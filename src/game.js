@@ -2793,6 +2793,13 @@ function updateOpps(dt) {
     if (got) { o.seen = true; if (!oppDone(o)) { toast('기회 발견 — ' + oppText(o), 3, 'good'); play('click', 0.35, 1.3); } }
   }
 }
+function drawCorpseRisk() {
+  for (const c of S.corpses) {
+    if (c.stashed || flOf(c) !== flOf(S.player)) continue;
+    if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font = '700 11px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선 시체: 경비가 그쪽을 보면 발견한다. 메고(특수) 수거함·맨홀·어두운 구석으로 옮겨라'); }
+  }
+}
 function drawOpps(P) {
   if (!showOpps || !S.opps) return; const fP = flOf(P), k = Math.max(1, 0.95 / SCALE);
   for (const o of S.opps) {
@@ -3292,6 +3299,22 @@ function openKeypad(d) {
 }
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
 function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; if (S) S.keypad = null; }
+// 들킬 듯할 때 짧게 똑딱 — 알아채는 정도가 오를수록 높고 빠르게
+function warnTick(m) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
+function updateWarn(dt) {
+  let m = 0; for (const g of S.guards) if (!g.civ && g.seen && g.state !== 'ALERT' && g.state !== 'DEAD') m = Math.max(m, g.meter || 0);
+  if (m < 0.15) { S.warnT = 0; return; }
+  if ((S.warnT = (S.warnT || 0) - dt) <= 0) { S.warnT = 0.55 - 0.4 * Math.min(1, m); warnTick(m); }
+}
+// 시체가 경비 눈에 띌 수 있는 자리인가 (누가 그쪽을 보면 보인다)
+function updateCorpseRisk(dt) {
+  if ((S.crT = (S.crT || 0) - dt) > 0) return; S.crT = 0.3;
+  for (const c of S.corpses) {
+    c.risk = false; if (c.stashed || c.carried || c.discovered || c.hidden || c.accident) continue;
+    for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) !== flOf(c) || dist(g.x, g.y, c.x, c.y) > 520) continue;
+      const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, false) > 0) { c.risk = true; break; } }
+  }
+}
 function kpBeep(ok) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'sine' : 'square'; o.frequency.value = ok ? 1320 : 220; g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + (ok ? 0.12 : 0.35)); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }
 function kpPress(v) {
   const k = S && S.keypad; if (!k) return; const n = (STAGE.code || '0000').length;
@@ -3956,7 +3979,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
-  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
+  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateWarn(dt); updateCorpseRisk(dt); } if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
     if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 경비가 있으면 들킨다', 2.6, 'warn'); }
@@ -5038,7 +5061,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) drawNearMarks(P, openB);
   if (running && !tactical) { drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running && CITY) drawOpps(P);
+  if (running && CITY) { drawOpps(P); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
       ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();
