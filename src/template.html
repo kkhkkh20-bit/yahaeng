@@ -241,7 +241,7 @@ body:not(.touch) .sysbtns .tonly { display: none; }
   #mini { width: 100px; top: calc(var(--topb, 150px) + 6px); right: 8px; opacity: .82; }
   #toasts { top: calc(var(--topb, 150px) + 130px) !important; }
 }
-#scanLegend { position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%); display: none; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 92vw; padding: 6px 12px; background: rgba(7,10,18,.86); border: 1px solid var(--ink-line); font-size: 12px; color: var(--paper-dim); pointer-events: none; z-index: 6; }
+#scanLegend { position: fixed; left: 50%; top: calc(var(--topb, 60px) + 54px); transform: translateX(-50%); display: none; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 92vw; padding: 6px 12px; background: rgba(7,10,18,.86); border: 1px solid var(--ink-line); font-size: 12px; color: var(--paper-dim); pointer-events: none; z-index: 6; }
 body.scanning #scanLegend { display: flex; }
 #scanLegend b { color: var(--paper); font-weight: 700; }
 #scanLegend i { font-style: normal; display: inline-flex; align-items: center; gap: 5px; }
@@ -273,6 +273,21 @@ body.scanning #scanLegend { display: flex; }
 #expoLbl[data-e="1"] { color: #1a1408; background: #f2c46b; border-color: #f2c46b; }
 #expoLbl[data-e="2"] { color: #fff; background: #e0483c; border-color: #e0483c; animation: expoP .5s infinite alternate; }
 @keyframes expoP { to { background: #a32a20; } }
+@media (max-height: 500px) and (min-width: 701px) {  /* 휴대폰 가로: 상단 줄을 줄이고 미니맵을 그 아래로 */
+  .chip, .sysbtns button { font-size: 10.5px; padding: 3px 6px; }
+  .lightbox, #killsLbl { display: none; }
+  .obj { font-size: 11.5px; padding: 4px 9px; max-width: 38vw; }
+  .obj small { display: none; }
+  #mini { width: 120px; top: calc(var(--topb, 60px) + 6px); }
+  #hintCard { max-width: 44vw; font-size: 12px; }
+}
+.perks { margin: 14px 0 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+.perks h3 { width: 100%; margin: 0 0 4px; font-size: 13px; letter-spacing: .1em; color: var(--paper-dim); }
+.perks h3 small { margin-left: 6px; color: #f2c46b; letter-spacing: 0; }
+.perk { font-size: 12px; padding: 5px 9px; border: 1px solid var(--ink-line); color: var(--paper-dim); opacity: .6; }
+.perk b { color: var(--paper-dim); margin-right: 4px; }
+.perk.on { opacity: 1; color: var(--paper); border-color: #f2c46b; }
+.perk.on b { color: #f2c46b; }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -332,6 +347,7 @@ body.scanning #scanLegend { display: flex; }
       <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
     </div>
     <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
+    <div id="perkList" class="perks" hidden></div>
     <div class="rules-h">규칙</div>
     <ul class="rules">
       <li><strong>시야 원뿔</strong>진한 안쪽은 항상 보인다. 줄무늬 구역에선 웅크리면 안 보인다. 점선 호 바깥은 어둠 속이면 안 보인다. 모래주머니 바로 뒤에서 웅크리면 가려진다.</li>
