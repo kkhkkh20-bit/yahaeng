@@ -939,8 +939,13 @@ let cam = { x: 0, y: 0 };
 let S = null;
 let running = false, paused = false;
 
+// 의뢰 변형 (깬 의뢰에만): 같은 지도를 다른 조건으로 다시 (히트맨 에스컬레이션 방식)
+const MODS = { reinf: ['순찰 증원', '순찰 경비가 둘 늘어난다 (반대 방향으로 돈다)'], timer: ['제한 시간', '6분 안에 끝내야 한다'], bright: ['환한 밤', '어둠 속에서도 경비가 1.5배 멀리 본다'], bare: ['맨손', '락픽·빈 캔·다트 없이 시작한다'] };
+let MOD = ''; try { const m = localStorage.getItem('yahaeng.mod'); if (MODS[m]) MOD = m; } catch (e) {}
+const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
 function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
+  const modNow = CITY && MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
   buildMap(STAGE); setLayer(0); buildFRM(false);
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
@@ -958,6 +963,7 @@ function newGame(si) {
   STAGE._g = STAGE.guards.map(resolveGuard).concat(autoResidents(), crowdGuys);
   STAGE._items = (STAGE.items || []).map(p => Array.isArray(p) ? p : (q => [q[0], q[1], p.fl || 0, p.b])(planPt(p.b, p.fl || 0, p.at || 'bed')));
   const guards = STAGE._g.map((d, i) => makeGuard(d, i));
+  if (modNow === 'reinf') STAGE._g.filter(d => d.route && d.route.length > 1 && d.kind !== 'civ' && d.kind !== 'dog' && !d.target).slice(0, 2).forEach(d => { const g = makeGuard(Object.assign({}, d, { route: d.route.slice().reverse(), key: null }), guards.length); g.reinf = true; guards.push(g); });
   guards.forEach(g => { setLayer(g.fl); buildRouteLine(g); if (g.civ && g.sleep) g.state = 'SLEEP'; }); setLayer(0);
   if (CITY) guards.forEach(g => { if (!g.civ && !g.dog && !g.target && !g.elite && g.id % 2 === 0) g.torch = true; });  // 경비 절반은 손전등
   // 주민의 '집': 자기 세대(거실·방·욕실) 칸 범위. 계단실·가게·클럽 같은 공용 공간은 집이 아니다
@@ -1019,7 +1025,10 @@ function newGame(si) {
     over: false, hints: {}, keys: {}, exitOpen: false, vents
   };
   S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70 };
-  applyPerks(); trapsInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
+  S.mod = modNow; applyPerks();
+  if (S.mod === 'timer') S.timeLeft = 360 * D().time;
+  if (S.mod === 'bare') { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; }
+  trapsInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
   // 전봇대와 전깃줄: 줄 끝은 전봇대 꼭대기 또는 옥상 가장자리
   S.poles = POLES.map(([tx, ty, z]) => ({ tx, ty, x: tc(tx), y: tc(ty), z, top: 26 + z * 10 }));
   // 인입선: [전봇대 x, y, 층] → 그 전봇대에서 가장 가까운, 그 층 정면 창문으로
@@ -1751,7 +1760,7 @@ function guardRanges(g) {
   if (g.dog) return { lit: 170 * D().range, dark: 85 * D().range };
   const m = D().range * A_RANGE[S.alevel] * (g.state === 'SUSPICIOUS' || g.state === 'ALERT' || g.state === 'CHECK' ? 1.1 : 1) * (g.target ? 0.85 : 1);
   const dm = distracted(g) ? 0.65 : 1;
-  return { lit: 250 * m * dm, dark: 95 * m * dm };
+  return { lit: 250 * m * dm, dark: 95 * m * dm * (S.mod === 'bright' ? 1.5 : 1) };
 }
 // elev = 대상이 지붕 위 (경비는 위를 잘 올려다보지 않는다)
 function canSee(g, x, y, light, hidden, sneak, elev) {
@@ -5204,6 +5213,7 @@ function drawMini() {
 function objectiveLines() {
   const L = [], P = S.player;
   const place = (x, y, fl, b) => { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; };
+  if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
   if (S.exitOpen) L.push(['go', '탈출 지점(노란 원)으로']);
   if (STAGE.keyBld || STAGE.keyDoors) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
@@ -5310,7 +5320,7 @@ function showEnd(win, reason) {
     const bonus = [['발각되지 않기', st.detected === 0], ['시체 발견 0', st.bodies === 0], ['수색 경보 0', st.alarms === 0], [hasTargets ? '표적 외 살상 0' : '아무도 죽이지 않기', hasTargets ? st.extraKills === 0 : st.kills === 0]];
     S.bonus = bonus;
     if (STAGE.challenges) {
-      const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true;
+      const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
       S.chRes = STAGE.challenges.map(id => { const ok = !!(CH[id] && CH[id][1]()), fresh = ok && !mine[id]; if (ok) mine[id] = true; return [id, ok, fresh, !!mine[id]]; });
       saveCh(all);
     }
@@ -5329,6 +5339,7 @@ function showEnd(win, reason) {
       return `<div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
         + ((STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '난이도 ' + D().name + ' · 보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
+  if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' — 깼다' : ''}</div>`;
   if (CITY && win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
   $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial)));
@@ -5343,11 +5354,12 @@ function renderStageList() {
     <button class="stage" type="button" data-i="${i}">
       <span class="st-no">${s.no}</span>
       <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
-      <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
+      <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${CITY && !s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
     </button>`).join('');
   $('stageList').querySelectorAll('.stage').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
   { const pl = $('perkList'); if (pl) { pl.hidden = !CITY; if (CITY) { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   document.querySelectorAll('#diffSel button').forEach(b => b.classList.toggle('on', b.dataset.d === DKEY));
+  { const mb = $('modBox'); if (mb) { mb.hidden = !CITY; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
 }
 
 // ---------------------------------------------------------------- 루프
@@ -5532,6 +5544,7 @@ $('btnCP').addEventListener('click', () => loadCheckpoint());
 $('btnNext').addEventListener('click', () => start(STAGE.tutorial ? 0 : STAGE_I + 1));
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
 
+document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 document.querySelectorAll('#diffSel button').forEach(b => b.addEventListener('click', () => { DKEY = b.dataset.d; try { localStorage.setItem('yahaeng.diff', DKEY); } catch (e) {} renderStageList(); }));
 function start(i) {
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic(CITY ? 'n_calm' : 'calm'), 300);

@@ -288,6 +288,8 @@ body.scanning #scanLegend { display: flex; }
 .perk b { color: var(--paper-dim); margin-right: 4px; }
 .perk.on { opacity: 1; color: var(--paper); border-color: #f2c46b; }
 .perk.on b { color: #f2c46b; }
+.modc { font-size: 10.5px; color: #9fc7d8; margin-right: 6px; letter-spacing: 0; }
+#modSel { flex-wrap: wrap; }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -345,6 +347,10 @@ body.scanning #scanLegend { display: flex; }
     <div class="stages"><h3>난이도</h3>
       <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
       <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
+    </div>
+    <div class="stages" id="modBox" hidden><h3>의뢰 변형</h3>
+      <div class="diff" id="modSel"><button type="button" data-m="">없음</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
+      <p class="diff-note" id="modNote"></p>
     </div>
     <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
     <div id="perkList" class="perks" hidden></div>
