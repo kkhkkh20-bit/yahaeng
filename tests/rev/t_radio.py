@@ -30,6 +30,6 @@ async def run(b, mode):
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for m in ['wait']: await run(b, m)
+        for m in ['kill', 'dart']: await run(b, m)
         await b.close()
 asyncio.run(main())

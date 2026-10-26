@@ -3041,7 +3041,25 @@ function doorAct(dr) {
   if (dr.keyLock === 'code' && dr.locked) return { k: 'keypad', d: dr, label: '비번 입력' };
   return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? keyName(dr.keyLock) + '로 열기' : '잠김 (' + keyName(dr.keyLock) + ')' } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 잠그기' };
 }
+// 암살하려고 다가가는 중에는 Space가 문·비번·조명·두꺼비집·쪽지 같은 다른 행동을 하지 않는다 (그 행동은 Z로 넘긴다)
+const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg']);
+const KILL_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'ledgeKill', 'pushOff', 'winJump']);
+function stalkGuard() {
+  const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.under || P.vent || P.wire) return null;
+  let best = null, bd = 190;
+  for (const g of S.guards) {
+    if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'FLEE' || g.state === 'TERROR' || g.climb || (g.state === 'ALERT' && !radioBusy(g))) continue;
+    if (flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) continue;
+    const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y)) { bd = d; best = g; }
+  }
+  return best;
+}
 function primaryAction() {
+  const a = primaryActionRaw();
+  if (RISKY_K.has(a.k)) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: sg.civ ? '기절시키기' : '암살' }; }
+  return a;
+}
+function primaryActionRaw() {
   const P = S.player;
   if (P.trav || P.lunge) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
@@ -3105,13 +3123,13 @@ function primaryAction() {
   if (dr && !P.carrying) return doorAct(dr);
   return { k: 'none', label: '암살' };
 }
-function actPrimary() {
+function actPrimary(force) {
   if (!S || S.over || paused || !running) return;
   if (DLG.modal) { advanceDialog(); return; }
-  const a = primaryAction(), P = S.player;
-  // 입력 버퍼: 지금 할 수 있는 게 없으면 0.25초 안에 생기는 행동을 대신 실행
-  if (a.k === 'none') { S.qBuf = 0.25; return; }
-  S.qBuf = 0; P.vx = 0; P.vy = 0;
+  const a = force && force.viaZ ? force : primaryAction(), P = S.player;
+  // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
+  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '경비가 가까이 있으면 Space(행동 버튼)는 암살만 한다. 문·비번·조명·두꺼비집·쪽지는 Z(특수 버튼)로 한다'); return; }
+  S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
     case 'surface': {
@@ -3511,6 +3529,7 @@ function actCarry() {
   if (P.z || P.jump || P.trav || P.lunge || P.vent || P.under) return;
   if (P.captive) { actPrimaryForce('execute'); return; }
   const sa = secondaryAction();
+  if (sa.viaZ) { actPrimary(sa); return; }
   if (sa.k === 'cover') { enterCover(sa.n); return; }
   if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 경비에게 보이지 않는다. 옆으로 이동하고, 위로 밀면 올라서고, 1층 지붕이면 아래로 밀어 내려간다. 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]'); return; }
   if (sa.k === 'uncover') { P.cover = null; play('cloth', 0.15); return; }
@@ -3574,6 +3593,7 @@ function secondaryAction() {
   const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };
   const nc = nearCorpse(); if (nc && STAGE.disguise && !nc.dog && !nc.stripped && !nc.target && !(nc.ch || '').startsWith('civ') && !nc.ko && !(P.disguise && !P.disguiseBlown)) return { k: 'dress', c: nc, label: '옷 갈아입기' };
   if (nc) return { k: 'carry', label: '운반' };
+  const hp = primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true });
   const cv = !P.z && !P.carrying && !P.captive && coverAt(P); if (cv) return { k: 'cover', n: cv, label: '벽에 기대기' };
   return { k: 'none', label: '특수' };
 }
@@ -3646,7 +3666,7 @@ function update(dt) {
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
   if (S.whistleT > 0) S.whistleT -= dt;
   if (S.pull) updatePull(dt);
-  if (S.qBuf > 0) { S.qBuf -= dt; if (primaryAction().k !== 'none') { S.qBuf = 0; actPrimary(); } }
+  if (S.qBuf > 0) { S.qBuf -= dt; const qa = primaryAction(); if (qa.k !== 'none' && (!S.qKill || KILL_K.has(qa.k))) { S.qBuf = 0; actPrimary(); } }
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
@@ -4401,7 +4421,8 @@ function drawActLabels(pa, P) {
   const key = '';
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
-  if (pa.k === 'none') return;
+  let zKey = false;
+  if (pa.k === 'none') { if (!pa.held) return; pa = pa.held; zKey = true; }
   if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
   else if (pa.l && pa.k === 'up') { x = pa.l.x; y = pa.l.y - 34; } else if (pa.l && (pa.k === 'down' || pa.k === 'smother')) { x = pa.l.rx != null ? pa.l.rx : pa.l.ux; y = (pa.l.ry != null ? pa.l.ry : pa.l.uy) - 40; } else if (pa.l) at(pa.l);
   const col = pa.list || pa.g ? '#e8473c' : pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' ? SCAN.hide : '#f2c46b';
@@ -4412,6 +4433,7 @@ function drawActLabels(pa, P) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
+  if (zKey) { tag(x, y, lab + ' (경비 근처 — Space는 암살)', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
   tag(x, y, key + lab, col, 1, isTouch ? null : 'Space');
   const sa = secondaryAction();
   if (['grab', 'steal', 'tunnel', 'fdown'].includes(sa.k)) tag(x, y + 21 * Math.max(1, 0.95 / SCALE), sa.label, '#c4ccd6', 1, isTouch ? null : 'Z');
@@ -4936,7 +4958,7 @@ function updateHUD(force) {
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
   const pa = primaryAction();
-  setText(hud.act.querySelector('b'), 'act', pa.k === 'none' ? '행동' : pa.label);
+  setText(hud.act.querySelector('b'), 'act', pa.k === 'none' && !pa.stalk ? '행동' : pa.label);
   hud.act.classList.toggle('ready', pa.k !== 'none');
   const sa = secondaryAction();
   setText(hud.carry.querySelector('b'), 'carry', sa.label);
