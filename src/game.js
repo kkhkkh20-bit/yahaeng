@@ -3690,7 +3690,7 @@ function killGuard(g, mode, where, quiet) {
   if (g.civ) return koCiv(g, mode, where);
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
   g.state = 'DEAD'; g.icon = null;
-  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); setTimeout(() => play('thud', 0.45), 180);
+  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); setTimeout(() => play('thud', 0.45), 180); if (CITY) S.shakeT = quiet ? 0.12 : 0.18;  // 처치 손맛: 짧은 화면 흔들림
   S.stats.kills++; if (!g.target) S.stats.extraKills++;
   S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
   const c = { fl: flOf(g), ch: charOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
@@ -3979,6 +3979,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
+  if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
   updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateWarn(dt); updateCorpseRisk(dt); } if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
@@ -4098,7 +4099,7 @@ function drawSprite(c, x, y, a, s = 0.78, alpha = 1) {
   ctx.drawImage(c, -c.width * s * 0.42, -c.height * s / 2, c.width * s, c.height * s);
   ctx.restore();
 }
-function worldTransform(c, scale) { c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale, H / 2 * DPR - cam.y * scale); }
+function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; } c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
 function drawKeyIcon(k, x, y, ring) {
   if (!k || k === 'gold') return drawItemIcon('it_key', x, y, S.t, ring);
   const bob = Math.sin(S.t * 3) * 2, c = keyCol(k);
@@ -5375,6 +5376,7 @@ function showEnd(win, reason) {
   renderStageList();
 }
 
+if (!CITY) document.querySelectorAll('.cityonly').forEach(e => e.remove());
 function renderStageList() {
   const best = loadBest();
   $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).sort((a, b) => (b[0].tutorial ? 1 : 0) - (a[0].tutorial ? 1 : 0)).map(([s, i]) => `
