@@ -361,18 +361,18 @@ STAGES.push({
   items: [{ b: 1, fl: 0, at: 'L' }],
   challenges: [],
   steps: [
-    ['방향키로 걸어 동쪽으로 가 보자', (S, P) => P.x > 3 * 48],
+    ['방향키로 걸어 동쪽으로 가 보자', (S, P) => P.x > 3 * 48, () => ({ x: 5 * 48 + 24, y: 9 * 48 + 24 })],
     ['Ctrl(모바일은 [살금])로 살금 모드 켜기 — 발소리가 작아진다', (S, P, I) => I.sneakToggle],
-    ['등 돌린 경비 뒤로 다가가 Space(행동 버튼) — 암살', S => S.guards[0].state === 'DEAD'],
-    ['시체 옆에서 Z(특수 버튼)로 메고, 의류수거함 앞에서 Space로 넣기', S => (S.stats.stashed || 0) >= 1],
-    ['벽에 붙어 멈추면 저절로 기댄다 — 위쪽 상태 칸이 "숨음"(파랑)인지 보자', (S, P) => !!P.cover || S.guards[1].state === 'DEAD'],
-    ['기댄 채 기다리다가 앞을 지나는 경비에게 Space — 끌어당겨 암살', S => S.guards[1].state === 'DEAD'],
-    ['이쪽을 보는 경비: X(빈 캔 버튼)를 짧게 눌러 던지면 소리 난 곳을 보러 간다', S => S.stats.stonesUsed >= 1 || S.guards[2].state === 'DEAD'],
-    ['한눈판 경비 뒤로 돌아가 처치', S => S.guards[2].state === 'DEAD'],
-    ['컨테이너 옆 사다리 앞에서 Space — 위로 오르기', (S, P) => P.z > 0 || S.guards[3].state === 'DEAD'],
-    ['아래를 지나는 경비가 가까워지면 Space — 낙하 암살', S => S.guards[3].state === 'DEAD'],
-    ['연습 창고는 잠겨 있다. 창문이나 문 앞에서 Space — 락픽으로 따기 (움직이지 말고 기다린다)', S => (S.stats.picks || 0) >= 1],
-    ['연습 장부를 줍고 동쪽 끝(노란 원)으로 나가기', S => S.items.every(i => i.got)]
+    ['등 돌린 경비 뒤로 다가가 Space(행동 버튼) — 암살', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
+    ['시체 옆에서 Z(특수 버튼)로 메고, 의류수거함 앞에서 Space로 넣기', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
+    ['벽에 붙어 멈추면 저절로 기댄다 — 위쪽 상태 칸이 "숨음"(파랑)인지 보자', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
+    ['기댄 채 기다리다가 앞을 지나는 경비에게 Space — 끌어당겨 암살', S => S.guards[1].state === 'DEAD', S => S.guards[1]],
+    ['이쪽을 보는 경비: X(빈 캔 버튼)를 짧게 눌러 던지면 소리 난 곳을 보러 간다', S => S.stats.stonesUsed >= 1 || S.guards[2].state === 'DEAD', S => S.guards[2]],
+    ['한눈판 경비 뒤로 돌아가 처치', S => S.guards[2].state === 'DEAD', S => S.guards[2]],
+    ['컨테이너 옆 사다리 앞에서 Space — 위로 오르기', (S, P) => P.z > 0 || S.guards[3].state === 'DEAD', () => ({ x: 25 * 48 + 24, y: 5 * 48 + 24 })],
+    ['아래를 지나는 경비가 가까워지면 Space — 낙하 암살', S => S.guards[3].state === 'DEAD', S => S.guards[3]],
+    ['연습 창고는 잠겨 있다. 창문이나 문 앞에서 Space — 락픽으로 따기 (움직이지 말고 기다린다)', S => (S.stats.picks || 0) >= 1, () => ({ x: 36 * 48 + 24, y: 6 * 48 + 24 })],
+    ['연습 장부를 줍고 동쪽 끝(노란 원)으로 나가기', S => S.items.every(i => i.got), S => S.items[0]]
   ]
 });
 const DIALOGUE = {};

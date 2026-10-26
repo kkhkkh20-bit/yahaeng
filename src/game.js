@@ -5039,6 +5039,10 @@ function draw() {
   else if (running && !tactical) drawNearMarks(P, openB);
   if (running && !tactical) { drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) drawOpps(P);
+  if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
+    const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
+      ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();
+      ctx.font = `700 ${Math.round(11 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(tg.x - 16 * k, y - 30 * k, 32 * k, 15 * k); ctx.fillStyle = '#f2c46b'; ctx.fillText('여기', tg.x, y - 19 * k); ctx.textAlign = 'left'; } }
   if (running && !tactical) drawOffscreen();
   // 행동 표시
   if (running && !S.over && !S.entrySel) {
@@ -5216,7 +5220,7 @@ function objectiveLines() {
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
   if (S.exitOpen) L.push(['go', '탈출 지점(노란 원)으로']);
-  if (STAGE.keyBld || STAGE.keyDoors) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
+  if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
   if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', P.disguiseBlown ? '변장 들통남 — 다시 갈아입을 옷을 찾아라' : '변장 중 — 걸으면 멀리서는 안 들킨다']);
@@ -5366,7 +5370,7 @@ function renderStageList() {
 let lastT = 0;
 function frame(t) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (t - lastT) / 1000 || 0); lastT = t;
+  const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
   if (running && !paused) updateDialog(dt);
   document.body.classList.toggle('scanning', !!(input.scan && running && !tactical));
@@ -5378,8 +5382,16 @@ function frame(t) {
   else if (!running) { S.t += dt; const P = S.player, kx = P.x, ky = P.y; P.x = -9999; P.y = -9999; for (const g of S.guards) updateGuard(g, dt); P.x = kx; P.y = ky; }
   draw();
 }
+// 느린 기기: 3초 동안 평균 40fps 아래면 해상도를 한 단계(0.5배) 낮춘다 (다시 올리지는 않는다)
+let dprCap = 2, perfN = 0, perfSum = 0;
+function perfWatch(rawDt) {
+  if (!running || paused || !S || S.over || DPR <= 1 || rawDt <= 0 || rawDt > 0.25) return;
+  perfN++; perfSum += rawDt; if (perfSum < 3) return;
+  const fps = perfN / perfSum; perfN = 0; perfSum = 0;
+  if (fps < 40) { dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); }
+}
 function resize() {
-  DPR = Math.min(2, window.devicePixelRatio || 1);
+  DPR = Math.min(dprCap, 2, window.devicePixelRatio || 1);
   W = canvas.clientWidth; H = canvas.clientHeight;
   canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
   BASE_SCALE = clamp(Math.min(W, H * 1.45) / ((W < 640 ? 11.5 : 15) * TILE), 0.6, 1.35);
