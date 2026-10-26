@@ -332,6 +332,49 @@ const STAGES = [
 // 쉬운 것부터: 금고 털기 → VIP → 본부(변장) → 정전 → 대청소
 (o => STAGES.sort((a, b) => o.indexOf(a.id) - o.indexOf(b.id)))(['m1', 'm2', 'm5', 'm3', 'm4']);
 STAGES.forEach((st, i) => { st.no = String(i + 1).padStart(2, '0'); st.sub = st.sub.replace(/^임무( \d)? ·/, `임무 ${i + 1} ·`); });
+// ───────── 연습: 훈련장 — 한 칸씩 기술을 익힌다 (목록 맨 앞에 보인다)
+STAGES.push({
+  id: 't0', no: '00', name: '연습', sub: '연습 · 훈련장', tutorial: true,
+  mission: '기술을 하나씩 익힌다: 살금·뒤에서 암살·시체 숨기·기대기·유인·낙하 암살·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
+  brief: '서쪽에서 동쪽으로 한 칸씩 나아가며 기술을 익힌다. 임무 칸 맨 위의 "연습" 줄이 지금 할 일이다.',
+  W: 41, H: 15, start: [1, 9], exit: [40.5, 9], startA: 0, noRefine: true, floors: false, pspd: 1.25, gspd: 0.9, residents: 0,
+  build(m) {
+    m.fill(0, 0, 40, 14, ','); for (let x = 0; x < 41; x++) { m.set(x, 0, '#'); m.set(x, 14, '#'); }
+    m.fill(0, 8, 40, 10, '.'); m.fill(0, 7, 40, 7, '='); m.fill(0, 11, 40, 11, '=');
+    m.villa(11, 2, 18, 6, 1, { kind: 'house', name: '연습 벽집' });                                       // 0 기대기 벽
+    m.villa(33, 1, 38, 6, 1, { kind: 'shop', use: ['store'], signs: ['연습 창고'], name: '연습 창고' });    // 1 락픽
+    m.fill(26, 3, 30, 5, 'U'); m.set(25, 5, 'L');                                                           // 컨테이너 + 사다리
+    m.set(9, 7, 'H'); m.set(20, 12, 'H');                                                                   // 의류수거함 (시체 숨기기)
+    m.many('T', [[4, 12], [22, 4], [31, 12]]); m.many('B', [[2, 12], [8, 12], [24, 12]]);
+    m.car(36, 12, 1);
+  },
+  roofs: ['cRoofG', 'cRoofA'], bricks: [1, 0],
+  keyBld: [1],
+  well: 'manhole', kunai: 2, coins: 2,
+  lamps: [[5, 11, 120, 1], [39, 9, 120, 1]],
+  guards: [
+    { kind: 'g1', at: [7, 9], post: 0 },                                   // 0 등 돌린 경비 (뒤에서 암살)
+    { kind: 'g1', route: [[19, 8, 1.5], [11, 8, 1.5]] },                   // 1 벽 앞을 오가는 경비 (기대서 끌어당기기)
+    { kind: 'g1', at: [24, 10], post: 180 },                               // 2 이쪽을 보는 경비 (빈 캔으로 유인)
+    { kind: 'g2', route: [[27, 6, 1.2], [31, 6, 1.2]] }                    // 3 컨테이너 아래 (낙하 암살)
+  ],
+  items: [{ b: 1, fl: 0, at: 'L' }],
+  challenges: [],
+  steps: [
+    ['방향키로 걸어 동쪽으로 가 보자', (S, P) => P.x > 3 * 48],
+    ['Ctrl(모바일은 [살금])로 살금 모드 켜기 — 발소리가 작아진다', (S, P, I) => I.sneakToggle],
+    ['등 돌린 경비 뒤로 다가가 Space(행동 버튼) — 암살', S => S.guards[0].state === 'DEAD'],
+    ['시체 옆에서 Z(특수 버튼)로 메고, 의류수거함 앞에서 Space로 넣기', S => (S.stats.stashed || 0) >= 1],
+    ['벽에 붙어 멈추면 저절로 기댄다 — 위쪽 상태 칸이 "숨음"(파랑)인지 보자', (S, P) => !!P.cover || S.guards[1].state === 'DEAD'],
+    ['기댄 채 기다리다가 앞을 지나는 경비에게 Space — 끌어당겨 암살', S => S.guards[1].state === 'DEAD'],
+    ['이쪽을 보는 경비: X(빈 캔 버튼)를 짧게 눌러 던지면 소리 난 곳을 보러 간다', S => S.stats.stonesUsed >= 1 || S.guards[2].state === 'DEAD'],
+    ['한눈판 경비 뒤로 돌아가 처치', S => S.guards[2].state === 'DEAD'],
+    ['컨테이너 옆 사다리 앞에서 Space — 위로 오르기', (S, P) => P.z > 0 || S.guards[3].state === 'DEAD'],
+    ['아래를 지나는 경비가 가까워지면 Space — 낙하 암살', S => S.guards[3].state === 'DEAD'],
+    ['연습 창고는 잠겨 있다. 창문이나 문 앞에서 Space — 락픽으로 따기 (움직이지 말고 기다린다)', S => (S.stats.picks || 0) >= 1],
+    ['연습 장부를 줍고 동쪽 끝(노란 원)으로 나가기', S => S.items.every(i => i.got)]
+  ]
+});
 const DIALOGUE = {};
 const BARKS = {
   alert: ['누구야! 거기 서!', '도둑이다! 잡아!', '저기다! 놓치지 마!'],

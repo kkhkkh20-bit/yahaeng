@@ -34,4 +34,7 @@ python3 tests/rev/t_v33.py      # 락픽(창문·문)·걸쇠·방범창·자동
 python3 tests/rev/t_wire.py     # 전깃줄 매달린 방향
 python3 tests/rev/t_expo.py     # 숨음·들킬 수 있음·보인다 판정
 python3 tests/rev/t_tree.py     # 나무에 기대 숨기
+python3 tests/rev/t_change.py   # 경비가 열린 창문을 다시 잠금
+python3 tests/rev/t_perk.py     # 별점 장비
+python3 tests/rev/t_tut.py      # 연습(훈련장) 12단계 통과
 ```

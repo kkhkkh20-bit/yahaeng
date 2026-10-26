@@ -2659,7 +2659,7 @@ function updatePlayer(dt) {
     if (!canAim()) input.aiming = null;
     else { if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
   }
-  if (P.strikeT > 0) { P.strikeT -= dt; mag = 0; }
+  if (P.strikeT > 0) { P.strikeT = Math.max(0, P.strikeT - dt); mag = 0; }  // 0 아래로 내려가면 '공격 중'으로 남아 벽 기대기가 막혔다
   // 벽에 기대기: 벽(가구·차 포함) 쪽으로 잠깐 밀면 등을 붙인다. 기댄 채로는 벽을 따라 옆걸음만, 벽에서 떨어지는 쪽으로 밀면 나온다
   if (P.cover) {
     const n = coverAt(P, P.cover), away = mag > 0.05 ? (mx * P.cover.x + my * P.cover.y) / mag : 0;
@@ -3120,8 +3120,17 @@ function updateChanges(dt) {
     }
   }
 }
+// 연습(훈련장): 단계를 차례로 확인하고 다음 할 일을 알려 준다
+function updateTutorial() {
+  const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
+  while (S.tutI < st.length && st[S.tutI][1](S, S.player, input)) {
+    S.tutI++; play('switch', 0.45, 1.5);
+    if (S.tutI < st.length) toast('잘했다 — 다음: ' + st[S.tutI][0], 3.4, 'good'); else toast('연습 끝 — 이제 실제 의뢰로', 3, 'good');
+  }
+}
 function winInit() {
   S.winInit = true; if (!CITY) return;
+  if (STAGE.tutorial) { for (const w of S.windows) w.st = bldAt(w.tx, w.ty) >= 0 ? 'lock' : 'open'; for (const w of S.windows) w.b = bldAt(w.tx, w.ty); return; }
   const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], doorT = new Set(S.doors.map(d => d.tx + ',' + d.ty));
   const keyPts = S.items.filter(i => !i.fl).concat((S.keyItems || []).filter(i => !i.fl)).map(i => [Math.floor(i.x / TILE), Math.floor(i.y / TILE)]);
   const byB = {};
@@ -3938,7 +3947,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
-  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); }
+  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
     if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 경비가 있으면 들킨다', 2.6, 'warn'); }
@@ -5195,6 +5204,7 @@ function drawMini() {
 function objectiveLines() {
   const L = [], P = S.player;
   const place = (x, y, fl, b) => { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; };
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
   if (S.exitOpen) L.push(['go', '탈출 지점(노란 원)으로']);
   if (STAGE.keyBld || STAGE.keyDoors) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
@@ -5321,7 +5331,7 @@ function showEnd(win, reason) {
       : '난이도 ' + D().name + ' · 보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (CITY && win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
-  $('btnNext').hidden = !(win && STAGE_I < STAGES.length - 1);
+  $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial)));
   $('btnCP').hidden = win || !cpReady();
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
@@ -5329,7 +5339,7 @@ function showEnd(win, reason) {
 
 function renderStageList() {
   const best = loadBest();
-  $('stageList').innerHTML = STAGES.map((s, i) => `
+  $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).sort((a, b) => (b[0].tutorial ? 1 : 0) - (a[0].tutorial ? 1 : 0)).map(([s, i]) => `
     <button class="stage" type="button" data-i="${i}">
       <span class="st-no">${s.no}</span>
       <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
@@ -5519,7 +5529,7 @@ $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
 $('btnRetry').addEventListener('click', () => start(STAGE_I));
 $('btnCP').addEventListener('click', () => loadCheckpoint());
-$('btnNext').addEventListener('click', () => start(STAGE_I + 1));
+$('btnNext').addEventListener('click', () => start(STAGE.tutorial ? 0 : STAGE_I + 1));
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
 
 document.querySelectorAll('#diffSel button').forEach(b => b.addEventListener('click', () => { DKEY = b.dataset.d; try { localStorage.setItem('yahaeng.diff', DKEY); } catch (e) {} renderStageList(); }));
