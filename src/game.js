@@ -786,14 +786,70 @@ function initAudio() {
 const MB = {}; let musicGain = null, musicSrc = null, musicKey = null;
 function setMusic(k) {
   if (!AC || musicKey === k) return;
+  if (k.startsWith('n_') && !MB[k]) MB[k] = makeNeonLoop(k);
   if (!MB[k]) { if (A.music && A.music[k] && !MB['_' + k]) { MB['_' + k] = 1; AC.decodeAudioData(b64ToBuf(A.music[k]), b => { MB[k] = b; if (musicKey === '__want_' + k) { musicKey = null; setMusic(k); } }, () => {}); } musicKey = '__want_' + k; return; }
   if (!musicGain) { musicGain = AC.createGain(); musicGain.connect(master); }
   const now = AC.currentTime;
   if (musicSrc) { const old = musicSrc; const og = old._g; og.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { old.stop(); } catch (e) {} }, 2000); }
   const src = AC.createBufferSource(); src.buffer = MB[k]; src.loop = true;
-  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'calm' ? 0.16 : 0.2), now, 0.5);
+  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'calm' ? 0.16 : k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
   src.connect(g); g.connect(musicGain); src._g = g; src.start(); musicSrc = src; musicKey = k;
 }
+// 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
+function makeNeonLoop(kind) {
+  const sr = AC.sampleRate, BPM = kind === 'n_calm' ? 72 : kind === 'n_tense' ? 96 : 132, beat = 60 / BPM, bars = 8, len = Math.floor(sr * beat * 4 * bars);
+  const buf = AC.createBuffer(2, len, sr), L = buf.getChannelData(0), R = buf.getChannelData(1);
+  const hz = m => 440 * Math.pow(2, (m - 69) / 12), at = b => Math.floor(b * beat * sr);
+  const add = (i, l, r) => { i %= len; L[i] += l; R[i] += r == null ? l : r; };
+  const saw = ph => 2 * (ph - Math.floor(ph + 0.5)), tri = ph => 1 - 4 * Math.abs(ph - Math.floor(ph + 0.5));
+  // 음 하나: 파형, 길이, 볼륨, 저역 통과, 좌우, 엔벨로프(공격·감쇠)
+  const note = (b0, durB, m, o) => {
+    const f = hz(m), n = Math.floor(durB * beat * sr), s0 = at(b0), A = (o.att || 0.005) * sr, dec = o.dec || 0, cut = o.cut || 4000, pan = o.pan || 0, vol = o.vol || 0.2, det = o.det || 0;
+    let y = 0, y2 = 0, ph1 = Math.random(), ph2 = Math.random();
+    for (let i = 0; i < n + sr * (o.rel || 0.05); i++) {
+      const tt = i / sr, env = Math.min(1, i / A) * (dec ? Math.exp(-tt * dec) : 1) * (i > n ? Math.exp(-(i - n) / sr / (o.rel || 0.05) * 4) : 1);
+      ph1 += f * (1 + det) / sr; ph2 += f * (1 - det) / sr;
+      let x = o.wave === 'tri' ? tri(ph1) : o.wave === 'sin' ? Math.sin(TAU * ph1) : o.wave === 'sq' ? (ph1 % 1 < 0.5 ? 1 : -1) * 0.6 : (saw(ph1) + saw(ph2)) * 0.5;
+      const fc = o.sweep ? cut * (1 + o.sweep * Math.exp(-tt * 10)) : cut, a = 1 - Math.exp(-TAU * fc / sr); y += a * (x - y); y2 += a * (y - y2);
+      const v = y2 * env * vol; add(s0 + i, v * (1 - pan) , v * (1 + pan));
+    }
+  };
+  const kick = (b, v = 0.9) => { const s0 = at(b); for (let i = 0; i < sr * 0.32; i++) { const tt = i / sr, ph = TAU * (46 * tt + 120 * (1 - Math.exp(-tt * 30)) / 30); add(s0 + i, Math.sin(ph) * Math.exp(-tt * 9) * v); } };
+  const noiseHit = (b, durS, v, hp, pan = 0) => { const s0 = at(b); let pv = 0, y = 0; for (let i = 0; i < sr * durS; i++) { const n = Math.random() * 2 - 1, h = hp ? n - pv : n; pv = n; y += 0.5 * (h - y); const e = v * Math.exp(-i / sr / durS * 5); add(s0 + i, (hp ? h : y) * e * (1 - pan), (hp ? h : y) * e * (1 + pan)); } };
+  const delay = (sec, fb, mix) => { const d = Math.floor(sec * sr); for (let i = 0; i < len; i++) { const j = (i + d) % len; L[j] += R[i] * fb * mix; R[j] += L[i] * fb * mix; } };
+  const B = bars * 4;
+  if (kind === 'n_calm') {
+    const prog = [[45, 57, 60, 64], [41, 57, 60, 64], [38, 57, 60, 65], [40, 55, 59, 64]];
+    for (let c = 0; c < 4; c++) { const ch = prog[c], b0 = c * 8;
+      for (const m of ch.slice(1)) note(b0, 8, m, { att: 1.6, rel: 1.2, cut: 600, vol: 0.07, det: 0.004, pan: (m % 3 - 1) * 0.4 });
+      note(b0, 8, ch[0] - 12, { wave: 'sin', att: 0.4, rel: 0.6, cut: 300, vol: 0.32 });
+      const arp = [ch[1] + 12, ch[2] + 12, ch[3] + 12, ch[2] + 12, ch[1] + 24, ch[3] + 12];
+      for (let k = 0; k < 5; k++) note(b0 + k * 1.5 + 0.5, 0.4, arp[k % arp.length], { wave: 'tri', dec: 5, cut: 3200, vol: 0.11, pan: k % 2 ? 0.5 : -0.5, rel: 0.2 });
+    }
+    for (let b = 0; b < B; b += 2) noiseHit(b + 1, 0.05, 0.03, true, 0.3);
+    delay(beat * 0.75, 0.5, 0.55);
+  } else if (kind === 'n_tense') {
+    for (let c = 0; c < 2; c++) note(c * 16, 16, 33, { att: 2, rel: 1, cut: 260, vol: 0.28, det: 0.006 });
+    const pat = [45, 45, 57, 45, 48, 45, 57, 51];
+    for (let k = 0; k < B * 4; k++) { const m = pat[k % 8] + (k >= B * 2 ? 1 : 0) * (k % 16 > 11 ? -2 : 0); note(k / 4, 0.2, m, { wave: 'sq', dec: 14, cut: 500 + 1400 * ((k % 64) / 64), vol: 0.09, pan: k % 2 ? 0.25 : -0.25, rel: 0.03 }); }
+    for (let k = 0; k < B * 4; k++) noiseHit(k / 4, 0.03, k % 4 === 2 ? 0.07 : 0.035, true, 0.4);
+    for (let b = 0; b < B; b += 4) { kick(b, 0.55); kick(b + 0.75, 0.35); }
+    for (let c = 0; c < 4; c++) for (const m of [57, 60, 63]) note(c * 8 + 6, 2, m, { att: 0.6, rel: 0.6, cut: 1200, vol: 0.05, det: 0.008 });
+    delay(beat * 0.5, 0.35, 0.4);
+  } else {
+    for (let b = 0; b < B; b++) kick(b, 0.85);
+    for (let b = 1; b < B; b += 2) { noiseHit(b, 0.16, 0.32, false); note(b, 0.1, 50, { wave: 'sin', dec: 30, vol: 0.25 }); }
+    for (let k = 0; k < B * 2; k++) noiseHit(k / 2 + 0.25, 0.04, 0.08, true, 0.3);
+    const bass = [45, 45, 45, 57, 43, 43, 55, 43, 41, 41, 53, 41, 40, 40, 52, 47];
+    for (let k = 0; k < B * 2; k++) note(k / 2, 0.42, bass[Math.floor(k / 2) % 16] - 12, { cut: 700, sweep: 2, vol: 0.2, det: 0.005 });
+    const lead = [69, 72, 76, 74, 72, 71, 67, 69];
+    for (let bar = 0; bar < bars; bar++) { note(bar * 4 + 2.5, 0.35, lead[bar], { wave: 'sq', dec: 6, cut: 2600, vol: 0.08, pan: 0.3 }); note(bar * 4 + 3, 0.35, lead[bar] - 5, { wave: 'sq', dec: 6, cut: 2600, vol: 0.07, pan: -0.3 }); }
+    delay(beat * 0.75, 0.25, 0.3);
+  }
+  let pk = 0; for (let i = 0; i < len; i++) pk = Math.max(pk, Math.abs(L[i]), Math.abs(R[i])); const nm = 0.9 / (pk || 1); for (let i = 0; i < len; i++) { L[i] *= nm; R[i] *= nm; }
+  return buf;
+}
+function prepNeonMusic() { if (!AC || !CITY) return; ['n_calm', 'n_tense', 'n_fight'].forEach((k, i) => setTimeout(() => { if (!MB[k]) MB[k] = makeNeonLoop(k); }, 60 + i * 400)); }
 // 클럽 음악: 124BPM 4박 킥 + 오프비트 하이햇 + 베이스 + 화음 (직접 합성, 2마디 반복)
 const CLUB_BPM = 124; let club = null;
 function makeClubLoop() {
@@ -868,14 +924,15 @@ const ctx = canvas.getContext('2d');
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d');
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
-let userZoom = 0.8, showRoutes = true, tactical = false;
+let userZoom = 0.8, showRoutes = true, tactical = false, showOpps = true;
+try { if (localStorage.getItem('yahaeng.opps') === '0') showOpps = false; } catch (e) {}
 try { const z = parseFloat(localStorage.getItem('yahaeng.zoom')); if (z > 0.4 && z < 1.6) userZoom = z; const r = localStorage.getItem('yahaeng.routes'); if (r === '0') showRoutes = false; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
 let running = false, paused = false;
 
 function newGame(si) {
-  STAGE_I = si; STAGE = STAGES[si];
+  STAGE_I = si; STAGE = STAGES[si]; CP = null;
   pickAlts(STAGE);
   buildMap(STAGE); setLayer(0); buildFRM(false);
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
@@ -2249,6 +2306,21 @@ function updateRadioCall(dt) {
   if (g.state !== 'ALERT') { S.radioCall = null; return; }
   if ((R.t -= dt) <= 0) { S.radioCall = null; radioSpread(R.at); }
 }
+// 벽 너머 발소리: 보이지 않는 경비가 들리는 거리 안에서 움직이면 발밑에 작은 소리 원 (마크 오브 더 닌자 방식)
+function drawHeardSteps(P, openB, gVis) {
+  if (P.under || P.vent) return;
+  const fP = flOf(P);
+  for (const g of S.guards) {
+    if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !g.moving) continue;
+    const fG = flOf(g), hidden = coveredG(g, openB) || !gVis(g) || fG !== fP; if (!hidden) continue;
+    const d = dist(P.x, P.y, g.x, g.y), R = (fG === fP ? 330 : 230) * (g.state === 'ALERT' || g.state === 'SEARCH' ? 1.3 : 1); if (d > R) continue;
+    const per = g.state === 'ALERT' ? 0.34 : 0.5, f = ((S.t + (g.id || 0) * 0.37) % per) / per, a = (1 - f) * (1 - d / R * 0.6);
+    ctx.strokeStyle = g.state === 'ALERT' || g.state === 'SEARCH' ? `rgba(255,140,110,${0.75 * a})` : `rgba(160,210,255,${0.9 * a})`; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(g.x, g.y + 6, 5 + 15 * f, 0, TAU); ctx.stroke();
+    ctx.fillStyle = `rgba(150,200,255,${0.55 * (1 - d / R * 0.5)})`; ctx.beginPath(); ctx.arc(g.x, g.y + 6, 2.2, 0, TAU); ctx.fill();
+    if (fG !== fP) { ctx.font = '700 10px "IBM Plex Mono", monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(150,200,255,.75)'; ctx.fillText((fG + 1) + 'F', g.x, g.y - 10); ctx.textAlign = 'left'; }
+  }
+}
 function drawRadioCall() {
   const R = S.radioCall; if (!R) return; const g = R.g; if (flOf(g) !== flOf(S.player)) return;
   const k = 1 - R.t / R.dur, x = g.x + 34, y = g.y - 30;
@@ -2658,6 +2730,79 @@ function updateWindowView(P) {
   }
   S.peek = best;
   if (best && !was) { play('cloth', 0.12); hint('peek', '창문 쪽을 바라보면 안이 보인다. 고개를 돌리면 다시 가려진다'); }
+}
+// ---------------------------------------------------------------- 기회 (Hitman식): 직접 보거나 엿들어 알게 된 암살 수단을 임무 칸에 모은다
+function oppsInit() {
+  S.opps = [];
+  (S.traps || []).forEach((tr, i) => { const p = tr.k === 'shock' ? tr.sw : tr.at; S.opps.push({ k: 'trap', ref: i, x: tc(p[0]), y: tc(p[1]), fl: 0, roof: tr.k === 'drop', text: tr.k === 'shock' ? '전선을 끊어 물웅덩이 감전시키기' : '옥상 간판을 떨어뜨려 아래를 덮치기' }); });
+  if (STAGE.fuse) S.opps.push({ k: 'fuse', x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]), fl: 0, text: '두꺼비집을 내려 동네 조명 전부 끄기' });
+  const cds = []; for (const d of S.doors) if (d.keyLock === 'code' && !cds.some(o => dist(o.x, o.y, d.x, d.y) < 120)) cds.push(d);
+  cds.forEach(d => S.opps.push({ k: 'code', d, x: d.x, y: d.y, fl: d.fl || 0, text: '' }));
+  if (STAGE.disguise) S.opps.push({ k: 'dress', seen: true, text: '조직원을 쓰러뜨려 옷을 빼앗아 변장하기' });
+}
+function oppText(o) { return o.k === 'code' ? (S.player.keys.code ? `비번 ${STAGE.code || ''}로 잠긴 문 열기` : '잠긴 문 비번 알아내기 — 엿듣거나 쪽지 찾기') : o.text; }
+function oppDone(o) { return o.k === 'trap' ? !!(S.traps[o.ref] && S.traps[o.ref].used) : o.k === 'fuse' ? !S.lightsOn : o.k === 'code' ? !o.d.locked : o.k === 'dress' ? !!S.player.disguise : false; }
+function updateOpps(dt) {
+  if (!S.opps) oppsInit();
+  if ((S.oppT = (S.oppT || 0) - dt) > 0) return; S.oppT = 0.3;
+  const P = S.player, fP = flOf(P);
+  for (const o of S.opps) {
+    if (o.seen || o.x == null) continue;
+    const got = (o.k === 'code' && P.keys.code) || (fP === o.fl && !P.under && !P.vent && dist(P.x, P.y, o.x, o.y) < (o.roof ? 380 : 300) && (o.roof || los(P.x, P.y, o.x, o.y, true)));
+    if (got) { o.seen = true; if (!oppDone(o)) { toast('기회 발견 — ' + oppText(o), 3, 'good'); play('click', 0.35, 1.3); } }
+  }
+}
+function drawOpps(P) {
+  if (!showOpps || !S.opps) return; const fP = flOf(P), k = Math.max(1, 0.95 / SCALE);
+  for (const o of S.opps) {
+    if (!o.seen || o.x == null || oppDone(o) || (o.fl !== fP && !tactical)) continue;
+    if (!tactical && dist(P.x, P.y, o.x, o.y) > 760) continue;
+    const x = o.x, y = o.y - 34 * k, s = 7 * k, pulse = 0.7 + 0.3 * Math.sin(S.t * 3);
+    ctx.fillStyle = `rgba(242,196,107,${0.9 * pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
+    ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y); ctx.closePath(); ctx.stroke(); ctx.fill();
+    ctx.font = `700 ${Math.round(11 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)';
+    const lab = '기회', tw = ctx.measureText(lab).width + 8 * k; ctx.fillRect(x - tw / 2, y - s - 17 * k, tw, 15 * k); ctx.fillStyle = '#f2c46b'; ctx.fillText(lab, x, y - s - 6 * k); ctx.textAlign = 'left';
+  }
+}
+// ---------------------------------------------------------------- 체크포인트 (목표를 이룰 때마다, 조용해지면 저장)
+let CP = null;
+function cloneDeep(o, memo = new Map()) {
+  if (o === null || typeof o !== 'object') return o;
+  if (memo.has(o)) return memo.get(o);
+  if (ArrayBuffer.isView(o)) { const c = o.slice(); memo.set(o, c); return c; }
+  const ct = o.constructor; if (ct && ct !== Object && ct !== Array) return o;
+  const c = Array.isArray(o) ? new Array(o.length) : {}; memo.set(o, c);
+  for (const k of Object.keys(o)) c[k] = cloneDeep(o[k], memo);
+  return c;
+}
+const cpOn = () => DKEY !== 'hard';
+function cpProgress() { return S.guards.filter(g => g.target && g.state === 'DEAD').length + S.items.filter(i => i.got).length + (S.keyItems || []).filter(i => i.got).length + (S.exitOpen ? 1 : 0); }
+function updateCheckpoint(dt) {
+  if (!cpOn() || S.over) return;
+  const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
+  if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
+  const P = S.player;
+  if (S.alevel >= 2 || S.radioCall || P.trav || P.jump || P.lunge || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
+  if (S.guards.some(g => !g.civ && ['ALERT', 'NOTICE', 'BODY'].includes(g.state))) return;
+  S.cpWant = false; saveCheckpoint();
+}
+function saveCheckpoint() {
+  CP = { si: STAGE_I, diff: DKEY, S: cloneDeep(S), grids: [G0.map(r => r.slice())].concat(GF.slice(1).map(g => g ? g.map(r => r.slice()) : null)), used: CP && CP.si === STAGE_I ? CP.used : 0 };
+  toast('체크포인트 저장 — 죽으면 여기서 다시 시작할 수 있다', 2.4, 'good'); play('switch', 0.3, 1.6);
+}
+const cpReady = () => !!(CP && CP.si === STAGE_I && CP.diff === DKEY && cpOn());
+function loadCheckpoint() {
+  if (!cpReady()) return false;
+  initAudio();
+  CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used;
+  CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
+  setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
+  tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
+  S.keypad = null; const kp = $('keypad'); if (kp) kp.hidden = true;
+  resetDialog(); running = true; paused = false;
+  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
+  toast('체크포인트에서 다시 시작 (' + CP.used + '번째)', 2.4); syncTools();
+  return true;
 }
 function checkObjective() {
   if (S.exitOpen) return;
@@ -3670,7 +3815,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
-  updateRadioCall(dt); updateAlert(dt);
+  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) updateOpps(dt);
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
     if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 경비가 있으면 들킨다', 2.6, 'warn'); }
@@ -3680,7 +3825,11 @@ function update(dt) {
     const active = !S.exitOpen && (!STAGE.timeTarget || S.guards.some(g => g.target && g.state !== 'DEAD'));
     if (active) { S.timeLeft -= dt; if (S.timeLeft <= 0) { S.timeLeft = 0; endGame(false, STAGE.timeFail || '시간이 다 됐다.'); return; } }
   }
-  setMusic(S.alevel >= 3 ? 'fight' : S.alevel === 2 ? 'tense' : 'calm');
+  { let mood = S.alevel >= 3 || S.radioCall ? 2 : S.alevel === 2 ? 1 : 0;
+    if (CITY) { for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue; if (g.state === 'ALERT') { mood = 2; break; } if (['NOTICE', 'SUSPICIOUS', 'SEARCH', 'BODY'].includes(g.state) || g.meter > 0.15) mood = Math.max(mood, 1); }
+      if (mood >= (S.moodHi || 0)) { S.moodHi = mood; S.moodT = 4; } else if ((S.moodT -= dt) <= 0) S.moodHi = mood;
+      setMusic(['n_calm', 'n_tense', 'n_fight'][S.moodHi]); }
+    else setMusic(mood === 2 ? 'fight' : mood === 1 ? 'tense' : 'calm'); }
   if (STAGE.fuse) {
     if (S.fuseGuard && S.fuseGuard.state !== 'FUSE') { S.fuseGuard.atFuse = false; S.fuseGuard = null; }
     if (!S.lightsOn && !S.fuseGuard && S.fuseT <= 0) S.fuseT = 3;
@@ -4700,6 +4849,7 @@ function draw() {
   }
   if (!tactical) {
     drawRoofs(openB); drawPlanks();
+    if (CITY) drawHeardSteps(P, openB, gVis);
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 경비
@@ -4735,6 +4885,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) drawNearMarks(P, openB);
   if (running && !tactical) drawRadioCall();
+  if (running && CITY) drawOpps(P);
   if (running && !tactical) drawOffscreen();
   // 행동 표시
   if (running && !S.over && !S.entrySel) {
@@ -4917,6 +5068,7 @@ function objectiveLines() {
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
   for (const g of S.guards) if (g.target) { const r = g.route[0]; L.push([g.state === 'DEAD' ? 'done' : S.spare ? 'done' : '', (g.doc ? '한 선생' : '표적') + (S.spare && g.state !== 'DEAD' ? ' — 살려 둘 수 있다' : ' — ' + place(r.x, r.y, g.fl))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '밀서') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
+  if (showOpps) for (const o of S.opps || []) if (o.seen) { const pl = o.x != null ? (o.roof ? place(o.x, o.y, o.fl).replace(/ \d+층$/, ' 옥상') : place(o.x, o.y, o.fl)) : ''; L.push([oppDone(o) ? 'opp done' : 'opp', '기회: ' + oppText(o) + (pl && pl !== '바깥' ? ' — ' + pl : '')]); }
   if (S.timeLeft) L.push([S.timeLeft < 60 ? 'go' : '', `남은 시간 ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}`]);
   return L;
 }
@@ -4933,7 +5085,7 @@ function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
   setText(hud.objT, 'objT', STAGE.sub);
-  if (CITY) { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c === 'done' ? '●' : c === 'go' ? '▶' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  if (CITY) { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c === 'go' ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   else setText(hud.obj, 'obj', objectiveText() + (S.timeLeft ? ` · ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}` : '') + (P.hasKey ? ' · 열쇠 있음' : ''));
   if (CITY) drawMini();
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
@@ -5025,13 +5177,14 @@ function showEnd(win, reason) {
   $('endStats').innerHTML = [
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['제거', st.kills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 주민', (st.ko || 0) + '명'], ['주민 비명', (st.screams || 0) + '회'], ['돌·쿠나이', st.stonesUsed + ' · ' + st.kunaiUsed]
-  ].map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
+  ].concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;
       return `<div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
         + ((STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '난이도 ' + D().name + ' · 보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   drawEndMap();
   $('btnNext').hidden = !(win && STAGE_I < STAGES.length - 1);
+  $('btnCP').hidden = win || !cpReady();
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
 }
@@ -5219,18 +5372,20 @@ $('btnZoomOut').addEventListener('click', () => setZoom(userZoom - 0.12));
 $('btnZoomIn').addEventListener('click', () => setZoom(userZoom + 0.12));
 $('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes); try { localStorage.setItem('yahaeng.routes', showRoutes ? '1' : '0'); } catch (e) {} });
 $('btnRoutes').classList.toggle('on', showRoutes);
+{ const bo = $('btnOpps'); if (bo) { bo.classList.toggle('on', showOpps); bo.addEventListener('click', () => { showOpps = !showOpps; bo.classList.toggle('on', showOpps); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', showOpps ? '1' : '0'); } catch (e) {} }); } }
 $('tacBanner').addEventListener('click', toggleTactical);
 $('btnResume').addEventListener('click', () => setPause(false));
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
 $('btnRetry').addEventListener('click', () => start(STAGE_I));
+$('btnCP').addEventListener('click', () => loadCheckpoint());
 $('btnNext').addEventListener('click', () => start(STAGE_I + 1));
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
 
 document.querySelectorAll('#diffSel button').forEach(b => b.addEventListener('click', () => { DKEY = b.dataset.d; try { localStorage.setItem('yahaeng.diff', DKEY); } catch (e) {} renderStageList(); }));
 function start(i) {
-  initAudio(); play('knife', 0.5); setTimeout(() => setMusic('calm'), 300);
+  initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic(CITY ? 'n_calm' : 'calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'stone'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
@@ -5238,7 +5393,7 @@ function start(i) {
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   $('intro').hidden = true; $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
-  say(DIALOGUE[STAGE.id], true, () => { if (STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — [V] 지도로 순찰로 확인', 4); } });
+  say(DIALOGUE[STAGE.id], true, () => { if (STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — ' + (isTouch ? '미니맵을 눌러' : '[M] 지도로') + ' 순찰로 확인', 4); } });
 }
 // 시작 전 정찰: 전술 지도에서 진입로를 고른다 (골목 · 옥상 · 전깃줄)
 function beginEntry() {
@@ -5278,7 +5433,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get DLG() { return DLG; }, kitSpec, get BLD() { return BLD; }, lightAt, loudMul, noise, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, get DLG() { return DLG; }, kitSpec, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];

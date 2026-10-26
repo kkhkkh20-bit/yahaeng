@@ -26,4 +26,8 @@ python3 tests/v22/tval.py       # 지도 검증 (무작위 배치 3종)
 python3 tests/mis/tfeat2.py     # 미션별 기능
 python3 tests/mis/troutes2.py   # 경로·열쇠
 python3 tests/rev/t_radio.py    # 무전 지연·차단
+python3 tests/rev/t_stalk.py    # 경비 근처 Space=암살 전용
+python3 tests/rev/t_cp.py       # 체크포인트 저장·불러오기
+python3 tests/rev/t_opp.py      # 기회 목록
+python3 tests/rev/t_music.py    # 도시 음악 생성·전환
 ```
