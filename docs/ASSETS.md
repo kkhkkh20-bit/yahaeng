@@ -1,0 +1,5 @@
+# 원본 에셋 출처 (dl/ 폴더, 저장소 미포함)
+- Kenney: Retro Urban Kit, Furniture Kit, Top-down Shooter, Medieval RTS, Racing, Tanks, Impact/Interface Sounds, RPG Audio (CC0, kenney.nl)
+- Ninja Adventure Asset Pack (CC0, pixel-boy.itch.io)
+- OpenGameArt: roof_tiles.gif, footsteps, crickets.mp3 (oga/)
+- Galmuri 글꼴 (OFL)

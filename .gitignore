@@ -1,0 +1,13 @@
+# 내려받은 원본 에셋 팩 (용량 큼, 출처는 docs/ASSETS.md 참고)
+dl/
+# 도구 의존성·캐시
+node_modules/
+__pycache__/
+*.pyc
+# 빌드 결과 HTML (build*.py 로 다시 만든다)
+build/*.html
+/yahaeng*.html
+# 디버그 이미지
+dbg.png
+build/check.png
+tests/**/*.png

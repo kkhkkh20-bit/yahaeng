@@ -1,0 +1,7 @@
+<!doctype html><html><body><script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const L = new GLTFLoader();
+window.bbox = async names => { const out = {}; for (const n of names) { const g = await L.loadAsync('src/Models/GLB format/' + n + '.glb'); const b = new THREE.Box3().setFromObject(g.scene); out[n] = [b.min.toArray().map(v=>+v.toFixed(2)), b.max.toArray().map(v=>+v.toFixed(2))]; } return out; };
+window.__ok = true;
+</script></body></html>

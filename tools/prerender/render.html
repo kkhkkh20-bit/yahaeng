@@ -1,0 +1,184 @@
+<!doctype html><html><body style="margin:0"><script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// 사전 렌더: Quaternius 'Animated Human'(CC0) 3D 인물을 위에서 비스듬히 8방향으로 찍어 스프라이트로 만든다 (코만도스 방식)
+import * as THREE from 'three';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+const RS = 128;  // 렌더 크기 (나중에 64로 줄인다)
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(RS, RS); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xffffff, 0x505050, 1.5));  // 무채색 빛: 색 띠(키 색)를 나중에 칠할 수 있게
+const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-400, 900, 350); scene.add(sun);
+const EL = 52 * Math.PI / 180, VIEW = 560, CY = 210;
+const cam = new THREE.OrthographicCamera(-VIEW / 2, VIEW / 2, VIEW / 2, -VIEW / 2, 1, 6000);
+cam.position.set(0, CY + Math.sin(EL) * 2500, Math.cos(EL) * 2500); cam.lookAt(0, CY, 0);
+const shadow = new THREE.Mesh(new THREE.CircleGeometry(70, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false }));
+shadow.rotation.x = -Math.PI / 2; shadow.position.y = 1; shadow.scale.set(1.25, 0.8, 1); scene.add(shadow);
+let model, mixer, clips = {}, bones = {}, mats = [];
+let model2, mixer2, clips2 = {}, bones2 = {}, mats2 = []; const grp = new THREE.Group(); scene.add(grp);
+window.__ready = new Promise(res => new FBXLoader().load('human.fbx', obj => {
+  model = obj; scene.add(obj); mixer = new THREE.AnimationMixer(obj);
+  for (const a of obj.animations) clips[a.name.split('|')[1]] = a;
+  obj.traverse(o => { if (o.isBone) bones[o.name] = o; if (o.isMesh) { o.frustumCulled = false; mats = mats.concat(o.material); } });
+  new FBXLoader().load('human.fbx', o2 => {
+    model2 = o2; grp.add(o2); o2.visible = false; mixer2 = new THREE.AnimationMixer(o2);
+    for (const a of o2.animations) clips2[a.name.split('|')[1]] = a;
+    o2.traverse(o => { if (o.isBone) bones2[o.name] = o; if (o.isMesh) { o.frustumCulled = false; mats2 = mats2.concat(o.material); } });
+    const g = new THREE.Vector3(0, 0, 0).project(cam); res({ clips: Object.keys(clips), groundY: (1 - (g.y + 1) / 2) * RS });
+  });
+}));
+window.boneInfo = () => { renderFrame('Idle', 0, Math.PI / 2, 0); const out = {}; const v = new THREE.Vector3(); for (const n in bones) { bones[n].getWorldPosition(v); out[n] = v.toArray().map(x => Math.round(x)); } return out; };
+window.probe = () => { const out = {}; model.traverse(o => { if (o.isMesh) { const uv = o.geometry.attributes.uv; const hist = {}; for (let i = 0; i < uv.count; i++) { const v = Math.floor((1 - uv.getY(i)) * 32); hist[v] = (hist[v] || 0) + 1; } out.hist = hist; } }); return out; };
+window.probeFeet = () => { const out = {}; model.traverse(o => { if (o.isSkinnedMesh) { const uv = o.geometry.attributes.uv, si = o.geometry.attributes.skinIndex, sw = o.geometry.attributes.skinWeight; const names = o.skeleton.bones.map(b => b.name);
+  for (let i = 0; i < uv.count; i++) { let bi = 0, bw = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bi = si.getComponent(i, k); } } const n = names[bi]; const key = n + ':' + Math.floor((1 - uv.getY(i)) * 32) + ',' + Math.floor(uv.getX(i) * 32); out[key] = (out[key] || 0) + 1; } } }); return out; };
+let feetDone = false;
+window.remapFeet = () => { if (feetDone) return; feetDone = true; let n = 0; [model, model2].forEach(M => M.traverse(o => { if (o.isSkinnedMesh) { const uv = o.geometry.attributes.uv, si = o.geometry.attributes.skinIndex, sw = o.geometry.attributes.skinWeight; const names = o.skeleton.bones.map(b => b.name);
+  for (let i = 0; i < uv.count; i++) { let bi = 0, bw = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bi = si.getComponent(i, k); } } const nm = names[bi]; const row = Math.floor((1 - uv.getY(i)) * 32);
+    if ((nm.endsWith('Foot') || nm.endsWith('ToeBase')) && row < 8) { uv.setXY(i, 30.5 / 32, 1 - 1.5 / 32); n++; } }
+  uv.needsUpdate = true; } })); return n; };
+window.setTex = c => { remapFeet();
+  const cv = document.createElement('canvas'); cv.width = cv.height = 32; const x = cv.getContext('2d');
+  const band = (y0, y1, col) => { x.fillStyle = col; x.fillRect(0, y0, 32, y1 - y0); };
+  band(0, 8, c.skin); band(8, 12, c.eyes || '#262626'); band(12, 20, c.hair); band(20, 24, c.shirt); band(24, 32, c.pants); if (c.shirtUp) band(c.shirtUp, 20, c.shirt); x.fillStyle = c.shoes || '#222'; x.fillRect(29, 0, 3, 3);
+  const t = new THREE.CanvasTexture(cv); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace;
+  mats.concat(mats2).forEach(m => { m.map = t; if (m.color) m.color.set(0xffffff); if (m.shininess != null) m.shininess = 4; m.needsUpdate = true; });
+};
+window.CR = { th: 1.1, kn: 1.9, ft: 0.6, sp: 0.55, sp1: 0.2, hd: 0.45 };
+const hp = new THREE.Vector3(), hd = new THREE.Vector3();
+window.renderFrame = (clip, t, dirA, crouch, hang) => {
+  mixer.stopAllAction(); const act = mixer.clipAction(clips[clip]); act.reset(); act.play(); mixer.setTime(t);
+  bones.Hips.position.x = 0; bones.Hips.position.z = 0;  // 제자리 (루트 이동 제거)
+  model.rotation.y = 0; model.position.set(0, 0, 0); model.updateMatrixWorld(true);
+  const footY = () => { let m = 1e9; for (const n of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (bones[n]) { bones[n].getWorldPosition(hp); m = Math.min(m, hp.y); } return m; };
+  if (crouch) {  // 웅크리기: 세계 좌우축 기준으로 허벅지를 앞으로, 무릎을 뒤로 굽히고 상체를 숙인 뒤 발을 땅에 다시 붙인다
+    const f0 = footY();
+    const rotW = (b, ang) => { if (!b) return; const pq = new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); const qw = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), ang); const d = pq.clone().invert().multiply(qw).multiply(pq); b.quaternion.premultiply(d); b.updateMatrixWorld(true); };
+    for (const s of ['Left', 'Right']) { rotW(bones[s + 'UpLeg'], -CR.th * crouch); rotW(bones[s + 'Leg'], CR.kn * crouch); rotW(bones[s + 'Foot'], -CR.ft * crouch); }
+    rotW(bones.Spine, CR.sp * crouch); rotW(bones.Spine1, CR.sp1 * crouch); rotW(bones.Head, -CR.hd * crouch);
+    model.updateMatrixWorld(true); model.position.y = f0 - footY();
+  }
+  shadow.visible = hang == null;
+  if (hang != null) {  // 전깃줄에 매달린 자세: 두 팔을 머리 위로 곧게, 다리는 늘어뜨리고 조금 흔든다
+    const pa = new THREE.Vector3(), pb = new THREE.Vector3(), pq = new THREE.Quaternion();
+    const aim = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(pa); c.getWorldPosition(pb); const cur = pb.sub(pa).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(pq); b.quaternion.premultiply(pq.clone().invert().multiply(q).multiply(pq)); b.updateMatrixWorld(true); };
+    for (const sd of ['Left', 'Right']) {
+      bones[sd + 'Arm'].getWorldPosition(pa); const side = Math.sign(pa.x) || (sd === 'Left' ? 1 : -1);
+      aim(bones[sd + 'Arm'], bones[sd + 'ForeArm'], new THREE.Vector3(0.18 * side, 1, 0.05));
+      aim(bones[sd + 'ForeArm'], bones[sd + 'Hand'], new THREE.Vector3(0.05 * side, 1, 0.05));
+      const sw = (sd === 'Left' ? 1 : -1) * hang * 0.35;
+      aim(bones[sd + 'UpLeg'], bones[sd + 'Leg'], new THREE.Vector3(0, -1, sw + 0.12));
+      aim(bones[sd + 'Leg'], bones[sd + 'Foot'], new THREE.Vector3(0, -1, sw * 0.6 - 0.15));
+    }
+  }
+  model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA));
+  if (!crouch) model.position.set(0, hang != null ? -80 : 0, 0); model.updateMatrixWorld(true);
+  if (hang != null) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHand = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }
+  if (clip === 'Death') { bones.Hips.getWorldPosition(hp); bones.Head.getWorldPosition(hd); model.position.set(-(hp.x + hd.x) / 2, 0, -(hp.z + hd.z) / 2); shadow.position.set(0, 1, 0); }
+  renderer.render(scene, cam);
+  return renderer.domElement.toDataURL('image/png');
+};
+
+// 두 사람 자세 (어깨에 메기 / 뒤에서 붙잡기): 같이 포즈를 잡고, 한쪽은 깊이만 남겨 서로 가린 채 따로 찍는다
+const _pa = new THREE.Vector3(), _pb = new THREE.Vector3(), _pq = new THREE.Quaternion();
+const aimB = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(_pa); c.getWorldPosition(_pb); const cur = _pb.sub(_pa).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(_pq); b.quaternion.premultiply(_pq.clone().invert().multiply(q).multiply(_pq)); b.updateMatrixWorld(true); };
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+window.PZ = { cy: 34, cz: 18, gz: 78 };
+window.renderPair = (kind, clip, t, dirA, part) => {
+  grp.add(model); grp.rotation.y = 0; grp.updateMatrixWorld(true);
+  mixer.stopAllAction(); const a1 = mixer.clipAction(clips[clip]); a1.reset(); a1.play(); mixer.setTime(t);
+  bones.Hips.position.x = 0; bones.Hips.position.z = 0; model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
+  model2.visible = true; model2.rotation.set(0, 0, 0); model2.position.set(0, 0, 0); model2.quaternion.identity();
+  mixer2.stopAllAction();
+  const B = bones, Q = bones2;
+  if (kind === 'carry') {
+    const a2 = mixer2.clipAction(clips2.Idle); a2.reset(); a2.play(); mixer2.setTime(0); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
+    // 업힌 사람: 몸을 접어 상체는 등 뒤로, 다리는 가슴 앞으로 늘어뜨린다
+    const th = Math.atan2(-0.42, -0.9);
+    model2.quaternion.copy(new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), th).multiply(new THREE.Quaternion().setFromAxisAngle(V3(0, 1, 0), Math.PI)));
+    model2.updateMatrixWorld(true);
+    for (const sd of ['Left', 'Right']) {
+      aimB(Q[sd + 'UpLeg'], Q[sd + 'Leg'], V3(sd === 'Left' ? 0.07 : -0.07, -0.86, 0.5)); aimB(Q[sd + 'Leg'], Q[sd + 'Foot'], V3(0, -0.92, -0.38));
+      aimB(Q[sd + 'Arm'], Q[sd + 'ForeArm'], V3(sd === 'Left' ? 0.12 : -0.12, -1, -0.18)); aimB(Q[sd + 'ForeArm'], Q[sd + 'Hand'], V3(0, -1, -0.05));
+    }
+    aimB(Q.Neck, Q.Head, V3(0, -1, -0.25));
+    // 업은 사람: 오른팔로 다리를 감싸 쥔다
+    aimB(B.RightArm, B.RightForeArm, V3(-0.05, -0.55, 0.84)); aimB(B.RightForeArm, B.RightHand, V3(0.62, 0.42, 0.35));
+    model.updateMatrixWorld(true); B.RightShoulder.getWorldPosition(_pa); B.RightArm.getWorldPosition(_pb);
+    const tgt = V3((_pa.x + _pb.x) / 2, Math.max(_pa.y, _pb.y) + PZ.cy, (_pa.z + _pb.z) / 2 + PZ.cz);
+    model2.updateMatrixWorld(true); Q.Hips.getWorldPosition(_pa); model2.position.add(tgt.sub(_pa));
+  } else {
+    const a2 = mixer2.clipAction(clips2[clip]); a2.reset(); a2.play(); mixer2.setTime(clip === 'Walk' ? (t + 0.37) % 1 : t); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
+    model2.quaternion.setFromAxisAngle(V3(1, 0, 0), -0.12); model2.position.set(0, 0, PZ.gz); model2.updateMatrixWorld(true);
+    // 붙잡힌 사람: 목을 감은 팔을 두 손으로 붙들고 고개가 젖혀진다
+    aimB(Q.LeftArm, Q.LeftForeArm, V3(0.35, -0.55, 0.75)); aimB(Q.LeftForeArm, Q.LeftHand, V3(-0.55, 0.75, -0.35));
+    aimB(Q.RightArm, Q.RightForeArm, V3(-0.35, -0.55, 0.75)); aimB(Q.RightForeArm, Q.RightHand, V3(0.55, 0.75, -0.35));
+    aimB(Q.Neck, Q.Head, V3(0, 1, -0.4));
+    // 붙잡은 사람: 왼팔로 목을 감고 오른손은 칼을 목에 댄다
+    aimB(B.LeftArm, B.LeftForeArm, V3(0.15, -0.05, 1)); aimB(B.LeftForeArm, B.LeftHand, V3(-1, 0.15, 0.25));
+    aimB(B.RightArm, B.RightForeArm, V3(-0.15, -0.25, 1)); aimB(B.RightForeArm, B.RightHand, V3(0.7, 0.35, 0.6));
+    aimB(B.Spine, B.Spine1, V3(0, 1, 0.12));
+  }
+  grp.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); grp.updateMatrixWorld(true);
+  const show = part === 'a' ? mats : mats2, hide = part === 'a' ? mats2 : mats;
+  show.forEach(m => { m.colorWrite = true; }); hide.forEach(m => { m.colorWrite = false; });
+  model.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? 0 : -1; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? -1 : 0; });
+  shadow.visible = part === 'a'; shadow.position.set(0, 1, 0);
+  renderer.render(scene, cam);
+  const url = renderer.domElement.toDataURL('image/png');
+  mats.concat(mats2).forEach(m => { m.colorWrite = true; }); model.traverse(o => { if (o.isMesh) o.renderOrder = 0; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = 0; });
+  scene.add(model); model2.visible = false; grp.rotation.y = 0; shadow.visible = true;
+  return url;
+};
+
+// 동작 포즈: climb (배관·벽·전봇대 타기, 팔다리 번갈아) / vault (창문·난간 넘기: 짚기 → 몸 접어 넘기 → 착지)
+window.renderPose = (name, k, dirA) => {
+  mixer.stopAllAction(); const act = mixer.clipAction(clips.Idle); act.reset(); act.play(); mixer.setTime(0);
+  bones.Hips.position.x = 0; bones.Hips.position.z = 0;
+  model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
+  const B = bones;
+  const footY = () => { let m = 1e9; for (const n of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (B[n]) { B[n].getWorldPosition(_pa); m = Math.min(m, _pa.y); } return m; };
+  const rotW = (b, ang) => { const pq = new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); const qw = new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), ang); b.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); b.updateMatrixWorld(true); };
+  let lift = 0;
+  if (name === 'climb') {
+    const s = Math.sin(k / 4 * Math.PI * 2);
+    rotW(B.Spine, 0.18);
+    for (const [sd, sg] of [['Left', 1], ['Right', -1]]) {
+      const e = s * sg, side = sd === 'Left' ? 1 : -1;
+      aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.3 * side, 0.15 + 0.55 * e, 0.8));
+      aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.05 * side, 0.35 + 0.6 * e, 0.75));
+      aimB(B[sd + 'UpLeg'], B[sd + 'Leg'], V3(0.08 * side, -0.75 + 0.75 * Math.max(0, -e), 0.6));
+      aimB(B[sd + 'Leg'], B[sd + 'Foot'], V3(0, -1, -0.1));
+    }
+    aimB(B.Neck, B.Head, V3(0, 1, 0.25));
+  } else if (name === 'lean') {  // 벽에 등을 붙이고 선 자세: 몸을 젖히고 두 손은 벽을 짚고 한쪽 발바닥을 벽에 댄다
+    rotW(B.Spine, -0.14); rotW(B.Spine1, -0.06);
+    for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+      aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.1 * side, -1, -0.22)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.05 * side, -1, -0.3)); }
+    aimB(B.RightUpLeg, B.RightLeg, V3(-0.08, -0.8, 0.45)); aimB(B.RightLeg, B.RightFoot, V3(0, -0.75, -0.66));
+    aimB(B.LeftUpLeg, B.LeftLeg, V3(0.1, -1, 0.04)); aimB(B.LeftLeg, B.LeftFoot, V3(0, -1, -0.02));
+    aimB(B.Neck, B.Head, V3(k ? 0.45 : 0, 1, k ? 0.1 : 0.05));
+  } else if (name === 'vault') {
+    if (k === 1) {  // 몸을 접어 넘는 순간: 허벅지를 가슴으로, 두 손은 창턱을 짚는다
+      aimB(B.Spine, B.Spine1, V3(0, 0.55, 0.85)); aimB(B.Spine1, B.Spine2, V3(0, 0.45, 0.9));
+      for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+        aimB(B[sd + 'UpLeg'], B[sd + 'Leg'], V3(0.15 * side, 0.1, 1)); aimB(B[sd + 'Leg'], B[sd + 'Foot'], V3(0, -0.85, -0.5));
+        aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.2 * side, -0.7, 0.7)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0, -1, 0.15)); }
+      lift = 95;
+    } else {  // 0: 짚으려 웅크림 · 2: 착지
+      const cr = k === 0 ? 0.45 : 0.65;
+      for (const sd of ['Left', 'Right']) { rotW(B[sd + 'UpLeg'], -CR.th * cr); rotW(B[sd + 'Leg'], CR.kn * cr); rotW(B[sd + 'Foot'], -CR.ft * cr); }
+      rotW(B.Spine, CR.sp * cr * 1.2); rotW(B.Spine1, CR.sp1 * cr);
+      for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+        if (k === 0) { aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.15 * side, -0.35, 0.95)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0, -0.6, 0.8)); }
+        else { aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.6 * side, -0.5, 0.5)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.4 * side, -0.6, 0.6)); } }
+    }
+  }
+  model.updateMatrixWorld(true); const fy = footY();
+  model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
+  model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
+  shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
+  renderer.render(scene, cam); shadow.visible = true;
+  return renderer.domElement.toDataURL('image/png');
+};
+</script></body></html>

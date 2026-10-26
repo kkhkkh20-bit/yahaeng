@@ -1,0 +1,390 @@
+<title>야행</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: 화면 전체를 쓰는 캔버스 + 가장자리에 붙는 작은 HUD 조각들. 밤 장면 하나로 고정된 단일 테마 */
+:root {
+  --night: #070a12;
+  --night-2: #0f1522;
+  --ink-line: #253049;
+  --paper: #e8e3d6;
+  --paper-dim: #9aa3b5;
+  --blood: #c2362b;
+  --blood-hi: #e8473c;
+  --lamp: #f2c46b;
+  --moss: #7fae86;
+  --f-display: "Nanum Brush Script", "Nanum Pen Script", cursive, serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { margin: 0; }
+body {
+  background: var(--night); color: var(--paper); font-family: var(--f-body); overflow: hidden; word-break: keep-all;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-user-select: none; user-select: none; touch-action: none; -webkit-tap-highlight-color: transparent;
+}
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+button { font-family: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+
+/* HUD */
+#hud { position: fixed; inset: 0; pointer-events: none; }
+.top { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.obj { background: rgba(7, 10, 18, .78); border-left: 3px solid var(--blood); padding: 8px 12px; font-size: 13px; line-height: 1.4; max-width: min(360px, 62vw); min-width: 0; }
+.obj small { display: block; font-size: 10.5px; letter-spacing: .14em; color: var(--paper-dim); margin-bottom: 2px; }
+.status { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+.chip { background: rgba(7, 10, 18, .78); padding: 6px 10px; font-size: 12px; font-family: var(--f-body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chip.alarm { background: var(--lamp); color: var(--night); font-weight: 700; }
+.chip.alarm[data-lv="2"] { background: #e08a3c; }
+.chip.alarm[data-lv="3"] { background: var(--blood); color: #fff; }
+.pipsbox { display: flex; align-items: center; }
+#alertPips { display: flex; gap: 3px; }
+#alertPips i { width: 9px; height: 9px; border: 1.5px solid var(--paper-dim); transform: rotate(45deg); }
+#hpPips { display: flex; gap: 4px; align-items: center; }
+#hpPips i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--blood-hi); }
+#hpPips i.on { background: var(--blood-hi); }
+.hpbox { display: flex; align-items: center; }
+#alertPips i.on:nth-child(1) { background: var(--lamp); border-color: var(--lamp); }
+#alertPips i.on:nth-child(2) { background: #e08a3c; border-color: #e08a3c; }
+#alertPips i.on:nth-child(3) { background: var(--blood-hi); border-color: var(--blood-hi); }
+.lightbox { display: flex; align-items: center; gap: 8px; }
+.lightbar { width: 64px; height: 6px; background: #1b2232; position: relative; }
+.lightbar i { position: absolute; inset: 0 auto 0 0; background: var(--moss); transition: width .15s linear, background .2s; }
+.lightbar i[data-level="mid"] { background: var(--lamp); }
+.lightbar i[data-level="hi"] { background: var(--blood-hi); }
+.lightbar i[data-level="hid"] { background: var(--moss); width: 100% !important; opacity: .5; }
+.sysbtns { pointer-events: auto; display: flex; gap: 6px; }
+.sysbtns button { background: rgba(7, 10, 18, .78); color: var(--paper-dim); border: 1px solid var(--ink-line); padding: 6px 10px; font-size: 12px; min-width: 30px; }
+.sysbtns button.on { color: var(--lamp); border-color: var(--lamp); }
+.tac { position: absolute; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); pointer-events: auto; background: var(--lamp); color: var(--night); border: 0; padding: 10px 18px; font-size: 13px; font-weight: 700; z-index: 5; }
+
+#toasts { position: absolute; top: calc(70px + env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 6px; align-items: center; width: min(520px, 92vw); }
+.toast { background: rgba(7, 10, 18, .86); padding: 8px 14px; font-size: 13.5px; line-height: 1.45; text-align: center; border-bottom: 2px solid var(--ink-line); text-wrap: balance; animation: rise .25s ease-out; }
+.toast.hint { border-color: var(--lamp); color: var(--paper); }
+.toast.warn { border-color: var(--blood-hi); }
+.toast.good { border-color: var(--moss); }
+@keyframes rise { from { transform: translateY(-6px); opacity: 0 } }
+
+.keys { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--paper-dim); background: rgba(7, 10, 18, .7); padding: 8px 12px; max-width: calc(100vw - 24px); }
+.keys kbd { font-family: var(--f-mono); font-size: 11px; color: var(--paper); border: 1px solid var(--ink-line); padding: 1px 5px; margin-right: 4px; background: var(--night-2); }
+body.touch .keys { display: none; }
+
+.pad { position: absolute; right: max(14px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: grid; grid-template-columns: auto auto auto; grid-template-areas: "tools tools whis" "tool carry act"; gap: 10px; align-items: end; pointer-events: none; }
+.pad > * { pointer-events: auto; }
+body:not(.touch) .pad { grid-template-areas: "tools"; grid-template-columns: auto; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+body:not(.touch) .pad > button { display: none; }
+.tools { grid-area: tools; display: flex; gap: 0; justify-self: start; border: 1px solid var(--ink-line); background: rgba(7, 10, 18, .78); }
+.tools .tool { background: transparent; border: 0; color: var(--paper-dim); padding: 7px 10px; font-size: 12.5px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.tools .tool + .tool { border-left: 1px solid var(--ink-line); }
+.tools .tool span { font-family: var(--f-mono); color: var(--paper); }
+.tools .tool kbd { font-family: var(--f-mono); font-size: 10.5px; border: 1px solid var(--ink-line); padding: 0 4px; color: var(--paper-dim); }
+body.touch .tools .tool kbd { display: none; }
+.tools .tool.on { background: var(--paper); color: var(--night); font-weight: 700; }
+.tools .tool.on span, .tools .tool.on kbd { color: var(--night); border-color: var(--night); }
+.tools .tool.empty { opacity: .45; }
+.pad #btnTool { grid-area: tool; border-color: #6f7a8c; }
+.pad #btnTool small { display: block; font-size: 9.5px; color: var(--paper-dim); margin-top: 2px; font-weight: 500; }
+.pad #btnTool.aiming { background: var(--paper); color: var(--night); border-color: var(--paper); }
+.pad #btnTool.aiming small { color: var(--night); }
+.pad > button { width: 62px; height: 62px; border-radius: 50%; border: 2px solid var(--ink-line); background: rgba(7, 10, 18, .72); color: var(--paper); font-size: 12px; display: grid; place-items: center; touch-action: none; padding: 0; }
+.pad > button b { font-weight: 700; font-size: 12.5px; line-height: 1.15; }
+.pad > button.down { transform: scale(.94); background: rgba(37, 48, 73, .9); }
+.pad > button.on { border-color: var(--moss); color: var(--moss); }
+.pad #btnAct { grid-area: act; width: 92px; height: 92px; justify-self: end; border-color: #3a2226; }
+.pad #btnAct b { font-size: 14px; }
+.pad #btnAct.ready { background: rgba(37, 48, 73, .95); border-color: var(--paper); }
+.pad #btnAct.kill { background: var(--blood); border-color: var(--blood-hi); color: #fff; box-shadow: 0 0 0 6px rgba(194, 54, 43, .25); }
+.pad #btnCarry { grid-area: carry; }
+.pad #btnWhistle { grid-area: whis; width: 52px; height: 52px; justify-self: end; font-size: 11px; }
+.pad #btnWhistle b { font-size: 11px; }
+.pad #btnWhistle.cool { opacity: .45; }
+.pad #btnCarry.ready, .pad #btnTool.ready { border-color: var(--paper); }
+@media (max-width: 400px) { .pad { gap: 7px; } .pad > button { width: 58px; height: 58px; } .pad #btnAct { width: 84px; height: 84px; } }
+#joy { position: fixed; width: 120px; height: 120px; box-sizing: border-box; border-radius: 50%; border: 2px solid rgba(232, 227, 214, .25); background: rgba(7, 10, 18, .25); pointer-events: none; }
+#joy::before, #joy::after { content: ""; position: absolute; border-radius: 50%; border: 1px dashed rgba(232, 227, 214, .22); }
+#joy::before { inset: calc(60px - 60px * .38); }
+#joy::after { inset: calc(60px - 60px * .86); }
+#joyKnob { position: absolute; left: 36px; top: 36px; width: 48px; height: 48px; border-radius: 50%; background: rgba(232, 227, 214, .35); display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--night); }
+#joy[data-mode="walk"] #joyKnob { background: rgba(242, 196, 107, .6); }
+#joy[data-mode="run"] #joyKnob { background: rgba(232, 71, 60, .75); }
+#joy[data-mode="sneak"] #joyKnob { background: rgba(127, 174, 134, .6); }
+.joyhint { position: absolute; left: max(14px, env(safe-area-inset-left, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); font-size: 11.5px; color: var(--paper-dim); display: none; max-width: 40vw; line-height: 1.4; }
+body.touch .joyhint { display: block; }
+
+/* 화면(시작·일시정지·결과) */
+.screen { position: fixed; inset: 0; display: grid; place-items: center; overflow-y: auto; background: radial-gradient(ellipse at 50% 30%, rgba(7, 10, 18, .55), rgba(7, 10, 18, .94) 70%); padding-block: calc(20px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); touch-action: pan-y; }
+.panel { width: min(560px, 100%); display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-size: 11px; letter-spacing: .22em; color: var(--lamp); }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(88px, 22vw, 150px); line-height: .8; margin: 0; letter-spacing: -.01em; color: var(--paper); }
+h1 span { color: var(--blood); }
+.brief { font-size: 15.5px; line-height: 1.7; color: var(--paper); margin: 0; max-width: 62ch; text-wrap: pretty; }
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 18px; margin: 0; padding: 0; list-style: none; }
+.rules li { border-top: 1px solid var(--ink-line); padding-top: 8px; font-size: 13px; line-height: 1.55; color: var(--paper-dim); min-width: 0; }
+.rules li strong { display: block; color: var(--paper); font-size: 13.5px; margin-bottom: 2px; }
+.ctrl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; font-size: 12.5px; line-height: 1.75; color: var(--paper-dim); }
+.ctrl h3 { margin: 0 0 4px; font-size: 11px; letter-spacing: .16em; color: var(--paper); font-weight: 500; }
+.ctrl kbd { font-family: var(--f-mono); font-size: 11px; color: var(--paper); border: 1px solid var(--ink-line); padding: 0 5px; background: var(--night-2); }
+@media (max-width: 460px) { .rules, .ctrl { grid-template-columns: 1fr; } }
+.stages { display: flex; flex-direction: column; gap: 8px; }
+.stages h3, .rules-h { margin: 0; font-size: 11px; letter-spacing: .16em; color: var(--paper-dim); font-weight: 500; }
+.stage { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; text-align: left; background: rgba(15, 21, 34, .85); border: 1px solid var(--ink-line); color: var(--paper); padding: 12px 14px; }
+.stage:hover { border-color: var(--blood); }
+.st-no { font-family: var(--f-mono); font-size: 13px; color: var(--blood-hi); }
+.st-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.st-name { font-size: 16px; font-weight: 700; }
+.st-mis { font-size: 12.5px; color: var(--paper-dim); line-height: 1.45; }
+.st-best { font-size: 11.5px; color: var(--paper-dim); white-space: nowrap; }
+.st-best.has { color: var(--lamp); }
+.chip.layer { font-weight: 700; border-left: 3px solid #8b93a3; }
+.chip.layer[data-l="roof"] { border-left-color: #f08a3c; }
+.chip.layer[data-l="vent"] { border-left-color: #7fd6cc; color: #bff0ea; }
+.chip.layer[data-l="under"] { border-left-color: #7fb0ff; color: #cfe0ff; }
+.chip.layer[data-l="in"] { border-left-color: #d39a5c; }
+#btnScan.on { background: #7fd6cc; color: #0b1418; border-color: #7fd6cc; }
+.diff { display: flex; gap: 0; border: 1px solid var(--ink-line); align-self: flex-start; }
+.diff button { background: transparent; color: var(--paper-dim); border: 0; padding: 9px 16px; font-size: 13.5px; }
+.diff button + button { border-left: 1px solid var(--ink-line); }
+.diff button.on { background: var(--blood); color: #fff; font-weight: 700; }
+.diff-note { font-size: 12px; color: var(--paper-dim); line-height: 1.5; margin: 0; }
+.obj.urgent { border-left-color: var(--lamp); }
+.obj.urgent span { color: var(--lamp); }
+.bn { display: inline-block; margin-right: 8px; color: var(--paper-dim); white-space: nowrap; }
+.bn.ok { color: var(--lamp); }
+.bn b { color: var(--moss); font-weight: 700; font-size: 11px; }
+#endRankNote .stars { font-size: 24px; color: var(--lamp); letter-spacing: .08em; margin-bottom: 6px; }
+#endRankNote .stars small { font-size: 12px; color: var(--paper-dim); letter-spacing: 0; }
+#endRankNote .ent { margin-top: 8px; color: var(--moss); font-size: 13px; }
+.lg { display: inline-block; vertical-align: -2px; margin-right: 5px; }
+.lg-door { width: 16px; height: 6px; background: #8a5a34; border: 1px solid #3a2618; }
+.lg-win { width: 16px; height: 9px; background: linear-gradient(#eef6fb, #eef6fb) center / 2px 100% no-repeat, linear-gradient(#eef6fb, #eef6fb) center / 100% 2px no-repeat, #8fc3e6; border: 2px solid #1d2733; }
+.lg-pipe { width: 5px; height: 14px; background: #b8c0ca; border-radius: 3px; }
+.cta { align-self: flex-start; background: var(--blood); color: #fff; border: 0; padding: 14px 26px; font-size: 16px; font-weight: 700; letter-spacing: .04em; }
+.cta:hover { background: var(--blood-hi); }
+.ghost { background: transparent; color: var(--paper); border: 1px solid var(--ink-line); padding: 12px 20px; font-size: 14px; }
+.credit { font-size: 11.5px; color: var(--paper-dim); line-height: 1.6; }
+.credit a { color: var(--paper-dim); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+#end h2 { font-family: var(--f-display); font-weight: 400; font-size: clamp(72px, 18vw, 120px); line-height: .85; margin: 0; }
+#end[data-win="0"] h2 { color: var(--blood-hi); }
+#end[data-win="1"] h2 { color: var(--lamp); }
+#endSub { font-size: 16px; margin: 0; }
+#endStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0; }
+#endStats div { border-top: 1px solid var(--ink-line); padding-top: 6px; }
+#endStats dt { font-size: 11px; color: var(--paper-dim); letter-spacing: .08em; }
+#endStats dd { margin: 2px 0 0; font-family: var(--f-mono); font-size: 17px; font-variant-numeric: tabular-nums; }
+body.joyused .joyhint { display: none; }
+/* 대사 창: 닌자 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
+#dlg { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: min(640px, calc(100vw - 24px)); display: flex; gap: 8px; align-items: stretch; z-index: 6; pointer-events: auto; image-rendering: pixelated; }
+body.touch #dlg { bottom: auto; top: calc(118px + env(safe-area-inset-top, 0px)); }
+#dlg.modal::before { content: ""; position: fixed; inset: -100vh -100vw; background: rgba(3, 5, 10, .35); z-index: -1; }
+.dlg-face { flex: 0 0 76px; height: 76px; background-size: 100% 100%; background-repeat: no-repeat; display: grid; place-items: center; image-rendering: pixelated; }
+.dlg-face canvas { width: 58px; height: 58px; image-rendering: pixelated; }
+.dlg-box { flex: 1; min-width: 0; min-height: 48px; border: 14px solid transparent; color: #3b2a20; font-family: Galmuri, var(--f-body); padding: 0 4px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
+.dlg-box b { align-self: flex-start; background: #8a4b32; color: #fff3e0; font-size: 12px; padding: 2px 8px; font-weight: 700; letter-spacing: .04em; }
+.dlg-box p { margin: 0; font-size: 15px; line-height: 1.45; min-height: 1.45em; }
+.dlg-box small { font-size: 11px; color: #8a6a50; align-self: flex-end; }
+@media (max-width: 640px) { .dlg-face { flex-basis: 60px; height: 60px; } .dlg-face canvas { width: 46px; height: 46px; } .dlg-box p { font-size: 14px; } }
+@media (max-width: 640px) {
+  .top { gap: 6px; }
+  .obj { max-width: 100%; flex: 1 1 100%; font-size: 11.5px; padding: 4px 9px; pointer-events: auto; cursor: pointer; }
+  .obj small { display: none; }
+  /* 휴대폰: 목표는 지금 할 일 한 줄만 (누르면 전체) */
+  .obj:not(.open) #objective .ol.done, .obj:not(.open) #objective .ol.info { display: none; }
+  .obj:not(.open) #objective { display: block; max-height: 1.45em; overflow: hidden; }
+  .obj:not(.open) #objective .ol { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #layerLbl { max-width: 9.5em; overflow: hidden; text-overflow: ellipsis; }
+  #modeLbl { max-width: 8.5em; overflow: hidden; text-overflow: ellipsis; }
+  #hpPips i { width: 8px; height: 8px; } #alertPips i { width: 7px; height: 7px; }
+  .status { justify-content: flex-start; gap: 4px; }
+  .chip { font-size: 10.5px; padding: 3px 6px; }
+  .lightbar { width: 40px; }
+  #killsLbl, #kunaiLbl { display: none; }
+  .sysbtns button { font-size: 10.5px; padding: 3px 6px; }
+  #toasts { top: calc(150px + env(safe-area-inset-top, 0px)); }
+  .tac { bottom: auto; top: calc(150px + env(safe-area-inset-top, 0px)); }
+  .toast { font-size: 12.5px; padding: 7px 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
+/* 도움말 카드: 힌트는 화면 가운데를 가리지 않게 왼쪽 아래 한 장으로 */
+#hintCard { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); width: min(360px, 60vw); background: rgba(7, 10, 18, .88); border-left: 3px solid var(--lamp); padding: 8px 12px 9px; font-size: 13px; line-height: 1.5; color: var(--paper); transition: opacity .35s, transform .35s; }
+#hintCard small { display: block; font-size: 10.5px; letter-spacing: .14em; color: var(--lamp); margin-bottom: 2px; }
+#hintCard.off { opacity: 0; transform: translateY(8px); }
+/* 버튼 줄이기: 살피기는 터치 화면에서만, 나머지 설정은 메뉴 안으로 */
+body:not(.touch) .sysbtns .tonly { display: none; }
+#pause .opts { margin-top: 10px; flex-wrap: wrap; }
+#pause .opts button { font-size: 12.5px; padding: 7px 11px; }
+#pause .opts button.on { color: var(--lamp); border-color: var(--lamp); }
+/* 주인공이 HUD 밑에 오면 HUD를 옅게 */
+.hudfade { opacity: .14 !important; pointer-events: none !important; transition: opacity .2s; }
+/* 하단 줄이기: 고른 도구 하나만 (누르면 다음 도구) */
+.tools .tool:not(.on) { display: none; }
+.tools .tool.on::after { content: '›'; margin-left: 6px; opacity: .6; }
+.keys.mini { gap: 10px; }
+#modeLbl.lock { color: var(--lamp); border-color: var(--lamp); }
+/* 미니맵 */
+#mini { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(54px + env(safe-area-inset-top, 0px)); width: 200px; border: 1px solid var(--ink-line); background: rgba(7, 10, 18, .8); pointer-events: auto; cursor: pointer; image-rendering: pixelated; }
+/* 목표 목록 */
+#objective .ol { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#objective .ol.done { color: var(--paper-dim); text-decoration: line-through; }
+#objective .ol.info { color: #9fc7d8; }
+#objective .ol.go { color: var(--lamp); font-weight: 700; }
+.keys.mini span:not(.keep) { display: none; }
+@media (max-width: 700px) {
+  #hintCard { left: 8px; right: auto; bottom: auto; top: calc(var(--topb, 150px) + 6px); width: calc(100vw - 150px); font-size: 12px; padding: 6px 10px 7px; }
+  #mini { width: 100px; top: calc(var(--topb, 150px) + 6px); right: 8px; opacity: .82; }
+  #toasts { top: calc(var(--topb, 150px) + 130px) !important; }
+}
+#scanLegend { position: fixed; left: 50%; bottom: 66px; transform: translateX(-50%); display: none; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 92vw; padding: 6px 12px; background: rgba(7,10,18,.86); border: 1px solid var(--ink-line); font-size: 12px; color: var(--paper-dim); pointer-events: none; z-index: 6; }
+body.scanning #scanLegend { display: flex; }
+#scanLegend b { color: var(--paper); font-weight: 700; }
+#scanLegend i { font-style: normal; display: inline-flex; align-items: center; gap: 5px; }
+#scanLegend i::before { content: ''; width: 10px; height: 10px; border: 2px solid var(--c); }
+#scanLegend i.hx::before { border-color: rgba(255,96,72,.8); background: repeating-linear-gradient(45deg, rgba(255,96,72,.5) 0 2px, transparent 2px 5px); }
+@media (max-width: 700px) { #scanLegend { bottom: auto; top: 128px; font-size: 10.5px; gap: 7px; } }
+.endmap { margin: 14px 0 0; }
+.endmap canvas { display: block; max-width: 100%; border: 1px solid var(--ink-line); background: #0b0e16; image-rendering: pixelated; }
+.endmap figcaption { font-size: 11px; color: var(--paper-dim); margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.endmap i { display: inline-block; width: 14px; height: 3px; margin-right: 4px; vertical-align: middle; }
+.endmap i.l1 { background: #78d2ff; } .endmap i.l2 { background: #f2c46b; }
+.endmap b { font-weight: 800; margin-right: 3px; } .endmap .x1 { color: #e8473c; } .endmap .x2 { color: #f2c46b; } .endmap .x3 { color: #ff9a3c; } .endmap .x4 { color: #ff5a4a; }
+#keypad { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(4,6,10,.45); z-index: 20; }
+#keypad[hidden] { display: none; }
+#keypad .kp { width: min(300px, 86vw); padding: 16px 16px 12px; background: linear-gradient(#2a2e36, #1a1d23); border: 2px solid #4a505c; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08); text-align: center; color: var(--paper); }
+#keypad .kp > b { display: block; font-size: 13px; letter-spacing: .12em; color: var(--paper-dim); }
+#kpDisp { margin: 10px 0 6px; padding: 10px; background: #0d1a12; border: 2px solid #0a0f0c; border-radius: 4px; font: 700 30px "IBM Plex Mono", monospace; letter-spacing: .3em; color: #8ff0a8; text-shadow: 0 0 8px rgba(120,255,160,.6); }
+#kpDisp.bad { color: #ff6a5a; text-shadow: 0 0 8px rgba(255,90,70,.7); animation: kpshake .3s; }
+@keyframes kpshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+#kpHint { display: block; min-height: 16px; font-size: 12px; color: #f2c46b; margin-bottom: 10px; }
+#keypad .kpg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#keypad .kpg button { height: 52px; border-radius: 8px; border: 1px solid #5a606c; background: linear-gradient(#4a505c, #353a44); color: #eef0f4; font: 700 20px "IBM Plex Mono", monospace; box-shadow: 0 3px 0 #1c1f25; touch-action: manipulation; }
+#keypad .kpg button.fn { font: 700 13px "IBM Plex Sans KR", sans-serif; }
+#keypad .kpg button.ok { background: linear-gradient(#3f7a52, #2c5a3b); border-color: #5aa070; }
+#keypad .kpg button.down { transform: translateY(2px); box-shadow: 0 1px 0 #1c1f25; }
+#keypad .kpx { margin-top: 10px; background: none; border: 0; color: var(--paper-dim); font-size: 12px; }
+</style>
+
+<canvas id="game" aria-label="게임 화면"></canvas>
+
+<div id="hud" hidden>
+  <div class="top">
+    <div class="obj"><small id="objTitle">작전 목표</small><span id="objective"></span></div>
+    <div class="status">
+      <span class="chip lightbox"><span id="lightLbl">어둠</span><span class="lightbar"><i id="lightFill" data-level="lo"></i></span></span>
+      <span class="chip layer" id="layerLbl" data-l="out">지상</span>
+      <span class="chip" id="modeLbl">걷기</span>
+      <span class="chip" id="killsLbl">제거 0</span>
+      <span class="chip hpbox" title="체력"><span id="hpPips"></span></span>
+      <span class="chip pipsbox" title="경계 단계"><span id="alertPips"><i></i><i></i><i></i></span></span>
+      <span class="chip alarm" id="alarmChip" hidden>경계</span>
+      <span class="sysbtns"><button id="btnSneak" type="button" title="살금 모드 — 켜 두면 계속 살금살금 (Ctrl)">살금</button><button id="btnWalk" type="button" title="항상 걷기 — 뛰지 않는다 (R)">항상 걷기</button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
+    </div>
+  </div>
+  <div id="toasts" aria-live="polite"></div>
+  <div id="hintCard" class="off" aria-live="polite"><small>도움말</small><span id="hintText"></span></div>
+  <canvas id="mini" width="200" height="140" title="미니맵 — 누르면 전술 지도"></canvas>
+  <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
+  <div class="keys">
+    <span><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
+    <span class="keep"><kbd>Space</kbd>행동</span><span class="keep"><kbd>Z</kbd>특수</span><span class="keep"><kbd>X</kbd>도구(누르고 겨누기·떼면 사용)</span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
+  </div>
+  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i class="hx">막힌 곳</i></div>
+  <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>
+  <div class="pad">
+    <div id="tools" class="tools" role="group" aria-label="도구 고르기">
+      <button class="tool on" type="button" data-t="stone"><kbd>1</kbd>돌 <span>3</span></button>
+      <button class="tool" type="button" data-t="coin"><kbd>2</kbd>엽전 <span>2</span></button>
+      <button class="tool" type="button" data-t="kunai"><kbd>3</kbd>쿠나이 <span>3</span></button>
+    </div>
+    <button id="btnTool" type="button"><b>돌 3</b><small>꾹 눌러</small></button>
+    <button id="btnWhistle" type="button" title="휘파람 (V)"><b>휘파람</b></button>
+    <button id="btnCarry" type="button"><b>특수</b></button>
+    <button id="btnAct" type="button"><b>암살</b></button>
+  </div>
+</div>
+<div id="keypad" hidden><div class="kp"><b>숫자 자물쇠</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small>
+  <div class="kpg"><button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" data-k="&lt;" class="fn">지움</button><button type="button" data-k="0">0</button><button type="button" data-k="ok" class="fn ok">확인</button></div>
+  <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
+<div id="dlg" hidden>
+  <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="38" height="38"></canvas></div>
+  <div class="dlg-box"><b id="dlgName"></b><p id="dlgText"></p><small id="dlgHint"></small></div>
+</div>
+<div id="joy" hidden><div id="joyKnob"></div></div>
+
+<div class="screen" id="intro">
+  <div class="panel">
+    <div class="eyebrow">픽셀 닌자 잠입 암살</div>
+    <h1>야행<span>.</span></h1>
+    <p class="brief">빛을 피하고, 소리를 죽이고, 등 뒤나 지붕 위에서 덮친다. 들키면 끝이다.</p>
+    <div class="stages"><h3>난이도</h3>
+      <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
+      <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다.</p>
+    </div>
+    <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
+    <div class="rules-h">규칙</div>
+    <ul class="rules">
+      <li><strong>시야 원뿔</strong>진한 안쪽은 항상 보인다. 줄무늬 구역에선 웅크리면 안 보인다. 점선 호 바깥은 어둠 속이면 안 보인다. 모래주머니 바로 뒤에서 웅크리면 가려진다.</li>
+      <li><strong>소리</strong>달리면 멀리까지 들린다. 나무 바닥은 더 울리고, 지붕과 잔디는 덜 울린다.</li>
+      <li><strong>등 뒤 · 동시 암살</strong>경비 등 뒤에서 붉은 원이 뜨면 암살. 두 명이 붙어 있으면 한 번에 둘을 처치한다.</li>
+      <li><strong>지붕 · 2층</strong>사다리·배관으로 오른다. 골목 하나는 건너뛸 수 있고, 아래 경비에게 낙하 암살. 2층에선 1층 지붕으로만 내려간다.</li>
+      <li><strong>우물 · 땅굴</strong>들어가 숨어 있다가 지나가는 경비를 끌어들인다. 다른 출구로 이동하고, 나올 땐 조이스틱을 민 방향으로 나온다.</li>
+      <li><strong>표식 읽기</strong><span class="lg lg-door"></span>갈색 문짝은 문(잠글 수 있음) · <span class="lg lg-win"></span>십자 창살 유리는 창문 · <span class="lg lg-pipe"></span>회색 관과 발밑 ▸▸는 배관 · 금 간 벽은 숨겨진 통로</li>
+      <li><strong>건물 · 창문</strong>건물 안은 들어가야 보인다. 창문 앞에서 창문 쪽을 바라보면 안이 보이고, [창문 넘기]로 드나든다. 문은 잠가서 경비를 돌아가게 만들 수 있다.</li>
+      <li><strong>붙잡기</strong>등 뒤에서 바로 암살하거나 붙잡는다. 붙잡은 채 덤불·궤짝·우물로 끌고 가면 그 안에서 조용히 처치한다. 9초 넘게 끌면 빠져나간다.</li>
+      <li><strong>조명</strong>조명 옆에서 손으로 끄고 켤 수 있다. 지나가던 경비가 다시 켠다. 쿠나이로 깨면 영영 꺼진다.</li>
+      <li><strong>끌어들이기</strong>덤불·궤짝·우물에 숨어 있다가 옆을 지나는 경비를 방향 상관없이 끌어들여 처치한다.</li>
+      <li><strong>경비 읽기</strong>바닥의 점선은 순찰로, 작은 원은 멈추는 곳, 네모는 자리를 지키는 경비다. 평소엔 담배·하품·잡담을 하는데 그동안 시야가 좁아진다. [지도]로 멈춘 채 전체를 볼 수 있다.</li>
+      <li><strong>경계 3단계 · 체력</strong>경계 → 수색 → 발각. 들켜도 바로 끝나지 않는다. 경비들이 몰려와 칼을 들었다가(붉은 호) 내려친다 — 그 사이 피하면 산다. 맞으면 체력이 준다(쉬움 4 · 보통 3 · 어려움 2). 시야를 끊고 15초 숨어 버티면 수색으로, 수색이 끝나면 경비들이 제자리로 돌아간다. 수색 중엔 궤짝·우물·덤불을 뒤지며, 들키면 끌려 나온다.</li>
+      <li><strong>시체 처리</strong>발견되면 수색이 시작된다. 덤불, 궤짝(2구), 우물에 숨겨라. 수색하는 경비가 열어 보면 들킨다.</li>
+      <li><strong>쿠나이</strong>조명을 깨 어둠을 만들거나, 멀리 있는 경비를 원격 암살한다. 개수가 적다.</li>
+      <li><strong>지하 수로</strong>맨홀·우물에 들어가 [지하로]를 누르면 수로를 걸어 다른 맨홀 아래까지 간다. 경비는 내려오지 않는다.</li>
+      <li><strong>3층 · 계단</strong>건물 안 계단으로 옥상에 오른다. 3층 옥상은 가장 멀리 보이고 거의 들키지 않지만, 너무 높아 낙하 암살은 안 된다.</li>
+      <li><strong>엽전 · 정예 · 증원</strong>엽전을 떨어뜨리면 본 경비가 주우러 와 고개를 숙인다. 파란 옷에 붉은 표식을 단 정예는 돌·엽전에 안 넘어가고 붙잡히지 않는다. 처음 발각되면 증원이 온다.</li>
+      <li><strong>살피기 · 색 약속</strong>[살피기](PC는 Tab을 누르는 동안)로 쓸 수 있는 물체가 모두 표시된다. 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라. 지금 누를 수 있는 행동은 대상 위에 글자로 뜬다.</li>
+      <li><strong>층</strong>지붕 · 지상/실내 · 환풍구 · 지하 수로. 화면 위 표시로 지금 층을 알 수 있다. 층마다 장단점이 다르다.</li>
+      <li><strong>굴뚝</strong>지붕의 굴뚝으로 그 방 아궁이 앞에 내려간다. 불이 타고 있으면 [굴뚝 막기]로 끄면 되는데, 연기 소리에 안의 경비가 다시 불을 피우러 온다. 방 안에서 아궁이 불을 손으로 끄고 굴뚝으로 오를 수도 있다.</li>
+      <li><strong>환풍구</strong>천장 창살이나 지붕 환기구로 들어가 덕트를 기어간다. 살금살금이면 조용하고, 서두르면 쇠가 울려 아래 경비가 듣는다. 창살 밑을 지나는 경비를 [끌어올려 암살]. 열어 둔 창살을 경비가 보면 의심한다.</li>
+      <li><strong>감시병</strong>활을 든 감시병(머리 위 노란 겹화살표)은 지붕을 똑바로 본다. 지붕이 늘 안전하지는 않다.</li>
+      <li><strong>점호</strong>보통·어려움에선 일정 시간마다 점호가 돈다(10초 전 알림). 쓰러진 경비가 하나면 경계, 둘 이상이면 수색이 시작된다. 몰아서 처리하고 빨리 끝내라.</li>
+      <li><strong>경비견</strong>개는 냄새로 찾는다. 가까이 가면 덤불·어둠·웅크림이 소용없고, 숨겨 둔 시체도 맡는다. 들키면 짖어 주변 경비를 부른다. 붙잡을 수 없다.</li>
+      <li><strong>열쇠 · 소매치기</strong>열쇠로 잠긴 문이 있다. 열쇠를 든 경비 등 뒤에서 [열쇠 훔치기] — 웅크린 채여야 안전하다. 처치하면 열쇠를 떨어뜨린다. 창문·배관 같은 다른 길도 있다.</li>
+      <li><strong>시간 제한 · 보너스</strong>일부 작전엔 제한 시간이 있다. 성공하면 발각 0 · 시체 발견 0 · 수색 경보 0 · 불필요한 살상 0 네 가지 보너스 목표로 등급이 매겨진다.</li>
+      <li><strong>돌 · 퓨즈 상자</strong>돌로 경비를 유인한다. 퓨즈 상자로 바깥 조명을 끄면 경비 하나가 고치러 온다.</li>
+    </ul>
+    <div class="ctrl">
+      <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·지붕 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 경비를 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
+      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·지붕 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 경비를 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
+    </div>
+    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 기와 지붕: Clint Bellanger 'Oriental Roof Tiles' (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 범종 소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
+  </div>
+</div>
+
+<div class="screen" id="pause" hidden>
+  <div class="panel">
+    <div class="eyebrow">일시정지</div>
+    <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">작전 선택</button></div>
+    <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
+  </div>
+</div>
+
+<div class="screen" id="end" hidden>
+  <div class="panel">
+    <div class="eyebrow">작전 결과</div>
+    <h2 id="endTitle">임무 완료</h2>
+    <p id="endSub"></p>
+    <dl id="endStats"></dl>
+    <p class="credit" id="endRankNote"></p>
+    <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>지붕·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
+    <div class="row"><button class="cta" id="btnNext" type="button" hidden>다음 작전</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">작전 선택</button></div>
+  </div>
+</div>
+
+<script>window.__ASSETS__ = __ASSETS_JSON__;</script>
+<script>
+__STAGES_JS__
+__GAME_JS__
+</script>
