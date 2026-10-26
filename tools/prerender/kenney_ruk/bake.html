@@ -4,12 +4,20 @@
 // 투영: 높이 y만큼 화면 위로 민다(z' = z - y). 카메라는 바로 위에서 내려다본다. 배경은 투명.
 import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const L = new GLTFLoader(), cache = {};
-const load = async n => cache[n] || (cache[n] = (await L.loadAsync(n.startsWith('F:') ? '../furnglb/' + n.slice(2) + '.glb' : 'src/Models/GLB format/' + n + '.glb')).scene);
+const load = async n => cache[n] || (cache[n] = (await L.loadAsync(n.startsWith('F:') ? '../furnglb/' + n.slice(2) + '.glb' : n.startsWith('M:') ? '../mk/' + n.slice(2) + '.gltf' : 'src/Models/GLB format/' + n + '.glb')).scene);
 window.bbox = async n => { const o = await load(n); const b = new THREE.Box3().setFromObject(o); return [b.min.toArray().map(v => +v.toFixed(3)), b.max.toArray().map(v => +v.toFixed(3))]; };
 const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 r.outputColorSpace = THREE.SRGBColorSpace; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.setClearColor(0x000000, 0);
 document.body.appendChild(r.domElement);
 const matLit = mm => { const m = new THREE.MeshStandardMaterial({ map: mm.map, color: mm.color, roughness: 0.92, metalness: 0, transparent: false, alphaTest: (mm.transparent || mm.alphaTest > 0) ? Math.max(0.5, mm.alphaTest) : 0, side: mm.transparent ? THREE.DoubleSide : mm.side }); return m; };
+// MegaKit(Quaternius) 재질: 엔진 전용 셰이더(가짜 실내·유리)를 밤 창문 빛으로 바꾼다
+const matMK = (mm, it) => {
+  const nm = mm.name || '';
+  if (/FakeInterior/.test(nm)) return it.lit && it.neon ? new THREE.MeshStandardMaterial({ color: 0x1a1020, emissive: it.neon, emissiveIntensity: 1.1, roughness: 0.6 }) : new THREE.MeshStandardMaterial({ color: it.lit ? 0xffd9a0 : 0x1a2433, emissive: it.lit ? 0xffa850 : 0x0a1220, emissiveIntensity: it.lit ? 0.85 : 0.4, roughness: 0.6 });
+  if (/Glass/.test(nm)) return new THREE.MeshStandardMaterial({ color: 0x9fc4dd, transparent: true, opacity: 0.18, roughness: 0.05, metalness: 0.2, depthWrite: false });
+  if (/InteriorWall/.test(nm)) return new THREE.MeshStandardMaterial({ color: it.lit ? 0xc8a070 : 0x14181f, emissive: it.lit ? 0x3a2410 : 0x000000, roughness: 0.9 });
+  const m = matLit(mm); if (it.wallTint && /Brick|Trim|Metal/.test(nm)) m.color.multiply(new THREE.Color(it.wallTint)); return m;
+};
 // spec: { box: [x0, z0, x1, z1] 화면 범위(칸, z는 화면 세로), ppu, items: [...] }
 window.bake = async spec => {
   const [bx0, bz0, bx1, bz1] = spec.box, ppu = spec.ppu, W = Math.round((bx1 - bx0) * ppu), H = Math.round((bz1 - bz0) * ppu);
@@ -38,7 +46,7 @@ window.bake = async spec => {
       const [a, b, c, d, e, f] = it.box; o = new THREE.Mesh(new THREE.BoxGeometry(d - a, e - b, f - c), new THREE.MeshStandardMaterial({ color: it.color ?? 0x202228, roughness: it.rough ?? 0.95, metalness: it.metal ?? 0 }));
       o.position.set((a + d) / 2, (b + e) / 2, (c + f) / 2);
     } else {
-      o = (await load(it.n)).clone(true); o.traverse(m => { if (m.isMesh) m.material = matLit(m.material); });
+      o = (await load(it.n)).clone(true); o.traverse(m => { if (m.isMesh) { const f = it.n.startsWith('M:') ? mm => matMK(mm, it) : matLit; m.material = Array.isArray(m.material) ? m.material.map(f) : f(m.material); } });
       o.position.set(it.x, it.y || 0, it.z); o.rotation.y = (it.r || 0) * Math.PI / 2;
       if (it.s) o.scale.set(it.s[0], it.s[1], it.s[2]);
       if (it.tint) o.traverse(m => { if (m.isMesh) { m.material.color.set(it.tint); if (it.glow) m.material.emissive.set(it.glow); } });
