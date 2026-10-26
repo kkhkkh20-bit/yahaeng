@@ -37,4 +37,7 @@ python3 tests/rev/t_tree.py     # 나무에 기대 숨기
 python3 tests/rev/t_change.py   # 경비가 열린 창문을 다시 잠금
 python3 tests/rev/t_perk.py     # 별점 장비
 python3 tests/rev/t_tut.py      # 연습(훈련장) 12단계 통과
+python3 tests/rev/t_mod.py      # 의뢰 변형
+python3 tests/rev/t_risk.py     # 눈에 띄는 시체
+python3 tests/rev/fuzz.py 90 1  # 무작위 입력으로 미션마다 90초씩 오류·멈춤 탐색
 ```
