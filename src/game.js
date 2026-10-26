@@ -22,9 +22,9 @@ const N8 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]
 
 // 난이도
 const DIFFS = {
-  easy: { hp: 4, name: '쉬움', range: 0.9, rate: 0.8, spd: 0.95, stones: 5, coins: 3, kunaiAdd: 1, roll: 0, reinf: 1, time: 1.35 },
-  normal: { hp: 3, name: '보통', range: 1.0, rate: 1.08, spd: 1.0, stones: 3, coins: 2, kunaiAdd: 0, roll: 80, reinf: 2, time: 1.0 },
-  hard: { hp: 2, name: '어려움', range: 1.12, rate: 1.32, spd: 1.08, stones: 2, coins: 1, kunaiAdd: -1, roll: 55, reinf: 3, time: 0.85 }
+  easy: { hp: 4, name: '쉬움', range: 0.9, rate: 0.8, spd: 0.95, stones: 5, coins: 3, picks: 5, kunaiAdd: 1, roll: 0, reinf: 1, time: 1.35 },
+  normal: { hp: 3, name: '보통', range: 1.0, rate: 1.08, spd: 1.0, stones: 3, coins: 2, picks: 3, kunaiAdd: 0, roll: 80, reinf: 2, time: 1.0 },
+  hard: { hp: 2, name: '어려움', range: 1.12, rate: 1.32, spd: 1.08, stones: 2, coins: 1, picks: 2, kunaiAdd: -1, roll: 55, reinf: 3, time: 0.85 }
 };
 let DKEY = 'normal'; try { const d = localStorage.getItem('yahaeng.diff'); if (DIFFS[d]) DKEY = d; } catch (e) {}
 const D = () => DIFFS[DKEY];
@@ -1004,7 +1004,7 @@ function newGame(si) {
   S = {
     t: 0, lamps, lightsOn: true, guards, corpses: [], decals: [], noises: [], stones: [], kunais: [], toasts: [], hides, ladders,
     items: STAGE._items.map(p => ({ b: p[3], x: tc(p[0]), y: tc(p[1]), got: false, fl: p[2] || 0 })),
-    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
+    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: CITY ? D().picks : 0, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
     rollT: D().roll, rollWarn: false, timeLeft: STAGE.timeLimit ? STAGE.timeLimit * D().time : 0,
     alevel: 0, alevelT: 0, unseenT: 0, lures: [], reinforced: false, fx: [], keyDrop: null, fuseGuard: null, fuseT: 0, fleeing: false, windows: [],
     stats: { kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
@@ -1759,7 +1759,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
   if (hidden) eff = Math.min(eff, 36);
   if (elev) eff *= g.lookout ? (elev >= 3 ? 0.8 : 1.05) : elev >= 3 ? 0.35 : elev >= 2 ? 0.45 : 0.55;  // 감시병은 지붕을 본다
   if (g.elite) eff *= 1.1;
-  if (sneak === 2) eff *= 0.6;  // 벽에 기댐
+  if (sneak === 2) eff *= 0.42;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
   if (d > eff) return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;
@@ -2495,16 +2495,16 @@ function coverAt(P, prev) {
   if (prev) { const same = c.find(o => o.x === prev.x && o.y === prev.y); if (same) return same; }
   c.sort((a, b) => a.d - b.d); return c[0] || null;
 }
-function enterCover(n) {
-  const P = S.player; P.cover = { x: n.x, y: n.y }; P.coverPush = 0; P.vx = 0; P.vy = 0; P.a = Math.atan2(n.y, n.x); play('cloth', 0.22);
+function enterCover(n, quiet) {
+  const P = S.player; P.cover = { x: n.x, y: n.y }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0; P.a = Math.atan2(n.y, n.x); play('cloth', quiet ? 0.12 : 0.22);
   hint('cover', '벽에 기댐: 몸을 붙여 덜 보인다. 벽을 따라 옆걸음만 하고, 벽 반대쪽으로 밀면 떨어진다. 나를 못 본 채 옆을 지나는 사람은 [끌어당겨 암살]');
 }
 // 기댄 자리 옆을 지나는, 나를 보지 못한 사람
 function coverTarget() {
   const P = S.player; if (!P.cover || P.strikeT > 0 || S.pull) return null;
-  let best = null, bd = 66;
+  let best = null, bd = 100;
   for (const g of S.guards) {
-    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || g.z || g.climb || g.doomed || g.seen || flOf(g) !== flOf(P)) continue;
+    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || g.z || g.climb || g.doomed || (g.seen && g.meter > 0.6) || flOf(g) !== flOf(P)) continue;
     const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y)) { bd = d; best = g; }
   }
   return best;
@@ -2586,6 +2586,7 @@ function updatePlayer(dt) {
   if (P.wire || P.jump || P.under || P.vent || P.hide) { P.vx = 0; P.vy = 0; }
   if (P.z > 0 && !P.wire && !P.jump && facadeRow(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) P.y = roofEdgeY(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
   if (P.wire && !P.jump) { updateWire(P, mx, my, mag, mode, dt); return; }
+  if (P.pick) { updatePick(P, mag, dt); return; }
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
     P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
@@ -2639,11 +2640,19 @@ function updatePlayer(dt) {
   // 벽에 기대기: 벽(가구·차 포함) 쪽으로 잠깐 밀면 등을 붙인다. 기댄 채로는 벽을 따라 옆걸음만, 벽에서 떨어지는 쪽으로 밀면 나온다
   if (P.cover) {
     const n = coverAt(P, P.cover), away = mag > 0.05 ? (mx * P.cover.x + my * P.cover.y) / mag : 0;
-    if (!n || away > 0.45 || P.carrying || P.captive || mode === 'run') { P.cover = null; }
-    else { P.cover = n; mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
+    const into = mag > 0.05 ? -(mx * P.cover.x + my * P.cover.y) / mag : 0;
+    if (!n || away > 0.45 || P.carrying || P.captive || mode === 'run' || (P.cover.auto && mag > 0.05 && into < 0.7)) { P.cover = null; }
+    else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
   } else if (mag > 0.05 && mode !== 'run' && !P.carrying && !P.captive && !P.z && !P.strikeT) {
+    P.idleWall = 0;
     const n = coverAt(P); if (n && (mx * n.x + my * n.y) / mag < -0.7) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.28) { enterCover(n); mag = 0; } } else P.coverPush = 0;
-  } else P.coverPush = 0;
+  } else {
+    P.coverPush = 0;
+    // 벽에 붙어 멈추면 저절로 기댄다 (움직이면 바로 떨어진다)
+    if (mag <= 0.05 && mode !== 'run' && !P.carrying && !P.captive && !P.z && !P.strikeT && !P.pick && !input.aiming) {
+      const n = coverAt(P); if (n) { P.idleWall = (P.idleWall || 0) + dt; if (P.idleWall > 0.22) { enterCover(n, true); P.cover.auto = true; } } else P.idleWall = 0;
+    } else P.idleWall = 0;
+  }
   // 조작감: 아주 짧은 가속·감속(무게감), 모서리에 걸리면 옆으로 미끄러져 빠져나간다
   const sp0 = SPD[mode] * (P.carrying ? 0.6 : P.captive ? 0.55 : 1) * (STAGE.pspd || 1);
   const tvx = mag > 0.05 ? mx / mag * sp0 : 0, tvy = mag > 0.05 ? my / mag * sp0 : 0;
@@ -2892,7 +2901,7 @@ function updateWire(P, mx, my, mag, mode, dt) {
           if (best) { W_.w = w = best; s = best.a.pole === end.pole ? 0 : 1; play('metal', 0.15); }
         }
       }
-      W_.s = s; P.moving = true;
+      W_.s = s; P.moving = true; W_.fa = Math.atan2(uy * Math.sign(d), ux * Math.sign(d));
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = mode === 'run' ? 0.3 : 0.5; play('cloth', mode === 'run' ? 0.22 : 0.08, 1.2); if (mode === 'run') noise(P.x, P.y, 90, 'wire'); }
     }
   }
@@ -3053,12 +3062,63 @@ function ambushTarget() {
   return best;
 }
 // 창문 넘기: 창문 옆에 서 있고 반대편이 비어 있으면
+// 창문 상태 (도시): open 열림 · lock 잠김(밖에서는 락픽, 안에서는 걸쇠를 풀면 열린다) · bar 방범창(못 지나간다, 엿보기는 된다)
+// 건물마다 하나만 열려 있고, 물건·열쇠가 있는 방의 창문은 방범창
+function winInit() {
+  S.winInit = true; if (!CITY) return;
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], doorT = new Set(S.doors.map(d => d.tx + ',' + d.ty));
+  const keyPts = S.items.filter(i => !i.fl).concat((S.keyItems || []).filter(i => !i.fl)).map(i => [Math.floor(i.x / TILE), Math.floor(i.y / TILE)]);
+  const byB = {};
+  for (const w of S.windows) {
+    const b = bldAt(w.tx, w.ty); w.b = b; if (b < 0) { w.st = 'open'; continue; }
+    let inner = null; for (const [dx, dy] of N4) { const x = w.tx + dx, y = w.ty + dy; if (bldAt(x, y) === b && !groundSolidP(x, y)) { inner = [x, y]; break; } }
+    if (inner) {  // 창문 안쪽 방(문에서 끊긴다)에 물건·열쇠가 있으면 방범창
+      const seen = new Set([inner + '']), q = [inner]; let hit = false, door = false;
+      while (q.length && seen.size < 260) { const [x, y] = q.shift(); if (keyPts.some(([kx, ky]) => Math.abs(kx - x) <= 1 && Math.abs(ky - y) <= 1)) hit = true;
+        for (const [dx, dy] of N4) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (doorT.has(k)) door = true; if (seen.has(k) || bldAt(nx, ny) !== b || doorT.has(k) || groundSolidP(nx, ny)) continue; seen.add(k); q.push([nx, ny]); } }
+      if (hit) w.st = door ? 'bar' : 'lock';  // 문이 없는 방이면 창문이 유일한 길이니 막지 않고 잠가 둔다
+    }
+    (byB[b] = byB[b] || []).push(w);
+  }
+  for (const b in byB) { const ws = byB[b].filter(w => !w.st).sort(() => Math.random() - 0.5); ws.forEach((w, i) => { w.st = i === 0 ? 'open' : Math.random() < 0.6 ? 'lock' : 'bar'; }); }
+}
+const winSt = w => w.st || 'open';
+const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
+function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이면 멈춘다(락픽은 성공해야 줄어든다). 긁는 소리가 조금씩 난다. 잠긴 창문은 안쪽에서라면 락픽 없이 걸쇠만 풀면 열린다'); }
+function updatePick(P, mag, dt) {
+  const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
+  if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
+  K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); }
+  if (K.t < K.dur) return;
+  P.pick = null;
+  if (K.kind === 'latch') { K.w.st = 'open'; play('cloth', 0.3); toast('걸쇠를 풀었다 — 이 창문은 이제 열려 있다', 2); return; }
+  P.picks--; S.stats.picks = (S.stats.picks || 0) + 1; play('switch', 0.5, 1.4);
+  if (K.kind === 'win') { K.w.st = 'open'; toast(`창문을 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
+  else { const d = K.d; d.keyLock = null; setDoor(d, false); toast(`잠금장치를 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
+}
+function drawPickProgress(P) {
+  const K = P.pick; if (!K) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
+  ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
+  ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
+  ctx.font = `700 ${Math.round(11 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+}
+const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
+// 방범창: 창살
+function drawWinBars(w) {
+  const vert = winVert(w), L = 40, T = 18;
+  ctx.save(); ctx.translate(w.x, w.y + (vert ? 0 : 5)); if (vert) ctx.rotate(Math.PI / 2);
+  ctx.strokeStyle = 'rgba(40,44,52,.95)'; ctx.lineWidth = 3; ctx.beginPath();
+  for (let i = -2; i <= 2; i++) { ctx.moveTo(i * 8, -T / 2 - 1); ctx.lineTo(i * 8, T / 2 + 1); } ctx.moveTo(-L / 2, 0); ctx.lineTo(L / 2, 0); ctx.stroke();
+  ctx.strokeStyle = 'rgba(170,176,186,.75)'; ctx.lineWidth = 1; ctx.beginPath(); for (let i = -2; i <= 2; i++) { ctx.moveTo(i * 8 - 1, -T / 2); ctx.lineTo(i * 8 - 1, T / 2); } ctx.stroke();
+  ctx.restore();
+}
 function nearWindow() {
   const P = S.player; if (P.z || P.fl || P.jump || P.carrying || P.captive || P.hide) return null;
   for (const w of S.windows) {
     if (dist(P.x, P.y, w.x, w.y) > 52) continue;
     const dx = Math.abs(P.x - w.x) > Math.abs(P.y - w.y) ? Math.sign(w.x - P.x) : 0, dy = dx ? 0 : Math.sign(w.y - P.y);
     const ox = w.tx + dx, oy = w.ty + dy;
+    if (winSt(w) === 'bar') continue;
     if (!groundSolidP(ox, oy)) return { w, tx: ox, ty: oy };
   }
   return null;
@@ -3184,10 +3244,11 @@ function doorAct(dr) {
     return ok ? { k: 'door', d: dr, label: '빗장 풀기' } : { k: 'keymsg', d: dr, label: '반대편에 빗장이 걸렸다' };
   }
   if (dr.keyLock === 'code' && dr.locked) return { k: 'keypad', d: dr, label: '비번 입력' };
-  return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? keyName(dr.keyLock) + '로 열기' : '잠김 (' + keyName(dr.keyLock) + ')' } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 잠그기' };
+  if (dr.keyLock && dr.locked && !hasK(dr.keyLock) && CITY && P.picks > 0) return { k: 'pick', d: dr, o: { kind: 'door', d: dr, x: dr.x, y: dr.y }, label: `락픽으로 따기 (${keyName(dr.keyLock)} 대신 · ${P.picks}개)` };
+  return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? keyName(dr.keyLock) + '로 열기' : '잠김 (' + keyName(dr.keyLock) + ')' + (CITY ? ' — 락픽도 없다' : '') } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 잠그기' };
 }
 // 암살하려고 다가가는 중에는 Space가 문·비번·조명·두꺼비집·쪽지 같은 다른 행동을 하지 않는다 (그 행동은 Z로 넘긴다)
-const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg']);
+const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg', 'pick']);
 const KILL_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'ledgeKill', 'pushOff', 'winJump']);
 function stalkGuard() {
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.under || P.vent || P.wire) return null;
@@ -3254,7 +3315,12 @@ function primaryActionRaw() {
   if (cu) return { k: 'up', l: cu, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `계단 올라 ${cu.tfl + 1}층` : cu.kind === 'stair' ? '계단 올라 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
   const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: '환풍구로 들어가기' };
   const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, label: fd.kind === 'balc' ? '베란다로 나가 내려가기' : `계단 내려가 ${fd.bfl + 1}층` };
-  const nw = nearWindow(); if (nw) return { k: 'window', wv: nw, label: '창문 넘기' };
+  const nw = nearWindow(); if (nw) {
+    if (winSt(nw.w) === 'lock') { const inside = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === nw.w.b;
+      if (inside) return { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'latch', w: nw.w, x: nw.w.x, y: nw.w.y }, label: '창문 걸쇠 풀기' };
+      return P.picks > 0 ? { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'win', w: nw.w, x: nw.w.x, y: nw.w.y }, label: `잠긴 창문 — 락픽으로 따기 (${P.picks}개)` } : { k: 'keymsg', at: { x: nw.w.x, y: nw.w.y }, label: '잠긴 창문 — 락픽이 없다' }; }
+    return { k: 'window', wv: nw, label: '창문 넘기' };
+  }
   const h = nearHide();
   if (h && !P.carrying) return { k: 'hide', h, label: '숨기' };
   if (h && P.carrying) return { k: 'stash', label: '넣기' };
@@ -3411,7 +3477,7 @@ function actPrimary(force) {
     case 'pull': {
       const g = a.g, n = P.cover || { x: 0, y: 0 };
       g.doomed = true; g.moving = false; g.path = null;
-      S.pull = { g, x0: g.x, y0: g.y, x1: P.x + (g.x - P.x) * 0.35 + n.x * 4, y1: P.y + (g.y - P.y) * 0.35 + n.y * 4, t: 0, dur: 0.2 };
+      const pd = dist(P.x, P.y, g.x, g.y), k = Math.min(0.35, 30 / Math.max(1, pd)); S.pull = { g, x0: g.x, y0: g.y, x1: P.x + (g.x - P.x) * k + n.x * 4, y1: P.y + (g.y - P.y) * k + n.y * 4, t: 0, dur: 0.16 + pd / 900 };
       P.a = Math.atan2(g.y - P.y, g.x - P.x); P.strikeT = 0.34; play('cloth', 0.55);
       break;
     }
@@ -3437,7 +3503,8 @@ function actPrimary(force) {
       break;
     }
     case 'keypad': openKeypad(a.d); break;
-    case 'keymsg': if (a.d.gate) { toast('반대편에서 빗장을 걸어 둔 쪽문이다. 안쪽으로 돌아 들어가 풀면 지름길이 된다', 2.6); break; } toast((a.d.keyLock === 'gold' && STAGE.keyHint) || '잠긴 문이다. ' + keyName(a.d.keyLock) + '이(가) 필요하다 — 아니면 창문·옥상·환풍구', 2.4); break;
+    case 'pick': startPick(a.o); break;
+    case 'keymsg': if (!a.d) { toast(a.label, 1.8); break; } if (a.d.gate) { toast('반대편에서 빗장을 걸어 둔 쪽문이다. 안쪽으로 돌아 들어가 풀면 지름길이 된다', 2.6); break; } toast((a.d.keyLock === 'gold' && STAGE.keyHint) || '잠긴 문이다. ' + keyName(a.d.keyLock) + '이(가) 필요하다 — 아니면 창문·옥상·환풍구', 2.4); break;
     case 'door': {
       const d = a.d; if (d.gate && d.locked) { d.gate = null; toast('빗장을 풀었다 — 지름길이 열렸다', 2, 'good'); S.stats.gates = (S.stats.gates || 0) + 1; }
       if (d.keyLock && d.locked) { const kn = keyName(d.keyLock); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; d.group.forEach(t => t.keyLock = false); toast(kn + '로 문을 열었다', 1.8, 'good'); }
@@ -3815,7 +3882,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
-  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) updateOpps(dt);
+  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); }
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
     if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 경비가 있으면 들킨다', 2.6, 'warn'); }
@@ -3973,8 +4040,9 @@ function drawPlayer(P) {
     if (usePR('ninja') && PR.anims.hang && PR.hangHand) {  // 프리렌더 매달림: 두 손을 줄에 맞추고, 움직이면 다리를 흔들며 옮겨 간다
       const sh = prSheet('ninja'), [c0, nf] = PR.anims.hang, fi = P.moving ? Math.floor(S.t * 6) % nf : 0, fr = PR.fr;
       ctx.globalAlpha = blinkW ? 0.3 : dim ? 0.75 : 1;
-      ctx.drawImage(sh, (c0 + fi) * fr, 6 * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
-      if (dim && prVar.ninja_ol) { ctx.globalAlpha = 0.85; ctx.drawImage(prVar.ninja_ol, (c0 + fi) * fr, 6 * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
+      const row = prDir(P.wire.fa != null ? P.wire.fa : -Math.PI / 2);
+      ctx.drawImage(sh, (c0 + fi) * fr, row * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
+      if (dim && prVar.ninja_ol) { ctx.globalAlpha = 0.85; ctx.drawImage(prVar.ninja_ol, (c0 + fi) * fr, row * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
       ctx.globalAlpha = 1; return;
     }
     ctx.strokeStyle = '#2c3040'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(h.x - 8 + sw, h.y + 18); ctx.lineTo(h.x - 5, h.y + 1); ctx.moveTo(h.x + 8 + sw, h.y + 18); ctx.lineTo(h.x + 5, h.y + 1); ctx.stroke();
@@ -4518,7 +4586,7 @@ function drawNearMarks(P, openB) {
       if (l.kind === 'fstair' && l.tfl === fP && fP) add(l.x, l.y + 10, SCAN.ladder, '↓', '계단');
     }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
-      for (const w of S.windows) add(w.x, w.y, SCAN.window, '창', '창문'); }
+      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? '잠' : '창', st === 'lock' ? '잠긴 창문' : '창문'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, '창', w.link ? '옆 건물로' : '창밖 전깃줄');
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, '환', '환풍구', v.street ? null : v.tx, v.ty);
     for (const d of S.doors) if (d.keyLock && d.locked && (d.fl || 0) === fP) add(d.x, d.y, keyCol(d.keyLock), '잠', keyName(d.keyLock), d.tx, d.ty);
@@ -4545,7 +4613,7 @@ function drawScan(openB) {
   const seen = new Set(), fP = flOf(S.player);
   for (const d of S.doors) { const k = d.group.map(t => t.tx + ',' + t.ty).sort()[0]; if (seen.has(k)) continue; seen.add(k); box(d.x, d.y, d.locked && d.keyLock ? keyCol(d.keyLock) : SCAN.door, d.locked ? (d.keyLock ? '잠긴 문(' + keyName(d.keyLock) + ')' : '잠긴 문') : '문'); }
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
-  else for (const w of S.windows) box(w.x, w.y, SCAN.window, '창문');
+  else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#5a606a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '방범창' : st === 'lock' ? '잠긴 창문' : '창문'); }
   for (const l of S.ladders) {
     if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `계단 ↑${l.tfl + 1}층` : '계단 ↑옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) tag(l.x, l.y + 30, `↓${l.bfl + 1}층`, SCAN.ladder); continue; }
     if (fP) continue;
@@ -4884,7 +4952,7 @@ function draw() {
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) drawNearMarks(P, openB);
-  if (running && !tactical) drawRadioCall();
+  if (running && !tactical) { drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) drawOpps(P);
   if (running && !tactical) drawOffscreen();
   // 행동 표시
@@ -5109,6 +5177,7 @@ function updateHUD(force) {
   }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
+  { const pl = $('pickLbl'); if (pl) { pl.hidden = !CITY; if (CITY) setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
   const pa = primaryAction();
   setText(hud.act.querySelector('b'), 'act', pa.k === 'none' && !pa.stalk ? '행동' : pa.label);
   hud.act.classList.toggle('ready', pa.k !== 'none');

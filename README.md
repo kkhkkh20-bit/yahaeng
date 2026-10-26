@@ -30,4 +30,6 @@ python3 tests/rev/t_stalk.py    # 경비 근처 Space=암살 전용
 python3 tests/rev/t_cp.py       # 체크포인트 저장·불러오기
 python3 tests/rev/t_opp.py      # 기회 목록
 python3 tests/rev/t_music.py    # 도시 음악 생성·전환
+python3 tests/rev/t_v33.py      # 락픽(창문·문)·걸쇠·방범창·자동 기대기·끌어당겨 암살
+python3 tests/rev/t_wire.py     # 전깃줄 매달린 방향
 ```

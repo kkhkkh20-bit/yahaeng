@@ -279,7 +279,7 @@ body.scanning #scanLegend { display: flex; }
       <span class="chip lightbox"><span id="lightLbl">어둠</span><span class="lightbar"><i id="lightFill" data-level="lo"></i></span></span>
       <span class="chip layer" id="layerLbl" data-l="out">지상</span>
       <span class="chip" id="modeLbl">걷기</span>
-      <span class="chip" id="killsLbl">제거 0</span>
+      <span class="chip" id="killsLbl">제거 0</span><span class="chip" id="pickLbl" hidden title="락픽 — 잠긴 창문·문을 딴다">락픽 0</span>
       <span class="chip hpbox" title="체력"><span id="hpPips"></span></span>
       <span class="chip pipsbox" title="경계 단계"><span id="alertPips"><i></i><i></i><i></i></span></span>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
@@ -294,7 +294,7 @@ body.scanning #scanLegend { display: flex; }
     <span><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
     <span class="keep"><kbd>Space</kbd>행동</span><span class="keep"><kbd>Z</kbd>특수</span><span class="keep"><kbd>X</kbd>도구(누르고 겨누기·떼면 사용)</span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
-  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i class="hx">막힌 곳</i></div>
+  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i class="hx">막힌 곳</i></div>
   <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
@@ -324,7 +324,7 @@ body.scanning #scanLegend { display: flex; }
     <p class="brief">빛을 피하고, 소리를 죽이고, 등 뒤나 지붕 위에서 덮친다. 들키면 끝이다.</p>
     <div class="stages"><h3>난이도</h3>
       <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
-      <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다.</p>
+      <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
     </div>
     <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
     <div class="rules-h">규칙</div>
