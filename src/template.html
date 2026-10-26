@@ -268,6 +268,11 @@ body.scanning #scanLegend { display: flex; }
 #keypad .kpg button.ok { background: linear-gradient(#3f7a52, #2c5a3b); border-color: #5aa070; }
 #keypad .kpg button.down { transform: translateY(2px); box-shadow: 0 1px 0 #1c1f25; }
 #keypad .kpx { margin-top: 10px; background: none; border: 0; color: var(--paper-dim); font-size: 12px; }
+#expoLbl { font-weight: 700; min-width: 4.5em; text-align: center; }
+#expoLbl[data-e="0"] { color: #9fd8ff; border-color: rgba(120,200,255,.55); background: rgba(40,80,110,.35); }
+#expoLbl[data-e="1"] { color: #1a1408; background: #f2c46b; border-color: #f2c46b; }
+#expoLbl[data-e="2"] { color: #fff; background: #e0483c; border-color: #e0483c; animation: expoP .5s infinite alternate; }
+@keyframes expoP { to { background: #a32a20; } }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -276,7 +281,7 @@ body.scanning #scanLegend { display: flex; }
   <div class="top">
     <div class="obj"><small id="objTitle">작전 목표</small><span id="objective"></span></div>
     <div class="status">
-      <span class="chip lightbox"><span id="lightLbl">어둠</span><span class="lightbar"><i id="lightFill" data-level="lo"></i></span></span>
+      <span class="chip expo" id="expoLbl" data-e="0" hidden>숨음</span><span class="chip lightbox"><span id="lightLbl">어둠</span><span class="lightbar"><i id="lightFill" data-level="lo"></i></span></span>
       <span class="chip layer" id="layerLbl" data-l="out">지상</span>
       <span class="chip" id="modeLbl">걷기</span>
       <span class="chip" id="killsLbl">제거 0</span><span class="chip" id="pickLbl" hidden title="락픽 — 잠긴 창문·문을 딴다">락픽 0</span>

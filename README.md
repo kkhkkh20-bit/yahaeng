@@ -32,4 +32,6 @@ python3 tests/rev/t_opp.py      # 기회 목록
 python3 tests/rev/t_music.py    # 도시 음악 생성·전환
 python3 tests/rev/t_v33.py      # 락픽(창문·문)·걸쇠·방범창·자동 기대기·끌어당겨 암살
 python3 tests/rev/t_wire.py     # 전깃줄 매달린 방향
+python3 tests/rev/t_expo.py     # 숨음·들킬 수 있음·보인다 판정
+python3 tests/rev/t_tree.py     # 나무에 기대 숨기
 ```
