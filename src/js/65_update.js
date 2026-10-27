@@ -14,7 +14,7 @@ function update(dt) {
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
-  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateWarn(dt); updateCorpseRisk(dt); } if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 노랑이면 어둠·벽·나무 뒤로 붙거나 웅크려라'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
+  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateWarn(dt); updateCorpseRisk(dt); } if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
   if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
     S.rollT -= dt;
     if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 자경대원이 있으면 들킨다', 2.6, 'warn'); }
@@ -107,7 +107,13 @@ function moveCamera(dt) {
   const k = 1 - Math.pow(0.0015, dt);
   SCALE += (targetScale() - SCALE) * Math.min(1, dt * 6);
   const vw = W / SCALE, vh = H / SCALE;
-  if (tactical) { cam.x += (MW * TILE / 2 - cam.x) * k; cam.y += (MH * TILE / 2 + 40 / SCALE - cam.y) * k; return; }
+  if (tactical) {
+    if (H > W * 1.3) {  // 세로 전술 지도: 나를 가운데로 시작, 손가락으로 끌어 옮긴다
+      if (!S.tacCam) S.tacCam = { x: S.player.x, y: S.player.y };
+      const hx = vw / 2, hy = vh / 2; S.tacCam.x = clamp(S.tacCam.x, Math.min(hx, MW * TILE / 2), Math.max(MW * TILE - hx, MW * TILE / 2)); S.tacCam.y = clamp(S.tacCam.y, Math.min(hy - 60 / SCALE, MH * TILE / 2), Math.max(MH * TILE - hy + 120 / SCALE, MH * TILE / 2));
+      cam.x += (S.tacCam.x - cam.x) * Math.min(1, k * 2); cam.y += (S.tacCam.y - cam.y) * Math.min(1, k * 2); return; }
+    cam.x += (MW * TILE / 2 - cam.x) * k; cam.y += (MH * TILE / 2 + 40 / SCALE - cam.y) * k; return; }
+  if (S.tacCam) S.tacCam = null;
   if (isTouch) {
     cam.x += (S.player.x - cam.x) * k;
     cam.y += (S.player.y + vh * 0.12 - cam.y) * k;

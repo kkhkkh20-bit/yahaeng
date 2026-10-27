@@ -38,7 +38,7 @@ function resize() {
   if (!SCALE || SCALE === 1) SCALE = BASE_SCALE * userZoom;
 }
 function targetScale() {
-  if (tactical) return Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96;
+  if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
   return BASE_SCALE * userZoom * (P && P.z >= 3 ? 0.68 : P && (P.z || P.jump) ? 0.8 : 1);
 }

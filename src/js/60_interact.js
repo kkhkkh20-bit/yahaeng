@@ -228,7 +228,7 @@ function winInit() {
 }
 const winSt = w => w.st || 'open';
 const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
-function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이면 멈춘다(락픽은 성공해야 줄어든다). 긁는 소리가 조금씩 난다. 잠긴 창문은 안쪽에서라면 락픽 없이 걸쇠만 풀면 열린다'); }
+function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이지 마라. 긁는 소리가 조금 난다. 안쪽 창문은 걸쇠만 풀면 된다'); }
 function updatePick(P, mag, dt) {
   const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
   if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
@@ -535,7 +535,7 @@ function actPrimary(force) {
   if (DLG.modal) { advanceDialog(); return; }
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
-  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까이 있으면 Space(행동 버튼)는 기절(길게 누르면 처치)만 한다. 문·비번·조명·두꺼비집·쪽지는 Z(특수 버튼)로 한다'); return; }
+  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까우면 [행동]은 기절만 한다. 문·조명·쪽지는 [특수]로'); return; }
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
@@ -627,7 +627,7 @@ function actPrimary(force) {
       if (l.kind === 'fstair') {  // 실내 계단: 계단 칸으로 걸어 올라간다
         startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 1 }], dur: 0.42, phases: [{ to: 1, pose: 'walk' }],
           end: () => { P.fl = l.tfl; setLayer(P.fl); const ho = stairHole(l);  // 위층: 구멍(아래층에서 올라오는 계단) 바닥 쪽 끝 옆에 올라선다
-            const at = ho ? [ho.top, ho.e].find(c => !solidAt(c.tx, c.ty)) : null; if (at) { P.x = tc(at.tx); P.y = tc(at.ty); P.a = Math.atan2(ho.d[1], ho.d[0]); } else { P.x = l.x; P.y = l.y; } play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 자리 계단으로 오르내린다. 위층 사람은 아래층·바깥에서 보이지 않고, 정면 창문 밖 전깃줄로 바로 나갈 수 있다'); } });
+            const at = ho ? [ho.top, ho.e].find(c => !solidAt(c.tx, c.ty)) : null; if (at) { P.x = tc(at.tx); P.y = tc(at.ty); P.a = Math.atan2(ho.d[1], ho.d[0]); } else { P.x = l.x; P.y = l.y; } play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
         break;
       }
       const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
@@ -697,7 +697,7 @@ function actPrimary(force) {
     }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
-    case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 하나의 전등(모든 층)을 한 번에 끈다. 손으로 끈 등과 달리 지나가던 사람이 다시 켤 수 없고, 누군가 직접 두꺼비집까지 와야 한다'); break; }
+    case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
       const l = a.l; l.off = !l.off; play('switch', 0.45); noise(l.x, l.y, 25, 'switch');
       for (const c of S.corpses) c.light = lightAt(c.x, c.y);
@@ -750,7 +750,7 @@ function updateGrabIn(P, dt) {
     P.grabIn = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0));
     if (g.state !== 'CAPTIVE') return;
     P.captive = g;
-    hint('grab', '붙잡았다: 숨을 곳(화단·수거함·맨홀) 옆에서 [끌고 가 처치]. 끌고 가면 걸음이 많이 느려지고, 9초 넘게 끌면 빠져나간다');
+    hint('grab', '붙잡음: 화단·수거함·맨홀 옆에서 [끌고 가 처치]. 9초 넘으면 빠져나간다');
   }
 }
 // 숨기: 바로 사라지지 않는다. 쓰레기통 = 다가가 테를 짚고 몸을 넘겨 안으로 가라앉음 · 화단 = 웅크려 파고듦 · 맨홀 = 가장자리에서 사다리로 내려감
@@ -829,7 +829,7 @@ function koPerson(g, mode, where) {
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + keyName(k) + '을(를) 챙겼다'); }
   S.koHold = actHeld() ? { c, g, t0: S.t } : null;
   toast(g.civ ? '기절시켰다 — 죽이지 않았다. 남의 눈에 띄면 시체처럼 소란이 난다' : '기절시켰다 — 죽이지 않았다. 다른 자경대원이 보면 깨워서 수색한다', 2.4);
-  hint('ko', '표적이 아닌 사람은 기절시킨다(살상 아님, 평가 감점 없음). 행동 버튼을 계속 누르고 있으면 숨을 끊는다 — 표적 외 살상이라 감점');
+  hint('ko', '표적이 아니면 기절시킨다(감점 없음). 길게 누르면 처치 — 감점');
 }
 // 누른 채로 있으면 기절 → 처치로 바뀐다
 function updateKoHold() {
@@ -869,6 +869,7 @@ const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
   const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   P.strikeT = dur; P.killAnim = { ch: charOf(g), t0: S.t, kind, dur, from }; P.riseT = S.t + dur + 0.22;
+  { const S0 = S; setTimeout(() => { if (S === S0 && !S.over) { play('thud', 0.32); S.shakeT = Math.max(S.shakeT || 0, 0.08); } }, dur * 0.82 * 1000); }  // 무릎이 꺾여 내려놓는 순간
   const nd = S.decals.length, nf = S.fx.length, nc = S.corpses.length; killGuard(g, null, null, quiet); S.fx.length = nf; if (kind === 'choke') S.decals.length = nd;
   const c = S.corpses.length > nc ? S.corpses[S.corpses.length - 1] : null;
   if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
@@ -1034,13 +1035,13 @@ function actCarry() {
   if (!S || S.over || paused || !running || tactical) return;
   const P = S.player;
   if (P.hide) { if (P.hide.type === 'well') travelTunnel(); return; }
-  if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 보이지 않는다. 옆으로 이동하고, 위로 밀면 올라서고, 1층 옥상이면 아래로 밀어 내려간다. 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]'); } return; }
+  if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 가까이 온 자경대원은 끌어내린다'); } return; }
   if (P.z || P.jump || P.trav || P.lunge || P.grabIn || P.vent || P.under) return;
   if (P.captive) { actPrimaryForce('execute'); return; }
   const sa = secondaryAction();
   if (sa.viaZ) { actPrimary(sa); return; }
   if (sa.k === 'cover') { enterCover(sa.n); return; }
-  if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 보이지 않는다. 옆으로 이동하고, 위로 밀면 올라서고, 1층 옥상이면 아래로 밀어 내려간다. 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]'); return; }
+  if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 가까이 온 자경대원은 끌어내린다'); return; }
   if (sa.k === 'uncover') { P.cover = null; play('cloth', 0.15); return; }
   if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
   if (sa.k === 'grab') { grab(sa.g); return; }
@@ -1051,8 +1052,8 @@ function actCarry() {
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
-    else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 경계선이 초록이면 그 구역에 들어가도 된다. 뛰기·운반·락픽·담 타기는 여전히 수상하다. 눈 표시가 뜬 사람(눈썰미)은 가까이서 오래 보면 알아챈다. 들통나면 그 옷만 못 쓴다'); }
-    else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰거나, 시체를 들거나, 옥상에 있거나, 너무 가까이 붙으면 의심받는다. 한 번 들키면 변장은 끝'); }
+    else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 초록 경계선 구역은 지나다녀도 된다. 뛰기·운반·락픽은 수상하다. 눈 표시 사람은 오래 보면 알아챈다'); }
+    else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰기·시체 들기·옥상·너무 가까이 붙기는 의심받는다'); }
     return;
   }
   if (sa.k === 'throwBody') {
@@ -1142,7 +1143,7 @@ function actCoin(pt) {
   P.coins--; S.stats.coins = (S.stats.coins || 0) + 1;
   const l = { x: lx, y: ly, x0: P.x, y0: P.y, t: 0, landed: false, claim: null, fl: flOf(P) };
   (S.throwT = S.t + 0.7), S.lures.push(l); play('throw', 0.25);
-  hint('coin', '담배: 떨어진 담배를 본 자경대원이 주우러 와서 잠시 고개를 숙인다. 정예(파란 옷)는 넘어가지 않는다');
+  hint('coin', '담배: 본 자경대원이 주우러 와서 고개를 숙인다. 정예는 안 넘어간다');
 }
 function actKunai(forced) {
   if (!S || S.over || paused || !running) return;

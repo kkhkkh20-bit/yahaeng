@@ -39,7 +39,7 @@ function updateSharpEye(g, dt, rawVis) {
   if (!sharpEye(g)) { g.eyeT = 0; return; }
   const P = S.player, d = dist(g.x, g.y, P.x, P.y);
   if (rawVis > 0 && d < EYE_R) { g.eyeT = (g.eyeT || 0) + dt * (P.mode === 'run' ? 2 : 1) * (d < 70 ? 1.6 : 1); g.want = Math.atan2(P.y - g.y, P.x - g.x);
-    hint('eye', '눈 표시가 뜬 사람은 눈썰미가 있다. 가까이에서 오래 보이면 변장이 들통난다 — 거리를 두고 지나가라');
+    hint('eye', '눈 표시: 눈썰미가 있다. 가까이서 오래 보이면 변장이 들통난다');
     if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
@@ -61,7 +61,7 @@ function startWarn(g) {
   const P = S.player; endChat(g); g.act = null; g.bubble = null; g.state = 'WARN'; g.warnEnd = S.t + 4.5; g.warnExt = 0; g.warnD0 = dist(g.x, g.y, P.x, P.y); g.path = null; g.meter = 0.92; setIcon(g, '!?'); play('question', 0.5);
   g.lastSeen = pSpot();
   g.say = ['거기요! 여긴 관계자 외 출입 금지입니다. 나가세요.', '이봐요, 여기 들어오면 안 돼요. 당장 나가요.', '여긴 관계자만 다닙니다. 돌아 나가세요.'][g.id % 3]; g.sayT = 3.2;
-  hint('warn', '출입 금지 구역에서 처음 들키면 자경대원이 경고한다. 고리가 다 닳기 전에 공개 구역(거리)으로 나가거나 눈앞에서 사라지면 넘어가지만, 같은 자경대원에게 또 들키면 바로 발각된다');
+  hint('warn', '출입 금지: 처음 들키면 경고만 한다. 고리가 닳기 전에 나가면 끝, 또 들키면 발각');
 }
 // 경고 중: 플레이어 쪽으로 몸을 돌리고(보이면 다가온다), 시간이 다 되면
 //  · 공개 구역으로 나갔다 → 돌아간다   · 나가는 중(멀어지는 중)이다 → 조금 더 기다려 준다(최대 3초)

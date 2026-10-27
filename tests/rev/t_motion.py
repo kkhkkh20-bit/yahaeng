@@ -27,7 +27,11 @@ async def main():
             await pg.wait_for_timeout(16)
         dur = await pg.evaluate('() => window.__game.KILL_DUR'); print('처치 프레임 순서', seq, dur)
         if len(set(seq)) < 9 or seq[-1] != 9: bad.append('처치 동작이 프레임을 다 지나지 않는다 %s' % seq)
-        if any(b2 - a2 > 1 for a2, b2 in zip(seq, seq[1:])): bad.append('처치 동작 프레임이 건너뛴다 %s' % seq)
+        # 건너뜀 검사는 실제 시간 표본(시험 기계 속도에 흔들림) 대신 진행도 0~1을 촘촘히 훑어 계산
+        for kind in ('stab', 'choke'):
+            fs = await pg.evaluate(f"() => {{ const G = window.__game, out = []; for (let i = 0; i <= 200; i++) out.push(G.ktFrame('{kind}', G.killKT('{kind}', i / 200, 0))); return out; }}")
+            jumps = [(a2, b2) for a2, b2 in zip(fs, fs[1:]) if abs(b2 - a2) > 1]
+            if jumps: bad.append(f'{kind} 처치 동작 프레임이 건너뛴다 {jumps[:3]}')
         # 2 달려들기: 거리에 맞춰 0.2초 넘게 걸린다
         await fresh([2]); await pg.evaluate(PIN, [2, 33, 3, 0]); await behind(2, 80)
         lab = await pg.evaluate('() => window.__game.primaryAction().label'); await pg.evaluate('() => window.__game.actPrimary()')

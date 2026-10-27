@@ -42,7 +42,7 @@ function queueAim() {
     if (input.queue.some(q => q.tgt && q.tgt.ref === it.tgt.ref)) { toast('이미 예약한 대상이다', 1.4); return; } }
   input.queue.push(it); play('click', 0.35); input.aiming.t0 = performance.now();
   toast(`행동 예약 ${input.queue.length} — 다른 곳을 겨누고 손을 떼면 한꺼번에`, 1.8);
-  hint('queue', '동시 실행: 시간이 멈춘 조준 중 [특수]로 겨눈 것을 예약하고, 다른 곳을 겨눈 뒤 손을 떼면 모두 한꺼번에 던진다 (다트 둘로 자경대원 둘을 동시에)');
+  hint('queue', '조준 중 [특수]로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
 }
 function runQueued(it) {
   const P = S.player; P.a = it.a;
@@ -110,7 +110,7 @@ function whistle() {
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
   noise(x, y, 230, 'whistle'); S.stats.whistles = (S.stats.whistles || 0) + 1;
-  hint('whistle', '휘파람: 들은 자경대원이 이 자리를 확인하러 온다. 화단·쓰레기통·벽 모서리에서 불고 기다렸다가 처치하라');
+  hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기
 function ledgeAt(P) {
@@ -166,7 +166,7 @@ function enterCover(n, quiet) {
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
   P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26);
-  hint('cover', '벽에 바짝 붙음: 웅크린 채 벽에 닿거나, 벽 옆에 멈추면 저절로 붙는다. 붙어 있으면 시야 원뿔의 진한 부분이 확 줄고(거의 안 보임) 발소리가 나지 않는다. 벽을 따라 옆걸음, 벽 반대쪽으로 밀면 떨어진다. 나를 못 본 채 옆을 지나는 사람은 [끌어당겨 처치]');
+  hint('cover', '벽에 붙음: 잘 안 보이고 발소리가 없다. 벽 따라 옆걸음, 반대로 밀면 떨어진다');
 }
 function updateSnap(P, dt) {
   const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
@@ -296,7 +296,7 @@ function updatePlayer(dt) {
       P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -12 * dt, 12 * dt);
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = fast ? 0.4 : 0.62; if (fast) { play('step_m' + ((Math.random() * 3) | 0), 0.4); noise(P.x, P.y, 150, 'vent'); } else play('step_m' + ((Math.random() * 3) | 0), 0.06, 0.8); }
     }
-    hint('vent', '환풍구: 살금살금(조이스틱 살짝)은 조용하다. 서두르면 쇠 덕트가 울려 아래 자경대원이 듣는다. 창살 밑을 지나는 자경대원은 [끌어올려 암살]');
+    hint('vent', '환풍구: 살금살금이면 조용하다. 창살 밑 자경대원은 [끌어올려 암살]');
     return;
   }
   if (P.hide) {
@@ -304,7 +304,7 @@ function updatePlayer(dt) {
     if (mag > 0.5 && !S.hideExitLock) leaveHide({ x: mx / mag, y: my / mag });
     hint('hideDir', '숨은 상태에서 조이스틱(방향키)을 밀면 그 방향으로 빠져나온다');
     if (mag < 0.1) S.hideExitLock = false;
-    if (P.hide && P.hide.type === 'well') hint('well', '맨홀 안: 지나가는 자경대원을 끌어들여 암살하거나, [지하로]를 눌러 지하 수로를 걸어서 이동한다');
+    if (P.hide && P.hide.type === 'well') hint('well', '맨홀 안: 지나가는 자경대원을 끌어들이거나 [지하로] 이동한다');
     return;
   }
   if (P.hurtT > 0) P.hurtT -= dt;
@@ -361,7 +361,7 @@ function updatePlayer(dt) {
       P.stepT = { sneak: 0.56, walk: 0.4, run: 0.28 }[mode];
       const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * (mode === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z);
       play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
-      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '바닥 재질: 유리 조각·철판·물웅덩이·자갈은 발소리가 커진다(살금살금이어도 유리는 들린다). 돌아가거나 천천히'); } }
+      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
       if (P.carrying) play('cloth', 0.12);
       if (!P.cover) noise(P.x, P.y, r, 'step');  // 벽에 붙어 옆걸음: 소리 없음
     }
@@ -384,21 +384,21 @@ function updatePlayer(dt) {
   }
   if (P.z >= 3) hint('top', '3층 옥상: 멀리 보이고 자경대원이 거의 올려다보지 못한다. 너무 높아서 낙하 암살은 안 된다');
   if (P.z) {
-    hint('roof', '옥상 위: 자경대원은 위를 잘 보지 않는다. 단, 망꾼은 옥상을 똑바로 본다. 아래 자경대원 가까이 가면 [낙하 암살]');
+    hint('roof', '옥상: 자경대원은 위를 잘 안 본다(망꾼 빼고). 가까이 오면 [낙하 암살]');
     if (jumpTarget()) hint('gap', '골목 건너편 옥상을 향해 서면 [건너뛰기]로 넘어간다 (같은 높이나 한 층 아래만)');
     if (P.z === 2) hint('high', '2층 옥상: 땅으로 바로 뛰어내릴 수 없다. 1층 옥상으로 내려가거나 배관을 이용하라');
   }
   else {
     if (P.hidden) hint('bush', '화단 속에선 바로 옆이 아니면 보이지 않는다');
-    if (P.light < 0.25 && !P.hidden) hint('dark', '자경대원 시야(원뿔)는 어두운 곳에선 짧게, 불빛 아래로는 길게 뻗는다. 진한 부분은 웅크려도 보이고, 옅은 줄무늬 부분은 웅크리면 안 보인다');
+    if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 진한 곳은 웅크려도 보이고, 줄무늬는 웅크리면 안 보인다');
     const nh = nearHide();
-    if (nh && nh.furn) hint('furnHide', '옷장·침대 밑·사물함: [숨기]로 들어가고, 시체를 메고 [넣기]로 하나씩 숨긴다. 지나가는 사람을 끌어들여 처치할 수도 있다. 수색하는 자경대원은 가까운 가구도 열어 본다');
+    if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
     if (nh && nh.type === 'box') hint('box', CITY ? '쓰레기통: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)' : '은신 수거함: [숨기]로 들어가고, 시체를 업고 [넣기]로 보관한다');
     if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀: 숨어서 기습 암살하거나 다른 맨홀로 이동할 수 있다' : '맨홀: 숨어서 기습 암살하거나 다른 출구로 이동할 수 있다');
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
     if (N8.some(o => inMap(tx + o[0], ty + o[1]) && G[ty + o[1]][tx + o[0]] === 'S')) hint('secret', '벽에 금이 간 곳은 숨겨진 통로다. 그대로 걸어 들어가면 지나갈 수 있다 (자경대원은 모른다)');
-    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어가야 다 보인다. 밖에서는 창문·열린 문 너머로 보이는 만큼과 소리로만 알 수 있다');
+    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어가야 보인다. 밖에선 창문·열린 문 너머만 보인다');
   }
   updateWindowView(P);
   checkObjective();

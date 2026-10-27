@@ -926,6 +926,30 @@ function darkPass(sc, lamps, clip, key) {
   worldTransform(ctx, sc);
   if (clip) ctx.restore();
 }
+// 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
+function drawGoal(P) {
+  const gl = nextGoal(); if (!gl || gl.x == null) return;
+  const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
+  const df = (gl.fl || 0) - flOf(P), short = gl.text + (df ? (df > 0 ? ` (${df}층 위)` : ` (${-df}층 아래)`) : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
+  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const tag = (x, y, t) => { const tw = ctx.measureText(t).width + 14 * k; ctx.fillStyle = 'rgba(7,10,18,.88)'; ctx.fillRect(x - tw / 2, y - 9 * k, tw, 18 * k); ctx.fillStyle = '#f2c46b'; ctx.fillRect(x - tw / 2, y - 9 * k, 3 * k, 18 * k); ctx.fillText(t, x + 1 * k, y + 1 * k); };
+  const topPx = (drawMini.tb || 70) + 40, botPx = document.body.classList.contains('touch') ? 270 : 70;
+  const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
+  if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
+    if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
+    const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
+    ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(gl.x, gl.y, 20 * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke();
+    ctx.fillStyle = '#f2c46b'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
+    tag(gl.x, y - 13 * k, short);
+  } else {  // 화면 밖: 가장자리 화살표 + 할 일 · 거리
+    const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
+    ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(242,196,107,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
+    ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
+    const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + 80 * k, sx1 - 80 * k), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
+    tag(lx, ly, `${short} · ${m}m`);
+  }
+  ctx.textBaseline = 'alphabetic';
+}
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if (S.player.under && !tactical) { drawUnderground(); return; }
@@ -1177,6 +1201,7 @@ function draw() {
   if (running && CITY && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) { drawOpps(P); drawStoryMark(P); drawHoldRing(); if (!tactical) drawCorpseRisk(); }
+  if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
       ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();

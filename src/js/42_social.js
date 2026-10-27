@@ -23,11 +23,11 @@ function reportTo(g) {
 function startReport(g, x, y, c, saw, kind) {
   const to = reportTo(g); if (!to) return false; kind = kind || (c ? 'body' : 'crime');
   endChat(g); g.state = 'REPORT'; g.rep = { x, y, c: c || null, saw: saw || null, kind, to, t: 0, rp: 0 }; g.path = null; g.icon = '!'; g.iconT = 99; g.meter = 1; g.wait = 0;
-  if (kind === 'trespass') { gsay(g, ['경비 아저씨한테 말해야겠다.', '저 사람 왜 저기 들어가지?', '사장님께 말씀드려야지.'][g.id % 3], 2.2); hint('tres', '직원은 출입 금지 구역에 들어온 사람을 보면 먼저 말로 나가라고 하고, 계속 머물면 자경대원에게 알리러 간다. 알리면 자경대원이 확인하러 온다(경보는 아니다)'); return true; }
+  if (kind === 'trespass') { gsay(g, ['경비 아저씨한테 말해야겠다.', '저 사람 왜 저기 들어가지?', '사장님께 말씀드려야지.'][g.id % 3], 2.2); hint('tres', '직원은 출입 금지 구역의 사람에게 먼저 나가라고 한다. 계속 있으면 자경대원을 부른다'); return true; }
   S.stats.screams = (S.stats.screams || 0) + 1; logEv('witness', g.x, g.y);
   gsay(g, c ? ['저기 사람이 쓰러졌어!', '누가 좀 와 봐요!', '사람이 쓰러져 있어요!'][g.id % 3] : kind === 'disguise' ? ['당신 우리 직원 아니잖아!', '처음 보는 얼굴인데…!', '그 옷 어디서 났어요?'][g.id % 3] : ['도둑이야! 경비 아저씨!', '사람 살려요!', '저 사람이 사람을 해쳤어요!'][g.id % 3], 2.2);
   play('call', 0.5 * proxVol(g), 1.6); noise(g.x, g.y, 150, 'scream', flOf(g));
-  hint('report', '신고하러 뛰는 주민: 머리 위 ! 와 붉은 점선이 가는 곳이다. 자경대원에게 닿기 전에 막으면(기절) 신고는 없던 일이 된다');
+  hint('report', '신고하러 뛰는 주민: 닿기 전에 막으면(기절) 신고는 없던 일이 된다');
   return true;
 }
 function updateReport(g, dt) {
@@ -71,7 +71,7 @@ function giveCandy(g) {
   const P = S.player; P.candy--; g.treatT = 22; g.rep = null; g.state = 'PATROL'; g.meter = 0; g.icon = null; g.path = null; play('click', 0.4, 1.5);
   const a = Math.atan2(g.y - P.y, g.x - P.x); for (let k = 0; k < 8 && !g.path; k++) { const aa = a + (k % 2 ? 1 : -1) * k * 0.4; pathTo(g, g.x + Math.cos(aa) * 380, g.y + Math.sin(aa) * 380); if (g.path && !g.path.length) g.path = null; }
   gsay(g, ['우와, 사탕이다! 고맙습니다!', '헤헤, 놀이터 가야지!', '엄마한테 비밀!'][g.id % 3], 2.2);
-  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 손댈 수 없다. 대신 Z로 사탕을 주면 한동안 멀리 가서 논다 — 신고하러 뛰는 아이도 붙잡아 사탕으로 달랠 수 있다');
+  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 건드릴 수 없다. [특수]로 사탕을 주면 멀리 가서 논다');
 }
 function updateChildTreat(g, dt) {
   g.treatT -= dt; g.seen = false; g.meter = 0; g.icon = null;

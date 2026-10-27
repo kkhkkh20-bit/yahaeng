@@ -87,7 +87,7 @@ function updateWire(P, mx, my, mag, mode, dt) {
   const g = wireGround(W_.w, W_.s); P.x = g.x; P.y = g.y;
   P.z = Math.max(1, Math.round(W_.w.a.z + (W_.w.b.z - W_.w.a.z) * W_.s));
   P.light = lightAt(P.x, P.y, true); P.hidden = false; P.a = -Math.PI / 2;
-  hint('wire', '전깃줄: 방향키로 줄을 따라 이동한다. 아래를 지나는 자경대원 위에서 [낙하 암살]. 끝에서 옥상에 올라서거나 전봇대로 내려간다. 뛰면 줄이 출렁여 소리가 난다');
+  hint('wire', '전깃줄: 줄을 따라 이동. 아래 자경대원 위에서 [낙하 암살]. 뛰면 줄이 울린다');
   checkObjective();
 }
 

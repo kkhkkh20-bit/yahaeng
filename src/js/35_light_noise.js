@@ -31,7 +31,7 @@ function showHint(text, sec) {
 }
 function renderToasts() {
   toastEl.innerHTML = '';
-  S.toasts.slice(-2).forEach(m => { const d = document.createElement('div'); d.className = 'toast ' + m.kind; d.textContent = m.text; toastEl.appendChild(d); });
+  S.toasts.slice(isTouch ? -1 : -2).forEach(m => { const d = document.createElement('div'); d.className = 'toast ' + m.kind; d.textContent = m.text; toastEl.appendChild(d); });
 }
 
 // ---------------------------------------------------------------- 소음

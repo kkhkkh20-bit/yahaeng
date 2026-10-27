@@ -138,7 +138,7 @@ function drawAwareMark(g) {
 function drawAwareness(P) {
   if (P.hide || P.vent || P.under) return;
   const k = Math.max(1, 0.9 / SCALE), R = 34 * k;
-  if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '자경대원 머리 위 삼각형이 차오르면 들키는 중이다. 흰색 = 눈치, 노랑 = 의심해서 확인하러 온다, 빨강 = 발각. 시야에서 벗어나면 다시 줄어든다');
+  if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '머리 위 삼각형: 흰색 눈치 · 노랑 확인하러 옴 · 빨강 발각. 시야를 벗어나면 줄어든다');
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || dist(g.x, g.y, P.x, P.y) > 1100) continue;
     const al = g.state === 'ALERT', m = al ? 1 : g.meter; if (m < 0.03) continue;

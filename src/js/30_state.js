@@ -220,8 +220,7 @@ function newGame(si) {
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
   mapC = renderMap(); ugC = renderSewers(); ventC = renderVents();
   S.floorC = {};
-  cam.x = S.player.x; cam.y = S.player.y;
-  toast(STAGE.name + ' — ' + STAGE.mission, 2.6);
+  cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
   window.__hintT = setTimeout(() => S && !S.over && running && STAGE.hints && hint('stage', STAGE.hints[0]), 4500);
   if (STAGE.hints && STAGE.hints[1]) window.__hintT2 = setTimeout(() => S && !S.over && running && hint('stage2', STAGE.hints[1]), 10000);

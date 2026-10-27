@@ -269,7 +269,7 @@ function updateCams(dt) {
       if (sees(k.x, k.y, Math.max(0.5, k.light || 0))) { k.camSeen = true; k.discovered = true; S.stats.bodies++; S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, k.x, k.y) < 900) goSuspicious(g, k.x, k.y, 6); } }
   }
   setLayer(L0);
-  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV: 빨간 시야가 좌우로 천천히 돈다. 끝에서 잠깐 멈춘다. 찍히면 경보. 다트로 부수거나 두꺼비집을 내리면 꺼진다. 부서진 카메라를 자경대원이 보면 의심한다');
+  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV: 빨간 시야가 천천히 돈다. 찍히면 경보. 다트나 두꺼비집으로 끈다');
 }
 function drawCams(fl) {
   for (const c of S.cams || []) {
@@ -308,8 +308,8 @@ function updateCiv(g, dt) {
   const P = S.player; g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0) g.icon = null; }
   const sameF = flOf(g) === flOf(P) && !P.wire;
-  if (!g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('civ2', '주민은 싸우지 않는다. 길·가게에서 마주치는 건 상관없지만, 남의 집 안에 들어오거나 사람을 해치고 끌고 가는 모습을 보면 비명을 지른다');
-  if (g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('crowd', '군중: 걷거나 살금살금 다니면 사람들 사이에 섞여 자경대원 눈에 잘 안 띄고, 음악에 소리도 묻힌다. 뛰면 소용없다. 손님도 쓰러진 사람을 보면 비명을 지른다');
+  if (!g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('civ2', '주민은 싸우지 않는다. 집에 들어오거나 사람을 해치는 걸 보면 비명을 지른다');
+  if (g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('crowd', '군중: 걸으면 사람들 사이에 섞여 잘 안 띈다. 뛰면 소용없다');
   if (g.state === 'SLEEP') {
     g.seen = false;
     if (sameF && !P.hide && dist(g.x, g.y, P.x, P.y) < (P.mode === 'run' ? 100 : P.mode === 'walk' ? 55 : 0)) civWake(g, P.x, P.y);
@@ -792,13 +792,13 @@ function goAlert(g) {
     if (S.alevel < 3 && !S.radioCall) {
       const rg = g.radio ? g : S.guards.filter(o => o.radio && o.state === 'ALERT' && o.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
       if (rg) { const dur = DKEY === 'easy' ? 3.4 : DKEY === 'hard' ? 2.2 : 2.8; S.radioCall = { g: rg, t: dur, dur, at: pSpot() }; rg.icon = '!'; rg.iconT = 99;
-        toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 처치하면 끊긴다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 자경대원은 멈춰 서 있다. 등 뒤가 아니어도 붙으면 처치할 수 있고, 다트로도 맞힐 수 있다'); }
+        toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 처치하면 끊긴다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 자경대원은 멈춰 있다. 등 뒤가 아니어도 처치할 수 있다'); }
     }
     setAlert(2, 30);
   } else {
     setAlert(3);
   }
-  hint('alert', '발각! 자경대원들이 몰려와 칼을 휘두른다. 시야를 끊고 숨어 15초 버티면 수색으로, 수색이 끝나면 모두 제자리로 돌아간다');
+  hint('alert', '발각! 시야를 끊고 15초 숨어 버티면 수색으로 바뀐다');
 }
 function radioSpread(at) {
   toast('무전으로 경보가 퍼졌다', 2.4, 'warn');

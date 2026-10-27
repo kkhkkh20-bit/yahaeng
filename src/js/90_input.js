@@ -148,6 +148,11 @@ function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = m
 function setPause(v) { if (!running) return; paused = v; $('pause').hidden = !paused; }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
+{ let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
+  cv.addEventListener('pointerdown', e => { if (tactical && S && S.tacCam) drag = { x: e.clientX, y: e.clientY }; });
+  window.addEventListener('pointermove', e => { if (!drag || !tactical || !S || !S.tacCam) return; S.tacCam.x -= (e.clientX - drag.x) / SCALE; S.tacCam.y -= (e.clientY - drag.y) / SCALE; drag = { x: e.clientX, y: e.clientY }; });
+  window.addEventListener('pointerup', () => { drag = null; }); }
+try { if (localStorage.getItem('yahaeng.joyseen')) document.body.classList.add('joyseen'); } catch (e) {}
 $('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);
 $('btnPause').addEventListener('click', togglePause);
 $('btnMap').addEventListener('click', toggleTactical);
@@ -180,7 +185,7 @@ function start(i) {
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   $('intro').hidden = true; $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
-  say(DIALOGUE[STAGE.id], true, () => { if (ENTRY_PICK && STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — ' + (isTouch ? '미니맵을 눌러' : '[M] 지도로') + ' 순찰로 확인', 4); } });
+  say(DIALOGUE[STAGE.id], true, () => { if (ENTRY_PICK && STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발! ' + (isTouch ? '미니맵을 누르면' : 'M 키를 누르면') + ' 순찰로가 보인다', 3); } });
 }
 const ENTRY_PICK = false;  // 진입로 선택 창은 쓰지 않는다 — 길은 플레이어가 스스로 찾는다
 // 시작 전 정찰: 전술 지도에서 진입로를 고른다 (골목 · 옥상 · 전깃줄)
