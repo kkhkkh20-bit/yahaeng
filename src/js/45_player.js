@@ -383,7 +383,7 @@ function updatePlayer(dt) {
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
     if (N8.some(o => inMap(tx + o[0], ty + o[1]) && G[ty + o[1]][tx + o[0]] === 'S')) hint('secret', '벽에 금이 간 곳은 숨겨진 통로다. 그대로 걸어 들어가면 지나갈 수 있다 (자경대원은 모른다)');
-    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어와야 보인다. 밖에서는 안에 누가 있는지 소리로만 알 수 있다');
+    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어가야 다 보인다. 밖에서는 창문·열린 문 너머로 보이는 만큼과 소리로만 알 수 있다');
   }
   updateWindowView(P);
   checkObjective();

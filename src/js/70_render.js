@@ -830,7 +830,7 @@ function darkPass(sc, lamps, clip) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.86)' : 'rgba(4,8,22,0.84)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : CITY ? 'rgba(4,8,22,0.76)' : 'rgba(4,8,22,0.84)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   const flick = 1 + Math.sin(S.t * 13) * 0.012 + Math.sin(S.t * 7.3) * 0.01;
@@ -891,7 +891,7 @@ function draw() {
   if (showRoutes || tactical) drawRoutes(P);
   drawTrapsGround();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
-  for (const it of S.items) if (!it.got && onGround(it)) drawScroll(it.x, it.y, S.t);
+  for (const it of S.items) if (!it.got && onGround(it)) { if (CITY) { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawScroll(it.x, it.y, S.t); }  // 목표물은 은은하게 빛난다
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
   if (CITY && KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
@@ -1022,6 +1022,7 @@ function draw() {
   if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
+    drawWarnRing(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }

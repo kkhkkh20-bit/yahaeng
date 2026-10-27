@@ -307,7 +307,7 @@ function updateCiv(g, dt) {
   const P = S.player; g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0) g.icon = null; }
   const sameF = flOf(g) === flOf(P) && !P.wire;
-  if (!g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('civ2', '주민은 조직원이 아니다. 길·계단실·가게·클럽 같은 공용 공간에서 마주치는 건 상관없다. 자기 집(세대) 안에 들어온 낯선 사람, 사람을 해치거나 끌고 가는 모습, 시체를 보면 비명을 질러 조직원을 부른다');
+  if (!g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('civ2', '주민은 싸우지 않는다. 길·가게에서 마주치는 건 상관없지만, 남의 집 안에 들어오거나 사람을 해치고 끌고 가는 모습을 보면 비명을 지른다');
   if (g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('crowd', '군중: 걷거나 살금살금 다니면 사람들 사이에 섞여 자경대원 눈에 잘 안 띄고, 음악에 소리도 묻힌다. 뛰면 소용없다. 손님도 쓰러진 사람을 보면 비명을 지른다');
   if (g.state === 'SLEEP') {
     g.seen = false;
@@ -378,6 +378,7 @@ function updateGuard(g, dt) {
   let zk = 1; const pz = STAGE.zones ? pZone() : Z_HOS;
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = suspAct(g); if (!zk) vis = 0; }  // 공개 구역: 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
+  if (STAGE.zones && g.seen && !g.dog && g.state !== 'ALERT' && (P.strikeT > 0 || (S.crimeT && S.t - S.crimeT < 1.2) || P.captive)) { g.meter = 1; goAlert(g); }  // 처치·기절·붙잡는 걸 보면 그 자리에서 발각
   if (g.state === 'WARN') { updateTrespass(g, dt, pz); if (g.state === 'WARN') return; }
   if (g.seen && g.state !== 'FLEE') {
     // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
@@ -711,13 +712,14 @@ function followLeader(g, dt, spd) {
 function hurtPlayer(g, why) {
   const P = S.player; if (P.hurtT > 0 || S.over) return;
   if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; setTimeout(() => S && !S.over && bark('hero', 'hurt'), 600); }
-  P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유) play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
+  P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유)
+  play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 자경대원은 잠깐 숨을 고른다
   for (const o of S.guards) if (o !== g && o.state === 'ALERT' && dist(o.x, o.y, P.x, P.y) < 80) o.atkCd = Math.max(o.atkCd || 0, 1.2);  // 옆 자경대원이 바로 이어 베지 않게
   if (g) {  // 뒤로 밀림: 조금씩 밀다가 벽에 닿으면 멈춘다 (한 번에 30px 밀면 벽 속에 박혔다)
-    const a = dist(P.x, P.y, g.x, g.y) < 4 ? g.a : Math.atan2(P.y - g.y, P.x - g.x), sol = P.z ? solidFor(P.z) : groundSolidP;
+    const a = dist(P.x, P.y, g.x, g.y) < 4 ? g.a : Math.atan2(P.y - g.y, P.x - g.x), sol = P.z ? solidFor(P.z) : groundSolidP, px0 = P.x, py0 = P.y;
     for (let k = 0; k < 6; k++) { const nx = P.x + Math.cos(a) * 5, ny = P.y + Math.sin(a) * 5; if (sol(Math.floor((nx + Math.cos(a) * 12) / TILE), Math.floor((ny + Math.sin(a) * 12) / TILE))) break; P.x = nx; P.y = ny; }
-    collide(P, P.z ? 10 : 13, sol); }
+    collide(P, P.z ? 10 : 13, sol); if (sol(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) { P.x = px0; P.y = py0; } }
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; goAlert(c); }
   if (P.hp <= 0) { endGame(false, why); return; }
@@ -748,6 +750,7 @@ function goAlert(g) {
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', S.player.x, S.player.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
   if (P.disguise && !P.disguiseBlown) { P.disguiseBlown = true; toast('변장이 들통났다', 2.4, 'warn'); }
+  if (g.seen) S.chaseSeen = true;  // 본 사람이 있으면 수색이 끝날 때까지 얼굴을 안다 (무전기와 상관없이)
   g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0;
   if (S.fuseGuard === g) { S.fuseGuard = null; g.atFuse = false; }
   if (g.target) toast('표적이 소리쳤다 — 자경대원이 몰려온다', 2.6, 'warn');

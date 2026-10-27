@@ -453,17 +453,6 @@ function drawStairs(x, tx, ty) {
     x.restore();
   }
 }
-// 구역 경계: 적어 둔 출입 금지(주황)·적진(빨강) 구역을 바닥에 점선으로. 가까이 가면 이름표
-function drawZones(P) {
-  for (const r of STAGE.zones) {
-    if (r[4] === 'pub' || r[5] === 'roof') continue;
-    const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, hos = r[4] === 'hos', col = hos ? '232,80,60' : '242,170,70';
-    const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 700) continue;
-    ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
-    ctx.strokeStyle = `rgba(${col},${d < 250 ? 0.6 : 0.35})`; ctx.lineWidth = 2; ctx.setLineDash([10, 7]); ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); ctx.setLineDash([]);
-    if (d < 320) tag(x + w / 2, y + h - 12, (r[6] || (hos ? '적진' : '출입 금지')), hos ? '#ff8a76' : '#f2b45a', 0.95);
-  }
-}
 // 어둠 위에 덧그리는 계단 표시: 오르는 줄은 위층 불빛이 새어 드는 것처럼 위로 갈수록 밝게(▲), 내려가는 줄은 검은 구멍으로(▼)
 function drawStairGlow(P, openB) {
   if (P.z || P.wire || P.vent || P.under || P.hide || openB == null || openB < 0) return; const f = flOf(P);

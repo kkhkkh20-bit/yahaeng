@@ -84,8 +84,8 @@ function updateHUD(force) {
   hud.light.style.width = Math.round(lv * 100) + '%';
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
-  const zk0 = STAGE.zones ? pZone() : -1;
-  setText(hud.layer, 'layer', (zk0 >= 0 ? Z_NAME[zk0] + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `실내 ${P.fl + 1}층` : P.z ? `옥상 ${P.z}층` : bldAt(ptx, pty) >= 0 ? '실내 1층' : '지상') + bnm);
+  const zk0 = STAGE.zones ? pZone() : STAGE.tutorial ? -1 : Z_HOS;
+  setText(hud.layer, 'layer', (zk0 >= 0 ? Z_NAME[zk0] + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `실내 ${P.fl + 1}층` : P.z ? `옥상 ${P.z}층` : bldAt(ptx, pty) >= 0 ? '실내 1층' : '지상') + (STAGE.zones ? '' : bnm));
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : bldAt(ptx, pty) >= 0 ? 'in' : 'out';
   hud.layer.dataset.z = zk0 >= 0 ? ['pub', 'res', 'hos'][zk0] : '';
   setText(hud.lightLbl, 'll', P.vent ? '덕트 안' : P.under ? '지하 수로' : P.hide ? (P.hide.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀 은신' : '땅굴 은신') : hideName(P.hide) + ' 은신') : P.hidden ? '화단 은신' : P.jump ? '공중' : P.wire ? '전깃줄' + (lv > 0.4 ? '·노출' : '') : P.z ? P.z + '층 옥상' + (lv > 0.4 ? '·노출' : '') : lv > 0.55 ? '빛 노출' : lv > 0.22 ? '어스름' : '어둠');
@@ -102,7 +102,7 @@ function updateHUD(force) {
   }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
-  { const el = $('expoLbl'); if (el) { el.hidden = !CITY; if (CITY) { const e = P.hide || P.under || P.vent ? 0 : S.expo || 0; if (hudCache.expo !== e) { hudCache.expo = e; el.dataset.e = e; el.textContent = e === 2 ? '보인다!' : e === 1 ? '들킬 수 있음' : '숨음'; } } } }
+  { const el = $('expoLbl'); if (el) { el.hidden = !CITY; if (CITY) { const e = P.hide || P.under || P.vent ? 0 : S.expo || 0; const ek = e + (STAGE.zones && pZone() === Z_PUB ? 'p' : ''); if (hudCache.expo !== ek) { hudCache.expo = ek; el.dataset.e = e; el.textContent = e === 2 ? '보인다!' : e === 1 ? '들킬 수 있음' : (STAGE.zones && !P.hide && pZone() === Z_PUB ? '행인' : '숨음'); } } } }
   { const hc = $('hintCard'), dl = $('dlg'); if (hc && dl) hc.style.visibility = dl.hidden ? '' : 'hidden'; }
   { const pl = $('pickLbl'); if (pl) { pl.hidden = !CITY; if (CITY) setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
   const pa = primaryAction();

@@ -411,7 +411,7 @@ function primaryAction() {
 }
 function primaryActionRaw() {
   const P = S.player;
-  if (P.trav || P.lunge) return { k: 'none', label: '…' };
+  if (P.trav || P.lunge || (P.strikeT > 0 && (P.killAnim || P.bodyAnim))) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
@@ -432,7 +432,7 @@ function primaryActionRaw() {
     const kz = killList(); if (kz.length) return { k: kz.length === 2 && !kz.some(g => g.civ) ? 'kill2' : 'kill', list: kz.length === 2 && kz.some(g => g.civ) ? kz.slice(0, 1) : kz, label: (dist(P.x, P.y, kz[0].x, kz[0].y) > 56 ? '달려들어 ' : '') + (kz[0].target ? '표적 암살' : '암살') };
     if (P.cover) { const cg = coverTarget(); if (cg) return { k: 'pull', g: cg, label: cg.civ ? '끌어당겨 기절시키기' : '끌어당겨 암살' }; }  // 옥탑방 벽에 기대 있을 때
     const tz = nearTrap(); if (tz) return { k: 'trap', tp: tz, label: tz.label };
-    const hz = nearHide(); if (hz) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
+    const hz = nearHide(); if (hz && !(P.carrying && hz.bodies >= hz.cap)) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
     const g = dropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
     const wm = nearWireMount(); if (wm) return { k: 'wireOn', w: wm.w, s: wm.s, at: wm.at, label: wm.mid ? '손 뻗어 전깃줄 잡기' : '전깃줄 타기' };
     const cd = nearClimbDown(); if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? '계단 내려가기' : '내려가기' };
@@ -469,7 +469,7 @@ function primaryActionRaw() {
   }
   const h = nearHide();
   if (h && !P.carrying) return { k: 'hide', h, label: '숨기' };
-  if (h && P.carrying) return { k: 'stash', label: '넣기' };
+  if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', label: '넣기' };
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
   if (nearFuse()) return { k: 'fuse', label: '전체 조명 끄기' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
@@ -730,6 +730,7 @@ function leaveHide(dir) {
     const sc = (o[0] * dir.x + o[1] * dir.y) / (Math.hypot(o[0], o[1]) * dl);
     if (sc > bs) { bs = sc; best = [tx, ty]; }
   }
+  if (!best) { const sol = b.z ? solidFor(b.z) : groundSolidP; let bd = 1e9; for (let r = 1; r <= 3 && !best; r++) for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) { const tx = b.tx + ox, ty = b.ty + oy; if (Math.max(Math.abs(ox), Math.abs(oy)) !== r || sol(tx, ty)) continue; const dd = Math.hypot(ox - dir.x, oy - dir.y); if (dd < bd) { bd = dd; best = [tx, ty]; } } }  // 두 칸짜리 침대 등: 이웃이 다 막혔으면 조금 더 멀리
   if (best) {
     const tx = tc(best[0]), ty = tc(best[1]); P.a = Math.atan2(best[1] - b.ty, best[0] - b.tx);
     if (CITY && usePR('ninja') && PR.anims.vault && !b.z) {
@@ -756,7 +757,7 @@ function koCiv(g, mode, where) {
   toast('주민을 기절시켰다 — 죽이지 않았다. 다른 사람 눈에 띄면 시체처럼 소란이 난다', 2.6);
 }
 function strikeKill(list, two) {
-  const P = S.player; P.strikeT = 0.32;
+  const P = S.player; P.strikeT = 0.32; S.crimeT = S.t;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
   const kind = pairK ? (g0.civ || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null, dur = 0.66;
@@ -987,7 +988,7 @@ function secondaryAction() {
   if (P.captive) return { k: 'execute', label: '처치' };
   if (P.carrying) {
     if (!nearHide()) { const tg = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.target && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 300 && dist(g.x, g.y, P.x, P.y) > 70 && los(P.x, P.y, g.x, g.y) && Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < 1.0).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0]; if (tg) return { k: 'throwBody', g: tg, label: '시체 던지기 (겁주기)' }; }
-    return { k: 'carry', label: nearHide() ? '넣기' : '내려놓기' };
+    { const nh = nearHide(); return { k: 'carry', label: nh && nh.bodies < nh.cap ? '넣기' : nh ? '내려놓기 (가득 참)' : '내려놓기' }; }
   }
   if (P.z || P.jump) return { k: 'none', label: '특수' };
   const fd = nearFloorDown(); if (fd && nearClimb()) return { k: 'fdown', l: fd, label: `계단 내려가 ${fd.bfl + 1}층` };

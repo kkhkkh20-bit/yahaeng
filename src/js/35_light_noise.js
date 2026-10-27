@@ -18,13 +18,16 @@ function lightAt(x, y, elev) {
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
 function hint(key, text) { if (S.hints[key] || (STAGE && STAGE.tutorial)) return;  // 연습에서는 단계 안내만 (엇나간 도움말이 끼지 않게)
-  S.hints[key] = true; showHint(text); }
+  S.hints[key] = true; S.hintN = (S.hintN || 0) + 1; if (S.hintN > 6) return;  // 한 판에 6개까지 — 더 많으면 읽지 않는다
+  showHint(text); }
 // 도움말은 화면 가운데 대신 왼쪽 아래 카드 한 장 (새 도움말이 오면 바꿔 끼운다)
 let hintTimer = null;
+let hintQ = [], hintAt = 0;
 function showHint(text, sec) {
   const card = document.getElementById('hintCard'); if (!card) return;
-  document.getElementById('hintText').textContent = text; card.classList.remove('off');
-  clearTimeout(hintTimer); hintTimer = setTimeout(() => card.classList.add('off'), Math.max(5500, (sec || 0) * 1000, text.length * 75));
+  if (!card.classList.contains('off') && performance.now() - hintAt < 4000) { if (!hintQ.some(q => q[0] === text) && hintQ.length < 3) hintQ.push([text, sec]); return; }  // 앞 도움말을 덮지 않고 줄 선다
+  document.getElementById('hintText').textContent = text; card.classList.remove('off'); hintAt = performance.now();
+  clearTimeout(hintTimer); hintTimer = setTimeout(() => { card.classList.add('off'); const n = hintQ.shift(); if (n) setTimeout(() => showHint(n[0], n[1]), 250); }, Math.max(5500, (sec || 0) * 1000, text.length * 75));
 }
 function renderToasts() {
   toastEl.innerHTML = '';
@@ -51,13 +54,13 @@ function noise(x, y, r, src, fl) {
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.state === 'TERROR') continue;
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
+    if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB) continue;  // 거리·가게의 발소리는 아무도 신경 쓰지 않는다
     if (g.civ) { if (d < rr && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
     if (d < rr) {
       if (g.state === 'FUSE' && src !== 'stone') continue;
       if (g.state === 'BODY' || g.state === 'LURE') continue;
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
-      if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB) continue;  // 거리의 발소리는 아무도 신경 쓰지 않는다
       if (src === 'step' || src === 'whistle') nz.heard = true;
       if (src === 'whistle' && !g.dog) { gsay(g, ['누구야?', '휘파람…? 거기 누구 있어?', '뭐야, 이쪽인가?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = S.player.mode === 'run' ? 0.3 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x, y }; continue; }
