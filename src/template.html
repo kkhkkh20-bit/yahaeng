@@ -101,6 +101,17 @@ body.touch .tools .tool kbd { display: none; }
 .pad #btnAct { grid-area: act; width: 92px; height: 92px; justify-self: end; border-color: #3a2226; }
 .pad #btnAct b { font-size: var(--fs-body); }
 .pad #btnAct.ready { background: rgba(37, 48, 73, .95); border-color: var(--paper); }
+/* 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내). 길게 누르는 동안 둘레 고리가 찬다 */
+.pad > button { gap: 0; align-content: center; justify-items: center; }
+.pad > button svg { display: block; margin-bottom: 1px; }
+.pad > button small { display: block; font-size: 10px; line-height: 1.1; opacity: .85; font-weight: 600; }
+.pad #btnAct { position: relative; }
+.pad #btnAct::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; background: conic-gradient(#ff6a4c calc(var(--hold, 0) * 360deg), transparent 0); -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); pointer-events: none; }
+.pad #btnAct.ko { background: #2c3550; border-color: #9fb4ff; color: #fff; box-shadow: 0 0 0 6px rgba(120, 150, 255, .2); }
+.keys .km em { font-style: normal; color: var(--paper-dim); }
+.keys .km.on em { color: var(--paper); font-weight: 700; }
+.keys .km.on kbd { border-color: var(--paper); }
+.keys .kx { font-style: normal; font-size: var(--fs-cap); opacity: .6; margin-left: 4px; }
 .pad #btnAct.kill { background: var(--blood); border-color: var(--blood-hi); color: #fff; box-shadow: 0 0 0 6px rgba(194, 54, 43, .25); }
 .pad #btnCarry { grid-area: carry; }
 .pad #btnWhistle { grid-area: whis; width: 52px; height: 52px; justify-self: end; font-size: var(--fs-cap); }
@@ -338,8 +349,8 @@ body.scanning #scanLegend { display: flex; }
   <canvas id="mini" width="200" height="140" title="미니맵 — 누르면 전술 지도"></canvas>
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
-    <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep"><kbd>Space</kbd>행동</span><span class="keep"><kbd>Z</kbd>특수</span><span class="keep"><kbd>X</kbd>도구(누르고 겨누기·떼면 사용)</span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
+    <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">살금</em></span><span><kbd>Shift</kbd>달리기</span>
+    <span class="keep km"><kbd>Space</kbd><em id="kmAct">행동</em></span><span class="keep km"><kbd>Z</kbd><em id="kmZ">특수</em></span><span class="keep km"><kbd>X</kbd><em id="kmX">도구</em><i class="kx">누르고 겨누기</i></span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>

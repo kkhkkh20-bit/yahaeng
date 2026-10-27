@@ -408,7 +408,7 @@ function primaryAction() {
   const a = primaryActionRaw();
   if (RISKY_K.has(a.k)) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: koDefault(sg) ? '기절시키기' : '암살' }; }
   const v = a.g || (a.list && a.list[0]) || a.kill || ((a.k === 'execute' || a.k === 'drag') && S.player.captive) || null;
-  if (v && koDefault(v) && !v.civ && a.label && /암살|처치/.test(a.label) && !['ledgeKill', 'pushOff'].includes(a.k)) a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절') + (a.k === 'kill' ? ' (길게: 처치)' : '');
+  if (v && koDefault(v) && !v.civ && a.label && /암살|처치/.test(a.label) && !['ledgeKill', 'pushOff'].includes(a.k)) { a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절'); a.hold = '처치'; }
   return a;
 }
 function primaryActionRaw() {
@@ -493,7 +493,7 @@ function actPrimary(force) {
   if (DLG.modal) { advanceDialog(); return; }
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
-  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '자경대원이 가까이 있으면 Space(행동 버튼)는 암살만 한다. 문·비번·조명·두꺼비집·쪽지는 Z(특수 버튼)로 한다'); return; }
+  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까이 있으면 Space(행동 버튼)는 기절(길게 누르면 처치)만 한다. 문·비번·조명·두꺼비집·쪽지는 Z(특수 버튼)로 한다'); return; }
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;

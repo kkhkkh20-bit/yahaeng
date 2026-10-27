@@ -791,9 +791,10 @@ function drawActLabels(pa, P) {
     if (n) lab += ` — 보는 눈 ${n}`;
   }
   if (zKey) { tag(x, y, lab + ' (사람 근처 — Space는 ' + (stk && !koDefault(stk) ? '암살' : '기절') + ')', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
-  tag(x, y, key + lab, col, 1, isTouch ? null : 'Space');
+  tag(x, y, key + lab, col, 1, isTouch ? null : 'Space'); let dy = 21 * Math.max(1, 0.95 / SCALE), row = 1;
+  if (pa.hold && !isTouch) { tag(x, y + dy * row++, '길게 누르면 ' + pa.hold, '#ff8a76', 0.95, 'Space'); }  // 히트맨식: 같은 키 길게 누르기는 따로 한 줄
   const sa = secondaryAction();
-  if (['grab', 'steal', 'tunnel', 'fdown'].includes(sa.k) || sa.viaZ) tag(x, y + 21 * Math.max(1, 0.95 / SCALE), sa.label, '#c4ccd6', 1, isTouch ? null : 'Z');
+  if (['grab', 'steal', 'tunnel', 'fdown'].includes(sa.k) || sa.viaZ) tag(x, y + dy * row, sa.label, '#c4ccd6', 1, isTouch ? null : 'Z');
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && b !== openB; };
 
@@ -1102,7 +1103,7 @@ function draw() {
   if (running && CITY && !tactical) drawStairGlow(P, openB);
   if (running && CITY && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running && CITY) { drawOpps(P); drawStoryMark(P); if (!tactical) drawCorpseRisk(); }
+  if (running && CITY) { drawOpps(P); drawStoryMark(P); drawHoldRing(); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
       ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();

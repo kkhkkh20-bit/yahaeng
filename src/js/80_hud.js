@@ -108,12 +108,15 @@ function updateHUD(force) {
   { const hc = $('hintCard'), dl = $('dlg'); if (hc && dl) hc.style.visibility = dl.hidden ? '' : 'hidden'; }
   { const pl = $('pickLbl'); if (pl) { pl.hidden = !CITY; if (CITY) setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
   const pa = primaryAction();
-  setText(hud.act.querySelector('b'), 'act', pa.k === 'none' && !pa.stalk ? '행동' : pa.label);
+  padButton(hud.act, 'actH', pa, '행동');
   hud.act.classList.toggle('ready', pa.k !== 'none');
   const sa = secondaryAction();
-  setText(hud.carry.querySelector('b'), 'carry', sa.label);
+  padButton(hud.carry, 'carryH', sa, '특수');
   hud.carry.classList.toggle('ready', sa.k !== 'none');
-  hud.act.classList.toggle('kill', ['kill', 'kill2', 'drop', 'ambush', 'ventKill'].includes(pa.k));
+  const ki = pa.k !== 'none' ? actIcon(pa) : pa.stalk ? (koDefault(pa.stalk) ? 'ko' : 'kill') : '';
+  hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
+  hud.act.style.setProperty('--hold', holdFrac().toFixed(3));
+  keyMap(pa, sa);
 }
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
@@ -122,7 +125,7 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  setText(hud.tool.querySelector('b'), 'toolb', TOOL_NAME[input.tool] + ' ' + toolCount(input.tool));
+  { const html = icon(input.tool, 26) + `<b>${toolCount(input.tool)}</b>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.classList.toggle('aiming', !!input.aiming);
   hud.tool.classList.toggle('ready', input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
 }
