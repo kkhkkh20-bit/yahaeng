@@ -392,7 +392,7 @@ function robBuild() {
 }
 const ROB_SOLID_DIM = { tank: [1, 1] };
 function kitSpec() {
-  return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(f => f.t + '_' + f.w + 'x' + f.h))], b: BLD.map((b, i) => ({ i, props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
+  return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(furnKey))], b: BLD.map((b, i) => ({ i, props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };
 }
 // 3/4 정면벽: 건물 남쪽 벽 줄을 정면에서 본 벽으로 그린다 (실제 문·창문 그림)

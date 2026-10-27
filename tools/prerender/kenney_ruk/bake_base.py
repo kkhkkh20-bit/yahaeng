@@ -108,9 +108,32 @@ async def place(pg, n, fx, fz, fw, fd, mode='keep', hmax=1.0, r=0, y=0.0, pad=0.
     it = {'n': n, 'x': fx + fw / 2 - (mnx + mxx) / 2, 'y': y, 'z': fz + fd / 2 - (mnz + mxz) / 2, 'r': r, 's': list(sc)}
     if tint: it['tint'] = tint
     return it, bh * ly
-async def furn_items(pg, t, w, h):
+async def furn_items(pg, t, w, h, rr=0):
+    # rr = 게임의 가구 방향 (0 남 · 1 동 · 2 북 · 3 서). 모델 기본 방향(base)에 더해 돌린다
     F = lambda n: 'F:' + n
     it = []; long_x = w >= h
+    R = lambda base=0: (base + rr) % 4
+    if t == 'bedD':
+        o, _ = await place(pg, F('bedDouble'), 0, 0, w, h, 'keep', 0.7, r=R()); return [o]
+    if t == 'nstand':
+        o, _ = await place(pg, F('sideTableDrawers'), 0, 0, w, h, 'fill', 0.6, pad=0.8, r=R()); return [o]
+    if t in ('kcab', 'ksink', 'stove'):
+        o, _ = await place(pg, F({'kcab': 'kitchenCabinetDrawer', 'ksink': 'kitchenSink', 'stove': 'kitchenStove'}[t]), 0, 0, w, h, 'fill', 0.8, pad=0.96, r=R()); return [o]
+    if t == 'bsink':
+        o, _ = await place(pg, F('bathroomSink'), 0, 0, w, h, 'keep', 0.9, pad=0.8, r=R()); return [o]
+    if t == 'washer':
+        o, _ = await place(pg, F('washer'), 0, 0, w, h, 'fill', 0.9, pad=0.85, r=R()); return [o]
+    if t in ('chair', 'chairD'):
+        o, _ = await place(pg, F('chairCushion' if t == 'chair' else 'chairDesk'), 0, 0, w, h, 'keep', 0.8, pad=0.7, r=R()); return [o]
+    if t == 'lamp':
+        o, _ = await place(pg, F('lampRoundFloor'), 0, 0, w, h, 'keep', 1.3, pad=0.6); return [o]
+    if rr and t in ('sofa', 'sofaV', 'shelfS', 'toilet', 'desk', 'tv'):  # 돌려 놓는 옛 가구
+        base = {'toilet': 2}.get(t, 0)
+        nm = {'sofa': 'loungeSofa', 'sofaV': 'loungeSofa', 'shelfS': 'bookcaseOpenLow', 'toilet': 'toilet', 'desk': 'desk', 'tv': 'cabinetTelevision'}[t]
+        o, hh = await place(pg, F(nm), 0, 0, w, h, 'keep' if t in ('sofa', 'sofaV', 'toilet') else 'fill', {'sofa': 0.7, 'sofaV': 0.7, 'toilet': 0.7, 'shelfS': 0.7, 'desk': 0.55, 'tv': 0.45}[t], pad=0.9, r=R(base)); it.append(o)
+        if t == 'desk': o2, _ = await place(pg, F('computerScreen'), w * 0.25, h * 0.25, w * 0.5, h * 0.5, 'keep', 0.4, y=hh, r=R()); it.append(o2)
+        if t == 'tv': o2, _ = await place(pg, F('televisionModern'), w * 0.1, h * 0.1, w * 0.8, h * 0.8, 'keep', 0.6, y=hh, r=R()); it.append(o2)
+        return it
     async def tiled(names, hmax, mode='fill'):
         n_ = max(w, h)
         for k in range(n_):
@@ -180,7 +203,31 @@ def png2(url):
 def webp(im, q=88):
     bio = io.BytesIO(); im.save(bio, 'WEBP', quality=q, method=6); return 'data:image/webp;base64,' + base64.b64encode(bio.getvalue()).decode()
 
+async def furn_only():
+    # python3 bake_base.py furn — spec.json 의 가구 조합 중 아직 없는 것만 구워 build/kit 와 build/kit_mk 두 키트에 넣는다 (건물은 그대로)
+    spec = json.load(open(HERE + '/kenney_ruk/spec.json')); MK = '/root/game/build/kit_mk'
+    kit = json.load(open(f'{OUT}/kit.json')); kmk = json.load(open(f'{MK}/kit.json'))
+    need = sorted(set(c for st in spec for c in st.get('furn', [])) - set(kit.get('furn', {})))
+    print('구울 가구', need)
+    srv = subprocess.Popen([sys.executable, '-m', 'http.server', '8773'], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
+    try:
+        async with async_playwright() as p:
+            br = await p.chromium.launch(args=['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']); pg = await br.new_page()
+            await pg.goto('http://localhost:8773/kenney_ruk/bake.html'); await pg.wait_for_function('window.__ok')
+            for c in need:
+                parts = c.split('_'); rr = int(parts[-1][1:]) if parts[-1].startswith('r') else 0
+                if rr: parts = parts[:-1]
+                t, wh = '_'.join(parts[:-1]), parts[-1]; w, h = map(int, wh.split('x'))
+                items = await furn_items(pg, t, w, h, rr)
+                if not items: continue
+                im = png2(await pg.evaluate('bake', {'box': [-0.3, -FURN_TOP, w + 0.3, h + 0.25], 'ppu': PPU, 'items': items}))
+                v = {'ox': -0.3 * 48, 'oy': -FURN_TOP * 48, 'src': webp(im)}; kit.setdefault('furn', {})[c] = v; kmk.setdefault('furn', {})[c] = v; im.save(f'{OUT}/f_{c}.png')
+            await br.close()
+    finally: srv.terminate()
+    json.dump(kit, open(f'{OUT}/kit.json', 'w')); json.dump(kmk, open(f'{MK}/kit.json', 'w')); print('가구', len(kit['furn']))
+
 async def main():
+    if 'furn' in sys.argv: return await furn_only()
     spec = json.load(open(HERE + '/kenney_ruk/spec.json'))
     srv = subprocess.Popen([sys.executable, '-m', 'http.server', '8772'], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
     ONLY_PROPS = 'props' in sys.argv
@@ -204,8 +251,10 @@ async def main():
             kit['furn'] = {}
             combos = sorted(set(c for st in spec for c in st.get('furn', [])))
             for c in combos:
-                t, wh = c.rsplit('_', 1); w, h = map(int, wh.split('x'))
-                items = await furn_items(pg, t, w, h)
+                parts = c.split('_'); rr = int(parts[-1][1:]) if parts[-1].startswith('r') else 0
+                if rr: parts = parts[:-1]
+                t, wh = '_'.join(parts[:-1]), parts[-1]; w, h = map(int, wh.split('x'))
+                items = await furn_items(pg, t, w, h, rr)
                 if not items: continue
                 im = png2(await pg.evaluate('bake', {'box': [-0.3, -FURN_TOP, w + 0.3, h + 0.25], 'ppu': PPU, 'items': items}))
                 kit['furn'][c] = {'ox': -0.3 * 48, 'oy': -FURN_TOP * 48, 'src': webp(im)}; im.save(f'{OUT}/f_{c}.png')
