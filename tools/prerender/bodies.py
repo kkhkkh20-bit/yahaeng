@@ -16,6 +16,6 @@ BODIES = {
   'helmet': {'parts': [{'g': 'sph', 's': [56], 'at': [-9, 488, 42], 'sc': [1, 0.86, 1.06], 'bone': 'Head', 'k': 'shoes'}]},
 }
 # 주민 시트에 넣는 동작만 (주인공·자경대원 전용 동작은 빼서 용량을 줄인다)
-BODY_ANIMS = {'kid': ['idle', 'walk', 'run', 'crouch']}  # 아이는 쓰러지거나 붙잡히는 동작이 없다  # 아이는 쓰러지거나 붙잡히는 동작이 없다
-CIV_ANIMS = ['idle', 'walk', 'run', 'crouch', 'death', 'carried', 'carriedI', 'held', 'heldI', 'lifted', 'stabbed', 'choked']
+BODY_ANIMS = {'kid': ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']}  # 아이는 쓰러지거나 붙잡히는 동작이 없다  # 아이는 쓰러지거나 붙잡히는 동작이 없다
+CIV_ANIMS = ['idle', 'walk', 'run', 'crouch', 'death', 'carried', 'carriedI', 'held', 'heldI', 'lifted', 'stabbed', 'choked', 'idleC', 'talk']
 BODY_ANIMS['helmet'] = CIV_ANIMS + ['hold', 'holdI']  # 택배 기사: 상자 들고 걷기

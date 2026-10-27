@@ -20,7 +20,17 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('stab', 'Idle', [0, 1, 2, 3], 0, ('stab', 'a')), ('stabbed', 'Idle', [0, 1, 2, 3], 0, ('stab', 'b')),
   ('choke', 'Idle', [0, 1, 2, 3], 0, ('choke', 'a')), ('choked', 'Idle', [0, 1, 2, 3], 0, ('choke', 'b')),
   # 물건(택배 상자) 들고 걷기·서기
-  ('hold', 'Walk', [i / 8 for i in range(8)], 0, ('hold', 'w')), ('holdI', 'Idle', [0], 0, ('hold', 'i'))]
+  ('hold', 'Walk', [i / 8 for i in range(8)], 0, ('hold', 'w')), ('holdI', 'Idle', [0], 0, ('hold', 'i')),
+  # 편한 서기(팔 내리고 곧게) · 대화 손짓 — 주민과 평소의 경비 (기본 Idle 은 싸움 자세)
+  ('idleC', 'Walk', [0.25, 0.25], 0, ('relax', 'i')), ('talk', 'Walk', [0.25, 0.25, 0.25, 0.25], 0, ('relax', 't'))]
+TALK = [0, 1, 0.45, 1.25]
+def js_for(an, t, ti, a, hg='undefined'):
+    name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
+    if pr and pr[0] == 'pose': return f"renderPose('{pr[1]}', {t}, {a})"
+    if pr and pr[0] == 'hold': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)"
+    if pr and pr[0] == 'relax': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, false, " + ('{talk: %s}' % TALK[ti] if pr[1] == 't' else '{sway: %d}' % ti) + ')'
+    if pr: return f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')"
+    return f"renderFrame('{clip}', {t}, {a}, {cr}, {hg})"
 HANG_SWAY = [0, 0.7, 0, -0.7]
 VAR = {
   'key': dict(skin='#ff0000', hair='#00ff00', shirt='#0000ff', pants='#ff00ff', eyes='#000000', shirtUp=16, shoes='#00ffff'),
@@ -55,19 +65,23 @@ async def main():
             app = [x.split('=')[1].split(',') for x in sys.argv if x.startswith('--append=')]
             if app:  # 기존 기본 시트 뒤에 동작 몇 개만 덧붙인다 (전체를 다시 찍지 않는다)
                 old = json.load(open(f'{OUT}/pr_meta.json')); base = Image.open(f'{OUT}/key.png').convert('RGBA'); oc = old['cols']
-                AN = [an for an in ANIMS if an[0] in app[0]]; nc = sum(len(x[2]) for x in AN)
+                AN = [an for an in ANIMS if an[0] in app[0]]; nc = sum(len(x[2]) for x in AN if x[0] not in old['anims'])  # 이미 있는 동작은 그 자리에 다시 찍는다
                 sheet = Image.new('RGBA', ((oc + nc) * FR, 8 * FR)); sheet.paste(base, (0, 0))
                 await pg.evaluate(f'setTex({json.dumps(VAR["key"])})')
                 for d in range(8):
                     a = d * 3.14159265 / 4; c = oc
                     for an in AN:
                         name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
-                        for t in ts:
-                            url = await pg.evaluate(f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)" if pr and pr[0] == 'hold' else f"renderPose('{pr[1]}', {t}, {a})" if pr and pr[0] == 'pose' else f"renderFrame('{clip}', {t}, {a}, {cr})")
+                        if name in old['anims']: c0, c = c, old['anims'][name][0]
+                        else: c0 = None
+                        for ti, t in enumerate(ts):
+                            url = await pg.evaluate(js_for(an, t, ti, a))
                             im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA').resize((FR, FR), Image.LANCZOS)
                             sheet.paste(outline(im), (c * FR, d * FR)); c += 1
+                        if c0 is not None: c = c0
                 c = oc
-                for an in AN: old['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
+                for an in AN:
+                    if an[0] not in old['anims']: old['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
                 old['cols'] = oc + nc; sheet.save(f'{OUT}/key.png', optimize=True); sheet.save(f'{OUT}/key.webp', 'WEBP', lossless=True, method=6)
                 json.dump(old, open(f'{OUT}/pr_meta.json', 'w')); print('append', app[0], old['cols'], os.path.getsize(f'{OUT}/key.webp')); await b.close(); return
             if '--bodies' not in sys.argv:
@@ -80,7 +94,7 @@ async def main():
                           name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
                           for ti, t in enumerate(ts):
                               hg = HANG_SWAY[ti] if name == 'hang' else 'undefined'
-                              url = await pg.evaluate(f"renderPose('{pr[1]}', {t}, {a})" if pr and pr[0] == 'pose' else f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)" if pr and pr[0] == 'hold' else f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')" if pr else f"renderFrame('{clip}', {t}, {a}, {cr}, {hg})")
+                              url = await pg.evaluate(js_for(an, t, ti, a, hg))
                               if name == 'hang' and d == 6 and ti == 0: hand = await pg.evaluate('window.lastHand'); meta['hangHand'] = [round(hand[0] / 2, 1), round(hand[1] / 2, 1)]
                               im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA').resize((FR, FR), Image.LANCZOS)
                               sheet.paste(outline(im), (c * FR, d * FR)); c += 1
@@ -103,7 +117,7 @@ async def main():
                     for an in CA:
                         name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
                         for ti, t in enumerate(ts):
-                            url = await pg.evaluate(f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)" if pr and pr[0] == 'hold' else f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')" if pr else f"renderFrame('{clip}', {t}, {a}, {cr})")
+                            url = await pg.evaluate(js_for(an, t, ti, a))
                             im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA').resize((FR, FR), Image.LANCZOS)
                             sheet.paste(outline(im), (c * FR, d * FR)); c += 1
                 sheet = sheet.quantize(colors=128, method=Image.FASTOCTREE).convert('RGBA')  # 128색으로 줄여 용량 1/4 (게임에서 색을 다시 칠하므로 충분)

@@ -450,9 +450,9 @@ function drawStairs(x, tx, ty) {
   if (down && wb) {  // 옆 줄: 아래층에서 올라오는 계단(반대 방향으로 오른다 → 들어서는 쪽 끝이 가장 깊다), 바깥쪽에 난간
     x.save(); x.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); x.rotate(rot);
     x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
-    downFlight(-hw, hw, 1);
-    const gr = x.createLinearGradient(0, hl - st * 3, 0, hl); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(-hw, hl - st * 3, hw * 2, st * 3);
-    x.fillStyle = '#aeb6c0'; x.fillRect(-hw - 3, -hl, 3, hl * 2); x.fillRect(hw, -hl, 3, hl * 2); x.fillRect(-hw - 3, hl - 3, hw * 2 + 6, 3);   // 구멍을 두른 난간 (위층 바닥 쪽만 트였다)
+    downFlight(-hw, hw, -1);   // 바닥 쪽 끝(+hl, 들어서는 줄 옆)이 가장 얕고, 계단 칸 줄(-hl)로 갈수록 깊다
+    const gr = x.createLinearGradient(0, -hl + st * 3, 0, -hl); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(-hw, -hl, hw * 2, st * 3);
+    x.fillStyle = '#aeb6c0'; x.fillRect(-hw - 3, -hl, 3, hl * 2); x.fillRect(hw, -hl, 3, hl * 2); x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);   // 구멍을 두른 난간 (바닥 쪽 끝만 트였다 — 거기서 내려간다)
     for (let i = 0; i <= 3; i++) { x.fillRect(-hw - 4, -hl + 4 + i * ((hl * 2 - 10) / 3), 5, 3); x.fillRect(hw - 1, -hl + 4 + i * ((hl * 2 - 10) / 3), 5, 3); }
     x.restore();
   }
@@ -482,7 +482,12 @@ function drawStairGlow(P, openB) {
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
     if (up && down && !wb) { lane(-hw, -1, true); lane(1, hw, false); } else lane(-hw, hw, up);
     ctx.restore();
-    if (wb) { ctx.save(); ctx.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); ctx.rotate(rot); lane(-hw, hw, false, true); ctx.restore(); }
+    if (wb) { ctx.save(); ctx.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); ctx.rotate(rot);  // 구멍: 깊은 쪽(-hl)이 어둡고, 바닥 쪽 끝(+hl)에서 깊은 쪽을 가리키는 ▼▼ (내려가는 방향)
+      const gr = ctx.createLinearGradient(0, hl, 0, -hl); gr.addColorStop(0, 'rgba(0,0,0,.08)'); gr.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = gr; ctx.fillRect(-hw, -hl, hw * 2, hl * 2);
+      ctx.restore();
+      // 내려가는 곳 표시: 누르는 자리(구멍 바닥 쪽 끝)에 화면 기준 ▼▼ — 오르는 곳은 ▲, 내려가는 곳은 ▼ 로만 구분한다
+      const px = tc(l.tx + wb.s[0] + wb.d[0]), py = tc(l.ty + wb.s[1] + wb.d[1]), w = 13; ctx.fillStyle = 'rgba(170,205,240,.95)'; ctx.strokeStyle = 'rgba(7,10,18,.8)'; ctx.lineWidth = 1.5;
+      for (const oy of [-7, 6]) { ctx.beginPath(); ctx.moveTo(px - w / 2, py + oy - w * 0.35); ctx.lineTo(px + w / 2, py + oy - w * 0.35); ctx.lineTo(px, py + oy + w * 0.45); ctx.closePath(); ctx.stroke(); ctx.fill(); } }
   }
 }
 // 높이 그림자: 건물·전봇대·전깃줄이 같은 방향(오른쪽 아래)으로 높이만큼 긴 그림자를 땅에 드리운다. 한 번만 구워 땅 그림에 넣는다

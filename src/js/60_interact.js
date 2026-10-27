@@ -19,10 +19,15 @@ function nearClimb() {
   for (const l of S.ladders) { if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
   return best;
 }
-// 위층에서 아래층으로 (같은 층계 칸)
+// 계단실 (꺾인 두 줄): 올라가는 줄 = 계단 칸 Y + 들어서는 칸 e(=Y+d), 위층의 옆 줄 = 내려가는 구멍 c1(Y 옆, 깊은 쪽)·c2(e 옆, 바닥 쪽 끝)
+// 내려가기는 구멍의 바닥 쪽 끝(c2)에서만, 오르기는 계단 칸(Y)에서만 — 한 자리에 둘을 두지 않는다
+function stairHole(l) { const w = l.kind === 'fstair' && STAIRW[l.tfl + ':' + l.tx + ',' + l.ty]; if (!w) return null; const [sx, sy] = w.s, [dx, dy] = w.d;
+  return { d: w.d, c1: { x: tc(l.tx + sx), y: tc(l.ty + sy) }, c2: { x: tc(l.tx + sx + dx), y: tc(l.ty + sy + dy) }, e: { tx: l.tx + dx, ty: l.ty + dy }, top: { tx: l.tx + sx + 2 * dx, ty: l.ty + sy + 2 * dy } }; }
+const downPt = l => { const h = stairHole(l); return h ? h.c2 : { x: l.x, y: l.y }; };
+// 위층에서 아래층으로
 function nearFloorDown() {
-  const P = S.player; if (P.z || !flOf(P) || P.jump || P.carrying || P.captive) return null; let best = null, bd = 44;
-  for (const l of S.ladders) { if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P)) continue; const d = l.kind === 'balc' ? dist(P.x, P.y, l.ux, l.uy) : dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  const P = S.player; if (P.z || !flOf(P) || P.jump || P.carrying || P.captive) return null; let best = null, bd = 1e9;
+  for (const l of S.ladders) { if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P)) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
   return best;
 }
 function nearNote() {
@@ -467,7 +472,7 @@ function primaryActionRaw() {
   const cu = nearClimb(); if (cu && cu.kind === 'balc') { const v = landingVictim(cu.ux, cu.uy, cu.tfl); if (v) return { k: 'up', l: cu, kill: v, at: { x: cu.x, y: cu.y - 30 }, label: v.civ ? '베란다 넘어 기절시키기' : '베란다 넘어 암살' }; }
   if (cu) return { k: 'up', l: cu, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `계단 올라 ${cu.tfl + 1}층` : cu.kind === 'stair' ? '계단 올라 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
   const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: '환풍구로 들어가기' };
-  const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, label: fd.kind === 'balc' ? '베란다로 나가 내려가기' : `계단 내려가 ${fd.bfl + 1}층` };
+  const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downPt(fd), label: fd.kind === 'balc' ? '베란다로 나가 내려가기' : `계단 내려가 ${fd.bfl + 1}층` };
   const nw = nearWindow(); if (nw) {
     if (winSt(nw.w) === 'lock') { const inside = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === nw.w.b;
       if (inside) return { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'latch', w: nw.w, x: nw.w.x, y: nw.w.y }, label: '창문 걸쇠 풀기' };
@@ -570,7 +575,11 @@ function actPrimary(force) {
           end: () => { P.z = 0; P.x = l.x; P.y = l.y; P.a = Math.PI / 2; noise(l.x, l.y, 45, 'climb'); } });
         break;
       }
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y + 8, f: 1 }], dur: 0.4, phases: [{ to: 1, pose: 'walk' }], end: () => { P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; } });
+      const ho = stairHole(l);
+      // 구멍 바닥 쪽 끝(c2)으로 들어서 깊은 쪽(c1)으로 내려간 뒤, 아래층 계단 들어서는 칸(e)에 선다
+      startTrav({ pts: ho ? [{ x: P.x, y: P.y, f: 0 }, { x: ho.c2.x, y: ho.c2.y, f: 0.45 }, { x: ho.c1.x, y: ho.c1.y, f: 1 }] : [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y + 8, f: 1 }], dur: ho ? 0.6 : 0.4, phases: [{ to: 1, pose: 'walk' }],
+        end: () => { P.fl = l.bfl; setLayer(P.fl); const [dx, dy] = stairDir(l.tx, l.ty), ex = l.tx + dx, ey = l.ty + dy;
+          if (!solidAt(ex, ey)) { P.x = tc(ex); P.y = tc(ey); P.a = Math.atan2(dy, dx); } else { P.x = l.x; P.y = l.y; } play('step_w0', 0.3); S.fade = 0.15; } });
       break; }
     case 'up': {
       const l = a.l, top = { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };
@@ -585,7 +594,8 @@ function actPrimary(force) {
       }
       if (l.kind === 'fstair') {  // 실내 계단: 계단 칸으로 걸어 올라간다
         startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 1 }], dur: 0.42, phases: [{ to: 1, pose: 'walk' }],
-          end: () => { P.fl = l.tfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 자리 계단으로 오르내린다. 위층 사람은 아래층·바깥에서 보이지 않고, 정면 창문 밖 전깃줄로 바로 나갈 수 있다'); } });
+          end: () => { P.fl = l.tfl; setLayer(P.fl); const ho = stairHole(l);  // 위층: 구멍(아래층에서 올라오는 계단) 바닥 쪽 끝 옆에 올라선다
+            const at = ho ? [ho.top, ho.e].find(c => !solidAt(c.tx, c.ty)) : null; if (at) { P.x = tc(at.tx); P.y = tc(at.ty); P.a = Math.atan2(ho.d[1], ho.d[0]); } else { P.x = l.x; P.y = l.y; } play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 자리 계단으로 오르내린다. 위층 사람은 아래층·바깥에서 보이지 않고, 정면 창문 밖 전깃줄로 바로 나갈 수 있다'); } });
         break;
       }
       const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
@@ -1037,7 +1047,6 @@ function secondaryAction() {
     { const nh = nearHide(); return { k: 'carry', label: nh && nh.bodies < nh.cap ? '넣기' : nh ? '내려놓기 (가득 참)' : '내려놓기' }; }
   }
   if (P.z || P.jump) return { k: 'none', label: '특수' };
-  const fd = nearFloorDown(); if (fd && nearClimb()) return { k: 'fdown', l: fd, label: `계단 내려가 ${fd.bfl + 1}층` };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 (${P.candy})` };
   const kl = killList().filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };

@@ -122,7 +122,7 @@ function drawPlayer(P) {
       return;
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
-    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? 'idle' : (runP || P.jump) ? 'run' : 'walk';
+    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
     const t = S.t, s = sc / 3, PK = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
@@ -713,7 +713,10 @@ function drawNearMarks(P, openB) {
         if ((l.bfl || 0) === fP && !(l.bz || 0)) o.up = l.kind === 'stair' ? '옥상' : (l.tfl + 1) + '층'; if (l.kind === 'fstair' && l.tfl === fP && fP) o.down = (l.bfl + 1) + '층'; continue; }
       if ((l.bfl || 0) === fP && !(l.bz || 0)) add(l.x, l.y, SCAN.ladder, '↑', l.kind === 'pipe' ? (l.gas ? '가스관' : '배관') : l.kind === 'balc' ? '베란다' : '계단');
     }
-    for (const k in stc) { const o = stc[k]; if (!o.up && !o.down) continue; add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
+    for (const k in stc) { const o = stc[k]; if (!o.up && !o.down) continue;  // 오르는 곳(계단 칸)과 내려가는 곳(구멍 끝)이 다르면 표식도 따로
+      const dl = o.down && S.ladders.find(l => l.kind === 'fstair' && l.tx === o.l.tx && l.ty === o.l.ty && l.tfl === fP), dp = dl && downPt(dl);
+      if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
+      else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
       for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? '잠' : '창', st === 'lock' ? '잠긴 창문' : '창문'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, '창', w.link ? '옆 건물로' : '창밖 전깃줄');
@@ -747,7 +750,7 @@ function drawScan(openB) {
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
   else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#5a606a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 30 : 40, st === 'bar' ? 0.5 : 1); }
   for (const l of S.ladders) {
-    if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `계단 ↑${l.tfl + 1}층` : '계단 ↑옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) tag(l.x, l.y + 30, `↓${l.bfl + 1}층`, SCAN.ladder); continue; }
+    if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `계단 ↑${l.tfl + 1}층` : '계단 ↑옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `↓${l.bfl + 1}층`, SCAN.ladder); } continue; }
     if (fP) continue;
     if (l.kind === 'pipe') { box(l.x, l.y, SCAN.pipe, '배관 ↑', 36, l.bz ? 0.8 : 1); }
     else if (l.kind === 'ladder') box(l.x, l.y, SCAN.ladder, '사다리 ↑', 36);

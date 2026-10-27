@@ -212,7 +212,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
   if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
   const sh = prSheet(key); if (!sh) return false;
-  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 : anim === 'climb' ? 7 : 1.6;
+  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
   const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
   const fr = PR.fr, dw = fr * scale, gy = PR.groundY * scale;
   ctx.globalAlpha = alpha; ctx.drawImage(sh, (c0 + fi) * fr, prDir(a) * fr, fr, fr, x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
@@ -233,8 +233,10 @@ function drawBody(c, lift = 0) {
 // 들고 있는 상자 (택배): 두 팔을 모은 자세 위에 상자를 그린다. 북쪽(화면 위)을 보면 몸 뒤에 가려진다
 const holdingNow = g => g.carryTo != null && g.ri === g.carryTo && ['PATROL', 'RETURN'].includes(g.state);
 function drawHeldBox(x, y, a, s, front) {
-  const back = Math.sin(a) < -0.35; if (back === front) return;
-  const bx = x + Math.cos(a) * 11 * s, by = y - 17 * s + Math.sin(a) * 6 * s, w = 17 * s, h = 12 * s;
+  if (!front || Math.sin(a) < -0.35) return;  // 등을 보이면 상자는 몸에 가려 보이지 않는다
+  // 상자는 두 손 가운데에 (렌더할 때 방향마다 잰 손 위치 PR.holdHand, 64px 프레임 좌표)
+  const hh = PR && PR.holdHand && PR.holdHand[prDir(a)], dw = (PR ? PR.fr : 64) * s, gy = (PR ? PR.groundY : 46.8) * s;
+  const bx = hh ? x - dw / 2 + hh[0] * s : x + Math.cos(a) * 11 * s, by = hh ? y + 13 - gy + hh[1] * s - 3 * s : y - 4 * s, w = 15 * s, h = 11 * s;
   ctx.save(); ctx.translate(bx, by); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-w / 2 + 1, -h / 2 + 2, w, h);
   ctx.fillStyle = '#b98a50'; ctx.strokeStyle = 'rgba(30,20,10,.9)'; ctx.lineWidth = 1.2; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.strokeRect(-w / 2, -h / 2, w, h);
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
@@ -242,7 +244,13 @@ function drawHeldBox(x, y, a, s, front) {
 function guardAnim(g) {
   if (g.swingT > 0) return 'punch';
   if (holdingNow(g)) return g.moving ? 'hold' : 'holdI';
-  if (!(g.moving || g.state === 'CAPTIVE')) return g.state === 'PANIC' && g.cowered ? 'crouch' : 'idle';
+  if (!(g.moving || g.state === 'CAPTIVE')) {
+    if (g.state === 'PANIC' && g.cowered) return 'crouch';
+    // 평소에는 편하게 선다 (팔 내리고 곧게), 말하는 중이면 손짓 — 싸움 자세(idle)는 경계·수색·추격 중인 자경대원만
+    const calm = g.civ || ['PATROL', 'RETURN', 'WARN', 'FUSE'].includes(g.state);
+    if (calm && PR && PR.anims.idleC) return g.chat || g.say ? 'talk' : 'idleC';
+    return 'idle';
+  }
   return g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'PANIC' ? 'run' : 'walk';
 }
 function drawChar(key, x, y, a, moving, alpha = 1, scale = 3, attack = false, lift = 0) {
