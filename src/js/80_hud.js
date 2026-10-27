@@ -109,6 +109,7 @@ function updateHUD(force) {
   { const pl = $('pickLbl'); if (pl) { pl.hidden = !CITY; if (CITY) setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
   const pa = primaryAction();
   padButton(hud.act, 'actH', pa, '행동');
+  { const cb = $('btnCycle'); if (cb) { const n = pa.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (pa.choiceI + 1) + '/' + n); } }
   hud.act.classList.toggle('ready', pa.k !== 'none');
   const sa = secondaryAction();
   padButton(hud.carry, 'carryH', sa, '특수');

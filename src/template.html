@@ -114,6 +114,9 @@ body.touch .tools .tool kbd { display: none; }
 .keys .kx { font-style: normal; font-size: var(--fs-cap); opacity: .6; margin-left: 4px; }
 .pad #btnAct.kill { background: var(--blood); border-color: var(--blood-hi); color: #fff; box-shadow: 0 0 0 6px rgba(194, 54, 43, .25); }
 .pad #btnCarry { grid-area: carry; }
+.pad #btnCycle { position: absolute; right: 70px; top: -46px; width: 54px; height: 40px; border-radius: 20px; pointer-events: auto; border-color: var(--lamp); color: var(--lamp); background: rgba(7, 10, 18, .85); display: flex; gap: 4px; align-items: center; justify-content: center; }
+.pad #btnCycle[hidden] { display: none; }
+.pad #btnCycle small { font-size: 10px; opacity: .9; }
 .pad #btnWhistle { grid-area: whis; width: 52px; height: 52px; justify-self: end; font-size: var(--fs-cap); }
 .pad #btnWhistle b { font-size: var(--fs-cap); }
 .pad #btnWhistle.cool { opacity: .45; }
@@ -333,13 +336,30 @@ body.scanning #scanLegend { display: flex; }
 .row.sets { align-items: center; gap: 14px; flex-wrap: wrap; } .row.sets label { display: flex; align-items: center; gap: 8px; font-size: var(--fs-ui); color: var(--paper-dim); } .row.sets input[type=range] { width: 120px; accent-color: var(--blood); }
 #rotateHint { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(5,7,12,.94); color: var(--paper); flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; font-size: var(--fs-lead); padding: 24px; }
 #rotateHint small { color: var(--paper-dim); font-size: var(--fs-body); }
-@media (orientation: portrait) and (pointer: coarse) { body.playing:not(.portraitOk) #rotateHint { display: flex; } }
+/* 세로 화면이 기본 — 돌리라는 안내는 띄우지 않는다 */
 @media (min-width: 701px) {  /* PC: 상단 상태 줄은 한 줄로 (줄바꿈되면 목표·알림을 덮는다) */
   .top { flex-wrap: nowrap; } .status { flex-wrap: nowrap; } .obj { max-width: min(360px, 32vw); }
   #killsLbl { display: none; } body:not(.touch) #btnSneak, body:not(.touch) #btnWalk { display: none; }
   #layerLbl { max-width: 9em; } #modeLbl { max-width: 8em; }
 }
 @media (pointer: coarse) { .sysbtns button { min-height: 38px; min-width: 44px; padding: 6px 10px; font-size: var(--fs-ui); } }
+/* ===== 세로 화면(기본): 위 두 줄(목표 · 상태) · 오른쪽 가장자리 세로 버튼 줄 · 아래 조이스틱/행동 패드 ===== */
+@media (orientation: portrait) and (max-width: 700px) {
+  .top { flex-direction: column; align-items: stretch; gap: 5px; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: calc(6px + env(safe-area-inset-top, 0px)); }
+  .obj { flex: 0 0 auto; }
+  .status { flex-wrap: nowrap; justify-content: flex-start; overflow: hidden; gap: 4px; }
+  .status > .chip { flex: 0 0 auto; }
+  #modeLbl { display: none; }
+  /* 자주 누르는 토글(살금·항상 걷기·살피기·지도·메뉴)은 오른손 엄지가 닿는 오른쪽 가장자리 세로 줄로 */
+  .sysbtns { position: fixed; right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(250px + env(safe-area-inset-bottom, 0px)); flex-direction: column; gap: 6px; z-index: 3; }
+  .sysbtns button { min-width: 58px; min-height: 36px; padding: 5px 6px; font-size: var(--fs-cap); border-radius: 8px; background: rgba(7, 10, 18, .7); }
+  #mini { width: 96px; right: 8px; top: calc(var(--topb, 70px) + 6px); }
+  #hintCard { left: 8px; right: auto; top: calc(var(--topb, 70px) + 6px); bottom: auto; width: calc(100vw - 122px); }
+  #toasts { top: calc(var(--topb, 70px) + 110px) !important; }
+  body.touch #dlg { top: calc(var(--topb, 70px) + 8px); width: calc(100vw - 16px); }
+  .joyhint { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: 44vw; }
+  #scanLegend { top: calc(var(--topb, 70px) + 8px); }
+}
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -364,7 +384,7 @@ body.scanning #scanLegend { display: flex; }
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">살금</em></span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep km"><kbd>Space</kbd><em id="kmAct">행동</em></span><span class="keep km"><kbd>Z</kbd><em id="kmZ">특수</em></span><span class="keep km"><kbd>X</kbd><em id="kmX">도구</em><i class="kx">누르고 겨누기</i></span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
+    <span class="keep km"><kbd>Space</kbd><em id="kmAct">행동</em></span><span class="keep km"><kbd>Z</kbd><em id="kmZ">특수</em></span><span class="keep km"><kbd>X</kbd><em id="kmX">도구</em><i class="kx">누르고 겨누기</i></span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span class="keep"><kbd>F</kbd>겹친 대상 바꾸기</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>
@@ -378,6 +398,7 @@ body.scanning #scanLegend { display: flex; }
     <button id="btnWhistle" type="button" title="휘파람 (V)"><b>휘파람</b></button>
     <button id="btnCarry" type="button"><b>특수</b></button>
     <button id="btnAct" type="button"><b>암살</b></button>
+    <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>⇄</b><small id="cycleN">1/2</small></button>
   </div>
 </div>
 <div id="keypad" hidden><div class="kp"><b>숫자 자물쇠</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small>
@@ -393,7 +414,7 @@ body.scanning #scanLegend { display: flex; }
   <div class="panel">
     <div class="eyebrow">네온 빌라촌 · 잠입 암살</div>
     <h1>야행<span>.</span></h1>
-    <p class="brief">돈 되는 일이면 무엇이든 맡는 해결사가 있다. 그의 길은 골목이 아니라 옥상과 전깃줄이다. 빛을 피하고, 소리를 죽이고, 등 뒤에서 덮친다.</p>
+    <p class="brief">돈만 주면 뭐든 하는 동네 해결사. 오늘도 짠돌이 사장님 심부름이다. 불 꺼진 데로 다니고, 발소리 죽이고, 들키기 전에 끝내자.</p>
     <div class="row quick"><button class="cta" id="btnQuick" type="button">바로 시작</button><span class="qnote" id="qNote">처음이라면 연습 1(약 3분)부터. 의뢰는 아래에서 고른다</span></div>
     <div class="stages"><h3>난이도</h3>
       <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
@@ -456,7 +477,7 @@ body.scanning #scanLegend { display: flex; }
     <div class="eyebrow">일시정지</div>
     <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">의뢰 선택</button></div>
     <div class="row opts sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
-    <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
+    <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button></div>
   </div>
 </div>
 

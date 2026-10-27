@@ -19,7 +19,7 @@ function nearWireMount() {
 function nearPole() {
   const P = S.player; if (!S.poles.length || P.z || P.fl || P.wire || P.jump || P.carrying || P.captive || P.hide) return null;
   let best = null, bd = 56;
-  for (const o of S.poles) {
+  for (const o of S.poles) { if (ACT_SKIP.has(o)) continue;
     if (!o.wires.length) continue; const d = dist(P.x, P.y, o.x, o.y); if (d >= bd) continue;
     let bw = null, bs = -9;
     for (const w of o.wires) { const far = w.a.pole === o ? w.b : w.a; const sc = Math.cos(angDiff(P.a, Math.atan2(far.y - o.y, far.x - o.x))); if (sc > bs) { bs = sc; bw = w; } }

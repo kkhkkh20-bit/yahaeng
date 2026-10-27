@@ -64,7 +64,7 @@ function deliverReport(g) {
 // 사탕 (아이를 손대지 않고 다루는 법): 주면 신나서 멀리 놀러 간다. 그동안은 아무것도 보지 않는다
 function nearChild() {
   const P = S.player; if (!(P.candy > 0) || P.z || P.carrying || P.captive || P.hide) return null; let best = null, bd = 64;
-  for (const g of S.guards) { if (!g.child || g.state === 'DEAD' || (g.treatT || 0) > 0 || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
+  for (const g of S.guards) { if (ACT_SKIP.has(g)) continue; if (!g.child || g.state === 'DEAD' || (g.treatT || 0) > 0 || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   return best;
 }
 function giveCandy(g) {
@@ -147,12 +147,12 @@ function drawStoryMark(P) {
 function propsInit() { S.props = (STAGE.props || []).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
 function nearProp() {
   const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 58;
-  for (const p of S.props) { if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd) { bd = d; best = p; } }
+  for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd) { bd = d; best = p; } }
   return best;
 }
 function nearUse() {
   const P = S.player; if (!P.item || P.z || P.wire || P.hide) return null;
-  for (const [i, u] of (STAGE.uses || []).entries()) { if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; if (dist(P.x, P.y, tc(u.at[0]), tc(u.at[1])) < 56) return { u, i }; }
+  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; if (dist(P.x, P.y, tc(u.at[0]), tc(u.at[1])) < 56) return { u, i }; }
   return null;
 }
 function takeProp(p) {

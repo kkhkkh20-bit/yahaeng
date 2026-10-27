@@ -14,20 +14,20 @@ function guardCone(g, fov, rg) {
   }
   setLayer(L0); const cn = { rays, STP }; g._cone = { t: S.t, k: ck, x: g.x, y: g.y, a: g.a, cn }; return cn;
 }
-// lo~hi 단계인 칸들을 한 경로로 (이웃 광선 둘 중 높은 단계를 그 칸의 단계로)
+// lo~hi 단계 영역을 '띠' 몇 개로 그린다: 광선마다 그 단계인 구간들을 구하고, 구간 개수가 같은 이웃 광선끼리 묶어
+// 먼 끝을 따라 갔다가 가까운 끝으로 돌아오는 다각형 하나로 (칸마다 사각형을 만들던 것보다 경로가 수십 배 짧다 — 발열의 주범이었다)
 function conePaths(g, cn, lo, hi) {
-  const R = cn.rays, STP = cn.STP; ctx.beginPath();
-  for (let i = 0; i < R.length - 1; i++) {
-    const A0 = R[i], B0 = R[i + 1], A = { a: g.a + A0.ra, w: A0.w, lv: A0.lv }, B = { a: g.a + B0.ra, w: B0.w, lv: B0.lv }, n = Math.max(A.lv.length, B.lv.length); let k0 = -1;
-    for (let k = 0; k <= n; k++) {
-      const c = k < n ? Math.max(A.lv[k] || 0, B.lv[k] || 0) : 0, on = c >= lo && c <= hi;
-      if (on && k0 < 0) k0 = k;
-      if (!on && k0 >= 0) {
-        const r0 = k0 * STP, r1 = k * STP, ra0 = Math.min(r0, A.w), ra1 = Math.min(r1, A.w), rb0 = Math.min(r0, B.w), rb1 = Math.min(r1, B.w);
-        ctx.moveTo(g.x + Math.cos(A.a) * ra0, g.y + Math.sin(A.a) * ra0); ctx.lineTo(g.x + Math.cos(A.a) * ra1, g.y + Math.sin(A.a) * ra1);
-        ctx.lineTo(g.x + Math.cos(B.a) * rb1, g.y + Math.sin(B.a) * rb1); ctx.lineTo(g.x + Math.cos(B.a) * rb0, g.y + Math.sin(B.a) * rb0); ctx.closePath(); k0 = -1;
-      }
+  const R = cn.rays, STP = cn.STP, h = R.length > 1 ? (R[1].ra - R[0].ra) / 2 : 0.02; ctx.beginPath();
+  const ivs = R.map(r => { const out = [], n = r.lv.length; let k0 = -1; for (let k = 0; k <= n; k++) { const on = k < n && r.lv[k] >= lo && r.lv[k] <= hi; if (on && k0 < 0) k0 = k; if (!on && k0 >= 0) { out.push([k0 * STP, Math.min(k * STP, r.w)]); k0 = -1; } } return out; });
+  const pt = (a, d, mv) => { const x = g.x + Math.cos(a) * d, y = g.y + Math.sin(a) * d; if (mv) ctx.moveTo(x, y); else ctx.lineTo(x, y); };
+  for (let i = 0; i < R.length;) {
+    const m = ivs[i].length; if (!m) { i++; continue; }
+    let j = i; while (j + 1 < R.length && ivs[j + 1].length === m) j++;
+    for (let q = 0; q < m; q++) {
+      pt(g.a + R[i].ra - h, ivs[i][q][1], true); for (let r = i; r <= j; r++) pt(g.a + R[r].ra, ivs[r][q][1]); pt(g.a + R[j].ra + h, ivs[j][q][1]);
+      pt(g.a + R[j].ra + h, ivs[j][q][0]); for (let r = j; r >= i; r--) pt(g.a + R[r].ra, ivs[r][q][0]); pt(g.a + R[i].ra - h, ivs[i][q][0]); ctx.closePath();
     }
+    i = j + 1;
   }
 }
 // ---------------------------------------------------------------- 그리기
@@ -882,7 +882,25 @@ function drawUnderground() {
   if (pa.k === 'surface') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.strokeRect(pa.w.x - 24, pa.w.y - 24, 48, 48); }
 }
 // 어둠 한 겹: lamps 의 빛만 뚫린다. clip 이 있으면 그 사각형(월드 좌표) 안에만 덮는다
-function darkPass(sc, lamps, clip) {
+// 어둠: 화면 반 해상도 캔버스에 어둠을 칠하고, 불빛 자리를 지워(destination-out) 화면에 덮는다
+// 고정 조명(깜빡이지 않는 등)의 빛은 맵 전체를 1/4 해상도로 한 번만 그려 두고(켜짐·꺼짐이 바뀔 때만 다시), 매 프레임은 그 그림을 가져다 쓴다
+// — 프레임마다 등 하나하나 가림막 다각형+그라데이션을 그리던 것이 그리기 시간의 절반이었다
+const LIGHTQ = 4, lightCache = {};
+function lightMap(key, lamps) {
+  const sig = (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
+  let lc = lightCache[key];
+  if (lc && lc.sig === sig) return lc.c;
+  if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
+  lc.sig = sig; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
+  for (const l of lamps) { if (l.flk || !lampOn(l)) continue; lampLight(x, l, 1); }
+  return lc.c;
+}
+function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
+  x.save(); x.beginPath(); for (let i = 0; i < l.poly.length; i += 2) i ? x.lineTo(l.poly[i], l.poly[i + 1]) : x.moveTo(l.poly[i], l.poly[i + 1]); x.closePath(); x.clip();
+  const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.8)'); gr.addColorStop(0.55, 'rgba(0,0,0,.66)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
+}
+function darkPass(sc, lamps, clip, key) {
   const P = S.player;
   const ds = 0.5;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
@@ -892,24 +910,23 @@ function darkPass(sc, lamps, clip) {
   dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : CITY ? 'rgba(4,8,22,0.76)' : 'rgba(4,8,22,0.84)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
+  if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; dctx.drawImage(lightMap(key || 'g', lamps), 0, 0, MW * TILE, MH * TILE); }
   const flick = 1 + Math.sin(S.t * 13) * 0.012 + Math.sin(S.t * 7.3) * 0.01;
-  for (const l of lamps) {
-    if (!lampOn(l)) continue;
+  for (const l of lamps) {  // 깜빡이는 등만 매 프레임
+    if (!l.flk || !lampOn(l)) continue;
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;
-    dctx.save(); dctx.beginPath(); for (let i = 0; i < l.poly.length; i += 2) i ? dctx.lineTo(l.poly[i], l.poly[i + 1]) : dctx.moveTo(l.poly[i], l.poly[i + 1]); dctx.closePath(); dctx.clip();
-    const gr = dctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick);
-    gr.addColorStop(0, 'rgba(0,0,0,.8)'); gr.addColorStop(0.55, 'rgba(0,0,0,.66)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
-    dctx.fillStyle = gr; dctx.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); dctx.restore();
+    lampLight(dctx, l, flick);
   }
   const pg = dctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, 120);
   pg.addColorStop(0, 'rgba(0,0,0,.42)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
   dctx.fillStyle = pg; dctx.fillRect(P.x - 120, P.y - 120, 240, 240);
   if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2], clip[3]); ctx.clip(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false;
+  if (!DBG.dk1) { ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false; }
   worldTransform(ctx, sc);
   if (clip) ctx.restore();
 }
+const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if (S.player.under && !tactical) { drawUnderground(); return; }
   const sc = SCALE * DPR;
@@ -966,7 +983,7 @@ function draw() {
     if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
     if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = '700 13px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
   }
-  for (const g of S.guards) {
+  if (!DBG.sprites) for (const g of S.guards) {
     if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb) continue;
     drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
@@ -1017,11 +1034,12 @@ function draw() {
   }
 
   // 어둠
-  darkPass(sc, S.lamps.filter(l => !flOf(l)), null);
+  if (!DBG.dark) darkPass(sc, S.lamps.filter(l => !flOf(l)), null);
   worldTransform(ctx, sc);
   ctx.globalCompositeOperation = 'lighter';
   for (const l of S.lamps) {
-    if (!lampOn(l) || flOf(l)) continue;
+    if (!lampOn(l) || flOf(l) || DBG.glow) continue;
+    if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;  // 화면 밖
     const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7);
     const nn = NEONY() || !!l.col, lc = l.col || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
     gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
@@ -1033,7 +1051,7 @@ function draw() {
     setLayer(flOf(g)); ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i <= 12; i++) { const a = g.a - 0.32 + 0.64 * i / 12, d = castRay(g.x, g.y, a, TORCH_R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); } ctx.closePath(); setLayer(flOf(S.player));
     const gr = ctx.createRadialGradient(g.x, g.y, 6, g.x, g.y, TORCH_R); gr.addColorStop(0, 'rgba(255,244,200,.32)'); gr.addColorStop(1, 'rgba(255,244,200,0)'); ctx.fillStyle = gr; ctx.fill(); }
   ctx.globalCompositeOperation = 'source-over';
-  if (NEONY() && CITY) drawNeonSigns();
+  if (NEONY() && CITY && !DBG.neon) drawNeonSigns();
   drawSpeech();
   ctx.globalCompositeOperation = 'source-over';
   // 깨진 조명 표시
@@ -1057,7 +1075,7 @@ function draw() {
     drawLoud(VF); drawCams(VF);
     if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) drawGuard(g);
-    darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh]);
+    darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
     ctx.globalCompositeOperation = 'lighter';
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = l.col || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
@@ -1089,15 +1107,14 @@ function draw() {
     const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? (NEO ? '255,46,136' : '230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? (NEO ? '255,220,60' : '242,196,107') : (NEO ? '70,236,255' : '170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 진한 부분 = 웅크려도 보임 · 옅은 줄무늬 = 서 있으면 보임(웅크리면 안전) · 경계(빨강) 중에는 전부 진하게
-    const cn = guardCone(g, fov, rg); setLayer(0);
+    if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
       ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     conePaths(g, cn, 1, 1); ctx.fillStyle = `rgba(${col},.07)`; ctx.fill();
-    if (g.state !== 'ALERT') { ctx.save(); ctx.clip(); ctx.globalAlpha = 0.5; ctx.fillStyle = stripeFor(col); ctx.fillRect(g.x - rg.lit - 4, g.y - rg.lit - 4, rg.lit * 2 + 8, rg.lit * 2 + 8); ctx.restore(); }
+    if (g.state !== 'ALERT') { ctx.globalAlpha = 0.5; ctx.fillStyle = stripeFor(col); ctx.fill(); ctx.globalAlpha = 1; }  // 같은 경로에 줄무늬를 바로 칠한다 (잘라내기 없이)
     conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},.3)`; ctx.fill(); ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke();
-    conePaths(g, cn, 1, 2); ctx.strokeStyle = `rgba(${col},.18)`; ctx.lineWidth = 1; ctx.stroke();
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
@@ -1120,7 +1137,7 @@ function draw() {
     guardOverlay(g);
   }
   if (!tactical) {
-    drawRoofs(openB); drawPlanks();
+    if (!DBG.roofs) drawRoofs(openB); drawPlanks();
     if (CITY) drawHeardSteps(P, openB, gVis);
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
@@ -1168,6 +1185,14 @@ function draw() {
   // 행동 표시
   if (running && !S.over && !S.entrySel) {
     const pa = primaryAction();
+    if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
+      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
+      for (const o of pa.others) { const p = pos(o); if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, TAU); ctx.stroke(); } }
+      ctx.setLineDash([]);
+      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '⇄' : 'F'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
+        ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
+    }
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
     if (pa.list) pa.list.forEach(g => ring(g, '#e8473c'));
     if (pa.k === 'drop' || pa.k === 'ambush' || pa.k === 'ventKill') ring(pa.g, '#e8473c');

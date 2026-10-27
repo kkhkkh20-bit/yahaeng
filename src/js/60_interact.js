@@ -10,13 +10,13 @@ const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
   const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
-  for (const b of S.hides) { if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
+  for (const b of S.hides) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
 function nearClimb() {
   const P = S.player; if (P.carrying || P.captive || P.jump) return null; let best = null, bd = 44;
-  for (const l of S.ladders) { if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
   return best;
 }
 // 계단실 (꺾인 두 줄): 올라가는 줄 = 계단 칸 Y + 들어서는 칸 e(=Y+d), 위층의 옆 줄 = 내려가는 구멍 c1(Y 옆, 깊은 쪽)·c2(e 옆, 바닥 쪽 끝)
@@ -35,12 +35,12 @@ const downPt = l => { const h = stairHole(l); if (h) return h.c2;
 // 위층에서 아래층으로
 function nearFloorDown() {
   const P = S.player; if (P.z || !flOf(P) || P.jump || P.carrying || P.captive) return null; let best = null, bd = 1e9;
-  for (const l of S.ladders) { if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P)) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P)) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
   return best;
 }
 function nearNote() {
   const P = S.player; if (P.z || P.wire || P.jump || P.hide || !S.notes) return null; let best = null, bd = 44;
-  for (const n of S.notes) { if (n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = n; } }
+  for (const n of S.notes) { if (ACT_SKIP.has(n)) continue; if (n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = n; } }
   return best;
 }
 // 쪽지를 읽는다. 표적을 살려 둘 근거(spare)가 되는 쪽지면 선택이 열린다
@@ -68,7 +68,7 @@ function landingVictim(x, y, fl) {
 }
 function nearSideWin() {
   const P = S.player; if (P.z || !flOf(P) || P.wire || P.jump || P.carrying || P.captive) return null; let best = null, bd = 46;
-  for (const w of S.fwindows) { if (!w.link || w.fl !== flOf(P)) continue; const ix = tc(w.tx - w.link.dir), d = dist(P.x, P.y, ix, w.y); if (d < bd) { bd = d; best = w; } }
+  for (const w of S.fwindows) { if (ACT_SKIP.has(w)) continue; if (!w.link || w.fl !== flOf(P)) continue; const ix = tc(w.tx - w.link.dir), d = dist(P.x, P.y, ix, w.y); if (d < bd) { bd = d; best = w; } }
   return best;
 }
 // 위층 창문 안쪽에서 창밖 전깃줄로
@@ -79,7 +79,7 @@ function nearWinWire() {
 }
 function nearClimbDown() {
   const P = S.player; if (!P.z || P.jump) return null; let best = null, bd = 52;
-  for (const l of S.ladders) { if (l.tz !== P.z) continue; const d = dist(P.x, P.y, l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (l.tz !== P.z) continue; const d = dist(P.x, P.y, l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy); if (d < bd) { bd = d; best = l; } }
   return best;
 }
 // 골목 건너뛰기: 바라보는 방향으로 1~2칸 틈 너머의 같은 높이(또는 한 층 아래) 옥상
@@ -123,8 +123,8 @@ const LUNGE = 112;  // 등 뒤에서 이 거리 안이면 달려들어 암살
 function killList() {
   const P = S.player; if (P.carrying || P.captive || P.strikeT > 0 || P.hide || P.jump || P.wire || P.trav || P.under || P.vent) return [];
   if (P.lunge || P.grabIn) return [];
-  let list = S.guards.filter(g => canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
-  if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
+  let list = S.guards.filter(g => !ACT_SKIP.has(g) && canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
+  if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && !ACT_SKIP.has(g) && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
   if (list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
   return list.slice(0, 1);
 }
@@ -258,7 +258,7 @@ function drawWinBars(w) {
 }
 function nearWindow() {
   const P = S.player; if (P.z || P.fl || P.jump || P.carrying || P.captive || P.hide) return null;
-  for (const w of S.windows) {
+  for (const w of S.windows) { if (ACT_SKIP.has(w)) continue;
     if (dist(P.x, P.y, w.x, w.y) > 52) continue;
     const dx = Math.abs(P.x - w.x) > Math.abs(P.y - w.y) ? Math.sign(w.x - P.x) : 0, dy = dx ? 0 : Math.sign(w.y - P.y);
     const ox = w.tx + dx, oy = w.ty + dy;
@@ -303,17 +303,17 @@ function kunaiTarget() {
 }
 function nearCorpse() {
   const P = S.player; if (P.z || P.jump) return null; let best = null, bd = 46;
-  for (const c of S.corpses) { if (c.carried || c.stashed || flOf(c) !== flOf(P)) continue; const d = dist(P.x, P.y, c.x, c.y); if (d < bd) { bd = d; best = c; } }
+  for (const c of S.corpses) { if (ACT_SKIP.has(c)) continue; if (c.carried || c.stashed || flOf(c) !== flOf(P)) continue; const d = dist(P.x, P.y, c.x, c.y); if (d < bd) { bd = d; best = c; } }
   return best;
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (l.broken || l.pole || l.cut != null || !(l.off || lampOn(l)) || flOf(l) !== flOf(P)) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.lamps) { if (ACT_SKIP.has(l)) continue; if (l.broken || l.pole || l.cut != null || !(l.off || lampOn(l)) || flOf(l) !== flOf(P)) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {
   const P = S.player; if (P.z || P.fl || P.jump || P.hide) return null; let best = null, bd = 58;
-  for (const d of S.doors) { const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd) { bd = dd; best = d; } }
+  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd) { bd = dd; best = d; } }
   if (!best) return null;
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;
@@ -323,7 +323,7 @@ function doorBlocked(d) { return d.group.some(t => S.guards.some(g => g.state !=
 function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; G[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;
-  for (const b of S.bushes) { const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
+  for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
   return best;
 }
 function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && S.lightsOn && dist(P.x, P.y, tc(STAGE.fuse[0]), tc(STAGE.fuse[1])) < 62; }
@@ -331,7 +331,7 @@ function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && 
 function nearVent() {
   const P = S.player; if (P.jump || P.carrying || P.captive || P.hide || P.under || P.fl) return null;
   let best = null, bd = P.vent ? 34 : 42;
-  for (const v of S.vents) { if (!P.vent && v.z !== P.z) continue; const d = dist(P.x, P.y, v.x, v.y); if (d < bd) { bd = d; best = v; } }
+  for (const v of S.vents) { if (ACT_SKIP.has(v)) continue; if (!P.vent && v.z !== P.z) continue; const d = dist(P.x, P.y, v.x, v.y); if (d < bd) { bd = d; best = v; } }
   return best;
 }
 // 환풍구 창살 바로 밑을 지나는 자경대원을 끌어올린다
@@ -422,7 +422,25 @@ function stalkGuard() {
   }
   return best;
 }
+// 물체가 겹칠 때: 주 행동 후보를 대상 하나씩 빼 가며 다시 구해 목록을 만들고(최대 4), 고른 것(S.actSel)을 주 행동으로 쓴다
+// 바꾸기: Tab · 터치 ⇄ 버튼. 후보 묶음이 바뀌면 처음(가장 우선)으로 돌아간다
+const ACT_SKIP = new Set();
+const actObj = a => a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || a.tp || a.j || a.lv || null;
+const _oid = new WeakMap(); let _oidN = 0; const oid = o => { if (!o || typeof o !== 'object') return ''; if (!_oid.has(o)) _oid.set(o, ++_oidN); return _oid.get(o); };
+function actionChoices() {
+  const out = []; ACT_SKIP.clear(); let pref;
+  try { for (let i = 0; i < 4; i++) { const a = primaryActionOne(); if (!i) pref = S.ikPref; if (!a || a.k === 'none') { if (!out.length) out.push(a); break; }
+    const o = actObj(a); if (out.length && (!o || ACT_SKIP.has(o) || out.some(x => x.k === a.k && x.label === a.label && actObj(x) === o))) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } } finally { ACT_SKIP.clear(); if (pref !== undefined) S.ikPref = pref; }
+  return out;
+}
 function primaryAction() {
+  const L = actionChoices(); if (!S) return L[0];
+  if (L.length <= 1) { S.actKey = null; S.actSel = 0; return L[0] || { k: 'none', label: '' }; }
+  const key = L.map(a => a.k + oid(actObj(a))).join('|'); if (key !== S.actKey) { S.actKey = key; S.actSel = 0; }
+  const i = (S.actSel || 0) % L.length, a = L[i]; a.choices = L.length; a.choiceI = i; a.others = L.filter((x, j) => j !== i); return a;
+}
+function cycleAction() { if (!S) return; const a = primaryAction(); if (!(a.choices > 1)) return; S.actSel = (S.actSel || 0) + 1; play('click', 0.2); }
+function primaryActionOne() {
   const a = primaryActionRaw();
   if (RISKY_K.has(a.k)) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: koDefault(sg) ? '기절시키기' : '암살' }; }
   const v = a.g || (a.list && a.list[0]) || a.kill || ((a.k === 'execute' || a.k === 'drag') && S.player.captive) || null;
@@ -909,7 +927,7 @@ function trapsInit() {
 const inZone = (g, z) => g.x >= z[0] * TILE && g.x < (z[2] + 1) * TILE && g.y >= z[1] * TILE && g.y < (z[3] + 1) * TILE;
 function nearTrap() {
   const P = S.player; if (P.wire || P.jump || P.hide || P.carrying || P.vent || P.under || P.fl) return null;
-  for (const t of S.traps || []) {
+  for (const t of S.traps || []) { if (ACT_SKIP.has(t)) continue;
     if (t.used) continue;
     if (t.k === 'shock' && !P.z && dist(P.x, P.y, tc(t.sw[0]), tc(t.sw[1])) < 52) return { t, label: '전선 끊기 — 물웅덩이 감전' };
     if (t.k === 'drop' && P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < 52) return { t, label: '간판 떨어뜨리기' };
@@ -1001,7 +1019,7 @@ function bldPower(fb, on) {
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
   if (on) { const B = BLD[fb.b]; if (dist(S.player.x, S.player.y, fb.x, fb.y) < 900) toast(`${B.plate || B.name || '건물'} 전기가 다시 들어왔다`, 2.2); }
 }
-function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd) { bd = d; best = fb; } } return best; }
+function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd) { bd = d; best = fb; } } return best; }
 function cutLights() {
   S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast('바깥 조명이 꺼졌다 — 곧 누군가 확인하러 온다', 3); setAlert(1, 30);

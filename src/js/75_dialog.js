@@ -24,12 +24,27 @@ function faceSheet(pk) {
     o[j] = p[0] * s * wt + B.src[j] * (1 - wt); o[j + 1] = p[1] * s * wt + B.src[j + 1] * (1 - wt); o[j + 2] = p[2] * s * wt + B.src[j + 2] * (1 - wt); }
   x.putImageData(id, 0, 0); return (FACE.pal[pk] = c);
 }
+// 대사창 얼굴: 실루엣 초상 — 상반신을 어두운 그림자로 칠하고 가장자리만 말하는 사람 역할 색으로 빛나게 (윤곽으로 머리 모양·헬멧·덩치를 구분)
+// 저폴리곤 얼굴을 크게 보이면 어색해서, 얼굴 생김새 대신 윤곽과 옷 색 기운만 남긴다
+const _fcTmp = document.createElement('canvas');
 function drawFace(cv, sp) {
-  const fc = cv.getContext('2d'); fc.clearRect(0, 0, cv.width, cv.height);
-  if (sp.key && FACE.base) { const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk), fr = PR.faces.fr;
-    if (sh) { fc.imageSmoothingEnabled = true; fc.drawImage(sh, col * fr, 0, fr, fr, 0, 0, cv.width, cv.height); return true; } }
-  const f = sp.face && F[sp.face]; if (!f) return false;  // 예전 도트 얼굴 (초상 시트가 없을 때)
-  fc.imageSmoothingEnabled = false; fc.drawImage(atlas, f[0], f[1], f[2], f[3], 20, 24, 120, 120); return true;
+  const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
+  if (!(sp.key && FACE.base)) return false;
+  const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk), fr = PR.faces.fr; if (!sh) return false;
+  const t = _fcTmp; t.width = W; t.height = H; const x = t.getContext('2d'); x.imageSmoothingEnabled = true;
+  const src = () => x.drawImage(sh, col * fr, 0, fr, fr, 0, 0, W, H);
+  // 1 뒤에 번지는 빛 (역할 색)
+  fc.save(); fc.filter = 'blur(10px)'; fc.globalAlpha = 0.55; x.clearRect(0, 0, W, H); src(); x.globalCompositeOperation = 'source-in'; x.fillStyle = sp.col; x.fillRect(0, 0, W, H); x.globalCompositeOperation = 'source-over';
+  fc.drawImage(t, 0, 0); fc.restore();
+  // 2 테두리 빛: 몸 모양을 왼쪽 위로 살짝 민 것과의 차이만 남긴다
+  x.clearRect(0, 0, W, H); src(); x.globalCompositeOperation = 'source-in'; x.fillStyle = sp.col; x.fillRect(0, 0, W, H);
+  x.globalCompositeOperation = 'destination-out'; x.drawImage(sh, col * fr, 0, fr, fr, 4, 3, W, H); x.globalCompositeOperation = 'source-over';
+  // 3 몸: 어두운 그림자 + 옷 색 기운 조금
+  const b = document.createElement('canvas'); b.width = W; b.height = H; const y = b.getContext('2d');
+  y.drawImage(sh, col * fr, 0, fr, fr, 0, 0, W, H); y.globalCompositeOperation = 'source-atop'; y.fillStyle = 'rgba(10,13,22,.95)'; y.fillRect(0, 0, W, H);
+  const g = y.createLinearGradient(0, 0, 0, H); g.addColorStop(0, 'rgba(10,13,22,.5)'); g.addColorStop(1, 'rgba(10,13,22,0)'); y.fillStyle = g; y.fillRect(0, 0, W, H);
+  fc.drawImage(b, 0, 0); fc.drawImage(t, 0, 0);
+  return true;
 }
 // 이야기 장면(modal)은 아래 대사창, 플레이 중 혼잣말·외침은 그 사람 머리 위 말풍선으로 (몸이 없는 말 — 쪽지·의뢰인 — 만 대사창)
 function say(lines, modal, onEnd) {

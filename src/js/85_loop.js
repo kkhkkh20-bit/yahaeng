@@ -1,7 +1,11 @@
 // ---------------------------------------------------------------- 루프
 let lastT = 0;
+// 프레임 제한: 휴대폰은 기본 30fps (발열·배터리 — 잠입 게임은 30이면 충분하다), PC는 60. 메뉴에서 바꿀 수 있다
+let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.fps'); if (v === 30 || v === 60) return v; } catch (e) {} return (('ontouchstart' in window) || navigator.maxTouchPoints > 0) ? 30 : 60; })();
+function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v === 30 ? '절전 30fps' : '부드럽게 60fps'; perfDts = []; perfSum = 0; }
 function frame(t) {
   requestAnimationFrame(frame);
+  if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
   if (running && !paused) updateDialog(dt);
@@ -22,15 +26,15 @@ function perfWatch(rawDt) {
   perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 4) return;
   const med = perfDts.sort((a, b) => a - b)[perfDts.length >> 1], fps = 1 / med; perfDts = []; perfSum = 0;
   const native = Math.min(2, window.devicePixelRatio || 1);
-  if (fps < 40 && DPR > 1) { perfGood = 0; if (++perfBad >= 2) { perfBad = 0; dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); } }
-  else if (fps >= 58 && DPR < native && perfUp > 0) { perfBad = 0; if (++perfGood >= 3) { perfGood = 0; perfUp--; dprCap = Math.min(native, DPR + 0.5); resize(); miniBase = null; } }
+  if (fps < FPS_CAP * 0.66 && DPR > 1) { perfGood = 0; if (++perfBad >= 2) { perfBad = 0; dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); } }
+  else if (fps >= FPS_CAP * 0.95 && DPR < native && perfUp > 0) { perfBad = 0; if (++perfGood >= 3) { perfGood = 0; perfUp--; dprCap = Math.min(native, DPR + 0.5); resize(); miniBase = null; } }
   else { perfBad = 0; perfGood = 0; }
 }
 function resize() {
   DPR = Math.min(dprCap, 2, window.devicePixelRatio || 1);
   W = canvas.clientWidth; H = canvas.clientHeight;
   canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-  BASE_SCALE = clamp(Math.min(W, H * 1.45) / ((W < 640 ? 11.5 : 15) * TILE), 0.6, 1.35);
+  BASE_SCALE = clamp(Math.min(W, H * 1.45) / ((W < 640 ? (H > W * 1.3 ? 9.5 : 11.5) : 15) * TILE), 0.6, 1.35);  // 세로 휴대폰: 가로 9.5칸 (인물이 잘 보이게)
   if (!SCALE || SCALE === 1) SCALE = BASE_SCALE * userZoom;
 }
 function targetScale() {
