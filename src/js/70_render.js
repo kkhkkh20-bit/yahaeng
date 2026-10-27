@@ -1,3 +1,33 @@
+const GLC = { t: -1, m: new Map() };  // 시야 원뿔용 밝기 기억 (12px 칸, 0.2초)
+// 자경대원 시야 원뿔: 광선마다 6px 간격으로 그 자리 밝기를 보고 0(안 보임)·1(서 있으면 보임)·2(웅크려도 보임)를 매긴다
+// 밝기는 12px 칸마다 0.2초 동안 기억해 같이 쓴다 (여러 자경대원이 같은 칸을 본다)
+const lightC = (x, y) => { if (S.t - GLC.t > 0.2 || S.t < GLC.t) { GLC.m.clear(); GLC.t = S.t; } const cx = Math.floor(x / 12), cy = Math.floor(y / 12), k = CUR_F * 1e8 + cy * 1e4 + cx; let v = GLC.m.get(k); if (v === undefined) { v = lightAt(cx * 12 + 6, cy * 12 + 6, false); GLC.m.set(k, v); } return v; };
+function guardCone(g, fov, rg) {
+  const N = 34, STP = 6, rays = [], crouchK = g.state === 'ALERT' ? 1 : 0.55, el = g.elite ? 1.1 : 1, L0 = CUR_F;
+  setLayer(flOf(g));
+  for (let i = 0; i <= N; i++) {
+    const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
+    for (let d = STP / 2; d < w; d += STP) { const L = lightC(g.x + ca * d, g.y + sa * d), eff = (rg.dark + (rg.lit - rg.dark) * L) * el; lv.push(d < 24 || d <= eff * crouchK ? 2 : d <= eff ? 1 : 0); }
+    rays.push({ a, w, lv });
+  }
+  setLayer(L0); return { rays, STP };
+}
+// lo~hi 단계인 칸들을 한 경로로 (이웃 광선 둘 중 높은 단계를 그 칸의 단계로)
+function conePaths(g, cn, lo, hi) {
+  const R = cn.rays, STP = cn.STP; ctx.beginPath();
+  for (let i = 0; i < R.length - 1; i++) {
+    const A = R[i], B = R[i + 1], n = Math.max(A.lv.length, B.lv.length); let k0 = -1;
+    for (let k = 0; k <= n; k++) {
+      const c = k < n ? Math.max(A.lv[k] || 0, B.lv[k] || 0) : 0, on = c >= lo && c <= hi;
+      if (on && k0 < 0) k0 = k;
+      if (!on && k0 >= 0) {
+        const r0 = k0 * STP, r1 = k * STP, ra0 = Math.min(r0, A.w), ra1 = Math.min(r1, A.w), rb0 = Math.min(r0, B.w), rb1 = Math.min(r1, B.w);
+        ctx.moveTo(g.x + Math.cos(A.a) * ra0, g.y + Math.sin(A.a) * ra0); ctx.lineTo(g.x + Math.cos(A.a) * ra1, g.y + Math.sin(A.a) * ra1);
+        ctx.lineTo(g.x + Math.cos(B.a) * rb1, g.y + Math.sin(B.a) * rb1); ctx.lineTo(g.x + Math.cos(B.a) * rb0, g.y + Math.sin(B.a) * rb0); ctx.closePath(); k0 = -1;
+      }
+    }
+  }
+}
 // ---------------------------------------------------------------- 그리기
 function drawSprite(c, x, y, a, s = 0.78, alpha = 1) {
   ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.globalAlpha = alpha;
@@ -1041,19 +1071,17 @@ function draw() {
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? (NEO ? '255,46,136' : '230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? (NEO ? '255,220,60' : '242,196,107') : (NEO ? '70,236,255' : '170,200,235');
-    const N = 34, pts = [];
-    setLayer(flOf(g)); for (let i = 0; i <= N; i++) { const a = g.a - fov + (2 * fov) * i / N; pts.push(a, castRay(g.x, g.y, a, rg.lit, g.z || 0)); } setLayer(0);
-    // 바깥(빛 속에서만 보임) · 줄무늬(웅크리면 안전) · 안쪽(항상 보임)
-    const conePath = rmax => { ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i < pts.length; i += 2) { const d = Math.min(pts[i + 1], rmax); ctx.lineTo(g.x + Math.cos(pts[i]) * d, g.y + Math.sin(pts[i]) * d); } ctx.closePath(); };
+    // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
+    // 진한 부분 = 웅크려도 보임 · 옅은 줄무늬 = 서 있으면 보임(웅크리면 안전) · 경계(빨강) 중에는 전부 진하게
+    const cn = guardCone(g, fov, rg); setLayer(0);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      ctx.fillStyle = 'rgba(196,236,190,.035)'; conePath(Math.min(rg.lit, 120)); ctx.fill();
+      ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
-    ctx.fillStyle = `rgba(${col},.07)`; conePath(rg.lit); ctx.fill();
-    if (g.state !== 'ALERT') { ctx.save(); conePath(rg.lit); ctx.clip(); ctx.globalAlpha = 0.5; ctx.fillStyle = stripeFor(col); ctx.beginPath(); ctx.arc(g.x, g.y, rg.lit, 0, TAU); ctx.arc(g.x, g.y, rg.lit * 0.55, 0, TAU, true); ctx.fill(); ctx.restore(); }
-    ctx.fillStyle = `rgba(${col},.2)`; conePath(g.state === 'ALERT' ? rg.dark : Math.min(rg.dark, rg.lit * 0.55)); ctx.fill();
-    ctx.fillStyle = `rgba(${col},.1)`; conePath(rg.lit * 0.55); ctx.fill();
-    ctx.strokeStyle = `rgba(${col},.45)`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, rg.dark, g.a - fov, g.a + fov); ctx.stroke(); ctx.setLineDash([]);
+    conePaths(g, cn, 1, 1); ctx.fillStyle = `rgba(${col},.07)`; ctx.fill();
+    if (g.state !== 'ALERT') { ctx.save(); ctx.clip(); ctx.globalAlpha = 0.5; ctx.fillStyle = stripeFor(col); ctx.fillRect(g.x - rg.lit - 4, g.y - rg.lit - 4, rg.lit * 2 + 8, rg.lit * 2 + 8); ctx.restore(); }
+    conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},.3)`; ctx.fill(); ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke();
+    conePaths(g, cn, 1, 2); ctx.strokeStyle = `rgba(${col},.18)`; ctx.lineWidth = 1; ctx.stroke();
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시

@@ -277,10 +277,8 @@ function drawMarked() {
   const pts = g.routeLine ? g.routeLine.concat([g.routeLine[0]]) : null;
   if (pts) { ctx.strokeStyle = 'rgba(255,214,90,.85)'; ctx.lineWidth = 3.5; ctx.setLineDash([10, 6]); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]); for (const p of g.routeLine) if (p.stop) { ctx.fillStyle = 'rgba(255,214,90,.8)'; ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, TAU); ctx.fill(); } }
   // 시야: 지금 보는 방향의 원뿔 테두리를 진하게
-  const rg = guardRanges(g), fov = guardFov(g), R = Math.max(rg.lit, rg.dark);
-  ctx.strokeStyle = 'rgba(255,214,90,.9)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x, g.y);
-  for (let k = 0; k <= 16; k++) { const a = g.a - fov + (2 * fov) * k / 16; const d = castRay(g.x, g.y, a, R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); }
-  ctx.closePath(); ctx.stroke();
+  const rg = guardRanges(g), fov = guardFov(g);  // 실제로 보이는 범위(밝기 반영)의 테두리
+  ctx.strokeStyle = 'rgba(255,214,90,.9)'; ctx.lineWidth = 2.5; conePaths(g, guardCone(g, fov, rg), 1, 2); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,214,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
 }
 function drawGhosts() {
