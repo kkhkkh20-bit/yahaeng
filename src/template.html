@@ -184,7 +184,7 @@ h1 span { color: var(--blood); }
 #endStats dt { font-size: var(--fs-cap); color: var(--paper-dim); letter-spacing: .08em; }
 #endStats dd { margin: 2px 0 0; font-family: var(--f-body); font-weight: 600; font-variant-numeric: tabular-nums; font-size: var(--fs-lead); font-variant-numeric: tabular-nums; }
 body.joyused .joyhint { display: none; }
-/* 대사 창: 닌자 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
+/* 대사 창: 도둑 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
 #dlg { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: min(640px, calc(100vw - 24px)); display: flex; gap: 8px; align-items: stretch; z-index: 6; pointer-events: auto; image-rendering: pixelated; }
 body.touch #dlg { bottom: auto; top: calc(118px + env(safe-area-inset-top, 0px)); }
 #dlg.modal::before { content: ""; position: fixed; inset: -100vh -100vw; background: rgba(3, 5, 10, .35); z-index: -1; }
@@ -321,7 +321,7 @@ body.scanning #scanLegend { display: flex; }
 
 <div id="hud" hidden>
   <div class="top">
-    <div class="obj"><small id="objTitle">작전 목표</small><span id="objective"></span></div>
+    <div class="obj"><small id="objTitle">의뢰 목표</small><span id="objective"></span></div>
     <div class="status">
       <span class="chip expo" id="expoLbl" data-e="0" hidden>숨음</span><span class="chip lightbox"><span id="lightLbl">어둠</span><span class="lightbar"><i id="lightFill" data-level="lo"></i></span></span>
       <span class="chip layer" id="layerLbl" data-l="out">지상</span>
@@ -345,11 +345,11 @@ body.scanning #scanLegend { display: flex; }
   <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
-      <button class="tool on" type="button" data-t="stone"><kbd>1</kbd>돌 <span>3</span></button>
-      <button class="tool" type="button" data-t="coin"><kbd>2</kbd>엽전 <span>2</span></button>
-      <button class="tool" type="button" data-t="kunai"><kbd>3</kbd>쿠나이 <span>3</span></button>
+      <button class="tool on" type="button" data-t="stone"><kbd>1</kbd>빈 캔 <span>3</span></button>
+      <button class="tool" type="button" data-t="coin"><kbd>2</kbd>담배 <span>2</span></button>
+      <button class="tool" type="button" data-t="kunai"><kbd>3</kbd>다트 <span>3</span></button>
     </div>
-    <button id="btnTool" type="button"><b>돌 3</b><small>꾹 눌러</small></button>
+    <button id="btnTool" type="button"><b>빈 캔 3</b><small>꾹 눌러</small></button>
     <button id="btnWhistle" type="button" title="휘파람 (V)"><b>휘파람</b></button>
     <button id="btnCarry" type="button"><b>특수</b></button>
     <button id="btnAct" type="button"><b>암살</b></button>
@@ -366,61 +366,62 @@ body.scanning #scanLegend { display: flex; }
 
 <div class="screen" id="intro">
   <div class="panel">
-    <div class="eyebrow">픽셀 닌자 잠입 암살</div>
+    <div class="eyebrow">네온 빌라촌 · 잠입 암살</div>
     <h1>야행<span>.</span></h1>
-    <p class="brief">빛을 피하고, 소리를 죽이고, 등 뒤나 지붕 위에서 덮친다. 들키면 끝이다.</p>
+    <p class="brief">돈 되는 일이면 무엇이든 맡는 해결사가 있다. 그의 길은 골목이 아니라 옥상과 전깃줄이다. 빛을 피하고, 소리를 죽이고, 등 뒤에서 덮친다.</p>
     <div class="row quick"><button class="cta" id="btnQuick" type="button">바로 시작</button><span class="qnote" id="qNote">처음이라면 연습 1(약 3분)부터. 의뢰는 아래에서 고른다</span></div>
     <div class="stages"><h3>난이도</h3>
       <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
-      <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
+      <p class="diff-note">점호는 없다. 무전기를 든 자경대원에게 들키면 그가 몇 초간 무전으로 보고한다 — 그 사이 처치하면 경보가 퍼지지 않는다. 어려움은 자경대원 시야가 넓고 빨리 알아채며, 빈 캔·담배·다트가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
     </div>
     <div class="stages" id="modBox" hidden><h3>의뢰 변형</h3>
       <div class="diff" id="modSel"><button type="button" data-m="">없음</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
       <p class="diff-note" id="modNote"></p>
     </div>
-    <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
+    <div class="stages"><h3>의뢰 선택</h3><div id="stageList" class="stages"></div></div>
     <div id="perkList" class="perks" hidden></div>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히 보기 (처음이라면 "연습"부터)</summary>
     <ul class="rules">
-      <li class="cityonly"><strong>발견 게이지</strong>보이는 순간 들키지 않는다. 경비 머리 위 삼각형이 2~3초에 걸쳐 차오른다(가깝고 밝을수록 빠르다): 흰색 = 눈치채는 중(하던 걸 하며 고개만 돌린다) · 노랑 = 의심(멈춰 보고 확인하러 온다) · 빨강 = 발각. 내 둘레의 호는 누가 어느 쪽에서 보고 있는지 알려 준다. 시야에서 벗어나면 잠깐 뒤 줄어든다</li>
+      <li class="cityonly"><strong>발견 게이지</strong>보이는 순간 들키지 않는다. 자경대원 머리 위 삼각형이 2~3초에 걸쳐 차오른다(가깝고 밝을수록 빠르다): 흰색 = 눈치채는 중(하던 걸 하며 고개만 돌린다) · 노랑 = 의심(멈춰 보고 확인하러 온다) · 빨강 = 발각. 내 둘레의 호는 누가 어느 쪽에서 보고 있는지 알려 준다. 시야에서 벗어나면 잠깐 뒤 줄어든다</li>
       <li class="cityonly"><strong>가구</strong>파랑 테두리 = 높은 가구(막히고 시선을 가린다) · 주황 테두리 = 낮은 가구(막히지만 시선은 넘어간다. 바로 뒤에서 웅크리면 가려진다). 테두리 없는 깔개만 밟고 지나간다</li>
       <li class="cityonly"><strong>숨음 표시</strong>위쪽 상태 칸과 발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 들킬 듯하면 똑딱 소리가 빨라진다.</li>
       <li class="cityonly"><strong>기대기 · 끌어당기기</strong>벽·나무·차에 붙어 멈추면 저절로 기댄다(훨씬 덜 보인다). 기댄 채 2칸 안을 지나는 적은 Space로 끌어당겨 처치. 문 옆에서 기다리면 좋다.</li>
-      <li class="cityonly"><strong>락픽 · 창문</strong>건물마다 창문은 하나만 열려 있다. 잠긴 창문·카드 문은 락픽으로 딴다(소리·시간). 안쪽에선 걸쇠만 풀면 된다. 경비가 열린 걸 보면 다시 잠근다.</li>
+      <li class="cityonly"><strong>락픽 · 창문</strong>건물마다 창문은 하나만 열려 있다. 잠긴 창문·카드 문은 락픽으로 딴다(소리·시간). 안쪽에선 걸쇠만 풀면 된다. 자경대원이 열린 걸 보면 다시 잠근다.</li>
       <li class="cityonly"><strong>기회 · 체크포인트</strong>함정·두꺼비집·비번 문을 보면 임무 칸에 "기회"로 남는다. 쉬움·보통은 목표마다 체크포인트가 저장된다.</li>
       <li><strong>시야 원뿔</strong>진한 안쪽은 항상 보인다. 줄무늬 구역에선 웅크리면 안 보인다. 점선 호 바깥은 어둠 속이면 안 보인다. 모래주머니 바로 뒤에서 웅크리면 가려진다.</li>
-      <li><strong>소리</strong>달리면 멀리까지 들린다. 나무 바닥은 더 울리고, 지붕과 잔디는 덜 울린다.</li>
-      <li><strong>등 뒤 · 동시 암살</strong>경비 등 뒤에서 붉은 원이 뜨면 암살. 두 명이 붙어 있으면 한 번에 둘을 처치한다.</li>
-      <li><strong>지붕 · 2층</strong>사다리·배관으로 오른다. 골목 하나는 건너뛸 수 있고, 아래 경비에게 낙하 암살. 2층에선 1층 지붕으로만 내려간다.</li>
-      <li><strong>우물 · 땅굴</strong>들어가 숨어 있다가 지나가는 경비를 끌어들인다. 다른 출구로 이동하고, 나올 땐 조이스틱을 민 방향으로 나온다.</li>
+      <li><strong>소리</strong>달리면 멀리까지 들린다. 나무 바닥은 더 울리고, 옥상과 잔디는 덜 울린다.</li>
+      <li><strong>등 뒤 · 동시 암살</strong>자경대원 등 뒤에서 붉은 원이 뜨면 암살. 두 명이 붙어 있으면 한 번에 둘을 처치한다.</li>
+      <li><strong>옥상 · 2층</strong>사다리·배관으로 오른다. 골목 하나는 건너뛸 수 있고, 아래 자경대원에게 낙하 암살. 2층에선 1층 옥상으로만 내려간다.</li>
+      <li><strong>맨홀</strong>들어가 숨어 있다가 지나가는 자경대원을 끌어들인다. 다른 출구로 이동하고, 나올 땐 조이스틱을 민 방향으로 나온다.</li>
       <li><strong>표식 읽기</strong><span class="lg lg-door"></span>갈색 문짝은 문(잠글 수 있음) · <span class="lg lg-win"></span>십자 창살 유리는 창문 · <span class="lg lg-pipe"></span>회색 관과 발밑 ▸▸는 배관 · 금 간 벽은 숨겨진 통로</li>
-      <li><strong>건물 · 창문</strong>건물 안은 들어가야 보인다. 창문 앞에서 창문 쪽을 바라보면 안이 보이고, [창문 넘기]로 드나든다. 문은 잠가서 경비를 돌아가게 만들 수 있다.</li>
-      <li><strong>붙잡기</strong>등 뒤에서 바로 암살하거나 붙잡는다. 붙잡은 채 덤불·궤짝·우물로 끌고 가면 그 안에서 조용히 처치한다. 9초 넘게 끌면 빠져나간다.</li>
-      <li><strong>조명</strong>조명 옆에서 손으로 끄고 켤 수 있다. 지나가던 경비가 다시 켠다. 쿠나이로 깨면 영영 꺼진다.</li>
-      <li><strong>끌어들이기</strong>덤불·궤짝·우물에 숨어 있다가 옆을 지나는 경비를 방향 상관없이 끌어들여 처치한다.</li>
-      <li><strong>경비 읽기</strong>바닥의 점선은 순찰로, 작은 원은 멈추는 곳, 네모는 자리를 지키는 경비다. 평소엔 담배·하품·잡담을 하는데 그동안 시야가 좁아진다. [지도]로 멈춘 채 전체를 볼 수 있다.</li>
-      <li><strong>경계 3단계 · 체력</strong>경계 → 수색 → 발각. 들켜도 바로 끝나지 않는다. 경비들이 몰려와 칼을 들었다가(붉은 호) 내려친다 — 그 사이 피하면 산다. 맞으면 체력이 준다(쉬움 4 · 보통 3 · 어려움 2). 시야를 끊고 15초 숨어 버티면 수색으로, 수색이 끝나면 경비들이 제자리로 돌아간다. 수색 중엔 궤짝·우물·덤불을 뒤지며, 들키면 끌려 나온다.</li>
-      <li><strong>시체 처리</strong>발견되면 수색이 시작된다. 덤불, 궤짝(2구), 우물에 숨겨라. 수색하는 경비가 열어 보면 들킨다.</li>
-      <li><strong>쿠나이</strong>조명을 깨 어둠을 만들거나, 멀리 있는 경비를 원격 암살한다. 개수가 적다.</li>
-      <li><strong>지하 수로</strong>맨홀·우물에 들어가 [지하로]를 누르면 수로를 걸어 다른 맨홀 아래까지 간다. 경비는 내려오지 않는다.</li>
+      <li><strong>건물 · 창문</strong>건물 안은 들어가야 보인다. 창문 앞에서 창문 쪽을 바라보면 안이 보이고, [창문 넘기]로 드나든다. 문은 잠가서 자경대원을 돌아가게 만들 수 있다.</li>
+      <li><strong>붙잡기</strong>등 뒤에서 바로 암살하거나 붙잡는다. 붙잡은 채 화단·수거함·맨홀로 끌고 가면 그 안에서 조용히 처치한다. 9초 넘게 끌면 빠져나간다.</li>
+      <li><strong>조명</strong>조명 옆에서 손으로 끄고 켤 수 있다. 지나가던 자경대원이 다시 켠다. 다트로 깨면 영영 꺼진다.</li>
+      <li><strong>끌어들이기</strong>화단·수거함·맨홀에 숨어 있다가 옆을 지나는 자경대원을 방향 상관없이 끌어들여 처치한다.</li>
+      <li><strong>자경대원 읽기</strong>바닥의 점선은 순찰로, 작은 원은 멈추는 곳, 네모는 자리를 지키는 자경대원이다. 평소엔 담배·하품·잡담을 하는데 그동안 시야가 좁아진다. [지도]로 멈춘 채 전체를 볼 수 있다.</li>
+      <li><strong>경계 3단계 · 체력</strong>경계 → 수색 → 발각. 들켜도 바로 끝나지 않는다. 자경대원들이 몰려와 칼을 들었다가(붉은 호) 내려친다 — 그 사이 피하면 산다. 맞으면 체력이 준다(쉬움 4 · 보통 3 · 어려움 2). 시야를 끊고 15초 숨어 버티면 수색으로, 수색이 끝나면 자경대원들이 제자리로 돌아간다. 수색 중엔 수거함·맨홀·화단을 뒤지며, 들키면 끌려 나온다.</li>
+      <li><strong>시체 처리</strong>발견되면 수색이 시작된다. 화단, 수거함(2구), 맨홀에 숨겨라. 수색하는 자경대원이 열어 보면 들킨다.</li>
+      <li><strong>다트</strong>조명을 깨 어둠을 만들거나, 멀리 있는 자경대원을 원격 암살한다. 개수가 적다.</li>
+      <li><strong>지하 수로</strong>맨홀에 들어가 [지하로]를 누르면 수로를 걸어 다른 맨홀 아래까지 간다. 자경대원은 내려오지 않는다.</li>
       <li><strong>3층 · 계단</strong>건물 안 계단으로 옥상에 오른다. 3층 옥상은 가장 멀리 보이고 거의 들키지 않지만, 너무 높아 낙하 암살은 안 된다.</li>
-      <li><strong>엽전 · 정예 · 증원</strong>엽전을 떨어뜨리면 본 경비가 주우러 와 고개를 숙인다. 파란 옷에 붉은 표식을 단 정예는 돌·엽전에 안 넘어가고 붙잡히지 않는다. 처음 발각되면 증원이 온다.</li>
-      <li><strong>살피기 · 색 약속</strong>[살피기](PC는 Tab을 누르는 동안)로 쓸 수 있는 물체가 모두 표시된다. 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토<span class="nocity"> · 굴뚝 주황</span> · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라. 지금 누를 수 있는 행동은 대상 위에 글자로 뜬다.</li>
-      <li><strong>층</strong>지붕 · 지상/실내 · 환풍구 · 지하 수로. 화면 위 표시로 지금 층을 알 수 있다. 층마다 장단점이 다르다.</li>
-      <li class="nocity"><strong>굴뚝</strong>지붕의 굴뚝으로 그 방 아궁이 앞에 내려간다. 불이 타고 있으면 [굴뚝 막기]로 끄면 되는데, 연기 소리에 안의 경비가 다시 불을 피우러 온다. 방 안에서 아궁이 불을 손으로 끄고 굴뚝으로 오를 수도 있다.</li>
-      <li><strong>환풍구</strong>천장 창살이나 지붕 환기구로 들어가 덕트를 기어간다. 살금살금이면 조용하고, 서두르면 쇠가 울려 아래 경비가 듣는다. 창살 밑을 지나는 경비를 [끌어올려 암살]. 열어 둔 창살을 경비가 보면 의심한다.</li>
-      <li><strong>감시병</strong>활을 든 감시병(머리 위 노란 겹화살표)은 지붕을 똑바로 본다. 지붕이 늘 안전하지는 않다.</li>
-      <li><strong>점호</strong>보통·어려움에선 일정 시간마다 점호가 돈다(10초 전 알림). 쓰러진 경비가 하나면 경계, 둘 이상이면 수색이 시작된다. 몰아서 처리하고 빨리 끝내라.</li>
-      <li><strong>경비견</strong>개는 냄새로 찾는다. 가까이 가면 덤불·어둠·웅크림이 소용없고, 숨겨 둔 시체도 맡는다. 들키면 짖어 주변 경비를 부른다. 붙잡을 수 없다.</li>
-      <li><strong>열쇠 · 소매치기</strong>열쇠로 잠긴 문이 있다. 열쇠를 든 경비 등 뒤에서 [열쇠 훔치기] — 웅크린 채여야 안전하다. 처치하면 열쇠를 떨어뜨린다. 창문·배관 같은 다른 길도 있다.</li>
-      <li><strong>시간 제한 · 보너스</strong>일부 작전엔 제한 시간이 있다. 성공하면 발각 0 · 시체 발견 0 · 수색 경보 0 · 불필요한 살상 0 네 가지 보너스 목표로 등급이 매겨진다.</li>
-      <li><strong>돌 · 퓨즈 상자</strong>돌로 경비를 유인한다. 퓨즈 상자로 바깥 조명을 끄면 경비 하나가 고치러 온다.</li>
+      <li><strong>담배 · 정예 · 증원</strong>담배를 떨어뜨리면 본 자경대원이 주우러 와 고개를 숙인다. 파란 옷에 붉은 표식을 단 정예는 빈 캔·담배에 안 넘어가고 붙잡히지 않는다. 처음 발각되면 증원이 온다.</li>
+      <li><strong>살피기 · 색 약속</strong>[살피기](PC는 Alt 또는 Tab을 누르는 동안)로 쓸 수 있는 물체가 모두 표시된다. 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토<span class="nocity"> · 굴뚝 주황</span> · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라. 지금 누를 수 있는 행동은 대상 위에 글자로 뜬다.</li>
+      <li><strong>층</strong>옥상 · 지상/실내 · 환풍구 · 지하 수로. 화면 위 표시로 지금 층을 알 수 있다. 층마다 장단점이 다르다.</li>
+      <li class="nocity"><strong>굴뚝</strong>옥상의 굴뚝으로 그 방 아궁이 앞에 내려간다. 불이 타고 있으면 [굴뚝 막기]로 끄면 되는데, 연기 소리에 안의 자경대원이 다시 불을 피우러 온다. 방 안에서 아궁이 불을 손으로 끄고 굴뚝으로 오를 수도 있다.</li>
+      <li><strong>환풍구</strong>천장 창살이나 옥상 환기구로 들어가 덕트를 기어간다. 살금살금이면 조용하고, 서두르면 쇠가 울려 아래 자경대원이 듣는다. 창살 밑을 지나는 자경대원을 [끌어올려 암살]. 열어 둔 창살을 자경대원이 보면 의심한다.</li>
+      <li><strong>망꾼</strong>망꾼(머리 위 노란 겹화살표)은 옥상을 똑바로 본다. 옥상이 늘 안전하지는 않다.</li>
+      <li><strong>무전</strong>자경대원 셋 중 하나와 정예는 무전기를 든다(머리 위 무전기 표시). 들키면 그가 멈춰 서서 보고하고, 붉은 원이 다 차면 맵 전체가 경계한다. 그 전에 붙거나 다트로 처치하면 끊긴다. 무전기가 없으면 근처만 경계한다.</li><li><strong>시체 발견</strong>쓰러진 사람을 직접 보면 소리쳐 주변 대원을 부르고 수색이 시작된다. 쓰러뜨린 사람은 수거함·맨홀에 숨겨라.</li>
+      <li><strong>들개</strong>개는 냄새로 찾는다. 가까이 가면 화단·어둠·웅크림이 소용없고, 숨겨 둔 시체도 맡는다. 들키면 짖어 주변 자경대원을 부른다. 붙잡을 수 없다.</li>
+      <li><strong>열쇠 · 소매치기</strong>열쇠로 잠긴 문이 있다. 열쇠를 든 자경대원 등 뒤에서 [열쇠 훔치기] — 웅크린 채여야 안전하다. 처치하면 열쇠를 떨어뜨린다. 창문·배관 같은 다른 길도 있다.</li>
+      <li><strong>시간 제한 · 보너스</strong>일부 의뢰엔 제한 시간이 있다. 성공하면 발각 0 · 시체 발견 0 · 수색 경보 0 · 불필요한 살상 0 네 가지 보너스 목표로 등급이 매겨진다.</li>
+      <li><strong>빈 캔 · 두꺼비집</strong>빈 캔으로 자경대원을 유인한다. 두꺼비집으로 바깥 조명을 끄면 자경대원 하나가 고치러 온다.</li>
     </ul></details>
     <div class="ctrl">
-      <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·지붕 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 경비를 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
-      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·지붕 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 경비를 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
+      <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·옥상 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
+      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·옥상 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 자경대원을 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
     </div>
-    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 기와 지붕: Clint Bellanger 'Oriental Roof Tiles' (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 범종 소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
+    <p class="credit ver">야행 __VERSION__</p>
+    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
   </div>
 </div>
 
@@ -428,7 +429,7 @@ body.scanning #scanLegend { display: flex; }
 <div class="screen" id="pause" hidden>
   <div class="panel">
     <div class="eyebrow">일시정지</div>
-    <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">작전 선택</button></div>
+    <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">의뢰 선택</button></div>
     <div class="row opts sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
     <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
   </div>
@@ -436,13 +437,13 @@ body.scanning #scanLegend { display: flex; }
 
 <div class="screen" id="end" hidden>
   <div class="panel">
-    <div class="eyebrow">작전 결과</div>
+    <div class="eyebrow">의뢰 결과</div>
     <h2 id="endTitle">임무 완료</h2>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
     <p class="credit" id="endRankNote"></p>
-    <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>지붕·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
-    <div class="row"><button class="cta" id="btnNext" type="button" hidden>다음 작전</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">작전 선택</button></div>
+    <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
+    <div class="row"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
   </div>
 </div>
 

@@ -30,16 +30,7 @@ async def main():
         print('M1c', await pg.evaluate('''async () => { const g = T.G(), S = T.S(), P = S.player; T.freeze(); const l = S.ladders.find(l => l.kind === 'stair' && l.tz === 2 && l.rx != null);
           P.z = 2; P.fl = 0; P.x = l.rx; P.y = l.ry; const a = g.primaryAction().label; g.actPrimary(); await new Promise(r => setTimeout(r, 1500));
           return [a, P.z, P.fl, S.stats.roofStair]; }'''))
-        # M2: 빨강(2층 경비) → 금고 → 파랑 카드 → VIP 뒷문 → 표적
-        print('M2', await run(pg, 1, [
-          "const S = T.S(), g = S.guards.find(g => g.hasKey === 'red'); return [g.fl, Math.floor(g.x/48), Math.floor(g.y/48)];",
-          "const S = T.S(); S.player.keys.red = true; T.freeze(); T.at(5, 7); return T.act();",
-          "T.G().actPrimary(); T.at(3, 5); return 1;",
-          "return [Object.keys(T.S().player.keys), T.S().keyItems[0].got];",
-          "T.at(5, 4); return 1;",
-          "return T.S().items[0].got;",
-          "T.at(36, 4); return T.act();",
-          "T.G().actPrimary(); T.at(32, 4); T.S().player.a = Math.PI; return T.act();"]))
+        # (M2 카드 경로는 미션 2를 다시 짤 때 새로 쓴다 — 예전 카드 배치는 없어졌다)
         # M3: 전깃줄로 본채 옥상
         print('M3', await run(pg, 2, [
           "const S = T.S(); return S.wires.filter(w => w.b.roof || w.a.roof).map(w => [w.a.tx, w.a.ty, w.b.tx, w.b.ty, w.b.z]);",

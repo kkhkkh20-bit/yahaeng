@@ -11,3 +11,6 @@ build/*.html
 dbg.png
 build/check.png
 tests/**/*.png
+build/test_logs/
+/*.png
+/*.wav

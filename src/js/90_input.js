@@ -1,0 +1,258 @@
+// ---------------------------------------------------------------- 입력
+const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+document.body.classList.toggle('touch', isTouch);
+const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
+const keyCode = e => WASD[e.code] || e.code;
+window.addEventListener('keydown', e => {
+  if (!S) return;
+  if (S.entrySel && running) { const m = /^Digit([1-9])$/.exec(e.code); if (m) { e.preventDefault(); chooseEntry(+m[1] - 1); } return; }
+  if (S.keypad && running) { e.preventDefault(); const m = /^(?:Digit|Numpad)([0-9])$/.exec(e.code); if (m && !e.repeat) kpPress(m[1]); else if (e.code === 'Backspace') kpPress('<'); else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') kpPress('ok'); else if (e.code === 'Escape') kpPress('x'); return; }
+  if (e.code === 'KeyH' && !e.repeat) { const k = document.querySelector('.keys'); if (k) k.classList.toggle('mini'); return; }
+  if (DLG.modal && running) { if (['KeyQ', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
+  if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
+  if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); if (running) { input.scan = true; $('btnScan').classList.add('on'); hint('scan', '살피기: 문·창문·배관·환풍구·숨을 곳이 색으로 표시된다'); } return; }
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
+  if (e.repeat) return;
+  S.keys[keyCode(e)] = true;
+  if (!running || S.over) return;
+  // 왼손: Space 행동 · Z 특수 · X 도구(누르고 겨누기) · C 도구 바꾸기 · Ctrl 살금 모드 · Shift 달리기 · Alt 살피기 (Q W E는 예전 키로 남겨 둔다)
+  if (e.code === 'KeyQ' || e.code === 'Space') actPrimary();
+  if (e.code === 'KeyZ') { if (input.aiming) queueAim(); else actCarry(); }
+  if (e.code === 'KeyE' || e.code === 'KeyX') startAim('key');
+  if (e.code === 'KeyC') selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]);
+  if (e.code === 'KeyR') cycleMoveLock();
+  if (e.code === 'Digit1') selectTool('stone');
+  if (e.code === 'Digit2') selectTool('coin');
+  if (e.code === 'Digit3') selectTool('kunai');
+  if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
+  if (e.code === 'KeyN') toggleMute();
+  if (e.code === 'KeyM') toggleTactical();
+  if (e.code === 'KeyV') whistle();
+  if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
+  if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
+  if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { cancelAim(); toast('조준 취소', 1.2); return; }
+  if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
+});
+window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyE' || e.code === 'KeyX') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
+window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
+
+const joyEl = $('joy'), joyKnob = $('joyKnob'), JOY_R = 60;
+let joyId = null, joyO = null;
+canvas.addEventListener('touchstart', e => {
+  for (const t of e.changedTouches) {
+    if (joyId === null && t.clientX < W * 0.6 && running) {
+      document.body.classList.add('joyused');
+      joyId = t.identifier; joyO = { x: t.clientX, y: t.clientY };
+      joyEl.style.left = (t.clientX - JOY_R) + 'px'; joyEl.style.top = (t.clientY - JOY_R) + 'px'; joyEl.hidden = false;
+      joyKnob.style.transform = 'translate(0,0)'; input.joy = { x: 0, y: 0, mag: 0 }; joyEl.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
+    }
+  }
+  e.preventDefault();
+}, { passive: false });
+canvas.addEventListener('touchmove', e => {
+  for (const t of e.changedTouches) if (t.identifier === joyId) {
+    let dx = t.clientX - joyO.x, dy = t.clientY - joyO.y; const d = Math.hypot(dx, dy);
+    const m = Math.min(1, d / JOY_R);
+    if (d > JOY_R) { dx = dx / d * JOY_R; dy = dy / d * JOY_R; }
+    input.joy = { x: dx / JOY_R, y: dy / JOY_R, mag: m };  // 방향×세기 (이동 쪽에서 한 번만 정규화)
+    joyKnob.style.transform = `translate(${dx}px,${dy}px)`;
+    joyEl.dataset.mode = input.sneakToggle ? 'sneak' : input.walkLock || m < JOY_RUN ? 'walk' : 'run';
+  }
+  e.preventDefault();
+}, { passive: false });
+// 자경대원 주시(Desperados III): 자경대원을 누르면 그 자경대원의 순찰로·시야를 굵게 고정 표시한다. 다시 누르면 해제
+function markAt(cx, cy) {
+  if (!S || !running || S.over) return false;
+  const r = canvas.getBoundingClientRect(), wx = cam.x + (cx - r.left - W / 2) / SCALE, wy = cam.y + (cy - r.top - H / 2) / SCALE;
+  let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const d = dist(g.x, g.y - 14, wx, wy); if (d < bd) { bd = d; best = g; } }
+  if (!best) return false;
+  S.marked = S.marked === best ? null : best; play('click', 0.25);
+  if (S.marked) toast((best.target ? '표적' : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰로와 시야를 고정 표시한다', 1.8);
+  return true;
+}
+canvas.addEventListener('mousedown', e => { if (e.button === 0 && !isTouch) markAt(e.clientX, e.clientY); });
+const touchT = {};
+canvas.addEventListener('touchstart', e => { for (const t of e.changedTouches) touchT[t.identifier] = { x: t.clientX, y: t.clientY, t: performance.now() }; }, { passive: true });
+const endJoy = e => {
+  for (const t of e.changedTouches) {
+    const o = touchT[t.identifier]; delete touchT[t.identifier];
+    if (o && Math.hypot(t.clientX - o.x, t.clientY - o.y) < 10 && performance.now() - o.t < 320) markAt(t.clientX, t.clientY);
+    if (t.identifier === joyId) { joyId = null; input.joy = null; joyEl.hidden = true; }
+  }
+};
+canvas.addEventListener('touchend', endJoy); canvas.addEventListener('touchcancel', endJoy);
+
+function bindBtn(id, fn) {
+  const b = $(id);
+  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); fn(); b.classList.add('down'); });
+  const up = () => b.classList.remove('down');
+  b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up);
+}
+bindBtn('btnAct', actPrimary);
+bindBtn('btnCarry', () => { if (input.aiming) queueAim(); else actCarry(); });
+{
+  const b = $('btnTool');
+  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });
+  b.addEventListener('pointerup', e => { b.classList.remove('down'); const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
+  b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
+  b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
+}
+document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
+function syncSneakBtn() {
+  const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
+  const b = document.getElementById('btnWalk'); if (b) { b.classList.toggle('on', !!input.walkLock); b.setAttribute('aria-pressed', input.walkLock ? 'true' : 'false'); }
+  const s = document.getElementById('btnSneak'); if (s) { s.classList.toggle('on', !!input.sneakToggle); s.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
+  const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
+}
+// 살금 모드: 켜 두면 판이 바뀌어도 계속 살금살금으로 다닌다 (Ctrl 키 또는 위쪽 [살금] 버튼)
+function toggleSneak() {
+  input.sneakToggle = !input.sneakToggle; if (input.sneakToggle) { input.walkLock = false; try { localStorage.setItem('yh_walkLock', '0'); } catch (e) {} }
+  try { localStorage.setItem('yh_sneak', input.sneakToggle ? '1' : '0'); } catch (e) {}
+  syncSneakBtn(); toast(input.sneakToggle ? '살금 모드 — 발소리가 아주 작다 (끄기 전까지 유지)' : '살금 모드 해제 — 기본 걷기', 1.6);
+}
+// 항상 걷기: 켜 두면 Shift·조이스틱 끝까지도 뛰지 않는다 (R 키 또는 위쪽 [항상 걷기] 버튼)
+function toggleWalkLock() {
+  input.walkLock = !input.walkLock; if (input.walkLock) { input.sneakToggle = false; try { localStorage.setItem('yh_sneak', '0'); } catch (e) {} }
+  try { localStorage.setItem('yh_walkLock', input.walkLock ? '1' : '0'); } catch (e) {}
+  syncSneakBtn(); toast(input.walkLock ? '항상 걷기 — 뛰지 않는다' : '항상 걷기 해제 — 다시 뛸 수 있다', 1.4);
+}
+function cycleMoveLock() { toggleWalkLock(); }
+{ const o = document.querySelector('#hud .obj'); if (o) o.addEventListener('click', e => { e.stopPropagation(); o.classList.toggle('open'); }); }  // 휴대폰: 목표 펼치기
+{ const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
+{ const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
+{ const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); }); }
+{ const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleSneak(); b.blur(); }); }
+{ const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
+// 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+let VOL = +lsGet('yahaeng.vol', 90) / 100, BRI = +lsGet('yahaeng.bri', 100) / 100;
+function applyVol() { if (master) master.gain.value = VOL; }
+function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
+$('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri();
+$('volR').addEventListener('input', e => { VOL = +e.target.value / 100; lsSet('yahaeng.vol', e.target.value); applyVol(); });
+$('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.bri', e.target.value); applyBri(); });
+$('btnFull').addEventListener('click', () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch (e) {} });
+document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
+// 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
+function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 't0'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && !stageCleared(s)); return i >= 0 ? i : 0; }
+function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; $('btnQuick').textContent = st.tutorial ? '바로 시작 — ' + st.name : `이어 하기 — ${st.no} ${st.name}`; $('qNote').textContent = st.tutorial ? '처음이라면 여기부터 (약 3분). 의뢰는 아래에서 고른다' : '아직 깨지 않은 첫 의뢰. 다른 의뢰는 아래에서 고른다'; }
+$('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
+$('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
+function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
+function setPause(v) { if (!running) return; paused = v; $('pause').hidden = !paused; }
+function togglePause() { setPause(!paused); }
+$('btnMute').addEventListener('click', toggleMute);
+$('btnPause').addEventListener('click', togglePause);
+$('btnMap').addEventListener('click', toggleTactical);
+{ const mi = $('mini'); if (mi) { if (!CITY) mi.style.display = 'none'; else $('btnMap').style.display = 'none'; mi.addEventListener('click', toggleTactical); } }  // 도시: 지도 버튼 대신 미니맵을 누른다
+$('btnScan').addEventListener('click', () => { input.scan = !input.scan; $('btnScan').classList.toggle('on', input.scan); });
+$('btnZoomOut').addEventListener('click', () => setZoom(userZoom - 0.12));
+$('btnZoomIn').addEventListener('click', () => setZoom(userZoom + 0.12));
+$('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes); try { localStorage.setItem('yahaeng.routes', showRoutes ? '1' : '0'); } catch (e) {} });
+$('btnRoutes').classList.toggle('on', showRoutes);
+{ const bo = $('btnOpps'); if (bo) { bo.classList.toggle('on', showOpps); bo.addEventListener('click', () => { showOpps = !showOpps; bo.classList.toggle('on', showOpps); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', showOpps ? '1' : '0'); } catch (e) {} }); } }
+$('tacBanner').addEventListener('click', toggleTactical);
+$('btnResume').addEventListener('click', () => setPause(false));
+$('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I); });
+$('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
+$('btnMenu').addEventListener('click', toMenu);
+$('btnRetry').addEventListener('click', () => start(STAGE_I));
+$('btnCP').addEventListener('click', () => loadCheckpoint());
+$('btnNext').addEventListener('click', () => start(STAGE.tutorial ? 0 : STAGE_I + 1));
+document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
+
+document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
+document.querySelectorAll('#diffSel button').forEach(b => b.addEventListener('click', () => { DKEY = b.dataset.d; try { localStorage.setItem('yahaeng.diff', DKEY); } catch (e) {} renderStageList(); }));
+function start(i) {
+  initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic(CITY ? 'n_calm' : 'calm'), 300);
+  tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
+  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'stone'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
+  running = true; paused = false;
+  newGame(i); resetDialog(); miniBase = null;
+  const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
+  const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
+  $('intro').hidden = true; $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
+  say(DIALOGUE[STAGE.id], true, () => { if (STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — ' + (isTouch ? '미니맵을 눌러' : '[M] 지도로') + ' 순찰로 확인', 4); } });
+}
+// 시작 전 정찰: 전술 지도에서 진입로를 고른다 (골목 · 옥상 · 전깃줄)
+function beginEntry() {
+  S.entrySel = true; tactical = true;
+  let box = $('entryBox');
+  if (!box) {
+    box = document.createElement('div'); box.id = 'entryBox';
+    box.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,12,20,.92);border:1px solid #3a4250;padding:12px 14px;max-width:min(680px,94vw);font-family:Galmuri,"IBM Plex Sans KR",sans-serif;color:#e8e3d6;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+    document.body.appendChild(box);
+  }
+  box.innerHTML = '<div style="font-size:13px;letter-spacing:.12em;color:#f2c46b;margin-bottom:8px">정찰 — 진입로를 고른다' + (isTouch ? '' : ' (숫자 키)') + '</div>' +
+    STAGE.entries.map((e, i) => (e.need || 0) > starsOf(STAGE) ? `<div style="margin:4px 0;padding:8px 10px;border:1px dashed #3a4250;color:#7a8294">${i + 1}. 잠김 — 별 ${e.need}개 필요</div>` : `<button type="button" data-i="${i}" style="display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;background:#161b26;border:1px solid #3a4250;color:#e8e3d6;font:inherit;cursor:pointer"><b style="color:#f2c46b">${i + 1}. ${e.name}</b> <span style="font-size:12px;color:#b8b2a4">— ${e.desc}</span></button>`).join('');
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => chooseEntry(+b.dataset.i)));
+  box.hidden = false;
+  toast('전술 지도: 자경대원 순찰로와 목표를 보고 들어갈 길을 고른다', 4);
+}
+function chooseEntry(i) {
+  const e = STAGE.entries[i]; if (!e || !S.entrySel || (e.need || 0) > starsOf(STAGE)) return;
+  const P = S.player; P.wire = null; P.z = 0; P.fl = 0; setLayer(0); P.jump = null;
+  if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); const w = o.wires.find(w => !e.toward || (w.a.pole === o ? w.b : w.a).tx === e.toward) || o.wires[0]; P.wire = { w, s: w.a.pole === o ? 0 : 1 }; P.z = o.z; P.x = o.x; P.y = o.y; }
+  else { P.x = tc(e.at[0]); P.y = tc(e.at[1]); P.z = e.z || 0; }
+  S.entrySel = false; tactical = false; $('entryBox').hidden = true; $('tacBanner').hidden = true; $('btnMap').classList.remove('on'); S.toasts.length = 0; P.vx = 0; P.vy = 0;
+  cam.x = P.x; cam.y = P.y; play('bell', 0.6); startAmb(); toast('진입: ' + e.name, 2.2);
+}
+function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); return { x: o.x, y: o.y - o.top }; } return { x: tc(e.at[0]), y: tc(e.at[1]) }; }
+function toMenu() {
+  if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
+  running = false; paused = false; resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
+  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; $('intro').hidden = false;
+  renderStageList();
+  newGame(STAGE_I);
+}
+
+atlas.onload = () => {
+  resize();
+  renderStageList();
+  newGame(0);
+  requestAnimationFrame(frame);
+  window.__game = {
+    get S() { return S; }, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    mapImage() { return mapC.toDataURL(); },
+    validate() {
+      const issues = [];
+      STAGES.forEach((st, si) => {
+        newGame(si);
+        const sx = st.start[0], sy = st.start[1];
+        S.doors.filter(d => d.keyLock || d.gate).forEach(d => setDoor(d, false));
+        (st.keyDoors || []).forEach(([kx, ky]) => { const d = S.doors.find(d => d.tx === kx && d.ty === ky); if (!d) issues.push(`${st.id}: 열쇠 문 (${kx},${ky}) 문 아님`); else setDoor(d, false); });  // 열쇠는 얻을 수 있으므로 연 상태로 검사
+        const reach = (x, y, label) => { if (solidAt(x, y)) { issues.push(`${st.id}: ${label} (${x},${y}) 막힌 칸`); return; } if (!(x === sx && y === sy) && !astar(sx, sy, x, y).length) issues.push(`${st.id}: ${label} (${x},${y}) 도달 불가`); };
+        reach(Math.floor(st.exit[0]), Math.floor(st.exit[1]), '출구');
+        STAGE._items.forEach(p => { if (!p[2]) reach(p[0], p[1], '서류'); });
+        STAGE._g.forEach((g, gi) => { if (!g.fl) (g.route || (g.at ? [g.at] : [])).forEach(r => reach(r[0], r[1], `자경대원${gi}`)); });
+        // 위층: 그 층으로 올라오는 계단에서 닿는지
+        const fromStair = (f, x, y, label) => { const b = bldAt(x, y); const l = S.ladders.find(l => l.kind === 'fstair' && l.tfl === f && bldAt(l.tx, l.ty) === b); setLayer(f); if (!l) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 올라올 계단 없음`); else if (solidAt(x, y) || (!(l.bx === x && l.by === y) && !astar(l.bx, l.by, x, y).length)) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 도달 불가`); setLayer(0); };
+        STAGE._items.forEach(p => { if (p[2]) fromStair(p[2], p[0], p[1], '물건'); });
+        STAGE._g.forEach((g, gi) => { if (g.fl) (g.route || [g.at]).forEach(r => fromStair(g.fl, r[0], r[1], `자경대원${gi}`)); });
+        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.win && (!GF[n.fl] || GF[n.fl][n.ty][n.tx] !== 'N')) issues.push(`${st.id}: 전깃줄${wi} 창문 (${n.tx},${n.ty},${n.fl + 1}층) 창문 아님`); }));
+        if (st.fuse) reach(st.fuse[2], st.fuse[3], '퓨즈 앞');
+        if (st.flee) st.guards.forEach((g, gi) => { if (g.target) { const r = g.route[0]; if (!astar(r[0], r[1], st.flee[0], st.flee[1]).length) issues.push(`${st.id}: 표적${gi} 도주로 없음`); } });
+        S.hides.filter(b => !b.furn).forEach(b => { const ok = N8.slice(0, 4).filter(o => !solidAt(b.tx + o[0], b.ty + o[1])); if (!ok.length || !astar(sx, sy, b.tx + ok[0][0], b.ty + ok[0][1]).length) issues.push(`${st.id}: ${b.type} (${b.tx},${b.ty}) 접근 불가`); });
+        S.ladders.forEach(l => { if (l.bz === 0) reach(l.bx, l.by, l.kind === 'pipe' ? '배관 밑' : '사다리'); });
+        PIPES.forEach(p => { if (!S.ladders.some(l => l.kind === 'pipe' && l.tx === p[0] && l.ty === p[1])) issues.push(`${st.id}: 배관 (${p[0]},${p[1]}) 디딜 곳 없음`); });
+        for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'L' && !S.ladders.some(l => l.kind === 'ladder' && l.bx === x && l.by === y)) issues.push(`${st.id}: 사다리 (${x},${y}) 옆에 옥상 없음`);
+        if (st.reinf) reach(st.reinf[0], st.reinf[1], '증원 지점');
+        S.ladders.filter(l => l.kind === 'stair' || l.kind === 'fstair').forEach(l => { if (!l.bfl) reach(l.bx, l.by, '계단'); });
+        S.lamps.filter(l => l.hearth).forEach(l => { if (!S.ladders.some(c => c.kind === 'chimney' && c.lamp === l)) issues.push(`${st.id}: 아궁이 (${l.tx},${l.ty}) 굴뚝 없음`); });
+        S.vents.forEach(v => { if (v.roof ? !v.z : groundSolidP(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 자리 잘못됨`); else if (!v.roof) reach(v.tx, v.ty, '환풍구'); if (!ventAt(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 덕트 없음`); });
+        (S.cams || []).forEach(c => { const g = c.fl ? GF[c.fl] : G0; if (SOLID.has(g[c.ty][c.tx])) issues.push(`${st.id}: CCTV (${c.tx},${c.ty}) 벽 안`); });
+        S.hides.filter(h => h.type === 'well').forEach(h => { if (!ugAt(h.tx, h.ty)) issues.push(`${st.id}: 맨홀 (${h.tx},${h.ty}) 지하와 안 이어짐`); });
+        S.windows.forEach(w => { const ok = [[1, 0], [0, 1]].some(([dx, dy]) => !groundSolidP(w.tx + dx, w.ty + dy) && !groundSolidP(w.tx - dx, w.ty - dy)); if (!ok) issues.push(`${st.id}: 창문 (${w.tx},${w.ty}) 양쪽이 막힘`); });
+        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.roof && !n.z) issues.push(`${st.id}: 전깃줄${wi} 끝 (${n.tx},${n.ty}) 옥상 아님`); }));
+        S.poles.forEach(o => { if (!o.wires.length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 줄 없음`); const ok = N8.slice(0, 4).filter(d => !solidAt(o.tx + d[0], o.ty + d[1])); if (!ok.length || !astar(sx, sy, o.tx + ok[0][0], o.ty + ok[0][1]).length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 접근 불가`); });
+        BLD.forEach((b, bi) => { if (!S.ladders.some(l => bldAt(l.tx, l.ty) === bi) && !S.wires.some(w => [w.a, w.b].some(n => n.roof && bldAt(n.tx, n.ty) === bi))) issues.push(`${st.id}: 건물${bi} 직접 오를 곳 없음`); });
+      });
+      newGame(0);
+      return issues;
+    }
+  };
+};
+atlas.src = A.atlas;
