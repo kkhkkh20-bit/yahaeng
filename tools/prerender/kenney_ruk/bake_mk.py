@@ -171,6 +171,7 @@ def webp(im, q=88):
 async def main():
     spec = json.load(open(HERE + '/kenney_ruk/spec.json')); kit = json.load(open(BASE + '/kit.json')); kit['bld'] = {}
     only = next((a for a in sys.argv[1:] if not a.startswith('--')), None)
+    if only and os.path.exists(f'{OUT}/kit.json'): kit['bld'] = json.load(open(f'{OUT}/kit.json')).get('bld', {})  # 한 판만 다시 구울 땐 나머지 판은 그대로 둔다
     srv = subprocess.Popen([sys.executable, '-m', 'http.server', '8775'], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
     try:
         async with async_playwright() as p:

@@ -14,10 +14,9 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1200)
-        # M1: 순찰 경비 등 뒤에서 [특수]
-        print('M1 steal', await run(pg, 0, [
-          "const S = T.S(), g = S.guards.find(g => g.hasKey === 'red'); const P = S.player; P.x = g.x - Math.cos(g.a) * 36; P.y = g.y - Math.sin(g.a) * 36; P.a = g.a; return T.G().secondaryAction().label;",
-          "T.G().actCarry(); return [Object.keys(T.S().player.keys), T.S().alevel];"]))
+        # M1: 사무실 순찰 경비 등 뒤에서 [특수] — 카드키가 없어진 뒤로는 소매치기 대신 제압·끌기 확인
+        print('M1 back', await run(pg, 0, [
+          "const S = T.S(), g = S.guards[2]; const P = S.player; P.fl = g.fl || 0; T.G().setLayer(P.fl); P.x = g.x - Math.cos(g.a) * 36; P.y = g.y - Math.sin(g.a) * 36; P.a = g.a; return [T.act(), (T.G().secondaryAction() || {}).label];"]))
         # M4: 수금원 처치 → 빨강 떨어짐 → 줍기
         print('M4', await run(pg, 4, [
           "const S = T.S(), t = S.guards[0]; T.S().guards[1].x = -5000; T.S().guards[1].follow = null; const P = S.player; P.x = t.x - Math.cos(t.a) * 34; P.y = t.y - Math.sin(t.a) * 34; P.a = t.a; return T.act();",

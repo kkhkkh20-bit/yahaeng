@@ -181,7 +181,21 @@ function planInterior(g, b, bi, f) {
     if (f === 0) { const dx = sx0 + 2; g[b.y1][dx] = 't'; K(dx, iy1); K(dx, iy1 - 1); }
     for (let x = sx0; x <= sx1; x++) K(x, iy1);  // 앞줄 비움(창문 쪽 통로)
     K(ix0, iy1 - 1); K(ix1, iy1 - 1);  // 옆 창문 안쪽 비움 (옆 건물 창문 건너기)
-    if (use === 'store') { for (let y = iy0 + 1; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); furn(sx1 - 1, iy1 - 1, 2, 1, 'counter'); furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'locker'); }
+    if (use === 'heist') {  // 미션 1 창고 상회 1층: 뒤 = 창고(높은 선반 사이로 숨어 지나간다)·사무실(책상 = 낮은 엄폐, 장부) / 앞 = 매장(낮은 진열대)
+      const vy = iy0 + 5, xm = sx0 + 7;
+      fill(sx0, iy0, sx1, vy - 1, 'w'); fill(sx0, vy + 1, sx1, iy1, 't');
+      for (let x = sx0; x <= sx1; x++) g[vy][x] = '#';
+      for (let y = iy0; y < vy; y++) g[y][xm] = '#';
+      gap(sx0 + 3, vy, 'w'); gap(sx1 - 1, vy, 'w'); gap(xm, iy0 + 3, 'w');   // 창고↔매장 · 사무실↔매장 · 창고↔사무실
+      gap(cx0 - 1, iy0 + 1, 'w');                                            // 계단 복도 ↔ 사무실 (옥상 길로 오면 바로 사무실)
+      if (f === 0) { g[b.y0][sx0 + 3] = 'w'; K(sx0 + 3, iy0); K(sx0 + 3, iy0 + 1); }   // 뒷문: 잠기지 않았다
+      rec.store = { x0: sx0, y0: vy + 1, x1: sx1, y1: iy1, use }; rec.office = { x0: xm + 1, y0: iy0, x1: sx1, y1: vy - 1 };
+      for (const y of [iy0 + 1, iy0 + 3]) for (let x = sx0 + 1; x + 1 <= xm - 2; x += 3) furn(x, y, 2, 1, 'shelf');
+      furn(xm + 1, iy0 + 1, 2, 1, 'desk2'); furn(sx1 - 1, iy0 + 3, 2, 1, 'desk2'); furn(sx1, iy0, 1, 1, 'cab');
+      for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
+      furn(sx1 - 2, vy + 2, 2, 1, 'disp');
+    }
+    else if (use === 'store') { for (let y = iy0 + 1; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); furn(sx1 - 1, iy1 - 1, 2, 1, 'counter'); furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'locker'); }
     else if (use === 'pc') { for (let y = iy0; y < iy1; y += 2) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3) furn(x, y, 1, 1, 'pc'); }
     else if (use === 'academy') { furn(sx0 + 1, iy0, Math.max(2, sx1 - sx0 - 1), 1, 'board'); for (let y = iy0 + 2; y < iy1; y += 2) for (let x = sx0; x <= sx1; x += 2) furn(x, y, 1, 1, 'desk'); }
     else if (use === 'club') {  // 클럽: 바·디제이 부스·스피커, 가운데 춤추는 자리, 색 조명
@@ -311,6 +325,7 @@ function drawFurnArt(x, it) {
     case 'pc': sh(); R(4, 6, w - 8, h - 12, '#3a3d44'); R(10, 8, 28, 16, '#111318'); R(12, 10, 24, 12, ['#2a6a9a', '#6a2a8a', '#2a8a5a'][s % 3]); R(12, 28, 24, 6, '#5a5d64'); break;
     case 'shelf': sh(); R(2, 8, w - 4, h - 16, '#8a8f98'); for (let k = 0; k < it.w * 4; k++) R(6 + k * 11, 12, 8, 10, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;
     case 'shelfS': sh(); R(6, 4, w - 12, h - 10, '#6a4a32'); for (let k = 0; k < 3; k++) R(10 + k * 9, 8, 6, 14, ['#a84a4a', '#4a6a9a', '#c8a050'][(k + s) % 3]); break;
+    case 'disp': sh(); R(3, 10, w - 6, h - 18, '#8a8f98'); for (let k = 0; k < it.w * 3; k++) R(6 + k * 15, 13, 11, h - 26, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;  // 낮은 진열대
     case 'counter': sh(); R(2, 6, w - 4, h - 12, '#d8d0c0'); R(10, 12, 16, 12, '#3a3d44'); R(12, 14, 12, 6, '#7ac85a'); break;
     case 'table': sh(); R(6, 10, w - 12, h - 20, '#b08860'); for (const a of [10, w - 22]) { R(a, 2, 12, 6, '#7a5a3a'); R(a, h - 8, 12, 6, '#7a5a3a'); } R(w / 2 - 8, h / 2 - 4, 16, 8, '#c8c0b0'); break;
     case 'tableS': R(8, 10, w - 16, h - 20, '#a07850'); R(18, 18, 12, 8, '#e8e4d8'); break;
@@ -1007,7 +1022,8 @@ const CH = {
   nolure: ['던지는 도구 안 쓰기', () => S.stats.stonesUsed === 0 && S.stats.kunaiUsed === 0],
   fast: ['빨리 깨기', () => S.t < (STAGE.fastT || 240)],
   disguise: ['변장한 채로 표적 처치', () => !!S.stats.disguiseKill],
-  noalarm: ['경보를 한 번도 울리지 않기', () => S.stats.alarms === 0]
+  noalarm: ['경보를 한 번도 울리지 않기', () => S.stats.alarms === 0],
+  roof: ['옥상 계단실로 들어가기', () => (S.stats.roofStair || 0) > 0]
 };
 const chName = id => id === 'fast' ? `${Math.round((STAGE.fastT || 240) / 60)}분 안에 깨기` : (CH[id] || ['?'])[0];
 function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
@@ -3646,6 +3662,7 @@ function actPrimary(force) {
       play('throw', 0.3); break;
     }
     case 'down': {
+      if (a.l && a.l.kind === 'stair') S.stats.roofStair = (S.stats.roofStair || 0) + 1;
       const l = a.l, fin = () => { P.z = l.bz; P.fl = l.bfl || 0; setLayer(P.fl); P.x = l.x; P.y = l.y;
         if (l.kind === 'chimney') { noise(l.ux, l.uy, 70, 'soot'); S.fx.push({ k: 'smoke', x: l.ux, y: l.uy, t: 0 }); toast('굴뚝을 타고 아궁이로 내려왔다 (그을음 소리가 조금 났다)', 2.2); } };
       play(l.kind === 'pipe' ? 'metal' : 'cloth', 0.3);
