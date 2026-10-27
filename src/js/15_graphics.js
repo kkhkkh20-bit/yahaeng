@@ -230,8 +230,18 @@ function drawBody(c, lift = 0) {
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
   blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
 }
+// 들고 있는 상자 (택배): 두 팔을 모은 자세 위에 상자를 그린다. 북쪽(화면 위)을 보면 몸 뒤에 가려진다
+const holdingNow = g => g.carryTo != null && g.ri === g.carryTo && ['PATROL', 'RETURN'].includes(g.state);
+function drawHeldBox(x, y, a, s, front) {
+  const back = Math.sin(a) < -0.35; if (back === front) return;
+  const bx = x + Math.cos(a) * 11 * s, by = y - 17 * s + Math.sin(a) * 6 * s, w = 17 * s, h = 12 * s;
+  ctx.save(); ctx.translate(bx, by); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-w / 2 + 1, -h / 2 + 2, w, h);
+  ctx.fillStyle = '#b98a50'; ctx.strokeStyle = 'rgba(30,20,10,.9)'; ctx.lineWidth = 1.2; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.strokeRect(-w / 2, -h / 2, w, h);
+  ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
+}
 function guardAnim(g) {
   if (g.swingT > 0) return 'punch';
+  if (holdingNow(g)) return g.moving ? 'hold' : 'holdI';
   if (!(g.moving || g.state === 'CAPTIVE')) return g.state === 'PANIC' && g.cowered ? 'crouch' : 'idle';
   return g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'PANIC' ? 'run' : 'walk';
 }
@@ -281,7 +291,7 @@ function drawGuard(g) {
     drawPR(k, g.x, g.y, -Math.PI / 2, 'climb', 0, 1, 1, 14, ((Math.floor(c.t * 7) * (c.up ? 1 : -1)) % 4 + 4) % 4); return;
   }
   if (g.z) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(g.x + 4 + g.z * 2, g.y + 6 + g.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
-  if (usePR(k)) { drawPR(k, g.x, g.y, g.a, guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05); return; }
+  if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); drawPR(k, g.x, g.y, g.a, guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); return; }
   drawChar(k, g.x, g.y, g.a, g.moving || g.state === 'CAPTIVE', 1, 3, g.swingT > 0);
 }
 function drawDog(x, y, a, moving, alpha = 1, dead = false) {

@@ -19,11 +19,13 @@ function reportTo(g) {
   for (const o of S.guards) { if (o.civ || o.dog || o.target || ['DEAD', 'CAPTIVE', 'FLEE', 'TERROR'].includes(o.state) || flOf(o) !== flOf(g) || (o.z || 0)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; best = o; } }
   return best;
 }
-function startReport(g, x, y, c, saw) {
-  const to = reportTo(g); if (!to) return false;
-  endChat(g); g.state = 'REPORT'; g.rep = { x, y, c: c || null, saw: saw || null, to, t: 0, rp: 0 }; g.path = null; g.icon = '!'; g.iconT = 99; g.meter = 1; g.wait = 0;
+// kind: 'crime' 해치는 것을 봄 · 'body' 쓰러진 사람 · 'trespass' 출입 금지에 들어간 사람 · 'disguise' 처음 보는 사람이 우리 옷을 입음
+function startReport(g, x, y, c, saw, kind) {
+  const to = reportTo(g); if (!to) return false; kind = kind || (c ? 'body' : 'crime');
+  endChat(g); g.state = 'REPORT'; g.rep = { x, y, c: c || null, saw: saw || null, kind, to, t: 0, rp: 0 }; g.path = null; g.icon = '!'; g.iconT = 99; g.meter = 1; g.wait = 0;
+  if (kind === 'trespass') { gsay(g, ['경비 아저씨한테 말해야겠다.', '저 사람 왜 저기 들어가지?', '사장님께 말씀드려야지.'][g.id % 3], 2.2); hint('tres', '직원은 출입 금지 구역에 들어온 사람을 보면 먼저 말로 나가라고 하고, 계속 머물면 자경대원에게 알리러 간다. 알리면 자경대원이 확인하러 온다(경보는 아니다)'); return true; }
   S.stats.screams = (S.stats.screams || 0) + 1; logEv('witness', g.x, g.y);
-  gsay(g, c ? ['저기 사람이 쓰러졌어!', '누가 좀 와 봐요!', '사람이 쓰러져 있어요!'][g.id % 3] : ['저 사람 수상해요!', '도둑이야! 경비 아저씨!', '저기요! 저 사람이요!'][g.id % 3], 2.2);
+  gsay(g, c ? ['저기 사람이 쓰러졌어!', '누가 좀 와 봐요!', '사람이 쓰러져 있어요!'][g.id % 3] : kind === 'disguise' ? ['당신 우리 직원 아니잖아!', '처음 보는 얼굴인데…!', '그 옷 어디서 났어요?'][g.id % 3] : ['도둑이야! 경비 아저씨!', '사람 살려요!', '저 사람이 사람을 해쳤어요!'][g.id % 3], 2.2);
   play('call', 0.5 * proxVol(g), 1.6); noise(g.x, g.y, 150, 'scream', flOf(g));
   hint('report', '신고하러 뛰는 주민: 머리 위 ! 와 붉은 점선이 가는 곳이다. 자경대원에게 닿기 전에 막으면(기절) 신고는 없던 일이 된다');
   return true;
@@ -40,11 +42,16 @@ function deliverReport(g) {
   const r = g.rep, o = r.to, P = S.player; g.rep = null;
   if (g.child) {  // 아이 → 어른: 어른이 이어서 신고하러 간다 (한 단계 느리다)
     gsay(g, r.c ? '엄마! 저기 사람이 누워 있어!' : '아빠! 저 아저씨가 이상해!', 2.4); gsay(o, '뭐? 어디?', 2);
-    if (!startReport(o, r.x, r.y, r.c, r.saw)) civScream(o, r.x, r.y, r.c, r.saw);
+    if (!startReport(o, r.x, r.y, r.c, r.saw, r.kind)) civScream(o, r.x, r.y, r.c, r.saw, r.kind);
     g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false; return;
   }
+  if (r.kind === 'trespass') {  // 무단 침입 알림: 자경대원이 확인하러 갈 뿐 (경보·얼굴 기억·목격자 감점 없음)
+    gsay(g, '저쪽 출입 금지 구역에 수상한 사람이 들어갔어요.', 2.6); endChat(o); o.act = null; o.bubble = null; goSuspicious(o, r.x, r.y, 5); o.why = 'heard';
+    setTimeout(() => { if (o.state !== 'DEAD') gsay(o, ['알겠어요, 가 볼게요.', '또 누가 들어갔나.', '확인해 보죠.'][o.id % 3]); }, 900);
+    g.state = 'RETURN'; g.path = null; g.icon = null; return;
+  }
   S.stats.witness = (S.stats.witness || 0) + 1; logEv('report', g.x, g.y);
-  gsay(g, r.c ? '저쪽에 사람이 쓰러져 있어요!' : '저쪽에서 어떤 사람이 사람을 해쳤어요!', 2.6);
+  gsay(g, r.c ? '저쪽에 사람이 쓰러져 있어요!' : r.kind === 'disguise' ? '처음 보는 사람이 우리 옷을 입고 돌아다녀요!' : '저쪽에서 어떤 사람이 사람을 해쳤어요!', 2.6);
   endChat(o); o.act = null; o.bubble = null; o.want = Math.atan2(g.y - o.y, g.x - o.x);
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
@@ -75,7 +82,7 @@ function drawReport(g) {
   if (g.state !== 'REPORT' || !g.rep || !g.rep.to || flOf(g) !== flOf(S.player)) return; const o = g.rep.to;
   ctx.save(); ctx.strokeStyle = 'rgba(255,90,70,.75)'; ctx.lineWidth = 2.5; ctx.setLineDash([7, 6]); ctx.lineDashOffset = -S.t * 40;
   ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(o.x, o.y); ctx.stroke(); ctx.restore();
-  if (dist(g.x, g.y, S.player.x, S.player.y) < 600) tag(g.x, g.y + 34, '신고하러 간다', '#ff8a76', 0.95);
+  if (dist(g.x, g.y, S.player.x, S.player.y) < 600) tag(g.x, g.y + 34, g.rep.kind === 'trespass' ? '알리러 간다' : '신고하러 간다', g.rep.kind === 'trespass' ? '#f2c46b' : '#ff8a76', 0.95);
 }
 
 // ---- 표적 일과표 (이스케이피스트·히트맨식): 장소마다 머무는 시간과 하는 일. 경로(route)로 바꿔 쓰고, 이름은 정보 카드에 쓴다

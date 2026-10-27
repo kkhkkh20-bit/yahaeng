@@ -236,9 +236,9 @@ const spdMul = () => A_SPEED[S.alevel] * D().spd * (STAGE.gspd || 1);
 
 // 주민: 싸우지 않는다. 보거나 시체를 보면 비명을 질러 자경대원을 부르고 달아난다
 function civWake(g, x, y) { g.state = 'PATROL'; g.meter = Math.max(g.meter, 0.45); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '!?'); play('question', 0.3 * proxVol(g)); }
-function civScream(g, x, y, c, saw) {
+function civScream(g, x, y, c, saw, kind) {
   if (g.state === 'PANIC' || g.state === 'REPORT') return;
-  if (STAGE.zones && startReport(g, x, y, c, saw)) return;  // 구역이 있는 판: 비명 대신 자경대원에게 뛰어가 신고한다 (도중에 막을 수 있다)
+  if (STAGE.zones && startReport(g, x, y, c, saw, kind)) return;  // 구역이 있는 판: 비명 대신 자경대원에게 뛰어가 신고한다 (도중에 막을 수 있다)
   endChat(g); g.state = 'PANIC'; g.panicT = rnd(6, 9); g.fear = { x, y }; g.path = null; g.cowered = false; g.meter = 1; S.stats.screams = (S.stats.screams || 0) + 1;
   say([[g, ['도둑이야!', '누, 누구세요!', '사람 살려!'][(Math.random() * 3) | 0]]]);
   play('call', 0.7 * proxVol(g), 1.6); noise(g.x, g.y, 380, 'scream', flOf(g));
@@ -328,13 +328,23 @@ function updateCiv(g, dt) {
     // 비명을 지르는 건 ① 자기 집 안에 들어온 낯선 사람 ② 사람을 끌고 가거나 붙잡고 있거나 막 해치는 모습 (③ 시체는 아래에서 따로)
     const gb = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)), pb = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
     const H = g.home, ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
-    g.wary = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1) || !!(P.carrying || P.captive || P.strikeT > 0)
-      || !!(STAGE.zones && g.outfit && pZoneEff() !== Z_PUB) || !!(STAGE.zones && (P.pick || (P.useT || 0) > S.t));  // 직원은 자기 일터의 불청객을 알아본다 · 락픽·몰래 약 타기는 누구나 본다
+    // 범죄(처치·기절·운반·붙잡기·락픽·몰래 약 타기)와 무단 침입(직원이 일터의 불청객을 봄)을 따로 본다
+    const crimeNow = !!(P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
+    const homeNow = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1);
+    const tresNow = !!(STAGE.zones && g.outfit && !g.child && pZoneEff() !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
+    g.wary = homeNow || crimeNow || tresNow;
     const vis0 = (P.hide || P.under || P.vent || !sameF) ? 0 : canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.jump ? Math.max(1, P.z) : P.z);
     if (vis0 > 0 && !g.wary && dist(g.x, g.y, P.x, P.y) < 110 && Math.random() < dt * 0.6) g.want = Math.atan2(P.y - g.y, P.x - g.x);  // 힐끔 쳐다볼 뿐
     const vis = g.wary ? vis0 : 0;
     g.seen = vis > 0;
-    if (g.seen) { g.meter = Math.min(1, g.meter + D().rate * (0.35 + vis * 1.4) * (g.club ? 0.35 : 1) * (STAGE.zones && (P.strikeT > 0 || P.captive || P.carrying) ? 3 : 1) * dt); g.want = Math.atan2(P.y - g.y, P.x - g.x); if (!g.icon) setIcon(g, '?'); if (g.meter >= 1) { civScream(g, P.x, P.y, null, disguised() ? P.outfit : 'face'); return; } }
+    if (g.seen) { if (crimeNow) g.sawCrimeT = S.t;
+      g.meter = Math.min(1, g.meter + D().rate * (0.35 + vis * 1.4) * (g.club ? 0.35 : 1) * (STAGE.zones && crimeNow ? 3 : 1) * dt); g.want = Math.atan2(P.y - g.y, P.x - g.x); if (!g.icon) setIcon(g, '?');
+      if (g.meter >= 1) {
+        if (!STAGE.zones || S.t - (g.sawCrimeT || -99) < 2.5) { civScream(g, P.x, P.y, null, disguised() ? P.outfit : 'face', 'crime'); return; }
+        // 무단 침입: 먼저 말로 나가라고 하고, 그래도 머물면 '수상한 사람이 들어갔다'고 알린다 (경보·얼굴 기억·감점 없음)
+        if (!g.tresT || S.t - g.tresT > 20) { g.tresT = S.t; g.meter = 0.35; setIcon(g, '!?'); gsay(g, ['여기 들어오시면 안 돼요.', '저기요, 거긴 직원만 다녀요.', '어디 가세요? 거기 출입 금지예요.'][g.id % 3], 2.6); }
+        else if (S.t - g.tresT > 3) { g.meter = 0; if (!startReport(g, P.x, P.y, null, null, 'trespass')) g.tresT = S.t; return; }
+      } }
     else g.meter = Math.max(0, g.meter - dt * 0.25);
     for (const c of S.corpses) { if (c.stashed || c.carried || c.hidden || c.civSeen || flOf(c) !== flOf(g)) continue; if (canSee(g, c.x, c.y, Math.max(0.45, c.light), false, false, false) > 0) { c.civSeen = true; if (c.accident) { setIcon(g, '!?'); continue; } civScream(g, c.x, c.y, c); return; } }
     if (g.seen && g.chat) endChat(g);

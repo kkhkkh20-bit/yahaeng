@@ -121,7 +121,8 @@ function drawPlayer(P) {
       if (concealed && prVar.ninja_ol) drawPR('ninja_ol', P.x, P.y, aa, mv ? 'sneak' : 'lean', S.t, 0.85, s0, -yo, mv ? -1 : (Math.floor(S.t * 0.4) % 2));
       return;
     }
-    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? 'idle' : (runP || P.jump) ? 'run' : 'walk';
+    const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
+    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? 'idle' : (runP || P.jump) ? 'run' : 'walk';
     const t = S.t, s = sc / 3, PK = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
@@ -130,10 +131,10 @@ function drawPlayer(P) {
       const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : 0.55, s, -yo);
+      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : 0.55, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
       if (prVar.ninja_ol) drawPR('ninja_ol', P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.9, s, -yo);
-    } else { drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); }
+    } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
     if (P.disguise && !P.disguiseBlown) { ctx.fillStyle = 'rgba(127,174,134,.9)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('변장', P.x, P.y - 44 * s); }
     return;
   }

@@ -74,7 +74,7 @@
     { kind: 'civ', tag: 'boss', outfit: 'staff', body: 'big', enforcer: true, schedKey: 'bossOut', sched: [{ at: [37, 9], stay: 35, name: '사무실', act: '장부 정리' }, { at: [33, 13], stay: 22, name: '매장 카운터', act: '손님 응대' }, { at: [10, 25], stay: 18, name: '편의점', act: '담배 사기' }] },   // 12 사장 (눈썰미: 직원 옷)
     { kind: 'civ', tag: 'clerk', outfit: 'staff', body: 'fTail', wander: [29, 14, 36, 15], at: [32, 15] },                                                                      // 13 직원
     { kind: 'civ', tag: 'kid', outfit: 'staff', body: null, sched: [{ at: [31, 9], stay: 22, name: '창고', act: '짐 정리' }, { at: [21, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 14 막내
-    { kind: 'civ', tag: 'courier', outfit: 'courier', body: 'helmet', sched: [{ at: [48, 27], stay: 14, name: '택배 트럭', act: '상자 내리기' }, { at: [30, 8], stay: 8, name: '상회 창고', act: '배달' }] },   // 15 택배 기사
+    { kind: 'civ', tag: 'courier', outfit: 'courier', body: 'helmet', carryTo: 1, sched: [{ at: [48, 27], stay: 14, name: '택배 트럭', act: '상자 내리기' }, { at: [30, 8], stay: 8, name: '상회 창고', act: '배달' }] },   // 15 택배 기사
     // 광장의 엄마와 아이: 아이는 손댈 수 없다. 범죄를 보면 엄마에게 달려가고, 엄마가 신고하러 간다. 사탕(Z)으로 달랠 수 있다
     { kind: 'civ', tag: 'mom', body: 'fBob', at: [37, 21], post: 180 },                                                                                         // 16 엄마
     { kind: 'civ', tag: 'child', child: true, parent: 'mom', wander: [33, 20, 39, 22], at: [35, 21] }                                                                        // 17 아이

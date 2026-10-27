@@ -40,7 +40,7 @@ function updateSharpEye(g, dt, rawVis) {
   const P = S.player, d = dist(g.x, g.y, P.x, P.y);
   if (rawVis > 0 && d < EYE_R) { g.eyeT = (g.eyeT || 0) + dt * (P.mode === 'run' ? 2 : 1) * (d < 70 ? 1.6 : 1); g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '눈 표시가 뜬 사람은 눈썰미가 있다. 가까이에서 오래 보이면 변장이 들통난다 — 거리를 두고 지나가라');
-    if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
+    if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
