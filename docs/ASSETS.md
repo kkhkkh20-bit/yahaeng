@@ -3,4 +3,4 @@
 - Ninja Adventure Asset Pack (CC0, pixel-boy.itch.io)
 - OpenGameArt: roof_tiles.gif, footsteps, crickets.mp3 (oga/)
 - Galmuri 글꼴 (OFL)
-- Quaternius Downtown City MegaKit (CC0, quaternius.itch.io/downtown-city-megakit) — 비교판 건물 외관 (dl/megakit)
+- Quaternius Downtown City MegaKit (CC0, quaternius.itch.io/downtown-city-megakit) — 도시판 건물 외관 (dl/megakit). 옥상 소품은 three.js 기본 도형으로 직접 만든 것

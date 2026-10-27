@@ -397,8 +397,8 @@ const roofEdgeY = (tx, ty) => { const b = BLD[bldAt(tx, ty)]; return (b.y1 - b.f
 const bldAt = (tx, ty) => inMap(tx, ty) ? BI[ty * MW + tx] : -1;
 // 플레이어만 비밀 통로('S')를 지나갈 수 있다
 const groundSolidP = (tx, ty) => solidAt(tx, ty) && !(inMap(tx, ty) && G[ty][tx] === 'S');
-const solidFor = z => z ? (tx, ty) => rLv(tx, ty) !== z : groundSolidP;
-const opaqueAt = (tx, ty, ign) => !inMap(tx, ty) || (OPAQUE.has(G[ty][tx]) && !(ign && RL[ty * MW + tx] > 0));
+const solidFor = z => z ? (tx, ty) => rLv(tx, ty) !== z || robAt(tx, ty) : groundSolidP;
+const opaqueAt = (tx, ty, ign) => !inMap(tx, ty) || (OPAQUE.has(G[ty][tx]) && !(ign && RL[ty * MW + tx] > 0)) || (ign > 0 && robAt(tx, ty) && RL[ty * MW + tx] === ign);  // 옥탑방·물탱크는 지붕 위 시선을 가린다
 const tileAt0 = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return inMap(tx, ty) ? G0[ty][tx] : '#'; };
 const tileAt = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return inMap(tx, ty) ? G[ty][tx] : '#'; };
 
@@ -488,14 +488,16 @@ function kitFloor(k) {
 }
 // 판이 시작될 때: 구운 건물 그림을 이 판 건물에 붙인다 (지도 모양이 바뀌었으면 붙이지 않고 기존 그림을 쓴다)
 function kitAttach() {
+  ROB = null; BLD.forEach(b => { b.kitProps = null; });
   if (!KIT || !KIT.bld || !KIT.bld[STAGE.id]) return;
   const cache = kitB[STAGE.id] || (kitB[STAGE.id] = {});
   for (const e of KIT.bld[STAGE.id]) {
     const b = BLD[e.i]; if (!b || [b.x0, b.y0, b.x1, b.y1, b.h].join() !== e.key.join()) continue;
     let k = cache[e.i];
     if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null, gl: e.gl || [], g: null }; k.img.src = e.src; }
-    b.kit = k;
+    b.kit = k; b.kitProps = e.props || null;
   }
+  robBuild();
 }
 // 지붕 부분만 밤빛으로 한 번 어둡게 칠한 사본 (정면 벽은 매 프레임 조명에 따라 칠한다)
 function kitCanvas(b) {
@@ -2542,9 +2544,10 @@ function fallKill(g, from, to) {
 }
 // ---- 벽에 기대기 · 끌어당겨 암살
 function coverAt(P, prev) {
-  if (P.z || P.wire || P.jump || P.hide || P.vent || P.under || P.trav) return null;
-  const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, sol = groundSolidP, c = [];
-  const kd = (x, y) => { const ch = inMap(x, y) ? G0[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
+  if (P.wire || P.jump || P.hide || P.vent || P.under || P.trav || P.ledge) return null;
+  // 지붕 위: 옥탑방·물탱크·계단실 벽에만 기댄다 (지붕 끝은 기댈 벽이 아니다)
+  const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, sol = P.z ? (x, y) => robAt(x, y) && lvAt(x, y) === P.z : groundSolidP, c = [];
+  const kd = (x, y) => { if (P.z) return 'wall'; const ch = inMap(x, y) ? G0[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
   if (sol(tx, ty - 1) && fy < 22) c.push({ x: 0, y: 1, d: fy, kind: kd(tx, ty - 1) });
   if (sol(tx, ty + 1) && fy > TILE - 22) c.push({ x: 0, y: -1, d: TILE - fy, kind: kd(tx, ty + 1) });
   if (sol(tx - 1, ty) && fx < 22) c.push({ x: 1, y: 0, d: fx, kind: kd(tx - 1, ty) });
@@ -2561,8 +2564,8 @@ function coverTarget() {
   const P = S.player; if (!P.cover || P.strikeT > 0 || S.pull) return null;
   let best = null, bd = perkOn('reach') ? 120 : 100;
   for (const g of S.guards) {
-    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || g.z || g.climb || g.doomed || (g.seen && g.meter > 0.6) || flOf(g) !== flOf(P)) continue;
-    const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y)) { bd = d; best = g; }
+    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || (g.z || 0) !== (P.z || 0) || g.climb || g.doomed || (g.seen && g.meter > 0.6) || flOf(g) !== flOf(P)) continue;
+    const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y, P.z || 0)) { bd = d; best = g; }
   }
   return best;
 }
@@ -2700,13 +2703,13 @@ function updatePlayer(dt) {
     const into = mag > 0.05 ? -(mx * P.cover.x + my * P.cover.y) / mag : 0;
     if (!n || away > 0.45 || P.carrying || P.captive || mode === 'run' || (P.cover.auto && mag > 0.05 && into < 0.7)) { P.cover = null; }
     else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
-  } else if (mag > 0.05 && mode !== 'run' && !P.carrying && !P.captive && !P.z && !P.strikeT) {
+  } else if (mag > 0.05 && mode !== 'run' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT) {
     P.idleWall = 0;
     const n = coverAt(P); if (n && (mx * n.x + my * n.y) / mag < -0.92) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.42) { enterCover(n); mag = 0; } } else P.coverPush = 0;  // 벽을 향해 거의 똑바로 잠깐 밀어야 기댄다 (비스듬히 걸을 땐 안 걸린다)
   } else {
     P.coverPush = 0;
     // 벽에 붙어 멈추면 저절로 기댄다 (움직이면 바로 떨어진다)
-    if (mag <= 0.05 && mode !== 'run' && !P.carrying && !P.captive && !P.z && !P.strikeT && !P.pick && !input.aiming) {
+    if (mag <= 0.05 && mode !== 'run' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT && !P.pick && !input.aiming) {
       const n = coverAt(P); if (n) { P.idleWall = (P.idleWall || 0) + dt; if (P.idleWall > 0.22) { enterCover(n, true); P.cover.auto = true; } } else P.idleWall = 0;
     } else P.idleWall = 0;
   }
@@ -4401,8 +4404,80 @@ function drawFacadeExtras(b, flat, kit) {
   }
 }
 // 키트 굽기용: 건물마다 정면 줄(층별)의 창·문·기둥 자리
+// ---- 옥상 살림: 옥탑방·물탱크·계단실(막힘) + 간판·채광창·텃밭·빨랫줄·태양광판·실외기·환기관(그림만)
+// 배치는 여기서 정하고 kitSpec으로 굽기에 넘긴다. 구운 kit.json에 같은 목록이 들어 있으면 막힘 칸이 된다
+const hN = (...a) => { let h = 2166136261 >>> 0; for (const v of a) { h = Math.imul(h ^ (v & 0xffff), 16777619) >>> 0; h = Math.imul(h ^ ((v >>> 16) & 0xffff), 16777619) >>> 0; } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995) >>> 0; return (h ^ (h >>> 15)) >>> 0; };
+const ROOF_SOLID = { okt: 1, tank: 1, stair: 1 };
+function roofProps(b, bi) {
+  if (!CITY || !b.facade || b.fh !== b.h || b.piloti) return [];
+  const x0 = b.x0, x1 = b.x1, ry0 = b.y0, ry1 = b.y1 - b.fh, w = x1 - x0 + 1, dr = ry1 - ry0 + 1, L = lvAt(x0, ry0);
+  if (dr < 2 || L <= 0) return [];
+  for (let y = ry0; y <= ry1; y++) for (let x = x0; x <= x1; x++) if (rLv(x, y) !== L || bldAt(x, y) !== bi) return [];
+  const house = b.kind === 'house', shop = b.kind === 'shop', glass = !!b.glass, mansard = house && dr >= 2, fr = mansard ? 1 : 0, uy1 = ry1 - fr, hs = hN(x0, ry0, w, b.h);
+  const K = (x, y) => x + ',' + y, hard = new Set(), soft = new Set();
+  const mark = (x, y) => { if (x >= x0 && x <= x1 && y >= ry0 && y <= ry1) hard.add(K(x, y)); };
+  (S.ladders || []).forEach(l => { if (l.tz === L || l.tz > 0) mark(l.tx, l.ty); if (l.bz > 0) mark(l.bx, l.by); });
+  (S.vents || []).forEach(v => { if (v.roof) mark(v.tx, v.ty); });
+  (STAGE.planks || []).forEach(([ax, ay, bx, by]) => { for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) mark(x, y); mark(ax - 1, ay); mark(ax + 1, ay); mark(bx - 1, by); mark(bx + 1, by); mark(ax, ay - 1); mark(ax, ay + 1); mark(bx, by - 1); mark(bx, by + 1); });
+  (S.traps || []).forEach(t => { [t.at, t.sw].forEach(p => p && mark(p[0], p[1])); });
+  (S.wires || []).forEach(wi => [wi.a, wi.b].forEach(n => n && !n.pole && mark(n.tx, n.ty)));
+  [STAGE.start, STAGE.exit].forEach(p => p && mark(Math.floor(p[0]), Math.floor(p[1])));
+  const roofSol = (x, y) => rLv(x, y) !== L;
+  (S.guards || []).forEach(g => {
+    if ((g.z || 0) !== L || bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) !== bi) return;
+    const pts = (g.route || []).map(p => [Math.floor(p.x / TILE), Math.floor(p.y / TILE)]); pts.push([Math.floor(g.x / TILE), Math.floor(g.y / TILE)]);
+    pts.forEach(p => mark(p[0], p[1]));
+    for (let i = 0; i + 1 < pts.length; i++) astar(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1], roofSol).forEach(p => mark(Math.floor(p.x / TILE), Math.floor(p.y / TILE)));
+    if (pts.length > 2) astar(pts[pts.length - 2][0], pts[pts.length - 2][1], pts[0][0], pts[0][1], roofSol).forEach(p => mark(Math.floor(p.x / TILE), Math.floor(p.y / TILE)));
+  });
+  hard.forEach(k => { const [x, y] = k.split(',').map(Number); for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) soft.add(K(x + ox, y + oy)); });
+  const occ = new Set(), sol = new Set(), out = [];
+  const connected = () => {  // 막힘을 넣어도 지붕이 한 덩어리로 이어져 있는가
+    let st = null, n = 0; for (let y = ry0; y <= ry1; y++) for (let x = x0; x <= x1; x++) if (!sol.has(K(x, y))) { n++; if (!st) st = [x, y]; }
+    const seen = new Set([K(...st)]), q = [st];
+    while (q.length) { const [x, y] = q.pop(); for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = K(nx, ny); if (nx < x0 || nx > x1 || ny < ry0 || ny > ry1 || seen.has(k) || sol.has(k)) continue; seen.add(k); q.push([nx, ny]); } }
+    return seen.size === n;
+  };
+  const take = (cw, cd, cands, solid) => {
+    for (const [cx, cy] of cands) {
+      if (cx < x0 || cx + cw - 1 > x1 || cy < ry0 || cy + cd - 1 > uy1) continue;
+      if (solid && (cx < x0 + 1 || cx + cw - 1 > x1 - 1 || cy < ry0 + 1 || cy + cd - 1 > ry1 - 1)) continue;
+      const cells = []; for (let a = cx; a < cx + cw; a++) for (let c = cy; c < cy + cd; c++) cells.push(K(a, c));
+      if (cells.some(k => occ.has(k) || hard.has(k) || (solid && soft.has(k)))) continue;
+      if (solid) { cells.forEach(k => sol.add(k)); if (!connected()) { cells.forEach(k => sol.delete(k)); continue; } }
+      cells.forEach(k => occ.add(k)); return [cx, cy];
+    }
+    return null;
+  };
+  const mix = (seed, rows) => { const r = []; for (const y of rows || (function* () { for (let y = ry0; y <= uy1; y++) yield y; })()) for (let x = x0; x <= x1; x++) r.push([x, y]); return r.sort((p, q) => hN(p[0], p[1], seed, hs) - hN(q[0], q[1], seed, hs)); };
+  const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
+  let okt = null;
+  if (!glass && w >= 5 && dr - fr >= 4 && hN(hs, 1) % 5 < 3) {
+    okt = take(3, 2, [[x0 + 1, ry0 + 1], [x1 - 3, ry0 + 1], [x0 + ((w - 3) >> 1), ry0 + 1]].sort((p, q) => hN(p[0], 7, hs) - hN(q[0], 7, hs)), true);
+    if (okt) out.push({ t: 'okt', x: okt[0], y: okt[1], lit: hs % 3 !== 0 });
+  }
+  if (!house && !glass && w >= 6 && hs % 3) { const s = take(4, 1, mix(1, [ry1]), false); if (s) out.push({ t: 'sign', x: s[0], y: s[1] }); }
+  if (!okt && w >= 5 && dr - fr >= 3) { const s = take(2, 1, mix(2, range(ry0 + 1, uy1)), true); if (s) out.push({ t: 'stair', x: s[0], y: s[1] }); }
+  if (b.h >= 2 && hs % 3 === 0 && w >= 4 && dr - fr >= 3) { const s = take(1, 1, mix(3), true); if (s) out.push({ t: 'tank', x: s[0], y: s[1] }); }
+  if (w >= 8 && dr - fr >= 4 && hN(hs, 2) % 2) { const s = take(3, 2, mix(4), false); if (s) out.push({ t: 'solar', x: s[0], y: s[1] }); }
+  if (!glass && dr - fr >= 3 && w >= 5 && hN(hs, 3) % 3) { const s = take(4, 1, mix(5), false); if (s) out.push({ t: 'line', x: s[0], y: s[1], m: hs & 15 }); }
+  if (!glass) for (let k = 0; k < Math.max(1, w >> 2); k++) { const s = take(1, 1, mix(10 + k, range(ry0 + 2, uy1)), false); if (s) out.push({ t: 'sky', x: s[0], y: s[1] }); }
+  if (!glass && !mansard && w >= 4) { const s = take(4, 1, mix(6, [ry1]), false); if (s) out.push({ t: 'plant', x: s[0], y: s[1] }); }
+  for (let k = 0; k < Math.max(1, (w / 3) | 0); k++) { const s = take(1, 1, mix(20 + k), false); if (s) out.push({ t: 'ac', x: s[0], y: s[1], r: (hs >> k) & 3 }); }
+  for (let k = 0; k < Math.max(1, w >> 2); k++) { const s = take(1, 1, mix(30 + k), false); if (s) out.push({ t: 'vent', x: s[0], y: s[1] }); }
+  return out;
+}
+// 구운 kit.json의 옥상 살림 목록 → 지붕 막힘 칸
+let ROB = null;
+const robAt = (tx, ty) => !!(ROB && inMap(tx, ty) && ROB[ty * MW + tx]);
+function robBuild() {
+  ROB = new Uint8Array(MW * MH); let n = 0;
+  BLD.forEach(b => (b.kitProps || []).forEach(p => { if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
+  if (!n) ROB = null;
+}
+const ROB_SOLID_DIM = { okt: [3, 2], tank: [1, 1], stair: [2, 1] };
 function kitSpec() {
-  return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(f => f.t + '_' + f.w + 'x' + f.h))], b: BLD.map((b, i) => ({ i, x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
+  return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(f => f.t + '_' + f.w + 'x' + f.h))], b: BLD.map((b, i) => ({ i, props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };
 }
 // 3/4 정면벽: 건물 남쪽 벽 줄을 정면에서 본 벽으로 그린다 (실제 문·창문 그림)
@@ -5666,7 +5741,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get DLG() { return DLG; }, kitSpec, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, get DLG() { return DLG; }, kitSpec, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];

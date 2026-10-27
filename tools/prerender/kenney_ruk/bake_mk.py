@@ -1,4 +1,4 @@
-# 비교용 배경: 건물 외관·지붕을 Quaternius Downtown City MegaKit(CC0)으로 굽는다 → build/kit_mk/kit.json
+# 도시판 배경: 건물 외관·지붕을 Quaternius Downtown City MegaKit(CC0)으로 굽고, 게임이 정한 옥상 살림을 올린다 → build/kit_mk/kit.json
 # 바닥·나무·가구·소품은 기존 kit.json(Kenney)을 그대로 쓴다. 먼저 spec.py와 bake.py를 돌려 둘 것
 import asyncio, base64, io, json, os, subprocess, sys, time, hashlib
 from PIL import Image
@@ -54,76 +54,68 @@ def bld_items(b):
         pk = 1.1
     else:
         for xx in range(x0, x1 + 1): it.append(M(fam['cornice'], xx + 0.5, h - 0.05, zF, s=(0.5, 0.3, 0.5), wallTint=tint))
-    # 옥상 살림: 칸 단위로 자리를 잡아 서로 겹치지 않게 놓는다 (그림만, 이동은 막지 않음)
-    fr = 1 if mansard else 0; occ = set()
-    def take(cw, cd, cands):
-        for cx, cz in cands:
-            if cx < x0 or cx + cw - 1 > x1 or cz < zB or cz + cd - 1 > zF - 1 - fr: continue
-            cells = {(a, c) for a in range(cx, cx + cw) for c in range(cz, cz + cd)}
-            if cells & occ: continue
-            occ.update(cells); return cx, cz
-        return None
-    def mix(seed, rows=None):
-        return sorted([(a, c) for c in (rows or range(zB, zF)) for a in range(x0, x1 + 1)], key=lambda p: H(p, seed, hs))
+    # 옥상 살림: 배치는 게임(roofProps)이 정해 spec에 넣어 준다. 칸 (x, y)는 게임 좌표 → 굽기 z = y + h
     neonR = [0xff3ca8, 0x3ce0ff, 0xffb040, 0xb45aff][hs % 4]
-    okt = None
-    if DRESS and not b['glass'] and w >= 5 and dr - fr >= 3 and H(hs, 'okt') % 5 < 3:  # 옥탑방: 하늘색 지붕 + 불 켜진 창 + 문
-        okt = take(3, 2, sorted([(x0, zB), (x1 - 2, zB), (x0 + (w - 3) // 2, zB)], key=lambda p: H(p, hs, 'o')))
-        if okt:
-            ox, oz = okt[0] + 0.4, okt[1]
-            it.append({'box': [ox, h, oz + 0.3, ox + 2.2, h + 0.85, oz + 1.9], 'color': 0xd8d2c4})
-            it.append({'box': [ox - 0.08, h + 0.85, oz + 0.22, ox + 2.28, h + 0.95, oz + 1.98], 'color': 0x3d6b8a})
-            lit_o = hs % 3 != 0
-            it.append({'box': [ox + 0.3, h + 0.3, oz + 1.9, ox + 1.0, h + 0.7, oz + 1.93], 'color': 0xffd9a0 if lit_o else 0x1a2433, 'emi': 0xffa850 if lit_o else 0x0a1220, 'ei': 1.4 if lit_o else 0.4, **({'gl': 'w'} if lit_o else {})})
-            it.append({'box': [ox + 1.4, h, oz + 1.9, ox + 1.85, h + 0.72, oz + 1.93], 'color': 0x6a4a30})
+    for p in (b.get('props') or []) if DRESS else []:
+        t, px, pz = p['t'], p['x'], p['y'] + h
+        if t == 'okt':  # 옥탑방: 벽·처마 지붕·창틀·문
+            ox, oz = px + 0.35, pz + 0.25; rc = [0x3d6b8a, 0x4a7a52, 0x6a4a6a][hs % 3]; lit_o = p.get('lit')
+            it.append({'box': [ox, h, oz, ox + 2.3, h + 0.82, oz + 1.5], 'color': 0xd6cfc0})
+            it.append({'box': [ox - 0.12, h + 0.82, oz - 0.1, ox + 2.42, h + 0.9, oz + 1.66], 'color': rc, 'rough': 0.7})
+            it.append({'box': [ox - 0.12, h + 0.78, oz + 1.6, ox + 2.42, h + 0.84, oz + 1.66], 'color': 0x22262c})
+            it.append({'box': [ox + 0.22, h + 0.26, oz + 1.5, ox + 1.02, h + 0.66, oz + 1.53], 'color': 0x2a2e36})
+            it.append({'box': [ox + 0.27, h + 0.3, oz + 1.53, ox + 0.97, h + 0.62, oz + 1.56], 'color': 0xffd9a0 if lit_o else 0x1a2433, 'emi': 0xffa850 if lit_o else 0x0a1220, 'ei': 1.4 if lit_o else 0.4, **({'gl': 'w'} if lit_o else {})})
+            it.append({'box': [ox + 0.6, h + 0.3, oz + 1.56, ox + 0.64, h + 0.62, oz + 1.58], 'color': 0x2a2e36})
+            it.append({'box': [ox + 1.32, h, oz + 1.5, ox + 1.86, h + 0.7, oz + 1.53], 'color': 0x3a3f48})
+            it.append({'box': [ox + 1.36, h, oz + 1.53, ox + 1.82, h + 0.66, oz + 1.56], 'color': 0x8a5a36})
+            it.append({'box': [ox + 1.26, h, oz + 1.56, ox + 1.92, h + 0.05, oz + 1.8], 'color': 0x8a8680})
+            it.append({'box': [ox + 2.0, h + 0.1, oz + 1.5, ox + 2.28, h + 0.32, oz + 1.66], 'color': 0xd8d8d0})
             pk = max(pk, 0.8)
-    if DRESS and not house and not b['glass'] and w >= 6 and hs % 3:  # 옥상 간판: 앞쪽 끝에 길 쪽을 보고 선 네온 판 (글자는 게임이 쓴다)
-        sg = take(4, 1, mix(1, [zF - 1]))
-        if sg:
-            sx0 = sg[0] + 0.3; sz = zF - 0.36
-            for lx in (sx0 + 0.3, sx0 + 3.1): it.append({'cyl': [lx, h, sz - 0.05, lx, h + 0.3, sz - 0.05], 'r': 0.05, 'color': 0x7a7f88, 'metal': 0.5})
-            it.append({'box': [sx0, h + 0.22, sz - 0.12, sx0 + 3.4, h + 0.9, sz], 'color': 0x101018})
-            it.append({'box': [sx0 + 0.1, h + 0.3, sz, sx0 + 3.3, h + 0.82, sz + 0.03], 'color': neonR, 'emi': neonR, 'ei': 1.6, 'gl': 's'})
-    if not okt and w >= 4 and dr - fr >= 2:  # 옥상 출입구(작은 계단실)
-        st_ = take(2, 1, mix(2, [zB]))
-        if st_:
-            ex = st_[0] + 0.4; it.append({'box': [ex, h, zB + 0.2, ex + 1.1, h + 0.55, zB + 1.0], 'color': 0x8a7f74}); it.append({'box': [ex - 0.02, h + 0.55, zB + 0.16, ex + 1.12, h + 0.6, zB + 1.04], 'color': 0x5a5550})
-    if h >= 2 and hs % 3 == 0 and w >= 4 and dr - fr >= 2:  # 물탱크: 나무 통 + 다리 (뉴욕 옥상)
-        wt = take(2, 2, mix(3))
-        if wt:
-            tx, tz = wt[0] + 1, wt[1] + 1
+        elif t == 'stair':  # 옥상 계단실: 상자 + 철문 + 처마
+            ex, ez = px + 0.4, pz + 0.1
+            it.append({'box': [ex, h, ez, ex + 1.2, h + 0.62, ez + 0.8], 'color': 0x8a7f74})
+            it.append({'box': [ex - 0.06, h + 0.62, ez - 0.06, ex + 1.26, h + 0.68, ez + 0.9], 'color': 0x5a5550})
+            it.append({'box': [ex + 0.4, h, ez + 0.8, ex + 0.82, h + 0.52, ez + 0.83], 'color': 0x4a5a6a, 'metal': 0.4})
+        elif t == 'tank':  # 물탱크: 다리 + 통 + 테두리 + 뚜껑
+            tx, tz = px + 0.5, pz + 0.5
             for lx, lz in ((-0.22, -0.22), (0.22, -0.22), (-0.22, 0.22), (0.22, 0.22)): it.append({'cyl': [tx + lx, h + 0.05, tz + lz, tx + lx, h + 0.55, tz + lz], 'r': 0.035, 'color': 0x3a3d44})
             it.append({'cyl': [tx, h + 0.55, tz, tx, h + 1.05, tz], 'r': 0.32, 'color': 0x7a5638, 'rough': 0.9, 'metal': 0})
+            for yy in (0.66, 0.92): it.append({'cyl': [tx, h + yy, tz, tx, h + yy + 0.03, tz], 'r': 0.335, 'color': 0x2a2c30, 'metal': 0.5})
             it.append({'cyl': [tx, h + 1.05, tz, tx, h + 1.16, tz], 'r': 0.24, 'color': 0x3a3d44})
             pk = max(pk, 1.2)
-    if DRESS and w >= 8 and dr - fr >= 4 and H(hs, 'sol') % 2:  # 태양광판
-        sp = take(3, 2, mix(4))
-        if sp:
-            for k in range(3): it.append({'box': [sp[0] + 0.05 + k * 0.97, h + 0.15, sp[1] + 0.3, sp[0] + 0.92 + k * 0.97, h + 0.22, sp[1] + 1.7], 'color': 0x1c3260, 'metal': 0.6, 'rough': 0.25})
-    if DRESS and not b['glass'] and dr - fr >= 3 and w >= 5 and H(hs, 'ln') % 3:  # 빨랫줄
-        ln = take(4, 1, mix(5))
-        if ln:
-            lx0, lx1, lz = ln[0] + 0.15, ln[0] + 3.85, ln[1] + 0.5
+        elif t == 'sign':  # 옥상 간판: 길 쪽을 보는 네온 판, 철골 다리 (글자는 게임이 쓴다)
+            sx0 = px + 0.3; sz = pz + 0.64
+            for lx in (sx0 + 0.3, sx0 + 3.1):
+                it.append({'cyl': [lx, h, sz - 0.05, lx, h + 0.3, sz - 0.05], 'r': 0.05, 'color': 0x7a7f88, 'metal': 0.5})
+            it.append({'box': [sx0, h + 0.22, sz - 0.12, sx0 + 3.4, h + 0.9, sz], 'color': 0x101018})
+            it.append({'box': [sx0 - 0.02, h + 0.86, sz - 0.14, sx0 + 3.42, h + 0.92, sz + 0.02], 'color': 0x8a8f98, 'metal': 0.5})
+            it.append({'box': [sx0 + 0.1, h + 0.3, sz, sx0 + 3.3, h + 0.82, sz + 0.03], 'color': neonR, 'emi': neonR, 'ei': 1.6, 'gl': 's'})
+        elif t == 'solar':  # 태양광판: 틀 + 격자
+            for k in range(3):
+                a0 = px + 0.08 + k * 0.97
+                it.append({'box': [a0, h + 0.12, pz + 0.3, a0 + 0.86, h + 0.2, pz + 1.7], 'color': 0x9aa0a8, 'metal': 0.5})
+                it.append({'box': [a0 + 0.04, h + 0.2, pz + 0.34, a0 + 0.82, h + 0.22, pz + 1.66], 'color': 0x1c3260, 'metal': 0.6, 'rough': 0.25})
+                for q in (0.7, 1.05, 1.4): it.append({'box': [a0 + 0.04, h + 0.22, pz + q, a0 + 0.82, h + 0.225, pz + q + 0.02], 'color': 0x5a6a8a})
+        elif t == 'line':  # 빨랫줄
+            lx0, lx1, lz = px + 0.15, px + 3.85, pz + 0.5
             for lx in (lx0, lx1): it.append({'cyl': [lx, h, lz, lx, h + 0.75, lz], 'r': 0.03, 'color': 0x8a8f96})
             it.append({'cyl': [lx0, h + 0.72, lz, lx1, h + 0.72, lz], 'r': 0.012, 'color': 0xcccccc})
             for k, c in enumerate([0xe0e4ea, 0x5a7ab0, 0xc04848, 0xe0d070]):
-                if (hs >> k) % 4: it.append({'box': [lx0 + 0.3 + k * 0.85, h + 0.35, lz - 0.02, lx0 + 0.75 + k * 0.85, h + 0.72, lz + 0.02], 'color': c})
-    if DRESS and not b['glass']:  # 채광창: 아래층 불빛이 새어 나온다
-        for k in range(max(1, w // 4)):
-            sl = take(1, 1, mix(10 + k, range(zB + 2, zF)))
-            if sl: it.append({'box': [sl[0] + 0.05, h, sl[1] + 0.2, sl[0] + 0.95, h + 0.08, sl[1] + 0.8], 'color': 0x6a6e76}); it.append({'box': [sl[0] + 0.13, h + 0.08, sl[1] + 0.28, sl[0] + 0.87, h + 0.1, sl[1] + 0.72], 'color': 0xffe0b0, 'emi': 0xffb060, 'ei': 1.1, 'gl': 'k'})
-    if DRESS and not b['glass'] and not mansard and w >= 4:  # 스티로폼 텃밭: 앞쪽 줄
-        gd = take(4, 1, mix(6, [zF - 1]))
-        if gd:
+                if (p.get('m', 15) >> k) & 1 or k == 0: it.append({'box': [lx0 + 0.3 + k * 0.85, h + 0.35, lz - 0.02, lx0 + 0.75 + k * 0.85, h + 0.72, lz + 0.02], 'color': c})
+        elif t == 'sky':  # 채광창: 턱 + 유리(불빛) + 살
+            it.append({'box': [px + 0.08, h, pz + 0.22, px + 0.92, h + 0.1, pz + 0.78], 'color': 0x6a6e76})
+            it.append({'box': [px + 0.14, h + 0.1, pz + 0.28, px + 0.86, h + 0.12, pz + 0.72], 'color': 0xffe0b0, 'emi': 0xffb060, 'ei': 1.1, 'gl': 'k'})
+            it.append({'box': [px + 0.48, h + 0.12, pz + 0.28, px + 0.52, h + 0.13, pz + 0.72], 'color': 0x4a4e56})
+        elif t == 'plant':  # 스티로폼 텃밭: 앞쪽 줄
             for k in range(5):
-                gx = gd[0] + 0.1 + k * 0.76; it.append({'box': [gx, h, zF - 0.9, gx + 0.6, h + 0.18, zF - 0.5], 'color': 0xe8e8e8}); it.append({'box': [gx + 0.05, h + 0.18, zF - 0.85, gx + 0.55, h + 0.3, zF - 0.55], 'color': 0x3f7a3a})
-    for k in range(max(1, w // 3)):  # 에어컨 실외기
-        ac = take(1, 1, mix(20 + k))
-        if ac: it.append(M('Prop_ACUnit', ac[0] + 0.5, h + 0.07, ac[1] + 0.5, r=(hs >> k) % 4, s=(0.55, 0.55, 0.55)))
+                gx = px + 0.1 + k * 0.76; it.append({'box': [gx, h, pz + 0.1, gx + 0.6, h + 0.18, pz + 0.5], 'color': 0xe8e8e8})
+                it.append({'box': [gx + 0.05, h + 0.18, pz + 0.15, gx + 0.55, h + 0.24 + 0.06 * ((hs >> k) & 1), pz + 0.45], 'color': [0x3f7a3a, 0x5a8a3a, 0x7a5a3a][(hs >> (k + 2)) % 3]})
+        elif t == 'ac':
+            it.append(M('Prop_ACUnit', px + 0.5, h + 0.07, pz + 0.5, r=p.get('r', 0), s=(0.55, 0.55, 0.55)))
+        elif t == 'vent':
+            it.append({'cyl': [px + 0.5, h, pz + 0.5, px + 0.5, h + 0.28, pz + 0.5], 'r': 0.07, 'color': 0x9aa0a8, 'metal': 0.5, 'rough': 0.4})
+            it.append({'cyl': [px + 0.5, h + 0.28, pz + 0.5, px + 0.5, h + 0.33, pz + 0.5], 'r': 0.12, 'color': 0x7a8088, 'metal': 0.5})
     if not mansard: it.append(M('Prop_Drain', x0 + 0.6, h + 0.04, zB + 0.5, s=(0.6, 1, 0.6)))
-    for k in range(max(1, w // 4)):  # 환기관
-        vt = take(1, 1, mix(30 + k))
-        if vt: it.append({'cyl': [vt[0] + 0.5, h, vt[1] + 0.5, vt[0] + 0.5, h + 0.3, vt[1] + 0.5], 'r': 0.07, 'color': 0x9aa0a8, 'metal': 0.5, 'rough': 0.4})
     if shop and not mansard:  # 간판 불빛: 가게 지붕 끝에 네온 띠
         it.append({'box': [x0 + 0.3, h - 0.32, zF + 0.02, x1 + 0.7, h - 0.2, zF + 0.06], 'color': neon, 'rough': 0.3, 'metal': 0})
     # 가스관·베란다·가게 차양: 기존 굽기와 같게
@@ -167,7 +159,7 @@ async def main():
                     for q in items:
                         if q.get('gl') and 'box' in q:
                             a, bb, c, d, e, f = q['box']; gl.append([round((a - box[0]) * 48), round((c - e - box[1]) * 48), round((d - a) * 48), round((f - bb - c + e) * 48), '#%06x' % q['color'], q['gl']])
-                    lst.append({'i': b['i'], 'key': [b['x0'], b['y0'], b['x1'], b['y1'], b['h']], 'ox': box[0] * 48, 'oy': box[1] * 48, 'w': im.width, 'h': im.height, 'src': webp(im), 'gl': gl})
+                    lst.append({'i': b['i'], 'key': [b['x0'], b['y0'], b['x1'], b['y1'], b['h']], 'ox': box[0] * 48, 'oy': box[1] * 48, 'w': im.width, 'h': im.height, 'src': webp(im), 'gl': gl, 'props': (b.get('props') or []) if DRESS else []})
                     im.save(f"{OUT}/b_{st['id']}_{b['i']}.png")
                 kit['bld'][st['id']] = lst; print(st['id'], len(lst), 'buildings', flush=True)
             await br.close()

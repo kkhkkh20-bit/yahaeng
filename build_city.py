@@ -1,4 +1,5 @@
 # 현대 도시(빌라촌) 시안 빌드: Kenney RPG Urban Pack 그림 + 빌라촌 지도 + 전깃줄 (본편 파일은 건드리지 않음)
+import sys as _sys
 assets = open('/root/game/build/assets_city.json').read()
 js = open('/root/game/src/game.js').read()
 stages = open('/root/game/src/stages_city.js').read()
@@ -19,16 +20,18 @@ REP = [
 def tr(s):
     for a, b in REP: s = s.replace(a, b)
     return s
-CREDIT = "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · 캐릭터 3D 모델: Quaternius Animated Human (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · "
-html = tr(html).replace('<title>야행</title>', '<title>야행 — 빌라촌 시안</title>').replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
+KENNEY = 'kenney' in _sys.argv[1:]   # python3 build_city.py kenney → 이전 외관(Kenney 건물) 비교판
+CREDIT = ("" if KENNEY else "건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymegakit.html\" target=\"_blank\" rel=\"noopener\">Quaternius Downtown City MegaKit</a> (CC0) · ") + "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · 캐릭터 3D 모델: Quaternius Animated Human (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · "
+html = tr(html).replace('<title>야행</title>', ('<title>야행 — 이전 외관(Kenney)</title>' if KENNEY else '<title>야행 — 빌라촌 시안</title>')).replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
 import base64, json as _json
 _meta = _json.load(open('/root/game/build/pr/pr_meta.json'))
 _meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open('/root/game/build/pr/key.webp', 'rb').read()).decode()
 import os as _os
-_kit = open('/root/game/build/kit/kit.json').read() if _os.path.exists('/root/game/build/kit/kit.json') else 'null'
+_kp = '/root/game/build/kit/kit.json' if KENNEY else '/root/game/build/kit_mk/kit.json'
+_kit = open(_kp).read() if _os.path.exists(_kp) else 'null'
 html = html.replace('<script>window.__ASSETS__', "<script>window.__THEME = 'city'; window.__PR = " + _json.dumps(_meta) + "; window.__KIT = " + _kit + ";</script>\n<script>window.__ASSETS__")
 html = html.replace('__ASSETS_JSON__', assets).replace('__STAGES_JS__', tr(stages)).replace('__GAME_JS__', tr(js))
-open('/root/game/build/yahaeng_city.html', 'w').write(html)
+open('/root/game/build/yahaeng_city' + ('_kenney' if KENNEY else '') + '.html', 'w').write(html)
 pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'
-open('/root/game/build/preview_city.html', 'w').write(pre + html)
+open('/root/game/build/preview_city' + ('_kenney' if KENNEY else '') + '.html', 'w').write(pre + html)
 print('ok', len(html))
