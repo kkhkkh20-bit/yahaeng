@@ -45,7 +45,7 @@ python3 tests/rev/t_perk.py     # 별점 장비
 python3 tests/rev/t_tut.py      # 연습(훈련장) 17단계 통과
 python3 tests/rev/t_roof.py     # 옥상 살림 막힘: 지도 검증·지붕 경비 경로·지붕 연결·옥탑방에 막힘
 python3 tests/rev/t_roof2.py    # 지붕 위 옥탑방 벽에 기대기·끌어당겨 암살
-python3 tests/rev/t_okt.py      # 옥탑방에 들어가 숨기·나오기
+python3 tests/rev/t_sh.py       # 옥상 계단실: 실내 계단 위에 서고 문 앞에서 오르내림
 python3 tests/rev/t_aware.py    # 발견 게이지: 거리별 의심·발각까지 걸리는 시간
 python3 tests/rev/t_mod.py      # 의뢰 변형
 python3 tests/rev/t_risk.py     # 눈에 띄는 시체

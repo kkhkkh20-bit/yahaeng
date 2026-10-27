@@ -241,7 +241,9 @@ function planInterior(g, b, bi, f) {
   } else {
     // 한 세대 집 (단독·좁은 빌라): 계단은 앞쪽 오른쪽 구석
     const u = unit(ix0, ix1, 'R');
-    g[iy1][ix1] = 'Y'; rec.stair = [ix1, iy1]; K(ix1 - 1, iy1); K(ix1, iy1 - 1);
+    // 계단은 거실 오른쪽 끝, 바로 위가 걸을 수 있는 지붕 칸인 줄에 둔다 (옥상 계단실이 그 칸 위에 선다)
+    const fhE = Math.max(1, Math.min(b.h || 1, b.y1 - b.y0 - 1)), sy = Math.max(u.living.y0, Math.min(iy1, b.y1 - fhE - (b.kind === 'house' ? 1 : 0)));  // 단독주택은 지붕 앞줄이 경사(맨사드)라 한 줄 뒤
+    g[sy][ix1] = 'Y'; rec.stair = [ix1, sy]; K(ix1 - 1, sy); K(ix1, sy - 1); if (sy < iy1) K(ix1, sy + 1);
     if (f === 0) { const dx = Math.floor((ix0 + ix1) / 2); g[b.y1][dx] = 'w'; K(dx, iy1); K(dx, iy1 - 1); if (b.backDoor) { g[b.y0][ix0 + 1] = 'w'; K(ix0 + 1, iy0); K(ix0 + 1, iy0 + 1); } }
     winAndSide(); story(); furnishUnit(u, 'R');
     return rec;
@@ -1411,6 +1413,29 @@ function kitGround(ch, tx, ty) {
   const k = ch === '.' || ch === 'R' ? 'asph0' : ch === '=' || ch === 'F' ? 'pave0' : ch === 'd' ? (h < 80 ? 'dirt0' : 'dirt1') : ch === 'g' ? 'grass0' : null;
   return k && kitOk(kitG[k]) ? kitG[k] : null;
 }
+// 실내 계단: 계단 칸('Y')과 올라오는 쪽 칸, 두 칸에 걸친 한 줄 계단. 위(계단 칸 쪽)로 갈수록 밝고, 칸마다 디딤판 그림자·코, 양옆 난간
+function stairDir(tx, ty) {
+  const bi = bldAt(tx, ty);
+  for (const [dx, dy] of [[0, 1], [0, -1], [-1, 0], [1, 0]]) { const nx = tx + dx, ny = ty + dy; if (inMap(nx, ny) && bldAt(nx, ny) === bi && !SOLID.has(G[ny][nx]) && G[ny][nx] !== 'Y') return [dx, dy]; }
+  return [0, 1];
+}
+function drawStairs(x, tx, ty) {
+  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE;
+  x.save(); x.translate(cx, cy); x.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);  // 기준: 위쪽(-y)이 계단 칸, 아래쪽이 올라오는 칸
+  const hw = TILE / 2 - 3, hl = TILE, N = 8, st = (hl * 2) / N;
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
+  for (let i = 0; i < N; i++) {  // i = 0 이 맨 위 디딤판
+    const y0 = -hl + i * st, k = 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
+    x.fillStyle = `rgb(${c(96, 196)},${c(84, 172)},${c(70, 140)})`; x.fillRect(-hw, y0, hw * 2, st);
+    x.fillStyle = 'rgba(255,240,215,.35)'; x.fillRect(-hw, y0, hw * 2, 2);            // 디딤판 코 (빛)
+    x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(-hw, y0 + st - 3, hw * 2, 3);          // 아래 단으로 떨어지는 그림자
+  }
+  x.fillStyle = '#2e2a28'; x.fillRect(-hw - 3, -hl, 4, hl * 2); x.fillRect(hw - 1, -hl, 4, hl * 2);   // 옆판
+  x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4);                              // 난간
+  for (let i = 0; i <= 3; i++) x.fillRect(hw - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3);
+  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);                          // 위층 바닥 끝
+  x.restore();
+}
 function renderMap(R) {
   // R = {x0, y0, x1, y1}: 그 사각형(칸)만 그린다 (위층 평면 캐시용)
   const rx0 = R ? R.x0 : 0, ry0 = R ? R.y0 : 0, rx1 = R ? R.x1 : MW - 1, ry1 = R ? R.y1 : MH - 1;
@@ -1504,7 +1529,7 @@ function renderMap(R) {
       } else draw(piece, px, py);
       if (ch === 'S') { x.strokeStyle = 'rgba(15,10,8,.6)'; x.lineWidth = 2; x.beginPath(); x.moveTo(px + 22, py + 6); x.lineTo(px + 18, py + 20); x.lineTo(px + 26, py + 30); x.lineTo(px + 21, py + 42); x.stroke(); }
     }
-    if (ch === 'Y') {
+    if (ch === 'Y' && !CITY) {
       x.fillStyle = '#3c2a1e'; x.fillRect(px + 3, py + 3, 42, 42);
       x.fillStyle = '#b08458'; for (let i = 0; i < 5; i++) x.fillRect(px + 6, py + 6 + i * 8, 36 - i * 5, 5);
     }
@@ -1569,6 +1594,7 @@ function renderMap(R) {
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
   // 가구 (이 층 것만)
+  if (CITY) for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
   FURN.filter(f => f.fl === CUR_F && f.x + f.w > rx0 && f.x <= rx1 && f.y + f.h > ry0 && f.y <= ry1).sort((a, b) => (a.y + a.h) - (b.y + b.h)).forEach(f => drawFurn(x, f));
   // 주차된 차 · 필로티 아래 그늘
   if (!CUR_F) {
@@ -4481,7 +4507,18 @@ function roofProps(b, bi) {
   const house = b.kind === 'house', shop = b.kind === 'shop', glass = !!b.glass, mansard = house && dr >= 2, fr = mansard ? 1 : 0, uy1 = ry1 - fr, hs = hN(x0, ry0, w, b.h);
   const K = (x, y) => x + ',' + y, hard = new Set(), soft = new Set();
   const mark = (x, y) => { if (x >= x0 && x <= x1 && y >= ry0 && y <= ry1) hard.add(K(x, y)); };
-  (S.ladders || []).forEach(l => { if (l.tz === L || l.tz > 0) mark(l.tx, l.ty); if (l.bz > 0) mark(l.bx, l.by); });
+  // 옥상 계단실: 건물 안 계단('Y') 바로 위에 선다. 문은 걸을 수 있는 지붕 칸 쪽(남·서·동·북 순)으로, 오르내리는 자리는 문 앞
+  const shs = [];
+  (S.ladders || []).forEach(l => {
+    if (l.kind !== 'stair' || l.tz !== L || bldAt(l.tx, l.ty) !== bi || rLv(l.tx, l.ty) !== L) return;
+    const okc = (x, y) => x >= x0 && x <= x1 && y >= ry0 && y <= ry1 && rLv(x, y) === L;
+    const dirs = [['S', 0, 1], ['W', -1, 0], ['E', 1, 0], ['N', 0, -1]], d = dirs.find(([, dx, dy]) => okc(l.tx + dx, l.ty + dy)); if (!d) return;
+    const [dn, ddx, ddy] = d, side = ddy ? [[1, 0], [-1, 0]] : [[0, -1], [0, 1]];
+    const ex = side.map(([sx, sy]) => [l.tx + sx, l.ty + sy]).find(([x, y]) => okc(x, y) && !(x === l.tx + ddx && y === l.ty + ddy));
+    shs.push({ l, dn, door: [l.tx + ddx, l.ty + ddy], cells: ex ? [[l.tx, l.ty], ex] : [[l.tx, l.ty]] });
+  });
+  const shSet = new Set(shs.map(h => h.l));
+  (S.ladders || []).forEach(l => { if (shSet.has(l)) { const h = shs.find(q => q.l === l); mark(h.door[0], h.door[1]); return; } if (l.tz === L || l.tz > 0) mark(l.tx, l.ty); if (l.bz > 0) mark(l.bx, l.by); });
   (S.vents || []).forEach(v => { if (v.roof) mark(v.tx, v.ty); });
   (STAGE.planks || []).forEach(([ax, ay, bx, by]) => { for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) mark(x, y); mark(ax - 1, ay); mark(ax + 1, ay); mark(bx - 1, by); mark(bx + 1, by); mark(ax, ay - 1); mark(ax, ay + 1); mark(bx, by - 1); mark(bx, by + 1); });
   (S.traps || []).forEach(t => { [t.at, t.sw].forEach(p => p && mark(p[0], p[1])); });
@@ -4516,13 +4553,16 @@ function roofProps(b, bi) {
   };
   const mix = (seed, rows) => { const r = []; for (const y of rows || (function* () { for (let y = ry0; y <= uy1; y++) yield y; })()) for (let x = x0; x <= x1; x++) r.push([x, y]); return r.sort((p, q) => hN(p[0], p[1], seed, hs) - hN(q[0], q[1], seed, hs)); };
   const range = (a, b) => { const r = []; for (let i = a; i <= b; i++) r.push(i); return r; };
-  let okt = null;
-  if (!glass && w >= 5 && dr - fr >= 4 && hN(hs, 1) % 5 < 3) {
-    okt = take(3, 2, [[x0 + 1, ry0 + 1], [x1 - 3, ry0 + 1], [x0 + ((w - 3) >> 1), ry0 + 1]].sort((p, q) => hN(p[0], 7, hs) - hN(q[0], 7, hs)), true);
-    if (okt) out.push({ t: 'okt', x: okt[0], y: okt[1], lit: hs % 3 !== 0 });
+  for (const h of shs) {  // 계단실 = 옥탑방 (막힘). 지붕이 끊기면 한 칸짜리로, 그래도 끊기면 놓지 않는다
+    for (const cells of [h.cells, h.cells.slice(0, 1)]) {
+      const ks = cells.map(([x, y]) => K(x, y)); if (ks.some(k => occ.has(k))) continue;
+      ks.forEach(k => sol.add(k)); if (!connected()) { ks.forEach(k => sol.delete(k)); continue; }
+      ks.forEach(k => occ.add(k)); occ.add(K(h.door[0], h.door[1]));
+      out.push({ t: 'sh', cells, door: h.door, dir: h.dn, sx: h.l.tx, sy: h.l.ty, lit: hN(h.l.tx, h.l.ty, 5) % 3 !== 0 }); break;
+    }
   }
+  const okt = out.some(p => p.t === 'sh');
   if (!house && !glass && w >= 6 && hs % 3) { const s = take(4, 1, mix(1, [ry1]), false); if (s) out.push({ t: 'sign', x: s[0], y: s[1] }); }
-  if (!okt && w >= 5 && dr - fr >= 3) { const s = take(2, 1, mix(2, range(ry0 + 1, uy1)), true); if (s) out.push({ t: 'stair', x: s[0], y: s[1] }); }
   if (b.h >= 2 && hs % 3 === 0 && w >= 4 && dr - fr >= 3) { const s = take(1, 1, mix(3), true); if (s) out.push({ t: 'tank', x: s[0], y: s[1] }); }
   if (w >= 8 && dr - fr >= 4 && hN(hs, 2) % 2) { const s = take(3, 2, mix(4), false); if (s) out.push({ t: 'solar', x: s[0], y: s[1] }); }
   if (!glass && dr - fr >= 3 && w >= 5 && hN(hs, 3) % 3) { const s = take(4, 1, mix(5), false); if (s) out.push({ t: 'line', x: s[0], y: s[1], m: hs & 15 }); }
@@ -4537,12 +4577,18 @@ let ROB = null;
 const robAt = (tx, ty) => !!(ROB && inMap(tx, ty) && ROB[ty * MW + tx]);
 function robBuild() {
   ROB = new Uint8Array(MW * MH); let n = 0;
-  BLD.forEach(b => (b.kitProps || []).forEach(p => { if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
+  BLD.forEach(b => (b.kitProps || []).forEach(p => {
+    if (p.t === 'sh') {
+      p.cells.forEach(([x, y]) => { if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } });
+      const l = S && S.ladders && S.ladders.find(q => q.kind === 'stair' && q.tx === p.sx && q.ty === p.sy);
+      if (l) { l.rx = tc(p.door[0]); l.ry = tc(p.door[1]); l.shDir = p.dir; }
+      return;
+    }
+    if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
   if (!n) ROB = null;
-  // 옥탑방은 들어가 숨을 수 있다: 문 앞에서 숨기 (시체 둘까지)
-  if (S && S.hides) { S.hides = S.hides.filter(h => h.type !== 'okt'); BLD.forEach(b => (b.kitProps || []).forEach(p => { if (p.t !== 'okt') return; const z = lvAt(p.x + 1, p.y + 1); S.hides.push({ type: 'okt', furn: true, tx: p.x + 1, ty: p.y + 1, x: (p.x + 1.9) * TILE, y: (p.y + 1.7) * TILE, z, fl: 0, bodies: 0, cap: 2 }); })); }
+  if (S && S.hides) S.hides = S.hides.filter(h => h.type !== 'okt');
 }
-const ROB_SOLID_DIM = { okt: [3, 2], tank: [1, 1], stair: [2, 1] };
+const ROB_SOLID_DIM = { tank: [1, 1] };
 function kitSpec() {
   return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(f => f.t + '_' + f.w + 'x' + f.h))], b: BLD.map((b, i) => ({ i, props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };

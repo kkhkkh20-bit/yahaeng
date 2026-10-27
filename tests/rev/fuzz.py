@@ -42,7 +42,16 @@ async def run(seed, si, secs, b):
         if st['over']:
             restarts += 1; await pg.wait_for_timeout(1200)
             vis = await pg.evaluate('() => !document.getElementById("btnCP").hidden')
-            if vis and rnd.random() < 0.6: await pg.click('#btnCP')
+            shown = False
+            for _ in range(25):  # 끝 화면이 뜰 때까지 (최대 5초)
+                shown = await pg.evaluate('() => { const e = document.getElementById("btnRetry"); return !!(e && e.offsetParent); }')
+                if shown or not (await pg.evaluate('() => window.__game.S.over')): break
+                await pg.wait_for_timeout(200)
+            if not shown:
+                if await pg.evaluate('() => window.__game.S.over'):
+                    issues.append((t, 'end screen not shown', await pg.evaluate('() => { const S = window.__game.S; return { win: S.win, why: S.endWhy || null, ov: [...document.querySelectorAll("#end,#pause,#dlg,#keypad")].map(e => e.id + ":" + !e.hidden) }; }')))
+                    await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP)
+            elif vis and rnd.random() < 0.6: await pg.click('#btnCP')
             else: await pg.click('#btnRetry'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP)
             await pg.wait_for_timeout(300)
         # 일시정지·지도 화면이 떠 있으면 닫기

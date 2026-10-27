@@ -23,7 +23,7 @@ window.bake = async spec => {
   const [bx0, bz0, bx1, bz1] = spec.box, ppu = spec.ppu, W = Math.round((bx1 - bx0) * ppu), H = Math.round((bz1 - bz0) * ppu);
   r.setSize(W, H);
   const sc = new THREE.Scene(), root = new THREE.Group(); sc.add(root);
-  root.matrixAutoUpdate = false; root.matrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, -1, 1, 0, 0, 0, 0, 1);
+  root.matrixAutoUpdate = false; const ys = spec.ys ?? 1; root.matrix.set(1, 0, 0, 0, 0, ys, 0, 0, 0, -ys, 1, 0, 0, 0, 0, 1);  // ys: 높이 배율 (계단처럼 바닥에 붙은 것은 작게)
   const cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2;
   const cam = new THREE.OrthographicCamera(-(bx1 - bx0) / 2, (bx1 - bx0) / 2, (bz1 - bz0) / 2, -(bz1 - bz0) / 2, 0.1, 400);
   cam.position.set(cx, 150, cz); cam.up.set(0, 0, -1); cam.lookAt(cx, 0, cz);

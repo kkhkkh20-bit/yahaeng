@@ -48,7 +48,9 @@ def bld_items(b):
         for zz in range(zB, zF): it.append(M('Entrance_Concrete_2x2', xx + 0.5, h - 0.02, zz + 0.5, s=(0.5, 0.06, 0.5), cast=False, wallTint=0xb8b4ae if (xx + zz) % 2 else 0xa8a49e))
     for bx in ([x0, h, zB, x1 + 1, h + 0.22, zB + 0.12], [x0, h, zB, x0 + 0.12, h + 0.22, zF], [x1 + 1 - 0.12, h, zB, x1 + 1, h + 0.22, zF]):
         it.append({'box': bx, 'color': 0x6e6a66})
-    mansard = house and dr >= 2
+    # 단독주택 앞쪽 경사 지붕(맨사드)은 계단실이 지붕 앞줄에 서면 빼고 평지붕으로 (경사 위에 상자가 얹혀 보이지 않게)
+    sh_front = any(p['t'] == 'sh' and any(c[1] + h >= zF - 1 for c in p['cells']) for p in (b.get('props') or []))
+    mansard = house and dr >= 2 and not (DRESS and sh_front)
     if mansard:
         for xx in range(x0, x1 + 1): it.append(M('Roof_SlateCornice_Window_1' if (xx - x0) % 3 == 1 else 'Roof_SlateCornice_Center', xx + 0.5, h, zF, s=(0.5, 1 / 3, 0.5)))
         pk = 1.1
@@ -57,8 +59,34 @@ def bld_items(b):
     # 옥상 살림: 배치는 게임(roofProps)이 정해 spec에 넣어 준다. 칸 (x, y)는 게임 좌표 → 굽기 z = y + h
     neonR = [0xff3ca8, 0x3ce0ff, 0xffb040, 0xb45aff][hs % 4]
     for p in (b.get('props') or []) if DRESS else []:
-        t, px, pz = p['t'], p['x'], p['y'] + h
-        if t == 'okt':  # 옥탑방: 벽·처마 지붕·창틀·문
+        t, px, pz = p['t'], p.get('x', 0), p.get('y', 0) + h
+        if t == 'sh':  # 계단실(옥탑방): 건물 안 계단 바로 위. 문은 지붕 쪽으로, 문 위 등과 문 앞 디딤판
+            xs = [c[0] for c in p['cells']]; zs = [c[1] + h for c in p['cells']]
+            ax0, ax1, az0, az1 = min(xs) + 0.08, max(xs) + 0.92, min(zs) + 0.1, max(zs) + 0.92
+            rc = [0x3d6b8a, 0x4a7a52, 0x6a4a6a][hs % 3]; lit_o = p.get('lit'); dr_, (dx_, dz_) = p['dir'], (p['door'][0], p['door'][1] + h)
+            sx_, sz_ = p['sx'] + 0.5, p['sy'] + h + 0.5
+            it.append({'box': [ax0, h, az0, ax1, h + 0.9, az1], 'color': 0xd6cfc0})
+            it.append({'box': [ax0 - 0.12, h + 0.9, az0 - 0.1, ax1 + 0.12, h + 0.98, az1 + 0.14], 'color': rc, 'rough': 0.7})
+            it.append({'box': [ax0 - 0.12, h + 0.86, az1 + 0.08, ax1 + 0.12, h + 0.92, az1 + 0.14], 'color': 0x22262c})
+            it.append({'box': [dx_ + 0.12, h, dz_ + 0.12, dx_ + 0.88, h + 0.04, dz_ + 0.88], 'color': 0x8a8680})  # 문 앞 디딤판
+            if dr_ == 'S':  # 문이 보이는 쪽: 문틀 + 철문(살짝 열림) + 문 위 등
+                it.append({'box': [sx_ - 0.3, h, az1, sx_ + 0.3, h + 0.76, az1 + 0.03], 'color': 0x3a3f48})
+                it.append({'box': [sx_ - 0.26, h, az1 + 0.03, sx_ + 0.12, h + 0.72, az1 + 0.06], 'color': 0x4a5a6a, 'metal': 0.4})
+                it.append({'box': [sx_ + 0.12, h, az1 + 0.03, sx_ + 0.26, h + 0.72, az1 + 0.04], 'color': 0x0c0e12})
+                it.append({'box': [sx_ - 0.07, h + 0.8, az1, sx_ + 0.07, h + 0.86, az1 + 0.06], 'color': 0xfff0c0, 'emi': 0xffd080, 'ei': 1.3, 'gl': 'w'})
+            else:  # 옆·뒤로 난 문: 문 쪽 벽에 문틀 띠 + 문 위 등이 지붕 쪽으로 튀어나와 보인다
+                ox_ = {'W': ax0 - 0.06, 'E': ax1 + 0.0, 'N': sx_ - 0.07}[dr_]; oz_ = {'W': sz_ - 0.07, 'E': sz_ - 0.07, 'N': az0 - 0.06}[dr_]
+                it.append({'box': [ox_, h + 0.8, oz_, ox_ + 0.07 if dr_ != 'N' else ox_ + 0.14, h + 0.86, oz_ + 0.14 if dr_ != 'N' else oz_ + 0.07], 'color': 0xfff0c0, 'emi': 0xffd080, 'ei': 1.3, 'gl': 'w'})
+                if dr_ in ('W', 'E'):
+                    fx_ = ax0 - 0.03 if dr_ == 'W' else ax1
+                    it.append({'box': [fx_, h, sz_ - 0.3, fx_ + 0.03, h + 0.76, sz_ + 0.3], 'color': 0x3a3f48})
+            if len(p['cells']) > 1:  # 남쪽 벽 창문 (계단 칸이 아닌 쪽)
+                ex_ = [c for c in p['cells'] if not (c[0] == p['sx'] and c[1] == p['sy'])][0]; wx_ = ex_[0] + 0.5
+                if dr_ != 'S' or abs(wx_ - sx_) > 0.6:
+                    it.append({'box': [wx_ - 0.3, h + 0.28, az1, wx_ + 0.3, h + 0.66, az1 + 0.03], 'color': 0x2a2e36})
+                    it.append({'box': [wx_ - 0.26, h + 0.31, az1 + 0.03, wx_ + 0.26, h + 0.63, az1 + 0.05], 'color': 0xffd9a0 if lit_o else 0x1a2433, 'emi': 0xffa850 if lit_o else 0x0a1220, 'ei': 1.3 if lit_o else 0.4, **({'gl': 'w'} if lit_o else {})})
+            pk = max(pk, 0.95)
+        elif t == 'okt':  # (이전 형식) 옥탑방: 벽·처마 지붕·창틀·문
             ox, oz = px + 0.35, pz + 0.25; rc = [0x3d6b8a, 0x4a7a52, 0x6a4a6a][hs % 3]; lit_o = p.get('lit')
             it.append({'box': [ox, h, oz, ox + 2.3, h + 0.82, oz + 1.5], 'color': 0xd6cfc0})
             it.append({'box': [ox - 0.12, h + 0.82, oz - 0.1, ox + 2.42, h + 0.9, oz + 1.66], 'color': rc, 'rough': 0.7})
