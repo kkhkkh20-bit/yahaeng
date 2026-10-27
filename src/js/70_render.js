@@ -92,10 +92,15 @@ function drawPlayer(P) {
   }
   if (usePR('ninja')) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
-    if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 네 단계
+    const GI = P.grabIn;  // 붙잡기: 손이 닿은 뒤 목을 감아 끌어당기는 동작 (조르기 첫 단계를 그대로 쓴다)
+    if (GI && GI.g.state === 'CAPTIVE' && PAIR() && PR.anims.choke && usePR(charOf(GI.g))) {
+      const u = Math.min(1, (GI.t - GI.run) / Math.max(0.01, GI.dur - GI.run)), kt = 1 - (1 - u) * (1 - u), PK1 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3, fi = ktFrame('choke', kt), j = u > 0.6 ? Math.sin(S.t * 40) * 1.2 : 0;
+      drawPR(PK1, P.x, P.y, P.a, 'choke', 0, 1, s1, -yo, fi); drawPR(charOf(GI.g), P.x + j, P.y, P.a, 'choked', 0, 1, s1, -yo, fi); return;
+    }
+    if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3;
-      if (KA.kind && PR.anims[KA.kind]) { const f = (S.t - KA.t0) / KA.dur, k = f < 0.18 ? 0 : f < 0.45 ? 1 : f < 0.72 ? 2 : 3, j = k === 1 ? Math.sin(S.t * 40) * 1.5 : 0;
-        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, k); drawPR(KA.ch, P.x + j, P.y, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, k); return; }
+      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt), j = kt > 0.9 && kt < 1.5 ? Math.sin(S.t * 40) * (1.6 - (kt - 1) * 2) : 0;
+        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + j, P.y, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
       const j = Math.sin(S.t * 40) * 1.5; drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(KA.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
     }
     const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)
@@ -122,7 +127,8 @@ function drawPlayer(P) {
       return;
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
-    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
+    const rising = !mv && P.riseT && S.t < P.riseT && !pc && !pg;
+    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'crouch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
     const t = S.t, s = sc / 3, PK = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
@@ -173,7 +179,9 @@ function drawWindowSight(P, openB) {
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawScroll(it.x, it.y, S.t);
     ctx.fillStyle = 'rgba(255,230,170,.06)'; ctx.fillRect(bx, by, bw, bh);
-    ctx.strokeStyle = 'rgba(190,235,255,.7)'; ctx.lineWidth = 2; path(); ctx.stroke();
+    // 시선 경계는 선 대신 부드러운 그늘: 안쪽으로 번지는 흐린 띠 + 멀어질수록 서서히 어둡게 (도면 바탕과 자연스럽게 이어진다)
+    ctx.filter = 'blur(9px)'; ctx.strokeStyle = 'rgba(16,28,44,.8)'; ctx.lineWidth = 30; path(); ctx.stroke(); ctx.filter = 'none';
+    const rg = ctx.createRadialGradient(P.x, P.y, R * 0.3, P.x, P.y, R); rg.addColorStop(0, 'rgba(16,28,44,0)'); rg.addColorStop(1, 'rgba(16,28,44,.65)'); ctx.fillStyle = rg; ctx.fillRect(bx, by, bw, bh);
     ctx.restore();
     hint('winsight', '창문과 열린 문으로 시선이 닿는 방 안은 바깥에서도 보인다. 들어가기 전에 창가를 돌며 살펴라');
   });

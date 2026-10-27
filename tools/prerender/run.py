@@ -4,6 +4,7 @@ from PIL import Image, ImageFilter
 from playwright.async_api import async_playwright
 HERE = os.path.dirname(os.path.abspath(__file__)); OUT = '/root/game/build/pr'; os.makedirs(OUT, exist_ok=True)
 FR = 64
+KT = [round(i / 3, 4) for i in range(10)]
 ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('idle', 'Idle', [0, 5], 0), ('walk', 'Walk', [i / 8 for i in range(8)], 0), ('run', 'Run', [i / 8 * 0.63 for i in range(8)], 0),
   ('sneak', 'Walk', [i / 8 for i in range(8)], 0.7), ('crouch', 'Idle', [0], 0.75),
@@ -17,8 +18,9 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('climb', 'Idle', [0, 1, 2, 3], 0, ('pose', 'climb')), ('vault', 'Idle', [0, 1, 2], 0, ('pose', 'vault')), ('lean', 'Idle', [0, 1], 0, ('pose', 'lean')),
   # 시체 들기(허리 숙임 → 안아 올림 → 어깨에 얹음) · 뒤에서 처치(칼 / 목 조르기: 다가섬 → 제압 → 무릎 꺾임 → 내려놓음)
   ('stoop', 'Idle', [0], 0, ('pose', 'stoop')), ('lift', 'Idle', [1, 2], 0, ('lift', 'a')), ('lifted', 'Idle', [1, 2], 0, ('lift', 'b')),
-  ('stab', 'Idle', [0, 1, 2, 3], 0, ('stab', 'a')), ('stabbed', 'Idle', [0, 1, 2, 3], 0, ('stab', 'b')),
-  ('choke', 'Idle', [0, 1, 2, 3], 0, ('choke', 'a')), ('choked', 'Idle', [0, 1, 2, 3], 0, ('choke', 'b')),
+  # 핵심 자세 4개(0~3) 사이를 뼈마다 보간해 중간 프레임 2장씩 더 찍는다 (0, 1/3, 2/3, 1 … 3 = 10장)
+  ('stab', 'Idle', KT, 0, ('stab', 'a')), ('stabbed', 'Idle', KT, 0, ('stab', 'b')),
+  ('choke', 'Idle', KT, 0, ('choke', 'a')), ('choked', 'Idle', KT, 0, ('choke', 'b')),
   # 물건(택배 상자) 들고 걷기·서기
   ('hold', 'Walk', [i / 8 for i in range(8)], 0, ('hold', 'w')), ('holdI', 'Idle', [0], 0, ('hold', 'i')),
   # 편한 서기(팔 내리고 곧게) · 대화 손짓 — 주민과 평소의 경비 (기본 Idle 은 싸움 자세)
@@ -29,6 +31,8 @@ def js_for(an, t, ti, a, hg='undefined'):
     if pr and pr[0] == 'pose': return f"renderPose('{pr[1]}', {t}, {a})"
     if pr and pr[0] == 'hold': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)"
     if pr and pr[0] == 'relax': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, false, " + ('{talk: %s}' % TALK[ti] if pr[1] == 't' else '{sway: %d}' % ti) + ')'
+    if pr and pr[0] in ('stab', 'choke') and t != int(t):
+        k0 = int(t); return f"renderPair('{pr[0]}', '{clip}', {k0}, {a}, '{pr[1]}', {{k1: {k0 + 1}, f: {round(t - k0, 4)}}})"
     if pr: return f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')"
     return f"renderFrame('{clip}', {t}, {a}, {cr}, {hg})"
 HANG_SWAY = [0, 0.7, 0, -0.7]
@@ -60,19 +64,23 @@ async def main():
             b = await p.chromium.launch(args=['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']); pg = await b.new_page()
             await pg.goto('http://localhost:8766/render.html'); info = await pg.evaluate('window.__ready')
             cols = sum(len(a[2]) for a in ANIMS); meta = {'fr': FR, 'cols': cols, 'groundY': 46.8, 'anims': {}}
+            if os.path.exists(f'{OUT}/pr_meta.json'):  # 따로 잰 값(상자 든 손 위치)은 다시 찍어도 유지
+                om = json.load(open(f'{OUT}/pr_meta.json'))
+                for k in ('holdHand',):
+                    if k in om: meta[k] = om[k]
             c = 0
             for an in ANIMS: meta['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
             app = [x.split('=')[1].split(',') for x in sys.argv if x.startswith('--append=')]
             if app:  # 기존 기본 시트 뒤에 동작 몇 개만 덧붙인다 (전체를 다시 찍지 않는다)
                 old = json.load(open(f'{OUT}/pr_meta.json')); base = Image.open(f'{OUT}/key.png').convert('RGBA'); oc = old['cols']
-                AN = [an for an in ANIMS if an[0] in app[0]]; nc = sum(len(x[2]) for x in AN if x[0] not in old['anims'])  # 이미 있는 동작은 그 자리에 다시 찍는다
+                AN = [an for an in ANIMS if an[0] in app[0]]; same = lambda x: x[0] in old['anims'] and old['anims'][x[0]][1] == len(x[2]); nc = sum(len(x[2]) for x in AN if not same(x))  # 이미 있는 동작은 그 자리에 다시 찍는다
                 sheet = Image.new('RGBA', ((oc + nc) * FR, 8 * FR)); sheet.paste(base, (0, 0))
                 await pg.evaluate(f'setTex({json.dumps(VAR["key"])})')
                 for d in range(8):
                     a = d * 3.14159265 / 4; c = oc
                     for an in AN:
                         name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
-                        if name in old['anims']: c0, c = c, old['anims'][name][0]
+                        if name in old['anims'] and old['anims'][name][1] == len(ts): c0, c = c, old['anims'][name][0]
                         else: c0 = None
                         for ti, t in enumerate(ts):
                             url = await pg.evaluate(js_for(an, t, ti, a))
@@ -81,7 +89,7 @@ async def main():
                         if c0 is not None: c = c0
                 c = oc
                 for an in AN:
-                    if an[0] not in old['anims']: old['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
+                    if not same(an): old['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
                 old['cols'] = oc + nc; sheet.save(f'{OUT}/key.png', optimize=True); sheet.save(f'{OUT}/key.webp', 'WEBP', lossless=True, method=6)
                 json.dump(old, open(f'{OUT}/pr_meta.json', 'w')); print('append', app[0], old['cols'], os.path.getsize(f'{OUT}/key.webp')); await b.close(); return
             if '--bodies' not in sys.argv:

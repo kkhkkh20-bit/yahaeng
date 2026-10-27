@@ -108,7 +108,7 @@ function drawNearFurn(P, openB) {
 }
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
 function killBlockReason() {
-  const P = S.player; if (P.hide || P.vent || P.under || P.wire || P.jump || P.trav || P.lunge || P.strikeT > 0) return null;
+  const P = S.player; if (P.hide || P.vent || P.under || P.wire || P.jump || P.trav || P.lunge || P.grabIn || P.strikeT > 0) return null;
   let best = null, bd = 78;
   for (const g of S.guards) { if (g.civ || g.dog || g.dropped || ['DEAD', 'CAPTIVE'].includes(g.state) || g.climb || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   if (!best || canKill(best, P) || canKill(best, P, LUNGE)) return null;
@@ -212,7 +212,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
   if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
   const sh = prSheet(key); if (!sh) return false;
-  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
+  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 * DRAG_SPD / 0.55 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
   const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
   const fr = PR.fr, dw = fr * scale, gy = PR.groundY * scale;
   ctx.globalAlpha = alpha; ctx.drawImage(sh, (c0 + fi) * fr, prDir(a) * fr, fr, fr, x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
@@ -222,6 +222,17 @@ const usePR = key => { if (!PR || !prBase) return false; const [pk, bn] = prSpli
 const PAIR = () => !!(PR && PR.anims.carry && PR.anims.held);
 const carryKey = c => c && !c.dog && (c.stripped ? 'strip' : c.ch);
 const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && usePR('ninja');
+// 처치 진행(0~1) → 핵심 자세 시간(0~3). 다가섬(0→1) → 버둥거림(1 근처를 오가며 힘이 빠짐) → 무릎 꺾임(1→2) → 주저앉음(2→3)
+// from = 1: 이미 목을 감은 상태(붙잡은 사람)에서 시작
+const easeIO = u => u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u);
+function killKT(kind, f, from) {
+  const A = from ? [0, 0.4, 0.72] : kind === 'choke' ? [0.13, 0.52, 0.8] : [0.15, 0.4, 0.72], n = kind === 'choke' ? 3 : 2;
+  if (f < A[0]) return easeIO(f / A[0]);
+  if (f < A[1]) { const u = (f - A[0]) / (A[1] - A[0]); return 1 + 0.34 * Math.abs(Math.sin(u * Math.PI * n)) * (1 - u * 0.4); }
+  if (f < A[2]) return 1 + easeIO((f - A[1]) / (A[2] - A[1]));
+  return 2 + easeIO(Math.min(1, (f - A[2]) / (1 - A[2])));
+}
+const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, Math.round(kt / 3 * (nf - 1)))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
@@ -291,6 +302,7 @@ function drawGhosts() {
 }
 function drawGuard(g) {
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;
+  if (g.state === 'CAPTIVE' && S.player.grabIn && S.player.grabIn.g === g && PAIR() && PR.anims.choke && usePR(charOf(g))) return;  // 목을 감는 중: 플레이어와 함께 그린다
   if (g.civ && g.state === 'SLEEP') { drawBody({ ch: charOf(g), x: g.x, y: g.y, a: g.a }); drawEmote('zz', g.x + 16, g.y - 6); return; }
   const k = charOf(g);
   if (g.climb && usePR(k) && PR.anims.climb) {  // 배관·벽을 타는 중

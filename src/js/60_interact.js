@@ -114,7 +114,7 @@ const LUNGE = 112;  // 등 뒤에서 이 거리 안이면 달려들어 암살
 // 땅 위 암살 대상 (최대 2명 — 붙어 있으면 동시 암살)
 function killList() {
   const P = S.player; if (P.carrying || P.captive || P.strikeT > 0 || P.hide || P.jump || P.wire || P.trav || P.under || P.vent) return [];
-  if (P.lunge) return [];
+  if (P.lunge || P.grabIn) return [];
   let list = S.guards.filter(g => canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
   if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
   if (list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
@@ -423,7 +423,7 @@ function primaryAction() {
 }
 function primaryActionRaw() {
   const P = S.player;
-  if (P.trav || P.lunge || (P.strikeT > 0 && (P.killAnim || P.bodyAnim))) return { k: 'none', label: '…' };
+  if (P.trav || P.lunge || P.grabIn || (P.strikeT > 0 && (P.killAnim || P.bodyAnim))) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
@@ -657,7 +657,7 @@ function actPrimary(force) {
       if (d0 > 40) {  // 달려들기: 짧게 돌진해 등 뒤에 붙은 뒤 처치
         const ux = (g0.x - P.x) / d0, uy = (g0.y - P.y) / d0;
         a.list.forEach(g => { g.doomed = true; g.moving = false; });
-        P.lunge = { x0: P.x, y0: P.y, x1: g0.x - ux * 26, y1: g0.y - uy * 26, t: 0, dur: Math.min(0.2, 0.07 + d0 / 900), list: a.list, two: a.k === 'kill2' };
+        P.lunge = { x0: P.x, y0: P.y, x1: g0.x - ux * 26, y1: g0.y - uy * 26, t: 0, dur: 0.12 + d0 / 480, list: a.list, two: a.k === 'kill2' };
         play('cloth', 0.35); break;
       }
       strikeKill(a.list, a.k === 'kill2');
@@ -684,11 +684,7 @@ function actPrimary(force) {
       if (d.locked) hint('lock', '잠긴 문은 자경대원이 돌아서 간다. 쫓기거나 수색 중인 자경대원은 문을 부순다');
       break;
     }
-    case 'execute': {
-      const g = P.captive; P.captive = null; P.strikeT = 0.3;
-      if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; }
-      killGuard(g, null, null, true); S.stats.special++; break;
-    }
+    case 'execute': execCaptive(); break;
     case 'drag': {
       const g = P.captive, h = a.h; P.captive = null; S.stats.special++;
       if (h.type === 'bush') { P.x = h.x; P.y = h.y; killGuard(g, 'bush', h, true); toast(lastKO() ? '화단 속으로 끌고 들어가 기절시켰다' : '화단 속으로 끌고 들어가 처치했다', 2, 'good'); }
@@ -699,12 +695,31 @@ function actPrimary(force) {
     case 'stash': actCarry(); break;
   }
 }
+// 붙잡기: 바로 붙지 않는다. 등 뒤로 몇 걸음 달려 붙고(run) → 팔로 목을 감아 끌어당긴다(clinch) → 그 뒤에 끌고 다닌다
+const DRAG_SPD = 0.4, GRAB_CLINCH = 0.36;
 function grab(g) {
-  const P = S.player;
-  P.captive = g; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null;
-  if (S.fuseGuard === g) S.fuseGuard = null;
-  play('cloth', 0.55); play('thud', 0.3);
-  hint('grab', '붙잡았다: 숨을 곳(화단·수거함·맨홀) 옆에서 [끌고 가 처치]. 9초 넘게 끌면 빠져나간다');
+  const P = S.player, d = Math.max(1, dist(P.x, P.y, g.x, g.y)), ux = (g.x - P.x) / d, uy = (g.y - P.y) / d;
+  g.doomed = true; g.moving = false; g.path = null; P.a = Math.atan2(uy, ux); P.vx = P.vy = 0;
+  const run = Math.max(0, d - 26) / 300;
+  P.grabIn = { g, t: 0, run, dur: run + GRAB_CLINCH, x0: P.x, y0: P.y, x1: g.x - ux * 26, y1: g.y - uy * 26 };
+  play('cloth', 0.4);
+}
+function updateGrabIn(P, dt) {
+  const G = P.grabIn, g = G.g; G.t += dt;
+  const f = G.run > 0 ? Math.min(1, G.t / G.run) : 1, e = 1 - (1 - f) * (1 - f);
+  P.x = G.x0 + (G.x1 - G.x0) * e; P.y = G.y0 + (G.y1 - G.y0) * e; P.vx = P.vy = 0; P.moving = f < 1; P.mode = 'run';
+  if (f >= 1 && g.state !== 'CAPTIVE') {  // 손이 닿는 순간: 붙잡힌 상태가 된다 (이때부터 버둥거림·소리)
+    if (g.state === 'DEAD') { P.grabIn = null; return; }
+    g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
+    if (S.fuseGuard === g) S.fuseGuard = null;
+    play('cloth', 0.55); play('thud', 0.3);
+  }
+  if (G.t >= G.dur) {
+    P.grabIn = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0));
+    if (g.state !== 'CAPTIVE') return;
+    P.captive = g;
+    hint('grab', '붙잡았다: 숨을 곳(화단·수거함·맨홀) 옆에서 [끌고 가 처치]. 끌고 가면 걸음이 많이 느려지고, 9초 넘게 끌면 빠져나간다');
+  }
 }
 // 숨기: 바로 사라지지 않는다. 쓰레기통 = 다가가 테를 짚고 몸을 넘겨 안으로 가라앉음 · 화단 = 웅크려 파고듦 · 맨홀 = 가장자리에서 사다리로 내려감
 function enterHide(b, quick) {
@@ -807,20 +822,33 @@ function strikeKill(list, two) {
   const P = S.player; P.strikeT = 0.32; S.crimeT = S.t;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? (g0.civ || koDefault(g0) || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null, dur = 0.66;
-  if (pairK) { P.strikeT = dur; P.a = g0.a; P.killAnim = { ch: charOf(g0), t0: S.t, kind, dur }; }
+  const kind = pairK ? (g0.civ || koDefault(g0) || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null;
+  if (pairK) P.a = g0.a;
   list.forEach(g => {
     g.doomed = false;
-    if (pairK) {
-      const nd = S.decals.length, nf = S.fx.length; killGuard(g); S.fx.length = nf; if (kind === 'choke') S.decals.length = nd;
-      const c = S.corpses[S.corpses.length - 1];
-      if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
-        c.x = ok ? fx : P.x; c.y = ok ? fy : P.y; c.a = P.a; c.hideT = S.t + dur; c.t0 = S.t + dur; c.f0 = 4; c.light = lightAt(c.x, c.y);
-        if (kind === 'stab' && S.decals.length > nd) { const d = S.decals[S.decals.length - 1]; d.x = c.x + rnd(-5, 5); d.y = c.y + rnd(-5, 5); } }
-    } else killGuard(g);
+    if (pairK) pairKill(g, kind, 0); else killGuard(g);
   });
   S.hitStop = 0.07;
   if (two) { S.stats.special++; toast(lastKO() ? '동시 기절' : '동시 암살', 1.8, 'good'); }
+}
+// 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
+// from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
+const KILL_DUR = { stab: 0.95, choke: 1.15 };
+function pairKill(g, kind, from, quiet) {
+  const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  P.strikeT = dur; P.killAnim = { ch: charOf(g), t0: S.t, kind, dur, from }; P.riseT = S.t + dur + 0.22;
+  const nd = S.decals.length, nf = S.fx.length, nc = S.corpses.length; killGuard(g, null, null, quiet); S.fx.length = nf; if (kind === 'choke') S.decals.length = nd;
+  const c = S.corpses.length > nc ? S.corpses[S.corpses.length - 1] : null;
+  if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
+    c.x = ok ? fx : P.x; c.y = ok ? fy : P.y; c.a = P.a; c.hideT = S.t + dur; c.t0 = S.t + dur; c.f0 = 4; c.light = lightAt(c.x, c.y);
+    if (kind === 'stab' && S.decals.length > nd) { const d = S.decals[S.decals.length - 1]; d.x = c.x + rnd(-5, 5); d.y = c.y + rnd(-5, 5); } }
+}
+// 붙잡은 사람 처치: 목을 감은 자세에서 그대로 조여(또는 찔러) 내려놓는다
+function execCaptive() {
+  const P = S.player, g = P.captive; if (!g) return; P.captive = null; S.stats.special++;
+  if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; }
+  if (PAIR() && PR.anims.choke && !g.dog && usePR(charOf(g)) && usePR('ninja')) { S.crimeT = S.t; pairKill(g, g.civ || koDefault(g) || S.lethalNext ? 'choke' : 'stab', 1, true); return; }
+  P.strikeT = 0.3; killGuard(g, null, null, true);
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
@@ -975,7 +1003,7 @@ function actCarry() {
   const P = S.player;
   if (P.hide) { if (P.hide.type === 'well') travelTunnel(); return; }
   if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 보이지 않는다. 옆으로 이동하고, 위로 밀면 올라서고, 1층 옥상이면 아래로 밀어 내려간다. 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]'); } return; }
-  if (P.z || P.jump || P.trav || P.lunge || P.vent || P.under) return;
+  if (P.z || P.jump || P.trav || P.lunge || P.grabIn || P.vent || P.under) return;
   if (P.captive) { actPrimaryForce('execute'); return; }
   const sa = secondaryAction();
   if (sa.viaZ) { actPrimary(sa); return; }
@@ -1031,11 +1059,11 @@ function actCarry() {
   const c = nearCorpse();
   if (c) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
-function actPrimaryForce(k) { const a = { k }; const keep = primaryAction; if (k === 'execute') { const P = S.player; const g = P.captive; P.captive = null; P.strikeT = 0.3; if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; } killGuard(g, null, null, true); S.stats.special++; } }
+function actPrimaryForce(k) { if (k === 'execute') execCaptive(); }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction() {
   const P = S.player;
-  if (P.trav || P.lunge) return { k: 'none', label: '…' };
+  if (P.trav || P.lunge || P.grabIn) return { k: 'none', label: '…' };
   if (P.under || P.vent) return { k: 'none', label: '특수' };
   if (P.cover && !P.captive && !P.carrying) return { k: 'uncover', label: '벽에서 떨어지기' };
   if (P.ledge) return { k: 'none', label: '매달림' };

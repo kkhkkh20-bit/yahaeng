@@ -150,7 +150,8 @@ const squat = (Bn, M, cr, sp) => { M.updateMatrixWorld(true); const f0 = feetY(B
   if (sp) { rotWB(Bn.Spine, sp); rotWB(Bn.Spine1, sp * 0.4); }
   M.updateMatrixWorld(true); M.position.y += f0 - feetY(Bn); M.updateMatrixWorld(true); };
 window.KZ = { lean: 0.28 };
-window.renderPair = (kind, clip, t, dirA, part) => {
+// 두 사람 자세 잡기 (렌더는 안 한다). 핵심 자세 사이는 renderPair 의 blend 로 뼈마다 보간해 중간 프레임을 만든다
+function posePair(kind, clip, t) {
   grp.add(model); grp.rotation.y = 0; grp.updateMatrixWorld(true);
   mixer.stopAllAction(); const a1 = mixer.clipAction(clips[clip]); a1.reset(); a1.play(); mixer.setTime(t);
   bones.Hips.position.x = 0; bones.Hips.position.z = 0; model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
@@ -178,13 +179,18 @@ window.renderPair = (kind, clip, t, dirA, part) => {
     const tgt = V3((_pa.x + _pb.x) / 2, Math.max(_pa.y, _pb.y) + PZ.cy - (lk === 1 ? 26 : lk === 2 ? 8 : 0), (_pa.z + _pb.z) / 2 + PZ.cz + (lk === 1 ? 46 : lk === 2 ? 14 : 0));
     model2.updateMatrixWorld(true); Q.Hips.getWorldPosition(_pa); model2.position.add(tgt.sub(_pa));
   } else if (kind === 'stab' || kind === 'choke') {
-    const k = t, a2 = mixer2.clipAction(clips2.Idle); a2.reset(); a2.play(); mixer2.setTime(0); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
+    // 당하는 사람은 싸움 자세(Idle)가 아니라 평범하게 선 자세에서 시작한다: 걷기 중간 + 팔 내리고 다리 곧게 (주민 서기와 같은 자세)
+    const k = t, a2 = mixer2.clipAction(clips2.Walk); a2.reset(); a2.play(); mixer2.setTime(0.25); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
     model2.position.set(0, 0, PZ.gz - (k === 0 ? -8 : 0)); model2.updateMatrixWorld(true);
+    for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+      aimB(Q[sd + 'Arm'], Q[sd + 'ForeArm'], V3(0.12 * side, -1, 0.04)); aimB(Q[sd + 'ForeArm'], Q[sd + 'Hand'], V3(0.04 * side, -1, 0.14));
+      aimB(Q[sd + 'UpLeg'], Q[sd + 'Leg'], V3(0.07 * side, -1, 0.02)); aimB(Q[sd + 'Leg'], Q[sd + 'Foot'], V3(0.02 * side, -1, -0.04)); }
+    model2.updateMatrixWorld(true); model2.position.y -= feetY(Q); model2.updateMatrixWorld(true);
     // 당하는 사람: 0 그대로 서 있음 · 1 몸이 뒤로 젖혀지고 팔이 들린다 · 2 무릎이 꺾이고 늘어진다 · 3 무릎 꿇듯 주저앉는다
     if (k === 0) { aimB(Q.Neck, Q.Head, V3(0.25, 1, 0.1)); }
     if (k === 1) { model2.quaternion.setFromAxisAngle(V3(1, 0, 0), -KZ.lean); model2.updateMatrixWorld(true);
       if (kind === 'choke') { aimB(Q.LeftArm, Q.LeftForeArm, V3(0.35, -0.55, 0.75)); aimB(Q.LeftForeArm, Q.LeftHand, V3(-0.55, 0.75, -0.35)); aimB(Q.RightArm, Q.RightForeArm, V3(-0.35, -0.55, 0.75)); aimB(Q.RightForeArm, Q.RightHand, V3(0.55, 0.75, -0.35)); }
-      else { aimB(Q.LeftArm, Q.LeftForeArm, V3(0.75, 0.35, 0.3)); aimB(Q.LeftForeArm, Q.LeftHand, V3(0.4, 0.8, 0.3)); aimB(Q.RightArm, Q.RightForeArm, V3(-0.75, 0.35, 0.3)); aimB(Q.RightForeArm, Q.RightHand, V3(-0.4, 0.8, 0.3)); }
+      else { aimB(Q.LeftArm, Q.LeftForeArm, V3(0.35, -0.5, 0.78)); aimB(Q.LeftForeArm, Q.LeftHand, V3(-0.5, 0.8, -0.3)); aimB(Q.RightArm, Q.RightForeArm, V3(-0.7, -0.45, 0.2)); aimB(Q.RightForeArm, Q.RightHand, V3(-0.3, -0.2, -0.6)); }  // 칼: 한 손은 입을 막은 팔을 붙들고, 다른 손은 찔린 옆구리 쪽으로
       aimB(Q.Neck, Q.Head, V3(0, 1, -0.45)); }
     if (k >= 2) { squat(Q, model2, k === 2 ? 0.45 : 0.95, k === 2 ? 0.3 : 0.75);
       for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1; aimB(Q[sd + 'Arm'], Q[sd + 'ForeArm'], V3(0.12 * side, -1, k === 3 ? 0.35 : 0.1)); aimB(Q[sd + 'ForeArm'], Q[sd + 'Hand'], V3(0.05 * side, -1, k === 3 ? 0.3 : 0.05)); }
@@ -216,6 +222,14 @@ window.renderPair = (kind, clip, t, dirA, part) => {
     aimB(B.RightArm, B.RightForeArm, V3(-0.15, -0.25, 1)); aimB(B.RightForeArm, B.RightHand, V3(0.7, 0.35, 0.6));
     aimB(B.Spine, B.Spine1, V3(0, 1, 0.12));
   }
+}
+const snapPose = () => { const o = { b: {}, m: [model.position.clone(), model.quaternion.clone(), model2.position.clone(), model2.quaternion.clone()] };
+  for (const [k, Bn] of [['a', bones], ['b', bones2]]) for (const n in Bn) o.b[k + n] = [Bn[n].position.clone(), Bn[n].quaternion.clone()]; return o; };
+const mixPose = (A, Bp, f) => { for (const [k, Bn] of [['a', bones], ['b', bones2]]) for (const n in Bn) { const x = A.b[k + n], y = Bp.b[k + n]; if (!x || !y) continue; Bn[n].position.copy(x[0]).lerp(y[0], f); Bn[n].quaternion.copy(x[1]).slerp(y[1], f); }
+  model.position.copy(A.m[0]).lerp(Bp.m[0], f); model.quaternion.copy(A.m[1]).slerp(Bp.m[1], f); model2.position.copy(A.m[2]).lerp(Bp.m[2], f); model2.quaternion.copy(A.m[3]).slerp(Bp.m[3], f); model.updateMatrixWorld(true); model2.updateMatrixWorld(true); };
+window.renderPair = (kind, clip, t, dirA, part, blend) => {
+  posePair(kind, clip, t);
+  if (blend) { const A = snapPose(); posePair(kind, clip, blend.k1); const Bp = snapPose(); mixPose(A, Bp, blend.f); }
   grp.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); grp.updateMatrixWorld(true);
   const pm = i => partsOn[i].map(o => o.material), show = part === 'a' ? mats.concat(pm(0)) : mats2.concat(pm(1)), hide = part === 'a' ? mats2.concat(pm(1)) : mats.concat(pm(0));
   show.forEach(m => { m.colorWrite = true; }); hide.forEach(m => { m.colorWrite = false; });
