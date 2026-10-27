@@ -505,9 +505,10 @@ function kitFloor(k) {
 // 판이 시작될 때: 구운 건물 그림을 이 판 건물에 붙인다 (지도 모양이 바뀌었으면 붙이지 않고 기존 그림을 쓴다)
 function kitAttach() {
   ROB = null; BLD.forEach(b => { b.kitProps = null; });
-  if (!KIT || !KIT.bld || !KIT.bld[STAGE.id]) return;
+  const kid = STAGE.kitId || STAGE.id;  // 같은 지도를 쓰는 판은 구운 그림을 나눠 쓴다
+  if (!KIT || !KIT.bld || !KIT.bld[kid]) return;
   const cache = kitB[STAGE.id] || (kitB[STAGE.id] = {});
-  for (const e of KIT.bld[STAGE.id]) {
+  for (const e of KIT.bld[kid]) {
     const b = BLD[e.i]; if (!b || [b.x0, b.y0, b.x1, b.y1, b.h].join() !== e.key.join()) continue;
     let k = cache[e.i];
     if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null, gl: e.gl || [], g: null }; k.img.src = e.src; }
@@ -859,7 +860,7 @@ function initAudio() {
   if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
-    master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination);
+    master = AC.createGain(); master.gain.value = typeof VOL === 'number' ? VOL : 0.9; master.connect(AC.destination);
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
     let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
@@ -1111,6 +1112,8 @@ function newGame(si) {
   };
   S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70 };
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
+  (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 경비
+  if (STAGE.tutorial && !S.items.length) S.exitOpen = true;
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare') { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; }
   trapsInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
@@ -1406,10 +1409,22 @@ function renderSewers() {
   return c;
 }
 // 도시판 바닥: 구운 키트 타일 (아스팔트 · 보도 · 흙 · 잔디). 없으면 기존 그림
+const lotC = [];
+function lotTile(h) {  // 맨땅 칸: 어두운 콘크리트 + 잔 얼룩 + 가끔 금. 칸 경계가 드러나지 않게 가장자리는 건드리지 않는다
+  const v = h % 4; if (lotC[v]) return lotC[v];
+  const c = document.createElement('canvas'); c.width = c.height = TILE; const x = c.getContext('2d');
+  let r = 1234 + v * 977; const rnd = () => (r = (r * 16807) % 2147483647) / 2147483647;
+  x.fillStyle = '#34363a'; x.fillRect(0, 0, TILE, TILE);
+  for (let i = 0; i < 70; i++) { const a = 0.05 + rnd() * 0.08; x.fillStyle = rnd() < 0.5 ? `rgba(0,0,0,${a})` : `rgba(255,255,255,${a * 0.5})`; x.fillRect(2 + rnd() * (TILE - 6), 2 + rnd() * (TILE - 6), 1 + rnd() * 3, 1 + rnd() * 3); }
+  if (v === 1) { x.strokeStyle = 'rgba(0,0,0,.28)'; x.lineWidth = 1; x.beginPath(); x.moveTo(8, 30); x.lineTo(19, 24); x.lineTo(27, 27); x.lineTo(38, 17); x.stroke(); }
+  if (v === 3) { x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.ellipse(26, 22, 12, 8, 0.4, 0, Math.PI * 2); x.fill(); }
+  return (lotC[v] = c);
+}
 function kitGround(ch, tx, ty) {
   const h = (((tx * 73856093) ^ (ty * 19349663)) >>> 0) % 100;
   if (ch === 'T' || ch === 'B') { const n = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]); ch = n.includes('g') ? 'g' : n.includes('d') ? 'd' : n.includes('=') ? '=' : '.'; }
   if (ch === 'w' || ch === 'K' || ch === 'E') return kitFloor('planks'); if (ch === 'v') return kitFloor('planks2'); if (ch === 't') return kitFloor('tiles'); if (ch === 'h') return kitFloor('concrete');
+  if (ch === ',') return lotTile(h);  // 뒷마당·골목 맨땅: 같은 무늬가 칸마다 반복돼 격자로 보이지 않게 네 가지를 섞는다
   const k = ch === '.' || ch === 'R' ? 'asph0' : ch === '=' || ch === 'F' ? 'pave0' : ch === 'd' ? (h < 80 ? 'dirt0' : 'dirt1') : ch === 'g' ? 'grass0' : null;
   return k && kitOk(kitG[k]) ? kitG[k] : null;
 }
@@ -1627,7 +1642,8 @@ function lightAt(x, y, elev) {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
-function hint(key, text) { if (S.hints[key]) return; S.hints[key] = true; showHint(text); }
+function hint(key, text) { if (S.hints[key] || (STAGE && STAGE.tutorial)) return;  // 연습에서는 단계 안내만 (엇나간 도움말이 끼지 않게)
+  S.hints[key] = true; showHint(text); }
 // 도움말은 화면 가운데 대신 왼쪽 아래 카드 한 장 (새 도움말이 오면 바꿔 끼운다)
 let hintTimer = null;
 function showHint(text, sec) {
@@ -2091,7 +2107,7 @@ function updateGuard(g, dt) {
       v.open = false; goSuspicious(g, v.x, v.y, 3); if (dist(g.x, g.y, P.x, P.y) < 600) toast('경비가 열린 환풍구 창살을 보고 다가간다', 2.2, 'warn'); break;
     }
   }
-  if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target) {
+  if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
       if ((c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g)) continue;
       if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark'); } g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
@@ -2337,10 +2353,13 @@ function updateTalks(dt) {
 }
 // 말풍선 (어둠 위에 그린다): 같은 층, 가까이 있을 때만 (들리는 거리)
 function drawSpeech() {
-  const P = S.player;
+  const P = S.player, placed = [];
   for (const g of S.guards) {
     if (!g.say || g.state === 'DEAD' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 560) continue;
-    ctx.font = '700 13px Galmuri, "IBM Plex Sans KR", sans-serif'; const tw = Math.min(220, ctx.measureText(g.say).width), w = tw + 16, h = 24, x = g.x - w / 2, y = g.y - 62;
+    ctx.font = '700 13px Galmuri, "IBM Plex Sans KR", sans-serif'; const tw = Math.min(220, ctx.measureText(g.say).width), w = tw + 16, h = 24, x = g.x - w / 2;
+    let y = g.y - 62; for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 3 && y + h + 3 > r.y); k++) y -= h + 5;  // 말풍선끼리 겹치면 위로 쌓는다
+    placed.push({ x, y, w, h });
+    if (y < g.y - 62) { ctx.strokeStyle = 'rgba(232,236,244,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
     ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x + 2, y + 3, w, h);
     ctx.fillStyle = g.civ ? '#f4f1e6' : '#e8ecf4'; ctx.fillRect(x, y, w, h); ctx.beginPath(); ctx.moveTo(g.x - 5, y + h); ctx.lineTo(g.x + 5, y + h); ctx.lineTo(g.x, y + h + 7); ctx.fill();
     ctx.strokeStyle = g.civ ? '#7a9a6a' : '#5a6478'; ctx.lineWidth = 1.5; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
@@ -2515,7 +2534,7 @@ function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; if (inp
 function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if (!canAim()) return; input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [특수]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
@@ -2591,7 +2610,7 @@ function sfxWhistle() {
   o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4);
 }
 function whistle() {
-  if (!S || S.over || paused || !running || DLG.modal) return;
+  if (!S || S.over || paused || !running || DLG.modal || tactical) return;
   const P = S.player; if (P.under || P.vent || P.trav || P.jump || P.wire || P.captive) return;
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
@@ -2850,7 +2869,7 @@ function updatePlayer(dt) {
   for (const it of S.items) if (!it.got && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) {
     it.got = true; play('switch', 0.6); play('cloth', 0.3);
     const left = S.items.filter(i => !i.got).length;
-    toast(left ? `밀서 회수 — 남은 ${left}장` : '밀서를 모두 회수했다. 탈출 지점으로', 3, 'good');
+    { const nm = STAGE.itemName || '밀서'; toast(left ? `${nm} 회수 — 남은 것 ${left}개` : `${nm} 회수 완료 — 탈출 지점으로`, 3, 'good'); }
   }
   if (P.z >= 3) hint('top', '3층 옥상: 멀리 보이고 경비가 거의 올려다보지 못한다. 너무 높아서 낙하 암살은 안 된다');
   if (P.z) {
@@ -2963,6 +2982,7 @@ function loadCheckpoint() {
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
+  S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
   S.keypad = null; const kp = $('keypad'); if (kp) kp.hidden = true;
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -3557,7 +3577,7 @@ function primaryActionRaw() {
   return { k: 'none', label: '암살' };
 }
 function actPrimary(force) {
-  if (!S || S.over || paused || !running) return;
+  if (!S || S.over || paused || !running || tactical) return;  // 전술 지도(시간 멈춤) 중에는 행동하지 않는다
   if (DLG.modal) { advanceDialog(); return; }
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
@@ -3956,7 +3976,7 @@ function cutLights() {
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
 }
 function actCarry() {
-  if (!S || S.over || paused || !running) return;
+  if (!S || S.over || paused || !running || tactical) return;
   const P = S.player;
   if (P.hide) { if (P.hide.type === 'well') travelTunnel(); return; }
   if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 경비에게 보이지 않는다. 옆으로 이동하고, 위로 밀면 올라서고, 1층 지붕이면 아래로 밀어 내려간다. 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]'); } return; }
@@ -5469,8 +5489,8 @@ function objectiveLines() {
   const L = [], P = S.player;
   const place = (x, y, fl, b) => { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; };
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
-  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
-  if (S.exitOpen) L.push(['go', '탈출 지점(노란 원)으로']);
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
+  if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
@@ -5495,7 +5515,7 @@ function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
   setText(hud.objT, 'objT', STAGE.sub);
-  if (CITY) { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c === 'go' ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  if (CITY) { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   else setText(hud.obj, 'obj', objectiveText() + (S.timeLeft ? ` · ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}` : '') + (P.hasKey ? ' · 열쇠 있음' : ''));
   if (CITY) drawMini();
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
@@ -5585,8 +5605,8 @@ function showEnd(win, reason) {
     rank = n === 4 ? '그림자' : n === 3 ? '암살자' : n === 2 ? '침입자' : '소란꾼';
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank);
   }
-  $('endTitle').textContent = win ? '임무 완료' : '실패';
-  $('endSub').textContent = win ? '등급: ' + rank : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
+  $('endSub').textContent = win ? (STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : '등급: ' + rank) : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ' · ' + (tg && tg.state !== 'DEAD' ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   $('endStats').innerHTML = [
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['제거', st.kills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
@@ -5606,7 +5626,9 @@ function showEnd(win, reason) {
 }
 
 if (!CITY) document.querySelectorAll('.cityonly').forEach(e => e.remove());
+if (CITY) document.querySelectorAll('.nocity').forEach(e => e.remove());
 function renderStageList() {
+  syncQuick();
   const best = loadBest();
   $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).sort((a, b) => (b[0].tutorial ? 1 : 0) - (a[0].tutorial ? 1 : 0)).map(([s, i]) => `
     <button class="stage" type="button" data-i="${i}">
@@ -5627,7 +5649,7 @@ function frame(t) {
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
   if (running && !paused) updateDialog(dt);
-  document.body.classList.toggle('scanning', !!(input.scan && running && !tactical));
+  document.body.classList.toggle('scanning', !!(input.scan && running && !tactical)); document.body.classList.toggle('playing', !!(running && S && !S.over));
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   if (running && !paused && !S.over && !tactical && !DLG.modal) { let ud = dt; if (S.hitStop > 0) { S.hitStop -= dt; ud = dt * 0.06; } if (input.aiming) focusUpdate(ud); else update(ud); }
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
@@ -5667,6 +5689,8 @@ window.addEventListener('resize', resize);
 // ---------------------------------------------------------------- 입력
 const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 document.body.classList.toggle('touch', isTouch);
+const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
+const keyCode = e => WASD[e.code] || e.code;
 window.addEventListener('keydown', e => {
   if (!S) return;
   if (S.entrySel && running) { const m = /^Digit([1-9])$/.exec(e.code); if (m) { e.preventDefault(); chooseEntry(+m[1] - 1); } return; }
@@ -5675,13 +5699,13 @@ window.addEventListener('keydown', e => {
   if (DLG.modal && running) { if (['KeyQ', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
   if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
   if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); if (running) { input.scan = true; $('btnScan').classList.add('on'); hint('scan', '살피기: 문·창문·배관·굴뚝·환풍구·숨을 곳이 색으로 표시된다'); } return; }
-  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code) && running) e.preventDefault();
+  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
   if (e.repeat) return;
-  S.keys[e.code] = true;
+  S.keys[keyCode(e)] = true;
   if (!running || S.over) return;
   // 왼손: Space 행동 · Z 특수 · X 도구(누르고 겨누기) · C 도구 바꾸기 · Ctrl 살금 모드 · Shift 달리기 · Alt 살피기 (Q W E는 예전 키로 남겨 둔다)
   if (e.code === 'KeyQ' || e.code === 'Space') actPrimary();
-  if (e.code === 'KeyW' || e.code === 'KeyZ') { if (input.aiming) queueAim(); else actCarry(); }
+  if (e.code === 'KeyZ') { if (input.aiming) queueAim(); else actCarry(); }
   if (e.code === 'KeyE' || e.code === 'KeyX') startAim('key');
   if (e.code === 'KeyC') selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]);
   if (e.code === 'KeyR') cycleMoveLock();
@@ -5696,7 +5720,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
-window.addEventListener('keyup', e => { if (S) S.keys[e.code] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyE' || e.code === 'KeyX') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
+window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyE' || e.code === 'KeyX') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
 window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
@@ -5787,6 +5811,22 @@ function cycleMoveLock() { toggleWalkLock(); }
 { const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); }); }
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleSneak(); b.blur(); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
+// 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+let VOL = +lsGet('yahaeng.vol', 90) / 100, BRI = +lsGet('yahaeng.bri', 100) / 100;
+function applyVol() { if (master) master.gain.value = VOL; }
+function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
+$('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri();
+$('volR').addEventListener('input', e => { VOL = +e.target.value / 100; lsSet('yahaeng.vol', e.target.value); applyVol(); });
+$('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.bri', e.target.value); applyBri(); });
+$('btnFull').addEventListener('click', () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch (e) {} });
+document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
+// 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
+function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 't0'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && !stageCleared(s)); return i >= 0 ? i : 0; }
+function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; $('btnQuick').textContent = st.tutorial ? '바로 시작 — ' + st.name : `이어 하기 — ${st.no} ${st.name}`; $('qNote').textContent = st.tutorial ? '처음이라면 여기부터 (약 3분). 의뢰는 아래에서 고른다' : '아직 깨지 않은 첫 의뢰. 다른 의뢰는 아래에서 고른다'; }
+$('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
+$('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
 function setPause(v) { if (!running) return; paused = v; $('pause').hidden = !paused; }
 function togglePause() { setPause(!paused); }

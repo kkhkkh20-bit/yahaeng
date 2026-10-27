@@ -24,6 +24,9 @@ async def main():
             if i % 8 == 0: print('  g1', await ev('() => { const g = T.S().guards[1], P = T.S().player; return [g.state, Math.round(g.x), Math.round(g.y), Math.round(P.x), Math.round(P.y), !!P.cover, g.meter.toFixed(2), g.seen]; }'))
             await pg.wait_for_timeout(250)
         print('8', await st())
+        await ev('() => { const S = T.S(), P = S.player; P.x = S.exit.x; P.y = S.exit.y; }'); await pg.wait_for_timeout(1500)
+        print('basic end', await ev('() => [T.S().over, document.getElementById("end").dataset.win, T.S().tutI, document.getElementById("endSub").textContent.slice(0, 30)]'))
+        await ev('() => window.__game.start(6)'); await pg.wait_for_timeout(300); await ev(SKIP); await pg.wait_for_timeout(300)  # 연습 2 · 고급
         await to(16 * 48 + 24, 7 * 48 + 24, -1.5708); await pg.wait_for_timeout(400); print('9', await st())
         await ev('() => { const P = T.S().player, g = T.S().guards[2]; P.x = g.x - 230; P.y = g.y; P.a = 0; P.cover = null; }'); await pg.wait_for_timeout(200)
         await pg.keyboard.down('x'); await pg.wait_for_timeout(150); await pg.keyboard.down('ArrowRight'); await pg.wait_for_timeout(500); await pg.keyboard.up('ArrowRight'); await pg.keyboard.up('x'); await pg.wait_for_timeout(1800)

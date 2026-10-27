@@ -333,7 +333,8 @@ const STAGES = [
 (o => STAGES.sort((a, b) => o.indexOf(a.id) - o.indexOf(b.id)))(['m1', 'm2', 'm5', 'm3', 'm4']);
 STAGES.forEach((st, i) => { st.no = String(i + 1).padStart(2, '0'); st.sub = st.sub.replace(/^임무( \d)? ·/, `임무 ${i + 1} ·`); });
 // ───────── 연습: 훈련장 — 한 칸씩 기술을 익힌다 (목록 맨 앞에 보인다)
-STAGES.push({
+// 연습은 둘로 나눈다: 기본(약 3분, 첫 의뢰 전에 필요한 것만)과 고급(선택). 같은 지도를 쓰고, 쓰지 않는 경비는 빼 둔다
+const TUT = {
   id: 't0', no: '00', name: '연습', sub: '연습 · 훈련장', tutorial: true,
   mission: '기술을 하나씩 익힌다: 지도·살금·암살·시체 숨기·살피기·기대기·엿보기·유인·전깃줄·낙하 암살·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
   brief: '서쪽에서 동쪽으로 한 칸씩 나아가며 기술을 익힌다. 임무 칸 맨 위의 "연습" 줄이 지금 할 일이고, 대상 위에 "여기" 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
@@ -381,7 +382,16 @@ STAGES.push({
     ['연습 창고는 잠겨 있다. 창문이나 문 앞에서 Space — 락픽으로 따기 (움직이지 말고 기다린다)', S => (S.stats.picks || 0) >= 1, () => ({ x: 36 * 48 + 24, y: 6 * 48 + 24 })],
     ['연습 장부를 줍고 동쪽 끝(노란 원)으로 나가기', S => S.items.every(i => i.got), S => S.items[0]]
   ]
-});
+};
+STAGES.push(Object.assign({}, TUT, { id: 't0', name: '연습 1 · 기본', sub: '연습 · 기본 (약 3분)', exit: [21.5, 9], items: [], itemName: '', itemNames: [], dropGuards: [2, 3],
+  mission: '기본 기술: 걷기 · 전술 지도 · 살금 · 뒤에서 암살 · 시체 숨기 · 살피기 · 벽에 기대 끌어당기기',
+  brief: '서쪽에서 동쪽으로 나아가며 첫 의뢰에 필요한 기술만 익힌다. 임무 칸 맨 위 "연습" 줄이 지금 할 일이고, 대상 위에 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
+  steps: TUT.steps.slice(0, 8).concat([['동쪽 노란 원(출구)으로 나가면 기본 연습 끝', () => false, S => S.exit]]) }));
+STAGES.push(Object.assign({}, TUT, { id: 't1', kitId: 't0', name: '연습 2 · 고급', sub: '연습 · 고급 (선택)', start: [20, 9], dropGuards: [0, 1],
+  mission: '고급 기술: 엿보기 · 빈 캔 유인 · 전깃줄 · 낙하 암살 · 락픽',
+  brief: '기본 연습 다음 구간. 창문 엿보기, 빈 캔으로 꾀어내기, 전깃줄 타기, 위에서 덮치기, 잠긴 문 따기를 익힌다. 들켜도 그 단계부터 다시 한다.',
+  steps: TUT.steps.slice(8) }));
+
 const DIALOGUE = {};
 const BARKS = {
   alert: ['누구야! 거기 서!', '도둑이다! 잡아!', '저기다! 놓치지 마!'],

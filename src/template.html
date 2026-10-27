@@ -230,6 +230,7 @@ body:not(.touch) .sysbtns .tonly { display: none; }
 #mini { position: absolute; right: max(12px, env(safe-area-inset-right, 0px)); top: calc(54px + env(safe-area-inset-top, 0px)); width: 200px; border: 1px solid var(--ink-line); background: rgba(7, 10, 18, .8); pointer-events: auto; cursor: pointer; image-rendering: pixelated; }
 /* 목표 목록 */
 #objective .ol { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#objective .ol.tut, .obj:not(.open) #objective .ol.tut { white-space: normal; overflow: visible; }  /* 연습 단계 문구는 잘리지 않게 */
 #objective .ol.done { color: var(--paper-dim); text-decoration: line-through; }
 #objective .ol.info { color: #9fc7d8; }
 #objective .ol.go { color: var(--lamp); font-weight: 700; }
@@ -295,6 +296,16 @@ body.scanning #scanLegend { display: flex; }
 #layerLbl { max-width: 15em; overflow: hidden; text-overflow: ellipsis; }
 #modeLbl { max-width: 11em; overflow: hidden; text-overflow: ellipsis; }
 @media (min-width: 701px) { #scanLegend { left: auto; right: max(12px, env(safe-area-inset-right, 0px)); top: auto; bottom: 66px; transform: none; max-width: 46vw; justify-content: flex-end; } }
+.row.quick { align-items: center; gap: 12px; margin: 6px 0 14px; flex-wrap: wrap; } .row.quick .cta { font-size: 17px; padding: 12px 26px; } .qnote { color: var(--paper-dim); font-size: 13px; }
+.row.sets { align-items: center; gap: 14px; flex-wrap: wrap; } .row.sets label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--paper-dim); } .row.sets input[type=range] { width: 120px; accent-color: var(--blood); }
+#rotateHint { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(5,7,12,.94); color: var(--paper); flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; font-size: 18px; padding: 24px; }
+#rotateHint small { color: var(--paper-dim); font-size: 14px; }
+@media (orientation: portrait) and (pointer: coarse) { body.playing:not(.portraitOk) #rotateHint { display: flex; } }
+@media (min-width: 701px) {  /* PC: 상단 상태 줄은 한 줄로 (줄바꿈되면 목표·알림을 덮는다) */
+  .top { flex-wrap: nowrap; } .status { flex-wrap: nowrap; } .obj { max-width: min(360px, 32vw); }
+  #killsLbl { display: none; } body:not(.touch) #btnSneak, body:not(.touch) #btnWalk { display: none; }
+  #layerLbl { max-width: 9em; } #modeLbl { max-width: 8em; }
+}
 @media (pointer: coarse) { .sysbtns button { min-height: 38px; min-width: 44px; padding: 6px 10px; font-size: 12px; } }
 </style>
 
@@ -319,7 +330,7 @@ body.scanning #scanLegend { display: flex; }
   <canvas id="mini" width="200" height="140" title="미니맵 — 누르면 전술 지도"></canvas>
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
-    <span><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
+    <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
     <span class="keep"><kbd>Space</kbd>행동</span><span class="keep"><kbd>Z</kbd>특수</span><span class="keep"><kbd>X</kbd>도구(누르고 겨누기·떼면 사용)</span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
@@ -350,6 +361,7 @@ body.scanning #scanLegend { display: flex; }
     <div class="eyebrow">픽셀 닌자 잠입 암살</div>
     <h1>야행<span>.</span></h1>
     <p class="brief">빛을 피하고, 소리를 죽이고, 등 뒤나 지붕 위에서 덮친다. 들키면 끝이다.</p>
+    <div class="row quick"><button class="cta" id="btnQuick" type="button">바로 시작</button><span class="qnote" id="qNote">처음이라면 연습 1(약 3분)부터. 의뢰는 아래에서 고른다</span></div>
     <div class="stages"><h3>난이도</h3>
       <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
       <p class="diff-note">보통부터 점호가 돈다. 어려움은 경비 시야가 넓고 빨리 알아채며, 돌·엽전·쿠나이가 줄고 증원이 셋 온다. 쉬움·보통은 목표를 이룰 때마다 체크포인트가 저장되고, 어려움은 저장되지 않는다. 락픽은 쉬움 5 · 보통 3 · 어려움 2개.</p>
@@ -385,9 +397,9 @@ body.scanning #scanLegend { display: flex; }
       <li><strong>지하 수로</strong>맨홀·우물에 들어가 [지하로]를 누르면 수로를 걸어 다른 맨홀 아래까지 간다. 경비는 내려오지 않는다.</li>
       <li><strong>3층 · 계단</strong>건물 안 계단으로 옥상에 오른다. 3층 옥상은 가장 멀리 보이고 거의 들키지 않지만, 너무 높아 낙하 암살은 안 된다.</li>
       <li><strong>엽전 · 정예 · 증원</strong>엽전을 떨어뜨리면 본 경비가 주우러 와 고개를 숙인다. 파란 옷에 붉은 표식을 단 정예는 돌·엽전에 안 넘어가고 붙잡히지 않는다. 처음 발각되면 증원이 온다.</li>
-      <li><strong>살피기 · 색 약속</strong>[살피기](PC는 Tab을 누르는 동안)로 쓸 수 있는 물체가 모두 표시된다. 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라. 지금 누를 수 있는 행동은 대상 위에 글자로 뜬다.</li>
+      <li><strong>살피기 · 색 약속</strong>[살피기](PC는 Tab을 누르는 동안)로 쓸 수 있는 물체가 모두 표시된다. 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토<span class="nocity"> · 굴뚝 주황</span> · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라. 지금 누를 수 있는 행동은 대상 위에 글자로 뜬다.</li>
       <li><strong>층</strong>지붕 · 지상/실내 · 환풍구 · 지하 수로. 화면 위 표시로 지금 층을 알 수 있다. 층마다 장단점이 다르다.</li>
-      <li><strong>굴뚝</strong>지붕의 굴뚝으로 그 방 아궁이 앞에 내려간다. 불이 타고 있으면 [굴뚝 막기]로 끄면 되는데, 연기 소리에 안의 경비가 다시 불을 피우러 온다. 방 안에서 아궁이 불을 손으로 끄고 굴뚝으로 오를 수도 있다.</li>
+      <li class="nocity"><strong>굴뚝</strong>지붕의 굴뚝으로 그 방 아궁이 앞에 내려간다. 불이 타고 있으면 [굴뚝 막기]로 끄면 되는데, 연기 소리에 안의 경비가 다시 불을 피우러 온다. 방 안에서 아궁이 불을 손으로 끄고 굴뚝으로 오를 수도 있다.</li>
       <li><strong>환풍구</strong>천장 창살이나 지붕 환기구로 들어가 덕트를 기어간다. 살금살금이면 조용하고, 서두르면 쇠가 울려 아래 경비가 듣는다. 창살 밑을 지나는 경비를 [끌어올려 암살]. 열어 둔 창살을 경비가 보면 의심한다.</li>
       <li><strong>감시병</strong>활을 든 감시병(머리 위 노란 겹화살표)은 지붕을 똑바로 본다. 지붕이 늘 안전하지는 않다.</li>
       <li><strong>점호</strong>보통·어려움에선 일정 시간마다 점호가 돈다(10초 전 알림). 쓰러진 경비가 하나면 경계, 둘 이상이면 수색이 시작된다. 몰아서 처리하고 빨리 끝내라.</li>
@@ -397,17 +409,19 @@ body.scanning #scanLegend { display: flex; }
       <li><strong>돌 · 퓨즈 상자</strong>돌로 경비를 유인한다. 퓨즈 상자로 바깥 조명을 끄면 경비 하나가 고치러 온다.</li>
     </ul></details>
     <div class="ctrl">
-      <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·지붕 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 경비를 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
+      <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·지붕 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 경비를 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
       <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·지붕 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 경비를 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
     </div>
     <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 기와 지붕: Clint Bellanger 'Oriental Roof Tiles' (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 범종 소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
   </div>
 </div>
 
+<div id="rotateHint"><p>가로로 돌려서 하는 게임이다.<br><small>세로 화면은 보이는 범위가 좁다.</small></p><button type="button" class="ghost" id="btnPortrait">그래도 세로로 하기</button></div>
 <div class="screen" id="pause" hidden>
   <div class="panel">
     <div class="eyebrow">일시정지</div>
     <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">작전 선택</button></div>
+    <div class="row opts sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
     <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
   </div>
 </div>
