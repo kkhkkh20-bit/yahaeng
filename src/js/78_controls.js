@@ -25,6 +25,7 @@ const ICON_P = {
   stone: 'M7 5h10v15H7zM7 9h10M9 3h6',                                                          // 빈 캔
   coin: 'M3 14h15v3H3zM18 14h3v3h-3M19 11c0-2 2-2 2-4',                                          // 담배
   kunai: 'M4 20L15 9M15 9l5-5-1 6zM15 9l-6-1 5-5zM6 14l4 4',                                     // 다트
+  candy: 'M8 12a4 4 0 108 0 4 4 0 10-8 0M8 12l-5-3v6zM16 12l5-3v6z',                       // 사탕
   dot: 'M12 12h.01'
 };
 const icon = (k, s = 26) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON_P[k] || ICON_P.dot}"/></svg>`;
@@ -35,9 +36,9 @@ function actIcon(a) {
   return ({ hide: 'hide', stash: 'stash', carry: lb.startsWith('넣기') ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
     down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: 'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
-    cover: 'wall', uncover: 'wall', steal: 'key' })[k] || 'dot';
+    cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy' })[k] || 'dot';
 }
-const VERB = { ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기' };
+const VERB = { ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
 function actVerb(a, ic) {
   const lb = (a.label || '').split(/ \(| — /)[0];

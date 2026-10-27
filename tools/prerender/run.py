@@ -50,20 +50,46 @@ async def main():
             cols = sum(len(a[2]) for a in ANIMS); meta = {'fr': FR, 'cols': cols, 'groundY': 46.8, 'anims': {}}
             c = 0
             for an in ANIMS: meta['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
-            for vn, col in VAR.items():
-                await pg.evaluate(f'setTex({json.dumps(col)})')
-                sheet = Image.new('RGBA', (cols * FR, 8 * FR))
+            if '--bodies' not in sys.argv:
+              for vn, col in VAR.items():
+                  await pg.evaluate(f'setTex({json.dumps(col)})')
+                  sheet = Image.new('RGBA', (cols * FR, 8 * FR))
+                  for d in range(8):
+                      a = d * 3.14159265 / 4; c = 0
+                      for an in ANIMS:
+                          name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
+                          for ti, t in enumerate(ts):
+                              hg = HANG_SWAY[ti] if name == 'hang' else 'undefined'
+                              url = await pg.evaluate(f"renderPose('{pr[1]}', {t}, {a})" if pr and pr[0] == 'pose' else f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')" if pr else f"renderFrame('{clip}', {t}, {a}, {cr}, {hg})")
+                              if name == 'hang' and d == 6 and ti == 0: hand = await pg.evaluate('window.lastHand'); meta['hangHand'] = [round(hand[0] / 2, 1), round(hand[1] / 2, 1)]
+                              im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA').resize((FR, FR), Image.LANCZOS)
+                              sheet.paste(outline(im), (c * FR, d * FR)); c += 1
+                  sheet.save(f'{OUT}/{vn}.png', optimize=True); sheet.save(f'{OUT}/{vn}.webp', 'WEBP', lossless=True, method=6); print(vn, os.path.getsize(f'{OUT}/{vn}.png'), os.path.getsize(f'{OUT}/{vn}.webp'))
+            # 주민 체형 변형 시트: 주민에게 필요한 동작만, 체형마다 한 장 (body_<이름>.webp)
+            from bodies import BODIES, CIV_ANIMS, BODY_ANIMS
+            only = [a.split('=')[1] for a in sys.argv if a.startswith('--only=')]; only = only[0].split(',') if only else None
+            old = json.load(open(f'{OUT}/pr_meta.json')) if '--bodies' in sys.argv and os.path.exists(f'{OUT}/pr_meta.json') else None
+            if old: meta = old
+            meta['bodies'] = meta.get('bodies', {}) if only else {}
+            await pg.evaluate(f'setTex({json.dumps(VAR["key"])})')
+            for bn, spec in BODIES.items():
+                if only and bn not in only: continue
+                CA = [an for an in ANIMS if an[0] in BODY_ANIMS.get(bn, CIV_ANIMS)]; ccols = sum(len(a[2]) for a in CA); cmap = {}; c = 0
+                for an in CA: cmap[an[0]] = [c, len(an[2])]; c += len(an[2])
+                await pg.evaluate(f'setBody({json.dumps(spec)})')
+                sheet = Image.new('RGBA', (ccols * FR, 8 * FR))
                 for d in range(8):
                     a = d * 3.14159265 / 4; c = 0
-                    for an in ANIMS:
+                    for an in CA:
                         name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
                         for ti, t in enumerate(ts):
-                            hg = HANG_SWAY[ti] if name == 'hang' else 'undefined'
-                            url = await pg.evaluate(f"renderPose('{pr[1]}', {t}, {a})" if pr and pr[0] == 'pose' else f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')" if pr else f"renderFrame('{clip}', {t}, {a}, {cr}, {hg})")
-                            if name == 'hang' and d == 6 and ti == 0: hand = await pg.evaluate('window.lastHand'); meta['hangHand'] = [round(hand[0] / 2, 1), round(hand[1] / 2, 1)]
+                            url = await pg.evaluate(f"renderPair('{pr[0]}', '{clip}', {t}, {a}, '{pr[1]}')" if pr else f"renderFrame('{clip}', {t}, {a}, {cr})")
                             im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA').resize((FR, FR), Image.LANCZOS)
                             sheet.paste(outline(im), (c * FR, d * FR)); c += 1
-                sheet.save(f'{OUT}/{vn}.png', optimize=True); sheet.save(f'{OUT}/{vn}.webp', 'WEBP', lossless=True, method=6); print(vn, os.path.getsize(f'{OUT}/{vn}.png'), os.path.getsize(f'{OUT}/{vn}.webp'))
+                sheet = sheet.quantize(colors=128, method=Image.FASTOCTREE).convert('RGBA')  # 128색으로 줄여 용량 1/4 (게임에서 색을 다시 칠하므로 충분)
+                sheet.save(f'{OUT}/body_{bn}.webp', 'WEBP', lossless=True, method=6); meta['bodies'][bn] = {'cols': ccols, 'anims': cmap}
+                print(bn, os.path.getsize(f'{OUT}/body_{bn}.webp'))
+            await pg.evaluate('setBody(null)')
             json.dump(meta, open(f'{OUT}/pr_meta.json', 'w')); print(meta)
             await b.close()
     finally: srv.terminate()

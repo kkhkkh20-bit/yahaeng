@@ -130,12 +130,14 @@ function groundBelow(x, y, n) {  // 가장자리 바깥으로 처음 나오는 �
 const ledgeDraw = P => { const n = P.ledge; return { x: P.x + n.x * 20, y: P.y + (n.y > 0 ? 34 : n.y < 0 ? -8 : 10) }; };
 function ledgeTarget() {
   const P = S.player; if (!P.ledge) return null; let best = null, bd = 60;
-  for (const g of S.guards) { if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.dog || (g.z || 0) !== P.z || g.climb || g.doomed) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+ if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.dog || (g.z || 0) !== P.z || g.climb || g.doomed) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   return best;
 }
 function pushOffTarget() {
   const P = S.player; if (!P.z || P.ledge || P.trav) return null;
-  for (const g of S.guards) { const c = g.climb; if (!c || c.kind !== 'climb' || !c.up || (c.to.z || 0) !== P.z || g.state === 'DEAD') continue; if (dist(P.x, P.y, c.to.x, c.to.y) < 72) return g; }
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+ const c = g.climb; if (!c || c.kind !== 'climb' || !c.up || (c.to.z || 0) !== P.z || g.state === 'DEAD') continue; if (dist(P.x, P.y, c.to.x, c.to.y) < 72) return g; }
   return null;
 }
 // 떨어뜨리기: 사고(추락사)로 처리. 몸은 아래 땅으로 떨어진다
@@ -165,7 +167,8 @@ function enterCover(n, quiet) {
 function coverTarget() {
   const P = S.player; if (!P.cover || P.strikeT > 0 || S.pull) return null;
   let best = null, bd = perkOn('reach') ? 120 : 100;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || (g.z || 0) !== (P.z || 0) || g.climb || g.doomed || (g.seen && g.meter > 0.6) || flOf(g) !== flOf(P)) continue;
     const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y, P.z || 0)) { bd = d; best = g; }
   }

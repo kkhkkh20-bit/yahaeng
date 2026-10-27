@@ -90,7 +90,7 @@ function newGame(si) {
   S = {
     t: 0, lamps, lightsOn: true, guards, corpses: [], decals: [], noises: [], stones: [], kunais: [], toasts: [], hides, ladders,
     items: STAGE._items.map(p => ({ b: p[3], x: tc(p[0]), y: tc(p[1]), got: false, fl: p[2] || 0 })),
-    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: CITY ? D().picks : 0, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
+    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: CITY ? D().picks : 0, candy: STAGE.candy != null ? STAGE.candy : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
     rollT: D().roll, rollWarn: false, timeLeft: STAGE.timeLimit ? STAGE.timeLimit * D().time : 0,
     alevel: 0, alevelT: 0, unseenT: 0, lures: [], reinforced: false, fx: [], keyDrop: null, fuseGuard: null, fuseT: 0, fleeing: false, windows: [],
     stats: { kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
@@ -281,6 +281,9 @@ function floorCanvas(bi, f) {
   const b = BLD[bi], L0 = CUR_F; setLayer(f); const c = renderMap({ x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1 }); setLayer(L0);
   return (S.floorC[k] = c);
 }
+// 주민 체형 자동 배정 (어른만): 남자 기본 3 · 여자 셋 6 · 덩치·노인·코트·백팩 각 1
+const BODY_MIX = [null, null, null, 'fLong', 'fLong', 'fBob', 'fBob', 'fTail', 'fTail', 'big', 'old', 'coat', 'pack'];
+const autoBody = i => BODY_MIX[((i * 7919 + 13) >>> 0) % BODY_MIX.length];
 function makeGuard(d, i) {
   let sx, sy;
   if (d.at) { sx = d.at[0]; sy = d.at[1]; }
@@ -291,7 +294,7 @@ function makeGuard(d, i) {
     id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
-    tag: d.tag || null, sched: d.sched || null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
+    child: !!d.child, parent: d.parent || null, tag: d.tag || null, body: d.child ? 'kid' : d.body !== undefined ? d.body : d.kind === 'civ' ? autoBody(i) : null, sched: d.sched || null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
   };
 }
 function buildRouteLine(g) {

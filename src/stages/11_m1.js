@@ -70,10 +70,13 @@
     { kind: 'civ', route: [[46, 5, 1], [46, 23, 3]] },                       // 샛길로 지나가는 사람
     { kind: 'civ', wander: [27, 15, 38, 16], at: [31, 15] }, { kind: 'civ', wander: [27, 13, 33, 16], at: [28, 16] },   // 10·11 매장 손님
     // 상회 사람들 (히트맨식): 일과가 있고, 옷이 곧 신분이다
-    { kind: 'civ', tag: 'boss', outfit: 'staff', enforcer: true, schedKey: 'bossOut', sched: [{ at: [37, 9], stay: 35, name: '사무실', act: '장부 정리' }, { at: [33, 13], stay: 22, name: '매장 카운터', act: '손님 응대' }, { at: [10, 25], stay: 18, name: '편의점', act: '담배 사기' }] },   // 12 사장 (눈썰미: 직원 옷)
-    { kind: 'civ', tag: 'clerk', outfit: 'staff', wander: [29, 14, 36, 15], at: [32, 15] },                                                                      // 13 직원
-    { kind: 'civ', tag: 'kid', outfit: 'staff', sched: [{ at: [31, 9], stay: 22, name: '창고', act: '짐 정리' }, { at: [21, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 14 막내
-    { kind: 'civ', tag: 'courier', outfit: 'courier', sched: [{ at: [48, 27], stay: 14, name: '택배 트럭', act: '상자 내리기' }, { at: [30, 8], stay: 8, name: '상회 창고', act: '배달' }] }   // 15 택배 기사
+    { kind: 'civ', tag: 'boss', outfit: 'staff', body: 'big', enforcer: true, schedKey: 'bossOut', sched: [{ at: [37, 9], stay: 35, name: '사무실', act: '장부 정리' }, { at: [33, 13], stay: 22, name: '매장 카운터', act: '손님 응대' }, { at: [10, 25], stay: 18, name: '편의점', act: '담배 사기' }] },   // 12 사장 (눈썰미: 직원 옷)
+    { kind: 'civ', tag: 'clerk', outfit: 'staff', body: 'fTail', wander: [29, 14, 36, 15], at: [32, 15] },                                                                      // 13 직원
+    { kind: 'civ', tag: 'kid', outfit: 'staff', body: null, sched: [{ at: [31, 9], stay: 22, name: '창고', act: '짐 정리' }, { at: [21, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 14 막내
+    { kind: 'civ', tag: 'courier', outfit: 'courier', body: 'helmet', sched: [{ at: [48, 27], stay: 14, name: '택배 트럭', act: '상자 내리기' }, { at: [30, 8], stay: 8, name: '상회 창고', act: '배달' }] },   // 15 택배 기사
+    // 광장의 엄마와 아이: 아이는 손댈 수 없다. 범죄를 보면 엄마에게 달려가고, 엄마가 신고하러 간다. 사탕(Z)으로 달랠 수 있다
+    { kind: 'civ', tag: 'mom', body: 'fBob', at: [37, 21], post: 180 },                                                                                         // 16 엄마
+    { kind: 'civ', tag: 'child', child: true, parent: 'mom', wander: [33, 20, 39, 22], at: [35, 21] }                                                                        // 17 아이
   ],
   items: [[36, 9, 0, 1]],
   hints: ['거리와 상회 매장은 손님으로 드나든다. 뒷마당·창고·사무실은 그곳 사람 차림이면 지나다닐 수 있다 — 경계선이 초록이면 통과.', '들어가는 길은 여럿: 몰래 정문, 택배, 직원 조끼, 옥상 전깃줄, 정전·빈 캔으로 빼내기. 편의점 앞 수다와 매장 카운터 대화를 엿들어 보자.']

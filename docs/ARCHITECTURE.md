@@ -87,3 +87,8 @@ cd /root/game && python3 build.py
 ## 정리 예정
 - 엔진에 남은 옛 테마(조선·네온 시험판) 분기(`JOSEON`, `NEO`, `!CITY`)는 지금 쓰지 않는다. 모듈을 하나씩 손볼 때 테스트와 함께 걷어 낸다.
 - 의뢰 2~5는 구역 규칙으로 하나씩 다시 짠다.
+
+## 주민 체형 변형
+- tools/prerender/bodies.py: 체형 9종(비율·숙임·부품). `python3 run.py --bodies [--only=kid]` → build/pr/body_<이름>.webp (128색) + pr_meta.json bodies
+- 게임 키 '팔레트@체형' (예: civ3@fLong). 체형 시트에 없는 동작은 기본 체형으로. 주민은 autoBody로 자동 배정, 스테이지에서 body·child·parent 지정
+- 아이(child): 모든 공격 대상에서 제외, 신고는 부모 → 어른, 사탕(candy)으로 달램

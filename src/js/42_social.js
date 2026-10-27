@@ -9,6 +9,12 @@ const knows = s => (S.learned || []).some(t => t.includes(s));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
 const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got) };
 function reportTo(g) {
+  if (g.child) {  // 아이는 자경대원이 아니라 부모(없으면 가까운 어른)에게 달려간다 — 어른이 다시 신고하러 간다
+    const pa = g.parent && npc(g.parent); if (pa && !['DEAD', 'CAPTIVE', 'SLEEP'].includes(pa.state) && flOf(pa) === flOf(g)) return pa;
+    let best = null, bd = 900;
+    for (const o of S.guards) { if (!o.civ || o.child || o === g || ['DEAD', 'CAPTIVE', 'PANIC', 'REPORT', 'SLEEP'].includes(o.state) || flOf(o) !== flOf(g)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; best = o; } }
+    return best;
+  }
   let best = null, bd = 1600;
   for (const o of S.guards) { if (o.civ || o.dog || o.target || ['DEAD', 'CAPTIVE', 'FLEE', 'TERROR'].includes(o.state) || flOf(o) !== flOf(g) || (o.z || 0)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; best = o; } }
   return best;
@@ -32,6 +38,11 @@ function updateReport(g, dt) {
 }
 function deliverReport(g) {
   const r = g.rep, o = r.to, P = S.player; g.rep = null;
+  if (g.child) {  // 아이 → 어른: 어른이 이어서 신고하러 간다 (한 단계 느리다)
+    gsay(g, r.c ? '엄마! 저기 사람이 누워 있어!' : '아빠! 저 아저씨가 이상해!', 2.4); gsay(o, '뭐? 어디?', 2);
+    if (!startReport(o, r.x, r.y, r.c, r.saw)) civScream(o, r.x, r.y, r.c, r.saw);
+    g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false; return;
+  }
   S.stats.witness = (S.stats.witness || 0) + 1; logEv('report', g.x, g.y);
   gsay(g, r.c ? '저쪽에 사람이 쓰러져 있어요!' : '저쪽에서 어떤 사람이 사람을 해쳤어요!', 2.6);
   endChat(o); o.act = null; o.bubble = null; o.want = Math.atan2(g.y - o.y, g.x - o.x);
@@ -42,6 +53,23 @@ function deliverReport(g) {
   if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, `신고한 주민이 ${outfitName(r.saw)} 차림을 말했다 — 이 옷은 이제 통하지 않는다`);
   else if (r.saw === 'face') { S.chaseSeen = true; toast('신고한 주민이 얼굴을 말했다 — 수색이 끝날 때까지 거리에서도 알아본다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
+}
+// 사탕 (아이를 손대지 않고 다루는 법): 주면 신나서 멀리 놀러 간다. 그동안은 아무것도 보지 않는다
+function nearChild() {
+  const P = S.player; if (!(P.candy > 0) || P.z || P.carrying || P.captive || P.hide) return null; let best = null, bd = 64;
+  for (const g of S.guards) { if (!g.child || g.state === 'DEAD' || (g.treatT || 0) > 0 || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
+  return best;
+}
+function giveCandy(g) {
+  const P = S.player; P.candy--; g.treatT = 22; g.rep = null; g.state = 'PATROL'; g.meter = 0; g.icon = null; g.path = null; play('click', 0.4, 1.5);
+  const a = Math.atan2(g.y - P.y, g.x - P.x); for (let k = 0; k < 8 && !g.path; k++) { const aa = a + (k % 2 ? 1 : -1) * k * 0.4; pathTo(g, g.x + Math.cos(aa) * 380, g.y + Math.sin(aa) * 380); if (g.path && !g.path.length) g.path = null; }
+  gsay(g, ['우와, 사탕이다! 고맙습니다!', '헤헤, 놀이터 가야지!', '엄마한테 비밀!'][g.id % 3], 2.2);
+  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 손댈 수 없다. 대신 Z로 사탕을 주면 한동안 멀리 가서 논다 — 신고하러 뛰는 아이도 붙잡아 사탕으로 달랠 수 있다');
+}
+function updateChildTreat(g, dt) {
+  g.treatT -= dt; g.seen = false; g.meter = 0; g.icon = null;
+  if (g.path && g.path.length) { moveAlong(g, SPD.gPatrol * 1.3, dt); g.moving = true; } else g.moving = false;
+  if (g.treatT <= 0) { g.treatT = 0; g.path = null; g.state = 'RETURN'; }
 }
 function drawReport(g) {
   if (g.state !== 'REPORT' || !g.rep || !g.rep.to || flOf(g) !== flOf(S.player)) return; const o = g.rep.to;

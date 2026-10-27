@@ -42,7 +42,8 @@ function wireEnd() { const P = S.player, W_ = P.wire; if (!W_) return null; cons
 function wireDropTarget() {
   const P = S.player; if (!P.wire || P.strikeT > 0) return null;
   let best = null, bd = 74;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || (g.state === 'ALERT' && !g.target) || flOf(g)) continue;
     const gx = Math.floor(g.x / TILE), gy = Math.floor(g.y / TILE); if (roofAt(gx, gy) || bldAt(gx, gy) >= 0) continue;
     const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; }

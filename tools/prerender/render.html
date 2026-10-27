@@ -44,6 +44,44 @@ window.setTex = c => { remapFeet();
   const t = new THREE.CanvasTexture(cv); t.magFilter = THREE.NearestFilter; t.minFilter = THREE.NearestFilter; t.colorSpace = THREE.SRGBColorSpace;
   mats.concat(mats2).forEach(m => { m.map = t; if (m.color) m.color.set(0xffffff); if (m.shininess != null) m.shininess = 4; m.needsUpdate = true; });
 };
+
+// ---- 체형 변형 (주민 다양화 — 얼굴 없이 실루엣으로 구분): 같은 뼈대에 비율(뼈 크기·자세)과 부품(머리카락·치마·코트·가방·헬멧·모자·지팡이)
+// 부품 색은 키 색으로 칠해 두고, 게임에서 팔레트로 바꾼다 (hair=머리, shirt=윗옷, pants=아래옷, shoes=소품)
+const KEYC = { skin: 0xff0000, hair: 0x00ff00, shirt: 0x0000ff, pants: 0xff00ff, shoes: 0x00ffff };
+let BODY = null, partsOn = [[], []], baseS = [null, null];
+const partMesh = pd => {
+  const g = pd.g === 'box' ? new THREE.BoxGeometry(...pd.s) : pd.g === 'sph' ? new THREE.SphereGeometry(pd.s[0], 16, 12) : new THREE.CylinderGeometry(pd.s[0], pd.s[1], pd.s[2], 18);
+  const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({ color: KEYC[pd.k], shininess: 4 })); m.frustumCulled = false;
+  m.position.set(...pd.at); if (pd.rx) m.rotation.x = pd.rx; if (pd.sc) m.scale.set(...pd.sc); return m;
+};
+function bodyScale(Bn) {
+  for (const n in Bn) { const b = Bn[n]; if (!b.userData.s0) b.userData.s0 = b.scale.clone(); b.scale.copy(b.userData.s0); }
+  if (!BODY) return;
+  for (const [n, f] of Object.entries(BODY.xz || {})) { const b = Bn[n]; if (b) b.scale.set(b.userData.s0.x * f, b.userData.s0.y, b.userData.s0.z * f); }
+  if (BODY.head && Bn.Head) Bn.Head.scale.copy(Bn.Head.userData.s0).multiplyScalar(BODY.head);
+}
+function bodyBend(Bn, M) {  // 모델 기준 좌우축으로 숙이기 (방향과 상관없이)
+  if (!BODY || !BODY.bend) return; M.updateMatrixWorld(true);
+  for (const [n, ang] of Object.entries(BODY.bend)) { const b = Bn[n]; if (!b) continue;
+    const pq = new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); const mq = new THREE.Quaternion(); M.getWorldQuaternion(mq);
+    const ax = new THREE.Vector3(1, 0, 0).applyQuaternion(mq); const qw = new THREE.Quaternion().setFromAxisAngle(ax, ang);
+    b.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); b.updateMatrixWorld(true); }
+}
+const hookMixer = (mx, Bn, M) => { const st = mx.setTime.bind(mx); mx.setTime = t => { const r = st(t); bodyScale(Bn); bodyBend(Bn, M); return r; }; };
+window.setBody = spec => {
+  BODY = spec || null;
+  [[model, mixer, bones, clips], [model2, mixer2, bones2, clips2]].forEach(([M, mx, Bn, cl], mi) => {
+    if (!M.userData.hooked) { hookMixer(mx, Bn, M); M.userData.hooked = true; baseS[mi] = M.scale.clone(); }
+    partsOn[mi].forEach(p => p.parent && p.parent.remove(p)); partsOn[mi] = [];
+    M.scale.copy(baseS[mi]).multiplyScalar((BODY && BODY.h) || 1);
+    // 부품은 차렷(Idle 0초, 정면 +z) 자세에서 세계 좌표로 놓고 뼈에 붙인다
+    const vis = M.visible; M.visible = true; mx.stopAllAction(); const a = mx.clipAction(cl.Idle); a.reset(); a.play(); mx.setTime(0);
+    const rot = M.quaternion.clone(), pos = M.position.clone(); M.quaternion.identity(); M.position.set(0, 0, 0); if (mi) { grp.rotation.y = 0; grp.position.set(0, 0, 0); } M.updateMatrixWorld(true);
+    const hh = (BODY && BODY.h) || 1;
+    for (const pd of (BODY && BODY.parts) || []) { const m = partMesh(pd); m.position.multiplyScalar(hh); m.scale.multiplyScalar(hh); scene.add(m); m.updateMatrixWorld(true); Bn[pd.bone].attach(m); partsOn[mi].push(m); }
+    M.quaternion.copy(rot); M.position.copy(pos); M.visible = vis; M.updateMatrixWorld(true);
+  });
+};
 window.CR = { th: 1.1, kn: 1.9, ft: 0.6, sp: 0.55, sp1: 0.2, hd: 0.45 };
 const hp = new THREE.Vector3(), hd = new THREE.Vector3();
 window.renderFrame = (clip, t, dirA, crouch, hang) => {
@@ -159,13 +197,13 @@ window.renderPair = (kind, clip, t, dirA, part) => {
     aimB(B.Spine, B.Spine1, V3(0, 1, 0.12));
   }
   grp.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); grp.updateMatrixWorld(true);
-  const show = part === 'a' ? mats : mats2, hide = part === 'a' ? mats2 : mats;
+  const pm = i => partsOn[i].map(o => o.material), show = part === 'a' ? mats.concat(pm(0)) : mats2.concat(pm(1)), hide = part === 'a' ? mats2.concat(pm(1)) : mats.concat(pm(0));
   show.forEach(m => { m.colorWrite = true; }); hide.forEach(m => { m.colorWrite = false; });
   model.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? 0 : -1; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? -1 : 0; });
   shadow.visible = part === 'a'; shadow.position.set(0, 1, 0);
   renderer.render(scene, cam);
   const url = renderer.domElement.toDataURL('image/png');
-  mats.concat(mats2).forEach(m => { m.colorWrite = true; }); model.traverse(o => { if (o.isMesh) o.renderOrder = 0; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = 0; });
+  mats.concat(mats2, partsOn[0].map(o => o.material), partsOn[1].map(o => o.material)).forEach(m => { m.colorWrite = true; }); model.traverse(o => { if (o.isMesh) o.renderOrder = 0; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = 0; });
   scene.add(model); model2.visible = false; grp.rotation.y = 0; shadow.visible = true;
   return url;
 };

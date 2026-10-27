@@ -315,6 +315,7 @@ function updateCiv(g, dt) {
     if (sameF && !P.hide && dist(g.x, g.y, P.x, P.y) < (P.mode === 'run' ? 100 : P.mode === 'walk' ? 55 : 0)) civWake(g, P.x, P.y);
     return;
   }
+  if (g.child && g.treatT > 0) { updateChildTreat(g, dt); g.a += clamp(angDiff(g.a, g.want), -4 * dt, 4 * dt); return; }
   if (g.state === 'REPORT') { updateReport(g, dt); g.a += clamp(angDiff(g.a, g.want), -4 * dt, 4 * dt); return; }
   if (STAGE.zones && g.enforcer && g.state !== 'PANIC') updateSharpEye(g, dt, (P.hide || P.under || P.vent || !sameF) ? 0 : canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.z));
   if (g.state === 'REPORT') return;
@@ -342,8 +343,8 @@ function updateCiv(g, dt) {
       if (g.wander) {  // 군중: 구역 안에서 이리저리
         if (g.wait > 0) g.wait -= dt;
         else { if (!g.path) { const [x0, y0, x1, y1] = g.wander; for (let t = 0; t < 8; t++) { const tx = x0 + Math.floor(Math.random() * (x1 - x0 + 1)), ty = y0 + Math.floor(Math.random() * (y1 - y0 + 1)); if (!solidAt(tx, ty)) { pathTo(g, tc(tx), tc(ty)); break; } } if (!g.path) g.wait = 1; }
-          if (g.path && moveAlong(g, SPD.gPatrol * 0.7, dt)) { g.wait = rnd(1.5, 5); g.path = null; g.want = g.a + rnd(-2, 2); } }
-      } else if (g.route.length > 1) { const wp = g.route[g.ri] || g.route[(g.ri = 0)]; if (g.wait > 0) g.wait -= dt; else { if (!g.path) pathTo(g, wp.x, wp.y); if (moveAlong(g, SPD.gPatrol * 0.8, dt)) { g.wait = wp.pause; g.ri = (g.ri + 1) % g.route.length; g.path = null; } } }
+          if (g.path && moveAlong(g, SPD.gPatrol * 0.7 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = rnd(1.5, 5); g.path = null; g.want = g.a + rnd(-2, 2); } }
+      } else if (g.route.length > 1) { const wp = g.route[g.ri] || g.route[(g.ri = 0)]; if (g.wait > 0) g.wait -= dt; else { if (!g.path) pathTo(g, wp.x, wp.y); if (moveAlong(g, SPD.gPatrol * 0.8 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = wp.pause; g.ri = (g.ri + 1) % g.route.length; g.path = null; } } }
       else { g.glanceT -= dt; if (g.glanceT <= 0) { g.glanceT = rnd(8, 16); g.want = (g.post != null ? g.post : g.a) + rnd(-0.9, 0.9); } }
     }
   }
@@ -367,7 +368,7 @@ function updateGuard(g, dt) {
     if (!g.path || !g.path.length) { const a = Math.atan2(g.y - g.fearFrom.y, g.x - g.fearFrom.x) + rnd(-0.6, 0.6); pathTo(g, g.x + Math.cos(a) * 220, g.y + Math.sin(a) * 220); }
     moveAlong(g, SPD.flee * spdMul(), dt);
     if (!g.slashed && !g.dog) for (const o of S.guards) {
-      if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || dist(o.x, o.y, g.x, g.y) > 40) continue;
+      if (o === g || o.child || o.state === 'DEAD' || o.state === 'CAPTIVE' || dist(o.x, o.y, g.x, g.y) > 40) continue;
       g.slashed = true;
       if (Math.random() < 0.35) { S.lethalNext = true; killGuard(o, null, null, false); S.stats.kills--; if (!o.target) S.stats.extraKills--; S.stats.friendly = (S.stats.friendly || 0) + 1; if (dist(g.x, g.y, P.x, P.y) < 800) toast('겁에 질린 자경대원이 동료를 베었다!', 2.4, 'good'); }
       break;

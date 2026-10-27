@@ -5,7 +5,8 @@ const spr = {};
 // 픽셀 아트 그리기 도우미 (16px 원본을 3배로)
 function blit(c, name, dx, dy, dw, dh, sx = 0, sy = 0, sw, sh) { const f = F[name]; if (!f) return; c.drawImage(atlas, f[0] + sx, f[1] + sy, sw || f[2], sh || f[3], dx, dy, dw, dh); }
 const dirOf = a => { const c = Math.cos(a), s = Math.sin(a); return Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1); };
-const charOf = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.civ ? 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % 10 : (g.look || 0)) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
+const charOf = g => charBase(g) + (g.body && PR && PR.bodies && PR.bodies[g.body] ? '@' + g.body : '');
+const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.civ ? 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % 10 : (g.look || 0)) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
 // ---- 프리렌더 배경 (Kenney Retro Urban Kit, CC0): 건물 외관 · 바닥 · 나무를 같은 3/4 투영으로 미리 찍은 그림
 const KIT_PROP = {};  // 키트 거리 소품 (쓰레기통 등)
 if (window.__KIT && window.__KIT.props) for (const k in window.__KIT.props) { const e = window.__KIT.props[k]; KIT_PROP[k] = { img: Object.assign(new Image(), { src: e.src }), ox: e.ox, oy: e.oy }; }
@@ -166,10 +167,13 @@ const PR_PAL = {
 };
 const prImg = PR ? new Image() : null, prVar = {};
 let prBase = null;  // {w,h,src:Uint8ClampedArray, cls:Uint8Array, wgt:Float32Array, shd:Float32Array}
-if (PR) { prImg.onload = () => { try { prPrep(); } catch (e) { console.warn('PR', e); } }; prImg.src = PR.src; }
-function prPrep() {
-  const w = prImg.width, h = prImg.height, c = document.createElement('canvas'); c.width = w; c.height = h;
-  const x = c.getContext('2d'); x.drawImage(prImg, 0, 0); const d = x.getImageData(0, 0, w, h).data;
+if (PR) { prImg.onload = () => { try { prBase = prPrep(prImg); } catch (e) { console.warn('PR', e); } }; prImg.src = PR.src; }
+// 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
+const prBodies = {};
+if (PR && PR.bodies) for (const [bn, bm] of Object.entries(PR.bodies)) { const im = new Image(); im.onload = () => { try { prBodies[bn] = prPrep(im); } catch (e) { console.warn('PR body', bn, e); } }; im.src = bm.src; }
+function prPrep(img) {
+  const w = img.width, h = img.height, c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, w, h).data;
   const n = w * h, cls = new Uint8Array(n), wgt = new Float32Array(n), shd = new Float32Array(n);
   const K = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]];  // 피부·머리·윗옷·바지·신발
   for (let i = 0; i < n; i++) {
@@ -179,12 +183,13 @@ function prPrep() {
     for (let k = 0; k < 5; k++) { const q = (nr - K[k][0]) ** 2 + (ng - K[k][1]) ** 2 + (nb - K[k][2]) ** 2; if (q < bd) { bd = q; best = k; } }
     cls[i] = best; wgt[i] = Math.min(1, (ch - 20) / 60); shd[i] = Math.min(1.35, mx / 255 * 1.25);
   }
-  prBase = { w, h, src: d, cls, wgt, shd };
+  return { w, h, src: d, cls, wgt, shd };
 }
+const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, null] : [key.slice(0, i), key.slice(i + 1)]; };
 function prSheet(key) {
-  if (!prBase) return null; if (prVar[key]) return prVar[key];
-  const pal = PR_PAL[key]; if (!pal) return null;
-  const { w, h, src, cls, wgt, shd } = prBase, P4 = pal.map(h => hexRgb(h).split(',').map(Number));
+  if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
+  if (!base) return null; const pal = PR_PAL[pk]; if (!pal) return null;
+  const { w, h, src, cls, wgt, shd } = base, P4 = pal.map(h => hexRgb(h).split(',').map(Number));
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   const id = x.createImageData(w, h), o = id.data; o.set(src);
   for (let i = 0, n = w * h; i < n; i++) {
@@ -204,14 +209,16 @@ function prSheet(key) {
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {
+  const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
+  if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
   const sh = prSheet(key); if (!sh) return false;
-  const [c0, nf] = PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 : anim === 'climb' ? 7 : 1.6;
+  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 : anim === 'climb' ? 7 : 1.6;
   const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
   const fr = PR.fr, dw = fr * scale, gy = PR.groundY * scale;
   ctx.globalAlpha = alpha; ctx.drawImage(sh, (c0 + fi) * fr, prDir(a) * fr, fr, fr, x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
-const usePR = key => !!(PR && prBase && (PR_PAL[key] || (key === 'ninja_ol' && prVar.ninja_ol)));
+const usePR = key => { if (!PR || !prBase) return false; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!(PR_PAL[key] || (key === 'ninja_ol' && prVar.ninja_ol)); };
 const PAIR = () => !!(PR && PR.anims.carry && PR.anims.held);
 const carryKey = c => c && !c.dog && (c.stripped ? 'strip' : c.ch);
 const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && usePR('ninja');

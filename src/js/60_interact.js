@@ -46,7 +46,8 @@ function readNote(n) {
 // 넘어 들어가는 곳 바로 앞에 있는 사람(같은 층) — 착지와 함께 처리한다
 function landingVictim(x, y, fl) {
   const L0 = CUR_F; setLayer(fl); let best = null, bd = 78;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== fl || g.z || g.climb || g.dog || (g.state === 'ALERT' && !g.target)) continue;
     const d = dist(x, y, g.x, g.y); if (d < bd && los(x, y, g.x, g.y)) { bd = d; best = g; }
   }
@@ -90,7 +91,7 @@ function jumpTarget() {
   return null;
 }
 function canKill(g, P, reach = 56) {
-  if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
+  if (g.child || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
   if (g.state === 'ALERT' && !g.target && !radioBusy(g)) return false;
   const behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
@@ -122,7 +123,8 @@ function dropTarget() {
   const edges = N8.map(o => [tx + o[0], ty + o[1]]).filter(([x, y]) => !roofAt(x, y) && bldAt(x, y) < 0 && !groundSolidP(x, y));
   if (!edges.length) return null;
   let best = null, bd = P.z >= 2 ? 132 : 118;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || (g.state === 'ALERT' && !g.target) || flOf(g) || g.z || g.climb) continue;
     // 옥상 아래(건물 안)에 있는 사람은 옥상 위에서 칠 수 없다
     const gx = Math.floor(g.x / TILE), gy = Math.floor(g.y / TILE);
@@ -141,7 +143,8 @@ function ambushTarget() {
   const from = P.hide ? P.hide : (P.hidden && P.z === 0 && !P.carrying && !P.captive ? P : null);
   if (!from || P.strikeT > 0) return null;
   let best = null, bd = P.hide ? 80 : 60;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || g.z || g.climb) continue;
     const d = dist(from.x, from.y, g.x, g.y); if (d < bd && los(from.x, from.y, g.x, g.y)) { bd = d; best = g; }
   }
@@ -280,7 +283,7 @@ function kunaiTarget() {
     if (aimOn && score > 70) return;
     if (score < bs) { bs = score; best = { type, ref, x, y }; }
   };
-  for (const g of S.guards) if (g.state !== 'DEAD' && g.state !== 'CAPTIVE' && (g.state !== 'ALERT' || g.target || radioBusy(g))) consider(g.x, g.y, g, 'guard', 270 * (1 + P.z * 0.2));
+  for (const g of S.guards) if (!g.child && g.state !== 'DEAD' && g.state !== 'CAPTIVE' && (g.state !== 'ALERT' || g.target || radioBusy(g))) consider(g.x, g.y, g, 'guard', 270 * (1 + P.z * 0.2));
   for (const l of S.lamps) if (lampOn(l) && !l.hearth) consider(l.x, l.y, l, 'lamp', 330);
   for (const c of S.cams || []) if (!c.broken) consider(c.x, c.y, c, 'cam', 330);
   return best;
@@ -323,7 +326,8 @@ function ventAmbushTarget() {
   const P = S.player; if (!P.vent) return null;
   const v = S.vents.filter(v => !v.roof && dist(P.x, P.y, v.x, v.y) < 34)[0]; if (!v) return null;
   let best = null, bd = 50;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.elite || g.dog || g.z || g.climb) continue;
     const d = dist(g.x, g.y, v.x, v.y); if (d < bd) { bd = d; best = g; }
   }
@@ -397,7 +401,8 @@ const KILL_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', '
 function stalkGuard() {
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.under || P.vent || P.wire) return null;
   let best = null, bd = 190;
-  for (const g of S.guards) {
+  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'FLEE' || g.state === 'TERROR' || g.climb || (g.state === 'ALERT' && !radioBusy(g))) continue;
     if (flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) continue;
     const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y)) { bd = d; best = g; }
@@ -755,6 +760,7 @@ const actHeld = () => !!(S && S.keys && (S.keys.Space || S.keys.KeyQ)) || !!(doc
 const koDefault = g => !!g && !g.dog && !g.target;
 const KO_HOLD = 0.5;
 function koPerson(g, mode, where) {
+  if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
   const c = { fl: flOf(g), ch: charOf(g), ko: true, g, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
@@ -808,6 +814,7 @@ function strikeKill(list, two) {
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
+  if (g.child) return;
   if (g.civ || (koDefault(g) && !S.lethalNext)) { S.lethalNext = false; return koPerson(g, mode, where); }
   S.lethalNext = false;
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
@@ -834,7 +841,7 @@ function killGuard(g, mode, where, quiet) {
 }
 // 사고사: 칼자국 없이 죽는다. 시체를 봐도 '사고'로 여겨 수색·비명이 없다 (옮기면 사고로 보이지 않는다)
 function accidentKill(g, how) {
-  if (g.state === 'DEAD') return;
+  if (g.state === 'DEAD' || g.child) return;
   logEv('accident', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; play('thud', 0.6);
   S.stats.kills++; S.stats.accidents = (S.stats.accidents || 0) + 1; if (!g.target) S.stats.extraKills++;
@@ -968,10 +975,11 @@ function actCarry() {
   if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
   if (sa.k === 'grab') { grab(sa.g); return; }
   if (sa.k === 'use') { useItem(sa.n); return; }
+  if (sa.k === 'candy') { giveCandy(sa.g); return; }
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = c.ch; P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
     else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 경계선이 초록이면 그 구역에 들어가도 된다. 뛰기·운반·락픽·담 타기는 여전히 수상하다. 눈 표시가 뜬 사람(눈썰미)은 가까이서 오래 보면 알아챈다. 들통나면 그 옷만 못 쓴다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰거나, 시체를 들거나, 옥상에 있거나, 너무 가까이 붙으면 의심받는다. 한 번 들키면 변장은 끝'); }
@@ -1030,6 +1038,7 @@ function secondaryAction() {
   }
   if (P.z || P.jump) return { k: 'none', label: '특수' };
   const fd = nearFloorDown(); if (fd && nearClimb()) return { k: 'fdown', l: fd, label: `계단 내려가 ${fd.bfl + 1}층` };
+  const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 (${P.candy})` };
   const kl = killList().filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
