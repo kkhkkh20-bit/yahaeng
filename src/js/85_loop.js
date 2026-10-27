@@ -14,13 +14,17 @@ function frame(t) {
   else if (!running) { S.t += dt; const P = S.player, kx = P.x, ky = P.y; P.x = -9999; P.y = -9999; for (const g of S.guards) updateGuard(g, dt); P.x = kx; P.y = ky; }
   draw();
 }
-// 느린 기기: 3초 동안 평균 40fps 아래면 해상도를 한 단계(0.5배) 낮춘다 (다시 올리지는 않는다)
-let dprCap = 2, perfN = 0, perfSum = 0;
+// 느린 기기: 4초 구간의 '보통 프레임'(중앙값)이 두 구간 연속 40fps 아래일 때만 해상도를 한 단계(0.5배) 낮춘다.
+// 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 낮춘 뒤 넉넉해지면(중앙값 58fps 이상이 세 구간) 한 번은 되돌린다
+let dprCap = 2, perfDts = [], perfSum = 0, perfBad = 0, perfGood = 0, perfUp = 1;
 function perfWatch(rawDt) {
-  if (!running || paused || !S || S.over || DPR <= 1 || rawDt <= 0 || rawDt > 0.25) return;
-  perfN++; perfSum += rawDt; if (perfSum < 3) return;
-  const fps = perfN / perfSum; perfN = 0; perfSum = 0;
-  if (fps < 40) { dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); }
+  if (!running || paused || !S || S.over || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
+  perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 4) return;
+  const med = perfDts.sort((a, b) => a - b)[perfDts.length >> 1], fps = 1 / med; perfDts = []; perfSum = 0;
+  const native = Math.min(2, window.devicePixelRatio || 1);
+  if (fps < 40 && DPR > 1) { perfGood = 0; if (++perfBad >= 2) { perfBad = 0; dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); } }
+  else if (fps >= 58 && DPR < native && perfUp > 0) { perfBad = 0; if (++perfGood >= 3) { perfGood = 0; perfUp--; dprCap = Math.min(native, DPR + 0.5); resize(); miniBase = null; } }
+  else { perfBad = 0; perfGood = 0; }
 }
 function resize() {
   DPR = Math.min(dprCap, 2, window.devicePixelRatio || 1);

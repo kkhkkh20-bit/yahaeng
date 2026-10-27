@@ -202,7 +202,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
   if (g.elite) eff *= 1.1;
   if (sneak === 2) eff *= COVER_HIDE;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
   if (d > eff) return 0;
-  const near = !elev && (d < 24 || (!sneak && !hidden && d < 34));
+  const near = !elev && (d < 24 || (!sneak && !hidden && d < 34) || (!sneak && !hidden && S.player.mode === 'run' && S.player.moving && d < 72 && Math.abs(x - S.player.x) + Math.abs(y - S.player.y) < 2));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;
   if (!los(g.x, g.y, x, y, ign)) return 0;
   // 쉐도우 택틱스식 줄무늬 구역: 시야 바깥쪽 45%에서는 웅크리면 보이지 않는다
@@ -387,6 +387,7 @@ function updateGuard(g, dt) {
     return;
   }
 
+  if (g.startle) { const da = angDiff(g.a, g.startle.a), st = 16 * dt; if (Math.abs(da) <= st) { g.a = g.startle.a; g.want = g.a; g.startle = null; } else g.a += Math.sign(da) * st; }  // 화들짝 돌아보기 (약 0.2초)
   const sameF = flOf(g) === flOf(P) && !(flOf(P) && P.wire);
   const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
@@ -400,7 +401,8 @@ function updateGuard(g, dt) {
   if (g.seen && g.state !== 'FLEE') {
     // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
     const wary = ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state);
-    const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6) * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
+    const dP = dist(g.x, g.y, P.x, P.y), runK = P.mode === 'run' && P.moving ? 2 : 1, nearK = dP < 120 ? 1.5 * (1 - dP / 120) : 0;  // 뛰는 사람·코앞의 사람은 금방 알아본다
+    const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6 + nearK) * runK * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
     g.meter = Math.min(pz === Z_PUB && zk < 1 ? 0.9 : 1, g.meter + rate * zk * dt); g.holdT = 0.8;  // 거리에서 웅크린 정도로는 쳐다보기만 한다
     if (g.state !== 'ALERT') {
       if (g.meter >= 1 && pz === Z_RES && !g.warned && !suspAct(g) && !knownFace(g) && !g.civ && !g.target) startWarn(g);  // 출입 금지: 처음엔 나가라고 경고한다
@@ -678,18 +680,24 @@ function updateTalks(dt) {
   }
 }
 // 말풍선 (어둠 위에 그린다): 같은 층, 가까이 있을 때만 (들리는 거리)
+// 머리 위 말풍선: 밝은 바탕·둥근 모서리, 말하는 사람 역할 색 테두리, 길면 두 줄. 겹치면 위로 쌓는다
 function drawSpeech() {
-  const P = S.player, placed = [];
-  for (const g of S.guards) {
-    if (!g.say || g.state === 'DEAD' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 560) continue;
-    ctx.font = '700 13px Galmuri, "IBM Plex Sans KR", sans-serif'; const tw = Math.min(220, ctx.measureText(g.say).width), w = tw + 16, h = 24, x = g.x - w / 2;
-    let y = g.y - 62; for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 3 && y + h + 3 > r.y); k++) y -= h + 5;  // 말풍선끼리 겹치면 위로 쌓는다
+  const P = S.player, placed = [], who = [];
+  for (const g of S.guards) if (g.say && g.state !== 'DEAD' && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) <= 560) who.push(g);
+  if (P.say && !P.hide) who.push(P);
+  ctx.font = '600 13px "IBM Plex Sans KR", sans-serif';
+  for (const g of who) {
+    const hero = g === P, col = hero ? DLG_COL.hero : g.civ ? DLG_COL.civ : g.target ? DLG_COL.target : g.elite ? DLG_COL.elite : DLG_COL.guard;
+    const words = g.say.split(' '), lines = ['']; for (const w of words) { const t = lines[lines.length - 1] ? lines[lines.length - 1] + ' ' + w : w; if (ctx.measureText(t).width > 200 && lines[lines.length - 1] && lines.length < 2) lines.push(w); else lines[lines.length - 1] = t; }
+    const tw = Math.min(210, Math.max(...lines.map(l => ctx.measureText(l).width))), w = tw + 20, h = 10 + lines.length * 17, vx0 = cam.x - W / SCALE / 2 + 6, vx1 = cam.x + W / SCALE / 2 - 6, x = Math.max(vx0, Math.min(vx1 - w, g.x - w / 2));  // 화면 밖으로 잘리지 않게
+    let y = g.y - 58 - h + 24; for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 3 && y + h + 3 > r.y); k++) y -= h + 6;
     placed.push({ x, y, w, h });
-    if (y < g.y - 62) { ctx.strokeStyle = 'rgba(232,236,244,.5)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x + 2, y + 3, w, h);
-    ctx.fillStyle = g.civ ? '#f4f1e6' : '#e8ecf4'; ctx.fillRect(x, y, w, h); ctx.beginPath(); ctx.moveTo(g.x - 5, y + h); ctx.lineTo(g.x + 5, y + h); ctx.lineTo(g.x, y + h + 7); ctx.fill();
-    ctx.strokeStyle = g.civ ? '#7a9a6a' : '#5a6478'; ctx.lineWidth = 1.5; ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-    ctx.fillStyle = '#1a1c22'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(g.say, g.x, y + h / 2 + 1, 220); ctx.textBaseline = 'alphabetic';
+    if (y + h < g.y - 40) { ctx.strokeStyle = 'rgba(232,236,244,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
+    const rr = (px, py, pw, ph, r) => { ctx.beginPath(); ctx.moveTo(px + r, py); ctx.arcTo(px + pw, py, px + pw, py + ph, r); ctx.arcTo(px + pw, py + ph, px, py + ph, r); ctx.arcTo(px, py + ph, px, py, r); ctx.arcTo(px, py, px + pw, py, r); ctx.closePath(); };
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(x + 1, y + 3, w, h, 8); ctx.fill();
+    ctx.fillStyle = '#f3f5f9'; rr(x, y, w, h, 8); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)); ctx.beginPath(); ctx.moveTo(tx - 6, y + h - 1); ctx.lineTo(tx + 6, y + h - 1); ctx.lineTo(tx, y + h + 7); ctx.fill(); }
+    ctx.strokeStyle = col; ctx.lineWidth = 2; rr(x + 1, y + 1, w - 2, h - 2, 7); ctx.stroke();
+    ctx.fillStyle = '#16181f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, 214)); ctx.textBaseline = 'alphabetic';
   }
 }
 function updateChats(dt) {

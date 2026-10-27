@@ -49,6 +49,7 @@ function suspAct(g) {
   if (P.carrying || P.captive || P.strikeT > 0 || P.lunge || P.grabIn || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t || (P.useT || 0) > S.t) return 1;
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
+  if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
   if (P.mode === 'sneak' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;
   return 0;
 }

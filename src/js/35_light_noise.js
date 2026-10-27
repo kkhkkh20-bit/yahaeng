@@ -54,7 +54,8 @@ function noise(x, y, r, src, fl) {
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.state === 'TERROR') continue;
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
-    if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB) continue;  // 거리·가게의 발소리는 아무도 신경 쓰지 않는다
+    const runStep = src === 'step' && S.player.mode === 'run' && S.player.moving;
+    if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (d < rr && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
     if (d < rr) {
       if (g.state === 'FUSE' && src !== 'stone') continue;
@@ -63,7 +64,8 @@ function noise(x, y, r, src, fl) {
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
       if (src === 'step' || src === 'whistle') nz.heard = true;
       if (src === 'whistle' && !g.dog) { gsay(g, ['누구야?', '휘파람…? 거기 누구 있어?', '뭐야, 이쪽인가?'][(g.id + (S.stats.whistles || 0)) % 3]); }
-      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = S.player.mode === 'run' ? 0.3 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x, y }; continue; }
+      if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
+      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x, y }; continue; }
       goSuspicious(g, x + rnd(-20, 20), y + rnd(-20, 20), src === 'stone' ? 3 : 3.5); g.why = 'heard';
     }
   }

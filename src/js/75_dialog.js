@@ -31,9 +31,20 @@ function drawFace(cv, sp) {
   const f = sp.face && F[sp.face]; if (!f) return false;  // 예전 도트 얼굴 (초상 시트가 없을 때)
   fc.imageSmoothingEnabled = false; fc.drawImage(atlas, f[0], f[1], f[2], f[3], 20, 24, 120, 120); return true;
 }
+// 이야기 장면(modal)은 아래 대사창, 플레이 중 혼잣말·외침은 그 사람 머리 위 말풍선으로 (몸이 없는 말 — 쪽지·의뢰인 — 만 대사창)
 function say(lines, modal, onEnd) {
   if (!lines || !lines.length || (DLG.modal && !modal)) return;
+  if (!modal && S && lines.every(l => l[0] === 'hero' || (l[0] && l[0].kind && l[0].x != null))) {
+    let at = S.t; S.sayQ = (S.sayQ || []).filter(q => !lines.some(l => l[0] === q.w));  // 같은 사람의 밀린 말은 새 말로 바꾼다
+    for (const [w, text] of lines) { const dur = Math.min(4.5, 1.4 + text.length / 14); S.sayQ.push({ at, w, text, dur }); at += dur * 0.85; }
+    if (onEnd) onEnd(); return;
+  }
   DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();
+}
+function updateSayQ() {
+  if (!S || !S.sayQ || !S.sayQ.length) return;
+  for (const q of S.sayQ.slice()) { if (q.at > S.t) continue; S.sayQ.splice(S.sayQ.indexOf(q), 1);
+    if (q.w === 'hero') { S.player.say = q.text; S.player.sayT = q.dur; } else if (q.w.state !== 'DEAD') { q.w.say = q.text; q.w.sayT = q.dur; } }
 }
 function bark(who, key) { const arr = BARKS[key]; if (!arr || !who) return; say([[who, arr[(Math.random() * arr.length) | 0]]]); }
 const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.dog && !g.target && (!pred || pred(g)));
@@ -51,6 +62,7 @@ function advanceDialog() { const c = DLG.cur; if (!c) return; if (c.shown < c.te
 function skipDialog() { DLG.q = []; nextLine(); }
 function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; }
 function updateDialog(dt) {
+  updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
   const c = DLG.cur; if (!c) return; c.t += dt;
   if (c.shown < c.text.length) { c.shown = Math.min(c.text.length, c.shown + dt * 38); $('dlgText').textContent = c.text.slice(0, Math.floor(c.shown)); if (c.shown >= c.text.length) $('dlg').classList.remove('talking'); }
   else if (!DLG.modal && c.t > c.text.length / 38 + 2.2) nextLine();

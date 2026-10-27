@@ -3,20 +3,22 @@ const GLC = { t: -1, m: new Map() };  // 시야 원뿔용 밝기 기억 (12px �
 // 밝기는 12px 칸마다 0.2초 동안 기억해 같이 쓴다 (여러 자경대원이 같은 칸을 본다)
 const lightC = (x, y) => { if (S.t - GLC.t > 0.2 || S.t < GLC.t) { GLC.m.clear(); GLC.t = S.t; } const cx = Math.floor(x / 12), cy = Math.floor(y / 12), k = CUR_F * 1e8 + cy * 1e4 + cx; let v = GLC.m.get(k); if (v === undefined) { v = lightAt(cx * 12 + 6, cy * 12 + 6, false); GLC.m.set(k, v); } return v; };
 function guardCone(g, fov, rg) {
+  const ck = (S.player.cover ? 1 : 0) + g.state + (g.z || 0) + fov.toFixed(2) + Math.round(rg.lit);
+  if (g._cone && S.t - g._cone.t < 0.1 && S.t >= g._cone.t && g._cone.k === ck && Math.hypot(g.x - g._cone.x, g.y - g._cone.y) < 10 && Math.abs(angDiff(g._cone.a, g.a)) < 0.12) return g._cone.cn;
   const N = 34, STP = 6, rays = [], crouchK = (g.state === 'ALERT' ? 1 : 0.55) * (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
   setLayer(flOf(g));
   for (let i = 0; i <= N; i++) {
     const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
     for (let d = STP / 2; d < w; d += STP) { const L = lightC(g.x + ca * d, g.y + sa * d), eff = (rg.dark + (rg.lit - rg.dark) * L) * el; lv.push(d < 24 || d <= eff * crouchK ? 2 : d <= eff ? 1 : 0); }
-    rays.push({ a, w, lv });
+    rays.push({ a, ra: a - g.a, w, lv });
   }
-  setLayer(L0); return { rays, STP };
+  setLayer(L0); const cn = { rays, STP }; g._cone = { t: S.t, k: ck, x: g.x, y: g.y, a: g.a, cn }; return cn;
 }
 // lo~hi 단계인 칸들을 한 경로로 (이웃 광선 둘 중 높은 단계를 그 칸의 단계로)
 function conePaths(g, cn, lo, hi) {
   const R = cn.rays, STP = cn.STP; ctx.beginPath();
   for (let i = 0; i < R.length - 1; i++) {
-    const A = R[i], B = R[i + 1], n = Math.max(A.lv.length, B.lv.length); let k0 = -1;
+    const A0 = R[i], B0 = R[i + 1], A = { a: g.a + A0.ra, w: A0.w, lv: A0.lv }, B = { a: g.a + B0.ra, w: B0.w, lv: B0.lv }, n = Math.max(A.lv.length, B.lv.length); let k0 = -1;
     for (let k = 0; k <= n; k++) {
       const c = k < n ? Math.max(A.lv[k] || 0, B.lv[k] || 0) : 0, on = c >= lo && c <= hi;
       if (on && k0 < 0) k0 = k;

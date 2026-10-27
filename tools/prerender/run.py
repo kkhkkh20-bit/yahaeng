@@ -74,7 +74,7 @@ async def main():
             for an in ANIMS: meta['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
             if '--faces' in sys.argv:  # 대사창 얼굴: 기본 체형 + 체형마다 한 장씩, 키 색으로 (게임에서 팔레트로 칠한다)
                 from bodies import BODIES
-                FF = 160; names = [''] + list(BODIES); sheet = Image.new('RGBA', (len(names) * FF, FF))
+                FF = 256; names = [''] + list(BODIES); sheet = Image.new('RGBA', (len(names) * FF, FF))
                 await pg.evaluate(f'setTex({json.dumps(VAR["key"])})')
                 for i, bn in enumerate(names):
                     await pg.evaluate(f'setBody({json.dumps(BODIES[bn]) if bn else "null"})')
