@@ -31,11 +31,6 @@ async def main():
           P.z = 2; P.fl = 0; P.x = l.rx; P.y = l.ry; const a = g.primaryAction().label; g.actPrimary(); await new Promise(r => setTimeout(r, 1500));
           return [a, P.z, P.fl, S.stats.roofStair]; }'''))
         # (M2 카드 경로는 미션 2를 다시 짤 때 새로 쓴다 — 예전 카드 배치는 없어졌다)
-        # M3: 전깃줄로 본채 옥상
-        print('M3', await run(pg, 2, [
-          "const S = T.S(); return S.wires.filter(w => w.b.roof || w.a.roof).map(w => [w.a.tx, w.a.ty, w.b.tx, w.b.ty, w.b.z]);",
-          "const S = T.S(), g = S.guards.find(g => g.hasKey === 'green'); return [Math.floor(g.x/48), Math.floor(g.y/48)];",
-          "T.S().player.keys.green = true; T.freeze(); T.at(21, 14); return T.act();",
-          "const it = T.S().items[0]; return [it.fl, Math.floor(it.x/48), Math.floor(it.y/48)];"]))
+        # (M3 카드 경로도 미션 3을 다시 짤 때 새로 쓴다)
         print(errs[:3]); await b.close()
 asyncio.run(main())
