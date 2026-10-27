@@ -1,0 +1,74 @@
+<!doctype html><html><body style="margin:0;background:#000"><script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+// 야행 배경 굽기: Kenney Retro Urban Kit(CC0) 조각을 게임과 같은 3/4 정면 투영(한 층 = 한 칸, 1칸 = 48px)으로 찍는다.
+// 투영: 높이 y만큼 화면 위로 민다(z' = z - y). 카메라는 바로 위에서 내려다본다. 배경은 투명.
+import * as THREE from 'three'; import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+const L = new GLTFLoader(), cache = {};
+const load = async n => cache[n] || (cache[n] = (await L.loadAsync(n.startsWith('F:') ? '../furnglb/' + n.slice(2) + '.glb' : n.startsWith('M:') ? '../mk/' + n.slice(2) + '.gltf' : 'src/Models/GLB format/' + n + '.glb')).scene);
+window.bbox = async n => { const o = await load(n); const b = new THREE.Box3().setFromObject(o); return [b.min.toArray().map(v => +v.toFixed(3)), b.max.toArray().map(v => +v.toFixed(3))]; };
+const r = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+r.outputColorSpace = THREE.SRGBColorSpace; r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap; r.setClearColor(0x000000, 0);
+document.body.appendChild(r.domElement);
+const matLit = mm => { const m = new THREE.MeshStandardMaterial({ map: mm.map, color: mm.color, roughness: 0.92, metalness: 0, transparent: false, alphaTest: (mm.transparent || mm.alphaTest > 0) ? Math.max(0.5, mm.alphaTest) : 0, side: mm.transparent ? THREE.DoubleSide : mm.side }); return m; };
+// MegaKit(Quaternius) 재질: 엔진 전용 셰이더(가짜 실내·유리)를 밤 창문 빛으로 바꾼다
+const matMK = (mm, it) => {
+  const nm = mm.name || '';
+  if (/FakeInterior/.test(nm)) return it.lit && it.neon ? new THREE.MeshStandardMaterial({ color: 0x1a1020, emissive: it.neon, emissiveIntensity: 1.1, roughness: 0.6 }) : new THREE.MeshStandardMaterial({ color: it.lit ? 0xffd9a0 : 0x1a2433, emissive: it.lit ? 0xffa850 : 0x0a1220, emissiveIntensity: it.lit ? 0.85 : 0.4, roughness: 0.6 });
+  if (/Glass/.test(nm)) return new THREE.MeshStandardMaterial({ color: 0x9fc4dd, transparent: true, opacity: 0.18, roughness: 0.05, metalness: 0.2, depthWrite: false });
+  if (/InteriorWall/.test(nm)) return new THREE.MeshStandardMaterial({ color: it.lit ? 0xc8a070 : 0x14181f, emissive: it.lit ? 0x3a2410 : 0x000000, roughness: 0.9 });
+  const m = matLit(mm); if (it.wallTint && /Brick|Trim|Metal/.test(nm)) m.color.multiply(new THREE.Color(it.wallTint)); return m;
+};
+// spec: { box: [x0, z0, x1, z1] 화면 범위(칸, z는 화면 세로), ppu, items: [...] }
+window.bake = async spec => {
+  const [bx0, bz0, bx1, bz1] = spec.box, ppu = spec.ppu, W = Math.round((bx1 - bx0) * ppu), H = Math.round((bz1 - bz0) * ppu);
+  r.setSize(W, H);
+  const sc = new THREE.Scene(), root = new THREE.Group(); sc.add(root);
+  root.matrixAutoUpdate = false; const ys = spec.ys ?? 1; if (spec.cam) root.matrix.set(1, 0, 0, 0, 0, ys, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); else root.matrix.set(1, 0, 0, 0, 0, ys, 0, 0, 0, -ys, 1, 0, 0, 0, 0, 1);
+  const cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2;
+  const cam = new THREE.OrthographicCamera(-(bx1 - bx0) / 2, (bx1 - bx0) / 2, (bz1 - bz0) / 2, -(bz1 - bz0) / 2, 0.1, 400);
+  cam.position.set(cx, 150, cz); cam.up.set(0, 0, -1); cam.lookAt(cx, 0, cz);
+  // 빛: 밤 어둠은 게임이 덮으므로 여기선 고른 낮빛 (왼쪽 앞 위에서)
+  sc.add(new THREE.HemisphereLight(spec.night ? 0x5a6a94 : 0xffffff, spec.night ? 0x141620 : 0x3a3a40, spec.hemi ?? 1.25));
+  const sun = new THREE.DirectionalLight(spec.night ? 0x9fb4ff : 0xfff4e6, spec.sun ?? 1.9); const span = Math.max(bx1 - bx0, bz1 - bz0) + 12;
+  sun.position.set(cx - 6, 14, cz + 9); sun.target.position.set(cx, 0, cz); sc.add(sun.target); sun.castShadow = true;
+  Object.assign(sun.shadow.camera, { left: -span, right: span, top: span, bottom: -span, near: 0.1, far: 80 }); sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0008; sc.add(sun);
+  for (const l of spec.lamps || []) { const pl = new THREE.PointLight(l.c ?? 0xffc880, l.i ?? 6, l.d ?? 9, 1.6); pl.position.set(l.x, l.y, l.z); root.add(pl); }
+  for (const g of spec.floor || []) { const m = new THREE.Mesh(new THREE.BoxGeometry(g[2] - g[0], 0.02, g[3] - g[1]), new THREE.MeshStandardMaterial({ color: g[4], roughness: 0.95 })); m.position.set((g[0] + g[2]) / 2, -0.01, (g[1] + g[3]) / 2); m.receiveShadow = true; root.add(m); }
+  if (spec.ground !== false) {  // 그림자만 받는 투명 바닥
+    const g = new THREE.Mesh(new THREE.PlaneGeometry(bx1 - bx0 + 30, bz1 - bz0 + 30), new THREE.ShadowMaterial({ opacity: 0.38 }));
+    g.rotation.x = -Math.PI / 2; g.position.set(cx, 0.002, cz + 8); g.receiveShadow = true; root.add(g);
+  }
+  for (const it of spec.items) {
+    let o;
+    if (it.cyl) {  // 관: [x0, y0, z0, x1, y1, z1] 두 점을 잇는 원기둥
+      const [a, bb, c, d, e, f] = it.cyl, p0 = new THREE.Vector3(a, bb, c), p1 = new THREE.Vector3(d, e, f), L = p0.distanceTo(p1);
+      o = new THREE.Mesh(new THREE.CylinderGeometry(it.r, it.r, L, 14), new THREE.MeshStandardMaterial({ color: it.color ?? 0xd0a830, roughness: it.rough ?? 0.45, metalness: it.metal ?? 0.35 }));
+      o.position.copy(p0.clone().add(p1).multiplyScalar(0.5)); o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p1.clone().sub(p0).normalize());
+    } else if (it.box) {  // 단색 상자 [x0, y0, z0, x1, y1, z1]
+      const [a, b, c, d, e, f] = it.box; o = new THREE.Mesh(new THREE.BoxGeometry(d - a, e - b, f - c), new THREE.MeshStandardMaterial({ color: it.color ?? 0x202228, roughness: it.rough ?? 0.95, metalness: it.metal ?? 0, emissive: it.emi ?? 0x000000, emissiveIntensity: it.ei ?? 1 }));
+      o.position.set((a + d) / 2, (b + e) / 2, (c + f) / 2);
+    } else {
+      o = (await load(it.n)).clone(true); o.traverse(m => { if (m.isMesh) { const f = it.n.startsWith('M:') ? mm => matMK(mm, it) : matLit; m.material = Array.isArray(m.material) ? m.material.map(f) : f(m.material); } });
+      o.position.set(it.x, it.y || 0, it.z); o.rotation.y = (it.r || 0) * Math.PI / 2;
+      if (it.s) o.scale.set(it.s[0], it.s[1], it.s[2]);
+      if (it.tint) o.traverse(m => { if (m.isMesh) { m.material.color.set(it.tint); if (it.glow) m.material.emissive.set(it.glow); } });
+      if (it.nobase) o.traverse(m => { if (m.isMesh) { m.geometry.computeBoundingBox(); const bb = m.geometry.boundingBox; if (bb.max.y - bb.min.y < 0.06) m.visible = false; } });
+    }
+    o.traverse(m => { if (m.isMesh) { m.castShadow = it.cast !== false; m.receiveShadow = true; } }); root.add(o);
+  }
+  if (spec.cam) {  // 정사영 카메라를 앞쪽 위에서 elev도 각도로 내려다본다. 화면 범위는 장면 경계에 맞춘다
+    const e = spec.cam.elev * Math.PI / 180, bx = new THREE.Box3().setFromObject(root), c = new THREE.Vector3(); bx.getCenter(c);
+    if (spec.cam.fit) { bx.min.set(spec.cam.fit[0], 0, spec.cam.fit[1]); bx.max.set(spec.cam.fit[2], spec.cam.fit[4] ?? bx.max.y, spec.cam.fit[3]); bx.getCenter(c); }
+    cam.position.set(c.x, c.y + Math.sin(e) * 150, c.z + Math.cos(e) * 150); cam.up.set(0, 1, 0); cam.lookAt(c); cam.updateMatrixWorld();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const v = new THREE.Vector3();
+    for (let i = 0; i < 8; i++) { v.set(i & 1 ? bx.max.x : bx.min.x, i & 2 ? bx.max.y : bx.min.y, i & 4 ? bx.max.z : bx.min.z).applyMatrix4(cam.matrixWorldInverse); x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x); y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y); }
+    Object.assign(cam, { left: x0, right: x1, top: y1, bottom: y0, near: 1, far: 400 }); cam.updateProjectionMatrix(); r.setSize(Math.round((x1 - x0) * ppu), Math.round((y1 - y0) * ppu));
+  }
+  r.render(sc, cam);
+  const url = r.domElement.toDataURL('image/png');
+  sc.traverse(m => { if (m.isMesh && m.geometry && (m.geometry.type === 'BoxGeometry' || m.geometry.type === 'CylinderGeometry')) m.geometry.dispose(); });
+  return url;
+};
+window.matInfo = async n => { const o = await load(n); const r = []; o.traverse(m => { if (m.isMesh) r.push([m.name, m.material.type, m.material.transparent, m.material.alphaTest, m.material.side, !!m.material.map]); }); return r; };
+window.__ok = true;
+</script></body></html>
