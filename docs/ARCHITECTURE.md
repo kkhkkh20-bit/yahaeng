@@ -20,6 +20,7 @@
 | `35_light_noise.js` | 빛 세기, 알림·도움말, 소리 퍼짐(`noise`) |
 | `38_zones.js` | 구역(공개·출입 금지·적진) 판정, 수상한 행동, 출입 금지 경고 흐름 |
 | `40_guard_ai.js` | 시야(`canSee`), 길 찾기, 층 넘어 쫓기, 경비·주민 상태(순찰·의심·수색·발각 …) |
+| 42_social | 주민 신고(도중에 막기), 표적 일과표(sched), 단계형 기회(stories, 안내 강도 oppMode), 현장 물건(props·uses) |
 | `45_player.js` | 이동·충돌·발소리·도구 겨누기 |
 | `50_opps_checkpoint.js` | 암살 기회, 체크포인트 |
 | `55_wires.js` | 전봇대·전깃줄 |

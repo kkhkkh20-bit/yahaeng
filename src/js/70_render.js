@@ -779,7 +779,7 @@ function drawActLabels(pa, P) {
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
   let zKey = false;
-  if (pa.k === 'none') { if (!pa.held) return; pa = pa.held; zKey = true; }
+  const stk = pa.stalk; if (pa.k === 'none') { if (!pa.held) return; pa = pa.held; zKey = true; }
   if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
   else if (pa.l && pa.k === 'up') { x = pa.l.x; y = pa.l.y - 34; } else if (pa.l && (pa.k === 'down' || pa.k === 'smother')) { x = pa.l.rx != null ? pa.l.rx : pa.l.ux; y = (pa.l.ry != null ? pa.l.ry : pa.l.uy) - 40; } else if (pa.l) at(pa.l);
   const col = pa.list || pa.g ? '#e8473c' : pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' ? SCAN.hide : '#f2c46b';
@@ -790,7 +790,7 @@ function drawActLabels(pa, P) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  if (zKey) { tag(x, y, lab + ' (자경대원 근처 — Space는 암살)', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
+  if (zKey) { tag(x, y, lab + ' (사람 근처 — Space는 ' + (stk && !koDefault(stk) ? '암살' : '기절') + ')', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
   tag(x, y, key + lab, col, 1, isTouch ? null : 'Space');
   const sa = secondaryAction();
   if (['grab', 'steal', 'tunnel', 'fdown'].includes(sa.k) || sa.viaZ) tag(x, y + 21 * Math.max(1, 0.95 / SCALE), sa.label, '#c4ccd6', 1, isTouch ? null : 'Z');
@@ -889,7 +889,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawTrapsGround();
+  drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   for (const it of S.items) if (!it.got && onGround(it)) { if (CITY) { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawScroll(it.x, it.y, S.t); }  // 목표물은 은은하게 빛난다
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
@@ -1023,7 +1023,7 @@ function draw() {
   if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
-    drawWarnRing(g);
+    drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -1102,7 +1102,7 @@ function draw() {
   if (running && CITY && !tactical) drawStairGlow(P, openB);
   if (running && CITY && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running && CITY) { drawOpps(P); if (!tactical) drawCorpseRisk(); }
+  if (running && CITY) { drawOpps(P); drawStoryMark(P); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
       ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();

@@ -19,11 +19,15 @@ const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
 const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
 const pZone = () => pZoneInfo().k;
 const disguised = () => { const P = S.player; return !!(P.outfit && !P.disguiseBlown); };
-const permitted = zi => zi.k !== Z_PUB && disguised() && zi.allow.includes(S.player.outfit);
+// 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
+const myPermits = () => { const P = S.player, a = []; if (disguised()) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
+const allowedBy = allow => !!allow && myPermits().some(o => allow.includes(o));
+const permitName = allow => { const o = myPermits().find(o => allow && allow.includes(o)); return o === S.player.outfit ? outfitName(o) : (S.player.item && S.player.item.name) || outfitName(o); };
+const permitted = zi => zi.k !== Z_PUB && allowedBy(zi.allow);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = () => { const zi = pZoneInfo(); return permitted(zi) ? Z_PUB : zi.k; };
 // 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
-const sharpEye = g => !g.dog && !g.civ && disguised() && (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit));
+const sharpEye = g => !g.dog && disguised() && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
 const EYE_R = 150, EYE_T = 1.8;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
@@ -36,13 +40,13 @@ function updateSharpEye(g, dt, rawVis) {
   const P = S.player, d = dist(g.x, g.y, P.x, P.y);
   if (rawVis > 0 && d < EYE_R) { g.eyeT = (g.eyeT || 0) + dt * (P.mode === 'run' ? 2 : 1) * (d < 70 ? 1.6 : 1); g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '눈 표시가 뜬 사람은 눈썰미가 있다. 가까이에서 오래 보이면 변장이 들통난다 — 거리를 두고 지나가라');
-    if (g.eyeT >= EYE_T) { blowDisguise(g); g.seen = true; g.meter = 1; goAlert(g); } }
+    if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
 function suspAct(g) {
   const P = S.player;
-  if (P.carrying || P.captive || P.strikeT > 0 || P.lunge || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t) return 1;
+  if (P.carrying || P.captive || P.strikeT > 0 || P.lunge || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t || (P.useT || 0) > S.t) return 1;
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'sneak' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;
@@ -89,7 +93,7 @@ function zoneEdges() {
   setLayer(L0); return (S.zEdges = E);
 }
 // 경계선 색은 지금 입은 옷 기준: 초록 = 들어가도 된다, 주황 = 출입 금지, 빨강 = 적진
-const zoneCol = (k, allow) => disguised() && allow && allow.includes(S.player.outfit) ? '110,205,135' : k === Z_HOS ? '232,80,60' : '242,170,70';
+const zoneCol = (k, allow) => allowedBy(allow) ? '110,205,135' : k === Z_HOS ? '232,80,60' : '242,170,70';
 function drawZones(P) {
   const far = tactical ? 1e9 : 520;
   for (const e of zoneEdges()) {
@@ -101,19 +105,19 @@ function drawZones(P) {
   }
   for (const r of STAGE.zones) {  // 적어 둔 출입 금지·적진 구역: 옅은 칠과 이름표
     if (r[4] === 'pub' || r[5] === 'roof') continue;
-    const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, hos = r[4] === 'hos', ok = disguised() && (r[7] || STAGE.zoneAllow || ['crew']).includes(P.outfit), col = zoneCol(hos ? Z_HOS : Z_RES, ok ? [P.outfit] : null);
+    const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, hos = r[4] === 'hos', ok = allowedBy(r[7] || STAGE.zoneAllow || ['crew']), col = zoneCol(hos ? Z_HOS : Z_RES, r[7] || STAGE.zoneAllow || ['crew']);
     const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > far) continue;
     ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
     if (d < 320 || tactical) tag(x + w / 2, y + h - 12, (r[6] || (hos ? '적진' : '출입 금지')) + (ok ? ' · 통과' : ''), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
   }
   // 가까운 문턱에 '출입 금지' 표지 (가장 가까운 하나만). 허가 옷을 입었으면 '통과'
   if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && pZone() === Z_PUB) { bd = d; best = e; } }
-    if (best) { const ok = disguised() && best.allow && best.allow.includes(P.outfit);
-      tag((best.x0 + best.x1) / 2 + best.ix * 26, (best.y0 + best.y1) / 2 + best.iy * 26, ok ? '통과 — ' + outfitName(P.outfit) : best.k === Z_HOS ? '적진' : '출입 금지', ok ? '#8fe0a4' : best.k === Z_HOS ? '#ff8a76' : '#f2b45a', 0.9); } }
+    if (best) { const ok = allowedBy(best.allow);
+      tag((best.x0 + best.x1) / 2 + best.ix * 26, (best.y0 + best.y1) / 2 + best.iy * 26, ok ? '통과 — ' + permitName(best.allow) : best.k === Z_HOS ? '적진' : '출입 금지', ok ? '#8fe0a4' : best.k === Z_HOS ? '#ff8a76' : '#f2b45a', 0.9); } }
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
-  if (!STAGE.zones || g.state === 'DEAD' || g.civ || g.dog || !(g.enforcer || g.elite || g.target)) return;
+  if (!STAGE.zones || g.state === 'DEAD' || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
   const P = S.player, on = sharpEye(g); if (!on && !(g.enforcer && dist(g.x, g.y, P.x, P.y) < 420)) return;
   const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / EYE_T, 0, 1);
   ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.fillStyle = on ? (f > 0 ? '#ffd06a' : '#f4f1ea') : 'rgba(244,241,234,.55)';

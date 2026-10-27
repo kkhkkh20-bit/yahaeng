@@ -8,7 +8,7 @@ function update(dt) {
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
   if (S.whistleT > 0) S.whistleT -= dt;
   if (S.pull) updatePull(dt);
-  updateKoHold();
+  updateKoHold(); if (STAGE.zones || STAGE.stories) updateStories(dt);
   if (S.qBuf > 0) { S.qBuf -= dt; const qa = primaryAction(); if (qa.k !== 'none' && (!S.qKill || KILL_K.has(qa.k))) { S.qBuf = 0; actPrimary(); } }
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }

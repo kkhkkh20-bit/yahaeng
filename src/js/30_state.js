@@ -4,8 +4,8 @@ const ctx = canvas.getContext('2d');
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d');
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
-let userZoom = 0.8, showRoutes = true, tactical = false, showOpps = true;
-try { if (localStorage.getItem('yahaeng.opps') === '0') showOpps = false; } catch (e) {}
+let userZoom = 0.8, showRoutes = true, tactical = false, showOpps = true, oppMode = 2;  // 기회 안내: 2 전체 · 1 최소 · 0 끔
+try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '1m') oppMode = 1; } catch (e) {}
 try { const z = parseFloat(localStorage.getItem('yahaeng.zoom')); if (z > 0.4 && z < 1.6) userZoom = z; const r = localStorage.getItem('yahaeng.routes'); if (r === '0') showRoutes = false; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
@@ -102,7 +102,7 @@ function newGame(si) {
   if (STAGE.tutorial && !S.items.length) S.exitOpen = true;
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare') { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; }
-  trapsInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
+  trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
   // 전봇대와 전깃줄: 줄 끝은 전봇대 꼭대기 또는 옥상 가장자리
   S.poles = POLES.map(([tx, ty, z]) => ({ tx, ty, x: tc(tx), y: tc(ty), z, top: 26 + z * 10 }));
   // 인입선: [전봇대 x, y, 층] → 그 전봇대에서 가장 가까운, 그 층 정면 창문으로
@@ -254,6 +254,7 @@ function planPt(bi, f, where) {
   return [cx, cy];
 }
 function resolveGuard(d) {
+  if (d.sched && !d.route) d = Object.assign({}, d, { route: schedRoute(d) });  // 일과표 → 경로
   if (d.b == null) return d;
   const f = d.fl || 0, o = Object.assign({}, d);
   if (d.patrol) { const a = planPt(d.b, f, d.from || 'L'), c = planPt(d.b, f, d.to || 'R'); o.route = [[a[0], a[1], 2], [c[0], c[1], 2]]; delete o.at; }
@@ -290,7 +291,7 @@ function makeGuard(d, i) {
     id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
-    state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
+    sched: d.sched || null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
   };
 }
 function buildRouteLine(g) {

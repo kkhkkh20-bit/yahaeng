@@ -57,8 +57,10 @@ function objectiveLines() {
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
   if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 들통남 — 다른 옷을 구하라` : `${outfitName(P.outfit)} — 초록 경계선 안은 지나다닐 수 있다`) : P.disguiseBlown ? '변장 들통남 — 다시 갈아입을 옷을 찾아라' : '변장 중 — 걸으면 멀리서는 안 들킨다']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
-  for (const g of S.guards) if (g.target) { const r = g.route[0]; L.push([g.state === 'DEAD' ? 'done' : S.spare ? 'done' : '', (g.doc ? '한 선생' : '표적') + (S.spare && g.state !== 'DEAD' ? ' — 살려 둘 수 있다' : ' — ' + place(r.x, r.y, g.fl))]); }
+  for (const g of S.guards) if (g.target) { const r = g.route[0], sc = g.state !== 'DEAD' && schedText(g); L.push([g.state === 'DEAD' ? 'done' : S.spare ? 'done' : '', (g.doc ? '한 선생' : '표적') + (S.spare && g.state !== 'DEAD' ? ' — 살려 둘 수 있다' : sc ? ' — ' + sc : ' — ' + place(r.x, r.y, g.fl))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
+  if (P.item) L.push(['info', '들고 있는 것: ' + P.item.name + (P.item.permit ? ` (${outfitName(P.item.permit)}처럼 통한다)` : '')]);
+  storyLines().forEach(l => L.push(l));
   if (showOpps) for (const o of S.opps || []) if (o.seen) { const pl = o.x != null ? (o.roof ? place(o.x, o.y, o.fl).replace(/ \d+층$/, ' 옥상') : place(o.x, o.y, o.fl)) : ''; L.push([oppDone(o) ? 'opp done' : 'opp', '기회: ' + oppText(o) + (pl && pl !== '바깥' ? ' — ' + pl : '')]); }
   if (S.timeLeft) L.push([S.timeLeft < 60 ? 'go' : '', `남은 시간 ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}`]);
   return L;
@@ -158,7 +160,7 @@ function showEnd(win, reason) {
   let rank = '';
   if (win) {
     // 그림자 조건 (히트맨의 사일런트 어새신식): 다섯 가지를 모두 채우면 그림자
-    const bonus = [['발각 0', st.detected === 0], [hasTargets ? '표적 외 살상 0' : '살상 0', hasTargets ? st.extraKills === 0 : st.kills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
+    const bonus = [['발각 0', st.detected === 0], [hasTargets ? '표적 외 살상 0' : '살상 0', hasTargets ? st.extraKills === 0 : st.kills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
     S.bonus = bonus;
     if (STAGE.challenges) {
       const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
@@ -174,7 +176,7 @@ function showEnd(win, reason) {
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ' · ' + (tg && tg.state !== 'DEAD' ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   $('endStats').innerHTML = [
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['제거', st.kills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
-    ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], ['주민 비명', (st.screams || 0) + '회'], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
+    ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
   ].concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;
       return `<div class="ent">그림자 조건 ${S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ')}</div><div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')

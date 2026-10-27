@@ -94,7 +94,7 @@ function canKill(g, P, reach = 56) {
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
   if (g.state === 'ALERT' && !g.target && !radioBusy(g)) return false;
   const behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
-  if (g.civ) return (behind || g.state === 'SLEEP' || g.state === 'PANIC') && los(P.x, P.y, g.x, g.y);
+  if (g.civ) return (behind || g.state === 'SLEEP' || g.state === 'PANIC' || g.state === 'REPORT') && los(P.x, P.y, g.x, g.y);
   if (!behind && !(g.target && (g.state === 'FLEE' || (g.state !== 'ALERT' && d < 36))) && !(radioBusy(g) && d <= 56)) return false;
   return los(P.x, P.y, g.x, g.y) && (d <= 56 || lungeClear(P, g));
 }
@@ -967,6 +967,9 @@ function actCarry() {
   if (sa.k === 'uncover') { P.cover = null; play('cloth', 0.15); return; }
   if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
   if (sa.k === 'grab') { grab(sa.g); return; }
+  if (sa.k === 'use') { useItem(sa.n); return; }
+  if (sa.k === 'pickup') { takeProp(sa.p); return; }
+  if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = c.ch; P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
@@ -1029,9 +1032,12 @@ function secondaryAction() {
   const fd = nearFloorDown(); if (fd && nearClimb()) return { k: 'fdown', l: fd, label: `계단 내려가 ${fd.bfl + 1}층` };
   const kl = killList().filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };
+  const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
+  const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
   const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };
   if (nc) return { k: 'carry', label: '운반' };
   const hp = primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
+  if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   const cv = !P.z && !P.carrying && !P.captive && coverAt(P); if (cv) return { k: 'cover', n: cv, label: '벽에 기대기' };
   return { k: 'none', label: '특수' };
 }
