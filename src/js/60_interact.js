@@ -406,7 +406,9 @@ function stalkGuard() {
 }
 function primaryAction() {
   const a = primaryActionRaw();
-  if (RISKY_K.has(a.k)) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: sg.civ ? '기절시키기' : '암살' }; }
+  if (RISKY_K.has(a.k)) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: koDefault(sg) ? '기절시키기' : '암살' }; }
+  const v = a.g || (a.list && a.list[0]) || a.kill || ((a.k === 'execute' || a.k === 'drag') && S.player.captive) || null;
+  if (v && koDefault(v) && !v.civ && a.label && /암살|처치/.test(a.label) && !['ledgeKill', 'pushOff'].includes(a.k)) a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절') + (a.k === 'kill' ? ' (길게: 처치)' : '');
   return a;
 }
 function primaryActionRaw() {
@@ -517,7 +519,7 @@ function actPrimary(force) {
     case 'drop': {
       const g = a.g; P.z = 0; P.jump = null; P.wire = null; P.x = g.x; P.y = g.y; P.strikeT = 0.4; P.a = g.a;
       play('land', 0.5); killGuard(g); S.stats.special++;
-      toast('낙하 암살', 1.8, 'good'); collide(P, 13, groundSolidP); break;
+      toast(lastKO() ? '위에서 덮쳐 기절' : '낙하 암살', 1.8, 'good'); collide(P, 13, groundSolidP); break;
     }
     case 'wireOn': {
       const grab = () => { if (P.fl) { P.fl = 0; setLayer(0); S.fade = 0.15; }
@@ -572,7 +574,7 @@ function actPrimary(force) {
         play('cloth', 0.35); noise(l.x, l.y, v ? 30 : 55, 'climb');
         startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y, f: 0.12 }, { x: l.ux, y: l.uy + 26, f: 0.72 }, { x: l.ux, y: l.uy, f: 1 }], dur: 1.05, phases: [{ to: 0.72, pose: 'climb' }, { to: 1, pose: 'vault' }], face: -Math.PI / 2, base: { x: l.x, y: l.y }, step: 'cloth',
           end: () => { P.fl = 1; setLayer(1); P.x = l.ux; P.y = l.uy; P.a = -Math.PI / 2; S.fade = 0.12;
-            if (v && v.state !== 'DEAD') { const g = v; P.x = g.x; P.y = g.y + 22; collide(P, 13, groundSolidP); P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast('베란다 넘어 암살', 1.8, 'good'); } }
+            if (v && v.state !== 'DEAD') { const g = v; P.x = g.x; P.y = g.y + 22; collide(P, 13, groundSolidP); P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast(lastKO() ? '베란다 넘어 기절' : '베란다 넘어 암살', 1.8, 'good'); } }
             else toast('베란다 난간을 타고 2층으로 들어왔다', 1.8); } });
         break;
       }
@@ -674,8 +676,8 @@ function actPrimary(force) {
     }
     case 'drag': {
       const g = P.captive, h = a.h; P.captive = null; S.stats.special++;
-      if (h.type === 'bush') { P.x = h.x; P.y = h.y; killGuard(g, 'bush', h, true); toast('화단 속으로 끌고 들어가 처치했다', 2, 'good'); }
-      else { killGuard(g, 'stash', h, true); enterHide(h, true); toast(h.type === 'well' ? '맨홀 속으로 끌고 들어가 처치했다' : `${hideIn(h)}으로 끌고 들어가 처치했다`, 2.2, 'good'); }
+      if (h.type === 'bush') { P.x = h.x; P.y = h.y; killGuard(g, 'bush', h, true); toast(lastKO() ? '화단 속으로 끌고 들어가 기절시켰다' : '화단 속으로 끌고 들어가 처치했다', 2, 'good'); }
+      else { killGuard(g, 'stash', h, true); enterHide(h, true); const w = lastKO() ? '기절시켰다' : '처치했다'; toast(h.type === 'well' ? '맨홀 속으로 끌고 들어가 ' + w : `${hideIn(h)}으로 끌고 들어가 ${w}`, 2.2, 'good'); }
       break;
     }
     case 'hide': enterHide(a.h); break;
@@ -748,19 +750,48 @@ function travelTunnel() {
   play('metal', 0.35); play('cloth', 0.3); S.fade = 0.4;
   toast('지하 수로로 내려왔다', 1.8);
 }
-function koCiv(g, mode, where) {
-  g.state = 'DEAD'; g.icon = null; play('thud', 0.45); play('cloth', 0.4);
-  const c = { fl: flOf(g), ch: charOf(g), ko: true, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y) };
+// 기절 (히트맨식 비살상 제압): 표적이 아닌 사람은 기절이 기본. 행동 버튼을 계속 누르고 있으면 숨을 끊는다(표적 외 살상)
+const actHeld = () => !!(S && S.keys && (S.keys.Space || S.keys.KeyQ)) || !!(document.getElementById('btnAct') && document.getElementById('btnAct').classList.contains('down'));
+const koDefault = g => !!g && !g.dog && !g.target;
+const KO_HOLD = 0.5;
+function koPerson(g, mode, where) {
+  logEv('ko', g.x, g.y);
+  g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
+  const c = { fl: flOf(g), ch: charOf(g), ko: true, g, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; }
+  else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
   noise(g.x, g.y, 30, 'ko', flOf(g));
-  toast('주민을 기절시켰다 — 죽이지 않았다. 다른 사람 눈에 띄면 시체처럼 소란이 난다', 2.6);
+  if (S.fuseGuard === g) S.fuseGuard = null;
+  if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + keyName(k) + '을(를) 챙겼다'); }
+  S.koHold = actHeld() ? { c, g, t0: S.t } : null;
+  toast(g.civ ? '기절시켰다 — 죽이지 않았다. 남의 눈에 띄면 시체처럼 소란이 난다' : '기절시켰다 — 죽이지 않았다. 다른 자경대원이 보면 깨워서 수색한다', 2.4);
+  hint('ko', '표적이 아닌 사람은 기절시킨다(살상 아님, 평가 감점 없음). 행동 버튼을 계속 누르고 있으면 숨을 끊는다 — 표적 외 살상이라 감점');
 }
+// 누른 채로 있으면 기절 → 처치로 바뀐다
+function updateKoHold() {
+  const h = S.koHold; if (!h) return;
+  if (!actHeld() || h.c.stashed && !h.c.ko) { S.koHold = null; return; }
+  if (S.t - h.t0 < KO_HOLD) return;
+  S.koHold = null; const c = h.c, g = h.g; if (!c.ko) return;
+  c.ko = false; c.g = null; S.stats.ko--; S.stats.kills++; if (!g.target) S.stats.extraKills++; logEv('kill', c.x, c.y);
+  play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.45); if (CITY) S.shakeT = 0.12; noise(c.x, c.y, 40, 'kill', c.fl);
+  toast('숨을 끊었다 — 표적 외 살상', 1.8, 'warn');
+}
+// 기절한 사람이 발견되면 깨어나 함께 수색한다
+function wakeKO(c, by) {
+  const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
+  g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
+  if (g.civ) { g.state = 'PATROL'; gsay(g, '으… 머리야. 누가 뒤에서…'); return; }
+  g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
+  gsay(g, ['누가 뒤에서 쳤어! 이 근처에 있다!', '으윽… 어떤 놈이 목을…', '정신 차려 보니 바닥이야. 찾아!'][g.id % 3], 3);
+}
+const lastKO = () => { const c = S.corpses[S.corpses.length - 1]; return !!(c && c.ko); };
 function strikeKill(list, two) {
   const P = S.player; P.strikeT = 0.32; S.crimeT = S.t;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? (g0.civ || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null, dur = 0.66;
+  const kind = pairK ? (g0.civ || koDefault(g0) || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null, dur = 0.66;
   if (pairK) { P.strikeT = dur; P.a = g0.a; P.killAnim = { ch: charOf(g0), t0: S.t, kind, dur }; }
   list.forEach(g => {
     g.doomed = false;
@@ -773,11 +804,12 @@ function strikeKill(list, two) {
     } else killGuard(g);
   });
   S.hitStop = 0.07;
-  if (two) { S.stats.special++; toast('동시 암살', 1.8, 'good'); }
+  if (two) { S.stats.special++; toast(lastKO() ? '동시 기절' : '동시 암살', 1.8, 'good'); }
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
-  if (g.civ) return koCiv(g, mode, where);
+  if (g.civ || (koDefault(g) && !S.lethalNext)) { S.lethalNext = false; return koPerson(g, mode, where); }
+  S.lethalNext = false;
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
   g.state = 'DEAD'; g.icon = null;
   play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); setTimeout(() => play('thud', 0.45), 180); if (CITY) S.shakeT = quiet ? 0.12 : 0.18;  // 처치 손맛: 짧은 화면 흔들림
@@ -867,7 +899,7 @@ function updateIntel(dt) {
   });
 }
 function disguiseMul(g) {
-  const P = S.player; if (!P.disguise || P.disguiseBlown || g.dog) return 1;
+  const P = S.player; if (!P.disguise || P.disguiseBlown || g.dog || STAGE.zones) return 1;  // 구역이 있는 판은 허가 옷·눈썰미 규칙으로 따진다
   const d = dist(g.x, g.y, P.x, P.y);
   if (g.elite || g.target) return d < 220 ? 1.25 : 0.4;      // 얼굴을 아는 사람
   if (P.mode === 'run' || P.carrying || P.captive || P.z || P.strikeT > 0 || P.wire) return 1;  // 수상한 짓
@@ -936,8 +968,11 @@ function actCarry() {
   if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
   if (sa.k === 'grab') { grab(sa.g); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c; c.stripped = true; P.disguise = c.ch; P.disguiseBlown = false; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25;
-    toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰거나, 시체를 들거나, 옥상에 있거나, 너무 가까이 붙으면 의심받는다. 한 번 들키면 변장은 끝'); return;
+    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = c.ch; P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
+    else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 경계선이 초록이면 그 구역에 들어가도 된다. 뛰기·운반·락픽·담 타기는 여전히 수상하다. 눈 표시가 뜬 사람(눈썰미)은 가까이서 오래 보면 알아챈다. 들통나면 그 옷만 못 쓴다'); }
+    else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰거나, 시체를 들거나, 옥상에 있거나, 너무 가까이 붙으면 의심받는다. 한 번 들키면 변장은 끝'); }
+    return;
   }
   if (sa.k === 'throwBody') {
     const c = P.carrying, g = sa.g; P.carrying = null; c.carried = false; c.discovered = true; S.stats.bodies++;
@@ -994,7 +1029,7 @@ function secondaryAction() {
   const fd = nearFloorDown(); if (fd && nearClimb()) return { k: 'fdown', l: fd, label: `계단 내려가 ${fd.bfl + 1}층` };
   const kl = killList().filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };
-  const nc = nearCorpse(); if (nc && STAGE.disguise && !nc.dog && !nc.stripped && !nc.target && !(nc.ch || '').startsWith('civ') && !nc.ko && !(P.disguise && !P.disguiseBlown)) return { k: 'dress', c: nc, label: '옷 갈아입기' };
+  const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };
   if (nc) return { k: 'carry', label: '운반' };
   const hp = primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   const cv = !P.z && !P.carrying && !P.captive && coverAt(P); if (cv) return { k: 'cover', n: cv, label: '벽에 기대기' };
@@ -1054,7 +1089,7 @@ function kunaiHit(k) {
     hint('kunaiLamp', '깨진 조명은 다시 켜지지 않는다. 깨지는 소리에 근처 자경대원이 다가온다');
   } else {
     const g = t.ref; if (g.state === 'DEAD') { play('metal', 0.4); return; }
-    killGuard(g); S.stats.special++;
+    S.lethalNext = true; killGuard(g); S.stats.special++;
     toast('원격 암살', 1.6, 'good');
   }
 }

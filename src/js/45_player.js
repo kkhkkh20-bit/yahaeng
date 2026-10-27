@@ -176,7 +176,7 @@ function updatePull(dt) {
   g.x = L.x0 + (L.x1 - L.x0) * e; g.y = L.y0 + (L.y1 - L.y0) * e;
   if (f >= 1) {
     S.pull = null; g.doomed = false;
-    if (g.state !== 'DEAD') { killGuard(g, null, null, true); S.hitStop = 0.08; if (!g.civ) { S.stats.special++; toast('벽 뒤로 끌어당겨 암살', 1.6, 'good'); } }
+    if (g.state !== 'DEAD') { killGuard(g, null, null, true); S.hitStop = 0.08; if (!g.civ) { S.stats.special++; toast(lastKO() ? '벽 뒤로 끌어당겨 기절' : '벽 뒤로 끌어당겨 암살', 1.6, 'good'); } }
   }
 }
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
@@ -252,7 +252,7 @@ function updatePlayer(dt) {
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
     P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
-    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land'); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast('창문 넘어 암살', 1.8, 'good'); } collide(P, 13, groundSolidP); } }
+    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land'); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast(lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } collide(P, 13, groundSolidP); } }
     P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = true;
     return;
   }

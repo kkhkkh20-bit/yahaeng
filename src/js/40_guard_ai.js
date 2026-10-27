@@ -220,7 +220,7 @@ function exposure() {
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.climb || g.doomed) continue;
     if (flOf(g) !== flOf(P) || (flOf(P) && P.wire) || dist(g.x, g.y, pv.x, pv.y) > 560) continue;
-    if (STAGE.zones && !g.dog && !knownFace(g) && pZone() === Z_PUB && !suspAct(g)) continue;  // 공개 구역의 행인은 누가 돌아봐도 그냥 지나친다
+    if (STAGE.zones && !g.dog && !knownFace(g) && pZoneEff() === Z_PUB && !suspAct(g)) continue;  // 공개 구역의 행인은 누가 돌아봐도 그냥 지나친다
     const gg = Object.create(g); gg.a = Math.atan2(pv.y - g.y, pv.x - g.x);  // 이쪽으로 돌아본다면
     if (canSee(gg, pv.x, pv.y, P.light, P.hidden, sneak, elev) > 0) return 1;
   }
@@ -261,11 +261,11 @@ function updateCams(dt) {
     if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' ? 0.12 : 1)); if (c.meter >= 1) {
-      c.meter = 0; c.cool = 6; play('alarm', 0.4); setAlert(2, 40, 'CCTV에 찍혔다 — 자경대원이 몰려온다');
+      c.meter = 0; c.cool = 6; S.stats.camRec = (S.stats.camRec || 0) + 1; play('alarm', 0.4); setAlert(2, 40, 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, c.x, c.y) < 800) goSuspicious(g, P.x, P.y, 5);
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
     for (const k of S.corpses) { if (k.stashed || k.carried || k.discovered || k.camSeen || flOf(k) !== c.fl) continue; if (k.accident && sees(k.x, k.y, Math.max(0.5, k.light || 0))) { k.camSeen = true; continue; }  // 사고로 보이는 시체는 CCTV도 경보를 울리지 않는다
-      if (sees(k.x, k.y, Math.max(0.5, k.light || 0))) { k.camSeen = true; k.discovered = true; S.stats.bodies++; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, k.x, k.y) < 900) goSuspicious(g, k.x, k.y, 6); } }
+      if (sees(k.x, k.y, Math.max(0.5, k.light || 0))) { k.camSeen = true; k.discovered = true; S.stats.bodies++; S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, k.x, k.y) < 900) goSuspicious(g, k.x, k.y, 6); } }
   }
   setLayer(L0);
   if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV: 빨간 시야가 좌우로 천천히 돈다. 끝에서 잠깐 멈춘다. 찍히면 경보. 다트로 부수거나 두꺼비집을 내리면 꺼진다. 부서진 카메라를 자경대원이 보면 의심한다');
@@ -364,7 +364,7 @@ function updateGuard(g, dt) {
     if (!g.slashed && !g.dog) for (const o of S.guards) {
       if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || dist(o.x, o.y, g.x, g.y) > 40) continue;
       g.slashed = true;
-      if (Math.random() < 0.35) { killGuard(o, null, null, false); S.stats.kills--; if (!o.target) S.stats.extraKills--; S.stats.friendly = (S.stats.friendly || 0) + 1; if (dist(g.x, g.y, P.x, P.y) < 800) toast('겁에 질린 자경대원이 동료를 베었다!', 2.4, 'good'); }
+      if (Math.random() < 0.35) { S.lethalNext = true; killGuard(o, null, null, false); S.stats.kills--; if (!o.target) S.stats.extraKills--; S.stats.friendly = (S.stats.friendly || 0) + 1; if (dist(g.x, g.y, P.x, P.y) < 800) toast('겁에 질린 자경대원이 동료를 베었다!', 2.4, 'good'); }
       break;
     }
     if (g.terrorT <= 0) { g.state = 'SEARCH'; g.poi = { x: g.fearFrom.x, y: g.fearFrom.y }; g.reached = false; g.path = null; g.waitBase = 3; setIcon(g, '?'); }
@@ -375,8 +375,9 @@ function updateGuard(g, dt) {
   const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
-  let zk = 1; const pz = STAGE.zones ? pZone() : Z_HOS;
-  if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = suspAct(g); if (!zk) vis = 0; }  // 공개 구역: 행인으로 보인다
+  let zk = 1; const pz = STAGE.zones ? pZoneEff() : Z_HOS;
+  if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
+  if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = suspAct(g); if (!zk) vis = 0; }  // 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
   if (STAGE.zones && g.seen && !g.dog && g.state !== 'ALERT' && (P.strikeT > 0 || (S.crimeT && S.t - S.crimeT < 1.2) || P.captive)) { g.meter = 1; goAlert(g); }  // 처치·기절·붙잡는 걸 보면 그 자리에서 발각
   if (g.state === 'WARN') { updateTrespass(g, dt, pz); if (g.state === 'WARN') return; }
@@ -567,7 +568,8 @@ function updateGuard(g, dt) {
       if (!g.path) pathTo(g, c.x, c.y);
       if (moveAlong(g, SPD.gBody * spdMul(), dt) || dist(g.x, g.y, c.x, c.y) < 40) {
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고가 났네…', '감전됐나 봐. 손대지 마.', '저런, 재수도 없지.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
-        c.discovered = true; S.stats.bodies++; logEv('found', c.x, c.y); setAlert(2, 35, '자경대원이 시체를 발견했다 — 수색 시작');
+        c.discovered = true; S.stats.bodies++; logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작');
+        if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
         for (const o of S.guards) if (o !== g && o.state !== 'DEAD' && o.state !== 'ALERT' && !o.target && o.state !== 'FLEE' && dist(o.x, o.y, c.x, c.y) < 520) goSuspicious(o, c.x + rnd(-40, 40), c.y + rnd(-40, 40), 5);
         g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
       }
@@ -749,7 +751,7 @@ function goAlert(g) {
   const P = S.player; endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', S.player.x, S.player.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
-  if (P.disguise && !P.disguiseBlown) { P.disguiseBlown = true; toast('변장이 들통났다', 2.4, 'warn'); }
+  if (P.disguise && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `들통났다 — 이제 ${outfitName(P.outfit)}은 통하지 않는다` : '변장이 들통났다', 2.4, 'warn'); }
   if (g.seen) S.chaseSeen = true;  // 본 사람이 있으면 수색이 끝날 때까지 얼굴을 안다 (무전기와 상관없이)
   g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0;
   if (S.fuseGuard === g) { S.fuseGuard = null; g.atFuse = false; }
