@@ -1049,6 +1049,7 @@ const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 const CH = {
   ghost: ['한 번도 들키지 않기', () => S.stats.detected === 0],
   clean: ['표적 말고는 아무도 죽이지 않기', () => S.stats.extraKills === 0],
+  nokill: ['아무도 죽이지 않기', () => S.stats.kills === 0],
   nobody: ['시체가 한 번도 발견되지 않기', () => S.stats.bodies === 0],
   accident: ['표적을 모두 사고로 처리', () => S.corpses.filter(c => c.target).length > 0 && S.corpses.filter(c => c.target).every(c => c.accident)],
   nokey: ['카드·비번 없이 깨기', () => !S.stats.keyDoors],
@@ -1533,6 +1534,17 @@ function drawStairs(x, tx, ty) {
     x.restore();
   }
 }
+// 구역 경계: 적어 둔 출입 금지(주황)·적진(빨강) 구역을 바닥에 점선으로. 가까이 가면 이름표
+function drawZones(P) {
+  for (const r of STAGE.zones) {
+    if (r[4] === 'pub' || r[5] === 'roof') continue;
+    const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, hos = r[4] === 'hos', col = hos ? '232,80,60' : '242,170,70';
+    const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 700) continue;
+    ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = `rgba(${col},${d < 250 ? 0.6 : 0.35})`; ctx.lineWidth = 2; ctx.setLineDash([10, 7]); ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); ctx.setLineDash([]);
+    if (d < 320) tag(x + w / 2, y + h - 12, (r[6] || (hos ? '적진' : '출입 금지')), hos ? '#ff8a76' : '#f2b45a', 0.95);
+  }
+}
 // 어둠 위에 덧그리는 계단 표시: 오르는 줄은 위층 불빛이 새어 드는 것처럼 위로 갈수록 밝게(▲), 내려가는 줄은 검은 구멍으로(▼)
 function drawStairGlow(P, openB) {
   if (P.z || P.wire || P.vent || P.under || P.hide || openB == null || openB < 0) return; const f = flOf(P);
@@ -1807,6 +1819,7 @@ function noise(x, y, r, src, fl) {
       if (g.state === 'BODY' || g.state === 'LURE') continue;
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
+      if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB) continue;  // 거리의 발소리는 아무도 신경 쓰지 않는다
       if (src === 'step' || src === 'whistle') nz.heard = true;
       if (src === 'whistle' && !g.dog) { gsay(g, ['누구야?', '휘파람…? 거기 누구 있어?', '뭐야, 이쪽인가?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = S.player.mode === 'run' ? 0.3 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x, y }; continue; }
@@ -1816,6 +1829,7 @@ function noise(x, y, r, src, fl) {
   setLayer(L0);
 }
 function goSuspicious(g, x, y, look) {
+  if (g.state === 'WARN') return;  // 나가라고 경고하는 중엔 다른 데 정신 팔지 않는다
   endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35 * proxVol(g)); }
@@ -2013,6 +2027,28 @@ function guardRanges(g) {
   return { lit: 250 * m * dm, dark: 95 * m * dm * (S.mod === 'bright' ? 1.5 : 1) };
 }
 // elev = 대상이 지붕 위 (경비는 위를 잘 올려다보지 않는다)
+// ---- 구역 (히트맨식): 공개 구역에선 나는 행인이다 — 수상한 짓을 보일 때만 의심받는다. 출입 금지 구역은 잠입 규칙(처음엔 경고), 적진은 보이면 적대
+// STAGE.zones = [[x0, y0, x1, y1, 'pub' | 'res' | 'hos'], ...] (뒤에 적은 것이 우선). 따로 적지 않으면: 거리 = 공개, 건물 안·지붕 = 출입 금지
+// zones 가 없는 판은 옛 규칙(어디서나 적진)
+const Z_PUB = 0, Z_RES = 1, Z_HOS = 2, Z_NAME = ['공개', '출입 금지', '적진'];
+function zoneAt(x, y, z) {
+  if (!STAGE.zones) return Z_HOS;
+  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); let k = (z || 0) > 0 || bldAt(tx, ty) >= 0 ? Z_RES : Z_PUB;
+  for (const r of STAGE.zones) if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && (!r[5] || ((z || 0) > 0) === (r[5] === 'roof'))) k = r[4] === 'pub' ? Z_PUB : r[4] === 'hos' ? Z_HOS : Z_RES;
+  return k;
+}
+const pZone = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneAt(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
+// 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
+function suspAct(g) {
+  const P = S.player;
+  if (P.carrying || P.captive || P.strikeT > 0 || P.lunge || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t) return 1;
+  if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
+  if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
+  if (P.mode === 'sneak' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;
+  return 0;
+}
+// 나를 알아보는가: 쫓기는 중(발각)이거나, 발각 뒤 수색이 끝나기 전이면 공개 구역이어도 얼굴을 안다
+const knownFace = g => g.state === 'ALERT' || (S.alevel >= 2 && S.chaseSeen);
 function canSee(g, x, y, light, hidden, sneak, elev) {
   // 높이: 지붕 밑(건물 안)에서는 지붕 위를 못 보고, 지붕 위에서는 지붕 밑을 못 본다
   const gz = g.z || 0; elev = elev || 0;
@@ -2046,6 +2082,7 @@ function exposure() {
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.climb || g.doomed) continue;
     if (flOf(g) !== flOf(P) || (flOf(P) && P.wire) || dist(g.x, g.y, pv.x, pv.y) > 560) continue;
+    if (STAGE.zones && !g.dog && !knownFace(g) && pZone() === Z_PUB && !suspAct(g)) continue;  // 공개 구역의 행인은 누가 돌아봐도 그냥 지나친다
     const gg = Object.create(g); gg.a = Math.atan2(pv.y - g.y, pv.x - g.x);  // 이쪽으로 돌아본다면
     if (canSee(gg, pv.x, pv.y, P.light, P.hidden, sneak, elev) > 0) return 1;
   }
@@ -2200,14 +2237,18 @@ function updateGuard(g, dt) {
   const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
+  let zk = 1; const pz = STAGE.zones ? pZone() : Z_HOS;
+  if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = suspAct(g); if (!zk) vis = 0; }  // 공개 구역: 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
+  if (g.state === 'WARN') { updateTrespass(g, dt, pz); if (g.state === 'WARN') return; }
   if (g.seen && g.state !== 'FLEE') {
     // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
     const wary = ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state);
     const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6) * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
-    g.meter = Math.min(1, g.meter + rate * dt); g.holdT = 0.8;
+    g.meter = Math.min(pz === Z_PUB && zk < 1 ? 0.9 : 1, g.meter + rate * zk * dt); g.holdT = 0.8;  // 거리에서 웅크린 정도로는 쳐다보기만 한다
     if (g.state !== 'ALERT') {
-      if (g.meter >= 1) goAlert(g);
+      if (g.meter >= 1 && pz === Z_RES && !g.warned && !suspAct(g) && !knownFace(g) && !g.civ && !g.target) startWarn(g);  // 출입 금지: 처음엔 나가라고 경고한다
+      else if (g.meter >= 1) goAlert(g);
       else if (g.meter < NOTICE_AT && !wary) g.sense = Math.atan2(P.y - g.y, P.x - g.x);  // 흰색: 아직 확신이 없다 — 하던 걸 하며 고개만 돌린다
       else if (g.state !== 'NOTICE') {
         if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35); }
@@ -2562,6 +2603,19 @@ function terrorAt(x, y) {
   play('call', 0.7, 1.45); play('question', 0.5, 0.8); noise(x, y, 260, 'terror');
   if (n) { S.stats.terror = (S.stats.terror || 0) + n; setAlert(2, 30, `공포! 경비 ${n}명이 겁에 질려 달아난다`); bark(anyGuard(g => g.state === 'TERROR'), 'terror'); hint('terror', '겁에 질린 경비는 잠시 아무것도 못 보고 달아난다. 그 틈에 지나가거나 처리하라'); }
   else toast('시체가 떨어졌지만 본 경비가 없다', 2);
+}
+// 출입 금지 경고: 다가와 나가라고 한다. 4초 안에 공개 구역으로 나가면 돌아가고(두 번째부터는 바로 발각), 버티거나 수상한 짓을 하면 발각
+function startWarn(g) {
+  if (g.warnEnd && S.t < g.warnEnd + 1) { g.state = 'WARN'; return; }
+  endChat(g); g.act = null; g.bubble = null; g.state = 'WARN'; g.warnEnd = S.t + 4.5; g.path = null; g.meter = 0.92; setIcon(g, '!?'); play('question', 0.5);
+  g.say = ['거기요! 여긴 관계자 외 출입 금지입니다. 나가세요.', '이봐요, 여기 들어오면 안 돼요. 당장 나가요.', '여긴 직원만 다닙니다. 돌아 나가세요.'][g.id % 3]; g.sayT = 3.2;
+  hint('warn', '출입 금지 구역에서 처음 들키면 경비가 경고한다. 공개 구역(거리)으로 나가면 넘어가지만, 같은 경비에게 또 들키면 바로 발각된다');
+}
+function updateTrespass(g, dt, pz) {
+  const P = S.player; g.warnT = g.warnEnd - S.t; g.want = Math.atan2(P.y - g.y, P.x - g.x); g.meter = Math.max(g.meter, 0.92);
+  if (dist(g.x, g.y, P.x, P.y) > 70 && g.seen) { g.repath = (g.repath || 0) - dt; if (g.repath <= 0 || !g.path) { pathTo(g, P.x, P.y); g.repath = 0.5; } moveAlong(g, SPD.gSusp * 0.8 * spdMul(), dt); }
+  if (pz === Z_PUB && !suspAct(g)) { g.warned = true; g.state = 'RETURN'; g.path = null; g.meter = 0.3; g.icon = null; g.say = ['다시는 들어오지 마세요.', '그래요, 그쪽으로 가세요.', '두 번은 안 봐줍니다.'][g.id % 3]; g.sayT = 2.4; return; }
+  if (suspAct(g) === 1 || g.warnT <= 0 || pz === Z_HOS) { g.warned = true; goAlert(g); }
 }
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark'); }
@@ -4232,7 +4286,7 @@ function actThrow(pt) {
   const ang = Math.atan2(ty - P.y, tx - P.x); let d = Math.min(330, dist(P.x, P.y, tx, ty));
   d = Math.max(20, Math.min(d, castRay(P.x, P.y, ang, d, P.z > 0) - 6));
   P.stones--; S.stats.stonesUsed++;
-  S.stones.push({ x0: P.x, y0: P.y, x1: P.x + Math.cos(ang) * d, y1: P.y + Math.sin(ang) * d, t: 0, dur: 0.25 + d / 900, fl: flOf(P) });
+  (S.throwT = S.t + 0.7), S.stones.push({ x0: P.x, y0: P.y, x1: P.x + Math.cos(ang) * d, y1: P.y + Math.sin(ang) * d, t: 0, dur: 0.25 + d / 900, fl: flOf(P) });
   play('throw', 0.4);
   hint('stone', '돌이 떨어진 곳으로 근처 경비가 확인하러 간다');
 }
@@ -4248,7 +4302,7 @@ function actCoin(pt) {
   if (solidAt(Math.floor(lx / TILE), Math.floor(ly / TILE))) return;
   P.coins--; S.stats.coins = (S.stats.coins || 0) + 1;
   const l = { x: lx, y: ly, x0: P.x, y0: P.y, t: 0, landed: false, claim: null, fl: flOf(P) };
-  S.lures.push(l); play('throw', 0.25);
+  (S.throwT = S.t + 0.7), S.lures.push(l); play('throw', 0.25);
   hint('coin', '엽전: 떨어진 엽전을 본 경비가 주우러 와서 잠시 고개를 숙인다. 정예(파란 옷)는 넘어가지 않는다');
 }
 function actKunai(forced) {
@@ -4260,7 +4314,7 @@ function actKunai(forced) {
   P.kunai--; S.stats.kunaiUsed++;
   P.a = Math.atan2(t.y - P.y, t.x - P.x);
   const d = dist(P.x, P.y, t.x, t.y);
-  S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: t });
+  (S.throwT = S.t + 0.7), S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: t });
   play('kunai', 0.55);
 }
 function kunaiHit(k) {
@@ -5511,6 +5565,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); }
   if (running && CITY && !tactical) drawStairGlow(P, openB);
+  if (running && CITY && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) { drawOpps(P); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
@@ -5726,8 +5781,10 @@ function updateHUD(force) {
   hud.light.style.width = Math.round(lv * 100) + '%';
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
-  setText(hud.layer, 'layer', (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `실내 ${P.fl + 1}층` : P.z ? `지붕 ${P.z}층` : bldAt(ptx, pty) >= 0 ? '실내 1층' : '지상') + bnm);
+  const zk0 = STAGE.zones ? pZone() : -1;
+  setText(hud.layer, 'layer', (zk0 >= 0 ? Z_NAME[zk0] + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `실내 ${P.fl + 1}층` : P.z ? `지붕 ${P.z}층` : bldAt(ptx, pty) >= 0 ? '실내 1층' : '지상') + bnm);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : bldAt(ptx, pty) >= 0 ? 'in' : 'out';
+  hud.layer.dataset.z = zk0 >= 0 ? ['pub', 'res', 'hos'][zk0] : '';
   setText(hud.lightLbl, 'll', P.vent ? '덕트 안' : P.under ? '지하 수로' : P.hide ? (P.hide.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀 은신' : '땅굴 은신') : hideName(P.hide) + ' 은신') : P.hidden ? '덤불 은신' : P.jump ? '공중' : P.wire ? '전깃줄' + (lv > 0.4 ? '·노출' : '') : P.z ? P.z + '층 지붕' + (lv > 0.4 ? '·노출' : '') : lv > 0.55 ? '빛 노출' : lv > 0.22 ? '어스름' : '어둠');
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';
   setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.hide ? '숨는 중' : P.captive ? '붙잡는 중 ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 기댐' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 기댐') : P.trav ? '오르는 중' : (input.sneakToggle ? '[살금 모드] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '살금살금', walk: '걷기', run: '달리기' }[P.mode] + (CITY && loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 음악에 묻힘' : ' · 음악 소리') : ''));
