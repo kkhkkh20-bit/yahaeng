@@ -290,6 +290,12 @@ body.scanning #scanLegend { display: flex; }
 .perk.on b { color: #f2c46b; }
 .modc { font-size: 10.5px; color: #9fc7d8; margin-right: 6px; letter-spacing: 0; }
 #modSel { flex-wrap: wrap; }
+.rulesbox summary { cursor: pointer; padding: 6px 0; }
+.rulesbox[open] summary { margin-bottom: 10px; }
+#layerLbl { max-width: 15em; overflow: hidden; text-overflow: ellipsis; }
+#modeLbl { max-width: 11em; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 701px) { #scanLegend { left: auto; right: max(12px, env(safe-area-inset-right, 0px)); top: auto; bottom: 66px; transform: none; max-width: 46vw; justify-content: flex-end; } }
+@media (pointer: coarse) { .sysbtns button { min-height: 38px; min-width: 44px; padding: 6px 10px; font-size: 12px; } }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -354,7 +360,7 @@ body.scanning #scanLegend { display: flex; }
     </div>
     <div class="stages"><h3>작전 선택</h3><div id="stageList" class="stages"></div></div>
     <div id="perkList" class="perks" hidden></div>
-    <div class="rules-h">규칙</div>
+    <details class="rulesbox"><summary class="rules-h">규칙 자세히 보기 (처음이라면 "연습"부터)</summary>
     <ul class="rules">
       <li class="cityonly"><strong>숨음 표시</strong>위쪽 상태 칸과 발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 들킬 듯하면 똑딱 소리가 빨라진다.</li>
       <li class="cityonly"><strong>기대기 · 끌어당기기</strong>벽·나무·차에 붙어 멈추면 저절로 기댄다(훨씬 덜 보인다). 기댄 채 2칸 안을 지나는 적은 Space로 끌어당겨 처치. 문 옆에서 기다리면 좋다.</li>
@@ -387,7 +393,7 @@ body.scanning #scanLegend { display: flex; }
       <li><strong>열쇠 · 소매치기</strong>열쇠로 잠긴 문이 있다. 열쇠를 든 경비 등 뒤에서 [열쇠 훔치기] — 웅크린 채여야 안전하다. 처치하면 열쇠를 떨어뜨린다. 창문·배관 같은 다른 길도 있다.</li>
       <li><strong>시간 제한 · 보너스</strong>일부 작전엔 제한 시간이 있다. 성공하면 발각 0 · 시체 발견 0 · 수색 경보 0 · 불필요한 살상 0 네 가지 보너스 목표로 등급이 매겨진다.</li>
       <li><strong>돌 · 퓨즈 상자</strong>돌로 경비를 유인한다. 퓨즈 상자로 바깥 조명을 끄면 경비 하나가 고치러 온다.</li>
-    </ul>
+    </ul></details>
     <div class="ctrl">
       <div><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·지붕 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 경비는 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 경비를 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
       <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·지붕 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 경비를 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
