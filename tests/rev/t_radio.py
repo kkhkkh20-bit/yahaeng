@@ -8,8 +8,9 @@ async def run(b, mode):
     await pg.goto(URL); await pg.wait_for_timeout(1500)
     await pg.evaluate('() => window.__game.start(1)'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP); await pg.wait_for_timeout(200)
     await pg.keyboard.down('ArrowRight')
-    for i in range(30):
+    for i in range(90):  # 발견 게이지가 2~3초 걸리므로: 경비 시야 안으로 걸어 들어간 뒤 멈춰 서서 기다린다
         await pg.wait_for_timeout(100)
+        if i == 12: await pg.keyboard.up('ArrowRight')
         if await pg.evaluate('() => !!window.__game.S.radioCall'): break
     await pg.keyboard.up('ArrowRight')
     print(mode, 'call', await pg.evaluate(ST))

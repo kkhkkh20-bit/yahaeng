@@ -322,7 +322,7 @@ body.scanning #scanLegend { display: flex; }
     <span><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep"><kbd>Ctrl</kbd>살금 모드</span><span><kbd>Shift</kbd>달리기</span>
     <span class="keep"><kbd>Space</kbd>행동</span><span class="keep"><kbd>Z</kbd>특수</span><span class="keep"><kbd>X</kbd>도구(누르고 겨누기·떼면 사용)</span><span><kbd>C</kbd>도구 바꾸기</span><span class="keep"><kbd>V</kbd>휘파람</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
-  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i class="hx">막힌 곳</i></div>
+  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div class="joyhint">끌어서 걷기 · 끝까지 달리기 · [살금] 켜면 계속 살금살금</div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
@@ -362,6 +362,8 @@ body.scanning #scanLegend { display: flex; }
     <div id="perkList" class="perks" hidden></div>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히 보기 (처음이라면 "연습"부터)</summary>
     <ul class="rules">
+      <li class="cityonly"><strong>발견 게이지</strong>보이는 순간 들키지 않는다. 경비 머리 위 삼각형이 2~3초에 걸쳐 차오른다(가깝고 밝을수록 빠르다): 흰색 = 눈치채는 중(하던 걸 하며 고개만 돌린다) · 노랑 = 의심(멈춰 보고 확인하러 온다) · 빨강 = 발각. 내 둘레의 호는 누가 어느 쪽에서 보고 있는지 알려 준다. 시야에서 벗어나면 잠깐 뒤 줄어든다</li>
+      <li class="cityonly"><strong>가구</strong>파랑 테두리 = 높은 가구(막히고 시선을 가린다) · 주황 테두리 = 낮은 가구(막히지만 시선은 넘어간다. 바로 뒤에서 웅크리면 가려진다). 테두리 없는 깔개만 밟고 지나간다</li>
       <li class="cityonly"><strong>숨음 표시</strong>위쪽 상태 칸과 발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 들킬 듯하면 똑딱 소리가 빨라진다.</li>
       <li class="cityonly"><strong>기대기 · 끌어당기기</strong>벽·나무·차에 붙어 멈추면 저절로 기댄다(훨씬 덜 보인다). 기댄 채 2칸 안을 지나는 적은 Space로 끌어당겨 처치. 문 옆에서 기다리면 좋다.</li>
       <li class="cityonly"><strong>락픽 · 창문</strong>건물마다 창문은 하나만 열려 있다. 잠긴 창문·카드 문은 락픽으로 딴다(소리·시간). 안쪽에선 걸쇠만 풀면 된다. 경비가 열린 걸 보면 다시 잠근다.</li>

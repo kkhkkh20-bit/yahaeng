@@ -10,8 +10,11 @@ if (A.font && window.FontFace) { try { const ff = new FontFace('Galmuri', `url($
 const TILE = 48;
 let MW = 44, MH = 30;
 // 땅(z=0)에서 막히는 칸 / 시야를 가리는 칸
-const SOLID = new Set(['#', 'C', 'O', 'F', 'T', 'K', 'R', '~', 'H', 'U', 'W', 'S', 'N', 'X', 'Z', 'M', 'Q', 'q', 'P', 'V', 'A', 'I']);  // 'A' 주차된 차 'I' 필로티 기둥  // 'V' 위층 바깥(허공)  // 'Q' 불 땐 아궁이 'q' 찬 아궁이 'P' 전봇대
-const OPAQUE = new Set(['#', 'C', 'O', 'T', 'H', 'U', 'S', 'X', 'M', 'V']);
+const SOLID = new Set(['#', 'C', 'O', 'F', 'T', 'K', 'E', 'R', '~', 'H', 'U', 'W', 'S', 'N', 'X', 'Z', 'M', 'Q', 'q', 'P', 'V', 'A', 'I']);  // 'A' 주차된 차 'I' 필로티 기둥  // 'V' 위층 바깥(허공)  // 'Q' 불 땐 아궁이 'q' 찬 아궁이 'P' 전봇대
+const OPAQUE = new Set(['#', 'C', 'O', 'T', 'H', 'U', 'S', 'X', 'M', 'V', 'E']);
+// 가구는 두 가지뿐: 높은 가구('E') = 막힘 + 시선 가림, 낮은 가구('K') = 막힘 + 시선 통과(웅크리면 뒤에 숨는다). 깔개·춤추는 자리만 밟고 지나간다
+const FURN_TALL = new Set(['wardrobe', 'shelf', 'shelfS', 'locker', 'fridge', 'cab', 'boxes', 'plant', 'spk']);
+const FURN_FLAT = new Set(['rug', 'dance']);
 if (CITY) SOLID.delete('W');  // 도시: 맨홀 뚜껑은 밟고 지나간다 (막히면 도망치다 멈춘다)  // 'X' = 잠긴 문
 const TAU = Math.PI * 2;
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -97,10 +100,11 @@ function planInterior(g, b, bi, f) {
   const isW = c => c === '#' || c === 'N' || c === 'V';
   const wallSide = (x, y, w, h) => { const row = yy => { for (let xx = x; xx < x + w; xx++) if (!isW(g[yy][xx])) return false; return true; }, col = xx => { for (let yy = y; yy < y + h; yy++) if (!isW(g[yy][xx])) return false; return true; }; return row(y - 1) || row(y + h) || col(x - 1) || col(x + w); };
   const furn = (x, y, w, h, t, solid = true) => {
+    solid = !FURN_FLAT.has(t);  // 밟고 지나갈 수 있는 건 바닥 깔개뿐 (화분·칠판도 막는다)
     for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) { if (xx < ix0 || xx > ix1 || yy < iy0 || yy > iy1 || !floorCh(g[yy][xx]) || keep.has(xx + ',' + yy)) return false; }
     if (needWall && t !== 'rug' && !wallSide(x, y, w, h)) return false;
     if (solid) {
-      const old = []; for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) { old.push([xx, yy, g[yy][xx]]); g[yy][xx] = 'K'; }
+      const old = []; for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) { old.push([xx, yy, g[yy][xx]]); g[yy][xx] = FURN_TALL.has(t) ? 'E' : 'K'; }
       if (!connected()) { old.forEach(([xx, yy, c]) => { g[yy][xx] = c; }); return false; }  // 길을 막으면 놓지 않는다
     }
     FURN.push({ x, y, w, h, t, fl: f, seed: (x * 31 + y * 17 + f * 7 + bi) >>> 0 });
@@ -179,7 +183,7 @@ function planInterior(g, b, bi, f) {
     K(ix0, iy1 - 1); K(ix1, iy1 - 1);  // 옆 창문 안쪽 비움 (옆 건물 창문 건너기)
     if (use === 'store') { for (let y = iy0 + 1; y < iy1 - 1; y += 2) for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, y, 3, 1, 'shelf'); furn(sx1 - 1, iy1 - 1, 2, 1, 'counter'); furn(sx0, iy0, 1, 1, 'fridge'); furn(sx0 + 1, iy0, 1, 1, 'locker'); }
     else if (use === 'pc') { for (let y = iy0; y < iy1; y += 2) for (let x = sx0; x <= sx1; x++) if ((x - sx0) % 4 !== 3) furn(x, y, 1, 1, 'pc'); }
-    else if (use === 'academy') { FURN.push({ x: sx0 + 1, y: iy0, w: Math.max(2, sx1 - sx0 - 1), h: 1, t: 'board', fl: f, seed: 0 }); for (let y = iy0 + 2; y < iy1; y += 2) for (let x = sx0; x <= sx1; x += 2) furn(x, y, 1, 1, 'desk'); }
+    else if (use === 'academy') { furn(sx0 + 1, iy0, Math.max(2, sx1 - sx0 - 1), 1, 'board'); for (let y = iy0 + 2; y < iy1; y += 2) for (let x = sx0; x <= sx1; x += 2) furn(x, y, 1, 1, 'desk'); }
     else if (use === 'club') {  // 클럽: 바·디제이 부스·스피커, 가운데 춤추는 자리, 색 조명
       fill(sx0, iy0, sx1, iy1, 'h');
       furn(sx0 + 1, iy0, Math.min(5, sx1 - sx0 - 3), 1, 'bar'); furn(sx1 - 1, iy0, 2, 1, 'dj'); furn(sx0, iy0, 1, 1, 'spk'); furn(sx1, iy1 - 1, 1, 1, 'spk');
@@ -270,7 +274,17 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   x.textBaseline = 'alphabetic';
 }
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
+// 가구: 막힌 칸은 어두운 판 위에 그리고, 그림 위에 칸 테두리를 덧그린다 (높은 가구는 파랑, 낮은 가구는 주황). 깔개는 테두리 없음
 function drawFurn(x, it) {
+  const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
+  if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
+  drawFurnArt(x, it);
+  if (!flat) {
+    x.strokeStyle = tall ? 'rgba(150,190,240,.62)' : 'rgba(236,190,120,.55)'; x.lineWidth = 2; x.strokeRect(px + 2, py + 2, w - 4, h - 4);
+    if (tall) { x.fillStyle = 'rgba(150,190,240,.62)'; for (const [cx, cy] of [[px + 2, py + 2], [px + w - 2, py + 2], [px + 2, py + h - 2], [px + w - 2, py + h - 2]]) x.fillRect(cx - 3, cy - 3, 6, 6); }
+  }
+}
+function drawFurnArt(x, it) {
   if (CITY && KIT) { const k = kitFurn[it.t + '_' + it.w + 'x' + it.h]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); return; } }
   const T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, s = it.seed;
   const R = (a, b, c, d, col) => { x.fillStyle = col; x.fillRect(px + a, py + b, c, d); };
@@ -327,7 +341,7 @@ function buildFloors(st) {
       }
       for (let x = b.x0 + 1; x < b.x1; x++) if ((x - b.x0) % 2 === 1) { g[b.y1][x] = 'N'; if (g[b.y1 - 1][x] === '#') g[b.y1][x] = '#'; }
       const free = (x, y) => g[y][x] === fc && !stairs.some(s => Math.abs(s[0] - x) + Math.abs(s[1] - y) <= 1) && y < b.y1 - 1;
-      [[b.x0 + 1, b.y0 + 1], [b.x1 - 1, b.y0 + 1]].forEach(([x, y]) => { if (free(x, y) && ((x * 7 + y * 3 + f) % 3)) g[y][x] = 'K'; });
+      [[b.x0 + 1, b.y0 + 1], [b.x1 - 1, b.y0 + 1]].forEach(([x, y]) => { if (free(x, y) && ((x * 7 + y * 3 + f) % 3)) { g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); } });
     });
     (st.floorTiles || []).forEach(([ff, x, y, c]) => { if (ff === f) g[y][x] = c; });
     GF[f] = g;
@@ -547,6 +561,48 @@ function drawKitBuilding(b) {
   }
   if (b.kind === 'shop') drawShopSigns(b);
   return true;
+}
+// 내 둘레 가구의 막힌 칸: 어두운 방에서도 어디로 지나갈 수 있는지 보이게 (가까울수록 진하게)
+function drawNearFurn(P, openB) {
+  if (P.z || P.vent || P.under || P.hide) return; const fP = flOf(P), R = 230;
+  for (const it of FURN) {
+    if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB) continue;
+    const x = it.x * TILE, y = it.y * TILE, w = it.w * TILE, h = it.h * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > R) continue;
+    const a = 0.75 * (1 - d / R), tall = FURN_TALL.has(it.t);
+    ctx.strokeStyle = tall ? `rgba(150,190,240,${a})` : `rgba(240,196,120,${a})`; ctx.lineWidth = 2; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
+    if (tall) { ctx.fillStyle = `rgba(150,190,240,${a})`; for (const [cx, cy] of [[x + 2, y + 2], [x + w - 2, y + 2], [x + 2, y + h - 2], [x + w - 2, y + h - 2]]) ctx.fillRect(cx - 3, cy - 3, 6, 6); }
+  }
+}
+// 어쌔신 크리드식 머리 위 발견 표시: 아래를 향한 삼각형이 밑에서부터 찬다. 흰색 = 눈치, 노랑 = 의심, 빨강 = 발각
+function drawAwareMark(g) {
+  const al = g.state === 'ALERT', m = al ? 1 : clamp(g.meter, 0, 1), col = awareCol(g), k = Math.max(1, 0.9 / SCALE), x = g.x, y = g.y - 40 * k, w = 13 * k, h = 15 * k;
+  const pulse = al ? 1 : m > 0.75 ? 0.75 + 0.25 * Math.sin(S.t * 14) : 1;
+  ctx.save(); ctx.globalAlpha = pulse;
+  ctx.beginPath(); ctx.moveTo(x - w, y - h); ctx.lineTo(x + w, y - h); ctx.lineTo(x, y + h * 0.55); ctx.closePath();
+  ctx.fillStyle = 'rgba(7,10,18,.78)'; ctx.fill();
+  ctx.save(); ctx.clip(); ctx.fillStyle = col; const top = y + h * 0.55 - (h * 1.55) * m; ctx.fillRect(x - w, top, w * 2, y + h * 0.55 - top); ctx.restore();
+  ctx.lineWidth = 2 * k; ctx.strokeStyle = col; ctx.stroke();
+  const glyph = al ? '!' : (g.meter >= NOTICE_AT || g.icon === '?') ? '?' : '';
+  if (glyph) { ctx.font = `900 ${Math.round(13 * k)}px Galmuri, "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = m > 0.55 ? '#140d08' : col; ctx.fillText(glyph, x, y - h * 0.32); ctx.textBaseline = 'alphabetic'; }
+  ctx.restore();
+}
+// 내 둘레의 방향 표시: 나를 보고 있는 사람 쪽으로 호가 생기고 게이지만큼 길고 진해진다. 시야에서 놓친 자리에는 흐린 그림자(마지막으로 본 곳)
+function drawAwareness(P) {
+  if (P.hide || P.vent || P.under) return;
+  const k = Math.max(1, 0.9 / SCALE), R = 34 * k;
+  if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '경비 머리 위 삼각형이 차오르면 들키는 중이다. 흰색 = 눈치, 노랑 = 의심해서 확인하러 온다, 빨강 = 발각. 시야에서 벗어나면 다시 줄어든다');
+  for (const g of S.guards) {
+    if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || dist(g.x, g.y, P.x, P.y) > 1100) continue;
+    const al = g.state === 'ALERT', m = al ? 1 : g.meter; if (m < 0.03) continue;
+    const a = Math.atan2(g.y - P.y, g.x - P.x), span = 0.22 + 0.5 * m;
+    ctx.strokeStyle = awareCol(g); ctx.globalAlpha = 0.35 + 0.6 * m; ctx.lineWidth = (3 + 3 * m) * k; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(P.x, P.y, R, a - span / 2, a + span / 2); ctx.stroke(); ctx.lineCap = 'butt'; ctx.globalAlpha = 1;
+  }
+  const seenBy = S.guards.find(g => !g.civ && g.state !== 'DEAD' && ((g.state === 'ALERT' && g.lostT > 0.4) || (g.state === 'SEARCH' && g.why !== 'heard')) && g.lastSeen);
+  if (seenBy && dist(seenBy.lastSeen.x, seenBy.lastSeen.y, P.x, P.y) > 60) {
+    const L = seenBy.lastSeen; ctx.save(); ctx.globalAlpha = 0.3 + 0.08 * Math.sin(S.t * 4); drawChar('ninja', L.x, L.y, 0, false, 0.5); ctx.restore();
+    ctx.font = '700 11px Galmuri, "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,210,235,.75)'; ctx.fillText('마지막으로 들킨 곳', L.x, L.y + 34);
+  }
 }
 // ---- 프리렌더 캐릭터 (3D 모델을 8방향으로 미리 찍은 시트, Commandos 방식). 색 키 시트 한 장을 역할별 옷 색으로 바꿔 쓴다
 const PR = window.__PR || null;
@@ -1351,7 +1407,7 @@ function renderSewers() {
 function kitGround(ch, tx, ty) {
   const h = (((tx * 73856093) ^ (ty * 19349663)) >>> 0) % 100;
   if (ch === 'T' || ch === 'B') { const n = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]); ch = n.includes('g') ? 'g' : n.includes('d') ? 'd' : n.includes('=') ? '=' : '.'; }
-  if (ch === 'w' || ch === 'K') return kitFloor('planks'); if (ch === 'v') return kitFloor('planks2'); if (ch === 't') return kitFloor('tiles'); if (ch === 'h') return kitFloor('concrete');
+  if (ch === 'w' || ch === 'K' || ch === 'E') return kitFloor('planks'); if (ch === 'v') return kitFloor('planks2'); if (ch === 't') return kitFloor('tiles'); if (ch === 'h') return kitFloor('concrete');
   const k = ch === '.' || ch === 'R' ? 'asph0' : ch === '=' || ch === 'F' ? 'pave0' : ch === 'd' ? (h < 80 ? 'dirt0' : 'dirt1') : ch === 'g' ? 'grass0' : null;
   return k && kitOk(kitG[k]) ? kitG[k] : null;
 }
@@ -1373,7 +1429,7 @@ function renderMap(R) {
       case 'm': return 'stone1';
       case 'd': return F.fdirt0 ? (h < 75 ? 'fdirt0' : 'fdirt1') : 'dirt0';
       case '=': case 'F': return h < 80 ? 'stone0' : 'stone1';
-      case 'w': case 'K': return 'wood';
+      case 'w': case 'K': case 'E': return 'wood';
       case 'v': return 'wood2';
       case 'h': return 'stone1';
       case 't': return F.tileB ? 'tileB' : 'stone0';
@@ -1831,7 +1887,7 @@ function exposure() {
 function lowCovered(x0, y0, x1, y1) {
   const d = dist(x0, y0, x1, y1); if (d < 50) return false;
   const ux = (x0 - x1) / d, uy = (y0 - y1) / d;
-  for (let s = 10; s <= 66; s += 8) { const t = tileAt(x1 + ux * s, y1 + uy * s); if (t === 'Z' || t === 'A') return true; }
+  for (let s = 10; s <= 66; s += 8) { const t = tileAt(x1 + ux * s, y1 + uy * s); if (t === 'Z' || t === 'A' || t === 'K') return true; }
   return false;
 }
 const spdMul = () => A_SPEED[S.alevel] * D().spd * (STAGE.gspd || 1);
@@ -1946,6 +2002,8 @@ function updateCiv(g, dt) {
   }
   const tr = (g.state === 'PANIC' ? 4 : 1.8) * dt; g.a += clamp(angDiff(g.a, g.want), -tr, tr);
 }
+const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노랑(의심 — 멈춰 보고 확인하러 온다), 1이면 빨강(발각)
+const awareCol = g => g.state === 'ALERT' ? '#ff4a3c' : g.meter >= NOTICE_AT || ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#f4f1ea';
 function updateGuard(g, dt) {
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   if (g.civ) { updateCiv(g, dt); return; }
@@ -1975,19 +2033,23 @@ function updateGuard(g, dt) {
   const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
-  g.seen = vis > 0;
+  g.seen = vis > 0; g.sense = null;
   if (g.seen && g.state !== 'FLEE') {
-    const rate = disguiseMul(g) * D().rate * (0.45 + vis * 1.8) * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' ? 1.35 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
-    g.meter = Math.min(1, g.meter + rate * dt);
+    // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
+    const wary = ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state);
+    const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6) * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
+    g.meter = Math.min(1, g.meter + rate * dt); g.holdT = 0.8;
     if (g.state !== 'ALERT') {
       if (g.meter >= 1) goAlert(g);
+      else if (g.meter < NOTICE_AT && !wary) g.sense = Math.atan2(P.y - g.y, P.x - g.x);  // 흰색: 아직 확신이 없다 — 하던 걸 하며 고개만 돌린다
       else if (g.state !== 'NOTICE') {
         if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35); }
         endChat(g); g.act = null; g.bubble = null;
         g.state = 'NOTICE'; g.poi = { x: P.x, y: P.y }; g.noticeT = 0; g.why = 'saw';
       } else g.poi = { x: P.x, y: P.y };
     }
-  } else if (g.state !== 'ALERT') g.meter = Math.max(0, g.meter - dt * 0.3);
+  } else if (g.state !== 'ALERT') { if (g.holdT > 0) g.holdT -= dt; else g.meter = Math.max(0, g.meter - dt * 0.3); }  // 시야에서 벗어나도 잠깐은 게이지가 남는다
+  const sx0 = g.x, sy0 = g.y;
   if (g.hearT > 0) {
     if (g.state !== 'PATROL' && g.state !== 'RETURN') g.hearT = 0;
     else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
@@ -2179,6 +2241,7 @@ function updateGuard(g, dt) {
       break;
     }
   }
+  if (g.sense != null && (g.state === 'PATROL' || g.state === 'RETURN')) { g.want = g.sense; g.x = sx0 + (g.x - sx0) * 0.4; g.y = sy0 + (g.y - sy0) * 0.4; }  // 흰색 단계: 걸음이 느려지고 이쪽으로 고개를 돌린다
   const tr = (g.state === 'ALERT' || g.state === 'NOTICE' ? 5.5 : ['SEARCH', 'SUSPICIOUS', 'CHECK', 'BODY'].includes(g.state) ? 3 : 1.7 + S.alevel * 0.35) * dt;  // 평소엔 천천히 고개를 돌린다
   g.a += clamp(angDiff(g.a, g.want), -tr, tr);
   if (g.moving) {
@@ -2399,7 +2462,7 @@ function goFlee(g) { g.state = 'FLEE'; g.path = null; g.icon = '!'; g.iconT = 99
 // ---------------------------------------------------------------- 플레이어
 function stepSound(x, y) {
   const t = tileAt(x, y); const v = (Math.random() * 3) | 0;
-  if (t === 'w' || t === 'v' || t === 'K' || t === 'U') return 'step_w' + v;
+  if (t === 'w' || t === 'v' || t === 'K' || t === 'E' || t === 'U') return 'step_w' + v;
   if (t === '.' || t === 'B' || t === 'T') return 'step_g' + v;
   if (t === ',' || t === 'r') return 'step_d' + v;
   if (t === 'm') return 'step_w' + v;
@@ -4845,6 +4908,12 @@ function drawScan(openB) {
   for (const o of S.poles) if (o.wires.length) box(o.x, o.y, SCAN.ladder, '전봇대 ↑', 36);
   for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof) box(n.dx, n.dy, SCAN.ladder, '전깃줄', 26);
   for (const g of S.guards) if (g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '감시병: 지붕을 본다', col: '#f2c46b', d: 0 });
+  if (!S.player.z) for (const it of FURN) {  // 가구: 파랑 = 높은 가구(막힘·시선 가림), 노랑 점선 = 낮은 가구(막힘·웅크리면 엄폐)
+    if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB && !tactical) continue;
+    const x = it.x * TILE, y = it.y * TILE, w = it.w * TILE, h = it.h * TILE; if (!on(x + w / 2, y + h / 2)) continue;
+    if (FURN_TALL.has(it.t)) { ctx.fillStyle = 'rgba(110,150,220,.22)'; ctx.fillRect(x + 3, y + 3, w - 6, h - 6); ctx.strokeStyle = 'rgba(140,180,240,.85)'; ctx.lineWidth = 2; ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); }
+    else { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); ctx.setLineDash([]); }
+  }
   labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = `700 ${12 * kS}px "IBM Plex Sans KR",sans-serif`;
   for (const L of labs) { const w = ctx.measureText(L.text).width + 14 * kS, h = 19 * kS, r = [L.x - w / 2, L.y - h / 2, L.x + w / 2, L.y + h / 2];
     if (placed.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue; placed.push(r); tag(L.x, L.y, L.text, L.col); if (placed.length >= 18) break; }
@@ -5124,8 +5193,9 @@ function draw() {
       ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(g.poi.x - tw / 2, g.poi.y - 9, tw, 18); ctx.fillStyle = g.why === 'saw' ? '#ff8a6a' : '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, g.poi.x, g.poi.y + 4);
     }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
-    if (g.meter > 0.02 && g.state !== 'ALERT') { ctx.strokeStyle = 'rgba(242,196,107,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * g.meter); ctx.stroke(); }
-    if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
+    const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
+    if (mk) drawAwareMark(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
+    if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);
   };
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && coveredG(g, openB))) continue;
@@ -5167,8 +5237,8 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   if ((input.scan || tactical) && running) drawScan(openB);
-  else if (running && !tactical) drawNearMarks(P, openB);
-  if (running && !tactical) { drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
+  else if (running && !tactical) { drawNearMarks(P, openB); drawNearFurn(P, openB); }
+  if (running && !tactical) { drawAwareness(S.player); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) { drawOpps(P); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
@@ -5232,7 +5302,7 @@ function draw() {
     for (const it of S.items) if (!it.got) tgts.push({ x: it.x, y: it.y, c: '#f2c46b' });
   }
   // 화면 밖에서 나를 의심하는 자경대원 방향 (노랑 = 의심, 빨강 = 발각)
-  for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || dist(g.x, g.y, S.player.x, S.player.y) > 1100) continue; const al = g.state === 'ALERT'; if (al || g.meter > 0.05 || ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state)) tgts.push({ x: g.x, y: g.y, c: al ? '#ff4a3c' : '#f2c46b', small: true }); }
+  for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || dist(g.x, g.y, S.player.x, S.player.y) > 1100) continue; const al = g.state === 'ALERT'; if (al || g.meter > 0.05 || ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state)) tgts.push({ x: g.x, y: g.y, c: awareCol(g), small: true }); }
   for (const t of tgts) {
     const sx = (t.x - cam.x) * SCALE + W / 2, sy = (t.y - cam.y) * SCALE + H / 2, m = t.small ? 30 : 46;
     if (sx < m || sy < m + 70 || sx > W - m || sy > H - m) {

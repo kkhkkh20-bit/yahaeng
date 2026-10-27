@@ -19,7 +19,7 @@ async def main():
         # 경비가 멀면 Space가 비번
         print('far guard', await ev(setup, 400))
         # 버퍼: Space 누르고 0.2초 뒤 사정거리 안으로 들어오면 암살
-        await ev(setup, 150)
+        await ev(setup, 110)  # 150이면 경비가 옷장(높은 가구, 시선 가림) 칸 안에 놓인다
         await pg.keyboard.press('Space'); await pg.wait_for_timeout(150)
         print(' moved', await ev('() => { const P = T.S().player, g = window.__g; P.x = g.x - 50; P.y = g.y; return [T.act(), T.S().qBuf, T.S().qKill, Math.round(g.x), Math.round(g.y), Math.round(P.x), Math.round(P.y), g.a, g.state, g.fl, P.fl, T.S().player.strikeT]; }'))
         await pg.wait_for_timeout(1200); print('buffer kill', await ev('() => [window.__g.state, !!T.S().keypad]'))
