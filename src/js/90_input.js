@@ -199,6 +199,7 @@ function chooseEntry(i) {
   const P = S.player; P.wire = null; P.z = 0; P.fl = 0; setLayer(0); P.jump = null;
   if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); const w = o.wires.find(w => !e.toward || (w.a.pole === o ? w.b : w.a).tx === e.toward) || o.wires[0]; P.wire = { w, s: w.a.pole === o ? 0 : 1 }; P.z = o.z; P.x = o.x; P.y = o.y; }
   else { P.x = tc(e.at[0]); P.y = tc(e.at[1]); P.z = e.z || 0; }
+  if (e.outfit) { P.outfit = e.outfit; P.disguise = PR_PAL[e.outfit] ? e.outfit : P.disguise; P.disguiseBlown = false; }  // 숙련 해금: 변장한 채 시작
   S.entrySel = false; tactical = false; $('entryBox').hidden = true; $('tacBanner').hidden = true; $('btnMap').classList.remove('on'); S.toasts.length = 0; P.vx = 0; P.vy = 0;
   cam.x = P.x; cam.y = P.y; play('bell', 0.6); startAmb(); toast('진입: ' + e.name, 2.2);
 }

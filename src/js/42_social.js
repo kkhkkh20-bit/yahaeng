@@ -3,6 +3,11 @@
 
 // ---- 주민 신고 (파티 하드식): 범죄를 본 주민은 짧게 외치고 가장 가까운 자경대원에게 뛰어가 알린다.
 // 가는 길에 막으면(기절) 신고는 없던 일. 닿으면 그 자리로 수색이 오고, 주민이 본 옷차림은 그 판 동안 통하지 않는다
+const npc = tag => S.guards.find(g => g.tag === tag);  // 스테이지 데이터에서 인물을 이름표로 찾는다
+const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.y / TILE); return tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && flOf(o) === (r[4] || 0); };
+const knows = s => (S.learned || []).some(t => t.includes(s));
+// 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
+const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got) };
 function reportTo(g) {
   let best = null, bd = 1600;
   for (const o of S.guards) { if (o.civ || o.dog || o.target || ['DEAD', 'CAPTIVE', 'FLEE', 'TERROR'].includes(o.state) || flOf(o) !== flOf(g) || (o.z || 0)) continue; const d = dist(o.x, o.y, g.x, g.y); if (d < bd) { bd = d; best = o; } }
@@ -71,10 +76,10 @@ function updateStories(dt) {
   if ((S.storyT = (S.storyT || 0) - dt) > 0) return; S.storyT = 0.3;
   for (const st of S.stories) {
     if (st.done) continue;
-    if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S) : false; } catch (e) {} if (!rv) continue;
+    if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
       st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
     let adv = false;
-    while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S); } catch (e) {} if (!ok) break; st.step++; adv = true; }
+    while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
     if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) { const nx = S.stories.find(o => o.found && !o.done); S.storyTrack = nx ? nx.d.id : null; } }
     else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
   }
@@ -106,7 +111,7 @@ function drawStoryMark(P) {
 // STAGE.uses = [{ need: 'emetic', at: [x, y], fl, label: '술에 배탈약 타기', act: S => {...}, keep }]
 function propsInit() { S.props = (STAGE.props || []).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
 function nearProp() {
-  const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 48;
+  const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 58;
   for (const p of S.props) { if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd) { bd = d; best = p; } }
   return best;
 }
@@ -132,7 +137,7 @@ function dropItem() {
 function useItem(n) {
   const P = S.player, u = n.u; S.usesDone[n.i] = true; P.useT = S.t + 0.9; P.strikeT = Math.max(P.strikeT || 0, 0.5); play('cloth', 0.4);
   if (!u.keep) { const p = P.item; P.item = null; if (p) p.used = true; }
-  try { u.act && u.act(S); } catch (e) { console.warn('use', e); }
+  try { u.act && u.act(S, SH); } catch (e) { console.warn('use', e); }
   toast(u.done || '했다', 2.4, 'good');
 }
 function drawProps() {

@@ -363,7 +363,7 @@ function updatePlayer(dt) {
   if (S.keyDrop && P.z === 0 && flOf(P) === (S.keyDrop.fl || 0) && dist(P.x, P.y, S.keyDrop.x, S.keyDrop.y) < 34) { const k = S.keyDrop.key || 'gold'; S.keyDrop = null; giveKey(k, keyName(k) + '을(를) 주웠다'); bark('hero', 'key'); }
   for (const it of S.keyItems || []) if (!it.got && !P.z && !P.under && !P.vent && flOf(P) === it.fl && dist(P.x, P.y, it.x, it.y) < 34) { it.got = true; giveKey(it.key, keyName(it.key) + '을(를) 찾았다'); }
   for (const it of S.items) if (!it.got && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) {
-    it.got = true; play('switch', 0.6); play('cloth', 0.3);
+    it.got = true; play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) S.stats.gotAs = disguised() ? P.outfit : P.item && P.item.permit ? P.item.permit : 'self';  // 어떤 신분으로 훔쳤나 (도전 과제)
     const left = S.items.filter(i => !i.got).length;
     { const nm = STAGE.itemName || '서류'; toast(left ? `${nm} 회수 — 남은 것 ${left}개` : `${nm} 회수 완료 — 탈출 지점으로`, 3, 'good'); }
   }

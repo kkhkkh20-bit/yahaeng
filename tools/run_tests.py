@@ -6,7 +6,7 @@ import asyncio, concurrent.futures as cf, glob, os, re, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG = os.path.join(ROOT, 'build', 'test_logs'); os.makedirs(LOG, exist_ok=True)
 SUITE = sorted(glob.glob(os.path.join(ROOT, 'tests', 'rev', 't_*.py')) + glob.glob(os.path.join(ROOT, 'tests', 'rev', 'r[0-9].py'))) + \
-        [os.path.join(ROOT, 'tests', 'mis', f) for f in ('troutes.py', 'troutes2.py', 'tfeat2.py')]
+        [os.path.join(ROOT, 'tests', 'mis', f) for f in ('troutes.py', 'troutes2.py', 'tfeat2.py', 'tm1.py')]
 
 def run(path, timeout=400):
     name = os.path.relpath(path, ROOT); t0 = time.time()
