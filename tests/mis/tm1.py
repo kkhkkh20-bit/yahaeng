@@ -30,7 +30,7 @@ async def main():
         if r[0] or r[1]: bad.append('택배 상자를 들고 뒷마당·창고에서 들켰다 %s' % r)
         await pg.evaluate('T.walk(36, 9)'); await pg.wait_for_timeout(500)
         r = await pg.evaluate('() => [T.S().items[0].got, T.S().stats.gotAs, T.S().stories.find(s => s.d.id === "courier").done]'); print('택배 장부', r)
-        if r != [True, 'courier', True]: bad.append('택배 경로로 장부·기회 완료가 안 된다 %s' % r)
+        if r != [True, 'parcel', True]: bad.append('택배 경로로 장부·기회 완료가 안 된다 %s' % r)
         # 2 엿듣기 → 기회 '담배 타임' 발견 → 막내 기절 → 수거함 → 조끼 → 뒷마당·창고를 지나 사무실(② 있음)
         await fresh(); await pg.evaluate("T.away('boss')")
         await pg.evaluate('T.at(20, 26)')

@@ -154,7 +154,7 @@ function planInterior(g, b, bi, f) {
       gap(cx0 - 1, iy0 + 1, 'w');                                            // 계단 복도 ↔ 사무실 (옥상 길로 오면 바로 사무실)
       if (f === 0) { g[b.y0][sx0 + 3] = 'w'; K(sx0 + 3, iy0); K(sx0 + 3, iy0 + 1); }   // 뒷문: 잠기지 않았다
       rec.store = { x0: sx0, y0: vy + 1, x1: sx1, y1: iy1, use }; rec.office = { x0: xm + 1, y0: iy0, x1: sx1, y1: vy - 1 };
-      for (const y of [iy0 + 1, iy0 + 3]) for (let x = sx0 + 1; x + 1 <= xm - 2; x += 3) furn(x, y, 2, 1, 'shelf');
+      for (const y of [iy0 + 1, iy0 + 3]) for (let x = sx0 + 1; x + 1 <= xm - 2; x += 3) { furn(x, y, 1, 1, 'boxes'); furn(x + 1, y, 1, 1, 'boxes'); }  // 창고: 택배 상자 더미 (높아서 사이로 숨어 지나간다)
       furn(xm + 1, iy0 + 1, 2, 1, 'desk2'); furn(sx1 - 1, iy0 + 3, 2, 1, 'desk2'); furn(sx1, iy0, 1, 1, 'cab');
       for (let x = sx0 + 1; x + 2 <= sx1 - 1; x += 4) furn(x, vy + 2, 3, 1, 'disp');
       furn(sx1 - 2, vy + 2, 2, 1, 'disp');

@@ -15,7 +15,7 @@ const CH = {
   disguise: ['변장한 채로 표적 처치', () => !!S.stats.disguiseKill],
   noalarm: ['경보를 한 번도 울리지 않기', () => S.stats.alarms === 0],
   roof: ['옥상 계단실로 들어가기', () => (S.stats.roofStair || 0) > 0],
-  courier: ['택배 신분으로 장부 훔치기', () => S.stats.gotAs === 'courier'],
+  courier: ['택배 신분으로 장부 훔치기 (상자나 기사 옷)', () => S.stats.gotAs === 'courier' || S.stats.gotAs === 'parcel'],
   staff: ['상회 직원 차림으로 장부 훔치기', () => S.stats.gotAs === 'staff'],
   untouched: ['아무도 손대지 않기 (기절·처치 0)', () => !S.stats.kills && !(S.stats.ko || 0)],
   story: ['기회 하나를 끝까지', () => (S.stats.stories || 0) > 0]

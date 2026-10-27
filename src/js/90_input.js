@@ -138,7 +138,7 @@ $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('y
 $('btnFull').addEventListener('click', () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch (e) {} });
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
-function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 't0'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && !stageCleared(s)); return i >= 0 ? i : 0; }
+function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && !stageCleared(s)); return i >= 0 ? i : 0; }
 function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; $('btnQuick').textContent = st.tutorial ? '바로 시작 — ' + st.name : `이어 하기 — ${st.no} ${st.name}`; $('qNote').textContent = st.tutorial ? '처음이라면 여기부터 (약 3분). 의뢰는 아래에서 고른다' : '아직 깨지 않은 첫 의뢰. 다른 의뢰는 아래에서 고른다'; }
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
@@ -177,8 +177,9 @@ function start(i) {
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   $('intro').hidden = true; $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
-  say(DIALOGUE[STAGE.id], true, () => { if (STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — ' + (isTouch ? '미니맵을 눌러' : '[M] 지도로') + ' 순찰로 확인', 4); } });
+  say(DIALOGUE[STAGE.id], true, () => { if (ENTRY_PICK && STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); if (CITY) toast('출발 지점은 안전하다. 길은 직접 고른다 — ' + (isTouch ? '미니맵을 눌러' : '[M] 지도로') + ' 순찰로 확인', 4); } });
 }
+const ENTRY_PICK = false;  // 진입로 선택 창은 쓰지 않는다 — 길은 플레이어가 스스로 찾는다
 // 시작 전 정찰: 전술 지도에서 진입로를 고른다 (골목 · 옥상 · 전깃줄)
 function beginEntry() {
   S.entrySel = true; tactical = true;

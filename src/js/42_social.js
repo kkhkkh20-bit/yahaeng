@@ -156,7 +156,7 @@ function takeProp(p) {
   }
   if (P.item) dropItem();
   p.taken = true; P.item = p; play('cloth', 0.4); play('click', 0.3);
-  toast(`${p.name}을(를) 들었다` + (p.permit ? ` — ${outfitName(p.permit)}처럼 통하는 곳이 있다` : ''), 2.4, 'good');
+  toast(`${p.name}을(를) 들었다` + (p.permit ? ' — 들고 있으면 배달하러 온 사람으로 통하는 곳이 있다' : ''), 2.4, 'good');
   hint('item', '들고 있는 물건: 한 번에 하나만. Z(특수)로 내려놓는다. 쓰는 곳 앞에서는 Z로 쓴다');
 }
 function dropItem() {

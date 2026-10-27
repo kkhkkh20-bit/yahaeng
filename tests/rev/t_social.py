@@ -43,7 +43,7 @@ async def main():
         await pg.evaluate('() => { const P = window.__game.S.player; P.x = 44 * 48 + 10; P.y = 26 * 48 + 24; }'); await pg.wait_for_timeout(500)
         lab = await pg.evaluate('() => window.__game.secondaryAction ? 1 : 0'); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_timeout(500)
         r = await pg.evaluate('() => { const S = window.__game.S; return [S.player.item && S.player.item.id, window.__game.storyLines().map(l => l[1]).join(" / ")]; }'); print('물건·기회', r)
-        if r[0] != 'box' or '택배 왔습니다' not in r[1] or '창고 앞에 두기' not in r[1]: bad.append('물건 줍기·기회 진행이 안 된다 %s' % r)
+        if r[0] != 'box' or '택배 왔습니다' not in r[1] or '(1/2)' not in r[1]: bad.append('물건 줍기·기회 진행이 안 된다 %s' % r)
         # 택배 상자를 들면 뒷마당(택배 허가)에서 경고 없음
         await pg.evaluate(PIN, [2, 30, 3, 0]); await pg.evaluate('() => { const P = window.__game.S.player; P.x = 33 * 48 + 24; P.y = 3 * 48 + 24; }')
         await pg.wait_for_timeout(2500); r = await pg.evaluate('() => [window.__game.S.guards[2].state, Math.round(window.__game.S.guards[2].meter * 100) / 100]'); print('상자 허가', r)

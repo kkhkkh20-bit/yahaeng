@@ -5,7 +5,7 @@
 const Z_PUB = 0, Z_RES = 1, Z_HOS = 2, Z_NAME = ['공개', '출입 금지', '적진'];
 // ---- 신분(옷): 출입 금지·적진 구역마다 '허가 옷'이 있다. 허가된 옷을 입으면 그 구역 안에서도 행인처럼 대우받는다
 // 구역 8번째 칸 = 허가 옷 목록. 적지 않으면: 땅은 STAGE.zoneAllow(기본: 자경대원 옷), 옥상은 아무도 없음
-const OUTFITS = { crew: '자경대원 옷', staff: '상회 직원 조끼', courier: '택배 기사 옷', waiter: '클럽 직원 옷' };
+const OUTFITS = { crew: '자경대원 옷', staff: '상회 직원 조끼', courier: '택배 기사 옷', waiter: '클럽 직원 옷', parcel: '택배 상자' };
 const outfitOf = g => g.outfit || (g.civ || g.dog || g.target ? null : 'crew');
 const outfitName = o => OUTFITS[o] || '변장';
 function zoneInfo(x, y, z) {
