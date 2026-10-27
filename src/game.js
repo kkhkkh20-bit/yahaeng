@@ -527,7 +527,7 @@ function kitCanvas(b) {
       const words = ['노래방', 'PC방', '호프', '당구장', '24시', '모텔', '사우나', '찜질방', '치킨', '소주방'], wd = words[(b.x0 * 7 + b.y0 * 13 + i) % words.length];
       x.font = `700 ${Math.round(gh * 0.72)}px Galmuri, "IBM Plex Sans KR", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
       x.lineWidth = 3; x.strokeStyle = 'rgba(20,6,30,.85)'; x.strokeText(wd, gx + gw / 2, gy + gh / 2 + 1); x.fillStyle = '#fff6fb'; x.fillText(wd, gx + gw / 2, gy + gh / 2 + 1);
-    } else { x.fillStyle = t === 'w' ? '#ffd8a0' : 'rgba(255,214,150,.62)'; x.fillRect(gx, gy, gw, gh); }
+    } else { x.fillStyle = t === 'w' ? '#ffd8a0' : 'rgba(255,214,150,.3)'; x.fillRect(gx, gy, gw, gh); }  // 채광창은 바닥에 깔린 유리라 은은하게
   });
   return (k.c = c);
 }
@@ -537,7 +537,7 @@ function kitGlow(k) {
   const c = document.createElement('canvas'); c.width = k.w; c.height = k.h; const x = c.getContext('2d');
   k.gl.forEach(([gx, gy, gw, gh, col, t]) => {
     const cx = gx + gw / 2, cy = gy + gh / 2, r = t === 's' ? Math.max(gw, gh) * 0.75 : 26, g = x.createRadialGradient(cx, cy, 2, cx, cy, r);
-    const rgb = t === 's' ? col : t === 'w' ? '#ffb060' : '#ffc070', al = t === 's' ? 0.55 : t === 'w' ? 0.4 : 0.26;
+    const rgb = t === 's' ? col : t === 'w' ? '#ffb060' : '#ffc070', al = t === 's' ? 0.55 : t === 'w' ? 0.4 : 0.12;
     g.addColorStop(0, rgb + Math.round(al * 255).toString(16).padStart(2, '0')); g.addColorStop(1, rgb + '00');
     x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
   });
@@ -2257,7 +2257,7 @@ function updateGuard(g, dt) {
 function startCheck(g, at, max, radius) {
   const R = radius || 330;
   const gf = flOf(g);
-  const cand = S.hides.filter(h => (h.fl || 0) === gf && dist(h.x, h.y, at.x, at.y) < R);
+  const cand = S.hides.filter(h => (h.fl || 0) === gf && (h.z || 0) === (g.z || 0) && dist(h.x, h.y, at.x, at.y) < R);
   const bushes = gf ? [] : S.bushes.filter(b => dist(b.x, b.y, at.x, at.y) < Math.min(R, 240)).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
   const picked = []; for (const b of bushes) if (!picked.some(p => dist(p.x, p.y, b.x, b.y) < 80)) picked.push(b);
   const list = cand.concat(picked.slice(0, 2)).filter(s => astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), s.tx, s.ty).length || dist(g.x, g.y, s.x, s.y) < 60)
@@ -3044,7 +3044,7 @@ function updateWire(P, mx, my, mag, mode, dt) {
 
 // ---------------------------------------------------------------- 상호작용 대상 찾기
 // 숨을 곳 이름: 궤짝(수거함) · 우물(맨홀) · 옷장 · 침대 밑 · 사물함
-const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함' };
+const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', okt: '옥탑방' };
 // 열쇠·카드키: 색마다 맞는 문만 연다 (gold = 예전 판의 그냥 열쇠)
 const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨강 카드', '#ff5a5a'], blue: ['파랑 카드', '#5aa8ff'], green: ['초록 카드', '#5ad88a'], code: ['비번', '#c8ccd2'] };
 const keyName = k => k === 'code' ? (hasK('code') ? '비번 ' + (STAGE.code || '') : '숫자 자물쇠') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
@@ -3053,8 +3053,8 @@ function giveKey(k, msg) { S.player.keys[k] = true; S.player.hasKey = true; play
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '우물') : h.type === 'bush' ? '덤불' : CITY ? '쓰레기통' : '궤짝');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
-  const P = S.player; if (P.z || P.wire || P.jump) return null; let best = null, bd = 60;
-  for (const b of S.hides) { if ((b.fl || 0) !== flOf(P)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
+  const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
+  for (const b of S.hides) { if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
@@ -3474,7 +3474,9 @@ function primaryActionRaw() {
   if (P.z) {
     const po = pushOffTarget(); if (po) return { k: 'pushOff', g: po, at: po.climb.to, label: '배관에서 밀어 떨어뜨리기' };
     const kz = killList(); if (kz.length) return { k: kz.length === 2 && !kz.some(g => g.civ) ? 'kill2' : 'kill', list: kz.length === 2 && kz.some(g => g.civ) ? kz.slice(0, 1) : kz, label: (dist(P.x, P.y, kz[0].x, kz[0].y) > 56 ? '달려들어 ' : '') + (kz[0].target ? '표적 암살' : '암살') };
+    if (P.cover) { const cg = coverTarget(); if (cg) return { k: 'pull', g: cg, label: cg.civ ? '끌어당겨 기절시키기' : '끌어당겨 암살' }; }  // 옥탑방 벽에 기대 있을 때
     const tz = nearTrap(); if (tz) return { k: 'trap', tp: tz, label: tz.label };
+    const hz = nearHide(); if (hz) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
     const g = dropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
     const wm = nearWireMount(); if (wm) return { k: 'wireOn', w: wm.w, s: wm.s, at: wm.at, label: wm.mid ? '손 뻗어 전깃줄 잡기' : '전깃줄 타기' };
     const cd = nearClimbDown(); if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? '계단 내려가기' : '내려가기' };
@@ -3746,8 +3748,8 @@ function leaveHide(dir) {
   const dl = Math.hypot(dir.x, dir.y) || 1;
   let best = null, bs = -9;
   for (const o of N8) {
-    const tx = b.tx + o[0], ty = b.ty + o[1]; if (groundSolidP(tx, ty)) continue;
-    if (o[0] && o[1] && (groundSolidP(b.tx + o[0], b.ty) && groundSolidP(b.tx, b.ty + o[1]))) continue;
+    const sol = b.z ? solidFor(b.z) : groundSolidP, tx = b.tx + o[0], ty = b.ty + o[1]; if (sol(tx, ty)) continue;
+    if (o[0] && o[1] && (sol(b.tx + o[0], b.ty) && sol(b.tx, b.ty + o[1]))) continue;
     const sc = (o[0] * dir.x + o[1] * dir.y) / (Math.hypot(o[0], o[1]) * dl);
     if (sc > bs) { bs = sc; best = [tx, ty]; }
   }
@@ -4537,6 +4539,8 @@ function robBuild() {
   ROB = new Uint8Array(MW * MH); let n = 0;
   BLD.forEach(b => (b.kitProps || []).forEach(p => { if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
   if (!n) ROB = null;
+  // 옥탑방은 들어가 숨을 수 있다: 문 앞에서 숨기 (시체 둘까지)
+  if (S && S.hides) { S.hides = S.hides.filter(h => h.type !== 'okt'); BLD.forEach(b => (b.kitProps || []).forEach(p => { if (p.t !== 'okt') return; const z = lvAt(p.x + 1, p.y + 1); S.hides.push({ type: 'okt', furn: true, tx: p.x + 1, ty: p.y + 1, x: (p.x + 1.9) * TILE, y: (p.y + 1.7) * TILE, z, fl: 0, bodies: 0, cap: 2 }); })); }
 }
 const ROB_SOLID_DIM = { okt: [3, 2], tank: [1, 1], stair: [2, 1] };
 function kitSpec() {
@@ -4820,7 +4824,7 @@ function tag(x, y, text, col, alpha = 1, key) {
 // 살피기(Tab / 살피기 버튼): 쓸 수 있는 물체를 모두 색 테두리와 이름으로 보여준다
 // 지나갈 수 없는 경계: 걸을 수 있는 칸과 막힌 칸 사이에 선을 긋는다 (평소엔 내 주변만 옅게, 살피기 중엔 화면 전체 + 막힌 칸 빗금)
 function drawBlockEdges(P, all) {
-  const sol = P.z ? solidFor(P.z) : groundSolidP, ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), R = 6;
+  const sol = P.z ? (tx, ty) => rLv(tx, ty) !== P.z : groundSolidP, ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), R = 6;
   const hx = W / SCALE / 2 / TILE + 1, hy = H / SCALE / 2 / TILE + 1;
   const x0 = all ? Math.floor(cam.x / TILE - hx) : ptx - R, x1 = all ? Math.ceil(cam.x / TILE + hx) : ptx + R;
   const y0 = all ? Math.floor(cam.y / TILE - hy) : pty - R, y1 = all ? Math.ceil(cam.y / TILE + hy) : pty + R;
@@ -4852,7 +4856,7 @@ function drawNearMarks(P, openB) {
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
   const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; list.push({ x, y, col, g, lab, d }); };
   if (!P.z) {
-    for (const h of S.hides) if ((h.fl || 0) === fP) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? '맨' : '숨', hideName(h), h.tx, h.ty);
+    for (const h of S.hides) if ((h.fl || 0) === fP && (h.z || 0) === (S.player.z || 0)) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? '맨' : '숨', hideName(h), h.tx, h.ty);
     for (const l of S.ladders) {
       if (l.kind === 'chimney') continue;
       if ((l.bfl || 0) === fP && !(l.bz || 0)) add(l.x, l.y, SCAN.ladder, '↑', l.kind === 'pipe' ? (l.gas ? '가스관' : '배관') : l.kind === 'balc' ? '베란다' : '계단', l.kind === 'fstair' || l.kind === 'stair' ? l.bx : null, l.by);
@@ -4899,7 +4903,7 @@ function drawScan(openB) {
     else if (l.kind === 'chimney') { const lit = lampOn(l.lamp); box(l.ux, l.uy, SCAN.chimney, lit ? '굴뚝(불 땜)' : '굴뚝', 40); }
   }
   for (const v of S.vents) box(v.x, v.y, SCAN.vent, v.roof ? '옥상 환기구' : v.street ? '거리 환기구' : '환풍구', 34, v.roof ? 1 : inner(v.tx, v.ty));
-  for (const h of S.hides) { if ((h.fl || 0) !== flOf(S.player)) continue; box(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, hideName(h), 42, inner(h.tx, h.ty)); }
+  for (const h of S.hides) { if ((h.fl || 0) !== flOf(S.player) || (h.z || 0) !== (S.player.z || 0)) continue; box(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, hideName(h), 42, inner(h.tx, h.ty)); }
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'S') box(tc(tx), tc(ty), SCAN.secret, '비밀 통로', 40);
   if (STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '퓨즈 상자', 40);
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
