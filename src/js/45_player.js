@@ -76,7 +76,7 @@ function drawRadio(x, y) {  // 무전기: 이 자경대원이 경보를 맵 전�
 }
 // 발소리 반경: 지금 걸음으로 내는 소리가 닿는 거리. 자경대원이 그 안에 있으면 붉게
 function drawStepRing(P) {
-  const m = P.cover ? 'sneak' : P.mode, r = ({ sneak: 22, walk: 110, run: 250 }[m] + (P.carrying ? 35 : 0)) * (m === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z) * loudMul(P.x, P.y, flOf(P));
+  const m = P.cover ? 'sneak' : P.mode, r = P.cover ? 0 : ({ sneak: 22, walk: 110, run: 250 }[m] + (P.carrying ? 35 : 0)) * (m === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z) * loudMul(P.x, P.y, flOf(P));
   let heard = false;
   for (const g of S.guards) if (!g.civ && g.state !== 'DEAD' && g.state !== 'CAPTIVE' && flOf(g) === flOf(P) && !(g.z || 0) && dist(g.x, g.y, P.x, P.y) < r * soundThrough(P.x, P.y, g.x, g.y)) { heard = true; break; }
   const a = P.moving ? 1 : 0.55;
@@ -159,9 +159,19 @@ function coverAt(P, prev) {
   if (prev) { const same = c.find(o => o.x === prev.x && o.y === prev.y); if (same) return same; }
   c.sort((a, b) => a.d - b.d); return c[0] || null;
 }
+// 벽에 붙기: 벽 쪽으로 몸을 돌려 등을 바짝 붙이는 짧은 동작(0.2초) — 위치는 벽에 닿는 자리로 미끄러지고, 붙는 순간 '툭'
+const COVER_HIDE = 0.42;  // 붙어 있으면 보이는 거리가 이만큼으로 줄어든다 (canSee 의 sneak === 2)
 function enterCover(n, quiet) {
-  const P = S.player; P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0; P.a = Math.atan2(n.y, n.x); play('cloth', quiet ? 0.12 : 0.22);
-  hint('cover', '벽에 기댐: 몸을 붙여 덜 보인다. 벽을 따라 옆걸음만 하고, 벽 반대쪽으로 밀면 떨어진다. 나를 못 본 채 옆을 지나는 사람은 [끌어당겨 암살]');
+  const P = S.player, a1 = Math.atan2(n.y, n.x), pull = Math.max(0, (n.d || 13) - 12);
+  P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
+  P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
+  P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26);
+  hint('cover', '벽에 바짝 붙음: 웅크린 채 벽에 닿거나, 벽 옆에 멈추면 저절로 붙는다. 붙어 있으면 시야 원뿔의 진한 부분이 확 줄고(거의 안 보임) 발소리가 나지 않는다. 벽을 따라 옆걸음, 벽 반대쪽으로 밀면 떨어진다. 나를 못 본 채 옆을 지나는 사람은 [끌어당겨 처치]');
+}
+function updateSnap(P, dt) {
+  const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
+  P.x = s.x0 + (s.x1 - s.x0) * e; P.y = s.y0 + (s.y1 - s.y0) * e; P.moving = false;
+  if (f >= 1) { P.snap = null; play('thud', 0.08); }
 }
 // 기댄 자리 옆을 지나는, 나를 보지 못한 사람
 function coverTarget() {
@@ -224,6 +234,7 @@ function updatePlayer(dt) {
   if (P.trav) { updateTrav(P, dt); return; }
   if (P.ledge) { updateLedge(P, dt); return; }
   if (P.grabIn) { updateGrabIn(P, dt); return; }
+  if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {
     const L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
     P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;
@@ -308,10 +319,10 @@ function updatePlayer(dt) {
     const n = coverAt(P, P.cover), away = mag > 0.05 ? (mx * P.cover.x + my * P.cover.y) / mag : 0;
     const into = mag > 0.05 ? -(mx * P.cover.x + my * P.cover.y) / mag : 0;
     if (!n || away > 0.45 || P.carrying || P.captive || mode === 'run' || (P.cover.auto && mag > 0.05 && into < 0.7)) { P.cover = null; }
-    else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
+    else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; if (Math.abs(al) > 0.2) { P.coverSide = Math.sign(al); P.coverSideT = S.t; } mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
   } else if (mag > 0.05 && mode !== 'run' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT) {
     P.idleWall = 0;
-    const n = coverAt(P); if (n && (mx * n.x + my * n.y) / mag < -0.92) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.42) { enterCover(n); mag = 0; } } else P.coverPush = 0;  // 벽을 향해 거의 똑바로 잠깐 밀어야 기댄다 (비스듬히 걸을 땐 안 걸린다)
+    const n = coverAt(P), sn = mode === 'sneak', dot = n ? (mx * n.x + my * n.y) / mag : 0; if (n && dot < (sn ? -0.6 : -0.92) && (!sn || n.d < 18)) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > (sn ? 0.08 : 0.42)) { enterCover(n); mag = 0; } } else P.coverPush = 0;  // 벽을 향해 거의 똑바로 잠깐 밀어야 기댄다 (비스듬히 걸을 땐 안 걸린다)
   } else {
     P.coverPush = 0;
     // 벽에 붙어 멈추면 저절로 기댄다 (움직이면 바로 떨어진다)
@@ -352,7 +363,7 @@ function updatePlayer(dt) {
       play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
       { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '바닥 재질: 유리 조각·철판·물웅덩이·자갈은 발소리가 커진다(살금살금이어도 유리는 들린다). 돌아가거나 천천히'); } }
       if (P.carrying) play('cloth', 0.12);
-      noise(P.x, P.y, r, 'step');
+      if (!P.cover) noise(P.x, P.y, r, 'step');  // 벽에 붙어 옆걸음: 소리 없음
     }
   }
   P.hidden = P.z === 0 && tileAt(P.x, P.y) === 'B';

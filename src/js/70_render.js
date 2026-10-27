@@ -3,7 +3,7 @@ const GLC = { t: -1, m: new Map() };  // 시야 원뿔용 밝기 기억 (12px �
 // 밝기는 12px 칸마다 0.2초 동안 기억해 같이 쓴다 (여러 자경대원이 같은 칸을 본다)
 const lightC = (x, y) => { if (S.t - GLC.t > 0.2 || S.t < GLC.t) { GLC.m.clear(); GLC.t = S.t; } const cx = Math.floor(x / 12), cy = Math.floor(y / 12), k = CUR_F * 1e8 + cy * 1e4 + cx; let v = GLC.m.get(k); if (v === undefined) { v = lightAt(cx * 12 + 6, cy * 12 + 6, false); GLC.m.set(k, v); } return v; };
 function guardCone(g, fov, rg) {
-  const N = 34, STP = 6, rays = [], crouchK = g.state === 'ALERT' ? 1 : 0.55, el = g.elite ? 1.1 : 1, L0 = CUR_F;
+  const N = 34, STP = 6, rays = [], crouchK = (g.state === 'ALERT' ? 1 : 0.55) * (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
   setLayer(flOf(g));
   for (let i = 0; i <= N; i++) {
     const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
@@ -148,12 +148,26 @@ function drawPlayer(P) {
     if (BA && S.t - BA.t0 >= BA.dur) P.bodyAnim = null;
     if (P.killAnim && P.strikeT <= 0) P.killAnim = null;
     const pc = pairCarry(P), pg = !pc && pairGrab(P);
-    if (P.cover && PR.anims.lean && !P.strikeT) {  // 벽에 기댐: 등 뒤 벽에 옅은 선, 기댄 자세 (옆걸음은 웅크려 걷기)
-      const n = P.cover, wx = P.x - n.x * 15, wy = P.y - n.y * 15;
-      ctx.strokeStyle = 'rgba(150,220,255,.75)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(wx - n.y * 18, wy + n.x * 18); ctx.lineTo(wx + n.y * 18, wy - n.x * 18); ctx.stroke();
-      const PK0 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s0 = sc / 3, aa = mv ? P.a : Math.atan2(n.y, n.x);
-      drawPR(PK0, P.x, P.y, aa, mv ? 'sneak' : 'lean', S.t, blink ? 0.35 : concealed ? 0.6 : 1, s0, -yo, mv ? -1 : (Math.floor(S.t * 0.4) % 2));
-      if (concealed && prVar.ninja_ol) drawPR('ninja_ol', P.x, P.y, aa, mv ? 'sneak' : 'lean', S.t, 0.85, s0, -yo, mv ? -1 : (Math.floor(S.t * 0.4) % 2));
+    if (P.cover && (PR.anims.hug || PR.anims.lean) && !P.strikeT) {  // 벽에 바짝 붙음: 웅크려 등을 붙인 자세, 옆걸음, 좌우 살피기. 붙는 순간은 몸을 돌려 벽에 '툭'
+      const n = P.cover, PK0 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s0 = sc / 3, aw = Math.atan2(n.y, n.x), al0 = blink ? 0.35 : concealed ? 0.6 : 1;
+      const wx = P.x - n.x * 14, wy = P.y - n.y * 14, glow = P.snap ? Math.min(1, P.snap.t / P.snap.dur) : 1;
+      ctx.strokeStyle = `rgba(150,220,255,${0.75 * glow})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(wx - n.y * 18, wy + n.x * 18); ctx.lineTo(wx + n.y * 18, wy - n.x * 18); ctx.stroke();
+      const drawC = (k, ang, an, fr, ox, oy) => { drawPR(k, P.x + (ox || 0), P.y + (oy || 0), ang, an, S.t, k === 'ninja_ol' ? 0.85 : al0, s0, -yo, fr); };
+      let ang = aw, an, fr, ox = 0, oy = 0;
+      if (!PR.anims.hug) { an = mv ? 'sneak' : 'lean'; fr = mv ? -1 : Math.floor(S.t * 0.4) % 2; ang = mv ? P.a : aw; }
+      else if (P.snap) {  // 붙는 동작: 앞 절반은 웅크린 채 몸을 돌리고, 뒤 절반은 등이 벽에 닿으며 살짝 눌렸다 돌아온다
+        const f = Math.min(1, P.snap.t / P.snap.dur);
+        if (f < 0.5) { an = 'crouch'; fr = 0; ang = P.snap.a0 + angDiff(P.snap.a0, aw) * (f / 0.5); }
+        else { an = 'hug'; fr = 0; const b = Math.sin((f - 0.5) / 0.5 * Math.PI) * 2.5; ox = -n.x * b; oy = -n.y * b; }
+      } else if (mv) {  // 옆걸음: 몸 왼쪽(화면 기준 sin a, -cos a)으로 가면 앞으로, 오른쪽이면 거꾸로
+        const lx = Math.sin(aw), ly = -Math.cos(aw), fw = (P.vx * lx + P.vy * ly) >= 0, i = Math.floor(S.t * 7) % 4;
+        an = 'hugStep'; fr = fw ? i : (4 - i) % 4;
+      } else {  // 멈춤: 방금 움직인 쪽을 살피고, 오래 있으면 가끔 좌우를 번갈아 본다
+        an = 'hug'; const side = P.coverSide && S.t - (P.coverSideT || 0) < 1.6 ? P.coverSide : 0;
+        if (side) { const lx = Math.sin(aw), ly = -Math.cos(aw), wsx = -n.y * side, wsy = n.x * side; fr = wsx * lx + wsy * ly > 0 ? 1 : 2; }
+        else fr = [0, 0, 1, 0, 0, 2][Math.floor(S.t / 1.3) % 6];
+      }
+      drawC(PK0, ang, an, fr, ox, oy); if (concealed && prVar.ninja_ol) drawC('ninja_ol', ang, an, fr, ox, oy);
       return;
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다

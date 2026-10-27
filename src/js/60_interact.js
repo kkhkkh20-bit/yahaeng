@@ -1065,7 +1065,6 @@ function secondaryAction() {
   const P = S.player;
   if (P.trav || P.lunge || P.grabIn) return { k: 'none', label: '…' };
   if (P.under || P.vent) return { k: 'none', label: '특수' };
-  if (P.cover && !P.captive && !P.carrying) return { k: 'uncover', label: '벽에서 떨어지기' };
   if (P.ledge) return { k: 'none', label: '매달림' };
   if (P.z && !P.wire && !P.jump) { const lg = ledgeAt(P); if (lg) return { k: 'ledge', n: lg, label: '가장자리에 매달리기' }; }
   if (P.hide) return P.hide.type === 'well' && ugAt(P.hide.tx, P.hide.ty) ? { k: 'tunnel', label: '지하로' } : { k: 'none', label: '—' };
@@ -1084,7 +1083,6 @@ function secondaryAction() {
   if (nc) return { k: 'carry', label: '운반' };
   const hp = primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
-  const cv = !P.z && !P.carrying && !P.captive && coverAt(P); if (cv) return { k: 'cover', n: cv, label: '벽에 기대기' };
   return { k: 'none', label: '특수' };
 }
 function actThrow(pt) {

@@ -200,7 +200,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
   if (hidden) eff = Math.min(eff, 36);
   if (elev) eff *= g.lookout ? (elev >= 3 ? 0.8 : 1.05) : elev >= 3 ? 0.35 : elev >= 2 ? 0.45 : 0.55;  // 망꾼은 옥상을 본다
   if (g.elite) eff *= 1.1;
-  if (sneak === 2) eff *= 0.42;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
+  if (sneak === 2) eff *= COVER_HIDE;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
   if (d > eff) return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;

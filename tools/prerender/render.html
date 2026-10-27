@@ -269,6 +269,18 @@ window.renderPose = (name, k, dirA) => {
     aimB(B.RightUpLeg, B.RightLeg, V3(-0.08, -0.8, 0.45)); aimB(B.RightLeg, B.RightFoot, V3(0, -0.75, -0.66));
     aimB(B.LeftUpLeg, B.LeftLeg, V3(0.1, -1, 0.04)); aimB(B.LeftLeg, B.LeftFoot, V3(0, -1, -0.02));
     aimB(B.Neck, B.Head, V3(k ? 0.45 : 0, 1, k ? 0.1 : 0.05));
+  } else if (name === 'hug' || name === 'hugStep') {  // 웅크려 벽에 바짝 붙음: 등·엉덩이를 벽에, 무릎을 굽히고 두 손바닥으로 벽을 짚는다. hug k: 0 정면 · 1 왼쪽 살핌 · 2 오른쪽 살핌 / hugStep k: 옆걸음 4장
+    const SPR = name === 'hugStep' ? [[0.16, -0.16, 0, 0], [0.42, -0.16, 0.18, 0], [0.28, -0.34, 0, 0.12], [0.16, -0.08, 0, 0]][k] : [0.2, -0.2, 0, 0];
+    aimB(B.LeftUpLeg, B.LeftLeg, V3(SPR[0], -1, SPR[2])); aimB(B.LeftLeg, B.LeftFoot, V3(0, -1, 0));
+    aimB(B.RightUpLeg, B.RightLeg, V3(SPR[1], -1, SPR[3])); aimB(B.RightLeg, B.RightFoot, V3(0, -1, 0));
+    aimB(B.Spine, B.Spine1, V3(0, 1, -0.06));
+    const cr = 0.8; for (const sd of ['Left', 'Right']) { rotW(B[sd + 'UpLeg'], -CR.th * cr); rotW(B[sd + 'Leg'], CR.kn * cr); rotW(B[sd + 'Foot'], -CR.ft * cr); }
+    rotW(B.Spine, -0.22); rotW(B.Spine1, 0.05);  // 상체는 세워 벽에 붙인다
+    for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
+      aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.2 * side, -1, -0.1)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.14 * side, -1, -0.22)); }
+    aimB(B.Neck, B.Head, V3(0, 1, 0.08));
+    const yaw = name === 'hug' ? [0, 0.95, -0.95][k] : 0;
+    if (yaw && B.Head) { const pq = new THREE.Quaternion(); B.Head.parent.getWorldQuaternion(pq); const qw = new THREE.Quaternion().setFromAxisAngle(V3(0, 1, 0), yaw); B.Head.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); B.Head.updateMatrixWorld(true); }
   } else if (name === 'stoop') {  // 바닥에 누운 사람을 잡으려 허리·무릎을 굽히고 두 팔을 아래로 뻗는다
     for (const sd of ['Left', 'Right']) { rotW(B[sd + 'UpLeg'], -CR.th * 0.7); rotW(B[sd + 'Leg'], CR.kn * 0.7); rotW(B[sd + 'Foot'], -CR.ft * 0.7); }
     rotW(B.Spine, 0.75); rotW(B.Spine1, 0.3);
