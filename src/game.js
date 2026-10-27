@@ -337,8 +337,46 @@ function drawFurnArt(x, it) {
   }
 }
 // 위층 실내: 바깥벽 + 바닥 + 같은 자리 계단 + 칸막이 하나 + 정면 창(정면벽 그림과 같은 칸)
+// 꺾인 계단실: 위층의 계단 칸('Y') 옆 한 줄(계단 칸과 들어서는 칸, 세로 두 칸)은 아래층에서 올라오는 계단 구멍이다 — 난간으로 막혀 못 들어간다
+// (낮은 난간이라 시선은 지나간다: 'K'). 막아도 건물 안 길이 끊기지 않을 때만, 어느 쪽인지 STAIRW 에 적어 둔다
+let STAIRW = {};
+function stairWells(g, f) {
+  BLD.forEach(b => {
+    if (b.h <= f) return;
+    for (let ty = b.y0 + 1; ty < b.y1; ty++) for (let tx = b.x0 + 1; tx < b.x1; tx++) {
+      if (g[ty][tx] !== 'Y') continue;
+      const walk = (x, y) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1 && !SOLID.has(g[y][x]);
+      let done = false;
+      for (const d of [[0, 1], [0, -1], [-1, 0], [1, 0]]) { if (done || !walk(tx + d[0], ty + d[1]) || g[ty + d[1]][tx + d[0]] === 'Y') continue;  // 들어서는 쪽: 남·북·서·동 중 구멍을 낼 수 있는 첫 방향
+      const sides = d[0] ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]];
+      const reach = () => { const seen = new Set(), st = [[tx, ty]]; seen.add(tx + ',' + ty); while (st.length) { const [x, y] = st.pop(); for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + ox, ny = y + oy, k = nx + ',' + ny; if (!seen.has(k) && walk(nx, ny)) { seen.add(k); st.push([nx, ny]); } } } return seen; };
+      const count = () => reach().size;
+      for (const [sx, sy] of sides) {
+        const c1 = [tx + sx, ty + sy], c2 = [tx + sx + d[0], ty + sy + d[1]], floorC = c => walk(c[0], c[1]) && g[c[1]][c[0]] !== 'Y' && !FURN.some(it => (it.fl || 0) === f && c[0] >= it.x && c[0] < it.x + it.w && c[1] >= it.y && c[1] < it.y + it.h);
+        if (!floorC(c1) || !floorC(c2)) continue;
+        const before = reach(), o1 = g[c1[1]][c1[0]], o2 = g[c2[1]][c2[0]]; g[c1[1]][c1[0]] = 'K'; g[c2[1]][c2[0]] = 'K';
+        const after = reach(), lost = [...before].filter(k => !after.has(k) && k !== c1.join(',') && k !== c2.join(','));
+        // 막혀 떨어져 나간 구석이 1~3칸이고 문·창문에 붙어 있지 않으면 그 자리에 짐 상자를 쌓는다 (계단 밑 창고). 아니면 이 방향은 포기
+        const nearOpen = k => { const [x, y] = k.split(',').map(Number); return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([ox, oy]) => 'NSDdh'.includes(g[y + oy][x + ox]) || (g[y + oy][x + ox] === 'w' && (y + oy === b.y0 || y + oy === b.y1 || x + ox === b.x0 || x + ox === b.x1))); };
+        if (lost.length) {  // 먼저 길을 막은 작은 가구(1~2칸)를 계단에서 가까운 것부터 하나씩 치워 본다 — 길이 다시 이어지면 그것만 치운다
+          const fc = g[+lost[0].split(',')[1]][+lost[0].split(',')[0]];
+          const near = lost.concat([c1.join(','), c2.join(','), (tx + d[0]) + ',' + (ty + d[1])]).map(k => k.split(',').map(Number)), adj = it => near.some(([x, y]) => x >= it.x - 1 && x <= it.x + it.w && y >= it.y - 1 && y <= it.y + it.h);
+          const cand = FURN.filter(it => (it.fl || 0) === f && it.w * it.h <= 2 && it.x >= b.x0 && it.x <= b.x1 && it.y >= b.y0 && it.y <= b.y1 && adj(it)).sort((p, q) => (Math.abs(p.x - tx) + Math.abs(p.y - ty)) - (Math.abs(q.x - tx) + Math.abs(q.y - ty)));
+          const removed = [];
+          for (const it of cand) { const cells = []; for (let yy = it.y; yy < it.y + it.h; yy++) for (let xx = it.x; xx < it.x + it.w; xx++) { cells.push([xx, yy, g[yy][xx]]); g[yy][xx] = fc; } removed.push([it, cells]);
+            const a2 = reach(); if (lost.every(k => a2.has(k))) { lost.length = 0; break; } if (removed.length >= 3) break; }
+          if (lost.length) removed.forEach(([it, cells]) => cells.forEach(([xx, yy, c]) => { g[yy][xx] = c; }));
+          else removed.forEach(([it]) => FURN.splice(FURN.indexOf(it), 1));
+        }
+        if (lost.length > 3 || lost.some(nearOpen)) { g[c1[1]][c1[0]] = o1; g[c2[1]][c2[0]] = o2; continue; }
+        lost.forEach(k => { const [x, y] = k.split(',').map(Number); g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); });
+        STAIRW[f + ':' + tx + ',' + ty] = { d, s: [sx, sy] }; done = true; break;
+      } }
+    }
+  });
+}
 function buildFloors(st) {
-  GF = [null]; if (!st.floors) return;  // 위층 실내는 floors: true 인 작전만
+  GF = [null]; STAIRW = {}; if (!st.floors) return;  // 위층 실내는 floors: true 인 작전만
   const maxH = BLD.reduce((m, b) => Math.max(m, b.h), 1);
   for (let f = 1; f < maxH; f++) {
     const g = []; for (let y = 0; y < MH; y++) g.push(new Array(MW).fill('V'));
@@ -357,6 +395,7 @@ function buildFloors(st) {
       [[b.x0 + 1, b.y0 + 1], [b.x1 - 1, b.y0 + 1]].forEach(([x, y]) => { if (free(x, y) && ((x * 7 + y * 3 + f) % 3)) { g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); } });
     });
     (st.floorTiles || []).forEach(([ff, x, y, c]) => { if (ff === f) g[y][x] = c; });
+    stairWells(g, f);
     GF[f] = g;
   }
 }
@@ -1457,36 +1496,42 @@ function kitGround(ch, tx, ty) {
 }
 // 실내 계단: 계단 칸('Y')과 올라오는 쪽 칸, 두 칸에 걸친 한 줄 계단. 위(계단 칸 쪽)로 갈수록 밝고, 칸마다 디딤판 그림자·코, 양옆 난간
 function stairDir(tx, ty) {
+  const w = STAIRW[CUR_F + ':' + tx + ',' + ty]; if (w) return w.d;
   const bi = bldAt(tx, ty);
   for (const [dx, dy] of [[0, 1], [0, -1], [-1, 0], [1, 0]]) { const nx = tx + dx, ny = ty + dy; if (inMap(nx, ny) && bldAt(nx, ny) === bi && !SOLID.has(G[ny][nx]) && G[ny][nx] !== 'Y') return [dx, dy]; }
   return [0, 1];
 }
 function drawStairs(x, tx, ty) {
-  // 1층: 폭 전체가 오르는 계단. 위층: 꺾인 계단 — 한쪽 줄은 위로 오르고(밝아진다 ▲), 다른 줄은 아래층으로 내려간다(어두워진다 ▼)
-  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0;
-  x.save(); x.translate(cx, cy); x.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);  // 기준: 위쪽(-y)이 계단 칸, 아래쪽이 들어서는 칸
-  const hw = TILE / 2 - 3, hl = TILE, N = 8, st = (hl * 2) / N;
-  x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
-  const upFlight = (x0, x1) => {  // 오르는 줄: 먼 쪽(위층)으로 갈수록 밝고 디딤판이 조금씩 넓어 보인다, 단마다 코에 빛·아래에 그림자
+  // 오르는 계단: 계단 칸과 들어서는 칸, 폭 한 칸 × 길이 두 칸. 위층에선 옆 줄(역시 한 칸 × 두 칸)이 아래층에서 올라오는 계단 구멍 — 꺾인 계단실
+  // (옆 줄을 못 만든 곳만 한 칸 폭을 반씩 나눠 그린다)
+  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0, wb = STAIRW[CUR_F + ':' + tx + ',' + ty];
+  const hw = TILE / 2 - 3, hl = TILE, N = 8, st = (hl * 2) / N, rot = Math.atan2(-dy, -dx) + Math.PI / 2;
+  const upFlight = (x0, x1) => {  // 오르는 줄: 먼 쪽(위층)으로 갈수록 밝다, 단마다 코에 빛·아래에 그림자
     for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
       x.fillStyle = `rgb(${c(120, 232)},${c(106, 208)},${c(86, 172)})`; x.fillRect(x0, y0, x1 - x0, st);
       x.fillStyle = 'rgba(255,242,215,.45)'; x.fillRect(x0, y0, x1 - x0, 2); x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(x0, y0 + st - 3, x1 - x0, 3); }
   };
-  const downFlight = (x0, x1) => {  // 내려가는 줄: 먼 쪽(아래층)으로 갈수록 깊고 어둡다, 코의 빛이 점점 사라지고 끝은 검은 구멍
-    for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
+  const downFlight = (x0, x1, far) => {  // 내려가는 줄: 아래층 쪽 끝(far: -1 = 계단 칸 쪽, 1 = 들어서는 쪽)으로 갈수록 깊고 어둡다
+    for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = far < 0 ? i / (N - 1) : 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
       x.fillStyle = `rgb(${c(6, 78)},${c(6, 68)},${c(8, 58)})`; x.fillRect(x0, y0, x1 - x0, st);
-      x.fillStyle = `rgba(255,242,215,${0.05 + 0.3 * k})`; x.fillRect(x0, y0 + st - 2, x1 - x0, 2); }
-    const gr = x.createLinearGradient(0, -hl, 0, -hl + st * 3); gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.fillRect(x0, -hl, x1 - x0, st * 3);
+      x.fillStyle = `rgba(255,242,215,${0.05 + 0.3 * k})`; x.fillRect(x0, far < 0 ? y0 + st - 2 : y0, x1 - x0, 2); }
   };
-  if (down) {
-    upFlight(-hw, -1); downFlight(1, hw);
-    x.fillStyle = '#2e2a28'; x.fillRect(-2, -hl, 4, hl * 2); x.fillStyle = '#aeb6c0'; x.fillRect(-1, -hl + 2, 2, hl * 2 - 4);   // 가운데 난간: 두 줄을 가른다
-    x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4);                                                            // 내려가는 구멍 쪽 바깥 난간
-  } else upFlight(-hw, hw);
-  x.fillStyle = '#2e2a28'; x.fillRect(-hw - 3, -hl, 4, hl * 2); x.fillRect(hw - 1, -hl, 4, hl * 2);   // 옆판
-  if (!down) { x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4); for (let i = 0; i <= 3; i++) x.fillRect(hw - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3); }
+  const rails = (x0, x1) => { x.fillStyle = '#2e2a28'; x.fillRect(x0 - 3, -hl, 4, hl * 2); x.fillRect(x1 - 1, -hl, 4, hl * 2); x.fillStyle = '#aeb6c0'; x.fillRect(x1 - 1, -hl + 2, 2, hl * 2 - 4); for (let i = 0; i <= 3; i++) x.fillRect(x1 - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3); };
+  x.save(); x.translate(cx, cy); x.rotate(rot);
+  x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
+  if (down && !wb) { upFlight(-hw, -1); downFlight(1, hw, -1); x.fillStyle = '#aeb6c0'; x.fillRect(-1, -hl + 2, 2, hl * 2 - 4); rails(-hw, hw); }
+  else { upFlight(-hw, hw); rails(-hw, hw); }
   x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);
   x.restore();
+  if (down && wb) {  // 옆 줄: 아래층에서 올라오는 계단(반대 방향으로 오른다 → 들어서는 쪽 끝이 가장 깊다), 바깥쪽에 난간
+    x.save(); x.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); x.rotate(rot);
+    x.fillStyle = 'rgba(0,0,0,.6)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
+    downFlight(-hw, hw, 1);
+    const gr = x.createLinearGradient(0, hl - st * 3, 0, hl); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.85)'); x.fillStyle = gr; x.fillRect(-hw, hl - st * 3, hw * 2, st * 3);
+    x.fillStyle = '#aeb6c0'; x.fillRect(-hw - 3, -hl, 3, hl * 2); x.fillRect(hw, -hl, 3, hl * 2); x.fillRect(-hw - 3, hl - 3, hw * 2 + 6, 3);   // 구멍을 두른 난간 (위층 바닥 쪽만 트였다)
+    for (let i = 0; i <= 3; i++) { x.fillRect(-hw - 4, -hl + 4 + i * ((hl * 2 - 10) / 3), 5, 3); x.fillRect(hw - 1, -hl + 4 + i * ((hl * 2 - 10) / 3), 5, 3); }
+    x.restore();
+  }
 }
 // 어둠 위에 덧그리는 계단 표시: 오르는 줄은 위층 불빛이 새어 드는 것처럼 위로 갈수록 밝게(▲), 내려가는 줄은 검은 구멍으로(▼)
 function drawStairGlow(P, openB) {
@@ -1498,20 +1543,22 @@ function drawStairGlow(P, openB) {
     const up = S.ladders.some(o => (o.kind === 'fstair' || o.kind === 'stair') && o.tx === l.tx && o.ty === l.ty && (o.bfl || 0) === f);
     const down = S.ladders.some(o => o.kind === 'fstair' && o.tx === l.tx && o.ty === l.ty && o.tfl === f);
     if (!up && !down) continue; seen.add(key);
-    const [dx, dy] = stairDir(l.tx, l.ty), cx = (l.tx + 0.5 + dx / 2) * TILE, cy = (l.ty + 0.5 + dy / 2) * TILE, hw = TILE / 2 - 3, hl = TILE;
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);
-    const lane = (x0, x1, isUp) => {
+    const [dx, dy] = stairDir(l.tx, l.ty), cx = (l.tx + 0.5 + dx / 2) * TILE, cy = (l.ty + 0.5 + dy / 2) * TILE, hw = TILE / 2 - 3, hl = TILE, rot = Math.atan2(-dy, -dx) + Math.PI / 2, wb = down ? STAIRW[f + ':' + l.tx + ',' + l.ty] : null;
+    const lane = (x0, x1, isUp, farIn) => {
       const gr = ctx.createLinearGradient(0, hl, 0, -hl);
       if (isUp) { gr.addColorStop(0, 'rgba(255,214,150,.06)'); gr.addColorStop(1, 'rgba(255,214,150,.42)'); }
+      else if (farIn) { gr.addColorStop(0, 'rgba(0,0,0,.75)'); gr.addColorStop(1, 'rgba(0,0,0,.12)'); }
       else { gr.addColorStop(0, 'rgba(0,0,0,.1)'); gr.addColorStop(1, 'rgba(0,0,0,.7)'); }
       ctx.fillStyle = gr; ctx.fillRect(x0, -hl, x1 - x0, hl * 2);
-      const ax = (x0 + x1) / 2, ay = hl * 0.45, w = Math.min(13, (x1 - x0) * 0.6);
+      const ax = (x0 + x1) / 2, ay = isUp || !farIn ? hl * 0.45 : -hl * 0.45, w = Math.min(14, (x1 - x0) * 0.6);
       ctx.fillStyle = isUp ? 'rgba(255,236,200,.9)' : 'rgba(170,200,235,.85)'; ctx.beginPath();
-      for (const o of [0, -w * 0.9]) { if (isUp) { ctx.moveTo(ax, ay + o - w * 0.55); ctx.lineTo(ax + w / 2, ay + o + w * 0.2); ctx.lineTo(ax - w / 2, ay + o + w * 0.2); } else { ctx.moveTo(ax, ay + o + w * 0.25); ctx.lineTo(ax + w / 2, ay + o - w * 0.5); ctx.lineTo(ax - w / 2, ay + o - w * 0.5); } ctx.closePath(); }
+      for (const o of [0, (farIn ? 1 : -1) * w * 0.9 * (isUp ? -1 : 1)]) { const oy = isUp ? -Math.abs(o) : o; if (isUp) { ctx.moveTo(ax, ay + oy - w * 0.55); ctx.lineTo(ax + w / 2, ay + oy + w * 0.2); ctx.lineTo(ax - w / 2, ay + oy + w * 0.2); } else if (farIn) { ctx.moveTo(ax, ay + oy + w * 0.55); ctx.lineTo(ax + w / 2, ay + oy - w * 0.2); ctx.lineTo(ax - w / 2, ay + oy - w * 0.2); } else { ctx.moveTo(ax, ay + oy + w * 0.25); ctx.lineTo(ax + w / 2, ay + oy - w * 0.5); ctx.lineTo(ax - w / 2, ay + oy - w * 0.5); } ctx.closePath(); }
       ctx.fill();
     };
-    if (up && down) { lane(-hw, -1, true); lane(1, hw, false); } else lane(-hw, hw, up);
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+    if (up && down && !wb) { lane(-hw, -1, true); lane(1, hw, false); } else lane(-hw, hw, up);
     ctx.restore();
+    if (wb) { ctx.save(); ctx.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); ctx.rotate(rot); lane(-hw, hw, false, true); ctx.restore(); }
   }
 }
 // 높이 그림자: 건물·전봇대·전깃줄이 같은 방향(오른쪽 아래)으로 높이만큼 긴 그림자를 땅에 드리운다. 한 번만 구워 땅 그림에 넣는다
@@ -6059,7 +6106,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get DLG() { return DLG; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];
