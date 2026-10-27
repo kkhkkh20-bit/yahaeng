@@ -1,68 +1,55 @@
-# 야행 — itch.io 페이지 자료
+# 야행 — itch.io 페이지 자료 (v73 데모)
 
 ## 올리는 방법 (itch.io 대시보드 → Create new project)
 - Title: 야행 (Yahaeng)
 - Project URL: yahaeng
-- Short description (tagline): 네온 빌라촌의 밤, 옥상과 전깃줄로 들어가 등 뒤에서 덮치는 잠입 암살 / A top-down stealth assassination game on neon rooftops and power lines
-- Classification: Games
-- Kind of project: HTML
-- Release status: In development (데모)
-- Pricing: No payments (무료) — 나중에 후원을 받으려면 "Donate"
+- Short description (tagline): 짠돌이 사장님 심부름으로 네온 빌라촌에 숨어드는 잠입 암살 / A top-down stealth assassination game in a neon Korean villa town
+- Classification: Games · Kind of project: HTML
+- Release status: In development (무료 데모)
+- Pricing: No payments (무료). 후원을 받으려면 "Donate"
 - Uploads: yahaeng_itch.zip 올리고 "This file will be played in the browser" 체크
-- Embed options:
-  - Display mode: "Embed in page", Viewport dimensions 1280 × 720 (게임이 창 크기에 맞춰 늘어나므로 "Click to launch in fullscreen"도 가능)
-  - "Click to play"는 기본값(켜짐) 그대로 — 클릭으로 시작해야 소리·키보드 포커스가 정상
-  - "Fullscreen button" 체크 (게임 안 메뉴에도 전체 화면 버튼이 있다)
-  - "Scrollbars"는 기본값(숨김) 그대로
-  - "Mobile friendly" 체크, Orientation: Landscape (휴대폰은 전체 화면으로 시작된다)
-- 참고: itch.io는 index.html이 들어 있는 zip 또는 HTML 파일 하나를 받는다. 이 게임은 파일 하나라 둘 다 된다 (zip은 3.1MB)
+  - 데모 묶음에는 연습 3개와 의뢰 1·2만 열려 있고, 나머지 의뢰는 "정식판에서" 잠긴 카드로 보인다
+- Embed options
+  - Viewport: 1280 × 720 (PC는 가로 화면으로 잘 돈다), "Fullscreen button" 체크
+  - "Mobile friendly" 체크, Orientation: Portrait (휴대폰은 세로 화면이 기본)
+  - "Click to play"는 기본값 그대로 (눌러서 시작해야 소리가 난다)
 - Cover image: cover_630x500.png
-- Screenshots: shot1_neon, shot2_roof, shot3_detect, shot4_tactical, shot5_interior (shot0_title은 선택)
-- Genre: Action (또는 Strategy)
-- Tags: stealth, assassination, top-down, neon, pixel, singleplayer, korean, 2d, tactical
-- Language: Korean
-- Inputs: Keyboard, Touchscreen
-- Accessibility: Configurable controls 아님 → 체크하지 않음
-- Community: Comments 켜기 (데모 피드백용)
+- Screenshots: shot1_title, shot2_brief, shot3_mission1, shot4_club, shot5_tactical (모두 휴대폰 세로 화면)
+- Genre: Action (또는 Strategy) · Language: Korean · Inputs: Keyboard, Touchscreen
+- Tags: stealth, assassination, top-down, neon, singleplayer, korean, 2d, puzzle, mobile
+- Community: Comments 켜기 (데모 피드백)
 
 ## 소개문 (한국어)
 
-**야행** — 네온 빌라촌의 밤, 돈 되는 일이면 무엇이든 맡는 해결사가 있다. 그의 길은 골목이 아니라 옥상과 전깃줄이다.
+**야행** — 돈만 주면 뭐든 하는 동네 해결사. 오늘도 짠돌이 사장님 심부름으로 네온 빌라촌에 숨어든다.
 
-빛을 피하고, 소리를 죽이고, 등 뒤에서 덮친다. 경비는 보는 순간 알아채지 않는다. 머리 위 게이지가 흰색에서 노랑, 빨강으로 차오르는 2~3초 안에 시야에서 빠져나가면 된다.
+정면으로 뚫어도 되지만 비싸게 먹힌다. 대신 동네를 살피고, 사람들 일과를 엿듣고, 옷을 빌려 입고, 남들 눈에 안 띄는 길을 찾으면 훨씬 깔끔하게 끝난다.
 
-- 옥상 → 전깃줄 → 창문으로 이어지는 침입 경로를 직접 찾는다
-- 벽에 기대 숨었다가 지나가는 적을 끌어당겨 처치하고, 전깃줄 위에서 떨어져 덮친다
-- 무전으로 보고하는 경비를 끊고, 시체는 쓰레기통에 숨긴다. 열어 둔 창문은 경비가 다시 잠근다
-- 빈 캔으로 꾀어내기, 두꺼비집 내려 정전 만들기, 간판 떨어뜨리기, 엿들어 금고 비밀번호 알아내기
-- 시간이 멈추는 전술 지도로 순찰과 시야를 읽는다
+- **거리에선 그냥 행인:** 걸어 다니면 아무도 신경 쓰지 않는다. 대신 출입 금지 구역·수상한 행동·뛰어다니기는 눈길을 끈다
+- **변장:** 택배 기사, 직원, 자경대원 옷으로 들어갈 수 있는 곳이 달라진다. 눈썰미 좋은 반장은 가까이서 오래 보면 알아챈다
+- **기회:** 엿들은 대화, 떨어뜨릴 수 있는 간판, 두꺼비집 정전, 택배 상자 — 판마다 표적에게 닿는 길이 여러 개다
+- **빛과 그림자:** 경비의 시야는 그 자리 밝기만큼만 뻗는다. 벽에 바짝 붙고, 불 꺼진 데로 다니고, 들키기 전에 끝내자
+- **사람은 함부로 죽이지 않는다:** 표적이 아니면 기절이 기본. 아이는 건드릴 수 없고 사탕으로 달랜다
+- **지금 할 일 안내:** 다음 목표와 방향·거리를 늘 알려 준다. 길은 직접 고른다
 
-**데모 내용:** 연습 2개(기본 약 3분 · 고급) + 의뢰 5개. 처음 플레이 1.5~3시간.
-**조작:** WASD/방향키 이동 · Space 행동 · Z 특수 · X 도구(누른 채 겨누기) · Ctrl 살금 · Alt 살피기 · M 전술 지도 · Esc 메뉴. 휴대폰은 가로 화면 터치 조작.
+**데모 내용:** 연습 3개(첫 연습 약 3분) + 의뢰 2개. 처음 플레이 30분~1시간.
+**조작:** 휴대폰 — 화면을 끌어 걷기 · [행동] · [특수] · [도구] · ⇄ 겹친 대상 바꾸기. PC — WASD/방향키 · Space 행동 · Z 특수 · X 도구(누른 채 겨누기) · F 겹친 대상 바꾸기 · Ctrl 살금 · Alt 살피기 · M 전술 지도.
 **언어:** 한국어만 지원합니다.
 
-피드백(어디서 막혔는지, 어디서 재미있었는지)을 댓글로 남겨 주시면 다음 버전에 반영합니다.
+어디서 막혔는지, 어디가 재미있었는지 댓글로 남겨 주시면 다음 버전에 반영합니다.
 
 ## Description (English)
 
-**Yahaeng (야행, "Night Walk")** — a top-down stealth assassination game set on the neon rooftops of a Korean villa town at night.
+**Yahaeng ("Night Walk")** — a top-down stealth assassination game. You're a neighborhood fixer who'll do anything for cash, sent out by a stingy boss into a neon-lit Korean villa town.
 
-Avoid the light, kill the noise, strike from behind. Guards don't spot you instantly: a meter above their heads fills from white to yellow to red over 2–3 seconds, so you have a moment to slip away.
+You can go in loud, but it costs you. Watch the neighborhood, eavesdrop on routines, borrow a uniform and find the quiet way in.
 
-- Find your own way in: rooftops, power lines, windows
-- Lean against walls and pull passing guards into the dark, or drop on them from a power line
-- Cut off guards radioing for help, hide bodies in dumpsters — and watch guards re-lock the windows you opened
-- Throw cans as lures, kill the power at the breaker, drop neon signs, eavesdrop for the safe code
-- Read patrols and sight cones on a time-stopped tactical map
+- Blend in on the street; trespassing, odd behavior and running draw eyes
+- Disguises (courier, staff, watchman) open different areas — sharp-eyed bosses can see through them
+- Multiple ways to each target: overheard secrets, droppable signs, blackouts, a delivery box
+- Guards see only as far as the light allows; hug walls and stay in the dark
+- Non-targets are knocked out, not killed; kids can't be touched — calm them with candy
+- A "what to do now" guide always points to your next objective
 
-**Demo:** 2 training stages + 5 contracts (about 1.5–3 hours).
-**Controls:** WASD/Arrows move · Space action · Z special · X tools (hold to aim) · Ctrl sneak · Alt scan · M tactical map · Esc menu. Touch controls in landscape on phones.
-**Language:** Korean only for now (English is planned).
-
-## 크레딧 (페이지 하단에 그대로)
-- 건물 외관: Quaternius Downtown City MegaKit (CC0)
-- 배경 3D: Kenney Retro Urban Kit · Furniture Kit (CC0), 그래픽(도시): Kenney RPG Urban Pack (CC0)
-- 캐릭터: Quaternius Animated Human (CC0)
-- 그래픽·음악·효과음: Ninja Adventure Asset Pack — Pixel-Boy & AAA (CC0)
-- 효과음 일부: Kenney Impact·RPG·Interface Sounds (CC0), congusbongus 'Footsteps on different surfaces' (쇠: Eelke, CC-BY 3.0 / 자갈: Ali_6868, CC0), Wolfgang_ 귀뚜라미 (CC0)
-- 글꼴: 갈무리 Galmuri — Lee Minseo (SIL OFL 1.1)
+**Demo:** 3 training stages + 2 contracts (30–60 minutes). Portrait touch controls on phones, keyboard on PC.
+**Language:** Korean only for now.

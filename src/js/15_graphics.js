@@ -206,6 +206,17 @@ function prSheet(key) {
   }
   return (prVar[key] = c);
 }
+// 시트 미리 칠하기: 옷 색 칠하기(prSheet)는 한 장에 수십 ms라 판 시작 직후 첫 프레임들이 끊겼다.
+// 시작 화면·브리핑·대사 동안 쉬는 틈(requestIdleCallback)에 한 장씩 미리 칠해 둔다
+const prWarmQ = [];
+function prWarm(keys, first) {
+  for (const k of first ? [...keys].reverse() : keys) if (k && !prVar[k]) { const i = prWarmQ.indexOf(k); if (i >= 0) prWarmQ.splice(i, 1); if (first) prWarmQ.unshift(k); else prWarmQ.push(k); }
+  if (prWarm.on || !prWarmQ.length) return; prWarm.on = true;
+  const ric = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
+  const step = () => { const k = prWarmQ.shift(); if (k && !prVar[k]) { const [pk, bn] = prSplit(k); if (!PR || !PR_PAL[pk] || (bn && !(PR.bodies && PR.bodies[bn]))) {} else if (bn ? prBodies[bn] : prBase) prSheet(k); else prWarmQ.push(k); }  // 아직 그림이 안 읽혔으면 뒤로
+    if (prWarmQ.length) ric(step, { timeout: 400 }); else prWarm.on = false; };
+  ric(step, { timeout: 400 });
+}
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {

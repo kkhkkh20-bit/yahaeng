@@ -238,7 +238,7 @@ function showEnd(win, reason) {
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' — 깼다' : ''}</div>`;
   if (CITY && win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
-  $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial)));
+  $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial && demoOk(STAGES[STAGE_I + 1]))));
   $('btnCP').hidden = win || !cpReady();
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
@@ -246,16 +246,19 @@ function showEnd(win, reason) {
 
 if (!CITY) document.querySelectorAll('.cityonly').forEach(e => e.remove());
 if (CITY) document.querySelectorAll('.nocity').forEach(e => e.remove());
+// 데모(itch) 빌드: 연습과 의뢰 1·2만. 나머지는 잠긴 카드 하나로 알린다
+const demoOk = s => !window.__DEMO || window.__DEMO.includes(s.id);
 function renderStageList() {
   syncQuick();
   const best = loadBest();
-  $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).sort((a, b) => ((b[0].tutorial ? 1 : 0) + (b[0].id === 'tI' ? 1 : 0)) - ((a[0].tutorial ? 1 : 0) + (a[0].id === 'tI' ? 1 : 0))).map(([s, i]) => `
+  const locked = STAGES.filter(s => !demoOk(s));
+  $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s)).sort((a, b) => ((b[0].tutorial ? 1 : 0) + (b[0].id === 'tI' ? 1 : 0)) - ((a[0].tutorial ? 1 : 0) + (a[0].id === 'tI' ? 1 : 0))).map(([s, i]) => `
     <button class="stage" type="button" data-i="${i}">
       ${window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="">` : `<span class="st-no">${s.no}</span>`}
       <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
       <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${CITY && !s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
-    </button>`).join('');
-  $('stageList').querySelectorAll('.stage').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
+    </button>`).join('') + (locked.length ? `<div class="stage locked"><span class="st-no">잠김</span><span class="st-body"><span class="st-name">의뢰 ${locked.length}개 더 — 정식판에서</span><span class="st-mis">${locked.map(s => s.name).join(' · ')}</span></span><span></span></div>` : '');
+  $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
   { const pl = $('perkList'); if (pl) { pl.hidden = !CITY; if (CITY) { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   document.querySelectorAll('#diffSel button').forEach(b => b.classList.toggle('on', b.dataset.d === DKEY));
   { const dn = $('diffNote'); if (dn) dn.textContent = ({ easy: '쉬움 — 늦게 알아챔 · 체력 4 · 도구 넉넉 · 체크포인트 저장', normal: '보통 — 들키면 무전 보고 몇 초 · 체력 3 · 체크포인트 저장', hard: '어려움 — 넓은 시야·빠른 발견 · 체력 2 · 도구 적음 · 저장 없음' })[DKEY] || ''; }
