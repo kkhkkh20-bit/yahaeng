@@ -33,7 +33,8 @@ def build():
         bm['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'body_' + bn + '.webp'), 'rb').read()).decode()
     kit = read(P('build', 'kit_mk', 'kit.json')) if os.path.exists(P('build', 'kit_mk', 'kit.json')) else 'null'
     v, h = version()
-    html = html.replace('<script>window.__ASSETS__', "<script>window.__THEME = 'city'; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + ";</script>\n<script>window.__ASSETS__")
+    thumbs = read(P('build', 'thumbs.json')) if os.path.exists(P('build', 'thumbs.json')) else 'null'  # 의뢰 카드 지도 미리보기 (tools/thumbs.py)
+    html = html.replace('<script>window.__ASSETS__', "<script>window.__THEME = 'city'; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     html = html.replace('__ASSETS_JSON__', read(P('build', 'assets_city.json'))).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', game_js())
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)

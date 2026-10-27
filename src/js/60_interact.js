@@ -204,7 +204,7 @@ function updateTutorial() {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
   while (S.tutI < st.length && st[S.tutI][1](S, S.player, input)) {
     S.tutI++; S.cpWant = true; play('switch', 0.45, 1.5);
-    if (S.tutI < st.length) toast('잘했다 — 다음: ' + st[S.tutI][0], 3.4, 'good'); else toast('연습 끝 — 이제 실제 의뢰로', 3, 'good');
+    if (S.tutI < st.length) toast('잘했다! 다음: ' + tutText(st[S.tutI][0]), 3.4, 'good'); else toast('연습 끝 — 이제 실제 의뢰로', 3, 'good');
   }
 }
 function winInit() {

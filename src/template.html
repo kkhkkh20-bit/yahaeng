@@ -339,6 +339,15 @@ body.scanning #scanLegend { display: flex; }
 #rotateHint { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(5,7,12,.94); color: var(--paper); flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; font-size: var(--fs-lead); padding: 24px; }
 #rotateHint small { color: var(--paper-dim); font-size: var(--fs-body); }
 /* 세로 화면이 기본 — 돌리라는 안내는 띄우지 않는다 */
+/* 의뢰 브리핑 · 의뢰 카드 지도 미리보기 */
+.br-name { font-family: var(--f-display); font-size: 40px; color: var(--lamp); margin: 0; font-weight: 400; }
+.br-map { border: 1px solid var(--ink-line); background: #0b0e16; line-height: 0; }
+.br-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--fs-cap); color: var(--paper-dim); }
+.br-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: -6px; }
+.br-list { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: var(--fs-body); }
+.br-list b { color: var(--paper); } .br-list.ch { color: var(--paper-dim); font-size: var(--fs-ui); }
+#brief h3 { margin: 4px 0 0; font-size: var(--fs-ui); letter-spacing: .1em; color: var(--paper-dim); }
+.stage .st-map { width: 72px; height: 52px; object-fit: cover; border: 1px solid var(--ink-line); border-radius: 4px; image-rendering: auto; }
 .chip .clab { font-size: 10px; color: var(--paper-dim); margin-right: 5px; letter-spacing: .04em; }
 /* 경계 연출: 화면 가장자리 빛 (의심·수색 노랑, 발각 빨강 맥박) */
 #alertVig { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; box-shadow: inset 0 0 0 0 transparent; z-index: 1; }
@@ -510,6 +519,17 @@ body.joyseen .joyhint { display: none !important; }
   </div>
 </div>
 
+<div class="screen" id="brief" hidden>
+  <div class="panel">
+    <div class="eyebrow" id="brSub"></div>
+    <h2 class="br-name" id="brName"></h2>
+    <div class="br-map" id="brMap"></div>
+    <div class="br-legend"><i style="--c:#7fd6ff"></i>출발 <i style="--c:#ffd27a"></i>훔칠 것 <i style="--c:#ff5a4a"></i>표적 <i style="--c:#f2c46b"></i>탈출</div>
+    <h3>할 일</h3><ul class="br-list" id="brTodo"></ul>
+    <div id="brChBox"><h3>도전 과제 (별)</h3><ul class="br-list ch" id="brCh"></ul></div>
+    <div class="row"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
+  </div>
+</div>
 <div class="screen" id="end" hidden>
   <div class="panel">
     <div class="eyebrow">의뢰 결과</div>

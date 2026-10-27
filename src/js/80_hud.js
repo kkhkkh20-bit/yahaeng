@@ -45,12 +45,44 @@ function drawMini() {
   x.save(); x.translate(T(P.x), T(P.y)); x.rotate(P.a); x.fillStyle = '#7fe3ff'; x.beginPath(); x.moveTo(5, 0); x.lineTo(-3.5, -3.5); x.lineTo(-2, 0); x.lineTo(-3.5, 3.5); x.closePath(); x.fill(); x.restore();
   if (P.fl || P.z) { x.fillStyle = '#7fe3ff'; x.font = '700 9px monospace'; x.textAlign = 'left'; x.fillText(P.fl ? (P.fl + 1) + 'F' : 'R', T(P.x) + 5, T(P.y) - 4); }
 }
+// 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
+function stageMap(w, labels) {
+  const mw = MW * TILE, mh = MH * TILE, s = w / mw, h = Math.round(mh * s), c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  x.imageSmoothingEnabled = true; x.drawImage(mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
+  const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
+    if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
+    if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
+    if (labels && lab) { x.font = `700 ${Math.round(R * 3.2)}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; x.lineWidth = 3; x.strokeStyle = 'rgba(7,10,18,.95)'; x.strokeText(lab, X, Y - R * 2.2); x.fillStyle = col; x.fillText(lab, X, Y - R * 2.2); } };
+  pt(S.player.x, S.player.y, '#7fd6ff', 'c', '출발'); if (S.exit) pt(S.exit.x, S.exit.y, '#f2c46b', 'r', '탈출');
+  S.items.forEach((it, i) => pt(it.x, it.y, '#ffd27a', 'd', (STAGE.itemNames || [])[i] || STAGE.itemName || '서류'));
+  for (const g of S.guards) if (g.target) pt(g.x, g.y, '#ff5a4a', 'c', g.doc ? '한 선생' : '표적');
+  return c;
+}
+// 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]
+function showBrief(go) {
+  const el = $('brief'); if (!el || STAGE.tutorial || !CITY) { go(); return; }
+  paused = true; el.hidden = false;
+  $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
+  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), true); cv.style.width = '100%'; mp.appendChild(cv);
+  const todo = [];
+  S.items.forEach((it, i) => todo.push('<li><b>' + (((STAGE.itemNames || [])[i] || STAGE.itemName || '서류')) + ' 훔치기</b> — ' + placeName(it.x, it.y, it.fl, it.b) + '</li>'));
+  for (const g of S.guards) if (g.target) todo.push('<li><b>' + (g.doc ? '한 선생' : '표적') + ' 처리하기</b> — ' + (schedText(g) || placeName(g.x, g.y, flOf(g))) + '</li>');
+  todo.push('<li><b>탈출</b> — 다 하면 노란 원으로</li>');
+  $('brTodo').innerHTML = todo.join('');
+  $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
+  $('brChBox').hidden = !(STAGE.challenges || []).length;
+  $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
+  $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; $('intro').hidden = false; renderStageList(); };
+}
+// 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
+const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 행동: ['[행동]', 'Space'], 특수: ['[특수]', 'Z'], 도구: ['[도구]를', 'X를'], 살피기: ['[살피기]를', 'Alt를'] };
+const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => TUT_KEY[k] ? TUT_KEY[k][isTouch ? 0 : 1] : m);
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; }
 // 지금 할 일: 남은 목표 중 가장 가까운 하나 — 무엇을(동사) · 어디서 · 몇 m. 화면에 방향 화살표와 표시를 함께 그린다
 function nextGoal() {
   const P = S.player;
-  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: st[0], where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
   if (S.exitOpen) return { text: '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   const c = [];
   S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' 훔치기', where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
@@ -65,7 +97,7 @@ function objectiveLines() {
   const place = placeName;
   { const gl = !STAGE.steps && nextGoal(); if (gl) { const m0 = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0, df = (gl.fl || 0) - flOf(P); L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''} · ${df ? (df > 0 ? df + '층 위 · ' : -df + '층 아래 · ') : ''}${m}m`]); } }  // 지금 할 일 (맨 위)
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
-  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${STAGE.steps[S.tutI || 0][0]}`]);
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${tutText(STAGE.steps[S.tutI || 0][0])}`]);
   if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
@@ -219,7 +251,7 @@ function renderStageList() {
   const best = loadBest();
   $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).sort((a, b) => ((b[0].tutorial ? 1 : 0) + (b[0].id === 'tI' ? 1 : 0)) - ((a[0].tutorial ? 1 : 0) + (a[0].id === 'tI' ? 1 : 0))).map(([s, i]) => `
     <button class="stage" type="button" data-i="${i}">
-      <span class="st-no">${s.no}</span>
+      ${window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="">` : `<span class="st-no">${s.no}</span>`}
       <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
       <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${CITY && !s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
     </button>`).join('');
