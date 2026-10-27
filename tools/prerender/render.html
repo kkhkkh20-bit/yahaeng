@@ -84,6 +84,14 @@ const _pa = new THREE.Vector3(), _pb = new THREE.Vector3(), _pq = new THREE.Quat
 const aimB = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(_pa); c.getWorldPosition(_pb); const cur = _pb.sub(_pa).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(_pq); b.quaternion.premultiply(_pq.clone().invert().multiply(q).multiply(_pq)); b.updateMatrixWorld(true); };
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 window.PZ = { cy: 34, cz: 18, gz: 78 };
+const rotWB = (b, ang) => { if (!b) return; const pq = new THREE.Quaternion(); b.parent.getWorldQuaternion(pq); const qw = new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), ang); b.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); b.updateMatrixWorld(true); };
+const feetY = Bn => { let m = 1e9; for (const n of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (Bn[n]) { Bn[n].getWorldPosition(_pa); m = Math.min(m, _pa.y); } return m; };
+// 웅크리기: 허벅지 앞으로·무릎 뒤로·발목, 상체 숙이기(sp), 그 뒤 발을 원래 높이에 다시 붙인다
+const squat = (Bn, M, cr, sp) => { M.updateMatrixWorld(true); const f0 = feetY(Bn);
+  for (const s of ['Left', 'Right']) { rotWB(Bn[s + 'UpLeg'], -CR.th * cr); rotWB(Bn[s + 'Leg'], CR.kn * cr); rotWB(Bn[s + 'Foot'], -CR.ft * cr); }
+  if (sp) { rotWB(Bn.Spine, sp); rotWB(Bn.Spine1, sp * 0.4); }
+  M.updateMatrixWorld(true); M.position.y += f0 - feetY(Bn); M.updateMatrixWorld(true); };
+window.KZ = { lean: 0.28 };
 window.renderPair = (kind, clip, t, dirA, part) => {
   grp.add(model); grp.rotation.y = 0; grp.updateMatrixWorld(true);
   mixer.stopAllAction(); const a1 = mixer.clipAction(clips[clip]); a1.reset(); a1.play(); mixer.setTime(t);
@@ -91,10 +99,12 @@ window.renderPair = (kind, clip, t, dirA, part) => {
   model2.visible = true; model2.rotation.set(0, 0, 0); model2.position.set(0, 0, 0); model2.quaternion.identity();
   mixer2.stopAllAction();
   const B = bones, Q = bones2;
-  if (kind === 'carry') {
+  if (kind === 'carry' || kind === 'lift') {
+    const lk = kind === 'lift' ? t : 0;  // lift: t = 1 (허리 숙여 안아 올림) · 2 (어깨에 얹으며 일어섬)
+    if (lk) squat(B, model, lk === 1 ? 0.62 : 0.3, lk === 1 ? 0.55 : 0.2);
     const a2 = mixer2.clipAction(clips2.Idle); a2.reset(); a2.play(); mixer2.setTime(0); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
     // 업힌 사람: 몸을 접어 상체는 등 뒤로, 다리는 가슴 앞으로 늘어뜨린다
-    const th = Math.atan2(-0.42, -0.9);
+    const th = Math.atan2(-0.42, -0.9) + (lk === 1 ? KZ.l1 || 0.75 : lk === 2 ? KZ.l2 || 0.3 : 0);
     model2.quaternion.copy(new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), th).multiply(new THREE.Quaternion().setFromAxisAngle(V3(0, 1, 0), Math.PI)));
     model2.updateMatrixWorld(true);
     for (const sd of ['Left', 'Right']) {
@@ -102,11 +112,40 @@ window.renderPair = (kind, clip, t, dirA, part) => {
       aimB(Q[sd + 'Arm'], Q[sd + 'ForeArm'], V3(sd === 'Left' ? 0.12 : -0.12, -1, -0.18)); aimB(Q[sd + 'ForeArm'], Q[sd + 'Hand'], V3(0, -1, -0.05));
     }
     aimB(Q.Neck, Q.Head, V3(0, -1, -0.25));
-    // 업은 사람: 오른팔로 다리를 감싸 쥔다
-    aimB(B.RightArm, B.RightForeArm, V3(-0.05, -0.55, 0.84)); aimB(B.RightForeArm, B.RightHand, V3(0.62, 0.42, 0.35));
+    // 업은 사람: 오른팔로 다리를 감싸 쥔다 (들어 올리는 중엔 두 팔을 앞으로 뻗어 허리를 감싼다)
+    if (lk === 1) { aimB(B.RightArm, B.RightForeArm, V3(-0.2, -0.45, 0.87)); aimB(B.RightForeArm, B.RightHand, V3(0.55, -0.1, 0.8)); aimB(B.LeftArm, B.LeftForeArm, V3(0.2, -0.45, 0.87)); aimB(B.LeftForeArm, B.LeftHand, V3(-0.55, -0.1, 0.8)); }
+    else aimB(B.RightArm, B.RightForeArm, V3(-0.05, -0.55, 0.84)), aimB(B.RightForeArm, B.RightHand, V3(0.62, 0.42, 0.35));
+    if (lk === 2) { aimB(B.LeftArm, B.LeftForeArm, V3(0.25, -0.2, 0.9)); aimB(B.LeftForeArm, B.LeftHand, V3(-0.4, 0.5, 0.6)); }
     model.updateMatrixWorld(true); B.RightShoulder.getWorldPosition(_pa); B.RightArm.getWorldPosition(_pb);
-    const tgt = V3((_pa.x + _pb.x) / 2, Math.max(_pa.y, _pb.y) + PZ.cy, (_pa.z + _pb.z) / 2 + PZ.cz);
+    const tgt = V3((_pa.x + _pb.x) / 2, Math.max(_pa.y, _pb.y) + PZ.cy - (lk === 1 ? 26 : lk === 2 ? 8 : 0), (_pa.z + _pb.z) / 2 + PZ.cz + (lk === 1 ? 46 : lk === 2 ? 14 : 0));
     model2.updateMatrixWorld(true); Q.Hips.getWorldPosition(_pa); model2.position.add(tgt.sub(_pa));
+  } else if (kind === 'stab' || kind === 'choke') {
+    const k = t, a2 = mixer2.clipAction(clips2.Idle); a2.reset(); a2.play(); mixer2.setTime(0); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
+    model2.position.set(0, 0, PZ.gz - (k === 0 ? -8 : 0)); model2.updateMatrixWorld(true);
+    // 당하는 사람: 0 그대로 서 있음 · 1 몸이 뒤로 젖혀지고 팔이 들린다 · 2 무릎이 꺾이고 늘어진다 · 3 무릎 꿇듯 주저앉는다
+    if (k === 0) { aimB(Q.Neck, Q.Head, V3(0.25, 1, 0.1)); }
+    if (k === 1) { model2.quaternion.setFromAxisAngle(V3(1, 0, 0), -KZ.lean); model2.updateMatrixWorld(true);
+      if (kind === 'choke') { aimB(Q.LeftArm, Q.LeftForeArm, V3(0.35, -0.55, 0.75)); aimB(Q.LeftForeArm, Q.LeftHand, V3(-0.55, 0.75, -0.35)); aimB(Q.RightArm, Q.RightForeArm, V3(-0.35, -0.55, 0.75)); aimB(Q.RightForeArm, Q.RightHand, V3(0.55, 0.75, -0.35)); }
+      else { aimB(Q.LeftArm, Q.LeftForeArm, V3(0.75, 0.35, 0.3)); aimB(Q.LeftForeArm, Q.LeftHand, V3(0.4, 0.8, 0.3)); aimB(Q.RightArm, Q.RightForeArm, V3(-0.75, 0.35, 0.3)); aimB(Q.RightForeArm, Q.RightHand, V3(-0.4, 0.8, 0.3)); }
+      aimB(Q.Neck, Q.Head, V3(0, 1, -0.45)); }
+    if (k >= 2) { squat(Q, model2, k === 2 ? 0.45 : 0.95, k === 2 ? 0.3 : 0.75);
+      for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1; aimB(Q[sd + 'Arm'], Q[sd + 'ForeArm'], V3(0.12 * side, -1, k === 3 ? 0.35 : 0.1)); aimB(Q[sd + 'ForeArm'], Q[sd + 'Hand'], V3(0.05 * side, -1, k === 3 ? 0.3 : 0.05)); }
+      aimB(Q.Neck, Q.Head, V3(0, k === 2 ? 0.2 : -0.3, 1)); }
+    // 처치하는 사람
+    if (k >= 2) squat(B, model, k === 2 ? 0.22 : 0.5, k === 2 ? 0.15 : 0.4);
+    if (k === 0) {  // 다가서며 왼손을 입으로, 칼 쥔 오른손은 뒤로 (조르기는 두 팔을 벌려 뻗는다)
+      aimB(B.Spine, B.Spine1, V3(0, 1, 0.22));
+      aimB(B.LeftArm, B.LeftForeArm, V3(0.25, 0.15, 1)); aimB(B.LeftForeArm, B.LeftHand, V3(-0.3, 0.3, 0.9));
+      if (kind === 'choke') { aimB(B.RightArm, B.RightForeArm, V3(-0.25, 0.15, 1)); aimB(B.RightForeArm, B.RightHand, V3(0.3, 0.3, 0.9)); }
+      else { aimB(B.RightArm, B.RightForeArm, V3(-0.45, -0.3, -0.5)); aimB(B.RightForeArm, B.RightHand, V3(-0.1, 0.9, -0.2)); }
+    } else {  // 1~3: 왼팔로 입·목을 감고, 칼은 옆구리로 찔러 넣었다가 뺀다 (조르기는 오른손이 왼 손목을 잡아 조인다)
+      const lo = k === 3 ? -0.35 : k === 2 ? -0.15 : 0;
+      aimB(B.LeftArm, B.LeftForeArm, V3(0.15, -0.05 + lo, 1)); aimB(B.LeftForeArm, B.LeftHand, V3(-1, 0.15 + lo * 0.5, 0.25));
+      if (kind === 'choke') { aimB(B.RightArm, B.RightForeArm, V3(-0.2, -0.15 + lo, 1)); aimB(B.RightForeArm, B.RightHand, V3(0.85, 0.35 + lo * 0.5, 0.35)); }
+      else if (k === 1) { aimB(B.RightArm, B.RightForeArm, V3(-0.12, -0.35, 1)); aimB(B.RightForeArm, B.RightHand, V3(0.15, -0.05, 1)); }
+      else { aimB(B.RightArm, B.RightForeArm, V3(-0.2, -0.85, 0.35)); aimB(B.RightForeArm, B.RightHand, V3(-0.05, -0.7, 0.7)); }
+      aimB(B.Spine, B.Spine1, V3(0, 1, 0.1 - lo * 0.3));
+    }
   } else {
     const a2 = mixer2.clipAction(clips2[clip]); a2.reset(); a2.play(); mixer2.setTime(clip === 'Walk' ? (t + 0.37) % 1 : t); Q.Hips.position.x = 0; Q.Hips.position.z = 0;
     model2.quaternion.setFromAxisAngle(V3(1, 0, 0), -0.12); model2.position.set(0, 0, PZ.gz); model2.updateMatrixWorld(true);
@@ -158,6 +197,11 @@ window.renderPose = (name, k, dirA) => {
     aimB(B.RightUpLeg, B.RightLeg, V3(-0.08, -0.8, 0.45)); aimB(B.RightLeg, B.RightFoot, V3(0, -0.75, -0.66));
     aimB(B.LeftUpLeg, B.LeftLeg, V3(0.1, -1, 0.04)); aimB(B.LeftLeg, B.LeftFoot, V3(0, -1, -0.02));
     aimB(B.Neck, B.Head, V3(k ? 0.45 : 0, 1, k ? 0.1 : 0.05));
+  } else if (name === 'stoop') {  // 바닥에 누운 사람을 잡으려 허리·무릎을 굽히고 두 팔을 아래로 뻗는다
+    for (const sd of ['Left', 'Right']) { rotW(B[sd + 'UpLeg'], -CR.th * 0.7); rotW(B[sd + 'Leg'], CR.kn * 0.7); rotW(B[sd + 'Foot'], -CR.ft * 0.7); }
+    rotW(B.Spine, 0.75); rotW(B.Spine1, 0.3);
+    for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1; aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.18 * side, -0.85, 0.5)); aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.05 * side, -0.8, 0.6)); }
+    aimB(B.Neck, B.Head, V3(0, 0.3, 1));
   } else if (name === 'vault') {
     if (k === 1) {  // 몸을 접어 넘는 순간: 허벅지를 가슴으로, 두 손은 창턱을 짚는다
       aimB(B.Spine, B.Spine1, V3(0, 0.55, 0.85)); aimB(B.Spine1, B.Spine2, V3(0, 0.45, 0.9));

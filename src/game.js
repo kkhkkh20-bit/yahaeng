@@ -290,16 +290,12 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   x.textBaseline = 'alphabetic';
 }
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
-// 가구: 막힌 칸은 어두운 판 위에 그리고, 그림 위에 칸 테두리를 덧그린다 (높은 가구는 파랑, 낮은 가구는 주황). 깔개는 테두리 없음
+// 가구: 막힌 칸은 어두운 판(그림자) 위에 그린다. 막힘·엄폐 구분 테두리는 살피기(Alt) 때만
 function drawFurn(x, it) {
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
   if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
   drawFurnArt(x, it);
-  if (!flat) {
-    x.strokeStyle = tall ? 'rgba(150,190,240,.62)' : 'rgba(236,190,120,.55)'; x.lineWidth = 2; x.strokeRect(px + 2, py + 2, w - 4, h - 4);
-    if (tall) { x.fillStyle = 'rgba(150,190,240,.62)'; for (const [cx, cy] of [[px + 2, py + 2], [px + w - 2, py + 2], [px + 2, py + h - 2], [px + w - 2, py + h - 2]]) x.fillRect(cx - 3, cy - 3, 6, 6); }
-  }
-}
+}  // 칸 테두리(파랑·주황)는 평소엔 그리지 않는다 — 살피기(Alt)·전술 지도에서만 보인다
 function drawFurnArt(x, it) {
   if (CITY && KIT) { const k = kitFurn[it.t + '_' + it.w + 'x' + it.h]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); return; } }
   const T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, s = it.seed;
@@ -701,7 +697,7 @@ const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && us
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
-  const fr = c.t0 != null && S.t - c.t0 < 1 ? Math.floor((S.t - c.t0) * 10) : 9;  // 쓰러지는 동작
+  const fr = c.t0 != null && S.t - c.t0 < 1 ? (c.f0 || 0) + Math.floor((S.t - c.t0) * 10) : 9;  // 쓰러지는 동작
   if (c.stripped && usePR('strip')) { drawPR('strip', c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
   blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
@@ -1466,21 +1462,71 @@ function stairDir(tx, ty) {
   return [0, 1];
 }
 function drawStairs(x, tx, ty) {
-  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE;
-  x.save(); x.translate(cx, cy); x.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);  // 기준: 위쪽(-y)이 계단 칸, 아래쪽이 올라오는 칸
+  // 1층: 폭 전체가 오르는 계단. 위층: 꺾인 계단 — 한쪽 줄은 위로 오르고(밝아진다 ▲), 다른 줄은 아래층으로 내려간다(어두워진다 ▼)
+  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0;
+  x.save(); x.translate(cx, cy); x.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);  // 기준: 위쪽(-y)이 계단 칸, 아래쪽이 들어서는 칸
   const hw = TILE / 2 - 3, hl = TILE, N = 8, st = (hl * 2) / N;
-  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
-  for (let i = 0; i < N; i++) {  // i = 0 이 맨 위 디딤판
-    const y0 = -hl + i * st, k = 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
-    x.fillStyle = `rgb(${c(96, 196)},${c(84, 172)},${c(70, 140)})`; x.fillRect(-hw, y0, hw * 2, st);
-    x.fillStyle = 'rgba(255,240,215,.35)'; x.fillRect(-hw, y0, hw * 2, 2);            // 디딤판 코 (빛)
-    x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(-hw, y0 + st - 3, hw * 2, 3);          // 아래 단으로 떨어지는 그림자
-  }
+  x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
+  const upFlight = (x0, x1) => {  // 오르는 줄: 먼 쪽(위층)으로 갈수록 밝고 디딤판이 조금씩 넓어 보인다, 단마다 코에 빛·아래에 그림자
+    for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
+      x.fillStyle = `rgb(${c(120, 232)},${c(106, 208)},${c(86, 172)})`; x.fillRect(x0, y0, x1 - x0, st);
+      x.fillStyle = 'rgba(255,242,215,.45)'; x.fillRect(x0, y0, x1 - x0, 2); x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(x0, y0 + st - 3, x1 - x0, 3); }
+  };
+  const downFlight = (x0, x1) => {  // 내려가는 줄: 먼 쪽(아래층)으로 갈수록 깊고 어둡다, 코의 빛이 점점 사라지고 끝은 검은 구멍
+    for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
+      x.fillStyle = `rgb(${c(6, 78)},${c(6, 68)},${c(8, 58)})`; x.fillRect(x0, y0, x1 - x0, st);
+      x.fillStyle = `rgba(255,242,215,${0.05 + 0.3 * k})`; x.fillRect(x0, y0 + st - 2, x1 - x0, 2); }
+    const gr = x.createLinearGradient(0, -hl, 0, -hl + st * 3); gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.fillRect(x0, -hl, x1 - x0, st * 3);
+  };
+  if (down) {
+    upFlight(-hw, -1); downFlight(1, hw);
+    x.fillStyle = '#2e2a28'; x.fillRect(-2, -hl, 4, hl * 2); x.fillStyle = '#aeb6c0'; x.fillRect(-1, -hl + 2, 2, hl * 2 - 4);   // 가운데 난간: 두 줄을 가른다
+    x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4);                                                            // 내려가는 구멍 쪽 바깥 난간
+  } else upFlight(-hw, hw);
   x.fillStyle = '#2e2a28'; x.fillRect(-hw - 3, -hl, 4, hl * 2); x.fillRect(hw - 1, -hl, 4, hl * 2);   // 옆판
-  x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4);                              // 난간
-  for (let i = 0; i <= 3; i++) x.fillRect(hw - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3);
-  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);                          // 위층 바닥 끝
+  if (!down) { x.fillStyle = '#aeb6c0'; x.fillRect(hw - 1, -hl + 2, 2, hl * 2 - 4); for (let i = 0; i <= 3; i++) x.fillRect(hw - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3); }
+  x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);
   x.restore();
+}
+// 어둠 위에 덧그리는 계단 표시: 오르는 줄은 위층 불빛이 새어 드는 것처럼 위로 갈수록 밝게(▲), 내려가는 줄은 검은 구멍으로(▼)
+function drawStairGlow(P, openB) {
+  if (P.z || P.wire || P.vent || P.under || P.hide || openB == null || openB < 0) return; const f = flOf(P);
+  const seen = new Set();
+  for (const l of S.ladders) {
+    if ((l.kind !== 'fstair' && l.kind !== 'stair') || bldAt(l.tx, l.ty) !== openB) continue;
+    const key = l.tx + ',' + l.ty; if (seen.has(key)) continue;
+    const up = S.ladders.some(o => (o.kind === 'fstair' || o.kind === 'stair') && o.tx === l.tx && o.ty === l.ty && (o.bfl || 0) === f);
+    const down = S.ladders.some(o => o.kind === 'fstair' && o.tx === l.tx && o.ty === l.ty && o.tfl === f);
+    if (!up && !down) continue; seen.add(key);
+    const [dx, dy] = stairDir(l.tx, l.ty), cx = (l.tx + 0.5 + dx / 2) * TILE, cy = (l.ty + 0.5 + dy / 2) * TILE, hw = TILE / 2 - 3, hl = TILE;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(Math.atan2(-dy, -dx) + Math.PI / 2);
+    const lane = (x0, x1, isUp) => {
+      const gr = ctx.createLinearGradient(0, hl, 0, -hl);
+      if (isUp) { gr.addColorStop(0, 'rgba(255,214,150,.06)'); gr.addColorStop(1, 'rgba(255,214,150,.42)'); }
+      else { gr.addColorStop(0, 'rgba(0,0,0,.1)'); gr.addColorStop(1, 'rgba(0,0,0,.7)'); }
+      ctx.fillStyle = gr; ctx.fillRect(x0, -hl, x1 - x0, hl * 2);
+      const ax = (x0 + x1) / 2, ay = hl * 0.45, w = Math.min(13, (x1 - x0) * 0.6);
+      ctx.fillStyle = isUp ? 'rgba(255,236,200,.9)' : 'rgba(170,200,235,.85)'; ctx.beginPath();
+      for (const o of [0, -w * 0.9]) { if (isUp) { ctx.moveTo(ax, ay + o - w * 0.55); ctx.lineTo(ax + w / 2, ay + o + w * 0.2); ctx.lineTo(ax - w / 2, ay + o + w * 0.2); } else { ctx.moveTo(ax, ay + o + w * 0.25); ctx.lineTo(ax + w / 2, ay + o - w * 0.5); ctx.lineTo(ax - w / 2, ay + o - w * 0.5); } ctx.closePath(); }
+      ctx.fill();
+    };
+    if (up && down) { lane(-hw, -1, true); lane(1, hw, false); } else lane(-hw, hw, up);
+    ctx.restore();
+  }
+}
+// 높이 그림자: 건물·전봇대·전깃줄이 같은 방향(오른쪽 아래)으로 높이만큼 긴 그림자를 땅에 드리운다. 한 번만 구워 땅 그림에 넣는다
+const SHD = { x: 20, y: 11 };  // 한 층 높이당 그림자가 밀리는 거리(px)
+function bakeCastShadows(x) {
+  const c = document.createElement('canvas'); c.width = MW * TILE; c.height = MH * TILE; const s = c.getContext('2d');
+  s.fillStyle = '#000'; s.strokeStyle = '#000'; s.lineCap = 'round';
+  BLD.forEach(b => { const h = b.h || 1, dx = h * SHD.x, dy = h * SHD.y, x0 = b.x0 * TILE, y0 = b.y0 * TILE, x1 = (b.x1 + 1) * TILE, y1 = (b.y1 + 1) * TILE;
+    s.beginPath(); s.moveTo(x1, y0); s.lineTo(x1 + dx, y0 + dy); s.lineTo(x1 + dx, y1 + dy); s.lineTo(x0 + dx, y1 + dy); s.lineTo(x0, y1); s.lineTo(x1, y1); s.closePath(); s.fill(); });
+  for (const o of S.poles || []) { s.lineWidth = 7; s.beginPath(); s.moveTo(o.x, o.y + 12); s.lineTo(o.x + o.z * SHD.x * 1.1, o.y + 12 + o.z * SHD.y * 1.1); s.stroke();
+    s.lineWidth = 4; const tx = o.x + o.z * SHD.x * 1.1, ty = o.y + 12 + o.z * SHD.y * 1.1; s.beginPath(); s.moveTo(tx - 14, ty + 3); s.lineTo(tx + 14, ty - 3); s.stroke(); }
+  for (const w of S.wires || []) { const a = w.a, b = w.b; s.lineWidth = 2.5; s.beginPath(); s.moveTo(a.x + a.z * SHD.x, a.y + a.z * SHD.y); s.lineTo(b.x + b.z * SHD.x, b.y + b.z * SHD.y); s.stroke(); }
+  s.globalCompositeOperation = 'destination-out';  // 건물 바닥 안(실내)과 건물 자기 자리에는 드리우지 않는다
+  BLD.forEach(b => s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE));
+  x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, 0, 0); x.restore();
 }
 function renderMap(R) {
   // R = {x0, y0, x1, y1}: 그 사각형(칸)만 그린다 (위층 평면 캐시용)
@@ -1647,6 +1693,7 @@ function renderMap(R) {
     BLD.forEach(b => { if (b.piloti) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect((b.x0 + 1) * TILE, (b.y0 + 1) * TILE, (b.x1 - b.x0 - 1) * TILE, (b.y1 - b.y0) * TILE); } });
     CARS.forEach(([cx, cy, c]) => { x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(cx * TILE + 8, cy * TILE + 10, 38, 88); blit(x, 'car' + c, cx * TILE, cy * TILE, TILE, TILE * 2); });
   }
+  if (!CUR_F && !R && CITY) bakeCastShadows(x);
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
@@ -1876,7 +1923,7 @@ const A_NAME = ['평온', '경계', '수색', '발각'];
 function setAlert(lv, dur, msg) {
   if (lv >= 2 && S.alevel < 2) { S.stats.alarms++; if (CITY) setTimeout(roofCheck, 400); }
   if (lv > S.alevel) {
-    S.alevel = lv; if (lv === 3) { S.unseenT = 0; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; setTimeout(spawnReinforcements, 2500); } }
+    S.alevel = lv; if (lv === 3) { S.unseenT = 0; S.chaseSeen = true; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; setTimeout(spawnReinforcements, 2500); } }
     if (lv >= 2) play('alarm', 0.55);
     if (STAGE.flee && lv >= 2) startFlee();
   }
@@ -2232,7 +2279,7 @@ function updateGuard(g, dt) {
         g.waitT += dt; lookAround(g, dt, g.waitBase2, 1.4, [0.9, 1.5]);
         g.wait -= dt;
         if (g.wait <= 0) {
-          if (S.alevel >= 2 && !g.target) startCheck(g, g.poi, 4); else { g.state = 'RETURN'; g.path = null; g.icon = null; }
+          if (S.alevel >= 2 && !g.target) startCheck(g, g.poi, 4); else { g.state = 'RETURN'; g.path = null; g.icon = null; if (g.chased && !g.civ && !g.dog) { g.chased = false; gsay(g, BARKS.giveup ? BARKS.giveup[g.id % BARKS.giveup.length] : '놓쳤다…'); } }
         }
       }
       break;
@@ -2267,6 +2314,9 @@ function updateGuard(g, dt) {
     }
     case 'ALERT': {
       if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
+      g.chased = true;
+      // 눈앞에서 계단·배관·전깃줄로 높이를 바꿔 사라지면, 어디로 갔는지는 안다 (같은 단계에 있던 마지막 자리 근처에서 1.5초 안)
+      if (!g.seen && g.lostT < 1.5 && g.lastSeen && !P.hide && !P.under && !P.vent) { const ps = pSpot(); if (S.lvl && lvlKey(ps) !== lvlKey(g.lastSeen) && dist(ps.x, ps.y, g.lastSeen.x, g.lastSeen.y) < 200) { g.lastSeen = ps; g.path = null; g.repath = 0; } }
       if (g.target) { if (STAGE.flee) { goFlee(g); break; } g.want = Math.atan2(P.y - g.y, P.x - g.x); if (g.lostT > 5) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0.4; } break; }
       g.repath -= dt;
       if (g.repath <= 0 || !g.path) { routeTo(g, g.lastSeen); g.repath = 0.4; }
@@ -2438,7 +2488,10 @@ function hurtPlayer(g, why) {
   P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유) play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 경비는 잠깐 숨을 고른다
   for (const o of S.guards) if (o !== g && o.state === 'ALERT' && dist(o.x, o.y, P.x, P.y) < 80) o.atkCd = Math.max(o.atkCd || 0, 1.2);  // 옆 경비가 바로 이어 베지 않게
-  if (g) { const a = Math.atan2(P.y - g.y, P.x - g.x); P.x += Math.cos(a) * 30; P.y += Math.sin(a) * 30; if (!P.z) { collide(P, 13, groundSolidP); collide(P, 13, groundSolidP); } }
+  if (g) {  // 뒤로 밀림: 조금씩 밀다가 벽에 닿으면 멈춘다 (한 번에 30px 밀면 벽 속에 박혔다)
+    const a = dist(P.x, P.y, g.x, g.y) < 4 ? g.a : Math.atan2(P.y - g.y, P.x - g.x), sol = P.z ? solidFor(P.z) : groundSolidP;
+    for (let k = 0; k < 6; k++) { const nx = P.x + Math.cos(a) * 5, ny = P.y + Math.sin(a) * 5; if (sol(Math.floor((nx + Math.cos(a) * 12) / TILE), Math.floor((ny + Math.sin(a) * 12) / TILE))) break; P.x = nx; P.y = ny; }
+    collide(P, P.z ? 10 : 13, sol); }
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; goAlert(c); }
   if (P.hp <= 0) { endGame(false, why); return; }
@@ -2721,7 +2774,7 @@ function updatePull(dt) {
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
 function startTrav(o) {
-  const P = S.player; P.trav = Object.assign({ t: 0, st: 0 }, o); P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
+  const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
 }
 function travPose(T) {
   const f = Math.min(1, T.t / T.dur); let lo = 0;
@@ -2891,6 +2944,7 @@ function updatePlayer(dt) {
     }
   }
   P.hidden = P.z === 0 && tileAt(P.x, P.y) === 'B';
+  if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 덤불에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
   if (P.captive) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; }
   if (P.carrying) {
@@ -3799,7 +3853,7 @@ function actPrimary(force) {
     case 'drag': {
       const g = P.captive, h = a.h; P.captive = null; S.stats.special++;
       if (h.type === 'bush') { P.x = h.x; P.y = h.y; killGuard(g, 'bush', h, true); toast('덤불 속으로 끌고 들어가 처치했다', 2, 'good'); }
-      else { killGuard(g, 'stash', h, true); enterHide(h); toast(h.type === 'well' ? '우물 속으로 끌고 들어가 처치했다' : `${hideIn(h)}으로 끌고 들어가 처치했다`, 2.2, 'good'); }
+      else { killGuard(g, 'stash', h, true); enterHide(h, true); toast(h.type === 'well' ? '우물 속으로 끌고 들어가 처치했다' : `${hideIn(h)}으로 끌고 들어가 처치했다`, 2.2, 'good'); }
       break;
     }
     case 'hide': enterHide(a.h); break;
@@ -3813,10 +3867,30 @@ function grab(g) {
   play('cloth', 0.55); play('thud', 0.3);
   hint('grab', '붙잡았다: 숨을 곳(덤불·궤짝·우물) 옆에서 [끌고 가 처치]. 9초 넘게 끌면 빠져나간다');
 }
-function enterHide(b) {
+// 숨기: 바로 사라지지 않는다. 쓰레기통 = 다가가 테를 짚고 몸을 넘겨 안으로 가라앉음 · 덤불 = 웅크려 파고듦 · 맨홀 = 가장자리에서 사다리로 내려감
+function enterHide(b, quick) {
+  const P = S.player;
+  if (!quick && CITY && usePR('ninja') && PR.anims.vault && PR.anims.climb && !P.carrying && !P.captive) {
+    const d = dist(P.x, P.y, b.x, b.y), a = Math.atan2(b.y - P.y, b.x - P.x); P.a = a; P.cover = null; play('cloth', 0.3);
+    const fin = () => enterHideNow(b, false, true);
+    if (b.type === 'box') {
+      const ex = b.x - Math.cos(a) * 24, ey = b.y - Math.sin(a) * 24;
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: ex, y: ey, f: 0.28 }, { x: b.x, y: b.y - 4, f: 0.66 }, { x: b.x, y: b.y, f: 1 }], dur: 0.8 + d / 700, phases: [{ to: 0.28, pose: 'walk' }, { to: 0.66, pose: 'vault' }, { to: 1, pose: 'sink' }], face: a, rim: b.y + 2, hideB: b, end: () => { play('metal', 0.25); fin(); } });
+    } else if (b.type === 'well') {
+      const ex = b.x - Math.cos(a) * 20, ey = b.y - Math.sin(a) * 20;
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: ex, y: ey, f: 0.3 }, { x: b.x, y: b.y, f: 0.45 }, { x: b.x, y: b.y + 6, f: 1 }], dur: 0.9 + d / 700, phases: [{ to: 0.3, pose: 'walk' }, { to: 1, pose: 'climbDown' }], face: -Math.PI / 2, rim: b.y + 4, hideB: b, end: () => { play('metal', 0.3); fin(); } });
+    } else {
+      S.bushShake = { x: b.x, y: b.y, t: S.t };
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: b.x, y: b.y, f: 0.55 }, { x: b.x, y: b.y + 2, f: 1 }], dur: 0.55 + d / 700, phases: [{ to: 0.55, pose: 'walk' }, { to: 1, pose: 'sinkBush' }], face: a, rim: b.y + 14, hideB: b, end: () => { S.bushShake = { x: b.x, y: b.y, t: S.t }; fin(); } });
+    }
+    return;
+  }
+  enterHideNow(b, quick);
+}
+function enterHideNow(b, quick, keepFrom) {
   const P = S.player;
   b.spotted = S.guards.some(g => g.seen && g.state !== 'DEAD' && g.state !== 'CAPTIVE');
-  P.hide = b; P.hideFrom = { x: P.x, y: P.y }; P.x = b.x; P.y = b.y; S.hideExitLock = true; S.fx.push({ k: 'smoke', x: b.x, y: b.y, t: 0 });
+  P.hide = b; P.hideFrom = keepFrom && P.hideFrom ? P.hideFrom : { x: P.x, y: P.y }; P.x = b.x; P.y = b.y; S.hideExitLock = true; if (!CITY) S.fx.push({ k: 'smoke', x: b.x, y: b.y, t: 0 });
   play('cloth', 0.4); play('drop', 0.15);
   const where = hideIn(b);
   toast(b.spotted ? '숨는 모습을 들켰을지도 모른다…' : `${where}에 숨었다`, 2.2, b.spotted ? 'warn' : '');
@@ -3834,7 +3908,14 @@ function leaveHide(dir) {
     const sc = (o[0] * dir.x + o[1] * dir.y) / (Math.hypot(o[0], o[1]) * dl);
     if (sc > bs) { bs = sc; best = [tx, ty]; }
   }
-  if (best) { P.x = tc(best[0]); P.y = tc(best[1]); P.a = Math.atan2(best[1] - b.ty, best[0] - b.tx); }
+  if (best) {
+    const tx = tc(best[0]), ty = tc(best[1]); P.a = Math.atan2(best[1] - b.ty, best[0] - b.tx);
+    if (CITY && usePR('ninja') && PR.anims.vault && !b.z) {
+      if (b.type === 'box') { P.x = b.x; P.y = b.y; P.jump = { x0: b.x, y0: b.y - 4, x1: tx, y1: ty, t: 0, dur: 0.45, z1: 0, arc: 16, noise: 30, vault: true }; play('metal', 0.2); }
+      else if (b.type === 'well') { P.x = b.x; P.y = b.y + 6; startTrav({ pts: [{ x: b.x, y: b.y + 6, f: 0 }, { x: b.x, y: b.y, f: 0.6 }, { x: tx, y: ty, f: 1 }], dur: 0.8, phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'vault' }], face: -Math.PI / 2, rim: b.y + 4 }); }
+      else { S.bushShake = { x: b.x, y: b.y, t: S.t }; P.x = b.x; P.y = b.y; startTrav({ pts: [{ x: b.x, y: b.y, f: 0 }, { x: tx, y: ty, f: 1 }], dur: 0.35, phases: [{ to: 1, pose: 'walk' }] }); }
+    } else { P.x = tx; P.y = ty; }
+  }
   play('cloth', 0.35);
 }
 function travelTunnel() {
@@ -3854,13 +3935,19 @@ function koCiv(g, mode, where) {
 }
 function strikeKill(list, two) {
   const P = S.player; P.strikeT = 0.32;
-  const choke = !two && PAIR() && !list[0].civ && !list[0].dog && (S.stats.kills % 2 === 1);
-  if (choke) { P.strikeT = 0.42; P.killAnim = { ch: charOf(list[0]), t0: S.t }; P.a = list[0].a; }
+  // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
+  const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
+  const kind = pairK ? (g0.civ || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null, dur = 0.66;
+  if (pairK) { P.strikeT = dur; P.a = g0.a; P.killAnim = { ch: charOf(g0), t0: S.t, kind, dur }; }
   list.forEach(g => {
     g.doomed = false;
-    if (choke) { g.x = P.x + Math.cos(P.a) * 12; g.y = P.y + Math.sin(P.a) * 12; const nd = S.decals.length, nf = S.fx.length; killGuard(g); S.decals.length = nd; S.fx.length = nf;  // 목 조르기: 피·칼자국 없음
-      const c = S.corpses[S.corpses.length - 1]; if (c) { c.hideT = S.t + 0.42; c.t0 = S.t + 0.42; } }
-    else killGuard(g);
+    if (pairK) {
+      const nd = S.decals.length, nf = S.fx.length; killGuard(g); S.fx.length = nf; if (kind === 'choke') S.decals.length = nd;
+      const c = S.corpses[S.corpses.length - 1];
+      if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
+        c.x = ok ? fx : P.x; c.y = ok ? fy : P.y; c.a = P.a; c.hideT = S.t + dur; c.t0 = S.t + dur; c.f0 = 4; c.light = lightAt(c.x, c.y);
+        if (kind === 'stab' && S.decals.length > nd) { const d = S.decals[S.decals.length - 1]; d.x = c.x + rnd(-5, 5); d.y = c.y + rnd(-5, 5); } }
+    } else killGuard(g);
   });
   S.hitStop = 0.07;
   if (two) { S.stats.special++; toast('동시 암살', 1.8, 'good'); }
@@ -4010,6 +4097,7 @@ function cutLights() {
   S.fuseT = 2.5;
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
 }
+function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
 function actCarry() {
   if (!S || S.over || paused || !running || tactical) return;
   const P = S.player;
@@ -4041,15 +4129,18 @@ function actCarry() {
     return;
   }
   if (P.carrying) {
-    const c = P.carrying; const b = nearHide();
+    const c = P.carrying; const b = nearHide(), pc = pairCarry(P);
     if (b && b.bodies < b.cap) {
+      if (pc) { P.a = Math.atan2(b.y - P.y, b.x - P.x); startBodyAnim('stash', c, 0.5); }
       c.carried = false; c.stashed = true; P.carrying = null; b.bodies++; S.stats.stashed++;
       play('drop', 0.4); play('cloth', 0.3);
       toast(b.type === 'well' ? '시체를 우물 속에 떨어뜨렸다' : `${hideIn(b)}에 시체를 숨겼다 (${b.bodies}/${b.cap})`, 2.2, 'good');
       return;
     }
     if (b && b.bodies >= b.cap) toast(`${hideName(b)}은 꽉 찼다`, 1.6);
-    if (pairCarry(P)) { const ox = P.x - Math.sin(P.a) * 22, oy = P.y + Math.cos(P.a) * 22; c.x = ox; c.y = oy; c.td = S.t; c.t0 = null; }
+    if (pc) {  // 앞에 내려놓는다: 어깨에서 내려 → 안아 내림 → 허리 숙여 바닥에 눕힌다
+      const ox = P.x + Math.cos(P.a) * 26, oy = P.y + Math.sin(P.a) * 26; if (!solidAt(Math.floor(ox / TILE), Math.floor(oy / TILE))) { c.x = ox; c.y = oy; } else { c.x = P.x; c.y = P.y; }
+      c.a = P.a; c.t0 = null; c.td = null; c.hideT = S.t + 0.5; startBodyAnim('drop', c, 0.5); }
     c.carried = false; P.carrying = null;
     c.hidden = tileAt(c.x, c.y) === 'B';
     if (!c.hidden && solidAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE))) { c.x = P.x; c.y = P.y; c.hidden = P.hidden; }
@@ -4059,7 +4150,7 @@ function actCarry() {
     return;
   }
   const c = nearCorpse();
-  if (c) { c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 덤불 위나 궤짝·우물 옆에서 다시 누르면 숨긴다'); }
+  if (c) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 덤불 위나 궤짝·우물 옆에서 다시 누르면 숨긴다'); }
 }
 function actPrimaryForce(k) { const a = { k }; const keep = primaryAction; if (k === 'execute') { const P = S.player; const g = P.captive; P.captive = null; P.strikeT = 0.3; if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; } killGuard(g, null, null, true); S.stats.special++; } }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
@@ -4245,7 +4336,7 @@ function updateAlert(dt) {
     if (S.alevelT <= 0) {
       const was = S.alevel; S.alevel--; S.alevelT = S.alevel === 1 ? 45 : 0;
       if (was === 2) for (const g of S.guards) if (['SEARCH', 'CHECK', 'SUSPICIOUS', 'ALERT'].includes(g.state) && !g.target) { g.state = 'RETURN'; g.path = null; g.checks = []; g.inspect = null; g.icon = null; }
-      toast(was === 2 ? '수색이 끝났다 — 경비들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) bark(anyGuard(), 'calm');
+      toast(was === 2 ? '수색이 끝났다 — 경비들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) { bark(anyGuard(), S.chaseSeen && BARKS.calmLost ? 'calmLost' : S.stats.bodies && BARKS.calmBody ? 'calmBody' : 'calm'); S.chaseSeen = false; S.guards.forEach(g => { g.chased = false; }); }
     }
   }
 }
@@ -4313,8 +4404,9 @@ function drawPlayer(P) {
     // 전깃줄에 두 손으로 매달린 모습 (땅에는 그림자)
     const h = wirePt(P.wire.w, P.wire.s), sw = P.moving ? Math.sin(S.t * 9) * 2 : 0, dim = P.light < 0.3;
     const blinkW = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
-    ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 8, 13, 7, 0, 0, TAU); ctx.fill();
-    ctx.strokeStyle = 'rgba(160,230,255,.35)'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(h.x, h.y + 40); ctx.lineTo(P.x, P.y + 4); ctx.stroke(); ctx.setLineDash([]);
+    { const gp = wireGround(P.wire.w, P.wire.s), sx = gp.x + (P.z || 1) * SHD.x, sy = gp.y + (P.z || 1) * SHD.y;  // 땅에 떨어진 내 그림자: 높이만큼 떨어져 있다
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.ellipse(sx, sy, 13, 6.5, 0, 0, TAU); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(sx, sy, 19, 9.5, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(160,230,255,.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(h.x, h.y + 46); ctx.lineTo(sx, sy); ctx.stroke(); ctx.setLineDash([]); }
     if (usePR('ninja') && PR.anims.hang && PR.hangHand) {  // 프리렌더 매달림: 두 손을 줄에 맞추고, 움직이면 다리를 흔들며 옮겨 간다
       const sh = prSheet('ninja'), [c0, nf] = PR.anims.hang, fi = P.moving ? Math.floor(S.t * 6) % nf : 0, fr = PR.fr;
       ctx.globalAlpha = blinkW ? 0.3 : dim ? 0.75 : 1;
@@ -4355,15 +4447,36 @@ function drawPlayer(P) {
     const PK = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3, al = blink ? 0.35 : 1;
     if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); drawPR(PK, P.x, P.y, P.a, 'vault', 0, al, s1, -yo, f < 0.28 ? 0 : f < 0.78 ? 1 : 2); return; }
     const T = P.trav, tp = travPose(T);
+    if (tp.pose === 'sink' || tp.pose === 'sinkBush' || tp.pose === 'climbDown' || tp.pose === 'climbUp') {  // 숨는 곳 안으로 들어가고 나오는 몸: 테두리(rim) 아래는 잘라 낸다
+      const bush = tp.pose === 'sinkBush', cl = tp.pose === 'climbDown' || tp.pose === 'climbUp', g = tp.pose === 'climbUp' ? 1 - tp.g : tp.g, rim = T.rim != null ? T.rim : P.y + 10;
+      ctx.save(); ctx.beginPath(); ctx.rect(P.x - 80, rim - 240, 160, 240); ctx.clip();
+      const drop = g * (bush ? 8 : cl ? 46 : 36), fr = cl ? ((Math.floor(T.t * 7) * (tp.pose === 'climbDown' ? -1 : 1)) % 4 + 4) % 4 : 0;
+      drawPR(PK, P.x, P.y + drop, T.face != null ? T.face : P.a, cl ? 'climb' : 'crouch', 0, al * (bush ? 1 - g * 0.55 : 1), s1, cl ? 14 : 0, fr);
+      ctx.restore(); return; }
     if (tp.pose === 'climb') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'climb', 0, al, s1, 14, ((Math.floor(T.t * 7) * (T.down ? -1 : 1)) % 4 + 4) % 4); return; }
     if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
   }
   if (usePR('ninja')) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
-    if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 목 조르기
-      const PK1 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3, j = Math.sin(S.t * 40) * 1.5;
-      drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(P.killAnim.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
+    if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 네 단계
+      const KA = P.killAnim, PK1 = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3;
+      if (KA.kind && PR.anims[KA.kind]) { const f = (S.t - KA.t0) / KA.dur, k = f < 0.18 ? 0 : f < 0.45 ? 1 : f < 0.72 ? 2 : 3, j = k === 1 ? Math.sin(S.t * 40) * 1.5 : 0;
+        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, k); drawPR(KA.ch, P.x + j, P.y, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, k); return; }
+      const j = Math.sin(S.t * 40) * 1.5; drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(KA.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
     }
+    const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)
+    if (BA && S.t - BA.t0 < BA.dur && PR.anims.lift && PR.anims.stoop) {
+      const f = (S.t - BA.t0) / BA.dur, PKb = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', s1 = sc / 3, ck = carryKey(BA.c);
+      const ph = BA.k === 'lift' ? (f < 0.4 ? 'stoop' : f < 0.7 ? 0 : 1) : BA.k === 'drop' ? (f < 0.3 ? 1 : f < 0.6 ? 0 : 'stoop') : (f < 0.45 ? 1 : f < 0.8 ? 0 : 'stoop');
+      if (ph === 'stoop') {
+        const cx = BA.k === 'lift' ? BA.cx : BA.c.x, cy = BA.k === 'lift' ? BA.cy : BA.c.y, ca = BA.k === 'lift' ? BA.ca : BA.c.a, showC = BA.k !== 'stash' && ck && usePR(ck);
+        if (showC && cy < P.y) drawPR(ck, cx, cy - 6, ca || 0, 'death', 0, 1, 1, 0, 5);
+        drawPR(PKb, P.x, P.y, P.a, 'stoop', 0, 1, s1, -yo, 0);
+        if (showC && cy >= P.y) drawPR(ck, cx, cy - 6, ca || 0, 'death', 0, 1, 1, 0, 5);
+      } else { drawPR(PKb, P.x, P.y, P.a, 'lift', 0, 1, s1, -yo, ph); if (ck && usePR(ck)) drawPR(ck, P.x, P.y, P.a, 'lifted', 0, 1, s1, -yo, ph); }
+      return;
+    }
+    if (BA && S.t - BA.t0 >= BA.dur) P.bodyAnim = null;
     if (P.killAnim && P.strikeT <= 0) P.killAnim = null;
     const pc = pairCarry(P), pg = !pc && pairGrab(P);
     if (P.cover && PR.anims.lean && !P.strikeT) {  // 벽에 기댐: 등 뒤 벽에 옅은 선, 기댄 자세 (옆걸음은 웅크려 걷기)
@@ -4958,11 +5071,14 @@ function drawNearMarks(P, openB) {
   const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; list.push({ x, y, col, g, lab, d }); };
   if (!P.z) {
     for (const h of S.hides) if ((h.fl || 0) === fP && (h.z || 0) === (S.player.z || 0)) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? '맨' : '숨', hideName(h), h.tx, h.ty);
+    const stc = {};  // 계단 칸: 오르기·내려가기를 한 표식으로 (↑옥상 · ↓1층)
     for (const l of S.ladders) {
       if (l.kind === 'chimney') continue;
-      if ((l.bfl || 0) === fP && !(l.bz || 0)) add(l.x, l.y, SCAN.ladder, '↑', l.kind === 'pipe' ? (l.gas ? '가스관' : '배관') : l.kind === 'balc' ? '베란다' : '계단', l.kind === 'fstair' || l.kind === 'stair' ? l.bx : null, l.by);
-      if (l.kind === 'fstair' && l.tfl === fP && fP) add(l.x, l.y + 10, SCAN.ladder, '↓', '계단');
+      if (l.kind === 'fstair' || l.kind === 'stair') { const k = l.tx + ',' + l.ty, o = stc[k] || (stc[k] = { l, up: null, down: null });
+        if ((l.bfl || 0) === fP && !(l.bz || 0)) o.up = l.kind === 'stair' ? '옥상' : (l.tfl + 1) + '층'; if (l.kind === 'fstair' && l.tfl === fP && fP) o.down = (l.bfl + 1) + '층'; continue; }
+      if ((l.bfl || 0) === fP && !(l.bz || 0)) add(l.x, l.y, SCAN.ladder, '↑', l.kind === 'pipe' ? (l.gas ? '가스관' : '배관') : l.kind === 'balc' ? '베란다' : '계단');
     }
+    for (const k in stc) { const o = stc[k]; if (!o.up && !o.down) continue; add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
       for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? '잠' : '창', st === 'lock' ? '잠긴 창문' : '창문'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, '창', w.link ? '옆 건물로' : '창밖 전깃줄');
@@ -5180,7 +5296,7 @@ function draw() {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   for (let ty = vy0; ty <= vy1; ty++) for (let tx = vx0; tx <= vx1; tx++) {
     const ch = G[ty][tx];
-    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (CITY && kitOk(kitBush)) { ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
+    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (CITY && kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
     if (ch === 'T') {
       if (CITY && kitT.length) {  // 키트 나무: 숲은 침엽수가 많고, 시내는 활엽수
         const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0;
@@ -5302,6 +5418,10 @@ function draw() {
     if (mk) drawAwareMark(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
     if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);
   };
+  // 높이감: 지붕·전깃줄 위에 있으면 아래 거리가 한층 어둡고 푸르게 가라앉는다 (지붕은 그 위에 밝게 그려진다). 오르내릴 때는 서서히
+  if (CITY && !tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
+    const tgt = el > 0 ? Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
+    if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && coveredG(g, openB))) continue;
     guardOverlay(g);
@@ -5342,7 +5462,8 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   if ((input.scan || tactical) && running) drawScan(openB);
-  else if (running && !tactical) { drawNearMarks(P, openB); drawNearFurn(P, openB); }
+  else if (running && !tactical) { drawNearMarks(P, openB); }
+  if (running && CITY && !tactical) drawStairGlow(P, openB);
   if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running && CITY) { drawOpps(P); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
@@ -5938,7 +6059,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get DLG() { return DLG; }, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, get DLG() { return DLG; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, rollCall, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];

@@ -14,7 +14,11 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('grab', 'Walk', [i / 6 for i in range(6)], 0, ('grab', 'a')), ('grabI', 'Idle', [0], 0, ('grab', 'a')),
   ('held', 'Walk', [i / 6 for i in range(6)], 0, ('grab', 'b')), ('heldI', 'Idle', [0], 0, ('grab', 'b')),
   # 동작 포즈: 배관·벽 타기 / 창문 넘기
-  ('climb', 'Idle', [0, 1, 2, 3], 0, ('pose', 'climb')), ('vault', 'Idle', [0, 1, 2], 0, ('pose', 'vault')), ('lean', 'Idle', [0, 1], 0, ('pose', 'lean'))]
+  ('climb', 'Idle', [0, 1, 2, 3], 0, ('pose', 'climb')), ('vault', 'Idle', [0, 1, 2], 0, ('pose', 'vault')), ('lean', 'Idle', [0, 1], 0, ('pose', 'lean')),
+  # 시체 들기(허리 숙임 → 안아 올림 → 어깨에 얹음) · 뒤에서 처치(칼 / 목 조르기: 다가섬 → 제압 → 무릎 꺾임 → 내려놓음)
+  ('stoop', 'Idle', [0], 0, ('pose', 'stoop')), ('lift', 'Idle', [1, 2], 0, ('lift', 'a')), ('lifted', 'Idle', [1, 2], 0, ('lift', 'b')),
+  ('stab', 'Idle', [0, 1, 2, 3], 0, ('stab', 'a')), ('stabbed', 'Idle', [0, 1, 2, 3], 0, ('stab', 'b')),
+  ('choke', 'Idle', [0, 1, 2, 3], 0, ('choke', 'a')), ('choked', 'Idle', [0, 1, 2, 3], 0, ('choke', 'b'))]
 HANG_SWAY = [0, 0.7, 0, -0.7]
 VAR = {
   'key': dict(skin='#ff0000', hair='#00ff00', shirt='#0000ff', pants='#ff00ff', eyes='#000000', shirtUp=16, shoes='#00ffff'),
