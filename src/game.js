@@ -493,7 +493,7 @@ function kitAttach() {
   for (const e of KIT.bld[STAGE.id]) {
     const b = BLD[e.i]; if (!b || [b.x0, b.y0, b.x1, b.y1, b.h].join() !== e.key.join()) continue;
     let k = cache[e.i];
-    if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null }; k.img.src = e.src; }
+    if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null, gl: e.gl || [], g: null }; k.img.src = e.src; }
     b.kit = k;
   }
 }
@@ -503,11 +503,35 @@ function kitCanvas(b) {
   const c = document.createElement('canvas'); c.width = k.w; c.height = k.h; const x = c.getContext('2d'); x.drawImage(k.img, 0, 0);
   x.globalCompositeOperation = 'source-atop'; x.fillStyle = NEONY() ? 'rgba(26,8,56,.42)' : 'rgba(4,8,22,.46)';
   x.fillRect(0, 0, k.w, (b.y1 - b.fh + 1) * TILE - k.oy);
+  // 옥상 발광체(간판·옥탑방 창·채광창)는 어둡게 칠한 뒤 다시 밝힌다. 간판에는 글자를 쓴다
+  x.globalCompositeOperation = 'source-over';
+  k.gl.forEach(([gx, gy, gw, gh, col, t], i) => {
+    if (t === 's') {
+      x.fillStyle = col; x.fillRect(gx, gy, gw, gh);
+      const words = ['노래방', 'PC방', '호프', '당구장', '24시', '모텔', '사우나', '찜질방', '치킨', '소주방'], wd = words[(b.x0 * 7 + b.y0 * 13 + i) % words.length];
+      x.font = `700 ${Math.round(gh * 0.72)}px Galmuri, "IBM Plex Sans KR", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.lineWidth = 3; x.strokeStyle = 'rgba(20,6,30,.85)'; x.strokeText(wd, gx + gw / 2, gy + gh / 2 + 1); x.fillStyle = '#fff6fb'; x.fillText(wd, gx + gw / 2, gy + gh / 2 + 1);
+    } else { x.fillStyle = t === 'w' ? '#ffd8a0' : 'rgba(255,214,150,.62)'; x.fillRect(gx, gy, gw, gh); }
+  });
   return (k.c = c);
+}
+// 옥상 발광체 둘레의 번짐(한 번만 그려 두고 매 프레임 더하기 합성)
+function kitGlow(k) {
+  if (k.g !== null) return k.g; if (!k.gl.length) return (k.g = false);
+  const c = document.createElement('canvas'); c.width = k.w; c.height = k.h; const x = c.getContext('2d');
+  k.gl.forEach(([gx, gy, gw, gh, col, t]) => {
+    const cx = gx + gw / 2, cy = gy + gh / 2, r = t === 's' ? Math.max(gw, gh) * 0.75 : 26, g = x.createRadialGradient(cx, cy, 2, cx, cy, r);
+    const rgb = t === 's' ? col : t === 'w' ? '#ffb060' : '#ffc070', al = t === 's' ? 0.55 : t === 'w' ? 0.4 : 0.26;
+    g.addColorStop(0, rgb + Math.round(al * 255).toString(16).padStart(2, '0')); g.addColorStop(1, rgb + '00');
+    x.fillStyle = g; x.fillRect(cx - r, cy - r, r * 2, r * 2);
+  });
+  return (k.g = c);
 }
 function drawKitBuilding(b) {
   const c = kitCanvas(b); if (!c) return false;
   const k = b.kit; ctx.drawImage(c, k.ox, k.oy);
+  const gw = kitGlow(k);
+  if (gw && !(b.wsT > S.t - 0.2)) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.8 + 0.2 * Math.sin(S.t * 2.3 + b.x0); ctx.drawImage(gw, k.ox, k.oy); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
   for (let r = 0; r < b.fh; r++) {
@@ -4241,6 +4265,7 @@ function drawWindowSight(P, openB) {
     // 바깥벽 안쪽으로 시선이 들어가는지 (안쪽 칸 하나라도)
     let inside = false; for (let i = 0; i < poly.length && !inside; i += 2) { const tx = Math.floor((poly[i] - Math.cos(i / poly.length * TAU) * 2) / TILE), ty = Math.floor((poly[i + 1] - Math.sin(i / poly.length * TAU) * 2) / TILE); if (tx > b.x0 && tx < b.x1 && ty > b.y0 && ty < b.y1) inside = true; }
     if (!inside) return;
+    b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (지붕 발광은 쉰다)
     // 도면: 건물 평면을 흐리게 (사람은 안 보임)
     ctx.save(); ctx.globalAlpha = 0.5; ctx.drawImage(mapC, bx, by, bw, bh, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
     ctx.strokeStyle = 'rgba(160,200,235,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]); ctx.restore();

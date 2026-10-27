@@ -43,7 +43,7 @@ window.bake = async spec => {
       o = new THREE.Mesh(new THREE.CylinderGeometry(it.r, it.r, L, 14), new THREE.MeshStandardMaterial({ color: it.color ?? 0xd0a830, roughness: it.rough ?? 0.45, metalness: it.metal ?? 0.35 }));
       o.position.copy(p0.clone().add(p1).multiplyScalar(0.5)); o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p1.clone().sub(p0).normalize());
     } else if (it.box) {  // 단색 상자 [x0, y0, z0, x1, y1, z1]
-      const [a, b, c, d, e, f] = it.box; o = new THREE.Mesh(new THREE.BoxGeometry(d - a, e - b, f - c), new THREE.MeshStandardMaterial({ color: it.color ?? 0x202228, roughness: it.rough ?? 0.95, metalness: it.metal ?? 0 }));
+      const [a, b, c, d, e, f] = it.box; o = new THREE.Mesh(new THREE.BoxGeometry(d - a, e - b, f - c), new THREE.MeshStandardMaterial({ color: it.color ?? 0x202228, roughness: it.rough ?? 0.95, metalness: it.metal ?? 0, emissive: it.emi ?? 0x000000, emissiveIntensity: it.ei ?? 1 }));
       o.position.set((a + d) / 2, (b + e) / 2, (c + f) / 2);
     } else {
       o = (await load(it.n)).clone(true); o.traverse(m => { if (m.isMesh) { const f = it.n.startsWith('M:') ? mm => matMK(mm, it) : matLit; m.material = Array.isArray(m.material) ? m.material.map(f) : f(m.material); } });
