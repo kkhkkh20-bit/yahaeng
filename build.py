@@ -28,6 +28,7 @@ def build():
     html = read(P('src', 'template.html')).replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
     meta = json.load(open(P('build', 'pr', 'pr_meta.json')))
     meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'key.webp'), 'rb').read()).decode()
+    if meta.get('faces') and os.path.exists(P('build', 'pr', 'face.webp')): meta['faces']['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'face.webp'), 'rb').read()).decode()
     for bn, bm in (meta.get('bodies') or {}).items():  # 주민 체형 변형 시트
         bm['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'body_' + bn + '.webp'), 'rb').read()).decode()
     kit = read(P('build', 'kit_mk', 'kit.json')) if os.path.exists(P('build', 'kit_mk', 'kit.json')) else 'null'

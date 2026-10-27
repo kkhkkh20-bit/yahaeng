@@ -68,10 +68,22 @@ async def main():
             cols = sum(len(a[2]) for a in ANIMS); meta = {'fr': FR, 'cols': cols, 'groundY': 46.8, 'anims': {}}
             if os.path.exists(f'{OUT}/pr_meta.json'):  # 따로 잰 값(상자 든 손 위치)은 다시 찍어도 유지
                 om = json.load(open(f'{OUT}/pr_meta.json'))
-                for k in ('holdHand',):
+                for k in ('holdHand', 'faces'):
                     if k in om: meta[k] = om[k]
             c = 0
             for an in ANIMS: meta['anims'][an[0]] = [c, len(an[2])]; c += len(an[2])
+            if '--faces' in sys.argv:  # 대사창 얼굴: 기본 체형 + 체형마다 한 장씩, 키 색으로 (게임에서 팔레트로 칠한다)
+                from bodies import BODIES
+                FF = 160; names = [''] + list(BODIES); sheet = Image.new('RGBA', (len(names) * FF, FF))
+                await pg.evaluate(f'setTex({json.dumps(VAR["key"])})')
+                for i, bn in enumerate(names):
+                    await pg.evaluate(f'setBody({json.dumps(BODIES[bn]) if bn else "null"})')
+                    url = await pg.evaluate(f'renderFace(0.42, {FF})'); im = Image.open(io.BytesIO(base64.b64decode(url.split(',')[1]))).convert('RGBA')
+                    sheet.paste(im, (i * FF, 0))
+                await pg.evaluate('setBody(null)')
+                sheet.save(f'{OUT}/face.webp', 'WEBP', lossless=True, method=6)
+                old = json.load(open(f'{OUT}/pr_meta.json')); old['faces'] = {'fr': FF, 'cols': {n: i for i, n in enumerate(names)}}
+                json.dump(old, open(f'{OUT}/pr_meta.json', 'w')); print('faces', os.path.getsize(f'{OUT}/face.webp')); await b.close(); return
             app = [x.split('=')[1].split(',') for x in sys.argv if x.startswith('--append=')]
             if app:  # 기존 기본 시트 뒤에 동작 몇 개만 덧붙인다 (전체를 다시 찍지 않는다)
                 old = json.load(open(f'{OUT}/pr_meta.json')); base = Image.open(f'{OUT}/key.png').convert('RGBA'); oc = old['cols']

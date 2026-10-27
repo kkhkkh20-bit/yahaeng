@@ -196,16 +196,30 @@ h1 span { color: var(--blood); }
 #endStats dd { margin: 2px 0 0; font-family: var(--f-body); font-weight: 600; font-variant-numeric: tabular-nums; font-size: var(--fs-lead); font-variant-numeric: tabular-nums; }
 body.joyused .joyhint { display: none; }
 /* 대사 창: 도둑 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
-#dlg { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(64px + env(safe-area-inset-bottom, 0px)); width: min(640px, calc(100vw - 24px)); display: flex; gap: 8px; align-items: stretch; z-index: 6; pointer-events: auto; image-rendering: pixelated; }
+#dlg { --rc: #9fb6d8; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(62px + env(safe-area-inset-bottom, 0px)); width: min(720px, calc(100vw - 24px)); display: flex; align-items: flex-end; z-index: 6; pointer-events: auto; animation: dlgIn .18s ease-out; }
 body.touch #dlg { bottom: auto; top: calc(118px + env(safe-area-inset-top, 0px)); }
-#dlg.modal::before { content: ""; position: fixed; inset: -100vh -100vw; background: rgba(3, 5, 10, .35); z-index: -1; }
-.dlg-face { flex: 0 0 76px; height: 76px; background-size: 100% 100%; background-repeat: no-repeat; display: grid; place-items: center; image-rendering: pixelated; }
-.dlg-face canvas { width: 58px; height: 58px; image-rendering: pixelated; }
-.dlg-box { flex: 1; min-width: 0; min-height: 48px; border: 14px solid transparent; color: #3b2a20; font-family: Galmuri, var(--f-body); padding: 0 4px; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
-.dlg-box b { align-self: flex-start; background: #8a4b32; color: #fff3e0; font-size: var(--fs-ui); padding: 2px 8px; font-weight: 700; letter-spacing: .04em; }
-.dlg-box p { margin: 0; font-size: var(--fs-lead); line-height: 1.45; min-height: 1.45em; }
-.dlg-box small { font-size: var(--fs-cap); color: #8a6a50; align-self: flex-end; }
-@media (max-width: 640px) { .dlg-face { flex-basis: 60px; height: 60px; } .dlg-face canvas { width: 46px; height: 46px; } .dlg-box p { font-size: var(--fs-lead); } }
+#dlg.modal::before { content: ""; position: fixed; inset: -100vh -100vw; background: linear-gradient(180deg, rgba(3, 5, 10, 0) 35%, rgba(3, 5, 10, .55)); z-index: -1; pointer-events: none; }
+@keyframes dlgIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.dlg-face { position: relative; flex: 0 0 112px; height: 124px; margin-right: -14px; z-index: 1; border-radius: 10px 10px 2px 10px; overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 18%, color-mix(in srgb, var(--rc) 55%, #1a2234) 0%, #111827 62%, #070a12 100%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rc) 60%, transparent), 0 8px 22px rgba(0, 0, 0, .55); }
+.dlg-face::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 30%, transparent 70%, rgba(7, 10, 18, .55)); pointer-events: none; }
+.dlg-face canvas { position: absolute; left: 50%; bottom: -4px; width: 132px; height: 132px; transform: translateX(-50%); transform-origin: 50% 100%; }
+#dlg.talking .dlg-face canvas { animation: dlgTalk .32s ease-in-out infinite alternate; }
+@keyframes dlgTalk { from { transform: translateX(-50%) translateY(0); } to { transform: translateX(-50%) translateY(-1.5px) rotate(-.4deg); } }
+.dlg-box { flex: 1; min-width: 0; min-height: 92px; padding: 12px 18px 10px 28px; display: flex; flex-direction: column; gap: 5px; color: #eef1f6; font-family: var(--f-body);
+  background: linear-gradient(180deg, rgba(16, 21, 34, .94), rgba(8, 11, 19, .96)); border-radius: 0 10px 10px 0; border-top: 2px solid var(--rc);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04), 0 10px 26px rgba(0, 0, 0, .5); }
+.dlg-head { display: flex; align-items: baseline; gap: 8px; }
+.dlg-box b { color: var(--rc); font-size: 14px; font-weight: 700; letter-spacing: .06em; }
+.dlg-box i { font-style: normal; font-size: var(--fs-cap); color: #7f8aa3; letter-spacing: .08em; }
+.dlg-box p { margin: 0; font-size: 17px; line-height: 1.55; min-height: 1.55em; word-break: keep-all; text-wrap: pretty; }
+.dlg-box small { font-size: var(--fs-cap); color: #8d97ad; align-self: flex-end; letter-spacing: .04em; }
+#dlg:not(.talking) .dlg-box small::after { content: ""; display: inline-block; width: 6px; height: 6px; margin-left: 6px; border-right: 2px solid var(--rc); border-bottom: 2px solid var(--rc); transform: rotate(-45deg); animation: dlgNext .9s ease-in-out infinite; }
+@keyframes dlgNext { 50% { transform: translateX(3px) rotate(-45deg); opacity: .5; } }
+#dlg.noface .dlg-box { border-radius: 10px; padding-left: 18px; }
+@media (max-height: 480px) { #dlg { width: min(600px, calc(100vw - 200px)); } .dlg-face { flex-basis: 80px; height: 90px; margin-right: -10px; } .dlg-face canvas { width: 98px; height: 98px; } .dlg-box { min-height: 70px; padding: 8px 12px 7px 20px; gap: 3px; } .dlg-box p { font-size: 15px; } }
+@media (max-width: 640px) { .dlg-face { flex-basis: 84px; height: 96px; margin-right: -10px; } .dlg-face canvas { width: 102px; height: 102px; } .dlg-box { min-height: 76px; padding: 10px 12px 8px 20px; } .dlg-box p { font-size: 15px; } }
 @media (max-width: 640px) {
   :root { --fs-cap: 11px; --fs-ui: 11.5px; --fs-body: 12.5px; --fs-lead: 14px; }
   .top { gap: 6px; }
@@ -370,8 +384,8 @@ body.scanning #scanLegend { display: flex; }
   <div class="kpg"><button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" data-k="&lt;" class="fn">지움</button><button type="button" data-k="0">0</button><button type="button" data-k="ok" class="fn ok">확인</button></div>
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
 <div id="dlg" hidden>
-  <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="38" height="38"></canvas></div>
-  <div class="dlg-box"><b id="dlgName"></b><p id="dlgText"></p><small id="dlgHint"></small></div>
+  <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="160" height="160"></canvas></div>
+  <div class="dlg-box"><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><p id="dlgText"></p><small id="dlgHint"></small></div>
 </div>
 <div id="joy" hidden><div id="joyKnob"></div></div>
 

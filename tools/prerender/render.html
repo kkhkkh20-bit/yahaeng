@@ -242,6 +242,21 @@ window.renderPair = (kind, clip, t, dirA, part, blend) => {
   return url;
 };
 
+// 대사창 얼굴(초상): 편하게 선 자세에서 머리·어깨만 가까이, 정면에서 살짝 비껴 원근 카메라로 찍는다 (키 색 → 게임에서 팔레트로 칠함)
+const fcam = new THREE.PerspectiveCamera(20, 1, 1, 5000);
+window.renderFace = (side, size) => {
+  size = size || 160; renderer.setSize(size, size);
+  mixer.stopAllAction(); const a = mixer.clipAction(clips.Walk); a.reset(); a.play(); mixer.setTime(0.25);
+  bones.Hips.position.x = 0; bones.Hips.position.z = 0; model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
+  for (const sd of ['Left', 'Right']) { const sg = sd === 'Left' ? 1 : -1; aimB(bones[sd + 'Arm'], bones[sd + 'ForeArm'], V3(0.12 * sg, -1, 0.02)); aimB(bones[sd + 'ForeArm'], bones[sd + 'Hand'], V3(0.04 * sg, -1, 0.12)); }
+  aimB(bones.Spine, bones.Spine1, V3(0, 1, 0.02)); aimB(bones.Neck, bones.Head, V3(0, 1, 0.04));
+  const h = new THREE.Vector3(); bones.Head.getWorldPosition(h); const top = new THREE.Vector3(); (bones.HeadTop_End || bones.Head).getWorldPosition(top);
+  const hh = Math.max(20, top.y - h.y), c = h.clone().add(V3(0, hh * 0.15, 0)), d = hh * 6.4, sd = side || 0.42;
+  fcam.position.set(c.x + Math.sin(sd) * d, c.y + hh * 0.6, c.z + Math.cos(sd) * d); fcam.lookAt(c.x, c.y - hh * 0.2, c.z); fcam.updateProjectionMatrix();
+  shadow.visible = false; renderer.render(scene, fcam); shadow.visible = true;
+  const url = renderer.domElement.toDataURL('image/png'); renderer.setSize(RS, RS); return url;
+};
+window.boneNames = () => Object.keys(bones);
 // 동작 포즈: climb (배관·벽·전봇대 타기, 팔다리 번갈아) / vault (창문·난간 넘기: 짚기 → 몸 접어 넘기 → 착지)
 window.renderPose = (name, k, dirA) => {
   mixer.stopAllAction(); const act = mixer.clipAction(clips.Idle); act.reset(); act.play(); mixer.setTime(0);
