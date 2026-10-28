@@ -12,7 +12,11 @@ JS = r'''() => { const G = window.__game, S = G.S, T = 48, tc = v => v * T + T /
   const crew = S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.dropped);
   const pts = g => { const r = (g.route && g.route.length ? g.route : [{ x: g.x, y: g.y }]).filter(p => p.x > -1000); return r.length ? r : [{ x: g.x, y: g.y }]; };
   const fl = o => o.fl || 0;
-  const sees = (a, b, f) => Math.hypot(a.x - b.x, a.y - b.y) < 9 * T && G.los(a.x, a.y, b.x, b.y);
+  // 보는 방향: 자리 지킴이는 지키는 방향, 순찰은 경로 앞뒤 방향 (서는 곳에서 두리번거리니 양쪽 다), 좌우 70도 안
+  const faces = (o, i) => { const P = pts(o); if (o.post != null && P.length === 1) return [o.post * Math.PI / 180]; if (P.length < 2) return [o.a || 0]; const a = P[(i + 1) % P.length], b = P[(i - 1 + P.length) % P.length], q = P[i]; return [Math.atan2(a.y - q.y, a.x - q.x), Math.atan2(b.y - q.y, b.x - q.x)]; };
+  const angd = (a, b) => Math.abs(((a - b + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+  const sees = (a, b, f, A) => Math.hypot(a.x - b.x, a.y - b.y) < 9 * T && (!A || A.some(t => angd(t, Math.atan2(b.y - a.y, b.x - a.x)) < 1.22)) && G.los(a.x, a.y, b.x, b.y);
+  const watch = (o, p) => pts(o).some((q, i) => sees(q, p, 0, faces(o, i)));
   const hides = (S.hides || []).filter(h => (h.cap || 1) > 0);
   G.setLayer(0); const MWm = G.STAGES[0] ? window.__game.S && 200 : 200;
   for (let y = 0; y < 120; y++) for (let x = 0; x < 120; x++) { let c; try { c = G.tileG(x, y); } catch (e) { c = undefined; } if (c === 'B') hides.push({ type: 'bush', x: x * T + T / 2, y: y * T + T / 2, fl: 0 }); }
@@ -21,12 +25,12 @@ JS = r'''() => { const G = window.__game, S = G.S, T = 48, tc = v => v * T + T /
     const P = pts(g), f = fl(g); G.setLayer(f);
     let alone = 0, hideMin = 99, dark = 0, civ = 0;
     for (const p of P) {
-      const w = crew.filter(o => o !== g && fl(o) === f && pts(o).some(q => sees(q, p))).length; if (!w) alone++;
+      const w = crew.filter(o => o !== g && fl(o) === f && watch(o, p)).length; if (!w) alone++;
       const tx = Math.floor(p.x / T), ty = Math.floor(p.y / T);
-      for (const h of hides) { if (fl(h) !== f || (h.z || 0)) continue; const hx = Math.floor(h.x / T), hy = Math.floor(h.y / T); if (Math.abs(hx - tx) + Math.abs(hy - ty) > 9) continue; const path = G.astar(tx, ty, hx, hy); const n = (hx === tx && hy === ty) ? 0 : path.length || 99; if (n < hideMin) hideMin = n; }
+      for (const h of hides) { if (fl(h) !== f || (h.z || 0)) continue; const hx = Math.floor(h.x / T), hy = Math.floor(h.y / T); if (Math.abs(hx - tx) + Math.abs(hy - ty) > 9) continue; let n = 99; for (const [ax, ay] of [[hx, hy], [hx + 1, hy], [hx - 1, hy], [hx, hy + 1], [hx, hy - 1]]) { if (G.solidAt(ax, ay)) continue; if (ax === tx && ay === ty) { n = 0; break; } const path = G.astar(tx, ty, ax, ay); if (path.length) n = Math.min(n, path.length); } if (n < hideMin) hideMin = n; }  // 수거함·화단은 막힌 칸 — 옆 칸까지 걸음
       const a = g.post != null ? g.post * Math.PI / 180 : (g.a || 0);
       for (const k of [1, 2]) { const bx = p.x - Math.cos(a) * k * T, by = p.y - Math.sin(a) * k * T; if (!G.solidAt(Math.floor(bx / T), Math.floor(by / T)) && G.lightAtG(bx, by, f) < 0.35) { dark++; break; } }
-      civ = Math.max(civ, S.guards.filter(o => o.civ && fl(o) === f && pts(o).some(q => sees(q, p))).length);
+      civ = Math.max(civ, S.guards.filter(o => o.civ && !o.child && fl(o) === f && Math.hypot(o.x - p.x, o.y - p.y) < 9 * T && G.los(o.x, o.y, p.x, p.y)).length);
     }
     let near = 99; for (const o of crew) { if (o === g || fl(o) !== f) continue; for (const p of P) for (const q of pts(o)) near = Math.min(near, Math.round(Math.hypot(p.x - q.x, p.y - q.y) / T)); }
     const zi = G.zoneInfo(P[0].x, P[0].y, g.z || 0);
@@ -43,7 +47,7 @@ async def main():
             await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(400); await pg.evaluate(SK)
             rows = await pg.evaluate(JS)
             bad = {'홀로 못 됨': 0, '숨길 곳 멂': 0, '어둠 없음': 0, '주민 많음': 0, '너무 붙음': 0, '외톨이': 0}
-            print(f'\n== {sid}  조직원 {len(rows)}명')
+            print(f'\n== {sid}  조직원 {len(rows)}명  (홀로 = 다른 조직원 시야 밖인 서는 곳 / 서는 곳, 숨김 = 시체 숨길 곳까지 걸음 수)')
             print(' 번호 종류 층  자리     서는곳 홀로   숨김 어둠  주민 간격 구역  문제')
             for r in rows:
                 pr = []

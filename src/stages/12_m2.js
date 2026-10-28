@@ -29,10 +29,12 @@
     m.fill(21, 6, 21, 7, 'U'); m.set(21, 8, 'L'); m.pipe(22, 6);                                                     // 클럽 옆 컨테이너 → 배관 → 클럽 옥상
     m.many('T', [[47, 15], [53, 14]]); m.many('B', [[45, 13], [52, 13], [44, 17]]);
     [6, 24, 40, 52].forEach(x => m.pole(x, 19, 2));
-    m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34]]); m.many('O', [[12, 19], [33, 25]]);
+    m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34], [22, 17], [37, 15], [6, 1], [25, 1]]);   // 22,17·37,15 = 네온 골목 양 끝 (문지기·순찰 처리 뒤 숨길 곳) · 6,1 = 사무동 뒷골목 · 25,1 = 클럽 뒷골목 서쪽
+    m.fill(30, 1, 30, 2, 'C');                                                                                     // 클럽 뒷골목 가운데 상자 더미: 서쪽·동쪽 순찰의 시선을 끊는다 (3칸으로 지나간다) m.many('O', [[12, 19], [33, 25]]);
     m.many('W', [[6, 16], [31, 21], [54, 2], [41, 13]]); m.set(36, 18, 'F');
     mat(m, 'p', [[26, 16], [27, 16], [17, 11]]); mat(m, 'x', [[38, 10], [38, 11]]); mat(m, 'r', [[15, 15], [16, 15]]);
     [[10, 20, 0], [33, 22, 2], [46, 20, 1]].forEach(([x, y, c]) => m.car(x, y, c));
+    shrubs(m, [[14, 2], [19, 1], [41, 1], [47, 2], [52, 1], [38, 12], [42, 14], [1, 10], [12, 17], [49, 17], [28, 25], [39, 25], [23, 3]]);   // 숨을 화단: 뒷골목·샛길·큰길 가
   },
   wires: [...chain(19, [6, 24, 40, 52])],
   roofs: ['cRoofB', 'cRoofA', 'cRoofG', 'cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG'], bricks: [0, 1, 0, 1, 0, 1, 0, 1],
@@ -68,7 +70,7 @@
               { text: '실장이 간판 밑에 나오면 [간판 떨어뜨리기]', at: [27, 15, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] },
     { id: 'emetic', name: '약한 배', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
       steps: [{ text: '약국 진열대에서 배탈약 집기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
-              { text: '클럽 직원 옷 구하기 — 뒷골목에서 혼자 담배 피우는 직원이나 포차에서 쉬는 직원', at: [30, 2, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
+              { text: '클럽 직원 옷 구하기 — 뒷골목에서 혼자 담배 피우는 직원이나 포차에서 쉬는 직원', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '바 안쪽 실장 술병에 배탈약 타기 (직원 옷이면 자연스럽다)', at: [27, 10, 0], done: S => !!S.usesDone[0] },
               { text: '공중화장실에 혼자 들어간 실장 처리', at: [40, 7, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] },
     { id: 'vault', name: '금고와 뒷문', reveal: (S, h) => h.knows('비번'),
@@ -91,7 +93,7 @@
     { kind: 'g2', b: 1, fl: 0, at: 'VD', post: 90, elite: true },                     // 1 VIP룸 앞문 경호 (얼굴을 안다 — 변장도 알아본다)
     { kind: 'g1', tag: 'bouncer', at: [24, 16], post: 90 },                            // 2 클럽 문지기
     { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
-    { kind: 'g1', route: [[23, 2, 3], [36, 2, 3]] },                                  // 4 클럽 뒷골목
+    { kind: 'g1', route: [[23, 2, 4], [29, 2, 4]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
     { kind: 'g2', b: 0, at: 'VB', post: 90 },                                         // 6 금고 앞
     { kind: 'g1', b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
@@ -100,7 +102,7 @@
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
-    { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [31, 2], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
+    { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
     { kind: 'civ', outfit: 'waiter', at: [5, 30], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [6, 30], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들
     { kind: 'civ', tag: 'pharm', body: 'old', at: [18, 28], post: 180 },             // 16 약사
@@ -112,10 +114,9 @@
     { kind: 'civ', tag: 'mom', body: 'fBob', at: [20, 14], post: 180 },              // 24 엄마
     { kind: 'civ', tag: 'child', child: true, parent: 'mom', wander: [17, 14, 21, 16], at: [18, 15] },   // 25 아이 (손댈 수 없다 — 사탕)
     // 조직원 더: 뒤쪽은 조직 땅이다 (메탈기어식으로 하나씩 처리하며 나아갈 수 있게)
-    { kind: 'g2', route: [[36, 1, 4], [23, 1, 4]] },                         // 26 클럽 뒷골목 둘째
-    { kind: 'g1', b: 0, fl: 0, at: 'R', post: 270 },                         // 27 사무동 1층 사무실
-    { kind: 'g2', route: [[1, 4, 3], [1, 17, 3]] },                          // 28 사무동 서쪽 골목
-    { kind: 'g1', b: 0, fl: 1, at: 'S', post: 90 }                           // 29 사무동 2층
+    { kind: 'g2', route: [[31, 2, 4], [37, 1, 4]] },                         // 26 클럽 뒷골목 동쪽 (뒷문 앞)
+    { kind: 'g1', route: [[2, 2, 4], [11, 2, 4]] },                          // 27 사무동 뒷골목 (어둡다 · 6,1 수거함)
+    { kind: 'g2', route: [[1, 7, 3], [1, 17, 3]] }                           // 28 사무동 서쪽 골목
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],
   hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 옷이면 뒷골목·직원 복도·바 안쪽을 지나다닐 수 있다. VIP룸 경호는 얼굴을 알아본다.']

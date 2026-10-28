@@ -24,7 +24,7 @@ async def main():
             await ev('() => window.__game.actCarry()'); await pg.wait_for_timeout(700)
             return await ev('() => !!window.__game.S.player.captive')
         # 1 심문
-        await fresh([4, 26]); ok = await grab(4, 30, 2)
+        await fresh([4, 26]); ok = await grab(4, 27, 2)
         lab = await ev("() => [document.getElementById('btnTool').textContent, document.getElementById('kmX') && document.getElementById('kmX').textContent]")
         await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyX', key: 'x' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => { const S = window.__game.S; return [S.learned.slice(), !!S.player.keys.sign, (S.stories || []).filter(s => s.found).map(s => s.d.id), !!S.player.captive]; }")
@@ -56,7 +56,7 @@ async def main():
         r = await ev("() => window.__game.S.guards.filter(g => g.tagT > window.__game.S.t).map(g => g.id)"); print('위치 실토', ok, r)
         if not r: bad.append('정보를 다 알 때 심문하면 근처 조직원 위치가 표시되지 않는다')
         # 4 조직원 무전 점검
-        await fresh([3, 4]); await ev(PIN, [3, 30, 16, 0]); await ev(PIN, [4, 30, 2, 0]); await ev(BEHIND, 4); await pg.wait_for_timeout(60)
+        await fresh([3, 4]); await ev(PIN, [3, 30, 16, 0]); await ev(PIN, [4, 27, 2, 0]); await ev(BEHIND, 4); await pg.wait_for_timeout(60)
         await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1400)
         await ev("() => { const S = window.__game.S; S.player.x = 2 * 48; S.player.y = 33 * 48; S.rcT = 0.2; }"); await pg.wait_for_timeout(800)
         r = await ev("() => { const S = window.__game.S, g = S.guards[3]; return [S.guards[4].state, S.alevel, g.state, g.why, Math.round(g.poi ? g.poi.x / 48 : -1), Math.round(g.poi ? g.poi.y / 48 : -1)]; }")

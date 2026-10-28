@@ -611,8 +611,10 @@ function actPrimary(force) {
       const ho = stairHole(l);
       // 구멍 바닥 쪽 끝(c2)으로 들어서 깊은 쪽(c1)으로 내려간 뒤, 아래층 계단 들어서는 칸(e)에 선다
       startTrav({ pts: ho ? [{ x: P.x, y: P.y, f: 0 }, { x: ho.c2.x, y: ho.c2.y, f: 0.45 }, { x: ho.c1.x, y: ho.c1.y, f: 1 }] : [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y + 8, f: 1 }], dur: ho ? 0.6 : 0.4, phases: [{ to: 1, pose: 'walk' }],
-        end: () => { P.fl = l.bfl; setLayer(P.fl); const [dx, dy] = stairDir(l.tx, l.ty), ex = l.tx + dx, ey = l.ty + dy;
-          if (!solidAt(ex, ey)) { P.x = tc(ex); P.y = tc(ey); P.a = Math.atan2(dy, dx); } else { P.x = l.x; P.y = l.y; } play('step_w0', 0.3); S.fade = 0.15; } });
+        end: () => { P.fl = l.bfl; setLayer(P.fl); const [dx, dy] = stairDir(l.tx, l.ty), ex = l.tx + dx, ey = l.ty + dy; play('step_w0', 0.3); S.fade = 0.15;
+          // 아래층: 계단 칸(층계참)에서 돌아 나와 앞 칸으로 걸어 내려선다 — 화면이 어두워지는 사이에 몸을 돌리므로 휙 돌아보지 않는다
+          if (!solidAt(ex, ey)) { P.x = l.x; P.y = l.y; P.a = Math.atan2(dy, dx); startTrav({ pts: [{ x: l.x, y: l.y, f: 0 }, { x: tc(ex), y: tc(ey), f: 1 }], dur: 0.28, phases: [{ to: 1, pose: 'walk' }] }); }
+          else { P.x = l.x; P.y = l.y; } } });
       break; }
     case 'up': {
       const l = a.l, top = { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };

@@ -110,14 +110,14 @@ function syncSneakBtn() {
 }
 // 살금 모드: 켜 두면 판이 바뀌어도 계속 살금살금으로 다닌다 (Ctrl 키 또는 위쪽 [살금] 버튼)
 function toggleSneak() {
-  input.sneakToggle = !input.sneakToggle; if (input.sneakToggle) { input.walkLock = false; try { localStorage.setItem('yh_walkLock', '0'); } catch (e) {} }
+  input.sneakToggle = !input.sneakToggle; if (input.sneakToggle) { input.walkLock = false; try { localStorage.setItem('yh_walkLock2', '0'); } catch (e) {} }
   try { localStorage.setItem('yh_sneak', input.sneakToggle ? '1' : '0'); } catch (e) {}
   syncSneakBtn(); toast(input.sneakToggle ? '살금 모드 — 발소리가 아주 작다 (끄기 전까지 유지)' : '살금 모드 해제 — 기본 걷기', 1.6);
 }
 // 항상 걷기: 켜 두면 Shift·조이스틱 끝까지도 뛰지 않는다 (R 키 또는 위쪽 [항상 걷기] 버튼)
 function toggleWalkLock() {
   input.walkLock = !input.walkLock; if (input.walkLock) { input.sneakToggle = false; try { localStorage.setItem('yh_sneak', '0'); } catch (e) {} }
-  try { localStorage.setItem('yh_walkLock', input.walkLock ? '1' : '0'); } catch (e) {}
+  try { localStorage.setItem('yh_walkLock2', input.walkLock ? '1' : '0'); } catch (e) {}
   syncSneakBtn(); toast(input.walkLock ? '항상 걷기 — 뛰지 않는다' : '항상 걷기 해제 — 다시 뛸 수 있다', 1.4);
 }
 function cycleMoveLock() { toggleWalkLock(); }

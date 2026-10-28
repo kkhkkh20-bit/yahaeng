@@ -65,17 +65,17 @@ function bark(who, key) { const arr = BARKS[key]; if (!arr || !who) return; say(
 const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.dog && !g.target && (!pred || pred(g)));
 function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');
-  if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
+  if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; document.body.classList.remove('dlgmodal'); const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
   const sp = speakerOf(l[0]); DLG.cur = { text: l[1], shown: 0, t: 0 };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
   $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
-  el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false;
+  el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false; document.body.classList.toggle('dlgmodal', !!DLG.modal);
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';  // 줄이 바뀔 때마다 살짝 떠오르며 등장
 }
 function advanceDialog() { const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
 function skipDialog() { DLG.q = []; nextLine(); }
-function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; }
+function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
 function updateDialog(dt) {
   updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
   const c = DLG.cur; if (!c) return; c.t += dt;

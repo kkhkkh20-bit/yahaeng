@@ -10,7 +10,16 @@ const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc
 // ---- 프리렌더 배경 (Kenney Retro Urban Kit, CC0): 건물 외관 · 바닥 · 나무를 같은 3/4 투영으로 미리 찍은 그림
 const KIT_PROP = {};  // 키트 거리 소품 (쓰레기통 등)
 if (window.__KIT && window.__KIT.props) for (const k in window.__KIT.props) { const e = window.__KIT.props[k]; KIT_PROP[k] = { img: Object.assign(new Image(), { src: e.src }), ox: e.ox, oy: e.oy }; }
-const KIT = window.__KIT || null, kitG = {}, kitT = [], kitB = {}, kitBush = KIT && KIT.bush ? Object.assign(new Image(), { src: KIT.bush }) : null;
+const KIT = window.__KIT || null, kitG = {}, kitT = [], kitB = {};
+// 화단(숨는 곳)은 짙은 초록 생울타리 + 작은 흰 꽃 — 주황 단풍 나무(못 숨는 곳)와 한눈에 갈리게 다시 칠한다
+let kitBush = null;
+if (KIT && KIT.bush) { const im = new Image(); im.onload = () => { try {
+  const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; const x = c.getContext('2d');
+  x.drawImage(im, 0, 0); x.globalCompositeOperation = 'hue'; x.fillStyle = '#2f8a46'; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'saturation'; x.fillStyle = '#3a9a50'; x.fillRect(0, 0, c.width, c.height);
+  x.globalCompositeOperation = 'destination-in'; x.drawImage(im, 0, 0); x.globalCompositeOperation = 'source-atop';
+  for (let i = 0; i < 9; i++) { const h = (i * 2654435761) >>> 0; x.fillStyle = i % 3 ? 'rgba(240,236,220,.85)' : 'rgba(255,214,120,.8)'; x.fillRect(4 + h % (c.width - 8), c.height * 0.25 + (h >> 8) % Math.max(1, Math.floor(c.height * 0.5)), 2, 2); }
+  c.complete = true; c.naturalWidth = c.width; kitBush = c; } catch (e) { kitBush = im; } }; im.src = KIT.bush; }
 if (KIT) {
   for (const [k, src] of Object.entries(KIT.ground || {})) { const im = new Image(); im.src = src; kitG[k] = im; }
   (KIT.trees || []).forEach(src => { const im = new Image(); im.src = src; kitT.push(im); });

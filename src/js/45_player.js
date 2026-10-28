@@ -21,7 +21,7 @@ function collide(o, r, solid) {
   }
 }
 
-const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock'); return v == null ? touch : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'stone', aiming: null, scan: false };
+const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock2'); return v == null ? false : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'stone', aiming: null, scan: false };
 const TOOLS = ['stone', 'coin', 'kunai'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
@@ -224,6 +224,7 @@ function updateTrav(P, dt) {
   let i = 0; while (i < pts.length - 2 && f > pts[i + 1].f) i++;
   const a = pts[i], b = pts[i + 1], r = Math.max(0, Math.min(1, (f - a.f) / Math.max(1e-6, b.f - a.f)));
   P.x = a.x + (b.x - a.x) * r; P.y = a.y + (b.y - a.y) * r; P.moving = true; P.hidden = false;
+  if (T.face == null && Math.hypot(b.x - a.x, b.y - a.y) > 6) { const want = Math.atan2(b.y - a.y, b.x - a.x), d = ((want - P.a + Math.PI * 3) % (Math.PI * 2)) - Math.PI; P.a += d * Math.min(1, dt * 14); }  // 걸어가는 쪽을 본다 (뒷걸음질로 미끄러지지 않게)
   const bp = T.base || P; P.light = lightAt(bp.x, bp.y, false);
   if (T.step && (T.st -= dt) <= 0 && travPose(T).pose === 'climb') { T.st = 0.3; play(T.step, 0.16); noise(bp.x, bp.y, T.loud || 40, 'climb'); }
   if (f >= 1) { P.trav = null; P.moving = false; if (T.end) T.end(); }

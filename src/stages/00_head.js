@@ -5,6 +5,8 @@
 const chain = (y, xs) => xs.slice(1).map((x, i) => [[xs[i], y], [x, y]]);
 const alleyPlants = (m, rows) => rows.forEach(row => { for (let x = 1; x < 70; x++) if ((x * 7 + row) % 6 === 0 && m.get(x, row) === '.' && '#N'.includes(m.get(x, row - 1))) m.set(x, row, 'B'); });
 // 바닥 재질 깔기: 빈 바닥일 때만 (x 유리 조각 · m 철판 · p 물웅덩이 · r 자갈)
+// 화단 더 놓기: 빈 바닥일 때만 (밟고 지나가며 숨을 수 있다 — 길을 막지 않는다)
+const shrubs = (m, list) => list.forEach(([x, y]) => { if ('.,=g'.includes(m.get(x, y))) m.set(x, y, 'B'); });
 const mat = (m, c, list) => list.forEach(([x, y]) => { if ('.,=dg'.includes(m.get(x, y))) m.set(x, y, c); });
 const frame = (m, W, H, streetY) => { m.fill(0, 0, W - 1, H - 1, '.'); for (let x = 0; x < W; x++) m.set(x, 0, '#'); for (let y = 0; y < streetY; y++) { m.set(0, y, '#'); m.set(W - 1, y, '#'); } };
 const STAGES = [
