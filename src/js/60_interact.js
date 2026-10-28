@@ -271,12 +271,22 @@ function winInit() {
 const winSt = w => w.st || 'open';
 const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
 function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이지 마라. 긁는 소리가 조금 난다. 안쪽 창문은 걸쇠만 풀면 된다'); }
+// 핏자국 닦기: 핏자국 위에서 [행동]. 움직이면 멈춘다. 큰 자국 2.6초 · 핏방울 0.9초. 닦는 동안은 수상한 행동이라 보이면 들킨다
+function nearBlood() {
+  const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.vent || P.under) return null;
+  let best = null, bd = 34; for (const d of S.decals) { if (flOf(d) !== flOf(P)) continue; const e = dist(P.x, P.y, d.x, d.y); if (e < bd) { bd = e; best = d; } }
+  return best;
+}
+function startClean(d) { const P = S.player; P.pick = { kind: 'clean', d, x: d.x, y: d.y, t: 0, nt: 0.1, dur: d.r >= 10 ? 2.6 : 0.9 }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(d.y - P.y, d.x - P.x); hint('clean', '핏자국 닦기: 움직이면 멈춘다. 닦는 모습이 보이면 수상하게 여긴다'); }
 function updatePick(P, mag, dt) {
   const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
   if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
-  K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); }
+  K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; if (K.kind === 'clean') { play('cloth', 0.12, 1.3); noise(K.x, K.y, 30, 'pick'); } else { play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); } }
   if (K.t < K.dur) return;
   P.pick = null;
+  if (K.kind === 'clean') {  // 그 자국과 바로 옆 핏방울까지 지운다
+    const n0 = S.decals.length; S.decals = S.decals.filter(o => !(o === K.d || (flOf(o) === flOf(K.d) && dist(o.x, o.y, K.d.x, K.d.y) < 40)));
+    S.stats.cleaned = (S.stats.cleaned || 0) + (n0 - S.decals.length); play('cloth', 0.3); toast(S.decals.some(o => o.trail && o.trail === K.d.trail) ? '닦았다 — 이어진 핏방울이 더 남아 있다' : '핏자국을 닦았다', 1.8, 'good'); return; }
   if (K.kind === 'latch') { K.w.st = 'open'; noteChange('win', K.w); play('cloth', 0.3); toast('걸쇠를 풀었다 — 이 창문은 이제 열려 있다', 2); return; }
   P.picks--; S.stats.picks = (S.stats.picks || 0) + 1; play('switch', 0.5, 1.4);
   if (K.kind === 'win') { K.w.st = 'open'; noteChange('win', K.w); toast(`창문을 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
@@ -286,7 +296,7 @@ function drawPickProgress(P) {
   const K = P.pick; if (!K) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
   ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
@@ -537,6 +547,7 @@ function primaryActionRaw() {
   if (kl.length === 2) kl.length = 1;
   if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > 56 ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: { x: nt.x, y: nt.y }, label: nt.read ? '다시 읽기' : '읽기' };
+  const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' };
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downPt(fdE), label: `내리기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
@@ -588,6 +599,7 @@ function actPrimary(force) {
       play('metal', 0.35); S.fade = 0.35; toast('맨홀 아래로 올라왔다 — 아직 숨어 있다', 2); break;
     }
     case 'ambush': startAmbush(a.g); break;
+    case 'clean': startClean(a.d); break;
     case 'window': {
       const v = a.wv;
       P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };
