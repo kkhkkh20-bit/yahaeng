@@ -164,7 +164,7 @@ function drawPlayer(P) {
         if (f < 0.5) { an = 'crouch'; fr = 0; ang = P.snap.a0 + angDiff(P.snap.a0, aw) * (f / 0.5); }
         else { an = 'hug'; fr = 0; const b = Math.sin((f - 0.5) / 0.5 * Math.PI) * 2.5; ox = -n.x * b; oy = -n.y * b; }
       } else if (mv) {  // 옆걸음: 몸 왼쪽(화면 기준 sin a, -cos a)으로 가면 앞으로, 오른쪽이면 거꾸로
-        const lx = Math.sin(aw), ly = -Math.cos(aw), fw = (P.vx * lx + P.vy * ly) >= 0, i = Math.floor(S.t * 7) % 4;
+        const lx = Math.sin(aw), ly = -Math.cos(aw), fw = (P.vx * lx + P.vy * ly) >= 0, i = Math.floor(S.t * 4.5) % 4;  // 느린 옆걸음에 맞춘 걸음 속도
         an = 'hugStep'; fr = fw ? i : (4 - i) % 4;
       } else {  // 멈춤: 방금 움직인 쪽을 살피고, 오래 있으면 가끔 좌우를 번갈아 본다
         an = 'hug'; const side = P.coverSide && S.t - (P.coverSideT || 0) < 1.6 ? P.coverSide : 0;

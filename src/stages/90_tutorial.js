@@ -38,7 +38,7 @@ const TUT = {
     ['{지도} 전술 지도 열기 — 멈춘 채 순찰로가 보인다. 다시 눌러 닫기', S => !!S.usedMap],
     ['{살금} 살금 모드 켜기 — 발소리가 작아진다', (S, P, I) => I.sneakToggle],
     ['등 돌린 자경대원 뒤에서 {행동} — 암살', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
-    ['쓰러진 사람을 {특수}로 메고 쓰레기통에 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
+    ['쓰러진 사람을 {보조}로 메고 쓰레기통에 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
     ['{살피기} 누르고 있으면 쓸 수 있는 것이 색으로 보인다', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
     ['벽 쪽으로 0.5초 밀기 — 등을 바짝 붙인다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
     ['붙은 채 기다렸다가 지나가는 자경대원에게 {행동}', S => S.guards[1].state === 'DEAD', S => S.guards[1]],
@@ -99,8 +99,8 @@ STAGES.push({
     ['북쪽 마당(주황 = 출입 금지)에 들어가 경고를 받고 다시 나오기', (S, P) => npcT(S, 'yard').warned && P.y > 8 * 48, S => npcT(S, 'yard').warned ? { x: 14 * 48 + 24, y: 10 * 48 + 24 } : { x: 14 * 48 + 24, y: 6 * 48 + 24 }],
     ['수다 떠는 두 사람 곁에서 엿듣기', S => (S.learned || []).length > 0, () => ({ x: 19 * 48 + 48, y: 9 * 48 + 24 })],
     ['남쪽 골목 혼자인 자경대원 뒤에서 {행동} — 암살', S => npcT(S, 'lone').state === 'DEAD', S => npcT(S, 'lone')],
-    ['쓰러진 자경대원 옆에서 {특수} — 옷 갈아입기', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
-    ['{특수}로 메고 수거함에 넣기 — 숨겨야 안 들킨다', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
+    ['쓰러진 자경대원 옆에서 {보조} — 옷 갈아입기', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
+    ['{보조}로 메고 수거함에 넣기 — 숨겨야 안 들킨다', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
     ['초록 경계선 마당은 이 옷이면 통과 — 안쪽 끝까지 걸어가기', (S, P) => inR(P, [35, 3, 37, 5]), () => ({ x: 36 * 48 + 24, y: 4 * 48 + 24 })],
     ['눈 표시 반장은 오래 보면 알아챈다 — 떨어져서 노란 원으로', () => false, S => S.exit]
   ]

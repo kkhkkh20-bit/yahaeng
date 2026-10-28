@@ -15,7 +15,7 @@ window.addEventListener('keydown', e => {
   if (e.repeat) return;
   S.keys[keyCode(e)] = true;
   if (!running || S.over) return;
-  // 왼손: Space 행동 · Z 특수 · X 도구(누르고 겨누기) · C 도구 바꾸기 · Ctrl 살금 모드 · Shift 달리기 · Alt 살피기 (Q W E는 예전 키로 남겨 둔다)
+  // 왼손: Space 행동 · Z 보조 · X 도구(누르고 겨누기) · C 도구 바꾸기 · Ctrl 살금 모드 · Shift 달리기 · Alt 살피기 (Q W E는 예전 키로 남겨 둔다)
   if (e.code === 'KeyQ' || e.code === 'Space') actPrimary();
   if (e.code === 'KeyZ') { if (input.aiming) queueAim(); else actCarry(); }
   if (e.code === 'KeyE' || e.code === 'KeyX') startAim('key');

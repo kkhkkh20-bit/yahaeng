@@ -635,7 +635,7 @@ function actPrimary(force) {
   if (S.amb) return;  // 끌어들이는 중
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
-  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까우면 [행동]은 기절만 한다. 문·조명·쪽지는 [특수]로'); return; }
+  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까우면 [행동]은 기절만 한다. 문·조명·쪽지는 [보조]로'); return; }
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
@@ -910,7 +910,7 @@ function travelTunnel() {
   play('metal', 0.35); play('cloth', 0.3); S.fade = 0.4;
   toast('지하 수로로 내려왔다', 1.8);
 }
-// 제압 규칙 (메탈기어·코만도스식 손맛 + 히트맨식 동네): 조직원·자경대원은 [행동] = 암살(감점 없음), 붙잡은 뒤 [특수] = 기절.
+// 제압 규칙 (메탈기어·코만도스식 손맛 + 히트맨식 동네): 조직원·자경대원은 [행동] = 암살(감점 없음), 붙잡은 뒤 [보조] = 기절.
 // 주민은 늘 기절이 기본이고, 행동 버튼을 계속 누르고 있으면 숨을 끊는다(주민 살상 — 감점)
 const actHeld = () => !!(S && S.keys && (S.keys.Space || S.keys.KeyQ)) || !!(document.getElementById('btnAct') && document.getElementById('btnAct').classList.contains('down'));
 const koDefault = g => !!g && !g.dog && !g.target && !!g.civ;
@@ -928,7 +928,7 @@ function koPerson(g, mode, where) {
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + keyName(k) + '을(를) 챙겼다'); }
   S.koHold = actHeld() ? { c, g, t0: S.t } : null;
   toast(g.civ ? '기절시켰다 — 주민은 죽이지 않는다. 남의 눈에 띄면 시체처럼 소란이 난다' : '기절시켰다 — 다른 조직원이 보면 깨워서 수색한다', 2.4);
-  hint('ko', g.civ ? '주민은 기절시킨다(감점 없음). 길게 누르면 숨을 끊는다 — 감점' : '붙잡은 뒤 [특수]는 기절, [행동]은 처치');
+  hint('ko', g.civ ? '주민은 기절시킨다(감점 없음). 길게 누르면 숨을 끊는다 — 감점' : '붙잡은 뒤 [보조]는 기절, [행동]은 처치');
 }
 // 누른 채로 있으면 기절 → 처치로 바뀐다
 function updateKoHold() {
@@ -984,7 +984,7 @@ function pairKill(g, kind, from, quiet) {
 function execCaptive(ko) {
   const P = S.player, g = P.captive; if (!g) return; P.captive = null; S.stats.special++;
   if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; }
-  if (ko && !g.target) S.koNext = true;  // 붙잡은 뒤 [특수]: 목을 졸라 기절
+  if (ko && !g.target) S.koNext = true;  // 붙잡은 뒤 [보조]: 목을 졸라 기절
   if (PAIR() && PR.anims.choke && !g.dog && usePR(charOf(g)) && usePR('ninja')) { S.crimeT = S.t; pairKill(g, g.civ || koDefault(g) || S.koNext ? 'choke' : 'stab', 1, true); return; }
   P.strikeT = 0.3; killGuard(g, null, null, true);
 }
@@ -1205,7 +1205,7 @@ function actPrimaryForce(k) { if (k === 'execute') execCaptive(); else if (k ===
 function secondaryAction() {
   const P = S.player;
   if (P.trav || P.lunge || P.grabIn) return { k: 'none', label: '…' };
-  if (P.under || P.vent) return { k: 'none', label: '특수' };
+  if (P.under || P.vent) return { k: 'none', label: '보조' };
   if (P.ledge) return { k: 'none', label: '매달림' };
   if (P.z && !P.wire && !P.jump) { const lg = ledgeAt(P); if (lg) return { k: 'ledge', n: lg, label: '가장자리에 매달리기' }; }
   if (P.hide) return P.hide.type === 'well' && ugAt(P.hide.tx, P.hide.ty) ? { k: 'tunnel', label: '지하로' } : { k: 'none', label: '—' };
@@ -1214,7 +1214,7 @@ function secondaryAction() {
     if (!nearHide()) { const tg = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.target && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 300 && dist(g.x, g.y, P.x, P.y) > 70 && los(P.x, P.y, g.x, g.y) && Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < 1.0).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0]; if (tg) return { k: 'throwBody', g: tg, label: '시체 던지기 (겁주기)' }; }
     { const nh = nearHide(); return { k: 'carry', label: nh && nh.bodies < nh.cap ? '넣기' : nh ? '내려놓기 (가득 참)' : '내려놓기' }; }
   }
-  if (P.z || P.jump) return { k: 'none', label: '특수' };
+  if (P.z || P.jump) return { k: 'none', label: '보조' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 (${P.candy})` };
   const kl0 = killList(), kl = kl0.filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
@@ -1224,7 +1224,7 @@ function secondaryAction() {
   if (nc) return { k: 'carry', label: '운반' };
   const hp = primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
-  return { k: 'none', label: '특수' };
+  return { k: 'none', label: '보조' };
 }
 function actThrow(pt) {
   if (!S || S.over || paused || !running) return;

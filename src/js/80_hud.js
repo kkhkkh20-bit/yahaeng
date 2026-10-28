@@ -81,7 +81,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 행동: ['[행동]', 'Space'], 특수: ['[특수]', 'Z'], 도구: ['[도구]를', 'X를'], 살피기: ['[살피기]를', 'Alt를'] };
+const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 행동: ['[행동]', 'Space'], 보조: ['[보조]', 'Z'], 도구: ['[도구]를', 'X를'], 살피기: ['[살피기]를', 'Alt를'] };
 const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => TUT_KEY[k] ? TUT_KEY[k][isTouch ? 0 : 1] : m);
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -165,7 +165,7 @@ function updateHUD(force) {
   { const cb = $('btnCycle'); if (cb) { const n = pa.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (pa.choiceI + 1) + '/' + n); } }
   hud.act.classList.toggle('ready', pa.k !== 'none');
   const sa = secondaryAction();
-  padButton(hud.carry, 'carryH', sa, '특수');
+  padButton(hud.carry, 'carryH', sa, '보조');
   hud.carry.classList.toggle('ready', sa.k !== 'none');
   const ki = pa.k !== 'none' ? actIcon(pa) : pa.stalk ? (koDefault(pa.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
@@ -273,7 +273,7 @@ function showEnd(win, reason) {
   let feeRow = null; { const base = parseInt(STAGE.fee || '', 10); if (win && base > 0) { const cut = Math.min(0.7, (st.full || 0) * 0.15 + (st.extraKills || 0) * 0.2), got = Math.round(base * (1 - cut)), why = [st.full ? `전체 경보 ${st.full}회` : '', st.extraKills ? `민간인 ${st.extraKills}명` : ''].filter(Boolean).join(' · ');
     feeRow = ['수고비', cut > 0 ? `${got}만 (원래 ${base}만 — ${why}로 −${base - got}만)` : `${base}만 전액`]; S.feeGot = got; } }
   $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
-    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
+    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['보조 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
   ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.counters ? [['반격', st.counters + '회']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;

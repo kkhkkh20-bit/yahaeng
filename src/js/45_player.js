@@ -30,7 +30,7 @@ function canAim() { const P = S.player; return S && running && !S.over && !pause
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
 function startAim(src) { if (S && S.player && S.player.captive && !tactical) { interrogate(); return; } if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
-// 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [특수]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
+// 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
   const P = S.player; if (!input.aiming) return; input.queue = input.queue || [];
   if (input.queue.length >= 2) { toast('예약은 두 개까지 — 손을 떼면 한꺼번에 실행', 1.6); return; }
@@ -42,7 +42,7 @@ function queueAim() {
     if (input.queue.some(q => q.tgt && q.tgt.ref === it.tgt.ref)) { toast('이미 예약한 대상이다', 1.4); return; } }
   input.queue.push(it); play('click', 0.35); input.aiming.t0 = performance.now();
   toast(`행동 예약 ${input.queue.length} — 다른 곳을 겨누고 손을 떼면 한꺼번에`, 1.8);
-  hint('queue', '조준 중 [특수]로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
+  hint('queue', '조준 중 [보조]로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
 }
 function runQueued(it) {
   const P = S.player; P.a = it.a;
@@ -202,7 +202,8 @@ function drawCoverFx() { const F = S.coverFx; if (!F) return; const f = (S.t - F
 function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12) return; const k = Math.max(1, 0.9 / SCALE);
   ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 3 * k; ctx.strokeStyle = 'rgba(150,220,255,.25)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU); ctx.stroke();
   ctx.strokeStyle = 'rgba(150,220,255,.9)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, f)); ctx.stroke(); ctx.restore(); }
-const COVER_PUSH = 0.5;  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다
+const COVER_PUSH = 0.5;
+const COVER_SPD = 0.55;  // 벽에 붙어 옆걸음: 살금살금의 55% (메탈기어처럼 벽을 더듬듯 천천히)  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다
 function autoStairs(P) {
   // 오르내린 직전 방향 그대로 계속 누르고 있으면 다시 반대로 오르내리지 않는다 (멈추거나 방향을 바꾸면 풀림)
   if (S.stairArm === false) { const sp0 = Math.hypot(P.vx || 0, P.vy || 0), d0 = S.stairDir || [0, 0]; if (!P.moving || sp0 < 20 || (P.vx * d0[0] + P.vy * d0[1]) / sp0 < 0.5) S.stairArm = true; else if (!P.trav) return; }
@@ -357,7 +358,7 @@ function updatePlayer(dt) {
   }
   // 조작감: 아주 짧은 가속·감속(무게감), 모서리에 걸리면 옆으로 미끄러져 빠져나간다
   if (P.adrenT > 0) P.adrenT -= dt;
-  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? 0.6 : P.captive ? DRAG_SPD : 1) * (STAGE.pspd || 1);
+  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? 0.6 : P.captive ? DRAG_SPD : 1) * (P.cover ? COVER_SPD : 1) * (STAGE.pspd || 1);
   const tvx = mag > 0.05 ? mx / mag * sp0 : 0, tvy = mag > 0.05 ? my / mag * sp0 : 0;
   const kk = 1 - Math.exp(-dt * (mag > 0.05 ? 24 : 30));
   P.vx = (P.vx || 0) + (tvx - (P.vx || 0)) * kk; P.vy = (P.vy || 0) + (tvy - (P.vy || 0)) * kk;
