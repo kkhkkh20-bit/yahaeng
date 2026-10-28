@@ -165,7 +165,7 @@ function enterCover(n, quiet) {
   const P = S.player, a1 = Math.atan2(n.y, n.x), pull = Math.max(0, (n.d || 13) - 12);
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
-  P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26);
+  P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26); S.coverFx = { t: S.t, x: P.x - n.x * 14, y: P.y - n.y * 14, nx: n.x, ny: n.y };  // 붙는 순간 벽에 퍼지는 빛 (붙었다는 느낌)
   hint('cover', '벽에 붙음: 잘 안 보이고 발소리가 없다. 벽 따라 옆걸음, 반대로 밀면 떨어진다');
 }
 function updateSnap(P, dt) {
@@ -195,8 +195,11 @@ function updatePull(dt) {
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
 // 계단: 버튼 없이 계단 칸으로 걸어 들어가면 오르고, 위층 계단 구멍 끝에서 구멍 쪽으로 걸으면 내려간다
+// 벽에 붙은 순간: 벽선을 따라 퍼지는 하늘색 빛
+function drawCoverFx() { const F = S.coverFx; if (!F) return; const f = (S.t - F.t) / 0.45; if (f >= 1 || f < 0) { if (f >= 1) S.coverFx = null; return; }
+  const L = 18 + 40 * f; ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = `rgba(170,230,255,${(1 - f) * 0.9})`; ctx.lineWidth = 5 * (1 - f) + 1; ctx.beginPath(); ctx.moveTo(F.x - F.ny * L, F.y + F.nx * L); ctx.lineTo(F.x + F.ny * L, F.y - F.nx * L); ctx.stroke(); ctx.restore(); }
 // 벽 쪽으로 미는 동안: 발밑에 차오르는 반원 (다 차면 붙는다)
-function drawCoverPush(P) { const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12) return; const k = Math.max(1, 0.9 / SCALE);
+function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_PUSH; if (P.cover || f < 0.12) return; const k = Math.max(1, 0.9 / SCALE);
   ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 3 * k; ctx.strokeStyle = 'rgba(150,220,255,.25)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU); ctx.stroke();
   ctx.strokeStyle = 'rgba(150,220,255,.9)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, f)); ctx.stroke(); ctx.restore(); }
 const COVER_PUSH = 0.5;  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다

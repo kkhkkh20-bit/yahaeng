@@ -519,6 +519,9 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
   .br-acts .cta { flex: 1; }
   .pz-big { font-size: 34px; }
 }
+#stealth.pop { animation: sthPop .35s ease-out; }
+@keyframes sthPop { 0% { transform: translateX(-50%) scale(1); } 40% { transform: translateX(-50%) scale(1.12); } 100% { transform: translateX(-50%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { #stealth.pop { animation: none; } }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>

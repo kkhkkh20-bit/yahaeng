@@ -177,6 +177,7 @@ const STH_ICO = {
   hide: '<svg viewBox="0 0 24 24"><path d="M3 11c2.5 3.2 5.5 4.8 9 4.8s6.5-1.6 9-4.8"/><path d="M6.5 14.6l-1.6 2.2M12 15.8v2.6M17.5 14.6l1.6 2.2"/></svg>',
   blend: '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="8" r="3"/><path d="M2.5 20c.6-3.6 2.8-5.6 5.5-5.6s4.9 2 5.5 5.6M11.5 15.3c1.2-.6 2.9-.9 5-.9 2.7 0 4.9 2 5.5 5.6"/></svg>',
   risk: '<svg viewBox="0 0 24 24"><path d="M2.5 12c2.6-4 5.8-6 9.5-6s6.9 2 9.5 6c-2.6 4-5.8 6-9.5 6s-6.9-2-9.5-6z"/><path d="M5 12h14" opacity=".55"/><path class="f" d="M8.8 12a3.2 3.2 0 006.4 0z"/></svg>',
+  wall: '<svg viewBox="0 0 24 24"><path d="M4 3v18"/><path d="M4 7h3M4 12h3M4 17h3" opacity=".6"/><circle cx="12.5" cy="6.5" r="2.3"/><path d="M10.5 21v-6l-1-4.5 3-1.5 2.5 3.5h3"/></svg>',
   seen: '<svg viewBox="0 0 24 24"><path d="M2.5 12c2.6-4 5.8-6 9.5-6s6.9 2 9.5 6c-2.6 4-5.8 6-9.5 6s-6.9-2-9.5-6z"/><circle class="f" cx="12" cy="12" r="3.6"/></svg>'
 };
 function updateStealth(lv) {
@@ -190,6 +191,7 @@ function updateStealth(lv) {
   let s, word, why;
   if (e === 2) { s = 'seen'; word = '보인다'; why = banned ? '금지 구역에서 보였다' : '누가 보고 있다'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? '시체 운반 중 — 눈에 띈다' : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
+  else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛 아래 — 붙어도 가까우면 보인다' : `보이는 거리 ${Math.round(COVER_HIDE * 100)}% · 발소리 없음`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '변장 · 통과 가능' : '행인으로 보인다'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
@@ -198,7 +200,8 @@ function updateStealth(lv) {
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = e; $('lightLbl').textContent = why;
-  if (hudCache.sthI !== s) { hudCache.sthI = s; $('sthIco').innerHTML = STH_ICO[s]; }
+  const ico = P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
+  if (P.cover && hudCache.sthCov !== true) { box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop'); } hudCache.sthCov = !!P.cover;
 }
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
