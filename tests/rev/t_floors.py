@@ -37,11 +37,11 @@ async def main():
             if r[0] != 0: bad.append(f'계단 구멍 쪽으로 걸어도 내려오지 않는다 {r}')
         # 2 층 분리: 사무동 2층에서 뛰어다니고 처치해도 1층 금고 앞 경비(6)는 모른다
         await fresh([6, 7])
-        await ev("() => { const G = window.__game, S = G.S, g = S.guards[6], P = S.player; P.fl = 1; G.setLayer(1); P.z = 0; P.x = g.x; P.y = g.y; S.guards[7].x = g.x + 90; S.guards[7].y = g.y; }")
+        await ev("() => { const G = window.__game, S = G.S, g = S.guards[6], P = S.player; P.fl = 1; G.setLayer(1); P.z = 0; P.x = g.x; P.y = g.y; const o = S.guards[7]; o.x = g.x + 900; o.y = g.y; o.route = [{ x: o.x, y: o.y, pause: 999 }]; o.wait = 99; }  // 뛰는 동안 위층 경비(7)가 먼저 보지 않게 멀리 둔다")
         await ev("() => { window.__game.S.keys.ShiftLeft = true; }")
         for kk in ['ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight']: await hold([kk], 350)
         await ev("() => { window.__game.S.keys.ShiftLeft = false; }")
-        await ev("() => { const G = window.__game, S = G.S, P = S.player, o = S.guards[7]; o.a = 0; o.want = 0; o.route = [{ x: o.x, y: o.y, pause: 999 }]; o.wait = 99; P.x = o.x - 40; P.y = o.y; P.a = 0; P.mode = 'sneak'; }")
+        await ev("() => { const G = window.__game, S = G.S, P = S.player, o = S.guards[7], g6 = S.guards[6]; o.x = g6.x + 90; o.y = g6.y; o.a = 0; o.want = 0; o.route = [{ x: o.x, y: o.y, pause: 999 }]; o.wait = 99; P.x = o.x - 40; P.y = o.y; P.a = 0; P.mode = 'sneak'; }")
         await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1500)
         r = await ev("() => { const S = window.__game.S, g = S.guards[6]; return [g.state, +g.meter.toFixed(2), S.guards[7].state, (g.fl || 0)]; }"); print('층 분리', r)
         if r[0] not in ('PATROL', 'RETURN') or r[1] > 0.2: bad.append(f'위층 소리·처치에 아래층 경비가 반응한다 {r}')
