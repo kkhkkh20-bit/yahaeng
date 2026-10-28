@@ -283,7 +283,7 @@ function updateCams(dt) {
     if (v > 0 && STAGE.zones && pZoneEff() === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' ? 0.12 : 1)); if (c.meter >= 1) {
-      c.meter = 0; c.cool = 6; S.stats.camRec = (S.stats.camRec || 0) + 1;
+      c.meter = 0; c.cool = 6; if (!c.search) S.stats.camRec = (S.stats.camRec || 0) + 1;  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, c.x, c.y) < 800) goSuspicious(g, P.x, P.y, 5); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
@@ -832,7 +832,7 @@ function goAlert(g) {
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', S.player.x, S.player.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
   if (P.disguise && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `들통났다 — 이제 ${outfitName(P.outfit)}은 통하지 않는다` : '변장이 들통났다', 2.4, 'warn'); }
   if (g.seen) S.chaseSeen = true;  // 본 사람이 있으면 수색이 끝날 때까지 얼굴을 안다 (무전기와 상관없이)
-  g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0;
+  g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = pSpot(); g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0;
   if (S.fuseGuard === g) { S.fuseGuard = null; g.atFuse = false; }
   if (g.target) toast('표적이 소리쳤다 — 자경대원이 몰려온다', 2.6, 'warn');
   let radio = !!g.radio;

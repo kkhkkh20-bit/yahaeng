@@ -21,8 +21,8 @@ function collide(o, r, solid) {
   }
 }
 
-const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock2'); return v == null ? false : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'stone', aiming: null, scan: false };
-const TOOLS = ['stone', 'coin', 'kunai'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
+const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock2'); return v == null ? false : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'kunai', aiming: null, scan: false };
+const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
@@ -42,7 +42,7 @@ function queueAim() {
     if (input.queue.some(q => q.tgt && q.tgt.ref === it.tgt.ref)) { toast('이미 예약한 대상이다', 1.4); return; } }
   input.queue.push(it); play('click', 0.35); input.aiming.t0 = performance.now();
   toast(`행동 예약 ${input.queue.length} — 다른 곳을 겨누고 손을 떼면 한꺼번에`, 1.8);
-  hint('queue', '조준 중 [보조]로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
+  hint('queue', '조준 중 [행동]으로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
 }
 function runQueued(it) {
   const P = S.player; P.a = it.a;
@@ -297,6 +297,9 @@ function updatePlayer(dt) {
   if (P.captive) {
     const g = P.captive; g.captT += dt;
     if ((g.squirm = (g.squirm || 0) - dt) <= 0) { g.squirm = 1.4; noise(g.x, g.y, 55, 'struggle'); play('cloth', 0.25); }
+    // 가만히 붙잡고 있으면 심문 (아는 걸 실토한다)
+    g.stillT = Math.hypot(P.vx || 0, P.vy || 0) < 5 ? (g.stillT || 0) + dt : 0;
+    if (g.stillT > 1.1 && canInterrogate()) interrogate();
     if (g.captT > 9) { P.captive = null; g.state = 'PATROL'; g.meter = 1; goAlert(g); toast('붙잡은 자경대원이 몸부림쳐 빠져나갔다!', 2.6, 'warn'); }
   }
   if (P.wire || P.jump || P.under || P.vent || P.hide) { P.vx = 0; P.vy = 0; }
@@ -306,7 +309,7 @@ function updatePlayer(dt) {
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
     P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
-    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land'); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast(lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } collide(P, 13, groundSolidP); } }
+    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast(lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } collide(P, 13, groundSolidP); } }
     P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = true;
     return;
   }
@@ -399,7 +402,7 @@ function updatePlayer(dt) {
       play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
       { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
       if (P.carrying) play('cloth', 0.12);
-      if (!P.cover) noise(P.x, P.y, r, 'step');  // 벽에 붙어 옆걸음: 소리 없음
+      if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
     }
   }
   autoStairs(P);

@@ -43,11 +43,12 @@ function actIcon(a) {
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
     clean: 'clean', loot: 'loot', counter: 'counter', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
 }
-const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내리기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
+const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
 function actVerb(a, ic) {
   const lb = (a.label || '').split(/ \(| — | → | · /)[0];  // '오르기 · 2층' → '오르기'
-  if (a.k === 'none') return a.stalk ? (koDefault(a.stalk) ? '기절' : '처치') : '';
+  if (a.k === 'none') return a.stalk ? (koTap(a.stalk) ? '기절' : '처치') : '';
+  if (a.k === 'cap') return a.label;
   if (a.k === 'dropItem') return '내려놓기';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';
   if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기
@@ -57,16 +58,17 @@ function actVerb(a, ic) {
 }
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
-  const ic = a.k === 'none' && a.stalk ? (koDefault(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.hold ? `<small>길게: ${a.hold}</small>` : '';
+  const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.hold ? `<small>길게: ${a.hold}</small>` : '';
   const html = (a.k === 'none' && !a.stalk ? '' : icon(ic, 24)) + `<b>${v}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', a.label || v); }
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
-function keyMap(pa, sa) {
+function keyMap(ka, ea, ga) {
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
-  set('kmAct', pa.k === 'none' ? (pa.stalk ? actVerb(pa) : '행동') + (pa.hold ? '' : '') : actVerb(pa, actIcon(pa)) + (pa.hold ? ` · 길게 ${pa.hold}` : ''), pa.k !== 'none' || pa.stalk);
-  set('kmZ', sa.k === 'none' ? '보조' : actVerb(sa, actIcon(sa)), sa.k !== 'none');
-  if (S.player.captive) set('kmX', canInterrogate() ? '심문' : '도구', canInterrogate()); else set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}`, toolCount(input.tool) > 0);
+  set('kmAct', ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : (ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))) + (ka.hold ? ` · 길게 ${ka.hold}` : ''), ka.k !== 'none' || ka.stalk);
+  set('kmZ', ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea)), ea.k !== 'none');
+  set('kmQ', S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기', ga.k === 'grab' || canInterrogate());
+  set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}`, toolCount(input.tool) > 0);
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '살금 켜짐' : '살금', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)

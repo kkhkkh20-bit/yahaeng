@@ -13,13 +13,13 @@ async def main():
             await pg.evaluate('() => window.__game.start(0)'); await pg.wait_for_timeout(250); await pg.evaluate(SK); await pg.evaluate(FREEZE, keep)
         async def behind(i):  # i번 경비 바로 뒤(서쪽)에 선다
             await pg.evaluate(f'() => {{ const S = window.__game.S, P = S.player, q = S.guards[{i}]; P.x = q.x - 34; P.y = q.y; P.a = 0; P.z = 0; P.fl = 0; }}')
-        # 1 조직원은 암살이 기본 (감점 없음)
+        # 1 조직원도 톡 누르면 기절이 먼저 (계속 누르면 처치)
         await fresh([2]); await pg.evaluate(PIN, [2, 33, 3, 0]); await behind(2)
         lab = await pg.evaluate('() => window.__game.primaryAction().label'); print('행동 이름', lab)
-        if '암살' not in lab: bad.append('조직원 행동 이름이 암살이 아니다: ' + lab)
+        if '기절' not in lab: bad.append('조직원 행동 이름이 기절이 아니다(기절 우선): ' + lab)
         await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1300)
         r = await pg.evaluate('() => { const S = window.__game.S, c = S.corpses[S.corpses.length - 1]; return [S.guards[2].state, !!(c && c.ko), S.stats.kills, S.stats.extraKills, S.stats.crewKills, c && c.outfit]; }'); print('암살', r)
-        if r[:5] != ['DEAD', False, 1, 0, 1] or r[5] != 'crew': bad.append('조직원 암살 결과가 다르다 %s' % r)
+        if r[:3] != ['DEAD', True, 0] or r[5] != 'crew': bad.append('조직원 톡 = 기절 결과가 다르다 %s' % r)
         # 2 시체 옷 갈아입기 → 자경대원 옷
         await pg.evaluate('() => { const S = window.__game.S, c = S.corpses[S.corpses.length - 1]; S.player.x = c.x - 20; S.player.y = c.y; }')
         await pg.wait_for_timeout(100); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_timeout(400)

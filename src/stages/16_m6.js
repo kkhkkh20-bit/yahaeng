@@ -4,9 +4,10 @@
   id: 'm6', no: '06', name: '배신', sub: '임무 6 · 탈출', fee: '',
   mission: '감방에서 빠져나가, 2층 사무실에 있는 제비의 무전기를 챙겨 창고 단지를 벗어난다',
   itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
-  brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문은 간수가 열쇠를 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다.',
+  brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다.',
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
-  bare: true, candy: 0,
+  bare: true, candy: 0, itemVerb: '챙기기', briefBy: '상황',
+  firstGoal: { text: '감방에서 나가기 — 바닥의 머리핀으로 문 따기', where: '감금동 1층 감방', at: [9, 5, 0], done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
   build(m) {
     m.fill(0, 0, 43, 27, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 27, '#'); } for (let y = 0; y < 28; y++) m.set(0, y, '#');
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다
@@ -25,18 +26,18 @@
   roofs: ['cRoofB', 'cRoofA', 'cRoofG', 'cRoofA'], bricks: [1, 0, 1, 0],
   exits: [{ at: [17, 26.4], name: '남쪽 담 개구멍', r: 46 }],
   // 구역: 단지 전체가 조직 땅 — 조직원 옷이면 걸어서 지나간다
-  zones: [[1, 1, 42, 26, 'res', null, '조직 창고 단지 · 조직원만']],
+  zones: [[1, 1, 42, 26, 'hos', null, '조직 창고 단지 · 적진']],  // 적진: 보이면 경고 없이 바로 쫓는다 (조직원 옷이면 통과)
   zoneAllow: ['crew'],
-  locks: [{ b: 0, door: 'vault', key: 'red' }],
+  locks: [{ b: 0, door: 'vault', key: 'gold' }],
   keyItems: [{ key: 'pin', b: 0, fl: 0, at: 'VA' }, { key: 'gear', b: 1, fl: 0, at: 'R' }],
   fuse: [22, 14, 22, 15],
-  lamps: [[11, 13, 160, 1], [30, 12, 170, 1], [40, 20, 160, 1], [20, 25, 140, 1]],
-  cams: [[39, 17, 180, 50], [19, 13, 0, 50], [23, 12, 90, 45], [15, 9, 180, 35, 0]],
+  lamps: [[11, 13, 160, 1], [30, 12, 170, 1], [40, 20, 160, 1], [20, 25, 140, 1], [17, 26, 110, 1]],
+  cams: [[39, 17, 180, 50], [19, 13, 0, 50], [23, 12, 90, 45]],
   camRoom: { pos: [27, 4], fl: 0 },                                                                     // 경비실 관리실 화면
   searchlights: [[38, 13, 180, 60], [24, 25, 180, 35]],                                                 // 마당 망루 · 남쪽 담 (개구멍 쪽)
   radios: [1, 4, 7],
   guards: [
-    { kind: 'g1', tag: 'jailer', route: [[5, 8, 4], [14, 8, 4]], key: 'red' },                         // 0 간수 — 감방 앞 복도를 오간다 (감방 열쇠·빨강)
+    { kind: 'g1', tag: 'jailer', route: [[5, 8, 4], [14, 8, 4]], key: 'gold' },                         // 0 간수 — 감방 앞 복도를 오간다 (감방 열쇠·빨강)
     { kind: 'g2', b: 0, fl: 0, at: 'L', post: 0 },                                                      // 1 감금동 1층
     { kind: 'g1', at: [11, 8], fl: 1, post: 0 }, { kind: 'g2', at: [13, 8], fl: 1, post: 180 },           // 2·3 2층 사무실 — 제비 이야기
     { kind: 'g2', tag: 'camop', at: [27, 5], post: 270, still: true },                                  // 4 경비실 관리실 — CCTV 화면을 본다
@@ -44,7 +45,7 @@
     { kind: 'g2', route: [[4, 14, 2], [38, 14, 2]] },                                                   // 6 마당 동서 순찰
     { kind: 'g1', at: [41, 18], post: 180, elite: true }, { kind: 'g2', at: [41, 23], post: 180 },       // 7·8 정문
     { kind: 'g1', b: 3, fl: 1, at: 'bed', post: 90, sleep: true },                                      // 9 숙소에서 자는 조직원
-    { kind: 'dog', route: [[2, 26, 1.5], [40, 26, 1.5]] }                                               // 10 남쪽 담 개
+    { kind: 'dog', route: [[9, 26, 1.5], [27, 26, 1.5]] }                                               // 10 남쪽 담 개
   ],
   items: [{ b: 0, fl: 1, at: 'R' }],
   intel: [{ g: [2, 3], key: 2, gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', every: 24, first: 4,
@@ -53,14 +54,14 @@
   stories: [
     { id: 'cell', name: '감방 나가기', reveal: () => true,
       steps: [{ text: '감방 바닥에서 머리핀 찾기 — 락픽 대신 쓴다', at: null, done: S => !!(S.player.got || {}).pin || S.player.picks > 0 || !!S.player.keys.red },
-              { text: '감방 문 따기 — 간수가 등을 돌렸을 때', at: null, done: (S, h) => !h.inRect(S.player, [3, 3, 19, 12, 0]) || S.doors.some(d => d.keyLock === null || d.keyLock === false) }] },
+              { text: '감방 문 따기 — 간수가 등을 돌렸을 때', at: null, done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) }] },
     { id: 'gear', name: '압수품', reveal: (S, h) => !h.inRect(S.player, [3, 3, 19, 12, 0]) || h.knows('압수품'),
       steps: [{ text: '경비실에서 빼앗긴 장비 되찾기 (락픽·빈 캔·다트)', at: null, done: S => !!(S.player.got || {}).gear }] },
     { id: 'radio', name: '제비의 무전기', reveal: () => true,
       steps: [{ text: '감금동 2층 사무실 — 떠드는 둘의 이야기를 들어 보거나 바로 무전기를 챙긴다', at: null, done: S => S.items.every(i => i.got) }] }
   ],
   endText: '제비의 무전기를 챙겨 빠져나왔다. 무전기에는 마지막 메시지가 남아 있다 — "올빼미, 까마귀를 믿지 마." 이제 까마귀를 찾아간다.',
-  challenges: ['ghost', 'untouched', 'clean', 'fast'], fastT: 300,
+  challenges: ['ghost', 'untouched', 'clean', 'fast'], fastT: 150,
   well: 'manhole', kunai: 3, coins: 0, reinf: [43, 20],
   hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '압수품을 찾으면 락픽·빈 캔·다트가 돌아온다. 없으면 휘파람과 맨손으로.', '조직원을 쓰러뜨려 옷을 입으면 단지 안을 걸어서 지나갈 수 있다. 정문 정예는 얼굴을 안다.']
 },

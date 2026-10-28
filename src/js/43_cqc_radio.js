@@ -7,7 +7,7 @@ function canInterrogate() { const g = S.player.captive; return !!(g && !g.target
 function interrogate() {
   const P = S.player, g = P.captive; if (!g) return;
   if (g.target || g.civ || g.dog) { toast('이 사람은 아는 게 없어 보인다', 1.6); return; }
-  if (g.questioned) { toast('더 아는 게 없다 — [행동] 처치 · [보조] 기절', 1.8); return; }
+  if (g.questioned) { toast('더 아는 게 없다 — [공격] 톡 기절 · 계속 누르면 처치', 1.8); return; }
   g.questioned = true; g.captT = Math.max(0, (g.captT || 0) - 2.5); S.stats.interro = (S.stats.interro || 0) + 1;  // 겁먹어서 잠깐 덜 버둥거린다
   play('cloth', 0.4); P.strikeT = Math.max(P.strikeT || 0, 0.2);
   const it = (STAGE.interrogate || []).find(i => !S.learned.includes(i.learn) && !(i.gives && P.keys[i.gives]));
@@ -19,7 +19,7 @@ function interrogate() {
     after(INTERRO_T, () => { near.forEach(o => o.tagT = S.t + 30); if (near.length) toast(`실토했다 — 근처 조직원 ${near.length}명 위치 표시 (30초)`, 2.8, 'good'); });
   }
   bossRadio('interro');
-  hint('interro', '붙잡은 조직원에게 [도구]로 심문 — 비번·위치를 분다. 다 듣고 나면 [행동] 처치 · [보조] 기절');
+  hint('interro', '붙잡은 채 가만히 있으면 심문 — 비번·위치를 분다. 다 듣고 나면 [공격] 톡 기절 · 계속 누르면 처치');
 }
 // 실토로 위치가 드러난 조직원: 벽·지붕 너머에서도 머리 위 노란 표시
 function drawTagged() {

@@ -8,34 +8,35 @@ window.addEventListener('keydown', e => {
   if (S.entrySel && running) { const m = /^Digit([1-9])$/.exec(e.code); if (m) { e.preventDefault(); chooseEntry(+m[1] - 1); } return; }
   if (S.keypad && running) { e.preventDefault(); const m = /^(?:Digit|Numpad)([0-9])$/.exec(e.code); if (m && !e.repeat) kpPress(m[1]); else if (e.code === 'Backspace') kpPress('<'); else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') kpPress('ok'); else if (e.code === 'Escape') kpPress('x'); return; }
   if (e.code === 'KeyH' && !e.repeat) { const k = document.querySelector('.keys'); if (k) k.classList.toggle('mini'); return; }
-  if (DLG.modal && running && !paused) { if (['KeyQ', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
+  if (DLG.modal && running && !paused) { if (['KeyQ', 'KeyE', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
   if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
   if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); if (running) { input.scan = true; $('btnScan').classList.add('on'); hint('scan', '살피기: 문·창문·배관·환풍구·숨을 곳이 색으로 표시된다'); } return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
   if (e.repeat) return;
   S.keys[keyCode(e)] = true;
   if (!running || S.over) return;
-  // 왼손: Space 행동 · Z 보조 · X 도구(누르고 겨누기) · C 도구 바꾸기 · Ctrl 살금 모드 · Shift 달리기 · Alt 살피기 (Q W E는 예전 키로 남겨 둔다)
-  if (e.code === 'KeyQ' || e.code === 'Space') actPrimary();
-  if (e.code === 'KeyZ') { if (input.aiming) queueAim(); else actCarry(); }
-  if (e.code === 'KeyE' || e.code === 'KeyX') startAim('key');
+  // 왼손: Space 공격 · E 행동(Z도 같음) · Q 붙잡기 · X 다트·도구(톡 = 자동 조준, 누르고 있으면 겨누기) · C 도구 바꾸기 · V 휘파람 · F 겹친 대상 바꾸기
+  if (e.code === 'Space') actAttack();
+  if (e.code === 'KeyE' || e.code === 'KeyZ') actEnv();
+  if (e.code === 'KeyQ') actGrab();
+  if (e.code === 'KeyX') startAim('key');
   if (e.code === 'KeyC') selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]);
   if (e.code === 'KeyR') cycleMoveLock();
-  if (e.code === 'Digit1') selectTool('stone');
-  if (e.code === 'Digit2') selectTool('coin');
-  if (e.code === 'Digit3') selectTool('kunai');
+  if (e.code === 'Digit1') selectTool('kunai');
+  if (e.code === 'Digit2') selectTool('stone');
+  if (e.code === 'Digit3') selectTool('coin');
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
   if (e.code === 'KeyM') toggleTactical();
   if (e.code === 'KeyV') whistle();
-  if (e.code === 'KeyF') cycleAction();  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'KeyF') cycleEnv();  // 겹친 대상 중 다른 것 고르기
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
   if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { cancelAim(); toast('조준 취소', 1.2); return; }
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
-window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyE' || e.code === 'KeyX') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
+window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if (e.code === 'KeyX' && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
 window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
@@ -88,12 +89,13 @@ canvas.addEventListener('touchend', endJoy); canvas.addEventListener('touchcance
 
 function bindBtn(id, fn) {
   const b = $(id);
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); fn(); b.classList.add('down'); });
+  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); fn(); });  // '눌림'을 먼저 — 행동 안에서 길게 누르기(기절 뒤 처치·조르기)를 알아보게
   const up = () => b.classList.remove('down');
   b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up);
 }
-bindBtn('btnAct', actPrimary);
-bindBtn('btnCarry', () => { if (input.aiming) queueAim(); else actCarry(); });
+bindBtn('btnAct', actAttack);
+bindBtn('btnCarry', actEnv);
+bindBtn('btnGrab', () => { if (S && S.player.captive) { if (canInterrogate()) interrogate(); } else actGrab(); });
 {
   const b = $('btnTool');
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });
@@ -124,7 +126,7 @@ function cycleMoveLock() { toggleWalkLock(); }
 { const o = document.querySelector('#hud .obj'); if (o) o.addEventListener('click', e => { e.stopPropagation(); o.classList.toggle('open'); }); }  // 휴대폰: 목표 펼치기
 { const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
 { const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
-{ const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cycleAction(); }); }
+{ const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cycleEnv(); }); }
 { const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); }); }
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleSneak(); b.blur(); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
@@ -188,9 +190,10 @@ document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('cli
 function start(i, noBrief) {
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
-  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'stone'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
+  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
-  newGame(i); resetDialog(); miniBase = null;
+  newGame(i); resetDialog(); miniBase = null; renderToasts();
+  if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)  // 이전 판 알림(마지막 체력 등)을 지운다
   if (PR) prWarm(['ninja', ...S.guards.filter(g => !g.dog).map(charOf)], true);  // 이 판 사람들 옷 색부터 미리 칠한다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
@@ -237,7 +240,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get PR() { return PR; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); prSheet(k); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, get PR() { return PR; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); prSheet(k); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];

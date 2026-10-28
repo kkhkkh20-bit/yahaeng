@@ -19,7 +19,7 @@ function lightAt(x, y, elev) {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
-const HINT_ALARM = ['alert', 'radioCall', 'counter', 'search', 'hurt'];
+const HINT_ALARM = ['alert', 'radioCall', 'counter', 'search', 'hurt', 'gun'];
 function hint(key, text) { if (S.hints[key] || (STAGE && STAGE.tutorial)) return;  // 연습에서는 단계 안내만 (엇나간 도움말이 끼지 않게)
   if (S.alevel >= 2 && !HINT_ALARM.includes(key)) return;  // 쫓기는 중에는 일반 팁을 띄우지 않는다 (표시 안 한 팁은 나중에 다시 뜰 수 있다)
   S.hints[key] = true; S.hintN = (S.hintN || 0) + 1; if (S.hintN > 6) return;  // 한 판에 6개까지 — 더 많으면 읽지 않는다
@@ -49,13 +49,15 @@ function soundThrough(x0, y0, x1, y1) {
     if (f < 0.05) break; }
   return f;
 }
-function noise(x, y, r, src, fl) {
-  if (fl == null) fl = flOf(S.player);  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
+function noise(x, y, r, src, fl, z) {
+  if (fl == null) fl = flOf(S.player);
+  const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
   if (src !== 'scream') r *= loudMul(x, y, fl);  // 클럽 음악에 묻힌다
   const nz = { x, y, r, t: 0, src, fl }; S.noises.push(nz);
   const L0 = CUR_F; setLayer(fl);
   for (const g of S.guards) {
     if (flOf(g) !== fl) continue;
+    { const gz = g.z || 0, gIn = !gz && !flOf(g) && !!roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); if ((zs > 0 && gIn) || (srcIn && gz > 0)) continue; }  // 옥상 발소리는 아래 실내에서 안 들리고, 실내 소리는 옥상에서 안 들린다
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.state === 'TERROR') continue;
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
@@ -70,8 +72,9 @@ function noise(x, y, r, src, fl) {
       if (src === 'step' || src === 'whistle') nz.heard = true;
       if (src === 'whistle' && !g.dog) { gsay(g, ['누구야?', '휘파람…? 거기 누구 있어?', '뭐야, 이쪽인가?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
-      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x, y }; continue; }
-      goSuspicious(g, x + rnd(-20, 20), y + rnd(-20, 20), src === 'stone' ? 3 : 3.5); g.why = 'heard';
+      const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
+      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
+      goSuspicious(g, x + rnd(-fz, fz), y + rnd(-fz, fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
     }
   }
   setLayer(L0);

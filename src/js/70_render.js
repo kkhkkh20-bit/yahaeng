@@ -779,7 +779,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [보조]로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'F로 바꾸기') : pa && pa.k !== 'none' ? '다른 행동이 먼저 잡혀 있다 — 한 걸음 더 가까이' : '';
+      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'F로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
@@ -804,7 +804,7 @@ function drawScan(openB) {
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
   else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#5a606a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 30 : 40, st === 'bar' ? 0.5 : 1); }
   for (const l of S.ladders) {
-    if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `오르기 ${l.tfl + 1}층` : '오르기 옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `내리기 ${l.bfl + 1}층`, SCAN.ladder); } continue; }
+    if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `오르기 ${l.tfl + 1}층` : '오르기 옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `내려가기 ${l.bfl + 1}층`, SCAN.ladder); } continue; }
     if (fP) continue;
     if (l.kind === 'pipe') { box(l.x, l.y, SCAN.pipe, '배관 ↑', 36, l.bz ? 0.8 : 1); }
     else if (l.kind === 'ladder') box(l.x, l.y, SCAN.ladder, '사다리 ↑', 36);
@@ -840,15 +840,23 @@ function drawGunAim() {
     if (f > 0.7 && Math.floor(S.t * 12) % 2) { ctx.fillStyle = 'rgba(255,60,60,.9)'; ctx.beginPath(); ctx.arc(g.x + Math.cos(a) * L, g.y + Math.sin(a) * L, 4, 0, TAU); ctx.fill(); } }
 }
 // 지금 누를 수 있는 행동을 대상 위에 글자로 띄운다
-function drawActLabels(pa, P) {
-  const key = '';
+function drawActLabels(pa, P, ka, ga) {
+  const k = Math.max(1, 0.95 / SCALE), T = (b, kc) => isTouch ? [`[${b}] `, null] : ['', kc];
+  // [공격]: 사람 머리 위 (붉게) · [붙잡기]는 그 아래 한 줄
+  const vic = ka && (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk);
+  let vy = null;
+  if (vic) { const [p, kc] = T('공격', 'Space'), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
+    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc);
+    if (ga && ga.k === 'grab' && ga.g === vic) { const [p2, kc2] = T('붙잡기', 'Q'); tag(vic.x, vy + 21 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); } }
+  else if (ga && ga.k === 'grab') { const [p2, kc2] = T('붙잡기', 'Q'); tag(ga.g.x, ga.g.y - 34 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); }
+  if (!pa || pa.k === 'none') return;
+  // [행동]: 대상(문·창문·계단·시체…) 위
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
-  let zKey = false;
-  const stk = pa.stalk; if (pa.k === 'none') { if (!pa.held) return; pa = pa.held; zKey = true; }
-  if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
+  if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
   else if (pa.l && pa.k === 'up') { x = pa.l.x; y = pa.l.y - 34; } else if (pa.l && (pa.k === 'down' || pa.k === 'smother')) { x = pa.l.rx != null ? pa.l.rx : pa.l.ux; y = (pa.l.ry != null ? pa.l.ry : pa.l.uy) - 40; } else if (pa.l) at(pa.l);
-  const col = pa.list || pa.g ? '#e8473c' : pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' ? SCAN.hide : '#f2c46b';
+  if (vic && Math.abs(x - vic.x) < 60 && Math.abs(y - vy) < 44 * k) y = vy - 23 * k;  // 사람과 겹치면 한 줄 위로
+  const col = pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' || pa.k === 'stash' ? SCAN.hide : '#f2c46b';
   let lab = pa.label;
   if ((pa.k === 'up' && pa.l && pa.l.kind !== 'fstair') || pa.k === 'wireOn' || pa.k === 'down') {  // 오르내리는 동안 보일 자리: 지금 그곳을 보고 있는 자경대원
     const bx = pa.l ? pa.l.x : pa.at ? pa.at.x : P.x, by = pa.l ? pa.l.y : pa.at ? pa.at.y + 30 : P.y; let n = 0;
@@ -856,14 +864,7 @@ function drawActLabels(pa, P) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  if (zKey) {  // 사람 근처: 시설 행동은 [보조]로, [행동]은 사람에게 — 버튼마다 대상 위에 따로 띄운다
-    tag(x, y, isTouch ? '[보조] ' + lab : lab, col, 1, isTouch ? null : 'Z');
-    if (stk) { const k = Math.max(1, 0.95 / SCALE); tag(stk.x, stk.y - 34 * k, (isTouch ? '[행동] ' : '') + (!koDefault(stk) ? '암살' : '기절'), '#e8473c', 1, isTouch ? null : 'Space'); }
-    return; }
-  tag(x, y, key + lab, col, 1, isTouch ? null : 'Space'); let dy = 21 * Math.max(1, 0.95 / SCALE), row = 1;
-  if (pa.hold && !isTouch) { tag(x, y + dy * row++, '길게 누르면 ' + pa.hold, '#ff8a76', 0.95, 'Space'); }  // 히트맨식: 같은 키 길게 누르기는 따로 한 줄
-  const sa = secondaryAction();
-  if (['grab', 'steal', 'tunnel', 'fdown'].includes(sa.k) || sa.viaZ) tag(x, y + dy * row, sa.label, '#c4ccd6', 1, isTouch ? null : 'Z');
+  const [p, kc] = T('행동', 'E'); tag(x, y, p + lab, col, 1, kc);
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && b !== openB; };
 
@@ -1124,7 +1125,7 @@ function draw() {
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
   }
-  const travUp = !!(P.trav && P.trav.phases.some(ph => ph.pose !== 'walk'));
+  const travUp = !!(P.trav && !P.trav.hideB && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
   if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
   // 키트 나무·화단: 주인공이 그 뒤(위쪽)에 있으면 잎을 반투명하게 한 번 더 덮어 '뒤에 숨은' 모습으로
@@ -1158,11 +1159,16 @@ function draw() {
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
-    if (g.poi && !g.civ && ['NOTICE', 'SUSPICIOUS', 'SEARCH'].includes(g.state) && !g.reached) {
+    // 멀리 있는 경비의 점선은 그리지 않고(쫓기는 중엔 더 가까운 것만), 같은 자리의 '들었다/봤다'는 하나로 합친다
+    if (S._poiT !== S.t) { S._poiT = S.t; S._poiL = []; }
+    const pdist = dist(g.x, g.y, S.player.x, S.player.y);
+    if (g.poi && !g.civ && ['NOTICE', 'SUSPICIOUS', 'SEARCH'].includes(g.state) && !g.reached && g.why !== 'exit' && pdist < (chaseNow() ? 260 : 450)) {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
+      const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
+      if (!dup) {
       const lab = g.why === 'saw' ? '봤다' : '들었다'; ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 10;
       ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(g.poi.x - tw / 2, g.poi.y - 9, tw, 18); ctx.fillStyle = g.why === 'saw' ? '#ff8a6a' : '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, g.poi.x, g.poi.y + 4);
-    }
+    } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
     if (mk) drawAwareMark(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
@@ -1226,7 +1232,7 @@ function draw() {
   if (running && !tactical) drawOffscreen();
   // 행동 표시
   if (running && !S.over && !S.entrySel) {
-    const pa = primaryAction();
+    const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
       const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
@@ -1235,13 +1241,13 @@ function draw() {
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
     }
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
-    if (pa.list) pa.list.forEach(g => ring(g, '#e8473c'));
-    if (pa.k === 'drop' || pa.k === 'ambush' || pa.k === 'ventKill') ring(pa.g, '#e8473c');
-    if (pa.k === 'counter') { ring(pa.g, '#f2c46b'); tag(pa.g.x, pa.g.y - 46, '지금 [행동] — 반격', '#f2c46b', 1); }
+    if (ka.list) ka.list.forEach(g => ring(g, '#e8473c'));
+    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, '#e8473c');
+    if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'leap') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + tc(pa.j.tx)) / 2, (P.y + tc(pa.j.ty)) / 2 - 40, tc(pa.j.tx), tc(pa.j.ty)); ctx.stroke(); ctx.setLineDash([]); }
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
-    S.paNow = pa; drawActLabels(pa, P);
+    S.paNow = pa; drawActLabels(pa, P, ka, ga);
     const nc = !P.carrying && nearCorpse();
     if (nc) { ctx.strokeStyle = 'rgba(232,227,214,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.arc(nc.x, nc.y, 26, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     if (input.aiming && input.tool !== 'kunai') {

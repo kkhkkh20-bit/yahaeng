@@ -80,7 +80,7 @@ function deliverReport(g) {
 function lockExits() {
   if (!S.exits || S.over || (S.lockT && S.t - S.lockT < 60)) return; S.lockT = S.t; let n = 0;
   for (const e of S.exits) {
-    const g = S.guards.filter(o => !o.civ && !o.dog && !o.target && !o.elite && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && o.state !== 'ALERT' && !(o.fl || 0) && !(o.z || 0) && dist(o.x, o.y, e.x, e.y) < 1400 && !o.guardExit)
+    const g = S.guards.filter(o => !o.civ && !o.dog && !o.target && !o.elite && !o.still && o.tag !== 'camop' && !o.yank && !o.doomed && ['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH'].includes(o.state) && !(o.fl || 0) && !(o.z || 0) && dist(o.x, o.y, e.x, e.y) < 1400 && !o.guardExit)
       .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))[0];
     if (!g) continue; n++; endChat(g); g.guardExit = true; goSuspicious(g, e.x, e.y, 40); g.why = 'exit'; gsay(g, '출구부터 막아!', 2.2); after(45, () => { g.guardExit = false; });
   }
@@ -96,7 +96,7 @@ function giveCandy(g) {
   const P = S.player; P.candy--; g.treatT = 22; g.rep = null; g.state = 'PATROL'; g.meter = 0; g.icon = null; g.path = null; play('click', 0.4, 1.5);
   const a = Math.atan2(g.y - P.y, g.x - P.x); for (let k = 0; k < 8 && !g.path; k++) { const aa = a + (k % 2 ? 1 : -1) * k * 0.4; pathTo(g, g.x + Math.cos(aa) * 380, g.y + Math.sin(aa) * 380); if (g.path && !g.path.length) g.path = null; }
   gsay(g, ['우와, 사탕이다! 고맙습니다!', '헤헤, 놀이터 가야지!', '엄마한테 비밀!'][g.id % 3], 2.2);
-  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 건드릴 수 없다. [보조]로 사탕을 주면 멀리 가서 논다');
+  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 건드릴 수 없다. [행동]으로 사탕을 주면 멀리 가서 논다');
 }
 function updateChildTreat(g, dt) {
   g.treatT -= dt; g.seen = false; g.meter = 0; g.icon = null;
@@ -142,7 +142,7 @@ function updateStories(dt) {
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
     if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) { const nx = S.stories.find(o => o.found && !o.done); S.storyTrack = nx ? nx.d.id : null; } }
     else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
-    if (!st.done && S.exitOpen) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 길로 목표를 이뤘으면 남은 기회 안내는 접는다 (탈출만 남긴다)
+    if (!st.done && S.exitOpen && !st.d.keepOpen) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 길로 목표를 이뤘으면 남은 기회 안내는 접는다 (탈출만 남긴다)
   }
 }
 const storyStep = st => st.done || st.moot ? null : st.d.steps[st.step];
@@ -190,7 +190,7 @@ function takeProp(p) {
   if (P.item) dropItem();
   p.taken = true; P.item = p; play('cloth', 0.4); play('click', 0.3);
   toast(`${p.name}을(를) 들었다` + (p.permit ? ' — 들고 있으면 배달하러 온 사람으로 통하는 곳이 있다' : ''), 2.4, 'good');
-  hint('item', '들고 있는 물건: 한 번에 하나만. Z(보조)로 내려놓는다. 쓰는 곳 앞에서는 Z로 쓴다');
+  hint('item', '들고 있는 물건: 한 번에 하나만. [행동]으로 내려놓는다. 쓰는 곳 앞에서도 [행동]으로 쓴다');
 }
 function dropItem() {
   const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); play('drop', 0.3);

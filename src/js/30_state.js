@@ -106,7 +106,7 @@ function newGame(si) {
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !S.items.length) S.exitOpen = true;
-  if (!STAGE.tutorial) S.items.forEach(lootPlace);  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
+  if (!STAGE.tutorial) S.items.forEach(it => lootPlace(it));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
@@ -129,6 +129,7 @@ function newGame(si) {
   S.fwindows = []; for (let f = 1; f < GF.length; f++) for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (GF[f][ty][tx] === 'N') S.fwindows.push({ tx, ty, x: tc(tx), y: tc(ty), fl: f });
   // 읽을 수 있는 쪽지·장부: { b, fl, at, title, lines }
   S.notes = (STAGE.notes || []).map(n => { const q = n.pos || planPt(n.b, n.fl || 0, n.at || 'bed'); return { x: tc(q[0]), y: tc(q[1]), fl: n.fl || 0, title: n.title, lines: n.lines, key: n.key, gives: n.gives, learn: n.learn, read: false }; });
+  S.notes.forEach(n => { if (/책상/.test(n.title || '')) { lootPlace(n, ['desk', 'desk2', 'pc']); n.furn = null; } });  // '책상 밑 메모'는 실제 책상 옆에 둔다
   // 옆 건물 같은 층 창문과 마주 보면 건너뛸 수 있다 (틈 1~3칸)
   S.fwindows.forEach(w => {
     const A = bldAt(w.tx, w.ty); if (A < 0) return; const dir = w.tx === BLD[A].x0 ? -1 : w.tx === BLD[A].x1 ? 1 : 0; if (!dir) return;
@@ -345,7 +346,7 @@ const ventAt = (tx, ty) => inMap(tx, ty) && VG && VG[ty * MW + tx] === 1;
 function autoVents(sp, hides, ladders, lamps) {
   const B = BLD[sp.b]; if (!B) return null;
   const busy = (tx, ty) => hides.some(h => !h.fl && Math.abs(h.tx - tx) <= 1 && Math.abs(h.ty - ty) <= 1) || lamps.some(l => !l.fl && l.tx === tx && l.ty === ty)
-    || ladders.some(l => (l.bx === tx && l.by === ty) || (l.tx === tx && l.ty === ty));
+    || ladders.some(l => (l.bx === tx && l.by === ty) || (l.tx === tx && l.ty === ty) || ((l.kind === 'stair' || l.kind === 'fstair') && Math.abs(l.bx - tx) <= 2 && Math.abs(l.by - ty) <= 2));  // 계단 칸 둘레 2칸은 비운다 (환풍구와 계단 표시가 겹치지 않게)
   const pick = (cands, score) => { let best = null, bs = 1e9; for (const c of cands) { const v = score(c); if (v < bs) { bs = v; best = c; } } return best; };
   // 옥상: 걸을 수 있는 칸, 계단실·사다리·물탱크(오른쪽 위)를 피해 왼쪽 위 안쪽
   const roofC = [];

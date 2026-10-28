@@ -325,7 +325,8 @@ function stairWells(g, f) {
       const count = () => reach().size;
       for (const [sx, sy] of sides) {
         const c1 = [tx + sx, ty + sy], c2 = [tx + sx + d[0], ty + sy + d[1]], floorC = c => walk(c[0], c[1]) && g[c[1]][c[0]] !== 'Y' && !FURN.some(it => (it.fl || 0) === f && c[0] >= it.x && c[0] < it.x + it.w && c[1] >= it.y && c[1] < it.y + it.h);
-        if (!floorC(c1) || !floorC(c2)) continue;
+        const tp = [tx + sx + 2 * d[0], ty + sy + 2 * d[1]];
+        if (!floorC(c1) || !floorC(c2) || !floorC(tp)) continue;  // 내려가는 자리(구멍 바닥 쪽 끝 앞 칸)가 벽·가구면 이 방향은 쓰지 않는다 (구석 계단에서 내려가지 못하던 문제)
         const before = reach(), o1 = g[c1[1]][c1[0]], o2 = g[c2[1]][c2[0]]; g[c1[1]][c1[0]] = 'K'; g[c2[1]][c2[0]] = 'K';
         const after = reach(), lost = [...before].filter(k => !after.has(k) && k !== c1.join(',') && k !== c2.join(','));
         // 막혀 떨어져 나간 구석이 1~3칸이고 문·창문에 붙어 있지 않으면 그 자리에 짐 상자를 쌓는다 (계단 밑 창고). 아니면 이 방향은 포기

@@ -60,8 +60,8 @@ function stageMap(w, labels) {
 }
 // 할 일 목록 (브리핑·일시정지 공용): [표식, 색, 할 일, 자리]
 function briefTodo() {
-  const out = [];
-  S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' 훔치기', placeName(it.x, it.y, it.fl, it.b)]); });
+  const out = []; if (STAGE.firstGoal) out.push(['dia', '#7fd6ff', STAGE.firstGoal.text, STAGE.firstGoal.where || '']);
+  S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), placeName(it.x, it.y, it.fl, it.b)]); });
   for (const g of S.guards) if (g.target && g.state !== 'DEAD') out.push(['dot', '#e8473c', (g.doc ? '한 선생' : '표적') + ' 처리', schedText(g) || placeName(g.x, g.y, flOf(g))]);
   out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '끝나면 노란 원으로']);
   return out;
@@ -74,7 +74,7 @@ function showBrief(go) {
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), true); cv.style.width = '100%'; mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
-  { const L = (typeof DIALOGUE !== 'undefined' && DIALOGUE[STAGE.id] || []).find(l => l[0] === 'master'); $('brLine').textContent = L ? L[1].replace(/^올빼미, 까마귀다\. /, '') : ''; $('brRadio').hidden = !L; }
+  { const L = (typeof DIALOGUE !== 'undefined' && DIALOGUE[STAGE.id] || []).find(l => l[0] === 'master'); $('brLine').textContent = STAGE.briefBy ? STAGE.brief : L ? L[1].replace(/^올빼미, 까마귀다\. /, '') : ''; $('brRadio').hidden = !L && !STAGE.briefBy; $('brRadio').querySelector('b').textContent = STAGE.briefBy || '까마귀'; }
   $('brTodo').innerHTML = briefTodo().map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span> · ${w}</span></b></li>`).join('');
   $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
@@ -84,7 +84,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 행동: ['[행동]', 'Space'], 보조: ['[보조]', 'Z'], 도구: ['[도구]를', 'X를'], 살피기: ['[살피기]를', 'Alt를'] };
+const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 공격: ['[공격]', 'Space'], 행동: ['[행동]', 'E'], 보조: ['[행동]', 'E'], 도구: ['도구 버튼을', 'X를'], 바꾸기: ['도구 칸을 눌러', 'C로'], 살피기: ['[살피기]를', 'Alt를'] };
 const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => TUT_KEY[k] ? TUT_KEY[k][isTouch ? 0 : 1] : m);
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -93,8 +93,9 @@ function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
+  { const fg = STAGE.firstGoal; if (fg) { let ok = false; try { ok = fg.done(S, SH); } catch (e) {} if (!ok) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; } }  // 판마다 맨 먼저 할 일 (예: 감방 나가기)
   const c = [];
-  S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' 훔치기', where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
+  S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
   if (!S.spare) for (const g of S.guards) if (g.target && g.state !== 'DEAD') c.push({ text: (g.doc ? '한 선생' : '표적') + ' 처리하기', where: placeName(g.x, g.y, flOf(g)), x: g.x, y: g.y, fl: flOf(g), g });
   if (!c.length) return null;
   const cost = o => dist(P.x, P.y, o.x, o.y) + Math.abs((o.fl || 0) - flOf(P)) * 300;
@@ -163,17 +164,18 @@ function updateHUD(force) {
   updateStealth(lv);
   { const hc = $('hintCard'), dl = $('dlg'); if (hc && dl) hc.style.visibility = dl.hidden ? '' : 'hidden'; }
   { const pl = $('pickLbl'); if (pl) { pl.hidden = false; setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
-  const pa = primaryAction();
-  padButton(hud.act, 'actH', pa, '행동');
-  { const cb = $('btnCycle'); if (cb) { const n = pa.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (pa.choiceI + 1) + '/' + n); } }
-  hud.act.classList.toggle('ready', pa.k !== 'none');
-  const sa = secondaryAction();
-  padButton(hud.carry, 'carryH', sa, '보조');
-  hud.carry.classList.toggle('ready', sa.k !== 'none');
-  const ki = pa.k !== 'none' ? actIcon(pa) : pa.stalk ? (koDefault(pa.stalk) ? 'ko' : 'kill') : '';
+  // 버튼 넷: [공격] 사람에게만 · [행동] 시설·시체 · [붙잡기] 등 뒤에서 · [다트](도구)
+  const ka = attackAction(), ea = envAction(), ga = grabAction();
+  padButton(hud.act, 'actH', ka, '공격');
+  hud.act.classList.toggle('ready', ka.k !== 'none' || !!ka.stalk);
+  const ki = ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
   hud.act.style.setProperty('--hold', holdFrac().toFixed(3));
-  keyMap(pa, sa);
+  padButton(hud.carry, 'carryH', ea, '행동');
+  hud.carry.classList.toggle('ready', ea.k !== 'none');
+  { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (ea.choiceI + 1) + '/' + n); } }
+  { const gb = $('btnGrab'); if (gb) { const html = icon('grab', 20) + `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
+  keyMap(ka, ea, ga);
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 들킬 수 있음 · 보인다 + 이유 한 줄
 const STH_ICO = {
