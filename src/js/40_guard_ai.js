@@ -155,7 +155,7 @@ function setAlert(lv, dur, msg) {
 function roofCheck() {
   if (!S || S.over) return; if (!S.lvl) lvlInit();
   const tops = S.lvl.ends.filter(e => e.A.k === 'g' && e.B.z > 0), used = new Set(), P = S.player;
-  const cand = S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.elite && !(g.z || 0) && !flOf(g) && ['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH'].includes(g.state));
+  const cand = S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.elite && !(g.z || 0) && !flOf(g) && g.why !== 'blood' && ['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH'].includes(g.state));  // 핏자국을 쫓는 경비는 옥상으로 돌리지 않는다
   let n = 0;
   for (const g of cand.sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))) {
     if (n >= 2) break;
@@ -426,7 +426,12 @@ function updateGuard(g, dt) {
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
     g.bloodT = 0.35;
     for (const d of S.decals) { if (d.seen || flOf(d) !== flOf(g) || (g.z || 0) || dist(g.x, g.y, d.x, d.y) > 170) continue;
-      if (canSee(g, d.x, d.y, Math.max(0.45, lightAt(d.x, d.y)), false, false, 0) > 0) { d.seen = true; goSuspicious(g, d.x, d.y, 5); g.why = 'saw'; gsay(g, ['피…? 이게 뭐야.', '바닥에 피가 있어.', '누가 다쳤나?'][g.id % 3]); setAlert(1, 20); break; } }
+      if (canSee(g, d.x, d.y, Math.max(0.45, lightAt(d.x, d.y)), false, false, 0) > 0) {
+        // 핏자국을 보면 의심이 아니라 바로 수색: 핏방울이 이어져 있으면 그 끝(시체를 옮겨 간 곳)까지 따라간다
+        let end = d; if (d.trail) for (const o of S.decals) if (o.trail === d.trail) { o.seen = true; if (flOf(o) === flOf(g) && (o.k || 0) > (end.k || 0)) end = o; }
+        d.seen = true; endChat(g); g.state = 'SEARCH'; g.poi = { x: end.x, y: end.y, fl: flOf(end), z: 0 }; g.reached = false; g.path = null; g.waitBase = 5; g.meter = Math.max(g.meter, 0.6); g.why = 'blood'; setIcon(g, '!');
+        gsay(g, end !== d ? ['피가 저쪽으로 이어져 있어!', '누가 끌고 갔어. 따라가 본다.', '핏자국이다… 어디까지 가나 보자.'][g.id % 3] : ['피다! 근처를 뒤져!', '바닥에 피가 있어. 누가 당했어!', '여기서 무슨 일이 있었어.'][g.id % 3]);
+        setAlert(2, 30); bossRadio('blood'); break; } }
   }
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && !g.target && S.vents.length) {
     for (const v of S.vents) if (v.open && !v.roof && dist(g.x, g.y, v.x, v.y) < 150 && Math.abs(angDiff(g.a, Math.atan2(v.y - g.y, v.x - g.x))) < guardFov(g) && los(g.x, g.y, v.x, v.y)) {
