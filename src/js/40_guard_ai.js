@@ -364,6 +364,7 @@ function updateCiv(g, dt) {
 const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노랑(의심 — 멈춰 보고 확인하러 온다), 1이면 빨강(발각)
 const awareCol = g => g.state === 'ALERT' ? '#ff4a3c' : g.meter >= NOTICE_AT || ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#f4f1ea';
 function updateGuard(g, dt) {
+  if (g.yank) return;  // 숨은 곳으로 끌려가는 중 (updateAmbush가 움직인다)
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   if (g.civ) { updateCiv(g, dt); return; }
   if (g.climb) { g.seen = false; if (g.iconT > 0) g.iconT -= dt; updateClimbG(g, dt); if (g.state === 'ALERT' && S.player) g.lostT = 0; return; }
@@ -785,7 +786,7 @@ function goAlert(g) {
   if (g.target) toast('표적이 소리쳤다 — 자경대원이 몰려온다', 2.6, 'warn');
   let radio = !!g.radio;
   for (const o of S.guards) {
-    if (o === g || o.civ || o.state === 'DEAD' || o.state === 'ALERT' || o.target || o.state === 'FLEE' || o.state === 'CAPTIVE' || o.state === 'TERROR' || flOf(o) !== flOf(g)) continue;
+    if (o === g || o.civ || o.yank || o.state === 'DEAD' || o.state === 'ALERT' || o.target || o.state === 'FLEE' || o.state === 'CAPTIVE' || o.state === 'TERROR' || flOf(o) !== flOf(g)) continue;
     if (dist(o.x, o.y, g.x, g.y) < (g.target ? 650 : 340)) { o.state = 'ALERT'; o.icon = '!'; o.iconT = 99; o.lastSeen = pSpot(); o.lostT = 0.5; o.path = null; o.repath = 0; o.meter = 1; o.shootT = 0; if (o.radio) radio = true; }
   }
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
@@ -805,7 +806,7 @@ function goAlert(g) {
 }
 function radioSpread(at) {
   toast('무전으로 경보가 퍼졌다', 2.4, 'warn');
-  for (const o of S.guards) if (!o.civ && !o.dog && !o.target && o.state !== 'DEAD' && o.state !== 'ALERT' && o.state !== 'CAPTIVE' && flOf(o) === (at.fl || 0) && dist(o.x, o.y, at.x, at.y) < 1100) { o.state = 'SEARCH';  // 같은 층만 몰려온다 (다른 층은 모른다)
+  for (const o of S.guards) if (!o.civ && !o.dog && !o.target && !o.yank && o.state !== 'DEAD' && o.state !== 'ALERT' && o.state !== 'CAPTIVE' && flOf(o) === (at.fl || 0) && dist(o.x, o.y, at.x, at.y) < 1100) { o.state = 'SEARCH';  // 같은 층만 몰려온다 (다른 층은 모른다)
     o.poi = { x: at.x + rnd(-60, 60), y: at.y + rnd(-60, 60), fl: at.fl, z: at.z }; o.reached = false; o.path = null; o.waitBase = 4; setIcon(o, '!'); }
   setAlert(3);
 }

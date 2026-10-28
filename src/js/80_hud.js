@@ -175,6 +175,8 @@ const STH_ICO = {
 };
 function updateStealth(lv) {
   const box = $('stealth'); if (!box || !S) return; const P = S.player;
+  { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
+    if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
   const pub = STAGE.zones && !P.hide && !P.hidden && !P.under && !P.vent && !P.z && pZoneEff() === Z_PUB;
   const zi = STAGE.zones ? pZoneInfo() : null, banned = zi && zi.k !== Z_PUB && !permitted(zi);

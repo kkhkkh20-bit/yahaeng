@@ -40,9 +40,9 @@ function resize() {
 function targetScale() {
   if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
-  return BASE_SCALE * userZoom * (P && P.z >= 3 ? 0.68 : P && (P.z || P.jump) ? 0.8 : 1);
+  return BASE_SCALE * userZoom * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
-function setZoom(z) { userZoom = clamp(z, 0.45, 1.5); try { localStorage.setItem('yahaeng.zoom', String(userZoom)); } catch (e) {} }
+function setZoom(z) { userZoom = clamp(z, 0.8, 1.6); try { localStorage.setItem('yahaeng.zoom2', String(userZoom)); } catch (e) {} }  // 너무 멀리(전지적 시점)는 못 빼게. 전체는 전술 지도로
 function toggleTactical() {
   if (!running || !S || S.over || S.entrySel) return;
   tactical = !tactical; $('tacBanner').hidden = !tactical; $('btnMap').classList.toggle('on', tactical); if (tactical) S.usedMap = true;

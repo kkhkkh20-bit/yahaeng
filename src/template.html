@@ -393,7 +393,7 @@ body.joyseen .joyhint { display: none !important; }
 
 /* ---- 첫 화면 · 의뢰 장부 · 도움말 ----
    첫 화면: 실제 게임 장면(네온 골목)을 화면 가득 깔고, 붓글씨 제목과 시작 버튼만. 움직임은 배경이 아주 천천히 흐르는 것 하나
-   의뢰 장부: 짠돌이 사장님의 장부 한 면 — 왼쪽 붉은 여백선, 줄마다 의뢰 하나, 이름과 수고비는 붓글씨, 지도 사진은 클립으로 끼운 듯 */
+   의뢰 장부: 까마귀가 넘기는 장부 한 면 — 왼쪽 붉은 여백선, 줄마다 의뢰 하나, 이름과 수고비는 붓글씨, 지도 사진은 클립으로 끼운 듯 */
 #intro { background: var(--night); place-items: end stretch; padding: 0; overflow: hidden; }
 .title-bg { position: absolute; inset: -4%; background: var(--night) center / cover no-repeat; background-image: var(--title-bg, none); filter: saturate(1.15) brightness(.82); animation: titleDrift 46s ease-in-out infinite alternate; }
 #intro::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(7, 10, 18, .15) 0%, rgba(7, 10, 18, .1) 32%, rgba(7, 10, 18, .82) 62%, var(--night) 88%); pointer-events: none; }
@@ -444,7 +444,7 @@ body.joyseen .joyhint { display: none !important; }
 #ledger .stages h3 { margin-top: 10px; }
 #help details.rulesbox { border-top: 1px solid var(--ink-line); padding-top: 10px; }
 /* 은신 상태: 화면 위 가운데 큰 표시 (히트맨의 상태 표시·마크 오브 더 닌자의 숨음 표시처럼 한눈에) */
-#stealth { --sc: #8fd3ff; position: absolute; left: 50%; top: calc(var(--topb, 70px) + 8px); transform: translateX(-50%); display: flex; align-items: center; gap: 9px; padding: 6px 16px 6px 10px; border-radius: 999px; background: rgba(7, 10, 18, .8); border: 2px solid var(--sc); color: var(--sc); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); pointer-events: none; white-space: nowrap; transition: background-color .18s, border-color .18s, color .18s; z-index: 2; }
+#stealth { --sc: #8fd3ff; position: absolute; left: 50%; top: calc(var(--topb, 70px) + 8px); transform: translateX(-50%); display: flex; align-items: center; gap: 9px; padding: 6px 16px 6px 10px; border-radius: 999px; background: rgba(7, 10, 18, .8); color: var(--sc); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); pointer-events: none; white-space: nowrap; transition: background-color .18s, border-color .18s, color .18s; z-index: 2; }
 #stealth .sth-ico { width: 30px; height: 30px; flex: none; }
 #stealth .sth-ico svg { width: 100%; height: 100%; display: block; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
 #stealth .sth-ico svg .f { fill: currentColor; stroke: none; }
@@ -463,7 +463,8 @@ body.joyseen .joyhint { display: none !important; }
 #stealth[data-s="risk"] .sth-wing, #stealth[data-s="seen"] .sth-wing { background: rgba(0, 0, 0, .2); }
 @keyframes sthPulse { to { box-shadow: 0 0 0 6px rgba(255, 90, 76, .35), 0 6px 18px rgba(0, 0, 0, .45); } }
 @media (prefers-reduced-motion: reduce) { #stealth[data-s="seen"] { animation: none; } }
-body.scanning #stealth, body.dlgmodal #stealth { visibility: hidden; }
+body.scanning #stealth, body.dlgmodal #stealth, body:has(.screen:not([hidden])) #stealth { visibility: hidden; }
+#stealth.under { opacity: .28; }  /* 주인공이 표시 밑에 오면 비친다 */
 #toasts { top: calc(var(--topb, 70px) + 70px) !important; }
 </style>
 
@@ -520,7 +521,7 @@ body.scanning #stealth, body.dlgmodal #stealth { visibility: hidden; }
   <div class="title-bg" aria-hidden="true"></div>
   <div class="panel title-panel">
     <h1>야행<span>.</span></h1>
-    <p class="brief">돈만 주면 뭐든 하는 동네 해결사. 오늘도 짠돌이 사장님 심부름이다.</p>
+    <p class="brief">코드명 올빼미. 까마귀가 지목한 표적을 밤사이 흔적 없이 지운다.</p>
     <div class="title-acts">
       <button class="cta" id="btnQuick" type="button">바로 시작</button>
       <p class="qnote" id="qNote"></p>

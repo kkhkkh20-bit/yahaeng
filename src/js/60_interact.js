@@ -154,14 +154,56 @@ function dropTarget() {
 function ambushTarget() {
   const P = S.player;
   const from = P.hide ? P.hide : (P.hidden && P.z === 0 && !P.carrying && !P.captive ? P : null);
-  if (!from || P.strikeT > 0) return null;
+  if (!from || P.strikeT > 0 || S.amb) return null;
   let best = null, bd = P.hide ? 80 : 60;
   for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
 
-    if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || g.z || g.climb) continue;
+    if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.yank || flOf(g) !== flOf(P) || g.z || g.climb) continue;
     const d = dist(from.x, from.y, g.x, g.y); if (d < bd && los(from.x, from.y, g.x, g.y)) { bd = d; best = g; }
   }
   return best;
+}
+// 끌어들여 암살: 순간이동 대신 약 1.2초 동작 — 움찔(붙잡힘) → 뒤로 끌려감 → 안으로 사라짐.
+// 그동안 끌려가는 사람이 다른 사람 눈에 보이면 목격: 조직원은 그 자리로 덮치고(발각), 주민은 소리치거나 신고하러 간다
+const AMB_DUR = 1.2;
+function startAmbush(g) {
+  const P = S.player, h = P.hide, tx = h ? h.x : P.x, ty = h ? h.y : P.y;
+  endChat(g); g.act = null; g.path = null; g.moving = false; g.yank = true; g.icon = '!'; g.iconT = 99;
+  S.amb = { g, h: h || null, x0: g.x, y0: g.y, tx, ty, t: 0, seen: false, inT: false };
+  S.bushShake = { x: tx, y: ty, t: S.t }; play('cloth', 0.55); gsay(g, ['읍—!', '뭐, 뭐야—!', '으읍!'][g.id % 3], 0.9);
+}
+function ambWitness(o, A) {
+  if (A.seen === o) return; A.seen = A.seen || o;
+  if (o.civ) { if (!(STAGE.zones && startReport(o, A.tx, A.ty, null, 'face', 'crime'))) civScream(o, A.tx, A.ty, null, 'face', 'crime'); }
+  else { o.meter = 1; goAlert(o); }
+  if (!A.warned) { A.warned = true; toast('끌어들이는 걸 누가 봤다!', 2.4, 'warn'); }
+}
+function updateAmbush(dt) {
+  const A = S.amb; if (!A) return; const g = A.g;
+  if (g.state === 'DEAD') { S.amb = null; g.yank = false; return; }
+  A.t += dt; const f = Math.min(1, A.t / AMB_DUR);
+  // 0~0.15 붙잡혀 움찔 · 0.15~0.6 뒤로 끌려감 · 0.6~1 안으로 (그리기에서 줄어들며 사라진다)
+  const u = f < 0.15 ? 0 : Math.min(1, (f - 0.15) / 0.45), e = u * u * (3 - 2 * u), d = dist(A.x0, A.y0, A.tx, A.ty), k = d > 1 ? Math.max(0, (d - (A.h ? 16 : 10)) / d) : 0;
+  g.x = A.x0 + (A.tx - A.x0) * e * k; g.y = A.y0 + (A.ty - A.y0) * e * k; g.a = Math.atan2(A.y0 - A.ty, A.x0 - A.tx); g.want = g.a; g.moving = false;
+  if (f >= 0.6 && !A.inT) { A.inT = true; S.bushShake = { x: A.tx, y: A.ty, t: S.t }; play(A.h && A.h.type !== 'bush' ? 'metal' : 'cloth', 0.45); }
+  if (f < 0.9) for (const o of S.guards) {  // 목격: 끌려가는 몸이 보이면
+    if (o === g || o.yank || o.dog || o.child || flOf(o) !== flOf(g) || ['DEAD', 'CAPTIVE', 'TERROR', 'PANIC', 'SLEEP', 'ALERT', 'REPORT', 'FLEE'].includes(o.state) || o.doomed) continue;
+    if (dist(o.x, o.y, g.x, g.y) < 700 && canSee(o, g.x, g.y, Math.max(0.45, lightAt(g.x, g.y)), false, false, 0) > 0) ambWitness(o, A);
+  }
+  if (f < 1) return;
+  S.amb = null; g.yank = false; const P = S.player, h = A.h;
+  if (h) {
+    if (h.bodies < h.cap) { killGuard(g, 'stash', h); toast(h.type === 'well' ? '맨홀 속으로 끌어들였다' : `${hideIn(h)}으로 끌어들였다`, 2, A.seen ? 'warn' : 'good'); }
+    else { killGuard(g); toast('끌어들였지만 수거함이 꽉 차 시체가 밖에 남았다', 2.4, 'warn'); }
+  } else { killGuard(g, 'bush', P); toast('화단 속으로 끌어들였다', 2, A.seen ? 'warn' : 'good'); }
+  S.stats.special++;
+}
+// 끌려가는 사람 그리기: 버둥거림 + 마지막에 숨는 곳 쪽으로 줄어들며 사라짐
+function drawYanked(g) {
+  const A = S.amb; if (!A || A.g !== g) { drawGuard(g); return; }
+  const f = Math.min(1, A.t / AMB_DUR), q = f > 0.6 ? (f - 0.6) / 0.4 : 0, j = f < 0.9 ? Math.sin(S.t * 46) * (f < 0.15 ? 1.2 : 2.2) : 0;
+  ctx.save(); if (q > 0) { ctx.globalAlpha = Math.max(0, 1 - q * 1.05); ctx.translate(A.tx, A.ty); ctx.scale(1 - q * 0.45, 1 - q * 0.45); ctx.translate(-A.tx, -A.ty); }
+  const ox = g.x; g.x += j; drawGuard(g); g.x = ox; ctx.restore();
 }
 // 창문 넘기: 창문 옆에 서 있고 반대편이 비어 있으면
 // 창문 상태 (도시): open 열림 · lock 잠김(밖에서는 락픽, 안에서는 걸쇠를 풀면 열린다) · bar 방범창(못 지나간다, 엿보기는 된다)
@@ -534,6 +576,7 @@ function primaryActionRaw() {
 function actPrimary(force) {
   if (!S || S.over || paused || !running || tactical) return;  // 전술 지도(시간 멈춤) 중에는 행동하지 않는다
   if (DLG.modal) { advanceDialog(); return; }
+  if (S.amb) return;  // 끌어들이는 중
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
   if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람이 가까우면 [행동]은 기절만 한다. 문·조명·쪽지는 [특수]로'); return; }
@@ -544,14 +587,7 @@ function actPrimary(force) {
       const w = a.w; P.under = false; P.x = w.x; P.y = w.y; P.hide = w; P.hideFrom = null; w.spotted = false; S.hideExitLock = true;
       play('metal', 0.35); S.fade = 0.35; toast('맨홀 아래로 올라왔다 — 아직 숨어 있다', 2); break;
     }
-    case 'ambush': {
-      const g = a.g, h = P.hide;
-      if (h) {
-        if (h.bodies < h.cap) { killGuard(g, 'stash', h); toast(h.type === 'well' ? '맨홀 속으로 끌어들였다' : `${hideIn(h)}으로 끌어들였다`, 2, 'good'); }
-        else { killGuard(g); toast('끌어들였지만 수거함이 꽉 차 시체가 밖에 남았다', 2.4, 'warn'); }
-      } else { killGuard(g, 'bush', P); toast('화단 속으로 끌어들였다', 2, 'good'); }
-      S.stats.special++; break;
-    }
+    case 'ambush': startAmbush(a.g); break;
     case 'window': {
       const v = a.wv;
       P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };
@@ -1044,7 +1080,7 @@ function cutLights() {
 }
 function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
 function actCarry() {
-  if (!S || S.over || paused || !running || tactical) return;
+  if (!S || S.over || paused || !running || tactical || S.amb) return;
   const P = S.player;
   if (P.hide) { if (P.hide.type === 'well') travelTunnel(); return; }
   if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 가까이 온 자경대원은 끌어내린다'); } return; }

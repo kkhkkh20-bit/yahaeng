@@ -48,7 +48,7 @@ async def main():
         await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1500)
         r = await ev("() => { const S = window.__game.S; return [S.guards[26].state, S.stats.kills, S.stats.crewKills, S.toasts.map(t => t.text).join('|')]; }"); print('붙잡아 처치', r[:3])
         if r[0] != 'DEAD' or r[1] != 1: bad.append(f'붙잡은 채 [행동]이 처치가 아니다 {r[:3]}')
-        if '사장님:' not in r[3] and not await ev("() => (window.__game.S.radioN || 0) > 0"): bad.append('첫 처치에 사장님 무전이 없다')
+        if '까마귀:' not in r[3] and not await ev("() => (window.__game.S.radioN || 0) > 0"): bad.append('첫 처치에 사장님 무전이 없다')
         # 2 다 알고 나면 위치를 분다
         await fresh([3, 4, 26]); await ev("() => { const S = window.__game.S; ['sign', 'code', 'emetic'].forEach(k => S.player.keys[k] = true); S.learned.push('실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', '사무동 금고 비번 0417', '실장은 배가 약하다 — 술에 배탈약만 들어가도 골목 공중화장실로 뛰어간다'); }")
         await ev(PIN, [26, 33, 2, 0]); ok = await grab(4, 28, 2)

@@ -196,17 +196,19 @@ function updatePull(dt) {
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
 // 계단: 버튼 없이 계단 칸으로 걸어 들어가면 오르고, 위층 계단 구멍 끝에서 구멍 쪽으로 걸으면 내려간다
 function autoStairs(P) {
-  if (P.z || P.trav || P.jump || P.hide || P.wire || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || !P.moving || S.t < (S.autoStairT || 0)) return;
+  // 오르내린 직전 방향 그대로 계속 누르고 있으면 다시 반대로 오르내리지 않는다 (멈추거나 방향을 바꾸면 풀림)
+  if (S.stairArm === false) { const sp0 = Math.hypot(P.vx || 0, P.vy || 0), d0 = S.stairDir || [0, 0]; if (!P.moving || sp0 < 20 || (P.vx * d0[0] + P.vy * d0[1]) / sp0 < 0.5) S.stairArm = true; else if (!P.trav) return; }
+  if (P.z || P.trav || P.jump || P.hide || P.wire || P.under || P.vent || P.carrying || P.strikeT > 0 || !P.moving || S.t < (S.autoStairT || 0)) return;  // 붙잡은 사람은 실내 계단까지 끌고 간다
   const sp = Math.hypot(P.vx || 0, P.vy || 0); if (sp < 20) return; const vx = P.vx / sp, vy = P.vy / sp, tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), f = flOf(P);
   for (const l of S.ladders) {
-    if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bz || 0)) continue;
+    if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bz || 0) || (P.captive && l.kind !== 'fstair')) continue;
     if ((l.bfl || 0) === f && l.tx === tx && l.ty === ty) {  // 오르기: 계단 칸 위, 들어선 쪽(e)에서 계단 쪽으로 걷는 중
       const L0 = CUR_F; setLayer(f); const [dx, dy] = stairDir(l.tx, l.ty); setLayer(L0);
-      if (-(vx * dx + vy * dy) > 0.45) { S.autoStairT = S.t + 0.9; actPrimary({ k: 'up', l, label: '오르기', viaZ: true }); return; }
+      if (-(vx * dx + vy * dy) > 0.45) { S.autoStairT = S.t + 0.9; S.stairArm = false; S.stairDir = [vx, vy]; actPrimary({ k: 'up', l, label: '오르기', viaZ: true }); return; }
     }
     if (l.kind === 'fstair' && l.tfl === f) {  // 내리기: 구멍(난간으로 막힌 두 칸)의 바닥 쪽 끝(c2)으로, 구멍 쪽을 향해 걸어 들어가는 중
       const ho = stairHole(l); if (!ho) continue; const fx = Math.floor((P.x + vx * 30) / TILE), fy = Math.floor((P.y + vy * 30) / TILE);
-      if (fx === Math.floor(ho.c2.x / TILE) && fy === Math.floor(ho.c2.y / TILE) && dist(P.x, P.y, ho.c2.x, ho.c2.y) < 60 && -(vx * ho.d[0] + vy * ho.d[1]) > 0.45) { S.autoStairT = S.t + 0.9; actPrimary({ k: 'fdown', l, at: ho.c2, label: '내리기', viaZ: true }); return; }
+      if (fx === Math.floor(ho.c2.x / TILE) && fy === Math.floor(ho.c2.y / TILE) && dist(P.x, P.y, ho.c2.x, ho.c2.y) < 60 && -(vx * ho.d[0] + vy * ho.d[1]) > 0.45) { S.autoStairT = S.t + 0.9; S.stairArm = false; S.stairDir = [vx, vy]; actPrimary({ k: 'fdown', l, at: ho.c2, label: '내리기', viaZ: true }); return; }
     }
   }
 }
@@ -248,9 +250,10 @@ function updateTrav(P, dt) {
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
   if (S.keypad) { P.moving = false; if (dist(P.x, P.y, S.keypad.d.x, S.keypad.d.y) > 90 || S.over) closeKeypad(); return; }
-  if (P.trav) { updateTrav(P, dt); return; }
+  if (P.trav) { updateTrav(P, dt); if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; } return; }  // 계단에서도 붙잡은 사람이 함께 오르내린다
   if (P.ledge) { updateLedge(P, dt); return; }
   if (P.grabIn) { updateGrabIn(P, dt); return; }
+  if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {
     const L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
@@ -388,7 +391,7 @@ function updatePlayer(dt) {
     if (inBush && !P.hidden) hint('bushStand', '화단: 웅크려야(살금) 숨는다. 서 있으면 머리가 다 보인다'); }
   if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
-  if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; }
+  if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; }
   if (P.carrying) {
     const c = P.carrying; c.fl = flOf(P); const sh = pairCarry(P), bx = sh ? P.x : P.x - Math.cos(P.a) * 24, by = sh ? P.y - 1 : P.y - Math.sin(P.a) * 24;
     c.x += (bx - c.x) * Math.min(1, dt * (sh ? 30 : 10)); c.y += (by - c.y) * Math.min(1, dt * (sh ? 30 : 10)); c.a = P.a + Math.PI;
