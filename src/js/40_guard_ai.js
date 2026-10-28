@@ -155,7 +155,7 @@ function setAlert(lv, dur, msg) {
 function roofCheck() {
   if (!S || S.over) return; if (!S.lvl) lvlInit();
   const tops = S.lvl.ends.filter(e => e.A.k === 'g' && e.B.z > 0), used = new Set(), P = S.player;
-  const cand = S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.elite && !(g.z || 0) && !flOf(g) && g.why !== 'blood' && ['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH'].includes(g.state));  // 핏자국을 쫓는 경비는 옥상으로 돌리지 않는다
+  const cand = S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.elite && !(g.z || 0) && !flOf(g) && g.why !== 'blood' && g.why !== 'exit' && ['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH'].includes(g.state));  // 핏자국을 쫓는 경비는 옥상으로 돌리지 않는다
   let n = 0;
   for (const g of cand.sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))) {
     if (n >= 2) break;
@@ -622,7 +622,7 @@ function updateGuard(g, dt) {
       if (!g.path) pathTo(g, c.x, c.y);
       if (moveAlong(g, SPD.gBody * spdMul(), dt) || dist(g.x, g.y, c.x, c.y) < 40) {
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고가 났네…', '감전됐나 봐. 손대지 마.', '저런, 재수도 없지.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
-        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작');
+        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); if (!c.ko) after(1.5, lockExits);
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
         for (const o of S.guards) if (o !== g && o.state !== 'DEAD' && o.state !== 'ALERT' && !o.target && o.state !== 'FLEE' && flOf(o) === flOf(c) && dist(o.x, o.y, c.x, c.y) < 520) goSuspicious(o, c.x + rnd(-40, 40), c.y + rnd(-40, 40), 5);
         g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
@@ -717,9 +717,11 @@ function updateTalks(dt) {
 }
 // 말풍선 (어둠 위에 그린다): 같은 층, 가까이 있을 때만 (들리는 거리)
 // 머리 위 말풍선: 밝은 바탕·둥근 모서리, 말하는 사람 역할 색 테두리, 길면 두 줄. 겹치면 위로 쌓는다
+// 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
+function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
-  const P = S.player, placed = [], who = [];
-  for (const g of S.guards) if (g.say && g.state !== 'DEAD' && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) <= 560) who.push(g);
+  const P = S.player, placed = [], who = [], ch = chaseNow();
+  for (const g of S.guards) if (g.say && g.state !== 'DEAD' && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) <= (ch ? 300 : 560) && (!ch || (g.state === 'ALERT' && !g.civ))) who.push(g);
   if (P.say && !P.hide) who.push(P);
   ctx.font = '600 13px "IBM Plex Sans KR", sans-serif';
   for (const g of who) {

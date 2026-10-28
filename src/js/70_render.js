@@ -774,7 +774,13 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
     for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, 'wire', '전깃줄');
   }
+  const pa = S.paNow, paAt = pa && (pa.at || (pa.l && (pa.k === 'down' ? { x: pa.l.rx != null ? pa.l.rx : pa.l.ux, y: pa.l.ry != null ? pa.l.ry : pa.l.uy } : pa.l)) || (pa.wv && pa.wv.w) || pa.d || pa.v || pa.h);
+  const WAY = new Set(['↓', '↑', '↕', 'window', 'pick', 'door', 'vent', 'manhole', 'wire']);
   for (const m of list) {
+    // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
+    if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [보조]로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'F로 바꾸기') : pa && pa.k !== 'none' ? '다른 행동이 먼저 잡혀 있다 — 한 걸음 더 가까이' : '';
+        if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
@@ -1235,7 +1241,7 @@ function draw() {
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'leap') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + tc(pa.j.tx)) / 2, (P.y + tc(pa.j.ty)) / 2 - 40, tc(pa.j.tx), tc(pa.j.ty)); ctx.stroke(); ctx.setLineDash([]); }
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
-    drawActLabels(pa, P);
+    S.paNow = pa; drawActLabels(pa, P);
     const nc = !P.carrying && nearCorpse();
     if (nc) { ctx.strokeStyle = 'rgba(232,227,214,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.arc(nc.x, nc.y, 26, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     if (input.aiming && input.tool !== 'kunai') {

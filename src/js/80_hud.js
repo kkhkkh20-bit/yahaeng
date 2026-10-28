@@ -277,8 +277,11 @@ function showEnd(win, reason) {
   const ttl = win ? playTitle(st) : null;
   // 들킨 대가: 경보가 무전으로 전체에 퍼졌을 때만 수고비를 깎는다 (전체 경보 1회 −15%, 민간인 살상 1명 −20%, 최대 −70%). 근처만 알아챈 발각은 깎지 않는다
   let feeRow = null; { const base = parseInt(STAGE.fee || '', 10); if (win && base > 0) { const cut = Math.min(0.7, (st.full || 0) * 0.15 + (st.extraKills || 0) * 0.2), got = Math.round(base * (1 - cut)), why = [st.full ? `전체 경보 ${st.full}회` : '', st.extraKills ? `민간인 ${st.extraKills}명` : ''].filter(Boolean).join(' · ');
-    const purge = STAGE.purgeBonus && S.guards.filter(g => !g.civ && !g.dog && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE'), bonus = purge ? STAGE.purgeBonus : 0;  // 몰살 보너스
-    feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (원래 ${base}만 — ${why}로 −${base - got}만` + (bonus ? ` · 몰살 +${bonus}만` : '') + ')' : bonus ? `${base + bonus}만 (전액 + 몰살 +${bonus}만)` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
+    const purge = STAGE.purgeBonus && S.guards.filter(g => !g.civ && !g.dog && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE');  // 몰살 보너스
+    // 깔끔한 처리의 보상: 표적을 모두 사고로 처리하면 +20%, 시체 발견·목격자 없이 끝내면 +10%
+    const tc0 = S.corpses.filter(c => c.target), acc = tc0.length && tc0.length === S.guards.filter(g => g.target).length && tc0.every(c => c.accident), clean = !st.bodies && !(st.witness || 0);
+    const adds = [purge ? ['몰살', STAGE.purgeBonus] : null, acc ? ['사고 처리', Math.round(base * 0.2)] : null, clean ? ['흔적 없음', Math.round(base * 0.1)] : null].filter(Boolean), bonus = adds.reduce((s, a) => s + a[1], 0), addTxt = adds.map(a => `${a[0]} +${a[1]}만`).join(' · ');
+    feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (원래 ${base}만 — ${why}로 −${base - got}만` + (bonus ? ` · ${addTxt}` : '') + ')' : bonus ? `${base + bonus}만 (전액 + ${addTxt})` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
   $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['보조 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]

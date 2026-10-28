@@ -71,10 +71,20 @@ function deliverReport(g) {
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
-  setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작');
+  setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작'); lockExits();
   if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, `신고한 주민이 ${outfitName(r.saw)} 차림을 말했다 — 이 옷은 이제 통하지 않는다`);
   else if (r.saw === 'face') { S.chaseSeen = true; toast('신고한 주민이 얼굴을 말했다 — 수색이 끝날 때까지 거리에서도 알아본다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
+}
+// 출구 지키기: 시체가 발견되거나 신고가 들어오면 가까운 조직원이 탈출구로 가서 한동안 지킨다 (다른 출구·다른 때를 고르게 만든다)
+function lockExits() {
+  if (!S.exits || S.over || (S.lockT && S.t - S.lockT < 60)) return; S.lockT = S.t; let n = 0;
+  for (const e of S.exits) {
+    const g = S.guards.filter(o => !o.civ && !o.dog && !o.target && !o.elite && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && o.state !== 'ALERT' && !(o.fl || 0) && !(o.z || 0) && dist(o.x, o.y, e.x, e.y) < 1400 && !o.guardExit)
+      .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))[0];
+    if (!g) continue; n++; endChat(g); g.guardExit = true; goSuspicious(g, e.x, e.y, 40); g.why = 'exit'; gsay(g, '출구부터 막아!', 2.2); after(45, () => { g.guardExit = false; });
+  }
+  if (n) toast(n > 1 ? '조직원들이 출구를 지키러 간다 — 때를 기다리거나 다른 길로' : '조직원이 출구를 지키러 간다 — 다른 출구나 다른 때를', 2.8, 'warn');
 }
 // 사탕 (아이를 손대지 않고 다루는 법): 주면 신나서 멀리 놀러 간다. 그동안은 아무것도 보지 않는다
 function nearChild() {

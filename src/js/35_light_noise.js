@@ -35,7 +35,8 @@ function showHint(text, sec) {
 }
 function renderToasts() {
   toastEl.innerHTML = '';
-  S.toasts.slice(isTouch ? -1 : -2).forEach(m => { const d = document.createElement('div'); d.className = 'toast ' + m.kind; d.textContent = m.text; toastEl.appendChild(d); });
+  const ch = S && S.guards && running && chaseNow(), T = ch ? S.toasts.filter(m => /warn|bad|good/.test(m.kind || '') && !/radio/.test(m.kind || '')).slice(-1) : S.toasts.slice(isTouch ? -1 : -2);  // 쫓기는 중엔 급한 알림 하나만
+  T.forEach(m => { const d = document.createElement('div'); d.className = 'toast ' + m.kind; d.textContent = m.text; toastEl.appendChild(d); });
 }
 
 // ---------------------------------------------------------------- 소음

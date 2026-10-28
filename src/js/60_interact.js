@@ -487,6 +487,7 @@ function kpPress(v) {
     if (v !== 'ok' && v.length === 1) kpShow();
     if (k.buf.length < n) return;
     if (k.buf === STAGE.code) {
+      if (!hasK('code')) { S.player.keys.code = true; S.learned.push('비번 ' + STAGE.code + ' (스스로 알아냄)'); }  // 어디서 봤든 맞는 비번을 넣었으면 알아낸 것으로 친다
       const d = k.d; kpBeep(true); after(0.26, () => { d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비번이 맞았다 — 문이 열렸다', 1.8, 'good'); closeKeypad(); });
     } else {
       kpBeep(false); k.bad++; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
@@ -1091,16 +1092,15 @@ function updateIntel(dt) {
     const calm = g => ['PATROL', 'RETURN'].includes(g.state);
     a.chatCd = b.chatCd = 99;  // 정해진 대화를 하는 둘은 잡담을 하지 않는다
     if (st.i < 0) { st.t -= dt; if (st.t <= 0 && calm(a) && calm(b) && dist(a.x, a.y, b.x, b.y) < 230) { st.i = 0; st.lt = 0; } else return; }
-    if (!calm(a) || !calm(b)) { a.say = b.say = null; st.i = -1; st.t = 8; return; }
+    if (!calm(a) || !calm(b)) { a.say = b.say = null; st.i = -1; st.cur = null; st.t = 8; return; }
+    // 엿듣기: 들리는 거리(같은 층, 벽 너머는 더 가까이) 안에서만 말이 들린다 — 멀면 말풍선은 '소곤소곤'뿐 (보이는 대사 = 알게 된 정보)
+    const hear = sp0 => flOf(P) === flOf(sp0) && !P.under && !P.vent && dist(P.x, P.y, sp0.x, sp0.y) < 190 * soundThrough(sp0.x, sp0.y, P.x, P.y) + 40;
+    if (st.cur) { const c = st.cur; c.sp.say = hear(c.sp) ? c.text : '(소곤소곤…)';
+      if (c.key && !st.done && hear(c.sp)) { st.done = true; if (it.gives) { S.player.keys[it.gives] = true; S.player.hasKey = true; } S.learned.push(it.learn); play('click', 0.4); toast('엿들었다 — ' + it.learn, 3.2, 'good'); } }
     st.lt -= dt; if (st.lt > 0) return;
-    if (st.i >= it.lines.length) { a.say = b.say = null; st.i = -1; st.t = it.every || 30; return; }
-    const [who, text] = it.lines[st.i], sp = who ? b : a, ot = who ? a : b; ot.say = null; sp.say = text; st.lt = 2 + text.length * 0.07;
-    sp.want = Math.atan2(ot.y - sp.y, ot.x - sp.x);
-    // 엿듣기: 같은 층, 가까이(벽 너머는 더 가까이), 그 줄을 말할 때
-    if (st.i === it.key && !st.done && flOf(P) === flOf(sp) && !P.under && !P.vent) {
-      const d = dist(P.x, P.y, sp.x, sp.y), near = d < 190 * soundThrough(sp.x, sp.y, P.x, P.y) + 40;
-      if (near) { st.done = true; if (it.gives) { S.player.keys[it.gives] = true; S.player.hasKey = true; } S.learned.push(it.learn); play('click', 0.4); toast('엿들었다 — ' + it.learn, 3.2, 'good'); }
-    }
+    if (st.i >= it.lines.length) { a.say = b.say = null; st.i = -1; st.cur = null; st.t = it.every || 30; return; }
+    const [who, text] = it.lines[st.i], sp = who ? b : a, ot = who ? a : b; ot.say = null; sp.say = hear(sp) ? text : '(소곤소곤…)'; st.lt = 2 + text.length * 0.07;
+    sp.want = Math.atan2(ot.y - sp.y, ot.x - sp.x); st.cur = { sp, text, key: st.i === it.key };
     st.i++;
   });
 }
