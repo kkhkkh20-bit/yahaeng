@@ -148,17 +148,18 @@ function drawAwareness(P) {
   if (P.hide || P.vent || P.under) return;
   const k = Math.max(1, 0.9 / SCALE), R = 34 * k;
   if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '머리 위 삼각형: 흰색 눈치 · 노랑 확인하러 옴 · 빨강 발각. 시야를 벗어나면 줄어든다');
+  const hw = W / SCALE / 2 - 10, hh = H / SCALE / 2 - 10; let ring = false;
   for (const g of S.guards) {
-    if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || dist(g.x, g.y, P.x, P.y) > 1100) continue;
+    if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 1100) continue;  // 다른 층은 표시하지 않는다
     const al = g.state === 'ALERT', m = al ? 1 : g.meter; if (m < 0.03) continue;
+    if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     const a = Math.atan2(g.y - P.y, g.x - P.x), span = 0.22 + 0.5 * m;
     ctx.strokeStyle = awareCol(g); ctx.globalAlpha = 0.35 + 0.6 * m; ctx.lineWidth = (3 + 3 * m) * k; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.arc(P.x, P.y, R, a - span / 2, a + span / 2); ctx.stroke(); ctx.lineCap = 'butt'; ctx.globalAlpha = 1;
-  }
-  const seenBy = S.guards.find(g => !g.civ && g.state !== 'DEAD' && ((g.state === 'ALERT' && g.lostT > 0.4) || (g.state === 'SEARCH' && g.why !== 'heard')) && g.lastSeen);
-  if (seenBy && dist(seenBy.lastSeen.x, seenBy.lastSeen.y, P.x, P.y) > 60) {
-    const L = seenBy.lastSeen; ctx.save(); ctx.globalAlpha = 0.3 + 0.08 * Math.sin(S.t * 4); drawChar('ninja', L.x, L.y, 0, false, 0.5); ctx.restore();
-    ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,210,235,.75)'; ctx.fillText('마지막으로 들킨 곳', L.x, L.y + 34);
+    ctx.beginPath(); ctx.arc(P.x, P.y, R, a - span / 2, a + span / 2); ctx.stroke(); ctx.lineCap = 'butt';
+    if (Math.abs(g.x - cam.x) > hw || Math.abs(g.y - cam.y) > hh) {  // 화면 밖 사람: 바깥쪽 삼각형으로 '그쪽에서 본다'
+      const tx = P.x + Math.cos(a) * (R + 9 * k), ty = P.y + Math.sin(a) * (R + 9 * k), r6 = 6 * k;
+      ctx.fillStyle = awareCol(g); ctx.beginPath(); ctx.moveTo(tx + Math.cos(a) * r6, ty + Math.sin(a) * r6); ctx.lineTo(tx + Math.cos(a + 2) * r6 * 0.8, ty + Math.sin(a + 2) * r6 * 0.8); ctx.lineTo(tx + Math.cos(a - 2) * r6 * 0.8, ty + Math.sin(a - 2) * r6 * 0.8); ctx.closePath(); ctx.fill(); }
+    ctx.globalAlpha = 1;
   }
 }
 // ---- 프리렌더 캐릭터 (3D 모델을 8방향으로 미리 찍은 시트, Commandos 방식). 색 키 시트 한 장을 역할별 옷 색으로 바꿔 쓴다
@@ -209,8 +210,8 @@ function prSheet(key) {
   // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
   if (key === 'ninja') {
     const s = document.createElement('canvas'); s.width = w; s.height = h; const sx = s.getContext('2d');
-    for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) sx.drawImage(c, dx, dy);
-    sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#a8e8ff'; sx.fillRect(0, 0, w, h);
+    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, -1], [-1, 1], [1, 1], [-1, 0], [1, 0], [0, -1], [0, 1]]) sx.drawImage(c, dx, dy);
+    sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#f2fbff'; sx.fillRect(0, 0, w, h);
     sx.globalCompositeOperation = 'destination-out'; sx.drawImage(c, 0, 0); prVar.ninja_ol = s;
   }
   return (prVar[key] = c);
@@ -301,19 +302,26 @@ function drawMarked() {
   ctx.strokeStyle = 'rgba(255,214,90,.9)'; ctx.lineWidth = 2.5; conePaths(g, guardCone(g, fov, rg), 1, 2); ctx.stroke();
   ctx.strokeStyle = 'rgba(255,214,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
 }
-function drawGhosts() {
-  drawMarked();
+function drawGhosts() { drawMarked(); }
+// 마지막으로 보인 곳 (어쌔신 크리드 유니티식 유령 + 수색 범위): 어둠 위에 그려 늘 또렷하게
+function drawLastSeen() {
   const P = S.player, pts = [];
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
     const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? g.poi : null;
     if (!q || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
-    pts.push({ x: q.x, y: q.y, hot: g.state === 'ALERT' || g.state === 'NOTICE' });
+    pts.push({ x: q.x, y: q.y, hot: g.state === 'ALERT' || g.state === 'NOTICE', heard: g.state !== 'ALERT' && g.why === 'heard' });
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;
     const pulse = 0.5 + 0.2 * Math.sin(S.t * 4);
-    if (usePR('ninja') && prVar.ninja_ol) { drawPR('ninja_ol', q.x, q.y, Math.PI / 2, 'idle', 0, pulse, 1, 0, 0); drawPR('ninja', q.x, q.y, Math.PI / 2, 'idle', 0, 0.18, 1, 0, 0); }
+    { // 수색 범위 (어쌔신 크리드식): 놈들이 뒤질 둘레
+      const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
+      ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
+      ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+      tag(q.x, q.y + 30, q.heard ? '소리 난 곳' : '마지막으로 보인 곳', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
+    if (q.heard) { /* 소리만 들었다: 내 모습은 남기지 않는다 */ }
+    else if (usePR('ninja') && prVar.ninja_ol) { drawPR('ninja_ol', q.x, q.y, Math.PI / 2, 'idle', 0, pulse, 1, 0, 0); drawPR('ninja', q.x, q.y, Math.PI / 2, 'idle', 0, 0.18, 1, 0, 0); }
     else { ctx.strokeStyle = `rgba(168,232,255,${pulse})`; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(q.x, q.y, 14, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = '700 14px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }

@@ -182,7 +182,6 @@ $('btnNext').addEventListener('click', () => start(STAGE.tutorial ? 0 : STAGE_I 
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
-document.querySelectorAll('#diffSel button').forEach(b => b.addEventListener('click', () => { DKEY = b.dataset.d; try { localStorage.setItem('yahaeng.diff', DKEY); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');

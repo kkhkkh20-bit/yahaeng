@@ -86,7 +86,7 @@ function drawPlayer(P) {
   if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); yo = -Math.sin(f * Math.PI) * P.jump.arc; lift += Math.sin(f * Math.PI) * 0.25; }
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
-  const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3));
+  const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3)) && !(STAGE.zones && !P.hidden && !P.z && pZoneEff() === Z_PUB);  // 공개 구역에서 섞여 있을 땐 숨음 외곽선을 쓰지 않는다 (위 표시와 맞춘다)
   if (!P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
     const red = S.expo === 2, pu = red ? 0.6 + 0.35 * Math.sin(S.t * 10) : 0.75;
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
@@ -1170,6 +1170,7 @@ function draw() {
     drawPlayer(P);
   }
   setLayer(flOf(P));
+  if (running && !tactical && !DBG.ui) drawLastSeen();
   if (S.entrySel) STAGE.entries.forEach((e, i) => { const p = entryPos(e), pulse = 0.6 + 0.4 * Math.sin(S.t * 5 + i); ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 34, 0, TAU); ctx.stroke(); ctx.fillStyle = 'rgba(242,196,107,.95)'; ctx.font = '700 30px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), p.x, p.y + 10); tag(p.x, p.y - 52, e.name, '#f2c46b'); });
   // 맨홀 속에 숨어 있거나 살피기 중이면 지하 수로·덕트 길을 비춰 보여 준다
   { const P = S.player, inWell = P.hide && P.hide.type === 'well';
