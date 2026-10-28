@@ -96,7 +96,7 @@ function bindBtn(id, fn) {
 }
 bindBtn('btnAct', actAttack);
 bindBtn('btnCarry', actEnv);
-bindBtn('btnGrab', () => { if (S && S.player.captive) { if (canInterrogate()) interrogate(); } else actGrab(); });
+bindBtn('btnGrab', actGrab);
 {
   const b = $('btnTool');
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });
@@ -194,7 +194,8 @@ function start(i, noBrief) {
   syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
   newGame(i); resetDialog(); miniBase = null; renderToasts();
-  if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)  // 이전 판 알림(마지막 체력 등)을 지운다
+  if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
+  statsBegin('new');  // 플레이 기록: 판 시작
   if (PR) prWarm(['ninja', ...S.guards.filter(g => !g.dog).map(charOf)], true);  // 이 판 사람들 옷 색부터 미리 칠한다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');

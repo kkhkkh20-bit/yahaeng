@@ -100,6 +100,7 @@ function updateCheckpoint(dt) {
 }
 function saveCheckpoint() {
   CP = { si: STAGE_I, diff: DKEY, S: cloneDeep(S), grids: [G0.map(r => r.slice())].concat(GF.slice(1).map(g => g ? g.map(r => r.slice()) : null)), used: CP && CP.si === STAGE_I ? CP.used : 0 };
+  statsCheckpoint();
   if (!STAGE.tutorial) { storeCP(); toast('체크포인트 저장 — 죽거나 앱을 닫아도 여기서 이어 할 수 있다', 2.4, 'good'); play('switch', 0.3, 1.6); }
 }
 const cpReady = () => !!(CP && CP.si === STAGE_I && CP.diff === DKEY && cpOn());
@@ -115,6 +116,7 @@ function loadCheckpoint() {
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   toast('체크포인트에서 다시 시작 (' + CP.used + '번째)', 2.4); syncTools();
+  statsBegin('cp');  // 플레이 기록: 체크포인트에서 이어 하기는 새 판으로 센다
   return true;
 }
 function checkObjective() {

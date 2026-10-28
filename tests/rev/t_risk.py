@@ -6,7 +6,7 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': 1280, 'height': 760}); errs = []; pg.on('pageerror', lambda e: errs.append(str(e))); ev = pg.evaluate
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
-        await ev('() => window.__game.start(5)'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H)
+        await ev('() => window.__game.start(window.__game.STAGES.findIndex(s => s.id === "t0"))'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H)
         await ev('() => { const P = T.S().player, g = T.S().guards[0]; P.x = g.x - 50; P.y = g.y; P.a = 0; }'); await pg.wait_for_timeout(150)
         await pg.keyboard.press('Space'); await pg.wait_for_timeout(1200)
         # 다른 경비를 시체가 보이는 곳(뒤돌아선 채)에 둔다

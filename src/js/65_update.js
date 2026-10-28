@@ -9,7 +9,7 @@ function update(dt) {
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
   if (S.whistleT > 0) S.whistleT -= dt;
   if (S.pull) updatePull(dt);
-  updateKoHold(); if (STAGE.zones || STAGE.stories) updateStories(dt);
+  updateKoHold(); statsTick(); if (STAGE.zones || STAGE.stories) updateStories(dt);
   if (S.qBuf > 0) { S.qBuf -= dt; const qa = S.qKill ? attackAction() : primaryAction(); if (qa.k !== 'none' && (!S.qKill || isAtk(qa))) { S.qBuf = 0; actPrimary(S.qKill ? Object.assign({}, qa, { viaZ: true }) : undefined); } }  // [공격]을 미리 눌러 두면 닿는 순간 공격
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }

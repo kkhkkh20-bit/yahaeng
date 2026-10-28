@@ -300,6 +300,7 @@ function showEnd(win, reason) {
   $('btnCP').hidden = win || !cpReady();
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
+  statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
 }
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());

@@ -1,5 +1,5 @@
 # 메탈기어식 손맛 회귀:
-#  1 붙잡은 조직원 [도구] = 심문 → 아직 모르는 정보를 분다(의뢰 2: 간판 → 비번 순) · 기회가 열린다 · 같은 사람은 두 번 안 분다
+#  1 붙잡은 조직원 [붙잡기](C·Q) 한 번 더 = 심문 (가만히 있어도 저절로) → 아직 모르는 정보를 분다(의뢰 2: 간판 → 비번 순) · 기회가 열린다 · 같은 사람은 두 번 안 분다
 #  2 정보를 다 알면 근처 조직원 위치를 분다(표시)
 #  3 붙잡은 채 [특수] = 기절, [행동] = 처치
 #  4 조직원 무전 점검: 쓰러진 조직원은 대답 못 함 → 가까운 조직원이 그 자리로 · 경계 1
@@ -25,14 +25,14 @@ async def main():
             return await ev('() => !!window.__game.S.player.captive')
         # 1 심문
         await fresh([4, 26]); ok = await grab(4, 27, 2)
-        lab = await ev("() => [document.getElementById('btnTool').textContent, document.getElementById('kmX') && document.getElementById('kmX').textContent]")
-        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyX', key: 'x' }))"); await pg.wait_for_timeout(1800)
+        await pg.wait_for_timeout(200); lab = await ev("() => [document.getElementById('btnGrab').textContent, document.getElementById('kmQ') && document.getElementById('kmQ').textContent]")
+        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => { const S = window.__game.S; return [S.learned.slice(), !!S.player.keys.sign, (S.stories || []).filter(s => s.found).map(s => s.d.id), !!S.player.captive]; }")
         print('심문 1', ok, lab, r)
         if not ok: bad.append('조직원을 붙잡지 못했다')
-        if '심문' not in ''.join(x or '' for x in lab): bad.append(f'붙잡은 동안 도구 버튼·키 안내가 심문이 아니다 {lab}')
+        if '심문' not in ''.join(x or '' for x in lab): bad.append(f'붙잡은 동안 붙잡기 버튼·키 안내가 심문이 아니다 {lab}')
         if not r[1] or 'sign' not in r[2]: bad.append(f'심문해도 간판 정보·기회가 안 생긴다 {r}')
-        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyX', key: 'x' }))"); await pg.wait_for_timeout(300)
+        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(300)
         n = await ev("() => window.__game.S.learned.length")
         if n != 1: bad.append(f'같은 사람을 두 번 심문해 정보가 또 나온다 {n}')
         # 3 붙잡은 채 [특수] = 기절
@@ -41,7 +41,7 @@ async def main():
         if '기절' not in lab or r != ['DEAD', True, 0]: bad.append(f'붙잡은 채 [특수]가 기절이 아니다 {lab} {r}')
         # 1-b 두 번째 사람은 다음 정보(비번)
         ok = await grab(26, 33, 2)
-        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyX', key: 'x' }))"); await pg.wait_for_timeout(1800)
+        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => { const S = window.__game.S; return [!!S.player.keys.code, S.learned.length]; }"); print('심문 2', ok, r)
         if not r[0]: bad.append(f'두 번째 심문에서 비번이 안 나온다 {r}')
         # 3-b 붙잡은 채 [행동] = 처치
@@ -52,7 +52,7 @@ async def main():
         # 2 다 알고 나면 위치를 분다
         await fresh([3, 4, 26]); await ev("() => { const S = window.__game.S; ['sign', 'code', 'emetic'].forEach(k => S.player.keys[k] = true); S.learned.push('실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', '사무동 금고 비번 0417', '실장은 배가 약하다 — 술에 배탈약만 들어가도 골목 공중화장실로 뛰어간다'); }")
         await ev(PIN, [26, 33, 2, 0]); ok = await grab(4, 28, 2)
-        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyX', key: 'x' }))"); await pg.wait_for_timeout(1800)
+        await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => window.__game.S.guards.filter(g => g.tagT > window.__game.S.t).map(g => g.id)"); print('위치 실토', ok, r)
         if not r: bad.append('정보를 다 알 때 심문하면 근처 조직원 위치가 표시되지 않는다')
         # 4 조직원 무전 점검

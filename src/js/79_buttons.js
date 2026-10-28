@@ -72,6 +72,7 @@ function actEnv() {
 function actGrab() {
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
+  if (S.player.captive) { if (canInterrogate()) interrogate(); return; }  // 잡은 채 한 번 더 = 바로 심문 (가만히 있어도 저절로 한다)
   const a = grabAction(); if (a.k === 'grab') grab(a.g);
 }
 function cycleEnv() { if (!S) return; const a = envAction(); if (!(a.choices > 1)) return; S.envSel = (S.envSel || 0) + 1; play('click', 0.2); }

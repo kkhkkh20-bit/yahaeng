@@ -9,7 +9,7 @@ async def main():
         await ev('() => window.__game.start(1)'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H); await ev('() => T.freeze()'); await pg.wait_for_timeout(300)
         w = await ev('''() => { const S = T.S(), P = S.player, G = T.G(); const w = S.windows.find(w => w.st === 'lock' && w.b >= 0 && G.bldAt(w.tx, w.ty + 1) < 0);
             P.x = w.x; P.y = w.y + 48; P.a = -Math.PI / 2; window.__w = w; return [w.tx, w.ty, T.act()]; }''')
-        print('win', w); await pg.keyboard.press('Space'); await pg.wait_for_timeout(2200)
+        print('win', w); await pg.keyboard.press('KeyE'); await pg.wait_for_timeout(2200)
         print(' opened', await ev('() => [window.__w.st, (T.S().changes || []).length]'))
         # 플레이어는 멀리, 경비를 창문 앞 180px에서 창문 쪽을 보게
         await ev('''() => { const S = T.S(), P = S.player, w = window.__w; P.x = w.x + 400; P.y = w.y + 200; const g = S.guards.find(g => !g.civ && !g.target && !g.dog);
