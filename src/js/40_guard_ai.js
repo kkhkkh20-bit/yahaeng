@@ -807,7 +807,7 @@ function goAlert(g) {
   } else {
     setAlert(3);
   }
-  hint('alert', '발각! 시야를 끊고 15초 숨어 버티면 수색으로 바뀐다');
+  hint('alert', '발각! 시야를 끊고 20초 숨어 버티면 수색으로 바뀐다');
 }
 function radioSpread(at) {
   toast('무전으로 경보가 퍼졌다', 2.4, 'warn');

@@ -22,7 +22,7 @@ const N8 = [[0, 1], [0, -1], [1, 0], [-1, 0], [1, 1], [-1, 1], [1, -1], [-1, -1]
 // 난이도: 한 가지(보통)로 통일. easy·hard 값은 시험용으로만 남긴다 (__game.setDiff)
 const DIFFS = {
   easy: { hp: 4, name: '쉬움', range: 0.9, rate: 0.8, spd: 0.95, stones: 5, coins: 3, picks: 5, kunaiAdd: 1, roll: 0, reinf: 1, time: 1.35 },
-  normal: { hp: 3, name: '보통', range: 1.0, rate: 1.08, spd: 1.0, stones: 3, coins: 2, picks: 3, kunaiAdd: 0, roll: 80, reinf: 2, time: 1.0 },
+  normal: { hp: 3, name: '보통', range: 1.08, rate: 1.25, spd: 1.0, stones: 2, coins: 2, picks: 2, kunaiAdd: 0, roll: 80, reinf: 3, time: 1.0 },  // 난이도 상향(v78): 시야 +8%, 알아채는 속도 +16%, 빈 캔·락픽 하나씩 줄임, 증원 +1
   hard: { hp: 2, name: '어려움', range: 1.12, rate: 1.32, spd: 1.08, stones: 2, coins: 1, picks: 2, kunaiAdd: -1, roll: 55, reinf: 3, time: 0.85 }
 };
 let DKEY = 'normal';

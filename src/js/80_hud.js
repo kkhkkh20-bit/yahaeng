@@ -150,7 +150,7 @@ function updateHUD(force) {
   hud.alarm.hidden = !(S.alevel || fleeNow);
   hud.alarm.dataset.lv = S.alevel;
   if (S.alevel || fleeNow) {
-    const t = S.alevel === 3 ? '발각 — 숨어서 ' + Math.max(0, Math.ceil(15 - S.unseenT)) + '초 버티기' : A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초';
+    const t = S.alevel === 3 ? '발각 — 숨어서 ' + Math.max(0, Math.ceil(ESCAPE_T - S.unseenT)) + '초 버티기' : A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초';
     setText(hud.alarm, 'al', (fleeNow ? '표적 도주 · ' : '') + t);
   }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
@@ -185,18 +185,22 @@ function updateStealth(lv) {
   { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
-  const sus = STAGE.zones && suspAct(null) >= 1, pub = STAGE.zones && !P.hide && !P.hidden && !P.under && !P.vent && !P.z && pZoneEff() === Z_PUB && !sus;  // 시체·붙잡은 사람을 끌고 있으면 공개 구역이어도 섞이지 않는다
+  const eyeG = STAGE.zones && S.guards.find(g => g.state !== 'DEAD' && (g.eyeT || 0) > 0.05 && flOf(g) === flOf(P)),  // 눈썰미 있는 사람이 변장을 살피는 중
+    runNear = STAGE.zones && P.mode === 'run' && P.moving && S.guards.some(g => g.state !== 'DEAD' && !g.dog && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 220),
+    sus = STAGE.zones && suspAct(null) >= 1, pub = STAGE.zones && !P.hide && !P.hidden && !P.under && !P.vent && !P.z && pZoneEff() === Z_PUB && !sus;  // 시체·붙잡은 사람을 끌고 있으면 공개 구역이어도 섞이지 않는다
   const zi = STAGE.zones ? pZoneInfo() : null, banned = zi && zi.k !== Z_PUB && !permitted(zi);
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
   if (e === 2) { s = 'seen'; word = '보인다'; why = banned ? '금지 구역에서 보였다' : '누가 보고 있다'; }
+  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '눈썰미'; why = '저 사람은 변장을 알아본다 — 멀어져라'; }
+  else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '사람 가까이서 뛰면 눈에 띈다'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? '시체 운반 중 — 눈에 띈다' : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛 아래 — 붙어도 가까우면 보인다' : `보이는 거리 ${Math.round(COVER_HIDE * 100)}% · 발소리 없음`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '변장 · 통과 가능' : '행인으로 보인다'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
-    let r = 0; for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.dropped || flOf(g) !== flOf(P)) continue; r = Math.max(r, g.state === 'ALERT' && !g.civ ? 1 : g.meter || 0); }
+    let r = 0; for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.dropped || flOf(g) !== flOf(P)) continue; r = Math.max(r, g.state === 'ALERT' && !g.civ ? 1 : g.meter || 0, (g.eyeT || 0) / EYE_T); }  // 눈썰미 게이지도 함께
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = e; $('lightLbl').textContent = why;

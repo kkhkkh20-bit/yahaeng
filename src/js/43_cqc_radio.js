@@ -59,7 +59,7 @@ function bossRadio(ev, force) {
 // 쓰러진(죽었거나 기절한) 조직원은 대답하지 못한다 → 가까운 조직원이 그 자리를 확인하러 가고, 경계가 오른다. 한 번 빠진 자리는 다시 세지 않는다
 // 의뢰 자료 STAGE.radioCheck: 간격(초). 없으면 구역 판(연습 제외)은 70초
 const RADIO_WARN = 8;
-function radioEvery() { return STAGE.radioCheck != null ? STAGE.radioCheck : (STAGE.zones && !STAGE.tutorial ? 70 : 0); }
+function radioEvery() { return STAGE.radioCheck != null ? STAGE.radioCheck : (STAGE.zones && !STAGE.tutorial ? 55 : 0); }
 function updateRadioCheck(dt) {
   const every = radioEvery(); if (!every || S.over) return;
   if (S.rcT == null) S.rcT = every;

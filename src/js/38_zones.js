@@ -50,7 +50,7 @@ function suspAct(g) {
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
-  if (P.mode === 'sneak' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;
+  if (P.mode === 'sneak' && P.moving && g && !myPermits().length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
   return 0;
 }
 // 나를 알아보는가: 쫓기는 중(발각)이거나, 발각 뒤 수색이 끝나기 전이면 공개 구역이어도 얼굴을 안다

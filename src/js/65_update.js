@@ -1,3 +1,4 @@
+const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
 function update(dt) {
   updateTraps(dt);
@@ -73,7 +74,7 @@ function updateAlert(dt) {
   if (S.alevel === 3) {
     const seenNow = S.guards.some(g => g.seen && g.state === 'ALERT');
     S.unseenT = seenNow ? 0 : S.unseenT + dt;
-    if (S.unseenT >= 15) {
+    if (S.unseenT >= ESCAPE_T) {
       S.alevel = 2; S.alevelT = 30; S.unseenT = 0;
       for (const g of S.guards) if (g.state === 'ALERT' && !g.target) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 2; g.icon = '?'; g.iconT = 2; g.meter = 0.3; }
       toast('추적을 놓쳤다 — 자경대원들이 숨을 만한 곳을 뒤진다', 3, 'warn'); bark(anyGuard(g => g.state === 'SEARCH') || anyGuard(), 'lost');
