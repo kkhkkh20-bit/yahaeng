@@ -189,7 +189,6 @@ function drawPlayer(P) {
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
       if (prVar.ninja_ol) drawPR('ninja_ol', P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.9, s, -yo);
     } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
-    if (P.disguise && !P.disguiseBlown) { ctx.fillStyle = 'rgba(127,174,134,.9)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('변장', P.x, P.y - 44 * s); }
     return;
   }
   if (crouch) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 14, 19, 8, 0, 0, TAU); ctx.fill(); }
@@ -741,13 +740,14 @@ function drawBlockEdges(P, all) {
   ctx.lineCap = 'butt';
 }
 // 가까운 상호작용 지점을 작은 표식으로 늘 보여 준다 (숨을 곳 · 오르는 곳 · 창문 · 환풍구 · 잠긴 문)
+const _nearPaths = {}; const nearPath = k => _nearPaths[k] || (_nearPaths[k] = new Path2D(ICON_P[k]));  // 근처 표시용 아이콘 (버튼 아이콘과 같은 그림)
 function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (P.hide || P.vent || P.under || P.wire || P.trav || P.jump) return;
   const R = 300, fP = flOf(P), k = Math.max(1, 0.95 / SCALE), list = [];
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
   const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; list.push({ x, y, col, g, lab, d }); };
   if (!P.z) {
-    for (const h of S.hides) if ((h.fl || 0) === fP && (h.z || 0) === (S.player.z || 0)) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? '맨' : '숨', hideName(h), h.tx, h.ty);
+    for (const h of S.hides) if ((h.fl || 0) === fP && (h.z || 0) === (S.player.z || 0)) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? 'manhole' : 'hide', hideName(h), h.tx, h.ty);
     const stc = {};  // 계단 칸: 오르기·내려가기를 한 표식으로 (↑옥상 · ↓1층)
     for (const l of S.ladders) {
       if (l.kind === 'chimney') continue;
@@ -760,20 +760,21 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
-      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? '잠' : '창', st === 'lock' ? '잠긴 창문' : '창문'); } }
-    else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, '창', w.link ? '옆 건물로' : '창밖 전깃줄');
-    for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, '환', '환풍구', v.street ? null : v.tx, v.ty);
-    for (const d of S.doors) if (d.keyLock && d.locked && (d.fl || 0) === fP) add(d.x, d.y, keyCol(d.keyLock), '잠', keyName(d.keyLock), d.tx, d.ty);
+      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? 'pick' : 'window', st === 'lock' ? '잠긴 창문' : '창문'); } }
+    else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
+    for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
+    for (const d of S.doors) if (d.keyLock && d.locked && (d.fl || 0) === fP) add(d.x, d.y, keyCol(d.keyLock), 'pick', keyName(d.keyLock), d.tx, d.ty);
   } else {
     for (const l of S.ladders) if (l.tz === P.z) add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
-    for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, '환', '환기구');
-    for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, '줄', '전깃줄');
+    for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
+    for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, 'wire', '전깃줄');
   }
   for (const m of list) {
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k);
+    if (ICON_P[m.g]) { const sc = (13 * k) / 24; ctx.save(); ctx.translate(m.x - 12 * sc, y - 12 * sc); ctx.scale(sc, sc); ctx.strokeStyle = m.col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(nearPath(m.g)); ctx.restore(); }
+    else { ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
     if (m.d < 130 && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
   }
   ctx.globalAlpha = 1;
