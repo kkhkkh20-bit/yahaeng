@@ -85,6 +85,7 @@ async def main():
         a = await ev('() => { const a = window.__game.primaryAction(); return [a.k, a.label]; }'); await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(900)
         for x, y in ((5, 6), (4, 6), (3, 6)):
             await ev(AT, [x, y, 0, 0]); await pg.wait_for_timeout(250)
+        await ev('() => { const S = window.__game.S, it = S.items[0], P = S.player; P.x = it.x; P.y = it.y; }'); await pg.wait_for_timeout(150); await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(2700)  # 금고에서 꺼내기
         r = await ev('() => { const S = window.__game.S; return [S.items.every(i => i.got), !!S.player.keys.blue]; }')
         print('금고', a, r)
         if not all(r): bad.append(f'금고에서 장부·파랑 카드를 못 챙긴다 {a} {r}')

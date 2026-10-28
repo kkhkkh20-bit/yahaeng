@@ -11,7 +11,7 @@ async def main():
         print('items', info)
         # 경비를 치우고 장부 위치로
         await ev('() => { T.freeze(); const S = T.S(), it = S.items[0]; const P = S.player; P.fl = it.fl || 0; T.G().setLayer && 0; P.x = it.x; P.y = it.y; }')
-        await pg.wait_for_timeout(1500)
+        await pg.wait_for_timeout(200); await ev('() => T.G().actPrimary()'); await pg.wait_for_timeout(1500)  # 가구 위 물건: [행동]으로 챙긴다
         print('after pick', await ev('() => [T.S().items[0].got, !!T.G().CP, T.S().cpProg, T.S().cpWant]'))
         pos = await ev('() => [Math.round(T.S().player.x), Math.round(T.S().player.y)]')
         # 문 하나 상태 바꾸고, 다른 곳으로 이동, 시간 흐름, 사망

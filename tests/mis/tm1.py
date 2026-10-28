@@ -28,7 +28,8 @@ async def main():
             await pg.evaluate(f'T.walk({x}, {y})')
         r = await pg.evaluate('() => [T.bad(), T.S().stats.detected, T.S().stories.find(s => s.d.id === "courier").step]'); print('택배 → 창고', r)
         if r[0] or r[1]: bad.append('택배 상자를 들고 뒷마당·창고에서 들켰다 %s' % r)
-        await pg.evaluate('T.walk(36, 9)'); await pg.wait_for_timeout(500)
+        await pg.evaluate('T.walk(36, 9)'); await pg.wait_for_timeout(300)
+        print('책상 행동', await pg.evaluate('() => { const a = T.G().primaryAction().label; T.G().actPrimary(); return a; }')); await pg.wait_for_timeout(1300)  # 장부는 책상 위: [행동]으로 챙긴다
         r = await pg.evaluate('() => [T.S().items[0].got, T.S().stats.gotAs, T.S().stories.find(s => s.d.id === "courier").done]'); print('택배 장부', r)
         if r != [True, 'parcel', True]: bad.append('택배 경로로 장부·기회 완료가 안 된다 %s' % r)
         # 2 엿듣기 → 기회 '담배 타임' 발견 → 막내 기절 → 수거함 → 조끼 → 뒷마당·창고를 지나 사무실(② 있음)
@@ -51,7 +52,7 @@ async def main():
         if r[0] != 'staff' or not r[1]: bad.append('막내 기절 → 조끼 → 숨기기가 안 된다 %s' % r)
         for (x, y) in [(30, 4), (30, 7), (33, 9), (36, 9)]:
             await pg.evaluate(f'T.walk({x}, {y})')
-        await pg.wait_for_timeout(500)
+        await pg.wait_for_timeout(300); await pg.evaluate('() => T.G().actPrimary()'); await pg.wait_for_timeout(1300)  # 책상에서 챙기기
         r = await pg.evaluate('() => [T.bad(), T.S().items[0].got, T.S().stats.gotAs, T.S().player.disguiseBlown]'); print('조끼 → 장부', r)
         if r[0] or not r[1] or r[2] != 'staff': bad.append('직원 조끼로 사무실 장부까지 못 간다 %s' % r)
         # 3 사장 눈썰미: 조끼 차림으로 사장 코앞에 서 있으면 알아채고 신고하러 간다

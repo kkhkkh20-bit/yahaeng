@@ -406,11 +406,7 @@ function updatePlayer(dt) {
   }
   if (S.keyDrop && P.z === 0 && flOf(P) === (S.keyDrop.fl || 0) && dist(P.x, P.y, S.keyDrop.x, S.keyDrop.y) < 34) { const k = S.keyDrop.key || 'gold'; S.keyDrop = null; giveKey(k, keyName(k) + '을(를) 주웠다'); bark('hero', 'key'); }
   for (const it of S.keyItems || []) if (!it.got && !P.z && !P.under && !P.vent && flOf(P) === it.fl && dist(P.x, P.y, it.x, it.y) < 34) { it.got = true; giveKey(it.key, keyName(it.key) + '을(를) 찾았다'); }
-  for (const it of S.items) if (!it.got && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) {
-    it.got = true; play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) S.stats.gotAs = disguised() ? P.outfit : P.item && P.item.permit ? P.item.permit : 'self';  // 어떤 신분으로 훔쳤나 (도전 과제)
-    const left = S.items.filter(i => !i.got).length;
-    { const nm = STAGE.itemName || '서류'; toast(left ? `${nm} 회수 — 남은 것 ${left}개` : `${nm} 회수 완료 — 탈출 지점으로`, 3, 'good'); }
-  }
+  for (const it of S.items) if (!it.got && !it.furn && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) takeItem(it);  // 가구 위 물건은 [행동]으로 시간을 들여 빼 온다
   if (P.z >= 3) hint('top', '3층 옥상: 멀리 보이고 자경대원이 거의 올려다보지 못한다. 너무 높아서 낙하 암살은 안 된다');
   if (P.z) {
     hint('roof', '옥상: 자경대원은 위를 잘 안 본다(망꾼 빼고). 가까이 오면 [낙하 암살]');

@@ -271,6 +271,36 @@ function winInit() {
 const winSt = w => w.st || 'open';
 const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
 function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이지 마라. 긁는 소리가 조금 난다. 안쪽 창문은 걸쇠만 풀면 된다'); }
+// 가구에서 훔치기: 물건을 가까운 책상·컴퓨터·서류장·금고 등에 올려 두고, 옆에 서서 [행동]으로 시간을 들여 빼 온다.
+// it.x, it.y 는 가구 옆 '서는 자리'(길 찾기·거리 판정용), it.dx, it.dy 는 가구 위 그리는 자리
+const LOOT = { pc: ['컴퓨터', '자료 빼내기', '빼내기', 3.0, 15], safe: ['금고', '금고에서 꺼내기', '꺼내기', 2.2, 25], cab: ['서류장', '서랍 뒤지기', '뒤지기', 1.6, 35], locker: ['사물함', '사물함 뒤지기', '뒤지기', 1.6, 40],
+  desk2: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], desk: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], wardrobe: ['옷장', '옷장 뒤지기', '뒤지기', 1.6, 35], table: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15], counter: ['계산대', '계산대 뒤지기', '뒤지기', 1.2, 25], tableS: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15],
+  nstand: ['협탁', '협탁 서랍 뒤지기', '뒤지기', 1.2, 25], bedD: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25], bed: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25] };
+const LOOT_PREF = ['safe', 'pc', 'cab', 'desk2', 'desk', 'nstand', 'counter', 'locker', 'wardrobe', 'table', 'tableS', 'bedD', 'bed'];
+function lootPlace(it) {
+  const f0 = it.fl || 0, g = f0 ? GF[f0] : G0, tx0 = Math.floor(it.x / TILE), ty0 = Math.floor(it.y / TILE), b0 = bldAt(tx0, ty0); let best = null, bs = 1e9;
+  for (const F of FURN) {
+    if ((F.fl || 0) !== f0 || !LOOT[F.t] || F.w * F.h > 4) continue;
+    const cx = (F.x + F.w / 2) * TILE, cy = (F.y + F.h / 2) * TILE, d = dist(cx, cy, it.x, it.y); if (d > 4.2 * TILE || bldAt(F.x, F.y) !== b0) continue;
+    let st = null, sd = 1e9; for (let y = F.y - 1; y <= F.y + F.h; y++) for (let x = F.x - 1; x <= F.x + F.w; x++) { if (x >= F.x && x < F.x + F.w && y >= F.y && y < F.y + F.h) continue; if ((x === F.x - 1 || x === F.x + F.w) && (y === F.y - 1 || y === F.y + F.h)) continue; if (g[y] && !SOLID.has(g[y][x]) && g[y][x] !== 'Y' && bldAt(x, y) === b0) { const e = Math.hypot(x - tx0, y - ty0); if (e < sd) { sd = e; st = [x, y]; } } }  // 원래 물건 자리에서 가장 가까운 옆 칸에 선다
+    if (!st) continue; const sc = d + LOOT_PREF.indexOf(F.t) * 40; if (sc < bs) { bs = sc; best = { F, st, cx, cy }; }
+  }
+  if (!best) return;
+  it.furn = best.F.t; it.dx = best.cx; it.dy = best.cy - 6; it.x = tc(best.st[0]); it.y = tc(best.st[1]);
+}
+function nearLoot() {
+  const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.vent || P.under) return null;
+  for (const it of S.items) if (!it.got && it.furn && flOf(it) === flOf(P) && (dist(P.x, P.y, it.x, it.y) < 34 || dist(P.x, P.y, it.dx, it.dy + 6) < 58)) return it;
+  return null;
+}
+function startLoot(it) { const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+  hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
+// 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
+function takeItem(it) {
+  const P = S.player; it.got = true; play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) S.stats.gotAs = disguised() ? P.outfit : P.item && P.item.permit ? P.item.permit : 'self';  // 어떤 신분으로 훔쳤나 (도전 과제)
+  const left = S.items.filter(i => !i.got).length, nm = STAGE.itemName || '서류';
+  toast(left ? `${nm} 회수 — 남은 것 ${left}개` : `${nm} 회수 완료 — 탈출 지점으로`, 3, 'good');
+}
 // 핏자국 닦기: 핏자국 위에서 [행동]. 움직이면 멈춘다. 큰 자국 2.6초 · 핏방울 0.9초. 닦는 동안은 수상한 행동이라 보이면 들킨다
 function nearBlood() {
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.vent || P.under) return null;
@@ -281,9 +311,10 @@ function startClean(d) { const P = S.player; P.pick = { kind: 'clean', d, x: d.x
 function updatePick(P, mag, dt) {
   const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
   if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
-  K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; if (K.kind === 'clean') { play('cloth', 0.12, 1.3); noise(K.x, K.y, 30, 'pick'); } else { play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); } }
+  K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; if (K.kind === 'clean') { play('cloth', 0.12, 1.3); noise(K.x, K.y, 30, 'pick'); } else if (K.kind === 'loot') { play(K.short === '빼내기' ? 'click' : 'cloth', 0.12, 1.4); noise(K.x, K.y, K.loud, 'pick'); } else { play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); } }
   if (K.t < K.dur) return;
   P.pick = null;
+  if (K.kind === 'loot') { if (!K.it.got) takeItem(K.it); return; }
   if (K.kind === 'clean') {  // 그 자국과 바로 옆 핏방울까지 지운다
     const n0 = S.decals.length; S.decals = S.decals.filter(o => !(o === K.d || (flOf(o) === flOf(K.d) && dist(o.x, o.y, K.d.x, K.d.y) < 40)));
     S.stats.cleaned = (S.stats.cleaned || 0) + (n0 - S.decals.length); play('cloth', 0.3); toast(S.decals.some(o => o.trail && o.trail === K.d.trail) ? '닦았다 — 이어진 핏방울이 더 남아 있다' : '핏자국을 닦았다', 1.8, 'good'); return; }
@@ -296,7 +327,7 @@ function drawPickProgress(P) {
   const K = P.pick; if (!K) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
   ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
@@ -547,6 +578,7 @@ function primaryActionRaw() {
   if (kl.length === 2) kl.length = 1;
   if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > 56 ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: { x: nt.x, y: nt.y }, label: nt.read ? '다시 읽기' : '읽기' };
+  const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: `${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
   const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' };
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downPt(fdE), label: `내리기 · ${fdE.bfl + 1}층` }; }
@@ -600,6 +632,7 @@ function actPrimary(force) {
     }
     case 'ambush': startAmbush(a.g); break;
     case 'clean': startClean(a.d); break;
+    case 'loot': startLoot(a.it); break;
     case 'window': {
       const v = a.wv;
       P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };

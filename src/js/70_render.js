@@ -50,6 +50,13 @@ function drawNote(n) {
   ctx.fillStyle = n.read ? '#c8c2b0' : '#f2ecd8'; ctx.fillRect(x - 11, y - 9, 22, 16); ctx.fillStyle = '#8a8070'; for (let k = 0; k < 3; k++) ctx.fillRect(x - 8, y - 5 + k * 4, 16, 1.5);
   if (!n.read) { ctx.strokeStyle = `rgba(160,220,255,${0.5 + 0.3 * Math.sin(S.t * 4)})`; ctx.lineWidth = 2; ctx.strokeRect(x - 14, y - 12, 28, 22); }
 }
+// 훔칠 물건: 가구 위에 놓인 경우 그 가구 위에 (컴퓨터는 화면이 깜빡이고, 서랍·금고는 손잡이가 빛난다)
+function drawLootItem(it) {
+  const x = it.dx || it.x, y = it.dy || it.y;
+  if (it.furn === 'pc') { const a = 0.45 + 0.35 * Math.sin(S.t * 5); ctx.fillStyle = `rgba(120,220,255,${a})`; ctx.fillRect(x - 12, y - 8, 24, 14); ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.strokeRect(x - 13, y - 9, 26, 16); return; }
+  if (it.furn === 'safe' || it.furn === 'cab' || it.furn === 'locker' || it.furn === 'wardrobe' || it.furn === 'nstand') { const a = 0.55 + 0.35 * Math.sin(S.t * 4); ctx.fillStyle = `rgba(242,196,107,${a})`; ctx.fillRect(x - 9, y - 2, 18, 4); ctx.beginPath(); ctx.arc(x, y + 8, 3, 0, TAU); ctx.fill(); return; }
+  drawScroll(x, y, S.t);
+}
 function drawScroll(x, y, t) { drawItemIcon('it_scroll', x, y, t, true); }
 function drawScrollOld(x, y, t) {
   const bob = Math.sin(t * 3) * 2;
@@ -218,7 +225,7 @@ function drawWindowSight(P, openB) {
     ctx.drawImage(mapC, bx, by, bw, bh, bx, by, bw, bh);
     for (const c of S.corpses) if (!c.stashed && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawScroll(it.x, it.y, S.t);
+    for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawLootItem(it);
     ctx.fillStyle = 'rgba(255,230,170,.06)'; ctx.fillRect(bx, by, bw, bh);
     // 시선 경계는 선 대신 부드러운 그늘: 안쪽으로 번지는 흐린 띠 + 멀어질수록 서서히 어둡게 (도면 바탕과 자연스럽게 이어진다)
     ctx.filter = 'blur(9px)'; ctx.strokeStyle = 'rgba(16,28,44,.8)'; ctx.lineWidth = 30; path(); ctx.stroke(); ctx.filter = 'none';
@@ -975,7 +982,7 @@ function draw() {
   if (showRoutes || tactical) drawRoutes(P);
   drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
-  for (const it of S.items) if (!it.got && onGround(it)) { { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawScroll(it.x, it.y, S.t); }  // 목표물은 은은하게 빛난다
+  for (const it of S.items) if (!it.got && onGround(it)) { { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.dx || it.x, it.dy || it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawLootItem(it); }  // 목표물은 은은하게 빛난다
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
   if (KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
@@ -1077,7 +1084,7 @@ function draw() {
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
     for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
-    for (const it of S.items) if (!it.got && onFloor(it)) drawScroll(it.x, it.y, S.t);
+    for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
     for (const c of S.corpses) if (!c.stashed && onFloor(c)) { ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c); ctx.globalAlpha = 1; }
     drawLoud(VF); drawCams(VF);
