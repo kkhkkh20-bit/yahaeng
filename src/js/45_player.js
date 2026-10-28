@@ -273,6 +273,7 @@ function updatePlayer(dt) {
   if (P.grabIn) { updateGrabIn(P, dt); return; }
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
+  if (S.killWait) { P.moving = false; P.vx = 0; P.vy = 0; if (updateKillWait()) return; }  // 처치 방식 고르는 짧은 순간 (칼/조르기)
   if (P.lunge) {
     const L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
     P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;
@@ -437,7 +438,9 @@ function updatePlayer(dt) {
   }
   updateWindowView(P);
   checkObjective();
-  if (S.exitOpen && P.z === 0 && !flOf(P) && dist(P.x, P.y, S.exit.x, S.exit.y) < S.exit.r && !S.over) endGame(true);
+  if (STAGE.zones) { const zi = pZoneInfo(); if (zi.k !== Z_PUB && zi.allow) for (const o of myPermits()) if (zi.allow.includes(o)) (S.usedPermit || (S.usedPermit = {}))[o] = true; }  // 신분이 금지 구역을 통과시켜 준 기록 (도전 과제 판정)
+  if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = S.exits.reduce((a, b) => dist(P.x, P.y, a.x, a.y) <= dist(P.x, P.y, b.x, b.y) ? a : b);  // 안내는 가장 가까운 탈출구로
+  if (S.exitOpen && P.z === 0 && !flOf(P) && !S.over && (S.exits || [S.exit]).some(e => dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
 }
 // 창문 앞에서 창문 쪽을 바라보고 있으면 그 건물 안이 보인다
 function updateWindowView(P) {

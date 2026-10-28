@@ -24,6 +24,7 @@ function newGame(si) {
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
   buildMap(STAGE); setLayer(0); buildFRM(false);
+  if (STAGE.startAt) { const q = planPt(STAGE.startAt.b, STAGE.startAt.fl || 0, STAGE.startAt.at); if (q) STAGE.start = q; }  // 건물 안에서 시작 (감방 등)
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
   POLES.forEach(([px, py], i) => { if ((px * 7 + py * 3) % 3 === 2) return; const oy = !SOLID.has(G0[py + 1] && G0[py + 1][px]) ? 0.55 : -0.55; lamps.push({ x: tc(px), y: tc(py) + oy * TILE, r: 170, outdoor: true, poly: null, broken: false, fl: 0, pole: true, flk: (px + py) % 4 === 0 ? { f: 2.3 + (px % 3), p: py } : null }); });
@@ -100,13 +101,14 @@ function newGame(si) {
     stats: { kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
     over: false, hints: {}, keys: {}, exitOpen: false, vents
   };
-  S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70 };
+  S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70, name: STAGE.exitName || '' };
+  S.exits = [S.exit].concat((STAGE.exits || []).map(e => ({ x: tc(e.at[0]), y: e.at[1] * TILE + TILE / 2, r: e.r || 60, name: e.name || '' })));  // 탈출구가 여럿이면 가까운 곳으로 (지름길)
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !S.items.length) S.exitOpen = true;
   if (!STAGE.tutorial) S.items.forEach(lootPlace);  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
-  if (S.mod === 'bare') { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; }
+  if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
   // 전봇대와 전깃줄: 줄 끝은 전봇대 꼭대기 또는 옥상 가장자리
   S.poles = POLES.map(([tx, ty, z]) => ({ tx, ty, x: tc(tx), y: tc(ty), z, top: 26 + z * 10 }));
@@ -172,7 +174,12 @@ function newGame(si) {
     else { const p = planPt(c.b, c.fl || 0, c.at || 'S'); if (!p) return null; fl = c.fl || 0; const g = fl ? GF[fl] : G0; x = p[0]; y = p[1]; while (y > 0 && !SOLID.has(g[y - 1][x])) y--; base = Math.PI / 2; sweep = c.sweep || 55; }
     const cx = tc(x) - Math.cos(base) * 18, cy = tc(y) - Math.sin(base) * 18;
     return { x: cx, y: cy, tx: x, ty: y, fl, base, sweep: sweep * Math.PI / 180, period: 7 + ((x * 7 + y * 3) % 5), ph: (x + y) % 7, a: base, meter: 0, broken: false, cool: 0, b: bldAt(x, y), outdoor: bldAt(x, y) < 0 };
-  }).filter(Boolean);  if (FRM) {
+  }).filter(Boolean);
+  // 서치라이트: [x, y, 방향°, 좌우°] — 옥상·망루에서 멀리 비춘다 (다트로 깨거나 두꺼비집으로 끈다)
+  (STAGE.searchlights || []).forEach(([x, y, base, sweep]) => { const a = base * Math.PI / 180; S.cams.push({ x: tc(x), y: tc(y), tx: x, ty: y, fl: 0, base: a, sweep: sweep * Math.PI / 180, period: 11 + (x % 4), ph: y % 5, a, meter: 0, broken: false, cool: 0, b: -1, outdoor: true, search: true }); });
+  // CCTV 관리실: { b, fl, at } — 화면 보는 사람(tag 'camop')이 있어야 CCTV가 경보로 이어진다
+  S.camRoom = null; if (STAGE.camRoom) { const q = STAGE.camRoom.pos || planPt(STAGE.camRoom.b, STAGE.camRoom.fl || 0, STAGE.camRoom.at || 'L'); if (q) S.camRoom = { x: tc(q[0]), y: tc(q[1]), tx: q[0], ty: q[1], fl: STAGE.camRoom.fl || 0 }; }
+  if (FRM) {
     // 정면 벽 가스관(노란 배관): 땅 → 옥상. 2층 베란다: 땅에서 난간을 타고 2층으로
     const occ = new Set(S.ladders.map(l => l.bx + ',' + l.by)); S.poles.forEach(o => occ.add(o.tx + ',' + o.ty));
     const reach = new Uint8Array(MW * MH), rq = [[STAGE.start[0] | 0, STAGE.start[1] | 0]]; reach[(STAGE.start[1] | 0) * MW + (STAGE.start[0] | 0)] = 1;
@@ -297,7 +304,8 @@ function makeGuard(d, i) {
   return {
     id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
-    post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
+    // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
+    post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
     carryTo: d.carryTo != null ? d.carryTo : null, child: !!d.child, parent: d.parent || null, tag: d.tag || null, body: d.child ? 'kid' : d.body !== undefined ? d.body : d.kind === 'civ' ? autoBody(i) : null, sched: d.sched ? d.sched.slice() : null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
   };
 }

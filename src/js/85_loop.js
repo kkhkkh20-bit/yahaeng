@@ -9,7 +9,7 @@ function frame(t) {
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
   if (running && !paused) updateDialog(dt);
-  { const sc = !!(input.scan && running && !tactical); if (sc && !frame.scanAt) frame.scanAt = performance.now(); if (!sc) frame.scanAt = 0; document.body.classList.toggle('scanning', sc); document.body.classList.toggle('scanleg', sc && performance.now() - frame.scanAt < 4000); }  // 범례는 켠 뒤 4초만 (살필 곳을 가리지 않게) document.body.classList.toggle('playing', !!(running && S && !S.over));
+  { const sc = !!(input.scan && running && !tactical); if (sc && !frame.scanAt) frame.scanAt = performance.now(); if (!sc) frame.scanAt = 0; document.body.classList.toggle('scanning', sc); document.body.classList.toggle('scanleg', sc && performance.now() - frame.scanAt < 4000); }  document.body.classList.toggle('playing', !!(running && S && !S.over));  // 범례는 켠 뒤 4초만 (살필 곳을 가리지 않게)
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   if (running && !paused && !S.over && !tactical && !DLG.modal) { let ud = dt; if (S.hitStop > 0) { S.hitStop -= dt; ud = dt * 0.06; } if (input.aiming) focusUpdate(ud); else update(ud); }
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }

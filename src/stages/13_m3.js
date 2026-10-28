@@ -78,6 +78,7 @@
   fuse: [36, 27, 36, 28],
   cams: [[21, 14, 90, 70], [16, 24, 315, 40]],
   crowd: [[15, 16, 28, 20, 0, 5]],                                                                  // 잔치 손님들
+  radios: [1, 3, 6, 9, 21],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
     // 0 표적: 회장. 단상 건배사 → 연못 구경(웅덩이 위) → 잔칫상에서 술 한잔
     { kind: 't', target: true, tag: 'boss', schedKey: 'toast', sched: [{ at: [21, 15], stay: 18, name: '본채 앞 단상', act: '건배사' }, { at: [21, 23], stay: 12, name: '연못가', act: '연못 구경' }, { at: [27, 18], stay: 16, name: '잔칫상', act: '술 한잔' }] },
@@ -91,7 +92,7 @@
     { kind: 'g1', route: [[2, 30, 2], [42, 30, 2]] },                         // 8 큰길 순찰
     { kind: 'g2', route: [[0, 11, 2], [0, 22, 2]], lookout: true },           // 9 서쪽 골목 망보기
     // 출장 뷔페 일꾼 (조끼가 곧 신분)
-    { kind: 'civ', outfit: 'cater', wander: [10, 17, 13, 21], at: [11, 19] },                        // 10 부엌
+    { kind: 'civ', tag: 'cook', outfit: 'cater', enforcer: true, wander: [10, 17, 13, 21], at: [11, 19] },   // 10 부엌 일꾼 반장 (눈썰미: 조끼)
     { kind: 'civ', outfit: 'cater', body: 'fTail', wander: [15, 16, 28, 21], at: [24, 20] },         // 11 마당 서빙
     { kind: 'civ', outfit: 'cater', at: [12, 27], post: 0 }, { kind: 'civ', outfit: 'cater', body: 'fBob', at: [13, 27], post: 180 },   // 12·13 노점 골목에서 쉬는 일꾼 둘 — 발전기 이야기
     { kind: 'civ', tag: 'shuttle', outfit: 'cater', sched: [{ at: [24, 30], stay: 12, name: '뷔페 차', act: '음식 내리기' }, { at: [11, 21], stay: 10, name: '창고 부엌', act: '음식 나르기' }] },   // 14 차 ↔ 부엌

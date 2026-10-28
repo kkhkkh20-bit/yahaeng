@@ -5,11 +5,11 @@ const lightC = (x, y) => { if (S.t - GLC.t > 0.2 || S.t < GLC.t) { GLC.m.clear()
 function guardCone(g, fov, rg) {
   const ck = (S.player.cover ? 1 : 0) + g.state + (g.z || 0) + fov.toFixed(2) + Math.round(rg.lit);
   if (g._cone && S.t - g._cone.t < 0.1 && S.t >= g._cone.t && g._cone.k === ck && Math.hypot(g.x - g._cone.x, g.y - g._cone.y) < 10 && Math.abs(angDiff(g._cone.a, g.a)) < 0.12) return g._cone.cn;
-  const N = 34, STP = 6, rays = [], crouchK = (g.state === 'ALERT' ? 1 : 0.55) * (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
+  const N = 34, STP = 6, rays = [], crouchK = (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
   setLayer(flOf(g));
   for (let i = 0; i <= N; i++) {
     const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
-    for (let d = STP / 2; d < w; d += STP) { const L = lightC(g.x + ca * d, g.y + sa * d), eff = (rg.dark + (rg.lit - rg.dark) * L) * el; lv.push(d < 24 || d <= eff * crouchK ? 2 : d <= eff ? 1 : 0); }
+    for (let d = STP / 2; d < w; d += STP) { const L = lightC(g.x + ca * d, g.y + sa * d), eff = (rg.dark + (rg.lit - rg.dark) * L) * el; lv.push(d < 24 || d <= eff * crouchK * (g.state === 'ALERT' ? 1 : L < 0.5 ? 0.55 : 0.8) ? 2 : d <= eff ? 1 : 0); }  // 웅크려도 보이는 안쪽: 어두운 곳 55%, 밝은 곳 80% (canSee와 같게)
     rays.push({ a, ra: a - g.a, w, lv });
   }
   setLayer(L0); const cn = { rays, STP }; g._cone = { t: S.t, k: ck, x: g.x, y: g.y, a: g.a, cn }; return cn;
@@ -760,10 +760,15 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
-      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? 'pick' : 'window', st === 'lock' ? '잠긴 창문' : '창문'); } }
+      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? 'pick' : 'window', st === 'lock' ? '잠긴 창문 · 락픽' : '창문 · 넘어가기'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
-    for (const d of S.doors) if (d.keyLock && d.locked && (d.fl || 0) === fP) add(d.x, d.y, keyCol(d.keyLock), 'pick', keyName(d.keyLock), d.tx, d.ty);
+    if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
+    { const seen = new Set();  // 출입문: 바깥에서 들어갈 수 있는 문은 밖에서도 보이게 (입구를 찾느라 헤매지 않게)
+      for (const d of S.doors) { if ((d.fl || 0) !== fP) continue; const gk = d.group ? d.group.map(t => t.tx + ',' + t.ty).sort()[0] : d.tx + ',' + d.ty; if (seen.has(gk)) continue; seen.add(gk);
+        const outer = !fP && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([ox, oy]) => bldAt(d.tx + ox, d.ty + oy) < 0);
+        if (d.keyLock && d.locked) add(d.x, d.y, keyCol(d.keyLock), 'pick', keyName(d.keyLock), outer ? null : d.tx, outer ? null : d.ty);
+        else if (outer) add(d.x, d.y, SCAN.door, d.locked ? 'pick' : 'door', d.locked ? '잠긴 문 · 락픽' : '출입문'); } }
   } else {
     for (const l of S.ladders) if (l.tz === P.z) add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
@@ -775,7 +780,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
     if (ICON_P[m.g]) { const sc = (13 * k) / 24; ctx.save(); ctx.translate(m.x - 12 * sc, y - 12 * sc); ctx.scale(sc, sc); ctx.strokeStyle = m.col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(nearPath(m.g)); ctx.restore(); }
     else { ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
-    if (m.d < 130 && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
+    if (m.d < (m.g === 'door' || m.g === 'window' || m.g === 'pick' ? 190 : 130) && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
   }
   ctx.globalAlpha = 1;
 }
@@ -820,6 +825,14 @@ function drawScan(openB) {
   for (const L of labs) { const w = ctx.measureText(L.text).width + 14 * kS, h = 19 * kS, r = [L.x - w / 2, L.y - h / 2, L.x + w / 2, L.y + h / 2];
     if (placed.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue; placed.push(r); tag(L.x, L.y, L.text, L.col); if (placed.length >= 18) break; }
 }
+// 권총 조준선: 겨눈 시간만큼 굵고 진해진다 (1초 뒤 발사)
+function drawGunAim() {
+  const P = S.player;
+  for (const g of S.guards) { if (!g.aim || g.state !== 'ALERT' || flOf(g) !== flOf(P)) continue; const f = Math.min(1, g.aim / GUN_AIM);
+    const L = Math.min(dist(g.x, g.y, P.x, P.y), castRay(g.x, g.y, Math.atan2(P.y - g.y, P.x - g.x), GUN_R)), a = Math.atan2(P.y - g.y, P.x - g.x);
+    ctx.strokeStyle = `rgba(255,40,40,${0.25 + 0.65 * f})`; ctx.lineWidth = 1 + 2.5 * f; ctx.setLineDash(f > 0.7 ? [] : [6, 5]); ctx.beginPath(); ctx.moveTo(g.x + Math.cos(a) * 14, g.y + Math.sin(a) * 14); ctx.lineTo(g.x + Math.cos(a) * L, g.y + Math.sin(a) * L); ctx.stroke(); ctx.setLineDash([]);
+    if (f > 0.7 && Math.floor(S.t * 12) % 2) { ctx.fillStyle = 'rgba(255,60,60,.9)'; ctx.beginPath(); ctx.arc(g.x + Math.cos(a) * L, g.y + Math.sin(a) * L, 4, 0, TAU); ctx.fill(); } }
+}
 // 지금 누를 수 있는 행동을 대상 위에 글자로 띄운다
 function drawActLabels(pa, P) {
   const key = '';
@@ -837,7 +850,10 @@ function drawActLabels(pa, P) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  if (zKey) { tag(x, y, isTouch ? `[보조] ${lab} · [행동] ${stk && !koDefault(stk) ? '암살' : '기절'}` : lab + ' (사람 근처 — Space는 ' + (stk && !koDefault(stk) ? '암살' : '기절') + ')', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
+  if (zKey) {  // 사람 근처: 시설 행동은 [보조]로, [행동]은 사람에게 — 버튼마다 대상 위에 따로 띄운다
+    tag(x, y, isTouch ? '[보조] ' + lab : lab, col, 1, isTouch ? null : 'Z');
+    if (stk) { const k = Math.max(1, 0.95 / SCALE); tag(stk.x, stk.y - 34 * k, (isTouch ? '[행동] ' : '') + (!koDefault(stk) ? '암살' : '기절'), '#e8473c', 1, isTouch ? null : 'Space'); }
+    return; }
   tag(x, y, key + lab, col, 1, isTouch ? null : 'Space'); let dy = 21 * Math.max(1, 0.95 / SCALE), row = 1;
   if (pa.hold && !isTouch) { tag(x, y + dy * row++, '길게 누르면 ' + pa.hold, '#ff8a76', 0.95, 'Space'); }  // 히트맨식: 같은 키 길게 누르기는 따로 한 줄
   const sa = secondaryAction();
@@ -974,7 +990,7 @@ function draw() {
   if (S.exitOpen) {
     const p = 0.5 + 0.5 * Math.sin(S.t * 4);
     ctx.strokeStyle = `rgba(242,196,107,${0.5 + p * 0.4})`; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
-    ctx.beginPath(); ctx.arc(S.exit.x, S.exit.y, S.exit.r - 8 + p * 6, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+    for (const e of S.exits || [S.exit]) { ctx.beginPath(); ctx.arc(e.x, e.y, e.r - 8 + p * 6, 0, TAU); ctx.stroke(); }  ctx.setLineDash([]);
   }
   if (STAGE.flee && S.fleeing) {
     const fx = tc(STAGE.flee[0]), fy = tc(STAGE.flee[1]);
@@ -1035,7 +1051,9 @@ function draw() {
   for (const f of S.fx) {
     if (f.k === 'slash') { const fr = Math.min(3, Math.floor(f.t / 0.06)); blit(ctx, 'fx_slash', f.x - 48, f.y - 48, 96, 96, fr * 32, 0, 32, 32); }
     if (f.k === 'smoke') { const fr = Math.min(5, Math.floor(f.t / 0.07)); blit(ctx, 'fx_smoke', f.x - 36, f.y - 44, 72, 72, fr * 32, 0, 32, 32); }
+    if (f.k === 'muzzle' && f.t < 0.12) { const a = 1 - f.t / 0.12; ctx.fillStyle = `rgba(255,220,140,${a})`; ctx.beginPath(); ctx.arc(f.x, f.y, 9 * a + 3, 0, TAU); ctx.fill(); }  // 총구 불꽃
   }
+  drawGunAim();
   if (S.keyDrop && (S.keyDrop.fl || 0) === flOf(S.player)) drawKeyIcon(S.keyDrop.key, S.keyDrop.x, S.keyDrop.y, true);
   for (const it of S.keyItems || []) if (!it.got && it.fl === flOf(S.player)) drawKeyIcon(it.key, it.x, it.y, true);
   for (const s of S.stones) {

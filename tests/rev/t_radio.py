@@ -9,6 +9,7 @@ async def run(b, mode):
     # 구역 규칙이 없는 옛 판(의뢰 4): 무전기 든 자경대원 앞 시야 안에 서서 들킨다 (발견 게이지 2~3초)
     si = await pg.evaluate("() => window.__game.STAGES.findIndex(s => s.id === 'm4')")
     await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP); await pg.wait_for_timeout(200)
+    await pg.evaluate('() => { window.__game.STAGE.zones = null; }')  # 무전 규칙만 본다: 구역 없이(의뢰 4도 이제 구역 판이다)
     await pg.evaluate('''() => { const S = window.__game.S, P = S.player; const g = S.guards.find(g => g.radio && !g.civ && !g.dog && !g.elite && !(g.fl || 0) && !(g.z || 0) && g.state === 'PATROL');
       S.guards.forEach(o => { if (o !== g) { o.x = -9999; o.y = -9999; o.route = [{ x: -9999, y: -9999, pause: 999 }]; o.path = null; } });
       const G = window.__game, ok = (x, y) => !G.solidAt(Math.floor(x / 48), Math.floor(y / 48));

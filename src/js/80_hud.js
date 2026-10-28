@@ -29,7 +29,7 @@ function drawMini() {
   x.drawImage(miniBase, 0, 0);
   // 화면에 보이는 범위
   x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1; x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
-  if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; x.beginPath(); x.arc(T(S.exit.x), T(S.exit.y), 5, 0, TAU); x.stroke(); }
+  if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
   for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = '700 7px monospace'; x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록
   for (const g of S.guards) {
@@ -53,7 +53,7 @@ function stageMap(w, labels) {
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
     if (labels && lab) { x.font = `700 ${Math.round(R * 3.2)}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; x.lineWidth = 3; x.strokeStyle = 'rgba(7,10,18,.95)'; x.strokeText(lab, X, Y - R * 2.2); x.fillStyle = col; x.fillText(lab, X, Y - R * 2.2); } };
-  pt(S.player.x, S.player.y, '#7fd6ff', 'c', '출발'); if (S.exit) pt(S.exit.x, S.exit.y, '#f2c46b', 'r', '탈출');
+  pt(S.player.x, S.player.y, '#7fd6ff', 'c', '출발'); for (const e of S.exits || (S.exit ? [S.exit] : [])) pt(e.x, e.y, '#f2c46b', 'r', '탈출');
   S.items.forEach((it, i) => pt(it.x, it.y, '#ffd27a', 'd', (STAGE.itemNames || [])[i] || STAGE.itemName || '서류'));
   for (const g of S.guards) if (g.target) pt(g.x, g.y, '#ff5a4a', 'c', g.doc ? '한 선생' : '표적');
   return c;
@@ -79,6 +79,8 @@ function showBrief(go) {
   $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
+  { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) b.textContent = '체크포인트부터 이어 하기 · ' + new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    b.onclick = () => { el.hidden = true; paused = false; if (resumeStoredCP(STAGE_I)) { play('bell', 0.6); startAmb(); } else go(); }; }
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
@@ -90,7 +92,7 @@ function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x 
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
-  if (S.exitOpen) return { text: '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
+  if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   const c = [];
   S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' 훔치기', where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
   if (!S.spare) for (const g of S.guards) if (g.target && g.state !== 'DEAD') c.push({ text: (g.doc ? '한 선생' : '표적') + ' 처리하기', where: placeName(g.x, g.y, flOf(g)), x: g.x, y: g.y, fl: flOf(g), g });
@@ -266,16 +268,17 @@ function showEnd(win, reason) {
     }
     const n = bonus.filter(b => b[1]).length;
     rank = n === 5 ? '그림자' : n === 4 ? '암살자' : n === 3 ? '침입자' : '소란꾼';
-    saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank);
+    saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.id === 'tI' ? '이 게임의 규칙을 익혔다. 이제 의뢰 01로 가자. 살금·기대기·전깃줄 같은 잠입 기술은 연습 2·3(선택)에서.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.id === 'tI' ? '이 게임의 규칙을 익혔다. 이제 의뢰 01로 가자. 살금·기대기·전깃줄 같은 잠입 기술은 연습 2·3(선택)에서.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && tg.state !== 'DEAD' ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
   // 들킨 대가: 경보가 무전으로 전체에 퍼졌을 때만 수고비를 깎는다 (전체 경보 1회 −15%, 민간인 살상 1명 −20%, 최대 −70%). 근처만 알아챈 발각은 깎지 않는다
   let feeRow = null; { const base = parseInt(STAGE.fee || '', 10); if (win && base > 0) { const cut = Math.min(0.7, (st.full || 0) * 0.15 + (st.extraKills || 0) * 0.2), got = Math.round(base * (1 - cut)), why = [st.full ? `전체 경보 ${st.full}회` : '', st.extraKills ? `민간인 ${st.extraKills}명` : ''].filter(Boolean).join(' · ');
-    feeRow = ['수고비', cut > 0 ? `${got}만 (원래 ${base}만 — ${why}로 −${base - got}만)` : `${base}만 전액`]; S.feeGot = got; } }
+    const purge = STAGE.purgeBonus && S.guards.filter(g => !g.civ && !g.dog && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE'), bonus = purge ? STAGE.purgeBonus : 0;  // 몰살 보너스
+    feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (원래 ${base}만 — ${why}로 −${base - got}만` + (bonus ? ` · 몰살 +${bonus}만` : '') + ')' : bonus ? `${base + bonus}만 (전액 + 몰살 +${bonus}만)` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
   $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['보조 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]

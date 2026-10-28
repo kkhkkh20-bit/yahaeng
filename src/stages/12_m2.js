@@ -87,6 +87,7 @@
           [35, 2, 90, 1], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
   fuse: [36, 18, 36, 17],
   cams: [[22, 15, 0, 20], [12, 15, 0, 45]],
+  radios: [1, 3, 6, 9, 27],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
     // 0 표적: 클럽 실장. VIP룸에서 술 → 클럽 앞 간판 밑에서 담배 → 홀 바에서 수다
     { kind: 't', target: true, tag: 'vip', schedKey: 'sign', sched: [{ at: [25, 6], stay: 30, name: 'VIP룸', act: '양주' }, { at: [27, 15], stay: 16, name: '클럽 앞 간판 밑', act: '담배' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '수다' }] },
@@ -101,7 +102,7 @@
     { kind: 'g1', at: [15, 9], post: 0 }, { kind: 'g2', at: [17, 9], post: 180 },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비번 이야기
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
-    { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
+    { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
     { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
     { kind: 'civ', outfit: 'waiter', at: [5, 30], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [6, 30], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들

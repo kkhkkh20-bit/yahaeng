@@ -50,6 +50,43 @@ function cloneDeep(o, memo = new Map()) {
   for (const k of Object.keys(o)) c[k] = cloneDeep(o[k], memo);
   return c;
 }
+// 체크포인트를 기기에 남긴다 (새로고침·앱을 다시 열어도 이어 하기). 같은 객체를 여러 곳에서 가리키는 관계를 살려 JSON으로 바꾼다
+const CP_KEY = 'yahaeng.cp';
+function packGraph(root) {
+  const ids = new Map(), nodes = [];
+  const enc = v => {
+    if (v === undefined || typeof v === 'function') return { $u: 1 };
+    if (typeof v === 'number' && !isFinite(v)) return { $n: String(v) };
+    if (v === null || typeof v !== 'object') return v;
+    if (ids.has(v)) return { $r: ids.get(v) };
+    const id = nodes.length; ids.set(v, id); nodes.push(null);
+    if (ArrayBuffer.isView(v)) { nodes[id] = { $t: v.constructor.name, d: Array.from(v) }; return { $r: id }; }
+    const ct = v.constructor; if (ct && ct !== Object && ct !== Array) return { $u: 1 };
+    if (Array.isArray(v)) nodes[id] = { $a: v.map(enc) }; else { const o = {}; for (const k of Object.keys(v)) o[k] = enc(v[k]); nodes[id] = { $o: o }; }
+    return { $r: id };
+  };
+  return { root: enc(root), nodes };
+}
+function unpackGraph(P) {
+  const out = P.nodes.map(n => !n ? null : n.$t ? new window[n.$t](n.d) : n.$a ? [] : {});
+  const dec = v => (v === null || typeof v !== 'object') ? v : '$r' in v ? out[v.$r] : '$n' in v ? Number(v.$n) : undefined;
+  P.nodes.forEach((n, i) => { if (!n || n.$t) return; if (n.$a) n.$a.forEach((x, j) => { out[i][j] = dec(x); }); else for (const k in n.$o) { const e = n.$o[k]; if (e && typeof e === 'object' && '$u' in e) continue; out[i][k] = dec(e); } });
+  return dec(P.root);
+}
+function storeCP() {
+  if (!CP || STAGE.tutorial) return;
+  try { localStorage.setItem(CP_KEY, JSON.stringify({ id: STAGE.id, diff: CP.diff, used: CP.used, mod: S.mod || '', at: Date.now(), g: packGraph(CP.S), grids: CP.grids })); } catch (e) {}
+}
+function storedCP(id) { try { const r = JSON.parse(localStorage.getItem(CP_KEY) || 'null'); return r && r.id === id && r.diff === DKEY ? r : null; } catch (e) { return null; } }
+function clearStoredCP(id) { try { const r = storedCP(id); if (r || !id) localStorage.removeItem(CP_KEY); } catch (e) {} }
+// 남겨 둔 체크포인트로 이어 하기: 판을 새로 만든 뒤 상태와 지도 칸을 덮어쓴다
+function resumeStoredCP(si) {
+  const r = storedCP(STAGES[si].id); if (!r) return false;
+  let st; try { st = unpackGraph(r.g); } catch (e) { clearStoredCP(); return false; }
+  (st.stories || []).forEach((o, i) => { if (STAGE.stories && STAGE.stories[i]) o.d = STAGE.stories[i]; });  // 함수가 든 기회 정의는 판 자료에서 다시 잇는다
+  CP = { si, diff: r.diff, S: st, grids: r.grids, used: r.used || 0 };
+  return loadCheckpoint();
+}
 const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
 function cpProgress() { return S.guards.filter(g => g.target && g.state === 'DEAD').length + S.items.filter(i => i.got).length + (S.keyItems || []).filter(i => i.got).length + (S.exitOpen ? 1 : 0); }
 function updateCheckpoint(dt) {
@@ -63,13 +100,13 @@ function updateCheckpoint(dt) {
 }
 function saveCheckpoint() {
   CP = { si: STAGE_I, diff: DKEY, S: cloneDeep(S), grids: [G0.map(r => r.slice())].concat(GF.slice(1).map(g => g ? g.map(r => r.slice()) : null)), used: CP && CP.si === STAGE_I ? CP.used : 0 };
-  if (!STAGE.tutorial) { toast('체크포인트 저장 — 죽으면 여기서 다시 시작할 수 있다', 2.4, 'good'); play('switch', 0.3, 1.6); }
+  if (!STAGE.tutorial) { storeCP(); toast('체크포인트 저장 — 죽거나 앱을 닫아도 여기서 이어 할 수 있다', 2.4, 'good'); play('switch', 0.3, 1.6); }
 }
 const cpReady = () => !!(CP && CP.si === STAGE_I && CP.diff === DKEY && cpOn());
 function loadCheckpoint() {
   if (!cpReady()) return false;
   initAudio();
-  CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.amb = null; S.guards.forEach(g => { g.yank = false; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
+  CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.doomed = false; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;

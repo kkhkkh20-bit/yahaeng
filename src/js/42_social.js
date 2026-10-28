@@ -125,24 +125,25 @@ function updateStories(dt) {
   if (!S.stories) storiesInit();
   if ((S.storyT = (S.storyT || 0) - dt) > 0) return; S.storyT = 0.3;
   for (const st of S.stories) {
-    if (st.done) continue;
+    if (st.done || st.moot) continue;
     if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
       st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
     if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) { const nx = S.stories.find(o => o.found && !o.done); S.storyTrack = nx ? nx.d.id : null; } }
     else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
+    if (!st.done && S.exitOpen) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 길로 목표를 이뤘으면 남은 기회 안내는 접는다 (탈출만 남긴다)
   }
 }
-const storyStep = st => st.done ? null : st.d.steps[st.step];
+const storyStep = st => st.done || st.moot ? null : st.d.steps[st.step];
 function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
-  for (const st of S.stories) { if (!st.found) continue; const tr = S.storyTrack === st.d.id, s = storyStep(st);
+  for (const st of S.stories) { if (!st.found || st.moot) continue; const tr = S.storyTrack === st.d.id, s = storyStep(st);
     L.push([st.done ? 'opp done' : 'opp', (tr && !st.done ? '▶ ' : '') + '기회: ' + st.d.name + (st.done ? '' : oppMode === 2 && s ? ' — ' + s.text : ` (${st.step}/${st.d.steps.length})`)]); }
   return L;
 }
 function trackNextStory() {
-  const f = (S.stories || []).filter(o => o.found && !o.done); if (!f.length) return;
+  const f = (S.stories || []).filter(o => o.found && !o.done && !o.moot); if (!f.length) return;
   const i = f.findIndex(o => o.d.id === S.storyTrack); S.storyTrack = f[(i + 1) % f.length].d.id; hudCache.objH = null;
   toast('추적: ' + f[(i + 1) % f.length].d.name, 1.6);
 }

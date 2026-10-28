@@ -9,6 +9,8 @@ function lightAt(x, y, elev) {
     const d = dist(lp.x, lp.y, x, y);
     if (d < lp.r && los(lp.x, lp.y, x, y, elev)) l = Math.max(l, clamp((1 - d / lp.r) * 1.8, 0, 1));
   }
+  // 서치라이트: 빛줄기 안은 대낮처럼 밝다 (누구 눈에든 띈다)
+  if (S.cams) for (const c of S.cams) { if (!c.search || c.fl !== CUR_F || !camOn(c)) continue; const d = dist(c.x, c.y, x, y); if (d > SL_R || d < 4) continue; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > SL_FOV) continue; if (!los(c.x, c.y, x, y, elev)) continue; l = Math.max(l, 0.95 - 0.35 * d / SL_R); }
   // 손전등: 비추는 자경대원 앞 원뿔 안은 밝다 (어둠 속이어도 들킨다)
   if (S.guards) for (const g of S.guards) { if (!g.torch || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== CUR_F) continue; const d = dist(g.x, g.y, x, y); if (d > TORCH_R || d < 4) continue; if (Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > 0.32) continue; if (!los(g.x, g.y, x, y, elev)) continue; l = Math.max(l, 0.85 * (1 - d / TORCH_R) + 0.2); }
   return l;

@@ -152,6 +152,8 @@ function sfx(kind) {
   else if (kind === 'toHide') osc('sine', 540, 330, 0.16, 0.06);
   else if (kind === 'toBlend') osc('sine', 440, 440, 0.1, 0.04);
   else if (kind === 'toRisk') { osc('sine', 420, 640, 0.12, 0.06); }
+  else if (kind === 'gun') { hiss(0.22, 0.5, 1400, 0.6); osc('square', 160, 50, 0.18, 0.22); hiss(0.6, 0.08, 500, 0.5, 0.05); }  // 권총: 짧은 폭음 + 메아리
+  else if (kind === 'aim') osc('sine', 1800, 1800, 0.05, 0.03);
   else if (kind === 'toSeen') { osc('square', 660, 660, 0.07, 0.045); osc('square', 880, 880, 0.09, 0.045, 0.08); }
 }
 // 의심 상승음: 누가 나를 알아채는 게이지(0~1)를 따라 아주 작은 음이 높아진다. 0이면 사라진다

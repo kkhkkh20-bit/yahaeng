@@ -4,6 +4,7 @@ SKIP = '() => { const g = window.__game; for (let i = 0; i < 20 && g.DLG.modal; 
 H = open('troutes.py').read().split('H = """')[1].split('"""')[0]
 async def run(pg, st, steps, fresh=True):
     if fresh:
+        if isinstance(st, str): st = await pg.evaluate(f"() => window.__game.STAGES.findIndex(s => s.id === '{st}')")
         await pg.evaluate(f'() => window.__game.start({st})'); await pg.wait_for_timeout(250); await pg.evaluate(SKIP); await pg.evaluate(H)
     out = []
     for s in steps:
@@ -15,10 +16,10 @@ async def main():
         b = await p.chromium.launch(); pg = await b.new_page(); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1200)
         # M1: 사무실 순찰 경비 등 뒤에서 [특수] — 카드키가 없어진 뒤로는 소매치기 대신 제압·끌기 확인
-        print('M1 back', await run(pg, 0, [
+        print('M1 back', await run(pg, 'm1', [
           "const S = T.S(), g = S.guards[2]; const P = S.player; P.fl = g.fl || 0; T.G().setLayer(P.fl); P.x = g.x - Math.cos(g.a) * 36; P.y = g.y - Math.sin(g.a) * 36; P.a = g.a; return [T.act(), (T.G().secondaryAction() || {}).label];"]))
         # M4: 수금원 처치 → 빨강 떨어짐 → 줍기
-        print('M4', await run(pg, 4, [
+        print('M4', await run(pg, 'm4', [
           "const S = T.S(), t = S.guards[0]; T.S().guards[1].x = -5000; T.S().guards[1].follow = null; const P = S.player; P.x = t.x - Math.cos(t.a) * 34; P.y = t.y - Math.sin(t.a) * 34; P.a = t.a; return T.act();",
           "T.G().actPrimary(); return 1;", "WAIT900",
           "const S = T.S(); return [S.guards[0].state, S.keyDrop && S.keyDrop.key];",

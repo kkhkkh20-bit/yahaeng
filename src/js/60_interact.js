@@ -2,10 +2,14 @@
 // 숨을 곳 이름: 수거함(수거함) · 맨홀(맨홀) · 옷장 · 침대 밑 · 사물함
 const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', okt: '옥탑방' };
 // 열쇠·카드키: 색마다 맞는 문만 연다 (gold = 예전 판의 그냥 열쇠)
-const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨강 카드', '#ff5a5a'], blue: ['파랑 카드', '#5aa8ff'], green: ['초록 카드', '#5ad88a'], code: ['비번', '#c8ccd2'] };
+const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨강 카드', '#ff5a5a'], blue: ['파랑 카드', '#5aa8ff'], green: ['초록 카드', '#5ad88a'], code: ['비번', '#c8ccd2'], pin: ['머리핀', '#d6d9e0'], gear: ['압수품 가방', '#c9a2ff'], truth: ['진실', '#c9a2ff'] };
 const keyName = k => k === 'code' ? (hasK('code') ? '비번 ' + (STAGE.code || '') : '숫자 자물쇠') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
 const hasK = k => !!(S.player.keys && S.player.keys[k]);
-function giveKey(k, msg) { S.player.keys[k] = true; S.player.hasKey = true; play('click', 0.5); toast(msg || keyName(k) + '을(를) 챙겼다', 2.2, 'good'); }
+function giveKey(k, msg) { const P = S.player; play('click', 0.5);
+  if (k === 'pin' || k === 'gear') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 머리핀·압수품은 열쇠 목록에 남기지 않는다
+  if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
+  if (k === 'gear') { P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔·다트', 2.6, 'good'); return; }
+  toast(msg || keyName(k) + '을(를) 챙겼다', 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '수거함');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
@@ -309,7 +313,7 @@ function startLoot(it) { if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot',
   hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
-  const P = S.player; it.got = true; play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) S.stats.gotAs = disguised() ? P.outfit : P.item && P.item.permit ? P.item.permit : 'self';  // 어떤 신분으로 훔쳤나 (도전 과제)
+  const P = S.player; it.got = true; play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) { const zi = STAGE.zones ? pZoneInfo() : null, by = zi && zi.k !== Z_PUB ? myPermits().find(o => zi.allow && zi.allow.includes(o)) : disguised() ? P.outfit : null; const U = S.usedPermit || {}; S.stats.gotAs = by || (P.item && P.item.permit && U[P.item.permit] ? P.item.permit : disguised() && U[P.outfit] ? P.outfit : 'self'); }  // 그 신분이 실제로 금지 구역에 들여보내 준 적이 있으면 인정  // 어떤 신분으로 훔쳤나 (도전 과제) — 그 자리를 실제로 허가해 준 신분만 친다
   const left = S.items.filter(i => !i.got).length, nm = STAGE.itemName || '서류';
   toast(left ? `${nm} 회수 — 남은 것 ${left}개` : `${nm} 회수 완료 — 탈출 지점으로`, 3, 'good');
 }
@@ -531,8 +535,8 @@ function actionChoices() {
 function primaryAction() {
   const L = actionChoices(); if (!S) return L[0];
   if (L.length <= 1) { S.actKey = null; S.actSel = 0; return L[0] || { k: 'none', label: '' }; }
-  const key = L.map(a => a.k + oid(actObj(a))).join('|'); if (key !== S.actKey) { S.actKey = key; S.actSel = 0; }
-  const i = (S.actSel || 0) % L.length, a = L[i]; a.choices = L.length; a.choiceI = i; a.others = L.filter((x, j) => j !== i); return a;
+  const key = L.map(a => a.k + oid(actObj(a))).join('|'); if (key !== S.actKey) { S.actKey = key; const j = L.findIndex(a => oid(actObj(a)) === S.actPick); S.actSel = j >= 0 ? j : 0; }  // 목록이 바뀌어도 고르던 대상이 남아 있으면 그대로 (대상이 쉽게 바뀌지 않게)
+  const i = (S.actSel || 0) % L.length, a = L[i]; S.actPick = oid(actObj(a)); a.choices = L.length; a.choiceI = i; a.others = L.filter((x, j) => j !== i); return a;
 }
 function cycleAction() { if (!S) return; const a = primaryAction(); if (!(a.choices > 1)) return; S.actSel = (S.actSel || 0) + 1; play('click', 0.2); }
 function primaryActionOne() {
@@ -627,6 +631,7 @@ function primaryActionRaw() {
     S.ikPref = pick.k; const res = pick.a(), other = cands.find(c => c !== pick); if (other) res.alt = other.a();
     return res;
   }
+  { const cr = S.camRoom; if (cr && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
   { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
 }
@@ -783,7 +788,7 @@ function actPrimary(force) {
       break;
     }
     case 'kill': case 'kill2': {
-      const g0 = a.list[0], d0 = dist(P.x, P.y, g0.x, g0.y);
+      const g0 = a.list[0], d0 = dist(P.x, P.y, g0.x, g0.y); S.killPress = S.t; S.killKind = null;
       P.a = Math.atan2(g0.y - P.y, g0.x - P.x);
       if (d0 > 40) {  // 달려들기: 짧게 돌진해 등 뒤에 붙은 뒤 처치
         const ux = (g0.x - P.x) / d0, uy = (g0.y - P.y) / d0;
@@ -794,6 +799,7 @@ function actPrimary(force) {
       strikeKill(a.list, a.k === 'kill2');
       break;
     }
+    case 'camroom': { S.camsOff = true; const n = S.stats.camRec || 0; S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' — 서치라이트는 따로 돈다', 2.8, 'good'); S.stats.camKill = 1; break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
@@ -955,11 +961,23 @@ function killStreak() {
   if (k >= 2) { toast(k + '연속 처치', 1.4, 'good'); play('click', 0.35, 0.8 + k * 0.1); } if (k === 3) bossRadio('streak');
 }
 const lastKO = () => { const c = S.corpses[S.corpses.length - 1]; return !!(c && c.ko); };
+const KILL_PICK = 0.22;  // 이만큼 누르고 있으면 목 조르기
+// 처치 방식 기다리기: 손을 떼면 칼, 계속 누르고 있으면 조르기
+function updateKillWait() {
+  const w = S.killWait; if (!w) return false;
+  if (w.list.some(g => g.state === 'DEAD' || g.state === 'CAPTIVE')) { w.list.forEach(g => { g.doomed = false; }); S.killWait = null; return false; }
+  const held = actHeld(); if (held && S.t - S.killPress < KILL_PICK) return true;
+  S.killWait = null; S.killKind = held ? 'choke' : 'stab'; S.killPress = null; strikeKill(w.list, w.two); return true;
+}
 function strikeKill(list, two) {
   const P = S.player; P.strikeT = 0.32; S.crimeT = S.t;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? (g0.civ || koDefault(g0) || S.stats.kills % 2 === 1 ? 'choke' : 'stab') : null;
+  // 처치 방식은 누르는 길이로 고른다: 짧게 = 칼(빠르지만 피가 남는다), 길게 = 목 조르기(느리지만 피가 없다). 주민은 늘 조르기(기절)
+  if (pairK && !g0.civ && !koDefault(g0) && !two && S.killPress != null && actHeld() && S.t - S.killPress < KILL_PICK) {
+    list.forEach(g => { g.doomed = true; g.moving = false; g.path = null; }); S.killWait = { list, two }; P.a = Math.atan2(g0.y - P.y, g0.x - P.x); return; }
+  const pick = S.killKind || (S.killPress != null && actHeld() ? 'choke' : 'stab'), kind = pairK ? (g0.civ || koDefault(g0) || pick === 'choke' ? 'choke' : 'stab') : null; S.killKind = null; S.killPress = null;
+  if (pairK && !g0.civ) hint('killKind', '[행동]을 짧게 누르면 칼 — 빠르지만 피가 남는다. 길게 누르면 목 조르기 — 느리지만 피가 없다');
   if (pairK) P.a = g0.a;
   list.forEach(g => {
     g.doomed = false;
@@ -979,6 +997,7 @@ function pairKill(g, kind, from, quiet) {
   const c = S.corpses.length > nc ? S.corpses[S.corpses.length - 1] : null;
   if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
     c.x = ok ? fx : P.x; c.y = ok ? fy : P.y; c.a = P.a; c.hideT = S.t + dur; c.t0 = S.t + dur; c.f0 = 4; c.light = lightAt(c.x, c.y);
+    if (kind === 'choke') c.bleed = 0;  // 목 조르기: 옮겨도 핏방울이 없다
     if (kind === 'stab' && S.decals.length > nd) { const d = S.decals[S.decals.length - 1]; d.x = c.x + rnd(-5, 5); d.y = c.y + rnd(-5, 5); } }
 }
 // 붙잡은 사람 처치: 목을 감은 자세에서 그대로 조여(또는 찔러) 내려놓는다

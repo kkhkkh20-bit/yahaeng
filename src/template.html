@@ -495,7 +495,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 .br-chl { font-size: 13px; color: #9aa3b5; display: block; margin-bottom: 8px; }
 .br-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .br-chips li { font-size: 13px; color: #c7cede; background: rgba(37, 48, 73, .6); padding: 5px 10px; }
-.br-acts { display: flex; gap: 12px; margin-top: 4px; }
+.br-acts { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
 .br-acts .cta { background: var(--lamp); color: #170f04; padding: 15px 44px; font-size: 18px; }
 .br-acts .cta:hover { background: #ffd98a; }
 .br-frame { position: relative; padding: 14px; }
@@ -639,9 +639,13 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
       <li class="cityonly"><strong>벽에 붙기 · 끌어당기기</strong>벽 쪽으로 0.5초 밀면 바짝 붙는다(발밑 원이 다 차면 붙음)(훨씬 덜 보이고 발소리가 없다). 붙은 채 옆을 지나는 사람은 [행동]으로 끌어당겨 처치.</li>
       <li class="cityonly"><strong>락픽 · 창문</strong>건물마다 창문은 하나만 열려 있다. 잠긴 창문·카드 문은 락픽으로 딴다(소리·시간). 안쪽에선 걸쇠만 풀면 된다. 자경대원이 열린 걸 보면 다시 잠근다.</li>
       <li><strong>들켰을 때</strong>경비가 칼을 들어 올린 뒤 내려치기 직전(노란 고리)에 [행동]이면 반격해 기절시킨다. 소리가 커서 주변이 몰려온다. 근처 경비만 알아챈 발각은 괜찮지만, 무전으로 경보가 전체에 퍼지면 증원이 와서 끝까지 남고 까마귀가 수고비를 깎는다(전체 경보 1회 −15%, 민간인 1명 −20%). 무전하는 경비를 먼저 처리하면 퍼지지 않는다.</li>
-      <li><strong>핏자국</strong>그 자리에서 처치하면 바닥에 피가 남고, 처치한 시체를 메고 가면 핏방울이 이어진다. 핏자국을 본 경비는 바로 수색하며 핏방울 끝까지 따라간다. 기절이나 수거함·화단으로 끌어들이기는 피를 남기지 않는다. 핏자국 위에서 [행동]으로 닦을 수 있지만, 닦는 동안은 움직일 수 없고 보이면 수상하게 여긴다.</li>
+      <li><strong>CCTV와 관리실</strong>CCTV에 찍히면 관리실에서 화면을 보던 사람이 경보를 낸다. 관리실 사람을 쓰러뜨리면 찍혀도 녹화만 남고, 관리실 화면에서 [행동]으로 CCTV를 모두 끄고 녹화를 지울 수 있다.</li>
+      <li><strong>서치라이트</strong>옥상·망루의 서치라이트는 멀리까지 밝게 비춘다. 빛줄기 안에서는 누구 눈에든 띈다. 경보가 울리면 마지막으로 본 자리 쪽을 비춘다. 다트로 깨거나 두꺼비집으로 끈다.</li>
+      <li><strong>권총</strong>전체 경보가 울리면 정예와 증원은 권총을 꺼낸다. 붉은 조준선으로 1초 겨눈 뒤 쏜다 — 벽·차 뒤로 시야를 끊으면 빗나간다.</li>
+      <li><strong>칼과 목 조르기</strong>[행동]을 짧게 누르면 칼 — 빠르지만 바닥에 피가 남는다. 길게 누르면 목 조르기 — 조금 느리지만 피가 없다.</li>
+      <li><strong>핏자국</strong>칼로 처치하면 바닥에 피가 남고, 처치한 시체를 메고 가면 핏방울이 이어진다. 핏자국을 본 경비는 바로 수색하며 핏방울 끝까지 따라간다. 기절이나 수거함·화단으로 끌어들이기는 피를 남기지 않는다. 핏자국 위에서 [행동]으로 닦을 수 있지만, 닦는 동안은 움직일 수 없고 보이면 수상하게 여긴다.</li>
       <li class="cityonly"><strong>기회 · 체크포인트</strong>함정·두꺼비집·비번 문을 보면 임무 칸에 "기회"로 남는다. 목표마다 체크포인트가 저장된다.</li>
-      <li><strong>시야 원뿔</strong>원뿔은 그 자리 밝기만큼만 뻗는다(어두우면 짧고 불빛 아래면 길다). 원뿔은 지금 내 자세로 들키는 범위다 — 서 있으면 넓고, 웅크리면 줄어들고, 벽에 붙으면 더 준다.</li>
+      <li><strong>시야 원뿔</strong>원뿔은 그 자리 밝기만큼만 뻗는다(어두우면 짧고 불빛 아래면 길다). 원뿔은 지금 내 자세로 들키는 범위다 — 서 있으면 넓고, 웅크리면 줄어들고(어두운 곳에서 많이, 불빛 아래서는 조금), 벽에 붙으면 더 준다.</li>
       <li><strong>소리</strong>달리면 멀리까지 들린다. 나무 바닥은 더 울리고, 옥상과 잔디는 덜 울린다.</li>
       <li><strong>등 뒤 · 동시 암살</strong>조직원·자경대원 등 뒤에서 붉은 원이 뜨면 암살 — 감점 없다. 8초 안에 다음 사람을 처치하면 연속 처치. 두 명이 붙어 있으면 한 번에 둘을 처치한다. 주민은 기절만 시키고, 길게 눌러 숨을 끊으면 감점.</li>
       <li><strong>옥상 · 2층</strong>사다리·배관으로 오른다. 골목 하나는 건너뛸 수 있고, 아래 자경대원에게 낙하 암살. 2층에선 1층 옥상으로만 내려간다.</li>
@@ -701,7 +705,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
       <div class="br-radio" id="brRadio"><b>까마귀</b><p id="brLine"></p></div>
       <ul class="br-todo" id="brTodo"></ul>
       <div id="brChBox"><small class="br-chl">별 받는 법</small><ul class="br-chips" id="brCh"></ul></div>
-      <div class="br-acts"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
+      <div class="br-acts"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrCP" type="button" hidden>체크포인트부터 이어 하기</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
     </div>
     <div class="br-mapcol">
       <div class="br-frame"><div class="br-map" id="brMap"></div></div>

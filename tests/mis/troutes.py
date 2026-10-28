@@ -9,6 +9,7 @@ H = """window.T = {
   freeze() { for (const g of this.S().guards) if (!g.target) { g.x = -5000; g.y = -5000; g.route = [{ x: -5000, y: -5000, pause: 999 }]; g.path = null; } }
 };"""
 async def run(pg, st, steps):
+    if isinstance(st, str): st = await pg.evaluate(f"() => window.__game.STAGES.findIndex(s => s.id === '{st}')")
     await pg.evaluate(f'() => window.__game.start({st})'); await pg.wait_for_timeout(250); await pg.evaluate(SKIP); await pg.evaluate(H)
     out = []
     for s in steps:
@@ -19,7 +20,7 @@ async def main():
         b = await p.chromium.launch(); pg = await b.new_page(); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1200)
         # M1-a: 뒷골목 → 뒷문(잠기지 않음) → 창고 → 사무실 장부 → 서쪽 출구
-        print('M1a', await run(pg, 0, [
+        print('M1a', await run(pg, 'm1', [
           "T.freeze(); T.at(30, 5); return [T.G().tileG(30, 6), T.act()];",
           "T.G().actPrimary(); return 1;",
           "T.at(30, 7); return T.G().astar(30, 7, 36, 9).length > 0;",
