@@ -930,7 +930,7 @@ function travelTunnel() {
 }
 // 제압 규칙 (메탈기어·코만도스식 손맛 + 히트맨식 동네): 조직원·자경대원은 [행동] = 암살(감점 없음), 붙잡은 뒤 [보조] = 기절.
 // 주민은 늘 기절이 기본이고, 행동 버튼을 계속 누르고 있으면 숨을 끊는다(주민 살상 — 감점)
-const actHeld = () => !!(S && S.keys && S.keys.Space) || !!(document.getElementById('btnAct') && document.getElementById('btnAct').classList.contains('down'));  // [공격] 키·버튼을 누르고 있는가 (기절 뒤 계속 = 처치)
+const actHeld = () => !!(S && S.keys && (S.keys.Space || S.keys.KeyZ)) || !!(document.getElementById('btnAct') && document.getElementById('btnAct').classList.contains('down'));  // [공격] 키·버튼을 누르고 있는가 (기절 뒤 계속 = 처치)
 const koDefault = g => !!g && !g.dog && !g.target && !!g.civ;
 // 기절 우선: 등 뒤에서 [행동]을 누르면 조직원도 먼저 기절. 계속 누르고 있으면(KO_HOLD) 숨을 끊는다 — 표적만 바로 처치
 const koFirst = g => !!g && !g.dog && !g.target && !g.civ;

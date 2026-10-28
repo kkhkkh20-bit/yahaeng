@@ -8,19 +8,20 @@ window.addEventListener('keydown', e => {
   if (S.entrySel && running) { const m = /^Digit([1-9])$/.exec(e.code); if (m) { e.preventDefault(); chooseEntry(+m[1] - 1); } return; }
   if (S.keypad && running) { e.preventDefault(); const m = /^(?:Digit|Numpad)([0-9])$/.exec(e.code); if (m && !e.repeat) kpPress(m[1]); else if (e.code === 'Backspace') kpPress('<'); else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') kpPress('ok'); else if (e.code === 'Escape') kpPress('x'); return; }
   if (e.code === 'KeyH' && !e.repeat) { const k = document.querySelector('.keys'); if (k) k.classList.toggle('mini'); return; }
-  if (DLG.modal && running && !paused) { if (['KeyQ', 'KeyE', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
+  if (DLG.modal && running && !paused) { if (['KeyQ', 'KeyE', 'KeyZ', 'KeyX', 'Space', 'Enter'].includes(e.code)) { e.preventDefault(); if (!e.repeat) advanceDialog(); return; } if (e.code === 'Escape') { skipDialog(); return; } }
   if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault();  // 브라우저 메뉴로 넘어가지 않게
-  if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); if (running) { input.scan = true; $('btnScan').classList.add('on'); hint('scan', '살피기: 문·창문·배관·환풍구·숨을 곳이 색으로 표시된다'); } return; }
+  if (e.code === 'Tab') { e.preventDefault(); } else if (e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { e.preventDefault(); if (running) { input.scan = true; $('btnScan').classList.add('on'); hint('scan', '살피기: 문·창문·배관·환풍구·숨을 곳이 색으로 표시된다'); } return; }
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
   if (e.repeat) return;
   S.keys[keyCode(e)] = true;
+  { const c = e.code, ks = /^Arrow|^Key[ZXCV]$/.test(c) ? 'arrow' : /^Key[WASDEQF]$|^Space$/.test(c) ? 'wasd' : null; if (ks && input.kset !== ks) { input.kset = ks; if (typeof hudCache !== 'undefined') hudCache.kset = null; } }
   if (!running || S.over) return;
-  // 왼손: Space 공격 · E 행동(Z도 같음) · Q 붙잡기 · X 다트·도구(톡 = 자동 조준, 누르고 있으면 겨누기) · C 도구 바꾸기 · V 휘파람 · F 겹친 대상 바꾸기
-  if (e.code === 'Space') actAttack();
-  if (e.code === 'KeyE' || e.code === 'KeyZ') actEnv();
-  if (e.code === 'KeyQ') actGrab();
-  if (e.code === 'KeyX') startAim('key');
-  if (e.code === 'KeyC') selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]);
+  // 키는 두 벌을 함께 쓴다 — 방향키 손: Z 공격 · X 행동 · C 붙잡기 · V 다트 / WASD 손: Space 공격 · E 행동 · Q 붙잡기 · F 다트 (히트맨 PC: E 상호작용 · Q 제압)
+  // 다트·도구: 톡 = 자동 조준, 누르고 있으면 겨누기. 나머지: Tab 겹친 대상 바꾸기 · G 휘파람 · 1 2 3 도구 · R 항상 걷기 · Ctrl 살금 · Alt 살피기
+  if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
+  if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
+  if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
+  if (e.code === 'KeyF' || e.code === 'KeyV') startAim('key');
   if (e.code === 'KeyR') cycleMoveLock();
   if (e.code === 'Digit1') selectTool('kunai');
   if (e.code === 'Digit2') selectTool('stone');
@@ -28,15 +29,15 @@ window.addEventListener('keydown', e => {
   if (e.code === 'ControlLeft' || e.code === 'ControlRight') toggleSneak();
   if (e.code === 'KeyN') toggleMute();
   if (e.code === 'KeyM') toggleTactical();
-  if (e.code === 'KeyV') whistle();
-  if (e.code === 'KeyF') cycleEnv();  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'KeyG') whistle();
+  if (e.code === 'Tab') cycleEnv();  // 겹친 대상 중 다른 것 고르기
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
   if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { cancelAim(); toast('조준 취소', 1.2); return; }
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
-window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if (e.code === 'KeyX' && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Tab' || e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
+window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyF' || e.code === 'KeyV') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
 window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });

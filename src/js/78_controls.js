@@ -65,6 +65,7 @@ function padButton(el, key, a, idle) {
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
+  if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
   set('kmAct', ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : (ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))) + (ka.hold ? ` · 길게 ${ka.hold}` : ''), ka.k !== 'none' || ka.stalk);
   set('kmZ', ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea)), ea.k !== 'none');
   set('kmQ', S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기', ga.k === 'grab' || canInterrogate());

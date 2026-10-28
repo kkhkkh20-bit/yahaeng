@@ -22,6 +22,9 @@ function collide(o, r, solid) {
 }
 
 const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock2'); return v == null ? false : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'kunai', aiming: null, scan: false };
+// PC 키 두 벌: 마지막으로 누른 쪽 이름을 화면에 보여 준다 (방향키 손 = Z X C V · WASD 손 = Space E Q F)
+const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { atk: 'Space', env: 'E', grab: 'Q', tool: 'F' } };
+const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }

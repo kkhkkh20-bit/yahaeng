@@ -779,7 +779,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'F로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
+      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
@@ -845,10 +845,10 @@ function drawActLabels(pa, P, ka, ga) {
   // [공격]: 사람 머리 위 (붉게) · [붙잡기]는 그 아래 한 줄
   const vic = ka && (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk);
   let vy = null;
-  if (vic) { const [p, kc] = T('공격', 'Space'), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
+  if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
     vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc);
-    if (ga && ga.k === 'grab' && ga.g === vic) { const [p2, kc2] = T('붙잡기', 'Q'); tag(vic.x, vy + 21 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); } }
-  else if (ga && ga.k === 'grab') { const [p2, kc2] = T('붙잡기', 'Q'); tag(ga.g.x, ga.g.y - 34 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); }
+    if (ga && ga.k === 'grab' && ga.g === vic) { const [p2, kc2] = T('붙잡기', KK('grab')); tag(vic.x, vy + 21 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); } }
+  else if (ga && ga.k === 'grab') { const [p2, kc2] = T('붙잡기', KK('grab')); tag(ga.g.x, ga.g.y - 34 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); }
   if (!pa || pa.k === 'none') return;
   // [행동]: 대상(문·창문·계단·시체…) 위
   let x = P.x, y = P.y - 44;
@@ -864,7 +864,7 @@ function drawActLabels(pa, P, ka, ga) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  const [p, kc] = T('행동', 'E'); tag(x, y, p + lab, col, 1, kc);
+  const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc);
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && b !== openB; };
 
@@ -1237,7 +1237,7 @@ function draw() {
       const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '⇄' : 'F'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
+      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '⇄' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
     }
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
