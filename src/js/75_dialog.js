@@ -70,8 +70,8 @@ function nextLine() {
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
   $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
-  el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false; document.body.classList.toggle('dlgmodal', !!DLG.modal);
-  el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';  // 줄이 바뀔 때마다 살짝 떠오르며 등장
+  const opening = el.hidden; el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false; document.body.classList.toggle('dlgmodal', !!DLG.modal);
+  if (opening) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }  // 처음 열릴 때만 떠오르며 등장. 이어지는 줄은 같은 창에서 글자만 바뀐다
 }
 function advanceDialog() { if (paused) return;  // 일시정지·브리핑 화면 중에는 대사가 넘어가지 않는다
   const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
