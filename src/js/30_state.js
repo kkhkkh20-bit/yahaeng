@@ -4,9 +4,9 @@ const ctx = canvas.getContext('2d');
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d');
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
-let userZoom = 0.8, showRoutes = true, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
+let userZoom = 0.8, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
 try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
-try { const z = parseFloat(localStorage.getItem('yahaeng.zoom')); if (z > 0.4 && z < 1.6) userZoom = z; const r = localStorage.getItem('yahaeng.routes'); if (r === '0') showRoutes = false; } catch (e) {}
+try { const z = parseFloat(localStorage.getItem('yahaeng.zoom')); if (z > 0.4 && z < 1.6) userZoom = z; const r = localStorage.getItem('yahaeng.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
 let running = false, paused = false;

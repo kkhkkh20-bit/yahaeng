@@ -27,7 +27,7 @@ function drawCorpseRisk() {
       ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선 시체: 자경대원이 보면 발견한다. [특수]로 메고 숨겨라'); }
   }
 }
-function drawOpps(P) {
+function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (!showOpps || !S.opps) return; const fP = flOf(P), k = Math.max(1, 0.95 / SCALE);
   for (const o of S.opps) {
     if (!o.seen || o.x == null || oppDone(o) || (o.fl !== fP && !tactical)) continue;

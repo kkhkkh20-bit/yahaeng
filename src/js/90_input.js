@@ -140,8 +140,15 @@ $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('y
 $('btnFull').addEventListener('click', () => { const d = document; try { if (d.fullscreenElement) d.exitFullscreen(); else d.documentElement.requestFullscreen({ navigationUI: 'hide' }); } catch (e) {} });
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
-function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && !stageCleared(s)); return i >= 0 ? i : 0; }
-function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; $('btnQuick').textContent = st.tutorial ? '바로 시작 — ' + st.name : `이어 하기 — ${st.no} ${st.name}`; $('qNote').textContent = st.tutorial ? '처음이라면 여기부터 (약 3분). 의뢰는 아래에서 고른다' : '아직 깨지 않은 첫 의뢰. 다른 의뢰는 아래에서 고른다'; }
+function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && demoOk(s) && !stageCleared(s)); return i >= 0 ? i : STAGES.findIndex(s => !s.tutorial); }
+function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = !STAGES.some(s => !s.tutorial && demoOk(s) && !stageCleared(s)) && stageCleared(STAGES[STAGES.findIndex(s => s.id === 'tI')] || {});
+  $('btnQuick').textContent = st.tutorial ? '바로 시작' : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${st.no} ${st.name}`;
+  $('qNote').textContent = st.tutorial ? '처음이면 3분짜리 연습부터 시작한다.' : done ? '장부의 의뢰를 모두 끝냈다. 별을 더 모아 보자.' : (st.fee ? `수고비 ${st.fee}. ` : '') + (st.mission || ''); }
+$('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); });
+$('btnHelp').addEventListener('click', () => showMenu('help'));
+$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); });
+$('btnHelpBack').addEventListener('click', () => showMenu('intro'));
+{ const bg = window.__TITLE_BG; const el = $('intro'); if (bg && el) el.style.setProperty('--title-bg', `url(${bg})`); }
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
@@ -160,7 +167,7 @@ $('btnMap').addEventListener('click', toggleTactical);
 $('btnScan').addEventListener('click', () => { input.scan = !input.scan; $('btnScan').classList.toggle('on', input.scan); });
 $('btnZoomOut').addEventListener('click', () => setZoom(userZoom - 0.12));
 $('btnZoomIn').addEventListener('click', () => setZoom(userZoom + 0.12));
-$('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes); try { localStorage.setItem('yahaeng.routes', showRoutes ? '1' : '0'); } catch (e) {} });
+$('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes); try { localStorage.setItem('yahaeng.routes2', showRoutes ? '1' : '0'); } catch (e) {} });
 $('btnRoutes').classList.toggle('on', showRoutes);
 { const bo = $('btnOpps'), lab = () => { bo.textContent = '기회 안내: ' + ['끔', '최소', '전체'][oppMode]; bo.classList.toggle('on', oppMode > 0); };
   if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
@@ -185,8 +192,8 @@ function start(i, noBrief) {
   if (PR) prWarm(['ninja', ...S.guards.filter(g => !g.dog).map(charOf)], true);  // 이 판 사람들 옷 색부터 미리 칠한다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
-  $('intro').hidden = true; $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
-  (noBrief ? f => f() : showBrief)(() => say(DIALOGUE[STAGE.id], true, () => { if (ENTRY_PICK && STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb(); toast('출발! ' + (isTouch ? '미니맵을 누르면' : 'M 키를 누르면') + ' 순찰로가 보인다', 3); } }));
+  showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
+  (noBrief ? f => f() : showBrief)(() => say(DIALOGUE[STAGE.id], true, () => { if (ENTRY_PICK && STAGE.entries && STAGE.entries.filter(e => (e.need || 0) <= starsOf(STAGE)).length > 1) beginEntry(); else { play('bell', 0.6); startAmb();  } }));
 }
 const ENTRY_PICK = false;  // 진입로 선택 창은 쓰지 않는다 — 길은 플레이어가 스스로 찾는다
 // 시작 전 정찰: 전술 지도에서 진입로를 고른다 (골목 · 옥상 · 전깃줄)
@@ -217,7 +224,7 @@ function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole
 function toMenu() {
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
   running = false; paused = false; resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
-  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; $('intro').hidden = false;
+  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; showMenu('ledger');
   renderStageList();
   newGame(STAGE_I);
 }

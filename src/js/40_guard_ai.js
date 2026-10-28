@@ -63,7 +63,7 @@ function pathTo(g, x, y) {
   if (!g.path.length && dist(g.x, g.y, x, y) > 60 && ['ALERT', 'SEARCH', 'CHECK', 'BODY', 'SUSPICIOUS'].includes(g.state)) {
     const d = S.doors.filter(d => d.locked).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
     if (d && dist(d.x, d.y, g.x, g.y) < 360) {
-      setDoor(d, false); play('thud', 0.6 * proxVol(g)); noise(d.x, d.y, 160, 'door');
+      setDoor(d, false); play('thud', 0.6 * proxVol(g)); noise(d.x, d.y, 160, 'door', flOf(g));
       if (dist(d.x, d.y, S.player.x, S.player.y) < 700) toast('자경대원이 잠긴 문을 부수고 열었다', 2.2, 'warn');
       g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
     }
@@ -435,7 +435,7 @@ function updateGuard(g, dt) {
   if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
       if ((c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g)) continue;
-      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark'); } g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
+      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
     }
   }
 
@@ -591,7 +591,7 @@ function updateGuard(g, dt) {
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고가 났네…', '감전됐나 봐. 손대지 마.', '저런, 재수도 없지.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
         c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작');
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
-        for (const o of S.guards) if (o !== g && o.state !== 'DEAD' && o.state !== 'ALERT' && !o.target && o.state !== 'FLEE' && dist(o.x, o.y, c.x, c.y) < 520) goSuspicious(o, c.x + rnd(-40, 40), c.y + rnd(-40, 40), 5);
+        for (const o of S.guards) if (o !== g && o.state !== 'DEAD' && o.state !== 'ALERT' && !o.target && o.state !== 'FLEE' && flOf(o) === flOf(c) && dist(o.x, o.y, c.x, c.y) < 520) goSuspicious(o, c.x + rnd(-40, 40), c.y + rnd(-40, 40), 5);
         g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
       }
       break;
@@ -774,7 +774,7 @@ function terrorAt(x, y) {
   else toast('시체가 떨어졌지만 본 자경대원이 없다', 2);
 }
 function goAlert(g) {
-  if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark'); }
+  if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
   const P = S.player; endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', S.player.x, S.player.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
@@ -805,7 +805,8 @@ function goAlert(g) {
 }
 function radioSpread(at) {
   toast('무전으로 경보가 퍼졌다', 2.4, 'warn');
-  for (const o of S.guards) if (!o.civ && !o.dog && !o.target && o.state !== 'DEAD' && o.state !== 'ALERT' && o.state !== 'CAPTIVE' && dist(o.x, o.y, at.x, at.y) < 1100) { o.state = 'SEARCH'; o.poi = { x: at.x + rnd(-60, 60), y: at.y + rnd(-60, 60), fl: at.fl, z: at.z }; o.reached = false; o.path = null; o.waitBase = 4; setIcon(o, '!'); }
+  for (const o of S.guards) if (!o.civ && !o.dog && !o.target && o.state !== 'DEAD' && o.state !== 'ALERT' && o.state !== 'CAPTIVE' && flOf(o) === (at.fl || 0) && dist(o.x, o.y, at.x, at.y) < 1100) { o.state = 'SEARCH';  // 같은 층만 몰려온다 (다른 층은 모른다)
+    o.poi = { x: at.x + rnd(-60, 60), y: at.y + rnd(-60, 60), fl: at.fl, z: at.z }; o.reached = false; o.path = null; o.waitBase = 4; setIcon(o, '!'); }
   setAlert(3);
 }
 const radioBusy = g => !!(S.radioCall && S.radioCall.g === g);
@@ -822,13 +823,13 @@ function drawHeardSteps(P, openB, gVis) {
   const fP = flOf(P);
   for (const g of S.guards) {
     if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !g.moving) continue;
-    const fG = flOf(g), hidden = coveredG(g, openB) || !gVis(g) || fG !== fP; if (!hidden) continue;
-    const d = dist(P.x, P.y, g.x, g.y), R = (fG === fP ? 330 : 230) * (g.state === 'ALERT' || g.state === 'SEARCH' ? 1.3 : 1); if (d > R) continue;
+    const fG = flOf(g); if (fG !== fP) continue;  // 다른 층 사람은 아예 보이지도 들리지도 않는다 (헷갈리지 않게)
+    const hidden = coveredG(g, openB) || !gVis(g); if (!hidden) continue;
+    const d = dist(P.x, P.y, g.x, g.y), R = 330 * (g.state === 'ALERT' || g.state === 'SEARCH' ? 1.3 : 1); if (d > R) continue;
     const per = g.state === 'ALERT' ? 0.34 : 0.5, f = ((S.t + (g.id || 0) * 0.37) % per) / per, a = (1 - f) * (1 - d / R * 0.6);
     ctx.strokeStyle = g.state === 'ALERT' || g.state === 'SEARCH' ? `rgba(255,140,110,${0.75 * a})` : `rgba(160,210,255,${0.9 * a})`; ctx.lineWidth = 2.5;
     ctx.beginPath(); ctx.arc(g.x, g.y + 6, 5 + 15 * f, 0, TAU); ctx.stroke();
     ctx.fillStyle = `rgba(150,200,255,${0.55 * (1 - d / R * 0.5)})`; ctx.beginPath(); ctx.arc(g.x, g.y + 6, 2.2, 0, TAU); ctx.fill();
-    if (fG !== fP) { ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(150,200,255,.75)'; ctx.fillText((fG + 1) + 'F', g.x, g.y - 10); ctx.textAlign = 'left'; }
   }
 }
 function drawRadioCall() {

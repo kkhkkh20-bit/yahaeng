@@ -395,6 +395,61 @@ body.joyseen .joyhint { display: none !important; }
   .joyhint { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: 44vw; }
   #scanLegend { top: calc(var(--topb, 70px) + 8px); }
 }
+
+/* ---- 첫 화면 · 의뢰 장부 · 도움말 ----
+   첫 화면: 실제 게임 장면(네온 골목)을 화면 가득 깔고, 붓글씨 제목과 시작 버튼만. 움직임은 배경이 아주 천천히 흐르는 것 하나
+   의뢰 장부: 짠돌이 사장님의 장부 한 면 — 왼쪽 붉은 여백선, 줄마다 의뢰 하나, 이름과 수고비는 붓글씨, 지도 사진은 클립으로 끼운 듯 */
+#intro { background: var(--night); place-items: end stretch; padding: 0; overflow: hidden; }
+.title-bg { position: absolute; inset: -4%; background: var(--night) center / cover no-repeat; background-image: var(--title-bg, none); filter: saturate(1.15) brightness(.82); animation: titleDrift 46s ease-in-out infinite alternate; }
+#intro::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, rgba(7, 10, 18, .15) 0%, rgba(7, 10, 18, .1) 32%, rgba(7, 10, 18, .82) 62%, var(--night) 88%); pointer-events: none; }
+@keyframes titleDrift { from { transform: translate3d(-1.5%, 1%, 0) scale(1.02); } to { transform: translate3d(1.5%, -1.5%, 0) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .title-bg { animation: none; } }
+.title-panel { position: relative; z-index: 2; width: min(520px, 100%); margin: 0 auto; gap: 14px; padding: 0 max(20px, env(safe-area-inset-left, 0px)) calc(26px + env(safe-area-inset-bottom, 0px)); }
+.title-panel h1 { font-size: clamp(120px, 34vw, 180px); line-height: .78; text-shadow: 0 4px 30px rgba(0, 0, 0, .65); }
+.title-panel .brief { font-size: 17px; line-height: 1.6; max-width: 24em; text-shadow: 0 1px 8px rgba(0, 0, 0, .8); }
+.title-acts { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+.title-acts .cta { align-self: stretch; padding: 17px 20px; font-size: 18px; box-shadow: 0 10px 30px rgba(194, 54, 43, .35); }
+.qnote { margin: 0; font-size: var(--fs-ui); color: var(--paper-dim); line-height: 1.5; }
+.title-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.title-row .ghost { background: rgba(7, 10, 18, .55); backdrop-filter: blur(4px); padding: 13px 10px; }
+.title-panel .ver { margin: 4px 0 0; opacity: .7; }
+@media (min-width: 900px) and (min-height: 560px) { #intro { place-items: center start; } .title-panel { margin: 0 0 0 8vw; padding-bottom: 0; } #intro::before { background: linear-gradient(90deg, var(--night) 0%, rgba(7, 10, 18, .86) 34%, rgba(7, 10, 18, .2) 70%, rgba(7, 10, 18, .1)); } }
+
+.screen.sub { place-items: start center; background: var(--night); }
+.screen.sub .panel { width: min(620px, 100%); padding-bottom: 30px; }
+.sub-head { display: flex; align-items: center; gap: 14px; position: sticky; top: calc(-20px - env(safe-area-inset-top, 0px)); z-index: 3; background: var(--night); padding: 8px 0 10px; margin-top: -8px; }
+.sub-head h2 { margin: 0; font-family: var(--f-display); font-weight: 400; font-size: 46px; line-height: 1; color: var(--paper); }
+.back { background: transparent; border: 1px solid var(--ink-line); color: var(--paper-dim); padding: 9px 14px; font-size: var(--fs-ui); }
+.back::before { content: ""; display: inline-block; width: 7px; height: 7px; border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-right: 8px; vertical-align: 1px; }
+.diffbox { display: flex; flex-direction: column; gap: 6px; }
+.diffbox .diff { align-self: stretch; } .diffbox .diff button { flex: 1; }
+
+/* 장부: 붉은 여백선 + 가로 줄 */
+.ledger-list { position: relative; display: flex; flex-direction: column; padding-left: 46px; border-top: 1px solid var(--ink-line); }
+.ledger-list::before { content: ""; position: absolute; left: 34px; top: 0; bottom: 0; width: 2px; background: rgba(194, 54, 43, .55); }
+.ledger-list .lg-sec { font-family: var(--f-display); font-size: 26px; color: var(--paper-dim); margin: 18px 0 2px; line-height: 1; }
+.ledger-list .stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: start; text-align: left; background: transparent; border: 0; border-bottom: 1px solid var(--ink-line); color: var(--paper); padding: 14px 0 14px; width: 100%; font: inherit; }
+.ledger-list .stage:hover, .ledger-list .stage:focus-visible { background: rgba(232, 227, 214, .04); }
+.ledger-list .stage .st-no { position: absolute; left: -46px; top: 22px; width: 28px; text-align: right; font-family: var(--f-body); font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--blood-hi); line-height: 1; }
+.ledger-list .st-name { font-family: var(--f-display); font-weight: 400; font-size: 34px; line-height: 1; letter-spacing: .01em; }
+.ledger-list .st-mis { grid-column: 1; font-size: var(--fs-ui); line-height: 1.5; color: var(--paper-dim); max-width: 34em; }
+.ledger-list .st-foot { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.ledger-list .st-stars { font-size: var(--fs-ui); color: var(--paper-dim); letter-spacing: .1em; }
+.ledger-list .st-stars.has { color: var(--lamp); }
+.ledger-list .st-rank { font-size: var(--fs-cap); color: var(--paper); border: 1px solid var(--ink-line); padding: 2px 7px; }
+.ledger-list .st-fee { grid-row: 1; grid-column: 2; font-family: var(--f-display); font-size: 26px; color: var(--lamp); line-height: 1; white-space: nowrap; }
+.ledger-list .st-fee small { font-family: var(--f-body); font-size: var(--fs-cap); color: var(--paper-dim); margin-right: 4px; }
+.ledger-list .stage .st-map { grid-column: 1 / -1; width: calc(100% - 10px); max-width: 460px; height: auto; aspect-ratio: 16 / 7; object-fit: cover; margin: 8px 0 4px; border: 5px solid #d9d2c2; border-bottom-width: 12px; border-radius: 1px; box-shadow: 0 8px 18px rgba(0, 0, 0, .5); transform: rotate(-.8deg); image-rendering: auto; }
+.ledger-list .stage:nth-of-type(even) .st-map { transform: rotate(.7deg); }
+.ledger-list .stage.tut { grid-template-columns: minmax(0, 1fr) auto; padding: 10px 0; }
+.ledger-list .stage.tut .st-name { font-size: 26px; }
+.ledger-list .stage.tut .st-no { top: 16px; color: var(--paper-dim); }
+.ledger-list .st-next { font-size: var(--fs-cap); font-weight: 700; color: #fff; background: var(--blood); padding: 2px 8px; }
+.ledger-list .stage.next .st-no { color: var(--lamp); }
+.ledger-list .stage.locked { opacity: .75; cursor: default; }
+.ledger-list .stage.locked .st-stamp { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-weight: 700; font-size: var(--fs-ui); color: var(--blood-hi); border: 2px solid var(--blood-hi); padding: 4px 10px; transform: rotate(-6deg); letter-spacing: .08em; }
+#ledger .stages h3 { margin-top: 10px; }
+#help details.rulesbox { border-top: 1px solid var(--ink-line); padding-top: 10px; }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -447,22 +502,44 @@ body.joyseen .joyhint { display: none !important; }
 <div id="joy" hidden><div id="joyKnob"></div></div>
 
 <div class="screen" id="intro">
-  <div class="panel">
-    <div class="eyebrow">네온 빌라촌 · 잠입 암살</div>
+  <div class="title-bg" aria-hidden="true"></div>
+  <div class="panel title-panel">
     <h1>야행<span>.</span></h1>
-    <p class="brief">돈만 주면 뭐든 하는 동네 해결사. 오늘도 짠돌이 사장님 심부름이다. 불 꺼진 데로 다니고, 발소리 죽이고, 들키기 전에 끝내자.</p>
-    <div class="row quick"><button class="cta" id="btnQuick" type="button">바로 시작</button><span class="qnote" id="qNote">처음이라면 연습 1(약 3분)부터. 의뢰는 아래에서 고른다</span></div>
-    <div class="stages"><h3>난이도</h3>
-      <div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
+    <p class="brief">돈만 주면 뭐든 하는 동네 해결사. 오늘도 짠돌이 사장님 심부름이다.</p>
+    <div class="title-acts">
+      <button class="cta" id="btnQuick" type="button">바로 시작</button>
+      <p class="qnote" id="qNote"></p>
+      <div class="title-row"><button class="ghost" id="btnLedger" type="button">의뢰 장부</button><button class="ghost" id="btnHelp" type="button">조작과 규칙</button></div>
+    </div>
+    <p class="credit ver">야행 __VERSION__</p>
+  </div>
+</div>
+
+<div class="screen sub" id="ledger" hidden>
+  <div class="panel">
+    <div class="sub-head"><button class="back" id="btnLedgerBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>의뢰 장부</h2></div>
+    <div class="diffbox"><div class="diff" id="diffSel"><button type="button" data-d="easy">쉬움</button><button type="button" data-d="normal">보통</button><button type="button" data-d="hard">어려움</button></div>
       <p class="diff-note" id="diffNote">보통 — 들키면 무전 보고 몇 초 · 체력 3 · 체크포인트 저장</p>
     </div>
+    <div id="stageList" class="ledger-list"></div>
     <div class="stages" id="modBox" hidden><h3>의뢰 변형</h3>
       <div class="diff" id="modSel"><button type="button" data-m="">없음</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
       <p class="diff-note" id="modNote"></p>
     </div>
-    <div class="stages"><h3>의뢰 선택</h3><div id="stageList" class="stages"></div></div>
     <div id="perkList" class="perks" hidden></div>
-    <details class="rulesbox"><summary class="rules-h">규칙 자세히 보기 (처음이라면 "연습"부터)</summary>
+  </div>
+</div>
+
+<div class="screen sub" id="help" hidden>
+  <div class="panel">
+    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>조작과 규칙</h2></div>
+    <details class="rulesbox" open><summary class="rules-h">조작법</summary>
+    <div class="ctrl">
+      <div class="kbonly"><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·옥상 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
+      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·옥상 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 자경대원을 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
+    </div>
+    </details>
+    <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
     <ul class="rules">
       <li class="cityonly"><strong>발견 게이지</strong>보이는 순간 들키지 않는다. 자경대원 머리 위 삼각형이 2~3초에 걸쳐 차오른다(가깝고 밝을수록 빠르다): 흰색 = 눈치채는 중(하던 걸 하며 고개만 돌린다) · 노랑 = 의심(멈춰 보고 확인하러 온다) · 빨강 = 발각. 내 둘레의 호는 누가 어느 쪽에서 보고 있는지 알려 준다. 시야에서 벗어나면 잠깐 뒤 줄어든다</li>
       <li class="cityonly"><strong>가구</strong>파랑 테두리 = 높은 가구(막히고 시선을 가린다) · 주황 테두리 = 낮은 가구(막히지만 시선은 넘어간다. 바로 뒤에서 웅크리면 가려진다). 테두리 없는 깔개만 밟고 지나간다</li>
@@ -499,14 +576,7 @@ body.joyseen .joyhint { display: none !important; }
       <li><strong>시간 제한 · 보너스</strong>일부 의뢰엔 제한 시간이 있다. 성공하면 발각 0 · 주민 살상 0 · 시체 발견 0 · 목격자 0 · CCTV 기록 0 다섯 가지로 등급이 매겨진다. 조직원은 얼마든지 처치해도 등급이 깎이지 않는다 — 대신 시체를 들키지 말 것.</li>
       <li><strong>빈 캔 · 두꺼비집</strong>빈 캔으로 자경대원을 유인한다. 두꺼비집으로 바깥 조명을 끄면 자경대원 하나가 고치러 온다.</li>
     </ul></details>
-    <details class="rulesbox"><summary class="rules-h">조작법</summary>
-    <div class="ctrl">
-      <div class="kbonly"><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 특수 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·옥상 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
-      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [특수] 붙잡기·운반·벽에 기대기·옥상 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 자경대원을 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
-    </div>
-    </details>
-    <p class="credit ver">야행 __VERSION__</p>
-    <details class="rulesbox"><summary class="rules-h">출처 · 만든 것들</summary>
+    <details class="rulesbox"><summary class="rules-h">출처</summary>
     <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
   </div>

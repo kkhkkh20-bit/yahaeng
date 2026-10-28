@@ -39,7 +39,7 @@ function drawKeyIcon(k, x, y, ring) {
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x - 11, y - 7 + bob, 24, 17);
   ctx.fillStyle = c; ctx.fillRect(x - 12, y - 9 + bob, 24, 16); ctx.fillStyle = '#f4f2ea'; ctx.fillRect(x - 9, y - 6 + bob, 7, 5); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 12, y + 3 + bob, 24, 3);
 }
-function drawItemIcon(name, x, y, t, ring) {
+function drawItemIcon(name, x, y, t, ring) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const bob = Math.sin(t * 3) * 2;
   if (ring) { ctx.strokeStyle = 'rgba(242,196,107,.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 18 + Math.sin(t * 4) * 2, 0, TAU); ctx.stroke(); }
   const f = F[name]; const k = 32 / Math.max(f[2], f[3]); blit(ctx, name, x - f[2] * k / 2, y - f[3] * k / 2 + bob, f[2] * k, f[3] * k);
@@ -690,7 +690,7 @@ function drawPipeBase(l) {
 }
 // 상호작용 대상의 색: 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라
 const SCAN = { door: '#d39a5c', window: '#8fc3e6', pipe: '#c4ccd6', ladder: '#e0b070', chimney: '#f08a3c', vent: '#7fd6cc', hide: '#8fcf95', well: '#7fb0ff', secret: '#c9a0ff', lamp: '#f2c46b', fuse: '#f2c46b' };
-function tag(x, y, text, col, alpha = 1, key) {
+function tag(x, y, text, col, alpha = 1, key) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const k = Math.max(1, 0.95 / SCALE);  // 화면이 축소돼 있어도 글자는 읽을 수 있는 크기로
   ctx.globalAlpha = alpha; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center';
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k;
@@ -734,7 +734,7 @@ function drawBlockEdges(P, all) {
   ctx.lineCap = 'butt';
 }
 // 가까운 상호작용 지점을 작은 표식으로 늘 보여 준다 (숨을 곳 · 오르는 곳 · 창문 · 환풍구 · 잠긴 문)
-function drawNearMarks(P, openB) {
+function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (P.hide || P.vent || P.under || P.wire || P.trav || P.jump) return;
   const R = 300, fP = flOf(P), k = Math.max(1, 0.95 / SCALE), list = [];
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
@@ -908,7 +908,7 @@ function darkPass(sc, lamps, clip, key) {
   if (clip) ctx.restore();
 }
 // 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
-function drawGoal(P) {
+function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = nextGoal(); if (!gl || gl.x == null) return;
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   const df = (gl.fl || 0) - flOf(P), short = gl.text + (df ? (df > 0 ? ` (${df}층 위)` : ` (${-df}층 아래)`) : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
@@ -943,8 +943,11 @@ function draw() {
   const P = S.player;
   setLayer(0);
   // 위층에 있으면 그 건물 자리에 그 층 평면을 덮어 그린다
-  const VF = (!P.z && !P.wire && !P.jump && !P.vent && !P.under) ? flOf(P) : 0;
-  const VB = VF ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;
+  // 창문 넘기·창문 건너기(같은 높이 뜀): 지붕 위로 날아가는 것처럼 보이지 않게, 건물 안을 보여 준 채 땅 위 사람처럼 그린다 (절반 전엔 출발 건물, 그 뒤엔 도착 건물)
+  const lowJ = !!(P.jump && P.jump.vault && !P.jump.z1 && !P.z);
+  const jumpB = lowJ ? (() => { const J = P.jump, f = J.t / J.dur, bs = bldAt(Math.floor(J.x0 / TILE), Math.floor(J.y0 / TILE)), bd = bldAt(Math.floor(J.x1 / TILE), Math.floor(J.y1 / TILE)); return f > 0.5 ? (bd >= 0 ? bd : bs) : (bs >= 0 ? bs : bd); })() : -1;
+  const VF = (!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0;
+  const VB = VF ? (lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) : -1;
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
@@ -1091,7 +1094,7 @@ function draw() {
   }
   const travUp = !!(P.trav && P.trav.phases.some(ph => ph.pose !== 'walk'));
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
-  if (!P.hide && !P.z && !P.jump && !P.vent && !travUp) drawPlayer(P);
+  if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
   // 키트 나무·화단: 주인공이 그 뒤(위쪽)에 있으면 잎을 반투명하게 한 번 더 덮어 '뒤에 숨은' 모습으로
   if (!P.z && !P.jump && !P.vent && !P.hide && !flOf(P)) {
     const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
@@ -1101,7 +1104,7 @@ function draw() {
       if (ch === 'B' && P.hidden && tx === ptx && ty === pty && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
     }
   }
-  let openB = (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
+  let openB = lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
   if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
@@ -1150,7 +1153,7 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl)))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
     if (input.scan) drawPlansFaint(P, openB);
-    if (!P.z && !P.jump && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
+    if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
   }
   if (S.poles.length) {
     const vx = W / SCALE / 2 + 80, vy = H / SCALE / 2 + 120;
@@ -1158,7 +1161,7 @@ function draw() {
     drawWires();
   }
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
-  if ((P.z || P.jump || P.wire || travUp) && !P.hide) drawPlayer(P);
+  if ((P.z || (P.jump && !lowJ) || P.wire || travUp) && !P.hide) drawPlayer(P);
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
@@ -1254,6 +1257,7 @@ function draw() {
   }
   // 화면 밖에서 나를 의심하는 자경대원 방향 (노랑 = 의심, 빨강 = 발각)
   for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || dist(g.x, g.y, S.player.x, S.player.y) > 1100) continue; const al = g.state === 'ALERT'; if (al || g.meter > 0.05 || ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state)) tgts.push({ x: g.x, y: g.y, c: awareCol(g), small: true }); }
+  if (DBG.ui) tgts.length = 0;
   for (const t of tgts) {
     const sx = (t.x - cam.x) * SCALE + W / 2, sy = (t.y - cam.y) * SCALE + H / 2, m = t.small ? 30 : 46;
     if (sx < m || sy < m + 70 || sx > W - m || sy > H - m) {

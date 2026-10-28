@@ -1120,8 +1120,8 @@ function secondaryAction() {
   }
   if (P.z || P.jump) return { k: 'none', label: '특수' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 (${P.candy})` };
-  const kl = killList().filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
-  const kg = kl.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: '붙잡기' };
+  const kl0 = killList(), kl = kl0.filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
+  const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
   const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };

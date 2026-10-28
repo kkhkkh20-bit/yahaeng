@@ -11,8 +11,8 @@ STATE = '''() => { const G = window.__game, P = G.S.player; G.setLayer(P.fl || 0
 SPOT = '''([i]) => { const G = window.__game, l = G.LADDERS[i], ho = G.stairHole(l), tc = v => v * 48 + 24; G.setLayer(l.tfl);
   const p = G.downPt(l), arr = ho ? [ho.top, ho.e].find(c => !G.solidAt(c.tx, c.ty)) : { tx: l.tx, ty: l.ty };  // 꺾인 계단실이 없으면 계단 칸 그 자리로 오르내린다 if (!arr) return { err: '위층 도착 칸이 모두 막힘' };
   let best = null, bd = 1e9; const px = Math.floor(p.x / 48), py = Math.floor(p.y / 48);
-  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const cx = px + dx, cy = py + dy; if (G.solidAt(cx, cy)) continue; const d = Math.hypot(tc(cx) - p.x, tc(cy) - p.y); if (d >= 60 || d >= bd) continue;
-    if (!(cx === arr.tx && cy === arr.ty) && !G.astar(arr.tx, arr.ty, cx, cy).length) continue; bd = d; best = [tc(cx), tc(cy)]; }
+  for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const cx = px + dx, cy = py + dy; if (G.solidAt(cx, cy) || G.tileG(cx, cy) === "Y") continue; const d = Math.hypot(tc(cx) - p.x, tc(cy) - p.y); if (d >= 60 || d >= bd) continue;
+    if (!(cx === arr.tx && cy === arr.ty) && !G.astar(arr.tx, arr.ty, cx, cy, (x, y) => G.solidAt(x, y) || G.tileG(x, y) === "Y").length) continue; bd = d; best = [tc(cx), tc(cy)]; }
   return best ? { at: best, arr: [arr.tx, arr.ty] } : { err: '내려가는 자리(' + px + ',' + py + ') 근처에 걸어서 설 칸이 없음', arr: [arr.tx, arr.ty] }; }'''
 async def main():
     bad = []; n = 0
@@ -21,7 +21,7 @@ async def main():
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
         stages = await pg.evaluate('() => window.__game.STAGES.map(s => s.id)')
         async def walk(to):  # 길찾기로 칸 경로를 얻고 방향키로 따라간다
-            path = await pg.evaluate(f'() => {{ const G = window.__game, P = G.S.player; G.setLayer(P.fl || 0); const p = G.astar(Math.floor(P.x / 48), Math.floor(P.y / 48), Math.floor({to[0]} / 48), Math.floor({to[1]} / 48)); return p.map(c => [c.x, c.y]); }}')
+            path = await pg.evaluate(f'() => {{ const G = window.__game, P = G.S.player; G.setLayer(P.fl || 0); const p = G.astar(Math.floor(P.x / 48), Math.floor(P.y / 48), Math.floor({to[0]} / 48), Math.floor({to[1]} / 48), (x, y) => G.solidAt(x, y) || G.tileG(x, y) === "Y"); /* 계단 칸은 밟으면 저절로 오르므로 피해 걷는다 */ return p.map(c => [c.x, c.y]); }}')
             pts = path + [list(to)]
             for tx, ty in pts:
                 for k in range(60):

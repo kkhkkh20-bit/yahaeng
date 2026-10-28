@@ -75,7 +75,7 @@ function drawRadio(x, y) {  // 무전기: 이 자경대원이 경보를 맵 전�
   ctx.fillStyle = Math.floor(S.t * 2) % 2 ? '#7fe08a' : '#2f6a38'; ctx.fillRect(x - 3, y - 4, 3, 3);
 }
 // 발소리 반경: 지금 걸음으로 내는 소리가 닿는 거리. 자경대원이 그 안에 있으면 붉게
-function drawStepRing(P) {
+function drawStepRing(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const m = P.cover ? 'sneak' : P.mode, r = P.cover ? 0 : ({ sneak: 22, walk: 110, run: 250 }[m] + (P.carrying ? 35 : 0)) * (m === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z) * loudMul(P.x, P.y, flOf(P));
   let heard = false;
   for (const g of S.guards) if (!g.civ && g.state !== 'DEAD' && g.state !== 'CAPTIVE' && flOf(g) === flOf(P) && !(g.z || 0) && dist(g.x, g.y, P.x, P.y) < r * soundThrough(P.x, P.y, g.x, g.y)) { heard = true; break; }
@@ -85,7 +85,7 @@ function drawStepRing(P) {
   if (heard && P.moving) { ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(240,100,70,.9)'; ctx.fillText('발소리가 들린다', P.x, P.y + 6 + r * 0.92 + 14); }
 }
 // 화면 밖에서 나를 보거나 쫓는 자경대원: 화면 가장자리에 화살표
-function drawOffscreen() {
+function drawOffscreen() { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const hw = W / SCALE / 2, hh = H / SCALE / 2, m = 30 / SCALE, sz = 11 / SCALE;
   for (const g of S.guards) {
     if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue;
@@ -194,6 +194,22 @@ function updatePull(dt) {
 }
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
+// 계단: 버튼 없이 계단 칸으로 걸어 들어가면 오르고, 위층 계단 구멍 끝에서 구멍 쪽으로 걸으면 내려간다
+function autoStairs(P) {
+  if (P.z || P.trav || P.jump || P.hide || P.wire || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || !P.moving || S.t < (S.autoStairT || 0)) return;
+  const sp = Math.hypot(P.vx || 0, P.vy || 0); if (sp < 20) return; const vx = P.vx / sp, vy = P.vy / sp, tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), f = flOf(P);
+  for (const l of S.ladders) {
+    if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bz || 0)) continue;
+    if ((l.bfl || 0) === f && l.tx === tx && l.ty === ty) {  // 오르기: 계단 칸 위, 들어선 쪽(e)에서 계단 쪽으로 걷는 중
+      const L0 = CUR_F; setLayer(f); const [dx, dy] = stairDir(l.tx, l.ty); setLayer(L0);
+      if (-(vx * dx + vy * dy) > 0.45) { S.autoStairT = S.t + 0.9; actPrimary({ k: 'up', l, label: '오르기', viaZ: true }); return; }
+    }
+    if (l.kind === 'fstair' && l.tfl === f) {  // 내리기: 구멍(난간으로 막힌 두 칸)의 바닥 쪽 끝(c2)으로, 구멍 쪽을 향해 걸어 들어가는 중
+      const ho = stairHole(l); if (!ho) continue; const fx = Math.floor((P.x + vx * 30) / TILE), fy = Math.floor((P.y + vy * 30) / TILE);
+      if (fx === Math.floor(ho.c2.x / TILE) && fy === Math.floor(ho.c2.y / TILE) && dist(P.x, P.y, ho.c2.x, ho.c2.y) < 60 && -(vx * ho.d[0] + vy * ho.d[1]) > 0.45) { S.autoStairT = S.t + 0.9; actPrimary({ k: 'fdown', l, at: ho.c2, label: '내리기', viaZ: true }); return; }
+    }
+  }
+}
 function startTrav(o) {
   const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
 }
@@ -367,7 +383,9 @@ function updatePlayer(dt) {
       if (!P.cover) noise(P.x, P.y, r, 'step');  // 벽에 붙어 옆걸음: 소리 없음
     }
   }
-  P.hidden = P.z === 0 && tileAt(P.x, P.y) === 'B';
+  autoStairs(P);
+  { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
+    if (inBush && !P.hidden) hint('bushStand', '화단: 웅크려야(살금) 숨는다. 서 있으면 머리가 다 보인다'); }
   if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
   if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; }

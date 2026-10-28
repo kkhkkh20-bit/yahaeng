@@ -45,7 +45,7 @@ function soundThrough(x0, y0, x1, y1) {
   return f;
 }
 function noise(x, y, r, src, fl) {
-  if (fl == null) fl = CUR_F;
+  if (fl == null) fl = flOf(S.player);  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
   if (src !== 'scream') r *= loudMul(x, y, fl);  // 클럽 음악에 묻힌다
   const nz = { x, y, r, t: 0, src, fl }; S.noises.push(nz);
   const L0 = CUR_F; setLayer(fl);

@@ -10,6 +10,7 @@ async def main():
             await pg.wait_for_timeout(1500); await pg.screenshot(path=f'{name}_title.png')
             print(name, 'load', round(t1-t0,2), 'intro text:', (await pg.inner_text('#intro'))[:600].replace('\n',' | '))
             # 첫 미션 시작: 실제 버튼 클릭
+            await pg.click('#btnLedger'); await pg.wait_for_timeout(300)  # 의뢰 장부 화면을 연다
             btns = await pg.query_selector_all('#stageList button, #stageList [data-i], #stageList li')
             print('stage items', len(btns))
             if btns: await btns[0].click()

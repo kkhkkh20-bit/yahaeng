@@ -25,12 +25,11 @@ function interrogate() {
 function drawTagged() {
   const P = S.player, k = Math.max(1, 0.95 / SCALE);
   for (const g of S.guards) {
-    if (!(g.tagT > S.t) || g.state === 'DEAD' || g.state === 'CAPTIVE') continue;
+    if (!(g.tagT > S.t) || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P)) continue;  // 다른 층은 그 층에 가야 보인다
     const other = flOf(g) !== flOf(P), y = g.y - 40 * k, b = 3 * Math.sin(S.t * 5 + g.id);
     ctx.save(); ctx.globalAlpha = other ? 0.55 : 0.95; ctx.fillStyle = '#ffd65a'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(g.x, y + 9 * k + b); ctx.lineTo(g.x - 8 * k, y - 4 * k + b); ctx.lineTo(g.x + 8 * k, y - 4 * k + b); ctx.closePath(); ctx.stroke(); ctx.fill();
     ctx.strokeStyle = 'rgba(255,214,90,.7)'; ctx.lineWidth = 2 * k; ctx.setLineDash([5 * k, 4 * k]); ctx.beginPath(); ctx.arc(g.x, g.y, 22 * k, 0, TAU); ctx.stroke(); ctx.restore();
-    if (other) tag(g.x, y - 14 * k, flOf(g) > flOf(P) ? '위층' : '아래층', '#ffd65a', 0.8);
   }
 }
 

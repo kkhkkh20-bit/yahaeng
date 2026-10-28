@@ -146,7 +146,7 @@ function trackNextStory() {
   const i = f.findIndex(o => o.d.id === S.storyTrack); S.storyTrack = f[(i + 1) % f.length].d.id; hudCache.objH = null;
   toast('추적: ' + f[(i + 1) % f.length].d.name, 1.6);
 }
-function drawStoryMark(P) {
+function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (oppMode !== 2 || !S.stories) return; const st = S.stories.find(o => o.d.id === S.storyTrack); if (!st || st.done) return;
   const s = storyStep(st); if (!s || !s.at) return; const fl = s.at[2] || 0; if (fl !== flOf(P) && !tactical) return;
   const x = tc(s.at[0]), y = tc(s.at[1]), k = Math.max(1, 0.95 / SCALE), b = 6 * Math.sin(S.t * 4);

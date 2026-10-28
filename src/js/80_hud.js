@@ -35,7 +35,7 @@ function drawMini() {
   for (const g of S.guards) {
     if (g.state === 'DEAD') continue;
     const same = flOf(g) === flOf(P) && !P.under && !P.vent;
-    const seen = g.target || (same && dist(g.x, g.y, P.x, P.y) < 560 && los(P.x, P.y, g.x, g.y, P.z > 0)) || g.state === 'ALERT';
+    const seen = g.target || (same && dist(g.x, g.y, P.x, P.y) < 560 && los(P.x, P.y, g.x, g.y, P.z > 0)) || (same && g.state === 'ALERT');
     if (!seen) continue;
     x.fillStyle = g.target ? '#ff5a4a' : g.civ ? '#9ad69a' : g.state === 'ALERT' ? '#e8473c' : ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#c8d2e6';
     x.beginPath(); x.arc(T(g.x), T(g.y), g.target ? 3 : 2.2, 0, TAU); x.fill();
@@ -72,7 +72,7 @@ function showBrief(go) {
   $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
-  $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; $('intro').hidden = false; renderStageList(); };
+  $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
 const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 행동: ['[행동]', 'Space'], 특수: ['[특수]', 'Z'], 도구: ['[도구]를', 'X를'], 살피기: ['[살피기]를', 'Alt를'] };
@@ -247,16 +247,30 @@ function showEnd(win, reason) {
 document.querySelectorAll('.nocity').forEach(e => e.remove());
 // 데모(itch) 빌드: 연습과 의뢰 1·2만. 나머지는 잠긴 카드 하나로 알린다
 const demoOk = s => !window.__DEMO || window.__DEMO.includes(s.id);
+// 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
+function showMenu(which) { ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
+const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();
-  const best = loadBest();
+  const best = loadBest(), next = quickTarget();
   const locked = STAGES.filter(s => !demoOk(s));
-  $('stageList').innerHTML = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s)).sort((a, b) => ((b[0].tutorial ? 1 : 0) + (b[0].id === 'tI' ? 1 : 0)) - ((a[0].tutorial ? 1 : 0) + (a[0].id === 'tI' ? 1 : 0))).map(([s, i]) => `
-    <button class="stage" type="button" data-i="${i}">
-      ${window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="">` : `<span class="st-no">${s.no}</span>`}
-      <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
-      <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${!s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
-    </button>`).join('') + (locked.length ? `<div class="stage locked"><span class="st-no">잠김</span><span class="st-body"><span class="st-name">의뢰 ${locked.length}개 더 — 정식판에서</span><span class="st-mis">${locked.map(s => s.name).join(' · ')}</span></span><span></span></div>` : '');
+  const row = ([s, i]) => {
+    const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
+    const stars = s.challenges ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">${'★'.repeat(st)}${'☆'.repeat(Math.max(0, all - st))}</span>` : '';
+    const mods = !s.tutorial && stageCleared(s) ? `<span class="st-rank">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</span>` : '';
+    const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
+    const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
+    const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : s.mission, tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
+    return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
+      <span class="st-no">${s.tutorial ? tno : s.no}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
+      <span class="st-mis">${sub}</span>${map}
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${rk ? `<span class="st-rank">${D().name} ${RANK_TXT(rk)}</span>` : ''}${mods}</span>
+    </button>`;
+  };
+  const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
+  const tuts = list.filter(([s]) => s.tutorial).sort((a, b) => (b[0].id === 'tI') - (a[0].id === 'tI')), miss = list.filter(([s]) => !s.tutorial);
+  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('')
+    + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
   { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   document.querySelectorAll('#diffSel button').forEach(b => b.classList.toggle('on', b.dataset.d === DKEY));
