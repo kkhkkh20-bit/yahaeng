@@ -28,7 +28,7 @@ function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; if (inp
 function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if (S && S.player && S.player.captive && !tactical) { interrogate(); return; } if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [특수]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
@@ -393,7 +393,7 @@ function updatePlayer(dt) {
     if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 진한 곳은 웅크려도 보이고, 줄무늬는 웅크리면 안 보인다');
     const nh = nearHide();
     if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
-    if (nh && nh.type === 'box') hint('box', CITY ? '쓰레기통: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)' : '은신 수거함: [숨기]로 들어가고, 시체를 업고 [넣기]로 보관한다');
+    if (nh && nh.type === 'box') hint('box', '쓰레기통: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)');
     if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀: 숨어서 기습 암살하거나 다른 맨홀로 이동할 수 있다' : '맨홀: 숨어서 기습 암살하거나 다른 출구로 이동할 수 있다');
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);

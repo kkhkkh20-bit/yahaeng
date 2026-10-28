@@ -3,7 +3,9 @@ const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 // 임무별 도전과제 (Hitman식): 깨면 별 하나 + 과제마다 별 하나. 모은 별로 다른 진입로가 열린다
 const CH = {
   ghost: ['한 번도 들키지 않기', () => S.stats.detected === 0],
-  clean: ['표적 말고는 아무도 죽이지 않기', () => S.stats.extraKills === 0],
+  clean: ['주민은 아무도 죽이지 않기', () => S.stats.extraKills === 0],
+  purge: ['조직원 모두 처리 (기절도 된다)', () => S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.dropped && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE')],
+  streak3: ['조직원 3연속 처치 (8초 안에 다음)', () => (S.stats.maxStreak || 0) >= 3],
   nokill: ['아무도 죽이지 않기', () => S.stats.kills === 0],
   nobody: ['시체가 한 번도 발견되지 않기', () => S.stats.bodies === 0],
   accident: ['표적을 모두 사고로 처리', () => S.corpses.filter(c => c.target).length > 0 && S.corpses.filter(c => c.target).every(c => c.accident)],
@@ -28,7 +30,7 @@ const PERKS = [[3, 'pick', '락픽 +1'], [6, 'dart', '다트 +1'], [9, 'sole', '
 const totalStars = () => STAGES.reduce((n, s) => n + (s.challenges ? starsOf(s) : 0), 0);
 const perkOn = k => !!(S && S.perks && S.perks[k]);
 function applyPerks() {
-  S.perks = {}; if (!CITY) return; const n = totalStars(); S.stars0 = n; for (const [need, k] of PERKS) if (n >= need) S.perks[k] = true;
+  S.perks = {}; const n = totalStars(); S.stars0 = n; for (const [need, k] of PERKS) if (n >= need) S.perks[k] = true;
   const P = S.player; if (S.perks.pick) P.picks++; if (S.perks.dart) P.kunai++; if (S.perks.can) P.stones += 2;
 }
 function starsOf(st) { const c = loadCh()[st.id] || {}; return (c._clear ? 1 : 0) + (st.challenges || []).filter(id => c[id]).length; }

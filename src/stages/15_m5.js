@@ -34,6 +34,7 @@
   roofs: ['cRoofB', 'cRoofA', 'cRoofG', 'cRoofA', 'cRoofB'], bricks: [0, 1, 0, 1, 0],
   ventB: [{ b: 0, at: [21, 4] }],
   locks: [{ b: 0, door: 'vault', key: 'code' }], code: '2580',
+  interrogate: [{ gives: 'code', learn: '본부 금고 비번 2580', say: '2580! 금고 비번은 2580이야!' }],
   intel: [{ g: [2, 3], key: 2, gives: 'code', learn: '본부 금고 비번 2580', every: 22, first: 5, lines: [[0, '금고 비번 아직도 그거야?'], [1, '어. 전화기 가운데 줄 그대로.'], [1, '2, 5, 8, 0. 바보도 외운다.'], [0, '보스가 알면 난리 나겠다.']] }],
   well: 'manhole', kunai: 3, coins: 3, reinf: [39, 13],
   lamps: [[15, 11, 170, 1], [26, 11, 170, 1], [33, 11, 160, 1], [6, 15, 140, 1], [20, 15, 150, 1], [33, 6, 150, 1]],

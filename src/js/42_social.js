@@ -7,7 +7,22 @@ const npc = tag => S.guards.find(g => g.tag === tag);  // 스테이지 데이터
 const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.y / TILE); return tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && flOf(o) === (r[4] || 0); };
 const knows = s => (S.learned || []).some(t => t.includes(s));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
-const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got) };
+const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
+  detour: (t, x, y, stay, name, act) => detour(npc(t), x, y, stay, name, act), say: (t, text) => { const g = npc(t); if (g && g.state !== 'DEAD') gsay(g, text, 2.6); } };
+// 일과에서 벗어나 한 번 들르기 (배탈 → 화장실 등): 지금 가는 곳 앞에 끼워 넣고, 다 머물고 떠날 때 지운다. 일과표(sched)도 같이 끼워 이름표가 맞게
+function detour(g, x, y, stay, name, act) {
+  if (!g || g.state === 'DEAD' || g.state === 'CAPTIVE' || !g.route) return;
+  const wp = { x: tc(x), y: tc(y), pause: stay, once: true }, i = Math.min(g.ri || 0, g.route.length);
+  if (g.route.length === 1 && g.route[0].pause >= 999) g.route[0].pause = 999;  // 한자리 사람: 다녀와서 제자리로
+  g.route.splice(i, 0, wp); if (g.sched) { g.sched = g.sched.slice(); g.sched.splice(i, 0, { at: [x, y], stay, name: name || '어딘가', act: act || '볼일', once: true }); }  // 일과표는 의뢰 자료와 같은 배열 — 복사해서 고친다
+  g.ri = i; g.wait = Math.min(g.wait || 0, 1.5); g.path = null; g.act = null; g.bubble = null; endChat(g);
+}
+// 들렀다 떠날 때: 다 쓴 들를 곳을 일과에서 지운다
+function purgeDetour(g) {
+  if (g.sched) g.sched = g.sched.slice();
+  for (let k = g.route.length - 1; k >= 0; k--) if (g.route[k].spent) { g.route.splice(k, 1); if (g.sched) g.sched.splice(k, 1); if (k < g.ri) g.ri--; }
+  if (g.ri >= g.route.length) g.ri = 0;
+}
 function reportTo(g) {
   if (g.child) {  // 아이는 자경대원이 아니라 부모(없으면 가까운 어른)에게 달려간다 — 어른이 다시 신고하러 간다
     const pa = g.parent && npc(g.parent); if (pa && !['DEAD', 'CAPTIVE', 'SLEEP'].includes(pa.state) && flOf(pa) === flOf(g)) return pa;
@@ -170,7 +185,7 @@ function dropItem() {
   const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); play('drop', 0.3);
 }
 function useItem(n) {
-  const P = S.player, u = n.u; S.usesDone[n.i] = true; P.useT = S.t + 0.9; P.strikeT = Math.max(P.strikeT || 0, 0.5); play('cloth', 0.4);
+  const P = S.player, u = n.u, natural = u.permit && myPermits().includes(u.permit); S.usesDone[n.i] = true; if (!natural) { P.useT = S.t + 0.9; P.strikeT = Math.max(P.strikeT || 0, 0.5); } play('cloth', 0.4);  // 허가 옷(직원)이면 자연스러운 일 — 수상하지 않다
   if (!u.keep) { const p = P.item; P.item = null; if (p) p.used = true; }
   try { u.act && u.act(S, SH); } catch (e) { console.warn('use', e); }
   toast(u.done || '했다', 2.4, 'good');

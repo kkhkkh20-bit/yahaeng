@@ -1,9 +1,6 @@
 const A = window.__ASSETS__;
-const NEO = window.__THEME === 'neo';  // 네온·스티커 시험판
-const JOSEON = window.__THEME === 'joseon' || NEO;
-const NEONY = () => NEO || !!(STAGE && STAGE.neon);  // 네온 동네(강남 등): 건물 윤곽·간판·조명이 네온
+const NEONY = () => !!(STAGE && STAGE.neon);  // 네온 동네(강남 등): 건물 윤곽·간판·조명이 네온
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
-const CITY = window.__THEME === 'city';  // 현대 도시(빌라촌) 시안
 if (A.font && window.FontFace) { try { const ff = new FontFace('Galmuri', `url(${A.font})`); ff.load().then(f => document.fonts.add(f)).catch(() => {}); } catch (e) {} }
 const TILE = 48;
 let MW = 44, MH = 30;
@@ -13,7 +10,7 @@ const OPAQUE = new Set(['#', 'C', 'O', 'T', 'H', 'U', 'S', 'X', 'M', 'V', 'E']);
 // 가구는 두 가지뿐: 높은 가구('E') = 막힘 + 시선 가림, 낮은 가구('K') = 막힘 + 시선 통과(웅크리면 뒤에 숨는다). 깔개·춤추는 자리만 밟고 지나간다
 const FURN_TALL = new Set(['wardrobe', 'shelf', 'shelfS', 'locker', 'fridge', 'cab', 'boxes', 'plant', 'spk']);
 const FURN_FLAT = new Set(['rug', 'dance']);
-if (CITY) SOLID.delete('W');  // 도시: 맨홀 뚜껑은 밟고 지나간다 (막히면 도망치다 멈춘다)  // 'X' = 잠긴 문
+SOLID.delete('W');  // 도시: 맨홀 뚜껑은 밟고 지나간다 (막히면 도망치다 멈춘다)  // 'X' = 잠긴 문
 const TAU = Math.PI * 2;
 const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const dist = (a, b, c, d) => Math.hypot(c - a, d - b);

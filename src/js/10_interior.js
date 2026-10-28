@@ -245,7 +245,6 @@ function planInterior(g, b, bi, f) {
 }
 const USE_NAME = { store: '가게', food: '식당', pc: 'PC방', academy: '학원', office: '사무실' };
 function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
-  if (!CITY) return;
   x.font = '700 13px "IBM Plex Sans KR", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(232,227,214,.3)';
   const lab = (r, t) => { if (!r || r.x1 < rx0 || r.x0 > rx1 || r.y1 < ry0 || r.y0 > ry1) return; x.fillText(t, (r.x0 + r.x1 + 1) / 2 * TILE, (r.y0 + r.y1 + 1) / 2 * TILE); };
   PLANS.forEach((fls, bi) => { const p = fls && fls[f]; if (!p) return; const b = BLD[bi];
@@ -263,7 +262,7 @@ function drawFurn(x, it) {
 }  // 칸 테두리(파랑·주황)는 평소엔 그리지 않는다 — 살피기(Alt)·전술 지도에서만 보인다
 const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '');  // 구운 가구 그림 열쇠: 종류_가로x세로(_r방향)
 function drawFurnArt(x, it) {
-  if (CITY && KIT) { const k = kitFurn[furnKey(it)]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); return; } }
+  if (KIT) { const k = kitFurn[furnKey(it)]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); return; } }
   const T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, s = it.seed;
   const R = (a, b, c, d, col) => { x.fillStyle = col; x.fillRect(px + a, py + b, c, d); };
   const sh = () => { x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(px + 5, py + 6, w - 4, h - 4); };
@@ -424,7 +423,6 @@ let FRM = null;
 const facadeRow = (tx, ty) => !!(FRM && inMap(tx, ty) && FRM[ty * MW + tx]);
 const rLv = (tx, ty) => facadeRow(tx, ty) ? 0 : lvAt(tx, ty);
 function buildFRM(exact) {
-  if (!CITY) { FRM = null; return; }
   FRM = new Uint8Array(MW * MH);
   BLD.forEach(b => {
     let fh = b.fh;

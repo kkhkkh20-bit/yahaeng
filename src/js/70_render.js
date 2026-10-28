@@ -91,8 +91,8 @@ function drawPlayer(P) {
   if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); yo = -Math.sin(f * Math.PI) * P.jump.arc; lift += Math.sin(f * Math.PI) * 0.25; }
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
-  const concealed = !P.jump && !P.under && (CITY && S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3));
-  if (CITY && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
+  const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3));
+  if (!P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
     const red = S.expo === 2, pu = red ? 0.6 + 0.35 * Math.sin(S.t * 10) : 0.75;
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
@@ -278,7 +278,7 @@ function drawRoofs(openB) {
     if (i === openB) {
       ctx.strokeStyle = 'rgba(242,196,107,.35)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]);
-      if (CITY && !flOf(S.player)) drawFacadeExtras(b, true);
+      if (!flOf(S.player)) drawFacadeExtras(b, true);
       return;
     }
     const x = b.x0 * TILE, y = b.y0 * TILE, w = (b.x1 - b.x0 + 1) * TILE, h = b.roofC.rh;
@@ -289,17 +289,17 @@ function drawRoofs(openB) {
     }
     const sh = b.h * 6;
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + sh, y + sh, w, h);
-    if (b.facade) { drawFacade(b); if (CITY) drawFacadeExtras(b); }
+    if (b.facade) { drawFacade(b); drawFacadeExtras(b); }
     ctx.drawImage(b.roofC, x, y);
-    if (b.h >= 2 && !b.roofC.giwa && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
-    ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h + (b.roofC.giwa && b.facade ? 20 : 0));
+    if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
+    ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(b.h + 'F', x + 6, y + 14);
-    if (b.h >= 3 && !b.roofC.giwa && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
+    if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
-  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (CITY && BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, CITY ? 0.5 : 0.9); } }
+  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
   for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
   for (const l of S.ladders) if (l.kind === 'pipe' && !l.gas) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
@@ -357,7 +357,7 @@ function drawFacadeExtras(b, flat, kit) {
 const hN = (...a) => { let h = 2166136261 >>> 0; for (const v of a) { h = Math.imul(h ^ (v & 0xffff), 16777619) >>> 0; h = Math.imul(h ^ ((v >>> 16) & 0xffff), 16777619) >>> 0; } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995) >>> 0; return (h ^ (h >>> 15)) >>> 0; };
 const ROOF_SOLID = { okt: 1, tank: 1, stair: 1 };
 function roofProps(b, bi) {
-  if (!CITY || !b.facade || b.fh !== b.h || b.piloti) return [];
+  if (!b.facade || b.fh !== b.h || b.piloti) return [];
   const x0 = b.x0, x1 = b.x1, ry0 = b.y0, ry1 = b.y1 - b.fh, w = x1 - x0 + 1, dr = ry1 - ry0 + 1, L = lvAt(x0, ry0);
   if (dr < 2 || L <= 0) return [];
   for (let y = ry0; y <= ry1; y++) for (let x = x0; x <= x1; x++) if (rLv(x, y) !== L || bldAt(x, y) !== bi) return [];
@@ -454,10 +454,10 @@ function kitSpec() {
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
-  if (CITY && b.kind === 'shop') return drawShopFacade(b);
-  const wn = n => (CITY && b.alt ? n + 'B' : n);
+  if (b.kind === 'shop') return drawShopFacade(b);
+  const wn = n => (b.alt ? n + 'B' : n);
   const glow = (x, yy, tx, r) => {  // 도시: 불 켜진 창 몇 개 (촛불·등잔빛)
-    if (!CITY) return; const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0;
+    const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0;
     if (h % 5) return; const fl = 0.85 + 0.15 * Math.sin(S.t * 3 + tx);
     ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,170,80,${0.42 * fl})`; ctx.fillRect(x + 12, yy + 10, 24, 26); ctx.globalCompositeOperation = 'source-over';
   };
@@ -468,15 +468,12 @@ function drawFacade(b) {
       const x = tx * TILE;
       blit(ctx, wn(tx === b.x0 ? 'fWallL' : tx === b.x1 ? 'fWallR' : 'fWall'), x, yy, TILE, TILE);
       const win = tx > b.x0 && tx < b.x1 && (tx - b.x0) % 2 === 1;
-      if (win && CITY) blit(ctx, b.alt ? 'fWinB' : 'fWin', x, yy, TILE, TILE);
-      else if (win) { ctx.fillStyle = '#1d2733'; ctx.fillRect(x + 7, yy + 6, 34, 30); blit(ctx, 'fWin', x + 9, yy + 8, 30, 26); ctx.strokeStyle = '#8fc3e6'; ctx.lineWidth = 2; ctx.strokeRect(x + 7, yy + 6, 34, 30); if (NEO) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = (tx + b.y1) % 3 ? 'rgba(46,242,255,.32)' : 'rgba(255,46,136,.32)'; ctx.fillRect(x + 7, yy + 6, 34, 30); ctx.globalCompositeOperation = 'source-over'; } }
+      if (win) blit(ctx, b.alt ? 'fWinB' : 'fWin', x, yy, TILE, TILE);
       const l = b.fl[tx - b.x0]; ctx.fillStyle = `rgba(4,8,22,${0.68 * (1 - clamp(l, 0, 1)) + 0.06 * r})`; ctx.fillRect(x, yy, TILE, TILE);
       if (win) glow(x, yy, tx, r);
     }
     const by = yy + TILE;  // 층 사이 처마 띠
-    if (CITY) { for (let tx = b.x0; tx <= b.x1; tx++) blit(ctx, wn('fBand'), tx * TILE, by - 13, TILE, 26, 0, 3, 16, 9); ctx.fillStyle = 'rgba(4,8,22,.45)'; ctx.fillRect(b.x0 * TILE, by - 13, (b.x1 - b.x0 + 1) * TILE, 26); }
-    else if (JOSEON && F.gw_eave) { const e = F.gw_eave; for (let x = b.x0 * TILE; x < (b.x1 + 1) * TILE; x += 32) ctx.drawImage(atlas, e[0], e[1], 16, 20, x, by - 22, 32, 30); ctx.fillStyle = 'rgba(4,8,22,.45)'; ctx.fillRect(b.x0 * TILE, by - 14, (b.x1 - b.x0 + 1) * TILE, 22); }
-    else { ctx.fillStyle = '#2a1a14'; ctx.fillRect(b.x0 * TILE, by - 5, (b.x1 - b.x0 + 1) * TILE, 9); ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(b.x0 * TILE, by + 4, (b.x1 - b.x0 + 1) * TILE, 5); }
+    for (let tx = b.x0; tx <= b.x1; tx++) blit(ctx, wn('fBand'), tx * TILE, by - 13, TILE, 26, 0, 3, 16, 9); ctx.fillStyle = 'rgba(4,8,22,.45)'; ctx.fillRect(b.x0 * TILE, by - 13, (b.x1 - b.x0 + 1) * TILE, 26);
   }
   for (let tx = b.x0; tx <= b.x1; tx++) {
     const x = tx * TILE, ch = G[b.y1][tx];
@@ -489,8 +486,7 @@ function drawFacade(b) {
     } else if (door) { blit(ctx, wn('fWall'), x, y, TILE, TILE); blit(ctx, door.locked ? 'fDoor' : 'fDoorOpen', x, y, TILE, TILE); if (door.locked && door.keyLock) { ctx.fillStyle = keyCol(door.keyLock); ctx.fillRect(x + 19, y + 22, 10, 10); } }
     else {
       blit(ctx, wn(tx === b.x0 ? 'fWallL' : tx === b.x1 ? 'fWallR' : (tx * 7 + b.y1) % 5 === 0 ? 'fWall2' : 'fWall'), x, y, TILE, TILE);
-      if (ch === 'N' && CITY) blit(ctx, b.alt ? 'fWinB' : 'fWin', x, y, TILE, TILE);
-      else if (ch === 'N') { ctx.fillStyle = '#1d2733'; ctx.fillRect(x + 5, y + 4, 38, 38); blit(ctx, 'fWin', x + 7, y + 6, 34, 34); if (NEO) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = (tx + b.y1) % 3 ? 'rgba(46,242,255,.32)' : 'rgba(255,46,136,.32)'; ctx.fillRect(x + 5, y + 4, 38, 38); ctx.globalCompositeOperation = 'source-over'; } ctx.strokeStyle = '#8fc3e6'; ctx.lineWidth = 2; ctx.strokeRect(x + 5, y + 4, 38, 38); ctx.fillStyle = '#e8eef2'; ctx.fillRect(x + 3, y + 42, 42, 3); }
+      if (ch === 'N') blit(ctx, b.alt ? 'fWinB' : 'fWin', x, y, TILE, TILE);
       if (ch === 'S') { ctx.strokeStyle = 'rgba(40,24,14,.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + 22, y + 6); ctx.lineTo(x + 17, y + 20); ctx.lineTo(x + 27, y + 30); ctx.lineTo(x + 21, y + 44); ctx.stroke(); }
     }
     const l = b.fl[tx - b.x0]; ctx.fillStyle = `rgba(4,8,22,${0.62 * (1 - clamp(l, 0, 1))})`; ctx.fillRect(x, y, TILE, TILE);
@@ -626,17 +622,7 @@ function drawRoutes(P) {
 // 창문: 하늘색 유리 + 흰 십자 창살
 const winVert = w => (G[w.ty - 1] && G[w.ty - 1][w.tx] === '#') || (G[w.ty + 1] && G[w.ty + 1][w.tx] === '#');
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
-function drawWindowOld(w, alpha) {
-  const vert = winVert(w), ww = vert ? 18 : 40, hh = vert ? 40 : 18;
-  ctx.globalAlpha = alpha;
-  ctx.fillStyle = '#e8eef2'; if (vert) ctx.fillRect(w.x - ww / 2 - 6, w.y - hh / 2 - 3, 3, hh + 6); else ctx.fillRect(w.x - ww / 2 - 3, w.y + hh / 2 + 3, ww + 6, 3);
-  ctx.fillStyle = '#1d2733'; ctx.fillRect(w.x - ww / 2 - 3, w.y - hh / 2 - 3, ww + 6, hh + 6);
-  ctx.fillStyle = '#8fc3e6'; ctx.fillRect(w.x - ww / 2, w.y - hh / 2, ww, hh);
-  ctx.fillStyle = '#eef6fb'; ctx.fillRect(w.x - 1.5, w.y - hh / 2, 3, hh); ctx.fillRect(w.x - ww / 2, w.y - 1.5, ww, 3);
-  ctx.globalAlpha = 1;
-}
 function drawWindow(w, alpha) {
-  if (!CITY) return drawWindowOld(w, alpha);
   const vert = winVert(w), L = 42, T = 14;
   const lit = lightAt(w.x, w.y) > 0.45;
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(w.x, w.y); if (vert) ctx.rotate(Math.PI / 2);
@@ -907,7 +893,7 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : CITY ? 'rgba(4,8,22,0.76)' : 'rgba(4,8,22,0.84)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; dctx.drawImage(lightMap(key || 'g', lamps), 0, 0, MW * TILE, MH * TILE); }
@@ -991,10 +977,10 @@ function draw() {
   if (showRoutes || tactical) drawRoutes(P);
   drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
-  for (const it of S.items) if (!it.got && onGround(it)) { if (CITY) { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawScroll(it.x, it.y, S.t); }  // 목표물은 은은하게 빛난다
+  for (const it of S.items) if (!it.got && onGround(it)) { { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.x, it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawScroll(it.x, it.y, S.t); }  // 목표물은 은은하게 빛난다
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
-  if (CITY && KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
+  if (KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
   if (!tactical && !P.z && !flOf(P) && !input.scan) drawBlockEdges(P, false);
   for (const n of S.noises) {
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(240,80,60,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
@@ -1012,7 +998,7 @@ function draw() {
     drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
     if (g.hasKey && dist(g.x, g.y, P.x, P.y) < 320) drawKeyIcon(g.hasKey, g.x + 18, g.y - 30, false);
-    if (CITY && g.radio && dist(g.x, g.y, P.x, P.y) < 460) drawRadio(g.x - 19, g.y - 34);
+    if (g.radio && dist(g.x, g.y, P.x, P.y) < 460) drawRadio(g.x - 19, g.y - 34);
     if (STAGE.zones) drawSharpEye(g);
     else if (P.disguise && !P.disguiseBlown && (g.elite || g.target) && dist(g.x, g.y, P.x, P.y) < 380) {  // 변장: 이 사람은 얼굴을 안다 (원 안에서 보이면 들킨다)
       ctx.strokeStyle = 'rgba(232,90,70,.4)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(g.x, g.y, 220, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -1023,7 +1009,7 @@ function draw() {
     if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
     if (g.target) { ctx.strokeStyle = 'rgba(194,54,43,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x, g.y, 24, 0, TAU); ctx.stroke(); }
   }
-  drawGhosts();
+  drawGhosts(); drawTagged();
   if (P.hide) { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.strokeRect(P.hide.x - 22, P.hide.y - 22, 44, 44); ctx.setLineDash([]); }
   // (땅 위 주인공은 어둠·화단 위에 그린다 — 아래쪽 참고)
   const vx0 = Math.max(0, Math.floor((cam.x - W / SCALE / 2) / TILE) - 2), vx1 = Math.min(MW - 1, Math.ceil((cam.x + W / SCALE / 2) / TILE) + 2);
@@ -1031,9 +1017,9 @@ function draw() {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   for (let ty = vy0; ty <= vy1; ty++) for (let tx = vx0; tx <= vx1; tx++) {
     const ch = G[ty][tx];
-    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (CITY && kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
+    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
     if (ch === 'T') {
-      if (CITY && kitT.length) {  // 키트 나무: 숲은 침엽수가 많고, 시내는 활엽수
+      if (kitT.length) {  // 키트 나무: 숲은 침엽수가 많고, 시내는 활엽수
         const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0;
         const im = kitT[pine ? 2 : hh % 3 === 0 ? 3 : 0];
         if (kitOk(im)) { ctx.drawImage(im, tx * TILE - TILE, (ty + 0.5 - 3.6) * TILE); continue; }
@@ -1075,7 +1061,7 @@ function draw() {
     setLayer(flOf(g)); ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i <= 12; i++) { const a = g.a - 0.32 + 0.64 * i / 12, d = castRay(g.x, g.y, a, TORCH_R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); } ctx.closePath(); setLayer(flOf(S.player));
     const gr = ctx.createRadialGradient(g.x, g.y, 6, g.x, g.y, TORCH_R); gr.addColorStop(0, 'rgba(255,244,200,.32)'); gr.addColorStop(1, 'rgba(255,244,200,0)'); ctx.fillStyle = gr; ctx.fill(); }
   ctx.globalCompositeOperation = 'source-over';
-  if (NEONY() && CITY && !DBG.neon) drawNeonSigns();
+  if (NEONY() && !DBG.neon) drawNeonSigns();
   drawSpeech();
   ctx.globalCompositeOperation = 'source-over';
   // 깨진 조명 표시
@@ -1112,7 +1098,7 @@ function draw() {
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
   if (!P.hide && !P.z && !P.jump && !P.vent && !travUp) drawPlayer(P);
   // 키트 나무·화단: 주인공이 그 뒤(위쪽)에 있으면 잎을 반투명하게 한 번 더 덮어 '뒤에 숨은' 모습으로
-  if (CITY && !P.z && !P.jump && !P.vent && !P.hide && !flOf(P)) {
+  if (!P.z && !P.jump && !P.vent && !P.hide && !flOf(P)) {
     const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
     for (let ty = pty; ty <= pty + 3; ty++) for (let tx = ptx - 1; tx <= ptx + 1; tx++) {
       const ch = G[ty] && G[ty][tx];
@@ -1128,7 +1114,7 @@ function draw() {
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
-    const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? (NEO ? '255,46,136' : '230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? (NEO ? '255,220,60' : '242,196,107') : (NEO ? '70,236,255' : '170,200,235');
+    const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? ('230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? ('242,196,107') : ('170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 진한 부분 = 웅크려도 보임 · 옅은 줄무늬 = 서 있으면 보임(웅크리면 안전) · 경계(빨강) 중에는 전부 진하게
     if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
@@ -1153,7 +1139,7 @@ function draw() {
     if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);
   };
   // 높이감: 옥상·전깃줄 위에 있으면 아래 거리가 한층 어둡고 푸르게 가라앉는다 (옥상은 그 위에 밝게 그려진다). 오르내릴 때는 서서히
-  if (CITY && !tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
+  if (!tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
     const tgt = el > 0 ? Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   for (const g of S.guards) {
@@ -1162,13 +1148,13 @@ function draw() {
   }
   if (!tactical) {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks();
-    if (CITY) drawHeardSteps(P, openB, gVis);
+    drawHeardSteps(P, openB, gVis);
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl)))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    if (CITY) drawWindowSight(P, openB);
-    if (input.scan && CITY) drawPlansFaint(P, openB);
+    drawWindowSight(P, openB);
+    if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && !P.jump && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
   }
   if (S.poles.length) {
@@ -1197,10 +1183,10 @@ function draw() {
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); }
-  if (running && CITY && !tactical) drawStairGlow(P, openB);
-  if (running && CITY && STAGE.zones) drawZones(P);
-  if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (CITY && !flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running && CITY) { drawOpps(P); drawStoryMark(P); drawHoldRing(); if (!tactical) drawCorpseRisk(); }
+  if (running && !tactical) drawStairGlow(P, openB);
+  if (running && STAGE.zones) drawZones(P);
+  if (running && !tactical) { drawAwareness(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
+  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); if (!tactical) drawCorpseRisk(); }
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;

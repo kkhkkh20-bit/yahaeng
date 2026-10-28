@@ -14,21 +14,15 @@ function update(dt) {
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
-  updateRadioCall(dt); updateAlert(dt); updateCheckpoint(dt); if (CITY) { updateWarn(dt); updateCorpseRisk(dt); } if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } if (CITY) { updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(); }
-  if (D().roll && !CITY) {  // 도시: 무전·점호 없음 — 쓰러진 사람을 직접 봐야 수색한다
-    S.rollT -= dt;
-    if (S.rollT <= 10 && !S.rollWarn) { S.rollWarn = true; toast('10초 뒤 점호 — 쓰러진 자경대원이 있으면 들킨다', 2.6, 'warn'); }
-    if (S.rollT <= 0) { S.rollT = D().roll; S.rollWarn = false; rollCall(); }
-  }
+  updateRadioCall(dt); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt); updateWarn(dt); updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial();
   if (S.timeLeft) {
     const active = !S.exitOpen && (!STAGE.timeTarget || S.guards.some(g => g.target && g.state !== 'DEAD'));
     if (active) { S.timeLeft -= dt; if (S.timeLeft <= 0) { S.timeLeft = 0; endGame(false, STAGE.timeFail || '시간이 다 됐다.'); return; } }
   }
   { let mood = S.alevel >= 3 || S.radioCall ? 2 : S.alevel === 2 ? 1 : 0;
-    if (CITY) { for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue; if (g.state === 'ALERT') { mood = 2; break; } if (['NOTICE', 'SUSPICIOUS', 'SEARCH', 'BODY'].includes(g.state) || g.meter > 0.15) mood = Math.max(mood, 1); }
+    for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue; if (g.state === 'ALERT') { mood = 2; break; } if (['NOTICE', 'SUSPICIOUS', 'SEARCH', 'BODY'].includes(g.state) || g.meter > 0.15) mood = Math.max(mood, 1); }
       if (mood >= (S.moodHi || 0)) { S.moodHi = mood; S.moodT = 4; } else if ((S.moodT -= dt) <= 0) S.moodHi = mood;
       setMusic(['n_calm', 'n_tense', 'n_fight'][S.moodHi]); }
-    else setMusic(mood === 2 ? 'fight' : mood === 1 ? 'tense' : 'calm'); }
   if (STAGE.fuse) {
     if (S.fuseGuard && S.fuseGuard.state !== 'FUSE') { S.fuseGuard.atFuse = false; S.fuseGuard = null; }
     if (!S.lightsOn && !S.fuseGuard && S.fuseT <= 0) S.fuseT = 3;
@@ -74,16 +68,6 @@ function focusUpdate(dt) {
   updatePlayer(dt);
   for (const m of S.toasts) m.t -= dt * 0.5;
   moveCamera(dt); updateHUD();
-}
-// 점호: 정해진 간격마다 자경대원들이 서로 확인한다. 쓰러진 자경대원이 있으면 경계가 오른다
-function rollCall() {
-  const missing = S.guards.filter(g => g.state === 'DEAD' && !g.target && !g.dog && !g.civ && !g.rollDone);
-  missing.forEach(g => g.rollDone = true);
-  play('call', 0.5);
-  if (missing.length) bark(anyGuard(), 'roll');
-  if (missing.length >= 2) setAlert(2, 40, `점호: ${missing.length}명이 대답하지 않는다 — 수색 시작`);
-  else if (missing.length === 1) setAlert(1, 40, '점호: 한 명이 대답하지 않는다 — 경계');
-  else toast('점호 — 이상 없음', 1.8);
 }
 function updateAlert(dt) {
   if (S.alevel === 3) {

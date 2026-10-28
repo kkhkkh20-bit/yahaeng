@@ -70,6 +70,7 @@ button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
 .toast.hint { border-color: var(--lamp); color: var(--paper); }
 .toast.warn { border-color: var(--blood-hi); }
 .toast.good { border-color: var(--moss); }
+.toast.radio { border-color: #7fa6e8; color: #d6e4ff; text-align: left; }
 .toast.big { font-size: var(--fs-lead); font-weight: 700; padding: 10px 18px; border-bottom-color: var(--blood-hi); }
 @keyframes rise { from { transform: translateY(-6px); opacity: 0 } }
 
@@ -469,12 +470,12 @@ body.joyseen .joyhint { display: none !important; }
       <li class="cityonly"><strong>기회 · 체크포인트</strong>함정·두꺼비집·비번 문을 보면 임무 칸에 "기회"로 남는다. 쉬움·보통은 목표마다 체크포인트가 저장된다.</li>
       <li><strong>시야 원뿔</strong>원뿔은 그 자리 밝기만큼만 뻗는다(어두우면 짧고 불빛 아래면 길다). 진한 부분은 웅크려도 보이고, 옅은 줄무늬 부분은 웅크리면 안 보인다. 벽에 붙으면 진한 부분이 확 준다.</li>
       <li><strong>소리</strong>달리면 멀리까지 들린다. 나무 바닥은 더 울리고, 옥상과 잔디는 덜 울린다.</li>
-      <li><strong>등 뒤 · 동시 암살</strong>자경대원 등 뒤에서 붉은 원이 뜨면 암살. 두 명이 붙어 있으면 한 번에 둘을 처치한다.</li>
+      <li><strong>등 뒤 · 동시 암살</strong>조직원·자경대원 등 뒤에서 붉은 원이 뜨면 암살 — 감점 없다. 8초 안에 다음 사람을 처치하면 연속 처치. 두 명이 붙어 있으면 한 번에 둘을 처치한다. 주민은 기절만 시키고, 길게 눌러 숨을 끊으면 감점.</li>
       <li><strong>옥상 · 2층</strong>사다리·배관으로 오른다. 골목 하나는 건너뛸 수 있고, 아래 자경대원에게 낙하 암살. 2층에선 1층 옥상으로만 내려간다.</li>
       <li><strong>맨홀</strong>들어가 숨어 있다가 지나가는 자경대원을 끌어들인다. 다른 출구로 이동하고, 나올 땐 조이스틱을 민 방향으로 나온다.</li>
       <li><strong>표식 읽기</strong><span class="lg lg-door"></span>갈색 문짝은 문(잠글 수 있음) · <span class="lg lg-win"></span>십자 창살 유리는 창문 · <span class="lg lg-pipe"></span>회색 관과 발밑 ▸▸는 배관 · 금 간 벽은 숨겨진 통로</li>
       <li><strong>건물 · 창문</strong>건물 안은 들어가야 보인다. 창문 앞에서 창문 쪽을 바라보면 안이 보이고, [창문 넘기]로 드나든다. 문은 잠가서 자경대원을 돌아가게 만들 수 있다.</li>
-      <li><strong>붙잡기</strong>[특수]로 등 뒤에서 붙잡는다. 끌고 가면 많이 느리다. 화단·수거함·맨홀 옆에서 [끌고 가 처치]. 9초 넘게 끌면 빠져나간다.</li>
+      <li><strong>붙잡기</strong>[특수]로 등 뒤에서 붙잡는다. 붙잡은 채 [행동]은 처치, [특수]는 목을 졸라 기절. 끌고 가면 많이 느리다. 화단·수거함·맨홀 옆에서 [끌고 가 처치]. 9초 넘게 끌면 빠져나간다.</li>
       <li><strong>조명</strong>조명 옆에서 손으로 끄고 켤 수 있다. 지나가던 자경대원이 다시 켠다. 다트로 깨면 영영 꺼진다.</li>
       <li><strong>끌어들이기</strong>화단·수거함·맨홀에 숨어 있다가 옆을 지나는 자경대원을 방향 상관없이 끌어들여 처치한다.</li>
       <li><strong>자경대원 읽기</strong>바닥의 점선은 순찰로, 작은 원은 멈추는 곳, 네모는 자리를 지키는 자경대원이다. 평소엔 담배·하품·잡담을 하는데 그동안 시야가 좁아진다. [지도]로 멈춘 채 전체를 볼 수 있다.</li>
@@ -493,7 +494,7 @@ body.joyseen .joyhint { display: none !important; }
       <li><strong>무전</strong>자경대원 셋 중 하나와 정예는 무전기를 든다(머리 위 무전기 표시). 들키면 그가 멈춰 서서 보고하고, 붉은 원이 다 차면 맵 전체가 경계한다. 그 전에 붙거나 다트로 처치하면 끊긴다. 무전기가 없으면 근처만 경계한다.</li><li><strong>시체 발견</strong>쓰러진 사람을 직접 보면 소리쳐 주변 대원을 부르고 수색이 시작된다. 쓰러뜨린 사람은 수거함·맨홀에 숨겨라.</li>
       <li><strong>들개</strong>개는 냄새로 찾는다. 가까이 가면 화단·어둠·웅크림이 소용없고, 숨겨 둔 시체도 맡는다. 들키면 짖어 주변 자경대원을 부른다. 붙잡을 수 없다.</li>
       <li><strong>열쇠 · 소매치기</strong>열쇠로 잠긴 문이 있다. 열쇠를 든 자경대원 등 뒤에서 [열쇠 훔치기] — 웅크린 채여야 안전하다. 처치하면 열쇠를 떨어뜨린다. 창문·배관 같은 다른 길도 있다.</li>
-      <li><strong>시간 제한 · 보너스</strong>일부 의뢰엔 제한 시간이 있다. 성공하면 발각 0 · 시체 발견 0 · 수색 경보 0 · 불필요한 살상 0 네 가지 보너스 목표로 등급이 매겨진다.</li>
+      <li><strong>시간 제한 · 보너스</strong>일부 의뢰엔 제한 시간이 있다. 성공하면 발각 0 · 주민 살상 0 · 시체 발견 0 · 목격자 0 · CCTV 기록 0 다섯 가지로 등급이 매겨진다. 조직원은 얼마든지 처치해도 등급이 깎이지 않는다 — 대신 시체를 들키지 말 것.</li>
       <li><strong>빈 캔 · 두꺼비집</strong>빈 캔으로 자경대원을 유인한다. 두꺼비집으로 바깥 조명을 끄면 자경대원 하나가 고치러 온다.</li>
     </ul></details>
     <details class="rulesbox"><summary class="rules-h">조작법</summary>

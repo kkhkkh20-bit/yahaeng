@@ -17,13 +17,13 @@ let MOD = ''; try { const m = localStorage.getItem('yahaeng.mod'); if (MODS[m]) 
 const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
 function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
-  const modNow = CITY && MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
+  const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
   buildMap(STAGE); setLayer(0); buildFRM(false);
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
-  if (CITY) POLES.forEach(([px, py], i) => { if ((px * 7 + py * 3) % 3 === 2) return; const oy = !SOLID.has(G0[py + 1] && G0[py + 1][px]) ? 0.55 : -0.55; lamps.push({ x: tc(px), y: tc(py) + oy * TILE, r: 170, outdoor: true, poly: null, broken: false, fl: 0, pole: true, flk: (px + py) % 4 === 0 ? { f: 2.3 + (px % 3), p: py } : null }); });
-  if (CITY && STAGE.neon) lamps.forEach((l, i) => { if (l.outdoor && l.col && i % 3 === 1) l.flk = { f: 3.1 + (i % 4), p: i }; });
+  POLES.forEach(([px, py], i) => { if ((px * 7 + py * 3) % 3 === 2) return; const oy = !SOLID.has(G0[py + 1] && G0[py + 1][px]) ? 0.55 : -0.55; lamps.push({ x: tc(px), y: tc(py) + oy * TILE, r: 170, outdoor: true, poly: null, broken: false, fl: 0, pole: true, flk: (px + py) % 4 === 0 ? { f: 2.3 + (px % 3), p: py } : null }); });
+  if (STAGE.neon) lamps.forEach((l, i) => { if (l.outdoor && l.col && i % 3 === 1) l.flk = { f: 3.1 + (i % 4), p: i }; });
   // 아궁이(벽난로): 방을 밝히는 불. 옥상의 굴뚝과 이어진다
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
   lamps.forEach(l => { setLayer(l.fl); l.poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU; const d = Math.min(l.r, castRay(l.x, l.y, a, l.r) + 20); l.poly.push(l.x + Math.cos(a) * d, l.y + Math.sin(a) * d); } }); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
@@ -37,7 +37,7 @@ function newGame(si) {
   const guards = STAGE._g.map((d, i) => makeGuard(d, i));
   if (modNow === 'reinf') STAGE._g.filter(d => d.route && d.route.length > 1 && d.kind !== 'civ' && d.kind !== 'dog' && !d.target).slice(0, 2).forEach(d => { const g = makeGuard(Object.assign({}, d, { route: d.route.slice().reverse(), key: null }), guards.length); g.reinf = true; guards.push(g); });
   guards.forEach(g => { setLayer(g.fl); buildRouteLine(g); if (g.civ && g.sleep) g.state = 'SLEEP'; }); setLayer(0);
-  if (CITY) guards.forEach(g => { if (!g.civ && !g.dog && !g.target && !g.elite && g.id % 2 === 0) g.torch = true; });  // 자경대원 절반은 손전등
+  guards.forEach(g => { if (!g.civ && !g.dog && !g.target && !g.elite && g.id % 2 === 0) g.torch = true; });  // 자경대원 절반은 손전등
   // 주민의 '집': 자기 세대(거실·방·욕실) 칸 범위. 계단실·가게·클럽 같은 공용 공간은 집이 아니다
   guards.forEach(g => {
     if (!g.civ || g.club) return; const tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), bi = bldAt(tx, ty), p = bi >= 0 && PLANS[bi] && PLANS[bi][g.fl]; if (!p) return;
@@ -82,7 +82,7 @@ function newGame(si) {
   });
   // 환풍구: 같은 무리의 창살끼리 덕트로 잇는다 ('r' = 옥상 환기구, 없으면 방 천장 창살)
   VG = new Uint8Array(MW * MH); const vents = [];
-  const VSPEC = (STAGE.vents || []).concat(CITY ? (STAGE.ventB || []).map(sp => autoVents(typeof sp === 'number' ? { b: sp } : sp, hides, ladders, lamps)).filter(Boolean) : []);
+  const VSPEC = (STAGE.vents || []).concat((STAGE.ventB || []).map(sp => autoVents(typeof sp === 'number' ? { b: sp } : sp, hides, ladders, lamps)).filter(Boolean));
   VSPEC.forEach((grp, gi) => {
     const vs = grp.map(([tx, ty, k]) => ({ tx, ty, x: tc(tx), y: tc(ty), roof: k === 'r', street: k === 's', z: k === 'r' ? lvAt(tx, ty) : 0, group: gi, open: false }));
     carveNet(VG, vs); vents.push(...vs);
@@ -90,7 +90,7 @@ function newGame(si) {
   S = {
     t: 0, lamps, lightsOn: true, guards, corpses: [], decals: [], noises: [], stones: [], kunais: [], toasts: [], hides, ladders,
     items: STAGE._items.map(p => ({ b: p[3], x: tc(p[0]), y: tc(p[1]), got: false, fl: p[2] || 0 })),
-    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: CITY ? D().picks : 0, candy: STAGE.candy != null ? STAGE.candy : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
+    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: D().picks, candy: STAGE.candy != null ? STAGE.candy : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
     rollT: D().roll, rollWarn: false, timeLeft: STAGE.timeLimit ? STAGE.timeLimit * D().time : 0,
     alevel: 0, alevelT: 0, unseenT: 0, lures: [], reinforced: false, fx: [], keyDrop: null, fuseGuard: null, fuseT: 0, fleeing: false, windows: [],
     stats: { kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
@@ -109,8 +109,8 @@ function newGame(si) {
   const drops = [];
   (STAGE.drops || []).forEach(([px, py, f]) => {
     if (!GF[f]) return; let best = null, bd = 1e9;
-    BLD.forEach(b => { if (b.h <= f || b.y1 >= py || py - b.y1 > 4) return; for (let x = b.x0 + 1; x < b.x1; x++) if (GF[f][b.y1][x] === 'N') { const d = Math.abs(x - px) * 1.3 + (py - b.y1); if (d < bd && !drops.some(w => w[1][0] === x && w[1][1] === b.y1 && (CITY || w[1][2] === f))) { bd = d; best = [x, b.y1]; } } });
-    if (best) drops.push(CITY ? [[px, py], [best[0], best[1]]] : [[px, py], [best[0], best[1], f]]);  // 도시: 인입선은 창문이 아니라 옥상 난간 밑 벽에 붙는다
+    BLD.forEach(b => { if (b.h <= f || b.y1 >= py || py - b.y1 > 4) return; for (let x = b.x0 + 1; x < b.x1; x++) if (GF[f][b.y1][x] === 'N') { const d = Math.abs(x - px) * 1.3 + (py - b.y1); if (d < bd && !drops.some(w => w[1][0] === x && w[1][1] === b.y1 && (true))) { bd = d; best = [x, b.y1]; } } });
+    if (best) drops.push([[px, py], [best[0], best[1]]]);  // 도시: 인입선은 창문이 아니라 옥상 난간 밑 벽에 붙는다
   });
   S.wires = (STAGE.wires || []).concat(drops).map(([p, q]) => {
     const node = ([tx, ty, f]) => { if (f != null) return { win: true, fl: f, b: bldAt(tx, ty), tx, ty, x: tc(tx), y: (ty + 1) * TILE + 10, z: f, dx: tc(tx), dy: (ty - f) * TILE + 22 }; const pole = S.poles.find(o => o.tx === tx && o.ty === ty); return pole ? { x: pole.x, y: pole.y, z: pole.z, pole, dx: pole.x, dy: pole.y - pole.top + 3 } : { x: tc(tx), y: tc(ty), z: lvAt(tx, ty), roof: true, tx, ty, dx: tc(tx), dy: tc(ty) - 4 }; };
@@ -202,7 +202,7 @@ function newGame(si) {
     for (const g of S.guards) if (g.z && g.route) g.route.forEach(r => { const tx = Math.floor(r.x / TILE), ty = Math.floor(r.y / TILE); if (facadeRow(tx, ty)) r.y = roofEdgeY(tx, ty); });
     for (const g of S.guards) if (g.z && facadeRow(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) g.y = roofEdgeY(Math.floor(g.x / TILE), Math.floor(g.y / TILE));
   }
-  if (CITY) {  // 건물마다 이름판·외벽 색·옥상 물건을 달리해 구분되게
+  {  // 건물마다 이름판·외벽 색·옥상 물건을 달리해 구분되게
     const PL = ['그린빌라', '한솔하이츠', '삼익맨션', '우성빌라', '동원파크빌', '명성하이빌', '대림빌라', '은하맨션', '청솔빌', '현대빌라', '새한주택', '해맑은빌', '금호빌라', '성원하이츠', '다복빌라', '소망빌라'];
     const hsh = (b, k) => ((b.x0 * 73856093) ^ (b.y0 * 19349663) ^ (STAGE_I * 83492791) ^ k) >>> 0;
     let church = null; BLD.forEach(b => { if (b.plan && b.kind !== 'shop' && b.kind !== 'house' && !b.name && b.h >= 3 && (!church || b.h > church.h)) church = b; });
@@ -215,8 +215,8 @@ function newGame(si) {
       if (b === church) { b.church = true; b.plate = '새빛교회'; }
     });
   }
-  BLD.forEach((b, i) => { b.alt = CITY ? (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2) : 0; b.roofC = buildRoofCanvas(b, i); });
-  if (CITY) kitAttach();
+  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = buildRoofCanvas(b, i); });
+  kitAttach();
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
   mapC = renderMap(); ugC = renderSewers(); ventC = renderVents();
   S.floorC = {};
@@ -293,7 +293,7 @@ function makeGuard(d, i) {
     id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
-    carryTo: d.carryTo != null ? d.carryTo : null, child: !!d.child, parent: d.parent || null, tag: d.tag || null, body: d.child ? 'kid' : d.body !== undefined ? d.body : d.kind === 'civ' ? autoBody(i) : null, sched: d.sched || null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
+    carryTo: d.carryTo != null ? d.carryTo : null, child: !!d.child, parent: d.parent || null, tag: d.tag || null, body: d.child ? 'kid' : d.body !== undefined ? d.body : d.kind === 'civ' ? autoBody(i) : null, sched: d.sched ? d.sched.slice() : null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
   };
 }
 function buildRouteLine(g) {
@@ -534,13 +534,13 @@ function renderMap(R) {
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx]; let b = base(ch, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
-    const kg = KIT && CITY ? kitGround(ch, tx, ty) : null;
+    const kg = KIT ? kitGround(ch, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
   }
   x.strokeStyle = 'rgba(200,225,245,.35)'; x.lineWidth = 2;
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === '~' && G[ty + 1] && G[ty + 1][tx] !== '~' && G[ty + 1][tx] != null) { x.beginPath(); x.moveTo(tx * TILE, ty * TILE + TILE - 1); x.lineTo(tx * TILE + TILE, ty * TILE + TILE - 1); x.stroke(); }
   // 도시: 개울('~')은 물빛과 잔물결, 물 위 보도블록('=')은 나무 다리
-  if (CITY) for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
+  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx], px = tx * TILE, py = ty * TILE, hh = hs(tx, ty);
     if (ch === '~') { x.fillStyle = '#163650'; x.fillRect(px, py, TILE, TILE); x.fillStyle = '#1f4a6a'; x.fillRect(px, py + (hh % 3) * 6, TILE, 10); x.strokeStyle = 'rgba(170,215,240,.35)'; x.lineWidth = 2; for (let k = 0; k < 2; k++) { const yy = py + 12 + k * 20 + (hh % 5); x.beginPath(); x.moveTo(px + 4 + (hh % 7), yy); x.quadraticCurveTo(px + 16, yy - 4, px + 28 + (hh % 9), yy); x.stroke(); } }
     const water = (ox, oy) => G[ty + oy] && G[ty + oy][tx + ox] === '~';
@@ -556,15 +556,13 @@ function renderMap(R) {
   }
   // 돌계단('J'): 계단 줄무늬
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'J') { const px = tx * TILE, py = ty * TILE; for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(0,0,0,.32)'; x.fillRect(px, py + k * 12 + 9, TILE, 3); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(px, py + k * 12, TILE, 2); } }
-  if (CITY) {
-    // 보도 경계석: 보도블록('=')이 아스팔트('.')와 맞닿는 곳
+  // 보도 경계석: 보도블록('=')이 아스팔트('.')와 맞닿는 곳
     for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
       if (G[ty][tx] !== '=') continue; const px = tx * TILE, py = ty * TILE;
       const asph = (ox, oy) => G[ty + oy] && G[ty + oy][tx + ox] === '.';
       x.fillStyle = '#b4b6c4'; if (asph(0, 1)) x.fillRect(px, py + TILE - 6, TILE, 6); if (asph(0, -1)) x.fillRect(px, py, TILE, 5); if (asph(-1, 0)) x.fillRect(px, py, 5, TILE); if (asph(1, 0)) x.fillRect(px + TILE - 5, py, 5, TILE);
       x.fillStyle = 'rgba(0,0,0,.35)'; if (asph(0, 1)) x.fillRect(px, py + TILE, TILE, 3);
     }
-  }
   if (!CUR_F) (STAGE.decor || []).forEach(d => {
     if (d[0] === 'shade') { x.fillStyle = `rgba(${d[6] || '0,0,0'},${d[5]})`; x.fillRect(d[1] * TILE, d[2] * TILE, (d[3] - d[1] + 1) * TILE, (d[4] - d[2] + 1) * TILE); return; }
     if (d[0] === 'lane') { x.fillStyle = 'rgba(232,196,90,.75)'; for (let xx = d[1] * TILE; xx < (d[3] + 1) * TILE; xx += 48) x.fillRect(xx + 6, d[2] * TILE - 2, 28, 4); return; }
@@ -587,7 +585,7 @@ function renderMap(R) {
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';
       else if (e && n && !so && !w) piece = 'wallBL'; else if (w && n && !so && !e) piece = 'wallBR';
       else if ((n || so) && !e && !w) piece = 'wallV';
-      if (CITY && kitOk(kitTex.wall)) {
+      if (kitOk(kitTex.wall)) {
         x.fillStyle = '#2a2622'; x.fillRect(px, py, TILE, TILE); x.fillStyle = '#3e3832'; x.fillRect(px + 2, py + 2, TILE - 4, TILE - 4); x.fillStyle = '#2a2622'; x.fillRect(px + 6, py + 6, TILE - 12, TILE - 12);
         if (!so) {  // 앞(남쪽)이 열려 있으면 벽 앞면
           x.drawImage(kitTex.wall, 0, 16, 64, 48, px, py + 20, TILE, 28);
@@ -595,10 +593,6 @@ function renderMap(R) {
         }  // 옆벽 창문은 drawWindow가 위에 그린다
       } else draw(piece, px, py);
       if (ch === 'S') { x.strokeStyle = 'rgba(15,10,8,.6)'; x.lineWidth = 2; x.beginPath(); x.moveTo(px + 22, py + 6); x.lineTo(px + 18, py + 20); x.lineTo(px + 26, py + 30); x.lineTo(px + 21, py + 42); x.stroke(); }
-    }
-    if (ch === 'Y' && !CITY) {
-      x.fillStyle = '#3c2a1e'; x.fillRect(px + 3, py + 3, 42, 42);
-      x.fillStyle = '#b08458'; for (let i = 0; i < 5; i++) x.fillRect(px + 6, py + 6 + i * 8, 36 - i * 5, 5);
     }
     if (ch === 'Z') draw('sack', px, py);
     if (ch === 'I') { x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(px + 14, py + 14, 24, 24); x.fillStyle = '#8c8f97'; x.fillRect(px + 10, py + 10, 26, 26); x.fillStyle = '#b3b6bd'; x.fillRect(px + 10, py + 10, 26, 5); }
@@ -610,9 +604,9 @@ function renderMap(R) {
     if (ch === 'C') draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
     if (ch === 'O') draw(tx % 2 ? 'pot0' : 'pot1', px, py);
     if (ch === 'R') draw('rock', px, py);
-    if (ch === 'H' && CITY && KIT_PROP.dumpster) { x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(px + 4, py + 8, TILE - 6, TILE - 8); }
+    if (ch === 'H' && KIT_PROP.dumpster) { x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(px + 4, py + 8, TILE - 6, TILE - 8); }
     else if (ch === 'H') { draw('box', px, py); x.strokeStyle = 'rgba(242,196,107,.5)'; x.lineWidth = 2; x.strokeRect(px + 2, py + 2, TILE - 4, TILE - 4); }
-    if (ch === 'U' && CITY) {  // 컨테이너·창고 옥상 (높이 1): 골함석, 남쪽 끝은 앞면
+    if (ch === 'U') {  // 컨테이너·창고 옥상 (높이 1): 골함석, 남쪽 끝은 앞면
       const hh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0, cols = ['#5a82a8', '#a84e40', '#55906c', '#b88e3e'];
       let gx = tx; while (G[ty][gx - 1] === 'U') gx--; const base = cols[(gx * 7 + ty * 3) % 4];
       x.fillStyle = base; x.fillRect(px, py, TILE, TILE);
@@ -632,7 +626,7 @@ function renderMap(R) {
       if (!roofAt(tx + 1, ty)) x.fillRect(px + TILE - 3, py, 3, TILE);
     }
     if (ch === 'L') {
-      x.strokeStyle = CITY ? '#9aa1aa' : '#b08458'; x.lineWidth = 5; x.beginPath(); x.moveTo(px + 14, py + 3); x.lineTo(px + 14, py + 45); x.moveTo(px + 34, py + 3); x.lineTo(px + 34, py + 45); x.stroke();
+      x.strokeStyle = '#9aa1aa'; x.lineWidth = 5; x.beginPath(); x.moveTo(px + 14, py + 3); x.lineTo(px + 14, py + 45); x.moveTo(px + 34, py + 3); x.lineTo(px + 34, py + 45); x.stroke();
       x.lineWidth = 4; x.beginPath(); for (let i = 0; i < 5; i++) { x.moveTo(px + 14, py + 7 + i * 9); x.lineTo(px + 34, py + 7 + i * 9); } x.stroke();
     }
     if (ch === 'W') {
@@ -661,18 +655,18 @@ function renderMap(R) {
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
   // 가구 (이 층 것만)
-  if (CITY) for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
+  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
   FURN.filter(f => f.fl === CUR_F && f.x + f.w > rx0 && f.x <= rx1 && f.y + f.h > ry0 && f.y <= ry1).sort((a, b) => (a.y + a.h) - (b.y + b.h)).forEach(f => drawFurn(x, f));
   // 주차된 차 · 필로티 아래 그늘
   if (!CUR_F) {
     BLD.forEach(b => { if (b.piloti) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect((b.x0 + 1) * TILE, (b.y0 + 1) * TILE, (b.x1 - b.x0 - 1) * TILE, (b.y1 - b.y0) * TILE); } });
     CARS.forEach(([cx, cy, c]) => { x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(cx * TILE + 8, cy * TILE + 10, 38, 88); blit(x, 'car' + c, cx * TILE, cy * TILE, TILE, TILE * 2); });
   }
-  if (!CUR_F && !R && CITY) bakeCastShadows(x);
+  if (!CUR_F && !R) bakeCastShadows(x);
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.hearth || flOf(l) !== CUR_F) return; if (CITY) { if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; } x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.hearth || flOf(l) !== CUR_F) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 

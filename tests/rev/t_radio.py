@@ -6,13 +6,18 @@ ST='() => { const S = window.__game.S, R = S.radioCall; return [S.alevel, R ? [R
 async def run(b, mode):
     pg = await b.new_page(viewport={'width':1280,'height':760}); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
     await pg.goto(URL); await pg.wait_for_timeout(1500)
-    await pg.evaluate('() => window.__game.start(1)'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP); await pg.wait_for_timeout(200)
-    await pg.keyboard.down('ArrowRight')
-    for i in range(90):  # 발견 게이지가 2~3초 걸리므로: 경비 시야 안으로 걸어 들어간 뒤 멈춰 서서 기다린다
+    # 구역 규칙이 없는 옛 판(의뢰 4): 무전기 든 자경대원 앞 시야 안에 서서 들킨다 (발견 게이지 2~3초)
+    si = await pg.evaluate("() => window.__game.STAGES.findIndex(s => s.id === 'm4')")
+    await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP); await pg.wait_for_timeout(200)
+    await pg.evaluate('''() => { const S = window.__game.S, P = S.player; const g = S.guards.find(g => g.radio && !g.civ && !g.dog && !g.elite && !(g.fl || 0) && !(g.z || 0) && g.state === 'PATROL');
+      S.guards.forEach(o => { if (o !== g) { o.x = -9999; o.y = -9999; o.route = [{ x: -9999, y: -9999, pause: 999 }]; o.path = null; } });
+      const G = window.__game, ok = (x, y) => !G.solidAt(Math.floor(x / 48), Math.floor(y / 48));
+      const l = S.lamps.find(l => l.outdoor && !l.off && !l.broken && !(l.fl || 0) && ok(l.x, l.y) && ok(l.x - 110, l.y));  // 밝은 가로등 밑에 서서, 서쪽에서 보는 자경대원에게 들킨다
+      g.x = l.x - 110; g.y = l.y; g.a = 0; g.want = 0; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.path = null; g.wait = 99; g.post = 0;
+      P.x = l.x; P.y = l.y; P.fl = 0; P.z = 0; }''')
+    for i in range(90):
         await pg.wait_for_timeout(100)
-        if i == 12: await pg.keyboard.up('ArrowRight')
         if await pg.evaluate('() => !!window.__game.S.radioCall'): break
-    await pg.keyboard.up('ArrowRight')
     print(mode, 'call', await pg.evaluate(ST))
     await pg.wait_for_timeout(700); await pg.screenshot(path=f'radio_{mode}.png', clip={'x':300,'y':200,'width':400,'height':260})
     if mode == 'wait':

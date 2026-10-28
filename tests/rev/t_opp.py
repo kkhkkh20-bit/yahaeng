@@ -10,17 +10,15 @@ async def main():
         for i in []:
             await ev(f'() => window.__game.start({i})'); await pg.wait_for_timeout(300); await ev(SKIP); await pg.wait_for_timeout(500)
             print(i, await ev('() => (window.__game.S.opps || []).map(o => [o.k, o.seen ? 1 : 0, o.x == null ? null : [Math.round(o.x/48), Math.round(o.y/48), o.fl]])'))
-        await ev('() => window.__game.start(1)'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H); await ev('() => T.freeze()')
-        # 함정 근처로
-        await ev('() => { const o = T.S().opps.find(o => o.k === "trap"); const P = T.S().player; P.fl = 0; T.G().setLayer && 0; P.x = o.x + 100; P.y = o.y + 120; }'); await pg.wait_for_timeout(900)
-        print('trap seen', await ev('() => T.S().opps.filter(o => o.seen).map(o => o.k)'), await ev(OL))
-        await pg.screenshot(path='opp_trap.png')
-        # 비번 문 근처
-        await ev('() => T.at(5, 9)'); await pg.wait_for_timeout(900)
+        # 비번 문 기회 (옛 기회 목록이 남은 의뢰 5: 금고 비번 문)
+        si = await ev("() => window.__game.STAGES.findIndex(s => s.id === 'm5')")
+        await ev(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H); await ev('() => T.freeze()')
+        await ev('() => { const S = T.S(), d = S.doors.find(d => d.keyLock === "code"), P = S.player; P.fl = d.fl || 0; T.G().setLayer(P.fl); P.z = 0; P.x = d.x; P.y = d.y + 48; }'); await pg.wait_for_timeout(900)
         print('code', await ev(OL))
         await ev('() => { T.S().player.keys.code = true; }'); await pg.wait_for_timeout(300); print('known', await ev(OL))
         await ev('() => T.G().actPrimary()'); await pg.wait_for_timeout(200)
-        for k in '0417': await pg.keyboard.press('Digit' + k)
+        code = await ev('() => window.__game.STAGES[window.__game.STAGE_I || 0] ? 0 : 0'); code = await ev("() => window.__game.STAGES.find(s => s.id === 'm5').code")
+        for k in code: await pg.keyboard.press('Digit' + k)
         await pg.wait_for_timeout(800); print('opened', await ev(OL))
         await pg.keyboard.press('Escape'); await pg.wait_for_timeout(300); print('paused', await ev('() => !document.getElementById("pause").hidden'))
         await pg.click('#btnOpps'); await pg.click('#btnResume'); await pg.wait_for_timeout(400)

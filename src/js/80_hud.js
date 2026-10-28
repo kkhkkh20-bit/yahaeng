@@ -60,7 +60,7 @@ function stageMap(w, labels) {
 }
 // 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]
 function showBrief(go) {
-  const el = $('brief'); if (!el || STAGE.tutorial || !CITY) { go(); return; }
+  const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), true); cv.style.width = '100%'; mp.appendChild(cv);
@@ -125,9 +125,8 @@ function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
   setText(hud.objT, 'objT', STAGE.sub);
-  if (CITY) { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
-  else setText(hud.obj, 'obj', objectiveText() + (S.timeLeft ? ` · ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}` : '') + (P.hasKey ? ' · 열쇠 있음' : ''));
-  if (CITY) drawMini();
+  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  drawMini();
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
@@ -139,7 +138,7 @@ function updateHUD(force) {
   hud.layer.dataset.z = zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
   setText(hud.lightLbl, 'll', P.vent ? '덕트 안' : P.under ? '지하 수로' : P.hide ? (P.hide.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀 은신' : '땅굴 은신') : hideName(P.hide) + ' 은신') : P.hidden ? '화단 은신' : P.jump ? '공중' : P.wire ? '전깃줄' + (lv > 0.4 ? '·노출' : '') : P.z ? P.z + '층 옥상' + (lv > 0.4 ? '·노출' : '') : lv > 0.55 ? '빛 노출' : lv > 0.22 ? '어스름' : '어둠');
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';
-  setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.hide ? '숨는 중' : P.captive ? '붙잡는 중 ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 붙음' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 붙음') + ' · 잘 안 보임 · 소리 없음' : P.trav ? '오르는 중' : (input.sneakToggle ? '[살금 모드] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '살금살금', walk: '걷기', run: '달리기' }[P.mode] + (CITY && loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 음악에 묻힘' : ' · 음악 소리') : ''));
+  setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.hide ? '숨는 중' : P.captive ? '붙잡는 중 ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 붙음' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 붙음') + ' · 잘 안 보임 · 소리 없음' : P.trav ? '오르는 중' : (input.sneakToggle ? '[살금 모드] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '살금살금', walk: '걷기', run: '달리기' }[P.mode] + (loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 음악에 묻힘' : ' · 음악 소리') : ''));
   syncTools();
   setText(hud.kills, 'k', '제거 ' + S.stats.kills);
   const fleeNow = S.fleeing && S.guards.some(g => g.state === 'FLEE');
@@ -153,9 +152,9 @@ function updateHUD(force) {
   { const v = $('alertVig'); if (v) { const chase = S.guards.some(g => g.state === 'ALERT' && !g.civ && g.seen), a = S.over ? 0 : chase ? 3 : S.alevel >= 2 ? 2 : S.alevel >= 1 ? 1 : 0; if (hudCache.vig !== a) { hudCache.vig = a; v.dataset.a = a; } } }  // 화면 가장자리 경계 빛
   if (!document.body.classList.contains('joyseen') && S.t > 12) { document.body.classList.add('joyseen'); try { localStorage.setItem('yahaeng.joyseen', '1'); } catch (e) {} }
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
-  { const el = $('expoLbl'); if (el) { el.hidden = !CITY; if (CITY) { const e = P.hide || P.under || P.vent ? 0 : S.expo || 0; const ek = e + (STAGE.zones && pZoneEff() === Z_PUB ? 'p' : ''); if (hudCache.expo !== ek) { hudCache.expo = ek; el.dataset.e = e; el.textContent = e === 2 ? '보인다!' : e === 1 ? '들킬 수 있음' : (STAGE.zones && !P.hide && pZoneEff() === Z_PUB ? (disguised() ? '변장' : '행인') : '숨음'); } } } }
+  { const el = $('expoLbl'); if (el) { el.hidden = false; { const e = P.hide || P.under || P.vent ? 0 : S.expo || 0; const ek = e + (STAGE.zones && pZoneEff() === Z_PUB ? 'p' : ''); if (hudCache.expo !== ek) { hudCache.expo = ek; el.dataset.e = e; el.textContent = e === 2 ? '보인다!' : e === 1 ? '들킬 수 있음' : (STAGE.zones && !P.hide && pZoneEff() === Z_PUB ? (disguised() ? '변장' : '행인') : '숨음'); } } } }
   { const hc = $('hintCard'), dl = $('dlg'); if (hc && dl) hc.style.visibility = dl.hidden ? '' : 'hidden'; }
-  { const pl = $('pickLbl'); if (pl) { pl.hidden = !CITY; if (CITY) setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
+  { const pl = $('pickLbl'); if (pl) { pl.hidden = false; setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
   const pa = primaryAction();
   padButton(hud.act, 'actH', pa, '행동');
   { const cb = $('btnCycle'); if (cb) { const n = pa.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (pa.choiceI + 1) + '/' + n); } }
@@ -175,7 +174,7 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = icon(input.tool, 26) + `<b>${toolCount(input.tool)}</b>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : icon(input.tool, 26) + `<b>${toolCount(input.tool)}</b>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.classList.toggle('aiming', !!input.aiming);
   hud.tool.classList.toggle('ready', input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
 }
@@ -213,7 +212,7 @@ function showEnd(win, reason) {
   let rank = '';
   if (win) {
     // 그림자 조건 (히트맨의 사일런트 어새신식): 다섯 가지를 모두 채우면 그림자
-    const bonus = [['발각 0', st.detected === 0], [hasTargets ? '표적 외 살상 0' : '살상 0', hasTargets ? st.extraKills === 0 : st.kills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
+    const bonus = [['발각 0', st.detected === 0], ['주민 살상 0', st.extraKills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
     S.bonus = bonus;
     if (STAGE.challenges) {
       const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
@@ -227,16 +226,17 @@ function showEnd(win, reason) {
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
   $('endSub').textContent = win ? (STAGE.id === 'tI' ? '이 게임의 규칙을 익혔다. 이제 의뢰 01로 가자. 살금·기대기·전깃줄 같은 잠입 기술은 연습 2·3(선택)에서.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : '등급: ' + rank) : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ' · ' + (tg && tg.state !== 'DEAD' ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
-  $('endStats').innerHTML = [
-    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['제거', st.kills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
+  const ttl = win ? playTitle(st) : null;
+  $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat([
+    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['특수 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
-  ].concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
+  ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;
       return `<div class="ent"><b>등급</b>은 얼마나 조용히 했나 (다섯 개 다 지키면 그림자) — ${S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ')}</div><div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max} · 별은 깬 것 1개 + 도전 과제</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
         + (ENTRY_PICK && (STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '난이도 ' + D().name + ' · 보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' — 깼다' : ''}</div>`;
-  if (CITY && win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
+  if (win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
   $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial && demoOk(STAGES[STAGE_I + 1]))));
   $('btnCP').hidden = win || !cpReady();
@@ -244,8 +244,7 @@ function showEnd(win, reason) {
   renderStageList();
 }
 
-if (!CITY) document.querySelectorAll('.cityonly').forEach(e => e.remove());
-if (CITY) document.querySelectorAll('.nocity').forEach(e => e.remove());
+document.querySelectorAll('.nocity').forEach(e => e.remove());
 // 데모(itch) 빌드: 연습과 의뢰 1·2만. 나머지는 잠긴 카드 하나로 알린다
 const demoOk = s => !window.__DEMO || window.__DEMO.includes(s.id);
 function renderStageList() {
@@ -256,12 +255,12 @@ function renderStageList() {
     <button class="stage" type="button" data-i="${i}">
       ${window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="">` : `<span class="st-no">${s.no}</span>`}
       <span class="st-body"><span class="st-name">${s.name}</span><span class="st-mis">${s.mission}</span></span>
-      <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${CITY && !s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
+      <span class="st-best ${best[s.id + '_' + DKEY] || starsOf(s) ? 'has' : ''}">${!s.tutorial && stageCleared(s) ? `<small class="modc">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</small> ` : ''}${s.challenges ? '★'.repeat(starsOf(s)) + '☆'.repeat(1 + s.challenges.length - starsOf(s)) : best[s.id + '_' + DKEY] ? D().name + ' 최고 ' + best[s.id + '_' + DKEY] : D().name + ' 미완료'}</span>
     </button>`).join('') + (locked.length ? `<div class="stage locked"><span class="st-no">잠김</span><span class="st-body"><span class="st-name">의뢰 ${locked.length}개 더 — 정식판에서</span><span class="st-mis">${locked.map(s => s.name).join(' · ')}</span></span><span></span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
-  { const pl = $('perkList'); if (pl) { pl.hidden = !CITY; if (CITY) { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
+  { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   document.querySelectorAll('#diffSel button').forEach(b => b.classList.toggle('on', b.dataset.d === DKEY));
   { const dn = $('diffNote'); if (dn) dn.textContent = ({ easy: '쉬움 — 늦게 알아챔 · 체력 4 · 도구 넉넉 · 체크포인트 저장', normal: '보통 — 들키면 무전 보고 몇 초 · 체력 3 · 체크포인트 저장', hard: '어려움 — 넓은 시야·빠른 발견 · 체력 2 · 도구 적음 · 저장 없음' })[DKEY] || ''; }
-  { const mb = $('modBox'); if (mb) { mb.hidden = !CITY; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
+  { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
 }
 

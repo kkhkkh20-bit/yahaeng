@@ -15,14 +15,14 @@ async def main():
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': 1280, 'height': 800}); errs=[]; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
         names = await pg.evaluate("() => window.__game.STAGES ? 1 : 0")
-        # m2 (index 1): 엿듣기 — 골목 둘 옆에 서 있기
+        # m2 (index 1): 엿듣기 — 야시장에서 쉬는 조직원 둘 옆에 서 있기 (금고 비번)
         print('M2 intel', await run(pg, 1, [
-          "const S = T.S(); const a = S.guards[10], b = S.guards[11]; T.at(15, 6); return [a.state, b.state, Math.round(a.x/48), Math.round(a.y/48)];",
-          "WAIT9000", "return [T.S().learned, Object.keys(T.S().player.keys), T.S().guards[10].say || T.S().guards[11].say];",
+          "const S = T.S(); const a = S.guards[9], b = S.guards[10]; T.at(16, 8); return [a.state, b.state, Math.round(a.x/48), Math.round(a.y/48)];",
+          "WAIT9000", "return [T.S().learned, Object.keys(T.S().player.keys), T.S().guards[9].say || T.S().guards[10].say];",
           "T.freeze(); T.at(5, 9); return T.act();"]))
         # m2: 간판 사고 — 표적이 클럽 앞에 나올 때
         print('M2 drop', await run(pg, 1, [
-          "const S = T.S(), t = S.guards[0]; t.x = 23.5*48; t.y = 12.5*48; t.route = [{ x: t.x, y: t.y, pause: 999 }]; t.ri = 0; t.wait = 99; t.path = null; T.at(23, 8, 0, 2); return T.act();",
+          "const S = T.S(), t = S.guards[0]; t.x = 27.5*48; t.y = 15.5*48; t.route = [{ x: t.x, y: t.y, pause: 999 }]; t.ri = 0; t.wait = 99; t.path = null; T.at(27, 12, 0, 2); return T.act();",
           "T.G().actPrimary(); T.at(1, 26); return 1;", "WAIT400",
           "const S = T.S(); return [S.guards[0].state, S.corpses.map(c => c.accident), S.alevel];",
           "WAIT6000", "const S = T.S(); return [S.alevel, S.corpses.map(c => c.discovered), S.guards.filter(g => g.state === 'SEARCH').length];"]))

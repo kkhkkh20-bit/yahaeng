@@ -155,7 +155,7 @@ function drawAwareness(P) {
 // ---- 프리렌더 캐릭터 (3D 모델을 8방향으로 미리 찍은 시트, Commandos 방식). 색 키 시트 한 장을 역할별 옷 색으로 바꿔 쓴다
 const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
-const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'] };
+const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
   ninja: ['#e6b38a', '#141414', '#17191f', '#1f2537', '#0c0c0e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#e6e2d8', '#3a3a44', '#1a1a1a'],
@@ -339,14 +339,13 @@ function roofPattern(name) {
   blit(x, name, 0, 0, 48, 48);
   return (roofPats[name] = ctx.createPattern(c, 'repeat'));
 }
-const GIWA = new Set(['roofRed', 'roofGreen', 'roofSlate']);
 // 건물 옥상을 한 장으로 미리 그린다. 조선 테마의 기와는 남쪽·북쪽 비탈 + 용마루 + 막새 끝선 + 들린 처마 끝
 function buildRoofCanvas(b, i) {
   const w = (b.x1 - b.x0 + 1) * TILE, h = (b.y1 - b.y0 + 1 - (b.fh || 0)) * TILE, hang = 22;
   const c = document.createElement('canvas'); c.width = w; c.height = h + hang;
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
   const key = roofOf(i);
-  if (CITY && F[key] && key.startsWith('cRoof')) {
+  if (F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
     const f = F[key], pc = (sx, sy, dx, dy) => x.drawImage(atlas, f[0] + sx, f[1] + sy, 16, 16, dx, dy, 48, 48);
     for (let yy = 48; yy < h - 48; yy += 48) for (let xx = 48; xx < w - 48; xx += 48) pc(16, 16, xx, yy);
@@ -415,21 +414,6 @@ function buildRoofCanvas(b, i) {
       x.strokeStyle = '#5d584f'; x.lineWidth = 2; x.strokeRect(sx + 1, sy - 18, 46, 46);
     }
     c.flat = true;
-  } else if (JOSEON && GIWA.has(key) && F.gw_field) {
-    const f = F.gw_field, e = F.gw_eave, rd = F.gw_ridge;
-    const mid = Math.max(24, Math.round(h * 0.42 / 6) * 6);
-    for (let yy = mid; yy < h; yy += 96) for (let xx = 0; xx < w; xx += 48) x.drawImage(atlas, f[0], f[1], 16, 32, xx, yy, 48, 96);
-    x.save(); x.translate(0, mid); x.scale(1, -1); for (let yy = 0; yy < mid; yy += 96) for (let xx = 0; xx < w; xx += 48) x.drawImage(atlas, f[0], f[1], 16, 32, xx, yy, 48, 96); x.restore();
-    x.fillStyle = 'rgba(0,0,0,.18)'; x.fillRect(0, 0, w, mid);  // 북쪽 비탈은 그늘
-    if (key === 'roofGreen') { x.fillStyle = 'rgba(40,80,110,.2)'; x.fillRect(0, 0, w, h); }
-    if (key === 'roofSlate') { x.fillStyle = 'rgba(235,238,245,.1)'; x.fillRect(0, 0, w, h); }
-    for (let xx = 0; xx < w; xx += 48) x.drawImage(atlas, e[0], e[1], 16, 20, xx, h - 38, 48, 60);           // 남쪽 막새
-    x.save(); x.translate(0, 38); x.scale(1, -1); for (let xx = 0; xx < w; xx += 48) x.drawImage(atlas, e[0], e[1], 16, 20, xx, 0, 48, 60); x.restore();  // 북쪽 막새
-    for (let xx = 0; xx < w; xx += 48) x.drawImage(atlas, rd[0], rd[1], 16, 20, xx, mid - 22, 48, 40);     // 용마루
-    const cl = F.gw_cornerL, cr = F.gw_cornerR;
-    x.drawImage(atlas, cl[0], cl[1], 32, 38, -6, h - 58, 64, 76); x.drawImage(atlas, cr[0], cr[1], 32, 38, w - 58, h - 58, 64, 76);  // 들린 처마 끝
-    x.save(); x.translate(0, 58); x.scale(1, -1); x.drawImage(atlas, cl[0], cl[1], 32, 38, -6, -18, 64, 76); x.drawImage(atlas, cr[0], cr[1], 32, 38, w - 58, -18, 64, 76); x.restore();
-    c.giwa = true;
   } else {
     x.fillStyle = roofPattern(key); x.fillRect(0, 0, w, h);
     x.fillStyle = 'rgba(0,0,0,.35)'; if (w >= h) x.fillRect(0, h / 2 - 3, w, 6); else x.fillRect(w / 2 - 3, 0, 6, h);

@@ -34,13 +34,13 @@ def build():
     kit = read(P('build', 'kit_mk', 'kit.json')) if os.path.exists(P('build', 'kit_mk', 'kit.json')) else 'null'
     v, h = version()
     thumbs = read(P('build', 'thumbs.json')) if os.path.exists(P('build', 'thumbs.json')) else 'null'  # 의뢰 카드 지도 미리보기 (tools/thumbs.py)
-    html = html.replace('<script>window.__ASSETS__', "<script>window.__THEME = 'city'; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
+    html = html.replace('<script>window.__ASSETS__', "<script>window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     html = html.replace('__ASSETS_JSON__', read(P('build', 'assets_city.json'))).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', game_js())
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)
     pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'
     open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(pre + html)
-    demo = html.replace('window.__THUMBS = ', "window.__DEMO = ['tI', 't0', 't1', 'm1', 'm2']; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 1·2
+    demo = html.replace('window.__THUMBS = ', "window.__DEMO = ['tI', 't0', 't1', 'm1', 'm2', 'm3']; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 1~3
     open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(pre + demo)
     print('ok', len(html), v, h)
     if '--itch' in sys.argv:

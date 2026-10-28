@@ -58,7 +58,7 @@ function keyMap(pa, sa) {
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   set('kmAct', pa.k === 'none' ? (pa.stalk ? actVerb(pa) : '행동') + (pa.hold ? '' : '') : actVerb(pa, actIcon(pa)) + (pa.hold ? ` · 길게 ${pa.hold}` : ''), pa.k !== 'none' || pa.stalk);
   set('kmZ', sa.k === 'none' ? '특수' : actVerb(sa, actIcon(sa)), sa.k !== 'none');
-  set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}`, toolCount(input.tool) > 0);
+  if (S.player.captive) set('kmX', canInterrogate() ? '심문' : '도구', canInterrogate()); else set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}`, toolCount(input.tool) > 0);
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '살금 켜짐' : '살금', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)

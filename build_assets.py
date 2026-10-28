@@ -1,7 +1,7 @@
 # 에셋 묶음 v2 — Ninja Adventure Asset Pack (Pixel-Boy & AAA, CC0) 중심으로 교체
 # 발소리 등 일부 효과음은 기존 Kenney(CC0) 것을 유지한다.
 import json, base64, subprocess, os, colorsys, sys
-THEME = os.environ.get('THEME', 'city')  # 도시판 아틀라스·소리 (원본 에셋 dl/ 필요)
+THEME = 'city'  # 도시판 아틀라스·소리 (원본 에셋 dl/ 필요). 옛 조선·네오 시안은 지웠다
 from PIL import Image
 
 NA = '/root/game/dl/ninja/pack/Ninja Adventure - Asset Pack/'
@@ -36,30 +36,9 @@ t16('crate', TE, 0, 0); t16('crate2', TE, 9, 2); t16('pot0', TE, 1, 0); t16('pot
 t16('box', TE, 1, 9); t16('sack', TE, 8, 2); t16('rock', TN, 8, 12)
 t16('bush0', TN, 1, 10); t16('bush1', TN, 6, 10); t16('bush2', TN, 10, 9)
 t16('treeR', TN, 6, 8, 2, 2); t16('pine', TN, 0, 0, 2, 2); t16('treeP', TN, 0, 18, 2, 2)
-# 기와 지붕 조각 (OpenGameArt 'Oriental Roof Tiles', Clint Bellanger, CC0)
-GW = Image.open('/root/game/dl/oga/roof_tiles.gif').convert('RGBA')
-_px = GW.load()
-for yy in range(GW.height):
-    for xx in range(GW.width):
-        if _px[xx, yy][:3] == (223, 152, 90): _px[xx, yy] = (0, 0, 0, 0)
-def gw(name, box): items.append((name, GW.crop(box)))
-gw('gw_field', (288, 56, 304, 88)); gw('gw_ridge', (288, 26, 304, 46)); gw('gw_eave', (288, 188, 304, 208))
-gw('gw_cornerL', (18, 168, 50, 206)); gw('gw_cornerR', (588, 168, 620, 206))
 # 3/4 정면벽 조각 (집 타일셋): 황토 벽, 격자 창, 문
 def h16(name, x, y): items.append((name, TH.crop((x, y, x + 16, y + 16))))
-if THEME in ('joseon', 'neo'):
-    from PIL import ImageDraw
-    def hanok(x, y, left=False, right=False):
-        t = setcol(TH.crop((x, y, x + 16, y + 16)), 0.1, 1, 1.15, 0.08)
-        d = ImageDraw.Draw(t)
-        d.rectangle((0, 0, 15, 1), fill=(74, 48, 32, 255))                     # 도리(위 나무)
-        d.rectangle((0, 13, 15, 15), fill=(118, 112, 104, 255)); d.line((0, 13, 15, 13), fill=(86, 80, 74, 255))  # 돌 기단
-        if left or True: d.rectangle((0, 0, 1, 12), fill=(92, 60, 38, 255))  # 기둥
-        if right: d.rectangle((14, 0, 15, 12), fill=(92, 60, 38, 255))
-        return t
-    raw('fWallL', hanok(96, 32, left=True)); raw('fWall', hanok(96, 32)); raw('fWall2', hanok(96, 32)); raw('fWallR', hanok(96, 32, right=True))
-else:
-    h16('fWallL', 64, 32); h16('fWall', 96, 32); h16('fWall2', 160, 32); h16('fWallR', 112, 32)
+h16('fWallL', 64, 32); h16('fWall', 96, 32); h16('fWall2', 160, 32); h16('fWallR', 112, 32)
 h16('fWin', 0, 48); h16('fWinBar', 16, 48); h16('fDoor', 128, 48); h16('fDoorOpen', 144, 48)
 t16('bench', TE, 2, 10, 3, 1); t16('shelf', TE, 3, 7, 2, 2)
 # 지붕 질감: 붉은 기와를 기준으로 색만 바꾼 변형
@@ -75,12 +54,7 @@ def recolor(im, hue=None, sat=1.0, val=1.0):
             r2, g2, b2 = colorsys.hsv_to_rgb(h, s, v)
             out.putpixel((xx, yy), (int(r2 * 255), int(g2 * 255), int(b2 * 255), a))
     return out
-if THEME in ('joseon', 'neo'):
-    # 기와(짙은 회청색 여러 톤)와 초가(볏짚)
-    raw('roofRed', setcol(roof, 0.6, 1, 0.92, 0.12)); raw('roofGreen', setcol(roof, 0.57, 1, 0.85, 0.2)); raw('roofSlate', setcol(roof, 0.63, 1, 1.0, 0.07))
-    raw('roofOrange', setcol(roof, 0.12, 1, 0.9, 0.55)); raw('roofBrown', setcol(roof, 0.1, 1, 0.75, 0.5))
-else:
-    raw('roofRed', roof); raw('roofGreen', recolor(roof, 0.30, 0.55, 0.62)); raw('roofSlate', recolor(roof, 0.58, 0.28, 0.6)); raw('roofOrange', recolor(roof, 0.05, 0.9, 0.95)); raw('roofBrown', recolor(roof, 0.06, 0.55, 0.55))
+raw('roofRed', roof); raw('roofGreen', recolor(roof, 0.30, 0.55, 0.62)); raw('roofSlate', recolor(roof, 0.58, 0.28, 0.6)); raw('roofOrange', recolor(roof, 0.05, 0.9, 0.95)); raw('roofBrown', recolor(roof, 0.06, 0.55, 0.55))
 # 캐릭터 (64x112: 4방향 x 7행, 16px)
 CH = NA + 'Actor/Character/'
 def recolor_fn(im, fn):
@@ -97,8 +71,6 @@ navy = lambda h, s, v: (h, s, v) if (skin(h, s, v) or s < 0.15) else (0.62, 0.45
 redcoat = lambda h, s, v: (h, s, v) if (skin(h, s, v) or s < 0.15) else (0.99, 0.7, v * 0.75)
 blackhat = lambda h, s, v: (h, s, v * 0.22) if (s < 0.18 and v > 0.6) else ((h, s, v) if skin(h, s, v) else (0.55, 0.4, v * 0.6))
 CAST = [('ninja', 'NinjaDark', None), ('sam', 'Samurai', None), ('samB', 'SamuraiBlue', None), ('samR', 'SamuraiRed', None), ('noble', 'Noble', None), ('old', 'OldMan', None), ('hunter', 'Hunter', None)]
-if THEME in ('joseon', 'neo'):  # 순라군(남색) · 포졸(홍색) · 포교(검은 갓)
-    CAST = [('ninja', 'NinjaDark', None), ('sam', 'Villager5', navy), ('samB', 'Villager6', redcoat), ('samR', 'Inspector', blackhat), ('noble', 'Noble', None), ('old', 'OldMan', None), ('hunter', 'Hunter', None)]
 for key, folder, fn in CAST:
     sp = CH + folder + '/SpriteSheet.png'
     sheet = img(sp if os.path.exists(sp) else CH + folder + '/redsamurai.png'); dead = img(CH + folder + '/SeparateAnim/Dead.png')
@@ -213,36 +185,6 @@ if THEME == 'city':
                 if 0 <= nx < _cn.width and 0 <= ny < _cn.height and nx // 16 == xx // 16 and ny // 16 == yy // 16 and _cp[nx, ny][3] >= 40:
                     _op[xx, yy] = (190, 243, 255, 255); break
     put('ch_ninja_ol', _ol)
-if THEME == 'neo':
-    # 바닥은 짙은 남보라·청록으로, 인물·소품은 흰 스티커 테두리
-    FLOOR = {'grass0': (0.47, 0.55, 0.42), 'grass1': (0.47, 0.55, 0.40), 'grass2': (0.47, 0.5, 0.44), 'dirt0': (0.78, 0.35, 0.42), 'dirt1': (0.78, 0.35, 0.4),
-             'stone0': (0.66, 0.3, 0.42), 'stone1': (0.66, 0.3, 0.4), 'wood': (0.88, 0.35, 0.42), 'wood2': (0.9, 0.3, 0.46), 'water': (0.58, 0.8, 0.5)}
-    def neo_floor(im, h, smul, vmul):
-        out = Image.new('RGBA', im.size)
-        for yy in range(im.height):
-            for xx in range(im.width):
-                r_, g_, b_, a_ = im.getpixel((xx, yy)); hh, ss, vv = colorsys.rgb_to_hsv(r_ / 255, g_ / 255, b_ / 255)
-                r2, g2, b2 = colorsys.hsv_to_rgb(h, min(1, 0.25 + ss * smul), vv * vmul); out.putpixel((xx, yy), (int(r2 * 255), int(g2 * 255), int(b2 * 255), a_))
-        return out
-    def sticker(im, cell=None):
-        src = im.load(); out = im.copy(); o = out.load(); W_, H_ = im.size
-        for yy in range(H_):
-            for xx in range(W_):
-                if src[xx, yy][3] >= 40: continue
-                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                    nx, ny = xx + dx, yy + dy
-                    if not (0 <= nx < W_ and 0 <= ny < H_): continue
-                    if cell and (nx // cell != xx // cell or ny // cell != yy // cell): continue
-                    if src[nx, ny][3] >= 40: o[xx, yy] = (246, 242, 230, 255); break
-        return out
-    STICK = {'crate', 'crate2', 'pot0', 'pot1', 'box', 'sack', 'rock', 'bush0', 'bush1', 'bush2', 'treeR', 'pine', 'treeP', 'it_scroll', 'it_coin', 'it_key', 'dog'}
-    new = []
-    for name, im in items:
-        if name in FLOOR: im = neo_floor(im, *FLOOR[name])
-        elif name.startswith('ch_') or name.startswith('dead_') or name == 'dog': im = sticker(im, 16)
-        elif name in STICK: im = sticker(im)
-        new.append((name, im))
-    items[:] = new
 W = 1024; x = y = rowh = 0; pad = 2; frames = {}; placed = []
 for name, im in items:
     if x + im.width > W: x = 0; y += rowh + pad; rowh = 0
@@ -251,7 +193,7 @@ for name, im in items:
 H = y + rowh
 atlas = Image.new('RGBA', (W, H), (0, 0, 0, 0))
 for name, im, px, py in placed: atlas.paste(im, (px, py))
-APNG = f'/root/game/build/atlas_{THEME}.png' if THEME else '/root/game/build/atlas2.png'
+APNG = '/root/game/build/atlas_city.png'
 atlas.save(APNG, optimize=True)
 
 SND = NA + 'Audio/Sounds/'
@@ -299,4 +241,4 @@ _subset.main(['/root/game/dl/galmuri/package/dist/Galmuri11-Bold.ttf', '--text-f
 font_url = 'data:font/woff2;base64,' + base64.b64encode(open('/root/game/build/galmuri_sub.woff2', 'rb').read()).decode()
 atlas_b64 = 'data:image/png;base64,' + base64.b64encode(open(APNG, 'rb').read()).decode()
 json.dump({'atlas': atlas_b64, 'frames': frames, 'sounds': snd, 'music': music, 'ui': ui, 'font': font_url}, open(f'/root/game/build/assets_{THEME}.json' if THEME else '/root/game/build/assets.json', 'w'))
-print('font', os.path.getsize('/root/game/build/galmuri_sub.woff2'), 'atlas', W, H, os.path.getsize('/root/game/build/atlas2.png'), 'snd', sum(len(v) for v in snd.values()), 'music', sum(len(v) for v in music.values()), 'bark', sounds['bark'])
+print('font', os.path.getsize('/root/game/build/galmuri_sub.woff2'), 'atlas', W, H, os.path.getsize(APNG), 'snd', sum(len(v) for v in snd.values()), 'music', sum(len(v) for v in music.values()), 'bark', sounds['bark'])

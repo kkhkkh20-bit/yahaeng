@@ -6,7 +6,7 @@ function initAudio() {
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     master = AC.createGain(); master.gain.value = typeof VOL === 'number' ? VOL : 0.9; master.connect(AC.destination);
-    if (CITY) setTimeout(() => prepNeonMusic(), 50);  // 처음 누른 순간부터 음악을 작업자에서 미리 합성
+    setTimeout(() => prepNeonMusic(), 50);  // 처음 누른 순간부터 음악을 작업자에서 미리 합성
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
     let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
@@ -87,7 +87,7 @@ function makeNeonLoop(kind) { return toBuf(neonSynth(kind, AC.sampleRate)); }
 // 작업자에서 세 곡을 미리 합성한다 (안 되는 환경이면 쉬는 틈에 하나씩)
 let neonW = null; const neonPending = {};
 function prepNeonMusic() {
-  if (!AC || !CITY) return;
+  if (!AC) return;
   const ks = ['n_calm', 'n_tense', 'n_fight'].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
   try {
     if (!neonW) { neonW = new Worker(URL.createObjectURL(new Blob([neonSynth.toString() + '\nonmessage = e => { const r = neonSynth(e.data.k, e.data.sr); postMessage({ k: e.data.k, L: r.L, R: r.R }, [r.L.buffer, r.R.buffer]); };'], { type: 'text/javascript' })));

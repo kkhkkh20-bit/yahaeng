@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------- 기회 (Hitman식): 직접 보거나 엿들어 알게 된 암살 수단을 임무 칸에 모은다
 function oppsInit() {
   S.opps = [];
-  (S.traps || []).forEach((tr, i) => { const p = tr.k === 'shock' ? tr.sw : tr.at; S.opps.push({ k: 'trap', ref: i, x: tc(p[0]), y: tc(p[1]), fl: 0, roof: tr.k === 'drop', text: tr.k === 'shock' ? '전선을 끊어 물웅덩이 감전시키기' : '옥상 간판을 떨어뜨려 아래를 덮치기' }); });
+  (S.traps || []).forEach((tr, i) => { if (tr.noOpp) return; const p = tr.k === 'shock' ? tr.sw : tr.at;  // noOpp: 단계형 기회(stories)가 같은 수단을 안내하면 옛 목록에선 뺀다
+    S.opps.push({ k: 'trap', ref: i, x: tc(p[0]), y: tc(p[1]), fl: 0, roof: tr.k === 'drop', text: tr.k === 'shock' ? '전선을 끊어 물웅덩이 감전시키기' : '옥상 간판을 떨어뜨려 아래를 덮치기' }); });
   if (STAGE.fuse) S.opps.push({ k: 'fuse', x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]), fl: 0, text: '두꺼비집을 내려 동네 조명 전부 끄기' });
-  const cds = []; for (const d of S.doors) if (d.keyLock === 'code' && !cds.some(o => dist(o.x, o.y, d.x, d.y) < 120)) cds.push(d);
+  const cds = []; if (STAGE.codeOpp !== false) for (const d of S.doors) if (d.keyLock === 'code' && !cds.some(o => dist(o.x, o.y, d.x, d.y) < 120)) cds.push(d);
   cds.forEach(d => S.opps.push({ k: 'code', d, x: d.x, y: d.y, fl: d.fl || 0, text: '' }));
   if (STAGE.disguise) S.opps.push({ k: 'dress', seen: true, text: '조직원을 쓰러뜨려 옷을 빼앗아 변장하기' });
 }
