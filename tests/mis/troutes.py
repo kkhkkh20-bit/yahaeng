@@ -25,6 +25,8 @@ async def main():
           "T.at(30, 7); return T.G().astar(30, 7, 36, 9).length > 0;",
           "T.at(36, 9); return 1;"]))
         await pg.wait_for_timeout(400)
+        await pg.evaluate('() => { const S = T.S(), P = S.player, it = S.items[0]; P.x = it.x; P.y = it.y; P.fl = it.fl || 0; P.z = 0; T.G().actPrimary(); }')
+        await pg.wait_for_timeout(3000)
         print('M1a item', await pg.evaluate('() => [T.S().items[0].got, T.S().alevel]'))
         # M1-c: 옥상 계단실 → 계단으로 내려가기 (도전 '옥상 계단실로 들어가기')
         print('M1c', await pg.evaluate('''async () => { const g = T.G(), S = T.S(), P = S.player; T.freeze(); const l = S.ladders.find(l => l.kind === 'stair' && l.tz === 2 && l.rx != null);

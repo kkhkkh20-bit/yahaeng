@@ -142,9 +142,9 @@ function updateClimbG(g, dt) {
 const A_RANGE = [1, 1.12, 1.22, 1.3], A_SPEED = [1, 1.06, 1.12, 1.18], A_FOV = [1, 1.05, 1.12, 1.15];
 const A_NAME = ['평온', '경계', '수색', '발각'];
 function setAlert(lv, dur, msg) {
-  if (lv >= 2 && S.alevel < 2) { S.stats.alarms++; setTimeout(roofCheck, 400); }
+  if (lv >= 2 && S.alevel < 2) { S.stats.alarms++; after(0.4, roofCheck); }
   if (lv > S.alevel) {
-    S.alevel = lv; if (lv === 3) { S.stats.full = (S.stats.full || 0) + 1; bossRadio('alert'); S.unseenT = 0; S.chaseSeen = true; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; setTimeout(spawnReinforcements, 2500); } }
+    S.alevel = lv; if (lv === 3) { S.stats.full = (S.stats.full || 0) + 1; bossRadio('alert'); S.unseenT = 0; S.chaseSeen = true; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; after(2.5, spawnReinforcements); } }
     if (lv >= 2) play('alarm', 0.55);
     if (STAGE.flee && lv >= 2) startFlee();
   }
@@ -746,7 +746,7 @@ function followLeader(g, dt, spd) {
 // 순라꾼에게 맞음: 체력 1 감소, 뒤로 밀림, 잠깐 무적. 체력이 다하면 실패
 function hurtPlayer(g, why) {
   const P = S.player; if (P.hurtT > 0 || S.over) return;
-  if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; setTimeout(() => S && !S.over && bark('hero', 'hurt'), 600); }
+  if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; after(0.6, () => bark('hero', 'hurt')); }
   P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유)
   play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 자경대원은 잠깐 숨을 고른다
@@ -792,7 +792,7 @@ function goAlert(g) {
   let radio = !!g.radio;
   for (const o of S.guards) {
     if (o === g || o.civ || o.yank || o.state === 'DEAD' || o.state === 'ALERT' || o.target || o.state === 'FLEE' || o.state === 'CAPTIVE' || o.state === 'TERROR' || flOf(o) !== flOf(g)) continue;
-    if (dist(o.x, o.y, g.x, g.y) < (g.target ? 650 : 340)) { o.state = 'ALERT'; o.icon = '!'; o.iconT = 99; o.lastSeen = pSpot(); o.lostT = 0.5; o.path = null; o.repath = 0; o.meter = 1; o.shootT = 0; if (o.radio) radio = true; }
+    if (dist(o.x, o.y, g.x, g.y) < 340) { o.state = 'ALERT'; o.icon = '!'; o.iconT = 99; o.lastSeen = pSpot(); o.lostT = 0.5; o.path = null; o.repath = 0; o.meter = 1; o.shootT = 0; if (o.radio) radio = true; }
   }
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
     if (S.alevel < 2) toast('근처 자경대원만 알아챘다 — 무전기 자경대원이 없다', 2.4);
@@ -804,9 +804,10 @@ function goAlert(g) {
         toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 처치하면 끊긴다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 자경대원은 멈춰 있다. 등 뒤가 아니어도 처치할 수 있다'); }
     }
     setAlert(2, 30);
-  } else {
-    setAlert(3);
-  }
+  } else if (!S.radioCall) {  // 표적도 바로 전체 경보가 아니라 2초 동안 소리친다 — 그 사이 처치하면 막힌다
+    S.radioCall = { g, t: 2.0, dur: 2.0, at: pSpot(), shout: true }; toast('표적이 사람을 부른다 — 2초 안에 막으면 퍼지지 않는다', 2.4, 'warn');
+    setAlert(2, 30);
+  } else setAlert(2, 30);
   hint('alert', '발각! 시야를 끊고 20초 숨어 버티면 수색으로 바뀐다');
 }
 function radioSpread(at) {
@@ -819,7 +820,7 @@ const radioBusy = g => !!(S.radioCall && S.radioCall.g === g);
 function updateRadioCall(dt) {
   const R = S.radioCall; if (!R) return;
   const g = R.g;
-  if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.doomed) { S.radioCall = null; S.stats.radioCut = (S.stats.radioCut || 0) + 1; toast('무전을 끊었다 — 경보가 퍼지지 않았다', 2.4, 'good'); logEv && logEv('radioCut', g.x, g.y); return; }
+  if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.doomed) { S.radioCall = null; S.stats.radioCut = (S.stats.radioCut || 0) + 1; toast(R.shout ? '소리치기 전에 막았다 — 경보가 퍼지지 않았다' : '무전을 끊었다 — 경보가 퍼지지 않았다', 2.4, 'good'); logEv && logEv('radioCut', g.x, g.y); return; }
   if (g.state !== 'ALERT') { S.radioCall = null; return; }
   if ((R.t -= dt) <= 0) { S.radioCall = null; radioSpread(R.at); }
 }

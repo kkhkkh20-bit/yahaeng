@@ -15,7 +15,7 @@ function update(dt) {
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
-  updateRadioCall(dt); updateAmbush(dt); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt); updateWarn(dt); updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial();
+  updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt); updateWarn(dt); updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial();
   if (S.timeLeft) {
     const active = !S.exitOpen && (!STAGE.timeTarget || S.guards.some(g => g.target && g.state !== 'DEAD'));
     if (active) { S.timeLeft -= dt; if (S.timeLeft <= 0) { S.timeLeft = 0; endGame(false, STAGE.timeFail || '시간이 다 됐다.'); return; } }

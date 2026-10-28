@@ -185,7 +185,7 @@ function updateStealth(lv) {
   { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
-  const eyeG = STAGE.zones && S.guards.find(g => g.state !== 'DEAD' && (g.eyeT || 0) > 0.05 && flOf(g) === flOf(P)),  // 눈썰미 있는 사람이 변장을 살피는 중
+  const eyeG = STAGE.zones && S.guards.find(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !radioBusy(g) && (g.eyeT || 0) > 0.05 && flOf(g) === flOf(P)),  // 눈썰미 있는 사람이 변장을 살피는 중
     runNear = STAGE.zones && P.mode === 'run' && P.moving && S.guards.some(g => g.state !== 'DEAD' && !g.dog && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 220),
     sus = STAGE.zones && suspAct(null) >= 1, pub = STAGE.zones && !P.hide && !P.hidden && !P.under && !P.vent && !P.z && pZoneEff() === Z_PUB && !sus;  // 시체·붙잡은 사람을 끌고 있으면 공개 구역이어도 섞이지 않는다
   const zi = STAGE.zones ? pZoneInfo() : null, banned = zi && zi.k !== Z_PUB && !permitted(zi);
@@ -201,7 +201,7 @@ function updateStealth(lv) {
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     let r = 0; for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.dropped || flOf(g) !== flOf(P)) continue; r = Math.max(r, g.state === 'ALERT' && !g.civ ? 1 : g.meter || 0, (g.eyeT || 0) / EYE_T); }  // 눈썰미 게이지도 함께
-    riskTone(paused || S.over ? 0 : r);
+    riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
@@ -254,7 +254,8 @@ function showEnd(win, reason) {
   let rank = '';
   if (win) {
     // 그림자 조건 (히트맨의 사일런트 어새신식): 다섯 가지를 모두 채우면 그림자
-    const bonus = [['발각 0', st.detected === 0], ['주민 살상 0', st.extraKills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
+    // 근처만 알아챈 발각은 괜찮다 — 무전으로 퍼지지만 않으면
+    const bonus = [['전체 경보 0', !(st.full || 0)], ['주민 살상 0', st.extraKills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['CCTV 기록 0', !(st.camRec || 0)]];
     S.bonus = bonus;
     if (STAGE.challenges) {
       const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
@@ -283,7 +284,7 @@ function showEnd(win, reason) {
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' — 깼다' : ''}</div>`;
   if (win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
-  $('btnNext').hidden = !(win && (STAGE.tutorial || (STAGE_I < STAGES.length - 1 && !STAGES[STAGE_I + 1].tutorial && demoOk(STAGES[STAGE_I + 1]))));
+  $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
   $('btnCP').hidden = win || !cpReady();
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();

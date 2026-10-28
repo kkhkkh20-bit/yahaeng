@@ -174,8 +174,8 @@ function startAmbush(g) {
 }
 function ambWitness(o, A) {
   if (A.seen === o) return; A.seen = A.seen || o;
-  if (o.civ) { if (!(STAGE.zones && startReport(o, A.tx, A.ty, null, 'face', 'crime'))) civScream(o, A.tx, A.ty, null, 'face', 'crime'); }
-  else { o.meter = 1; goAlert(o); }
+  if (o.civ) { if (!(STAGE.zones && startReport(o, A.tx, A.ty, null, null, 'crime'))) civScream(o, A.tx, A.ty, null, null, 'crime'); }  // 끌려가는 몸만 봤다 — 내 얼굴·옷은 모른다
+  else { endChat(o); o.state = 'SEARCH'; o.poi = { x: A.tx, y: A.ty, fl: flOf(o), z: 0 }; o.reached = false; o.path = null; o.waitBase = 5; o.meter = Math.max(o.meter, 0.7); o.why = 'saw'; setIcon(o, '!'); gsay(o, ['방금 뭐야?! 저기 끌려갔어!', '저기 누가 사라졌어!', '방금 저쪽에서 뭐가…!'][o.id % 3], 2); setAlert(2, 30); }
   if (!A.warned) { A.warned = true; toast('끌어들이는 걸 누가 봤다!', 2.4, 'warn'); }
 }
 function updateAmbush(dt) {
@@ -281,7 +281,7 @@ function counterTarget() {
 function doCounter(g) {
   const P = S.player; g.atkT = 0; g.atkCd = 0; P.a = Math.atan2(g.y - P.y, g.x - P.x); P.strikeT = 0.35; S.hitStop = 0.12; S.shakeT = 0.18;
   S.stats.counters = (S.stats.counters || 0) + 1; play('thud', 0.7); noise(g.x, g.y, 260, 'fight', flOf(g));
-  S.koNext = true; killGuard(g, null, null, true); toast('반격 — 넘어뜨려 기절시켰다. 소리가 컸다', 2.2, 'good');
+  S.koNext = true; killGuard(g, null, null, true); S.koHold = null; toast('반격 — 넘어뜨려 기절시켰다. 소리가 컸다', 2.2, 'good');  // 반격은 길게 눌러도 처치로 바뀌지 않는다
 }
 // 가구에서 훔치기: 물건을 가까운 책상·컴퓨터·서류장·금고 등에 올려 두고, 옆에 서서 [행동]으로 시간을 들여 빼 온다.
 // it.x, it.y 는 가구 옆 '서는 자리'(길 찾기·거리 판정용), it.dx, it.dy 는 가구 위 그리는 자리
@@ -316,7 +316,7 @@ function takeItem(it) {
 // 핏자국 닦기: 핏자국 위에서 [행동]. 움직이면 멈춘다. 큰 자국 2.6초 · 핏방울 0.9초. 닦는 동안은 수상한 행동이라 보이면 들킨다
 function nearBlood() {
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.vent || P.under) return null;
-  let best = null, bd = 34; for (const d of S.decals) { if (flOf(d) !== flOf(P)) continue; const e = dist(P.x, P.y, d.x, d.y); if (e < bd) { bd = e; best = d; } }
+  let best = null, bd = 34; for (const d of S.decals) { if (flOf(d) !== flOf(P) || ACT_SKIP.has(d) || (d.z || 0) !== (P.z || 0)) continue; const e = dist(P.x, P.y, d.x, d.y); if (e < bd) { bd = e; best = d; } }
   return best;
 }
 function startClean(d) { const P = S.player; P.pick = { kind: 'clean', d, x: d.x, y: d.y, t: 0, nt: 0.1, dur: d.r >= 10 ? 2.6 : 0.9 }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(d.y - P.y, d.x - P.x); hint('clean', '핏자국 닦기: 움직이면 멈춘다. 닦는 모습이 보이면 수상하게 여긴다'); }
@@ -483,7 +483,7 @@ function kpPress(v) {
     if (v !== 'ok' && v.length === 1) kpShow();
     if (k.buf.length < n) return;
     if (k.buf === STAGE.code) {
-      const d = k.d; kpBeep(true); setTimeout(() => { if (!S) return; d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비번이 맞았다 — 문이 열렸다', 1.8, 'good'); closeKeypad(); }, 260);
+      const d = k.d; kpBeep(true); after(0.26, () => { d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비번이 맞았다 — 문이 열렸다', 1.8, 'good'); closeKeypad(); });
     } else {
       kpBeep(false); k.bad++; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
       const el = document.getElementById('kpDisp'); el.classList.remove('bad'); void el.offsetWidth; el.classList.add('bad');
@@ -520,7 +520,7 @@ function stalkGuard() {
 // 물체가 겹칠 때: 주 행동 후보를 대상 하나씩 빼 가며 다시 구해 목록을 만들고(최대 4), 고른 것(S.actSel)을 주 행동으로 쓴다
 // 바꾸기: Tab · 터치 ⇄ 버튼. 후보 묶음이 바뀌면 처음(가장 우선)으로 돌아간다
 const ACT_SKIP = new Set();
-const actObj = a => a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || a.tp || a.j || a.lv || null;
+const actObj = a => a.it || a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || a.tp || a.j || a.lv || null;
 const _oid = new WeakMap(); let _oidN = 0; const oid = o => { if (!o || typeof o !== 'object') return ''; if (!_oid.has(o)) _oid.set(o, ++_oidN); return _oid.get(o); };
 function actionChoices() {
   const out = []; ACT_SKIP.clear(); let pref;
@@ -592,7 +592,6 @@ function primaryActionRaw() {
   if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > 56 ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: { x: nt.x, y: nt.y }, label: nt.read ? '다시 읽기' : '읽기' };
   const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: `${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
-  const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' };
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downPt(fdE), label: `내리기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
@@ -613,6 +612,7 @@ function primaryActionRaw() {
   const h = nearHide();
   if (h && !P.carrying) return { k: 'hide', h, label: '숨기' };
   if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', label: '넣기' };
+  if (P.carrying) return { k: 'none', label: '—' };  // 메고 있는 동안 큰 버튼이 조명·문을 가리키지 않게 (내려놓기는 [보조])
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
   if (nearFuse()) return { k: 'fuse', label: '전체 조명 끄기' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
@@ -627,6 +627,7 @@ function primaryActionRaw() {
     S.ikPref = pick.k; const res = pick.a(), other = cands.find(c => c !== pick); if (other) res.alt = other.a();
     return res;
   }
+  { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
 }
 function actPrimary(force) {
@@ -914,7 +915,7 @@ function travelTunnel() {
 // 주민은 늘 기절이 기본이고, 행동 버튼을 계속 누르고 있으면 숨을 끊는다(주민 살상 — 감점)
 const actHeld = () => !!(S && S.keys && (S.keys.Space || S.keys.KeyQ)) || !!(document.getElementById('btnAct') && document.getElementById('btnAct').classList.contains('down'));
 const koDefault = g => !!g && !g.dog && !g.target && !!g.civ;
-const KO_HOLD = 0.5;
+const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   logEv('ko', g.x, g.y);
@@ -1005,6 +1006,7 @@ function killGuard(g, mode, where, quiet) {
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
+  else if (g.z) noise(g.x, g.y, 60, 'kill', flOf(g));  // 옥상: 핏자국을 남기지 않는다 (아래층에서 보이거나 닦을 수 없는 피가 생기지 않게)
   else { c.bleed = ++S.trailN || (S.trailN = 1); S.decals.push({ x: g.x + rnd(-6, 6), y: g.y + rnd(-6, 6), r: rnd(14, 19), rot: rnd(0, TAU), fl: flOf(g), trail: c.bleed, k: 0 }); noise(g.x, g.y, 60, 'kill', flOf(g)); }  // 처치한 자리에 핏자국. 이 시체를 옮기면 같은 번호로 핏방울이 이어진다
   S.flash = 0.25;
   if (g.target) {
@@ -1022,7 +1024,7 @@ function accidentKill(g, how) {
   if (g.state === 'DEAD' || g.child) return;
   logEv('accident', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; play('thud', 0.6);
-  S.stats.kills++; S.stats.accidents = (S.stats.accidents || 0) + 1; if (g.target) setTimeout(() => bossRadio('accident', true), 1200); if (!g.target && g.civ) S.stats.extraKills++; else if (!g.target && !g.dog) S.stats.crewKills = (S.stats.crewKills || 0) + 1;
+  S.stats.kills++; S.stats.accidents = (S.stats.accidents || 0) + 1; if (g.target) after(1.2, () => bossRadio('accident', true)); if (!g.target && g.civ) S.stats.extraKills++; else if (!g.target && !g.dog) S.stats.crewKills = (S.stats.crewKills || 0) + 1;
   const c = { fl: flOf(g), ch: charOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, accident: how, t0: S.t };
   S.corpses.push(c);
   if (g.target) { const left = S.guards.filter(o => o.target && o.state !== 'DEAD').length; toast(left ? `표적 제거(사고) — 남은 표적 ${left}` : '표적 제거 — 사고로 보인다', 3, 'good'); }
@@ -1158,7 +1160,7 @@ function actCarry() {
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; setTimeout(() => S && !S.over && bossRadio('disguise', true), 900); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
     else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 초록 경계선 구역은 지나다녀도 된다. 뛰기·운반·락픽은 수상하다. 눈 표시 사람은 오래 보면 알아챈다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰기·시체 들기·옥상·너무 가까이 붙기는 의심받는다'); }

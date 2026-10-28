@@ -62,7 +62,7 @@ function deliverReport(g) {
   }
   if (r.kind === 'trespass') {  // 무단 침입 알림: 자경대원이 확인하러 갈 뿐 (경보·얼굴 기억·목격자 감점 없음)
     gsay(g, '저쪽 출입 금지 구역에 수상한 사람이 들어갔어요.', 2.6); endChat(o); o.act = null; o.bubble = null; goSuspicious(o, r.x, r.y, 5); o.why = 'heard';
-    setTimeout(() => { if (o.state !== 'DEAD') gsay(o, ['알겠어요, 가 볼게요.', '또 누가 들어갔나.', '확인해 보죠.'][o.id % 3]); }, 900);
+    after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['알겠어요, 가 볼게요.', '또 누가 들어갔나.', '확인해 보죠.'][o.id % 3]); });
     g.state = 'RETURN'; g.path = null; g.icon = null; return;
   }
   S.stats.witness = (S.stats.witness || 0) + 1; logEv('report', g.x, g.y);
@@ -70,7 +70,7 @@ function deliverReport(g) {
   endChat(o); o.act = null; o.bubble = null; o.want = Math.atan2(g.y - o.y, g.x - o.x);
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
-  setTimeout(() => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); }, 900);
+  after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
   setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작');
   if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, `신고한 주민이 ${outfitName(r.saw)} 차림을 말했다 — 이 옷은 이제 통하지 않는다`);
   else if (r.saw === 'face') { S.chaseSeen = true; toast('신고한 주민이 얼굴을 말했다 — 수색이 끝날 때까지 거리에서도 알아본다', 2.8, 'warn'); }
@@ -173,7 +173,7 @@ function nearUse() {
 function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
-    p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : P.disguise; P.outfit = p.outfit; setTimeout(() => S && !S.over && bossRadio('disguise', true), 900); P.disguiseBlown = !!(P.blown || {})[p.outfit]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     toast(P.disguiseBlown ? `${outfitName(p.outfit)} — 이미 들통난 옷이다` : `${outfitName(p.outfit)}으로 갈아입었다 — 초록 경계선 안은 지나다닐 수 있다`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();

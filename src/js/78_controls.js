@@ -46,7 +46,7 @@ function actIcon(a) {
 const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내리기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
 function actVerb(a, ic) {
-  const lb = (a.label || '').split(/ \(| — | → /)[0];
+  const lb = (a.label || '').split(/ \(| — | → | · /)[0];  // '오르기 · 2층' → '오르기'
   if (a.k === 'none') return a.stalk ? (koDefault(a.stalk) ? '기절' : '처치') : '';
   if (a.k === 'dropItem') return '내려놓기';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';

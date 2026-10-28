@@ -51,8 +51,8 @@
               { text: '사무실 책상의 장부 — 상자만 들었으면 자경대원이 등을 돌릴 때, 택배 기사 옷이면 서명 받으러 왔다며 걸어 들어간다', at: [36, 9, 0], done: S => S.items.every(i => i.got) }] },
     { id: 'smoke', name: '담배 타임', reveal: (S, h) => h.knows('막내'),
       steps: [{ text: '뒷골목 서쪽에서 혼자 담배 피우는 막내를 기절', at: [21, 3, 0], done: (S, h) => h.npc('kid').state === 'DEAD' },
+              { text: '쓰러진 막내의 직원 조끼 입기', at: [21, 3, 0], done: S => S.player.outfit === 'staff' && !S.player.disguiseBlown },  // 옷 먼저 — 수거함에 넣은 사람은 옷을 벗길 수 없다
               { text: '막내를 의류수거함에 숨기기', at: [19, 2, 0], done: S => S.corpses.some(c => c.tag === 'kid' && (c.stashed || c.hidden)) },
-              { text: '직원 조끼 입기', at: [21, 3, 0], done: S => S.player.outfit === 'staff' && !S.player.disguiseBlown },
               { text: '사장 눈을 피해 사무실 책상의 장부', at: [36, 9, 0], done: S => S.items.every(i => i.got) }] },
     { id: 'boss', name: '사장의 외출', reveal: (S, h) => h.knows('사장은'),
       steps: [{ text: '사장이 편의점에 담배 사러 갈 때까지 기다리기', at: [10, 25, 0], done: (S, h) => h.inRect(h.npc('boss'), [5, 20, 18, 28, 0]) || h.npc('boss').state === 'DEAD' },

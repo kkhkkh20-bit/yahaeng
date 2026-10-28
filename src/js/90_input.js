@@ -179,7 +179,9 @@ $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
 $('btnRetry').addEventListener('click', () => start(STAGE_I, true));  // 다시 하기는 브리핑 없이 바로
 $('btnCP').addEventListener('click', () => loadCheckpoint());
-$('btnNext').addEventListener('click', () => start(STAGE.tutorial ? 0 : STAGE_I + 1));
+// 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
+function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (!STAGES[i].tutorial && demoOk(STAGES[i])) return i; return -1; }
+$('btnNext').addEventListener('click', () => { const n = nextPlayable(); start(STAGE.tutorial ? STAGES.findIndex(s => !s.tutorial) : n >= 0 ? n : STAGE_I); });
 document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));

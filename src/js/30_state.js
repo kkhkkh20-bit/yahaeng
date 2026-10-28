@@ -16,6 +16,9 @@ let running = false, paused = false;
 const MODS = { reinf: ['순찰 증원', '순찰 자경대원이 둘 늘어난다 (반대 방향으로 돈다)'], timer: ['제한 시간', '6분 안에 끝내야 한다'], bright: ['환한 밤', '어둠 속에서도 자경대원이 1.5배 멀리 본다'], bare: ['맨손', '락픽·빈 캔·다트 없이 시작한다'] };
 let MOD = ''; try { const m = localStorage.getItem('yahaeng.mod'); if (MODS[m]) MOD = m; } catch (e) {}
 const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
+// 판 안 예약 동작: 게임 시간(S.t)으로 센다 — 일시정지하면 멈추고, 판이 바뀌면 사라진다 (setTimeout 은 이전 판 일이 새 판에 끼어들었다)
+function after(sec, fn) { if (S) (S.timers || (S.timers = [])).push({ at: S.t + sec, fn }); }
+function runTimers() { const T = S && S.timers; if (!T || !T.length) return; const now = S.t, due = T.filter(o => o.at <= now); if (!due.length) return; S.timers = T.filter(o => o.at > now); for (const o of due) { if (S.over) return; try { o.fn(); } catch (e) { console.error(e); } } }
 function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';

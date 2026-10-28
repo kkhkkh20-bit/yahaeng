@@ -12,11 +12,11 @@ function interrogate() {
   play('cloth', 0.4); P.strikeT = Math.max(P.strikeT || 0, 0.2);
   const it = (STAGE.interrogate || []).find(i => !S.learned.includes(i.learn) && !(i.gives && P.keys[i.gives]));
   if (it) {
-    gsay(g, it.say, 3.2); setTimeout(() => { if (!S || S.over) return; if (it.gives) { P.keys[it.gives] = true; P.hasKey = true; } S.learned.push(it.learn); hudCache.objH = null; toast('실토했다 — ' + it.learn, 3.2, 'good'); }, INTERRO_T * 1000);
+    gsay(g, it.say, 3.2); after(INTERRO_T, () => { if (it.gives) { P.keys[it.gives] = true; P.hasKey = true; } S.learned.push(it.learn); hudCache.objH = null; toast('실토했다 — ' + it.learn, 3.2, 'good'); });
   } else {
     const near = S.guards.filter(o => o !== g && !o.civ && !o.dog && !o.target && !['DEAD', 'CAPTIVE'].includes(o.state) && dist(o.x, o.y, g.x, g.y) < 1100);
     gsay(g, near.length ? ['알았어, 말할게! 저쪽에 우리 애들이…', '살려 줘! 다 불게! 몇 명 더 있어!', '나 혼자 아니야, 저기도 있다고!'][g.id % 3] : '나, 나밖에 없어! 진짜야!', 3);
-    setTimeout(() => { if (!S || S.over) return; near.forEach(o => o.tagT = S.t + 30); if (near.length) toast(`실토했다 — 근처 조직원 ${near.length}명 위치 표시 (30초)`, 2.8, 'good'); }, INTERRO_T * 1000);
+    after(INTERRO_T, () => { near.forEach(o => o.tagT = S.t + 30); if (near.length) toast(`실토했다 — 근처 조직원 ${near.length}명 위치 표시 (30초)`, 2.8, 'good'); });
   }
   bossRadio('interro');
   hint('interro', '붙잡은 조직원에게 [도구]로 심문 — 비번·위치를 분다. 다 듣고 나면 [행동] 처치 · [보조] 기절');
@@ -70,7 +70,7 @@ function updateRadioCheck(dt) {
   const every = radioEvery(); if (!every || S.over) return;
   if (S.rcT == null) S.rcT = every;
   S.rcT -= dt;
-  if (S.rcT <= RADIO_WARN && !S.rcWarned) { S.rcWarned = true; if (S.guards.some(g => isCrew(g) && g.state === 'DEAD' && !g.rcMissed)) { toast(`${RADIO_WARN}초 뒤 조직원 무전 점검 — 쓰러진 자리는 대답이 없다`, 2.8, 'warn'); bossRadio('check'); } }
+  if (S.rcT <= RADIO_WARN && !S.rcWarned) { S.rcWarned = true; if (S.guards.some(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE') && !g.rcMissed)) { toast(`${RADIO_WARN}초 뒤 조직원 무전 점검 — 쓰러진 자리는 대답이 없다`, 2.8, 'warn'); bossRadio('check'); } }
   if (S.rcT > 0) return;
   S.rcT = every; S.rcWarned = false;
   const missing = S.guards.filter(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE') && !g.rcMissed);

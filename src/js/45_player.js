@@ -394,7 +394,7 @@ function updatePlayer(dt) {
   }
   autoStairs(P);
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)
-    const L = S.lastDrop; if (!L || L.trail !== c.bleed || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L && L.trail === c.bleed ? L.k : 0) + 1 }; S.decals.push(d); S.lastDrop = d; } } }
+    const L = c.lastDrop; if (!L || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L ? L.k : 0) + 1 }; S.decals.push(d); c.lastDrop = d; } } }  // 시체마다 마지막 핏방울을 기억 (다른 시체를 옮겨도 번호가 이어진다)
   { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
     if (inBush && !P.hidden) hint('bushStand', '화단: 웅크려야(살금) 숨는다. 서 있으면 머리가 다 보인다'); }
   if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다

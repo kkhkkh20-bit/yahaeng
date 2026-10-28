@@ -837,7 +837,7 @@ function drawActLabels(pa, P) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  if (zKey) { tag(x, y, lab + ' (사람 근처 — Space는 ' + (stk && !koDefault(stk) ? '암살' : '기절') + ')', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
+  if (zKey) { tag(x, y, isTouch ? `[보조] ${lab} · [행동] ${stk && !koDefault(stk) ? '암살' : '기절'}` : lab + ' (사람 근처 — Space는 ' + (stk && !koDefault(stk) ? '암살' : '기절') + ')', '#c4ccd6', 1, isTouch ? null : 'Z'); return; }
   tag(x, y, key + lab, col, 1, isTouch ? null : 'Space'); let dy = 21 * Math.max(1, 0.95 / SCALE), row = 1;
   if (pa.hold && !isTouch) { tag(x, y + dy * row++, '길게 누르면 ' + pa.hold, '#ff8a76', 0.95, 'Space'); }  // 히트맨식: 같은 키 길게 누르기는 따로 한 줄
   const sa = secondaryAction();
@@ -1090,7 +1090,7 @@ function draw() {
     for (const c of S.corpses) if (!c.stashed && onFloor(c)) { ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c); ctx.globalAlpha = 1; }
     drawLoud(VF); drawCams(VF);
     if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
-    for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) drawGuard(g);
+    for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
     ctx.globalCompositeOperation = 'lighter';
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = l.col || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
