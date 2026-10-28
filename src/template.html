@@ -466,6 +466,9 @@ body.joyseen .joyhint { display: none !important; }
 body.scanning #stealth, body.dlgmodal #stealth, body:has(.screen:not([hidden])) #stealth { visibility: hidden; }
 #stealth.under { opacity: .28; }  /* 주인공이 표시 밑에 오면 비친다 */
 #toasts { top: calc(var(--topb, 70px) + 70px) !important; }
+/* 화면(일시정지·브리핑·끝)이 떠 있으면 대사창은 숨기고 눌리지 않게 */
+body:has(.screen:not([hidden])) #dlg { visibility: hidden; pointer-events: none; }
+body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>

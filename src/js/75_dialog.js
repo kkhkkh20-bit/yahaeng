@@ -73,7 +73,8 @@ function nextLine() {
   el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false; document.body.classList.toggle('dlgmodal', !!DLG.modal);
   el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';  // 줄이 바뀔 때마다 살짝 떠오르며 등장
 }
-function advanceDialog() { const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
+function advanceDialog() { if (paused) return;  // 일시정지·브리핑 화면 중에는 대사가 넘어가지 않는다
+  const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
 function skipDialog() { DLG.q = []; nextLine(); }
 function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
 function updateDialog(dt) {
