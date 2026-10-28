@@ -197,11 +197,23 @@ h1 span { color: var(--blood); }
 #end[data-win="0"] h2 { color: var(--blood-hi); }
 #end[data-win="1"] h2 { color: var(--lamp); }
 #endSub { font-size: var(--fs-lead); margin: 0; }
+#endSub:empty { display: none; }
+#end { background: var(--night); }
+#endRank { display: flex; align-items: baseline; gap: 12px; margin-top: -4px; }
+#endRank small { font-size: var(--fs-ui); color: var(--paper-dim); }
+#endRank b { font-family: var(--f-title, var(--f-display)); font-weight: 400; font-size: clamp(34px, 9vw, 52px); line-height: 1; color: var(--paper); padding: 2px 14px 4px; border-left: 4px solid var(--lamp); background: rgba(242, 196, 107, .1); }
+#endRank[data-r="그림자"] b { color: var(--lamp); }
+#endRank[data-r="소란꾼"] b { border-left-color: var(--blood-hi); background: rgba(232, 71, 60, .1); }
+.endmore summary { cursor: pointer; color: var(--paper-dim); font-size: var(--fs-ui); padding: 6px 0; }
+.endmore[open] summary { margin-bottom: 10px; }
+#endMore { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0 0 12px; }
+#end .endacts { position: sticky; bottom: calc(-20px - env(safe-area-inset-bottom, 0px)); padding: 12px 0 calc(14px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(rgba(7, 10, 18, 0), var(--night) 14px); z-index: 2; }
 #endStats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin: 0; }
-#endStats div { border-top: 1px solid var(--ink-line); padding-top: 6px; }
-#endStats dt { font-size: var(--fs-cap); color: var(--paper-dim); letter-spacing: .08em; }
-#endStats dd { margin: 2px 0 0; font-family: var(--f-body); font-weight: 600; font-variant-numeric: tabular-nums; font-size: var(--fs-lead); font-variant-numeric: tabular-nums; }
+#endStats div, #endMore div { border-top: 1px solid var(--ink-line); padding-top: 6px; }
+#endStats dt, #endMore dt { font-size: var(--fs-cap); color: var(--paper-dim); letter-spacing: .08em; }
+#endStats dd, #endMore dd { margin: 2px 0 0; font-family: var(--f-body); font-weight: 600; font-variant-numeric: tabular-nums; font-size: var(--fs-lead); font-variant-numeric: tabular-nums; }
 body.joyused .joyhint { display: none; }
+body.touch:not(.joyused):not(.joyseen) .pad .tools { visibility: hidden; }  /* 첫 이동 전에는 도구 칩이 이동 안내를 가리지 않게 */
 /* 대사 창: 도둑 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
 #dlg { --rc: #9fb6d8; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(62px + env(safe-area-inset-bottom, 0px)); width: min(720px, calc(100vw - 24px)); display: flex; align-items: stretch; z-index: 25; pointer-events: auto; animation: dlgIn .18s ease-out; }
 body.touch #dlg { top: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
@@ -254,7 +266,7 @@ body.dlgmodal .pad, body.dlgmodal .joyhint, body.dlgmodal .sysbtns, body.dlgmoda
 /* 도움말 카드: 힌트는 화면 가운데를 가리지 않게 왼쪽 아래 한 장으로 */
 #hintCard { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); width: min(360px, 60vw); background: rgba(7, 10, 18, .88); border-left: 3px solid var(--lamp); padding: 8px 12px 9px; font-size: var(--fs-ui); line-height: 1.5; color: var(--paper); transition: opacity .35s, transform .35s; }
 #hintCard small { display: block; font-size: var(--fs-cap); letter-spacing: .14em; color: var(--lamp); margin-bottom: 2px; }
-#hintCard.off { opacity: 0; transform: translateY(8px); }
+#hintCard.off { opacity: 0 !important; transform: translateY(8px); visibility: hidden; transition: opacity .35s, transform .35s, visibility 0s .35s; }
 /* 버튼 줄이기: 살피기는 터치 화면에서만, 나머지 설정은 메뉴 안으로 */
 body:not(.touch) .sysbtns .tonly { display: none; }
 /* 주인공이 HUD 밑에 오면 HUD를 옅게 */
@@ -282,7 +294,7 @@ body:not(.touch) .sysbtns .tonly { display: none; }
   #toasts { top: calc(var(--topb, 150px) + 130px) !important; }
 }
 #scanLegend { position: fixed; left: 50%; top: calc(var(--topb, 60px) + 54px); transform: translateX(-50%); display: none; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 92vw; padding: 6px 12px; background: rgba(7,10,18,.86); border: 1px solid var(--ink-line); font-size: var(--fs-ui); color: var(--paper-dim); pointer-events: none; z-index: 6; }
-body.scanning #scanLegend { display: flex; }
+body.scanning.scanleg #scanLegend { display: flex; }
 #scanLegend b { color: var(--paper); font-weight: 700; }
 #scanLegend i { font-style: normal; display: inline-flex; align-items: center; gap: 5px; }
 #scanLegend i::before { content: ''; width: 10px; height: 10px; border: 2px solid var(--c); }
@@ -493,6 +505,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 .br-map { line-height: 0; background: #0b0e16; } .br-map canvas { display: block; width: 100%; height: auto; }
 .br-legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: #9aa3b5; padding: 8px 14px 0; }
 .br-legend span { display: flex; align-items: center; gap: 8px; }
+.br-legend span[hidden] { display: none; }
 .pz-wrap { width: min(1100px, 100%); box-sizing: border-box; padding: 40px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 500px); gap: 56px; align-items: center; }
 .pz-menu { display: flex; flex-direction: column; gap: 4px; }
 .pz-menu .fx-sub { margin-bottom: 16px; }
@@ -614,7 +627,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
     <details class="rulesbox" open><summary class="rules-h">조작법</summary>
     <div class="ctrl">
       <div class="kbonly"><h3>키보드 (오른손 방향키 · 왼손 Ctrl Shift Alt Space / Z X C)</h3><kbd>WASD</kbd> 또는 <kbd>←↑↓→</kbd> 이동 — 기본은 걷기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기(켜 두면 계속 살금살금) · <kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>R</kbd> 항상 걷기<br><kbd>Space</kbd> 행동 — 암살·오르기·숨기·문·창문 등 상황에 맞게<br><kbd>Z</kbd> 보조 — 붙잡기·운반·열쇠 훔치기·옷 갈아입기·벽에 기대기·옥상 끝에 매달리기 (조준 중엔 그 조준을 예약 → 손을 떼면 한꺼번에)<br>벽 쪽으로 잠깐 밀어도 기댄다. 기댄 채 옆을 지나는 사람은 [끌어당겨 암살] · 매달린 채 가까이 온 옥상 자경대원은 [끌어내려 떨어뜨리기]<br><kbd>X</kbd> 도구 — 누르고 있으면 조준(방향키로 방향, 오래 누를수록 멀리), 떼면 사용 · <kbd>C</kbd> 도구 바꾸기(<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>로 바로 고르기)<br><kbd>Alt</kbd> 살피기(누르는 동안) · 예전 키 <kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd>도 그대로 쓸 수 있다<br><kbd>V</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다(숨은 채로도) · <kbd>M</kbd> 지도 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지</div>
-      <div><h3>터치 (버튼 3개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [보조] 붙잡기·운반·벽에 기대기·옥상 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 자경대원을 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
+      <div><h3>터치 (버튼 4개)</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 위쪽 [살금] 버튼을 켜 두면 계속 살금살금으로 다닌다.<br>[행동] 상황에 맞는 기본 행동 · [보조] 붙잡기·운반·벽에 기대기·옥상 끝 매달리기 등 (조준 중엔 행동 예약) · [휘파람] 주변 자경대원을 부른다 · [도구] 누르고 있는 동안 왼손으로 방향과 거리를 정하고, 떼면 사용. 도구는 버튼 위 작은 칸에서 고른다.</div>
     </div>
     </details>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
@@ -692,7 +705,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
     </div>
     <div class="br-mapcol">
       <div class="br-frame"><div class="br-map" id="brMap"></div></div>
-      <div class="br-legend"><span><i class="mk dot" style="--c:#7fd6ff"></i>출발</span><span><i class="mk dia" style="--c:#f2c46b"></i>훔칠 것</span><span><i class="mk dot" style="--c:#e8473c"></i>표적</span><span><i class="mk ring" style="--c:#f2c46b"></i>탈출</span></div>
+      <div class="br-legend"><span><i class="mk dot" style="--c:#7fd6ff"></i>출발</span><span class="lg-it"><i class="mk dia" style="--c:#f2c46b"></i>훔칠 것</span><span class="lg-tg"><i class="mk dot" style="--c:#e8473c"></i>표적</span><span><i class="mk ring" style="--c:#f2c46b"></i>탈출</span></div>
     </div>
   </div>
 </div>
@@ -700,11 +713,15 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
   <div class="panel">
     <div class="eyebrow">의뢰 결과</div>
     <h2 id="endTitle">임무 완료</h2>
+    <div id="endRank" hidden></div>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
     <p class="credit" id="endRankNote"></p>
-    <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
-    <div class="row"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
+    <details class="endmore"><summary>자세히 · 지나간 길</summary>
+      <dl id="endMore"></dl>
+      <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
+    </details>
+    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
   </div>
 </div>
 

@@ -143,7 +143,7 @@ document.addEventListener('fullscreenchange', () => { $('btnFull').textContent =
 function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && demoOk(s) && !stageCleared(s)); return i >= 0 ? i : STAGES.findIndex(s => !s.tutorial); }
 function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = !STAGES.some(s => !s.tutorial && demoOk(s) && !stageCleared(s)) && stageCleared(STAGES[STAGES.findIndex(s => s.id === 'tI')] || {});
   $('btnQuick').textContent = st.tutorial ? '바로 시작' : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${st.no} ${st.name}`;
-  $('qNote').textContent = st.tutorial ? '처음이면 3분짜리 연습부터 시작한다.' : done ? '장부의 의뢰를 모두 끝냈다. 별을 더 모아 보자.' : (st.fee ? `수고비 ${st.fee}. ` : '') + (st.mission || ''); }
+  $('qNote').textContent = st.tutorial ? '처음이면 4분짜리 연습부터 시작한다.' : done ? '장부의 의뢰를 모두 끝냈다. 별을 더 모아 보자.' : (st.fee ? `수고비 ${st.fee}. ` : '') + (st.mission || ''); }
 $('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); });
 $('btnHelp').addEventListener('click', () => showMenu('help'));
 $('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); });

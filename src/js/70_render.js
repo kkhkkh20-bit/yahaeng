@@ -1255,8 +1255,7 @@ function draw() {
     for (const g of S.guards) if (g.target && g.state !== 'DEAD') tgts.push({ x: g.x, y: g.y, c: '#e8473c' });
     for (const it of S.items) if (!it.got) tgts.push({ x: it.x, y: it.y, c: '#f2c46b' });
   }
-  // 화면 밖에서 나를 의심하는 자경대원 방향 (노랑 = 의심, 빨강 = 발각)
-  for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || dist(g.x, g.y, S.player.x, S.player.y) > 1100) continue; const al = g.state === 'ALERT'; if (al || g.meter > 0.05 || ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state)) tgts.push({ x: g.x, y: g.y, c: awareCol(g), small: true }); }
+  // 화면 밖 자경대원은 drawOffscreen의 눈 표시로 따로 (금색·빨강 화살표는 목표에만)
   if (DBG.ui) tgts.length = 0;
   for (const t of tgts) {
     const sx = (t.x - cam.x) * SCALE + W / 2, sy = (t.y - cam.y) * SCALE + H / 2, m = t.small ? 30 : 46;

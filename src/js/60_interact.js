@@ -6,7 +6,7 @@ const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨강 카드', '#ff5a5a'], b
 const keyName = k => k === 'code' ? (hasK('code') ? '비번 ' + (STAGE.code || '') : '숫자 자물쇠') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
 const hasK = k => !!(S.player.keys && S.player.keys[k]);
 function giveKey(k, msg) { S.player.keys[k] = true; S.player.hasKey = true; play('click', 0.5); toast(msg || keyName(k) + '을(를) 챙겼다', 2.2, 'good'); }
-const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '쓰레기통');
+const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '수거함');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
   const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
@@ -246,7 +246,7 @@ function updateTutorial() {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
   while (S.tutI < st.length && st[S.tutI][1](S, S.player, input)) {
     S.tutI++; S.cpWant = true; play('switch', 0.45, 1.5);
-    if (S.tutI < st.length) toast('잘했다! 다음: ' + tutText(st[S.tutI][0]), 3.4, 'good'); else toast('연습 끝 — 이제 실제 의뢰로', 3, 'good');
+    if (S.tutI < st.length) toast('완료 ' + S.tutI + '/' + st.length, 1.5, 'good'); else toast('연습 끝 — 이제 실제 의뢰로', 3, 'good');
   }
 }
 function winInit() {

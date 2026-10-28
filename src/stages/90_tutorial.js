@@ -38,7 +38,7 @@ const TUT = {
     ['{지도} 전술 지도 열기 — 멈춘 채 순찰로가 보인다. 다시 눌러 닫기', S => !!S.usedMap],
     ['{살금} 살금 모드 켜기 — 발소리가 작아진다', (S, P, I) => I.sneakToggle],
     ['등 돌린 자경대원 뒤에서 {행동} — 암살', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
-    ['쓰러진 사람을 {보조}로 메고 쓰레기통에 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
+    ['쓰러진 사람을 {보조}로 메고 수거함에 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
     ['{살피기} 누르고 있으면 쓸 수 있는 것이 색으로 보인다', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
     ['벽 쪽으로 0.5초 밀기 — 등을 바짝 붙인다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
     ['붙은 채 기다렸다가 지나가는 자경대원에게 {행동}', S => S.guards[1].state === 'DEAD', S => S.guards[1]],

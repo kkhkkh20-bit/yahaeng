@@ -86,14 +86,23 @@ function drawStepRing(P) { if (window.__skip && window.__skip.ui) return;  // �
 }
 // 화면 밖에서 나를 보거나 쫓는 자경대원: 화면 가장자리에 화살표
 function drawOffscreen() { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  const hw = W / SCALE / 2, hh = H / SCALE / 2, m = 30 / SCALE, sz = 11 / SCALE;
+  // 화면 밖 자경대원: 목표용 금색 화살표와 헷갈리지 않게 작은 눈 표시(주황=의심, 빨강=발각). 화면 안에 보이는 사람은 표시하지 않는다
+  const hw = W / SCALE / 2, hh = H / SCALE / 2, k = Math.max(1, 0.95 / SCALE), touch = document.body.classList.contains('touch');
+  const topPx = (drawMini.tb || 70) + 40, botPx = touch ? 270 : 70, rPx = touch ? 74 : 34;
+  const sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - rPx / SCALE, sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2;
   for (const g of S.guards) {
     if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue;
-    if (!(g.seen || g.state === 'ALERT' || g.state === 'NOTICE')) continue;
-    const dx = g.x - cam.x, dy = g.y - cam.y; if (Math.abs(dx) < hw - m && Math.abs(dy) < hh - m) continue;
-    const k = Math.min((hw - m) / Math.max(1e-6, Math.abs(dx)), (hh - m) / Math.max(1e-6, Math.abs(dy))), ex = cam.x + dx * k, ey = cam.y + dy * k, a = Math.atan2(dy, dx);
-    const col = g.state === 'ALERT' ? '232,71,60' : '242,196,107', pz = 0.65 + 0.35 * Math.sin(S.t * 8);
-    ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(${col},${pz})`; ctx.beginPath(); ctx.moveTo(sz * 1.4, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.4, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.fill(); ctx.restore();
+    if (!(g.seen || g.state === 'ALERT' || g.meter > 0.05 || ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state)) || dist(g.x, g.y, S.player.x, S.player.y) > 1100) continue;
+    if (Math.abs(g.x - cam.x) < hw && Math.abs(g.y - cam.y) < hh) continue;
+    const dx = g.x - cx, dy = g.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(dx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(dy)));
+    const ex = cx + dx * kk, ey = cy + dy * kk, a = Math.atan2(dy, dx), r = 7 * k;
+    const col = g.state === 'ALERT' ? '232,71,60' : g.meter > 0.05 || g.state !== 'PATROL' ? '255,154,60' : '200,206,218', al = g.state === 'ALERT' ? 0.7 + 0.3 * Math.sin(S.t * 8) : 0.85;
+    ctx.save(); ctx.translate(ex, ey);
+    ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.beginPath(); ctx.arc(0, 0, r + 3 * k, 0, TAU); ctx.fill();
+    ctx.fillStyle = `rgba(${col},${al})`; ctx.beginPath(); ctx.moveTo(Math.cos(a) * (r + 7 * k), Math.sin(a) * (r + 7 * k)); ctx.lineTo(Math.cos(a + 0.55) * (r + 2 * k), Math.sin(a + 0.55) * (r + 2 * k)); ctx.lineTo(Math.cos(a - 0.55) * (r + 2 * k), Math.sin(a - 0.55) * (r + 2 * k)); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = `rgba(${col},${al})`; ctx.lineWidth = 1.6 * k; ctx.beginPath(); ctx.ellipse(0, 0, r * 0.95, r * 0.55, 0, 0, TAU); ctx.stroke();
+    ctx.fillStyle = `rgba(${col},${al})`; ctx.beginPath(); ctx.arc(0, 0, r * 0.3, 0, TAU); ctx.fill();
+    ctx.restore();
   }
 }
 // ---- 휘파람: 공짜 유인. 들은 자경대원이 이 자리를 확인하러 온다 (숨은 채·벽에 기댄 채로도 분다)
@@ -419,7 +428,7 @@ function updatePlayer(dt) {
     if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 웅크리면 원뿔이 줄어든다 — 지금 내 자세로 들키는 범위다');
     const nh = nearHide();
     if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
-    if (nh && nh.type === 'box') hint('box', '쓰레기통: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)');
+    if (nh && nh.type === 'box') hint('box', '수거함: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)');
     if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀: 숨어서 기습 암살하거나 다른 맨홀로 이동할 수 있다' : '맨홀: 숨어서 기습 암살하거나 다른 출구로 이동할 수 있다');
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);

@@ -109,7 +109,8 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, hos = r[4] === 'hos', ok = allowedBy(r[7] || STAGE.zoneAllow || ['crew']), col = zoneCol(hos ? Z_HOS : Z_RES, r[7] || STAGE.zoneAllow || ['crew']);
     const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > far) continue;
     ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
-    if (d < 320 || tactical) tag(x + w / 2, y + h - 12, (r[6] || (hos ? '적진' : '출입 금지')) + (ok ? ' · 통과' : ''), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
+    const lo = Math.max(x + 60, cam.x - W / SCALE / 2 + 110 / SCALE), hi = Math.min(x + w - 60, cam.x + W / SCALE / 2 - 110 / SCALE), lx = lo <= hi ? clamp(x + w / 2, lo, hi) : x + w / 2;  // 구역이 화면에 걸쳐 있으면 이름표를 보이는 쪽으로
+    if (d < 320 || tactical) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통과' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
   }
   // 가까운 문턱에 '출입 금지' 표지 (가장 가까운 하나만). 허가 옷을 입었으면 '통과'
   if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && pZone() === Z_PUB) { bd = d; best = e; } }

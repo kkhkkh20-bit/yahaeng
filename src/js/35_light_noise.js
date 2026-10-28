@@ -17,7 +17,9 @@ function lightAt(x, y, elev) {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
+const HINT_ALARM = ['alert', 'radioCall', 'counter', 'search', 'hurt'];
 function hint(key, text) { if (S.hints[key] || (STAGE && STAGE.tutorial)) return;  // 연습에서는 단계 안내만 (엇나간 도움말이 끼지 않게)
+  if (S.alevel >= 2 && !HINT_ALARM.includes(key)) return;  // 쫓기는 중에는 일반 팁을 띄우지 않는다 (표시 안 한 팁은 나중에 다시 뜰 수 있다)
   S.hints[key] = true; S.hintN = (S.hintN || 0) + 1; if (S.hintN > 6) return;  // 한 판에 6개까지 — 더 많으면 읽지 않는다
   showHint(text); }
 // 도움말은 화면 가운데 대신 왼쪽 아래 카드 한 장 (새 도움말이 오면 바꿔 끼운다)

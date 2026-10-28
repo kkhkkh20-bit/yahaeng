@@ -62,7 +62,7 @@ async def main():
         print('깨움', r)
         if r[1] == 'DEAD' or r[2] != 0: bad.append('기절자가 발견돼도 깨어나지 않는다 %s' % r)
         # 7 그림자 5조건
-        await fresh([]); n = await pg.evaluate('() => { const G = window.__game; G.S.items.forEach(i => i.got = true); G.showEnd(true); return [G.S.bonus.length, document.getElementById("endSub").textContent]; }'); print('평가', n)
+        await fresh([]); n = await pg.evaluate('() => { const G = window.__game; G.S.items.forEach(i => i.got = true); G.showEnd(true); return [G.S.bonus.length, document.getElementById("endRank").textContent]; }'); print('평가', n)
         if n[0] != 5 or '그림자' not in n[1]: bad.append('그림자 조건이 5개가 아니거나 등급이 다르다 %s' % n)
         print('errs', errs[:3]); await b.close()
     print('문제', bad); sys.exit(1 if bad or errs else 0)
