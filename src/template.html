@@ -72,6 +72,7 @@ button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
 .toast.warn { border-color: var(--blood-hi); }
 .toast.good { border-color: var(--moss); }
 .toast.radio { border-color: #7fa6e8; color: #d6e4ff; text-align: left; }
+.toast.radio.aide { border-color: #8fe3c9; color: #dcfff3; }
 .toast.big { font-size: var(--fs-lead); font-weight: 700; padding: 10px 18px; border-bottom-color: var(--blood-hi); }
 @keyframes rise { from { transform: translateY(-6px); opacity: 0 } }
 
@@ -616,6 +617,7 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
       <li class="cityonly"><strong>숨음 표시</strong>위쪽 상태 칸과 발밑 고리: 파랑 = 숨음(누가 돌아봐도 안 보인다) · 노랑 = 누가 이쪽을 보면 보인다 · 빨강 = 보고 있다. 들킬 듯하면 똑딱 소리가 빨라진다.</li>
       <li class="cityonly"><strong>벽에 붙기 · 끌어당기기</strong>벽 쪽으로 0.5초 밀면 바짝 붙는다(발밑 원이 다 차면 붙음)(훨씬 덜 보이고 발소리가 없다). 붙은 채 옆을 지나는 사람은 [행동]으로 끌어당겨 처치.</li>
       <li class="cityonly"><strong>락픽 · 창문</strong>건물마다 창문은 하나만 열려 있다. 잠긴 창문·카드 문은 락픽으로 딴다(소리·시간). 안쪽에선 걸쇠만 풀면 된다. 자경대원이 열린 걸 보면 다시 잠근다.</li>
+      <li><strong>들켰을 때</strong>경비가 칼을 들어 올린 뒤 내려치기 직전(노란 고리)에 [행동]이면 반격해 기절시킨다. 소리가 커서 주변이 몰려온다. 근처 경비만 알아챈 발각은 괜찮지만, 무전으로 경보가 전체에 퍼지면 증원이 와서 끝까지 남고 까마귀가 수고비를 깎는다(전체 경보 1회 −15%, 민간인 1명 −20%). 무전하는 경비를 먼저 처리하면 퍼지지 않는다.</li>
       <li><strong>핏자국</strong>그 자리에서 처치하면 바닥에 피가 남고, 처치한 시체를 메고 가면 핏방울이 이어진다. 핏자국을 본 경비는 바로 수색하며 핏방울 끝까지 따라간다. 기절이나 수거함·화단으로 끌어들이기는 피를 남기지 않는다. 핏자국 위에서 [행동]으로 닦을 수 있지만, 닦는 동안은 움직일 수 없고 보이면 수상하게 여긴다.</li>
       <li class="cityonly"><strong>기회 · 체크포인트</strong>함정·두꺼비집·비번 문을 보면 임무 칸에 "기회"로 남는다. 목표마다 체크포인트가 저장된다.</li>
       <li><strong>시야 원뿔</strong>원뿔은 그 자리 밝기만큼만 뻗는다(어두우면 짧고 불빛 아래면 길다). 원뿔은 지금 내 자세로 들키는 범위다 — 서 있으면 넓고, 웅크리면 줄어들고, 벽에 붙으면 더 준다.</li>

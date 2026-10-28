@@ -144,7 +144,7 @@ const A_NAME = ['평온', '경계', '수색', '발각'];
 function setAlert(lv, dur, msg) {
   if (lv >= 2 && S.alevel < 2) { S.stats.alarms++; setTimeout(roofCheck, 400); }
   if (lv > S.alevel) {
-    S.alevel = lv; if (lv === 3) { bossRadio('alert'); S.unseenT = 0; S.chaseSeen = true; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; setTimeout(spawnReinforcements, 2500); } }
+    S.alevel = lv; if (lv === 3) { S.stats.full = (S.stats.full || 0) + 1; bossRadio('alert'); S.unseenT = 0; S.chaseSeen = true; if (!S.reinforced && STAGE.reinf) { S.reinforced = true; setTimeout(spawnReinforcements, 2500); } }
     if (lv >= 2) play('alarm', 0.55);
     if (STAGE.flee && lv >= 2) startFlee();
   }

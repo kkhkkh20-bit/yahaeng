@@ -173,7 +173,7 @@ function nearUse() {
 function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
-    p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : P.disguise; P.outfit = p.outfit; P.disguiseBlown = !!(P.blown || {})[p.outfit]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : P.disguise; P.outfit = p.outfit; setTimeout(() => S && !S.over && bossRadio('disguise', true), 900); P.disguiseBlown = !!(P.blown || {})[p.outfit]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     toast(P.disguiseBlown ? `${outfitName(p.outfit)} — 이미 들통난 옷이다` : `${outfitName(p.outfit)}으로 갈아입었다 — 초록 경계선 안은 지나다닐 수 있다`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();

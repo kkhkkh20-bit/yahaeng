@@ -152,7 +152,7 @@ $('btnHelpBack').addEventListener('click', () => showMenu('intro'));
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
-function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused;
+function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; if (paused) riskTone(0);
   if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); $('pzTodo').innerHTML = STAGE.tutorial ? '' : briefTodo().map(([mk, c, t, w]) => `<span><i class="mk ${mk}" style="--c:${c}"></i> ${t} · ${w}</span>`).join(''); $('pzTodo').parentElement.hidden = !!STAGE.tutorial; } }  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
@@ -223,7 +223,7 @@ function chooseEntry(i) {
 function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); return { x: o.x, y: o.y - o.top }; } return { x: tc(e.at[0]), y: tc(e.at[1]) }; }
 function toMenu() {
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
-  running = false; paused = false; resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
+  running = false; paused = false; riskTone(0); resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; showMenu('ledger');
   renderStageList();
   newGame(STAGE_I);

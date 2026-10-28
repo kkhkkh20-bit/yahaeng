@@ -271,6 +271,18 @@ function winInit() {
 const winSt = w => w.st || 'open';
 const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
 function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이지 마라. 긁는 소리가 조금 난다. 안쪽 창문은 걸쇠만 풀면 된다'); }
+// 반격 (메탈기어 CQC식): 경비가 칼을 들어 올린 뒤 내려치기 직전(0.35초)에 [행동]이면 붙잡아 넘어뜨려 기절시킨다. 소리가 커서 주변이 몰려온다
+const COUNTER_WIN = 0.35;
+function counterTarget() {
+  const P = S.player; if (P.hide || P.vent || P.under || P.carrying || P.captive || P.trav || P.jump || P.wire) return null;
+  let best = null; for (const g of S.guards) { if (!(g.atkT > 0) || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0) || dist(g.x, g.y, P.x, P.y) > 62) continue; if (g.atkT <= COUNTER_WIN && (!best || g.atkT < best.atkT)) best = g; }
+  return best;
+}
+function doCounter(g) {
+  const P = S.player; g.atkT = 0; g.atkCd = 0; P.a = Math.atan2(g.y - P.y, g.x - P.x); P.strikeT = 0.35; S.hitStop = 0.12; S.shakeT = 0.18;
+  S.stats.counters = (S.stats.counters || 0) + 1; play('thud', 0.7); noise(g.x, g.y, 260, 'fight', flOf(g));
+  S.koNext = true; killGuard(g, null, null, true); toast('반격 — 넘어뜨려 기절시켰다. 소리가 컸다', 2.2, 'good');
+}
 // 가구에서 훔치기: 물건을 가까운 책상·컴퓨터·서류장·금고 등에 올려 두고, 옆에 서서 [행동]으로 시간을 들여 빼 온다.
 // it.x, it.y 는 가구 옆 '서는 자리'(길 찾기·거리 판정용), it.dx, it.dy 는 가구 위 그리는 자리
 const LOOT = { pc: ['컴퓨터', '자료 빼내기', '빼내기', 3.0, 15], safe: ['금고', '금고에서 꺼내기', '꺼내기', 2.2, 25], cab: ['서류장', '서랍 뒤지기', '뒤지기', 1.6, 35], locker: ['사물함', '사물함 뒤지기', '뒤지기', 1.6, 40],
@@ -293,7 +305,7 @@ function nearLoot() {
   for (const it of S.items) if (!it.got && it.furn && flOf(it) === flOf(P) && (dist(P.x, P.y, it.x, it.y) < 34 || dist(P.x, P.y, it.dx, it.dy + 6) < 58)) return it;
   return null;
 }
-function startLoot(it) { const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+function startLoot(it) { if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
   hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
@@ -537,6 +549,7 @@ function primaryActionRaw() {
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
+  { const cg = counterTarget(); if (cg) return { k: 'counter', g: cg, label: '반격!' }; }  // 내려치기 직전이면 무엇보다 먼저
   if (P.wire) {
     const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 };
     const g = wireDropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
@@ -633,6 +646,7 @@ function actPrimary(force) {
     case 'ambush': startAmbush(a.g); break;
     case 'clean': startClean(a.d); break;
     case 'loot': startLoot(a.it); break;
+    case 'counter': doCounter(a.g); break;
     case 'window': {
       const v = a.wv;
       P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };
@@ -977,7 +991,8 @@ function execCaptive(ko) {
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
   if (g.child) return;
-  if (S.koNext || g.civ || (koDefault(g) && !S.lethalNext)) { S.lethalNext = false; S.koNext = false; return koPerson(g, mode, where); }
+  if (S.koNext || g.civ || (koDefault(g) && !S.lethalNext)) { S.lethalNext = false; S.koNext = false; sfx('stingerKO'); return koPerson(g, mode, where); }
+  sfx('stinger');  // 조용한 처치의 손맛 (플레이어만 듣는다)
   S.lethalNext = false;
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
   g.state = 'DEAD'; g.icon = null;
@@ -1143,7 +1158,7 @@ function actCarry() {
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; setTimeout(() => S && !S.over && bossRadio('disguise', true), 900); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
     else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 초록 경계선 구역은 지나다녀도 된다. 뛰기·운반·락픽은 수상하다. 눈 표시 사람은 오래 보면 알아챈다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰기·시체 들기·옥상·너무 가까이 붙기는 의심받는다'); }

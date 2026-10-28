@@ -27,7 +27,7 @@ async def main():
         nxt = await pg.evaluate('() => window.__game.DLG.cur && window.__game.DLG.cur.text')
         print('넘김', first[:20], '→', (nxt or '(끝)')[:20])
         if nxt == first: bad.append('대화창 밖을 눌러도 다음 대사로 안 넘어간다')
-        for i in range(12):
+        for i in range(24):  # 대사 한 줄에 두 번(다 보이기 → 다음)
             if not await pg.evaluate('() => window.__game.DLG.modal'): break
             await pg.touchscreen.tap(195, 300); await pg.wait_for_timeout(200)
         vis = await pg.evaluate("() => getComputedStyle(document.querySelector('.pad')).visibility"); print('대화 끝 버튼', vis)

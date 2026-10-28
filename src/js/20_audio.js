@@ -137,3 +137,30 @@ function play(name, vol = 0.6, rate = 1) {
   const g = AC.createGain(); g.gain.value = vol; s.connect(g); g.connect(master); s.start();
 }
 
+
+// ---------------------------------------------------------------- 합성 효과음 (파일 없이 WebAudio로)
+// 히트맨식 '암살 스팅어'(조용한 처치에 붙는 짧고 추상적인 소리 — 플레이어만 듣는다), 은신 상태 신호음, 의심 상승음, 메뉴 딸깍
+function sfx(kind) {
+  if (!AC || muted || !master) return; const t = AC.currentTime;
+  const osc = (type, f0, f1, dur, vol, at = 0) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.setValueAtTime(f0, t + at); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + at + dur);
+    g.gain.setValueAtTime(0.0001, t + at); g.gain.exponentialRampToValueAtTime(vol, t + at + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur); o.connect(g); g.connect(master); o.start(t + at); o.stop(t + at + dur + 0.02); };
+  const hiss = (dur, vol, freq, q = 1, at = 0) => { const n = Math.floor(AC.sampleRate * dur), b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; g.gain.value = vol; s.connect(f); f.connect(g); g.connect(master); s.start(t + at); };
+  if (kind === 'click') { osc('triangle', 2300, 1800, 0.035, 0.06); hiss(0.02, 0.05, 4000, 2); }
+  else if (kind === 'stinger') { osc('sine', 72, 42, 0.55, 0.38); hiss(0.28, 0.14, 900, 0.7); osc('sine', 1318, 1318, 0.7, 0.035, 0.03); osc('sine', 1975, 1975, 0.5, 0.02, 0.06); }
+  else if (kind === 'stingerKO') { osc('sine', 150, 100, 0.3, 0.2); osc('sine', 988, 988, 0.45, 0.025, 0.02); }
+  else if (kind === 'toHide') osc('sine', 540, 330, 0.16, 0.06);
+  else if (kind === 'toBlend') osc('sine', 440, 440, 0.1, 0.04);
+  else if (kind === 'toRisk') { osc('sine', 420, 640, 0.12, 0.06); }
+  else if (kind === 'toSeen') { osc('square', 660, 660, 0.07, 0.045); osc('square', 880, 880, 0.09, 0.045, 0.08); }
+}
+// 의심 상승음: 누가 나를 알아채는 게이지(0~1)를 따라 아주 작은 음이 높아진다. 0이면 사라진다
+let riskOsc = null, riskGain = null;
+function riskTone(r) {
+  if (!AC || !master) return; if (muted) r = 0;
+  if (!riskOsc) { if (r < 0.05) return; riskOsc = AC.createOscillator(); riskGain = AC.createGain(); const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1800; riskOsc.type = 'triangle'; riskGain.gain.value = 0; riskOsc.connect(f); f.connect(riskGain); riskGain.connect(master); riskOsc.start(); }
+  const t = AC.currentTime, on = r >= 0.05 && r < 1;
+  riskGain.gain.setTargetAtTime(on ? 0.012 + 0.05 * r : 0, t, on ? 0.08 : 0.15); riskOsc.frequency.setTargetAtTime(240 + 620 * Math.min(1, r), t, 0.1);
+}
+// 메뉴·화면 버튼 딸깍 (게임 안 행동 버튼은 각자 소리가 있어 제외)
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b || b.closest('.pad') || b.closest('#keypad')) return; if (!b.closest('.screen, .sysbtns, #tacBanner')) return; try { initAudio(); } catch (er) {} sfx('click'); }, true);

@@ -38,7 +38,7 @@ function blowDisguise(g, why) {
 function updateSharpEye(g, dt, rawVis) {
   if (!sharpEye(g)) { g.eyeT = 0; return; }
   const P = S.player, d = dist(g.x, g.y, P.x, P.y);
-  if (rawVis > 0 && d < EYE_R) { g.eyeT = (g.eyeT || 0) + dt * (P.mode === 'run' ? 2 : 1) * (d < 70 ? 1.6 : 1); g.want = Math.atan2(P.y - g.y, P.x - g.x);
+  if (rawVis > 0 && d < EYE_R) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt * (P.mode === 'run' ? 2 : 1) * (d < 70 ? 1.6 : 1); g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '눈 표시: 눈썰미가 있다. 가까이서 오래 보이면 변장이 들통난다');
     if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
