@@ -1205,7 +1205,6 @@ function draw() {
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
       const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
-      for (const o of pa.others) { const p = pos(o); if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 18, 0, TAU); ctx.stroke(); } }
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '⇄' : 'F'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
@@ -1213,18 +1212,9 @@ function draw() {
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
     if (pa.list) pa.list.forEach(g => ring(g, '#e8473c'));
     if (pa.k === 'drop' || pa.k === 'ambush' || pa.k === 'ventKill') ring(pa.g, '#e8473c');
-    if (pa.k === 'ventIn' || pa.k === 'ventOut') { ctx.strokeStyle = 'rgba(127,214,204,.95)'; ctx.lineWidth = 2.5; ctx.strokeRect(pa.v.x - 20, pa.v.y - 20, 40, 40); }
-    if (pa.k === 'smother') { ctx.strokeStyle = 'rgba(240,138,60,.95)'; ctx.lineWidth = 2.5; ctx.strokeRect(pa.l.ux - 22, pa.l.uy - 24, 40, 40); }
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
-    if (pa.k === 'door') { ctx.strokeStyle = 'rgba(232,227,214,.85)'; ctx.lineWidth = 2; ctx.strokeRect(pa.d.x - 24, pa.d.y - 24, 48, 48); }
-    if (pa.k === 'drag' && pa.h) { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.strokeRect(pa.h.x - 24, pa.h.y - 24, 48, 48); }
-    if (pa.k === 'window') { ctx.strokeStyle = 'rgba(140,190,225,.95)'; ctx.lineWidth = 2; ctx.strokeRect(pa.wv.w.x - 24, pa.wv.w.y - 24, 48, 48); }
-    if (pa.k === 'hide') { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.strokeRect(pa.h.x - 25, pa.h.y - 25, 50, 50); }
-    if (pa.k === 'up' || pa.k === 'down') { const l = pa.l; const x = pa.k === 'up' ? l.x : (l.rx != null ? l.rx : l.ux), y = pa.k === 'up' ? l.y : (l.ry != null ? l.ry : l.uy); ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.strokeRect(x - 24, y - 24, 48, 48); }
-    if (pa.k === 'leap') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + tc(pa.j.tx)) / 2, (P.y + tc(pa.j.ty)) / 2 - 40, tc(pa.j.tx), tc(pa.j.ty)); ctx.stroke(); ctx.setLineDash([]); ctx.strokeRect(pa.j.tx * TILE + 6, pa.j.ty * TILE + 6, 36, 36); }
-    if (pa.k === 'jump') { const s = pa.s; ctx.strokeStyle = 'rgba(232,227,214,.6)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 2; ctx.strokeRect(s[0] * TILE + 6, s[1] * TILE + 6, 36, 36); ctx.setLineDash([]); }
+    if (pa.k === 'leap') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + tc(pa.j.tx)) / 2, (P.y + tc(pa.j.ty)) / 2 - 40, tc(pa.j.tx), tc(pa.j.ty)); ctx.stroke(); ctx.setLineDash([]); }
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
-    if (pa.k === 'fuse') { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2; ctx.strokeRect(STAGE.fuse[0] * TILE + 4, STAGE.fuse[1] * TILE + 4, 40, 40); }
     drawActLabels(pa, P);
     const nc = !P.carrying && nearCorpse();
     if (nc) { ctx.strokeStyle = 'rgba(232,227,214,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.arc(nc.x, nc.y, 26, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
