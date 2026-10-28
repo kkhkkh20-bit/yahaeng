@@ -88,6 +88,7 @@ function updateAlert(dt) {
   }
 }
 function moveCamera(dt) {
+  { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
   const k = 1 - Math.pow(0.0015, dt);
   SCALE += (targetScale() - SCALE) * Math.min(1, dt * 6);
   const vw = W / SCALE, vh = H / SCALE;

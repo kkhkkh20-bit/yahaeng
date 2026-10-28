@@ -391,7 +391,7 @@ function updatePlayer(dt) {
   }
   else {
     if (P.hidden) hint('bush', '화단 속에선 바로 옆이 아니면 보이지 않는다');
-    if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 진한 곳은 웅크려도 보이고, 줄무늬는 웅크리면 안 보인다');
+    if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 웅크리면 원뿔이 줄어든다 — 지금 내 자세로 들키는 범위다');
     const nh = nearHide();
     if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
     if (nh && nh.type === 'box') hint('box', '쓰레기통: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)');

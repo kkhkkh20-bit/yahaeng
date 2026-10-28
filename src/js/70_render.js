@@ -14,21 +14,16 @@ function guardCone(g, fov, rg) {
   }
   setLayer(L0); const cn = { rays, STP }; g._cone = { t: S.t, k: ck, x: g.x, y: g.y, a: g.a, cn }; return cn;
 }
-// lo~hi 단계 영역을 '띠' 몇 개로 그린다: 광선마다 그 단계인 구간들을 구하고, 구간 개수가 같은 이웃 광선끼리 묶어
-// 먼 끝을 따라 갔다가 가까운 끝으로 돌아오는 다각형 하나로 (칸마다 사각형을 만들던 것보다 경로가 수십 배 짧다 — 발열의 주범이었다)
-function conePaths(g, cn, lo, hi) {
-  const R = cn.rays, STP = cn.STP, h = R.length > 1 ? (R[1].ra - R[0].ra) / 2 : 0.02; ctx.beginPath();
-  const ivs = R.map(r => { const out = [], n = r.lv.length; let k0 = -1; for (let k = 0; k <= n; k++) { const on = k < n && r.lv[k] >= lo && r.lv[k] <= hi; if (on && k0 < 0) k0 = k; if (!on && k0 >= 0) { out.push([k0 * STP, Math.min(k * STP, r.w)]); k0 = -1; } } return out; });
-  const pt = (a, d, mv) => { const x = g.x + Math.cos(a) * d, y = g.y + Math.sin(a) * d; if (mv) ctx.moveTo(x, y); else ctx.lineTo(x, y); };
-  for (let i = 0; i < R.length;) {
-    const m = ivs[i].length; if (!m) { i++; continue; }
-    let j = i; while (j + 1 < R.length && ivs[j + 1].length === m) j++;
-    for (let q = 0; q < m; q++) {
-      pt(g.a + R[i].ra - h, ivs[i][q][1], true); for (let r = i; r <= j; r++) pt(g.a + R[r].ra, ivs[r][q][1]); pt(g.a + R[j].ra + h, ivs[j][q][1]);
-      pt(g.a + R[j].ra + h, ivs[j][q][0]); for (let r = j; r >= i; r--) pt(g.a + R[r].ra, ivs[r][q][0]); pt(g.a + R[i].ra - h, ivs[i][q][0]); ctx.closePath();
-    }
-    i = j + 1;
-  }
+function conePaths(g, cn, lo) {
+  // 한 겹 원뿔: 광선마다 '이 단계 이상'인 마지막 거리까지 한 길이로 잡고(중간 구멍은 메운다), 이웃 광선과 고르게 해 매끈한 부채꼴로 그린다.
+  // 길이는 그 자리 밝기를 따른다 — 불빛 쪽 광선은 길고 어두운 쪽은 짧아, 원뿔이 좌우로 다를 수 있다
+  const R = cn.rays, STP = cn.STP, h = R.length > 1 ? (R[1].ra - R[0].ra) / 2 : 0.02;
+  const L = R.map(r => { let k = -1; for (let i = 0; i < r.lv.length; i++) if (r.lv[i] >= lo) k = i; return k < 0 ? 0 : Math.min(r.w, (k + 1) * STP); });
+  const M = L.map((v, i) => { const a = L[i - 1] != null ? L[i - 1] : v, b = L[i + 1] != null ? L[i + 1] : v; return Math.min(R[i].w, a * 0.25 + v * 0.5 + b * 0.25); });
+  ctx.beginPath(); ctx.moveTo(g.x, g.y);
+  const pt = (a, d) => ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d);
+  pt(g.a + R[0].ra - h, M[0]); for (let i = 0; i < R.length; i++) pt(g.a + R[i].ra, M[i]); pt(g.a + R[R.length - 1].ra + h, M[R.length - 1]);
+  ctx.closePath();
 }
 // ---------------------------------------------------------------- 그리기
 function drawSprite(c, x, y, a, s = 0.78, alpha = 1) {
@@ -1116,15 +1111,15 @@ function draw() {
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? ('230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? ('242,196,107') : ('170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
-    // 진한 부분 = 웅크려도 보임 · 옅은 줄무늬 = 서 있으면 보임(웅크리면 안전) · 경계(빨강) 중에는 전부 진하게
+    // 한 겹: 내 자세에 맞는 범위만 그린다 — 서 있으면 넓은 원뿔, 웅크리면(벽에 붙으면 더) 좁아진 원뿔. 바뀔 때 0.2초 동안 부드럽게 줄고 는다
     if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
       ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
-    conePaths(g, cn, 1, 1); ctx.fillStyle = `rgba(${col},.07)`; ctx.fill();
-    if (g.state !== 'ALERT') { ctx.globalAlpha = 0.5; ctx.fillStyle = stripeFor(col); ctx.fill(); ctx.globalAlpha = 1; }  // 같은 경로에 줄무늬를 바로 칠한다 (잘라내기 없이)
-    conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},.3)`; ctx.fill(); ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke();
+    { const ck = S.coneK || 0;  // 0 = 서 있음, 1 = 웅크림
+      if (ck < 0.99) { conePaths(g, cn, 1, 2); ctx.fillStyle = `rgba(${col},${(0.24 * (1 - ck)).toFixed(3)})`; ctx.fill(); if (ck < 0.5) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } }
+      if (ck > 0.01) { conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},${(0.24 * ck).toFixed(3)})`; ctx.fill(); if (ck >= 0.5) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } } }
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
