@@ -40,7 +40,7 @@ const TUT = {
     ['등 돌린 자경대원 뒤에서 {행동} — 암살', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
     ['쓰러진 사람을 {특수}로 메고 쓰레기통에 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
     ['{살피기} 누르고 있으면 쓸 수 있는 것이 색으로 보인다', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
-    ['벽에 붙어 멈추기 — 저절로 바짝 붙는다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
+    ['벽 쪽으로 1초 동안 밀기 — 등을 바짝 붙인다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
     ['붙은 채 기다렸다가 지나가는 자경대원에게 {행동}', S => S.guards[1].state === 'DEAD', S => S.guards[1]],
     ['창문 쪽을 바라보면 안이 보인다 — 엿보기', S => !!S.peek, () => ({ x: 16 * 48 + 24, y: 7 * 48 + 24 })],
     ['{도구} 누른 채 겨누고 떼서 빈 캔 던지기 — 소리 난 곳을 보러 간다', S => ['SUSPICIOUS', 'LURE', 'CHECK'].includes(S.guards[2].state) || S.guards[2].state === 'DEAD', S => S.guards[2]],

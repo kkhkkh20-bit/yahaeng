@@ -18,7 +18,7 @@ async def main():
         # 웅크려 벽 쪽(위)으로 걷기
         await pg.evaluate('() => { window.__game.input.sneakToggle = true; window.__game.S.keys.ArrowUp = true; }')
         snapSeen, t_cover = False, None
-        for i in range(60):
+        for i in range(120):  # 벽 쪽으로 1초 밀어야 붙는다
             await pg.wait_for_timeout(20)
             s = await pg.evaluate('() => { const P = window.__game.S.player; return [!!P.snap, !!P.cover, Math.round(P.y - window.__wy)]; }')
             snapSeen = snapSeen or s[0]
