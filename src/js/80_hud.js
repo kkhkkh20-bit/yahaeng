@@ -58,17 +58,23 @@ function stageMap(w, labels) {
   for (const g of S.guards) if (g.target) pt(g.x, g.y, '#ff5a4a', 'c', g.doc ? '한 선생' : '표적');
   return c;
 }
+// 할 일 목록 (브리핑·일시정지 공용): [표식, 색, 할 일, 자리]
+function briefTodo() {
+  const out = [];
+  S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' 훔치기', placeName(it.x, it.y, it.fl, it.b)]); });
+  for (const g of S.guards) if (g.target && g.state !== 'DEAD') out.push(['dot', '#e8473c', (g.doc ? '한 선생' : '표적') + ' 처리', schedText(g) || placeName(g.x, g.y, flOf(g))]);
+  out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '끝나면 노란 원으로']);
+  return out;
+}
 // 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]
 function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), true); cv.style.width = '100%'; mp.appendChild(cv);
-  const todo = [];
-  S.items.forEach((it, i) => todo.push('<li><b>' + (((STAGE.itemNames || [])[i] || STAGE.itemName || '서류')) + ' 훔치기</b> — ' + placeName(it.x, it.y, it.fl, it.b) + '</li>'));
-  for (const g of S.guards) if (g.target) todo.push('<li><b>' + (g.doc ? '한 선생' : '표적') + ' 처리하기</b> — ' + (schedText(g) || placeName(g.x, g.y, flOf(g))) + '</li>');
-  todo.push('<li><b>탈출</b> — 다 하면 노란 원으로</li>');
-  $('brTodo').innerHTML = todo.join('');
+  $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
+  { const L = (typeof DIALOGUE !== 'undefined' && DIALOGUE[STAGE.id] || []).find(l => l[0] === 'master'); $('brLine').textContent = L ? L[1].replace(/^올빼미, 까마귀다\. /, '') : ''; $('brRadio').hidden = !L; }
+  $('brTodo').innerHTML = briefTodo().map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span> · ${w}</span></b></li>`).join('');
   $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };

@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Brush+Script&family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* 레이아웃: 화면 전체를 쓰는 캔버스 + 가장자리에 붙는 작은 HUD 조각들. 밤 장면 하나로 고정된 단일 테마 */
 :root {
@@ -16,6 +16,7 @@
   --lamp: #f2c46b;
   --moss: #7fae86;
   --f-display: "Nanum Brush Script", "Nanum Pen Script", cursive, serif;
+  --f-title: "Black Han Sans", "IBM Plex Sans KR", sans-serif;
   --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, monospace;
   /* 글자 크기 다섯 단계: 캡션(라벨·키) · UI(칩·버튼·보조 글) · 본문(목표·알림·도움말) · 리드(소개·대사·제목줄) · 제목 */
@@ -255,9 +256,6 @@ body.dlgmodal .pad, body.dlgmodal .joyhint, body.dlgmodal .sysbtns, body.dlgmoda
 #hintCard.off { opacity: 0; transform: translateY(8px); }
 /* 버튼 줄이기: 살피기는 터치 화면에서만, 나머지 설정은 메뉴 안으로 */
 body:not(.touch) .sysbtns .tonly { display: none; }
-#pause .opts { margin-top: 10px; flex-wrap: wrap; }
-#pause .opts button { font-size: var(--fs-ui); padding: 7px 11px; }
-#pause .opts button.on { color: var(--lamp); border-color: var(--lamp); }
 /* 주인공이 HUD 밑에 오면 HUD를 옅게 */
 .hudfade { opacity: .14 !important; pointer-events: none !important; transition: opacity .2s; }
 /* 하단 줄이기: 고른 도구 하나만 (누르면 다음 도구) */
@@ -338,13 +336,6 @@ body.scanning #scanLegend { display: flex; }
 #rotateHint small { color: var(--paper-dim); font-size: var(--fs-body); }
 /* 세로 화면이 기본 — 돌리라는 안내는 띄우지 않는다 */
 /* 의뢰 브리핑 · 의뢰 카드 지도 미리보기 */
-.br-name { font-family: var(--f-display); font-size: 40px; color: var(--lamp); margin: 0; font-weight: 400; }
-.br-map { border: 1px solid var(--ink-line); background: #0b0e16; line-height: 0; }
-.br-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: var(--fs-cap); color: var(--paper-dim); }
-.br-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: -6px; }
-.br-list { margin: 0; padding-left: 18px; display: grid; gap: 5px; font-size: var(--fs-body); }
-.br-list b { color: var(--paper); } .br-list.ch { color: var(--paper-dim); font-size: var(--fs-ui); }
-#brief h3 { margin: 4px 0 0; font-size: var(--fs-ui); letter-spacing: .1em; color: var(--paper-dim); }
 .stage .st-map { width: 72px; height: 52px; object-fit: cover; border: 1px solid var(--ink-line); border-radius: 4px; image-rendering: auto; }
 .chip .clab { font-size: 10px; color: var(--paper-dim); margin-right: 5px; letter-spacing: .04em; }
 /* 경계 연출: 화면 가장자리 빛 (의심·수색 노랑, 발각 빨강 맥박) */
@@ -469,6 +460,65 @@ body.scanning #stealth, body.dlgmodal #stealth, body:has(.screen:not([hidden])) 
 /* 화면(일시정지·브리핑·끝)이 떠 있으면 대사창은 숨기고 눌리지 않게 */
 body:has(.screen:not([hidden])) #dlg { visibility: hidden; pointer-events: none; }
 body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
+
+/* 브리핑·일시정지 (네온 누아르): 골목 장면을 어둡게 깔고, 왼쪽 정보 · 오른쪽 지도 / 왼쪽 큰 메뉴 · 오른쪽 설정 */
+.screen.fx { background: var(--night); place-items: center; padding: 0; }
+.screen.fx::before { content: ""; position: fixed; inset: 0; background-image: var(--title-bg, none); background-size: cover; background-position: center; opacity: .3; filter: saturate(.8); pointer-events: none; }
+.screen.fx::after { content: ""; position: fixed; inset: 0; background: linear-gradient(90deg, var(--night) 0%, rgba(7, 10, 18, .9) 42%, rgba(7, 10, 18, .55) 100%); pointer-events: none; }
+.screen.fx > * { position: relative; z-index: 1; }
+.fx-sub { font-size: 14px; color: #9aa3b5; }
+.br-wrap { width: min(1180px, 100%); box-sizing: border-box; padding: 40px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 470px) minmax(0, 1fr); gap: 56px; align-items: center; }
+.br-info { display: flex; flex-direction: column; gap: 18px; }
+.br-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.br-name { margin: 0; font-family: var(--f-title); font-weight: 400; font-size: clamp(64px, 8vw, 96px); line-height: .85; color: #f4f1ea; text-shadow: 0 0 24px rgba(242, 196, 107, .22); }
+.br-fee { text-align: right; flex: none; } .br-fee small { display: block; font-size: 13px; color: #9aa3b5; } .br-fee b { font-family: var(--f-title); font-weight: 400; font-size: 38px; line-height: 1; color: var(--lamp); }
+.br-radio { border-left: 2px solid var(--lamp); padding: 4px 0 4px 16px; display: flex; flex-direction: column; gap: 6px; }
+.br-radio b { font-size: 13px; color: #c9a2ff; } .br-radio p { margin: 0; font-size: 16px; line-height: 1.6; }
+.br-todo { list-style: none; margin: 0; padding: 0; }
+.br-todo li { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; padding: 11px 0; border-bottom: 1px solid var(--ink-line); font-size: 16px; }
+.br-todo li span { color: #9aa3b5; }
+.mk { display: inline-block; width: 11px; height: 11px; background: var(--c); }
+.mk.dot { border-radius: 50%; } .mk.dia { transform: rotate(45deg); width: 10px; height: 10px; } .mk.ring { border-radius: 50%; background: none; border: 3px solid var(--c); box-sizing: border-box; width: 12px; height: 12px; }
+.br-chl { font-size: 13px; color: #9aa3b5; display: block; margin-bottom: 8px; }
+.br-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.br-chips li { font-size: 13px; color: #c7cede; background: rgba(37, 48, 73, .6); padding: 5px 10px; }
+.br-acts { display: flex; gap: 12px; margin-top: 4px; }
+.br-acts .cta { background: var(--lamp); color: #170f04; padding: 15px 44px; font-size: 18px; }
+.br-acts .cta:hover { background: #ffd98a; }
+.br-frame { position: relative; padding: 14px; }
+.br-frame::before, .br-frame::after { content: ""; position: absolute; width: 34px; height: 34px; border: 2px solid var(--lamp); }
+.br-frame::before { left: 0; top: 0; border-right: 0; border-bottom: 0; box-shadow: none; }
+.br-frame::after { right: 0; bottom: 0; border-left: 0; border-top: 0; }
+.br-map { line-height: 0; background: #0b0e16; } .br-map canvas { display: block; width: 100%; height: auto; }
+.br-legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: #9aa3b5; padding: 8px 14px 0; }
+.br-legend span { display: flex; align-items: center; gap: 8px; }
+.pz-wrap { width: min(1100px, 100%); box-sizing: border-box; padding: 40px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 500px); gap: 56px; align-items: center; }
+.pz-menu { display: flex; flex-direction: column; gap: 4px; }
+.pz-menu .fx-sub { margin-bottom: 16px; }
+.pz-big { display: flex; align-items: center; gap: 18px; text-align: left; font-family: var(--f-title); font-weight: 400; font-size: clamp(34px, 5vw, 52px); line-height: 1.15; color: #6f7890; background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.pz-big::before { content: ""; width: 6px; height: .8em; background: transparent; }
+.pz-big:hover, .pz-big:focus-visible, #btnResume { color: var(--lamp); }
+#btnResume::before, .pz-big:hover::before, .pz-big:focus-visible::before { background: var(--lamp); }
+.pz-menu:hover #btnResume:not(:hover) { color: #6f7890; } .pz-menu:hover #btnResume:not(:hover)::before { background: transparent; }
+.pz-side { display: flex; flex-direction: column; gap: 20px; padding: 26px 28px; background: rgba(15, 21, 34, .85); }
+.pz-todo small { display: block; font-size: 13px; color: #9aa3b5; margin-bottom: 8px; }
+#pzTodo { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
+.pz-sets { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--ink-line); padding-top: 18px; }
+.pz-sets label { display: grid; grid-template-columns: 84px minmax(0, 1fr); align-items: center; font-size: 15px; }
+.pz-sets input { accent-color: var(--lamp); width: 100%; }
+.pz-opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.pz-opts button { font-size: 14px; padding: 9px 12px; background: transparent; border: 1px solid #3a4560; color: var(--paper); }
+.pz-opts button.on { color: var(--lamp); border-color: var(--lamp); }
+@media (max-width: 820px), (orientation: portrait) {
+  .screen.fx { place-items: start center; overflow-y: auto; }
+  .screen.fx::after { background: linear-gradient(180deg, rgba(7, 10, 18, .7) 0%, var(--night) 60%); }
+  .br-wrap, .pz-wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding: calc(20px + env(safe-area-inset-top, 0px)) 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .br-mapcol { order: -1; }
+  .br-name { font-size: 64px; }
+  .br-acts { position: sticky; bottom: 0; padding: 10px 0 4px; background: linear-gradient(180deg, transparent, var(--night) 30%); }
+  .br-acts .cta { flex: 1; }
+  .pz-big { font-size: 34px; }
+}
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -599,24 +649,36 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 </div>
 
 <div id="rotateHint"><p>가로로 돌려서 하는 게임이다.<br><small>세로 화면은 보이는 범위가 좁다.</small></p><button type="button" class="ghost" id="btnPortrait">그래도 세로로 하기</button></div>
-<div class="screen" id="pause" hidden>
-  <div class="panel">
-    <div class="eyebrow">일시정지</div>
-    <div class="row"><button class="cta" id="btnResume" type="button">계속하기</button><button class="ghost" id="btnRestart2" type="button">처음부터</button><button class="ghost" id="btnMenu2" type="button">의뢰 선택</button></div>
-    <div class="row opts sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
-    <div class="row opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button></div>
+<div class="screen fx" id="pause" hidden>
+  <div class="pz-wrap">
+    <div class="pz-menu">
+      <span class="fx-sub" id="pzSub"></span>
+      <button class="pz-big" id="btnResume" type="button">계속하기</button>
+      <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
+      <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
+    </div>
+    <div class="pz-side">
+      <div class="pz-todo"><small>지금 할 일</small><div id="pzTodo"></div></div>
+      <div class="pz-sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label></div>
+      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+    </div>
   </div>
 </div>
 
-<div class="screen" id="brief" hidden>
-  <div class="panel">
-    <div class="eyebrow" id="brSub"></div>
-    <h2 class="br-name" id="brName"></h2>
-    <div class="br-map" id="brMap"></div>
-    <div class="br-legend"><i style="--c:#7fd6ff"></i>출발 <i style="--c:#ffd27a"></i>훔칠 것 <i style="--c:#ff5a4a"></i>표적 <i style="--c:#f2c46b"></i>탈출</div>
-    <h3>할 일</h3><ul class="br-list" id="brTodo"></ul>
-    <div id="brChBox"><h3>도전 과제 (별)</h3><ul class="br-list ch" id="brCh"></ul></div>
-    <div class="row"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
+<div class="screen fx" id="brief" hidden>
+  <div class="br-wrap">
+    <div class="br-info">
+      <span class="fx-sub" id="brSub"></span>
+      <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-radio" id="brRadio"><b>까마귀</b><p id="brLine"></p></div>
+      <ul class="br-todo" id="brTodo"></ul>
+      <div id="brChBox"><small class="br-chl">별 받는 법</small><ul class="br-chips" id="brCh"></ul></div>
+      <div class="br-acts"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
+    </div>
+    <div class="br-mapcol">
+      <div class="br-frame"><div class="br-map" id="brMap"></div></div>
+      <div class="br-legend"><span><i class="mk dot" style="--c:#7fd6ff"></i>출발</span><span><i class="mk dia" style="--c:#f2c46b"></i>훔칠 것</span><span><i class="mk dot" style="--c:#e8473c"></i>표적</span><span><i class="mk ring" style="--c:#f2c46b"></i>탈출</span></div>
+    </div>
   </div>
 </div>
 <div class="screen" id="end" hidden>

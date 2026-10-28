@@ -148,11 +148,12 @@ $('btnLedger').addEventListener('click', () => { initAudio(); renderStageList();
 $('btnHelp').addEventListener('click', () => showMenu('help'));
 $('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); });
 $('btnHelpBack').addEventListener('click', () => showMenu('intro'));
-{ const bg = window.__TITLE_BG; const el = $('intro'); if (bg && el) el.style.setProperty('--title-bg', `url(${bg})`); }
+{ const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
-function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; }  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
+function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused;
+  if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); $('pzTodo').innerHTML = STAGE.tutorial ? '' : briefTodo().map(([mk, c, t, w]) => `<span><i class="mk ${mk}" style="--c:${c}"></i> ${t} · ${w}</span>`).join(''); $('pzTodo').parentElement.hidden = !!STAGE.tutorial; } }  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
