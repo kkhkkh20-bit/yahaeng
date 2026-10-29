@@ -121,7 +121,8 @@ function brawlStep(g, dt) {
   if (d > 600) { g.brawl = null; g.state = 'RETURN'; return false; }
   if (d <= 34 && (b.cd -= dt) <= 0) {
     b.cd = rnd(0.8, 1.3); g.swingT = 0.3; play('thud', 0.3 * proxVol(g)); noise(g.x, g.y, 140, 'fight', flOf(g));
-    if (Math.random() < 0.55) { o.fhp = (o.fhp == null ? 3 : o.fhp) - 1; o.startle = { a: Math.atan2(g.y - o.y, g.x - o.x) }; if (o.fhp <= 0) { npcDown(o, g, g.fac === 'P' ? false : Math.random() < (o.civ ? 0.5 : 0.4)); if (g.fac === 'P') gsay(g, '제압했다. 꼼짝 마.', 2); g.brawl = null; g.state = 'RETURN'; g.path = null; return true; } }
+    const cop = g.fac === 'P';  // 경찰 곤봉: 더 자주, 더 세게 (끼어든 싸움은 경찰이 끝낸다)
+    if (Math.random() < (cop ? 0.75 : 0.55)) { o.fhp = (o.fhp == null ? 3 : o.fhp) - (cop ? 2 : 1); o.startle = { a: Math.atan2(g.y - o.y, g.x - o.x) }; if (o.fhp <= 0) { npcDown(o, g, g.fac === 'P' ? false : Math.random() < (o.civ ? 0.5 : 0.4)); if (g.fac === 'P') gsay(g, '제압했다. 꼼짝 마.', 2); g.brawl = null; g.state = 'RETURN'; g.path = null; return true; } }
     // 싸움에 휘말리는 주민
     for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && dist(c.x, c.y, o.x, o.y) < 48 && Math.random() < 0.18) { npcDown(c, g, Math.random() < 0.3); if (dist(S.player.x, S.player.y, c.x, c.y) < 700) toast('지나가던 주민이 싸움에 휘말렸다', 2); }
   }

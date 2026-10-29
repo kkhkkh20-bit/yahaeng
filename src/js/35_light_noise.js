@@ -2,9 +2,21 @@
 const TORCH_R = 210;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
 const lampOn = l => !l.broken && !l.off && !(l.outdoor && !S.lightsOn) && !flickOff(l);
+// 등 격자: 밝기를 물을 때마다 판의 등 전부(도시는 수백 개)를 훑지 않게, 160px 칸마다 빛이 닿을 수 있는 등만 모아 둔다
+const LG_C = 160, LG_NONE = [];
+let LG = null;
+function lampsNear(x, y, f) {
+  if (!LG || LG.S !== S || LG.n !== S.lamps.length) {
+    LG = { S, n: S.lamps.length, m: new Map() };
+    for (const lp of S.lamps) { const lf = flOf(lp);
+      for (let cy = Math.floor((lp.y - lp.r) / LG_C); cy <= Math.floor((lp.y + lp.r) / LG_C); cy++) for (let cx = Math.floor((lp.x - lp.r) / LG_C); cx <= Math.floor((lp.x + lp.r) / LG_C); cx++) {
+        const k = lf * 1e8 + (cy + 500) * 1e4 + cx + 500; let a = LG.m.get(k); if (!a) LG.m.set(k, a = []); a.push(lp); } }
+  }
+  return LG.m.get(f * 1e8 + (Math.floor(y / LG_C) + 500) * 1e4 + Math.floor(x / LG_C) + 500) || LG_NONE;
+}
 function lightAt(x, y, elev) {
   let l = elev ? 0.1 : 0.04;
-  for (const lp of S.lamps) {
+  for (const lp of lampsNear(x, y, CUR_F)) {
     if (!lampOn(lp) || flOf(lp) !== CUR_F) continue;
     const d = dist(lp.x, lp.y, x, y);
     if (d < lp.r && los(lp.x, lp.y, x, y, elev)) l = Math.max(l, clamp((1 - d / lp.r) * 1.8, 0, 1));

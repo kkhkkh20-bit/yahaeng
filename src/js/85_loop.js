@@ -12,12 +12,15 @@ function frame(t) {
   if (running && !paused) updateDialog(dt);
   { const sc = !!(input.scan && running && !tactical); if (sc && !frame.scanAt) frame.scanAt = performance.now(); if (!sc) frame.scanAt = 0; document.body.classList.toggle('scanning', sc); document.body.classList.toggle('scanleg', sc && performance.now() - frame.scanAt < 4000); }  document.body.classList.toggle('playing', !!(running && S && !S.over));  // 범례는 켠 뒤 4초만 (살필 곳을 가리지 않게)
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
+  const pf = window.__pf, t0 = pf ? performance.now() : 0;  // 성능 측정 (__pf 를 켰을 때만)
   if (running && !paused && !S.over && !tactical && !DLG.modal) { let ud = dt; if (S.hitStop > 0) { S.hitStop -= dt; ud = dt * 0.06; } if (input.aiming) focusUpdate(ud); else update(ud); }
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
   else if (S.over) { for (const n of S.noises) n.t += dt; }
   else if (!running) { S.t += dt; const P = S.player, kx = P.x, ky = P.y; P.x = -9999; P.y = -9999; for (const g of S.guards) updateGuard(g, dt); P.x = kx; P.y = ky; }
+  const t1 = pf ? performance.now() : 0;
   draw();
+  if (pf) { pf.u.push(t1 - t0); pf.d.push(performance.now() - t1); }
 }
 // 느린 기기: 4초 구간의 '보통 프레임'(중앙값)이 두 구간 연속 40fps 아래일 때만 해상도를 한 단계(0.5배) 낮춘다.
 // 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 낮춘 뒤 넉넉해지면(중앙값 58fps 이상이 세 구간) 한 번은 되돌린다

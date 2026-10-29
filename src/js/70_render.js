@@ -80,8 +80,8 @@ function drawPlayer(P) {
       const sh = prSheet('ninja'), [c0, nf] = PR.anims.hang, fi = P.moving ? Math.floor(S.t * 6) % nf : 0, fr = PR.fr;
       ctx.globalAlpha = blinkW ? 0.3 : dim ? 0.75 : 1;
       const row = prDir(P.wire.fa != null ? P.wire.fa : -Math.PI / 2);
-      ctx.drawImage(sh, (c0 + fi) * fr, row * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
-      if (dim && prVar.ninja_ol) { ctx.globalAlpha = 0.85; ctx.drawImage(prVar.ninja_ol, (c0 + fi) * fr, row * fr, fr, fr, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
+      prBlit(sh, c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
+      if (dim && prVar.ninja_ol) { ctx.globalAlpha = 0.85; prBlit(prVar.ninja_ol, c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
       ctx.globalAlpha = 1; return;
     }
     ctx.strokeStyle = '#2c3040'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(h.x - 8 + sw, h.y + 18); ctx.lineTo(h.x - 5, h.y + 1); ctx.moveTo(h.x + 8 + sw, h.y + 18); ctx.lineTo(h.x + 5, h.y + 1); ctx.stroke();
@@ -108,7 +108,7 @@ function drawPlayer(P) {
   if (P.ledge && usePR('ninja') && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
     const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), sh = prSheet(P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja'), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = P.moving ? Math.floor(S.t * 6) % nf : 0;
     ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    ctx.globalAlpha = n.y < 0 ? 0.75 : 1; ctx.drawImage(sh, (c0 + fi) * fr, 6 * fr, fr, fr, hx - PR.hangHand[0], hy + 2 - PR.hangHand[1], fr, fr); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.globalAlpha = n.y < 0 ? 0.75 : 1; prBlit(sh, c0 + fi, 6, hx - PR.hangHand[0], hy + 2 - PR.hangHand[1], fr, fr); ctx.restore(); ctx.globalAlpha = 1;
     return;
   }
   if (usePR('ninja') && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
@@ -127,7 +127,7 @@ function drawPlayer(P) {
     if (tp.pose === 'wjLeap') { drawPR(PK, P.x, P.y, T.face, 'vault', 0, al, s1, tp.g * 22, tp.g < 0.5 ? 0 : 1); return; }
     if (tp.pose === 'wjHang') {
       if (T.hangOk && PR.anims.hang && PR.hangHand) { const sh = prSheet(PK), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = Math.min(nf - 1, Math.floor(tp.g * nf)), sw = Math.sin(tp.g * Math.PI) * 2;
-        ctx.globalAlpha = al; ctx.drawImage(sh, (c0 + fi) * fr, 6 * fr, fr, fr, P.x - PR.hangHand[0], P.y + 2 + sw - PR.hangHand[1], fr, fr); ctx.globalAlpha = 1; return; }
+        ctx.globalAlpha = al; prBlit(sh, c0 + fi, 6, P.x - PR.hangHand[0], P.y + 2 + sw - PR.hangHand[1], fr, fr); ctx.globalAlpha = 1; return; }
       drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
     if (tp.pose === 'climb') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'climb', 0, al, s1, 14, ((Math.floor(T.t * 7) * (T.down ? -1 : 1)) % 4 + 4) % 4); return; }
     if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
@@ -213,8 +213,11 @@ function drawPlayer(P) {
 // 도면 시야 (Monaco): 바깥 땅에 서 있으면, 창문·열린 문으로 시선이 닿는 방 안만 보인다
 function drawWindowSight(P, openB) {
   if (P.z || P.wire || P.jump || P.trav || P.hide || P.vent || P.under || flOf(P)) return;
-  const R = 430, poly = [];
-  for (let i = 0; i < 180; i++) { const a = i / 180 * TAU, d = castRay(P.x, P.y, a, R); poly.push(P.x + Math.cos(a) * d, P.y + Math.sin(a) * d); }
+  const R = 430, WC = drawWindowSight.c || (drawWindowSight.c = {});
+  if (!(WC.S === S && Math.abs(WC.x - P.x) < 3 && Math.abs(WC.y - P.y) < 3 && S.t - WC.t < 0.3 && S.t >= WC.t)) {  // 시선 다각형은 제자리면 다시 쏘지 않는다
+    const poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU, d = castRay(P.x, P.y, a, R); poly.push(P.x + Math.cos(a) * d, P.y + Math.sin(a) * d); }
+    Object.assign(WC, { S, x: P.x, y: P.y, t: S.t, poly }); }
+  const poly = WC.poly;
   const path = () => { ctx.beginPath(); for (let i = 0; i < poly.length; i += 2) i ? ctx.lineTo(poly[i], poly[i + 1]) : ctx.moveTo(poly[i], poly[i + 1]); ctx.closePath(); };
   BLD.forEach((b, bi) => {
     if (bi === openB || b.piloti) return;
@@ -225,17 +228,17 @@ function drawWindowSight(P, openB) {
     if (!inside) return;
     b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
     // 도면: 건물 평면을 흐리게 (사람은 안 보임)
-    ctx.save(); ctx.globalAlpha = 0.5; ctx.drawImage(mapC, bx, by, bw, bh, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
+    ctx.save(); ctx.globalAlpha = 0.5; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
     ctx.strokeStyle = 'rgba(160,200,235,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]); ctx.restore();
     // 시선이 닿는 곳: 또렷하게 + 사람까지
     ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, bh - 2 * TILE); ctx.clip(); path(); ctx.clip();
-    ctx.drawImage(mapC, bx, by, bw, bh, bx, by, bw, bh);
+    drawBig(ctx, mapC, bx, by, bw, bh);
     for (const c of S.corpses) if (!c.stashed && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawLootItem(it);
     ctx.fillStyle = 'rgba(255,230,170,.06)'; ctx.fillRect(bx, by, bw, bh);
     // 시선 경계는 선 대신 부드러운 그늘: 안쪽으로 번지는 흐린 띠 + 멀어질수록 서서히 어둡게 (도면 바탕과 자연스럽게 이어진다)
-    ctx.filter = 'blur(9px)'; ctx.strokeStyle = 'rgba(16,28,44,.8)'; ctx.lineWidth = 30; path(); ctx.stroke(); ctx.filter = 'none';
+    path(); ctx.strokeStyle = 'rgba(16,28,44,.22)'; for (const lw of [36, 24, 12]) { ctx.lineWidth = lw; ctx.stroke(); }  // 흐림 필터(휴대폰에서 매우 무겁다) 대신 겹친 띠
     const rg = ctx.createRadialGradient(P.x, P.y, R * 0.3, P.x, P.y, R); rg.addColorStop(0, 'rgba(16,28,44,0)'); rg.addColorStop(1, 'rgba(16,28,44,.65)'); ctx.fillStyle = rg; ctx.fillRect(bx, by, bw, bh);
     ctx.restore();
     hint('winsight', '창문과 열린 문으로 시선이 닿는 방 안은 바깥에서도 보인다. 들어가기 전에 창가를 돌며 살펴라');
@@ -246,7 +249,7 @@ function drawPlansFaint(P, openB) {
   BLD.forEach((b, bi) => {
     if (bi === openB || !b.plan) return; const bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
     if (Math.abs(P.x - (bx + bw / 2)) > bw / 2 + 520 || Math.abs(P.y - (by + bh / 2)) > bh / 2 + 420) return;
-    ctx.globalAlpha = 0.42; ctx.drawImage(mapC, bx, by, bw, bh, bx, by, bw, bh); ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.42; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1;
     ctx.strokeStyle = 'rgba(160,200,235,.6)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]);
     if (b.name) tag(bx + bw / 2, by - 12, b.name, '#a0c8eb');
   });
@@ -648,7 +651,8 @@ const winVert = w => (G[w.ty - 1] && G[w.ty - 1][w.tx] === '#') || (G[w.ty + 1] 
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
 function drawWindow(w, alpha) {
   const vert = winVert(w), L = 42, T = 14;
-  const lit = lightAt(w.x, w.y) > 0.45;
+  if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }  // 밝기는 0.25초마다
+  const lit = w._lit;
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(w.x, w.y); if (vert) ctx.rotate(Math.PI / 2);
   ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-L / 2 + 2, -T / 2 + 3, L, T);
   ctx.fillStyle = '#5d636d'; ctx.fillRect(-L / 2, -T / 2, L, T);                    // 창틀 (샤시)
@@ -830,7 +834,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
+      if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
@@ -922,8 +926,8 @@ function drawUnderground() {
   const sc = SCALE * DPR, P = S.player;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#030406'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   worldTransform(ctx, sc); ctx.imageSmoothingEnabled = false;
-  ctx.globalAlpha = 0.14; ctx.drawImage(mapC, 0, 0); ctx.globalAlpha = 1;
-  ctx.drawImage(ugC, 0, 0);
+  ctx.globalAlpha = 0.14; drawBig(ctx, mapC, ...viewRect(60)); ctx.globalAlpha = 1;
+  drawBig(ctx, ugC, ...viewRect(60));
   // 맨홀 아래 빛줄기
   for (const h of S.hides) if (h.type === 'well' && ugAt(h.tx, h.ty)) {
     const gr = ctx.createRadialGradient(h.x, h.y, 0, h.x, h.y, 40); gr.addColorStop(0, 'rgba(200,215,230,.35)'); gr.addColorStop(1, 'rgba(200,215,230,0)');
@@ -972,7 +976,9 @@ function darkPass(sc, lamps, clip, key) {
   dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
-  if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; dctx.drawImage(lightMap(key || 'g', lamps), 0, 0, MW * TILE, MH * TILE); }
+  if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
+    const x0 = Math.max(0, Math.floor(rx / LIGHTQ)), y0 = Math.max(0, Math.floor(ry / LIGHTQ)), x1 = Math.min(lm.width, Math.ceil((rx + rw) / LIGHTQ)), y1 = Math.min(lm.height, Math.ceil((ry + rh) / LIGHTQ));
+    if (x1 > x0 && y1 > y0) dctx.drawImage(lm, x0, y0, x1 - x0, y1 - y0, x0 * LIGHTQ, y0 * LIGHTQ, (x1 - x0) * LIGHTQ, (y1 - y0) * LIGHTQ); }
   const flick = 1 + Math.sin(S.t * 13) * 0.012 + Math.sin(S.t * 7.3) * 0.01;
   for (const l of lamps) {  // 깜빡이는 등만 매 프레임
     if (!l.flk || !lampOn(l)) continue;
@@ -1019,15 +1025,18 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   }
   ctx.textBaseline = 'alphabetic';
 }
+// 성능 측정: __pf 가 켜져 있을 때만 단계별 시간을 모은다
+let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t = performance.now(); if (k) { const s = pf.s || (pf.s = {}); s[k] = (s[k] || 0) + t - PM_T; } PM_T = t; }
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if (S.player.under && !tactical) { drawUnderground(); return; }
+  PM();
   const sc = SCALE * DPR;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, canvas.width, canvas.height);
   worldTransform(ctx, sc);
   ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(mapC, 0, 0);
+  drawBig(ctx, mapC, ...viewRect(60));
   const P = S.player;
   SPEECH_R = []; MARK_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
   setLayer(0);
@@ -1046,10 +1055,12 @@ function draw() {
     blit(ctx, 'it_coin', x - 10, y - 10, 20, 20);
     if (l.landed) { ctx.strokeStyle = `rgba(242,196,107,${0.4 + 0.3 * Math.sin(S.t * 6)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 11, 0, TAU); ctx.stroke(); }
   }
-  for (const w of S.windows) drawWindow(w, 1);
-  for (const d of S.doors) drawDoor(d, false);
-  for (const l of S.ladders) if (l.kind === 'pipe' && l.bz === 0) drawPipeBase(l);
-  for (const v of S.vents) if (!v.roof) drawGrate(v, 0.85);
+  PM('map');
+  // 화면 밖 것은 그리지 않는다 (큰 판은 창문·문만 수백 개)
+  for (const w of S.windows) if (inView(w.x, w.y, 60)) drawWindow(w, 1);
+  for (const d of S.doors) if (inView(d.x, d.y, 60)) drawDoor(d, false);
+  for (const l of S.ladders) if (l.kind === 'pipe' && l.bz === 0 && inView(l.x, l.y, 120)) drawPipeBase(l);
+  for (const v of S.vents) if (!v.roof && inView(v.x, v.y, 40)) drawGrate(v, 0.85);
   for (const l of S.lamps) if (l.hearth && lampOn(l)) { const fl = 0.75 + 0.25 * Math.sin(S.t * 17 + l.x); ctx.fillStyle = `rgba(255,140,50,${0.85 * fl})`; ctx.beginPath(); ctx.moveTo(l.x - 9, l.y + 14); ctx.quadraticCurveTo(l.x - 6, l.y - 2 * fl, l.x, l.y - 8 * fl); ctx.quadraticCurveTo(l.x + 6, l.y - 2 * fl, l.x + 9, l.y + 14); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,220,120,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y + 9, 4 * fl, 0, TAU); ctx.fill(); }
   for (const b of S.hides) if (b.bodies && b.type !== 'well' && (b.fl || 0) === flOf(S.player)) { ctx.fillStyle = 'rgba(110,14,18,.9)'; for (let i = 0; i < b.bodies; i++) { ctx.beginPath(); ctx.arc(b.x - 6 + i * 12, b.y - 14, 3, 0, TAU); ctx.fill(); } }
   if (S.exitOpen) {
@@ -1073,6 +1084,7 @@ function draw() {
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(240,80,60,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
     ctx.lineWidth = n.heard ? 3 : 2; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(1, n.r * (0.25 + 0.75 * k)), 0, TAU); ctx.stroke();
   }
+  PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
     if (c.stashed || !onGround(c)) continue;
@@ -1081,8 +1093,9 @@ function draw() {
     if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
     if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = '700 13px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
   }
+  PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
-    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb) continue;
+    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120)) continue;
     if (g.yank) drawYanked(g); else drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
     if (g.hasKey && dist(g.x, g.y, P.x, P.y) < 320) drawKeyIcon(g.hasKey, g.x + 18, g.y - 30, false);
@@ -1097,6 +1110,7 @@ function draw() {
     if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
     if (g.target) { ctx.strokeStyle = 'rgba(194,54,43,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x, g.y, 24, 0, TAU); ctx.stroke(); }
   }
+  PM('guards');
   drawGhosts(); drawTagged();
   if (P.hide) { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.strokeRect(P.hide.x - 22, P.hide.y - 22, 44, 44); ctx.setLineDash([]); }
   // (땅 위 주인공은 어둠·화단 위에 그린다 — 아래쪽 참고)
@@ -1114,6 +1128,7 @@ function draw() {
       }
       const v = (tx * 5 + ty * 3) % 3; blit(ctx, v === 0 ? 'treeR' : v === 1 ? 'pine' : 'treeP', tx * TILE - 24, ty * TILE - 52, 96, 96); }
   }
+  PM('tiles');
   for (const f of S.fx) {
     if (f.k === 'slash') { const fr = Math.min(3, Math.floor(f.t / 0.06)); blit(ctx, 'fx_slash', f.x - 48, f.y - 48, 96, 96, fr * 32, 0, 32, 32); }
     if (f.k === 'smoke') { const fr = Math.min(5, Math.floor(f.t / 0.07)); blit(ctx, 'fx_smoke', f.x - 36, f.y - 44, 72, 72, fr * 32, 0, 32, 32); }
@@ -1133,8 +1148,10 @@ function draw() {
     ctx.fillStyle = '#5a3a2a'; ctx.fillRect(-10, -1.5, 6, 3); ctx.restore();
   }
 
+  PM('fx');
   // 어둠
   if (!DBG.dark) darkPass(sc, S.lamps.filter(l => !flOf(l)), null);
+  PM('dark');
   worldTransform(ctx, sc);
   ctx.globalCompositeOperation = 'lighter';
   for (const l of S.lamps) {
@@ -1151,6 +1168,7 @@ function draw() {
     setLayer(flOf(g)); ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i <= 12; i++) { const a = g.a - 0.32 + 0.64 * i / 12, d = castRay(g.x, g.y, a, TORCH_R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); } ctx.closePath(); setLayer(flOf(S.player));
     const gr = ctx.createRadialGradient(g.x, g.y, 6, g.x, g.y, TORCH_R); gr.addColorStop(0, 'rgba(255,244,200,.32)'); gr.addColorStop(1, 'rgba(255,244,200,0)'); ctx.fillStyle = gr; ctx.fill(); }
   ctx.globalCompositeOperation = 'source-over';
+  PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
   drawSpeech();
   ctx.globalCompositeOperation = 'source-over';
@@ -1158,6 +1176,7 @@ function draw() {
   for (const l of S.lamps) if (l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
   for (const l of S.lamps) if (l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(l.x - 5, l.y - 5); ctx.lineTo(l.x + 5, l.y + 5); ctx.moveTo(l.x + 5, l.y - 5); ctx.lineTo(l.x - 5, l.y + 5); ctx.stroke(); }
 
+  PM('neon+speech');
   // 내 모습은 어둠과 화단 위에 그려 언제나 확인할 수 있게 (숨은 상태면 반투명 + 외곽선)
   if (VF && VB >= 0 && GF[VF]) {
     const b = BLD[VB], bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
@@ -1184,9 +1203,12 @@ function draw() {
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
   }
+  PM('floor');
   const travUp = !!(P.trav && !P.trav.hideB && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
+  PM('stepring');
   if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
+  PM('drawPlayer');
   // 키트 나무·화단: 주인공이 그 뒤(위쪽)에 있으면 잎을 반투명하게 한 번 더 덮어 '뒤에 숨은' 모습으로
   if (!P.z && !P.jump && !P.vent && !P.hide && !flOf(P)) {
     const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
@@ -1196,6 +1218,7 @@ function draw() {
       if (ch === 'B' && P.hidden && tx === ptx && ty === pty && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
     }
   }
+  PM('player');
   let openB = lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
   if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
@@ -1240,22 +1263,26 @@ function draw() {
   if (!tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
     const tgt = el > 0 ? Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
+  PM('haze');
   for (const g of S.guards) {
-    if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && coveredG(g, openB))) continue;
+    if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && (!inView(g.x, g.y, 460) || coveredG(g, openB)))) continue;  // 시야 원뿔이 화면에 닿지 않는 사람은 건너뛴다
     guardOverlay(g);
   }
+  PM('cones');
   if (!tactical) {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks();
+    PM('roofs');
     if (!flOf(P) && !P.z) drawWinWatch();  // 위층 창가에서 내려다보는 사람: 창문 밖으로 옅은 시선
     drawHeardSteps(P, openB, gVis);
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
-    for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
+    for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && inView(g.x, g.y, 120) && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
-    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl)))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
+    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x, g.y, 460) && (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl)))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
   }
+  PM('roofs2');
   if (S.poles.length) {
     const vx = W / SCALE / 2 + 80, vy = H / SCALE / 2 + 120;
     for (const o of S.poles) if (Math.abs(o.x - cam.x) < vx && Math.abs(o.y - cam.y) < vy) drawPole(o);
@@ -1266,23 +1293,26 @@ function draw() {
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
-    ctx.globalAlpha = 0.92; ctx.drawImage(ventC, 0, 0); ctx.globalAlpha = 1;
+    ctx.globalAlpha = 0.92; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
     for (const v of S.vents) { ctx.strokeStyle = v.roof ? 'rgba(242,196,107,.8)' : 'rgba(127,214,204,.9)'; ctx.lineWidth = 2; ctx.strokeRect(v.x - 13, v.y - 13, 26, 26); ctx.fillStyle = v.roof ? 'rgba(242,196,107,.25)' : 'rgba(127,214,204,.18)'; ctx.fillRect(v.x - 13, v.y - 13, 26, 26); }
     drawPlayer(P);
   }
   setLayer(flOf(P));
+  PM('poles');
   if (running && !tactical && !DBG.ui) drawLastSeen();
   if (S.entrySel) STAGE.entries.forEach((e, i) => { const p = entryPos(e), pulse = 0.6 + 0.4 * Math.sin(S.t * 5 + i); ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 34, 0, TAU); ctx.stroke(); ctx.fillStyle = 'rgba(242,196,107,.95)'; ctx.font = '700 30px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), p.x, p.y + 10); tag(p.x, p.y - 52, e.name, '#f2c46b'); });
   // 맨홀 속에 숨어 있거나 살피기 중이면 지하 수로·덕트 길을 비춰 보여 준다
   { const P = S.player, inWell = P.hide && P.hide.type === 'well';
     if (running && !P.under && !P.vent && (input.scan || tactical || inWell)) {
-      const k = inWell ? 0.5 : 0.36; ctx.globalAlpha = k * (0.8 + 0.2 * Math.sin(S.t * 3)); if (ugC) ctx.drawImage(ugC, 0, 0);
-      if (!inWell && ventC) { ctx.globalAlpha = 0.42; ctx.drawImage(ventC, 0, 0); } ctx.globalAlpha = 1;
+      const k = inWell ? 0.5 : 0.36; ctx.globalAlpha = k * (0.8 + 0.2 * Math.sin(S.t * 3)); if (ugC) drawBig(ctx, ugC, ...viewRect(60));
+      if (!inWell && ventC) { ctx.globalAlpha = 0.42; drawBig(ctx, ventC, ...viewRect(60)); } ctx.globalAlpha = 1;
       if (inWell) for (const h of S.hides) if (h.type === 'well' && h !== P.hide && ugAt(h.tx, h.ty)) { ctx.strokeStyle = 'rgba(150,200,255,.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(h.x, h.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
+  PM('misc');
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
+  PM('nearmarks');
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
@@ -1292,6 +1322,7 @@ function draw() {
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
       ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();
       ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(tg.x - 16 * k, y - 30 * k, 32 * k, 15 * k); ctx.fillStyle = '#f2c46b'; ctx.fillText('여기', tg.x, y - 19 * k); ctx.textAlign = 'left'; } }
+  PM('overlays');
   if (running && !tactical) drawOffscreen();
   // 행동 표시
   if (running && !S.over && !S.entrySel) {
@@ -1300,10 +1331,11 @@ function draw() {
       const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '⇄' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
+      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
     }
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
+    prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
     if (ka.list) ka.list.forEach(g => ring(g, '#e8473c'));
     if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, '#e8473c');
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
@@ -1336,7 +1368,8 @@ function draw() {
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();
     }
   }
-  flushTags();
+  PM('actions');
+  flushTags(); PM('tags');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (input.aiming && running && !S.over) {  // 조준하는 동안 세상은 멈춰 있다 — 화면 테두리와 글로 알려 준다
     ctx.strokeStyle = 'rgba(120,190,255,.45)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
@@ -1369,6 +1402,7 @@ function draw() {
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+  PM('screen');
 }
 
 

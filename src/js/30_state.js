@@ -3,6 +3,31 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d');
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
+// 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
+// 1024px 조각으로 나눠 두고, 화면에 걸친 조각만 그린다
+const BIG_T = 1024;
+function bigify(c) {
+  if (!c) return c; const T = BIG_T, nx = Math.ceil(c.width / T), ny = Math.ceil(c.height / T), tiles = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const w = Math.min(T, c.width - i * T), h = Math.min(T, c.height - j * T), t = document.createElement('canvas'); t.width = w; t.height = h;
+    t.getContext('2d').drawImage(c, i * T, j * T, w, h, 0, 0, w, h); tiles.push(t);
+  }
+  const B = { big: true, width: c.width, height: c.height, nx, ny, tiles }; c.width = c.height = 1; return B;
+}
+// 큰 그림의 (sx,sy,sw,sh) 부분을 (dx,dy,dw,dh) 에 그린다. 생략하면 전체를 제자리에
+function drawBig(x, B, sx = 0, sy = 0, sw = B.width, sh = B.height, dx = sx, dy = sy, dw = sw, dh = sh) {
+  if (!B) return; if (!B.big) { x.drawImage(B, sx, sy, sw, sh, dx, dy, dw, dh); return; }
+  const kx = dw / sw, ky = dh / sh, T = BIG_T;
+  const x0 = Math.max(0, sx), y0 = Math.max(0, sy), x1 = Math.min(B.width, sx + sw), y1 = Math.min(B.height, sy + sh); if (x1 <= x0 || y1 <= y0) return;
+  for (let j = Math.floor(y0 / T); j <= Math.floor((y1 - 1) / T); j++) for (let i = Math.floor(x0 / T); i <= Math.floor((x1 - 1) / T); i++) {
+    const t = B.tiles[j * B.nx + i], tx0 = Math.max(x0, i * T), ty0 = Math.max(y0, j * T), tx1 = Math.min(x1, i * T + t.width), ty1 = Math.min(y1, j * T + t.height);
+    if (tx1 <= tx0 || ty1 <= ty0) continue;
+    x.drawImage(t, tx0 - i * T, ty0 - j * T, tx1 - tx0, ty1 - ty0, dx + (tx0 - sx) * kx, dy + (ty0 - sy) * ky, (tx1 - tx0) * kx, (ty1 - ty0) * ky);
+  }
+}
+// 지금 화면에 보이는 월드 사각형 (여유 m)
+const viewRect = (m = 0) => { const hw = W / SCALE / 2 + m, hh = H / SCALE / 2 + m; return [cam.x - hw, cam.y - hh, hw * 2, hh * 2]; };
+const inView = (x, y, m = 60) => Math.abs(x - cam.x) < W / SCALE / 2 + m && Math.abs(y - cam.y) < H / SCALE / 2 + m;
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
 let userZoom = 1.1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
 try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
@@ -232,7 +257,7 @@ function newGame(si) {
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = buildRoofCanvas(b, i); });
   kitAttach();
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
-  mapC = renderMap(); ugC = renderSewers(); ventC = renderVents();
+  mapC = bigify(renderMap()); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
   S.floorC = {};
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);

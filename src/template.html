@@ -581,6 +581,38 @@ body.touch .chip.hpbox .clab, body.touch .chip.pipsbox .clab { font-size: 13px; 
 body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
 @media (max-width: 400px) { body.touch #hpPips i, body.touch #alertPips i { width: 19px; height: 13px; } }
 @media (prefers-reduced-motion: reduce) { .hpbox[data-low="1"] { animation: none; background: rgba(194, 54, 43, .45); } }
+
+/* ── 휴대폰 버튼 배치 (액션 게임식): 오른쪽 아래 큰 [공격]을 중심으로 [행동]·[붙잡기]·[도구]가 부채꼴로 둘러싼다.
+   엄지가 [공격]에 놓인 채 조금씩 움직여 닿는 거리. 도구 이름표(누르면 다음 도구)는 도구 버튼 바로 위 */
+body.touch .pad { display: block; width: 250px; height: 236px; right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+body.touch .pad > button { position: absolute; margin: 0; border-width: 2px; box-shadow: 0 3px 10px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
+  background: radial-gradient(circle at 50% 35%, rgba(44, 52, 72, .92), rgba(10, 13, 22, .9)); }
+body.touch .pad > button b { font-size: 11px; letter-spacing: -.2px; }
+body.touch .pad > button svg { opacity: .95; }
+body.touch .pad #btnAct { position: absolute; justify-self: auto; align-self: auto; right: 4px; bottom: 4px; width: 98px; height: 98px; border-color: rgba(232, 71, 60, .55); }
+body.touch .pad #btnAct b { font-size: 13px; }
+body.touch .pad #btnCarry { position: absolute; justify-self: auto; align-self: auto; right: 112px; bottom: 10px; width: 72px; height: 72px; border-color: rgba(242, 196, 107, .5); }
+body.touch .pad #btnCarry.ready { border-color: var(--lamp); color: var(--paper); }
+body.touch .pad #btnGrab { position: absolute; justify-self: auto; align-self: auto; right: 98px; bottom: 96px; width: 58px; height: 58px; border-color: rgba(143, 180, 255, .45); }
+body.touch .pad #btnGrab.ready { border-color: #9fb4ff; }
+body.touch .pad #btnTool { position: absolute; justify-self: auto; align-self: auto; right: 22px; bottom: 112px; width: 62px; height: 62px; border-color: rgba(232, 227, 214, .45); }
+body.touch .pad #btnTool b { font-size: 12px; }
+body.touch .pad #btnWhistle { position: absolute; justify-self: auto; align-self: auto; right: 172px; bottom: 96px; width: 46px; height: 46px; }
+body.touch .pad #btnWhistle b { font-size: 10px; }
+body.touch .pad .tools { position: absolute; right: 12px; bottom: 180px; pointer-events: auto; border-radius: 14px; overflow: hidden; border-color: rgba(232, 227, 214, .35); }
+body.touch .pad .tools .tool { padding: 4px 10px; font-size: 12px; }
+body.touch .pad .tools .tool.on { background: rgba(232, 227, 214, .92); }
+body.touch .pad #btnCycle { right: 192px; bottom: 26px; top: auto; width: 50px; height: 36px; }
+/* 글자만 쓰는 버튼: 그림 없이 동사를 크게 */
+body.touch .pad > button b { font-size: 13px; font-weight: 700; letter-spacing: -.3px; }
+body.touch .pad #btnAct b { font-size: 17px; }
+body.touch .pad #btnCarry b { font-size: 15px; }
+body.touch .pad #btnGrab b, body.touch .pad #btnTool b { font-size: 13px; }
+body.touch .pad #btnWhistle b { font-size: 11px; }
+body.touch .pad #btnTool small { font-size: 11px; margin-top: 1px; color: var(--paper-dim); }
+body.touch .pad > button small { font-size: 10px; margin-top: 2px; }
+body.touch .pad #btnCycle b { font-size: 12px; }
+@media (max-width: 370px) { body.touch .pad { transform: scale(.9); transform-origin: right bottom; } }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -623,7 +655,7 @@ body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>
     <button id="btnAct" type="button" title="공격 (Z · Space)"><b>공격</b></button>
-    <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>⇄</b><small id="cycleN">1/2</small></button>
+    <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>대상</b><small id="cycleN">1/2</small></button>
   </div>
 </div>
 <div id="keypad" hidden><div class="kp"><b>숫자 자물쇠</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small>

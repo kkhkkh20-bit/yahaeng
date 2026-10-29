@@ -48,7 +48,7 @@ function drawMini() {
 // 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
 function stageMap(w, labels) {
   const mw = MW * TILE, mh = MH * TILE, s = w / mw, h = Math.round(mh * s), c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-  x.imageSmoothingEnabled = true; x.drawImage(mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
+  x.imageSmoothingEnabled = true; drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
@@ -185,7 +185,7 @@ function updateHUD(force) {
   padButton(hud.carry, 'carryH', ea, '행동');
   hud.carry.classList.toggle('ready', ea.k !== 'none');
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (ea.choiceI + 1) + '/' + n); } }
-  { const gb = $('btnGrab'); if (gb) { const html = icon('grab', 20) + `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
+  { const gb = $('btnGrab'); if (gb) { const html = `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
   keyMap(ka, ea, ga);
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 들킬 수 있음 · 보인다 + 이유 한 줄
@@ -232,7 +232,7 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : icon(input.tool, 26) + `<b>${toolCount(input.tool)}</b>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : `<b>${TOOL_NAME[input.tool]}</b><small>${toolCount(input.tool)}개</small>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.classList.toggle('aiming', !!input.aiming);
   hud.tool.classList.toggle('ready', input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
 }

@@ -29,7 +29,7 @@ const ICON_P = {
   key: 'M8 15a4 4 0 110-8 4 4 0 010 8zM12 11h9M18 11v3M21 11v2',                                  // 열쇠
   stone: 'M7 5h10v15H7zM7 9h10M9 3h6',                                                          // 빈 캔
   coin: 'M3 14h15v3H3zM18 14h3v3h-3M19 11c0-2 2-2 2-4',                                          // 담배
-  kunai: 'M4 20L15 9M15 9l5-5-1 6zM15 9l-6-1 5-5zM6 14l4 4',                                     // 다트
+  kunai: 'M20 4l-7 2 5 5zM15.5 8.5L6 18M6 18l-3 0 0-3 3 3zM8 16l-3-3M8 16l3 3',                    // 다트 (바늘 끝 · 대 · 꼬리 깃)
   candy: 'M8 12a4 4 0 108 0 4 4 0 10-8 0M8 12l-5-3v6zM16 12l5-3v6z',                       // 사탕
   car: 'M5 17h14v-5l-2-5H7l-2 5zM5 12h14M7 17v2M17 17v2M8 14.5h.01M16 14.5h.01',                // 차
   dot: 'M12 12h.01'
@@ -61,7 +61,8 @@ function actVerb(a, ic) {
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.hold ? `<small>길게: ${a.hold}</small>` : '';
-  const html = (a.k === 'none' && !a.stalk ? '' : icon(ic, 24)) + `<b>${v}</b>` + hold;
+  // 그림 없이 글자만: 무엇을 하는지 동사로 바로 읽히게
+  const html = `<b>${v}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', a.label || v); }
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
