@@ -256,6 +256,9 @@ body.dlgmodal .pad, body.dlgmodal .joyhint, body.dlgmodal .sysbtns, body.dlgmoda
 #dlg.noface .dlg-box { border-radius: 10px; padding-left: 18px; }
 @media (max-height: 480px) { #dlg { width: min(600px, calc(100vw - 200px)); } .dlg-face { flex-basis: 80px; min-height: 90px; margin-right: -10px; } .dlg-face canvas { width: 98px; height: 98px; } .dlg-box { min-height: 70px; padding: 8px 12px 7px 20px; gap: 3px; } .dlg-box p { font-size: 15px; } }
 @media (max-width: 640px) { .dlg-face { flex-basis: 84px; min-height: 96px; margin-right: -10px; } .dlg-face canvas { width: 102px; height: 102px; } .dlg-box { min-height: 76px; padding: 10px 12px 8px 20px; } .dlg-box p { font-size: 15px; } }
+/* 대사 글이 한 줄 → 두 줄로 늘 때 창이 커지지 않게: 처음부터 세 줄 높이 (낮은 가로 화면은 두 줄) */
+.dlg-box p { min-height: calc(1.55em * 3); }
+@media (max-height: 480px) { .dlg-box p { min-height: calc(1.55em * 2); } }
 @media (max-width: 640px) {
   :root { --fs-cap: 11px; --fs-ui: 11.5px; --fs-body: 12.5px; --fs-lead: 14px; }
   .top { gap: 6px; }

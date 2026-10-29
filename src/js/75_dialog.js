@@ -67,7 +67,7 @@ const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'C
 function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');
   if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; document.body.classList.remove('dlgmodal'); const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
-  const sp = speakerOf(l[0]); DLG.cur = { text: l[1], shown: 0, t: 0 };
+  const sp = speakerOf(l[0]); DLG.cur = { text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
   $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
@@ -81,7 +81,8 @@ function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEn
 function updateDialog(dt) {
   updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
   const c = DLG.cur; if (!c) return; c.t += dt;
-  if (c.shown < c.text.length) { c.shown = Math.min(c.text.length, c.shown + dt * 38); $('dlgText').textContent = c.text.slice(0, Math.floor(c.shown)); if (c.shown >= c.text.length) $('dlg').classList.remove('talking'); }
+  if (c.shown < c.text.length) { const n0 = Math.floor(c.shown); c.shown = Math.min(c.text.length, c.shown + dt * 38); const n1 = Math.floor(c.shown); $('dlgText').textContent = c.text.slice(0, n1);
+    for (let i = n0; i < n1; i++) if (i % 2 === 0 && !/[\s.,…·!?]/.test(c.text[i])) { typeTick(c.seed); break; } if (c.shown >= c.text.length) $('dlg').classList.remove('talking'); }  // 타이핑 소리 (두 글자에 한 번, 띄어쓰기·문장부호는 조용히)
   else if (!DLG.modal && c.t > c.text.length / 38 + 2.2) nextLine();
 }
 { const el = document.getElementById('dlg'); el.addEventListener('pointerdown', e => { e.preventDefault(); advanceDialog(); });
