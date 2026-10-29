@@ -52,7 +52,8 @@ function stageMap(w, labels) {
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
-    if (labels && lab) { x.font = `700 ${Math.round(R * 3.2)}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; x.lineWidth = 3; x.strokeStyle = 'rgba(7,10,18,.95)'; x.strokeText(lab, X, Y - R * 2.2); x.fillStyle = col; x.fillText(lab, X, Y - R * 2.2); } };
+    if (labels && lab) { x.font = `700 ${Math.round(R * 3.2)}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 3, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);  // 지도 가장자리에서 글자가 잘리지 않게
+      x.lineWidth = 3; x.strokeStyle = 'rgba(7,10,18,.95)'; x.strokeText(lab, LX, LY); x.fillStyle = col; x.fillText(lab, LX, LY); } };
   pt(S.player.x, S.player.y, '#7fd6ff', 'c', '출발'); for (const e of S.exits || (S.exit ? [S.exit] : [])) pt(e.x, e.y, '#f2c46b', 'r', '탈출');
   S.items.forEach((it, i) => pt(it.x, it.y, '#ffd27a', 'd', (STAGE.itemNames || [])[i] || STAGE.itemName || '서류'));
   for (const g of S.guards) if (g.target) pt(g.x, g.y, '#ff5a4a', 'c', g.doc ? '한 선생' : '표적');
@@ -84,7 +85,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[살금]으로', 'Ctrl로'], 공격: ['[공격]', () => KK('atk')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 살피기: ['[살피기]를', 'Alt를'] };
+const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[이동] 버튼으로', 'Ctrl로'], 공격: ['[공격]', () => KK('atk')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 살피기: ['[살피기]를', 'Alt를'] };
 const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -151,13 +152,13 @@ function updateHUD(force) {
   syncTools();
   setText(hud.kills, 'k', '제거 ' + S.stats.kills);
   const fleeNow = S.fleeing && S.guards.some(g => g.state === 'FLEE');
-  hud.alarm.hidden = !(S.alevel || fleeNow);
-  hud.alarm.dataset.lv = S.alevel;
-  if (S.alevel || fleeNow) {
-    const t = S.alevel === 3 ? '발각 · 숨어 ' + Math.max(0, Math.ceil(ESCAPE_T - S.unseenT)) + '초' : A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초';
-    setText(hud.alarm, 'al', (fleeNow ? '표적 도주 · ' : '') + t);
-  }
+  // 경계: 한 칸에 단계 이름 + 남은 시간 (따로 뜨던 경보 칸은 표적 도주 때만)
+  hud.alarm.hidden = !fleeNow; hud.alarm.dataset.lv = S.alevel;
+  if (fleeNow) setText(hud.alarm, 'al', '표적 도주');
+  { const t = S.alevel === 3 ? '발각 · 숨어 ' + Math.max(0, Math.ceil(ESCAPE_T - S.unseenT)) + '초' : S.alevel ? A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초' : '평온';
+    setText($('alertWord'), 'aw', t); const ab = $('alertBox'); if (ab && ab.dataset.lv !== String(S.alevel)) ab.dataset.lv = S.alevel; }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
+  { const hb = $('hpBox'), low = P.hp <= 1 && P.hpMax > 1 ? '1' : '0'; if (hb && hb.dataset.low !== low) hb.dataset.low = low; }  // 마지막 체력: 깜빡인다
   { const v = $('alertVig'); if (v) { const chase = S.guards.some(g => g.state === 'ALERT' && !g.civ && g.seen), a = S.over ? 0 : chase ? 3 : S.alevel >= 2 ? 2 : S.alevel >= 1 ? 1 : 0; if (hudCache.vig !== a) { hudCache.vig = a; v.dataset.a = a; } } }  // 화면 가장자리 경계 빛
   if (!document.body.classList.contains('joyseen') && S.t > 12) { document.body.classList.add('joyseen'); try { localStorage.setItem('yahaeng.joyseen', '1'); } catch (e) {} }
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }

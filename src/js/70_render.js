@@ -696,7 +696,34 @@ function drawPipeBase(l) {
 }
 // 상호작용 대상의 색: 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라
 const SCAN = { door: '#d39a5c', window: '#8fc3e6', pipe: '#c4ccd6', ladder: '#e0b070', chimney: '#f08a3c', vent: '#7fd6cc', hide: '#8fcf95', well: '#7fb0ff', secret: '#c9a0ff', lamp: '#f2c46b', fuse: '#f2c46b' };
-function tag(x, y, text, col, alpha = 1, key) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
+// 글자 표시 겹침 정리: 한 화면의 tag 를 모아 두었다가(TAGQ) 중요한 것부터 겹치지 않는 자리(위·아래 한두 줄)에 놓는다.
+// 말풍선(SPEECH_R)·머리 위 발견 표시(MARK_R)도 피한다. 자리가 없으면 덜 중요한 표시(구역 이름 등)는 이번 화면에서 뺀다
+let TAGQ = null, SPEECH_R = [], MARK_R = [];
+function tag(x, y, text, col, alpha = 1, key, pri) { if (window.__skip && window.__skip.ui) return;
+  if (TAGQ) { TAGQ.push({ x, y, text, col, alpha, key, pri: pri != null ? pri : (key || /^\[/.test(text) ? 3 : 1) }); return; }
+  drawTag(x, y, text, col, alpha, key);
+}
+function tagRect(x, y, text, key) {
+  const k = Math.max(1, 0.95 / SCALE); ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
+  const w = ctx.measureText(text).width + 12 * k, h = 18 * k; let kw = 0;
+  if (key) { ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; kw = Math.max(h, ctx.measureText(key).width + 9 * k) + 2 * k; }
+  return [x - w / 2 - kw, y - h / 2, x + w / 2, y + h / 2];
+}
+function flushTags() {
+  const q = TAGQ; TAGQ = null; if (!q || !q.length) return;
+  const k = Math.max(1, 0.95 / SCALE), lh = 21 * k, hit = (r, p) => r[0] < p[2] + 2 && r[2] + 2 > p[0] && r[1] < p[3] + 1 && r[3] + 1 > p[1];
+  const placed = SPEECH_R.map(r => [r.x, r.y, r.x + r.w, r.y + r.h]).concat(MARK_R);
+  q.forEach((t, i) => { t.i = i; }); q.sort((a, b) => b.pri - a.pri || a.i - b.i);
+  const seen = new Set();
+  for (const t of q) {
+    const sig = t.text + '|' + Math.round(t.x / 40) + '|' + Math.round(t.y / 40); if (seen.has(sig)) continue; seen.add(sig);  // 같은 자리 같은 글은 한 번
+    let at = null;
+    for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagRect(t.x, y, t.text, t.key); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
+    if (!at) { if (t.pri < 2) continue; at = [t.y, tagRect(t.x, t.y, t.text, t.key)]; }
+    placed.push(at[1]); drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
+  }
+}
+function drawTag(x, y, text, col, alpha = 1, key) {
   const k = Math.max(1, 0.95 / SCALE);  // 화면이 축소돼 있어도 글자는 읽을 수 있는 크기로
   ctx.globalAlpha = alpha; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center';
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k;
@@ -846,11 +873,10 @@ function drawActLabels(pa, P, ka, ga) {
   const vic = ka && (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk);
   let vy = null;
   if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
-    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc);
-    if (ga && ga.k === 'grab' && ga.g === vic) { const [p2, kc2] = T('붙잡기', KK('grab')); tag(vic.x, vy + 21 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); } }
-  else if (ga && ga.k === 'grab') { const [p2, kc2] = T('붙잡기', KK('grab')); tag(ga.g.x, ga.g.y - 34 * k, p2 + ga.label, '#c4ccd6', 0.95, kc2); }
+    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc, 4); }  // [붙잡기]는 버튼이 켜지는 것으로 충분 — 머리 위 글자를 줄인다
   if (!pa || pa.k === 'none') return;
-  // [행동]: 대상(문·창문·계단·시체…) 위
+  // [행동]: 대상(문·창문·계단·시체…) 위. 대상이 따로 없는 행동(들고 있는 것 내려놓기 등)은 버튼만 — 주인공 머리 위를 가리지 않게
+  if (!pa.at && !pa.c && !actObj(pa)) return;
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
   if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
@@ -864,7 +890,7 @@ function drawActLabels(pa, P, ka, ga) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` — 보는 눈 ${n}`;
   }
-  const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc);
+  const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && b !== openB; };
 
@@ -944,7 +970,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   const df = (gl.fl || 0) - flOf(P), short = gl.text + (df ? (df > 0 ? ` (${df}층 위)` : ` (${-df}층 아래)`) : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const tag = (x, y, t) => { const tw = ctx.measureText(t).width + 14 * k; ctx.fillStyle = 'rgba(7,10,18,.88)'; ctx.fillRect(x - tw / 2, y - 9 * k, tw, 18 * k); ctx.fillStyle = '#f2c46b'; ctx.fillRect(x - tw / 2, y - 9 * k, 3 * k, 18 * k); ctx.fillText(t, x + 1 * k, y + 1 * k); };
+  // 할 일 글자는 전역 tag(겹침 정리)로
   const topPx = (drawMini.tb || 70) + 40, botPx = document.body.classList.contains('touch') ? 270 : 70;
   const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
@@ -952,13 +978,14 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
     ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(gl.x, gl.y, 20 * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke();
     ctx.fillStyle = '#f2c46b'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
-    tag(gl.x, y - 13 * k, short);
+    tag(gl.x, y - 13 * k, short, '#f2c46b', 1, null, 2.6);
   } else {  // 화면 밖: 가장자리 화살표 + 할 일 · 거리
     const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
     ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(242,196,107,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
-    const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + 80 * k, sx1 - 80 * k), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
-    tag(lx, ly, `${short} · ${m}m`);
+    const txt = `${short} · ${m}m`; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
+    const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + th, Math.max(sx0 + th, rEdge - th)), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
+    tag(lx, ly, txt, '#f2c46b', 1, null, 2.6);
   }
   ctx.textBaseline = 'alphabetic';
 }
@@ -972,6 +999,7 @@ function draw() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(mapC, 0, 0);
   const P = S.player;
+  SPEECH_R = []; MARK_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
   setLayer(0);
   // 위층에 있으면 그 건물 자리에 그 층 평면을 덮어 그린다
   // 창문 넘기·창문 건너기(같은 높이 뜀): 지붕 위로 날아가는 것처럼 보이지 않게, 건물 안을 보여 준 채 땅 위 사람처럼 그린다 (절반 전엔 출발 건물, 그 뒤엔 도착 건물)
@@ -1166,8 +1194,7 @@ function draw() {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
       const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
       if (!dup) {
-      const lab = g.why === 'saw' ? '봤다' : '들었다'; ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 10;
-      ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(g.poi.x - tw / 2, g.poi.y - 9, tw, 18); ctx.fillStyle = g.why === 'saw' ? '#ff8a6a' : '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, g.poi.x, g.poi.y + 4);
+      tag(g.poi.x, g.poi.y, g.why === 'saw' ? '봤다' : '들었다', g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
@@ -1273,6 +1300,7 @@ function draw() {
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();
     }
   }
+  flushTags();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (input.aiming && running && !S.over) {  // 조준하는 동안 세상은 멈춰 있다 — 화면 테두리와 글로 알려 준다
     ctx.strokeStyle = 'rgba(120,190,255,.45)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
@@ -1286,7 +1314,7 @@ function draw() {
     for (const it of S.items) if (!it.got) tgts.push({ x: it.x, y: it.y, c: '#f2c46b' });
   }
   // 화면 밖 자경대원은 drawOffscreen의 눈 표시로 따로 (금색·빨강 화살표는 목표에만)
-  if (DBG.ui) tgts.length = 0;
+  if (DBG.ui || !STAGE.steps) tgts.length = 0;  // 의뢰에서는 drawGoal 의 화살표 하나만 (같은 목표에 화살표가 두 개 뜨지 않게)
   for (const t of tgts) {
     const sx = (t.x - cam.x) * SCALE + W / 2, sy = (t.y - cam.y) * SCALE + H / 2, m = t.small ? 30 : 46;
     if (sx < m || sy < m + 70 || sx > W - m || sy > H - m) {

@@ -22,7 +22,8 @@ const CH = {
   untouched: ['아무도 손대지 않기 (기절·처치 0)', () => !S.stats.kills && !(S.stats.ko || 0)],
   story: ['기회 하나를 끝까지', () => (S.stats.stories || 0) > 0]
 };
-const chName = id => id === 'fast' ? `${Math.round((STAGE.fastT || 330) / 60)}분 안에 깨기` : (CH[id] || ['?'])[0];
+const mmss = t => { const m = Math.floor(t / 60), s = Math.round(t % 60); return m + '분' + (s ? ' ' + s + '초' : ''); };
+const chName = id => id === 'fast' ? `${mmss(STAGE.fastT || 330)} 안에 깨기` : (CH[id] || ['?'])[0];
 function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
 // 별점 해금 장비 (도시): 모든 의뢰의 별을 합친 수로 열린다

@@ -728,8 +728,8 @@ function drawSpeech() {
     const hero = g === P, col = hero ? DLG_COL.hero : g.civ ? DLG_COL.civ : g.target ? DLG_COL.target : g.elite ? DLG_COL.elite : DLG_COL.guard;
     const words = g.say.split(' '), lines = ['']; for (const w of words) { const t = lines[lines.length - 1] ? lines[lines.length - 1] + ' ' + w : w; if (ctx.measureText(t).width > 200 && lines[lines.length - 1] && lines.length < 2) lines.push(w); else lines[lines.length - 1] = t; }
     const tw = Math.min(210, Math.max(...lines.map(l => ctx.measureText(l).width))), w = tw + 20, h = 10 + lines.length * 17, vx0 = cam.x - W / SCALE / 2 + 6, vx1 = cam.x + W / SCALE / 2 - 6, x = Math.max(vx0, Math.min(vx1 - w, g.x - w / 2));  // 화면 밖으로 잘리지 않게
-    let y = g.y - 58 - h + 24; for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 3 && y + h + 3 > r.y); k++) y -= h + 6;
-    placed.push({ x, y, w, h });
+    let y = g.y - 58 - h + 24 - (g.icon || g.state === 'ALERT' || (g.meter || 0) > 0.02 ? 34 : 0);  // 머리 위 ?·! 표시가 있으면 그 위로 for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 3 && y + h + 3 > r.y); k++) y -= h + 6;
+    placed.push({ x, y, w, h }); SPEECH_R.push({ x, y, w, h });  // 글자 표시가 말풍선을 피하게
     if (y + h < g.y - 40) { ctx.strokeStyle = 'rgba(232,236,244,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
     const rr = (px, py, pw, ph, r) => { ctx.beginPath(); ctx.moveTo(px + r, py); ctx.arcTo(px + pw, py, px + pw, py + ph, r); ctx.arcTo(px + pw, py + ph, px, py + ph, r); ctx.arcTo(px, py + ph, px, py, r); ctx.arcTo(px, py, px + pw, py, r); ctx.closePath(); };
     ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(x + 1, y + 3, w, h, 8); ctx.fill();

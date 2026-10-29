@@ -29,7 +29,8 @@ function attackAction() {
   if (P.captive) return P.captive.target ? { k: 'cap', label: '처치' } : { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
-  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150)) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
+  // 등 뒤에 있을 때만 다가가기 표시 (정면이면 공격을 권하지 않는다)
+  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + (시체 메기·내려놓기·옷 갈아입기·줍기 등 예전 [보조] 쪽 일). 붙잡은 뒤엔 '끌고 가기'

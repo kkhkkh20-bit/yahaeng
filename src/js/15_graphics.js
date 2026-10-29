@@ -126,13 +126,13 @@ function killBlockReason() {
   return { g, why };
 }
 function drawKillBlock() {
-  const r = killBlockReason(); if (!r) return; const pa = primaryAction(); if (pa.k !== 'none') return;
-  const g = r.g, k = Math.max(1, 0.9 / SCALE); ctx.font = `600 ${12 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText('× ' + r.why).width + 12 * k, x = g.x - tw / 2, y = g.y + 30 * k;
-  ctx.fillStyle = 'rgba(7,10,18,.82)'; ctx.fillRect(x, y, tw, 18 * k); ctx.fillStyle = '#ff9a86'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('× ' + r.why, g.x, y + 9.5 * k); ctx.textBaseline = 'alphabetic';
+  const r = killBlockReason(); if (!r) return; const ka = attackAction(); if (ka.k !== 'none') return;  // [공격]이 할 수 있는 게 있으면 이유는 보이지 않는다
+  const k = Math.max(1, 0.9 / SCALE); tag(r.g.x, r.g.y + 40 * k, '× ' + r.why, '#ff9a86', 0.95, null, 2);
 }
 // 어쌔신 크리드식 머리 위 발견 표시: 아래를 향한 삼각형이 밑에서부터 찬다. 흰색 = 눈치, 노랑 = 의심, 빨강 = 발각
 function drawAwareMark(g) {
   const al = g.state === 'ALERT', m = al ? 1 : clamp(g.meter, 0, 1), col = awareCol(g), k = Math.max(1, 0.9 / SCALE), x = g.x, y = g.y - 40 * k, w = 13 * k, h = 15 * k;
+  MARK_R.push([x - w - 2, y - h - 4, x + w + 2, y + h + 2]);
   const pulse = al ? 1 : m > 0.75 ? 0.75 + 0.25 * Math.sin(S.t * 14) : 1;
   ctx.save(); ctx.globalAlpha = pulse;
   ctx.beginPath(); ctx.moveTo(x - w, y - h); ctx.lineTo(x + w, y - h); ctx.lineTo(x, y + h * 0.55); ctx.closePath();
@@ -348,7 +348,7 @@ function drawDog(x, y, a, moving, alpha = 1, dead = false) {
   blit(ctx, 'dog', -24, -32, 48, 48, fr * 16, 0, 16, 16); ctx.restore();
 }
 const EMOTE = { 'zz': 'em_zz', '?': 'em_q', '!': 'em_ex', '!?': 'em_exq', '...': 'em_dots', '흥': 'em_meh', '잡담…': 'em_chat', '후—': 'em_dots', '하암': 'em_zz', '담배?': 'em_q', '멍!': 'em_ex' };
-function drawEmote(txt, x, y) { const n = EMOTE[txt] || 'em_q'; blit(ctx, n, x - 21, y - 40, 42, 39); }
+function drawEmote(txt, x, y) { const n = EMOTE[txt] || 'em_q'; blit(ctx, n, x - 21, y - 40, 42, 39); MARK_R.push([x - 21, y - 40, x + 21, y - 1]); }
 const roofPats = {};
 function roofPattern(name) {
   if (roofPats[name]) return roofPats[name];

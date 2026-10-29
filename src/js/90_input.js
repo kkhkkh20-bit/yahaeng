@@ -107,8 +107,7 @@ bindBtn('btnGrab', actGrab);
 document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
 function syncSneakBtn() {
   const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
-  const b = document.getElementById('btnWalk'); if (b) { b.classList.toggle('on', !!input.walkLock); b.setAttribute('aria-pressed', input.walkLock ? 'true' : 'false'); }
-  const s = document.getElementById('btnSneak'); if (s) { s.classList.toggle('on', !!input.sneakToggle); s.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
+  const s = document.getElementById('btnSneak'), m = moveMode(); if (s) { s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = { sneak: '살금', walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 방식: ' + l.textContent); }
   const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
 }
 // 살금 모드: 켜 두면 판이 바뀌어도 계속 살금살금으로 다닌다 (Ctrl 키 또는 위쪽 [살금] 버튼)
@@ -124,12 +123,20 @@ function toggleWalkLock() {
   syncSneakBtn(); toast(input.walkLock ? '항상 걷기 — 뛰지 않는다' : '항상 걷기 해제 — 다시 뛸 수 있다', 1.4);
 }
 function cycleMoveLock() { toggleWalkLock(); }
+// 이동 방식 한 버튼: 살금 → 걷기 → 달리기 (조이스틱을 끝까지 밀었을 때의 빠르기). 살금 = 늘 살금살금, 걷기 = 뛰지 않음, 달리기 = 끝까지 밀면 뛴다
+const moveMode = () => input.sneakToggle ? 'sneak' : input.walkLock ? 'walk' : 'run';
+function cycleMoveMode() {
+  const nx = { sneak: 'walk', walk: 'run', run: 'sneak' }[moveMode()];
+  input.sneakToggle = nx === 'sneak'; input.walkLock = nx === 'walk';
+  try { localStorage.setItem('yh_sneak', input.sneakToggle ? '1' : '0'); localStorage.setItem('yh_walkLock2', input.walkLock ? '1' : '0'); } catch (e) {}
+  syncSneakBtn(); toast({ sneak: '살금 — 발소리가 아주 작다', walk: '걷기 — 끝까지 밀어도 뛰지 않는다', run: '달리기 — 끝까지 밀면 뛴다 (소리가 크다)' }[nx], 1.4);
+}
 { const o = document.querySelector('#hud .obj'); if (o) o.addEventListener('click', e => { e.stopPropagation(); o.classList.toggle('open'); }); }  // 휴대폰: 목표 펼치기
 { const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
 { const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
 { const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cycleEnv(); }); }
 { const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); }); }
-{ const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleSneak(); b.blur(); }); }
+{ const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) cycleMoveMode(); b.blur(); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
