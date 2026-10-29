@@ -28,6 +28,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
 }
 function attackAction() {
   const P = S.player;
+  if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return P.captive.target ? { k: 'cap', label: '처치' } : { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
@@ -52,7 +53,7 @@ function envAction() {
   a.choices = L.length; a.choiceI = i; return a;
 }
 function grabAction() {
-  const P = S.player; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
+  const P = S.player; if (P.car) return { k: 'none', label: '붙잡기' }; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
   const sa = secondaryAction(); return sa && sa.k === 'grab' ? sa : { k: 'none', label: '붙잡기' };
 }
 function actAttack() {
@@ -60,6 +61,7 @@ function actAttack() {
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
+  if (P.car) { honk(); return; }
   if (P.captive) { if (P.captive.target) execCaptive(); else execCaptive(true); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
   if (a.k === 'none') { if (a.stalk) { S.qBuf = 0.5; S.qKill = true; } return; }

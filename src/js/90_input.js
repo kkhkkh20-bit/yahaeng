@@ -187,7 +187,8 @@ $('btnResume').addEventListener('click', () => setPause(false));
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
-$('btnRetry').addEventListener('click', () => start(STAGE_I, true));  // 다시 하기는 브리핑 없이 바로
+$('btnRetry').addEventListener('click', () => start(STAGE_I, true));
+$('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => s.city); if (ci >= 0) start(ci, true); });  // 다시 하기는 브리핑 없이 바로
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (!STAGES[i].tutorial && demoOk(STAGES[i])) return i; return -1; }

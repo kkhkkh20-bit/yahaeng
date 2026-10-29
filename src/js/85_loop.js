@@ -8,6 +8,7 @@ function frame(t) {
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
+  if (ENG && (paused || !running || S.over)) engineSound();  // 멈추면 엔진 소리도
   if (running && !paused) updateDialog(dt);
   { const sc = !!(input.scan && running && !tactical); if (sc && !frame.scanAt) frame.scanAt = performance.now(); if (!sc) frame.scanAt = 0; document.body.classList.toggle('scanning', sc); document.body.classList.toggle('scanleg', sc && performance.now() - frame.scanAt < 4000); }  document.body.classList.toggle('playing', !!(running && S && !S.over));  // 범례는 켠 뒤 4초만 (살필 곳을 가리지 않게)
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
@@ -40,6 +41,7 @@ function resize() {
 function targetScale() {
   if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
+  if (P && P.car) return BASE_SCALE * userZoom * (0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더)
   return BASE_SCALE * userZoom * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
 function setZoom(z) { userZoom = clamp(z, 0.8, 1.6); try { localStorage.setItem('yahaeng.zoom2', String(userZoom)); } catch (e) {} }  // 너무 멀리(전지적 시점)는 못 빼게. 전체는 전술 지도로

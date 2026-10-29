@@ -563,6 +563,7 @@ function primaryActionRaw() {
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
+  if (STAGE.city) { const ca = cityAction(); if (ca) return ca; }  // 도시: 차 타기·내리기·의뢰 받기
   { const cg = counterTarget(); if (cg) return { k: 'counter', g: cg, label: '반격!' }; }  // 내려치기 직전이면 무엇보다 먼저
   if (P.wire) {
     const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 };
@@ -657,6 +658,9 @@ function actPrimary(force) {
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
+    case 'carIn': carEnter(a.v); break;
+    case 'carOut': carExit(); break;
+    case 'contract': cityContract(a.c); break;
     case 'surface': {
       const w = a.w; P.under = false; P.x = w.x; P.y = w.y; P.hide = w; P.hideFrom = null; w.spotted = false; S.hideExitLock = true;
       play('metal', 0.35); S.fade = 0.35; toast('맨홀 아래로 올라왔다 — 아직 숨어 있다', 2); break;
@@ -941,7 +945,7 @@ function koPerson(g, mode, where) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
-  facWitness(g);
+  facWitness(g); cityVictim(g);
   const c = { fl: flOf(g), ch: charOf(g), ko: true, g, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; }
@@ -1036,7 +1040,7 @@ function killGuard(g, mode, where, quiet) {
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
   S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
-  facWitness(g);
+  facWitness(g); cityVictim(g);
   const c = { fl: flOf(g), ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);
   const intoWell = mode === 'stash';

@@ -72,14 +72,14 @@ function facWitness(victim) {
 }
 // 매 프레임 (updateGuard 맨 앞): 싸움·입막음·구역 단속이 평소 행동보다 먼저. true 면 이번 프레임은 이걸로 끝
 function updateFaction(g, dt) {
-  if (!S.facOn || g.civ || g.dog || g.target || g.child || g.climb || g.x < 0 || g.y < 0) return false;  // 지도 밖(시험용으로 치워 둔 사람)은 세력 행동 없음
+  if (!S.facOn || g.civ || g.dog || g.target || g.child || g.climb || g.x < 0 || g.y < 0 || g.fac === 'P') return false;  // 지도 밖(시험용으로 치워 둔 사람)은 세력 행동 없음
   if (g.state === 'ALERT' || g.state === 'TERROR' || g.state === 'FLEE') { g.brawl = null; g.hunt = null; return false; }
   if (g.brawl) return brawlStep(g, dt);
   if (g.hunt) return huntStep(g, dt);
   if ((g.facT = (g.facT || 0) - dt) > 0) return false; g.facT = 0.4;
   const P = S.player;
   for (const o of S.guards) {
-    if (!o.fac || o.fac === g.fac || o.x < 0 || o.y < 0 || !npcAlive(o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
+    if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
     // 적진(hos) 안에 들어온 건달은 바로 친다 · 전쟁 중이면 보는 즉시 · 평소엔 시비 (가끔 붙는다)
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;

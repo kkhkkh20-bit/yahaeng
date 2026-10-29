@@ -120,7 +120,7 @@ function loadCheckpoint() {
   return true;
 }
 function checkObjective() {
-  if (S.exitOpen) return;
+  if (S.exitOpen || STAGE.city) return;  // 도시: 끝이 없다 (의뢰는 의뢰 장소에서)
   const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && g.state !== 'DEAD').length;
   const itemsLeft = S.items.filter(i => !i.got).length;
   if (!targetsLeft && !itemsLeft) { S.exitOpen = true; if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }

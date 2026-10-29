@@ -23,7 +23,7 @@ function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
-  buildMap(STAGE); setLayer(0); buildFRM(false);
+  buildMap(STAGE); if (STAGE.city) cityMapPrep(); setLayer(0); buildFRM(false);
   if (STAGE.startAt) { const q = planPt(STAGE.startAt.b, STAGE.startAt.fl || 0, STAGE.startAt.at); if (q) STAGE.start = q; }  // 건물 안에서 시작 (감방 등)
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
@@ -36,6 +36,7 @@ function newGame(si) {
   CROWD = [];
   PLANS.forEach((fls, bi) => (fls || []).forEach((p, f) => { if (p && p.store && (p.store.use === 'club' || p.store.use === 'vip')) CROWD.push({ x0: p.store.x0, y0: p.store.y0 + 1, x1: p.store.x1, y1: p.store.y1, fl: f, n: p.store.use === 'vip' ? 5 : 7, club: true, b: bi }); }));
   (STAGE.crowd || []).forEach(c => CROWD.push({ x0: c[0], y0: c[1], x1: c[2], y1: c[3], fl: c[4] || 0, n: c[5] || 5 }));
+  CROWD = CROWD.filter(c => c.x1 >= c.x0 && c.y1 >= c.y0);  // 너무 좁은 가게(한 줄도 안 되는 곳)는 군중 없음
   const crowdGuys = []; CROWD.forEach((c, ci) => { const g = c.fl ? GF[c.fl] : G0; for (let k = 0; k < c.n; k++) { for (let t = 0; t < 30; t++) { const h = ((ci * 7919) ^ (k * 104729) ^ (t * 1299709)) >>> 0, x = c.x0 + h % (c.x1 - c.x0 + 1), y = c.y0 + (h >> 8) % (c.y1 - c.y0 + 1); if (!SOLID.has(g[y][x]) && g[y][x] !== 'Y') { crowdGuys.push({ kind: 'civ', look: (h >> 4) % 4, fl: c.fl, at: [x, y], post: ((h >> 6) % 4) * 90, wander: [c.x0, c.y0, c.x1, c.y1], club: true }); break; } } } });
   STAGE._g = STAGE.guards.map(resolveGuard).concat(autoResidents(), crowdGuys);
   STAGE._items = (STAGE.items || []).map(p => Array.isArray(p) ? p : (q => [q[0], q[1], p.fl || 0, p.b])(planPt(p.b, p.fl || 0, p.at || 'bed')));
@@ -167,7 +168,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  buildFRM(true); autoSigns(); factionsInit();
+  buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit();
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 그 자리에서 위쪽 벽에 달고 아래를 본다)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;
@@ -577,6 +578,7 @@ function renderMap(R) {
       x.fillStyle = '#b4b6c4'; if (asph(0, 1)) x.fillRect(px, py + TILE - 6, TILE, 6); if (asph(0, -1)) x.fillRect(px, py, TILE, 5); if (asph(-1, 0)) x.fillRect(px, py, 5, TILE); if (asph(1, 0)) x.fillRect(px + TILE - 5, py, 5, TILE);
       x.fillStyle = 'rgba(0,0,0,.35)'; if (asph(0, 1)) x.fillRect(px, py + TILE, TILE, 3);
     }
+  if (!CUR_F && STAGE.city && !R) drawRoadMarks(x);  // 도시: 차선·횡단보도
   if (!CUR_F) (STAGE.decor || []).forEach(d => {
     if (d[0] === 'shade') { x.fillStyle = `rgba(${d[6] || '0,0,0'},${d[5]})`; x.fillRect(d[1] * TILE, d[2] * TILE, (d[3] - d[1] + 1) * TILE, (d[4] - d[2] + 1) * TILE); return; }
     if (d[0] === 'lane') { x.fillStyle = 'rgba(232,196,90,.75)'; for (let xx = d[1] * TILE; xx < (d[3] + 1) * TILE; xx += 48) x.fillRect(xx + 6, d[2] * TILE - 2, 28, 4); return; }

@@ -93,6 +93,7 @@ function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x 
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
+  if (STAGE.city) return cityGoal();
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const fg = STAGE.firstGoal; if (fg) { let ok = false; try { ok = fg.done(S, SH); } catch (e) {} if (!ok) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; } }  // 판마다 맨 먼저 할 일 (예: 감방 나가기)
   const c = [];
@@ -106,7 +107,7 @@ function nextGoal() {
 function objectiveLines() {
   const L = [], P = S.player;
   const place = placeName;
-  { const gl = !STAGE.steps && nextGoal(); if (gl) { const m0 = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0, df = (gl.fl || 0) - flOf(P); L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''} · ${df ? (df > 0 ? df + '층 위 · ' : -df + '층 아래 · ') : ''}${m}m`]); } }  // 지금 할 일 (맨 위)
+  { const gl = !STAGE.steps && nextGoal(); if (gl) { const m0 = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0, df = (gl.fl || 0) - flOf(P); L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''} · ${df ? (df > 0 ? df + '층 위 · ' : -df + '층 아래 · ') : ''}${m}m`.replace(/ · \d+m$/, gl.x == null ? '' : '$&')]); } }  // 지금 할 일 (맨 위)
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${tutText(STAGE.steps[S.tutI || 0][0])}`]);
   if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);
@@ -135,6 +136,7 @@ function objectiveText() {
 function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
+  drawWanted();
   setText(hud.objT, 'objT', STAGE.sub);
   { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   drawMini();
@@ -299,6 +301,7 @@ function showEnd(win, reason) {
   drawEndMap();
   $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
   $('btnCP').hidden = win || !cpReady();
+  $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
@@ -313,7 +316,7 @@ const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();
   const best = loadBest(), next = quickTarget();
-  const locked = STAGES.filter(s => !demoOk(s));
+  const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
     const stars = s.challenges ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">${'★'.repeat(st)}${'☆'.repeat(Math.max(0, all - st))}</span>` : '';
@@ -328,10 +331,10 @@ function renderStageList() {
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a, b) => (b[0].id === 'tI') - (a[0].id === 'tI')), miss = list.filter(([s]) => !s.tutorial);
-  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('')
+  const tuts = list.filter(([s]) => s.tutorial).sort((a, b) => (b[0].id === 'tI') - (a[0].id === 'tI')), miss = list.filter(([s]) => !s.tutorial && !s.city), city = list.filter(([s]) => s.city);
+  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (city.length ? `<div class="lg-sec">도시 (시제품)</div>` + city.map(row).join('') : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
-  $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
+  $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
 }

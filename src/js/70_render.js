@@ -68,6 +68,7 @@ function drawScrollOld(x, y, t) {
   ctx.restore();
 }
 function drawPlayer(P) {
+  if (P.car) return;  // 차 안: 차가 곧 나
   if (P.wire) {
     // 전깃줄에 두 손으로 매달린 모습 (땅에는 그림자)
     const h = wirePt(P.wire.w, P.wire.s), sw = P.moving ? Math.sin(S.t * 9) * 2 : 0, dim = P.light < 0.3;
@@ -1049,6 +1050,7 @@ function draw() {
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(240,80,60,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
     ctx.lineWidth = n.heard ? 3 : 2; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(1, n.r * (0.25 + 0.75 * k)), 0, TAU); ctx.stroke();
   }
+  if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
     if (c.stashed || !onGround(c)) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);

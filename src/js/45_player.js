@@ -297,6 +297,7 @@ function updatePlayer(dt) {
   if (input.sneakToggle && !shiftRun) mode = 'sneak';
   if (input.walkLock && mode === 'run') mode = 'walk';  // 걷기 고정: 뛰지 않는다
   if ((P.carrying || P.captive) && mode === 'run') mode = 'walk';
+  if (P.car) { updateDriving(P, mx, my, mag, dt); return; }  // 도시: 운전 중
   if (P.captive) {
     const g = P.captive; g.captT += dt;
     if ((g.squirm = (g.squirm || 0) - dt) <= 0) { g.squirm = 1.4; noise(g.x, g.y, 55, 'struggle'); play('cloth', 0.25); }

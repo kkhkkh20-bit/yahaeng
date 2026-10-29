@@ -46,6 +46,10 @@ button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
 .chip.alarm[data-lv="2"] { background: #e08a3c; }
 .chip.alarm[data-lv="3"] { background: var(--blood); color: #fff; }
 .pipsbox { display: flex; align-items: center; }
+.chip.want { color: #ffd34a; font-size: 17px; letter-spacing: 0; padding: 4px 10px; display: flex; align-items: center; gap: 1px; text-shadow: 0 1px 0 #000; }
+.chip.want .clab { font-size: 12px; font-weight: 700; color: var(--paper); margin-right: 6px; }
+.chip.want[data-on="1"] { background: rgba(150, 24, 24, .7); }
+.chip.want i { font-style: normal; color: rgba(255, 255, 255, .22); }
 #alertPips { display: flex; gap: 3px; }
 #alertPips i { width: 9px; height: 9px; border: 1.5px solid var(--paper-dim); transform: rotate(45deg); }
 #hpPips { display: flex; gap: 4px; align-items: center; }
@@ -586,6 +590,7 @@ body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
       <span class="chip" id="killsLbl">제거 0</span><span class="chip" id="pickLbl" hidden title="락픽 — 잠긴 창문·문을 딴다">락픽 0</span>
       <span class="chip hpbox" id="hpBox" title="체력"><small class="clab">체력</small><span id="hpPips"></span></span>
       <span class="chip pipsbox" id="alertBox" title="경계 단계" data-lv="0"><small class="clab" id="alertWord">평온</small><span id="alertPips"><i></i><i></i><i></i></span></span>
+      <span class="chip want" id="wantBox" hidden title="수배"></span>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
       <span class="sysbtns"><button id="btnSneak" type="button" title="이동 방식 — 누를 때마다 살금 · 걷기 · 달리기 (조이스틱 끝까지 밀었을 때의 빠르기)"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
     </div>
@@ -759,7 +764,7 @@ body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
       <dl id="endMore"></dl>
       <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
     </details>
-    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
+    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="cta" id="btnCity" type="button" hidden>도시로 돌아가기</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
   </div>
 </div>
 
