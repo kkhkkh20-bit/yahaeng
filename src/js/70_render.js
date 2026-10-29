@@ -388,7 +388,7 @@ function roofProps(b, bi) {
   const x0 = b.x0, x1 = b.x1, ry0 = b.y0, ry1 = b.y1 - b.fh, w = x1 - x0 + 1, dr = ry1 - ry0 + 1, L = lvAt(x0, ry0);
   if (dr < 2 || L <= 0) return [];
   for (let y = ry0; y <= ry1; y++) for (let x = x0; x <= x1; x++) if (rLv(x, y) !== L || bldAt(x, y) !== bi) return [];
-  const house = b.kind === 'house', shop = b.kind === 'shop', glass = !!b.glass, mansard = house && dr >= 2, fr = mansard ? 1 : 0, uy1 = ry1 - fr, hs = hN(x0, ry0, w, b.h);
+  const house = b.kind === 'house', shop = b.kind === 'shop', glass = !!b.glass, mansard = false, fr = 0, uy1 = ry1 - fr, hs = hN(x0, ry0, w, b.h);
   const K = (x, y) => x + ',' + y, hard = new Set(), soft = new Set();
   const mark = (x, y) => { if (x >= x0 && x <= x1 && y >= ry0 && y <= ry1) hard.add(K(x, y)); };
   // 옥상 계단실: 건물 안 계단('Y') 바로 위에 선다. 문은 걸을 수 있는 옥상 칸 쪽(남·서·동·북 순)으로, 오르내리는 자리는 문 앞
