@@ -316,8 +316,8 @@ function showEnd(win, reason) {
 }
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());
-// 데모(itch) 빌드: 연습과 의뢰 1·2만. 나머지는 잠긴 카드 하나로 알린다
-const demoOk = s => !window.__DEMO || window.__DEMO.includes(s.id);
+// 데모(itch) 빌드: 'all' 이면 도시 시제품만 빼고 전부, 목록이면 그 판만 (나머지는 잠긴 카드 하나로 알린다)
+const demoOk = s => !window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id));
 // 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
 function showMenu(which) { ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
 const RANK_TXT = r => r ? '최고 ' + r : '';

@@ -61,7 +61,7 @@ def build():
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)
     pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'
     open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(pre + html)
-    demo = html.replace('window.__THUMBS = ', "window.__DEMO = ['tI', 't0', 't1', 'm1', 'm2', 'm3']; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 1~3
+    demo = html.replace('window.__THUMBS = ', "window.__DEMO = 'all'; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 전부 (도시 시제품만 뺀다)
     open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(pre + demo)
     print('ok', len(html), v, h)
     if '--itch' in sys.argv:
