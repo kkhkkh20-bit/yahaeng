@@ -965,8 +965,14 @@ function darkPass(sc, lamps, clip, key) {
   if (clip) ctx.restore();
 }
 // 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
+// 쫓기는 중에는 할 일 대신 가장 가까운 숨을 곳(수거함·맨홀·옷장 등)을 가리킨다 — 발각을 끊는 게 먼저
+function chaseHide(P) {
+  let best = null, bd = 700;
+  for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
+  return best ? { x: best.x, y: best.y, fl: best.fl || 0, text: '숨을 곳 — ' + hideName(best) } : null;
+}
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  const gl = nextGoal(); if (!gl || gl.x == null) return;
+  const gl = (S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal(); if (!gl || gl.x == null) return;
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   const df = (gl.fl || 0) - flOf(P), short = gl.text + (df ? (df > 0 ? ` (${df}층 위)` : ` (${-df}층 아래)`) : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1177,13 +1183,17 @@ function draw() {
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 한 겹: 내 자세에 맞는 범위만 그린다 — 서 있으면 넓은 원뿔, 웅크리면(벽에 붙으면 더) 좁아진 원뿔. 바뀔 때 0.2초 동안 부드럽게 줄고 는다
     if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
+    // 쫓기는 중: 멀리 있는 시야는 옅게, 겁먹은 주민 시야·표시는 가까운 것만 — 나와 가까운 위협이 먼저 보이게
+    const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
+    if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
+    const far = chs && gd > 380 ? 0.35 : 1;
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
       ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     { const ck = S.coneK || 0;  // 0 = 서 있음, 1 = 웅크림
-      if (ck < 0.99) { conePaths(g, cn, 1, 2); ctx.fillStyle = `rgba(${col},${(0.24 * (1 - ck)).toFixed(3)})`; ctx.fill(); if (ck < 0.5) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } }
-      if (ck > 0.01) { conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},${(0.24 * ck).toFixed(3)})`; ctx.fill(); if (ck >= 0.5) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } } }
+      if (ck < 0.99) { conePaths(g, cn, 1, 2); ctx.fillStyle = `rgba(${col},${(0.24 * (1 - ck) * far).toFixed(3)})`; ctx.fill(); if (ck < 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } }
+      if (ck > 0.01) { conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},${(0.24 * ck * far).toFixed(3)})`; ctx.fill(); if (ck >= 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } } }
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시

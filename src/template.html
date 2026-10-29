@@ -362,7 +362,7 @@ body.scanning.scanleg #scanLegend { display: flex; }
 #alertVig { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; box-shadow: inset 0 0 0 0 transparent; z-index: 1; }
 #alertVig[data-a="1"] { opacity: .55; box-shadow: inset 0 0 60px 12px rgba(242, 196, 107, .45); }
 #alertVig[data-a="2"] { opacity: .8; box-shadow: inset 0 0 80px 18px rgba(255, 140, 60, .55); }
-#alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 0 90px 24px rgba(232, 60, 50, .7); animation: vigPulse .9s ease-in-out infinite alternate; }
+#alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 0 56px 10px rgba(232, 60, 50, .55); animation: vigPulse .9s ease-in-out infinite alternate; }  /* 쫓길 때: 가장자리만 붉게 (가운데 화면은 가리지 않게) */
 @keyframes vigPulse { from { opacity: .65; } to { opacity: 1; } }
 body:not(.playing) #alertVig { display: none; }
 /* 조이스틱 안내는 처음 한 번만 (몇 초 뒤 사라짐) */
