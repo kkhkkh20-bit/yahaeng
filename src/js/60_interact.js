@@ -669,7 +669,8 @@ function primaryActionRaw() {
   }
   { const cr = S.camRoom; if (cr && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
   { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: wu.z > 1 ? '벽 잡고 오르기 · 한 층 위 옥상' : '벽 잡고 오르기 · 1층 옥상' }; }
-  { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
+  { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
+  { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
 }
 function actPrimary(force) {
@@ -685,6 +686,7 @@ function actPrimary(force) {
     case 'carIn': carEnter(a.v); break;
     case 'carOut': carExit(); break;
     case 'contract': cityContract(a.c); break;
+    case 'rumor': spreadRumor(a.c); break;
     case 'surface': {
       const w = a.w; P.under = false; P.x = w.x; P.y = w.y; P.hide = w; P.hideFrom = null; w.spotted = false; S.hideExitLock = true;
       play('metal', 0.35); S.fade = 0.35; toast('맨홀 아래로 올라왔다 — 아직 숨어 있다', 2); break;
@@ -1397,7 +1399,7 @@ function kunaiHit(k) {
     hint('kunaiLamp', '깨진 조명은 다시 켜지지 않는다. 깨지는 소리에 근처 자경대원이 다가온다');
   } else {
     const g = t.ref; if (g.state === 'DEAD') { play('metal', 0.4); return; }
-    S.lethalNext = true; killGuard(g); S.stats.special++;
+    S.lethalNext = true; killGuard(g); S.stats.special++; dartBlame(g);
     toast('원격 암살', 1.6, 'good');
   }
 }

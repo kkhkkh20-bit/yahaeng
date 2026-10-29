@@ -43,6 +43,7 @@ function envChoices() {
   if (sa && sa.k === 'dress') z.push({ k: 'carry', c: sa.c, label: '운반', fromZ: true });  // 옷 옆에서도 메기는 ⇄로
   if (P.captive) { const d = rawChoices().find(a => a.k === 'drag'); return d ? [d] : []; }
   const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute');
+  { const rc = !P.carrying && rumorTarget(); if (rc && !env.some(a => a.k === 'rumor')) env.push({ k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }); }  // 문·창문 옆이어도 [대상]으로 고를 수 있게
   // 시체 옆·메고 있을 때는 시체 일이 먼저, 그 밖엔 환경 행동이 먼저
   // 시체를 멘 채 계단 칸: 오르내리기가 먼저 (내려놓기는 ⇄)
   if (P.carrying) { const st = env.filter(a => (a.k === 'up' || a.k === 'fdown') && a.l && a.l.kind === 'fstair'); if (st.length) return st.concat(z, env.filter(a => !st.includes(a))); }
