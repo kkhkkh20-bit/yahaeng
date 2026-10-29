@@ -19,9 +19,11 @@ function rawChoices0(n) {
   finally { ACT_SKIP.clear(); }
   return out;
 }
+// 톡 = 기절, 계속 = 처치가 되는 공격 (떨어뜨리기·밀어 떨어뜨리기는 떨어지는 것 자체가 죽음이라 제외)
+const KO_K = new Set(['kill', 'kill2', 'pull', 'ambush', 'drop', 'ventKill', 'winJump', 'up']);
 function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 처치)
   const v = a.g || (a.list && a.list[0]) || a.kill;
-  if (v && (koDefault(v) || (koFirst(v) && (a.k === 'kill' || a.k === 'kill2'))) && /암살|처치/.test(a.label || '') && !['ledgeKill', 'pushOff'].includes(a.k)) { a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절'); a.hold = '처치'; }
+  if (v && (koDefault(v) || (koFirst(v) && KO_K.has(a.k))) && /암살|처치/.test(a.label || '')) { a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절'); a.hold = '처치'; }
   return a;
 }
 function attackAction() {
@@ -61,6 +63,8 @@ function actAttack() {
   if (P.captive) { if (P.captive.target) execCaptive(); else execCaptive(true); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
   if (a.k === 'none') { if (a.stalk) { S.qBuf = 0.5; S.qKill = true; } return; }
+  // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
+  if (a.hold && !['kill', 'kill2'].includes(a.k)) S.koNext = true;
   actPrimary(Object.assign({}, a, { viaZ: true }));
 }
 function actEnv() {

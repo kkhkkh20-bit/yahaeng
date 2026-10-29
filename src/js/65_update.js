@@ -104,8 +104,9 @@ function moveCamera(dt) {
     cam.x += (S.player.x - cam.x) * k;
     cam.y += (S.player.y + vh * 0.12 - cam.y) * k;
     // 가장자리: 맵 밖 빈 화면은 좌우 8%·위 10%까지만, 아래는 조작 버튼 자리(28%)만큼 허용
-    cam.x = clamp(cam.x, Math.min(vw * 0.42, MW * TILE / 2), Math.max(MW * TILE - vw * 0.42, MW * TILE / 2));
-    cam.y = clamp(cam.y, Math.min(vh * 0.4, MH * TILE / 2), MH * TILE - vh * 0.22);
+    // 맵 끝: 오른쪽은 세로 버튼 줄 폭만큼, 왼쪽은 조금, 아래는 버튼·도움말 자리만큼 더 따라가 주인공이 화면 가장자리 UI 밑에 깔리지 않게
+    cam.x = clamp(cam.x, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 78 / SCALE, MW * TILE / 2));
+    cam.y = clamp(cam.y, Math.min(vh * 0.4, MH * TILE / 2), MH * TILE + vh * 0.06);
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();

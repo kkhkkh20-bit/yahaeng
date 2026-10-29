@@ -787,7 +787,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
-      for (const w of S.windows) { const st = winSt(w); if (st !== 'bar') add(w.x, w.y, st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'lock' ? 'pick' : 'window', st === 'lock' ? '잠긴 창문 · 락픽' : '창문 · 넘어가기'); } }
+      for (const w of S.windows) { const st = winSt(w); add(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'open' ? 'window' : 'pick', st === 'bar' ? '방범창 · 락픽(느림)' : st === 'lock' ? '잠긴 창문 · 락픽' : '창문 · 넘어가기'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
     if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
@@ -829,7 +829,7 @@ function drawScan(openB) {
   const seen = new Set(), fP = flOf(S.player);
   for (const d of S.doors) { const k = d.group.map(t => t.tx + ',' + t.ty).sort()[0]; if (seen.has(k)) continue; seen.add(k); if ((d.fl || 0) !== fP && !tactical) continue; const keyed = d.locked && d.keyLock; box(d.x, d.y, keyed ? keyCol(d.keyLock) : SCAN.door, keyed ? '잠긴 문(' + keyName(d.keyLock) + ')' : '문', 40, keyed ? 1 : inner(d.tx, d.ty)); }
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
-  else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#5a606a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 30 : 40, st === 'bar' ? 0.5 : 1); }
+  else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '방범창' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 34 : 40, st === 'bar' ? 0.75 : 1); }
   for (const l of S.ladders) {
     if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `오르기 ${l.tfl + 1}층` : '오르기 옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `내려가기 ${l.bfl + 1}층`, SCAN.ladder); } continue; }
     if (fP) continue;
@@ -879,7 +879,7 @@ function drawActLabels(pa, P, ka, ga) {
   if (!pa.at && !pa.c && !actObj(pa)) return;
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
-  if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]);
+  if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]); else if (pa.tp && pa.tp.car) at(pa.tp.car);
   else if (pa.l && pa.k === 'up') { x = pa.l.x; y = pa.l.y - 34; } else if (pa.l && (pa.k === 'down' || pa.k === 'smother')) { x = pa.l.rx != null ? pa.l.rx : pa.l.ux; y = (pa.l.ry != null ? pa.l.ry : pa.l.uy) - 40; } else if (pa.l) at(pa.l);
   if (vic && Math.abs(x - vic.x) < 60 && Math.abs(y - vy) < 44 * k) y = vy - 23 * k;  // 사람과 겹치면 한 줄 위로
   const col = pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' || pa.k === 'stash' ? SCAN.hide : '#f2c46b';
