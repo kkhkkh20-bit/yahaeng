@@ -465,6 +465,11 @@ body.joyseen .joyhint { display: none !important; }
 .ledger-list .stage.locked .st-stamp { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-weight: 700; font-size: var(--fs-ui); color: var(--blood-hi); border: 2px solid var(--blood-hi); padding: 4px 10px; transform: rotate(-6deg); letter-spacing: .08em; }
 #ledger .stages h3 { margin-top: 10px; }
 #help details.rulesbox { border-top: 1px solid var(--ink-line); padding-top: 10px; }
+/* 설정 화면: 화면·소리 옵션 + 조작법 + 규칙. 게임 중 메뉴에서 열면 메뉴 위에 뜬다 */
+#help .setbox { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 18px; }
+#help .setbox .pz-sets { border-top: 0; padding-top: 0; }
+#help.over { z-index: 60; }
+.pz-todo[hidden] { display: none; }
 /* 은신 상태: 화면 위 가운데 큰 표시 (히트맨의 상태 표시·마크 오브 더 닌자의 숨음 표시처럼 한눈에) */
 #stealth { --sc: #8fd3ff; position: absolute; left: 50%; top: calc(var(--topb, 70px) + 8px); transform: translateX(-50%); display: flex; align-items: center; gap: 9px; padding: 6px 16px 6px 10px; border-radius: 999px; background: rgba(7, 10, 18, .8); color: var(--sc); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); pointer-events: none; white-space: nowrap; transition: background-color .18s, border-color .18s, color .18s; z-index: 2; }
 #stealth .sth-ico { width: 30px; height: 30px; flex: none; }
@@ -527,12 +532,20 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 .pz-wrap { width: min(1100px, 100%); box-sizing: border-box; padding: 40px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 500px); gap: 56px; align-items: center; }
 .pz-menu { display: flex; flex-direction: column; gap: 4px; }
 .pz-menu .fx-sub { margin-bottom: 16px; }
-.pz-big { display: flex; align-items: center; gap: 18px; text-align: left; font-family: var(--f-title); font-weight: 400; font-size: clamp(34px, 5vw, 52px); line-height: 1.15; color: #6f7890; background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.pz-big { display: flex; align-items: center; gap: 18px; text-align: left; font-family: var(--f-title); font-weight: 400; font-size: clamp(34px, 5vw, 52px); line-height: 1.15; color: #c3cad8; background: none; border: 0; padding: 4px 0; cursor: pointer; }
 .pz-big::before { content: ""; width: 6px; height: .8em; background: transparent; }
 .pz-big:hover, .pz-big:focus-visible, #btnResume { color: var(--lamp); }
 #btnResume::before, .pz-big:hover::before, .pz-big:focus-visible::before { background: var(--lamp); }
-.pz-menu:hover #btnResume:not(:hover) { color: #6f7890; } .pz-menu:hover #btnResume:not(:hover)::before { background: transparent; }
+.pz-menu:hover #btnResume:not(:hover) { color: #c3cad8; } .pz-menu:hover #btnResume:not(:hover)::before { background: transparent; }
 .pz-side { display: flex; flex-direction: column; gap: 20px; padding: 26px 28px; background: rgba(15, 21, 34, .85); }
+/* 설정은 접어 둔다 (펼치면 소리·밝기·화면 옵션). 메뉴 세 줄이 먼저 보이게 */
+.pz-side { background: none; padding: 0; }
+.pz-setbox > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; color: var(--paper); padding: 10px 16px; border: 1px solid #3a4560; }
+.pz-setbox > summary::-webkit-details-marker { display: none; }
+.pz-setbox > summary::after { content: '열기'; font-size: 12px; color: #9aa3b5; }
+.pz-setbox[open] > summary::after { content: '접기'; }
+.pz-setbox[open] { display: flex; flex-direction: column; gap: 18px; padding: 0 0 20px; }
+.pz-setbox[open] > summary { align-self: flex-start; }
 .pz-todo small { display: block; font-size: 13px; color: #9aa3b5; margin-bottom: 8px; }
 #pzTodo { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
 .pz-sets { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--ink-line); padding-top: 18px; }
@@ -675,7 +688,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
     <div class="title-acts">
       <button class="cta" id="btnQuick" type="button">바로 시작</button>
       <p class="qnote" id="qNote"></p>
-      <div class="title-row"><button class="ghost" id="btnLedger" type="button">의뢰 장부</button><button class="ghost" id="btnHelp" type="button">조작과 규칙</button></div>
+      <div class="title-row"><button class="ghost" id="btnLedger" type="button">의뢰 선택</button><button class="ghost" id="btnHelp" type="button">설정</button></div>
     </div>
     <p class="credit ver">야행 __VERSION__</p>
   </div>
@@ -683,7 +696,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
 
 <div class="screen sub" id="ledger" hidden>
   <div class="panel">
-    <div class="sub-head"><button class="back" id="btnLedgerBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>의뢰 장부</h2></div>
+    <div class="sub-head"><button class="back" id="btnLedgerBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>의뢰 선택</h2></div>
     <div id="stageList" class="ledger-list"></div>
     <div class="stages" id="modBox" hidden><h3>의뢰 변형</h3>
       <div class="diff" id="modSel"><button type="button" data-m="">없음</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
@@ -695,7 +708,11 @@ body.touch .pad #btnCycle b { font-size: 12px; }
 
 <div class="screen sub" id="help" hidden>
   <div class="panel">
-    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>조작과 규칙</h2></div>
+    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="돌아가기">돌아가기</button><h2>설정</h2></div>
+    <section class="setbox"><h3 class="rules-h">화면 · 소리</h3>
+      <div class="pz-sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label></div>
+      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+    </section>
     <details class="rulesbox" open><summary class="rules-h">조작법</summary>
     <div class="ctrl">
       <div class="kbonly"><h3>키보드 — 두 벌 중 손에 맞는 쪽을 쓰면 된다</h3><b>방향키로 움직일 때</b> (왼손 아랫줄): <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 다트<br><b>WASD로 움직일 때</b> (히트맨식): <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 다트<br>공격 — 사람에게만. 톡 누르면 기절, 계속 누르고 있으면 처치(표적은 바로 처치)<br>행동 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기·옥상 끝 매달리기. 사람이 가까워도 공격으로 바뀌지 않는다 (조준 중엔 그 조준을 예약)<br>붙잡기 — 등 뒤에서 잡는다. 잡은 채 가만히 있으면 심문, 공격 톡 기절 · 계속 처치, 행동은 숨을 곳으로 끌고 가기<br>다트 — 톡 누르면 앞쪽 표시된 대상에 자동 조준, 누르고 있으면 직접 겨누기 · <kbd>1</kbd> 다트 <kbd>2</kbd> 빈 캔 <kbd>3</kbd> 담배<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기 · <kbd>R</kbd> 항상 걷기 · <kbd>Alt</kbd> 살피기(누르는 동안)<br><kbd>Tab</kbd> 겹친 대상 바꾸기 · <kbd>G</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다 · <kbd>M</kbd> 지도 · <kbd>T</kbd> 기회 추적 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지<br>벽 쪽으로 잠깐 밀면 저절로 기댄다. 기댄 채 옆을 지나는 사람은 공격으로 끌어당긴다</div>
@@ -764,11 +781,10 @@ body.touch .pad #btnCycle b { font-size: 12px; }
       <button class="pz-big" id="btnResume" type="button">계속하기</button>
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
+      <button class="pz-big" id="btnSet2" type="button">설정</button>
     </div>
     <div class="pz-side">
-      <div class="pz-todo"><small>지금 할 일</small><div id="pzTodo"></div></div>
-      <div class="pz-sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label></div>
-      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+      <div class="pz-todo" hidden><small>지금 할 일</small><div id="pzTodo"></div></div>
     </div>
   </div>
 </div>

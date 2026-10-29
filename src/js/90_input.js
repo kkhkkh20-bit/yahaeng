@@ -164,13 +164,14 @@ function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('b
 $('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); });
 $('btnHelp').addEventListener('click', () => showMenu('help'));
 $('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); });
-$('btnHelpBack').addEventListener('click', () => showMenu('intro'));
+$('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } else showMenu('intro'); });  // 게임 중 메뉴에서 열었으면 메뉴로
+$('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0; });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
-function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; if (paused) riskTone(0);
-  if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); $('pzTodo').innerHTML = STAGE.tutorial ? '' : briefTodo().map(([mk, c, t, w]) => `<span><i class="mk ${mk}" style="--c:${c}"></i> ${t} · ${w}</span>`).join(''); $('pzTodo').parentElement.hidden = !!STAGE.tutorial; } }  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
+function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } } if (paused) riskTone(0);
+  if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); } }  // 메뉴에는 할 일을 띄우지 않는다 (화면 위 목표 칸에 이미 있다)  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
