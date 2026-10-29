@@ -597,7 +597,7 @@ body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
 
 /* ── 휴대폰 버튼 배치 (액션 게임식): 오른쪽 아래 큰 [공격]을 중심으로 [행동]·[붙잡기]·[도구]가 부채꼴로 둘러싼다.
    엄지가 [공격]에 놓인 채 조금씩 움직여 닿는 거리. 도구 이름표(누르면 다음 도구)는 도구 버튼 바로 위 */
-body.touch .pad { display: block; width: 250px; height: 236px; right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+body.touch .pad { display: block; width: 270px; height: 236px; right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
 body.touch .pad > button { position: absolute; margin: 0; border-width: 2px; box-shadow: 0 3px 10px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
   background: radial-gradient(circle at 50% 35%, rgba(44, 52, 72, .92), rgba(10, 13, 22, .9)); }
 body.touch .pad > button b { font-size: 11px; letter-spacing: -.2px; }
@@ -615,7 +615,12 @@ body.touch .pad #btnWhistle b { font-size: 10px; }
 body.touch .pad .tools { position: absolute; right: 12px; bottom: 180px; pointer-events: auto; border-radius: 14px; overflow: hidden; border-color: rgba(232, 227, 214, .35); }
 body.touch .pad .tools .tool { padding: 4px 10px; font-size: 12px; }
 body.touch .pad .tools .tool.on { background: rgba(232, 227, 214, .92); }
-body.touch .pad #btnCycle { right: 192px; bottom: 26px; top: auto; width: 50px; height: 36px; }
+body.touch .pad #btnCycle { right: 96px; bottom: 166px; top: auto; width: 54px; height: 36px; }
+/* 웅크리기: 이동 빠르기와 따로. 켜지면 초록 */
+body.touch .pad #btnCrouch { position: absolute; justify-self: auto; align-self: auto; right: 194px; bottom: 14px; width: 64px; height: 64px; border-color: rgba(127, 174, 134, .5); }
+body.touch .pad #btnCrouch b { font-size: 12px; }
+body.touch .pad #btnCrouch.on { background: rgba(40, 70, 48, .92); border-color: var(--moss); color: #dff5e2; }
+body:not(.touch) .pad #btnCrouch { display: none; }
 /* 글자만 쓰는 버튼: 그림 없이 동사를 크게 */
 body.touch .pad > button b { font-size: 13px; font-weight: 700; letter-spacing: -.3px; }
 body.touch .pad #btnAct b { font-size: 17px; }
@@ -642,7 +647,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
       <span class="chip want" id="wantBox" hidden title="수배"></span>
       <div id="floorBan" aria-live="polite"></div>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
-      <span class="sysbtns"><button id="btnSneak" type="button" title="이동 방식 — 누를 때마다 살금 · 걷기 · 달리기 (조이스틱 끝까지 밀었을 때의 빠르기)"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
+      <span class="sysbtns"><button id="btnSneak" type="button" title="이동 빠르기 — 누를 때마다 걷기 · 달리기 (조이스틱 끝까지 밀었을 때의 빠르기)"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
     </div>
   </div>
   <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
@@ -656,7 +661,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
   </div>
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div id="alertVig" aria-hidden="true"></div>
-  <div class="joyhint">끌어서 걷기 · 오른쪽 [이동]으로 살금 · 걷기 · 달리기</div>
+  <div class="joyhint">왼쪽을 끌어서 걷기</div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
       <button class="tool on" type="button" data-t="kunai"><kbd>1</kbd>다트 <span>3</span></button>
@@ -665,6 +670,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
     </div>
     <button id="btnTool" type="button"><b>다트 3</b></button>
     <button id="btnWhistle" type="button" title="휘파람 (G)"><b>휘파람</b></button>
+    <button id="btnCrouch" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button>
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>
     <button id="btnAct" type="button" title="공격 (Z · Space)"><b>공격</b></button>
@@ -716,7 +722,7 @@ body.touch .pad #btnCycle b { font-size: 12px; }
     <details class="rulesbox" open><summary class="rules-h">조작법</summary>
     <div class="ctrl">
       <div class="kbonly"><h3>키보드 — 두 벌 중 손에 맞는 쪽을 쓰면 된다</h3><b>방향키로 움직일 때</b> (왼손 아랫줄): <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 다트<br><b>WASD로 움직일 때</b> (히트맨식): <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 다트<br>공격 — 사람에게만. 톡 누르면 기절, 계속 누르고 있으면 처치(표적은 바로 처치)<br>행동 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기·옥상 끝 매달리기. 사람이 가까워도 공격으로 바뀌지 않는다 (조준 중엔 그 조준을 예약)<br>붙잡기 — 등 뒤에서 잡는다. 잡은 채 가만히 있으면 심문, 공격 톡 기절 · 계속 처치, 행동은 숨을 곳으로 끌고 가기<br>다트 — 톡 누르면 앞쪽 표시된 대상에 자동 조준, 누르고 있으면 직접 겨누기 · <kbd>1</kbd> 다트 <kbd>2</kbd> 빈 캔 <kbd>3</kbd> 담배<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기 · <kbd>R</kbd> 항상 걷기 · <kbd>Alt</kbd> 살피기(누르는 동안)<br><kbd>Tab</kbd> 겹친 대상 바꾸기 · <kbd>G</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다 · <kbd>M</kbd> 지도 · <kbd>T</kbd> 기회 추적 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지<br>벽 쪽으로 잠깐 밀면 저절로 기댄다. 기댄 채 옆을 지나는 사람은 공격으로 끌어당긴다</div>
-      <div><h3>터치</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 오른쪽 [이동] 버튼을 누를 때마다 살금 · 걷기 · 달리기가 바뀐다(끝까지 밀었을 때의 빠르기).<br>[공격] 큰 버튼 — 사람에게만. 톡 누르면 기절, 계속 누르면 처치 · [행동] 문·창문·숨기·계단·줍기·시체 메기 (사람이 가까워도 공격으로 바뀌지 않는다) · [붙잡기] 등 뒤에서 잡기 · [다트] 톡 누르면 자동 조준, 누른 채 끌면 직접 겨누기. 도구는 버튼 옆 작은 칸에서 바꾼다 · [휘파람]은 아래 버튼 묶음 왼쪽, [살피기]는 미니맵 아래.</div>
+      <div><h3>터치</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 오른쪽 [이동] 버튼을 누를 때마다 걷기 · 달리기가 바뀐다. [웅크리기] 버튼은 몸을 낮춰 발소리를 줄이고 덜 보이게 한다(다시 누르면 일어선다)(끝까지 밀었을 때의 빠르기).<br>[공격] 큰 버튼 — 사람에게만. 톡 누르면 기절, 계속 누르면 처치 · [행동] 문·창문·숨기·계단·줍기·시체 메기 (사람이 가까워도 공격으로 바뀌지 않는다) · [붙잡기] 등 뒤에서 잡기 · [다트] 톡 누르면 자동 조준, 누른 채 끌면 직접 겨누기. 도구는 버튼 옆 작은 칸에서 바꾼다 · [휘파람]은 아래 버튼 묶음 왼쪽, [살피기]는 미니맵 아래.</div>
     </div>
     </details>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
