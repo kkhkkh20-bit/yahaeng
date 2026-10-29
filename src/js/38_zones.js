@@ -96,6 +96,7 @@ function zoneEdges() {
 // 경계선 색은 지금 입은 옷 기준: 초록 = 들어가도 된다, 주황 = 출입 금지, 빨강 = 적진
 const zoneCol = (k, allow) => allowedBy(allow) ? '110,205,135' : k === Z_HOS ? '232,80,60' : '242,170,70';
 function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
+  if (!tactical && ((P.z || 0) > 0 || flOf(P) > 0 || P.wire)) return;  // 옥상·위층·전깃줄 위: 땅의 구역 선·이름표는 안 보인다
   const far = tactical ? 1e9 : 520;
   for (const e of zoneEdges()) {
     const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d > far) continue;

@@ -19,7 +19,7 @@ function makeVehicle(o) {
 }
 function trafficInit() {
   S.vehicles = [];
-  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c, parked: true }));
+  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9 }));  // 색 9 = 경찰차
   const RX = STAGE.roadsX, RY = STAGE.roadsY, n = STAGE.traffic || 0, P = S.player;
   // 도로 위 차: 가로·세로 도로에 번갈아, 나와 너무 가깝지 않게
   for (let i = 0, k = 0; i < n && k < 400; k++) {

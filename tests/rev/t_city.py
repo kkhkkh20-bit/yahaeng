@@ -44,11 +44,9 @@ async def main():
         print('경찰 추격', c)
         if not c: bad.append('수배가 붙어도 경찰이 쫓아오지 않는다')
         # 5) 쓰러지면 병원에서 깨어나고 수배가 풀린다
-        await m.evaluate("() => { const S = window.__game.S; S.player.hp = 1; S.player.hurtT = 0; }")
-        for t in range(14):
-            await m.wait_for_timeout(1000)
-            s = await m.evaluate("() => { const S = window.__game.S; return [S.stats.downs || 0, S.wanted, S.player.hp, S.over]; }")
-            if s[0]: break
+        await m.evaluate("() => { const S = window.__game.S; S.player.hp = 1; S.player.hurtT = 0; window.__game.hurt('경찰 곤봉에 맞았다.'); }")  # 경찰이 언제 닿을지는 그때그때라 직접 맞힌다
+        await m.wait_for_timeout(500)
+        s = await m.evaluate("() => { const S = window.__game.S; return [S.stats.downs || 0, S.wanted, S.player.hp, S.over]; }")
         print('병원', s)
         if not s[0] or s[1] or s[3]: bad.append('쓰러져도 병원에서 깨어나지 않는다 %s' % s)
         # 6) 운전자 끌어내기: 차 앞에 서 있으면 멈춘다 → 타면 운전자가 내려 달아난다

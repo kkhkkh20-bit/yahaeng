@@ -319,7 +319,10 @@ function stairWells(g, f) {
       if (g[ty][tx] !== 'Y') continue;
       const walk = (x, y) => x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1 && !SOLID.has(g[y][x]);
       let done = false;
-      for (const d of [[0, 1], [0, -1], [-1, 0], [1, 0]]) { if (done || !walk(tx + d[0], ty + d[1]) || g[ty + d[1]][tx + d[0]] === 'Y') continue;  // 들어서는 쪽: 남·북·서·동 중 구멍을 낼 수 있는 첫 방향
+      // 1층 계단이 놓인 방향(들어서는 쪽)을 먼저 — 층마다 계단 방향이 바뀌지 않게 (1층은 상하인데 2층은 좌우이던 문제)
+      const DIRS = [[0, 1], [0, -1], [-1, 0], [1, 0]], d0 = DIRS.find(([dx, dy]) => { const nx = tx + dx, ny = ty + dy; return nx > b.x0 && nx < b.x1 && ny > b.y0 && ny < b.y1 && !SOLID.has(G0[ny][nx]) && G0[ny][nx] !== 'Y'; });
+      const order = d0 ? [d0].concat(DIRS.filter(d => d !== d0)) : DIRS;
+      for (const d of order) { if (done || !walk(tx + d[0], ty + d[1]) || g[ty + d[1]][tx + d[0]] === 'Y') continue;  // 들어서는 쪽: 1층과 같은 방향부터, 안 되면 남·북·서·동 순
       const sides = d[0] ? [[0, 1], [0, -1]] : [[1, 0], [-1, 0]];
       const reach = () => { const seen = new Set(), st = [[tx, ty]]; seen.add(tx + ',' + ty); while (st.length) { const [x, y] = st.pop(); for (const [ox, oy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + ox, ny = y + oy, k = nx + ',' + ny; if (!seen.has(k) && walk(nx, ny)) { seen.add(k); st.push([nx, ny]); } } } return seen; };
       const count = () => reach().size;

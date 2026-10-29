@@ -13,7 +13,7 @@ function update(dt) {
   if (S.qBuf > 0) { S.qBuf -= dt; const qa = S.qKill ? attackAction() : primaryAction(); if (qa.k !== 'none' && (!S.qKill || isAtk(qa))) { S.qBuf = 0; actPrimary(S.qKill ? Object.assign({}, qa, { viaZ: true }) : undefined); } }  // [공격]을 미리 눌러 두면 닿는 순간 공격
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
-  if (STAGE.city) cityUpdate(dt);
+  if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);

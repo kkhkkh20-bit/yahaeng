@@ -23,7 +23,7 @@ function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
-  buildMap(STAGE); if (STAGE.city) cityMapPrep(); setLayer(0); buildFRM(false);
+  buildMap(STAGE); if (STAGE.city || STAGE.roadsX) cityMapPrep(); setLayer(0); buildFRM(false);  // 도로가 있는 판: 세워 둔 차는 몰 수 있는 차
   if (STAGE.startAt) { const q = planPt(STAGE.startAt.b, STAGE.startAt.fl || 0, STAGE.startAt.at); if (q) STAGE.start = q; }  // 건물 안에서 시작 (감방 등)
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
@@ -168,7 +168,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit();
+  buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 그 자리에서 위쪽 벽에 달고 아래를 본다)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;
@@ -578,7 +578,7 @@ function renderMap(R) {
       x.fillStyle = '#b4b6c4'; if (asph(0, 1)) x.fillRect(px, py + TILE - 6, TILE, 6); if (asph(0, -1)) x.fillRect(px, py, TILE, 5); if (asph(-1, 0)) x.fillRect(px, py, 5, TILE); if (asph(1, 0)) x.fillRect(px + TILE - 5, py, 5, TILE);
       x.fillStyle = 'rgba(0,0,0,.35)'; if (asph(0, 1)) x.fillRect(px, py + TILE, TILE, 3);
     }
-  if (!CUR_F && STAGE.city && !R) drawRoadMarks(x);  // 도시: 차선·횡단보도
+  if (!CUR_F && STAGE.roadsX && !R) drawRoadMarks(x);  // 도시: 차선·횡단보도
   if (!CUR_F) (STAGE.decor || []).forEach(d => {
     if (d[0] === 'shade') { x.fillStyle = `rgba(${d[6] || '0,0,0'},${d[5]})`; x.fillRect(d[1] * TILE, d[2] * TILE, (d[3] - d[1] + 1) * TILE, (d[4] - d[2] + 1) * TILE); return; }
     if (d[0] === 'lane') { x.fillStyle = 'rgba(232,196,90,.75)'; for (let xx = d[1] * TILE; xx < (d[3] + 1) * TILE; xx += 48) x.fillRect(xx + 6, d[2] * TILE - 2, 28, 4); return; }

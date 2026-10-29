@@ -10,7 +10,14 @@ function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
   trafficInit();
+  // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
+  for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
+}
+// 의뢰 판의 거리: 교통(도로가 있으면)과 순찰 경찰. 수배·병원·의뢰 장소는 도시에만
+function streetInit() {
+  if (STAGE.roadsX) trafficInit();
+  for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
 }
 // 범행을 본 사람이 있나 (주민·경찰, 같은 층, 가까이, 시선이 닿음)
 function witnessed(x, y, r) {
@@ -34,12 +41,12 @@ function offscreenSpot(r0, r1) {
   }
   return null;
 }
-function spawnCop() {
+function spawnCop(calm) {  // calm: 사건 출동 (나를 쫓지 않는다)
   const p = offscreenSpot(650, 1100); if (!p) return null;
   let g = S.guards.find(o => o.police && o.off);
   if (!g) { g = makeGuard({ kind: 'g1', at: [Math.floor(p.x / TILE), Math.floor(p.y / TILE)], radio: false }, S.guards.length); S.guards.push(g); g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; if (PR) prWarm([charOf(g)], true); }
   g.off = false; g.state = 'PATROL'; g.x = p.x; g.y = p.y; g.fl = 0; g.z = 0; g.hp = null; g.fhp = null; g.brawl = null; g.hunt = null; g.route = [{ x: p.x, y: p.y, pause: 999 }]; g.routeLine = null;
-  copChase(g); return g;
+  if (!calm) copChase(g); return g;
 }
 function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999; g.path = null; g.icon = null; g.say = null; }
 function cityUpdate(dt) {
@@ -56,6 +63,7 @@ function cityUpdate(dt) {
       if (!S.wanted) for (const g of cops) { g.state = 'RETURN'; g.icon = null; g.path = null; g.leaveT = 6; } }
   } else for (const g of cops) {  // 수배가 풀린 경찰: 화면 밖으로 사라진다
     if (g.state === 'ALERT') { g.state = 'RETURN'; g.leaveT = 6; }
+    if (g.beat || g.incident || g.brawl) continue;  // 순찰 경찰·출동 중인 경찰은 남는다
     if ((g.leaveT = (g.leaveT || 6) - dt) <= 0 && (Math.abs(g.x - cam.x) > W / SCALE / 2 + 40 || Math.abs(g.y - cam.y) > H / SCALE / 2 + 40)) despawnCop(g);
   }
   // 멀리 떨어진 경찰은 화면 밖에서 다시 가까이 (따라잡기)
@@ -97,7 +105,7 @@ function cityGoal() {
 }
 // 의뢰 장소 표시: 빨간 원과 이름 (끝낸 곳은 회색)
 function drawContracts() {
-  if (!S.contracts || flOf(S.player)) return; const done = cityDone();
+  if (!S.contracts || flOf(S.player) || S.player.z > 0 || S.player.wire) return; const done = cityDone();  // 옥상·위층에선 땅 표시를 그리지 않는다
   for (const c of S.contracts) {
     const ok = done[c.id], pulse = 0.6 + 0.4 * Math.sin(S.t * 3);
     ctx.strokeStyle = ok ? 'rgba(150,150,160,.6)' : `rgba(232,71,60,${pulse})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.stroke();

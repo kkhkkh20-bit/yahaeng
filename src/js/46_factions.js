@@ -12,7 +12,9 @@ const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yan
 // 라이벌 배치: 구역이 있는 판(의뢰 2~5)에 셋이 한 무리로 거리를 돈다. STAGE.rivals = 0 이면 없음, 숫자면 그만큼
 function factionsInit() {
   S.war = false; S.facOn = !!STAGE.zones && !STAGE.tutorial;
-  for (const g of S.guards) if (!g.civ && !g.dog) g.fac = 'A';
+  // 판에 적힌 소속: police: true = 경찰(제복) · fac: 'B' = 건달파(빨간 점퍼) · 나머지 조직원은 의뢰 조직(A)
+  for (const g of S.guards) { if (g.civ || g.dog) continue; const d = (STAGE._g || [])[g.id];
+    if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (g.fac === 'B') { g.outfit = 'rival'; g.rival = true; } } }
   if (!S.facOn) return;
   const n = STAGE.rivals != null ? STAGE.rivals : 3; if (!n) return;
   const P = S.player, pub = [];
@@ -35,9 +37,10 @@ function startBrawl(a, b, why) {
   a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) b.brawl = { o: a, cd: rnd(0.5, 0.9) };
   a.state = a.state === 'ALERT' ? a.state : 'PATROL'; a.path = null; a.chat = null; a.say = null;
   S.stats.fights = (S.stats.fights || 0) + 1; noise(a.x, a.y, 220, 'fight', flOf(a));
-  gsay(a, why || (a.fac === 'B' ? TAUNT_B : TAUNT)[(a.id + S.stats.fights) % 4], 1.8);
+  gsay(a, why || (a.fac === 'P' ? '경찰이다! 그만둬!' : (a.fac === 'B' ? TAUNT_B : TAUNT)[(a.id + S.stats.fights) % 4]), 1.8);
+  if (a.fac !== 'P' && b.fac !== 'P') policeCall(a.x, a.y, a);  // 도시: 패싸움은 누군가 경찰에 신고한다
   for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && flOf(c) === flOf(a) && dist(c.x, c.y, a.x, a.y) < 260) civPanic(c, a.x, a.y, 7);
-  const P = S.player; if (dist(P.x, P.y, a.x, a.y) < 700) { toast(b.civ ? '조직원이 주민을 때린다' : `${FAC_NAME[a.fac]}와 ${FAC_NAME[b.fac]}가 붙었다 — 시선이 그쪽으로 쏠린다`, 2.4, 'warn'); hint('fight', '조직끼리 싸우는 동안은 서로만 본다. 한쪽 옷을 입고 다른 쪽을 치면 전쟁이 난다 — 그 틈을 노려라'); }
+  const P = S.player; if (dist(P.x, P.y, a.x, a.y) < 700 && a.fac !== 'P') { toast(b.civ ? '조직원이 주민을 때린다' : `${FAC_NAME[a.fac]}와 ${FAC_NAME[b.fac]}가 붙었다 — 시선이 그쪽으로 쏠린다`, 2.4, 'warn'); hint('fight', '조직끼리 싸우는 동안은 서로만 본다. 한쪽 옷을 입고 다른 쪽을 치면 전쟁이 난다 — 그 틈을 노려라'); }
 }
 function civPanic(c, x, y, t) { if (!npcAlive(c) || c.child && c.treatT > 0) return; c.state = 'PANIC'; c.fear = { x, y }; c.panicT = t; c.cowered = false; c.path = null; c.chat = null; setIcon(c, '!'); }
 function declareWar(why) {
@@ -51,6 +54,7 @@ function npcDown(o, by, lethal) {
   play(lethal ? 'kill' : 'thud', 0.5 * proxVol(o)); noise(o.x, o.y, 90, 'fight', flOf(o));
   const c = { fl: flOf(o), ch: charOf(o), g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
   S.corpses.push(c); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
+  if (by && by.fac && by.fac !== 'P' && o.civ) policeCall(o.x, o.y, by);
   if (S.fuseGuard === o) S.fuseGuard = null;
   if (o.hasKey) { const k = o.hasKey; o.hasKey = null; S.keyDrop = { x: c.x + 14, y: c.y + 10, key: k, fl: c.fl || 0 }; }
   if (!lethal && !o.civ) after(25, () => { const i = S.corpses.indexOf(c); if (i < 0 || c.carried || c.stashed || !c.ko) return; S.corpses.splice(i, 1); o.state = 'PATROL'; o.x = c.x; o.y = c.y; o.meter = 0.3; o.path = null; gsay(o, '으… 어디 갔어, 그 새끼들.'); });
@@ -72,10 +76,11 @@ function facWitness(victim) {
 }
 // 매 프레임 (updateGuard 맨 앞): 싸움·입막음·구역 단속이 평소 행동보다 먼저. true 면 이번 프레임은 이걸로 끝
 function updateFaction(g, dt) {
-  if (!S.facOn || g.civ || g.dog || g.target || g.child || g.climb || g.x < 0 || g.y < 0 || g.fac === 'P') return false;  // 지도 밖(시험용으로 치워 둔 사람)은 세력 행동 없음
+  if (!S.facOn || g.civ || g.dog || g.target || g.child || g.climb || g.x < 0 || g.y < 0 || g.off) return false;  // 지도 밖(시험용으로 치워 둔 사람)은 세력 행동 없음
   if (g.state === 'ALERT' || g.state === 'TERROR' || g.state === 'FLEE') { g.brawl = null; g.hunt = null; return false; }
   if (g.brawl) return brawlStep(g, dt);
   if (g.hunt) return huntStep(g, dt);
+  if (g.fac === 'P') return copWatch(g, dt);  // 경찰: 보이는 범행에 끼어든다 (시비는 걸지 않는다)
   if ((g.facT = (g.facT || 0) - dt) > 0) return false; g.facT = 0.4;
   const P = S.player;
   for (const o of S.guards) {
@@ -84,6 +89,7 @@ function updateFaction(g, dt) {
     // 적진(hos) 안에 들어온 건달은 바로 친다 · 전쟁 중이면 보는 즉시 · 평소엔 시비 (가끔 붙는다)
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;
     if (S.war || inHos || o.brawl) { startBrawl(g, o); return true; }
+    if (copNear(g, 380)) continue;  // 경찰이 보고 있으면 먼저 시비 걸지 않는다 (전쟁·적진 침입은 예외 — 위에서 이미 싸움)
     if (!g.tauntT || S.t - g.tauntT > 14) { g.tauntT = S.t; o.tauntT = S.t; g.want = Math.atan2(o.y - g.y, o.x - g.x); gsay(g, (g.fac === 'B' ? TAUNT_B : TAUNT)[g.id % 4], 2.2);
       if (Math.random() < 0.3) { startBrawl(g, o); return true; } }
   }
@@ -115,7 +121,7 @@ function brawlStep(g, dt) {
   if (d > 600) { g.brawl = null; g.state = 'RETURN'; return false; }
   if (d <= 34 && (b.cd -= dt) <= 0) {
     b.cd = rnd(0.8, 1.3); g.swingT = 0.3; play('thud', 0.3 * proxVol(g)); noise(g.x, g.y, 140, 'fight', flOf(g));
-    if (Math.random() < 0.55) { o.fhp = (o.fhp == null ? 3 : o.fhp) - 1; o.startle = { a: Math.atan2(g.y - o.y, g.x - o.x) }; if (o.fhp <= 0) { npcDown(o, g, Math.random() < (o.civ ? 0.5 : 0.4)); g.brawl = null; g.state = 'RETURN'; g.path = null; return true; } }
+    if (Math.random() < 0.55) { o.fhp = (o.fhp == null ? 3 : o.fhp) - 1; o.startle = { a: Math.atan2(g.y - o.y, g.x - o.x) }; if (o.fhp <= 0) { npcDown(o, g, g.fac === 'P' ? false : Math.random() < (o.civ ? 0.5 : 0.4)); if (g.fac === 'P') gsay(g, '제압했다. 꼼짝 마.', 2); g.brawl = null; g.state = 'RETURN'; g.path = null; return true; } }
     // 싸움에 휘말리는 주민
     for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && dist(c.x, c.y, o.x, o.y) < 48 && Math.random() < 0.18) { npcDown(c, g, Math.random() < 0.3); if (dist(S.player.x, S.player.y, c.x, c.y) < 700) toast('지나가던 주민이 싸움에 휘말렸다', 2); }
   }
@@ -141,4 +147,32 @@ function facBody(g, c) {
   if (c.fac && c.fac !== g.fac) { c.discovered = true; gsay(g, ['누가 건달 하나 손봤네.', '쟤넨 원래 저래.'][g.id % 2], 1.8); return true; }
   if (c.fac === 'B' && g.fac === 'B') { c.discovered = true; if (S.guards.some(o => o.fac === 'A' && npcAlive(o) && dist(o.x, o.y, c.x, c.y) < 500)) declareWar('건달파가 동료 시체 옆의 조직원을 탓한다 — 전쟁이 났다'); else goSuspicious(g, c.x, c.y, 4); return true; }
   return false;
+}
+// ---- 경찰 (도시): 조직의 범행에 끼어든다. 내 수배와는 따로 — 경찰이 조직을 제압해도 내 감점·수배는 없다
+const copNear = (g, r) => S.guards.some(o => o.police && !o.off && npcAlive(o) && flOf(o) === flOf(g) && dist(o.x, o.y, g.x, g.y) < r && los(o.x, o.y, g.x, g.y));
+function copWatch(g, dt) {
+  const inc = g.incident;
+  if ((g.cwT = (g.cwT || 0) - dt) <= 0) { g.cwT = 0.35;
+    // 눈앞에서 싸우거나 주민을 쫓는 조직원: 끼어들어 제압한다
+    for (const o of S.guards) {
+      if (o === g || o.fac === 'P' || o.civ || !npcAlive(o) || !(o.brawl || o.hunt) || flOf(o) !== flOf(g) || dist(o.x, o.y, g.x, g.y) > 420 || !los(g.x, g.y, o.x, o.y)) continue;
+      if (!inc && Math.abs(angDiff(g.a, Math.atan2(o.y - g.y, o.x - g.x))) > 1.4 && dist(o.x, o.y, g.x, g.y) > 320) continue;  // 등 뒤라도 가까운 싸움(320px)은 소리로 안다. 출동 중이면 둘러본다
+      o.hunt = null; g.incident = null; startBrawl(g, o); return true;
+    }
+    if (inc && npcAlive(inc.by) && dist(g.x, g.y, inc.by.x, inc.by.y) < 300 && los(g.x, g.y, inc.by.x, inc.by.y)) { g.incident = null; inc.by.hunt = null; startBrawl(g, inc.by, '경찰이다! 엎드려!'); return true; }
+  }
+  // 신고받은 사건: 그 자리로 뛰어간다. 가 봤는데 아무도 없으면 돌아간다
+  if (!inc) return false;
+  if (S.t - inc.t0 > 40 || dist(g.x, g.y, inc.x, inc.y) < 60) { g.incident = null; g.state = 'RETURN'; g.path = null; if (!npcAlive(inc.by)) gsay(g, '이미 끝났군.', 1.6); return false; }
+  if (!g.path || (g.incT = (g.incT || 0) - dt) <= 0) { g.incT = 1; pathTo(g, inc.x, inc.y); }
+  moveAlong(g, SPD.gAlert * 0.9 * spdMul(), dt); g.moving = true;
+  return true;
+}
+// 경찰 신고: 가까운 한가한 경찰이 출동한다. 없으면 화면 밖에서 하나 온다 (사건 하나에 경찰 둘까지)
+function policeCall(x, y, by) {
+  if (!(STAGE.city || STAGE.copBeats) || !by) return; if ((S.incT || 0) > S.t) return; S.incT = S.t + 4;
+  const idle = S.guards.filter(o => o.police && !o.off && npcAlive(o) && o.state !== 'ALERT' && !o.brawl && !o.incident).sort((p, q) => dist(p.x, p.y, x, y) - dist(q.x, q.y, x, y));
+  let n = 0; for (const o of idle.slice(0, 2)) { o.incident = { x, y, by, t0: S.t }; o.state = 'PATROL'; o.path = null; n++; }
+  if (!n) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n = 1; } }
+  if (n && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
 }

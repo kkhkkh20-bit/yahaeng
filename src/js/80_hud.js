@@ -133,6 +133,13 @@ function objectiveText() {
   if (S.items.length) parts.push(`${STAGE.itemName || '서류'} 회수 ${S.items.filter(i => i.got).length}/${S.items.length}`);
   return parts.join(' · ');
 }
+// 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
+function floorBanner(P, ptx, pty) {
+  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층 실내` : P.z ? `${P.z}층 높이 옥상` : bldAt(ptx, pty) >= 0 ? '1층 실내' : '거리';
+  if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
+  if (S._flk == null) { S._flk = k; return; }
+  if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+}
 function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
@@ -146,7 +153,8 @@ function updateHUD(force) {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? (P.z > 1 ? `옥상 ${P.z}` : '옥상') : bldAt(ptx, pty) >= 0 ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : bldAt(ptx, pty) >= 0 ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  floorBanner(P, ptx, pty);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : bldAt(ptx, pty) >= 0 ? 'in' : 'out';
   hud.layer.dataset.z = zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';

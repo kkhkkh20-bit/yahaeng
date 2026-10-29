@@ -27,10 +27,10 @@ def main():
     if '--no-build' not in sys.argv: subprocess.run([sys.executable, os.path.join(ROOT, 'build.py')], check=True)
     v, errs = asyncio.run(validate()); print('도달 검사:', '통과' if not v and not errs else ('문제 ' + str(v) + str(errs)))
     fails = [] if not v and not errs else ['validate']
-    with cf.ThreadPoolExecutor(4) as ex: res = list(ex.map(run, SUITE))
+    with cf.ThreadPoolExecutor(4) as ex: res = list(ex.map(lambda f: run(f, 900 if 't_trav' in f else 400), SUITE))  # 이동 전수 점검은 오래 걸린다
     retry = [r[0] for r in res if r[1]]
     for name in retry:  # 병렬 실행 때 시간에 밀려 떨어진 것은 혼자 한 번 더
-        r = run(os.path.join(ROOT, name)); res = [r if x[0] == name else x for x in res]
+        r = run(os.path.join(ROOT, name), 900 if 't_trav' in name else 400); res = [r if x[0] == name else x for x in res]
     for name, bad, code, dt, tail in res: print(('실패 ' if bad else '통과 ') + f'{name} ({dt:.0f}초)' + (f' — {tail}' if bad else ''))
     fails += [r[0] for r in res if r[1]]
     if '--quick' not in sys.argv:

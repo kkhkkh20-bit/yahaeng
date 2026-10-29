@@ -197,6 +197,21 @@ function permitNod(g) {
   g.nodded = true; gsay(g, L[g.id % L.length], 2.6); g.want = Math.atan2(S.player.y - g.y, S.player.x - g.x);
   if (!S.nodToast) { S.nodToast = true; toast(permitName(zi.allow) + ' 덕분에 그냥 들여보내 준다', 2.4, 'good'); }
 }
+// 위층 사람이 창문 너머로 바깥 땅(1층 높이)을 본다: 창가(160px 안)에서 창문 쪽을 보고 있고, 창문 바깥에서 나까지 시야가 트였을 때. 조금 덜 보인다(0.8배)
+function winSee(g, pv) {
+  const f = flOf(g), b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); if (b < 0 || bldAt(Math.floor(pv.x / TILE), Math.floor(pv.y / TILE)) >= 0) return 0;
+  let best = 0; const L0 = CUR_F;
+  for (const w of S.fwindows || []) {
+    if (w.fl !== f || !w.out || !w.inn || bldAt(w.tx, w.ty) !== b) continue;
+    const dw = dist(g.x, g.y, w.x, w.y); if (dw > 160) continue;
+    if ((pv.x - w.x) * w.out.d[0] + (pv.y - w.y) * w.out.d[1] < 20) continue;  // 창문 앞쪽(바깥)에 있어야
+    if (Math.abs(angDiff(g.a, Math.atan2(w.y - g.y, w.x - g.x))) > guardFov(g) || Math.abs(angDiff(g.a, Math.atan2(pv.y - g.y, pv.x - g.x))) > guardFov(g)) continue;
+    setLayer(f); const inOk = los(g.x, g.y, w.inn.x, w.inn.y); setLayer(0);
+    if (inOk) { const o = Object.create(g); o.x = w.out.x; o.y = w.out.y; o.z = 0; o.fl = 0; const v = canSee(o, pv.x, pv.y, S.player.light, S.player.hidden, S.player.mode === 'sneak', 0) * 0.8; if (v > best) best = v; }
+    setLayer(L0);
+  }
+  return best;
+}
 function canSee(g, x, y, light, hidden, sneak, elev) {
   // 높이: 옥상 밑(건물 안)에서는 옥상 위를 못 보고, 옥상 위에서는 옥상 밑을 못 본다
   const gz = g.z || 0; elev = elev || 0;
@@ -422,8 +437,9 @@ function updateGuard(g, dt) {
   const sameF = flOf(g) === flOf(P) && !(flOf(P) && P.wire);
   const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
+  if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
-  let zk = 1; const pz = STAGE.zones ? pZoneEff() : Z_HOS;
+  let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff()) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = suspAct(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
@@ -849,7 +865,7 @@ function goAlert(g) {
     if (dist(o.x, o.y, g.x, g.y) < 340) { o.state = 'ALERT'; o.icon = '!'; o.iconT = 99; o.lastSeen = pSpot(); o.lostT = 0.5; o.path = null; o.repath = 0; o.meter = 1; o.shootT = 0; if (o.radio) radio = true; }
   }
   if (g.fac === 'B') { toast('건달파가 나를 노린다', 2, 'warn'); return; }
-  if (g.fac === 'P') { if (STAGE.city) copAlert(g); return; }  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
+  if (g.fac === 'P' && STAGE.city) { copAlert(g); return; }  // 도시의 경찰: 수배로 (의뢰 판의 경찰은 자경대원처럼 경보를 올린다)  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
     if (S.alevel < 2) toast('근처 자경대원만 알아챘다 — 무전기 자경대원이 없다', 2.4);
     setAlert(2, 30);

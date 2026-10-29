@@ -122,6 +122,13 @@ function drawPlayer(P) {
       const drop = g * (bush ? 8 : cl ? 46 : 36), fr = cl ? ((Math.floor(T.t * 7) * (tp.pose === 'climbDown' ? -1 : 1)) % 4 + 4) % 4 : 0;
       drawPR(PK, P.x, P.y + drop, T.face != null ? T.face : P.a, cl ? 'climb' : 'crouch', 0, al * (bush ? 1 - g * 0.55 : 1), s1, cl ? 14 : 0, fr);
       ctx.restore(); return; }
+    // 벽 잡고 오르기: 웅크렸다 → 뛰어올라 → 가장자리에 두 손으로 매달려 → 끌어올린다
+    if (tp.pose === 'wjCrouch') { drawPR(PK, P.x, P.y, T.face, 'crouch', 0, al, s1, 0, 0); return; }
+    if (tp.pose === 'wjLeap') { drawPR(PK, P.x, P.y, T.face, 'vault', 0, al, s1, tp.g * 22, tp.g < 0.5 ? 0 : 1); return; }
+    if (tp.pose === 'wjHang') {
+      if (T.hangOk && PR.anims.hang && PR.hangHand) { const sh = prSheet(PK), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = Math.min(nf - 1, Math.floor(tp.g * nf)), sw = Math.sin(tp.g * Math.PI) * 2;
+        ctx.globalAlpha = al; ctx.drawImage(sh, (c0 + fi) * fr, 6 * fr, fr, fr, P.x - PR.hangHand[0], P.y + 2 + sw - PR.hangHand[1], fr, fr); ctx.globalAlpha = 1; return; }
+      drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
     if (tp.pose === 'climb') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'climb', 0, al, s1, 14, ((Math.floor(T.t * 7) * (T.down ? -1 : 1)) % 4 + 4) % 4); return; }
     if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
   }
@@ -276,8 +283,30 @@ function drawPlanks() {
 }
 function drawRoofs(openB) {
   const roof = STAGE.roof || ['#444a55', '#545b68'];
+  // 지붕은 열고 닫을 때 0.15초쯤 걸려 스르륵 (들어가고 나오고 벽을 탈 때 화면이 확 바뀌지 않게)
+  const rdt = clamp(S.t - (S._roofT != null ? S._roofT : S.t), 0, 0.1); S._roofT = S.t;
   BLD.forEach((b, i) => {
-    if (i === openB) {
+    const tgt = i === openB ? 0 : 1; if (b.ra == null) b.ra = tgt; b.ra += (tgt - b.ra) * Math.min(1, rdt * 14); if (Math.abs(tgt - b.ra) < 0.02) b.ra = tgt;
+    if (b.ra < 1) { ctx.strokeStyle = `rgba(242,196,107,${0.35 * (1 - b.ra)})`; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+      ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]); }
+    if (b.ra === 0) {
+      if (!flOf(S.player)) drawFacadeExtras(b, true);
+      return;
+    }
+    if (b.ra < 1) ctx.globalAlpha = b.ra;
+    drawRoof1(b, i, roof); ctx.globalAlpha = 1;
+  });
+  const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
+  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
+  for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
+  for (const l of S.ladders) if (l.kind === 'pipe' && !l.gas) drawPipe(l);
+  for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
+  for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
+  drawTrapsRoof();
+}
+function drawRoof1(b, i, roof) {
+  {
+    if (false) {
       ctx.strokeStyle = 'rgba(242,196,107,.35)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]);
       if (!flOf(S.player)) drawFacadeExtras(b, true);
@@ -299,14 +328,7 @@ function drawRoofs(openB) {
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(b.h + 'F', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
-  });
-  const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
-  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
-  for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
-  for (const l of S.ladders) if (l.kind === 'pipe' && !l.gas) drawPipe(l);
-  for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
-  for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
-  drawTrapsRoof();
+  }
 }
 // 가스관과 2층 베란다 (정면 벽 위에 그린다)
 function drawFacadeExtras(b, flat, kit) {
@@ -788,6 +810,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
+      for (const w of S.fwindows || []) if (w.fl === 1 && w.out && w.st === 'open') add(w.out.x, w.out.y, SCAN.window, '↑', '2층 창문 · 열림');  // 벽 타고 들어갈 수 있는 창문
       for (const w of S.windows) { const st = winSt(w); add(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'open' ? 'window' : 'pick', st === 'bar' ? '방범창 · 락픽(느림)' : st === 'lock' ? '잠긴 창문 · 락픽' : '창문 · 넘어가기'); } }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
@@ -807,7 +830,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      if (!on && m.d < 60) { const why = P.carrying ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
+      if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '⇄ 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
@@ -1223,6 +1246,7 @@ function draw() {
   }
   if (!tactical) {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks();
+    if (!flOf(P) && !P.z) drawWinWatch();  // 위층 창가에서 내려다보는 사람: 창문 밖으로 옅은 시선
     drawHeardSteps(P, openB, gVis);
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
@@ -1347,3 +1371,20 @@ function draw() {
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
 }
 
+
+// 위층 창가에서 바깥을 내려다보는 사람: 바깥(1층 높이)에서 볼 때 창문에서 뻗는 옅은 시선 부채꼴 (winSee 와 같은 조건)
+function drawWinWatch() {
+  const P = S.player;
+  for (const g of S.guards) {
+    if (!flOf(g) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'SLEEP' || g.dog) continue;
+    const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); if (b < 0) continue;
+    for (const w of S.fwindows || []) {
+      if (w.fl !== flOf(g) || !w.out || bldAt(w.tx, w.ty) !== b || dist(g.x, g.y, w.x, w.y) > 160 || dist(P.x, P.y, w.x, w.y) > 700) continue;
+      if (Math.abs(angDiff(g.a, Math.atan2(w.y - g.y, w.x - g.x))) > guardFov(g)) continue;
+      const a0 = Math.atan2(w.out.d[1], w.out.d[0]), r = 210, col = g.state === 'ALERT' ? '230,70,60' : g.civ ? '196,236,190' : '242,196,107';
+      const gr = ctx.createRadialGradient(w.out.x, w.out.y, 10, w.out.x, w.out.y, r); gr.addColorStop(0, `rgba(${col},.16)`); gr.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(w.x, w.y); ctx.arc(w.x, w.y, r, a0 - 0.6, a0 + 0.6); ctx.closePath(); ctx.fill();
+      tag(w.x + w.out.d[0] * 30, w.y + w.out.d[1] * 30 - 8, g.civ ? '창가 · 주민' : '창가 · 내려다봄', g.civ ? '#9fd6a0' : '#f2c46b', 1.2);
+    }
+  }
+}
