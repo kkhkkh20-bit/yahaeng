@@ -44,8 +44,9 @@ function envChoices() {
 }
 function envAction() {
   const L = envChoices(); if (!L.length) return { k: 'none', label: '행동' };
-  const key = L.map(a => a.k + oid(actObj(a))).join('|'); if (key !== S.envKey) { S.envKey = key; const j = L.findIndex(a => oid(actObj(a)) === S.envPick); S.envSel = j >= 0 ? j : 0; }  // 고르던 대상은 목록이 바뀌어도 그대로
-  const i = (S.envSel || 0) % L.length, a = L[i]; S.envPick = oid(actObj(a)); a.choices = L.length; a.choiceI = i; return a;
+  const key = L.map(a => a.k + oid(actObj(a))).join('|'); const PP = S.player, stay = S.envPickP && Math.hypot(PP.x - S.envPickP.x, PP.y - S.envPickP.y) < 30; if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;  // 고르던 대상은 목록이 바뀌어도 그대로
+  const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a)); if (pk !== S.envPick) S.envPickP = { x: S.player.x, y: S.player.y }; S.envPick = pk;  // 고르던 대상은 그 자리(30px 안)에서만 유지 — 걸어서 옮기면 가까운 쪽부터 다시
+  a.choices = L.length; a.choiceI = i; return a;
 }
 function grabAction() {
   const P = S.player; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };

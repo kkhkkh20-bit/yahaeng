@@ -61,7 +61,7 @@
       steps: [{ text: '감금동 2층 사무실 — 떠드는 둘의 이야기를 들어 보거나 바로 무전기를 챙긴다', at: null, done: S => S.items.every(i => i.got) }] }
   ],
   endText: '제비의 무전기를 챙겨 빠져나왔다. 무전기에는 마지막 메시지가 남아 있다 — "올빼미, 까마귀를 믿지 마." 이제 까마귀를 찾아간다.',
-  challenges: ['ghost', 'untouched', 'clean', 'fast'], fastT: 150,
+  challenges: ['ghost', 'untouched', 'clean', 'fast'], fastT: 210,
   well: 'manhole', kunai: 3, coins: 0, reinf: [43, 20],
   hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '압수품을 찾으면 락픽·빈 캔·다트가 돌아온다. 없으면 휘파람과 맨손으로.', '조직원을 쓰러뜨려 옷을 입으면 단지 안을 걸어서 지나갈 수 있다. 정문 정예는 얼굴을 안다.']
 },

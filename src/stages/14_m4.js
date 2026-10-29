@@ -38,7 +38,7 @@
   roofs: ['cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG'], bricks: [1, 0, 1, 0, 1, 0, 1, 0],
   ventB: [{ b: 1, at: [15, 4] }, { b: 3, at: [41, 5] }], disguise: true,
   shift: { every: 80, first: 100, add: [{ kind: 'g2', route: [[2, 13, 2], [45, 13, 2]] }, { kind: 'g1', route: [[46, 2, 2], [46, 24, 2]] }, { kind: 'g2', route: [[9, 1, 2], [33, 1, 2]] }], msg: '교대 시간 — 순찰이 하나 늘었다' },
-  challenges: ['accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 480,
+  challenges: ['accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 660,
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 2, door: 'vault', key: 'green' }, { b: 3, door: 'vipBack', key: 'blue' }],
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 4, fl: 2, at: 'bed', alt: [{ b: 4, fl: 2, at: 'room2' }, { b: 7, fl: 1, at: 'bed' }] }],
   well: 'manhole', kunai: 4, coins: 3, reinf: [47, 13],

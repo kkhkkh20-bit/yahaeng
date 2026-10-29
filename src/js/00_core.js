@@ -28,5 +28,7 @@ const DIFFS = {
 let DKEY = 'normal';
 const D = () => DIFFS[DKEY];
 // 속도(픽셀/초) — 자경대원은 플레이어보다 확실히 느리게
-const SPD = { sneak: 84, walk: 130, run: 215, gPatrol: 48, gSusp: 60, gBody: 66, gAlert: 128, target: 36, flee: 92 };
+// 속도(px/초) — 한 칸(48px)이 문 하나 폭(약 1m). 걷기 애니메이션(9fps)이 발이 미끄러지지 않는 빠르기가 약 70px/초(1.4m/초)
+// 주인공: 살금 1.1m/초 · 걷기 1.7m/초 · 달리기 3.3m/초. 추격하는 자경대원(112)은 달리는 주인공보다 조금 느리다
+const SPD = { sneak: 55, walk: 82, run: 160, gPatrol: 48, gSusp: 60, gBody: 66, gAlert: 112, target: 36, flee: 92 };
 

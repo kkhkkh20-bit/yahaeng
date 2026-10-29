@@ -545,8 +545,9 @@ function primaryAction() {
   const L = actionChoices(); if (!S) return L[0];
   if (L.length > 1 && /^달려들어/.test(L[0].label || '')) L.push(L.shift());  // 거리를 좁히는 '달려들어' 공격은 다른 행동 뒤로 (문·금고 앞에서 실수로 덮치지 않게)
   if (L.length <= 1) { S.actKey = null; S.actSel = 0; return L[0] || { k: 'none', label: '' }; }
-  const key = L.map(a => a.k + oid(actObj(a))).join('|'); if (key !== S.actKey) { S.actKey = key; const j = L.findIndex(a => oid(actObj(a)) === S.actPick); S.actSel = j >= 0 ? j : 0; }  // 목록이 바뀌어도 고르던 대상이 남아 있으면 그대로 (대상이 쉽게 바뀌지 않게)
-  const i = (S.actSel || 0) % L.length, a = L[i]; S.actPick = oid(actObj(a)); a.choices = L.length; a.choiceI = i; a.others = L.filter((x, j) => j !== i); return a;
+  const key = L.map(a => a.k + oid(actObj(a))).join('|'); const PP = S.player, stay = S.actPickP && Math.hypot(PP.x - S.actPickP.x, PP.y - S.actPickP.y) < 30; if (key !== S.actKey) { S.actKey = key; const j = stay ? L.findIndex(a => oid(actObj(a)) === S.actPick) : -1; S.actSel = j >= 0 ? j : 0; } else if (!stay) S.actSel = 0;  // 목록이 바뀌어도 고르던 대상이 남아 있으면 그대로 (대상이 쉽게 바뀌지 않게)
+  const i = (S.actSel || 0) % L.length, a = L[i], pk = oid(actObj(a)); if (pk !== S.actPick) S.actPickP = { x: S.player.x, y: S.player.y }; S.actPick = pk;  // 고르던 대상은 그 자리(30px 안)에서만 유지 — 걸어서 옮기면 가까운 쪽부터 다시
+  a.choices = L.length; a.choiceI = i; a.others = L.filter((x, j) => j !== i); return a;
 }
 function cycleAction() { if (!S) return; const a = primaryAction(); if (!(a.choices > 1)) return; S.actSel = (S.actSel || 0) + 1; play('click', 0.2); }
 function primaryActionOne() {

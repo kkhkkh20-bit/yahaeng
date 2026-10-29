@@ -13,7 +13,7 @@ const CH = {
   vent: ['환풍구를 한 번 이상 쓰기', () => (S.stats.vents || 0) > 0],
   intel: ['엿듣기나 쪽지로 정보 얻기', () => (S.learned || []).length > 0],
   nolure: ['던지는 도구 안 쓰기', () => S.stats.stonesUsed === 0 && S.stats.kunaiUsed === 0],
-  fast: ['빨리 깨기', () => S.t < (STAGE.fastT || 240)],
+  fast: ['빨리 깨기', () => S.t < (STAGE.fastT || 330)],
   disguise: ['변장한 채로 표적 처치', () => !!S.stats.disguiseKill],
   noalarm: ['경보를 한 번도 울리지 않기', () => S.stats.alarms === 0],
   roof: ['옥상 계단실로 들어가기', () => (S.stats.roofStair || 0) > 0],
@@ -22,7 +22,7 @@ const CH = {
   untouched: ['아무도 손대지 않기 (기절·처치 0)', () => !S.stats.kills && !(S.stats.ko || 0)],
   story: ['기회 하나를 끝까지', () => (S.stats.stories || 0) > 0]
 };
-const chName = id => id === 'fast' ? `${Math.round((STAGE.fastT || 240) / 60)}분 안에 깨기` : (CH[id] || ['?'])[0];
+const chName = id => id === 'fast' ? `${Math.round((STAGE.fastT || 330) / 60)}분 안에 깨기` : (CH[id] || ['?'])[0];
 function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
 // 별점 해금 장비 (도시): 모든 의뢰의 별을 합친 수로 열린다

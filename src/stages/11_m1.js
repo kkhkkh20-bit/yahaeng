@@ -27,7 +27,7 @@
   },
   wires: [[[52, 24], [46, 24]], [[46, 24], [42, 14]]],                   // 출발하자마자 보이는 길: 전봇대 → 상회 옥상 동쪽 끝
   roofs: ['cRoofG', 'cRoofA', 'cRoofB', 'cRoofA', 'cRoofG', 'cRoofB'], bricks: [1, 0, 1, 0, 1, 0],
-  challenges: ['ghost', 'courier', 'staff', 'roof', 'untouched', 'fast'], fastT: 150,
+  challenges: ['ghost', 'courier', 'staff', 'roof', 'untouched', 'fast'], fastT: 210,
   entries: [{ name: '동쪽 큰길', desc: '기본 출발', at: [63, 27] }, { name: '집 옥상', desc: '별 2개 — 옥상에서 시작', at: [52, 8], z: 2, need: 2 },
             { name: '택배 트럭', desc: '별 4개 — 택배 기사 옷을 입고 트럭 옆에서', at: [49, 28], need: 4, outfit: 'courier' }],
   well: 'manhole', kunai: 3, coins: 3,
