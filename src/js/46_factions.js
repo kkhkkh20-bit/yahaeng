@@ -15,21 +15,53 @@ function factionsInit() {
   // 판에 적힌 소속: police: true = 경찰(제복) · fac: 'B' = 건달파(빨간 점퍼) · 나머지 조직원은 의뢰 조직(A)
   for (const g of S.guards) { if (g.civ || g.dog) continue; const d = (STAGE._g || [])[g.id];
     if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (g.fac === 'B') { g.outfit = 'rival'; g.rival = true; } } }
+  turfInit();
   if (!S.facOn) return;
   const n = STAGE.rivals != null ? STAGE.rivals : 3; if (!n) return;
-  const P = S.player, pub = [];
-  for (let ty = 1; ty < MH - 1; ty++) for (let tx = 1; tx < MW - 1; tx++) if (!solidAt(tx, ty) && bldAt(tx, ty) < 0 && zoneAt(tc(tx), tc(ty), 0) === Z_PUB) pub.push([tx, ty]);
-  if (pub.length < 30) return;
-  const far = pub.filter(([x, y]) => dist(tc(x), tc(y), P.x, P.y) > 650); if (!far.length) return;
+  const P = S.player, pubAt = (tx, ty) => tx > 0 && ty > 0 && tx < MW - 1 && ty < MH - 1 && !solidAt(tx, ty) && bldAt(tx, ty) < 0 && zoneAt(tc(tx), tc(ty), 0) === Z_PUB;
+  // 건달파 구역: 조직(A) 사람들이 다니는 길에서 가장 먼 건물 하나와 그 둘레 거리. 거기서만 돈다
+  const aPts = []; for (const g of S.guards) if (g.fac === 'A' && !g.civ && !g.dog) { aPts.push([g.x, g.y]); for (const p of g.route || []) aPts.push([p.x, p.y]); }
+  let best = null, bs = -1;
+  BLD.forEach(b => { if (b.gang || b.piloti) return; const cx = (b.x0 + b.x1 + 1) / 2 * TILE, cy = (b.y0 + b.y1 + 1) / 2 * TILE; if (dist(cx, cy, P.x, P.y) < 600) return;
+    if ((S.items || []).some(it => bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === BLD.indexOf(b)) || S.guards.some(g => g.target && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === BLD.indexOf(b))) return;
+    const sc = aPts.length ? Math.min(...aPts.map(([x, y]) => dist(cx, cy, x, y))) : 9999; if (sc > bs) { bs = sc; best = b; } });
+  if (!best) return;
+  const rect = [Math.max(1, best.x0 - 4), Math.max(1, best.y0 - 3), Math.min(MW - 2, best.x1 + 4), Math.min(MH - 2, best.y1 + 4)], pub = [];
+  for (let ty = rect[1]; ty <= rect[3]; ty++) for (let tx = rect[0]; tx <= rect[2]; tx++) if (pubAt(tx, ty)) pub.push([tx, ty]);
+  if (pub.length < 8) return;
+  best.gang = 'B'; rect.dyn = true; S.turf.B.push(rect);
   const pick = (arr, k) => arr[(k * 7919 + S.guards.length * 31) % arr.length];
-  const a = pick(far, 1), wps = [a];
-  for (let k = 2; wps.length < 3 && k < 40; k++) { const c = pick(pub, k * 13); if (wps.every(w => Math.hypot(w[0] - c[0], w[1] - c[1]) > 8)) wps.push(c); }
+  const a = pick(pub, 1), wps = [a];
+  for (let k = 2; wps.length < 3 && k < 60; k++) { const c = pick(pub, k * 13); if (wps.every(w => Math.hypot(w[0] - c[0], w[1] - c[1]) > 4)) wps.push(c); }
   for (let i = 0; i < n; i++) {
-    const off = [[0, 0], [1, 0], [0, 1], [-1, 0]][i % 4], sx = a[0] + off[0], sy = a[1] + off[1], st = solidAt(sx, sy) ? a : [sx, sy];
-    const g = makeGuard({ kind: i === 0 ? 'g2' : 'g1', at: st, route: wps.map((w, j) => [w[0] + (j ? off[0] : 0), w[1], 4 + i]), radio: false }, S.guards.length);
+    const off = [[0, 0], [1, 0], [0, 1], [-1, 0]][i % 4], sx = a[0] + off[0], sy = a[1] + off[1], st = pubAt(sx, sy) ? [sx, sy] : a;
+    const g = makeGuard({ kind: i === 0 ? 'g2' : 'g1', at: st, route: wps.map((w, j) => [w[0] + (j && pubAt(w[0] + off[0], w[1]) ? off[0] : 0), w[1], 4 + i]), radio: false }, S.guards.length);
     g.fac = 'B'; g.outfit = 'rival'; g.rival = true; g.radio = false; g.torch = false; g.x = tc(st[0]); g.y = tc(st[1]);
     setLayer(0); buildRouteLine(g); S.guards.push(g);
   }
+}
+// 세력 구역: 조직(A) = 판에 적힌 출입 금지·적진 구역(건달파·경찰 전용은 빼고) · 건달파(B) = 'rival' 허가 구역 (없으면 위에서 정한 건물 둘레)
+function turfInit() {
+  S.turf = { A: [], B: [] }; BLD.forEach(b => { b.gang = null; });
+  for (const r of STAGE.zones || []) { if (r[4] === 'pub' || r[5] === 'roof') continue; const al = r[7] || [];
+    if (al.includes('rival')) S.turf.B.push([r[0], r[1], r[2], r[3]]); else if (!al.includes('police')) S.turf.A.push([r[0], r[1], r[2], r[3]]); }
+  BLD.forEach(b => { for (const f of ['B', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
+}
+const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return S.turf[f].some(r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]); };
+// 건물 소속 깃발: 옥상 왼쪽 위 모서리에 조직(검정·금색) / 건달파(빨강) 깃발, 가까우면 이름
+const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
+function drawGangFlags(P) {
+  if (!S.turf) return;
+  BLD.forEach(b => { if (!b.gang) return; const x = b.x0 * TILE + 10, y = b.y0 * TILE + 8; if (!inView(x, y, 80)) return;
+    const [bg, fg] = GANG_COL[b.gang], w = Math.sin(S.t * 3 + b.x0) * 2;
+    ctx.strokeStyle = '#c9ccd3'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y + 34); ctx.lineTo(x, y - 14); ctx.stroke();
+    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 36, y - 3 + w); ctx.lineTo(x, y + 8); ctx.closePath(); ctx.fill(); ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.stroke();
+    if (dist(P.x, P.y, x, y) < 700 || tactical) tag(x + 44, y - 4, b.gang === 'B' ? '건달파 건물' : '조직 건물', b.gang === 'B' ? '#ff8a76' : '#e0b450', 0.9);
+  });
+  for (const r of S.turf.B) { if (!r.dyn) continue;  // 건달파 거리 구역: 붉은 점선 (가까울 때)
+    const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 520 && !tactical) continue;
+    ctx.strokeStyle = 'rgba(200,60,50,.45)'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 7]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
+    if (d < 300 || tactical) tag(clamp(P.x, x + 80, x + w - 80), y + h - 12, '건달파 구역 · 조직원은 들어가면 맞는다', '#ff8a76', 0.85); }
 }
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {
@@ -87,12 +119,11 @@ function updateFaction(g, dt) {
   for (const o of S.guards) {
     if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
-    // 적진(hos) 안에 들어온 건달은 바로 친다 · 전쟁 중이면 보는 즉시 · 평소엔 시비 (가끔 붙는다)
+    // 싸움은 구역이 정한다: 우리 구역(또는 적진)에 들어온 상대 · 동료가 이미 붙은 상대 · 전쟁 중이면 보는 즉시. 구역 밖에서 마주치면 말로만 시비
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;
-    if (S.war || inHos || o.brawl) { startBrawl(g, o); return true; }
-    if (copNear(g, 380)) continue;  // 경찰이 보고 있으면 먼저 시비 걸지 않는다 (전쟁·적진 침입은 예외 — 위에서 이미 싸움)
-    if (!g.tauntT || S.t - g.tauntT > 14) { g.tauntT = S.t; o.tauntT = S.t; g.want = Math.atan2(o.y - g.y, o.x - g.x); gsay(g, (g.fac === 'B' ? TAUNT_B : TAUNT)[g.id % 4], 2.2);
-      if (Math.random() < 0.3) { startBrawl(g, o); return true; } }
+    if (S.war || inHos || inTurf(g.fac, o.x, o.y) || (o.brawl && o.brawl.o && o.brawl.o.fac === g.fac)) { startBrawl(g, o, inTurf(g.fac, o.x, o.y) ? (g.fac === 'B' ? '여기 우리 구역이다, 꺼져!' : '어딜 들어와!') : null); return true; }
+    if (copNear(g, 380)) continue;  // 경찰이 보고 있으면 먼저 시비 걸지 않는다
+    if (!g.tauntT || S.t - g.tauntT > 18) { g.tauntT = S.t; o.tauntT = S.t; g.want = Math.atan2(o.y - g.y, o.x - g.x); gsay(g, (g.fac === 'B' ? TAUNT_B : TAUNT)[g.id % 4], 2.2); }
   }
   // 건달 점퍼를 입은 나: 조직원이 가까이서 보면 시비, 전쟁 중이면 덤빈다
   if (g.fac === 'A' && disguised() && P.outfit === 'rival' && flOf(P) === flOf(g) && dist(P.x, P.y, g.x, g.y) < 160 && g.seen) {

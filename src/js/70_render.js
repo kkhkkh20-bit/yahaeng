@@ -1274,7 +1274,7 @@ function draw() {
   }
   PM('cones');
   if (!tactical) {
-    if (!DBG.roofs) drawRoofs(openB); drawPlanks();
+    if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
     PM('roofs');
     if (!flOf(P) && !P.z) drawWinWatch();  // 위층 창가에서 내려다보는 사람: 창문 밖으로 옅은 시선
     drawHeardSteps(P, openB, gVis);
