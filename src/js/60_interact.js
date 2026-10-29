@@ -722,9 +722,10 @@ function actPrimary(force) {
       break;
     }
     case 'drop': {
-      const g = a.g; P.z = 0; P.jump = null; P.wire = null; P.x = g.x; P.y = g.y; P.strikeT = 0.4; P.a = g.a;
-      play('land', 0.5); killGuard(g); S.stats.special++;
-      toast(lastKO() ? '위에서 덮쳐 기절' : '낙하 암살', 1.8, 'good'); collide(P, 13, groundSolidP); break;
+      // 위에서 덮치기: 그 자리로 순간이동하지 않고 뛰어내려 덮친다 (내려앉는 순간 처치)
+      const g = a.g, z0 = P.z || 0; P.wire = null; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.doomed = true; g.path = null; g.moving = false;
+      P.jump = { x0: P.x, y0: P.y, x1: g.x, y1: g.y, t: 0, dur: 0.26 + z0 * 0.05, z1: 0, arc: 10, noise: 40, killG: g, dropKill: true }; P.z = 0; play('throw', 0.3);
+      break;
     }
     case 'wireOn': {
       const grab = () => { if (P.fl) { P.fl = 0; setLayer(0); S.fade = 0.15; }
@@ -738,7 +739,8 @@ function actPrimary(force) {
       break;
     }
     case 'wireOff': wireDismount(a.n); break;
-    case 'wireRoof': { P.wire = null; P.z = a.lv; if (a.to) { P.x = a.to.x; P.y = a.to.y; } play('land', 0.3); noise(P.x, P.y, 50 * floorMul(P.x, P.y, 1), 'land', null, P.z); break; }
+    case 'wireRoof': { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : { x: P.x, y: P.y }; P.wire = null; const to = a.to || { x: P.x, y: P.y };  // 줄에서 옥상으로 살짝 뛰어 내려선다
+      P.jump = { x0: h.x, y0: h.y, x1: to.x, y1: to.y, t: 0, dur: 0.24, z1: a.lv, arc: 8, noise: 50 }; P.z = a.lv; break; }
     case 'wireFall': {
       const h = wirePt(P.wire.w, P.wire.s); P.wire = null;
       P.jump = { x0: P.x, y0: P.y, x1: P.x, y1: P.y, t: 0, dur: 0.32, z1: 0, arc: 8, noise: 130 };
@@ -817,7 +819,7 @@ function actPrimary(force) {
       break;
     }
     case 'ventIn': { S.stats.vents = (S.stats.vents || 0) + 1;
-      const v = a.v; P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = 0.3;
+      const v = a.v; P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = Math.max(S.fade || 0, 0.25);  /* 창살 속으로: 화면이 잠깐 어두워진다 */ S.fade = 0.3;
       toast('환풍구로 들어갔다', 1.6); break;
     }
     case 'ventOut': {
@@ -1266,7 +1268,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'cover') { enterCover(sa.n); return; }
   if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 밖으로 밀면 손을 놓고 뛰어내린다(2층 높이까지). 가까이 온 자경대원은 끌어내린다'); return; }
   if (sa.k === 'uncover') { P.cover = null; play('cloth', 0.15); return; }
-  if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
+  if (sa.k === 'fdown') { actPrimary({ k: 'fdown', l: sa.l, at: sa.at, label: '', viaZ: true }); return; }  // 계단 내려가기는 늘 걸어 내려가는 동작으로
   if (sa.k === 'grab') { grab(sa.g); return; }
   if (sa.k === 'use') { useItem(sa.n); return; }
   if (sa.k === 'candy') { giveCandy(sa.g); return; }

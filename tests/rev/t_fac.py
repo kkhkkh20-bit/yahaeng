@@ -58,7 +58,7 @@ async def main():
         if not r: bad.append('출입 금지 구역 자리를 못 찾았다')
         else:
             await m.evaluate(HOLD, r[:2])
-            for t in range(14):
+            for t in range(24):
                 await m.wait_for_timeout(1000)
                 s = await m.evaluate("(id) => { const S = window.__game.S, c = S.guards.find(q => q.id === id); return [c.state, S.corpses.some(k => k.g === c && k.byNpc), S.alevel]; }", r[1])
                 if s[0] == 'DEAD': break

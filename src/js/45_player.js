@@ -256,18 +256,17 @@ function autoTraverse(P, mx, my, mag, mode, dt) {
   if (!c && P.z && mode === 'run') { const jt = jumpTarget(); if (jt && into(Math.cos(P.a), Math.sin(P.a))) c = { k: 'leap', j: jt, key: 'leap' + jt.tx + ',' + jt.ty, wait: 0.05, act: () => actPrimary({ k: 'leap', j: jt, label: '건너뛰기', viaZ: true }) }; }
   if (!c && !blocked) { S.pk = null; return; }
   // 2) 1층 높이 벽 · 한 층 위 옥상: 벽을 보고 민다
-  if (!c) { const wu = wallUpSpot(); if (wu && into(wu.n[0], wu.n[1])) c = { key: 'wu' + wu.top.x + ',' + wu.top.y, act: () => actPrimary({ k: 'wallUp', s: wu, label: '벽 잡고 오르기', viaZ: true }) }; }
-  // 3) 2층 열린 창문: 밖에서 밀면 타고 들어가고, 안에서 밀면 넘어 내려간다
-  if (!c) { const w = nearWinClimb(); if (w && into(-w.out.d[0], -w.out.d[1])) c = { key: 'wc' + w.tx + ',' + w.ty, act: () => actPrimary({ k: 'winClimb', w, label: '', viaZ: true }) }; }
-  if (!c) { const w = nearWinDrop(); if (w && into(w.out.d[0], w.out.d[1])) c = { key: 'wd' + w.tx + ',' + w.ty, wait: 0.4, act: () => actPrimary({ k: 'winDrop', w, label: '', viaZ: true }) }; }
+  if (!c) { const wu = wallUpSpot(); if (wu && into(wu.n[0], wu.n[1])) c = { lab: '밀어서 벽 오르기', at: wu.at, key: 'wu' + wu.top.x + ',' + wu.top.y, act: () => actPrimary({ k: 'wallUp', s: wu, label: '벽 잡고 오르기', viaZ: true }) }; }
+  // (2층 창문 오르내리기는 밀어서는 하지 않는다 — 벽에 기대다 뜻밖에 2층으로 올라가 버렸다. [행동] 버튼으로만)
   // 4) 1층 열린 창문: 밀면 넘는다
-  if (!c && !P.z && !flOf(P)) { const nw = nearWindow(); if (nw && winSt(nw.w) === 'open' && into(Math.sign(nw.tx - Math.floor(P.x / TILE)), Math.sign(nw.ty - Math.floor(P.y / TILE)))) c = { key: 'nw' + nw.w.tx + ',' + nw.w.ty, act: () => actPrimary({ k: 'window', wv: nw, label: '', viaZ: true }) }; }
+  if (!c && !P.z && !flOf(P)) { const nw = nearWindow(); if (nw && winSt(nw.w) === 'open' && into(Math.sign(nw.tx - Math.floor(P.x / TILE)), Math.sign(nw.ty - Math.floor(P.y / TILE)))) c = { lab: '밀어서 창문 넘기', at: { x: nw.w.x, y: nw.w.y }, key: 'nw' + nw.w.tx + ',' + nw.w.ty, act: () => actPrimary({ k: 'window', wv: nw, label: '', viaZ: true }) }; }
   // 5) 옥상 가장자리: 밖으로 밀면 매달린다 (매달린 뒤 다시 밀면 손을 놓고 내려간다)
-  if (!c && P.z) { const lg = ledgeAt(P); if (lg && into(lg.x, lg.y)) c = { key: 'lg' + Math.floor(P.x / TILE) + ',' + Math.floor(P.y / TILE), wait: 0.35, act: () => { P.ledge = { x: lg.x, y: lg.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 위로 밀면 올라서고, 밖으로 한 번 더 밀면 손을 놓고 내려간다(두 층 높이까지)'); } }; }
+  if (!c && P.z) { const lg = ledgeAt(P); if (lg && into(lg.x, lg.y)) c = { lab: '밀어서 매달리기', at: { x: P.x + lg.x * 24, y: P.y + lg.y * 24 }, key: 'lg' + Math.floor(P.x / TILE) + ',' + Math.floor(P.y / TILE), wait: 0.5, act: () => { P.ledge = { x: lg.x, y: lg.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 위로 밀면 올라서고, 밖으로 한 번 더 밀면 손을 놓고 내려간다(두 층 높이까지)'); } }; }
   if (!c) { S.pk = null; return; }
   if (!S.pk || S.pk.key !== c.key) S.pk = { key: c.key, t: 0 };
-  S.pk.t += dt;
-  if (S.pk.t >= (c.wait != null ? c.wait : mode === 'run' ? 0.14 : 0.28)) { S.pk = null; c.act(); }
+  // 밀고 있는 동안 그 자리에 차오르는 고리와 이름 (무엇이 일어날지 미리 보인다) — 걷기 0.4초 · 달리기 0.2초
+  const need = c.wait != null ? c.wait : mode === 'run' ? 0.2 : 0.4; S.pk.t += dt; S.pk.f = Math.min(1, S.pk.t / need); S.pk.at = c.at || { x: P.x + ux * 30, y: P.y + uy * 30 }; S.pk.lab = c.lab || '';
+  if (S.pk.t >= need) { S.pk = null; c.act(); }
 }
 function startTrav(o) {
   const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
@@ -353,7 +352,7 @@ function updatePlayer(dt) {
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
     P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
-    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ) { S.stats.special++; toast(lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } collide(P, 13, groundSolidP); } }
+    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; g.doomed = false; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ || j.dropKill) { S.stats.special++; toast(j.dropKill ? (lastKO() ? '위에서 덮쳐 기절' : '낙하 암살') : lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } if (j.dropKill) play('land', 0.5); collide(P, 13, groundSolidP); } }
     P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = true;
     return;
   }
@@ -503,4 +502,12 @@ function updateWindowView(P) {
   }
   S.peek = best;
   if (best && !was) { play('cloth', 0.12); hint('peek', '창문 쪽을 바라보면 안이 보인다. 고개를 돌리면 다시 가려진다'); }
+}
+
+// 밀어서 넘기 예고: 차오르는 고리 + 이름
+function drawPushHint() {
+  const k = S.pk; if (!k || !k.at || !(k.f > 0.08)) return; const sc = Math.max(1, 0.9 / SCALE);
+  ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 6 * sc; ctx.beginPath(); ctx.arc(k.at.x, k.at.y, 16 * sc, 0, TAU); ctx.stroke();
+  ctx.strokeStyle = '#8fe0ff'; ctx.lineWidth = 3.5 * sc; ctx.beginPath(); ctx.arc(k.at.x, k.at.y, 16 * sc, -Math.PI / 2, -Math.PI / 2 + TAU * k.f); ctx.stroke();
+  if (k.lab) tag(k.at.x, k.at.y - 26 * sc, k.lab, '#8fe0ff', 3.6);
 }

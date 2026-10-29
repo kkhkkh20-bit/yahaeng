@@ -1282,7 +1282,7 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   if ((input.scan || tactical) && running) drawScan(openB);
-  else if (running && !tactical) { drawNearMarks(P, openB); }
+  else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
