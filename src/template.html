@@ -601,32 +601,32 @@ body.touch #hpPips i, body.touch #alertPips i { width: 22px; height: 14px; }
 /* ── 휴대폰 버튼 배치 (레퍼런스: 모바일 액션 게임의 공격 버튼 + 스킬 부채꼴 · Apple 게임 조작 지침)
    - 가장 자주 누르는 [공격]을 오른쪽 아래 구석에 가장 크게, 엄지가 그 자리에서 조금씩 움직여 닿도록 나머지는
      공격 중심에서 같은 거리의 부채꼴(왼쪽 → 위)로: [행동] → [붙잡기] → [도구]. 웅크리기는 [이동] 위 작은 버튼
-   - 자주 누를수록 크게 (공격 100 · 행동 72 · 나머지 58~62, 모두 44pt 이상). 휘파람은 도구 버튼에 담아 버튼 수를 줄인다
+   - 자주 누를수록 크게 (공격 96 · 행동 70 · 나머지 58~60, 모두 44pt 이상) — 사이는 8~20px로 촘촘히. 휘파람은 도구 버튼에 담아 버튼 수를 줄인다
    - 할 수 없는 동작은 흐리게, 누르면 눌린 표시(빛)
    - 도구 이름·개수는 도구 버튼 안에, 도구 바꾸기는 그 위 작은 칩 하나 */
-body.touch .pad { display: block; width: 228px; height: 262px; right: max(6px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+body.touch .pad { display: block; width: 200px; height: 232px; right: max(6px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
 body.touch .pad > button { position: absolute; margin: 0; justify-self: auto; align-self: auto; border-width: 2px; pointer-events: auto;
   box-shadow: 0 3px 10px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
   background: radial-gradient(circle at 50% 35%, rgba(44, 52, 72, .92), rgba(10, 13, 22, .9)); transition: transform .06s, box-shadow .06s; }
 body.touch .pad > button.down { transform: scale(.93); box-shadow: 0 0 0 5px rgba(242, 196, 107, .28), 0 0 18px rgba(242, 196, 107, .35); }
 body.touch .pad > button b { font-size: 13px; font-weight: 700; letter-spacing: -.3px; }
 body.touch .pad > button small { font-size: 10px; margin-top: 2px; }
-body.touch .pad #btnAct { position: absolute; right: 6px; bottom: 6px; width: 100px; height: 100px; border-color: rgba(232, 71, 60, .55); }
+body.touch .pad #btnAct { position: absolute; right: 6px; bottom: 6px; width: 96px; height: 96px; border-color: rgba(232, 71, 60, .55); }
 body.touch .pad #btnAct b { font-size: 17px; }
-body.touch .pad #btnCarry { right: 148px; bottom: 24px; width: 72px; height: 72px; border-color: rgba(242, 196, 107, .5); }
+body.touch .pad #btnCarry { right: 118px; bottom: 33px; width: 70px; height: 70px; border-color: rgba(242, 196, 107, .5); }
 body.touch .pad #btnCarry b { font-size: 15px; }
 body.touch .pad #btnCarry.ready { border-color: var(--lamp); color: var(--paper); }
-body.touch .pad #btnGrab { right: 115px; bottom: 116px; width: 62px; height: 62px; border-color: rgba(143, 180, 255, .45); }
+body.touch .pad #btnGrab { right: 89px; bottom: 102px; width: 58px; height: 58px; border-color: rgba(143, 180, 255, .45); }
 body.touch .pad #btnGrab.ready { border-color: #9fb4ff; }
-body.touch .pad #btnTool { right: 21px; bottom: 156px; width: 62px; height: 62px; border-color: rgba(232, 227, 214, .45); }
+body.touch .pad #btnTool { right: 20px; bottom: 124px; width: 60px; height: 60px; border-color: rgba(232, 227, 214, .45); }
 body.touch .pad #btnTool small { font-size: 11px; margin-top: 1px; color: var(--paper-dim); }
 body.touch .pad #btnWhistle { display: none; }  /* 휘파람은 도구 버튼에 ([바꾸기]로 고른다) */
-body.touch .pad #btnToolNext { right: 21px; bottom: 224px; width: 62px; height: 28px; border-radius: 14px; border-width: 1px; border-color: rgba(232, 227, 214, .4); background: rgba(10, 13, 22, .88); }
+body.touch .pad #btnToolNext { right: 21px; bottom: 190px; width: 58px; height: 26px; border-radius: 14px; border-width: 1px; border-color: rgba(232, 227, 214, .4); background: rgba(10, 13, 22, .88); }
 body.touch .pad #btnToolNext b { font-size: 11px; font-weight: 600; color: var(--paper-dim); }
-body.touch .pad #btnCycle { right: 157px; bottom: 192px; top: auto; width: 58px; height: 34px; border-radius: 17px; }
+body.touch .pad #btnCycle { right: 128px; bottom: 168px; top: auto; width: 58px; height: 34px; border-radius: 17px; }
 body.touch .pad #btnCycle b { font-size: 12px; }
 body.touch .pad .tools { display: none; }
-body.touch .sysbtns { bottom: calc(292px + env(safe-area-inset-bottom, 0px)); }  /* 버튼 부채꼴 위로 비켜 선다 */
+body.touch .sysbtns { bottom: calc(254px + env(safe-area-inset-bottom, 0px)); }  /* 버튼 부채꼴 위로 비켜 선다 */
 body:not(.touch) .pad #btnToolNext { display: none; }
 /* 웅크리기: 오른쪽 [이동] 위 작은 버튼 (켜지면 초록) */
 body.touch .sysbtns #btnCrouch b { font-size: 11px; }

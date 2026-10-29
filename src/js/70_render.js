@@ -659,10 +659,18 @@ function drawWindow(w, alpha) {
   ctx.fillStyle = '#c3c8cf'; ctx.fillRect(-L / 2, -T / 2, L, 2); ctx.fillRect(-L / 2, T / 2 - 2, L, 2);
   const g = ctx.createLinearGradient(-L / 2, -T / 2, L / 2, T / 2);
   if (lit) { g.addColorStop(0, '#ffe2a8'); g.addColorStop(1, '#e0a85a'); } else { g.addColorStop(0, '#7fb6d6'); g.addColorStop(1, '#3d6680'); }
-  ctx.fillStyle = g; ctx.fillRect(-L / 2 + 3, -T / 2 + 3, L / 2 - 2, T - 7); ctx.fillRect(1, -T / 2 + 4, L / 2 - 4, T - 7);  // 두 짝이 살짝 어긋난 미닫이
+  const open = (w.st || 'open') === 'open';
+  if (open) {  // 열린 창: 한 짝을 다른 짝 위로 밀어 겹치고, 오른쪽 절반은 방 안이 시커멓게 뚫려 보인다 (표식 없이 그림만으로)
+    ctx.fillStyle = lit ? '#2a1e10' : '#05070c'; ctx.fillRect(1, -T / 2 + 3, L / 2 - 4, T - 6);
+    ctx.fillStyle = g; ctx.fillRect(-L / 2 + 3, -T / 2 + 3, L / 2 - 2, T - 7); ctx.globalAlpha *= 0.85; ctx.fillRect(-L / 2 + 6, -T / 2 + 4, L / 2 - 4, T - 7); ctx.globalAlpha = alpha;
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-L / 2 + 6, T / 2 - 5); ctx.lineTo(-L / 2 + 11, -T / 2 + 4); ctx.stroke();
+    ctx.fillStyle = '#8b919a'; ctx.fillRect(-2, -T / 2 + 2, 2, T - 4);
+  } else {
+  ctx.fillStyle = g; ctx.fillRect(-L / 2 + 3, -T / 2 + 3, L / 2 - 2, T - 7); ctx.fillRect(1, -T / 2 + 4, L / 2 - 4, T - 7);  // 닫힌 창: 두 짝이 나란히
   ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.beginPath();
   ctx.moveTo(-L / 2 + 6, T / 2 - 5); ctx.lineTo(-L / 2 + 11, -T / 2 + 4); ctx.moveTo(6, T / 2 - 4); ctx.lineTo(11, -T / 2 + 5); ctx.stroke();
   ctx.fillStyle = '#8b919a'; ctx.fillRect(-1, -T / 2 + 2, 2, T - 4);
+  }
   ctx.fillStyle = '#d9d4c8'; ctx.fillRect(-L / 2 - 3, T / 2, L + 6, 3);              // 창턱
   ctx.restore(); ctx.globalAlpha = 1;
 }
@@ -814,16 +822,11 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
-      for (const w of S.fwindows || []) if (w.fl === 1 && w.out && w.st === 'open') add(w.out.x, w.out.y, SCAN.window, '↑', '2층 창문 · 열림');  // 벽 타고 들어갈 수 있는 창문
-      for (const w of S.windows) { const st = winSt(w); add(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'open' ? 'window' : 'pick', st === 'bar' ? '방범창 · 락픽(느림)' : st === 'lock' ? '잠긴 창문 · 락픽' : '창문 · 넘어가기'); } }
+      // 창문·문은 표식 없이 그림으로 (열린 창은 틈이 벌어져 보인다). 무엇을 할지는 다가가 [행동]에 뜬다
+    }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
     if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
-    { const seen = new Set();  // 출입문: 바깥에서 들어갈 수 있는 문은 밖에서도 보이게 (입구를 찾느라 헤매지 않게)
-      for (const d of S.doors) { if ((d.fl || 0) !== fP) continue; const gk = d.group ? d.group.map(t => t.tx + ',' + t.ty).sort()[0] : d.tx + ',' + d.ty; if (seen.has(gk)) continue; seen.add(gk);
-        const outer = !fP && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([ox, oy]) => bldAt(d.tx + ox, d.ty + oy) < 0);
-        if (d.keyLock && d.locked) add(d.x, d.y, keyCol(d.keyLock), 'pick', keyName(d.keyLock), outer ? null : d.tx, outer ? null : d.ty);
-        else if (outer) add(d.x, d.y, SCAN.door, d.locked ? 'pick' : 'door', d.locked ? '잠긴 문 · 락픽' : '출입문'); } }
   } else {
     for (const l of S.ladders) if (l.tz === P.z) add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
@@ -836,12 +839,13 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
     if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
-    const a = Math.max(0.35, 1 - m.d / R) * (0.85 + 0.15 * Math.sin(S.t * 3)), r = 9 * k, y = m.y - 22 * k;
+    if (m.d > 170) continue;  // 표식은 가까이 왔을 때만, 글자 없이 작은 그림 하나
+    const a = Math.max(0.3, 1 - m.d / 170) * 0.8, r = 8 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
     if (ICON_P[m.g]) { const sc = (13 * k) / 24; ctx.save(); ctx.translate(m.x - 12 * sc, y - 12 * sc); ctx.scale(sc, sc); ctx.strokeStyle = m.col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(nearPath(m.g)); ctx.restore(); }
     else { ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
-    if (m.d < (m.g === 'door' || m.g === 'window' || m.g === 'pick' ? 190 : 130) && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
+    if (false && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
   }
   ctx.globalAlpha = 1;
 }

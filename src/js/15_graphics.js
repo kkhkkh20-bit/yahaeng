@@ -98,6 +98,8 @@ function drawKitBuilding(b) {
       const x = tx * TILE, l = b.fl[tx - b.x0];
       ctx.fillStyle = `rgba(4,8,22,${(r ? 0.66 : 0.6) * (1 - clamp(l, 0, 1)) + 0.05 * r})`; ctx.fillRect(x, yy, TILE, TILE);
       const win = g && g[b.y1] ? g[b.y1][tx] === 'N' : (tx > b.x0 && tx < b.x1 && (tx - b.x0) % 2 === 1);
+      if (r && S.fwindows && S._owT !== S.t) { S._owT = S.t; S._ow = new Set(S.fwindows.filter(q => q.st === 'open' && q.out).map(q => q.fl + ',' + q.tx + ',' + q.ty)); }
+      if (r && S._ow && S._ow.has(r + ',' + tx + ',' + b.y1)) { ctx.fillStyle = 'rgba(3,5,9,.9)'; ctx.fillRect(x + 24, yy + 13, 12, 21); ctx.fillStyle = 'rgba(160,190,210,.35)'; ctx.fillRect(x + 12, yy + 13, 3, 21); }  // 열린 위층 창: 반쪽이 시커멓게 뚫려 보인다
       if (win && b.kind !== 'shop') { const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0; if (h % 5 === 0) { const fl = 0.85 + 0.15 * Math.sin(S.t * 3 + tx); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,170,80,${0.4 * fl})`; ctx.fillRect(x + 12, yy + 13, 24, 21); ctx.globalCompositeOperation = 'source-over'; } }
     }
   }
