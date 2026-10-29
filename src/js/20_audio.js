@@ -167,8 +167,9 @@ function typeTick(seed) {
   g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(0.022, now + 0.004); g.gain.exponentialRampToValueAtTime(0.0008, now + 0.035);
   o.connect(f); f.connect(g); g.connect(master); o.start(now); o.stop(now + 0.04);
 }
+// 들킬 위험 경고음은 쓰지 않는다 (계속 삐 소리가 거슬렸다). 위험은 화면 위 눈 막대로만 보여 준다
 function riskTone(r) {
-  if (!AC || !master) return; if (muted) r = 0;
+  r = 0; if (!AC || !master) return;
   if (!riskOsc) { if (r < 0.05) return; riskOsc = AC.createOscillator(); riskGain = AC.createGain(); const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1800; riskOsc.type = 'triangle'; riskGain.gain.value = 0; riskOsc.connect(f); f.connect(riskGain); riskGain.connect(master); riskOsc.start(); }
   const t = AC.currentTime, on = r >= 0.05 && r < 1;
   riskGain.gain.setTargetAtTime(on ? 0.012 + 0.05 * r : 0, t, on ? 0.08 : 0.15); riskOsc.frequency.setTargetAtTime(240 + 620 * Math.min(1, r), t, 0.1);

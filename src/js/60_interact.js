@@ -490,7 +490,8 @@ function openKeypad(d) {
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
 function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; if (S) S.keypad = null; }
 // 들킬 듯할 때 짧게 똑딱 — 알아채는 정도가 오를수록 높고 빠르게
-function warnTick(m) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
+function warnTick(m) { return;  // 알아채는 중 삐삐 소리도 뺀다 (눈 막대·머리 위 표시로 충분)
+  if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
 function updateWarn(dt) {
   let m = 0; for (const g of S.guards) if (!g.civ && g.seen && g.state !== 'ALERT' && g.state !== 'DEAD') m = Math.max(m, g.meter || 0);
   if (m < 0.15) { S.warnT = 0; return; }
