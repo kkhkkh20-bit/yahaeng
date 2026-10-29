@@ -83,6 +83,7 @@ function updateFaction(g, dt) {
   if (g.fac === 'P') return copWatch(g, dt);  // 경찰: 보이는 범행에 끼어든다 (시비는 걸지 않는다)
   if ((g.facT = (g.facT || 0) - dt) > 0) return false; g.facT = 0.4;
   const P = S.player;
+  if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && npcAlive(c) && dist(c.x, c.y, g.x, g.y) < 260)) return false;  // 경찰이 바로 옆에서 제압 중이면 새 싸움을 걸지 않는다
   for (const o of S.guards) {
     if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
@@ -116,6 +117,9 @@ function closeIn(g, o, dt, spd) {
 function brawlStep(g, dt) {
   const b = g.brawl, o = b.o;
   if (!npcAlive(o) || flOf(o) !== flOf(g)) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
+  // 경찰이 싸움에 끼어들면 조직원끼리는 손을 뗀다 (경찰이 붙잡은 쪽만 남아 제압당한다)
+  if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && c.brawl.o !== g && (c.brawl.o === o || dist(c.x, c.y, g.x, g.y) < 140) && npcAlive(c))) { g.brawl = null; g.state = 'RETURN'; g.path = null; gsay(g, '짭새다, 빠져!', 1.6); return false; }
+  if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && c.brawl.o === g && npcAlive(c))) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
   if (g.swingT > 0) g.swingT -= dt;
   const d = closeIn(g, o, dt, SPD.gAlert * 0.95);
   if (d > 600) { g.brawl = null; g.state = 'RETURN'; return false; }

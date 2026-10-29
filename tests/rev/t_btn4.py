@@ -68,7 +68,7 @@ async def main():
         await m.goto('file:///root/game/build/preview_city.html'); await m.wait_for_timeout(1500)
         await m.evaluate("() => window.__game.start(window.__game.STAGES.findIndex(s => s.id === 'm1'))"); await m.wait_for_timeout(300); await m.evaluate(SK); await m.wait_for_timeout(600)
         await m.screenshot(path='btn4_mob.png')
-        ids = await m.evaluate("() => ['btnAct','btnCarry','btnGrab','btnTool','btnWhistle'].map(id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return [id, Math.round(r.x), Math.round(r.y), Math.round(r.width)]; })"); print('버튼 위치', ids)
+        ids = await m.evaluate("() => ['btnAct','btnCarry','btnGrab','btnTool','btnToolNext','btnCrouch','btnSneak'].map(id => { const e = document.getElementById(id), r = e.getBoundingClientRect(); return [id, Math.round(r.x), Math.round(r.y), Math.round(r.width)]; })"); print('버튼 위치', ids)
         if any(w == 0 for _, _, _, w in ids): bad.append('보이지 않는 버튼 %s' % ids)
         await b.close()
     if errs: bad.append('페이지 오류 %s' % errs[:3])

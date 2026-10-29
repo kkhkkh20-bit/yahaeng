@@ -106,16 +106,21 @@ bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
 {
   const b = $('btnTool');
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });
-  b.addEventListener('pointerup', e => { b.classList.remove('down'); const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
+  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람
+  b.addEventListener('pointerup', e => { b.classList.remove('down'); if (input.padWhistle) return; const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
   b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
   b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
 }
 document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
+// 휴대폰 도구 버튼 한 개에 던질 것(다트·빈 캔·담배)과 휘파람을 함께 담는다 — [바꾸기]로 돌아가며 고른다
+function cyclePadTool() {
+  const L = [...TOOLS, 'whistle'], cur = input.padWhistle ? 'whistle' : input.tool; let i = L.indexOf(cur);
+  for (let k = 1; k <= L.length; k++) { const t = L[(i + k) % L.length]; if (t === 'whistle') { input.padWhistle = true; syncTools(); play('click', 0.2); return; } if (toolCount(t) > 0) { selectTool(t); return; } }
+}
 function syncSneakBtn() {
   const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
   const s = document.getElementById('btnSneak'), m = moveMode(); if (s) { s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = { walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 빠르기: ' + l.textContent); }
-  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = input.sneakToggle ? '<b>웅크림</b><small>켜짐</small>' : '<b>웅크리기</b>'; c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
+  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = input.sneakToggle ? '<b>웅크림</b>' : '<b>웅크리기</b>'; c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
   const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
 }
 // 웅크리기(살금): 이동 빠르기와 따로 켜고 끈다. 켜 두면 판이 바뀌어도 유지 (Ctrl 키 또는 [웅크리기] 버튼)
@@ -145,7 +150,7 @@ function cycleMoveMode() {
 { const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cycleEnv(); }); }
 { const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) cycleMoveMode(); b.blur(); }); }
-{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!running) return; const P = S.player, has = t => toolCount(t) > 0; let i = TOOLS.indexOf(input.tool); for (let k = 1; k <= TOOLS.length; k++) { const t = TOOLS[(i + k) % TOOLS.length]; if (has(t) || k === TOOLS.length) { selectTool(t); break; } } b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }  // 도구 바꾸기 칩: 남은 것이 있는 다음 도구로
+{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!running) return; cyclePadTool(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }  // 도구 바꾸기 칩: 남은 것이 있는 다음 도구 → … → 휘파람
 { const b = document.getElementById('btnCrouch'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (running) toggleSneak(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
@@ -210,7 +215,7 @@ document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('cli
 function start(i, noBrief) {
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
-  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
+  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
   newGame(i); resetDialog(); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
