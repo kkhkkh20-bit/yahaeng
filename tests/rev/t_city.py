@@ -21,7 +21,7 @@ async def main():
         # 2) 세워 둔 차: [행동]으로 타고, 방향키로 몬다
         r = await m.evaluate("() => { const S = window.__game.S, P = S.player, v = S.vehicles.find(v => v.parked && v.y > 40 * 48 && v.x < 40 * 48); P.x = v.x + 40; P.y = v.y; return [Math.round(v.x), Math.round(v.y)]; }")
         await m.wait_for_timeout(200)
-        e = await m.evaluate("() => window.__game.envAction().k"); await m.keyboard.press('KeyX'); await m.wait_for_timeout(300)
+        e = await m.evaluate("() => window.__game.envAction().k"); await m.keyboard.press('KeyX'); await m.wait_for_timeout(1000)  # 문 앞으로 걸어가 타는 동작
         inCar = await m.evaluate("() => !!window.__game.S.player.car")
         await m.keyboard.down('ArrowDown'); await m.wait_for_timeout(2200); await m.keyboard.up('ArrowDown')
         r2 = await m.evaluate("() => { const P = window.__game.S.player; return [Math.round(P.x), Math.round(P.y), Math.round(P.car ? P.car.v : 0)]; }")
@@ -57,7 +57,7 @@ async def main():
         await m.wait_for_timeout(150)
         e = await m.evaluate("() => { const a = window.__game.envAction(); return [a.k, a.label]; }")
         n0 = await m.evaluate("() => window.__game.S.guards.length")
-        await m.keyboard.press('KeyX'); await m.wait_for_timeout(500)
+        await m.keyboard.press('KeyX'); await m.wait_for_timeout(1700)  # 문 열고 끌어내고 타는 동작
         s = await m.evaluate("(n0) => { const S = window.__game.S, g = S.guards.find(q => q.driverOut); return [!!S.player.car, S.guards.slice(n0).filter(q => q.driverOut).length, g ? g.state : null]; }", n0)
         print('빼앗기', e, s)
         if e[0] != 'carIn' or not s[0] or s[1] != 1 or s[2] != 'PANIC': bad.append('운전자를 끌어내고 타지 못한다 %s %s' % (e, s))

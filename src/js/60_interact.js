@@ -790,9 +790,15 @@ function actPrimary(force) {
         break;
       }
       if (l.kind === 'fstair') {  // 실내 계단: 계단 칸으로 걸어 올라간다
-        startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 1 }], dur: 0.42, phases: [{ to: 1, pose: 'walk' }],
-          end: () => { P.fl = l.tfl; setLayer(P.fl); const ho = stairHole(l);  // 위층: 구멍(아래층에서 올라오는 계단) 바닥 쪽 끝 옆에 올라선다
-            const at = ho ? [ho.top, ho.e].find(c => !solidAt(c.tx, c.ty)) : null; if (at) { P.x = tc(at.tx); P.y = tc(at.ty); P.a = Math.atan2(ho.d[1], ho.d[0]); } else { P.x = l.x; P.y = l.y; } play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
+        // 위층에 내려설 자리: 계단을 다 오른 그 앞 한 칸 (구멍 위쪽 끝을 지나 한 걸음) — 예전엔 구멍 반대쪽 끝(두세 칸 앞)으로 건너뛰었다
+        const L0 = CUR_F; setLayer(l.tfl); const ho = stairHole(l), up = ho ? [-ho.d[0], -ho.d[1]] : null;
+        const c1 = ho ? { tx: Math.floor(ho.c1.x / TILE), ty: Math.floor(ho.c1.y / TILE) } : null;
+        const cand = ho ? [{ tx: c1.tx + up[0], ty: c1.ty + up[1] }, { tx: l.tx + up[0], ty: l.ty + up[1] }, ho.e, ho.top] : [];
+        const at = cand.find(c => inMap(c.tx, c.ty) && !solidAt(c.tx, c.ty) && bldAt(c.tx, c.ty) === bldAt(l.tx, l.ty)); setLayer(L0);
+        const ax = at ? tc(at.tx) : l.x, ay = at ? tc(at.ty) : l.y;
+        startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 0.6 }, { x: ax, y: ay, f: 1 }], dur: 0.62, phases: [{ to: 1, pose: 'walk' }],
+          end: () => { P.fl = l.tfl; setLayer(P.fl);
+            P.x = ax; P.y = ay; if (up) P.a = Math.atan2(up[1], up[0]); play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
         break;
       }
       const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));

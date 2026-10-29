@@ -147,7 +147,7 @@ function spawnCopCar() {
 function copCarArrive(v, dt) {
   const P = S.player, d = dist(v.x, v.y, P.x, P.y), slowMe = !P.car || Math.abs(P.car.v) < 80;
   if (!(d < 300 && slowMe)) return false;
-  v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += DV[v.d][0] * v.v * dt; v.y += DV[v.d][1] * v.v * dt; return true; }
+  v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt; return true; }
   v.chase = false; v.ai = false; v.parked = true; v.driver = false; v.deployed = true; play('switch', 0.5);
   for (const s of [-1, 1]) { const a = v.a + s * Math.PI / 2, x = v.x + Math.cos(a) * 50, y = v.y + Math.sin(a) * 50; const g = spawnCop(); if (g) { g.x = x; g.y = y; g.path = null; copChase(g); } }
   return true;

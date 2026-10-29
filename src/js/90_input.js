@@ -38,7 +38,14 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
 window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyF' || e.code === 'KeyV') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
-window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
+// 창이 잠깐 가려지면(스크린샷·알림·다른 앱) 메뉴를 띄우지 않고 조용히 멈췄다가, 돌아오면 저절로 이어 간다 (스크린샷에 게임 화면이 그대로 찍힌다)
+function softPause(v) {
+  if (!running || !S || S.over) return;
+  if (v) { if (paused) return; paused = true; S.autoPaused = true; riskTone(0); input.joy = null; return; }
+  if (S.autoPaused) { S.autoPaused = false; paused = false; }
+}
+window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; softPause(true); });
+window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
 
@@ -193,7 +200,7 @@ $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (!STAGES[i].tutorial && demoOk(STAGES[i])) return i; return -1; }
 $('btnNext').addEventListener('click', () => { const n = nextPlayable(); start(STAGE.tutorial ? STAGES.findIndex(s => !s.tutorial) : n >= 0 ? n : STAGE_I); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {

@@ -34,7 +34,7 @@ function trafficInit() {
 // 다음 교차로에서 어디로 꺾을지 정하고, 꺾는 지점(새 차로 좌표)을 적어 둔다
 function planTurn(v) {
   const hor = v.d === 0 || v.d === 2, pos = hor ? v.x : v.y, sgn = DV[v.d][0] + DV[v.d][1], cross = hor ? STAGE.roadsX : STAGE.roadsY, here = hor ? STAGE.roadsY : STAGE.roadsX;
-  const myRoad = here.find(r => Math.abs(laneOf(r, v.d) - (hor ? v.y : v.x)) < 30);
+  const myRoad = here.find(r => Math.abs(laneOf(r, v.d) - (v.lane != null ? v.lane : hor ? v.y : v.x)) < 30);  // 지금 따라가는 차로 (돌고 있는 중이면 몸은 아직 옆에 있다)
   // 앞쪽 첫 교차 도로 (이미 들어선 교차로는 건너뛴다)
   const ahead = cross.filter(r => sgn > 0 ? r * TILE > pos - 8 : (r + 4) * TILE < pos + 8).sort((a, b) => sgn > 0 ? a - b : b - a);
   const r = ahead[0]; if (r == null) { v.turn = null; return; }
@@ -66,23 +66,41 @@ function updateVehicles(dt) {
     if (v.smoke > 0) v.smoke -= dt;
     if (v === (S.player.car || {})) continue;  // 내 차는 updateDriving
     if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
-    const blk = aheadBlocked(v);
-    if (blk) { v.v = Math.max(0, v.v - CAR_BRAKE * dt); v.stopT += dt;
-      if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
-      if (!(blk === 'car' && v.stopT > 5)) { v.a += clamp(angDiff(v.a, Math.atan2(DV[v.d][1], DV[v.d][0])), -4 * dt, 4 * dt); continue; } }  // 오래 막히면(교차로 꼬임) 그냥 지나간다
-    else { v.stopT = 0; v.v = Math.min(v.chase ? AI_SPD * 2 : AI_SPD, v.v + CAR_ACC * (v.chase ? 1.2 : 0.6) * dt); }
-    if (v.chase && copCarArrive(v, dt)) continue;
-    const hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
-    // 꺾는 지점에 닿으면 새 방향으로 (모서리를 돌 때는 천천히)
-    if (v.turn) { const pos = hor ? v.x : v.y, left = (v.turn.at - pos) * sgn; if (left < 90) v.v = Math.min(v.v, 95);
-      if (left <= 0) { if (hor) v.x = v.turn.at; else v.y = v.turn.at; v.d = v.turn.nd; planTurn(v); } }
-    else if (v.crossEnd != null && ((hor ? v.x : v.y) - v.crossEnd) * sgn > 0) { v.crossEnd = null; planTurn(v); }
-    v.x += DV[v.d][0] * v.v * dt; v.y += DV[v.d][1] * v.v * dt;
-    v.a += clamp(angDiff(v.a, Math.atan2(DV[v.d][1], DV[v.d][0])), -5 * dt, 5 * dt);
-    // 지도 끝: 반대편 도로로 다시 들어온다
-    if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) { v.d = (v.d + 2) % 4; v.a += Math.PI; v.x = clamp(v.x, 30, MW * TILE - 30); v.y = clamp(v.y, 30, MH * TILE - 30); if (hor) v.y = laneOf(STAGE.roadsY.find(r => Math.abs(r * TILE + 96 - v.y) < 120) || 0, v.d); else v.x = laneOf(STAGE.roadsX.find(r => Math.abs(r * TILE + 96 - v.x) < 120) || 0, v.d); planTurn(v); }
+    aiDrive(v, dt);
     hitPeople(v, dt);
   }
+}
+// 남이 모는 차: 내 차와 같은 몸(속도·방향·핸들)으로 달린다. 앞을 보고(차로 위 70px 앞 점을 따라가는 '순수 추종') 핸들을 꺾고,
+// 교차로 앞에선 속도를 줄이고, 꺾을 때는 새 차로 쪽 점을 따라가 둥글게 돈다 (예전처럼 직각으로 '툭' 꺾이지 않는다)
+const AI_LOOK = 72;
+function aiDrive(v, dt) {
+  let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
+  if (v.lane == null) v.lane = hor ? v.y : v.x;
+  const blk = aheadBlocked(v); let want = v.chase ? AI_SPD * 2 : AI_SPD;
+  if (blk) { v.stopT += dt; want = 0;
+    if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
+    if (blk === 'car' && v.stopT > 5) want = AI_SPD * 0.5;  // 오래 막히면(교차로 꼬임) 천천히 비집고 간다
+  } else v.stopT = 0;
+  if (v.chase && copCarArrive(v, dt)) return;
+  // 교차로: 꺾을 차로가 가까워지면 미리 새 차로로 갈아탄다 (오른쪽은 짧게, 왼쪽은 크게 돈다)
+  if (v.turn) { const pos = hor ? v.x : v.y, left = (v.turn.at - pos) * sgn, right = v.turn.nd === (v.d + 1) % 4;
+    if (left < 150) want = Math.min(want, right ? 85 : 105);
+    if (left < (right ? 34 : 70)) { v.d = v.turn.nd; v.lane = v.turn.at; hor = v.d === 0 || v.d === 2; sgn = DV[v.d][0] + DV[v.d][1]; planTurn(v); } }
+  else if (v.crossEnd != null && ((hor ? v.x : v.y) - v.crossEnd) * sgn > 0) { v.crossEnd = null; planTurn(v); }
+  // 앞쪽 목표점: 차로 중심선 위, 지금 위치에서 AI_LOOK 만큼 앞
+  const tx = hor ? v.x + sgn * AI_LOOK : v.lane, ty = hor ? v.lane : v.y + sgn * AI_LOOK;
+  const err = angDiff(v.a, Math.atan2(ty - v.y, tx - v.x));
+  if (Math.abs(err) > 0.5) want = Math.min(want, 95);  // 크게 꺾는 중엔 천천히
+  // 가속·브레이크 (내 차와 같은 수치를 조금 순하게)
+  if (v.v < want) v.v = Math.min(want, v.v + CAR_ACC * (v.chase ? 1.2 : 0.7) * dt); else v.v = Math.max(want, v.v - CAR_BRAKE * dt);
+  // 핸들: 내 차와 같은 식 — 빠를수록 잘 돌고, 서 있으면 거의 안 돈다
+  v.a += clamp(err * 3, -1, 1) * CAR_TURN * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
+  v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt;
+  // 지도 끝: 반대 방향 차로로 돌아 들어온다
+  if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) {
+    v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, 30, MW * TILE - 30); v.y = clamp(v.y, 30, MH * TILE - 30);
+    const road = hor ? STAGE.roadsY.find(r => Math.abs(r * TILE + 96 - v.y) < 120) : STAGE.roadsX.find(r => Math.abs(r * TILE + 96 - v.x) < 120);
+    v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane; planTurn(v); }
 }
 // 차의 앞뒤 원 둘
 const carPts = v => { const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25; return [[v.x + ca, v.y + sa], [v.x - ca, v.y - sa]]; };
@@ -157,19 +175,28 @@ function nearVehicle() {
   for (const v of S.vehicles) { if (v.dead || Math.abs(v.v) > 110) continue; const d = Math.min(...carPts(v).map(([x, y]) => dist(P.x, P.y, x, y)), dist(P.x, P.y, v.x, v.y)); if (d < bd) { bd = d; best = v; } }
   return best;
 }
+// 차 타기: 운전석 문(왼쪽) 앞으로 걸어가 → (사람이 타 있으면) 문을 열고 끌어내 밀쳐 내고 → 올라탄다
 function carEnter(v) {
-  const P = S.player;
-  if (v.driver) {  // 운전자를 끌어낸다: 주민 하나가 차 옆에 나와 달아난다
-    const side = v.a + Math.PI / 2, dx = Math.cos(side) * 46, dy = Math.sin(side) * 46;
-    const g = makeGuard({ kind: 'civ', at: [Math.floor((v.x + dx) / TILE), Math.floor((v.y + dy) / TILE)] }, S.guards.length);
-    g.x = v.x + dx; g.y = v.y + dy; g.route = [{ x: g.x, y: g.y, pause: 999 }]; g.driverOut = true; S.guards.push(g);
+  const P = S.player; if (P.trav) return;
+  const side = v.a - Math.PI / 2, door = { x: v.x + Math.cos(side) * 40 + Math.cos(v.a) * 6, y: v.y + Math.sin(side) * 40 + Math.sin(v.a) * 6 };
+  const out = { x: v.x + Math.cos(side) * 78, y: v.y + Math.sin(side) * 78 }, jack = !!v.driver;
+  v.ai = false; v.parked = false; v.v = 0; v.jacking = true; P.hide = null; P.cover = null; input.aiming = null;
+  const tWalk = Math.min(0.35, dist(P.x, P.y, door.x, door.y) / 240), tPull = jack ? 0.55 : 0.12, dur = tWalk + tPull + 0.3;
+  startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: door.x, y: door.y, f: tWalk / dur }, { x: door.x, y: door.y, f: (tWalk + tPull) / dur }, { x: v.x, y: v.y, f: 1 }], dur,
+    phases: [{ to: 1, pose: 'walk' }], face: Math.atan2(v.y - door.y, v.x - door.x) });
+  after(tWalk, () => { play('switch', 0.5); });  // 문 여는 소리
+  if (jack) after(tWalk + 0.12, () => {  // 운전자를 끌어내 길바닥에 밀쳐 낸다 → 일어나 달아난다
+    P.strikeT = 0.3; play('cloth', 0.6); play('thud', 0.4);
+    const g = makeGuard({ kind: 'civ', at: [Math.floor(v.x / TILE), Math.floor(v.y / TILE)] }, S.guards.length);
+    g.x = v.x; g.y = v.y; g.a = side; g.route = [{ x: out.x, y: out.y, pause: 999 }]; g.driverOut = true; g.state = 'PATROL'; g.meter = 1; S.guards.push(g);
     if (PR) prWarm([charOf(g)], true);
-    civPanic(g, v.x, v.y, 8); gsay(g, ['내 차!', '뭐, 뭐야!', '사람 살려!'][v.id % 3], 1.6);
+    let k = 0; const slide = () => { k++; g.x = v.x + (out.x - v.x) * k / 4; g.y = v.y + (out.y - v.y) * k / 4; if (k < 4) after(0.06, slide); else { civPanic(g, v.x, v.y, 8); gsay(g, ['내 차!', '뭐, 뭐야!', '사람 살려!'][v.id % 3], 1.6); } };
+    slide();
     if (witnessed(P.x, P.y, 380)) addWanted(1, '차를 빼앗는 걸 사람들이 봤다');
     v.driver = false;
-  }
-  v.ai = false; v.parked = false; v.v = 0; P.car = v; P.hide = null; P.cover = null; input.aiming = null;
-  play('switch', 0.5); play('click', 0.3); hint('drive', isTouch ? '운전: 화면을 끄는 쪽으로 차머리가 돌며 달린다. 반대로 끌면 브레이크·후진. [행동] = 내리기' : '운전: 방향키 쪽으로 차머리가 돌며 달린다. 반대쪽 = 브레이크·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적');
+  });
+  P.trav.end = () => { v.jacking = false; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
+    hint('drive', isTouch ? '운전: 화면을 끄는 쪽으로 차머리가 돌며 달린다. 반대로 끌면 브레이크·후진. [행동] = 내리기' : '운전: 방향키 쪽으로 차머리가 돌며 달린다. 반대쪽 = 브레이크·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;
