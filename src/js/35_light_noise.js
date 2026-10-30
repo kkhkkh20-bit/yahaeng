@@ -74,6 +74,7 @@ function noise(x, y, r, src, fl, z) {
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
     const runStep = src === 'step' && S.player.mode === 'run' && S.player.moving;
+    if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs)) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
     if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (d < rr && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
     if (d < rr) {

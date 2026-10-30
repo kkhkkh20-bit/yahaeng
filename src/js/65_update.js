@@ -86,7 +86,7 @@ function updateAlert(dt) {
     if (S.alevelT <= 0) {
       const was = S.alevel; S.alevel--; S.alevelT = S.alevel === 1 ? 45 : 0;
       if (was === 2) for (const g of S.guards) if (['SEARCH', 'CHECK', 'SUSPICIOUS', 'ALERT'].includes(g.state) && !g.target) { g.state = 'RETURN'; g.path = null; g.checks = []; g.inspect = null; g.icon = null; }
-      toast(was === 2 ? '수색이 끝났다 — 자경대원들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) { bark(anyGuard(), S.chaseSeen && BARKS.calmLost ? 'calmLost' : S.stats.bodies && BARKS.calmBody ? 'calmBody' : 'calm'); S.chaseSeen = false; S.guards.forEach(g => { g.chased = false; }); }
+      toast(was === 2 ? '수색이 끝났다 — 자경대원들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) { bark(anyGuard(), S.chaseSeen && BARKS.calmLost ? 'calmLost' : S.stats.bodies && BARKS.calmBody ? 'calmBody' : 'calm'); S.chaseSeen = false; S.knownLooks = {}; S.guards.forEach(g => { g.chased = false; }); }
     }
   }
 }

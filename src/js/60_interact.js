@@ -1286,9 +1286,9 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew'; c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${outfitName(of)}으로 갈아입었지만 이미 들통난 옷이다 — 이 옷으로는 통과할 수 없다`, 3, 'warn');
-    else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 걸어서 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 초록 경계선 구역은 지나다녀도 된다. 뛰기·운반·락픽은 수상하다. 눈 표시 사람은 오래 보면 알아챈다'); }
+    else if (STAGE.zones) { toast(`${outfitName(of)}으로 갈아입었다 — 초록 경계선 안은 지나다닐 수 있다`, 3.2, 'good'); hint('disguise2', '변장: 초록 경계선 구역은 지나다녀도 된다. 시체 운반·붙잡기·락픽은 들킨다. 눈 표시 사람은 가까이서 오래 보면 알아챈다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장: 뛰기·시체 들기·옥상·너무 가까이 붙기는 의심받는다'); }
     return;
   }

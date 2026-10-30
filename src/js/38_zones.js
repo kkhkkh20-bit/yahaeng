@@ -53,8 +53,24 @@ function suspAct(g) {
   if (P.mode === 'sneak' && P.moving && g && !myPermits().length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
   return 0;
 }
-// 나를 알아보는가: 쫓기는 중(발각)이거나, 발각 뒤 수색이 끝나기 전이면 공개 구역이어도 얼굴을 안다
-const knownFace = g => g.state === 'ALERT' || (S.alevel >= 2 && S.chaseSeen);
+// 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
+const suspectLook = () => S.player.outfit || 'face';
+function rememberSuspect(g, look = suspectLook()) {
+  if (g) g.suspectLook = look;
+  S.chaseSeen = true; (S.knownLooks = S.knownLooks || {})[look] = true;
+}
+const knownFace = (g, look = suspectLook()) =>
+  (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
+  !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
+// 허가받은 직원이 걷거나 뛰는 것은 업무 동선이다. 실제 불법 행동은 복장과 관계없이 판정한다.
+const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits().length ? 0 : k; };
+function onDisguiseChanged(previousLook) {
+  const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
+  const L0 = CUR_F; setLayer(flOf(P));
+  const witness = S.guards.find(g => !g.civ && !g.dog && !g.doomed && !['DEAD', 'CAPTIVE', 'TERROR'].includes(g.state) && flOf(g) === flOf(P) && knownFace(g, previousLook) && canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.z) > 0);
+  setLayer(L0);
+  if (witness) { witness.seen = true; goAlert(witness); }
+}
 // 출입 금지 경고: 다가와 나가라고 한다. 4초 안에 공개 구역으로 나가면 돌아가고(두 번째부터는 바로 발각), 버티거나 수상한 짓을 하면 발각
 function startWarn(g) {
   if (g.warnEnd && S.t < g.warnEnd + 1) { g.state = 'WARN'; return; }
@@ -71,7 +87,7 @@ function updateTrespass(g, dt, pz) {
   if (g.seen) g.lastSeen = pSpot();
   if (dist(g.x, g.y, P.x, P.y) > 70 && g.seen) { g.repath = (g.repath || 0) - dt; if (g.repath <= 0 || !g.path) { pathTo(g, P.x, P.y); g.repath = 0.5; } moveAlong(g, SPD.gSusp * 0.8 * spdMul(), dt); }
   g.warnT = g.warnEnd - S.t;
-  if (pz === Z_PUB && !suspAct(g)) { g.warned = true; g.state = 'RETURN'; g.path = null; g.meter = 0.3; g.icon = null; g.say = ['다시는 들어오지 마세요.', '그래요, 그쪽으로 가세요.', '두 번은 안 봐줍니다.'][g.id % 3]; g.sayT = 2.4; return; }
+  if (pz === Z_PUB && !publicSuspicion(g)) { g.warned = true; g.state = 'RETURN'; g.path = null; g.meter = 0.3; g.icon = null; g.say = ['다시는 들어오지 마세요.', '그래요, 그쪽으로 가세요.', '두 번은 안 봐줍니다.'][g.id % 3]; g.sayT = 2.4; return; }
   if (suspAct(g) === 1 || pz === Z_HOS) { g.warned = true; goAlert(g); return; }
   if (g.warnT > 0) return;
   const away = dist(g.x, g.y, P.x, P.y) > (g.warnD0 || 0) + 48;
