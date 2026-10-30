@@ -1062,7 +1062,9 @@ function chaseHide(P) {
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = (S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal(); if (!gl || gl.x == null) return;
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
-  const df = (gl.fl || 0) - flOf(P), short = (gl.storyName || gl.text) + (df ? (df > 0 ? ` (${df}층 위)` : ` (${-df}층 아래)`) : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
+  // 건물명은 목표 HUD에 표시하고, 지도 표식은 실제 층수로 짧게 쓴다.
+  const location = /층/.test(gl.where || '') ? `${(gl.fl || 0) + 1}층` : gl.where;
+  const short = (gl.storyName || gl.text) + (location && location !== '바깥' ? ' · ' + location : gl.fl ? ` · ${gl.fl + 1}층` : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const topPx = (drawMini.tb || 70) + 40, botPx = document.body.classList.contains('touch') ? 270 : 70;

@@ -414,9 +414,9 @@ function drawLastSeen() {
   const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막으로 보인 곳'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
-    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? g.poi : null;
-    if (!q || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
-    pts.push({ x: q.x, y: q.y, hot: g.state === 'ALERT' || g.state === 'NOTICE', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
+    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.searchJob ? g.searchOrigin : g.poi) : null;
+    if (!q || flOf(q) !== flOf(P) || (q.z || 0) !== (P.z || 0) || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
+    pts.push({ x: q.x, y: q.y, hot: g.state === 'ALERT' || g.state === 'NOTICE', body: g.searchJob && (S.searchIncidents || []).find(i => i.id === g.searchJob.incident)?.source === 'body', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;
@@ -425,8 +425,8 @@ function drawLastSeen() {
       const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
       ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
-      tag(q.x, q.y + 30, q.exit ? '출구를 지키는 곳' : q.blood ? '핏자국을 쫓는 곳' : q.heard ? '소리 난 곳' : '마지막으로 보인 곳', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
-    if (q.heard || q.blood || q.exit) { /* 소리·핏자국: 내 모습은 남기지 않는다 */ }
+      tag(q.x, q.y + 30, q.exit ? '출구를 지키는 곳' : q.blood ? '핏자국을 쫓는 곳' : q.heard ? '소리 난 곳' : q.body ? '발견된 현장' : '마지막으로 보인 곳', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
+    if (q.heard || q.blood || q.exit || q.body) { /* 소리·핏자국: 내 모습은 남기지 않는다 */ }
     else if (usePR('ninja') && prVar.ninja_ol) { drawPR('ninja_ol', q.x, q.y, Math.PI / 2, 'idle', 0, pulse, 1, 0, 0); drawPR('ninja', q.x, q.y, Math.PI / 2, 'idle', 0, 0.18, 1, 0, 0); }
     else { ctx.strokeStyle = `rgba(168,232,255,${pulse})`; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(q.x, q.y, 14, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = '700 14px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);

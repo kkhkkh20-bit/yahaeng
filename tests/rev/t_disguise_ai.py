@@ -61,7 +61,7 @@ async def main():
           P.x=q.x+150;P.y=q.y+40;q.a=q.want=Math.PI;G.takeProp({outfit:'crew'});tick(1);
           check(!q.seen&&q.lastSeen.x===at.x&&q.lastSeen.y===at.y,'Radio must not track unseen coordinates');
           G.updateRadioCall(5);check(G.S.alevel===3&&!G.knownFace(q),'Delayed radio must describe old appearance');results.push('radio memory');
-          fixture();q.enforcer=true;q.wait=999;tick(3);check(P.disguiseBlown&&q.state==='ALERT','Enforcer must still detect close disguise');results.push('enforcer');
+          fixture();q.enforcer=true;q.wait=999;q.post=0;q.still=true;q.idleT=999;P.a=Math.PI;tick(3.3);check(P.disguiseBlown&&q.state==='ALERT','Enforcer must still detect close disguise '+JSON.stringify({eye:q.eyeT,state:q.state,blown:P.disguiseBlown,pa:P.a,qa:q.a,d:Math.hypot(q.x-P.x,q.y-P.y)}));results.push('enforcer');
           fixture();P.fl=1;P.captive={};tick(2);check(q.state==='PATROL'&&!q.seen,'Different floor must not witness crime');results.push('floor separation');
           fixture();let wall=false;
           for(let y=1;y<G.MH-1&&!wall;y++)for(let x=2;x<G.MW-2;x++)if(G.tileCh(x,y)==='#'&&!G.solidAt(x-1,y)&&!G.solidAt(x+1,y)){

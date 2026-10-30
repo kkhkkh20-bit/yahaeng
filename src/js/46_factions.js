@@ -108,7 +108,7 @@ function drawGangFlags(P) {
   for (const r of S.turf.B) { if (!r.dyn) continue;  // 건달파 거리 구역: 붉은 점선 (가까울 때)
     const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 520 && !tactical) continue;
     ctx.strokeStyle = 'rgba(200,60,50,.45)'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 7]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
-    if (d < 300 || tactical) tag(clamp(P.x, x + 80, x + w - 80), y + h - 12, '건달파 구역 · 조직원은 들어가면 맞는다', '#ff8a76', 0.85); }
+    if (d < 300 || tactical) tag(clamp(P.x, x + 80, x + w - 80), y + h - 12, '건달파 구역 · 적대 조직 발견 시 공격', '#ff8a76', 0.85); }
 }
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {

@@ -627,7 +627,7 @@ function primaryActionRaw() {
     const cd = cdz; if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? `내려가기 · ${(cd.bfl || 0) + 1}층` : '내려가기' };
     const rv = nearVent(); if (rv) return { k: 'ventIn', v: rv, label: '환풍구로 들어가기' };
     const jt = jumpTarget(); if (jt) return { k: 'leap', j: jt, label: '건너뛰기' };
-    { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: '벽 잡고 오르기 · 한 층 위 옥상' }; }
+    { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: `벽 잡고 오르기 · ${wu.z}층 옥상` }; }
     const ds = dropSpot(); if (ds) return { k: 'jump', s: ds, label: P.z >= 2 ? '1층 옥상으로' : '뛰어내리기' };
     return { k: 'none', label: '암살' };
   }
@@ -685,7 +685,7 @@ function primaryActionRaw() {
     return res;
   }
   { const cr = S.camRoom; if (cr && !ACT_SKIP.has(cr) && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', targetObject: cr, at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
-  { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: wu.z > 1 ? '벽 잡고 오르기 · 한 층 위 옥상' : '벽 잡고 오르기 · 1층 옥상' }; }
+  { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: `벽 잡고 오르기 · ${wu.z}층 옥상` }; }
   { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
   { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
@@ -854,7 +854,9 @@ function actPrimary(force) {
       break;
     }
     case 'wallUp': {  // 1층 높이 벽: 손을 뻗어 가장자리를 잡고 끌어올린다
-      const s = a.s; P.a = Math.atan2(s.n[1], s.n[0]); play('cloth', 0.4); noise(P.x, P.y, 55, 'climb'); S.stats.wallUp = (S.stats.wallUp || 0) + 1;
+      const s = wallUpSpot();
+      if (!s || !a.s || s.z !== a.s.z || dist(s.top.x, s.top.y, a.s.top.x, a.s.top.y) > 2) break;
+      P.a = Math.atan2(s.n[1], s.n[0]); play('cloth', 0.4); noise(P.x, P.y, 55, 'climb'); S.stats.wallUp = (S.stats.wallUp || 0) + 1;
       // 웅크림(0.12) → 뛰어올라 가장자리를 잡음(0.3) → 매달려 한 번 버팀(0.55) → 끌어올림(0.88) → 올라섬
       const hang = { x: s.edge.x + (s.top.x - s.edge.x) * 0.55, y: s.edge.y + (s.top.y - s.edge.y) * 0.55 };
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: P.x, y: P.y, f: 0.12 }, { x: hang.x, y: hang.y, f: 0.3 }, { x: hang.x, y: hang.y, f: 0.55 }, { x: s.top.x, y: s.top.y + 14, f: 0.88 }, { x: s.top.x, y: s.top.y, f: 1 }], dur: 1.15,
@@ -1416,6 +1418,9 @@ function kunaiHit(k) {
 function wallUpSpot() {
   const P = S.player, z0 = P.z || 0; if (flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav || P.wire || P.under || P.vent || P.ledge) return null;
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, z1 = z0 + 1;
+  // 실내 가구·안쪽 벽은 외벽 등반 지점이 아니다. 지붕 없는 공터의 컨테이너는 유지한다.
+  const inside = bldAt(tx, ty);
+  if (!z0 && inside >= 0 && !BLD[inside].vacant) return null;
   const ok1 = (x, y) => inMap(x, y) && rLv(x, y) === z1 && !robAt(x, y);
   let best = null, bs = -9;
   for (const [nx, ny] of [[0, -1], [0, 1], [1, 0], [-1, 0]]) {
