@@ -346,6 +346,7 @@ function drawRoof1(b, i, roof) {
     const x = b.x0 * TILE, y = b.y0 * TILE, w = (b.x1 - b.x0 + 1) * TILE, h = b.roofC.rh;
     if (b.kit && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
+      if (hasHeightCues(i)) drawRoofCoping(b);
       ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left'; ctx.fillText(b.h + 'F', x + 6, y + 14);
       return;
     }
@@ -356,6 +357,7 @@ function drawRoof1(b, i, roof) {
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
     ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
+    if (hasHeightCues(i)) drawRoofCoping(b);
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(b.h + 'F', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
@@ -1233,6 +1235,7 @@ function draw() {
     // 높이감: 바깥(땅)은 층이 높을수록 더 어둡게 가라앉고, 건물 그림자는 길어진다
     ctx.fillStyle = `rgba(4,6,12,${Math.min(0.62, 0.3 + VF * 0.1)})`; ctx.beginPath(); ctx.rect(cam.x - 6000, cam.y - 6000, 12000, 12000); ctx.rect(bx, by, bw, bh); ctx.fill('evenodd');
     const shd = 8 + VF * 7; ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(bx + shd, by + shd, bw, bh);
+    if (hasHeightCues(VB)) drawFloorThickness(b, VF);
     ctx.drawImage(floorCanvas(VB, VF), bx, by);
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
@@ -1248,7 +1251,7 @@ function draw() {
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = l.col || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
     drawSpeech();
-    ctx.strokeStyle = 'rgba(242,196,107,.55)'; ctx.lineWidth = 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
+    ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
   }

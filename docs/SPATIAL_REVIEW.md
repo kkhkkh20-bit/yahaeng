@@ -39,3 +39,8 @@
 - 비교 화면의 세 이미지 로드, 키보드 탭 이동, 모바일 390px에서 가로 넘침 없음 확인.
 - `tools/prerender/spatial_preview.py`가 실제 게임에서 평면·가구·계단·주인공을 읽고 세 장을 생성한다. 기존 게임 서버 `127.0.0.1:8001`과 프리렌더 서버 `127.0.0.1:8766`이 실행 중이어야 한다.
 - 사용 모델: Quaternius Downtown City MegaKit, Kenney Furniture Kit, Quaternius Ultimate Modular Women. 모두 CC0.
+
+
+## v85 · 현재 시점을 유지한 시험 적용
+
+리소스와 개발 범위를 줄이기 위해 새 투영으로 전체를 전환하지 않고, 대청소 맵 남서쪽 3층 빌라 한 채에 높이 단서만 적용했다. [기존/보강 후 비교](height-cues/index.html) · [구현과 비용](HEIGHT_CUES.md). 위의 3D 시안과 달리 실행본의 카메라·좌표·판정·버튼 배치를 유지한다.

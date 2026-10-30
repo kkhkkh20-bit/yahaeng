@@ -696,6 +696,7 @@ function renderMap(R) {
       x.fillStyle = '#f2c46b'; x.beginPath(); x.moveTo(px + 26, py + 12); x.lineTo(px + 18, py + 26); x.lineTo(px + 24, py + 26); x.lineTo(px + 21, py + 36); x.lineTo(px + 30, py + 21); x.lineTo(px + 24, py + 21); x.closePath(); x.fill();
     }
   }
+  if (R && CUR_F > 0) { const bi = BLD.findIndex(b => b.x0 === rx0 && b.y0 === ry0 && b.x1 === rx1 && b.y1 === ry1); if (hasHeightCues(bi)) paintInteriorCuts(x, BLD[bi], CUR_F); }
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
   // 가구 (이 층 것만)
