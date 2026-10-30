@@ -2,9 +2,11 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+옥상 통로 수정 비교: https://kkhkkh20-bit.github.io/yahaeng/roof-routes/
+
 현재 시점 높이 단서 비교: https://kkhkkh20-bit.github.io/yahaeng/height-cues/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v85
-Source commit: 0320c2960f7e0b5044ba12977e89b9572b0da7cb
+Version: v86
+Source commit: 0fc5dafa07002d4ba1aa9fbf91470fc3bfd15203
