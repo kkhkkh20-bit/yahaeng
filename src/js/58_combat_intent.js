@@ -71,6 +71,9 @@ function grabTarget() {
 function targetEliminated(g) {
   return g.state === 'DEAD' && !g.unconscious && !S.corpses.some(c => c.ko && c.g === g);
 }
+function targetPosition(g) {
+  return S.corpses.find(c => c.ko && c.g === g) || g;
+}
 
 function nearFinish() {
   const P = S.player; if (actionBusy(P) || P.carrying || P.captive || P.wire || P.ledge) return null;
@@ -81,6 +84,10 @@ function nearFinish() {
 function finishKo(c, g) {
   if (!c || !c.ko || !S.corpses.includes(c)) return;
   delete g.takedownIntent; c.ko = false; c.g = null; g.unconscious = false; S.stats.ko--; S.stats.kills++;
-  if (g.target) bossRadio('target', true); else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
+  if (g.target) {
+    bossRadio('target', true);
+    const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;
+    toast(left ? `표적 제거 — 남은 표적 ${left}` : '표적 제거', 3, 'good');
+  } else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   logEv(g.target ? 'target' : 'kill', c.x, c.y); play('kill', .45); noise(c.x, c.y, 40, 'kill', c.fl);
 }

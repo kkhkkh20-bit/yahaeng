@@ -34,7 +34,7 @@ async def main():
         await pg.evaluate('T.walk(24, 13)'); await pg.evaluate("() => { const g = T.npc('lone'), P = T.S().player; P.x = g.x - 34; P.y = g.y; P.a = 0; }")
         await pg.evaluate('() => T.G().actPrimary()'); await pg.wait_for_timeout(1000); r = await st(); print('4 기절', r)
         await pg.evaluate("() => { const c = T.S().corpses.find(c => c.tag === 'lone'); T.S().player.x = c.x - 18; T.S().player.y = c.y; }"); await pg.wait_for_timeout(150)
-        await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_timeout(500); r = await st(); print('5 옷', r, await pg.evaluate('() => T.S().player.outfit'))
+        await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_function('!T.S().player.interact'); r = await st(); print('5 옷', r, await pg.evaluate('() => T.S().player.outfit'))
         await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_timeout(700); await pg.evaluate('T.walk(25, 14)')
         await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_timeout(800); r = await st(); print('6 숨기기', r)
         if r[0] < 7: bad.append('기절·옷·숨기기 단계 실패 %s' % r)

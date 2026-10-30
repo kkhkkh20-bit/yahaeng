@@ -65,18 +65,18 @@
   notes: [{ b: 0, fl: 1, at: 'L', title: '책상 밑 메모', lines: ['금고 0417', '(사장님 따님 생신)'], gives: 'code', learn: '사무동 금고 비번 0417' }],
   traps: [{ k: 'drop', at: [27, 12], hit: [25, 15, 29, 16], text: 'CLUB', noOpp: true }], codeOpp: false,   // 간판·금고 비번은 아래 단계형 기회가 안내한다
   stories: [
-    { id: 'sign', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
-      steps: [{ text: '클럽 옥상 간판 뒤로 — 야시장 컨테이너에서 배관을 타거나 전깃줄로', at: [27, 12, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 160) || h.npc('vip').state === 'DEAD' },
-              { text: '실장이 간판 밑에 나오면 [간판 떨어뜨리기]', at: [27, 15, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] },
-    { id: 'emetic', name: '약한 배', moot: (S, h) => h.npc('vip').state === 'DEAD', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
+    { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
+      steps: [{ text: '클럽 옥상 간판 뒤로 — 야시장 컨테이너에서 배관을 타거나 전깃줄로', at: [27, 12, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 160) || h.eliminated('vip') },
+              { text: '실장이 간판 밑에 나오면 [간판 떨어뜨리기]', at: [27, 15, 0], done: (S, h) => h.eliminated('vip') }] },
+    { id: 'emetic', targetTag: 'vip', name: '약한 배', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
       steps: [{ text: '약국 진열대에서 배탈약 집기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '클럽 직원 옷 구하기 — 뒷골목에서 혼자 담배 피우는 직원이나 포차에서 쉬는 직원', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '바 안쪽 실장 술병에 배탈약 타기 (직원 옷이면 자연스럽다)', at: [27, 10, 0], done: S => !!S.usesDone[0] },
-              { text: '공중화장실에 혼자 들어간 실장 처리', at: [40, 7, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] },
-    { id: 'vault', name: '금고와 뒷문', moot: (S, h) => h.npc('vip').state === 'DEAD', reveal: (S, h) => h.knows('비번'),
+              { text: '공중화장실에 혼자 들어간 실장 처리', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
+    { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비번'),
       steps: [{ text: '사무동 1층 금고에서 장부와 파랑 카드 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
-              { text: '뒷골목 → 클럽 직원 복도 → 파랑 카드로 VIP룸 뒷문', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.npc('vip').state === 'DEAD' },
-              { text: 'VIP룸 소파의 실장 처리', at: [25, 6, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] }
+              { text: '뒷골목 → 클럽 직원 복도 → 파랑 카드로 VIP룸 뒷문', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
+              { text: 'VIP룸 소파의 실장 처리', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
   challenges: ['accident', 'intel', 'purge', 'streak3', 'clean', 'nobody'],
   entries: [{ name: '서쪽 큰길', desc: '기본 출발', at: [0, 21] }, { name: '빌라 옥상', desc: '별 3개 — 옥상에서 시작', at: [48, 6], z: 2, need: 3 },

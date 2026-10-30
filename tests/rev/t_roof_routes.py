@@ -25,7 +25,7 @@ async def main():
             const S=fresh(id),P=S.player;
             for(const p of G.PLANKS) {
               // This test covers equal-height walking links, including both joins in the report's m3 screenshot.
-              if(!p.a||!p.b)continue;
+              check(p.a&&p.b,id+' plank has no matching rooftop at both ends');
               const solid=G.solidFor(p.z);
               for(let y=p.y0;y<=p.y1;y++)for(let x=p.x0;x<=p.x1;x++)check(!solid(x,y),id+' broken plank collision');
               for(const mobile of [false,true])for(const reverse of [false,true]) {

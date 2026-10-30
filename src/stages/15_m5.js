@@ -73,8 +73,8 @@
     { id: 'purge', name: '본부 몰살', keepOpen: true, reveal: (S, h) => S.guards.some(g => g.radio && (g.state === 'DEAD' || g.state === 'CAPTIVE')) || (S.stats.crewKills || 0) >= 2,
       steps: [{ text: '무전기를 든 조직원부터 — 무전이 끊기면 아무도 지원을 못 부른다', at: null, done: S => S.guards.filter(g => g.radio && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE') },
               { text: '남은 조직원 정리 — 어둠·휘파람·수거함으로 하나씩 (몰살하면 수고비 +50만)', at: null, done: S => S.guards.filter(g => !g.civ && !g.dog && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE') }] },
-    { id: 'boss', name: '2층 보스', reveal: (S, h) => h.inRect(S.player, [12, 2, 27, 10, 0]) || h.inRect(S.player, [12, 2, 27, 10, 1]),
-      steps: [{ text: '본부 2층을 오가는 보스 처리 — 경호원이 따라붙는다', at: [19, 6, 1], done: (S, h) => h.npc('boss').state === 'DEAD' }] }
+    { id: 'boss', targetTag: 'boss', name: '2층 보스', reveal: (S, h) => h.inRect(S.player, [12, 2, 27, 10, 0]) || h.inRect(S.player, [12, 2, 27, 10, 1]),
+      steps: [{ text: '본부 2층을 오가는 보스 처리 — 경호원이 따라붙는다', at: [19, 6, 1], done: (S, h) => h.eliminated('boss') }] }
   ],
   challenges: ['disguise', 'intel', 'purge', 'streak3', 'ghost', 'clean'],
   purgeBonus: 50,  // 본부 몰살: 조직원을 모두 처리하면 수고비 +50만

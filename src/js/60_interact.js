@@ -518,19 +518,20 @@ function updateCorpseRisk(dt) {
   if ((S.crT = (S.crT || 0) - dt) > 0) return; S.crT = 0.3;
   for (const c of S.corpses) {
     c.risk = false; if (c.stashed || c.carried || c.discovered || c.hidden || c.accident) continue;
-    for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) !== flOf(c) || dist(g.x, g.y, c.x, c.y) > 520) continue;
+    for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) !== flOf(c) || (g.z || 0) !== (c.z || 0) || dist(g.x, g.y, c.x, c.y) > 520) continue;
       const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, false) > 0) { c.risk = true; break; } }
   }
 }
 function kpBeep(ok) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'sine' : 'square'; o.frequency.value = ok ? 1320 : 220; g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + (ok ? 0.12 : 0.35)); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }
 function kpPress(v) {
-  const k = S && S.keypad; if (!k) return; const n = (STAGE.code || '0000').length;
+  const k = S && S.keypad; if (!k || k.unlocking) return; const n = (STAGE.code || '0000').length;
   if (v === 'x') { closeKeypad(); return; }
   if (v === '<') { k.buf = k.buf.slice(0, -1); kpShow(); play('click', 0.15); return; }
   if (v === 'ok' || (v.length === 1 && k.buf.length + 1 === n && (k.buf += v))) {
     if (v !== 'ok' && v.length === 1) kpShow();
     if (k.buf.length < n) return;
     if (k.buf === STAGE.code) {
+      k.unlocking = true;
       if (!hasK('code')) { S.player.keys.code = true; S.learned.push('비번 ' + STAGE.code + ' (스스로 알아냄)'); }  // 어디서 봤든 맞는 비번을 넣었으면 알아낸 것으로 친다
       const d = k.d; kpBeep(true); after(0.26, () => { d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비번이 맞았다 — 문이 열렸다', 1.8, 'good'); closeKeypad(); });
     } else {
@@ -1018,7 +1019,7 @@ function koPerson(g, mode, where, intent) {
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { fl: flOf(g), ch: charOf(g), ko: true, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -1043,7 +1044,7 @@ function updateKoHold() {
 // 기절한 사람이 발견되면 깨어나 함께 수색한다
 function wakeKO(c, by) {
   const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
-  g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
+  g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
   if (g.civ) { g.state = 'PATROL'; gsay(g, '으… 머리야. 누가 뒤에서…'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
   gsay(g, ['누가 뒤에서 쳤어! 이 근처에 있다!', '으윽… 어떤 놈이 목을…', '정신 차려 보니 바닥이야. 찾아!'][g.id % 3], 3);
@@ -1106,7 +1107,7 @@ function killGuard(g, mode, where, quiet) {
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
   S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
   facWitness(g); cityVictim(g);
-  const c = { fl: flOf(g), ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
+  const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
@@ -1116,7 +1117,7 @@ function killGuard(g, mode, where, quiet) {
   S.flash = 0.25;
   if (g.target) {
     if (S.player.disguise && !S.player.disguiseBlown) S.stats.disguiseKill = true;
-    const left = S.guards.filter(o => o.target && o.state !== 'DEAD').length;
+    const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;
     toast(left ? `표적 제거 — 남은 표적 ${left}` : '표적 제거', 3, 'good'); if (left) bark('hero', 'kill');
   } else if (!mode) hint('body', '시체가 발견되면 경보가 울린다. [운반]해서 화단·수거함·맨홀에 숨겨라');
   if (S.fuseGuard === g) S.fuseGuard = null;
@@ -1130,9 +1131,9 @@ function accidentKill(g, how) {
   logEv('accident', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; play('thud', 0.6);
   S.stats.kills++; S.stats.accidents = (S.stats.accidents || 0) + 1; if (g.target) after(1.2, () => bossRadio('accident', true)); if (!g.target && g.civ) S.stats.extraKills++; else if (!g.target && !g.dog) S.stats.crewKills = (S.stats.crewKills || 0) + 1;
-  const c = { fl: flOf(g), ch: charOf(g), fac: g.fac, dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, accident: how, t0: S.t };
+  const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, accident: how, t0: S.t };
   S.corpses.push(c);
-  if (g.target) { const left = S.guards.filter(o => o.target && o.state !== 'DEAD').length; toast(left ? `표적 제거(사고) — 남은 표적 ${left}` : '표적 제거 — 사고로 보인다', 3, 'good'); }
+  if (g.target) { const left = S.guards.filter(o => o.target && !targetEliminated(o)).length; toast(left ? `표적 제거(사고) — 남은 표적 ${left}` : '표적 제거 — 사고로 보인다', 3, 'good'); }
   if (S.fuseGuard === g) S.fuseGuard = null;
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; S.keyDrop = { x: c.x + 14, y: c.y + 10, key: k, fl: c.fl || 0 }; }
   checkObjective();
@@ -1301,7 +1302,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     const c = P.carrying; const b = sa.h || nearHide(), pc = pairCarry(P);
     if (b && b.bodies < b.cap) {
       if (pc) { P.a = Math.atan2(b.y - P.y, b.x - P.x); startBodyAnim('stash', c, 0.5); }
-      c.carried = false; c.stashed = true; P.carrying = null; b.bodies++; S.stats.stashed++;
+      c.carried = false; c.stashed = true; c.container = b; c.x = b.x; c.y = b.y; P.carrying = null; b.bodies++; S.stats.stashed++;
       play('drop', 0.4); play('cloth', 0.3);
       toast(b.type === 'well' ? '시체를 맨홀 속에 떨어뜨렸다' : `${hideIn(b)}에 시체를 숨겼다 (${b.bodies}/${b.cap})`, 2.2, 'good');
       return;

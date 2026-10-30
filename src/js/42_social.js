@@ -8,6 +8,7 @@ const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.
 const knows = s => (S.learned || []).some(t => t.includes(s));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
 const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
+  eliminated: t => { const g = npc(t); return !!g && targetEliminated(g); },
   detour: (t, x, y, stay, name, act) => detour(npc(t), x, y, stay, name, act), say: (t, text) => { const g = npc(t); if (g && g.state !== 'DEAD') gsay(g, text, 2.6); } };
 // 일과에서 벗어나 한 번 들르기 (배탈 → 화장실 등): 지금 가는 곳 앞에 끼워 넣고, 다 머물고 떠날 때 지운다. 일과표(sched)도 같이 끼워 이름표가 맞게
 function detour(g, x, y, stay, name, act) {
@@ -132,6 +133,7 @@ function schedText(g) {
 // moot(S, SH): 다른 방식으로 해결해 더는 의미 없는 경로. 기회 완료 보상과 구별한다.
 // 안내 강도: oppMode 2 = 전체(다음 단계 위치 표시), 1 = 최소(목록만), 0 = 끔
 function storiesInit() {
+  S.missionProgressVersion = 1;
   S.stories = (STAGE.stories || []).map(d => ({ d, found: false, step: 0, done: false }));
   S.storyTrack = null;
 }

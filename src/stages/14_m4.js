@@ -33,7 +33,7 @@
     m.set(13, 19, '.'); m.set(21, 19, '.');
     m.fill(43, 17, 43, 24, '#'); m.set(43, 22, ',');
   },
-  planks: [[33, 5, 33, 5, 2], [21, 5, 21, 5, 2]],
+  planks: [[33, 5, 33, 5, 2]],  // 사무동 ↔ 클럽. 1층 창고와는 옥상 높이가 다르다.
   gates: [{ at: [13, 19], open: 's' }, { at: [21, 19], open: 's' }, { at: [43, 22], open: 'e' }],
   wires: [], drops: [],
   roofs: ['cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG'], bricks: [1, 0, 1, 0, 1, 0, 1, 0],
@@ -72,13 +72,13 @@
             lines: [[0, '사무동 간판 봤어? 나사가 반은 빠졌던데.'], [1, '수금원 그 양반 매일 그 밑으로 지나가잖아.'], [0, '떨어지면 딱 맞겠네.'], [1, '말조심해. 저 사람들 귀 밝아.']] }],
   interrogate: [{ gives: 'sign', learn: '사무동 간판이 헐겁다 — 수금원은 매일 그 밑 큰길을 지난다', say: '사무동 간판! 수금원 형님이 매일 그 밑으로 다녀!' }],
   stories: [
-    { id: 'sign', name: '헐거운 간판', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(8)) < 220),
-      steps: [{ text: '사무동 옥상 간판 뒤로 — 창고 옥상에서 널빤지를 건너', at: [27, 8, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(8)) < 160) || h.npc('collector').state === 'DEAD' },
-              { text: '수금원이 간판 밑을 지날 때 [간판 떨어뜨리기]', at: [27, 13, 0], done: (S, h) => h.npc('collector').state === 'DEAD' }] },
-    { id: 'red', name: '빨강 카드', reveal: () => true,
-      steps: [{ text: '수금원을 쓰러뜨려 빨강 카드 얻기 (경호원이 붙어 다닌다)', at: [20, 13, 0], done: (S, h) => !!(S.player.keys || {}).red || h.npc('collector').state === 'DEAD' },
+    { id: 'sign', targetTag: 'collector', name: '헐거운 간판', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(8)) < 220),
+      steps: [{ text: '사무동 계단이나 배관으로 옥상 간판 뒤로', at: [27, 8, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(8)) < 160) || h.eliminated('collector') },
+              { text: '수금원이 간판 밑을 지날 때 [간판 떨어뜨리기]', at: [27, 13, 0], done: (S, h) => h.eliminated('collector') }] },
+    { id: 'red', targetTag: 'vip', name: '빨강 카드', reveal: () => true,
+      steps: [{ text: '수금원을 쓰러뜨려 빨강 카드 얻기 (경호원이 붙어 다닌다)', at: [20, 13, 0], done: (S, h) => !!(S.player.keys || {}).red || h.eliminated('collector') },
               { text: '창고 금고에서 현금 가방과 파랑 카드 챙기기', at: [13, 4, 0], done: S => S.items[0].got && !!(S.player.keys || {}).blue },
-              { text: '파랑 카드로 클럽 VIP룸 뒷문 → VIP 처리', at: [40, 4, 0], done: (S, h) => h.npc('vip').state === 'DEAD' }] },
+              { text: '파랑 카드로 클럽 VIP룸 뒷문 → VIP 처리', at: [40, 4, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'green', name: '초록 카드', reveal: () => true,
       steps: [{ text: '남쪽 빌라들 위층 침실에서 초록 카드 찾기', at: null, done: S => !!(S.player.keys || {}).green || S.items[1].got },
               { text: '사무동 금고에서 계약서 챙기기', at: [25, 4, 0], done: S => S.items[1].got }] }

@@ -88,7 +88,19 @@ function resumeStoredCP(si) {
   return loadCheckpoint();
 }
 const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
-function cpProgress() { return S.guards.filter(g => g.target && g.state === 'DEAD').length + S.items.filter(i => i.got).length + (S.keyItems || []).filter(i => i.got).length + (S.exitOpen ? 1 : 0); }
+function cpProgress() { return S.guards.filter(g => g.target && targetEliminated(g)).length + S.items.filter(i => i.got).length + (S.keyItems || []).filter(i => i.got).length + (S.exitOpen ? 1 : 0); }
+function syncMissionProgress() {
+  for (const c of S.corpses) if (c.ko && c.g && c.z == null) { c.z = c.g.z || 0; c.target = !!c.g.target; }
+  if (S.missionProgressVersion === 1) return;
+  if (!S.spare) for (const st of S.stories || []) {
+    const tag = st.d && st.d.targetTag, g = tag && S.guards.find(g => g.tag === tag);
+    if (!g || targetEliminated(g) || (!st.done && !st.moot)) continue;
+    if (st.done) S.stats.stories = Math.max(0, (S.stats.stories || 0) - 1);
+    st.done = false; st.moot = false; st.step = Math.min(st.step, st.d.steps.length - 1);
+  }
+  if (S.items.some(i => !i.got) || (!S.spare && S.guards.some(g => g.target && !targetEliminated(g)))) S.exitOpen = false;
+  S.cpProg = Math.min(S.cpProg || 0, cpProgress()); S.missionProgressVersion = 1;
+}
 function updateCheckpoint(dt) {
   if (!cpOn() || S.over) return;
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
@@ -109,7 +121,7 @@ function loadCheckpoint() {
   initAudio();
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
-  robBuild(); syncDynamicTurf(); stairsInit();  // 저장된 구버전의 옥탑 위치·건달파 경계도 현재 그림과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); syncMissionProgress();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
