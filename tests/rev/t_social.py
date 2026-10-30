@@ -16,7 +16,7 @@ async def main():
         async def crime():
             await fresh([0, 2, civ]); await pg.evaluate(PIN, [2, 30, 20, 0]); await pg.evaluate(PIN, [0, 41, 13, 1.57]); await pg.evaluate(PIN, [civ, 33, 20, 3.14159])
             await pg.evaluate('() => { const S = window.__game.S, P = S.player, q = S.guards[2]; P.x = q.x - 34; P.y = q.y; P.a = 0; }')
-            await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1200)
+            await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.actionBusy()')
             return await pg.evaluate(f'() => window.__game.S.guards[{civ}].state')
         st = await crime(); print('목격 후 주민', st)
         if st != 'REPORT': bad.append('범죄를 본 주민이 신고하러 가지 않는다: %s' % st)
@@ -41,7 +41,7 @@ async def main():
           ST._base.guards.push({ kind: 't', target: true, sched: [{ at: [30, 21], stay: 2, name: '광장', act: '담배' }, { at: [40, 21], stay: 2, name: '편의점 앞', act: '통화' }], schedKey: 'tn' }); }''')
         await fresh([2])
         await pg.evaluate('() => { const P = window.__game.S.player; P.x = 44 * 48 + 10; P.y = 26 * 48 + 24; }'); await pg.wait_for_timeout(500)
-        lab = await pg.evaluate('() => window.__game.secondaryAction ? 1 : 0'); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_timeout(500)
+        lab = await pg.evaluate('() => window.__game.secondaryAction ? 1 : 0'); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_function('!window.__game.S.player.interact')
         r = await pg.evaluate('() => { const S = window.__game.S; return [S.player.item && S.player.item.id, window.__game.storyLines().map(l => l[1]).join(" / ")]; }'); print('물건·기회', r)
         if r[0] != 'box' or '택배 왔습니다' not in r[1] or '(1/2)' not in r[1]: bad.append('물건 줍기·기회 진행이 안 된다 %s' % r)
         # 택배 상자를 들면 뒷마당(택배 허가)에서 경고 없음
@@ -49,7 +49,7 @@ async def main():
         await pg.wait_for_timeout(2500); r = await pg.evaluate('() => [window.__game.S.guards[2].state, Math.round(window.__game.S.guards[2].meter * 100) / 100]'); print('상자 허가', r)
         if r[0] in ('WARN', 'ALERT') or r[1] > 0.5: bad.append('택배 상자를 들었는데 뒷마당에서 경고받는다 %s' % r)
         await pg.evaluate('() => { const P = window.__game.S.player; P.x = 33 * 48 + 24; P.y = 4 * 48 + 24; window.__game.S.guards[2].x = -9999; }'); await pg.wait_for_timeout(200)
-        await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_timeout(700)
+        await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_function('!window.__game.S.player.interact')
         r = await pg.evaluate('() => { const S = window.__game.S; return [S._used, !!S.player.item, S.stories[0].done]; }'); print('쓰기·기회 완료', r)
         if r != [1, False, True]: bad.append('물건 쓰기 또는 기회 완료가 안 된다 %s' % r)
         # 일과표: 정보 카드 문구, 알아내기 전엔 다음 행선지 숨김

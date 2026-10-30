@@ -8,7 +8,7 @@ const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
 // 겹친 대상까지 훑은 행동 후보 (사람 근처 '공격 우선' 바꾸기 없이 날것 그대로)
 // 한 프레임 안에서 화면·버튼·라벨이 같은 계산을 되풀이하지 않게 (시각·위치가 같으면 그대로). 버튼을 누를 땐 새로 구한다
 let RC = null;
-const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
+const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
 function rawChoices(n = 7) {
   const key = rcKey(); if (RC && RC.key === key) return RC.out.slice();
   const out = rawChoices0(n); RC = { key, out }; return out.slice();
@@ -27,7 +27,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
   return a;
 }
 function attackAction() {
-  const P = S.player;
+  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '공격' };
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return P.captive.target ? { k: 'cap', label: '처치' } : { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));
@@ -38,14 +38,27 @@ function attackAction() {
 }
 // [행동] 후보: 환경 행동 + (시체 메기·내려놓기·옷 갈아입기·줍기 등 예전 [보조] 쪽 일). 붙잡은 뒤엔 '끌고 가기'
 const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody']);
+function secondaryEnvChoices() {
+  const out = []; ACT_SKIP.clear();
+  try {
+    for (let i = 0; i < 6; i++) {
+      const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
+      const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
+      out.push(Object.assign({}, a, { fromZ: true }));
+      if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
+      if (!o) break; ACT_SKIP.add(o);
+    }
+  } finally { ACT_SKIP.clear(); }
+  return out;
+}
 function envChoices() {
+  if (actionBusy()) return [];
   const hanging = S.player;
   if (hanging.ledge) return hanging.trav || hanging.jump ? [] : [{ k: 'ledgeUp', label: '올라가기', at: { x: hanging.x, y: hanging.y - 20 } }];
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
-  const P = S.player, sa = secondaryAction(true), z = sa && ENV_Z.has(sa.k) ? [Object.assign({}, sa, { fromZ: true })] : [];
-  if (sa && sa.k === 'dress') z.push({ k: 'carry', c: sa.c, label: '운반', fromZ: true });  // 옷 옆에서도 메기는 ⇄로
+  const P = S.player, z = secondaryEnvChoices(), sa = z[0];
   if (P.captive) { const d = rawChoices().find(a => a.k === 'drag'); return d ? [d] : []; }
-  const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute');
+  const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute' && !(a.k === 'stash' && z.some(b => b.k === 'carry' && b.h === a.h)));
   { const rc = !P.carrying && rumorTarget(); if (rc && !env.some(a => a.k === 'rumor')) env.push({ k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }); }  // 문·창문 옆이어도 [대상]으로 고를 수 있게
   // 시체 옆·메고 있을 때는 시체 일이 먼저, 그 밖엔 환경 행동이 먼저
   // 시체를 멘 채 계단 칸: 오르내리기가 먼저 (내려놓기는 ⇄)
@@ -54,13 +67,18 @@ function envChoices() {
   return (P.carrying || (sa && (sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel'))) ? z.concat(env) : env.concat(z);
 }
 function envAction() {
-  const L = envChoices(); if (!L.length) return { k: 'none', label: S.player.ledge || S.player.wire ? '올라가기' : '행동' };
-  const key = L.map(a => a.k + oid(actObj(a))).join('|'); const PP = S.player, stay = S.envPickP && Math.hypot(PP.x - S.envPickP.x, PP.y - S.envPickP.y) < 30; if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;  // 고르던 대상은 목록이 바뀌어도 그대로
-  const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a)); if (pk !== S.envPick) S.envPickP = { x: S.player.x, y: S.player.y }; S.envPick = pk;  // 고르던 대상은 그 자리(30px 안)에서만 유지 — 걸어서 옮기면 가까운 쪽부터 다시
+  if (actionBusy()) return busyEnvAction();
+  const L = envChoices(); if (!L.length) { S.envKey = S.envPick = S.envPickK = S.envPickP = null; S.envSel = 0; return { k: 'none', label: S.player.ledge || S.player.wire ? '올라가기' : '행동' }; }
+  const key = L.map(a => a.k + oid(actObj(a))).join('|'), PP = S.player, anchor = S.envPickP;
+  const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
+  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
+  if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
+  S.envPick = pk; S.envPickK = a.k;
   a.choices = L.length; a.choiceI = i; return a;
 }
 function grabAction() {
-  const P = S.player;
+  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '붙잡기' };
   if (P.ledge || P.wire) { const ok = !P.jump && !P.trav && (P.ledge ? landBelow(P.x, P.y, P.ledge, P.z) : wireFallOk()); return { k: ok ? (P.ledge ? 'ledgeDrop' : 'wireFall') : 'none', label: '떨어지기', blocked: !ok }; }
   if (P.car) return { k: 'none', label: '붙잡기' }; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
   const sa = secondaryAction(); return sa && sa.k === 'grab' ? sa : { k: 'none', label: '붙잡기' };
@@ -70,6 +88,7 @@ function actAttack() {
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
+  if (actionBusy(P)) return;
   if (P.car) { honk(); return; }
   if (P.captive) { if (P.captive.target) execCaptive(); else execCaptive(true); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
@@ -83,6 +102,7 @@ function actEnv() {
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
+  if (actionBusy()) return;
   const a = envAction(); if (a.k === 'none') return;
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true }));
 }
@@ -90,6 +110,7 @@ function actGrab() {
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
+  if (actionBusy()) return;
   if (S.player.ledge || S.player.wire) { const a = grabAction(); if (a.k !== 'none') actPrimary(Object.assign({}, a, { viaZ: true })); return; }
   if (S.player.captive) { if (canInterrogate()) interrogate(); return; }  // 잡은 채 한 번 더 = 바로 심문 (가만히 있어도 저절로 한다)
   const a = grabAction(); if (a.k === 'grab') grab(a.g);

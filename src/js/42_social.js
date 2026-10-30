@@ -181,13 +181,14 @@ function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // �
 function propsInit() { S.props = (STAGE.props || []).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
 function nearProp() {
   const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 58;
-  for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd) { bd = d; best = p; } }
+  for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd && objectReachable(p, 58)) { bd = d; best = p; } }
   return best;
 }
 function nearUse() {
   const P = S.player; if (!P.item || P.z || P.wire || P.hide) return null;
-  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; if (dist(P.x, P.y, tc(u.at[0]), tc(u.at[1])) < 56) return { u, i }; }
-  return null;
+  let best = null, bd = 56;
+  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; const at = { x: tc(u.at[0]), y: tc(u.at[1]), fl: u.fl || 0 }, d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 56)) { best = { u, i }; bd = d; } }
+  return best;
 }
 function takeProp(p) {
   const P = S.player;
@@ -204,7 +205,7 @@ function dropItem() {
   const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); play('drop', 0.3);
 }
 function useItem(n) {
-  const P = S.player, u = n.u, natural = u.permit && myPermits().includes(u.permit); S.usesDone[n.i] = true; if (!natural) { P.useT = S.t + 0.9; P.strikeT = Math.max(P.strikeT || 0, 0.5); } play('cloth', 0.4);  // 허가 옷(직원)이면 자연스러운 일 — 수상하지 않다
+  const P = S.player, u = n.u, natural = u.permit && myPermits().includes(u.permit); S.usesDone[n.i] = true; if (!natural) { P.useT = S.t + 0.9; if (!P.interact) P.strikeT = Math.max(P.strikeT || 0, 0.5); } play('cloth', 0.4);  // 허가 옷(직원)이면 자연스러운 일 — 수상하지 않다
   if (!u.keep) { const p = P.item; P.item = null; if (p) p.used = true; }
   try { u.act && u.act(S, SH); } catch (e) { console.warn('use', e); }
   toast(u.done || '했다', 2.4, 'good');

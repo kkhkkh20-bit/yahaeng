@@ -22,7 +22,7 @@ async def main():
         # 1 택배: 트럭 옆 상자를 들고 → 샛길 → 뒷마당(자경대원 ③ 앞) → 뒷문 → 창고 → (직원·② 없을 때) 사무실 장부
         await fresh(); await pg.evaluate("T.away(1, 'boss', 'kid', 'clerk', 'courier')")
         await pg.evaluate('T.at(48, 28)'); await pg.wait_for_timeout(200)
-        r = await pg.evaluate('() => { const a = T.G().secondaryAction(); T.G().actCarry(); return [a.label, T.S().player.item && T.S().player.item.id]; }'); print('상자', r)
+        lab = await pg.evaluate('() => { const a = T.G().secondaryAction(); T.G().actCarry(); return a.label; }'); await pg.wait_for_function('!T.S().player.interact'); r = [lab, await pg.evaluate('T.S().player.item && T.S().player.item.id')]; print('상자', r)
         if r[1] != 'box': bad.append('택배 상자를 못 든다 %s' % r)
         for (x, y) in [(46, 22), (46, 5), (34, 4), (30, 7), (33, 9)]:
             await pg.evaluate(f'T.walk({x}, {y})')
@@ -45,7 +45,7 @@ async def main():
         await pg.evaluate('T.walk(23, 3)'); await pg.evaluate('() => { const P = T.S().player, k = T.npc("kid"); P.x = k.x + 30; P.y = k.y; P.a = Math.PI; }')
         lab = await pg.evaluate('() => T.G().primaryAction().label'); await pg.evaluate('() => T.G().actPrimary()'); await pg.wait_for_timeout(900)
         await pg.evaluate('() => { const c = T.S().corpses.find(c => c.tag === "kid"); T.S().player.x = c.x + 18; T.S().player.y = c.y; }'); await pg.wait_for_timeout(100)
-        a1 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_timeout(600)
+        await pg.wait_for_function('!T.G().actionBusy()'); a1 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_function('!T.S().player.interact')
         a2 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_timeout(700)
         await pg.evaluate('T.walk(19, 3)'); a3 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_timeout(700)
         r = await pg.evaluate('() => [T.S().player.outfit, T.S().corpses.find(c => c.tag === "kid").stashed, T.S().stories.find(s => s.d.id === "smoke").step]'); print('막내', lab, a1, a2, a3, r)

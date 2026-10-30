@@ -14,7 +14,7 @@ const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
   const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
-  for (const b of S.hides) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
+  for (const b of S.hides) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b)) { bd = d; best = b; } }
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
@@ -45,7 +45,7 @@ function nearFloorDown() {
 }
 function nearNote() {
   const P = S.player; if (P.z || P.wire || P.jump || P.hide || !S.notes) return null; let best = null, bd = 44;
-  for (const n of S.notes) { if (ACT_SKIP.has(n)) continue; if (n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = n; } }
+  for (const n of S.notes) { if (ACT_SKIP.has(n)) continue; if (n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd && objectReachable(n, 44)) { bd = d; best = n; } }
   return best;
 }
 // 쪽지를 읽는다. 표적을 살려 둘 근거(spare)가 되는 쪽지면 선택이 열린다
@@ -334,8 +334,13 @@ function lootPlace(it, only) {  // only: 이 가구 종류만 (쪽지 '책상 �
 }
 function nearLoot() {
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.vent || P.under) return null;
-  for (const it of S.items) if (!it.got && it.furn && flOf(it) === flOf(P) && (dist(P.x, P.y, it.x, it.y) < 34 || dist(P.x, P.y, it.dx, it.dy + 6) < 58)) return it;
-  return null;
+  let best = null, bd = Infinity;
+  for (const it of S.items) {
+    if (ACT_SKIP.has(it) || it.got || !it.furn || flOf(it) !== flOf(P)) continue;
+    const stand = dist(P.x, P.y, it.x, it.y), face = { x: it.dx, y: it.dy + 6, fl: flOf(it) }, d = dist(P.x, P.y, face.x, face.y);
+    if (((stand < 34 && objectReachable(it, 34)) || objectReachable(face, 58)) && Math.min(stand, d) < bd) { best = it; bd = Math.min(stand, d); }
+  }
+  return best;
 }
 function startLoot(it) { if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
   hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
@@ -368,10 +373,10 @@ function updatePick(P, mag, dt) {
   else { const d = K.d; noteChange('door', d, d.keyLock); d.keyLock = null; setDoor(d, false); toast(`잠금장치를 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
 }
 function drawPickProgress(P) {
-  const K = P.pick; if (!K) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
+  const K = P.pick || P.interact; if (!K || (P.interact && K.dur < 0.5)) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
   ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(P.interact ? (K.pose === 'dress' ? '변장' : '사용') : K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
@@ -429,17 +434,17 @@ function kunaiTarget() {
 }
 function nearCorpse() {
   const P = S.player; if (P.z || P.jump) return null; let best = null, bd = 46;
-  for (const c of S.corpses) { if (ACT_SKIP.has(c)) continue; if (c.carried || c.stashed || flOf(c) !== flOf(P)) continue; const d = dist(P.x, P.y, c.x, c.y); if (d < bd) { bd = d; best = c; } }
+  for (const c of S.corpses) { if (ACT_SKIP.has(c)) continue; if (c.carried || c.stashed || flOf(c) !== flOf(P)) continue; const d = dist(P.x, P.y, c.x, c.y); if (d < bd && objectReachable(c, 46)) { bd = d; best = c; } }
   return best;
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (ACT_SKIP.has(l)) continue; if (l.broken || l.pole || l.cut != null || !(l.off || lampOn(l)) || flOf(l) !== flOf(P)) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.lamps) { if (ACT_SKIP.has(l)) continue; if (l.broken || l.pole || l.cut != null || !(l.off || lampOn(l)) || flOf(l) !== flOf(P)) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd && objectReachable(l, 48)) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {
   const P = S.player; if (P.z || P.fl || P.jump || P.hide) return null; let best = null, bd = 58;
-  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd) { bd = dd; best = d; } }
+  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd && objectReachable(d, 58)) { bd = dd; best = d; } }
   if (!best) return null;
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;
@@ -449,7 +454,7 @@ function doorBlocked(d) { return d.group.some(t => S.guards.some(g => g.state !=
 function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; G[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;
-  for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
+  for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b, 64)) { bd = d; best = b; } }
   return best;
 }
 // 실행 거리 밖에서도 붙잡은 적과 함께 들어갈 곳과 행동 키를 미리 안내한다.
@@ -462,7 +467,7 @@ function captiveDragPreview() {
   }
   return best;
 }
-function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && S.lightsOn && dist(P.x, P.y, tc(STAGE.fuse[0]), tc(STAGE.fuse[1])) < 62; }
+function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && S.lightsOn && objectReachable({ x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, 62); }
 
 function nearVent() {
   const P = S.player; if (P.jump || P.carrying || P.captive || P.hide || P.under || P.fl) return null;
@@ -589,7 +594,7 @@ function primaryActionOne() {
 }
 function primaryActionRaw() {
   const P = S.player;
-  if (P.trav || P.lunge || P.grabIn || (P.strikeT > 0 && (P.killAnim || P.bodyAnim))) return { k: 'none', label: '…' };
+  if (actionBusy(P)) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
@@ -659,10 +664,10 @@ function primaryActionRaw() {
   { const wc = nearWinClimb(); if (wc) return { k: 'winClimb', w: wc, at: { x: wc.x, y: wc.y }, label: '벽 타고 2층 창문으로' }; }  /* 1층 창문이 먼저, 2층 창문 오르기는 ⇄ */
   const h = nearHide();
   if (h && !P.carrying) return { k: 'hide', h, label: '숨기' };
-  if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', label: '넣기' };
+  if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', h, c: P.carrying, label: '넣기' };
   if (P.carrying) return { k: 'none', label: '—' };  // 메고 있는 동안 큰 버튼이 조명·문을 가리키지 않게 (내려놓기는 [보조])
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
-  if (nearFuse()) return { k: 'fuse', label: '전체 조명 끄기' };
+  if (nearFuse()) return { k: 'fuse', at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: '전체 조명 끄기' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
   // 문·두꺼비집·조명이 함께 가까우면: 가까운 쪽, 단 방금 고른 것은 24px 더 멀어질 때까지 유지 (몇 픽셀 차이로 바뀌지 않게). 다른 하나는 Z로
   const dr = nearDoor(), bf = nearBFuse(), lp = nearLamp(), cands = [];
@@ -684,10 +689,11 @@ function primaryActionRaw() {
 function actPrimary(force) {
   if (!S || S.over || paused || !running || tactical) return;  // 전술 지도(시간 멈춤) 중에는 행동하지 않는다
   if (DLG.modal) { advanceDialog(); return; }
-  if (S.amb) return;  // 끌어들이는 중
+  if (actionBusy() && !(S.player.interact && S.player.interact.committing)) return;
   const a = force && force.viaZ ? force : primaryAction(), P = S.player;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
   if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람에게는 [공격], 문·조명·쪽지는 [행동]'); return; }
+  if (!(P.interact && P.interact.committing) && beginObjectAction(a)) return;
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
@@ -828,14 +834,20 @@ function actPrimary(force) {
       toast('굴뚝을 막았다 — 연기가 방에 차며 불이 꺼졌다. 안의 자경대원이 다시 불을 피우러 온다', 3, 'good');
       break;
     }
-    case 'ventIn': { S.stats.vents = (S.stats.vents || 0) + 1;
-      const v = a.v; P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = Math.max(S.fade || 0, 0.25);  /* 창살 속으로: 화면이 잠깐 어두워진다 */ S.fade = 0.3;
-      toast('환풍구로 들어갔다', 1.6); break;
+    case 'ventIn': {
+      const v = a.v; v.open = !v.roof; P.cover = null; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.4 }, { x: v.x, y: v.y + 4, f: 1 }], dur: 0.6,
+        phases: [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'sink' }], rim: v.y + 10,
+        end: () => { P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; S.stats.vents = (S.stats.vents || 0) + 1; S.fade = 0.12; toast('환풍구로 들어갔다', 1.6); } });
+      break;
     }
     case 'ventOut': {
-      const v = a.v; P.vent = false; P.z = v.z; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = 0.25;
-      if (!v.roof && v.z === 0) { const tx = v.tx, ty = v.ty; if (groundSolidP(tx, ty)) { const o = N8.find(o => !groundSolidP(tx + o[0], ty + o[1])); if (o) { P.x = tc(tx + o[0]); P.y = tc(ty + o[1]); } } }
-      hint('ventOpen', '열어 둔 창살은 지나가던 자경대원이 보면 의심한다');
+      const v = a.v; let x = v.x, y = v.y;
+      if (!v.roof && v.z === 0 && groundSolidP(v.tx, v.ty)) { const o = N8.find(o => !groundSolidP(v.tx + o[0], v.ty + o[1])); if (o) { x = tc(v.tx + o[0]); y = tc(v.ty + o[1]); } }
+      P.vent = false; P.z = v.z; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.6 }, { x, y, f: 1 }], dur: 0.6,
+        phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'walk' }], rim: v.y + 10,
+        end: () => { P.x = x; P.y = y; S.fade = 0.12; hint('ventOpen', '열어 둔 창살은 지나가던 자경대원이 보면 의심한다'); } });
       break;
     }
     case 'ventKill': {
@@ -919,13 +931,14 @@ function actPrimary(force) {
       break;
     }
     case 'hide': enterHide(a.h); break;
-    case 'stash': actCarry(); break;
+    case 'stash': actCarry({ k: 'carry', c: P.carrying, h: a.h }); break;
   }
 }
 // 붙잡기: 바로 붙지 않는다. 등 뒤로 몇 걸음 달려 붙고(run) → 팔로 목을 감아 끌어당긴다(clinch) → 그 뒤에 끌고 다닌다
 const DRAG_SPD = 0.4, GRAB_CLINCH = 0.36;
 function grab(g) {
-  const P = S.player, d = Math.max(1, dist(P.x, P.y, g.x, g.y)), ux = (g.x - P.x) / d, uy = (g.y - P.y) / d;
+  const P = S.player; if (actionBusy(P)) return;
+  const d = Math.max(1, dist(P.x, P.y, g.x, g.y)), ux = (g.x - P.x) / d, uy = (g.y - P.y) / d;
   g.doomed = true; g.moving = false; g.path = null; P.a = Math.atan2(uy, ux); P.vx = P.vy = 0;
   const run = Math.max(0, d - 26) / 300;
   P.grabIn = { g, t: 0, run, dur: run + GRAB_CLINCH, x0: P.x, y0: P.y, x1: g.x - ux * 26, y1: g.y - uy * 26 };
@@ -1258,7 +1271,7 @@ function bldPower(fb, on) {
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
   if (on) { const B = BLD[fb.b]; if (dist(S.player.x, S.player.y, fb.x, fb.y) < 900) toast(`${B.plate || B.name || '건물'} 전기가 다시 들어왔다`, 2.2); }
 }
-function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd) { bd = d; best = fb; } } return best; }
+function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
 function cutLights() {
   S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast('바깥 조명이 꺼졌다 — 곧 누군가 확인하러 온다', 3); setAlert(1, 30);
@@ -1270,11 +1283,13 @@ function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.a
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   const P = S.player;
+  if (actionBusy(P) && !(P.interact && P.interact.committing)) return;
   if (P.hide) { if (P.hide.type === 'well') travelTunnel(); return; }
   if (P.z && !P.jump && !P.trav && !P.lunge && !P.wire) { const sa = force || secondaryAction(); if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 가까이 온 자경대원은 끌어내린다'); } return; }
   if (P.z || P.jump || P.trav || P.lunge || P.grabIn || P.vent || P.under) return;
   if (P.captive) { actPrimaryForce(P.captive.target ? 'execute' : 'choke'); return; }
   const sa = force || secondaryAction();
+  if (!(P.interact && P.interact.committing) && beginObjectAction(Object.assign({}, sa, { fromZ: true }))) return;
   if (sa.viaZ) { actPrimary(sa); return; }
   if (sa.k === 'cover') { enterCover(sa.n); return; }
   if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 밖으로 밀면 손을 놓고 뛰어내린다(2층 높이까지). 가까이 온 자경대원은 끌어내린다'); return; }
@@ -1305,7 +1320,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   if (P.carrying) {
-    const c = P.carrying; const b = nearHide(), pc = pairCarry(P);
+    const c = P.carrying; const b = sa.h || nearHide(), pc = pairCarry(P);
     if (b && b.bodies < b.cap) {
       if (pc) { P.a = Math.atan2(b.y - P.y, b.x - P.x); startBodyAnim('stash', c, 0.5); }
       c.carried = false; c.stashed = true; P.carrying = null; b.bodies++; S.stats.stashed++;
@@ -1325,14 +1340,14 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     toast(c.hidden ? '시체를 화단에 숨겼다' : '시체를 내려놓았다 (눈에 띌 수 있음)', 2.2, c.hidden ? 'good' : '');
     return;
   }
-  const c = nearCorpse();
-  if (c) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  const c = sa.c || nearCorpse();
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 function actPrimaryForce(k) { if (k === 'execute') execCaptive(); else if (k === 'choke') execCaptive(true); }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
   const P = S.player;
-  if (P.trav || P.lunge || P.grabIn) return { k: 'none', label: '…' };
+  if (actionBusy(P)) return busyEnvAction();
   if (P.under || P.vent) return { k: 'none', label: '보조' };
   if (P.ledge) return { k: 'none', label: '매달림' };
   if (P.z && !P.wire && !P.jump) { const lg = ledgeAt(P); if (lg) return { k: 'ledge', n: lg, label: '가장자리에 매달리기' }; }
@@ -1340,7 +1355,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   if (P.captive) return { k: 'execute', label: P.captive.target ? '처치' : '기절시키기' };
   if (P.carrying) {
     if (!nearHide()) { const tg = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.target && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 300 && dist(g.x, g.y, P.x, P.y) > 70 && los(P.x, P.y, g.x, g.y) && Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < 1.0).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0]; if (tg) return { k: 'throwBody', g: tg, label: '시체 던지기 (겁주기)' }; }
-    { const nh = nearHide(); return { k: 'carry', label: nh && nh.bodies < nh.cap ? '넣기' : nh ? '내려놓기 (가득 참)' : '내려놓기' }; }
+    { const nh = nearHide(); return { k: 'carry', c: P.carrying, h: nh, label: nh && nh.bodies < nh.cap ? '넣기' : nh ? '내려놓기 (가득 참)' : '내려놓기' }; }
   }
   if (P.z || P.jump) return { k: 'none', label: '보조' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 (${P.candy})` };
@@ -1349,14 +1364,14 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
   const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };
-  if (nc) return { k: 'carry', label: '운반' };
+  if (nc) return { k: 'carry', c: nc, label: '운반' };
   const hp = envOnly ? {} : primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   return { k: 'none', label: '보조' };
 }
 function actThrow(pt) {
   if (!S || S.over || paused || !running) return;
-  const P = S.player; if (P.hide || P.jump || P.trav || P.under || P.vent) return;
+  const P = S.player; if (actionBusy(P) || P.hide || P.under || P.vent) return;
   if (P.stones <= 0) { toast('빈 캔이 없다', 1.4); return; }
   const tx = pt ? pt.x : P.x + Math.cos(P.a) * 230, ty = pt ? pt.y : P.y + Math.sin(P.a) * 230;
   const ang = Math.atan2(ty - P.y, tx - P.x); let d = Math.min(330, dist(P.x, P.y, tx, ty));
@@ -1368,7 +1383,7 @@ function actThrow(pt) {
 }
 function actCoin(pt) {
   if (!S || S.over || paused || !running) return;
-  const P = S.player; if (P.hide || P.jump || P.under || P.vent) return;
+  const P = S.player; if (actionBusy(P) || P.hide || P.under || P.vent) return;
   if (P.z) { toast('옥상 위에서는 담배를 던질 수 없다', 1.6); return; }
   if (P.coins <= 0) { toast('담배이 없다', 1.4); return; }
   const tx = pt ? pt.x : P.x + Math.cos(P.a) * 110, ty = pt ? pt.y : P.y + Math.sin(P.a) * 110;
@@ -1382,7 +1397,7 @@ function actCoin(pt) {
   hint('coin', '담배: 본 자경대원이 주우러 와서 고개를 숙인다. 정예는 안 넘어간다');
 }
 function actKunai(forced) {
-  if (!S || S.over || paused || !running) return;
+  if (!S || S.over || paused || !running || actionBusy()) return;
   const P = S.player;
   if (P.kunai <= 0) { toast('다트가 없다', 1.4); return; }
   const t = forced || kunaiTarget();

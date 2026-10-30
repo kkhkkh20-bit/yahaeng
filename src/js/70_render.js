@@ -136,6 +136,15 @@ function drawPlayer(P) {
   }
   if (usePR(playerLook)) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
+    if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
+      const I = P.interact || P.pick, f = clamp(I.t / I.dur, 0, 1), ground = I.pose === 'ground' || I.pose === 'dress' || I.kind === 'clean' || I.kind === 'loot';
+      let anim = 'idle', fi = 0;
+      if (f > 0.12 && f < 0.9) {
+        anim = ground ? (f < 0.3 || f > 0.78 ? 'crouch' : 'stoop') : 'lift';
+        fi = anim === 'lift' && f > 0.4 && f < 0.75 ? 1 : 0;
+      }
+      drawPR(playerLook, P.x, P.y, P.a, anim, 0, blink ? 0.35 : 1, sc / 3, -yo, fi); return;
+    }
     const GI = P.grabIn;  // 붙잡기: 손이 닿은 뒤 목을 감아 끌어당기는 동작 (조르기 첫 단계를 그대로 쓴다)
     if (GI && GI.g.state === 'CAPTIVE' && PAIR() && PR.anims.choke && usePR(charOf(GI.g))) {
       const u = Math.min(1, (GI.t - GI.run) / Math.max(0.01, GI.dur - GI.run)), kt = 1 - (1 - u) * (1 - u), PK1 = playerLook, s1 = sc / 3, fi = ktFrame('choke', kt), j = u > 0.6 ? Math.sin(S.t * 40) * 1.2 : 0;

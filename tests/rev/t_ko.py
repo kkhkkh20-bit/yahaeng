@@ -22,7 +22,7 @@ async def main():
         if r[:3] != ['DEAD', True, 0] or r[5] != 'crew': bad.append('조직원 톡 = 기절 결과가 다르다 %s' % r)
         # 2 시체 옷 갈아입기 → 자경대원 옷
         await pg.evaluate('() => { const S = window.__game.S, c = S.corpses[S.corpses.length - 1]; S.player.x = c.x - 20; S.player.y = c.y; }')
-        await pg.wait_for_timeout(100); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_timeout(400)
+        await pg.wait_for_timeout(100); await pg.wait_for_function('!window.__game.actionBusy()'); await pg.evaluate('() => window.__game.actCarry()'); await pg.wait_for_function('!window.__game.S.player.interact')
         r = await pg.evaluate('() => [window.__game.S.player.outfit, window.__game.S.player.disguiseBlown, window.__game.S.player.carrying ? 1 : 0]'); print('옷', r)
         if r[0] != 'crew' or r[1]: bad.append('기절자 옷을 못 입는다 %s' % r)
         # 3 허가 옷: 상회 사무실(출입 금지)에서 자경대원 눈앞에 서도 경고·발각 없음

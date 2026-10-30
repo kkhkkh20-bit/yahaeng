@@ -28,6 +28,7 @@ async def main():
             return G.zoneInfo(P.x,P.y,P.z);
           };
           window.tick = (seconds) => {const G=window.__game; for(let t=0;t<seconds;t+=.05){G.S.t+=.05;G.updateGuard(window.q,.05)}};
+          window.finishHands = () => {const G=window.__game;for(let t=0;t<1;t+=.02){G.S.t+=.02;G.updatePlayer(.02)}};
           window.check = (ok,msg) => {if(!ok)throw Error(msg)};
         }''')
         result = await pg.evaluate('''() => {
@@ -52,9 +53,9 @@ async def main():
           fixture(null);q.seen=true;G.goAlert(q);G.takeProp({outfit:'crew'});
           check(P.disguiseBlown&&G.knownFace(q),'Visible clothing change must be recognized '+JSON.stringify({blown:P.disguiseBlown,known:G.knownFace(q),outfit:P.outfit,disguise:P.disguise,look:q.suspectLook,seen:q.seen,vis:G.canSee(q,P.x,P.y,1,false,false,0)}));results.push('watched change');
           fixture(null);q.seen=true;G.goAlert(q);q.a=q.want=Math.PI;
-          const body={outfit:'crew',ch:'sam',stripped:false};G.actCarry({k:'dress',c:body});
+          const body={outfit:'crew',ch:'sam',stripped:false,x:P.x,y:P.y,fl:0};G.actCarry({k:'dress',c:body});finishHands();
           check(body.stripped&&P.outfit==='crew'&&!P.disguiseBlown&&!G.knownFace(q),'Body clothing must use unseen-change rules');
-          fixture(null);q.seen=true;G.goAlert(q);G.actCarry({k:'dress',c:{outfit:'crew',ch:'sam'}});
+          fixture(null);q.seen=true;G.goAlert(q);G.actCarry({k:'dress',c:{outfit:'crew',ch:'sam',x:P.x,y:P.y,fl:0}});finishHands();
           check(P.disguiseBlown&&G.knownFace(q),'Body clothing must also be recognized when watched');results.push('body clothing');
           fixture(null);q.radio=true;q.seen=true;G.goAlert(q);const at={...q.lastSeen};
           P.x=q.x+150;P.y=q.y+40;q.a=q.want=Math.PI;G.takeProp({outfit:'crew'});tick(1);

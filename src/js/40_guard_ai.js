@@ -382,7 +382,7 @@ function updateCiv(g, dt) {
     const gb = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)), pb = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
     const H = g.home, ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
     // 범죄(처치·기절·운반·붙잡기·락픽·몰래 약 타기)와 무단 침입(직원이 일터의 불청객을 봄)을 따로 본다
-    const crimeNow = !!(P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
+    const crimeNow = !!((P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
     const homeNow = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1);
     const tresNow = !!(STAGE.zones && g.outfit && !g.child && pZoneEff() !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
     g.wary = homeNow || crimeNow || tresNow;
