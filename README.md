@@ -2,6 +2,10 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PRODUCT_IMPLEMENTATION.md
+
+변경 화면: https://kkhkkh20-bit.github.io/yahaeng/product-improvement/
+
 게임 문구 검수: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/COPY_REVIEW.md
 
 층 안내·변장·수색·CCTV 수정: https://kkhkkh20-bit.github.io/yahaeng/search-rules/
@@ -22,5 +26,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v93
-Source commit: 0526d6de6902ff03af332af5af04a36add83f5e4
+Version: v94
+Source commit: 8b29ffb63a9425c6210798fee1450f00cec463ac
