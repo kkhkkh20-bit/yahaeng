@@ -1,6 +1,6 @@
 // 손을 쓰는 행동은 대상 확인 → 손 뻗기 → 접촉 → 마무리까지 한 번만 실행한다.
 function actionBusy(P = S.player) {
-  return !!(P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
+  return !!(P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
     (P.strikeT > 0) || (P.bodyAnim && S.t - P.bodyAnim.t0 < P.bodyAnim.dur));
 }
 // 벽·층 너머 물건을 잡지 않는다. 벽에 붙인 스위치와 가구 끝에는 손이 닿는다.
@@ -64,5 +64,5 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
-  return { k: 'none', busy: true, label: P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
+  return { k: 'none', busy: true, label: P.lethalHold ? '누르는 중' : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }

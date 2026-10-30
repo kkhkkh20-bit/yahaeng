@@ -94,7 +94,7 @@ function updateCheckpoint(dt) {
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
   const P = S.player;
-  if (S.alevel >= 2 || S.radioCall || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
+  if (S.alevel >= 2 || S.radioCall || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
   if (S.guards.some(g => !g.civ && ['ALERT', 'NOTICE', 'BODY'].includes(g.state))) return;
   S.cpWant = false; saveCheckpoint();
 }
@@ -113,6 +113,7 @@ function loadCheckpoint() {
   setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
+  S.koHold = null; S.player.lethalHold = null; input.pressIds = {};
   S.keypad = null; const kp = $('keypad'); if (kp) kp.hidden = true;
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -122,7 +123,7 @@ function loadCheckpoint() {
 }
 function checkObjective() {
   if (S.exitOpen || STAGE.city) return;  // 도시: 끝이 없다 (의뢰는 의뢰 장소에서)
-  const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && g.state !== 'DEAD').length;
+  const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && !targetEliminated(g)).length;
   const itemsLeft = S.items.filter(i => !i.got).length;
   if (!targetsLeft && !itemsLeft) { S.exitOpen = true; if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
 }

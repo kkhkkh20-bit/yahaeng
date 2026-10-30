@@ -44,8 +44,8 @@ async def main():
         await ev("() => window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyC', key: 'c' }))"); await pg.wait_for_timeout(1800)
         r = await ev("() => { const S = window.__game.S; return [!!S.player.keys.code, S.learned.length]; }"); print('심문 2', ok, r)
         if not r[0]: bad.append(f'두 번째 심문에서 비번이 안 나온다 {r}')
-        # 3-b 붙잡은 채 [행동] = 처치
-        await ev('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1500)
+        # 3-b 붙잡은 채 [공격]을 계속 누르면 처치
+        await pg.keyboard.down('KeyZ'); await pg.wait_for_timeout(1400); await pg.keyboard.up('KeyZ'); await pg.wait_for_timeout(200)
         r = await ev("() => { const S = window.__game.S; return [S.guards[26].state, S.stats.kills, S.stats.crewKills, S.toasts.map(t => t.text).join('|')]; }"); print('붙잡아 처치', r[:3])
         if r[0] != 'DEAD' or r[1] != 1: bad.append(f'붙잡은 채 [행동]이 처치가 아니다 {r[:3]}')
         if '까마귀:' not in r[3] and not await ev("() => (window.__game.S.radioN || 0) > 0"): bad.append('첫 처치에 사장님 무전이 없다')

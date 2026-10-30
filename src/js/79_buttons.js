@@ -15,7 +15,7 @@ function rawChoices(n = 7) {
 }
 function rawChoices0(n) {
   const out = []; ACT_SKIP.clear();
-  try { for (let i = 0; i < n; i++) { const a = primaryActionRaw(); if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
+  try { for (let i = 0; i < n; i++) { const a = combatLabel(primaryActionRaw()); if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
   finally { ACT_SKIP.clear(); }
   return out;
 }
@@ -27,10 +27,11 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
   return a;
 }
 function attackAction() {
-  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '공격' };
+  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: P.lethalHold ? '누르는 중' : '공격' };
   if (P.car) return { k: 'none', label: '경적', honk: true };
-  if (P.captive) return P.captive.target ? { k: 'cap', label: '처치' } : { k: 'cap', label: '기절', hold: '처치' };
+  if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));
+  const c = nearFinish(); if (c) return combatLabel({ k: 'finish', c, g: c.g });
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
   // 등 뒤에 있을 때만 다가가기 표시 (정면이면 공격을 권하지 않는다)
   const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
@@ -86,7 +87,7 @@ function grabAction() {
   const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '붙잡기' };
   if (P.ledge || P.wire) { const ok = !P.jump && !P.trav && (P.ledge ? landBelow(P.x, P.y, P.ledge, P.z) : wireFallOk()); return { k: ok ? (P.ledge ? 'ledgeDrop' : 'wireFall') : 'none', label: '떨어지기', blocked: !ok }; }
   if (P.car) return { k: 'none', label: '붙잡기' }; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
-  const sa = secondaryAction(); return sa && sa.k === 'grab' ? sa : { k: 'none', label: '붙잡기' };
+  const g = grabTarget(); return g ? { k: 'grab', g, label: '붙잡기' } : { k: 'none', label: '붙잡기' };
 }
 function actAttack() {
   RC = null;
@@ -95,12 +96,12 @@ function actAttack() {
   const P = S.player;
   if (actionBusy(P)) return;
   if (P.car) { honk(); return; }
-  if (P.captive) { if (P.captive.target) execCaptive(); else execCaptive(true); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
+  if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
   if (a.k === 'none') { if (a.stalk) { S.qBuf = 0.5; S.qKill = true; } return; }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
-  if (a.hold && !['kill', 'kill2'].includes(a.k)) S.koNext = true;
-  actPrimary(Object.assign({}, a, { viaZ: true }));
+  // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
+  actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));
 }
 function actEnv() {
   RC = null;
@@ -109,7 +110,7 @@ function actEnv() {
   if (input.aiming) { queueAim(); return; }
   if (actionBusy()) return;
   const a = envAction(); if (a.k === 'none') return;
-  if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true }));
+  if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
 }
 function actGrab() {
   RC = null;

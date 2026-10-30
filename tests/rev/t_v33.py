@@ -32,7 +32,8 @@ async def main():
         print(' door after', await ev('() => window.__d ? [window.__d.keyLock, window.__d.locked, T.S().player.picks] : 0'))
         # 3) 자동 기대기
         await ev('() => window.__game.start(1)'); await pg.wait_for_timeout(300); await ev(SKIP); await ev(H); await ev('() => T.freeze()')
-        r = await ev('''() => { const S = T.S(), P = S.player, G = T.G(); const w = S.windows.find(w => w.b >= 0 && G.bldAt(w.tx, w.ty + 1) < 0);
+        r = await ev('''() => { const S = T.S(), P = S.player, G = T.G(); const w = S.windows.find(w => w.b >= 0 && G.bldAt(w.tx, w.ty + 1) < 0) || G.BLD.flatMap((B,b) => Array.from({length: Math.max(0,B.x1-B.x0-2)},(_,i)=>({tx:B.x0+2+i,ty:B.y1,b}))).find(w => G.solidAt(w.tx,w.ty) && G.solidAt(w.tx-1,w.ty) && !G.solidAt(w.tx,w.ty+1) && !G.solidAt(w.tx-1,w.ty+1));
+            if (!w) throw Error('No walkable frontage for cover fixture');
             const B = G.BLD[w.b]; P.x = (w.tx) * 48 + 24 - 30; P.y = (B.y1 + 1) * 48 + 15; P.a = Math.PI / 2; return [w.tx, B.y1, Math.round(P.x), Math.round(P.y)]; }''')
         print(' placed', r)
         # 벽 쪽으로 걸어가 멈추기

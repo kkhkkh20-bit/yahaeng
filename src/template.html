@@ -122,7 +122,7 @@ body.touch .tools .tool kbd { display: none; }
 .pad > button svg { display: block; margin-bottom: 1px; }
 .pad > button small { display: block; font-size: 10px; line-height: 1.1; opacity: .85; font-weight: 600; }
 .pad #btnAct { position: relative; }
-.pad #btnAct::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; background: conic-gradient(#ff6a4c calc(var(--hold, 0) * 360deg), transparent 0); -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); pointer-events: none; }
+.pad #btnAct::after, .pad #btnCarry::after { content: ''; position: absolute; inset: -7px; border-radius: 50%; background: conic-gradient(#ff6a4c calc(var(--hold, 0) * 360deg), transparent 0); -webkit-mask: radial-gradient(circle, transparent 62%, #000 63%); mask: radial-gradient(circle, transparent 62%, #000 63%); pointer-events: none; }
 .pad #btnAct.ko { background: #2c3550; border-color: #9fb4ff; color: #fff; box-shadow: 0 0 0 6px rgba(120, 150, 255, .2); }
 .keys .km em { font-style: normal; color: var(--paper-dim); }
 .keys .km.on em { color: var(--paper); font-weight: 700; }
@@ -854,7 +854,7 @@ body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-co
       <li><strong>CCTV와 관리실</strong>CCTV에 찍히면 관리실에서 화면을 보던 사람이 경보를 낸다. 관리실 사람을 쓰러뜨리면 찍혀도 녹화만 남고, 관리실 화면에서 [행동]으로 CCTV를 모두 끄고 녹화를 지울 수 있다.</li>
       <li><strong>서치라이트</strong>옥상·망루의 서치라이트는 멀리까지 밝게 비춘다. 빛줄기 안에서는 누구 눈에든 띈다. 경보가 울리면 마지막으로 본 자리 쪽을 비춘다. 다트로 깨거나 두꺼비집으로 끈다.</li>
       <li><strong>권총</strong>전체 경보가 울리면 정예와 증원은 권총을 꺼낸다. 붉은 조준선으로 1초 겨눈 뒤 쏜다 — 벽·차 뒤로 시야를 끊으면 빗나간다.</li>
-      <li><strong>기절과 처치</strong>등 뒤에서 [공격]을 누르면 먼저 기절시킨다. 그대로 1초 더 누르고 있으면 숨을 끊는다(피 없음). 기절한 사람은 동료에게 발견되면 깨어나 수색한다. 표적은 바로 처치 — 짧게 누르면 칼(피가 남는다), 길게 누르면 목 조르기.</li>
+      <li><strong>기절과 처치</strong>등 뒤에서 [공격]을 누르면 먼저 기절시킨다. 그대로 1초 더 누르고 있으면 숨을 끊는다(피 없음). 기절한 사람은 동료에게 발견되면 깨어나 수색한다. 표적도 같은 기준이다. 화단·수거함으로 끌고 가기도 짧게 누르면 기절, 같은 버튼을 계속 누르면 처치한다. 다트는 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치한다. 붙잡기는 별도 [붙잡기] 버튼으로 하며, 계속 눌러도 처치되지 않는다.</li>
       <li><strong>핏자국</strong>칼로 처치하면 바닥에 피가 남고, 처치한 시체를 메고 가면 핏방울이 이어진다. 핏자국을 본 경비는 바로 수색하며 핏방울 끝까지 따라간다. 기절이나 수거함·화단으로 끌어들이기는 피를 남기지 않는다. 핏자국 위에서 [행동]으로 닦을 수 있지만, 닦는 동안은 움직일 수 없고 보이면 수상하게 여긴다.</li>
       <li class="cityonly"><strong>기회 · 체크포인트</strong>함정·두꺼비집·비번 문을 보면 임무 칸에 "기회"로 남는다. 목표마다 체크포인트가 저장된다.</li>
       <li><strong>시야 원뿔</strong>원뿔은 그 자리 밝기만큼만 뻗는다(어두우면 짧고 불빛 아래면 길다). 원뿔은 지금 내 자세로 들키는 범위다 — 서 있으면 넓고, 웅크리면 줄어들고(어두운 곳에서 많이, 불빛 아래서는 조금), 벽에 붙으면 더 준다.</li>

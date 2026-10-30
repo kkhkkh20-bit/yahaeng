@@ -40,7 +40,7 @@ function queueAim() {
   const tool = input.tool, used = input.queue.filter(q => q.tool === tool).length + 1;
   const have = tool === 'stone' ? P.stones : tool === 'coin' ? P.coins : P.kunai;
   if (have - used < 1) { toast(`${TOOL_NAME[tool]}이(가) 모자라다`, 1.4); return; }
-  const it = { tool, a: P.a, pt: aimPoint() };
+  const it = { tool, a: P.a, pt: aimPoint(), lethal: (performance.now() - input.aiming.t0) >= LETHAL_HOLD * 1000 };
   if (tool === 'kunai') { it.tgt = kunaiTarget(); if (!it.tgt) { toast('노릴 대상이 없다', 1.4); return; }
     if (input.queue.some(q => q.tgt && q.tgt.ref === it.tgt.ref)) { toast('이미 예약한 대상이다', 1.4); return; } }
   input.queue.push(it); play('click', 0.35); input.aiming.t0 = performance.now();
@@ -50,7 +50,7 @@ function queueAim() {
 function runQueued(it) {
   const P = S.player; P.a = it.a;
   if (it.tool === 'stone') actThrow(it.pt); else if (it.tool === 'coin') actCoin(it.pt);
-  else if (it.tgt && !(it.tgt.ref && (it.tgt.ref.state === 'DEAD' || it.tgt.ref.broken))) { const g = it.tgt.ref; if (g && g.x != null && it.tgt.type !== 'cam' && it.tgt.type !== 'lamp') { it.tgt.x = g.x; it.tgt.y = g.y; } actKunai(it.tgt); }
+  else if (it.tgt && !(it.tgt.ref && (it.tgt.ref.state === 'DEAD' || it.tgt.ref.broken))) { const g = it.tgt.ref; if (g && g.x != null && it.tgt.type !== 'cam' && it.tgt.type !== 'lamp') { it.tgt.x = g.x; it.tgt.y = g.y; } actKunai(it.tgt, it.lethal); }
 }
 function aimPoint() {
   const P = S.player, a = input.aiming; if (!a) return null;
@@ -62,10 +62,10 @@ function aimPoint() {
 }
 function releaseAim() {
   if (!input.aiming) return;
-  const pt = aimPoint(); input.aiming = null;
+  const pt = aimPoint(), lethal = performance.now() - input.aiming.t0 >= LETHAL_HOLD * 1000; input.aiming = null;
   const q = input.queue || []; input.queue = [];
   if (!canAim()) return;
-  if (input.tool === 'stone') actThrow(pt); else if (input.tool === 'coin') actCoin(pt); else actKunai();
+  if (input.tool === 'stone') actThrow(pt); else if (input.tool === 'coin') actCoin(pt); else actKunai(undefined, lethal);
   if (q.length) { S.qRun = q; S.qRunT = 0.1; }
   syncTools();
 }
@@ -315,6 +315,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if (P.lethalHold && updateLethalHold(P, dt)) return;
   if (P.interact) { updateObjectAction(P, dt); return; }
   if (S.keypad) { P.moving = false; if (dist(P.x, P.y, S.keypad.d.x, S.keypad.d.y) > 90 || S.over) closeKeypad(); return; }
   if (P.trav) { updateTrav(P, dt); if (P.carrying) { const c = P.carrying; c.x = P.x; c.y = P.y; c.fl = flOf(P); }  // 계단을 오르내리는 동안 멘 시체도 함께
@@ -323,7 +324,6 @@ function updatePlayer(dt) {
   if (P.grabIn) { updateGrabIn(P, dt); return; }
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
-  if (S.killWait) { P.moving = false; P.vx = 0; P.vy = 0; if (updateKillWait()) return; }  // 처치 방식 고르는 짧은 순간 (칼/조르기)
   if (P.lunge) {
     const L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
     P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;

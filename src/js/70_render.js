@@ -941,13 +941,14 @@ function drawGunAim() {
 function drawActLabels(pa, P, ka, ga) {
   const k = Math.max(1, 0.95 / SCALE), T = (b, kc) => isTouch ? [`[${b}] `, null] : ['', kc];
   // [공격]: 사람 머리 위 (붉게) · [붙잡기]는 그 아래 한 줄
-  const vic = ka && (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk);
+  const vic = ka && (ka.c || (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk));
   let vy = null;
   if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
-    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc, 4); }  // [붙잡기]는 버튼이 켜지는 것으로 충분 — 머리 위 글자를 줄인다
+    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc, 4); }
+  if (ga && ga.k === 'grab' && ga.g) { const [p, kc] = T('붙잡기', KK('grab')); tag(ga.g.x, ga.g.y - 66 * k, '붙잡기', '#a8d4d6', 1, kc, 4); }
   if (!isTouch && ga && ['ledgeDrop', 'wireFall'].includes(ga.k)) { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : P; tag(h.x, h.y - 75 * k, '떨어지기', '#f2c46b', 1, KK('grab'), 3.5); }
   if (P.captive) { const ready = pa && pa.k === 'drag', h = ready ? pa.h : captiveDragPreview();
-    if (h) { const [p, kc] = T('행동', KK('env')); tag(P.x, P.y + 52 * k, p + hideName(h) + (ready ? ' · 끌고 처치' : ' · 가까이 가서 끌고 처치'), SCAN.hide, 1, kc, 5); }
+    if (h) { const [p, kc] = T('행동', KK('env')); tag(P.x, P.y + 52 * k, p + hideName(h) + (ready ? ' · 끌고 가 기절 · 길게 처치' : ' · 가까이 가서 끌고 가 기절'), SCAN.hide, 1, kc, 5); }
     if (ready) return;  // 알림·공격 안내와 겹치지 않게 인물 아래에 한 번만 표시한다
   }
   if (!pa || pa.k === 'none') return;
@@ -1416,7 +1417,7 @@ function draw() {
       ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, `예약 ${i + 1} · ${TOOL_NAME[q.tool]}`, '#7fd6cc');
     });
     const kt = (input.tool === 'kunai' || input.aiming) ? kunaiTarget() : null;
-    if (kt && input.aiming && input.tool === 'kunai') { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, kt.type === 'lamp' ? '다트 — 조명 깨기' : '다트 — 원격 암살', '#d7dbe2'); }
+    if (kt && input.aiming && input.tool === 'kunai') { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, kt.type === 'lamp' ? '다트 — 조명 깨기' : kt.type === 'cam' ? '다트 — CCTV 깨기' : '다트 — 짧게 기절 · 길게 처치', '#d7dbe2'); }
     if (kt) {
       ctx.save(); ctx.translate(kt.x, kt.y); ctx.rotate(S.t * 1.5); ctx.strokeStyle = 'rgba(215,219,226,.85)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();
@@ -1452,7 +1453,7 @@ function draw() {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 떼면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : '시간 멈춤 — 방향키로 겨누고 X를 떼면 던진다 · Esc 취소', W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 떼면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
