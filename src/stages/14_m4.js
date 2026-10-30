@@ -35,6 +35,8 @@
   },
   planks: [[33, 5, 33, 5, 2]],  // 사무동 ↔ 클럽. 1층 창고와는 옥상 높이가 다르다.
   gates: [{ at: [13, 19], open: 's' }, { at: [21, 19], open: 's' }, { at: [43, 22], open: 'e' }],
+  // 빗장 북쪽에서도 큰길로 빠져나올 수 있게 골목 입구의 시설물을 옆으로 옮긴다.
+  fixtureMoves: [{ from: [21, 16], to: [20, 16], tile: 'F', floor: '=' }, { from: [13, 17], to: [12, 16], tile: 'H', floor: '.' }],
   wires: [], drops: [],
   roofs: ['cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG'], bricks: [1, 0, 1, 0, 1, 0, 1, 0],
   ventB: [{ b: 1, at: [15, 4] }, { b: 3, at: [41, 5] }], disguise: true,
@@ -44,7 +46,7 @@
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 4, fl: 2, at: 'bed', alt: [{ b: 4, fl: 2, at: 'room2' }, { b: 7, fl: 1, at: 'bed' }] }],
   well: 'manhole', kunai: 4, coins: 3, reinf: [47, 13],
   lamps: [[8, 11, 160, 1], [20, 11, 170, 1, 0, '255,90,190'], [33, 11, 170, 1, 0, '90,220,255'], [44, 11, 160, 1], [8, 16, 150, 1], [33, 16, 150, 1, 0, '255,60,170']],
-  fuse: [21, 16, 21, 15],
+  fuse: [20, 16, 20, 15],
   cams: [[21, 12, 90, 70], [34, 1, 180, 40]],
   radios: [3, 6, 9, 10],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [

@@ -18,9 +18,9 @@ async def main():
             s = await m.evaluate("() => { const S = window.__game.S; return [S.guards.filter(q => q.raid).length, S.stats.fights || 0, S.war]; }")
             if s[1]: break
         print('소문', s); bad = [] if s[1] else ['소문을 흘려도 싸움이 안 난다 %s' % s]
-        # 2) 다트 누명
+        # 2) 다트 누명: 벽 없는 큰길에서 실제로 보이는 상대 조직을 오해한다
         await fresh()
-        r = await m.evaluate("""() => { const g = window.__game, S = g.S; const bs = S.guards.filter(q => q.fac === 'B' && q.state !== 'DEAD'); const b0 = bs[0];
+        r = await m.evaluate("""() => { const g = window.__game, S = g.S; const bs = S.guards.filter(q => q.fac === 'B' && q.state !== 'DEAD'); const b0 = bs[0]; b0.x = 20.5 * 48; b0.y = 22.5 * 48; b0.fl = 0; b0.z = 0;
           const as = S.guards.filter(q => q.fac === 'A' && !q.target && !q.dog && !(q.fl || 0) && q.state !== 'DEAD').slice(0, 2); as[0].x = b0.x + 120; as[0].y = b0.y; as[1].x = b0.x + 160; as[1].y = b0.y + 30;
           as.forEach(q => { q.fl = 0; q.z = 0; }); S.player.x = b0.x + 600; S.player.y = b0.y; g.killGuard(as[0]); g.dartBlame(as[0]); return [as[1].brawl ? as[1].brawl.o.fac : null, S.corpses[S.corpses.length - 1].blamed]; }""")
         print('다트 누명', r)

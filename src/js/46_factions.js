@@ -9,6 +9,8 @@ const FAC_NAME = { A: '조직', B: '건달파' };
 const TAUNT = ['어이, 여기가 어디라고 기어 와?', '건달 새끼들이 왜 여기 있어.', '눈 깔아라.', '한판 붙자는 거냐?'];
 const TAUNT_B = ['너네 구역이 언제부터 여기였냐?', '어깨 펴고 다니네?', '오늘 좀 맞아 볼래?', '비켜, 우리 길이다.'];
 const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yank && !o.doomed;
+const sameNpcLevel = (a, b) => flOf(a) === flOf(b) && (a.z || 0) === (b.z || 0) && !a.climb && !b.climb;
+const npcContact = (a, b, range) => sameNpcLevel(a, b) && dist(a.x, a.y, b.x, b.y) <= range && los(a.x, a.y, b.x, b.y, a.z || 0);
 const factionAvoids = (g, o) => g.facAvoid && g.facAvoid.id === o.id && S.t < g.facAvoid.until;
 function factionBlocked(g, dt) {
   g.facBlocked = g.moving ? 0 : (g.facBlocked || 0) + dt;
@@ -109,7 +111,7 @@ function drawGangFlags(P) {
 }
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {
-  if (!npcAlive(a) || !npcAlive(b) || a.brawl || a.target || b.target) return;
+  if (!npcAlive(a) || !npcAlive(b) || !sameNpcLevel(a, b) || a.brawl || a.target || b.target) return;
   a.facBlocked = 0; a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) { b.facBlocked = 0; b.brawl = { o: a, cd: rnd(0.5, 0.9) }; }
   a.state = a.state === 'ALERT' ? a.state : 'PATROL'; a.path = null; a.chat = null; a.say = null;
   S.stats.fights = (S.stats.fights || 0) + 1; noise(a.x, a.y, 220, 'fight', flOf(a));
@@ -122,7 +124,7 @@ function civPanic(c, x, y, t) { if (!npcAlive(c) || c.child && c.treatT > 0) ret
 // 다트 누명: 들키지 않고 한쪽 조직원을 다트로 쓰러뜨리면, 곁의 동료가 가까이 있는 상대 조직을 범인으로 알고 덤빈다
 function dartBlame(v) {
   if (!S.facOn || S.war || (v.fac !== 'A' && v.fac !== 'B')) return;
-  const R = v.fac === 'A' ? 'B' : 'A', near = o => npcAlive(o) && flOf(o) === flOf(v) && !(o.z || 0) && !o.target;
+  const R = v.fac === 'A' ? 'B' : 'A', near = o => npcAlive(o) && sameNpcLevel(o, v) && !o.target && los(o.x, o.y, v.x, v.y, v.z || 0);
   const allies = S.guards.filter(o => o.fac === v.fac && near(o) && dist(o.x, o.y, v.x, v.y) < 450);
   if (!allies.length || allies.some(o => o.state === 'ALERT')) return;  // 나를 이미 보고 있으면 누명이 안 통한다
   const r = S.guards.filter(o => o.fac === R && near(o) && dist(o.x, o.y, v.x, v.y) < 480).sort((a, b) => dist(a.x, a.y, v.x, v.y) - dist(b.x, b.y, v.x, v.y))[0];
@@ -158,10 +160,12 @@ function declareWar(why) {
 // 조직원이 쓰러뜨린 사람 (내 통계와 따로): 처치 또는 기절. 기절한 조직원은 25초 뒤 깨어난다
 function npcDown(o, by, lethal) {
   if (!npcAlive(o) || o.child) return;
+  const blamed = by && ['A', 'B'].includes(by.fac) && ['A', 'B'].includes(o.fac) && by.fac !== o.fac && S.guards.some(w => w !== o && w !== by && w.fac === o.fac && npcAlive(w) && sameNpcLevel(w, by) && canSee(w, by.x, by.y, Math.max(.4, lightAt(by.x, by.y)), false, false, by.z || 0) > 0) ? by.fac : null;
   o.state = 'DEAD'; o.icon = null; o.path = null; o.say = null; o.brawl = null; o.hunt = null; o.moving = false;
   play(lethal ? 'kill' : 'thud', 0.5 * proxVol(o)); noise(o.x, o.y, 90, 'fight', flOf(o));
-  const c = { fl: flOf(o), ch: charOf(o), g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
+  const c = { fl: flOf(o), z: o.z || 0, ch: charOf(o), g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
   S.corpses.push(c); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
+  if (blamed) c.blamed = blamed;  // 실제 목격된 조직만 현장 증거로 남긴다
   if (by && by.fac && by.fac !== 'P' && o.civ) policeCall(o.x, o.y, by);
   if (S.fuseGuard === o) S.fuseGuard = null;
   if (o.hasKey) { const k = o.hasKey; o.hasKey = null; S.keyDrop = { x: c.x + 14, y: c.y + 10, key: k, fl: c.fl || 0 }; }
@@ -179,7 +183,7 @@ function facWitness(victim) {
   if (!S.facOn || !victim || !victim.fac) return;
   const P = S.player, ow = disguised() ? P.outfit : null;
   const blamed = victim.fac === 'B' && aFits(ow) ? 'A' : victim.fac === 'A' && ow === 'rival' ? 'B' : null; if (!blamed) return;
-  const seen = S.guards.some(o => o !== victim && o.fac === victim.fac && npcAlive(o) && flOf(o) === flOf(P) && dist(o.x, o.y, P.x, P.y) < 450 && canSee(o, P.x, P.y, Math.max(0.35, P.light || 0), false, false, P.z) > 0);
+  const seen = S.guards.some(o => o !== victim && o.fac === victim.fac && npcAlive(o) && sameNpcLevel(o, P) && dist(o.x, o.y, P.x, P.y) < 450 && canSee(o, P.x, P.y, Math.max(0.35, P.light || 0), P.hidden, P.mode === 'sneak', P.z) > 0);
   if (seen) declareWar(victim.fac === 'B' ? '건달파가 조직 짓으로 안다 — 전쟁이 났다' : '조직이 건달파 짓으로 안다 — 전쟁이 났다');
 }
 // 매 프레임 (updateGuard 맨 앞): 싸움·입막음·구역 단속이 평소 행동보다 먼저. true 면 이번 프레임은 이걸로 끝
@@ -226,45 +230,45 @@ function facScan(g) {
 }
 function closeIn(g, o, dt, spd) {
   const d = dist(g.x, g.y, o.x, o.y);
-  if (d > 30) { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.5; pathTo(g, o.x, o.y); } moveAlong(g, spd * spdMul(), dt); }
+  if (d > 30 || !npcContact(g, o, 34)) { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.5; pathTo(g, o.x, o.y); } moveAlong(g, spd * spdMul(), dt); }
   else { g.moving = false; g.path = null; }
   g.a += clamp(angDiff(g.a, Math.atan2(o.y - g.y, o.x - g.x)), -8 * dt, 8 * dt); g.want = g.a;
   return d;
 }
 function brawlStep(g, dt) {
   const b = g.brawl, o = b.o;
-  if (!npcAlive(o) || flOf(o) !== flOf(g)) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
+  if (!npcAlive(o) || !sameNpcLevel(o, g)) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
   // 경찰이 싸움에 끼어들면 조직원끼리는 손을 뗀다 (경찰이 붙잡은 쪽만 남아 제압당한다)
   if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && c.brawl.o !== g && (c.brawl.o === o || dist(c.x, c.y, g.x, g.y) < 140) && npcAlive(c))) { g.brawl = null; g.state = 'RETURN'; g.path = null; gsay(g, '짭새다, 빠져!', 1.6); return false; }
   if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && c.brawl.o === g && npcAlive(c))) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
-  if (g.swingT > 0) g.swingT -= dt;
-  const d = closeIn(g, o, dt, SPD.gAlert * 0.95);
-  if (d > 34 && factionBlocked(g, dt)) { endFactionMove(g, o); return false; }
+  const d = closeIn(g, o, dt, SPD.gAlert * 0.95), contact = npcContact(g, o, 34);
+  if (!contact && factionBlocked(g, dt)) { endFactionMove(g, o); return false; }
   if (d > 600) { g.brawl = null; g.state = 'RETURN'; return false; }
-  if (d <= 34 && (b.cd -= dt) <= 0) {
+  if (contact && (b.cd -= dt) <= 0) {
     b.cd = rnd(0.8, 1.3); g.swingT = 0.3; play('thud', 0.3 * proxVol(g)); noise(g.x, g.y, 140, 'fight', flOf(g));
     const cop = g.fac === 'P';  // 경찰 곤봉: 더 자주, 더 세게 (끼어든 싸움은 경찰이 끝낸다)
     if (Math.random() < (cop ? 0.75 : 0.55)) { o.fhp = (o.fhp == null ? 3 : o.fhp) - (cop ? 2 : 1); o.startle = { a: Math.atan2(g.y - o.y, g.x - o.x) }; if (o.fhp <= 0) { npcDown(o, g, g.fac === 'P' ? false : Math.random() < (o.civ ? 0.5 : 0.4)); if (g.fac === 'P') gsay(g, '제압했다. 꼼짝 마.', 2); g.brawl = null; g.state = 'RETURN'; g.path = null; return true; } }
     // 싸움에 휘말리는 주민
-    for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && dist(c.x, c.y, o.x, o.y) < 48 && Math.random() < 0.18) { npcDown(c, g, Math.random() < 0.3); if (dist(S.player.x, S.player.y, c.x, c.y) < 700) toast('지나가던 주민이 싸움에 휘말렸다', 2); }
+    for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && npcContact(g, c, 48) && Math.random() < 0.18) { npcDown(c, g, Math.random() < 0.3); if (dist(S.player.x, S.player.y, c.x, c.y) < 700) toast('지나가던 주민이 싸움에 휘말렸다', 2); }
   }
   return true;
 }
 function huntStep(g, dt) {
   const h = g.hunt, c = h.c;
-  if (!npcAlive(c) || S.t - h.t0 > 16 || flOf(c) !== flOf(g)) { g.hunt = null; g.state = 'RETURN'; g.path = null; return false; }
-  if (g.swingT > 0) g.swingT -= dt;
-  const d = closeIn(g, c, dt, SPD.gAlert * (h.beat ? 0.8 : 1));
-  if (d > 32 && factionBlocked(g, dt)) { endFactionMove(g, c); return false; }
+  if (!npcAlive(c) || S.t - h.t0 > 16 || !sameNpcLevel(c, g)) { g.hunt = null; g.state = 'RETURN'; g.path = null; return false; }
+  const d = closeIn(g, c, dt, SPD.gAlert * (h.beat ? 0.8 : 1)), contact = npcContact(g, c, 32);
+  if (!contact && factionBlocked(g, dt)) { endFactionMove(g, c); return false; }
   if (d > 650) { g.hunt = null; g.state = 'RETURN'; return false; }
-  if (d <= 32) { g.swingT = 0.3; npcDown(c, g, !h.beat || Math.random() < 0.2); gsay(g, h.beat ? '다신 얼씬대지 마.' : '본 놈은 없어야지.', 2); g.hunt = null; g.state = 'RETURN'; g.path = null; }
+  if (contact) { g.swingT = 0.3; npcDown(c, g, !h.beat || Math.random() < 0.2); gsay(g, h.beat ? '다신 얼씬대지 마.' : '본 놈은 없어야지.', 2); g.hunt = null; g.state = 'RETURN'; g.path = null; }
   return true;
 }
 // 시체를 찾았을 때: 조직끼리 생긴 시체는 경보 대신 세력 반응 (내 탓으로 돌리지 않는다)
 function facBody(g, c) {
   if (!S.facOn) return false;
+  if (c.accident) return false;  // 사고는 상대 구역에서도 조직 범행의 증거가 아니다
   if (c.byNpc) { c.discovered = true;
-    if (!c.civ && c.fac === g.fac && c.by && c.by !== g.fac) { declareWar(g.fac === 'A' ? '조직원이 동료 시체를 찾았다 — 건달파와 전쟁이다' : '건달파가 동료 시체를 찾았다 — 조직과 전쟁이다'); gsay(g, '건드렸겠다… 다 죽었어.', 2.4); }
+    if (!c.civ && c.fac === g.fac && c.blamed && c.blamed !== g.fac) { declareWar(g.fac === 'A' ? '조직원이 목격된 범행을 확인했다 — 건달파와 전쟁이다' : '건달파가 목격된 범행을 확인했다 — 조직과 전쟁이다'); gsay(g, '건드렸겠다… 다 죽었어.', 2.4); }
+    else if (!c.civ && c.fac === g.fac) { goSuspicious(g, c.x, c.y, 4); gsay(g, '누가 한 짓이야… 주변을 확인해.', 2); }
     else if (!c.civ && c.fac !== g.fac) gsay(g, ['하나 뻗었네.', '꼴좋다.'][g.id % 2], 1.8);
     return true; }
   // 다트로 쓰러뜨린 걸 상대 조직 탓으로 안 시체: 내 탓이 아니다
@@ -272,9 +276,10 @@ function facBody(g, c) {
   // 상대 구역에 버려진 동료 시체: 상대 짓으로 알고 전쟁 (시체를 끌어다 놓아 싸움을 붙일 수 있다)
   if (!c.civ && (c.fac === 'A' || c.fac === 'B') && c.fac === g.fac) { const R = c.fac === 'A' ? 'B' : 'A';
     if (inTurf(R, c.x, c.y)) { c.discovered = true; gsay(g, R === 'B' ? '건달 놈들 구역에서… 가만 안 둬.' : '조직 놈들 구역이잖아… 가만 안 둬.', 2.4); declareWar(R === 'B' ? '조직원이 건달파 구역에서 동료 시체를 찾았다 — 전쟁이다' : '건달파가 조직 구역에서 동료 시체를 찾았다 — 전쟁이다'); return true; } }
-  // 내가 쓰러뜨린 상대편 조직원: 우리 일이 아니다 / 건달파 동료가 찾으면 근처 조직원 탓으로 전쟁
+  // 상대편 조직원: 우리 일이 아니다
   if (c.fac && c.fac !== g.fac) { c.discovered = true; gsay(g, ['누가 건달 하나 손봤네.', '쟤넨 원래 저래.'][g.id % 2], 1.8); return true; }
-  if (c.fac === 'B' && g.fac === 'B') { c.discovered = true; if (S.guards.some(o => o.fac === 'A' && npcAlive(o) && dist(o.x, o.y, c.x, c.y) < 500)) declareWar('건달파가 동료 시체 옆의 조직원을 탓한다 — 전쟁이 났다'); else goSuspicious(g, c.x, c.y, 4); return true; }
+  // 범행·누명·상대 구역이라는 단서가 없으면 양쪽 모두 현장을 수색한다.
+  // 근처에 있다는 이유로 벽·층 너머 조직원을 범인으로 확정하지 않는다.
   return false;
 }
 // ---- 경찰 (도시): 조직의 범행에 끼어든다. 내 수배와는 따로 — 경찰이 조직을 제압해도 내 감점·수배는 없다

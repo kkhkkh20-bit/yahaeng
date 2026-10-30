@@ -1056,7 +1056,7 @@ function killStreak() {
 }
 const lastKO = () => { const c = S.corpses[S.corpses.length - 1]; return !!(c && c.ko); };
 function strikeKill(list, two) {
-  const P = S.player; P.strikeT = 0.32; S.crimeT = S.t;
+  const P = S.player; P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
   const kind = pairK ? 'choke' : null;
@@ -1089,7 +1089,7 @@ function execCaptive(ko) {
   if (solidAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) { g.x = P.x; g.y = P.y; }
   if (!g.takedownIntent) g.takedownIntent = { source: combatSource('atk') || combatSource('env'), lethal: false };
   if (!g.takedownIntent.lethal) S.koNext = true;  // 붙잡은 뒤 [보조]: 목을 졸라 기절
-  if (PAIR() && PR.anims.choke && !g.dog && usePR(charOf(g)) && usePR('ninja')) { S.crimeT = S.t; pairKill(g, g.civ || koDefault(g) || S.koNext ? 'choke' : 'stab', 1, true); return; }
+  if (PAIR() && PR.anims.choke && !g.dog && usePR(charOf(g)) && usePR('ninja')) { pairKill(g, g.civ || koDefault(g) || S.koNext ? 'choke' : 'stab', 1, true); return; }
   P.strikeT = 0.3; killGuard(g, null, null, true);
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };

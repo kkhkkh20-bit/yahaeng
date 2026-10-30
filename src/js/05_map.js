@@ -42,6 +42,7 @@ function buildMap(st) {
     tent: (x, y, c) => { m.fill(x, y, x + 1, y + 1, 'M'); TENTS.push([x, y, c || 'R']); }
   };
   st.build(m);
+  moveStageFixtures(st, G);
   // 평면 건물 1층 창문인데 바깥이 막혀 있으면(전봇대·맨홀·지도 끝) 벽으로
   BLD.forEach(b => { if (!b.plan) return; for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) if (G[y][x] === 'N') { const ox = x === b.x0 ? x - 1 : x === b.x1 ? x + 1 : x, oy = y === b.y1 ? y + 1 : y === b.y0 ? y - 1 : y; if (!inMap(ox, oy) || SOLID.has(G[oy][ox])) G[y][x] = '#'; } });
   refineMap(st);
@@ -50,4 +51,16 @@ function buildMap(st) {
   BLD.forEach((b, i) => { for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { RL[y * MW + x] = b.h; BI[y * MW + x] = i; } });
   (st.planks || []).forEach(([x0, y0, x1, y1, z]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inMap(x, y) && RL[y * MW + x] < z) RL[y * MW + x] = z; });
   G0 = G; buildFloors(st); CUR_F = 0;
+}
+// 시설물 이동은 새 판과 구버전 체크포인트에 같은 규칙으로 적용한다.
+function moveStageFixtures(st, grid, saved = false) {
+  for (const m of st.fixtureMoves || []) {
+    const [x, y] = m.from, [nx, ny] = m.to;
+    if (grid[y][x] !== m.tile) continue;
+    grid[y][x] = m.floor; grid[ny][nx] = m.tile;
+    if (!saved) continue;
+    const P = S.player, h = S.hides.find(h => !h.furn && h.tx === x && h.ty === y);
+    if (h) { h.tx = nx; h.ty = ny; h.x = tc(nx); h.y = tc(ny); if (P.hide === h) { P.x = h.x; P.y = h.y; } }
+    if (!P.hide && !flOf(P) && !P.z && Math.floor(P.x / TILE) === nx && Math.floor(P.y / TILE) === ny) { P.x = tc(x); P.y = tc(y); }
+  }
 }

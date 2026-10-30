@@ -431,6 +431,7 @@ const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노
 const awareCol = g => g.state === 'ALERT' ? '#ff4a3c' : g.meter >= NOTICE_AT || ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#f4f1ea';
 function updateGuard(g, dt) {
   g.moving = false;
+  g.swingT = Math.max(0, (g.swingT || 0) - dt);  // 싸움 종료·상태 변경 뒤에도 공격 동작은 끝난다
   if (g.yank) return;  // 숨은 곳으로 끌려가는 중 (updateAmbush가 움직인다)
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   // 세력: 조직끼리 싸움·목격자 입막음·구역 단속이 평소 행동보다 먼저
@@ -474,7 +475,7 @@ function updateGuard(g, dt) {
   if (g.state === 'NOTICE' && g.why === 'saw' && pz === Z_PUB && !knownFace(g) && !publicSuspicion(g)) {
     g.state = 'RETURN'; g.path = null; g.poi = null; g.icon = null; g.meter = 0; g.holdT = 0; g.noticeT = 0; g.why = null;
   }
-  if (STAGE.zones && g.seen && !g.dog && g.state !== 'ALERT' && (P.strikeT > 0 || (S.crimeT && S.t - S.crimeT < 1.2) || P.captive)) { g.meter = 1; goAlert(g); }  // 처치·기절·붙잡는 걸 보면 그 자리에서 발각
+  if (STAGE.zones && g.seen && !g.dog && g.state !== 'ALERT' && (P.strikeT > 0 || P.captive)) { g.meter = 1; goAlert(g); }  // 지금 해치는 동작을 실제로 보는 경우만. 지난 범행 시각으로 새 목격자를 만들지 않는다
   if (g.state === 'WARN') { updateTrespass(g, dt, pz); if (g.state === 'WARN') return; }
   if (g.seen && g.state !== 'FLEE') {
     // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
@@ -659,8 +660,7 @@ function updateGuard(g, dt) {
       if (g.atkT > 0) {
         g.atkT -= dt; if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x);
         if (g.atkT <= 0) { g.swingT = 0.2; g.atkCd = 1.1; if (sameF && !P.hide && !P.under && !P.vent && (P.z || 0) === (g.z || 0) && !P.jump && !P.wire && !P.trav && dist(g.x, g.y, P.x, P.y) < 54 && los(g.x, g.y, P.x, P.y)) hurtPlayer(g, g.dog ? '들개에게 물렸다.' : g.police ? '경찰 곤봉에 맞았다.' : '자경대원의 칼에 베였다.'); else play('throw', 0.4 * proxVol(g)); }
-      } else if (g.seen && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
-      if (g.swingT > 0) g.swingT -= dt;
+      } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && los(g.x, g.y, P.x, P.y)) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
       if (g.seen && P.z > (g.z || 0) && !roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) && dist(g.x, g.y, P.x, P.y) < (g.lookout ? 260 : 130) && (g.shootT = (g.shootT || 0) + dt) > 2.2) { g.shootT = 0; play('kunai', 0.5); hurtPlayer(null, g.lookout ? '옥상 위에서 석궁 화살에 맞았다.' : ('옥상 위로 던진 병에 맞았다.')); if (S.over) return; }
       if (P.hide && P.hide.spotted && dist(g.x, g.y, P.hide.x, P.hide.y) < 60) { P.hide.spotted = false; dragOut(g, P.hide.type === 'well' ? '숨는 모습을 들켜 맨홀에서 끌려 나왔다.' : '숨는 모습을 들켜 수거함에서 끌려 나왔다.'); if (S.over) return; }
       if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
