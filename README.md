@@ -2,5 +2,5 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
-Version: v81
-Source commit: 8313a47510aa2a9b42ff03aab0823c31f00abc7a
+Version: v82
+Source commit: 97e938e5ce4b1b632cadfc8d0d4f29b86a4b21b7
