@@ -4,5 +4,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v83
-Source commit: 7816672c1af1d10d127e70405b46255ea1a8435c
+Version: v84
+Source commit: e3e8c1907f86102c0b1460f8ca69634fc3cc594d
