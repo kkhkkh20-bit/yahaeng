@@ -476,7 +476,14 @@ function robBuild() {
     if (p.t === 'sh') {
       p.cells.forEach(([x, y]) => { if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } });
       const l = S && S.ladders && S.ladders.find(q => q.kind === 'stair' && q.tx === p.sx && q.ty === p.sy);
-      if (l) { l.rx = tc(p.door[0]); l.ry = tc(p.door[1]); l.shDir = p.dir; }
+      if (l) {
+        l.rx = tc(p.door[0]); l.ry = tc(p.door[1]); l.shDir = p.dir;
+        const [dx, dy] = { S: [0, 1], W: [-1, 0], E: [1, 0], N: [0, -1] }[p.dir];
+        const xs = p.cells.map(c => c[0]), ys = p.cells.map(c => c[1]);
+        // bake_mk의 실제 문 벽면(.08~.92) 바닥점. 앞 타일 중심은 서는 자리일 뿐 안내 위치가 아니다.
+        l.roofDoor = { x: dx ? (dx < 0 ? Math.min(...xs) + 0.08 : Math.max(...xs) + 0.92) * TILE : tc(p.sx),
+          y: dy ? (dy < 0 ? Math.min(...ys) + 0.1 : Math.max(...ys) + 0.92) * TILE : tc(p.sy), dx, dy, z: l.tz };
+      }
       return;
     }
     if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
@@ -818,7 +825,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   if (P.hide || P.vent || P.under || P.wire || P.trav || P.jump) return;
   const R = 300, fP = flOf(P), k = Math.max(1, 0.95 / SCALE), list = [];
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
-  const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; list.push({ x, y, col, g, lab, d }); };
+  const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; const m = { x, y, col, g, lab, d }; list.push(m); return m; };
   if (!P.z) {
     for (const h of S.hides) if ((h.fl || 0) === fP && (h.z || 0) === (S.player.z || 0)) add(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, h.type === 'well' ? 'manhole' : 'hide', hideName(h), h.tx, h.ty);
     const stc = {};  // 계단 칸: 오르기·내려가기를 한 표식으로 (↑옥상 · ↓1층)
@@ -839,7 +846,10 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
     for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
     if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
   } else {
-    for (const l of S.ladders) if (l.tz === P.z) add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
+    for (const l of S.ladders) if (l.tz === P.z) {
+      if (l.roofDoor) { const d = l.roofDoor, m = add(d.x, d.y, SCAN.ladder, 'door', '옥탑문'); if (m) m.roofDoor = true; }
+      else add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
+    }
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
     for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, 'wire', '전깃줄');
   }
@@ -847,10 +857,10 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   const WAY = new Set(['↓', '↑', '↕', 'window', 'pick', 'door', 'vent', 'manhole', 'wire']);
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
-    if (WAY.has(m.g) && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
-    if (m.d > 170) continue;  // 표식은 가까이 왔을 때만, 글자 없이 작은 그림 하나
+    if (m.d > 170 || (m.roofDoor && paAt && dist(paAt.x, paAt.y, m.x, m.y) < 2)) continue;  // 선택된 옥탑문은 문 테두리와 행동 안내만
     const a = Math.max(0.3, 1 - m.d / 170) * 0.8, r = 8 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
@@ -874,6 +884,7 @@ function drawScan(openB) {
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
   else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '방범창' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 34 : 40, st === 'bar' ? 0.75 : 1); }
   for (const l of S.ladders) {
+    if (S.player.z && l.roofDoor && l.tz === S.player.z) { box(l.roofDoor.x, l.roofDoor.y, SCAN.ladder, '옥탑문 ↓', 28); continue; }
     if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `오르기 ${l.tfl + 1}층` : '오르기 옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `내려가기 ${l.bfl + 1}층`, SCAN.ladder); } continue; }
     if (fP) continue;
     if (l.kind === 'pipe') { box(l.x, l.y, SCAN.pipe, '배관 ↑', 36, l.bz ? 0.8 : 1); }
@@ -1348,7 +1359,7 @@ function draw() {
   if (running && !S.over && !S.entrySel) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
-      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
@@ -1360,6 +1371,12 @@ function draw() {
     if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, '#e8473c');
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
+    if (pa.k === 'down' && pa.l.roofDoor) {
+      const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
+      if (!d.dx) { ctx.fillRect(d.x - 12, d.y - 32, 24, 32); ctx.strokeRect(d.x - 12, d.y - 32, 24, 32); }
+      else { const sx = -d.dx * 8; ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x + sx, d.y + 4); ctx.lineTo(d.x + sx, d.y - 25); ctx.lineTo(d.x, d.y - 30); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      ctx.restore();
+    }
     if (pa.k === 'leap') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + tc(pa.j.tx)) / 2, (P.y + tc(pa.j.ty)) / 2 - 40, tc(pa.j.tx), tc(pa.j.ty)); ctx.stroke(); ctx.setLineDash([]); }
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
     S.paNow = pa; drawActLabels(pa, P, ka, ga);

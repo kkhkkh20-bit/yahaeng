@@ -362,6 +362,7 @@ const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
+  if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   const fr = c.t0 != null && S.t - c.t0 < 1 ? (c.f0 || 0) + Math.floor((S.t - c.t0) * 10) : 9;  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }

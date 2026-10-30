@@ -9,6 +9,39 @@ const FAC_NAME = { A: '조직', B: '건달파' };
 const TAUNT = ['어이, 여기가 어디라고 기어 와?', '건달 새끼들이 왜 여기 있어.', '눈 깔아라.', '한판 붙자는 거냐?'];
 const TAUNT_B = ['너네 구역이 언제부터 여기였냐?', '어깨 펴고 다니네?', '오늘 좀 맞아 볼래?', '비켜, 우리 길이다.'];
 const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yank && !o.doomed;
+function rivalTurfRect(b) {
+  let r = [Math.max(1, b.x0 - 4), Math.max(1, b.y0 - 3), Math.min(MW - 2, b.x1 + 4), Math.min(MH - 2, b.y1 + 4)];
+  const blockers = BLD.filter(o => o !== b).map(o => [o.x0, o.y0, o.x1, o.y1]).concat(S.turf.A);
+  const area = a => (a[2] - a[0] + 1) * (a[3] - a[1] + 1);
+  for (const q of blockers) {
+    if (q[2] < r[0] || q[0] > r[2] || q[3] < r[1] || q[1] > r[3]) continue;
+    const options = [];
+    if (q[2] < b.x0) options.push([Math.max(r[0], q[2] + 1), r[1], r[2], r[3]]);
+    if (q[0] > b.x1) options.push([r[0], r[1], Math.min(r[2], q[0] - 1), r[3]]);
+    if (q[3] < b.y0) options.push([r[0], Math.max(r[1], q[3] + 1), r[2], r[3]]);
+    if (q[1] > b.y1) options.push([r[0], r[1], r[2], Math.min(r[3], q[1] - 1)]);
+    if (!options.length) return null;
+    options.sort((a, b) => area(b) - area(a)); r = options[0];
+  }
+  return r;
+}
+// 이전 체크포인트도 현재 건물 소속에 맞춘다. NPC 위치·전투 상태는 유지한다.
+function syncDynamicTurf() {
+  if (!S.turf) return;
+  for (const r of S.turf.B || []) {
+    if ((STAGE.zones || []).some(z => (z[7] || []).includes('rival') && r.every((v, i) => v === z[i]))) continue;
+    const b = BLD.find(b => b.gang === 'B' && b.x0 >= r[0] && b.y0 >= r[1] && b.x1 <= r[2] && b.y1 <= r[3]), next = b && rivalTurfRect(b);
+    if (!next) continue;
+    for (let i = 0; i < 4; i++) r[i] = next[i]; r.dyn = true;
+    const L0 = CUR_F; setLayer(0); const pub = [];
+    for (let y = r[1]; y <= r[3]; y++) for (let x = r[0]; x <= r[2]; x++) if (!solidAt(x, y) && bldAt(x, y) < 0 && zoneAt(tc(x), tc(y), 0) === Z_PUB) pub.push({ x: tc(x), y: tc(y) });
+    if (pub.length) for (const g of S.guards) if (g.rival && !g.brawl && !g.hunt && ['PATROL', 'RETURN'].includes(g.state) && g.route.some(p => !inTurf('B', p.x, p.y))) {
+      g.route = g.route.map(p => inTurf('B', p.x, p.y) ? p : Object.assign({}, p, pub.reduce((a, b) => dist(p.x, p.y, a.x, a.y) < dist(p.x, p.y, b.x, b.y) ? a : b)));
+      g.path = null; buildRouteLine(g);
+    }
+    setLayer(L0);
+  }
+}
 // 라이벌 배치: 구역이 있는 판(의뢰 2~5)에 셋이 한 무리로 거리를 돈다. STAGE.rivals = 0 이면 없음, 숫자면 그만큼
 function factionsInit() {
   S.war = false; S.facOn = !!STAGE.zones && !STAGE.tutorial;
@@ -26,7 +59,8 @@ function factionsInit() {
     if ((S.items || []).some(it => bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === BLD.indexOf(b)) || S.guards.some(g => g.target && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === BLD.indexOf(b))) return;
     const sc = aPts.length ? Math.min(...aPts.map(([x, y]) => dist(cx, cy, x, y))) : 9999; if (sc > bs) { bs = sc; best = b; } });
   if (!best) return;
-  const rect = [Math.max(1, best.x0 - 4), Math.max(1, best.y0 - 3), Math.min(MW - 2, best.x1 + 4), Math.min(MH - 2, best.y1 + 4)], pub = [];
+  const rect = rivalTurfRect(best), pub = []; if (!rect) return;
+  const rivalPubAt = (x, y) => x >= rect[0] && x <= rect[2] && y >= rect[1] && y <= rect[3] && pubAt(x, y);
   for (let ty = rect[1]; ty <= rect[3]; ty++) for (let tx = rect[0]; tx <= rect[2]; tx++) if (pubAt(tx, ty)) pub.push([tx, ty]);
   if (pub.length < 8) return;
   best.gang = 'B'; rect.dyn = true; S.turf.B.push(rect);
@@ -34,8 +68,8 @@ function factionsInit() {
   const a = pick(pub, 1), wps = [a];
   for (let k = 2; wps.length < 3 && k < 60; k++) { const c = pick(pub, k * 13); if (wps.every(w => Math.hypot(w[0] - c[0], w[1] - c[1]) > 4)) wps.push(c); }
   for (let i = 0; i < n; i++) {
-    const off = [[0, 0], [1, 0], [0, 1], [-1, 0]][i % 4], sx = a[0] + off[0], sy = a[1] + off[1], st = pubAt(sx, sy) ? [sx, sy] : a;
-    const g = makeGuard({ kind: i === 0 ? 'g2' : 'g1', at: st, route: wps.map((w, j) => [w[0] + (j && pubAt(w[0] + off[0], w[1]) ? off[0] : 0), w[1], 4 + i]), radio: false }, S.guards.length);
+    const off = [[0, 0], [1, 0], [0, 1], [-1, 0]][i % 4], sx = a[0] + off[0], sy = a[1] + off[1], st = rivalPubAt(sx, sy) ? [sx, sy] : a;
+    const g = makeGuard({ kind: i === 0 ? 'g2' : 'g1', at: st, route: wps.map((w, j) => [w[0] + (j && rivalPubAt(w[0] + off[0], w[1]) ? off[0] : 0), w[1], 4 + i]), radio: false }, S.guards.length);
     g.fac = 'B'; g.outfit = 'rival'; g.rival = true; g.radio = false; g.torch = false; g.x = tc(st[0]); g.y = tc(st[1]);
     setLayer(0); buildRouteLine(g); S.guards.push(g);
   }

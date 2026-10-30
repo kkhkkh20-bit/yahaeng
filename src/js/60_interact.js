@@ -84,7 +84,13 @@ function nearWinWire() {
 }
 function nearClimbDown() {
   const P = S.player; if (!P.z || P.jump) return null; let best = null, bd = 52;
-  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (l.tz !== P.z) continue; const d = dist(P.x, P.y, l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (l.tz !== P.z) continue;
+    const entry = l.roofDoor;
+    if (entry) {
+      const vx = P.x - entry.x, vy = P.y - entry.y;
+      if (vx * entry.dx + vy * entry.dy < 0 || Math.abs(vx * -entry.dy + vy * entry.dx) > 30 || !objectReachable(entry, 52)) continue;
+    }
+    const d = dist(P.x, P.y, entry ? entry.x : l.rx != null ? l.rx : l.ux, entry ? entry.y : l.ry != null ? l.ry : l.uy); if (d < bd) { bd = d; best = l; } }
   return best;
 }
 // 골목 건너뛰기: 바라보는 방향으로 1~2칸 틈 너머의 같은 높이(또는 한 층 아래) 옥상
@@ -620,7 +626,7 @@ function primaryActionRaw() {
     // 낮은 옥상(컨테이너 등) 위에서 더 높은 옥상으로 오르는 배관·사다리 — 내려가는 곳과 붙어 있으면 더 가까운 쪽이 먼저(나머지는 F·⇄로)
     const cuz = nearClimb(), cdz = nearClimbDown(); if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && (!cdz || dist(P.x, P.y, cuz.x, cuz.y) <= dist(P.x, P.y, cdz.rx != null ? cdz.rx : cdz.ux, cdz.ry != null ? cdz.ry : cdz.uy))) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
     if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && !cdz) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
-    const cd = cdz; if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? `내려가기 · ${(cd.bfl || 0) + 1}층` : '내려가기' };
+    const cd = cdz; if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, at: cd.roofDoor, label: cd.kind === 'stair' ? `내려가기 · ${(cd.bfl || 0) + 1}층` : '내려가기' };
     const rv = nearVent(); if (rv) return { k: 'ventIn', v: rv, label: '환풍구로 들어가기' };
     const jt = jumpTarget(); if (jt) return { k: 'leap', j: jt, label: '건너뛰기' };
     { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: '벽 잡고 오르기 · 한 층 위 옥상' }; }
