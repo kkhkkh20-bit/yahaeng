@@ -2,6 +2,8 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+실내외 겹침·옥탑문 비교: https://kkhkkh20-bit.github.io/yahaeng/scene-layers/
+
 맵 끝 시점·말풍선 비교: https://kkhkkh20-bit.github.io/yahaeng/camera-patrol/
 
 시나리오 점검: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/SCENARIO_QA.md
@@ -12,5 +14,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v88
-Source commit: 21d49138221e6d44f7635924796935da72d13d6c
+Version: v89
+Source commit: 28bf04a589aa28c8bab4e0537521dc9945135ee9
