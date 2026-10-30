@@ -6,7 +6,7 @@
   itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
   brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다.',
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
-  bare: true, candy: 0, itemVerb: '챙기기', briefBy: '상황',
+  bare: true, candy: 0, itemVerb: '챙기기', briefBy: '상황', kitStyle: 'industrial',
   firstGoal: { text: '감방에서 나가기 — 바닥의 머리핀으로 문 따기', where: '감금동 1층 감방', at: [9, 5, 0], done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
   build(m) {
     m.fill(0, 0, 43, 27, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 27, '#'); } for (let y = 0; y < 28; y++) m.set(0, y, '#');
@@ -52,7 +52,7 @@
             lines: [[0, '까마귀가 직접 넘겼다며? 둘 다.'], [1, '어. 돈 받고 깔끔하게.'], [1, '제비라는 여자는 어젯밤에 끝났고.'], [0, '남은 하나는 아래층 감방에 있지. 내일 처리한대.']] }],
   interrogate: [{ gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', say: '까, 까마귀가 넘겼어! 그 여자는 어제 죽었고!' }],
   stories: [
-    { id: 'cell', name: '감방 나가기', reveal: () => true,
+    { id: 'cell', name: '감방 나가기', moot: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]), reveal: () => true,
       steps: [{ text: '감방 바닥에서 머리핀 찾기 — 락픽 대신 쓴다', at: null, done: S => !!(S.player.got || {}).pin || S.player.picks > 0 || !!S.player.keys.red },
               { text: '감방 문 따기 — 간수가 등을 돌렸을 때', at: null, done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) }] },
     { id: 'gear', name: '압수품', reveal: (S, h) => !h.inRect(S.player, [3, 3, 19, 12, 0]) || h.knows('압수품'),

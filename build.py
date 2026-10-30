@@ -22,10 +22,15 @@ def stages_js():
 
 CREDIT = ("건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymegakit.html\" target=\"_blank\" rel=\"noopener\">Quaternius Downtown City MegaKit</a> (CC0) · "
           "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · "
-          "캐릭터 3D 모델: Quaternius Animated Human (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · ")
+          "캐릭터 3D 모델: <a href=\"https://quaternius.com/packs/ultimatemodularwomen.html\" target=\"_blank\" rel=\"noopener\">Quaternius Ultimate Modular Women</a> · <a href=\"https://quaternius.com/packs/ultimatemodularcharacters.html\" target=\"_blank\" rel=\"noopener\">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · ")
 
 def build():
     html = read(P('src', 'template.html')).replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
+    title_font = base64.b64encode(open(P('src', 'fonts', 'title-blackhansans.ttf'), 'rb').read()).decode()
+    html = html.replace('__TITLE_FONT__', title_font)
+    html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
+    menu_art = base64.b64encode(open(P('src', 'art', 'title-poster.webp'), 'rb').read()).decode()
+    html = html.replace('__MENU_ART__', menu_art)
     meta = json.load(open(P('build', 'pr', 'pr_meta.json')))
     meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'key.webp'), 'rb').read()).decode()
     if meta.get('faces') and os.path.exists(P('build', 'pr', 'face.webp')): meta['faces']['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'face.webp'), 'rb').read()).decode()
@@ -35,7 +40,7 @@ def build():
     v, h = version()
     thumbs = read(P('build', 'thumbs.json')) if os.path.exists(P('build', 'thumbs.json')) else 'null'  # 의뢰 카드 지도 미리보기 (tools/thumbs.py)
     tbg = read(P('build', 'title_bg.json')) if os.path.exists(P('build', 'title_bg.json')) else 'null'  # 첫 화면 배경 (tools/titlebg.py)
-    html = html.replace('<script>window.__ASSETS__', "<script>window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
+    html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     html = html.replace('__ASSETS_JSON__', read(P('build', 'assets_city.json'))).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', game_js())
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)

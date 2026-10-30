@@ -4,7 +4,7 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
   const P = S && S.player;
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: P && P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja', role: P && P.disguise && P.outfit ? outfitName(P.outfit) + ' 옷' : '', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: P ? playerKey(P) : 'ninja', role: P && P.disguise && P.outfit ? outfitName(P.outfit) + ' 옷' : '', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
   if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'noble', role: '', face: 'fc_master' };
@@ -17,13 +17,10 @@ function speakerOf(w) {
 // 초상 시트(키 색)를 팔레트별로 한 번 칠해 둔다
 const FACE = { img: null, base: null, pal: {} };
 if (PR && PR.faces && PR.faces.src) { FACE.img = new Image(); FACE.img.onload = () => { try { FACE.base = prPrep(FACE.img); } catch (e) { console.warn('face', e); } }; FACE.img.src = PR.faces.src; }
-function faceSheet(pk) {
-  if (FACE.pal[pk]) return FACE.pal[pk]; const B = FACE.base, pal = PR_PAL[pk]; if (!B || !pal) return null;
-  const P4 = pal.map(h => hexRgb(h).split(',').map(Number)), c = document.createElement('canvas'); c.width = B.w; c.height = B.h;
-  const x = c.getContext('2d'), id = x.createImageData(B.w, B.h), o = id.data; o.set(B.src);
-  for (let i = 0, n = B.w * B.h; i < n; i++) { const wt = B.wgt[i]; if (!wt) continue; const p = P4[B.cls[i]], s = B.shd[i], j = i * 4;
-    o[j] = p[0] * s * wt + B.src[j] * (1 - wt); o[j + 1] = p[1] * s * wt + B.src[j + 1] * (1 - wt); o[j + 2] = p[2] * s * wt + B.src[j + 2] * (1 - wt); }
-  x.putImageData(id, 0, 0); return (FACE.pal[pk] = c);
+function faceSheet(pk, body) {
+  const key = pk + (body && body.startsWith('hero') ? '@hero' : '');
+  if (FACE.pal[key]) return FACE.pal[key]; const B = FACE.base, pal = prPalette(pk, body); if (!B || !pal) return null;
+  return (FACE.pal[key] = prPaint(B, pal));
 }
 // 대사창 얼굴: 실루엣 초상 — 상반신을 어두운 그림자로 칠하고 가장자리만 말하는 사람 역할 색으로 빛나게 (윤곽으로 머리 모양·헬멧·덩치를 구분)
 // 저폴리곤 얼굴을 크게 보이면 어색해서, 얼굴 생김새 대신 윤곽과 옷 색 기운만 남긴다
@@ -31,7 +28,15 @@ const _fcTmp = document.createElement('canvas');
 function drawFace(cv, sp) {
   const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
   if (!(sp.key && FACE.base)) return false;
-  const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk), fr = PR.faces.fr; if (!sh) return false;
+  const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk, bn), fr = PR.faces.fr; if (!sh) return false;
+  if (PR.style === 'modular') {
+    // The same authored model supplies the portrait and every in-game pose.
+    // Keep the existing dialogue box/portrait position; retain face detail.
+    fc.fillStyle = '#11171c'; fc.fillRect(0, 0, W, H);
+    fc.imageSmoothingEnabled = true;
+    fc.drawImage(sh, col * fr, 0, fr, fr, 0, 0, W, H);
+    return true;
+  }
   const t = _fcTmp; t.width = W; t.height = H; const x = t.getContext('2d'); x.imageSmoothingEnabled = true;
   const src = () => x.drawImage(sh, col * fr, 0, fr, fr, 0, 0, W, H);
   // 1 뒤에 번지는 빛 (역할 색)

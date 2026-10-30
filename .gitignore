@@ -2,6 +2,7 @@
 dl/
 # 도구 의존성·캐시
 node_modules/
+/tools/prerender/node_modules
 __pycache__/
 *.pyc
 # 빌드 결과 HTML (build*.py 로 다시 만든다)

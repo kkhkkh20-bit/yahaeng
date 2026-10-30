@@ -28,7 +28,7 @@ function statsDoc(result, reason) {
     items: items.filter(i => i.got).length + '/' + items.length, target: !!(S && S.guards.some(g => g.target && g.state === 'DEAD')),
     cps: RUN.cps, kills: st.kills || 0, ko: st.ko || 0, seen: st.detected || 0, alarms: st.alarms || 0, bodies: st.bodies || 0, civ: st.extraKills || 0,
     hp: S ? S.player.hp : 0, rank: (document.getElementById('endRank') || {}).textContent || '',
-    mobile: !!isTouch, host: location.host.slice(0, 60), ver: ((document.querySelector('.credit.ver') || {}).textContent || '').replace('야행 ', ''), demo: !!window.__DEMO,
+    mobile: !!isTouch, host: location.host.slice(0, 60), ver: window.__BUILD_VERSION__ || '', demo: !!window.__DEMO,
     path: RUN.path.join(';'),
     ev: (S && S.events || []).slice(-300).map(e => [e.k, Math.round(e.x / 8), Math.round(e.y / 8), Math.round(e.t - RUN.g0)].join(',')).join(';'),
     last: S ? [Math.round(S.player.x / 8), Math.round(S.player.y / 8), flOf(S.player)].join(',') : ''

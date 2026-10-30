@@ -5,7 +5,15 @@ const spr = {};
 // 픽셀 아트 그리기 도우미 (16px 원본을 3배로)
 function blit(c, name, dx, dy, dw, dh, sx = 0, sy = 0, sw, sh) { const f = F[name]; if (!f) return; c.drawImage(atlas, f[0] + sx, f[1] + sy, sw || f[2], sh || f[3], dx, dy, dw, dh); }
 const dirOf = a => { const c = Math.cos(a), s = Math.sin(a); return Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1); };
-const charOf = g => charBase(g) + (g.body && PR && PR.bodies && PR.bodies[g.body] ? '@' + g.body : '');
+const charOf = g => {
+  const base = charBase(g);
+  // An explicit civilian shape wins; role-specific outfits keep their own
+  // workwear silhouette (for example the courier's helmet).
+  const female = g.body && ['fBob', 'fLong', 'fTail'].includes(g.body);
+  const job = PR && PR.style === 'modular' && g.outfit && PR.looks[g.outfit];
+  const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body;
+  return base + (body && PR && PR.bodies && PR.bodies[body] ? '@' + body : '');
+};
 const charBase = g => g.outfit && OUTFIT_PAL[g.outfit] ? g.outfit : g.doc ? 'doc' : g.civ ? 'civ' + (window.__PR ? ((g.look || 0) + g.id * 3) % 10 : (g.look || 0)) : g.dog ? 'dog' : g.lookout ? 'hunter' : g.target ? (g.id % 2 ? 'old' : 'noble') : g.kind === 'g3' ? 'samR' : g.kind === 'g2' ? 'samB' : 'sam';
 // ---- 프리렌더 배경 (Kenney Retro Urban Kit, CC0): 건물 외관 · 바닥 · 나무를 같은 3/4 투영으로 미리 찍은 그림
 const KIT_PROP = {};  // 키트 거리 소품 (쓰레기통 등)
@@ -167,8 +175,8 @@ const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
 const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
-  ninja: ['#e6b38a', '#141414', '#17191f', '#1f2537', '#0c0c0e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
-  samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#e6e2d8', '#3a3a44', '#1a1a1a'],
+  ninja: ['#e6b38a', '#141414', '#313b46', '#34404e', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
+  samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
   old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#6a4020', '#b84a3a', '#3a4a6a', '#d8d8d4'],
   civ1: ['#c48961', '#1a1a1a', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#2a2a2a', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#7a2a2a', '#d27a9e', '#20222a', '#202020'],
   civ4: ['#e8b890', '#3a2a20', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#121212', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#8a5a2a', '#7a3a8a', '#2a2a30', '#1a1a1a'],
@@ -176,7 +184,7 @@ const PR_PAL = {
   ...OUTFIT_PAL,
 };
 const prImg = PR ? new Image() : null, prVar = {};
-let prBase = null;  // {w,h,src:Uint8ClampedArray, cls:Uint8Array, wgt:Float32Array, shd:Float32Array}
+let prBase = null;  // Sparse occupied pixels, RGBA, palette classes and lighting weights.
 if (PR) { prImg.onload = () => { try { prBase = prPrep(prImg); } catch (e) { console.warn('PR', e); } }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
 const prBodies = {};
@@ -184,35 +192,57 @@ if (PR && PR.bodies) for (const [bn, bm] of Object.entries(PR.bodies)) { const i
 function prPrep(img) {
   const w = img.width, h = img.height, c = document.createElement('canvas'); c.width = w; c.height = h;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, w, h).data;
-  const n = w * h, cls = new Uint8Array(n), wgt = new Float32Array(n), shd = new Float32Array(n);
-  const K = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]];  // 피부·머리·윗옷·바지·신발
+  // Sprite atlases are mostly transparent. Keep palette work only for occupied
+  // pixels instead of three full-size lookup arrays per outfit/body sheet.
+  const occupied = []; for (let i = 0; i < w * h; i++) if (d[i * 4 + 3]) occupied.push(i);
+  const pixels = Uint32Array.from(occupied), n = pixels.length, src = new Uint8ClampedArray(n * 4);
+  const cls = new Uint8Array(n), wgt = new Float32Array(n), shd = new Float32Array(n);
+  const K = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]];
   for (let i = 0; i < n; i++) {
-    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; if (!d[i * 4 + 3]) continue;
-    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn; if (ch < 20 || !mx) continue;
+    const j = pixels[i] * 4, k = i * 4; src.set(d.subarray(j, j + 4), k);
+    const r = d[j], g = d[j + 1], b = d[j + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn;
+    if (ch < 20 || !mx) continue;
     const nr = r / mx, ng = g / mx, nb = b / mx; let best = 0, bd = 9;
     for (let k = 0; k < 5; k++) { const q = (nr - K[k][0]) ** 2 + (ng - K[k][1]) ** 2 + (nb - K[k][2]) ** 2; if (q < bd) { bd = q; best = k; } }
     cls[i] = best; wgt[i] = Math.min(1, (ch - 20) / 60); shd[i] = Math.min(1.35, mx / 255 * 1.25);
   }
-  return { w, h, src: d, cls, wgt, shd };
+  return { w, h, src, pixels, cls, wgt, shd };
 }
-const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, null] : [key.slice(0, i), key.slice(i + 1)]; };
+function prPaint(base, pal) {
+  const { w, h, src, pixels, cls, wgt, shd } = base, P4 = pal.map(h => hexRgb(h).split(',').map(Number));
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const id = x.createImageData(w, h), out = id.data;
+  for (let i = 0; i < pixels.length; i++) {
+    const j = pixels[i] * 4, k = i * 4, wt = wgt[i], p = P4[cls[i]], s = shd[i];
+    for (let ch = 0; ch < 3; ch++) out[j + ch] = wt ? p[ch] * s * wt + src[k + ch] * (1 - wt) : src[k + ch];
+    out[j + 3] = src[k + 3];
+  }
+  x.putImageData(id, 0, 0); return c;
+}
+const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, (PR && PR.looks && PR.looks[key]) || null] : [key.slice(0, i), key.slice(i + 1)]; };
+// Keep the heroine's head and body when wearing a guard's or worker's clothes.
+// NPC palette keys remain unchanged, so old saves and disguise permissions work.
+function playerKey(P) {
+  const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
+  if (!(PR && PR.style === 'modular')) return pal;
+  const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  return pal === 'ninja' ? pal : pal + '@' + body;
+}
+function prPalette(pk, body) {
+  const pal = PR_PAL[pk];
+  return pal && PR && PR.style === 'modular' && body && body.startsWith('hero') ?
+    [PR_PAL.ninja[0], PR_PAL.ninja[1], ...pal.slice(2)] : pal;
+}
 function prSheet(key) {
   if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
-  if (!base) return null; const pal = PR_PAL[pk]; if (!pal) return null;
-  const { w, h, src, cls, wgt, shd } = base, P4 = pal.map(h => hexRgb(h).split(',').map(Number));
-  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-  const id = x.createImageData(w, h), o = id.data; o.set(src);
-  for (let i = 0, n = w * h; i < n; i++) {
-    const wt = wgt[i]; if (!wt) continue; const p = P4[cls[i]], s = shd[i], j = i * 4;
-    o[j] = p[0] * s * wt + src[j] * (1 - wt); o[j + 1] = p[1] * s * wt + src[j + 1] * (1 - wt); o[j + 2] = p[2] * s * wt + src[j + 2] * (1 - wt);
-  }
-  x.putImageData(id, 0, 0);
+  if (!base) return null; const pal = prPalette(pk, bn); if (!pal) return null;
+  const { w, h } = base, c = prPaint(base, pal);
   // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
-  if (key === 'ninja') {
+  if (key === 'ninja' || (PR && PR.style === 'modular' && bn && bn.startsWith('hero'))) {
     const s = document.createElement('canvas'); s.width = w; s.height = h; const sx = s.getContext('2d');
     for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, -1], [-1, 1], [1, 1], [-1, 0], [1, 0], [0, -1], [0, 1]]) sx.drawImage(c, dx, dy);
     sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#f2fbff'; sx.fillRect(0, 0, w, h);
-    sx.globalCompositeOperation = 'destination-out'; sx.drawImage(c, 0, 0); prVar.ninja_ol = s;
+    sx.globalCompositeOperation = 'destination-out'; sx.drawImage(c, 0, 0); prVar[key + '_ol'] = s;
   }
   return (prVar[key] = c);
 }
@@ -235,13 +265,19 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const sh = prSheet(key); if (!sh) return false;
   const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 * DRAG_SPD / 0.55 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
   const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
-  const fr = PR.fr, dw = fr * scale, gy = PR.groundY * scale;
+  const fr = PR.fr, dw = fr * scale;
+  const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
+  const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
   ctx.globalAlpha = alpha; ctx.drawImage(sh, (c0 + fi) * fr, prDir(a) * fr, fr, fr, x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
-const usePR = key => { if (!PR || !prBase) return false; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!(PR_PAL[key] || (key === 'ninja_ol' && prVar.ninja_ol)); };
+const usePR = key => { if (!PR || !prBase) return false; if (key.endsWith('_ol')) return !!prVar[key]; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!PR_PAL[key]; };
 const PAIR = () => !!(PR && PR.anims.carry && PR.anims.held);
-const carryKey = c => c && !c.dog && (c.stripped ? 'strip' : c.ch);
+const strippedKey = c => {
+  const body = prSplit(c.ch || 'strip')[1];
+  return PR && PR.style === 'modular' ? 'strip@' + (PR.bodyGender[body] === 'female' ? 'fBob' : 'male') : 'strip';
+};
+const carryKey = c => c && !c.dog && (c.stripped ? strippedKey(c) : c.ch);
 const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && usePR('ninja');
 // 처치 진행(0~1) → 핵심 자세 시간(0~3). 다가섬(0→1) → 버둥거림(1 근처를 오가며 힘이 빠짐) → 무릎 꺾임(1→2) → 주저앉음(2→3)
 // from = 1: 이미 목을 감은 상태(붙잡은 사람)에서 시작
@@ -258,7 +294,7 @@ const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
   const fr = c.t0 != null && S.t - c.t0 < 1 ? (c.f0 || 0) + Math.floor((S.t - c.t0) * 10) : 9;  // 쓰러지는 동작
-  if (c.stripped && usePR('strip')) { drawPR('strip', c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
+  if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
   blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
 }

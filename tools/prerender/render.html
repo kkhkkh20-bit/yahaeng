@@ -3,6 +3,8 @@
 // 사전 렌더: Quaternius 'Animated Human'(CC0) 3D 인물을 위에서 비스듬히 8방향으로 찍어 스프라이트로 만든다 (코만도스 방식)
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { loadModular, colorModular } from './modular_models.js';
+const modular = new URLSearchParams(location.search).has('modular');
 const RS = 128;  // 렌더 크기 (나중에 64로 줄인다)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.setSize(RS, RS); renderer.setClearColor(0x000000, 0); document.body.appendChild(renderer.domElement);
@@ -13,11 +15,30 @@ const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-400, 90
 const EL = 52 * Math.PI / 180, VIEW = 560, CY = 210;
 const cam = new THREE.OrthographicCamera(-VIEW / 2, VIEW / 2, VIEW / 2, -VIEW / 2, 1, 6000);
 cam.position.set(0, CY + Math.sin(EL) * 2500, Math.cos(EL) * 2500); cam.lookAt(0, CY, 0);
+function renderSprite(cameraDrop = 0) {
+  // Flat corpses and lowered climbing poses extend below a standing frame.
+  // Move the bake camera, then export its ground anchor for runtime placement.
+  cam.position.y -= cameraDrop; cam.lookAt(0, CY - cameraDrop, 0); cam.updateMatrixWorld(true);
+  renderer.render(scene, cam);
+  const ground = new THREE.Vector3().project(cam);
+  window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;
+  cam.position.y += cameraDrop; cam.lookAt(0, CY, 0); cam.updateMatrixWorld(true);
+}
 const shadow = new THREE.Mesh(new THREE.CircleGeometry(70, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false }));
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = 1; shadow.scale.set(1.25, 0.8, 1); scene.add(shadow);
 let model, mixer, clips = {}, bones = {}, mats = [];
 let model2, mixer2, clips2 = {}, bones2 = {}, mats2 = []; const grp = new THREE.Group(); scene.add(grp);
-window.__ready = new Promise(res => new FBXLoader().load('human.fbx', obj => {
+window.loadModularLook = async (name, partner = name) => {
+  if (model) model.removeFromParent();
+  if (model2) model2.removeFromParent();
+  const a = await loadModular(name), b = await loadModular(partner);
+  ({ model, mixer, bones, mats, clips } = a);
+  model2 = b.model; mixer2 = b.mixer; bones2 = b.bones; mats2 = b.mats; clips2 = b.clips;
+  scene.add(model); grp.add(model2); model2.visible = false;
+  BODY = null; partsOn = [[], []]; baseS = [null, null];
+  return { clips: Object.keys(clips) };
+};
+window.__ready = modular ? Promise.resolve().then(() => loadModularLook('hero')) : new Promise(res => new FBXLoader().load('human.fbx', obj => {
   model = obj; scene.add(obj); mixer = new THREE.AnimationMixer(obj);
   for (const a of obj.animations) clips[a.name.split('|')[1]] = a;
   obj.traverse(o => { if (o.isBone) bones[o.name] = o; if (o.isMesh) { o.frustumCulled = false; mats = mats.concat(o.material); } });
@@ -37,7 +58,9 @@ window.remapFeet = () => { if (feetDone) return; feetDone = true; let n = 0; [mo
   for (let i = 0; i < uv.count; i++) { let bi = 0, bw = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bi = si.getComponent(i, k); } } const nm = names[bi]; const row = Math.floor((1 - uv.getY(i)) * 32);
     if ((nm.endsWith('Foot') || nm.endsWith('ToeBase')) && row < 8) { uv.setXY(i, 30.5 / 32, 1 - 1.5 / 32); n++; } }
   uv.needsUpdate = true; } })); return n; };
-window.setTex = c => { remapFeet();
+window.setTex = c => {
+  if (modular) { colorModular(mats.concat(mats2), c); return; }
+  remapFeet();
   const cv = document.createElement('canvas'); cv.width = cv.height = 32; const x = cv.getContext('2d');
   const band = (y0, y1, col) => { x.fillStyle = col; x.fillRect(0, y0, 32, y1 - y0); };
   band(0, 8, c.skin); band(8, 12, c.eyes || '#262626'); band(12, 20, c.hair); band(20, 24, c.shirt); band(24, 32, c.pants); if (c.shirtUp) band(c.shirtUp, 20, c.shirt); x.fillStyle = c.shoes || '#222'; x.fillRect(29, 0, 3, 3);
@@ -67,10 +90,11 @@ function bodyBend(Bn, M) {  // 모델 기준 좌우축으로 숙이기 (방향�
     const ax = new THREE.Vector3(1, 0, 0).applyQuaternion(mq); const qw = new THREE.Quaternion().setFromAxisAngle(ax, ang);
     b.quaternion.premultiply(pq.clone().invert().multiply(qw).multiply(pq)); b.updateMatrixWorld(true); }
 }
-const hookMixer = (mx, Bn, M) => { const st = mx.setTime.bind(mx); mx.setTime = t => { const r = st(t); bodyScale(Bn); bodyBend(Bn, M); return r; }; };
-window.setBody = spec => {
+const hookMixer = (mx, Bn, M) => { const st = mx.setTime.bind(mx); mx.setTime = t => { const r = st(t), prev = BODY; BODY = M.userData.bodySpec; bodyScale(Bn); bodyBend(Bn, M); BODY = prev; return r; }; };
+window.setBody = (spec, only) => {
   BODY = spec || null;
   [[model, mixer, bones, clips], [model2, mixer2, bones2, clips2]].forEach(([M, mx, Bn, cl], mi) => {
+    const savedBody = BODY; BODY = only == null || only === mi ? spec : null; M.userData.bodySpec = BODY;
     if (!M.userData.hooked) { hookMixer(mx, Bn, M); M.userData.hooked = true; baseS[mi] = M.scale.clone(); }
     partsOn[mi].forEach(p => p.parent && p.parent.remove(p)); partsOn[mi] = [];
     M.scale.copy(baseS[mi]).multiplyScalar((BODY && BODY.h) || 1);
@@ -80,6 +104,7 @@ window.setBody = spec => {
     const hh = (BODY && BODY.h) || 1;
     for (const pd of (BODY && BODY.parts) || []) { const m = partMesh(pd); m.position.multiplyScalar(hh); m.scale.multiplyScalar(hh); scene.add(m); m.updateMatrixWorld(true); Bn[pd.bone].attach(m); partsOn[mi].push(m); }
     M.quaternion.copy(rot); M.position.copy(pos); M.visible = vis; M.updateMatrixWorld(true);
+    BODY = savedBody;
   });
 };
 window.CR = { th: 1.1, kn: 1.9, ft: 0.6, sp: 0.55, sp1: 0.2, hd: 0.45 };
@@ -133,7 +158,7 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   if (hold) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHold = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }  // 두 손 가운데 (상자 자리)
   if (hang != null) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHand = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }
   if (clip === 'Death') { bones.Hips.getWorldPosition(hp); bones.Head.getWorldPosition(hd); model.position.set(-(hp.x + hd.x) / 2, 0, -(hp.z + hd.z) / 2); shadow.position.set(0, 1, 0); }
-  renderer.render(scene, cam);
+  renderSprite(modular && clip === 'Death' ? CY : 0);
   return renderer.domElement.toDataURL('image/png');
 };
 
@@ -235,7 +260,7 @@ window.renderPair = (kind, clip, t, dirA, part, blend) => {
   show.forEach(m => { m.colorWrite = true; }); hide.forEach(m => { m.colorWrite = false; });
   model.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? 0 : -1; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? -1 : 0; });
   shadow.visible = part === 'a'; shadow.position.set(0, 1, 0);
-  renderer.render(scene, cam);
+  renderSprite();
   const url = renderer.domElement.toDataURL('image/png');
   mats.concat(mats2, partsOn[0].map(o => o.material), partsOn[1].map(o => o.material)).forEach(m => { m.colorWrite = true; }); model.traverse(o => { if (o.isMesh) o.renderOrder = 0; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = 0; });
   scene.add(model); model2.visible = false; grp.rotation.y = 0; shadow.visible = true;
@@ -321,7 +346,7 @@ window.renderPose = (name, k, dirA) => {
   model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
   model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
   shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
-  renderer.render(scene, cam); shadow.visible = true;
+  renderSprite(modular && name === 'climb' ? CY + 100 : 0); shadow.visible = true;
   return renderer.domElement.toDataURL('image/png');
 };
 </script></body></html>

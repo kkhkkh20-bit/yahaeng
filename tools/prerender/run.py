@@ -2,7 +2,7 @@
 import asyncio, base64, io, json, os, subprocess, time, sys
 from PIL import Image, ImageFilter
 from playwright.async_api import async_playwright
-HERE = os.path.dirname(os.path.abspath(__file__)); OUT = '/root/game/build/pr'; os.makedirs(OUT, exist_ok=True)
+HERE = os.path.dirname(os.path.abspath(__file__)); OUT = os.path.abspath(os.path.join(HERE, '..', '..', 'build', 'pr')); os.makedirs(OUT, exist_ok=True)
 FR = 64
 KT = [round(i / 3, 4) for i in range(10)]
 ANIMS = [  # 이름, 클립, 시간들, 웅크림
@@ -149,4 +149,5 @@ async def main():
             json.dump(meta, open(f'{OUT}/pr_meta.json', 'w')); print(meta)
             await b.close()
     finally: srv.terminate()
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

@@ -1,9 +1,11 @@
 # 도시판 배경: 건물 외관·지붕을 Quaternius Downtown City MegaKit(CC0)으로 굽고, 게임이 정한 옥상 살림을 올린다 → build/kit_mk/kit.json
 # 바닥·나무·가구·소품은 기존 kit.json(Kenney)을 그대로 쓴다. 먼저 spec.py와 bake.py를 돌려 둘 것
 import asyncio, base64, io, json, os, subprocess, sys, time, hashlib
+from pathlib import Path
 from PIL import Image
 from playwright.async_api import async_playwright
-HERE = '/root/game/tools/prerender'; BASE = '/root/game/build/kit'; OUT = '/root/game/build/kit_mk'; os.makedirs(OUT, exist_ok=True)
+ROOT = Path(__file__).resolve().parents[3]
+HERE = str(ROOT / 'tools/prerender'); BASE = str(ROOT / 'build/kit'); OUT = str(ROOT / 'build/kit_mk'); os.makedirs(OUT, exist_ok=True)
 PPU = 96
 DRESS = '--plain' not in sys.argv   # 옥상 살림(옥탑방·간판·채광창·텃밭·빨랫줄·태양광판)
 def H(*a): return int(hashlib.md5(repr(a).encode()).hexdigest()[:8], 16)
@@ -19,7 +21,7 @@ NEON = [0xff4fa0, 0x40e0ff, 0xffa850, 0x9a6bff, 0x5cff9a]
 def bld_items(b):
     x0, y0, x1, y1, h = b['x0'], b['y0'], b['x1'], b['y1'], b['h']
     zF = y1 + 1; zB = min(y0 + h, zF - 1); dr = zF - zB; w = x1 - x0 + 1; hs = H(x0, y0, w)
-    shop = b['kind'] == 'shop'; house = b['kind'] == 'house'
+    shop = b['kind'] == 'shop'; house = b['kind'] == 'house'; industrial = b.get('style') == 'industrial'
     fam = FAM['metal' if b['glass'] else ('metal' if hs % 2 else 'brick') if shop else ('trim' if hs % 2 else 'brick') if house else ['brick', 'trim', 'brick'][hs % 3]]
     tint = TINTS[(hs >> 4) % len(TINTS)]; neon = NEON[(hs >> 7) % len(NEON)]
     it = [{'box': [x0, 0, zB, x1 + 1, h - 0.002, zF - 0.98], 'color': 0x1c1e24, 'cast': False}]
@@ -37,7 +39,7 @@ def bld_items(b):
             if ch == 'D':
                 it.append(M(fam['door'], X, f, zF, wallTint=tint, lit=lit)); it.append(M(fam['leaf'], X + 0.25, f, zF - 0.05, wallTint=tint))
                 if f == 0 and not shop: it.append(M('Stairs_Entrance_Concrete', X, 0, zF, s=(0.42, 0.2, 0.3)))
-            elif shop and f == 0: it.append(M(fam['shop'], X, 0, zF, wallTint=tint, lit=(x + hs) % 3 != 0, neon=neon))
+            elif shop and f == 0 and not industrial: it.append(M(fam['shop'], X, 0, zF, wallTint=tint, lit=(x + hs) % 3 != 0, neon=neon))
             elif b['glass']: it.append(M('Metal_FullWindow', X, f, zF, wallTint=tint, lit=lit, neon=neon if lit and (x + f) % 4 == 0 else None))
             elif ch == 'N': it.append(M(fam['win'][(x + f + hs) % len(fam['win'])], X, f, zF, wallTint=tint, lit=lit))
             elif f == 0: it.append(M(fam['gwall'], X, 0, zF, wallTint=tint))
@@ -144,7 +146,7 @@ def bld_items(b):
             it.append({'cyl': [px + 0.5, h, pz + 0.5, px + 0.5, h + 0.28, pz + 0.5], 'r': 0.07, 'color': 0x9aa0a8, 'metal': 0.5, 'rough': 0.4})
             it.append({'cyl': [px + 0.5, h + 0.28, pz + 0.5, px + 0.5, h + 0.33, pz + 0.5], 'r': 0.12, 'color': 0x7a8088, 'metal': 0.5})
     if not mansard: it.append(M('Prop_Drain', x0 + 0.6, h + 0.04, zB + 0.5, s=(0.6, 1, 0.6)))
-    if shop and not mansard:  # 간판 불빛: 가게 지붕 끝에 네온 띠
+    if shop and not mansard and not industrial:  # 간판 불빛: 가게 지붕 끝에 네온 띠
         it.append({'box': [x0 + 0.3, h - 0.32, zF + 0.02, x1 + 0.7, h - 0.2, zF + 0.06], 'color': neon, 'rough': 0.3, 'metal': 0})
     # 가스관·베란다·가게 차양: 기존 굽기와 같게
     for tx in b.get('gas') or []:
@@ -157,7 +159,7 @@ def bld_items(b):
         it.append({'cyl': [px, 0.62, pz, mx, 0.62, pz], 'r': 0.035, 'color': Y}); it.append({'box': [mx - 0.15, 0.42, zF, mx + 0.15, 0.82, zF + 0.16], 'color': 0xa4a8b0, 'metal': 0.2, 'rough': 0.55})
     for tx in b.get('balc') or []:
         it.append({'n': 'balcony-type-a', 'x': tx + 0.5, 'y': 1, 'z': zF + 0.14, 'r': 2})
-    if shop:
+    if shop and not industrial:
         for k, ch in enumerate(b['front'][0]):
             if ch == 'D': it.append({'n': 'detail-awning-wide', 'x': x0 + k + 0.5, 'y': 0.72, 'z': zF + 0.16, 'r': 2})
     top = y0 - (int((pk + 0.35) * 2 + 0.999) / 2)
@@ -171,8 +173,8 @@ def webp(im, q=88):
 async def main():
     spec = json.load(open(HERE + '/kenney_ruk/spec.json')); kit = json.load(open(BASE + '/kit.json')); kit['bld'] = {}
     only = next((a for a in sys.argv[1:] if not a.startswith('--')), None)
-    if only and os.path.exists(f'{OUT}/kit.json'): kit['bld'] = json.load(open(f'{OUT}/kit.json')).get('bld', {})  # 한 판만 다시 구울 땐 나머지 판은 그대로 둔다
-    srv = subprocess.Popen([sys.executable, '-m', 'http.server', '8775'], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
+    if only and os.path.exists(f'{OUT}/kit.json'): kit = json.load(open(f'{OUT}/kit.json'))  # 다른 판과 기반 키트를 그대로 보존
+    srv = subprocess.Popen([sys.executable, '-m', 'http.server', '8775', '--bind', '127.0.0.1'], cwd=HERE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL); time.sleep(1)
     try:
         async with async_playwright() as p:
             br = await p.chromium.launch(args=['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist']); pg = await br.new_page()
@@ -194,4 +196,4 @@ async def main():
             await br.close()
     finally: srv.terminate()
     json.dump(kit, open(f'{OUT}/kit.json', 'w')); print('kit_mk.json KB', os.path.getsize(f'{OUT}/kit.json') // 1024)
-asyncio.run(main())
+if __name__ == '__main__': asyncio.run(main())

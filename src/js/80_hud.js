@@ -61,7 +61,7 @@ function stageMap(w, labels) {
 }
 // 할 일 목록 (브리핑·일시정지 공용): [표식, 색, 할 일, 자리]
 function briefTodo() {
-  const out = []; if (STAGE.firstGoal) out.push(['dia', '#7fd6ff', STAGE.firstGoal.text, STAGE.firstGoal.where || '']);
+  const out = [], fg = pendingFirstGoal(); if (fg) out.push(['dia', '#7fd6ff', fg.text, fg.where || '']);
   S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), placeName(it.x, it.y, it.fl, it.b)]); });
   for (const g of S.guards) if (g.target && g.state !== 'DEAD') out.push(['dot', '#e8473c', (g.doc ? '한 선생' : '표적') + ' 처리', schedText(g) || placeName(g.x, g.y, flOf(g))]);
   out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '끝나면 노란 원으로']);
@@ -89,24 +89,31 @@ const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니
 const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return nm + ' ' + ((fl || 0) + 1) + '층'; }
-// 지금 할 일: 남은 목표 중 가장 가까운 하나 — 무엇을(동사) · 어디서 · 몇 m. 화면에 방향 화살표와 표시를 함께 그린다
+function pendingFirstGoal() {
+  const fg = STAGE.firstGoal; if (!fg) return null;
+  try { if (fg.done(S, SH)) return null; } catch (e) {}
+  return fg;
+}
+// 연습 → 탈출 → 필수 첫 행동 → 추적 기회(전체 안내) → 가까운 의뢰 목표.
+// 최소 안내에서는 기회의 위치를 공개하지 않고 의뢰 목표임을 명시한다.
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const fg = STAGE.firstGoal; if (fg) { let ok = false; try { ok = fg.done(S, SH); } catch (e) {} if (!ok) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; } }  // 판마다 맨 먼저 할 일 (예: 감방 나가기)
+  { const fg = pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; }
+  if (oppMode === 2) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '추적: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
   const c = [];
   S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
   if (!S.spare) for (const g of S.guards) if (g.target && g.state !== 'DEAD') c.push({ text: (g.doc ? '한 선생' : '표적') + ' 처리하기', where: placeName(g.x, g.y, flOf(g)), x: g.x, y: g.y, fl: flOf(g), g });
   if (!c.length) return null;
   const cost = o => dist(P.x, P.y, o.x, o.y) + Math.abs((o.fl || 0) - flOf(P)) * 300;
-  return c.sort((a, b) => cost(a) - cost(b))[0];
+  const goal = c.sort((a, b) => cost(a) - cost(b))[0]; goal.text = '의뢰: ' + goal.text; return goal;
 }
 // 목표 목록: 무엇을 어디서 (건물 이름·층) — 한 줄씩, 끝낸 것은 줄 긋기
 function objectiveLines() {
   const L = [], P = S.player;
   const place = placeName;
-  { const gl = !STAGE.steps && nextGoal(); if (gl) { const m0 = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0, df = (gl.fl || 0) - flOf(P); L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''} · ${df ? (df > 0 ? df + '층 위 · ' : -df + '층 아래 · ') : ''}${m}m`]); } }  // 지금 할 일 (맨 위)
+  { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const m0 = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0, df = (gl.fl || 0) - flOf(P); distance = ` · ${df ? (df > 0 ? df + '층 위 · ' : -df + '층 아래 · ') : ''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `연습 ${(S.tutI || 0) + 1}/${STAGE.steps.length}: ${tutText(STAGE.steps[S.tutI || 0][0])}`]);
   if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);

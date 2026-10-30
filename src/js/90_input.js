@@ -4,6 +4,24 @@ document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
 window.addEventListener('keydown', e => {
+  const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
+  if (menu) {
+    if (e.code === 'Escape' && menu !== 'intro') { e.preventDefault(); $(menu === 'ledger' ? 'btnLedgerBack' : 'btnHelpBack').click(); }
+    if (menu === 'intro' && ['ArrowDown', 'ArrowUp'].includes(e.code)) {
+      e.preventDefault();
+      const buttons = [...document.querySelectorAll('.title-acts button')], i = buttons.indexOf(document.activeElement);
+      buttons[i < 0 ? (e.code === 'ArrowDown' ? 0 : buttons.length - 1) : (i + (e.code === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length].focus();
+    }
+    return;
+  }
+  const overlay = document.querySelector('.screen:not([hidden])');
+  if (overlay) {
+    if (e.code === 'Escape') {
+      const back = { pause: 'btnResume', brief: 'btnBrBack', end: 'btnMenu' }[overlay.id];
+      if (back) { e.preventDefault(); $(back).click(); }
+    }
+    return;
+  }
   if (!S) return;
   if (S.entrySel && running) { const m = /^Digit([1-9])$/.exec(e.code); if (m) { e.preventDefault(); chooseEntry(+m[1] - 1); } return; }
   if (S.keypad && running) { e.preventDefault(); const m = /^(?:Digit|Numpad)([0-9])$/.exec(e.code); if (m && !e.repeat) kpPress(m[1]); else if (e.code === 'Backspace') kpPress('<'); else if (e.code === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Space') kpPress('ok'); else if (e.code === 'Escape') kpPress('x'); return; }
@@ -152,12 +170,16 @@ document.addEventListener('fullscreenchange', () => { $('btnFull').textContent =
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
 function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const i = STAGES.findIndex(s => !s.tutorial && demoOk(s) && !stageCleared(s)); return i >= 0 ? i : STAGES.findIndex(s => !s.tutorial); }
 function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = !STAGES.some(s => !s.tutorial && demoOk(s) && !stageCleared(s)) && stageCleared(STAGES[STAGES.findIndex(s => s.id === 'tI')] || {});
-  $('btnQuick').textContent = st.tutorial ? '바로 시작' : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${st.no} ${st.name}`;
-  $('qNote').textContent = st.tutorial ? '처음이면 4분짜리 연습부터 시작한다.' : done ? '장부의 의뢰를 모두 끝냈다. 별을 더 모아 보자.' : (st.fee ? `수고비 ${st.fee}. ` : '') + (st.mission || ''); }
-$('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); });
-$('btnHelp').addEventListener('click', () => showMenu('help'));
-$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); });
-$('btnHelpBack').addEventListener('click', () => showMenu('intro'));
+  $('btnQuick').textContent = st.tutorial ? '시작하기' : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${st.no} ${st.name}`;
+  $('btnQuick').title = st.tutorial ? '처음 플레이하면 연습부터 시작합니다.' : (st.mission || st.name); }
+document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
+  $('stageList').dataset.filter = button.dataset.filter;
+  document.querySelectorAll('.ledger-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+}));
+$('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); document.querySelector('.ledger-tabs button[aria-pressed="true"]').focus({ preventScroll: true }); });
+$('btnHelp').addEventListener('click', () => { showMenu('help'); $('btnHelpBack').focus({ preventScroll: true }); });
+$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnLedger').focus({ preventScroll: true }); });
+$('btnHelpBack').addEventListener('click', () => { showMenu('intro'); $('btnHelp').focus({ preventScroll: true }); });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
@@ -174,7 +196,14 @@ try { if (localStorage.getItem('yahaeng.joyseen')) document.body.classList.add('
 $('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);
 $('btnPause').addEventListener('click', togglePause);
 $('btnMap').addEventListener('click', toggleTactical);
-{ const mi = $('mini'); if (mi) { $('btnMap').style.display = 'none'; mi.addEventListener('click', toggleTactical); } }  // 도시: 지도 버튼 대신 미니맵을 누른다
+{ const mi = $('mini'); if (mi) {
+  $('btnMap').style.display = 'none'; mi.addEventListener('click', toggleTactical);
+  mi.addEventListener('keydown', e => {
+    if (e.code !== 'Enter' && e.code !== 'Space') return;
+    e.preventDefault(); e.stopPropagation();
+    if (!e.repeat) { toggleTactical(); if (!$('tacBanner').hidden) $('tacBanner').focus({ preventScroll: true }); }
+  });
+} }  // 도시: 지도 버튼 대신 미니맵을 누른다
 $('btnScan').addEventListener('click', () => { input.scan = !input.scan; $('btnScan').classList.toggle('on', input.scan); });
 $('btnZoomOut').addEventListener('click', () => setZoom(userZoom - 0.12));
 $('btnZoomIn').addEventListener('click', () => setZoom(userZoom + 0.12));
@@ -182,7 +211,7 @@ $('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('bt
 $('btnRoutes').classList.toggle('on', showRoutes);
 { const bo = $('btnOpps'), lab = () => { bo.textContent = '기회 안내: ' + ['끔', '최소', '전체'][oppMode]; bo.classList.toggle('on', oppMode > 0); };
   if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
-$('tacBanner').addEventListener('click', toggleTactical);
+$('tacBanner').addEventListener('click', e => { toggleTactical(); if (!e.detail) $('mini').focus({ preventScroll: true }); });
 $('btnResume').addEventListener('click', () => setPause(false));
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
@@ -249,7 +278,7 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, get PR() { return PR; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); prSheet(k); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    get S() { return S; }, nextGoal, get PR() { return PR; }, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); prSheet(k); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { return mapC.toDataURL(); },
     validate() {
       const issues = [];

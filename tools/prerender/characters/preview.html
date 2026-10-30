@@ -1,0 +1,28 @@
+<!doctype html><html lang="ko"><meta charset="utf-8">
+<title>야행 인물 모델</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:28px;background:#e9e6dd;color:#222;font:15px "Noto Sans CJK KR",sans-serif}h1{font-size:28px;margin:0 0 8px}p{margin:0 0 22px;color:#626860}.row{display:flex;gap:12px}.person{width:210px;background:#283137;color:#e9e6dd;padding:16px}h2{font-size:16px;font-weight:500;margin:0 0 8px}canvas{display:block;width:178px;height:320px}.note{font-size:12px;margin-top:20px}
+</style>
+<h1>야행 · 인물 모델 적용</h1><p>여성 주인공 / 같은 얼굴을 유지하는 변장 / 직업별 주민과 경비</p>
+<div class="row"></div><p class="note">게임에 사용한 모델의 확대 보기입니다. 실제 플레이에서는 8방향 64px 이미지로 표시됩니다.</p>
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<script type="module">
+import * as T from 'three';
+import {loadModular,colorModular} from '../modular_models.js';
+const people=[
+ ['여성 주인공','hero',['#e6b38a','#141414','#313b46','#34404e','#161a1e']],
+ ['경비 변장','heroCrew',['#e6b38a','#141414','#2a3654','#1d1f26','#141416']],
+ ['직원 변장','heroWorker',['#e6b38a','#141414','#3f9a5e','#2f3440','#1c1c1c']],
+ ['경비','guard',['#ddaa80','#3a2a1c','#56603c','#3e3a2c','#2a241c']],
+ ['주민 · 정장','suit',['#efc49e','#2b2b2b','#343b46','#252b33','#17191d']],
+ ['주민 · 평상복','male',['#efbf98','#6a4020','#b84a3a','#3a4a6a','#d8d8d4']],
+];
+window.ready=Promise.all(people.map(async([label,name,palette])=>{
+ const card=document.createElement('article');card.className='person';card.innerHTML='<h2>'+label+'</h2>';document.querySelector('.row').append(card);
+ const r=new T.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});r.setSize(178,320);card.append(r.domElement);
+ const scene=new T.Scene();scene.add(new T.HemisphereLight(0xffffff,0x505050,1.5));const sun=new T.DirectionalLight(0xffffff,2.4);sun.position.set(-400,900,350);scene.add(sun);
+ const a=await loadModular(name);colorModular(a.mats,Object.fromEntries(['skin','hair','shirt','pants','shoes'].map((k,i)=>[k,palette[i]])));scene.add(a.model);
+ a.mixer.clipAction(a.clips.Idle_Neutral||a.clips.Idle).play();a.mixer.setTime(.25);
+ const cam=new T.PerspectiveCamera(28,178/320,1,5000);cam.position.set(120,290,1200);cam.lookAt(0,260,0);r.render(scene,cam);
+}));
+</script></html>

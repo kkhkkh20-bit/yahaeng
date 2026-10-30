@@ -1,0 +1,47 @@
+[
+  {
+    "file": "Female-Casual.glb",
+    "sha256": "bc2d84fba249ebaa0629cb9d133ad37234196e4b8004aa205a6397abed04e05c",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Female/Casual.glb"
+  },
+  {
+    "file": "Female-Formal.glb",
+    "sha256": "9a676084711f07e48c1c3071c7bfaddfb316e42acfcc47c92bd072f1b3d2be7f",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Female/Formal.glb"
+  },
+  {
+    "file": "Female-Suit.glb",
+    "sha256": "9a7dae48ef51246abd542efc23cd0742fced08a500caec2497c3a735b86c0fcc",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Female/Suit.glb"
+  },
+  {
+    "file": "Female-Worker.glb",
+    "sha256": "4359f38a77344e02b3d5e915640a7f142ac325375fa82d5e881827a437b70019",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Female/Worker.glb"
+  },
+  {
+    "file": "Male-Casual_2.glb",
+    "sha256": "caaed4ea0846b6c40471830ed13a9067eeb375e942b3986ea9b6175af6cee6d1",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Casual_2.glb"
+  },
+  {
+    "file": "Male-Casual_Hoodie.glb",
+    "sha256": "f5b722199f7628b24550989af4230f65d5230727df9c326fd2b3e360effe5249",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Casual_Hoodie.glb"
+  },
+  {
+    "file": "Male-Suit.glb",
+    "sha256": "500ae95582c31288606934f6d28a8d2c5122e1e96a5b99a776da36197250de12",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Suit.glb"
+  },
+  {
+    "file": "Male-Swat.glb",
+    "sha256": "61631bafc8b3a5c2b591c4641ec4249162795bb3c3191a1aa1693b25b4dd560c",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Swat.glb"
+  },
+  {
+    "file": "Male-Worker.glb",
+    "sha256": "8d0f454336c2effc5c08f63a177af3a82d1a7af025ca9588b40e4c90c4703534",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Worker.glb"
+  }
+]

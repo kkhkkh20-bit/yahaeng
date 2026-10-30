@@ -66,11 +66,17 @@
 ## 굽기 (지도·건물 모양이 바뀌었을 때)
 ```
 python3 build.py
-cd tools/prerender/kenney_ruk && python3 spec.py 6 && python3 bake_mk.py m1     # 바뀐 의뢰만 (생략하면 전부)
-cd /root/game && python3 build.py
+python3 tools/prerender/kenney_ruk/spec.py 6
+python3 tools/prerender/kenney_ruk/restore_mk.py m6  # 원본이 없는 경우: 필요한 CC0 모델만 복구
+python3 tools/prerender/kenney_ruk/bake_mk.py m6    # 바뀐 의뢰만 (생략하면 전부)
+python3 build.py
 ```
 - `spec.py` 는 게임이 정한 건물·옥상 배치를 `spec.json` 으로 뽑는다.
 - `bake_mk.py` 는 기반 키트(`build/kit/kit.json`)에 MegaKit 건물 외관을 더해 `build/kit_mk/` 에 저장한다.
+- `restore_mk.py`는 고정 리비전의 표준 CC0 팩에서 해당 의뢰에 필요한 모델·텍스처만
+  `dl/megakit`에 복구한다. 원본 전체팩이 이미 있으면 다운로드할 필요가 없다.
+  `tools/prerender/mk`는 저장소 기준 상대 링크다. 의뢰 하나를 구울 때 다른 의뢰와
+  공유 키트는 보존한다. 굽기 도구에는 three.js, Pillow, Playwright/Chromium이 필요하다.
 - 기반 키트(바닥·나무·가구)를 바꿀 때만 `bake_base.py` 를 돌린다.
 - 새 가구 종류·방향만 생겼으면 `python3 spec.py 6 && python3 bake_base.py furn`: 빠진 가구만 구워 두 키트에 넣는다(건물은 그대로).
 - 캐릭터 동작을 더할 때는 `tools/prerender/render.html` 에 포즈를 만들고 `run.py` 의 `ANIMS` 끝에 붙인 뒤 `python3 run.py` 로 `build/pr/` 를 다시 만든다.

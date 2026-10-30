@@ -125,7 +125,8 @@ function schedText(g) {
 }
 
 // ---- 단계형 기회 (히트맨의 기회·미션 스토리식): 엿듣기 → 물건 → 장소 같은 사슬. 하나를 추적하면 다음 단계 위치를 표시
-// STAGE.stories = [{ id, name, reveal: S => bool, steps: [{ text, done: S => bool, at: [x, y, fl] }] }]
+// STAGE.stories = [{ id, name, reveal, moot?, steps: [{ text, done, at: [x, y, fl] }] }]
+// moot(S, SH): 다른 방식으로 해결해 더는 의미 없는 경로. 기회 완료 보상과 구별한다.
 // 안내 강도: oppMode 2 = 전체(다음 단계 위치 표시), 1 = 최소(목록만), 0 = 끔
 function storiesInit() {
   S.stories = (STAGE.stories || []).map(d => ({ d, found: false, step: 0, done: false }));
@@ -140,25 +141,29 @@ function updateStories(dt) {
       st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
-    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) { const nx = S.stories.find(o => o.found && !o.done); S.storyTrack = nx ? nx.d.id : null; } }
+    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
     else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
-    if (!st.done && S.exitOpen && !st.d.keepOpen) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 길로 목표를 이뤘으면 남은 기회 안내는 접는다 (탈출만 남긴다)
+    let moot = S.exitOpen && !st.d.keepOpen;
+    if (!st.done && st.d.moot) { try { moot = moot || !!st.d.moot(S, SH); } catch (e) { if (!st.err3) { st.err3 = 1; console.warn('story moot', st.d.id, e); } } }
+    if (!st.done && moot) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 방법으로 해결한 기회는 완료 보상 없이 접는다
   }
 }
 const storyStep = st => st.done || st.moot ? null : st.d.steps[st.step];
+const trackedStory = () => (S.stories || []).find(st => st.d.id === S.storyTrack && st.found && !st.done && !st.moot);
 function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
-  for (const st of S.stories) { if (!st.found || st.moot) continue; const tr = S.storyTrack === st.d.id, s = storyStep(st);
-    L.push([st.done ? 'opp done' : 'opp', (tr && !st.done ? '▶ ' : '') + '기회: ' + st.d.name + (st.done ? '' : oppMode === 2 && s ? ' — ' + s.text : ` (${st.step}/${st.d.steps.length})`)]); }
+  for (const st of S.stories) { if (!st.found || st.moot || st.done) continue; const tr = S.storyTrack === st.d.id, s = storyStep(st);
+    if (tr && oppMode === 2 && !S.exitOpen && !pendingFirstGoal()) continue;  // 같은 단계를 맨 위와 목록에 두 번 쓰지 않는다
+    L.push(['opp', (tr ? '추적 중: ' : '기회: ') + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : ` (${st.step}/${st.d.steps.length})`)]); }
   return L;
 }
 function trackNextStory() {
   const f = (S.stories || []).filter(o => o.found && !o.done && !o.moot); if (!f.length) return;
-  const i = f.findIndex(o => o.d.id === S.storyTrack); S.storyTrack = f[(i + 1) % f.length].d.id; hudCache.objH = null;
-  toast('추적: ' + f[(i + 1) % f.length].d.name, 1.6);
+  const i = f.findIndex(o => o.d.id === S.storyTrack), next = f[i + 1]; S.storyTrack = next ? next.d.id : null; hudCache.objH = null;
+  toast(next ? '추적: ' + next.d.name : '기회 추적 해제', 1.6);
 }
 function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  if (oppMode !== 2 || !S.stories) return; const st = S.stories.find(o => o.d.id === S.storyTrack); if (!st || st.done) return;
+  if (oppMode !== 2 || !S.stories || !tactical || S.exitOpen || pendingFirstGoal()) return; const st = trackedStory(); if (!st) return;  // 플레이 화면의 안내는 drawGoal 하나로 통일
   const s = storyStep(st); if (!s || !s.at) return; const fl = s.at[2] || 0; if (fl !== flOf(P) && !tactical) return;
   const x = tc(s.at[0]), y = tc(s.at[1]), k = Math.max(1, 0.95 / SCALE), b = 6 * Math.sin(S.t * 4);
   ctx.save(); ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;

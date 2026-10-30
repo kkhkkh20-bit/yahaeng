@@ -1,0 +1,6 @@
+{
+  "name": "yahaeng-character-baker",
+  "private": true,
+  "description": "Build-time 3D to 2D sprite tools; no runtime dependency",
+  "dependencies": { "three": "0.168.0" }
+}

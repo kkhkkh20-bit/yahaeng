@@ -11,9 +11,13 @@ async def main():
             print(name, 'load', round(t1-t0,2), 'intro text:', (await pg.inner_text('#intro'))[:600].replace('\n',' | '))
             # 첫 미션 시작: 실제 버튼 클릭
             await pg.click('#btnLedger'); await pg.wait_for_timeout(300)  # 의뢰 장부 화면을 연다
-            btns = await pg.query_selector_all('#stageList button, #stageList [data-i], #stageList li')
+            btns = await pg.query_selector_all('#stageList .stage[data-i]:not(.tut)')
             print('stage items', len(btns))
-            if btns: await btns[0].click()
+            assert btns, '선택 가능한 의뢰가 없다'
+            await btns[0].click()
+            assert await pg.is_visible('#brief'), '의뢰 브리핑이 열리지 않는다'
+            await pg.click('#btnBrGo')
+            assert await pg.evaluate('!!window.__game.S.player'), '게임이 시작되지 않는다'
             await pg.wait_for_timeout(800); await pg.screenshot(path=f'{name}_start.png')
             # 대사 넘기기: 실제 탭/스페이스
             for i in range(12):
@@ -29,6 +33,6 @@ async def main():
                 cdp = await c.new_cdp_session(pg); await cdp.send('Emulation.setCPUThrottlingRate', {'rate':4})
             fps = await pg.evaluate('''() => new Promise(r => { let n=0, t0=performance.now(); const f=()=>{ n++; if (performance.now()-t0<3000) requestAnimationFrame(f); else r(n/3); }; requestAnimationFrame(f); })''')
             print(name, 'fps', round(fps,1))
-            print(name, 'errs', errs[:3]); await c.close()
+            print(name, 'errs', errs[:3]); assert not errs, errs; await c.close()
         await b.close()
 asyncio.run(main())
