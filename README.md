@@ -2,6 +2,8 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+층 안내·변장·수색·CCTV 수정: https://kkhkkh20-bit.github.io/yahaeng/search-rules/
+
 공간·의뢰·서기 자세 개편: https://kkhkkh20-bit.github.io/yahaeng/mission-rework/
 
 막힌 골목 수정 비교: https://kkhkkh20-bit.github.io/yahaeng/access-evidence/
@@ -18,5 +20,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v91
-Source commit: 5687a1e8876b371b1faba918f4ccf4fade156274
+Version: v92
+Source commit: d7f05051a2a149c51f993d0e50f15966de232af0
