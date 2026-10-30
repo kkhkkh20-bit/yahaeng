@@ -2,6 +2,8 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+막힌 골목 수정 비교: https://kkhkkh20-bit.github.io/yahaeng/access-evidence/
+
 실내외 겹침·옥탑문 비교: https://kkhkkh20-bit.github.io/yahaeng/scene-layers/
 
 맵 끝 시점·말풍선 비교: https://kkhkkh20-bit.github.io/yahaeng/camera-patrol/
@@ -14,5 +16,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v89
-Source commit: 28bf04a589aa28c8bab4e0537521dc9945135ee9
+Version: v90
+Source commit: 13c687d8ac948c9a9c2649a0a3438dc15fab33c9
