@@ -48,15 +48,16 @@ async def main():
               const d=l.roofDoor;
               check(G.nearClimbDown()===l,id+' roof door must be usable from its step');
               const a=G.envChoices().find(a=>a.k==='down'&&a.l===l);
-              check(a&&a.at===d,id+' label must point at the physical doorway');
+              check(!a,id+' rooftop rooms must not require a descent button');
               check(Math.hypot(d.x-l.rx,d.y-l.ry)>10,id+' doorway and standing tile must have distinct anchors');
               P.x=l.rx-d.dy*43;P.y=l.ry+d.dx*43;
               check(G.nearClimbDown()!==l,id+' empty space beside the room must not select the doorway');
               P.x=d.x-d.dx*25;P.y=d.y-d.dy*25;
               check(G.nearClimbDown()!==l,id+' room back wall must not select the doorway');
-              P.x=l.rx;P.y=l.ry;for(let i=0;i<G.envChoices().length;i++){const a=G.envAction();if(a.k==='down'&&a.l===l)break;G.cycleEnv()}
-              check(G.envAction().k==='down'&&G.envAction().l===l,id+' selected action must match this doorway');G.actEnv();check(P.trav,id+' descent must play the traversal animation');
-              for(let t=0;t<1.5&&P.trav;t+=.02){S.t+=.02;G.updatePlayer(.02)}
+              P.x=l.rx;P.y=l.ry;S.stairArm=true;G.input.joy={x:-d.dx*.35,y:-d.dy*.35,mag:.35};
+              for(let n=0;n<180&&!P.trav;n++){S.t+=.01;G.updatePlayer(.01)}
+              check(P.trav,id+' walking into the doorway must play the traversal animation');G.input.joy=null;
+              for(let n=0;n<1000&&P.trav;n++){S.t+=.01;G.updatePlayer(.01)}
               check(!P.trav&&P.z===0&&P.fl===(l.bfl||0),id+' descent must finish on the correct interior floor');
               const e=G.stairFloor(l.tx,l.ty,l.bfl||0).up.entry;check(Math.hypot(P.x-e.x,P.y-e.y)<2,id+' descent must land at its open interior entry');doors++;
             }

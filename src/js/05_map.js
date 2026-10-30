@@ -16,6 +16,7 @@ const flOf = o => (o && o.fl) || 0;
 function setLayer(f) { CUR_F = f || 0; G = CUR_F && GF[CUR_F] ? GF[CUR_F] : G0; }
 let BLD = [], PIPES = [], TENTS = [], RL = null, BI = null, UG = null, VG = null;  // 건물 목록, 배관, 칸별 옥상 높이, 칸별 건물 번호
 function buildMap(st) {
+  PLANKS = []; PLANK_MASK = null;
   MW = st.W; MH = st.H; G = []; BLD = []; PIPES = []; TENTS = []; POLES = []; CARS = []; FURN = []; PLANS = []; AUTO_LAMPS = [];
   for (let y = 0; y < MH; y++) G.push(new Array(MW).fill('.'));
   const m = {

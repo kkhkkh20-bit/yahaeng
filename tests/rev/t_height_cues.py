@@ -34,7 +34,7 @@ async def main():
     const before=G.envChoices().map(a=>[a.k,a.at&&a.at.x,a.at&&a.at.y]);G.benchDraw(2);check(JSON.stringify(before)===JSON.stringify(G.envChoices().map(a=>[a.k,a.at&&a.at.x,a.at&&a.at.y])),'drawing changed interaction choice on '+fl);
    }
    const l=G.LADDERS.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===4);Object.assign(P,{x:l.rx,y:l.ry,fl:0,z:l.tz});G.setLayer(0);check(G.nearClimbDown()===l,'roof entry not usable');
-   const at=G.envChoices().find(a=>a.k==='down'&&a.l===l).at;G.benchDraw(2);check(G.nearClimbDown()===l&&G.envChoices().find(a=>a.k==='down'&&a.l===l).at===at,'roof coping changed entry anchor');
+   const at=l.roofDoor;G.benchDraw(2);check(G.nearClimbDown()===l&&l.roofDoor===at,'roof coping changed entry anchor');check(!G.envChoices().some(a=>a.k==='down'&&a.l===l),'rooftop doorway should use walking entry');
    check(sig()===snapshot,'visual pass modified collision or traversal geometry');
    const ctx=G.ctx;ctx.save();ctx.globalAlpha=.4;ctx.globalCompositeOperation='xor';ctx.setTransform(1.2,0,0,1.2,5,7);
    const state=()=>JSON.stringify([ctx.globalAlpha,ctx.globalCompositeOperation,ctx.getTransform().toString()]),was=state();G.drawFloorThickness(b,1);G.drawRoofCoping(b);check(state()===was,'cue leaks canvas state');ctx.restore();

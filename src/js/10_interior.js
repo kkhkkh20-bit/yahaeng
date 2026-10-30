@@ -424,7 +424,7 @@ const lvAt = (tx, ty) => inMap(tx, ty) ? RL[ty * MW + tx] : 0;
 const roofAt = (tx, ty) => lvAt(tx, ty) > 0;
 // 도시: 옥상 위로 걸을 수 있는 칸은 옥상 그림 부분뿐 (남쪽 정면벽 줄은 건물 옆면이라 못 걷는다)
 let FRM = null;
-const facadeRow = (tx, ty) => !!(FRM && inMap(tx, ty) && FRM[ty * MW + tx]);
+const facadeRow = (tx, ty) => !!(FRM && inMap(tx, ty) && FRM[ty * MW + tx] && !plankAt(tx, ty));
 const rLv = (tx, ty) => facadeRow(tx, ty) ? 0 : lvAt(tx, ty);
 function buildFRM(exact) {
   FRM = new Uint8Array(MW * MH);
@@ -433,6 +433,7 @@ function buildFRM(exact) {
     if (!exact) { let n = 0; for (let x = b.x0; x <= b.x1; x++) { const ch = G0[b.y1][x]; if ('#NSX'.includes(ch) || (!SOLID.has(ch) && !b.piloti)) n++; } fh = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2 ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; }
     for (let y = b.y1 - fh + 1; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) FRM[y * MW + x] = 1;
   });
+  buildPlanks();
 }
 const roofEdgeY = (tx, ty) => { const b = BLD[bldAt(tx, ty)]; return (b.y1 - b.fh) * TILE + TILE - 14; };
 const bldAt = (tx, ty) => inMap(tx, ty) ? BI[ty * MW + tx] : -1;

@@ -229,7 +229,14 @@ function autoStairs(P, mx, my, mag) {
   if (mag <= .1) { S.stairArm = true; return; }
   const vx = mx / mag, vy = my / mag, old = S.stairDir || [0, 0];
   if (S.stairArm === false) { if (vx * old[0] + vy * old[1] > .5) return; S.stairArm = true; }
-  if (P.z || actionBusy(P) || P.hide || P.wire || P.under || P.vent || !P.moving) return;
+  if (actionBusy(P) || P.hide || P.wire || P.under || P.vent || !P.moving) return;
+  if (P.z) {
+    if (P.captive || P.ledge) return;
+    for (const l of S.ladders) if (roofStairAccess(l, P) && -(vx * l.roofDoor.dx + vy * l.roofDoor.dy) > .7) {
+      S.stats.roofStair = (S.stats.roofStair || 0) + 1; beginStairTravel(l, false); return;
+    }
+    return;
+  }
   for (const l of S.ladders) {
     if ((l.kind !== 'fstair' && l.kind !== 'stair') || ((P.captive || P.carrying) && l.kind !== 'fstair')) continue;
     if (stairAccess(l, true, P)) {

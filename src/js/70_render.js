@@ -302,14 +302,20 @@ function drawWires() {
 // 건물 옥상 덮개 (안에 들어가 있는 건물만 열어 보인다)
 // 판자 다리: 옥상과 옥상 사이에 걸친 널빤지 (위를 걸을 수 있고, 아래 골목은 그대로 지나다닌다)
 function drawPlanks() {
-  for (const [x0, y0, x1, y1] of STAGE.planks || []) {
-    const ew = (x1 - x0) >= (y1 - y0);
-    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-      if (BI[y * MW + x] >= 0) continue; const px = x * TILE, py = y * TILE;
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, TILE, TILE - 6);
-      for (let k = 0; k < 6; k++) { ctx.fillStyle = k % 2 ? '#7a5a3a' : '#8a6744'; if (ew) ctx.fillRect(px + k * 8, py + 6, 7, TILE - 12); else ctx.fillRect(px + 6, py + k * 8, TILE - 12, 7); }
-      ctx.fillStyle = '#3a2a1a'; if (ew) { ctx.fillRect(px, py + 4, TILE, 3); ctx.fillRect(px, py + TILE - 7, TILE, 3); } else { ctx.fillRect(px + 4, py, 3, TILE); ctx.fillRect(px + TILE - 7, py, 3, TILE); }
+  for (const p of PLANKS) {
+    const { x0, y0, x1, y1, ew } = p;
+    const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
+    const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
+    const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
+    for (let k = 0; k < (ew ? w : h); k += 8) {
+      ctx.fillStyle = k % 16 ? '#7a5a3a' : '#8a6744';
+      if (ew) ctx.fillRect(px + k, py + 6, Math.min(7, w - k), h - 12);
+      else ctx.fillRect(px + 6, py + k, w - 12, Math.min(7, h - k));
     }
+    ctx.fillStyle = '#3a2a1a';
+    if (ew) { ctx.fillRect(px, py + 4, w, 3); ctx.fillRect(px, py + h - 7, w, 3); }
+    else { ctx.fillRect(px + 4, py, 3, h); ctx.fillRect(px + w - 7, py, 3, h); }
   }
 }
 function drawRoofs(openB) {
@@ -434,7 +440,7 @@ function roofProps(b, bi) {
   const shSet = new Set(shs.map(h => h.l));
   (S.ladders || []).forEach(l => { if (shSet.has(l)) { const h = shs.find(q => q.l === l); mark(h.door[0], h.door[1]); return; } if (l.tz === L || l.tz > 0) mark(l.tx, l.ty); if (l.bz > 0) mark(l.bx, l.by); });
   (S.vents || []).forEach(v => { if (v.roof) mark(v.tx, v.ty); });
-  (STAGE.planks || []).forEach(([ax, ay, bx, by]) => { for (let x = Math.min(ax, bx); x <= Math.max(ax, bx); x++) for (let y = Math.min(ay, by); y <= Math.max(ay, by); y++) mark(x, y); mark(ax - 1, ay); mark(ax + 1, ay); mark(bx - 1, by); mark(bx + 1, by); mark(ax, ay - 1); mark(ax, ay + 1); mark(bx, by - 1); mark(bx, by + 1); });
+  PLANKS.forEach(p => { for (let x = p.x0; x <= p.x1; x++) for (let y = p.y0; y <= p.y1; y++) mark(x, y); for (const e of [p.a, p.b]) if (e) mark(e.x, e.y); });
   (S.traps || []).forEach(t => { [t.at, t.sw].forEach(p => p && mark(p[0], p[1])); });
   (S.wires || []).forEach(wi => [wi.a, wi.b].forEach(n => n && !n.pole && mark(n.tx, n.ty)));
   [STAGE.start, STAGE.exit].forEach(p => p && mark(Math.floor(p[0]), Math.floor(p[1])));

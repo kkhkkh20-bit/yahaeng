@@ -39,6 +39,12 @@ function stairFloor(tx, ty, fl) {
 }
 const stairLower = l => stairFloor(l.tx, l.ty, l.bfl || 0);
 const stairUpper = l => stairFloor(l.tx, l.ty, l.tfl);
+function roofStairAccess(l, P = S.player) {
+  const d = l.roofDoor;
+  if (l.kind !== 'stair' || !d || P.z !== l.tz || flOf(P)) return false;
+  const x = P.x - d.x, y = P.y - d.y, depth = x * d.dx + y * d.dy;
+  return depth >= -4 && depth <= 24 && Math.abs(x * -d.dy + y * d.dx) <= 18 && objectReachable(d, 34);
+}
 function stairAccess(l, up, P = S.player) {
   if (P.z || flOf(P) !== (up ? l.bfl || 0 : l.tfl)) return false;
   const g = up ? stairLower(l) : stairUpper(l), d = g.d;
