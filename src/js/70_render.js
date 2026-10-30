@@ -908,6 +908,11 @@ function drawActLabels(pa, P, ka, ga) {
   let vy = null;
   if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
     vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc, 4); }  // [붙잡기]는 버튼이 켜지는 것으로 충분 — 머리 위 글자를 줄인다
+  if (!isTouch && ga && ['ledgeDrop', 'wireFall'].includes(ga.k)) { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : P; tag(h.x, h.y - 75 * k, '떨어지기', '#f2c46b', 1, KK('grab'), 3.5); }
+  if (P.captive) { const ready = pa && pa.k === 'drag', h = ready ? pa.h : captiveDragPreview();
+    if (h) { const [p, kc] = T('행동', KK('env')); tag(P.x, P.y + 52 * k, p + hideName(h) + (ready ? ' · 끌고 처치' : ' · 가까이 가서 끌고 처치'), SCAN.hide, 1, kc, 5); }
+    if (ready) return;  // 알림·공격 안내와 겹치지 않게 인물 아래에 한 번만 표시한다
+  }
   if (!pa || pa.k === 'none') return;
   // [행동]: 대상(문·창문·계단·시체…) 위. 대상이 따로 없는 행동(들고 있는 것 내려놓기 등)은 버튼만 — 주인공 머리 위를 가리지 않게
   if (!pa.at && !pa.c && !actObj(pa)) return;

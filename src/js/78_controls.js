@@ -40,7 +40,7 @@ function actIcon(a) {
   const k = a.k, lb = a.label || '';
   if (KILLISH.has(k) || ((k === 'winJump' || k === 'up') && a.kill)) return /기절|끌어내리기/.test(lb) ? 'ko' : 'kill';
   return ({ hide: 'hide', stash: 'stash', carry: lb.startsWith('넣기') ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
-    down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: 'door', pick: 'pick',
+    down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: 'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
     clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
 }
@@ -52,6 +52,7 @@ function actVerb(a, ic) {
   if (a.k === 'none') return a.stalk ? (koTap(a.stalk) ? '기절' : '처치') : '';
   if (a.k === 'cap') return a.label;
   if (a.k === 'dropItem') return '내려놓기';
+  if (a.k === 'drag') return '끌고 처치';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';
   if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기
   if (lb.length <= 6) return lb;
@@ -71,7 +72,7 @@ function keyMap(ka, ea, ga) {
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
   set('kmAct', ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : (ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))) + (ka.hold ? ` · 길게 ${ka.hold}` : ''), ka.k !== 'none' || ka.stalk);
   set('kmZ', ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea)), ea.k !== 'none');
-  set('kmQ', S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기', ga.k === 'grab' || canInterrogate());
+  set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기', ga.k !== 'none' || canInterrogate());
   set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}`, toolCount(input.tool) > 0);
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '살금 켜짐' : '살금', S.player.mode === 'sneak' || input.sneakToggle);
 }

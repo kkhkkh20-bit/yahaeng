@@ -452,6 +452,16 @@ function nearBushSpot() {
   for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd) { bd = d; best = b; } }
   return best;
 }
+// 실행 거리 밖에서도 붙잡은 적과 함께 들어갈 곳과 행동 키를 미리 안내한다.
+function captiveDragPreview() {
+  const P = S.player; if (!P.captive || P.trav || P.grabIn || P.jump) return null;
+  let best = null, bd = 144;
+  for (const h of [...S.hides, ...S.bushes]) {
+    if ((h.fl || 0) !== flOf(P) || (h.z || 0) !== (P.z || 0) || h.bodies >= h.cap) continue;
+    const d = dist(P.x, P.y, h.x, h.y); if (d < bd) { best = h; bd = d; }
+  }
+  return best;
+}
 function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && S.lightsOn && dist(P.x, P.y, tc(STAGE.fuse[0]), tc(STAGE.fuse[1])) < 62; }
 
 function nearVent() {
@@ -589,10 +599,7 @@ function primaryActionRaw() {
   if (P.wire) {
     const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 };
     const g = wireDropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
-    const e = wireEnd(); if (e) return { k: 'wireOff', n: e, at, label: e.roof ? '옥상에 올라서기' : e.win ? `${e.fl + 1}층 창문으로 들어가기` : '전봇대 내려가기' };
-    const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), lv = rLv(ptx, pty);
-    if (lv > 0 && lv <= P.z + 1) return { k: 'wireRoof', lv, at, label: '옥상에 내리기' };
-    const nr = wireNearRoof(h, P.z); if (nr) return { k: 'wireRoof', lv: nr.lv, to: nr, at, label: '옆 옥상으로 내려서기' };
+    const exit = wireExitAction(); if (exit) return exit;
     if (wireFallOk()) return { k: 'wireFall', at, label: '뛰어내리기' };
     return { k: 'none', label: '전깃줄' };
   }
@@ -618,7 +625,7 @@ function primaryActionRaw() {
   if (P.captive) {
     const h = nearHide();
     if (h && h.bodies < h.cap) return { k: 'drag', h, label: h.type === 'well' ? '맨홀로 끌고 가 처치' : `${hideName(h)}${h.type === 'bed' ? '으로' : '으로'} 끌고 가 처치` };
-    const bs = nearBushSpot(); if (bs) return { k: 'drag', h: bs, label: '화단로 끌고 가 처치' };
+    const bs = nearBushSpot(); if (bs) return { k: 'drag', h: bs, label: '화단으로 끌고 가 처치' };
     return { k: 'execute', label: '처치' };
   }
   if (P.hidden) { const ag = ambushTarget(); if (ag) return { k: 'ambush', g: ag, label: '끌어들여 암살' }; }
@@ -857,6 +864,7 @@ function actPrimary(force) {
       break;
     }
     case 'ledgeUp': { const n0 = P.ledge, d = ledgeDraw(P); P.ledge = null; play('cloth', 0.3); startTrav({ pts: [{ x: d.x, y: d.y, f: 0 }, { x: P.x - n0.x * 6, y: P.y - n0.y * 6, f: 1 }], dur: 0.38, phases: [{ to: 1, pose: 'vault' }], face: Math.atan2(-n0.y, -n0.x) }); break; }
+    case 'ledgeDrop': dropLedge(P); break;
     case 'pushOff': {
       const g = a.g, c = g.climb; P.strikeT = 0.3; P.a = Math.atan2(g.y - P.y, g.x - P.x); play('metal', 0.5);
       fallKill(g, { x: g.x, y: g.y }, { x: c.from.x, y: c.from.y + 6 }); toast('배관에서 밀어 떨어뜨렸다 — 추락사로 보인다', 2, 'good');

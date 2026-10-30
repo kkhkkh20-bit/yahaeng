@@ -276,6 +276,15 @@ function travPose(T) {
   for (const ph of T.phases) { if (f <= ph.to + 1e-6) return { pose: ph.pose, g: (f - lo) / Math.max(1e-6, ph.to - lo) }; lo = ph.to; }
   const ph = T.phases[T.phases.length - 1]; return { pose: ph.pose, g: 1 };
 }
+function dropLedge(P) {
+  if (!P.ledge || P.jump || P.trav) return false;
+  const gb = landBelow(P.x, P.y, P.ledge, P.z);
+  if (!gb) { if (!P.ledgeWarn) { P.ledgeWarn = true; toast('착지할 곳이 없다 — 두 층 높이까지만 내려갈 수 있다', 2); } return false; }
+  const d = ledgeDraw(P), h = P.z - gb.z;
+  P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.3 + h * 0.08, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70 };
+  P.z = gb.z; if (h >= 2) S.shakeT = 0.15;
+  return true;
+}
 function updateLedge(P, dt) {
   const k = S.keys, n = P.ledge; let mx = 0, my = 0;
   if (k.ArrowLeft) mx -= 1; if (k.ArrowRight) mx += 1; if (k.ArrowUp) my -= 1; if (k.ArrowDown) my += 1;
@@ -286,10 +295,7 @@ function updateLedge(P, dt) {
   if (into > 0.6 && !P.ledgeLock) { const n0 = P.ledge, d = ledgeDraw(P); P.ledge = null; play('cloth', 0.3);  // 다시 올라서기
     startTrav({ pts: [{ x: d.x, y: d.y, f: 0 }, { x: P.x - n0.x * 6, y: P.y - n0.y * 6, f: 1 }], dur: 0.38, phases: [{ to: 1, pose: 'vault' }], face: Math.atan2(-n0.y, -n0.x) }); return; }
   // 밖으로 밀면 손을 놓고 땅으로 (2층 높이까지 — 높을수록 착지 소리가 크다)
-  if (out > 0.6 && !P.ledgeLock) { const gb = landBelow(P.x, P.y, n, P.z);
-    if (gb) { const d = ledgeDraw(P), h = P.z - gb.z; P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.3 + h * 0.08, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70 }; P.z = gb.z; if (h >= 2) S.shakeT = 0.15; }
-    else if (!P.ledgeWarn) { P.ledgeWarn = true; toast('너무 높다 — 두 층 높이까지만 손을 놓고 뛰어내릴 수 있다', 2); }
-    return; }
+  if (out > 0.6 && !P.ledgeLock) { dropLedge(P); return; }
   const al = mx * -n.y + my * n.x; if (Math.abs(al) / mag < 0.4) return;  // 옆으로 이동 (가장자리가 이어지는 곳까지)
   const nx = P.x + -n.y * Math.sign(al) * 52 * dt, ny = P.y + n.x * Math.sign(al) * 52 * dt, ox = P.x, oy = P.y;
   P.x = nx; P.y = ny; const e = ledgeAt(P);

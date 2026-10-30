@@ -38,6 +38,16 @@ function wireNearRoof(h, z) {
   return best;
 }
 function wireEnd() { const P = S.player, W_ = P.wire; if (!W_) return null; const tol = 44 / W_.w.L; return W_.s <= tol ? W_.w.a : W_.s >= 1 - tol ? W_.w.b : null; }
+// 줄에서 벗어나는 환경 행동은 아래 적을 공격할 수 있는지와 따로 계산한다.
+function wireExitAction() {
+  const P = S.player; if (!P.wire || P.jump || P.trav) return null;
+  const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 }, e = wireEnd();
+  if (e) return { k: 'wireOff', n: e, at, label: e.roof ? '옥상에 올라가기' : e.win ? `${e.fl + 1}층 창문으로 들어가기` : '전봇대 내려가기' };
+  const lv = rLv(Math.floor(P.x / TILE), Math.floor(P.y / TILE));
+  if (lv > 0 && lv <= P.z + 1) return { k: 'wireRoof', lv, at, label: '옥상에 올라가기' };
+  const nr = wireNearRoof(h, P.z);
+  return nr ? { k: 'wireRoof', lv: nr.lv, to: nr, at, label: '옆 옥상에 올라가기' } : null;
+}
 // 줄 아래(실외, 맨땅)를 지나는 자경대원 위로 떨어진다
 function wireDropTarget() {
   const P = S.player; if (!P.wire || P.strikeT > 0) return null;

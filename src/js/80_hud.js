@@ -189,10 +189,10 @@ function updateHUD(force) {
   const ki = ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
   hud.act.style.setProperty('--hold', holdFrac().toFixed(3));
-  padButton(hud.carry, 'carryH', ea, '행동');
+  padButton(hud.carry, 'carryH', ea, P.ledge || P.wire ? '올라가기' : '행동');
   hud.carry.classList.toggle('ready', ea.k !== 'none');
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (ea.choiceI + 1) + '/' + n); } }
-  { const gb = $('btnGrab'); if (gb) { const html = `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
+  { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기', html = `<b>${label}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label); } }
   keyMap(ka, ea, ga);
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 들킬 수 있음 · 보인다 + 이유 한 줄
