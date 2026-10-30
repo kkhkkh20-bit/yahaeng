@@ -42,7 +42,8 @@ function syncDynamicTurf() {
   if (!S.turf) return;
   for (const r of S.turf.B || []) {
     if ((STAGE.zones || []).some(z => (z[7] || []).includes('rival') && r.every((v, i) => v === z[i]))) continue;
-    const b = BLD.find(b => b.gang === 'B' && b.x0 >= r[0] && b.y0 >= r[1] && b.x1 <= r[2] && b.y1 <= r[3]), next = b && rivalTurfRect(b);
+    const owned = BLD.filter(b => b.gang === 'B' && !b.vacant);
+    const b = owned.find(b => b.x0 >= r[0] && b.y0 >= r[1] && b.x1 <= r[2] && b.y1 <= r[3]) || (owned.length === 1 ? owned[0] : null), next = b && rivalTurfRect(b);
     if (!next) continue;
     for (let i = 0; i < 4; i++) r[i] = next[i]; r.dyn = true;
     const L0 = CUR_F; setLayer(0); const pub = [];
@@ -67,7 +68,7 @@ function factionsInit() {
   // 건달파 구역: 조직(A) 사람들이 다니는 길에서 가장 먼 건물 하나와 그 둘레 거리. 거기서만 돈다
   const aPts = []; for (const g of S.guards) if (g.fac === 'A' && !g.civ && !g.dog) { aPts.push([g.x, g.y]); for (const p of g.route || []) aPts.push([p.x, p.y]); }
   let best = null, bs = -1;
-  BLD.forEach(b => { if (b.gang || b.piloti) return; const cx = (b.x0 + b.x1 + 1) / 2 * TILE, cy = (b.y0 + b.y1 + 1) / 2 * TILE; if (dist(cx, cy, P.x, P.y) < 600) return;
+  BLD.forEach((b, bi) => { if (b.gang || b.piloti || b.vacant || (STAGE.rivalBuilding != null && bi !== STAGE.rivalBuilding)) return; const cx = (b.x0 + b.x1 + 1) / 2 * TILE, cy = (b.y0 + b.y1 + 1) / 2 * TILE; if (STAGE.rivalBuilding == null && dist(cx, cy, P.x, P.y) < 600) return;
     if ((S.items || []).some(it => bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === BLD.indexOf(b)) || S.guards.some(g => g.target && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === BLD.indexOf(b))) return;
     const sc = aPts.length ? Math.min(...aPts.map(([x, y]) => dist(cx, cy, x, y))) : 9999; if (sc > bs) { bs = sc; best = b; } });
   if (!best) return;
@@ -91,7 +92,7 @@ function turfInit() {
   S.turf = { A: [], B: [] }; BLD.forEach(b => { b.gang = null; });
   for (const r of STAGE.zones || []) { if (r[4] === 'pub' || r[5] === 'roof') continue; const al = r[7] || [];
     if (al.includes('rival')) S.turf.B.push([r[0], r[1], r[2], r[3]]); else if (!al.includes('police')) S.turf.A.push([r[0], r[1], r[2], r[3]]); }
-  BLD.forEach(b => { for (const f of ['B', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
+  BLD.forEach(b => { if (b.vacant) return; for (const f of ['B', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
 }
 const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return S.turf[f].some(r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]); };
 // 건물 소속 깃발: 옥상 왼쪽 위 모서리에 조직(검정·금색) / 건달파(빨강) 깃발, 가까우면 이름

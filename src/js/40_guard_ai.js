@@ -322,8 +322,8 @@ function updateCams(dt) {
     if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
     if (v > 0 && STAGE.zones && pZoneEff() === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
     c.seen = v > 0;
-    if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' ? 0.12 : 1)); if (c.meter >= 1) {
-      c.meter = 0; c.cool = 6; if (!c.search) S.stats.camRec = (S.stats.camRec || 0) + 1;  // 서치라이트는 녹화가 아니다
+    if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
+      c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       for (const g of S.guards) if (!g.civ && !g.dog && flOf(g) === c.fl && !['DEAD', 'CAPTIVE', 'ALERT'].includes(g.state) && dist(g.x, g.y, c.x, c.y) < 800) goSuspicious(g, P.x, P.y, 5); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
@@ -820,7 +820,14 @@ function followLeader(g, dt, spd) {
     if (L && !g.civ && !g.dog) { goSuspicious(g, L.x, L.y, 6); g.why = 'saw'; gsay(g, ['어디 갔어? 대답해!', '야… 어디 간 거야?', '방금까지 앞에 있었는데…'][g.id % 3]); setIcon(g, '?'); }
     return;
   }
-  const bx = L.x - Math.cos(L.a) * 52, by = L.y - Math.sin(L.a) * 52;
+  const wait = g.escortWait, privacy = wait && inRect(L, wait.rect);
+  if (privacy && !g.waitingPrivacy) gsay(g, '밖에서 기다리겠습니다.', 2);
+  g.waitingPrivacy = !!privacy;
+  const bx = privacy ? tc(wait.at[0]) : L.x - Math.cos(L.a) * 52, by = privacy ? tc(wait.at[1]) : L.y - Math.sin(L.a) * 52;
+  if (flOf(g) !== flOf(L) || (g.z || 0) !== (L.z || 0)) {
+    if (!g.path || (g.repath -= dt) <= 0) { routeTo(g, gSpot(L)); g.repath = .6; }
+    hopClimb(g, moveAlong(g, spd, dt)); return;
+  }
   const d = dist(g.x, g.y, bx, by);
   g.repath -= dt;
   if (d > 30) {

@@ -11,7 +11,8 @@ const outfitName = o => OUTFITS[o] || '변장';
 function zoneInfo(x, y, z) {
   if (!STAGE.zones) return { k: Z_HOS, allow: [] };
   const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE), up = (z || 0) > 0, base = up ? [] : (STAGE.zoneAllow || ['crew']);
-  let k = up || bldAt(tx, ty) >= 0 ? Z_RES : Z_PUB, allow = base;
+  const bi = bldAt(tx, ty);
+  let k = up || (bi >= 0 && !BLD[bi].vacant) ? Z_RES : Z_PUB, allow = base;
   for (const r of STAGE.zones) if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && (r[5] === 'all' || up === (r[5] === 'roof'))) { k = r[4] === 'pub' ? Z_PUB : r[4] === 'hos' ? Z_HOS : Z_RES; allow = r[7] || base; }
   return { k, allow };
 }

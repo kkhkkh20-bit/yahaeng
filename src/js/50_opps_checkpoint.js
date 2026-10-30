@@ -121,8 +121,8 @@ function loadCheckpoint() {
   initAudio();
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
-  moveStageFixtures(STAGE, G0, true);
-  robBuild(); syncDynamicTurf(); stairsInit(); syncMissionProgress();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  moveStageFixtures(STAGE, G0, true); restoreContractLayout();
+  robBuild(); syncDynamicTurf(); stairsInit(); lvlInit(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
@@ -135,9 +135,11 @@ function loadCheckpoint() {
   return true;
 }
 function checkObjective() {
-  if (S.exitOpen || STAGE.city) return;  // 도시: 끝이 없다 (의뢰는 의뢰 장소에서)
+  if (STAGE.city) return;  // 도시: 끝이 없다 (의뢰는 의뢰 장소에서)
   const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && !targetEliminated(g)).length;
   const itemsLeft = S.items.filter(i => !i.got).length;
-  if (!targetsLeft && !itemsLeft) { S.exitOpen = true; if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
+  const ready = !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
+  S.exitOpen = ready;
+  if (ready && !wasOpen) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
 }
 

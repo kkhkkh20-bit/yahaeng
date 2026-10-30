@@ -165,7 +165,7 @@ function newGame(si) {
   S.doors = [];
   const wallish = v => v === '#' || v === 'N' || v === 'S';
   BLD.forEach(b => {
-    if (b.piloti) return;  // 필로티 주차장 입구는 문이 아니다
+    if (b.piloti || b.vacant) return;  // 주차장·공터·폐허 가장자리는 문이 아니다
     for (let ty = b.y0; ty <= b.y1; ty++) for (let tx = b.x0; tx <= b.x1; tx++) {
       const ch = G[ty][tx]; if (SOLID.has(ch)) continue;
       const border = tx === b.x0 || tx === b.x1 || ty === b.y0 || ty === b.y1;
@@ -254,7 +254,7 @@ function newGame(si) {
       if (b === church) { b.church = true; b.plate = '새빛교회'; }
     });
   }
-  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = buildRoofCanvas(b, i); });
+  BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
   mapC = bigify(renderMap()); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
@@ -263,7 +263,7 @@ function newGame(si) {
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
   window.__hintT = setTimeout(() => S && !S.over && running && STAGE.hints && hint('stage', STAGE.hints[0]), 4500);
   if (STAGE.hints && STAGE.hints[1]) window.__hintT2 = setTimeout(() => S && !S.over && running && hint('stage2', STAGE.hints[1]), 10000);
-  updateHUD(true);
+  captureContractLayout(); updateHUD(true);
 }
 
 // 평면 건물 안의 자리 찾기: where = 'L'(왼쪽 세대 거실) 'R'(오른쪽 세대 거실) 'S'(가게·사무실) 'bed'(첫 방) 'bath'
@@ -329,7 +329,7 @@ function makeGuard(d, i) {
   else { const leader = (STAGE._g || STAGE.guards)[d.follow]; sx = leader.route[0][0] - 1; sy = leader.route[0][1]; }
   const post = d.post != null ? d.post * Math.PI / 180 : null;
   return {
-    id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
+    id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
@@ -537,13 +537,13 @@ const SHD = { x: 20, y: 11 };  // 한 층 높이당 그림자가 밀리는 거�
 function bakeCastShadows(x) {
   const c = document.createElement('canvas'); c.width = MW * TILE; c.height = MH * TILE; const s = c.getContext('2d');
   s.fillStyle = '#000'; s.strokeStyle = '#000'; s.lineCap = 'round';
-  BLD.forEach(b => { const h = b.h || 1, dx = h * SHD.x, dy = h * SHD.y, x0 = b.x0 * TILE, y0 = b.y0 * TILE, x1 = (b.x1 + 1) * TILE, y1 = (b.y1 + 1) * TILE;
+  BLD.forEach(b => { if (b.vacant) return; const h = b.h || 1, dx = h * SHD.x, dy = h * SHD.y, x0 = b.x0 * TILE, y0 = b.y0 * TILE, x1 = (b.x1 + 1) * TILE, y1 = (b.y1 + 1) * TILE;
     s.beginPath(); s.moveTo(x1, y0); s.lineTo(x1 + dx, y0 + dy); s.lineTo(x1 + dx, y1 + dy); s.lineTo(x0 + dx, y1 + dy); s.lineTo(x0, y1); s.lineTo(x1, y1); s.closePath(); s.fill(); });
   for (const o of S.poles || []) { s.lineWidth = 7; s.beginPath(); s.moveTo(o.x, o.y + 12); s.lineTo(o.x + o.z * SHD.x * 1.1, o.y + 12 + o.z * SHD.y * 1.1); s.stroke();
     s.lineWidth = 4; const tx = o.x + o.z * SHD.x * 1.1, ty = o.y + 12 + o.z * SHD.y * 1.1; s.beginPath(); s.moveTo(tx - 14, ty + 3); s.lineTo(tx + 14, ty - 3); s.stroke(); }
   for (const w of S.wires || []) { const a = w.a, b = w.b; s.lineWidth = 2.5; s.beginPath(); s.moveTo(a.x + a.z * SHD.x, a.y + a.z * SHD.y); s.lineTo(b.x + b.z * SHD.x, b.y + b.z * SHD.y); s.stroke(); }
   s.globalCompositeOperation = 'destination-out';  // 건물 바닥 안(실내)과 건물 자기 자리에는 드리우지 않는다
-  BLD.forEach(b => s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE));
+  BLD.forEach(b => { if (!b.vacant) s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE); });
   x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, 0, 0); x.restore();
 }
 function renderMap(R) {

@@ -242,7 +242,7 @@ function drawWindowSight(P, openB) {
   const poly = WC.poly;
   const path = () => { ctx.beginPath(); for (let i = 0; i < poly.length; i += 2) i ? ctx.lineTo(poly[i], poly[i + 1]) : ctx.moveTo(poly[i], poly[i + 1]); ctx.closePath(); };
   BLD.forEach((b, bi) => {
-    if (bi === openB || b.piloti) return;
+    if (bi === openB || b.piloti || b.vacant) return;
     const bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
     if (P.x < bx - R || P.x > bx + bw + R || P.y < by - R || P.y > by + bh + R) return;
     // 바깥벽 안쪽으로 시선이 들어가는지 (안쪽 칸 하나라도)
@@ -323,6 +323,7 @@ function drawRoofs(openB) {
   // 지붕은 열고 닫을 때 0.15초쯤 걸려 스르륵 (들어가고 나오고 벽을 탈 때 화면이 확 바뀌지 않게)
   const rdt = clamp(S.t - (S._roofT != null ? S._roofT : S.t), 0, 0.1); S._roofT = S.t;
   BLD.forEach((b, i) => {
+    if (b.vacant) return;
     const tgt = i === openB ? 0 : 1; if (b.ra == null) b.ra = tgt; b.ra += (tgt - b.ra) * Math.min(1, rdt * 14); if (Math.abs(tgt - b.ra) < 0.02) b.ra = tgt;
     if (b.ra < 1) { ctx.strokeStyle = `rgba(242,196,107,${0.35 * (1 - b.ra)})`; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]); }
@@ -977,7 +978,7 @@ function drawActLabels(pa, P, ka, ga) {
   }
   const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);
 }
-const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && b !== openB; };
+const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && !BLD[b].vacant && b !== openB; };
 
 function drawUnderground() {
   const sc = SCALE * DPR, P = S.player;

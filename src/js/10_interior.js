@@ -429,7 +429,7 @@ const rLv = (tx, ty) => facadeRow(tx, ty) ? 0 : lvAt(tx, ty);
 function buildFRM(exact) {
   FRM = new Uint8Array(MW * MH);
   BLD.forEach(b => {
-    let fh = b.fh;
+    let fh = b.fh; if (b.vacant) return;
     if (!exact) { let n = 0; for (let x = b.x0; x <= b.x1; x++) { const ch = G0[b.y1][x]; if ('#NSX'.includes(ch) || (!SOLID.has(ch) && !b.piloti)) n++; } fh = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2 ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; }
     for (let y = b.y1 - fh + 1; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) FRM[y * MW + x] = 1;
   });

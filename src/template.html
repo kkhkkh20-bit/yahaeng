@@ -466,6 +466,9 @@ body.joyseen .joyhint { display: none !important; }
 /* 의뢰 카드: 지도와 작전 정보를 함께 읽는다. */
 #ledger .panel { width: min(1060px, 100%); }
 .ledger-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.lg-archive { grid-column: 1 / -1; margin-top: 18px; color: var(--paper-dim); }
+.lg-archive summary { cursor: pointer; padding: 14px 0; border-top: 1px solid var(--ink-line); }
+.archive-stages { display: grid; gap: 12px; }
 .ledger-list .lg-sec { grid-column: 1 / -1; font-size: 11px; letter-spacing: .18em; color: var(--paper-dim); margin: 22px 0 0; padding-bottom: 12px; border-bottom: 1px solid var(--ink-line); }
 .ledger-list .stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px 16px; padding: 26px; width: 100%; background: #1a202c; border: 1px solid #39404b; border-radius: 0; font: inherit; text-align: left; align-items: start; overflow: hidden; }
 .ledger-list .stage:hover, .ledger-list .stage:focus-visible { background: #242b38; border-color: #9098a3; transform: translateY(-2px); }
@@ -694,6 +697,7 @@ button:focus-visible, summary:focus-visible { outline: 2px solid #dbbf86; outlin
 .ledger-tabs button[aria-pressed="true"] { color: #f2eee5; border-bottom-color: #d05b51; }
 .ledger-tabs button:hover { color: #fff; }
 .ledger-list .lg-sec { display: none; }
+.ledger-list[data-filter="training"] .lg-archive { display: none; }
 .ledger-list[data-filter="missions"] .stage.tut,
 .ledger-list[data-filter="training"] .stage:not(.tut) { display: none; }
 button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }

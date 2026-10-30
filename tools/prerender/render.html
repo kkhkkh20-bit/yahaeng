@@ -50,6 +50,11 @@ window.__ready = modular ? Promise.resolve().then(() => loadModularLook('hero'))
   });
 }));
 window.boneInfo = () => { renderFrame('Idle', 0, Math.PI / 2, 0); const out = {}; const v = new THREE.Vector3(); for (const n in bones) { bones[n].getWorldPosition(v); out[n] = v.toArray().map(x => Math.round(x)); } return out; };
+window.poseMetrics = () => {
+  const out = {}, v = new THREE.Vector3(); model.updateMatrixWorld(true);
+  for (const n of ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot']) { bones[n].getWorldPosition(v); out[n] = v.toArray(); }
+  return out;
+};
 window.probe = () => { const out = {}; model.traverse(o => { if (o.isMesh) { const uv = o.geometry.attributes.uv; const hist = {}; for (let i = 0; i < uv.count; i++) { const v = Math.floor((1 - uv.getY(i)) * 32); hist[v] = (hist[v] || 0) + 1; } out.hist = hist; } }); return out; };
 window.probeFeet = () => { const out = {}; model.traverse(o => { if (o.isSkinnedMesh) { const uv = o.geometry.attributes.uv, si = o.geometry.attributes.skinIndex, sw = o.geometry.attributes.skinWeight; const names = o.skeleton.bones.map(b => b.name);
   for (let i = 0; i < uv.count; i++) { let bi = 0, bw = 0; for (let k = 0; k < 4; k++) { const w = sw.getComponent(i, k); if (w > bw) { bw = w; bi = si.getComponent(i, k); } } const n = names[bi]; const key = n + ':' + Math.floor((1 - uv.getY(i)) * 32) + ',' + Math.floor(uv.getX(i) * 32); out[key] = (out[key] || 0) + 1; } } }); return out; };
@@ -111,7 +116,9 @@ window.CR = { th: 1.1, kn: 1.9, ft: 0.6, sp: 0.55, sp1: 0.2, hd: 0.45 };
 const hp = new THREE.Vector3(), hd = new THREE.Vector3();
 window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   let relaxY = 0;
-  mixer.stopAllAction(); const act = mixer.clipAction(clips[clip]); act.reset(); act.play(); mixer.setTime(t);
+  // 편한 서기는 걷기의 한 프레임을 멈추지 않는다. 골반·허리의 전진 기울기부터 제거한다.
+  const standing = relax && !relax.walk;
+  mixer.stopAllAction(); const act = mixer.clipAction(clips[standing ? 'Idle' : clip]); act.reset(); act.play(); mixer.setTime(standing ? 0 : t);
   bones.Hips.position.x = 0; bones.Hips.position.z = 0;  // 제자리 (루트 이동 제거)
   model.rotation.y = 0; model.position.set(0, 0, 0); model.updateMatrixWorld(true);
   const footY = () => { let m = 1e9; for (const n of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (bones[n]) { bones[n].getWorldPosition(hp); m = Math.min(m, hp.y); } return m; };
@@ -139,12 +146,18 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
     const qa = new THREE.Vector3(), qb = new THREE.Vector3(), qq = new THREE.Quaternion();
     const aimR = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(qa); c.getWorldPosition(qb); const cur = qb.sub(qa).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(qq); b.quaternion.premultiply(qq.clone().invert().multiply(q).multiply(qq)); b.updateMatrixWorld(true); };
     const sw = relax.sway || 0;
+    if (standing) {
+      // 부모인 척추를 먼저 세운 다음 팔을 맞춘다. 팔부터 맞추면 척추 회전에 휘말려 몸속에 숨는다.
+      aimR(bones.Spine, bones.Spine1, new THREE.Vector3(0, 1, 0));
+      aimR(bones.Spine1, bones.Spine2, new THREE.Vector3(0, 1, 0));
+      aimR(bones.Spine2, bones.Neck, new THREE.Vector3(0, 1, 0));
+      aimR(bones.Neck, bones.Head, new THREE.Vector3(0, 1, 0.02));
+    }
     for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1;
       if (relax.talk && sd === 'Right') { aimR(bones[sd + 'Arm'], bones[sd + 'ForeArm'], new THREE.Vector3(0.25 * side, -1, 0.25)); aimR(bones[sd + 'ForeArm'], bones[sd + 'Hand'], new THREE.Vector3(-0.15 * side + relax.talk * 0.25, 0.35 + relax.talk * 0.25, 1)); continue; }
-      aimR(bones[sd + 'Arm'], bones[sd + 'ForeArm'], new THREE.Vector3(0.12 * side, -1, 0.02 + sw * 0.04 * side)); aimR(bones[sd + 'ForeArm'], bones[sd + 'Hand'], new THREE.Vector3(0.04 * side, -1, 0.12)); }
-    if (!relax.walk) {  // 다리도 곧게, 어깨너비로 (싸움 자세처럼 엇갈려 서지 않게) — 그 뒤 발을 땅에 다시 붙인다
-      for (const sd of ['Left', 'Right']) { const side = sd === 'Left' ? 1 : -1; aimR(bones[sd + 'UpLeg'], bones[sd + 'Leg'], new THREE.Vector3(0.07 * side, -1, 0.02)); aimR(bones[sd + 'Leg'], bones[sd + 'Foot'], new THREE.Vector3(0.02 * side, -1, -0.04)); }
-      aimR(bones.Spine, bones.Spine1, new THREE.Vector3(0, 1, 0.02)); model.updateMatrixWorld(true); relaxY = -footY();
+      aimR(bones[sd + 'Arm'], bones[sd + 'ForeArm'], new THREE.Vector3(0.24 * side, -1, 0.02 + sw * 0.02 * side)); aimR(bones[sd + 'ForeArm'], bones[sd + 'Hand'], new THREE.Vector3(0.08 * side, -1, 0.08)); }
+    if (!relax.walk) {  // 원본 Idle의 발 접지는 유지한다. 모듈형 리그는 발과 무릎의 부모가 달라 무릎만 펴면 다리가 꺾인다.
+      model.updateMatrixWorld(true); relaxY = -footY();
     }
   }
   if (hold) {  // 상자 들기: 위팔은 앞아래로, 아래팔은 앞으로 모아 가슴 앞에서 두 손을 맞댄다 (상자는 게임에서 그린다)

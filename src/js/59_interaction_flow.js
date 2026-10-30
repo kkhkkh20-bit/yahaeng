@@ -40,7 +40,7 @@ function beginObjectAction(a) {
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
   P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
     face: at && Number.isFinite(at.x) ? Math.atan2(at.y - P.y, at.x - P.x) : P.a,
-    illegal: a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit)), committed: false,
+    illegal: a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;

@@ -47,6 +47,7 @@ async def main():
  OUT.mkdir(parents=True, exist_ok=True)
  meta = json.loads((OUT/'pr_meta.json').read_text())
  selected = next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--only=')), list(RECIPES))
+ patch = set(next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--patch=')), []))
  unknown = set(selected)-RECIPES.keys()
  if unknown: raise ValueError(f'Unknown looks: {unknown}')
  server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(HERE)))
@@ -66,12 +67,18 @@ async def main():
     anims=[a for a in ANIMS if names is None or a[0] in names]
     cmap={};col=0
     for a in anims:cmap[a[0]]=[col,len(a[2])];col+=len(a[2])
+    if patch and not patch.issubset(cmap):raise ValueError(f'{bn}: unknown patch animations {patch-set(cmap)}')
+    if patch:
+     previous=meta if bn=='key' else meta['bodies'][bn]
+     if previous['cols']!=col or previous['anims']!=cmap:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
     # Assemble inside the browser: one PNG encode/IPC transfer per look, rather
     # than thousands of per-frame PNG transfers. Existing render APIs stay usable.
     expressions=[]
     for direction in range(8):
      c=0
      for a in anims:
+      if patch and a[0] not in patch:
+       c+=len(a[2]);continue
       for ti,t in enumerate(a[2]):
        hang=HANG_SWAY[ti] if a[0]=='hang' else 'undefined'
        pair = a[4] if len(a)>4 else None
@@ -96,12 +103,23 @@ async def main():
     }''',{'frames':expressions,'cols':col,'fr':FR,'look':look,'body':body,'key':KEY})
     image=Image.open(io.BytesIO(base64.b64decode(result['png'].split(',')[1]))).convert('RGBA')
     outlined=Image.new('RGBA',image.size)
+    patch_cols=[c for a in anims if not patch or a[0] in patch for c in range(cmap[a[0]][0],cmap[a[0]][0]+cmap[a[0]][1])]
     for direction in range(8):
-     for c in range(col):
+     for c in patch_cols:
       box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR)
       outlined.paste(outline(image.crop(box)),box[:2])
     image=outlined.quantize(colors=192,method=Image.FASTOCTREE).convert('RGBA')
     filename='key.webp' if bn=='key' else f'body_{bn}.webp'
+    if patch:
+     original=Image.open(OUT/filename).convert('RGBA')
+     if original.size!=image.size:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
+     for direction in range(8):
+      for c in patch_cols:
+       box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR);original.paste(image.crop(box),box[:2])
+     original.save(OUT/filename,'WEBP',lossless=True,method=6)
+     if bn=='key':original.save(OUT/'key.png',optimize=True)
+     print(bn,'patched',','.join(sorted(patch)),(OUT/filename).stat().st_size,flush=True)
+     continue
     image.save(OUT/filename,'WEBP',lossless=True,method=6)
     # Also preserve the PNG used by legacy append tools for the base contract.
     if bn=='key':
@@ -124,7 +142,7 @@ async def main():
    for bn in RECIPES:
     face=OUT/f'face_{bn}.webp'
     if face.exists():faces.append((bn,Image.open(face).convert('RGBA')))
-   if len(faces)==len(RECIPES):
+   if len(faces)==len(RECIPES) and not patch:
     image=Image.new('RGBA',(256*len(faces),256))
     for i,(_,face) in enumerate(faces):image.paste(face,(i*256,0))
     image.save(OUT/'face.webp','WEBP',lossless=True,method=6)

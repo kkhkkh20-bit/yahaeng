@@ -37,6 +37,7 @@ function buildMap(st) {
     villa: (x0, y0, x1, y1, h, o = {}) => { const b = { x0, y0, x1, y1, h, plan: true, kind: o.kind || 'villa', piloti: !!o.piloti, floorsUse: o.use, signs: o.signs, story: o.story, name: o.name, glass: !!o.glass, plateName: o.plate, backDoor: !!o.back }; const bi = BLD.length; BLD.push(b); PLANS[bi] = [planInterior(G, b, bi, 0)]; return bi; },
     car: (x, y, c) => { m.set(x, y, 'A'); m.set(x, y + 1, 'A'); CARS.push([x, y, c || 0]); },
     roof: (x0, y0, x1, y1, h) => BLD.push({ x0, y0, x1, y1, h }),
+    vacant: (x0, y0, x1, y1, kind, name) => { m.fill(x0, y0, x1, y1, kind === 'ruin' ? 'r' : ','); BLD.push({ x0, y0, x1, y1, h: 0, vacant: kind, name, plate: name }); },
     pipe: (x, y) => PIPES.push([x, y]),
     pole: (x, y, h) => { m.set(x, y, 'P'); POLES.push([x, y, h || 2]); },
     tent: (x, y, c) => { m.fill(x, y, x + 1, y + 1, 'M'); TENTS.push([x, y, c || 'R']); }
@@ -48,7 +49,7 @@ function buildMap(st) {
   refineMap(st);
   RL = new Uint8Array(MW * MH); BI = new Int16Array(MW * MH).fill(-1);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'U') RL[y * MW + x] = 1;
-  BLD.forEach((b, i) => { for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { RL[y * MW + x] = b.h; BI[y * MW + x] = i; } });
+  BLD.forEach((b, i) => { for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { if (!b.vacant) RL[y * MW + x] = b.h; BI[y * MW + x] = i; } });
   (st.planks || []).forEach(([x0, y0, x1, y1, z]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inMap(x, y) && RL[y * MW + x] < z) RL[y * MW + x] = z; });
   G0 = G; buildFloors(st); CUR_F = 0;
 }
