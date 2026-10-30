@@ -2,6 +2,8 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+게임 문구 검수: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/COPY_REVIEW.md
+
 층 안내·변장·수색·CCTV 수정: https://kkhkkh20-bit.github.io/yahaeng/search-rules/
 
 공간·의뢰·서기 자세 개편: https://kkhkkh20-bit.github.io/yahaeng/mission-rework/
@@ -20,5 +22,5 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v92
-Source commit: d7f05051a2a149c51f993d0e50f15966de232af0
+Version: v93
+Source commit: 0526d6de6902ff03af332af5af04a36add83f5e4
