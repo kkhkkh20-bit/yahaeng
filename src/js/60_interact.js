@@ -1235,8 +1235,9 @@ function drawTrapsGround() {
   }
   for (const c of S.carAlarms || []) if (c.t > 0 && Math.floor(S.t * 3) % 2) { ctx.fillStyle = 'rgba(255,170,60,.55)'; ctx.beginPath(); ctx.arc(c.x - 14, c.y - 30, 7, 0, TAU); ctx.arc(c.x + 14, c.y - 30, 7, 0, TAU); ctx.fill(); }
 }
-function drawTrapsRoof() {
+function drawTrapsRoof(openB = -1) {
   for (const t of S.traps || []) if (t.k === 'drop' && !t.used) {
+    if (!tactical && !S.player.z && bldAt(t.at[0], t.at[1]) === openB) continue;
     const x = t.at[0] * TILE, y = t.at[1] * TILE + 26;
     // 자동 간판은 건물 옥상 간판 그림이 이미 있다 — 떨어질 자리만 보여 준다
     if (!t.auto) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x - 18, y + 4, 86, 22); ctx.fillStyle = '#2a1830'; ctx.fillRect(x - 20, y, 86, 22); ctx.strokeStyle = '#ff3ca8'; ctx.lineWidth = 2; ctx.strokeRect(x - 18, y + 2, 82, 18);

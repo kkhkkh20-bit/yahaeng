@@ -339,7 +339,7 @@ function drawRoofs(openB) {
   for (const l of S.ladders) if (l.kind === 'pipe' && !l.gas) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
   for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
-  drawTrapsRoof();
+  drawTrapsRoof(openB);
 }
 function drawRoof1(b, i, roof) {
   {
@@ -868,11 +868,11 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       // 창문·문은 표식 없이 그림으로 (열린 창은 틈이 벌어져 보인다). 무엇을 할지는 다가가 [행동]에 뜬다
     }
     else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
-    for (const v of S.vents) if (!v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
+    for (const v of S.vents) if (!v.roof && flOf(v) === fP) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
     if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
   } else {
     for (const l of S.ladders) if (l.tz === P.z) {
-      if (l.roofDoor) { const d = l.roofDoor, m = add(d.x, d.y, SCAN.ladder, 'door', '옥탑문'); if (m) m.roofDoor = true; }
+      if (l.roofDoor) continue;  // 실제 문턱·열린 철문·계단 명판이 입구를 표시한다
       else add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
     }
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
@@ -909,7 +909,7 @@ function drawScan(openB) {
   if (fP) for (const w of S.fwindows) { if (w.fl === fP && winUsable(w)) box(w.x, w.y, SCAN.window, S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === fP && n.tx === w.tx && n.ty === w.ty)) ? '창문(전깃줄)' : '창문'); }
   else for (const w of S.windows) { const st = winSt(w); box(w.x, w.y, st === 'bar' ? '#7a808a' : st === 'lock' ? '#9aa6b4' : SCAN.window, st === 'bar' ? '방범창' : st === 'lock' ? '잠긴 창문' : '창문', st === 'bar' ? 34 : 40, st === 'bar' ? 0.75 : 1); }
   for (const l of S.ladders) {
-    if (S.player.z && l.roofDoor && l.tz === S.player.z) { box(l.roofDoor.x, l.roofDoor.y, SCAN.ladder, '옥탑문 ↓', 28); continue; }
+    if (S.player.z && l.roofDoor && l.tz === S.player.z) { box(l.roofDoor.x, l.roofDoor.y, SCAN.ladder, '계단 입구 · ' + ((l.bfl || 0) + 1) + '층', 28); continue; }
     if ((l.kind === 'stair' || l.kind === 'fstair') && !S.player.z) { if ((l.bfl || 0) === fP) box(l.x, l.y, SCAN.ladder, l.kind === 'fstair' ? `오르기 ${l.tfl + 1}층` : '오르기 옥상', 36); if (l.kind === 'fstair' && l.tfl === fP) { const dp = downPt(l); tag(dp.x, dp.y + (dp.x === l.x && dp.y === l.y ? 30 : 0), `내려가기 ${l.bfl + 1}층`, SCAN.ladder); } continue; }
     if (fP) continue;
     if (l.kind === 'pipe') { box(l.x, l.y, SCAN.pipe, '배관 ↑', 36, l.bz ? 0.8 : 1); }
@@ -917,16 +917,16 @@ function drawScan(openB) {
     else if (l.kind === 'stair') box(l.x, l.y, SCAN.ladder, '오르기 옥상', 36, inner(l.bx, l.by));
     else if (l.kind === 'chimney') { const lit = lampOn(l.lamp); box(l.ux, l.uy, SCAN.chimney, lit ? '굴뚝(불 땜)' : '굴뚝', 40); }
   }
-  for (const v of S.vents) box(v.x, v.y, SCAN.vent, v.roof ? '옥상 환기구' : v.street ? '거리 환기구' : '환풍구', 34, v.roof ? 1 : inner(v.tx, v.ty));
+  for (const v of S.vents) if (!fP || (!v.roof && flOf(v) === fP)) box(v.x, v.y, SCAN.vent, v.roof ? '옥상 환기구' : v.street ? '거리 환기구' : '환풍구', 34, v.roof ? 1 : inner(v.tx, v.ty));
   for (const h of S.hides) { if ((h.fl || 0) !== flOf(S.player) || (h.z || 0) !== (S.player.z || 0)) continue; box(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, hideName(h), 42, inner(h.tx, h.ty)); }
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'S') box(tc(tx), tc(ty), SCAN.secret, '비밀 통로', 40);
-  if (STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '두꺼비집', 40);
+  if (!fP && STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '두꺼비집', 40);
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
   for (const c of S.cams || []) if (c.fl === flOf(S.player) && !c.broken) box(c.x, c.y, '#ff5a5a', 'CCTV', 28);
-  for (const l of S.lamps) if (!l.hearth && !l.broken && on(l.x, l.y)) { ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(l.x, l.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
-  for (const o of S.poles) if (o.wires.length) box(o.x, o.y, SCAN.ladder, '전봇대 ↑', 36);
-  for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof) box(n.dx, n.dy, SCAN.ladder, '전깃줄', 26);
-  for (const g of S.guards) if (g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
+  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(l.x, l.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+  if (!fP) for (const o of S.poles) if (o.wires.length) box(o.x, o.y, SCAN.ladder, '전봇대 ↑', 36);
+  if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof) box(n.dx, n.dy, SCAN.ladder, '전깃줄', 26);
+  for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
   if (!S.player.z) for (const it of FURN) {  // 가구: 파랑 = 높은 가구(막힘·시선 가림), 노랑 점선 = 낮은 가구(막힘·웅크리면 엄폐)
     if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB && !tactical) continue;
     const x = it.x * TILE, y = it.y * TILE, w = it.w * TILE, h = it.h * TILE; if (!on(x + w / 2, y + h / 2)) continue;
@@ -1321,12 +1321,14 @@ function draw() {
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   PM('haze');
   for (const g of S.guards) {
-    if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && (!inView(g.x, g.y, 460) || coveredG(g, openB)))) continue;  // 시야 원뿔이 화면에 닿지 않는 사람은 건너뛴다
+    if ((VF && flOf(g) !== VF) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && (!inView(g.x, g.y, 460) || coveredG(g, openB)))) continue;  // 시야 원뿔이 화면에 닿지 않는 사람은 건너뛴다
     guardOverlay(g);
   }
   PM('cones');
+  const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
+    drawRoofEntrances(P);
     PM('roofs');
     for (const c of S.corpses) if (c.z && !c.stashed && !flOf(c) && inView(c.x, c.y, 120)) {
       ctx.globalAlpha = c.hidden ? .5 : 1; drawBody(c); ctx.globalAlpha = 1;
@@ -1348,6 +1350,7 @@ function draw() {
     for (const o of S.poles) if (Math.abs(o.x - cam.x) < vx && Math.abs(o.y - cam.y) < vy) drawPole(o);
     drawWires();
   }
+  if (exteriorClip) ctx.restore();
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp) && !P.hide) drawPlayer(P);
   if (P.vent && !tactical) {

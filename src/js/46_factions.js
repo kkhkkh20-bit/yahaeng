@@ -96,7 +96,7 @@ const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx 
 const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
 function drawGangFlags(P) {
   if (!S.turf) return;
-  BLD.forEach(b => { if (!b.gang) return; const x = b.x0 * TILE + 10, y = b.y0 * TILE + 8; if (!inView(x, y, 80)) return;
+  BLD.forEach(b => { if (!b.gang || (!tactical && flOf(P) && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === BLD.indexOf(b))) return; const x = b.x0 * TILE + 10, y = b.y0 * TILE + 8; if (!inView(x, y, 80)) return;
     const [bg, fg] = GANG_COL[b.gang], w = Math.sin(S.t * 3 + b.x0) * 2;
     ctx.strokeStyle = '#c9ccd3'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y + 34); ctx.lineTo(x, y - 14); ctx.stroke();
     ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 36, y - 3 + w); ctx.lineTo(x, y + 8); ctx.closePath(); ctx.fill(); ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.stroke();
