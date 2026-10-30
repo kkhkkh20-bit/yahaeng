@@ -439,7 +439,13 @@ function drawGuard(g) {
   const k = charOf(g);
   if (g.climb && usePR(k) && PR.anims.climb) {  // 배관·벽을 타는 중
     const c = g.climb;
-    if (c.kind === 'stair') { drawPR(k, g.x, g.y, g.a, 'walk', S.t + g.id * 0.37, 0.4 + 0.6 * Math.abs(1 - 2 * Math.min(1, c.t / c.dur))); return; }
+    if (c.stairs) {
+      const tp = travPose(c); if (tp.pose === 'stairHidden') return;
+      const depth = tp.pose === 'stairRise' ? (1 - tp.g) * 28 : tp.pose === 'stairSink' ? tp.g * 28 : 0;
+      ctx.save(); ctx.beginPath(); ctx.rect(g.x - 100, g.y - 150, 200, 165); ctx.clip();
+      drawPR(k, g.x, g.y + depth, g.a, 'walk', S.t + g.id * .37); ctx.restore(); return;
+    }
+    if (c.kind === 'stair') { drawPR(k, g.x, g.y, g.a, 'walk', S.t + g.id * 0.37); return; }
     drawPR(k, g.x, g.y, -Math.PI / 2, 'climb', 0, 1, 1, 14, ((Math.floor(c.t * 7) * (c.up ? 1 : -1)) % 4 + 4) % 4); return;
   }
   if (g.z) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(g.x + 4 + g.z * 2, g.y + 6 + g.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }

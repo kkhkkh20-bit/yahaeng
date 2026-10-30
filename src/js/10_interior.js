@@ -344,7 +344,7 @@ function stairWells(g, f) {
           if (lost.length) removed.forEach(([it, cells]) => cells.forEach(([xx, yy, c]) => { g[yy][xx] = c; }));
           else removed.forEach(([it]) => FURN.splice(FURN.indexOf(it), 1));
         }
-        if (lost.length > 3 || lost.some(nearOpen)) { g[c1[1]][c1[0]] = o1; g[c2[1]][c2[0]] = o2; continue; }
+        if (lost.includes(tp.join(',')) || lost.length > 3 || lost.some(nearOpen)) { g[c1[1]][c1[0]] = o1; g[c2[1]][c2[0]] = o2; continue; }
         lost.forEach(k => { const [x, y] = k.split(',').map(Number); g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); });
         STAIRW[f + ':' + tx + ',' + ty] = { d, s: [sx, sy] }; done = true; break;
       } }

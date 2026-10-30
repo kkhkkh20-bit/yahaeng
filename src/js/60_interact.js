@@ -21,26 +21,21 @@ function nearHide() {
 // 시체를 메고는 실내 계단(fstair)만 오른다 (사다리·배관·옥상 계단은 못 오른다)
 function nearClimb() {
   const P = S.player; if (P.captive || P.jump) return null; let best = null, bd = 44;
-  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (P.carrying && l.kind !== 'fstair') continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (P.carrying && l.kind !== 'fstair') continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; let d = dist(P.x, P.y, l.x, l.y);
+    if (l.kind === 'fstair' || l.kind === 'stair') { if (!stairAccess(l, true, P)) continue; const g = stairLower(l), a = clamp((P.x-g.shaft.x)*g.d[0]+(P.y-g.shaft.y)*g.d[1],0,TILE); d = dist(P.x,P.y,g.shaft.x+g.d[0]*a,g.shaft.y+g.d[1]*a); }
+    if (d < bd) { bd = d; best = l; } }
   return best;
 }
 // 계단실 (꺾인 두 줄): 올라가는 줄 = 계단 칸 Y + 들어서는 칸 e(=Y+d), 위층의 옆 줄 = 내려가는 구멍 c1(Y 옆, 깊은 쪽)·c2(e 옆, 바닥 쪽 끝)
-// 내려가기는 구멍의 바닥 쪽 끝(c2)에서만, 오르기는 계단 칸(Y)에서만 — 한 자리에 둘을 두지 않는다
-function stairHole(l) { const w = l.kind === 'fstair' && STAIRW[l.tfl + ':' + l.tx + ',' + l.ty]; if (!w) return null; const [sx, sy] = w.s, [dx, dy] = w.d;
-  return { d: w.d, c1: { x: tc(l.tx + sx), y: tc(l.ty + sy) }, c2: { x: tc(l.tx + sx + dx), y: tc(l.ty + sy + dy) }, e: { tx: l.tx + dx, ty: l.ty + dy }, top: { tx: l.tx + sx + 2 * dx, ty: l.ty + sy + 2 * dy } }; }
-// 내려가는 자리: 꺾인 계단실이면 구멍 바닥 쪽 끝(c2). 구멍을 못 만든 계단은 계단 칸 그 자리인데, 같은 칸에서 또 위로 오르는 계단(옥상·윗층)이 있으면
-// 한 자리에 두 행동이 겹치므로 내려가는 자리를 계단 앞 칸(들어서는 칸)으로 옮긴다
-const downPt = l => { const h = stairHole(l); if (h) return h.c2;
-  if (l.kind === 'fstair' && S.ladders.some(o => o !== l && (o.kind === 'fstair' || o.kind === 'stair') && o.tx === l.tx && o.ty === l.ty && (o.bfl || 0) === l.tfl)) {
-    if (l._dp) return l._dp;  // 옆 칸 중 막히지 않고, 옆 건물 창문 앞 자리와 겹치지 않는 칸 (계단 앞 칸 먼저)
-    const L0 = CUR_F; setLayer(l.tfl); const [dx, dy] = stairDir(l.tx, l.ty), win = (x, y) => S.fwindows.some(w => w.link && w.fl === l.tfl && w.tx - w.link.dir === x && w.ty === y);
-    const c = [[dx, dy], [0, 1], [0, -1], [-1, 0], [1, 0]].map(([ox, oy]) => [l.tx + ox, l.ty + oy]).find(([x, y]) => !solidAt(x, y) && G[y][x] !== 'Y' && !win(x, y)); setLayer(L0);
-    if (c) return (l._dp = { x: tc(c[0]), y: tc(c[1]) }); }
-  return { x: l.x, y: l.y }; };
+// 내려가기는 열린 층계참에서, 오르기는 해당 층의 올라가는 줄에서만 선택한다
+function stairHole(l) { return l.kind === 'fstair' ? stairUpper(l).well : null; }
+// 내려가는 입구는 난간 구멍 안이 아니라 그 앞의 걸을 수 있는 층계참이다.
+const downPt = l => l.kind === 'fstair' ? stairUpper(l).down.entry : { x: l.x, y: l.y };
+const downMark = l => l.kind === 'fstair' ? stairUpper(l).down.marker : downPt(l);
 // 위층에서 아래층으로
 function nearFloorDown() {
   const P = S.player; if (P.z || !flOf(P) || P.jump || P.captive) return null; let best = null, bd = 1e9;
-  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P) || (P.carrying && l.kind !== 'fstair')) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P) || (P.carrying && l.kind !== 'fstair')) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = 60, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd && (l.kind === 'balc' || stairAccess(l, false, P))) { bd = d; best = l; } }  // 난간 옆·뒤에서는 선택되지 않는다
   return best;
 }
 function nearNote() {
@@ -648,17 +643,17 @@ function primaryActionRaw() {
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: { x: nt.x, y: nt.y }, label: nt.read ? '다시 읽기' : '읽기' };
   const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: `${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만
-    if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downPt(fdE), label: `내려가기 · ${fdE.bfl + 1}층` }; }
+    if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downMark(fdE), label: `내려가기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
   const ww = nearWinWire(); if (ww) return { k: 'wireOn', w: ww.w, s: ww.s, at: ww.at, label: '창밖 전깃줄 타기' };
   const pw = nearPole(); if (pw) return { k: 'wireOn', w: pw.w, s: pw.s, at: pw.at, pole: true, label: '전봇대 올라 전깃줄로' };
-  let cu = nearClimb(); if (cu && cu === S.stairBack && S.t - S.stairBackT < 2.5 && dist(P.x, P.y, S.stairBackP.x, S.stairBackP.y) < 60) cu = null;  // 방금 내려온 계단은 바로 다시 오르기로 잡지 않는다
+  let cu = nearClimb(); if (cu && cu.kind !== 'fstair' && cu === S.stairBack && S.t - S.stairBackT < 2.5 && dist(P.x, P.y, S.stairBackP.x, S.stairBackP.y) < 60) cu = null;  // 방금 내려온 계단은 바로 다시 오르기로 잡지 않는다
   if (cu && cu.kind === 'balc') { const v = landingVictim(cu.ux, cu.uy, cu.tfl); if (v) return { k: 'up', l: cu, kill: v, at: { x: cu.x, y: cu.y - 30 }, label: v.civ ? '베란다 넘어 기절시키기' : '베란다 넘어 암살' }; }
   // 계단실: 계단 칸 위에 올라서야 [오르기], 그 앞(올라와 선 자리)은 [내리기] — 나머지는 F·⇄로
-  const fd0 = cu && cu.kind !== 'balc' && nearFloorDown(); if (fd0 && fd0.kind !== 'balc' && (stairHole(fd0) ? dist(P.x, P.y, cu.x, cu.y) > 30 : dist(P.x, P.y, downPt(fd0).x, downPt(fd0).y) < dist(P.x, P.y, cu.x, cu.y))) return { k: 'fdown', l: fd0, at: downPt(fd0), label: `내리기 · ${fd0.bfl + 1}층` };
-  if (cu) return { k: 'up', l: cu, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `오르기 · ${cu.tfl + 1}층` : cu.kind === 'stair' ? '오르기 · 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
+  const fd0 = cu && cu.kind !== 'balc' && nearFloorDown(); if (fd0 && fd0.kind !== 'balc' && (stairHole(fd0) ? dist(P.x, P.y, cu.x, cu.y) > 30 : dist(P.x, P.y, downPt(fd0).x, downPt(fd0).y) < dist(P.x, P.y, cu.x, cu.y))) return { k: 'fdown', l: fd0, at: downMark(fd0), label: `내리기 · ${fd0.bfl + 1}층` };
+  if (cu) return { k: 'up', l: cu, at: cu.kind === 'fstair' || cu.kind === 'stair' ? stairLower(cu).up.marker : undefined, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `오르기 · ${cu.tfl + 1}층` : cu.kind === 'stair' ? '오르기 · 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
   const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: '환풍구로 들어가기' };
-  const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downPt(fd), label: fd.kind === 'balc' ? '내려가기 · 베란다로' : `내려가기 · ${fd.bfl + 1}층` };
+  const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downMark(fd), label: fd.kind === 'balc' ? '내려가기 · 베란다로' : `내려가기 · ${fd.bfl + 1}층` };
   { const wd = nearWinDrop(); if (wd) return { k: 'winDrop', w: wd, at: { x: wd.x, y: wd.y }, label: '창문 넘어 내려가기' }; }
   const nw = nearWindow(); if (nw) {
     const ws = winSt(nw.w);
@@ -769,7 +764,7 @@ function actPrimary(force) {
       play('throw', 0.3); break;
     }
     case 'down': {
-      if (a.l && a.l.kind === 'stair') S.stats.roofStair = (S.stats.roofStair || 0) + 1;
+      if (a.l && a.l.kind === 'stair') { S.stats.roofStair = (S.stats.roofStair || 0) + 1; beginStairTravel(a.l, false); break; }
       const l = a.l, fin = () => { P.z = l.bz; P.fl = l.bfl || 0; setLayer(P.fl); P.x = l.x; P.y = l.y;
         if (l.kind === 'chimney') { noise(l.ux, l.uy, 70, 'soot'); S.fx.push({ k: 'smoke', x: l.ux, y: l.uy, t: 0 }); toast('굴뚝을 타고 아궁이로 내려왔다 (그을음 소리가 조금 났다)', 2.2); } };
       play(l.kind === 'pipe' ? 'metal' : 'cloth', 0.3);
@@ -787,20 +782,14 @@ function actPrimary(force) {
       hint('winJump', '창문 건너기: 붙어 있는 빌라는 같은 층 옆 창문끼리 건너뛴다. 착지 소리가 조금 난다');
       break;
     }
-    case 'fdown': { const l = a.l; after(1.0, () => { S.stairBack = l; S.stairBackT = S.t; S.stairBackP = { x: S.player.x, y: S.player.y }; });
+    case 'fdown': { const l = a.l;
       if (l.kind === 'balc') {  // 난간을 넘어 밖으로 나가 기둥을 타고 내려간다
         P.fl = 0; setLayer(0); S.fade = 0.12; play('cloth', 0.35);
         startTrav({ pts: [{ x: l.ux, y: l.uy - 10, f: 0 }, { x: l.ux, y: l.uy + 24, f: 0.28 }, { x: l.x, y: l.y, f: 1 }], dur: 1.0, phases: [{ to: 0.28, pose: 'vault' }, { to: 1, pose: 'climb' }], face: -Math.PI / 2, down: true, base: { x: l.x, y: l.y }, step: 'cloth', loud: 40,
           end: () => { P.z = 0; P.x = l.x; P.y = l.y; P.a = Math.PI / 2; noise(l.x, l.y, 45, 'climb'); } });
         break;
       }
-      const ho = stairHole(l);
-      // 구멍 바닥 쪽 끝(c2)으로 들어서 깊은 쪽(c1)으로 내려간 뒤, 아래층 계단 들어서는 칸(e)에 선다
-      startTrav({ pts: ho ? [{ x: P.x, y: P.y, f: 0 }, { x: ho.c2.x, y: ho.c2.y, f: 0.45 }, { x: ho.c1.x, y: ho.c1.y, f: 1 }] : [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y + 8, f: 1 }], dur: ho ? 0.6 : 0.4, phases: [{ to: 1, pose: 'walk' }],
-        end: () => { P.fl = l.bfl; setLayer(P.fl); const [dx, dy] = stairDir(l.tx, l.ty), ex = l.tx + dx, ey = l.ty + dy; play('step_w0', 0.3); S.fade = 0.15;
-          // 아래층: 계단 칸(층계참)에서 돌아 나와 앞 칸으로 걸어 내려선다 — 화면이 어두워지는 사이에 몸을 돌리므로 휙 돌아보지 않는다
-          if (!solidAt(ex, ey)) { P.x = l.x; P.y = l.y; P.a = Math.atan2(dy, dx); startTrav({ pts: [{ x: l.x, y: l.y, f: 0 }, { x: tc(ex), y: tc(ey), f: 1 }], dur: 0.28, phases: [{ to: 1, pose: 'walk' }] }); }
-          else { P.x = l.x; P.y = l.y; } } });
+      beginStairTravel(l, false);
       break; }
     case 'up': {
       const l = a.l, top = { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };
@@ -813,18 +802,7 @@ function actPrimary(force) {
             else toast('베란다 난간을 타고 2층으로 들어왔다', 1.8); } });
         break;
       }
-      if (l.kind === 'fstair') {  // 실내 계단: 계단 칸으로 걸어 올라간다
-        // 위층에 내려설 자리: 계단을 다 오른 그 앞 한 칸 (구멍 위쪽 끝을 지나 한 걸음) — 예전엔 구멍 반대쪽 끝(두세 칸 앞)으로 건너뛰었다
-        const L0 = CUR_F; setLayer(l.tfl); const ho = stairHole(l), up = ho ? [-ho.d[0], -ho.d[1]] : null;
-        const c1 = ho ? { tx: Math.floor(ho.c1.x / TILE), ty: Math.floor(ho.c1.y / TILE) } : null;
-        const cand = ho ? [{ tx: c1.tx + up[0], ty: c1.ty + up[1] }, { tx: l.tx + up[0], ty: l.ty + up[1] }, ho.e, ho.top] : [];
-        const at = cand.find(c => inMap(c.tx, c.ty) && !solidAt(c.tx, c.ty) && bldAt(c.tx, c.ty) === bldAt(l.tx, l.ty)); setLayer(L0);
-        const ax = at ? tc(at.tx) : l.x, ay = at ? tc(at.ty) : l.y;
-        startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 0.6 }, { x: ax, y: ay, f: 1 }], dur: 0.62, phases: [{ to: 1, pose: 'walk' }],
-          end: () => { P.fl = l.tfl; setLayer(P.fl);
-            P.x = ax; P.y = ay; if (up) P.a = Math.atan2(up[1], up[0]); play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
-        break;
-      }
+      if (l.kind === 'fstair' || l.kind === 'stair') { beginStairTravel(l, true); break; }
       const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
       play(l.kind === 'pipe' ? 'metal' : 'cloth', 0.35); if (l.kind === 'chimney') noise(l.ux, l.uy, 60, 'soot');
       startTrav(climb ? { pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y, f: 0.1 }, { x: top.x, y: top.y + 18, f: 0.86 }, { x: top.x, y: top.y, f: 1 }], dur: 0.45 + lv * 0.42, phases: [{ to: 0.86, pose: 'climb' }, { to: 1, pose: 'vault' }], face: -Math.PI / 2, base: { x: l.x, y: l.y }, step: l.kind === 'pipe' ? 'metal' : 'cloth', loud: l.kind === 'pipe' ? 45 : 30 }

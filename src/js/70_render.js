@@ -118,6 +118,17 @@ function drawPlayer(P) {
     const PK = playerLook, s1 = sc / 3, al = blink ? 0.35 : 1;
     if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); drawPR(PK, P.x, P.y, P.a, 'vault', 0, al, s1, -yo, f < 0.28 ? 0 : f < 0.78 ? 1 : 2); return; }
     const T = P.trav, tp = travPose(T);
+    if (T.stairs) {
+      if (tp.pose === 'stairHidden') return;
+      if (tp.pose === 'stairRise' || tp.pose === 'stairSink') {
+        const depth = (tp.pose === 'stairRise' ? 1 - tp.g : tp.g) * 28, pc = pairCarry(P), pg = !pc && pairGrab(P), anim = pc ? 'carry' : pg ? 'grab' : 'walk';
+        ctx.save(); ctx.beginPath(); ctx.rect(P.x - 100, P.y - 150, 200, 165); ctx.clip();
+        drawPR(PK, P.x, P.y + depth, P.a, anim, S.t, al, s1, 0);
+        if (pc || pg) drawPR(pc ? carryKey(P.carrying) : charOf(P.captive), P.x, P.y + depth, P.a, pc ? 'carried' : 'held', S.t, al, s1, 0);
+        ctx.restore(); return;
+      }
+    }
+
     if (tp.pose === 'sink' || tp.pose === 'sinkBush' || tp.pose === 'climbDown' || tp.pose === 'climbUp') {  // 숨는 곳 안으로 들어가고 나오는 몸: 테두리(rim) 아래는 잘라 낸다
       const bush = tp.pose === 'sinkBush', cl = tp.pose === 'climbDown' || tp.pose === 'climbUp', g = tp.pose === 'climbUp' ? 1 - tp.g : tp.g, rim = T.rim != null ? T.rim : P.y + 10;
       ctx.save(); ctx.beginPath(); ctx.rect(P.x - 80, rim - 240, 160, 240); ctx.clip();
@@ -836,9 +847,9 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
       if ((l.bfl || 0) === fP && !(l.bz || 0)) add(l.x, l.y, SCAN.ladder, '↑', l.kind === 'pipe' ? (l.gas ? '가스관' : '배관') : l.kind === 'balc' ? '베란다' : '계단');
     }
     for (const k in stc) { const o = stc[k]; if (!o.up && !o.down) continue;  // 오르는 곳(계단 칸)과 내려가는 곳(구멍 끝)이 다르면 표식도 따로
-      const dl = o.down && S.ladders.find(l => l.kind === 'fstair' && l.tx === o.l.tx && l.ty === o.l.ty && l.tfl === fP), dp = dl && downPt(dl);
-      if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(o.l.x, o.l.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
-      else add(o.l.x, o.l.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
+      const dl = o.down && S.ladders.find(l => l.kind === 'fstair' && l.tx === o.l.tx && l.ty === o.l.ty && l.tfl === fP), dp = dl && downMark(dl), up = stairFloor(o.l.tx, o.l.ty, fP).up.marker;
+      if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(up.x, up.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
+      else add(up.x, up.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
     if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
       // 창문·문은 표식 없이 그림으로 (열린 창은 틈이 벌어져 보인다). 무엇을 할지는 다가가 [행동]에 뜬다
     }
@@ -1235,7 +1246,7 @@ function draw() {
     setLayer(0);
   }
   PM('floor');
-  const travUp = !!(P.trav && !P.trav.hideB && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
+  const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
   PM('stepring');
   if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
@@ -1308,7 +1319,7 @@ function draw() {
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && inView(g.x, g.y, 120) && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
-    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x, g.y, 460) && (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl)))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
+    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x, g.y, 460) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
@@ -1359,7 +1370,7 @@ function draw() {
   if (running && !S.over && !S.entrySel) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
-      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downPt(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;

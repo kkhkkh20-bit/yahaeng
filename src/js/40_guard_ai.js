@@ -82,8 +82,9 @@ function lvlInit() {
   S.lvl = { RC, ends: [] };
   for (const l of S.ladders) {
     if (l.kind === 'chimney') continue;
-    const A = { fl: l.bfl || 0, z: l.bz || 0, x: l.x, y: l.y };
-    const B = l.kind === 'fstair' || l.kind === 'balc' ? { fl: l.tfl, z: 0, x: l.ux, y: l.uy } : { fl: 0, z: l.tz, x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };
+    const lower = l.kind === 'fstair' || l.kind === 'stair' ? stairLower(l).up.entry : l;
+    const A = { fl: l.bfl || 0, z: l.bz || 0, x: lower.x, y: lower.y };
+    const B = l.kind === 'fstair' || l.kind === 'balc' ? { fl: l.tfl, z: 0, x: l.kind === 'fstair' ? downPt(l).x : l.ux, y: l.kind === 'fstair' ? downPt(l).y : l.uy } : { fl: 0, z: l.tz, x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };
     A.k = lvlKey(A); B.k = lvlKey(B); if (A.k !== B.k) S.lvl.ends.push({ l, A, B });
   }
 }
@@ -123,7 +124,12 @@ function routeTo(g, t) {
 function hopClimb(g, arrived) {
   const h = g.hop; if (!h || g.climb) return !!g.climb;
   const d = dist(g.x, g.y, h.from.x, h.from.y);
-  if (d > (arrived ? 90 : 22)) { if (arrived) g.hop = null; return false; }
+  if (d > (['fstair', 'stair'].includes(h.e.l.kind) ? 22 : arrived ? 90 : 22)) { if (arrived) g.hop = null; return false; }
+  if (['fstair', 'stair'].includes(h.e.l.kind)) {
+    const up = (h.to.z || 0) + (h.to.fl || 0) > (h.from.z || 0) + (h.from.fl || 0);
+    g.climb = Object.assign(stairTravel(h.e.l, g, up), { from: h.from, to: h.to, t: 0, kind: 'stair', up });
+    g.hop = null; g.path = null; return true;
+  }
   g.x = h.from.x; g.y = h.from.y;
   const lv = Math.max(Math.abs((h.to.z || 0) - (h.from.z || 0)), Math.abs((h.to.fl || 0) - (h.from.fl || 0)), 1);
   const k = h.e.l.kind, kind = k === 'fstair' || k === 'stair' ? 'stair' : 'climb';
@@ -134,7 +140,14 @@ function hopClimb(g, arrived) {
 }
 function updateClimbG(g, dt) {
   const c = g.climb; c.t += dt; const f = Math.min(1, c.t / c.dur);
-  g.x = c.from.x + (c.to.x - c.from.x) * f; g.y = c.from.y + (c.to.y - c.from.y) * f; g.moving = true;
+  if (c.stairs) {
+    crossStairLevel(g, c, f);
+    let i = 0; while (i < c.pts.length - 2 && f > c.pts[i + 1].f) i++;
+    const a = c.pts[i], b = c.pts[i + 1], u = clamp((f - a.f) / Math.max(.00001, b.f - a.f), 0, 1);
+    g.x = a.x + (b.x - a.x) * u; g.y = a.y + (b.y - a.y) * u;
+    if (dist(a.x, a.y, b.x, b.y) > 1) g.a = Math.atan2(b.y - a.y, b.x - a.x);
+  }
+  else { g.x = c.from.x + (c.to.x - c.from.x) * f; g.y = c.from.y + (c.to.y - c.from.y) * f; } g.moving = true;
   if (c.kind === 'climb') g.a = c.up ? -Math.PI / 2 : Math.PI / 2;
   if (f >= 1) { g.climb = null; g.fl = c.to.fl || 0; g.z = c.to.z || 0; g.x = c.to.x; g.y = c.to.y; g.path = null; g.repath = 0; setLayer(flOf(g)); }
 }

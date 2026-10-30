@@ -58,7 +58,7 @@ async def main():
               check(G.envAction().k==='down'&&G.envAction().l===l,id+' selected action must match this doorway');G.actEnv();check(P.trav,id+' descent must play the traversal animation');
               for(let t=0;t<1.5&&P.trav;t+=.02){S.t+=.02;G.updatePlayer(.02)}
               check(!P.trav&&P.z===0&&P.fl===(l.bfl||0),id+' descent must finish on the correct interior floor');
-              check(Math.hypot(P.x-l.x,P.y-l.y)<2,id+' descent must land at its own stair shaft');doors++;
+              const e=G.stairFloor(l.tx,l.ty,l.bfl||0).up.entry;check(Math.hypot(P.x-e.x,P.y-e.y)<2,id+' descent must land at its open interior entry');doors++;
             }
           }
           check(doors>0,'Missing rooftop doorway fixtures');passed.push(doors+' rooftop doors: labels, approach sides and actual descent');

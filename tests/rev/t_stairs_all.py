@@ -7,7 +7,7 @@ SK = '() => { const g = window.__game; for (let i = 0; i < 40 && g.DLG.modal; i+
 FREEZE = '''() => { const S = window.__game.S; S.guards.forEach(g => { g.x = -9999; g.y = -9999; g.route = [{ x: -9999, y: -9999, pause: 999 }]; g.wander = null; g.sched = null; g.path = null; }); }'''
 PLACE = '''([fl, z, x, y]) => { const G = window.__game, P = G.S.player; P.fl = fl; P.z = z; P.x = x; P.y = y; P.trav = null; P.cover = null; P.snap = null; P.carrying = null; P.captive = null; P.item = null; P.vx = P.vy = 0; G.setLayer(fl); }'''
 STATE = '''() => { const G = window.__game, P = G.S.player; G.setLayer(P.fl || 0); return { fl: P.fl || 0, z: P.z || 0, x: Math.round(P.x), y: Math.round(P.y), solid: !P.z && G.solidAt(Math.floor(P.x / 48), Math.floor(P.y / 48)), trav: !!P.trav }; }'''
-# 위층에서 '내려가는 자리'(구멍 바닥 쪽 끝 c2) 가까이 설 수 있고, 도착 칸에서 걸어서 닿는 칸
+# 위층에서 '내려가는 자리'(열린 층계참) 가까이 설 수 있고, 도착 칸에서 걸어서 닿는 칸
 SPOT = '''([i]) => { const G = window.__game, l = G.LADDERS[i], ho = G.stairHole(l), tc = v => v * 48 + 24; G.setLayer(l.tfl);
   const p = G.downPt(l), arr = ho ? [ho.top, ho.e].find(c => !G.solidAt(c.tx, c.ty)) : { tx: l.tx, ty: l.ty };  // 꺾인 계단실이 없으면 계단 칸 그 자리로 오르내린다 if (!arr) return { err: '위층 도착 칸이 모두 막힘' };
   let best = null, bd = 1e9; const px = Math.floor(p.x / 48), py = Math.floor(p.y / 48);
@@ -41,7 +41,7 @@ async def main():
                 await pg.evaluate(PLACE, [l['bfl'], 0, l['x'], l['y']]); await pg.wait_for_timeout(60)
                 a = await pg.evaluate('() => { const a = window.__game.primaryAction(); return [a.k, a.label]; }')
                 if a[0] != 'up': bad.append(f'{tag}: 계단 칸에서 [오르기]가 아니라 {a}'); continue
-                await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(900)
+                await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.S.player.trav')
                 s = await pg.evaluate(STATE)
                 if l['kind'] == 'fstair':
                     if s['fl'] != l['tfl'] or s['solid'] or s['trav']: bad.append(f'{tag}: 올라간 뒤 상태 이상 {s}'); continue
@@ -52,7 +52,7 @@ async def main():
                     await pg.wait_for_timeout(60)
                     a = await pg.evaluate('() => { const a = window.__game.primaryAction(); return [a.k, a.label]; }')
                     if a[0] != 'fdown': bad.append(f'{tag}: 내려가는 자리에서 [내리기]가 아니라 {a}'); continue
-                    await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1100)
+                    await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.S.player.trav')
                     s = await pg.evaluate(STATE)
                     if s['fl'] != l['bfl'] or s['solid'] or s['trav']: bad.append(f'{tag}: 내려온 뒤 상태 이상 {s}'); continue
                     # 내려온 자리에서 다시 계단 칸으로 걸어갈 수 있나
@@ -63,7 +63,7 @@ async def main():
                     await pg.evaluate(PLACE, [0, l['tz'], l['rx'], l['ry']]); await pg.wait_for_timeout(60)
                     a = await pg.evaluate('() => { const a = window.__game.primaryAction(); return [a.k, a.label]; }')
                     if a[0] != 'down': bad.append(f'{tag}: 옥상 계단실 앞에서 [내리기]가 아니라 {a}'); continue
-                    await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1100)
+                    await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.S.player.trav')
                     s = await pg.evaluate(STATE)
                     if s['z'] or s['trav'] or s['solid']: bad.append(f'{tag}: 옥상에서 내려온 뒤 상태 이상 {s}')
         print('계단', n, '개 검사'); print('errs', errs[:3]); await b.close()

@@ -193,7 +193,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
+  stairsInit(true); buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 그 자리에서 위쪽 벽에 달고 아래를 본다)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;
@@ -459,6 +459,7 @@ function kitGround(ch, tx, ty) {
 }
 // 실내 계단: 계단 칸('Y')과 올라오는 쪽 칸, 두 칸에 걸친 한 줄 계단. 위(계단 칸 쪽)로 갈수록 밝고, 칸마다 디딤판 그림자·코, 양옆 난간
 function stairDir(tx, ty) {
+  const plan = S && S.stairPlan && S.stairPlan[CUR_F + ':' + tx + ',' + ty]; if (plan) return plan.d;
   const w = STAIRW[CUR_F + ':' + tx + ',' + ty]; if (w) return w.d;
   const bi = bldAt(tx, ty);
   for (const [dx, dy] of [[0, 1], [0, -1], [-1, 0], [1, 0]]) { const nx = tx + dx, ny = ty + dy; if (inMap(nx, ny) && bldAt(nx, ny) === bi && !SOLID.has(G[ny][nx]) && G[ny][nx] !== 'Y') return [dx, dy]; }
@@ -466,8 +467,8 @@ function stairDir(tx, ty) {
 }
 function drawStairs(x, tx, ty) {
   // 오르는 계단: 계단 칸과 들어서는 칸, 폭 한 칸 × 길이 두 칸. 위층에선 옆 줄(역시 한 칸 × 두 칸)이 아래층에서 올라오는 계단 구멍 — 꺾인 계단실
-  // (옆 줄을 못 만든 곳만 한 칸 폭을 반씩 나눠 그린다)
-  const [dx, dy] = stairDir(tx, ty), cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0, wb = STAIRW[CUR_F + ':' + tx + ',' + ty];
+  // 옆 줄을 못 만드는 좁은 계단실은 한 칸 폭을 유지한다
+  const geometry = stairFloor(tx, ty, CUR_F), [dx, dy] = geometry.d, cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0, wb = geometry.well;
   const hw = TILE / 2 - 3, hl = TILE, N = 8, st = (hl * 2) / N, rot = Math.atan2(-dy, -dx) + Math.PI / 2;
   const upFlight = (x0, x1) => {  // 오르는 줄: 먼 쪽(위층)으로 갈수록 밝다, 단마다 코에 빛·아래에 그림자
     for (let i = 0; i < N; i++) { const y0 = -hl + i * st, k = 1 - i / (N - 1), c = (a, b) => Math.round(a + (b - a) * k);
@@ -482,8 +483,7 @@ function drawStairs(x, tx, ty) {
   const rails = (x0, x1) => { x.fillStyle = '#2e2a28'; x.fillRect(x0 - 3, -hl, 4, hl * 2); x.fillRect(x1 - 1, -hl, 4, hl * 2); x.fillStyle = '#aeb6c0'; x.fillRect(x1 - 1, -hl + 2, 2, hl * 2 - 4); for (let i = 0; i <= 3; i++) x.fillRect(x1 - 2, -hl + 4 + i * ((hl * 2 - 10) / 3), 4, 3); };
   x.save(); x.translate(cx, cy); x.rotate(rot);
   x.fillStyle = 'rgba(0,0,0,.5)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, hl * 2);
-  if (down && !wb) { upFlight(-hw, -1); downFlight(1, hw, -1); x.fillStyle = '#aeb6c0'; x.fillRect(-1, -hl + 2, 2, hl * 2 - 4); rails(-hw, hw); }
-  else { upFlight(-hw, hw); rails(-hw, hw); }
+  upFlight(-hw, hw); rails(-hw, hw);  // 좁은 계단도 사람이 설 수 있는 한 칸 폭을 유지한다
   x.fillStyle = 'rgba(0,0,0,.55)'; x.fillRect(-hw - 3, -hl, hw * 2 + 6, 3);
   x.restore();
   if (down && wb) {  // 옆 줄: 아래층에서 올라오는 계단(반대 방향으로 오른다 → 들어서는 쪽 끝이 가장 깊다), 바깥쪽에 난간
@@ -506,7 +506,7 @@ function drawStairGlow(P, openB) {
     const up = S.ladders.some(o => (o.kind === 'fstair' || o.kind === 'stair') && o.tx === l.tx && o.ty === l.ty && (o.bfl || 0) === f);
     const down = S.ladders.some(o => o.kind === 'fstair' && o.tx === l.tx && o.ty === l.ty && o.tfl === f);
     if (!up && !down) continue; seen.add(key);
-    const [dx, dy] = stairDir(l.tx, l.ty), cx = (l.tx + 0.5 + dx / 2) * TILE, cy = (l.ty + 0.5 + dy / 2) * TILE, hw = TILE / 2 - 3, hl = TILE, rot = Math.atan2(-dy, -dx) + Math.PI / 2, wb = down ? STAIRW[f + ':' + l.tx + ',' + l.ty] : null;
+    const geometry = stairFloor(l.tx, l.ty, f), [dx, dy] = geometry.d, cx = (l.tx + 0.5 + dx / 2) * TILE, cy = (l.ty + 0.5 + dy / 2) * TILE, hw = TILE / 2 - 3, hl = TILE, rot = Math.atan2(-dy, -dx) + Math.PI / 2, wb = down ? geometry.well : null;
     const lane = (x0, x1, isUp, farIn) => {
       const gr = ctx.createLinearGradient(0, hl, 0, -hl);
       if (isUp) { gr.addColorStop(0, 'rgba(255,214,150,.06)'); gr.addColorStop(1, 'rgba(255,214,150,.42)'); }
@@ -519,14 +519,17 @@ function drawStairGlow(P, openB) {
       ctx.fill();
     };
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
-    if (up && down && !wb) { lane(-hw, -1, true); lane(1, hw, false); } else lane(-hw, hw, up);
+    lane(-hw, hw, up);
     ctx.restore();
     if (wb) { ctx.save(); ctx.translate(cx + wb.s[0] * TILE, cy + wb.s[1] * TILE); ctx.rotate(rot);  // 구멍: 깊은 쪽(-hl)이 어둡고, 바닥 쪽 끝(+hl)에서 깊은 쪽을 가리키는 ▼▼ (내려가는 방향)
       const gr = ctx.createLinearGradient(0, hl, 0, -hl); gr.addColorStop(0, 'rgba(0,0,0,.08)'); gr.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = gr; ctx.fillRect(-hw, -hl, hw * 2, hl * 2);
-      ctx.restore();
-      // 내려가는 곳 표시: 누르는 자리(구멍 바닥 쪽 끝)에 화면 기준 ▼▼ — 오르는 곳은 ▲, 내려가는 곳은 ▼ 로만 구분한다
-      const px = tc(l.tx + wb.s[0] + wb.d[0]), py = tc(l.ty + wb.s[1] + wb.d[1]), w = 13; ctx.fillStyle = 'rgba(170,205,240,.95)'; ctx.strokeStyle = 'rgba(7,10,18,.8)'; ctx.lineWidth = 1.5;
-      for (const oy of [-7, 6]) { ctx.beginPath(); ctx.moveTo(px - w / 2, py + oy - w * 0.35); ctx.lineTo(px + w / 2, py + oy - w * 0.35); ctx.lineTo(px, py + oy + w * 0.45); ctx.closePath(); ctx.stroke(); ctx.fill(); } }
+      ctx.restore(); }
+    if (down) {
+      // 실제 입구에서 구멍 안으로 향하는 방향. 화면 아래 방향으로 고정하지 않는다.
+      const px = geometry.down.marker.x, py = geometry.down.marker.y, w = 13;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(rot); ctx.fillStyle = 'rgba(170,205,240,.95)'; ctx.strokeStyle = 'rgba(7,10,18,.8)'; ctx.lineWidth = 1.5;
+      for (const oy of [-7, 6]) { ctx.beginPath(); ctx.moveTo(-w/2, oy+w*.35); ctx.lineTo(w/2, oy+w*.35); ctx.lineTo(0, oy-w*.45); ctx.closePath(); ctx.stroke(); ctx.fill(); } ctx.restore(); }
+
   }
 }
 // 높이 그림자: 건물·전봇대·전깃줄이 같은 방향(오른쪽 아래)으로 높이만큼 긴 그림자를 땅에 드리운다. 한 번만 구워 땅 그림에 넣는다

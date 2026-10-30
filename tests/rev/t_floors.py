@@ -24,17 +24,17 @@ async def main():
         info = await ev('''() => { const G = window.__game, S = G.S, l = G.LADDERS.find(l => l.kind === 'fstair' && (l.bfl || 0) === 0 && G.stairHole(l)); G.setLayer(0); const d = G.stairDir(l.tx, l.ty);
           const P = S.player; P.fl = 0; P.z = 0; P.x = (l.tx + d[0]) * 48 + 24; P.y = (l.ty + d[1]) * 48 + 24; return { tx: l.tx, ty: l.ty, d, tfl: l.tfl }; }''')
         k = KEY[tuple(-v for v in info['d'])]
-        await hold([k], 700); await pg.wait_for_timeout(900)
+        await hold([k], 700); await pg.wait_for_function('!window.__game.S.player.trav')
         r = await ev('() => { const P = window.__game.S.player; return [P.fl || 0, !!P.trav]; }'); print('자동 오르기', info, r)
-        if r[0] != info['tfl']: bad.append(f'계단 칸으로 걸어 들어가도 오르지 않는다 {info} {r}')
+        if r[0] != info['tfl'] or r[1]: bad.append(f'계단 칸으로 걸어 들어가도 오르지 않는다 {info} {r}')
         else:
             ho = await ev('''(i) => { const G = window.__game, l = G.LADDERS.find(l => l.kind === 'fstair' && l.tx === i.tx && l.ty === i.ty && (l.bfl || 0) === 0), h = G.stairHole(l), P = G.S.player; G.setLayer(l.tfl);
               P.x = h.c2.x + h.d[0] * 48; P.y = h.c2.y + h.d[1] * 48; return h.d; }''', info)  # 구멍 끝(c2) 바로 앞 칸
             await pg.wait_for_timeout(1000)
             k2 = KEY[tuple(-v for v in ho)]
-            await hold([k2], 500); await pg.wait_for_timeout(1100)
+            await hold([k2], 500); await pg.wait_for_function('!window.__game.S.player.trav')
             r = await ev('() => { const P = window.__game.S.player; return [P.fl || 0, !!P.trav]; }'); print('자동 내리기', ho, r)
-            if r[0] != 0: bad.append(f'계단 구멍 쪽으로 걸어도 내려오지 않는다 {r}')
+            if r[0] != 0 or r[1]: bad.append(f'계단 구멍 쪽으로 걸어도 내려오지 않는다 {r}')
         # 2 층 분리: 사무동 2층에서 뛰어다니고 처치해도 1층 금고 앞 경비(6)는 모른다
         await fresh([6, 7])
         await ev("() => { const G = window.__game, S = G.S, g = S.guards[6], P = S.player; P.fl = 1; G.setLayer(1); P.z = 0; P.x = g.x; P.y = g.y; const o = S.guards[7]; o.x = g.x + 900; o.y = g.y; o.route = [{ x: o.x, y: o.y, pause: 999 }]; o.wait = 99; }  // 뛰는 동안 위층 경비(7)가 먼저 보지 않게 멀리 둔다")

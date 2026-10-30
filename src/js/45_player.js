@@ -225,20 +225,20 @@ function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_
   ctx.strokeStyle = 'rgba(150,220,255,.9)'; ctx.beginPath(); ctx.arc(P.x, P.y, 26 * k, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, f)); ctx.stroke(); ctx.restore(); }
 const COVER_PUSH = 0.5;
 const COVER_SPD = 0.55;  // 벽에 붙어 옆걸음: 살금살금의 55% (메탈기어처럼 벽을 더듬듯 천천히)  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다
-function autoStairs(P) {
-  // 오르내린 직전 방향 그대로 계속 누르고 있으면 다시 반대로 오르내리지 않는다 (멈추거나 방향을 바꾸면 풀림)
-  if (S.stairArm === false) { const sp0 = Math.hypot(P.vx || 0, P.vy || 0), d0 = S.stairDir || [0, 0]; if (!P.moving || sp0 < 20 || (P.vx * d0[0] + P.vy * d0[1]) / sp0 < 0.5) S.stairArm = true; else if (!P.trav) return; }
-  if (P.z || P.trav || P.jump || P.hide || P.wire || P.under || P.vent || P.strikeT > 0 || !P.moving || S.t < (S.autoStairT || 0)) return;  // 붙잡은 사람·멘 시체는 실내 계단까지 데리고 간다
-  const sp = Math.hypot(P.vx || 0, P.vy || 0); if (sp < 20) return; const vx = P.vx / sp, vy = P.vy / sp, tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), f = flOf(P);
+function autoStairs(P, mx, my, mag) {
+  if (mag <= .1) { S.stairArm = true; return; }
+  const vx = mx / mag, vy = my / mag, old = S.stairDir || [0, 0];
+  if (S.stairArm === false) { if (vx * old[0] + vy * old[1] > .5) return; S.stairArm = true; }
+  if (P.z || actionBusy(P) || P.hide || P.wire || P.under || P.vent || !P.moving) return;
   for (const l of S.ladders) {
-    if ((l.kind !== 'fstair' && l.kind !== 'stair') || (l.bz || 0) || ((P.captive || P.carrying) && l.kind !== 'fstair')) continue;
-    if ((l.bfl || 0) === f && l.tx === tx && l.ty === ty) {  // 오르기: 계단 칸 위, 들어선 쪽(e)에서 계단 쪽으로 걷는 중
-      const L0 = CUR_F; setLayer(f); const [dx, dy] = stairDir(l.tx, l.ty); setLayer(L0);
-      if (-(vx * dx + vy * dy) > 0.45) { S.autoStairT = S.t + 0.9; S.stairArm = false; S.stairDir = [vx, vy]; actPrimary({ k: 'up', l, label: '오르기', viaZ: true }); return; }
+    if ((l.kind !== 'fstair' && l.kind !== 'stair') || ((P.captive || P.carrying) && l.kind !== 'fstair')) continue;
+    if (stairAccess(l, true, P)) {
+      const g = stairLower(l), along = (P.x-g.shaft.x)*g.d[0]+(P.y-g.shaft.y)*g.d[1];
+      if (along < TILE*.65 && -(vx*g.d[0]+vy*g.d[1]) > .6) { beginStairTravel(l, true); return; }
     }
-    if (l.kind === 'fstair' && l.tfl === f) {  // 내리기: 구멍(난간으로 막힌 두 칸)의 바닥 쪽 끝(c2)으로, 구멍 쪽을 향해 걸어 들어가는 중
-      const ho = stairHole(l); if (!ho) continue; const fx = Math.floor((P.x + vx * 30) / TILE), fy = Math.floor((P.y + vy * 30) / TILE);
-      if (fx === Math.floor(ho.c2.x / TILE) && fy === Math.floor(ho.c2.y / TILE) && dist(P.x, P.y, ho.c2.x, ho.c2.y) < 60 && -(vx * ho.d[0] + vy * ho.d[1]) > 0.45) { S.autoStairT = S.t + 0.9; S.stairArm = false; S.stairDir = [vx, vy]; actPrimary({ k: 'fdown', l, at: ho.c2, label: '내리기', viaZ: true }); return; }
+    if (l.kind === 'fstair' && stairAccess(l, false, P)) {
+      const g = stairUpper(l), depth = (P.x-g.down.marker.x)*g.d[0]+(P.y-g.down.marker.y)*g.d[1];
+      if (depth < 32 && -(vx*g.d[0]+vy*g.d[1]) > .6) { beginStairTravel(l, false); return; }
     }
   }
 }
@@ -304,6 +304,7 @@ function updateLedge(P, dt) {
 }
 function updateTrav(P, dt) {
   const T = P.trav; T.t += dt; const f = Math.min(1, T.t / T.dur), pts = T.pts;
+  crossStairLevel(P, T, f);
   let i = 0; while (i < pts.length - 2 && f > pts[i + 1].f) i++;
   const a = pts[i], b = pts[i + 1], r = Math.max(0, Math.min(1, (f - a.f) / Math.max(1e-6, b.f - a.f)));
   P.x = a.x + (b.x - a.x) * r; P.y = a.y + (b.y - a.y) * r; P.moving = true; P.hidden = false;
@@ -455,7 +456,7 @@ function updatePlayer(dt) {
       if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
     }
   }
-  autoStairs(P); autoTraverse(P, mx, my, mag, mode, dt);
+  autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)
     const L = c.lastDrop; if (!L || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L ? L.k : 0) + 1 }; S.decals.push(d); c.lastDrop = d; } } }  // 시체마다 마지막 핏방울을 기억 (다른 시체를 옮겨도 번호가 이어진다)
   { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다

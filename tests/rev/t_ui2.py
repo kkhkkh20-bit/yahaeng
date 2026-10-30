@@ -37,8 +37,8 @@ async def main():
         await pg.evaluate('() => { const g = window.__game; for (let i = 0; i < 40 && g.DLG.modal; i++) g.advanceDialog(); }')
         await pg.evaluate('''() => { const G = window.__game, S = G.S; S.guards.forEach(g => { g.x = -9999; g.y = -9999; g.route = [{ x: -9999, y: -9999, pause: 999 }]; g.path = null; g.wander = null; g.sched = null; });
           const l = G.LADDERS.find(l => l.kind === 'fstair' && G.stairHole(l)); window.__L = l; const P = S.player; P.fl = l.bfl; G.setLayer(l.bfl); P.x = l.x; P.y = l.y; P.z = 0; }''')
-        await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(1000)
-        await pg.evaluate('() => { const G = window.__game, l = window.__L, P = G.S.player, dp = G.downPt(l); P.x = dp.x + 30; P.y = dp.y + 30; P.a = Math.atan2(30, 30); }')   # 내려가는 쪽과 반대로 서 있게
+        await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.S.player.trav')
+        await pg.evaluate('() => { const G = window.__game, l = window.__L, P = G.S.player, g = G.stairFloor(l.tx,l.ty,l.tfl), dp = G.downPt(l); P.x = dp.x + g.d[0]*8; P.y = dp.y + g.d[1]*8; P.a = Math.atan2(g.d[1],g.d[0]); }')   # 내려가는 쪽과 반대로 서 있게
         a = await pg.evaluate('() => { const a = window.__game.primaryAction(); return a.k; }')
         await pg.evaluate('() => window.__game.actPrimary()')
         worst = 0; prev = None
