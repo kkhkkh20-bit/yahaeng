@@ -7,6 +7,7 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 function moveAlong(g, speed, dt) {
+  const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) return true;
   // 비켜 걷기: 앞에 서 있는 사람은 옆으로 돌아가고, 마주 오면 서로 오른쪽으로, 같은 방향이면 속도를 맞춰 뒤따른다
   if (g.detourT > 0) g.detourT -= dt;
@@ -52,7 +53,7 @@ function moveAlong(g, speed, dt) {
     if (d <= step) { g.x = p.x; g.y = p.y; step -= d; g.path.shift(); }
     else { const q = g.path[1] || p; g.want = Math.atan2((p.y + q.y) / 2 - g.y, (p.x + q.x) / 2 - g.x); g.x += (p.x - g.x) / d * step; g.y += (p.y - g.y) / d * step; step = 0; }
   }
-  g.moving = true;
+  g.moving = dist(startX, startY, g.x, g.y) > .01;
   return !g.path.length;
 }
 const solidAtG = (tx, ty) => solidAt(tx, ty);
@@ -429,6 +430,7 @@ function updateCiv(g, dt) {
 const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노랑(의심 — 멈춰 보고 확인하러 온다), 1이면 빨강(발각)
 const awareCol = g => g.state === 'ALERT' ? '#ff4a3c' : g.meter >= NOTICE_AT || ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#f4f1ea';
 function updateGuard(g, dt) {
+  g.moving = false;
   if (g.yank) return;  // 숨은 곳으로 끌려가는 중 (updateAmbush가 움직인다)
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed) { if (g.doomed) g.moving = false; return; }
   // 세력: 조직끼리 싸움·목격자 입막음·구역 단속이 평소 행동보다 먼저
@@ -771,9 +773,13 @@ function drawSpeech() {
   const P = S.player, placed = [], who = [], ch = chaseNow();
   for (const g of S.guards) if (g.say && g.state !== 'DEAD' && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) <= (ch ? 300 : 560) && (!ch || (g.state === 'ALERT' && !g.civ))) who.push(g);
   if (P.say && !P.hide) who.push(P);
+  if (!who.length) return;
   // 머리 위 ?·! 표시 자리는 미리 비워 둔다 (다른 사람 말풍선이 그 위를 덮지 않게)
   for (const g of S.guards) if ((g.icon || g.state === 'ALERT' || (g.meter || 0) > 0.02) && g.state !== 'DEAD' && flOf(g) === flOf(P)) placed.push({ x: g.x - 21, y: g.y - 72, w: 42, h: 42 });
   ctx.font = '600 13px "IBM Plex Sans KR", sans-serif';
+  const top = document.querySelector('#hud .top'), cr = canvas.getBoundingClientRect();
+  const minY = cam.y - H / SCALE / 2 + (Math.max(8, top ? top.getBoundingClientRect().bottom - cr.top + 8 : 8)) / SCALE;
+  const maxY = cam.y + H / SCALE / 2 - 12 / SCALE;
   for (const g of who) {
     const hero = g === P, col = hero ? DLG_COL.hero : g.civ ? DLG_COL.civ : g.target ? DLG_COL.target : g.elite ? DLG_COL.elite : DLG_COL.guard;
     const words = g.say.split(' '), lines = ['']; for (const w of words) { const t = lines[lines.length - 1] ? lines[lines.length - 1] + ' ' + w : w; if (ctx.measureText(t).width > 200 && lines[lines.length - 1] && lines.length < 2) lines.push(w); else lines[lines.length - 1] = t; }
@@ -781,13 +787,17 @@ function drawSpeech() {
     // 머리 위 ?·! 표시가 있으면 그 위로, 다른 말풍선과는 꼬리(7px)까지 띄운다
     let y = g.y - 58 - h + 24 - (g.icon || g.state === 'ALERT' || (g.meter || 0) > 0.02 ? 34 : 0);
     for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 10 && y + h + 10 > r.y); k++) y -= h + 12;
+    if (y < minY || y + h > maxY) {
+      const options = [g.y + 18, minY, maxY - h];
+      y = options.find(py => py >= minY && py + h <= maxY && !placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && py < r.y + r.h + 10 && py + h + 10 > r.y)) ?? clamp(y, minY, Math.max(minY, maxY - h));
+    }
     placed.push({ x, y, w, h }); SPEECH_R.push({ x, y, w, h });  // 글자 표시가 말풍선을 피하게
     if (y + h < g.y - 40) { ctx.strokeStyle = 'rgba(232,236,244,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
     const rr = (px, py, pw, ph, r) => { ctx.beginPath(); ctx.moveTo(px + r, py); ctx.arcTo(px + pw, py, px + pw, py + ph, r); ctx.arcTo(px + pw, py + ph, px, py + ph, r); ctx.arcTo(px, py + ph, px, py, r); ctx.arcTo(px, py, px + pw, py, r); ctx.closePath(); };
     ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(x + 1, y + 3, w, h, 8); ctx.fill();
-    ctx.fillStyle = '#f3f5f9'; rr(x, y, w, h, 8); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)); ctx.beginPath(); ctx.moveTo(tx - 6, y + h - 1); ctx.lineTo(tx + 6, y + h - 1); ctx.lineTo(tx, y + h + 7); ctx.fill(); }
+    ctx.fillStyle = '#f3f5f9'; rr(x, y, w, h, 8); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)), below = y > g.y - 40, edge = below ? y + 1 : y + h - 1; ctx.beginPath(); ctx.moveTo(tx - 6, edge); ctx.lineTo(tx + 6, edge); ctx.lineTo(tx, edge + (below ? -8 : 8)); ctx.fill(); }
     ctx.strokeStyle = col; ctx.lineWidth = 2; rr(x + 1, y + 1, w - 2, h - 2, 7); ctx.stroke();
-    ctx.fillStyle = '#16181f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, 214)); ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#16181f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, w - 20)); ctx.textBaseline = 'alphabetic';
   }
 }
 function updateChats(dt) {

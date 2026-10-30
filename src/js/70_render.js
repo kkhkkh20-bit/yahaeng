@@ -1227,7 +1227,6 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
-  drawSpeech();
   ctx.globalCompositeOperation = 'source-over';
   // 깨진 조명 표시
   for (const l of S.lamps) if (l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
@@ -1256,7 +1255,6 @@ function draw() {
     ctx.globalCompositeOperation = 'lighter';
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = l.col || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
-    drawSpeech();
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
@@ -1437,6 +1435,7 @@ function draw() {
     }
   }
   PM('actions');
+  drawSpeech();  // 건물·옥상·층 덮개 뒤에 한 번만 그린다. 글자 표시는 말풍선을 피한다.
   flushTags(); PM('tags');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (input.aiming && running && !S.over) {  // 조준하는 동안 세상은 멈춰 있다 — 화면 테두리와 글로 알려 준다

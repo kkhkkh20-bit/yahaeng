@@ -9,6 +9,16 @@ const FAC_NAME = { A: '조직', B: '건달파' };
 const TAUNT = ['어이, 여기가 어디라고 기어 와?', '건달 새끼들이 왜 여기 있어.', '눈 깔아라.', '한판 붙자는 거냐?'];
 const TAUNT_B = ['너네 구역이 언제부터 여기였냐?', '어깨 펴고 다니네?', '오늘 좀 맞아 볼래?', '비켜, 우리 길이다.'];
 const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yank && !o.doomed;
+const factionAvoids = (g, o) => g.facAvoid && g.facAvoid.id === o.id && S.t < g.facAvoid.until;
+function factionBlocked(g, dt) {
+  g.facBlocked = g.moving ? 0 : (g.facBlocked || 0) + dt;
+  return g.facBlocked > 2;
+}
+function endFactionMove(g, other) {
+  if (other) g.facAvoid = { id: other.id, until: S.t + 8 };
+  g.brawl = g.hunt = g.raid = g.incident = null; g.path = null; g.facBlocked = 0;
+  g.state = 'RETURN'; g.moving = false;
+}
 function rivalTurfRect(b) {
   let r = [Math.max(1, b.x0 - 4), Math.max(1, b.y0 - 3), Math.min(MW - 2, b.x1 + 4), Math.min(MH - 2, b.y1 + 4)];
   const blockers = BLD.filter(o => o !== b).map(o => [o.x0, o.y0, o.x1, o.y1]).concat(S.turf.A);
@@ -100,7 +110,7 @@ function drawGangFlags(P) {
 const aFits = o => !!o && o !== 'rival' && S.guards.some(g => g.fac === 'A' && outfitOf(g) === o);  // 이 옷이 의뢰 조직 옷인가
 function startBrawl(a, b, why) {
   if (!npcAlive(a) || !npcAlive(b) || a.brawl || a.target || b.target) return;
-  a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) b.brawl = { o: a, cd: rnd(0.5, 0.9) };
+  a.facBlocked = 0; a.brawl = { o: b, cd: rnd(0.2, 0.6) }; if (!b.brawl && !b.civ) { b.facBlocked = 0; b.brawl = { o: a, cd: rnd(0.5, 0.9) }; }
   a.state = a.state === 'ALERT' ? a.state : 'PATROL'; a.path = null; a.chat = null; a.say = null;
   S.stats.fights = (S.stats.fights || 0) + 1; noise(a.x, a.y, 220, 'fight', flOf(a));
   gsay(a, why || (a.fac === 'P' ? '경찰이다! 그만둬!' : (a.fac === 'B' ? TAUNT_B : TAUNT)[(a.id + S.stats.fights) % 4]), 1.8);
@@ -182,7 +192,8 @@ function updateFaction(g, dt) {
   if (g.raid) {  // 소문을 듣고 상대 구역으로 몰려가는 중: 걸어가며 계속 둘러본다 (상대 구역에 들어서면 그쪽이 덤빈다)
     const r = g.raid;
     if (dist(g.x, g.y, r.x, r.y) < 70 || S.t - r.t0 > 45) { g.raid = null; g.state = 'RETURN'; g.path = null; }
-    else { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.8; pathTo(g, r.x, r.y); } moveAlong(g, SPD.gAlert * 0.8 * spdMul(), dt); g.moving = true;
+    else { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.8; pathTo(g, r.x, r.y); } moveAlong(g, SPD.gAlert * 0.8 * spdMul(), dt);
+      if (factionBlocked(g, dt)) { endFactionMove(g); return false; }
       if ((g.facT = (g.facT || 0) - dt) <= 0) { g.facT = 0.4; facScan(g); } return true; }
   }
   if ((g.facT = (g.facT || 0) - dt) > 0) return false; g.facT = 0.4;
@@ -192,7 +203,7 @@ function facScan(g) {
   const P = S.player;
   if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && npcAlive(c) && dist(c.x, c.y, g.x, g.y) < 260)) return false;  // 경찰이 바로 옆에서 제압 중이면 새 싸움을 걸지 않는다
   for (const o of S.guards) {
-    if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
+    if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || factionAvoids(g, o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
     // 싸움은 구역이 정한다: 우리 구역(또는 적진)에 들어온 상대 · 동료가 이미 붙은 상대 · 전쟁 중이면 보는 즉시. 구역 밖에서 마주치면 말로만 시비
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;
@@ -207,7 +218,7 @@ function facScan(g) {
   }
   // 자기 구역(출입 금지·적진)에 들어온 주민: 나가라고 하고, 그래도 있으면 때려 눕힌다
   if (g.fac === 'A' && STAGE.zones) for (const c of S.guards) {
-    if (!c.civ || c.child || !npcAlive(c) || c.outfit || c.enforcer || flOf(c) !== flOf(g) || dist(c.x, c.y, g.x, g.y) > 170 || zoneAt(c.x, c.y, 0) === Z_PUB || !los(g.x, g.y, c.x, c.y)) continue;
+    if (!c.civ || c.child || !npcAlive(c) || factionAvoids(g, c) || c.outfit || c.enforcer || flOf(c) !== flOf(g) || dist(c.x, c.y, g.x, g.y) > 170 || zoneAt(c.x, c.y, 0) === Z_PUB || !los(g.x, g.y, c.x, c.y)) continue;
     if (!c.shooT) { c.shooT = S.t; gsay(g, '여기 들어오지 말라 했지!', 2); continue; }
     if (S.t - c.shooT > 4) { g.hunt = { c, t0: S.t, beat: true }; civPanic(c, g.x, g.y, 6); return true; }
   }
@@ -215,7 +226,7 @@ function facScan(g) {
 }
 function closeIn(g, o, dt, spd) {
   const d = dist(g.x, g.y, o.x, o.y);
-  if (d > 30) { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.5; pathTo(g, o.x, o.y); } moveAlong(g, spd * spdMul(), dt); g.moving = true; }
+  if (d > 30) { if (!g.path || (g.repathF = (g.repathF || 0) - dt) <= 0) { g.repathF = 0.5; pathTo(g, o.x, o.y); } moveAlong(g, spd * spdMul(), dt); }
   else { g.moving = false; g.path = null; }
   g.a += clamp(angDiff(g.a, Math.atan2(o.y - g.y, o.x - g.x)), -8 * dt, 8 * dt); g.want = g.a;
   return d;
@@ -228,6 +239,7 @@ function brawlStep(g, dt) {
   if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && c.brawl.o === g && npcAlive(c))) { g.brawl = null; g.state = 'RETURN'; g.path = null; return false; }
   if (g.swingT > 0) g.swingT -= dt;
   const d = closeIn(g, o, dt, SPD.gAlert * 0.95);
+  if (d > 34 && factionBlocked(g, dt)) { endFactionMove(g, o); return false; }
   if (d > 600) { g.brawl = null; g.state = 'RETURN'; return false; }
   if (d <= 34 && (b.cd -= dt) <= 0) {
     b.cd = rnd(0.8, 1.3); g.swingT = 0.3; play('thud', 0.3 * proxVol(g)); noise(g.x, g.y, 140, 'fight', flOf(g));
@@ -243,6 +255,7 @@ function huntStep(g, dt) {
   if (!npcAlive(c) || S.t - h.t0 > 16 || flOf(c) !== flOf(g)) { g.hunt = null; g.state = 'RETURN'; g.path = null; return false; }
   if (g.swingT > 0) g.swingT -= dt;
   const d = closeIn(g, c, dt, SPD.gAlert * (h.beat ? 0.8 : 1));
+  if (d > 32 && factionBlocked(g, dt)) { endFactionMove(g, c); return false; }
   if (d > 650) { g.hunt = null; g.state = 'RETURN'; return false; }
   if (d <= 32) { g.swingT = 0.3; npcDown(c, g, !h.beat || Math.random() < 0.2); gsay(g, h.beat ? '다신 얼씬대지 마.' : '본 놈은 없어야지.', 2); g.hunt = null; g.state = 'RETURN'; g.path = null; }
   return true;
@@ -281,7 +294,8 @@ function copWatch(g, dt) {
   if (!inc) return false;
   if (S.t - inc.t0 > 40 || dist(g.x, g.y, inc.x, inc.y) < 60) { g.incident = null; g.state = 'RETURN'; g.path = null; if (!npcAlive(inc.by)) gsay(g, '이미 끝났군.', 1.6); return false; }
   if (!g.path || (g.incT = (g.incT || 0) - dt) <= 0) { g.incT = 1; pathTo(g, inc.x, inc.y); }
-  moveAlong(g, SPD.gAlert * 0.9 * spdMul(), dt); g.moving = true;
+  moveAlong(g, SPD.gAlert * 0.9 * spdMul(), dt);
+  if (factionBlocked(g, dt)) { endFactionMove(g, inc.by); return false; }
   return true;
 }
 // 경찰 신고: 가까운 한가한 경찰이 출동한다. 없으면 화면 밖에서 하나 온다 (사건 하나에 경찰 둘까지)

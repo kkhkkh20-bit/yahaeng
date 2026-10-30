@@ -104,22 +104,25 @@ function moveCamera(dt) {
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
     const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
-    cam.x += (S.player.x + lx - cam.x) * k;
-    cam.y += (S.player.y + ly + vh * 0.12 - cam.y) * k;
-    // 가장자리: 맵 밖 빈 화면은 좌우 8%·위 10%까지만, 아래는 조작 버튼 자리(28%)만큼 허용
-    // 맵 끝: 오른쪽은 세로 버튼 줄 폭만큼, 왼쪽은 조금, 아래는 버튼·도움말 자리만큼 더 따라가 주인공이 화면 가장자리 UI 밑에 깔리지 않게
-    cam.x = clamp(cam.x, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 78 / SCALE, MW * TILE / 2));
-    cam.y = clamp(cam.y, Math.min(vh * 0.4, MH * TILE / 2), MH * TILE + vh * 0.06);
+    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 78 / SCALE, MW * TILE / 2));
+    const bounds = cameraYBounds(vh), ty = clamp(S.player.y + ly + vh * .12, bounds[0], bounds[1]);
+    cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();
     const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
-    cam.x += (P.x + S.lead.x - cam.x) * k; cam.y += (P.y + S.lead.y - cam.y) * k;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다
-    const ox = vw * 0.16, oy = vh * 0.2;
-    cam.x = vw >= MW * TILE ? MW * TILE / 2 : clamp(cam.x, vw / 2 - ox, MW * TILE - vw / 2 + ox);
-    cam.y = vh >= MH * TILE ? MH * TILE / 2 : clamp(cam.y, vh / 2 - oy, MH * TILE - vh / 2 + oy);
+    const ox = vw * .16, bounds = cameraYBounds(vh);
+    const tx = vw >= MW * TILE ? MW * TILE / 2 : clamp(P.x + S.lead.x, vw / 2 - ox, MW * TILE - vw / 2 + ox);
+    const ty = clamp(P.y + S.lead.y, bounds[0], bounds[1]);
+    cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   }
+}
+function cameraYBounds(vh = H / SCALE) {
+  const middle = MH * TILE / 2, top = (isTouch ? Math.min(48, H * .08) : 24) / SCALE;
+  // 하단 조작부의 얕은 여백만 남긴다. 경계에 가까워지면 카메라가 먼저 멈춰 위쪽 지형을 보여 준다.
+  const bottom = (isTouch ? Math.min(140, H * .18) : 24) / SCALE;
+  return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];
 }
 
