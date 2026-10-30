@@ -125,6 +125,10 @@ function schedNow(g) {
 }
 function schedText(g) {
   const s = schedNow(g); if (!s) return null; const know = !g.schedKey || (S.player.keys || {})[g.schedKey];
+  if (g.target && oppMode !== 2 && !targetKnowledge(g).live) {
+    if (!know) return null;
+    return '알아낸 일과: ' + [...new Set(g.sched.filter(s=>!s.once).map(s=>s.name))].join(' → ');
+  }
   const now = s.moving ? `${withJosa(s.next.name, '으로/로')} 이동 중` : `${s.cur.name} — ${s.cur.act}`;
   return now + (know && !s.moving ? ` · 다음: ${s.next.name}` : '');
 }

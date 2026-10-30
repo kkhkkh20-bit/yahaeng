@@ -74,8 +74,8 @@ function unpackGraph(P) {
   return dec(P.root);
 }
 function storeCP() {
-  if (!CP || STAGE.tutorial) return;
-  try { localStorage.setItem(CP_KEY, JSON.stringify({ id: STAGE.id, diff: CP.diff, used: CP.used, mod: S.mod || '', at: Date.now(), g: packGraph(CP.S), grids: CP.grids })); } catch (e) {}
+  if (!CP || STAGE.tutorial) return false;
+  try { localStorage.setItem(CP_KEY, JSON.stringify({ id: STAGE.id, diff: CP.diff, used: CP.used, mod: S.mod || '', at: Date.now(), g: packGraph(CP.S), grids: CP.grids })); return true; } catch (e) { return false; }
 }
 function storedCP(id) { try { const r = JSON.parse(localStorage.getItem(CP_KEY) || 'null'); return r && r.id === id && r.diff === DKEY ? r : null; } catch (e) { return null; } }
 function clearStoredCP(id) { try { const r = storedCP(id); if (r || !id) localStorage.removeItem(CP_KEY); } catch (e) {} }
@@ -88,6 +88,27 @@ function resumeStoredCP(si) {
   return loadCheckpoint();
 }
 const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
+// 처음 달성한 준비만 센다. 같은 복장과 문을 반복 조작해도 증가하지 않는다.
+function preparationTokens() {
+  const P = S.player, a = [];
+  for (const s of S.learned || []) a.push('clue:' + s);
+  for (const k of Object.keys(P.keys || {})) if (P.keys[k]) a.push('key:' + k);
+  for (const k of Object.keys(P.got || {})) if (P.got[k]) a.push('equipment:' + k);
+  if(S.camsOff) a.push('security:cleared');
+  if (P.outfit && !P.disguiseBlown) a.push('outfit:' + P.outfit);
+  for (const p of S.props || []) if (p.taken || p.used) a.push('prop:' + p.id);
+  for (const k of Object.keys(S.usesDone || {})) if (S.usesDone[k]) a.push('use:' + k);
+  for (const d of S.doors || []) if (d.keyLock && !d.locked) a.push('door:' + (d.fl || 0) + ':' + d.tx + ',' + d.ty);
+  return a;
+}
+function initPreparationProgress() {
+  if (S.prepSeen) return;
+  S.prepSeen = Object.fromEntries(preparationTokens().map(k => [k, true])); S.prepCount = 0;
+}
+function updatePreparationProgress() {
+  initPreparationProgress();
+  for (const k of preparationTokens()) if (!S.prepSeen[k]) { S.prepSeen[k] = true; S.prepCount++; S.cpWant = true; }
+}
 function cpProgress() { return S.guards.filter(g => g.target && targetEliminated(g)).length + S.items.filter(i => i.got).length + (S.keyItems || []).filter(i => i.got).length + (S.exitOpen ? 1 : 0); }
 function syncMissionProgress() {
   for (const c of S.corpses) if (c.ko && c.g && c.z == null) { c.z = c.g.z || 0; c.target = !!c.g.target; }
@@ -103,17 +124,19 @@ function syncMissionProgress() {
 }
 function updateCheckpoint(dt) {
   if (!cpOn() || S.over) return;
+  updatePreparationProgress();
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
   const P = S.player;
   if (S.alevel >= 2 || S.radioCall || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
-  if (S.guards.some(g => !g.civ && ['ALERT', 'NOTICE', 'BODY'].includes(g.state))) return;
+  if (S.guards.some(g => !g.civ && (['ALERT', 'NOTICE', 'BODY', 'WARN'].includes(g.state) || (g.eyeT || 0) > .05))) return;
   S.cpWant = false; saveCheckpoint();
 }
 function saveCheckpoint() {
+  initPreparationProgress(); updatePreparationProgress(); S.cpWant = false;
   CP = { si: STAGE_I, diff: DKEY, S: cloneDeep(S), grids: [G0.map(r => r.slice())].concat(GF.slice(1).map(g => g ? g.map(r => r.slice()) : null)), used: CP && CP.si === STAGE_I ? CP.used : 0 };
   statsCheckpoint();
-  if (!STAGE.tutorial) { storeCP(); toast('체크포인트 저장 — 죽거나 앱을 닫아도 여기서 이어 할 수 있다', 2.4, 'good'); play('switch', 0.3, 1.6); }
+  if (!STAGE.tutorial) { const stored = storeCP(); S.cpStored = stored; S.cpSavedAt = S.t; if (!stored) toast('기기 저장 공간이 부족하다 — 이번 실행 중에는 체크포인트 사용 가능', 3, 'warn'); play('switch', 0.2, 1.6); }
 }
 const cpReady = () => !!(CP && CP.si === STAGE_I && CP.diff === DKEY && cpOn());
 function loadCheckpoint() {
@@ -123,10 +146,11 @@ function loadCheckpoint() {
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout();
   robBuild(); syncDynamicTurf(); stairsInit(); lvlInit(); syncCameraLayout(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
-  refreshItemNames(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
+  refreshItemNames(); initPreparationProgress(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
   S.koHold = null; S.player.lethalHold = null; input.pressIds = {};
+  S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
   S.keypad = null; const kp = $('keypad'); if (kp) kp.hidden = true;
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -136,6 +160,7 @@ function loadCheckpoint() {
 }
 function checkObjective() {
   if (STAGE.city) return;  // 도시: 끝이 없다 (의뢰는 의뢰 장소에서)
+  recordMissionOutcome();
   const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && !targetEliminated(g)).length;
   const itemsLeft = S.items.filter(i => !i.got).length;
   const ready = !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;

@@ -797,7 +797,18 @@ function flushTags() {
   for (const t of q) {
     const sig = t.text + '|' + Math.round(t.x / 40) + '|' + Math.round(t.y / 40); if (seen.has(sig)) continue; seen.add(sig);  // 같은 자리 같은 글은 한 번
     let at = null;
-    for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagRect(t.x, y, t.text, t.key); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
+    if (t.pri===2.6) {
+      const blocks=[...document.querySelectorAll('#mini,#stealth,#hud .top,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button')].map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
+        .map(r=>[cam.x+(r.left-W/2-6)/SCALE,cam.y+(r.top-H/2-6)/SCALE,cam.x+(r.right-W/2+6)/SCALE,cam.y+(r.bottom-H/2+6)/SCALE]);
+      const margin=tagRect(0,0,t.text,t.key)[2]+8/SCALE;
+      const xs=[t.x,clamp(t.x,cam.x-W/2/SCALE+margin,cam.x+W/2/SCALE-margin),cam.x-30/SCALE];
+      for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,4,5]) { const y=t.y+dy*lh,r=tagRect(x,y,t.text,t.key);
+        if(r[0]<cam.x-W/2/SCALE+4/SCALE||r[2]>cam.x+W/2/SCALE-4/SCALE||r[1]<cam.y-H/2/SCALE+4/SCALE||r[3]>cam.y+H/2/SCALE-75/SCALE)continue;
+        if(!blocks.concat(placed).some(p=>hit(r,p))) { t.x=x;at=[y,r];break; }
+      } if(at)break; }
+      if(!at)continue;
+    }
+    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagRect(t.x, y, t.text, t.key); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
     if (!at) { if (t.pri < 2) continue; at = [t.y, tagRect(t.x, t.y, t.text, t.key)]; }
     placed.push(at[1]); drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
   }
@@ -1060,11 +1071,11 @@ function chaseHide(P) {
   return best ? { x: best.x, y: best.y, fl: best.fl || 0, text: '숨을 곳 — ' + hideName(best) } : null;
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  const gl = (S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal(); if (!gl || gl.x == null) return;
+  const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // 건물명은 목표 HUD에 표시하고, 지도 표식은 실제 층수로 짧게 쓴다.
   const location = /층/.test(gl.where || '') ? `${(gl.fl || 0) + 1}층` : gl.where;
-  const short = (gl.storyName || gl.text) + (location && location !== '바깥' ? ' · ' + location : gl.fl ? ` · ${gl.fl + 1}층` : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
+  const short = (gl.storyName || gl.text) + (gl.area ? ' · 활동 구역' : gl.lastSeen ? ' · 마지막 목격' : location && location !== '바깥' ? ' · ' + location : !gl.via && gl.fl ? ` · ${gl.fl + 1}층` : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const topPx = (drawMini.tb || 70) + 40, botPx = document.body.classList.contains('touch') ? 270 : 70;
@@ -1072,7 +1083,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
     if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
-    ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.arc(gl.x, gl.y, 20 * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 2 * k; ctx.setLineDash(gl.area?[9*k,7*k]:gl.lastSeen?[3*k,4*k]:[]); ctx.beginPath(); ctx.arc(gl.x, gl.y, (gl.area?32:20) * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#f2c46b'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
     tag(gl.x, y - 13 * k, short, '#f2c46b', 1, null, 2.6);
   } else {  // 화면 밖: 가장자리 화살표 + 할 일 · 거리
@@ -1109,7 +1120,7 @@ function draw() {
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
-  const gVis = o => onGround(o) || onFloor(o);
+  const gVis = o => (onGround(o) || onFloor(o)) && (!tactical || !o.target || oppMode===2 || targetKnowledge(o).live);
   for (const l of S.lures) {
     const f = l.landed ? 1 : l.t / 0.35, x = l.x0 + (l.x - l.x0) * f, y = l.y0 + (l.y - l.y0) * f - Math.sin(f * Math.PI) * 14;
     blit(ctx, 'it_coin', x - 10, y - 10, 20, 20);
@@ -1382,7 +1393,8 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); if (!tactical) drawCorpseRisk(); }
+  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); if (!tactical) drawCorpseRisk(); }
+  if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
     const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;

@@ -74,9 +74,14 @@ function envChoices() {
 }
 function envAction() {
   if (actionBusy()) return busyEnvAction();
-  const L = envChoices(); if (!L.length) { S.envKey = S.envPick = S.envPickK = S.envPickP = null; S.envSel = 0; return { k: 'none', label: S.player.ledge || S.player.wire ? '올라가기' : '행동' }; }
+  const L = envChoices(); if (!L.length) {
+    const p=S.player,a=S.envPickP;
+    if(S.envExplicit && a && a.fl===flOf(p) && a.z===(p.z||0) && dist(p.x,p.y,a.x,a.y)<30) return {k:'none',label:'대상이 사라짐',blocked:true};
+    S.envExplicit=null; S.envKey = S.envPick = S.envPickK = S.envPickP = null; S.envSel = 0; return { k: 'none', label: S.player.ledge || S.player.wire ? '올라가기' : '행동' }; }
   const key = L.map(a => a.k + oid(actObj(a))).join('|'), PP = S.player, anchor = S.envPickP;
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
+  if (!stay) S.envExplicit = null;
+  if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
   if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
@@ -109,8 +114,9 @@ function actEnv() {
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
   if (actionBusy()) return;
-  const a = envAction(); if (a.k === 'none') return;
+  const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다 — 다시 고르거나 가까이 이동하기':unavailableEnvReason(),1.8); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
+  S.envExplicit=null; closeEnvPicker();
 }
 function actGrab() {
   RC = null;
@@ -121,4 +127,4 @@ function actGrab() {
   if (S.player.captive) { if (canInterrogate()) interrogate(); return; }  // 잡은 채 한 번 더 = 바로 심문 (가만히 있어도 저절로 한다)
   const a = grabAction(); if (a.k === 'grab') grab(a.g);
 }
-function cycleEnv() { if (!S) return; const a = envAction(); if (!(a.choices > 1)) return; S.envSel = (S.envSel || 0) + 1; play('click', 0.2); }
+function cycleEnv() { if (!S || actionBusy()) return; const a = envAction(), L=envChoices(); if (!L.length || (L.length===1&&!a.blocked)) return; const i=L.findIndex(v=>envToken(v)===envToken(a)); selectEnvTarget(envToken(L[(i+1)%L.length])); play('click', 0.2); }

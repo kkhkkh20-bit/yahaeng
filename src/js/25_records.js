@@ -2,6 +2,7 @@
 const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 // 임무별 도전과제 (Hitman식): 깨면 별 하나 + 과제마다 별 하나. 모은 별로 다른 진입로가 열린다
 const CH = {
+  unrecorded: ['신원이 한 번도 녹화되지 않기', () => S.stats.camEver === 0],
   ghost: ['한 번도 들키지 않기', () => S.stats.detected === 0],
   clean: ['주민은 아무도 죽이지 않기', () => S.stats.extraKills === 0],
   purge: ['조직원 모두 제압하기 · 기절 포함', () => S.guards.filter(g => !g.civ && !g.dog && !g.target && !g.dropped && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE')],

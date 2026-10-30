@@ -9,15 +9,29 @@ function lookAround(g, dt, base, amp, hold) {
 function moveAlong(g, speed, dt) {
   const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) return true;
+  // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
+  // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
+  if (g.target && g.state==='PATROL') {
+    const end=g.path[g.path.length-1],d=dist(g.x,g.y,end.x,end.y);let r=g.motionRecovery;
+    if(!r || r.x!==end.x || r.y!==end.y) r=g.motionRecovery={x:end.x,y:end.y,best:d,t:S.t,until:0};
+    if(d<r.best-8){r.best=d;r.t=S.t;}
+    if(S.t-r.t>3 && d>20){
+      const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(end.x/TILE),Math.floor(end.y/TILE),g.z?solidFor(g.z):solidAt);
+      if(path.length){path[path.length-1]={...end};g.path=path;r.until=S.t+1.2;}
+      r.best=d;r.t=S.t;
+    }
+  }
   // 비켜 걷기: 앞에 서 있는 사람은 옆으로 돌아가고, 마주 오면 서로 오른쪽으로, 같은 방향이면 속도를 맞춰 뒤따른다
   if (g.detourT > 0) g.detourT -= dt;
-  if (S.guards.length > 1) {
+  if (S.guards.length > 1 && !(g.motionRecovery && g.motionRecovery.until>S.t)) {
     const p0 = g.path[0], dd = dist(g.x, g.y, p0.x, p0.y);
     if (dd > 1) {
       const ux = (p0.x - g.x) / dd, uy = (p0.y - g.y) / dd, rxv = -uy, ryv = ux; let sx = 0, sy = 0, slow = 1;
       const P = S.player, others = [P].concat(S.guards);
       for (const o of others) {
         if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || o.climb || o.trav || o.hide || o.vent || o.under || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
+        // 호위는 선두의 뒤를 따른다. 선두가 자기 호위를 피해 거꾸로 우회하지 않는다.
+        if (o.follow === g.id) continue;
         if (o === P && (P.wire || P.jump || P.ledge)) continue;
         const ox = o.x - g.x, oy = o.y - g.y, d = Math.hypot(ox, oy); if (d > 48 || d < 0.01) continue;
         const ahead = (ox * ux + oy * uy) / d; if (ahead < 0.25) continue;
@@ -319,7 +333,7 @@ function updateCams(dt) {
     if (v > 0 && STAGE.zones && pZoneEff() === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
-      c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
+      c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       const at = pSpot(); rememberSuspect(null); startBuildingSearch(at, 'A', 'camera'); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
@@ -415,7 +429,7 @@ function updateCiv(g, dt) {
     else if (!g.seen) {
       if (g.wander) {  // 군중: 구역 안에서 이리저리
         if (g.wait > 0) g.wait -= dt;
-        else { if (!g.path) { const [x0, y0, x1, y1] = g.wander; for (let t = 0; t < 8; t++) { const tx = x0 + Math.floor(Math.random() * (x1 - x0 + 1)), ty = y0 + Math.floor(Math.random() * (y1 - y0 + 1)); if (!solidAt(tx, ty)) { pathTo(g, tc(tx), tc(ty)); break; } } if (!g.path) g.wait = 1; }
+        else { if (!g.path) { const [x0, y0, x1, y1] = g.wander; for (let t = 0; t < 8; t++) { const tx = x0 + Math.floor(Math.random() * (x1 - x0 + 1)), ty = y0 + Math.floor(Math.random() * (y1 - y0 + 1)); if (!solidAt(tx, ty) && !serviceCell(tx,ty,flOf(g))) { pathTo(g, tc(tx), tc(ty)); break; } } if (!g.path) g.wait = 1; }
           if (g.path && moveAlong(g, SPD.gPatrol * 0.7 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = rnd(1.5, 5); g.path = null; g.want = g.a + rnd(-2, 2); } }
       } else if (g.route.length > 1) { if (g.wait <= 0 && g.route.some(r => r.spent)) purgeDetour(g); const wp = g.route[g.ri] || g.route[(g.ri = 0)]; if (g.wait > 0) g.wait -= dt; else { if (!g.path) pathTo(g, wp.x, wp.y); if (moveAlong(g, SPD.gPatrol * 0.8 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = wp.pause; if (wp.once) wp.spent = true; g.ri = (g.ri + 1) % g.route.length; g.path = null; } } }
       else { g.glanceT -= dt; if (g.glanceT <= 0) { g.glanceT = rnd(8, 16); g.want = (g.post != null ? g.post : g.a) + rnd(-0.9, 0.9); } }
@@ -574,7 +588,7 @@ function updateGuard(g, dt) {
       if (!g.path) pathTo(g, wp.x, wp.y);
       g.glanceT -= dt;
       if (g.glanceT <= 0 && g.route.length > 1 && !g.still) { g.glance = rnd(2.2, 3.2); g.glanceA = g.a + Math.PI; break; }  // 걷다가 멈춰 뒤돌아보기
-      if (moveAlong(g, spd, dt)) {
+      if (moveAlong(g, spd, dt) || (g.target && dist(g.x,g.y,wp.x,wp.y)<12)) {
         g.wait = wp.pause * (S.alevel || wp.once ? 1 : 1.8); g.waitBase = g.a; g.waitT = 0; g.path = null; g.lookT = null;
         if (wp.once) wp.spent = true;
         if (g.route.length > 1) g.ri = (g.ri + 1) % g.route.length; else g.wait = 999;

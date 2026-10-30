@@ -20,7 +20,11 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `tests/` Playwright 테스트 (`tests/rev/t_*.py` 는 자동으로 테스트 묶음에 들어간다)
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
-- `VERSION` 지금 판본 (시작 화면 크레딧 줄에 `야행 v53 · 빌드 날짜`로 보인다)
+- `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v94
+
+VIP 실제 음용·유인, 목표 고정과 관측 정보, 행동 대상 이름 목록, 준비 단계 안전 저장, 실내 높이·입구 안내를 보강했다. [개발·검증 내역](docs/PRODUCT_IMPLEMENTATION.md) · [전후 화면](docs/product-improvement/index.html).
 
 ## 업데이트 순서
 1. 고칠 곳의 모듈·의뢰 파일을 고친다

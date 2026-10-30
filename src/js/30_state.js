@@ -62,7 +62,7 @@ function newGame(si) {
   PLANS.forEach((fls, bi) => (fls || []).forEach((p, f) => { if (p && p.store && (p.store.use === 'club' || p.store.use === 'vip')) CROWD.push({ x0: p.store.x0, y0: p.store.y0 + 1, x1: p.store.x1, y1: p.store.y1, fl: f, n: p.store.use === 'vip' ? 5 : 7, club: true, b: bi }); }));
   (STAGE.crowd || []).forEach(c => CROWD.push({ x0: c[0], y0: c[1], x1: c[2], y1: c[3], fl: c[4] || 0, n: c[5] || 5 }));
   CROWD = CROWD.filter(c => c.x1 >= c.x0 && c.y1 >= c.y0);  // 너무 좁은 가게(한 줄도 안 되는 곳)는 군중 없음
-  const crowdGuys = []; CROWD.forEach((c, ci) => { const g = c.fl ? GF[c.fl] : G0; for (let k = 0; k < c.n; k++) { for (let t = 0; t < 30; t++) { const h = ((ci * 7919) ^ (k * 104729) ^ (t * 1299709)) >>> 0, x = c.x0 + h % (c.x1 - c.x0 + 1), y = c.y0 + (h >> 8) % (c.y1 - c.y0 + 1); if (!SOLID.has(g[y][x]) && g[y][x] !== 'Y') { crowdGuys.push({ kind: 'civ', look: (h >> 4) % 4, fl: c.fl, at: [x, y], post: ((h >> 6) % 4) * 90, wander: [c.x0, c.y0, c.x1, c.y1], club: true }); break; } } } });
+  const crowdGuys = []; CROWD.forEach((c, ci) => { const g = c.fl ? GF[c.fl] : G0; for (let k = 0; k < c.n; k++) { for (let t = 0; t < 30; t++) { const h = ((ci * 7919) ^ (k * 104729) ^ (t * 1299709)) >>> 0, x = c.x0 + h % (c.x1 - c.x0 + 1), y = c.y0 + (h >> 8) % (c.y1 - c.y0 + 1); if (!SOLID.has(g[y][x]) && g[y][x] !== 'Y' && !serviceCell(x,y,c.fl)) { crowdGuys.push({ kind: 'civ', look: (h >> 4) % 4, fl: c.fl, at: [x, y], post: ((h >> 6) % 4) * 90, wander: [c.x0, c.y0, c.x1, c.y1], club: true }); break; } } } });
   STAGE._g = STAGE.guards.map(resolveGuard).concat(autoResidents(), crowdGuys);
   STAGE._items = (STAGE.items || []).map(p => Array.isArray(p) ? p : (q => [q[0], q[1], p.fl || 0, p.b])(planPt(p.b, p.fl || 0, p.at || 'bed')));
   const guards = STAGE._g.map((d, i) => makeGuard(d, i));
@@ -124,7 +124,7 @@ function newGame(si) {
     player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: D().picks, candy: STAGE.candy != null ? STAGE.candy : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
     rollT: D().roll, rollWarn: false, timeLeft: STAGE.timeLimit ? STAGE.timeLimit * D().time : 0,
     alevel: 0, alevelT: 0, unseenT: 0, lures: [], reinforced: false, fx: [], keyDrop: null, fuseGuard: null, fuseT: 0, fleeing: false, windows: [],
-    stats: { kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
+    stats: { camEver: 0, kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
     over: false, hints: {}, keys: {}, exitOpen: false, vents
   };
   S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70, name: STAGE.exitName || '' };
@@ -263,7 +263,7 @@ function newGame(si) {
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
   window.__hintT = setTimeout(() => S && !S.over && running && STAGE.hints && hint('stage', STAGE.hints[0]), 4500);
   if (STAGE.hints && STAGE.hints[1]) window.__hintT2 = setTimeout(() => S && !S.over && running && hint('stage2', STAGE.hints[1]), 10000);
-  syncCameraLayout(); captureContractLayout(); updateHUD(true);
+  syncCameraLayout(); captureContractLayout(); initPreparationProgress(); initMissionPlan(); closeEnvPicker(); updateTargetIntel(); updateHUD(true);
 }
 
 // 평면 건물 안의 자리 찾기: where = 'L'(왼쪽 세대 거실) 'R'(오른쪽 세대 거실) 'S'(가게·사무실) 'bed'(첫 방) 'bath'

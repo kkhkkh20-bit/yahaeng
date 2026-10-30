@@ -4,6 +4,7 @@
   id: 'm6', no: '06', name: '배신', sub: '의뢰 03', fee: '',
   mission: '감방 탈출 후 감금동 2층에서 제비의 무전기를 회수하고 탈출',
   itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
+  heightCueBuildings: [0, 1],
   brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   bare: true, candy: 0, itemVerb: '챙기기', briefBy: '상황', kitStyle: 'industrial',
@@ -62,7 +63,7 @@
       steps: [{ text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: null, done: S => S.items.every(i => i.got) }] }
   ],
   endText: '제비의 무전기를 챙겨 빠져나왔다. 무전기에는 마지막 메시지가 남아 있다 — "올빼미, 까마귀를 믿지 마." 이제 까마귀를 찾아간다.',
-  challenges: ['ghost', 'untouched', 'clean', 'fast'], fastT: 210,
+  challenges: ['unrecorded', 'ghost', 'untouched', 'clean', 'fast'], fastT: 210,
   well: 'manhole', kunai: 3, coins: 0, reinf: [43, 20],
   hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '경비실의 압수품 가방에서 락픽·빈 캔·다트를 되찾을 수 있다. 장비 없이도 휘파람과 맨손을 쓸 수 있다.', '조직원을 쓰러뜨려 옷을 입으면 단지 안을 걸어서 지나갈 수 있다. 정문 정예는 얼굴을 안다.']
 },

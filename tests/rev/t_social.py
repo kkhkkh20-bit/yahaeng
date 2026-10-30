@@ -55,7 +55,7 @@ async def main():
         # 일과표: 정보 카드 문구, 알아내기 전엔 다음 행선지 숨김
         await pg.wait_for_timeout(2600)
         r = await pg.evaluate('() => { const G = window.__game, t = G.S.guards.find(g => g.target); const a = G.schedText(t); G.S.player.keys.tn = true; return [a, G.schedText(t)]; }'); print('일과표', r)
-        if not r[0] or '다음' in r[0] or not any(n in r[0] for n in ('광장', '편의점 앞')): bad.append('일과표 문구가 이상하다 %s' % r)
+        if r[0] is not None or not r[1] or '알아낸 일과:' not in r[1] or not all(n in r[1] for n in ('광장', '편의점 앞')): bad.append('미목격 표적의 현재 위치가 노출되거나 획득한 일과가 없다 %s' % r)
         await pg.evaluate('() => { const ST = window.__game.STAGE, k = ST._bak; ST.props = k[0]; ST.uses = k[1]; ST.stories = k[2]; ST.zones[0][7] = k[3]; ST._base.guards.length = k[4]; delete ST._bak; }')
         print('errs', errs[:3]); await b.close()
     print('문제', bad); sys.exit(1 if bad or errs else 0)

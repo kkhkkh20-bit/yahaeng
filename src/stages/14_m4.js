@@ -5,7 +5,7 @@
   itemName: '현금 가방', itemNames: ['현금 가방', '계약서'],
   brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입 비밀번호는 북서쪽 폐사무소 연락책의 메모에 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 1층 금고의 계약서를 챙긴다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   W: 48, H: 28, start: [47, 26], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
-  heightCueBuildings: [4],  // 남쪽 3층 빌라: 기존 시점에서 높이 단서만 시험
+  heightCueBuildings: [2, 3, 4],
   // 구역: 큰길·포차·남쪽 골목은 공개(기본). 건물 안과 북쪽 뒷골목은 조직원만
   zones: [[1, 2, 8, 10, 'res', null, '폐사무소 · 연락책 거점', ['crew']], [10, 2, 20, 10, 'res', null, '창고 · 조직원만'], [22, 2, 32, 10, 'res', null, '사무동 · 조직원만'], [34, 2, 46, 10, 'res', null, '클럽 · 조직원만'],
           [1, 17, 12, 24, 'res', null, '빌라 · 조직원 숙소'], [0, 1, 47, 1, 'res', null, '뒷골목 · 조직원만']],
@@ -46,7 +46,7 @@
   roofs: ['cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG', 'cRoofB', 'cRoofA', 'cRoofG'], bricks: [1, 0, 1, 0, 1, 0, 1, 0],
   ventB: [{ b: 1, at: [15, 4] }, { b: 3, at: [41, 5] }], disguise: true,
   shift: { every: 80, first: 100, add: [{ kind: 'g2', route: [[2, 13, 2], [45, 13, 2]] }, { kind: 'g1', route: [[46, 2, 2], [46, 24, 2]] }, { kind: 'g2', route: [[9, 1, 2], [33, 1, 2]] }], msg: '교대 시간 · 순찰 경비 1명 추가' },
-  challenges: ['accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 660,
+  challenges: ['unrecorded', 'accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 660,
   layoutVersion: 1, rebuiltSites: [0, 5], rivalBuilding: 7,
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 2, door: 'vault', key: 'green' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,

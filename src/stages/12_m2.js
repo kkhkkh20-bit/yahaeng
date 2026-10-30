@@ -4,6 +4,8 @@
   id: 'm2', no: '02', name: 'VIP', sub: '의뢰 01', fee: '80만',
   mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],
+  heightCueBuildings: [0, 1],
+  vipDrink: { at: [29, 10], to: [40, 6] },
   brief: '클럽 실장이 가게 돈을 장부째 들고 튈 준비 중이다. 장부는 사무동 1층 금고에 있다. 거리·야시장·포차·약국·클럽 1층 홀은 손님으로 드나든다 — 걸으면 아무도 신경 쓰지 않는다. VIP룸·뒷골목·직원 복도는 클럽 직원만, 사무동은 조직원만 다닌다. 사람들 이야기를 들어 보면 실장에게 가는 길이 여럿 보인다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   build(m) {
@@ -49,8 +51,8 @@
           [3, 27, 10, 31, 'pub'], [14, 27, 21, 31, 'pub'], [39, 6, 41, 7, 'pub']],    // 포차 · 약국 · 공중화장실
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30] }],
-  uses: [{ need: 'emetic', at: [27, 9], label: '실장 술병에 구토제 타기', permit: 'waiter', done: '실장 술병에 구토제를 탔다 — 실장이 화장실로 향한다',
-           act: (S, h) => { h.detour('vip', 40, 6, 32, '공중화장실', '구토'); h.say('vip', '으윽… 속이 왜 이래…'); } }],
+  uses: [{ need: 'emetic', at: [27, 9], label: '실장 술병에 구토제 타기', permit: 'waiter', done: '실장 술병 준비 완료 — 실장이 바에서 마시면 효과가 난다',
+           act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } }],
   intel: [
     { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
     { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,
@@ -72,13 +74,14 @@
       steps: [{ text: '약국 진열대에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '클럽 직원 옷 구하기 — 뒷골목에서 혼자 담배 피우는 직원이나 포차에서 쉬는 직원', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '바 안쪽 실장 술병에 구토제 타기 (직원 옷이면 자연스럽다)', at: [27, 10, 0], done: S => !!S.usesDone[0] },
+              { text: '실장이 바에서 술을 마시는지 확인하기', at: [29, 10, 0], done: (S, h) => !!(S.vipPlan && ['sick','done'].includes(S.vipPlan.phase)) || h.eliminated('vip') },
               { text: '공중화장실에 혼자 들어간 실장 처치하기', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호'),
       steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
               { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
               { text: 'VIP룸에 있는 실장 처치하기', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
-  challenges: ['accident', 'intel', 'purge', 'streak3', 'clean', 'nobody'],
+  challenges: ['unrecorded', 'accident', 'intel', 'purge', 'streak3', 'clean', 'nobody'],
   entries: [{ name: '서쪽 큰길', desc: '기본 출발', at: [0, 21] }, { name: '빌라 옥상', desc: '별 3개 — 옥상에서 시작', at: [48, 6], z: 2, need: 3 },
             { name: '클럽 직원', desc: '별 5개 — 직원 옷을 입고 뒷골목에서', at: [40, 2], need: 5, outfit: 'waiter' }],
   keyItems: [{ key: 'blue', b: 0, fl: 0, at: 'VC' }],
@@ -90,8 +93,8 @@
   cams: [[22, 15, 0, 20], [12, 15, 0, 45], { b: 0, fl: 0, at: 'VB', sweep: 40 }],
   radios: [1, 3, 6, 9, 27],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
-    // 0 표적: 클럽 실장. VIP룸에서 술 → 클럽 앞 간판 밑에서 담배 → 홀 바에서 수다
-    { kind: 't', target: true, tag: 'vip', schedKey: 'sign', sched: [{ at: [25, 6], stay: 30, name: 'VIP룸', act: '양주' }, { at: [27, 15], stay: 16, name: '클럽 앞 간판 밑', act: '담배' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '수다' }] },
+    // 0 표적: 클럽 실장. VIP룸 → 홀 바에서 양주 → 클럽 앞 간판 밑에서 담배
+    { kind: 't', target: true, tag: 'vip', schedKey: 'sign', sched: [{ at: [25, 6], stay: 18, name: 'VIP룸', act: '양주' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '양주' }, { at: [27, 15], stay: 16, name: '클럽 앞 간판 밑', act: '담배' }] },
     { kind: 'g2', b: 1, fl: 0, at: 'VD', post: 90, elite: true },                     // 1 VIP룸 앞문 경호 (얼굴을 안다 — 변장도 알아본다)
     { kind: 'g1', tag: 'bouncer', at: [24, 16], post: 90 },                            // 2 클럽 문지기
     { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)

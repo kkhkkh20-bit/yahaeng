@@ -42,7 +42,11 @@ async def main():
         if a[0] != 'use' or not r[0]: bad.append(f'바에서 배탈약을 탈 수 없다 {a} {r}')
         if r[1]: bad.append('직원 옷을 입고 탔는데 수상한 짓으로 친다')
         t0 = await ev(TGT); print('실장 일과', t0)
-        if not t0['once'] or '공중화장실' not in (t0['sn'] or []): bad.append(f'배탈약을 타도 실장이 화장실로 가지 않는다 {t0}')
+        if t0['once']: bad.append('구토제를 사용하기만 했는데 음용 전에 화장실로 간다')
+        # The real bar stop is a scene fixture here; t_vip_routes also tests the full live schedule.
+        await ev("() => { const g=window.__game.S.guards[0];Object.assign(g,{x:29.5*48,y:10.5*48,path:null,wait:8,ri:2}); }")
+        await pg.wait_for_function("window.__game.S.vipPlan?.phase==='sick'",timeout=6000)
+
         await ev("() => { const g = window.__game.S.guards[0]; g.x = 34 * 48 + 24; g.y = 16 * 48 + 24; g.path = null; }")   # 클럽 앞에서 출발시켜 시간 줄이기
         arr = None
         for t in range(70):
@@ -65,7 +69,10 @@ async def main():
         await ev("() => { const G = window.__game, g = G.S.guards[0]; g.x = 38 * 48 + 24; g.y = 12 * 48 + 24; g.path = null; G.S.usesDone = {}; }")
         await ev("() => { const S = window.__game.S; S.player.item = S.props[0]; S.props[0].taken = true; }")
         await ev(AT, [27, 10, 0, 0]); await ev('() => window.__game.actCarry()')
-        for t in range(40):
+        await pg.wait_for_function('!window.__game.S.player.interact')
+        await ev("() => { const g=window.__game.S.guards[0];Object.assign(g,{x:29.5*48,y:10.5*48,path:null,wait:8,ri:2}); }")
+        await pg.wait_for_function("window.__game.S.vipPlan?.phase==='sick'",timeout=6000)
+        for t in range(80):
             await pg.wait_for_timeout(500); r = await ev(TGT)
             if 39 <= r['tx'] <= 41 and 6 <= r['ty'] <= 7 and r['wait'] > 0: break
         await ev("() => { window.__game.S.guards[0].wait = 0.05; }"); await pg.wait_for_timeout(1500); r = await ev(TGT)

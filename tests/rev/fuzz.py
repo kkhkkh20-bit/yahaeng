@@ -13,7 +13,7 @@ async def run(seed, si, secs, b):
     pg = await b.new_page(viewport={'width': 1280, 'height': 760}); errs = []
     pg.on('pageerror', lambda e: errs.append('PE ' + str(e)[:300]))
     pg.on('console', lambda m: m.type == 'error' and errs.append('CE ' + m.text[:300]))
-    await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1200)
+    await pg.goto('file:///root/game/build/preview_city.html?nostats'); await pg.wait_for_timeout(1200)
     await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await pg.evaluate(SKIP)
     t = 0; held = None; last = None; stuck = 0; issues = []; restarts = 0
     while t < secs * 1000:

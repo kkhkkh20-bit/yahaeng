@@ -381,6 +381,7 @@ function drawHeldBox(x, y, a, s, front) {
 }
 function guardAnim(g) {
   if (g.swingT > 0) return 'punch';
+  if (g.drinkT > 0 && PR && PR.anims.talk) return 'talk';
   if (holdingNow(g)) return g.moving ? 'hold' : 'holdI';
   if (!(g.moving || g.state === 'CAPTIVE')) {
     if (g.state === 'PANIC' && g.cowered) return 'crouch';

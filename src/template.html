@@ -745,6 +745,18 @@ body:not(.touch) .pad #btnToolNext { display: none; }
 body.touch .sysbtns #btnCrouch b { font-size: 11px; }
 body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-color: var(--moss); color: #dff5e2; }
 @media (max-width: 370px) { body.touch .pad { transform: scale(.9); transform-origin: right bottom; } }
+/* 기존 조작 위치는 유지하고, 선택할 때만 이름 목록을 연다. */
+#envPicker { position:fixed; z-index:25; width:min(250px,calc(100vw - 124px)); max-height:55vh; overflow:auto; pointer-events:auto; padding:8px; background:#111820; border:1px solid #6b7779; border-radius:4px; box-shadow:0 5px 18px #0008; }
+#envPicker > b { display:block; color:var(--paper-dim); font-size:12px; padding:3px 4px 7px; }
+#envPicker button { display:block; width:100%; min-height:42px; text-align:left; white-space:normal; font-size:13px; line-height:1.4; padding:8px; margin:3px 0; border:1px solid #414b53; background:#18212a; color:var(--paper); border-radius:3px; }
+#envPicker button[aria-pressed="true"] { border-color:var(--lamp); }
+#envPicker button:disabled { opacity:.4; }
+#missionGoals { display:grid; gap:6px; margin:12px 0; }
+#missionGoals:empty { display:none; }
+#missionGoals button { text-align:left; white-space:normal; line-height:1.5; padding:10px 12px; border:1px solid #56616b; background:#111923; color:var(--paper); border-radius:3px; }
+#missionGoals button[aria-pressed="true"] { border-color:var(--lamp); }
+#saveState { position:absolute; bottom:calc(43px + env(safe-area-inset-bottom,0px)); left:14px; font-size:11px; color:#a6b3b5; }
+body.touch #saveState { bottom:calc(28px + env(safe-area-inset-bottom,0px)); }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -776,6 +788,8 @@ body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-co
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
+  <small id="saveState" aria-live="polite" hidden></small>
+  <div id="envPicker" role="group" aria-label="행동 대상 선택" hidden></div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
       <button class="tool on" type="button" data-t="kunai"><kbd>1</kbd>다트 <span>3</span></button>
@@ -908,7 +922,7 @@ body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-co
       <button class="pz-big" id="btnSet2" type="button">설정</button>
     </div>
     <div class="pz-side">
-      <div class="pz-todo" hidden><small>지금 할 일</small><div id="pzTodo"></div></div>
+      <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
     </div>
   </div>
 </div>
