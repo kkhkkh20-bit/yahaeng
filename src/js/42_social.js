@@ -35,7 +35,9 @@ function reportTo(g) {
   return best;
 }
 // kind: 'crime' 해치는 것을 봄 · 'body' 쓰러진 사람 · 'trespass' 출입 금지에 들어간 사람 · 'disguise' 처음 보는 사람이 우리 옷을 입음
-function startReport(g, x, y, c, saw, kind) {
+function startReport(g, x, y, c, saw, kind, gated) {
+  if (!gated && kind !== 'trespass' && kind !== 'disguise' && !g.child && !gateReport(g, x, y)) return true;  // 한 사건에 신고는 한두 명 — 나머지는 달아난다
+  if (STAGE.city && kind !== 'trespass') { if (g.state === 'PANIC' || g.state === 'REPORT') return true; cityScream(g, x, y); return true; }  // 도시: 범죄는 경찰에 전화한다
   const to = reportTo(g); if (!to) return false; kind = kind || (c ? 'body' : 'crime');
   endChat(g); g.state = 'REPORT'; g.rep = { x, y, c: c || null, saw: saw || null, kind, to, t: 0, rp: 0 }; g.path = null; g.icon = '!'; g.iconT = 99; g.meter = 1; g.wait = 0;
   if (kind === 'trespass') { gsay(g, ['경비 아저씨한테 말해야겠다.', '저 사람 왜 저기 들어가지?', '사장님께 말씀드려야지.'][g.id % 3], 2.2); hint('tres', '직원은 출입 금지 구역의 사람에게 먼저 나가라고 한다. 계속 있으면 자경대원을 부른다'); return true; }

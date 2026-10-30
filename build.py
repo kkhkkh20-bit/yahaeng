@@ -24,7 +24,27 @@ CREDIT = ("건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymeg
           "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · "
           "캐릭터 3D 모델: <a href=\"https://quaternius.com/packs/ultimatemodularwomen.html\" target=\"_blank\" rel=\"noopener\">Quaternius Ultimate Modular Women</a> · <a href=\"https://quaternius.com/packs/ultimatemodularcharacters.html\" target=\"_blank\" rel=\"noopener\">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · ")
 
+def syntax_check(js):
+    # 줄 중간에 끼운 // 주석이 뒤 코드를 삼키는 실수가 잦다 — 게시 전에 node 로 문법부터 확인한다 (node 가 없으면 건너뜀)
+    import shutil, subprocess, tempfile
+    if not shutil.which('node'): return
+    with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f: f.write(js); tmp = f.name
+    r = subprocess.run(['node', '--check', tmp], capture_output=True, text=True)
+    os.unlink(tmp)
+    if r.returncode: print('문법 오류:\n' + r.stderr[-800:]); sys.exit(1)
+
+def comment_lint():
+    # 줄 끝 // 주석 안에 코드처럼 보이는 것(키: 값, 키: 값, … / const / return / => / );)이 있으면 경고 — 주석이 뒤 코드를 삼킨 흔적일 수 있다
+    import re
+    pat = re.compile(r"(\b\w+: [^,;]{1,40}, ){2,}\w+:|\bconst \w+ =|\breturn \w|=> \{|\); \w")
+    for f in sorted(glob.glob(P('src', 'js', '*.js')) + glob.glob(P('src', 'stages', '*.js'))):
+        for i, line in enumerate(open(f, encoding='utf-8'), 1):
+            s = re.sub(r"'(\\.|[^'\\])*'|\"(\\.|[^\"\\])*\"|`(\\.|[^`\\])*`", "''", line)
+            k = s.find('//')
+            if k > 0 and s[:k].strip() and pat.search(s[k:]): print('주석 확인:', os.path.relpath(f, ROOT) + ':' + str(i), s[k:k + 90].strip())
+
 def build():
+    syntax_check(game_js()); comment_lint()
     html = read(P('src', 'template.html')).replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
     title_font = base64.b64encode(open(P('src', 'fonts', 'title-blackhansans.ttf'), 'rb').read()).decode()
     html = html.replace('__TITLE_FONT__', title_font)
@@ -46,7 +66,7 @@ def build():
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)
     pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'
     open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(pre + html)
-    demo = html.replace('window.__THUMBS = ', "window.__DEMO = ['tI', 't0', 't1', 'm1', 'm2', 'm3']; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 1~3
+    demo = html.replace('window.__THUMBS = ', "window.__DEMO = 'all'; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 전부 (도시 시제품만 뺀다)
     open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(pre + demo)
     print('ok', len(html), v, h)
     if '--itch' in sys.argv:

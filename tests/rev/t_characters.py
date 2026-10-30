@@ -37,6 +37,8 @@ async def main():
   assert meta['faces']['cols']['hero']!=meta['faces']['cols']['suit']
   await pg.wait_for_timeout(600)
   assert not errors,errors
+  chunks=await pg.evaluate("""()=>Object.values(window.__game.prVar).flatMap(sh=>(sh.parts||[]).filter(Boolean)).map(c=>c.width)""")
+  assert chunks and max(chunks)<=1024,chunks
   # Palette compaction must preserve neutral pixels, semi-transparent edges,
   # all five key colors, and the previous Float32 rounding behaviour.
   source=(ROOT/'src/js/15_graphics.js').read_text()

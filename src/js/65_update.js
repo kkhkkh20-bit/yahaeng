@@ -13,6 +13,8 @@ function update(dt) {
   if (S.qBuf > 0) { S.qBuf -= dt; const qa = S.qKill ? attackAction() : primaryAction(); if (qa.k !== 'none' && (!S.qKill || isAtk(qa))) { S.qBuf = 0; actPrimary(S.qKill ? Object.assign({}, qa, { viaZ: true }) : undefined); } }  // [공격]을 미리 눌러 두면 닿는 순간 공격
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
+  if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
+  engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
   updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt); updateWarn(dt); updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 보고 있음'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial();
@@ -101,15 +103,17 @@ function moveCamera(dt) {
     cam.x += (MW * TILE / 2 - cam.x) * k; cam.y += (MH * TILE / 2 + 40 / SCALE - cam.y) * k; return; }
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
-    cam.x += (S.player.x - cam.x) * k;
-    cam.y += (S.player.y + vh * 0.12 - cam.y) * k;
+    const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
+    cam.x += (S.player.x + lx - cam.x) * k;
+    cam.y += (S.player.y + ly + vh * 0.12 - cam.y) * k;
     // 가장자리: 맵 밖 빈 화면은 좌우 8%·위 10%까지만, 아래는 조작 버튼 자리(28%)만큼 허용
-    cam.x = clamp(cam.x, Math.min(vw * 0.42, MW * TILE / 2), Math.max(MW * TILE - vw * 0.42, MW * TILE / 2));
-    cam.y = clamp(cam.y, Math.min(vh * 0.4, MH * TILE / 2), MH * TILE - vh * 0.22);
+    // 맵 끝: 오른쪽은 세로 버튼 줄 폭만큼, 왼쪽은 조금, 아래는 버튼·도움말 자리만큼 더 따라가 주인공이 화면 가장자리 UI 밑에 깔리지 않게
+    cam.x = clamp(cam.x, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 78 / SCALE, MW * TILE / 2));
+    cam.y = clamp(cam.y, Math.min(vh * 0.4, MH * TILE / 2), MH * TILE + vh * 0.06);
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();
-    const lx = ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (P.moving ? 70 : 30), ly = ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (P.moving ? 55 : 24);
+    const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
     cam.x += (P.x + S.lead.x - cam.x) * k; cam.y += (P.y + S.lead.y - cam.y) * k;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다

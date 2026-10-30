@@ -56,7 +56,14 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
 window.addEventListener('keyup', e => { if (S) S.keys[keyCode(e)] = false; if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyF' || e.code === 'KeyV') && input.aiming && input.aiming.src === 'key') releaseAim(); if (e.code === 'Digit4' || e.code === 'AltLeft' || e.code === 'AltRight') { input.scan = false; $('btnScan').classList.remove('on'); } });
-window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; if (running && !S.over) setPause(true); });
+// 창이 잠깐 가려지면(스크린샷·알림·다른 앱) 메뉴를 띄우지 않고 조용히 멈췄다가, 돌아오면 저절로 이어 간다 (스크린샷에 게임 화면이 그대로 찍힌다)
+function softPause(v) {
+  if (!running || !S || S.over) return;
+  if (v) { if (paused) return; paused = true; S.autoPaused = true; riskTone(0); input.joy = null; return; }
+  if (S.autoPaused) { S.autoPaused = false; paused = false; }
+}
+window.addEventListener('blur', () => { cancelAim(); if (S) S.keys = {}; softPause(true); });
+window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
 
@@ -117,44 +124,52 @@ bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
 {
   const b = $('btnTool');
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });
-  b.addEventListener('pointerup', e => { b.classList.remove('down'); const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
+  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람
+  b.addEventListener('pointerup', e => { b.classList.remove('down'); if (input.padWhistle) return; const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
   b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
   b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
 }
 document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
+// 휴대폰 도구 버튼 한 개에 던질 것(다트·빈 캔·담배)과 휘파람을 함께 담는다 — [바꾸기]로 돌아가며 고른다
+function cyclePadTool() {
+  const L = [...TOOLS, 'whistle'], cur = input.padWhistle ? 'whistle' : input.tool; let i = L.indexOf(cur);
+  for (let k = 1; k <= L.length; k++) { const t = L[(i + k) % L.length]; if (t === 'whistle') { input.padWhistle = true; syncTools(); play('click', 0.2); return; } if (toolCount(t) > 0) { selectTool(t); return; } }
+}
 function syncSneakBtn() {
   const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
-  const s = document.getElementById('btnSneak'), m = moveMode(); if (s) { s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = { sneak: '살금', walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 방식: ' + l.textContent); }
+  const s = document.getElementById('btnSneak'), m = moveMode(); if (s) { s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = { walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 빠르기: ' + l.textContent); }
+  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = input.sneakToggle ? '<b>웅크림</b>' : '<b>웅크리기</b>'; c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
   const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
 }
-// 살금 모드: 켜 두면 판이 바뀌어도 계속 살금살금으로 다닌다 (Ctrl 키 또는 위쪽 [살금] 버튼)
+// 웅크리기(살금): 이동 빠르기와 따로 켜고 끈다. 켜 두면 판이 바뀌어도 유지 (Ctrl 키 또는 [웅크리기] 버튼)
 function toggleSneak() {
-  input.sneakToggle = !input.sneakToggle; if (input.sneakToggle) { input.walkLock = false; try { localStorage.setItem('yh_walkLock2', '0'); } catch (e) {} }
+  input.sneakToggle = !input.sneakToggle;
   try { localStorage.setItem('yh_sneak', input.sneakToggle ? '1' : '0'); } catch (e) {}
-  syncSneakBtn(); toast(input.sneakToggle ? '살금 모드 — 발소리가 아주 작다 (끄기 전까지 유지)' : '살금 모드 해제 — 기본 걷기', 1.6);
+  syncSneakBtn(); toast(input.sneakToggle ? '웅크림 — 발소리가 아주 작고 시야 원뿔이 줄어든다 (다시 누르면 일어선다)' : '일어섬', 1.6);
 }
-// 항상 걷기: 켜 두면 Shift·조이스틱 끝까지도 뛰지 않는다 (R 키 또는 위쪽 [항상 걷기] 버튼)
+// 항상 걷기: 켜 두면 Shift·조이스틱 끝까지도 뛰지 않는다 (R 키)
 function toggleWalkLock() {
-  input.walkLock = !input.walkLock; if (input.walkLock) { input.sneakToggle = false; try { localStorage.setItem('yh_sneak', '0'); } catch (e) {} }
+  input.walkLock = !input.walkLock;
   try { localStorage.setItem('yh_walkLock2', input.walkLock ? '1' : '0'); } catch (e) {}
   syncSneakBtn(); toast(input.walkLock ? '항상 걷기 — 뛰지 않는다' : '항상 걷기 해제 — 다시 뛸 수 있다', 1.4);
 }
 function cycleMoveLock() { toggleWalkLock(); }
-// 이동 방식 한 버튼: 살금 → 걷기 → 달리기 (조이스틱을 끝까지 밀었을 때의 빠르기). 살금 = 늘 살금살금, 걷기 = 뛰지 않음, 달리기 = 끝까지 밀면 뛴다
-const moveMode = () => input.sneakToggle ? 'sneak' : input.walkLock ? 'walk' : 'run';
+// [이동] 버튼: 걷기 ↔ 달리기 (조이스틱을 끝까지 밀었을 때의 빠르기). 웅크림은 [웅크리기] 버튼이 따로 맡는다 — 이동을 바꾸면 일어선다
+const moveMode = () => input.walkLock ? 'walk' : 'run';
 function cycleMoveMode() {
-  const nx = { sneak: 'walk', walk: 'run', run: 'sneak' }[moveMode()];
-  input.sneakToggle = nx === 'sneak'; input.walkLock = nx === 'walk';
-  try { localStorage.setItem('yh_sneak', input.sneakToggle ? '1' : '0'); localStorage.setItem('yh_walkLock2', input.walkLock ? '1' : '0'); } catch (e) {}
-  syncSneakBtn(); toast({ sneak: '살금 — 발소리가 아주 작다', walk: '걷기 — 끝까지 밀어도 뛰지 않는다', run: '달리기 — 끝까지 밀면 뛴다 (소리가 크다)' }[nx], 1.4);
+  const nx = moveMode() === 'walk' ? 'run' : 'walk';
+  input.walkLock = nx === 'walk'; input.sneakToggle = false;
+  try { localStorage.setItem('yh_sneak', '0'); localStorage.setItem('yh_walkLock2', input.walkLock ? '1' : '0'); } catch (e) {}
+  syncSneakBtn(); toast({ walk: '걷기 — 끝까지 밀어도 뛰지 않는다', run: '달리기 — 끝까지 밀면 뛴다 (소리가 크다)' }[nx], 1.4);
 }
 { const o = document.querySelector('#hud .obj'); if (o) o.addEventListener('click', e => { e.stopPropagation(); o.classList.toggle('open'); }); }  // 휴대폰: 목표 펼치기
 { const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
 { const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
 { const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); cycleEnv(); }); }
-{ const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); }); }
+{ const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) cycleMoveMode(); b.blur(); }); }
+{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!running) return; cyclePadTool(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }  // 도구 바꾸기 칩: 남은 것이 있는 다음 도구 → … → 휘파람
+{ const b = document.getElementById('btnCrouch'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (running) toggleSneak(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 살금 모드 켜고 끄기 (C)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
@@ -179,13 +194,14 @@ document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEve
 $('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); document.querySelector('.ledger-tabs button[aria-pressed="true"]').focus({ preventScroll: true }); });
 $('btnHelp').addEventListener('click', () => { showMenu('help'); $('btnHelpBack').focus({ preventScroll: true }); });
 $('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnLedger').focus({ preventScroll: true }); });
-$('btnHelpBack').addEventListener('click', () => { showMenu('intro'); $('btnHelp').focus({ preventScroll: true }); });
+$('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); $('btnSet2').focus({ preventScroll: true }); } else { showMenu('intro'); $('btnHelp').focus({ preventScroll: true }); } });
+$('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0; });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기'; }
-function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; if (paused) riskTone(0);
-  if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); $('pzTodo').innerHTML = STAGE.tutorial ? '' : briefTodo().map(([mk, c, t, w]) => `<span><i class="mk ${mk}" style="--c:${c}"></i> ${t} · ${w}</span>`).join(''); $('pzTodo').parentElement.hidden = !!STAGE.tutorial; } }  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
+function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } } if (paused) riskTone(0);
+  if (paused && S) { $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); } }  // 메뉴에는 할 일을 띄우지 않는다 (화면 위 목표 칸에 이미 있다)  // 브리핑·끝 화면 위에서는 일시정지를 겹쳐 열지 않는다
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
@@ -216,23 +232,24 @@ $('btnResume').addEventListener('click', () => setPause(false));
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
-$('btnRetry').addEventListener('click', () => start(STAGE_I, true));  // 다시 하기는 브리핑 없이 바로
+$('btnRetry').addEventListener('click', () => start(STAGE_I, true));
+$('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => s.city); if (ci >= 0) start(ci, true); });  // 다시 하기는 브리핑 없이 바로
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (!STAGES[i].tutorial && demoOk(STAGES[i])) return i; return -1; }
 $('btnNext').addEventListener('click', () => { const n = nextPlayable(); start(STAGE.tutorial ? STAGES.findIndex(s => !s.tutorial) : n >= 0 ? n : STAGE_I); });
-document.addEventListener('visibilitychange', () => { if (document.hidden && running) setPause(true); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
-  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
+  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false; $('btnScan').classList.remove('on');  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
   newGame(i); resetDialog(); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR) prWarm(['ninja', ...S.guards.filter(g => !g.dog).map(charOf)], true);  // 이 판 사람들 옷 색부터 미리 칠한다
+  if (PR) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep([...ks, ...Object.keys(OUTFIT_PAL), 'police', 'rival']); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -278,8 +295,9 @@ atlas.onload = () => {
   newGame(0);
   requestAnimationFrame(frame);
   window.__game = {
-    get S() { return S; }, nextGoal, get PR() { return PR; }, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); prSheet(k); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
-    mapImage() { return mapC.toDataURL(); },
+    get S() { return S; }, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
+    npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
       const issues = [];
       STAGES.forEach((st, si) => {
@@ -319,5 +337,5 @@ atlas.onload = () => {
   };
 };
 atlas.src = A.atlas;
-// 시작 화면에서 쉬는 동안 기본 옷 색 시트를 모두 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
-if (PR) setTimeout(() => prWarm(['ninja', 'sam', 'samB', 'samR', 'hunter', 'noble', 'old', 'doc', 'strip', ...Object.keys(OUTFIT_PAL), ...Array.from({ length: 10 }, (_, i) => 'civ' + i)]), 1500);
+// 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
+if (PR) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)

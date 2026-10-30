@@ -106,6 +106,8 @@ function drawKitBuilding(b) {
       const x = tx * TILE, l = b.fl[tx - b.x0];
       ctx.fillStyle = `rgba(4,8,22,${(r ? 0.66 : 0.6) * (1 - clamp(l, 0, 1)) + 0.05 * r})`; ctx.fillRect(x, yy, TILE, TILE);
       const win = g && g[b.y1] ? g[b.y1][tx] === 'N' : (tx > b.x0 && tx < b.x1 && (tx - b.x0) % 2 === 1);
+      if (r && S.fwindows && S._owT !== S.t) { S._owT = S.t; S._ow = new Set(S.fwindows.filter(q => q.st === 'open' && q.out).map(q => q.fl + ',' + q.tx + ',' + q.ty)); }
+      if (r && S._ow && S._ow.has(r + ',' + tx + ',' + b.y1)) { ctx.fillStyle = 'rgba(3,5,9,.9)'; ctx.fillRect(x + 24, yy + 13, 12, 21); ctx.fillStyle = 'rgba(160,190,210,.35)'; ctx.fillRect(x + 12, yy + 13, 3, 21); }  // 열린 위층 창: 반쪽이 시커멓게 뚫려 보인다
       if (win && b.kind !== 'shop') { const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0; if (h % 5 === 0) { const fl = 0.85 + 0.15 * Math.sin(S.t * 3 + tx); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,170,80,${0.4 * fl})`; ctx.fillRect(x + 12, yy + 13, 24, 21); ctx.globalCompositeOperation = 'source-over'; } }
     }
   }
@@ -184,11 +186,38 @@ const PR_PAL = {
   ...OUTFIT_PAL,
 };
 const prImg = PR ? new Image() : null, prVar = {};
-let prBase = null;  // Sparse occupied pixels, RGBA, palette classes and lighting weights.
-if (PR) { prImg.onload = () => { try { prBase = prPrep(prImg); } catch (e) { console.warn('PR', e); } }; prImg.src = PR.src; }
+// 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
+// 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
+const PR_CH = 16;
+let prBase = null;  // { img, w, h, parts: [조각별 분류 캐시] }
+if (PR) { prImg.onload = () => { prBase = { img: prImg, w: prImg.width, h: prImg.height, parts: [] }; }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
 const prBodies = {};
-if (PR && PR.bodies) for (const [bn, bm] of Object.entries(PR.bodies)) { const im = new Image(); im.onload = () => { try { prBodies[bn] = prPrep(im); } catch (e) { console.warn('PR body', bn, e); } }; im.src = bm.src; }
+if (PR && PR.bodies) for (const [bn, bm] of Object.entries(PR.bodies)) { const im = new Image(); im.onload = () => { prBodies[bn] = { img: im, w: im.width, h: im.height, parts: [] }; }; im.src = bm.src; }
+// 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
+let prScr = null;
+function prRead(base, ci) {
+  const fr = PR.fr, x0 = ci * PR_CH * fr, w = Math.min(PR_CH * fr, base.w - x0), h = base.h; if (w <= 0) return null;
+  if (!prScr) { prScr = document.createElement('canvas'); prScr.width = PR_CH * fr; prScr.height = h; }
+  if (prScr.height < h) prScr.height = h;
+  const x = prScr.getContext('2d', { willReadFrequently: true }); x.clearRect(0, 0, prScr.width, prScr.height); x.drawImage(base.img, x0, 0, w, h, 0, 0, w, h);
+  return { w, h, d: x.getImageData(0, 0, w, h).data };
+}
+function prPrepPart(base, ci) {
+  if (base.parts[ci]) return base.parts[ci];
+  const rd = prRead(base, ci); if (!rd) return null; const { w, h, d } = rd;
+  const n = w * h, cls = new Uint8Array(n), wgt = new Uint8Array(n), shd = new Uint8Array(n);
+  const K = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [0, 1, 1]];  // 피부·머리·윗옷·바지·신발
+  for (let i = 0; i < n; i++) {
+    const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; if (!d[i * 4 + 3]) continue;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn; if (ch < 20 || !mx) continue;
+    const nr = r / mx, ng = g / mx, nb = b / mx; let best = 0, bd = 9;
+    for (let k = 0; k < 5; k++) { const q = (nr - K[k][0]) ** 2 + (ng - K[k][1]) ** 2 + (nb - K[k][2]) ** 2; if (q < bd) { bd = q; best = k; } }
+    cls[i] = best; wgt[i] = Math.max(1, Math.round(Math.min(1, (ch - 20) / 60) * 255)); shd[i] = Math.round(Math.min(1.35, mx / 255 * 1.25) * 180);
+  }
+  return (base.parts[ci] = { w, h, cls, wgt, shd });
+}
+// 한 장 통째 분류 (대화창 얼굴 시트처럼 작은 그림용)
 function prPrep(img) {
   const w = img.width, h = img.height, c = document.createElement('canvas'); c.width = w; c.height = h;
   const x = c.getContext('2d'); x.drawImage(img, 0, 0); const d = x.getImageData(0, 0, w, h).data;
@@ -233,30 +262,70 @@ function prPalette(pk, body) {
   return pal && PR && PR.style === 'modular' && body && body.startsWith('hero') ?
     [PR_PAL.ninja[0], PR_PAL.ninja[1], ...pal.slice(2)] : pal;
 }
+
+// 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로
 function prSheet(key) {
   if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
   if (!base) return null; const pal = prPalette(pk, bn); if (!pal) return null;
-  const { w, h } = base, c = prPaint(base, pal);
-  // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
-  if (key === 'ninja' || (PR && PR.style === 'modular' && bn && bn.startsWith('hero'))) {
-    const s = document.createElement('canvas'); s.width = w; s.height = h; const sx = s.getContext('2d');
-    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, -1], [-1, 1], [1, 1], [-1, 0], [1, 0], [0, -1], [0, 1]]) sx.drawImage(c, dx, dy);
-    sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#f2fbff'; sx.fillRect(0, 0, w, h);
-    sx.globalCompositeOperation = 'destination-out'; sx.drawImage(c, 0, 0); prVar[key + '_ol'] = s;
-  }
-  return (prVar[key] = c);
+  const sh = prVar[key] = { key, base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
+  if (key === 'ninja' || (PR.style === 'modular' && bn && bn.startsWith('hero'))) prVar[key + '_ol'] = { key: key + '_ol', of: sh, parts: [] };  // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
+  return sh;
 }
-// 시트 미리 칠하기: 옷 색 칠하기(prSheet)는 한 장에 수십 ms라 판 시작 직후 첫 프레임들이 끊겼다.
-// 시작 화면·브리핑·대사 동안 쉬는 틈(requestIdleCallback)에 한 장씩 미리 칠해 둔다
+function prPart(sh, ci) {
+  if (sh.parts[ci]) return sh.parts[ci];
+  if (sh.of) {  // 외곽선: 칠한 주인공 조각을 사방으로 겹쳐 찍고 안쪽을 지운다
+    const src = prPart(sh.of, ci); if (!src) return null;
+    const s = document.createElement('canvas'); s.width = src.width; s.height = src.height; const sx = s.getContext('2d');
+    for (const [dx, dy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, -1], [-1, 1], [1, 1], [-1, 0], [1, 0], [0, -1], [0, 1]]) sx.drawImage(src, dx, dy);
+    sx.globalCompositeOperation = 'source-in'; sx.fillStyle = '#f2fbff'; sx.fillRect(0, 0, s.width, s.height);
+    sx.globalCompositeOperation = 'destination-out'; sx.drawImage(src, 0, 0);
+    return (sh.parts[ci] = s);
+  }
+  const bp = prPrepPart(sh.base, ci); if (!bp) return null;
+  const { w, h, cls, wgt, shd } = bp, P4 = sh.P4, src = prRead(sh.base, ci).d;
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  const id = x.createImageData(w, h), o = id.data; o.set(src);
+  for (let i = 0, n = w * h; i < n; i++) {
+    const w8 = wgt[i]; if (!w8) continue; const wt = w8 / 255, p = P4[cls[i]], s = shd[i] / 180 * wt, j = i * 4, r = 1 - wt;
+    o[j] = p[0] * s + src[j] * r; o[j + 1] = p[1] * s + src[j + 1] * r; o[j + 2] = p[2] * s + src[j + 2] * r;
+  }
+  x.putImageData(id, 0, 0);
+  return (sh.parts[ci] = c);
+}
+// 시트의 한 칸(col, row)을 그린다
+function prBlit(sh, col, row, dx, dy, dw, dh) {
+  const ci = Math.floor(col / PR_CH), c = prPart(sh, ci); if (!c) return false;
+  const fr = PR.fr; ctx.drawImage(c, (col - ci * PR_CH) * fr, row * fr, fr, fr, dx, dy, dw, dh); return true;
+}
+// 미리 칠하기: 칠하기는 조각 하나에 수 ms라 판 시작 직후 첫 프레임들이 끊겼다.
+// 쉬는 틈(requestIdleCallback)에 서기·걷기·달리기·쓰러짐·대화 조각부터, 그다음 처치·운반 조각을 한 조각씩 칠해 둔다
+const PR_WARM1 = ['idle', 'walk', 'run', 'idleC', 'talk', 'death'], PR_WARM2 = ['crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
+function prWarmParts(key, names) {
+  const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn], out = new Set();
+  if (key === 'ninja') { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
+  for (const a of names) { const r = (bm && bm.anims[a]) || (!bm && PR.anims[a]); if (!r) continue; for (let c = r[0]; c < r[0] + r[1]; c++) out.add(Math.floor(c / PR_CH)); }
+  return [...out];
+}
 const prWarmQ = [];
 function prWarm(keys, first) {
-  for (const k of first ? [...keys].reverse() : keys) if (k && !prVar[k]) { const i = prWarmQ.indexOf(k); if (i >= 0) prWarmQ.splice(i, 1); if (first) prWarmQ.unshift(k); else prWarmQ.push(k); }
+  const add = (k, ci, front) => { const id = k + '#' + ci; const i = prWarmQ.indexOf(id); if (i >= 0) prWarmQ.splice(i, 1); if (front) prWarmQ.unshift(id); else prWarmQ.push(id); };
+  const ks = keys.filter(k => k && PR_PAL[prSplit(k)[0]]);
+  const l1 = [], l2 = [];
+  for (const k of ks) { for (const ci of prWarmParts(k, PR_WARM1)) l1.push([k, ci]); if (k !== 'ninja' && (first === 2)) for (const ci of prWarmParts(k, PR_WARM2)) l2.push([k, ci]); }
+  if (first) { for (const [k, ci] of l2.reverse()) add(k, ci, true); for (const [k, ci] of l1.reverse()) add(k, ci, true); }
+  else { for (const [k, ci] of l1) add(k, ci); for (const [k, ci] of l2) add(k, ci); }
   if (prWarm.on || !prWarmQ.length) return; prWarm.on = true;
   const ric = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
-  const step = () => { const k = prWarmQ.shift(); if (k && !prVar[k]) { const [pk, bn] = prSplit(k); if (!PR || !PR_PAL[pk] || (bn && !(PR.bodies && PR.bodies[bn]))) {} else if (bn ? prBodies[bn] : prBase) prSheet(k); else prWarmQ.push(k); }  // 아직 그림이 안 읽혔으면 뒤로
+  const step = () => { const id = prWarmQ.shift(); if (id) { const [k, cs] = id.split('#'), ci = +cs, [pk, bn] = prSplit(k);
+      if (!PR || !PR_PAL[pk] || (bn && !(PR.bodies && PR.bodies[bn]))) {} else if (bn ? prBodies[bn] : prBase) { const sh = prSheet(k); if (sh) prPart(sh, ci); } else prWarmQ.push(id); }  // 아직 그림이 안 읽혔으면 뒤로
     if (prWarmQ.length) ric(step, { timeout: 400 }); else prWarm.on = false; };
   ric(step, { timeout: 400 });
 }
+// 처치·운반 동작 조각은 그 사람에게 다가갔을 때 미리 칠한다 (판 시작에 모두 칠하면 옷마다 14MB)
+const prNear = new Set();
+function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2); }
+// 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
+function prKeep(keys) { prNear.clear(); const keep = new Set(['ninja', 'ninja_ol', ...keys, ...keys.map(k => k + '_ol')]); for (const k of Object.keys(prVar)) if (!keep.has(k)) delete prVar[k]; for (let i = prWarmQ.length - 1; i >= 0; i--) if (!keep.has(prWarmQ[i].split('#')[0])) prWarmQ.splice(i, 1); }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {
@@ -268,7 +337,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const fr = PR.fr, dw = fr * scale;
   const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
   const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
-  ctx.globalAlpha = alpha; ctx.drawImage(sh, (c0 + fi) * fr, prDir(a) * fr, fr, fr, x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
+  ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
 const usePR = key => { if (!PR || !prBase) return false; if (key.endsWith('_ol')) return !!prVar[key]; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!PR_PAL[key]; };

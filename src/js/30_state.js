@@ -3,10 +3,35 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 const darkC = document.createElement('canvas'); const dctx = darkC.getContext('2d');
 let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
+// 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
+// 1024px 조각으로 나눠 두고, 화면에 걸친 조각만 그린다
+const BIG_T = 1024;
+function bigify(c) {
+  if (!c) return c; const T = BIG_T, nx = Math.ceil(c.width / T), ny = Math.ceil(c.height / T), tiles = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const w = Math.min(T, c.width - i * T), h = Math.min(T, c.height - j * T), t = document.createElement('canvas'); t.width = w; t.height = h;
+    t.getContext('2d').drawImage(c, i * T, j * T, w, h, 0, 0, w, h); tiles.push(t);
+  }
+  const B = { big: true, width: c.width, height: c.height, nx, ny, tiles }; c.width = c.height = 1; return B;
+}
+// 큰 그림의 (sx,sy,sw,sh) 부분을 (dx,dy,dw,dh) 에 그린다. 생략하면 전체를 제자리에
+function drawBig(x, B, sx = 0, sy = 0, sw = B.width, sh = B.height, dx = sx, dy = sy, dw = sw, dh = sh) {
+  if (!B) return; if (!B.big) { x.drawImage(B, sx, sy, sw, sh, dx, dy, dw, dh); return; }
+  const kx = dw / sw, ky = dh / sh, T = BIG_T;
+  const x0 = Math.max(0, sx), y0 = Math.max(0, sy), x1 = Math.min(B.width, sx + sw), y1 = Math.min(B.height, sy + sh); if (x1 <= x0 || y1 <= y0) return;
+  for (let j = Math.floor(y0 / T); j <= Math.floor((y1 - 1) / T); j++) for (let i = Math.floor(x0 / T); i <= Math.floor((x1 - 1) / T); i++) {
+    const t = B.tiles[j * B.nx + i], tx0 = Math.max(x0, i * T), ty0 = Math.max(y0, j * T), tx1 = Math.min(x1, i * T + t.width), ty1 = Math.min(y1, j * T + t.height);
+    if (tx1 <= tx0 || ty1 <= ty0) continue;
+    x.drawImage(t, tx0 - i * T, ty0 - j * T, tx1 - tx0, ty1 - ty0, dx + (tx0 - sx) * kx, dy + (ty0 - sy) * ky, (tx1 - tx0) * kx, (ty1 - ty0) * ky);
+  }
+}
+// 지금 화면에 보이는 월드 사각형 (여유 m)
+const viewRect = (m = 0) => { const hw = W / SCALE / 2 + m, hh = H / SCALE / 2 + m; return [cam.x - hw, cam.y - hh, hw * 2, hh * 2]; };
+const inView = (x, y, m = 60) => Math.abs(x - cam.x) < W / SCALE / 2 + m && Math.abs(y - cam.y) < H / SCALE / 2 + m;
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
-let userZoom = 1.1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
+let userZoom = 1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
 try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
-try { const z = parseFloat(localStorage.getItem('yahaeng.zoom2')); if (z >= 0.8 && z <= 1.6) userZoom = z;  // 예전 저장값(멀리 본 시점)은 쓰지 않는다
+try { const z = parseFloat(localStorage.getItem('yahaeng.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 예전 저장값(확대해 둔 시점)은 쓰지 않는다
   const r = localStorage.getItem('yahaeng.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
@@ -23,7 +48,7 @@ function newGame(si) {
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);
-  buildMap(STAGE); setLayer(0); buildFRM(false);
+  buildMap(STAGE); if (STAGE.city || STAGE.roadsX) cityMapPrep(); setLayer(0); buildFRM(false);  // 도로가 있는 판: 세워 둔 차는 몰 수 있는 차
   if (STAGE.startAt) { const q = planPt(STAGE.startAt.b, STAGE.startAt.fl || 0, STAGE.startAt.at); if (q) STAGE.start = q; }  // 건물 안에서 시작 (감방 등)
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
@@ -36,6 +61,7 @@ function newGame(si) {
   CROWD = [];
   PLANS.forEach((fls, bi) => (fls || []).forEach((p, f) => { if (p && p.store && (p.store.use === 'club' || p.store.use === 'vip')) CROWD.push({ x0: p.store.x0, y0: p.store.y0 + 1, x1: p.store.x1, y1: p.store.y1, fl: f, n: p.store.use === 'vip' ? 5 : 7, club: true, b: bi }); }));
   (STAGE.crowd || []).forEach(c => CROWD.push({ x0: c[0], y0: c[1], x1: c[2], y1: c[3], fl: c[4] || 0, n: c[5] || 5 }));
+  CROWD = CROWD.filter(c => c.x1 >= c.x0 && c.y1 >= c.y0);  // 너무 좁은 가게(한 줄도 안 되는 곳)는 군중 없음
   const crowdGuys = []; CROWD.forEach((c, ci) => { const g = c.fl ? GF[c.fl] : G0; for (let k = 0; k < c.n; k++) { for (let t = 0; t < 30; t++) { const h = ((ci * 7919) ^ (k * 104729) ^ (t * 1299709)) >>> 0, x = c.x0 + h % (c.x1 - c.x0 + 1), y = c.y0 + (h >> 8) % (c.y1 - c.y0 + 1); if (!SOLID.has(g[y][x]) && g[y][x] !== 'Y') { crowdGuys.push({ kind: 'civ', look: (h >> 4) % 4, fl: c.fl, at: [x, y], post: ((h >> 6) % 4) * 90, wander: [c.x0, c.y0, c.x1, c.y1], club: true }); break; } } } });
   STAGE._g = STAGE.guards.map(resolveGuard).concat(autoResidents(), crowdGuys);
   STAGE._items = (STAGE.items || []).map(p => Array.isArray(p) ? p : (q => [q[0], q[1], p.fl || 0, p.b])(planPt(p.b, p.fl || 0, p.at || 'bed')));
@@ -167,7 +193,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  buildFRM(true);
+  buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 그 자리에서 위쪽 벽에 달고 아래를 본다)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;
@@ -231,7 +257,7 @@ function newGame(si) {
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = buildRoofCanvas(b, i); });
   kitAttach();
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
-  mapC = renderMap(); ugC = renderSewers(); ventC = renderVents();
+  mapC = bigify(renderMap()); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
   S.floorC = {};
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
@@ -577,6 +603,7 @@ function renderMap(R) {
       x.fillStyle = '#b4b6c4'; if (asph(0, 1)) x.fillRect(px, py + TILE - 6, TILE, 6); if (asph(0, -1)) x.fillRect(px, py, TILE, 5); if (asph(-1, 0)) x.fillRect(px, py, 5, TILE); if (asph(1, 0)) x.fillRect(px + TILE - 5, py, 5, TILE);
       x.fillStyle = 'rgba(0,0,0,.35)'; if (asph(0, 1)) x.fillRect(px, py + TILE, TILE, 3);
     }
+  if (!CUR_F && STAGE.roadsX && !R) drawRoadMarks(x);  // 도시: 차선·횡단보도
   if (!CUR_F) (STAGE.decor || []).forEach(d => {
     if (d[0] === 'shade') { x.fillStyle = `rgba(${d[6] || '0,0,0'},${d[5]})`; x.fillRect(d[1] * TILE, d[2] * TILE, (d[3] - d[1] + 1) * TILE, (d[4] - d[2] + 1) * TILE); return; }
     if (d[0] === 'lane') { x.fillStyle = 'rgba(232,196,90,.75)'; for (let xx = d[1] * TILE; xx < (d[3] + 1) * TILE; xx += 48) x.fillRect(xx + 6, d[2] * TILE - 2, 28, 4); return; }

@@ -48,7 +48,7 @@ function drawMini() {
 // 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
 function stageMap(w, labels) {
   const mw = MW * TILE, mh = MH * TILE, s = w / mw, h = Math.round(mh * s), c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
-  x.imageSmoothingEnabled = true; x.drawImage(mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
+  x.imageSmoothingEnabled = true; drawBig(x, mapC, 0, 0, mw, mh, 0, 0, w, h); x.fillStyle = 'rgba(7,10,18,.35)'; x.fillRect(0, 0, w, h);
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
@@ -99,6 +99,7 @@ function pendingFirstGoal() {
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
+  if (STAGE.city) return cityGoal();
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const fg = pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; }
   if (oppMode === 2) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '추적: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
@@ -139,9 +140,17 @@ function objectiveText() {
   if (S.items.length) parts.push(`${STAGE.itemName || '서류'} 회수 ${S.items.filter(i => i.got).length}/${S.items.length}`);
   return parts.join(' · ');
 }
+// 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
+function floorBanner(P, ptx, pty) {
+  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층 실내` : P.z ? `${P.z}층 높이 옥상` : bldAt(ptx, pty) >= 0 ? '1층 실내' : '거리';
+  if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
+  if (S._flk == null) { S._flk = k; return; }
+  if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+}
 function updateHUD(force) {
   if (force) hudCache = {};
   const P = S.player;
+  drawWanted();
   setText(hud.objT, 'objT', STAGE.sub);
   { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   drawMini();
@@ -151,7 +160,8 @@ function updateHUD(force) {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? (P.z > 1 ? `옥상 ${P.z}` : '옥상') : bldAt(ptx, pty) >= 0 ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : bldAt(ptx, pty) >= 0 ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  floorBanner(P, ptx, pty);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : bldAt(ptx, pty) >= 0 ? 'in' : 'out';
   hud.layer.dataset.z = zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';
@@ -182,7 +192,7 @@ function updateHUD(force) {
   padButton(hud.carry, 'carryH', ea, '행동');
   hud.carry.classList.toggle('ready', ea.k !== 'none');
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (ea.choiceI + 1) + '/' + n); } }
-  { const gb = $('btnGrab'); if (gb) { const html = icon('grab', 20) + `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
+  { const gb = $('btnGrab'); if (gb) { const html = `<b>${P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기'}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k === 'grab' || canInterrogate()); } }
   keyMap(ka, ea, ga);
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 들킬 수 있음 · 보인다 + 이유 한 줄
@@ -213,7 +223,7 @@ function updateStealth(lv) {
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '변장 · 통과 가능' : '행인으로 보인다'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
-    let r = 0; for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.dropped || flOf(g) !== flOf(P)) continue; r = Math.max(r, g.state === 'ALERT' && !g.civ ? 1 : g.meter || 0, (g.eyeT || 0) / EYE_T); }  // 눈썰미 게이지도 함께
+    let r = 0; for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.dropped || flOf(g) !== flOf(P) || (g.civ && g.state === 'PANIC') || dist(g.x, g.y, P.x, P.y) > 700) continue; r = Math.max(r, g.state === 'ALERT' && !g.civ ? 1 : g.meter || 0, (g.eyeT || 0) / EYE_T); }  // 눈썰미 게이지도 함께  // 멀리 있는 사람·겁먹은 주민(다른 일로 놀람)은 경고음에서 뺀다
     riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
@@ -229,9 +239,9 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : icon(input.tool, 26) + `<b>${toolCount(input.tool)}</b>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]}</b><small>${toolCount(input.tool)}개</small>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.classList.toggle('aiming', !!input.aiming);
-  hud.tool.classList.toggle('ready', input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
+  hud.tool.classList.toggle('ready', input.padWhistle ? !(S.whistleT > 0) : input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
 }
 
 function endGame(win, reason) { riskTone(0);
@@ -295,7 +305,7 @@ function showEnd(win, reason) {
   $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['보조 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
     ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
-  ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.counters ? [['반격', st.counters + '회']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div class="${END_MAIN.includes(r[0]) ? 'main' : 'more'}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
+  ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.counters ? [['반격', st.counters + '회']] : []).concat(st.fights ? [['조직 싸움', st.fights + '회' + (st.war ? ' · 전쟁' : '')]] : []).concat(st.npcDown ? [['조직이 쓰러뜨린 사람', st.npcDown + '명' + (st.npcCiv ? ` (주민 ${st.npcCiv})` : '') + ' · 감점 없음']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div class="${END_MAIN.includes(r[0]) ? 'main' : 'more'}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   { const mo = $('endMore'); if (mo) { mo.innerHTML = ''; $('endStats').querySelectorAll('.more').forEach(d => mo.appendChild(d)); } }
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;
       return `<div class="ent"><b>등급</b>은 얼마나 조용히 했나 (다섯 개 다 지키면 그림자) — ${S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ')}</div><div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
@@ -306,21 +316,22 @@ function showEnd(win, reason) {
   drawEndMap();
   $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
   $('btnCP').hidden = win || !cpReady();
+  $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
 }
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());
-// 데모(itch) 빌드: 연습과 의뢰 1·2만. 나머지는 잠긴 카드 하나로 알린다
-const demoOk = s => !window.__DEMO || window.__DEMO.includes(s.id);
+// 데모(itch) 빌드: 'all' 이면 도시 시제품만 빼고 전부, 목록이면 그 판만 (나머지는 잠긴 카드 하나로 알린다)
+const demoOk = s => !window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id));
 // 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
-function showMenu(which) { ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
+function showMenu(which) { { const h = $('help'); if (h) h.classList.remove('over'); } ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
 const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();
   const best = loadBest(), next = quickTarget();
-  const locked = STAGES.filter(s => !demoOk(s));
+  const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
     const stars = s.challenges ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">${'★'.repeat(st)}${'☆'.repeat(Math.max(0, all - st))}</span>` : '';
@@ -335,10 +346,10 @@ function renderStageList() {
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a, b) => (b[0].id === 'tI') - (a[0].id === 'tI')), miss = list.filter(([s]) => !s.tutorial);
-  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('')
+  const tuts = list.filter(([s]) => s.tutorial).sort((a, b) => (b[0].id === 'tI') - (a[0].id === 'tI')), miss = list.filter(([s]) => !s.tutorial && !s.city), city = list.filter(([s]) => s.city);
+  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (city.length ? `<div class="lg-sec">도시 (시제품)</div>` + city.map(row).join('') : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
-  $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => start(+b.dataset.i)));
+  $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
   { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
 }

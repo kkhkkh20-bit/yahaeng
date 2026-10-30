@@ -29,8 +29,9 @@ const ICON_P = {
   key: 'M8 15a4 4 0 110-8 4 4 0 010 8zM12 11h9M18 11v3M21 11v2',                                  // 열쇠
   stone: 'M7 5h10v15H7zM7 9h10M9 3h6',                                                          // 빈 캔
   coin: 'M3 14h15v3H3zM18 14h3v3h-3M19 11c0-2 2-2 2-4',                                          // 담배
-  kunai: 'M4 20L15 9M15 9l5-5-1 6zM15 9l-6-1 5-5zM6 14l4 4',                                     // 다트
+  kunai: 'M20 4l-7 2 5 5zM15.5 8.5L6 18M6 18l-3 0 0-3 3 3zM8 16l-3-3M8 16l3 3',                    // 다트 (바늘 끝 · 대 · 꼬리 깃)
   candy: 'M8 12a4 4 0 108 0 4 4 0 10-8 0M8 12l-5-3v6zM16 12l5-3v6z',                       // 사탕
+  car: 'M5 17h14v-5l-2-5H7l-2 5zM5 12h14M7 17v2M17 17v2M8 14.5h.01M16 14.5h.01',                // 차
   dot: 'M12 12h.01'
 };
 const icon = (k, s = 26) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON_P[k] || ICON_P.dot}"/></svg>`;
@@ -41,12 +42,13 @@ function actIcon(a) {
   return ({ hide: 'hide', stash: 'stash', carry: lb.startsWith('넣기') ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
     down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: 'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
-    clean: 'clean', loot: 'loot', counter: 'counter', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
+    clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
 }
 const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
 function actVerb(a, ic) {
   const lb = (a.label || '').split(/ \(| — | → | · /)[0];  // '오르기 · 2층' → '오르기'
+  if (a.honk) return '경적';
   if (a.k === 'none') return a.stalk ? (koTap(a.stalk) ? '기절' : '처치') : '';
   if (a.k === 'cap') return a.label;
   if (a.k === 'dropItem') return '내려놓기';
@@ -59,7 +61,8 @@ function actVerb(a, ic) {
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.hold ? `<small>길게: ${a.hold}</small>` : '';
-  const html = (a.k === 'none' && !a.stalk ? '' : icon(ic, 24)) + `<b>${v}</b>` + hold;
+  // 그림 없이 글자만: 무엇을 하는지 동사로 바로 읽히게
+  const html = `<b>${v}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', a.label || v); }
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게

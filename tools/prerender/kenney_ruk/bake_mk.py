@@ -52,7 +52,7 @@ def bld_items(b):
         it.append({'box': bx, 'color': 0x6e6a66})
     # 단독주택 앞쪽 경사 지붕(맨사드)은 계단실이 지붕 앞줄에 서면 빼고 평지붕으로 (경사 위에 상자가 얹혀 보이지 않게)
     sh_front = any(p['t'] == 'sh' and any(c[1] + h >= zF - 1 for c in p['cells']) for p in (b.get('props') or []))
-    mansard = house and dr >= 2 and not (DRESS and sh_front)
+    mansard = False  # 맨사드(앞줄 경사 지붕+지붕창)는 쓰지 않는다: 옥상 앞줄을 걸을 수 있어 지붕창 위를 걷는 것처럼 보였다
     if mansard:
         for xx in range(x0, x1 + 1): it.append(M('Roof_SlateCornice_Window_1' if (xx - x0) % 3 == 1 else 'Roof_SlateCornice_Center', xx + 0.5, h, zF, s=(0.5, 1 / 3, 0.5)))
         pk = 1.1

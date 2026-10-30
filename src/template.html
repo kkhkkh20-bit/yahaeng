@@ -50,6 +50,14 @@ button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
 .chip.alarm[data-lv="2"] { background: #e08a3c; }
 .chip.alarm[data-lv="3"] { background: var(--blood); color: #fff; }
 .pipsbox { display: flex; align-items: center; }
+.chip.want { color: #ffd34a; font-size: 17px; letter-spacing: 0; padding: 4px 10px; display: flex; align-items: center; gap: 1px; text-shadow: 0 1px 0 #000; }
+#floorBan { position: fixed; left: 50%; top: 31%; transform: translateX(-50%); z-index: 30; pointer-events: none; font: 800 26px "IBM Plex Sans KR", sans-serif; color: #f4efe2; letter-spacing: 1px; text-shadow: 0 2px 0 #000, 0 0 16px rgba(0,0,0,.8); opacity: 0; white-space: nowrap; }
+#floorBan.on { animation: flBan 1.4s ease-out; }
+@keyframes flBan { 0% { opacity: 0; transform: translate(-50%, 8px); } 15% { opacity: .95; transform: translate(-50%, 0); } 70% { opacity: .95; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #floorBan.on { animation-duration: .01s; } }
+.chip.want .clab { font-size: 12px; font-weight: 700; color: var(--paper); margin-right: 6px; }
+.chip.want[data-on="1"] { background: rgba(150, 24, 24, .7); }
+.chip.want i { font-style: normal; color: rgba(255, 255, 255, .22); }
 #alertPips { display: flex; gap: 3px; }
 #alertPips i { width: 9px; height: 9px; border: 1.5px solid var(--paper-dim); transform: rotate(45deg); }
 #hpPips { display: flex; gap: 4px; align-items: center; }
@@ -252,6 +260,9 @@ body.dlgmodal .pad, body.dlgmodal .joyhint, body.dlgmodal .sysbtns, body.dlgmoda
 #dlg.noface .dlg-box { border-radius: 10px; padding-left: 18px; }
 @media (max-height: 480px) { #dlg { width: min(600px, calc(100vw - 200px)); } .dlg-face { flex-basis: 80px; min-height: 90px; margin-right: -10px; } .dlg-face canvas { width: 98px; height: 98px; } .dlg-box { min-height: 70px; padding: 8px 12px 7px 20px; gap: 3px; } .dlg-box p { font-size: 15px; } }
 @media (max-width: 640px) { .dlg-face { flex-basis: 84px; min-height: 96px; margin-right: -10px; } .dlg-face canvas { width: 102px; height: 102px; } .dlg-box { min-height: 76px; padding: 10px 12px 8px 20px; } .dlg-box p { font-size: 15px; } }
+/* 대사 글이 한 줄 → 두 줄로 늘 때 창이 커지지 않게: 처음부터 세 줄 높이 (낮은 가로 화면은 두 줄) */
+.dlg-box p { min-height: calc(1.55em * 3); }
+@media (max-height: 480px) { .dlg-box p { min-height: calc(1.55em * 2); } }
 @media (max-width: 640px) {
   :root { --fs-cap: 11px; --fs-ui: 11.5px; --fs-body: 12.5px; --fs-lead: 14px; }
   .top { gap: 6px; }
@@ -366,7 +377,7 @@ body.scanning.scanleg #scanLegend { display: flex; }
 #alertVig { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .4s; box-shadow: inset 0 0 0 0 transparent; z-index: 1; }
 #alertVig[data-a="1"] { opacity: .55; box-shadow: inset 0 0 60px 12px rgba(242, 196, 107, .45); }
 #alertVig[data-a="2"] { opacity: .8; box-shadow: inset 0 0 80px 18px rgba(255, 140, 60, .55); }
-#alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 0 90px 24px rgba(232, 60, 50, .7); animation: vigPulse .9s ease-in-out infinite alternate; }
+#alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 0 56px 10px rgba(232, 60, 50, .55); animation: vigPulse .9s ease-in-out infinite alternate; }  /* 쫓길 때: 가장자리만 붉게 (가운데 화면은 가리지 않게) */
 @keyframes vigPulse { from { opacity: .65; } to { opacity: 1; } }
 body:not(.playing) #alertVig { display: none; }
 /* 조이스틱 안내는 처음 한 번만 (몇 초 뒤 사라짐) */
@@ -480,6 +491,11 @@ body.joyseen .joyhint { display: none !important; }
 .ledger-list .stage.locked .st-stamp { grid-column: 2; color: #a9b4b7; font-size: 11px; padding: 5px 8px; border: 1px solid #3c4a50; }
 @media (max-width: 640px) { .ledger-list { grid-template-columns: 1fr; gap: 12px; } .ledger-list .stage { padding: 20px; } }
 #help details.rulesbox { border-top: 1px solid var(--ink-line); padding-top: 10px; }
+/* 설정 화면: 화면·소리 옵션 + 조작법 + 규칙. 게임 중 메뉴에서 열면 메뉴 위에 뜬다 */
+#help .setbox { display: flex; flex-direction: column; gap: 14px; padding: 6px 0 18px; }
+#help .setbox .pz-sets { border-top: 0; padding-top: 0; }
+#help.over { z-index: 60; }
+.pz-todo[hidden] { display: none; }
 /* 은신 상태: 화면 위 가운데 큰 표시 (히트맨의 상태 표시·마크 오브 더 닌자의 숨음 표시처럼 한눈에) */
 #stealth { --sc: #8fd3ff; position: absolute; left: 50%; top: calc(var(--topb, 70px) + 8px); transform: translateX(-50%); display: flex; align-items: center; gap: 9px; padding: 6px 16px 6px 10px; border-radius: 999px; background: rgba(7, 10, 18, .8); color: var(--sc); box-shadow: 0 6px 18px rgba(0, 0, 0, .45); pointer-events: none; white-space: nowrap; transition: background-color .18s, border-color .18s, color .18s; z-index: 2; }
 #stealth .sth-ico { width: 30px; height: 30px; flex: none; }
@@ -542,12 +558,20 @@ body:has(.screen:not([hidden])) #dlg.modal::before { pointer-events: none; }
 .pz-wrap { width: min(1100px, 100%); box-sizing: border-box; padding: 40px max(24px, env(safe-area-inset-left, 0px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 500px); gap: 56px; align-items: center; }
 .pz-menu { display: flex; flex-direction: column; gap: 4px; }
 .pz-menu .fx-sub { margin-bottom: 16px; }
-.pz-big { display: flex; align-items: center; gap: 18px; text-align: left; font-family: var(--f-title); font-weight: 400; font-size: clamp(34px, 5vw, 52px); line-height: 1.15; color: #6f7890; background: none; border: 0; padding: 4px 0; cursor: pointer; }
+.pz-big { display: flex; align-items: center; gap: 18px; text-align: left; font-family: var(--f-title); font-weight: 400; font-size: clamp(34px, 5vw, 52px); line-height: 1.15; color: #c3cad8; background: none; border: 0; padding: 4px 0; cursor: pointer; }
 .pz-big::before { content: ""; width: 6px; height: .8em; background: transparent; }
-.pz-big:hover, .pz-big:focus-visible, #btnResume { color: #f0eee7; }
-#btnResume::before, .pz-big:hover::before, .pz-big:focus-visible::before { background: #d05b51; }
-.pz-menu:hover #btnResume:not(:hover) { color: #6f7890; } .pz-menu:hover #btnResume:not(:hover)::before { background: transparent; }
+.pz-big:hover, .pz-big:focus-visible, #btnResume { color: var(--lamp); }
+#btnResume::before, .pz-big:hover::before, .pz-big:focus-visible::before { background: var(--lamp); }
+.pz-menu:hover #btnResume:not(:hover) { color: #c3cad8; } .pz-menu:hover #btnResume:not(:hover)::before { background: transparent; }
 .pz-side { display: flex; flex-direction: column; gap: 20px; padding: 26px 28px; background: rgba(15, 21, 34, .85); }
+/* 설정은 접어 둔다 (펼치면 소리·밝기·화면 옵션). 메뉴 세 줄이 먼저 보이게 */
+.pz-side { background: none; padding: 0; }
+.pz-setbox > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 16px; color: var(--paper); padding: 10px 16px; border: 1px solid #3a4560; }
+.pz-setbox > summary::-webkit-details-marker { display: none; }
+.pz-setbox > summary::after { content: '열기'; font-size: 12px; color: #9aa3b5; }
+.pz-setbox[open] > summary::after { content: '접기'; }
+.pz-setbox[open] { display: flex; flex-direction: column; gap: 18px; padding: 0 0 20px; }
+.pz-setbox[open] > summary { align-self: flex-start; }
 .pz-todo small { display: block; font-size: 13px; color: #9aa3b5; margin-bottom: 8px; }
 #pzTodo { display: flex; flex-direction: column; gap: 6px; font-size: 15px; }
 .pz-sets { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--ink-line); padding-top: 18px; }
@@ -683,6 +707,40 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
 .br-mapcol { min-width: 0; }
 @media (max-width: 700px) { .br-mapcol { max-height: none; overflow: visible; } }
 
+/* ── 휴대폰 버튼 배치 (레퍼런스: 모바일 액션 게임의 공격 버튼 + 스킬 부채꼴 · Apple 게임 조작 지침)
+   - 가장 자주 누르는 [공격]을 오른쪽 아래 구석에 가장 크게, 엄지가 그 자리에서 조금씩 움직여 닿도록 나머지는
+     공격 중심에서 같은 거리의 부채꼴(왼쪽 → 위)로: [행동] → [붙잡기] → [도구]. 웅크리기는 [이동] 위 작은 버튼
+   - 자주 누를수록 크게 (공격 96 · 행동 70 · 나머지 58~60, 모두 44pt 이상) — 사이는 8~20px로 촘촘히. 휘파람은 도구 버튼에 담아 버튼 수를 줄인다
+   - 할 수 없는 동작은 흐리게, 누르면 눌린 표시(빛)
+   - 도구 이름·개수는 도구 버튼 안에, 도구 바꾸기는 그 위 작은 칩 하나 */
+body.touch .pad { display: block; width: 200px; height: 232px; right: max(6px, env(safe-area-inset-right, 0px)); bottom: calc(10px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+body.touch .pad > button { position: absolute; margin: 0; justify-self: auto; align-self: auto; border-width: 2px; pointer-events: auto;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .06);
+  background: radial-gradient(circle at 50% 35%, rgba(44, 52, 72, .92), rgba(10, 13, 22, .9)); transition: transform .06s, box-shadow .06s; }
+body.touch .pad > button.down { transform: scale(.93); box-shadow: 0 0 0 5px rgba(242, 196, 107, .28), 0 0 18px rgba(242, 196, 107, .35); }
+body.touch .pad > button b { font-size: 13px; font-weight: 700; letter-spacing: -.3px; }
+body.touch .pad > button small { font-size: 10px; margin-top: 2px; }
+body.touch .pad #btnAct { position: absolute; right: 6px; bottom: 6px; width: 96px; height: 96px; border-color: rgba(232, 71, 60, .55); }
+body.touch .pad #btnAct b { font-size: 17px; }
+body.touch .pad #btnCarry { right: 118px; bottom: 33px; width: 70px; height: 70px; border-color: rgba(242, 196, 107, .5); }
+body.touch .pad #btnCarry b { font-size: 15px; }
+body.touch .pad #btnCarry.ready { border-color: var(--lamp); color: var(--paper); }
+body.touch .pad #btnGrab { right: 89px; bottom: 102px; width: 58px; height: 58px; border-color: rgba(143, 180, 255, .45); }
+body.touch .pad #btnGrab.ready { border-color: #9fb4ff; }
+body.touch .pad #btnTool { right: 20px; bottom: 124px; width: 60px; height: 60px; border-color: rgba(232, 227, 214, .45); }
+body.touch .pad #btnTool small { font-size: 11px; margin-top: 1px; color: var(--paper-dim); }
+body.touch .pad #btnWhistle { display: none; }  /* 휘파람은 도구 버튼에 ([바꾸기]로 고른다) */
+body.touch .pad #btnToolNext { right: 21px; bottom: 190px; width: 58px; height: 26px; border-radius: 14px; border-width: 1px; border-color: rgba(232, 227, 214, .4); background: rgba(10, 13, 22, .88); }
+body.touch .pad #btnToolNext b { font-size: 11px; font-weight: 600; color: var(--paper-dim); }
+body.touch .pad #btnCycle { right: 128px; bottom: 168px; top: auto; width: 58px; height: 34px; border-radius: 17px; }
+body.touch .pad #btnCycle b { font-size: 12px; }
+body.touch .pad .tools { display: none; }
+body.touch .sysbtns { bottom: calc(254px + env(safe-area-inset-bottom, 0px)); }  /* 버튼 부채꼴 위로 비켜 선다 */
+body:not(.touch) .pad #btnToolNext { display: none; }
+/* 웅크리기: 오른쪽 [이동] 위 작은 버튼 (켜지면 초록) */
+body.touch .sysbtns #btnCrouch b { font-size: 11px; }
+body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-color: var(--moss); color: #dff5e2; }
+@media (max-width: 370px) { body.touch .pad { transform: scale(.9); transform-origin: right bottom; } }
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
@@ -696,8 +754,10 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
       <span class="chip" id="killsLbl">제거 0</span><span class="chip" id="pickLbl" hidden title="락픽 — 잠긴 창문·문을 딴다">락픽 0</span>
       <span class="chip hpbox" id="hpBox" title="체력"><small class="clab">체력</small><span id="hpPips"></span></span>
       <span class="chip pipsbox" id="alertBox" title="경계 단계" data-lv="0"><small class="clab" id="alertWord">평온</small><span id="alertPips"><i></i><i></i><i></i></span></span>
+      <span class="chip want" id="wantBox" hidden title="수배"></span>
+      <div id="floorBan" aria-live="polite"></div>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
-      <span class="sysbtns"><button id="btnSneak" type="button" title="이동 방식 — 누를 때마다 살금 · 걷기 · 달리기 (조이스틱 끝까지 밀었을 때의 빠르기)"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
+      <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnSneak" type="button" title="이동 빠르기 — 누를 때마다 걷기 · 달리기 (조이스틱 끝까지 밀었을 때의 빠르기)"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
     </div>
   </div>
   <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
@@ -711,7 +771,7 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
   </div>
   <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div id="alertVig" aria-hidden="true"></div>
-  <div class="joyhint">끌어서 걷기 · 오른쪽 [이동]으로 살금 · 걷기 · 달리기</div>
+  <div class="joyhint">왼쪽을 끌어서 걷기</div>
   <div class="pad">
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
       <button class="tool on" type="button" data-t="kunai"><kbd>1</kbd>다트 <span>3</span></button>
@@ -719,11 +779,12 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
       <button class="tool" type="button" data-t="coin"><kbd>3</kbd>담배 <span>2</span></button>
     </div>
     <button id="btnTool" type="button"><b>다트 3</b></button>
+    <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>바꾸기</b></button>
     <button id="btnWhistle" type="button" title="휘파람 (G)"><b>휘파람</b></button>
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>
     <button id="btnAct" type="button" title="공격 (Z · Space)"><b>공격</b></button>
-    <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>⇄</b><small id="cycleN">1/2</small></button>
+    <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>대상</b><small id="cycleN">1/2</small></button>
   </div>
 </div>
 <div id="keypad" hidden><div class="kp"><b>숫자 자물쇠</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small>
@@ -766,15 +827,20 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
 
 <div class="screen sub" id="help" hidden>
   <div class="panel">
-    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="첫 화면으로">돌아가기</button><h2>조작 방법</h2></div>
+    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="돌아가기">돌아가기</button><h2>설정</h2></div>
+    <section class="setbox"><h3 class="rules-h">화면 · 소리</h3>
+      <div class="pz-sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label></div>
+      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+    </section>
     <details class="rulesbox" open><summary class="rules-h">조작법</summary>
     <div class="ctrl">
       <div class="kbonly"><h3>키보드 — 두 벌 중 손에 맞는 쪽을 쓰면 된다</h3><b>방향키로 움직일 때</b> (왼손 아랫줄): <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 다트<br><b>WASD로 움직일 때</b> (히트맨식): <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 다트<br>공격 — 사람에게만. 톡 누르면 기절, 계속 누르고 있으면 처치(표적은 바로 처치)<br>행동 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기·옥상 끝 매달리기. 사람이 가까워도 공격으로 바뀌지 않는다 (조준 중엔 그 조준을 예약)<br>붙잡기 — 등 뒤에서 잡는다. 잡은 채 가만히 있으면 심문, 공격 톡 기절 · 계속 처치, 행동은 숨을 곳으로 끌고 가기<br>다트 — 톡 누르면 앞쪽 표시된 대상에 자동 조준, 누르고 있으면 직접 겨누기 · <kbd>1</kbd> 다트 <kbd>2</kbd> 빈 캔 <kbd>3</kbd> 담배<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 살금 모드 켜기/끄기 · <kbd>R</kbd> 항상 걷기 · <kbd>Alt</kbd> 살피기(누르는 동안)<br><kbd>Tab</kbd> 겹친 대상 바꾸기 · <kbd>G</kbd> 휘파람 — 주변 자경대원을 이 자리로 부른다 · <kbd>M</kbd> 지도 · <kbd>T</kbd> 기회 추적 · <kbd>N</kbd> 소리 끄기 · <kbd>Esc</kbd> 정지<br>벽 쪽으로 잠깐 밀면 저절로 기댄다. 기댄 채 옆을 지나는 사람은 공격으로 끌어당긴다</div>
-      <div><h3>터치</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 오른쪽 [이동] 버튼을 누를 때마다 살금 · 걷기 · 달리기가 바뀐다(끝까지 밀었을 때의 빠르기).<br>[공격] 큰 버튼 — 사람에게만. 톡 누르면 기절, 계속 누르면 처치 · [행동] 문·창문·숨기·계단·줍기·시체 메기 (사람이 가까워도 공격으로 바뀌지 않는다) · [붙잡기] 등 뒤에서 잡기 · [다트] 톡 누르면 자동 조준, 누른 채 끌면 직접 겨누기. 도구는 버튼 옆 작은 칸에서 바꾼다 · [휘파람]은 아래 버튼 묶음 왼쪽, [살피기]는 미니맵 아래.</div>
+      <div><h3>터치</h3>화면 왼쪽을 끌어 걷기, 끝까지 끌면 달리기. 오른쪽 [이동] 버튼을 누를 때마다 걷기 · 달리기가 바뀐다. [웅크리기] 버튼은 몸을 낮춰 발소리를 줄이고 덜 보이게 한다(다시 누르면 일어선다)(끝까지 밀었을 때의 빠르기).<br>[공격] 큰 버튼 — 사람에게만. 톡 누르면 기절, 계속 누르면 처치 · [행동] 문·창문·숨기·계단·줍기·시체 메기 (사람이 가까워도 공격으로 바뀌지 않는다) · [붙잡기] 등 뒤에서 잡기 · [도구] 다트는 톡 누르면 자동 조준, 누른 채 끌면 직접 겨누기. 도구 버튼 위 [바꾸기]로 다트 · 빈 캔 · 담배 · 휘파람을 돌아가며 고른다 · [살피기]는 미니맵 아래.</div>
     </div>
     </details>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
     <ul class="rules">
+      <li class="cityonly"><strong>조직 싸움 붙이기</strong>조직과 건달파는 각자 구역이 있다(옥상 깃발: 검정·금색 = 조직, 빨강 = 건달파). 구역 밖에서는 말로만 시비, 상대 구역에 들어가면 싸운다. 싸움을 붙이는 방법: ① 빈 캔·담배로 조직원을 상대 구역까지 끌어들이기 ② 상대 옷을 입고 치는 걸 보이기(전쟁) ③ 쓰러뜨린 조직원을 상대 구역에 버려 두기(찾으면 전쟁) ④ 들키지 않고 다트로 한쪽을 쓰러뜨리면 곁의 동료가 가까운 상대 조직 탓으로 덤빈다 ⑤ 거리 주민에게 [행동] 소문 흘리기 → 한쪽이 상대 구역으로 몰려간다 (1분에 한 번).</li>
       <li class="cityonly"><strong>발견 게이지</strong>보이는 순간 들키지 않는다. 자경대원 머리 위 삼각형이 2~3초에 걸쳐 차오른다(가깝고 밝을수록 빠르다): 흰색 = 눈치채는 중(하던 걸 하며 고개만 돌린다) · 노랑 = 의심(멈춰 보고 확인하러 온다) · 빨강 = 발각. 내 둘레의 호는 누가 어느 쪽에서 보고 있는지 알려 준다. 시야에서 벗어나면 잠깐 뒤 줄어든다</li>
       <li class="cityonly"><strong>가구</strong>파랑 테두리 = 높은 가구(막히고 시선을 가린다) · 주황 테두리 = 낮은 가구(막히지만 시선은 넘어간다. 바로 뒤에서 웅크리면 가려진다). 테두리 없는 깔개만 밟고 지나간다</li>
       <li><strong>가구 속 물건</strong>훔칠 물건은 책상·컴퓨터·서류장·금고·협탁 같은 가구에 있다. 옆에 서서 [행동]으로 빼 온다 — 책상 0.8초, 서랍 1.6초, 금고 2.2초, 컴퓨터 자료 3초. 하는 동안 움직이면 멈추고, 보이면 수상하게 여긴다.</li>
@@ -798,6 +864,7 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
       <li><strong>맨홀</strong>들어가 숨어 있다가 지나가는 자경대원을 끌어들인다. 다른 출구로 이동하고, 나올 땐 조이스틱을 민 방향으로 나온다.</li>
       <li><strong>표식 읽기</strong><span class="lg lg-door"></span>갈색 문짝은 문(잠글 수 있음) · <span class="lg lg-win"></span>십자 창살 유리는 창문 · <span class="lg lg-pipe"></span>회색 관과 발밑 ▸▸는 배관 · 금 간 벽은 숨겨진 통로</li>
       <li><strong>건물 · 창문</strong>건물 안은 들어가야 보인다. 창문 앞에서 창문 쪽을 바라보면 안이 보이고, [창문 넘기]로 드나든다. 문은 잠가서 자경대원을 돌아가게 만들 수 있다.</li>
+      <li><strong>창문과 간판</strong>잠긴 창문은 락픽으로 딴다. 방범창도 락픽으로 풀 수 있지만 오래 걸린다. 간판이 달린 상가 건물은 옥상 끝에서 간판을 떨어뜨려 아래 길에 선 사람을 깔 수 있다 — 사고로 보이지만 소리가 크고, 주민이 깔리면 감점.</li>
       <li><strong>붙잡기</strong>[붙잡기]로 등 뒤에서 붙잡는다. 잡은 채 가만히 있으면 심문(조직원이 아는 걸 분다). [공격] 톡 = 기절, 계속 = 처치. [행동] = 숨을 곳으로 끌고 가기. 끌고 가면 많이 느리다. 화단·수거함·맨홀 옆에서 [끌고 가 처치]. 9초 넘게 끌면 빠져나간다.</li>
       <li><strong>조명</strong>조명 옆에서 손으로 끄고 켤 수 있다. 지나가던 자경대원이 다시 켠다. 다트로 깨면 영영 꺼진다.</li>
       <li><strong>끌어들이기</strong>화단·수거함·맨홀에 숨어 있다가 옆을 지나는 자경대원을 방향 상관없이 끌어들여 처치한다.</li>
@@ -834,11 +901,10 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
       <button class="pz-big" id="btnResume" type="button">계속하기</button>
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
+      <button class="pz-big" id="btnSet2" type="button">설정</button>
     </div>
     <div class="pz-side">
-      <div class="pz-todo"><small>지금 할 일</small><div id="pzTodo"></div></div>
-      <div class="pz-sets"><label>소리 크기 <input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <input type="range" id="briR" min="80" max="160" step="5"></label></div>
-      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+      <div class="pz-todo" hidden><small>지금 할 일</small><div id="pzTodo"></div></div>
     </div>
   </div>
 </div>
@@ -871,7 +937,7 @@ button:focus-visible, summary:focus-visible { outline-color: #dce0e4; }
       <dl id="endMore"></dl>
       <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
     </details>
-    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
+    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="cta" id="btnCity" type="button" hidden>도시로 돌아가기</button><button class="ghost" id="btnRetry" type="button">다시 잠입</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
   </div>
 </div>
 

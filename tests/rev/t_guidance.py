@@ -91,7 +91,8 @@ async def main():
         await start(5)
         await goal_contains('감방에서 나가기')
         await pg.click('#btnPause')
-        assert '감방에서 나가기' in await pg.locator('#pzTodo').inner_text()
+        assert any('감방에서 나가기' in row[2] for row in await pg.evaluate('window.__game.briefTodo()'))
+        assert not await pg.locator('#pzTodo').is_visible()
         await pg.keyboard.press('Escape')
 
         # A non-positional story must not invent a distance, floor or map arrow.
@@ -105,7 +106,7 @@ async def main():
         text = await pg.locator('#objective .goal').inner_text()
         assert 'NaN' not in text and not text.endswith('m'), text
         await pg.click('#btnPause')
-        assert '감방에서 나가기' not in await pg.locator('#pzTodo').inner_text()
+        assert not any('감방에서 나가기' in row[2] for row in await pg.evaluate('window.__game.briefTodo()'))
         assert not errors, errors
         await browser.close()
     print('guidance: selected steps/markers, untracking, completion, escape, minimal mode and pause completion passed')

@@ -18,9 +18,10 @@ function nearHide() {
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
+// 시체를 메고는 실내 계단(fstair)만 오른다 (사다리·배관·옥상 계단은 못 오른다)
 function nearClimb() {
-  const P = S.player; if (P.carrying || P.captive || P.jump) return null; let best = null, bd = 44;
-  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
+  const P = S.player; if (P.captive || P.jump) return null; let best = null, bd = 44;
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (P.carrying && l.kind !== 'fstair') continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd) { bd = d; best = l; } }
   return best;
 }
 // 계단실 (꺾인 두 줄): 올라가는 줄 = 계단 칸 Y + 들어서는 칸 e(=Y+d), 위층의 옆 줄 = 내려가는 구멍 c1(Y 옆, 깊은 쪽)·c2(e 옆, 바닥 쪽 끝)
@@ -38,8 +39,8 @@ const downPt = l => { const h = stairHole(l); if (h) return h.c2;
   return { x: l.x, y: l.y }; };
 // 위층에서 아래층으로
 function nearFloorDown() {
-  const P = S.player; if (P.z || !flOf(P) || P.jump || P.carrying || P.captive) return null; let best = null, bd = 1e9;
-  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P)) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
+  const P = S.player; if (P.z || !flOf(P) || P.jump || P.captive) return null; let best = null, bd = 1e9;
+  for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if ((l.kind !== 'fstair' && l.kind !== 'balc') || l.tfl !== flOf(P) || (P.carrying && l.kind !== 'fstair')) continue; const p = l.kind === 'balc' ? { x: l.ux, y: l.uy } : downPt(l), r = stairHole(l) ? 64 : 44, d = dist(P.x, P.y, p.x, p.y); if (d < r && d < bd) { bd = d; best = l; } }  // 구멍 끝은 난간이라 옆 칸에서 누른다 (64px)
   return best;
 }
 function nearNote() {
@@ -278,10 +279,29 @@ function winInit() {
     }
     (byB[b] = byB[b] || []).push(w);
   }
-  for (const b in byB) { const ws = byB[b].filter(w => !w.st).sort(() => Math.random() - 0.5); ws.forEach((w, i) => { w.st = i === 0 ? 'open' : Math.random() < 0.6 ? 'lock' : 'bar'; }); }
+  // 건물마다 하나는 꼭 열어 두고, 나머지는 반쯤 열림 · 잠김 · 방범창이 적당히 섞이게 (예전엔 거의 다 잠겨 있었다)
+  for (const b in byB) { const ws = byB[b].filter(w => !w.st).sort(() => Math.random() - 0.5); ws.forEach((w, i) => { w.st = i === 0 || Math.random() < 0.45 ? 'open' : 'lock'; }); }  // 나머지는 잠김 — 락픽으로 딸 수 있다 (방범창은 물건 있는 방만)
+  // 2층 창문: 반쯤 열려 있다. 열린 창문 밑에서는 벽을 타고 올라 들어갈 수 있다 (바깥 땅 칸 · 안쪽 바닥 칸을 적어 둔다)
+  for (const w of S.fwindows || []) { w.st = w.fl === 1 && Math.random() < 0.5 ? 'open' : 'lock'; w.out = null; w.inn = null;
+    const g = GF[w.fl]; if (!g) continue;
+    for (const [dx, dy] of N4) { const ox = w.tx + dx, oy = w.ty + dy, ix = w.tx - dx, iy = w.ty - dy;
+      if (!inMap(ox, oy) || !inMap(ix, iy) || bldAt(ox, oy) >= 0 || groundSolidP(ox, oy) || SOLID.has(g[iy][ix]) || bldAt(ix, iy) < 0) continue;
+      w.out = { x: tc(ox), y: tc(oy), d: [dx, dy] }; w.inn = { x: tc(ix), y: tc(iy) }; break; } }
+}
+// 2층 안에서 열린 창문 앞: 창틀을 넘어 벽을 타고 내려간다
+function nearWinDrop() {
+  const P = S.player; if (P.z || flOf(P) !== 1 || P.carrying || P.captive || P.jump || P.hide || P.trav) return null; let best = null, bd = 40;
+  for (const w of S.fwindows || []) { if (ACT_SKIP.has(w) || w.fl !== 1 || w.st !== 'open' || !w.out || !w.inn) continue; const d = dist(P.x, P.y, w.inn.x, w.inn.y); if (d < bd) { bd = d; best = w; } }
+  return best;
+}
+// 벽 타고 2층 열린 창문으로: 창문 바로 밑(바깥 땅 칸)에서. 열린 창문만 (매달린 채로는 락픽을 못 쓴다)
+function nearWinClimb() {
+  const P = S.player; if (P.z || flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav) return null; let best = null, bd = 36;
+  for (const w of S.fwindows || []) { if (ACT_SKIP.has(w) || w.fl !== 1 || !w.out || w.st !== 'open') continue; const d = dist(P.x, P.y, w.out.x, w.out.y); if (d < bd) { bd = d; best = w; } }
+  return best;
 }
 const winSt = w => w.st || 'open';
-const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
+const pickDur = kind => (kind === 'door' ? 3.2 : kind === 'bar' ? 3.8 : kind === 'latch' ? 0.7 : 1.6) * (DKEY === 'easy' ? 0.8 : DKEY === 'hard' ? 1.25 : 1);
 function startPick(o) { const P = S.player; P.pick = Object.assign({ t: 0, nt: 0.2 }, o, { dur: pickDur(o.kind) }); P.vx = P.vy = 0; P.cover = null; play('metal', 0.18, 1.8); hint('pick', '락픽: 따는 동안 움직이지 마라. 긁는 소리가 조금 난다. 안쪽 창문은 걸쇠만 풀면 된다'); }
 // 반격 (메탈기어 CQC식): 경비가 칼을 들어 올린 뒤 내려치기 직전(0.35초)에 [행동]이면 붙잡아 넘어뜨려 기절시킨다. 소리가 커서 주변이 몰려온다
 const COUNTER_WIN = 0.35;
@@ -344,7 +364,7 @@ function updatePick(P, mag, dt) {
     S.stats.cleaned = (S.stats.cleaned || 0) + (n0 - S.decals.length); play('cloth', 0.3); toast(S.decals.some(o => o.trail && o.trail === K.d.trail) ? '닦았다 — 이어진 핏방울이 더 남아 있다' : '핏자국을 닦았다', 1.8, 'good'); return; }
   if (K.kind === 'latch') { K.w.st = 'open'; noteChange('win', K.w); play('cloth', 0.3); toast('걸쇠를 풀었다 — 이 창문은 이제 열려 있다', 2); return; }
   P.picks--; S.stats.picks = (S.stats.picks || 0) + 1; play('switch', 0.5, 1.4);
-  if (K.kind === 'win') { K.w.st = 'open'; noteChange('win', K.w); toast(`창문을 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
+  if (K.kind === 'win' || K.kind === 'bar') { K.w.st = 'open'; noteChange('win', K.w); toast(`${K.kind === 'bar' ? '방범창을 풀었다' : '창문을 땄다'} — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
   else { const d = K.d; noteChange('door', d, d.keyLock); d.keyLock = null; setDoor(d, false); toast(`잠금장치를 땄다 — 락픽 ${P.picks}개 남음`, 2.2, 'good'); }
 }
 function drawPickProgress(P) {
@@ -369,8 +389,7 @@ function nearWindow() {
     if (dist(P.x, P.y, w.x, w.y) > 52) continue;
     const dx = Math.abs(P.x - w.x) > Math.abs(P.y - w.y) ? Math.sign(w.x - P.x) : 0, dy = dx ? 0 : Math.sign(w.y - P.y);
     const ox = w.tx + dx, oy = w.ty + dy;
-    if (winSt(w) === 'bar') continue;
-    if (!groundSolidP(ox, oy)) return { w, tx: ox, ty: oy };
+    if (!groundSolidP(ox, oy)) return { w, tx: ox, ty: oy };  // 방범창도 다룰 수 있다 (락픽으로 느리게 푼다)
   }
   return null;
 }
@@ -471,7 +490,8 @@ function openKeypad(d) {
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
 function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; if (S) S.keypad = null; }
 // 들킬 듯할 때 짧게 똑딱 — 알아채는 정도가 오를수록 높고 빠르게
-function warnTick(m) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
+function warnTick(m) { return;  // 알아채는 중 삐삐 소리도 뺀다 (눈 막대·머리 위 표시로 충분)
+  if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
 function updateWarn(dt) {
   let m = 0; for (const g of S.guards) if (!g.civ && g.seen && g.state !== 'ALERT' && g.state !== 'DEAD') m = Math.max(m, g.meter || 0);
   if (m < 0.15) { S.warnT = 0; return; }
@@ -533,7 +553,7 @@ function stalkGuard() {
 // 물체가 겹칠 때: 주 행동 후보를 대상 하나씩 빼 가며 다시 구해 목록을 만들고(최대 4), 고른 것(S.actSel)을 주 행동으로 쓴다
 // 바꾸기: Tab · 터치 ⇄ 버튼. 후보 묶음이 바뀌면 처음(가장 우선)으로 돌아간다
 const ACT_SKIP = new Set();
-const actObj = a => a.it || a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || a.tp || a.j || a.lv || null;
+const actObj = a => a.it || a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || (a.tp && (a.tp.t || a.tp.car || a.tp)) || a.j || a.lv || null;  // 함정·차 경보는 매번 새로 만든 묶음이 아니라 그 물건으로 구분
 const _oid = new WeakMap(); let _oidN = 0; const oid = o => { if (!o || typeof o !== 'object') return ''; if (!_oid.has(o)) _oid.set(o, ++_oidN); return _oid.get(o); };
 function actionChoices() {
   const out = []; ACT_SKIP.clear(); let pref;
@@ -564,6 +584,7 @@ function primaryActionRaw() {
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
+  if (S.vehicles) { const ca = cityAction(); if (ca) return ca; }  // 도시: 차 타기·내리기·의뢰 받기
   { const cg = counterTarget(); if (cg) return { k: 'counter', g: cg, label: '반격!' }; }  // 내려치기 직전이면 무엇보다 먼저
   if (P.wire) {
     const h = wirePt(P.wire.w, P.wire.s), at = { x: h.x, y: h.y - 6 };
@@ -590,6 +611,7 @@ function primaryActionRaw() {
     const cd = cdz; if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? `내려가기 · ${(cd.bfl || 0) + 1}층` : '내려가기' };
     const rv = nearVent(); if (rv) return { k: 'ventIn', v: rv, label: '환풍구로 들어가기' };
     const jt = jumpTarget(); if (jt) return { k: 'leap', j: jt, label: '건너뛰기' };
+    { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: '벽 잡고 오르기 · 한 층 위 옥상' }; }
     const ds = dropSpot(); if (ds) return { k: 'jump', s: ds, label: P.z >= 2 ? '1층 옥상으로' : '뛰어내리기' };
     return { k: 'none', label: '암살' };
   }
@@ -619,12 +641,15 @@ function primaryActionRaw() {
   if (cu) return { k: 'up', l: cu, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `오르기 · ${cu.tfl + 1}층` : cu.kind === 'stair' ? '오르기 · 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
   const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: '환풍구로 들어가기' };
   const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downPt(fd), label: fd.kind === 'balc' ? '내려가기 · 베란다로' : `내려가기 · ${fd.bfl + 1}층` };
+  { const wd = nearWinDrop(); if (wd) return { k: 'winDrop', w: wd, at: { x: wd.x, y: wd.y }, label: '창문 넘어 내려가기' }; }
   const nw = nearWindow(); if (nw) {
-    if (winSt(nw.w) === 'lock') { const inside = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === nw.w.b;
-      if (inside) return { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'latch', w: nw.w, x: nw.w.x, y: nw.w.y }, label: '창문 걸쇠 풀기' };
-      return P.picks > 0 ? { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'win', w: nw.w, x: nw.w.x, y: nw.w.y }, label: `잠긴 창문 — 락픽으로 따기 (${P.picks}개)` } : { k: 'keymsg', at: { x: nw.w.x, y: nw.w.y }, label: '잠긴 창문 — 락픽이 없다' }; }
+    const ws = winSt(nw.w);
+    if (ws === 'lock' || ws === 'bar') { const inside = bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === nw.w.b, bar = ws === 'bar';
+      if (inside) return { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: 'latch', w: nw.w, x: nw.w.x, y: nw.w.y }, label: bar ? '방범창 고정쇠 풀기' : '창문 걸쇠 풀기' };
+      return P.picks > 0 ? { k: 'pick', at: { x: nw.w.x, y: nw.w.y }, o: { kind: bar ? 'bar' : 'win', w: nw.w, x: nw.w.x, y: nw.w.y }, label: bar ? `방범창 — 락픽으로 풀기 (느림 · ${P.picks}개)` : `잠긴 창문 — 락픽으로 따기 (${P.picks}개)` } : { k: 'keymsg', at: { x: nw.w.x, y: nw.w.y }, label: bar ? '방범창 — 락픽이 없다' : '잠긴 창문 — 락픽이 없다' }; }
     return { k: 'window', wv: nw, label: '창문 넘기' };
   }
+  { const wc = nearWinClimb(); if (wc) return { k: 'winClimb', w: wc, at: { x: wc.x, y: wc.y }, label: '벽 타고 2층 창문으로' }; }  /* 1층 창문이 먼저, 2층 창문 오르기는 ⇄ */
   const h = nearHide();
   if (h && !P.carrying) return { k: 'hide', h, label: '숨기' };
   if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', label: '넣기' };
@@ -644,7 +669,9 @@ function primaryActionRaw() {
     return res;
   }
   { const cr = S.camRoom; if (cr && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
-  { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
+  { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: wu.z > 1 ? '벽 잡고 오르기 · 한 층 위 옥상' : '벽 잡고 오르기 · 1층 옥상' }; }
+  { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
+  { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
 }
 function actPrimary(force) {
@@ -657,6 +684,10 @@ function actPrimary(force) {
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
     case 'leave': leaveHide(); break;
+    case 'carIn': carEnter(a.v); break;
+    case 'carOut': carExit(); break;
+    case 'contract': cityContract(a.c); break;
+    case 'rumor': spreadRumor(a.c); break;
     case 'surface': {
       const w = a.w; P.under = false; P.x = w.x; P.y = w.y; P.hide = w; P.hideFrom = null; w.spotted = false; S.hideExitLock = true;
       play('metal', 0.35); S.fade = 0.35; toast('맨홀 아래로 올라왔다 — 아직 숨어 있다', 2); break;
@@ -665,6 +696,27 @@ function actPrimary(force) {
     case 'clean': startClean(a.d); break;
     case 'loot': startLoot(a.it); break;
     case 'counter': doCounter(a.g); break;
+    case 'winDrop': {  // 창틀을 넘고 → 벽에 매달려 → 내려선다
+      const w = a.w, o = w.out, up = { x: o.x - o.d[0] * 22, y: o.y - o.d[1] * 22 }; P.a = Math.atan2(o.d[1], o.d[0]); play('cloth', 0.4);
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: w.inn.x, y: w.inn.y, f: 0.15 }, { x: up.x, y: up.y - 44, f: 0.4 }, { x: up.x, y: up.y, f: 0.85 }, { x: o.x, y: o.y, f: 1 }], dur: 1.2,
+        phases: [{ to: 0.4, pose: 'vault' }, { to: 0.85, pose: 'climb' }, { to: 1, pose: 'vault' }], face: Math.atan2(-o.d[1], -o.d[0]), down: true, step: 'cloth', base: { x: w.inn.x, y: w.inn.y } });
+      { const T = P.trav; after(T.dur * 0.4, () => { if (P.trav !== T) return; P.fl = 0; setLayer(0); T.base = { x: o.x, y: o.y }; }); }  // 창틀을 넘은 뒤로는 바깥 1층에서 보인다
+      P.trav.end = () => { P.fl = 0; setLayer(0); P.z = 0; P.x = o.x; P.y = o.y; S.fade = 0.12; play('land', 0.25); noise(o.x, o.y, 70, 'land', 0); };
+      break;
+    }
+    case 'winClimb': {  // 웅크렸다 뛰어올라 벽을 타고 2층 창틀을 넘는다
+      const w = a.w, o = w.out, up = { x: o.x - o.d[0] * 22, y: o.y - o.d[1] * 22 }, lk = w.st !== 'open'; P.a = Math.atan2(-o.d[1], -o.d[0]); play('cloth', 0.4); noise(P.x, P.y, 60, 'climb'); S.stats.winClimb = (S.stats.winClimb || 0) + 1;
+      // 잠긴 창문: 창틀에 매달린 채 락픽으로 딴다 (락픽 하나를 쓰고 1.3초 더 걸린다)
+      if (lk) { P.picks--; w.st = 'open'; after(0.6, () => play('metal', 0.25, 1.8)); after(1.2, () => play('metal', 0.25, 1.9)); after(1.7, () => play('click', 0.4)); }
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: o.x, y: o.y, f: 0.1 * (lk ? 0.55 : 1) }, { x: up.x, y: up.y, f: 0.25 * (lk ? 0.55 : 1) }, { x: up.x, y: up.y - 44, f: lk ? 0.85 : 0.72 }, { x: w.inn.x, y: w.inn.y, f: 1 }], dur: lk ? 2.8 : 1.25,
+        phases: [{ to: 0.1 * (lk ? 0.55 : 1), pose: 'wjCrouch' }, { to: 0.25 * (lk ? 0.55 : 1), pose: 'wjLeap' }, { to: lk ? 0.85 : 0.72, pose: 'climb' }, { to: 1, pose: 'vault' }], face: P.a, base: { x: o.x, y: o.y }, step: 'cloth' });
+      if (lk) toast(`2층 창문을 땄다 — 락픽 ${P.picks}개 남음`, 2);
+      after(0.12, () => play('throw', 0.3));
+      // 창틀을 넘는 순간부터는 2층 안에 있는 사람 눈에 보인다 (그 전엔 바깥 1층에서만)
+      { const T = P.trav; after(T.dur * 0.74, () => { if (P.trav !== T) return; P.fl = w.fl; setLayer(P.fl); T.base = { x: w.inn.x, y: w.inn.y }; }); }
+      P.trav.end = () => { P.fl = w.fl; setLayer(P.fl); P.z = 0; P.x = w.inn.x; P.y = w.inn.y; S.fade = 0.15; play('land', 0.2); hint('winClimb', '열린 2층 창문은 밑에서 벽을 타고 들어갈 수 있다. 잠긴 창문은 안 된다'); };
+      break;
+    }
     case 'window': {
       const v = a.wv;
       P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };
@@ -673,9 +725,10 @@ function actPrimary(force) {
       break;
     }
     case 'drop': {
-      const g = a.g; P.z = 0; P.jump = null; P.wire = null; P.x = g.x; P.y = g.y; P.strikeT = 0.4; P.a = g.a;
-      play('land', 0.5); killGuard(g); S.stats.special++;
-      toast(lastKO() ? '위에서 덮쳐 기절' : '낙하 암살', 1.8, 'good'); collide(P, 13, groundSolidP); break;
+      // 위에서 덮치기: 그 자리로 순간이동하지 않고 뛰어내려 덮친다 (내려앉는 순간 처치)
+      const g = a.g, z0 = P.z || 0; P.wire = null; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.doomed = true; g.path = null; g.moving = false;
+      P.jump = { x0: P.x, y0: P.y, x1: g.x, y1: g.y, t: 0, dur: 0.26 + z0 * 0.05, z1: 0, arc: 10, noise: 40, killG: g, dropKill: true }; P.z = 0; play('throw', 0.3);
+      break;
     }
     case 'wireOn': {
       const grab = () => { if (P.fl) { P.fl = 0; setLayer(0); S.fade = 0.15; }
@@ -689,7 +742,8 @@ function actPrimary(force) {
       break;
     }
     case 'wireOff': wireDismount(a.n); break;
-    case 'wireRoof': { P.wire = null; P.z = a.lv; if (a.to) { P.x = a.to.x; P.y = a.to.y; } play('land', 0.3); noise(P.x, P.y, 50 * floorMul(P.x, P.y, 1), 'land', null, P.z); break; }
+    case 'wireRoof': { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : { x: P.x, y: P.y }; P.wire = null; const to = a.to || { x: P.x, y: P.y };  // 줄에서 옥상으로 살짝 뛰어 내려선다
+      P.jump = { x0: h.x, y0: h.y, x1: to.x, y1: to.y, t: 0, dur: 0.24, z1: a.lv, arc: 8, noise: 50 }; P.z = a.lv; break; }
     case 'wireFall': {
       const h = wirePt(P.wire.w, P.wire.s); P.wire = null;
       P.jump = { x0: P.x, y0: P.y, x1: P.x, y1: P.y, t: 0, dur: 0.32, z1: 0, arc: 8, noise: 130 };
@@ -741,9 +795,15 @@ function actPrimary(force) {
         break;
       }
       if (l.kind === 'fstair') {  // 실내 계단: 계단 칸으로 걸어 올라간다
-        startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 1 }], dur: 0.42, phases: [{ to: 1, pose: 'walk' }],
-          end: () => { P.fl = l.tfl; setLayer(P.fl); const ho = stairHole(l);  // 위층: 구멍(아래층에서 올라오는 계단) 바닥 쪽 끝 옆에 올라선다
-            const at = ho ? [ho.top, ho.e].find(c => !solidAt(c.tx, c.ty)) : null; if (at) { P.x = tc(at.tx); P.y = tc(at.ty); P.a = Math.atan2(ho.d[1], ho.d[0]); } else { P.x = l.x; P.y = l.y; } play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
+        // 위층에 내려설 자리: 계단을 다 오른 그 앞 한 칸 (구멍 위쪽 끝을 지나 한 걸음) — 예전엔 구멍 반대쪽 끝(두세 칸 앞)으로 건너뛰었다
+        const L0 = CUR_F; setLayer(l.tfl); const ho = stairHole(l), up = ho ? [-ho.d[0], -ho.d[1]] : null;
+        const c1 = ho ? { tx: Math.floor(ho.c1.x / TILE), ty: Math.floor(ho.c1.y / TILE) } : null;
+        const cand = ho ? [{ tx: c1.tx + up[0], ty: c1.ty + up[1] }, { tx: l.tx + up[0], ty: l.ty + up[1] }, ho.e, ho.top] : [];
+        const at = cand.find(c => inMap(c.tx, c.ty) && !solidAt(c.tx, c.ty) && bldAt(c.tx, c.ty) === bldAt(l.tx, l.ty)); setLayer(L0);
+        const ax = at ? tc(at.tx) : l.x, ay = at ? tc(at.ty) : l.y;
+        startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y - 8, f: 0.6 }, { x: ax, y: ay, f: 1 }], dur: 0.62, phases: [{ to: 1, pose: 'walk' }],
+          end: () => { P.fl = l.tfl; setLayer(P.fl);
+            P.x = ax; P.y = ay; if (up) P.a = Math.atan2(up[1], up[0]); play('step_w1', 0.3); S.fade = 0.15; hint('floors', '위층: 같은 계단으로 오르내린다. 위층은 밖에서 안 보인다'); } });
         break;
       }
       const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
@@ -762,7 +822,7 @@ function actPrimary(force) {
       break;
     }
     case 'ventIn': { S.stats.vents = (S.stats.vents || 0) + 1;
-      const v = a.v; P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = 0.3;
+      const v = a.v; P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent'); S.fade = Math.max(S.fade || 0, 0.25);  /* 창살 속으로: 화면이 잠깐 어두워진다 */ S.fade = 0.3;
       toast('환풍구로 들어갔다', 1.6); break;
     }
     case 'ventOut': {
@@ -784,6 +844,16 @@ function actPrimary(force) {
     case 'ledgeKill': {
       const g = a.g, n = P.ledge, from = { x: g.x, y: g.y }, to = groundBelow(P.x, P.y, n) || groundBelow(g.x, g.y, n) || { x: P.x + n.x * 60, y: P.y + n.y * 60 };
       P.strikeT = 0.3; play('cloth', 0.5); fallKill(g, from, to); toast('가장자리에서 끌어내렸다 — 추락사로 보인다', 2, 'good');
+      break;
+    }
+    case 'wallUp': {  // 1층 높이 벽: 손을 뻗어 가장자리를 잡고 끌어올린다
+      const s = a.s; P.a = Math.atan2(s.n[1], s.n[0]); play('cloth', 0.4); noise(P.x, P.y, 55, 'climb'); S.stats.wallUp = (S.stats.wallUp || 0) + 1;
+      // 웅크림(0.12) → 뛰어올라 가장자리를 잡음(0.3) → 매달려 한 번 버팀(0.55) → 끌어올림(0.88) → 올라섬
+      const hang = { x: s.edge.x + (s.top.x - s.edge.x) * 0.55, y: s.edge.y + (s.top.y - s.edge.y) * 0.55 };
+      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: P.x, y: P.y, f: 0.12 }, { x: hang.x, y: hang.y, f: 0.3 }, { x: hang.x, y: hang.y, f: 0.55 }, { x: s.top.x, y: s.top.y + 14, f: 0.88 }, { x: s.top.x, y: s.top.y, f: 1 }], dur: 1.15,
+        phases: [{ to: 0.12, pose: 'wjCrouch' }, { to: 0.3, pose: 'wjLeap' }, { to: 0.55, pose: 'wjHang' }, { to: 0.88, pose: 'climb' }, { to: 1, pose: 'vault' }], face: P.a, hangOk: s.n[1] === -1, base: { x: s.edge.x, y: s.edge.y }, elev: P.z || 0 });
+      after(0.15, () => play('throw', 0.3)); after(0.34, () => play('land', 0.2));  // 뛰는 소리 · 손이 턱에 닿는 소리
+      P.trav.end = () => { P.fl = 0; setLayer(0); P.z = s.z; P.x = s.top.x; P.y = s.top.y; hint('wallUp', '1층 높이 벽은 가장자리를 잡고 오를 수 있다. 내려갈 때는 가장자리에 매달려 밖으로 민다'); };
       break;
     }
     case 'ledgeUp': { const n0 = P.ledge, d = ledgeDraw(P); P.ledge = null; play('cloth', 0.3); startTrav({ pts: [{ x: d.x, y: d.y, f: 0 }, { x: P.x - n0.x * 6, y: P.y - n0.y * 6, f: 1 }], dur: 0.38, phases: [{ to: 1, pose: 'vault' }], face: Math.atan2(-n0.y, -n0.x) }); break; }
@@ -941,7 +1011,8 @@ function koPerson(g, mode, where) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
-  const c = { fl: flOf(g), ch: charOf(g), ko: true, g, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  facWitness(g); cityVictim(g);
+  const c = { fl: flOf(g), ch: charOf(g), ko: true, g, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -1035,7 +1106,8 @@ function killGuard(g, mode, where, quiet) {
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
   S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
-  const c = { fl: flOf(g), ch: charOf(g), tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
+  facWitness(g); cityVictim(g);
+  const c = { fl: flOf(g), ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true; where.bodies++; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
@@ -1059,7 +1131,7 @@ function accidentKill(g, how) {
   logEv('accident', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; play('thud', 0.6);
   S.stats.kills++; S.stats.accidents = (S.stats.accidents || 0) + 1; if (g.target) after(1.2, () => bossRadio('accident', true)); if (!g.target && g.civ) S.stats.extraKills++; else if (!g.target && !g.dog) S.stats.crewKills = (S.stats.crewKills || 0) + 1;
-  const c = { fl: flOf(g), ch: charOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, accident: how, t0: S.t };
+  const c = { fl: flOf(g), ch: charOf(g), fac: g.fac, dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, accident: how, t0: S.t };
   S.corpses.push(c);
   if (g.target) { const left = S.guards.filter(o => o.target && o.state !== 'DEAD').length; toast(left ? `표적 제거(사고) — 남은 표적 ${left}` : '표적 제거 — 사고로 보인다', 3, 'good'); }
   if (S.fuseGuard === g) S.fuseGuard = null;
@@ -1067,6 +1139,18 @@ function accidentKill(g, how) {
   checkObjective();
 }
 // 함정: { k: 'shock', sw: [x, y], zone: [x0, y0, x1, y1] } 전선 끊어 물웅덩이 감전 · { k: 'drop', at: [x, y], hit: [x0, y0, x1, y1] } 옥상 간판 떨어뜨리기
+// 간판 달린 건물(상가)마다 옥상 끝 간판을 떨어뜨릴 수 있다 — 정면 높이(b.fh)가 정해진 뒤에 부른다
+function autoSigns() {
+  BLD.forEach(b => {
+    if (b.kind !== 'shop' || !b.fh) return; const cx = Math.round((b.x0 + b.x1) / 2), ey = b.y1 - b.fh;
+    if (ey < b.y0 || S.traps.some(t => t.k === 'drop' && Math.abs(t.at[0] - cx) <= 4 && Math.abs(t.at[1] - ey) <= 3)) return;
+    const hit = [Math.max(0, cx - 2), b.y1 + 1, Math.min(MW - 1, cx + 2), Math.min(MH - 1, b.y1 + 2)]; let open = 0;
+    for (let y = hit[1]; y <= hit[3]; y++) for (let x = hit[0]; x <= hit[2]; x++) if (!solidAt(x, y)) open++;
+    // 아래가 막혀 있으면(벽·다른 건물) 떨어뜨릴 곳이 아니다
+    if (open < 4) return;
+    S.traps.push({ i: S.traps.length, used: false, k: 'drop', at: [cx, ey], hit, text: ((b.signs || [])[0] || b.name || '간판').slice(0, 6), auto: true, noOpp: true });
+  });
+}
 function trapsInit() {
   S.traps = (STAGE.traps || []).map((t, i) => Object.assign({ i, used: false }, t));
   S.carAlarms = CARS.map(([x, y]) => ({ x: tc(x), y: (y + 1) * TILE, tx: x, ty: y, used: false, t: 0 }));
@@ -1079,7 +1163,7 @@ function nearTrap() {
     if (t.k === 'shock' && !P.z && dist(P.x, P.y, tc(t.sw[0]), tc(t.sw[1])) < 52) return { t, label: '전선 끊기 — 물웅덩이 감전' };
     if (t.k === 'drop' && P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < 52) return { t, label: t.label || '간판 떨어뜨리기' };
   }
-  if (!P.z) for (const c of S.carAlarms || []) if (!c.used && dist(P.x, P.y, c.x, c.y) < 56) return { car: c, label: '차 경보 울리기' };
+  if (!P.z) for (const c of S.carAlarms || []) if (!c.used && !ACT_SKIP.has(c) && dist(P.x, P.y, c.x, c.y) < 56) return { car: c, label: '차 경보 울리기' };
   return null;
 }
 function fireTrap(a) {
@@ -1087,12 +1171,12 @@ function fireTrap(a) {
   const t = a.t; t.used = true;
   if (t.k === 'shock') {
     const z = t.zone, cx = (z[0] + z[2] + 1) / 2 * TILE, cy = (z[1] + z[3] + 1) / 2 * TILE; let n = 0;
-    for (const g of S.guards) if (!g.civ && !flOf(g) && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'shock'); n++; }
+    for (const g of S.guards) if (!g.child && !flOf(g) && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'shock'); n++; }
     t.fx = 1.6; play('fuse', 0.7); noise(cx, cy, 150, 'switch'); S.flash = 0.2;
     toast(n ? `감전 — ${n}명 쓰러졌다 (사고로 보인다)` : '물웅덩이에 전기가 흘렀지만 아무도 없었다', 2.6, n ? 'good' : '');
   } else if (t.k === 'drop') {
     const z = t.hit, cx = (z[0] + z[2] + 1) / 2 * TILE, cy = (z[1] + z[3] + 1) / 2 * TILE; let n = 0;
-    for (const g of S.guards) if (!g.civ && !flOf(g) && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'fall'); n++; }
+    for (const g of S.guards) if (!g.child && !flOf(g) && !g.z && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'fall'); n++; }  // 지나가던 주민도 깔린다 (주민 사망 감점)
     t.wreck = { x: cx, y: cy }; play('thud', 0.9); play('metal', 0.6); noise(cx, cy, 260, 'crash'); S.flash = 0.15;
     toast(n ? `간판이 떨어졌다 — ${n}명 깔렸다 (사고로 보인다)` : '간판이 떨어졌다 — 아무도 없었다. 소리에 사람들이 온다', 2.6, n ? 'good' : '');
   }
@@ -1154,9 +1238,10 @@ function drawTrapsGround() {
 function drawTrapsRoof() {
   for (const t of S.traps || []) if (t.k === 'drop' && !t.used) {
     const x = t.at[0] * TILE, y = t.at[1] * TILE + 26;
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x - 18, y + 4, 86, 22); ctx.fillStyle = '#2a1830'; ctx.fillRect(x - 20, y, 86, 22); ctx.strokeStyle = '#ff3ca8'; ctx.lineWidth = 2; ctx.strokeRect(x - 18, y + 2, 82, 18);
-    ctx.fillStyle = '#ff9ad2'; ctx.font = '700 12px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t.text || '간판', x + 23, y + 15);
-    const P = S.player; if (P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < 200) { const z = t.hit; ctx.strokeStyle = 'rgba(255,90,170,.6)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeRect(z[0] * TILE, z[1] * TILE, (z[2] - z[0] + 1) * TILE, (z[3] - z[1] + 1) * TILE); ctx.setLineDash([]); }
+    // 자동 간판은 건물 옥상 간판 그림이 이미 있다 — 떨어질 자리만 보여 준다
+    if (!t.auto) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x - 18, y + 4, 86, 22); ctx.fillStyle = '#2a1830'; ctx.fillRect(x - 20, y, 86, 22); ctx.strokeStyle = '#ff3ca8'; ctx.lineWidth = 2; ctx.strokeRect(x - 18, y + 2, 82, 18);
+    ctx.fillStyle = '#ff9ad2'; ctx.font = '700 12px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t.text || '간판', x + 23, y + 15); }
+    const P = S.player; if (P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < (t.auto ? 110 : 200)) {  /* 아무 간판: 바로 옆에 섰을 때만 떨어질 자리 표시 */ const z = t.hit; ctx.strokeStyle = 'rgba(255,90,170,.6)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeRect(z[0] * TILE, z[1] * TILE, (z[2] - z[0] + 1) * TILE, (z[3] - z[1] + 1) * TILE); ctx.setLineDash([]); }
   }
 }
 function bldPower(fb, on) {
@@ -1184,9 +1269,9 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   const sa = force || secondaryAction();
   if (sa.viaZ) { actPrimary(sa); return; }
   if (sa.k === 'cover') { enterCover(sa.n); return; }
-  if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 가까이 온 자경대원은 끌어내린다'); return; }
+  if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 밖으로 밀면 손을 놓고 뛰어내린다(2층 높이까지). 가까이 온 자경대원은 끌어내린다'); return; }
   if (sa.k === 'uncover') { P.cover = null; play('cloth', 0.15); return; }
-  if (sa.k === 'fdown') { const l = sa.l; P.fl = l.bfl; setLayer(P.fl); P.x = l.x; P.y = l.y; play('step_w0', 0.3); S.fade = 0.15; return; }
+  if (sa.k === 'fdown') { actPrimary({ k: 'fdown', l: sa.l, at: sa.at, label: '', viaZ: true }); return; }  // 계단 내려가기는 늘 걸어 내려가는 동작으로
   if (sa.k === 'grab') { grab(sa.g); return; }
   if (sa.k === 'use') { useItem(sa.n); return; }
   if (sa.k === 'candy') { giveCandy(sa.g); return; }
@@ -1315,8 +1400,27 @@ function kunaiHit(k) {
     hint('kunaiLamp', '깨진 조명은 다시 켜지지 않는다. 깨지는 소리에 근처 자경대원이 다가온다');
   } else {
     const g = t.ref; if (g.state === 'DEAD') { play('metal', 0.4); return; }
-    S.lethalNext = true; killGuard(g); S.stats.special++;
+    S.lethalNext = true; killGuard(g); S.stats.special++; dartBlame(g);
     toast('원격 암살', 1.6, 'good');
   }
 }
 
+// 1층 높이 벽 오르기: 땅에서 벽(건물·담·컨테이너)에 바짝 붙어 있고, 그 너머가 1층 높이 옥상이면
+// 땅에서 1층 높이 옥상으로, 또는 옥상에서 한 층 더 높은 옆 옥상으로
+function wallUpSpot() {
+  const P = S.player, z0 = P.z || 0; if (flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav || P.wire || P.under || P.vent || P.ledge) return null;
+  const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, z1 = z0 + 1;
+  const ok1 = (x, y) => inMap(x, y) && rLv(x, y) === z1 && !robAt(x, y);
+  let best = null, bs = -9;
+  for (const [nx, ny] of [[0, -1], [0, 1], [1, 0], [-1, 0]]) {
+    const ex = tx + nx, ey = ty + ny; if (z0 ? rLv(ex, ey) === z0 : !groundSolidP(ex, ey)) continue;
+    // 벽(막힌 칸)이고 그 위가 한 층 높은 옥상 — 땅에서 볼 때 남쪽 정면벽 줄은 옥상 높이가 0으로 적혀 있으니 한 칸 안쪽을 본다
+    const bi = bldAt(ex, ey), facade = !z0 && !ok1(ex, ey) && bi >= 0 && BLD[bi].h === 1 && ok1(ex + nx, ey + ny);
+    if (!ok1(ex, ey) && !facade) continue;
+    const gap = nx > 0 ? TILE - fx : nx < 0 ? fx : ny > 0 ? TILE - fy : fy; if (gap > 26) continue;  // 벽에 바짝
+    const face = Math.cos(P.a) * nx + Math.sin(P.a) * ny; if (face < 0.3) continue;  // 벽을 보고 있을 때만
+    if (face > bs) { bs = face; const ix = ok1(ex + nx, ey + ny) ? ex + nx : ex, iy = ok1(ex + nx, ey + ny) ? ey + ny : ey;
+      best = { n: [nx, ny], z: z1, edge: { x: P.x + nx * gap, y: P.y + ny * gap }, top: { x: tc(ix), y: tc(iy) }, at: { x: P.x + nx * (gap + 10), y: P.y + ny * (gap + 10) } }; }
+  }
+  return best;
+}
