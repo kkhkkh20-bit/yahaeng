@@ -80,7 +80,7 @@ async def main():
     assert await ui.evaluate('window.__game.S.player.captive===window.__g&&window.__game.S.stats.kills===0'),'Real grapple input kills target'
    for held in [False,True]:
     await ui.evaluate('''()=>{__fresh();const S=window.__game.S,P=S.player;P.captive=__g;__g.state='CAPTIVE';S.hides=[{type:'bush',x:P.x+24,y:P.y,tx:33,ty:21,fl:0,z:0,cap:3,bodies:0}];__step(2)}''')
-    assert await ui.evaluate("document.querySelector('#btnCarry').textContent.includes('끌고 기절')&&document.querySelector('#btnCarry').textContent.includes('길게: 처치')")
+    assert await ui.evaluate("document.querySelector('#btnCarry').textContent.includes('끌고 기절')&&document.querySelector('#btnCarry').textContent.includes('길게 처치')")
     await down('KeyX','#btnCarry')
     if not held:await up('KeyX')
     if held:

@@ -34,9 +34,14 @@ async def main():
         await pg.evaluate('T.walk(24, 13)'); await pg.evaluate("() => { const g = T.npc('lone'), P = T.S().player; P.x = g.x - 34; P.y = g.y; P.a = 0; }")
         await pg.evaluate('() => T.G().actPrimary()'); await pg.wait_for_timeout(1000); r = await st(); print('4 기절', r)
         await pg.evaluate("() => { const c = T.S().corpses.find(c => c.tag === 'lone'); T.S().player.x = c.x - 18; T.S().player.y = c.y; }"); await pg.wait_for_timeout(150)
-        await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_function('!T.S().player.interact'); r = await st(); print('5 옷', r, await pg.evaluate('() => T.S().player.outfit'))
-        await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_timeout(700); await pg.evaluate('T.walk(25, 14)')
-        await pg.evaluate('() => T.G().actCarry()'); await pg.wait_for_timeout(800); r = await st(); print('6 숨기기', r)
+        # 제압 동작이 끝난 뒤 실제 [행동] 버튼의 선택을 실행한다. 옛 보조 API는 동작 중 입력을 무시한다.
+        await pg.wait_for_function('!T.G().actionBusy()')
+        selected = await pg.evaluate("()=>{const G=T.G();for(let i=0;i<8&&G.envAction().k!=='dress';i++)G.cycleEnv();return G.envAction().k}")
+        assert selected == 'dress', '대상 전환으로 옷 갈아입기를 선택할 수 없다'
+        await pg.evaluate('() => T.G().actEnv()'); await pg.wait_for_function("T.S().player.outfit==='crew'&&!T.G().actionBusy()")
+        r = await st(); print('5 옷', r, await pg.evaluate('() => T.S().player.outfit'))
+        await pg.evaluate('() => T.G().actEnv()'); await pg.wait_for_function('!!T.S().player.carrying&&!T.G().actionBusy()'); await pg.evaluate('T.walk(25, 14)')
+        await pg.evaluate('() => T.G().actEnv()'); await pg.wait_for_function('T.S().corpses.some(c=>c.stashed)'); await pg.wait_for_timeout(200); r = await st(); print('6 숨기기', r)
         if r[0] < 7: bad.append('기절·옷·숨기기 단계 실패 %s' % r)
         await pg.evaluate('T.walk(30, 9)'); await pg.evaluate('T.walk(36, 6)'); await pg.evaluate('T.walk(36, 4)'); r = await st(); print('7 초록 구역', r, await pg.evaluate("() => [T.npc('chief').state, T.S().player.disguiseBlown, T.npc('yard').state]"))
         if r[0] < 8 or r[1] >= 2: bad.append('자경대원 옷으로 마당 안쪽까지 못 간다 %s' % r)

@@ -64,9 +64,9 @@ function stageMap(w, labels) {
 function briefTodo() {
   const out = [], fg = pendingFirstGoal(); if (fg) out.push(['dia', '#7fd6ff', fg.text, fg.where || '']);
   S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), placeName(it.x, it.y, it.fl, it.b)]); });
-  for (const g of S.guards) if (g.target && !targetEliminated(g)) out.push(['dot', '#e8473c', (g.doc ? '한 선생' : '표적') + ' 처리', schedText(g) || placeName(g.x, g.y, flOf(g))]);
+  for (const g of S.guards) if (g.target && !targetEliminated(g)) out.push(['dot', '#e8473c', (g.doc ? '한 선생' : '표적') + ' 처치', schedText(g) || placeName(g.x, g.y, flOf(g))]);
   if (STAGE.securityEvidence && S.camRoom) out.push(['ring', '#8ca5ba', '신원 기록', '녹화됐을 때만 보안실에서 삭제']);
-  out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '끝나면 노란 원으로']);
+  out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
   return out;
 }
 // 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]
@@ -87,7 +87,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 이동: ['화면을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[이동] 버튼으로', 'Ctrl로'], 공격: ['[공격]', () => KK('atk')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 살피기: ['[살피기]를', 'Alt를'] };
+const TUT_KEY = { 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'], 살피기: ['[살피기]를', 'Alt를'] };
 const tutText = t => t.replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = B.name ? B.name + (B.plate && !B.plate.includes(B.name) && !B.name.includes(B.plate) ? '(' + B.plate + ')' : '') : B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -108,7 +108,7 @@ function nextGoal() {
   if (oppMode === 2) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '추적: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
   const c = [];
   S.items.forEach((it, i) => { if (!it.got) c.push({ text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0 }); });
-  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) { const at = targetPosition(g); c.push({ text: (g.doc ? '한 선생' : '표적') + ' 처리하기', where: placeName(at.x, at.y, flOf(at)), x: at.x, y: at.y, fl: flOf(at), g }); }
+  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) { const at = targetPosition(g); c.push({ text: (g.doc ? '한 선생' : '표적') + ' 처치하기', where: placeName(at.x, at.y, flOf(at)), x: at.x, y: at.y, fl: flOf(at), g }); }
   if (!c.length) return null;
   const cost = o => dist(P.x, P.y, o.x, o.y) + Math.abs((o.fl || 0) - flOf(P)) * 300;
   const goal = c.sort((a, b) => cost(a) - cost(b))[0]; goal.text = '의뢰: ' + goal.text; return goal;
@@ -124,7 +124,7 @@ function objectiveLines() {
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
-  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 들통남 — 다른 옷을 구하라` : `${outfitName(P.outfit)} — 초록 경계선 안은 지나다닐 수 있다`) : P.disguiseBlown ? '변장 들통남 — 다시 갈아입을 옷을 찾아라' : '변장 중 — 걸으면 멀리서는 안 들킨다']);
+  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 초록 경계선 통과 가능`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
   for (const g of S.guards) if (g.target) { const r = g.route[0], sc = !targetEliminated(g) && schedText(g); L.push([targetEliminated(g) ? 'done' : S.spare ? 'done' : '', (g.doc ? '한 선생' : '표적') + (S.spare && !targetEliminated(g) ? ' — 살려 둘 수 있다' : sc ? ' — ' + sc : ' — ' + place(r.x, r.y, g.fl))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
@@ -139,13 +139,14 @@ function objectiveText() {
   const tg = S.guards.filter(g => g.target), td = tg.filter(g => targetEliminated(g)).length;
   const parts = [];
   if (STAGE.keyDoors && S.doors.some(d => d.keyLock && d.locked) && !S.player.hasKey) parts.push('열쇠 확보(또는 다른 길)');
-  if (tg.length) parts.push(S.spare && td < tg.length ? '표적: 살려 둘 수 있다' : `표적 제거 ${td}/${tg.length}`);
+  if (tg.length) parts.push(S.spare && td < tg.length ? '표적: 살려 둘 수 있다' : `표적 처치 ${td}/${tg.length}`);
   if (S.items.length) parts.push(`${STAGE.itemName || '서류'} 회수 ${S.items.filter(i => i.got).length}/${S.items.length}`);
   return parts.join(' · ');
 }
 // 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
 function floorBanner(P, ptx, pty) {
-  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층 실내` : P.z ? `${P.z}층 높이 옥상` : bldAt(ptx, pty) >= 0 ? '1층 실내' : '거리';
+  const bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
+  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층 실내` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
   if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
   if (S._flk == null) { S._flk = k; return; }
   if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
@@ -160,17 +161,17 @@ function updateHUD(force) {
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
-  const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
+  const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : bldAt(ptx, pty) >= 0 ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
   floorBanner(P, ptx, pty);
-  hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : bldAt(ptx, pty) >= 0 ? 'in' : 'out';
+  hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : indoor ? 'in' : 'out';
   hud.layer.dataset.z = zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';
-  setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.interact ? P.interact.label : P.pick ? '작업 중' : P.hide ? '숨는 중' : P.captive ? '붙잡는 중 ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 붙음' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 붙음') + ' · 잘 안 보임 · 소리 없음' : P.trav ? '오르는 중' : (input.sneakToggle ? '[살금 모드] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '살금살금', walk: '걷기', run: '달리기' }[P.mode] + (loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 음악에 묻힘' : ' · 음악 소리') : ''));
+  setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.interact ? P.interact.label : P.pick ? '작업 중' : P.hide ? '은신 중' : P.captive ? '붙잡음 · ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 붙음' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 붙음') + ' · 은폐 효과 · 발소리 없음' : P.trav ? '이동 중' : (input.sneakToggle ? '[웅크림] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '웅크림', walk: '걷기', run: '달리기' }[P.mode] + (loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 발소리가 음악에 묻힘' : ' · 주변 음악 소리') : ''));
   syncTools();
-  setText(hud.kills, 'k', '제거 ' + S.stats.kills);
+  setText(hud.kills, 'k', '처치 ' + S.stats.kills);
   const fleeNow = S.fleeing && S.guards.some(g => g.state === 'FLEE');
   // 경계: 한 칸에 단계 이름 + 남은 시간 (따로 뜨던 경보 칸은 표적 도주 때만)
   hud.alarm.hidden = !fleeNow; hud.alarm.dataset.lv = S.alevel;
@@ -197,7 +198,7 @@ function updateHUD(force) {
   padButton(hud.carry, 'carryH', ea, P.ledge || P.wire ? '올라가기' : '행동');
   hud.carry.classList.toggle('ready', ea.k !== 'none');
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1); if (n > 1) setText($('cycleN'), 'cycN', (ea.choiceI + 1) + '/' + n); } }
-  { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '잡는 중') : '붙잡기', html = `<b>${label}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label); } }
+  { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label); } }
   keyMap(ka, ea, ga);
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 신원 확인 · 발각 + 이유 한 줄
@@ -223,8 +224,8 @@ function updateStealth(lv) {
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴을 확인하고 있다 — 시야를 벗어나라'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = '이 옷차림이 알려졌다 — 다른 옷 필요'; }
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '사람 가까이서 뛰면 눈에 띈다'; }
-  else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? '시체 운반 중 — 눈에 띈다' : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
-  else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛 아래 — 붙어도 가까우면 보인다' : `보이는 거리 ${Math.round(COVER_HIDE * 100)}% · 발소리 없음`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
+  else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절한 사람 운반 중' : '시체 운반 중') + ' · 눈에 띈다' : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
+  else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛 아래 — 붙어도 가까우면 보인다' : `경비의 탐지 거리 감소 · 발소리 없음`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '변장 · 통과 가능' : '행인으로 보인다'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
@@ -245,7 +246,7 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b><small>${input.tool === 'kunai' ? '길게 처치' : '개'}</small>`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b>${input.tool === 'kunai' ? '<small>길게 처치</small>' : ''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.setAttribute('aria-label', P.captive ? '심문' : input.tool === 'kunai' ? '다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치' : TOOL_NAME[input.tool]);
   hud.tool.classList.toggle('aiming', !!input.aiming);
   hud.tool.classList.toggle('ready', input.padWhistle ? !(S.whistleT > 0) : input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
@@ -277,7 +278,7 @@ function drawEndMap() {
     x.beginPath(); x.moveTo(px - 4, py - 4); x.lineTo(px + 4, py + 4); x.moveTo(px + 4, py - 4); x.lineTo(px - 4, py + 4); x.stroke();
   }
 }
-const END_MAIN = ['칭호', '수고비', '소요 시간', '조직원 처치', '발각 횟수', '발견된 시체'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
+const END_MAIN = ['칭호', '수고비', '소요 시간', '조직원 처치', '발각 횟수', '발견된 시체·기절자'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
   running = false;
   const st = S.stats, t = Math.floor(S.t);
@@ -298,27 +299,27 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.id === 'tI' ? '이 게임의 규칙을 익혔다. 이제 의뢰 01로 가자. 살금·기대기·전깃줄 같은 잠입 기술은 연습 2·3(선택)에서.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.id === 'tI' ? '이 게임의 규칙을 익혔다. 이제 의뢰 01로 가자. 웅크리기·엄폐·전깃줄 같은 잠입 기술은 연습 2·3(선택)에서.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01로 가거나, 연습 2(고급)에서 전깃줄·낙하 암살·락픽을 익힐 수 있다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
   // 들킨 대가: 경보가 무전으로 전체에 퍼졌을 때만 수고비를 깎는다 (전체 경보 1회 −15%, 민간인 살상 1명 −20%, 최대 −70%). 근처만 알아챈 발각은 깎지 않는다
-  let feeRow = null; { const base = parseInt(STAGE.fee || '', 10); if (win && base > 0) { const cut = Math.min(0.7, (st.full || 0) * 0.15 + (st.extraKills || 0) * 0.2), got = Math.round(base * (1 - cut)), why = [st.full ? `전체 경보 ${st.full}회` : '', st.extraKills ? `민간인 ${st.extraKills}명` : ''].filter(Boolean).join(' · ');
+  let feeRow = null; { const base = parseInt(STAGE.fee || '', 10); if (win && base > 0) { const cut = Math.min(0.7, (st.full || 0) * 0.15 + (st.extraKills || 0) * 0.2), got = Math.round(base * (1 - cut)), why = [st.full ? `전체 경보 ${st.full}회` : '', st.extraKills ? `주민 살상 ${st.extraKills}명` : ''].filter(Boolean).join(' · ');
     const purge = STAGE.purgeBonus && S.guards.filter(g => !g.civ && !g.dog && !g.reinf).every(g => g.state === 'DEAD' || g.state === 'CAPTIVE');  // 몰살 보너스
     // 깔끔한 처리의 보상: 표적을 모두 사고로 처리하면 +20%, 시체 발견·목격자 없이 끝내면 +10%
     const tc0 = S.corpses.filter(c => c.target), acc = tc0.length && tc0.length === S.guards.filter(g => g.target).length && tc0.every(c => c.accident), clean = !st.bodies && !(st.witness || 0);
-    const adds = [purge ? ['몰살', STAGE.purgeBonus] : null, acc ? ['사고 처리', Math.round(base * 0.2)] : null, clean ? ['흔적 없음', Math.round(base * 0.1)] : null].filter(Boolean), bonus = adds.reduce((s, a) => s + a[1], 0), addTxt = adds.map(a => `${a[0]} +${a[1]}만`).join(' · ');
-    feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (원래 ${base}만 — ${why}로 −${base - got}만` + (bonus ? ` · ${addTxt}` : '') + ')' : bonus ? `${base + bonus}만 (전액 + ${addTxt})` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
+    const adds = [purge ? ['전원 제압', STAGE.purgeBonus] : null, acc ? ['사고 처리', Math.round(base * 0.2)] : null, clean ? ['흔적 없음', Math.round(base * 0.1)] : null].filter(Boolean), bonus = adds.reduce((s, a) => s + a[1], 0), addTxt = adds.map(a => `${a[0]} +${a[1]}만`).join(' · ');
+    feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (기본 ${base}만 · 감점 ${base - got}만: ${why}` + (bonus ? ` · ${addTxt}` : '') + ')' : bonus ? `${base + bonus}만 (전액 + ${addTxt})` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
   $('endStats').innerHTML = (ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
-    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['보조 암살', st.special + '회'], ['발각 횟수', st.detected + '회'],
-    ['발견된 시체', st.bodies + '구'], ['숨긴 시체', st.stashed + '구'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
+    ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['특수 제압·처치', st.special + '회'], ['발각 횟수', st.detected + '회'],
+    ['발견된 시체·기절자', st.bodies + '명'], ['숨긴 시체·기절자', st.stashed + '명'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
   ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.counters ? [['반격', st.counters + '회']] : []).concat(st.fights ? [['조직 싸움', st.fights + '회' + (st.war ? ' · 전쟁' : '')]] : []).concat(st.npcDown ? [['조직이 쓰러뜨린 사람', st.npcDown + '명' + (st.npcCiv ? ` (주민 ${st.npcCiv})` : '') + ' · 감점 없음']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div class="${END_MAIN.includes(r[0]) ? 'main' : 'more'}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
   { const mo = $('endMore'); if (mo) { mo.innerHTML = ''; $('endStats').querySelectorAll('.more').forEach(d => mo.appendChild(d)); } }
   $('endRankNote').innerHTML = !win ? '' : STAGE.challenges ? (() => { const n = starsOf(STAGE), max = 1 + STAGE.challenges.length;
-      return `<div class="ent"><b>등급</b>은 얼마나 조용히 했나 (다섯 개 다 지키면 그림자) — ${S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ')}</div><div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
+      return `<div class="ent"><b>등급 조건</b> · 5개 모두 달성 시 그림자 — ${S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ')}</div><div class="stars">${'★'.repeat(n)}${'☆'.repeat(max - n)} <small>별 ${n}/${max}</small></div>` + S.chRes.map(([id, ok, fresh, ever]) => `<span class="bn ${ok ? 'ok' : ''}">${ok ? '●' : ever ? '◐' : '○'} ${chName(id)}${fresh ? ' <b>새로 달성</b>' : ''}</span>`).join(' ')
         + (ENTRY_PICK && (STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
-  if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' — 깼다' : ''}</div>`;
+  if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if (win && S.stars0 != null) { const n = totalStars(), nw = PERKS.filter(([need]) => need > S.stars0 && need <= n); if (nw.length) $('endRankNote').innerHTML += `<div class="ent">새 장비 해금: ${nw.map(p => p[2]).join(' · ')}</div>`; }
   drawEndMap();
   $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
@@ -358,6 +359,6 @@ function renderStageList() {
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
-  { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' — 한 번 깬 의뢰에만 적용된다.' : '한 번 깬 의뢰는 조건을 바꿔 다시 할 수 있다. 깬 변형은 목록에 표시된다.'; } }
+  { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' · 완료한 의뢰에만 적용' : '완료한 의뢰는 추가 조건을 선택해 다시 플레이할 수 있다. 완료한 변형은 목록에 표시된다.'; } }
 }
 

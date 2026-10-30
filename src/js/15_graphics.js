@@ -132,7 +132,7 @@ function killBlockReason() {
   for (const g of S.guards) { if (g.civ || g.dog || g.dropped || ['DEAD', 'CAPTIVE'].includes(g.state) || g.climb || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   if (!best || canKill(best, P) || canKill(best, P, LUNGE)) return null;
   const g = best, behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
-  const why = P.carrying || P.captive ? '손이 비어야 덮친다' : (g.z || 0) !== (P.z || 0) ? '높이가 다르다' : g.state === 'ALERT' && !radioBusy(g) ? '경계 중 — 몸을 숨기고 기회를 노려라' : !behind ? '정면 — 등 뒤로 돌아가라' : !los(P.x, P.y, g.x, g.y) ? '사이가 막혀 있다' : '가는 길이 막혔다';
+  const why = P.carrying || P.captive ? '운반 중에는 공격할 수 없다' : (g.z || 0) !== (P.z || 0) ? '높이가 다르다' : g.state === 'ALERT' && !radioBusy(g) ? '추격 중 · 시야를 끊고 뒤로 접근' : !behind ? '정면에서는 불가 · 등 뒤로 접근' : !los(P.x, P.y, g.x, g.y) ? '장애물에 가려져 있다' : '접근 경로가 막혀 있다';
   return { g, why };
 }
 function drawKillBlock() {
@@ -157,7 +157,7 @@ function drawAwareMark(g) {
 function drawAwareness(P) {
   if (P.hide || P.vent || P.under) return;
   const k = Math.max(1, 0.9 / SCALE), R = 34 * k;
-  if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '머리 위 삼각형: 흰색 눈치 · 노랑 확인하러 옴 · 빨강 발각. 시야를 벗어나면 줄어든다');
+  if (S.guards.some(g => !g.civ && g.meter > 0.08 && g.state !== 'ALERT')) hint('aware', '경비 머리 위 표시: 흰색은 주시, 노랑은 의심, 빨강은 발각. 시야를 벗어나면 게이지가 줄어든다');
   const hw = W / SCALE / 2 - 10, hh = H / SCALE / 2 - 10; let ring = false;
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 1100) continue;  // 다른 층은 표시하지 않는다
@@ -409,9 +409,9 @@ function drawMarked() {
   ctx.strokeStyle = 'rgba(255,214,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
 }
 function drawGhosts() { drawMarked(); }
-// 마지막으로 보인 곳 (어쌔신 크리드 유니티식 유령 + 수색 범위): 어둠 위에 그려 늘 또렷하게
+// 마지막 목격 지점 (어쌔신 크리드 유니티식 유령 + 수색 범위): 어둠 위에 그려 늘 또렷하게
 function drawLastSeen() {
-  const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막으로 보인 곳'이다
+  const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
     const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.searchJob ? g.searchOrigin : g.poi) : null;
@@ -425,7 +425,7 @@ function drawLastSeen() {
       const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
       ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
-      tag(q.x, q.y + 30, q.exit ? '출구를 지키는 곳' : q.blood ? '핏자국을 쫓는 곳' : q.heard ? '소리 난 곳' : q.body ? '발견된 현장' : '마지막으로 보인 곳', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
+      tag(q.x, q.y + 30, q.exit ? '출구 경비 위치' : q.blood ? '핏자국 발견 지점' : q.heard ? '소리가 난 지점' : q.body ? '발견된 현장' : '마지막 목격 지점', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
     if (q.heard || q.blood || q.exit || q.body) { /* 소리·핏자국: 내 모습은 남기지 않는다 */ }
     else if (usePR('ninja') && prVar.ninja_ol) { drawPR('ninja_ol', q.x, q.y, Math.PI / 2, 'idle', 0, pulse, 1, 0, 0); drawPR('ninja', q.x, q.y, Math.PI / 2, 'idle', 0, 0.18, 1, 0, 0); }
     else { ctx.strokeStyle = `rgba(168,232,255,${pulse})`; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(q.x, q.y, 14, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }

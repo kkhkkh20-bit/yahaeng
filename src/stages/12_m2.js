@@ -1,8 +1,8 @@
 // ───────── 임무 2 (보통): VIP — 히트맨식. 클럽 1층 홀·거리·야시장·포차·약국은 손님으로 드나든다.
-// 표적(클럽 실장)에게 가는 길 셋: 간판 사고 · 배탈약 → 혼자 공중화장실 · 금고(장부·파랑 카드) → VIP룸 뒷문
+// 표적(클럽 실장)에게 가는 길 셋: 간판 사고 · 구토제 → 혼자 공중화장실 · 금고(장부·파란 카드키) → VIP룸 뒷문
 {
   id: 'm2', no: '02', name: 'VIP', sub: '의뢰 01', fee: '80만',
-  mission: '클럽 실장을 처리하고 사무동 금고의 장부를 챙겨 동쪽 큰길 끝으로',
+  mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],
   brief: '클럽 실장이 가게 돈을 장부째 들고 튈 준비 중이다. 장부는 사무동 1층 금고에 있다. 거리·야시장·포차·약국·클럽 1층 홀은 손님으로 드나든다 — 걸으면 아무도 신경 쓰지 않는다. VIP룸·뒷골목·직원 복도는 클럽 직원만, 사무동은 조직원만 다닌다. 사람들 이야기를 들어 보면 실장에게 가는 길이 여럿 보인다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -48,35 +48,35 @@
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
           [3, 27, 10, 31, 'pub'], [14, 27, 21, 31, 'pub'], [39, 6, 41, 7, 'pub']],    // 포차 · 약국 · 공중화장실
   zoneAllow: ['crew'],
-  props: [{ id: 'emetic', name: '배탈약', at: [16, 30] }],
-  uses: [{ need: 'emetic', at: [27, 9], label: '실장 술병에 배탈약 타기', permit: 'waiter', done: '실장 술병에 배탈약을 탔다 — 다음 잔부터 배가 아플 거다',
-           act: (S, h) => { h.detour('vip', 40, 6, 32, '공중화장실', '배탈'); h.say('vip', '으윽… 배가 왜 이래…'); } }],
+  props: [{ id: 'emetic', name: '구토제', at: [16, 30] }],
+  uses: [{ need: 'emetic', at: [27, 9], label: '실장 술병에 구토제 타기', permit: 'waiter', done: '실장 술병에 구토제를 탔다 — 실장이 화장실로 향한다',
+           act: (S, h) => { h.detour('vip', 40, 6, 32, '공중화장실', '구토'); h.say('vip', '으윽… 속이 왜 이래…'); } }],
   intel: [
-    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비번 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
-    { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 배가 약하다 — 술에 배탈약만 들어가도 골목 공중화장실로 뛰어간다', every: 28, first: 5,
+    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
+    { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,
       lines: [[0, '실장님 오늘도 VIP룸에서 양주 드시더라.'], [1, '그 양반 장 약해서 뭐 하나만 잘못 들어가도 골목 공중화장실로 뛰어가잖아.'], [0, 'VIP룸 화장실은 언제 고쳐?'], [1, '고칠 돈으로 양주 사 드시겠지.']] },
     { g: [2, 3], key: 1, gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', every: 26, first: 8,
       lines: [[0, '실장님 또 나오시겠네.'], [1, '간판 밑에서 담배 한 대. 그게 하루 낙이래.'], [0, '저 간판 나사 빠진 거 아무도 말 안 했지?'], [1, '말하면 나보고 고치라고 할 거잖아.']] }
   ],
   // 붙잡은 조직원 심문: 아직 모르는 것부터 하나씩 분다
   interrogate: [{ gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', say: '실장님? 간판 밑에서 담배 피우실 땐 혼자야!' },
-                { gives: 'code', learn: '사무동 금고 비번 0417', say: '비, 비번은 0417! 사장 딸 생일이야!' },
-                { gives: 'emetic', learn: '실장은 배가 약하다 — 술에 배탈약만 들어가도 골목 공중화장실로 뛰어간다', say: '실장님 배 약해! 술에 뭐 들어가면 바로 화장실로 뛰어가!' }],
-  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 밑 메모', lines: ['금고 0417', '(사장님 따님 생신)'], gives: 'code', learn: '사무동 금고 비번 0417' }],
-  traps: [{ k: 'drop', at: [27, 12], hit: [25, 15, 29, 16], text: 'CLUB', noOpp: true }], codeOpp: false,   // 간판·금고 비번은 아래 단계형 기회가 안내한다
+                { gives: 'code', learn: '사무동 금고 비밀번호 0417', say: '비, 비번은 0417! 사장 딸 생일이야!' },
+                { gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', say: '실장님 배 약해! 술에 뭐 들어가면 바로 화장실로 뛰어가!' }],
+  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 밑 메모', lines: ['금고 0417', '(사장님 딸 생일)'], gives: 'code', learn: '사무동 금고 비밀번호 0417' }],
+  traps: [{ k: 'drop', at: [27, 12], hit: [25, 15, 29, 16], text: 'CLUB', noOpp: true }], codeOpp: false,   // 간판·금고 비밀번호는 아래 단계형 기회가 안내한다
   stories: [
     { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
       steps: [{ text: '클럽 옥상 간판 뒤로 — 야시장 컨테이너에서 배관을 타거나 전깃줄로', at: [27, 12, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 160) || h.eliminated('vip') },
               { text: '실장이 간판 밑에 나오면 [간판 떨어뜨리기]', at: [27, 15, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'emetic', targetTag: 'vip', name: '약한 배', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
-      steps: [{ text: '약국 진열대에서 배탈약 집기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
+    { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
+      steps: [{ text: '약국 진열대에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '클럽 직원 옷 구하기 — 뒷골목에서 혼자 담배 피우는 직원이나 포차에서 쉬는 직원', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
-              { text: '바 안쪽 실장 술병에 배탈약 타기 (직원 옷이면 자연스럽다)', at: [27, 10, 0], done: S => !!S.usesDone[0] },
-              { text: '공중화장실에 혼자 들어간 실장 처리', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비번'),
-      steps: [{ text: '사무동 1층 금고에서 장부와 파랑 카드 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
-              { text: '뒷골목 → 클럽 직원 복도 → 파랑 카드로 VIP룸 뒷문', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
-              { text: 'VIP룸 소파의 실장 처리', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
+              { text: '바 안쪽 실장 술병에 구토제 타기 (직원 옷이면 자연스럽다)', at: [27, 10, 0], done: S => !!S.usesDone[0] },
+              { text: '공중화장실에 혼자 들어간 실장 처치하기', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
+    { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호'),
+      steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
+              { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
+              { text: 'VIP룸에 있는 실장 처치하기', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
   challenges: ['accident', 'intel', 'purge', 'streak3', 'clean', 'nobody'],
   entries: [{ name: '서쪽 큰길', desc: '기본 출발', at: [0, 21] }, { name: '빌라 옥상', desc: '별 3개 — 옥상에서 시작', at: [48, 6], z: 2, need: 3 },
@@ -100,7 +100,7 @@
     { kind: 'g2', b: 0, at: 'VB', post: 90 },                                         // 6 금고 앞
     { kind: 'g1', b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
-    { kind: 'g1', at: [15, 9], post: 0 }, { kind: 'g2', at: [17, 9], post: 180 },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비번 이야기
+    { kind: 'g1', at: [15, 9], post: 0 }, { kind: 'g2', at: [17, 9], post: 180 },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
@@ -123,5 +123,5 @@
     { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],
-  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 옷이면 뒷골목·직원 복도·바 안쪽을 지나다닐 수 있다. VIP룸 경호는 얼굴을 알아본다.']
+  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
 },

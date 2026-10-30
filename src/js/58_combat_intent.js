@@ -31,7 +31,7 @@ function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
   if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 처치' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '처치' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
-    const label = a.k === 'drag' ? hideName(a.h) + '으로 끌고 가 기절' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? '기절' : (a.label || '기절').replace(/암살|처치/g, '기절');
+    const label = a.k === 'drag' ? withJosa(hideName(a.h), '으로/로') + ' 끌고 가 기절' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? '기절' : (a.label || '기절').replace(/암살|처치/g, '기절');
     return Object.assign({}, a, { label, hold: '처치' });
   }
   return a;

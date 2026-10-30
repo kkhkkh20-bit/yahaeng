@@ -196,7 +196,7 @@ function carEnter(v) {
     v.driver = false;
   });
   P.trav.end = () => { v.jacking = false; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
-    hint('drive', isTouch ? '운전: 화면을 끄는 쪽으로 차머리가 돌며 달린다. 반대로 끌면 브레이크·후진. [행동] = 내리기' : '운전: 방향키 쪽으로 차머리가 돌며 달린다. 반대쪽 = 브레이크·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
+    hint('drive', isTouch ? '운전: 화면 왼쪽을 끌어 방향 조절. 진행 반대 방향으로 끌면 제동·후진. [행동]으로 내리기' : '운전: 방향키로 조향, 진행 반대 방향으로 제동·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;

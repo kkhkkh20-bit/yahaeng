@@ -116,7 +116,7 @@ function updateClubMusic() {
   const P = S.player, fl = flOf(P); let vol = 0, open = false;
   for (const c of zones) {
     const inside = c.fl === fl && P.x >= c.x0 * TILE && P.x < (c.x1 + 1) * TILE && P.y >= (c.y0 - 1) * TILE && P.y < (c.y1 + 1) * TILE;
-    if (inside) { vol = 0.55; open = true; hint('loud', '클럽 안: 음악에 소리가 묻히고 손님 사이에서 덜 띈다'); break; }
+    if (inside) { vol = 0.55; open = true; hint('loud', '클럽에서는 음악이 발소리를 가리고, 손님 사이에 섞이면 덜 눈에 띈다'); break; }
     const B = BLD[c.b], cx = (B.x0 + B.x1 + 1) / 2 * TILE, cy = (B.y0 + B.y1 + 1) / 2 * TILE, d = dist(P.x, P.y, cx, cy);
     vol = Math.max(vol, clamp(1 - d / 900, 0, 1) * (bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === c.b ? 0.4 : 0.28));
   }

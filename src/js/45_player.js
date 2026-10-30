@@ -36,16 +36,16 @@ function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
   const P = S.player; if (!input.aiming) return; input.queue = input.queue || [];
-  if (input.queue.length >= 2) { toast('예약은 두 개까지 — 손을 떼면 한꺼번에 실행', 1.6); return; }
+  if (input.queue.length >= 2) { toast('투척은 최대 2개 예약 가능 · 손을 떼면 함께 사용', 1.6); return; }
   const tool = input.tool, used = input.queue.filter(q => q.tool === tool).length + 1;
   const have = tool === 'stone' ? P.stones : tool === 'coin' ? P.coins : P.kunai;
-  if (have - used < 1) { toast(`${TOOL_NAME[tool]}이(가) 모자라다`, 1.4); return; }
+  if (have - used < 1) { toast(`${withJosa(TOOL_NAME[tool], '이/가')} 부족하다`, 1.4); return; }
   const it = { tool, a: P.a, pt: aimPoint(), lethal: (performance.now() - input.aiming.t0) >= LETHAL_HOLD * 1000 };
   if (tool === 'kunai') { it.tgt = kunaiTarget(); if (!it.tgt) { toast('노릴 대상이 없다', 1.4); return; }
     if (input.queue.some(q => q.tgt && q.tgt.ref === it.tgt.ref)) { toast('이미 예약한 대상이다', 1.4); return; } }
   input.queue.push(it); play('click', 0.35); input.aiming.t0 = performance.now();
-  toast(`행동 예약 ${input.queue.length} — 다른 곳을 겨누고 손을 떼면 한꺼번에`, 1.8);
-  hint('queue', '조준 중 [행동]으로 예약하고 다른 곳을 겨누면 한꺼번에 던진다');
+  toast(`투척 예약 ${input.queue.length}개 · 다른 대상을 겨눈 뒤 손을 떼면 함께 사용`, 1.8);
+  hint('queue', '조준 중 [행동]으로 투척을 예약할 수 있다. 다른 대상을 겨눈 뒤 도구 버튼을 놓으면 함께 사용한다');
 }
 function runQueued(it) {
   const P = S.player; P.a = it.a;
@@ -396,7 +396,7 @@ function updatePlayer(dt) {
       P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -12 * dt, 12 * dt);
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = fast ? 0.4 : 0.62; if (fast) { play('step_m' + ((Math.random() * 3) | 0), 0.4); noise(P.x, P.y, 150, 'vent'); } else play('step_m' + ((Math.random() * 3) | 0), 0.06, 0.8); }
     }
-    hint('vent', '환풍구: 살금살금이면 조용하다. 창살 밑 자경대원은 [끌어올려 암살]');
+    hint('vent', '환풍구에서는 웅크려 이동하면 조용하다. 창살 아래 경비에게 [공격]: 짧게 기절, 길게 처치');
     return;
   }
   if (P.hide) {
@@ -467,7 +467,7 @@ function updatePlayer(dt) {
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)
     const L = c.lastDrop; if (!L || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L ? L.k : 0) + 1 }; S.decals.push(d); c.lastDrop = d; } } }  // 시체마다 마지막 핏방울을 기억 (다른 시체를 옮겨도 번호가 이어진다)
   { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
-    if (inBush && !P.hidden) hint('bushStand', '화단: 웅크려야(살금) 숨는다. 서 있으면 머리가 다 보인다'); }
+    if (inBush && !P.hidden) hint('bushStand', '화단에서는 웅크려야 숨을 수 있다. 서 있으면 경비에게 보인다'); }
   if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
   if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; }
@@ -476,12 +476,12 @@ function updatePlayer(dt) {
     c.x += (bx - c.x) * Math.min(1, dt * (sh ? 30 : 10)); c.y += (by - c.y) * Math.min(1, dt * (sh ? 30 : 10)); c.a = P.a + Math.PI;
     c.light = lightAt(c.x, c.y);
   }
-  if (S.keyDrop && P.z === 0 && flOf(P) === (S.keyDrop.fl || 0) && dist(P.x, P.y, S.keyDrop.x, S.keyDrop.y) < 34) { const k = S.keyDrop.key || 'gold'; S.keyDrop = null; giveKey(k, keyName(k) + '을(를) 주웠다'); bark('hero', 'key'); }
-  for (const it of S.keyItems || []) if (!it.got && !P.z && !P.under && !P.vent && flOf(P) === it.fl && dist(P.x, P.y, it.x, it.y) < 34) { it.got = true; giveKey(it.key, keyName(it.key) + '을(를) 찾았다'); }
+  if (S.keyDrop && P.z === 0 && flOf(P) === (S.keyDrop.fl || 0) && dist(P.x, P.y, S.keyDrop.x, S.keyDrop.y) < 34) { const k = S.keyDrop.key || 'gold'; S.keyDrop = null; giveKey(k, withJosa(keyName(k), '을/를') + ' 주웠다'); bark('hero', 'key'); }
+  for (const it of S.keyItems || []) if (!it.got && !P.z && !P.under && !P.vent && flOf(P) === it.fl && dist(P.x, P.y, it.x, it.y) < 34) { it.got = true; giveKey(it.key, withJosa(keyName(it.key), '을/를') + ' 찾았다'); }
   for (const it of S.items) if (!it.got && !it.furn && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) takeItem(it);  // 가구 위 물건은 [행동]으로 시간을 들여 빼 온다
-  if (P.z >= 3) hint('top', '3층 옥상: 멀리 보이고 자경대원이 거의 올려다보지 못한다. 너무 높아서 낙하 암살은 안 된다');
+  if (P.z >= 3) hint('top', '3층 옥상에서는 멀리 볼 수 있다. 높이가 너무 높아 아래 경비를 덮칠 수는 없다');
   if (P.z) {
-    hint('roof', '옥상: 자경대원은 위를 잘 안 본다(망꾼 빼고). 가까이 오면 [낙하 암살]');
+    hint('roof', '옥상에서는 망꾼의 시야를 주의해야 한다. 아래에 경비가 오면 [공격]으로 덮칠 수 있다');
     if (jumpTarget()) hint('gap', '골목 건너편 옥상을 향해 서면 [건너뛰기]로 넘어간다 (같은 높이나 한 층 아래만)');
     if (P.z === 2) hint('high', '2층 옥상: 땅으로 바로 뛰어내릴 수 없다. 1층 옥상으로 내려가거나 배관을 이용하라');
   }
@@ -490,8 +490,8 @@ function updatePlayer(dt) {
     if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 웅크리면 원뿔이 줄어든다 — 지금 내 자세로 들키는 범위다');
     const nh = nearHide();
     if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
-    if (nh && nh.type === 'box') hint('box', '수거함: [숨기]로 들어가 숨고, 시체를 메고 와서 [넣기]로 버린다 (2구까지)');
-    if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀: 숨어서 기습 암살하거나 다른 맨홀로 이동할 수 있다' : '맨홀: 숨어서 기습 암살하거나 다른 출구로 이동할 수 있다');
+    if (nh && nh.type === 'box') hint('box', '수거함은 [숨기]로 들어갈 수 있다. 시체나 기절한 사람은 운반해 [넣기]로 숨긴다 · 최대 2명');
+    if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀에서는 지나가는 경비를 끌어들이거나 지하 수로로 이동할 수 있다' : '맨홀에서는 지나가는 경비를 끌어들이거나 다른 출구로 이동할 수 있다');
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
     if (N8.some(o => inMap(tx + o[0], ty + o[1]) && G[ty + o[1]][tx + o[0]] === 'S')) hint('secret', '벽에 금이 간 곳은 숨겨진 통로다. 그대로 걸어 들어가면 지나갈 수 있다 (자경대원은 모른다)');

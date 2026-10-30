@@ -206,7 +206,7 @@ function permitNod(g) {
   const zi = pZoneInfo(); if (zi.k === Z_PUB || !permitted(zi)) return;
   const by = myPermits().find(o => zi.allow && zi.allow.includes(o)), L = PERMIT_NOD[by]; if (!L) return;
   g.nodded = true; gsay(g, L[g.id % L.length], 2.6); g.want = Math.atan2(S.player.y - g.y, S.player.x - g.x);
-  if (!S.nodToast) { S.nodToast = true; toast(permitName(zi.allow) + ' 덕분에 그냥 들여보내 준다', 2.4, 'good'); }
+  if (!S.nodToast) { S.nodToast = true; toast(permitName(zi.allow) + ' · 출입 허용', 2.4, 'good'); }
 }
 // 위층 사람이 창문 너머로 바깥 땅(1층 높이)을 본다: 창가(160px 안)에서 창문 쪽을 보고 있고, 창문 바깥에서 나까지 시야가 트였을 때. 조금 덜 보인다(0.8배)
 function winSee(g, pv) {
@@ -301,7 +301,7 @@ function camRange(c, light) { return c.search ? SL_R : light > 0.3 ? 300 : 135; 
 const camWatcher = () => { if (!S.camRoom) return true; const op = npc('camop'); return !!op && !['DEAD', 'CAPTIVE', 'SLEEP', 'TERROR', 'ALERT'].includes(op.state) && !op.climb && !op.brawl && flOf(op) === S.camRoom.fl && !(op.z || 0) && dist(op.x, op.y, S.camRoom.x, S.camRoom.y) < 85; };
 function camReport(c, text, x, y) {
   if (c.search || camWatcher()) { const op = !c.search && S.camRoom && npc('camop'); if (op) gsay(op, '카메라에 뭐가 찍혔다! 가 봐!', 2.4); return true; }
-  if (!S.camBlindToast) { S.camBlindToast = true; toast('CCTV에 찍혔다 — 관리실이 비어 아무도 화면을 보지 않는다 (녹화는 남는다)', 2.8); } return false;
+  if (!S.camBlindToast) { S.camBlindToast = true; toast('CCTV 녹화 중 · 관리실에 사람이 없어 신고는 전달되지 않는다', 2.8); } return false;
 }
 // 서치라이트: 경보가 울리면 마지막으로 본 자리 쪽으로 빛을 돌린다
 function searchAim(c) { const g = S.guards.find(o => o.state === 'ALERT' && o.lastSeen && !o.civ) || S.guards.find(o => o.state === 'SEARCH' && o.poi && !o.civ); const p = g ? (g.state === 'ALERT' ? g.lastSeen : g.poi) : null; return p && dist(c.x, c.y, p.x, p.y) < SL_R ? Math.atan2(p.y - c.y, p.x - c.x) : null; }
@@ -327,7 +327,7 @@ function updateCams(dt) {
       if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
   }
   setLayer(L0);
-  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV: 빨간 시야가 천천히 돈다. 찍히면 경보. 다트나 두꺼비집으로 끈다');
+  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 다트로 부수거나 건물 전원을 끌 수 있다');
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
@@ -372,7 +372,7 @@ function updateCiv(g, dt) {
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0) g.icon = null; }
   const sameF = flOf(g) === flOf(P) && !P.wire;
   if (!g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('civ2', '주민은 싸우지 않는다. 집에 들어오거나 사람을 해치는 걸 보면 비명을 지른다');
-  if (g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('crowd', '군중: 걸으면 사람들 사이에 섞여 잘 안 띈다. 뛰면 소용없다');
+  if (g.club && sameF && dist(g.x, g.y, P.x, P.y) < 220) hint('crowd', '손님 사이에서 걸으면 덜 눈에 띈다. 달리면 은폐 효과가 사라진다');
   if (g.state === 'SLEEP') {
     g.seen = false;
     if (sameF && !P.hide && dist(g.x, g.y, P.x, P.y) < (P.mode === 'run' ? 100 : P.mode === 'walk' ? 55 : 0)) civWake(g, P.x, P.y);
@@ -735,7 +735,7 @@ const TALK_GUARD = [
   [[0, 'CCTV 하나 또 나갔대.'], [1, '부품이 없어. 그냥 둬.'], [0, '그러다 찍힐 것도 못 찍지.']]
 ];
 const TALK_CIV = [
-  [[0, '쌀 좀 남았어요?'], [1, '한 되요. 애들 먹여야지.']],
+  [[0, '쌀 좀 남았어요?'], [1, '한 되예요. 애들 먹여야지.']],
   [[0, '밤엔 나가지 마요. 자경대 눈이 벌개요.'], [1, '알아요. 문 잠갔어요.']],
   [[0, '한 선생님 댁 가 봤어요?'], [1, '어제 약 받아 왔어요. 돈도 안 받으시더라.']],
   [[0, '담배 한 갑에 통조림 셋이래.'], [1, '지난주엔 둘이었는데.']],
@@ -889,8 +889,8 @@ function terrorAt(x, y) {
     if (g.dog) play('bark', 0.6 * proxVol(g));
   }
   play('call', 0.7, 1.45); play('question', 0.5, 0.8); noise(x, y, 260, 'terror');
-  if (n) { S.stats.terror = (S.stats.terror || 0) + n; setAlert(2, 30, `공포! 자경대원 ${n}명이 겁에 질려 달아난다`); bark(anyGuard(g => g.state === 'TERROR'), 'terror'); hint('terror', '겁에 질린 자경대원은 잠시 아무것도 못 보고 달아난다. 그 틈에 지나가거나 처리하라'); }
-  else toast('시체가 떨어졌지만 본 자경대원이 없다', 2);
+  if (n) { S.stats.terror = (S.stats.terror || 0) + n; setAlert(2, 30, `경비 ${n}명이 겁에 질려 달아난다`); bark(anyGuard(g => g.state === 'TERROR'), 'terror'); hint('terror', '겁에 질린 경비는 잠시 주변을 살피지 못한다. 이때 지나가거나 뒤에서 접근할 수 있다'); }
+  else toast('시체가 떨어졌다 · 목격자 없음', 2);
 }
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
@@ -910,20 +910,20 @@ function goAlert(g) {
   if (g.fac === 'B') { toast('건달파가 나를 노린다', 2, 'warn'); return; }
   if (g.fac === 'P' && STAGE.city) { copAlert(g); return; }  // 도시의 경찰: 수배로 (의뢰 판의 경찰은 자경대원처럼 경보를 올린다)  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
-    if (S.alevel < 2) toast('근처 자경대원만 알아챘다 — 무전기 자경대원이 없다', 2.4);
+    if (S.alevel < 2) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
     setAlert(2, 30);
   } else if (!g.target) {  // 무전: 바로 퍼지지 않는다. 무전기 자경대원이 몇 초간 보고하는 사이 처치하면 끊긴다
     if (S.alevel < 3 && !S.radioCall) {
       const rg = g.radio ? g : S.guards.filter(o => o.radio && o.state === 'ALERT' && o.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
       if (rg) { const dur = DKEY === 'easy' ? 3.4 : DKEY === 'hard' ? 2.2 : 2.8; S.radioCall = { g: rg, t: dur, dur, at: { ...observed }, look: g.suspectLook }; rg.icon = '!'; rg.iconT = 99;
-        toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 처치하면 끊긴다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 자경대원은 멈춰 있다. 등 뒤가 아니어도 처치할 수 있다'); }
+        toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 제압하면 신고를 막을 수 있다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 경비는 멈춰 선다. 정면에서도 짧게 눌러 기절, 길게 눌러 처치할 수 있다'); }
     }
     setAlert(2, 30);
   } else if (!S.radioCall) {  // 표적도 바로 전체 경보가 아니라 2초 동안 소리친다 — 그 사이 처치하면 막힌다
     S.radioCall = { g, t: 2.0, dur: 2.0, at: { ...observed }, look: g.suspectLook, shout: true }; toast('표적이 사람을 부른다 — 2초 안에 막으면 퍼지지 않는다', 2.4, 'warn');
     setAlert(2, 30);
   } else setAlert(2, 30);
-  hint('alert', '발각! 시야를 끊고 20초 숨어 버티면 수색으로 바뀐다');
+  hint('alert', '발각됐다. 시야를 끊고 숨으면 추격이 수색으로 전환된다');
 }
 function radioSpread(at, look) {
   toast('무전으로 경보가 퍼졌다', 2.4, 'warn');

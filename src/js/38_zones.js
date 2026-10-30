@@ -33,7 +33,7 @@ const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
   (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; S.stats.blown = (S.stats.blown || 0) + 1;
-  toast(why || `들통났다 — 이제 ${outfitName(P.outfit)}은 통하지 않는다. 다른 옷을 구하라`, 3, 'warn');
+  toast(why || `변장이 발각됐다 — 이 복장으로는 통과할 수 없다. 다른 옷이 필요하다`, 3, 'warn');
   if (g) { gsay(g, ['잠깐, 넌 우리 사람이 아니잖아!', '너 누구야? 처음 보는 얼굴인데.', '그 옷 어디서 났어?'][g.id % 3]); g.eyeT = 0; }
 }
 function updateSharpEye(g, dt, rawVis) {
@@ -41,7 +41,7 @@ function updateSharpEye(g, dt, rawVis) {
   const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI * .6;
   if (rawVis > 0 && d < R && faceVisible) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
-    hint('eye', '눈 표시: 눈썰미가 있다. 가까이서 오래 보이면 변장이 들통난다');
+    hint('eye', '눈 표시가 있는 인물은 얼굴을 알아본다. 가까이서 오래 마주 보면 변장이 발각된다');
     if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
@@ -79,7 +79,7 @@ function startWarn(g) {
   const P = S.player; endChat(g); g.act = null; g.bubble = null; g.state = 'WARN'; g.warnEnd = S.t + 4.5; g.warnExt = 0; g.warnD0 = dist(g.x, g.y, P.x, P.y); g.path = null; g.meter = 0.92; setIcon(g, '!?'); play('question', 0.5);
   g.lastSeen = pSpot();
   g.say = ['거기요! 여긴 관계자 외 출입 금지입니다. 나가세요.', '이봐요, 여기 들어오면 안 돼요. 당장 나가요.', '여긴 관계자만 다닙니다. 돌아 나가세요.'][g.id % 3]; g.sayT = 3.2;
-  hint('warn', '출입 금지: 처음 들키면 경고만 한다. 고리가 닳기 전에 나가면 끝, 또 들키면 발각');
+  hint('warn', '출입 금지 구역에서는 먼저 퇴거 경고를 받는다. 경고 시간이 끝나기 전에 나가야 한다. 다시 침입하면 발각된다');
 }
 // 경고 중: 플레이어 쪽으로 몸을 돌리고(보이면 다가온다), 시간이 다 되면
 //  · 공개 구역으로 나갔다 → 돌아간다   · 나가는 중(멀어지는 중)이다 → 조금 더 기다려 준다(최대 3초)

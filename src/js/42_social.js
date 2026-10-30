@@ -5,7 +5,8 @@
 // 가는 길에 막으면(기절) 신고는 없던 일. 닿으면 그 자리로 수색이 오고, 주민이 본 옷차림은 그 판 동안 통하지 않는다
 const npc = tag => S.guards.find(g => g.tag === tag);  // 스테이지 데이터에서 인물을 이름표로 찾는다
 const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.y / TILE); return tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && flOf(o) === (r[4] || 0); };
-const knows = s => (S.learned || []).some(t => t.includes(s));
+// 구버전 저장의 '비번' 정보도 현재 '비밀번호' 단서와 같은 정보로 인식한다.
+const knows = s => (S.learned || []).some(t => t.replace(/비번/g, '비밀번호').includes(s.replace(/비번/g, '비밀번호')));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
 const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
   eliminated: t => { const g = npc(t); return !!g && targetEliminated(g); },
@@ -45,7 +46,7 @@ function startReport(g, x, y, c, saw, kind, gated) {
   S.stats.screams = (S.stats.screams || 0) + 1; logEv('witness', g.x, g.y);
   gsay(g, c ? ['저기 사람이 쓰러졌어!', '누가 좀 와 봐요!', '사람이 쓰러져 있어요!'][g.id % 3] : kind === 'disguise' ? ['당신 우리 직원 아니잖아!', '처음 보는 얼굴인데…!', '그 옷 어디서 났어요?'][g.id % 3] : ['도둑이야! 경비 아저씨!', '사람 살려요!', '저 사람이 사람을 해쳤어요!'][g.id % 3], 2.2);
   play('call', 0.5 * proxVol(g), 1.6); noise(g.x, g.y, 150, 'scream', flOf(g));
-  hint('report', '신고하러 뛰는 주민: 닿기 전에 막으면(기절) 신고는 없던 일이 된다');
+  hint('report', '주민이 경비에게 도착하기 전에 제압하면 신고를 막을 수 있다');
   return true;
 }
 function updateReport(g, dt) {
@@ -76,8 +77,8 @@ function deliverReport(g) {
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
   setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작'); lockExits();
   if (r.saw) rememberSuspect(null, r.saw);
-  if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, `신고한 주민이 ${outfitName(r.saw)} 차림을 말했다 — 이 옷은 이제 통하지 않는다`);
-  else if (r.saw === 'face') { toast('신고한 주민이 얼굴을 말했다 — 수색이 끝날 때까지 거리에서도 알아본다', 2.8, 'warn'); }
+  if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, '현재 복장이 신고됐다 — 다른 옷이 필요하다');
+  else if (r.saw === 'face') { toast('인상착의가 알려졌다 — 수색 중에는 거리에서도 알아본다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
 }
 // 출구 지키기: 시체가 발견되거나 신고가 들어오면 가까운 조직원이 탈출구로 가서 한동안 지킨다 (다른 출구·다른 때를 고르게 만든다)
@@ -88,7 +89,7 @@ function lockExits() {
       .sort((a, b) => dist(a.x, a.y, e.x, e.y) - dist(b.x, b.y, e.x, e.y))[0];
     if (!g) continue; n++; endChat(g); g.guardExit = true; goSuspicious(g, e.x, e.y, 40); g.why = 'exit'; gsay(g, '출구부터 막아!', 2.2); after(45, () => { g.guardExit = false; });
   }
-  if (n) toast(n > 1 ? '조직원들이 출구를 지키러 간다 — 때를 기다리거나 다른 길로' : '조직원이 출구를 지키러 간다 — 다른 출구나 다른 때를', 2.8, 'warn');
+  if (n) toast(n > 1 ? '조직원들이 출구를 지킨다 — 다른 출구를 찾거나 경비가 떠날 때까지 기다리기' : '출구 경비가 배치됐다 — 다른 출구를 찾거나 경비가 떠날 때까지 기다리기', 2.8, 'warn');
 }
 // 사탕 (아이를 손대지 않고 다루는 법): 주면 신나서 멀리 놀러 간다. 그동안은 아무것도 보지 않는다
 function nearChild() {
@@ -100,7 +101,7 @@ function giveCandy(g) {
   const P = S.player; P.candy--; g.treatT = 22; g.rep = null; g.state = 'PATROL'; g.meter = 0; g.icon = null; g.path = null; play('click', 0.4, 1.5);
   const a = Math.atan2(g.y - P.y, g.x - P.x); for (let k = 0; k < 8 && !g.path; k++) { const aa = a + (k % 2 ? 1 : -1) * k * 0.4; pathTo(g, g.x + Math.cos(aa) * 380, g.y + Math.sin(aa) * 380); if (g.path && !g.path.length) g.path = null; }
   gsay(g, ['우와, 사탕이다! 고맙습니다!', '헤헤, 놀이터 가야지!', '엄마한테 비밀!'][g.id % 3], 2.2);
-  toast(`사탕을 줬다 — 한동안 신나서 멀리 논다 (남은 사탕 ${P.candy})`, 2.2, 'good'); hint('candy', '아이는 건드릴 수 없다. [행동]으로 사탕을 주면 멀리 가서 논다');
+  toast(`사탕을 줬다 — 아이가 다른 곳으로 이동한다 · 남은 사탕 ${P.candy}개`, 2.2, 'good'); hint('candy', '아이는 건드릴 수 없다. [행동]으로 사탕을 주면 멀리 가서 논다');
 }
 function updateChildTreat(g, dt) {
   g.treatT -= dt; g.seen = false; g.meter = 0; g.icon = null;
@@ -124,7 +125,7 @@ function schedNow(g) {
 }
 function schedText(g) {
   const s = schedNow(g); if (!s) return null; const know = !g.schedKey || (S.player.keys || {})[g.schedKey];
-  const now = s.moving ? `${s.next.name}(으)로 가는 중` : `${s.cur.name} — ${s.cur.act}`;
+  const now = s.moving ? `${withJosa(s.next.name, '으로/로')} 이동 중` : `${s.cur.name} — ${s.cur.act}`;
   return now + (know && !s.moving ? ` · 다음: ${s.next.name}` : '');
 }
 
@@ -196,12 +197,12 @@ function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
     const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    toast(P.disguiseBlown ? `${outfitName(p.outfit)} — 이미 들통난 옷이다` : `${outfitName(p.outfit)}으로 갈아입었다 — 초록 경계선 안은 지나다닐 수 있다`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
+    toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();
   p.taken = true; P.item = p; play('cloth', 0.4); play('click', 0.3);
-  toast(`${p.name}을(를) 들었다` + (p.permit ? ' — 들고 있으면 배달하러 온 사람으로 통하는 곳이 있다' : ''), 2.4, 'good');
-  hint('item', '들고 있는 물건: 한 번에 하나만. [행동]으로 내려놓는다. 쓰는 곳 앞에서도 [행동]으로 쓴다');
+  toast(`${withJosa(p.name, '을/를')} 집었다` + (p.permit ? ' — 들고 있으면 배달하러 온 사람으로 통하는 곳이 있다' : ''), 2.4, 'good');
+  hint('item', '물건은 한 번에 하나만 들 수 있다. [행동]으로 내려놓거나 지정된 장소에서 사용할 수 있다');
 }
 function dropItem() {
   const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); play('drop', 0.3);

@@ -354,7 +354,7 @@ function drawRoof1(b, i, roof) {
     if (b.kit && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
-      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left'; ctx.fillText(b.h + 'F', x + 6, y + 14);
+      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left'; ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
       return;
     }
     const sh = b.h * 6;
@@ -366,7 +366,7 @@ function drawRoof1(b, i, roof) {
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     if (hasHeightCues(i)) drawRoofCoping(b);
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(b.h + 'F', x + 6, y + 14);
+    ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
   }
 }
@@ -384,7 +384,7 @@ function drawFacadeExtras(b, flat, kit) {
       const g = ctx.createRadialGradient(px - 2, py - 2, 1, px, py, 7); g.addColorStop(0, '#ffe58a'); g.addColorStop(0.6, '#d6ad2c'); g.addColorStop(1, '#7a5e12');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill(); ctx.strokeStyle = '#3a2e0a'; ctx.lineWidth = 1; ctx.stroke();
     }
-    for (const tx of b.balc || []) { const x0 = tx * TILE - 18, w = TILE + 36, y = (b.y1 + 1) * TILE - 2; ctx.fillStyle = '#6b6f78'; ctx.fillRect(x0, y, w, 7); ctx.fillStyle = '#2b2f37'; for (let x = x0 + 2; x < x0 + w - 1; x += 7) ctx.fillRect(x, y + 1, 2, 5); ctx.fillStyle = 'rgba(242,196,107,.8)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('2F 베란다', tx * TILE + TILE / 2, y + 17); }
+    for (const tx of b.balc || []) { const x0 = tx * TILE - 18, w = TILE + 36, y = (b.y1 + 1) * TILE - 2; ctx.fillStyle = '#6b6f78'; ctx.fillRect(x0, y, w, 7); ctx.fillStyle = '#2b2f37'; for (let x = x0 + 2; x < x0 + w - 1; x += 7) ctx.fillRect(x, y + 1, 2, 5); ctx.fillStyle = 'rgba(242,196,107,.8)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('2층 베란다', tx * TILE + TILE / 2, y + 17); }
     return;
   }
   const top = (b.y1 - b.fh + 1) * TILE - 4, bot = (b.y1 + 1) * TILE + 6;
@@ -884,7 +884,7 @@ function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return
   for (const m of list) {
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '메고는 못 간다 — [행동]으로 내려놓기' : P.captive ? '붙잡은 채로는 못 간다' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
+      if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '운반 중에는 통과 불가 · [행동]으로 내려놓기' : P.captive ? '붙잡은 상태에서는 통과 불가' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
         if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     if (m.d > 170 || (m.roofDoor && paAt && dist(paAt.x, paAt.y, m.x, m.y) < 2)) continue;  // 선택된 옥탑문은 문 테두리와 행동 안내만
     const a = Math.max(0.3, 1 - m.d / 170) * 0.8, r = 8 * k, y = m.y - 22 * k;
@@ -916,7 +916,7 @@ function drawScan(openB) {
     if (l.kind === 'pipe') { box(l.x, l.y, SCAN.pipe, '배관 ↑', 36, l.bz ? 0.8 : 1); }
     else if (l.kind === 'ladder') box(l.x, l.y, SCAN.ladder, '사다리 ↑', 36);
     else if (l.kind === 'stair') box(l.x, l.y, SCAN.ladder, '오르기 옥상', 36, inner(l.bx, l.by));
-    else if (l.kind === 'chimney') { const lit = lampOn(l.lamp); box(l.ux, l.uy, SCAN.chimney, lit ? '굴뚝(불 땜)' : '굴뚝', 40); }
+    else if (l.kind === 'chimney') { const lit = lampOn(l.lamp); box(l.ux, l.uy, SCAN.chimney, lit ? '굴뚝 · 불이 켜져 있음' : '굴뚝', 40); }
   }
   for (const v of S.vents) if (!fP || (!v.roof && flOf(v) === fP)) box(v.x, v.y, SCAN.vent, v.roof ? '옥상 환기구' : v.street ? '거리 환기구' : '환풍구', 34, v.roof ? 1 : inner(v.tx, v.ty));
   for (const h of S.hides) { if ((h.fl || 0) !== flOf(S.player) || (h.z || 0) !== (S.player.z || 0)) continue; box(h.x, h.y, h.type === 'well' ? SCAN.well : SCAN.hide, hideName(h), 42, inner(h.tx, h.ty)); }
@@ -953,7 +953,7 @@ function drawActLabels(pa, P, ka, ga) {
   const vic = ka && (ka.c || (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk));
   let vy = null;
   if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
-    vy = vic.y - 34 * k; tag(vic.x, vy, p + v + (ka.hold ? ' · 길게 ' + ka.hold : ''), '#e8473c', 1, kc, 4); }
+    vy = vic.y - 34 * k; tag(vic.x, vy, p + actionCaption(ka, v), '#e8473c', 1, kc, 4); }
   if (ga && ga.k === 'grab' && ga.g) { const [p, kc] = T('붙잡기', KK('grab')); tag(ga.g.x, ga.g.y - 66 * k, '붙잡기', '#a8d4d6', 1, kc, 4); }
   if (!isTouch && ga && ['ledgeDrop', 'wireFall'].includes(ga.k)) { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : P; tag(h.x, h.y - 75 * k, '떨어지기', '#f2c46b', 1, KK('grab'), 3.5); }
   if (P.captive) { const ready = pa && pa.k === 'drag', h = ready ? pa.h : captiveDragPreview();
@@ -974,7 +974,7 @@ function drawActLabels(pa, P, ka, ga) {
     const bx = pa.l ? pa.l.x : pa.at ? pa.at.x : P.x, by = pa.l ? pa.l.y : pa.at ? pa.at.y + 30 : P.y; let n = 0;
     for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) || (g.z || 0)) continue;
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
-    if (n) lab += ` — 보는 눈 ${n}`;
+    if (n) lab += ` · 이 위치를 보는 경비 ${n}명`;
   }
   const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);
 }
@@ -1471,7 +1471,7 @@ function draw() {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 떼면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }

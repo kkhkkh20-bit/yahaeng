@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
-// [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적은 바로 처치). 공격할 사람이 닿을 때만 켜진다
+// [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적도 같은 기준). 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
 // [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 잡은 뒤: [공격] 톡 기절 / 계속 처치, [행동] 숨을 곳으로 끌고 가기, 가만히 있으면 심문
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
@@ -27,7 +27,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
   return a;
 }
 function attackAction() {
-  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: P.lethalHold ? '누르는 중' : '공격' };
+  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : '공격' };
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));

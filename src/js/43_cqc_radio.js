@@ -7,7 +7,7 @@ function canInterrogate() { const g = S.player.captive; return !!(g && !g.target
 function interrogate() {
   const P = S.player, g = P.captive; if (!g) return;
   if (g.target || g.civ || g.dog) { toast('이 사람은 아는 게 없어 보인다', 1.6); return; }
-  if (g.questioned) { toast('더 아는 게 없다 — [공격] 톡 기절 · 계속 누르면 처치', 1.8); return; }
+  if (g.questioned) { toast('추가 정보 없음 · [공격] 짧게 기절 / 길게 처치', 1.8); return; }
   g.questioned = true; g.captT = Math.max(0, (g.captT || 0) - 2.5); S.stats.interro = (S.stats.interro || 0) + 1;  // 겁먹어서 잠깐 덜 버둥거린다
   play('cloth', 0.4); P.strikeT = Math.max(P.strikeT || 0, 0.2);
   const it = (STAGE.interrogate || []).find(i => !S.learned.includes(i.learn) && !(i.gives && P.keys[i.gives]));
@@ -19,7 +19,7 @@ function interrogate() {
     after(INTERRO_T, () => { near.forEach(o => o.tagT = S.t + 30); if (near.length) toast(`실토했다 — 근처 조직원 ${near.length}명 위치 표시 (30초)`, 2.8, 'good'); });
   }
   bossRadio('interro');
-  hint('interro', '붙잡은 채 가만히 있으면 심문 — 비번·위치를 분다. 다 듣고 나면 [공격] 톡 기절 · 계속 누르면 처치');
+  hint('interro', '붙잡고 기다리거나 [심문]을 누르면 정보를 얻는다. [공격]은 짧게 눌러 기절, 길게 눌러 처치');
 }
 // 실토로 위치가 드러난 조직원: 벽·지붕 너머에서도 머리 위 노란 표시
 function drawTagged() {
@@ -46,11 +46,11 @@ const AIDE_RADIO = {
   eye: ['저 사람 조심해. 네 변장을 알아볼 수 있어. 가까이 가지 마.', '머리 위에 눈 표시 보이지? 그 사람은 얼굴을 알아. 거리를 둬.'],
   alert: ['들켰어. 시야부터 끊고 숨어. 20초만 버티면 돼.', '숨을 곳 찾아. 수거함이든 화단이든.', '뛰어서 시야를 끊어. 그다음에 숨어.'],
   calm: ['조용해졌어. 다시 시작하자.', '수색 끝났어. 천천히 움직여.'],
-  body: ['시체가 발견됐어. 순찰이 늘 거야.', '들켰어, 시체. 다음엔 꼭 숨겨.'],
+  body: ['시체가 발견됐어. 순찰이 늘 거야.', '시체를 발견했어. 다음엔 꼭 숨겨.'],
   blood: ['핏자국을 봤어. 핏방울 따라 시체 쪽으로 갈 거야.', '피를 남겼어. 기절시키거나 숨는 곳으로 끌어들이면 피가 안 남아.'],
   interro: ['심문은 짧게. 오래 붙잡고 있으면 빠져나가.', '들을 거 다 들었으면 처리해.'],
   check: ['곧 조직원 무전 점검이야. 쓰러진 자리는 대답이 없을 거야.', '응답 없는 자리는 누가 확인하러 와. 시체 근처에서 빠져.'],
-  disguise: ['그 옷이면 그쪽 구역도 다닐 수 있어. 대신 뛰지는 마.', '옷 좋네. 눈 표시 있는 사람만 피해.'],
+  disguise: ['그 옷이면 초록 경계선 안은 다닐 수 있어. 범행은 보이지 마.', '옷 좋네. 눈 표시 있는 사람만 피해.'],
   loot: ['거기야. 끝날 때까지 움직이지 마. 주변은 내가 볼게.', '빼내는 동안은 무방비야. 누가 오면 바로 멈춰.']
 };
 function bossRadio(ev, force) {
@@ -92,12 +92,12 @@ const isCrew = g => !!g && !g.civ && !g.dog && !g.target && !g.dropped;
 function playTitle(st) {
   const crew = st.crewKills || 0, ko = st.ko || 0, streak = st.maxStreak || 0;
   if (st.extraKills > 0) return ['오점', '민간인까지 건드렸다'];
-  if (!st.kills && !ko) return ['유령', '아무도 손대지 않았다'];
+  if (!st.kills && !ko) return ['유령', '아무도 해치지 않았다'];
   if (streak >= 4) return ['도미노', `${streak}명을 숨 돌릴 틈 없이 연달아 처치`];
   if ((st.accidents || 0) > 0 && crew <= 1) return ['사고 전문', '사고처럼 보이게 끝냈다'];
   if (crew >= 8 && !st.bodies) return ['청소부', `${crew}명을 처치하고 시체는 하나도 안 들켰다`];
-  if (crew >= 8) return ['도살자', `${crew}명 처치 — 다음엔 좀 치우자`];
-  if (ko > crew) return ['제압', '처치보다 기절이 많았다'];
+  if (crew >= 8) return ['도살자', `${crew}명 처치 · 시체가 발견됐다`];
+  if (ko > crew) return ['제압', '처치보다 기절시킨 인원이 많았다'];
   if (st.detected >= 3) return ['노출', `${st.detected}번 들켰다`];
   if ((st.interro || 0) >= 2) return ['취조관', `${st.interro}명을 심문했다`];
   return ['전문가', '무난하게 끝냈다'];

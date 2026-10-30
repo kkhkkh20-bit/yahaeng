@@ -119,7 +119,7 @@ function startBrawl(a, b, why) {
   gsay(a, why || (a.fac === 'P' ? '경찰이다! 그만둬!' : (a.fac === 'B' ? TAUNT_B : TAUNT)[(a.id + S.stats.fights) % 4]), 1.8);
   if (a.fac !== 'P' && b.fac !== 'P') policeCall(a.x, a.y, a);  // 도시: 패싸움은 누군가 경찰에 신고한다
   for (const c of S.guards) if (c.civ && npcAlive(c) && !c.child && flOf(c) === flOf(a) && dist(c.x, c.y, a.x, a.y) < 260) civPanic(c, a.x, a.y, 7);
-  const P = S.player; if (dist(P.x, P.y, a.x, a.y) < 700 && a.fac !== 'P') { toast(b.civ ? '조직원이 주민을 때린다' : `${FAC_NAME[a.fac]}와 ${FAC_NAME[b.fac]}가 붙었다 — 시선이 그쪽으로 쏠린다`, 2.4, 'warn'); hint('fight', '조직끼리 싸우는 동안은 서로만 본다. 한쪽 옷을 입고 다른 쪽을 치면 전쟁이 난다 — 그 틈을 노려라'); }
+  const P = S.player; if (dist(P.x, P.y, a.x, a.y) < 700 && a.fac !== 'P') { toast(b.civ ? '조직원이 주민을 때린다' : `${withJosa(FAC_NAME[a.fac], '과/와')} ${FAC_NAME[b.fac]}의 싸움 · 주변 시선이 쏠린다`, 2.4, 'warn'); hint('fight', '두 조직은 싸우는 동안 서로에게 집중한다. 상대 조직 복장으로 공격하는 모습을 보이면 전쟁을 유도할 수 있다'); }
 }
 function civPanic(c, x, y, t) { if (!npcAlive(c) || c.child && c.treatT > 0) return; c.state = 'PANIC'; c.fear = { x, y }; c.panicT = t; c.cowered = false; c.path = null; c.chat = null; setIcon(c, '!'); }
 // 다트 누명: 들키지 않고 한쪽 조직원을 다트로 쓰러뜨리면, 곁의 동료가 가까이 있는 상대 조직을 범인으로 알고 덤빈다
@@ -176,7 +176,7 @@ function npcDown(o, by, lethal) {
     const w = S.guards.filter(q => q.civ && npcAlive(q) && !q.child && flOf(q) === flOf(o) && dist(q.x, q.y, o.x, o.y) < 300 && ((q.state === 'PANIC' && q.fear && dist(q.fear.x, q.fear.y, o.x, o.y) < 220) || canSee(q, o.x, o.y, Math.max(0.4, lightAt(o.x, o.y)), false, false, 0) > 0))
       .sort((p, q) => dist(p.x, p.y, by.x, by.y) - dist(q.x, q.y, by.x, by.y))[0];
     if (w) { by.hunt = { c: w, t0: S.t }; civPanic(w, by.x, by.y, 14); gsay(by, ['본 놈 있네. 거기 서!', '너 봤지? 이리 와.', '입 다물게 해 줄게.'][by.id % 3], 2);
-      if (dist(S.player.x, S.player.y, w.x, w.y) < 700) toast('조직원이 본 사람을 쫓는다', 2); }
+      if (dist(S.player.x, S.player.y, w.x, w.y) < 700) toast('조직원이 목격자를 쫓는다', 2); }
   }
 }
 // 내가 쓰러뜨린 조직원: 옷으로 누구 짓인지 착각하게 만들 수 있다 (한쪽 옷을 입고 다른 쪽을 쳤는데 그쪽 조직원이 봤으면 전쟁)

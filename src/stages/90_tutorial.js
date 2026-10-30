@@ -6,8 +6,8 @@ STAGES.forEach((st, i) => { st.no = String(i + 1).padStart(2, '0'); st.sub = st.
 // 연습은 둘로 나눈다: 기본(약 3분, 첫 의뢰 전에 필요한 것만)과 고급(선택). 같은 지도를 쓰고, 쓰지 않는 자경대원은 빼 둔다
 const TUT = {
   id: 't0', no: '00', name: '연습', sub: '연습 · 훈련장', tutorial: true,
-  mission: '기술을 하나씩 익힌다: 지도·살금·암살·시체 숨기·살피기·기대기·엿보기·유인·전깃줄·낙하 암살·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
-  brief: '서쪽에서 동쪽으로 한 칸씩 나아가며 기술을 익힌다. 임무 칸 맨 위의 "연습" 줄이 지금 할 일이고, 대상 위에 "여기" 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
+  mission: '기술을 하나씩 익힌다: 지도·웅크리기·기절과 처치·시체 숨기기·살피기·엄폐·유인·전깃줄·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
+  brief: '서쪽에서 동쪽으로 한 칸씩 나아가며 기술을 익힌다. 목표 목록 맨 위의 "연습" 줄이 지금 할 일이고, 대상 위에 "여기" 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
   W: 41, H: 15, start: [1, 9], exit: [40.5, 9], startA: 0, noRefine: true, floors: false, pspd: 1.25, gspd: 0.9, residents: 0,
   build(m) {
     m.fill(0, 0, 40, 14, ','); for (let x = 0; x < 41; x++) { m.set(x, 0, '#'); m.set(x, 14, '#'); }
@@ -36,10 +36,10 @@ const TUT = {
   steps: [
     ['{이동} 동쪽으로 걸어 보자', (S, P) => P.x > 3 * 48, () => ({ x: 4 * 48 + 24, y: 9 * 48 + 24 })],
     ['{지도} 전술 지도 열기 — 멈춘 채 순찰로가 보인다. 다시 눌러 닫기', S => !!S.usedMap],
-    ['{살금} 살금 모드 켜기 — 발소리가 작아진다', (S, P, I) => I.sneakToggle],
+    ['{살금} 몸 낮추기 — 발소리와 노출 감소', (S, P, I) => I.sneakToggle],
     ['등 돌린 자경대원 뒤에서 {공격} — 톡 누르면 기절, 계속 누르면 처치', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
     ['쓰러진 사람을 {행동}으로 메고, 수거함 앞에서 다시 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
-    ['{살피기} 누르고 있으면 쓸 수 있는 것이 색으로 보인다', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
+    ['{살피기} 사용 가능한 물체 확인하기', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
     ['벽 쪽으로 0.5초 밀기 — 등을 바짝 붙인다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
     ['붙은 채 기다렸다가 지나가는 자경대원에게 {공격}', S => S.guards[1].state === 'DEAD', S => S.guards[1]],
     ['창문 쪽을 바라보면 안이 보인다 — 엿보기', S => !!S.peek, () => ({ x: 16 * 48 + 24, y: 7 * 48 + 24 })],
@@ -54,8 +54,8 @@ const TUT = {
   ]
 };
 STAGES.push(Object.assign({}, TUT, { id: 't0', name: '연습 2 · 잠입 기초', sub: '연습 · 잠입 기초 (선택, 약 3분)', exit: [21.5, 9], items: [], itemName: '', itemNames: [], dropGuards: [2, 3],
-  mission: '잠입 기초: 걷기 · 전술 지도 · 살금 · 뒤에서 암살 · 시체 숨기 · 살피기 · 벽에 기대 끌어당기기',
-  brief: '서쪽에서 동쪽으로 나아가며 첫 의뢰에 필요한 기술만 익힌다. 임무 칸 맨 위 "연습" 줄이 지금 할 일이고, 대상 위에 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
+  mission: '잠입 기초: 걷기·전술 지도·웅크리기·뒤에서 제압·시체 숨기기·엄폐',
+  brief: '서쪽에서 동쪽으로 나아가며 첫 의뢰에 필요한 기술만 익힌다. 목표 목록 맨 위 "연습" 줄이 지금 할 일이고, 대상 위에 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
   steps: TUT.steps.slice(0, 8).concat([['동쪽 노란 원으로 나가면 끝', () => false, S => S.exit]]) }));
 STAGES.push(Object.assign({}, TUT, { id: 't1', kitId: 't0', name: '연습 3 · 고급', sub: '연습 · 고급 (선택)', start: [20, 9], dropGuards: [0, 1],
   mission: '고급 기술: 엿보기 · 빈 캔 유인 · 전깃줄 · 위에서 덮치기 · 락픽',
@@ -68,8 +68,8 @@ const npcT = (S, t) => S.guards.find(g => g.tag === t);
 const inR = (P, r) => P.x >= r[0] * 48 && P.x < (r[2] + 1) * 48 && P.y >= r[1] * 48 && P.y < (r[3] + 1) * 48;
 STAGES.push({
   id: 'tI', no: '00', name: '연습 1 · 신분', sub: '연습 · 신분 (약 4분, 먼저 하기)', tutorial: true, kitId: 't0',
-  mission: '이 게임의 기본 규칙: 거리에선 행인 · 출입 금지는 경고 · 엿듣기 · 암살 · 옷 갈아입기 · 숨기기 · 초록 경계선 · 눈썰미', itemName: '', itemNames: [],
-  brief: '서쪽에서 동쪽으로 걸으며 이 게임의 규칙을 익힌다. 거리(공개 구역)에선 나는 그냥 행인이다. 주황 경계선 안은 출입 금지 — 그곳 사람의 옷을 입으면 경계선이 초록으로 바뀌고 지나다닐 수 있다. 임무 칸 맨 위 "연습" 줄이 지금 할 일이다.',
+  mission: '이 게임의 기본 규칙: 공개·출입 금지 구역 구분, 엿듣기·기절·변장·은신·신원 확인', itemName: '', itemNames: [],
+  brief: '서쪽에서 동쪽으로 걸으며 이 게임의 규칙을 익힌다. 거리(공개 구역)에선 나는 그냥 행인이다. 주황 경계선 안은 출입 금지 — 그곳 사람의 옷을 입으면 경계선이 초록으로 바뀌고 지나다닐 수 있다. 목표 목록 맨 위 "연습" 줄이 지금 할 일이다.',
   W: 44, H: 16, start: [1, 10], exit: [43.5, 10], startA: 0, noRefine: true, floors: false, pspd: 1.25, gspd: 0.9, residents: 0, candy: 0,
   build(m) {
     m.fill(0, 0, 43, 15, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 15, '#'); }
@@ -99,9 +99,9 @@ STAGES.push({
     ['북쪽 마당(주황 = 출입 금지)에 들어가 경고를 받고 다시 나오기', (S, P) => npcT(S, 'yard').warned && P.y > 8 * 48, S => npcT(S, 'yard').warned ? { x: 14 * 48 + 24, y: 10 * 48 + 24 } : { x: 14 * 48 + 24, y: 6 * 48 + 24 }],
     ['수다 떠는 두 사람 곁에서 엿듣기', S => (S.learned || []).length > 0, () => ({ x: 19 * 48 + 48, y: 9 * 48 + 24 })],
     ['남쪽 골목 혼자인 자경대원 뒤에서 {공격} — 기절', S => npcT(S, 'lone').state === 'DEAD', S => npcT(S, 'lone')],
-    ['쓰러진 자경대원 옆에서 {행동} — 옷 갈아입기', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
-    ['{행동}으로 메고 수거함에 넣기 — 숨겨야 안 들킨다', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
+    ['{행동} 옷 갈아입기 · 다른 행동이 보이면 {대상}', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
+    ['{행동}으로 메고 수거함에 넣기 — 발견되지 않도록 숨기기', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
     ['초록 경계선 마당은 이 옷이면 통과 — 안쪽 끝까지 걸어가기', (S, P) => inR(P, [35, 3, 37, 5]), () => ({ x: 36 * 48 + 24, y: 4 * 48 + 24 })],
-    ['눈 표시 반장은 오래 보면 알아챈다 — 떨어져서 노란 원으로', () => false, S => S.exit]
+    ['눈 표시 반장의 시야를 피해 노란 탈출 지점으로 이동하기', () => false, S => S.exit]
   ]
 });

@@ -64,5 +64,5 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
-  return { k: 'none', busy: true, label: P.lethalHold ? '누르는 중' : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
+  return { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }

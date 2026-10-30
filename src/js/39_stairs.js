@@ -98,6 +98,6 @@ function beginStairTravel(l, up) {
   startTrav(Object.assign(plan, { end: () => {
     P.fl = plan.stairs.dest.fl; P.z = plan.stairs.dest.z; P.x = end.x; P.y = end.y; P.vx = P.vy = 0; setLayer(flOf(P));
     play(up ? 'step_w1' : 'step_w0', .3);
-    if (up && l.kind === 'fstair') hint('floors', '위층: 계단 입구에서 같은 계단으로 내려갈 수 있다');
+    if (up && l.kind === 'fstair') hint('floors', '계단 입구로 들어가면 아래층으로 내려간다');
   } }));
 }

@@ -2,13 +2,13 @@
 function oppsInit() {
   S.opps = [];
   (S.traps || []).forEach((tr, i) => { if (tr.noOpp) return; const p = tr.k === 'shock' ? tr.sw : tr.at;  // noOpp: 단계형 기회(stories)가 같은 수단을 안내하면 옛 목록에선 뺀다
-    S.opps.push({ k: 'trap', ref: i, x: tc(p[0]), y: tc(p[1]), fl: 0, roof: tr.k === 'drop', text: tr.k === 'shock' ? '전선을 끊어 물웅덩이 감전시키기' : '옥상 간판을 떨어뜨려 아래를 덮치기' }); });
+    S.opps.push({ k: 'trap', ref: i, x: tc(p[0]), y: tc(p[1]), fl: 0, roof: tr.k === 'drop', text: tr.k === 'shock' ? '전선을 끊어 물웅덩이에 전류 흘리기' : '옥상 간판을 떨어뜨려 아래를 덮치기' }); });
   if (STAGE.fuse) S.opps.push({ k: 'fuse', x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]), fl: 0, text: '두꺼비집을 내려 동네 조명 전부 끄기' });
   const cds = []; if (STAGE.codeOpp !== false) for (const d of S.doors) if (d.keyLock === 'code' && !cds.some(o => dist(o.x, o.y, d.x, d.y) < 120)) cds.push(d);
   cds.forEach(d => S.opps.push({ k: 'code', d, x: d.x, y: d.y, fl: d.fl || 0, text: '' }));
   if (STAGE.disguise) S.opps.push({ k: 'dress', seen: true, text: '조직원을 쓰러뜨려 옷을 빼앗아 변장하기' });
 }
-function oppText(o) { if (o.k === 'trap' && S.traps[o.ref] && S.traps[o.ref].tip) return o.text + ' — ' + S.traps[o.ref].tip; return o.k === 'code' ? (S.player.keys.code ? `비번 ${STAGE.code || ''}로 잠긴 문 열기` : '잠긴 문 비번 알아내기 — 엿듣거나 쪽지 찾기') : o.text; }
+function oppText(o) { if (o.k === 'trap' && S.traps[o.ref] && S.traps[o.ref].tip) return o.text + ' — ' + S.traps[o.ref].tip; return o.k === 'code' ? (S.player.keys.code ? `비밀번호 ${STAGE.code || ''}로 잠긴 문 열기` : '문 비밀번호 알아내기 · 엿듣기 또는 쪽지 확인') : o.text; }
 function oppDone(o) { return o.k === 'trap' ? !!(S.traps[o.ref] && S.traps[o.ref].used) : o.k === 'fuse' ? !S.lightsOn : o.k === 'code' ? !o.d.locked : o.k === 'dress' ? !!S.player.disguise : false; }
 function updateOpps(dt) {
   if (!S.opps) oppsInit();
@@ -24,7 +24,7 @@ function drawCorpseRisk() {
   for (const c of S.corpses) {
     if (c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선 시체: 자경대원이 보면 발견한다. [행동]으로 메고 숨겨라'); }
+      ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
 }
 function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
@@ -123,7 +123,7 @@ function loadCheckpoint() {
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout();
   robBuild(); syncDynamicTurf(); stairsInit(); lvlInit(); syncCameraLayout(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
-  setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
+  refreshItemNames(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
   S.koHold = null; S.player.lethalHold = null; input.pressIds = {};

@@ -38,7 +38,7 @@ let S = null;
 let running = false, paused = false;
 
 // 의뢰 변형 (깬 의뢰에만): 같은 지도를 다른 조건으로 다시 (히트맨 에스컬레이션 방식)
-const MODS = { reinf: ['순찰 증원', '순찰 자경대원이 둘 늘어난다 (반대 방향으로 돈다)'], timer: ['제한 시간', '6분 안에 끝내야 한다'], bright: ['환한 밤', '어둠 속에서도 자경대원이 1.5배 멀리 본다'], bare: ['맨손', '락픽·빈 캔·다트 없이 시작한다'] };
+const MODS = { reinf: ['순찰 증원', '순찰 경비 2명 추가 · 기존 동선의 반대 방향으로 순찰'], timer: ['제한 시간', '제한 시간 6분'], bright: ['환한 밤', '경비의 어둠 속 시야 거리 1.5배'], bare: ['맨손', '락픽·빈 캔·다트 없이 시작한다'] };
 let MOD = ''; try { const m = localStorage.getItem('yahaeng.mod'); if (MODS[m]) MOD = m; } catch (e) {}
 const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
 // 판 안 예약 동작: 게임 시간(S.t)으로 센다 — 일시정지하면 멈추고, 판이 바뀌면 사라진다 (setTimeout 은 이전 판 일이 새 판에 끼어들었다)
