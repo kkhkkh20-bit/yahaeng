@@ -5,11 +5,12 @@ function wireGround(w, s) { return { x: w.a.x + (w.b.x - w.a.x) * s, y: w.a.y + 
 function nearWireMount() {
   const P = S.player; if (!S.wires.length || !P.z || P.wire || P.jump || P.carrying || P.captive) return null;
   let best = null, bd = 46;
-  for (const w of S.wires) for (const [n, s] of [[w.a, 0], [w.b, 1]]) { if (!n.roof || n.z !== P.z) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = { w, s, at: { x: n.dx, y: n.dy } }; } }
+  for (const w of S.wires) for (const [n, s] of [[w.a, 0], [w.b, 1]]) { if (ACT_SKIP.has(w) || !n.roof || n.z !== P.z) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = { w, s, at: { x: n.dx, y: n.dy } }; } }
   if (best) return best;
   // 줄 중간: 옥상 가장자리 바로 옆을 지나는 줄(높이 차 한 층 이내)은 손을 뻗어 잡는다
   bd = 40;
   for (const w of S.wires) for (let i = 2; i <= 38; i++) {
+    if (ACT_SKIP.has(w)) continue;
     const s = i / 40, h = wirePt(w, s), z = w.a.z + (w.b.z - w.a.z) * s; if (Math.abs(z - P.z) > 1.01) continue;
     const d = dist(P.x, P.y, h.x, h.y); if (d < bd) { bd = d; best = { w, s, at: { x: h.x, y: h.y }, mid: true }; }
   }
@@ -19,7 +20,7 @@ function nearWireMount() {
 function nearPole() {
   const P = S.player; if (!S.poles.length || P.z || P.fl || P.wire || P.jump || P.carrying || P.captive || P.hide) return null;
   let best = null, bd = 56;
-  for (const o of S.poles) { if (ACT_SKIP.has(o)) continue;
+  for (const o of S.poles) { if (ACT_SKIP.has(o) || !objectReachable({ x: o.x, y: o.y, fl: 0 }, 56)) continue;
     if (!o.wires.length) continue; const d = dist(P.x, P.y, o.x, o.y); if (d >= bd) continue;
     let bw = null, bs = -9;
     for (const w of o.wires) { const far = w.a.pole === o ? w.b : w.a; const sc = Math.cos(angDiff(P.a, Math.atan2(far.y - o.y, far.x - o.x))); if (sc > bs) { bs = sc; bw = w; } }

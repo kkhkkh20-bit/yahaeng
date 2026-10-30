@@ -22,7 +22,7 @@ const matMK = (mm, it) => {
 window.bake = async spec => {
   const [bx0, bz0, bx1, bz1] = spec.box, ppu = spec.ppu, W = Math.round((bx1 - bx0) * ppu), H = Math.round((bz1 - bz0) * ppu);
   r.setSize(W, H);
-  const sc = new THREE.Scene(), root = new THREE.Group(); sc.add(root);
+  const sc = new THREE.Scene(), billboards = [], root = new THREE.Group(); sc.add(root);
   root.matrixAutoUpdate = false; const ys = spec.ys ?? 1; if (spec.cam) root.matrix.set(1, 0, 0, 0, 0, ys, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1); else root.matrix.set(1, 0, 0, 0, 0, ys, 0, 0, 0, -ys, 1, 0, 0, 0, 0, 1);
   const cx = (bx0 + bx1) / 2, cz = (bz0 + bz1) / 2;
   const cam = new THREE.OrthographicCamera(-(bx1 - bx0) / 2, (bx1 - bx0) / 2, (bz1 - bz0) / 2, -(bz1 - bz0) / 2, 0.1, 400);
@@ -40,7 +40,11 @@ window.bake = async spec => {
   }
   for (const it of spec.items) {
     let o;
-    if (it.cyl) {  // 관: [x0, y0, z0, x1, y1, z1] 두 점을 잇는 원기둥
+    if (it.sprite) {
+      const map = await new THREE.TextureLoader().loadAsync(it.sprite); map.colorSpace = THREE.SRGBColorSpace;
+      o = new THREE.Mesh(new THREE.PlaneGeometry(it.w || 1, it.h || 1), new THREE.MeshBasicMaterial({ map, transparent: true, alphaTest: .05, side: THREE.DoubleSide }));
+      o.position.set(it.x, it.y, it.z); billboards.push([o, it]);
+    } else if (it.cyl) {  // 관: [x0, y0, z0, x1, y1, z1] 두 점을 잇는 원기둥
       const [a, bb, c, d, e, f] = it.cyl, p0 = new THREE.Vector3(a, bb, c), p1 = new THREE.Vector3(d, e, f), L = p0.distanceTo(p1);
       o = new THREE.Mesh(new THREE.CylinderGeometry(it.r, it.r, L, 14), new THREE.MeshStandardMaterial({ color: it.color ?? 0xd0a830, roughness: it.rough ?? 0.45, metalness: it.metal ?? 0.35 }));
       o.position.copy(p0.clone().add(p1).multiplyScalar(0.5)); o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p1.clone().sub(p0).normalize());
@@ -59,14 +63,18 @@ window.bake = async spec => {
   if (spec.cam) {  // 정사영 카메라를 앞쪽 위에서 elev도 각도로 내려다본다. 화면 범위는 장면 경계에 맞춘다
     const e = spec.cam.elev * Math.PI / 180, bx = new THREE.Box3().setFromObject(root), c = new THREE.Vector3(); bx.getCenter(c);
     if (spec.cam.fit) { bx.min.set(spec.cam.fit[0], 0, spec.cam.fit[1]); bx.max.set(spec.cam.fit[2], spec.cam.fit[4] ?? bx.max.y, spec.cam.fit[3]); bx.getCenter(c); }
-    cam.position.set(c.x, c.y + Math.sin(e) * 150, c.z + Math.cos(e) * 150); cam.up.set(0, 1, 0); cam.lookAt(c); cam.updateMatrixWorld();
+    const az = (spec.cam.azimuth || 0) * Math.PI / 180; cam.position.set(c.x + Math.sin(az) * Math.cos(e) * 150, c.y + Math.sin(e) * 150, c.z + Math.cos(az) * Math.cos(e) * 150); cam.up.set(0, 1, 0); cam.lookAt(c); cam.updateMatrixWorld();
     let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; const v = new THREE.Vector3();
     for (let i = 0; i < 8; i++) { v.set(i & 1 ? bx.max.x : bx.min.x, i & 2 ? bx.max.y : bx.min.y, i & 4 ? bx.max.z : bx.min.z).applyMatrix4(cam.matrixWorldInverse); x0 = Math.min(x0, v.x); x1 = Math.max(x1, v.x); y0 = Math.min(y0, v.y); y1 = Math.max(y1, v.y); }
     Object.assign(cam, { left: x0, right: x1, top: y1, bottom: y0, near: 1, far: 400 }); cam.updateProjectionMatrix(); r.setSize(Math.round((x1 - x0) * ppu), Math.round((y1 - y0) * ppu));
   }
+  for (const [o, it] of billboards) {
+    o.quaternion.copy(cam.quaternion);
+    o.position.add(new THREE.Vector3(0, ((it.ground ?? .5) - .5) * (it.h || 1), 0).applyQuaternion(cam.quaternion));
+  }
   r.render(sc, cam);
   const url = r.domElement.toDataURL('image/png');
-  sc.traverse(m => { if (m.isMesh && m.geometry && (m.geometry.type === 'BoxGeometry' || m.geometry.type === 'CylinderGeometry')) m.geometry.dispose(); });
+  sc.traverse(m => { if (m.isMesh && m.geometry && (m.geometry.type === 'BoxGeometry' || m.geometry.type === 'CylinderGeometry' || m.geometry.type === 'PlaneGeometry')) m.geometry.dispose(); });
   return url;
 };
 window.matInfo = async n => { const o = await load(n); const r = []; o.traverse(m => { if (m.isMesh) r.push([m.name, m.material.type, m.material.transparent, m.material.alphaTest, m.material.side, !!m.material.map]); }); return r; };

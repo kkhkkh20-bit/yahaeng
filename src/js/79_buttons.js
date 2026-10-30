@@ -59,6 +59,11 @@ function envChoices() {
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
   if (P.captive) { const d = rawChoices().find(a => a.k === 'drag'); return d ? [d] : []; }
   const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute' && !(a.k === 'stash' && z.some(b => b.k === 'carry' && b.h === a.h)));
+  // 손이 스위치 쪽에 더 가까울 때만 조명을 먼저 제안한다. 명시적으로 고른 대상은 envAction이 유지한다.
+  const lamp = env.find(a => a.k === 'lamp' && a.l.pole), pole = lamp && env.find(a => a.k === 'wireOn' && a.pole && a.targetObject && dist(a.targetObject.x, a.targetObject.y, lamp.l.x, lamp.l.y) < TILE);
+  if (pole && dist(P.x, P.y, lamp.at.x, lamp.at.y) < dist(P.x, P.y, pole.targetObject.x, pole.targetObject.y)) {
+    env.splice(env.indexOf(lamp), 1); env.unshift(lamp);
+  }
   { const rc = !P.carrying && rumorTarget(); if (rc && !env.some(a => a.k === 'rumor')) env.push({ k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }); }  // 문·창문 옆이어도 [대상]으로 고를 수 있게
   // 시체 옆·메고 있을 때는 시체 일이 먼저, 그 밖엔 환경 행동이 먼저
   // 시체를 멘 채 계단 칸: 오르내리기가 먼저 (내려놓기는 ⇄)

@@ -74,7 +74,7 @@ function nearSideWin() {
 // 위층 창문 안쪽에서 창밖 전깃줄로
 function nearWinWire() {
   const P = S.player; if (P.z || !flOf(P) || P.wire || P.jump || P.carrying || P.captive) return null; let best = null, bd = 52;
-  for (const w of S.wires) for (const [n, s] of [[w.a, 0], [w.b, 1]]) { if (!n.win || n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, tc(n.tx), tc(n.ty - 1)); if (d < bd) { bd = d; best = { w, s, at: { x: tc(n.tx), y: tc(n.ty) } }; } }
+  for (const w of S.wires) for (const [n, s] of [[w.a, 0], [w.b, 1]]) { if (ACT_SKIP.has(w) || !n.win || n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, tc(n.tx), tc(n.ty - 1)); if (d < bd) { bd = d; best = { w, s, at: { x: tc(n.tx), y: tc(n.ty) } }; } }
   return best;
 }
 function nearClimbDown() {
@@ -440,7 +440,7 @@ function nearCorpse() {
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (ACT_SKIP.has(l)) continue; if (l.broken || l.pole || l.cut != null || !(l.off || lampOn(l)) || flOf(l) !== flOf(P)) continue; const d = dist(P.x, P.y, l.x, l.y); if (d < bd && objectReachable(l, 48)) { bd = d; best = l; } }
+  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.broken || l.cut != null || (l.outdoor && !S.lightsOn) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {
@@ -468,7 +468,7 @@ function captiveDragPreview() {
   }
   return best;
 }
-function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && S.lightsOn && objectReachable({ x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, 62); }
+function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && !ACT_SKIP.has(STAGE.fuse) && S.lightsOn && objectReachable({ x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, 62); }
 
 function nearVent() {
   const P = S.player; if (P.jump || P.carrying || P.captive || P.hide || P.under || P.fl) return null;
@@ -569,7 +569,7 @@ function stalkGuard() {
 // 물체가 겹칠 때: 주 행동 후보를 대상 하나씩 빼 가며 다시 구해 목록을 만들고(최대 4), 고른 것(S.actSel)을 주 행동으로 쓴다
 // 바꾸기: Tab · 터치 ⇄ 버튼. 후보 묶음이 바뀌면 처음(가장 우선)으로 돌아간다
 const ACT_SKIP = new Set();
-const actObj = a => a.it || a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || (a.tp && (a.tp.t || a.tp.car || a.tp)) || a.j || a.lv || null;  // 함정·차 경보는 매번 새로 만든 묶음이 아니라 그 물건으로 구분
+const actObj = a => a.targetObject || a.it || a.g || (a.list && a.list[0]) || a.l || a.d || a.fb || (a.wv && a.wv.w) || a.w || (a.n && a.n.u) || a.n || a.h || a.p || a.c || a.v || (a.o && (a.o.w || a.o.d)) || a.o || (a.tp && (a.tp.t || a.tp.car || a.tp)) || a.j || a.lv || null;  // 함정·차 경보는 매번 새로 만든 묶음이 아니라 그 물건으로 구분
 const _oid = new WeakMap(); let _oidN = 0; const oid = o => { if (!o || typeof o !== 'object') return ''; if (!_oid.has(o)) _oid.set(o, ++_oidN); return _oid.get(o); };
 function actionChoices() {
   const out = []; ACT_SKIP.clear(); let pref;
@@ -646,7 +646,7 @@ function primaryActionRaw() {
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downMark(fdE), label: `내려가기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
   const ww = nearWinWire(); if (ww) return { k: 'wireOn', w: ww.w, s: ww.s, at: ww.at, label: '창밖 전깃줄 타기' };
-  const pw = nearPole(); if (pw) return { k: 'wireOn', w: pw.w, s: pw.s, at: pw.at, pole: true, label: '전봇대 올라 전깃줄로' };
+  const pw = nearPole(); if (pw) return { k: 'wireOn', w: pw.w, s: pw.s, at: pw.at, targetObject: pw.pole, pole: true, label: '전봇대 올라 전깃줄로' };
   let cu = nearClimb(); if (cu && cu.kind !== 'fstair' && cu === S.stairBack && S.t - S.stairBackT < 2.5 && dist(P.x, P.y, S.stairBackP.x, S.stairBackP.y) < 60) cu = null;  // 방금 내려온 계단은 바로 다시 오르기로 잡지 않는다
   if (cu && cu.kind === 'balc') { const v = landingVictim(cu.ux, cu.uy, cu.tfl); if (v) return { k: 'up', l: cu, kill: v, at: { x: cu.x, y: cu.y - 30 }, label: v.civ ? '베란다 넘어 기절시키기' : '베란다 넘어 암살' }; }
   // 계단실: 계단 칸 위에 올라서야 [오르기], 그 앞(올라와 선 자리)은 [내리기] — 나머지는 F·⇄로
@@ -668,20 +668,20 @@ function primaryActionRaw() {
   if (h && P.carrying && h.bodies < h.cap) return { k: 'stash', h, c: P.carrying, label: '넣기' };
   if (P.carrying) return { k: 'none', label: '—' };  // 메고 있는 동안 큰 버튼이 조명·문을 가리키지 않게 (내려놓기는 [보조])
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
-  if (nearFuse()) return { k: 'fuse', at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: '전체 조명 끄기' };
+  if (nearFuse()) return { k: 'fuse', targetObject: STAGE.fuse, at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: '전체 조명 끄기' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
   // 문·두꺼비집·조명이 함께 가까우면: 가까운 쪽, 단 방금 고른 것은 24px 더 멀어질 때까지 유지 (몇 픽셀 차이로 바뀌지 않게). 다른 하나는 Z로
   const dr = nearDoor(), bf = nearBFuse(), lp = nearLamp(), cands = [];
   if (dr && !P.carrying) cands.push({ k: 'door', d: dist(P.x, P.y, dr.x, dr.y), a: () => doorAct(dr) });
   if (bf) cands.push({ k: 'bfuse', d: dist(P.x, P.y, bf.x, bf.y), a: () => ({ k: 'bfuse', fb: bf, label: '두꺼비집 내리기 (이 건물 전등)' }) });
-  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lp.x, lp.y), a: () => ({ k: 'lamp', l: lp, label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lp.off ? '조명 켜기' : '조명 끄기' }) });
+  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lampControl(lp).x, lampControl(lp).y), a: () => ({ k: 'lamp', l: lp, at: lampControl(lp), label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lp.off ? '조명 켜기' : '조명 끄기' }) });
   if (cands.length) {
     cands.sort((a, b) => a.d - b.d); let pick = cands[0];
     const pref = cands.find(c => c.k === S.ikPref); if (pref && pref !== pick && pref.d - pick.d < 24) pick = pref;
     S.ikPref = pick.k; const res = pick.a(), other = cands.find(c => c !== pick); if (other) res.alt = other.a();
     return res;
   }
-  { const cr = S.camRoom; if (cr && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
+  { const cr = S.camRoom; if (cr && !ACT_SKIP.has(cr) && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', targetObject: cr, at: { x: cr.x, y: cr.y }, label: 'CCTV 끄고 녹화 지우기' }; }  // 관리실 화면
   { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: wu.z > 1 ? '벽 잡고 오르기 · 한 층 위 옥상' : '벽 잡고 오르기 · 1층 옥상' }; }
   { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
   { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)

@@ -2,6 +2,13 @@
 const TORCH_R = 210;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
 const lampOn = l => !l.broken && !l.off && !(l.outdoor && !S.lightsOn) && !flickOff(l);
+// 빛의 중심과 손으로 누르는 스위치는 별개다. 구버전 저장도 기둥 밑 상자에 연결한다.
+function lampControl(l) {
+  if (!l.pole) return l;
+  if (l.control) return l.control;
+  const o = (S.poles || []).find(o => Math.abs(o.x - l.x) < 1 && Math.abs(o.y - l.y) < TILE);
+  return o ? { x: o.x + 12, y: o.y + 6, fl: 0, z: 0 } : l;
+}
 // 등 격자: 밝기를 물을 때마다 판의 등 전부(도시는 수백 개)를 훑지 않게, 160px 칸마다 빛이 닿을 수 있는 등만 모아 둔다
 const LG_C = 160, LG_NONE = [];
 let LG = null;

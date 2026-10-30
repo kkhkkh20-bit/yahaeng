@@ -284,6 +284,12 @@ function drawPole(o) {
   for (let k = 0; k < 3; k++) { ctx.fillStyle = k % 2 ? '#1c1c20' : '#d8b636'; ctx.fillRect(x - 5, y + 8 - k * 6, 10, 6); }
   ctx.fillStyle = '#55585f'; ctx.fillRect(x - 20, top + 6, 40, 5); ctx.fillStyle = '#d9dde4'; for (const k of [-16, 0, 16]) ctx.fillRect(x + k - 2, top + 1, 4, 6);
   if ((o.tx + o.ty) % 2 === 0) { ctx.fillStyle = '#8e939c'; ctx.fillRect(x + 5, top + 15, 11, 17); ctx.fillStyle = '#62666e'; ctx.fillRect(x + 5, top + 15, 11, 3); }
+  const lamp = S.lamps.find(l => l.pole && Math.abs(l.x - x) < 1 && Math.abs(l.y - y) < TILE);
+  if (lamp) { const at = lampControl(lamp);
+    ctx.fillStyle = '#14191e'; ctx.fillRect(at.x - 6, at.y - 7, 13, 15);
+    ctx.strokeStyle = '#737f86'; ctx.lineWidth = 1; ctx.strokeRect(at.x - 6, at.y - 7, 13, 15);
+    ctx.fillStyle = lamp.off || lamp.broken || !S.lightsOn ? '#454e51' : '#bdcfad'; ctx.fillRect(at.x - 1, at.y - 3, 3, 6);
+  }
   if (!tactical) { ctx.fillStyle = `rgba(4,8,22,${0.62 * (1 - clamp(lt * 1.3, 0, 1))})`; ctx.fillRect(x - 21, top, 42, y + 16 - top); }
 }
 function drawWires() {

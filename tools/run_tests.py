@@ -10,7 +10,7 @@ SUITE = sorted(glob.glob(os.path.join(ROOT, 'tests', 'rev', 't_*.py')) + glob.gl
         [os.path.join(ROOT, 'tests', 'mis', f) for f in ('troutes.py', 'troutes2.py', 'tfeat2.py', 'tm1.py')]
 
 # 빠른 묶음 (--fast): 매번 돌리는 핵심만 — 버튼·공격·세력·도시·의뢰 1·연습·구역·창문 (몇 분). 전체는 마일스톤 때만
-FAST = ['t_stair_geometry', 't_world_alignment', 't_interaction_flow', 't_disguise_ai', 't_btn4', 't_hanging_controls', 't_ko', 't_cqc', 't_fac', 't_instig', 't_rel', 't_city', 't_m1x', 't_choice', 't_change', 't_v33', 't_tut', 't_ui2', 't_zone', 'r3', 'tm1']
+FAST = ['t_environment_targets', 't_stair_geometry', 't_world_alignment', 't_interaction_flow', 't_disguise_ai', 't_btn4', 't_hanging_controls', 't_ko', 't_cqc', 't_fac', 't_instig', 't_rel', 't_city', 't_m1x', 't_choice', 't_change', 't_v33', 't_tut', 't_ui2', 't_zone', 'r3', 'tm1']
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 
 def run(path, timeout=400):

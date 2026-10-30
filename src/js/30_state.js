@@ -52,7 +52,7 @@ function newGame(si) {
   if (STAGE.startAt) { const q = planPt(STAGE.startAt.b, STAGE.startAt.fl || 0, STAGE.startAt.at); if (q) STAGE.start = q; }  // 건물 안에서 시작 (감방 등)
   const lamps = STAGE.lamps.concat(AUTO_LAMPS).map(l => ({ x: tc(l[0]), y: tc(l[1]), r: l[2], outdoor: !!l[3], poly: null, broken: false, fl: l[4] || 0, col: l[5] || null }));
   // 도시: 전봇대마다 보안등 (셋 중 하나는 고장 나 꺼져 있다 — 어두운 틈)
-  POLES.forEach(([px, py], i) => { if ((px * 7 + py * 3) % 3 === 2) return; const oy = !SOLID.has(G0[py + 1] && G0[py + 1][px]) ? 0.55 : -0.55; lamps.push({ x: tc(px), y: tc(py) + oy * TILE, r: 170, outdoor: true, poly: null, broken: false, fl: 0, pole: true, flk: (px + py) % 4 === 0 ? { f: 2.3 + (px % 3), p: py } : null }); });
+  POLES.forEach(([px, py], i) => { if ((px * 7 + py * 3) % 3 === 2) return; const oy = !SOLID.has(G0[py + 1] && G0[py + 1][px]) ? 0.55 : -0.55; lamps.push({ x: tc(px), y: tc(py) + oy * TILE, r: 170, outdoor: true, poly: null, broken: false, fl: 0, pole: true, control: { x: tc(px) + 12, y: tc(py) + 6, fl: 0, z: 0 }, flk: (px + py) % 4 === 0 ? { f: 2.3 + (px % 3), p: py } : null }); });
   if (STAGE.neon) lamps.forEach((l, i) => { if (l.outdoor && l.col && i % 3 === 1) l.flk = { f: 3.1 + (i % 4), p: i }; });
   // 아궁이(벽난로): 방을 밝히는 불. 옥상의 굴뚝과 이어진다
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
