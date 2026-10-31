@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>UNTITLED.TXT v0.24 — 문자 사냥</title>
+<title>UNTITLED.TXT v0.25 — 문자 사냥</title>
 <style>
   :root{--ink:#242424;--faded:#848484;--line:#dededb;--paper:#fbfbfa;--bg:#eeefed;--accent:#252525}
   *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Consolas,'Courier New',monospace;color:var(--ink);background:var(--bg)}
@@ -80,7 +80,7 @@
 </head>
 <body>
 <div class="layout">
-  <div class="eyebrow">PLAYABLE EXPERIMENT / 004</div>
+  <div class="eyebrow">PLAYABLE EXPERIMENT / 005</div>
   <div class="window">
     <div class="titlebar"><div class="title-left"><span class="fileicon">TXT</span><span>untitled.txt — 문자 사냥</span></div><div class="win-controls" aria-hidden="true"><span>−</span><span>□</span><span>×</span></div></div>
     <div class="menubar">
@@ -98,10 +98,10 @@
           <canvas id="board" width="696" height="552" tabindex="0" aria-label="문자 미로 게임. 방향키 또는 WASD로 이동합니다."></canvas>
           <div id="scrim" class="scrim">
             <div class="dialog" id="dialog" role="dialog" aria-labelledby="dialogTitle">
-              <div class="meta" id="dialogMeta">UNTITLED.TXT / V0.24</div>
+              <div class="meta" id="dialogMeta">UNTITLED.TXT / V0.25</div>
               <h2 id="dialogTitle">문자 하나로 시작한다.</h2>
               <p id="dialogBody">방향키로 움직여 적의 뒤를 잡으세요. 적의 정면에서 만나면 바로 잡아먹힙니다.</p>
-              <ul id="dialogList"><li>적 <code>@</code>의 뒤를 잡으면 <code>@</code> 벽을 지울 수 있습니다.</li><li>직접 뚫은 통로는 적도 이용합니다. 바깥으로 갈수록 적이 많아집니다.</li><li>새 문자를 흡수할수록 같은 세계가 바깥으로 확장됩니다.</li></ul>
+              <ul id="dialogList"><li>적 <code>@</code>의 뒤를 잡으면 <code>@</code> 벽을 지울 수 있습니다.</li><li>직접 뚫은 통로는 적도 이용합니다. 네 방향의 구역을 원하는 순서로 개척합니다.</li><li>새 문자를 흡수할수록 같은 세계가 바깥으로 확장됩니다.</li></ul>
               <button class="primary" id="btnPrimary">게임 시작 →</button>
               <button class="secondary" id="btnSecondary" style="display:none">계속하기</button>
             </div>
@@ -131,7 +131,7 @@
           <div class="section-tag">ABSORBED / 획득 문자</div>
           <div class="milestone" id="milestoneAt"><span class="token">@</span><span class="description">@ 벽 지우기</span><span class="state">잠김</span></div>
           <div class="milestone" id="milestoneAnd"><span class="token">&amp;</span><span class="description">&amp; 벽 지우기</span><span class="state">잠김</span></div>
-          <div class="milestone" id="milestonePct"><span class="token">%</span><span class="description">마지막 문자</span><span class="state">미획득</span></div>
+          <div class="milestone" id="milestonePct"><span class="token">%</span><span class="description">% 지름길 개방</span><span class="state">미획득</span></div>
         </div>
         <div class="evolve-panel">
           <div class="section-tag">EVOLUTION / 내 도형 성장</div>
@@ -156,16 +156,16 @@
           <div class="section-tag">RULES / 규칙</div>
           <div class="legend">
             <div class="legend-line"><span class="legend-char">&lt;</span><span>내 캐릭터. 벌어진 오른쪽으로 먹습니다</span></div>
-            <div class="legend-line"><span class="legend-char">@</span><span>적. 글자 끝과 터진 쪽이 정면</span></div>
+            <div class="legend-line"><span class="legend-char">@</span><span>적. 글자 입구 쪽이 정면</span></div>
             <div class="legend-line"><span class="legend-char">###</span><span>부술 수 없는 벽</span></div>
             <div class="legend-line"><span class="legend-char">@@@</span><span>흡수 후 지울 수 있는 벽</span></div>
           </div>
         </div>
       </aside>
     </div>
-    <div class="statusbar"><span id="statusCoords">Ln 12, Col 15</span><span id="statusActivity">삭제 ERASE → 기록 WRITE</span><span>UTF-8 · BUILD 0.24</span></div>
+    <div class="statusbar"><span id="statusCoords">Ln 12, Col 15</span><span id="statusActivity">삭제 ERASE → 기록 WRITE</span><span>UTF-8 · BUILD 0.25</span></div>
   </div>
-  <div class="credit">© PROTOTYPE 0.24 — 지우고, 쓰고, 사냥한다</div>
+  <div class="credit">© PROTOTYPE 0.25 — 지우고, 쓰고, 사냥한다</div>
 </div>
 <script>
 (()=>{'use strict';
@@ -173,7 +173,7 @@
   const dirs={up:{x:0,y:-1,ch:'v'},right:{x:1,y:0,ch:'<'},down:{x:0,y:1,ch:'^'},left:{x:-1,y:0,ch:'>'}}; // Glyph means open mouth, not arrow tip.
   const names=Object.keys(dirs);
   const $=id=>document.getElementById(id);
-  const state={map:[],revealed:[],revealAt:[],player:null,enemies:[],unlocks:new Set(),breached:new Set(),kills:0,stage:0,mode:'intro',held:null,lastPlayerStep:0,lastFrame:0,toastUntil:0,toastText:'',message:'',messageUntil:0,mute:true,particles:[],flash:0,absorbEvent:null,absorbed:[],trail:[],skin:'core',ink:0,walls:[],overview:false,writingAt:0};
+  const state={map:[],revealed:[],revealAt:[],player:null,enemies:[],unlocks:new Set(),breached:new Set(),kills:0,stage:0,mode:'intro',held:null,lastPlayerStep:0,lastFrame:0,toastUntil:0,toastText:'',message:'',messageUntil:0,mute:true,particles:[],flash:0,absorbEvent:null,absorbed:[],trail:[],skin:'core',ink:0,walls:[],overview:false,writingAt:0,zoneOpen:new Set(),gateCount:0};
   let audio=null;
   const idx=(x,y)=>y*W+x;
   const valid=(x,y)=>x>=0&&x<W&&y>=0&&y<H;
@@ -182,55 +182,64 @@
   const carve=(x,y)=>setTile(x,y,' ');
   const line=(x1,y1,x2,y2)=>{if(x1!==x2&&y1!==y2)throw new Error('Not orthogonal');const dx=Math.sign(x2-x1),dy=Math.sign(y2-y1);for(let x=x1,y=y1;;x+=dx,y+=dy){carve(x,y);if(x===x2&&y===y2)break}};
   const rect=(x1,y1,x2,y2,fill)=>{for(let x=x1;x<=x2;x++){setTile(x,y1,fill);setTile(x,y2,fill)}for(let y=y1;y<=y2;y++){setTile(x1,y,fill);setTile(x2,y,fill)}};
+  // Four small independent areas around a persistent center.
+  // Each gate has a named region; removing one door doesn't unlock the whole outer ring.
+  const gateRegions=new Map([
+    ['14,7','north'],['19,11','east'],['14,15','south'],['9,11','west'],
+    ['10,4','nw'],['5,8','nw'],['18,4','ne'],['23,8','ne'],
+    ['5,14','sw'],['10,18','sw'],['23,14','se'],['18,18','se'],
+    ['7,3','top'],['21,3','top'],['7,19','bottom'],['21,19','bottom']
+  ]);
+  const zoneNames={north:'북쪽',east:'동쪽',south:'남쪽',west:'서쪽',nw:'북서',ne:'북동',sw:'남서',se:'남동',top:'상단 지름길',bottom:'하단 지름길'};
+  function pathBox(x1,y1,x2,y2){line(x1,y1,x2,y1);line(x2,y1,x2,y2);line(x2,y2,x1,y2);line(x1,y2,x1,y1)}
   function buildMap(){
     state.map=Array.from({length:H},()=>Array(W).fill('#'));
-    // The outer world: concentric loops with multiple tactical shortcuts.
-    rect(2,2,26,20,' ');rect(4,4,24,18,' ');
-    line(14,2,14,20);line(2,11,26,11);
-    line(8,2,8,4);line(20,2,20,4);line(8,18,8,20);line(20,18,20,20);
-    line(4,7,4,15);line(24,7,24,15);
-    line(2,6,4,6);line(24,16,26,16);line(2,16,4,16);line(24,6,26,6);
-    // Outer perimeter of ring one; only & gates can connect these regions.
-    rect(5,4,23,18,'#');
-    rect(6,5,22,17,' ');rect(8,7,20,15,' ');
-    line(14,5,14,17);line(6,11,22,11);
-    line(8,5,8,7);line(20,5,20,7);line(8,15,8,17);line(20,15,20,17);
-    line(6,8,8,8);line(20,14,22,14);
-    // The starting maze never disappears. The @ wall is its only exit.
-    rect(9,7,19,15,'#');
-    rect(10,8,18,14,' ');line(14,8,14,14);line(10,11,18,11);
+    // Immutable middle: its loops remain useful until the end of a run.
+    pathBox(10,8,18,14);line(14,8,14,14);line(10,11,18,11);
     line(12,8,12,11);line(16,11,16,14);
-    // Exact one-cell gates. Nearby cells outside belong to the same map.
-    [[14,7],[19,11],[14,15],[9,11]].forEach(([x,y])=>setTile(x,y,'@'));
-    [[14,4],[23,11],[14,18],[5,11]].forEach(([x,y])=>setTile(x,y,'&'));
-    // A late-game shortcut; acquiring % has a genuine use on the existing world.
-    [[14,3],[14,19]].forEach(([x,y])=>setTile(x,y,'%'));
-    // Keep non-removable walls as the permanent skeleton of the maze.
-    for(let x=0;x<W;x++){setTile(x,0,'#');setTile(x,H-1,'#')}
-    for(let y=0;y<H;y++){setTile(0,y,'#');setTile(W-1,y,'#')}
+    // First layer: each direction is a separate 15–25 cell hunting ground.
+    pathBox(11,3,17,6);line(11,5,17,5);line(14,3,14,6);
+    pathBox(20,9,25,13);line(20,11,25,11);line(23,9,23,13);
+    pathBox(11,16,17,19);line(11,18,17,18);line(14,16,14,19);
+    pathBox(3,9,8,13);line(3,11,8,11);line(6,9,6,13);
+    // Second layer: corridors connect earlier areas into new loop routes.
+    line(11,4,5,4);line(5,4,5,9);line(5,6,7,6);line(7,4,7,6);
+    line(17,4,23,4);line(23,4,23,9);line(21,4,21,6);line(21,6,23,6);
+    line(5,13,5,18);line(5,18,11,18);line(5,16,7,16);line(7,16,7,18);
+    line(23,13,23,18);line(23,18,17,18);line(21,16,23,16);line(21,16,21,18);
+    // Third layer: very short express links, not a huge new level.
+    line(7,1,21,1);line(7,1,7,4);line(21,1,21,4);
+    line(7,18,7,21);line(7,21,21,21);line(21,18,21,21);
+    // Seal every route at its region transition. There is no accidental bypass.
+    for(const [position,region] of gateRegions){
+      const [x,y]=position.split(',').map(Number);
+      setTile(x,y,['north','east','south','west'].includes(region)?'@':(['top','bottom'].includes(region)?'%':'&'));
+    }
     state.revealed=Array(W*H).fill(false);
     state.revealAt=Array(W*H).fill(0);
     state.player={x:14,y:11,dir:'right',prevX:14,prevY:11,movedAt:0};
+    // All spawns sit on traversable ground. Enemies wait until their own region opens.
     const spawns=[
-      // Initial zone: a stationary tutorial prey plus one slow opponent.
-      ['@',17,11,'right',0,999999,'tutorial'],
-      ['@',11,8,'left',0,880,'wander'],
-      // First short expansion. Several routes offer actual hunting choices.
-      ['&',20,8,'up',1,720,'hunter'],
-      ['@',8,5,'down',1,820,'wander'],
-      ['@',6,14,'right',1,920,'wander'],
-      ['&',21,17,'left',1,810,'hunter'],
-      ['@',14,17,'up',1,960,'wander'],
-      // Outer ring: stronger mix, only activates after the & barrier is opened.
-      ['%',26,8,'down',2,690,'hunter'],
-      ['&',4,4,'down',2,880,'wander'],
-      ['@',14,2,'right',2,930,'wander'],
-      ['%',2,16,'up',2,770,'hunter'],
-      ['&',24,18,'left',2,900,'wander'],
-      ['@',14,20,'up',2,850,'hunter']
+      ['@',17,11,'right','center',999999,'tutorial'],
+      ['@',11,8,'left','center',920,'patrol'],
+      ['&',11,5,'right','north',790,'hunter'],
+      ['@',16,3,'left','north',910,'patrol'],
+      ['@',22,11,'up','east',800,'patrol'],
+      ['&',25,13,'left','east',790,'hunter'],
+      ['&',12,18,'right','south',770,'hunter'],
+      ['@',17,16,'left','south',890,'patrol'],
+      ['@',3,9,'down','west',880,'patrol'],
+      ['&',8,13,'left','west',805,'hunter'],
+      ['%',7,5,'left','nw',730,'ambush'],
+      ['%',21,6,'up','ne',760,'ambush'],
+      ['&',7,17,'down','sw',790,'hunter'],
+      ['%',21,17,'up','se',740,'ambush']
     ];
-    state.enemies=spawns.map(([ch,x,y,dir,zone,speed,style],i)=>({id:i+1,ch,x,y,prevX:x,prevY:y,movedAt:0,dir,zone,speed,style,wake:0,seenUntil:0,goal:null,lastStep:0,alive:true}));
-    state.kills=0;state.stage=0;state.zoom=1.72;state.unlocks=new Set();state.breached=new Set();state.particles=[];state.flash=0;state.lastPlayerStep=0;state.lastFrame=0;state.held=null;state.absorbEvent=null;state.absorbed=[];state.trail=[];state.ink=0;state.walls=[];state.overview=false;state.writingAt=0;$('btnMap').classList.remove('active');$('btnMap').textContent='전체 지도 [TAB]';state.message='@ 적의 뒤에서 접근하세요. 입이 벌어진 방향이 공격 방향입니다.';state.messageUntil=Infinity;
+    state.enemies=spawns.map(([ch,x,y,dir,zone,speed,style],i)=>({id:i+1,ch,x,y,prevX:x,prevY:y,movedAt:0,dir,zone,speed,style,wake:0,seenUntil:0,goal:null,lastStep:0,alive:true,windup:0,alertUntil:0}));
+    state.kills=0;state.stage=0;state.zoneOpen=new Set(['center']);state.gateCount=0;
+    state.zoom=1.72;state.unlocks=new Set();state.breached=new Set();state.particles=[];state.flash=0;state.lastPlayerStep=0;state.lastFrame=0;state.held=null;state.absorbEvent=null;state.absorbed=[];state.trail=[];state.ink=0;state.walls=[];state.overview=false;state.writingAt=0;
+    $('btnMap').classList.remove('active');$('btnMap').textContent='전체 지도 [TAB]';
+    state.message='@를 뒤에서 먹고 네 방향 중 원하는 문을 열어 보세요.';state.messageUntil=Infinity;
     reveal(0,true);updateUI();
   }
   function reveal(now,initial=false){
@@ -261,7 +270,7 @@
     if(!valid(x,y)||tile(x,y)!==' '||enemyAt(x,y)){toast('빈 통로에만 + 벽을 쓸 수 있어요.');return false}
     state.ink--;state.walls.push({x,y,until:now+8000,from:now});setTile(x,y,'+');state.writingAt=now;
     // A written mark is audible: nearby opponents inspect the writer's last position.
-    for(const e of state.enemies){if(!e.alive||e.zone>state.stage||e.style==='tutorial')continue;
+    for(const e of state.enemies){if(!e.alive||!state.zoneOpen.has(e.zone)||e.style==='tutorial')continue;
       if(Math.abs(e.x-x)+Math.abs(e.y-y)<=7){e.goal={x:state.player.x,y:state.player.y};e.seenUntil=now+2400;e.alertUntil=now+1200}
     }
     tone(520,.11,'square',.019);toast('+ 벽 생성 · 적이 다른 길로 돌아옵니다.',1700);
@@ -282,9 +291,9 @@
     state.flash=now+230;
     for(let i=0;i<13;i++){const a=Math.random()*Math.PI*2,s=10+Math.random()*48;state.particles.push({x:e.x*CELL+CELL/2,y:e.y*CELL+CELL/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,from:now,life:470+Math.random()*250,ch:e.ch})}
     tone(340,.12,'triangle',.035);setTimeout(()=>tone(460,.17,'sine',.025),75);
-    if(first&&e.ch==='@'){toast('@ 흡수! 이제 @ 벽을 먹을 수 있습니다.');showMessage('중앙 둘레의 @ 벽으로 이동해 길을 직접 뚫어 보세요.',7000)}
-    else if(first&&e.ch==='&'){toast('& 흡수! 더 바깥쪽으로 갈 수 있습니다.');showMessage('이제 & 벽을 지워 미로의 바깥 둘레를 열 수 있습니다.',7000)}
-    else if(first&&e.ch==='%'){toast('% 흡수! 문자 수집 완료.');showMessage('새로운 능력을 얻었습니다. 남은 적도 사냥해 보세요.',7000)}
+    if(first&&e.ch==='@'){toast('@ 흡수! 이제 @ 벽을 먹을 수 있습니다.');showMessage('중앙 둘레의 4개 @ 문 중 원하는 방향을 먼저 열어 보세요.',7000)}
+    else if(first&&e.ch==='&'){toast('& 흡수! 더 바깥쪽으로 갈 수 있습니다.');showMessage('& 문을 지우면 기존 사냥터끼리 새로운 우회로로 연결됩니다.',7000)}
+    else if(first&&e.ch==='%'){toast('% 흡수! 문자 수집 완료.');showMessage('이제 % 문을 지워 외곽 지름길을 연결할 수 있습니다.',7000)}
     else toast(e.ch+' 흡수 · 먹물 +1 · 속도 증가');
     updateUI();
     if(state.kills===state.enemies.length){state.mode='won';state.held=null;openDialog('win')}
@@ -317,7 +326,20 @@
       const t=tile(x,y);
       if(t==='#'){tone(120,.045,'triangle',.012);return false}
       if(t!==' '&&t!=='+'&&!state.unlocks.has(t)){toast(t+' 적을 흡수해야 '+t+' 벽을 먹을 수 있습니다.',1500);tone(110,.06,'triangle',.017);return false}
-      if(t!==' '){setTile(x,y,' ');tone(250,.095,'square',.024);if(t==='+'){state.walls=state.walls.filter(w=>w.x!==x||w.y!==y);toast('내가 쓴 벽을 지웠습니다.',800)}else if(!state.breached.has(t)){state.breached.add(t);state.stage=Math.max(state.stage,t==='@'?1:2);state.enemies.forEach(en=>{if(en.zone<=state.stage&&!en.wake)en.wake=now+1100+(en.id%4)*450});toast(t+' 벽 삭제 · 새로운 미로 개방',2500);showMessage('새로 열린 통로로 적도 들어옵니다. 기존 미로를 활용해 뒤를 잡으세요.',5500);updateUI()}else{toast('벽을 지웠습니다.',650)}}
+      if(t!==' '){setTile(x,y,' ');tone(250,.095,'square',.024);if(t==='+'){state.walls=state.walls.filter(w=>w.x!==x||w.y!==y);toast('내가 쓴 벽을 지웠습니다.',800)}else{
+        const region=gateRegions.get(x+','+y);
+        state.gateCount++;
+        if(region && !state.zoneOpen.has(region)){
+          state.zoneOpen.add(region);
+          state.stage=Math.max(state.stage,t==='@'?1:t==='&'?2:3);
+          state.enemies.forEach(en=>{if(en.zone===region)en.wake=now+1200+(en.id%3)*380});
+          toast(zoneNames[region]+' 미로 개방 · 새로운 적 발견',2200);
+          showMessage(zoneNames[region]+'을 열었습니다. 기존 길로 돌아가 뒤를 노려 보세요.',5200);
+        }else if(region){
+          toast(zoneNames[region]+' 연결 · 새로운 순환로 완성',1900);
+        }else toast(t+' 지형 삭제',850);
+        updateUI();
+      }}
       state.trail.push({x:ox,y:oy,from:now,dir:p.dir});
       p.prevX=ox;p.prevY=oy;p.movedAt=now;p.x=x;p.y=y;
       tickSound();
@@ -345,37 +367,58 @@
     let cur=targetI,first=null;while(cur!==start){const n=came.get(cur);first=n.dir;cur=n.i}
     return first;
   }
+  // Enemy intent is based on line of sight / last known location, never omniscience.
+  function predictJunction(e){
+    const p=state.player,d=dirs[p.dir];
+    // Prefer the next reachable junction 2–4 tiles forward, but never look through a wall.
+    let x=p.x,y=p.y,target={x,y};
+    for(let j=1;j<=4;j++){
+      if(!isFloor(x+d.x,y+d.y))break;
+      x+=d.x;y+=d.y;target={x,y};
+      const exits=names.filter(n=>isFloor(x+dirs[n].x,y+dirs[n].y)).length;
+      if(exits>=3)break;
+    }
+    return target;
+  }
   function aiStep(e,now){
-    if(state.mode!=='playing'||!e.alive||e.zone>state.stage||now<e.wake||e.style==='tutorial')return;
-    if(Math.abs(e.x-state.player.x)+Math.abs(e.y-state.player.y)>12)return;
-    if(hasStraightSight(e)){e.goal={x:state.player.x,y:state.player.y};e.seenUntil=now+2800;e.alertUntil=now+950}
-    const choices=names.filter(name=>{const d=dirs[name];const x=e.x+d.x,y=e.y+d.y;return isFloor(x,y)&&!enemyAt(x,y)});
+    if(state.mode!=='playing'||!e.alive||!state.zoneOpen.has(e.zone)||now<e.wake||e.style==='tutorial')return;
+    if(Math.abs(e.x-state.player.x)+Math.abs(e.y-state.player.y)>13)return;
+    const sees=hasStraightSight(e);
+    if(sees){
+      e.goal=e.style==='ambush'?predictJunction(e):{x:state.player.x,y:state.player.y};
+      e.seenUntil=now+(e.style==='patrol'?1600:3800);
+      e.alertUntil=now+(e.style==='ambush'?1450:1100);
+    }
+    if(e.goal && now>e.seenUntil){e.goal=null;e.windup=0}
+    const choices=names.filter(name=>{const d=dirs[name],x=e.x+d.x,y=e.y+d.y;return isFloor(x,y)&&!enemyAt(x,y)});
     if(!choices.length)return;
     let direction=null;
-    if(e.goal&&now<e.seenUntil){direction=navigate(e,e.goal);if(e.goal.x===e.x&&e.goal.y===e.y){e.goal=null;e.seenUntil=0}}
+    if(e.goal && now<e.seenUntil){
+      direction=navigate(e,e.goal);
+      if(e.goal.x===e.x && e.goal.y===e.y){e.goal=null;e.seenUntil=0}
+    }
     if(!direction){
-      // Wanderers favour forward movement; hunters investigate junctions.
+      const opposite=names.find(n=>dirs[n].x===-dirs[e.dir].x && dirs[n].y===-dirs[e.dir].y);
       const forward=choices.includes(e.dir);
-      if(forward&&Math.random()<(e.style==='wander'?.76:.55))direction=e.dir;
-      else{
-        const opposite=names.find(name=>dirs[name].x===-dirs[e.dir].x&&dirs[name].y===-dirs[e.dir].y);
-        const preferred=choices.filter(n=>n!==opposite);
-        const options=preferred.length?preferred:choices;
-        direction=options[Math.floor(Math.random()*options.length)];
+      if(e.style==='ambush' && choices.length>=3 && Math.random()<.43){
+        // A % opponent waits at an intersection rather than always rushing.
+        e.alertUntil=Math.max(e.alertUntil||0,now+230);return;
       }
+      const forwardBias=e.style==='patrol'?.87:e.style==='hunter'?.56:.67;
+      if(forward&&Math.random()<forwardBias)direction=e.dir;
+      else{const preferred=choices.filter(n=>n!==opposite);const opts=preferred.length?preferred:choices;
+        direction=opts[Math.floor(Math.random()*opts.length)]}
     }
     if(!direction)return;
-    if(e.dir!==direction){e.dir=direction;return} // A turn is visibly telegraphed for one full AI beat.
+    if(e.dir!==direction){e.dir=direction;e.windup=0;return} // Visible turn warning.
     const d=dirs[e.dir],nx=e.x+d.x,ny=e.y+d.y;
     if(!isFloor(nx,ny))return;
     if(nx===state.player.x&&ny===state.player.y){
-      // Seeing the jaw one cell away gives one enemy beat to dodge. Contact remains fatal.
-      if(!e.windup || now-e.windup>e.speed*2.2){
-        e.windup=now;e.alertUntil=now+e.speed*1.4;
-        e.goal={x:state.player.x,y:state.player.y};e.seenUntil=now+e.speed*1.5;
-        return;
+      // An attacker must look toward the victim, stop, and visibly wind up.
+      if(!e.windup){e.windup=now;e.alertUntil=now+Math.max(520,e.speed*1.1);return}
+      if(now-e.windup>=Math.max(320,e.speed*.62)){
+        die(now,'적이 입을 벌리고 돌진했습니다. ! 경고를 보면 교차로로 피하세요.');return;
       }
-      if(now-e.windup>=e.speed*.65){die(now,'적의 입이 닿았습니다. 경고 !가 보이면 방향을 바꿔 도망치세요.');return}
       return;
     }
     e.windup=0;
@@ -385,13 +428,13 @@
   function updateUI(){
     $('killCount').textContent=String(state.kills);$('totalEnemies').textContent=String(state.enemies.length);
     $('levelInfo').textContent='LV.'+String(1+state.unlocks.size).padStart(2,'0')+' · 이동속도 '+Math.round(Math.min(140,100+state.kills*7))+'%';
-    $('zoneInfo').textContent=['중앙 미로','첫 번째 외곽 개방','두 번째 외곽 개방'][state.stage];
+    $('zoneInfo').textContent='개척 '+Math.max(0,state.zoneOpen.size-1)+'/10구역 · 연결 '+state.gateCount+'개';
     $('worldLabel').textContent='WORLD 0'+(state.stage+1)+' · '+(state.unlocks.size===0?'MONOCHROME':'ABSORB / '+[...state.unlocks].join(' '));
     $('statusCoords').textContent='Ln '+(state.player.y+1)+', Col '+(state.player.x+1);
     $('inkLabel').textContent=state.unlocks.has('@')?'먹물 '+state.ink+' / 3 · 적을 먹어 충전':'첫 @를 먹으면 해금';
     $('btnWrite').disabled=(!state.unlocks.has('@')||!state.ink||state.mode==='dead'||state.mode==='won');$('btnMobileWrite').disabled=$('btnWrite').disabled;
     [...$('inkLeds').children].forEach((el,i)=>el.classList.toggle('filled',i<state.ink));
-    $('statusActivity').textContent=state.stage===0?'중앙에서 시작':state.stage===1?'1차 확장 · @ 구역': '2차 확장 · & 구역';
+    $('statusActivity').textContent=state.stage===0?'중앙에서 시작':state.stage===1?'4방향 개척 · @ 문':state.stage===2?'구역 연결 · & 문':'지름길 개방 · % 문';
     const k=state.kills;
     const steps=[1,3,5,8,11];
     const stage=steps.filter(v=>k>=v).length;
@@ -407,9 +450,9 @@
   }
   function openDialog(type){
     const content={
-      intro:{meta:'UNTITLED.TXT / V0.24',title:'문자 하나로 시작한다.',body:'방향키로 움직여 적의 뒤를 잡으세요. 입이 벌어진 방향이 공격 방향입니다. 적의 등 뒤에서 먹으면 색과 능력이 내 몸에 쌓입니다.',list:['첫 번째 @는 @ 자체의 꼬리 방향으로 오른쪽을 보고 있습니다. 왼쪽 뒤에서 접근해 보세요.','@를 잡으면 @ 벽을 먹어 길을 만들 수 있습니다.','@를 먹으면 SPACE로 + 벽을 쓸 수 있습니다. 적의 길을 바꿔 보세요.'],primary:'게임 시작 →'},
-      help:{meta:'HOW TO PLAY',title:'사냥 · 흡수 · 개척',body:'방향키 또는 WASD로 움직입니다. 적의 뒤쪽 한 칸에서 적에게 들어가면 흡수합니다. 입이 벌어진 쪽이나 옆에서 충돌하면 패배합니다.',list:['캐릭터의 열린 쪽 또는 글자 꼬리 방향이 그 캐릭터의 정면입니다.','@ → @ 벽, & → & 벽. 문자마다 새로운 길이 열립니다.','@를 먹은 뒤 SPACE로 앞쪽 빈 칸에 + 벽 쓰기. 8초 후 사라지고 먹물 1개를 소비합니다.','# 벽은 영원히 남으며, %를 먹으면 외곽 지름길을 열 수 있습니다.','R 재시작 · P 일시정지 · TAB 전체 지도 · 모바일 방향키 또는 스와이프.'],primary:'계속하기'},
-      dead:{meta:'GAME OVER',title:'이번엔 내가 먹혔다.',body:'정면이나 측면은 위험합니다. 상대의 뒤로 돌아가려면 순환로와 코너를 이용하세요.',list:['흡수 기록: '+state.kills+' / '+state.enemies.length,'다음 시도에서는 적이 몸을 돌리는 시간도 노려 보세요.'],primary:'다시 시작 ↻'},
+      intro:{meta:'UNTITLED.TXT / V0.25',title:'문자 하나로 시작한다.',body:'방향키로 움직여 적의 뒤를 잡으세요. 입이 벌어진 방향이 공격 방향입니다. 적의 등 뒤에서 먹으면 색과 능력이 내 몸에 쌓입니다.',list:['첫 번째 @는 @ 자체의 꼬리 방향으로 오른쪽을 보고 있습니다. 왼쪽 뒤에서 접근해 보세요.','@를 잡으면 @ 벽을 먹어 길을 만들 수 있습니다.','@를 먹으면 SPACE로 + 벽을 쓸 수 있습니다. 적의 길을 바꿔 보세요.'],primary:'게임 시작 →'},
+      help:{meta:'HOW TO PLAY',title:'사냥 · 흡수 · 개척',body:'방향키 또는 WASD로 움직입니다. 적의 뒤쪽 한 칸에서 적에게 들어가면 흡수합니다. 입이 벌어진 쪽이나 옆에서 충돌하면 패배합니다.',list:['캐릭터의 열린 쪽 또는 글자 꼬리 방향이 그 캐릭터의 정면입니다.','@는 네 방향의 작은 미로를 열고, &는 두 미로 사이에 순환로를 만듭니다.','@를 먹은 뒤 SPACE로 앞쪽 빈 칸에 + 벽 쓰기. 8초 후 사라지고 먹물 1개를 소비합니다.','# 벽은 영원히 남고, %를 먹으면 빠른 외곽 지름길이 열립니다.','R 재시작 · P 일시정지 · TAB 전체 지도 · 모바일 방향키 또는 스와이프.'],primary:'계속하기'},
+      dead:{meta:'GAME OVER',title:'이번엔 내가 먹혔다.',body:'정면이나 측면은 위험합니다. 상대의 뒤로 돌아가려면 순환로와 코너를 이용하세요.',list:['흡수 기록: '+state.kills+' / '+state.enemies.length,'@는 순찰, &는 추격, %는 매복을 선호합니다.'],primary:'다시 시작 ↻'},
       win:{meta:'WORLD CLEAR',title:'이 세계를 전부 먹었다.',body:'처음엔 문자 하나였지만, 적을 흡수하고 벽을 지워 세계를 직접 확장했습니다.',list:['흡수한 적: '+state.kills,'획득 문자: '+[...state.unlocks].join(' ') ,'이 미로의 핵심 재미가 검증됐는지 판단해 보세요.'],primary:'한 번 더 플레이 ↻'},
       pause:{meta:'PAUSED',title:'일시정지',body:'코너를 돌아 상대의 등 뒤로 접근하세요.',list:['방향키 / WASD 이동','P 를 눌러 재개할 수 있습니다.'],primary:'계속하기'}
     }[type];
@@ -577,7 +620,7 @@
     const p=state.player;
     ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W*CELL,H*CELL);
     // The original central maze stays fixed, while the camera gently reveals more of its perimeter.
-    const targetZoom=state.overview?1:[1.72,1.22,1][state.stage];
+    const targetZoom=state.overview?1:[1.72,1.43,1.18,1][state.stage];
     state.zoom=state.zoom===undefined?targetZoom:state.zoom+(targetZoom-state.zoom)*0.065;
     ctx.save();
     ctx.translate(canvas.width/2,canvas.height/2);
@@ -589,17 +632,18 @@
       const i=idx(x,y),t=tile(x,y);if(!state.revealed[i]||t===' ')continue;
       const alpha=state.revealAt[i]===0?1:Math.min(1,Math.max(0,(now-state.revealAt[i])/350));
       ctx.globalAlpha=alpha;
-      ctx.fillStyle=t==='#'?'#474747':t==='@'?(hasAt?'#7795b3':'#989898'):t==='&'?(hasAnd?'#b79672':'#989898'):'#888';
+      ctx.fillStyle=t==='#'?'#474747':t==='@'?(hasAt?'#7795b3':'#989898'):t==='&'?(hasAnd?'#b79672':'#989898'):t==='%'?(state.unlocks.has('%')?'#ae8dc3':'#989898'):'#888';
       ctx.fillText(t,x*CELL+CELL/2,y*CELL+CELL/2+1);
     }
     ctx.globalAlpha=1;
     // Breathe on the next unlocked gate so the player spots where to explore.
-    const gate=state.unlocks.has('&')?'&':state.unlocks.has('@')?'@':null;
-    if(gate){
-      ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='19px Consolas, "Courier New", monospace';
-      for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(tile(x,y)===gate&&state.revealed[idx(x,y)]){
-        const a=.12+.12*(.5+.5*Math.sin(now/270));
-        ctx.fillStyle=gate==='@'?'rgba(66,113,150,'+a+')':'rgba(152,108,71,'+a+')';
+    const unlockedGates=['@','&','%'].filter(ch=>state.unlocks.has(ch));
+    if(unlockedGates.length){
+      ctx.save();
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+        const t=tile(x,y);if(!unlockedGates.includes(t)||!state.revealed[idx(x,y)])continue;
+        const a=.09+.10*(.5+.5*Math.sin(now/280));
+        ctx.fillStyle=t==='@'?'rgba(66,113,150,'+a+')':t==='&'?'rgba(152,108,71,'+a+')':'rgba(153,105,163,'+a+')';
         ctx.beginPath();ctx.arc((x+.5)*CELL,(y+.5)*CELL,12,0,Math.PI*2);ctx.fill();
       }
       ctx.restore();
@@ -612,12 +656,12 @@
     }
     renderTrail(now);
     // A light dotted line in front of each enemy makes facing readable without UI clutter.
-    for(const e of state.enemies){if(!e.alive||e.zone>state.stage||!state.revealed[idx(e.x,e.y)])continue;
+    for(const e of state.enemies){if(!e.alive||!state.zoneOpen.has(e.zone)||!state.revealed[idx(e.x,e.y)])continue;
       const d=dirs[e.dir];
       ctx.fillStyle=e.alertUntil>now?'rgba(173,80,80,.21)':'rgba(70,70,70,.14)';
       for(let j=1;j<=3;j++){const x=e.x+d.x*j,y=e.y+d.y*j;if(!valid(x,y)||tile(x,y)!==' '||!state.revealed[idx(x,y)])break;ctx.beginPath();ctx.arc((x+.5)*CELL,(y+.5)*CELL,1.6,0,Math.PI*2);ctx.fill()}
     }
-    for(const e of state.enemies){if(!e.alive||e.zone>state.stage||!state.revealed[idx(e.x,e.y)])continue;
+    for(const e of state.enemies){if(!e.alive||!state.zoneOpen.has(e.zone)||!state.revealed[idx(e.x,e.y)])continue;
       const dt=Math.min(1,Math.max(0,(now-(e.movedAt||0))/120));
       const ease=1-Math.pow(1-dt,3);
       const cx=((e.prevX??e.x)+(e.x-(e.prevX??e.x))*ease+.5)*CELL;
@@ -643,7 +687,7 @@
       updateWalls(now);
       const interval=145/Math.min(1.4,1+state.kills*.07);
       if(state.held&&now-state.lastPlayerStep>interval)movePlayer(state.held,now);
-      for(const e of state.enemies){if(!e.alive||e.zone>state.stage||now<e.wake)continue;if(now-e.lastStep>=e.speed){e.lastStep=now;aiStep(e,now)}}
+      for(const e of state.enemies){if(!e.alive||!state.zoneOpen.has(e.zone)||now<e.wake)continue;if(now-e.lastStep>=e.speed){e.lastStep=now;aiStep(e,now)}}
     } else if(state.mode==='absorbing'&&state.absorbEvent){
       if(now>=state.absorbEvent.until){
         const target=state.enemies.find(e=>e.id===state.absorbEvent.enemyId&&e.alive);
@@ -659,7 +703,7 @@
     requestAnimationFrame(frame)
   }
   // Small deterministic hook for local automated smoke tests.
-  window.__TEXT_HUNTER_TEST__={snapshot:()=>({mode:state.mode,x:state.player.x,y:state.player.y,dir:state.player.dir,kills:state.kills,stage:state.stage,absorb:state.absorbEvent?{...state.absorbEvent}:null,skin:state.skin,ink:state.ink,walls:state.walls.map(w=>({x:w.x,y:w.y})),overview:state.overview,absorbed:state.absorbed.map(a=>a.ch),unlocks:[...state.unlocks],enemies:state.enemies.filter(e=>e.alive).map(e=>({ch:e.ch,x:e.x,y:e.y,dir:e.dir,zone:e.zone})),map:state.map.map(r=>r.join(''))}),move:dir=>movePlayer(dir),reset:()=>buildMap()};
+  window.__TEXT_HUNTER_TEST__={snapshot:()=>({mode:state.mode,opened:[...state.zoneOpen],gateCount:state.gateCount,x:state.player.x,y:state.player.y,dir:state.player.dir,kills:state.kills,stage:state.stage,absorb:state.absorbEvent?{...state.absorbEvent}:null,skin:state.skin,ink:state.ink,walls:state.walls.map(w=>({x:w.x,y:w.y})),overview:state.overview,absorbed:state.absorbed.map(a=>a.ch),unlocks:[...state.unlocks],enemies:state.enemies.filter(e=>e.alive).map(e=>({ch:e.ch,x:e.x,y:e.y,dir:e.dir,zone:e.zone,style:e.style})),map:state.map.map(r=>r.join(''))}),move:dir=>movePlayer(dir),reset:()=>buildMap()};
   buildMap();openDialog('intro');requestAnimationFrame(frame);
 })();
 </script>
