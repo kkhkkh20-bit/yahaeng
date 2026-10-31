@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v113 장부 유인·매복 공략과 화면 정리: https://kkhkkh20-bit.github.io/yahaeng/fun-v113/
+
+개발·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PLAY_LOOP_V113.md
+
 v112 출입구 손 조작·환풍구 구분·간판 낙하 영상: https://kkhkkh20-bit.github.io/yahaeng/access-v112/
 
 변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/ACCESS_FIXTURES_QA.md
@@ -98,7 +102,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v112
-Source commit: 2a52340631fdbed59985855af1e9e11f095046eb
+Version: v113
+Source commit: 517e807dc59074188eec2a81f96538a9c2df6d13
 
-Ink study source: 2a52340631fdbed59985855af1e9e11f095046eb
+Ink study source: 517e807dc59074188eec2a81f96538a9c2df6d13
