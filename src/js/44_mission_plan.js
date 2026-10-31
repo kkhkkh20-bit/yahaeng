@@ -103,7 +103,7 @@ function goalNavigation(goal) {
   for (const c of options) { const route=astar(Math.floor(P.x/TILE),Math.floor(P.y/TILE),Math.floor(c.from.x/TILE),Math.floor(c.from.y/TILE),sol);
     if(dist(P.x,P.y,c.from.x,c.from.y)<60 || route.length) { chosen=c;path=route;break; } }
   setLayer(L0); if (!chosen) return goal;
-  const nav={x:chosen.from.x,y:chosen.from.y,fl:flOf(P),z:P.z||0,text:'이동: '+(chosen.to.z?chosen.to.z+'층 옥상':((chosen.to.fl||0)+1)+'층')+' 연결 입구',where:'',storyName:null,via:true};
+  const nav={x:chosen.from.x,y:chosen.from.y,fl:flOf(P),z:P.z||0,text:'이동: '+(chosen.to.z?chosen.to.z+'층 옥상':((chosen.to.fl||0)+1)+'층')+' 연결 입구',where:'',storyName:null,via:true,viaTo:{fl:chosen.to.fl||0,z:chosen.to.z||0}};
   const locked=path.map(p=>doors.get(Math.floor(p.y/TILE)*MW+Math.floor(p.x/TILE))).find(Boolean);
   if(locked) {nav.x=locked.x;nav.y=locked.y;nav.text='이동: 연결 입구 · 잠긴 문';nav.locked=true;}
   S.goalNavCache={key,t:S.t,nav}; return {...goal,...nav};

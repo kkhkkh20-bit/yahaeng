@@ -37,10 +37,12 @@ function blowDisguise(g, why) {
   if (g) { gsay(g, ['잠깐, 넌 우리 사람이 아니잖아!', '너 누구야? 처음 보는 얼굴인데.', '그 옷 어디서 났어?'][g.id % 3]); g.eyeT = 0; }
 }
 function updateSharpEye(g, dt, rawVis) {
+  g.eyeWatching=false;
   if (!sharpEye(g)) { g.eyeT = 0; return; }
   const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI * .6;
-  if (rawVis > 0 && d < R && faceVisible) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
+  g.eyeWatching=rawVis>0&&d<R&&faceVisible;
+  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '눈 표시가 있는 인물은 얼굴을 알아본다. 가까이서 오래 마주 보면 변장이 발각된다');
     if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
@@ -138,12 +140,12 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
-  if (!STAGE.zones || g.state === 'DEAD' || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
+  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
   const P = S.player, on = sharpEye(g); if (!on && !(g.enforcer && dist(g.x, g.y, P.x, P.y) < 420)) return;
   const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / EYE_T, 0, 1);
   ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.fillStyle = on ? (f > 0 ? '#ffd06a' : '#f4f1ea') : 'rgba(244,241,234,.55)';
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
-  if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = f > 0.6 ? '#ff6a4c' : '#ffd06a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
+  if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
   ctx.restore();
 }
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)

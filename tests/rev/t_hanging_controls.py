@@ -63,13 +63,13 @@ async def main():
   # Captive: show the environment key before reaching interaction range.
   for mode,key,code in [('arrow','X','KeyX'),('wasd','E','KeyE')]:
    await fresh();await pg.evaluate(CAPTIVE,110);await pg.evaluate('(mode)=>window.__game.input.kset=mode',mode);await pg.evaluate(RECORD)
-   await pg.wait_for_function("window.__text.some(t=>t.includes('가까이 가서 끌고 가 기절'))")
+   await pg.wait_for_function("window.__text.some(t=>t==='끌고 가기')&&window.__text.some(t=>t.includes('더 가까이'))")
    assert await pg.evaluate('(key)=>window.__text.includes(key)',key)
    assert await pg.evaluate('window.__game.envAction().k')!='drag'
    await pg.keyboard.press(code);assert await pg.evaluate('!!window.__game.S.player.captive')
    await pg.evaluate('''()=>{const P=window.__game.S.player;P.x=window.__h.x+44;P.y=window.__h.y;window.__text=[];}''')
    await pg.wait_for_function("document.querySelector('#btnCarry').textContent.includes('끌고 기절')&&document.querySelector('#btnCarry').textContent.includes('길게 처치')")
-   await pg.wait_for_function("window.__text.some(t=>t.includes('수거함 · 끌고 가 기절'))")
+   await pg.wait_for_function("window.__text.some(t=>t==='끌고 가 기절')&&window.__text.some(t=>t.includes('수거함')&&t.includes('길게 처치'))")
    assert await pg.evaluate('(key)=>window.__text.includes(key)',key)
    await pg.keyboard.press(code);await pg.wait_for_function('!!window.__game.S.player.hide')
    result=await pg.evaluate('''()=>({held:!!window.__game.S.player.captive,state:window.__q.state,kills:window.__game.S.stats.kills,hidden:window.__game.S.player.hide===window.__h})''')

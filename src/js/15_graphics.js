@@ -132,16 +132,16 @@ function killBlockReason() {
   for (const g of S.guards) { if (g.civ || g.dog || g.dropped || ['DEAD', 'CAPTIVE'].includes(g.state) || g.climb || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   if (!best || canKill(best, P) || canKill(best, P, LUNGE)) return null;
   const g = best, behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
-  const why = P.carrying || P.captive ? '운반 중에는 공격할 수 없다' : (g.z || 0) !== (P.z || 0) ? '높이가 다르다' : g.state === 'ALERT' && !radioBusy(g) ? '추격 중 · 시야를 끊고 뒤로 접근' : !behind ? '정면에서는 불가 · 등 뒤로 접근' : !los(P.x, P.y, g.x, g.y) ? '장애물에 가려져 있다' : '접근 경로가 막혀 있다';
+  const why = P.carrying || P.captive ? '운반 중에는 공격할 수 없다' : (g.z || 0) !== (P.z || 0) ? '높이가 다르다' : g.state === 'ALERT' && !radioBusy(g) ? (g.seen?'교전 중 · 시야를 끊기':'경계 중 · 뒤로 접근') : !behind ? '정면에서는 불가 · 등 뒤로 접근' : !los(P.x, P.y, g.x, g.y) ? '장애물에 가려져 있다' : '접근 경로가 막혀 있다';
   return { g, why };
 }
 function drawKillBlock() {
-  const r = killBlockReason(); if (!r) return; const ka = attackAction(); if (ka.k !== 'none') return;  // [공격]이 할 수 있는 게 있으면 이유는 보이지 않는다
+  const r = killBlockReason(); if (!r || grabAction().near) return; const ka = attackAction(); if (ka.k !== 'none') return;  // [공격]이 할 수 있는 게 있으면 이유는 보이지 않는다
   const k = Math.max(1, 0.9 / SCALE); tag(r.g.x, r.g.y + 40 * k, '× ' + r.why, '#ff9a86', 0.95, null, 2);
 }
 // 어쌔신 크리드식 머리 위 발견 표시: 아래를 향한 삼각형이 밑에서부터 찬다. 흰색 = 눈치, 노랑 = 의심, 빨강 = 발각
 function drawAwareMark(g) {
-  const al = g.state === 'ALERT', m = al ? 1 : clamp(g.meter, 0, 1), col = awareCol(g), k = Math.max(1, 0.9 / SCALE), x = g.x, y = g.y - 40 * k, w = 13 * k, h = 15 * k;
+  const awareness=guardAwareness(g), al=awareness.phase==='seen', m=awareness.progress, col=awareness.color, k = Math.max(1, 0.9 / SCALE), x = g.x, y = g.y - 40 * k, w = 13 * k, h = 15 * k;
   MARK_R.push([x - w - 2, y - h - 4, x + w + 2, y + h + 2]);
   const pulse = al ? 1 : m > 0.75 ? 0.75 + 0.25 * Math.sin(S.t * 14) : 1;
   ctx.save(); ctx.globalAlpha = pulse;
@@ -149,7 +149,7 @@ function drawAwareMark(g) {
   ctx.fillStyle = 'rgba(7,10,18,.78)'; ctx.fill();
   ctx.save(); ctx.clip(); ctx.fillStyle = col; const top = y + h * 0.55 - (h * 1.55) * m; ctx.fillRect(x - w, top, w * 2, y + h * 0.55 - top); ctx.restore();
   ctx.lineWidth = 2 * k; ctx.strokeStyle = col; ctx.stroke();
-  const glyph = al ? '!' : (g.meter >= NOTICE_AT || g.icon === '?') ? '?' : '';
+  const glyph = al ? '!' : awareness.phase==='search'||awareness.phase==='suspect' ? '?' : '';
   if (glyph) { ctx.font = `900 ${Math.round(13 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = m > 0.55 ? '#140d08' : col; ctx.fillText(glyph, x, y - h * 0.32); ctx.textBaseline = 'alphabetic'; }
   ctx.restore();
 }
@@ -161,7 +161,7 @@ function drawAwareness(P) {
   const hw = W / SCALE / 2 - 10, hh = H / SCALE / 2 - 10; let ring = false;
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(P) || dist(g.x, g.y, P.x, P.y) > 1100) continue;  // 다른 층은 표시하지 않는다
-    const al = g.state === 'ALERT', m = al ? 1 : g.meter; if (m < 0.03) continue;
+    const aw=guardAwareness(g),al=aw.phase==='seen',m=aw.progress;if(!aw.direct||m<.03)continue;
     if (!ring) { ring = true; ctx.strokeStyle = 'rgba(244,241,234,.14)'; ctx.lineWidth = 1.5 * k; ctx.beginPath(); ctx.arc(P.x, P.y, R, 0, TAU); ctx.stroke(); }  // 고리 바탕 (어쌔신 크리드 유니티식)
     const a = Math.atan2(g.y - P.y, g.x - P.x), span = 0.22 + 0.5 * m;
     ctx.strokeStyle = awareCol(g); ctx.globalAlpha = 0.35 + 0.6 * m; ctx.lineWidth = (3 + 3 * m) * k; ctx.lineCap = 'round';
@@ -417,7 +417,7 @@ function drawLastSeen() {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
     const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.searchJob ? g.searchOrigin : g.poi) : null;
     if (!q || flOf(q) !== flOf(P) || (q.z || 0) !== (P.z || 0) || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
-    pts.push({ x: q.x, y: q.y, hot: g.state === 'ALERT' || g.state === 'NOTICE', body: g.searchJob && (S.searchIncidents || []).find(i => i.id === g.searchJob.incident)?.source === 'body', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
+    pts.push({ x: q.x, y: q.y, hot: false, body: g.searchJob && (S.searchIncidents || []).find(i => i.id === g.searchJob.incident)?.source === 'body', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;

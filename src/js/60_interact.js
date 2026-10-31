@@ -943,7 +943,7 @@ function updateGrabIn(P, dt) {
     if (g.state === 'DEAD') { P.grabIn = null; return; }
     g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
     if (S.fuseGuard === g) S.fuseGuard = null;
-    play('cloth', 0.55); play('thud', 0.3);
+    play('cloth', 0.55); play('thud', 0.3); contactFeedback(g,'grab');
   }
   if (G.t >= G.dur) {
     P.grabIn = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0));

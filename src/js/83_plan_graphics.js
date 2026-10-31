@@ -51,7 +51,7 @@ function drawPlanFixtures(P) {
       tag(x,y-30,p.text,p.other?'#e6a27e':'#d9c98e',.85);
     }
   }
-  for(const g of S.guards) if((g.eyeT||0)>.05 && fixtureVisible(g,160)) {
+  for(const g of S.guards) if(g.eyeWatching && (g.eyeT||0)>.05 && fixtureVisible(g,160)) {
     ctx.strokeStyle='#e7c276';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(g.x,g.y+4,17,9,0,0,TAU);ctx.stroke();
   }
   ctx.restore();

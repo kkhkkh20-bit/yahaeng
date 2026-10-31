@@ -262,8 +262,7 @@ function newGame(si) {
   S.floorC = {};
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
-  window.__hintT = setTimeout(() => S && !S.over && running && STAGE.hints && hint('stage', STAGE.hints[0]), 4500);
-  if (STAGE.hints && STAGE.hints[1]) window.__hintT2 = setTimeout(() => S && !S.over && running && hint('stage2', STAGE.hints[1]), 10000);
+  resetHelpTip();
   syncCameraLayout(); captureContractLayout(); initPreparationProgress(); initMissionPlan(); closeEnvPicker(); updateTargetIntel(); updateHUD(true);
 }
 

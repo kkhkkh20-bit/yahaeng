@@ -776,6 +776,14 @@ body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-co
   #brief .br-mapcol { order: 0; max-height: none; overflow: visible; }
   #brief .br-name { font-size: 36px; }
 }
+/* 진행 중에는 현재 목표 한 줄, 누르면 기존 전체 목록. */
+#hud .obj { pointer-events: auto; position: relative; cursor: pointer; padding-right: 25px; }
+#hud .obj::after { content: '⌄'; position: absolute; right: 8px; top: 8px; color: #97a7af; font-size: 12px; }
+#hud .obj.open::after { content: '⌃'; }
+#hud .obj:not(.open) #objective .ol:not(:first-child) { display: none; }
+#hud .obj.open { max-height: 45vh; overflow: auto; }
+#hud .obj:focus-visible { outline: 2px solid #b7c6c8; outline-offset: 2px; }
+body.dlgmodal #toasts, body:has(.screen:not([hidden])) #hintCard { visibility: hidden; }
 /* 기존 조작 위치는 유지하고, 선택할 때만 이름 목록을 연다. */
 #envPicker { position:fixed; z-index:25; width:min(250px,calc(100vw - 124px)); max-height:55vh; overflow:auto; pointer-events:auto; padding:8px; background:#111820; border:1px solid #6b7779; border-radius:4px; box-shadow:0 5px 18px #0008; }
 #envPicker > b { display:block; color:var(--paper-dim); font-size:12px; padding:3px 4px 7px; }

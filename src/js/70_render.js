@@ -742,6 +742,7 @@ function drawWindowEdge(w, b) {
 function drawDoor(d, onRoof) {
   const x = d.x, y = d.y;
   ctx.save(); ctx.translate(x, y); if (!d.horiz) ctx.rotate(Math.PI / 2);
+  ctx.fillStyle='#69716b';ctx.fillRect(-19,-9,38,3);ctx.fillStyle='#b8bca6';ctx.fillRect(-19,-9,38,1);
   ctx.fillStyle = '#3a2618'; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
   if (d.locked) {
     ctx.fillStyle = '#8a5a34'; ctx.fillRect(-19, -6, 38, 12); ctx.strokeStyle = '#3a2618'; ctx.lineWidth = 2; ctx.strokeRect(-19, -6, 38, 12);
@@ -800,17 +801,17 @@ function flushTags() {
     if (t.pri===2.6 || t.pri===4.2) {
       const blocks=[...document.querySelectorAll('#mini,#stealth,#hud .top,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button')].map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
         .map(r=>[cam.x+(r.left-W/2-6)/SCALE,cam.y+(r.top-H/2-6)/SCALE,cam.x+(r.right-W/2+6)/SCALE,cam.y+(r.bottom-H/2+6)/SCALE]);
-      const margin=tagRect(0,0,t.text,t.key)[2]+8/SCALE;
+      const margin=tagBounds(t,0,0)[2]+8/SCALE;
       const xs=[t.x,clamp(t.x,cam.x-W/2/SCALE+margin,cam.x+W/2/SCALE-margin),cam.x-30/SCALE];
-      for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]) { const y=t.y+dy*lh,r=tagRect(x,y,t.text,t.key);
+      for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]) { const y=t.y+dy*lh,r=tagBounds(t,x,y);
         if(r[0]<cam.x-W/2/SCALE+4/SCALE||r[2]>cam.x+W/2/SCALE-4/SCALE||r[1]<cam.y-H/2/SCALE+4/SCALE||r[3]>cam.y+H/2/SCALE-75/SCALE)continue;
         if(!blocks.concat(placed).some(p=>hit(r,p))) { t.x=x;at=[y,r];break; }
       } if(at)break; }
       if(!at)continue;
     }
-    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagRect(t.x, y, t.text, t.key); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
-    if (!at) { if (t.pri < 2) continue; at = [t.y, tagRect(t.x, t.y, t.text, t.key)]; }
-    placed.push(at[1]); drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
+    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
+    if (!at) { if (t.pri < 2) continue; at = [t.y, tagBounds(t,t.x,t.y)]; }
+    placed.push(at[1]); if(t.rows)drawEncounter(t.x,at[0],t.rows);else drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
   }
 }
 function drawTag(x, y, text, col, alpha = 1, key) {
@@ -960,21 +961,12 @@ function drawGunAim() {
 // 지금 누를 수 있는 행동을 대상 위에 글자로 띄운다
 function drawActLabels(pa, P, ka, ga) {
   const k = Math.max(1, 0.95 / SCALE), T = (b, kc) => isTouch ? [`[${b}] `, null] : ['', kc];
-  // [공격]: 사람 머리 위 (붉게) · [붙잡기]는 그 아래 한 줄
-  const vic = ka && (ka.c || (ka.k === 'cap' ? P.captive : ka.k !== 'none' ? (ka.g || (ka.list && ka.list[0]) || ka.kill) : ka.stalk));
-  let vy = null;
-  if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
-    vy = vic.y - 34 * k; tag(vic.x, vy, p + actionCaption(ka, v), '#e8473c', 1, kc, 4); }
-  if (ga && (ga.k === 'grab' || ga.near)) {
-    const g=ga.g||ga.near, label=ga.reason?'붙잡기 · '+ga.reason:'붙잡기', kc=isTouch?null:KK('grab');
-    // 적 머리·대사·공격 표시 사이에 묻히지 않게 내 쪽에서 같은 입력 이름을 보여 준다.
-    tag(P.x, P.y+36*k, label, ga.k==='grab'?'#a8d4d6':'#b4b9b8', 1, kc, 4.2);
+  const vic=ka&&(ka.c||ka.g||ka.kill||ka.list?.[0]||ka.stalk),vy=vic?vic.y-34*k:null;
+  queueEncounter(P,encounterRows(P,ka,ga,pa));
+  if (!isTouch && ga && ['ledgeDrop','wireFall'].includes(ga.k)) {
+    const h=P.wire?wirePt(P.wire.w,P.wire.s):P;tag(h.x,h.y-75*k,'떨어지기','#f2c46b',1,KK('grab'),3.5);
   }
-  if (!isTouch && ga && ['ledgeDrop', 'wireFall'].includes(ga.k)) { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : P; tag(h.x, h.y - 75 * k, '떨어지기', '#f2c46b', 1, KK('grab'), 3.5); }
-  if (P.captive) { const ready = pa && pa.k === 'drag', h = ready ? pa.h : captiveDragPreview();
-    if (h) { const [p, kc] = T('행동', KK('env')); tag(P.x, P.y + 52 * k, p + hideName(h) + (ready ? ' · 끌고 가 기절 · 길게 처치' : ' · 가까이 가서 끌고 가 기절'), SCAN.hide, 1, kc, 5); }
-    if (ready) return;  // 알림·공격 안내와 겹치지 않게 인물 아래에 한 번만 표시한다
-  }
+  if(P.captive || pa?.k==='steal')return;
   if (!pa || pa.k === 'none') return;
   // [행동]: 대상(문·창문·계단·시체…) 위. 대상이 따로 없는 행동(들고 있는 것 내려놓기 등)은 버튼만 — 주인공 머리 위를 가리지 않게
   if (!pa.at && !pa.c && !actObj(pa)) return;
@@ -1072,17 +1064,15 @@ function darkPass(sc, lamps, clip, key) {
 function chaseHide(P) {
   let best = null, bd = 700;
   for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
-  return best ? { x: best.x, y: best.y, fl: best.fl || 0, text: '숨을 곳 — ' + hideName(best) } : null;
+  return best ? { x: best.x, y: best.y, fl: best.fl || 0, shelter:true, text: '숨을 곳 — ' + hideName(best) } : null;
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
   const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
-  // 건물명은 목표 HUD에 표시하고, 지도 표식은 실제 층수로 짧게 쓴다.
-  const location = /층/.test(gl.where || '') ? `${(gl.fl || 0) + 1}층` : gl.where;
-  const short = (gl.storyName || gl.text) + (gl.area ? ' · 활동 구역' : gl.lastSeen ? ' · 마지막 목격' : location && location !== '바깥' ? ' · ' + location : !gl.via && gl.fl ? ` · ${gl.fl + 1}층` : ''), pulse = 0.7 + 0.3 * Math.sin(S.t * 4);
+  const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
-  const topPx = (drawMini.tb || 70) + 40, botPx = document.body.classList.contains('touch') ? 270 : 70;
+  const topPx = Math.max((drawMini.tb || 70) + 40,($('stealth')?.getBoundingClientRect().bottom||0)+24), botPx = document.body.classList.contains('touch') ? 270 : 70;
   const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
     if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
@@ -1094,7 +1084,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
     ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(242,196,107,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
-    const txt = `${short} · ${m}m`; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
+    const txt = short; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
     const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + th, Math.max(sx0 + th, rEdge - th)), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
     tag(lx, ly, txt, '#f2c46b', 1, null, 2.6);
   }
@@ -1301,7 +1291,7 @@ function draw() {
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     if (g.state === 'TERROR') { ctx.strokeStyle = `rgba(190,120,255,${0.5 + 0.4 * Math.sin(S.t * 14)})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
-    const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : g.state === 'ALERT' || g.state === 'FLEE' ? ('230,70,60') : (g.state === 'NOTICE' || g.state === 'SUSPICIOUS' || g.state === 'SEARCH' || g.state === 'BODY' || g.state === 'CHECK') ? ('242,196,107') : ('170,200,235');
+    const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : guardAwareness(g).phase==='seen' ? ('230,70,60') : (guardAwareness(g).phase==='search'||guardAwareness(g).phase==='suspect') ? ('242,196,107') : ('170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 한 겹: 내 자세에 맞는 범위만 그린다 — 서 있으면 넓은 원뿔, 웅크리면(벽에 붙으면 더) 좁아진 원뿔. 바뀔 때 0.2초 동안 부드럽게 줄고 는다
     if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
@@ -1330,7 +1320,7 @@ function draw() {
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
-    if (mk) drawAwareMark(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
+    if (mk) {if(!g.eyeWatching)drawAwareMark(g);} else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
     if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);
   };
   // 높이감: 옥상·전깃줄 위에 있으면 아래 거리가 한층 어둡고 푸르게 가라앉는다 (옥상은 그 위에 밝게 그려진다). 오르내릴 때는 서서히
@@ -1398,7 +1388,7 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); if (!tactical) drawCorpseRisk(); }
+  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
@@ -1408,7 +1398,7 @@ function draw() {
   PM('overlays');
   if (running && !tactical) drawOffscreen();
   // 행동 표시
-  if (running && !S.over && !S.entrySel) {
+  if (running && !S.over && !S.entrySel && !tactical && !DLG.modal) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
       const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
@@ -1419,8 +1409,8 @@ function draw() {
     }
     const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
-    if (ka.list) ka.list.forEach(g => ring(g, '#e8473c'));
-    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, '#e8473c');
+    if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
+    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd');
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {

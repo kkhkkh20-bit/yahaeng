@@ -57,7 +57,7 @@ function updateObjectAction(P, dt) {
     try {
       // 다른 인물이 이미 열거나 껐다면 반대로 토글하지 않는다.
       const changed = (I.a.k === 'door' && I.a.d.locked !== I.state) || (I.a.k === 'lamp' && I.a.l.off !== I.state);
-      if (!changed) { if (I.a.fromZ) actCarry(I.a); else actPrimary(Object.assign({}, I.a, { viaZ: true })); }
+      if (!changed) { if (I.a.fromZ) actCarry(I.a); else actPrimary(Object.assign({}, I.a, { viaZ: true })); contactFeedback(objectActionPoint(I.a),I.a.k); }
     } finally { I.committing = false; RC = null; S.storyT = 0; hudCache.objH = null; }
   }
   if (I.t >= I.dur) P.interact = null;

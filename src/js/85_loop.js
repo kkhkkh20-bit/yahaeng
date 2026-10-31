@@ -8,6 +8,7 @@ function frame(t) {
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
   if (!S || !mapC) return;
+  updateHelpTip();
   if (ENG && (paused || !running || S.over)) engineSound();  // 멈추면 엔진 소리도
   if (running && !paused) updateDialog(dt);
   { const sc = !!(input.scan && running && !tactical); if (sc && !frame.scanAt) frame.scanAt = performance.now(); if (!sc) frame.scanAt = 0; document.body.classList.toggle('scanning', sc); document.body.classList.toggle('scanleg', sc && performance.now() - frame.scanAt < 4000); }  document.body.classList.toggle('playing', !!(running && S && !S.over));  // 범례는 켠 뒤 4초만 (살필 곳을 가리지 않게)

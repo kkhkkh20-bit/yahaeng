@@ -100,7 +100,7 @@ function grabAction() {
     .sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];
   if (!near) return { k: 'none', label: '붙잡기' };
   const behind=Math.abs(angDiff(near.a,Math.atan2(P.y-near.y,P.x-near.x)))>1.75;
-  return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?'교전 중':!behind?'등 뒤로':'더 가까이' };
+  return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?(near.seen?'교전 중':'경계 중'):!behind?'등 뒤로':'더 가까이' };
 }
 function actAttack() {
   RC = null;

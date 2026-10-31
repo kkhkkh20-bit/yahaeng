@@ -63,7 +63,7 @@ async def main():
    await pg.evaluate('__step(90)')
    assert await pg.evaluate("__game.S.player.captive===__game.S.guards[0]&&__game.S.stats.kills===0&&__game.S.guards[0].state==='CAPTIVE'"), 'grab skipped/treated as kill'
    await pg.evaluate(SCENE)
-   for change,reason in [("g.x=P.x+50;g.a=Math.PI",'등 뒤로'),("g.elite=true",'정예 불가'),("g.elite=false;g.state='ALERT'",'교전 중')]:
+   for change,reason in [("g.x=P.x+50;g.a=Math.PI",'등 뒤로'),("g.elite=true",'정예 불가'),("g.elite=false;g.state='ALERT';g.seen=true",'교전 중')]:
     await pg.evaluate("()=>{const G=__game,g=G.S.guards[0],P=G.S.player;"+change+";G.updateHUD(true)}")
     assert await pg.evaluate('__game.grabAction().reason')==reason
     assert not await pg.locator('#btnGrab').evaluate("e=>e.classList.contains('ready')")

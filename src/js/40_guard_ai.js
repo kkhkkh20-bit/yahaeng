@@ -439,7 +439,7 @@ function updateCiv(g, dt) {
   const tr = (g.state === 'PANIC' ? 4 : 1.8) * dt; g.a += clamp(angDiff(g.a, g.want), -tr, tr);
 }
 const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노랑(의심 — 멈춰 보고 확인하러 온다), 1이면 빨강(발각)
-const awareCol = g => g.state === 'ALERT' ? '#ff4a3c' : g.meter >= NOTICE_AT || ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state) ? '#f2c46b' : '#f4f1ea';
+const awareCol = g => guardAwareness(g).color;
 function updateGuard(g, dt) {
   g.moving = false; g.seen = false;
   if (g.searchJob && g.state !== 'SEARCH') releaseSearchJob(g);
@@ -480,6 +480,7 @@ function updateGuard(g, dt) {
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
+  if(g.seen){g.sightAt=S.t;g.sightFl=flOf(P);g.sightZ=P.z||0;}
   if (radioBusy(g)) {
     if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
     g.path = null; return;  // 보고 중에도 실제 시야만 사용한다
@@ -832,7 +833,11 @@ function followLeader(g, dt, spd) {
     if (L && !g.civ && !g.dog) { goSuspicious(g, L.x, L.y, 6); g.why = 'saw'; gsay(g, ['어디 갔어? 대답해!', '야… 어디 간 거야?', '방금까지 앞에 있었는데…'][g.id % 3]); setIcon(g, '?'); }
     return;
   }
-  const wait = g.escortWait, privacy = wait && inRect(L, wait.rect);
+  const wait=g.escortWait,r=wait&&wait.rect;
+  // 입구에 도착하기 전에 밖에서 대기한다. 뒤따르던 옛 경로를 계속 밟아 안으로 들어가지 않는다.
+  const approach=r&&[r[0]-(wait.at[0]<r[0]?1:0),r[1]-(wait.at[1]<r[1]?1:0),r[2]+(wait.at[0]>r[2]?1:0),r[3]+(wait.at[1]>r[3]?1:0),r[4]];
+  const privacy=!!(wait&&inRect(L,approach));
+  if(privacy!==!!g.waitingPrivacy){g.path=null;g.repath=0;}
   if (privacy && !g.waitingPrivacy) gsay(g, '밖에서 기다리겠습니다.', 2);
   g.waitingPrivacy = !!privacy;
   const bx = privacy ? tc(wait.at[0]) : L.x - Math.cos(L.a) * 52, by = privacy ? tc(wait.at[1]) : L.y - Math.sin(L.a) * 52;

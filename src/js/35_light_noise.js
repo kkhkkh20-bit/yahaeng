@@ -39,24 +39,40 @@ function lightAt(x, y, elev) {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
-const HINT_ALARM = ['alert', 'radioCall', 'counter', 'search', 'hurt', 'gun'];
-function hint(key, text) { if (S.hints[key] || (STAGE && STAGE.tutorial)) return;  // 연습에서는 단계 안내만 (엇나간 도움말이 끼지 않게)
-  if (S.alevel >= 2 && !HINT_ALARM.includes(key)) return;  // 쫓기는 중에는 일반 팁을 띄우지 않는다 (표시 안 한 팁은 나중에 다시 뜰 수 있다)
-  S.hints[key] = true; S.hintN = (S.hintN || 0) + 1; if (S.hintN > 6) return;  // 한 판에 6개까지 — 더 많으면 읽지 않는다
-  showHint(text); }
-// 도움말은 화면 가운데 대신 왼쪽 아래 카드 한 장 (새 도움말이 오면 바꿔 끼운다)
-let hintTimer = null;
-let hintQ = [], hintAt = 0;
-function showHint(text, sec) {
-  const card = document.getElementById('hintCard'); if (!card) return;
-  if (!card.classList.contains('off') && performance.now() - hintAt < 4000) { if (!hintQ.some(q => q[0] === text) && hintQ.length < 3) hintQ.push([text, sec]); return; }  // 앞 도움말을 덮지 않고 줄 선다
-  document.getElementById('hintText').textContent = text; card.classList.remove('off'); hintAt = performance.now();
-  clearTimeout(hintTimer); hintTimer = setTimeout(() => { card.classList.add('off'); const n = hintQ.shift(); if (n) setTimeout(() => showHint(n[0], n[1]), 250); }, Math.max(5500, (sec || 0) * 1000, text.length * 75));
+const HELP_INLINE=new Set(['stage','stage2','grab','killKind','interro','aware']);
+const HELP_SHORT={winsight:'창문과 열린 문 너머도 살펴볼 수 있다.',scan:'살피기로 문·창문·은신처를 확인할 수 있다.',wire:'전깃줄을 따라 이동할 수 있다. 빠르게 움직이면 소리가 커진다.',tac:'전술 지도에서는 시간이 멈춘다. 길과 순찰을 확인하라.'};
+let helpTip=null;
+const helpSeen=(()=>{try{const v=JSON.parse(localStorage.getItem('yahaeng.help.v1')||'[]');return new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);}catch(e){return new Set();}})();
+function resetHelpTip() { helpTip=null; const c=document.getElementById('hintCard');if(c)c.classList.add('off'); }
+function canShowHelpTip() {
+  if(!S||!running||paused||S.over||tactical||DLG.cur||input.scan||S.alevel>=2||S.toasts.length||actionBusy()||S.player.captive)return false;
+  const a=attackAction(),g=grabAction();return !a.stalk&&a.k==='none'&&g.k==='none'&&!g.near&&!activeObserver();
+}
+function hint(key,text) {
+  if(S.hints[key]||helpSeen.has(key)||STAGE.tutorial||HELP_INLINE.has(key)||(S.hintN||0)>=3)return;
+  showHint(HELP_SHORT[key]||text,0,key);
+}
+function showHint(text,sec,key) {
+  if(helpTip||!canShowHelpTip())return false;
+  const card=document.getElementById('hintCard');if(!card)return false;
+  helpTip={run:S,key,text,t:S.t,until:S.t+Math.max(4,Math.min(7,Math.max(sec||0,text.length*.065))),recorded:false};
+  document.getElementById('hintText').textContent=text;card.classList.remove('off');return true;
+}
+function updateHelpTip() {
+  if(!helpTip)return;
+  if(helpTip.run!==S||!canShowHelpTip()||S.t>=helpTip.until){resetHelpTip();return;}
+  if(helpTip.key&&!helpTip.recorded&&S.t-helpTip.t>=2){
+    helpTip.recorded=true;S.hints[helpTip.key]=true;S.hintN=(S.hintN||0)+1;helpSeen.add(helpTip.key);
+    try{localStorage.setItem('yahaeng.help.v1',JSON.stringify([...helpSeen]));}catch(e){}
+  }
 }
 function renderToasts() {
-  toastEl.innerHTML = '';
-  const ch = S && S.guards && running && chaseNow(), T = ch ? S.toasts.filter(m => /warn|bad|good/.test(m.kind || '') && !/radio/.test(m.kind || '')).slice(-1) : S.toasts.slice(isTouch ? -1 : -2);  // 쫓기는 중엔 급한 알림 하나만
-  T.forEach(m => { const d = document.createElement('div'); d.className = 'toast ' + m.kind; d.textContent = m.text; toastEl.appendChild(d); });
+  toastEl.innerHTML='';if(!S)return;
+  // 기록은 유지하고, 화면에는 긴급도와 발생 순서에 따라 한 건만 보여 준다.
+  const score=m=>/bad/.test(m.kind||'')?4:/warn/.test(m.kind||'')?3:/good/.test(m.kind||'')?2:/radio/.test(m.kind||'')?0:1;
+  const m=S.toasts.reduce((best,m)=>!best||score(m)>=score(best)?m:best,null);
+  if(m){const d=document.createElement('div');d.className='toast '+m.kind;d.textContent=m.text;toastEl.appendChild(d);}
+  updateHelpTip();
 }
 
 // ---------------------------------------------------------------- 소음
