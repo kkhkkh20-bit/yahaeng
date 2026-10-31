@@ -6,6 +6,7 @@ function actionBusy(P = S.player) {
 // 벽·층 너머 물건을 잡지 않는다. 벽에 붙인 스위치와 가구 끝에는 손이 닿는다.
 function objectReachable(o, radius = 60) {
   const P = S.player;
+  if(o?.surface)o=surfaceFixture(o);
   if (!o || !Number.isFinite(o.x) || !Number.isFinite(o.y) || flOf(o) !== flOf(P) || (o.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, o.x, o.y); if ((o.furn===true?hideDistance(o,P):d) > radius) return false;
   const L0 = CUR_F; setLayer(flOf(P));
@@ -23,7 +24,7 @@ const OBJECT_FLOW = {
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [0.65, '조작 중', 'hands']
 };
 function objectActionPoint(a) {
-  if (a.k === 'use') return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]), fl: a.n.u.fl || 0 };
+  if (a.k === 'use') return usePoint(a.n.u);
   return a.at || actObj(a);
 }
 function objectActionValid(a, item) {
@@ -32,7 +33,7 @@ function objectActionValid(a, item) {
   if (a.k === 'dropItem') return !!P.item && P.item === item;
   if (a.k === 'pickup') return !a.p.taken && objectReachable(a.p);
   if (a.k === 'dress') return !a.c.stripped && !a.c.carried && !a.c.stashed && objectReachable(a.c, 46);
-  if (a.k === 'use') return P.item === item && !!item && item.id === a.n.u.need && !S.usesDone[a.n.i] && objectReachable(objectActionPoint(a), 56);
+  if (a.k === 'use') return P.item === item && !!item && item.id === a.n.u.need && !S.usesDone[a.n.i] && (a.n.u.need!=='laxative'||mealAvailable()) && objectReachable(objectActionPoint(a), 56);
   const o = objectActionPoint(a);
   return (!o || objectReachable(Object.assign({ fl: flOf(P), z: P.z || 0 }, o), a.k === 'fuse' ? 62 : 60)) && !(a.l && a.l.broken);
 }
@@ -41,8 +42,8 @@ function beginObjectAction(a) {
   const P = S.player, item = P.item;
   if (!objectActionValid(a, item)) return true;
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
-  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
-    face: at && Number.isFinite(at.x) ? Math.atan2(at.y - P.y, at.x - P.x) : P.a,
+  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
+    face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
     illegal: a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;

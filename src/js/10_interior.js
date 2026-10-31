@@ -264,7 +264,7 @@ const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '')
 function drawFurnArt(x, it) {
   if(it.t==='locker'||it.t==='wardrobe'){drawCabinet({type:it.t,tx:it.x,ty:it.y,w:it.w,h:it.h,furn:true,fl:it.fl||0},'all',x,0);return;}
   if(INK_STUDY&&STAGE.id==='m2'&&it.t==='dance'){drawInkDance(x,it);return;}
-  if (KIT) { const k = kitFurn[furnKey(it)]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); return; } }
+  if (KIT) { const k = kitFurn[furnKey(it)]; if (k && kitOk(k.img)) { x.drawImage(k.img, it.x * TILE + k.ox, it.y * TILE + k.oy); if(it.t==='shelf'&&BLD[bldAt(it.x,it.y)]?.name==='약국')drawPharmacyStock(x,it);return; } }
   const T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, s = it.seed;
   const R = (a, b, c, d, col) => { x.fillStyle = col; x.fillRect(px + a, py + b, c, d); };
   const sh = () => { x.fillStyle = 'rgba(0,0,0,.3)'; x.fillRect(px + 5, py + 6, w - 4, h - 4); };

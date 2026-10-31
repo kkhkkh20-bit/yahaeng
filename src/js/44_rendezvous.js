@@ -9,7 +9,7 @@ function rendezvousState() {
     const desk=FURN.filter(f=>(f.fl||0)===fl&&f.t==='desk'&&f.x>b.x0&&f.x<b.x1&&f.y>b.y0&&f.y<b.y1)
       .sort((a,c)=>Math.hypot(a.x-room[0],a.y-room[1])-Math.hypot(c.x-room[0],c.y-room[1]))[0];
     if(!desk||solidAt(room[0],room[1]))return null;
-    const phone={x:tc(desk.x),y:tc(desk.y),tx:desk.x,ty:desk.y,fl,z:0};
+    const phone={x:tc(desk.x),y:tc(desk.y),tx:desk.x,ty:desk.y,fl,z:0,surface:{...desk}};
     S.rendezvous={phase:'idle',phone,room:{x:tc(room[0]),y:tc(room[1]),fl,z:0},cooldown:0,calls:0};
     return S.rendezvous;
   }finally{setLayer(L0);}
@@ -73,7 +73,7 @@ function drawRendezvousPhone() {
   drawLitContainer({...r.phone,type:'phone'});
 }
 function drawRendezvousPhoneArt(p,ctx){
-  const x=p.x,y=p.y-24;ctx.save();ctx.fillStyle='#131d1c';ctx.fillRect(x-10,y-4,20,11);ctx.strokeStyle='#767b6c';ctx.lineWidth=1;ctx.strokeRect(x-10,y-4,20,11);
+  const v=surfacePoint(p),x=v.x,y=p.surface?v.y:p.y-24;ctx.save();ctx.fillStyle='#131d1c';ctx.fillRect(x-10,y-4,20,11);ctx.strokeStyle='#767b6c';ctx.lineWidth=1;ctx.strokeRect(x-10,y-4,20,11);
   ctx.fillStyle='#46514a';ctx.fillRect(x-10,y-8,5,8);ctx.fillRect(x+5,y-8,5,8);ctx.fillRect(x-8,y-9,16,4);
   ctx.strokeStyle='#242e29';ctx.beginPath();ctx.moveTo(x+9,y+1);ctx.bezierCurveTo(x+19,y+8,x+3,y+13,x+15,y+16);ctx.stroke();
   ctx.fillStyle=rendezvousReady()?'#b4ad7b':'#656e60';for(let i=0;i<6;i++)ctx.fillRect(x-3+i%3*3,y+Math.floor(i/3)*3,1,1);ctx.restore();
@@ -92,6 +92,7 @@ function missionApproachGoal() {
   const g=npc('vip');if(!g||targetEliminated(g)||g.state==='DEAD')return null;
   const r=S.rendezvous;
   if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
+  if(S.player.item?.id==='laxative'&&!S.usesDone[1]&&mealAvailable())return{...usePoint(mealUse()),text:'문지기 식사에 설사약 넣기',where:'포차 1층'};
   let id=null;
   if(S.player.item?.id==='emetic'||['prepared','drinking','sick'].includes(S.vipPlan?.phase))id='emetic';
   else if(S.player.z&&S.traps.some(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used&&canReleaseSign(t)))id='sign';

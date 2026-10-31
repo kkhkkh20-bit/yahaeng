@@ -6,6 +6,9 @@
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
   vipDrink: { at: [29, 10], to: [40, 6] },
+  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [40, 6], toiletStay: 32 },
+  buildingNames: {2:'공중화장실'},
+  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
   brief: '실장과 장부. 둘 다 넘기면 끝이다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -49,11 +52,14 @@
           [23, 9, 32, 9, 'res', null, '바 안쪽 · 직원만', ['waiter']],                 // 바 줄: 직원 옷이면 술병을 만져도 자연스럽다
           [33, 5, 35, 13, 'res', null, '직원 계단 복도', ['waiter', 'crew']],
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
-          [3, 27, 10, 31, 'pub'], [14, 27, 21, 31, 'pub'], [39, 6, 41, 7, 'pub']],    // 포차 · 약국 · 공중화장실
+          [2, 26, 11, 32, 'pub'], [13, 26, 22, 32, 'pub'], [38, 5, 42, 8, 'pub']],    // 포차 · 약국 · 공중화장실
   zoneAllow: ['crew'],
-  props: [{ id: 'emetic', name: '구토제', at: [16, 30] }],
-  uses: [{ need: 'emetic', at: [27, 9], label: '실장 술병에 구토제 타기', permit: 'waiter', done: '실장 술병 준비 완료 — 실장이 바에서 마시면 효과가 난다',
-           act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } }],
+  props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
+          { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],
+  uses: [{ need: 'emetic', at: [29, 10], surface:{b:1,t:'bar',u:.3}, label: '실장 술병에 구토제 넣기', permit: 'waiter', done: '실장 술병에 구토제를 넣었다',
+           act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } },
+         { need:'laxative',at:[5,30],surface:{b:4,t:'table',u:.65},label:'문지기 식사에 설사약 넣기',permit:'waiter',
+           done:'문지기 식사에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
   intel: [
     { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
     { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,
@@ -65,7 +71,7 @@
   interrogate: [{ gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', say: '실장님? 간판 밑에서 담배 피우실 땐 혼자야!' },
                 { gives: 'code', learn: '사무동 금고 비밀번호 0417', say: '비, 비번은 0417! 사장 딸 생일이야!' },
                 { gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', say: '실장님 배 약해! 술에 뭐 들어가면 바로 화장실로 뛰어가!' }],
-  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 밑 메모', lines: ['금고 0417', '(사장님 딸 생일)'], gives: 'code', learn: '사무동 금고 비밀번호 0417' }],
+  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 위 메모', surface:{b:0,types:['desk','desk2']}, lines: ['금고 0417', '(사장님 딸 생일)'], gives: 'code', learn: '사무동 금고 비밀번호 0417' }],
   traps: [{ k: 'drop', at: [27, 12], hit: [25, 15, 29, 16], text: 'CLUB', noOpp: true }], codeOpp: false,   // 간판·금고 비밀번호는 아래 단계형 기회가 안내한다
   stories: [
     { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
@@ -74,7 +80,7 @@
     { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
       steps: [{ text: '약국에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '클럽 직원 복장 구하기', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
-              { text: '실장 술병에 구토제 타기', at: [27, 10, 0], done: S => !!S.usesDone[0] },
+              { text: '실장 술병에 구토제 넣기', at: [29, 10, 0], done: S => !!S.usesDone[0] },
               { text: '실장이 바에서 술을 마시는지 확인하기', at: [29, 10, 0], done: (S, h) => !!(S.vipPlan && ['sick','done'].includes(S.vipPlan.phase)) || h.eliminated('vip') },
               { text: '공중화장실에서 실장 처치', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호'),
@@ -88,7 +94,7 @@
   keyItems: [{ key: 'blue', b: 0, fl: 0, at: 'VC' }],
   well: 'manhole', kunai: 3, coins: 3, reinf: [55, 21],
   lamps: [[24, 15, 150, 1, 0, '255,90,190'], [32, 16, 150, 1, 0, '90,220,255'], [7, 17, 150, 1], [16, 8, 120, 1, 0, '255,200,120'], [19, 14, 110, 1, 0, '255,200,120'],
-          [35, 2, 90, 1], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
+          [35, 2, 90, 1], [40, 6, 100, 0], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
   fuse: [36, 18, 36, 17],
   layoutVersion: 1, securityEvidence: true, camRoom: { b: 0, fl: 1, at: 'S' },
   cams: [[22, 15, 0, 20], [12, 15, 0, 45], { b: 0, fl: 0, at: 'VB', sweep: 40 }],
@@ -109,7 +115,7 @@
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
     { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
-    { kind: 'civ', outfit: 'waiter', at: [5, 30], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [6, 30], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
+    { kind: 'civ', outfit: 'waiter', at: [7, 30], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [8, 30], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들
     { kind: 'civ', tag: 'pharm', body: 'old', at: [18, 28], post: 180 },             // 16 약사
     { kind: 'civ', route: [[1, 19, 1], [54, 19, 1]] },                               // 17·18 큰길 행인

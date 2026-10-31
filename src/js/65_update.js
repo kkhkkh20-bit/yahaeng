@@ -15,6 +15,7 @@ function update(dt) {
   updateChats(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   updateVipPlan(dt);
+  updateDining(dt);
   updateRendezvous(dt);
   if ((S.targetIntelT = (S.targetIntelT || 0) - dt) <= 0) { S.targetIntelT = .15; updateTargetIntel(); }
   if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);

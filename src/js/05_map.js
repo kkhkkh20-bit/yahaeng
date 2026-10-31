@@ -43,6 +43,7 @@ function buildMap(st) {
     tent: (x, y, c) => { m.fill(x, y, x + 1, y + 1, 'M'); TENTS.push([x, y, c || 'R']); }
   };
   st.build(m);
+  for(const [i,name]of Object.entries(st.buildingNames||{}))if(BLD[i])BLD[i].name=name;
   moveStageFixtures(st, G);
   // 평면 건물 1층 창문인데 바깥이 막혀 있으면(전봇대·맨홀·지도 끝) 벽으로
   BLD.forEach(b => { if (!b.plan) return; for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) if (G[y][x] === 'N') { const ox = x === b.x0 ? x - 1 : x === b.x1 ? x + 1 : x, oy = y === b.y1 ? y + 1 : y === b.y0 ? y - 1 : y; if (!inMap(ox, oy) || SOLID.has(G[oy][ox])) G[y][x] = '#'; } });
@@ -51,7 +52,21 @@ function buildMap(st) {
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'U') RL[y * MW + x] = 1;
   BLD.forEach((b, i) => { for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { if (!b.vacant) RL[y * MW + x] = b.h; BI[y * MW + x] = i; } });
   (st.planks || []).forEach(([x0, y0, x1, y1, z]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inMap(x, y) && RL[y * MW + x] < z) RL[y * MW + x] = z; });
-  G0 = G; buildFloors(st); CUR_F = 0;
+  G0 = G; buildFloors(st); CUR_F = 0; installStageFurniture(st);
+}
+// Authored fixtures share the same footprint in collision and rendering.
+function installStageFurniture(st, saved = false) {
+  for(const d of st.fixedFurn||[]){
+    let f=FURN.find(f=>f.x===d.x&&f.y===d.y&&(f.fl||0)===(d.fl||0)&&f.t===d.t);
+    if(!f){f={w:1,h:1,r:0,fl:0,seed:114,...d};FURN.push(f);}
+    const grid=f.fl?GF[f.fl]:G0;if(!grid)continue;
+    for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
+    if(saved)for(const o of [S.player,...S.guards,...S.corpses]){
+      if(flOf(o)!==f.fl||o.z||o.hide||o.stashed||o.carried||o.x<f.x*TILE||o.x>=(f.x+f.w)*TILE||o.y<f.y*TILE||o.y>=(f.y+f.h)*TILE)continue;
+      const cells=[];for(let y=f.y-1;y<=f.y+f.h;y++)for(let x=f.x-1;x<=f.x+f.w;x++)if(grid[y]&&!SOLID.has(grid[y][x])&&bldAt(x,y)===bldAt(f.x,f.y))cells.push({x:tc(x),y:tc(y)});
+      cells.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y));if(cells[0]){o.x=cells[0].x;o.y=cells[0].y;o.path=null;}
+    }
+  }
 }
 // 시설물 이동은 새 판과 구버전 체크포인트에 같은 규칙으로 적용한다.
 function moveStageFixtures(st, grid, saved = false) {

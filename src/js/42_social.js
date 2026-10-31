@@ -188,13 +188,13 @@ function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // �
 function propsInit() { S.props = (STAGE.props || []).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
 function nearProp() {
   const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 58;
-  for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = dist(P.x, P.y, p.x, p.y); if (d < bd && objectReachable(p, 58)) { bd = d; best = p; } }
+  for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = p.surface ? hideDistance(surfaceFixture(p),P) : dist(P.x, P.y, p.x, p.y); if (d < bd && objectReachable(p, 58)) { bd = d; best = p; } }
   return best;
 }
 function nearUse() {
   const P = S.player; if (!P.item || P.z || P.wire || P.hide) return null;
   let best = null, bd = 56;
-  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; const at = { x: tc(u.at[0]), y: tc(u.at[1]), fl: u.fl || 0 }, d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 56)) { best = { u, i }; bd = d; } }
+  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if ((u.need==='laxative'&&!mealAvailable()) || S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; const at = usePoint(u), d = at.surface ? hideDistance(surfaceFixture(at),P) : dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 56)) { best = { u, i }; bd = d; } }
   return best;
 }
 function takeProp(p) {
@@ -209,7 +209,7 @@ function takeProp(p) {
   hint('item', '물건은 한 번에 하나만 들 수 있다. [행동]으로 내려놓거나 지정된 장소에서 사용할 수 있다');
 }
 function dropItem() {
-  const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); play('drop', 0.3);
+  const P = S.player, p = P.item; if (!p) return; P.item = null; p.taken = false; p.x = P.x; p.y = P.y + 6; p.fl = flOf(P); p.surface=null;p.dx=p.dy=null;p.dropped=true; play('drop', 0.3);
 }
 function useItem(n) {
   const P = S.player, u = n.u, natural = u.permit && myPermits().includes(u.permit); S.usesDone[n.i] = true; if (!natural) { P.useT = S.t + 0.9; if (!P.interact) P.strikeT = Math.max(P.strikeT || 0, 0.5); } play('cloth', 0.4);  // 허가 옷(직원)이면 자연스러운 일 — 수상하지 않다
@@ -217,9 +217,10 @@ function useItem(n) {
   try { u.act && u.act(S, SH); } catch (e) { console.warn('use', e); }
   toast(u.done || '했다', 2.4, 'good');
 }
-function drawProps() {
-  for (const p of S.props || []) { if (p.taken || p.fl !== flOf(S.player)) continue;
-    ctx.save(); ctx.translate(p.x, p.y); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-11, -4, 24, 12);
+function drawProps(fl=0) {
+  for (const p of S.props || []) { if (p.taken || p.fl !== fl) continue;
+    const v=surfacePoint(p);ctx.save(); ctx.translate(v.x, v.y); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-11, -4, 24, 12);
+    if(['emetic','laxative'].includes(p.id)){drawMedicineArt(ctx,p);ctx.restore();continue;}
     ctx.fillStyle = p.outfit ? '#6fae7e' : p.id === 'box' ? '#b78a52' : '#d9d2c2'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 1.5; ctx.fillRect(-10, -9, 20, 15); ctx.strokeRect(-10, -9, 20, 15);
-    ctx.restore(); if (dist(p.x, p.y, S.player.x, S.player.y) < 260) tag(p.x, p.y - 20, p.name, '#f4e3c2', 0.85); }
+    ctx.restore(); if (dist(p.x, p.y, S.player.x, S.player.y) < 260) tag(v.x, v.y - 20, p.name, '#f4e3c2', 0.85); }
 }

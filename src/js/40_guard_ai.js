@@ -7,6 +7,18 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 function moveAlong(g, speed, dt) {
+  // A stationary person can invalidate a local sidestep. Replan around occupied
+  // cells instead of stacking detours forever in a narrow doorway or aisle.
+  if(g.path?.length){
+    const goal=g.path[g.path.length-1],d=dist(g.x,g.y,goal.x,goal.y);
+    let p=g.walkProgress;if(!p||p.x!==goal.x||p.y!==goal.y||p.fl!==flOf(g)||p.z!==(g.z||0))p=g.walkProgress={x:goal.x,y:goal.y,fl:flOf(g),z:g.z||0,best:d,t:0};
+    if(d<p.best-8){p.best=d;p.t=0;}else p.t+=dt;
+    if(p.t>3){
+      p.t=0;const occupied=new Set(),sol=g.z?solidFor(g.z):solidAt,tx=Math.floor(goal.x/TILE),ty=Math.floor(goal.y/TILE);
+      for(const o of S.guards){if(o===g||o.moving||o.state==='DEAD'||o.state==='CAPTIVE'||o.climb||flOf(o)!==flOf(g)||(o.z||0)!==(g.z||0)||dist(g.x,g.y,o.x,o.y)>TILE*6)continue;const x=Math.floor(o.x/TILE),y=Math.floor(o.y/TILE);if(x!==tx||y!==ty)occupied.add(y*MW+x);}
+      if(occupied.size){const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,(x,y)=>sol(x,y)||occupied.has(y*MW+x));if(path.length){path[path.length-1]={x:goal.x,y:goal.y};g.path=path;g.detourT=1.2;}}
+    }
+  }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) return true;
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
@@ -41,7 +53,7 @@ function moveAlong(g, speed, dt) {
         const side = ox * rxv + oy * ryv, sg = rel < -0.55 ? 1 : side > 0 ? -1 : 1;  // 마주 오면 오른쪽, 서 있으면 반대쪽
         sx += rxv * sg * w; sy += ryv * sg * w; if (d < 30) slow = Math.min(slow, 0.55);
         // 우회 지점: 상대 옆 36px로 돌아갈 점을 경로 앞에 끼운다 (막힌 칸이면 반대쪽)
-        if (!(g.detourT > 0) && d < 58) {
+        if (!(g.detourT > 0) && !g.path.some(p=>p.detour) && d < 58) {
           const sol = g.z ? solidFor(g.z) : solidAt;
           for (const s2 of [sg, -sg]) {
             const dx = o.x + rxv * s2 * 38 + ux * 8, dy = o.y + ryv * s2 * 38 + uy * 8;

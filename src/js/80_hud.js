@@ -162,7 +162,7 @@ function updateHUD(force) {
   const P = S.player;
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
   drawWanted();
-  setText(hud.objT, 'objT', STAGE.sub);
+  setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name);
   { const html = objectiveLines().filter(([c])=>!c.includes('done')).map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   drawMini();
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);

@@ -30,10 +30,9 @@ function drawPlanFixtures(P) {
     if(d.keyLock==='blue' && hasK('blue') && dist(P.x,P.y,d.x,d.y)<150) tag(x,y-20,'파란 카드키 · VIP룸 뒷문',keyCol('blue'),.8);
   }
   if(STAGE.id==='m2' && !P.fl && !P.z) {
-    const p={x:tc(27),y:tc(9),fl:0};
-    if(fixtureVisible(p,260)) {
-      ctx.fillStyle='#34443a';ctx.fillRect(p.x-4,p.y-12,8,17);ctx.fillRect(p.x-2,p.y-17,4,6);
-      ctx.fillStyle=S.usesDone[0]?'#c8ad76':'#d8d2b9';ctx.fillRect(p.x-3,p.y-6,6,6);
+    const physical=usePoint(STAGE.uses[0]),p={...surfacePoint(physical),fl:0};
+    if(fixtureVisible(surfaceFixture(physical),260)) {
+      drawLitContainer({...p,type:'surface',art:'bottle',dosed:S.usesDone[0]});
       if(S.vipPlan && dist(P.x,P.y,p.x,p.y)<120)tag(p.x,p.y-27,S.vipPlan.phase==='sick'?'음용 완료':'준비된 실장 술병','#c9bc91',.8);
     }
     const g=npc('vip');

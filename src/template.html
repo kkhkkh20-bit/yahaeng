@@ -789,6 +789,7 @@ body.touch .sysbtns #btnCrouch.on { background: rgba(40, 70, 48, .92); border-co
 #hud .obj.open::after { content: '⌃'; }
 #hud .obj:not(.open) #objective .ol:not(:first-child) { display: none; }
 #hud .obj.open { max-height: 45vh; overflow: auto; }
+#hud .obj #objTitle { display:block; margin:0 0 3px; font-size:11px; font-weight:600; line-height:1.2; letter-spacing:.06em; color:#c6c5b5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #hud .obj:focus-visible { outline: 2px solid #b7c6c8; outline-offset: 2px; }
 body.dlgmodal #toasts, body:has(.screen:not([hidden])) #hintCard { visibility: hidden; }
 /* 기존 조작 위치는 유지하고, 선택할 때만 이름 목록을 연다. */

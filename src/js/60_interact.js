@@ -60,7 +60,7 @@ function nearFloorDown() {
 }
 function nearNote() {
   const P = S.player; if (P.z || P.wire || P.jump || P.hide || !S.notes) return null; let best = null, bd = 44;
-  for (const n of S.notes) { if (ACT_SKIP.has(n)) continue; if (n.fl !== flOf(P)) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd && objectReachable(n, 44)) { bd = d; best = n; } }
+  for (const n of S.notes) { if (ACT_SKIP.has(n)) continue; if (n.fl !== flOf(P)) continue; const d = n.surface ? hideDistance(surfaceFixture(n),P) : dist(P.x, P.y, n.x, n.y); if (d < bd && objectReachable(n, 44)) { bd = d; best = n; } }
   return best;
 }
 // 쪽지를 읽는다. 표적을 살려 둘 근거(spare)가 되는 쪽지면 선택이 열린다
@@ -347,7 +347,7 @@ const LOOT = { pc: ['컴퓨터', '자료 빼내기', '빼내기', 3.0, 15], safe
   desk2: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], desk: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], wardrobe: ['옷장', '옷장 뒤지기', '뒤지기', 1.6, 35], table: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15], counter: ['계산대', '계산대 뒤지기', '뒤지기', 1.2, 25], tableS: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15],
   nstand: ['협탁', '협탁 서랍 뒤지기', '뒤지기', 1.2, 25], bedD: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25], bed: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25] };
 const LOOT_PREF = ['safe', 'pc', 'cab', 'desk2', 'desk', 'nstand', 'counter', 'locker', 'wardrobe', 'table', 'tableS', 'bedD', 'bed'];
-function lootPlace(it, only) {  // only: 이 가구 종류만 (쪽지 '책상 밑 메모' → 책상), 거리 제한 없이 같은 건물 안에서
+function lootPlace(it, only) {  // only: 지정한 가구 종류만, 같은 건물 안에서 접근할 수 있는 자리를 찾는다
   const f0 = it.fl || 0, g = f0 ? GF[f0] : G0, tx0 = Math.floor(it.x / TILE), ty0 = Math.floor(it.y / TILE), b0 = bldAt(tx0, ty0); let best = null, bs = 1e9;
   for (const F of FURN) {
     if ((F.fl || 0) !== f0 || !LOOT[F.t] || F.w * F.h > 4 || (only && !only.includes(F.t))) continue;
@@ -674,7 +674,7 @@ function primaryActionRaw() {
   if (kl.length === 2 && !kl.some(g => g.civ)) return { k: 'kill2', list: kl, label: '동시 암살' };
   if (kl.length === 2) kl.length = 1;
   if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > 56 ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
-  const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: { x: nt.x, y: nt.y }, label: nt.read ? '다시 읽기' : '읽기' };
+  const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: nt, label: nt.read ? '메모 다시 읽기' : nt.title+' 읽기' };
   {const call=nearRendezvous();if(call)return call;}
   const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: `${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만

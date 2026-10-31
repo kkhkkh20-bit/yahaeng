@@ -156,7 +156,7 @@ function newGame(si) {
   S.fwindows = []; for (let f = 1; f < GF.length; f++) for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (GF[f][ty][tx] === 'N') S.fwindows.push({ tx, ty, x: tc(tx), y: tc(ty), fl: f });
   // 읽을 수 있는 쪽지·장부: { b, fl, at, title, lines }
   S.notes = (STAGE.notes || []).map(n => { const q = n.pos || planPt(n.b, n.fl || 0, n.at || 'bed'); return { x: tc(q[0]), y: tc(q[1]), fl: n.fl || 0, title: n.title, lines: n.lines, key: n.key, gives: n.gives, learn: n.learn, read: false }; });
-  S.notes.forEach(n => { if (/책상/.test(n.title || '')) { lootPlace(n, ['desk', 'desk2', 'pc']); n.furn = null; } });  // '책상 밑 메모'는 실제 책상 옆에 둔다
+  syncSurfaceObjects();
   // 옆 건물 같은 층 창문과 마주 보면 건너뛸 수 있다 (틈 1~3칸)
   S.fwindows.forEach(w => {
     const A = bldAt(w.tx, w.ty); if (A < 0) return; const dir = w.tx === BLD[A].x0 ? -1 : w.tx === BLD[A].x1 ? 1 : 0; if (!dir) return;

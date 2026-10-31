@@ -53,10 +53,14 @@ function drawItemIcon(name, x, y, t, ring) { if (window.__skip && window.__skip.
   const f = F[name]; const k = 32 / Math.max(f[2], f[3]); blit(ctx, name, x - f[2] * k / 2, y - f[3] * k / 2 + bob, f[2] * k, f[3] * k);
 }
 function drawNote(n) {
-  const x = n.x, y = n.y;
-  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(x - 9, y - 6, 22, 16);
-  ctx.fillStyle = n.read ? '#c8c2b0' : '#f2ecd8'; ctx.fillRect(x - 11, y - 9, 22, 16); ctx.fillStyle = '#8a8070'; for (let k = 0; k < 3; k++) ctx.fillRect(x - 8, y - 5 + k * 4, 16, 1.5);
-  if (!n.read) { ctx.strokeStyle = `rgba(160,220,255,${0.5 + 0.3 * Math.sin(S.t * 4)})`; ctx.lineWidth = 2; ctx.strokeRect(x - 14, y - 12, 28, 22); }
+  const {x,y}=surfacePoint(n);
+  ctx.save();ctx.translate(x,y);ctx.rotate(-.12);
+  ctx.fillStyle='#11171366';ctx.fillRect(-9,-5,20,14);
+  ctx.fillStyle=n.read?'#b4ad98':'#d5cbb2';ctx.fillRect(-10,-7,18,13);
+  ctx.fillStyle='#f0e5cb';ctx.beginPath();ctx.moveTo(3,-7);ctx.lineTo(8,-2);ctx.lineTo(3,-2);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#706958';for(let k=0;k<3;k++)ctx.fillRect(-7,-3+k*3,k===2?6:10,1);
+  ctx.restore();
+
 }
 // 훔칠 물건: 가구 위에 놓인 경우 그 가구 위에 (컴퓨터는 화면이 깜빡이고, 서랍·금고는 손잡이가 빛난다)
 function drawLootItem(it) {
@@ -1001,7 +1005,7 @@ function drawActLabels(pa, P, ka, ga) {
   if (!pa.at && !pa.c && !actObj(pa)) return;
   let x = P.x, y = P.y - 44;
   const at = o => { x = o.x; y = o.y - 34; };
-  if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]); else if (pa.tp && pa.tp.car) at(pa.tp.car);
+  if (pa.k==='use'||objectActionPoint(pa)?.surface) {const p=surfacePoint(objectActionPoint(pa));x=p.x;y=p.y-30;} else if (pa.at) { x = pa.at.x; y = pa.at.y - 30; } else if (pa.d) at(pa.d); else if (pa.wv) at(pa.wv.w); else if (pa.v) at(pa.v); else if (pa.h) at(pa.h); else if (pa.c) at(pa.c); else if (pa.p) at(pa.p); else if (pa.g) at(pa.g); else if (pa.list) at(pa.list[0]); else if (pa.tp && pa.tp.car) at(pa.tp.car);
   else if (pa.l && pa.k === 'up') { x = pa.l.x; y = pa.l.y - 34; } else if (pa.l && (pa.k === 'down' || pa.k === 'smother')) { x = pa.l.rx != null ? pa.l.rx : pa.l.ux; y = (pa.l.ry != null ? pa.l.ry : pa.l.uy) - 40; } else if (pa.l) at(pa.l);
   if (vic && Math.abs(x - vic.x) < 60 && Math.abs(y - vy) < 44 * k) y = vy - 23 * k;  // 사람과 겹치면 한 줄 위로
   const col = pa.k === 'window' ? SCAN.window : pa.k === 'door' || pa.k === 'keymsg' ? SCAN.door : pa.v ? SCAN.vent : pa.k === 'smother' || (pa.l && pa.l.kind === 'chimney') ? SCAN.chimney : pa.k === 'hide' || pa.k === 'drag' || pa.k === 'stash' ? SCAN.hide : '#f2c46b';
@@ -1291,6 +1295,7 @@ function draw() {
     for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
     for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
+    drawProps(VF);
     for (const c of S.corpses) if (!c.stashed && onFloor(c)) { ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c); ctx.globalAlpha = 1; }
     drawLoud(VF); drawCams(VF);
     if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
@@ -1429,7 +1434,7 @@ function draw() {
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); }
-  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
+  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawDiningFixtures(); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
@@ -1442,7 +1447,7 @@ function draw() {
   if (running && !S.over && !S.entrySel && !tactical && !DLG.modal) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
-      const pos = a => { if(a.c){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      const pos = a => { if(a.c){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
