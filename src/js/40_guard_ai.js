@@ -67,6 +67,7 @@ function moveAlong(g, speed, dt) {
     if (d <= step) { g.x = p.x; g.y = p.y; step -= d; g.path.shift(); }
     else { const q = g.path[1] || p; g.want = Math.atan2((p.y + q.y) / 2 - g.y, (p.x + q.x) / 2 - g.x); g.x += (p.x - g.x) / d * step; g.y += (p.y - g.y) / d * step; step = 0; }
   }
+  collideLightPosts(g,11,g.z?solidFor(g.z):solidAt);
   g.moving = dist(startX, startY, g.x, g.y) > .01;
   return !g.path.length;
 }

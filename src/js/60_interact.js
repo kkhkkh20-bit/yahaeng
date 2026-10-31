@@ -677,7 +677,7 @@ function primaryActionRaw() {
   const dr = nearDoor(), bf = nearBFuse(), lp = nearLamp(), cands = [];
   if (dr && !P.carrying) cands.push({ k: 'door', d: dist(P.x, P.y, dr.x, dr.y), a: () => doorAct(dr) });
   if (bf) cands.push({ k: 'bfuse', d: dist(P.x, P.y, bf.x, bf.y), a: () => ({ k: 'bfuse', fb: bf, label: '건물 전원 끄기' }) });
-  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lampControl(lp).x, lampControl(lp).y), a: () => ({ k: 'lamp', l: lp, at: lampControl(lp), label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lp.off ? '조명 켜기' : '조명 끄기' }) });
+  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lampControl(lp).x, lampControl(lp).y), a: () => ({ k: 'lamp', l: lp, at: lampControl(lp), label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lampName(lp)+(lp.off?' 켜기':' 끄기') }) });
   if (cands.length) {
     cands.sort((a, b) => a.d - b.d); let pick = cands[0];
     const pref = cands.find(c => c.k === S.ikPref); if (pref && pref !== pick && pref.d - pick.d < 24) pick = pref;

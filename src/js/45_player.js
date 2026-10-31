@@ -19,6 +19,7 @@ function collide(o, r, solid) {
     const dx = o.x - cx, dy = o.y - cy, d = Math.hypot(dx, dy);
     if (d < r) { if (d > 0.001) { o.x += dx / d * (r - d); o.y += dy / d * (r - d); } else o.y += r; }
   }
+  collideLightPosts(o,r,solid);
 }
 
 const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)').matches; try { const v = localStorage.getItem('yh_walkLock2'); return v == null ? false : v === '1'; } catch (e) { return touch; } })()  /* 휴대폰은 처음부터 '항상 걷기' (조이스틱을 끝까지 밀어 뜻하지 않게 뛰지 않게) */, sneakToggle: (() => { try { return localStorage.getItem('yh_sneak') === '1'; } catch (e) { return false; } })(), joy: null, tool: 'kunai', aiming: null, scan: false };

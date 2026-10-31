@@ -56,6 +56,7 @@ function newGame(si) {
   if (STAGE.neon) lamps.forEach((l, i) => { if (l.outdoor && l.col && i % 3 === 1) l.flk = { f: 3.1 + (i % 4), p: i }; });
   // 아궁이(벽난로): 방을 밝히는 불. 옥상의 굴뚝과 이어진다
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
+  mountOutdoorLamps(lamps);
   lamps.forEach(l => { setLayer(l.fl); l.poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU; const d = Math.min(l.r, castRay(l.x, l.y, a, l.r) + 20); l.poly.push(l.x + Math.cos(a) * d, l.y + Math.sin(a) * d); } }); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
   // 군중: 클럽 안(층마다)과 지정한 바깥 자리. 사람들이 돌아다니고, 그 사이에 섞이면 잘 안 보이고 소리도 묻힌다
   CROWD = [];

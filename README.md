@@ -26,6 +26,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 
 VIP 실제 음용·유인, 목표 고정과 관측 정보, 행동 대상 이름 목록, 준비 단계 안전 저장, 실내 높이·입구 안내를 보강했다. [개발·검증 내역](docs/PRODUCT_IMPLEMENTATION.md) · [전후 화면](docs/product-improvement/index.html).
 
+## v95
+
+실외 조명 91개를 벽부등·가로등·전신주 보안등에 연결하고 스위치·충돌·저장 복구를 맞췄다. [변경·검증 내역](docs/OUTDOOR_LIGHTS.md) · [전후 화면](docs/lighting/index.html).
+
 ## 업데이트 순서
 1. 고칠 곳의 모듈·의뢰 파일을 고친다
 2. 지도나 건물 모양이 바뀌었으면 건물 외관을 다시 굽는다 (`docs/ARCHITECTURE.md` 의 “굽기”)

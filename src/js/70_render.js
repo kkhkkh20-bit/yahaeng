@@ -935,7 +935,7 @@ function drawScan(openB) {
   if (!fP && STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '두꺼비집', 40);
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
   for (const c of S.cams || []) if (c.fl === flOf(S.player) && !c.broken) box(c.x, c.y, '#ff5a5a', 'CCTV', 28);
-  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(l.x, l.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { const p=lampControl(l);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
   if (!fP) for (const o of S.poles) if (o.wires.length) box(o.x, o.y, SCAN.ladder, '전봇대 ↑', 36);
   if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof) box(n.dx, n.dy, SCAN.ladder, '전깃줄', 26);
   for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
@@ -1232,7 +1232,7 @@ function draw() {
     const nn = NEONY() || !!l.col, lc = l.col || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
     gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
-    ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();
+    if(!l.outdoor) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
   }
   // 손전등 빛줄기
   for (const g of S.guards) { if (!g.torch || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(S.player) || !gVis(g)) continue;
@@ -1243,8 +1243,8 @@ function draw() {
   if (NEONY() && !DBG.neon) drawNeonSigns();
   ctx.globalCompositeOperation = 'source-over';
   // 깨진 조명 표시
-  for (const l of S.lamps) if (l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
-  for (const l of S.lamps) if (l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(l.x - 5, l.y - 5); ctx.lineTo(l.x + 5, l.y + 5); ctx.moveTo(l.x + 5, l.y - 5); ctx.lineTo(l.x - 5, l.y + 5); ctx.stroke(); }
+  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
+  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(l.x - 5, l.y - 5); ctx.lineTo(l.x + 5, l.y + 5); ctx.moveTo(l.x + 5, l.y - 5); ctx.lineTo(l.x - 5, l.y + 5); ctx.stroke(); }
 
   PM('neon+speech');
   // 내 모습은 어둠과 화단 위에 그려 언제나 확인할 수 있게 (숨은 상태면 반투명 + 외곽선)
@@ -1364,6 +1364,7 @@ function draw() {
     for (const o of S.poles) if (Math.abs(o.x - cam.x) < vx && Math.abs(o.y - cam.y) < vy) drawPole(o);
     drawWires();
   }
+  drawOutdoorLampFixtures();
   if (exteriorClip) ctx.restore();
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp) && !P.hide) drawPlayer(P);
