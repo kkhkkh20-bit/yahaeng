@@ -75,7 +75,7 @@ function nextLine() {
   const sp = speakerOf(l[0]); DLG.cur = { speaker:sp, text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
-  $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
+  $('dlgMeasure').textContent = l[1]; $('dlgText').textContent = ''; $('dlgText').scrollTop=0; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
   const opening = el.hidden; el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = !DLG.modal&&playerActionFocus(); document.body.classList.toggle('dlgmodal', !!DLG.modal);
   if (opening) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }  // 처음 열릴 때만 떠오르며 등장. 이어지는 줄은 같은 창에서 글자만 바뀐다
 }
@@ -92,8 +92,12 @@ function updateDialog(dt) {
     for (let i = n0; i < n1; i++) if (i % 2 === 0 && !/[\s.,…·!?]/.test(c.text[i])) { typeTick(c.seed); break; } if (c.shown >= c.text.length) $('dlg').classList.remove('talking'); }  // 타이핑 소리 (두 글자에 한 번, 띄어쓰기·문장부호는 조용히)
   else if (!DLG.modal && c.t > c.text.length / 38 + 2.2) nextLine();
 }
-{ const el = document.getElementById('dlg'); el.addEventListener('pointerdown', e => { e.preventDefault(); advanceDialog(); });
- }
+{ const el=document.getElementById('dlg'); let tap=null;
+  el.addEventListener('pointerdown',e=>{if(e.isPrimary!==false&&e.button===0)tap={id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};});
+  el.addEventListener('pointermove',e=>{if(tap&&tap.id===e.pointerId&&Math.hypot(e.clientX-tap.x,e.clientY-tap.y)>8)tap.moved=true;});
+  el.addEventListener('pointerup',e=>{const t=tap;tap=null;if(t&&t.id===e.pointerId&&!t.moved){e.preventDefault();advanceDialog();}});
+  el.addEventListener('pointercancel',()=>{tap=null;});
+}
 // 밤 소리(귀뚜라미) 반복
 let ambSrc = null;
 function startAmb() {

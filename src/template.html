@@ -233,33 +233,36 @@ h1 span { color: var(--blood); }
 #endStats dd, #endMore dd { margin: 2px 0 0; font-family: var(--f-body); font-weight: 600; font-variant-numeric: tabular-nums; font-size: var(--fs-lead); font-variant-numeric: tabular-nums; }
 body.joyused .joyhint { display: none; }
 body.touch:not(.joyused):not(.joyseen) .pad .tools { visibility: hidden; }  /* 첫 이동 전에는 도구 칩이 이동 안내를 가리지 않게 */
-/* 대사 창: 도둑 어드벤처 대화 상자 + 갈무리 픽셀 글꼴 */
-#dlg { --rc: #9fb6d8; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(62px + env(safe-area-inset-bottom, 0px)); width: min(720px, calc(100vw - 24px)); display: flex; align-items: stretch; z-index: 25; pointer-events: auto; animation: dlgIn .18s ease-out; }
-body.touch #dlg { top: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
-/* 대화 중엔 어차피 움직이거나 행동할 수 없으니 조작 버튼을 감춘다 (대화창이 그 자리에 뜬다) */
-body.dlgmodal .pad, body.dlgmodal .keys, body.dlgmodal .joyhint, body.dlgmodal .sysbtns, body.dlgmodal #cmap { visibility: hidden; }
-#dlg.modal::before { content: ""; position: fixed; inset: -100vh -100vw; background: linear-gradient(180deg, rgba(3, 5, 10, 0) 35%, rgba(3, 5, 10, .55)); z-index: -1; pointer-events: auto; }  /* 화면 어디를 눌러도 다음 대사 */
-@keyframes dlgIn { from { opacity: 0; transform: translate(-50%, 10px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.dlg-face { position: relative; flex: 0 0 80px; height: 88px; align-self: flex-start; margin: 0; overflow: hidden; background: #141b21; border-right: 1px solid #39434b; }
-.dlg-face canvas { display: block; width: 96px; height: 96px; position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); }
-#dlg { box-sizing: border-box; padding: 16px; gap: 16px; background: #10171ef5; border: 1px solid #424b53; border-radius: 4px; box-shadow: 0 8px 28px #0006; }
-.dlg-box { flex: 1; min-width: 0; min-height: 88px; padding: 0; display: flex; flex-direction: column; gap: 8px; color: #e6e5df; font-family: var(--f-body); }
-.dlg-head { display: flex; align-items: baseline; gap: 8px; }
-.dlg-box b { color: #c8d1d5; font-size: 12px; font-weight: 600; letter-spacing: .03em; }
-.dlg-box i { font-style: normal; font-size: 11px; color: #8e9ca6; }
-.dlg-box p { margin: 0; font-size: 16px; line-height: 1.65; min-height: 3.3em; word-break: keep-all; overflow-wrap: anywhere; max-height: 40dvh; overflow-y: auto; }
-.dlg-box small { margin-top: auto; font-size: 11px; color: #8e9ca6; align-self: flex-end; }
-#dlg.noface .dlg-box { padding: 0; }
-@media (max-width: 640px), (max-height: 480px) {
-  #dlg { gap: 12px; padding: 12px; }
-  .dlg-face { flex-basis: 60px; height: 72px; }
-  .dlg-face canvas { width: 78px; height: 78px; }
-  .dlg-box { min-height: 72px; gap: 6px; }
-  .dlg-box p { font-size: 14px; min-height: 4.95em; }
+/* 대화는 초상 한 칸과 짧은 본문으로 묶는다. 완성 문장으로 높이를 예약해 타이핑 중 흔들리지 않는다. */
+#dlg { --rc:#9fb6d8; position:fixed; left:50%; transform:translateX(-50%); bottom:calc(62px + env(safe-area-inset-bottom,0px)); width:min(680px,calc(100vw - 32px)); box-sizing:border-box; display:flex; align-items:stretch; gap:16px; padding:16px; background:#10171ef5; border:1px solid #424b53; border-radius:3px; box-shadow:0 8px 28px #0006; z-index:25; pointer-events:auto; user-select:none; animation:dlgIn .18s ease-out; }
+body.touch #dlg { top:auto; bottom:calc(14px + env(safe-area-inset-bottom,0px)); }
+body.dlgmodal .pad,body.dlgmodal .keys,body.dlgmodal .joyhint,body.dlgmodal .sysbtns,body.dlgmodal #cmap { visibility:hidden; }
+#dlg.modal::before { content:""; position:fixed; inset:-100vh -100vw; background:linear-gradient(180deg,rgba(3,5,10,0) 35%,rgba(3,5,10,.55)); z-index:-1; pointer-events:auto; }
+@keyframes dlgIn { from { opacity:0; transform:translate(-50%,10px); } to { opacity:1; transform:translate(-50%,0); } }
+.dlg-face { position:relative; flex:0 0 80px; height:88px; align-self:flex-start; overflow:hidden; background:#141b21; }
+.dlg-face canvas { display:block; width:96px; height:96px; position:absolute; left:50%; bottom:0; transform:translateX(-50%); }
+.dlg-box { flex:1; min-width:0; padding:0; display:flex; flex-direction:column; gap:6px; color:#e6e5df; font-family:var(--f-body); }
+.dlg-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:3px 8px; line-height:1.4; }
+.dlg-box b { color:#c8d1d5; font-size:12px; font-weight:600; letter-spacing:.02em; }
+.dlg-box i { font-style:normal; font-size:11px; color:#8e9ca6; }
+.dlg-copy { position:relative; min-width:0; }
+.dlg-copy p { margin:0; font-size:16px; line-height:1.6; word-break:keep-all; overflow-wrap:anywhere; }
+#dlgMeasure { visibility:hidden; max-height:clamp(72px,28dvh,200px); overflow:hidden; pointer-events:none; }
+#dlgText { position:absolute; inset:0; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; touch-action:pan-y; }
+.dlg-box small { margin-top:auto; padding-top:2px; font-size:10px; line-height:1.4; color:#8e9ca6; align-self:flex-end; }
+.dlg-box small:empty { display:none; }
+#dlg.noface .dlg-box { padding:0; }
+@media (max-width:640px),(max-height:480px) {
+ #dlg { width:min(600px,calc(100vw - 24px)); gap:12px; padding:12px; }
+ .dlg-face { flex-basis:64px; height:76px; }
+ .dlg-face canvas { width:80px; height:80px; }
+ .dlg-box { gap:5px; }
+ .dlg-copy p { font-size:14px; line-height:1.55; }
+ .dlg-box b { font-size:11px; }
+ .dlg-box i { font-size:10px; }
 }
-@media (max-height: 480px) {
-  #dlg { width: min(600px, calc(100vw - 200px)); }
-  .dlg-box p { min-height: 3.3em; }
+@media (max-height:480px) {
+ #dlg { bottom:calc(10px + env(safe-area-inset-bottom,0px)); width:min(600px,calc(100vw - 48px)); }
 }
 @media (max-width: 640px) {
   :root { --fs-cap: 11px; --fs-ui: 11.5px; --fs-body: 12.5px; --fs-lead: 14px; }
@@ -848,7 +851,7 @@ __INK_STUDY_CSS__
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
-  <div class="dlg-box"><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><p id="dlgText"></p><small id="dlgHint"></small></div>
+  <div class="dlg-box"><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
 </div>
 <div id="joy" hidden><div id="joyKnob"></div></div>
 

@@ -33,7 +33,7 @@
 .ink-study .toast.warn { border-left-color:#dd7857; }
 .ink-study .toast.good { border-left-color:#b8c295; }
 .ink-study #floorBan { font-size:14px; padding:5px 10px; background:#171b16ed; border-left:2px solid #cfbe94; color:#e9dfc9; text-shadow:none; }
-/* 종이 위에 같은 인물의 잉크 초상을 넣는다. 그림 바깥으로 얼굴이 뜨지 않는다. */
+/* 인게임 초상과 본문은 한 패널 안에서 정렬한다. */
 .ink-study #dlg { background:#eee4cff7; border:1px solid #171817; border-left:4px solid #b73528; border-radius:0; box-shadow:0 5px 18px #0005; }
 .ink-study .dlg-face { background:#151814; border-right:0; }
 
