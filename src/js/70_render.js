@@ -89,7 +89,7 @@ function drawPlayer(P) {
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {
-  if(P.trav?.hideFlow)return;
+  if(P.trav?.hideFlow||P.trav?.accessFlow||P.trav?.signFlow)return;
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
   if (P.car) return;  // 차 안: 차가 곧 나
@@ -661,7 +661,7 @@ function drawShopSigns(b) {
   for (let r = b.fh - 1; r >= 0; r--) {
     const yy = (b.y1 - r) * TILE;
     // 간판
-    const txt = (b.signs || [])[r]; if (!txt) continue;
+    const txt = (b.signs || [])[r]; if (!txt||signReplacesFacade(b,r)) continue;
     const c = COLS[(hs + r * 3) % COLS.length], on = ((hs >> (r + 2)) % 3) !== 0;
     const bw = Math.min(wAll - 24, Math.max(110, txt.length * 26 + 30)), bx = x0 + 12 + ((hs + r * 7) % Math.max(1, wAll - 24 - bw)), by = r === 0 ? yy - 22 : yy + 1;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(bx + 3, by + 3, bw, 20);
@@ -684,13 +684,8 @@ function drawChimney(l) {
   if (lit) { ctx.fillStyle = 'rgba(255,150,60,.55)'; ctx.fillRect(x - 7, y - 3, 12, 5); const t = S.t * 0.9; for (let i = 0; i < 4; i++) { const f = (t + i / 4) % 1; ctx.fillStyle = `rgba(200,200,205,${0.45 * (1 - f)})`; ctx.beginPath(); ctx.arc(x - 1 + Math.sin(f * 5 + i) * 6 + f * 10, y - 8 - f * 46, 5 + f * 9, 0, TAU); ctx.fill(); } }
 }
 // 환풍구 창살: 청록 테두리 + 가로 창살. 열려 있으면 검은 구멍
-function drawGrate(v, alpha) {
-  const x = v.x, y = v.y; ctx.globalAlpha = alpha;
-  ctx.fillStyle = '#1a2a2e'; ctx.fillRect(x - 15, y - 15, 30, 30);
-  if (v.open) { ctx.fillStyle = '#050708'; ctx.fillRect(x - 12, y - 12, 24, 24); ctx.strokeStyle = '#7fd6cc'; ctx.lineWidth = 2; ctx.strokeRect(x - 15, y - 15, 30, 30); ctx.fillStyle = '#5f8f8a'; ctx.fillRect(x + 15, y - 15, 6, 30); }
-  else { ctx.fillStyle = '#6fa6a0'; for (let i = 0; i < 5; i++) ctx.fillRect(x - 12, y - 11 + i * 5, 24, 2.5); ctx.strokeStyle = '#7fd6cc'; ctx.lineWidth = 2; ctx.strokeRect(x - 15, y - 15, 30, 30); }
-  ctx.globalAlpha = 1;
-}
+function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.save();ctx.globalAlpha=alpha;drawVent(v,'all',ctx,v.open?1:0);ctx.restore();}
+
 function stripeFor(col) {
   if (stripePat[col]) return stripePat[col];
   const c = document.createElement('canvas'); c.width = c.height = 12; const x = c.getContext('2d');
@@ -1037,6 +1032,7 @@ function drawUnderground() {
   // 위층 자경대원은 발소리처럼 희미한 점으로
   for (const g of S.guards) if (g.state !== 'DEAD' && g.state !== 'CAPTIVE' && dist(g.x, g.y, P.x, P.y) < 420) { ctx.fillStyle = 'rgba(232,120,100,.35)'; ctx.beginPath(); ctx.arc(g.x, g.y, 7, 0, TAU); ctx.fill(); }
   drawPlayer(P);
+  drawAccessFlow();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const g2 = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 60 * sc, canvas.width / 2, canvas.height / 2, 300 * sc);
   const px = (P.x - cam.x) * sc + canvas.width / 2, py = (P.y - cam.y) * sc + canvas.height / 2;
@@ -1401,6 +1397,8 @@ function draw() {
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
   drawHideFlowVisual();
+  if(!P.vent)drawAccessFlow();
+  drawSignWork();
   drawLedgePull();
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
@@ -1408,6 +1406,7 @@ function draw() {
     ctx.globalAlpha = 0.92; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
     for (const v of S.vents) { ctx.strokeStyle = v.roof ? 'rgba(242,196,107,.8)' : 'rgba(127,214,204,.9)'; ctx.lineWidth = 2; ctx.strokeRect(v.x - 13, v.y - 13, 26, 26); ctx.fillStyle = v.roof ? 'rgba(242,196,107,.25)' : 'rgba(127,214,204,.18)'; ctx.fillRect(v.x - 13, v.y - 13, 26, 26); }
     drawPlayer(P);
+    drawAccessFlow();
   }
   setLayer(flOf(P));
   PM('poles');

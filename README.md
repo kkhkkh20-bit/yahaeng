@@ -22,6 +22,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
 
+## v112
+
+맨홀·환풍구·수납함의 손 조작과 출입, 옥상 간판의 해제·낙하·충돌을 연결했다. [변경·검증 내역](docs/STORAGE_MOTION.md) · [실제 동작 영상](docs/access-v112/index.html).
+
 ## v94
 
 VIP 실제 음용·유인, 목표 고정과 관측 정보, 행동 대상 이름 목록, 준비 단계 안전 저장, 실내 높이·입구 안내를 보강했다. [개발·검증 내역](docs/PRODUCT_IMPLEMENTATION.md) · [전후 화면](docs/product-improvement/index.html).

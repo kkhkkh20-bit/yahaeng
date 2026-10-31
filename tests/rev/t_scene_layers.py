@@ -15,14 +15,14 @@ async def main():
    const a={dx:b.x0*48-100,dy:(b.y0+3)*48,roof:false},z={dx:(b.x1+1)*48+100,dy:(b.y0+3)*48,roof:false};
    S.wires=[{a,b:z,sag:12}];S.traps=[{k:'drop',text:'옥상전용간판',at:[b.x0+4,b.y0+3],hit:[0,0,0,0],auto:false,used:false}];
    const rect=()=>{const c=ctx.canvas,s=G.SCALE*dpr,x=Math.max(0,Math.ceil((b.x0*48-G.cam.x)*s+c.width/2)),y=Math.max(0,Math.ceil((b.y0*48-G.cam.y)*s+c.height/2)),right=Math.min(c.width,Math.floor(((b.x1+1)*48-G.cam.x)*s+c.width/2)),bottom=Math.min(c.height,Math.floor(((b.y1+1)*48-G.cam.y)*s+c.height/2));return[x+3,y+3,right-x-6,bottom-y-6]};
-   const dpr=G.DPRinfo()[0],t=S.t,texts=[],fill=ctx.fillText;ctx.fillText=function(t,...a){texts.push(String(t));return fill.call(this,t,...a)};
+   const dpr=G.DPRinfo()[0],t=S.t,texts=[],proto=CanvasRenderingContext2D.prototype,fill=proto.fillText;proto.fillText=function(t,...a){texts.push(String(t));return fill.call(this,t,...a)};
    G.input.scan=false;G.benchDraw(1);const R=rect(),withExterior=ctx.getImageData(...R).data;check(!texts.includes('옥상전용간판'),'roof sign is submitted inside current room');
    S.wires=[];S.traps=[];S.t=t;G.benchDraw(1);const withoutExterior=ctx.getImageData(...R).data;
    check(withExterior.every((v,i)=>v===withoutExterior[i]),'exterior wire/sign changes room pixels');
    // Scan marks must also respect floor membership. Window-to-wire connections stay identified as windows.
    G.input.scan=true;texts.length=0;G.benchDraw(1);check(!texts.some(t=>t==='전깃줄'||t.startsWith('전봇대')||t==='두꺼비집'||t==='옥상 환기구'),'exterior scan marker appears on upper floor');G.input.scan=false;
    // The same exterior remains visible when standing on its roof.
-   Object.assign(P,{z:2,fl:0});G.setLayer(0);S.wires=[{a,b:z,sag:12}];S.traps=[{k:'drop',text:'옥상전용간판',at:[b.x0+4,b.y0+3],hit:[0,0,0,0],auto:false,used:false}];texts.length=0;G.benchDraw(40);check(texts.includes('옥상전용간판'),'roof sign disappeared from rooftop');ctx.fillText=fill;
+   Object.assign(P,{z:2,fl:0});G.setLayer(0);S.wires=[{a,b:z,sag:12}];S.traps=[{k:'drop',text:'옥상전용간판',at:[b.x0+4,b.y0+3],hit:[0,0,0,0],auto:false,used:false}];texts.length=0;G.benchDraw(40);check(texts.includes('옥상전용간판'),'roof sign disappeared from rooftop');proto.fillText=fill;
    let doors=0;
    for(const id of ['m1','m2','m3','m4','m5','m6','city']){
     const S=fresh(id),P=S.player;for(const l of S.ladders.filter(l=>l.roofDoor)){

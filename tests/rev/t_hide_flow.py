@@ -81,7 +81,7 @@ async def main():
    await ui.evaluate('__step(20)');assert await ui.evaluate("__game.S.player.trav?.hideFlow?.kind==='enter'&&!__game.S.player.hide")
    await ui.evaluate('__step(100)');assert await ui.evaluate('__game.S.player.hide===__bin')
    await ui.keyboard.down('ArrowDown');await ui.evaluate('__step(2)');await ui.keyboard.up('ArrowDown');assert await ui.evaluate("__game.S.player.trav?.hideFlow?.kind==='exit'")
-   await ui.evaluate('__step(90)');assert await ui.evaluate('!__game.S.player.hide&&!__game.S.player.trav')
+   await ui.evaluate('__step(120)');assert await ui.evaluate('!__game.S.player.hide&&!__game.S.player.trav')
    await ui.evaluate("""()=>{const G=__game,P=G.S.player;Object.assign(P,{x:__bin.x,y:__bin.y+48,a:-Math.PI/2});const c={x:P.x,y:P.y,fl:0,z:0,ch:'sam',ko:true,carried:true,stashed:false};G.S.corpses=[c];P.carrying=c;window.__body=c;__step(2)}""")
    assert '기절자 넣기' in await ui.locator('#btnCarry').inner_text()
    if touch:await ui.locator('#btnCarry').tap()

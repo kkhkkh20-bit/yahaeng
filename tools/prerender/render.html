@@ -375,6 +375,22 @@ window.renderPose = (name, k, dirA) => {
   return renderer.domElement.toDataURL('image/png');
 };
 
+// Opening covers and latches: an actual two-hand grip, lift/pull, release.
+window.renderAccessPose=(kind,t,dirA)=>{
+  renderFrame('Walk',.25,0,0,undefined,false,{sway:0});const A=snapPose();
+  const low=kind==='low',pull=Math.max(0,Math.min(1,(t-.28)/.34));
+  if(low)renderPose('stoop',0,0);else renderFrame('Walk',.25,0,0,undefined,false,{sway:0});
+  model.rotation.set(0,0,0);model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.updateMatrixWorld(true);
+  for(const [sd,side]of [['Left',1],['Right',-1]]){
+    const arm=bones[sd+'Arm'],elbow=bones[sd+'ForeArm'],hand=bones[sd+'Hand'],sp=new THREE.Vector3(),ep=new THREE.Vector3(),hp=new THREE.Vector3();arm.getWorldPosition(sp);elbow.getWorldPosition(ep);hand.getWorldPosition(hp);
+    const target=V3(side*18,sp.y+(low?-100+pull*75:-40+pull*22),sp.z+85-pull*28),l1=ep.distanceTo(sp),l2=hp.distanceTo(ep),axis=target.clone().sub(sp),d=Math.min(axis.length(),l1+l2-.01);axis.normalize();
+    const along=(l1*l1-l2*l2+d*d)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along)),out=V3(side,0,0).addScaledVector(axis,-side*axis.x).normalize();
+    aimB(arm,elbow,sp.clone().addScaledVector(axis,along).addScaledVector(out,bend).sub(sp));elbow.getWorldPosition(ep);aimB(elbow,hand,target.sub(ep));
+  }
+  const B=snapPose(),weight=Math.min(1,t/.22,Math.max(0,(1-t)/.24));mixPose(A,B,weight*weight*(3-2*weight));
+  model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+  shadow.visible=false;renderSprite(0,1.8);shadow.visible=true;return renderer.domElement.toDataURL('image/png');
+};
 // Foot-normalized, bone-interpolated entry poses; reverse the same frames on exit.
 window.renderHidePose = (kind, t, dirA) => {
   if(kind==='ledgePull'){

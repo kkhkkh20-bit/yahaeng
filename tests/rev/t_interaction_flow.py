@@ -27,6 +27,7 @@ async def main():
             G.setLayer(0);window.P=P;window.S=S;
           };
           window.advance=(seconds)=>{for(let t=0;t<seconds;t+=.02){G.S.t+=.02;G.updatePlayer(.02)}};
+          window.finishAccess=()=>{let n=0;while(G.S.player.trav&&n++<400)advance(.01);check(n<400,'Access never completes')};
           window.choose=(k,obj)=>{const n=G.envChoices().length;for(let i=0;i<n;i++){const a=G.envAction();if(a.k===k&&(!obj||a.c===obj||a.p===obj))return a;G.cycleEnv()}throw Error('Missing choice '+k)};
           window.prop=(id,dx=24)=>{const a={id,name:id,x:P.x+dx,y:P.y,fl:0,taken:false};S.props.push(a);return a};
           window.body=(dx)=>{const c={x:P.x+dx,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',stripped:false,carried:false,stashed:false};S.corpses.push(c);return c};
@@ -67,8 +68,8 @@ async def main():
           fresh();const v={x:P.x+20,y:P.y,tx:33,ty:21,z:0,roof:false};S.vents=[v];const vx=P.x;
           G.doAct({k:'ventIn',v});check(P.trav&&!P.vent&&P.x===vx,'Vent entry must begin at current position');
           const V=P.trav;advance(.1);G.actEnv();G.actAttack();check(P.trav===V&&!P.vent,'Vent entry cannot be skipped by input');
-          advance(.6);check(P.vent&&!P.trav&&S.stats.vents===1,'Vent entry must finish inside');
-          G.doAct({k:'ventOut',v});check(P.trav&&!P.vent,'Vent exit must play a transition');advance(.7);check(!P.trav&&!P.vent,'Vent exit must finish');passed.push('vent transitions');
+          finishAccess();check(P.vent&&!P.trav&&S.stats.vents===1,'Vent entry must finish inside');
+          G.doAct({k:'ventOut',v});check(P.trav&&P.vent,'Vent exit must start inside');finishAccess();check(!P.trav&&!P.vent,'Vent exit must finish');passed.push('vent transitions');
           fresh();const stair={x:P.x,y:P.y};P.pick={kind:'latch',w:{st:'lock'},x:P.x,y:P.y,t:.3,nt:10,dur:.8};const K=P.pick;
           G.actEnv();G.actCarry({k:'pickup',p:prop('while-picking')});check(P.pick===K&&K.t===.3&&!P.interact,'Repeated action cannot restart lockpick');passed.push('lockpick continuity');
           fresh();let found=false;
@@ -85,8 +86,8 @@ async def main():
             G.S.guards.forEach(q=>{q.x=q.y=-9999});
             for(const v of G.S.vents){const P=G.S.player;
               Object.assign(P,{trav:null,jump:null,vent:false,hide:null,cover:null,snap:null,pick:null,interact:null,carrying:null,captive:null,bodyAnim:null,strikeT:0,x:v.x,y:v.y,fl:0,z:v.z});G.setLayer(0);
-              G.doAct({k:'ventIn',v});advance(.62);check(P.vent&&!P.trav,id+' vent entry must finish');
-              G.doAct({k:'ventOut',v});advance(.62);check(!P.vent&&!P.trav&&P.z===v.z,id+' vent exit must preserve roof height');
+              G.doAct({k:'ventIn',v});finishAccess();check(P.vent&&!P.trav,id+' vent entry must finish');
+              G.doAct({k:'ventOut',v});finishAccess();check(!P.vent&&!P.trav&&P.z===v.z,id+' vent exit must preserve roof height');
               check(P.z||!G.solidAt(Math.floor(P.x/48),Math.floor(P.y/48)),id+' vent exit must land on open ground');vents++;
             }
           }

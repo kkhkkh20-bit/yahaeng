@@ -15,7 +15,7 @@ async def main():
     const G=__game,S=G.S,P=S.player,check=(v,m)=>{if(!v)throw Error(m)};S.guards=[];S.cams=[];S.facOn=false;S.fade=0;let motions=0,cabinets=0,paint=0;
     for(const type of ['box','well']){
      const h=S.hides.find(h=>h.type===type&&!G.solidAt(h.tx,h.ty+1));Object.assign(P,{x:h.x,y:h.y+48,fl:0,z:0,trav:null,hide:null,captive:null,carrying:null,bodyAnim:null,strikeT:0});G.setLayer(0);
-     G.beginHideFlow('enter',h);const T=P.trav,F=T.hideFlow,sample=q=>{T.t=F.walk+q*F.duration;return G.hideHeroSample(P,T)};
+     G.beginHideFlow('enter',h);const T=P.trav,F=T.hideFlow,sample=q=>{T.t=F.walk+(F.handPre||0)+q*F.duration;return G.hideHeroSample(P,T)};
      check(F.duration<=1.15,'container body transfer too long');const before=sample(.60),after=sample(.64);check(after.y-before.y>3,'body pauses at the old vault/sink boundary');
      let previous=sample(.2).y,descending=false,turns=0;
      for(let q=.21;q<.88;q+=.01){const y=sample(q).y,down=y>previous;if(down!==descending){turns++;descending=down;}previous=y;}

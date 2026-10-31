@@ -505,10 +505,10 @@ function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && 
 function nearVent() {
   const P = S.player; if (P.jump || P.carrying || P.captive || P.hide || P.under || P.fl) return null;
   let best = null, bd = P.vent ? 34 : 42;
-  for (const v of S.vents) { if (ACT_SKIP.has(v)) continue; if (!P.vent && v.z !== P.z) continue; const d = dist(P.x, P.y, v.x, v.y); if (d < bd) { bd = d; best = v; } }
+  for (const v of S.vents) { if (ACT_SKIP.has(v)) continue; if (!P.vent && (v.z !== P.z||!objectReachable(ventFixture(v),64))) continue; const d = dist(P.x, P.y, v.x, v.y); if (d < bd) { bd = d; best = v; } }
   return best;
 }
-// 환풍구 창살 바로 밑을 지나는 자경대원을 끌어올린다
+// 바닥 환풍구를 지나는 경비를 안쪽으로 끌어들인다
 function ventAmbushTarget() {
   const P = S.player; if (!P.vent) return null;
   const v = S.vents.filter(v => !v.roof && dist(P.x, P.y, v.x, v.y) < 34)[0]; if (!v) return null;
@@ -631,7 +631,7 @@ function primaryActionRaw() {
   const P = S.player;
   if (actionBusy(P)) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
-  if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어올려 암살' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '방으로 내려가기' } : { k: 'none', label: '환풍구' }; }
+  if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '환풍구로 끌어들이기' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '실내로 나가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
   if (S.vehicles) { const ca = cityAction(); if (ca) return ca; }  // 도시: 차 타기·내리기·의뢰 받기
@@ -656,7 +656,7 @@ function primaryActionRaw() {
     const cuz = nearClimb(), cdz = nearClimbDown(true); if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && (!cdz || dist(P.x, P.y, cuz.x, cuz.y) <= dist(P.x, P.y, cdz.rx != null ? cdz.rx : cdz.ux, cdz.ry != null ? cdz.ry : cdz.uy))) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
     if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && !cdz) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
     const cd = cdz; if (cd) return cd.kind === 'chimney' ? (lampOn(cd.lamp) ? { k: 'smother', l: cd, label: '굴뚝 막기 (불 끄기)' } : { k: 'down', l: cd, label: '굴뚝으로 내려가기' }) : { k: 'down', l: cd, label: cd.kind === 'stair' ? `내려가기 · ${(cd.bfl || 0) + 1}층` : '내려가기' };
-    const rv = nearVent(); if (rv) return { k: 'ventIn', v: rv, label: '환풍구로 들어가기' };
+    const rv = nearVent(); if (rv) return { k: 'ventIn', v: rv, label: withJosa(ventName(rv),'으로/로')+' 들어가기' };
     const jt = jumpTarget(); if (jt) return { k: 'leap', j: jt, label: '건너뛰기' };
     { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: `벽 잡고 오르기 · ${wu.z}층 옥상` }; }
     const ds = dropSpot(); if (ds) return { k: 'jump', s: ds, label: P.z >= 2 ? '1층 옥상으로' : '뛰어내리기' };
@@ -686,7 +686,7 @@ function primaryActionRaw() {
   // 계단실: 계단 칸 위에 올라서야 [오르기], 그 앞(올라와 선 자리)은 [내리기] — 나머지는 F·⇄로
   const fd0 = cu && cu.kind !== 'balc' && nearFloorDown(); if (fd0 && fd0.kind !== 'balc' && (stairHole(fd0) ? dist(P.x, P.y, cu.x, cu.y) > 30 : dist(P.x, P.y, downPt(fd0).x, downPt(fd0).y) < dist(P.x, P.y, cu.x, cu.y))) return { k: 'fdown', l: fd0, at: downMark(fd0), label: `내리기 · ${fd0.bfl + 1}층` };
   if (cu) return { k: 'up', l: cu, at: cu.kind === 'fstair' || cu.kind === 'stair' ? stairLower(cu).up.marker : undefined, label: cu.kind === 'balc' ? '베란다 타고 2층으로' : cu.gas ? '가스관 타고 옥상으로' : cu.kind === 'pipe' ? '배관 오르기' : cu.kind === 'fstair' ? `오르기 · ${cu.tfl + 1}층` : cu.kind === 'stair' ? '오르기 · 옥상' : cu.kind === 'chimney' ? '굴뚝으로 오르기' : '오르기' };
-  const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: '환풍구로 들어가기' };
+  const gv = nearVent(); if (gv) return { k: 'ventIn', v: gv, label: withJosa(ventName(gv),'으로/로')+' 들어가기' };
   const fd = nearFloorDown(); if (fd) return { k: 'fdown', l: fd, at: fd.kind === 'balc' ? null : downMark(fd), label: fd.kind === 'balc' ? '내려가기 · 베란다로' : `내려가기 · ${fd.bfl + 1}층` };
   { const wd = nearWinDrop(); if (wd) return { k: 'winDrop', w: wd, at: { x: wd.x, y: wd.y }, label: '창문 넘어 내려가기' }; }
   const nw = nearWindow(); if (nw) {
@@ -737,10 +737,7 @@ function actPrimary(force) {
     case 'carOut': carExit(); break;
     case 'contract': cityContract(a.c); break;
     case 'rumor': spreadRumor(a.c); break;
-    case 'surface': {
-      const w = a.w; P.under = false; P.x = w.x; P.y = w.y; P.hide = w; P.hideFrom = null; w.spotted = false; S.hideExitLock = true;
-      play('metal', 0.35); S.fade = 0.35; toast('맨홀 안으로 올라왔다 · 방향을 입력하면 밖으로 나간다', 2); break;
-    }
+    case 'surface': {beginAccessFlow('surface',a.w);break;}
     case 'ambush': startAmbush(a.g); break;
     case 'clean': startClean(a.d); break;
     case 'loot': startLoot(a.it); break;
@@ -857,25 +854,11 @@ function actPrimary(force) {
       toast('굴뚝을 막았다 — 연기가 방에 차며 불이 꺼졌다. 안의 자경대원이 다시 불을 피우러 온다', 3, 'good');
       break;
     }
-    case 'ventIn': {
-      const v = a.v; v.open = !v.roof; P.cover = null; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.4 }, { x: v.x, y: v.y + 4, f: 1 }], dur: 0.6,
-        phases: [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'sink' }], rim: v.y + 10,local:true,
-        end: () => { P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; S.stats.vents = (S.stats.vents || 0) + 1; S.fade = 0.12; toast('환풍구로 들어갔다', 1.6); } });
-      break;
-    }
-    case 'ventOut': {
-      const v = a.v; let x = v.x, y = v.y;
-      if (!v.roof && v.z === 0 && groundSolidP(v.tx, v.ty)) { const o = N8.find(o => !groundSolidP(v.tx + o[0], v.ty + o[1])); if (o) { x = tc(v.tx + o[0]); y = tc(v.ty + o[1]); } }
-      P.vent = false; P.z = v.z; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.6 }, { x, y, f: 1 }], dur: 0.6,
-        phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'walk' }], rim: v.y + 10,local:true,
-        end: () => { P.x = x; P.y = y; S.fade = 0.12; hint('ventOpen', '열어 둔 창살은 지나가던 자경대원이 보면 의심한다'); } });
-      break;
-    }
+    case 'ventIn': {beginAccessFlow('ventIn',a.v);break;}
+    case 'ventOut': {beginAccessFlow('ventOut',a.v);break;}
     case 'ventKill': {
       const g = a.g; killGuard(g, 'stash', { bodies: 0 }); a.v.open = true; P.strikeT = 0.3; S.stats.special++;
-      toast('창살 밑의 자경대원을 환풍구로 끌어올렸다', 2.2, 'good'); break;
+      toast('자경대원을 환풍구 안으로 끌어들였다', 2.2, 'good'); break;
     }
     case 'leap': case 'jump': {
       const t = a.k === 'leap' ? [a.j.tx, a.j.ty, a.j.z] : a.s;
@@ -998,13 +981,7 @@ function leaveHide(dir) {
   const b=S.player.hide;if(!b)return;
   beginHideFlow('exit',b,null,dir);
 }
-function travelTunnel() {
-  const P = S.player; const w = P.hide; if (!w || w.type !== 'well' || !ugAt(w.tx, w.ty)) return;
-  if (P.carrying || P.captive) return;
-  w.spotted = false; P.hide = null; P.under = true; P.x = w.x; P.y = w.y;
-  play('metal', 0.35); play('cloth', 0.3); S.fade = 0.4;
-  toast('지하 수로로 내려왔다', 1.8);
-}
+function travelTunnel(){const P=S.player,w=P.hide;if(w&&w.type==='well'&&!P.carrying&&!P.captive)beginAccessFlow('sewerDown',w);}
 // 제압: 표적·조직원·주민 모두 짧게 기절. 처음 누른 버튼을 계속 누를 때만 처치.
 // 주민은 늘 기절이 기본이고, 행동 버튼을 계속 누르고 있으면 숨을 끊는다(주민 살상 — 감점)
 const koDefault = g => !!g && !g.dog && !!g.civ;
@@ -1159,7 +1136,7 @@ function nearTrap() {
   for (const t of S.traps || []) { if (ACT_SKIP.has(t)) continue;
     if (t.used) continue;
     if (t.k === 'shock' && !P.z && dist(P.x, P.y, tc(t.sw[0]), tc(t.sw[1])) < 52) return { t, label: '전선 끊기 — 물웅덩이 감전' };
-    if (t.k === 'drop' && P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < 52) return { t, label: t.label || '간판 떨어뜨리기' };
+    if(t.k==='drop'&&canReleaseSign(t))return{t,label:t.text==='실외기'?'실외기 고정 풀기':'간판 고정 풀기'};
   }
   if (!P.z) for (const c of S.carAlarms || []) if (!c.used && !ACT_SKIP.has(c) && dist(P.x, P.y, c.x, c.y) < 56) return { car: c, label: '차 경보 울리기' };
   return null;
@@ -1167,17 +1144,13 @@ function nearTrap() {
 function fireTrap(a) {
   if (a.t && a.t.used) return;
   if (a.car) { a.car.used = true; a.car.t = 7; play('metal', 0.4); toast('차 경보가 울린다 — 근처 자경대원이 보러 온다', 2.2); return; }
-  const t = a.t; t.used = true;
+  const t = a.t;if(t.k==='drop'){beginSignRelease(t);return;}t.used=true;
   if (t.k === 'shock') {
     const z = t.zone, cx = (z[0] + z[2] + 1) / 2 * TILE, cy = (z[1] + z[3] + 1) / 2 * TILE; let n = 0;
     for (const g of S.guards) if (!g.child && !flOf(g) && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'shock'); n++; }
     t.fx = 1.6; play('fuse', 0.7); noise(cx, cy, 150, 'switch'); S.flash = 0.2;
     toast(n ? `감전 — ${n}명 쓰러졌다 (사고로 보인다)` : '물웅덩이에 전기가 흘렀지만 아무도 없었다', 2.6, n ? 'good' : '');
-  } else if (t.k === 'drop') {
-    const z = t.hit, cx = (z[0] + z[2] + 1) / 2 * TILE, cy = (z[1] + z[3] + 1) / 2 * TILE; let n = 0;
-    for (const g of S.guards) if (!g.child && !flOf(g) && !g.z && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'fall'); n++; }  // 지나가던 주민도 깔린다 (주민 사망 감점)
-    t.wreck = { x: cx, y: cy }; play('thud', 0.9); play('metal', 0.6); noise(cx, cy, 260, 'crash'); S.flash = 0.15;
-    toast(n ? `간판이 떨어졌다 — ${n}명 깔렸다 (사고로 보인다)` : '간판이 떨어졌다 — 아무도 없었다. 소리에 사람들이 온다', 2.6, n ? 'good' : '');
+
   }
 }
 function updateIntel(dt) {
@@ -1216,6 +1189,7 @@ function updateShift(dt) {
   S.shiftT = sh.every; play('bell', 0.4); toast(sh.msg || '교대 시간 · 순찰 경비 1명 추가', 2.8, 'warn');
 }
 function updateTraps(dt) {
+  updateFallingSigns(dt);
   updateShift(dt);
   updateIntel(dt);
   for (const g of S.guards) if (g.sayT > 0) { g.sayT -= dt; if (g.sayT <= 0 && !g.chat) g.say = null; }
@@ -1230,20 +1204,11 @@ function drawTrapsGround() {
       ctx.strokeStyle = t.used ? '#3a3d44' : '#1a1c20'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x + 24, y + 36); ctx.lineTo(x + 24, y + 46); ctx.stroke();
       if (t.fx > 0) { const z = t.zone; ctx.globalCompositeOperation = 'lighter'; for (let k = 0; k < 14; k++) { const px = (z[0] + Math.random() * (z[2] - z[0] + 1)) * TILE, py = (z[1] + Math.random() * (z[3] - z[1] + 1)) * TILE; ctx.strokeStyle = `rgba(160,220,255,${t.fx / 1.6})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px + rnd(-14, 14), py + rnd(-14, 14)); ctx.lineTo(px + rnd(-14, 14), py + rnd(-14, 14)); ctx.stroke(); } ctx.globalCompositeOperation = 'source-over'; }
     }
-    if (t.k === 'drop' && t.wreck) { const w = t.wreck; ctx.save(); ctx.translate(w.x, w.y); ctx.rotate(0.18); ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-40, -12, 84, 30); ctx.fillStyle = '#3a2a3a'; ctx.fillRect(-42, -16, 84, 28); ctx.strokeStyle = '#ff3ca8'; ctx.lineWidth = 2; ctx.strokeRect(-40, -14, 80, 24); ctx.fillStyle = '#ff9ad2'; ctx.font = '700 12px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t.text || '간판', 0, 3); ctx.restore(); }
+
   }
   for (const c of S.carAlarms || []) if (c.t > 0 && Math.floor(S.t * 3) % 2) { ctx.fillStyle = 'rgba(255,170,60,.55)'; ctx.beginPath(); ctx.arc(c.x - 14, c.y - 30, 7, 0, TAU); ctx.arc(c.x + 14, c.y - 30, 7, 0, TAU); ctx.fill(); }
 }
-function drawTrapsRoof(openB = -1) {
-  for (const t of S.traps || []) if (t.k === 'drop' && !t.used) {
-    if (!tactical && !S.player.z && bldAt(t.at[0], t.at[1]) === openB) continue;
-    const x = t.at[0] * TILE, y = t.at[1] * TILE + 26;
-    // 자동 간판은 건물 옥상 간판 그림이 이미 있다 — 떨어질 자리만 보여 준다
-    if (!t.auto) { ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x - 18, y + 4, 86, 22); ctx.fillStyle = '#2a1830'; ctx.fillRect(x - 20, y, 86, 22); ctx.strokeStyle = '#ff3ca8'; ctx.lineWidth = 2; ctx.strokeRect(x - 18, y + 2, 82, 18);
-    ctx.fillStyle = '#ff9ad2'; ctx.font = '700 12px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(t.text || '간판', x + 23, y + 15); }
-    const P = S.player; if (P.z && dist(P.x, P.y, tc(t.at[0]), tc(t.at[1])) < (t.auto ? 110 : 200)) {  /* 아무 간판: 바로 옆에 섰을 때만 떨어질 자리 표시 */ const z = t.hit; ctx.strokeStyle = 'rgba(255,90,170,.6)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.strokeRect(z[0] * TILE, z[1] * TILE, (z[2] - z[0] + 1) * TILE, (z[3] - z[1] + 1) * TILE); ctx.setLineDash([]); }
-  }
-}
+function drawTrapsRoof(openB=-1){drawHangingSigns(openB);}
 function bldPower(fb, on) {
   fb.cut = !on; fb.t = 5;
   for (const l of S.lamps) if (!l.outdoor && !l.hearth && bldAt(Math.floor(l.x / TILE), Math.floor(l.y / TILE)) === fb.b) { if (on) { if (l.cut != null) { l.off = l.cutWas; l.cut = null; } } else if (l.cut == null) { l.cutWas = l.off; l.off = true; l.cut = fb.b; } }

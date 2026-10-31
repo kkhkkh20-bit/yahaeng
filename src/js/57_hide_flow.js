@@ -39,7 +39,7 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
       c.fillStyle=steel?'#737c80':i?'#827666':'#897c69';c.strokeStyle=steel?'#4b5457':'#514b41';c.lineWidth=1;
       c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
-      const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=(g.doorTop+g.doorBottom)/2+depth;
+      const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=g.doorTop+(g.doorBottom-g.doorTop)*.78+depth;
       c.strokeStyle=steel?'#303839':'#4b443a';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
       if(steel&&wide>8){c.strokeStyle='#4a5558';c.lineWidth=1;for(let k=0;k<3;k++){c.beginPath();c.moveTo(hinge+side*wide*.2,g.doorTop+12+k*4+depth*.2);c.lineTo(hinge+side*wide*.75,g.doorTop+12+k*4+depth*.75);c.stroke();}}
     }
@@ -66,7 +66,7 @@ function hideApproach(h) {
     const same=Math.floor(P.x/TILE)===tx&&Math.floor(P.y/TILE)===ty;
     const path=same?[]:astar(Math.floor(P.x/TILE),Math.floor(P.y/TILE),tx,ty);
     if(!same&&!path.length)continue;
-    const stand=h.furn?{x:tc(tx),y:tc(ty)}:{x:h.x+nx*38,y:h.y+ny*38},points=[{x:P.x,y:P.y}];
+    const stand=h.furn?{x:tc(tx)-nx*12,y:tc(ty)-ny*12}:{x:h.x+nx*26,y:h.y+ny*26},points=[{x:P.x,y:P.y}];
     for(const p of path)if(dist(points.at(-1).x,points.at(-1).y,p.x,p.y)>2)points.push({x:p.x,y:p.y});
     points.push(stand);let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);
     const score=length+(h.type==='box'&&ny!==1?320:0)+(h.furn&&h.type!=='bed'&&ny!==1?160:0);
@@ -99,14 +99,15 @@ function beginHideFlow(kind,h,subject=null,dir=null) {
   const g=kind==='drag'?subject:null,c=kind==='stash'?subject:null;
   if(g&&P.captive!==g||c&&P.carrying!==c)return false;
   const walk=route.length/130,duration=kind==='drag'?1.7:kind==='stash'?1.15:h.type==='box'?1.05:1.1;
-  const F={kind,h,g,c,route,walk,duration,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
+  const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&kind==='enter'?ACCESS_WORK:0,handPost=handled&&kind==='exit'?ACCESS_WORK:0;
+  const F={kind,h,g,c,route,walk,duration,handPre,handPost,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
-  startTrav({pts:[{x:P.x,y:P.y,f:0},{x:route.stand.x,y:route.stand.y,f:1}],dur:walk+duration,phases:[{to:1,pose:'container'}],hideB:h,local:true,hideFlow:F});
+  startTrav({pts:[{x:P.x,y:P.y,f:0},{x:route.stand.x,y:route.stand.y,f:1}],dur:walk+duration+handPre+handPost,phases:[{to:1,pose:'container'}],hideB:h,local:true,hideFlow:F});
   if(kind==='exit')S.hideExitLock=true;
   closeEnvPicker();return true;
 }
-function hideFlowProgress(T) {const F=T.hideFlow;return clamp((T.t-F.walk)/F.duration,0,1);}
-function hideFlowOpen(T) {const f=hideFlowProgress(T);return Math.min(clamp((f-.02)/.14,0,1),clamp((1-f)/(T.hideFlow.h.furn?.16:.06),0,1));}
+function hideFlowProgress(T) {const F=T.hideFlow;return clamp((T.t-F.walk-(F.handPre||0))/F.duration,0,1);}
+function hideFlowOpen(T) {const F=T.hideFlow;if(T.t<F.walk)return 0;const W=hideWork(T);if(W)return workOpen(W.p,W.closing);const f=hideFlowProgress(T);if(F.handPre)return clamp((1-f)/.12,0,1);if(F.handPost)return clamp(f/.12,0,1);return Math.min(clamp((f-.02)/.14,0,1),clamp((1-f)/(F.h.furn?.16:.06),0,1));}
 function hideRoutePoint(points,d) {
   for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],len=dist(a.x,a.y,b.x,b.y);if(d<=len){const k=len?d/len:1;return{x:a.x+(b.x-a.x)*k,y:a.y+(b.y-a.y)*k};}d-=len;}
   return points.at(-1);
@@ -126,7 +127,8 @@ function updateHideFlow(P,dt) {
   const f=hideFlowProgress(T),walking=T.t<F.walk;
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
-  const at=F.route.stand;
+  const at=F.route.stand,W=hideWork(T);
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing);P.x=q.x;P.y=q.y;P.a=q.a;if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;RC=null;}return;}
   if(F.kind==='exit'){
     if(f>.18)P.hide=null;
     const u=hideEase((f-.38)/.46);P.x=h.x+(at.x-h.x)*u;P.y=h.y+(at.y-h.y)*u;P.a=Math.atan2(at.y-h.y,at.x-h.x);
@@ -148,7 +150,7 @@ function updateHideFlow(P,dt) {
     if(F.kind==='drag'&&F.committed&&!P.hide&&f>=.96){enterHideNow(h,false,true,F.witnessed);}
   }
   if(!F.opened&&f>.08){F.opened=true;play(h.type==='bush'||h.furn?'cloth':'metal',.25);}
-  if(!F.closed&&f>.94){F.closed=true;play(h.type==='bush'||h.furn?'cloth':'metal',.2);}
+  if(!F.closed&&!F.handPost&&f>.94){F.closed=true;play(h.type==='bush'||h.furn?'cloth':'metal',.2);}
   if(T.t>=T.dur){
     P.trav=null;P.moving=false;if(F.kind==='stash'||F.kind==='exit'){P.x=at.x;P.y=at.y;}else if(P.hide){P.x=h.x;P.y=h.y;}
     if(F.kind==='exit')h.spotted=false;RC=null;
@@ -156,13 +158,15 @@ function updateHideFlow(P,dt) {
 }
 // 대형 수거함: 바퀴·넓은 입구·뒤쪽 경첩·회전하는 뚜껑. 앞판은 사람을 넣는 동안 몸의 아래를 가린다.
 function containerOpen(h) {
-  const T=S.player.trav;if(T?.hideFlow?.h===h)return hideFlowOpen(T);
+  const T=S.player.trav;if(T?.accessFlow?.h===h)return accessOpen(T.accessFlow);if(h.source&&T?.accessFlow?.obj===h.source)return accessOpen(T.accessFlow);if(T?.hideFlow?.h===h)return hideFlowOpen(T);
   const A=S.amb;if(A?.h===h){const f=A.t/AMB_DUR;return Math.min(clamp(f/.18,0,1),clamp((1-f)/.16,0,1));}
   return 0;
 }
 function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
   const ctx=target,x=h.x,y=h.y;ctx.save();ctx.translate(x,y);
-  if(h.type==='box'){
+  if(h.type==='vent'){ctx.restore();drawVent(h.source||h,part,target,open);return;
+  }else if(h.type==='sign'){ctx.restore();drawHangingSign(h.trap,part,target);return;
+  }else if(h.type==='box'){
     if(part!=='front'){
       ctx.fillStyle='#07101199';ctx.beginPath();ctx.ellipse(3,22,32,9,0,0,TAU);ctx.fill();
       ctx.fillStyle='#151d1b';for(const dx of [-19,19]){ctx.fillRect(dx-3,14,6,9);ctx.beginPath();ctx.arc(dx,22,4,0,TAU);ctx.fill();}
@@ -195,18 +199,20 @@ function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
 const hideFixtureCache={};
 function drawHideFixtures() {
   for(const h of S.hides){if(!['box','well'].includes(h.type)||flOf(h)||!inView(h.x,h.y,90))continue;
-    if(S.player.trav?.hideFlow?.h===h||S.amb?.h===h)continue;
+    if(S.player.trav?.hideFlow?.h===h||S.player.trav?.accessFlow?.h===h||S.amb?.h===h)continue;
     let image=hideFixtureCache[h.type];if(!image){image=document.createElement('canvas');image.width=80;image.height=96;drawContainer({type:h.type,x:40,y:58},'all',image.getContext('2d'),0);hideFixtureCache[h.type]=image;}
     ctx.drawImage(image,h.x-40,h.y-58);
   }
 }
 let hideLightBuffers=null;
 function hideFixtureBounds(h) {
+  if(h.type==='sign')return signBounds(h.trap);
+  if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:h.x-36,y:g.y-38,w:88,h:h.y-g.y+76};}
   if(h.furn&&h.type!=='bed'){const g=cabinetGeometry(h);return{x:g.left-12,y:g.top-4,w:g.right-g.left+24,h:g.bottom-g.top+24};}
   return{x:h.x-42,y:h.y-52,w:92,h:84};
 }
 function drawLitContainer(h,part='all') {
-  if(!['box','well'].includes(h.type)&&!(h.furn&&h.type!=='bed'))return;
+  if(!['box','well','vent','sign'].includes(h.type)&&!(h.furn&&h.type!=='bed'))return;
   if(!hideLightBuffers){const raw=document.createElement('canvas'),lit=document.createElement('canvas');raw.width=lit.width=raw.height=lit.height=1;hideLightBuffers={raw,lit,r:raw.getContext('2d'),l:lit.getContext('2d')};}
   const B=hideLightBuffers,b=hideFixtureBounds(h),w=Math.ceil(b.w),v=Math.ceil(b.h);
   if(B.raw.width<w||B.raw.height<v||!B.ready){for(const c of [B.raw,B.lit]){c.width=Math.max(w,B.raw.width);c.height=Math.max(v,B.raw.height);}B.ready=true;}
@@ -239,7 +245,7 @@ function drawHideFlowVisual() {
   const old=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
   try{
     drawLitContainer(h,'back');
-    if(F)drawHideFlowActors(P,T);
+    if(F){drawHideFlowActors(P,T);const f=hideFlowProgress(T),q=F.kind==='exit'?f:1-f;if(['enter','exit'].includes(F.kind)&&!hideWork(T)&&T.t>=F.walk&&q<.18)drawInsideCoverHand(h,hideFlowOpen(T),hideEase(q/.04)*hideEase((.18-q)/.06));}
     else drawContainerAmbush(A);
     drawLitContainer(h,'front');
     if(F&&hideActorOutside(T))drawHideFlowHero(P,T);
@@ -250,7 +256,8 @@ const hideEase = v => {const t=clamp(v,0,1);return t*t*(3-2*t);};
 // A single continuous root and pose phase drives both rendering and occlusion.
 // Moving behind the lip is allowed only while the feet already clear it.
 function hideHeroSample(P,T) {
-  const F=T.hideFlow,f=hideFlowProgress(T),h=F.h,at=F.route.stand,exit=F.kind==='exit';
+  const F=T.hideFlow,f=hideFlowProgress(T),h=F.h,at=F.route.stand,exit=F.kind==='exit',W=hideWork(T);
+  if(W)return accessHandSample(h,at,W.p,W.closing);
   if(T.t<F.walk)return{x:P.x,y:P.y,anim:F.c?'carry':F.g?'grab':'walk',frame:-1,outside:true};
   if(F.kind==='stash')return{x:at.x,y:at.y,anim:f<.26?'carryI':f<.65?'lift':f<.85?'stoop':'idleC',frame:f<.42?1:0,outside:true};
   if(F.kind==='drag'&&f<.52)return{x:at.x,y:at.y,anim:'grabI',frame:0,outside:true};
