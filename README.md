@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v114 사물 배치·약국·식사·화장실: https://kkhkkh20-bit.github.io/yahaeng/surfaces-v114/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/OBJECT_MATCHING_V114.md
+
 v113 장부 유인·매복 공략과 화면 정리: https://kkhkkh20-bit.github.io/yahaeng/fun-v113/
 
 개발·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PLAY_LOOP_V113.md
@@ -102,7 +106,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v113
-Source commit: 517e807dc59074188eec2a81f96538a9c2df6d13
+Version: v114
+Source commit: 2045046468e8d79c1f3b95e421cfe971dbe7de81
 
-Ink study source: 517e807dc59074188eec2a81f96538a9c2df6d13
+Ink study source: 2045046468e8d79c1f3b95e421cfe971dbe7de81
