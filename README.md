@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v112 출입구 손 조작·환풍구 구분·간판 낙하 영상: https://kkhkkh20-bit.github.io/yahaeng/access-v112/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/ACCESS_FIXTURES_QA.md
+
 v111 새 물체 색감·동작 중 조명 비교: https://kkhkkh20-bit.github.io/yahaeng/tone-v111/
 
 v110 출입·낙하 속도와 사물함 전체 문 수정: https://kkhkkh20-bit.github.io/yahaeng/motion-v110/
@@ -94,7 +98,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v111
-Source commit: bc7e1f2c2ab849c82bb1b8759dac64394af1b9d7
+Version: v112
+Source commit: 2a52340631fdbed59985855af1e9e11f095046eb
 
-Ink study source: bc7e1f2c2ab849c82bb1b8759dac64394af1b9d7
+Ink study source: 2a52340631fdbed59985855af1e9e11f095046eb
