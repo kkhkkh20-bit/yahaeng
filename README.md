@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v107 동작·상호작용·창문: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/MOTION_WINDOWS.md
+
+전후 화면·동작 영상: https://kkhkkh20-bit.github.io/yahaeng/motion-v107/
+
 v106 모바일 인물 크기·내 위치 표시: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PLAYER_FRAMING.md
 
 전후 화면: https://kkhkkh20-bit.github.io/yahaeng/framing-v106/
@@ -78,7 +82,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v106
-Source commit: e116e781594101af98d18495cfa1b01a66ddc57a
+Version: v107
+Source commit: 98d62a5a0cd7c9e84c971ae370400067be4aed7f
 
-Ink study source: e116e781594101af98d18495cfa1b01a66ddc57a
+Ink study source: 98d62a5a0cd7c9e84c971ae370400067be4aed7f
