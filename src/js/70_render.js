@@ -77,7 +77,7 @@ function drawScrollOld(x, y, t) {
 }
 function drawPlayerLocator(P) {
   const k=1/SCALE,x=P.x,y=P.y+10,a=P.car?P.car.a:P.cover?Math.atan2(P.cover.y,P.cover.x):P.a;
-  const col=S.expo===2?'#e85a46':S.expo===1?'#dfbc70':'#7fe3ff';
+  const col='#7fe3ff';  // 내 위치는 항상 같은 색. 위험은 중앙 상태와 시선 방향 호가 알린다.
   ctx.save();ctx.setLineDash([]);ctx.lineWidth=3.5*k;ctx.strokeStyle='#081015cc';ctx.beginPath();ctx.ellipse(x,y,11*k,5*k,0,0,TAU);ctx.stroke();
   ctx.lineWidth=1.5*k;ctx.strokeStyle=col;ctx.stroke();
   if(P.hide){ctx.restore();return;}
@@ -888,7 +888,7 @@ function drawBlockEdges(P, all) {
 const _nearPaths = {}; const nearPath = k => _nearPaths[k] || (_nearPaths[k] = new Path2D(ICON_P[k]));  // 근처 표시용 아이콘 (버튼 아이콘과 같은 그림)
 function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip.ui)) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (P.hide || P.vent || P.under || P.wire || P.trav || P.jump) return;
-  const R = 300, fP = flOf(P), k = Math.max(1, 0.95 / SCALE), list = [];
+  const R = 300, fP = flOf(P), k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), list = [];
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
   const add = (x, y, col, g, lab, tx, ty) => { const d = dist(P.x, P.y, x, y); if (d > R) return; if (tx != null && hidden(tx, ty)) return; const m = { x, y, col, g, lab, d }; list.push(m); return m; };
   if (!P.z) {
@@ -1096,7 +1096,7 @@ function chaseHide(P) {
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
-  const k = Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
+  const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로

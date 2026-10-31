@@ -59,3 +59,5 @@ v103 배관 접점과 동작 경로: [PIPE_CONTACTS.md](PIPE_CONTACTS.md).
 v104 시야·소리·선택 표시·성능: [AI_FEEDBACK.md](AI_FEEDBACK.md).
 
 v105 모바일 카메라·내 캐릭터 가독성: [PLAYER_FRAMING.md](PLAYER_FRAMING.md).
+
+- v106: [인물 크기·내 위치 표식](PLAYER_FRAMING.md) · [모바일 전후 비교](framing-v106/index.html)

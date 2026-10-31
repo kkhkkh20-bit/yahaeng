@@ -40,7 +40,7 @@ function resize() {
   DPR = Math.min(dprCap, 2, window.devicePixelRatio || 1);
   W = canvas.clientWidth; H = canvas.clientHeight;
   canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-  BASE_SCALE = clamp(Math.min(W, H * 1.45) / ((isTouch ? (H > W * 1.3 ? 10 : 16) : W < 640 ? (H > W * 1.3 ? 12 : 14) : 18) * TILE), 0.5, 1.25);  // 세로 휴대폰은 가로 10칸: 캐릭터의 팔·붙잡기 동작이 읽히는 크기
+  BASE_SCALE = clamp(Math.min(W, H * 1.45) / ((isTouch ? (H > W * 1.3 ? 8 : 14) : W < 640 ? (H > W * 1.3 ? 12 : 14) : 18) * TILE), 0.5, 1.25);  // 모바일: 세로 8칸·가로 14칸, 인물 동작이 먼저 읽히는 거리
   if (!SCALE || SCALE === 1) SCALE = BASE_SCALE * userZoom;
 }
 function targetScale() {

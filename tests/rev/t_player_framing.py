@@ -15,7 +15,7 @@ async def main():
     Object.assign(P,{x:28.5*48,y:20.5*48,fl:0,z:0,a:0,moving:false,hidden:false,mode:'walk'});G.setLayer(0);S.guards=[];S.cams=[];S.facOn=false;
     for(const zoom of [.75,1,1.6]){G.setZoom(zoom);for(let n=0;n<360;n++)G.moveCamera(1/60);const y=(P.y-G.cam.y)*G.SCALE+innerHeight/2;if(touch)check(Math.abs(y/innerHeight-(innerHeight>innerWidth*1.3?.6:.56))<.002,'mobile anchor not below centre');else check(Math.abs(y-innerHeight/2)<1,'desktop camera moved');}
     G.setZoom(1);for(let n=0;n<360;n++)G.moveCamera(1/60);
-    if(touch){const expected=Math.min(1.25,Math.max(.5,Math.min(innerWidth,innerHeight*1.45)/((innerHeight>innerWidth*1.3?10:16)*48)));check(Math.abs(G.SCALE-expected)<.001,'mobile actor scale regressed');}
+    if(touch){const expected=Math.min(1.25,Math.max(.5,Math.min(innerWidth,innerHeight*1.45)/((innerHeight>innerWidth*1.3?8:14)*48)));check(Math.abs(G.SCALE-expected)<.001,'mobile actor scale regressed');}
     if(touch){
      for(const px of [24,G.MW*48-24]){P.x=px;P.y=24;for(let n=0;n<360;n++)G.moveCamera(1/60);const sx=(P.x-G.cam.x)*G.SCALE+innerWidth/2,sy=(P.y-G.cam.y)*G.SCALE+innerHeight/2,r=[sx-12,sy-40*G.SCALE,sx+12,sy+14];
       for(const selector of ['#hud .top','#stealth','#mini']){const e=document.querySelector(selector),b=e.getBoundingClientRect();check(!(r[0]<b.right&&r[2]>b.left&&r[1]<b.bottom&&r[3]>b.top),'player hidden by HUD at top corner');}
