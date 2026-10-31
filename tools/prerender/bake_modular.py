@@ -12,6 +12,7 @@ from PIL import Image
 from playwright.async_api import async_playwright
 from run import ANIMS, js_for, HANG_SWAY, outline
 from bodies import BODIES, CIV_ANIMS
+from frame_bounds import frame_bounds
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / 'build' / 'pr'
@@ -117,6 +118,7 @@ async def main():
      for direction in range(8):
       for c in patch_cols:
        box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR);original.paste(image.crop(box),box[:2])
+     previous['bounds']=frame_bounds(original,FR,cmap)
      original.save(OUT/filename,'WEBP',lossless=True,method=6)
      if bn=='key':original.save(OUT/'key.png',optimize=True)
      if 'climb' in patch:previous.update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
@@ -129,6 +131,7 @@ async def main():
     if bn=='key':
      image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'],scales=result['scales'])
     else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds'],'scales':result['scales']}
+    (meta if bn=='key' else meta['bodies'][bn])['bounds']=frame_bounds(image,FR,cmap)
     if result['climbHands']:(meta if bn=='key' else meta['bodies'][bn]).update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)

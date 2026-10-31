@@ -6,7 +6,7 @@ function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', 
 function frame(t) {
   requestAnimationFrame(frame);
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
-  const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; perfWatch(rawDt);
+  const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; prWarm.frameGap=rawDt;perfWatch(rawDt);
   if (!S || !mapC) return;
   updateHelpTip();
   if (ENG && (paused || !running || S.over)) engineSound();  // 멈추면 엔진 소리도
@@ -23,16 +23,16 @@ function frame(t) {
   draw();
   if (pf) { pf.u.push(t1 - t0); pf.d.push(performance.now() - t1); }
 }
-// 느린 기기: 4초 구간의 '보통 프레임'(중앙값)이 두 구간 연속 40fps 아래일 때만 해상도를 한 단계(0.5배) 낮춘다.
-// 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 낮춘 뒤 넉넉해지면(중앙값 58fps 이상이 세 구간) 한 번은 되돌린다
+// 2초 구간의 중앙값이 두 번 연속 목표의 80% 아래면 해상도를 한 단계 낮춘다.
+// 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 목표 프레임에 가까워진 상태가 세 구간 유지되면 한 번 되돌린다
 let dprCap = 2, perfDts = [], perfSum = 0, perfBad = 0, perfGood = 0, perfUp = 1;
 function perfWatch(rawDt) {
   if (!running || paused || !S || S.over || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
-  perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 4) return;
+  perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 2) return;
   const med = perfDts.sort((a, b) => a - b)[perfDts.length >> 1], fps = 1 / med; perfDts = []; perfSum = 0;
   const native = Math.min(2, window.devicePixelRatio || 1);
-  // 60fps 목표여도 24fps 아래일 때만 해상도를 낮춘다 (조금 못 미친다고 화질을 깎지 않게)
-  if (fps < Math.min(FPS_CAP * 0.66, 24) && DPR > 1) { perfGood = 0; if (++perfBad >= 2) { perfBad = 0; dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); } }
+  // 한 번의 멈칫은 제외하고, 지속적인 프레임 저하에만 대응한다.
+  if (fps < FPS_CAP * 0.8 && DPR > 1) { perfGood = 0; if (++perfBad >= 2) { perfBad = 0; dprCap = Math.max(1, DPR - 0.5); resize(); miniBase = null; toast(`화면이 느려 해상도를 낮췄다 (${Math.round(fps)}fps)`, 2.2); } }
   else if (fps >= FPS_CAP * 0.95 && DPR < native && perfUp > 0) { perfBad = 0; if (++perfGood >= 3) { perfGood = 0; perfUp--; dprCap = Math.min(native, DPR + 0.5); resize(); miniBase = null; } }
   else { perfBad = 0; perfGood = 0; }
 }

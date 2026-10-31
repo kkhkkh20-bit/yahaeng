@@ -204,13 +204,13 @@ function spawnReinforcements() {
   if (S.alevel >= 2) startBuildingSearch(at, 'A', 'radio');
   play('alarm', 0.5); toast(`증원 자경대원 ${D().reinf}명이 도착했다`, 3, 'warn');
 }
-function guardFov(g) { if (g.civ) return 0.55; if (g.dog) return 1.15; return (g.state === 'ALERT' ? 0.66 : 0.5) * A_FOV[S.alevel] * (distracted(g) ? (g.act === 'pickup' ? 0.4 : 0.6) : 1) * (g.elite ? 1.1 : 1); }
+function guardFov(g) { if (g.civ) return 0.55; if (g.dog) return 1.15; return (g.state === 'ALERT' ? 0.72 : 0.6) * A_FOV[S.alevel] * (distracted(g) ? (g.act === 'pickup' ? 0.4 : 0.6) : 1) * (g.elite ? 1.1 : 1); }
 function guardRanges(g) {
   if (g.civ) return { lit: 175 * D().range, dark: 62 * D().range };
   if (g.dog) return { lit: 170 * D().range, dark: 85 * D().range };
   const m = D().range * A_RANGE[S.alevel] * (g.state === 'SUSPICIOUS' || g.state === 'ALERT' || g.state === 'CHECK' ? 1.1 : 1) * (g.target ? 0.85 : 1);
   const dm = distracted(g) ? 0.65 : 1;
-  return { lit: 250 * m * dm, dark: 95 * m * dm * (S.mod === 'bright' ? 1.5 : 1) };
+  return { lit: 520 * m * dm, dark: 95 * m * dm * (S.mod === 'bright' ? 1.5 : 1) };
 }
 // elev = 대상이 옥상 위 (자경대원은 위를 잘 올려다보지 않는다)
 // 신분이 통했다는 걸 장면으로: 금지 구역에서 허가 신분(옷·택배 상자)을 본 조직원이 한마디 하고 지나간다 (한 사람당 한 번)

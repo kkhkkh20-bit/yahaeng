@@ -84,7 +84,7 @@ function keyMap(ka, ea, ga) {
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)
 function holdFrac() { const p = S.player.lethalHold, h = S.koHold; return p ? clamp(p.t / LETHAL_HOLD, 0, 1) : h ? clamp((S.t - h.t0) / KO_HOLD, 0, 1) : 0; }
 function drawHoldRing() {
-  const h = S.koHold || S.player.lethalHold; if (!h) return; const f = holdFrac(), c = h.container || h.c || (h.a && h.a.c) || combatVictims(h.a)[0] || actObj(h.a) || S.player, x = c.x != null ? c.x : S.player.x, y = (c.y != null ? c.y : S.player.y) - 30;
+  const h = S.koHold || S.player.lethalHold; if (!h) return; const f = holdFrac(), c = h.container || h.c || (h.a && h.a.c) || combatVictims(h.a)[0] || actObj(h.a) || S.player, marker=actorMarker(c,h.container?null:h.a?.c||h.c),x=marker.x,y=marker.y-marker.ry-14;
   ctx.save(); ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(x, y, 16, 0, TAU); ctx.stroke();
   ctx.strokeStyle = '#e8473c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); ctx.restore();
   tag(x, y - 30, '계속 누르면 처치', '#ff8a76', 0.9);

@@ -1,11 +1,19 @@
-const GLC = { t: -1, m: new Map() };  // 시야 원뿔용 밝기 기억 (12px 칸, 0.2초)
-// 자경대원 시야 원뿔: 광선마다 6px 간격으로 그 자리 밝기를 보고 0(안 보임)·1(서 있으면 보임)·2(웅크려도 보임)를 매긴다
-// 밝기는 12px 칸마다 0.2초 동안 기억해 같이 쓴다 (여러 자경대원이 같은 칸을 본다)
-const lightC = (x, y) => { if (S.t - GLC.t > 0.2 || S.t < GLC.t) { GLC.m.clear(); GLC.t = S.t; } const cx = Math.floor(x / 12), cy = Math.floor(y / 12), k = CUR_F * 1e8 + cy * 1e4 + cx; let v = GLC.m.get(k); if (v === undefined) { v = lightAt(cx * 12 + 6, cy * 12 + 6, false); GLC.m.set(k, v); } return v; };
+// 고정 조명 표본은 켜짐·문 상태가 바뀔 때만 폐기하고, 움직이는 광원만 짧게 갱신한다.
+const GLC = { t:-1, m:new Map(), base:new Map(), S:null, sig:null, checked:-1 };
+const lightC=(x,y)=>{
+  if(GLC.S!==S){GLC.S=S;GLC.base.clear();GLC.m.clear();GLC.sig=null;GLC.checked=-1;GLC.t=-1;}
+  if(GLC.checked!==S.t){GLC.checked=S.t;const sig=(S.lamps||[]).map(l=>lampOn(l)?1:0).join('')+'|'+(S.doors||[]).map(d=>d.locked?1:0).join('');
+    if(sig!==GLC.sig){GLC.sig=sig;GLC.base.clear();GLC.m.clear();GLC.t=S.t;}
+  }
+  if(S.t-GLC.t>.12||S.t<GLC.t){GLC.m.clear();GLC.t=S.t;}
+  const cx=Math.floor(x/12),cy=Math.floor(y/12),key=CUR_F*1e8+cy*1e4+cx;let value=GLC.m.get(key);
+  if(value===undefined){let base=GLC.base.get(key);if(base===undefined){base=ambientLightAt(cx*12+6,cy*12+6,false);GLC.base.set(key,base);}value=dynamicLightAt(cx*12+6,cy*12+6,false,base);GLC.m.set(key,value);}return value;
+};
 function guardCone(g, fov, rg) {
-  const ck = (S.player.cover ? 1 : 0) + g.state + (g.z || 0) + fov.toFixed(2) + Math.round(rg.lit);
-  if (g._cone && S.t - g._cone.t < 0.1 && S.t >= g._cone.t && g._cone.k === ck && Math.hypot(g.x - g._cone.x, g.y - g._cone.y) < 10 && Math.abs(angDiff(g._cone.a, g.a)) < 0.12) return g._cone.cn;
-  const N = 34, STP = 6, rays = [], crouchK = (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
+  const detail=!g.civ||g.eyeWatching||g.wary||g.state==='PANIC';
+  const ck = (detail?'hi':'lo')+(S.player.cover ? 1 : 0) + g.state + (g.z || 0) + fov.toFixed(2) + Math.round(rg.lit);
+  if (g._cone && S.t - g._cone.t < 0.1 && S.t >= g._cone.t && g._cone.k === ck && Math.hypot(g.x - g._cone.x, g.y - g._cone.y) < 4 && Math.abs(angDiff(g._cone.a, g.a)) < 0.05) return g._cone.cn;
+  const N = detail?24:12, STP = detail?12:18, rays = [], crouchK = (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
   setLayer(flOf(g));
   for (let i = 0; i <= N; i++) {
     const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
@@ -990,6 +998,7 @@ function drawActLabels(pa, P, ka, ga) {
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && !BLD[b].vacant && b !== openB; };
 
+function roofOccludes(o,openB){if(tactical||o.yank||o.fly||!coveredG(o,openB))return false;const b=BLD[bldAt(Math.floor(o.x/TILE),Math.floor(o.y/TILE))];return(b.ra??1)>=.98;}
 function drawUnderground() {
   const sc = SCALE * DPR, P = S.player;
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#030406'; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1112,6 +1121,9 @@ function draw() {
   // 창문 넘기·창문 건너기(같은 높이 뜀): 지붕 위로 날아가는 것처럼 보이지 않게, 건물 안을 보여 준 채 땅 위 사람처럼 그린다 (절반 전엔 출발 건물, 그 뒤엔 도착 건물)
   const lowJ = !!(P.jump && P.jump.vault && !P.jump.z1 && !P.z);
   const jumpB = lowJ ? (() => { const J = P.jump, f = J.t / J.dur, bs = bldAt(Math.floor(J.x0 / TILE), Math.floor(J.y0 / TILE)), bd = bldAt(Math.floor(J.x1 / TILE), Math.floor(J.y1 / TILE)); return f > 0.5 ? (bd >= 0 ? bd : bs) : (bs >= 0 ? bs : bd); })() : -1;
+  const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
+  let openB = lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
+  if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   const VF = (!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0;
   const VB = VF ? (lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) : -1;
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
@@ -1149,13 +1161,13 @@ function draw() {
   if (KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
   if (!tactical && !P.z && !flOf(P) && !input.scan) drawBlockEdges(P, false);
   for (const n of S.noises) {
-    const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(240,80,60,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
+    const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(242,196,107,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
     ctx.lineWidth = n.heard ? 3 : 2; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(1, n.r * (0.25 + 0.75 * k)), 0, TAU); ctx.stroke();
   }
   PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
-    if (c.stashed || !onGround(c) || (c.z && !tactical)) continue;
+    if (c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
@@ -1163,7 +1175,7 @@ function draw() {
   }
   PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
-    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120)) continue;
+    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120) || roofOccludes(g,openB)) continue;
     if (g.yank) drawYanked(g); else drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
     if (g.hasKey && dist(g.x, g.y, P.x, P.y) < 320) drawKeyIcon(g.hasKey, g.x + 18, g.y - 30, false);
@@ -1174,9 +1186,9 @@ function draw() {
       tag(g.x, g.y + 34, '얼굴을 안다', '#e85a46', 0.9);
     }
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
-    if (g.elite) { ctx.fillStyle = '#e8473c'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
+    if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
     if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
-    if (g.target) { ctx.strokeStyle = 'rgba(194,54,43,.85)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(g.x, g.y, 24, 0, TAU); ctx.stroke(); }
+    if (g.target) drawTargetRing(g,'rgba(194,54,43,.85)');
   }
   PM('guards');
   drawGhosts(); drawTagged();
@@ -1271,7 +1283,6 @@ function draw() {
     setLayer(0);
   }
   PM('floor');
-  const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
   PM('stepring');
   if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
@@ -1286,8 +1297,6 @@ function draw() {
     }
   }
   PM('player');
-  let openB = lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
-  if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
     drawWarnRing(g); drawReport(g);
@@ -1332,7 +1341,7 @@ function draw() {
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   PM('haze');
   for (const g of S.guards) {
-    if ((VF && flOf(g) !== VF) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && (!inView(g.x, g.y, 460) || coveredG(g, openB)))) continue;  // 시야 원뿔이 화면에 닿지 않는 사람은 건너뛴다
+    if ((VF && flOf(g) !== VF) || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.z || g.climb || !gVis(g) || (!tactical && (!inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) || coveredG(g, openB)))) continue;  // 시야 원뿔이 화면에 닿지 않는 사람은 건너뛴다
     guardOverlay(g);
   }
   PM('cones');
@@ -1350,7 +1359,7 @@ function draw() {
     const front = (x, y) => { const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return BLD.some((b, i) => b.facade && i !== openB && ty === b.y1 + 1 && tx >= b.x0 - 1 && tx <= b.x1 + 1); };
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && inView(g.x, g.y, 120) && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
-    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x, g.y, 460) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
+    for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
@@ -1404,16 +1413,16 @@ function draw() {
   if (running && !S.over && !S.entrySel && !tactical && !DLG.modal) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
-      const pos = a => { const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      const pos = a => { if(a.c){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return { x: tc(a.n.u.at[0]), y: tc(a.n.u.at[1]) }; if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
     }
-    const ring = (g, col) => { ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 25 + Math.sin(S.t * 10) * 2, 0, TAU); ctx.stroke(); };
+    const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
-    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd');
+    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
     if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
@@ -1426,7 +1435,7 @@ function draw() {
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
     S.paNow = pa; drawActLabels(pa, P, ka, ga);
     const nc = !P.carrying && nearCorpse();
-    if (nc) { ctx.strokeStyle = 'rgba(232,227,214,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.arc(nc.x, nc.y, 26, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+    if(nc&&nc!==ka.c){ctx.setLineDash([5,5]);drawTargetRing(nc,'rgba(232,227,214,.8)',nc);ctx.setLineDash([]);}
     if (input.aiming && input.tool !== 'kunai') {
       const ap = aimPoint();
       if (ap) {

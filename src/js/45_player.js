@@ -122,7 +122,7 @@ function whistle() {
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
-  noise(x, y, 230, 'whistle'); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  noise(x, y, 230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
   hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기

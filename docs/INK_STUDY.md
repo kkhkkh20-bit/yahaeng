@@ -55,3 +55,5 @@ v101 설명·옵션의 정보량 정리: [UI_EDIT.md](UI_EDIT.md).
 v102 행동 안내·배관 오르기: [CLIMB_PROMPTS.md](CLIMB_PROMPTS.md).
 
 v103 배관 접점과 동작 경로: [PIPE_CONTACTS.md](PIPE_CONTACTS.md).
+
+v104 시야·소리·선택 표시·성능: [AI_FEEDBACK.md](AI_FEEDBACK.md).

@@ -298,8 +298,8 @@ function prBlit(sh, col, row, dx, dy, dw, dh) {
   const fr = PR.fr; ctx.drawImage(c, (col - ci * PR_CH) * fr, row * fr, fr, fr, dx, dy, dw, dh); return true;
 }
 // 미리 칠하기: 칠하기는 조각 하나에 수 ms라 판 시작 직후 첫 프레임들이 끊겼다.
-// 쉬는 틈(requestIdleCallback)에 서기·걷기·달리기·쓰러짐·대화 조각부터, 그다음 처치·운반 조각을 한 조각씩 칠해 둔다
-const PR_WARM1 = ['idle', 'walk', 'run', 'idleC', 'talk', 'death'], PR_WARM2 = ['crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
+// 쉬는 틈에 서기·걷기·대화부터 준비한다. 달리기·쓰러짐·처치·운반은 가까운 인물부터 준비한다.
+const PR_WARM1 = ['idle', 'walk', 'idleC', 'talk'], PR_WARM2 = ['run', 'death', 'crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
 function prWarmParts(key, names) {
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn], out = new Set();
   if (key === 'ninja') { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
@@ -316,10 +316,18 @@ function prWarm(keys, first) {
   else { for (const [k, ci] of l1) add(k, ci); for (const [k, ci] of l2) add(k, ci); }
   if (prWarm.on || !prWarmQ.length) return; prWarm.on = true;
   const ric = window.requestIdleCallback || (f => setTimeout(() => f({ timeRemaining: () => 8 }), 30));
-  const step = () => { const id = prWarmQ.shift(); if (id) { const [k, cs] = id.split('#'), ci = +cs, [pk, bn] = prSplit(k);
+  const step = deadline => {
+    if(!prWarmQ.length){prWarm.on=false;return;}
+    const active=running&&!paused&&!DLG.modal,cost=prWarm.cost||3;
+    // timeout은 한가하다는 뜻이 아니다. 플레이 프레임이 밀리면 준비 작업을 양보한다.
+    if(active&&(deadline?.didTimeout||(deadline?.timeRemaining?.()??8)<cost+1||(prWarm.frameGap||0)>1/FPS_CAP*1.25)){
+      prWarm.deferred=(prWarm.deferred||0)+1;setTimeout(()=>ric(step,{timeout:1500}),120);return;
+    }
+    const started=performance.now(),id = prWarmQ.shift(); if (id) { const [k, cs] = id.split('#'), ci = +cs, [pk, bn] = prSplit(k);
       if (!PR || !PR_PAL[pk] || (bn && !(PR.bodies && PR.bodies[bn]))) {} else if (bn ? prBodies[bn] : prBase) { const sh = prSheet(k); if (sh) prPart(sh, ci); } else prWarmQ.push(id); }  // 아직 그림이 안 읽혔으면 뒤로
-    if (prWarmQ.length) ric(step, { timeout: 400 }); else prWarm.on = false; };
-  ric(step, { timeout: 400 });
+    prWarm.cost=Math.max(3,(prWarm.cost||3)*.3+(performance.now()-started)*.7);
+    if (prWarmQ.length) ric(step, { timeout:1500 }); else prWarm.on = false; };
+  ric(step, { timeout:1500 });
 }
 // 처치·운반 동작 조각은 그 사람에게 다가갔을 때 미리 칠한다 (판 시작에 모두 칠하면 옷마다 14MB)
 const prNear = new Set();
@@ -370,10 +378,24 @@ function killKT(kind, f, from) {
 }
 const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, Math.round(kt / 3 * (nf - 1)))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
+const corpseFrame=c=>c.stripped?9:c.t0!=null&&S.t-c.t0<1?(c.f0||0)+Math.floor((S.t-c.t0)*10):9;
+function corpseBounds(c){
+  if(c.dog)return[c.x-24,c.y-26,c.x+24,c.y+22];
+  const key=c.stripped?strippedKey(c):c.ch,bm=PR?.bodies?.[prSplit(key||'ninja')[1]],m=bm||PR;
+  const frame=Math.min((m?.anims?.death?.[1]||10)-1,corpseFrame(c)),box=m?.bounds?.death?.[prDir(c.a||0)]?.[frame];
+  if(!box)return[c.x-20,c.y-24,c.x+20,c.y+10];
+  const x=c.x-PR.fr/2,y=c.y+7-(m.grounds?.death??PR.grounds?.death??PR.groundY);
+  return[x+box[0],y+box[1],x+box[2],y+box[3]];
+}
+function actorMarker(g,c){
+  if(c){const b=corpseBounds(c);return{x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,rx:(b[2]-b[0])/2+4,ry:(b[3]-b[1])/2+4};}
+  return{x:g.x,y:g.y-12,rx:18,ry:24};
+}
+function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
-  const fr = c.t0 != null && S.t - c.t0 < 1 ? (c.f0 || 0) + Math.floor((S.t - c.t0) * 10) : 9;  // 쓰러지는 동작
+  const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
   blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
