@@ -1,5 +1,7 @@
 # 야행 웹 실행본
 
+v110 출입·낙하 속도와 사물함 전체 문 수정: https://kkhkkh20-bit.github.io/yahaeng/motion-v110/
+
 v109 은신 출입·매달림 처치·낙하 점검: https://kkhkkh20-bit.github.io/yahaeng/motion-v109/
 
 개발 기록: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/STORAGE_MOTION.md
@@ -90,7 +92,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v109
-Source commit: e716971fd3bb677c6fbc4ca8b776fdd4047a8c7e
+Version: v110
+Source commit: b5a8faaaf527e1ae1f2d2e7b8982c27c6dc57109
 
-Ink study source: e716971fd3bb677c6fbc4ca8b776fdd4047a8c7e
+Ink study source: b5a8faaaf527e1ae1f2d2e7b8982c27c6dc57109
