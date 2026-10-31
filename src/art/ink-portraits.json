@@ -1,0 +1,15 @@
+{
+  "created": "2026-10-31",
+  "source": "image_gen, using existing title-poster.webp as identity and art-direction reference",
+  "size": [
+    2172,
+    724
+  ],
+  "columns": [
+    "fc_ninja",
+    "fc_aide",
+    "fc_master"
+  ],
+  "description": "Three distinct adult Korean cast portraits, printing ink and hatching on warm ivory, no labels or borders. The protagonist preserves the title poster identity.",
+  "runtime": "Equal thirds sampled in drawInkPortrait; WebP export preserves the atlas dimensions."
+}

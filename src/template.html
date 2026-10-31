@@ -4,6 +4,7 @@
 <!-- Title font license:
 __TITLE_FONT_LICENSE__
 -->
+<script>if(new URLSearchParams(location.search).get("tone")==="ink"||window.__INK_FORCE__)document.documentElement.classList.add("ink-study");</script>
 <style>
 @font-face { font-family: "Yahaeng Title"; src: url("data:font/ttf;base64,__TITLE_FONT__") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
 
@@ -796,6 +797,7 @@ body.dlgmodal #toasts, body:has(.screen:not([hidden])) #hintCard { visibility: h
 #missionGoals button[aria-pressed="true"] { border-color:var(--lamp); }
 #saveState { position:absolute; bottom:calc(43px + env(safe-area-inset-bottom,0px)); left:14px; font-size:11px; color:#a6b3b5; }
 body.touch #saveState { bottom:calc(28px + env(safe-area-inset-bottom,0px)); }
+__INK_STUDY_CSS__
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>

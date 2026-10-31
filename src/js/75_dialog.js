@@ -27,6 +27,7 @@ function faceSheet(pk, body) {
 const _fcTmp = document.createElement('canvas');
 function drawFace(cv, sp) {
   const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
+  if(INK_STUDY&&drawInkPortrait(cv,sp))return true;
   if (!(sp.key && FACE.base)) return false;
   const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk, bn), fr = PR.faces.fr; if (!sh) return false;
   if (PR.style === 'modular') {
@@ -72,7 +73,7 @@ const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'C
 function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');
   if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; document.body.classList.remove('dlgmodal'); const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
-  const sp = speakerOf(l[0]); DLG.cur = { text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
+  const sp = speakerOf(l[0]); DLG.cur = { speaker:sp, text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
   $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';

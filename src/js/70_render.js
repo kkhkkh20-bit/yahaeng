@@ -820,9 +820,9 @@ function drawTag(x, y, text, col, alpha = 1, key) {
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k;
   ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const kcw = key ? Math.max(h, ctx.measureText(key).width + 9 * k) : 0, kw = key ? kcw + 2 * k : 0;
   ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
-  ctx.fillStyle = 'rgba(8,11,18,.86)'; ctx.fillRect(x - w / 2, y - h / 2, w, h);
+  ctx.fillStyle = INK_STUDY?'#191b18f0':'rgba(8,11,18,.86)'; ctx.fillRect(x - w / 2, y - h / 2, w, h);
   ctx.fillStyle = col; ctx.fillRect(x - w / 2, y - h / 2, 3 * k, h);
-  ctx.fillStyle = '#efeadf'; ctx.fillText(text, x + k, y + 4.5 * k);
+  ctx.fillStyle = INK_STUDY?INK.paper:'#efeadf'; ctx.fillText(text, x + k, y + 4.5 * k);
   if (key) {  // 누를 키를 작은 키캡으로
     const kx = x - w / 2 - kw; ctx.fillStyle = col; ctx.fillRect(kx, y - h / 2, kcw, h); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(kx, y + h / 2 - 3 * k, kcw, 3 * k);
     ctx.fillStyle = '#0b0d12'; ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText(key, kx + kcw / 2, y + 4 * k);
@@ -1038,7 +1038,7 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
@@ -1223,7 +1223,7 @@ function draw() {
     if (!lampOn(l) || flOf(l) || DBG.glow) continue;
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;  // 화면 밖
     const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7);
-    const nn = NEONY() || !!l.col, lc = l.col || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
+    const nn = NEONY() || !!l.col, lc = inkLampColor(l) || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
     gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
     if(!l.outdoor) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
@@ -1261,7 +1261,7 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
     ctx.globalCompositeOperation = 'lighter';
-    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = l.col || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
+    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
@@ -1388,7 +1388,7 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
-  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
+  if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
   if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표

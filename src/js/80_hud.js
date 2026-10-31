@@ -11,6 +11,7 @@ function buildMiniBase(mw = 200, mh = 140) {
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
     const ch = G0[ty][tx], b = bldAt(tx, ty);
     x.fillStyle = b >= 0 && !BLD[b].vacant ? (ch === '#' || ch === 'N' ? '#6a7486' : '#3e4758') : ch === '#' ? '#4a5262' : ch === '=' ? '#2c3343' : ch === ',' ? '#2a2e28' : ch === 'g' ? '#1f3020' : ch === 'd' ? '#3a3024' : ch === 'x' ? '#6a8aa0' : ch === 'p' ? '#28405a' : ch === 'm' ? '#5d636e' : ch === 'r' ? '#4a463e' : ch === 'J' ? '#3a3e48' : ch === '~' ? '#1e3a5a' : ch === 'B' || ch === 'T' ? '#2f4a34' : ch === 'P' ? '#8a8f98' : ch === 'M' ? '#6a3a3a' : ch === 'A' ? '#5a6070' : '#181d28';
+    if(INK_STUDY)x.fillStyle=b>=0&&!BLD[b].vacant?(ch==='#'||ch==='N'?'#777365':'#40463a'):ch==='B'||ch==='T'?'#46523d':ch==='='?'#37392f':ch==='~'?'#354a46':'#252b23';
     x.fillRect(tx * s, ty * s, Math.ceil(s), Math.ceil(s));
   }
   S.wires.forEach(w => { x.strokeStyle = 'rgba(160,170,190,.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(w.a.x / TILE * s, w.a.y / TILE * s); x.lineTo(w.b.x / TILE * s, w.b.y / TILE * s); x.stroke(); });
@@ -345,7 +346,7 @@ function renderStageList() {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
     const stars = s.challenges ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">${'★'.repeat(st)}${'☆'.repeat(Math.max(0, all - st))}</span>` : '';
     const mods = !s.tutorial && stageCleared(s) ? `<span class="st-rank">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</span>` : '';
-    const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
+    const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
     const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : s.mission, tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">

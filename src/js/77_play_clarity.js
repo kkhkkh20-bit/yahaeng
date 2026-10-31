@@ -48,7 +48,7 @@ function encounterSize(rows) {
 function encounterRect(x,y,rows) { const s=encounterSize(rows);return [x-s.width/2,y-s.height/2,x+s.width/2,y+s.height/2]; }
 function drawEncounter(x,y,rows) {
   const {k,width:w,height:h}=encounterSize(rows),left=x-w/2,top=y-h/2;
-  ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle='#101921f2';ctx.fillRect(left,top,w,h);ctx.strokeStyle='#63717a';ctx.lineWidth=k;ctx.strokeRect(left,top,w,h);
+  ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle=INK_STUDY?'#181b17f2':'#101921f2';ctx.fillRect(left,top,w,h);ctx.strokeStyle=INK_STUDY?'#aa9e84':'#63717a';ctx.lineWidth=k;ctx.strokeRect(left,top,w,h);
   rows.forEach((r,i)=>{const yy=top+(17+i*23)*k;
     ctx.globalAlpha=r.ready?1:.66;ctx.fillStyle=r.ready?'#c4d3cd':'#89959c';ctx.font=`600 ${11*k}px "IBM Plex Sans KR",sans-serif`;ctx.textAlign='center';ctx.fillText(r.key,left+24*k,yy);
     ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;ctx.textAlign='left';ctx.fillStyle='#e8e8df';ctx.fillText(r.text,left+48*k,yy,w-56*k);
