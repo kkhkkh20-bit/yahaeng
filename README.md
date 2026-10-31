@@ -2,6 +2,10 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+잉크 누아르 미술 시안: https://kkhkkh20-bit.github.io/yahaeng/tone-study/
+
+시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
+
 v97 진행 화면·행동 선택·탐지 표시: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PLAY_CLARITY.md
 
 진행 화면 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/play-clarity/
@@ -40,3 +44,5 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 Version: v97
 Source commit: ea479de3a96ea5df13347976ebd6847be538286a
+
+Ink study source: ac2999ea4217d4b5eeb229d2bd7d7e18b9cc0953
