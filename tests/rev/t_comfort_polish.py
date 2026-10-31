@@ -7,7 +7,7 @@ START="""()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='m2'));for(let
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch()
-  for w,h in [(320,568),(390,844),(568,320),(844,390),(1280,800)]:
+  for w,h in [(320,480),(390,480),(320,568),(390,844),(568,320),(844,390),(1280,800)]:
    for ink in [False,True]:
     pg=await b.new_page(viewport={'width':w,'height':h},has_touch=w!=1280);errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
     await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats'+('&tone=ink'if ink else''));await pg.wait_for_function('!!window.__game',polling=100);await pg.evaluate(START)
