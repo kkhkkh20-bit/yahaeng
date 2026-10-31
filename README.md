@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v99 대화창 비율·레퍼런스: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/DIALOGUE_PROPORTIONS.md
+
+대화창 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/dialogue-v99/
+
 v98 조작·대화 가독성: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/CONTROLS_READABILITY.md
 
 전후 화면: https://kkhkkh20-bit.github.io/yahaeng/controls-v98/
@@ -46,7 +50,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v98
-Source commit: d42585cc75dc187dbc881bdfd7814135e6c0717d
+Version: v99
+Source commit: 511b7fdea5b14fa8f8b0697d879369ee3f339adb
 
-Ink study source: d42585cc75dc187dbc881bdfd7814135e6c0717d
+Ink study source: 511b7fdea5b14fa8f8b0697d879369ee3f339adb
