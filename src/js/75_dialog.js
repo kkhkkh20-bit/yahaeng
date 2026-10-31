@@ -72,6 +72,7 @@ const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'C
 function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');
   if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; document.body.classList.remove('dlgmodal'); const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
+  if(DLG.modal&&!document.body.classList.contains('dlgmodal')){clearPlayerInput();closeEnvPicker();}
   const sp = speakerOf(l[0]); DLG.cur = { speaker:sp, text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);

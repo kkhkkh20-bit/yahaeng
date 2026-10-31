@@ -151,7 +151,7 @@ function loadCheckpoint() {
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
   S.koHold = null; S.player.lethalHold = null; input.pressIds = {};
   S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
-  S.keypad = null; const kp = $('keypad'); if (kp) kp.hidden = true;
+  closeKeypad();clearPlayerInput();
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   toast('체크포인트에서 다시 시작 (' + CP.used + '번째)', 2.4); syncTools();

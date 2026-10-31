@@ -112,3 +112,19 @@
 .ink-study #endRankNote .bn b { color:#455238; }
 
 .ink-study #btnPause.hud-menu { background:#171b16f2; color:#eee4cf; border-color:#a79a7c; border-radius:0; }
+
+/* 현장 입력창과 대상 선택도 같은 종이·먹 재질로 맞춘다. */
+.ink-study #envPicker,.ink-study #keypad .kp { background:#eee4cf; color:#171817; border:1px solid #6e6655; border-radius:0; }
+.ink-study #envPicker > b { color:#4f4b40; }
+.ink-study #envPicker button,.ink-study #keypad .kpg button,.ink-study #keypad .kpx { background:#e7dcc5; border:1px solid #9d9076; border-radius:0; color:#22241e; box-shadow:none; }
+.ink-study #envPicker button[aria-pressed="true"] { border-left:3px solid #a53227; background:#f6ecd7; }
+.ink-study #keypad .kpg button.ok { background:#a53227; border-color:#943327; color:#fff1dc; }
+.ink-study #kpHint,.ink-study #kpStatus { color:#5d574a; }
+.ink-study #kpStatus[data-state="bad"] { color:#963225; }
+.ink-study .setbox input[type="range"] { accent-color:#a53227; }
+
+.ink-study #envPicker button small { color:#686052; }
+.ink-study #help .ctrl { background:#e8dec8; border-color:#aa9c81; border-radius:0; color:#4e4b40; }
+.ink-study #help .ctrl h3 { color:#282b24; }
+.ink-study .screen .ghost:hover,.ink-study .screen .back:hover,.ink-study .screen .pz-big:hover { background:#e2d5b9; color:#872e24; }
+.ink-study #help .pz-opts button.on { background:#a53227; border-color:#963225; color:#fff1dc; }

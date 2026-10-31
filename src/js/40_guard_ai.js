@@ -783,7 +783,7 @@ function updateTalks(dt) {
 // 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
 function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
-  if(DLG.modal)return;
+  if(DLG.modal||S.keypad)return;
   const P=S.player,ch=chaseNow(),focus=playerActionFocus();
   const who=S.guards.filter(g=>g.say&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<=(ch?300:560)&&(!ch||g.state==='ALERT'&&!g.civ));
   if(P.say&&!P.hide)who.unshift(P);

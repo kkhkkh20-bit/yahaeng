@@ -51,7 +51,8 @@ function targetScale() {
 }
 function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem('yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 너무 멀리(전지적 시점)는 못 빼게. 전체는 전술 지도로
 function toggleTactical() {
-  if (!running || !S || S.over || S.entrySel) return;
+  if (!running || !S || S.over || S.entrySel || paused || DLG.modal || S.keypad) return;
+  clearPlayerInput();closeEnvPicker();
   tactical = !tactical; $('tacBanner').hidden = !tactical; $('btnMap').classList.toggle('on', tactical); if (tactical) S.usedMap = true;
   if (tactical) hint('tac', '전술 지도: 게임이 멈춘 상태에서 자경대원 위치와 순찰로를 볼 수 있다');
 }

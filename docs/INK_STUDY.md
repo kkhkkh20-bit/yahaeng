@@ -47,3 +47,5 @@ v97에서 시작해 v99의 대화창 비율과 v98의 조작 정리를 반영한
 v98 조작·말풍선 변경과 검증: [CONTROLS_READABILITY.md](CONTROLS_READABILITY.md).
 
 v99 대화창 비율과 레퍼런스: [DIALOGUE_PROPORTIONS.md](DIALOGUE_PROPORTIONS.md).
+
+v100 보조창·설정·입력 전환 개선: [COMFORT_POLISH.md](COMFORT_POLISH.md).

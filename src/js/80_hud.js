@@ -17,6 +17,12 @@ function buildMiniBase(mw = 200, mh = 140) {
   S.wires.forEach(w => { x.strokeStyle = 'rgba(160,170,190,.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(w.a.x / TILE * s, w.a.y / TILE * s); x.lineTo(w.b.x / TILE * s, w.b.y / TILE * s); x.stroke(); });
   c.s = s; return c;
 }
+function miniGuardVisible(g) {
+  const P=S.player;
+  if(g.target)return !targetEliminated(g);
+  if(['DEAD','CAPTIVE'].includes(g.state)||P.under||P.vent||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||dist(g.x,g.y,P.x,P.y)>=560)return false;
+  const prev=CUR_F;setLayer(flOf(P));try{return !!los(P.x,P.y,g.x,g.y,!!P.z);}finally{setLayer(prev);}
+}
 function drawMini() {
   const cv = document.getElementById('mini'); if (!cv || !S) return;
   if (S.t - miniT < 0.12 && S.t >= miniT) return; miniT = S.t;
@@ -35,8 +41,7 @@ function drawMini() {
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록
   for (const g of S.guards) {
     if (g.state === 'DEAD' && !(g.target && !targetEliminated(g))) continue;
-    const same = flOf(g) === flOf(P) && !P.under && !P.vent;
-    const seen = g.target || (same && dist(g.x, g.y, P.x, P.y) < 560 && los(P.x, P.y, g.x, g.y, P.z > 0)) || (same && g.state === 'ALERT');
+    const seen = miniGuardVisible(g);
     if (!seen) continue;
     x.fillStyle = g.target ? '#ff5a4a' : g.civ ? '#9ad69a' : guardAwareness(g).color;
     const at = g.target ? targetKnowledge(g) : g;
@@ -255,7 +260,7 @@ function syncTools() {
   hud.tool.classList.toggle('ready', input.padWhistle ? !(S.whistleT > 0) : input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
 }
 
-function endGame(win, reason) { riskTone(0);
+function endGame(win, reason) { riskTone(0);closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
   if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast('들켰다 — 이 단계부터 다시 한다', 2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
@@ -283,6 +288,7 @@ function drawEndMap() {
 }
 const END_MAIN = ['접근 방식', '칭호', '수고비', '소요 시간', '조직원 처치', '발각 횟수', '발견된 시체·기절자'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
+  closeKeypad();clearPlayerInput();closeEnvPicker();
   running = false;
   const st = S.stats, t = Math.floor(S.t);
   const hasTargets = S.guards.some(g => g.target);
@@ -353,7 +359,7 @@ function renderStageList() {
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${rk ? `<span class="st-rank">최고 ${RANK_TXT(rk)}</span>` : ''}${mods}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));

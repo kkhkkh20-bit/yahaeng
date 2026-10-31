@@ -30,9 +30,9 @@ const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: 
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
-function canAim() { const P = S.player; return S && running && !S.over && !paused && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
+function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if (S && S.player && S.player.captive && !tactical) { interrogate(); return; } if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {

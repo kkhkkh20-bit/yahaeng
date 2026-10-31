@@ -45,7 +45,7 @@ let helpTip=null;
 const helpSeen=(()=>{try{const v=JSON.parse(localStorage.getItem('yahaeng.help.v1')||'[]');return new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);}catch(e){return new Set();}})();
 function resetHelpTip() { helpTip=null; const c=document.getElementById('hintCard');if(c)c.classList.add('off'); }
 function canShowHelpTip() {
-  if(!S||!running||paused||S.over||tactical||DLG.cur||input.scan||S.alevel>=2||S.toasts.length||actionBusy()||S.player.captive)return false;
+  if(!S||!running||paused||S.over||tactical||S.keypad||envPicker||DLG.cur||input.scan||S.alevel>=2||S.toasts.length||actionBusy()||S.player.captive)return false;
   const a=attackAction(),g=grabAction();return !a.stalk&&a.k==='none'&&g.k==='none'&&!g.near&&!activeObserver();
 }
 function hint(key,text) {

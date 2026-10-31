@@ -501,12 +501,12 @@ const winUsable = w => !!w.link || S.wires.some(x => [x.a, x.b].some(n => n.win 
 // 숫자판: 비밀번호 문 앞에서 직접 눌러 연다. 틀리면 삑 소리가 퍼진다
 function openKeypad(d) {
   const el = document.getElementById('keypad'); if (!el) { if (hasK('code')) { setDoor(d, false); d.group.forEach(t => t.keyLock = false); } return; }
-  S.keypad = { d, buf: '', bad: 0 }; el.hidden = false; S.player.vx = 0; S.player.vy = 0; input.aiming = null;
-  document.getElementById('kpHint').textContent = hasK('code') ? '확인한 비밀번호: ' + STAGE.code : '비밀번호 미확인 · 대화를 엿듣거나 쪽지를 확인할 수 있다';
+  clearPlayerInput();closeEnvPicker();S.keypad = { d, buf: '', bad: 0 }; el.hidden = false;document.body.classList.add('keypadopen');document.getElementById('kpStatus').textContent='';el.focus({preventScroll:true}); S.player.vx = 0; S.player.vy = 0; input.aiming = null;
+  document.getElementById('kpHint').textContent = hasK('code') ? '확인한 비밀번호: ' + STAGE.code : '비밀번호 미확인 · 대화나 쪽지 확인';
   kpShow(); play('click', 0.3);
 }
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
-function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; if (S) S.keypad = null; }
+function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; document.body.classList.remove('keypadopen');if(el?.contains(document.activeElement))canvas.focus({preventScroll:true});if (S) S.keypad = null; }
 // 들킬 듯할 때 짧게 똑딱 — 알아채는 정도가 오를수록 높고 빠르게
 function warnTick(m) { return;  // 알아채는 중 삐삐 소리도 뺀다 (눈 막대·머리 위 표시로 충분)
   if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
@@ -527,17 +527,18 @@ function updateCorpseRisk(dt) {
 function kpBeep(ok) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'sine' : 'square'; o.frequency.value = ok ? 1320 : 220; g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + (ok ? 0.12 : 0.35)); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }
 function kpPress(v) {
   const k = S && S.keypad; if (!k || k.unlocking) return; const n = (STAGE.code || '0000').length;
+  const status=document.getElementById('kpStatus');if(/^[0-9]$/.test(v)){status.textContent='';status.dataset.state='';}
   if (v === 'x') { closeKeypad(); return; }
   if (v === '<') { k.buf = k.buf.slice(0, -1); kpShow(); play('click', 0.15); return; }
   if (v === 'ok' || (v.length === 1 && k.buf.length + 1 === n && (k.buf += v))) {
     if (v !== 'ok' && v.length === 1) kpShow();
     if (k.buf.length < n) return;
     if (k.buf === STAGE.code) {
-      k.unlocking = true;
+      k.unlocking = true;status.textContent='잠금 해제';status.dataset.state='good';
       if (!hasK('code')) { S.player.keys.code = true; S.learned.push('비밀번호 ' + STAGE.code + ' · 직접 입력해 확인'); }  // 어디서 봤든 맞는 비번을 넣었으면 알아낸 것으로 친다
       const d = k.d; kpBeep(true); after(0.26, () => { d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비밀번호 일치 · 문이 열렸다', 1.8, 'good'); closeKeypad(); });
     } else {
-      kpBeep(false); k.bad++; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
+      kpBeep(false); k.bad++;status.textContent=k.bad>=2?'불일치 · 경고음 증가':'불일치 · 다시 입력';status.dataset.state='bad'; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
       const el = document.getElementById('kpDisp'); el.classList.remove('bad'); void el.offsetWidth; el.classList.add('bad');
       toast(k.bad >= 2 ? '비밀번호 불일치 · 경고음이 커진다' : '비밀번호가 틀렸다', 1.4, 'warn'); k.buf = ''; setTimeout(kpShow, 350);
     }

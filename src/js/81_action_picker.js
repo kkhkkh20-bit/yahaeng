@@ -10,15 +10,16 @@ function selectEnvTarget(token) {
   closeEnvPicker(); hudCache.carryH = null; return true;
 }
 function toggleEnvPicker() {
-  if (!S || !running || paused || S.over || DLG.modal || actionBusy()) return;
+  if (!S || !running || paused || tactical || S.keypad || S.over || DLG.modal || actionBusy()) return;
   if (envPicker) { closeEnvPicker(); return; }
   const choices = envChoices(); if (!choices.length || (choices.length < 2 && !S.envExplicit)) return;
   const P = S.player; envPicker = {x:P.x,y:P.y,fl:flOf(P),z:P.z||0};
-  const e = $('envPicker'); e.replaceChildren(); e.hidden = false; $('btnCycle').setAttribute('aria-expanded','true');
+  resetHelpTip();const e = $('envPicker'); e.replaceChildren(); e.hidden = false; $('btnCycle').setAttribute('aria-expanded','true');
   const title = document.createElement('b'); title.textContent = '행동 대상 선택'; e.append(title);
   const current = envAction();
   for (const a of choices) {
     const b = document.createElement('button'), token = envToken(a); b.type = 'button'; b.textContent = a.label;
+    if(choices.filter(c=>c.label===a.label).length>1){const at=objectActionPoint(a);if(at&&Number.isFinite(at.x)){const dx=at.x-P.x,dy=at.y-P.y,side=Math.abs(dx)>Math.abs(dy)?(dx<0?'왼쪽':'오른쪽'):(dy<0?'위쪽':'아래쪽'),note=document.createElement('small');note.textContent=side+' · '+Math.max(1,Math.round(Math.hypot(dx,dy)/32))+'m';b.append(note);}}
     b.dataset.envToken = token; b.setAttribute('aria-pressed',String(token === envToken(current)));
     b.addEventListener('pointerdown',ev=>ev.stopPropagation());
     b.addEventListener('click',ev=>{ev.preventDefault();selectEnvTarget(token);updateHUD(true);}); e.append(b);
@@ -30,14 +31,25 @@ function toggleEnvPicker() {
 function positionEnvPicker() {
   const e = $('envPicker'); if (!envPicker || !e) return;
   const P = S.player;
-  if (paused || S.over || actionBusy() || flOf(P)!==envPicker.fl || (P.z||0)!==envPicker.z || dist(P.x,P.y,envPicker.x,envPicker.y)>8) { closeEnvPicker(); return; }
+  if (paused || tactical || S.keypad || DLG.modal || S.over || actionBusy() || flOf(P)!==envPicker.fl || (P.z||0)!==envPicker.z || dist(P.x,P.y,envPicker.x,envPicker.y)>8) { closeEnvPicker(); return; }
   const live = new Set(envChoices().map(envToken));
   for (const b of e.querySelectorAll('[data-env-token]')) b.disabled = !live.has(b.dataset.envToken);
-  const r = e.getBoundingClientRect(), px = (P.x-cam.x)*SCALE+W/2, py=(P.y-cam.y)*SCALE+H/2;
-  // 주인공과 오른쪽 조작부를 피해 왼쪽 위/아래의 넓은 쪽에 둔다.
-  const top = Math.max(8,(drawMini.tb||70)+8), left=Math.max(8,Math.min(W-r.width-8,px-r.width-35));
-  const y = py-r.height-65>=top ? py-r.height-65 : py+65;
-  e.style.left=left+'px'; e.style.top=clamp(y,top,Math.max(top,H-r.height-16))+'px';
+  const px=(P.x-cam.x)*SCALE+W/2,py=(P.y-cam.y)*SCALE+H/2;
+  // 중앙 표시·조작 버튼·인물의 자리를 예약한다. 좁은 화면에서만 폭을 줄인다.
+  const blocks=[...document.querySelectorAll('#hud .top,#stealth,#mini,#btnPause,.pad > button:not([hidden]),.sysbtns button,#toasts .toast')]
+    .filter(n=>!n.closest('[hidden]')&&getComputedStyle(n).visibility!=='hidden').map(n=>n.getBoundingClientRect()).filter(b=>b.width&&b.height)
+    .map(b=>[b.left,b.top,b.right,b.bottom]);
+  blocks.push([px-24,py-58,px+24,py+14]);
+  let at=null,r;
+  for(const width of ['',Math.min(150,Math.max(112,W/2-44))+'px']){
+    e.style.width=width;r=e.getBoundingClientRect();
+    const x0=clamp(px-r.width-35,8,Math.max(8,W-r.width-8));
+    const xs=[x0,8,clamp(px+35,8,Math.max(8,W-r.width-8)),W-r.width-8],ys=[py-r.height-65,py+65,H-r.height-16,8,...blocks.flatMap(b=>[b[3]+8,b[1]-r.height-8])];
+    for(const y of ys){if(y<8||y+r.height>H-8)continue;for(const x of xs){if(x<8||x+r.width>W-8)continue;
+      if(!blocks.some(b=>x<b[2]+4&&x+r.width+4>b[0]&&y<b[3]+4&&y+r.height+4>b[1])){at={x,y};break;}
+    }if(at)break;}if(at)break;
+  }
+  e.style.left=(at?.x??8)+'px';e.style.top=(at?.y??clamp(py+65,8,Math.max(8,H-r.height-16)))+'px';
 }
 function drawEnvSelection() {
   if (tactical || paused || S.over || actionBusy()) return;
