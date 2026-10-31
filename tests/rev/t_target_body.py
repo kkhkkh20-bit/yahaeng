@@ -35,6 +35,8 @@ async def main():
    // Carrying an unconscious target into a container keeps a usable target inside that container.
    G.start(G.STAGES.findIndex(s=>s.id==='m4'));for(let n=0;n<60&&G.DLG.modal;n++)G.advanceDialog();const R=G.S,Q=R.player,t=R.guards.find(g=>g.target),h=R.hides.find(h=>h.type==='box'&&!h.fl);R.guards.forEach(g=>{g.x=g.y=-9999});G.setLayer(0);
    Object.assign(Q,{x:h.x,y:h.y+24,z:0,fl:0});Object.assign(t,{x:Q.x+20,y:Q.y,z:0,fl:0});G.npcDown(t);const body=R.corpses.find(c=>c.g===t);Q.carrying=body;body.carried=true;G.actCarry({k:'carry',c:body,h});
+   check(!body.stashed&&Q.carrying===body,'body is stored before entering the opening');
+   for(let i=0;i<180;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}
    check(body.stashed&&body.container===h&&body.x===h.x&&body.y===h.y,'stashed target loses container position');
    for(let i=0;i<70;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}const enter=G.envChoices().find(a=>a.k==='hide'&&a.h===h);check(enter,'cannot enter container holding target');G.doAct(enter);for(let i=0;i<180;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}check(Q.hide===h&&G.attackAction().k==='finish','stashing a living target makes mission impossible');
    R.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let i=0;i<130;i++){R.t+=.01;G.updatePlayer(.01);G.updateKoHold();G.runTimers()}R.keys.KeyZ=false;G.combatRelease('KeyZ');check(G.targetEliminated(t),'cannot finish target from inside container');

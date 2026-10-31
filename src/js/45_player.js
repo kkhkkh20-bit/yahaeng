@@ -315,6 +315,7 @@ function updateLedge(P, dt) {
   P.moving = true; P.stepT -= dt; if (P.stepT <= 0) { P.stepT = 0.5; play('cloth', 0.08); }
 }
 function updateTrav(P, dt) {
+  if(P.trav.hideFlow){updateHideFlow(P,dt);return;}
   const T = P.trav; T.t += dt; const f = Math.min(1, T.t / T.dur), pts = T.pts;
   crossStairLevel(P, T, f);
   let i = 0; while (i < pts.length - 2 && f > pts[i + 1].f) i++;

@@ -648,8 +648,7 @@ function renderMap(R) {
     if (ch === 'C') draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
     if (ch === 'O') draw(tx % 2 ? 'pot0' : 'pot1', px, py);
     if (ch === 'R') draw('rock', px, py);
-    if (ch === 'H' && KIT_PROP.dumpster) { x.fillStyle = 'rgba(0,0,0,.25)'; x.fillRect(px + 4, py + 8, TILE - 6, TILE - 8); }
-    else if (ch === 'H') { draw('box', px, py); x.strokeStyle = 'rgba(242,196,107,.5)'; x.lineWidth = 2; x.strokeRect(px + 2, py + 2, TILE - 4, TILE - 4); }
+    if(ch==='H'){x.fillStyle='rgba(0,0,0,.2)';x.fillRect(px+4,py+8,TILE-8,TILE-12);}
     if (ch === 'U') {  // 컨테이너·창고 옥상 (높이 1): 골함석, 남쪽 끝은 앞면
       const hh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0, cols = ['#5a82a8', '#a84e40', '#55906c', '#b88e3e'];
       let gx = tx; while (G[ty][gx - 1] === 'U') gx--; const base = cols[(gx * 7 + ty * 3) % 4];
@@ -673,24 +672,7 @@ function renderMap(R) {
       x.strokeStyle = '#9aa1aa'; x.lineWidth = 5; x.beginPath(); x.moveTo(px + 14, py + 3); x.lineTo(px + 14, py + 45); x.moveTo(px + 34, py + 3); x.lineTo(px + 34, py + 45); x.stroke();
       x.lineWidth = 4; x.beginPath(); for (let i = 0; i < 5; i++) { x.moveTo(px + 14, py + 7 + i * 9); x.lineTo(px + 34, py + 7 + i * 9); } x.stroke();
     }
-    if (ch === 'W') {
-      const man = STAGE.well === 'manhole';
-      if (man) {
-        // 주철 맨홀 뚜껑: 밝은 테두리, 격자 무늬, 아래쪽 그림자 (밤에도 바닥에서 구분되게)
-        x.fillStyle = 'rgba(0,0,0,.45)'; x.beginPath(); x.arc(px + 25, py + 27, 21, 0, TAU); x.fill();
-        x.fillStyle = '#8a8c94'; x.beginPath(); x.arc(px + 24, py + 24, 21, 0, TAU); x.fill();
-        x.fillStyle = '#4a4c54'; x.beginPath(); x.arc(px + 24, py + 24, 17, 0, TAU); x.fill();
-        x.save(); x.beginPath(); x.arc(px + 24, py + 24, 15, 0, TAU); x.clip();
-        x.strokeStyle = '#6e7078'; x.lineWidth = 2; for (let i = -15; i <= 15; i += 6) { x.beginPath(); x.moveTo(px + 9, py + 24 + i); x.lineTo(px + 39, py + 24 + i); x.stroke(); x.beginPath(); x.moveTo(px + 24 + i, py + 9); x.lineTo(px + 24 + i, py + 39); x.stroke(); }
-        x.restore();
-        x.strokeStyle = '#b4b6be'; x.lineWidth = 2; x.beginPath(); x.arc(px + 24, py + 24, 20, Math.PI * 1.05, Math.PI * 1.75); x.stroke();
-        x.fillStyle = '#2a2c32'; x.fillRect(px + 20, py + 10, 8, 3);
-      } else {
-        x.fillStyle = '#7c776c'; x.beginPath(); x.arc(px + 24, py + 24, 21, 0, TAU); x.fill();
-        x.fillStyle = '#58544c'; x.beginPath(); x.arc(px + 24, py + 24, 16, 0, TAU); x.fill();
-        x.fillStyle = '#05070b'; x.beginPath(); x.arc(px + 24, py + 24, 12, 0, TAU); x.fill();
-      }
-    }
+    if(ch==='W'){x.fillStyle='rgba(0,0,0,.2)';x.beginPath();x.ellipse(px+25,py+27,23,15,0,0,TAU);x.fill();}
     if (ch === 'F') {
       x.fillStyle = '#3e3a36'; x.fillRect(px + 10, py + 8, 28, 32); x.strokeStyle = '#1c1a18'; x.lineWidth = 3; x.strokeRect(px + 10, py + 8, 28, 32);
       x.fillStyle = '#f2c46b'; x.beginPath(); x.moveTo(px + 26, py + 12); x.lineTo(px + 18, py + 26); x.lineTo(px + 24, py + 26); x.lineTo(px + 21, py + 36); x.lineTo(px + 30, py + 21); x.lineTo(px + 24, py + 21); x.closePath(); x.fill();

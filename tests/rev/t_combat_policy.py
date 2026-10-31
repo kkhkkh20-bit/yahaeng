@@ -32,7 +32,7 @@ async def main():
    for(const type of ['box','bush'])for(const held of [false,true]){
     fresh('target');g.state='CAPTIVE';P.captive=g;const h={type,x:P.x+24,y:P.y,tx:33,ty:21,fl:0,z:0,bodies:0,cap:3};S.hides=[h];
     const a=G.envAction();check(a.k==='drag'&&a.label.includes('기절')&&a.hold==='처치',type+' drag label');
-    press('KeyX');G.actEnv();advance(.08);if(!held)release('KeyX');advance(1.3);release('KeyX');
+    press('KeyX');G.actEnv();advance(.08);if(!held)release('KeyX');advance(3.5);release('KeyX');
     check(S.stats.kills===(held?1:0)&&S.corpses[0].ko===!held,type+' drag input ignored nonlethal tap');
    }passed.push('container and bush: same environment button controls tap/hold');
    fresh('target');press('KeyZ');G.actAttack();advance(.2);release('KeyZ');press('KeyX');advance(1.4);release('KeyX');check(S.stats.kills===0,'another button completed lethal hold');

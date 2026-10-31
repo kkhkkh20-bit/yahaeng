@@ -477,6 +477,7 @@ function drawLastSeen() {
   }
 }
 function drawGuard(g) {
+  if(g.containerMoving)return;
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;
   if (g.state === 'CAPTIVE' && S.player.grabIn && S.player.grabIn.g === g && PAIR() && PR.anims.choke && usePR(charOf(g))) return;  // 목을 감는 중: 플레이어와 함께 그린다
   if (g.civ && g.state === 'SLEEP') { drawBody({ ch: charOf(g), x: g.x, y: g.y, a: g.a }); drawEmote('zz', g.x + 16, g.y - 6); return; }

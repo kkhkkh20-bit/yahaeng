@@ -89,6 +89,7 @@ function drawPlayer(P) {
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {
+  if(P.trav?.hideFlow)return;
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
   if (P.car) return;  // 차 안: 차가 곧 나
@@ -1161,7 +1162,7 @@ function draw() {
   for (const l of S.ladders) if (l.kind === 'pipe' && l.bz === 0 && inView(l.x, l.y, 120)) drawPipeBase(l);
   for (const v of S.vents) if (!v.roof && inView(v.x, v.y, 40)) drawGrate(v, 0.85);
   for (const l of S.lamps) if (l.hearth && lampOn(l)) { const fl = 0.75 + 0.25 * Math.sin(S.t * 17 + l.x); ctx.fillStyle = `rgba(255,140,50,${0.85 * fl})`; ctx.beginPath(); ctx.moveTo(l.x - 9, l.y + 14); ctx.quadraticCurveTo(l.x - 6, l.y - 2 * fl, l.x, l.y - 8 * fl); ctx.quadraticCurveTo(l.x + 6, l.y - 2 * fl, l.x + 9, l.y + 14); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,220,120,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y + 9, 4 * fl, 0, TAU); ctx.fill(); }
-  for (const b of S.hides) if (b.bodies && b.type !== 'well' && (b.fl || 0) === flOf(S.player)) { ctx.fillStyle = 'rgba(110,14,18,.9)'; for (let i = 0; i < b.bodies; i++) { ctx.beginPath(); ctx.arc(b.x - 6 + i * 12, b.y - 14, 3, 0, TAU); ctx.fill(); } }
+
   if (S.exitOpen) {
     const p = 0.5 + 0.5 * Math.sin(S.t * 4);
     ctx.strokeStyle = `rgba(242,196,107,${0.5 + p * 0.4})`; ctx.lineWidth = 4; ctx.setLineDash([10, 8]);
@@ -1177,7 +1178,7 @@ function draw() {
   for (const it of S.items) if (!it.got && onGround(it)) { { const d = dist(P.x, P.y, it.x, it.y), a = clamp(1 - d / 520, 0.25, 0.9) * (0.75 + 0.25 * Math.sin(S.t * 3)); ctx.strokeStyle = `rgba(242,196,107,${a})`; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(it.dx || it.x, it.dy || it.y, 20 + Math.sin(S.t * 3) * 2, 0, TAU); ctx.stroke(); } drawLootItem(it); }  // 목표물은 은은하게 빛난다
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
-  if (KIT_PROP.dumpster && kitOk(KIT_PROP.dumpster.img)) { const D = KIT_PROP.dumpster; for (const h of S.hides) if (h.type === 'box' && !(h.fl || 0)) ctx.drawImage(D.img, h.tx * TILE + D.ox, h.ty * TILE + D.oy); }
+  drawHideFixtures();
   if (!tactical && !P.z && !flOf(P) && !input.scan) drawBlockEdges(P, false);
   for (const n of S.noises) {
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(242,196,107,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
@@ -1318,6 +1319,7 @@ function draw() {
   PM('player');
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
+    if(g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
     drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -1393,6 +1395,7 @@ function draw() {
   if (exteriorClip) ctx.restore();
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
+  drawHideFlowVisual();
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();

@@ -58,7 +58,7 @@ function envChoices() {
   if (hanging.ledge) return hanging.trav || hanging.jump ? [] : [{ k: 'ledgeUp', label: '올라가기', at: { x: hanging.x, y: hanging.y - 20 } }];
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
-  if (P.captive) { const d = rawChoices().find(a => a.k === 'drag'); return d ? [d] : []; }
+  if(P.captive){const d=rawChoices().find(a=>a.k==='drag');if(d)return[d];const h=nearHide();return h&&!hideSpace(h,1,true)?[{k:'keymsg',h,at:h,label:'공간 부족'}]:[];}
   const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute' && !(a.k === 'stash' && z.some(b => b.k === 'carry' && b.h === a.h)));
   // 손이 스위치 쪽에 더 가까울 때만 조명을 먼저 제안한다. 명시적으로 고른 대상은 envAction이 유지한다.
   const lamp = env.find(a => a.k === 'lamp' && a.l.pole), pole = lamp && env.find(a => a.k === 'wireOn' && a.pole && a.targetObject && dist(a.targetObject.x, a.targetObject.y, lamp.l.x, lamp.l.y) < TILE);
