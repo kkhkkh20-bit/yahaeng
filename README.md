@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v103 배관 접점·동작 경로: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PIPE_CONTACTS.md
+
+전후와 동작 단계: https://kkhkkh20-bit.github.io/yahaeng/pipe-v103/
+
 v102 행동 안내·배관 오르기: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/CLIMB_PROMPTS.md
 
 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/climb-v102/
@@ -62,7 +66,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v102
-Source commit: 0c09e5851386f44c4ffcc8a43e27a5aa22e51f85
+Version: v103
+Source commit: aebe9b0f4a636b85515e82a50a1e7e911965262b
 
-Ink study source: 0c09e5851386f44c4ffcc8a43e27a5aa22e51f85
+Ink study source: aebe9b0f4a636b85515e82a50a1e7e911965262b
