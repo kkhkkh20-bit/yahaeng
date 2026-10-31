@@ -15,7 +15,8 @@ const sun = new THREE.DirectionalLight(0xffffff, 2.4); sun.position.set(-400, 90
 const EL = 52 * Math.PI / 180, VIEW = 560, CY = 210;
 const cam = new THREE.OrthographicCamera(-VIEW / 2, VIEW / 2, VIEW / 2, -VIEW / 2, 1, 6000);
 cam.position.set(0, CY + Math.sin(EL) * 2500, Math.cos(EL) * 2500); cam.lookAt(0, CY, 0);
-function renderSprite(cameraDrop = 0) {
+function renderSprite(cameraDrop = 0, frameScale = 1) {
+  cam.left=-VIEW*frameScale/2;cam.right=VIEW*frameScale/2;cam.top=VIEW*frameScale/2;cam.bottom=-VIEW*frameScale/2;cam.updateProjectionMatrix();window.frameScale=frameScale;
   // Flat corpses and lowered climbing poses extend below a standing frame.
   // Move the bake camera, then export its ground anchor for runtime placement.
   cam.position.y -= cameraDrop; cam.lookAt(0, CY - cameraDrop, 0); cam.updateMatrixWorld(true);
@@ -23,6 +24,7 @@ function renderSprite(cameraDrop = 0) {
   const ground = new THREE.Vector3().project(cam);
   window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;
   cam.position.y += cameraDrop; cam.lookAt(0, CY, 0); cam.updateMatrixWorld(true);
+  cam.left=cam.bottom=-VIEW/2;cam.right=cam.top=VIEW/2;cam.updateProjectionMatrix();
 }
 const shadow = new THREE.Mesh(new THREE.CircleGeometry(70, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.32, depthWrite: false }));
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = 1; shadow.scale.set(1.25, 0.8, 1); scene.add(shadow);
@@ -359,7 +361,7 @@ window.renderPose = (name, k, dirA) => {
   model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
   model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
   shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
-  renderSprite(modular && name === 'climb' ? CY + 100 : 0); shadow.visible = true;
+  renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular && name === 'climb' ? 1.25 : 1); shadow.visible = true;
   return renderer.domElement.toDataURL('image/png');
 };
 </script></body></html>

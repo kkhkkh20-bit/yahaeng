@@ -30,7 +30,7 @@ async def main():
      S.vehicles=null;S.camRoom=null;S.facOn=false;S.cams=[];S.fade=0;S.t=10;S.toasts=[];S.alevel=0;G.setZoom(1);for(let i=0;i<160;i++)G.moveCamera(1/60);
      G.toast('반복 안내',3);G.updateHUD(true);check(document.body.classList.contains('actionfocus'),'action focus absent');check(getComputedStyle(document.querySelector('#toasts .toast')).visibility==='hidden','routine toast covers action');
      const ctx=G.ctx,fill=ctx.fillText,texts=[];ctx.fillText=function(t,...a){texts.push(t);return fill.call(this,t,...a)};try{G.benchDraw(1)}finally{ctx.fillText=fill}
-     check(texts.includes('붙잡기')&&texts.includes('기절'),'chatter suppresses action labels');check(G.SPEECH_R.length<=1,'too many simultaneous bubbles during action');
+     check(texts.includes('붙잡기')&&texts.includes(document.body.classList.contains('touch')?'공격':'기절'),'chatter suppresses action labels');check(G.SPEECH_R.length<=1,'too many simultaneous bubbles during action');
      const blocks=G.ACTION_R.concat(G.actorTextBlocks(),G.hudTextBlocks());for(const r of G.SPEECH_R)check(!blocks.some(a=>r.x<a[2]&&r.x+r.w>a[0]&&r.y<a[3]&&r.y+r.h>a[1]),'speech covers action, body or controls');
      G.say([['aide','출입구를 확인해.']],false);G.updateDialog(.2);check(document.querySelector('#dlg').hidden&&G.DLG.cur.t===0,'nonmodal radio covers action or expires while hidden');
      S.guards=[];P.strikeT=0;S.t+=1;G.updateDialog(.2);check(!document.querySelector('#dlg').hidden&&G.DLG.cur.t>0,'deferred radio never resumes');

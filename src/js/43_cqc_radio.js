@@ -6,8 +6,8 @@ const INTERRO_T = 1.4;
 function canInterrogate() { const g = S.player.captive; return !!(g && !g.target && !g.civ && !g.dog && !g.questioned); }
 function interrogate() {
   const P = S.player, g = P.captive; if (!g) return;
-  if (g.target || g.civ || g.dog) { toast('이 사람은 아는 게 없어 보인다', 1.6); return; }
-  if (g.questioned) { toast('추가 정보 없음 · [공격] 짧게 기절 / 길게 처치', 1.8); return; }
+  if (g.target || g.civ || g.dog) return;
+  if (g.questioned) return;
   g.questioned = true; g.captT = Math.max(0, (g.captT || 0) - 2.5); S.stats.interro = (S.stats.interro || 0) + 1;  // 겁먹어서 잠깐 덜 버둥거린다
   play('cloth', 0.4); P.strikeT = Math.max(P.strikeT || 0, 0.2);
   const it = (STAGE.interrogate || []).find(i => !S.learned.includes(i.learn) && !(i.gives && P.keys[i.gives]));

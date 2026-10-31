@@ -89,17 +89,17 @@ async def main():
      const canvas=document.createElement('canvas');canvas.width=cols*fr;canvas.height=8*fr;
      const ctx=canvas.getContext('2d'),source=document.querySelector('canvas');
      const encode=source.toDataURL;source.toDataURL=()=>'';
-     const holds=[],hangs=[],grounds={};
+     const holds=[],hangs=[],grounds={},scales={};
      try {for(const victim of [false,true]) {
        if(!frames.some(f=>f[3]===victim))continue;
        await loadModularLook(victim?'hero':look,victim?look:'guard');
        setBody(body,victim?1:0);setTex(key);
        for(const [x,y,js,isVictim,anim] of frames){if(isVictim!==victim)continue;(0,eval)(js);ctx.drawImage(source,x,y,fr,fr);
          if(js.includes('true)')&&window.lastHold)holds[y/fr]=window.lastHold.map(v=>v/2);
-         if(anim==='death'||anim==='climb')grounds[anim]=window.frameGroundY;
+         if(anim==='death'||anim==='climb'){grounds[anim]=window.frameGroundY;scales[anim]=window.frameScale||1;}
        }
      }}finally{source.toDataURL=encode}
-     return {png:canvas.toDataURL(),holds,hangs,grounds};
+     return {png:canvas.toDataURL(),holds,hangs,grounds,scales};
     }''',{'frames':expressions,'cols':col,'fr':FR,'look':look,'body':body,'key':KEY})
     image=Image.open(io.BytesIO(base64.b64decode(result['png'].split(',')[1]))).convert('RGBA')
     outlined=Image.new('RGBA',image.size)
@@ -118,13 +118,15 @@ async def main():
        box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR);original.paste(image.crop(box),box[:2])
      original.save(OUT/filename,'WEBP',lossless=True,method=6)
      if bn=='key':original.save(OUT/'key.png',optimize=True)
+     previous.setdefault('grounds',{}).update({name:value for name,value in result['grounds'].items() if name in patch})
+     previous.setdefault('scales',{}).update({name:value for name,value in result['scales'].items() if name in patch})
      print(bn,'patched',','.join(sorted(patch)),(OUT/filename).stat().st_size,flush=True)
      continue
     image.save(OUT/filename,'WEBP',lossless=True,method=6)
     # Also preserve the PNG used by legacy append tools for the base contract.
     if bn=='key':
-     image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'])
-    else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds']}
+     image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'],scales=result['scales'])
+    else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds'],'scales':result['scales']}
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)
     await page.evaluate('(c)=>setTex(c)',KEY)

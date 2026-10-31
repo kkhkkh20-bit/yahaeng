@@ -51,3 +51,5 @@ v99 대화창 비율과 레퍼런스: [DIALOGUE_PROPORTIONS.md](DIALOGUE_PROPORT
 v100 보조창·설정·입력 전환 개선: [COMFORT_POLISH.md](COMFORT_POLISH.md).
 
 v101 설명·옵션의 정보량 정리: [UI_EDIT.md](UI_EDIT.md).
+
+v102 행동 안내·배관 오르기: [CLIMB_PROMPTS.md](CLIMB_PROMPTS.md).

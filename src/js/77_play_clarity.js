@@ -52,35 +52,43 @@ function encounterRows(P, ka, ga, pa) {
     if(canInterrogate())rows.push({key:key('grab'),text:'심문',detail:'',ready:true});
     rows.push({key:key('atk'),text:'기절',detail:'길게 처치',ready:true});
     const h=pa?.k==='drag'?pa.h:captiveDragPreview(),ready=pa?.k==='drag';
-    if(h)rows.push({key:key('env'),text:ready?'끌고 가 기절':'끌고 가기',detail:hideName(h)+(ready?' · 길게 처치':' · 더 가까이'),ready});
+    if(ready)rows.push({key:key('env'),text:'끌고 가 기절',detail:hideName(h)+' · 길게 처치',ready:true});
     return rows;
   }
-  if(victim)rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 처치':ka.stalk?'더 가까이':'',ready:ka.k!=='none'});
-  if(ga?.k==='grab'||ga?.near)rows.push({key:key('grab'),text:'붙잡기',detail:ga.reason||'',ready:ga.k==='grab'});
+  if(victim&&ka.k!=='none')rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 처치':ka.stalk?'더 가까이':'',ready:ka.k!=='none'});
+  if(ga?.k==='grab')rows.push({key:key('grab'),text:'붙잡기',detail:ga.reason||'',ready:ga.k==='grab'});
   if(rows.length&&pa?.k==='steal')rows.push({key:key('env'),text:pa.label,detail:'',ready:true});
   return rows;
 }
+// 가능한 키와 동작만 나란히 놓는다. 글자 크기는 화면 배율과 관계없이 일정하다.
 function encounterSize(rows) {
-  const k=Math.max(1,.95/SCALE);let width=140*k;
-  ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;
-  for(const r of rows)width=Math.max(width,ctx.measureText(r.text+'  '+r.detail).width+68*k);
-  return {k,width:Math.min(width,Math.min(320,W-20)/SCALE),height:(rows.length*23+12)*k};
+  const k=1/SCALE,limit=Math.min(280,W-24)*k,entries=[];let line=0,used=0,width=0;
+  for(const r of rows.filter(r=>r.ready!==false)){
+    const label=isTouch?(r.text==='심문'?'심문':r.key):r.text;
+    ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const keyWidth=isTouch?0:Math.max(16*k,ctx.measureText(r.key).width+6*k);
+    ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;const w=Math.min(limit,keyWidth+(keyWidth?7*k:0)+ctx.measureText(label).width+4*k);
+    if(used&&used+12*k+w>limit){line++;used=0;}
+    const dx=used?used+12*k:0;entries.push({...r,label,keyWidth,dx,dy:line*18*k,w});used=dx+w;width=Math.max(width,used);
+  }
+  return {k,entries,width,height:entries.length?(line+1)*18*k:0};
 }
 function encounterRect(x,y,rows) { const s=encounterSize(rows);return [x-s.width/2,y-s.height/2,x+s.width/2,y+s.height/2]; }
 function drawEncounter(x,y,rows) {
-  const {k,width:w,height:h}=encounterSize(rows),left=x-w/2,top=y-h/2;
-  ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.fillStyle=INK_STUDY?'#181b17f2':'#101921f2';ctx.fillRect(left,top,w,h);ctx.strokeStyle=INK_STUDY?'#aa9e84':'#63717a';ctx.lineWidth=k;ctx.strokeRect(left,top,w,h);
-  rows.forEach((r,i)=>{const yy=top+(17+i*23)*k;
-    ctx.globalAlpha=r.ready?1:.66;ctx.fillStyle=r.ready?'#c4d3cd':'#89959c';ctx.font=`600 ${11*k}px "IBM Plex Sans KR",sans-serif`;ctx.textAlign='center';ctx.fillText(r.key,left+24*k,yy);
-    ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;ctx.textAlign='left';ctx.fillStyle='#e8e8df';ctx.fillText(r.text,left+48*k,yy,w-56*k);
-    const textW=ctx.measureText(r.text).width;ctx.font=`400 ${10*k}px "IBM Plex Sans KR",sans-serif`;ctx.fillStyle='#a8b5bc';
-    if(r.detail)ctx.fillText(r.detail,left+56*k+textW,yy,Math.max(1,w-64*k-textW));
-    if(i) {ctx.globalAlpha=.24;ctx.strokeStyle='#84929a';ctx.beginPath();ctx.moveTo(left+8*k,yy-16*k);ctx.lineTo(left+w-8*k,yy-16*k);ctx.stroke();}
+  const {k,entries,width:w,height:h}=encounterSize(rows);if(!entries.length)return;
+  const left=x-w/2,top=y-h/2;
+  ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.lineJoin='round';
+  entries.forEach(r=>{
+    const yy=top+r.dy+13*k;let tx=left+r.dx+2*k;
+    if(!isTouch){ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const kw=r.keyWidth;
+      ctx.fillStyle='#111820df';ctx.fillRect(tx,yy-12*k,kw,16*k);ctx.fillStyle='#dddccf';ctx.textAlign='center';ctx.fillText(r.key,tx+kw/2,yy);ctx.textAlign='left';tx+=kw+7*k;
+    }
+    const tw=r.w-(tx-left-r.dx);ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;ctx.strokeStyle='#080e13ee';ctx.lineWidth=3*k;ctx.strokeText(r.label,tx,yy,tw);ctx.fillStyle='#f0eddf';ctx.fillText(r.label,tx,yy,tw);
   });ctx.restore();
 }
 function queueEncounter(P,rows) {
   if(!rows.length||!TAGQ)return false;
-  const s=encounterSize(rows);TAGQ.push({x:P.x,y:P.y+30*s.k+s.height/2,rows,text:rows.map(r=>r.text).join('|'),pri:4.2});return true;
+  const s=encounterSize(rows);if(!s.entries.length)return false;
+  TAGQ.push({x:P.x,y:P.y+Math.max(22*s.k,18)+s.height/2,rows:s.entries,text:s.entries.map(r=>r.text).join('|'),pri:4.2});return true;
 }
 function tagBounds(t,x,y) { return t.rows?encounterRect(x,y,t.rows):tagRect(x,y,t.text,t.key); }
 // 실제 접촉 순간에만 짧은 빛을 놓는다. 입력 직후나 취소된 동작에는 나오지 않는다.

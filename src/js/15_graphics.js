@@ -334,6 +334,8 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const sh = prSheet(key); if (!sh) return false;
   const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 * DRAG_SPD / 0.55 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
   const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
+  // 촬영 여백을 넓힌 동작은 저장한 배율로 실제 인물 크기를 되돌린다.
+  scale *= (bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1;
   const fr = PR.fr, dw = fr * scale;
   const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
   const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
