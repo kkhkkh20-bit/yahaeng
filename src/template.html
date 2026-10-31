@@ -813,6 +813,25 @@ body.actionfocus #hintCard,body.actionfocus #toasts .toast:not(.warn):not(.bad) 
  #hud .top { right:max(8px,env(safe-area-inset-right,0px)); }
  #hud .obj { box-sizing:border-box; flex:0 0 auto; width:calc(100% - 58px); max-width:calc(100% - 58px); }
 }
+/* 기본 화면은 음량·밝기, 나머지는 요청했을 때 펼친다. */
+#help .setbox { padding-bottom:8px; }
+#help .ctrl { display:block; padding:16px; }
+.control-note { margin:0 0 14px; font-weight:600; }
+.control-grid { display:grid; grid-template-columns:minmax(85px,1fr) minmax(0,2fr); gap:9px 16px; margin:0; }
+.control-grid dt { font-weight:600; }
+.control-grid dd { margin:0; }
+body:not(.touch) .touch-controls { display:none; }
+#help .compact-rules { margin-top:18px; }
+.advanced-rows { display:grid; gap:10px; padding:8px 0 14px; }
+.advanced-rows > div { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.advanced-rows b { font-size:13px; font-weight:500; }
+.advanced-rows span { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+.advanced-rows button { min-height:44px; min-width:44px; padding:8px 12px; font-size:13px; }
+.advanced-rows button.on { border-color:var(--lamp); color:var(--lamp); }
+.ledger-list .st-foot:empty { display:none; }
+.ledger-extra { margin:16px 0; border-top:1px solid var(--ink-line); padding-top:8px; }
+.ledger-extra > summary { cursor:pointer; padding:8px 0; font-size:14px; color:var(--paper-dim); }
+.ledger-extra .perks { padding:8px 0; }
 __INK_STUDY_CSS__
 </style>
 
@@ -836,12 +855,11 @@ __INK_STUDY_CSS__
   </div>
   <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
   <div id="toasts" aria-live="polite"></div>
-  <div id="hintCard" class="off" aria-live="polite"><small>도움말</small><span id="hintText"></span></div>
   <canvas id="mini" width="200" height="140" role="button" tabindex="0" aria-label="전술 지도 열기" title="미니맵 — 누르면 전술 지도"></canvas>
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">웅크리기</em></span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em><i class="kx">짧게 기절 · 길게 처치</i></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span class="keep"><kbd>G</kbd>휘파람</span><span class="keep"><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
+    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em><i class="kx">짧게 기절 · 길게 처치</i></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
   </div>
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
@@ -878,7 +896,7 @@ __INK_STUDY_CSS__
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
       <button class="ghost" id="btnLedger" type="button">의뢰 선택</button>
-      <button class="ghost" id="btnHelp" type="button">조작 방법</button>
+      <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
   <footer class="title-footer">__VERSION__</footer>
@@ -892,75 +910,47 @@ __INK_STUDY_CSS__
       <button type="button" data-filter="training" aria-pressed="false">연습</button>
     </div>
     <div id="stageList" class="ledger-list" data-filter="missions"></div>
-    <div class="stages" id="modBox" hidden><h3>의뢰 변형</h3>
-      <div class="diff" id="modSel"><button type="button" data-m="">없음</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
-      <p class="diff-note" id="modNote"></p>
-    </div>
-    <div id="perkList" class="perks" hidden></div>
+    <details class="ledger-extra" id="modBox" hidden><summary>재도전 조건</summary><div class="stages">
+      <div class="diff" id="modSel"><button type="button" data-m="">기본</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
+      <p class="diff-note" id="modNote"></p></div></details>
+    <details class="ledger-extra" id="perkBox" hidden><summary>장비 <span id="perkCount"></span></summary><div id="perkList" class="perks"></div></details>
   </div>
 </div>
 
 <div class="screen sub" id="help" hidden>
   <div class="panel">
-    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="돌아가기">돌아가기</button><h2>조작 방법 · 설정</h2></div>
-    <section class="setbox"><h3 class="rules-h">화면 · 소리</h3>
-      <div class="pz-sets"><label>소리 크기 <output id="volValue" for="volR">90%</output><input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <output id="briValue" for="briR">100%</output><input type="range" id="briR" min="80" max="160" step="5"></label></div>
-      <div class="pz-opts"><button class="ghost" id="btnRoutes" type="button">순찰 동선 표시</button><button class="ghost" id="btnOpps" type="button">기회 표시</button><button class="ghost" id="btnZoomOut" type="button">화면 축소</button><button class="ghost" id="btnZoomIn" type="button">화면 확대</button><button class="ghost" id="btnMute" type="button">소리 끄기</button><button class="ghost" id="btnFps" type="button">절전 30fps</button><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+    <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="돌아가기">돌아가기</button><h2>설정</h2></div>
+    <section class="setbox">
+      <div class="pz-sets"><label><span id="volLabel">음량</span><output id="volValue" for="volR">90%</output><input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <output id="briValue" for="briR">100%</output><input type="range" id="briR" min="80" max="160" step="5"></label></div>
+      <div class="pz-opts"><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
     </section>
-    <details class="rulesbox" open><summary class="rules-h">조작법</summary>
-    <div class="ctrl">
-      <div class="kbonly"><h3>키보드</h3><b>방향키 이동</b>: <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 도구<br><b>WASD 이동</b>: <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 도구<br>공격 — 등 뒤에서 짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 표적도 같은 기준이다.<br>행동 — 문·창문·조명·물건·은신처 조작. 시체나 기절한 사람도 운반할 수 있다.<br>붙잡기 — 등 뒤에서 붙잡는다. 기다리거나 한 번 더 누르면 심문. [공격]으로 기절·처치, [행동]으로 은신처에 끌고 갈 수 있다.<br>다트 — 짧게 눌렀다 놓으면 자동 조준으로 기절. 1초 이상 누른 뒤 놓으면 처치. 누르는 동안 직접 조준할 수 있다.<br><kbd>1</kbd> 다트 · <kbd>2</kbd> 빈 캔 · <kbd>3</kbd> 담배 · <kbd>G</kbd> 휘파람<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 웅크리기 전환 · <kbd>R</kbd> 항상 걷기 전환<br><kbd>Tab</kbd> 겹친 대상 선택 · <kbd>M</kbd> 전술 지도 · <kbd>T</kbd> 기회 추적<br><kbd>N</kbd> 음소거 · <kbd>Esc</kbd> 일시정지 · 조준 중에는 취소<br>벽을 향해 잠시 밀면 몸을 붙인다. 이 상태에서 지나는 경비를 [공격]으로 끌어당길 수 있다.</div>
-      <div><h3>터치</h3>화면 왼쪽을 끌어 이동한다. [이동]이 걷기이면 끝까지 밀어도 걷고, 달리기이면 끝까지 밀 때 뛴다. [웅크리기]를 누르면 몸을 낮추고, 다시 누르면 일어선다.<br>[공격] — 짧게 눌러 기절, 같은 버튼을 계속 눌러 처치. 표적도 같다.<br>[행동] — 문·창문·조명·물건·은신처 조작과 운반.<br>[붙잡기] — 등 뒤에서 붙잡기. 잡은 뒤 다시 누르면 심문.<br>[도구] — 다트는 짧게 눌렀다 놓으면 기절, 1초 이상 누른 뒤 놓으면 처치. 누른 채 끌어 직접 조준할 수 있다.<br>[바꾸기] — 다트·빈 캔·담배·휘파람 선택. [대상] — 겹친 상호작용 대상 선택.</div>
-    </div>
+    <details class="rulesbox" id="advancedSettings"><summary class="rules-h">고급 설정</summary>
+      <div class="advanced-rows">
+        <div><b>화면 배율</b><span><button class="ghost" id="btnZoomOut" type="button" aria-label="화면 축소">−</button><button class="ghost" id="btnZoomIn" type="button" aria-label="화면 확대">+</button></span></div>
+        <div><b>프레임</b><button class="ghost" id="btnFps" type="button">60 fps</button></div>
+        <div><b>소리</b><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
+        <div><b>안내</b><span><button class="ghost" id="btnRoutes" type="button">순찰 동선</button><button class="ghost" id="btnOpps" type="button">단서: 최소</button></span></div>
+      </div>
     </details>
-    <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
-    <ul class="rules">
-      <li class="cityonly"><strong>조직 간 충돌</strong>조직과 건달파는 상대가 자기 구역에 들어오면 싸운다. 상대 조직 복장으로 공격하는 모습을 보이거나, 동료의 시체를 적대 구역에 옮겨 놓으면 전쟁을 유도할 수 있다. 다트 누명에는 실제로 보이는 상대 조직원이 있어야 한다. 거리 주민에게 소문을 흘리는 방법도 있다.</li>
-      <li class="cityonly"><strong>발견 게이지</strong>경비 머리 위 삼각형: 흰색은 주시, 노랑은 의심, 빨강은 발각이다. 거리가 가깝고 밝을수록 빨리 차오르며, 시야를 벗어나면 줄어든다. 유효한 변장으로 허용된 구역을 통과하면 일반 경비는 의심하지 않는다.</li>
-      <li class="cityonly"><strong>가구와 엄폐</strong>파란 테두리는 시야를 가리는 높은 가구, 주황 테두리는 웅크려 숨을 수 있는 낮은 가구다. 가구는 통과할 수 없으며, 깔개는 밟고 지나갈 수 있다.</li>
-      <li><strong>가구 속 물건</strong>회수할 물건은 책상·서랍·금고·컴퓨터 등에 있다. 가까이에서 [행동]을 누르면 꺼낸다. 작업 중 움직이면 취소되며, 목격되면 의심받는다.</li>
-      <li class="cityonly"><strong>은신 상태</strong>화면 중앙 상태와 발밑 고리: 파랑은 은신·섞임, 노랑은 노출 위험·신원 확인, 빨강은 실제 발각·추격이다. 변장한 모습을 쳐다보는 것만으로 발각되지는 않는다.</li>
-      <li class="cityonly"><strong>벽에 붙기</strong>벽을 향해 약 0.5초 밀면 몸을 붙인다. 노출이 줄고 발소리가 사라진다. 옆을 지나는 경비는 [공격]으로 끌어당길 수 있다. 짧게 누르면 기절, 계속 누르면 처치한다.</li>
-      <li class="cityonly"><strong>락픽과 창문</strong>잠긴 문·창문은 락픽으로 열 수 있다. 안쪽에서는 걸쇠를 풀면 된다. 작업 소음이 발생하며, 경비가 열린 곳을 발견하면 다시 잠글 수 있다.</li>
-      <li><strong>반격과 경보</strong>경비가 칼을 내려치기 직전 노란 고리가 뜨면 [공격]으로 반격해 기절시킬 수 있다. 무전 신고가 끝나면 전체 경보가 퍼지고 증원이 올 수 있다. 신고 전에 경비를 제압하면 전달을 막을 수 있다. 전체 경보와 주민 살상은 수고비 감점 대상이다.</li>
-      <li><strong>건물 수색과 출구</strong>목격·신고된 위치를 기준으로 경비들이 출입구·각 층의 방·옥상·은신처를 나눠 확인한다. 실제 계단과 문을 이용해 이동한다. 출구를 지키는 경비가 있으면 다른 출구를 찾거나 경비가 떠날 때까지 기다릴 수 있다.</li>
-      <li><strong>추가 수고비</strong>표적을 모두 사고로 처치하면 기본 수고비의 20%, 시체 발견·목격자 없이 완료하면 10%를 추가로 받는다.</li>
-      <li><strong>엿듣기</strong>대화 중인 인물 가까이에서 정보를 얻을 수 있다. 멀리 있으면 대화 내용은 들리지 않는다.</li>
-      <li><strong>CCTV와 관리실</strong>CCTV는 범행·무단 침입을 녹화한다. 관리실에서 담당자가 화면을 보고 있어야 신고가 전달된다. 담당자를 제압하면 녹화만 남는다. 관리실에서 [행동]으로 CCTV를 끄고 기록을 지울 수 있다. 신원 기록이 남은 주요 의뢰는 삭제 후 탈출할 수 있다.</li>
-      <li><strong>서치라이트</strong>빛줄기 안에서는 밝기가 높아져 경비에게 잘 보인다. 경보가 울리면 알려진 수색 지점을 비춘다. 다트로 부수거나 전원을 끌 수 있다.</li>
-      <li><strong>권총</strong>전체 경보가 퍼지면 정예와 증원이 권총을 사용할 수 있다. 붉은 조준선이 보이면 벽·차량 뒤로 시야를 끊어 사격을 피할 수 있다.</li>
-      <li><strong>기절과 처치</strong>짧게 누르면 기절, 같은 버튼을 계속 누르면 처치한다. 표적·붙잡은 적·은신처로 끌고 가기도 같은 기준이다. 기절한 사람은 동료가 발견하면 깨어날 수 있다. 다트도 짧게 눌렀다 놓으면 기절, 1초 이상 누른 뒤 놓으면 처치한다. [붙잡기] 버튼만 계속 눌러서는 처치되지 않는다.</li>
-      <li><strong>핏자국</strong>칼로 처치하거나 시체를 운반하면 피가 남을 수 있다. 경비는 핏자국을 발견하면 흔적을 따라 수색한다. 기절과 은신처 끌어들이기는 피를 남기지 않는다. [행동]으로 핏자국을 닦을 수 있지만 목격되면 의심받는다.</li>
-      <li class="cityonly"><strong>기회와 체크포인트</strong>대화·쪽지·시설물에서 얻은 단서는 기회 목록에 남는다. 목표를 달성한 뒤 안전해지면 체크포인트가 저장된다.</li>
-      <li><strong>경비 시야</strong>원뿔은 현재 밝기와 자세에서 경비가 볼 수 있는 범위다. 어두운 곳에서는 짧아지고, 불빛 아래에서는 길어진다. 웅크리거나 엄폐하면 탐지 범위가 줄어든다.</li>
-      <li><strong>이동 소음</strong>달리면 발소리가 멀리 전달된다. 유리 조각·철판·물웅덩이·자갈은 특히 소음이 크다. 웅크려 이동하면 소음이 줄어든다.</li>
-      <li><strong>등 뒤 제압과 동시 공격</strong>등 뒤에서 공격할 수 있으며, 두 명이 가까이 있으면 함께 제압할 수 있다. 짧게 누르면 기절, 계속 누르면 처치한다. 조직원 처치 자체에는 감점이 없지만 목격과 시체 발견은 등급에 영향을 준다. 주민을 처치하면 수고비가 줄어든다.</li>
-      <li><strong>옥상 이동</strong>사다리·배관으로 옥상에 오르고, 계단 입구로 들어가 실내로 내려갈 수 있다. 조건이 맞으면 옆 건물 옥상으로 건너뛸 수 있다. 내려갈 수 있는 높이와 착지 지점이 없으면 이동할 수 없다.</li>
-      <li><strong>맨홀 은신</strong>맨홀에 숨어 지나는 경비를 끌어들일 수 있다. [행동]으로 지하 수로에 내려가거나 이동 방향을 입력해 밖으로 나올 수 있다.</li>
-      <li><strong>표식 읽기</strong><span class="lg lg-door"></span>갈색 문짝은 문(잠글 수 있음) · <span class="lg lg-win"></span>십자 창살 유리는 창문 · <span class="lg lg-pipe"></span>회색 관과 발밑 ▸▸는 배관 · 금 간 벽은 숨겨진 통로</li>
-      <li><strong>건물과 창문</strong>실내에 들어가거나 창문·열린 문을 통해 시야가 닿으면 안쪽이 보인다. 창문은 [행동]으로 넘을 수 있다. 문을 잠그면 경비의 이동을 늦출 수 있지만, 추격·수색 중에는 강제로 열고 들어올 수 있다.</li>
-      <li><strong>방범창과 간판</strong>방범창은 일반 창문보다 여는 데 오래 걸린다. 옥상에서 간판을 떨어뜨리면 아래 인물을 사고로 처치할 수 있다. 소음이 크며, 주민 피해는 감점 대상이다.</li>
-      <li><strong>붙잡기와 심문</strong>등 뒤에서 [붙잡기]를 누르면 적을 붙잡는다. 기다리거나 다시 누르면 심문한다. [공격]은 기절·처치, [행동]은 가까운 은신처로 끌고 가기다. 붙잡은 적은 약 9초가 지나면 빠져나간다.</li>
-      <li><strong>조명</strong>[행동]으로 조명을 켜거나 끌 수 있다. 손으로 끈 조명은 경비가 다시 켤 수 있다. 다트로 부순 조명은 다시 켜지지 않는다.</li>
-      <li><strong>은신처 끌어들이기</strong>화단·수거함·맨홀에 숨어 지나는 경비를 방향에 관계없이 끌어들일 수 있다. 짧게 누르면 기절, 같은 버튼을 계속 누르면 처치한다.</li>
-      <li><strong>순찰 동선</strong>점선은 순찰 경로, 원은 대기 지점, 네모는 고정 경비를 뜻한다. 담배·하품·잡담 중인 경비는 시야가 좁아진다. 전술 지도를 열면 멈춘 상태에서 동선을 살필 수 있다.</li>
-      <li><strong>경계 단계와 체력</strong>경계 → 수색 → 발각 순으로 경계 수준이 높아진다. 시야를 끊고 버티면 단계가 내려가며, 수색이 끝난 경비는 일과로 복귀한다. 근접 공격은 칼을 들어 올린 뒤 실행되므로 피할 시간이 있다. 공격에 맞으면 체력이 줄어든다.</li>
-      <li><strong>시체와 기절한 사람</strong>발견되면 수색이 시작된다. [행동]으로 운반해 화단·수거함·맨홀 등에 숨길 수 있다. 수거함 정원은 2명이며, 경비가 은신처를 조사하면 발견될 수 있다.</li>
-      <li><strong>다트</strong>짧게 눌렀다 놓으면 기절, 1초 이상 누른 뒤 놓으면 처치한다. 조명·CCTV를 부수는 데도 사용할 수 있다. 수량이 제한되어 있다.</li>
-      <li><strong>지하 수로</strong>맨홀 안에서 [행동]으로 수로에 내려가 다른 맨홀 아래로 이동할 수 있다. 경비는 수로까지 따라오지 않는다.</li>
-      <li><strong>실내 층과 계단</strong>상단에 현재 층과 실내·옥상이 표시된다. 실내 계단과 옥탑문 입구로 들어가면 연결된 층으로 이동한다. 3층 옥상에서는 높이가 너무 높아 아래 인물을 덮칠 수 없다.</li>
-      <li><strong>담배·정예·증원</strong>담배를 본 일반 경비는 주우러 와 잠시 고개를 숙인다. 정예는 빈 캔·담배 유인에 잘 속지 않고 붙잡을 수 없다. 전체 경보가 전달되면 증원이 올 수 있다.</li>
-      <li><strong>겹친 대상 선택</strong>문·창문·계단 등 대상이 겹치면 PC는 Tab, 터치는 [대상]으로 선택을 바꿀 수 있다. 현재 선택한 행동은 대상 위와 버튼에 표시된다.</li>
-      <li><strong>위치 표시</strong>상단에 지상·실내 층수·옥상·환풍구·지하 수로를 표시한다. 목표에는 실제 건물과 층수를 표시한다. 폐허와 공터는 실내로 표시하지 않는다.</li>
-      <li class="nocity"><strong>굴뚝</strong>옥상 굴뚝을 통해 아궁이가 있는 방으로 내려갈 수 있다. 불이 켜져 있으면 먼저 [굴뚝 막기]로 꺼야 한다. 경비가 다시 불을 피우러 올 수 있다.</li>
-      <li><strong>환풍구</strong>천장 창살이나 옥상 환기구를 통해 들어간다. 웅크려 이동하면 조용하고, 빠르게 이동하면 아래 경비가 소리를 들을 수 있다. 창살 아래 경비는 [공격]으로 끌어올릴 수 있다. 열린 창살은 수색의 단서가 된다.</li>
-      <li><strong>망꾼</strong>머리 위 노란 겹화살표가 있는 망꾼은 옥상까지 살핀다. 옥상에서도 시야를 주의해야 한다.</li>
-      <li><strong>무전 신고</strong>무전기 표시가 있는 경비는 발각 시 멈춰 서서 신고한다. 신고가 끝나기 전에 기절시키거나 처치하면 전달을 막을 수 있다. 무전기가 없으면 경보는 근처 경비에게만 전달된다.</li><li><strong>시체 발견</strong>쓰러진 사람을 발견하면 주변 수색이 시작된다. 범행이나 범인의 신원을 보지 못했다면 시체만으로 플레이어를 범인으로 확정하지 않는다.</li>
-      <li><strong>들개</strong>들개는 후각으로 가까운 사람과 숨겨진 시체를 찾을 수 있다. 근처에서는 화단·어둠·웅크리기만으로 피하기 어렵다. 발각되면 짖어서 경비를 부르며, 붙잡기는 불가능하다.</li>
-      <li><strong>열쇠와 소매치기</strong>열쇠나 카드키를 가진 인물의 등 뒤에서 [행동]으로 훔칠 수 있다. 웅크린 상태가 더 안전하며, 기절시키거나 처치해 얻는 방법도 있다. 문에 맞는 열쇠가 없으면 창문·배관 등 우회로를 찾을 수 있다.</li>
-      <li><strong>등급과 시간 제한</strong>일부 의뢰에는 제한 시간이 있다. 등급은 전체 경보·주민 살상·쓰러진 사람 발견·목격자 신고·CCTV 기록으로 평가한다. 조직원 처치 자체에는 감점이 없지만, 목격과 시체 발견은 기록에 남는다.</li>
-      <li><strong>빈 캔과 두꺼비집</strong>빈 캔을 던져 경비를 유인할 수 있다. 두꺼비집을 내리면 해당 조명이 꺼지고 경비가 전원을 확인하러 올 수 있다.</li>
-    </ul></details>
+    <details class="rulesbox" id="controlGuide"><summary class="rules-h">조작</summary>
+      <div class="ctrl">
+        <p class="control-note">공격·다트: 짧게 기절 · 길게 처치</p>
+        <div class="kbonly"><dl class="control-grid">
+          <dt>이동</dt><dd>WASD / 방향키</dd><dt>공격</dt><dd>Space / Z</dd><dt>행동</dt><dd>E / X</dd><dt>붙잡기·심문</dt><dd>Q / C</dd><dt>도구</dt><dd>F / V · 1–3 선택</dd><dt>웅크리기</dt><dd>Ctrl · Shift 달리기</dd><dt>대상 선택</dt><dd>Tab</dd><dt>지도·메뉴</dt><dd>M / Esc</dd><dt>그 밖의 조작</dt><dd>G 휘파람 · R 이동 속도<br>T 단서 전환 · N 음소거<br>H 키 안내 · −/+ 배율</dd>
+        </dl></div>
+        <div class="touch-controls"><dl class="control-grid">
+          <dt>이동</dt><dd>왼쪽 화면 드래그</dd><dt>공격</dt><dd>기절·처치</dd><dt>행동</dt><dd>사물 조작·운반</dd><dt>붙잡기</dt><dd>등 뒤에서 붙잡기<br>다시 눌러 심문</dd><dt>도구</dt><dd>다트·유인 · 바꾸기로 선택</dd><dt>대상</dt><dd>겹친 사물 선택</dd><dt>지도</dt><dd>미니맵 터치</dd>
+        </dl></div>
+      </div>
+      <ul class="rules compact-rules">
+        <li><strong>신분</strong>허용된 복장이면 출입할 수 있다. 눈 표시 인물은 변장을 확인한다.</li>
+        <li><strong>흔적</strong>기절한 사람은 깨어날 수 있다. 시체·핏자국이 발견되면 수색이 시작된다.</li>
+        <li><strong>발각</strong>경비는 마지막 목격 지점과 연결된 건물·층을 수색한다.</li>
+        <li><strong>CCTV</strong>신원이 녹화되면 보안실에서 기록을 지워야 한다.</li>
+        <li><strong>단서</strong>대화·쪽지·심문으로 비밀번호와 접근 경로를 알아낼 수 있다.</li>
+        <li><strong>평가</strong>목격·시체 발견·민간인 피해가 등급과 수고비에 영향을 준다.</li>
+      </ul>
+    </details>
     <details class="rulesbox"><summary class="rules-h">출처</summary>
     <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: 갈무리 Galmuri (Lee Minseo, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
@@ -989,8 +979,7 @@ __INK_STUDY_CSS__
       <span class="fx-sub" id="brSub"></span>
       <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
-      <p class="br-exit">목표 완료 후 탈출 지점으로 이탈</p>
-      <details class="br-details" id="brDetails"><summary>현장 정보 · 추가 목표</summary>
+      <details class="br-details" id="brDetails"><summary>현장 정보</summary>
         <div class="br-radio" id="brRadio"><b>현장 정보</b><p id="brLine"></p></div>
         <div id="brChBox"><small class="br-chl">추가 목표 · 선택</small><ul class="br-chips" id="brCh"></ul></div>
       </details>
@@ -1009,8 +998,7 @@ __INK_STUDY_CSS__
     <div id="endRank" hidden></div>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
-    <p class="credit" id="endRankNote"></p>
-    <details class="endmore"><summary>자세히 · 지나간 길</summary>
+    <details class="endmore"><summary>상세 기록</summary><p class="credit" id="endRankNote"></p>
       <dl id="endMore"></dl>
       <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
     </details>

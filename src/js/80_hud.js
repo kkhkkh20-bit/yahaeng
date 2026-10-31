@@ -161,7 +161,7 @@ function updateHUD(force) {
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
   drawWanted();
   setText(hud.objT, 'objT', STAGE.sub);
-  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  { const html = objectiveLines().filter(([c])=>!c.includes('done')).map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   drawMini();
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
@@ -227,16 +227,16 @@ function updateStealth(lv) {
   const zi = STAGE.zones ? pZoneInfo() : null, banned = zi && zi.k !== Z_PUB && !permitted(zi);
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
-  if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? '침입을 확인하고 추격 중' : '신원이 확인돼 추격 중'; }
-  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴을 확인하고 있다 — 시야를 벗어나라'; }
-  else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='아직 신원 미확인 · 시야를 벗어나라'; }
-  else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = '이 옷차림이 알려졌다 — 다른 옷 필요'; }
-  else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '사람 가까이서 뛰면 눈에 띈다'; }
-  else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절한 사람 운반 중' : '시체 운반 중') + ' · 눈에 띈다' : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
-  else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛 아래 — 붙어도 가까우면 보인다' : `경비의 탐지 거리 감소 · 발소리 없음`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
+  if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? '무단 침입' : '신원 노출'; }
+  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴 확인'; }
+  else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
+  else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = '알려진 옷차림'; }
+  else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
+  else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
+  else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
-  else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '변장 · 통과 가능' : '행인으로 보인다'; }
-  else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '아무도 못 본다'; }
+  else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '허용된 복장' : '공개 구역'; }
+  else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
     riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
@@ -286,7 +286,7 @@ function drawEndMap() {
     x.beginPath(); x.moveTo(px - 4, py - 4); x.lineTo(px + 4, py + 4); x.moveTo(px + 4, py - 4); x.lineTo(px - 4, py + 4); x.stroke();
   }
 }
-const END_MAIN = ['접근 방식', '칭호', '수고비', '소요 시간', '조직원 처치', '발각 횟수', '발견된 시체·기절자'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
+const END_MAIN = ['접근 방식','수고비','소요 시간','발각 횟수'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
   closeKeypad();clearPlayerInput();closeEnvPicker();
   running = false;
@@ -319,7 +319,7 @@ function showEnd(win, reason) {
     const tc0 = S.corpses.filter(c => c.target), acc = tc0.length && tc0.length === S.guards.filter(g => g.target).length && tc0.every(c => c.accident), clean = !st.bodies && !(st.witness || 0);
     const adds = [purge ? ['전원 제압', STAGE.purgeBonus] : null, acc ? ['사고 처리', Math.round(base * 0.2)] : null, clean ? ['흔적 없음', Math.round(base * 0.1)] : null].filter(Boolean), bonus = adds.reduce((s, a) => s + a[1], 0), addTxt = adds.map(a => `${a[0]} +${a[1]}만`).join(' · ');
     feeRow = ['수고비', (cut > 0 ? `${got + bonus}만 (기본 ${base}만 · 감점 ${base - got}만: ${why}` + (bonus ? ` · ${addTxt}` : '') + ')' : bonus ? `${base + bonus}만 (전액 + ${addTxt})` : `${base}만 전액`)]; S.feeGot = got + bonus; } }
-  $('endStats').innerHTML = (win && S.missionApproach ? [['접근 방식',S.missionApproach]] : []).concat(ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [feeRow] : []).concat([
+  $('endStats').innerHTML = (win && S.missionApproach ? [['접근 방식',S.missionApproach]] : []).concat(ttl ? [['칭호', ttl[0] + ' — ' + ttl[1]]] : []).concat(feeRow ? [[feeRow[0],S.feeGot+'만']] : []).concat(feeRow&&feeRow[1].includes('(')?[['정산 내역',feeRow[1]]]:[]).concat([
     ['소요 시간', Math.floor(t / 60) + '분 ' + String(t % 60).padStart(2, '0') + '초'], ['조직원 처치', (st.crewKills || 0) + '명' + (st.maxStreak >= 2 ? ` (최대 ${st.maxStreak}연속)` : '')], ['주민 살상', st.extraKills + '명'], ['특수 제압·처치', st.special + '회'], ['발각 횟수', st.detected + '회'], ['CCTV 신원 녹화', st.camEver == null ? '이전 저장 · 이력 없음' : st.camEver + '회' + (st.camEver && !evidencePending() ? ' · 기록 삭제됨' : '')],
     ['발견된 시체·기절자', st.bodies + '명'], ['숨긴 시체·기절자', st.stashed + '명'], ['기절시킨 사람', (st.ko || 0) + '명'], [STAGE.zones ? '신고한 주민' : '주민 비명', (STAGE.zones ? st.witness || 0 : st.screams || 0) + (STAGE.zones ? '명' : '회')], ['빈 캔·다트', st.stonesUsed + ' · ' + st.kunaiUsed]
   ]).concat(st.interro ? [['심문', st.interro + '명']] : []).concat(st.counters ? [['반격', st.counters + '회']] : []).concat(st.fights ? [['조직 싸움', st.fights + '회' + (st.war ? ' · 전쟁' : '')]] : []).concat(st.npcDown ? [['조직이 쓰러뜨린 사람', st.npcDown + '명' + (st.npcCiv ? ` (주민 ${st.npcCiv})` : '') + ' · 감점 없음']] : []).concat(st.cpUsed ? [['체크포인트 재시작', st.cpUsed + '회']] : []).map(r => `<div class="${END_MAIN.includes(r[0]) ? 'main' : 'more'}"><dt>${r[0]}</dt><dd>${r[1]}</dd></div>`).join('');
@@ -351,11 +351,13 @@ function renderStageList() {
   const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
-    const stars = s.challenges ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">${'★'.repeat(st)}${'☆'.repeat(Math.max(0, all - st))}</span>` : '';
-    const mods = !s.tutorial && stageCleared(s) ? `<span class="st-rank">변형 ${Object.keys(MODS).filter(k => (loadCh()[s.id] || {})['mod_' + k]).length}/4</span>` : '';
+    const stars = s.challenges && st ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">★ ${st}</span>` : '';
+    const modCount=Object.keys(MODS).filter(k=>(loadCh()[s.id]||{})['mod_'+k]).length;
+    const mods=!s.tutorial&&modCount?`<span class="st-rank">추가 조건 ${modCount}/4</span>`:'';
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
-    const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : s.mission, tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
+    const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
+    const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
       <span class="st-mis">${sub}</span>${map}
@@ -367,7 +369,12 @@ function renderStageList() {
   $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
-  { const pl = $('perkList'); if (pl) { pl.hidden = false; { const n = totalStars(); pl.innerHTML = `<h3>장비 <small>별 ${n}개</small></h3>` + PERKS.map(([need, k, name]) => `<span class="perk ${n >= need ? 'on' : ''}"><b>★${need}</b> ${name}</span>`).join(''); } } }
-  { const mb = $('modBox'); if (mb) { mb.hidden = false; document.querySelectorAll('#modSel button').forEach(b => b.classList.toggle('on', b.dataset.m === MOD)); const mn = $('modNote'); if (mn) mn.textContent = MOD ? MODS[MOD][1] + ' · 완료한 의뢰에만 적용' : '완료한 의뢰는 추가 조건을 선택해 다시 플레이할 수 있다. 완료한 변형은 목록에 표시된다.'; } }
+  { const n=totalStars(),earned=PERKS.filter(([need])=>n>=need),box=$('perkBox');
+    box.hidden=$('stageList').dataset.filter!=='missions'||!earned.length;$('perkCount').textContent=earned.length;
+    $('perkList').innerHTML=earned.map(([,k,name])=>`<span class="perk on">${name}</span>`).join(''); }
+  { const mb=$('modBox');mb.hidden=$('stageList').dataset.filter!=='missions'||!mainContracts().some(stageCleared);
+    document.querySelectorAll('#modSel button').forEach(b=>b.classList.toggle('on',b.dataset.m===MOD));
+    $('modNote').hidden=!MOD;$('modNote').textContent=MOD?MODS[MOD][1]:''; }
+
 }
 

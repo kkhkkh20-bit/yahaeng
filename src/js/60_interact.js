@@ -502,7 +502,7 @@ const winUsable = w => !!w.link || S.wires.some(x => [x.a, x.b].some(n => n.win 
 function openKeypad(d) {
   const el = document.getElementById('keypad'); if (!el) { if (hasK('code')) { setDoor(d, false); d.group.forEach(t => t.keyLock = false); } return; }
   clearPlayerInput();closeEnvPicker();S.keypad = { d, buf: '', bad: 0 }; el.hidden = false;document.body.classList.add('keypadopen');document.getElementById('kpStatus').textContent='';el.focus({preventScroll:true}); S.player.vx = 0; S.player.vy = 0; input.aiming = null;
-  document.getElementById('kpHint').textContent = hasK('code') ? '확인한 비밀번호: ' + STAGE.code : '비밀번호 미확인 · 대화나 쪽지 확인';
+  document.getElementById('kpHint').textContent = hasK('code') ? '확인한 비밀번호: ' + STAGE.code : '번호 미확인';
   kpShow(); play('click', 0.3);
 }
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
@@ -538,7 +538,7 @@ function kpPress(v) {
       if (!hasK('code')) { S.player.keys.code = true; S.learned.push('비밀번호 ' + STAGE.code + ' · 직접 입력해 확인'); }  // 어디서 봤든 맞는 비번을 넣었으면 알아낸 것으로 친다
       const d = k.d; kpBeep(true); after(0.26, () => { d.group.forEach(t => t.keyLock = false); setDoor(d, false); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; play('metal', 0.4); toast('비밀번호 일치 · 문이 열렸다', 1.8, 'good'); closeKeypad(); });
     } else {
-      kpBeep(false); k.bad++;status.textContent=k.bad>=2?'불일치 · 경고음 증가':'불일치 · 다시 입력';status.dataset.state='bad'; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
+      kpBeep(false); k.bad++;status.textContent=k.bad>=2?'불일치 · 경고음 증가':'번호 불일치';status.dataset.state='bad'; noise(k.d.x, k.d.y, 70 + k.bad * 30, 'beep', k.d.fl || 0);
       const el = document.getElementById('kpDisp'); el.classList.remove('bad'); void el.offsetWidth; el.classList.add('bad');
       toast(k.bad >= 2 ? '비밀번호 불일치 · 경고음이 커진다' : '비밀번호가 틀렸다', 1.4, 'warn'); k.buf = ''; setTimeout(kpShow, 350);
     }

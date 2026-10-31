@@ -49,3 +49,5 @@ v98 조작·말풍선 변경과 검증: [CONTROLS_READABILITY.md](CONTROLS_READA
 v99 대화창 비율과 레퍼런스: [DIALOGUE_PROPORTIONS.md](DIALOGUE_PROPORTIONS.md).
 
 v100 보조창·설정·입력 전환 개선: [COMFORT_POLISH.md](COMFORT_POLISH.md).
+
+v101 설명·옵션의 정보량 정리: [UI_EDIT.md](UI_EDIT.md).

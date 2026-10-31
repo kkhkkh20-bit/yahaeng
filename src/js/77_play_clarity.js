@@ -49,10 +49,10 @@ function encounterRows(P, ka, ga, pa) {
   const rows=[],key=k=>isTouch?{atk:'공격',grab:'붙잡기',env:'행동'}[k]:KK(k);
   const victim=ka&&(ka.c||ka.g||ka.kill||ka.list?.[0]||ka.stalk);
   if(P.captive) {
-    rows.push({key:key('grab'),text:canInterrogate()?'심문':P.captive.questioned?'심문 완료':'심문 불가',detail:canInterrogate()?'정보 얻기':'추가 정보 없음',ready:canInterrogate()});
+    if(canInterrogate())rows.push({key:key('grab'),text:'심문',detail:'',ready:true});
     rows.push({key:key('atk'),text:'기절',detail:'길게 처치',ready:true});
     const h=pa?.k==='drag'?pa.h:captiveDragPreview(),ready=pa?.k==='drag';
-    rows.push({key:key('env'),text:ready?'끌고 가 기절':h?'끌고 가기':'은신처 찾기',detail:h?hideName(h)+(ready?' · 길게 처치':' · 더 가까이'):'이동하며 찾기',ready});
+    if(h)rows.push({key:key('env'),text:ready?'끌고 가 기절':'끌고 가기',detail:hideName(h)+(ready?' · 길게 처치':' · 더 가까이'),ready});
     return rows;
   }
   if(victim)rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 처치':ka.stalk?'더 가까이':'',ready:ka.k!=='none'});

@@ -34,31 +34,11 @@ function drawTagged() {
 }
 
 // ---- 까마귀(의뢰인) 무전 (메탈기어의 무전 동료식): 일이 생기면 짧게 한마디. 연습판에서는 하지 않는다
-const BOSS_RADIO = {
-  first: ['첫 처치 확인. 시체는 반드시 숨겨라.', '시작됐군. 시체를 남기지 마.'],
-  streak: ['연속 처치. 주변부터 확인해.', '속도가 빠르다. 흔적 관리에 신경 써.', '좋다. 하지만 서두르지 마.'],
-  target: ['표적 제거 확인. 이탈해.', '확인했다. 조용히 빠져나와.'],
-  accident: ['사고로 처리됐다. 깔끔하다.', '사고로 보인다. 좋은 판단이다.'],
-  civ: ['민간인 피해가 발생했다. 표적만 노려.', '민간인은 작전 대상이 아니다.']
-};
-// ---- 제비 (현장 서포트, 여자 에이전트): 까마귀가 일을 주고 판단하면, 제비는 현장에서 무엇을 조심할지 짚어 준다
-const AIDE_RADIO = {
-  eye: ['저 사람 조심해. 네 변장을 알아볼 수 있어. 가까이 가지 마.', '머리 위에 눈 표시 보이지? 그 사람은 얼굴을 알아. 거리를 둬.'],
-  alert: ['들켰어. 시야부터 끊고 숨어. 20초만 버티면 돼.', '숨을 곳 찾아. 수거함이든 화단이든.', '뛰어서 시야를 끊어. 그다음에 숨어.'],
-  calm: ['조용해졌어. 다시 시작하자.', '수색 끝났어. 천천히 움직여.'],
-  body: ['시체가 발견됐어. 순찰이 늘 거야.', '시체를 발견했어. 다음엔 꼭 숨겨.'],
-  blood: ['핏자국을 봤어. 핏방울 따라 시체 쪽으로 갈 거야.', '피를 남겼어. 기절시키거나 숨는 곳으로 끌어들이면 피가 안 남아.'],
-  interro: ['심문은 짧게. 오래 붙잡고 있으면 빠져나가.', '들을 거 다 들었으면 처리해.'],
-  check: ['곧 조직원 무전 점검이야. 쓰러진 자리는 대답이 없을 거야.', '응답 없는 자리는 누가 확인하러 와. 시체 근처에서 빠져.'],
-  disguise: ['그 옷이면 초록 경계선 안은 다닐 수 있어. 범행은 보이지 마.', '옷 좋네. 눈 표시 있는 사람만 피해.'],
-  loot: ['거기야. 끝날 때까지 움직이지 마. 주변은 내가 볼게.', '빼내는 동안은 무방비야. 누가 오면 바로 멈춰.']
-};
+const FIELD_RADIO={body:['제비','시체가 발견됐어.'],blood:['제비','핏자국을 따라오고 있어.'],civ:['까마귀','민간인 피해 확인.']};
 function bossRadio(ev, force) {
-  if (!S || S.over || !STAGE || STAGE.tutorial || ev==='first' || ev==='streak') return;
-  const aide = !!AIDE_RADIO[ev], L = AIDE_RADIO[ev] || BOSS_RADIO[ev]; if (!L) return;  // 현장 조언은 제비, 일과 평가는 까마귀
-  if (!force && S.t < (S.radioNext || 0)) return;
-  S.radioNext = S.t + 14; S.radioN = (S.radioN || 0) + 1;
-  toast((aide ? '제비: ' : '까마귀: ') + L[(S.radioN + ev.length) % L.length], 3.4, aide ? 'radio aide' : 'radio');
+  if(!S||S.over||!STAGE||STAGE.tutorial||!FIELD_RADIO[ev])return;
+  if(!force&&S.t<(S.radioNext||0))return;
+  S.radioNext=S.t+14;const [who,line]=FIELD_RADIO[ev];toast(who+': '+line,2.6,'radio');
 }
 
 // ---- 조직원 무전 점검 (메탈기어 솔리드 2식): 일정 시간마다 조직원들이 무전으로 자리를 확인한다.

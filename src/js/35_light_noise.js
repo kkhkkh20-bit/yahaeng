@@ -39,33 +39,12 @@ function lightAt(x, y, elev) {
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
-const HELP_INLINE=new Set(['stage','stage2','grab','killKind','interro','aware']);
-const HELP_SHORT={winsight:'창문과 열린 문 너머도 살펴볼 수 있다.',wire:'전깃줄을 따라 이동할 수 있다. 빠르게 움직이면 소리가 커진다.',tac:'전술 지도에서는 시간이 멈춘다. 길과 순찰을 확인하라.'};
-let helpTip=null;
-const helpSeen=(()=>{try{const v=JSON.parse(localStorage.getItem('yahaeng.help.v1')||'[]');return new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);}catch(e){return new Set();}})();
-function resetHelpTip() { helpTip=null; const c=document.getElementById('hintCard');if(c)c.classList.add('off'); }
-function canShowHelpTip() {
-  if(!S||!running||paused||S.over||tactical||S.keypad||envPicker||DLG.cur||input.scan||S.alevel>=2||S.toasts.length||actionBusy()||S.player.captive)return false;
-  const a=attackAction(),g=grabAction();return !a.stalk&&a.k==='none'&&g.k==='none'&&!g.near&&!activeObserver();
-}
-function hint(key,text) {
-  if(S.hints[key]||helpSeen.has(key)||STAGE.tutorial||HELP_INLINE.has(key)||(S.hintN||0)>=3)return;
-  showHint(HELP_SHORT[key]||text,0,key);
-}
-function showHint(text,sec,key) {
-  if(helpTip||!canShowHelpTip())return false;
-  const card=document.getElementById('hintCard');if(!card)return false;
-  helpTip={run:S,key,text,t:S.t,until:S.t+Math.max(4,Math.min(7,Math.max(sec||0,text.length*.065))),recorded:false};
-  document.getElementById('hintText').textContent=text;card.classList.remove('off');return true;
-}
-function updateHelpTip() {
-  if(!helpTip)return;
-  if(helpTip.run!==S||!canShowHelpTip()||S.t>=helpTip.until){resetHelpTip();return;}
-  if(helpTip.key&&!helpTip.recorded&&S.t-helpTip.t>=2){
-    helpTip.recorded=true;S.hints[helpTip.key]=true;S.hintN=(S.hintN||0)+1;helpSeen.add(helpTip.key);
-    try{localStorage.setItem('yahaeng.help.v1',JSON.stringify([...helpSeen]));}catch(e){}
-  }
-}
+// 조작 설명은 연습과 조작 화면에 둔다. 구형 행동 코드의 호출은 자동 패널을 만들지 않는다.
+function hint() {}
+function showHint() { return false; }
+function resetHelpTip() {}
+function updateHelpTip() {}
+
 function renderToasts() {
   toastEl.innerHTML='';if(!S)return;
   // 기록은 유지하고, 화면에는 긴급도와 발생 순서에 따라 한 건만 보여 준다.

@@ -128,3 +128,9 @@
 .ink-study #help .ctrl h3 { color:#282b24; }
 .ink-study .screen .ghost:hover,.ink-study .screen .back:hover,.ink-study .screen .pz-big:hover { background:#e2d5b9; color:#872e24; }
 .ink-study #help .pz-opts button.on { background:#a53227; border-color:#963225; color:#fff1dc; }
+
+.ink-study .ledger-extra { border-color:#a99b80; }
+.ink-study .ledger-extra > summary { color:#5d574a; }
+.ink-study .advanced-rows button { color:#272822; border-color:#9d9076; }
+.ink-study .advanced-rows button.on { background:#a53227; border-color:#943327; color:#fff1dc; }
+.ink-study .advanced-rows button:hover { background:#e2d5b9; color:#872e24; }

@@ -2,7 +2,7 @@
 let lastT = 0;
 // 프레임 제한: 기본 60fps. 메뉴에서 30으로 낮출 수 있다
 let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
-function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v === 30 ? '절전 30fps' : '부드럽게 60fps'; perfDts = []; perfSum = 0; }
+function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
 function frame(t) {
   requestAnimationFrame(frame);
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
