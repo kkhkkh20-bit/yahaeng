@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v108 수거함·맨홀·은신 상호작용: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/HIDE_INTERACTIONS.md
+
+전후 화면·동작 영상: https://kkhkkh20-bit.github.io/yahaeng/hide-v108/
+
 v107 동작·상호작용·창문: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/MOTION_WINDOWS.md
 
 전후 화면·동작 영상: https://kkhkkh20-bit.github.io/yahaeng/motion-v107/
@@ -82,7 +86,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v107
-Source commit: 98d62a5a0cd7c9e84c971ae370400067be4aed7f
+Version: v108
+Source commit: bd8a9ec3e256d58790ed0d9397c3ce18908109e2
 
-Ink study source: 98d62a5a0cd7c9e84c971ae370400067be4aed7f
+Ink study source: bd8a9ec3e256d58790ed0d9397c3ce18908109e2
