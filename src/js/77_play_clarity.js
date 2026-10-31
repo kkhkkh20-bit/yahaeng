@@ -17,7 +17,7 @@ function hudTextBlocks() {
 function actorTextBlocks() {
   const P=S.player;
   return [P,...S.guards.filter(g=>!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<560)]
-    .map(g=>[g.x-17,g.y-46,g.x+17,g.y+10]);
+    .map(g=>{const self=isTouch&&g===P,w=self?Math.max(17,20/SCALE):17;return[g.x-w,g.y-46,g.x+w,g.y+(self?10+14/SCALE:10)];});
 }
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {

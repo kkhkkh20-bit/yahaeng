@@ -336,6 +336,7 @@ function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if
 function prKeep(keys) { prNear.clear(); const keep = new Set(['ninja', 'ninja_ol', ...keys, ...keys.map(k => k + '_ol')]); for (const k of Object.keys(prVar)) if (!keep.has(k)) delete prVar[k]; for (let i = prWarmQ.length - 1; i >= 0; i--) if (!keep.has(prWarmQ[i].split('#')[0])) prWarmQ.splice(i, 1); }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
+let playerInkKey=null;
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
   if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
@@ -347,6 +348,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const fr = PR.fr, dw = fr * scale;
   const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
   const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
+  if(key===playerInkKey&&prVar[key+'_ol']){ctx.globalAlpha=.62*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
   ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
@@ -453,15 +455,14 @@ function drawLastSeen() {
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;
-    const pulse = 0.5 + 0.2 * Math.sin(S.t * 4);
     { // 수색 범위 (어쌔신 크리드식): 놈들이 뒤질 둘레
       const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
       ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
       tag(q.x, q.y + 30, q.exit ? '출구 경비 위치' : q.blood ? '핏자국 발견 지점' : q.heard ? '소리가 난 지점' : q.body ? '발견된 현장' : '마지막 목격 지점', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
-    if (q.heard || q.blood || q.exit || q.body) { /* 소리·핏자국: 내 모습은 남기지 않는다 */ }
-    else if (usePR('ninja') && prVar.ninja_ol) { drawPR('ninja_ol', q.x, q.y, Math.PI / 2, 'idle', 0, pulse, 1, 0, 0); drawPR('ninja', q.x, q.y, Math.PI / 2, 'idle', 0, 0.18, 1, 0, 0); }
-    else { ctx.strokeStyle = `rgba(168,232,255,${pulse})`; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(q.x, q.y, 14, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+    // 기억한 위치는 사람을 복제하지 않고 바닥의 십자 표식으로만 남긴다.
+    const k=1/SCALE;ctx.save();ctx.strokeStyle='#d7b76c';ctx.lineWidth=1.5*k;ctx.beginPath();
+    ctx.moveTo(q.x-6*k,q.y);ctx.lineTo(q.x+6*k,q.y);ctx.moveTo(q.x,q.y-6*k);ctx.lineTo(q.x,q.y+6*k);ctx.stroke();ctx.restore();
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = '700 14px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }

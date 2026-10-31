@@ -75,7 +75,20 @@ function drawScrollOld(x, y, t) {
   ctx.fillStyle = '#c2362b'; ctx.beginPath(); ctx.arc(2, 1, 3.5, 0, TAU); ctx.fill();
   ctx.restore();
 }
+function drawPlayerLocator(P) {
+  const k=1/SCALE,x=P.x,y=P.y+10,a=P.car?P.car.a:P.cover?Math.atan2(P.cover.y,P.cover.x):P.a;
+  const col=S.expo===2?'#e85a46':S.expo===1?'#dfbc70':'#7fe3ff';
+  ctx.save();ctx.setLineDash([]);ctx.lineWidth=3.5*k;ctx.strokeStyle='#081015cc';ctx.beginPath();ctx.ellipse(x,y,11*k,5*k,0,0,TAU);ctx.stroke();
+  ctx.lineWidth=1.5*k;ctx.strokeStyle=col;ctx.stroke();
+  if(P.hide){ctx.restore();return;}
+  const dx=Math.cos(a),dy=Math.sin(a),px=x+dx*15*k,py=y+dy*9*k;
+  ctx.fillStyle='#7fe3ff';ctx.strokeStyle='#081015';ctx.lineWidth=1.5*k;ctx.beginPath();ctx.moveTo(px+dx*3*k,py+dy*3*k);ctx.lineTo(px-dx*3*k-dy*3*k,py-dy*3*k+dx*3*k);ctx.lineTo(px-dx*3*k+dy*3*k,py-dy*3*k-dx*3*k);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
+}
 function drawPlayer(P) {
+  const previous=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
+  try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
+}
+function drawPlayerBody(P) {
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
   if (P.car) return;  // 차 안: 차가 곧 나
@@ -91,7 +104,7 @@ function drawPlayer(P) {
       ctx.globalAlpha = blinkW ? 0.3 : dim ? 0.75 : 1;
       const row = prDir(P.wire.fa != null ? P.wire.fa : -Math.PI / 2);
       prBlit(sh, c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
-      if (dim && prVar[playerOutline]) { ctx.globalAlpha = 0.85; prBlit(prVar[playerOutline], c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
+      if ((dim||isTouch) && prVar[playerOutline]) { ctx.globalAlpha = dim?0.85:0.62; prBlit(prVar[playerOutline], c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
       ctx.globalAlpha = 1; return;
     }
     ctx.strokeStyle = '#2c3040'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(h.x - 8 + sw, h.y + 18); ctx.lineTo(h.x - 5, h.y + 1); ctx.moveTo(h.x + 8 + sw, h.y + 18); ctx.lineTo(h.x + 5, h.y + 1); ctx.stroke();
@@ -105,7 +118,7 @@ function drawPlayer(P) {
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
   const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3)) && !(STAGE.zones && !P.hidden && !P.z && pZoneEff() === Z_PUB);  // 공개 구역에서 섞여 있을 땐 숨음 외곽선을 쓰지 않는다 (위 표시와 맞춘다)
-  if (!P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
+  if (!isTouch && !P.jump && !P.z && !P.under && S.expo > 0) {  // 드러남 고리: 노랑(돌아보면 보인다) · 빨강(보고 있다)
     const red = S.expo === 2, pu = red ? 0.6 + 0.35 * Math.sin(S.t * 10) : 0.75;
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
@@ -118,7 +131,7 @@ function drawPlayer(P) {
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
     const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), sh = prSheet(playerLook), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = P.moving ? Math.floor(S.t * 6) % nf : 0;
     ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    ctx.globalAlpha = n.y < 0 ? 0.75 : 1; prBlit(sh, c0 + fi, 6, hx - PR.hangHand[0], hy + 2 - PR.hangHand[1], fr, fr); ctx.restore(); ctx.globalAlpha = 1;
+    ctx.globalAlpha = n.y < 0 ? 0.75 : 1; prBlit(sh, c0 + fi, 6, hx - PR.hangHand[0], hy + 2 - PR.hangHand[1], fr, fr);if(isTouch&&prVar[playerOutline]){ctx.globalAlpha=.62;prBlit(prVar[playerOutline],c0+fi,6,hx-PR.hangHand[0],hy+2-PR.hangHand[1],fr,fr);} ctx.restore(); ctx.globalAlpha = 1;
     return;
   }
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
@@ -152,9 +165,10 @@ function drawPlayer(P) {
       drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
     if (tp.pose === 'climb') { const frame=((Math.floor(T.t*7)*(T.down?-1:1))%4+4)%4;
       const grip=T.pipe&&climbContact(PK,T.face,frame,pipeGripAt(T));
-      drawPR(PK,grip?grip.x:P.x,grip?grip.y:P.y,T.face??P.a,'climb',0,al,grip?1:s1,14,frame);return; }
+      drawPR(PK,grip?grip.x:P.x,grip?grip.y:P.y,T.face??P.a,'climb',0,al,grip?1:s1,14,frame);if(isTouch&&grip)drawPlayerLocator({...P,...grip.foot,a:T.face,cover:null});return; }
     if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
   }
+  if(isTouch&&!P.trav&&!P.jump&&!P.under&&!P.vent)drawPlayerLocator(P);
   if (usePR(playerLook)) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
@@ -193,7 +207,7 @@ function drawPlayer(P) {
     if (P.killAnim && P.strikeT <= 0) P.killAnim = null;
     const pc = pairCarry(P), pg = !pc && pairGrab(P);
     if (P.cover && (PR.anims.hug || PR.anims.lean) && !P.strikeT) {  // 벽에 바짝 붙음: 웅크려 등을 붙인 자세, 옆걸음, 좌우 살피기. 붙는 순간은 몸을 돌려 벽에 '툭'
-      const n = P.cover, PK0 = playerLook, s0 = sc / 3, aw = Math.atan2(n.y, n.x), al0 = blink ? 0.35 : concealed ? 0.6 : 1;
+      const n = P.cover, PK0 = playerLook, s0 = sc / 3, aw = Math.atan2(n.y, n.x), al0 = blink ? 0.35 : concealed ? (isTouch?.95:.6) : 1;
       const wx = P.x - n.x * 14, wy = P.y - n.y * 14, glow = P.snap ? Math.min(1, P.snap.t / P.snap.dur) : 1;
       ctx.strokeStyle = `rgba(150,220,255,${0.75 * glow})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(wx - n.y * 18, wy + n.x * 18); ctx.lineTo(wx + n.y * 18, wy - n.x * 18); ctx.stroke();
       const drawC = (k, ang, an, fr, ox, oy) => { drawPR(k, P.x + (ox || 0), P.y + (oy || 0), ang, an, S.t, k === playerOutline ? 0.85 : al0, s0, -yo, fr); };
@@ -222,10 +236,12 @@ function drawPlayer(P) {
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
     if (concealed) {
+      if(!isTouch){
       const pulse = 0.55 + 0.25 * Math.sin(S.t * 3);
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : 0.55, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
+      }
+      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : isTouch ? .95 : .55, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
       if (prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.9, s, -yo);
     } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
@@ -1399,6 +1415,7 @@ function draw() {
   PM('nearmarks');
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
+  if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();

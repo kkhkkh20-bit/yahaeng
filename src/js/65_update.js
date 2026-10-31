@@ -106,8 +106,9 @@ function moveCamera(dt) {
   if (S.tacCam) S.tacCam = null;
   if (isTouch) {
     const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
-    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 78 / SCALE, MW * TILE / 2));
-    const bounds = cameraYBounds(vh), ty = clamp(S.player.y + ly + vh * .12, bounds[0], bounds[1]);
+    const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 / SCALE, MW * TILE / 2));
+    // 세로는 화면 높이의 60%, 가로는 56%에 서서 위쪽 지형을 더 보게 한다.
+    const anchor=H>W*1.3?.60:.56,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
@@ -122,7 +123,7 @@ function moveCamera(dt) {
   }
 }
 function cameraYBounds(vh = H / SCALE) {
-  const middle = MH * TILE / 2, top = (isTouch ? Math.min(48, H * .08) : 24) / SCALE;
+  const middle = MH * TILE / 2, top = (isTouch ? 190 : 24) / SCALE;
   // 하단 조작부의 얕은 여백만 남긴다. 경계에 가까워지면 카메라가 먼저 멈춰 위쪽 지형을 보여 준다.
   const bottom = (isTouch ? Math.min(140, H * .18) : 24) / SCALE;
   return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];

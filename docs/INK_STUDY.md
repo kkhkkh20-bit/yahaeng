@@ -57,3 +57,5 @@ v102 행동 안내·배관 오르기: [CLIMB_PROMPTS.md](CLIMB_PROMPTS.md).
 v103 배관 접점과 동작 경로: [PIPE_CONTACTS.md](PIPE_CONTACTS.md).
 
 v104 시야·소리·선택 표시·성능: [AI_FEEDBACK.md](AI_FEEDBACK.md).
+
+v105 모바일 카메라·내 캐릭터 가독성: [PLAYER_FRAMING.md](PLAYER_FRAMING.md).
