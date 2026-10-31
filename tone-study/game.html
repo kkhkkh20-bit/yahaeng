@@ -23,7 +23,7 @@ with others.
 
 The OFL allows the licensed fonts to be used, studied, modified and
 redistributed freely as long as they are not sold by themselves. The
-fonts, including any derivative works, can be bundled, embedded, 
+fonts, including any derivative works, can be bundled, embedded,
 redistributed and/or sold with any software provided that any reserved
 names are not used by derivative works. The fonts and derivatives,
 however, cannot be released under any other type of license. The
@@ -8479,7 +8479,7 @@ function updateTutorial() {
   }
 }
 function winInit() {
-  S.winInit = true; 
+  S.winInit = true;
   if (STAGE.tutorial) { for (const w of S.windows) w.st = bldAt(w.tx, w.ty) >= 0 ? 'lock' : 'open'; for (const w of S.windows) w.b = bldAt(w.tx, w.ty); return; }
   const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], doorT = new Set(S.doors.map(d => d.tx + ',' + d.ty));
   const keyPts = S.items.filter(i => !i.fl).concat((S.keyItems || []).filter(i => !i.fl)).map(i => [Math.floor(i.x / TILE), Math.floor(i.y / TILE)]);
@@ -9188,7 +9188,7 @@ function enterHide(b, quick) {
 function enterHideNow(b, quick, keepFrom) {
   const P = S.player;
   b.spotted = S.guards.some(g => g.seen && g.state !== 'DEAD' && g.state !== 'CAPTIVE');
-  P.hide = b; P.hideFrom = keepFrom && P.hideFrom ? P.hideFrom : { x: P.x, y: P.y }; P.x = b.x; P.y = b.y; S.hideExitLock = true; 
+  P.hide = b; P.hideFrom = keepFrom && P.hideFrom ? P.hideFrom : { x: P.x, y: P.y }; P.x = b.x; P.y = b.y; S.hideExitLock = true;
   play('cloth', 0.4); play('drop', 0.15);
   const where = hideIn(b);
   toast(b.spotted ? '숨는 모습을 들켰을지도 모른다…' : `${where}에 숨었다`, 2.2, b.spotted ? 'warn' : '');
