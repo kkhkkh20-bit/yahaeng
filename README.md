@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v109 은신 출입·매달림 처치·낙하 점검: https://kkhkkh20-bit.github.io/yahaeng/motion-v109/
+
+개발 기록: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/STORAGE_MOTION.md
+
 https://kkhkkh20-bit.github.io/yahaeng/
 
 잉크 누아르 미술 시안: https://kkhkkh20-bit.github.io/yahaeng/tone-study/
@@ -86,7 +90,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v108
-Source commit: bd8a9ec3e256d58790ed0d9397c3ce18908109e2
+Version: v109
+Source commit: e716971fd3bb677c6fbc4ca8b776fdd4047a8c7e
 
-Ink study source: bd8a9ec3e256d58790ed0d9397c3ce18908109e2
+Ink study source: e716971fd3bb677c6fbc4ca8b776fdd4047a8c7e
