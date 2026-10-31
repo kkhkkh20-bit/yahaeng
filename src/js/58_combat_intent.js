@@ -48,7 +48,7 @@ function prepareCombat(a) {
 function updateLethalHold(P, dt) {
   const h = P.lethalHold; if (!h) return false;
   const a = h.a, gs = combatVictims(a);
-  const invalid = gs.some(g => g.child || (a.k !== 'finish' && g.state === 'DEAD') || (a.k === 'pushOff' && !g.climb) || (a.k === 'finish' ? !a.c.container && dist(P.x, P.y, a.c.x, a.c.y) > 60 : dist(P.x, P.y, g.x, g.y) > 180));
+  const invalid = gs.some(g => g.child || (a.k !== 'finish' && g.state === 'DEAD') || (a.k === 'pushOff' && !g.climb) || (a.k==='ledgeKill'&&!ledgeTargetValid(g)) || (a.k === 'finish' ? !a.c.container && dist(P.x, P.y, a.c.x, a.c.y) > 60 : dist(P.x, P.y, g.x, g.y) > 180));
   const obscured = gs.some(g => a.k === 'finish' ? !a.c.container && !objectReachable(a.c, 60) : !los(P.x, P.y, g.x, g.y, Math.max(P.z || 0, g.z || 0)));
   if (!combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
   if ((a.k === 'finish' && (!a.c || !a.c.ko)) || (a.k === 'trap' && (!a.tp.t || a.tp.t.used))) { P.lethalHold = null; return false; }

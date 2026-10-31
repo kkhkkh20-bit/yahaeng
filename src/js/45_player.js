@@ -141,20 +141,53 @@ function groundBelow(x, y, n) {  // 가장자리 바깥으로 처음 나오는 �
   return null;
 }
 // 매달린 가장자리 밖으로 처음 나오는 낮은 자리: 땅 또는 낮은 옥상. 두 층 차이까지만 (그보다 높으면 null)
-function landBelow(x, y, n, z) {
+function landBelow(x, y, n, z, maxDrop=2) {
   const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
   for (let k = 1; k <= 4; k++) { const gx = tx + n.x * k, gy = ty + n.y * k; if (!inMap(gx, gy)) return null; const lv = rLv(gx, gy); if (lv >= z) continue;
-    if (z - lv > 2) return null;
+    if (z - lv > maxDrop) return null;
     if (lv === 0) return !roofAt(gx, gy) && !groundSolidP(gx, gy) ? { x: tc(gx), y: tc(gy), z: 0 } : null;
     return !robAt(gx, gy) ? { x: tc(gx), y: tc(gy), z: lv } : null; }
   return null;
 }
 const ledgeDraw = P => { const n = P.ledge; return { x: P.x + n.x * 20, y: P.y + (n.y > 0 ? 34 : n.y < 0 ? -8 : 10) }; };
+function ledgeGrip(P) {
+  const n=P.ledge;return{x:P.x+n.x*14,y:P.y+n.y*14+(n.y>0?6:0)+2,a:Math.atan2(-n.y,-n.x)};
+}
+function ledgeRoot(P) {
+  const h=ledgeGrip(P),key=playerKey(P),m=PR.bodies?.[prSplit(key)[1]]||PR,row=prDir(h.a),hands=m.hangHands?.[row]?.[0]||PR.hangHands?.[row]?.[0],scale=m.scales?.hang||PR.scales?.hang||1;
+  if(!hands)return ledgeDraw(P);
+  return{x:h.x+(PR.fr/2-(hands[0][0]+hands[1][0])/2)*scale,y:h.y+((m.grounds?.hang??PR.groundY)-(hands[0][1]+hands[1][1])/2)*scale-13};
+}
+function ledgeTargetValid(g) {
+  const P=S.player,n=P.ledge;if(!n||!g||g.child||g.civ||g.dog||g.climb||g.doomed||['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)||flOf(g)!==flOf(P)||(g.z||0)!==P.z)return false;
+  const dx=g.x-P.x,dy=g.y-P.y,inward=-dx*n.x-dy*n.y,along=dx*-n.y+dy*n.x;
+  return inward>=-8&&inward<=64&&Math.abs(along)<=36&&Math.hypot(dx,dy)<=72&&rLv(Math.floor(g.x/TILE),Math.floor(g.y/TILE))===P.z&&los(P.x,P.y,g.x,g.y,P.z)&&!!landBelow(P.x,P.y,n,P.z,Infinity);
+}
 function ledgeTarget() {
-  const P = S.player; if (!P.ledge) return null; let best = null, bd = 60;
-  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
- if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.dog || (g.z || 0) !== P.z || g.climb || g.doomed) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
-  return best;
+  return S.guards.filter(ledgeTargetValid).sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||null;
+}
+function beginLedgePull(g) {
+  const P=S.player;if(S.ledgePull||!ledgeTargetValid(g))return false;
+  const to=landBelow(P.x,P.y,P.ledge,P.z,Infinity),grip=ledgeGrip(P);
+  S.ledgePull={g,t:0,dur:.95+Math.max(0,P.z-to.z-1)*.12,from:{x:g.x,y:g.y},edge:{x:grip.x,y:grip.y-5},to,z:P.z,n:{...P.ledge},px:P.x,py:P.y,fl:flOf(P)};
+  g.doomed=true;g.ledgeFalling=true;g.path=null;g.moving=false;g.icon=null;P.vx=P.vy=0;play('cloth',.5);return true;
+}
+function updateLedgePull(dt) {
+  const A=S.ledgePull;if(!A)return;const P=S.player,g=A.g;
+  if(g.state==='DEAD'||!P.ledge||P.z!==A.z||flOf(P)!==A.fl||P.x!==A.px||P.y!==A.py){g.doomed=false;g.ledgeFalling=false;S.ledgePull=null;return;}
+  A.t+=dt;const f=clamp(A.t/A.dur,0,1),pull=hideEase(f/.38),fall=clamp((f-.38)/.62,0,1);
+  g.x=A.from.x+(A.edge.x-A.from.x)*pull+(A.to.x-A.edge.x)*fall;
+  g.y=A.from.y+(A.edge.y-A.from.y)*pull+(A.to.y-A.edge.y)*fall*fall;
+  if(f>=1){
+    g.x=A.to.x;g.y=A.to.y;g.z=A.to.z;g.fl=0;g.doomed=false;g.ledgeFalling=false;
+    const L0=CUR_F;setLayer(0);accidentKill(g,'fall');setLayer(L0);
+    const c=S.corpses.findLast(c=>c.accident==='fall'&&c.x===g.x&&c.y===g.y);if(c)c.t0=S.t-4;
+    S.stats.special++;S.ledgePull=null;noise(g.x,g.y,150,'crash',0,g.z);S.shakeT=.12;
+  }
+}
+function drawLedgePull() {
+  const A=S.ledgePull;if(!A)return;const f=clamp(A.t/A.dur,0,1),g=A.g,a=Math.atan2(A.n.y,A.n.x);
+  drawPR(charOf(g),g.x,g.y,a,f<.38?'hide':'death',0,1,1,Math.sin(Math.PI*clamp((f-.38)/.62,0,1))*8,f<.38?Math.round(clamp(f/.38,0,1)*10):Math.round(2+3*clamp((f-.38)/.62,0,1)));
 }
 function pushOffTarget() {
   const P = S.player; if (!P.z || P.ledge || P.trav) return null;
@@ -292,9 +325,9 @@ function dropLedge(P) {
   if (!P.ledge || P.jump || P.trav) return false;
   const gb = landBelow(P.x, P.y, P.ledge, P.z);
   if (!gb) { if (!P.ledgeWarn) { P.ledgeWarn = true; toast('착지할 곳이 없다 — 두 층 높이까지만 내려갈 수 있다', 2); } return false; }
-  const d = ledgeDraw(P), h = P.z - gb.z;
-  P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.3 + h * 0.08, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70 };
-  P.z = gb.z; if (h >= 2) S.shakeT = 0.15;
+  const d = ledgeRoot(P), h = P.z - gb.z,grip=ledgeGrip(P),face=grip.a,releaseMaskY=P.ledge.y<0?grip.y+4:null;
+  P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.3 + h * 0.08, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70,downward:true,releasedHang:true,face,releaseMaskY };
+  P.x=d.x;P.y=d.y;P.a=face; if (h >= 2) S.shakeT = 0.15;
   return true;
 }
 function updateLedge(P, dt) {
@@ -333,6 +366,7 @@ function updatePlayer(dt) {
   if (S.keypad) { P.moving = false; if (dist(P.x, P.y, S.keypad.d.x, S.keypad.d.y) > 90 || S.over) closeKeypad(); return; }
   if (P.trav) { updateTrav(P, dt); if (P.carrying) { const c = P.carrying; c.x = P.x; c.y = P.y; c.fl = flOf(P); c.z = P.z || 0; }  // 계단을 오르내리는 동안 멘 시체도 함께
     if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; } return; }  // 계단에서도 붙잡은 사람이 함께 오르내린다
+  if(S.ledgePull){P.vx=P.vy=0;P.moving=false;return;}
   if (P.ledge) { updateLedge(P, dt); return; }
   if (P.grabIn) { updateGrabIn(P, dt); return; }
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
@@ -372,9 +406,9 @@ function updatePlayer(dt) {
   if (P.pick) { updatePick(P, mag, dt); return; }
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
-    P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
-    if (f >= 1) { P.jump = null; P.z = j.z1; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; g.doomed = false; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ || j.dropKill) { S.stats.special++; toast(j.dropKill ? (lastKO() ? '위에서 덮쳐 기절' : '낙하 암살') : lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } if (j.dropKill) play('land', 0.5); collide(P, 13, groundSolidP); } }
-    P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = true;
+    P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * (j.downward?f*f:f);
+    if (f >= 1) { P.jump = null; P.z = j.z1;P.moving=false; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; g.doomed = false; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ || j.dropKill) { S.stats.special++; toast(j.dropKill ? (lastKO() ? '위에서 덮쳐 기절' : '낙하 암살') : lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } if (j.dropKill) play('land', 0.5); collide(P, 13, groundSolidP); } }
+    P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = f<1;
     return;
   }
   if (P.under) {

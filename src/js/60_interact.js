@@ -16,7 +16,7 @@ const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
   const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
-  for (const b of S.hides) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b)) { bd = d; best = b; } }
+  for (const b of S.hides) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = hideDistance(b,P); if (d < bd && objectReachable(b)) { bd = d; best = b; } }
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
@@ -122,7 +122,7 @@ function jumpTarget() {
   for (let n = 1; n <= 12; n++) {
     const lx = tx + dx * n, ly = ty + dy * n; if (!inMap(lx, ly)) return null;
     const lv = rLv(lx, ly);
-    if (n > 1 && lv > 0 && (lv === P.z || lv === P.z - 1) && real >= 1) return { tx: lx, ty: ly, z: lv };
+    if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) return { tx: lx, ty: ly, z: lv };
     if (lv >= P.z) return null;
     if (!facadeRow(lx, ly)) real++;
     if (real > 1) return null;  // 사람 한 칸 정도 틈만 건너뛴다
@@ -437,7 +437,7 @@ function dropSpot() {
   let best = null, bd = 1e9;
   for (const o of N8) {
     const nx = tx + o[0], ny = ty + o[1];
-    if (P.z === 1 ? (solidAt(nx, ny) || roofAt(nx, ny)) : lvAt(nx, ny) !== P.z - 1) continue;
+    if (P.z === 1 ? (solidAt(nx, ny) || roofAt(nx, ny)) : (rLv(nx, ny) !== P.z - 1 || robAt(nx,ny))) continue;
     const d = dist(P.x + Math.cos(P.a) * 40, P.y + Math.sin(P.a) * 40, tc(nx), tc(ny));
     if (d < bd) { bd = d; best = [nx, ny]; }
   }
@@ -879,15 +879,13 @@ function actPrimary(force) {
     }
     case 'leap': case 'jump': {
       const t = a.k === 'leap' ? [a.j.tx, a.j.ty, a.j.z] : a.s;
+      if(!inMap(t[0],t[1])||solidFor(t[2]||0)(t[0],t[1]))break;
       P.jump = { x0: P.x, y0: P.y, x1: tc(t[0]), y1: tc(t[1]), t: 0, dur: a.k === 'leap' ? 0.42 : 0.3, z1: t[2], arc: a.k === 'leap' ? 26 : 10 };
-      P.a = Math.atan2(P.jump.y1 - P.y, P.jump.x1 - P.x); play('throw', 0.35);
+      P.jump.downward=(t[2]||0)<P.z;P.jump.face=Math.atan2(P.jump.y1-P.y,P.jump.x1-P.x);
+      P.a = P.jump.face; play('throw', 0.35);
       break;
     }
-    case 'ledgeKill': {
-      const g = a.g, n = P.ledge, from = { x: g.x, y: g.y }, to = groundBelow(P.x, P.y, n) || groundBelow(g.x, g.y, n) || { x: P.x + n.x * 60, y: P.y + n.y * 60 };
-      P.strikeT = 0.3; play('cloth', 0.5); fallKill(g, from, to); toast('가장자리에서 끌어내렸다 — 추락사로 보인다', 2, 'good');
-      break;
-    }
+    case 'ledgeKill': { beginLedgePull(a.g);break; }
     case 'wallUp': {  // 1층 높이 벽: 손을 뻗어 가장자리를 잡고 끌어올린다
       const s = wallUpSpot();
       if (!s || !a.s || s.z !== a.s.z || dist(s.top.x, s.top.y, a.s.top.x, a.s.top.y) > 2) break;
@@ -984,24 +982,8 @@ function updateGrabIn(P, dt) {
 }
 // 숨기: 바로 사라지지 않는다. 쓰레기통 = 다가가 테를 짚고 몸을 넘겨 안으로 가라앉음 · 화단 = 웅크려 파고듦 · 맨홀 = 가장자리에서 사다리로 내려감
 function enterHide(b, quick) {
-  const P = S.player;
-  if(['box','well'].includes(b.type)){beginHideFlow('enter',b);return;}
-  if (!quick && usePR('ninja') && PR.anims.vault && PR.anims.climb && !P.carrying && !P.captive) {
-    const d = dist(P.x, P.y, b.x, b.y), a = Math.atan2(b.y - P.y, b.x - P.x); P.a = a; P.cover = null; play('cloth', 0.3);
-    const fin = () => enterHideNow(b, false, true);
-    if (b.type === 'box') {
-      const ex = b.x - Math.cos(a) * 24, ey = b.y - Math.sin(a) * 24;
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: ex, y: ey, f: 0.28 }, { x: b.x, y: b.y - 4, f: 0.66 }, { x: b.x, y: b.y, f: 1 }], dur: 0.8 + d / 700, phases: [{ to: 0.28, pose: 'walk' }, { to: 0.66, pose: 'vault' }, { to: 1, pose: 'sink' }], face: a, rim: b.y + 2, hideB: b, end: () => { play('metal', 0.25); fin(); } });
-    } else if (b.type === 'well') {
-      const ex = b.x - Math.cos(a) * 20, ey = b.y - Math.sin(a) * 20;
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: ex, y: ey, f: 0.3 }, { x: b.x, y: b.y, f: 0.45 }, { x: b.x, y: b.y + 6, f: 1 }], dur: 0.9 + d / 700, phases: [{ to: 0.3, pose: 'walk' }, { to: 1, pose: 'climbDown' }], face: -Math.PI / 2, rim: b.y + 4, hideB: b, end: () => { play('metal', 0.3); fin(); } });
-    } else {
-      S.bushShake = { x: b.x, y: b.y, t: S.t };
-      startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: b.x, y: b.y, f: 0.55 }, { x: b.x, y: b.y + 2, f: 1 }], dur: 0.55 + d / 700, phases: [{ to: 0.55, pose: 'walk' }, { to: 1, pose: 'sinkBush' }], face: a, rim: b.y + 14, hideB: b, end: () => { S.bushShake = { x: b.x, y: b.y, t: S.t }; fin(); } });
-    }
-    return;
-  }
-  enterHideNow(b, quick);
+  if(b.type==='okt'){enterHideNow(b,quick);return;}
+  beginHideFlow('enter',b);
 }
 function enterHideNow(b, quick, keepFrom, witnessed=false) {
   const P = S.player;
@@ -1013,28 +995,8 @@ function enterHideNow(b, quick, keepFrom, witnessed=false) {
 }
 // dir 가 있으면 그 방향에 가장 가까운 빈 칸으로 나온다 (조이스틱 방향 탈출)
 function leaveHide(dir) {
-  const P = S.player, b = P.hide; if (!b) return;
-  if(['box','well'].includes(b.type)){beginHideFlow('exit',b,null,dir);return;}
-  b.spotted = false; P.hide = null;
-  if (!dir) dir = b.type === 'well' || !P.hideFrom ? { x: Math.cos(P.a), y: Math.sin(P.a) } : { x: P.hideFrom.x - b.x, y: P.hideFrom.y - b.y };
-  const dl = Math.hypot(dir.x, dir.y) || 1;
-  let best = null, bs = -9;
-  for (const o of N8) {
-    const sol = b.z ? solidFor(b.z) : groundSolidP, tx = b.tx + o[0], ty = b.ty + o[1]; if (sol(tx, ty)) continue;
-    if (o[0] && o[1] && (sol(b.tx + o[0], b.ty) && sol(b.tx, b.ty + o[1]))) continue;
-    const sc = (o[0] * dir.x + o[1] * dir.y) / (Math.hypot(o[0], o[1]) * dl);
-    if (sc > bs) { bs = sc; best = [tx, ty]; }
-  }
-  if (!best) { const sol = b.z ? solidFor(b.z) : groundSolidP; let bd = 1e9; for (let r = 1; r <= 3 && !best; r++) for (let oy = -r; oy <= r; oy++) for (let ox = -r; ox <= r; ox++) { const tx = b.tx + ox, ty = b.ty + oy; if (Math.max(Math.abs(ox), Math.abs(oy)) !== r || sol(tx, ty)) continue; const dd = Math.hypot(ox - dir.x, oy - dir.y); if (dd < bd) { bd = dd; best = [tx, ty]; } } }  // 두 칸짜리 침대 등: 이웃이 다 막혔으면 조금 더 멀리
-  if (best) {
-    const tx = tc(best[0]), ty = tc(best[1]); P.a = Math.atan2(best[1] - b.ty, best[0] - b.tx);
-    if (usePR('ninja') && PR.anims.vault && !b.z) {
-      if (b.type === 'box') { P.x = b.x; P.y = b.y; P.jump = { x0: b.x, y0: b.y - 4, x1: tx, y1: ty, t: 0, dur: 0.45, z1: 0, arc: 16, noise: 30, vault: true }; play('metal', 0.2); }
-      else if (b.type === 'well') { P.x = b.x; P.y = b.y + 6; startTrav({ pts: [{ x: b.x, y: b.y + 6, f: 0 }, { x: b.x, y: b.y, f: 0.6 }, { x: tx, y: ty, f: 1 }], dur: 0.8, phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'vault' }], face: -Math.PI / 2, rim: b.y + 4 }); }
-      else { S.bushShake = { x: b.x, y: b.y, t: S.t }; P.x = b.x; P.y = b.y; startTrav({ pts: [{ x: b.x, y: b.y, f: 0 }, { x: tx, y: ty, f: 1 }], dur: 0.35, phases: [{ to: 1, pose: 'walk' }] }); }
-    } else { P.x = tx; P.y = ty; }
-  }
-  play('cloth', 0.35);
+  const b=S.player.hide;if(!b)return;
+  beginHideFlow('exit',b,null,dir);
 }
 function travelTunnel() {
   const P = S.player; const w = P.hide; if (!w || w.type !== 'well' || !ugAt(w.tx, w.ty)) return;

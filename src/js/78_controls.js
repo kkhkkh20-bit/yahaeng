@@ -56,6 +56,7 @@ function actVerb(a, ic) {
   if (a.k === 'dropItem') return '내려놓기';
   if (a.k === 'drag') return '끌고 기절';
   if (a.k === 'finish') return '처치';
+  if (a.k === 'ledgeKill') return '끌어내리기';
   if (a.k === 'camroom') return 'CCTV 끄기';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';
   if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기

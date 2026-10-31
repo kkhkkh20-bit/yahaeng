@@ -1,18 +1,19 @@
 // 손을 쓰는 행동은 대상 확인 → 손 뻗기 → 접촉 → 마무리까지 한 번만 실행한다.
 function actionBusy(P = S.player) {
-  return !!(P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
+  return !!(S.ledgePull || P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
     (P.strikeT > 0) || (P.bodyAnim && S.t - P.bodyAnim.t0 < P.bodyAnim.dur));
 }
 // 벽·층 너머 물건을 잡지 않는다. 벽에 붙인 스위치와 가구 끝에는 손이 닿는다.
 function objectReachable(o, radius = 60) {
   const P = S.player;
   if (!o || !Number.isFinite(o.x) || !Number.isFinite(o.y) || flOf(o) !== flOf(P) || (o.z || 0) !== (P.z || 0)) return false;
-  const d = dist(P.x, P.y, o.x, o.y); if (d > radius) return false;
+  const d = dist(P.x, P.y, o.x, o.y); if ((o.furn===true?hideDistance(o,P):d) > radius) return false;
   const L0 = CUR_F; setLayer(flOf(P));
   const a = Math.atan2(o.y - P.y, o.x - P.x), hit = castRay(P.x, P.y, a, d, P.z || 0);
   // 막힌 칸이 물건 자체의 칸이면 표면까지 손이 닿는다. 중간 벽은 통과할 수 없다.
   const ok = hit >= d - 1 || (Math.floor((P.x + Math.cos(a) * (hit + 0.01)) / TILE) === Math.floor(o.x / TILE) && Math.floor((P.y + Math.sin(a) * (hit + 0.01)) / TILE) === Math.floor(o.y / TILE));
-  setLayer(L0); return ok;
+  const b=o.furn===true?hideFootprint(o):null,hx=P.x+Math.cos(a)*(hit+.01),hy=P.y+Math.sin(a)*(hit+.01);
+  setLayer(L0); return ok||!!(b&&hx>=b.x0&&hx<b.x1&&hy>=b.y0&&hy<b.y1);
 }
 const OBJECT_FLOW = {
   pickup: [0.42, '줍는 중', 'ground'], dress: [0.8, '갈아입는 중', 'dress'],

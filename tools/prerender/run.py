@@ -26,10 +26,16 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   # 물건(택배 상자) 들고 걷기·서기
   ('hold', 'Walk', [i / 8 for i in range(8)], 0, ('hold', 'w')), ('holdI', 'Idle', [0], 0, ('hold', 'i')),
   # 편한 서기(팔 내리고 곧게) · 대화 손짓 — 주민과 평소의 경비 (기본 Idle 은 싸움 자세)
-  ('idleC', 'Walk', [0.25, 0.25], 0, ('relax', 'i')), ('talk', 'Walk', [0.25, 0.25, 0.25, 0.25], 0, ('relax', 't'))]
+  ('idleC', 'Walk', [0.25, 0.25], 0, ('relax', 'i')), ('talk', 'Walk', [0.25, 0.25, 0.25, 0.25], 0, ('relax', 't')),
+  ('hide', 'Idle', [i/16 for i in range(17)], 0, ('hide', 'vault')),
+  ('duck', 'Idle', [i/8 for i in range(9)], 0, ('hide', 'duck')),
+  ('drop', 'Idle', [i/12 for i in range(13)], 0, ('hide', 'drop')),
+  ('leap', 'Idle', [i/12 for i in range(13)], 0, ('hide', 'leap')),
+  ('ledgePull', 'Idle', [i/12 for i in range(13)], 0, ('hide', 'ledgePull'))]
 TALK = [0, 1, 0.45, 1.25]
 def js_for(an, t, ti, a, hg='undefined'):
     name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None
+    if pr and pr[0] == 'hide': return f"renderHidePose('{pr[1]}', {t}, {a})"
     if pr and pr[0] == 'pose': return f"renderPose('{pr[1]}', {t}, {a})"
     if pr and pr[0] == 'hold': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, true)"
     if pr and pr[0] == 'relax': return f"renderFrame('{clip}', {t}, {a}, 0, undefined, false, " + ('{talk: %s}' % TALK[ti] if pr[1] == 't' else '{sway: %d}' % ti) + ')'

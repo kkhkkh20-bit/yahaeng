@@ -126,10 +126,15 @@ function drawPlayerBody(P) {
   // 자세: 살금살금 = 몸을 낮춤(납작·넓게, 발밑 그림자 큼) / 달리기 = 뒤로 흩날리는 속도선
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
   if (runP) { const bx = -Math.cos(P.a), by = -Math.sin(P.a); ctx.lineWidth = 2.5; for (const o of [-8, 0, 8]) { const ph = (S.t * 5 + o * 0.05) % 1, px = P.x - by * o, py = P.y + 6 + bx * o; ctx.strokeStyle = `rgba(232,238,248,${0.5 * (1 - ph)})`; ctx.beginPath(); ctx.moveTo(px + bx * (18 + ph * 8), py + by * (18 + ph * 8)); ctx.lineTo(px + bx * (36 + ph * 14), py + by * (36 + ph * 14)); ctx.stroke(); } }
+  if(P.jump?.downward&&usePR(playerLook)){
+    const j=P.jump,f=clamp(j.t/j.dur,0,1);ctx.save();
+    if(j.releaseMaskY!=null){ctx.beginPath();ctx.rect(P.x-200,j.releaseMaskY-500,400,500);ctx.clip();}
+    drawPR(playerLook,P.x,P.y,j.face??P.a,j.releasedHang?'drop':'leap',0,1,1,-yo,Math.round(f*12));ctx.restore();return;
+  }
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
-    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), nf=PR.anims.hang[1],fi=P.moving?Math.floor(S.t*6)%nf:0;
+    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
     ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    drawHangPR(playerLook,hx,hy+2,Math.atan2(-n.y,-n.x),fi,n.y<0?.75:1);ctx.restore();ctx.globalAlpha=1;
+    drawHangPR(playerLook,hx,hy+2,Math.atan2(-n.y,-n.x),fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
     return;
   }
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
@@ -1319,7 +1324,7 @@ function draw() {
   PM('player');
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
-    if(g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
+    if(g.ledgeFalling||g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
     drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -1396,6 +1401,7 @@ function draw() {
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
   drawHideFlowVisual();
+  drawLedgePull();
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();

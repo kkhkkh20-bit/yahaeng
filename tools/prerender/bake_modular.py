@@ -76,7 +76,9 @@ async def main():
     if requested_patch and not patch:continue
     if patch:
      previous=meta if bn=='key' else meta['bodies'][bn]
-     if previous['cols']!=col or previous['anims']!=cmap:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
+     if previous['cols']!=col or previous['anims']!=cmap:
+      compatible=all(cmap.get(k)==v for k,v in previous['anims'].items()) and col>=previous['cols'] and set(cmap)-set(previous['anims'])<=patch
+      if '--append' not in sys.argv or not compatible:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
     # Assemble inside the browser: one PNG encode/IPC transfer per look, rather
     # than thousands of per-frame PNG transfers. Existing render APIs stay usable.
     expressions=[]
@@ -95,7 +97,7 @@ async def main():
      const canvas=document.createElement('canvas');canvas.width=cols*fr;canvas.height=8*fr;
      const ctx=canvas.getContext('2d'),source=document.querySelector('canvas');
      const encode=source.toDataURL;source.toDataURL=()=>'';
-     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[],hangHands=[];
+     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[],hangHands=[],ledgePullHands=[];
      try {for(const victim of [false,true]) {
        if(!frames.some(f=>f[3]===victim))continue;
        await loadModularLook(victim?'hero':look,victim?look:'guard');
@@ -103,11 +105,12 @@ async def main():
        for(const [x,y,js,isVictim,anim] of frames){if(isVictim!==victim)continue;(0,eval)(js);ctx.drawImage(source,x,y,fr,fr);
          if(js.includes('true)')&&window.lastHold)holds[y/fr]=window.lastHold.map(v=>v/2);
          grounds[anim]=window.frameGroundY;scales[anim]=window.frameScale||1;
+         if(anim==='ledgePull'){const row=y/fr;(ledgePullHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='hang'){const row=y/fr;(hangHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='climb'){const row=y/fr;(climbHands[row]||=([])).push(window.frameClimbHands);(climbFeet[row]||=([])).push(window.frameClimbFeet);}
        }
      }}finally{source.toDataURL=encode}
-     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet,hangHands};
+     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet,hangHands,ledgePullHands};
     }''',{'frames':expressions,'cols':col,'fr':FR,'look':look,'body':body,'key':KEY})
     image=Image.open(io.BytesIO(base64.b64decode(result['png'].split(',')[1]))).convert('RGBA')
     outlined=Image.new('RGBA',image.size)
@@ -120,7 +123,10 @@ async def main():
     filename='key.webp' if bn=='key' else f'body_{bn}.webp'
     if patch:
      original=Image.open(OUT/filename).convert('RGBA')
-     if original.size!=image.size:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
+     if original.size!=image.size:
+      if '--append' not in sys.argv or original.height!=image.height or original.width>image.width:raise ValueError(f'{bn}: incompatible sheet size')
+      expanded=Image.new('RGBA',image.size);expanded.paste(original,(0,0));original=expanded
+     previous.update(cols=col,anims=cmap)
      for direction in range(8):
       for c in patch_cols:
        box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR);original.paste(image.crop(box),box[:2])
@@ -129,6 +135,7 @@ async def main():
      if bn=='key':original.save(OUT/'key.png',optimize=True)
      if 'climb' in patch:previous.update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
      if 'hang' in patch:previous['hangHands']=result['hangHands']
+     if 'ledgePull' in patch:previous['ledgePullHands']=result['ledgePullHands']
      previous.setdefault('grounds',{}).update({name:value for name,value in result['grounds'].items() if name in patch})
      previous.setdefault('scales',{}).update({name:value for name,value in result['scales'].items() if name in patch})
      (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
@@ -140,6 +147,7 @@ async def main():
      image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'],scales=result['scales'])
     else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds'],'scales':result['scales']}
     (meta if bn=='key' else meta['bodies'][bn])['bounds']=frame_bounds(image,FR,cmap)
+    if result['ledgePullHands']:(meta if bn=='key' else meta['bodies'][bn])['ledgePullHands']=result['ledgePullHands']
     if result['hangHands']:(meta if bn=='key' else meta['bodies'][bn])['hangHands']=result['hangHands']
     if result['climbHands']:(meta if bn=='key' else meta['bodies'][bn]).update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
     await page.evaluate('(n)=>loadModularLook(n)',look)

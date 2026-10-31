@@ -94,7 +94,7 @@ function newGame(si) {
   });
   ladders.forEach(l => { l.x = tc(l.bx); l.y = tc(l.by); l.ux = tc(l.tx); l.uy = tc(l.ty); });
   // 실내 가구 은신처: 옷장 · 침대 밑 · 사물함 (층마다)
-  FURN.forEach(it => { const t = it.t === 'cbed' ? 'bed' : it.t; if (!FURN_HIDE[t]) return; hides.push({ type: t, furn: true, tx: it.x, ty: it.y, x: (it.x + it.w / 2) * TILE, y: (it.y + it.h / 2) * TILE, fl: it.fl || 0, bodies: 0, cap: 1 }); });
+  FURN.forEach(it => { const t = it.t === 'cbed' ? 'bed' : it.t; if (!FURN_HIDE[t]) return; hides.push({ type: t, furn: true, w:it.w,h:it.h,r:it.r,tx: it.x, ty: it.y, x: (it.x + it.w / 2) * TILE, y: (it.y + it.h / 2) * TILE, fl: it.fl || 0, bodies: 0, cap: 1 }); });
   S_ugC = null;
   const wells = hides.filter(h => h.type === 'well');
   wells.forEach((w, i) => { w.next = wells.length > 1 ? wells[(i + 1) % wells.length] : null; });

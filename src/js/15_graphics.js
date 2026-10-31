@@ -128,9 +128,9 @@ function drawNearFurn(P, openB) {
 }
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
 function killBlockReason() {
-  const P = S.player; if (P.hide || P.vent || P.under || P.wire || P.jump || P.trav || P.lunge || P.grabIn || P.strikeT > 0) return null;
+  const P = S.player; if (P.ledge || actionBusy(P) || P.hide || P.vent || P.under || P.wire) return null;
   let best = null, bd = 78;
-  for (const g of S.guards) { if (g.civ || g.dog || g.dropped || ['DEAD', 'CAPTIVE'].includes(g.state) || g.climb || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
+  for (const g of S.guards) { if (g.civ || g.dog || g.doomed || g.dropped || ['DEAD', 'CAPTIVE'].includes(g.state) || g.climb || flOf(g) !== flOf(P)) continue; const d = dist(P.x, P.y, g.x, g.y); if (d < bd) { bd = d; best = g; } }
   if (!best || canKill(best, P) || canKill(best, P, LUNGE)) return null;
   const g = best, behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
   const why = P.carrying || P.captive ? '운반 중에는 공격할 수 없다' : (g.z || 0) !== (P.z || 0) ? '높이가 다르다' : g.state === 'ALERT' && !radioBusy(g) ? (g.seen?'교전 중 · 시야를 끊기':'경계 중 · 뒤로 접근') : !behind ? '정면에서는 불가 · 등 뒤로 접근' : !los(P.x, P.y, g.x, g.y) ? '장애물에 가려져 있다' : '접근 경로가 막혀 있다';
@@ -354,10 +354,11 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   return true;
 }
 // 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.
-function drawHangPR(key, x, y, a, frame, alpha = 1) {
-  const m=PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims.hang||PR.anims.hang,fi=clamp(frame,0,n-1),row=prDir(a);
-  const hands=m.hangHands?.[row]?.[fi]||PR.hangHands?.[row]?.[fi],s=m.scales?.hang||PR.scales?.hang||1;
-  const hx=hands?(hands[0][0]+hands[1][0])/2:PR.hangHand[0],hy=hands?(hands[0][1]+hands[1][1])/2:PR.hangHand[1];
+function drawHangPR(key, x, y, a, frame, alpha = 1, anim = 'hang') {
+  const m=PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims[anim]||PR.anims[anim],fi=clamp(frame,0,n-1),row=prDir(a);
+  const hands=m[anim+'Hands']?.[row]?.[fi]||PR[anim+'Hands']?.[row]?.[fi],s=m.scales?.hang||PR.scales?.hang||1;
+  let hx=hands?(hands[0][0]+hands[1][0])/2:PR.hangHand[0],hy=hands?(hands[0][1]+hands[1][1])/2:PR.hangHand[1];
+  if(anim==='ledgePull'&&hands){const base=m.hangHands?.[row]?.[0]||PR.hangHands[row][0];hx=hands[0][0]-(base[0][0]-base[1][0])/2;hy=hands[0][1]-(base[0][1]-base[1][1])/2;}
   const dx=x-hx*s,dy=y-hy*s,dw=PR.fr*s,sh=prSheet(key),ol=prVar[key+'_ol'];
   if(ol&&(isTouch||alpha<1)){ctx.globalAlpha=.65*alpha;prBlit(ol,c+fi,row,dx,dy,dw,dw);}
   ctx.globalAlpha=alpha;prBlit(sh,c+fi,row,dx,dy,dw,dw);ctx.globalAlpha=1;
@@ -477,7 +478,7 @@ function drawLastSeen() {
   }
 }
 function drawGuard(g) {
-  if(g.containerMoving)return;
+  if(g.containerMoving||g.ledgeFalling)return;
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;
   if (g.state === 'CAPTIVE' && S.player.grabIn && S.player.grabIn.g === g && PAIR() && PR.anims.choke && usePR(charOf(g))) return;  // 목을 감는 중: 플레이어와 함께 그린다
   if (g.civ && g.state === 'SLEEP') { drawBody({ ch: charOf(g), x: g.x, y: g.y, a: g.a }); drawEmote('zz', g.x + 16, g.y - 6); return; }
