@@ -434,7 +434,7 @@ body:not(.touch) .sysbtns .tonly { display: none; }
 #keypad .kpx { margin-top:8px; min-height:44px; width:100%; background:none; border:1px solid #637478; border-radius:2px; color:inherit; font-size:12px; }
 #keypad button:focus-visible { outline:2px solid var(--lamp); outline-offset:2px; }
 body.keypadopen .pad,body.keypadopen .sysbtns,body.keypadopen .keys { visibility:hidden; }
-@media(max-height:480px) {
+@media(max-height:480px) and (min-width:480px) {
  #keypad .kp { width:min(600px,calc(100vw - 32px)); display:grid; grid-template-columns:minmax(130px,1fr) minmax(170px,1.1fr); gap:10px 16px; }
  #keypad .kp-info { grid-column:1; grid-row:1; }
  #keypad .kpg { grid-column:2; grid-row:1 / span 2; gap:6px; }

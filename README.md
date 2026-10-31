@@ -55,6 +55,6 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
 Version: v100
-Source commit: 6be4a97eeed1ed247b0cec6806ea45bc69f03470
+Source commit: a1fa8fcb2b29ed16d912ee32e854d1c497a7a2b7
 
-Ink study source: 6be4a97eeed1ed247b0cec6806ea45bc69f03470
+Ink study source: a1fa8fcb2b29ed16d912ee32e854d1c497a7a2b7
