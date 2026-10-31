@@ -23,6 +23,9 @@ function renderSprite(cameraDrop = 0, frameScale = 1) {
   renderer.render(scene, cam);
   const ground = new THREE.Vector3().project(cam);
   window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;
+  const projectBone = name => { const v = new THREE.Vector3(); bones[name].getWorldPosition(v); v.project(cam); return [(v.x+1)*RS/4,(1-v.y)*RS/4]; };
+  window.frameClimbHands = ['LeftHand','RightHand'].map(projectBone);
+  window.frameClimbFeet = ['LeftFoot','RightFoot'].map(projectBone);
   cam.position.y += cameraDrop; cam.lookAt(0, CY, 0); cam.updateMatrixWorld(true);
   cam.left=cam.bottom=-VIEW/2;cam.right=cam.top=VIEW/2;cam.updateProjectionMatrix();
 }
@@ -311,8 +314,15 @@ window.renderPose = (name, k, dirA) => {
     rotW(B.Spine, 0.18);
     for (const [sd, sg] of [['Left', 1], ['Right', -1]]) {
       const e = s * sg, side = sd === 'Left' ? 1 : -1;
-      aimB(B[sd + 'Arm'], B[sd + 'ForeArm'], V3(0.3 * side, 0.15 + 0.55 * e, 0.8));
-      aimB(B[sd + 'ForeArm'], B[sd + 'Hand'], V3(0.05 * side, 0.35 + 0.6 * e, 0.75));
+      const shoulder = new THREE.Vector3(); B[sd+'Arm'].getWorldPosition(shoulder);
+      const target = V3(side*9, shoulder.y+62+e*35, shoulder.z+86);
+      const upper=B[sd+'Arm'], elbow=B[sd+'ForeArm'], hand=B[sd+'Hand'];
+      const ep=new THREE.Vector3(),hp=new THREE.Vector3();elbow.getWorldPosition(ep);hand.getWorldPosition(hp);
+      const len1=ep.distanceTo(shoulder),len2=hp.distanceTo(ep),axis=target.clone().sub(shoulder),distance=Math.min(axis.length(),len1+len2-.01);axis.normalize();
+      const along=(len1*len1-len2*len2+distance*distance)/(2*distance),bend=Math.sqrt(Math.max(0,len1*len1-along*along));
+      const outward=V3(side,0,0).addScaledVector(axis,-side*axis.x).normalize();
+      const elbowTarget=shoulder.clone().addScaledVector(axis,along).addScaledVector(outward,bend);
+      aimB(upper,elbow,elbowTarget.sub(shoulder));elbow.getWorldPosition(ep);aimB(elbow,hand,target.sub(ep));
       aimB(B[sd + 'UpLeg'], B[sd + 'Leg'], V3(0.08 * side, -0.75 + 0.75 * Math.max(0, -e), 0.6));
       aimB(B[sd + 'Leg'], B[sd + 'Foot'], V3(0, -1, -0.1));
     }

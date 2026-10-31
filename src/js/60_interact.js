@@ -21,6 +21,24 @@ function nearHide() {
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면
 // 시체를 메고는 실내 계단(fstair)만 오른다 (사다리·배관·옥상 계단은 못 오른다)
+// 그려진 관 축과 이동 동작은 같은 좌표를 사용한다. 옥상 착지점은 별도로 보존한다.
+function pipeGeometry(l) {
+  const landing={x:l.rx??l.ux,y:l.ry??l.uy},nx=Math.sign(l.x-l.ux),ny=Math.sign(l.y-l.uy),b=BLD[bldAt(l.tx,l.ty)];
+  const height=Math.max(1,(l.tz||1)-(l.bz||0));
+  let x=nx?(l.x+l.ux)/2+nx*3:l.ux,bottom=l.y-26,base=l.y+8,top=Math.min(bottom-height*40,landing.y+ny*20-16);
+  if(l.gas&&b){x=l.tx*TILE+(l.tx===b.x0?9:l.tx===b.x1?TILE-9:TILE/2);top=b.facade?(b.y1-b.fh+1)*TILE+4:bottom-height*40;base=(b.y1+1)*TILE+6;}
+  return {top:{x,y:Math.min(top,bottom-28)},bottom:{x,y:bottom},base:{x,y:base},landing,face:Math.atan2(l.uy-l.y,l.ux-l.x)};
+}
+function pipeTravel(l,P,up) {
+  const geometry=pipeGeometry(l),key=playerKey(P),foot=at=>climbContact(key,geometry.face,0,at)?.foot||at,a=foot(geometry.bottom),b=foot(geometry.top),lv=Math.max(1,(l.tz||1)-(l.bz||0));
+  return {pipe:l,face:geometry.face,base:{x:l.x,y:l.y},step:'metal',loud:45,down:!up,dur:.65+lv*.65,
+    pts:up?[{x:P.x,y:P.y,f:0},{...a,f:.16},{...b,f:.8},{...geometry.landing,f:1}]:[{x:P.x,y:P.y,f:0},{...b,f:.2},{...a,f:.84},{x:l.x,y:l.y,f:1}],
+    phases:up?[{to:.16,pose:'walk'},{to:.8,pose:'climb'},{to:1,pose:'vault'}]:[{to:.2,pose:'vault'},{to:.84,pose:'climb'},{to:1,pose:'walk'}]};
+}
+function pipeGripAt(T) {
+  const geometry=pipeGeometry(T.pipe),f=clamp(T.t/T.dur,0,1),u=T.down?1-clamp((f-.2)/.64,0,1):clamp((f-.16)/.64,0,1);
+  return {x:geometry.bottom.x,y:geometry.bottom.y+(geometry.top.y-geometry.bottom.y)*u};
+}
 function nearClimb() {
   const P = S.player; if (P.captive || P.jump) return null; let best = null, bd = 44;
   for (const l of S.ladders) { if (ACT_SKIP.has(l)) continue; if (P.carrying && l.kind !== 'fstair') continue; if (l.bz !== P.z || (P.z === 0 && (l.bfl || 0) !== flOf(P)) || (l.kind === 'chimney' && lampOn(l.lamp))) continue; let d = dist(P.x, P.y, l.x, l.y);
@@ -773,7 +791,8 @@ function actPrimary(force) {
       const l = a.l, fin = () => { P.z = l.bz; P.fl = l.bfl || 0; setLayer(P.fl); P.x = l.x; P.y = l.y;
         if (l.kind === 'chimney') { noise(l.ux, l.uy, 70, 'soot'); S.fx.push({ k: 'smoke', x: l.ux, y: l.uy, t: 0 }); toast('굴뚝을 타고 아궁이로 내려왔다 (이동 소음 발생)', 2.2); } };
       play(l.kind === 'pipe' ? 'metal' : 'cloth', 0.3);
-      if (l.kind === 'pipe' || l.kind === 'ladder') {  // 배관·사다리를 붙잡고 한 칸씩 내려간다
+      if(l.kind==='pipe'){startTrav({...pipeTravel(l,P,false),end:fin});break;}
+      if (l.kind === 'ladder') {  // 사다리를 붙잡고 한 칸씩 내려간다
         const top = { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy }, lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
         startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: top.x, y: top.y + 18, f: 0.14 }, { x: l.x, y: l.y, f: 1 }], dur: 0.4 + lv * 0.36, phases: [{ to: 0.14, pose: 'vault' }, { to: 1, pose: 'climb' }], face: -Math.PI / 2, down: true, base: { x: l.x, y: l.y }, step: 'metal', loud: 45, end: fin });
       } else startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y, f: 1 }], dur: 0.45, phases: [{ to: 1, pose: 'walk' }], end: () => { fin(); S.fade = 0.12; } });
@@ -808,7 +827,8 @@ function actPrimary(force) {
         break;
       }
       if (l.kind === 'fstair' || l.kind === 'stair') { beginStairTravel(l, true); break; }
-      const climb = l.kind === 'pipe' || l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
+      if(l.kind==='pipe'){play('metal',.35);startTrav({...pipeTravel(l,P,true),end:()=>{P.fl=0;setLayer(0);P.z=l.tz;P.x=top.x;P.y=top.y;}});break;}
+      const climb = l.kind === 'chimney' || l.kind === 'ladder', lv = Math.max(1, (l.tz || 1) - (l.bz || 0));
       play(l.kind === 'pipe' ? 'metal' : 'cloth', 0.35); if (l.kind === 'chimney') noise(l.ux, l.uy, 60, 'soot');
       startTrav(climb ? { pts: [{ x: P.x, y: P.y, f: 0 }, { x: l.x, y: l.y, f: 0.1 }, { x: top.x, y: top.y + 18, f: 0.86 }, { x: top.x, y: top.y, f: 1 }], dur: 0.45 + lv * 0.42, phases: [{ to: 0.86, pose: 'climb' }, { to: 1, pose: 'vault' }], face: -Math.PI / 2, base: { x: l.x, y: l.y }, step: l.kind === 'pipe' ? 'metal' : 'cloth', loud: l.kind === 'pipe' ? 45 : 30 }
         : { pts: [{ x: P.x, y: P.y, f: 0 }, { x: top.x, y: top.y, f: 1 }], dur: 0.5, phases: [{ to: 1, pose: 'walk' }] },

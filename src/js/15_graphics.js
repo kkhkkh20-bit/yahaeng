@@ -342,6 +342,14 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
+// 배관은 발 기준 오프셋 대신 실제로 구운 두 손의 접점을 관 축에 맞춘다.
+function climbContact(key, a, frame, at, size = 1) {
+  const bm=PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),hands=m?.climbHands?.[row]?.[frame],feet=m?.climbFeet?.[row]?.[frame];
+  if(!hands||!feet)return null;
+  const scale=size*(m.scales?.climb||1),hx=(hands[0][0]+hands[1][0])/2,hy=(hands[0][1]+hands[1][1])/2;
+  const fy=(feet[0][1]+feet[1][1])/2,fx=(feet[0][0]+feet[1][0])/2,gy=m.grounds?.climb??PR.groundY;
+  return {x:at.x-(hx-PR.fr/2)*scale,y:at.y-13+(gy-hy)*scale+14,foot:{x:at.x+(fx-hx)*scale,y:at.y+(fy-hy)*scale-13},hands:hands.map(h=>({x:at.x+(h[0]-hx)*scale,y:at.y+(h[1]-hy)*scale}))};
+}
 const usePR = key => { if (!PR || !prBase) return false; if (key.endsWith('_ol')) return !!prVar[key]; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!PR_PAL[key]; };
 const PAIR = () => !!(PR && PR.anims.carry && PR.anims.held);
 const strippedKey = c => {

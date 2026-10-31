@@ -142,7 +142,9 @@ function drawPlayer(P) {
       if (T.hangOk && PR.anims.hang && PR.hangHand) { const sh = prSheet(PK), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = Math.min(nf - 1, Math.floor(tp.g * nf)), sw = Math.sin(tp.g * Math.PI) * 2;
         ctx.globalAlpha = al; prBlit(sh, c0 + fi, 6, P.x - PR.hangHand[0], P.y + 2 + sw - PR.hangHand[1], fr, fr); ctx.globalAlpha = 1; return; }
       drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
-    if (tp.pose === 'climb') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'climb', 0, al, s1, 14, ((Math.floor(T.t * 7) * (T.down ? -1 : 1)) % 4 + 4) % 4); return; }
+    if (tp.pose === 'climb') { const frame=((Math.floor(T.t*7)*(T.down?-1:1))%4+4)%4;
+      const grip=T.pipe&&climbContact(PK,T.face,frame,pipeGripAt(T));
+      drawPR(PK,grip?grip.x:P.x,grip?grip.y:P.y,T.face??P.a,'climb',0,al,grip?1:s1,14,frame);return; }
     if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
   }
   if (usePR(playerLook)) {
@@ -337,7 +339,7 @@ function drawRoofs(openB) {
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
   for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
   for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
-  for (const l of S.ladders) if (l.kind === 'pipe' && !l.gas) drawPipe(l);
+  for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
   for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
   drawTrapsRoof(openB);
@@ -759,15 +761,18 @@ function drawDoor(d, onRoof) {
 }
 // 배관: 회색 관(벽에 붙음) + 바닥 쪽 오르기 표시
 function drawPipe(l) {
-  const vert = l.bx === l.tx;
-  const ox = (l.x - l.ux) / TILE, oy = (l.y - l.uy) / TILE;
-  const cx = l.ux + ox * 20, cy = l.uy + oy * 20;
-  ctx.strokeStyle = '#b8c0ca'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath();
-  if (vert) { ctx.moveTo(cx, cy - 18 * oy); ctx.lineTo(cx, cy + 10 * oy); } else { ctx.moveTo(cx - 18 * ox, cy); ctx.lineTo(cx + 10 * ox, cy); }
-  ctx.stroke(); ctx.lineCap = 'butt';
-  ctx.fillStyle = '#6b737e'; ctx.beginPath(); ctx.arc(cx, cy, 5, 0, TAU); ctx.fill();
+  const g=pipeGeometry(l),x=g.top.x,top=g.top.y,bottom=g.base.y;
+  ctx.save();ctx.lineCap='round';
+  ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x+2,top+3);ctx.lineTo(x+2,bottom+3);ctx.stroke();
+  ctx.strokeStyle=l.gas?'#c9a43a':'#8e99a2';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,bottom);ctx.stroke();
+  ctx.strokeStyle=l.gas?'#f0d070':'#cad1d5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-1,top);ctx.lineTo(x-1,bottom);ctx.stroke();
+  ctx.fillStyle='#525b61';for(let y=top+8;y<bottom-4;y+=24)ctx.fillRect(x-5,y,10,3);
+  // 옥상 쪽 짧은 꺾임은 건물로 들어간다. 손은 세로 관 구간을 붙잡는다.
+  const nx=Math.sign(l.ux-l.x);if(nx){ctx.strokeStyle='#aeb8bf';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x+nx*13,top);ctx.stroke();}
+  ctx.restore();
 }
 function drawPipeBase(l) {
+  if(S.player.trav?.pipe===l)return;
   const a = Math.atan2(l.uy - l.y, l.ux - l.x);
   ctx.save(); ctx.translate(l.x, l.y); ctx.rotate(a);
   ctx.strokeStyle = 'rgba(184,192,202,.75)'; ctx.lineWidth = 3;
@@ -857,7 +862,7 @@ function drawBlockEdges(P, all) {
 }
 // 가까운 상호작용 지점을 작은 표식으로 늘 보여 준다 (숨을 곳 · 오르는 곳 · 창문 · 환풍구 · 잠긴 문)
 const _nearPaths = {}; const nearPath = k => _nearPaths[k] || (_nearPaths[k] = new Path2D(ICON_P[k]));  // 근처 표시용 아이콘 (버튼 아이콘과 같은 그림)
-function drawNearMarks(P, openB) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
+function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip.ui)) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (P.hide || P.vent || P.under || P.wire || P.trav || P.jump) return;
   const R = 300, fP = flOf(P), k = Math.max(1, 0.95 / SCALE), list = [];
   const hidden = (tx, ty) => { const b = bldAt(tx, ty); return !P.z && !fP && b >= 0 && b !== openB; };
