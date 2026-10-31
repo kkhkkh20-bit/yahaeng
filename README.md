@@ -2,6 +2,10 @@
 
 https://kkhkkh20-bit.github.io/yahaeng/
 
+v96 의뢰·대화·붙잡기: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PRESENTATION.md
+
+전후 화면: https://kkhkkh20-bit.github.io/yahaeng/presentation/
+
 v95 실외 조명 변경: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/OUTDOOR_LIGHTS.md
 
 조명 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/lighting/
@@ -30,5 +34,5 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v95
-Source commit: 25c28f3ec96a5e602e3c0612e4f5110720b4114e
+Version: v96
+Source commit: 7efe9a78aa3f4bae23c5cdbc1500886b3fdac963
