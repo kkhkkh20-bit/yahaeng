@@ -453,7 +453,7 @@ function updateGuard(g, dt) {
   const P = S.player;
   g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0 && g.state !== 'ALERT') g.icon = null; }
-  const spd = (g.target ? SPD.target : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1)) * spdMul();
+  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1)) * spdMul();
   if (S.alevel && (g.chat || g.act)) { endChat(g); g.act = null; }
   // 공포: 겁에 질려 달아난다. 주변을 못 보고, 가까운 동료를 잘못 벨 수 있다
   if (g.state === 'TERROR') {
@@ -589,7 +589,7 @@ function updateGuard(g, dt) {
       const wp = g.route[g.ri] || g.route[(g.ri = 0)];
       if (!g.path) pathTo(g, wp.x, wp.y);
       g.glanceT -= dt;
-      if (g.glanceT <= 0 && g.route.length > 1 && !g.still) { g.glance = rnd(2.2, 3.2); g.glanceA = g.a + Math.PI; break; }  // 걷다가 멈춰 뒤돌아보기
+      if (g.glanceT <= 0 && g.route.length > 1 && !g.still && !rendezvousHurry(g)) { g.glance = rnd(2.2, 3.2); g.glanceA = g.a + Math.PI; break; }  // 걷다가 멈춰 뒤돌아보기
       if (moveAlong(g, spd, dt) || (g.target && dist(g.x,g.y,wp.x,wp.y)<12)) {
         g.wait = wp.pause * (S.alevel || wp.once ? 1 : 1.8); g.waitBase = g.a; g.waitT = 0; g.path = null; g.lookT = null;
         if (wp.once) wp.spent = true;
@@ -785,15 +785,15 @@ function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t;
 function drawSpeech() {
   if(DLG.modal||S.keypad)return;
   const P=S.player,ch=chaseNow(),focus=playerActionFocus();
-  const who=S.guards.filter(g=>g.say&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<=(ch?300:560)&&(!ch||g.state==='ALERT'&&!g.civ));
+  const who=visibleSpeechCandidates(P,ch,focus);
   if(P.say&&!P.hide)who.unshift(P);
-  who.sort((a,b)=>(b===P?1:0)-(a===P?1:0)||(!!b.chat-!!a.chat)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
+  who.sort((a,b)=>speechPriority(b,P)-speechPriority(a,P)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
   const vx0=cam.x-W/SCALE/2+8/SCALE,vx1=cam.x+W/SCALE/2-8/SCALE,vy0=cam.y-H/SCALE/2+8/SCALE,vy1=cam.y+H/SCALE/2-8/SCALE;
   const hit=(a,b)=>a[0]<b[2]+gap&&a[2]+gap>b[0]&&a[1]<b[3]+gap&&a[3]+gap>b[1];
   ctx.save();ctx.font=`500 ${12*k}px "IBM Plex Sans KR",sans-serif`;
   for(const g of who) {
-    if(SPEECH_R.length>=(focus?1:2))break;
+    if(SPEECH_R.length>=1)break;
     // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.
     const lines=[''],maxText=Math.min(210*k,(W-32)/SCALE-20*k);
     for(const word of g.say.split(' ')) {
@@ -840,7 +840,7 @@ function followLeader(g, dt, spd) {
     if (L && !g.civ && !g.dog) { goSuspicious(g, L.x, L.y, 6); g.why = 'saw'; gsay(g, ['어디 갔어? 대답해!', '야… 어디 간 거야?', '방금까지 앞에 있었는데…'][g.id % 3]); setIcon(g, '?'); }
     return;
   }
-  const wait=g.escortWait,r=wait&&wait.rect;
+  const wait=rendezvousPrivacy(g)||g.escortWait,r=wait&&wait.rect;
   // 입구에 도착하기 전에 밖에서 대기한다. 뒤따르던 옛 경로를 계속 밟아 안으로 들어가지 않는다.
   const approach=r&&[r[0]-(wait.at[0]<r[0]?1:0),r[1]-(wait.at[1]<r[1]?1:0),r[2]+(wait.at[0]>r[2]?1:0),r[3]+(wait.at[1]>r[3]?1:0),r[4]];
   const privacy=!!(wait&&inRect(L,approach));
@@ -902,8 +902,13 @@ function hurtPlayer(g, why) {
 }
 // 숨은 곳에서 끌려 나옴
 function dragOut(g, why) {
-  const P = S.player; const b = P.hide; if (b) { leaveHide({ x: P.x - g.x, y: P.y - g.y }); }
-  P.hidden = false; g.seen = true; goAlert(g); hurtPlayer(g, why);
+  const P=S.player;
+  if(P.trav?.hideFlow?.forced){g.seen=true;if(g.state!=='ALERT')goAlert(g);return;}
+  const b=P.hide;if(b){
+    leaveHide({x:P.x-g.x,y:P.y-g.y});
+    const T=P.trav;if(T?.hideFlow?.kind==='exit'){T.hideFlow.forced=true;T.hideFlow.handPost=0;T.dur=T.hideFlow.walk+T.hideFlow.duration;P.hide=null;}
+  }
+  P.hidden=false;g.seen=true;goAlert(g);hurtPlayer(g,why);
 }
 // 시체를 던져 겁주기 (Mark of the Ninja의 공포): 떨어진 곳 주변의 자경대원이 비명을 지르고 달아난다
 function terrorAt(x, y) {

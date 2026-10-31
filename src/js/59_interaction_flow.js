@@ -17,6 +17,7 @@ function objectReachable(o, radius = 60) {
 }
 const OBJECT_FLOW = {
   pickup: [0.42, '줍는 중', 'ground'], dress: [0.8, '갈아입는 중', 'dress'],
+  callMeet: [.9, '통화 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
   door: [0.32, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [0.65, '조작 중', 'hands']
@@ -27,6 +28,7 @@ function objectActionPoint(a) {
 }
 function objectActionValid(a, item) {
   const P = S.player;
+  if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);
   if (a.k === 'dropItem') return !!P.item && P.item === item;
   if (a.k === 'pickup') return !a.p.taken && objectReachable(a.p);
   if (a.k === 'dress') return !a.c.stripped && !a.c.carried && !a.c.stashed && objectReachable(a.c, 46);

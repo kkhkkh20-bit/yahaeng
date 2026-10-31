@@ -28,6 +28,8 @@ async def main():
     }
     G.start(G.STAGES.findIndex(s=>s.id==='m5'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setZoom(1);const S=G.S,P=S.player,g=S.guards.find(g=>g.rival);S.guards.forEach(q=>{q.x=q.y=-9999});Object.assign(P,{x:27*48+24,y:24*48+24,z:0,fl:0});for(let i=0;i<150;i++)G.moveCamera(1/60);
     Object.assign(g,{x:P.x,y:P.y,z:0,fl:0,state:'PATROL',say:'건물 앞 말풍선 검사',meter:0,icon:null});
+    // This is heard mission dialogue; ambient chatter deliberately yields during close actions.
+    S.intel={presentation:{cur:{sp:g}}};
     const ctx=G.ctx,fill=ctx.fillText,draw=ctx.drawImage,events=[];
     ctx.fillText=function(t,...a){events.push({text:t});return fill.call(this,t,...a)};ctx.drawImage=function(...a){events.push({img:a[0]});return draw.apply(this,a)};
     try{G.benchDraw(1)}finally{ctx.fillText=fill;ctx.drawImage=draw}

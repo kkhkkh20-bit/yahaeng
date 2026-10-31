@@ -833,6 +833,14 @@ body:not(.touch) .touch-controls { display:none; }
 .ledger-extra > summary { cursor:pointer; padding:8px 0; font-size:14px; color:var(--paper-dim); }
 .ledger-extra .perks { padding:8px 0; }
 __INK_STUDY_CSS__
+
+/* Quiet movement keeps the centred identity cue without a second status panel. */
+body #stealth.quiet { background: rgba(10,16,17,.35); box-shadow: none; border-color: transparent; padding: 5px 10px; gap: 6px; }
+body #stealth.quiet .sth-txt { min-width: 0; }
+body #stealth.quiet b { font-size: 15px; }
+body #stealth.quiet small { display: none; }
+body #stealth.quiet .sth-ico { width: 24px; height: 24px; }
+body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
 </style>
 
 <canvas id="game" tabindex="-1" aria-label="게임 화면"></canvas>

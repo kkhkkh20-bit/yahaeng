@@ -82,7 +82,10 @@ function takeSearchJob(g, inc) {
   if (!inc || inc.until < S.t) return false;
   const from = gSpot(g), fk = lvlKey(from);
   const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at))));
-  jobs.sort((a, b) => a.priority - b.priority || dist(g.x, g.y, a.at.x, a.at.y) - dist(g.x, g.y, b.at.x, b.at.y));
+  // Sweep nearby rooms and hiding places before sending the same guard down the stairs again.
+  // Only incident jobs and the guard's own floor contribute; the hidden player is never queried.
+  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650;
+  jobs.sort((a,b)=>cost(a)-cost(b));
   let job, leg;
   for (const j of jobs) { const p = searchLeg(g, j.at); if (p) { job = j; leg = p; break; } }
   if (!job) return false;

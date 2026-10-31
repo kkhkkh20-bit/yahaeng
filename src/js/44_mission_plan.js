@@ -9,7 +9,7 @@ function recordMissionOutcome() {
   const g=npc('vip');if(!g || !targetEliminated(g))return;
   const c=S.corpses.find(c=>c.target);
   S.missionApproach=c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
-    c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.vipBackDoorUsed?'VIP룸 뒷문 접근':'직접 접근';
+    c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.rendezvous?.calls&&S.rendezvous.waiting>0&&c&&dist(c.x,c.y,S.rendezvous.room.x,S.rendezvous.room.y)<120?'장부로 불러낸 매복':S.vipBackDoorUsed?'VIP룸 뒷문 접근':'직접 접근';
 }
 function serviceCell(tx,ty,fl) {
   return STAGE.id==='m2' && STAGE.guards.some(g=>g.target && (g.fl||0)===fl && (g.sched||[]).some(s=>Math.hypot(tx-s.at[0],ty-s.at[1])<1.25));
@@ -72,7 +72,7 @@ function pinnedMissionGoal() {
 }
 function selectMissionGoal(id) {
   if (!missionGoalCandidates().some(g => g.id === id)) return false;
-  S.goalPin = id; S.storyTrack = null; hudCache.objH = null; renderMissionGoals(); return true;
+  S.goalPin = id; S.goalManual = true; S.storyTrack = null; hudCache.objH = null; renderMissionGoals(); return true;
 }
 function renderMissionGoals() {
   const el = $('missionGoals'); if (!el || !S || STAGE.tutorial || STAGE.city) { if (el) el.replaceChildren(); return; }
@@ -114,7 +114,14 @@ function updateVipPlan(dt) {
   const P=S.player;
   if(!P.z&&!P.fl&&P.moving && S.doors.some(d=>d.keyLock==='blue'&&!d.locked&&dist(P.x,P.y,d.x,d.y)<20))S.vipBackDoorUsed=true;
   const g = npc('vip'), v = S.vipPlan;
-  if (!g || !v || v.phase === 'done' || v.phase === 'sick') return;
+  if (!g || !v || v.phase === 'done') return;
+  if(v.phase==='sick'){
+    const d=STAGE.vipDrink,at=!flOf(g)&&!g.z&&dist(g.x,g.y,tc(d.to[0]),tc(d.to[1]))<65;
+    if(at&&!g.moving)v.reachedToilet=true;
+    const pending=g.route.some(w=>w.once&&dist(w.x,w.y,tc(d.to[0]),tc(d.to[1]))<20);
+    if(!at&&(v.reachedToilet||!pending)){v.phase='done';S.goalNavCache=null;}
+    return;
+  }
   if (g.state === 'DEAD') { v.phase = 'done'; g.drinkT = 0; return; }
   const d = STAGE.vipDrink, calm = g.state === 'PATROL' && !g.climb && !g.grabbed && !g.yank && !g.doomed && !g.brawl;
   const atBar = !flOf(g) && !g.z && dist(g.x,g.y,tc(d.at[0]),tc(d.at[1])) < 30 && !g.moving;

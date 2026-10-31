@@ -29,13 +29,15 @@ function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') |
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
 // 별점 해금 장비 (도시): 모든 의뢰의 별을 합친 수로 열린다
 const PERKS = [[3, 'pick', '락픽 +1'], [6, 'dart', '다트 +1'], [9, 'sole', '고무 밑창 — 걷기 소음 25% 감소'], [12, 'can', '빈 캔 +2'], [16, 'reach', '긴 팔 — 끌어당기기·돌진 거리 20% 증가'], [20, 'shadow', '그림자 걸음 — 웅크리기 이동 속도 20% 증가']];
-const totalStars = () => STAGES.reduce((n, s) => n + (s.challenges ? starsOf(s) : 0), 0);
+const totalStars = () => STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s):0),0);
 const perkOn = k => !!(S && S.perks && S.perks[k]);
 function applyPerks() {
   S.perks = {}; const n = totalStars(); S.stars0 = n; for (const [need, k] of PERKS) if (n >= need) S.perks[k] = true;
   const P = S.player; if (S.perks.pick) P.picks++; if (S.perks.dart) P.kunai++; if (S.perks.can) P.stones += 2;
 }
-function starsOf(st) { const c = loadCh()[st.id] || {}; return (c._clear ? 1 : 0) + (st.challenges || []).filter(id => c[id]).length; }
+// Retired goals keep their earned credit and previously unlocked starting points.
+function earnedChallengeStars(st){const c=loadCh()[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
+function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
 function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.best') || '{}') || {}; } catch (e) { return {}; } }
 function saveBest(id, rank) {
   const b = loadBest(); if (b[id] && RANKS.indexOf(b[id]) >= RANKS.indexOf(rank)) return;

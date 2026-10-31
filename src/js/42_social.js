@@ -148,10 +148,10 @@ function updateStories(dt) {
   for (const st of S.stories) {
     if (st.done || st.moot) continue;
     if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
-      st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
+      st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode===2) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
-    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
+    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode===2) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
     else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
     let moot = S.exitOpen && !st.d.keepOpen;
     if (!st.done && st.d.moot) { try { moot = moot || !!st.d.moot(S, SH); } catch (e) { if (!st.err3) { st.err3 = 1; console.warn('story moot', st.d.id, e); } } }

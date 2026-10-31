@@ -164,7 +164,8 @@ function containerOpen(h) {
 }
 function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
   const ctx=target,x=h.x,y=h.y;ctx.save();ctx.translate(x,y);
-  if(h.type==='vent'){ctx.restore();drawVent(h.source||h,part,target,open);return;
+  if(h.type==='phone'){ctx.restore();drawRendezvousPhoneArt(h,target);return;
+  }else if(h.type==='vent'){ctx.restore();drawVent(h.source||h,part,target,open);return;
   }else if(h.type==='sign'){ctx.restore();drawHangingSign(h.trap,part,target);return;
   }else if(h.type==='box'){
     if(part!=='front'){
@@ -206,13 +207,15 @@ function drawHideFixtures() {
 }
 let hideLightBuffers=null;
 function hideFixtureBounds(h) {
+  if(h.type==='phone')return{x:h.x-14,y:h.y-38,w:46,h:42};
   if(h.type==='sign')return signBounds(h.trap);
-  if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:h.x-36,y:g.y-38,w:88,h:h.y-g.y+76};}
+  if(h.type==='phone'){ctx.restore();drawRendezvousPhoneArt(h,target);return;
+  }else if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:h.x-36,y:g.y-38,w:88,h:h.y-g.y+76};}
   if(h.furn&&h.type!=='bed'){const g=cabinetGeometry(h);return{x:g.left-12,y:g.top-4,w:g.right-g.left+24,h:g.bottom-g.top+24};}
   return{x:h.x-42,y:h.y-52,w:92,h:84};
 }
 function drawLitContainer(h,part='all') {
-  if(!['box','well','vent','sign'].includes(h.type)&&!(h.furn&&h.type!=='bed'))return;
+  if(!['box','well','vent','sign','phone'].includes(h.type)&&!(h.furn&&h.type!=='bed'))return;
   if(!hideLightBuffers){const raw=document.createElement('canvas'),lit=document.createElement('canvas');raw.width=lit.width=raw.height=lit.height=1;hideLightBuffers={raw,lit,r:raw.getContext('2d'),l:lit.getContext('2d')};}
   const B=hideLightBuffers,b=hideFixtureBounds(h),w=Math.ceil(b.w),v=Math.ceil(b.h);
   if(B.raw.width<w||B.raw.height<v||!B.ready){for(const c of [B.raw,B.lit]){c.width=Math.max(w,B.raw.width);c.height=Math.max(v,B.raw.height);}B.ready=true;}

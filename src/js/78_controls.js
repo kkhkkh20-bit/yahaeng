@@ -53,6 +53,7 @@ function actVerb(a, ic) {
   if (a.honk) return '경적';
   if (a.k === 'none') return a.stalk ? (koTap(a.stalk) ? '기절' : '처치') : '';
   if (a.k === 'cap') return a.label;
+  if(a.k==='callMeet')return '전화 걸기';
   if(a.k==='ventIn')return '들어가기';
   if(a.k==='ventOut')return '나오기';
   if (a.k === 'dropItem') return '내려놓기';

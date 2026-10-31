@@ -122,7 +122,7 @@ function actEnv() {
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
   if (actionBusy()) return;
-  const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다 — 다시 고르거나 가까이 이동하기':unavailableEnvReason(),1.8); return; }
+  const a = envAction(); if (a.k === 'none') { if(a.blocked)toast('선택한 대상에 손이 닿지 않는다',1.4); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
