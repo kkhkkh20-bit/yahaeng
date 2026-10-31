@@ -106,9 +106,10 @@ function drawKitBuilding(b) {
       const x = tx * TILE, l = b.fl[tx - b.x0];
       ctx.fillStyle = `rgba(4,8,22,${(r ? 0.66 : 0.6) * (1 - clamp(l, 0, 1)) + 0.05 * r})`; ctx.fillRect(x, yy, TILE, TILE);
       const win = g && g[b.y1] ? g[b.y1][tx] === 'N' : (tx > b.x0 && tx < b.x1 && (tx - b.x0) % 2 === 1);
-      if (r && S.fwindows && S._owT !== S.t) { S._owT = S.t; S._ow = new Set(S.fwindows.filter(q => q.st === 'open' && q.out).map(q => q.fl + ',' + q.tx + ',' + q.ty)); }
-      if (r && S._ow && S._ow.has(r + ',' + tx + ',' + b.y1)) { ctx.fillStyle = 'rgba(3,5,9,.9)'; ctx.fillRect(x + 24, yy + 13, 12, 21); ctx.fillStyle = 'rgba(160,190,210,.35)'; ctx.fillRect(x + 12, yy + 13, 3, 21); }  // 열린 위층 창: 반쪽이 시커멓게 뚫려 보인다
-      if (win && b.kind !== 'shop') { const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0; if (h % 5 === 0) { const fl = 0.85 + 0.15 * Math.sin(S.t * 3 + tx); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,170,80,${0.4 * fl})`; ctx.fillRect(x + 12, yy + 13, 24, 21); ctx.globalCompositeOperation = 'source-over'; } }
+      if(S._windowT!==S.t){S._windowT=S.t;S._windowFrames=new Map([...(S.windows||[]),...(S.fwindows||[])].map(w=>[(w.fl||0)+','+w.tx+','+w.ty,w]));}
+      const pane=S._windowFrames?.get(r+','+tx+','+b.y1);
+      if(pane){ctx.save();ctx.translate(x+24,yy+24);paintWindow(pane,l>.45,28,26);ctx.restore();}
+      if (win && !pane && b.kind !== 'shop') { const h = ((tx * 92821) ^ ((b.y1 - r) * 68917) ^ (b.x0 * 31)) >>> 0; if (h % 5 === 0) { const fl = 0.85 + 0.15 * Math.sin(S.t * 3 + tx); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = `rgba(255,170,80,${0.4 * fl})`; ctx.fillRect(x + 12, yy + 13, 24, 21); ctx.globalCompositeOperation = 'source-over'; } }
     }
   }
   if (b.kind === 'shop') drawShopSigns(b);
@@ -352,6 +353,15 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
+// 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.
+function drawHangPR(key, x, y, a, frame, alpha = 1) {
+  const m=PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims.hang||PR.anims.hang,fi=clamp(frame,0,n-1),row=prDir(a);
+  const hands=m.hangHands?.[row]?.[fi]||PR.hangHands?.[row]?.[fi],s=m.scales?.hang||PR.scales?.hang||1;
+  const hx=hands?(hands[0][0]+hands[1][0])/2:PR.hangHand[0],hy=hands?(hands[0][1]+hands[1][1])/2:PR.hangHand[1];
+  const dx=x-hx*s,dy=y-hy*s,dw=PR.fr*s,sh=prSheet(key),ol=prVar[key+'_ol'];
+  if(ol&&(isTouch||alpha<1)){ctx.globalAlpha=.65*alpha;prBlit(ol,c+fi,row,dx,dy,dw,dw);}
+  ctx.globalAlpha=alpha;prBlit(sh,c+fi,row,dx,dy,dw,dw);ctx.globalAlpha=1;
+}
 // 배관은 발 기준 오프셋 대신 실제로 구운 두 손의 접점을 관 축에 맞춘다.
 function climbContact(key, a, frame, at, size = 1) {
   const bm=PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),hands=m?.climbHands?.[row]?.[frame],feet=m?.climbFeet?.[row]?.[frame];
@@ -386,8 +396,8 @@ function corpseBounds(c){
   const key=c.stripped?strippedKey(c):c.ch,bm=PR?.bodies?.[prSplit(key||'ninja')[1]],m=bm||PR;
   const frame=Math.min((m?.anims?.death?.[1]||10)-1,corpseFrame(c)),box=m?.bounds?.death?.[prDir(c.a||0)]?.[frame];
   if(!box)return[c.x-20,c.y-24,c.x+20,c.y+10];
-  const x=c.x-PR.fr/2,y=c.y+7-(m.grounds?.death??PR.grounds?.death??PR.groundY);
-  return[x+box[0],y+box[1],x+box[2],y+box[3]];
+  const s=m.scales?.death||PR.scales?.death||1,x=c.x-PR.fr*s/2,y=c.y+7-(m.grounds?.death??PR.grounds?.death??PR.groundY)*s;
+  return[x+box[0]*s,y+box[1]*s,x+box[2]*s,y+box[3]*s];
 }
 function actorMarker(g,c){
   if(c){const b=corpseBounds(c);return{x:(b[0]+b[2])/2,y:(b[1]+b[3])/2,rx:(b[2]-b[0])/2+4,ry:(b[3]-b[1])/2+4};}

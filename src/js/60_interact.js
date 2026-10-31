@@ -409,15 +409,22 @@ function drawWinBars(w) {
   ctx.strokeStyle = 'rgba(170,176,186,.75)'; ctx.lineWidth = 1; ctx.beginPath(); for (let i = -2; i <= 2; i++) { ctx.moveTo(i * 8 - 1, -T / 2); ctx.lineTo(i * 8 - 1, T / 2); } ctx.stroke();
   ctx.restore();
 }
+function windowPassage(w,P=S.player) {
+  if(flOf(P)||P.z||flOf(w))return null;
+  const vert=winVert(w),nx=vert?1:0,ny=vert?0:1,along=(P.x-w.x)*-ny+(P.y-w.y)*nx,side=Math.sign((P.x-w.x)*nx+(P.y-w.y)*ny);
+  if(!side||Math.abs(along)>30||dist(P.x,P.y,w.x,w.y)>52)return null;
+  const tx=w.tx-nx*side,ty=w.ty-ny*side;
+  if(groundSolidP(tx,ty))return null;
+  return{w,tx,ty,nx:nx*side,ny:ny*side};
+}
 function nearWindow() {
   const P = S.player; if (P.z || P.fl || P.jump || P.carrying || P.captive || P.hide) return null;
+  let best=null,bd=Infinity;
   for (const w of S.windows) { if (ACT_SKIP.has(w)) continue;
-    if (dist(P.x, P.y, w.x, w.y) > 52) continue;
-    const dx = Math.abs(P.x - w.x) > Math.abs(P.y - w.y) ? Math.sign(w.x - P.x) : 0, dy = dx ? 0 : Math.sign(w.y - P.y);
-    const ox = w.tx + dx, oy = w.ty + dy;
-    if (!groundSolidP(ox, oy)) return { w, tx: ox, ty: oy };  // 방범창도 다룰 수 있다 (락픽으로 느리게 푼다)
+    const v=windowPassage(w,P),d=dist(P.x,P.y,w.x,w.y);
+    if(v&&d<bd){best=v;bd=d;}
   }
-  return null;
+  return best;
 }
 function dropSpot() {
   const P = S.player; if (!P.z || P.jump) return null;
@@ -736,9 +743,9 @@ function actPrimary(force) {
     case 'winDrop': {  // 창틀을 넘고 → 벽에 매달려 → 내려선다
       const w = a.w, o = w.out, up = { x: o.x - o.d[0] * 22, y: o.y - o.d[1] * 22 }; P.a = Math.atan2(o.d[1], o.d[0]); play('cloth', 0.4);
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: w.inn.x, y: w.inn.y, f: 0.15 }, { x: up.x, y: up.y - 44, f: 0.4 }, { x: up.x, y: up.y, f: 0.85 }, { x: o.x, y: o.y, f: 1 }], dur: 1.2,
-        phases: [{ to: 0.4, pose: 'vault' }, { to: 0.85, pose: 'climb' }, { to: 1, pose: 'vault' }], face: Math.atan2(-o.d[1], -o.d[0]), down: true, step: 'cloth', base: { x: w.inn.x, y: w.inn.y } });
-      { const T = P.trav; after(T.dur * 0.4, () => { if (P.trav !== T) return; P.fl = 0; setLayer(0); T.base = { x: o.x, y: o.y }; }); }  // 창틀을 넘은 뒤로는 바깥 1층에서 보인다
-      P.trav.end = () => { P.fl = 0; setLayer(0); P.z = 0; P.x = o.x; P.y = o.y; S.fade = 0.12; play('land', 0.25); noise(o.x, o.y, 70, 'land', 0); };
+        phases: [{ to: 0.4, pose: 'vault' }, { to: 0.85, pose: 'climb' }, { to: 1, pose: 'vault' }], face: Math.atan2(-o.d[1], -o.d[0]), down: true, step: 'cloth', base: { x: o.x, y: o.y },
+        room:{b:bldAt(w.tx,w.ty),fl:w.fl,until:.4},crossing:{at:.4,fl:0,z:0,fade:false} });
+      P.trav.end = () => { P.fl = 0; setLayer(0); P.z = 0; P.x = o.x; P.y = o.y; play('land', 0.25); noise(o.x, o.y, 70, 'land', 0); };
       break;
     }
     case 'winClimb': {  // 웅크렸다 뛰어올라 벽을 타고 2층 창틀을 넘는다
@@ -746,18 +753,20 @@ function actPrimary(force) {
       // 잠긴 창문: 창틀에 매달린 채 락픽으로 딴다 (락픽 하나를 쓰고 1.3초 더 걸린다)
       if (lk) { P.picks--; w.st = 'open'; after(0.6, () => play('metal', 0.25, 1.8)); after(1.2, () => play('metal', 0.25, 1.9)); after(1.7, () => play('click', 0.4)); }
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: o.x, y: o.y, f: 0.1 * (lk ? 0.55 : 1) }, { x: up.x, y: up.y, f: 0.25 * (lk ? 0.55 : 1) }, { x: up.x, y: up.y - 44, f: lk ? 0.85 : 0.72 }, { x: w.inn.x, y: w.inn.y, f: 1 }], dur: lk ? 2.8 : 1.25,
-        phases: [{ to: 0.1 * (lk ? 0.55 : 1), pose: 'wjCrouch' }, { to: 0.25 * (lk ? 0.55 : 1), pose: 'wjLeap' }, { to: lk ? 0.85 : 0.72, pose: 'climb' }, { to: 1, pose: 'vault' }], face: P.a, base: { x: o.x, y: o.y }, step: 'cloth' });
+        phases: [{ to: 0.1 * (lk ? 0.55 : 1), pose: 'wjCrouch' }, { to: 0.25 * (lk ? 0.55 : 1), pose: 'wjLeap' }, { to: lk ? 0.85 : 0.72, pose: 'climb' }, { to: 1, pose: 'vault' }], face: P.a, base: { x: o.x, y: o.y }, step: 'cloth',
+        room:{b:bldAt(w.tx,w.ty),fl:w.fl,from:lk?.86:.74},crossing:{at:lk?.86:.74,fl:w.fl,z:0,fade:false} });
       if (lk) toast(`2층 창문을 땄다 — 락픽 ${P.picks}개 남음`, 2);
       after(0.12, () => play('throw', 0.3));
       // 창틀을 넘는 순간부터는 2층 안에 있는 사람 눈에 보인다 (그 전엔 바깥 1층에서만)
-      { const T = P.trav; after(T.dur * 0.74, () => { if (P.trav !== T) return; P.fl = w.fl; setLayer(P.fl); T.base = { x: w.inn.x, y: w.inn.y }; }); }
-      P.trav.end = () => { P.fl = w.fl; setLayer(P.fl); P.z = 0; P.x = w.inn.x; P.y = w.inn.y; S.fade = 0.15; play('land', 0.2); hint('winClimb', '열린 2층 창문은 밑에서 벽을 타고 들어갈 수 있다. 잠긴 창문은 안 된다'); };
+      P.trav.end = () => { P.fl = w.fl; setLayer(P.fl); P.z = 0; P.x = w.inn.x; P.y = w.inn.y; play('land', 0.2); hint('winClimb', '열린 2층 창문은 밑에서 벽을 타고 들어갈 수 있다. 잠긴 창문은 안 된다'); };
       break;
     }
     case 'window': {
-      const v = a.wv;
-      P.jump = { x0: P.x, y0: P.y, x1: tc(v.tx), y1: tc(v.ty), t: 0, dur: 0.6, z1: 0, arc: 14, noise: 45, vault: true };
-      P.a = Math.atan2(P.jump.y1 - P.y, P.jump.x1 - P.x); play('cloth', 0.4);
+      const v=windowPassage(a.wv.w);if(!v||winSt(v.w)!=='open')break;
+      const w=v.w,end={x:tc(v.tx),y:tc(v.ty)};play('cloth',.4);
+      startTrav({pts:[{x:P.x,y:P.y,f:0},{x:w.x+v.nx*24,y:w.y+v.ny*24,f:.22},{x:w.x-v.nx*24,y:w.y-v.ny*24,f:.78},{...end,f:1}],dur:.78,
+        phases:[{to:.22,pose:'walk'},{to:.78,pose:'vault'},{to:1,pose:'walk'}],local:true,room:{b:bldAt(w.tx,w.ty),fl:0},
+        end:()=>{play('land',.2);noise(end.x,end.y,45,'land',0);}});
       hint('window', '창문은 자경대원이 지나다니지 않는다. 안팎을 몰래 드나드는 길로 써라');
       break;
     }
@@ -846,7 +855,7 @@ function actPrimary(force) {
     case 'ventIn': {
       const v = a.v; v.open = !v.roof; P.cover = null; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.4 }, { x: v.x, y: v.y + 4, f: 1 }], dur: 0.6,
-        phases: [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'sink' }], rim: v.y + 10,
+        phases: [{ to: 0.4, pose: 'walk' }, { to: 1, pose: 'sink' }], rim: v.y + 10,local:true,
         end: () => { P.vent = true; P.z = 0; P.x = v.x; P.y = v.y; S.stats.vents = (S.stats.vents || 0) + 1; S.fade = 0.12; toast('환풍구로 들어갔다', 1.6); } });
       break;
     }
@@ -855,7 +864,7 @@ function actPrimary(force) {
       if (!v.roof && v.z === 0 && groundSolidP(v.tx, v.ty)) { const o = N8.find(o => !groundSolidP(v.tx + o[0], v.ty + o[1])); if (o) { x = tc(v.tx + o[0]); y = tc(v.ty + o[1]); } }
       P.vent = false; P.z = v.z; v.open = !v.roof; play('metal', 0.3); noise(v.x, v.y, 40, 'vent');
       startTrav({ pts: [{ x: P.x, y: P.y, f: 0 }, { x: v.x, y: v.y, f: 0.6 }, { x, y, f: 1 }], dur: 0.6,
-        phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'walk' }], rim: v.y + 10,
+        phases: [{ to: 0.6, pose: 'climbUp' }, { to: 1, pose: 'walk' }], rim: v.y + 10,local:true,
         end: () => { P.x = x; P.y = y; S.fade = 0.12; hint('ventOpen', '열어 둔 창살은 지나가던 자경대원이 보면 의심한다'); } });
       break;
     }

@@ -26,7 +26,11 @@ async def main():
    const roofIndex=calls.findIndex(a=>a[0]===roof.c||a[0]===roof.img);check(matches.length===1&&matches[0]>roofIndex&&roofIndex>=0,'rooftop body hidden under roof or drawn twice '+JSON.stringify({matches,roofIndex}));
    // A guard on the street cannot wake a body on the roof at the same map coordinate.
    Object.assign(watcher,{x:c.x,y:c.y,z:0,fl:0,state:'BODY',body:c,path:null});G.updateGuard(watcher,.01);check(watcher.state!=='BODY'&&c.ko,'street guard wakes roof body');watcher.x=watcher.y=-9999;
-   S.items=[];S.storyTrack=null;c.x+=60;c.y+=48;c.fl=1;const goal=G.nextGoal();check(G.targetPosition(g)===c&&goal.g===g&&goal.x===c.x&&goal.y===c.y&&goal.fl===1,'objective follows old target position');
+   S.items=[];S.storyTrack=null;c.x+=60;c.y+=48;c.fl=1;
+   // The mission tracker uses witnessed positions; hidden movement is not live intel.
+   check(G.targetPosition(g)===c,'target position loses the unconscious body');
+   (S.targetIntel||={})[g.id]={x:c.x,y:c.y,fl:c.fl,z:c.z,t:S.t};
+   const goal=G.missionGoalCandidates().find(goal=>goal.g===g);check(goal&&goal.x===c.x&&goal.y===c.y&&goal.fl===1,'observed body position missing from target goal');
    c.fl=0;c.x=P.x+24;c.y=P.y;S.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let i=0;i<120;i++)tick();S.keys.KeyZ=false;G.combatRelease('KeyZ');check(G.targetEliminated(g),'roof target cannot be finished by holding attack');
    // Carrying an unconscious target into a container keeps a usable target inside that container.
    G.start(G.STAGES.findIndex(s=>s.id==='m4'));for(let n=0;n<60&&G.DLG.modal;n++)G.advanceDialog();const R=G.S,Q=R.player,t=R.guards.find(g=>g.target),h=R.hides.find(h=>h.type==='box'&&!h.fl);R.guards.forEach(g=>{g.x=g.y=-9999});G.setLayer(0);

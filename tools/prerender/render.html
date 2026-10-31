@@ -176,7 +176,7 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   if (hold) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHold = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }  // 두 손 가운데 (상자 자리)
   if (hang != null) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHand = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }
   if (clip === 'Death') { bones.Hips.getWorldPosition(hp); bones.Head.getWorldPosition(hd); model.position.set(-(hp.x + hd.x) / 2, 0, -(hp.z + hd.z) / 2); shadow.position.set(0, 1, 0); }
-  renderSprite(modular && clip === 'Death' ? CY : 0);
+  renderSprite(modular && clip === 'Death' ? CY : 0, modular ? (clip === 'Death' || clip === 'Punch' || hang != null ? 1.6 : window.spritePadding || 1) : 1);
   return renderer.domElement.toDataURL('image/png');
 };
 
@@ -278,7 +278,7 @@ window.renderPair = (kind, clip, t, dirA, part, blend) => {
   show.forEach(m => { m.colorWrite = true; }); hide.forEach(m => { m.colorWrite = false; });
   model.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? 0 : -1; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = part === 'a' ? -1 : 0; });
   shadow.visible = part === 'a'; shadow.position.set(0, 1, 0);
-  renderSprite();
+  renderSprite(modular ? -120 : 0, modular ? 1.8 : 1);
   const url = renderer.domElement.toDataURL('image/png');
   mats.concat(mats2, partsOn[0].map(o => o.material), partsOn[1].map(o => o.material)).forEach(m => { m.colorWrite = true; }); model.traverse(o => { if (o.isMesh) o.renderOrder = 0; }); model2.traverse(o => { if (o.isMesh) o.renderOrder = 0; });
   scene.add(model); model2.visible = false; grp.rotation.y = 0; shadow.visible = true;
@@ -371,7 +371,7 @@ window.renderPose = (name, k, dirA) => {
   model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
   model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
   shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
-  renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular && name === 'climb' ? 1.25 : 1); shadow.visible = true;
+  renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular ? (name === 'climb' ? 1.25 : ['vault','stoop'].includes(name) ? 1.6 : 1) : 1); shadow.visible = true;
   return renderer.domElement.toDataURL('image/png');
 };
 </script></body></html>

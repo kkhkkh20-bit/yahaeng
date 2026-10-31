@@ -100,11 +100,8 @@ function drawPlayerBody(P) {
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.ellipse(sx, sy, 13, 6.5, 0, 0, TAU); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(sx, sy, 19, 9.5, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = 'rgba(160,230,255,.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(h.x, h.y + 46); ctx.lineTo(sx, sy); ctx.stroke(); ctx.setLineDash([]); }
     if (usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 프리렌더 매달림: 두 손을 줄에 맞추고, 움직이면 다리를 흔들며 옮겨 간다
-      const sh = prSheet(playerLook), [c0, nf] = PR.anims.hang, fi = P.moving ? Math.floor(S.t * 6) % nf : 0, fr = PR.fr;
-      ctx.globalAlpha = blinkW ? 0.3 : dim ? 0.75 : 1;
-      const row = prDir(P.wire.fa != null ? P.wire.fa : -Math.PI / 2);
-      prBlit(sh, c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr);
-      if ((dim||isTouch) && prVar[playerOutline]) { ctx.globalAlpha = dim?0.85:0.62; prBlit(prVar[playerOutline], c0 + fi, row, h.x + sw - PR.hangHand[0], h.y + 2 - PR.hangHand[1], fr, fr); }
+      const nf=PR.anims.hang[1],fi=P.moving?Math.floor(S.t*6)%nf:0;
+      drawHangPR(playerLook,h.x+sw,h.y+2,P.wire.fa??-Math.PI/2,fi,blinkW?.3:dim?.75:1);
       ctx.globalAlpha = 1; return;
     }
     ctx.strokeStyle = '#2c3040'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(h.x - 8 + sw, h.y + 18); ctx.lineTo(h.x - 5, h.y + 1); ctx.moveTo(h.x + 8 + sw, h.y + 18); ctx.lineTo(h.x + 5, h.y + 1); ctx.stroke();
@@ -129,9 +126,9 @@ function drawPlayerBody(P) {
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
   if (runP) { const bx = -Math.cos(P.a), by = -Math.sin(P.a); ctx.lineWidth = 2.5; for (const o of [-8, 0, 8]) { const ph = (S.t * 5 + o * 0.05) % 1, px = P.x - by * o, py = P.y + 6 + bx * o; ctx.strokeStyle = `rgba(232,238,248,${0.5 * (1 - ph)})`; ctx.beginPath(); ctx.moveTo(px + bx * (18 + ph * 8), py + by * (18 + ph * 8)); ctx.lineTo(px + bx * (36 + ph * 14), py + by * (36 + ph * 14)); ctx.stroke(); } }
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
-    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), sh = prSheet(playerLook), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = P.moving ? Math.floor(S.t * 6) % nf : 0;
+    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), nf=PR.anims.hang[1],fi=P.moving?Math.floor(S.t*6)%nf:0;
     ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    ctx.globalAlpha = n.y < 0 ? 0.75 : 1; prBlit(sh, c0 + fi, 6, hx - PR.hangHand[0], hy + 2 - PR.hangHand[1], fr, fr);if(isTouch&&prVar[playerOutline]){ctx.globalAlpha=.62;prBlit(prVar[playerOutline],c0+fi,6,hx-PR.hangHand[0],hy+2-PR.hangHand[1],fr,fr);} ctx.restore(); ctx.globalAlpha = 1;
+    drawHangPR(playerLook,hx,hy+2,Math.atan2(-n.y,-n.x),fi,n.y<0?.75:1);ctx.restore();ctx.globalAlpha=1;
     return;
   }
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
@@ -149,6 +146,12 @@ function drawPlayerBody(P) {
         ctx.restore(); return;
       }
     }
+    if(tp.pose==='walk'){
+      const pc=pairCarry(P),pg=!pc&&pairGrab(P);
+      drawPR(PK,P.x,P.y,P.a,pc?'carry':pg?'grab':'walk',T.t,al,s1);
+      if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',T.t,al,s1);
+      return;
+    }
 
     if (tp.pose === 'sink' || tp.pose === 'sinkBush' || tp.pose === 'climbDown' || tp.pose === 'climbUp') {  // 숨는 곳 안으로 들어가고 나오는 몸: 테두리(rim) 아래는 잘라 낸다
       const bush = tp.pose === 'sinkBush', cl = tp.pose === 'climbDown' || tp.pose === 'climbUp', g = tp.pose === 'climbUp' ? 1 - tp.g : tp.g, rim = T.rim != null ? T.rim : P.y + 10;
@@ -160,8 +163,8 @@ function drawPlayerBody(P) {
     if (tp.pose === 'wjCrouch') { drawPR(PK, P.x, P.y, T.face, 'crouch', 0, al, s1, 0, 0); return; }
     if (tp.pose === 'wjLeap') { drawPR(PK, P.x, P.y, T.face, 'vault', 0, al, s1, tp.g * 22, tp.g < 0.5 ? 0 : 1); return; }
     if (tp.pose === 'wjHang') {
-      if (T.hangOk && PR.anims.hang && PR.hangHand) { const sh = prSheet(PK), [c0, nf] = PR.anims.hang, fr = PR.fr, fi = Math.min(nf - 1, Math.floor(tp.g * nf)), sw = Math.sin(tp.g * Math.PI) * 2;
-        ctx.globalAlpha = al; prBlit(sh, c0 + fi, 6, P.x - PR.hangHand[0], P.y + 2 + sw - PR.hangHand[1], fr, fr); ctx.globalAlpha = 1; return; }
+      if (T.hangOk && PR.anims.hang && PR.hangHand) { const nf=PR.anims.hang[1],fi=Math.min(nf-1,Math.floor(tp.g*nf)),sw=Math.sin(tp.g*Math.PI)*2;
+        drawHangPR(PK,P.x,P.y+2+sw,T.face,fi,al);return; }
       drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
     if (tp.pose === 'climb') { const frame=((Math.floor(T.t*7)*(T.down?-1:1))%4+4)%4;
       const grip=T.pipe&&climbContact(PK,T.face,frame,pipeGripAt(T));
@@ -173,10 +176,10 @@ function drawPlayerBody(P) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
       const I = P.interact || P.pick, f = clamp(I.t / I.dur, 0, 1), ground = I.pose === 'ground' || I.pose === 'dress' || I.kind === 'clean' || I.kind === 'loot';
-      let anim = 'idle', fi = 0;
+      let anim = PR.anims.idleC?'idleC':'idle', fi = 0;
       if (f > 0.12 && f < 0.9) {
-        anim = ground ? (f < 0.3 || f > 0.78 ? 'crouch' : 'stoop') : 'lift';
-        fi = anim === 'lift' && f > 0.4 && f < 0.75 ? 1 : 0;
+        // 사물 조작에 두 사람용 들기 프레임을 쓰면 보이지 않는 상대가 팔을 가린다.
+        anim = ground ? (f < 0.3 || f > 0.78 ? 'crouch' : 'stoop') : 'holdI';
       }
       drawPR(playerLook, P.x, P.y, P.a, anim, 0, blink ? 0.35 : 1, sc / 3, -yo, fi); return;
     }
@@ -717,32 +720,35 @@ function drawRoutes(P) {
   }
 }
 // 창문: 하늘색 유리 + 흰 십자 창살
-const winVert = w => (G[w.ty - 1] && G[w.ty - 1][w.tx] === '#') || (G[w.ty + 1] && G[w.ty + 1][w.tx] === '#');
+const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[w.ty+1]?.[w.tx]==='#';};
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
-function drawWindow(w, alpha) {
-  const vert = winVert(w), L = 42, T = 14;
-  if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }  // 밝기는 0.25초마다
-  const lit = w._lit;
-  ctx.save(); ctx.globalAlpha = alpha; ctx.translate(w.x, w.y); if (vert) ctx.rotate(Math.PI / 2);
-  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-L / 2 + 2, -T / 2 + 3, L, T);
-  ctx.fillStyle = '#5d636d'; ctx.fillRect(-L / 2, -T / 2, L, T);                    // 창틀 (샤시)
-  ctx.fillStyle = '#c3c8cf'; ctx.fillRect(-L / 2, -T / 2, L, 2); ctx.fillRect(-L / 2, T / 2 - 2, L, 2);
-  const g = ctx.createLinearGradient(-L / 2, -T / 2, L / 2, T / 2);
-  if (lit) { g.addColorStop(0, '#ffe2a8'); g.addColorStop(1, '#e0a85a'); } else { g.addColorStop(0, '#7fb6d6'); g.addColorStop(1, '#3d6680'); }
-  const open = (w.st || 'open') === 'open';
-  if (open) {  // 열린 창: 한 짝을 다른 짝 위로 밀어 겹치고, 오른쪽 절반은 방 안이 시커멓게 뚫려 보인다 (표식 없이 그림만으로)
-    ctx.fillStyle = lit ? '#2a1e10' : '#05070c'; ctx.fillRect(1, -T / 2 + 3, L / 2 - 4, T - 6);
-    ctx.fillStyle = g; ctx.fillRect(-L / 2 + 3, -T / 2 + 3, L / 2 - 2, T - 7); ctx.globalAlpha *= 0.85; ctx.fillRect(-L / 2 + 6, -T / 2 + 4, L / 2 - 4, T - 7); ctx.globalAlpha = alpha;
-    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-L / 2 + 6, T / 2 - 5); ctx.lineTo(-L / 2 + 11, -T / 2 + 4); ctx.stroke();
-    ctx.fillStyle = '#8b919a'; ctx.fillRect(-2, -T / 2 + 2, 2, T - 4);
-  } else {
-  ctx.fillStyle = g; ctx.fillRect(-L / 2 + 3, -T / 2 + 3, L / 2 - 2, T - 7); ctx.fillRect(1, -T / 2 + 4, L / 2 - 4, T - 7);  // 닫힌 창: 두 짝이 나란히
-  ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 1.2; ctx.beginPath();
-  ctx.moveTo(-L / 2 + 6, T / 2 - 5); ctx.lineTo(-L / 2 + 11, -T / 2 + 4); ctx.moveTo(6, T / 2 - 4); ctx.lineTo(11, -T / 2 + 5); ctx.stroke();
-  ctx.fillStyle = '#8b919a'; ctx.fillRect(-1, -T / 2 + 2, 2, T - 4);
+// 실제 창짝·걸쇠·창살로 상태를 읽는다. 평면과 외벽은 같은 창문을 그린다.
+function paintWindow(w,lit,L=44,T=20) {
+  const state=winSt(w),open=state==='open',left=-L/2,top=-T/2;
+  ctx.fillStyle='#080e12';ctx.fillRect(left-2,top-1,L+4,T+4);
+  ctx.fillStyle='#3d4948';ctx.fillRect(left,top,L,T);
+  ctx.fillStyle='#a8b3a4';ctx.fillRect(left,top,L,2);ctx.fillRect(left,top,2,T);
+  ctx.fillStyle='#101b20';ctx.fillRect(left+3,top+3,L-6,T-6);
+  const glass=ctx.createLinearGradient(left,top,L/2,T/2);
+  glass.addColorStop(0,lit?'#c9ba89':'#65848b');glass.addColorStop(1,lit?'#716747':'#243e49');
+  const pane=open?L*.32:(L-8)/2;
+  ctx.fillStyle=glass;ctx.fillRect(left+3,top+3,pane,T-6);
+  if(!open)ctx.fillRect(1,top+3,L/2-4,T-6);
+  ctx.strokeStyle='#c8d3c26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
+  const join=open?left+pane+3:0;
+  ctx.fillStyle='#84958b';ctx.fillRect(join-1,top+2,2,T-4);
+  if(!open){ctx.fillStyle='#bdab70';ctx.fillRect(-3,-3,6,6);ctx.fillStyle='#28312c';ctx.fillRect(-1,-1,2,3);}
+  if(state==='bar'){
+    ctx.strokeStyle='#081014';ctx.lineWidth=3;ctx.beginPath();
+    for(let x=left+7;x<L/2-2;x+=8){ctx.moveTo(x,top+1);ctx.lineTo(x,T/2+1);}ctx.stroke();
+    ctx.strokeStyle='#98a397';ctx.lineWidth=1;ctx.stroke();
   }
-  ctx.fillStyle = '#d9d4c8'; ctx.fillRect(-L / 2 - 3, T / 2, L + 6, 3);              // 창턱
-  ctx.restore(); ctx.globalAlpha = 1;
+  ctx.fillStyle='#899084';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c6c6ae';ctx.fillRect(left-2,T/2,L+4,1);
+}
+function drawWindow(w, alpha) {
+  if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
+  paintWindow(w,w._lit);ctx.restore();
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
@@ -756,12 +762,7 @@ function drawWindowEdge(w, b) {
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey); if (vert) ctx.rotate(Math.PI / 2);
-  const near = !S.player.z && dist(S.player.x, S.player.y, ex, ey) < 150, pz = near ? 0.6 + 0.4 * Math.sin(S.t * 4) : 0;
-  if (near) { ctx.strokeStyle = `rgba(143,195,230,${0.5 + 0.4 * pz})`; ctx.lineWidth = 3; ctx.strokeRect(-24, -8, 48, 15); }
-  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(-19, -1, 40, 7);
-  ctx.fillStyle = near ? '#dfe6ee' : '#9aa0a8'; ctx.fillRect(-20, -4, 40, 7);
-  ctx.fillStyle = lit ? '#ffd38a' : near ? '#8fc3e6' : '#33485a'; ctx.fillRect(-17, -2, 34, 3);
-  ctx.fillStyle = '#6a7079'; ctx.fillRect(-1, -3, 2, 5);
+  paintWindow(w,lit,42,14);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
@@ -1137,11 +1138,13 @@ function draw() {
   // 창문 넘기·창문 건너기(같은 높이 뜀): 지붕 위로 날아가는 것처럼 보이지 않게, 건물 안을 보여 준 채 땅 위 사람처럼 그린다 (절반 전엔 출발 건물, 그 뒤엔 도착 건물)
   const lowJ = !!(P.jump && P.jump.vault && !P.jump.z1 && !P.z);
   const jumpB = lowJ ? (() => { const J = P.jump, f = J.t / J.dur, bs = bldAt(Math.floor(J.x0 / TILE), Math.floor(J.y0 / TILE)), bd = bldAt(Math.floor(J.x1 / TILE), Math.floor(J.y1 / TILE)); return f > 0.5 ? (bd >= 0 ? bd : bs) : (bs >= 0 ? bs : bd); })() : -1;
-  const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && P.trav.phases.some(ph => ph.pose !== 'walk'));  // 숨는 동작(수거함·가구·화단)은 오르는 게 아니다 — 건물 안 화면을 유지
-  let openB = lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;  // 환풍구 안이면 그 건물 안이 보인다
+  const room=traversalRoom(P.trav);
+  const windowMotion=!!P.trav?.room;
+  const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && !P.trav.local && !room && P.trav.phases.some(ph => ph.pose !== 'walk'));
+  let openB = room?.b??(lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1);
   if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
-  const VF = (!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0;
-  const VB = VF ? (lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) : -1;
+  const VF = room?.fl??((!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0);
+  const VB = VF ? (room?.b??(lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)))) : -1;
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
@@ -1301,7 +1304,7 @@ function draw() {
   PM('floor');
   if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
   PM('stepring');
-  if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp) drawPlayer(P);
+  if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp && !windowMotion) drawPlayer(P);
   PM('drawPlayer');
   // 키트 나무·화단: 주인공이 그 뒤(위쪽)에 있으면 잎을 반투명하게 한 번 더 덮어 '뒤에 숨은' 모습으로
   if (!P.z && !P.jump && !P.vent && !P.hide && !flOf(P)) {
@@ -1378,7 +1381,7 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
     if (input.scan) drawPlansFaint(P, openB);
-    if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && front(P.x, P.y)) drawPlayer(P);
+    if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && !windowMotion && front(P.x, P.y)) drawPlayer(P);
   }
   PM('roofs2');
   if (S.poles.length) {
@@ -1389,7 +1392,7 @@ function draw() {
   drawOutdoorLampFixtures();
   if (exteriorClip) ctx.restore();
   if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
-  if ((P.z || (P.jump && !lowJ) || P.wire || travUp) && !P.hide) drawPlayer(P);
+  if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
   if (P.vent && !tactical) {
     // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
@@ -1416,7 +1419,7 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
-  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); if (!flOf(P)) for (const w of S.windows) if (w.st === 'bar' && dist(P.x, P.y, w.x, w.y) < 700 && (onFacadeW(w) || w.b === openB)) drawWinBars(w); }
+  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);

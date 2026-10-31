@@ -39,6 +39,8 @@ RECIPES = {
 LOOK_MAP = {'ninja': 'hero', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
 LOOK_MAP.update({f'civ{i}': ['male', 'fBob', 'male', 'fLong', 'male', 'coat', 'fTail', 'pack', 'old', 'male'][i] for i in range(10)})
+# Widen crowded civilian frames; exported scale/ground anchors retain world size.
+FRAME_PADDING = {name:1.4 for name in ['big','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
 PLAYER_MAP = {'crew': 'heroCrew', 'staff': 'heroWorker', 'courier': 'heroWorker',
               'waiter': 'heroSuit', 'cater': 'heroWorker'}
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -48,7 +50,8 @@ async def main():
  OUT.mkdir(parents=True, exist_ok=True)
  meta = json.loads((OUT/'pr_meta.json').read_text())
  selected = next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--only=')), list(RECIPES))
- patch = set(next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--patch=')), []))
+ requested_patch = set(next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--patch=')), []))
+ if requested_patch-set(a[0] for a in ANIMS):raise ValueError('Unknown animation patch')
  unknown = set(selected)-RECIPES.keys()
  if unknown: raise ValueError(f'Unknown looks: {unknown}')
  server = ThreadingHTTPServer(('127.0.0.1', 0), partial(QuietHandler, directory=str(HERE)))
@@ -64,11 +67,13 @@ async def main():
     if bn not in selected: continue
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)
+    await page.evaluate('(n)=>window.spritePadding=n',FRAME_PADDING.get(bn,1))
     await page.evaluate('(c)=>setTex(c)',KEY)
     anims=[a for a in ANIMS if names is None or a[0] in names]
     cmap={};col=0
     for a in anims:cmap[a[0]]=[col,len(a[2])];col+=len(a[2])
-    if patch and not patch.issubset(cmap):raise ValueError(f'{bn}: unknown patch animations {patch-set(cmap)}')
+    patch=requested_patch & cmap.keys()
+    if requested_patch and not patch:continue
     if patch:
      previous=meta if bn=='key' else meta['bodies'][bn]
      if previous['cols']!=col or previous['anims']!=cmap:raise ValueError(f'{bn}: animation layout changed; rebuild full sheet')
@@ -90,18 +95,19 @@ async def main():
      const canvas=document.createElement('canvas');canvas.width=cols*fr;canvas.height=8*fr;
      const ctx=canvas.getContext('2d'),source=document.querySelector('canvas');
      const encode=source.toDataURL;source.toDataURL=()=>'';
-     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[];
+     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[],hangHands=[];
      try {for(const victim of [false,true]) {
        if(!frames.some(f=>f[3]===victim))continue;
        await loadModularLook(victim?'hero':look,victim?look:'guard');
        setBody(body,victim?1:0);setTex(key);
        for(const [x,y,js,isVictim,anim] of frames){if(isVictim!==victim)continue;(0,eval)(js);ctx.drawImage(source,x,y,fr,fr);
          if(js.includes('true)')&&window.lastHold)holds[y/fr]=window.lastHold.map(v=>v/2);
-         if(anim==='death'||anim==='climb'){grounds[anim]=window.frameGroundY;scales[anim]=window.frameScale||1;}
+         grounds[anim]=window.frameGroundY;scales[anim]=window.frameScale||1;
+         if(anim==='hang'){const row=y/fr;(hangHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='climb'){const row=y/fr;(climbHands[row]||=([])).push(window.frameClimbHands);(climbFeet[row]||=([])).push(window.frameClimbFeet);}
        }
      }}finally{source.toDataURL=encode}
-     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet};
+     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet,hangHands};
     }''',{'frames':expressions,'cols':col,'fr':FR,'look':look,'body':body,'key':KEY})
     image=Image.open(io.BytesIO(base64.b64decode(result['png'].split(',')[1]))).convert('RGBA')
     outlined=Image.new('RGBA',image.size)
@@ -122,8 +128,10 @@ async def main():
      original.save(OUT/filename,'WEBP',lossless=True,method=6)
      if bn=='key':original.save(OUT/'key.png',optimize=True)
      if 'climb' in patch:previous.update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
+     if 'hang' in patch:previous['hangHands']=result['hangHands']
      previous.setdefault('grounds',{}).update({name:value for name,value in result['grounds'].items() if name in patch})
      previous.setdefault('scales',{}).update({name:value for name,value in result['scales'].items() if name in patch})
+     (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
      print(bn,'patched',','.join(sorted(patch)),(OUT/filename).stat().st_size,flush=True)
      continue
     image.save(OUT/filename,'WEBP',lossless=True,method=6)
@@ -132,6 +140,7 @@ async def main():
      image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'],scales=result['scales'])
     else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds'],'scales':result['scales']}
     (meta if bn=='key' else meta['bodies'][bn])['bounds']=frame_bounds(image,FR,cmap)
+    if result['hangHands']:(meta if bn=='key' else meta['bodies'][bn])['hangHands']=result['hangHands']
     if result['climbHands']:(meta if bn=='key' else meta['bodies'][bn]).update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)
@@ -150,7 +159,7 @@ async def main():
    for bn in RECIPES:
     face=OUT/f'face_{bn}.webp'
     if face.exists():faces.append((bn,Image.open(face).convert('RGBA')))
-   if len(faces)==len(RECIPES) and not patch:
+   if len(faces)==len(RECIPES) and not requested_patch:
     image=Image.new('RGBA',(256*len(faces),256))
     for i,(_,face) in enumerate(faces):image.paste(face,(i*256,0))
     image.save(OUT/'face.webp','WEBP',lossless=True,method=6)

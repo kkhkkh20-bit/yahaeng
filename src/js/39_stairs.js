@@ -87,7 +87,7 @@ function stairTravel(l, actor, up) {
 function crossStairLevel(actor, T, f) {
   if (!T.crossing || T.crossed || f < T.crossing.at) return;
   T.crossed = true; actor.fl = T.crossing.fl; actor.z = T.crossing.z; setLayer(flOf(actor));
-  if (actor === S.player) S.fade = Math.max(S.fade || 0, .12);
+  if (actor === S.player && T.crossing.fade!==false) S.fade = Math.max(S.fade || 0, .12);
 }
 function beginStairTravel(l, up) {
   const P = S.player, plan = stairTravel(l, P, up), end = plan.pts[plan.pts.length - 1];

@@ -277,7 +277,11 @@ function autoTraverse(P, mx, my, mag, mode, dt) {
   if (S.pk.t >= need) { S.pk = null; c.act(); }
 }
 function startTrav(o) {
-  const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
+  const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.cover=null;P.snap=null;P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
+}
+function traversalRoom(T) {
+  if(!T?.room)return null;
+  const f=T.t/T.dur;return f>=(T.room.from??0)&&f<=(T.room.until??1)?T.room:null;
 }
 function travPose(T) {
   const f = Math.min(1, T.t / T.dur); let lo = 0;
@@ -319,7 +323,7 @@ function updateTrav(P, dt) {
   if (T.face == null && Math.hypot(b.x - a.x, b.y - a.y) > 6) { const want = Math.atan2(b.y - a.y, b.x - a.x), d = ((want - P.a + Math.PI * 3) % (Math.PI * 2)) - Math.PI; P.a += d * Math.min(1, dt * 14); }  // 걸어가는 쪽을 본다 (뒷걸음질로 미끄러지지 않게)
   const bp = T.base || P; P.light = lightAt(bp.x, bp.y, false);
   if (T.step && (T.st -= dt) <= 0 && travPose(T).pose === 'climb') { T.st = 0.3; play(T.step, 0.16); noise(bp.x, bp.y, T.loud || 40, 'climb'); }
-  if (f >= 1) { P.trav = null; P.moving = false; if (T.end) T.end(); }
+  if (f >= 1) { P.trav = null; P.moving = false; if(T.face!=null)P.a=T.face;if (T.end) T.end(); }
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
