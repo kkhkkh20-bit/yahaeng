@@ -54,8 +54,10 @@ function stageMap(w, labels) {
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
-    if (labels && lab) { x.font = `700 ${Math.round(R * 3.2)}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 3, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);  // 지도 가장자리에서 글자가 잘리지 않게
-      x.lineWidth = 3; x.strokeStyle = 'rgba(7,10,18,.95)'; x.strokeText(lab, LX, LY); x.fillStyle = col; x.fillText(lab, LX, LY); } };
+    if (labels && lab) { const brief=labels==='brief'; x.font = `${brief?500:700} ${Math.round(R * (brief?2:3.2))}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 5, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);
+      if(brief) { x.fillStyle='#0d151de8'; x.fillRect(LX-hw,LY-R*1.75,hw*2,R*2.5); x.fillStyle='#e4e5df'; }
+      else { x.lineWidth=3; x.strokeStyle='rgba(7,10,18,.95)'; x.strokeText(lab,LX,LY); x.fillStyle=col; }
+      x.fillText(lab,LX,LY); } };
   pt(S.player.x, S.player.y, '#7fd6ff', 'c', '출발'); for (const e of S.exits || (S.exit ? [S.exit] : [])) pt(e.x, e.y, '#f2c46b', 'r', '탈출');
   S.items.forEach((it, i) => pt(it.x, it.y, '#ffd27a', 'd', (STAGE.itemNames || [])[i] || STAGE.itemName || '서류'));
   for (const g of S.guards) if (g.target && !targetEliminated(g)) { const at=targetKnowledge(g); pt(at.x,at.y,'#ff5a4a',at.area||at.lastSeen?'r':'c',targetName(g)); }
@@ -75,15 +77,15 @@ function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
-  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), true); cv.style.width = '100%'; mp.appendChild(cv);
+  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
-  { const L = (typeof DIALOGUE !== 'undefined' && DIALOGUE[STAGE.id] || []).find(l => l[0] === 'master'); $('brLine').textContent = STAGE.briefBy ? STAGE.brief : L ? L[1].replace(/^올빼미, 까마귀다\. /, '') : ''; $('brRadio').hidden = !L && !STAGE.briefBy; $('brRadio').querySelector('b').textContent = STAGE.briefBy || '까마귀'; }
-  $('brTodo').innerHTML = briefTodo().map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span> · ${w}</span></b></li>`).join('');
+  $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
+  $('brTodo').innerHTML = briefTodo().filter(r => r[2] !== '신원 기록' && r[2] !== '이탈').map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
-  { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) b.textContent = '체크포인트부터 이어 하기 · ' + new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) { b.textContent = '이어 하기'; const time = document.createElement('small'); time.textContent = new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); b.appendChild(time); }
     b.onclick = () => { el.hidden = true; paused = false; if (resumeStoredCP(STAGE_I)) { play('bell', 0.6); startAmb(); } else go(); }; }
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
@@ -195,7 +197,7 @@ function updateHUD(force) {
   padButton(hud.carry, 'carryH', ea, P.ledge || P.wire ? '올라가기' : '행동');
   hud.carry.classList.toggle('ready', ea.k !== 'none');
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1 || ea.blocked&&n>0); if (!cb.hidden) setText($('cycleN'), 'cycN', ea.blocked?'다시 선택':(ea.choiceI + 1) + '/' + n); } }
-  { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label); } }
+  { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   keyMap(ka, ea, ga);
   positionEnvPicker();
 }

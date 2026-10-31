@@ -797,12 +797,12 @@ function flushTags() {
   for (const t of q) {
     const sig = t.text + '|' + Math.round(t.x / 40) + '|' + Math.round(t.y / 40); if (seen.has(sig)) continue; seen.add(sig);  // 같은 자리 같은 글은 한 번
     let at = null;
-    if (t.pri===2.6) {
+    if (t.pri===2.6 || t.pri===4.2) {
       const blocks=[...document.querySelectorAll('#mini,#stealth,#hud .top,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button')].map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
         .map(r=>[cam.x+(r.left-W/2-6)/SCALE,cam.y+(r.top-H/2-6)/SCALE,cam.x+(r.right-W/2+6)/SCALE,cam.y+(r.bottom-H/2+6)/SCALE]);
       const margin=tagRect(0,0,t.text,t.key)[2]+8/SCALE;
       const xs=[t.x,clamp(t.x,cam.x-W/2/SCALE+margin,cam.x+W/2/SCALE-margin),cam.x-30/SCALE];
-      for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,4,5]) { const y=t.y+dy*lh,r=tagRect(x,y,t.text,t.key);
+      for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]) { const y=t.y+dy*lh,r=tagRect(x,y,t.text,t.key);
         if(r[0]<cam.x-W/2/SCALE+4/SCALE||r[2]>cam.x+W/2/SCALE-4/SCALE||r[1]<cam.y-H/2/SCALE+4/SCALE||r[3]>cam.y+H/2/SCALE-75/SCALE)continue;
         if(!blocks.concat(placed).some(p=>hit(r,p))) { t.x=x;at=[y,r];break; }
       } if(at)break; }
@@ -965,7 +965,11 @@ function drawActLabels(pa, P, ka, ga) {
   let vy = null;
   if (vic) { const [p, kc] = T('공격', KK('atk')), v = ka.k === 'none' ? (koTap(vic) ? '기절' : '처치') : ka.k === 'cap' ? ka.label : (ka.label || '').replace(/^달려들어 /, '');
     vy = vic.y - 34 * k; tag(vic.x, vy, p + actionCaption(ka, v), '#e8473c', 1, kc, 4); }
-  if (ga && ga.k === 'grab' && ga.g) { const [p, kc] = T('붙잡기', KK('grab')); tag(ga.g.x, ga.g.y - 66 * k, '붙잡기', '#a8d4d6', 1, kc, 4); }
+  if (ga && (ga.k === 'grab' || ga.near)) {
+    const g=ga.g||ga.near, label=ga.reason?'붙잡기 · '+ga.reason:'붙잡기', kc=isTouch?null:KK('grab');
+    // 적 머리·대사·공격 표시 사이에 묻히지 않게 내 쪽에서 같은 입력 이름을 보여 준다.
+    tag(P.x, P.y+36*k, label, ga.k==='grab'?'#a8d4d6':'#b4b9b8', 1, kc, 4.2);
+  }
   if (!isTouch && ga && ['ledgeDrop', 'wireFall'].includes(ga.k)) { const h = P.wire ? wirePt(P.wire.w, P.wire.s) : P; tag(h.x, h.y - 75 * k, '떨어지기', '#f2c46b', 1, KK('grab'), 3.5); }
   if (P.captive) { const ready = pa && pa.k === 'drag', h = ready ? pa.h : captiveDragPreview();
     if (h) { const [p, kc] = T('행동', KK('env')); tag(P.x, P.y + 52 * k, p + hideName(h) + (ready ? ' · 끌고 가 기절 · 길게 처치' : ' · 가까이 가서 끌고 가 기절'), SCAN.hide, 1, kc, 5); }

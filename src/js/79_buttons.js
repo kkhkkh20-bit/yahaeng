@@ -92,7 +92,15 @@ function grabAction() {
   const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '붙잡기' };
   if (P.ledge || P.wire) { const ok = !P.jump && !P.trav && (P.ledge ? landBelow(P.x, P.y, P.ledge, P.z) : wireFallOk()); return { k: ok ? (P.ledge ? 'ledgeDrop' : 'wireFall') : 'none', label: '떨어지기', blocked: !ok }; }
   if (P.car) return { k: 'none', label: '붙잡기' }; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
-  const g = grabTarget(); return g ? { k: 'grab', g, label: '붙잡기' } : { k: 'none', label: '붙잡기' };
+  const g = grabTarget(); if (g) return { k: 'grab', g, label: '붙잡기' };
+  // 공격 사거리 밖에서도 별도 붙잡기 입력을 먼저 알린다. 실행 가능 판정은 grabTarget 그대로다.
+  if (P.hide || P.carrying || P.under || P.vent || P.z) return { k: 'none', label: '붙잡기' };
+  const near = S.guards.filter(g => !g.child && !g.dog && !g.doomed && !g.climb && !['DEAD','CAPTIVE'].includes(g.state) && flOf(g)===flOf(P) && (g.z||0)===(P.z||0) &&
+    dist(P.x,P.y,g.x,g.y)<(g.elite||g.civ||g.state==='ALERT'?72:150) && los(P.x,P.y,g.x,g.y))
+    .sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];
+  if (!near) return { k: 'none', label: '붙잡기' };
+  const behind=Math.abs(angDiff(near.a,Math.atan2(P.y-near.y,P.x-near.x)))>1.75;
+  return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?'교전 중':!behind?'등 뒤로':'더 가까이' };
 }
 function actAttack() {
   RC = null;

@@ -806,10 +806,10 @@ function drawSpeech() {
     placed.push({ x, y, w, h }); SPEECH_R.push({ x, y, w, h });  // 글자 표시가 말풍선을 피하게
     if (y + h < g.y - 40) { ctx.strokeStyle = 'rgba(232,236,244,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
     const rr = (px, py, pw, ph, r) => { ctx.beginPath(); ctx.moveTo(px + r, py); ctx.arcTo(px + pw, py, px + pw, py + ph, r); ctx.arcTo(px + pw, py + ph, px, py + ph, r); ctx.arcTo(px, py + ph, px, py, r); ctx.arcTo(px, py, px + pw, py, r); ctx.closePath(); };
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(x + 1, y + 3, w, h, 8); ctx.fill();
-    ctx.fillStyle = '#f3f5f9'; rr(x, y, w, h, 8); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)), below = y > g.y - 40, edge = below ? y + 1 : y + h - 1; ctx.beginPath(); ctx.moveTo(tx - 6, edge); ctx.lineTo(tx + 6, edge); ctx.lineTo(tx, edge + (below ? -8 : 8)); ctx.fill(); }
-    ctx.strokeStyle = col; ctx.lineWidth = 2; rr(x + 1, y + 1, w - 2, h - 2, 7); ctx.stroke();
-    ctx.fillStyle = '#16181f'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, w - 20)); ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = 'rgba(0,0,0,.25)'; rr(x + 1, y + 2, w, h, 3); ctx.fill();
+    ctx.fillStyle = '#111a22'; rr(x, y, w, h, 3); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)), below = y > g.y - 40, edge = below ? y + 1 : y + h - 1; ctx.beginPath(); ctx.moveTo(tx - 6, edge); ctx.lineTo(tx + 6, edge); ctx.lineTo(tx, edge + (below ? -8 : 8)); ctx.fill(); }
+    ctx.strokeStyle = '#63727c'; ctx.lineWidth = 1; rr(x + .5, y + .5, w - 1, h - 1, 3); ctx.stroke(); ctx.fillStyle = col; ctx.fillRect(x, y + 5, 2, h - 10);
+    ctx.fillStyle = '#e6e5df'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, w - 20)); ctx.textBaseline = 'alphabetic';
   }
 }
 function updateChats(dt) {
