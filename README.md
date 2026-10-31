@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v101 설명·옵션 정리: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/UI_EDIT.md
+
+설명·옵션 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/editorial-v101/
+
 v100 보조창·입력·표시 개선: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/COMFORT_POLISH.md
 
 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/comfort-v100/
@@ -54,7 +58,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v100
-Source commit: a1fa8fcb2b29ed16d912ee32e854d1c497a7a2b7
+Version: v101
+Source commit: 63a15a1fbade3fb0408bd5494818359a97267c42
 
-Ink study source: a1fa8fcb2b29ed16d912ee32e854d1c497a7a2b7
+Ink study source: 63a15a1fbade3fb0408bd5494818359a97267c42
