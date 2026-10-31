@@ -12,6 +12,41 @@ function hideDistance(h,P=S.player) {
   if(!h.furn)return dist(P.x,P.y,h.x,h.y);
   const b=hideFootprint(h);return dist(P.x,P.y,clamp(P.x,b.x0,b.x1),clamp(P.y,b.y0,b.y1));
 }
+function cabinetGeometry(h) {
+  const b=hideFootprint(h),locker=h.type==='locker',inset=locker?5:4;
+  const left=b.x0+inset,right=b.x1-inset,top=b.y0-(locker?58:63),bottom=b.y1-5;
+  return {left,right,top,bottom,doorLeft:left+3,doorRight:right-3,doorTop:top+5,doorBottom:bottom-8,locker};
+}
+function cabinetAperture(h,open) {
+  const g=cabinetGeometry(h),w=g.doorRight-g.doorLeft,leaf=w/(g.locker?1:2),panel=leaf*Math.cos(clamp(open,0,1)*Math.PI*.48);
+  return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*(g.locker?1:2)),h:g.doorBottom-g.doorTop};
+}
+function drawCabinet(h,part='all',target=ctx,open=0) {
+  const c=target,g=cabinetGeometry(h),w=g.right-g.left,H=g.bottom-g.top,steel=g.locker;
+  c.save();
+  if(part!=='front'){
+    c.fillStyle='#070b0d66';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
+    c.fillStyle=steel?'#687786':'#806449';c.fillRect(g.left,g.top,w,H-3);
+    c.fillStyle=steel?'#9ba8b2':'#a48460';c.fillRect(g.left,g.top,w,4);
+    c.fillStyle='#0d1416';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
+    c.fillStyle=steel?'#29373d':'#392d23';c.fillRect(g.doorLeft+3,g.doorTop+4,g.doorRight-g.doorLeft-6,3);
+    c.strokeStyle=steel?'#9aa7ad':'#ad906c';c.lineWidth=1;c.strokeRect(g.left+.5,g.top+.5,w-1,H-4);
+    c.fillStyle='#172023';c.fillRect(g.left+1,g.bottom-3,3,5);c.fillRect(g.right-4,g.bottom-3,3,5);
+  }
+  if(part!=='back'){
+    const count=steel?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
+    for(let i=0;i<count;i++){
+      const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
+      c.fillStyle=steel?'#81909e':i?'#987653':'#a28059';c.strokeStyle=steel?'#566572':'#624c36';c.lineWidth=1;
+      c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
+      const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=(g.doorTop+g.doorBottom)/2+depth;
+      c.strokeStyle=steel?'#2d3c45':'#5d4733';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
+      if(steel&&wide>8){c.strokeStyle='#52636f';c.lineWidth=1;for(let k=0;k<3;k++){c.beginPath();c.moveTo(hinge+side*wide*.2,g.doorTop+12+k*4+depth*.2);c.lineTo(hinge+side*wide*.75,g.doorTop+12+k*4+depth*.75);c.stroke();}}
+    }
+    c.fillStyle=steel?'#4b5c68':'#684f38';c.fillRect(g.left+1,g.bottom-9,w-2,3);
+  }
+  c.restore();
+}
 function hideGeometry(h) {
   const b=hideFootprint(h),f=h.furn;
   return {x:h.x,y:f?h.y:h.y-(h.type==='well'?4:10),rim:f?b.y1-6:h.y+(h.type==='well'?8:-5),back:f?b.y0:h.y-23,left:f?b.x0:h.x-28,right:f?b.x1:h.x+28,footprint:b};
@@ -63,7 +98,7 @@ function beginHideFlow(kind,h,subject=null,dir=null) {
   const route=kind==='exit'?{points:[],stand:exit,length:0}:hideApproach(h);if(!route)return false;
   const g=kind==='drag'?subject:null,c=kind==='stash'?subject:null;
   if(g&&P.captive!==g||c&&P.carrying!==c)return false;
-  const walk=route.length/130,duration=kind==='drag'?1.9:kind==='stash'?1.25:1.45;
+  const walk=route.length/130,duration=kind==='drag'?1.7:kind==='stash'?1.15:h.type==='box'?1.05:1.1;
   const F={kind,h,g,c,route,walk,duration,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:route.stand.x,y:route.stand.y,f:1}],dur:walk+duration,phases:[{to:1,pose:'container'}],hideB:h,local:true,hideFlow:F});
@@ -147,12 +182,7 @@ function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
       ctx.fillStyle='#9ca88a66';for(const [dx,dy]of [[-21,8],[18,13],[-10,15]])ctx.fillRect(dx,dy,3,1);
       ctx.fillStyle='#82917c';ctx.fillRect(-30,0,5,8);ctx.fillRect(25,0,5,8);
     }
-  }else if(h.furn&&h.type!=='bed'&&part==='back'){
-    const b=hideFootprint(h),w=b.x1-b.x0,v=b.y1-b.y0;ctx.translate(b.x0-x,b.y0-y);
-    ctx.fillStyle=h.type==='locker'?'#586879':'#594333';ctx.fillRect(2,1,w-4,v-5);
-    ctx.fillStyle='#101716';ctx.fillRect(6,5,w-12,v-12);
-    const panel=(w-12)/2*(1-open*.92);ctx.fillStyle=h.type==='locker'?'#63717d':'#705440';ctx.fillRect(6,5,panel,v-12);ctx.fillRect(w-6-panel,5,panel,v-12);
-    ctx.strokeStyle='#b3a788';ctx.lineWidth=1;ctx.strokeRect(5,4,w-10,v-10);
+  }else if(h.furn&&h.type!=='bed'){ctx.restore();drawCabinet(h,part,target,open);return;
   }else if(h.type==='well'&&part==='front'){ctx.strokeStyle='#8b9489';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(0,0,22,14,0,0,Math.PI);ctx.stroke();
   }else if(h.type==='well'){
     ctx.fillStyle='#080e12';ctx.beginPath();ctx.ellipse(0,0,22,14,0,0,TAU);ctx.fill();ctx.strokeStyle='#75807c';ctx.lineWidth=3;ctx.stroke();
@@ -193,32 +223,29 @@ function hideHeroSample(P,T) {
   if(F.kind==='drag'&&f<.52)return{x:at.x,y:at.y,anim:'grabI',frame:0,outside:true};
   const q=exit?1-f:F.kind==='drag'?clamp((f-.52)/.48,0,1):f;
   if(h.furn||h.type==='bush'){
-    const u=hideEase((q-.16)/.72),pose=clamp((q-.06)/.32,0,1),bed=h.type==='bed';
-    // Enter through the chosen face instead of sinking vertically into a cabinet.
-    const b=F.geo.footprint,nx=Math.sign(at.x-h.x),ny=Math.sign(at.y-h.y);
-    const x=at.x+(h.x-at.x)*u,y=at.y+(h.y-at.y)*u+(bed?u*12:0);
-    return{x,y,anim:'duck',frame:Math.round(pose*8),outside:true,cover:hideEase((q-.42)/.48),cabinet:!bed&&h.furn,bed,bush:h.type==='bush',nx,ny};
+    const u=hideEase((q-.16)/.64),bed=h.type==='bed',cabinet=h.furn&&!bed;
+    const x=at.x+(h.x-at.x)*u,y=at.y+(h.y-at.y)*u+(bed?u*12:cabinet?-u*15:0);
+    const pose=clamp((q-.06)/.32,0,1),moving=u>0&&u<1;
+    return{x,y,anim:cabinet?(moving?'walk':'idleC'):'duck',frame:cabinet?(moving?-1:0):Math.round(pose*8),outside:true,inside:cabinet&&u>=.99};
   }
-  const u=hideEase((q-.16)/.46),inside=F.geo.rim-18,sink=hideEase((q-.62)/.32)*90;
-  const x=at.x+(h.x-at.x)*u,y=at.y+(inside-at.y)*u-Math.sin(u*Math.PI)*28+sink;
-  return{x,y,anim:h.type==='well'?'duck':'hide',frame:Math.round(u*(h.type==='well'?8:16)),outside:u<.70,visible:q<.96};
+  const t=clamp((q-.14)/.74,0,1),r=1-t,rim=F.geo.rim,control=rim-(h.type==='well'?80:96),end=rim+40;
+  const x=r*r*at.x+(1-r*r)*h.x,y=r*r*at.y+2*r*t*control+t*t*end;
+  return{x,y,anim:h.type==='well'?'duck':'hide',frame:Math.round(t*(h.type==='well'?8:16)),outside:t<.53,visible:q<.96};
 }
 function hideActorOutside(T) {return hideHeroSample(S.player,T).outside;}
 function drawHideFlowHero(P,T) {
   const F=T.hideFlow,h=F.h,s=hideHeroSample(P,T);if(s.visible===false)return;
   ctx.save();
   if(!s.outside){ctx.beginPath();ctx.rect(h.x-140,h.y-200,280,200+F.geo.rim-h.y);ctx.clip();}
-  if(h.furn||h.type==='bush')clipHideFurniture(T);
+  if(h.furn&&h.type!=='bed'?s.inside:h.furn||h.type==='bush')clipHideFurniture(T);
   drawPR(playerKey(P),s.x,s.y,P.a,s.anim,T.t,1,1,0,s.frame);ctx.restore();
   if(T.t<F.walk){const other=F.c?carryKey(F.c):F.g?charOf(F.g):null;if(other)drawPR(other,P.x,P.y,P.a,F.c?'carried':'held',T.t);}
 }
 function clipHideFurniture(T) {
-  const F=T.hideFlow,h=F.h,b=F.geo.footprint;ctx.beginPath();ctx.rect(h.x-200,h.y-220,400,440);
-  ctx.rect(b.x0,b.y0,b.x1-b.x0,b.y1-b.y0);
+  const F=T.hideFlow,h=F.h,b=F.geo.footprint;ctx.beginPath();ctx.rect(h.x-240,h.y-260,480,520);
   if(h.furn&&h.type!=='bed'){
-    const w=b.x1-b.x0,panel=(w-12)/2*(1-hideFlowOpen(T)*.92);
-    ctx.rect(b.x0+6+panel,b.y0+5,Math.max(0,w-12-2*panel),b.y1-b.y0-12);
-  }
+    const g=cabinetAperture(h,hideFlowOpen(T));ctx.rect(g.left,g.top,g.right-g.left,g.bottom-g.top+5);ctx.rect(g.x,g.y,g.w,g.h);
+  }else ctx.rect(b.x0,b.y0,b.x1-b.x0,b.y1-b.y0);
   ctx.clip('evenodd');
 }
 function hideFlowTargetOutside(T) {
@@ -230,7 +257,7 @@ function drawHideFlowTarget(P,T) {
   const F=T.hideFlow,f=hideFlowProgress(T),h=F.h,at=F.route.stand;if((F.committed&&!h.furn&&h.type!=='bush')||T.t<F.walk||!F.c&&!F.g)return;
   const u=F.c?clamp((f-.28)/.45,0,1):clamp((f-.26)/.43,0,1),furn=h.furn||h.type==='bush',move=furn?hideEase(u):clamp((u-.40)/.25,0,1),drop=furn?0:clamp((u-.65)/.35,0,1)*85;
   const x=at.x+(h.x-at.x)*move,y=at.y+((furn?h.y:F.geo.y)-at.y)*move+drop+(h.type==='bed'?12*move:0);
-  ctx.save();if(furn)clipHideFurniture(T);else if(u>=.65){ctx.beginPath();ctx.rect(h.x-160,h.y-220,320,220+F.geo.rim-h.y);ctx.clip();}
+  ctx.save();if(furn){if(!h.furn||h.type==='bed'||move>=.99)clipHideFurniture(T);}else if(u>=.65){ctx.beginPath();ctx.rect(h.x-160,h.y-220,320,220+F.geo.rim-h.y);ctx.clip();}
   if(F.c)drawPR(carryKey(F.c),x,y,P.a,furn&&u>.55?(h.type==='bed'?'death':'crouch'):f<.26?'carriedI':'lifted',0,1,1,0,furn&&h.type==='bed'&&u>.55?5:f<.42?1:0);
   if(F.g)drawPR(charOf(F.g),x,y,P.a,u<.65?'heldI':'crouch',0);
   ctx.restore();

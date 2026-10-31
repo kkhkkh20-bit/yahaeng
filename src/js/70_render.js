@@ -112,7 +112,7 @@ function drawPlayerBody(P) {
     return;
   }
   let lift = P.z ? 1 + P.z * 0.05 : 1, yo = 0;
-  if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); yo = -Math.sin(f * Math.PI) * P.jump.arc; lift += Math.sin(f * Math.PI) * 0.25; }
+  if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); yo = -(P.jump.downward?(P.jump.releasedHang?0:4*f*(1-f)):Math.sin(f*Math.PI))*P.jump.arc; lift += Math.sin(f * Math.PI) * 0.25; }
   if (P.z || P.jump) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x + 4 + P.z * 2, P.y + 6 + P.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
   // 숨은 상태(어둠·화단): 몸은 반투명, 밝은 외곽선과 발밑 고리로 내 위치는 늘 보이게
   const concealed = !P.jump && !P.under && (S.expo != null ? S.expo === 0 : (P.hidden || P.light < 0.3)) && !(STAGE.zones && !P.hidden && !P.z && pZoneEff() === Z_PUB);  // 공개 구역에서 섞여 있을 땐 숨음 외곽선을 쓰지 않는다 (위 표시와 맞춘다)

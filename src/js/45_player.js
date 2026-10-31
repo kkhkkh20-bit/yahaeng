@@ -172,12 +172,19 @@ function beginLedgePull(g) {
   S.ledgePull={g,t:0,dur:.95+Math.max(0,P.z-to.z-1)*.12,from:{x:g.x,y:g.y},edge:{x:grip.x,y:grip.y-5},to,z:P.z,n:{...P.ledge},px:P.x,py:P.y,fl:flOf(P)};
   g.doomed=true;g.ledgeFalling=true;g.path=null;g.moving=false;g.icon=null;P.vx=P.vy=0;play('cloth',.5);return true;
 }
+// Keep the pull's exit velocity when the victim crosses the edge.
+function ledgeVictimPoint(A,f) {
+  if(f<=.38){const t=clamp(f/.38,0,1),u=t*t*(2-t);return{x:A.from.x+(A.edge.x-A.from.x)*u,y:A.from.y+(A.edge.y-A.from.y)*u};}
+  const t=clamp((f-.38)/.62,0,1),r=1-t,out={};
+  for(const k of ['x','y']){
+    const p0=A.edge[k],p1=p0+(p0-A.from[k])*(.62/.38)/3,p2=A.to[k]-(A.to[k]-p0)*.25;
+    out[k]=r*r*r*p0+3*r*r*t*p1+3*r*t*t*p2+t*t*t*A.to[k];
+  }return out;
+}
 function updateLedgePull(dt) {
   const A=S.ledgePull;if(!A)return;const P=S.player,g=A.g;
   if(g.state==='DEAD'||!P.ledge||P.z!==A.z||flOf(P)!==A.fl||P.x!==A.px||P.y!==A.py){g.doomed=false;g.ledgeFalling=false;S.ledgePull=null;return;}
-  A.t+=dt;const f=clamp(A.t/A.dur,0,1),pull=hideEase(f/.38),fall=clamp((f-.38)/.62,0,1);
-  g.x=A.from.x+(A.edge.x-A.from.x)*pull+(A.to.x-A.edge.x)*fall;
-  g.y=A.from.y+(A.edge.y-A.from.y)*pull+(A.to.y-A.edge.y)*fall*fall;
+  A.t+=dt;const f=clamp(A.t/A.dur,0,1),at=ledgeVictimPoint(A,f);g.x=at.x;g.y=at.y;
   if(f>=1){
     g.x=A.to.x;g.y=A.to.y;g.z=A.to.z;g.fl=0;g.doomed=false;g.ledgeFalling=false;
     const L0=CUR_F;setLayer(0);accidentKill(g,'fall');setLayer(L0);
@@ -326,7 +333,7 @@ function dropLedge(P) {
   const gb = landBelow(P.x, P.y, P.ledge, P.z);
   if (!gb) { if (!P.ledgeWarn) { P.ledgeWarn = true; toast('착지할 곳이 없다 — 두 층 높이까지만 내려갈 수 있다', 2); } return false; }
   const d = ledgeRoot(P), h = P.z - gb.z,grip=ledgeGrip(P),face=grip.a,releaseMaskY=P.ledge.y<0?grip.y+4:null;
-  P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.3 + h * 0.08, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70,downward:true,releasedHang:true,face,releaseMaskY };
+  P.ledge = null; P.jump = { x0: d.x, y0: d.y, x1: gb.x, y1: gb.y, t: 0, dur: 0.22 + h * 0.04, z1: gb.z, arc: 4, noise: h >= 2 ? 140 : 70,downward:true,releasedHang:true,face,releaseMaskY };
   P.x=d.x;P.y=d.y;P.a=face; if (h >= 2) S.shakeT = 0.15;
   return true;
 }
@@ -406,7 +413,7 @@ function updatePlayer(dt) {
   if (P.pick) { updatePick(P, mag, dt); return; }
   if (P.jump) {
     const j = P.jump; j.t += dt; const f = Math.min(1, j.t / j.dur);
-    P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * (j.downward?f*f:f);
+    P.x = j.x0 + (j.x1 - j.x0) * f; P.y = j.y0 + (j.y1 - j.y0) * f;
     if (f >= 1) { P.jump = null; P.z = j.z1;P.moving=false; play('land', j.noise ? 0.25 : 0.4); noise(P.x, P.y, (j.noise || (j.z1 ? 70 : 120)) * floorMul(P.x, P.y, j.z1), 'land', null, j.z1); if (j.killG && j.killG.state !== 'DEAD') { const g = j.killG; g.doomed = false; P.strikeT = 0.35; P.a = Math.atan2(g.y - P.y, g.x - P.x); killGuard(g); if (!g.civ || j.dropKill) { S.stats.special++; toast(j.dropKill ? (lastKO() ? '위에서 덮쳐 기절' : '낙하 암살') : lastKO() ? '창문 넘어 기절' : '창문 넘어 암살', 1.8, 'good'); } if (j.dropKill) play('land', 0.5); collide(P, 13, groundSolidP); } }
     P.light = lightAt(P.x, P.y, true); P.hidden = false; P.moving = f<1;
     return;
