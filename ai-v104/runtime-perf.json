@@ -1,0 +1,58 @@
+[
+  {
+    "when": "before",
+    "cpuThrottle": 4,
+    "width": 390,
+    "nativeDpr": 2,
+    "windows2s": [
+      {
+        "medianFrameMs": 150,
+        "frames": 13,
+        "dpr": 2
+      },
+      {
+        "medianFrameMs": 100,
+        "frames": 20,
+        "dpr": 2
+      },
+      {
+        "medianFrameMs": 100,
+        "frames": 21,
+        "dpr": 2
+      },
+      {
+        "medianFrameMs": 100,
+        "frames": 20,
+        "dpr": 2
+      }
+    ]
+  },
+  {
+    "when": "after",
+    "cpuThrottle": 4,
+    "width": 390,
+    "nativeDpr": 2,
+    "windows2s": [
+      {
+        "medianFrameMs": 216.5999999999999,
+        "frames": 11,
+        "dpr": 2
+      },
+      {
+        "medianFrameMs": 83.40000000000055,
+        "frames": 22,
+        "dpr": 2
+      },
+      {
+        "medianFrameMs": 66.69999999999982,
+        "frames": 27,
+        "dpr": 1.5
+      },
+      {
+        "medianFrameMs": 66.69999999999891,
+        "frames": 30,
+        "dpr": 1.5
+      }
+    ]
+  }
+]

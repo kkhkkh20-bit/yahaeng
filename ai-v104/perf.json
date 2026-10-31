@@ -1,0 +1,122 @@
+[
+  {
+    "width": 390,
+    "dpr": 2,
+    "scene": "street",
+    "when": "before",
+    "drawMedianMs": 11.873333333432674,
+    "coneMedianMs": 0.3516666690508524,
+    "coloredCacheMB": 155.625,
+    "drawSamplesMs": [
+      11.57666666706403,
+      12.169999999801318,
+      11.22666666706403,
+      12.706666666269303
+    ]
+  },
+  {
+    "width": 390,
+    "dpr": 2,
+    "scene": "street",
+    "when": "after",
+    "drawMedianMs": 12.365000000596046,
+    "coneMedianMs": 0.2533333341280619,
+    "coloredCacheMB": 109.625,
+    "drawSamplesMs": [
+      12.213333333532015,
+      12.293333333730697,
+      12.436666667461395,
+      13.480000000198682
+    ]
+  },
+  {
+    "width": 390,
+    "dpr": 2,
+    "scene": "vip",
+    "when": "before",
+    "drawMedianMs": 15.026666666567326,
+    "coneMedianMs": 1.8166666636864344,
+    "coloredCacheMB": 160.25,
+    "drawSamplesMs": [
+      14.696666665871938,
+      15.67333333293597,
+      15.333333333333334,
+      14.719999999801319
+    ]
+  },
+  {
+    "width": 390,
+    "dpr": 2,
+    "scene": "vip",
+    "when": "after",
+    "drawMedianMs": 15.38666666597128,
+    "coneMedianMs": 1.6316666657725971,
+    "coloredCacheMB": 116.25,
+    "drawSamplesMs": [
+      16.55,
+      15.72999999920527,
+      15.043333332737287,
+      14.333333333333334
+    ]
+  },
+  {
+    "width": 1280,
+    "dpr": 1,
+    "scene": "street",
+    "when": "before",
+    "drawMedianMs": 9.275000000496705,
+    "coneMedianMs": 0.3583333343267441,
+    "coloredCacheMB": 155.625,
+    "drawSamplesMs": [
+      10.219999999801319,
+      8.446666665871938,
+      9.093333333730698,
+      9.456666667262713
+    ]
+  },
+  {
+    "width": 1280,
+    "dpr": 1,
+    "scene": "street",
+    "when": "after",
+    "drawMedianMs": 9.148333333432674,
+    "coneMedianMs": 0.32166666587193804,
+    "coloredCacheMB": 109.625,
+    "drawSamplesMs": [
+      9.983333333333333,
+      8.82666666706403,
+      9.306666666269303,
+      8.990000000596046
+    ]
+  },
+  {
+    "width": 1280,
+    "dpr": 1,
+    "scene": "vip",
+    "when": "before",
+    "drawMedianMs": 10.23333333283663,
+    "coneMedianMs": 1.0200000017881394,
+    "coloredCacheMB": 160.25,
+    "drawSamplesMs": [
+      13.103333333134652,
+      10.219999999801319,
+      9.963333333532015,
+      10.246666665871938
+    ]
+  },
+  {
+    "width": 1280,
+    "dpr": 1,
+    "scene": "vip",
+    "when": "after",
+    "drawMedianMs": 10.483333333333334,
+    "coneMedianMs": 0.9816666707396507,
+    "coloredCacheMB": 116.25,
+    "drawSamplesMs": [
+      10.786666666467985,
+      9.569999999801318,
+      10.206666667262713,
+      10.759999999403954
+    ]
+  }
+]

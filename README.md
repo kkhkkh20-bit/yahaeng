@@ -6,6 +6,10 @@ https://kkhkkh20-bit.github.io/yahaeng/
 
 시안 실행: https://kkhkkh20-bit.github.io/yahaeng/tone-study/game.html
 
+v104 시야·휘파람·선택 표시·성능: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/AI_FEEDBACK.md
+
+전후 화면: https://kkhkkh20-bit.github.io/yahaeng/ai-v104/
+
 v103 배관 접점·동작 경로: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/PIPE_CONTACTS.md
 
 전후와 동작 단계: https://kkhkkh20-bit.github.io/yahaeng/pipe-v103/
@@ -66,7 +70,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v103
-Source commit: aebe9b0f4a636b85515e82a50a1e7e911965262b
+Version: v104
+Source commit: 6fe988fcc655280fc7adc309f9c3183af867085b
 
-Ink study source: aebe9b0f4a636b85515e82a50a1e7e911965262b
+Ink study source: 6fe988fcc655280fc7adc309f9c3183af867085b
