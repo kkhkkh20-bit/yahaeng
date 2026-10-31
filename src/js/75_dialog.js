@@ -27,7 +27,6 @@ function faceSheet(pk, body) {
 const _fcTmp = document.createElement('canvas');
 function drawFace(cv, sp) {
   const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
-  if(INK_STUDY&&drawInkPortrait(cv,sp))return true;
   if (!(sp.key && FACE.base)) return false;
   const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk, bn), fr = PR.faces.fr; if (!sh) return false;
   if (PR.style === 'modular') {
@@ -77,7 +76,7 @@ function nextLine() {
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
   $('dlgText').textContent = ''; $('dlgHint').textContent = DLG.modal ? (isTouch ? '탭하면 다음' : 'Space 다음 · Esc 건너뛰기') : '';
-  const opening = el.hidden; el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = false; document.body.classList.toggle('dlgmodal', !!DLG.modal);
+  const opening = el.hidden; el.classList.toggle('modal', DLG.modal); el.classList.add('talking'); el.hidden = !DLG.modal&&playerActionFocus(); document.body.classList.toggle('dlgmodal', !!DLG.modal);
   if (opening) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }  // 처음 열릴 때만 떠오르며 등장. 이어지는 줄은 같은 창에서 글자만 바뀐다
 }
 function advanceDialog() { if (paused) return;  // 일시정지·브리핑 화면 중에는 대사가 넘어가지 않는다
@@ -86,7 +85,9 @@ function skipDialog() { DLG.q = []; nextLine(); }
 function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
 function updateDialog(dt) {
   updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
-  const c = DLG.cur; if (!c) return; c.t += dt;
+  const c = DLG.cur; if (!c) return;
+  if(!DLG.modal&&playerActionFocus()){ $('dlg').hidden=true; return; }
+  $('dlg').hidden=false; c.t += dt;
   if (c.shown < c.text.length) { const n0 = Math.floor(c.shown); c.shown = Math.min(c.text.length, c.shown + dt * 38); const n1 = Math.floor(c.shown); $('dlgText').textContent = c.text.slice(0, n1);
     for (let i = n0; i < n1; i++) if (i % 2 === 0 && !/[\s.,…·!?]/.test(c.text[i])) { typeTick(c.seed); break; } if (c.shown >= c.text.length) $('dlg').classList.remove('talking'); }  // 타이핑 소리 (두 글자에 한 번, 띄어쓰기·문장부호는 조용히)
   else if (!DLG.modal && c.t > c.text.length / 38 + 2.2) nextLine();

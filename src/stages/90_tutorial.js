@@ -6,7 +6,7 @@ STAGES.forEach((st, i) => { st.no = String(i + 1).padStart(2, '0'); st.sub = st.
 // 연습은 둘로 나눈다: 기본(약 3분, 첫 의뢰 전에 필요한 것만)과 고급(선택). 같은 지도를 쓰고, 쓰지 않는 자경대원은 빼 둔다
 const TUT = {
   id: 't0', no: '00', name: '연습', sub: '연습 · 훈련장', tutorial: true,
-  mission: '기술을 하나씩 익힌다: 지도·웅크리기·기절과 처치·시체 숨기기·살피기·엄폐·유인·전깃줄·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
+  mission: '기술을 하나씩 익힌다: 지도·웅크리기·기절과 처치·시체 숨기기·상호작용·엄폐·유인·전깃줄·락픽', itemName: '연습 장부', itemNames: ['연습 장부'],
   brief: '서쪽에서 동쪽으로 한 칸씩 나아가며 기술을 익힌다. 목표 목록 맨 위의 "연습" 줄이 지금 할 일이고, 대상 위에 "여기" 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
   W: 41, H: 15, start: [1, 9], exit: [40.5, 9], startA: 0, noRefine: true, floors: false, pspd: 1.25, gspd: 0.9, residents: 0,
   build(m) {
@@ -39,7 +39,7 @@ const TUT = {
     ['{살금} 몸 낮추기 — 발소리와 노출 감소', (S, P, I) => I.sneakToggle],
     ['등 돌린 자경대원 뒤에서 {공격} — 톡 누르면 기절, 계속 누르면 처치', S => S.guards[0].state === 'DEAD', S => S.guards[0]],
     ['쓰러진 사람을 {행동}으로 메고, 수거함 앞에서 다시 {행동}', S => (S.stats.stashed || 0) >= 1, S => S.player.carrying ? { x: 9 * 48 + 24, y: 7 * 48 + 24 } : S.corpses.find(c => !c.stashed)],
-    ['{살피기} 사용 가능한 물체 확인하기', (S, P, I) => I.scan || S.guards[1].state === 'DEAD'],
+    ['문·벽에 가까이 가서 {행동} 안내 확인하기', (S,P)=>Math.hypot(P.x-(15*48+24),P.y-(7*48+12))<88||S.guards[1].state==='DEAD',()=>({x:15*48+24,y:7*48+12})],
     ['벽 쪽으로 0.5초 밀기 — 등을 바짝 붙인다', (S, P) => !!P.cover || S.guards[1].state === 'DEAD', () => ({ x: 15 * 48 + 24, y: 7 * 48 + 12 })],
     ['붙은 채 기다렸다가 지나가는 자경대원에게 {공격}', S => S.guards[1].state === 'DEAD', S => S.guards[1]],
     ['창문 쪽을 바라보면 안이 보인다 — 엿보기', S => !!S.peek, () => ({ x: 16 * 48 + 24, y: 7 * 48 + 24 })],

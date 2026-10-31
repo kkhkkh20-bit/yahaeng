@@ -1,17 +1,6 @@
 // 메인 포스터에 맞춘 작동 시안. 기본 실행과 분리하고 ?tone=ink에서만 켠다.
 const INK_STUDY=document.documentElement.classList.contains('ink-study');
 const INK={paper:'#eee4cf',ink:'#171817',line:'#777366',red:'#b73528',muted:'#b4ad9e'};
-const inkPortraits=INK_STUDY&&window.__INK_PORTRAITS__?new Image():null;
-if(inkPortraits){
-  inkPortraits.onload=()=>{if(typeof DLG!=='undefined'&&DLG.cur?.speaker&&!$('dlg').hidden){const ok=drawFace($('dlgFace'),DLG.cur.speaker);$('dlgFaceBox').hidden=!ok;$('dlg').classList.toggle('noface',!ok);}};
-  inkPortraits.src=window.__INK_PORTRAITS__;
-}
-function drawInkPortrait(cv,sp){
-  const col={fc_ninja:0,fc_aide:1,fc_master:2}[sp.face];
-  if(!inkPortraits?.complete||!inkPortraits.naturalWidth||col==null)return false;
-  const x=cv.getContext('2d'),side=inkPortraits.naturalWidth/3;x.clearRect(0,0,cv.width,cv.height);x.imageSmoothingEnabled=true;
-  x.drawImage(inkPortraits,col*side,0,side,inkPortraits.naturalHeight,0,0,cv.width,cv.height);return true;
-}
 function inkLampColor(l){
   if(!INK_STUDY||STAGE.id!=='m2')return l.col;
   return {'255,60,170':'204,78,54','255,90,190':'204,78,54','60,220,255':'135,204,197','90,220,255':'135,204,197','190,90,255':'177,106,85'}[l.col]||l.col;

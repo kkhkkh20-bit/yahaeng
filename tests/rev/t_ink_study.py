@@ -25,9 +25,9 @@ async def main():
     }return out;}''')
     snapshots.append(result)
     await pg.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&__game.DLG.modal;i++)__game.advanceDialog();__game.updateHUD(true)")
-    rects.append(await pg.locator('#btnAct,#btnCarry,#btnGrab,#btnTool,#btnCrouch,#btnScan,#btnPause').evaluate_all('(a)=>a.map(e=>{const r=e.getBoundingClientRect();return[e.id,r.x,r.y,r.width,r.height]})'))
+    rects.append(await pg.locator('#btnAct,#btnCarry,#btnGrab,#btnTool,#btnCrouch,#btnPause').evaluate_all('(a)=>a.map(e=>{const r=e.getBoundingClientRect();return[e.id,r.x,r.y,r.width,r.height]})'))
     if ink:
-     await pg.wait_for_function('__game.inkPortraits?.complete&&__game.inkPortraits.naturalWidth>0',polling=100)
+     await pg.wait_for_function('(()=>{const c=document.createElement("canvas");c.width=c.height=128;return __game.drawFace(c,__game.speakerOf("hero"))})()',polling=100)
      hashes=await pg.evaluate('''()=>{const G=__game,cv=document.createElement('canvas');cv.width=cv.height=128;return ['hero','aide','master'].map(role=>{if(!G.drawFace(cv,G.speakerOf(role)))throw Error('missing portrait');return cv.toDataURL();});}''')
      assert len(set(hashes))==3,'main cast portraits not distinct'
      await pg.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='m2'),true)");await pg.evaluate('document.fonts.ready')

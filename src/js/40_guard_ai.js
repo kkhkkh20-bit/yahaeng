@@ -783,35 +783,42 @@ function updateTalks(dt) {
 // 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
 function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
-  const P = S.player, placed = [], who = [], ch = chaseNow();
-  for (const g of S.guards) if (g.say && g.state !== 'DEAD' && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) <= (ch ? 300 : 560) && (!ch || (g.state === 'ALERT' && !g.civ))) who.push(g);
-  if (P.say && !P.hide) who.push(P);
-  if (!who.length) return;
-  // 머리 위 ?·! 표시 자리는 미리 비워 둔다 (다른 사람 말풍선이 그 위를 덮지 않게)
-  for (const g of S.guards) if ((g.icon || g.state === 'ALERT' || (g.meter || 0) > 0.02) && g.state !== 'DEAD' && flOf(g) === flOf(P)) placed.push({ x: g.x - 21, y: g.y - 72, w: 42, h: 42 });
-  ctx.font = '600 13px "IBM Plex Sans KR", sans-serif';
-  const top = document.querySelector('#hud .top'), cr = canvas.getBoundingClientRect();
-  const minY = cam.y - H / SCALE / 2 + (Math.max(8, top ? top.getBoundingClientRect().bottom - cr.top + 8 : 8)) / SCALE;
-  const maxY = cam.y + H / SCALE / 2 - 12 / SCALE;
-  for (const g of who) {
-    const hero = g === P, col = hero ? DLG_COL.hero : g.civ ? DLG_COL.civ : g.target ? DLG_COL.target : g.elite ? DLG_COL.elite : DLG_COL.guard;
-    const words = g.say.split(' '), lines = ['']; for (const w of words) { const t = lines[lines.length - 1] ? lines[lines.length - 1] + ' ' + w : w; if (ctx.measureText(t).width > 200 && lines[lines.length - 1] && lines.length < 2) lines.push(w); else lines[lines.length - 1] = t; }
-    const tw = Math.min(210, Math.max(...lines.map(l => ctx.measureText(l).width))), w = tw + 20, h = 10 + lines.length * 17, vx0 = cam.x - W / SCALE / 2 + 6, vx1 = cam.x + W / SCALE / 2 - 6, x = Math.max(vx0, Math.min(vx1 - w, g.x - w / 2));  // 화면 밖으로 잘리지 않게
-    // 머리 위 ?·! 표시가 있으면 그 위로, 다른 말풍선과는 꼬리(7px)까지 띄운다
-    let y = g.y - 58 - h + 24 - (g.icon || g.state === 'ALERT' || (g.meter || 0) > 0.02 ? 34 : 0);
-    for (let k = 0; k < 6 && placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && y < r.y + r.h + 10 && y + h + 10 > r.y); k++) y -= h + 12;
-    if (y < minY || y + h > maxY) {
-      const options = [g.y + 18, minY, maxY - h];
-      y = options.find(py => py >= minY && py + h <= maxY && !placed.some(r => x < r.x + r.w + 4 && x + w + 4 > r.x && py < r.y + r.h + 10 && py + h + 10 > r.y)) ?? clamp(y, minY, Math.max(minY, maxY - h));
+  if(DLG.modal)return;
+  const P=S.player,ch=chaseNow(),focus=playerActionFocus();
+  const who=S.guards.filter(g=>g.say&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<=(ch?300:560)&&(!ch||g.state==='ALERT'&&!g.civ));
+  if(P.say&&!P.hide)who.unshift(P);
+  who.sort((a,b)=>(b===P?1:0)-(a===P?1:0)||(!!b.chat-!!a.chat)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
+  const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
+  const vx0=cam.x-W/SCALE/2+8/SCALE,vx1=cam.x+W/SCALE/2-8/SCALE,vy0=cam.y-H/SCALE/2+8/SCALE,vy1=cam.y+H/SCALE/2-8/SCALE;
+  const hit=(a,b)=>a[0]<b[2]+gap&&a[2]+gap>b[0]&&a[1]<b[3]+gap&&a[3]+gap>b[1];
+  ctx.save();ctx.font=`500 ${12*k}px "IBM Plex Sans KR",sans-serif`;
+  for(const g of who) {
+    if(SPEECH_R.length>=(focus?1:2))break;
+    // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.
+    const lines=[''],maxText=Math.min(210*k,(W-32)/SCALE-20*k);
+    for(const word of g.say.split(' ')) {
+      let i=lines.length-1,t=lines[i]?(lines[i]+' '+word):word;
+      if(ctx.measureText(t).width>maxText&&lines[i]){lines.push('');i++;}
+      for(const c of word){if(ctx.measureText(lines[i]+c).width>maxText&&lines[i]){lines.push('');i++;}lines[i]+=c;}
+      lines[i]+=' ';
     }
-    placed.push({ x, y, w, h }); SPEECH_R.push({ x, y, w, h });  // 글자 표시가 말풍선을 피하게
-    if (y + h < g.y - 40) { ctx.strokeStyle = 'rgba(232,236,244,.45)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(g.x, y + h); ctx.lineTo(g.x, g.y - 40); ctx.stroke(); }
-    const rr = (px, py, pw, ph, r) => { ctx.beginPath(); ctx.moveTo(px + r, py); ctx.arcTo(px + pw, py, px + pw, py + ph, r); ctx.arcTo(px + pw, py + ph, px, py + ph, r); ctx.arcTo(px, py + ph, px, py, r); ctx.arcTo(px, py, px + pw, py, r); ctx.closePath(); };
-    ctx.fillStyle = 'rgba(0,0,0,.25)'; rr(x + 1, y + 2, w, h, 3); ctx.fill();
-    ctx.fillStyle = '#111a22'; rr(x, y, w, h, 3); ctx.fill(); { const tx = Math.max(x + 10, Math.min(x + w - 10, g.x)), below = y > g.y - 40, edge = below ? y + 1 : y + h - 1; ctx.beginPath(); ctx.moveTo(tx - 6, edge); ctx.lineTo(tx + 6, edge); ctx.lineTo(tx, edge + (below ? -8 : 8)); ctx.fill(); }
-    ctx.strokeStyle = '#63727c'; ctx.lineWidth = 1; rr(x + .5, y + .5, w - 1, h - 1, 3); ctx.stroke(); ctx.fillStyle = col; ctx.fillRect(x, y + 5, 2, h - 10);
-    ctx.fillStyle = '#e6e5df'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, x + w / 2, y + 5 + 17 * i + 9, w - 20)); ctx.textBaseline = 'alphabetic';
+    const w=Math.max(...lines.map(l=>ctx.measureText(l.trim()).width))+20*k,h=(12+lines.length*17)*k;
+    if(w>vx1-vx0||h>vy1-vy0)continue;
+    const cx=clamp(g.x-w/2,vx0,vx1-w),above=g.y-58-h;
+    let at=null;
+    const xs=[cx,clamp(g.x-w-26*k,vx0,vx1-w),clamp(g.x+26*k,vx0,vx1-w)];
+    const ys=[above,above-h-12*k,g.y+26*k,clamp(above,vy0,vy1-h),g.y+50*k,...Array.from({length:12},(_,i)=>g.y+(72+i*18)*k)];
+    for(const y of ys){if(y<vy0||y+h>vy1)continue;for(const x of xs){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
+    if(!at)continue;
+    const [x,y]=at,col=g===P?DLG_COL.hero:g.civ?DLG_COL.civ:g.target?DLG_COL.target:g.elite?DLG_COL.elite:DLG_COL.guard;
+    placed.push(at);SPEECH_R.push({x,y,w,h});
+    ctx.fillStyle=INK_STUDY?'#191b18f5':'#111a22f5';ctx.fillRect(x,y,w,h);ctx.strokeStyle=INK_STUDY?'#aa9e84':'#63727c';ctx.lineWidth=k;ctx.strokeRect(x+.5*k,y+.5*k,w-k,h-k);
+    ctx.fillStyle=col;ctx.fillRect(x,y+5*k,2*k,h-10*k);
+    // 가까운 가장자리의 짧은 연결선으로 말하는 사람만 구별한다.
+    if(y+h<g.y-46){const tx=clamp(g.x,x+8*k,x+w-8*k);ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(tx,y+h);ctx.lineTo(tx,y+h+6*k);ctx.stroke();}
+    ctx.fillStyle='#e6e5df';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
   }
+  ctx.restore();
 }
 function updateChats(dt) {
   updateTalks(dt);

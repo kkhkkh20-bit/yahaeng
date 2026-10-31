@@ -777,8 +777,8 @@ function drawPipeBase(l) {
 // 상호작용 대상의 색: 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라
 const SCAN = { door: '#d39a5c', window: '#8fc3e6', pipe: '#c4ccd6', ladder: '#e0b070', chimney: '#f08a3c', vent: '#7fd6cc', hide: '#8fcf95', well: '#7fb0ff', secret: '#c9a0ff', lamp: '#f2c46b', fuse: '#f2c46b' };
 // 글자 표시 겹침 정리: 한 화면의 tag 를 모아 두었다가(TAGQ) 중요한 것부터 겹치지 않는 자리(위·아래 한두 줄)에 놓는다.
-// 말풍선(SPEECH_R)·머리 위 발견 표시(MARK_R)도 피한다. 자리가 없으면 덜 중요한 표시(구역 이름 등)는 이번 화면에서 뺀다
-let TAGQ = null, SPEECH_R = [], MARK_R = [];
+// 인물·발견 표시·조작 영역을 먼저 비운다. 행동을 배치한 뒤 말풍선은 남은 자리에 둔다.
+let TAGQ = null, SPEECH_R = [], MARK_R = [], ACTION_R = [];
 function tag(x, y, text, col, alpha = 1, key, pri) { if (window.__skip && window.__skip.ui) return;
   if (TAGQ) { TAGQ.push({ x, y, text, col, alpha, key, pri: pri != null ? pri : (key || /^\[/.test(text) ? 3 : 1) }); return; }
   drawTag(x, y, text, col, alpha, key);
@@ -792,15 +792,13 @@ function tagRect(x, y, text, key) {
 function flushTags() {
   const q = TAGQ; TAGQ = null; if (!q || !q.length) return;
   const k = Math.max(1, 0.95 / SCALE), lh = 21 * k, hit = (r, p) => r[0] < p[2] + 2 && r[2] + 2 > p[0] && r[1] < p[3] + 1 && r[3] + 1 > p[1];
-  const placed = SPEECH_R.map(r => [r.x, r.y, r.x + r.w, r.y + r.h]).concat(MARK_R);
+  const placed = MARK_R.concat(actorTextBlocks()), blocks=hudTextBlocks();
   q.forEach((t, i) => { t.i = i; }); q.sort((a, b) => b.pri - a.pri || a.i - b.i);
   const seen = new Set();
   for (const t of q) {
     const sig = t.text + '|' + Math.round(t.x / 40) + '|' + Math.round(t.y / 40); if (seen.has(sig)) continue; seen.add(sig);  // 같은 자리 같은 글은 한 번
     let at = null;
-    if (t.pri===2.6 || t.pri===4.2) {
-      const blocks=[...document.querySelectorAll('#mini,#stealth,#hud .top,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button')].map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
-        .map(r=>[cam.x+(r.left-W/2-6)/SCALE,cam.y+(r.top-H/2-6)/SCALE,cam.x+(r.right-W/2+6)/SCALE,cam.y+(r.bottom-H/2+6)/SCALE]);
+    if (t.pri>=2) {
       const margin=tagBounds(t,0,0)[2]+8/SCALE;
       const xs=[t.x,clamp(t.x,cam.x-W/2/SCALE+margin,cam.x+W/2/SCALE-margin),cam.x-30/SCALE];
       for(const x of xs) { for(const dy of [0,-1,1,-2,2,-3,3,-4,4,-5,5,-6,6]) { const y=t.y+dy*lh,r=tagBounds(t,x,y);
@@ -811,7 +809,7 @@ function flushTags() {
     }
     if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
     if (!at) { if (t.pri < 2) continue; at = [t.y, tagBounds(t,t.x,t.y)]; }
-    placed.push(at[1]); if(t.rows)drawEncounter(t.x,at[0],t.rows);else drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
+    placed.push(at[1]); ACTION_R.push(at[1]); if(t.rows)drawEncounter(t.x,at[0],t.rows);else drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
   }
 }
 function drawTag(x, y, text, col, alpha = 1, key) {
@@ -1103,7 +1101,7 @@ function draw() {
   ctx.imageSmoothingEnabled = false;
   drawBig(ctx, mapC, ...viewRect(60));
   const P = S.player;
-  SPEECH_R = []; MARK_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
+  SPEECH_R = []; MARK_R = []; ACTION_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
   setLayer(0);
   // 위층에 있으면 그 건물 자리에 그 층 평면을 덮어 그린다
   // 창문 넘기·창문 건너기(같은 높이 뜀): 지붕 위로 날아가는 것처럼 보이지 않게, 건물 안을 보여 준 채 땅 위 사람처럼 그린다 (절반 전엔 출발 건물, 그 뒤엔 도착 건물)
@@ -1448,8 +1446,8 @@ function draw() {
     }
   }
   PM('actions');
-  drawSpeech();  // 건물·옥상·층 덮개 뒤에 한 번만 그린다. 글자 표시는 말풍선을 피한다.
-  flushTags(); PM('tags');
+  flushTags();  // 행동 안내를 먼저 배치한다. 말풍선은 행동과 인물을 피해 남는 자리에 둔다.
+  drawSpeech(); PM('tags');
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (input.aiming && running && !S.over) {  // 조준하는 동안 세상은 멈춰 있다 — 화면 테두리와 글로 알려 준다
     ctx.strokeStyle = 'rgba(120,190,255,.45)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);

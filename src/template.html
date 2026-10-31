@@ -189,7 +189,6 @@ h1 span { color: var(--blood); }
 .chip.layer[data-z="pub"] { background: rgba(110,170,120,.18); }
 .chip.layer[data-z="res"] { background: rgba(232,170,70,.28); color: #ffe1a8; }
 .chip.layer[data-z="hos"] { background: rgba(220,70,60,.32); color: #ffd0c8; }
-#btnScan.on { background: #7fd6cc; color: #0b1418; border-color: #7fd6cc; }
 .diff { display: flex; gap: 0; border: 1px solid var(--ink-line); align-self: flex-start; }
 .diff button { background: transparent; color: var(--paper-dim); border: 0; padding: 9px 16px; font-size: var(--fs-body); }
 .diff button + button { border-left: 1px solid var(--ink-line); }
@@ -288,7 +287,7 @@ body.dlgmodal .pad, body.dlgmodal .keys, body.dlgmodal .joyhint, body.dlgmodal .
 #hintCard { position: absolute; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(58px + env(safe-area-inset-bottom, 0px)); width: min(360px, 60vw); background: rgba(7, 10, 18, .88); border-left: 3px solid var(--lamp); padding: 8px 12px 9px; font-size: var(--fs-ui); line-height: 1.5; color: var(--paper); transition: opacity .35s, transform .35s; }
 #hintCard small { display: block; font-size: var(--fs-cap); letter-spacing: .14em; color: var(--lamp); margin-bottom: 2px; }
 #hintCard.off { opacity: 0 !important; transform: translateY(8px); visibility: hidden; transition: opacity .35s, transform .35s, visibility 0s .35s; }
-/* 버튼 줄이기: 살피기는 터치 화면에서만, 나머지 설정은 메뉴 안으로 */
+/* 자주 쓰는 조작만 화면에 두고 설정은 메뉴 안으로 */
 body:not(.touch) .sysbtns .tonly { display: none; }
 /* 주인공이 HUD 밑에 오면 HUD를 옅게 */
 .hudfade { opacity: .14 !important; pointer-events: none !important; transition: opacity .2s; }
@@ -314,13 +313,6 @@ body:not(.touch) .sysbtns .tonly { display: none; }
   #mini { width: 100px; top: calc(var(--topb, 150px) + 70px); right: 8px; opacity: .82; }
   #toasts { top: calc(var(--topb, 150px) + 130px) !important; }
 }
-#scanLegend { position: fixed; left: 50%; top: calc(var(--topb, 60px) + 54px); transform: translateX(-50%); display: none; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; max-width: 92vw; padding: 6px 12px; background: rgba(7,10,18,.86); border: 1px solid var(--ink-line); font-size: var(--fs-ui); color: var(--paper-dim); pointer-events: none; z-index: 6; }
-body.scanning.scanleg #scanLegend { display: flex; }
-#scanLegend b { color: var(--paper); font-weight: 700; }
-#scanLegend i { font-style: normal; display: inline-flex; align-items: center; gap: 5px; }
-#scanLegend i::before { content: ''; width: 10px; height: 10px; border: 2px solid var(--c); }
-#scanLegend i.hx::before { border-color: rgba(255,96,72,.8); background: repeating-linear-gradient(45deg, rgba(255,96,72,.5) 0 2px, transparent 2px 5px); }
-@media (max-width: 700px) { #scanLegend { bottom: auto; top: 128px; font-size: var(--fs-cap); gap: 7px; } }
 .endmap { margin: 14px 0 0; }
 .endmap canvas { display: block; max-width: 100%; border: 1px solid var(--ink-line); background: #0b0e16; image-rendering: pixelated; }
 .endmap figcaption { font-size: var(--fs-cap); color: var(--paper-dim); margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
@@ -363,7 +355,6 @@ body.scanning.scanleg #scanLegend { display: flex; }
 .rulesbox[open] summary { margin-bottom: 10px; }
 #layerLbl { max-width: 15em; overflow: hidden; text-overflow: ellipsis; }
 #modeLbl { max-width: 11em; overflow: hidden; text-overflow: ellipsis; }
-@media (min-width: 701px) { #scanLegend { left: auto; right: max(12px, env(safe-area-inset-right, 0px)); top: auto; bottom: 66px; transform: none; max-width: 46vw; justify-content: flex-end; } }
 .row.quick { align-items: center; gap: 12px; margin: 6px 0 14px; flex-wrap: wrap; } .row.quick .cta { font-size: var(--fs-lead); padding: 12px 26px; } .qnote { color: var(--paper-dim); font-size: var(--fs-ui); }
 .row.sets { align-items: center; gap: 14px; flex-wrap: wrap; } .row.sets label { display: flex; align-items: center; gap: 8px; font-size: var(--fs-ui); color: var(--paper-dim); } .row.sets input[type=range] { width: 120px; accent-color: var(--blood); }
 #rotateHint { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(5,7,12,.94); color: var(--paper); flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; font-size: var(--fs-lead); padding: 24px; }
@@ -395,7 +386,6 @@ body.joyseen .joyhint { display: none !important; }
   .obj:not(.open) #objective .ol:first-child { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .lightbar { width: 28px; } #pickLbl { display: none !important; } .status .chip { padding: 3px 5px; }
   #layerLbl { max-width: 7.2em; }
-  #scanLegend { top: auto !important; bottom: calc(262px + env(safe-area-inset-bottom, 0px)); }
   body.scanning #hintCard, body.scanning #toasts { visibility: hidden; }
   .pad .tools { justify-self: start; border-radius: 14px; overflow: hidden; }
   .tools .tool { padding: 4px 10px; font-size: var(--fs-cap); }
@@ -409,14 +399,12 @@ body.joyseen .joyhint { display: none !important; }
   .sysbtns button { min-width: 50px; min-height: 34px; padding: 4px 5px; font-size: 11px; border-radius: 8px; background: rgba(7, 10, 18, .5); border-color: rgba(232, 227, 214, .14); }  /* 게임 화면을 덜 가리게: 좁고 옅게 */
   .sysbtns button.on { background: rgba(7, 10, 18, .78); }
   #mini { width: 96px; right: 8px; top: calc(var(--topb, 70px) + 70px); }
-  #btnScan { position: fixed; right: 8px; top: calc(var(--topb, 70px) + 142px); width: 96px; min-height: 30px; font-size: 11px; }  /* 살피기는 미니맵 바로 아래 (지도·살피기 = 보는 기능끼리) */
   #hintCard { left: 8px; right: auto; top: auto; bottom: calc(262px + env(safe-area-inset-bottom, 0px)); width: calc(100vw - 104px); }
   #toasts { top: calc(var(--topb, 70px) + 8px) !important; left: 8px; transform: none; width: calc(100vw - 122px); align-items: flex-start; }
   .toast { text-align: left; font-size: var(--fs-ui); padding: 6px 10px; }
   body.touch #dlg { top: auto; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: calc(100vw - 16px); }
   body.touch #dlg:not(.modal) { bottom: calc(262px + env(safe-area-inset-bottom, 0px)); width: calc(100vw - 78px); left: calc(50% - 31px); }  /* 무전(진행 중 대사)은 버튼 위로 — 공격·행동 버튼을 가리지 않게 */
   .joyhint { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); max-width: 44vw; }
-  #scanLegend { top: calc(var(--topb, 70px) + 8px); }
 }
 
 /* 첫 화면 · 의뢰 선택 · 도움말 */
@@ -797,12 +785,22 @@ body.dlgmodal #toasts, body:has(.screen:not([hidden])) #hintCard { visibility: h
 #missionGoals button[aria-pressed="true"] { border-color:var(--lamp); }
 #saveState { position:absolute; bottom:calc(43px + env(safe-area-inset-bottom,0px)); left:14px; font-size:11px; color:#a6b3b5; }
 body.touch #saveState { bottom:calc(28px + env(safe-area-inset-bottom,0px)); }
+/* 메뉴는 상단에 독립 배치하고 움직임·공격 입력 영역은 유지한다. */
+#btnPause.hud-menu { position:fixed; top:calc(10px + env(safe-area-inset-top,0px)); right:max(8px,env(safe-area-inset-right,0px)); width:48px; min-height:44px; padding:6px; pointer-events:auto; z-index:6; border:1px solid #7c8587; border-radius:3px; background:#101820ed; color:#e8e3d6; font:600 12px var(--f-body); }
+#hud .top { right:calc(max(12px,env(safe-area-inset-right,0px)) + 56px); }
+body.dlgmodal .hud-menu,body:has(.screen:not([hidden])) .hud-menu { visibility:hidden; }
+body.actionfocus #hintCard,body.actionfocus #toasts .toast:not(.warn):not(.bad) { visibility:hidden; }
+@media(max-width:700px) {
+ #hud .top { right:max(8px,env(safe-area-inset-right,0px)); }
+ #hud .obj { box-sizing:border-box; flex:0 0 auto; width:calc(100% - 58px); max-width:calc(100% - 58px); }
+}
 __INK_STUDY_CSS__
 </style>
 
 <canvas id="game" aria-label="게임 화면"></canvas>
 
 <div id="hud" hidden>
+  <button id="btnPause" class="hud-menu" type="button" title="메뉴 (Esc)">메뉴</button>
   <div class="top">
     <div class="obj"><small id="objTitle">의뢰 목표</small><span id="objective"></span></div>
     <div class="status">
@@ -814,7 +812,7 @@ __INK_STUDY_CSS__
       <span class="chip want" id="wantBox" hidden title="수배"></span>
       <div id="floorBan" aria-live="polite"></div>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
-      <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnSneak" type="button" title="이동 속도 전환 · 걷기 / 달리기"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnScan" class="tonly" type="button">살피기</button><button id="btnMap" type="button">지도</button><button id="btnPause" type="button">메뉴</button></span>
+      <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnSneak" type="button" title="이동 속도 전환 · 걷기 / 달리기"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnMap" type="button">지도</button></span>
     </div>
   </div>
   <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
@@ -824,9 +822,8 @@ __INK_STUDY_CSS__
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">웅크리기</em></span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em><i class="kx">짧게 기절 · 길게 처치</i></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span class="keep"><kbd>G</kbd>휘파람</span><span class="keep"><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>Alt</kbd>살피기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
+    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em><i class="kx">짧게 기절 · 길게 처치</i></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span class="keep"><kbd>G</kbd>휘파람</span><span class="keep"><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>조작 안내</span>
   </div>
-  <div id="scanLegend" aria-hidden="true"><b>살피기</b><i style="--c:#d39a5c">문</i><i style="--c:#8fc3e6">창문</i><i style="--c:#9aa6b4">잠긴 창문</i><i style="--c:#e0b070">오르는 곳</i><i style="--c:#c4ccd6">배관</i><i style="--c:#7fd6cc">환풍구</i><i style="--c:#8fcf95">숨을 곳</i><i style="--c:#7fb0ff">맨홀</i><i style="--c:#c9a0ff">비밀 통로</i><i style="--c:#f2c46b">전등·두꺼비집</i><i style="--c:#8cb4f0">높은 가구(시야 가림)</i><i style="--c:#f2c46b">낮은 가구(웅크리면 엄폐)</i><i class="hx">막힌 곳</i></div>
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
   <small id="saveState" aria-live="polite" hidden></small>
@@ -893,8 +890,8 @@ __INK_STUDY_CSS__
     </section>
     <details class="rulesbox" open><summary class="rules-h">조작법</summary>
     <div class="ctrl">
-      <div class="kbonly"><h3>키보드</h3><b>방향키 이동</b>: <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 도구<br><b>WASD 이동</b>: <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 도구<br>공격 — 등 뒤에서 짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 표적도 같은 기준이다.<br>행동 — 문·창문·조명·물건·은신처 조작. 시체나 기절한 사람도 운반할 수 있다.<br>붙잡기 — 등 뒤에서 붙잡는다. 기다리거나 한 번 더 누르면 심문. [공격]으로 기절·처치, [행동]으로 은신처에 끌고 갈 수 있다.<br>다트 — 짧게 눌렀다 놓으면 자동 조준으로 기절. 1초 이상 누른 뒤 놓으면 처치. 누르는 동안 직접 조준할 수 있다.<br><kbd>1</kbd> 다트 · <kbd>2</kbd> 빈 캔 · <kbd>3</kbd> 담배 · <kbd>G</kbd> 휘파람<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 웅크리기 전환 · <kbd>R</kbd> 항상 걷기 전환<br><kbd>Alt</kbd> 누르는 동안 살피기 · <kbd>Tab</kbd> 겹친 대상 선택 · <kbd>M</kbd> 전술 지도 · <kbd>T</kbd> 기회 추적<br><kbd>N</kbd> 음소거 · <kbd>Esc</kbd> 일시정지 · 조준 중에는 취소<br>벽을 향해 잠시 밀면 몸을 붙인다. 이 상태에서 지나는 경비를 [공격]으로 끌어당길 수 있다.</div>
-      <div><h3>터치</h3>화면 왼쪽을 끌어 이동한다. [이동]이 걷기이면 끝까지 밀어도 걷고, 달리기이면 끝까지 밀 때 뛴다. [웅크리기]를 누르면 몸을 낮추고, 다시 누르면 일어선다.<br>[공격] — 짧게 눌러 기절, 같은 버튼을 계속 눌러 처치. 표적도 같다.<br>[행동] — 문·창문·조명·물건·은신처 조작과 운반.<br>[붙잡기] — 등 뒤에서 붙잡기. 잡은 뒤 다시 누르면 심문.<br>[도구] — 다트는 짧게 눌렀다 놓으면 기절, 1초 이상 누른 뒤 놓으면 처치. 누른 채 끌어 직접 조준할 수 있다.<br>[바꾸기] — 다트·빈 캔·담배·휘파람 선택. [대상] — 겹친 상호작용 대상 선택. [살피기] — 사용 가능한 물체 표시.</div>
+      <div class="kbonly"><h3>키보드</h3><b>방향키 이동</b>: <kbd>Z</kbd> 공격 · <kbd>X</kbd> 행동 · <kbd>C</kbd> 붙잡기 · <kbd>V</kbd> 도구<br><b>WASD 이동</b>: <kbd>Space</kbd> 공격 · <kbd>E</kbd> 행동 · <kbd>Q</kbd> 붙잡기 · <kbd>F</kbd> 도구<br>공격 — 등 뒤에서 짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 표적도 같은 기준이다.<br>행동 — 문·창문·조명·물건·은신처 조작. 시체나 기절한 사람도 운반할 수 있다.<br>붙잡기 — 등 뒤에서 붙잡는다. 기다리거나 한 번 더 누르면 심문. [공격]으로 기절·처치, [행동]으로 은신처에 끌고 갈 수 있다.<br>다트 — 짧게 눌렀다 놓으면 자동 조준으로 기절. 1초 이상 누른 뒤 놓으면 처치. 누르는 동안 직접 조준할 수 있다.<br><kbd>1</kbd> 다트 · <kbd>2</kbd> 빈 캔 · <kbd>3</kbd> 담배 · <kbd>G</kbd> 휘파람<br><kbd>Shift</kbd> 누르는 동안 달리기 · <kbd>Ctrl</kbd> 웅크리기 전환 · <kbd>R</kbd> 항상 걷기 전환<br><kbd>Tab</kbd> 겹친 대상 선택 · <kbd>M</kbd> 전술 지도 · <kbd>T</kbd> 기회 추적<br><kbd>N</kbd> 음소거 · <kbd>Esc</kbd> 일시정지 · 조준 중에는 취소<br>벽을 향해 잠시 밀면 몸을 붙인다. 이 상태에서 지나는 경비를 [공격]으로 끌어당길 수 있다.</div>
+      <div><h3>터치</h3>화면 왼쪽을 끌어 이동한다. [이동]이 걷기이면 끝까지 밀어도 걷고, 달리기이면 끝까지 밀 때 뛴다. [웅크리기]를 누르면 몸을 낮추고, 다시 누르면 일어선다.<br>[공격] — 짧게 눌러 기절, 같은 버튼을 계속 눌러 처치. 표적도 같다.<br>[행동] — 문·창문·조명·물건·은신처 조작과 운반.<br>[붙잡기] — 등 뒤에서 붙잡기. 잡은 뒤 다시 누르면 심문.<br>[도구] — 다트는 짧게 눌렀다 놓으면 기절, 1초 이상 누른 뒤 놓으면 처치. 누른 채 끌어 직접 조준할 수 있다.<br>[바꾸기] — 다트·빈 캔·담배·휘파람 선택. [대상] — 겹친 상호작용 대상 선택.</div>
     </div>
     </details>
     <details class="rulesbox"><summary class="rules-h">규칙 자세히</summary>
@@ -934,7 +931,6 @@ __INK_STUDY_CSS__
       <li><strong>지하 수로</strong>맨홀 안에서 [행동]으로 수로에 내려가 다른 맨홀 아래로 이동할 수 있다. 경비는 수로까지 따라오지 않는다.</li>
       <li><strong>실내 층과 계단</strong>상단에 현재 층과 실내·옥상이 표시된다. 실내 계단과 옥탑문 입구로 들어가면 연결된 층으로 이동한다. 3층 옥상에서는 높이가 너무 높아 아래 인물을 덮칠 수 없다.</li>
       <li><strong>담배·정예·증원</strong>담배를 본 일반 경비는 주우러 와 잠시 고개를 숙인다. 정예는 빈 캔·담배 유인에 잘 속지 않고 붙잡을 수 없다. 전체 경보가 전달되면 증원이 올 수 있다.</li>
-      <li><strong>살피기</strong>PC에서는 Alt를 누르는 동안, 터치에서는 [살피기]를 눌러 사용 가능한 물체를 확인한다. 문은 갈색, 창문은 하늘색, 배관은 회색, 계단은 황토색, 환풍구는 청록색, 은신처는 초록색, 맨홀은 파란색으로 표시된다.</li>
       <li><strong>겹친 대상 선택</strong>문·창문·계단 등 대상이 겹치면 PC는 Tab, 터치는 [대상]으로 선택을 바꿀 수 있다. 현재 선택한 행동은 대상 위와 버튼에 표시된다.</li>
       <li><strong>위치 표시</strong>상단에 지상·실내 층수·옥상·환풍구·지하 수로를 표시한다. 목표에는 실제 건물과 층수를 표시한다. 폐허와 공터는 실내로 표시하지 않는다.</li>
       <li class="nocity"><strong>굴뚝</strong>옥상 굴뚝을 통해 아궁이가 있는 방으로 내려갈 수 있다. 불이 켜져 있으면 먼저 [굴뚝 막기]로 꺼야 한다. 경비가 다시 불을 피우러 올 수 있다.</li>

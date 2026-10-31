@@ -54,7 +54,7 @@ const AIDE_RADIO = {
   loot: ['거기야. 끝날 때까지 움직이지 마. 주변은 내가 볼게.', '빼내는 동안은 무방비야. 누가 오면 바로 멈춰.']
 };
 function bossRadio(ev, force) {
-  if (!S || S.over || !STAGE || STAGE.tutorial) return;
+  if (!S || S.over || !STAGE || STAGE.tutorial || ev==='first' || ev==='streak') return;
   const aide = !!AIDE_RADIO[ev], L = AIDE_RADIO[ev] || BOSS_RADIO[ev]; if (!L) return;  // 현장 조언은 제비, 일과 평가는 까마귀
   if (!force && S.t < (S.radioNext || 0)) return;
   S.radioNext = S.t + 14; S.radioN = (S.radioN || 0) + 1;

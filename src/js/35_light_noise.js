@@ -40,7 +40,7 @@ function lightAt(x, y, elev) {
 const toastEl = document.getElementById('toasts');
 function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
 const HELP_INLINE=new Set(['stage','stage2','grab','killKind','interro','aware']);
-const HELP_SHORT={winsight:'창문과 열린 문 너머도 살펴볼 수 있다.',scan:'살피기로 문·창문·은신처를 확인할 수 있다.',wire:'전깃줄을 따라 이동할 수 있다. 빠르게 움직이면 소리가 커진다.',tac:'전술 지도에서는 시간이 멈춘다. 길과 순찰을 확인하라.'};
+const HELP_SHORT={winsight:'창문과 열린 문 너머도 살펴볼 수 있다.',wire:'전깃줄을 따라 이동할 수 있다. 빠르게 움직이면 소리가 커진다.',tac:'전술 지도에서는 시간이 멈춘다. 길과 순찰을 확인하라.'};
 let helpTip=null;
 const helpSeen=(()=>{try{const v=JSON.parse(localStorage.getItem('yahaeng.help.v1')||'[]');return new Set(Array.isArray(v)?v.filter(k=>typeof k==='string'):[]);}catch(e){return new Set();}})();
 function resetHelpTip() { helpTip=null; const c=document.getElementById('hintCard');if(c)c.classList.add('off'); }

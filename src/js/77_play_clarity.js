@@ -1,3 +1,24 @@
+// 실행 가능한 대인 행동과 동작 중에는 설명보다 플레이를 우선한다.
+function playerActionFocus(ka,ga) {
+  if(!S||!running||S.over)return false;
+  const P=S.player;
+  if(actionBusy(P)||P.captive||input.aiming)return true;
+  ka=ka||attackAction();ga=ga||grabAction();
+  return ka.k!=='none'||!!ka.stalk||ga.k==='grab'||!!ga.near;
+}
+// DOM 안내와 인물의 실제 자리를 월드 좌표로 예약한다.
+function hudTextBlocks() {
+  const cr=canvas.getBoundingClientRect();
+  return [...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#toasts .toast')]
+    .filter(e=>getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden]'))
+    .map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
+    .map(r=>[cam.x+(r.left-cr.left-W/2-5)/SCALE,cam.y+(r.top-cr.top-H/2-5)/SCALE,cam.x+(r.right-cr.left-W/2+5)/SCALE,cam.y+(r.bottom-cr.top-H/2+5)/SCALE]);
+}
+function actorTextBlocks() {
+  const P=S.player;
+  return [P,...S.guards.filter(g=>!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<560)]
+    .map(g=>[g.x-17,g.y-46,g.x+17,g.y+10]);
+}
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
   const place=g.shelter?'은신처':g.locked?'잠긴 문':g.via?(g.viaTo?.z?`${g.viaTo.z}층 옥상 입구`:`${(g.viaTo?.fl??g.fl??0)+1}층 입구`):g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';

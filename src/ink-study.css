@@ -35,8 +35,8 @@
 .ink-study #floorBan { font-size:14px; padding:5px 10px; background:#171b16ed; border-left:2px solid #cfbe94; color:#e9dfc9; text-shadow:none; }
 /* 종이 위에 같은 인물의 잉크 초상을 넣는다. 그림 바깥으로 얼굴이 뜨지 않는다. */
 .ink-study #dlg { background:#eee4cff7; border:1px solid #171817; border-left:4px solid #b73528; border-radius:0; box-shadow:0 5px 18px #0005; }
-.ink-study .dlg-face { background:#eee4cf; border-right:0; }
-.ink-study .dlg-face canvas { inset:0; width:100%; height:100%; transform:none; }
+.ink-study .dlg-face { background:#151814; border-right:0; }
+
 .ink-study .dlg-box { color:#22241f; }
 .ink-study .dlg-box b { color:#9c2f24; font-weight:800; }
 .ink-study .dlg-box i,.ink-study .dlg-box small { color:#6b6558; }
@@ -110,3 +110,5 @@
 .ink-study #help button.on,.ink-study #help button[aria-pressed="true"] { color:#f2e6cd; background:#a53227; }
 
 .ink-study #endRankNote .bn b { color:#455238; }
+
+.ink-study #btnPause.hud-menu { background:#171b16f2; color:#eee4cf; border-color:#a79a7c; border-radius:0; }
