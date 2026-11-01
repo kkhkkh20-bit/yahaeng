@@ -6,9 +6,12 @@
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
   vipDrink: { at: [29, 10], to: [40, 6] },
-  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [40, 6], toiletStay: 32 },
+  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [7, 28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
   buildingNames: {2:'공중화장실'},
-  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'}],
+  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
+  roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[
+    {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],to:[6,30]}],
+    tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
   brief: '실장과 장부. 둘 다 넘기면 끝이다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -58,7 +61,7 @@
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],
   uses: [{ need: 'emetic', at: [29, 10], surface:{b:1,t:'bar',u:.3}, label: '실장 술병에 구토제 넣기', permit: 'waiter', done: '실장 술병에 구토제를 넣었다',
            act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } },
-         { need:'laxative',at:[5,30],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
+         { need:'laxative',at:[5,29],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
            done:'양념통에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
   intel: [
     { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
@@ -94,7 +97,7 @@
   keyItems: [{ key: 'blue', b: 0, fl: 0, at: 'VC' }],
   well: 'manhole', kunai: 3, coins: 3, reinf: [55, 21],
   lamps: [[24, 15, 150, 1, 0, '255,90,190'], [32, 16, 150, 1, 0, '90,220,255'], [7, 17, 150, 1], [16, 8, 120, 1, 0, '255,200,120'], [19, 14, 110, 1, 0, '255,200,120'],
-          [35, 2, 90, 1], [40, 6, 100, 0], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
+          [35, 2, 90, 1], [40, 6, 100, 0], [7,28,90,0,0,null,[6.1,28.5]], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
   fuse: [36, 18, 36, 17],
   layoutVersion: 1, securityEvidence: true, camRoom: { b: 0, fl: 1, at: 'S' },
   cams: [[22, 15, 0, 20], [12, 15, 0, 45], { b: 0, fl: 0, at: 'VB', sweep: 40 }],
@@ -115,13 +118,13 @@
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
     { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
-    { kind: 'civ', outfit: 'waiter', at: [7, 30], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [8, 30], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
+    { kind: 'civ', outfit: 'waiter', at: [6, 31], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [7, 31], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들
     { kind: 'civ', tag: 'pharm', body: 'old', at: [18, 28], post: 180 },             // 16 약사
     { kind: 'civ', route: [[1, 19, 1], [54, 19, 1]] },                               // 17·18 큰길 행인
     { kind: 'civ', route: [[54, 24, 2], [1, 24, 2]] },
     { kind: 'civ', wander: [13, 5, 21, 17], at: [15, 7] }, { kind: 'civ', wander: [13, 5, 21, 17], at: [19, 15] }, { kind: 'civ', body: 'fLong', wander: [13, 5, 21, 17], at: [14, 13] },   // 19~21 야시장 손님
-    { kind: 'civ', wander: [3, 28, 7, 29], at: [6, 28] },                           // 22 포차 손님
+    { kind: 'civ', wander: [3, 28, 4, 29], at: [4, 28] },                           // 22 포차 손님
     { kind: 'civ', route: [[38, 15, 3], [38, 4, 2], [54, 2, 2]] },                   // 23 샛길로 지나가는 사람
     { kind: 'civ', tag: 'mom', body: 'fBob', at: [20, 14], post: 180 },              // 24 엄마
     { kind: 'civ', tag: 'child', child: true, parent: 'mom', wander: [17, 14, 21, 16], at: [18, 15] },   // 25 아이 (손댈 수 없다 — 사탕)

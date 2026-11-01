@@ -27,6 +27,7 @@ function attachSurface(o,spec){
 function usePoint(u){
   if(!u.surface)return{x:tc(u.at[0]),y:tc(u.at[1]),fl:u.fl||0};
   S.usePoints=S.usePoints||{};const i=STAGE.uses.indexOf(u);
+  const old=S.usePoints[i]?.surface;if(old&&!FURN.some(f=>f.t===old.t&&f.x===old.x&&f.y===old.y&&(f.fl||0)===(old.fl||0)))delete S.usePoints[i];
   if(!S.usePoints[i]){const p={x:tc(u.at[0]),y:tc(u.at[1]),fl:u.fl||0};attachSurface(p,u.surface);S.usePoints[i]=p;}
   const p=S.usePoints[i];if(p.surface)p.surfaceU=u.surface.u??.5;
   return p;
@@ -46,9 +47,18 @@ function syncSurfaceObjects(){
 }
 function syncServiceRoomLight(){
   const d=STAGE.dining;if(!d)return;
-  const def=STAGE.lamps.find(l=>l[0]===d.toilet[0]&&l[1]===d.toilet[1]&&!l[3]);if(!def)return;
-  const x=tc(def[0]),y=tc(def[1]);if(S.lamps.some(l=>!flOf(l)&&l.x===x&&l.y===y))return;
-  const L0=CUR_F;setLayer(0);const l={x,y,r:def[2],fl:0,outdoor:false,broken:false,poly:[]};
-  for(let i=0;i<180;i++){const a=i/180*TAU,r=Math.min(l.r,castRay(x,y,a,l.r)+20);l.poly.push(x+Math.cos(a)*r,y+Math.sin(a)*r);}
-  S.lamps.push(l);setLayer(L0);LG=null;for(const k in lightCache)delete lightCache[k];
+  const L0=CUR_F;setLayer(0);let added=false;
+  for(const l of S.lamps){
+    if(flOf(l)||!(STAGE.roomPatches||[]).some(p=>{const [x0,y0,x1,y1]=p.bounds;return l.x+l.r>=x0*TILE&&l.x-l.r<=(x1+1)*TILE&&l.y+l.r>=y0*TILE&&l.y-l.r<=(y1+1)*TILE;}))continue;
+    l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,r=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*r,l.y+Math.sin(a)*r);}added=true;
+  }
+  for(const site of [d.toilet,STAGE.vipDrink?.to].filter(Boolean)){
+    const def=STAGE.lamps.find(l=>l[0]===site[0]&&l[1]===site[1]&&!l[3]);if(!def)continue;
+    const x=tc(def[0]),y=tc(def[1]),control=def[6]?{x:def[6][0]*TILE,y:def[6][1]*TILE,fl:0,z:0}:null;
+    const existing=S.lamps.find(l=>!flOf(l)&&l.x===x&&l.y===y);if(existing){if(control)existing.control=control;continue;}
+    const l={x,y,r:def[2],fl:0,outdoor:false,broken:false,poly:[],control};
+    for(let i=0;i<180;i++){const a=i/180*TAU,r=Math.min(l.r,castRay(x,y,a,l.r)+20);l.poly.push(x+Math.cos(a)*r,y+Math.sin(a)*r);}
+    S.lamps.push(l);added=true;
+  }
+  setLayer(L0);if(added){LG=null;for(const k in lightCache)delete lightCache[k];}
 }

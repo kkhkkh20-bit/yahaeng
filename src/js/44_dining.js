@@ -11,9 +11,26 @@ function mealTrip(g,at,stay,name){
   clearMealTrip(g);detour(g,Math.floor(at.x/TILE),Math.floor(at.y/TILE),stay,name,name);
   const w=g.route[g.ri];w.mealTrip=true;g.glance=0;g.glanceT=8;return w;
 }
+function syncDiningLayout(){
+  const m=S.dining,d=STAGE.dining,g=d&&npc(d.guest);if(!m||!g||m.layout===2)return;
+  // A saved visit already under way keeps its destination and remaining wait.
+  if(m.phase==='toilet'&&m.waypoint&&!m.toilet){m.toilet=[Math.floor(m.waypoint.x/TILE),Math.floor(m.waypoint.y/TILE)];m.queue=[m.toilet[0],m.toilet[1]+3];}
+  if(['walking','eating'].includes(m.phase)&&!m.eaten&&g.state==='PATROL'){
+    const p=usePoint(mealUse());m.waypoint=mealTrip(g,p,d.stay,'포차 식사');m.phase='walking';m.eating=0;m.elapsed=0;
+  }
+  m.layout=2;
+}
+function diningGoal(){
+  const d=STAGE.dining,P=S.player,m=S.dining;if(!d||S.goalManual||!oppMode||(P.outfit==='crew'||P.blown?.crew))return null;
+  const g=npc(d.guest);if(!g)return null;
+  const wc=m?.toilet||d.toilet,c=S.corpses.find(c=>c.g===g&&!c.stripped&&!c.stashed);
+  if((targetEliminated(g)||g.state==='DEAD')&&(!c||dist(c.x,c.y,tc(wc[0]),tc(wc[1]))>90))return null;
+  if(S.mealDosed||m?.sick)return{x:tc(wc[0]),y:tc(wc[1]),fl:0,z:0,text:'경비복 확보',where:wc[0]===d.toilet[0]&&wc[1]===d.toilet[1]?'포차 화장실':'골목 공중화장실',dining:true};
+  return null;
+}
 function updateDining(dt){
   const d=STAGE.dining,u=mealUse();if(!d||!u)return;
-  const g=npc(d.guest),m=S.dining||(S.dining={phase:'idle',next:d.first,eating:0,eaten:false});
+  const g=npc(d.guest),m=S.dining||(S.dining={phase:'idle',next:d.first,eating:0,eaten:false,layout:2});
   if(!g||targetEliminated(g)){m.phase='done';return;}
   const calm=g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&S.alevel<2;
   if(!calm){
@@ -23,10 +40,10 @@ function updateDining(dt){
   }
   if(['walking','queue','returning'].includes(m.phase)||m.phase==='toilet'&&!m.arrived){g.glance=0;g.glanceT=8;}
   const table=usePoint(u),atTable=!flOf(g)&&!g.z&&dist(g.x,g.y,table.x,table.y)<18&&!g.moving;
-  const wc={x:tc(d.toilet[0]),y:tc(d.toilet[1])};
+  const dest=m.toilet||d.toilet,waiting=m.queue||d.queue||[dest[0],dest[1]+3],wc={x:tc(dest[0]),y:tc(dest[1])};
   if(m.phase==='idle'){
     if(S.t<m.next||g.route.some(w=>w.once))return;
-    m.waypoint=mealTrip(g,table,d.stay,'포차 식사');m.phase='walking';m.elapsed=0;m.eaten=false;m.eating=0;return;
+    m.waypoint=mealTrip(g,table,d.stay,'포차 식사');m.phase='walking';m.elapsed=0;m.eaten=false;m.eating=0;m.toilet=null;m.queue=null;return;
   }
   if(m.phase==='done')return;
   m.elapsed+=dt;
@@ -41,16 +58,18 @@ function updateDining(dt){
       if(m.eating>=3){m.eaten=true;g.mealT=0;m.sick=!!S.mealDosed;S.mealDosed=false;}
     }
     if(m.eaten&&m.sick){
-      gsay(g,'잠깐… 배가…',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:wc.x,y:tc(9)},3,'화장실 앞');return;
+      m.toilet=d.toilet.slice();m.queue=(d.queue||[d.toilet[0],d.toilet[1]+3]).slice();
+      gsay(g,'잠깐… 배가…',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:tc(m.queue[0]),y:tc(m.queue[1])},3,'화장실 앞');return;
     }
     if(m.eaten&&(!g.route.includes(m.waypoint)||g.wait<=0)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;}
   }else if(m.phase==='queue'){
-    const occupied=S.guards.some(o=>o!==g&&!targetEliminated(o)&&!flOf(o)&&!o.z&&dist(o.x,o.y,wc.x,wc.y)<48)||(npc('vip')&&!targetEliminated(npc('vip'))&&S.vipPlan?.phase==='sick'&&!S.vipPlan.reachedToilet);
-    if(!occupied){m.waypoint=mealTrip(g,wc,d.toiletStay,'공중화장실');m.phase='toilet';m.elapsed=0;m.arrived=false;}
-    else if(!g.route.includes(m.waypoint)){m.waypoint=mealTrip(g,{x:wc.x,y:tc(9)},3,'화장실 앞');}
+    const sameWC=STAGE.vipDrink?.to?.[0]===dest[0]&&STAGE.vipDrink?.to?.[1]===dest[1];
+    const occupied=S.guards.some(o=>o!==g&&!targetEliminated(o)&&!flOf(o)&&!o.z&&dist(o.x,o.y,wc.x,wc.y)<48)||(sameWC&&npc('vip')&&!targetEliminated(npc('vip'))&&S.vipPlan?.phase==='sick'&&!S.vipPlan.reachedToilet);
+    if(!occupied){m.waypoint=mealTrip(g,wc,d.toiletStay,sameWC?'공중화장실':'포차 화장실');m.phase='toilet';m.elapsed=0;m.arrived=false;}
+    else if(!g.route.includes(m.waypoint)){m.waypoint=mealTrip(g,{x:tc(waiting[0]),y:tc(waiting[1])},3,'화장실 앞');}
   }else if(m.phase==='toilet'){
     const here=!flOf(g)&&!g.z&&dist(g.x,g.y,wc.x,wc.y)<24&&!g.moving;
-    if(here){m.arrived=true;g.a=g.want=0;g.act=null;g.idleT=20;}
+    if(here){m.arrived=true;g.a=g.want=dest[0]===d.toilet[0]&&dest[1]===d.toilet[1]?(d.toiletA||0):0;g.act=null;g.idleT=20;}
     if(m.arrived&&!here&&!g.route.includes(m.waypoint)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;}
   }else if(m.phase==='returning'&&!g.route.some(w=>w.mealTrip)){const home=g.route[0];if(home&&dist(g.x,g.y,home.x,home.y)<24&&!g.moving){m.phase='idle';m.next=S.t+d.every;}}
 }
@@ -79,7 +98,7 @@ function drawDiningFixtures(){
     drawLitContainer({...food,fl:0,type:'surface',art:'meal'});drawLitContainer({...v,fl:0,type:'surface',art:'condiment'});
     if(S.player.item?.id!=='laxative'&&dist(S.player.x,S.player.y,p.x,p.y)<110){const at=S.mealDosed?v:food;tag(at.x,at.y-27,S.mealDosed?'약을 넣은 양념통':S.dining?.eaten?'빈 그릇':'문지기 식사','#c9c0a6',.75);}
   }
-  for(const sign of [{x:tc(40),y:tc(8),text:'WC'},{x:tc(6),y:tc(32),text:'식사'}])if(fixtureVisible(sign,450))drawLitContainer({...sign,type:'surface',art:'placeSign'});
+  for(const sign of [{x:tc(40),y:tc(8),text:'WC'},{x:tc(7),y:tc(29),text:'WC'},{x:tc(6),y:tc(32),text:'식사'}])if((sign.x===tc(7)&&bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))===4)||fixtureVisible(sign,450))drawLitContainer({...sign,type:'surface',art:'placeSign'});
 }
 function drawSurfaceArt(p,ctx){
   if(p.art==='meal'){drawMealArt(p,ctx);return;}

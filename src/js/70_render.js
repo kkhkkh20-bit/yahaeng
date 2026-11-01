@@ -1268,6 +1268,12 @@ function draw() {
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
     if(!l.outdoor) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
   }
+  ctx.globalCompositeOperation = 'source-over';
+  // 실내등 스위치는 광원과 떨어진 실제 벽 위치에 그린다.
+  for(const l of S.lamps)if(!l.outdoor&&!flOf(l)&&l.control&&inView(l.control.x,l.control.y,40)){
+    const p=l.control;ctx.fillStyle='#27302d';ctx.fillRect(p.x-4,p.y-7,8,13);ctx.strokeStyle='#858b7b';ctx.lineWidth=1;ctx.strokeRect(p.x-4,p.y-7,8,13);
+    ctx.fillStyle=lampOn(l)?'#c5c6a3':'#5d655c';ctx.fillRect(p.x-1,p.y-4,3,7);
+  }
   // 손전등 빛줄기
   for (const g of S.guards) { if (!g.torch || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(S.player) || !gVis(g)) continue;
     setLayer(flOf(g)); ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i <= 12; i++) { const a = g.a - 0.32 + 0.64 * i / 12, d = castRay(g.x, g.y, a, TORCH_R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); } ctx.closePath(); setLayer(flOf(S.player));

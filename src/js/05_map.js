@@ -52,7 +52,33 @@ function buildMap(st) {
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'U') RL[y * MW + x] = 1;
   BLD.forEach((b, i) => { for (let y = b.y0; y <= b.y1; y++) for (let x = b.x0; x <= b.x1; x++) { if (!b.vacant) RL[y * MW + x] = b.h; BI[y * MW + x] = i; } });
   (st.planks || []).forEach(([x0, y0, x1, y1, z]) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inMap(x, y) && RL[y * MW + x] < z) RL[y * MW + x] = z; });
-  G0 = G; buildFloors(st); CUR_F = 0; installStageFurniture(st);
+  G0 = G; buildFloors(st); CUR_F = 0; installRoomPatches(st);installStageFurniture(st);
+}
+// Small authored rooms retain the surrounding building, stairwell and entrances.
+function installRoomPatches(st,saved=false){
+  for(const p of st.roomPatches||[]){
+    const fl=p.fl||0,grid=fl?GF[fl]:G0;if(!grid)continue;
+    for(const [x0,y0,x1,y1,ch]of p.floors||[])for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)grid[y][x]=ch;
+    for(const m of p.furniture||[]){
+      const f=FURN.find(f=>f.t===m.t&&(f.fl||0)===fl&&((f.x===m.from[0]&&f.y===m.from[1])||(m.to&&f.x===m.to[0]&&f.y===m.to[1])));if(!f)continue;
+      if(m.remove){FURN.splice(FURN.indexOf(f),1);continue;}
+      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
+    }
+    for(const [x,y,ch]of p.tiles||[])grid[y][x]=ch;
+    if(!saved)continue;
+    for(const [tx,ty]of p.doors||[]){
+      let d=S.doors.find(d=>d.tx===tx&&d.ty===ty&&flOf(d)===fl);
+      if(!d){d={tx,ty,x:tc(tx),y:tc(ty),fl,orig:grid[ty][tx],locked:false,horiz:true};d.group=[d];S.doors.push(d);}else if(d.locked)grid[ty][tx]='X';
+    }
+    // Relocate only occupants covered by a newly solid cell, within this room patch.
+    const [x0,y0,x1,y1]=p.bounds;
+    for(const o of [S.player,...S.guards,...S.corpses,...S.props]){
+      const tx=Math.floor(o.x/TILE),ty=Math.floor(o.y/TILE);
+      if(flOf(o)!==fl||o.z||o.hide||o.stashed||o.carried||o.taken||tx<x0||tx>x1||ty<y0||ty>y1||!SOLID.has(grid[ty][tx]))continue;
+      const cells=[];for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(!SOLID.has(grid[y][x]))cells.push({x:tc(x),y:tc(y)});
+      cells.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y));if(cells[0]){o.x=cells[0].x;o.y=cells[0].y;o.path=null;}
+    }
+  }
 }
 // Authored fixtures share the same footprint in collision and rendering.
 function installStageFurniture(st, saved = false) {
