@@ -75,15 +75,28 @@ function pinnedMissionGoal() {
 }
 function selectMissionGoal(id) {
   if (!missionGoalCandidates().some(g => g.id === id)) return false;
-  S.goalPin = id; S.goalManual = true; S.storyTrack = null; hudCache.objH = null; renderMissionGoals(); return true;
+  S.goalPin = id; S.goalManual = true; S.storyTrack = null; S.storyTrackManual = false; hudCache.objH = null; renderMissionGoals(); return true;
 }
 function renderMissionGoals() {
   const el = $('missionGoals'); if (!el || !S || STAGE.tutorial || STAGE.city) { if (el) el.replaceChildren(); return; }
+  const focus = el.contains(document.activeElement) && document.activeElement.dataset.track, expanded = el.querySelector('details')?.open;
   el.replaceChildren();
   for (const g of missionGoalCandidates()) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = g.text + ' · ' + g.where;
-    b.setAttribute('aria-pressed', String(g.id === S.goalPin)); b.onclick = () => selectMissionGoal(g.id); el.append(b);
+    b.dataset.track = g.id;
+    b.setAttribute('aria-pressed', String(g.id === S.goalPin && !(oppMode && trackedStory()))); b.onclick = () => selectMissionGoal(g.id); el.append(b);
   }
+  const clues = oppMode && !S.exitOpen && (S.stories || []).filter(st => st.found && !st.done && !st.moot);
+  if (clues && clues.length) {
+    const details = document.createElement('details'), summary = document.createElement('summary'); summary.textContent = '발견한 단서'; details.append(summary);
+    for (const st of clues) {
+      const b = document.createElement('button'), selected = trackedStory() === st; b.type = 'button'; b.textContent = st.d.name;
+      b.dataset.track = 'story:' + st.d.id;
+      b.setAttribute('aria-pressed', String(selected)); b.onclick = () => selectStory(selected ? null : st.d.id); details.append(b);
+    }
+    details.open = expanded || !!trackedStory(); el.append(details);
+  }
+  if (focus) [...el.querySelectorAll('button')].find(b => b.dataset.track === focus)?.focus({preventScroll:true});
 }
 // 같은 층에서도 잠긴 방의 내부 대신 실제로 조작해야 할 문을 가리킨다.
 function sameFloorGoalNavigation(goal){

@@ -33,7 +33,7 @@ function callRendezvous() {
   const wp=g.route[g.ri];wp.rendezvous=true;
   g.glance=0;g.glanceT=4;
   r.phase='travelling';r.elapsed=0;r.waiting=0;r.calls++;r.waypoint=wp;
-  S.goalManual=false;S.storyTrack=null;S.goalNavCache=null;
+  S.goalNavCache=null;
   play('click',.35);toast('실장이 사무동으로 온다',2.5,'good');return true;
 }
 function finishRendezvous(phase) {
@@ -86,7 +86,7 @@ function visibleSpeechCandidates(P,chase=false,focus=false) {
     (g.chat||Object.values(S.intel||{}).some(it=>it.cur?.sp===g)||los(P.x,P.y,g.x,g.y,P.z||0)));}
   finally{setLayer(L0);}
 }
-// Preparation is an explicit choice: follow the useful lead without enabling every hint.
+// Optional context helpers for route inspection; these never select the player's HUD objective.
 function missionApproachGoal() {
   if(STAGE.id!=='m2'||S.goalManual||!oppMode)return null;
   const g=npc('vip');if(!g||targetEliminated(g)||g.state==='DEAD')return null;

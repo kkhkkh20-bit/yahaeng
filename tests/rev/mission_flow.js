@@ -1,4 +1,4 @@
-({sid,alt=0,mobile=false})=>{
+({sid,alt=0,mobile=false,targetsFirst=false})=>{
  const G=__game,check=(v,m)=>{if(!v)throw Error(m)},solid=new Set('#COFTKER~HUSNXZM QqPVAI'.replaceAll(' ',''));
  window.__randPick=alt;G.start(G.STAGES.findIndex(s=>s.id===sid));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();
  const S=G.S,P=S.player,dt=1/60,trace=[];check(!S.exitOpen&&!S.over,'mission starts already completed');window.__flowTrace=trace;G.input.sneakToggle=false;G.input.walkLock=true;
@@ -76,6 +76,7 @@
  // Prioritize obtainable cards so the playthrough exercises their intended door pairings.
  for(const g of S.guards.filter(g=>g.hasKey))if(plan(approach(g,60))){if(g.target)attack(g,true);else{const key=g.hasKey;walk(approach(g,60),'approach '+g.id);const a=G.secondaryAction();check(a.k==='steal'&&a.g===g,'card theft not selectable');G.actCarry();idle();check(P.keys[key],'card theft failed');trace.push('steal '+key)}}
  for(const it of S.keyItems)if(!it.got&&plan(at(it)))walk(at(it),'key '+it.key);
+ if(targetsFirst)for(const g of S.guards.filter(g=>g.target&&!G.targetEliminated(g)))attack(g,true);
  for(const it of S.items){
   walk(at(it),'objective '+S.items.indexOf(it));
   if(!it.got){const a=G.envChoices().find(a=>a.k==='loot'&&a.it===it);check(a,'objective has no physical loot action');G.doAct(a);idle();}
@@ -84,5 +85,5 @@
  for(const g of S.guards.filter(g=>g.target&&!G.targetEliminated(g)))attack(g,true);
  settle();check(S.exitOpen,'all objectives done but exit closed');
  const e=[];for(const exit of S.exits)for(let y=0;y<G.MH;y++)for(let x=0;x<G.MW;x++)if(Math.hypot(x*48+24-exit.x,y*48+24-exit.y)<exit.r-5&&pass(x,y,0))e.push({x,y,f:0});walk(e,'exit');settle();check(S.over&&S.exitOpen,'escape did not finish successfully '+JSON.stringify({over:S.over,success:S.success}));
- stop();return {sid,alt,mobile,objectives:S.items.length,targets:S.guards.filter(g=>g.target).length,seconds:Math.round(S.t),trace};
+ stop();return {sid,alt,mobile,targetsFirst,objectives:S.items.length,targets:S.guards.filter(g=>g.target).length,seconds:Math.round(S.t),trace};
 }

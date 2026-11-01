@@ -80,7 +80,7 @@
     { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
       steps: [{ text: '클럽 옥상의 간판으로 이동', at: [27, 12, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 160) || h.eliminated('vip') },
               { text: '실장이 간판 아래에 오면 고정 풀기', at: [27, 15, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
+    { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip') || S.vipPlan?.phase === 'done', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
       steps: [{ text: '약국에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '클럽 직원 복장 구하기', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '실장 술병에 구토제 넣기', at: [29, 10, 0], done: S => !!S.usesDone[0] },

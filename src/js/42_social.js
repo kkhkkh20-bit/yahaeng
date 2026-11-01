@@ -141,6 +141,7 @@ function storiesInit() {
   S.missionProgressVersion = 1;
   S.stories = (STAGE.stories || []).map(d => ({ d, found: false, step: 0, done: false }));
   S.storyTrack = null;
+  S.storyTrackManual = false;
 }
 function updateStories(dt) {
   if (!S.stories) storiesInit();
@@ -148,32 +149,39 @@ function updateStories(dt) {
   for (const st of S.stories) {
     if (st.done || st.moot) continue;
     if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
-      st.found = true; if (!S.storyTrack) S.storyTrack = st.d.id; if (oppMode===2) { toast('기회 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
+      st.found = true; if (oppMode===2) { toast('단서 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
     if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode===2) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
-    else if (adv && oppMode === 2 && S.storyTrack === st.d.id) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
+    else if (adv && oppMode === 2 && trackedStory() === st) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
     let moot = S.exitOpen && !st.d.keepOpen;
     if (!st.done && st.d.moot) { try { moot = moot || !!st.d.moot(S, SH); } catch (e) { if (!st.err3) { st.err3 = 1; console.warn('story moot', st.d.id, e); } } }
     if (!st.done && moot) { st.moot = true; if (S.storyTrack === st.d.id) S.storyTrack = null; }  // 다른 방법으로 해결한 기회는 완료 보상 없이 접는다
   }
 }
 const storyStep = st => st.done || st.moot ? null : st.d.steps[st.step];
-const trackedStory = () => (S.stories || []).find(st => st.d.id === S.storyTrack && st.found && !st.done && !st.moot);
+// Older saves also stored automatically selected clues. Only a player's choice may steer the HUD.
+const trackedStory = () => S.storyTrackManual && (S.stories || []).find(st => st.d.id === S.storyTrack && st.found && !st.done && !st.moot);
+function selectStory(id) {
+  const st = (S.stories || []).find(st => st.d.id === id && st.found && !st.done && !st.moot);
+  if (id != null && (!oppMode || !st)) return false;
+  S.storyTrack = id; S.storyTrackManual = !!st; hudCache.objH = null; renderMissionGoals(); return true;
+}
 function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
-  for (const st of S.stories) { if (!st.found || st.moot || st.done) continue; const tr = S.storyTrack === st.d.id, s = storyStep(st);
-    if (tr && oppMode === 2 && !S.exitOpen && !pendingFirstGoal()) continue;  // 같은 단계를 맨 위와 목록에 두 번 쓰지 않는다
-    L.push(['opp', (tr ? '추적 중: ' : '기회: ') + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : ` (${st.step}/${st.d.steps.length})`)]); }
+  for (const st of S.stories) { if (!st.found || st.moot || st.done) continue; const tr = trackedStory() === st, s = storyStep(st);
+    if (tr && !S.exitOpen && !pendingFirstGoal()) continue;  // 같은 단계를 맨 위와 목록에 두 번 쓰지 않는다
+    L.push(['opp', '단서: ' + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : '')]); }
   return L;
 }
 function trackNextStory() {
   const f = (S.stories || []).filter(o => o.found && !o.done && !o.moot); if (!f.length) return;
-  const i = f.findIndex(o => o.d.id === S.storyTrack), next = f[i + 1]; S.storyTrack = next ? next.d.id : null; hudCache.objH = null;
+  if (!oppMode) return;
+  const i = f.indexOf(trackedStory()), next = f[i + 1]; selectStory(next ? next.d.id : null);
   toast(next ? '추적: ' + next.d.name : '기회 추적 해제', 1.6);
 }
 function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  if (oppMode !== 2 || !S.stories || !tactical || S.exitOpen || pendingFirstGoal()) return; const st = trackedStory(); if (!st) return;  // 플레이 화면의 안내는 drawGoal 하나로 통일
+  if (!oppMode || !S.stories || !tactical || S.exitOpen || pendingFirstGoal()) return; const st = trackedStory(); if (!st) return;  // 플레이 화면의 안내는 drawGoal 하나로 통일
   const s = storyStep(st); if (!s || !s.at) return; const fl = s.at[2] || 0; if (fl !== flOf(P) && !tactical) return;
   const x = tc(s.at[0]), y = tc(s.at[1]), k = Math.max(1, 0.95 / SCALE), b = 6 * Math.sin(S.t * 4);
   ctx.save(); ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;

@@ -803,6 +803,9 @@ body.dlgmodal #toasts, body:has(.screen:not([hidden])) #hintCard { visibility: h
 #missionGoals:empty { display:none; }
 #missionGoals button { text-align:left; white-space:normal; line-height:1.5; padding:10px 12px; border:1px solid #56616b; background:#111923; color:var(--paper); border-radius:3px; }
 #missionGoals button[aria-pressed="true"] { border-color:var(--lamp); }
+#missionGoals details { margin-top:8px; }
+#missionGoals summary { cursor:pointer; color:var(--paper-dim); padding:8px 0; }
+#missionGoals details button { display:block; width:100%; margin-top:6px; }
 #saveState { position:absolute; bottom:calc(43px + env(safe-area-inset-bottom,0px)); left:14px; font-size:11px; color:#a6b3b5; }
 body.touch #saveState { bottom:calc(28px + env(safe-area-inset-bottom,0px)); }
 /* 메뉴는 상단에 독립 배치하고 움직임·공격 입력 영역은 유지한다. */

@@ -20,7 +20,7 @@ async def main():
     const item=P.item={id:'can',name:'빈 캔'};check(G.nearRendezvous(),'call unavailable after ledger');const a=G.envChoices().find(a=>a.k==='callMeet');check(a,'phone missing in selection');
     G.doAct(a);check(P.interact&&!R.calls,'phone commits on button press');for(let i=0;i<12;i++){S.t+=.02;G.updatePlayer(.02);}G.actEnv();check(!R.calls,'repeat input skips call');
     for(let i=0;i<40;i++){S.t+=.02;G.updatePlayer(.02);}check(R.calls===1&&R.phase==='travelling'&&P.item===item,'phone consumes unrelated item or repeats');check(!G.nearRendezvous()&&!G.callRendezvous(),'duplicate appointment');
-    check(G.nextGoal().x===R.room.x&&G.nextGoal().area,'appointment leaks live unseen target position');P.x=P.y=-9000;
+    check(G.nextGoal().g===vip&&!G.nextGoal().meeting,'appointment replaces the required target objective');P.x=P.y=-9000;
     let arrive=0,maxStep=0;while(R.phase==='travelling'&&arrive<60){const old={x:vip.x,y:vip.y};S.t+=.05;G.setLayer(vip.fl||0);G.updateGuard(vip,.05);G.setLayer(escort.fl||0);G.updateGuard(escort,.05);G.updateRendezvous(.05);maxStep=Math.max(maxStep,Math.hypot(vip.x-old.x,vip.y-old.y));arrive+=.05;}
     check(R.phase==='waiting'&&arrive<50&&maxStep<8,'target never physically arrives or teleports '+JSON.stringify({phase:R.phase,arrive,maxStep}));
     const office=G.STAGE.rendezvous.b;check(G.bldAt(Math.floor(vip.x/48),Math.floor(vip.y/48))===office,'target does not enter reused room');
@@ -31,9 +31,9 @@ async def main():
     check(R.phase==='left'&&!vip.route.some(w=>w.rendezvous)&&!S.over,'missed ambush fails mission or leaves permanent detour');check(JSON.stringify(G.STAGE.guards[0].sched)===original,'appointment mutates shared stage schedule');
     for(let i=0;i<260;i++)G.updateRendezvous(.05);Object.assign(P,{x:R.phone.x,y:R.phone.y+48,fl:0,z:0});G.setLayer(0);check(G.callRendezvous()&&R.calls===2,'missed appointment cannot be retried');
     vip.state='ALERT';vip.lastSeen={x:900,y:800,fl:0,z:0};G.updateRendezvous(.05);check(R.phase==='interrupted'&&vip.state==='ALERT'&&vip.lastSeen.x===900&&!vip.route.some(w=>w.rendezvous),'cancelled appointment clears pursuit');
-    // Deliberate poison preparation changes the current lead, while manual objective selection wins.
+    // Optional route previews remain available; HUD tracking requires an explicit choice.
     S=fresh();P=S.player;P.item={id:'emetic'};G.updateStories(.5);G.setOppMode(1);const lead=G.missionApproachGoal();check(lead?.story==='emetic'&&lead.text==='클럽 직원 복장 구하기','preparation leaves unrelated objective selected');
-    const sign=S.stories.find(s=>s.d.id==='sign');sign.found=true;S.storyTrack='sign';G.setOppMode(2);check(G.nextGoal().story==='sign','prepared item overrides explicit full-guide route');G.setOppMode(1);
+    const sign=S.stories.find(s=>s.d.id==='sign');sign.found=true;G.selectStory('sign');G.setOppMode(2);check(G.nextGoal().story==='sign','prepared item overrides explicit full-guide route');G.setOppMode(1);
     const goal=G.missionGoalCandidates().find(g=>g.g);G.selectMissionGoal(goal.id);check(!G.missionApproachGoal()&&G.nextGoal().g===goal.g,'automatic lead overwrites manual choice');
     const v=S.vipPlan={phase:'sick',drinking:0};vip=S.guards[0];Object.assign(vip,{x:40*48+24,y:6*48+24,fl:0,z:0,moving:false});G.updateVipPlan(.1);check(v.reachedToilet,'actual arrival unrecorded');vip.x+=130;G.updateVipPlan(.1);check(v.phase==='done','missed bathroom opportunity keeps stale arrow');
     // A search discovery cancels concealment immediately, while retaining visible emergence.

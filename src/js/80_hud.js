@@ -105,8 +105,7 @@ function pendingFirstGoal() {
   try { if (fg.done(S, SH)) return null; } catch (e) {}
   return fg;
 }
-// 연습 → 탈출 → 필수 첫 행동 → 추적 기회(전체 안내) → 가까운 의뢰 목표.
-// 최소 안내에서는 기회의 위치를 공개하지 않고 의뢰 목표임을 명시한다.
+// 의뢰 목표는 목적만 안내한다. 선택한 단서만 잠시 추적하고, 준비 행동으로 공략을 강요하지 않는다.
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
@@ -114,9 +113,7 @@ function nextGoal() {
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const fg = pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; }
-  if (oppMode === 2) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '추적: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
-  {const approach=missionApproachGoal();if(approach)return approach;}
-  {const meeting=rendezvousGoal();if(meeting)return meeting;}
+  if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
   return pinnedMissionGoal();
 }
 // 목표 목록: 무엇을 어디서 (건물 이름·층) — 한 줄씩, 끝낸 것은 줄 긋기

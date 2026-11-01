@@ -8,7 +8,7 @@
   brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   bare: true, candy: 0, itemVerb: '챙기기', briefBy: '상황', kitStyle: 'industrial',
-  firstGoal: { text: '감방에서 나가기 — 바닥의 머리핀으로 문 따기', where: '감금동 1층 감방', at: [9, 5, 0], done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
+  firstGoal: { text: '감방에서 나가기', where: '감금동 1층 감방', done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
   build(m) {
     m.fill(0, 0, 43, 27, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 27, '#'); } for (let y = 0; y < 28; y++) m.set(0, y, '#');
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다

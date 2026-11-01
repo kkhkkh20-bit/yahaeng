@@ -7,7 +7,7 @@ from playwright.async_api import async_playwright
 ROOT=Path(__file__).resolve().parents[2]
 FLOW=Path(__file__).with_name('mission_flow.js').read_text().split(' // Prioritize obtainable cards')[0]
 FLOW=FLOW.replace('const tick=()=>{S.t+=dt;G.updatePlayer(dt);G.updateKoHold();G.runTimers();};',"const guest=S.guards.find(g=>g.tag==='bouncer');const tick=()=>{S.t+=dt;G.updatePlayer(dt);G.setLayer(guest.fl||0);G.updateGuard(guest,dt);G.setLayer(P.fl||0);G.updateDining(dt);G.updateKoHold();G.runTimers();};")
-FLOW=FLOW.replace('({sid,alt=0,mobile=false})=>','({sid,alt=0,mobile=false,live=false})=>')
+FLOW=FLOW.replace('({sid,alt=0,mobile=false,targetsFirst=false})=>','({sid,alt=0,mobile=false,targetsFirst=false,live=false})=>')
 FLOW=FLOW.replace('const tick=()=>{S.t+=dt;',"const tick=()=>{if(live){G.update(dt);check(!S.over,'live scene ended during '+trace.join(' / '));return;}S.t+=dt;")
 FLOW+='''
  const med=S.props.find(p=>p.id==='laxative');walk(at(med),'pharmacy');let a=G.envChoices().find(a=>a.k==='pickup'&&a.p===med);check(a,'medicine unavailable');G.actCarry(a);idle();
