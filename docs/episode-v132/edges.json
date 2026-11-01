@@ -1,0 +1,11 @@
+{
+  "result": {
+    "floorSafeSearch": true,
+    "deskCodeIndependent": true,
+    "authoredWindow": true,
+    "targetFloor": 1,
+    "KOIsNotKill": true,
+    "bothGoalsRequired": true
+  },
+  "errors": []
+}

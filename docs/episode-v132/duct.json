@@ -1,0 +1,144 @@
+{
+  "route": "duct",
+  "touch": false,
+  "cases": [
+    {
+      "case": "entry",
+      "t": 0.03333333333333333,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        5.5,
+        18.5,
+        0
+      ],
+      "kills": 0,
+      "ko": null,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "interrogation",
+      "t": 9.233333333333372,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        7.499997173716186,
+        12.041666666659294,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "stash",
+      "t": 14.066666666666945,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        6.5,
+        8.041666666666666,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "duct-bypass",
+      "t": 27.816666666666368,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.50641470892568,
+        6.493158786662902,
+        1
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "target",
+      "t": 49.26666666666515,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.493995848918951,
+        6.506402490988234,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "ledger",
+      "t": 50.616666666665076,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.500621926226222,
+        7.483435299286935,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "window-exit",
+      "t": 52.716666666664956,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.5,
+        3.5,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "extraction",
+      "t": 61.26666666666447,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        4.525317900975536,
+        18.474682943362563,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    }
+  ],
+  "errors": [],
+  "note": "Live AI with fixed simulation steps; not a device FPS benchmark."
+}

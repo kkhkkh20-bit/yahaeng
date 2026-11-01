@@ -2,6 +2,7 @@
 
 - 기존 2D 게임 · 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
+- 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
@@ -12,6 +13,7 @@
 ```
 python3 build.py                 # 빌드 → build/yahaeng_city.html (게시본), build/preview_city.html (테스트용)
 python3 build.py --itch          # 빌드 + dist/itch/yahaeng_itch.zip
+python3 build.py --episode --club # 사선 에피소드와 기존 구역 → build/episode-one/, build/club-study/
 python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트 → 무작위 조작(fuzz). --quick 은 fuzz 생략
 ```
 
@@ -27,6 +29,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v132
+
+사선 구역의 독립 의뢰 **마지막 정산**. 송대건 처치와 원본 장부 회수 후 탈출한다. 번호판·계단, 맨홀·창문, 환풍구 우회로를 사용한다. [기획·검증](docs/EPISODE_ONE.md).
 
 ## v118
 

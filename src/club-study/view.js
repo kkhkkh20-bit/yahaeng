@@ -5,6 +5,7 @@ import {makeReveal} from './reveal.js';
 import {createSight} from './sight.js';
 import {createEffects} from './effects.js';
 import {passageMode,accessMotion,SEWER_Y,DUCT_Y} from './passages.js';
+import {prepareEpisode} from './episode.js';
 const style=document.createElement('style');style.textContent='.keys .kx{display:none}';document.head.append(style);
 const loading=document.createElement('div');loading.id='clubLoading';loading.setAttribute('role','status');loading.style.cssText='position:fixed;inset:0;z-index:100;background:#10191c;color:#d8ccb3;display:grid;place-items:center;font:16px system-ui;letter-spacing:.1em';loading.textContent='골목 불러오는 중';document.body.append(loading);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -42,6 +43,7 @@ try{
   const dpr=canvas.width/width;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.setTransform(dpr,0,0,dpr,0,0);const P=G.S.player;
   G.SPEECH_R.length=0;G.ACTION_R.length=0;
   for(const o of world.items)if(o.mesh.visible){const q=project(o.at);ctx.save();ctx.translate(q.x,q.y);ctx.rotate(Math.PI/4);ctx.fillStyle='#dfbd72';ctx.fillRect(-4,-4,8,8);ctx.restore();}
+  for(const o of world.notes)if(o.mesh.visible&&!o.n.read&&Math.hypot(o.n.x-P.x,o.n.y-P.y)<180){const q=project(o.at);ctx.fillStyle='#dbd4b8';ctx.fillRect(q.x-3,q.y-5,6,8);}
   if(G.input.aiming){const pt=G.aimPoint(),from=project(new THREE.Vector3(P.x/48,people.height(P)+1,P.y/48));if(pt){const to=project(new THREE.Vector3(pt.x/48,people.height(P)+.05,pt.y/48));ctx.strokeStyle='#cbd6c3';ctx.lineWidth=1.5;ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.ellipse(to.x,to.y,10,5,0,0,Math.PI*2);ctx.stroke();}}
   const grab=G.grabAction(),env=currentEnv,mode=passageMode(P);if(grab.k==='grab'&&grab.g)badge(ctx,project(new THREE.Vector3(grab.g.x/48,people.height(grab.g)+1.85,grab.g.y/48)),matchMedia('(pointer:coarse)').matches?'붙잡기':'C · 붙잡기');
   if(env.k&&!['none','step','up'].includes(env.k)&&env.label&&!G.actionBusy()){
@@ -65,6 +67,7 @@ try{
   const currentEnv=G.envAction(),I=P.interact,F=P.trav?.hideFlow,A=accessMotion(P,G),mode=passageMode(P);let contact=null,progress=0,closing=false;
   if(I?.a?.l){const o=world.lamps.find(o=>o.l===I.a.l);if(o){contact=o.controlAt.clone();progress=I.t/I.dur;}}
   else if(I?.a?.d&&!I.a.d.r){const o=world.doors.find(o=>o.d===I.a.d);if(o){contact=o.pivot.localToWorld(new THREE.Vector3(.75,.99,-.09));progress=I.t/I.dur;}}
+  else if(I?.a?.n){const o=world.notes.find(o=>o.n===I.a.n);if(o){contact=o.at.clone();progress=I.t/I.dur;}}
   else if(P.pick?.it){const o=world.items.find(o=>o.it===P.pick.it);if(o){contact=o.at.clone();contact.y-=.23;const toward=new THREE.Vector3(P.x/48-contact.x,0,P.y/48-contact.z).normalize();contact.addScaledVector(toward,.1);progress=P.pick.t/P.pick.dur;}}
   else if(F){const q=P.trav.t-F.walk,begin=F.handPre||0,finish=begin+F.duration;const o=world.hides.find(o=>o.h===F.h);if(o&&(q>=0&&q<begin||q>=finish&&q<finish+(F.handPost||0))){contact=o.v.grip();closing=q>=finish;progress=q<begin?q/Math.max(.01,begin):(q-finish)/Math.max(.01,F.handPost);}}
   else if(A?.work){const o=A.F.h.type==='well'?world.hides.find(o=>o.h===A.F.obj):world.passages.fixtures.find(o=>o.obj===A.F.obj);if(o){contact=o.v.grip();progress=A.work.p;closing=A.work.closing;}}
@@ -80,6 +83,6 @@ try{
   lastFrame=performance.now();
  }
  const view={get ready(){return ready},drawPassageMap(cv){return world?.passages.drawMini(cv)||false;},draw,direction,pace,screenToWorld,project,actorPick(o){return project(new THREE.Vector3(o.x/48,people.height(o)+1,o.y/48));},actorScreen(o){return project(new THREE.Vector3(o.x/48,people.height(o),o.y/48));},get occlusion(){return{occluded,radius:reveal?.radius}},get effects(){return effects},get sight(){return sight},get world(){return world},get people(){return people},get scene(){return scene},get camera(){return camera},get renderer(){return renderer},get contactTrace(){return contactTrace;},get metrics(){const a=frameCosts.slice().sort((a,b)=>a-b);return{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,pixelRatio:renderer.getPixelRatio(),medianMs:a[Math.floor(a.length*.5)]||0,p95Ms:a[Math.floor(a.length*.95)]||0};},async readyForScene(){while(pending||!ready||state!==G.S)await sleep(20);}};
- window.__clubView=view;G.start(G.STAGES.findIndex(s=>s.artSlice));while(G.DLG.modal)G.advanceDialog();await rebuild();
+ window.__clubView=view;prepareEpisode();G.start(G.STAGES.findIndex(s=>window.__EPISODE_ONE__?s.episode:s.artSlice),!!window.__EPISODE_ONE__);while(G.DLG.modal)G.advanceDialog();await rebuild();
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(G.STAGE.artSlice){loading.textContent='화면 복구 중';loading.style.display='grid';}});renderer.domElement.addEventListener('webglcontextrestored',()=>{loading.style.display='none';moon.shadow.needsUpdate=true;});
 }catch(error){console.error(error);loading.textContent='새 화면을 열지 못했습니다. ';const link=document.createElement('a');link.href='../tone-study/game.html';link.textContent='기존 게임 열기';link.style.color='#e2c58b';loading.append(link);window.__clubError=String(error);}

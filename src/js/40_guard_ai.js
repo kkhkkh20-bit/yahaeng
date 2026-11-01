@@ -92,7 +92,7 @@ function pathTo(g, x, y) {
   g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
   // 쫓거나 뒤지는 중인데 길이 막혔으면 가까운 잠긴 문을 부수고 연다
   if (!g.path.length && dist(g.x, g.y, x, y) > 60 && ['ALERT', 'SEARCH', 'CHECK', 'BODY', 'SUSPICIOUS'].includes(g.state)) {
-    const d = S.doors.filter(d => d.locked).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
+    const d = S.doors.filter(d => d.locked && flOf(d)===flOf(g)).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
     if (d && dist(d.x, d.y, g.x, g.y) < 360) {
       setDoor(d, false); play('thud', 0.6 * proxVol(g)); noise(d.x, d.y, 160, 'door', flOf(g));
       if (dist(d.x, d.y, S.player.x, S.player.y) < 700) toast('자경대원이 잠긴 문을 부수고 열었다', 2.2, 'warn');

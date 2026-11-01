@@ -313,6 +313,7 @@ function winInit() {
     for (const [dx, dy] of N4) { const ox = w.tx + dx, oy = w.ty + dy, ix = w.tx - dx, iy = w.ty - dy;
       if (!inMap(ox, oy) || !inMap(ix, iy) || bldAt(ox, oy) >= 0 || groundSolidP(ox, oy) || SOLID.has(g[iy][ix]) || bldAt(ix, iy) < 0) continue;
       w.out = { x: tc(ox), y: tc(oy), d: [dx, dy] }; w.inn = { x: tc(ix), y: tc(iy) }; break; } }
+  for(const [x,y,fl,state]of STAGE.windowStates||[]){const w=(fl?S.fwindows:S.windows).find(w=>w.tx===x&&w.ty===y&&flOf(w)===fl);if(w)w.st=state;}
 }
 // 2층 안에서 열린 창문 앞: 창틀을 넘어 벽을 타고 내려간다
 function nearWinDrop() {
@@ -484,7 +485,7 @@ function nearDoor() {
   return best;
 }
 function doorBlocked(d) { return d.group.some(t => S.guards.some(g => g.state !== 'DEAD' && Math.floor(g.x / TILE) === t.tx && Math.floor(g.y / TILE) === t.ty) || S.corpses.some(c => !c.stashed && !c.carried && Math.floor(c.x / TILE) === t.tx && Math.floor(c.y / TILE) === t.ty)); }
-function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; G[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
+function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; const grid=flOf(t)?GF[flOf(t)]:G0; grid[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;
   for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b, 64)) { bd = d; best = b; } }

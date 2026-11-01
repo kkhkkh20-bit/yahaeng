@@ -18,7 +18,7 @@ window.addEventListener('keydown', e => {
   const overlay = document.querySelector('.screen:not([hidden])');
   if (overlay) {
     if (e.code === 'Escape') {
-      const back = { pause: 'btnResume', brief: 'btnBrBack', end: 'btnMenu' }[overlay.id];
+      const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu' }[overlay.id];
       if (back) { e.preventDefault(); $(back).click(); }
     }
     return;
@@ -311,6 +311,7 @@ function chooseEntry(i) {
 }
 function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); return { x: o.x, y: o.y - o.top }; } return { x: tc(e.at[0]), y: tc(e.at[1]) }; }
 function toMenu() {
+  if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
   running = false; paused = false; riskTone(0); resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;

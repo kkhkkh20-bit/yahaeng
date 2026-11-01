@@ -76,11 +76,12 @@ def build():
     open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(pre + html)
     demo = html.replace('window.__THUMBS = ', "window.__DEMO = 'all'; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 전부 (도시 시제품만 뺀다)
     open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(pre + demo)
-    if '--club' in sys.argv:
-        study=html.replace('<script>window.__ASSETS__','<script>window.__CLUB_STUDY__=true;</script><script>window.__ASSETS__',1)
+    for edition in (['club-study'] if '--club' in sys.argv else []) + (['episode-one'] if '--episode' in sys.argv else []):
+        flags='window.__CLUB_STUDY__=true;'+('window.__EPISODE_ONE__=true;' if edition=='episode-one' else '')
+        study=html.replace('<script>window.__ASSETS__','<script>'+flags+'</script><script>window.__ASSETS__',1)
         study=study.replace('<script>window.__BUILD_VERSION__','<script>window.__INK_FORCE__=true;</script><script>window.__BUILD_VERSION__',1)
         head='<script type="importmap">{"imports":{"three":"./lib/three.module.min.js","three/addons/":"./lib/addons/"}}</script>'
-        folder=P('build','club-study');os.makedirs(folder,exist_ok=True)
+        folder=P('build',edition);os.makedirs(folder,exist_ok=True)
         import shutil
         shutil.copytree(P('src','club-study'),folder,dirs_exist_ok=True)
         # Version the first-party import graph so returning testers do not mix old
