@@ -1354,7 +1354,7 @@ function draw() {
       if (ck < 0.99) { conePaths(g, cn, 1, 2); ctx.fillStyle = `rgba(${col},${(0.24 * (1 - ck) * far).toFixed(3)})`; ctx.fill(); if (ck < 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } }
       if (ck > 0.01) { conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},${(0.24 * ck * far).toFixed(3)})`; ctx.fill(); if (ck >= 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } } }
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
-    if (g.act === 'smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
+    if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
     // 멀리 있는 경비의 점선은 그리지 않고(쫓기는 중엔 더 가까운 것만), 같은 자리의 '들었다/봤다'는 하나로 합친다
     if (S._poiT !== S.t) { S._poiT = S.t; S._poiL = []; }

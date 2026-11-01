@@ -10,11 +10,11 @@
   buildingNames: {2:'공중화장실'},
   fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
   roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[
-    {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],to:[6,30]}],
+    {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
   brief: '실장과 장부. 둘 다 넘기면 끝이다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
-  W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
+  W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   build(m) {
     m.fill(0, 0, 55, 35, ','); for (let x = 0; x < 56; x++) m.set(x, 0, '#');
     // 바닥 먼저: 큰길(보도 19·24, 차도 20~23) · 사무동 앞마당 · 야시장 · 네온 골목 · 동쪽 샛길 · 빌라 앞마당
@@ -64,17 +64,17 @@
          { need:'laxative',at:[5,29],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
            done:'양념통에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
   intel: [
-    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
+    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '장부는 사무동 금고에 뒀다.'], [1, '비밀번호는 0417.']] },
     { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,
-      lines: [[0, '실장님 오늘도 VIP룸에서 양주 드시더라.'], [1, '그 양반 장 약해서 뭐 하나만 잘못 들어가도 골목 공중화장실로 뛰어가잖아.'], [0, 'VIP룸 화장실은 언제 고쳐?'], [1, '고칠 돈으로 양주 사 드시겠지.']] },
+      lines: [[0, '실장 술은 바에 따로 뒀어.'], [1, '속이 안 좋다던데. 탈 나면 또 골목 화장실로 가겠네.']] },
     { g: [2, 3], key: 1, gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', every: 26, first: 8,
-      lines: [[0, '실장님 또 나오시겠네.'], [1, '간판 밑에서 담배 한 대. 그게 하루 낙이래.'], [0, '저 간판 나사 빠진 거 아무도 말 안 했지?'], [1, '말하면 나보고 고치라고 할 거잖아.']] }
+      lines: [[0, '담배 피울 땐 혼자 두래. 경호는 입구에서 서고.'], [1, '간판 고정대도 손봐야 하는데. 아직 그대로야.']] }
   ],
   // 붙잡은 조직원 심문: 아직 모르는 것부터 하나씩 분다
   interrogate: [{ gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', say: '실장님? 간판 밑에서 담배 피우실 땐 혼자야!' },
                 { gives: 'code', learn: '사무동 금고 비밀번호 0417', say: '비, 비번은 0417! 사장 딸 생일이야!' },
                 { gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', say: '실장님 배 약해! 술에 뭐 들어가면 바로 화장실로 뛰어가!' }],
-  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 위 메모', surface:{b:0,types:['desk','desk2']}, lines: ['금고 0417', '(사장님 딸 생일)'], gives: 'code', learn: '사무동 금고 비밀번호 0417' }],
+  notes: [{ b: 0, fl: 1, at: 'L', title: '책상 위 메모', surface:{b:0,types:['desk','desk2']}, lines: ['장부 금고 0417', '파란 카드키는 금고 안. VIP룸 뒷문용.'], gives: 'code', learn: '사무동 금고 비밀번호 0417' }],
   traps: [{ k: 'drop', at: [27, 12], hit: [25, 15, 29, 16], text: 'CLUB', noOpp: true }], codeOpp: false,   // 간판·금고 비밀번호는 아래 단계형 기회가 안내한다
   stories: [
     { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
@@ -118,7 +118,7 @@
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
     { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
-    { kind: 'civ', outfit: 'waiter', at: [6, 31], post: 0 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [7, 31], post: 180 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
+    { kind: 'civ', outfit: 'waiter', at: [10, 28], post: 90 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [10, 30], post: 270 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들
     { kind: 'civ', tag: 'pharm', body: 'old', at: [18, 28], post: 180 },             // 16 약사
     { kind: 'civ', route: [[1, 19, 1], [54, 19, 1]] },                               // 17·18 큰길 행인
@@ -132,7 +132,9 @@
     { kind: 'g2', route: [[31, 2, 4], [37, 1, 4]] },                         // 26 클럽 뒷골목 동쪽 (뒷문 앞)
     { kind: 'g1', route: [[2, 2, 4], [11, 2, 4]] },                          // 27 사무동 뒷골목 (어둡다 · 6,1 수거함)
     { kind: 'g2', route: [[1, 7, 3], [1, 17, 3]] },                          // 28 사무동 서쪽 골목
-    { kind: 'g2', tag: 'vipEscort', at: [26, 6], follow: 0, elite: true, escortWait: { rect: [39, 6, 41, 7, 0], at: [40, 9] } },
+    { kind: 'g2', tag: 'vipEscort', at: [26, 6], follow: 0, elite: true, escortWait: [
+      {rect:[39,6,41,7,0],at:[40,9]},
+      {rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
     { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],

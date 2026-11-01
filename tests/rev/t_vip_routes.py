@@ -26,7 +26,7 @@ async def main():
        const hold=(group,secs)=>{if(mobile){const id=group==='env'?'btnCarry':'btnAct',el=document.getElementById(id);el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7,pointerType:'touch'}));tick(Math.ceil(secs/dt));el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:7,pointerType:'touch'}))}else{const key=group==='env'?'KeyX':'KeyZ';S.keys[key]=true;G.combatPress(key);group==='env'?G.actEnv():G.actAttack();tick(Math.ceil(secs/dt));S.keys[key]=false;G.combatRelease(key)}};
        if(route==='poison'){
         place(16,29);select('pickup');check(P.item?.id==='emetic','medicine not picked up');
-        place(27,10);select('use');check(S.vipPlan?.phase==='prepared'&&!g.route.some(r=>r.once),'medicine acts before actual drinking');
+        const bottle=G.usePoint(G.STAGE.uses[0]);place(bottle.x/48-.5,bottle.y/48-.5);select('use');check(S.vipPlan?.phase==='prepared'&&!g.route.some(r=>r.once),'medicine acts before actual drinking');
         place(0,21);until(()=>S.vipPlan.phase==='sick',150,'VIP never drinks');const drankAt=S.t;
         until(()=>Math.floor(g.x/48)>=39&&Math.floor(g.x/48)<=41&&Math.floor(g.y/48)<=7&&g.wait>15,70,'bathroom unreachable');
         until(()=>escort.waitingPrivacy,5,'escort does not wait outside');check(escort.y>8*48,'escort enters private toilet');
@@ -35,10 +35,10 @@ async def main():
         return{drankAt:Math.round(drankAt),bathroom:true,escortWaits:true,killed:true};
        }
        if(route==='sign'){
-        place(27,12,2);until(()=>g.x>=25*48&&g.x<30*48&&g.y>=15*48&&g.y<17*48,90,'VIP never reaches smoking spot');
+        place(27,10,2);G.input.sneakToggle=true;until(()=>g.x>=25*48&&g.x<30*48&&g.y>=15*48&&g.y<17*48,90,'VIP never reaches smoking spot');
         // Wait for the whole hold window to fit within the scheduled stop.
-        until(()=>g.wait>3&&g.y>=15*48,6,'smoking stop too short');const a=G.envChoices().find(a=>a.k==='trap'&&a.tp?.t?.text==='CLUB');check(a,'missing sign action');
-        G.selectEnvTarget(G.envToken(a));hold('env',1.25);tick(10);check(G.targetEliminated(g)&&S.corpses.some(c=>c.target&&c.accident),'sign misses the actual target');return{accident:true};
+        until(()=>g.wait>3&&g.y>=15*48,6,'smoking stop too short');place(27,12,2);const a=G.envChoices().find(a=>a.k==='trap'&&a.tp?.t?.text==='CLUB');check(a,'missing sign action');
+        G.selectEnvTarget(G.envToken(a));hold('env',1.25);until(()=>G.targetEliminated(g),4,'falling sign misses actual target');check(G.targetEliminated(g)&&S.corpses.some(c=>c.target&&c.accident),'sign misses the actual target');return{accident:true};
        }
        // Blue card is an equipment fixture; the real door action and NPC response are live.
        P.keys.blue=true;place(33,7);const door=S.doors.find(d=>d.keyLock==='blue');check(door?.locked,'back door not locked initially');

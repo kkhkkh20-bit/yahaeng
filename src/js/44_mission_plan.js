@@ -4,17 +4,28 @@ function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
   return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
+function vipRoutine(g) {
+  if(STAGE.id!=='m2'||g.tag!=='vip'||g.state!=='PATROL'||g.moving||g.doomed||g.climb||g.wait<=0)return null;
+  const s=schedNow(g);return s?.cur?.act==='담배'?'smoke':s?.cur?.act==='양주'?'drink':null;
+}
 function recordMissionOutcome() {
   if(STAGE.id!=='m2' || S.missionApproach)return;
   const g=npc('vip');if(!g || !targetEliminated(g))return;
   const c=S.corpses.find(c=>c.target);
   S.missionApproach=c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
-    c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.rendezvous?.calls&&S.rendezvous.waiting>0&&c&&dist(c.x,c.y,S.rendezvous.room.x,S.rendezvous.room.y)<120?'장부로 불러낸 매복':S.vipBackDoorUsed?'VIP룸 뒷문 접근':'직접 접근';
+    c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.rendezvous?.calls&&S.rendezvous.waiting>0&&c&&dist(c.x,c.y,S.rendezvous.room.x,S.rendezvous.room.y)<120?'장부로 불러낸 매복':S.vipBackDoorUsed?'VIP룸 뒷문 접근':c&&S.vipSmokingSeen&&inRect(c,[25,15,29,16,0])?'흡연 동선 매복':'직접 접근';
 }
 function serviceCell(tx,ty,fl) {
   return STAGE.id==='m2' && STAGE.guards.some(g=>g.target && (g.fl||0)===fl && (g.sched||[]).some(s=>Math.hypot(tx-s.at[0],ty-s.at[1])<1.25));
 }
 function initMissionPlan() {
+  if(STAGE.id==='m2'&&S.vipContractVersion!==1){
+    const escort=npc('vipEscort'),d=STAGE.guards.find(g=>g.tag==='vipEscort');if(escort&&d)escort.escortWait=cloneDeep(d.escortWait);
+    // Saved staff walk to their new posts; bodies and active encounters stay intact.
+    for(const id of [14,15]){const g=S.guards[id],d=STAGE.guards[id];if(g?.civ&&g.state==='PATROL'&&g.route.length===1&&d?.at){const x=tc(d.at[0]),y=tc(d.at[1]);if(g.route[0].x!==x||g.route[0].y!==y){g.route=[{x,y,pause:999}];g.ri=0;g.wait=0;g.path=null;g.post=d.post*Math.PI/180;}}}
+    for(const e of STAGE.exits||[]){const x=tc(e.at[0]),y=tc(e.at[1]);if(!S.exits.some(o=>dist(o.x,o.y,x,y)<1))S.exits.push({x,y,r:e.r||60,name:e.name||''});}
+    if(S.exits[0]&&!S.exits[0].name)S.exits[0].name=STAGE.exitName;S.vipContractVersion=1;
+  }
   S.targetIntel = S.targetIntel || {};
   S.targetBrief = S.targetBrief || {};
   // v93의 약 사용은 곧바로 화장실 일과를 만들었다. 기존 우회는 그대로 이어간다.
@@ -151,6 +162,7 @@ function updateVipPlan(dt) {
   const P=S.player;
   if(!P.z&&!P.fl&&P.moving && S.doors.some(d=>d.keyLock==='blue'&&!d.locked&&dist(P.x,P.y,d.x,d.y)<20))S.vipBackDoorUsed=true;
   const g = npc('vip'), v = S.vipPlan;
+  if(g&&vipRoutine(g)==='smoke'&&canObserveTarget(g))S.vipSmokingSeen=true;
   if (!g || !v || v.phase === 'done') return;
   if(v.phase==='sick'){
     const d=STAGE.vipDrink,at=!flOf(g)&&!g.z&&dist(g.x,g.y,tc(d.to[0]),tc(d.to[1]))<65;

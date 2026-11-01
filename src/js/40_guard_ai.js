@@ -7,11 +7,13 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 function moveAlong(g, speed, dt) {
+  // A necessary bend can lead away from the destination. Measure the next leg,
+  // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
   // cells instead of stacking detours forever in a narrow doorway or aisle.
   if(g.path?.length){
-    const goal=g.path[g.path.length-1],d=dist(g.x,g.y,goal.x,goal.y);
-    let p=g.walkProgress;if(!p||p.x!==goal.x||p.y!==goal.y||p.fl!==flOf(g)||p.z!==(g.z||0))p=g.walkProgress={x:goal.x,y:goal.y,fl:flOf(g),z:g.z||0,best:d,t:0};
+    const goal=g.path[g.path.length-1],next=g.path[0],d=dist(g.x,g.y,next.x,next.y);
+    let p=g.walkProgress;if(!p||p.x!==goal.x||p.y!==goal.y||p.nx!==next.x||p.ny!==next.y||p.fl!==flOf(g)||p.z!==(g.z||0))p=g.walkProgress={x:goal.x,y:goal.y,nx:next.x,ny:next.y,fl:flOf(g),z:g.z||0,best:d,t:0};
     if(d<p.best-8){p.best=d;p.t=0;}else p.t+=dt;
     if(p.t>3){
       p.t=0;const occupied=new Set(),sol=g.z?solidFor(g.z):solidAt,tx=Math.floor(goal.x/TILE),ty=Math.floor(goal.y/TILE);
@@ -23,9 +25,9 @@ function moveAlong(g, speed, dt) {
   if (!g.path || !g.path.length) return true;
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
-  if (g.target && g.state==='PATROL') {
-    const end=g.path[g.path.length-1],d=dist(g.x,g.y,end.x,end.y);let r=g.motionRecovery;
-    if(!r || r.x!==end.x || r.y!==end.y) r=g.motionRecovery={x:end.x,y:end.y,best:d,t:S.t,until:0};
+  if ((g.target || g.route.some(w=>w.mealTrip)) && g.state==='PATROL') {
+    const end=g.path[g.path.length-1],next=g.path[0],d=dist(g.x,g.y,next.x,next.y);let r=g.motionRecovery;
+    if(!r || r.x!==end.x || r.y!==end.y || r.nx!==next.x || r.ny!==next.y) r=g.motionRecovery={x:end.x,y:end.y,nx:next.x,ny:next.y,best:d,t:S.t,until:r?.until||0};
     if(d<r.best-8){r.best=d;r.t=S.t;}
     if(S.t-r.t>3 && d>20){
       const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(end.x/TILE),Math.floor(end.y/TILE),g.z?solidFor(g.z):solidAt);
@@ -852,12 +854,14 @@ function followLeader(g, dt, spd) {
     if (L && !g.civ && !g.dog) { goSuspicious(g, L.x, L.y, 6); g.why = 'saw'; gsay(g, ['어디 갔어? 대답해!', '야… 어디 간 거야?', '방금까지 앞에 있었는데…'][g.id % 3]); setIcon(g, '?'); }
     return;
   }
-  const wait=rendezvousPrivacy(g)||g.escortWait,r=wait&&wait.rect;
+  const posts=Array.isArray(g.escortWait)?g.escortWait:[g.escortWait].filter(Boolean);
+  const area=w=>{const r=w.rect;return[r[0]-(w.at[0]<r[0]?1:0),r[1]-(w.at[1]<r[1]?1:0),r[2]+(w.at[0]>r[2]?1:0),r[3]+(w.at[1]>r[3]?1:0),r[4]];};
+  const wait=rendezvousPrivacy(g)||posts.find(w=>inRect(L,area(w)))||posts[0],r=wait&&wait.rect;
   // 입구에 도착하기 전에 밖에서 대기한다. 뒤따르던 옛 경로를 계속 밟아 안으로 들어가지 않는다.
-  const approach=r&&[r[0]-(wait.at[0]<r[0]?1:0),r[1]-(wait.at[1]<r[1]?1:0),r[2]+(wait.at[0]>r[2]?1:0),r[3]+(wait.at[1]>r[3]?1:0),r[4]];
+  const approach=r&&area(wait);
   const privacy=!!(wait&&inRect(L,approach));
   if(privacy!==!!g.waitingPrivacy){g.path=null;g.repath=0;}
-  if (privacy && !g.waitingPrivacy) gsay(g, '밖에서 기다리겠습니다.', 2);
+  if (privacy && !g.waitingPrivacy) gsay(g, wait.say||'밖에서 기다리겠습니다.', 2);
   g.waitingPrivacy = !!privacy;
   const bx = privacy ? tc(wait.at[0]) : L.x - Math.cos(L.a) * 52, by = privacy ? tc(wait.at[1]) : L.y - Math.sin(L.a) * 52;
   if (flOf(g) !== flOf(L) || (g.z || 0) !== (L.z || 0)) {
@@ -871,10 +875,11 @@ function followLeader(g, dt, spd) {
     moveAlong(g, Math.max(spd, SPD.target * 1.5), dt);
   } else {
     g.path = null;
+    const facing=privacy&&wait.face!=null?wait.face:L.a;
     g.glanceT -= dt;
     if (g.glance > 0) { g.glance -= dt; g.want = g.glanceA; if (g.glance <= 0) g.glanceT = rnd(5, 9); }
-    else if (g.glanceT <= 0) { g.glance = rnd(1.2, 1.8); g.glanceA = L.a + Math.PI + rnd(-0.6, 0.6); }
-    else g.want = L.a;
+    else if (g.glanceT <= 0) { g.glance = rnd(1.2, 1.8); g.glanceA = facing + (privacy&&wait.face!=null?0:Math.PI) + rnd(-0.6, 0.6); }
+    else g.want = facing;
   }
 }
 // 순라꾼에게 맞음: 체력 1 감소, 뒤로 밀림, 잠깐 무적. 체력이 다하면 실패

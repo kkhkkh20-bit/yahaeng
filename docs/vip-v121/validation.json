@@ -1,0 +1,119 @@
+{
+  "contract": [
+    "PASS VIP rules PC {\"twoExits\": true, \"earlyExitBlocked\": true, \"doglegRecovery\": true, \"legacySave\": true, \"shortDialogue\": true, \"pin\": \"item:0\"}",
+    "PASS VIP live routine PC {\"seed\": 1, \"first\": 59.6, \"repeat\": 198.1, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}",
+    "PASS VIP live routine PC {\"seed\": 116, \"first\": 55.5, \"repeat\": 189, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}",
+    "PASS VIP live routine PC {\"seed\": 118, \"first\": 56.4, \"repeat\": 189.6, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}",
+    "PASS VIP rules mobile {\"twoExits\": true, \"earlyExitBlocked\": true, \"doglegRecovery\": true, \"legacySave\": true, \"shortDialogue\": true, \"pin\": \"item:0\"}",
+    "PASS VIP live routine mobile {\"seed\": 1, \"first\": 59.6, \"repeat\": 198.1, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}",
+    "PASS VIP live routine mobile {\"seed\": 116, \"first\": 55.5, \"repeat\": 189, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}",
+    "PASS VIP live routine mobile {\"seed\": 118, \"first\": 56.4, \"repeat\": 189.6, \"actors\": 39, \"escortPost\": true, \"waitAgain\": true}"
+  ],
+  "showcase": [
+    "PASS full AI showcase PC {\"seconds\": 196, \"hp\": 3, \"detected\": 0, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"camera approach\", \"office camera disabled with dart\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}",
+    "PASS full AI showcase mobile {\"seconds\": 196, \"hp\": 1, \"detected\": 3, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"camera approach\", \"office camera disabled with dart\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}"
+  ],
+  "uniform-final": [
+    "PASS uniform route {\"mobile\": false, \"alt\": 0, \"seconds\": 112, \"waited\": 59.8, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS uniform route {\"mobile\": false, \"alt\": 1, \"seconds\": 112, \"waited\": 59.8, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS uniform route {\"mobile\": false, \"alt\": 2, \"seconds\": 112, \"waited\": 59.8, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS uniform route {\"mobile\": true, \"alt\": 0, \"seconds\": 112, \"waited\": 60, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS uniform route {\"mobile\": true, \"alt\": 1, \"seconds\": 112, \"waited\": 60, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS uniform route {\"mobile\": true, \"alt\": 2, \"seconds\": 112, \"waited\": 60, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS full live scene {\"mobile\": false, \"alt\": 0, \"seconds\": 112, \"waited\": 60, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}",
+    "PASS full live scene {\"mobile\": true, \"alt\": 0, \"seconds\": 112, \"waited\": 60.2, \"kills\": 0, \"outfit\": \"crew\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\"]}"
+  ],
+  "routes": [
+    "PASS poison keyboard 0 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+    "PASS sign keyboard 0 {'accident': True}",
+    "PASS backdoor keyboard 0 {'blueDoor': True, 'actors': 39}",
+    "PASS poison keyboard 1 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+    "PASS sign keyboard 1 {'accident': True}",
+    "PASS backdoor keyboard 1 {'blueDoor': True, 'actors': 39}",
+    "PASS poison touch 0 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+    "PASS sign touch 0 {'accident': True}",
+    "PASS backdoor touch 0 {'blueDoor': True, 'actors': 39}",
+    "PASS poison touch 1 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+    "PASS sign touch 1 {'accident': True}",
+    "PASS backdoor touch 1 {'blueDoor': True, 'actors': 39}",
+    "PASS twelve live scenes; no NPC freezing"
+  ],
+  "missions": [
+    "PASS m1 placement 0 keyboard start → objectives → escape",
+    "PASS m2 placement 0 keyboard start → objectives → escape",
+    "PASS m3 placement 0 keyboard start → objectives → escape",
+    "PASS m4 placement 0 keyboard start → objectives → escape",
+    "PASS m5 placement 0 keyboard start → objectives → escape",
+    "PASS m6 placement 0 keyboard start → objectives → escape",
+    "PASS m1 placement 1 keyboard start → objectives → escape",
+    "PASS m2 placement 1 keyboard start → objectives → escape",
+    "PASS m3 placement 1 keyboard start → objectives → escape",
+    "PASS m4 placement 1 keyboard start → objectives → escape",
+    "PASS m5 placement 1 keyboard start → objectives → escape",
+    "PASS m6 placement 1 keyboard start → objectives → escape",
+    "PASS m1 placement 2 keyboard start → objectives → escape",
+    "PASS m2 placement 2 keyboard start → objectives → escape",
+    "PASS m3 placement 2 keyboard start → objectives → escape",
+    "PASS m4 placement 2 keyboard start → objectives → escape",
+    "PASS m5 placement 2 keyboard start → objectives → escape",
+    "PASS m6 placement 2 keyboard start → objectives → escape",
+    "PASS m1 placement 0 mobile start → objectives → escape",
+    "PASS m2 placement 0 mobile start → objectives → escape",
+    "PASS m3 placement 0 mobile start → objectives → escape",
+    "PASS m4 placement 0 mobile start → objectives → escape",
+    "PASS m5 placement 0 mobile start → objectives → escape",
+    "PASS m6 placement 0 mobile start → objectives → escape",
+    "PASS m1 placement 1 mobile start → objectives → escape",
+    "PASS m2 placement 1 mobile start → objectives → escape",
+    "PASS m3 placement 1 mobile start → objectives → escape",
+    "PASS m4 placement 1 mobile start → objectives → escape",
+    "PASS m5 placement 1 mobile start → objectives → escape",
+    "PASS m6 placement 1 mobile start → objectives → escape",
+    "PASS m1 placement 2 mobile start → objectives → escape",
+    "PASS m2 placement 2 mobile start → objectives → escape",
+    "PASS m3 placement 2 mobile start → objectives → escape",
+    "PASS m4 placement 2 mobile start → objectives → escape",
+    "PASS m5 placement 2 mobile start → objectives → escape",
+    "PASS m6 placement 2 mobile start → objectives → escape",
+    "PASS 36 mission playthroughs, no objective/door/key grants or player teleporting"
+  ],
+  "ambush": [
+    "PASS keyboard movement 0 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]",
+    "PASS keyboard movement 1 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]",
+    "PASS keyboard movement 2 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]",
+    "PASS mobile movement 0 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]",
+    "PASS mobile movement 1 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]",
+    "PASS mobile movement 2 [\"door 5,8 keypad\", \"key blue\", \"objective 0\", \"office phone\", \"call\", \"ambush hiding place\", \"VIP arrival\", \"approach 0\", \"kill 0\", \"exit\"]"
+  ],
+  "restaurant": [
+    "PASS restaurant PC {\"reachableCells\": 22, \"unchangedOutsidePatch\": 1991, \"doorPrivacy\": true, \"twoToilets\": true, \"goalPriority\": true, \"migration\": true, \"oldVisitPreserved\": true}",
+    "PASS restaurant mobile {\"reachableCells\": 22, \"unchangedOutsidePatch\": 1991, \"doorPrivacy\": true, \"twoToilets\": true, \"goalPriority\": true, \"migration\": true, \"oldVisitPreserved\": true}"
+  ],
+  "density": [
+    "PASS {'mainContracts': 3, 'securityRooms': 3, 'physicalCode': True, 'sameBuildingReuse': True, 'privacySeparation': True, 'oldSaveRecovery': True}"
+  ],
+  "freedom": [
+    "PASS free approach PC {\"preparations\": 4, \"goalStable\": true, \"manualTracking\": true, \"legacySave\": true, \"missedMeeting\": true}",
+    "PASS free approach mobile {\"preparations\": 4, \"goalStable\": true, \"manualTracking\": true, \"legacySave\": true, \"missedMeeting\": true}"
+  ],
+  "combat": [
+    "PASS combat feel keyboard {\"mobile\": false, \"events\": [{\"name\": \"cloth\", \"t\": 10.149999999999997}, {\"name\": \"cloth\", \"t\": 10.549999999999988}, {\"name\": \"thud\", \"t\": 10.94999999999998}]}",
+    "PASS combat feel mobile touch {\"mobile\": true, \"events\": [{\"name\": \"cloth\", \"t\": 10.149999999999997}, {\"name\": \"cloth\", \"t\": 10.549999999999988}, {\"name\": \"thud\", \"t\": 10.94999999999998}]}"
+  ],
+  "controls": [
+    "PASS 1280 800 normal {'actionPriority': True, 'radioResumes': True}",
+    "PASS 1280 800 ink {'actionPriority': True, 'radioResumes': True}",
+    "PASS 390 844 normal {'actionPriority': True, 'radioResumes': True}",
+    "PASS 390 844 ink {'actionPriority': True, 'radioResumes': True}",
+    "PASS 360 740 normal {'actionPriority': True, 'radioResumes': True}",
+    "PASS 360 740 ink {'actionPriority': True, 'radioResumes': True}",
+    "PASS 844 390 normal {'actionPriority': True, 'radioResumes': True}",
+    "PASS 844 390 ink {'actionPriority': True, 'radioResumes': True}"
+  ],
+  "first-session": [
+    "PASS first session {\"mobile\": false, \"trainingToContract\": true, \"detected\": 0, \"kills\": 0, \"warningsGuideToExit\": true, \"earlyExitBlocked\": true}",
+    "PASS first session {\"mobile\": false, \"earlyExitBlocked\": true, \"legacyCheckpointRepaired\": true}",
+    "PASS first session {\"mobile\": true, \"trainingToContract\": true, \"detected\": 0, \"kills\": 0, \"warningsGuideToExit\": true, \"earlyExitBlocked\": true}",
+    "PASS first session {\"mobile\": true, \"earlyExitBlocked\": true, \"legacyCheckpointRepaired\": true}"
+  ]
+}
