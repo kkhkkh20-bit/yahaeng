@@ -109,6 +109,16 @@
   },
   {
     "mobile": false,
+    "case": "fade",
+    "cells": 0,
+    "at": [
+      12.5,
+      13.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
     "case": "feedback",
     "cells": 12,
     "at": [
@@ -273,6 +283,16 @@
     "at": [
       11.5,
       14.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "fade",
+    "cells": 0,
+    "at": [
+      12.5,
+      13.5
     ],
     "cues": []
   },

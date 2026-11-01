@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {batchStatic} from './batch.js?v=v130';
-import {makeMaterials} from './materials.js?v=v130';
-import {createVisibility} from './visibility.js?v=v130';
+import {batchStatic} from './batch.js?v=v130-ddb1c767dc19';
+import {makeMaterials} from './materials.js?v=v130-ddb1c767dc19';
+import {createVisibility} from './visibility.js?v=v130-ddb1c767dc19';
 export const FLOOR=2.8;
 const boxG=new THREE.BoxGeometry(1,1,1),postG=new THREE.CylinderGeometry(.028,.028,1,8);
 function mesh(parent,geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
@@ -126,6 +126,8 @@ export function buildWorld(G,scene){
  const batch={};for(let f=0;f<floorGroups.length;f++)if(floorGroups[f])batch['floor'+f]=batchStatic(floorGroups[f]);for(const o of roofs)batch['roof'+o.bi]=batchStatic(o.group);batch.street=batchStatic(root,new Set([...floorGroups.filter(Boolean),...roofs.map(o=>o.group)]));
  const fades=[];for(const group of [floorGroups[1],...roofs.filter(o=>o.bi===0).map(o=>o.group)].filter(Boolean)){const cloned=new Map();group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(!cloned.has(m)){const c=m.clone();c.userData.maxOpacity=m.opacity;c.transparent=true;cloned.set(m,c);}return cloned.get(m)};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});fades.push({group,value:1,materials:[...cloned.values()]});}
  visibility.install(floorGroups[1],'overhead');visibility.install(roofs.find(o=>o.bi===0)?.group,'overhead');for(const o of planes)if(!o.fl)visibility.install(o.group,'wall');
+ // The sight shader clones materials; fades must drive those live instances.
+ for(const f of fades){const live=new Set();f.group.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])live.add(m);});f.materials=[...live];}
  let updated=G.S.t;
  return{root,mat,visibility,floorGroups,frontWalls,roofs,doors,windows,hides,items,lamps,stairs,batch,update(){visibility.update();const dt=Math.max(.016,Math.min(.08,G.S.t-updated));updated=G.S.t;const alpha=1-Math.exp(-dt*14),P=G.S.player,inside=visibility.inside===0&&!P.z,upper=inside&&((P.fl||0)>0||P.trav?.stairs&&P.trav.t/P.trav.dur>.6);
   for(const f of fades){const wanted=f.group===floorGroups[1]?(!inside||upper?1:0):inside?0:1;f.value+=(wanted-f.value)*alpha;f.group.visible=f.value>.005;for(const m of f.materials){m.opacity=m.userData.maxOpacity*f.value;m.depthWrite=f.value>.98;}}

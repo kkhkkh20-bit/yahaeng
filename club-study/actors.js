@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {loadModular,colorModular} from './lib/modular_models.js?v=v130';
-import {createPoseDriver} from './pose_driver.js?v=v130';
-import {FLOOR} from './world.js?v=v130';
+import {loadModular,colorModular} from './lib/modular_models.js?v=v130-ddb1c767dc19';
+import {createPoseDriver} from './pose_driver.js?v=v130-ddb1c767dc19';
+import {FLOOR} from './world.js?v=v130-ddb1c767dc19';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=v=>{v=clamp(v);return v*v*(3-2*v)};
 function pbr(rig){const mats=[];rig.model.traverse(o=>{if(!o.isMesh)return;const cv=m=>{const n=new THREE.MeshStandardMaterial({color:m.color,roughness:.83,metalness:0});n.userData={...m.userData};mats.push(n);return n};o.material=Array.isArray(o.material)?o.material.map(cv):cv(o.material);o.castShadow=o.receiveShadow=true;});rig.mats=mats;return rig;}
