@@ -138,8 +138,8 @@ function updateHideFlow(P,dt) {
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
   const at=F.route.stand,W=hideWork(T),leaveAt=F.walk+(F.handPre||0)+F.duration+(F.handPost||0);
-  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a=Math.atan2(P.y-from.y,P.x-from.x);if(T.t>=T.dur){P.trav=null;P.moving=false;P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
-  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing);P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,q.a),-dt*12,dt*12);if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>.7&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
   if(F.kind==='retrieve'){
     P.x=at.x;P.y=at.y;P.a=Math.atan2(h.y-at.y,h.x-at.x);
     if(!F.committed&&f>=.78){
@@ -301,9 +301,9 @@ function drawHideFlowHero(P,T) {
   ctx.save();
   if(!s.outside){ctx.beginPath();ctx.rect(h.x-140,h.y-200,280,200+F.geo.rim-h.y);ctx.clip();}
   if(h.furn&&h.type!=='bed'?s.inside:h.furn||h.type==='bush')clipHideFurniture(T);
-  drawPR(s.key||playerKey(P),s.x,s.y,P.a,s.anim,T.t,1,1,0,s.frame);ctx.restore();
+  drawPR(s.key||playerKey(P),s.x,s.y,P.a,s.anim,s.anim==='walk'?(P.gaitTime??T.t):T.t,1,1,0,s.frame);ctx.restore();
   if(F.kind==='retrieve'&&F.committed)drawPR(carryKey(F.c),P.x,P.y,P.a,'carriedI',T.t);
-  if(T.t<F.walk&&F.kind!=='retrieve'){const other=F.c?carryKey(F.c):F.g?charOf(F.g):null;if(other)drawPR(other,P.x,P.y,P.a,F.c?'carried':'held',T.t);}
+  if(T.t<F.walk&&F.kind!=='retrieve'){const other=F.c?carryKey(F.c):F.g?charOf(F.g):null;if(other)drawPR(other,P.x,P.y,P.a,F.c?'carried':'held',P.gaitTime??T.t);}
 }
 function clipHideFurniture(T) {
   const F=T.hideFlow,h=F.h,b=F.geo.footprint;ctx.beginPath();ctx.rect(h.x-240,h.y-260,480,520);

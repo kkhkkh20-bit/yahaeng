@@ -829,7 +829,7 @@ function drawSpeech() {
     if(!at)continue;
     const [x,y]=at;
     placed.push(at);SPEECH_R.push({x,y,w,h,speaker:g,text:g.say});
-    const bg=INK_STUDY?'#20231ef5':'#17232af5',edge=INK_STUDY?'#b7ae96':'#8d9d9f',r=6*k;
+    const bg='#f7f6f1',edge='#373c38',r=6*k;
     ctx.fillStyle=bg;ctx.strokeStyle=edge;ctx.lineWidth=k;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.stroke();
     // A triangular tail points toward the speaking actor, on the nearest edge.
     const head={x:g.x,y:g.y-40},tail=11*k;let a,b,tip;
@@ -837,7 +837,7 @@ function drawSpeech() {
     else if(head.y<=y){const tx=clamp(head.x,x+12*k,x+w-12*k);a=[tx-5*k,y+k];b=[tx+5*k,y+k];tip=[clamp(head.x,tx-tail,tx+tail),Math.max(head.y,y-tail)];}
     else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
     ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
-    ctx.fillStyle='#e6e5df';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
+    ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
   }
   ctx.restore();
 }

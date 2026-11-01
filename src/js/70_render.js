@@ -144,22 +144,22 @@ function drawPlayerBody(P) {
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
     // 오르기·넘기: 배관·벽을 붙잡고 팔다리를 번갈아 / 창턱을 짚고 몸을 접어 넘는다
     const PK = playerLook, s1 = sc / 3, al = blink ? 0.35 : 1;
-    if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); drawPR(PK, P.x, P.y, P.a, 'vault', 0, al, s1, -yo, f < 0.28 ? 0 : f < 0.78 ? 1 : 2); return; }
+    if (P.jump) { const f = Math.min(1, P.jump.t / P.jump.dur); drawVaultPR(PK,P.x,P.y,P.a,f,al,s1,-yo); return; }
     const T = P.trav, tp = travPose(T);
     if (T.stairs) {
       if (tp.pose === 'stairHidden') return;
       if (tp.pose === 'stairRise' || tp.pose === 'stairSink') {
         const depth = (tp.pose === 'stairRise' ? 1 - tp.g : tp.g) * 28, pc = pairCarry(P), pg = !pc && pairGrab(P), anim = pc ? 'carry' : pg ? 'grab' : 'walk';
         ctx.save(); ctx.beginPath(); ctx.rect(P.x - 100, P.y - 150, 200, 165); ctx.clip();
-        drawPR(PK, P.x, P.y + depth, P.a, anim, S.t, al, s1, 0);
-        if (pc || pg) drawPR(pc ? carryKey(P.carrying) : charOf(P.captive), P.x, P.y + depth, P.a, pc ? 'carried' : 'held', S.t, al, s1, 0);
+        drawPR(PK, P.x, P.y + depth, P.a, anim, P.gaitTime??S.t, al, s1, 0);
+        if (pc || pg) drawPR(pc ? carryKey(P.carrying) : charOf(P.captive), P.x, P.y + depth, P.a, pc ? 'carried' : 'held', P.gaitTime??S.t, al, s1, 0);
         ctx.restore(); return;
       }
     }
     if(tp.pose==='walk'){
       const pc=pairCarry(P),pg=!pc&&pairGrab(P);
-      drawPR(PK,P.x,P.y,P.a,pc?'carry':pg?'grab':'walk',T.t,al,s1);
-      if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',T.t,al,s1);
+      drawPR(PK,P.x,P.y,P.a,pc?'carry':pg?'grab':'walk',P.gaitTime??T.t,al,s1);
+      if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',P.gaitTime??T.t,al,s1);
       return;
     }
 
@@ -179,20 +179,14 @@ function drawPlayerBody(P) {
     if (tp.pose === 'climb') { const frame=((Math.floor(T.t*7)*(T.down?-1:1))%4+4)%4;
       const grip=T.pipe&&climbContact(PK,T.face,frame,pipeGripAt(T));
       drawPR(PK,grip?grip.x:P.x,grip?grip.y:P.y,T.face??P.a,'climb',0,al,grip?1:s1,14,frame);if(isTouch&&grip)drawPlayerLocator({...P,...grip.foot,a:T.face,cover:null});return; }
-    if (tp.pose === 'vault') { drawPR(PK, P.x, P.y, T.face != null ? T.face : P.a, 'vault', 0, al, s1, Math.sin(tp.g * Math.PI) * 10, tp.g < 0.3 ? 0 : tp.g < 0.75 ? 1 : 2); return; }
+    if (tp.pose === 'vault') { drawVaultPR(PK,P.x,P.y,T.face??P.a,tp.g,al,s1,Math.sin(tp.g*Math.PI)*10); return; }
   }
   if(isTouch&&!P.trav&&!P.jump&&!P.under&&!P.vent)drawPlayerLocator(P);
   if (usePR(playerLook)) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
       if(P.interact?.a.k==='door'){const I=P.interact,p=clamp(I.t/I.dur,0,1),d=I.a.d,s=accessHandSample({type:'panel',x:d.x,y:d.y},{x:I.x,y:I.y},p,!I.state,true);drawPR(playerLook,s.x,s.y,P.a,s.anim,0,blink?.35:1,sc/3,0,s.frame);return;}
-      const I = P.interact || P.pick, f = clamp(I.t / I.dur, 0, 1), ground = I.pose === 'ground' || I.pose === 'dress' || I.kind === 'clean' || I.kind === 'loot';
-      let anim = PR.anims.idleC?'idleC':'idle', fi = 0;
-      if (f > 0.12 && f < 0.9) {
-        // 사물 조작에 두 사람용 들기 프레임을 쓰면 보이지 않는 상대가 팔을 가린다.
-        anim = ground ? (f < 0.3 || f > 0.78 ? 'crouch' : 'stoop') : 'holdI';
-      }
-      drawPR(playerLook, P.x, P.y, P.a, anim, 0, blink ? 0.35 : 1, sc / 3, -yo, fi); return;
+      const I=P.interact||P.pick,s=actionHandPose(I);drawPR(playerLook,P.x,P.y,P.a,s.anim,0,blink?.35:1,sc/3,-yo,s.frame);return;
     }
     const GI = P.grabIn;  // 붙잡기: 손이 닿은 뒤 목을 감아 끌어당기는 동작 (조르기 첫 단계를 그대로 쓴다)
     if (GI && GI.g.state === 'CAPTIVE' && PAIR() && PR.anims.choke && usePR(charOf(GI.g))) {
@@ -207,6 +201,7 @@ function drawPlayerBody(P) {
     }
     const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)
     if (BA && S.t - BA.t0 < BA.dur && PR.anims.lift && PR.anims.stoop) {
+      if(drawHandling(P,BA,blink?.35:1,sc/3))return;
       const f = (S.t - BA.t0) / BA.dur, PKb = playerLook, s1 = sc / 3, ck = carryKey(BA.c);
       const ph = BA.k === 'lift' ? (f < 0.4 ? 'stoop' : f < 0.7 ? 0 : 1) : BA.k === 'drop' ? (f < 0.3 ? 1 : f < 0.6 ? 0 : 'stoop') : (f < 0.45 ? 1 : f < 0.8 ? 0 : 'stoop');
       if (ph === 'stoop') {
@@ -244,8 +239,8 @@ function drawPlayerBody(P) {
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
     const rising = !mv && P.riseT && S.t < P.riseT && !pc && !pg;
-    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'crouch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
-    const t = mv&&!P.jump?(P.gaitTime??S.t):S.t, s = sc / 3, PK = playerLook;
+    const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'duck' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
+    const t = mv&&!P.jump?(P.gaitTime??S.t):S.t, s = sc / 3, PK = playerLook, rf=rising?Math.round(clamp((P.riseT-S.t)/.22,0,1)*8):-1;
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
@@ -255,10 +250,10 @@ function drawPlayerBody(P) {
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
       }
-      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : isTouch ? .95 : .55, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
+      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : isTouch ? .95 : .55, s, -yo,rf); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
-      if (!isTouch&&prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.32, s, -yo);
-    } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
+      if (!isTouch&&prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.32, s, -yo,rf);
+    } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo,rf); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
     return;
   }
   if (crouch) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 14, 19, 8, 0, 0, TAU); ctx.fill(); }

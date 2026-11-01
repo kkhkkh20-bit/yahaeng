@@ -111,6 +111,6 @@ function drawAccessFlow() {
   const P=S.player,T=P.trav,F=T?.accessFlow;if(!F)return;const s=accessActorSample(F),h=F.h,old=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
   try{
     drawLitContainer(h,'back');ctx.save();if(!s.outside){ctx.beginPath();ctx.rect(h.x-140,h.y-220,280,220+(s.rim??h.y+10)-h.y);ctx.clip();}
-    drawPR(playerKey(P),s.x,s.y,s.a,s.anim,T.t,1,1,s.anim==='climb'?14:0,s.frame);ctx.restore();const p=accessProgress(F),q=F.exit?p:1-p;if(F.t>=F.walk+F.pre&&F.t<F.walk+F.pre+F.core&&q<.22)drawInsideCoverHand(h,accessOpen(F),hideEase(q/.06)*hideEase((.22-q)/.08));drawLitContainer(h,'front');
+    drawPR(playerKey(P),s.x,s.y,s.a,s.anim,s.anim==='walk'?(P.gaitTime??T.t):T.t,1,1,s.anim==='climb'?14:0,s.frame);ctx.restore();const p=accessProgress(F),q=F.exit?p:1-p;if(F.t>=F.walk+F.pre&&F.t<F.walk+F.pre+F.core&&q<.22)drawInsideCoverHand(h,accessOpen(F),hideEase(q/.06)*hideEase((.22-q)/.08));drawLitContainer(h,'front');
   }finally{playerInkKey=old;}
 }

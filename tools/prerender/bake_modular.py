@@ -38,11 +38,15 @@ RECIPES = {
  'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
  'heroWorkerLid': ('heroWorker', None, ['openBin']), 'heroCrewLid': ('heroCrew', None, ['openBin']),
 }
+for bn,(look,body,_) in list(RECIPES.items()):
+ if bn!='kid' and not bn.endswith('Lid'):
+  RECIPES[bn+'Motion']=(look,body,['vaultPass','handleLift','handledLift'] if bn.startswith('hero') else ['handledLift'])
 LOOK_MAP = {'ninja': 'hero', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
 LOOK_MAP.update({f'civ{i}': ['male', 'fBob', 'male', 'fLong', 'male', 'coat', 'fTail', 'pack', 'old', 'male'][i] for i in range(10)})
 # Widen crowded civilian frames; exported scale/ground anchors retain world size.
 FRAME_PADDING = {name:1.4 for name in ['big','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
+FRAME_PADDING.update({'oldMotion':1.5,'packMotion':1.2})
 PLAYER_MAP = {'crew': 'heroCrew', 'staff': 'heroWorker', 'courier': 'heroWorker',
               'waiter': 'heroSuit', 'cater': 'heroWorker'}
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -71,7 +75,7 @@ async def main():
     await page.evaluate('(b)=>setBody(b)',body)
     await page.evaluate('(n)=>window.spritePadding=n',FRAME_PADDING.get(bn,1))
     await page.evaluate('(c)=>setTex(c)',KEY)
-    anims=[a for a in ANIMS if (names is None or a[0] in names) and (a[0]!='openBin' or bn.endswith('Lid'))]
+    anims=[a for a in ANIMS if (names is None or a[0] in names) and (a[0]!='openBin' or bn.endswith('Lid')) and (a[0] not in ['vaultPass','handleLift','handledLift'] or bn.endswith('Motion'))]
     cmap={};col=0
     for a in anims:cmap[a[0]]=[col,len(a[2])];col+=len(a[2])
     patch=requested_patch & cmap.keys()
@@ -92,7 +96,7 @@ async def main():
       for ti,t in enumerate(a[2]):
        hang=HANG_SWAY[ti] if a[0]=='hang' else 'undefined'
        pair = a[4] if len(a)>4 else None
-       victim = bool(pair and pair[0] in ['carry','grab','lift','stab','choke'] and pair[1]=='b')
+       victim = bool(pair and pair[0] in ['carry','grab','lift','stab','choke','handling'] and pair[1]=='b')
        expressions.append([c*FR,direction*FR,js_for(a,t,ti,direction*math.pi/4,hang),victim,a[0]])
        c+=1
     result=await page.evaluate('''async({frames,cols,fr,look,body,key})=>{
@@ -159,7 +163,7 @@ async def main():
     if result['ledgePullHands']:(meta if bn=='key' else meta['bodies'][bn])['ledgePullHands']=result['ledgePullHands']
     if result['hangHands']:(meta if bn=='key' else meta['bodies'][bn])['hangHands']=result['hangHands']
     if result['climbHands']:(meta if bn=='key' else meta['bodies'][bn]).update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
-    if bn.endswith('Lid'):
+    if bn.endswith(('Lid','Motion')):
      (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')));print(bn,col,(OUT/filename).stat().st_size,flush=True);continue
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)
@@ -184,7 +188,7 @@ async def main():
     image.save(OUT/'face.webp','WEBP',lossless=True,method=6)
     meta['faces']={'fr':256,'cols':{('' if bn=='key' else bn):i for i,(bn,_) in enumerate(faces)}}
     meta.update(style='modular',looks=LOOK_MAP,playerLooks=PLAYER_MAP,
-      bodyGender={bn:('female' if bn.startswith(('hero','female')) or bn in ['fBob','fLong','fTail'] else 'male') for bn in RECIPES})
+      bodyGender={bn:('female' if bn.startswith(('hero','female')) or bn.removesuffix('Motion') in ['fBob','fLong','fTail'] else 'male') for bn in RECIPES})
    (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
    if errors:raise RuntimeError(errors)
    await browser.close()

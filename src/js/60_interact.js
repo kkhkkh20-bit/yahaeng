@@ -1255,7 +1255,7 @@ function cutLights() {
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
   if (STAGE.onLightsOut) try { STAGE.onLightsOut(S, SH); } catch (e) { console.warn('onLightsOut', e); }  // 의뢰마다: 정전에 반응하는 사람 (예: 발전기 보러 가는 표적)
 }
-function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
+function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur, cx:c.x,cy:c.y,ca:c.a }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   const P = S.player;

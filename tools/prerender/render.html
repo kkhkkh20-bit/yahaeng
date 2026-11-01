@@ -285,6 +285,27 @@ window.renderPair = (kind, clip, t, dirA, part, blend) => {
   return url;
 };
 
+// Continuous two-person handling: reach, gather, raise, settle on shoulder.
+window.renderHandling=(t,dirA,part)=>{
+  const keys=[0,.34,.7,1];
+  const pose=i=>{
+    posePair(i===1||i===2?'lift':'carry','Idle',i===1?1:i===2?2:0);
+    if(i===0){
+      renderFrame('Walk',.25,0,0,undefined,false,{sway:0});grp.add(model);grp.rotation.y=0;
+      mixer2.stopAllAction();const clip=mixer2.clipAction(clips2.Death);clip.reset();clip.play();mixer2.setTime(3.45);
+      bones2.Hips.position.x=0;bones2.Hips.position.z=0;model2.position.set(0,0,0);model2.quaternion.identity();model2.visible=true;
+    }
+    grp.updateMatrixWorld(true);const dy=-feetY(bones);model.position.y+=dy;if(i!==0)model2.position.y+=dy;grp.updateMatrixWorld(true);
+  };
+  t=Math.max(0,Math.min(1,t));let i=0;while(i<2&&t>keys[i+1])i++;
+  pose(i);const A=snapPose();pose(i+1);const B=snapPose();let f=(t-keys[i])/(keys[i+1]-keys[i]);f=f*f*(3-2*f);mixPose(A,B,f);
+  grp.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));grp.updateMatrixWorld(true);
+  const pm=i=>partsOn[i].map(o=>o.material),show=part==='a'?mats.concat(pm(0)):mats2.concat(pm(1)),hide=part==='a'?mats2.concat(pm(1)):mats.concat(pm(0));
+  show.forEach(m=>m.colorWrite=true);hide.forEach(m=>m.colorWrite=false);model.traverse(o=>{if(o.isMesh)o.renderOrder=part==='a'?0:-1;});model2.traverse(o=>{if(o.isMesh)o.renderOrder=part==='a'?-1:0;});
+  shadow.visible=false;renderSprite(-40,2*(window.spritePadding||1));const url=renderer.domElement.toDataURL('image/png');
+  mats.concat(mats2,pm(0),pm(1)).forEach(m=>m.colorWrite=true);model.traverse(o=>{if(o.isMesh)o.renderOrder=0;});model2.traverse(o=>{if(o.isMesh)o.renderOrder=0;});scene.add(model);model2.visible=false;grp.rotation.y=0;shadow.visible=true;return url;
+};
+
 // 대사창 얼굴(초상): 편하게 선 자세에서 머리·어깨만 가까이, 정면에서 살짝 비껴 원근 카메라로 찍는다 (키 색 → 게임에서 팔레트로 칠함)
 const fcam = new THREE.PerspectiveCamera(20, 1, 1, 5000);
 window.renderFace = (side, size) => {
@@ -417,6 +438,7 @@ window.renderHidePose = (kind, t, dirA) => {
   }
   const keys=kind==='duck'?[0,1]:['drop','leap'].includes(kind)?[0,.38,.78,1]:[0,.23,.57,1];
   const pose=i=>{
+    if(kind==='pass'){if(i===0||i===3)renderFrame('Walk',.25,dirA,0,undefined,false,{sway:0});else renderPose('vault',i-1,dirA);return;}
     if(['drop','leap'].includes(kind)){if(i===0){if(kind==='drop')renderFrame('Idle',0,dirA,0,0);else renderFrame('Walk',.25,dirA,0,undefined,false,{sway:0});}else if(i===3)renderFrame('Walk',.25,dirA,0,undefined,false,{sway:0});else renderPose('vault',i===1?1:2,dirA);return;}
     if(i===0)renderFrame('Walk',.25,dirA,0,undefined,false,{sway:0});
     else if(kind==='duck'||i===3)renderFrame('Idle',0,dirA,.75);

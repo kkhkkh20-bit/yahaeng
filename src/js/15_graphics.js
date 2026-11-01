@@ -194,8 +194,12 @@ const PR_CH = 16;
 let prBase = null;  // { img, w, h, parts: [조각별 분류 캐시] }
 if (PR) { prImg.onload = () => { prBase = { img: prImg, w: prImg.width, h: prImg.height, parts: [] }; }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
-const prBodies = {};
-if (PR && PR.bodies) for (const [bn, bm] of Object.entries(PR.bodies)) { const im = new Image(); im.onload = () => { prBodies[bn] = { img: im, w: im.width, h: im.height, parts: [] }; }; im.src = bm.src; }
+const prBodies={},prBodyLoads={};
+function prLoadBody(bn){
+  if(prBodies[bn])return Promise.resolve(prBodies[bn]);if(prBodyLoads[bn])return prBodyLoads[bn];const bm=PR?.bodies?.[bn];if(!bm)return Promise.resolve(null);
+  return prBodyLoads[bn]=new Promise(resolve=>{const im=new Image();im.onload=()=>{const body=prBodies[bn]={img:im,w:im.width,h:im.height,parts:[]};delete prBodyLoads[bn];resolve(body);};im.onerror=()=>{delete prBodyLoads[bn];resolve(null);};im.src=bm.src;});
+}
+if(PR?.bodies)for(const bn of Object.keys(PR.bodies))if(!bn.endsWith('Motion')||bn==='heroMotion')prLoadBody(bn);
 // 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
 let prScr = null;
 function prRead(base, ci) {
@@ -257,6 +261,7 @@ function playerKey(P) {
   const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
   const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
   return pal === 'ninja' ? pal : pal + '@' + body;
 }
 function prPalette(pk, body) {
@@ -304,6 +309,7 @@ function prBlit(sh, col, row, dx, dy, dw, dh) {
 const PR_WARM1 = ['idle', 'walk', 'idleC', 'talk'], PR_WARM2 = ['run', 'death', 'crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
 function prWarmParts(key, names) {
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn], out = new Set();
+  if(bn?.endsWith('Motion')){for(let ci=0;ci*PR_CH<bm.cols;ci++)out.add(ci);return [...out];}
   if (key === 'ninja') { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
   for (const a of names) { const r = (bm && bm.anims[a]) || (!bm && PR.anims[a]); if (!r) continue; for (let c = r[0]; c < r[0] + r[1]; c++) out.add(Math.floor(c / PR_CH)); }
   return [...out];
@@ -333,9 +339,13 @@ function prWarm(keys, first) {
 }
 // 처치·운반 동작 조각은 그 사람에게 다가갔을 때 미리 칠한다 (판 시작에 모두 칠하면 옷마다 14MB)
 const prNear = new Set();
-function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2); }
+function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
-function prKeep(keys) { prNear.clear(); const keep = new Set(['ninja', 'ninja_ol', ...keys, ...keys.map(k => k + '_ol')]); for (const k of Object.keys(prVar)) if (!keep.has(k)) delete prVar[k]; for (let i = prWarmQ.length - 1; i >= 0; i--) if (!keep.has(prWarmQ[i].split('#')[0])) prWarmQ.splice(i, 1); }
+function prKeep(keys){
+  prNear.clear();const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
+  const bodies=new Set([...keep].map(k=>prSplit(k)[1]));for(const bn of Object.keys(prBodies))if(bn.endsWith('Motion')&&!bodies.has(bn))delete prBodies[bn];
+}
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 let playerInkKey=null;

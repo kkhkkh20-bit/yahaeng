@@ -1,0 +1,158 @@
+{
+  "version": "v126",
+  "passed": {
+    "motion_tracks": [
+      "PASS motion tracks False {\"handTracks\": 9, \"vaultFrames\": 17, \"handlingSamples\": 111, \"handlingFrames\": 25, \"approachGait\": true, \"traverseGait\": true, \"whiteBubble\": [247, 246, 241, 255]}",
+      "PASS motion tracks True {\"handTracks\": 9, \"vaultFrames\": 17, \"handlingSamples\": 111, \"handlingFrames\": 25, \"approachGait\": true, \"traverseGait\": true, \"whiteBubble\": [247, 246, 241, 255]}"
+    ],
+    "storage_motion": [
+      "PASS 520 baked ledge support-hand anchors and hanging endpoints",
+      "PASS PC {\"stores\": 206, \"exits\": 206, \"types\": {\"box\": 37, \"well\": 21, \"wardrobe\": 34, \"bed\": 28, \"locker\": 19, \"bush\": 67}, \"storedBodies\": 6, \"paired\": 6, \"drops\": 1039, \"standingDrops\": 398, \"ledgeKills\": 23, \"faces\": [\"-1,0\", \"0,-1\", \"1,0\", \"0,1\"]}",
+      "PASS touch {\"stores\": 206, \"exits\": 206, \"types\": {\"box\": 37, \"well\": 21, \"wardrobe\": 34, \"bed\": 28, \"locker\": 19, \"bush\": 67}, \"storedBodies\": 6, \"paired\": 6, \"drops\": 1039, \"standingDrops\": 398, \"ledgeKills\": 23, \"faces\": [\"-1,0\", \"0,-1\", \"1,0\", \"0,1\"]}"
+    ],
+    "hide_flow": [
+      "PASS PC {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}",
+      "PASS touch {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}",
+      "PASS actual keyboard entry, directional exit, subject-specific storage label and delayed storage",
+      "PASS actual touch entry, directional exit, subject-specific storage label and delayed storage"
+    ],
+    "storage_retrieval": [
+      "PASS retrieval PC [{\"type\": \"box\", \"ko\": true, \"roots\": 185, \"recoveredObjective\": true}, {\"type\": \"box\", \"ko\": false, \"roots\": 185, \"recoveredObjective\": true}, {\"type\": \"well\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"well\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"locker\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"locker\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"wardrobe\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"wardrobe\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"bed\", \"ko\": true, \"roots\": 87, \"recoveredObjective\": true}, {\"type\": \"bed\", \"ko\": false, \"roots\": 87, \"recoveredObjective\": true}]",
+      "PASS retrieval touch [{\"type\": \"box\", \"ko\": true, \"roots\": 185, \"recoveredObjective\": true}, {\"type\": \"box\", \"ko\": false, \"roots\": 185, \"recoveredObjective\": true}, {\"type\": \"well\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"well\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"locker\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"locker\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"wardrobe\", \"ko\": true, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"wardrobe\", \"ko\": false, \"roots\": 178, \"recoveredObjective\": true}, {\"type\": \"bed\", \"ko\": true, \"roots\": 87, \"recoveredObjective\": true}, {\"type\": \"bed\", \"ko\": false, \"roots\": 87, \"recoveredObjective\": true}]"
+    ],
+    "access_fixtures": [
+      "PASS PC {\"vents\": 15, \"sewers\": 21, \"signs\": 21, \"contacts\": 128, \"maxStep\": 0.63, \"kinds\": [\"roof\", \"floor\"]}",
+      "PASS touch {\"vents\": 15, \"sewers\": 21, \"signs\": 21, \"contacts\": 128, \"maxStep\": 0.63, \"kinds\": [\"roof\", \"floor\"]}"
+    ],
+    "access_inputs": [
+      "PASS keyboard short tap cancellation, continuous hold, hand release, delayed impact, vent roundtrip",
+      "PASS mobile pointer/touch short tap cancellation, continuous hold, hand release, delayed impact, vent roundtrip"
+    ],
+    "npc_feedback": [
+      "PASS NPC reply 1280 800 {\"replies\": 12, \"automatic\": 6, \"bubbleTails\": 12}",
+      "PASS NPC reply 390 844 {\"replies\": 12, \"automatic\": 6, \"bubbleTails\": 12}",
+      "PASS NPC reply 360 740 {\"replies\": 12, \"automatic\": 6, \"bubbleTails\": 12}",
+      "PASS NPC reply 844 390 {\"replies\": 12, \"automatic\": 6, \"bubbleTails\": 12}"
+    ],
+    "quarter_presentation": [
+      "PASS CC0 model bakes: complete silhouettes and transparent margins 14",
+      "PASS sample PC {'loadedModels': 14, 'windowApproach': True, 'opaqueRoof': True, 'physicalOpenings': True, 'save': True, 'distanceGait': True, 'blockedIdle': True}",
+      "PASS sample mobile {'loadedModels': 14, 'windowApproach': True, 'opaqueRoof': True, 'physicalOpenings': True, 'save': True, 'distanceGait': True, 'blockedIdle': True}"
+    ],
+    "controls_readability": [
+      "PASS 1280 800 normal {'actionPriority': True, 'radioResumes': True}",
+      "PASS 1280 800 ink {'actionPriority': True, 'radioResumes': True}",
+      "PASS 390 844 normal {'actionPriority': True, 'radioResumes': True}",
+      "PASS 390 844 ink {'actionPriority': True, 'radioResumes': True}",
+      "PASS 360 740 normal {'actionPriority': True, 'radioResumes': True}",
+      "PASS 360 740 ink {'actionPriority': True, 'radioResumes': True}",
+      "PASS 844 390 normal {'actionPriority': True, 'radioResumes': True}",
+      "PASS 844 390 ink {'actionPriority': True, 'radioResumes': True}"
+    ],
+    "camera_presentation": [
+      "PASS 390 844 {'cases': 36, 'speechAboveBuildings': True}",
+      "PASS 844 390 {'cases': 36, 'speechAboveBuildings': True}",
+      "PASS 1280 720 {'cases': 36, 'speechAboveBuildings': True}",
+      "PASS 108 camera boundary cases"
+    ],
+    "first_session": [
+      "PASS first session {\"mobile\": false, \"trainingToContract\": true, \"detected\": 0, \"kills\": 0, \"warningsGuideToExit\": true, \"earlyExitBlocked\": true}",
+      "PASS first session {\"mobile\": false, \"earlyExitBlocked\": true, \"legacyCheckpointRepaired\": true}",
+      "PASS first session {\"mobile\": true, \"trainingToContract\": true, \"detected\": 0, \"kills\": 0, \"warningsGuideToExit\": true, \"earlyExitBlocked\": true}",
+      "PASS first session {\"mobile\": true, \"earlyExitBlocked\": true, \"legacyCheckpointRepaired\": true}"
+    ],
+    "ai_feedback": [
+      "PASS desktop {'whistle': True, 'brightTenTiles': True, 'darkness': True, 'wallOcclusion': True, 'torchParity': True, 'corpseRing': True, 'adaptive': True, 'idleBudget': True, 'roofCulling': True}",
+      "PASS touch {'whistle': True, 'brightTenTiles': True, 'darkness': True, 'wallOcclusion': True, 'torchParity': True, 'corpseRing': True, 'adaptive': True, 'idleBudget': True, 'roofCulling': True}"
+    ],
+    "stair_geometry": [
+      "PASS {'flights': 59, 'roofs': 70, 'compact': 4, 'automatic': 118, 'npcs': 258, 'legacySave': True}"
+    ],
+    "vip_showcase": [
+      "PASS full AI showcase PC {\"seconds\": 190, \"hp\": 3, \"detected\": 0, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"camera approach\", \"office camera disabled with dart\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}",
+      "PASS full AI showcase mobile {\"seconds\": 191, \"hp\": 3, \"detected\": 0, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"camera approach\", \"office camera disabled with dart\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}"
+    ],
+    "motion_windows": [
+      "PASS 23000 nonempty frames with transparent margins",
+      "PASS PC {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}",
+      "PASS touch {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}"
+    ],
+    "interaction_flow": [
+      "PASS overlap and pickup phases, facing at contact, door intent, selected corpse and lift lock, selection stability, dress phases, single use effect and permission, target revalidation, distance revalidation, travel continuity, vent transitions, lockpick continuity, wall access, floor access, 15 mission vent roundtrips",
+      "PASS keyboard and mobile touch, busy labels, uninterrupted dress and one completion"
+    ],
+    "combat_feel": [
+      "PASS combat feel keyboard {\"mobile\": false, \"events\": [{\"name\": \"cloth\", \"t\": 10.149999999999997}, {\"name\": \"cloth\", \"t\": 10.549999999999988}, {\"name\": \"thud\", \"t\": 10.94999999999998}]}",
+      "PASS combat feel mobile touch {\"mobile\": true, \"events\": [{\"name\": \"cloth\", \"t\": 10.149999999999997}, {\"name\": \"cloth\", \"t\": 10.549999999999988}, {\"name\": \"thud\", \"t\": 10.94999999999998}]}"
+    ],
+    "combat_policy": [
+      "PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: same environment button controls tap/hold; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors",
+      "PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and bush drag"
+    ],
+    "cabinet_exit": [
+      "PASS cabinet False {\"cabinets\": 53, \"forwardSamples\": 3816}",
+      "PASS cabinet True {\"cabinets\": 53, \"forwardSamples\": 3816}"
+    ],
+    "grounded_access": [
+      "PASS grounded work PC {\"opens\": 16, \"closes\": 16, \"departures\": 16, \"groundedSamples\": 576, \"kinds\": [\"box\", \"well\", \"locker\", \"wardrobe\"], \"doorSwing\": true}",
+      "PASS grounded work touch {\"opens\": 16, \"closes\": 16, \"departures\": 16, \"groundedSamples\": 576, \"kinds\": [\"box\", \"well\", \"locker\", \"wardrobe\"], \"doorSwing\": true}"
+    ],
+    "vip_routes": [
+      "PASS poison keyboard 0 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+      "PASS sign keyboard 0 {'accident': True}",
+      "PASS backdoor keyboard 0 {'blueDoor': True, 'actors': 39}",
+      "PASS poison keyboard 1 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+      "PASS sign keyboard 1 {'accident': True}",
+      "PASS backdoor keyboard 1 {'blueDoor': True, 'actors': 39}",
+      "PASS poison touch 0 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+      "PASS sign touch 0 {'accident': True}",
+      "PASS backdoor touch 0 {'blueDoor': True, 'actors': 39}",
+      "PASS poison touch 1 {'drankAt': 12, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+      "PASS sign touch 1 {'accident': True}",
+      "PASS backdoor touch 1 {'blueDoor': True, 'actors': 39}",
+      "PASS twelve live scenes; no NPC freezing"
+    ]
+  },
+  "realtime": {
+    "route": {
+      "over": true,
+      "exit": true,
+      "title": "임무 완료",
+      "trace": [
+        "pharmacy",
+        "seasoning",
+        "wait off the aisle",
+        "guest arrived",
+        "WC entrance",
+        "nonlethal takedown",
+        "uniform",
+        "office interior",
+        "crew office access",
+        "upstairs code note",
+        "door 5,8 keypad",
+        "ledger",
+        "camera approach",
+        "office camera disabled with dart",
+        "phone",
+        "ambush locker",
+        "VIP arrived while hidden",
+        "VIP rear",
+        "VIP eliminated"
+      ],
+      "t": 191.9023960000306,
+      "hp": 3,
+      "at": [
+        0.463076813993432,
+        16.18610229826037,
+        0
+      ],
+      "cleared": true
+    },
+    "errors": []
+  },
+  "diagnostics": {
+    "legacy_stairs_all": "47 checks still require a manual down button. Not treated as a passing check. Current automatic-stair geometry tests pass; baseline diagnostic stopped after four minutes.",
+    "vip_routes_first": "One initial unseeded AI scene failed to reach the bathroom. All 12 scenes passed on rerun, and all 12 baseline scenes passed. Do not call the initial run a pass."
+  },
+  "method": "Map-aware automated ordinary action/input routes with full AI and real animation frames, plus isolated actual-object pose fixtures. Not a blind human usability test or real-phone performance test."
+}

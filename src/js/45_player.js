@@ -375,16 +375,16 @@ function updatePlayer(dt) {
   if (P.lethalHold && updateLethalHold(P, dt)) return;
   if (P.interact) { updateObjectAction(P, dt); return; }
   if (S.keypad) { P.moving = false; if (dist(P.x, P.y, S.keypad.d.x, S.keypad.d.y) > 90 || S.over) closeKeypad(); return; }
-  if (P.trav) { updateTrav(P, dt); if (P.carrying) { const c = P.carrying; c.x = P.x; c.y = P.y; c.fl = flOf(P); c.z = P.z || 0; }  // 계단을 오르내리는 동안 멘 시체도 함께
+  if (P.trav) { const x=P.x,y=P.y;updateTrav(P,dt);advancePlayerGait(P,x,y,dt,SPD.walk); if (P.carrying) { const c = P.carrying; c.x = P.x; c.y = P.y; c.fl = flOf(P); c.z = P.z || 0; }  // 계단을 오르내리는 동안 멘 시체도 함께
     if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; } return; }  // 계단에서도 붙잡은 사람이 함께 오르내린다
   if(S.ledgePull){P.vx=P.vy=0;P.moving=false;return;}
   if (P.ledge) { updateLedge(P, dt); return; }
-  if (P.grabIn) { updateGrabIn(P, dt); if(!P.grabIn)runGrabAttack(P); return; }
+  if (P.grabIn) { const x=P.x,y=P.y;updateGrabIn(P,dt);advancePlayerGait(P,x,y,dt,SPD.run); if(!P.grabIn)runGrabAttack(P); return; }
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {
-    const L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
-    P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;
+    const x=P.x,y=P.y,L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
+    P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;advancePlayerGait(P,x,y,dt,SPD.run);
     if (f >= 1) { P.lunge = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0)); if (L.list.every(g => g.state !== 'DEAD')) strikeKill(L.list, L.two); else L.list.forEach(g => { g.doomed = false; }); }
     return;
   }
