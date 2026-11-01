@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v121 VIP 대표 의뢰: 동선·흡연 호위·서쪽 탈출·전체 AI 완주: https://kkhkkh20-bit.github.io/yahaeng/vip-v121/
+
+기획·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/VIP_SHOWCASE_V121.md
+
 v120 제압 판정·소리·후속 입력·모바일 동작 개선: https://kkhkkh20-bit.github.io/yahaeng/combat-v120/
 
 변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/GAME_FEEL_V120.md
@@ -130,7 +134,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v120
-Source commit: dd7e752a4760d6e22d35cdbbbbfe26829a5c0246
+Version: v121
+Source commit: 3de9b6e5b7df3d0e8caba4494a7ec18e644f9f71
 
-Ink study source: dd7e752a4760d6e22d35cdbbbbfe26829a5c0246
+Ink study source: 3de9b6e5b7df3d0e8caba4494a7ec18e644f9f71
