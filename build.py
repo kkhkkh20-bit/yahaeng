@@ -85,12 +85,13 @@ def build():
         shutil.copytree(P('src','club-study'),folder,dirs_exist_ok=True)
         # Version the first-party import graph so returning testers do not mix old
         # cached actors/world modules with a new HTML build. Vendored Three stays pinned.
-        import re
+        import re, hashlib
+        asset_rev=v+'-'+hashlib.sha256(''.join(read(p) for p in sorted(glob.glob(P('src','club-study','*.js')))).encode()).hexdigest()[:12]
         for path in glob.glob(os.path.join(folder,'*.js')):
             code=read(path)
-            code=re.sub(r"(from\s+['\"])(\./[^'\"]+\.js)(['\"])",lambda m:m[1]+m[2]+'?v='+v+m[3],code)
+            code=re.sub(r"(from\s+['\"])(\./[^'\"]+\.js)(['\"])",lambda m:m[1]+m[2]+'?v='+asset_rev+m[3],code)
             open(path,'w',encoding='utf-8').write(code)
-        open(os.path.join(folder,'index.html'),'w',encoding='utf-8').write(pre+head+study+'<script type="module" src="./view.js?v='+v+'"></script>')
+        open(os.path.join(folder,'index.html'),'w',encoding='utf-8').write(pre+head+study+'<script type="module" src="./view.js?v='+asset_rev+'"></script>')
     print('ok', len(html), v, h)
     if '--cloudflare' in sys.argv:
         # Regular 2D campaign only. The dedicated art-slice flag/modules are absent.
