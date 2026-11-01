@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v124 쓰레기통·수납함 여닫기, 발 고정과 출입 연결 전후 영상: https://kkhkkh20-bit.github.io/yahaeng/access-v124/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/GROUNDED_ACCESS_V124.md
+
 v123 클럽 기준 구역 · 에셋·공간·이동과 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/quarter-v123/
 
 기획·출처·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/CLUB_QUARTER_V123.md
@@ -140,7 +144,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v123
-Source commit: 7f9197261ad2023ef597eb7b8a4f49ca6f220b44
+Version: v124
+Source commit: f0dc14ad833d378eb28a21dbaad680a54605253a
 
-Ink study source: 7f9197261ad2023ef597eb7b8a4f49ca6f220b44
+Ink study source: f0dc14ad833d378eb28a21dbaad680a54605253a
