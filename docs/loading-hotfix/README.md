@@ -17,3 +17,9 @@
 배포 확인: Cloudflare 연결 브랜치는 `playtest-2d`였다. 소스 main의 dfaf6f0과 별도로 테스트 브랜치 094c42a에 같은 public 파일을 반영했다. Cloudflare Workers Builds a3e71a9c-4cc7-427f-988d-2743037a493f가 실패했으나 GitHub 체크에는 오류 본문이 없었다. 사용자의 Cloudflare 로그를 요청했다. 로컬 Wrangler dry-run은 186개 정적 파일을 읽고 통과했다.
 
 대체 공개 주소 `https://kkhkkh20-bit.github.io/yahaeng/playtest-2d/`를 게시하여 실제 HTTPS PC·모바일 클릭, 이동, 지연 다운로드, 실패 복구를 재확인했다. 이 기록은 Cloudflare 재배포 성공을 의미하지 않는다.
+
+## Cloudflare 운영 주소 확인 · 2026-11-01 15:29 UTC
+
+현재 원주소 `https://yahaeng.kkhkkh-20.workers.dev/`에서 v128-loading-fix가 제공되는 것을 직접 확인했다. 이전 실패 체크는 기록으로 남아 있지만, 현재 서비스의 HTML·version.json·174개 자산 전체 SHA-256은 수정본과 일치한다. 실제 HTTPS Chrome PC·터치에서 시작·의뢰 선택·설정·캐릭터 이동을 확인하고, 다운로드 지연 시 예약 실행과 실패 시 재접속 안내도 통과했다. Cloudflare 적용 여부 확인을 위해 사용자에게 추가 로그를 받을 필요는 없다.
+
+검증: `cloudflare-assets.json`(176개 파일), `cloudflare-browser.json`. 기존 2D 캠페인만 반영하며 사선 구역으로 교체하지 않았다.
