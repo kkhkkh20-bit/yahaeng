@@ -24,6 +24,14 @@
     "start": true
   },
   {
+    "engine": "webkit",
+    "mobile": true,
+    "ready": true,
+    "settings": true,
+    "contracts": true,
+    "start": true
+  },
+  {
     "delayedDownload": "settings responsive, start queued and opened"
   },
   {

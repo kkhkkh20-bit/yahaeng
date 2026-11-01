@@ -43,6 +43,7 @@ async def main():
   await step('uniform',"act(G.envChoices().find(a=>a.k==='dress'));check(P.outfit==='crew','uniform absent')")
   await step('carry',"act(G.envChoices().find(a=>a.k==='carry'));check(P.carrying,'carry absent');walk(6,8)")
   await step('stash',"act(G.envChoices().find(a=>a.k==='carry'&&a.h));check(!P.carrying&&S.corpses[0].stashed,'stash fails')")
+  await step('retrieve',"const h=S.corpses[0].container,c=S.corpses[0];check(G.beginHideFlow('retrieve',h,c),'retrieve rejected');idle();check(!c.stashed&&!c.carried&&!P.carrying&&h.bodies===0,'retrieve occupancy fails');act(G.envChoices().find(a=>a.k==='carry'&&!a.h));act(G.envChoices().find(a=>a.k==='carry'&&a.h));check(c.stashed&&h.bodies===1,'restash fails')")
   await step('bin',"act(G.envChoices().find(a=>a.k==='hide'));check(P.hide,'hide fails');G.leaveHide({x:0,y:1});idle();check(!P.hide,'exit fails')")
   await step('interior',"walk(10,3);walk(10,6);check(G.bldAt(Math.floor(P.x/48),Math.floor(P.y/48))===0,'did not enter')")
   await step('locker',"walk(10,8);act(G.envChoices().find(a=>a.k==='hide'&&a.h.type==='locker'));check(P.hide?.type==='locker','locker entry fails');G.leaveHide({x:0,y:1});idle();check(!P.hide,'locker exit fails')")

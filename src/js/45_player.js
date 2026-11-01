@@ -318,6 +318,9 @@ function autoTraverse(P, mx, my, mag, mode, dt) {
   if (S.pk.t >= need) { S.pk = null; c.act(); }
 }
 function startTrav(o) {
+  // Old sprites offset screen Y to imply height. Live 3D keeps the physical path
+  // on the wall and draws elevation separately, so AI and the camera agree.
+  if(STAGE.artSlice&&o.room&&o.crossing&&!o.stairs){const edge=o.down?.4:o.phases.find(p=>p.pose==='climb')?.to;o.pts=o.pts.map(p=>({...p,y:p.y+(p.f===edge?44:0)}));o.studyPhysical=true;}
   const P = S.player; if (o.hideB) P.hideFrom = { x: P.x, y: P.y }; P.trav = Object.assign({ t: 0, st: 0 }, o); P.cover=null;P.snap=null;P.vx = 0; P.vy = 0; P.moving = true; S.qBuf = 0;
 }
 function traversalRoom(T) {

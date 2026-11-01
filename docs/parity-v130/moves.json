@@ -1,0 +1,20 @@
+{
+  "drag": {
+    "ko": 1,
+    "kills": 0,
+    "type": "bush"
+  },
+  "ambush": {
+    "ko": 2,
+    "kills": 0
+  },
+  "upper": {
+    "samples": 75,
+    "from": 0,
+    "to": 2.8,
+    "landing": [
+      16.5,
+      3.5
+    ]
+  }
+}

@@ -13,3 +13,7 @@
 검증은 `tests/rev/t_cloudflare_startup.py`. Chrome PC·터치, Firefox, WebKit 엔진에서 설정·의뢰·시작을 실제 클릭. decode API가 없는 상황, 스크립트 다운로드를 지연한 상황, 다운로드 실패 상황을 별도로 확인한다. Linux WebKit은 실제 iPhone 검증을 대신하지 않는다.
 
 재생성: `python3 tools/package_cloudflare_2d.py /path/to/self-contained-2d.html`. 현재 public/index.html은 이미 분할되었으므로 입력으로 쓰지 않는다. Git의 직전 공개 2D 원본에서 부팅 부분만 수정한 HTML을 입력했다.
+
+배포 확인: Cloudflare 연결 브랜치는 `playtest-2d`였다. 소스 main의 dfaf6f0과 별도로 테스트 브랜치 094c42a에 같은 public 파일을 반영했다. Cloudflare Workers Builds a3e71a9c-4cc7-427f-988d-2743037a493f가 실패했으나 GitHub 체크에는 오류 본문이 없었다. 사용자의 Cloudflare 로그를 요청했다. 로컬 Wrangler dry-run은 186개 정적 파일을 읽고 통과했다.
+
+대체 공개 주소 `https://kkhkkh20-bit.github.io/yahaeng/playtest-2d/`를 게시하여 실제 HTTPS PC·모바일 클릭, 이동, 지연 다운로드, 실패 복구를 재확인했다. 이 기록은 Cloudflare 재배포 성공을 의미하지 않는다.
