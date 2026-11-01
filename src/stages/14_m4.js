@@ -22,7 +22,7 @@
     m.villa(34, 2, 46, 10, 2, { kind: 'shop', use: ['vip', 'office'], signs: ['CLUB', ''], name: '클럽', back: true });  // 3 VIP(파랑 뒷문)
     m.villa(1, 17, 12, 24, 3, { name: '빌라' });                                                                       // 4 3층에 초록 카드키
     m.vacant(14, 17, 20, 24, 'lot', '공터 적치장'); // 5 잠입용 은폐·탈출로. 건물 그림과 옥상 판정이 없다
-    m.car(15, 19, 1); m.fill(18, 21, 19, 21, 'U'); m.set(20, 21, 'L');
+    m.car(15, 19, 1); // 공터의 납작한 컨테이너·사다리를 제거한다. 바닥과 이동 판정도 열린 공터다.
     m.many('B', [[18, 18], [19, 24]]); m.set(17, 23, 'W'); m.set(19, 19, 'H');
     m.villa(22, 17, 33, 24, 1, { kind: 'shop', use: ['food'], signs: ['포차'] });                                      // 6
     m.villa(35, 17, 42, 24, 2, { kind: 'house', name: '건달파 보급처' }); // 7 위험을 감수하면 예비 도구와 변장 경로 확보
@@ -47,7 +47,7 @@
   ventB: [{ b: 1, at: [15, 4] }, { b: 3, at: [41, 5] }], disguise: true,
   shift: { every: 80, first: 100, add: [{ kind: 'g2', route: [[2, 13, 2], [45, 13, 2]] }, { kind: 'g1', route: [[46, 2, 2], [46, 24, 2]] }, { kind: 'g2', route: [[9, 1, 2], [33, 1, 2]] }], msg: '교대 시간 · 순찰 경비 1명 추가' },
   challenges: ['unrecorded', 'accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 660,
-  layoutVersion: 1, rebuiltSites: [0, 5], rivalBuilding: 7,
+  layoutVersion: 2, rebuiltSites: [0, 5], rivalBuilding: 7,
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 2, door: 'vault', key: 'green' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,
   fixedFurn:[{x:6,y:5,t:'desk'}],

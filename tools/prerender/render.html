@@ -123,7 +123,10 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   let relaxY = 0;
   // 편한 서기는 걷기의 한 프레임을 멈추지 않는다. 골반·허리의 전진 기울기부터 제거한다.
   const standing = relax && !relax.walk;
-  mixer.stopAllAction(); const act = mixer.clipAction(clips[standing ? 'Idle' : clip]); act.reset(); act.play(); mixer.setTime(standing ? 0 : t);
+  mixer.stopAllAction();
+  // 원본의 Idle은 전투 대기다. 발 IK까지 함께 구워진 평상시 서기 클립을 쓴다.
+  const act = mixer.clipAction(standing ? (clips.Idle_Neutral || clips.Idle) : clips[clip]);
+  act.reset(); act.play(); mixer.setTime(standing ? 0 : t);
   bones.Hips.position.x = 0; bones.Hips.position.z = 0;  // 제자리 (루트 이동 제거)
   model.rotation.set(0, 0, 0); model.position.set(0, 0, 0); model.updateMatrixWorld(true);
   const footY = () => { let m = 1e9; for (const n of ['LeftToeBase', 'RightToeBase', 'LeftFoot', 'RightFoot']) if (bones[n]) { bones[n].getWorldPosition(hp); m = Math.min(m, hp.y); } return m; };
@@ -152,7 +155,7 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
     const aimR = (b, c, dir) => { if (!b || !c) return; b.getWorldPosition(qa); c.getWorldPosition(qb); const cur = qb.sub(qa).normalize(); const q = new THREE.Quaternion().setFromUnitVectors(cur, dir.clone().normalize()); b.parent.getWorldQuaternion(qq); b.quaternion.premultiply(qq.clone().invert().multiply(q).multiply(qq)); b.updateMatrixWorld(true); };
     const sw = relax.sway || 0;
     if (standing) {
-      // 부모인 척추를 먼저 세운 다음 팔을 맞춘다. 팔부터 맞추면 척추 회전에 휘말려 몸속에 숨는다.
+      // 부모인 척추를 먼저 세운 다음 팔을 맞춘다.
       aimR(bones.Spine, bones.Spine1, new THREE.Vector3(0, 1, 0));
       aimR(bones.Spine1, bones.Spine2, new THREE.Vector3(0, 1, 0));
       aimR(bones.Spine2, bones.Neck, new THREE.Vector3(0, 1, 0));

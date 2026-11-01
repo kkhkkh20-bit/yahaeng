@@ -17,7 +17,7 @@ async def main():
     for route in ['poison','sign','backdoor']:
      try:
       result=await pg.evaluate('''({route,mobile,repeat})=>{
-       const G=__game,check=(v,m)=>{if(!v)throw Error(m)};G.start(G.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();
+       const G=__game,check=(v,m)=>{if(!v)throw Error(m)};let seed=127+repeat*5+(mobile?11:0);Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};G.start(G.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();
        const S=G.S,P=S.player,g=S.guards.find(g=>g.tag==='vip'),escort=S.guards.find(g=>g.tag==='vipEscort'),dt=.025;window.__vipTrace={route,repeat};
        const tick=n=>{for(let i=0;i<n;i++){G.update(dt);if(S.over)throw Error('player died during '+route)}};
        const until=(condition,secs,label)=>{for(let n=0;n<secs/dt;n++){if(condition())return;tick(1)}throw Error(label+' '+JSON.stringify({t:S.t,phase:S.vipPlan,guard:{x:g.x/48,y:g.y/48,state:g.state,ri:g.ri,wait:g.wait,path:g.path?.length},P:{hp:P.hp,fl:P.fl,z:P.z},over:S.over}))};
@@ -26,7 +26,7 @@ async def main():
        const hold=(group,secs)=>{if(mobile){const id=group==='env'?'btnCarry':'btnAct',el=document.getElementById(id);el.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerId:7,pointerType:'touch'}));tick(Math.ceil(secs/dt));el.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:7,pointerType:'touch'}))}else{const key=group==='env'?'KeyX':'KeyZ';S.keys[key]=true;G.combatPress(key);group==='env'?G.actEnv():G.actAttack();tick(Math.ceil(secs/dt));S.keys[key]=false;G.combatRelease(key)}};
        if(route==='poison'){
         place(16,29);select('pickup');check(P.item?.id==='emetic','medicine not picked up');
-        const bottle=G.usePoint(G.STAGE.uses[0]);place(bottle.x/48-.5,bottle.y/48-.5);select('use');check(S.vipPlan?.phase==='prepared'&&!g.route.some(r=>r.once),'medicine acts before actual drinking');
+        const bottle=G.usePoint(G.STAGE.uses[0]);place(bottle.x/48-.5,bottle.y/48-.5);select('use');check(S.vipPlan?.phase==='prepared'&&S.vipPlan.requested&&g.route.some(r=>r.once),'prepared drink must request a physical visit without making the VIP sick remotely');
         place(0,21);until(()=>S.vipPlan.phase==='sick',150,'VIP never drinks');const drankAt=S.t;
         until(()=>Math.floor(g.x/48)>=39&&Math.floor(g.x/48)<=41&&Math.floor(g.y/48)<=7&&g.wait>15,70,'bathroom unreachable');
         until(()=>escort.waitingPrivacy,5,'escort does not wait outside');check(escort.y>8*48,'escort enters private toilet');

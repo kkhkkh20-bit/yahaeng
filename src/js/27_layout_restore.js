@@ -5,7 +5,7 @@ function captureContractLayout() {
   CONTRACT_LAYOUT = !STAGE.layoutVersion ? null : {
     id: STAGE.id, grids: [G0, ...GF.slice(1)].map(g => g && g.map(r => r.slice())),
     data: cloneDeep({ camRoom: S.camRoom, cams: S.cams, keyItems: S.keyItems, notes: S.notes, exits: S.exits, hides: S.hides, ladders: S.ladders, turf: S.turf,
-      guards: S.guards.filter(g => ['vipEscort', 'camop', 'contact'].includes(g.tag)) })
+      guards: S.guards.filter(g => ['vipEscort', 'camop', 'contact', 'mealGuest'].includes(g.tag)) })
   };
 }
 function restoreContractLayout() {

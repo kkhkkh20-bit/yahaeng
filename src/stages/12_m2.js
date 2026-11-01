@@ -6,7 +6,7 @@
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
   vipDrink: { at: [29, 10], to: [40, 6] },
-  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
+  dining: { guest: 'mealGuest', first: 60, every: 75, stay: 6, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
   buildingNames: {2:'공중화장실'},
   fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
   roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[
@@ -99,7 +99,7 @@
   lamps: [[24, 15, 150, 1, 0, '255,90,190'], [32, 16, 150, 1, 0, '90,220,255'], [7, 17, 150, 1], [16, 8, 120, 1, 0, '255,200,120'], [19, 14, 110, 1, 0, '255,200,120'],
           [35, 2, 90, 1], [40, 6, 100, 0], [7,28,90,0,0,null,[6.1,28.5]], [40, 10, 100, 1], [6, 25, 140, 1], [18, 25, 140, 1]],
   fuse: [36, 18, 36, 17],
-  layoutVersion: 1, securityEvidence: true, camRoom: { b: 0, fl: 1, at: 'S' },
+  layoutVersion: 2, securityEvidence: true, camRoom: { b: 0, fl: 1, at: 'S' },
   cams: [[22, 15, 0, 20], [12, 15, 0, 45], { b: 0, fl: 0, at: 'VB', sweep: 40 }],
   radios: [1, 3, 6, 9, 27],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
@@ -135,7 +135,9 @@
     { kind: 'g2', tag: 'vipEscort', at: [26, 6], follow: 0, elite: true, escortWait: [
       {rect:[39,6,41,7,0],at:[40,9]},
       {kind:'smoke',rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
-    { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true }
+    { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true },
+    // 식당에서 쉬는 경비: 음식 유인은 가까운 대상에게 곧바로 효과가 나고, 화장실은 목격자가 없다.
+    { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],
   hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']

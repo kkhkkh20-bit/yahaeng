@@ -1,0 +1,133 @@
+{
+  "version": "v127",
+  "checks": {
+    "lure": {
+      "passLines": [
+        "PASS lure PC {\"prepared\": 0, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.03, \"walking\"], [4.52, \"eating\"], [5.78, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS lure PC {\"prepared\": 30, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.02, \"walking\"], [4.52, \"eating\"], [5.77, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS lure PC {\"prepared\": 150, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.03, \"walking\"], [4.53, \"eating\"], [5.78, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS layout/save PC {'openYard': True, 'noInvisibleLadder': True, 'legacyPlatformSafe': True, 'mealGuestRestoredOnce': True}",
+        "PASS lure mobile {\"prepared\": 0, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.03, \"walking\"], [4.52, \"eating\"], [5.78, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS lure mobile {\"prepared\": 30, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.02, \"walking\"], [4.52, \"eating\"], [5.77, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS lure mobile {\"prepared\": 150, \"seconds\": 13.6, \"maxStep\": 1.61, \"phases\": [[0.03, \"walking\"], [4.53, \"eating\"], [5.78, \"queue\"], [5.8, \"toilet\"]], \"guards\": 40, \"cameras\": 3}",
+        "PASS layout/save mobile {'openYard': True, 'noInvisibleLadder': True, 'legacyPlatformSafe': True, 'mealGuestRestoredOnce': True}"
+      ],
+      "errors": []
+    },
+    "surfaces": {
+      "passLines": [
+        "PASS PC {\"notes\": [{\"id\": \"m2\", \"x\": 216, \"y\": 334}, {\"id\": \"m4\", \"x\": 312, \"y\": 238}], \"stage\": \"의뢰 01 · VIP\", \"mealWalkSeconds\": 5.7, \"toiletWalkSeconds\": 7.8, \"returnSeconds\": 35.9, \"maxStep\": 3.21, \"checkpoint\": true}",
+        "PASS full crowd PC {\"phases\": [[0.1, \"walking\"], [4.6, \"eating\"], [5.8, \"queue\"], [5.8, \"toilet\"], [49.1, \"returning\"], [54.1, \"idle\"]], \"arrival\": 13.7, \"guards\": 40}",
+        "PASS touch {\"notes\": [{\"id\": \"m2\", \"x\": 216, \"y\": 334}, {\"id\": \"m4\", \"x\": 312, \"y\": 238}], \"stage\": \"의뢰 01 · VIP\", \"mealWalkSeconds\": 5.7, \"toiletWalkSeconds\": 7.8, \"returnSeconds\": 35.9, \"maxStep\": 3.21, \"checkpoint\": true}",
+        "PASS full crowd touch {\"phases\": [[0.1, \"walking\"], [4.6, \"eating\"], [5.8, \"queue\"], [5.8, \"toilet\"], [49.6, \"returning\"], [54.6, \"idle\"]], \"arrival\": 13.7, \"guards\": 40}",
+        "PASS actual keyboard shelf pickup and meal contact",
+        "PASS actual touch shelf pickup and meal contact"
+      ],
+      "errors": []
+    },
+    "neutral": {
+      "passLines": [
+        "PASS balanced standing {\"looks\": 11, \"directions\": 8, \"poses\": 88, \"maxLean\": 0.0307}",
+        "PASS unchanged walking/combat/traversal frames 16600"
+      ],
+      "errors": []
+    },
+    "vipRoutes": {
+      "passLines": [
+        "PASS poison keyboard 0 {'drankAt': 9, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+        "PASS sign keyboard 0 {'accident': True}",
+        "PASS backdoor keyboard 0 {'blueDoor': True, 'actors': 40}",
+        "PASS poison keyboard 1 {'drankAt': 9, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+        "PASS sign keyboard 1 {'accident': True}",
+        "PASS backdoor keyboard 1 {'blueDoor': True, 'actors': 40}",
+        "PASS poison touch 0 {'drankAt': 9, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+        "PASS sign touch 0 {'accident': True}",
+        "PASS backdoor touch 0 {'blueDoor': True, 'actors': 40}",
+        "PASS poison touch 1 {'drankAt': 9, 'bathroom': True, 'escortWaits': True, 'killed': True}",
+        "PASS sign touch 1 {'accident': True}",
+        "PASS backdoor touch 1 {'blueDoor': True, 'actors': 40}",
+        "PASS twelve live scenes; no NPC freezing"
+      ],
+      "errors": []
+    },
+    "stairs": {
+      "passLines": [
+        "PASS {'flights': 59, 'roofs': 70, 'compact': 4, 'automatic': 118, 'npcs': 258, 'legacySave': True}"
+      ],
+      "errors": []
+    },
+    "framesWindows": {
+      "passLines": [
+        "PASS 23000 nonempty frames with transparent margins",
+        "PASS PC {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}",
+        "PASS touch {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}"
+      ],
+      "errors": []
+    },
+    "combat": {
+      "passLines": [
+        "PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: same environment button controls tap/hold; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors",
+        "PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and bush drag"
+      ],
+      "errors": []
+    },
+    "fullRoute": {
+      "passLines": [
+        "PASS full AI showcase PC {\"seconds\": 143, \"hp\": 3, \"detected\": 0, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"camera approach\", \"office camera disabled with dart\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}",
+        "PASS full AI showcase mobile {\"seconds\": 139, \"hp\": 1, \"detected\": 3, \"approach\": \"장부로 불러낸 매복\", \"exit\": \"서쪽 골목\", \"trace\": [\"pharmacy\", \"seasoning\", \"wait off the aisle\", \"guest arrived\", \"WC entrance\", \"nonlethal takedown\", \"uniform\", \"office interior\", \"crew office access\", \"camera approach\", \"office camera disabled with dart\", \"upstairs code note\", \"door 5,8 keypad\", \"ledger\", \"phone\", \"ambush locker\", \"VIP arrived while hidden\", \"VIP rear\", \"VIP eliminated\"]}"
+      ],
+      "errors": []
+    }
+  },
+  "realtime": {
+    "route": {
+      "over": true,
+      "exit": true,
+      "title": "임무 완료",
+      "trace": [
+        "pharmacy",
+        "seasoning",
+        "wait off the aisle",
+        "guest arrived",
+        "WC entrance",
+        "nonlethal takedown",
+        "uniform",
+        "office interior",
+        "crew office access",
+        "upstairs code note",
+        "door 5,8 keypad",
+        "ledger",
+        "camera approach",
+        "office camera disabled with dart",
+        "phone",
+        "ambush locker",
+        "VIP arrived while hidden",
+        "VIP rear",
+        "VIP eliminated"
+      ],
+      "t": 155.30299600002118,
+      "hp": 3,
+      "at": [
+        0.46339247081273643,
+        16.186715309431488,
+        0
+      ],
+      "cleared": true
+    },
+    "errors": []
+  },
+  "video": {
+    "duration": "158.876000",
+    "size": "5117997"
+  },
+  "limitations": [
+    "Full route is an authored-map automated controller, not a blind human first-use study.",
+    "Video records canvas; HTML HUD is omitted.",
+    "Mobile checks emulate Chromium touch; no physical iPhone claim."
+  ],
+  "initialFailures": [
+    "An unseeded VIP visit blocked in RETURN; recovery was extended to that state and seeded live scenes passed.",
+    "Fixed walking controller reached the phone during an alarm; controller now disables the office camera before vault entry and both full routes clear.",
+    "First real-time nearby-diner placement witnessed preparation and the player died; post direction and first natural meal time were revised; final real-time route cleared with 3 HP."
+  ]
+}

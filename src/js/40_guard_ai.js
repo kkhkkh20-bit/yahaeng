@@ -25,7 +25,7 @@ function moveAlong(g, speed, dt) {
   if (!g.path || !g.path.length) return true;
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
-  if ((g.target || g.route.some(w=>w.mealTrip)) && g.state==='PATROL') {
+  if ((g.target || g.route.some(w=>w.mealTrip)) && ['PATROL','RETURN'].includes(g.state)) {
     const end=g.path[g.path.length-1],next=g.path[0],d=dist(g.x,g.y,next.x,next.y);let r=g.motionRecovery;
     if(!r || r.x!==end.x || r.y!==end.y || r.nx!==next.x || r.ny!==next.y) r=g.motionRecovery={x:end.x,y:end.y,nx:next.x,ny:next.y,best:d,t:S.t,until:r?.until||0};
     if(d<r.best-8){r.best=d;r.t=S.t;}
@@ -467,7 +467,7 @@ function updateGuard(g, dt) {
   const P = S.player;
   g.moving = false;
   if (g.iconT > 0) { g.iconT -= dt; if (g.iconT <= 0 && g.state !== 'ALERT') g.icon = null; }
-  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1)) * spdMul();
+  const spd = (g.target ? SPD.target*(rendezvousHurry(g)?1.75:vipDrinkHurry(g)?1.5:1) : SPD.gPatrol * (S.alevel ? 1 : 0.85) * (g.dog ? 1.25 : 1) * (diningHurry(g) ? 1.5 : 1)) * spdMul();
   if (S.alevel && (g.chat || g.act)) { endChat(g); g.act = null; }
   // 공포: 겁에 질려 달아난다. 주변을 못 보고, 가까운 동료를 잘못 벨 수 있다
   if (g.state === 'TERROR') {

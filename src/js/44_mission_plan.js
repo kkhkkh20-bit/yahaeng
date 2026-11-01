@@ -157,6 +157,7 @@ function goalNavigation(goal) {
   S.goalNavCache={key,t:S.t,nav}; return {...goal,...nav};
 }
 // 술병에 약을 넣은 뒤 실제 음용이 끝나야 화장실 일과를 시작한다.
+function vipDrinkHurry(g){return g.tag==='vip'&&S.vipPlan?.requested&&!S.vipPlan.reachedToilet&&['prepared','drinking','sick'].includes(S.vipPlan.phase);}
 function updateVipPlan(dt) {
   if (STAGE.id !== 'm2' || !STAGE.vipDrink) return;
   const P=S.player;
@@ -174,6 +175,9 @@ function updateVipPlan(dt) {
   if (g.state === 'DEAD') { v.phase = 'done'; g.drinkT = 0; return; }
   const d = STAGE.vipDrink, calm = g.state === 'PATROL' && !g.climb && !g.grabbed && !g.yank && !g.doomed && !g.brawl;
   const atBar = !flOf(g) && !g.z && dist(g.x,g.y,tc(d.at[0]),tc(d.at[1])) < 30 && !g.moving;
+  if(calm&&S.alevel<2&&!atBar&&!v.requested&&!g.route.some(w=>w.once)){
+    detour(g,d.at[0],d.at[1],4,'클럽 홀 바','양주');v.requested=true;
+  }
   if (!calm || !atBar || S.alevel >= 2) { v.phase='prepared'; v.drinking = 0; g.drinkT = 0; return; }
   v.phase = 'drinking'; v.drinking = (v.drinking || 0) + dt; g.drinkT = v.drinking;
   if (v.drinking < 2) return;

@@ -1,6 +1,8 @@
-// A meal creates an opening at the club entrance. Dosing never moves an NPC remotely.
+// A short, optional meal lure isolates a nearby off-duty guard. NPCs always walk there.
 function mealUse(){return (STAGE.uses||[]).find(u=>u.need==='laxative');}
+function diningGuest(){return npc(S.dining?.guest||STAGE.dining?.guest);}
 function mealAvailable(){return !S.dining?.eaten;}
+function diningHurry(g){return !!STAGE.dining&&g.tag===(S.dining?.guest||STAGE.dining.guest)&&['walking','queue','toilet'].includes(S.dining?.phase)&&!S.dining.arrived;}
 function clearMealTrip(g){
   if(!g)return;
   for(let i=g.route.length-1;i>=0;i--)if(g.route[i].mealTrip){g.route.splice(i,1);if(g.sched){g.sched=g.sched.slice();g.sched.splice(i,1);}if(g.ri>i)g.ri--;}
@@ -12,27 +14,33 @@ function mealTrip(g,at,stay,name){
   const w=g.route[g.ri];w.mealTrip=true;g.glance=0;g.glanceT=8;return w;
 }
 function syncDiningLayout(){
-  const m=S.dining,d=STAGE.dining,g=d&&npc(d.guest);if(!m||!g||m.layout===2)return;
+  const m=S.dining,d=STAGE.dining;if(!m||!d||m.layout===3)return;
+  // 이미 걷던 구버전 손님은 제자리로 돌려보내지 않는다. 다음 식사부터 가까운 경비가 맡는다.
+  const old=S.guards.find(g=>g.route.some(w=>w.mealTrip));
+  m.guest=old&& !['idle','done'].includes(m.phase)?old.tag:d.guest;
+  const g=diningGuest();if(!g)return;
   // A saved visit already under way keeps its destination and remaining wait.
   if(m.phase==='toilet'&&m.waypoint&&!m.toilet){m.toilet=[Math.floor(m.waypoint.x/TILE),Math.floor(m.waypoint.y/TILE)];m.queue=[m.toilet[0],m.toilet[1]+3];}
   if(['walking','eating'].includes(m.phase)&&!m.eaten&&g.state==='PATROL'){
     const p=usePoint(mealUse());m.waypoint=mealTrip(g,p,d.stay,'포차 식사');m.phase='walking';m.eating=0;m.elapsed=0;
   }
-  m.layout=2;
+  m.layout=3;
 }
 function diningGoal(){
   const d=STAGE.dining,P=S.player,m=S.dining;if(!d||S.goalManual||!oppMode||(P.outfit==='crew'||P.blown?.crew))return null;
-  const g=npc(d.guest);if(!g)return null;
+  const g=diningGuest();if(!g)return null;
   const wc=m?.toilet||d.toilet,c=S.corpses.find(c=>c.g===g&&!c.stripped&&!c.stashed);
   const body=g.state==='DEAD'&&c&&dist(c.x,c.y,tc(wc[0]),tc(wc[1]))<=90;
   if((targetEliminated(g)||g.state==='DEAD')&&!body)return null;
-  if(S.mealDosed&&!body){const wait=d.waitAt||d.queue||d.toilet;return{x:tc(wait[0]),y:tc(wait[1]),fl:0,z:0,text:'경비 식사 지켜보기',where:'포차',dining:true};}
+  // 준비만 한 상태에서는 의뢰 목표를 덮어쓰며 기다리라고 하지 않는다.
   if(body||m?.sick&&['queue','toilet'].includes(m.phase))return{x:body?c.x:tc(wc[0]),y:body?c.y:tc(wc[1]),fl:0,z:0,text:'경비복 확보',where:wc[0]===d.toilet[0]&&wc[1]===d.toilet[1]?'포차 화장실':'골목 공중화장실',dining:true};
   return null;
 }
 function updateDining(dt){
   const d=STAGE.dining,u=mealUse();if(!d||!u)return;
-  const g=npc(d.guest),m=S.dining||(S.dining={phase:'idle',next:d.first,eating:0,eaten:false,layout:2});
+  const m=S.dining||(S.dining={phase:'idle',next:d.first,eating:0,eaten:false,layout:3,guest:d.guest});
+  if(m.phase==='idle')m.guest=d.guest;
+  const g=diningGuest();
   if(!g||targetEliminated(g)){m.phase='done';return;}
   const calm=g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&S.alevel<2;
   if(!calm){
@@ -40,12 +48,14 @@ function updateDining(dt){
     if(!['idle','done'].includes(m.phase)){clearMealTrip(g);m.phase='idle';m.eating=0;m.next=S.t+d.every;}
     return;
   }
+  // 새로 준비한 양념은 다음 긴 식사 주기를 기다리지 않는다. 이미 끝난 맨밥도 새 접시로 잇는다.
+  if(S.mealDosed&&m.eaten&&!m.sick){clearMealTrip(g);m.phase='idle';m.eaten=false;m.eating=0;}
   if(['walking','queue','returning'].includes(m.phase)||m.phase==='toilet'&&!m.arrived){g.glance=0;g.glanceT=8;}
   const table=usePoint(u),atTable=!flOf(g)&&!g.z&&dist(g.x,g.y,table.x,table.y)<18&&!g.moving;
   const dest=m.toilet||d.toilet,waiting=m.queue||d.queue||[dest[0],dest[1]+3],wc={x:tc(dest[0]),y:tc(dest[1])};
   if(m.phase==='idle'){
-    if(S.t<m.next||g.route.some(w=>w.once))return;
-    m.waypoint=mealTrip(g,table,d.stay,'포차 식사');m.phase='walking';m.elapsed=0;m.eaten=false;m.eating=0;m.toilet=null;m.queue=null;return;
+    if((S.t<m.next&&!S.mealDosed)||g.route.some(w=>w.once))return;
+    m.waypoint=mealTrip(g,table,d.stay,'포차 식사');m.phase='walking';m.elapsed=0;m.eaten=false;m.eating=0;m.arrived=false;m.sick=false;m.toilet=null;m.queue=null;return;
   }
   if(m.phase==='done')return;
   m.elapsed+=dt;
@@ -57,7 +67,7 @@ function updateDining(dt){
     m.phase='eating';g.act=null;g.idleT=20;g.glance=0;g.glanceT=5;
     const visual=surfacePoint(table);g.a=g.want=Math.atan2(visual.y-g.y,visual.x-g.x);
     if(!m.eaten){m.eating+=dt;g.mealT=m.eating;
-      if(m.eating>=3){m.eaten=true;g.mealT=0;m.sick=!!S.mealDosed;S.mealDosed=false;}
+      if(m.eating>=1.25){m.eaten=true;g.mealT=0;m.sick=!!S.mealDosed;S.mealDosed=false;}
     }
     if(m.eaten&&m.sick){
       m.toilet=d.toilet.slice();m.queue=(d.queue||[d.toilet[0],d.toilet[1]+3]).slice();
