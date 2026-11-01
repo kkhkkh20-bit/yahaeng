@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 // Share the game's wall rays, light samples and standing/crouching visibility bands.
 // Ground meshes are depth-tested, so roofs, walls and props occlude the display.
-export function createSight(G,scene,people){
+export function createSight(G,scene,people,visibility){
  const entries=new Map();
  function make(g){const geometry=new THREE.BufferGeometry(),material=new THREE.MeshBasicMaterial({color:'#aabfc0',transparent:true,opacity:.14,depthWrite:false,side:THREE.DoubleSide,toneMapped:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;scene.add(mesh);const e={g,mesh,t:-Infinity,signature:'',cells:[]};entries.set(g,e);return e;}
  function rebuild(e,cn,level){
@@ -24,7 +24,7 @@ export function createSight(G,scene,people){
  function update(){
   const S=G.S,P=S.player,level=P.mode==='sneak'||P.cover?2:1;
   for(const g of S.guards){
-   if(g.civ)continue;const e=entries.get(g)||make(g),active=!['DEAD','CAPTIVE','TERROR','SLEEP'].includes(g.state)&&!g.doomed&&!g.climb&&(g.fl||0)===(P.fl||0)&&G.miniGuardVisible(g);
+   if(g.civ)continue;const e=entries.get(g)||make(g),active=!['DEAD','CAPTIVE','TERROR','SLEEP'].includes(g.state)&&!g.doomed&&!g.climb&&(g.fl||0)===(P.fl||0)&&G.miniGuardVisible(g)&&(!visibility||visibility.visible(g));
    e.mesh.visible=active;if(!active)continue;
    const cn=G.guardCone(g,G.guardFov(g),G.guardRanges(g)),signature=level+':'+!!P.cover+':'+cn.STP;
    if(e.cn!==cn||e.signature!==signature){rebuild(e,cn,level);e.cn=cn;e.signature=signature;e.t=S.t;}

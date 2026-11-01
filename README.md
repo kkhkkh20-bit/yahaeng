@@ -1,10 +1,12 @@
 # 야행 웹 실행본
 
-기존 2D 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
+기존 2D 외부 테스트 · 로딩 수정본: https://kkhkkh20-bit.github.io/yahaeng/playtest-2d/
+
+v130 기존 기능 복원과 검수: https://kkhkkh20-bit.github.io/yahaeng/parity-v130/
 
 v129 걷기·방향 보정과 경비 시야: https://kkhkkh20-bit.github.io/yahaeng/tempo-v129/
 
-v128 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
+v130 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 
 같은 배치의 화면 비교·검수: https://kkhkkh20-bit.github.io/yahaeng/club-v128/
 
