@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v120 제압 판정·소리·후속 입력·모바일 동작 개선: https://kkhkkh20-bit.github.io/yahaeng/combat-v120/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/GAME_FEEL_V120.md
+
 v119 자유로운 의뢰 순서·선택형 단서 안내: https://kkhkkh20-bit.github.io/yahaeng/free-approach-v119/
 
 변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FREE_APPROACH_V119.md
@@ -126,7 +130,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v119
-Source commit: 598d1524a0f8777d69783e7089a5545b684be996
+Version: v120
+Source commit: dd7e752a4760d6e22d35cdbbbbfe26829a5c0246
 
-Ink study source: 598d1524a0f8777d69783e7089a5545b684be996
+Ink study source: dd7e752a4760d6e22d35cdbbbbfe26829a5c0246
