@@ -32,6 +32,8 @@ function updateDining(dt){
   m.elapsed+=dt;
   if(m.elapsed>180){clearMealTrip(g);m.phase='idle';m.next=S.t+d.every;return;}
   if(m.phase==='walking'||m.phase==='eating'){
+    // A completed meal remains completed if another person nudges the guest away.
+    if(m.eaten&&!m.sick&&(!g.route.includes(m.waypoint)||g.wait<=0)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;g.mealT=0;return;}
     if(!atTable){g.mealT=0;if(m.phase==='eating'){m.eating=0;m.phase='walking';}return;}
     m.phase='eating';g.act=null;g.idleT=20;g.glance=0;g.glanceT=5;
     const visual=surfacePoint(table);g.a=g.want=Math.atan2(visual.y-g.y,visual.x-g.x);
@@ -60,17 +62,28 @@ function drawMedicineArt(ctx,p){
 function drawMealArt(p,ctx){
   ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle='#17201b66';ctx.beginPath();ctx.ellipse(1,3,17,8,0,0,TAU);ctx.fill();
   ctx.fillStyle='#a9a492';ctx.beginPath();ctx.ellipse(0,0,15,8,0,0,TAU);ctx.fill();ctx.fillStyle='#4e584c';ctx.beginPath();ctx.ellipse(0,-1,12,5,0,0,TAU);ctx.fill();
-  if(!S.dining?.eaten){ctx.fillStyle='#c2b99c';ctx.beginPath();ctx.ellipse(-3,-2,7,4,0,0,TAU);ctx.fill();ctx.fillStyle='#696c43';ctx.fillRect(4,-4,4,5);ctx.fillStyle='#8c6247';ctx.fillRect(1,-4,3,3);}
+  if(mealAvailable()){ctx.fillStyle='#c2b99c';ctx.beginPath();ctx.ellipse(-3,-2,7,4,0,0,TAU);ctx.fill();ctx.fillStyle='#696c43';ctx.fillRect(4,-4,4,5);ctx.fillStyle='#8c6247';ctx.fillRect(1,-4,3,3);}
   ctx.strokeStyle='#9d8869';ctx.lineWidth=1.5;for(const dx of [19,22]){ctx.beginPath();ctx.moveTo(dx,-9);ctx.lineTo(dx-3,9);ctx.stroke();}ctx.restore();
+}
+function drawCondimentArt(p,ctx){
+  ctx.fillStyle='#15211a66';ctx.beginPath();ctx.ellipse(p.x+1,p.y+3,7,3,0,0,TAU);ctx.fill();
+  ctx.fillStyle='#62563b';ctx.fillRect(p.x-5,p.y-13,10,15);ctx.strokeStyle='#a49a7c';ctx.lineWidth=1;ctx.strokeRect(p.x-5,p.y-13,10,15);
+  ctx.fillStyle='#70564a';ctx.fillRect(p.x-5,p.y-17,10,5);ctx.fillStyle='#beb49b';ctx.fillRect(p.x-4,p.y-8,8,5);
+  if(S.mealDosed){ctx.fillStyle='#dbcd9e';ctx.fillRect(p.x-2,p.y-16,4,2);}
 }
 function drawDiningFixtures(){
   if(STAGE.id!=='m2'||S.player.fl||S.player.z)return;
   const u=mealUse(),p=u&&usePoint(u);
-  if(p&&fixtureVisible(surfaceFixture(p),550)){const v=surfacePoint(p);drawLitContainer({...v,fl:0,type:'surface',art:'meal'});if(S.player.item?.id!=='laxative'&&dist(S.player.x,S.player.y,p.x,p.y)<110)tag(v.x,v.y-27,'문지기 식사','#c9c0a6',.75);}
+  if(p&&fixtureVisible(p,550)){
+    const v=surfacePoint(p),food=surfacePoint({...p,surfaceU:.45});
+    drawLitContainer({...food,fl:0,type:'surface',art:'meal'});drawLitContainer({...v,fl:0,type:'surface',art:'condiment'});
+    if(S.player.item?.id!=='laxative'&&dist(S.player.x,S.player.y,p.x,p.y)<110){const at=S.mealDosed?v:food;tag(at.x,at.y-27,S.mealDosed?'약을 넣은 양념통':S.dining?.eaten?'빈 그릇':'문지기 식사','#c9c0a6',.75);}
+  }
   for(const sign of [{x:tc(40),y:tc(8),text:'WC'},{x:tc(6),y:tc(32),text:'식사'}])if(fixtureVisible(sign,450))drawLitContainer({...sign,type:'surface',art:'placeSign'});
 }
 function drawSurfaceArt(p,ctx){
   if(p.art==='meal'){drawMealArt(p,ctx);return;}
+  if(p.art==='condiment'){drawCondimentArt(p,ctx);return;}
   if(p.art==='bottle'){
     ctx.fillStyle='#34443a';ctx.fillRect(p.x-4,p.y-12,8,17);ctx.fillRect(p.x-2,p.y-17,4,6);
     ctx.fillStyle=p.dosed?'#c8ad76':'#d8d2b9';ctx.fillRect(p.x-3,p.y-6,6,6);return;
@@ -83,7 +96,9 @@ function drawPharmacyStock(ctx,f){
   for(const row of [-31,10]){
     ctx.fillStyle='#716c58';ctx.fillRect(x+5,y+row+12,f.w*TILE-10,3);
     for(let col=0;col<f.w;col++)for(let j=0;j<3;j++){
-      const dx=x+col*TILE+10+j*10;ctx.fillStyle=['#b1af97','#858e7b','#9d9584'][(j+col)%3];ctx.fillRect(dx,y+row-3,7,14);
+      const dx=x+col*TILE+10+j*10;
+      if(row===10&&S.props?.some(p=>p.surface?.x===f.x&&p.surface?.y===f.y&&Math.abs(surfacePoint(p).x-dx-3.5)<12))continue;
+      ctx.fillStyle=['#b1af97','#858e7b','#9d9584'][(j+col)%3];ctx.fillRect(dx,y+row-3,7,14);
       ctx.fillStyle='#4c594d';ctx.fillRect(dx+1,y+row+2,5,2);
     }
   }

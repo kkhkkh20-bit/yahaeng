@@ -8,7 +8,7 @@ function surfacePoint(o){
   const f=o?.surface;if(!f)return{x:o?.dx??o?.x,y:o?.dy??o?.y};
   const k=kitFurn[furnKey(f)],baked=KIT&&k&&kitOk(k.img),u=o.surfaceU??.5;
   let x=(f.x+f.w*u)*TILE,y=(f.y+f.h*.5)*TILE;
-  if(baked){y=f.y*TILE+(f.t==='shelf'?-58:-2);if(f.t==='desk'||f.t==='desk2'){x=f.x*TILE+24;y=f.y*TILE-2;}}
+  if(baked){y=f.y*TILE+(f.t==='shelf'?24:-2);if(f.t==='desk'||f.t==='desk2'){x=f.x*TILE+24;y=f.y*TILE-2;}}
   return{x,y};
 }
 function attachSurface(o,spec){
@@ -28,7 +28,8 @@ function usePoint(u){
   if(!u.surface)return{x:tc(u.at[0]),y:tc(u.at[1]),fl:u.fl||0};
   S.usePoints=S.usePoints||{};const i=STAGE.uses.indexOf(u);
   if(!S.usePoints[i]){const p={x:tc(u.at[0]),y:tc(u.at[1]),fl:u.fl||0};attachSurface(p,u.surface);S.usePoints[i]=p;}
-  return S.usePoints[i];
+  const p=S.usePoints[i];if(p.surface)p.surfaceU=u.surface.u??.5;
+  return p;
 }
 function syncSurfaceObjects(){
   const phone=S.rendezvous?.phone;if(phone&&!phone.surface){const f=FURN.find(f=>f.x===phone.tx&&f.y===phone.ty&&(f.fl||0)===flOf(phone)&&f.t==='desk');if(f)phone.surface={...f};}

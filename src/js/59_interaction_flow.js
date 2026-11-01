@@ -19,6 +19,7 @@ function objectReachable(o, radius = 60) {
 const OBJECT_FLOW = {
   pickup: [0.42, '줍는 중', 'ground'], dress: [0.8, '갈아입는 중', 'dress'],
   callMeet: [.9, '통화 중', 'hands'],
+  read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
   door: [0.32, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [0.65, '조작 중', 'hands']
@@ -33,7 +34,8 @@ function objectActionValid(a, item) {
   if (a.k === 'dropItem') return !!P.item && P.item === item;
   if (a.k === 'pickup') return !a.p.taken && objectReachable(a.p);
   if (a.k === 'dress') return !a.c.stripped && !a.c.carried && !a.c.stashed && objectReachable(a.c, 46);
-  if (a.k === 'use') return P.item === item && !!item && item.id === a.n.u.need && !S.usesDone[a.n.i] && (a.n.u.need!=='laxative'||mealAvailable()) && objectReachable(objectActionPoint(a), 56);
+  if (a.k === 'use') return P.item === item && !!item && item.id === a.n.u.need && !S.usesDone[a.n.i] && objectReachable(objectActionPoint(a), 56);
+  if (a.k === 'read') return S.notes.includes(a.n)&&objectReachable(a.n,44);
   const o = objectActionPoint(a);
   return (!o || objectReachable(Object.assign({ fl: flOf(P), z: P.z || 0 }, o), a.k === 'fuse' ? 62 : 60)) && !(a.l && a.l.broken);
 }
@@ -55,7 +57,7 @@ function updateObjectAction(P, dt) {
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * 0.6) {
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'?1:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
     I.committed = true; I.committing = true;
     try {

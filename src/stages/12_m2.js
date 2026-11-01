@@ -58,8 +58,8 @@
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],
   uses: [{ need: 'emetic', at: [29, 10], surface:{b:1,t:'bar',u:.3}, label: '실장 술병에 구토제 넣기', permit: 'waiter', done: '실장 술병에 구토제를 넣었다',
            act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } },
-         { need:'laxative',at:[5,30],surface:{b:4,t:'table',u:.65},label:'문지기 식사에 설사약 넣기',permit:'waiter',
-           done:'문지기 식사에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
+         { need:'laxative',at:[5,30],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
+           done:'양념통에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
   intel: [
     { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '오늘 금고 비번 또 바뀌었다며?'], [1, '0417. 사장 딸 생일이래.'], [0, '그걸 또 그렇게 정하냐…'], [1, '외우기 쉽잖아. 너 잊어버리지나 마.']] },
     { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,

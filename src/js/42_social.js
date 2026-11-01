@@ -194,7 +194,7 @@ function nearProp() {
 function nearUse() {
   const P = S.player; if (!P.item || P.z || P.wire || P.hide) return null;
   let best = null, bd = 56;
-  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if ((u.need==='laxative'&&!mealAvailable()) || S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; const at = usePoint(u), d = at.surface ? hideDistance(surfaceFixture(at),P) : dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 56)) { best = { u, i }; bd = d; } }
+  for (const [i, u] of (STAGE.uses || []).entries()) { if (ACT_SKIP.has(u)) continue; if (S.usesDone[i] || u.need !== P.item.id || (u.fl || 0) !== flOf(P)) continue; const at = usePoint(u), d = at.surface ? hideDistance(surfaceFixture(at),P) : dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 56)) { best = { u, i }; bd = d; } }
   return best;
 }
 function takeProp(p) {

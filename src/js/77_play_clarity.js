@@ -94,12 +94,13 @@ function tagBounds(t,x,y) { return t.rows?encounterRect(x,y,t.rows):tagRect(x,y,
 // 실제 접촉 순간에만 짧은 빛을 놓는다. 입력 직후나 취소된 동작에는 나오지 않는다.
 function contactFeedback(at,kind) {
   if(!at||!Number.isFinite(at.x)||!Number.isFinite(at.y))return;
-  S.contact={x:at.x,y:at.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind};
+  const p=at.surface?surfacePoint(at):at;
+  S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
 }
 function drawContactFeedback() {
   const f=S.contact,P=S.player;if(!f||S.t-f.t>.24||flOf(f)!==flOf(P)||(f.z||0)!==(P.z||0))return;
   const t=clamp((S.t-f.t)/.24,0,1);ctx.save();ctx.globalAlpha=(1-t)*.8;ctx.strokeStyle='#d8e2c7';ctx.lineWidth=2;
-  ctx.beginPath();ctx.arc(f.x,f.y,10+12*t,0,TAU);ctx.stroke();ctx.restore();
+  ctx.beginPath();ctx.arc(f.x,f.y,f.surface?6+6*t:10+12*t,0,TAU);ctx.stroke();ctx.restore();
 }
 function drawAccessCues(P) {
   if(!mainContract(STAGE)||P.z||P.under||P.vent||tactical)return;

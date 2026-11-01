@@ -1,9 +1,13 @@
 // 기존 좌표와 자산 위에 기능이 읽히는 작은 현물만 보강한다.
 function fixtureVisible(p, radius = 500) {
+  const support=p.surface;if(support)p=surfaceFixture(p);
   const P=S.player, f=flOf(p), z=p.z||0;
   if(f!==flOf(P) || (P.z||0)!==z || dist(P.x,P.y,p.x,p.y)>radius || P.under || P.vent) return false;
   const d=dist(P.x,P.y,p.x,p.y),a=Math.atan2(p.y-P.y,p.x-P.x);
-  return castRay(P.x,P.y,a,d,P.z||0)>=d-27;
+  const prev=CUR_F;setLayer(f);const hit=castRay(P.x,P.y,a,d,P.z||0);setLayer(prev);if(hit>=d-27)return true;
+  const b=support?{x0:support.x*TILE,y0:support.y*TILE,x1:(support.x+support.w)*TILE,y1:(support.y+support.h)*TILE}:p.furn?hideFootprint(p):null;
+  const x=P.x+Math.cos(a)*(hit+.01),y=P.y+Math.sin(a)*(hit+.01);
+  return !!(b&&x>=b.x0&&x<b.x1&&y>=b.y0&&y<b.y1);
 }
 function drawKnownTargets() {
   if(oppMode===2)return;
@@ -31,7 +35,7 @@ function drawPlanFixtures(P) {
   }
   if(STAGE.id==='m2' && !P.fl && !P.z) {
     const physical=usePoint(STAGE.uses[0]),p={...surfacePoint(physical),fl:0};
-    if(fixtureVisible(surfaceFixture(physical),260)) {
+    if(fixtureVisible(physical,260)) {
       drawLitContainer({...p,type:'surface',art:'bottle',dosed:S.usesDone[0]});
       if(S.vipPlan && dist(P.x,P.y,p.x,p.y)<120)tag(p.x,p.y-27,S.vipPlan.phase==='sick'?'음용 완료':'준비된 실장 술병','#c9bc91',.8);
     }

@@ -92,7 +92,7 @@ function missionApproachGoal() {
   const g=npc('vip');if(!g||targetEliminated(g)||g.state==='DEAD')return null;
   const r=S.rendezvous;
   if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
-  if(S.player.item?.id==='laxative'&&!S.usesDone[1]&&mealAvailable())return{...usePoint(mealUse()),text:'문지기 식사에 설사약 넣기',where:'포차 1층'};
+  if(S.player.item?.id==='laxative'&&!S.usesDone[1])return{...usePoint(mealUse()),text:'양념통에 설사약 넣기',where:'포차 1층'};
   let id=null;
   if(S.player.item?.id==='emetic'||['prepared','drinking','sick'].includes(S.vipPlan?.phase))id='emetic';
   else if(S.player.z&&S.traps.some(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used&&canReleaseSign(t)))id='sign';
