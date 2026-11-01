@@ -33,7 +33,8 @@ ANIMS = [  # 이름, 클립, 시간들, 웅크림
   ('leap', 'Idle', [i/12 for i in range(13)], 0, ('hide', 'leap')),
   ('ledgePull', 'Idle', [i/12 for i in range(13)], 0, ('hide', 'ledgePull')),
   ('openLow', 'Idle', [i/16 for i in range(17)], 0, ('access', 'low')),
-  ('openHigh', 'Idle', [i/16 for i in range(17)], 0, ('access', 'high'))]
+  ('openHigh', 'Idle', [i/16 for i in range(17)], 0, ('access', 'high')),
+  ('openBin', 'Idle', [i/16 for i in range(17)], 0, ('access', 'bin'))]
 TALK = [0, 1, 0.45, 1.25]
 def js_for(an, t, ti, a, hg='undefined'):
     name, clip, ts, cr = an[:4]; pr = an[4] if len(an) > 4 else None

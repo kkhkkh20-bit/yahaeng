@@ -185,6 +185,7 @@ function drawPlayerBody(P) {
   if (usePR(playerLook)) {
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
+      if(P.interact?.a.k==='door'){const I=P.interact,p=clamp(I.t/I.dur,0,1),d=I.a.d,s=accessHandSample({type:'panel',x:d.x,y:d.y},{x:I.x,y:I.y},p,!I.state,true);drawPR(playerLook,s.x,s.y,P.a,s.anim,0,blink?.35:1,sc/3,0,s.frame);return;}
       const I = P.interact || P.pick, f = clamp(I.t / I.dur, 0, 1), ground = I.pose === 'ground' || I.pose === 'dress' || I.kind === 'clean' || I.kind === 'loot';
       let anim = PR.anims.idleC?'idleC':'idle', fi = 0;
       if (f > 0.12 && f < 0.9) {
@@ -780,17 +781,12 @@ function drawDoor(d, onRoof) {
   ctx.save(); ctx.translate(x, y); if (!d.horiz) ctx.rotate(Math.PI / 2);
   ctx.fillStyle='#69716b';ctx.fillRect(-19,-9,38,3);ctx.fillStyle='#b8bca6';ctx.fillRect(-19,-9,38,1);
   ctx.fillStyle = '#3a2618'; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
-  if (d.locked) {
-    ctx.fillStyle = '#8a5a34'; ctx.fillRect(-19, -6, 38, 12); ctx.strokeStyle = '#3a2618'; ctx.lineWidth = 2; ctx.strokeRect(-19, -6, 38, 12);
-    ctx.fillStyle = '#f2c46b'; ctx.fillRect(-4, -4, 8, 8); ctx.fillStyle = '#3a2618'; ctx.fillRect(-1, -1, 2, 3);
-  } else if (onRoof) {
-    // 옥상 위에서 보는 문: 벽에 뚫린 검은 출입구 + 열린 문짝 + 손잡이
-    ctx.fillStyle = '#140d08'; ctx.fillRect(-19, -7, 38, 14);
-    ctx.fillStyle = '#a8703f'; ctx.fillRect(-19, -7, 9, 14); ctx.fillStyle = '#f2c46b'; ctx.fillRect(-13, -1.5, 3, 3);
-    ctx.strokeStyle = 'rgba(224,176,112,.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(-19, 7, 22, -Math.PI / 2, 0); ctx.stroke();
-  } else {
-    ctx.fillStyle = '#8a5a34'; ctx.fillRect(-19, -6, 6, 34); ctx.strokeStyle = '#3a2618'; ctx.lineWidth = 1.5; ctx.strokeRect(-19, -6, 6, 34);
-  }
+  const open=doorVisualOpen(d),a=open*Math.PI/2,ex=-19+38*Math.cos(a),ey=-6+38*Math.sin(a);
+  ctx.fillStyle='#16241e';ctx.fillRect(-19,-6,38,12);
+  ctx.fillStyle='#8a5a34';ctx.strokeStyle='#3a2618';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(-19,-6);ctx.lineTo(ex,ey);ctx.lineTo(ex-3*Math.sin(a),ey+3*Math.cos(a));ctx.lineTo(-19,0);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#d3c18d';ctx.beginPath();ctx.arc(ex-6*Math.cos(a),ey-6*Math.sin(a)+2,2,0,TAU);ctx.fill();
+  if(d.locked&&open<.2&&d.keyLock){ctx.fillStyle='#b39c59';ctx.fillRect(-4,-3,8,7);}
   ctx.restore();
 }
 // 배관: 회색 관(벽에 붙음) + 바닥 쪽 오르기 표시

@@ -13,7 +13,7 @@ async def main():
     const G=__game,check=(v,m)=>{if(!v)throw Error(m)};let entries=0,stores=0,drags=0,ambushes=0;const sides=new Set();
     const fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();const S=G.S;window.template=S.guards.find(g=>!g.civ&&!g.dog&&!g.child&&!g.target);S.guards=[];S.cams=[];S.facOn=false;G.update(.001);S.fade=0;G.setLayer(0);return S;};
     const step=dt=>{G.S.t+=dt;G.setLayer(G.S.player.fl||0);G.updatePlayer(dt);G.updateKoHold();G.runTimers();};
-    const finish=()=>{let i=0,max=0;while(G.S.player.trav&&i++<1000){const P=G.S.player,x=P.x,y=P.y;step(.01);max=Math.max(max,Math.hypot(P.x-x,P.y-y));}check(i<1000,'container motion never finishes');check(max<9,'container motion teleports '+max);};
+    const finish=()=>{let i=0,max=0;while(G.S.player.trav&&i++<1000){const P=G.S.player,x=P.x,y=P.y;step(.01);max=Math.max(max,Math.hypot(P.x-x,P.y-y));}check(i<1000,'container motion never finishes '+JSON.stringify({t:G.S.player.trav?.t,dur:G.S.player.trav?.dur,kind:G.S.player.trav?.hideFlow?.kind,h:G.S.player.trav?.hideFlow?.h,walk:G.S.player.trav?.hideFlow?.departure?.length}));check(max<9,'container motion teleports '+max);};
     const place=(P,x,y)=>{Object.assign(P,{x,y,fl:0,z:0,hide:null,trav:null,jump:null,cover:null,snap:null,captive:null,carrying:null,strikeT:0,bodyAnim:null,pick:null,interact:null,a:-Math.PI/2});G.setLayer(0);};
     for(const id of ['m1','m2','m3','m4','m5','m6']){
      const S=fresh(id),P=S.player;

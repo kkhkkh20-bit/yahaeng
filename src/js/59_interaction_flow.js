@@ -21,7 +21,7 @@ const OBJECT_FLOW = {
   callMeet: [.9, '통화 중', 'hands'],
   read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
-  door: [0.32, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
+  door: [0.65, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [0.65, '조작 중', 'hands']
 };
 function objectActionPoint(a) {
@@ -57,7 +57,7 @@ function updateObjectAction(P, dt) {
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * (I.a.k==='read'?1:.6)) {
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
     I.committed = true; I.committing = true;
     try {
@@ -71,4 +71,15 @@ function updateObjectAction(P, dt) {
 function busyEnvAction() {
   const P = S.player;
   return { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
+}
+function doorVisualOpen(d){
+  const I=S.player.interact;
+  if(I?.a.k==='door'&&(I.a.d===d||I.a.d.group?.includes(d))){const p=hideEase((I.t/I.dur-.22)/.54);return I.state?p:1-p;}
+  return d.locked?0:1;
+}
+function drawFacadeDoorWork(d){
+  const x=d.x,y=d.y-24,open=doorVisualOpen(d),w=54*Math.cos(open*Math.PI*.48),depth=14*Math.sin(open*Math.PI*.48);
+  ctx.save();ctx.fillStyle='#080f0c';ctx.fillRect(x-27,y+3,54,44);ctx.fillStyle='#112923';ctx.strokeStyle='#536b57';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(x-27,y+3);ctx.lineTo(x-27+w,y+3+depth);ctx.lineTo(x-27+w,y+47+depth);ctx.lineTo(x-27,y+47);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#b4ae86';ctx.fillRect(x-27+w-7,y+22+depth,2,11);ctx.restore();
 }

@@ -43,7 +43,7 @@ async def main():
           advance(.18);check(P.item===b&&P.interact,'Selected prop must transfer at contact, with recovery still playing');
           advance(.3);check(!P.interact&&a.taken===false&&b.taken,'Pickup must finish on selected prop');passed.push('overlap and pickup phases');
           fresh();P.a=Math.PI;const d={x:P.x+24,y:P.y,fl:0,tx:33,ty:21,locked:true,orig:'.'};d.group=[d];
-          G.doAct({k:'door',d});advance(.22);check(!d.locked&&Math.abs(Math.atan2(Math.sin(P.a),Math.cos(P.a)))<.1,'Character must face door before contact '+JSON.stringify({locked:d.locked,a:P.a,t:P.interact&&P.interact.t}));advance(.2);passed.push('facing at contact');
+          G.doAct({k:'door',d});advance(.22);check(d.locked&&P.interact,'Door passage opens before the hand action');advance(.3);check(!d.locked&&Math.abs(Math.atan2(Math.sin(P.a),Math.cos(P.a)))<.1,'Character must face door before contact '+JSON.stringify({locked:d.locked,a:P.a,t:P.interact&&P.interact.t}));advance(.2);passed.push('facing at contact');
           fresh();const door={x:P.x+24,y:P.y,fl:0,tx:33,ty:21,locked:true,orig:'.'};door.group=[door];G.doAct({k:'door',d:door});
           door.locked=false;advance(.5);check(!door.locked,'A door opened by someone else must not close at contact');passed.push('door intent');
           fresh();const far=body(30),near=body(-15);

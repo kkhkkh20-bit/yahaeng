@@ -378,12 +378,12 @@ window.renderPose = (name, k, dirA) => {
 // Opening covers and latches: an actual two-hand grip, lift/pull, release.
 window.renderAccessPose=(kind,t,dirA)=>{
   renderFrame('Walk',.25,0,0,undefined,false,{sway:0});const A=snapPose();
-  const low=kind==='low',pull=Math.max(0,Math.min(1,(t-.28)/.34));
-  if(low)renderPose('stoop',0,0);else renderFrame('Walk',.25,0,0,undefined,false,{sway:0});
+  const low=kind==='low',bin=kind==='bin',pull=Math.max(0,Math.min(1,(t-.28)/.34));
+  if(low)renderFrame('Idle',0,0,.55);else renderFrame('Walk',.25,0,0,undefined,false,{sway:0});
   model.rotation.set(0,0,0);model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.updateMatrixWorld(true);
   for(const [sd,side]of [['Left',1],['Right',-1]]){
     const arm=bones[sd+'Arm'],elbow=bones[sd+'ForeArm'],hand=bones[sd+'Hand'],sp=new THREE.Vector3(),ep=new THREE.Vector3(),hp=new THREE.Vector3();arm.getWorldPosition(sp);elbow.getWorldPosition(ep);hand.getWorldPosition(hp);
-    const target=V3(side*18,sp.y+(low?-100+pull*75:-40+pull*22),sp.z+85-pull*28),l1=ep.distanceTo(sp),l2=hp.distanceTo(ep),axis=target.clone().sub(sp),d=Math.min(axis.length(),l1+l2-.01);axis.normalize();
+    const target=V3(side*18,sp.y+(low?-100+pull*35:bin?(sd==='Left'?-55:50+pull*70):-10+pull*16),sp.z+(bin?100-pull*14:85-pull*28)),l1=ep.distanceTo(sp),l2=hp.distanceTo(ep),axis=target.clone().sub(sp),d=Math.min(axis.length(),l1+l2-.01);axis.normalize();
     const along=(l1*l1-l2*l2+d*d)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along)),out=V3(side,0,0).addScaledVector(axis,-side*axis.x).normalize();
     aimB(arm,elbow,sp.clone().addScaledVector(axis,along).addScaledVector(out,bend).sub(sp));elbow.getWorldPosition(ep);aimB(elbow,hand,target.sub(ep));
   }
@@ -403,6 +403,17 @@ window.renderHidePose = (kind, t, dirA) => {
     model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);const B=snapPose();
     const weight=Math.min(1,t/.16,Math.max(0,(1-t)/.32));mixPose(A,B,weight);
     shadow.visible=false;renderSprite(0,1.6);shadow.visible=true;return renderer.domElement.toDataURL('image/png');
+  }
+  if(kind==='vault'){
+    // Step over a bin rim with one supporting leg. Opening the lid uses a
+    // separate planted-foot pose; no vault/jump animation is reused here.
+    renderFrame('Walk',.25,0,0,undefined,false,{sway:0});const A=snapPose();
+    renderFrame('Idle',0,0,.6);model.rotation.set(0,0,0);model.updateMatrixWorld(true);
+    const raise=Math.sin(Math.PI*Math.min(1,t/.7));
+    aimB(bones.LeftUpLeg,bones.LeftLeg,V3(.05,-1,.65*raise));aimB(bones.LeftLeg,bones.LeftFoot,V3(0,-1,-.4*raise));
+    for(const [sd,side]of [['Left',1],['Right',-1]]){aimB(bones[sd+'Arm'],bones[sd+'ForeArm'],V3(.2*side,-.25,.8));aimB(bones[sd+'ForeArm'],bones[sd+'Hand'],V3(-.15*side,.15,.8));}
+    const B=snapPose(),u=Math.min(1,t/.4);mixPose(A,B,u*u*(3-2*u));model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+    model2.visible=false;shadow.visible=false;renderSprite(0,1.6);shadow.visible=true;return renderer.domElement.toDataURL('image/png');
   }
   const keys=kind==='duck'?[0,1]:['drop','leap'].includes(kind)?[0,.38,.78,1]:[0,.23,.57,1];
   const pose=i=>{

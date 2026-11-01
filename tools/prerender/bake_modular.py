@@ -35,6 +35,8 @@ RECIPES = {
  'pack': ('hoodie', {'parts': BODIES['pack']['parts']}, CIV_ANIMS),
  'helmet': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
+ 'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
+ 'heroWorkerLid': ('heroWorker', None, ['openBin']), 'heroCrewLid': ('heroCrew', None, ['openBin']),
 }
 LOOK_MAP = {'ninja': 'hero', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
@@ -69,7 +71,7 @@ async def main():
     await page.evaluate('(b)=>setBody(b)',body)
     await page.evaluate('(n)=>window.spritePadding=n',FRAME_PADDING.get(bn,1))
     await page.evaluate('(c)=>setTex(c)',KEY)
-    anims=[a for a in ANIMS if names is None or a[0] in names]
+    anims=[a for a in ANIMS if (names is None or a[0] in names) and (a[0]!='openBin' or bn.endswith('Lid'))]
     cmap={};col=0
     for a in anims:cmap[a[0]]=[col,len(a[2])];col+=len(a[2])
     patch=requested_patch & cmap.keys()
@@ -97,7 +99,7 @@ async def main():
      const canvas=document.createElement('canvas');canvas.width=cols*fr;canvas.height=8*fr;
      const ctx=canvas.getContext('2d'),source=document.querySelector('canvas');
      const encode=source.toDataURL;source.toDataURL=()=>'';
-     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[],hangHands=[],ledgePullHands=[],openLowHands=[],openHighHands=[];
+     const holds=[],hangs=[],grounds={},scales={},climbHands=[],climbFeet=[],hangHands=[],ledgePullHands=[],openLowHands=[],openHighHands=[],openBinHands=[];
      try {for(const victim of [false,true]) {
        if(!frames.some(f=>f[3]===victim))continue;
        await loadModularLook(victim?'hero':look,victim?look:'guard');
@@ -106,13 +108,14 @@ async def main():
          if(js.includes('true)')&&window.lastHold)holds[y/fr]=window.lastHold.map(v=>v/2);
          grounds[anim]=window.frameGroundY;scales[anim]=window.frameScale||1;
          if(anim==='openLow'){const row=y/fr;(openLowHands[row]||=([])).push(window.frameClimbHands);}
+         if(anim==='openBin'){const row=y/fr;(openBinHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='openHigh'){const row=y/fr;(openHighHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='ledgePull'){const row=y/fr;(ledgePullHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='hang'){const row=y/fr;(hangHands[row]||=([])).push(window.frameClimbHands);}
          if(anim==='climb'){const row=y/fr;(climbHands[row]||=([])).push(window.frameClimbHands);(climbFeet[row]||=([])).push(window.frameClimbFeet);}
        }
      }}finally{source.toDataURL=encode}
-     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet,hangHands,ledgePullHands,openLowHands,openHighHands};
+     return {png:canvas.toDataURL(),holds,hangs,grounds,scales,climbHands,climbFeet,hangHands,ledgePullHands,openLowHands,openHighHands,openBinHands};
     }''',{'frames':expressions,'cols':col,'fr':FR,'look':look,'body':body,'key':KEY})
     image=Image.open(io.BytesIO(base64.b64decode(result['png'].split(',')[1]))).convert('RGBA')
     outlined=Image.new('RGBA',image.size)
@@ -133,11 +136,11 @@ async def main():
       for c in patch_cols:
        box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR);original.paste(image.crop(box),box[:2])
      previous['bounds']=frame_bounds(original,FR,cmap)
-     original.save(OUT/filename,'WEBP',lossless=True,method=6)
+     tmp=OUT/(filename+'.tmp.webp');original.save(tmp,'WEBP',lossless=True,method=6);tmp.replace(OUT/filename)
      if bn=='key':original.save(OUT/'key.png',optimize=True)
      if 'climb' in patch:previous.update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
      if 'hang' in patch:previous['hangHands']=result['hangHands']
-     for access in ['openLow','openHigh']:
+     for access in ['openLow','openHigh','openBin']:
       if access in patch:previous[access+'Hands']=result[access+'Hands']
      if 'ledgePull' in patch:previous['ledgePullHands']=result['ledgePullHands']
      previous.setdefault('grounds',{}).update({name:value for name,value in result['grounds'].items() if name in patch})
@@ -145,17 +148,19 @@ async def main():
      (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
      print(bn,'patched',','.join(sorted(patch)),(OUT/filename).stat().st_size,flush=True)
      continue
-    image.save(OUT/filename,'WEBP',lossless=True,method=6)
+    tmp=OUT/(filename+'.tmp.webp');image.save(tmp,'WEBP',lossless=True,method=6);tmp.replace(OUT/filename)
     # Also preserve the PNG used by legacy append tools for the base contract.
     if bn=='key':
      image.save(OUT/'key.png',optimize=True);meta.update(fr=FR,cols=col,groundY=46.8,anims=cmap,grounds=result['grounds'],scales=result['scales'])
     else:meta.setdefault('bodies',{})[bn]={'cols':col,'anims':cmap,'grounds':result['grounds'],'scales':result['scales']}
     (meta if bn=='key' else meta['bodies'][bn])['bounds']=frame_bounds(image,FR,cmap)
-    for access in ['openLow','openHigh']:
+    for access in ['openLow','openHigh','openBin']:
      if result[access+'Hands']:(meta if bn=='key' else meta['bodies'][bn])[access+'Hands']=result[access+'Hands']
     if result['ledgePullHands']:(meta if bn=='key' else meta['bodies'][bn])['ledgePullHands']=result['ledgePullHands']
     if result['hangHands']:(meta if bn=='key' else meta['bodies'][bn])['hangHands']=result['hangHands']
     if result['climbHands']:(meta if bn=='key' else meta['bodies'][bn]).update(climbHands=result['climbHands'],climbFeet=result['climbFeet'])
+    if bn.endswith('Lid'):
+     (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')));print(bn,col,(OUT/filename).stat().st_size,flush=True);continue
     await page.evaluate('(n)=>loadModularLook(n)',look)
     await page.evaluate('(b)=>setBody(b)',body)
     await page.evaluate('(c)=>setTex(c)',KEY)

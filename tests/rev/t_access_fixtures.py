@@ -44,10 +44,10 @@ async def main():
     const S=fresh('m2'),P=S.player,h=S.hides.find(h=>h.type==='well'&&G.ugAt(h.tx,h.ty));reset(P,h.x,h.y);P.under=true;const cells=[];
     for(let y=h.ty-1;y<=h.ty+1;y++)for(let x=h.tx-1;x<=h.tx+1;x++)if(x!==h.tx||y!==h.ty){cells.push([x,y,G.G0[y][x]]);G.G0[y][x]='#';}
     try{check(!G.beginAccessFlow('surface',h)&&P.under&&!P.trav,'blocked surface erases tunnel state');}finally{for(const[x,y,c]of cells)G.G0[y][x]=c;}
-    // Every player outfit uses its own measured hands, including diagonals and closing turns.
+    // Every outfit keeps its feet planted and faces the fixture while working, including diagonals.
     for(const outfit of [null,'crew','staff','waiter'])for(let d=0;d<8;d++)for(const high of [false,true])for(const closing of [false,true]){
      P.outfit=P.disguise=outfit;const h={type:'well',x:0,y:0},stand={x:Math.cos(d*Math.PI/4)*30,y:Math.sin(d*Math.PI/4)*30},s=G.accessHandSample(h,stand,.5,closing,high),key=G.characterLook(P),body=key.split('@')[1]||G.PR.looks[key],m=G.PR.bodies[body]||G.PR,row=((Math.round(s.a/(Math.PI/4))%8)+8)%8,hh=m[s.anim+'Hands'][row][s.frame],sc=m.scales[s.anim],gy=m.grounds[s.anim],x=s.x+((hh[0][0]+hh[1][0])/2-32)*sc,y=s.y+13+((hh[0][1]+hh[1][1])/2-gy)*sc;
-     check(Math.hypot(x-s.contact.x,y-s.contact.y)<.01,'hand misses physical cover');contacts++;
+     check(Math.hypot(s.x-stand.x,s.y-stand.y)<.01,'hand contact moves planted feet');check(Math.abs(Math.atan2(Math.sin(s.a-Math.atan2(-stand.y,-stand.x)),Math.cos(s.a-Math.atan2(-stand.y,-stand.x))))<.01,'closing turns back to fixture');check(Number.isFinite(x)&&Number.isFinite(y)&&Math.hypot(x-s.x,y-s.y)<75,'invalid baked reach');contacts++;
     }
     check(vents>=15&&sewers>=15&&signs>=20&&kinds.size===2,'incomplete map fixture coverage');return{vents,sewers,signs,contacts,maxStep:+maxStep.toFixed(2),kinds:[...kinds]};
    }''')

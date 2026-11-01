@@ -584,7 +584,7 @@ function doorAct(dr) {
   }
   if (dr.keyLock === 'code' && dr.locked) return { k: 'keypad', d: dr, label: '비밀번호 입력' };
   if (dr.keyLock && dr.locked && !hasK(dr.keyLock) && P.picks > 0) return { k: 'pick', d: dr, o: { kind: 'door', d: dr, x: dr.x, y: dr.y }, label: `락픽으로 열기 · 남은 락픽 ${P.picks}개` };
-  return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? withJosa(keyName(dr.keyLock), '으로/로') + ' 열기' : keyName(dr.keyLock) + ' 필요 · 락픽 없음' } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 잠그기' };
+  return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? withJosa(keyName(dr.keyLock), '으로/로') + ' 열기' : keyName(dr.keyLock) + ' 필요 · 락픽 없음' } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 닫기' };
 }
 // 암살하려고 다가가는 중에는 Space가 문·비번·조명·두꺼비집·쪽지 같은 다른 행동을 하지 않는다 (그 행동은 Z로 넘긴다)
 const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg', 'pick']);
@@ -925,7 +925,7 @@ function actPrimary(force) {
     case 'door': {
       const d = a.d; if (d.gate && d.locked) { d.gate = null; toast('빗장을 풀었다 — 지름길이 열렸다', 2, 'good'); S.stats.gates = (S.stats.gates || 0) + 1; }
       if (d.keyLock && d.locked) { const kn = keyName(d.keyLock); noteChange('door', d, d.keyLock); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; d.group.forEach(t => t.keyLock = false); toast(withJosa(kn, '으로/로') + ' 문을 열었다', 1.8, 'good'); }
-      if (!d.locked && doorBlocked(d)) { toast('문 앞에 무언가 있어 잠글 수 없다', 1.6); break; }
+      if (!d.locked && doorBlocked(d)) { toast('문 앞에 무언가 있어 닫을 수 없다', 1.6); break; }
       setDoor(d, !d.locked); play(d.locked ? 'metal' : 'cloth', 0.45); noise(d.x, d.y, 35, 'door');
       for (const g of S.guards) if (g.path) g.path = null;
       if (d.locked) hint('lock', '잠긴 문은 자경대원이 돌아서 간다. 쫓기거나 수색 중인 자경대원은 문을 부순다');

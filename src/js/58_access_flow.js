@@ -7,17 +7,16 @@ function fixtureGrip(h,open=0) {
     const g=cabinetGeometry(h),leaf=(g.doorRight-g.doorLeft)/(g.locker?1:2),p=leaf*Math.cos(open*Math.PI*.48);
     return{x:g.doorLeft+p-Math.min(5,p*.25),y:g.doorTop+(g.doorBottom-g.doorTop)*.78+Math.sin(open*Math.PI*.48)*9};
   }
-  if(h.type==='box')return{x:h.x,y:h.y-24+18*Math.cos(open*1.35)-24*Math.sin(open*1.35)};
+  if(h.type==='box')return{x:h.x,y:h.y-16+18*Math.cos(open*1.35)-14*Math.sin(open*1.35)};
   return{x:h.x+open*29,y:h.y-open*15};
 }
 function workOpen(p,closing=false){const f=hideEase((p-.24)/.42);return closing?1-f:f;}
 function accessHandSample(h,stand,p,closing=false,high=false) {
-  p=clamp(p,0,1);const key=playerKey(S.player),anim=high||h.furn?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,[,n]=m.anims[anim]||PR.anims[anim],frame=Math.round(p*(n-1));
-  const face=Math.atan2(h.y-stand.y,h.x-stand.x),turn=closing?1-hideEase(p/.2)+hideEase((p-.8)/.2):0,a=face+Math.PI*turn;
-  const row=prDir(a),hands=m[anim+'Hands']?.[row]?.[frame]||PR[anim+'Hands']?.[row]?.[frame],scale=m.scales?.[anim]||PR.scales?.[anim]||1,gy=m.grounds?.[anim]??PR.grounds?.[anim]??PR.groundY;
-  const at=fixtureGrip(h,workOpen(p,closing)),weight=closing?hideEase((p-.2)/.14)*hideEase((.8-p)/.12):hideEase(p/.3)*hideEase((1-p)/.25);let x=stand.x,y=stand.y;
-  if(hands){const hx=(hands[0][0]+hands[1][0])/2,hy=(hands[0][1]+hands[1][1])/2;x+=(at.x-(hx-PR.fr/2)*scale-x)*weight;y+=(at.y-13-(hy-gy)*scale-y)*weight;}
-  return{x,y,a,anim,frame,outside:true,contact:at,weight};
+  p=clamp(p,0,1);let key=playerKey(S.player);const [pal,bn]=prSplit(key),lid=h.type==='box'&&PR.bodies?.[bn+'Lid'];if(lid)key=pal+'@'+bn+'Lid';const anim=lid?'openBin':high||h.furn||h.type==='panel'?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,[,n]=m.anims[anim]||PR.anims[anim],frame=Math.round((closing?1-p:p)*(n-1));
+  const a=Math.atan2(h.y-stand.y,h.x-stand.x),at=fixtureGrip(h,workOpen(p,closing)),weight=hideEase((p-.14)/.1)*hideEase((.84-p)/.12);
+  // Keep both feet at the approach point. Hand contact must never be obtained
+  // by translating the entire actor into the air or turning their back.
+  return{x:stand.x,y:stand.y,a,key,anim,frame,outside:true,contact:at,weight};
 }
 // The trailing forearm stays above the lip while the person pulls the cover shut from inside.
 function drawInsideCoverHand(h,open,weight) {
@@ -30,7 +29,7 @@ function hideWork(T) {
   const F=T.hideFlow,at=T.t-F.walk;
   if(at>=0&&at<(F.handPre||0))return{p:at/F.handPre,closing:false};
   const end=(F.handPre||0)+F.duration;
-  if(F.handPost&&at>=end)return{p:clamp((at-end)/F.handPost,0,1),closing:true};
+  if(F.handPost&&at>=end&&at<end+F.handPost)return{p:clamp((at-end)/F.handPost,0,1),closing:true};
   return null;
 }
 function ventKind(v){return v.roof?'roof':v.street?'wall':'floor';}
@@ -88,8 +87,8 @@ function accessActorSample(F) {
   if(q<F.pre)return accessHandSample(h,F.stand,q/F.pre,false,F.obj.street||F.obj.roof);
   if(F.post&&q>=F.pre+F.core)return accessHandSample(h,F.stand,(q-F.pre-F.core)/F.post,true,F.obj.street||F.obj.roof);
   if(F.kind==='sewerDown')return{x:h.x,y:h.y+10+p*42,a:-Math.PI/2,anim:'climb',frame:Math.floor(p*7)%4,outside:false,rim:h.y+10};
-  const t=F.exit?1-p:p,r=1-t,u=hideEase(t),x=F.stand.x+(g.x-F.stand.x)*u,y=r*r*F.stand.y+2*r*t*(g.rim-56)+t*t*(g.rim+42);
-  return{x,y,a:Math.atan2(g.y-F.stand.y,g.x-F.stand.x)+(F.exit?Math.PI:0),anim:'duck',frame:Math.round(clamp(t/.65,0,1)*8),outside:t<.42,rim:g.rim};
+  const t=F.exit?1-p:p,u=hideEase(t),x=F.stand.x+(g.x-F.stand.x)*u,y=F.stand.y+(g.rim+36-F.stand.y)*u;
+  return{x,y,a:Math.atan2(g.y-F.stand.y,g.x-F.stand.x),anim:'duck',frame:Math.round(clamp(t/.65,0,1)*8),outside:t<.42,rim:g.rim};
 }
 function updateAccessFlow(P,dt) {
   const T=P.trav,F=T.accessFlow;T.t+=dt;F.t=T.t;

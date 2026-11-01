@@ -113,6 +113,7 @@ function drawKitBuilding(b) {
     }
   }
   if (b.kind === 'shop') drawShopSigns(b);
+  for(const d of S.doors)if(d.ty===b.y1&&d.tx>=b.x0&&d.tx<=b.x1&&(S.player.interact?.a.d===d||!d.locked))drawFacadeDoorWork(d);
   return true;
 }
 // 내 둘레 가구의 막힌 칸: 어두운 방에서도 어디로 지나갈 수 있는지 보이게 (가까울수록 진하게)
