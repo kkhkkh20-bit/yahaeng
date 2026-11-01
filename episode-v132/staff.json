@@ -1,0 +1,212 @@
+{
+  "route": "staff",
+  "touch": false,
+  "cases": [
+    {
+      "case": "entry",
+      "t": 0.03333333333333333,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        5.5,
+        18.5,
+        0
+      ],
+      "kills": 0,
+      "ko": null,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "interrogation",
+      "t": 9.233333333333372,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        7.499997173716186,
+        12.041666666659294,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "stash",
+      "t": 14.066666666666945,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        6.5,
+        8.041666666666666,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "desk-note",
+      "t": 22.933333333333312,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        12.489118163532353,
+        10.48959648876735,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "keypad-open",
+      "t": 24.18333333333324,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        14.49358530359458,
+        9.49963592755845,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "wrong-code",
+      "t": 24.18333333333324,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        14.49358530359458,
+        9.49963592755845,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "code-accepted",
+      "t": 24.683333333333213,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        14.49358530359458,
+        9.49963592755845,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "stairs",
+      "t": 31.483333333332826,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.50641470892568,
+        6.493158786662902,
+        1
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "target",
+      "t": 49.216666666665155,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.580577780992916,
+        6.816025641315473,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "ledger",
+      "t": 50.48333333333175,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.497203968826183,
+        7.5157084753430325,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "descent",
+      "t": 59.416666666664575,
+      "hp": 3,
+      "alarm": 2,
+      "at": [
+        13.49999999999117,
+        16.501648162942885,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "extraction",
+      "t": 63.28333333333102,
+      "hp": 3,
+      "alarm": 2,
+      "at": [
+        4.516152560983895,
+        18.483876439331336,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    }
+  ],
+  "errors": [],
+  "note": "Live AI with fixed simulation steps; not a device FPS benchmark."
+}

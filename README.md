@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v132 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/?v=132
+
+에피소드 기획·완주 검수: https://kkhkkh20-bit.github.io/yahaeng/episode-v132/
+
 v131 맨홀·환풍구와 출입 동작: https://kkhkkh20-bit.github.io/yahaeng/passages-v131/
 
 기존 2D 외부 테스트 · 로딩 수정본: https://kkhkkh20-bit.github.io/yahaeng/playtest-2d/
@@ -8,7 +12,7 @@ v130 기존 기능 복원과 검수: https://kkhkkh20-bit.github.io/yahaeng/pari
 
 v129 걷기·방향 보정과 경비 시야: https://kkhkkh20-bit.github.io/yahaeng/tempo-v129/
 
-v131 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
+v132 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 
 같은 배치의 화면 비교·검수: https://kkhkkh20-bit.github.io/yahaeng/club-v128/
 

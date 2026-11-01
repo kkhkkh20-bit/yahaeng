@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import {loadModular,colorModular} from './lib/modular_models.js?v=v131-585247f537b3';
-import {createPoseDriver} from './pose_driver.js?v=v131-585247f537b3';
-import {FLOOR} from './world.js?v=v131-585247f537b3';
-import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v131-585247f537b3';
+import {loadModular,colorModular} from './lib/modular_models.js?v=v132-7017f15cae32';
+import {createPoseDriver} from './pose_driver.js?v=v132-7017f15cae32';
+import {FLOOR} from './world.js?v=v132-7017f15cae32';
+import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v132-7017f15cae32';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=v=>{v=clamp(v);return v*v*(3-2*v)};
 function pbr(rig){const mats=[];rig.model.traverse(o=>{if(!o.isMesh)return;const cv=m=>{const n=new THREE.MeshStandardMaterial({color:m.color,roughness:.83,metalness:0});n.userData={...m.userData};mats.push(n);return n};o.material=Array.isArray(o.material)?o.material.map(cv):cv(o.material);o.castShadow=o.receiveShadow=true;});rig.mats=mats;return rig;}
@@ -10,9 +10,10 @@ export async function createActors(G,scene,visibility){
  const player=G.S.player,actors=new Map(),spawning=new Set(),dummy=pbr(await loadModular('guard'));
  let disposed=false;
  const corpseOf=o=>G.S.corpses.find(c=>c.g===o||o.id!=null&&c.guardId===o.id),guardOf=c=>c&&(c.g||G.S.guards.find(g=>g.id===c.guardId));
- async function make(o){const name=o===player?'hero':o.civ?'male':'guard',a=pbr(await loadModular(name)),b=pbr(await loadModular('guard')),driver=createPoseDriver(a,b);driver.root.visible=false;if(!disposed)scene.add(driver.root);const actor={o,rig:a,driver,look:null,phase:0,last:[o.x,o.y],previous:null,name};actors.set(o,actor);return actor;}
+ const authoredModel=o=>G.STAGE.guards.find(d=>d.tag&&d.tag===o.tag)?.model||(o.civ?'male':'guard');
+ async function make(o){const name=o===player?'hero':authoredModel(o),a=pbr(await loadModular(name)),b=pbr(await loadModular('guard')),driver=createPoseDriver(a,b);driver.root.visible=false;if(!disposed)scene.add(driver.root);const actor={o,rig:a,driver,look:null,phase:0,last:[o.x,o.y],previous:null,name};actors.set(o,actor);return actor;}
  await make(player);for(const g of G.S.guards)await make(g);
- function ensureOutfit(a){const corpse=corpseOf(a.o),name=a.o===player?(({crew:'heroCrew',staff:'heroWorker',courier:'heroWorker',waiter:'heroSuit',cater:'heroWorker'})[player.outfit]||'hero'):(corpse?.stripped||a.o.civ?'male':'guard');if(name===a.name||a.loading)return;a.loading=true;loadModular(name).then(r=>{a.rig=pbr(r);a.driver.setPrimary(a.rig);if(a.o===paired)actors.get(player).driver.setPartner(a.rig);a.name=name;a.look=null;a.previous=null;colour(a);}).finally(()=>a.loading=false);}
+ function ensureOutfit(a){const corpse=corpseOf(a.o),name=a.o===player?(({crew:'heroCrew',staff:'heroWorker',courier:'heroWorker',waiter:'heroSuit',cater:'heroWorker'})[player.outfit]||'hero'):(corpse?.stripped?'male':authoredModel(a.o));if(name===a.name||a.loading)return;a.loading=true;loadModular(name).then(r=>{a.rig=pbr(r);a.driver.setPrimary(a.rig);if(a.o===paired)actors.get(player).driver.setPartner(a.rig);a.name=name;a.look=null;a.previous=null;colour(a);}).finally(()=>a.loading=false);}
 
  function colour(a){const look=G.characterLook(a.o);if(a.look===look)return;a.look=look;const pal=G.characterPalette(a.o);if(pal)colorModular(a.rig.mats,Object.fromEntries(['skin','hair','shirt','pants','shoes'].map((k,i)=>[k,pal[i]||pal[4]])));const c=corpseOf(a.o);if(c?.stripped)for(const m of a.rig.mats){if(m.userData.role==='shirt')m.color.set('#989b91');if(m.userData.role==='pants')m.color.set('#545e59');}if(a.o===player)for(const m of a.rig.mats){m.emissive.copy(m.color);m.emissiveIntensity=['shirt','pants'].includes(m.userData.role)?.08:.015;}}
  function height(o){if(o===player){const a=accessMotion(o,G);if(a)return a.y;if(o.under)return SEWER_Y;if(o.vent)return DUCT_Y;}const T=o.trav||o.climb;if(T?.stairs&&!T.stairs.roof){const dest=T.stairs.dest.fl||0,from=T.stairs.up?dest-1:dest+1;return(from+(dest-from)*clamp(T.t/T.dur))*FLOOR;}if(T?.room&&T.crossing){const f=clamp(T.t/T.dur),edge=T.down?.4:(T.phases.find(p=>p.pose==='climb')?.to||.72),rise=T.down?1-ease((f-.4)/.45):ease((f-.1)/Math.max(.01,edge-.1));return(T.room.fl||1)*FLOOR*rise;}if(o.jump){const j=o.jump,f=clamp(j.t/j.dur);return((o.fl||0)*FLOOR+(o.z||0)*FLOOR)+Math.sin(f*Math.PI)*.4;}return(o.z||o.fl||0)*FLOOR;}

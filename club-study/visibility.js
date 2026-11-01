@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {passageMode} from './passages.js?v=v131-585247f537b3';
+import {passageMode} from './passages.js?v=v132-7017f15cae32';
 // The same tile rays as the simulation: glass transmits sight; shut doors and walls do not.
 // A small world-space texture cuts only the overhead architecture, not whole buildings.
 export function createVisibility(G){
