@@ -320,7 +320,7 @@ function toMenu() {
 }
 
 atlas.onload = async () => {
-  await Promise.all(Object.values(quarterImages).map(a=>a.img.decode().catch(()=>null)));
+  // Optional furniture images load independently; they must not hold up the menu.
   resize();
   renderStageList();
   newGame(0);
@@ -367,7 +367,9 @@ atlas.onload = async () => {
       return issues;
     }
   };
+  window.__boot?.ready();
 };
+atlas.onerror=()=>window.__boot?.fail('필수 이미지 다운로드 실패');
 atlas.src = A.atlas;
 // 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
 if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)

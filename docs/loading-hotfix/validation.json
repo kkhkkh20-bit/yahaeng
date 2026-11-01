@@ -1,0 +1,32 @@
+[
+  {
+    "engine": "chromium",
+    "mobile": false,
+    "ready": true,
+    "settings": true,
+    "contracts": true,
+    "start": true
+  },
+  {
+    "engine": "chromium",
+    "mobile": true,
+    "ready": true,
+    "settings": true,
+    "contracts": true,
+    "start": true
+  },
+  {
+    "engine": "firefox",
+    "mobile": false,
+    "ready": true,
+    "settings": true,
+    "contracts": true,
+    "start": true
+  },
+  {
+    "delayedDownload": "settings responsive, start queued and opened"
+  },
+  {
+    "failedDownload": "retry link and settings available"
+  }
+]

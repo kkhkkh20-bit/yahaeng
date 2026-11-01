@@ -24,3 +24,5 @@ build/test_logs/
 # Cloudflare Pages deploy artifacts
 /dist/cloudflare-2d/
 /dist/yahaeng-2d-cloudflare.zip
+
+/build/boot-validation/
