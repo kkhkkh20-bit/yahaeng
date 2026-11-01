@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v117 첫 플레이·연습 안내 개선: https://kkhkkh20-bit.github.io/yahaeng/first-session-v117/
+
+리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FIRST_USE_REVIEW_V117.md
+
 v116 식당 화장실·경비복 잠입: https://kkhkkh20-bit.github.io/yahaeng/uniform-v116/
 
 리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/SELF_REVIEW_V116.md
@@ -114,7 +118,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v116
-Source commit: 6229d1c346d5ebd4ffc8f44a7ec0809bd50d6cdf
+Version: v117
+Source commit: 438c3ece630c5c21103ea7e6c95a3d347dbc8663
 
-Ink study source: 6229d1c346d5ebd4ffc8f44a7ec0809bd50d6cdf
+Ink study source: 438c3ece630c5c21103ea7e6c95a3d347dbc8663
