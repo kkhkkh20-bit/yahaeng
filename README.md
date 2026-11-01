@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v118 전체 의뢰 리뷰·완료 기록·수납 복구: https://kkhkkh20-bit.github.io/yahaeng/mission-review-v118/
+
+상세 리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FULL_MISSION_REVIEW_V118.md
+
 v117 첫 플레이·연습 안내 개선: https://kkhkkh20-bit.github.io/yahaeng/first-session-v117/
 
 리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FIRST_USE_REVIEW_V117.md
@@ -118,7 +122,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v117
-Source commit: 438c3ece630c5c21103ea7e6c95a3d347dbc8663
+Version: v118
+Source commit: f9fd19be2884aed156a9ae727abdef1573e3730c
 
-Ink study source: 438c3ece630c5c21103ea7e6c95a3d347dbc8663
+Ink study source: f9fd19be2884aed156a9ae727abdef1573e3730c

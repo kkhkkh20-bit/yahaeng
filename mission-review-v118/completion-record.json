@@ -1,0 +1,67 @@
+{
+  "baselineVersion": "v117",
+  "baselineCommit": "438c3ece630c5c21103ea7e6c95a3d347dbc8663",
+  "method": "Time-stepped developer review using live game-engine movement and action APIs; all NPCs, cameras, factions and damage active. Map data used for route planning. No player teleport, health, outfit, objective or key grants. Not a blind human usability study.",
+  "runs": [
+    {
+      "id": "m2",
+      "name": "VIP",
+      "route": "장부로 불러낸 매복",
+      "gameClock": "5:39",
+      "detected": 0,
+      "healthRemaining": 3,
+      "endDataWin": "1",
+      "capture": "m2-clear-baseline.png"
+    },
+    {
+      "id": "m4",
+      "name": "대청소",
+      "route": "출입 메모·빨간/초록 카드·금고 두 곳·실장",
+      "gameClock": "2:35",
+      "detected": 0,
+      "healthRemaining": 3,
+      "endDataWin": "1",
+      "capture": "m4-clear-baseline.png"
+    },
+    {
+      "id": "m6",
+      "name": "배신",
+      "route": "머리핀·간수 복장·장비 회수·CCTV 차단",
+      "gameClock": "1:15",
+      "detected": 0,
+      "healthRemaining": 3,
+      "endDataWin": "1",
+      "capture": "m6-clear-baseline.png"
+    },
+    {
+      "id": "m1",
+      "name": "장부 털기",
+      "route": "직원 복장 → 장부 → 경찰 제복 → 사본",
+      "gameClock": "2:19",
+      "detected": 0,
+      "healthRemaining": 3,
+      "endDataWin": "1",
+      "capture": "m1-clear-baseline.png"
+    },
+    {
+      "id": "m3",
+      "name": "잔칫날",
+      "route": "문지기 제압·초록 카드·서류·회장",
+      "gameClock": "1:18",
+      "detected": 0,
+      "healthRemaining": 3,
+      "endDataWin": "1",
+      "capture": "m3-clear-baseline.png"
+    },
+    {
+      "id": "m5",
+      "name": "본부",
+      "route": "조직원 복장·비밀번호 엿듣기·2층 보스",
+      "gameClock": "1:28",
+      "detected": 2,
+      "healthRemaining": 1,
+      "endDataWin": "1",
+      "capture": "m5-clear-baseline.png"
+    }
+  ]
+}
