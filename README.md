@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+기존 2D 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
+
+v129 걷기·방향 보정과 경비 시야: https://kkhkkh20-bit.github.io/yahaeng/tempo-v129/
+
 v128 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 
 같은 배치의 화면 비교·검수: https://kkhkkh20-bit.github.io/yahaeng/club-v128/
@@ -162,7 +166,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v128
-Source commit: 3746fe56c14e376aa5efd9b3e968bb98a5f77060
+Version: v129
+Source commit: b8f49a3ce977830f704c779d0ecf916470b8c4c5
 
-Ink study source: 3746fe56c14e376aa5efd9b3e968bb98a5f77060
+Ink study source: b8f49a3ce977830f704c779d0ecf916470b8c4c5
