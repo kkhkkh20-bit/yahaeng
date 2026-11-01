@@ -1,0 +1,102 @@
+{
+  "url": "https://kkhkkh20-bit.github.io/yahaeng/club-study/",
+  "hashes": [
+    {
+      "file": "index.html",
+      "sha256": "e523a18e6bccc7671262dfa6907c39b86ac91ddda0a5cba22a642342ddf1c2de",
+      "bytes": 11380809
+    },
+    {
+      "file": "visibility.js",
+      "sha256": "d67ad95451db8063d69f5bfbd9f0f87e5b2dddfc63a841fe3042a684ab86ca31",
+      "bytes": 3373
+    },
+    {
+      "file": "actors.js",
+      "sha256": "c44c967cbb59a9d0e4c61b51c68accd767cccd4ba173597b23799b0ff05b6dc2",
+      "bytes": 10212
+    },
+    {
+      "file": "pose_driver.js",
+      "sha256": "4d5d19a712319e044e3530ec570cb835b707ec6a7cf00247fa6cf33281c11744",
+      "bytes": 36716
+    },
+    {
+      "file": "materials.js",
+      "sha256": "548a0506ea0e618b89baafdf8e94976b4b699aa33d61d19565823ed4e3de03ec",
+      "bytes": 3282
+    },
+    {
+      "file": "batch.js",
+      "sha256": "d676e9989299c47574a35f5c765bc87f1cebbef30b5c8ba88c0e784d0f36d735",
+      "bytes": 1512
+    },
+    {
+      "file": "view.js",
+      "sha256": "47134c063f9f6309e075932205e702fa21263654fbdd9b88e05c2aa0d50559e0",
+      "bytes": 17348
+    },
+    {
+      "file": "reveal.js",
+      "sha256": "32cff518c37c8550608abd0ec0d26e52ce18760bf8fe724c7759241206fd7e0e",
+      "bytes": 2622
+    },
+    {
+      "file": "passages.js",
+      "sha256": "180d98921faba05888b136e7d4f6229c82d61d2871e8f1a9d9ec2d38eed6c5ad",
+      "bytes": 6718
+    },
+    {
+      "file": "effects.js",
+      "sha256": "fdf2e746cceeac76096dfff2f7a0aa6f89ffb5eca8ec9d0deb457a46fa22761f",
+      "bytes": 2746
+    },
+    {
+      "file": "world.js",
+      "sha256": "3ecb6292a8bc2e22773038ec5faa8d422915ac8afd2aef05a888bfa0691ed1bd",
+      "bytes": 19467
+    },
+    {
+      "file": "sight.js",
+      "sha256": "43a969b6fa33e6ac660cc4fda61362d4750cde3dbedf788592102ce008ecf55e",
+      "bytes": 3013
+    },
+    {
+      "file": "lighting.js",
+      "sha256": "2b0109dc3eb9fb9cdb65eae5e5ef59414fdf317c3cca8919213276ef62a68bfa",
+      "bytes": 2362
+    }
+  ],
+  "browser": [
+    {
+      "version": "v131",
+      "under": true,
+      "wells": 2,
+      "vents": 3,
+      "sewerCells": 23,
+      "ductCells": 17,
+      "hp": 3,
+      "mobile": false
+    },
+    {
+      "version": "v131",
+      "under": true,
+      "wells": 2,
+      "vents": 3,
+      "sewerCells": 23,
+      "ductCells": 17,
+      "hp": 3,
+      "mobile": true
+    }
+  ],
+  "cloudflare2d": {
+    "edition": "2d-campaign",
+    "version": "v128-loading-fix",
+    "source_sha256": "0589f4cc2f0edf163155e5b1011a9a61062e4b98d005f04b292993ccc5d4927b",
+    "html_bytes": 159783,
+    "source_bytes": 11376729,
+    "scripts": 4,
+    "assets": 174,
+    "asset_bytes": 8826813
+  }
+}
