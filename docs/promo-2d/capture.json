@@ -1,0 +1,153 @@
+{
+  "source": "https://yahaeng.kkhkkh-20.workers.dev/",
+  "version": "v128",
+  "viewport": [
+    1280,
+    720
+  ],
+  "video": "local raw recording (not published)",
+  "events": [
+    {
+      "wall": 17.993122444999244,
+      "text": "route 15 pharmacy"
+    },
+    {
+      "wall": 29.20003212299889,
+      "text": "route 26 seasoning"
+    },
+    {
+      "wall": 31.5308106829998,
+      "text": "route 28 wait off the aisle"
+    },
+    {
+      "wall": 43.26755711799888,
+      "text": "route 40 guest arrived"
+    },
+    {
+      "wall": 47.64656218200071,
+      "text": "route 44 WC entrance"
+    },
+    {
+      "wall": 49.276911389000816,
+      "text": "route 46 nonlethal takedown"
+    },
+    {
+      "wall": 50.184592310999506,
+      "text": "route 47 uniform"
+    },
+    {
+      "wall": 67.48172125000019,
+      "text": "route 64 office interior"
+    },
+    {
+      "wall": 67.48255767000046,
+      "text": "route 64 crew office access"
+    },
+    {
+      "wall": 80.65701145100138,
+      "text": "route 77 upstairs code note"
+    },
+    {
+      "wall": 95.53885985700072,
+      "text": "route 92 door 5,8 keypad"
+    },
+    {
+      "wall": 97.61137481800142,
+      "text": "route 94 ledger"
+    },
+    {
+      "wall": 103.37954637799885,
+      "text": "route 100 camera approach"
+    },
+    {
+      "wall": 103.56968891100223,
+      "text": "route 100 office camera disabled with dart"
+    },
+    {
+      "wall": 104.71221130400045,
+      "text": "route 101 phone"
+    },
+    {
+      "wall": 108.66045893999944,
+      "text": "route 105 ambush locker"
+    },
+    {
+      "wall": 135.30484596299902,
+      "text": "route 132 VIP arrived while hidden"
+    },
+    {
+      "wall": 139.05813831399973,
+      "text": "route 136 VIP rear"
+    },
+    {
+      "wall": 141.7861864259994,
+      "text": "route 138 VIP eliminated"
+    }
+  ],
+  "screenshots": [
+    "02-takedown.png",
+    "03-infiltration.png",
+    "04-ledger.png",
+    "05-target.png"
+  ],
+  "result": {
+    "over": true,
+    "exit": true,
+    "title": "임무 완료",
+    "hp": 3,
+    "t": 143.33800400001894,
+    "trace": [
+      "pharmacy",
+      "seasoning",
+      "wait off the aisle",
+      "guest arrived",
+      "WC entrance",
+      "nonlethal takedown",
+      "uniform",
+      "office interior",
+      "crew office access",
+      "upstairs code note",
+      "door 5,8 keypad",
+      "ledger",
+      "camera approach",
+      "office camera disabled with dart",
+      "phone",
+      "ambush locker",
+      "VIP arrived while hidden",
+      "VIP rear",
+      "VIP eliminated"
+    ]
+  },
+  "errors": [],
+  "raw_sha256": "14db4bfce99da189bd39102531c7c732070b2491fe802c35d3e85abbaa0464c1",
+  "edit": {
+    "rate": "original playback speed",
+    "cuts": [
+      [
+        1.2,
+        2.6
+      ],
+      [
+        46.8,
+        51.8
+      ],
+      [
+        63.6,
+        68.0
+      ],
+      [
+        94.3,
+        98.8
+      ],
+      [
+        137.5,
+        142.6
+      ],
+      [
+        148.3,
+        150.5
+      ]
+    ],
+    "output": "yahaeng-play.mp4"
+  }
+}
