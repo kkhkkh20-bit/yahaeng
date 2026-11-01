@@ -1,0 +1,93 @@
+{
+  "hashes": [
+    {
+      "file": "index.html",
+      "sha256": "4bdeb220143c488804d62578b9f2b7f9a02c139feb379a396bd2bd28a83fb97a",
+      "bytes": 11378062
+    },
+    {
+      "file": "visibility.js",
+      "sha256": "66f4a78f9b0d8a5c549ebdbcacce219b0213b142a2567964c298e316289cfca9",
+      "bytes": 3311
+    },
+    {
+      "file": "actors.js",
+      "sha256": "d72178e2c7cf6a5b002d7fbabee7d0a330657d0f4ed1107a8c29f64b5b473fe5",
+      "bytes": 9198
+    },
+    {
+      "file": "pose_driver.js",
+      "sha256": "2ded3251023ea45c54d2376a49936f174341d8a14128994f4853481c13f734c6",
+      "bytes": 36790
+    },
+    {
+      "file": "materials.js",
+      "sha256": "548a0506ea0e618b89baafdf8e94976b4b699aa33d61d19565823ed4e3de03ec",
+      "bytes": 3282
+    },
+    {
+      "file": "batch.js",
+      "sha256": "d676e9989299c47574a35f5c765bc87f1cebbef30b5c8ba88c0e784d0f36d735",
+      "bytes": 1512
+    },
+    {
+      "file": "view.js",
+      "sha256": "6c5e5441b6f6920d3942e2b7446896ff2da15d7efb852aef280671012cead338",
+      "bytes": 15295
+    },
+    {
+      "file": "reveal.js",
+      "sha256": "32cff518c37c8550608abd0ec0d26e52ce18760bf8fe724c7759241206fd7e0e",
+      "bytes": 2622
+    },
+    {
+      "file": "effects.js",
+      "sha256": "fc73a28bffd771d7689180b3209d2d8d258f2883be14dd03ce6df3f53ff1bd50",
+      "bytes": 2746
+    },
+    {
+      "file": "world.js",
+      "sha256": "d755b16328d42f46673a537c2144f0ee1649a54fd5a22517aa53db55db003df3",
+      "bytes": 19512
+    },
+    {
+      "file": "sight.js",
+      "sha256": "43a969b6fa33e6ac660cc4fda61362d4750cde3dbedf788592102ce008ecf55e",
+      "bytes": 3013
+    }
+  ],
+  "browser": [
+    {
+      "version": "v130",
+      "hideTypes": [
+        "box",
+        "box",
+        "locker",
+        "wardrobe",
+        "locker",
+        "bush",
+        "bush"
+      ],
+      "sightCells": 412,
+      "window": true,
+      "vertexShaders": 24,
+      "mobile": false
+    },
+    {
+      "version": "v130",
+      "hideTypes": [
+        "box",
+        "box",
+        "locker",
+        "wardrobe",
+        "locker",
+        "bush",
+        "bush"
+      ],
+      "sightCells": 412,
+      "window": true,
+      "vertexShaders": 24,
+      "mobile": true
+    }
+  ]
+}
