@@ -371,7 +371,7 @@ function buildFloors(st) {
       }
       for (let x = b.x0 + 1; x < b.x1; x++) if ((x - b.x0) % 2 === 1) { g[b.y1][x] = 'N'; if (g[b.y1 - 1][x] === '#') g[b.y1][x] = '#'; }
       const free = (x, y) => g[y][x] === fc && !stairs.some(s => Math.abs(s[0] - x) + Math.abs(s[1] - y) <= 1) && y < b.y1 - 1;
-      [[b.x0 + 1, b.y0 + 1], [b.x1 - 1, b.y0 + 1]].forEach(([x, y]) => { if (free(x, y) && ((x * 7 + y * 3 + f) % 3)) { g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); } });
+      if(!st.artSlice) [[b.x0 + 1, b.y0 + 1], [b.x1 - 1, b.y0 + 1]].forEach(([x, y]) => { if (free(x, y) && ((x * 7 + y * 3 + f) % 3)) { g[y][x] = 'E'; FURN.push({ x, y, w: 1, h: 1, t: 'boxes', fl: f, seed: (x * 31 + y * 17 + f * 7) >>> 0 }); } });
     });
     (st.floorTiles || []).forEach(([ff, x, y, c]) => { if (ff === f) g[y][x] = c; });
     stairWells(g, f);

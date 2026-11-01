@@ -1,6 +1,7 @@
 const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
 function update(dt) {
+  if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
   updatePlayer(dt);

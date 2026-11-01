@@ -1126,6 +1126,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t = performance.now(); if (k) { const s = pf.s || (pf.s = {}); s[k] = (s[k] || 0) + t - PM_T; } PM_T = t; }
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
+  if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
   if (S.player.under && !tactical) { drawUnderground(); return; }
   PM();hudBlockFrame=null;
   const sc = SCALE * DPR;

@@ -1401,6 +1401,7 @@ function kunaiHit(k) {
 // 1층 높이 벽 오르기: 땅에서 벽(건물·담·컨테이너)에 바짝 붙어 있고, 그 너머가 1층 높이 옥상이면
 // 땅에서 1층 높이 옥상으로, 또는 옥상에서 한 층 더 높은 옆 옥상으로
 function wallUpSpot() {
+  if(STAGE.interiorOnly)return null;
   const P = S.player, z0 = P.z || 0; if (flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav || P.wire || P.under || P.vent || P.ledge) return null;
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, z1 = z0 + 1;
   // 실내 가구·안쪽 벽은 외벽 등반 지점이 아니다. 지붕 없는 공터의 컨테이너는 유지한다.

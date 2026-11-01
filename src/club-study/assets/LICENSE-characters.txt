@@ -1,0 +1,12 @@
+Character models and animations by Quaternius.
+Ultimate Modular Women and Ultimate Modular Characters: CC0 1.0 Universal.
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Author sources (CC0 confirmed on each pack page):
+https://quaternius.com/packs/ultimatemodularwomen.html
+https://quaternius.com/packs/ultimatemodularcharacters.html
+https://github.com/Quaternius/quaternius.github.io/tree/main/packs
+
+GLB conversions obtained from:
+https://github.com/LuanDucate/Ducz.CharacterCreator/tree/main/public/models
+Author attribution preserved voluntarily. No code from the character-creator application is incorporated.

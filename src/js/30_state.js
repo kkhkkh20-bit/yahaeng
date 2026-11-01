@@ -95,6 +95,7 @@ function newGame(si) {
   ladders.forEach(l => { l.x = tc(l.bx); l.y = tc(l.by); l.ux = tc(l.tx); l.uy = tc(l.ty); });
   // 실내 가구 은신처: 옷장 · 침대 밑 · 사물함 (층마다)
   FURN.forEach(it => { const t = it.t === 'cbed' ? 'bed' : it.t; if (!FURN_HIDE[t]) return; hides.push({ type: t, furn: true, w:it.w,h:it.h,r:it.r,tx: it.x, ty: it.y, x: (it.x + it.w / 2) * TILE, y: (it.y + it.h / 2) * TILE, fl: it.fl || 0, bodies: 0, cap: 1 }); });
+  if(STAGE.hideTypes)for(let i=hides.length-1;i>=0;i--)if(!STAGE.hideTypes.includes(hides[i].type))hides.splice(i,1);
   S_ugC = null;
   const wells = hides.filter(h => h.type === 'well');
   wells.forEach((w, i) => { w.next = wells.length > 1 ? wells[(i + 1) % wells.length] : null; });
@@ -104,7 +105,7 @@ function newGame(si) {
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Y' && lvAt(tx, ty) > 0) {
     const top = lvAt(tx, ty);
     let f = 0; for (; f < top - 1 && GF[f + 1] && GF[f + 1][ty][tx] === 'Y'; f++) ladders.push({ kind: 'fstair', bx: tx, by: ty, bz: 0, bfl: f, tfl: f + 1, tx, ty, tz: 0, x: tc(tx), y: tc(ty), ux: tc(tx), uy: tc(ty) });
-    ladders.push({ kind: 'stair', bx: tx, by: ty, bz: 0, bfl: f, tx, ty, tz: top, x: tc(tx), y: tc(ty), ux: tc(tx), uy: tc(ty) });
+    if(!STAGE.interiorOnly) ladders.push({ kind: 'stair', bx: tx, by: ty, bz: 0, bfl: f, tx, ty, tz: top, x: tc(tx), y: tc(ty), ux: tc(tx), uy: tc(ty) });
   }
   // 굴뚝: 옥상 위 굴뚝(아궁이 칸 바로 위) ↔ 아궁이 앞 바닥
   lamps.filter(l => l.hearth).forEach(l => {
@@ -133,7 +134,7 @@ function newGame(si) {
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
-  if (!STAGE.tutorial) S.items.forEach(it => lootPlace(it));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
+  if (!STAGE.tutorial) S.items.forEach(it => lootPlace(it,STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
@@ -178,6 +179,7 @@ function newGame(si) {
     }
   });
   S.doors.forEach(d => { d.group = S.doors.filter(o => Math.abs(o.tx - d.tx) + Math.abs(o.ty - d.ty) <= 1 && o.horiz === d.horiz); });
+  for(const [x,y]of STAGE.closedDoors||[]){const d=S.doors.find(d=>d.tx===x&&d.ty===y);if(d)setDoor(d,true);}
   // 빗장 쪽문: 담장에 난 문. open 쪽(n·s·e·w)에서만 풀 수 있다
   (STAGE.gates || []).forEach(gt => { const [tx, ty] = gt.at; const horiz = G[ty][tx - 1] === '#' || G[ty][tx + 1] === '#'; const d = { tx, ty, x: tc(tx), y: tc(ty), orig: G[ty][tx] === 'X' ? '.' : G[ty][tx], locked: false, horiz, gate: gt.open }; d.group = [d]; S.doors.push(d); setDoor(d, true); });
   (STAGE.keyBld || []).forEach(bi => { const b = BLD[bi]; const d = S.doors.find(d => d.ty === b.y1 && d.tx > b.x0 && d.tx < b.x1); if (d) { d.group.forEach(t => t.keyLock = 'gold'); setDoor(d, true); } });
