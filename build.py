@@ -85,6 +85,19 @@ def build():
         shutil.copytree(P('src','club-study'),folder,dirs_exist_ok=True)
         open(os.path.join(folder,'index.html'),'w',encoding='utf-8').write(pre+head+study+'<script type="module" src="./view.js"></script>')
     print('ok', len(html), v, h)
+    if '--cloudflare' in sys.argv:
+        # Regular 2D campaign only. The dedicated art-slice flag/modules are absent.
+        folder=P('dist','cloudflare-2d');os.makedirs(folder,exist_ok=True)
+        payload=pre+'<script>window.__INK_FORCE__=true;</script>\n'+html
+        files={'index.html':payload,'_headers':'/\n  Cache-Control: no-cache\n/index.html\n  Cache-Control: no-cache\n',
+               'version.json':json.dumps({'version':v,'build_date':h,'edition':'2d-campaign'},ensure_ascii=False)+'\n'}
+        for name,data in files.items():
+            if len(data.encode('utf-8'))>25*1024*1024:raise ValueError('Cloudflare Pages file exceeds 25 MiB: '+name)
+            open(os.path.join(folder,name),'w',encoding='utf-8').write(data)
+        archive=P('dist','yahaeng-2d-cloudflare.zip')
+        with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
+            for name in files:z.write(os.path.join(folder,name),name)
+        print('cloudflare',archive,os.path.getsize(archive))
     if '--itch' in sys.argv:
         os.makedirs(P('dist', 'itch'), exist_ok=True); z = P('dist', 'itch', 'yahaeng_itch.zip')
         with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as f: f.writestr('index.html', pre + demo)

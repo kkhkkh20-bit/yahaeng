@@ -3,6 +3,18 @@ let lastT = 0;
 // 프레임 제한: 기본 60fps. 메뉴에서 30으로 낮출 수 있다
 let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
 function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
+// The 3D view can render below 20 fps. Advance elapsed game time in small collision
+// steps instead of discarding everything beyond .05s and slowing all movement.
+function advanceGameFrame(elapsed) {
+  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.05,elapsed));
+  if(!total)return;
+  const count=STAGE.artSlice?Math.ceil(total*60):1,step=total/count;
+  for(let i=0;i<count;i++){
+    if(!running||paused||S.over||tactical||DLG.modal)break;
+    let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
+    if(input.aiming)focusUpdate(dt);else update(dt);
+  }
+}
 function frame(t) {
   requestAnimationFrame(frame);
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
@@ -14,7 +26,7 @@ function frame(t) {
   input.scan=false;document.body.classList.remove('scanning','scanleg');document.body.classList.toggle('playing',!!(running&&S&&!S.over));
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   const pf = window.__pf, t0 = pf ? performance.now() : 0;  // 성능 측정 (__pf 를 켰을 때만)
-  if (running && !paused && !S.over && !tactical && !DLG.modal) { let ud = dt; if (S.hitStop > 0) { S.hitStop -= dt; ud = dt * 0.06; } if (input.aiming) focusUpdate(ud); else update(ud); }
+  if (running && !paused && !S.over && !tactical && !DLG.modal) advanceGameFrame(rawDt);
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
   else if (S.over) { for (const n of S.noises) n.t += dt; }

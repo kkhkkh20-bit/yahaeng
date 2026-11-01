@@ -23,6 +23,7 @@ function moveAlong(g, speed, dt) {
   }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) return true;
+  if(STAGE.artSlice&&window.__clubView?.ready)speed*=window.__clubView.pace(g.path[0].x-g.x,g.path[0].y-g.y);
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
   if ((g.target || g.route.some(w=>w.mealTrip)) && ['PATROL','RETURN'].includes(g.state)) {

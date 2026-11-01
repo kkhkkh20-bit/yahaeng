@@ -1,0 +1,107 @@
+{
+  "seconds": 47.56666666666525,
+  "hp": 3,
+  "stats": {
+    "camEver": 0,
+    "kills": 0,
+    "extraKills": 0,
+    "bodies": 0,
+    "detected": 0,
+    "stonesUsed": 0,
+    "kunaiUsed": 0,
+    "alarms": 0,
+    "stashed": 1,
+    "special": 2,
+    "interro": 1,
+    "ko": 2,
+    "dressed": 1,
+    "gotAs": "crew"
+  },
+  "metrics": {
+    "drawCalls": 50,
+    "triangles": 33032,
+    "pixelRatio": 1,
+    "medianMs": 15.100000001490116,
+    "p95Ms": 50
+  },
+  "contacts": [],
+  "trace": [
+    [
+      "walk",
+      7,
+      12,
+      0,
+      3.07
+    ],
+    [
+      "walk",
+      6,
+      8,
+      0,
+      10.07
+    ],
+    [
+      "walk",
+      10,
+      3,
+      0,
+      18.15
+    ],
+    [
+      "walk",
+      10,
+      6,
+      0,
+      19.93
+    ],
+    [
+      "walk",
+      10,
+      8,
+      0,
+      21.52
+    ],
+    [
+      "walk",
+      17,
+      8,
+      0,
+      26.82
+    ],
+    [
+      "walk",
+      13,
+      8,
+      1,
+      30.28
+    ],
+    [
+      "walk",
+      13,
+      7,
+      1,
+      32.3
+    ],
+    [
+      "walk",
+      18,
+      9,
+      1,
+      35.15
+    ],
+    [
+      "walk",
+      10,
+      3,
+      0,
+      40.1
+    ],
+    [
+      "walk",
+      3,
+      19,
+      0,
+      47.57
+    ]
+  ]
+}

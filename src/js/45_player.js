@@ -481,7 +481,8 @@ function updatePlayer(dt) {
   }
   // 조작감: 아주 짧은 가속·감속(무게감), 모서리에 걸리면 옆으로 미끄러져 빠져나간다
   if (P.adrenT > 0) P.adrenT -= dt;
-  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? 0.6 : P.captive ? DRAG_SPD : 1) * (P.cover ? COVER_SPD : 1) * (STAGE.pspd || 1);
+  const viewPace=STAGE.artSlice&&window.__clubView?.ready?window.__clubView.pace(mx,my):1;
+  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? 0.6 : P.captive ? DRAG_SPD : 1) * (P.cover ? COVER_SPD : 1) * (STAGE.pspd || 1) * viewPace;
   const tvx = mag > 0.05 ? mx / mag * sp0 : 0, tvy = mag > 0.05 ? my / mag * sp0 : 0;
   const kk = 1 - Math.exp(-dt * (mag > 0.05 ? 24 : 30));
   P.vx = (P.vx || 0) + (tvx - (P.vx || 0)) * kk; P.vy = (P.vy || 0) + (tvy - (P.vy || 0)) * kk;

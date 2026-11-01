@@ -4,7 +4,7 @@ if(window.__CLUB_STUDY__)STAGES.push({
   mission:'2층 사무실의 장부를 회수하고 골목으로 빠져나간다',
   brief:'클럽이 문을 닫았다. 장부는 위층 사무실에 있다.',
   lootFurniture:['desk'],itemName:'장부',itemNames:['장부'],W:24,H:22,start:[5,18],exit:[3,19],exitName:'서쪽 골목',startA:-Math.PI/2,
-  hideTypes:['box','locker','wardrobe','cab'],rivals:0,noRefine:true,interiorOnly:true,floors:true,pspd:1,gspd:1,residents:0,kunai:2,coins:2,
+  hideTypes:['box','locker','wardrobe','cab'],rivals:0,noRefine:true,interiorOnly:true,floors:true,pspd:1.3,gspd:1,residents:0,kunai:2,coins:2,
   build(m){
     m.fill(0,0,23,21,'.');m.rect(0,0,23,21);m.fill(1,17,22,20,'=');
     m.bld(8,4,20,15,2,[[13,15],[10,4]],'w');m.set(13,15,'d');m.set(10,4,'d');

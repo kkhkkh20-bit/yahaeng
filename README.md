@@ -1,3 +1,9 @@
+# 게임 테스트 주소
+
+- 기존 2D 게임 · 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
+- 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
+- Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
+
 # 야행
 
 네온 빌라촌의 밤을 무대로 한 2D 탑다운 잠입 암살 웹 게임(“2D 히트맨”). 바닐라 JS 캔버스로 만들고, 빌드 결과는 HTML 파일 하나다.

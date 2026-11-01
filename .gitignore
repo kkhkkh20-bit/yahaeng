@@ -20,3 +20,7 @@ build/test_logs/
 /build/club-study/
 
 /build/club-validation/
+
+# Cloudflare Pages deploy artifacts
+/dist/cloudflare-2d/
+/dist/yahaeng-2d-cloudflare.zip
