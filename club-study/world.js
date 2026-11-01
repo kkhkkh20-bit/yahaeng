@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {batchStatic} from './batch.js';
-import {makeMaterials} from './materials.js';
-import {createVisibility} from './visibility.js';
+import {batchStatic} from './batch.js?v=v130';
+import {makeMaterials} from './materials.js?v=v130';
+import {createVisibility} from './visibility.js?v=v130';
 export const FLOOR=2.8;
 const boxG=new THREE.BoxGeometry(1,1,1),postG=new THREE.CylinderGeometry(.028,.028,1,8);
 function mesh(parent,geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}

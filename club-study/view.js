@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import {buildWorld,FLOOR} from './world.js';
-import {createActors} from './actors.js';
-import {makeReveal} from './reveal.js';
-import {createSight} from './sight.js';
-import {createEffects} from './effects.js';
+import {buildWorld,FLOOR} from './world.js?v=v130';
+import {createActors} from './actors.js?v=v130';
+import {makeReveal} from './reveal.js?v=v130';
+import {createSight} from './sight.js?v=v130';
+import {createEffects} from './effects.js?v=v130';
 const style=document.createElement('style');style.textContent='.keys .kx{display:none}';document.head.append(style);
 const loading=document.createElement('div');loading.id='clubLoading';loading.setAttribute('role','status');loading.style.cssText='position:fixed;inset:0;z-index:100;background:#10191c;color:#d8ccb3;display:grid;place-items:center;font:16px system-ui;letter-spacing:.1em';loading.textContent='골목 불러오는 중';document.body.append(loading);
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));

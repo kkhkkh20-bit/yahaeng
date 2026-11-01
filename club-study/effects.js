@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {FLOOR} from './world.js';
+import {FLOOR} from './world.js?v=v130';
 // Simulation-owned effects: removing a blood stain or consuming a lure removes its mesh.
 // These are pooled by object identity rather than rebuilt on every frame.
 export function createEffects(G,scene,visibility){
