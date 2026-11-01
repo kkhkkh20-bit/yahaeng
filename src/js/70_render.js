@@ -1450,7 +1450,7 @@ function draw() {
   if (running && !S.over && !S.entrySel && !tactical && !DLG.modal) {
     const pa = envAction(), ka = attackAction(), ga = grabAction();
     if (pa.choices > 1) {  // 겹친 대상: 다른 후보는 옅은 점선 고리, 고른 대상 위엔 '1/3 · F/⇄ 바꾸기'
-      const pos = a => { if(a.c){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
+      const pos = a => { if(a.c&&a.k!=='retrieve'){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
       const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;

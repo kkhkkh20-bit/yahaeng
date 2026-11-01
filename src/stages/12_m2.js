@@ -6,7 +6,7 @@
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
   vipDrink: { at: [29, 10], to: [40, 6] },
-  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [7, 28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
+  dining: { guest: 'bouncer', first: 24, every: 75, stay: 10, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
   buildingNames: {2:'공중화장실'},
   fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
   roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[

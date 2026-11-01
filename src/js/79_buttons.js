@@ -59,7 +59,14 @@ function envChoices() {
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
   if(P.captive){const d=rawChoices().find(a=>a.k==='drag');if(d)return[d];const h=nearHide();return h&&!hideSpace(h,1,true)?[{k:'keymsg',h,at:h,label:'공간 부족'}]:[];}
+  const stored=!P.hide&&!P.carrying&&!P.captive&&nearHide();
+  const recover=stored&&S.corpses.filter(c=>c.stashed&&c.container===stored).sort((a,b)=>(b.target&&b.ko?2:!b.stripped&&b.outfit?1:0)-(a.target&&a.ko?2:!a.stripped&&a.outfit?1:0))[0];
+  const retrieval=recover?{k:'retrieve',h:stored,c:recover,at:stored,label:recover.target&&recover.ko?'기절한 표적 꺼내기':recover.ko?'기절자 꺼내기':'시체 꺼내기'}:null;
   const env = rawChoices().filter(a => !isAtk(a) && a.k !== 'execute' && !(a.k === 'stash' && z.some(b => b.k === 'carry' && b.h === a.h)));
+  if(retrieval){
+    const blocked=env.findIndex(a=>a.k==='keymsg'&&a.h===stored);if(blocked>=0)env.splice(blocked,1);
+    if(recover.target&&recover.ko||!recover.stripped&&recover.outfit&&recover.outfit!==P.outfit)env.unshift(retrieval);else env.push(retrieval);
+  }
   // 손이 스위치 쪽에 더 가까울 때만 조명을 먼저 제안한다. 명시적으로 고른 대상은 envAction이 유지한다.
   const lamp = env.find(a => a.k === 'lamp' && a.l.pole), pole = lamp && env.find(a => a.k === 'wireOn' && a.pole && a.targetObject && dist(a.targetObject.x, a.targetObject.y, lamp.l.x, lamp.l.y) < TILE);
   if (pole && dist(P.x, P.y, lamp.at.x, lamp.at.y) < dist(P.x, P.y, pole.targetObject.x, pole.targetObject.y)) {

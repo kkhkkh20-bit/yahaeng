@@ -24,8 +24,10 @@ function diningGoal(){
   const d=STAGE.dining,P=S.player,m=S.dining;if(!d||S.goalManual||!oppMode||(P.outfit==='crew'||P.blown?.crew))return null;
   const g=npc(d.guest);if(!g)return null;
   const wc=m?.toilet||d.toilet,c=S.corpses.find(c=>c.g===g&&!c.stripped&&!c.stashed);
-  if((targetEliminated(g)||g.state==='DEAD')&&(!c||dist(c.x,c.y,tc(wc[0]),tc(wc[1]))>90))return null;
-  if(S.mealDosed||m?.sick)return{x:tc(wc[0]),y:tc(wc[1]),fl:0,z:0,text:'경비복 확보',where:wc[0]===d.toilet[0]&&wc[1]===d.toilet[1]?'포차 화장실':'골목 공중화장실',dining:true};
+  const body=g.state==='DEAD'&&c&&dist(c.x,c.y,tc(wc[0]),tc(wc[1]))<=90;
+  if((targetEliminated(g)||g.state==='DEAD')&&!body)return null;
+  if(S.mealDosed&&!body){const wait=d.waitAt||d.queue||d.toilet;return{x:tc(wait[0]),y:tc(wait[1]),fl:0,z:0,text:'경비 식사 지켜보기',where:'포차',dining:true};}
+  if(body||m?.sick&&['queue','toilet'].includes(m.phase))return{x:body?c.x:tc(wc[0]),y:body?c.y:tc(wc[1]),fl:0,z:0,text:'경비복 확보',where:wc[0]===d.toilet[0]&&wc[1]===d.toilet[1]?'포차 화장실':'골목 공중화장실',dining:true};
   return null;
 }
 function updateDining(dt){

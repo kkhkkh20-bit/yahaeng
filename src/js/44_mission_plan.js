@@ -52,6 +52,9 @@ function updateTargetIntel() {
 }
 function targetKnowledge(g) {
   initMissionPlan();
+  // 직접 옮겨 숨긴 기절 표적은 플레이어가 위치를 안다. 예전 활동 구역으로 안내하지 않는다.
+  const body=S.corpses.find(c=>c.g===g&&c.ko&&(c.playerHandled||c.stashed&&c.container||S.player.carrying===c));
+  if(body)return{...gSpot(body),where:(body.stashed&&body.container?hideName(body.container)+' · ':'')+placeName(body.x,body.y,flOf(body))+' · 기절',stored:!!body.stashed};
   if (oppMode === 2) return { ...gSpot(targetPosition(g)), where: placeName(targetPosition(g).x, targetPosition(g).y, flOf(targetPosition(g))), live: true };
   const m = S.targetIntel[g.id];
   if (m && S.t - m.t < 15) return { ...m, live: S.t - m.t < .3, lastSeen: S.t - m.t >= .3,
@@ -82,13 +85,34 @@ function renderMissionGoals() {
     b.setAttribute('aria-pressed', String(g.id === S.goalPin)); b.onclick = () => selectMissionGoal(g.id); el.append(b);
   }
 }
+// 같은 층에서도 잠긴 방의 내부 대신 실제로 조작해야 할 문을 가리킨다.
+function sameFloorGoalNavigation(goal){
+  const P=S.player,fl=flOf(P),bi=bldAt(Math.floor(goal.x/TILE),Math.floor(goal.y/TILE));
+  if(P.z||bi<0)return goal;
+  const locked=S.doors.filter(d=>d.locked&&flOf(d)===fl&&bldAt(d.tx,d.ty)===bi);if(!locked.length)return goal;
+  const key=['door',fl,Math.floor(P.x/TILE),Math.floor(P.y/TILE),Math.floor(goal.x/TILE),Math.floor(goal.y/TILE),locked.map(d=>d.tx+','+d.ty).join(';')].join(':');
+  if(S.goalNavCache?.key===key&&S.t-S.goalNavCache.t<.5)return{...goal,...S.goalNavCache.nav};
+  const L0=CUR_F;setLayer(fl);let nav={};
+  try{
+    const sx=Math.floor(P.x/TILE),sy=Math.floor(P.y/TILE),tx=Math.floor(goal.x/TILE),ty=Math.floor(goal.y/TILE);
+    const exact=(path,x,y)=>path.length&&Math.floor(path.at(-1).x/TILE)===x&&Math.floor(path.at(-1).y/TILE)===y;
+    // 금고 안에서 바깥으로 먼저 확인하면 닫힌 작은 방 때문에 지도 전체를 탐색하지 않는다.
+    const open=astar(tx,ty,sx,sy,solidAt);
+    if((sx!==tx||sy!==ty)&&!exact(open,sx,sy)){
+      const doors=new Map(locked.map(d=>[d.ty*MW+d.tx,d])),route=astar(sx,sy,tx,ty,(x,y)=>solidAt(x,y)&&!doors.has(y*MW+x));
+      const door=exact(route,tx,ty)&&route.map(p=>doors.get(Math.floor(p.y/TILE)*MW+Math.floor(p.x/TILE))).find(Boolean);
+      if(door)nav={x:door.x,y:door.y,fl,z:0,locked:true,text:'이동: 잠긴 문'};
+    }
+  }finally{setLayer(L0);}
+  S.goalNavCache={key,t:S.t,nav};return{...goal,...nav};
+}
 // 다른 층 목적지는 실제 연결 경로의 첫 입구를 안내한다.
 function goalNavigation(goal) {
   const P = S.player;
   if (!goal || goal.area || goal.x == null || P.under || P.vent || P.trav || P.jump) return goal;
   if (!S.lvl) lvlInit();
   const from = lvlKey(gSpot(P)), to = lvlKey({ x: goal.x, y: goal.y, fl: goal.fl || 0, z: goal.z || 0 });
-  if (from === to) return goal;
+  if (from === to) return sameFloorGoalNavigation(goal);
   const key=[from,to,Math.floor(P.x/TILE),Math.floor(P.y/TILE),Math.floor(goal.x/TILE),Math.floor(goal.y/TILE)].join(':');
   if(S.goalNavCache && S.goalNavCache.key===key && S.t-S.goalNavCache.t<.5) return {...goal,...S.goalNavCache.nav};
   const h = nextHop(P, from, to); if (!h) return goal;

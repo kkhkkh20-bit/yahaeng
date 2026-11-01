@@ -934,6 +934,7 @@ function actPrimary(force) {
     case 'finish': finishKo(a.c, a.c.g); P.strikeT = .35; checkObjective(); break;
     case 'execute': execCaptive(); break;
     case 'drag': { if(P.captive)beginHideFlow('drag',a.h,P.captive);break; }
+    case 'retrieve': beginHideFlow('retrieve',a.h,a.c); break;
     case 'hide': enterHide(a.h); break;
     case 'stash': actCarry({ k: 'carry', c: P.carrying, h: a.h }); break;
   }
@@ -996,7 +997,7 @@ function koPerson(g, mode, where, intent) {
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -1280,7 +1281,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 function actPrimaryForce(k) { if (k === 'execute') execCaptive(); else if (k === 'choke') execCaptive(true); }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반

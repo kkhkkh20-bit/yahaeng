@@ -91,15 +91,16 @@ function hideExitPoint(h,dir) {
 function beginHideFlow(kind,h,subject=null,dir=null) {
   const P=S.player;if(P.trav)return false;
   const needBody=kind==='stash'||kind==='drag',needSelf=kind==='enter'||kind==='drag';
-  if(kind!=='exit'&&!hideSpace(h,needBody?1:0,needSelf)){toast(withJosa(hideName(h),'은/는')+' 가득 찼다',1.4);return true;}
+  if(kind!=='exit'&&kind!=='retrieve'&&!hideSpace(h,needBody?1:0,needSelf)){toast(withJosa(hideName(h),'은/는')+' 가득 찼다',1.4);return true;}
   if(kind!=='exit'&&!objectReachable(h,64))return false;
   const exit=kind==='exit'?hideExitPoint(h,dir):null;
   if(kind==='exit'&&!exit){toast('나올 공간이 없다',1.4);return true;}
   const route=kind==='exit'?{points:[],stand:exit,length:0}:hideApproach(h);if(!route)return false;
-  const g=kind==='drag'?subject:null,c=kind==='stash'?subject:null;
-  if(g&&P.captive!==g||c&&P.carrying!==c)return false;
+  const g=kind==='drag'?subject:null,c=['stash','retrieve'].includes(kind)?subject:null;
+  if(kind==='retrieve'&&(!c||!c.stashed||c.container!==h||P.carrying||P.captive||P.hide))return false;
+  if(g&&P.captive!==g||kind==='stash'&&P.carrying!==c)return false;
   const walk=route.length/130,duration=kind==='drag'?1.7:kind==='stash'?1.15:h.type==='box'?1.05:1.1;
-  const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&kind==='enter'?ACCESS_WORK:0,handPost=handled&&kind==='exit'?ACCESS_WORK:0;
+  const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&['enter','retrieve'].includes(kind)?ACCESS_WORK:0,handPost=handled&&['exit','retrieve'].includes(kind)?ACCESS_WORK:0;
   const F={kind,h,g,c,route,walk,duration,handPre,handPost,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:route.stand.x,y:route.stand.y,f:1}],dur:walk+duration+handPre+handPost,phases:[{to:1,pose:'container'}],hideB:h,local:true,hideFlow:F});
@@ -117,19 +118,29 @@ function cancelHideFlow(P,T) {
   if(F.c&&!S.corpses.includes(F.c)&&P.carrying===F.c)P.carrying=null;
   P.trav=null;P.moving=false;if(!P.hide){P.x=F.from.x;P.y=F.from.y;}RC=null;
 }
+function finishBodyRetrieval(P,F){
+  if(F.kind!=='retrieve'||P.carrying!==F.c)return;
+  const c=F.c;c.carried=false;c.x=P.x;c.y=P.y;c.a=P.a;c.hidden=tileAt(c.x,c.y)==='B';P.carrying=null;
+  startBodyAnim('drop',c,.5);play('cloth',.25);
+}
 function updateHideFlow(P,dt) {
   const T=P.trav,F=T.hideFlow,h=F.h;T.t+=dt;
   if(!S.hides.includes(h)&&!(S.bushes||[]).includes(h)){cancelHideFlow(P,T);return;}
   if(flOf(h)!==F.fl||(h.z||0)!==F.z||h.x!==F.hx||h.y!==F.hy){cancelHideFlow(P,T);return;}
-  if(flOf(P)!==F.fl||(P.z||0)!==F.z||F.g&&!F.committed&&(P.captive!==F.g||F.g.state!=='CAPTIVE')||F.c&&!F.committed&&(P.carrying!==F.c||!S.corpses.includes(F.c))){cancelHideFlow(P,T);return;}
+  if(flOf(P)!==F.fl||(P.z||0)!==F.z||F.g&&!F.committed&&(P.captive!==F.g||F.g.state!=='CAPTIVE')||F.c&&!F.committed&&(!S.corpses.includes(F.c)||(F.kind==='retrieve'?P.carrying||!F.c.stashed||F.c.container!==h:P.carrying!==F.c))){cancelHideFlow(P,T);return;}
   if(F.intent){if(F.holding&&combatHeld(F.intent.source))F.held+=dt;else F.holding=false;}
   F.witnessed=F.witnessed||S.guards.some(g=>g.seen&&flOf(g)===F.fl&&(g.z||0)===F.z&&!['DEAD','CAPTIVE'].includes(g.state));
   const f=hideFlowProgress(T),walking=T.t<F.walk;
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
   const at=F.route.stand,W=hideWork(T);
-  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing);P.x=q.x;P.y=q.y;P.a=q.a;if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;RC=null;}return;}
-  if(F.kind==='exit'){
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing);P.x=q.x;P.y=q.y;P.a=q.a;if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(F.kind==='retrieve'){
+    P.x=at.x;P.y=at.y;P.a=Math.atan2(h.y-at.y,h.x-at.x);
+    if(!F.committed&&f>=.78){
+      F.committed=true;const c=F.c;c.stashed=false;c.container=null;c.carried=true;c.hidden=false;c.playerHandled=true;c.x=P.x;c.y=P.y;P.carrying=c;h.bodies=Math.max(0,(h.bodies||0)-1);play('cloth',.3);
+    }
+  }else if(F.kind==='exit'){
     if(f>.18)P.hide=null;
     const u=hideEase((f-.38)/.46);P.x=h.x+(at.x-h.x)*u;P.y=h.y+(at.y-h.y)*u;P.a=Math.atan2(at.y-h.y,at.x-h.x);
   }else{
@@ -140,7 +151,7 @@ function updateHideFlow(P,dt) {
     if(!F.committed&&f>=contact){
       if(!hideSpace(h,F.kind==='enter'?0:1,F.kind!=='stash')){cancelHideFlow(P,T);toast(withJosa(hideName(h),'은/는')+' 가득 찼다',1.4);return;}
       F.committed=true;
-      if(F.c){const c=F.c;c.carried=false;c.stashed=true;c.container=h;c.x=h.x;c.y=h.y;c.fl=flOf(h);c.z=h.z||0;P.carrying=null;h.bodies=(h.bodies||0)+1;S.stats.stashed++;}
+      if(F.c){const c=F.c;c.carried=false;c.stashed=true;c.container=h;c.playerHandled=true;c.x=h.x;c.y=h.y;c.fl=flOf(h);c.z=h.z||0;P.carrying=null;h.bodies=(h.bodies||0)+1;S.stats.stashed++;}
       if(F.g){const g=F.g;g.containerMoving=false;g.doomed=false;g.takedownIntent={...F.intent,lethal:F.intent.lethal||(F.holding&&F.held>=LETHAL_HOLD),container:h};P.captive=null;
         killGuard(g,h.type==='bush'?'bush':'stash',h,true);if(S.koHold?.g===g)S.koHold.t0=S.t-F.held;S.stats.special++;
       }
@@ -152,8 +163,8 @@ function updateHideFlow(P,dt) {
   if(!F.opened&&f>.08){F.opened=true;play(h.type==='bush'||h.furn?'cloth':'metal',.25);}
   if(!F.closed&&!F.handPost&&f>.94){F.closed=true;play(h.type==='bush'||h.furn?'cloth':'metal',.2);}
   if(T.t>=T.dur){
-    P.trav=null;P.moving=false;if(F.kind==='stash'||F.kind==='exit'){P.x=at.x;P.y=at.y;}else if(P.hide){P.x=h.x;P.y=h.y;}
-    if(F.kind==='exit')h.spotted=false;RC=null;
+    P.trav=null;P.moving=false;if(['stash','exit','retrieve'].includes(F.kind)){P.x=at.x;P.y=at.y;}else if(P.hide){P.x=h.x;P.y=h.y;}
+    if(F.kind==='exit')h.spotted=false;finishBodyRetrieval(P,F);RC=null;
   }
 }
 // 대형 수거함: 바퀴·넓은 입구·뒤쪽 경첩·회전하는 뚜껑. 앞판은 사람을 넣는 동안 몸의 아래를 가린다.
@@ -262,7 +273,8 @@ const hideEase = v => {const t=clamp(v,0,1);return t*t*(3-2*t);};
 function hideHeroSample(P,T) {
   const F=T.hideFlow,f=hideFlowProgress(T),h=F.h,at=F.route.stand,exit=F.kind==='exit',W=hideWork(T);
   if(W)return accessHandSample(h,at,W.p,W.closing);
-  if(T.t<F.walk)return{x:P.x,y:P.y,anim:F.c?'carry':F.g?'grab':'walk',frame:-1,outside:true};
+  if(T.t<F.walk)return{x:P.x,y:P.y,anim:F.c&&F.kind!=='retrieve'?'carry':F.g?'grab':'walk',frame:-1,outside:true};
+  if(F.kind==='retrieve')return{x:at.x,y:at.y,anim:F.committed?'carryI':f<.22?'stoop':f<.72?'lift':'carryI',frame:0,outside:true};
   if(F.kind==='stash')return{x:at.x,y:at.y,anim:f<.26?'carryI':f<.65?'lift':f<.85?'stoop':'idleC',frame:f<.42?1:0,outside:true};
   if(F.kind==='drag'&&f<.52)return{x:at.x,y:at.y,anim:'grabI',frame:0,outside:true};
   const q=exit?1-f:F.kind==='drag'?clamp((f-.52)/.48,0,1):f;
@@ -283,7 +295,8 @@ function drawHideFlowHero(P,T) {
   if(!s.outside){ctx.beginPath();ctx.rect(h.x-140,h.y-200,280,200+F.geo.rim-h.y);ctx.clip();}
   if(h.furn&&h.type!=='bed'?s.inside:h.furn||h.type==='bush')clipHideFurniture(T);
   drawPR(playerKey(P),s.x,s.y,P.a,s.anim,T.t,1,1,0,s.frame);ctx.restore();
-  if(T.t<F.walk){const other=F.c?carryKey(F.c):F.g?charOf(F.g):null;if(other)drawPR(other,P.x,P.y,P.a,F.c?'carried':'held',T.t);}
+  if(F.kind==='retrieve'&&F.committed)drawPR(carryKey(F.c),P.x,P.y,P.a,'carriedI',T.t);
+  if(T.t<F.walk&&F.kind!=='retrieve'){const other=F.c?carryKey(F.c):F.g?charOf(F.g):null;if(other)drawPR(other,P.x,P.y,P.a,F.c?'carried':'held',T.t);}
 }
 function clipHideFurniture(T) {
   const F=T.hideFlow,h=F.h,b=F.geo.footprint;ctx.beginPath();ctx.rect(h.x-240,h.y-260,480,520);
@@ -294,11 +307,12 @@ function clipHideFurniture(T) {
 }
 function hideFlowTargetOutside(T) {
   const F=T.hideFlow;if(T.t<F.walk||(!F.h.furn&&F.committed)||!F.c&&!F.g)return false;
-  const f=hideFlowProgress(T),u=F.c?clamp((f-.28)/.45,0,1):clamp((f-.26)/.43,0,1);
+  const f=F.kind==='retrieve'?1-hideFlowProgress(T):hideFlowProgress(T),u=F.c?clamp((f-.28)/.45,0,1):clamp((f-.26)/.43,0,1);
   return F.h.furn||F.h.type==='bush'||u<.65;
 }
 function drawHideFlowTarget(P,T) {
-  const F=T.hideFlow,f=hideFlowProgress(T),h=F.h,at=F.route.stand;if((F.committed&&!h.furn&&h.type!=='bush')||T.t<F.walk||!F.c&&!F.g)return;
+  if(T.hideFlow.kind==='retrieve'&&T.hideFlow.committed)return;
+  const F=T.hideFlow,f=F.kind==='retrieve'?1-hideFlowProgress(T):hideFlowProgress(T),h=F.h,at=F.route.stand;if((F.committed&&!h.furn&&h.type!=='bush')||T.t<F.walk||!F.c&&!F.g)return;
   const u=F.c?clamp((f-.28)/.45,0,1):clamp((f-.26)/.43,0,1),furn=h.furn||h.type==='bush',move=furn?hideEase(u):clamp((u-.40)/.25,0,1),drop=furn?0:clamp((u-.65)/.35,0,1)*85;
   const x=at.x+(h.x-at.x)*move,y=at.y+((furn?h.y:F.geo.y)-at.y)*move+drop+(h.type==='bed'?12*move:0);
   ctx.save();if(furn){if(!h.furn||h.type==='bed'||move>=.99)clipHideFurniture(T);}else if(u>=.65){ctx.beginPath();ctx.rect(h.x-160,h.y-220,320,220+F.geo.rim-h.y);ctx.clip();}
