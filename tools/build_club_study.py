@@ -48,6 +48,10 @@ s=re.sub(r'window\.(CR|PZ|KZ)\s*=',r'const \1 =',s);s=re.sub(r'window\.(render\w
 # Across the shoulders, with hanging arms and bent knees; the original sprite pose
 # turns almost upside-down when viewed from the opposite side in live 3D.
 s=s.replace("model2.quaternion.copy(new THREE.Quaternion().setFromAxisAngle(V3(1, 0, 0), th).multiply(new THREE.Quaternion().setFromAxisAngle(V3(0, 1, 0), Math.PI)));", "model2.quaternion.setFromEuler(new THREE.Euler(.25,0,Math.PI*.47));")
+# Live geometry uses physical elevation; sprite framing offsets must not leak
+# into blended poses when a climb changes to standing/hand work.
+s=s.replace("model.position.y = -fy + lift - (name === 'climb' ? 200 : 0);", "model.position.y = -fy + lift;")
+s=s.replace("// 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)", "// Feet stay in the live actor coordinate system.")
 names=re.findall(r'const (render\w+)\s*=',s)
 pre="""// Generated from the shared CC0 pose baker by tools/build_club_study.py.
 import * as THREE from 'three';

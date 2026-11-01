@@ -1,0 +1,29 @@
+"""Motion continuity, planted hand work, well body recovery and hold-only vent kills.
+Presentation fixtures advance player rules only; the separate route keeps all AI active.
+"""
+import asyncio,importlib.util,json,threading
+from pathlib import Path
+from functools import partial
+from http.server import ThreadingHTTPServer
+from playwright.async_api import async_playwright
+spec=importlib.util.spec_from_file_location('route',str(Path(__file__).with_name('t_club_study.py')));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+async def main():
+ server=ThreadingHTTPServer(('127.0.0.1',0),partial(m.H,directory=str(m.R)));threading.Thread(target=server.serve_forever,daemon=True).start();results=[]
+ async with async_playwright()as p:
+  b=await p.chromium.launch(args=['--enable-unsafe-swiftshader']);pg=await b.new_page(viewport={'width':1000,'height':740});errors=[];pg.on('pageerror',lambda e:errors.append(str(e)));await pg.add_init_script('localStorage.clear()');await pg.goto(f'http://127.0.0.1:{server.server_port}/build/club-study/index.html?nostats');await pg.wait_for_function('__clubView?.ready||window.__clubError',polling=100,timeout=120000);assert not await pg.evaluate('window.__clubError');await pg.evaluate('window.requestAnimationFrame=()=>0');await pg.wait_for_timeout(150)
+  for outfit in [None,'crew']:
+   await pg.evaluate('o=>{__game.S.player.outfit=o;__clubView.people.render(0)}',outfit);await pg.wait_for_function('n=>__clubView.people.player.name===n',arg='heroCrew'if outfit else'hero',polling=100,timeout=30000)
+   result=await pg.evaluate('''()=>{const G=__game,S=G.S,P=S.player,V=__clubView,A=V.people.player,check=(v,m)=>{if(!v)throw Error(m)},w=S.hides.find(h=>h.type==='well'&&h.ty===18),v=S.vents.find(v=>v.street);let maxStep=0,samples=0,grounded=0;
+    Object.assign(P,{x:w.x,y:w.y+34,fl:0,z:0,hide:null,under:false,vent:false,trav:null,interact:null});G.setLayer(0);
+    const sample=()=>{let prev=null,n=0;A.previous=null;while(P.trav&&n++<1500){S.t+=1/120;G.updatePlayer(1/120);V.world.update();V.people.render(1/120);const root=A.driver.root;root.updateMatrixWorld(true);const hip=A.rig.bones.Hips.getWorldPosition(root.position.clone());if(root.visible&&prev){const d=hip.distanceTo(prev);maxStep=Math.max(maxStep,d);check(d<.23,'body skips between climb and standing '+d+' '+(P.trav?.accessFlow?.kind||P.trav?.hideFlow?.kind||'end'));}prev=root.visible?hip:null;samples++;const T=P.trav,F=T?.accessFlow,H=T?.hideFlow;if(F&&(F.t>=F.walk&&F.t<F.walk+F.pre||F.post&&F.t>=F.walk+F.pre+F.core)||H&&G.hideWork(T)){check(Math.abs(root.position.y)<.001,'hand work levitates root');grounded++;}}
+      check(n<1500,'flow never ends');};
+    check(G.beginHideFlow('enter',w),'well enter rejected');sample();check(P.hide===w,'well entry incomplete');check(G.beginAccessFlow('sewerDown',w),'sewer descent rejected');sample();check(P.under,'not underground');check(G.beginAccessFlow('surface',w),'surface rejected');sample();check(!P.under,'surface incomplete');
+    Object.assign(P,{x:v.x-34,y:v.y,hide:null});check(G.beginAccessFlow('ventIn',v),'wall vent entry rejected');sample();check(P.vent,'vent entry incomplete');check(G.beginAccessFlow('ventOut',v),'wall vent exit rejected');sample();check(!P.vent,'vent exit incomplete');
+    return{outfit:P.outfit,maxStep,samples,grounded};}''');results.append(result);print('PASS motion',result,flush=True)
+  # Stashing uses the same corpse object and capacity as normal storage.
+  result=await pg.evaluate('''()=>{const G=__game,S=G.S,P=S.player,V=__clubView,w=S.hides.find(h=>h.type==='well'&&h.ty===3),g=S.guards.find(g=>g.tag==='doorGuard'),check=(v,m)=>{if(!v)throw Error(m)},tick=()=>{S.t+=1/120;G.updatePlayer(1/120);},idle=()=>{for(let n=0;P.trav&&n<1600;n++)tick();check(!P.trav,'storage never ends');};Object.assign(P,{x:w.x,y:w.y+32,hide:null,vent:false,under:false});g.x=P.x;g.y=P.y;g.takedownIntent={lethal:false};G.killGuard(g);const c=S.corpses.find(c=>c.guardId===g.id||c.g===g);check(c?.ko,'KO fixture missing');c.carried=true;P.carrying=c;check(G.beginHideFlow('stash',w,c),'well stash rejected');idle();check(c.stashed&&w.bodies===1&&!P.carrying,'well stash result mismatch');check(G.beginHideFlow('retrieve',w,c),'well retrieval rejected');idle();check(!c.stashed&&w.bodies===0,'well retrieval result mismatch');return{bodyObjectPreserved:S.corpses.includes(c),capacity:w.bodies};}''');results.append(result);print('PASS well body recovery',result,flush=True)
+  # Real key hold: the victim stays alive until the pull is complete, and only a full hold kills.
+  result=await pg.evaluate('''()=>{const G=__game,S=G.S,P=S.player,V=__clubView,v=S.vents.find(v=>!v.street&&v.tx===18),g=S.guards.find(g=>g.tag==='patrol'),check=(v,m)=>{if(!v)throw Error(m)};Object.assign(P,{x:v.x,y:v.y,under:false,vent:true,hide:null,trav:null,carrying:null,bodyAnim:null,strikeT:0,interact:null,pick:null,fl:0,z:0});Object.assign(g,{x:v.x,y:v.y+25,fl:0,z:0,state:'PATROL',doomed:false});G.clearPlayerInput();check(G.attackAction().k==='ventKill','held fixture action '+G.attackAction().k+' busy '+G.actionBusy());window.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyZ',bubbles:true}));check(P.trav?.ventPull,'held pull absent');for(let i=0;i<45;i++){S.t+=1/60;G.updatePlayer(1/60);}check(g.state!=='DEAD','pull commits early');for(let i=0;i<35;i++){S.t+=1/60;G.updatePlayer(1/60);}window.dispatchEvent(new KeyboardEvent('keyup',{code:'KeyZ',bubbles:true}));check(!P.trav&&g.state==='DEAD'&&S.stats.kills===1,'continuous hold does not kill');return{holdKill:true,kills:S.stats.kills};}''');results.append(result);print('PASS held pull',result,flush=True)
+  assert not errors,errors;await b.close()
+ (m.O/'passage-edges.json').write_text(json.dumps(results,ensure_ascii=False,indent=2));server.shutdown()
+if __name__=='__main__':asyncio.run(main())

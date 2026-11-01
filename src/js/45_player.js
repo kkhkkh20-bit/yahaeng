@@ -359,6 +359,7 @@ function updateLedge(P, dt) {
   P.moving = true; P.stepT -= dt; if (P.stepT <= 0) { P.stepT = 0.5; play('cloth', 0.08); }
 }
 function updateTrav(P, dt) {
+  if(P.trav.ventPull){updateVentPull(P,dt);return;}
   if(P.trav.accessFlow){updateAccessFlow(P,dt);return;}
   if(P.trav.signFlow){updateSignRelease(P,dt);return;}
   if(P.trav.hideFlow){updateHideFlow(P,dt);return;}
@@ -430,7 +431,7 @@ function updatePlayer(dt) {
     P.mode = mode === 'run' ? 'walk' : mode; P.hidden = true; P.light = 0; P.travelSpeed=0;
     P.moving = mag > 0.05;
     if (P.moving) {
-      const nx = mx / mag, ny = my / mag, sp = SPD[P.mode] * 1.05,ox=P.x,oy=P.y;
+      const nx = mx / mag, ny = my / mag, sp = SPD[P.mode] * 1.05*(STAGE.artSlice&&window.__clubView?window.__clubView.pace(nx,ny):1),ox=P.x,oy=P.y;
       P.x += nx * sp * dt; P.y += ny * sp * dt;
       const sol = (tx, ty) => !ugAt(tx, ty);
       collide(P, 11, sol); collide(P, 11, sol);advancePlayerGait(P,ox,oy,dt,sp);
@@ -444,7 +445,7 @@ function updatePlayer(dt) {
     const fast = mode !== 'sneak'; P.mode = fast ? 'walk' : 'sneak'; P.hidden = true; P.light = 0; P.travelSpeed=0;
     P.moving = mag > 0.05;
     if (P.moving) {
-      const nx = mx / mag, ny = my / mag, sp = fast ? 92 : 52,ox=P.x,oy=P.y;
+      const nx = mx / mag, ny = my / mag, sp = (fast ? 92 : 52)*(STAGE.artSlice&&window.__clubView?window.__clubView.pace(nx,ny):1),ox=P.x,oy=P.y;
       P.x += nx * sp * dt; P.y += ny * sp * dt;
       const sol = (tx, ty) => !ventAt(tx, ty);
       collide(P, 10, sol); collide(P, 10, sol);advancePlayerGait(P,ox,oy,dt,sp);

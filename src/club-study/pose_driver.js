@@ -280,7 +280,7 @@ const renderPose = (name, k, dirA) => {
     }
   }
   model.updateMatrixWorld(true); const fy = footY();
-  model.position.y = -fy + lift - (name === 'climb' ? 200 : 0); model.updateMatrixWorld(true);  // 타기: 팔이 잘리지 않게 200 내려 찍는다 (게임에서 14px 올려 그린다)
+  model.position.y = -fy + lift; model.updateMatrixWorld(true);  // Feet stay in the live actor coordinate system.
   model.rotation.y = Math.atan2(Math.cos(dirA), Math.sin(dirA)); model.updateMatrixWorld(true);
   shadow.visible = name === 'vault' && k !== 1; shadow.position.set(0, 1, 0);
   renderSprite(modular && name === 'climb' ? CY - 100 : 0, modular ? (name === 'climb' ? 1.25 : ['vault','stoop'].includes(name) ? 1.6 : 1) : 1); shadow.visible = true;

@@ -57,6 +57,7 @@ function newGame(si) {
   // 아궁이(벽난로): 방을 밝히는 불. 옥상의 굴뚝과 이어진다
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
   mountOutdoorLamps(lamps);
+  (STAGE.lampControls||[]).forEach(([i,x,y])=>{const l=lamps[i];if(l)l.control={x:x*TILE,y:y*TILE,fl:l.fl||0,z:0};});
   lamps.forEach(l => { setLayer(l.fl); l.poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU; const d = Math.min(l.r, castRay(l.x, l.y, a, l.r) + 20); l.poly.push(l.x + Math.cos(a) * d, l.y + Math.sin(a) * d); } }); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
   // 군중: 클럽 안(층마다)과 지정한 바깥 자리. 사람들이 돌아다니고, 그 사이에 섞이면 잘 안 보이고 소리도 묻힌다
   CROWD = [];
@@ -117,7 +118,7 @@ function newGame(si) {
   VG = new Uint8Array(MW * MH); const vents = [];
   const VSPEC = (STAGE.vents || []).concat((STAGE.ventB || []).map(sp => autoVents(typeof sp === 'number' ? { b: sp } : sp, hides, ladders, lamps)).filter(Boolean));
   VSPEC.forEach((grp, gi) => {
-    const vs = grp.map(([tx, ty, k]) => ({ tx, ty, x: tc(tx), y: tc(ty), roof: k === 'r', street: k === 's', z: k === 'r' ? lvAt(tx, ty) : 0, group: gi, open: false }));
+    const vs = grp.map(([tx, ty, k, face]) => ({ tx, ty, x: tc(tx), y: tc(ty), roof: k === 'r', street: k === 's', face, z: k === 'r' ? lvAt(tx, ty) : 0, group: gi, open: false }));
     carveNet(VG, vs); vents.push(...vs);
   });
   S = {

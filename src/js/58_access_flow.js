@@ -58,7 +58,7 @@ function drawVent(v,part='all',c=ctx,open=v.open?1:0) {
 }
 function accessStand(h,z,dir) {
   const L0=CUR_F;setLayer(0);const P=S.player,sol=solidFor(z),candidates=[];
-  for(const [nx,ny]of N8){const tx=h.tx+nx,ty=h.ty+ny;if(!inMap(tx,ty)||sol(tx,ty))continue;if(nx&&ny&&(sol(h.tx+nx,h.ty)||sol(h.tx,h.ty+ny)))continue;
+  for(const [nx,ny]of N8){const face=h.source?.face;if(face&&(nx!==face[0]||ny!==face[1]))continue;const tx=h.tx+nx,ty=h.ty+ny;if(!inMap(tx,ty)||sol(tx,ty))continue;if(nx&&ny&&(sol(h.tx+nx,h.ty)||sol(h.tx,h.ty+ny)))continue;
     const at={x:h.x+nx*26,y:h.y+ny*26},points=[{x:P.x,y:P.y}];let length=0;
     if(!dir){const sx=Math.floor(P.x/TILE),sy=Math.floor(P.y/TILE),same=sx===tx&&sy===ty,path=same?[]:astar(sx,sy,tx,ty,sol);if(!same&&!path.length)continue;
       for(const p of path)if(dist(points.at(-1).x,points.at(-1).y,p.x,p.y)>2)points.push(p);points.push(at);for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);if(length>180)continue;}
@@ -74,7 +74,7 @@ function beginAccessFlow(kind,obj) {
   if(kind==='surface'&&(!P.under||!ugAt(obj.tx,obj.ty)))return false;
   if(kind==='sewerDown'&&(P.hide!==obj||!ugAt(obj.tx,obj.ty)))return false;
   if(!exit&&kind!=='sewerDown'&&!objectReachable(h,64))return false;
-  const stand=accessStand(h,z,exit?{x:0,y:1}:null);if(!stand&&kind!=='sewerDown'){toast('출입할 공간이 없다',1.4);return false;}
+  const stand=accessStand(h,z,exit?{x:obj.face?.[0]||0,y:obj.face?.[1]??1}:null);if(!stand&&kind!=='sewerDown'){toast('출입할 공간이 없다',1.4);return false;}
   const at=stand||{x:h.x,y:h.y+36},pre=!exit&&kind!=='sewerDown'?ACCESS_WORK:0,post=exit?ACCESS_WORK:0,walk=!exit&&kind!=='sewerDown'?at.length/125:0;
   const F={kind,obj,h,hx:h.x,hy:h.y,z,exit,stand:at,from:{x:P.x,y:P.y,z:P.z||0,fl:flOf(P),vent:!!P.vent,under:!!P.under,hide:P.hide},walk,pre,post,core:.65,crossed:false,t:0};
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:at.x,y:at.y,f:1}],dur:walk+pre+F.core+post,phases:[{to:1,pose:'access'}],local:true,accessFlow:F});closeEnvPicker();return true;
@@ -94,8 +94,9 @@ function updateAccessFlow(P,dt) {
   const T=P.trav,F=T.accessFlow;T.t+=dt;F.t=T.t;
   if((F.h.type==='vent'?!S.vents.includes(F.obj):!S.hides.includes(F.obj))||F.obj.x!==F.hx||F.obj.y!==F.hy){P.trav=null;Object.assign(P,F.from);return;}
   const p=accessProgress(F),s=accessActorSample(F),q=F.t-F.walk;P.x=s.x;P.y=s.y;
-  if(q>=F.pre&&q<=F.pre+F.core){const u=hideEase(p);P.x=F.kind==='sewerDown'?F.h.x:F.exit?F.h.x+(F.stand.x-F.h.x)*u:F.stand.x+(F.h.x-F.stand.x)*u;P.y=F.kind==='sewerDown'?F.h.y:F.exit?F.h.y+(F.stand.y-F.h.y)*u:F.stand.y+(F.h.y-F.stand.y)*u;}P.a=s.a;P.moving=F.t<F.walk;P.vx=P.vy=0;
-  if(!F.crossed&&p>=(F.exit?.08:.94)){F.crossed=true;
+  if(q>=F.pre&&q<=F.pre+F.core){const u=hideEase(STAGE.artSlice&&F.kind==='surface'?clamp((p-.55)/.45,0,1):p);P.x=F.kind==='sewerDown'?F.h.x:F.exit?F.h.x+(F.stand.x-F.h.x)*u:F.stand.x+(F.h.x-F.stand.x)*u;P.y=F.kind==='sewerDown'?F.h.y:F.exit?F.h.y+(F.stand.y-F.h.y)*u:F.stand.y+(F.h.y-F.stand.y)*u;}P.a=s.a;if(STAGE.artSlice&&F.t>=F.walk){const working=q<F.pre||F.post&&q>=F.pre+F.core;P.a=F.kind==='sewerDown'||F.kind==='surface'&&!working&&p<.65?-Math.PI/2:working?Math.atan2(F.h.y-F.stand.y,F.h.x-F.stand.x):F.exit?Math.atan2(F.stand.y-F.h.y,F.stand.x-F.h.x):Math.atan2(F.h.y-F.stand.y,F.h.x-F.stand.x);}P.moving=F.t<F.walk;P.vx=P.vy=0;
+  const crossAt=STAGE.artSlice?(F.kind==='surface'?.72:F.kind==='ventOut'||F.kind==='ventIn'?.5:.94):(F.exit?.08:.94);
+  if(!F.crossed&&p>=crossAt){F.crossed=true;
     if(F.kind==='ventIn'){P.vent=true;P.z=0;P.fl=0;S.stats.vents=(S.stats.vents||0)+1;}
     if(F.kind==='ventOut'){P.vent=false;P.z=F.z;P.fl=0;}
     if(F.kind==='sewerDown'){P.hide=null;P.under=true;P.z=0;P.fl=0;}
@@ -113,4 +114,20 @@ function drawAccessFlow() {
     drawLitContainer(h,'back');ctx.save();if(!s.outside){ctx.beginPath();ctx.rect(h.x-140,h.y-220,280,220+(s.rim??h.y+10)-h.y);ctx.clip();}
     drawPR(playerKey(P),s.x,s.y,s.a,s.anim,s.anim==='walk'?(P.gaitTime??T.t):T.t,1,1,s.anim==='climb'?14:0,s.frame);ctx.restore();const p=accessProgress(F),q=F.exit?p:1-p;if(F.t>=F.walk+F.pre&&F.t<F.walk+F.pre+F.core&&q<.22)drawInsideCoverHand(h,accessOpen(F),hideEase(q/.06)*hideEase((.22-q)/.08));drawLitContainer(h,'front');
   }finally{playerInkKey=old;}
+}
+// Live 3D needs the pull itself before the simulation commits the hidden body.
+function beginVentPull(g,v){
+  const P=S.player;if(!P.vent||P.trav||!g||!v)return false;
+  const T={g,v,t:0,dur:1.12,x0:g.x,y0:g.y,intent:{...(g.takedownIntent||{lethal:false})},held:0,holding:true};
+  g.doomed=true;g.containerMoving=true;g.path=null;g.moving=false;
+  startTrav({pts:[{x:P.x,y:P.y,f:0},{x:P.x,y:P.y,f:1}],dur:T.dur,phases:[{to:1,pose:'ventPull'}],local:true,ventPull:T});return true;
+}
+function updateVentPull(P,dt){
+  const T=P.trav,A=T.ventPull,g=A.g;T.t+=dt;A.t=T.t;
+  if(!S.guards.includes(g)||g.state==='DEAD'||!S.vents.includes(A.v)){g.doomed=false;g.containerMoving=false;P.trav=null;return;}
+  if(A.holding&&combatHeld(A.intent.source))A.held+=dt;else A.holding=false;
+  const f=clamp(A.t/A.dur,0,1),u=hideEase((f-.15)/.75);g.x=A.x0+(A.v.x-A.x0)*u;g.y=A.y0+(A.v.y-A.y0)*u;g.moving=false;
+  if(f<1)return;
+  g.doomed=false;g.containerMoving=false;g.takedownIntent={...A.intent,lethal:A.intent.lethal||(A.holding&&A.held>=LETHAL_HOLD)};
+  killGuard(g,'stash',{type:'vent',x:A.v.x,y:A.v.y,fl:0,z:0,bodies:0});S.stats.special++;A.v.open=false;P.trav=null;P.moving=false;play('cloth',.4);
 }

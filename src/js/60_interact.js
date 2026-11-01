@@ -515,7 +515,7 @@ function ventAmbushTarget() {
   let best = null, bd = 50;
   for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
 
-    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.elite || g.dog || g.z || g.climb) continue;
+    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE'].includes(g.state) || g.elite || g.dog || g.z || g.fl || g.climb) continue;
     const d = dist(g.x, g.y, v.x, v.y); if (d < bd) { bd = d; best = g; }
   }
   return best ? { g: best, v } : null;
@@ -631,7 +631,7 @@ function primaryActionRaw() {
   const P = S.player;
   if (actionBusy(P)) return { k: 'none', label: '…' };
   if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
-  if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '환풍구로 끌어들이기' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '실내로 나가기' } : { k: 'none', label: '환풍구' }; }
+  if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어들여 기절' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '실내로 나가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
   if (S.vehicles) { const ca = cityAction(); if (ca) return ca; }  // 도시: 차 타기·내리기·의뢰 받기
@@ -858,6 +858,7 @@ function actPrimary(force) {
     case 'ventIn': {beginAccessFlow('ventIn',a.v);break;}
     case 'ventOut': {beginAccessFlow('ventOut',a.v);break;}
     case 'ventKill': {
+      if(STAGE.artSlice){beginVentPull(a.g,a.v);break;}
       const g = a.g; killGuard(g, 'stash', { bodies: 0 }); a.v.open = true; P.strikeT = 0.3; S.stats.special++;
       toast('자경대원을 환풍구 안으로 끌어들였다', 2.2, 'good'); break;
     }

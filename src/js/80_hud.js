@@ -34,6 +34,7 @@ function drawMini() {
   if (!miniBase || miniBase.stage !== S) { miniBase = buildMiniBase(); miniBase.stage = S; cv.width = miniBase.width; cv.height = miniBase.height; }
   const x = cv.getContext('2d'), s = miniBase.s, P = S.player, T = v => v / TILE * s;
   x.drawImage(miniBase, 0, 0);
+  if(STAGE.artSlice&&window.__clubView?.drawPassageMap(cv))return;
   // 화면에 보이는 범위
   x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(STAGE.artSlice&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
   if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
@@ -167,12 +168,13 @@ function updateHUD(force) {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 && !P.vent && !P.under ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
   floorBanner(P, ptx, pty);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : indoor ? 'in' : 'out';
-  hud.layer.dataset.z = zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
+  hud.layer.dataset.z = !P.vent && !P.under && zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
   hud.light.dataset.level = P.hidden ? 'hid' : lv > 0.55 ? 'hi' : lv > 0.22 ? 'mid' : 'lo';
   setText(hud.mode, 'mode', input.aiming ? TOOL_NAME[input.tool] + ' 조준' : P.interact ? P.interact.label : P.pick ? '작업 중' : P.hide ? '은신 중' : P.captive ? '붙잡음 · ' + Math.max(0, Math.ceil(9 - P.captive.captT)) + '초' : P.carrying ? '운반 중' : P.cover ? (P.cover.kind === 'tree' ? '나무에 붙음' : P.cover.kind === 'car' ? '차 뒤에 붙음' : '벽에 붙음') + ' · 은폐 효과 · 발소리 없음' : P.trav ? '이동 중' : (input.sneakToggle ? '[웅크림] ' : input.walkLock ? '[항상 걷기] ' : '') + { sneak: '웅크림', walk: '걷기', run: '달리기' }[P.mode] + (loudMul(P.x, P.y, flOf(P)) < 1 ? (loudMul(P.x, P.y, flOf(P)) < 0.5 ? ' · 발소리가 음악에 묻힘' : ' · 주변 음악 소리') : ''));
+  if(STAGE.artSlice){const constrained=!!(P.under||P.vent);if(hudCache.passageMove!==constrained){hudCache.passageMove=constrained;syncSneakBtn();}}
   syncTools();
   setText(hud.kills, 'k', '처치 ' + S.stats.kills);
   const fleeNow = S.fleeing && S.guards.some(g => g.state === 'FLEE');
@@ -194,7 +196,7 @@ function updateHUD(force) {
   hud.act.classList.toggle('ready', ka.k !== 'none' || !!ka.stalk);
   const ki = ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
-  const flow=P.trav?.hideFlow||S.amb,held=S.koHold||P.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?flow.intent:null), source = held && held.source && held.source.id, progress = holdFrac().toFixed(3);
+  const flow=P.trav?.hideFlow||P.trav?.ventPull||S.amb,held=S.koHold||P.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?flow.intent:null), source = held && held.source && held.source.id, progress = holdFrac().toFixed(3);
   hud.act.style.setProperty('--hold', COMBAT_INPUTS.atk.includes(source) ? progress : '0');
   hud.carry.style.setProperty('--hold', COMBAT_INPUTS.env.includes(source) ? progress : '0');
   padButton(hud.carry, 'carryH', ea, P.ledge || P.wire ? '올라가기' : '행동');
