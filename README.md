@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v119 자유로운 의뢰 순서·선택형 단서 안내: https://kkhkkh20-bit.github.io/yahaeng/free-approach-v119/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FREE_APPROACH_V119.md
+
 v118 전체 의뢰 리뷰·완료 기록·수납 복구: https://kkhkkh20-bit.github.io/yahaeng/mission-review-v118/
 
 상세 리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/FULL_MISSION_REVIEW_V118.md
@@ -122,7 +126,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v118
-Source commit: f9fd19be2884aed156a9ae727abdef1573e3730c
+Version: v119
+Source commit: 598d1524a0f8777d69783e7089a5545b684be996
 
-Ink study source: f9fd19be2884aed156a9ae727abdef1573e3730c
+Ink study source: 598d1524a0f8777d69783e7089a5545b684be996
