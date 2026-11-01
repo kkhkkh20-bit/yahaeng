@@ -1,0 +1,22 @@
+[
+  {
+    "outfit": null,
+    "maxStep": 0.05799384270741855,
+    "samples": 598,
+    "grounded": 183
+  },
+  {
+    "outfit": "crew",
+    "maxStep": 0.05799384270741855,
+    "samples": 598,
+    "grounded": 183
+  },
+  {
+    "bodyObjectPreserved": true,
+    "capacity": 0
+  },
+  {
+    "holdKill": true,
+    "kills": 1
+  }
+]

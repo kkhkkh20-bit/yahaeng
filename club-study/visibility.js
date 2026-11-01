@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {passageMode} from './passages.js?v=v131-585247f537b3';
 // The same tile rays as the simulation: glass transmits sight; shut doors and walls do not.
 // A small world-space texture cuts only the overhead architecture, not whole buildings.
 export function createVisibility(G){
@@ -10,7 +11,7 @@ export function createVisibility(G){
   if(outside&&!P.hide&&!P.under&&!P.vent){G.setLayer(0);try{const b=G.BLD[0];for(let iy=b.y0*scale;iy<(b.y1+1)*scale;iy++)for(let ix=b.x0*scale;ix<(b.x1+1)*scale;ix++){const x=(ix+.5)/scale*48,y=(iy+.5)/scale*48;if(Math.hypot(x-P.x,y-P.y)>430||!G.los(P.x,P.y,x,y))continue;data[(iy*w+ix)*4]=255;data[(iy*w+ix)*4+3]=255;count++;}}finally{G.setLayer(fl);}}
   texture.needsUpdate=true;
  }
- function visible(o,fixture=false){const P=G.S.player;if((o.fl||0)!==fl||(o.z||0)!==(P.z||0)||P.under||P.vent)return false;const b=G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48));if(b>=0&&b!==inside){if(b!==0||!at(o.x,o.y))return false;}if(fixture)return G.fixtureVisible(o,430);return true;}
+ function visible(o,fixture=false){const P=G.S.player;if((o.fl||0)!==fl||(o.z||0)!==(P.z||0)||passageMode(P))return false;const b=G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48));if(b>=0&&b!==inside){if(b!==0||!at(o.x,o.y))return false;}if(fixture)return G.fixtureVisible(o,430);return true;}
  function install(group,part){if(!group)return;const clones=new Map();group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(clones.has(m))return clones.get(m);const n=m.clone(),previous=n.onBeforeCompile;n.onBeforeCompile=shader=>{previous?.(shader);Object.assign(shader.uniforms,uniforms);shader.vertexShader='varying vec3 roomWorld;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nroomWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');shader.fragmentShader='uniform sampler2D roomSight;uniform vec2 roomSize;uniform float roomOutside;varying vec3 roomWorld;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nif(roomOutside>.5 && roomWorld.y>${part==='overhead'?'.15':'.25'} && texture2D(roomSight,(roomWorld.xz-vec2(roomWorld.y))/roomSize).r>.5)discard;`);};n.customProgramCacheKey=()=> 'club-window-sight-'+part;clones.set(m,n);materials.add(n);return n;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
  return{update,visible,at,install,texture,get outside(){return uniforms.roomOutside.value>0},get cells(){return count},get inside(){return inside},dispose(){texture.dispose();materials.forEach(m=>m.dispose());}};
 }

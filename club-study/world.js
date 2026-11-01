@@ -1,7 +1,9 @@
 import * as THREE from 'three';
-import {batchStatic} from './batch.js?v=v130-ddb1c767dc19';
-import {makeMaterials} from './materials.js?v=v130-ddb1c767dc19';
-import {createVisibility} from './visibility.js?v=v130-ddb1c767dc19';
+import {batchStatic} from './batch.js?v=v131-585247f537b3';
+import {makeMaterials} from './materials.js?v=v131-585247f537b3';
+import {createVisibility} from './visibility.js?v=v131-585247f537b3';
+import {createPassages} from './passages.js?v=v131-585247f537b3';
+import {createLighting} from './lighting.js?v=v131-585247f537b3';
 export const FLOOR=2.8;
 const boxG=new THREE.BoxGeometry(1,1,1),postG=new THREE.CylinderGeometry(.028,.028,1,8);
 function mesh(parent,geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
@@ -26,6 +28,7 @@ function dumpster(p,m,x,z){
 }
 export function buildWorld(G,scene){
  const visibility=createVisibility(G),mat=makeMaterials(),root=new THREE.Group();scene.add(root);const floorGroups=[],frontWalls=[],frontCuts=[],roofs=[],doors=[],windows=[],hides=[],items=[],lamps=[],bld=G.BLD,grids=[G.G0,...G.GF.slice(1)],stairs=[];
+ const passages=createPassages(G,scene,mat,{box,bar,mesh});
  const baseMat=mat.asphalt.clone();baseMat.map=baseMat.map.clone();baseMat.map.repeat.set(G.MW/2,G.MH/2);baseMat.bumpMap=baseMat.map;
  box(root,baseMat,G.MW/2,-.13,G.MH/2,G.MW+60,.24,G.MH+60);
  // A kerb and long, quiet paving slabs separate the street from the service lane.
@@ -95,20 +98,15 @@ export function buildWorld(G,scene){
   else if(['boxes','spk'].includes(f.t)){box(p,mat.wood,x,y+.45,z,w,.9,d);}
   else if(f.t==='plant'){box(p,mat.concrete,x,y+.25,z,w,.5,d);for(let k=0;k<7;k++){const leaf=mesh(p,new THREE.SphereGeometry(.18,6,4),mat.leather,x+Math.sin(k)*.19,y+.6+(k%2)*.16,z+Math.cos(k)*.19,.5,1.9,1);leaf.rotation.z=k;}}
  }
- for(const h of G.S.hides){if(!['box','locker','wardrobe','cab'].includes(h.type))continue;const fl=h.fl||0,p=floorGroups[fl]||root,x=h.furn?h.tx+(h.w||1)/2:h.x/48,z=h.furn?h.ty+(h.h||1)/2:h.y/48;const v=h.type==='box'?dumpster(p,mat,x,z):cabinet(p,mat,x,fl*FLOOR,z,(h.w||1)*.92,(h.h||1)*.8,h.type==='locker');v.group.userData.dynamic=true;hides.push({h,v});}
+ for(const h of G.S.hides){if(!['box','well','locker','wardrobe','cab'].includes(h.type))continue;const fl=h.fl||0,p=floorGroups[fl]||root,x=h.furn?h.tx+(h.w||1)/2:h.x/48,z=h.furn?h.ty+(h.h||1)/2:h.y/48;const v=h.type==='well'?passages.makeWell(p,h):h.type==='box'?dumpster(p,mat,x,z):cabinet(p,mat,x,fl*FLOOR,z,(h.w||1)*.92,(h.h||1)*.8,h.type==='locker');v.group.userData.dynamic=true;hides.push({h,v});}
  // Dense, low foliage is a real hide surface, using the existing bush occupancy/rules.
  mat.foliage=new THREE.MeshStandardMaterial({color:'#46513c',roughness:1});
  for(const h of G.S.bushes){const g=new THREE.Group();g.position.set(h.x/48,(h.fl||0)*FLOOR,h.y/48);(floorGroups[h.fl||0]||root).add(g);box(g,mat.concrete,0,.12,0,1.05,.24,1.05);box(g,mat.dark,0,.245,0,.9,.05,.9);for(let i=0;i<11;i++){const a=i*2.399,r=i?.12+(i%3)*.11:0;mesh(g,new THREE.IcosahedronGeometry(.26,1),mat.foliage,Math.cos(a)*r,.48+(i%3)*.065,Math.sin(a)*r,1,1.2,1);}g.userData.dynamic=true;hides.push({h,v:{group:g,open(){},grip(){return new THREE.Vector3(h.x/48,.5,h.y/48);}}});}
+ for(const v of G.S.vents)passages.makeVent(floorGroups[0]||root,v);
  // Foreground cutaways must never cut the container they are revealing.
- for(const {v}of hides){const clones=new Map();v.group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(!clones.has(m)){const n=m.clone();n.userData.noForeground=true;clones.set(m,n);}return clones.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
+ for(const {v}of [...hides,...passages.fixtures]){const clones=new Map();v.group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(!clones.has(m)){const n=m.clone();n.userData.noForeground=true;clones.set(m,n);}return clones.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
  for(const it of G.S.items){const f=G.FURN.filter(f=>(f.fl||0)===(it.fl||0)&&f.t===it.furn).sort((a,b)=>Math.hypot(a.x+.5-it.dx/48,a.y+.5-it.dy/48)-Math.hypot(b.x+.5-it.dx/48,b.y+.5-it.dy/48))[0];const dx=it.x/48-(f?f.x+f.w/2:it.x/48),dz=it.y/48-(f?f.y+f.h/2:it.y/48),norm=Math.hypot(dx,dz)||1,x=f?f.x+f.w/2+dx/norm*.42:it.x/48,z=f?f.y+f.h/2+dz/norm*.42:it.y/48,y=(it.fl||0)*FLOOR+(f?.t.startsWith('desk')?.86:.82);const o=box(floorGroups[it.fl||0]||root,mat.wood,x,y,z,.23,.045,.3);box(o,mat.paper,0,.55,0,.82,.18,.84);o.userData.dynamic=true;items.push({it,mesh:o,at:new THREE.Vector3(x,y+.25,z)});}
- for(const l of G.S.lamps){
-  const y=(l.fl||0)*FLOOR;const isIndoor=bld.some(b=>l.x/48>b.x0+1&&l.x/48<b.x1&&l.y/48>b.y0+1&&l.y/48<b.y1),x=l.x/48,z=l.y/48;
-  if(isIndoor)bar(floorGroups[l.fl||0]||root,mat.trim,new THREE.Vector3(x,y+2.38,z),new THREE.Vector3(x,y+FLOOR,z),.009);
-  if(!isIndoor){bar(root,mat.trim,new THREE.Vector3(x+.52,y+2.4,z),new THREE.Vector3(x,y+2.4,z),.025);box(root,mat.dark,x+.52,y+2.4,z,.07,.2,.12);}
-  box(floorGroups[l.fl||0]||root,mat.trim,x,y+2.35,z,.26,.07,.24);box(floorGroups[l.fl||0]||root,mat.warm,x,y+2.3,z,.2,.025,.18);
-  const light=new THREE.PointLight('#efc48c',isIndoor?7:10,6,2);light.position.set(x,y+2.2,z);root.add(light);lamps.push({l,light,base:light.intensity});
- }
+ lamps.push(...createLighting(G,root,floorGroups,mat,{box,bar}));
  // Drainage, cable runs and rain marks sit on their real outside surfaces.
  for(let z=4;z<16;z++){box(root,mat.trim,7.65,.012,z+.5,.2,.024,.92);for(let k=0;k<5;k++)box(root,mat.dark,7.65,.029,z+.17+k*.14,.16,.012,.035);}
  for(const x of [8.02,20.98])bar(root,mat.trim,new THREE.Vector3(x,.12,4.0),new THREE.Vector3(x,5.65,4.0),.045);
@@ -129,12 +127,13 @@ export function buildWorld(G,scene){
  // The sight shader clones materials; fades must drive those live instances.
  for(const f of fades){const live=new Set();f.group.traverse(o=>{if(o.isMesh)for(const m of Array.isArray(o.material)?o.material:[o.material])live.add(m);});f.materials=[...live];}
  let updated=G.S.t;
- return{root,mat,visibility,floorGroups,frontWalls,roofs,doors,windows,hides,items,lamps,stairs,batch,update(){visibility.update();const dt=Math.max(.016,Math.min(.08,G.S.t-updated));updated=G.S.t;const alpha=1-Math.exp(-dt*14),P=G.S.player,inside=visibility.inside===0&&!P.z,upper=inside&&((P.fl||0)>0||P.trav?.stairs&&P.trav.t/P.trav.dur>.6);
+ return{root,mat,visibility,passages,floorGroups,frontWalls,roofs,doors,windows,hides,items,lamps,stairs,batch,update(){visibility.update();const mode=passages.update();root.visible=!mode;const dt=Math.max(.016,Math.min(.08,G.S.t-updated));updated=G.S.t;const alpha=1-Math.exp(-dt*14),P=G.S.player,inside=visibility.inside===0&&!P.z,upper=inside&&((P.fl||0)>0||P.trav?.stairs&&P.trav.t/P.trav.dur>.6);
   for(const f of fades){const wanted=f.group===floorGroups[1]?(!inside||upper?1:0):inside?0:1;f.value+=(wanted-f.value)*alpha;f.group.visible=f.value>.005;for(const m of f.materials){m.opacity=m.userData.maxOpacity*f.value;m.depthWrite=f.value>.98;}}
   for(const o of planes){const h=inside&&o.fl===(upper?1:0)?.24:o.height;o.current+=(h-o.current)*alpha;o.plane.constant=o.fl*FLOOR+o.current+.005;o.cap.position.y=o.fl*FLOOR+o.current;o.cap.visible=o.current<o.height-.05;}
   for(const {d,pivot}of doors)pivot.rotation.y=G.doorVisualOpen(d)*Math.PI*.54;
   for(const {w,pivot}of windows)pivot.rotation.y=(!w.st||w.st==='open')?Math.PI*.55:0;
   for(const {h,v}of hides){v.group.visible=visibility.visible(h,true)||P.hide===h||P.trav?.hideFlow?.h===h;let open=0;const T=P.trav;if(T?.hideFlow?.h===h)open=G.hideFlowOpen(T);else if(T?.accessFlow?.h===h)open=G.accessOpen(T.accessFlow);else if(G.S.amb?.h===h){const f=G.S.amb.t/1.2;open=Math.min(1,f/.18,(1-f)/.16);}v.open(open);}
-  for(const o of items)o.mesh.visible=!o.it.got&&visibility.visible(o.it);for(const o of lamps)o.light.intensity=G.lampOn(o.l)?o.base:0;
+  for(const o of passages.fixtures)o.v.group.visible=visibility.visible(o.h,true)||G.S.player.trav?.accessFlow?.obj===o.obj;
+  for(const o of items)o.mesh.visible=!o.it.got&&visibility.visible(o.it);for(const o of lamps){const on=G.lampOn(o.l);o.light.intensity=on?o.base:0;o.bulbMaterial.emissiveIntensity=on?1.1:0;o.lever.rotation.x=on?-.16:.16;}
  }};
 }
