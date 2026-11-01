@@ -1,5 +1,7 @@
 # 야행 웹 실행본
 
+v122 경비 실종 확인·2인 순찰·VIP 피신과 복귀: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/SECURITY_RESPONSE_V122.md
+
 v121 VIP 대표 의뢰: 동선·흡연 호위·서쪽 탈출·전체 AI 완주: https://kkhkkh20-bit.github.io/yahaeng/vip-v121/
 
 기획·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/VIP_SHOWCASE_V121.md
@@ -134,7 +136,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v121
-Source commit: 3de9b6e5b7df3d0e8caba4494a7ec18e644f9f71
+Version: v122
+Source commit: 3b1fbdc97fb3b35a462a6d0f20bc5c29f593c522
 
-Ink study source: 3de9b6e5b7df3d0e8caba4494a7ec18e644f9f71
+Ink study source: 3b1fbdc97fb3b35a462a6d0f20bc5c29f593c522
