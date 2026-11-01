@@ -163,8 +163,9 @@ function checkObjective() {
   recordMissionOutcome();
   const targetsLeft = S.spare ? 0 : S.guards.filter(g => g.target && !targetEliminated(g)).length;
   const itemsLeft = S.items.filter(i => !i.got).length;
-  const ready = !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
+  const trainingReady = !STAGE.steps || (S.tutI||0)>=STAGE.steps.length-1;
+  const ready = trainingReady && !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
   S.exitOpen = ready;
-  if (ready && !wasOpen) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
+  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
 }
 

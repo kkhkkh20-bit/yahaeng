@@ -1104,6 +1104,7 @@ function chaseHide(P) {
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
+  if(gl.tut&&m<3)return;  // 손에 닿는 연습 대상은 행동 표시가 대신한다. 버튼 영역으로 밀려난 화살표도 인물을 덮지 않는다.
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
@@ -1442,11 +1443,7 @@ function draw() {
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawDiningFixtures(); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
-  if (running && !tactical && !S.over && !STAGE.steps) drawGoal(P);
-  if (running && !tactical && STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {  // 연습: 지금 단계의 대상 위에 화살표
-    const tg = STAGE.steps[S.tutI][2] && STAGE.steps[S.tutI][2](S); if (tg && tg.x != null) { const k = Math.max(1, 0.95 / SCALE), b = Math.sin(S.t * 5) * 5 * k, y = tg.y - 52 * k + b;
-      ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(tg.x - 10 * k, y - 12 * k); ctx.lineTo(tg.x + 10 * k, y - 12 * k); ctx.lineTo(tg.x, y); ctx.closePath(); ctx.stroke(); ctx.fill();
-      ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(tg.x - 16 * k, y - 30 * k, 32 * k, 15 * k); ctx.fillStyle = '#f2c46b'; ctx.fillText('여기', tg.x, y - 19 * k); ctx.textAlign = 'left'; } }
+  if (running && !tactical && !S.over) drawGoal(P);
   PM('overlays');
   if (running && !tactical) drawOffscreen();
   // 행동 표시
@@ -1507,24 +1504,6 @@ function draw() {
     ctx.strokeStyle = 'rgba(120,190,255,.45)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
     ctx.fillStyle = 'rgba(8,14,26,.72)'; const lw = 170 * DPR; ctx.fillRect(canvas.width / 2 - lw / 2, canvas.height - 150 * DPR, lw, 26 * DPR);
     ctx.fillStyle = 'rgba(168,220,255,.95)'; ctx.font = `700 ${13 * DPR}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText('시간 멈춤 · 조준 중', canvas.width / 2, canvas.height - 132 * DPR);
-  }
-  const tgts = [];
-  if (S.exitOpen) tgts.push({ x: S.exit.x, y: S.exit.y, c: '#f2c46b' });
-  else {
-    for (const g of S.guards) if (g.target && g.state !== 'DEAD') tgts.push({ x: g.x, y: g.y, c: '#e8473c' });
-    for (const it of S.items) if (!it.got) tgts.push({ x: it.x, y: it.y, c: '#f2c46b' });
-  }
-  // 화면 밖 자경대원은 drawOffscreen의 눈 표시로 따로 (금색·빨강 화살표는 목표에만)
-  if (DBG.ui || !STAGE.steps) tgts.length = 0;  // 의뢰에서는 drawGoal 의 화살표 하나만 (같은 목표에 화살표가 두 개 뜨지 않게)
-  for (const t of tgts) {
-    const sx = (t.x - cam.x) * SCALE + W / 2, sy = (t.y - cam.y) * SCALE + H / 2, m = t.small ? 30 : 46;
-    if (sx < m || sy < m + 70 || sx > W - m || sy > H - m) {
-      const a = Math.atan2(sy - H / 2, sx - W / 2);
-      const ex = clamp(sx, m, W - m), ey = clamp(sy, m + 70, H - m);
-      ctx.save(); ctx.scale(DPR, DPR); ctx.translate(ex, ey); ctx.rotate(a); if (t.small) ctx.scale(0.7, 0.7);
-      ctx.fillStyle = t.c; ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(-8, -9); ctx.lineTo(-4, 0); ctx.lineTo(-8, 9); ctx.closePath(); ctx.fill();
-      ctx.restore();
-    }
   }
   if (input.aiming && running && !S.over) {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);

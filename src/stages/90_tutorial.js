@@ -94,14 +94,14 @@ STAGES.push({
   ],
   items: [], challenges: [],
   steps: [
-    ['{이동} 동쪽으로 — 거리에선 나는 그냥 행인', (S, P) => P.x > 4 * 48, () => ({ x: 5 * 48 + 24, y: 10 * 48 + 24 })],
-    ['자경대원 옆을 그냥 걸어서 지나가 보자', (S, P) => P.x > 9 * 48, S => npcT(S, 'street')],
-    ['북쪽 마당(주황 = 출입 금지)에 들어가 경고를 받고 다시 나오기', (S, P) => npcT(S, 'yard').warned && P.y > 8 * 48, S => npcT(S, 'yard').warned ? { x: 14 * 48 + 24, y: 10 * 48 + 24 } : { x: 14 * 48 + 24, y: 6 * 48 + 24 }],
-    ['수다 떠는 두 사람 곁에서 엿듣기', S => (S.learned || []).length > 0, () => ({ x: 19 * 48 + 48, y: 9 * 48 + 24 })],
-    ['남쪽 골목 혼자인 자경대원 뒤에서 {공격} — 기절', S => npcT(S, 'lone').state === 'DEAD', S => npcT(S, 'lone')],
-    ['{행동} 옷 갈아입기 · 다른 행동이 보이면 {대상}', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
-    ['{행동}으로 메고 수거함에 넣기 — 발견되지 않도록 숨기기', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
-    ['초록 경계선 마당은 이 옷이면 통과 — 안쪽 끝까지 걸어가기', (S, P) => inR(P, [35, 3, 37, 5]), () => ({ x: 36 * 48 + 24, y: 4 * 48 + 24 })],
-    ['눈 표시 반장의 시야를 피해 노란 탈출 지점으로 이동하기', () => false, S => S.exit]
+    ['{이동} 오른쪽으로 이동하기', (S, P) => P.x > 4 * 48, () => ({ x: 5 * 48 + 24, y: 10 * 48 + 24 })],
+    ['길의 자경대원을 지나가기', (S, P) => P.x > 9 * 48, () => ({x:9.5*48,y:10.5*48})],
+    [S=>npcT(S,'yard').state==='WARN'||npcT(S,'yard').warned?'경고받았다 — 아래쪽 길로 나오기':'위쪽 주황 경계선 안으로 들어가기', (S, P) => npcT(S, 'yard').warned && P.y > 8 * 48, S => npcT(S,'yard').state==='WARN'||npcT(S,'yard').warned ? { x: 14.5*48, y: 9.5*48 } : { x: 14.5*48, y: 6.5*48 }],
+    ['두 사람 곁에서 대화 듣기', S => (S.learned || []).length > 0, () => ({ x: 19 * 48 + 48, y: 9 * 48 + 24 })],
+    [(S,P)=>P.captive===npcT(S,'lone')?'{공격} 짧게 눌러 기절시키기':'골목의 자경대원 뒤에서 {붙잡기} 또는 {공격}', S => npcT(S, 'lone').state === 'DEAD', S => npcT(S, 'lone')],
+    [(S,P)=>P.carrying?'{행동} 내려놓은 뒤 옷 갈아입기':'{행동} 옷 갈아입기', (S, P) => P.outfit === 'crew', S => S.corpses.find(c => c.tag === 'lone') || npcT(S, 'lone')],
+    [(S,P)=>P.carrying?'{행동} 수거함에 넣기':'{행동} 쓰러진 자경대원 운반', S => S.corpses.some(c => c.tag === 'lone' && c.stashed), (S) => S.player.carrying ? { x: 24 * 48 + 24, y: 14 * 48 + 24 } : S.corpses.find(c => c.tag === 'lone')],
+    ['초록 경계선을 넘어 안쪽으로 이동하기', (S, P) => inR(P, [35, 3, 37, 5]), () => ({ x: 36 * 48 + 24, y: 4 * 48 + 24 })],
+    ['아래쪽 길로 나와 노란 원으로 이동하기', () => false, S => S.player.y<8.5*48?{x:36.5*48,y:10.5*48}:S.exit]
   ]
 });
