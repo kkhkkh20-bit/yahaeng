@@ -1,0 +1,79 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/episode-one/",
+  "files": {
+    "index.html": "0b85c9daa5d1039dbf641dc12a74ec718037e0da22ffcb5d496cf3112b4a6eea",
+    "actors.js": "790dfdd77e341cc9de323c4922ba364baf74044ee684c1b66a01596be84e2eb5",
+    "batch.js": "d676e9989299c47574a35f5c765bc87f1cebbef30b5c8ba88c0e784d0f36d735",
+    "effects.js": "346be1d2f0f1852496c9993e61d4014da1d34f6be65480f2986ffbc02c853c73",
+    "episode.js": "a721f1e240894512940842a71d530e41952f8e35dad65849890e196d0d7e8cfa",
+    "lighting.js": "2b0109dc3eb9fb9cdb65eae5e5ef59414fdf317c3cca8919213276ef62a68bfa",
+    "materials.js": "548a0506ea0e618b89baafdf8e94976b4b699aa33d61d19565823ed4e3de03ec",
+    "passages.js": "df411ab085ca60d0aa6f4cd278078e4430aafcd3ff4d84ad375651def555b113",
+    "pose_driver.js": "4d5d19a712319e044e3530ec570cb835b707ec6a7cf00247fa6cf33281c11744",
+    "reveal.js": "32cff518c37c8550608abd0ec0d26e52ce18760bf8fe724c7759241206fd7e0e",
+    "sight.js": "43a969b6fa33e6ac660cc4fda61362d4750cde3dbedf788592102ce008ecf55e",
+    "view.js": "451c2304c8bab7270549708640b9087b11120d58b43c97fc840292bfbac48fa5",
+    "visibility.js": "b962601b01743102214da045c4aef4c0d5af275ad6c46adc501dac6899aaad3a",
+    "world.js": "826aaafcfb3b3c5b0b5826f43ebd4573d1b17687d64b974d941798b0dbdfb209"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        282.1319669980511,
+        871.4670330019492
+      ],
+      "stage": "lastSettlement",
+      "version": "v132",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 2,
+      "metrics": {
+        "drawCalls": 200,
+        "triangles": 39168,
+        "pixelRatio": 1,
+        "medianMs": 10.099999994039536,
+        "p95Ms": 34.899999998509884
+      },
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        319.81898812373896,
+        833.7800118762615
+      ],
+      "stage": "lastSettlement",
+      "version": "v132",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 2,
+      "metrics": {
+        "drawCalls": 105,
+        "triangles": 37374,
+        "pixelRatio": 1,
+        "medianMs": 7,
+        "p95Ms": 101.29999999701977
+      },
+      "errors": []
+    }
+  ],
+  "cloudflareVersion": {
+    "edition": "2d-campaign",
+    "version": "v128-loading-fix",
+    "source_sha256": "0589f4cc2f0edf163155e5b1011a9a61062e4b98d005f04b292993ccc5d4927b",
+    "html_bytes": 159783,
+    "source_bytes": 11376729,
+    "scripts": 4,
+    "assets": 174,
+    "asset_bytes": 8826813
+  }
+}

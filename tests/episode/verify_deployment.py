@@ -6,18 +6,19 @@ from pathlib import Path
 import httpx
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/episode-validation';O.mkdir(exist_ok=True)
-BASE=sys.argv[1]if len(sys.argv)>1 else 'https://kkhkkh20-bit.github.io/yahaeng/episode-one/'
+BASE=(sys.argv[1]if len(sys.argv)>1 else 'https://kkhkkh20-bit.github.io/yahaeng/episode-one/').rstrip('/')+'/'
+RELEASE=(R/'VERSION').read_text().strip()
 async def main():
  result={'base':BASE,'files':{},'browsers':[]}
  async with httpx.AsyncClient(timeout=90,follow_redirects=True)as client:
   for file in [R/'build/episode-one/index.html',*sorted((R/'build/episode-one').glob('*.js'))]:
-   data=(await client.get(BASE+file.name+'?verify=132')).raise_for_status().content
+   data=(await client.get(BASE+file.name+'?verify='+RELEASE)).raise_for_status().content
    digest=hashlib.sha256(data).hexdigest();assert digest==hashlib.sha256(file.read_bytes()).hexdigest(),file.name;result['files'][file.name]=digest
   result['cloudflareVersion']=(await client.get('https://yahaeng.kkhkkh-20.workers.dev/version.json')).raise_for_status().json()
  async with async_playwright()as p:
   browser=await p.chromium.launch(args=['--enable-unsafe-swiftshader'],proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
   for mobile in [False,True]:
-   page=await browser.new_page(viewport={'width':390 if mobile else 1000,'height':844 if mobile else 740},has_touch=mobile);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));await page.add_init_script('localStorage.clear()');await page.goto(BASE+'?v=132&nostats',timeout=120000);await page.wait_for_function('__clubView?.ready||window.__clubError',polling=100,timeout=120000);assert not await page.evaluate('window.__clubError');assert await page.evaluate('window.__BUILD_VERSION__')=='v132';assert await page.locator('#brief').is_visible();await page.keyboard.press('Escape');assert await page.locator('#brief').is_visible()
+   page=await browser.new_page(viewport={'width':390 if mobile else 1000,'height':844 if mobile else 740},has_touch=mobile);errors=[];page.on('pageerror',lambda e:errors.append(str(e)));await page.add_init_script('localStorage.clear()');await page.goto(BASE+'?v='+RELEASE+'&nostats',timeout=120000);await page.wait_for_function('__clubView?.ready||window.__clubError',polling=100,timeout=120000);assert not await page.evaluate('window.__clubError');assert await page.evaluate('window.__BUILD_VERSION__')==RELEASE;assert await page.locator('#brief').is_visible();await page.keyboard.press('Escape');assert await page.locator('#brief').is_visible()
    if mobile:await page.tap('#btnBrGo')
    else:await page.click('#btnBrGo')
    assert not await page.locator('#brief').is_visible()
