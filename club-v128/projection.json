@@ -1,0 +1,98 @@
+[
+  {
+    "touch": false,
+    "frame": [
+      639.9999999999998,
+      496.8533875307375,
+      1280,
+      800
+    ],
+    "metrics": {
+      "drawCalls": 220,
+      "triangles": 46758,
+      "pixelRatio": 1,
+      "medianMs": 50.30000000074506,
+      "p95Ms": 1022.9000000003725
+    }
+  },
+  {
+    "touch": false,
+    "frame": [
+      639.9999999999995,
+      496.8533875307374,
+      1280,
+      800
+    ],
+    "metrics": {
+      "drawCalls": 300,
+      "triangles": 46598,
+      "pixelRatio": 1,
+      "medianMs": 55.70000000111759,
+      "p95Ms": 1022.9000000003725
+    }
+  },
+  {
+    "touch": false,
+    "frame": [
+      639.9999999999995,
+      496.8533875307375,
+      1280,
+      800
+    ],
+    "metrics": {
+      "drawCalls": 348,
+      "triangles": 35548,
+      "pixelRatio": 1,
+      "medianMs": 50.30000000074506,
+      "p95Ms": 1022.9000000003725
+    }
+  },
+  {
+    "touch": true,
+    "frame": [
+      194.99999999999977,
+      527.829621125104,
+      390,
+      844
+    ],
+    "metrics": {
+      "drawCalls": 61,
+      "triangles": 40432,
+      "pixelRatio": 1,
+      "medianMs": 18.90000000037253,
+      "p95Ms": 815.5999999996275
+    }
+  },
+  {
+    "touch": true,
+    "frame": [
+      194.9999999999995,
+      527.829621125104,
+      390,
+      844
+    ],
+    "metrics": {
+      "drawCalls": 174,
+      "triangles": 44040,
+      "pixelRatio": 1,
+      "medianMs": 43,
+      "p95Ms": 815.5999999996275
+    }
+  },
+  {
+    "touch": true,
+    "frame": [
+      194.99999999999952,
+      527.829621125104,
+      390,
+      844
+    ],
+    "metrics": {
+      "drawCalls": 211,
+      "triangles": 34050,
+      "pixelRatio": 1,
+      "medianMs": 43,
+      "p95Ms": 815.5999999996275
+    }
+  }
+]

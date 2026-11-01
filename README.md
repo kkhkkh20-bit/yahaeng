@@ -1,5 +1,11 @@
 # 야행 웹 실행본
 
+v128 클럽 뒷골목 사선 시점 플레이: https://kkhkkh20-bit.github.io/yahaeng/club-study/
+
+같은 배치의 화면 비교·검수: https://kkhkkh20-bit.github.io/yahaeng/club-v128/
+
+제작 범위·자산·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/ART_DIRECTION_REVIEW_V128.md
+
 v127 유인 템포·시민 서기·공터 정리와 실시간 검수: https://kkhkkh20-bit.github.io/yahaeng/polish-v127/
 
 그래픽 진단·사선 2.5D 대표 구역 제안: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/ART_DIRECTION_REVIEW_V127.md
@@ -156,7 +162,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v127
-Source commit: 219d3f04d2776d93d127af424d0659a055d87167
+Version: v128
+Source commit: 3746fe56c14e376aa5efd9b3e968bb98a5f77060
 
-Ink study source: 219d3f04d2776d93d127af424d0659a055d87167
+Ink study source: 3746fe56c14e376aa5efd9b3e968bb98a5f77060

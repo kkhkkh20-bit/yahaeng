@@ -1,0 +1,38 @@
+{
+  "license": "CC0-1.0",
+  "originals": "https://github.com/kkhkkh20-bit/yahaeng/blob/main/tools/prerender/characters/sources.json",
+  "sources": [
+    "https://quaternius.com/packs/ultimatemodularwomen.html",
+    "https://quaternius.com/packs/ultimatemodularcharacters.html"
+  ],
+  "files": {
+    "Female-Casual.glb": {
+      "bytes": 1043248,
+      "sha256": "849f091323b5145046f844754963bbd4bdf2cf1175de9537ff1caa3bbf040cea"
+    },
+    "Female-Suit.glb": {
+      "bytes": 1050400,
+      "sha256": "f1039db000f5fc1ad1e4671c505a84161ca95236eb1a93e8c9e8ad5fcaf2c305"
+    },
+    "Female-Worker.glb": {
+      "bytes": 1013436,
+      "sha256": "016c7655a943b31ce4bcff79ff2ac1a3af0a021bdb8798cbedfcf5c7e230b333"
+    },
+    "Male-Swat.glb": {
+      "bytes": 1215564,
+      "sha256": "12c2728599c8a41ef83438cc4f0f9845ae8f07490548914232eb9d6f72ac5434"
+    },
+    "Male-Casual_2.glb": {
+      "bytes": 984684,
+      "sha256": "85ebd2f7fdc57b8b165b6ffda320c874a0eca07e0bd2144ab23b6d6334ed8b99"
+    },
+    "Male-Suit.glb": {
+      "bytes": 1174460,
+      "sha256": "830bbf92cfe409995c75bd24f60c69a611542044701ed803ef0666260aa2bc70"
+    },
+    "Male-Worker.glb": {
+      "bytes": 914076,
+      "sha256": "84937df3e686e4aabb6be3ffb77c071b52a6548b40d46b4b49f347dec4b3ebad"
+    }
+  }
+}
