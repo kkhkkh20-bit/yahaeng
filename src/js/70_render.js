@@ -1193,7 +1193,7 @@ function draw() {
   PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
-    if (c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
+    if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
@@ -1332,7 +1332,7 @@ function draw() {
   PM('player');
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
-    if(g.ledgeFalling||g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
+    if(g.doomed||g.ledgeFalling||g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
     drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -1385,7 +1385,7 @@ function draw() {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
     drawRoofEntrances(P);
     PM('roofs');
-    for (const c of S.corpses) if (c.z && !c.stashed && !flOf(c) && inView(c.x, c.y, 120)) {
+    for (const c of S.corpses) if (!(c.hideT>S.t) && c.z && !c.stashed && !flOf(c) && inView(c.x, c.y, 120)) {
       ctx.globalAlpha = c.hidden ? .5 : 1; drawBody(c); ctx.globalAlpha = 1;
       if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
     }

@@ -370,6 +370,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if (updatePairCombat(P,dt)) return;
   if (P.lethalHold && updateLethalHold(P, dt)) return;
   if (P.interact) { updateObjectAction(P, dt); return; }
   if (S.keypad) { P.moving = false; if (dist(P.x, P.y, S.keypad.d.x, S.keypad.d.y) > 90 || S.over) closeKeypad(); return; }
@@ -377,7 +378,7 @@ function updatePlayer(dt) {
     if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; } return; }  // 계단에서도 붙잡은 사람이 함께 오르내린다
   if(S.ledgePull){P.vx=P.vy=0;P.moving=false;return;}
   if (P.ledge) { updateLedge(P, dt); return; }
-  if (P.grabIn) { updateGrabIn(P, dt); return; }
+  if (P.grabIn) { updateGrabIn(P, dt); if(!P.grabIn)runGrabAttack(P); return; }
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {

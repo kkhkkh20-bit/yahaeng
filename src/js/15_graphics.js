@@ -349,7 +349,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const fr = PR.fr, dw = fr * scale;
   const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
   const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
-  if(key===playerInkKey&&prVar[key+'_ol']){ctx.globalAlpha=.62*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
+  if(key===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired ? .24 : .62)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
   ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
   return true;
 }
@@ -478,6 +478,7 @@ function drawLastSeen() {
   }
 }
 function drawGuard(g) {
+  if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once
   if(g.containerMoving||g.ledgeFalling)return;
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;
   if (g.state === 'CAPTIVE' && S.player.grabIn && S.player.grabIn.g === g && PAIR() && PR.anims.choke && usePR(charOf(g))) return;  // 목을 감는 중: 플레이어와 함께 그린다

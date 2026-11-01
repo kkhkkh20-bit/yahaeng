@@ -61,7 +61,20 @@ function armKoHold(c, g, intent) {
   if (!combatHeld(source)) return;
   const old = S.koHold;
   if (old && old.source.id === source.id && old.source.serial === source.serial && Math.abs(S.t - old.t0) < .05) old.bodies.push({ c, g });
-  else S.koHold = { c, g, bodies: [{ c, g }], source, t0: S.t, px: S.player.x, py: S.player.y, fl: flOf(S.player), z: S.player.z || 0, container: intent && intent.container };
+  else S.koHold = { c, g, bodies: [{ c, g }], source, t0: intent?.pairStarted ?? S.t, px: S.player.x, py: S.player.y, fl: flOf(S.player), z: S.player.z || 0, container: intent && intent.container };
+}
+// The final part of a grapple accepts one follow-up, bound to this victim and press.
+function canQueueGrabAttack(P = S.player) {
+  const A=P.grabIn;return !!(A&&A.dur-A.t<=.2&&A.g.state==='CAPTIVE'&&!A.g.child);
+}
+function queueGrabAttack() {
+  const P=S.player,source=combatSource('atk');if(!source||!canQueueGrabAttack(P))return;
+  if(!P.attackQueue)P.attackQueue={g:P.grabIn.g,source,fl:flOf(P),z:P.z||0};
+}
+function runGrabAttack(P) {
+  const q=P.attackQueue;P.attackQueue=null;
+  if(!q||S.over||P.captive!==q.g||!S.guards.includes(q.g)||q.g.state!=='CAPTIVE'||dist(P.x,P.y,q.g.x,q.g.y)>64||flOf(P)!==q.fl||(P.z||0)!==q.z||flOf(q.g)!==q.fl||(q.g.z||0)!==q.z||!los(P.x,P.y,q.g.x,q.g.y,P.z||0))return;
+  actPrimary({k:'execute',g:q.g,viaZ:true,inputGroup:'atk',combatSource:q.source});
 }
 function grabTarget() {
   const P = S.player;

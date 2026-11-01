@@ -27,7 +27,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
   return a;
 }
 function attackAction() {
-  const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : '공격' };
+  const P = S.player; if (actionBusy(P)) return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : '공격' };
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) return koLabel(Object.assign({}, a));
@@ -114,7 +114,7 @@ function actAttack() {
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
-  if (actionBusy(P)) return;
+  if (actionBusy(P)) { queueGrabAttack(); return; }
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();

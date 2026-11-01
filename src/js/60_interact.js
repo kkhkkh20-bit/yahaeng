@@ -995,7 +995,7 @@ const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨
 function koPerson(g, mode, where, intent) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   g.unconscious = true; logEv('ko', g.x, g.y);
-  g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; play('thud', 0.45); play('cloth', 0.4);
+  g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
   const c = { fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
@@ -1044,7 +1044,7 @@ function strikeKill(list, two) {
     g.doomed = false; if (koFirst(g)) S.koNext = true;  // 조직원은 먼저 기절 (계속 누르면 updateKoHold 가 숨을 끊는다)
     if (pairK) pairKill(g, koFirst(g) ? 'choke' : kind, 0); else killGuard(g);
   });
-  S.hitStop = 0.07;
+  if(!pairK)S.hitStop = 0.07;
   if (two) { S.stats.special++; toast(lastKO() ? '동시 기절' : '동시 암살', 1.8, 'good'); }
 }
 // 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
@@ -1052,14 +1052,43 @@ function strikeKill(list, two) {
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
   const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
-  P.strikeT = dur; P.killAnim = { ch: charOf(g), t0: S.t, kind, dur, from }; P.riseT = S.t + dur + 0.22;
-  { const S0 = S; setTimeout(() => { if (S === S0 && !S.over) { play('thud', 0.32); S.shakeT = Math.max(S.shakeT || 0, 0.08); } }, dur * 0.82 * 1000); }  // 무릎이 꺾여 내려놓는 순간
-  const nd = S.decals.length, nf = S.fx.length, nc = S.corpses.length; killGuard(g, null, null, quiet); S.fx.length = nf; if (kind === 'choke') S.decals.length = nd;
-  const c = S.corpses.length > nc ? S.corpses[S.corpses.length - 1] : null;
-  if (c) { const fx = P.x + Math.cos(P.a) * 24, fy = P.y + Math.sin(P.a) * 24, ok = !solidAt(Math.floor(fx / TILE), Math.floor(fy / TILE));
-    c.x = ok ? fx : P.x; c.y = ok ? fy : P.y; c.a = P.a; c.hideT = S.t + dur; c.t0 = S.t + dur; c.f0 = 4; c.light = lightAt(c.x, c.y);
-    if (kind === 'choke') c.bleed = 0;  // 목 조르기: 옮겨도 핏방울이 없다
-    if (kind === 'stab' && S.decals.length > nd) { const d = S.decals[S.decals.length - 1]; d.x = c.x + rnd(-5, 5); d.y = c.y + rnd(-5, 5); } }
+  const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};delete g.takedownIntent;
+  const ko=S.koNext||!intent.lethal;S.koNext=S.lethalNext=false;
+  P.strikeT=dur;P.vx=P.vy=0;P.moving=false;
+  P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y};
+  P.riseT=S.t+dur+.22;g.doomed=true;g.moving=false;g.path=null;g.say=null;g.icon=null;
+}
+// Contact, incapacitation and lowering all advance on the same clock as the pose.
+function updatePairCombat(P,dt) {
+  const A=P.killAnim;if(!A?.g)return false;
+  const g=A.g,t=S.t-A.t0;
+  if(!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
+    g.doomed=false;if(g.state==='CAPTIVE')g.state='RETURN';P.killAnim=null;P.strikeT=0;return false;
+  }
+  P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,A.dur-t);
+  P.hidden=!P.z&&tileAt(P.x,P.y)==='B'&&P.mode==='sneak';P.light=lightAt(P.x,P.y,!!P.z);
+  if(t<A.dur&&P.hurtT>0)P.hurtT=Math.max(0,P.hurtT-dt);
+  if(!A.committed)g.doomed=true;
+  if(!A.contact&&t>=(A.from ? .04 : .14)){
+    A.contact=true;play('cloth',.35);contactFeedback({x:P.x+Math.cos(P.a)*14,y:P.y+Math.sin(P.a)*14,fl:A.fl,z:A.z},'takedown');
+    S.hitStop=Math.max(S.hitStop||0,.025);
+  }
+  const at=A.kind==='choke'?(A.from ? .38 : .54):.24;
+  if(!A.committed&&t>=at){
+    A.committed=true;g.takedownIntent=A.intent;g.pairDown=true;S.koNext=A.ko;
+    const nd=S.decals.length,nf=S.fx.length,nc=S.corpses.length;
+    try{killGuard(g,null,null,A.quiet);}finally{delete g.pairDown;}
+    S.fx.length=nf;if(A.kind==='choke')S.decals.length=nd;
+    A.c=S.corpses.length>nc?S.corpses.at(-1):null;
+    if(A.c){const x=P.x+Math.cos(P.a)*24,y=P.y+Math.sin(P.a)*24,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
+      Object.assign(A.c,{x:ok?x:P.x,y:ok?y:P.y,a:P.a,hideT:A.t0+A.dur,t0:A.t0+A.dur,f0:4});A.c.light=lightAt(A.c.x,A.c.y);
+      if(A.kind==='choke')A.c.bleed=0;
+    }
+    S.hitStop=Math.max(S.hitStop||0,.035);
+  }
+  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);S.shakeT=Math.max(S.shakeT||0,.06);}
+  if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
+  return true;
 }
 // 붙잡은 사람 처치: 목을 감은 자세에서 그대로 조여(또는 찔러) 내려놓는다
 function execCaptive(ko) {
@@ -1080,7 +1109,7 @@ function killGuard(g, mode, where, quiet) {
   S.lethalNext = false;
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
   g.state = 'DEAD'; g.icon = null;
-  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); setTimeout(() => play('thud', 0.45), 180); S.shakeT = quiet ? 0.12 : 0.18;  // 처치 손맛: 짧은 화면 흔들림
+  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); if(!g.pairDown)after(.18,()=>{if(!S.over)play('thud',.45);}); S.shakeT = quiet ? 0.12 : 0.18;
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
   S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
