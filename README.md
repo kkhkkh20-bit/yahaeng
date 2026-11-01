@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v115 자체 리뷰·준비 흐름·접촉·HUD 개선: https://kkhkkh20-bit.github.io/yahaeng/review-v115/
+
+리뷰·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/SELF_REVIEW_V115.md
+
 v114 사물 배치·약국·식사·화장실: https://kkhkkh20-bit.github.io/yahaeng/surfaces-v114/
 
 변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/OBJECT_MATCHING_V114.md
@@ -106,7 +110,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v114
-Source commit: 2045046468e8d79c1f3b95e421cfe971dbe7de81
+Version: v115
+Source commit: 2b3700521aad7dd33fa957dbcc57b8af6b7bd971
 
-Ink study source: 2045046468e8d79c1f3b95e421cfe971dbe7de81
+Ink study source: 2b3700521aad7dd33fa957dbcc57b8af6b7bd971
