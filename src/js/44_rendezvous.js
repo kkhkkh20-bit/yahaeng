@@ -81,9 +81,13 @@ function drawRendezvousPhoneArt(p,ctx){
 // Ambient barks compete for one place; useful overheard dialogue keeps priority.
 function visibleSpeechCandidates(P,chase=false,focus=false) {
   const L0=CUR_F;setLayer(flOf(P));
-  try{return S.guards.filter(g=>g.say&&g.say!=='(소곤소곤…)'&&(!focus||g.state==='ALERT'||Object.values(S.intel||{}).some(it=>it.cur?.sp===g))&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&
-    dist(g.x,g.y,P.x,P.y)<=(chase?300:360)&&(!chase||g.state==='ALERT'&&!g.civ)&&
-    (g.chat||Object.values(S.intel||{}).some(it=>it.cur?.sp===g)||los(P.x,P.y,g.x,g.y,P.z||0)));}
+  const intel=new Set(Object.values(S.intel||{}).map(it=>it.cur?.sp).filter(Boolean));
+  try{return S.guards.filter(g=>{
+    const reply=g===P.captive||g.replyUntil>S.t;
+    return g.say&&g.say!=='(소곤소곤…)'&&(!focus||reply||g.state==='ALERT'||intel.has(g))&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&
+      dist(g.x,g.y,P.x,P.y)<=(chase?300:360)&&(!chase||reply||g.state==='ALERT'&&!g.civ)&&
+      (reply||g.chat||intel.has(g)||los(P.x,P.y,g.x,g.y,P.z||0));
+  });}
   finally{setLayer(L0);}
 }
 // Optional context helpers for route inspection; these never select the player's HUD objective.
@@ -103,5 +107,5 @@ function missionApproachGoal() {
   return{x:tc(at[0]),y:tc(at[1]),fl:at[2]||0,z:trap?signGeometry(trap).z:0,text:step.text,story:st.d.id,storyName:st.d.name,where:''};
 }
 function speechPriority(g,P) {
-  return g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.chat?30:10;
+  return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.chat?30:10;
 }

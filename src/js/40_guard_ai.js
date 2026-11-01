@@ -795,7 +795,7 @@ function updateTalks(dt) {
   }
 }
 // 말풍선 (어둠 위에 그린다): 같은 층, 가까이 있을 때만 (들리는 거리)
-// 머리 위 말풍선: 밝은 바탕·둥근 모서리, 말하는 사람 역할 색 테두리, 길면 두 줄. 겹치면 위로 쌓는다
+// 머리 위 말풍선: 둥근 몸체와 화자를 향한 꼬리. 행동·인물·조작 영역을 피해 배치한다.
 // 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
 function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
@@ -803,6 +803,7 @@ function drawSpeech() {
   const P=S.player,ch=chaseNow(),focus=playerActionFocus();
   const who=visibleSpeechCandidates(P,ch,focus);
   if(P.say&&!P.hide)who.unshift(P);
+  if(!who.length)return;
   who.sort((a,b)=>speechPriority(b,P)-speechPriority(a,P)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
   const vx0=cam.x-W/SCALE/2+8/SCALE,vx1=cam.x+W/SCALE/2-8/SCALE,vy0=cam.y-H/SCALE/2+8/SCALE,vy1=cam.y+H/SCALE/2-8/SCALE;
@@ -826,12 +827,16 @@ function drawSpeech() {
     const ys=[above,above-h-12*k,g.y+26*k,clamp(above,vy0,vy1-h),g.y+50*k,...Array.from({length:12},(_,i)=>g.y+(72+i*18)*k)];
     for(const y of ys){if(y<vy0||y+h>vy1)continue;for(const x of xs){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
     if(!at)continue;
-    const [x,y]=at,col=g===P?DLG_COL.hero:g.civ?DLG_COL.civ:g.target?DLG_COL.target:g.elite?DLG_COL.elite:DLG_COL.guard;
-    placed.push(at);SPEECH_R.push({x,y,w,h});
-    ctx.fillStyle=INK_STUDY?'#191b18f5':'#111a22f5';ctx.fillRect(x,y,w,h);ctx.strokeStyle=INK_STUDY?'#aa9e84':'#63727c';ctx.lineWidth=k;ctx.strokeRect(x+.5*k,y+.5*k,w-k,h-k);
-    ctx.fillStyle=col;ctx.fillRect(x,y+5*k,2*k,h-10*k);
-    // 가까운 가장자리의 짧은 연결선으로 말하는 사람만 구별한다.
-    if(y+h<g.y-46){const tx=clamp(g.x,x+8*k,x+w-8*k);ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(tx,y+h);ctx.lineTo(tx,y+h+6*k);ctx.stroke();}
+    const [x,y]=at;
+    placed.push(at);SPEECH_R.push({x,y,w,h,speaker:g,text:g.say});
+    const bg=INK_STUDY?'#20231ef5':'#17232af5',edge=INK_STUDY?'#b7ae96':'#8d9d9f',r=6*k;
+    ctx.fillStyle=bg;ctx.strokeStyle=edge;ctx.lineWidth=k;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill();ctx.stroke();
+    // A triangular tail points toward the speaking actor, on the nearest edge.
+    const head={x:g.x,y:g.y-40},tail=11*k;let a,b,tip;
+    if(head.y>=y+h){const tx=clamp(head.x,x+12*k,x+w-12*k);a=[tx-5*k,y+h-k];b=[tx+5*k,y+h-k];tip=[clamp(head.x,tx-tail,tx+tail),Math.min(head.y,y+h+tail)];}
+    else if(head.y<=y){const tx=clamp(head.x,x+12*k,x+w-12*k);a=[tx-5*k,y+k];b=[tx+5*k,y+k];tip=[clamp(head.x,tx-tail,tx+tail),Math.max(head.y,y-tail)];}
+    else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
+    ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
     ctx.fillStyle='#e6e5df';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
   }
   ctx.restore();

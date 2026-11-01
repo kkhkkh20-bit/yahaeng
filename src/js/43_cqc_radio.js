@@ -8,7 +8,7 @@ function interrogate() {
   const P = S.player, g = P.captive; if (!g) return;
   if (g.target || g.civ || g.dog) return;
   if (g.questioned) return;
-  g.questioned = true; g.captT = Math.max(0, (g.captT || 0) - 2.5); S.stats.interro = (S.stats.interro || 0) + 1;  // 겁먹어서 잠깐 덜 버둥거린다
+  endChat(g); g.replyUntil=S.t+3.6; g.questioned = true; g.captT = Math.max(0, (g.captT || 0) - 2.5); S.stats.interro = (S.stats.interro || 0) + 1;  // 겁먹어서 잠깐 덜 버둥거린다
   play('cloth', 0.4); P.strikeT = Math.max(P.strikeT || 0, 0.2);
   const it = (STAGE.interrogate || []).find(i => !S.learned.includes(i.learn) && !(i.gives && P.keys[i.gives]));
   if (it) {

@@ -62,6 +62,7 @@ function hideApproach(h) {
   if(h.type==='bush'){setLayer(L0);return{points:[{x:P.x,y:P.y}],stand:{x:P.x,y:P.y},length:0};}
   let best=null;
   for(const {tx,ty,nx,ny}of hidePerimeter(h)){
+    if(h.furn&&h.type!=='bed'&&ny!==1)continue;
     if(!inMap(tx,ty)||solidFor(P.z||0)(tx,ty))continue;
     const same=Math.floor(P.x/TILE)===tx&&Math.floor(P.y/TILE)===ty;
     const path=same?[]:astar(Math.floor(P.x/TILE),Math.floor(P.y/TILE),tx,ty);
@@ -79,7 +80,7 @@ function hideExitPoint(h,dir) {
   dir=dir||(P.hideFrom?{x:P.hideFrom.x-h.x,y:P.hideFrom.y-h.y}:{x:Math.cos(P.a),y:Math.sin(P.a)});
   let best=null,score=-Infinity;const len=Math.hypot(dir.x,dir.y)||1;
   // Cabinet doors and beds use the whole footprint, including old checkpoints.
-  const candidates=h.furn?hidePerimeter(h):N8.map(([nx,ny])=>({tx:h.tx+nx,ty:h.ty+ny,nx,ny}));
+  const candidates=h.furn?hidePerimeter(h).filter(p=>h.type==='bed'||p.ny===1):N8.map(([nx,ny])=>({tx:h.tx+nx,ty:h.ty+ny,nx,ny}));
   for(const {tx,ty,nx,ny}of candidates){
     const solid=solidFor(P.z||0);if(!inMap(tx,ty)||solid(tx,ty))continue;
     if(!h.furn&&nx&&ny&&(solid(h.tx+nx,h.ty)||solid(h.tx,h.ty+ny)))continue;
@@ -102,7 +103,7 @@ function beginHideFlow(kind,h,subject=null,dir=null) {
   const exitTo=kind==='exit'&&(['box','well'].includes(h.type)||h.furn&&h.type!=='bed')?{...route.stand}:null;
   if(exitTo){const work=hideClosingStand(h,exitTo);if(work)route.stand=work;}
   const departure=exitTo?hideDeparture(h,route.stand,exitTo):null;
-  const walk=route.length/130,duration=kind==='drag'?1.7:kind==='stash'?1.15:h.type==='box'?1.05:1.1;
+  const walk=route.length/130,duration=kind==='drag'?1.3:kind==='stash'?.85:h.type==='box'?.78:.72;
   const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&['enter','retrieve','stash','drag'].includes(kind)?ACCESS_WORK:0,handPost=handled&&['exit','retrieve','stash'].includes(kind)?ACCESS_WORK:0;
   const F={kind,h,g,c,route,walk,duration,handPre,handPost,departure,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
@@ -146,7 +147,7 @@ function updateHideFlow(P,dt) {
     }
   }else if(F.kind==='exit'){
     if(f>.18)P.hide=null;
-    const u=hideEase((f-.38)/.46);P.x=h.x+(at.x-h.x)*u;P.y=h.y+(at.y-h.y)*u;P.a=Math.atan2(h.y-at.y,h.x-at.x);
+    const u=hideEase((f-.38)/.46);P.x=h.x+(at.x-h.x)*u;P.y=h.y+(at.y-h.y)*u;const face=h.furn&&h.type!=='bed'&&f<.84?Math.atan2(at.y-h.y,at.x-h.x):Math.atan2(h.y-at.y,h.x-at.x);P.a+=clamp(angDiff(P.a,face),-dt*16,dt*16);
   }else{
     P.a=Math.atan2(F.geo.y-at.y,h.x-at.x);
     const u=F.kind==='enter'?hideEase((f-.16)/.78):F.kind==='drag'?hideEase((f-.52)/.42):0;

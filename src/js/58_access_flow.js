@@ -1,5 +1,5 @@
 // Hands, covers and the passage use the same world contact point.
-const ACCESS_WORK=.6;
+const ACCESS_WORK=.38;
 function fixtureGrip(h,open=0) {
   if(h.type==='sign')return{x:h.x-24,y:h.y-12};
   if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:g.x+open*10,y:g.y-4-open*12};}
@@ -76,7 +76,7 @@ function beginAccessFlow(kind,obj) {
   if(!exit&&kind!=='sewerDown'&&!objectReachable(h,64))return false;
   const stand=accessStand(h,z,exit?{x:0,y:1}:null);if(!stand&&kind!=='sewerDown'){toast('출입할 공간이 없다',1.4);return false;}
   const at=stand||{x:h.x,y:h.y+36},pre=!exit&&kind!=='sewerDown'?ACCESS_WORK:0,post=exit?ACCESS_WORK:0,walk=!exit&&kind!=='sewerDown'?at.length/125:0;
-  const F={kind,obj,h,hx:h.x,hy:h.y,z,exit,stand:at,from:{x:P.x,y:P.y,z:P.z||0,fl:flOf(P),vent:!!P.vent,under:!!P.under,hide:P.hide},walk,pre,post,core:.85,crossed:false,t:0};
+  const F={kind,obj,h,hx:h.x,hy:h.y,z,exit,stand:at,from:{x:P.x,y:P.y,z:P.z||0,fl:flOf(P),vent:!!P.vent,under:!!P.under,hide:P.hide},walk,pre,post,core:.65,crossed:false,t:0};
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:at.x,y:at.y,f:1}],dur:walk+pre+F.core+post,phases:[{to:1,pose:'access'}],local:true,accessFlow:F});closeEnvPicker();return true;
 }
 function accessProgress(F){return clamp((F.t-F.walk-F.pre)/F.core,0,1);}

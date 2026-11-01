@@ -1068,7 +1068,8 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
 }
 function darkPass(sc, lamps, clip, key) {
   const P = S.player;
-  const ds = 0.5;
+  // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.
+  const ds = 0.5 / DPR;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
@@ -1131,7 +1132,7 @@ let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if (S.player.under && !tactical) { drawUnderground(); return; }
-  PM();
+  PM();hudBlockFrame=null;
   const sc = SCALE * DPR;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = '#05070c'; ctx.fillRect(0, 0, canvas.width, canvas.height);
