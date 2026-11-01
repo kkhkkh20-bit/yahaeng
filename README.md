@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v126 흰 말풍선·동작 연결 전후 영상과 실시간 의뢰 검수: https://kkhkkh20-bit.github.io/yahaeng/motion-v126/
+
+변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/MOTION_REVIEW_V126.md
+
 v125 말풍선·심문 답변·수납함 전방 출입과 지연 개선 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/feedback-v125/
 
 원인·검증·성능 측정: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/NPC_FEEDBACK_V125.md
@@ -148,7 +152,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v125
-Source commit: ff44342c752ffc7065c0e0268adbdec0be69a5eb
+Version: v126
+Source commit: 4b87c74635e43ff420aa263328056580a19adb96
 
-Ink study source: ff44342c752ffc7065c0e0268adbdec0be69a5eb
+Ink study source: 4b87c74635e43ff420aa263328056580a19adb96
