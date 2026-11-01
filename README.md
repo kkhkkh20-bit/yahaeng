@@ -1,5 +1,9 @@
 # 야행 웹 실행본
 
+v125 말풍선·심문 답변·수납함 전방 출입과 지연 개선 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/feedback-v125/
+
+원인·검증·성능 측정: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/NPC_FEEDBACK_V125.md
+
 v124 쓰레기통·수납함 여닫기, 발 고정과 출입 연결 전후 영상: https://kkhkkh20-bit.github.io/yahaeng/access-v124/
 
 변경·검증: https://github.com/kkhkkh20-bit/yahaeng/blob/main/docs/GROUNDED_ACCESS_V124.md
@@ -144,7 +148,7 @@ v94 VIP·목표·행동·저장 개선: https://github.com/kkhkkh20-bit/yahaeng/
 
 공간 시안: https://kkhkkh20-bit.github.io/yahaeng/spatial/
 
-Version: v124
-Source commit: f0dc14ad833d378eb28a21dbaad680a54605253a
+Version: v125
+Source commit: ff44342c752ffc7065c0e0268adbdec0be69a5eb
 
-Ink study source: f0dc14ad833d378eb28a21dbaad680a54605253a
+Ink study source: ff44342c752ffc7065c0e0268adbdec0be69a5eb
