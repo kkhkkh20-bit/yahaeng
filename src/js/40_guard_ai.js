@@ -45,7 +45,7 @@ function moveAlong(g, speed, dt) {
       for (const o of others) {
         if (o === g || o.state === 'DEAD' || o.state === 'CAPTIVE' || o.climb || o.trav || o.hide || o.vent || o.under || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
         // 호위는 선두의 뒤를 따른다. 선두가 자기 호위를 피해 거꾸로 우회하지 않는다.
-        if (o.follow === g.id) continue;
+        if (o.follow === g.id || o.securityBuddy === g.id) continue;
         if (o === P && (P.wire || P.jump || P.ledge)) continue;
         const ox = o.x - g.x, oy = o.y - g.y, d = Math.hypot(ox, oy); if (d > 48 || d < 0.01) continue;
         const ahead = (ox * ux + oy * uy) / d; if (ahead < 0.25) continue;
@@ -352,8 +352,8 @@ function updateCams(dt) {
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       const at = pSpot(); rememberSuspect(null); startBuildingSearch(at, 'A', 'camera'); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
-    for (const k of S.corpses) { if (k.stashed || k.carried || k.discovered || k.camSeen || flOf(k) !== c.fl || (k.z || 0) !== (c.z || 0)) continue; if (k.accident && sees(k.x, k.y, Math.max(0.5, k.light || 0))) { k.camSeen = true; continue; }  // 사고로 보이는 시체는 CCTV도 경보를 울리지 않는다
-      if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
+    for (const k of S.corpses) { if (k.hideT>S.t || k.stashed || k.carried || k.discovered || k.camSeen || flOf(k) !== c.fl || (k.z || 0) !== (c.z || 0)) continue; if (k.accident && sees(k.x, k.y, Math.max(0.5, k.light || 0))) { if(camWatcher()){k.camSeen=true;securityBodyFound(k,null);}continue; }  // 관리자가 확인한 사고는 연락 두절에서 제외한다
+      if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { securityBodyFound(k,null); k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
   }
   setLayer(L0);
   if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 다트로 부수거나 건물 전원을 끌 수 있다');
@@ -544,7 +544,7 @@ function updateGuard(g, dt) {
   }
   if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
-      if ((c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue;
+      if (c.hideT>S.t || (c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue;
       if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
     }
   }
@@ -573,6 +573,7 @@ function updateGuard(g, dt) {
           if (l) { endChat(g); g.act = null; l.claim = g; g.lure = l; g.state = 'LURE'; g.path = null; g.lureT = null; setIcon(g, '?'); break; }
         }
       }
+      if (updateSecurityBuddy(g,dt,spd)) break;
       if (g.chat) {
         const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.bubble = null;
         if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 200) endChat(g);
@@ -605,7 +606,7 @@ function updateGuard(g, dt) {
       g.glanceT -= dt;
       if (g.glanceT <= 0 && g.route.length > 1 && !g.still && !rendezvousHurry(g)) { g.glance = rnd(2.2, 3.2); g.glanceA = g.a + Math.PI; break; }  // 걷다가 멈춰 뒤돌아보기
       if (moveAlong(g, spd, dt) || (g.target && dist(g.x,g.y,wp.x,wp.y)<12)) {
-        g.wait = wp.pause * (S.alevel || wp.once ? 1 : 1.8); g.waitBase = g.a; g.waitT = 0; g.path = null; g.lookT = null;
+        g.wait = securityPatrolPause(g,wp); g.waitBase = g.a; g.waitT = 0; g.path = null; g.lookT = null;
         if (wp.once) wp.spent = true;
         if (g.route.length > 1) g.ri = (g.ri + 1) % g.route.length; else g.wait = 999;
       }
@@ -657,8 +658,8 @@ function updateGuard(g, dt) {
           g.inspect = null; g.checks.shift();
           const inThis = (P.hide && P.hide === spot) || (spot.type === 'bush' && P.hidden && flOf(P) === flOf(g) && (P.z || 0) === (g.z || 0) && dist(P.x, P.y, spot.x, spot.y) < 44);
           if (inThis) { dragOut(g, spot.type === 'bush' ? '화단을 헤치던 자경대원에게 들켰다.' : spot.type === 'well' ? '맨홀 안을 비추던 자경대원에게 들켰다.' : `${hideIn(spot)}을 뒤지던 자경대원에게 들켰다.`); if (S.over) return; break; }
-          if (spot.bodies > 0 && !spot.found) { spot.found = true; S.stats.bodies++; bossRadio('body'); setIcon(g, '!?'); setAlert(2, 35, '숨겨둔 시체가 발견됐다'); }
-          if (spot.type === 'bush') for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && dist(c.x, c.y, spot.x, spot.y) < 50) { c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 시체가 발견됐다'); }
+          if (spot.bodies > 0 && !spot.found) { spot.found = true;for(const c of S.corpses)if(c.container===spot)securityBodyFound(c,g); S.stats.bodies++; bossRadio('body'); setIcon(g, '!?'); setAlert(2, 35, '숨겨둔 시체가 발견됐다'); }
+          if (spot.type === 'bush') for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && dist(c.x, c.y, spot.x, spot.y) < 50) { securityBodyFound(c,g);c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 시체가 발견됐다'); }
         }
       }
       break;
@@ -698,6 +699,7 @@ function updateGuard(g, dt) {
       if (!c || c.carried || (c.hidden && !g.dog) || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) { g.state = 'RETURN'; g.path = null; break; }
       if (!g.path) pathTo(g, c.x, c.y);
       if (moveAlong(g, SPD.gBody * spdMul(), dt) || dist(g.x, g.y, c.x, c.y) < 40) {
+        securityBodyFound(c,g);
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고가 났네…', '감전됐나 봐. 손대지 마.', '저런, 재수도 없지.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
         c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); if (!c.ko) after(1.5, lockExits);
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
@@ -836,7 +838,7 @@ function drawSpeech() {
 }
 function updateChats(dt) {
   updateTalks(dt);
-  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ));
+  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
     const a = gs[i], b = gs[j];
@@ -856,14 +858,15 @@ function followLeader(g, dt, spd) {
   }
   const posts=Array.isArray(g.escortWait)?g.escortWait:[g.escortWait].filter(Boolean);
   const area=w=>{const r=w.rect;return[r[0]-(w.at[0]<r[0]?1:0),r[1]-(w.at[1]<r[1]?1:0),r[2]+(w.at[0]>r[2]?1:0),r[3]+(w.at[1]>r[3]?1:0),r[4]];};
-  const wait=rendezvousPrivacy(g)||posts.find(w=>inRect(L,area(w)))||posts[0],r=wait&&wait.rect;
+  const wait=rendezvousPrivacy(g)||posts.find(w=>!(securityLevel()>=2&&w.kind==='smoke')&&inRect(L,area(w)))||posts[0],r=wait&&wait.rect;
   // 입구에 도착하기 전에 밖에서 대기한다. 뒤따르던 옛 경로를 계속 밟아 안으로 들어가지 않는다.
   const approach=r&&area(wait);
   const privacy=!!(wait&&inRect(L,approach));
   if(privacy!==!!g.waitingPrivacy){g.path=null;g.repath=0;}
   if (privacy && !g.waitingPrivacy) gsay(g, wait.say||'밖에서 기다리겠습니다.', 2);
   g.waitingPrivacy = !!privacy;
-  const bx = privacy ? tc(wait.at[0]) : L.x - Math.cos(L.a) * 52, by = privacy ? tc(wait.at[1]) : L.y - Math.sin(L.a) * 52;
+  let bx = privacy ? tc(wait.at[0]) : L.x - Math.cos(L.a) * 52, by = privacy ? tc(wait.at[1]) : L.y - Math.sin(L.a) * 52;
+  if(!privacy&&securityLevel()>=2&&L.target&&flOf(g)===flOf(L)&&(g.z||0)===(L.z||0)){const p=securityEscortPoint(L,bx,by);bx=p.x;by=p.y;}
   if (flOf(g) !== flOf(L) || (g.z || 0) !== (L.z || 0)) {
     if (!g.path || (g.repath -= dt) <= 0) { routeTo(g, gSpot(L)); g.repath = .6; }
     hopClimb(g, moveAlong(g, spd, dt)); return;

@@ -134,7 +134,7 @@
     { kind: 'g2', route: [[1, 7, 3], [1, 17, 3]] },                          // 28 사무동 서쪽 골목
     { kind: 'g2', tag: 'vipEscort', at: [26, 6], follow: 0, elite: true, escortWait: [
       {rect:[39,6,41,7,0],at:[40,9]},
-      {rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
+      {kind:'smoke',rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
     { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],

@@ -19,12 +19,12 @@ function serviceCell(tx,ty,fl) {
   return STAGE.id==='m2' && STAGE.guards.some(g=>g.target && (g.fl||0)===fl && (g.sched||[]).some(s=>Math.hypot(tx-s.at[0],ty-s.at[1])<1.25));
 }
 function initMissionPlan() {
-  if(STAGE.id==='m2'&&S.vipContractVersion!==1){
+  if(STAGE.id==='m2'&&S.vipContractVersion!==2){
     const escort=npc('vipEscort'),d=STAGE.guards.find(g=>g.tag==='vipEscort');if(escort&&d)escort.escortWait=cloneDeep(d.escortWait);
     // Saved staff walk to their new posts; bodies and active encounters stay intact.
     for(const id of [14,15]){const g=S.guards[id],d=STAGE.guards[id];if(g?.civ&&g.state==='PATROL'&&g.route.length===1&&d?.at){const x=tc(d.at[0]),y=tc(d.at[1]);if(g.route[0].x!==x||g.route[0].y!==y){g.route=[{x,y,pause:999}];g.ri=0;g.wait=0;g.path=null;g.post=d.post*Math.PI/180;}}}
     for(const e of STAGE.exits||[]){const x=tc(e.at[0]),y=tc(e.at[1]);if(!S.exits.some(o=>dist(o.x,o.y,x,y)<1))S.exits.push({x,y,r:e.r||60,name:e.name||''});}
-    if(S.exits[0]&&!S.exits[0].name)S.exits[0].name=STAGE.exitName;S.vipContractVersion=1;
+    if(S.exits[0]&&!S.exits[0].name)S.exits[0].name=STAGE.exitName;S.vipContractVersion=2;
   }
   S.targetIntel = S.targetIntel || {};
   S.targetBrief = S.targetBrief || {};

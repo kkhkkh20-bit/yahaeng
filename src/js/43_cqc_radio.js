@@ -50,10 +50,12 @@ function updateRadioCheck(dt) {
   const every = radioEvery(); if (!every || S.over) return;
   if (S.rcT == null) S.rcT = every;
   S.rcT -= dt;
-  if (S.rcT <= RADIO_WARN && !S.rcWarned) { S.rcWarned = true; if (S.guards.some(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE') && !g.rcMissed)) { toast(`${RADIO_WARN}초 뒤 조직원 무전 점검 — 쓰러진 자리는 대답이 없다`, 2.8, 'warn'); bossRadio('check'); } }
+  if (S.rcT <= RADIO_WARN && !S.rcWarned) { S.rcWarned = true; if (S.guards.some(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE') && !g.rcMissed)) { toast(`무전 점검 ${RADIO_WARN}초 전`, 2.8, 'warn'); bossRadio('check'); } }
   if (S.rcT > 0) return;
   S.rcT = every; S.rcWarned = false;
-  const missing = S.guards.filter(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE') && !g.rcMissed);
+  const unanswered = S.guards.filter(g => isCrew(g) && (g.state === 'DEAD' || g.state === 'CAPTIVE'));
+  securityRadioReports(unanswered);
+  const missing = unanswered.filter(g=>!g.rcMissed);
   if (!missing.length) return;
   missing.forEach(g => { g.rcMissed = true; });
   play('call', 0.45);

@@ -69,7 +69,7 @@ function deliverReport(g) {
     after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['알겠어요, 가 볼게요.', '또 누가 들어갔나.', '확인해 보죠.'][o.id % 3]); });
     g.state = 'RETURN'; g.path = null; g.icon = null; return;
   }
-  S.stats.witness = (S.stats.witness || 0) + 1; logEv('report', g.x, g.y);
+  S.stats.witness = (S.stats.witness || 0) + 1; logEv('report', g.x, g.y);if(r.c)securityBodyFound(r.c,o,{x:r.x,y:r.y,fl:flOf(g),z:g.z||0});
   gsay(g, r.c ? '저쪽에 사람이 쓰러져 있어요!' : r.kind === 'disguise' ? '처음 보는 사람이 우리 옷을 입고 돌아다녀요!' : '저쪽에서 어떤 사람이 사람을 해쳤어요!', 2.6);
   endChat(o); o.act = null; o.bubble = null; o.want = Math.atan2(g.y - o.y, g.x - o.x);
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
