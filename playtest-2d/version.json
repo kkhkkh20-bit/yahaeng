@@ -1,0 +1,10 @@
+{
+  "edition": "2d-campaign",
+  "version": "v128-loading-fix",
+  "source_sha256": "0589f4cc2f0edf163155e5b1011a9a61062e4b98d005f04b292993ccc5d4927b",
+  "html_bytes": 159783,
+  "source_bytes": 11376729,
+  "scripts": 4,
+  "assets": 174,
+  "asset_bytes": 8826813
+}
