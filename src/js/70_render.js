@@ -126,7 +126,7 @@ function drawPlayerBody(P) {
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
   }
   const blink = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
-  const sc = 3 * lift, mv = P.moving || !!P.jump;
+  const sc = 3 * lift, mv = (P.travelSpeed==null?P.moving:P.travelSpeed>6) || !!P.jump;
   // 자세: 살금살금 = 몸을 낮춤(납작·넓게, 발밑 그림자 큼) / 달리기 = 뒤로 흩날리는 속도선
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
   if (runP) { const bx = -Math.cos(P.a), by = -Math.sin(P.a); ctx.lineWidth = 2.5; for (const o of [-8, 0, 8]) { const ph = (S.t * 5 + o * 0.05) % 1, px = P.x - by * o, py = P.y + 6 + bx * o; ctx.strokeStyle = `rgba(232,238,248,${0.5 * (1 - ph)})`; ctx.beginPath(); ctx.moveTo(px + bx * (18 + ph * 8), py + by * (18 + ph * 8)); ctx.lineTo(px + bx * (36 + ph * 14), py + by * (36 + ph * 14)); ctx.stroke(); } }
@@ -244,7 +244,7 @@ function drawPlayerBody(P) {
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
     const rising = !mv && P.riseT && S.t < P.riseT && !pc && !pg;
     const anim = pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'crouch' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
-    const t = S.t, s = sc / 3, PK = playerLook;
+    const t = mv&&!P.jump?(P.gaitTime??S.t):S.t, s = sc / 3, PK = playerLook;
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
@@ -256,7 +256,7 @@ function drawPlayerBody(P) {
       }
       if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : isTouch ? .95 : .55, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
-      if (prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.9, s, -yo);
+      if (!isTouch&&prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : 0.32, s, -yo);
     } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
     return;
   }
@@ -281,16 +281,19 @@ function drawWindowSight(P, openB) {
   const poly = WC.poly;
   const path = () => { ctx.beginPath(); for (let i = 0; i < poly.length; i += 2) i ? ctx.lineTo(poly[i], poly[i + 1]) : ctx.moveTo(poly[i], poly[i + 1]); ctx.closePath(); };
   BLD.forEach((b, bi) => {
-    if (bi === openB || b.piloti || b.vacant) return;
+    if (bi === openB || b.piloti || b.vacant || !quarterWindowView(P,b)) return;
     const bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
     if (P.x < bx - R || P.x > bx + bw + R || P.y < by - R || P.y > by + bh + R) return;
     // 바깥벽 안쪽으로 시선이 들어가는지 (안쪽 칸 하나라도)
     let inside = false; for (let i = 0; i < poly.length && !inside; i += 2) { const tx = Math.floor((poly[i] - Math.cos(i / poly.length * TAU) * 2) / TILE), ty = Math.floor((poly[i + 1] - Math.sin(i / poly.length * TAU) * 2) / TILE); if (tx > b.x0 && tx < b.x1 && ty > b.y0 && ty < b.y1) inside = true; }
     if (!inside) return;
     b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
+    // Window sight reveals the actual visible room; it does not overlay an entire floor plan.
+    if(!quarterClub(b)){
     // 도면: 건물 평면을 흐리게 (사람은 안 보임)
     ctx.save(); ctx.globalAlpha = 0.5; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
     ctx.strokeStyle = 'rgba(160,200,235,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]); ctx.restore();
+    }
     // 시선이 닿는 곳: 또렷하게 + 사람까지
     ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, bh - 2 * TILE); ctx.clip(); path(); ctx.clip();
     drawBig(ctx, mapC, bx, by, bw, bh);
@@ -367,7 +370,7 @@ function drawRoofs(openB) {
     if (b.ra < 1) { ctx.strokeStyle = `rgba(242,196,107,${0.35 * (1 - b.ra)})`; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]); }
     if (b.ra === 0) {
-      if (!flOf(S.player)) drawFacadeExtras(b, true);
+      if (!flOf(S.player)&&!quarterClub(b)) drawFacadeExtras(b, true);
       return;
     }
     if (b.ra < 1) ctx.globalAlpha = b.ra;
@@ -382,11 +385,12 @@ function drawRoofs(openB) {
   drawTrapsRoof(openB);
 }
 function drawRoof1(b, i, roof) {
+  if(quarterRoof(b))return;
   {
     if (false) {
       ctx.strokeStyle = 'rgba(242,196,107,.35)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]);
-      if (!flOf(S.player)) drawFacadeExtras(b, true);
+      if (!flOf(S.player)&&!quarterClub(b)) drawFacadeExtras(b, true);
       return;
     }
     const x = b.x0 * TILE, y = b.y0 * TILE, w = (b.x1 - b.x0 + 1) * TILE, h = b.roofC.rh;
@@ -1345,9 +1349,9 @@ function draw() {
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g),quiet=!tactical&&!input.scan&&['quiet','check'].includes(awareness.phase)&&!awareness.progress;
-    const far = chs && gd > 380 ? 0.35 : quiet ? .42 : 1;
+    const far = chs && gd > 380 ? 0.35 : quiet ? (quarterNear(P) ? .19 : .42) : 1;
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();
+      if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();}
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     { const ck = S.coneK || 0;  // 0 = 서 있음, 1 = 웅크림
@@ -1383,6 +1387,7 @@ function draw() {
   const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
     if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
+    quarterWallEdges();
     drawRoofEntrances(P);
     PM('roofs');
     for (const c of S.corpses) if (!(c.hideT>S.t) && c.z && !c.stashed && !flOf(c) && inView(c.x, c.y, 120)) {

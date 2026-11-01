@@ -1,0 +1,41 @@
+{
+  "revision": "85064399bbdacc0e8cc50807179490314bc4ff1c",
+  "mirror": "https://raw.githubusercontent.com/tilakpatell/tilakverse-assets/85064399bbdacc0e8cc50807179490314bc4ff1c/quaternius/downtown-city-megakit/",
+  "official": [
+    "https://kenney.nl/assets/furniture-kit",
+    "https://quaternius.com/packs/downtowncitymegakit.html"
+  ],
+  "license": "CC0-1.0",
+  "files": {
+    "Exports/glTF (Godot)/Prop_Drain.gltf": "b81de6bf5cac90f6b62cd739218f4ee0a82cc930226af2060e9616ec7a5ac75f",
+    "Exports/glTF (Godot)/Prop_Drain.bin": "a5ba2a9331e2ac60f1083d05d9707373f49052362509720943d2dd978b0845bb",
+    "Exports/glTF (Godot)/T_Ornaments_Normal.png": "c1aa6b307d47386b63e775ba88d82992dd0aaf34f1e4c2b7824002e3cc0a795a",
+    "Exports/glTF (Godot)/T_Ornaments_BaseColor.png": "528cbe672c62384aa3bac703f574b60509bd69b4d492291cb2915022a12a449c",
+    "Exports/glTF (Godot)/T_Ornaments_ORM.png": "c65b673f871e6b4b2fa61fd110286a096d05d9a311e71ca71804cea46811885d",
+    "Exports/glTF (Godot)/Prop_ManholeCover.gltf": "c8519276b3628a217ec7ae0198e598868279046e329f9f6d16b3eec3e0aa2fc9",
+    "Exports/glTF (Godot)/Prop_ManholeCover.bin": "de8edeb728cac5469eea1e6e3fed6fc0f4afe875d7c416ec14dc03886650daa7",
+    "Exports/glTF (Godot)/Prop_Planter_Single.gltf": "5ab51700931236c2de45c9c8c5c1206ff312d56f00cedf134bfa462da4ef4f13",
+    "Exports/glTF (Godot)/Prop_Planter_Single.bin": "9350eb1b2bf17f057c8d57b9a59de8dc0c4c0bf8ec3580bba13fc7d0f9016e91",
+    "Exports/glTF (Godot)/T_MetalConcrete_Normal.png": "93f95a96c32b27820c590301f00f5ba1d23d4054046d92bf6d58adbf23007419",
+    "Exports/glTF (Godot)/T_MetalConcrete_BaseColor.png": "adae656323f15cd2c3f1a6453685cb1ca104b700dc114076137cb3a4c253d3d0",
+    "Exports/glTF (Godot)/T_MetalConcrete_ORM.png": "c4d35f684d20c47f199bea2fbe098d60a000fa7d1489df0f00a4c3c1ace4fcb7",
+    "Exports/glTF (Godot)/T_Dirt_Normal.png": "88958149742c2ebf8447079edd80ac1133f7b72a5fce0c118206b2f742a350ea",
+    "Exports/glTF (Godot)/T_Dirt_BaseColor.png": "bcb7b1d7bb9801aae25720f495af76306d11cce7654f52763e3cb6b273845302",
+    "Exports/glTF (Godot)/T_Dirt_ORM.png": "a2803d1ce2d6ccfdd0896de05a96e3c6aec898000c5897e1669c000faf2b2060",
+    "Exports/glTF (Godot)/Prop_Bollard.gltf": "4a05291a05873e4043c6354c7cae969c0726fd9b4590625a24ee3bcf940a1c9a",
+    "Exports/glTF (Godot)/Prop_Bollard.bin": "53b7227fade437ae5066359170e88fbcb537f9e96773a6c1ad0fb2bcc0f92125",
+    "Exports/glTF (Godot)/DoorFrame_Metal_Single.gltf": "c30cbb493a15191ea6432f246b601d741694015b9e6826ee80759bc66587a39e",
+    "Exports/glTF (Godot)/DoorFrame_Metal_Single.bin": "516af4807c1cf2d85559a6c9815e36c30ce49b4b823151cfacfabc85c1f5d79a"
+  },
+  "kenney_files": {
+    "loungeSofa.glb": "1886b811c0d3ad0d8525a4fd43adf4112c497c8e0ed906f06877ca3517f4c7dd",
+    "kitchenBar.glb": "792c3d31e60c8a8d8c7a28cf7d1efe004c5a601adc1b163a8799dde32c1b559d",
+    "speaker.glb": "78230b9fb382a937cb19e4bf7556ee9402d33ac80b1baaee2d2eb89493cfa1fc",
+    "pottedPlant.glb": "5b760eda2766f75fda36b2c5df652a1662f82981ef64cd8fa7fe7bcd386b3a15",
+    "tableCoffeeSquare.glb": "bcc81d8919a3af9141c9c93b4520106dd0a90a7144346cd87928014018aac816",
+    "desk.glb": "0164fe828f028b321730fb8c74502e353583f751be74da1682d42fff7d3c5a42",
+    "chairDesk.glb": "46406619186034cbe92b19b79a5f1a8e3f442a17a70a7524ef2c0ad0f35095c6",
+    "bookcaseClosedDoors.glb": "ff33f535acdb1825c0e958a293642b39665adcae0b1317b650e83d2bb687f4e2"
+  },
+  "license_sha256": "36c51fb08a9324abd5c2de457a1702f3b6233f09ee6ac412085f62d757fa7339"
+}

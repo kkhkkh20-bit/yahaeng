@@ -7,6 +7,7 @@ function stepSound(x, y) {
   if (t === 'm') return 'step_w' + v;
   return 'step_c' + v;
 }
+function advancePlayerGait(P,x,y,dt,speed){const d=Math.hypot(P.x-x,P.y-y);P.travelSpeed=d/Math.max(dt,.001);P.gaitTime=(P.gaitTime||0)+d/Math.max(1,speed);}
 // 바닥 재질: 유리 조각(x) · 철판(m) · 물웅덩이(p) · 자갈(r) 은 발소리가 커진다
 const MAT = { x: 2.3, m: 1.8, p: 1.7, r: 1.45 };
 const MAT_NAME = { x: '유리 조각', m: '철판', p: '물웅덩이', r: '자갈' };
@@ -422,13 +423,13 @@ function updatePlayer(dt) {
     return;
   }
   if (P.under) {
-    P.mode = mode === 'run' ? 'walk' : mode; P.hidden = true; P.light = 0;
+    P.mode = mode === 'run' ? 'walk' : mode; P.hidden = true; P.light = 0; P.travelSpeed=0;
     P.moving = mag > 0.05;
     if (P.moving) {
-      const nx = mx / mag, ny = my / mag, sp = SPD[P.mode] * 1.05;
+      const nx = mx / mag, ny = my / mag, sp = SPD[P.mode] * 1.05,ox=P.x,oy=P.y;
       P.x += nx * sp * dt; P.y += ny * sp * dt;
       const sol = (tx, ty) => !ugAt(tx, ty);
-      collide(P, 11, sol); collide(P, 11, sol);
+      collide(P, 11, sol); collide(P, 11, sol);advancePlayerGait(P,ox,oy,dt,sp);
       P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -12 * dt, 12 * dt);
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = 0.45; play('step_c' + ((Math.random() * 3) | 0), 0.12, 0.8); }
     }
@@ -436,13 +437,13 @@ function updatePlayer(dt) {
     return;
   }
   if (P.vent) {
-    const fast = mode !== 'sneak'; P.mode = fast ? 'walk' : 'sneak'; P.hidden = true; P.light = 0;
+    const fast = mode !== 'sneak'; P.mode = fast ? 'walk' : 'sneak'; P.hidden = true; P.light = 0; P.travelSpeed=0;
     P.moving = mag > 0.05;
     if (P.moving) {
-      const nx = mx / mag, ny = my / mag, sp = fast ? 92 : 52;
+      const nx = mx / mag, ny = my / mag, sp = fast ? 92 : 52,ox=P.x,oy=P.y;
       P.x += nx * sp * dt; P.y += ny * sp * dt;
       const sol = (tx, ty) => !ventAt(tx, ty);
-      collide(P, 10, sol); collide(P, 10, sol);
+      collide(P, 10, sol); collide(P, 10, sol);advancePlayerGait(P,ox,oy,dt,sp);
       P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -12 * dt, 12 * dt);
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = fast ? 0.4 : 0.62; if (fast) { play('step_m' + ((Math.random() * 3) | 0), 0.4); noise(P.x, P.y, 150, 'vent'); } else play('step_m' + ((Math.random() * 3) | 0), 0.06, 0.8); }
     }
@@ -484,7 +485,7 @@ function updatePlayer(dt) {
   const kk = 1 - Math.exp(-dt * (mag > 0.05 ? 24 : 30));
   P.vx = (P.vx || 0) + (tvx - (P.vx || 0)) * kk; P.vy = (P.vy || 0) + (tvy - (P.vy || 0)) * kk;
   if (Math.hypot(P.vx, P.vy) < 4 && mag <= 0.05) { P.vx = 0; P.vy = 0; }
-  P.moving = mag > 0.05;
+  P.moving = mag > 0.05; P.travelSpeed=0;
   if (P.moving || P.vx || P.vy) {
     const nx = mag > 0.05 ? mx / mag : 0, ny = mag > 0.05 ? my / mag : 0;
     const sp = sp0;
@@ -500,11 +501,12 @@ function updatePlayer(dt) {
         if (!solid(tx, ty) && !solid(sx2, sy2)) { P.x += px * sgn * sp * dt * 0.9; P.y += py * sgn * sp * dt * 0.9; collide(P, rad, solid); break; }
       }
     }
+    advancePlayerGait(P,ox,oy,dt,SPD[mode]*(STAGE.pspd||1));
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
     P.stepT -= dt;
-    if (P.moving && P.stepT <= 0) {
+    if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
       P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
       const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * (mode === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z);
       play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));

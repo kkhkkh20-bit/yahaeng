@@ -55,6 +55,10 @@ def build():
     html = html.replace('__INK_DISPLAY__', base64.b64encode(open(P('src','fonts','ink-display.woff'),'rb').read()).decode())
     ink_map=base64.b64encode(open(P('src','art','ink-vip-map.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__INK_VIP_MAP__ = '+json.dumps('data:image/webp;base64,'+ink_map)+';</script>\n<script>window.__ASSETS__')
+    quarter = json.load(open(P('src','art','quarter','meta.json')))
+    for key, item in quarter.items():
+        item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','quarter',key+'.webp'),'rb').read()).decode()
+    html=html.replace('<script>window.__ASSETS__','<script>window.__QUARTER__ = '+json.dumps(quarter)+';</script>\n<script>window.__ASSETS__')
     meta = json.load(open(P('build', 'pr', 'pr_meta.json')))
     meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'key.webp'), 'rb').read()).decode()
     if meta.get('faces') and os.path.exists(P('build', 'pr', 'face.webp')): meta['faces']['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'face.webp'), 'rb').read()).decode()

@@ -575,7 +575,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx]; let b = base(ch, tx, ty);
+    const ch = G[ty][tx]; if(quarterFloor(x,ch,tx,ty))continue; let b = base(ch, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(ch, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
@@ -681,6 +681,7 @@ function renderMap(R) {
   if (R && CUR_F > 0) { const bi = BLD.findIndex(b => b.x0 === rx0 && b.y0 === ry0 && b.x1 === rx1 && b.y1 === ry1); if (hasHeightCues(bi)) paintInteriorCuts(x, BLD[bi], CUR_F); }
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
+  quarterCuts(x,rx0,ry0,rx1,ry1);
   // 가구 (이 층 것만)
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
   FURN.filter(f => f.fl === CUR_F && f.x + f.w > rx0 && f.x <= rx1 && f.y + f.h > ry0 && f.y <= ry1).sort((a, b) => (a.y + a.h) - (b.y + b.h)).forEach(f => drawFurn(x, f));
