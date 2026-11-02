@@ -1,0 +1,120 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/episode-one/",
+  "files": {
+    "index.html": "bcfcf7086ebd2df87c97c40540ecbc28a1fd92df15db22ea84e9bab52841b01a",
+    "actors.js": "5c4d581f366ba5d207ddc3857b630d59a1a1bd1af559440cc38ef3ee7c84e3f4",
+    "batch.js": "d676e9989299c47574a35f5c765bc87f1cebbef30b5c8ba88c0e784d0f36d735",
+    "camera.js": "c3563d9ff72846b58bcce3ab3de04643ef8c4dd3daa929e0b09e59d622aa9652",
+    "effects.js": "687735fb4d7210e6a02d95ad4d6c3db55eb7320c645dc0a30bffed6da572c056",
+    "episode.js": "a721f1e240894512940842a71d530e41952f8e35dad65849890e196d0d7e8cfa",
+    "lighting.js": "2b0109dc3eb9fb9cdb65eae5e5ef59414fdf317c3cca8919213276ef62a68bfa",
+    "materials.js": "548a0506ea0e618b89baafdf8e94976b4b699aa33d61d19565823ed4e3de03ec",
+    "passages.js": "ea6b110f7c66b6cc84cad168578164d10cd64ddb03b379dd179f90241ee00333",
+    "pose_driver.js": "4d5d19a712319e044e3530ec570cb835b707ec6a7cf00247fa6cf33281c11744",
+    "reveal.js": "807eca358068d8f765b6ffb3a3e4a92b8b29b19943d4ea352a6321dc7c4d1dea",
+    "sight.js": "43a969b6fa33e6ac660cc4fda61362d4750cde3dbedf788592102ce008ecf55e",
+    "view.js": "061266e816125610606abe3b5f218a1537fa97d797c9227e8cdc267a3892e152",
+    "visibility.js": "4eba7a95e7b6a3eb99bf72a911cda6b8a3aa3b9c78ed991a7e61aaa85b21413d",
+    "world.js": "f2bfaddee8dca8e70cb5fb6c5a56eba0d624d0ae28286059eb43c79a5f756509"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        300.9745967824307,
+        852.6244032175695
+      ],
+      "stage": "lastSettlement",
+      "version": "v133",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 2,
+      "framing": {
+        "pitch": 54,
+        "span": 14.5,
+        "width": 1000,
+        "height": 740,
+        "groundWidth": 19.594594594594593,
+        "anchor": {
+          "touch": false,
+          "x": 0.5,
+          "y": 0.6
+        },
+        "slope": [
+          0.5137431483730079,
+          0.5137431483730079
+        ]
+      },
+      "occlusion": {
+        "mode": "ground-plan",
+        "range": 7
+      },
+      "metrics": {
+        "drawCalls": 208,
+        "triangles": 39132,
+        "pixelRatio": 1,
+        "medianMs": 8.199999995529652,
+        "p95Ms": 19.30000000447035
+      },
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        357.5077795501047,
+        796.091220449896
+      ],
+      "stage": "lastSettlement",
+      "version": "v133",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 2,
+      "framing": {
+        "pitch": 54,
+        "span": 17.31282051282051,
+        "width": 390,
+        "height": 844,
+        "groundWidth": 8,
+        "anchor": {
+          "touch": true,
+          "x": 0.45,
+          "y": 0.6
+        },
+        "slope": [
+          0.5137431483730079,
+          0.5137431483730079
+        ]
+      },
+      "occlusion": {
+        "mode": "ground-plan",
+        "range": 7
+      },
+      "metrics": {
+        "drawCalls": 139,
+        "triangles": 37580,
+        "pixelRatio": 1,
+        "medianMs": 6.899999998509884,
+        "p95Ms": 36.600000001490116
+      },
+      "errors": []
+    }
+  ],
+  "cloudflareVersion": {
+    "edition": "2d-campaign",
+    "version": "v128-loading-fix",
+    "source_sha256": "0589f4cc2f0edf163155e5b1011a9a61062e4b98d005f04b292993ccc5d4927b",
+    "html_bytes": 159783,
+    "source_bytes": 11376729,
+    "scripts": 4,
+    "assets": 174,
+    "asset_bytes": 8826813
+  }
+}
