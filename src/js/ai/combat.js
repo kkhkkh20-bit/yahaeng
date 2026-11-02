@@ -8,7 +8,8 @@ function updateGun(g, dt, sameF) {
   g.aim = (g.aim || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x); g.moving = false;
   if (g.aim >= GUN_AIM) {
     g.aim = 0; g.gunCd = GUN_CD; sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
-    S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
+    if(pixelFxEnabled())spawnEffect('muzzle',{x:g.x+Math.cos(g.a)*18,y:g.y-23+Math.sin(g.a)*12,fl:flOf(g),z:g.z||0},{angle:g.a});
+    else S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
     if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.');
     else toast('총알이 빗나갔다', 1.2);
   }
@@ -18,6 +19,7 @@ function hurtPlayer(g, why) {
   const P = S.player; if (P.hurtT > 0 || S.over) return;
   if (P.car) { const v = P.car; if (g) { v.hp -= 1; v.smoke = 1.5; P.hurtT = 0.9; play('metal', 0.5, 0.8); if (v.hp <= 0) carWreck(v); } return; }  // 차 안: 차가 대신 맞는다
   if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; after(0.6, () => bark('hero', 'hurt')); }
+  spawnEffect('impact',{x:P.x,y:P.y-20,fl:flOf(P),z:P.z||0},{scale:.85});
   P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유)
   play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 자경대원은 잠깐 숨을 고른다

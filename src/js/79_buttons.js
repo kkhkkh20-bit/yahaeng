@@ -14,9 +14,9 @@ function rawChoices(n = 7) {
   const out = rawChoices0(n); RC = { key, out }; return out.slice();
 }
 function rawChoices0(n) {
-  const out = []; ACT_SKIP.clear();
-  try { for (let i = 0; i < n; i++) { const a = combatLabel(primaryActionRaw()); if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
-  finally { ACT_SKIP.clear(); }
+  const out = []; ACT_SKIP.clear(); let firstPref;
+  try { for (let i = 0; i < n; i++) { const a = combatLabel(primaryActionRaw()); if (!i) firstPref=S.ikPref; if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
+  finally { ACT_SKIP.clear(); if(firstPref!==undefined)S.ikPref=firstPref; }
   return out;
 }
 // 톡 = 기절, 계속 = 처치가 되는 공격 (떨어뜨리기·밀어 떨어뜨리기는 떨어지는 것 자체가 죽음이라 제외)

@@ -1,0 +1,21 @@
+{
+  "standing": true,
+  "noHideAction": true,
+  "autoConceal": true,
+  "walkOut": true,
+  "bodyStorage": true,
+  "legacySave": true,
+  "effects": [
+    "leaf",
+    "dust",
+    "impact",
+    "strike",
+    "dart",
+    "muzzle",
+    "loot",
+    "shock"
+  ],
+  "cap": 24,
+  "frameCanvases": 0,
+  "floorAndHeight": true
+}

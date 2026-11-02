@@ -30,6 +30,7 @@ function enterHide(b, quick) {
   beginHideFlow('enter',b);
 }
 function enterHideNow(b, quick, keepFrom, witnessed=false) {
+  if(b?.type==='bush')return false;
   const P = S.player;
   b.spotted = witnessed||S.guards.some(g=>g.seen&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&g.state!=='DEAD'&&g.state!=='CAPTIVE');
   P.hide = b; P.hideFrom = keepFrom && P.hideFrom ? P.hideFrom : { x: P.x, y: P.y }; P.x = b.x; P.y = b.y; S.hideExitLock = true; 

@@ -21,8 +21,8 @@ const FIRST_STEPS = {
     ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 밝은 곳에서는 멀리 본다.', 'move', 1.1],
     ['가로등 밑 스위치에서 {행동} · 불 끄기', S=>!!S.lamps[3].off, S=>S.lamps[3].control||S.lamps[3], '빛을 끄면 적의 시야도 짧아진다.', 'env'],
     ['아래쪽 어두운 길을 따라 이동', (S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24, S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48}, '어둠에서는 덜 보인다. 손전등과 발소리는 여전히 위험하다.', 'move'],
-    ['몸을 낮춘 채 풀숲 안으로 이동', (S,P)=>P.hidden&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '다른 불빛과 손전등은 남아 있다. 풀숲에 몸을 낮춰 숨는다.', 'move'],
-    ['풀숲에 숨은 채 {휘파람}', S=>!!S.lessonWhistle?.heard, S=>S.bushes[0], '불을 꺼도 소리는 들린다. 소리 난 곳으로 적을 유인한다.', 'whistle'],
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 풀숲 안으로 이동':'{살금} 웅크린 다음 풀숲 안으로 이동', (S,P)=>P.hidden&&!P.hide&&!P.trav&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '웅크려 들어가면 몸이 가려진다. 일어서거나 풀숲 밖으로 나오면 은폐가 풀린다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['풀숲에 숨은 채 {휘파람}', (S,P)=>P.hidden&&!!S.lessonWhistle?.heard&&!!S.lessonWhistle?.hidden, S=>S.bushes[0], '불을 꺼도 소리는 들린다. 소리 난 곳으로 적을 유인한다.', 'whistle'],
     ['{이동} 왼쪽 표시로 빠져나오기', (S,P)=>!P.hidden&&!P.hide&&P.x<6.7*48, ()=>({x:6*48,y:10.5*48}), '적이 소리 난 곳을 보는 동안 조용히 다른 쪽으로 빠진다.', 'move'],
     ['아래쪽 노란 원으로 이동', ()=>false, S=>S.exit, '시야를 피하고 소리를 줄인다. 다음 연습에서는 뒤에서 제압한다.', 'move']
   ]

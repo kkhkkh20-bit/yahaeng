@@ -510,7 +510,7 @@ function updatePlayer(dt) {
     const L = c.lastDrop; if (!L || dist(L.x, L.y, P.x, P.y) > 42) { const d = { x: P.x + rnd(-5, 5), y: P.y + rnd(-5, 5), r: rnd(4, 7), rot: rnd(0, TAU), fl: flOf(P), trail: c.bleed, k: (L ? L.k : 0) + 1 }; S.decals.push(d); c.lastDrop = d; } } }  // 시체마다 마지막 핏방울을 기억 (다른 시체를 옮겨도 번호가 이어진다)
   { const inBush = P.z === 0 && tileAt(P.x, P.y) === 'B'; P.hidden = inBush && P.mode === 'sneak';  // 화단은 웅크려야 숨는다 — 서 있으면 머리가 보인다
     if (inBush && !P.hidden) hint('bushStand', '화단에서는 웅크려야 숨을 수 있다. 서 있으면 경비에게 보인다'); }
-  if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
+  if (P.hidden !== !!S._wasBush) { S._wasBush = P.hidden; S.bushShake = { x: tc(Math.floor(P.x / TILE)), y: tc(Math.floor(P.y / TILE)), t: S.t }; spawnEffect('leaf',P); play('cloth', 0.12); }  // 화단에 드나들면 잎이 흔들린다
   P.light = lightAt(P.x, P.y, P.z > 0);
   if (P.captive && !P.grabIn) { const g = P.captive, o = pairGrab(P) ? 10 : 22; g.x = P.x + Math.cos(P.a) * o; g.y = P.y + Math.sin(P.a) * o; g.a = P.a; g.fl = P.fl || 0; }
   if (P.carrying) {
@@ -532,7 +532,7 @@ function updatePlayer(dt) {
     if (P.light < 0.25 && !P.hidden) hint('dark', '시야 원뿔: 어두우면 짧고 불빛 아래면 길다. 웅크리면 원뿔이 줄어든다 — 지금 내 자세로 들키는 범위다');
     const nh = nearHide();
     if (nh && nh.furn) hint('furnHide', '옷장·침대 밑: [숨기]로 들어가고 시체도 넣을 수 있다. 수색하면 열어 본다');
-    if (nh && nh.type === 'box') hint('box', '수거함은 [숨기]로 들어갈 수 있다. 시체나 기절한 사람은 운반해 [넣기]로 숨긴다 · 최대 2명');
+    if (nh && nh.type === 'box') hint('box', '수거함은 [숨기]로 들어갈 수 있다. 시체나 기절한 사람은 운반해 [넣기]로 숨긴다 · 최대 1명');
     if (nh && nh.type === 'well') hint('well0', STAGE.well === 'manhole' ? '맨홀에서는 지나가는 경비를 끌어들이거나 지하 수로로 이동할 수 있다' : '맨홀에서는 지나가는 경비를 끌어들이거나 다른 출구로 이동할 수 있다');
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);

@@ -38,6 +38,10 @@
       "group": "graphics"
     },
     {
+      "path": "graphics/effects.js",
+      "group": "graphics"
+    },
+    {
       "path": "graphics/awareness.js",
       "group": "graphics"
     },

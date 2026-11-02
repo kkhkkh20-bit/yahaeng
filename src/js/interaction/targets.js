@@ -5,7 +5,7 @@ const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', 
 const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨간 카드키', '#ff5a5a'], blue: ['파란 카드키', '#5aa8ff'], green: ['초록 카드키', '#5ad88a'], code: ['비밀번호', '#c8ccd2'], pin: ['머리핀', '#d6d9e0'], gear: ['압수품 가방', '#c9a2ff'], truth: ['진실', '#c9a2ff'], supplies: ['예비 도구', '#c9c2ad'] };
 const keyName = k => k === 'code' ? (hasK('code') ? '비밀번호 ' + (STAGE.code || '') : '비밀번호') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
 const hasK = k => !!(S.player.keys && S.player.keys[k]);
-function giveKey(k, msg) { const P = S.player; play('click', 0.5);
+function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4,fl:flOf(P),z:P.z||0},{scale:.75}); play('click', 0.5);
   if (k === 'supplies' && P.got && P.got.supplies) return;
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
@@ -16,7 +16,7 @@ const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
 function nearHide() {
   const P = S.player; if (P.wire || P.jump) return null; let best = null, bd = 60;
-  for (const b of [...S.hides, ...(S.bushes || [])]) { if (ACT_SKIP.has(b)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = hideDistance(b,P); if (d < bd && objectReachable(b)) { bd = d; best = b; } }
+  for (const b of [...S.hides, ...(S.bushes || [])]) { if (ACT_SKIP.has(b) || (b.type==='bush' && !P.carrying)) continue; if ((b.fl || 0) !== flOf(P) || (b.z || 0) !== (P.z || 0)) continue; const d = hideDistance(b,P); if (d < bd && objectReachable(b)) { bd = d; best = b; } }
   return best;
 }
 // 오르기: 바닥 쪽(b)에 서 있으면 / 내려가기: 위쪽(u)에 서 있으면

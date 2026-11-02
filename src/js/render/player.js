@@ -46,9 +46,8 @@ function drawPlayerBody(P) {
   }
   const blink = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
   const sc = 3 * lift, mv = (P.travelSpeed==null?P.moving:P.travelSpeed>6) || !!P.jump;
-  // 자세: 살금살금 = 몸을 낮춤(납작·넓게, 발밑 그림자 큼) / 달리기 = 뒤로 흩날리는 속도선
+  // 자세: 살금살금은 몸을 낮추고, 달리기는 발 접촉의 작은 먼지로 표현한다
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
-  if (runP) { const bx = -Math.cos(P.a), by = -Math.sin(P.a); ctx.lineWidth = 2.5; for (const o of [-8, 0, 8]) { const ph = (S.t * 5 + o * 0.05) % 1, px = P.x - by * o, py = P.y + 6 + bx * o; ctx.strokeStyle = `rgba(232,238,248,${0.5 * (1 - ph)})`; ctx.beginPath(); ctx.moveTo(px + bx * (18 + ph * 8), py + by * (18 + ph * 8)); ctx.lineTo(px + bx * (36 + ph * 14), py + by * (36 + ph * 14)); ctx.stroke(); } }
   if(P.jump?.downward&&usePR(playerLook)){
     const j=P.jump,f=clamp(j.t/j.dur,0,1);ctx.save();
     if(j.releaseMaskY!=null){ctx.beginPath();ctx.rect(P.x-200,j.releaseMaskY-500,400,500);ctx.clip();}

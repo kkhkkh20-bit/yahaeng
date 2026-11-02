@@ -90,7 +90,7 @@ function hideExitPoint(h,dir) {
   setLayer(L0);return best;
 }
 function beginHideFlow(kind,h,subject=null,dir=null) {
-  if(kind==='drag')return false; // A conscious captive must be incapacitated and carried first.
+  if(kind==='drag'||kind==='enter'&&h?.type==='bush')return false; // A conscious captive must be incapacitated and carried first.
   const P=S.player;if(P.trav)return false;
   const needBody=kind==='stash'||kind==='drag',needSelf=kind==='enter'||kind==='drag';
   if(kind!=='exit'&&kind!=='retrieve'&&!hideSpace(h,needBody?1:0,needSelf)){toast(withJosa(hideName(h),'은/는')+' 가득 찼다',1.4);return true;}

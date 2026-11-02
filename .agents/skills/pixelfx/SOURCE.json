@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/patch-gg/pixelfx",
+  "commit": "a84159688af3ca37a4be05a0d422b94451b2e24e",
+  "version": "0.3.0",
+  "license": "MIT",
+  "upstream_skill": "skills/pixelfx/SKILL.md",
+  "upstream_skill_blob": "c75d1e255339f43aa47035e570c36c54718ab307",
+  "bundle_files": 300,
+  "bundle_bytes": 2406773,
+  "effects": 244,
+  "adaptations": [
+    "Use the bundled, pinned checkout for Codex project-scoped skill discovery",
+    "Explicit invocation only; no lifecycle hooks or global configuration",
+    "Render output goes to project build directory",
+    "Standalone web gallery and Patch Pixel font are not included"
+  ],
+  "runtime_integration": false,
+  "npm_install_required": false
+}

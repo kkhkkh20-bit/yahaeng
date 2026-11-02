@@ -1,0 +1,5 @@
+interface:
+  display_name: PixelFX
+  short_description: Find, render, export and refine pixel art effects for games.
+policy:
+  allow_implicit_invocation: false

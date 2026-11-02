@@ -31,7 +31,7 @@ function guardAwareness(g) {
   const P=S.player,same=flOf(g)===flOf(P)&&(g.z||0)===(P.z||0);
   const witnessed=g.seen&&g.sightFl===flOf(P)&&g.sightZ===(P.z||0)&&S.t-g.sightAt>=0&&S.t-g.sightAt<=.12;
   const direct=!(P.hide||P.under||P.vent||P.ledge)&&!!((g.seen||g.eyeWatching)&&same||witnessed);
-  const eye=direct?(g.eyeT||0)/EYE_T:0, meter=clamp(g.meter||0,0,1);
+  const eye=direct?(g.eyeT||0)/identityTime(g):0, meter=clamp(g.meter||0,0,1);
   if(g.state==='ALERT'&&direct) return {phase:'seen',color:'#ff4a3c',progress:1,direct:true,label:'발각'};
   if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))) return {phase:'search',color:'#d7b879',progress:.45,direct:false,label:'수색 중'};
   if(eye>0) return {phase:'check',color:'#ddd9c8',progress:clamp(eye,0,1),direct:true,label:'신원 확인'};
@@ -95,9 +95,16 @@ function tagBounds(t,x,y) { return t.rows?encounterRect(x,y,t.rows):tagRect(x,y,
 function contactFeedback(at,kind) {
   if(!at||!Number.isFinite(at.x)||!Number.isFinite(at.y))return;
   const p=at.surface?surfacePoint(at):at;
+  if(pixelFxEnabled()){
+    const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
+    if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
+    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.5});
+    else if(['door','pick','lamp','bfuse','fuse'].includes(kind))spawnEffect('dart',touch,{scale:.45,alpha:.6});
+  }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
 }
 function drawContactFeedback() {
+  if(pixelFxEnabled())return;
   const f=S.contact,P=S.player;if(!f||S.t-f.t>.24||flOf(f)!==flOf(P)||(f.z||0)!==(P.z||0))return;
   const t=clamp((S.t-f.t)/.24,0,1);ctx.save();ctx.globalAlpha=(1-t)*.8;ctx.strokeStyle='#d8e2c7';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(f.x,f.y,f.surface?6+6*t:10+12*t,0,TAU);ctx.stroke();ctx.restore();

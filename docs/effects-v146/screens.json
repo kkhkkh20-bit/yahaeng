@@ -1,0 +1,174 @@
+[
+  {
+    "file": "before-bush-pc.png",
+    "scene": "bush",
+    "hidden": true,
+    "containerHide": false,
+    "actions": [
+      "들어가 숨기"
+    ],
+    "effects": []
+  },
+  {
+    "file": "before-strike-pc.png",
+    "scene": "strike",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [
+      "옷 갈아입기 — 자경대원 옷",
+      "운반",
+      "핏자국 닦기"
+    ],
+    "effects": [
+      "slash"
+    ]
+  },
+  {
+    "file": "before-muzzle-pc.png",
+    "scene": "muzzle",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "muzzle"
+    ]
+  },
+  {
+    "file": "before-loot-pc.png",
+    "scene": "loot",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": []
+  },
+  {
+    "file": "before-bush-touch.png",
+    "scene": "bush",
+    "hidden": true,
+    "containerHide": false,
+    "actions": [
+      "들어가 숨기"
+    ],
+    "effects": []
+  },
+  {
+    "file": "before-strike-touch.png",
+    "scene": "strike",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [
+      "옷 갈아입기 — 자경대원 옷",
+      "운반",
+      "핏자국 닦기"
+    ],
+    "effects": [
+      "slash"
+    ]
+  },
+  {
+    "file": "before-muzzle-touch.png",
+    "scene": "muzzle",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "muzzle"
+    ]
+  },
+  {
+    "file": "before-loot-touch.png",
+    "scene": "loot",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": []
+  },
+  {
+    "file": "after-bush-pc.png",
+    "scene": "bush",
+    "hidden": true,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "leaf"
+    ]
+  },
+  {
+    "file": "after-strike-pc.png",
+    "scene": "strike",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [
+      "옷 갈아입기 — 자경대원 옷",
+      "운반",
+      "핏자국 닦기"
+    ],
+    "effects": [
+      "strike"
+    ]
+  },
+  {
+    "file": "after-muzzle-pc.png",
+    "scene": "muzzle",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "muzzle"
+    ]
+  },
+  {
+    "file": "after-loot-pc.png",
+    "scene": "loot",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "loot"
+    ]
+  },
+  {
+    "file": "after-bush-touch.png",
+    "scene": "bush",
+    "hidden": true,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "leaf"
+    ]
+  },
+  {
+    "file": "after-strike-touch.png",
+    "scene": "strike",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [
+      "옷 갈아입기 — 자경대원 옷",
+      "운반",
+      "핏자국 닦기"
+    ],
+    "effects": [
+      "strike"
+    ]
+  },
+  {
+    "file": "after-muzzle-touch.png",
+    "scene": "muzzle",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "muzzle"
+    ]
+  },
+  {
+    "file": "after-loot-touch.png",
+    "scene": "loot",
+    "hidden": false,
+    "containerHide": false,
+    "actions": [],
+    "effects": [
+      "loot"
+    ]
+  }
+]
