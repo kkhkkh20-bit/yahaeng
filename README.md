@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v136): https://kkhkkh20-bit.github.io/yahaeng/?v=136
+- 2D 본편 · 시야와 소리 연습 (v137): https://kkhkkh20-bit.github.io/yahaeng/?v=137
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -31,6 +31,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v137
+
+측면 창문을 외벽 창틀로 다듬고, 첫 연습에 불 끄기·어두운 길 통과를 추가했다. 경비는 소리 유인을 분담하고 반복 소리를 경계하며, 스위치로 가서 불을 켠다. 승인한 Impeccable과 Ponytail 리뷰 도구를 설치·적용했다. [수정·검수](docs/REFINEMENT_V137.md) · [비교 화면](docs/refinement-v137/index.html).
 
 ## v136
 

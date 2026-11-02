@@ -1,0 +1,6 @@
+PASS live response PC {"seed": 1, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3616, "vipHome": 84.9, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response PC {"seed": 116, "rollcall": 55.1, "pairs": 2, "patrolTravel": 2764, "vipHome": 80.4, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response PC {"seed": 118, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3832, "vipHome": 81.5, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 1, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3616, "vipHome": 84.9, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 116, "rollcall": 55.1, "pairs": 2, "patrolTravel": 2764, "vipHome": 80.4, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 118, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3832, "vipHome": 81.5, "routineResumed": true, "cooled": 155.3, "detected": 0}

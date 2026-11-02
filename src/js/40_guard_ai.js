@@ -566,18 +566,27 @@ function updateGuard(g, dt) {
   switch (g.state) {
     case 'PATROL': {
       if (g.relight) {
-        const l = g.relight.l; g.want = Math.atan2(l.y - g.y, l.x - g.x); g.relight.t -= dt;
-        if (g.relight.t <= 0) { l.off = false; g.relight = null; g.icon = null; play('switch', 0.4 * proxVol(g)); for (const c of S.corpses) c.light = lightAt(c.x, c.y); if (dist(g.x, g.y, P.x, P.y) < 700) toast('자경대원이 꺼진 조명을 다시 켰다', 2); setAlert(1, 20); }
+        const work=g.relight,l=work.l,at=lampControl(l);
+        if(!l.off||l.broken||l.cut!=null){g.relight=null;g.path=null;break;}
+        g.want=Math.atan2(at.y-g.y,at.x-g.x);
+        if(dist(g.x,g.y,at.x,at.y)>34||!los(g.x,g.y,at.x,at.y,g.z||0)){
+          work.approach=(work.approach||0)+dt;
+          if(work.approach>7){g.relight=null;g.path=null;g.relightRetryAt=S.t+6;break;}
+          if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);break;
+        }
+        g.path=null;g.moving=false;work.t-=dt;
+        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));for(const c of S.corpses)c.light=lightAt(c.x,c.y);if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
         break;
       }
       g.lampScan = (g.lampScan || 0) - dt;
-      if (g.lampScan <= 0 && !g.target) {
+      if (g.lampScan <= 0 && !g.target && !(g.relightRetryAt>S.t)) {
         g.lampScan = 0.6;
-        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y));
+        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l));
         if (l) { g.relight = { l, t: 1.8 }; g.path = null; setIcon(g, '?'); break; }
         const bc = g.dog ? null : (S.cams || []).find(c => c.broken && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
         if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 부서진 CCTV를 발견했다', 2.2, 'warn'); break; }
       }
+      if(g.soundWatchUntil>S.t){g.want=g.glanceA;g.path=null;break;}
       if (g.follow != null) { followLeader(g, dt, spd); break; }
       if (!g.elite && !g.target && !g.dog && S.lures.length) {
         g.lureScan = (g.lureScan || 0) - dt;
@@ -646,14 +655,15 @@ function updateGuard(g, dt) {
     case 'SUSPICIOUS': case 'SEARCH': {
       if (g.state === 'SEARCH' && g.searchJob) { updateBuildingSearch(g, dt); break; }
       if (!g.reached) {
-        if (!g.path) routeTo(g, g.poi);
-        const arr = moveAlong(g, SPD.gSusp * spdMul(), dt) || !g.path.length;
+        if (!g.path) routeTo(g,g.why==='heard'&&g.soundApproach||g.poi);
+        const arr = moveAlong(g, SPD.gSusp * spdMul(), dt);
         if (hopClimb(g, arr)) break;
         if (arr) { g.reached = true; g.wait = g.waitBase; g.waitBase2 = g.a; g.waitT = 0; g.path = null; g.lookT = null; }
       } else {
         g.waitT += dt; lookAround(g, dt, g.waitBase2, 1.4, [0.9, 1.5]);
         g.wait -= dt;
         if (g.wait <= 0) {
+          if(g.why==='heard'&&g.soundApproach&&startCheck(g,g.poi,1,96)){gsay(g,'안쪽도 봐야겠어.');break;}
           if (S.alevel >= 2 && !g.target) startCheck(g, g.poi, 4); else { g.state = 'RETURN'; g.path = null; g.icon = null; if (g.chased && !g.civ && !g.dog) { g.chased = false; gsay(g, BARKS.giveup ? BARKS.giveup[g.id % BARKS.giveup.length] : '놓쳤다…'); } }
         }
       }

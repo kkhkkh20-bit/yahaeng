@@ -1,6 +1,6 @@
 // The first visit teaches one action at a time, using the campaign's real rules.
 const FIRST_STEPS = {
-  id:'tB', no:'00', name:'연습 1 · 시야와 소리', sub:'기초 연습 (약 2분)', tutorial:true, firstSteps:true,
+  id:'tB', no:'00', name:'연습 1 · 시야와 소리', sub:'기초 연습 (약 3분)', tutorial:true, firstSteps:true,
   mission:'보이는 곳과 들리는 소리를 구분하고, 풀숲에서 시선을 피해 빠져나온다.',
   brief:'한 번에 한 가지씩 직접 익힌다. 실수하면 방금 배운 단계부터 다시 시작한다.',
   W:26,H:18,start:[2,10],exit:[3,14],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,
@@ -11,7 +11,7 @@ const FIRST_STEPS = {
     m.many('B',[[8,10]]);m.many('H',[[20,8]]);
     m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);
   },
-  lamps:[[3,7,130,1],[10,9,300,1],[22,7,160,1]],
+  lamps:[[3,7,130,1],[10,9,300,1],[22,7,160,1],[6,7,400,1]],
   guards:[{kind:'g1',tag:'practice',at:[10,6],post:90,still:true,radio:false}],
   items:[],itemName:'',itemNames:[],nextTutorial:'t0',
   steps:[
@@ -19,8 +19,10 @@ const FIRST_STEPS = {
     ['{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', 'run'],
     [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 조금 이동':'{살금} 몸을 낮추고 조금 이동', (S,P)=>P.moving&&P.mode==='sneak'&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:6.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 밝은 곳에서는 멀리 본다.', 'move', 1.1],
-    ['몸을 낮춘 채 풀숲 안으로 이동', (S,P)=>P.hidden&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.bushes[0], '시야 안이라도 풀숲에 몸을 숨기면 보이지 않는다. 적이 바짝 오면 위험하다.', 'move'],
-    ['풀숲에 숨은 채 {휘파람}', S=>!!S.lessonWhistle?.heard, S=>S.bushes[0], '보이지 않아도 소리를 들으면 그곳을 확인하러 온다.', 'whistle'],
+    ['가로등 밑 스위치에서 {행동} · 불 끄기', S=>!!S.lamps[3].off, S=>S.lamps[3].control||S.lamps[3], '빛을 끄면 적의 시야도 짧아진다.', 'env'],
+    ['아래쪽 어두운 길을 따라 이동', (S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24, S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48}, '어둠에서는 덜 보인다. 손전등과 발소리는 여전히 위험하다.', 'move'],
+    ['몸을 낮춘 채 풀숲 안으로 이동', (S,P)=>P.hidden&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '다른 불빛과 손전등은 남아 있다. 풀숲에 몸을 낮춰 숨는다.', 'move'],
+    ['풀숲에 숨은 채 {휘파람}', S=>!!S.lessonWhistle?.heard, S=>S.bushes[0], '불을 꺼도 소리는 들린다. 소리 난 곳으로 적을 유인한다.', 'whistle'],
     ['{이동} 왼쪽 표시로 빠져나오기', (S,P)=>!P.hidden&&!P.hide&&P.x<6.7*48, ()=>({x:6*48,y:10.5*48}), '적이 소리 난 곳을 보는 동안 조용히 다른 쪽으로 빠진다.', 'move'],
     ['아래쪽 노란 원으로 이동', ()=>false, S=>S.exit, '시야를 피하고 소리를 줄인다. 다음 연습에서는 뒤에서 제압한다.', 'move']
   ]
@@ -45,6 +47,6 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
     [(S,P)=>P.carrying?'{행동} · 먼저 내려놓기':S.envPickK==='dress'?'{행동} · 옷 갈아입기':'{대상}에서 옷 갈아입기 선택', (S,P)=>P.outfit==='crew', S=>S.corpses[0], '행동이 여러 개면 대상을 골라 실행한다. 옷이 맞으면 직원 구역을 통과한다.', (S,P)=>P.carrying||S.envPickK==='dress'?'env':'cycle'],
     ['{행동} · 쓰러진 경비 운반', (S,P)=>!!P.carrying||S.corpses.some(c=>c.stashed), S=>S.corpses[0], '같은 버튼이 지금 가능한 행동으로 바뀐다.', 'env'],
     ['수거함 앞에서 {행동} · 넣기', S=>S.corpses.some(c=>c.stashed), S=>S.hides.find(h=>h.type==='box'&&h.tx===9), '다른 경비가 발견하기 전에 흔적을 숨긴다.', 'env'],
-    ['오른쪽 노란 원으로 이동', ()=>false, S=>S.exit, '의뢰에서는 목표를 마친 뒤 탈출한다.', 'move']
+    ['오른쪽 노란 원으로 이동', ()=>false, S=>S.exit, '의뢰에서는 목표를 마친 뒤 탈출한다. 같은 곳의 반복 유인은 경계한다.', 'move']
   ]
 });

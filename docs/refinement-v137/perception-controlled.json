@@ -1,0 +1,106 @@
+[
+  {
+    "samples": [
+      {
+        "blend": 0,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 381.00000000000006
+      },
+      {
+        "blend": 0.25,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 372.00000000000006
+      },
+      {
+        "blend": 0.5,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 363
+      },
+      {
+        "blend": 0.75,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 354.00000000000006
+      },
+      {
+        "blend": 1,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 345
+      }
+    ],
+    "persistentSoundOvals": 0,
+    "recoveryBefore": [
+      120,
+      504
+    ],
+    "failed": true,
+    "mobile": false,
+    "recovered": {
+      "at": [
+        120,
+        504
+      ],
+      "over": false,
+      "used": 1,
+      "sneak": true,
+      "step": 0,
+      "guard": "PATROL"
+    }
+  },
+  {
+    "samples": [
+      {
+        "blend": 0,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 381.00000000000006
+      },
+      {
+        "blend": 0.25,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 372.00000000000006
+      },
+      {
+        "blend": 0.5,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 363
+      },
+      {
+        "blend": 0.75,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 354.00000000000006
+      },
+      {
+        "blend": 1,
+        "fills": 1,
+        "outlines": 1,
+        "maxRange": 345
+      }
+    ],
+    "persistentSoundOvals": 0,
+    "recoveryBefore": [
+      120,
+      504
+    ],
+    "failed": true,
+    "mobile": true,
+    "recovered": {
+      "at": [
+        120,
+        504
+      ],
+      "over": false,
+      "used": 1,
+      "sneak": true,
+      "step": 0,
+      "guard": "PATROL"
+    }
+  }
+]

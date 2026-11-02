@@ -1,0 +1,5 @@
+interface:
+  display_name: Ponytail Review
+  short_description: Requested code review with concrete correctness and performance findings.
+policy:
+  allow_implicit_invocation: false

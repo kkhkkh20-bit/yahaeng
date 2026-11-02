@@ -11,7 +11,7 @@ class H(SimpleHTTPRequestHandler):
  def log_message(self,*a):pass
 DRIVER='''()=>{
  const G=__game;window.lessonTrace=[];const check=(v,m)=>{if(!v)throw Error(m+' '+JSON.stringify({stage:G.STAGE.id,step:G.S.tutI,at:[G.S.player.x/48,G.S.player.y/48],choices:G.envChoices().map(a=>[a.k,a.label,a.c?.outfit]),selected:G.envAction()?.k,outfit:G.S.player.outfit,noise:G.S.noises,mode:G.S.player.mode,stepT:G.S.player.stepT,guard:G.S.guards.map(g=>[g.state,g.x/48,g.y/48,g.a,g.seen]),trace:lessonTrace}));};
- const tick=(n=1)=>{for(let i=0;i<n;i++){if(G.S.over)break;G.update(1/60);G.updateDialog(1/60);}check(!G.S.over||G.S.exitOpen,'unexpected failure');};
+ const tick=(n=1)=>{for(let i=0;i<n;i++){if(G.S.over)break;G.update(1/60);G.updateDialog(1/60);}check(!G.S.over||G.S.exitOpen&&!G.S.guards.some(g=>g.state==='ALERT'),'unexpected failure');};
  const render=()=>{const t=G.S.t;G.benchDraw(1);G.S.t=t;};
  const key=(code,on)=>window.dispatchEvent(new KeyboardEvent(on?'keydown':'keyup',{code,bubbles:true}));
  const idle=()=>{for(let i=0;G.actionBusy()&&i<600;i++)tick();check(!G.actionBusy(),'action stuck');tick(5);render();};
@@ -53,6 +53,13 @@ async def main():
     info=await page.evaluate('({name:'+json.dumps(name)+',stage:__game.STAGE.id,step:__game.S.tutI,t:__game.S.t,hp:__game.S.player.hp,hidden:__game.S.player.hidden,at:[__game.S.player.x/48,__game.S.player.y/48],guard:__game.S.guards[0].state})');await page.evaluate('(o)=>lessonTrace.push(o)',info)
     assert await page.evaluate('(()=>{const e=document.querySelector("#objective");return e.clientHeight>=e.scrollHeight-1})()'),'tutorial text is clipped'
     await page.screenshot(path=str(O/f'{"touch"if mobile else"pc"}-{name}.png'));print('PASS',mobile,name,info,flush=True)
+   async def press(code,button,n=4):
+    if mobile:
+     box=await page.locator('#'+button).bounding_box();await page.touchscreen.tap(box['x']+box['width']/2,box['y']+box['height']/2)
+    else:await page.keyboard.down(code)
+    await page.evaluate('(n)=>lesson.tick(n)',n)
+    if not mobile:await page.keyboard.up(code)
+    await page.evaluate('lesson.idle()')
    await walk(4.5*48,10.5*48)
    await step('move','check(G.S.tutI===1,"movement lesson")')
    # PC keyboard; mobile uses the actual left touch joystick to produce run footsteps.
@@ -67,14 +74,24 @@ async def main():
    else:await page.keyboard.press('Control')
    await walk(6.5*48,10.5*48)
    await step('sound-quiet','check(G.S.tutI===3,"quiet movement");tick(75);check(G.S.tutI===4,"observe the vision field")')
+   # The same open ground is visible when lit and safe only while the lamp is off.
+   await step('light-before','window.lightProbe={x:7.5*48,y:12.5*48};const p=lightProbe,g=G.S.guards[0];p.lit=G.lightAt(p.x,p.y);check(G.canSee(g,p.x,p.y,p.lit,false,1,0)>0,"light exercise starts outside actual vision")')
+   stand=await page.evaluate('(()=>{const l=__game.S.lamps[3],at=__game.lampControl(l);return{x:at.x+(l.mount?.nx||0)*24,y:at.y+(l.mount?.ny||0)*24}})()')
+   await walk(stand['x'],stand['y'])
+   await step('light-switch','check(G.envAction().k==="lamp"&&G.envAction().l===G.S.lamps[3],"lamp is not default reachable action")')
+   await press('x','btnCarry')
+   await step('light-off','check(G.S.tutI===5&&G.S.lamps[3].off,"lamp switch did not complete");const p=lightProbe;p.dark=G.lightAt(p.x,p.y);check(p.dark<p.lit&&G.canSee(G.S.guards[0],p.x,p.y,p.dark,false,1,0)===0,"switch does not shrink actual vision")')
+   await walk(6.5*48,12.5*48);await walk(7.5*48,12.5*48)
+   await step('dark-crossing','check(G.S.tutI===6&&!G.S.player.hidden&&!G.S.guards[0].seen,"darkness was not the reason passage succeeded")')
+   await walk(6.5*48,10.5*48)
    # Verify that the bush is in a real sight field, rather than a safe decorative corner.
    await walk(8.5*48,10.5*48)
-   await step('bush','check(G.S.tutI===5&&G.S.player.hidden,"bush concealment");const S=G.S,P=S.player,g=S.guards[0];check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),false,1,0)>0,"bush is not in vision");check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),true,1,0)===0,"concealment not applied")')
+   await step('bush','check(G.S.tutI===7&&G.S.player.hidden,"bush concealment");const S=G.S,P=S.player,g=S.guards[0];check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),false,1,0)>0,"bush is not in vision");check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),true,1,0)===0,"concealment not applied")')
    if mobile:await page.tap('#btnTool')
    else:await page.keyboard.press('g')
-   await step('heard','tick(5);check(G.S.tutI===6&&G.S.lessonWhistle.heard,"whistle not heard");check(G.S.guards[0].why==="heard"&&!G.S.guards[0].seen,"hearing became visual detection")')
+   await step('heard','tick(5);check(G.S.tutI===8&&G.S.lessonWhistle.heard,"whistle not heard");check(G.S.guards[0].why==="heard"&&!G.S.guards[0].seen,"hearing became visual detection")')
    await walk(6*48,10.5*48)
-   await step('escape-vision','check(G.S.tutI===7,"quiet escape")')
+   await step('escape-vision','check(G.S.tutI===9,"quiet escape")')
    await walk(3.5*48,14.5*48)
    await step('escape','tick(5);check(G.S.over&&G.S.exitOpen,"first lesson did not complete")')
    # The actual result button starts the next lesson, not a contract or the old identity tutorial.
@@ -84,13 +101,6 @@ async def main():
     else:await page.keyboard.press('Control')
    await walk(8.5*48-29,9.5*48)
    await step('rear','check(G.S.tutI===1,"rear approach");check(G.grabAction().k==="grab","rear grab absent")')
-   async def press(code,button,n=4):
-    if mobile:
-     box=await page.locator('#'+button).bounding_box();await page.touchscreen.tap(box['x']+box['width']/2,box['y']+box['height']/2)
-    else:await page.keyboard.down(code)
-    await page.evaluate('(n)=>lesson.tick(n)',n)
-    if not mobile:await page.keyboard.up(code)
-    await page.evaluate('lesson.idle()')
    await press('c','btnGrab');await step('grab','check(G.S.tutI===2&&G.S.player.captive,"grab lesson")')
    await press('z','btnAct');await step('ko','check(G.S.tutI===3&&G.S.corpses[0].ko&&G.S.stats.kills===0,"short press did not KO")')
    if await page.evaluate('__game.envAction().k')!='dress':

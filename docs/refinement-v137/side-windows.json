@@ -1,0 +1,62 @@
+[
+  {
+    "before": true,
+    "mobile": false,
+    "window": [
+      38,
+      7
+    ],
+    "building": 2,
+    "side": true,
+    "states": [
+      "lock",
+      "open",
+      "bar"
+    ]
+  },
+  {
+    "before": true,
+    "mobile": true,
+    "window": [
+      38,
+      7
+    ],
+    "building": 2,
+    "side": true,
+    "states": [
+      "lock",
+      "open",
+      "bar"
+    ]
+  },
+  {
+    "before": false,
+    "mobile": false,
+    "window": [
+      38,
+      7
+    ],
+    "building": 2,
+    "side": true,
+    "states": [
+      "lock",
+      "open",
+      "bar"
+    ]
+  },
+  {
+    "before": false,
+    "mobile": true,
+    "window": [
+      38,
+      7
+    ],
+    "building": 2,
+    "side": true,
+    "states": [
+      "lock",
+      "open",
+      "bar"
+    ]
+  }
+]

@@ -1,0 +1,3 @@
+PASS 23000 nonempty frames with transparent margins
+PASS PC {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}
+PASS touch {'windows': 496, 'floors': 72, 'contacts': 128, 'sides': ['side', 'front']}

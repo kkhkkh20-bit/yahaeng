@@ -1,0 +1,20 @@
+{
+  "controlled": true,
+  "strip": {
+    "x": 1800,
+    "y": 504
+  },
+  "oneScout": true,
+  "coveringGuards": 2,
+  "repeatStandOff": 48,
+  "repeatChecksNearbyHide": true,
+  "prioritySightAndBody": true,
+  "floorIsolation": true,
+  "physicalRepair": {
+    "elapsed": 3.0800000000000023,
+    "turnedAt": 33.16479999999865,
+    "moved": 54.83520000000135
+  },
+  "failedPathNotArrival": true,
+  "deadRepairClaimReleased": true
+}

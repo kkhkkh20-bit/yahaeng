@@ -743,7 +743,7 @@ function paintWindow(w,lit,L=44,T=20) {
   ctx.strokeStyle='#c8d3c26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
   const join=open?left+pane+3:0;
   ctx.fillStyle='#84958b';ctx.fillRect(join-1,top+2,2,T-4);
-  if(!open){ctx.fillStyle='#bdab70';ctx.fillRect(-3,-3,6,6);ctx.fillStyle='#28312c';ctx.fillRect(-1,-1,2,3);}
+  if(!open){ctx.fillStyle='#727f78';ctx.fillRect(-2,-1,4,2);if(state==='lock'){ctx.fillStyle='#b0a078';ctx.fillRect(-1,-2,2,3);}}
   if(state==='bar'){
     ctx.strokeStyle='#081014';ctx.lineWidth=3;ctx.beginPath();
     for(let x=left+7;x<L/2-2;x+=8){ctx.moveTo(x,top+1);ctx.lineTo(x,T/2+1);}ctx.stroke();
@@ -754,7 +754,24 @@ function paintWindow(w,lit,L=44,T=20) {
 function drawWindow(w, alpha) {
   if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
-  paintWindow(w,w._lit);ctx.restore();
+  paintWindow(w,w._lit,winVert(w)?36:44,winVert(w)?14:20);ctx.restore();
+}
+// A side facade shows the recessed glass face and a shallow sill, not a rotated door.
+function paintSideWindow(w,lit,side){
+  ctx.save();ctx.scale(1,.72);
+  const st=winSt(w),open=st==='open',outer=side*9,inner=-side*4;
+  const quad=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.lineTo(...d);ctx.closePath();};
+  ctx.fillStyle='#080e12a8';quad([outer+side*2,-16],[inner,-19],[inner,18],[outer+side*2,21]);ctx.fill();
+  ctx.fillStyle='#53605a';quad([outer,-17],[inner,-20],[inner,17],[outer,20]);ctx.fill();
+  ctx.fillStyle='#111d21';quad([outer-side*1.5,-14],[inner+side*1.5,-17],[inner+side*1.5,14],[outer-side*1.5,17]);ctx.fill();
+  const glass=ctx.createLinearGradient(inner,-15,outer,16);glass.addColorStop(0,lit?'#a89e7b':'#3c5962');glass.addColorStop(1,lit?'#635d47':'#192f37');
+  ctx.fillStyle=glass;
+  if(!open){quad([outer-side*2,-13],[inner+side*2,-15],[inner+side*2,-1],[outer-side*2,1]);ctx.fill();}
+  quad([outer-side*2,3],[inner+side*2,1],[inner+side*2,13],[outer-side*2,15]);ctx.fill();
+  ctx.strokeStyle='#88958a99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(outer,-17);ctx.lineTo(inner,-20);ctx.lineTo(inner,17);ctx.moveTo(outer,2);ctx.lineTo(inner,-1);ctx.stroke();
+  if(st==='bar'){ctx.strokeStyle='#0a1115';ctx.lineWidth=2;ctx.beginPath();for(const y of [-9,0,9]){ctx.moveTo(outer-side,y+2);ctx.lineTo(inner+side,y-1);}ctx.stroke();}
+  if(st==='lock'){ctx.fillStyle='#a59874';ctx.fillRect(Math.min(outer,inner)+3,-1,2,2);}
+  ctx.fillStyle='#858b7b';quad([outer,18],[inner,15],[inner+side*2,18],[outer+side*2,22]);ctx.fill();ctx.restore();
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
@@ -767,8 +784,8 @@ function drawWindowEdge(w, b) {
     gr.addColorStop(0, 'rgba(255,206,130,.32)'); gr.addColorStop(1, 'rgba(255,206,130,0)');
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
-  ctx.save(); ctx.translate(ex, ey); if (vert) ctx.rotate(Math.PI / 2);
-  paintWindow(w,lit,42,14);
+  ctx.save(); ctx.translate(ex, ey);
+  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,12);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
