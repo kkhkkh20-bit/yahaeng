@@ -1,9 +1,9 @@
 import * as THREE from 'three';
-import {batchStatic} from './batch.js?v=v132-7017f15cae32';
-import {makeMaterials} from './materials.js?v=v132-7017f15cae32';
-import {createVisibility} from './visibility.js?v=v132-7017f15cae32';
-import {createPassages} from './passages.js?v=v132-7017f15cae32';
-import {createLighting} from './lighting.js?v=v132-7017f15cae32';
+import {batchStatic} from './batch.js?v=v133-5e6252f80fa4';
+import {makeMaterials} from './materials.js?v=v133-5e6252f80fa4';
+import {createVisibility} from './visibility.js?v=v133-5e6252f80fa4';
+import {createPassages} from './passages.js?v=v133-5e6252f80fa4';
+import {createLighting} from './lighting.js?v=v133-5e6252f80fa4';
 export const FLOOR=2.8;
 const boxG=new THREE.BoxGeometry(1,1,1),postG=new THREE.CylinderGeometry(.028,.028,1,8);
 function mesh(parent,geo,mat,x,y,z,sx=1,sy=1,sz=1){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=m.receiveShadow=true;parent.add(m);return m;}
@@ -85,6 +85,10 @@ export function buildWorld(G,scene){
   roofs.push({bi,group:g});
   if(bi!==0){const s=sign(g,bi===1?'골목식당':'레코드',2.3,.47,bi===1?'#d7ba92':'#a7bfc0',bi===1?'#49382b':'#233536');s.position.set(cx,2.2,b.y1+1.02);box(g,mat.metal,cx,1.02,b.y1+.72,w-.8,1.7,.1);for(let j=.25;j<1.8;j+=.1)box(g,mat.trim,cx,j,b.y1+.79,w-.85,.015,.018);}
  }
+ // Architecture owns separate materials: cutaways must never erase desks,
+ // stair treads, containers or the door leaf being handled by the player.
+ const architectureMaterials=new Map(),leaves=new Set([...doors.map(o=>o.pivot),...windows.map(o=>o.pivot)]);
+ for(const g of [...floorGroups.filter(Boolean),...roofs.map(o=>o.group)])g.traverse(o=>{if(!o.isMesh)return;for(let p=o;p&&p!==g;p=p.parent)if(leaves.has(p))return;const clone=m=>{if(!architectureMaterials.has(m)){const n=m.clone();n.userData.tacticalOccluder=true;architectureMaterials.set(m,n);}return architectureMaterials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});
  // Actual furniture footprints, built at human scale. No decorative blocking objects.
  const hidden=new Set(G.S.hides.filter(h=>h.furn&&['locker','wardrobe','cab'].includes(h.type)).map(h=>`${h.fl||0}:${h.tx},${h.ty}`));
  for(const f of G.FURN){const p=floorGroups[f.fl||0];if(!p)continue;const x=f.x+f.w/2,z=f.y+f.h/2,y=(f.fl||0)*FLOOR,w=f.w*.92,d=f.h*.83;

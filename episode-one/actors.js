@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import {loadModular,colorModular} from './lib/modular_models.js?v=v132-7017f15cae32';
-import {createPoseDriver} from './pose_driver.js?v=v132-7017f15cae32';
-import {FLOOR} from './world.js?v=v132-7017f15cae32';
-import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v132-7017f15cae32';
+import {loadModular,colorModular} from './lib/modular_models.js?v=v133-5e6252f80fa4';
+import {createPoseDriver} from './pose_driver.js?v=v133-5e6252f80fa4';
+import {FLOOR} from './world.js?v=v133-5e6252f80fa4';
+import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v133-5e6252f80fa4';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=v=>{v=clamp(v);return v*v*(3-2*v)};
 function pbr(rig){const mats=[];rig.model.traverse(o=>{if(!o.isMesh)return;const cv=m=>{const n=new THREE.MeshStandardMaterial({color:m.color,roughness:.83,metalness:0});n.userData={...m.userData};mats.push(n);return n};o.material=Array.isArray(o.material)?o.material.map(cv):cv(o.material);o.castShadow=o.receiveShadow=true;});rig.mats=mats;return rig;}
