@@ -1,0 +1,162 @@
+[
+  {
+    "file": "menu-pc.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "dual-prepare-pc.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "dual-hit-pc.png",
+    "phase": "first",
+    "kills": 2,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "chain-move-pc.png",
+    "phase": "move",
+    "kills": 3,
+    "position": [
+      938.399999999999,
+      456
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "menu-touch-390.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "dual-prepare-touch-390.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "dual-hit-touch-390.png",
+    "phase": "first",
+    "kills": 2,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "chain-move-touch-390.png",
+    "phase": "move",
+    "kills": 3,
+    "position": [
+      938.399999999999,
+      456
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "menu-touch-844.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "dual-prepare-touch-844.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "dual-hit-touch-844.png",
+    "phase": "first",
+    "kills": 2,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "chain-move-touch-844.png",
+    "phase": "move",
+    "kills": 3,
+    "position": [
+      938.399999999999,
+      456
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "menu-touch-320.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "chain"
+  },
+  {
+    "file": "dual-prepare-touch-320.png",
+    "phase": "prepare",
+    "kills": 0,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "dual-hit-touch-320.png",
+    "phase": "first",
+    "kills": 2,
+    "position": [
+      420,
+      432
+    ],
+    "selected": "dual"
+  },
+  {
+    "file": "chain-move-touch-320.png",
+    "phase": "move",
+    "kills": 3,
+    "position": [
+      938.399999999999,
+      456
+    ],
+    "selected": "chain"
+  }
+]

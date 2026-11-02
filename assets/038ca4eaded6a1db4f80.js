@@ -929,6 +929,22 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
     ['오른쪽 노란 원으로 이동', ()=>false, S=>S.exit, '의뢰에서는 목표를 마친 뒤 탈출한다. 같은 곳의 반복 유인은 경계한다.', 'move']
   ]
 });
+STAGES.push({
+ id:'tS',no:'00',name:'연습 5 · 암살 기술',sub:'선택 연습 · 쌍암살과 연속 암살',tutorial:true,skillPractice:true,noSupport:true,noAmbientChats:true,
+ mission:'쌍암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에서 접근해 기술 버튼을 1초 동안 누른다.',
+ W:32,H:18,start:[3,9],exit:[28,13],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,bare:true,kunai:0,coins:0,items:[],itemName:'',itemNames:[],well:'manhole',
+ build(m){m.fill(0,0,31,17,',');m.rect(0,0,31,17);m.fill(1,7,30,11,'.');m.fill(1,6,30,6,'=');m.fill(1,12,30,12,'=');m.many('Z',[[14,7],[14,8],[14,10],[14,11]]);m.many('T',[[4,3],[11,3],[20,3],[28,3],[4,15],[25,15]]);},
+ lamps:[[8,6,350,1],[21,6,400,1]],wires:[],roofs:[],bricks:[],
+ guards:[{kind:'g1',at:[9,8],post:0,still:true,radio:false},{kind:'g1',at:[9,9],post:0,still:true,radio:false},{kind:'g1',at:[19,9],post:0,still:true,radio:false},{kind:'g1',at:[21,9],post:0,still:true,radio:false}],
+ steps:[
+ [(S,P)=>P.mode==='sneak'?'두 경비의 등 뒤 표시로 이동':'{살금} 두 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-8.75*48,P.y-9*48)<12,()=>({x:8.75*48,y:9*48}),'발소리를 줄여 접근하자. 쌍암살은 붙어 있는 두 적을 함께 처리한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+ ['{기술} 길게 · 두 경비 쌍암살',S=>(S.stats.dualAssassinations||0)>0,S=>S.guards[0],'두 적 모두 등 뒤에서 가까이 접근해야 한다. 1초 동안 눌러 발동한다.','skill'],
+ ['{기술목록} 연속 암살 선택',S=>S.selectedSkill==='chain',()=>null,'연속 암살은 첫 적을 처리한 뒤 다음 적까지 직접 이동한다.','skills'],
+ [(S,P)=>P.mode==='sneak'?'다음 경비의 등 뒤 표시로 이동':'{살금} 다음 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-18.625*48,P.y-9.5*48)<12,()=>({x:18.625*48,y:9.5*48}),'웅크려 접근하고 통로로 지나가자. 두 번째 적까지 길이 트여 있어야 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+ ['{기술} 길게 · 연속 암살',S=>(S.stats.chainAssassinations||0)>0,S=>S.guards[2],'이동 중 들키거나 길이 막히면 다음 공격은 중단된다.','skill'],
+ ['아래쪽 출구로 이동',()=>false,S=>S.exit,'의뢰에서는 별 3개에 쌍암살, 6개에 연속 암살이 열린다.','move']
+ ]
+});
 // The authored art slice is loaded only by its dedicated build, not the contract list.
 if(window.__CLUB_STUDY__)STAGES.push({
   id:'clubStudy',artSlice:true,no:'01',name:'뒷문',sub:'클럽 뒷골목',fee:'',
@@ -2305,7 +2321,7 @@ function actorMarker(g,c){
 }
 function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
 function drawBody(c, lift = 0) {
-  if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
+  if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
@@ -2378,6 +2394,7 @@ function drawLastSeen() {
   }
 }
 function drawGuard(g) {
+  if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once
   if(g.containerMoving||g.ledgeFalling)return;
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;
@@ -2721,6 +2738,61 @@ function saveBest(id, rank) {
 }
 
 
+// Earned abilities reuse existing mission stars. No second currency or grind reset.
+const ASSASSIN_SKILLS={
+  dual:{name:'쌍암살',stars:3,cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
+  chain:{name:'연속 암살',stars:6,cooldown:16,description:'등 뒤의 적을 처리한 뒤 가까운 다음 적에게 직접 이동해 한 번 더 공격한다.'}
+};
+function initAssassinSkills(){
+  S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
+  let key='dual';try{key=localStorage.getItem('yahaeng.assassinSkill')||key;}catch(e){}
+  S.selectedSkill=ASSASSIN_SKILLS[key]?key:'dual';
+  if(!STAGE.skillPractice&&S.skillStars<ASSASSIN_SKILLS[S.selectedSkill].stars)S.selectedSkill='dual';
+  if(STAGE.skillPractice)S.selectedSkill=S.practiceSkill||'dual';
+  cancelAssassinSkill();
+}
+const assassinUnlocked=(key=S.selectedSkill)=>!!ASSASSIN_SKILLS[key]&&(!!STAGE.skillPractice||(S.skillStars??0)>=ASSASSIN_SKILLS[key].stars);
+const assassinSupported=()=>!!S&&!STAGE.artSlice&&(!STAGE.tutorial||!!STAGE.skillPractice);
+function assassinPath(a,b){
+  if(flOf(a)!==flOf(b)||(a.z||0)!==(b.z||0))return false;
+  const L0=CUR_F;setLayer(flOf(a));let ok=true;
+  const n=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/8)),sol=solidFor(a.z||0);
+  for(let i=0;i<=n&&ok;i++)for(const [dx,dy]of [[-10,-10],[10,-10],[-10,10],[10,10]]){
+    const x=a.x+(b.x-a.x)*i/n+dx,y=a.y+(b.y-a.y)*i/n+dy;
+    if(sol(Math.floor(x/TILE),Math.floor(y/TILE))){ok=false;break;}
+  }
+  setLayer(L0);return ok;
+}
+function assassinVictim(g,from,reach){
+  if(!g||g.child||g.civ||g.dog||g.elite||g.doomed||g.climb||g.seen||g.meter>=NOTICE_AT||['DEAD','CAPTIVE','ALERT','TERROR','FLEE'].includes(g.state))return false;
+  if(flOf(g)!==flOf(from)||(g.z||0)!==(from.z||0)||dist(from.x,from.y,g.x,g.y)>reach)return false;
+  if(Math.abs(angDiff(g.a,Math.atan2(from.y-g.y,from.x-g.x)))<1.95)return false;
+  return sightLine(from,g.x,g.y,g.z||0,false,flOf(g));
+}
+function assassinLanding(g,from){
+  const d=Math.max(1,dist(from.x,from.y,g.x,g.y));
+  return{x:g.x+(from.x-g.x)*40/d,y:g.y+(from.y-g.y)*40/d,fl:flOf(g),z:g.z||0};
+}
+function assassinOpportunity(key=S.selectedSkill){
+  const P=S.player;
+  if(!assassinSupported()||!assassinUnlocked(key)||S.t<S.skillReadyAt||P.z||P.wire||P.ledge||P.car||P.hurtT>0||P.hide||P.vent||P.under||P.carrying||P.captive||P.jump||P.trav||P.lunge||P.grabIn||P.interact||P.pick||P.strikeT>0||P.assassinAnim)return null;
+  const first=S.guards.filter(g=>assassinVictim(g,P,62)).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
+  for(const a of first){
+    const others=S.guards.filter(g=>g!==a&&assassinVictim(g,P,key==='dual'?62:195)&&dist(a.x,a.y,g.x,g.y)<=(key==='dual'?54:132)&&dist(a.x,a.y,g.x,g.y)>=(key==='dual'?10:55));
+    const b=others.sort((b,c)=>dist(a.x,a.y,b.x,b.y)-dist(a.x,a.y,c.x,c.y))[0];if(!b)continue;
+    const at=key==='chain'?assassinLanding(b,P):null;
+    if(at&&!assassinPath(P,at))continue;
+    return{key,ids:[a.id,b.id],at};
+  }return null;
+}
+function assassinReason(){
+  const P=S.player,k=S.selectedSkill,d=ASSASSIN_SKILLS[k];
+  if(!assassinUnlocked(k))return `의뢰 별 ${d.stars}개로 해금 · 기술 연습에서 사용 가능`;
+  if(S.t<S.skillReadyAt)return `회복 ${Math.ceil(S.skillReadyAt-S.t)}초`;
+  if(P.z||P.hide||P.vent||P.under||P.carrying||P.captive)return '빈손으로 같은 층의 등 뒤에서 접근';
+  return k==='dual'?'붙어 있는 두 적의 등 뒤로 접근':'가까운 두 적의 등 뒤와 이동 경로 확보';
+}
+
 // 주요 의뢰는 서로 다른 잠입 문제 세 개에 집중한다. 이전 의뢰의 기록·저장은 보존한다.
 const MAIN_CONTRACTS = ['m2', 'm4', 'm6'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
@@ -3055,7 +3127,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
-  applyWorldPolicy(); syncWorkLights(); capturePhysicalLayout();
+  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -3968,7 +4040,7 @@ function updateSharpEye(g, dt, rawVis) {
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
 function suspAct(g) {
   const P = S.player;
-  if ((P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || P.lunge || P.grabIn || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t || (P.useT || 0) > S.t) return 1;
+  if (P.skillHold || P.assassinAnim || (P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || P.lunge || P.grabIn || S.pull || P.wire || P.ledge || P.pick || (S.throwT || 0) > S.t || (P.useT || 0) > S.t) return 1;
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
@@ -5151,7 +5223,8 @@ function drawSpeech() {
 }
 function updateChats(dt) {
   updateTalks(dt);
-  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
+  if(STAGE.noAmbientChats)return;
+  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
     const a = gs[i], b = gs[j];
@@ -6858,6 +6931,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if(updateAssassinSkill(P,dt))return;
   if (updatePairCombat(P,dt)) return;
   if (P.lethalHold && updateLethalHold(P, dt)) return;
   if (P.interact) { updateObjectAction(P, dt); return; }
@@ -7837,7 +7911,7 @@ function updateOpps(dt) {
 }
 function drawCorpseRisk() {
   for (const c of S.corpses) {
-    if (c.stashed || flOf(c) !== flOf(S.player)) continue;
+    if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
       ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
@@ -7943,7 +8017,7 @@ function updateCheckpoint(dt) {
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
   const P = S.player;
-  if (S.alevel >= 2 || S.radioCall || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
+  if (S.alevel >= 2 || S.radioCall || P.skillHold || P.assassinAnim || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
   if (S.guards.some(g => !g.civ && (['ALERT', 'NOTICE', 'BODY', 'WARN'].includes(g.state) || (g.eyeT || 0) > .05))) return;
   S.cpWant = false; saveCheckpoint();
 }
@@ -7960,7 +8034,7 @@ function loadCheckpoint() {
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.vfx=[]; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   delete S.contact; if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
@@ -8601,7 +8675,7 @@ function updateVentPull(P,dt){
 }
 
 // 짧게 제압, 같은 입력을 계속 누를 때만 처치. 동작 중에도 처음 고른 대상과 입력을 유지한다.
-const COMBAT_INPUTS = { atk: ['KeyZ', 'Space', 'btnAct'], env: ['KeyX', 'KeyE', 'btnCarry'], grab: ['KeyC', 'KeyQ', 'btnGrab'] };
+const COMBAT_INPUTS = { skill:['KeyB','btnSkill'], atk: ['KeyZ', 'Space', 'btnAct'], env: ['KeyX', 'KeyE', 'btnCarry'], grab: ['KeyC', 'KeyQ', 'btnGrab'] };
 const LETHAL_HOLD = 1;
 function combatPress(id) {
   input.pressSerial = (input.pressSerial || 0) + 1;
@@ -8620,6 +8694,7 @@ function combatRelease(id) {
   if (!S) return;
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
+  if(S.player.skillHold?.source.id===id)S.player.skillHold=null;
   if (input.pressIds) delete input.pressIds[id];
 }
 function combatVictims(a) {
@@ -8771,7 +8846,7 @@ function drawHangingSigns(openB=-1) {
 
 // 손을 쓰는 행동은 대상 확인 → 손 뻗기 → 접촉 → 마무리까지 한 번만 실행한다.
 function actionBusy(P = S.player) {
-  return !!(S.ledgePull || P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
+  return !!(P.skillHold || P.assassinAnim || S.ledgePull || P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
     (P.strikeT > 0) || (P.bodyAnim && S.t - P.bodyAnim.t0 < P.bodyAnim.dur));
 }
 // 벽·층 너머 물건을 잡지 않는다. 벽에 붙인 스위치와 가구 끝에는 손이 닿는다.
@@ -9031,7 +9106,7 @@ function killList() {
   if (P.lunge || P.grabIn) return [];
   let list = S.guards.filter(g => !ACT_SKIP.has(g) && canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
   if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && !ACT_SKIP.has(g) && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
-  if (list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
+  if (STAGE.artSlice && list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
   return list.slice(0, 1);
 }
 // 옥상 위에서 아래로 떨어지며 암살
@@ -10008,6 +10083,99 @@ function killGuard(g, mode, where, quiet) {
 }
 // 사고사: 칼자국 없이 죽는다. 시체를 봐도 '사고'로 여겨 수색·비명이 없다 (옮기면 사고로 보이지 않는다)
 
+// A held input prepares a lethal skill. Victims are locked by id, not retargeted.
+function beginAssassinSkill(){
+  if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
+  const choice=assassinOpportunity(),source=combatSource('skill');
+  if(!choice||!source){toast(assassinReason(),2.2);return;}
+  const P=S.player;P.skillHold={...choice,source,t0:S.t,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.vx=P.vy=0;P.moving=false;
+}
+function cancelAssassinSkill(){
+  if(!S?.player)return;const P=S.player,A=P.assassinAnim;
+  if(A){
+    for(const id of A.ids){const g=S.guards.find(g=>g.id===id);if(g)g.doomed=false;}
+    for(const c of S.corpses)if(A.ids.includes(c.guardId))delete c.skillAnimating;
+    P.strikeT=0;P.assassinAnim=null;
+  }P.skillHold=null;
+}
+function assassinAt(id){return S.guards.find(g=>g.id===id);}
+function skillVictimStillValid(g,P,reach){
+  if(!g)return false;const was=g.doomed;g.doomed=false;const ok=assassinVictim(g,P,reach);g.doomed=was;return ok;
+}
+function commitAssassinHit(A,index){
+  const P=S.player,g=assassinAt(A.ids[index]);
+  if(!skillVictimStillValid(g,P,66))return false;
+  A.hits[index]=S.t;P.a=Math.atan2(g.y-P.y,g.x-P.x);
+  g.doomed=false;g.takedownIntent={source:null,lethal:true,assailantLook:witnessedAssailant(g)};
+  S.koNext=false;S.lethalNext=true;g.pairDown=true;
+  try{killGuard(g,null,null,true);}finally{delete g.pairDown;}
+  const c=S.corpses.find(c=>c.guardId===g.id&&!c.ko);
+  if(!c)return false;
+  c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.65,angle:P.a});
+  if(index===0){S.skillReadyAt=S.t+ASSASSIN_SKILLS[A.key].cooldown;S.stats.assassinUses=(S.stats.assassinUses||0)+1;}
+  return true;
+}
+function updateAssassinSkill(P,dt){
+  const h=P.skillHold;
+  if(h){
+    if(!combatHeld(h.source)||flOf(P)!==h.fl||(P.z||0)!==h.z||dist(P.x,P.y,h.x,h.y)>8||P.hurtT>0){P.skillHold=null;return false;}
+    const chosen=assassinOpportunity(h.key);
+    if(!chosen||chosen.ids.some((id,i)=>id!==h.ids[i])){P.skillHold=null;return false;}
+    P.vx=P.vy=0;P.moving=false;P.hidden=false;P.light=lightAt(P.x,P.y,false);
+    if(S.t-h.t0<LETHAL_HOLD)return true;
+    P.skillHold=null;const A=P.assassinAnim={key:h.key,ids:h.ids,hits:[null,null],t0:S.t,fl:h.fl,z:h.z,x:P.x,y:P.y,phase:'first'};
+    for(const id of h.key==='dual'?h.ids:[h.ids[0]])assassinAt(id).doomed=true;
+    P.strikeT=4;P.a=Math.atan2(assassinAt(h.ids[0]).y-P.y,assassinAt(h.ids[0]).x-P.x);endChat(assassinAt(h.ids[0]));
+    S.qBuf=0;S.koHold=null;return true;
+  }
+  const A=P.assassinAnim;if(!A)return false;
+  if(flOf(P)!==A.fl||(P.z||0)!==A.z||P.hurtT>0||P.hide||P.carrying||P.captive){cancelAssassinSkill();return false;}
+  P.vx=P.vy=0;P.moving=false;P.hidden=false;P.light=lightAt(P.x,P.y,false);
+  const t=S.t-A.t0;
+  if(A.hits[0]==null&&t>=.34&&!commitAssassinHit(A,0)){cancelAssassinSkill();return false;}
+  if(A.key==='dual'){
+    if(dist(P.x,P.y,A.x,A.y)>8){cancelAssassinSkill();return false;}
+    if(A.hits[1]==null&&t>=.41&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+    if(t>=1.05)finishAssassinSkill(A);return true;
+  }
+  if(t<.62)return true;
+  const second=assassinAt(A.ids[1]);
+  if(A.phase==='first'){
+    if(!skillVictimStillValid(second,P,195)){cancelAssassinSkill();return false;}
+    const at=assassinLanding(second,P);if(!assassinPath(P,at)){cancelAssassinSkill();return false;}
+    P.mode='walk';A.phase='move';A.moveAt=S.t;A.from={x:P.x,y:P.y,fl:A.fl,z:A.z};A.to=at;A.moveDur=Math.max(.2,dist(P.x,P.y,at.x,at.y)/210);
+  }
+  if(A.phase==='move'){
+    if(!skillVictimStillValid(second,P,195)||!assassinPath(P,A.to)){cancelAssassinSkill();return false;}
+    const f=clamp((S.t-A.moveAt)/A.moveDur,0,1),x=P.x,y=P.y;
+    P.x=A.from.x+(A.to.x-A.from.x)*f;P.y=A.from.y+(A.to.y-A.from.y)*f;P.a=Math.atan2(A.to.y-y,A.to.x-x);P.moving=true;advancePlayerGait(P,x,y,dt,SPD.run);
+    if(f>=1){A.phase='second';A.secondAt=S.t;second.doomed=true;endChat(second);P.a=Math.atan2(second.y-P.y,second.x-P.x);}return true;
+  }
+  if(A.hits[1]==null&&S.t-A.secondAt>=.25&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+  if(S.t-A.secondAt>=.8)finishAssassinSkill(A);return true;
+}
+function finishAssassinSkill(A){
+  if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;}
+  cancelAssassinSkill();
+}
+function drawAssassinActors(P,key,alpha=1){
+  const A=P.assassinAnim;if(!A)return false;
+  const t=S.t-A.t0,move=A.phase==='move',attackT=A.phase==='second'?S.t-A.secondAt:t;
+  const fi=PR?.anims?.stab?Math.min(PR.anims.stab[1]-1,Math.floor(clamp(attackT/1.05,0,1)*PR.anims.stab[1])):0;
+  if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
+  for(let i=0;i<A.ids.length;i++){
+    const g=assassinAt(A.ids[i]);if(!g)continue;
+    // Only the surprised/struck victim belongs to this animation; the next guard
+    // keeps patrolling and can notice the approach until the second attack starts.
+    if(i===1&&A.key==='chain'&&!A.hits[1]&&A.phase!=='second')continue;
+    const hit=A.hits[i],k=charOf(g);
+    if(usePR(k)&&hit!=null){const frames=PR.anims.death?.[1]||6;drawPR(k,g.x,g.y,g.a,'death',0,1,1,0,Math.min(frames-1,Math.floor((S.t-hit)*12)));}
+    else if(hit!=null)blit(ctx,'dead_'+k,g.x-24,g.y-26,48,48);
+    else if(g.state!=='DEAD'){if(usePR(k))drawPR(k,g.x,g.y,g.a,'idle',S.t,1,1);else drawChar(k,g.x,g.y,g.a,false,1,3);}
+  }return true;
+}
+function assassinOwnsActor(g){const A=S.player.assassinAnim;return !!A&&A.ids.includes(g.id)&&(A.key==='dual'||A.ids[0]===g.id||A.phase==='second');}
+
 function accidentKill(g, how) {
   if (g.state === 'DEAD' || g.child) return;
   logEv('accident', g.x, g.y);
@@ -10358,7 +10526,7 @@ function update(dt) {
   for (const c of S.corpses) if (c.fly) { const f = c.fly; f.t += dt; const k = Math.min(1, f.t / f.dur); c.x = f.x0 + (f.x1 - f.x0) * k; c.y = f.y0 + (f.y1 - f.y0) * k; if (k >= 1) { c.fly = null; c.light = lightAt(c.x, c.y); play('thud', 0.7); if (c.accident) noise(c.x, c.y, 140, 'crash', c.fl || 0); else { S.decals.push({ x: c.x, y: c.y, r: 16, rot: rnd(0, TAU) }); terrorAt(c.x, c.y); } } }  // 추락사(사고)는 피·공포 없이 쿵 소리만 — 와서 보면 '사고가 났네'
   for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s)); } }
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);
-  updateEffects();
+  updateAssassinPractice(); updateEffects();
   for (const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < 0.45);
   for (const l of S.lures) if (!l.landed) { l.t += dt; if (l.t > 0.35) { l.landed = true; play('click', 0.2); } }
   for (const k of S.kunais) { k.t += dt; if (k.t >= k.dur && !k.done) { k.done = true; kunaiHit(k); } }
@@ -10731,6 +10899,7 @@ function drawPlayerBody(P) {
   if(P.trav?.hideFlow||P.trav?.accessFlow||P.trav?.signFlow)return;
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
+  if(P.assassinAnim&&drawAssassinActors(P,playerLook))return;
   if (P.car) return;  // 차 안: 차가 곧 나
   if (P.wire) {
     // 전깃줄에 두 손으로 매달린 모습 (땅에는 그림자)
@@ -12094,7 +12263,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   PM('nearmarks');
-  if(running)drawEffects(P,openB);
+  if(running){drawEffects(P,openB);drawAssassinTargets();}
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
@@ -12774,7 +12943,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 달리기: [()=>input.walkLock?'[이동]을 달리기로 바꾼 뒤 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 암살 기술에서','K · 기술 목록에서'], 달리기: [()=>input.walkLock?'[이동]을 달리기로 바꾼 뒤 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -12825,6 +12994,7 @@ function floorBanner(P, ptx, pty) {
 }
 function updateHUD(force) {
   if (force) hudCache = {};
+  syncAssassinHUD();
   const P = S.player;
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
@@ -12940,7 +13110,7 @@ function syncTools() {
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
-  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast((STAGE.firstSteps?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
+  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice)?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
   const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
 }
@@ -12985,7 +13155,7 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 의뢰에서는 별을 모아 해금할 수 있다.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -13062,8 +13232,8 @@ function syncTutorialCue(){
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4],key=(typeof cue==='function'?cue(S,S.player):cue)||'',token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle'}[key];
-  for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnCycle'])$(id)?.classList.toggle('lesson-cue',id===active);
+  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause'}[key];
+  for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }
 
 // 기존 대상 버튼에서 이름을 보고 고른다. 선택은 실행하지 않으며 실행 시 대상을 다시 확인한다.
@@ -13207,6 +13377,66 @@ function drawPlanFixtures(P) {
     ctx.strokeStyle='#e7c276';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(g.x,g.y+4,17,9,0,0,TAU);ctx.stroke();
   }
   ctx.restore();
+}
+
+let assassinMenu=null;
+function openAssassinMenu(){
+  if(DLG.modal||S?.keypad||!$('end').hidden)return;
+  const from=!$('ledger').hidden?'ledger':!$('pause').hidden?'pause':'play';
+  assassinMenu={from,practice:from!=='ledger'&&!!STAGE?.skillPractice,paused};
+  clearPlayerInput();closeHudInspection();if(running)paused=true;
+  if(from==='ledger')$('ledger').hidden=true;if(from==='pause')$('pause').hidden=true;
+  $('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
+}
+function closeAssassinMenu(){
+  const m=assassinMenu;if(!m)return;$('skillScreen').hidden=true;assassinMenu=null;clearPlayerInput();
+  if(m.from==='ledger'){$('ledger').hidden=false;renderStageList();}
+  else if(m.from==='pause')$('pause').hidden=false;
+  if(running)paused=m.paused;
+}
+function chooseAssassinSkill(key){
+  const d=ASSASSIN_SKILLS[key],practice=assassinMenu?.practice;if(!d||!practice&&totalStars()<d.stars)return;
+  if(practice){S.practiceSkill=key;S.selectedSkill=key;S.skillReadyAt=S.t;}
+  else {try{localStorage.setItem('yahaeng.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
+  renderAssassinMenu();hudCache.skill=null;
+}
+function renderAssassinMenu(){
+  const practice=!!assassinMenu?.practice,stars=totalStars();let selected=S?.selectedSkill||'dual';
+  if(!S||assassinMenu?.from==='ledger')try{selected=localStorage.getItem('yahaeng.assassinSkill')||selected;}catch(e){}
+  $('skillSummary').textContent=practice?'연습에서는 모든 기술을 사용할 수 있다. 해금 기록은 바뀌지 않는다.':`의뢰에서 모은 별 ${stars}개 · 기술은 별 개수에 따라 해금된다.`;
+  const list=$('skillCards');list.replaceChildren();
+  for(const [key,d]of Object.entries(ASSASSIN_SKILLS)){
+    const unlocked=practice||stars>=d.stars,card=document.createElement('button');card.type='button';card.className='assassin-card';card.dataset.skill=key;card.disabled=!unlocked;card.setAttribute('aria-pressed',String(unlocked&&selected===key));
+    const name=document.createElement('b');name.textContent=d.name;
+    const note=document.createElement('span');note.textContent=d.description;
+    const state=document.createElement('small');state.textContent=!unlocked?`별 ${d.stars}개 필요`:selected===key?'선택됨':practice?'연습에 선택':'사용 기술로 선택';
+    card.append(name,note,state);card.addEventListener('click',()=>chooseAssassinSkill(key));list.append(card);
+  }
+  $('skillTrainingNote').textContent='살상 기술이다. 같은 층·등 뒤·가까운 거리에서만 발동하며, 주민과 정예에게는 사용할 수 없다.';
+}
+function syncAssassinHUD(){
+  const b=$('btnSkill');if(!b||!S)return;
+  b.hidden=!assassinSupported()||S.over;
+  if(b.hidden)return;
+  const P=S.player,d=ASSASSIN_SKILLS[S.selectedSkill];
+  // Readiness may lag 0.1s; the actual input and both impacts always revalidate.
+  let scan=hudCache.skillScan;
+  if(!scan||scan.key!==S.selectedSkill||S.t<scan.t||S.t-scan.t>=.1)scan=hudCache.skillScan={key:S.selectedSkill,t:S.t,choice:assassinOpportunity()};
+  const choice=P.assassinAnim?null:P.skillHold||scan.choice;
+  const progress=P.skillHold?clamp((S.t-P.skillHold.t0)/LETHAL_HOLD,0,1):0;
+  const state=P.assassinAnim?'동작 중':P.skillHold?`준비 ${Math.ceil(progress*100)}%`:!assassinUnlocked()?`별 ${d.stars}개 필요`:S.t<S.skillReadyAt?`회복 ${Math.ceil(S.skillReadyAt-S.t)}초`:choice?'길게 · 살상':'등 뒤에서 준비';
+  const key=d.name+'|'+state;if(hudCache.skill!==key){hudCache.skill=key;b.querySelector('b').textContent=(isTouch?'':'B · ')+d.name;b.querySelector('small').textContent=state;b.title=assassinReason()+' · K 기술 목록';b.setAttribute('aria-label',d.name+' · '+state);}
+  b.classList.toggle('ready',!!choice);b.style.setProperty('--skill-hold',Math.round(progress*100)+'%');
+}
+function drawAssassinTargets(){
+  const h=S.player.skillHold;if(!h)return;
+  ctx.save();ctx.fillStyle='#ded2ad';ctx.font='bold 12px Galmuri,sans-serif';ctx.textAlign='center';
+  h.ids.forEach((id,i)=>{const g=assassinAt(id);if(g)ctx.fillText(String(i+1),g.x,g.y-58);});ctx.restore();
+}
+function updateAssassinPractice(){
+  if(!STAGE.skillPractice||S.over||S.player.assassinAnim||S.player.skillHold)return;
+  const step=S.tutI||0,ids=step<2?[0,1]:step>=3&&step<5?[2,3]:[];
+  if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. B 또는 기술 버튼을 길게 눌러 보자.');
 }
 
 // ---------------------------------------------------------------- 루프
@@ -13354,7 +13584,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
-    spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
@@ -13416,7 +13646,7 @@ window.addEventListener('keydown', e => {
   const overlay = document.querySelector('.screen:not([hidden])');
   if (overlay) {
     if (e.code === 'Escape') {
-      const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu' }[overlay.id];
+      const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu', skillScreen:'btnSkillsBack' }[overlay.id];
       if (back) { e.preventDefault(); $(back).click(); }
     }
     return;
@@ -13448,6 +13678,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
   if (e.code === 'KeyF' || e.code === 'KeyV') startAim('key');
+  if(e.code==='KeyB')beginAssassinSkill();
+  if(e.code==='KeyK')openAssassinMenu();
   if (e.code === 'KeyR') cycleMoveLock();
   if (e.code === 'Digit1') selectTool('kunai');
   if (e.code === 'Digit2') selectTool('stone');
@@ -13472,10 +13704,10 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
-  for(const id of ['btnAct','btnCarry','btnGrab','btnTool'])document.getElementById(id)?.classList.remove('down');
+  for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.skillHold=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
@@ -13550,6 +13782,10 @@ function bindBtn(id, fn) {
 bindBtn('btnAct', actAttack);
 bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
+bindBtn('btnSkill',beginAssassinSkill);
+$('btnSkillsLedger').addEventListener('click',openAssassinMenu);
+$('btnSkillsPause').addEventListener('click',openAssassinMenu);
+$('btnSkillsBack').addEventListener('click',closeAssassinMenu);
 {
   const b = $('btnTool');
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람

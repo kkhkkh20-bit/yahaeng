@@ -1,0 +1,2 @@
+PASS desktop {'grammar': 8, 'tapTarget': True, 'holdOnlyCaption': True, 'legacyClue': True, 'lotAndUpperFloor': True}
+PASS mobile {'grammar': 8, 'tapTarget': True, 'holdOnlyCaption': True, 'legacyClue': True, 'lotAndUpperFloor': True}
