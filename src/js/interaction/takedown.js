@@ -34,9 +34,9 @@ function wakeKO(c, by) {
   const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
   g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
   if (c.assailantLook) { rememberSuspect(g,c.assailantLook); if (by) rememberSuspect(by,c.assailantLook); }
-  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '으… 누가 때렸는지 못 봤어요.'); return; }
+  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '뒤에서 맞았어요. 누군지는 못 봤어요.'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
-  gsay(g, c.assailantLook ? '때린 사람을 봤어. 인상착의 알려 줄게.' : '누가 때렸는지 못 봤어. 주변부터 확인하자.', 3);
+  gsay(g, c.assailantLook ? '때린 사람 봤어. 인상착의 보낼게.' : '뒤에서 당했어. 주변 확인해 줘.', 3);
 }
 // 연속 처치: 8초 안에 조직원을 또 처치하면 손맛 표시 (메탈기어·코만도스식 소탕의 리듬)
 function killStreak() {

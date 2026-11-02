@@ -79,8 +79,8 @@ function newGame(si) {
   });
   const hides = [], ladders = [];
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
-    if (G[ty][tx] === 'H') hides.push({ type: 'box', tx, ty, x: tc(tx), y: tc(ty), bodies: 0, cap: 2 });
-    if (G[ty][tx] === 'W') hides.push({ type: 'well', tx, ty, x: tc(tx), y: tc(ty), bodies: 0, cap: 99 });
+    if (G[ty][tx] === 'H') hides.push({ type: 'box', tx, ty, x: tc(tx), y: tc(ty), bodies: 0, cap: 1 });
+    if (G[ty][tx] === 'W') hides.push({ type: 'well', tx, ty, x: tc(tx), y: tc(ty), bodies: 0, cap: 1 });
     if (G[ty][tx] === 'L') {
       const o = N8.slice(0, 4).find(o => roofAt(tx + o[0], ty + o[1])) || N8.find(o => roofAt(tx + o[0], ty + o[1]));
       if (o) ladders.push({ kind: 'ladder', bx: tx, by: ty, bz: 0, tx: tx + o[0], ty: ty + o[1], tz: lvAt(tx + o[0], ty + o[1]) });
@@ -124,7 +124,7 @@ function newGame(si) {
   S = {
     t: 0, lamps, lightsOn: true, guards, corpses: [], decals: [], noises: [], stones: [], kunais: [], toasts: [], hides, ladders,
     items: STAGE._items.map(p => ({ b: p[3], x: tc(p[0]), y: tc(p[1]), got: false, fl: p[2] || 0 })),
-    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: D().picks, candy: STAGE.candy != null ? STAGE.candy : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(1, (STAGE.kunai || 3) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
+    player: { x: tc(STAGE.start[0]), y: tc(STAGE.start[1]), z: 0, under: false, coins: D().coins, picks: D().picks, candy: STAGE.candy != null ? STAGE.candy : groundedWorld() ? 0 : 2, jump: null, hasKey: false, keys: {}, hp: D().hp, hpMax: D().hp, hurtT: 0, a: STAGE.startA != null ? STAGE.startA : -Math.PI / 2, mode: 'walk', carrying: null, stones: D().stones, kunai: Math.max(0, (STAGE.kunai ?? 2) + D().kunaiAdd), hidden: false, light: 0, stepT: 0, strikeT: 0, moving: false, hide: null },
     rollT: D().roll, rollWarn: false, timeLeft: STAGE.timeLimit ? STAGE.timeLimit * D().time : 0,
     alevel: 0, alevelT: 0, unseenT: 0, lures: [], reinforced: false, fx: [], keyDrop: null, fuseGuard: null, fuseT: 0, fleeing: false, windows: [],
     stats: { camEver: 0, kills: 0, extraKills: 0, bodies: 0, detected: 0, stonesUsed: 0, kunaiUsed: 0, alarms: 0, stashed: 0, special: 0 },
@@ -260,6 +260,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
+  applyWorldPolicy(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -334,7 +335,7 @@ function makeGuard(d, i) {
   else { const leader = (STAGE._g || STAGE.guards)[d.follow]; sx = leader.route[0][0] - 1; sy = leader.route[0][1]; }
   const post = d.post != null ? d.post * Math.PI / 180 : null;
   return {
-    id: i, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
+    id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,

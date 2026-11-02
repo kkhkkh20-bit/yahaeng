@@ -25,14 +25,14 @@ async def main():
     for(let y=1;y<G.MH-1&&!valid;y++)for(let x=1;x<G.MW-1&&!valid;x++)if(G.bldAt(x,y)<0&&!G.solidAt(x,y))for(const a of [0,Math.PI/2,Math.PI,-Math.PI/2]){
      P.x=x*48+24;P.y=y*48+24;P.a=a;valid=G.wallUpSpot();if(valid)break;
     }
-    if(valid){exterior++;const B=G.BLD.find(b=>!b.vacant),q=G.planPt(G.BLD.indexOf(B),0,'S')||[B.x0+2,B.y0+2];P.x=q[0]*48+24;P.y=q[1]*48+24;G.doAct({k:'wallUp',s:valid});check(!P.trav&&!P.z,'stale exterior climb teleports from indoors '+id)}
+    check(!valid,'street offers unaided wall climb '+id);if(valid){exterior++;const B=G.BLD.find(b=>!b.vacant),q=G.planPt(G.BLD.indexOf(B),0,'S')||[B.x0+2,B.y0+2];P.x=q[0]*48+24;P.y=q[1]*48+24;G.doAct({k:'wallUp',s:valid});check(!P.trav&&!P.z,'stale exterior climb teleports from indoors '+id)}
     for(const c of S.cams.filter(c=>!c.search&&c.b>=0&&!G.BLD[c.b].vacant)){
      check(c.wallMount,'indoor camera has no architectural corner '+id+' '+JSON.stringify(c));corners++;
      G.setLayer(c.fl);check(!G.solidAt(c.tx,c.ty),'camera inside wall');const m=c.wallMount;
      check('#NSXV'.includes(G.tileCh(c.tx+m.sx,c.ty))&&'#NSXV'.includes(G.tileCh(c.tx,c.ty+m.sy)),'mount not at two walls');
     }
    }
-   check(exterior===6&&indoor>10000&&corners>=6,'insufficient map fixtures '+JSON.stringify({exterior,indoor,corners}));
+   check(exterior===0&&indoor>10000&&corners>=6,'insufficient map fixtures '+JSON.stringify({exterior,indoor,corners}));
    for(const [id,bi] of [['m2',0],['m4',2],['m6',0]]){
     const S=fresh(id),P=S.player;P.x=P.y=-9000;S.facOn=false;S.corpses=[];S.decals=[];S.t=10;
     const at=G.planPt(bi,0,'S')||G.planPt(bi,0,'L');check(at,'missing search room '+id);

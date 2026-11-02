@@ -22,12 +22,11 @@ async def main():
             const S=fresh(id),P=S.player;
             for(const l of S.lamps.filter(l=>l.pole)){
               const at=G.lampControl(l);Object.assign(P,{fl:0,z:0,trav:null,interact:null});G.setLayer(0);S.t+=.02;
-              const foot=[[26,0],[0,32],[-26,32],[26,32],[0,-44]].find(([dx,dy])=>{P.x=at.x+dx;P.y=at.y+dy;return !G.solidAt(Math.floor(P.x/48),Math.floor(P.y/48))&&G.objectReachable(at,48)&&G.nearPole()});
+              const foot=[[26,0],[0,32],[-26,32],[26,32],[0,-44]].find(([dx,dy])=>{P.x=at.x+dx;P.y=at.y+dy;return !G.solidAt(Math.floor(P.x/48),Math.floor(P.y/48))&&G.objectReachable(at,48)});
               check(foot,id+' inaccessible switch approach');
               const choices=G.envChoices(),a=choices.find(a=>a.k==='lamp'&&a.l===l),pole=choices.find(a=>a.k==='wireOn'&&a.pole);
-              check(a&&pole,id+' pole must not hide light action');check(a.at.x===at.x&&a.at.y===at.y,id+' label anchor disagrees with control');
-              if(Math.hypot(P.x-at.x,P.y-at.y)<Math.hypot(P.x-pole.targetObject.x,P.y-pole.targetObject.y))check(G.envAction().k==='lamp',id+' hand at switch should offer light first');
-              choose('wireOn');const selected=G.envAction();P.x+=1;S.t+=.02;check(G.envAction().k==='wireOn'&&G.envAction().targetObject===selected.targetObject,id+' explicit pole selection lost');P.x-=1;
+              check(a&&!pole,id+' utility pole must offer the reachable switch without a climbing shortcut');check(a.at.x===at.x&&a.at.y===at.y,id+' label anchor disagrees with control');
+              choose('lamp',l);const selected=G.envAction();P.x+=1;S.t+=.02;check(G.envAction().k==='lamp'&&G.envAction().targetObject===selected.targetObject,id+' explicit switch selection lost');P.x-=1;
               choose('lamp',l);G.actEnv();check(P.interact&&!P.trav,id+' light press started climbing');tick(.5);check(l.off&&!P.interact&&!P.trav,id+' switch did not turn off');
               choose('lamp',l);G.actEnv();tick(.5);check(!l.off,id+' switch cannot turn on again');
               // Blink darkness is not a broken lamp or missing switch.
@@ -36,14 +35,14 @@ async def main():
             }
           }
           {
-            const S=fresh('m1'),P=S.player;for(const k of ['poles','wires','ladders','props','hides','notes','windows','fwindows','doors','lamps','bfuses','traps','corpses','items'])S[k]=[];
-            S.vehicles=null;S.camRoom=null;S.facOn=false;G.STAGE.fuse=null;Object.assign(P,{x:33*48,y:21*48,fl:0,z:0,a:0});G.setLayer(0);
-            const o={x:P.x,y:P.y-20,tx:33,ty:20,z:2},w={a:{x:o.x,y:o.y,pole:o,z:2},b:{x:o.x+200,y:o.y,z:2},sag:8};o.wires=[w];S.poles=[o];S.wires=[w];
+            const S=fresh('t1'),P=S.player;for(const k of ['poles','wires','ladders','props','hides','notes','windows','fwindows','doors','lamps','bfuses','traps','corpses','items'])S[k]=[];
+            S.vehicles=null;S.camRoom=null;S.facOn=false;G.STAGE.fuse=null;Object.assign(P,{x:18*48,y:9*48,fl:0,z:0,a:0});G.setLayer(0);
+            const o={x:P.x,y:P.y-20,tx:18,ty:8,z:2},w={a:{x:o.x,y:o.y,pole:o,z:2},b:{x:o.x+200,y:o.y,z:2},sag:8};o.wires=[w];S.poles=[o];S.wires=[w];
             const l={x:P.x+4,y:P.y,fl:0,pole:true,control:{x:P.x+4,y:P.y,fl:0,z:0}};S.lamps=[l];
-            const d={x:P.x-15,y:P.y,tx:32,ty:21,fl:0,locked:false,orig:'.'};d.group=[d];S.doors=[d];
+            const d={x:P.x-15,y:P.y,tx:17,ty:9,fl:0,locked:false,orig:'.'};d.group=[d];S.doors=[d];
             const keys=G.envChoices().map(a=>a.k);check(['lamp','wireOn','door'].every(k=>keys.includes(k)),'third overlapping facility lost: '+keys);
             // A global fuse has its own identity, so it cannot truncate candidates after it.
-            G.STAGE.fuse=[33,21,33,21];S.t+=.02;check(G.envChoices().some(a=>a.k==='door'),'global fuse blocked another facility');G.STAGE.fuse=null;
+            G.STAGE.fuse=[18,9,18,9];S.t+=.02;check(G.envChoices().some(a=>a.k==='door'),'global fuse blocked another facility');G.STAGE.fuse=null;
             // The pole base must also respect walls, including an opaque intermediate tile.
             let tested=false;
             for(let y=1;y<G.MH-1&&!tested;y++)for(let x=1;x<G.MW-1&&!tested;x++)if(G.tileG(x,y)==='#'&&!G.solidAt(x-1,y)&&!G.solidAt(x,y-1)){

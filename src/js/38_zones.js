@@ -34,7 +34,7 @@ function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
   (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; S.stats.blown = (S.stats.blown || 0) + 1;
   toast(why || `변장을 알아본 목격자가 있다 · 시야 밖에서 옷을 갈아입어라`, 3, 'warn');
-  if (g) { gsay(g, ['잠깐, 넌 우리 사람이 아니잖아!', '너 누구야? 처음 보는 얼굴인데.', '그 옷 어디서 났어?'][g.id % 3]); g.eyeT = 0; }
+  if (g) { gsay(g, ['잠깐. 소속이 어디야?', '어느 팀이지? 처음 보는데.', '직원 확인 좀 하자.'][g.id % 3]); g.eyeT = 0; }
 }
 function updateSharpEye(g, dt, rawVis) {
   g.eyeWatching=false;

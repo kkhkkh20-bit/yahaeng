@@ -3,6 +3,7 @@ function wirePt(w, s) { const cx = (w.a.dx + w.b.dx) / 2, cy = (w.a.dy + w.b.dy)
 function wireGround(w, s) { return { x: w.a.x + (w.b.x - w.a.x) * s, y: w.a.y + (w.b.y - w.a.y) * s }; }
 // 옥상 가장자리의 줄 끝에 서 있으면 [전깃줄 타기]
 function nearWireMount() {
+  if (!wireUsable()) return null;
   const P = S.player; if (!S.wires.length || !P.z || P.wire || P.jump || P.carrying || P.captive) return null;
   let best = null, bd = 46;
   for (const w of S.wires) for (const [n, s] of [[w.a, 0], [w.b, 1]]) { if (ACT_SKIP.has(w) || !n.roof || n.z !== P.z) continue; const d = dist(P.x, P.y, n.x, n.y); if (d < bd) { bd = d; best = { w, s, at: { x: n.dx, y: n.dy } }; } }
@@ -18,6 +19,7 @@ function nearWireMount() {
 }
 // 전봇대 밑에 서 있으면 [전봇대 오르기] — 바라보는 방향의 줄로
 function nearPole() {
+  if (!wireUsable()) return null;
   const P = S.player; if (!S.poles.length || P.z || P.fl || P.wire || P.jump || P.carrying || P.captive || P.hide) return null;
   let best = null, bd = 56;
   for (const o of S.poles) { if (ACT_SKIP.has(o) || !objectReachable({ x: o.x, y: o.y, fl: 0 }, 56)) continue;

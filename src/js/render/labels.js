@@ -98,10 +98,10 @@ function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip
       const dl = o.down && S.ladders.find(l => l.kind === 'fstair' && l.tx === o.l.tx && l.ty === o.l.ty && l.tfl === fP), dp = dl && downMark(dl), up = stairFloor(o.l.tx, o.l.ty, fP).up.marker;
       if (dp && (dp.x !== o.l.x || dp.y !== o.l.y)) { if (o.up) add(up.x, up.y, SCAN.ladder, '↑', '↑' + o.up, o.l.bx, o.l.by); add(dp.x, dp.y, SCAN.ladder, '↓', '↓' + o.down, o.l.bx, o.l.by); }
       else add(up.x, up.y, SCAN.ladder, o.up && o.down ? '↕' : o.up ? '↑' : '↓', [o.up && '↑' + o.up, o.down && '↓' + o.down].filter(Boolean).join(' · '), o.l.bx, o.l.by); }
-    if (!fP) { for (const o of S.poles) if (o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', '전봇대');
+    if (!fP) { for (const o of S.poles) if (wireUsable() && o.wires.length) add(o.x, o.y, SCAN.ladder, '↑', STAGE.tutorial ? '훈련 지주' : '전봇대');
       // 창문·문은 표식 없이 그림으로 (열린 창은 틈이 벌어져 보인다). 무엇을 할지는 다가가 [행동]에 뜬다
     }
-    else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : '창밖 전깃줄');
+    else for (const w of S.fwindows) if (w.fl === fP && winUsable(w)) add(w.x, w.y, SCAN.window, 'window', w.link ? '옆 건물로' : (wireUsable() ? '창밖 전깃줄' : '창문'));
     for (const v of S.vents) if (!v.roof && flOf(v) === fP) add(v.x, v.y, SCAN.vent, 'vent', '환풍구', v.street ? null : v.tx, v.ty);
     if (S.camRoom && !S.camsOff && S.camRoom.fl === fP) add(S.camRoom.x, S.camRoom.y, '#ff6a6a', 'light', 'CCTV 관리실', S.camRoom.tx, S.camRoom.ty);
   } else {
@@ -110,7 +110,7 @@ function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip
       else add(l.rx != null ? l.rx : l.ux, l.ry != null ? l.ry : l.uy, SCAN.ladder, '↓', l.kind === 'pipe' ? '내려가기' : '계단');
     }
     for (const v of S.vents) if (v.roof) add(v.x, v.y, SCAN.vent, 'vent', '환기구');
-    for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, 'wire', '전깃줄');
+    for (const w of S.wires) for (const n of [w.a, w.b]) if (wireUsable() && n.roof && n.z === P.z) add(n.dx, n.dy, SCAN.ladder, 'wire', STAGE.tutorial ? '훈련 로프' : '전깃줄');
   }
   const pa = S.paNow, paAt = pa && (pa.at || (pa.l && (pa.k === 'down' ? { x: pa.l.rx != null ? pa.l.rx : pa.l.ux, y: pa.l.ry != null ? pa.l.ry : pa.l.uy } : pa.l)) || (pa.wv && pa.wv.w) || pa.d || pa.v || pa.h);
   const WAY = new Set(['↓', '↑', '↕', 'window', 'pick', 'door', 'vent', 'manhole', 'wire']);
@@ -158,8 +158,8 @@ function drawScan(openB) {
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
   for (const c of S.cams || []) if (c.fl === flOf(S.player) && !c.broken) box(c.x, c.y, '#ff5a5a', 'CCTV', 28);
   for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { const p=lampControl(l);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
-  if (!fP) for (const o of S.poles) if (o.wires.length) box(o.x, o.y, SCAN.ladder, '전봇대 ↑', 36);
-  if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (n.roof) box(n.dx, n.dy, SCAN.ladder, '전깃줄', 26);
+  if (!fP) for (const o of S.poles) if (wireUsable() && o.wires.length) box(o.x, o.y, SCAN.ladder, STAGE.tutorial ? '훈련 지주 ↑' : '전봇대 ↑', 36);
+  if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (wireUsable() && n.roof) box(n.dx, n.dy, SCAN.ladder, STAGE.tutorial ? '훈련 로프' : '전깃줄', 26);
   for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
   if (!S.player.z) for (const it of FURN) {  // 가구: 파랑 = 높은 가구(막힘·시선 가림), 노랑 점선 = 낮은 가구(막힘·웅크리면 엄폐)
     if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB && !tactical) continue;

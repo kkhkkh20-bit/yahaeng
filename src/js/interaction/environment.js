@@ -13,6 +13,7 @@ function accidentKill(g, how) {
 // 함정: { k: 'shock', sw: [x, y], zone: [x0, y0, x1, y1] } 전선 끊어 물웅덩이 감전 · { k: 'drop', at: [x, y], hit: [x0, y0, x1, y1] } 옥상 간판 떨어뜨리기
 // 간판 달린 건물(상가)마다 옥상 끝 간판을 떨어뜨릴 수 있다 — 정면 높이(b.fh)가 정해진 뒤에 부른다
 function autoSigns() {
+  if (groundedWorld()) return;
   BLD.forEach(b => {
     if (b.kind !== 'shop' || !b.fh) return; const cx = Math.round((b.x0 + b.x1) / 2), ey = b.y1 - b.fh;
     if (ey < b.y0 || S.traps.some(t => t.k === 'drop' && Math.abs(t.at[0] - cx) <= 4 && Math.abs(t.at[1] - ey) <= 3)) return;
@@ -115,7 +116,7 @@ function bldPower(fb, on) {
 function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
 function cutLights() {
   S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
-  toast('바깥 조명이 꺼졌다 — 곧 누군가 확인하러 온다', 3); setAlert(1, 30);
+  toast((STAGE.powerName || '구역 조명')+' 전원 차단 · 경비가 복구하러 온다', 3); setAlert(1, 30);
   S.fuseT = 2.5;
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
   if (STAGE.onLightsOut) try { STAGE.onLightsOut(S, SH); } catch (e) { console.warn('onLightsOut', e); }  // 의뢰마다: 정전에 반응하는 사람 (예: 발전기 보러 가는 표적)

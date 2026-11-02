@@ -62,7 +62,7 @@ function primaryActionRaw() {
     const tz = nearTrap(); if (tz) return { k: 'trap', tp: tz, label: tz.label };
     const hz = nearHide(); if (hz && !(P.carrying && hz.bodies >= hz.cap)) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
     const g = dropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
-    const wm = nearWireMount(); if (wm) return { k: 'wireOn', w: wm.w, s: wm.s, at: wm.at, label: wm.mid ? '손 뻗어 전깃줄 잡기' : '전깃줄 타기' };
+    const wm = nearWireMount(); if (wm) return { k: 'wireOn', w: wm.w, s: wm.s, at: wm.at, label: STAGE.tutorial ? '훈련 로프 잡기' : wm.mid ? '손 뻗어 전깃줄 잡기' : '전깃줄 타기' };
     // 낮은 옥상(컨테이너 등) 위에서 더 높은 옥상으로 오르는 배관·사다리 — 내려가는 곳과 붙어 있으면 더 가까운 쪽이 먼저(나머지는 F·⇄로)
     const cuz = nearClimb(), cdz = nearClimbDown(true); if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && (!cdz || dist(P.x, P.y, cuz.x, cuz.y) <= dist(P.x, P.y, cdz.rx != null ? cdz.rx : cdz.ux, cdz.ry != null ? cdz.ry : cdz.uy))) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
     if (cuz && cuz.kind !== 'balc' && cuz.kind !== 'fstair' && !cdz) return { k: 'up', l: cuz, label: cuz.kind === 'pipe' ? '배관 오르기' : '오르기' };
@@ -89,7 +89,7 @@ function primaryActionRaw() {
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downMark(fdE), label: `내려가기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
   const ww = nearWinWire(); if (ww) return { k: 'wireOn', w: ww.w, s: ww.s, at: ww.at, label: '창밖 전깃줄 타기' };
-  const pw = nearPole(); if (pw) return { k: 'wireOn', w: pw.w, s: pw.s, at: pw.at, targetObject: pw.pole, pole: true, label: '전봇대 올라 전깃줄로' };
+  const pw = nearPole(); if (pw) return { k: 'wireOn', w: pw.w, s: pw.s, at: pw.at, targetObject: pw.pole, pole: true, label: STAGE.tutorial ? '훈련 지주 올라 로프로' : '전봇대 올라 전깃줄로' };
   let cu = nearClimb(); if (cu && cu.kind !== 'fstair' && cu === S.stairBack && S.t - S.stairBackT < 2.5 && dist(P.x, P.y, S.stairBackP.x, S.stairBackP.y) < 60) cu = null;  // 방금 내려온 계단은 바로 다시 오르기로 잡지 않는다
   if (cu && cu.kind === 'balc') { const v = landingVictim(cu.ux, cu.uy, cu.tfl); if (v) return { k: 'up', l: cu, kill: v, at: { x: cu.x, y: cu.y - 30 }, label: v.civ ? '베란다 넘어 기절시키기' : '베란다 넘어 암살' }; }
   // 계단실: 계단 칸 위에 올라서야 [오르기], 그 앞(올라와 선 자리)은 [내리기] — 나머지는 F·⇄로
@@ -111,7 +111,7 @@ function primaryActionRaw() {
   if(h&&P.carrying)return hideSpace(h,1)?{k:'stash',h,c:P.carrying,label:P.carrying.ko?'기절자 넣기':'시체 넣기'}:{k:'keymsg',h,label:hideName(h)+' 가득 참'};
   if (P.carrying) {const bs=nearBushSpot();return bs?{k:'stash',h:bs,c:P.carrying,label:'화단에 숨기기'}:{k:'none',label:'—'};}
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
-  if (nearFuse()) return { k: 'fuse', targetObject: STAGE.fuse, at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: '전체 조명 끄기' };
+  if (nearFuse()) return { k: 'fuse', targetObject: STAGE.fuse, at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: (STAGE.powerName || '구역 조명')+' 전원 차단' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
   // 문·두꺼비집·조명이 함께 가까우면: 가까운 쪽, 단 방금 고른 것은 24px 더 멀어질 때까지 유지 (몇 픽셀 차이로 바뀌지 않게). 다른 하나는 Z로
   const dr = nearDoor(), bf = nearBFuse(), lp = nearLamp(), cands = [];

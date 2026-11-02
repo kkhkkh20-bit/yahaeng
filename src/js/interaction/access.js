@@ -21,9 +21,9 @@ function winInit() {
     (byB[b] = byB[b] || []).push(w);
   }
   // 건물마다 하나는 꼭 열어 두고, 나머지는 반쯤 열림 · 잠김 · 방범창이 적당히 섞이게 (예전엔 거의 다 잠겨 있었다)
-  for (const b in byB) { const ws = byB[b].filter(w => !w.st).sort(() => Math.random() - 0.5); ws.forEach((w, i) => { w.st = i === 0 || Math.random() < 0.45 ? 'open' : 'lock'; }); }  // 나머지는 잠김 — 락픽으로 딸 수 있다 (방범창은 물건 있는 방만)
+  for (const b in byB) { const ws = byB[b].filter(w => !w.st).sort(() => Math.random() - 0.5); ws.forEach((w, i) => { w.st = groundedWorld() ? 'lock' : i === 0 || Math.random() < 0.45 ? 'open' : 'lock'; }); }  // 나머지는 잠김 — 락픽으로 딸 수 있다 (방범창은 물건 있는 방만)
   // 2층 창문: 반쯤 열려 있다. 열린 창문 밑에서는 벽을 타고 올라 들어갈 수 있다 (바깥 땅 칸 · 안쪽 바닥 칸을 적어 둔다)
-  for (const w of S.fwindows || []) { w.st = w.fl === 1 && Math.random() < 0.5 ? 'open' : 'lock'; w.out = null; w.inn = null;
+  for (const w of S.fwindows || []) { w.st = !groundedWorld() && w.fl === 1 && Math.random() < 0.5 ? 'open' : 'lock'; w.out = null; w.inn = null;
     const g = GF[w.fl]; if (!g) continue;
     for (const [dx, dy] of N4) { const ox = w.tx + dx, oy = w.ty + dy, ix = w.tx - dx, iy = w.ty - dy;
       if (!inMap(ox, oy) || !inMap(ix, iy) || bldAt(ox, oy) >= 0 || groundSolidP(ox, oy) || SOLID.has(g[iy][ix]) || bldAt(ix, iy) < 0) continue;
@@ -38,6 +38,7 @@ function nearWinDrop() {
 }
 // 벽 타고 2층 열린 창문으로: 창문 바로 밑(바깥 땅 칸)에서. 열린 창문만 (매달린 채로는 락픽을 못 쓴다)
 function nearWinClimb() {
+  if (groundedWorld()) return null;
   const P = S.player; if (P.z || flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav) return null; let best = null, bd = 36;
   for (const w of S.fwindows || []) { if (ACT_SKIP.has(w) || w.fl !== 1 || !w.out || w.st !== 'open') continue; const d = dist(P.x, P.y, w.out.x, w.out.y); if (d < bd) { bd = d; best = w; } }
   return best;

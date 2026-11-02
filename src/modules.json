@@ -18,6 +18,10 @@
       "group": "map"
     },
     {
+      "path": "06_world_policy.js",
+      "group": "map"
+    },
+    {
       "path": "10_interior.js",
       "group": "interior"
     },

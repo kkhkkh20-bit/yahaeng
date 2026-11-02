@@ -92,7 +92,7 @@ function takeSearchJob(g, inc) {
   g.searchJob = { incident: inc.id, job: job.id, elapsed: 0, repath: 0, inspect: null };
   endChat(g); g.act = null; g.bubble = null; g.state = 'SEARCH'; g.poi = { ...job.at }; g.searchOrigin = { ...inc.at }; g.why = 'building';
   g.path = leg.path; g.hop = leg.hop; g.reached = false; g.meter = Math.min(g.meter || 0, .5); g.atkT = 0; g.shootT = 0; g.aim = 0; setIcon(g, '?');
-  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 맡는다.' : job.at.z ? '옥상 확인한다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽을 확인한다.', 2.2); }
+  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 볼게.' : job.at.z ? '옥상 확인하러 간다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽은 내가 볼게.', 2.2); }
   return true;
 }
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {

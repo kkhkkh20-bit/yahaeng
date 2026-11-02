@@ -56,6 +56,7 @@ function actPrimary(force) {
       break;
     }
     case 'wireOn': {
+      if (!wireUsable()) break;
       const grab = () => { if (P.fl) { P.fl = 0; setLayer(0); S.fade = 0.15; }
         P.wire = { w: a.w, s: a.s }; P.z = Math.max(1, Math.round(a.w.a.z + (a.w.b.z - a.w.a.z) * a.s)); const h = wirePt(a.w, a.s); P.x = h.x; P.y = h.y + 40; };
       play(a.pole ? 'metal' : 'cloth', 0.3); noise(P.x, P.y, a.pole ? 45 : 25, 'climb');
@@ -104,6 +105,7 @@ function actPrimary(force) {
       beginStairTravel(l, false);
       break; }
     case 'up': {
+      if (!physicalAccess(a.l)) break;
       const l = a.l, top = { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy };
       if (l.kind === 'balc') {  // 베란다: 난간까지 기어올라 넘어 들어간다
         const v = a.kill && a.kill.state !== 'DEAD' ? a.kill : null;
@@ -194,7 +196,7 @@ function actPrimary(force) {
       const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
       if(l.off)respondToLampOff(l,watchers);
       for (const c of S.corpses) c.light = lightAt(c.x, c.y);
-      if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 영영 끄려면 다트로 깨라');
+      if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');
       break;
     }
     case 'keypad': openKeypad(a.d); break;

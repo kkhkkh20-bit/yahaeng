@@ -50,7 +50,7 @@ function updateRendezvous(dt) {
   if(g.state!=='PATROL'||S.alevel>=2||S.vipPlan?.phase==='sick'){finishRendezvous('interrupted');return;}
   r.elapsed+=dt;
   const here=flOf(g)===r.room.fl&&!g.z&&dist(g.x,g.y,r.room.x,r.room.y)<32;
-  if(r.phase==='travelling'&&here&&!g.moving){r.phase='waiting';gsay(g,'장부는? 혼자 왔다.',2.5);}
+  if(r.phase==='travelling'&&here&&!g.moving){r.phase='waiting';gsay(g,'장부 가져왔나? 여기서 얘기하지.',2.5);}
   // Patrol marks a one-shot waypoint spent on arrival; keep its full waiting window.
   if(r.phase==='waiting'){
     if(here)r.waiting+=dt;

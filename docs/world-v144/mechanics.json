@@ -1,0 +1,52 @@
+{
+  "worlds": [
+    {
+      "id": "m1",
+      "access": 24,
+      "storage": 15,
+      "windows": 83
+    },
+    {
+      "id": "m2",
+      "access": 13,
+      "storage": 14,
+      "windows": 41
+    },
+    {
+      "id": "m3",
+      "access": 13,
+      "storage": 8,
+      "windows": 40
+    },
+    {
+      "id": "m4",
+      "access": 11,
+      "storage": 12,
+      "windows": 35
+    },
+    {
+      "id": "m5",
+      "access": 9,
+      "storage": 4,
+      "windows": 27
+    },
+    {
+      "id": "m6",
+      "access": 6,
+      "storage": 4,
+      "windows": 25
+    },
+    {
+      "id": "city",
+      "access": 53,
+      "storage": 9,
+      "windows": 102
+    }
+  ],
+  "projectiles": [
+    "hit",
+    "moved",
+    "floor"
+  ],
+  "legacy": true
+}

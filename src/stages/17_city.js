@@ -46,7 +46,7 @@
     m.villa(x + 1, y + 1, x + 8, y + 6, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '지구대', name: '지구대' });
     m.fill(x + 1, y + 9, x + 14, y + 14, '.'); [[x + 3, y + 10, 0], [x + 6, y + 10, 1], [x + 9, y + 10, 2], [x + 12, y + 12, 0]].forEach(([a, b, c]) => m.car(a, b, c));
     [x, y] = B(2, 2);  // 공사장·컨테이너
-    m.fill(x + 3, y + 3, x + 5, y + 4, 'U'); m.set(x + 6, y + 4, 'L'); m.fill(x + 9, y + 8, x + 11, y + 9, 'U'); m.set(x + 8, y + 9, 'L');
+    m.fill(x + 3, y + 3, x + 5, y + 4, 'U'); m.set(x + 6, y + 4, ','); m.fill(x + 9, y + 8, x + 11, y + 9, 'U'); m.set(x + 8, y + 9, ',');
     m.many('H', [[x + 2, y + 12], [x + 13, y + 2]]); m.many('O', [[x + 4, y + 12], [x + 12, y + 13]]); mat(m, 'r', [[x + 6, y + 6], [x + 7, y + 6], [x + 6, y + 7]]);
     m.villa(x + 9, y + 11, x + 14, y + 14, 1, { kind: 'shop', use: ['store'], signs: ['자재'] });
     [x, y] = B(3, 2);  // 조직 본부

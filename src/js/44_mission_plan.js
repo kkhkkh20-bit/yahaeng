@@ -182,6 +182,6 @@ function updateVipPlan(dt) {
   v.phase = 'drinking'; v.drinking = (v.drinking || 0) + dt; g.drinkT = v.drinking;
   if (v.drinking < 2) return;
   v.phase = 'sick'; v.drinking = 0; g.drinkT = 0;
-  detour(g,d.to[0],d.to[1],32,'공중화장실','구토'); gsay(g,'으윽… 속이 왜 이래…',2.6);
+  detour(g,d.to[0],d.to[1],32,'공중화장실','구토'); gsay(g,'속이 안 좋네. 화장실 좀 다녀올게.',2.6);
   if (canObserveTarget(g)) toast('실장이 술을 마셨다 — 화장실로 향한다',2.6,'good');
 }

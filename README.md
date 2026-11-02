@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v143): https://kkhkkh20-bit.github.io/yahaeng/?v=143
+- 2D 본편 · 시야와 소리 연습 (v144): https://kkhkkh20-bit.github.io/yahaeng/?v=144
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v144: 대사와 오브젝트 배치를 정리하고, 컨테이너·배관·전선의 쉬운 우회로와 무제한 은닉을 제거했습니다. 조명 회로·경비 역할·도구 사용을 실제 시설에 맞춰 조정했습니다. [변경·검증](docs/WORLD_REALISM_V144.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/world-v144/)
 
 v143: 층·지붕을 통과하는 발견을 막고, 경비가 접근 가능한 계단을 따라 마지막 목격 층과 옥상까지 추적하도록 수정했습니다. [변경·검증](docs/AI_HEIGHT_V143.md) · [화면](https://kkhkkh20-bit.github.io/yahaeng/ai-v143/)
 

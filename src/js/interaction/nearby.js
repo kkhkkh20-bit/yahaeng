@@ -30,23 +30,14 @@ function dropSpot() {
 }
 function kunaiTarget() {
   const P = S.player; if (P.kunai <= 0 || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
-  const elev = P.z > 0;
-  const aimOn = false;
-  let best = null, bs = 1e9;
-  const consider = (x, y, ref, type, maxD) => {
-    if (flOf(ref) !== flOf(P)) return;
-    const d = dist(P.x, P.y, x, y); if (d > maxD || d < 20) return;
-    const ad = Math.abs(angDiff(P.a, Math.atan2(y - P.y, x - P.x)));
-    if (!aimOn && ad > 1.2) return;
-    if (elev && roofAt(Math.floor(x / TILE), Math.floor(y / TILE))) return;  // 옥상 위에서 옥상 아래(건물 안)는 못 맞힌다
-    if (!los(P.x, P.y, x, y, elev || type === 'lamp')) return;
-    const score = aimOn ? dist(input.aim.x, input.aim.y, x, y) : ad * 160 + d * 0.4;
-    if (aimOn && score > 70) return;
-    if (score < bs) { bs = score; best = { type, ref, x, y }; }
-  };
-  for (const g of S.guards) if (!g.child && g.state !== 'DEAD' && g.state !== 'CAPTIVE' && (g.state !== 'ALERT' || g.target || radioBusy(g))) consider(g.x, g.y, g, 'guard', 270 * (1 + P.z * 0.2));
-  for (const l of S.lamps) if (lampOn(l) && !l.hearth) consider(l.x, l.y, l, 'lamp', 330);
-  for (const c of S.cams || []) if (!c.broken) consider(c.x, c.y, c, 'cam', 330);
+  let best = null, bs = Infinity;
+  for (const g of S.guards) {
+    if (g.child || g.dog || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P)) continue;
+    const d = dist(P.x, P.y, g.x, g.y), ad = Math.abs(angDiff(P.a, Math.atan2(g.y-P.y, g.x-P.x)));
+    if (d < 20 || d > 250 || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
+    const score = ad * 160 + d * .4;
+    if (score < bs) { bs = score; best = { type:'guard',ref:g,x:g.x,y:g.y,fl:flOf(g),z:g.z||0 }; }
+  }
   return best;
 }
 function nearCorpse() {
@@ -56,7 +47,7 @@ function nearCorpse() {
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.broken || l.cut != null || (l.outdoor && !S.lightsOn) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
+  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.broken || l.cut != null || (l.outdoor && mainPowerOff(l)) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {

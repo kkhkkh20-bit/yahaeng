@@ -20,7 +20,7 @@ function shareGuardReport(from, at, look) {
     g.reportFrom = from.id; g.reportAt = S.t; g.seen = false;
     if (look) rememberSuspect(g, look);
     setIcon(g, '?'); g.actionSpeechUntil = S.t + 2.4;
-    gsay(g, '들었어. 마지막으로 본 곳부터 확인한다.', 2.4);
+    gsay(g, '알았어. 마지막으로 본 곳부터 갈게.', 2.4);
     listeners.push(g);
   }
   return listeners;
@@ -33,7 +33,7 @@ function queueGuardRadio(candidates, at, look, relay = false) {
   const dur = DKEY === 'easy' ? 3.4 : DKEY === 'hard' ? 2.2 : 2.8;
   S.radioCall = { g, t:dur, dur, at:{...at}, look:look || null, relay };
   g.path = null; g.actionSpeechUntil = S.t + dur;
-  gsay(g, look ? '무전. 목격된 인상착의와 위치를 전달한다.' : '무전. 쓰러진 동료 발견. 범인은 못 봤다.', dur);
+  gsay(g, look ? '침입자 목격. 위치와 인상착의 보낸다.' : '동료가 쓰러져 있다. 누가 했는지는 못 봤다.', dur);
   toast('경비가 무전 보고 중 · 제압하면 전달을 막을 수 있다', 2.4, 'warn');
   play('metal', .25, 1.9); return true;
 }
@@ -52,7 +52,7 @@ function claimBodyExam(g, c) {
   // At most one witness keeps watch. No NPC learns about the body through this claim.
   if (!g.dog && ['PATROL','RETURN'].includes(g.state) && !S.guards.some(o => o !== g && o.bodyCoverId === c.sceneId && !o.doomed && ['PATROL','RETURN'].includes(o.state))) {
     g.bodyCoverId = c.sceneId; g.state = 'PATROL'; g.relight = null; g.path = null; g.actionSpeechUntil = S.t + 2;
-    gsay(g, '상태 확인해. 나는 주위를 살필게.', 2);
+    gsay(g, '상태 좀 봐 줘. 나는 주변 볼게.', 2);
   }
   return false;
 }

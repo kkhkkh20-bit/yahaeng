@@ -75,13 +75,13 @@ function drawShopFacade(b) {
       ctx.fillStyle = '#18222c'; ctx.fillRect(x0 + 6, yy + 12, wAll - 12, TILE - 12);
       for (let tx = b.x0; tx <= b.x1; tx++) { ctx.fillStyle = '#9aa0aa'; ctx.fillRect(tx * TILE, yy + 12, 3, TILE - 12); }
       for (const d of S.doors) if (d.ty === b.y1 && d.tx >= b.x0 && d.tx <= b.x1) { const dx = d.tx * TILE; ctx.fillStyle = d.locked ? '#3a4656' : '#05070a'; ctx.fillRect(dx + 6, yy + 14, 36, TILE - 14); ctx.fillStyle = '#c8ccd2'; ctx.fillRect(dx + 22, yy + 26, 4, 10); if (d.locked && d.keyLock) { ctx.fillStyle = keyCol(d.keyLock); ctx.fillRect(dx + 18, yy + 34, 12, 9); } }
-      if ((hs + r) % 4 !== 0 && S.lightsOn) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(200,230,255,.10)'; ctx.fillRect(x0 + 6, yy + 12, wAll - 12, TILE - 12); ctx.globalCompositeOperation = 'source-over'; }
+      if ((hs + r) % 4 !== 0 && !mainPowerOff({x:(b.x0+b.x1+1)*TILE/2,y:(b.y0+b.y1+1)*TILE/2})) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(200,230,255,.10)'; ctx.fillRect(x0 + 6, yy + 12, wAll - 12, TILE - 12); ctx.globalCompositeOperation = 'source-over'; }
       for (let k = 0; k * 16 < wAll; k++) { ctx.fillStyle = k % 2 ? '#e8e4dc' : COLS[hs % COLS.length][0]; ctx.fillRect(x0 + k * 16, yy, 16, 12); }
     } else {
       if (b.glass) {  // 유리 외벽(커튼월): 칸마다 유리, 몇 칸은 사무실 불이 켜져 있다
         for (let tx = b.x0; tx <= b.x1; tx++) { const px = tx * TILE, hh = ((tx * 92821) ^ (r * 68917) ^ hs) >>> 0;
           const g2 = ctx.createLinearGradient(px, yy, px + TILE, yy + TILE); g2.addColorStop(0, '#1c3a52'); g2.addColorStop(1, '#0e1c2c'); ctx.fillStyle = g2; ctx.fillRect(px, yy + 2, TILE, TILE - 2);
-          if (hh % 5 === 0 && S.lightsOn) { ctx.fillStyle = hh % 2 ? 'rgba(255,236,190,.55)' : 'rgba(210,235,255,.5)'; ctx.fillRect(px + 3, yy + 6, TILE - 6, TILE - 12); }
+          if (hh % 5 === 0 && !mainPowerOff({x:(b.x0+b.x1+1)*TILE/2,y:(b.y0+b.y1+1)*TILE/2})) { ctx.fillStyle = hh % 2 ? 'rgba(255,236,190,.55)' : 'rgba(210,235,255,.5)'; ctx.fillRect(px + 3, yy + 6, TILE - 6, TILE - 12); }
           ctx.fillStyle = 'rgba(160,210,240,.16)'; ctx.beginPath(); ctx.moveTo(px + 6, yy + TILE - 4); ctx.lineTo(px + 20, yy + 4); ctx.lineTo(px + 28, yy + 4); ctx.lineTo(px + 14, yy + TILE - 4); ctx.fill();
           ctx.fillStyle = '#8a929e'; ctx.fillRect(px, yy, TILE, 3); ctx.fillRect(px, yy, 2, TILE); }
       } else

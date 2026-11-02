@@ -38,8 +38,12 @@ async def main():
    check(!body.stashed&&Q.carrying===body,'body is stored before entering the opening');
    for(let i=0;i<180;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}
    check(body.stashed&&body.container===h&&body.x===h.x&&body.y===h.y,'stashed target loses container position');
-   for(let i=0;i<70;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}const enter=G.envChoices().find(a=>a.k==='hide'&&a.h===h);check(enter,'cannot enter container holding target');G.doAct(enter);for(let i=0;i<180;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}check(Q.hide===h&&G.attackAction().k==='finish','stashing a living target makes mission impossible');
-   R.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let i=0;i<130;i++){R.t+=.01;G.updatePlayer(.01);G.updateKoHold();G.runTimers()}R.keys.KeyZ=false;G.combatRelease('KeyZ');check(G.targetEliminated(t),'cannot finish target from inside container');
+   for(let i=0;i<70;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}
+   check(!G.envChoices().some(a=>a.k==='hide'&&a.h===h),'full one-person container accepts a second person');
+   const retrieve=G.envChoices().find(a=>a.k==='retrieve'&&a.c===body);check(retrieve,'full container has no target recovery action');G.doAct(retrieve);for(let i=0;i<220;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}
+   check(!body.stashed&&!Q.hide&&!Q.carrying,'target cannot be recovered outside full container');for(let i=0;i<70;i++){R.t+=.01;G.updatePlayer(.01);G.runTimers()}
+   check(!Q.carrying&&G.attackAction().k==='finish','recovered living target cannot be finished outside');
+   R.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let i=0;i<130;i++){R.t+=.01;G.updatePlayer(.01);G.updateKoHold();G.runTimers()}R.keys.KeyZ=false;G.combatRelease('KeyZ');check(G.targetEliminated(t),'cannot finish recovered target outside container');
    return {rooftopHeight:true,drawnOnceAboveRoof:true,groundGuardSeparation:true,movingObjective:true,containerRecovery:true};
   }''')
   assert not errors,errors;print('PASS',result);await b.close()

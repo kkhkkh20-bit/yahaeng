@@ -56,14 +56,14 @@ function drawPole(o) {
   if (lamp) { const at = lampControl(lamp);
     ctx.fillStyle = '#14191e'; ctx.fillRect(at.x - 6, at.y - 7, 13, 15);
     ctx.strokeStyle = '#737f86'; ctx.lineWidth = 1; ctx.strokeRect(at.x - 6, at.y - 7, 13, 15);
-    ctx.fillStyle = lamp.off || lamp.broken || !S.lightsOn ? '#454e51' : '#bdcfad'; ctx.fillRect(at.x - 1, at.y - 3, 3, 6);
+    ctx.fillStyle = lamp.off || lamp.broken || mainPowerOff(lamp) ? '#454e51' : '#bdcfad'; ctx.fillRect(at.x - 1, at.y - 3, 3, 6);
   }
   if (!tactical) { ctx.fillStyle = `rgba(4,8,22,${0.62 * (1 - clamp(lt * 1.3, 0, 1))})`; ctx.fillRect(x - 21, top, 42, y + 16 - top); }
 }
 function drawWires() {
   for (const w of S.wires) {
     const cx = (w.a.dx + w.b.dx) / 2, cy = (w.a.dy + w.b.dy) / 2 + w.sag * 2;
-    for (const [off, col, lw] of [[6, '#101218', 2], [0, '#14161c', 3], [-1.5, 'rgba(176,186,206,.45)', 1]]) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(w.a.dx, w.a.dy + off); ctx.quadraticCurveTo(cx, cy + off * 1.4, w.b.dx, w.b.dy + off); ctx.stroke(); }
+    for (const [off, col, lw] of (STAGE.tutorial ? [[0, '#746044', 5], [-1, '#c1a67b', 2]] : [[6, '#101218', 2], [0, '#14161c', 3], [-1.5, 'rgba(176,186,206,.45)', 1]])) { ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.beginPath(); ctx.moveTo(w.a.dx, w.a.dy + off); ctx.quadraticCurveTo(cx, cy + off * 1.4, w.b.dx, w.b.dy + off); ctx.stroke(); }
     for (const n of [w.a, w.b]) if (n.roof) { ctx.fillStyle = '#2e3138'; ctx.fillRect(n.dx - 5, n.dy - 5, 10, 10); ctx.fillStyle = '#9aa0aa'; ctx.fillRect(n.dx - 2, n.dy - 2, 4, 4); }
   }
 }

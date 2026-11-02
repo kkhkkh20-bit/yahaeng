@@ -22,7 +22,7 @@ const OBJECT_FLOW = {
   read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
   door: [0.48, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
-  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [0.65, '조작 중', 'hands']
+  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands']
 };
 function objectActionPoint(a) {
   if (a.k === 'use') return usePoint(a.n.u);

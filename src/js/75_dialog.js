@@ -67,7 +67,7 @@ function updateSayQ() {
   for (const q of S.sayQ.slice()) { if (q.at > S.t) continue; S.sayQ.splice(S.sayQ.indexOf(q), 1);
     if (q.w === 'hero') { S.player.say = q.text; S.player.sayT = q.dur; } else if (q.w.state !== 'DEAD') { q.w.say = q.text; q.w.sayT = q.dur; } }
 }
-function bark(who, key) { const arr = BARKS[key]; if (!arr || !who) return; say([[who, arr[(Math.random() * arr.length) | 0]]]); }
+function bark(who, key) { const arr = BARKS[key]; if (!arr || !who || !arr.some(s => s.trim())) return; say([[who, arr[(Math.random() * arr.length) | 0]]]); }
 const anyGuard = pred => S.guards.find(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.dog && !g.target && (!pred || pred(g)));
 function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');

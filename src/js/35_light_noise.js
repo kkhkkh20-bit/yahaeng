@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 빛
 const TORCH_R = 210, TORCH_FOV = .32;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
-const lampOn = l => !l.broken && !l.off && !(l.outdoor && !S.lightsOn) && !flickOff(l);
+const lampOn = l => !l.broken && !l.off && !(l.outdoor && mainPowerOff(l)) && !flickOff(l);
 // 빛의 중심과 손으로 누르는 스위치는 별개다. 구버전 저장도 기둥 밑 상자에 연결한다.
 function lampControl(l) {
   if (l.control) return l.control;
@@ -100,7 +100,7 @@ function respondToLampOff(l,watchers){
   const at=lampControl(l),g=watchers.sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
   if(S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l))return;
   releaseSearchJob(g);endChat(g);g.state='PATROL';g.path=null;g.act=null;g.bubble=null;g.soundWatchUntil=0;g.sense=null;g.hearT=0;g.poi=null;
-  g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'불 끄지 마세요. 다시 켭니다.',2.4);
+  g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
 }
 function noise(x, y, r, src, fl, z) {
   if (fl == null) fl = flOf(S.player);
@@ -130,7 +130,7 @@ function noise(x, y, r, src, fl, z) {
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
       if (src === 'step' || src === 'whistle') nz.heard = true;
-      if (src === 'whistle' && !g.dog) { g.startle={a:Math.atan2(y-g.y,x-g.x)};gsay(g, ['누구야?', '휘파람…? 거기 누구 있어?', '뭐야, 이쪽인가?'][(g.id + (S.stats.whistles || 0)) % 3]); }
+      if (src === 'whistle' && !g.dog) { g.startle={a:Math.atan2(y-g.y,x-g.x)};gsay(g, ['누구야?', '지금 누가 불렀어?', '저쪽에서 났지?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }

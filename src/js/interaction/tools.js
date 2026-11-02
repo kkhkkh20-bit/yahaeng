@@ -23,35 +23,28 @@ function actCoin(pt) {
   P.coins--; S.stats.coins = (S.stats.coins || 0) + 1;
   const l = { x: lx, y: ly, x0: P.x, y0: P.y, t: 0, landed: false, claim: null, fl: flOf(P) };
   (S.throwT = S.t + 0.7), S.lures.push(l); play('throw', 0.25);
-  hint('coin', '담배: 본 자경대원이 주우러 와서 고개를 숙인다. 정예는 안 넘어간다');
+  hint('coin', '담배는 쉬는 중인 흡연자만 관심을 보인다. 경계 중이거나 자리를 지키는 경비는 움직이지 않는다');
 }
 function actKunai(forced, lethal = false) {
   if (!S || S.over || paused || !running || actionBusy()) return;
   const P = S.player;
   if (P.kunai <= 0) { toast('다트가 없다', 1.4); return; }
   const t = forced || kunaiTarget();
-  if (!t) { toast('사거리 안에 경비나 조준할 시설물이 없다', 1.6); return; }
+  if (!t || t.type !== 'guard' || !S.guards.includes(t.ref) || t.ref.child || t.ref.state === 'DEAD') { toast('조준할 사람이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
   P.kunai--; S.stats.kunaiUsed++;
   P.a = Math.atan2(t.y - P.y, t.x - P.x);
   const d = dist(P.x, P.y, t.x, t.y);
-  (S.throwT = S.t + 0.7), S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: t, lethal });
+  (S.throwT = S.t + 0.7), S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: {...t,fl:flOf(t.ref),z:t.ref.z||0}, fl:flOf(P), z:P.z||0, lethal });
   play('kunai', 0.55);
 }
 function kunaiHit(k) {
   const t = k.tgt;
-  if (t.type === 'cam') {
-    if (t.ref.broken) return; t.ref.broken = true; play('glass', 0.5); play('metal', 0.3); noise(t.x, t.y, 90, 'glass', t.ref.fl);
-    for (let i = 0; i < 3; i++) S.fx.push({ k: 'smoke', x: t.x, y: t.y, t: -i * 0.1 }); toast('다트로 CCTV를 부쉈다', 1.8, 'good'); return;
+  if (t.type !== 'guard') return;
+  const origin={x:k.x0,y:k.y0,fl:k.fl||0,z:k.z||0},g=t.ref;
+  if (!g || g.state === 'DEAD' || flOf(g)!==(t.fl||0) || (g.z||0)!==(t.z||0) || dist(g.x,g.y,t.x,t.y)>24 || !sightLine(origin,g.x,g.y,g.z||0,false,flOf(g))) {
+    play('metal',.25);noise(t.x,t.y,45,'dart',t.fl||0,t.z||0);toast('다트가 빗나갔다',1.4);return;
   }
-  if (t.type === 'lamp') {
-    if (t.ref.broken) return;
-    t.ref.broken = true; play('glass', 0.6);
-    for (const c of S.corpses) c.light = lightAt(c.x, c.y);
-    noise(t.x, t.y, 150, 'glass');
-    toast('다트로 조명을 깨뜨렸다', 1.8, 'good'); setAlert(1, 30);
-    hint('kunaiLamp', '깨진 조명은 다시 켜지지 않는다. 깨지는 소리에 근처 자경대원이 다가온다');
-  } else {
-    const g = t.ref; if (g.state === 'DEAD') { play('metal', 0.4); return; }
+  {
     g.takedownIntent = { source: null, lethal: !!k.lethal }; S.lethalNext = !!k.lethal; if (!k.lethal) S.koNext = true;
     killGuard(g); S.stats.special++; dartBlame(g);
     toast(k.lethal ? '다트로 처치했다' : '다트로 기절시켰다', 1.6, 'good');

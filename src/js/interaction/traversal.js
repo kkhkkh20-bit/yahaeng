@@ -1,5 +1,5 @@
 function wallUpSpot() {
-  if(STAGE.interiorOnly)return null;
+  if(STAGE.interiorOnly || groundedWorld())return null;
   const P = S.player, z0 = P.z || 0; if (flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav || P.wire || P.under || P.vent || P.ledge) return null;
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, z1 = z0 + 1;
   // 실내 가구·안쪽 벽은 외벽 등반 지점이 아니다. 지붕 없는 공터의 컨테이너는 유지한다.

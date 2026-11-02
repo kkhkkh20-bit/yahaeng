@@ -1,4 +1,4 @@
-const camOn = c => !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? !S.lightsOn : (S.bfuses || []).some(f => f.b === c.b && f.cut));
+const camOn = c => !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
 const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀리
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
 function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
@@ -6,7 +6,7 @@ function camRange(c, light) { return c.search ? SL_R : light > 0.3 ? 300 : 135; 
 // CCTV 관리실: 화면을 보는 사람이 있어야 CCTV가 경보로 이어진다. 관리실이 비면(쓰러뜨리면) 찍혀도 녹화만 된다
 const camWatcher = () => { if (!S.camRoom) return true; const op = npc('camop'); return !!op && !['DEAD', 'CAPTIVE', 'SLEEP', 'TERROR', 'ALERT'].includes(op.state) && !op.climb && !op.brawl && flOf(op) === S.camRoom.fl && !(op.z || 0) && dist(op.x, op.y, S.camRoom.x, S.camRoom.y) < 85; };
 function camReport(c, text, x, y) {
-  if (c.search || camWatcher()) { const op = !c.search && S.camRoom && npc('camop'); if (op) gsay(op, '카메라에 뭐가 찍혔다! 가 봐!', 2.4); return true; }
+  if (c.search || camWatcher()) { const op = !c.search && S.camRoom && npc('camop'); if (op) gsay(op, '카메라에 수상한 사람 보인다. 현장 확인해.', 2.4); return true; }
   if (!S.camBlindToast) { S.camBlindToast = true; toast('CCTV 녹화 중 · 관리실에 사람이 없어 신고는 전달되지 않는다', 2.8); } return false;
 }
 // 서치라이트: 경보가 울리면 마지막으로 본 자리 쪽으로 빛을 돌린다
@@ -33,7 +33,7 @@ function updateCams(dt) {
       if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { securityBodyFound(k,null); k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
   }
   setLayer(L0);
-  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 다트로 부수거나 건물 전원을 끌 수 있다');
+  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 관리실에서 끄거나 해당 건물 전원을 차단할 수 있다');
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)

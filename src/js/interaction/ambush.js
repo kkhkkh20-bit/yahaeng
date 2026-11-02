@@ -8,7 +8,7 @@ function startAmbush(g) {
 function ambWitness(o, A) {
   if (A.seen === o) return; A.seen = A.seen || o;
   if (o.civ) { if (!(STAGE.zones && startReport(o, A.tx, A.ty, null, null, 'crime'))) civScream(o, A.tx, A.ty, null, null, 'crime'); }  // 끌려가는 몸만 봤다 — 내 얼굴·옷은 모른다
-  else { endChat(o); o.state = 'SEARCH'; o.poi = { x: A.tx, y: A.ty, fl: flOf(o), z: 0 }; o.reached = false; o.path = null; o.waitBase = 5; o.meter = Math.max(o.meter, 0.7); o.why = 'saw'; setIcon(o, '!'); gsay(o, ['방금 뭐야?! 저기 끌려갔어!', '저기 누가 사라졌어!', '방금 저쪽에서 뭐가…!'][o.id % 3], 2); setAlert(2, 30); }
+  else { endChat(o); o.state = 'SEARCH'; o.poi = { x: A.tx, y: A.ty, fl: flOf(o), z: 0 }; o.reached = false; o.path = null; o.waitBase = 5; o.meter = Math.max(o.meter, 0.7); o.why = 'saw'; setIcon(o, '!'); gsay(o, ['누가 저 사람을 끌고 갔어!', '저쪽 확인해. 방금 사람 지나갔어.', '저기 누구 있어?'][o.id % 3], 2); setAlert(2, 30); }
   if (!A.warned) { A.warned = true; toast('끌어들이는 걸 누가 봤다!', 2.4, 'warn'); }
 }
 function updateAmbush(dt) {

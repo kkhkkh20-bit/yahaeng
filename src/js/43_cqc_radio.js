@@ -15,7 +15,7 @@ function interrogate() {
     gsay(g, it.say, 3.2); after(INTERRO_T, () => { if (it.gives) { P.keys[it.gives] = true; P.hasKey = true; } S.learned.push(it.learn); hudCache.objH = null; toast('실토했다 — ' + it.learn, 3.2, 'good'); });
   } else {
     const near = S.guards.filter(o => o !== g && !o.civ && !o.dog && !o.target && !['DEAD', 'CAPTIVE'].includes(o.state) && dist(o.x, o.y, g.x, g.y) < 1100);
-    gsay(g, near.length ? ['알았어, 말할게! 저쪽에 우리 애들이…', '살려 줘! 다 불게! 몇 명 더 있어!', '나 혼자 아니야, 저기도 있다고!'][g.id % 3] : '나, 나밖에 없어! 진짜야!', 3);
+    gsay(g, near.length ? ['말할게. 저쪽에도 경비 있어.', '저기 몇 명 더 있어. 무전기 든 사람도 있고.', '나 말고 안쪽에도 경비가 있어.'][g.id % 3] : '이 근처는 나 혼자야.', 3);
     after(INTERRO_T, () => { near.forEach(o => o.tagT = S.t + 30); if (near.length) toast(`실토했다 — 근처 조직원 ${near.length}명 위치 표시 (30초)`, 2.8, 'good'); });
   }
   bossRadio('interro');
@@ -36,7 +36,7 @@ function drawTagged() {
 // ---- 까마귀(의뢰인) 무전 (메탈기어의 무전 동료식): 일이 생기면 짧게 한마디. 연습판에서는 하지 않는다
 const FIELD_RADIO={body:['제비','시체가 발견됐어.'],blood:['제비','핏자국을 따라오고 있어.'],civ:['까마귀','민간인 피해 확인.']};
 function bossRadio(ev, force) {
-  if(!S||S.over||!STAGE||STAGE.tutorial||!FIELD_RADIO[ev])return;
+  if(!S||S.over||!STAGE||STAGE.tutorial||STAGE.noSupport||!FIELD_RADIO[ev])return;
   if(!force&&S.t<(S.radioNext||0))return;
   S.radioNext=S.t+14;const [who,line]=FIELD_RADIO[ev];toast(who+': '+line,2.6,'radio');
 }
@@ -64,7 +64,7 @@ function updateRadioCheck(dt) {
   for (const m of missing.slice(0, 3)) {
     const home = m.route && m.route[0] ? m.route[0] : { x: m.x, y: m.y }; let best = null, bd = 1e9;
     for (const g of S.guards) { if (!isCrew(g) || sent.has(g) || g.elite || ['DEAD', 'CAPTIVE', 'ALERT', 'FUSE'].includes(g.state) || flOf(g) !== flOf(m)) continue; const d = dist(g.x, g.y, home.x, home.y); if (d < bd) { bd = d; best = g; } }
-    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'radio'; gsay(best, ['어이, 대답 좀 해 봐. …가 볼게.', '무전 안 받네. 확인하고 올게.', '또 졸고 있나. 가 본다.'][best.id % 3], 2.4); }
+    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'radio'; gsay(best, ['응답이 없어. 내가 가 볼게.', '무전 안 받네. 확인하고 올게.', '계속 응답이 없네. 확인할게.'][best.id % 3], 2.4); }
   }
   setAlert(1, 30, `무전 점검 — ${missing.length}명이 대답하지 않는다. 확인하러 간다`);
 }
