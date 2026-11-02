@@ -1,0 +1,45 @@
+{
+  "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+  "files": {
+    "index.html": "50998574f60b043b276c1318fb47d2ed4c987a1b3a52cadb30d46a3533a44826",
+    "version.json": "1cf635b6aff9e45a988adb66daa4b8c4d62f4ea94202ace00a975da1edb1edbf",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/8e06825208fdbc7a6920.js": "8e06825208fdbc7a69203801b6bf5d07459135b9a10d7d044318b3583e7d0185",
+    "assets/09e8089decec3c09fdb0.js": "09e8089decec3c09fdb09f0e13cf7463d85e835fe06af1a513b781dfbd9cd40f",
+    "assets/9dfc2082567120bf9889.js": "9dfc2082567120bf988906a13f0d78889b42db56bdd04cc720f2782ce0ca5abb"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        184.85237305943463,
+        505.53135
+      ],
+      "version": "v144",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        188.27703754707656,
+        505.540575
+      ],
+      "version": "v144",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    }
+  ]
+}
