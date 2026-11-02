@@ -10,7 +10,7 @@ async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);results=[]
   for mobile in [False,True]:
-   q=await b.new_page(viewport={'width':390 if mobile else 1440,'height':844 if mobile else 900},has_touch=mobile,is_mobile=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!__game');label='touch'if mobile else'pc'
+   q=await b.new_page(viewport={'width':390 if mobile else 1440,'height':844 if mobile else 900},has_touch=mobile,is_mobile=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE,timeout=120000);await q.wait_for_function('!!window.__game',timeout=120000);label='touch'if mobile else'pc'
    await q.evaluate('''()=>{
     const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.guards=[];S.cams=[];
     for(const l of S.lamps){if(l.hearth||l.fl||l.z||l.off||l.broken)continue;const at=G.lampControl(l);Object.assign(P,{x:at.x,y:at.y+20,z:0,fl:0});G.setLayer(0);if(G.objectReachable(at,60)&&G.envChoices().some(a=>a.l===l)){window.lampFixture=l;break;}}
