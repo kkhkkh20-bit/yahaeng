@@ -1,0 +1,50 @@
+[
+  {
+    "version": "before",
+    "touch": false,
+    "controlled": true,
+    "examiner": "SEARCH",
+    "checking": false,
+    "cover": "SEARCH",
+    "lookout": false,
+    "bodyPresent": false,
+    "victim": "SEARCH",
+    "globalLooks": {}
+  },
+  {
+    "version": "after",
+    "touch": false,
+    "controlled": true,
+    "examiner": "BODY",
+    "checking": true,
+    "cover": "PATROL",
+    "lookout": true,
+    "bodyPresent": true,
+    "victim": "DEAD",
+    "globalLooks": {}
+  },
+  {
+    "version": "before",
+    "touch": true,
+    "controlled": true,
+    "examiner": "SEARCH",
+    "checking": false,
+    "cover": "SEARCH",
+    "lookout": false,
+    "bodyPresent": false,
+    "victim": "SEARCH",
+    "globalLooks": {}
+  },
+  {
+    "version": "after",
+    "touch": true,
+    "controlled": true,
+    "examiner": "BODY",
+    "checking": true,
+    "cover": "PATROL",
+    "lookout": true,
+    "bodyPresent": true,
+    "victim": "DEAD",
+    "globalLooks": {}
+  }
+]

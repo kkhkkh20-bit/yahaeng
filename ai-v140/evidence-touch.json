@@ -1,0 +1,13 @@
+{
+  "controlled": true,
+  "passed": [
+    "local report, height/floor/distance isolation and no remote relay",
+    "interruptible heard relay",
+    "completed report retains old appearance and coordinates",
+    "physical wall blocks report",
+    "timed assessment, one examiner and one lookout, one revival",
+    "examiner death and removed body cancel work",
+    "frontal victim remembers observed uniform, rear victim cannot identify",
+    "body report broadens search without identifying killer"
+  ]
+}

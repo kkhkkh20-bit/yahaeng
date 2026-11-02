@@ -1,0 +1,120 @@
+v140-final-evidence.log
+PASS False local report, height/floor/distance isolation and no remote relay, interruptible heard relay, completed report retains old appearance and coordinates, physical wall blocks report, timed assessment, one examiner and one lookout, one revival, examiner death and removed body cancel work, frontal victim remembers observed uniform, rear victim cannot identify, body report broadens search without identifying killer
+PASS True local report, height/floor/distance isolation and no remote relay, interruptible heard relay, completed report retains old appearance and coordinates, physical wall blocks report, timed assessment, one examiner and one lookout, one revival, examiner death and removed body cancel work, frontal victim remembers observed uniform, rear victim cannot identify, body report broadens search without identifying killer
+
+
+v140-final-disguise.log
+PASS authorized patrol, authorized footsteps, notice resolves, trespass warning, wrong uniform, observer-specific uniform, crime detection, unseen change, watched change, body clothing, radio memory, enforcer, floor separation, wall separation, camera identity, resident report identity, real investigation, multiple identities, checkpoint identity
+
+
+v140-final-feedback.log
+PASS feedback False {'controlled': True, 'mobile': False, 'passageOpen': True, 'oldCheckpointPassageMigrated': True, 'matchingPropGround': True, 'bushBodyHiddenAfterLowering': True, 'quietKoRadius': 7.199999999999999, 'localReport': {'local': True, 'distant': False, 'otherFloor': False}, 'witnessedLight': {'spoke': True, 'elapsed': 3.2099999999999755, 'atSwitch': 33.90119999999729}, 'unseenLightNoObjection': True, 'cabinetOpenedAndFound': True, 'blockedContainerCheck': True}
+PASS feedback True {'controlled': True, 'mobile': True, 'passageOpen': True, 'oldCheckpointPassageMigrated': True, 'matchingPropGround': True, 'bushBodyHiddenAfterLowering': True, 'quietKoRadius': 7.199999999999999, 'localReport': {'local': True, 'distant': False, 'otherFloor': False}, 'witnessedLight': {'spoke': True, 'elapsed': 3.2099999999999755, 'atSwitch': 33.90119999999729}, 'unseenLightNoObjection': True, 'cabinetOpenedAndFound': True, 'blockedContainerCheck': True}
+
+
+t_security_response_live.py.v140.log
+PASS live response PC {"seed": 1, "rollcall": 55.1, "pairs": 2, "patrolTravel": 5228, "vipHome": 84.2, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response PC {"seed": 116, "rollcall": 55.1, "pairs": 2, "patrolTravel": 2463, "vipHome": 77.6, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response PC {"seed": 118, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3998, "vipHome": 81.1, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 1, "rollcall": 55.1, "pairs": 2, "patrolTravel": 5228, "vipHome": 84.2, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 116, "rollcall": 55.1, "pairs": 2, "patrolTravel": 2463, "vipHome": 77.6, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 118, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3998, "vipHome": 81.1, "routineResumed": true, "cooled": 155.3, "detected": 0}
+
+
+v140-building.log
+PASS {'indoorPositions': 13360, 'exteriorClimbs': 6, 'cornerCameras': 6, 'searches': [{'id': 'm2', 'assigned': 6, 'checked': 17, 'upstairs': 4}, {'id': 'm4', 'assigned': 6, 'checked': 12, 'upstairs': 4}, {'id': 'm6', 'assigned': 6, 'checked': 14, 'upstairs': 4}], 'identityCues': True, 'absoluteFloors': True}
+
+
+t_combat_policy.py.v140.log
+PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: incapacitation precedes separate storage; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors
+PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation
+
+
+v140-hud.log
+PASS HUD systems {'touch': False, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': True, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+PASS HUD systems {'touch': True, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': False, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+
+
+v140-progress.log
+PASS {'targets': 5, 'stories': 9, 'keypads': 2, 'legacyProgress': True, 'remainingTargets': True}
+
+
+v140-missions.log
+PASS m1 placement 0 keyboard start → objectives → escape
+PASS m2 placement 0 keyboard start → objectives → escape
+PASS m3 placement 0 keyboard start → objectives → escape
+PASS m4 placement 0 keyboard start → objectives → escape
+PASS m5 placement 0 keyboard start → objectives → escape
+PASS m6 placement 0 keyboard start → objectives → escape
+PASS m1 placement 1 keyboard start → objectives → escape
+PASS m2 placement 1 keyboard start → objectives → escape
+PASS m3 placement 1 keyboard start → objectives → escape
+PASS m4 placement 1 keyboard start → objectives → escape
+PASS m5 placement 1 keyboard start → objectives → escape
+PASS m6 placement 1 keyboard start → objectives → escape
+PASS m1 placement 2 keyboard start → objectives → escape
+PASS m2 placement 2 keyboard start → objectives → escape
+PASS m3 placement 2 keyboard start → objectives → escape
+PASS m4 placement 2 keyboard start → objectives → escape
+PASS m5 placement 2 keyboard start → objectives → escape
+PASS m6 placement 2 keyboard start → objectives → escape
+PASS m1 placement 0 mobile start → objectives → escape
+PASS m2 placement 0 mobile start → objectives → escape
+PASS m3 placement 0 mobile start → objectives → escape
+PASS m4 placement 0 mobile start → objectives → escape
+PASS m5 placement 0 mobile start → objectives → escape
+PASS m6 placement 0 mobile start → objectives → escape
+PASS m1 placement 1 mobile start → objectives → escape
+PASS m2 placement 1 mobile start → objectives → escape
+PASS m3 placement 1 mobile start → objectives → escape
+PASS m4 placement 1 mobile start → objectives → escape
+PASS m5 placement 1 mobile start → objectives → escape
+PASS m6 placement 1 mobile start → objectives → escape
+PASS m1 placement 2 mobile start → objectives → escape
+PASS m2 placement 2 mobile start → objectives → escape
+PASS m3 placement 2 mobile start → objectives → escape
+PASS m4 placement 2 mobile start → objectives → escape
+PASS m5 placement 2 mobile start → objectives → escape
+PASS m6 placement 2 mobile start → objectives → escape
+PASS 36 mission playthroughs, no objective/door/key grants or player teleporting
+
+
+v140-tutorial.log
+PASS False move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS False light-before {'name': 'light-before', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS False light-switch {'name': 'light-switch', 'stage': 'tB', 'step': 4, 't': 5.916666666666651, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS False light-off {'name': 'light-off', 'stage': 'tB', 'step': 5, 't': 6.349999999999983, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS False dark-crossing {'name': 'dark-crossing', 'stage': 'tB', 'step': 6, 't': 10.650000000000109, 'hp': 3, 'hidden': False, 'at': [7.467753670897518, 12.471680686778937], 'guard': 'PATROL'}
+PASS False bush {'name': 'bush', 'stage': 'tB', 'step': 7, 't': 14.16666666666695, 'hp': 3, 'hidden': True, 'at': [8.46123828589648, 10.520947807465653], 'guard': 'PATROL'}
+PASS False heard {'name': 'heard', 'stage': 'tB', 'step': 8, 't': 14.250000000000288, 'hp': 3, 'hidden': True, 'at': [8.466428440194365, 10.520947807465653], 'guard': 'SUSPICIOUS'}
+PASS False escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 9, 't': 16.000000000000373, 'hp': 3, 'hidden': False, 'at': [6.051482150540642, 10.542432182465653], 'guard': 'NOTICE'}
+PASS False escape {'name': 'escape', 'stage': 'tB', 'step': 9, 't': 19.533333333333506, 'hp': 3, 'hidden': False, 'at': [3.534141741314452, 13.048148995402052], 'guard': 'SUSPICIOUS'}
+PASS False rear {'name': 'rear', 'stage': 't0', 'step': 1, 't': 4.666666666666655, 'hp': 3, 'hidden': False, 'at': [7.8537483729870425, 9.521484375], 'guard': 'PATROL'}
+PASS False grab {'name': 'grab', 'stage': 't0', 'step': 2, 't': 5.13333333333332, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'CAPTIVE'}
+PASS False ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 6.1499999999999835, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False uniform {'name': 'uniform', 'stage': 't0', 'step': 4, 't': 7.033333333333314, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False carry {'name': 'carry', 'stage': 't0', 'step': 5, 't': 7.683333333333311, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False stash {'name': 'stash', 'stage': 't0', 'step': 6, 't': 12.516666666666868, 'hp': 3, 'hidden': False, 'at': [9.5, 8.041666666666666], 'guard': 'DEAD'}
+PASS False complete {'name': 'complete', 'stage': 't0', 'step': 6, 't': 20.733333333333437, 'hp': 3, 'hidden': False, 'at': [21.220126535158926, 8.270833333333334], 'guard': 'DEAD'}
+PASS False contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
+PASS True move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS True light-before {'name': 'light-before', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS True light-switch {'name': 'light-switch', 'stage': 'tB', 'step': 4, 't': 5.916666666666651, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS True light-off {'name': 'light-off', 'stage': 'tB', 'step': 5, 't': 6.349999999999983, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS True dark-crossing {'name': 'dark-crossing', 'stage': 'tB', 'step': 6, 't': 10.650000000000109, 'hp': 3, 'hidden': False, 'at': [7.467753670897518, 12.471680686778937], 'guard': 'PATROL'}
+PASS True bush {'name': 'bush', 'stage': 'tB', 'step': 7, 't': 14.16666666666695, 'hp': 3, 'hidden': True, 'at': [8.46123828589648, 10.520947807465653], 'guard': 'PATROL'}
+PASS True heard {'name': 'heard', 'stage': 'tB', 'step': 8, 't': 14.250000000000288, 'hp': 3, 'hidden': True, 'at': [8.466428440194365, 10.520947807465653], 'guard': 'SUSPICIOUS'}
+PASS True escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 9, 't': 16.000000000000373, 'hp': 3, 'hidden': False, 'at': [6.051482150540642, 10.542432182465653], 'guard': 'NOTICE'}
+PASS True escape {'name': 'escape', 'stage': 'tB', 'step': 9, 't': 19.533333333333506, 'hp': 3, 'hidden': False, 'at': [3.534141741314452, 13.048148995402052], 'guard': 'SUSPICIOUS'}
+PASS True rear {'name': 'rear', 'stage': 't0', 'step': 1, 't': 4.666666666666655, 'hp': 3, 'hidden': False, 'at': [7.8537483729870425, 9.521484375], 'guard': 'PATROL'}
+PASS True grab {'name': 'grab', 'stage': 't0', 'step': 2, 't': 5.13333333333332, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'CAPTIVE'}
+PASS True ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 6.1499999999999835, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True uniform {'name': 'uniform', 'stage': 't0', 'step': 4, 't': 7.033333333333314, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True carry {'name': 'carry', 'stage': 't0', 'step': 5, 't': 7.683333333333311, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True stash {'name': 'stash', 'stage': 't0', 'step': 6, 't': 12.516666666666868, 'hp': 3, 'hidden': False, 'at': [9.5, 8.041666666666666], 'guard': 'DEAD'}
+PASS True complete {'name': 'complete', 'stage': 't0', 'step': 6, 't': 20.733333333333437, 'hp': 3, 'hidden': False, 'at': [21.220126535158926, 8.270833333333334], 'guard': 'DEAD'}
+PASS True contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
