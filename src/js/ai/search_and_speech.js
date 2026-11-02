@@ -85,6 +85,12 @@ function drawSpeech() {
     const xs=[cx,clamp(g.x-w-26*k,vx0,vx1-w),clamp(g.x+26*k,vx0,vx1-w)];
     const ys=[above,above-h-12*k,g.y+26*k,clamp(above,vy0,vy1-h),g.y+50*k,...Array.from({length:12},(_,i)=>g.y+(72+i*18)*k)];
     for(const y of ys){if(y<vy0||y+h>vy1)continue;for(const x of xs){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
+    // A short landscape viewport can leave no room immediately above/below an
+    // actor. Preserve useful reports and alert barks in a nearby free column.
+    if(!at&&speechPriority(g,P)>=60){
+      const sides=[clamp(g.x-w-54*k,vx0,vx1-w),clamp(g.x+54*k,vx0,vx1-w)];
+      for(let y=vy0;y+h<=vy1;y+=12*k){for(const x of sides){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
+    }
     if(!at)continue;
     const [x,y]=at;
     placed.push(at);SPEECH_R.push({x,y,w,h,speaker:g,text:g.say});

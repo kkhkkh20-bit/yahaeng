@@ -6,10 +6,11 @@ function lookAround(g, dt, base, amp, hold) {
   if (g.lookT <= 0) { g.lookI = (g.lookI + 1) % 4; g.lookOff = [0, 1, 0, -1][g.lookI] * amp * rnd(0.8, 1.15) * (g.lookSide || (g.lookSide = Math.random() < 0.5 ? 1 : -1)); g.lookT = rnd(hold[0], hold[1]); }
   g.want = base + g.lookOff;
 }
+const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
-  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&npcCanOpenDoor(g,d)&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:.36};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
@@ -90,28 +91,22 @@ function moveAlong(g, speed, dt) {
   return !g.path.length;
 }
 function updateNpcDoors(dt){
-  for(const d of S.doors){const W=d.npcWork;if(!W)continue;const g=S.guards.find(g=>g.doorWork===W);if(!g||['DEAD','CAPTIVE'].includes(g.state)){if(g)g.doorWork=null;d.npcWork=null;continue;}W.t+=dt;if(d.locked&&W.t>=W.dur*.76){setDoor(d,false);play('metal',.2*proxVol(g));}if(W.t>=W.dur){g.doorWork=null;d.npcWork=null;}}
+  for(const d of S.doors){const W=d.npcWork;if(!W)continue;const g=S.guards.find(g=>g.doorWork===W);if(!g||['DEAD','CAPTIVE'].includes(g.state)){if(g)g.doorWork=null;d.npcWork=null;continue;}W.t+=dt;if(d.locked&&W.t>=W.dur*.76){setDoor(d,false);play(W.forced?'thud':'metal',.3*proxVol(g));if(W.forced)noise(d.x,d.y,140,'guardDoor',flOf(g),g.z||0);}if(W.t>=W.dur){g.doorWork=null;d.npcWork=null;}}
 }
 const solidAtG = (tx, ty) => solidAt(tx, ty);
+// Planning may include a locked door; opening it belongs to moveAlong at the
+// actual threshold, on every floor. A failed path never opens a remote door.
+function npcRouteSolid(g) {
+  if (g.z) return solidFor(g.z);
+  const grid = flOf(g) ? GF[flOf(g)] : G0;
+  const doors = new Set(S.doors.filter(d => d.locked && flOf(d) === flOf(g) && (npcCanOpenDoor(g, d) || npcCanForceDoor(g))).map(d => d.ty * MW + d.tx));
+  return (x, y) => !inMap(x, y) || !grid || SOLID.has(grid[y][x]) && !doors.has(y * MW + x);
+}
 function pathTo(g, x, y) {
-  if (g.z) { g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE), solidFor(g.z)); if (g.path.length) { const last = g.path[g.path.length - 1]; if (rLv(Math.floor(x / TILE), Math.floor(y / TILE)) === g.z) { last.x = x; last.y = y; } } return; }
-  g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
-  if(!g.path.length&&!['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state)){
-    const doors=new Set(S.doors.filter(d=>flOf(d)===flOf(g)&&npcCanOpenDoor(g,d)).map(d=>d.ty*MW+d.tx));
-    g.path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(x/TILE),Math.floor(y/TILE),(tx,ty)=>solidAt(tx,ty)&&!doors.has(ty*MW+tx));
-  }
-  // 쫓거나 뒤지는 중인데 길이 막혔으면 가까운 잠긴 문을 부수고 연다
-  if (!g.path.length && dist(g.x, g.y, x, y) > 60 && ['ALERT', 'SEARCH', 'CHECK', 'BODY', 'SUSPICIOUS'].includes(g.state)) {
-    const d = S.doors.filter(d => d.locked && flOf(d)===flOf(g)).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
-    if (d && dist(d.x, d.y, g.x, g.y) < 360) {
-      setDoor(d, false); play('thud', 0.6 * proxVol(g)); noise(d.x, d.y, 160, 'door', flOf(g));
-      if (dist(d.x, d.y, S.player.x, S.player.y) < 700) toast('자경대원이 잠긴 문을 부수고 열었다', 2.2, 'warn');
-      g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
-    }
-  }
-  if(!g.path.length&&Math.floor(g.x/TILE)===Math.floor(x/TILE)&&Math.floor(g.y/TILE)===Math.floor(y/TILE)&&dist(g.x,g.y,x,y)>6&&!solidAt(Math.floor(x/TILE),Math.floor(y/TILE)))g.path=[{x,y}];
-  g.pathGoal={x,y};g.pathFailedAt=S.t;
-  if (g.path.length && !solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { const last = g.path[g.path.length - 1]; last.x = x; last.y = y; }
+  const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  g.path = astar(sx, sy, tx, ty, sol); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
+  if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
+  if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
 }
 // ---- 높이 단계: 땅(g) · 건물 위층(f층_건물) · 옥상(r구역). 자경대원은 계단·배관·베란다로 단계를 옮겨 쫓는다
 function lvlInit() {
@@ -139,8 +134,65 @@ function lvlKey(o) {
 }
 const gSpot = g => ({ fl: flOf(g), z: g.z || 0, x: g.x, y: g.y });
 const pSpot = () => { const P = S.player; return { x: P.x, y: P.y, fl: flOf(P), z: P.wire || P.under || P.vent ? 0 : P.jump ? P.jump.z1 || 0 : P.z || 0 }; };
+// Cached connected walking regions distinguish a room from the street below
+// the same XY. The old level-only BFS chose a nearby pipe behind an indoor wall
+// and never tried the longer, reachable stair chain.
+const NPC_NAV = { state: null, modes: new Map() };
+function npcRegions(g) {
+  if (NPC_NAV.state !== S) { NPC_NAV.state = S; NPC_NAV.modes.clear(); }
+  const mode = [npcCanForceDoor(g), g.hasKey || '', g.fac || ''].join(':');
+  const doors = S.doors.map(d => d.locked ? 1 : 0).join('');
+  let nav = NPC_NAV.modes.get(mode);
+  if (nav && nav.levels === S.lvl && nav.doors === doors && S.t >= nav.t && S.t - nav.t < 1) return nav;
+  nav = { levels: S.lvl, doors, t: S.t, grids: new Map() }; NPC_NAV.modes.set(mode, nav);
+  // Bound capability variants; never retain maps from an earlier mission/save.
+  if (NPC_NAV.modes.size > 8) NPC_NAV.modes.delete(NPC_NAV.modes.keys().next().value);
+  nav.region = spot => {
+    const fl = flOf(spot), z = spot.z || 0, key = z ? 'r' + z : 'f' + fl;
+    let labels = nav.grids.get(key);
+    if (!labels) {
+      labels = new Int32Array(MW * MH).fill(-1); let count = 0;
+      const sol = npcRouteSolid({ ...g, fl, z }), queue = new Int32Array(MW * MH);
+      for (let cell = 0; cell < labels.length; cell++) {
+        const x = cell % MW, y = (cell / MW) | 0; if (labels[cell] >= 0 || sol(x, y)) continue;
+        let head = 0, tail = 1; queue[0] = cell; labels[cell] = count;
+        while (head < tail) {
+          const at = queue[head++], ax = at % MW, ay = (at / MW) | 0;
+          for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+            const nx = ax + dx, ny = ay + dy, ni = ny * MW + nx;
+            if (inMap(nx, ny) && labels[ni] < 0 && !sol(nx, ny)) { labels[ni] = count; queue[tail++] = ni; }
+          }
+        }
+        count++;
+      }
+      nav.grids.set(key, labels);
+    }
+    const tx = Math.floor(spot.x / TILE), ty = Math.floor(spot.y / TILE);
+    return inMap(tx, ty) && labels[ty * MW + tx] >= 0 ? key + ':' + labels[ty * MW + tx] : null;
+  };
+  return nav;
+}
+function nextGuardHop(g, target) {
+  const nav = npcRegions(g), from = nav.region(g), to = nav.region(target);
+  if (!from || !to || from === to) return null;
+  const queue = [{ key: from, cost: 0, at: g, first: null }], best = new Map([[from, 0]]);
+  while (queue.length) {
+    queue.sort((a, b) => a.cost - b.cost); const node = queue.shift();
+    if (node.cost !== best.get(node.key)) continue;
+    if (node.key === to) return node.first;
+    for (const e of S.lvl.ends) for (const [a, b] of [[e.A, e.B], [e.B, e.A]]) {
+      if (nav.region(a) !== node.key) continue;
+      const key = nav.region(b); if (!key) continue;
+      const cost = node.cost + dist(node.at.x, node.at.y, a.x, a.y) / 140 + (['stair','fstair'].includes(e.l.kind) ? 1 : 6);
+      if (cost >= (best.get(key) ?? Infinity)) continue;
+      best.set(key, cost); queue.push({ key, cost, at: b, first: node.first || { e, from: a, to: b } });
+    }
+  }
+  return null;
+}
 // 다음에 탈 사다리 (가장 적게 갈아타는 길의 첫 칸, 같은 연결이면 가까운 것)
-function nextHop(g, fromK, toK) {
+function nextHop(g, fromK, toK, target) {
+  if (target && g !== S.player) return nextGuardHop(g, target);
   const E = S.lvl.ends, prev = { [fromK]: null }, q = [fromK];
   while (q.length) {
     const k = q.shift(); if (k === toK) break;
@@ -159,8 +211,8 @@ function routeTo(g, t) {
   if (g.civ || g.dog || t.fl == null) { pathTo(g, t.x, t.y); return; }
   const gk = lvlKey(gSpot(g)), tk = lvlKey(t);
   if (gk === tk) { pathTo(g, t.x, t.y); return; }
-  const h = nextHop(g, gk, tk);
-  if (!h) { pathTo(g, t.x, t.y); return; }
+  const h = nextHop(g, gk, tk, t);
+  if (!h) { g.path = []; g.pathGoal = null; return; }
   g.hop = h; pathTo(g, h.from.x, h.from.y);
 }
 // 사다리 입구에 닿았으면 실제로 올라타(내려가) 움직인다. 올라타면 true

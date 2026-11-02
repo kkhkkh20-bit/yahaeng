@@ -67,11 +67,10 @@ function releaseSearchJob(g) {
 }
 // 첫 계단 입구까지 실제로 갈 수 있는 사람만 배정한다. 잠긴 문은 접근한 뒤 연다.
 function searchLeg(g, at) {
-  const fk = lvlKey(gSpot(g)), tk = lvlKey(at), hop = fk === tk ? null : nextHop(g, fk, tk);
+  const fk = lvlKey(gSpot(g)), tk = lvlKey(at), hop = fk === tk ? null : nextHop(g, fk, tk, at);
   if (fk !== tk && !hop) return null;
   const target = hop ? hop.from : at, f = flOf(g), L0 = CUR_F; setLayer(f);
-  const doors = new Set(!f && !g.z ? S.doors.filter(d => d.locked).map(d => d.ty * MW + d.tx) : []);
-  const sol = g.z ? solidFor(g.z) : (x, y) => solidAt(x, y) && !doors.has(y * MW + x);
+  const sol = npcRouteSolid(g);
   const path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(target.x / TILE), Math.floor(target.y / TILE), sol);
   setLayer(L0);
   if (!path.length && dist(g.x, g.y, target.x, target.y) > 28) return null;
@@ -81,10 +80,10 @@ function searchLeg(g, at) {
 function takeSearchJob(g, inc) {
   if (!inc || inc.until < S.t) return false;
   const from = gSpot(g), fk = lvlKey(from);
-  const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at))));
-  // Sweep nearby rooms and hiding places before sending the same guard down the stairs again.
+  const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at), j.at)));
+  // A real sighting is checked first, even upstairs; then sweep nearby rooms and hiding places.
   // Only incident jobs and the guard's own floor contribute; the hidden player is never queried.
-  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650;
+  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0);
   jobs.sort((a,b)=>cost(a)-cost(b));
   let job, leg;
   for (const j of jobs) { const p = searchLeg(g, j.at); if (p) { job = j; leg = p; break; } }
@@ -139,8 +138,8 @@ function updateBuildingSearch(g, dt) {
       return;
     }
     if ((ref.repath -= dt) <= 0 || !g.path) { const leg = searchLeg(g, job.at); g.path = leg ? leg.path : []; g.hop = leg && leg.hop; ref.repath = .8; }
-    const next = g.path && g.path[0], doorIndex = !flOf(g) && !g.z && next ? S.doors.findIndex(d => d.locked && d.tx === Math.floor(next.x / TILE) && d.ty === Math.floor(next.y / TILE)) : -1;
-    if (doorIndex >= 0 && dist(g.x, g.y, next.x, next.y) < 65) { ref.door = { index: doorIndex, t: 1.1 }; return; }
+    const next = g.path && g.path[0], doorIndex = !g.z && next ? S.doors.findIndex(d => d.locked && flOf(d) === flOf(g) && d.tx === Math.floor(next.x / TILE) && d.ty === Math.floor(next.y / TILE)) : -1;
+    if (doorIndex >= 0 && dist(g.x, g.y, next.x, next.y) < 44) { ref.door = { index: doorIndex, t: npcCanOpenDoor(g, S.doors[doorIndex]) ? .36 : 1.1 }; return; }
     const arrived = moveAlong(g, SPD.gSusp * spdMul(), dt);
     if (hopClimb(g, arrived)) return;
     if (lvlKey(gSpot(g)) === lvlKey(job.at) && dist(g.x, g.y, job.at.x, job.at.y) < 28) { ref.inspect = job.kind === 'entrance' ? 5 : 2.4; g.path = null; g.lookT = null; g.waitBase2 = g.a;

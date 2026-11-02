@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v142): https://kkhkkh20-bit.github.io/yahaeng/?v=142
+- 2D 본편 · 시야와 소리 연습 (v143): https://kkhkkh20-bit.github.io/yahaeng/?v=143
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v143: 층·지붕을 통과하는 발견을 막고, 경비가 접근 가능한 계단을 따라 마지막 목격 층과 옥상까지 추적하도록 수정했습니다. [변경·검증](docs/AI_HEIGHT_V143.md) · [화면](https://kkhkkh20-bit.github.io/yahaeng/ai-v143/)
 
 v142: 플레이 HUD의 반복 테두리·큰 원형 버튼을 줄이고, 목표와 위험 안내를 정돈했습니다. [변경·검증](docs/HUD_V142.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/hud-v142/)
 

@@ -91,7 +91,7 @@ function updateGuard(g, dt) {
   if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
       if (c.hideT>S.t || (c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue;
-      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c) || !claimBodyExam(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
+      if (canSee(g, c.x, c.y, c.light, false, false, c.z || 0, flOf(c)) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c) || !claimBodyExam(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
     }
   }
 
@@ -246,8 +246,8 @@ function updateGuard(g, dt) {
       g.atkCd = Math.max(0, (g.atkCd || 0) - dt);
       if (g.atkT > 0) {
         g.atkT -= dt; if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x);
-        if (g.atkT <= 0) { g.swingT = 0.2; g.atkCd = 1.1; if (sameF && !P.hide && !P.under && !P.vent && (P.z || 0) === (g.z || 0) && !P.jump && !P.wire && !P.trav && dist(g.x, g.y, P.x, P.y) < 54 && los(g.x, g.y, P.x, P.y)) hurtPlayer(g, g.dog ? '들개에게 물렸다.' : g.police ? '경찰 곤봉에 맞았다.' : '자경대원의 칼에 베였다.'); else play('throw', 0.4 * proxVol(g)); }
-      } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && los(g.x, g.y, P.x, P.y)) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
+        if (g.atkT <= 0) { g.swingT = 0.2; g.atkCd = 1.1; if (sameF && !P.hide && !P.under && !P.vent && (P.z || 0) === (g.z || 0) && !P.jump && !P.wire && !P.trav && dist(g.x, g.y, P.x, P.y) < 54 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) hurtPlayer(g, g.dog ? '들개에게 물렸다.' : g.police ? '경찰 곤봉에 맞았다.' : '자경대원의 칼에 베였다.'); else play('throw', 0.4 * proxVol(g)); }
+      } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
       if (g.seen && P.z > (g.z || 0) && !roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) && dist(g.x, g.y, P.x, P.y) < (g.lookout ? 260 : 130) && (g.shootT = (g.shootT || 0) + dt) > 2.2) { g.shootT = 0; play('kunai', 0.5); hurtPlayer(null, g.lookout ? '옥상 위에서 석궁 화살에 맞았다.' : ('옥상 위로 던진 병에 맞았다.')); if (S.over) return; }
       if (P.hide && P.hide.spotted && dist(g.x, g.y, P.hide.x, P.hide.y) < 60) { P.hide.spotted = false; dragOut(g, P.hide.type === 'well' ? '숨는 모습을 들켜 맨홀에서 끌려 나왔다.' : '숨는 모습을 들켜 수거함에서 끌려 나왔다.'); if (S.over) return; }
       if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }

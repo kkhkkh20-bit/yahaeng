@@ -13,7 +13,7 @@ function updateCorpseRisk(dt) {
   for (const c of S.corpses) {
     c.risk = false; if (c.stashed || c.carried || c.discovered || c.hidden || c.accident) continue;
     for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) !== flOf(c) || (g.z || 0) !== (c.z || 0) || dist(g.x, g.y, c.x, c.y) > 520) continue;
-      const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, false) > 0) { c.risk = true; break; } }
+      const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, c.z || 0, flOf(c)) > 0) { c.risk = true; break; } }
   }
 }
 function kpBeep(ok) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'sine' : 'square'; o.frequency.value = ok ? 1320 : 220; g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + (ok ? 0.12 : 0.35)); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }

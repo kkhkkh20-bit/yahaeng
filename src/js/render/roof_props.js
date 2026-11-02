@@ -93,6 +93,8 @@ function robBuild() {
     }
     if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
   if (!n) ROB = null;
+  // Kit loading can move a roof stair landing after the first goal/path query.
+  if (S) S.lvl = null;
   if (S && S.hides) S.hides = S.hides.filter(h => h.type !== 'okt');
 }
 const ROB_SOLID_DIM = { tank: [1, 1] };

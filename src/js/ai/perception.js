@@ -69,12 +69,42 @@ function winSee(g, pv) {
   }
   return best;
 }
-function canSee(g, x, y, light, hidden, sneak, elev) {
+// Roof sight uses the height of the ray at each crossed tile. Ignoring every
+// building wall made a street lookout see the middle of a roof through its slab.
+function roofSightRange(g, x, y, z, sneak) {
+  const gz = g.z || 0, dx = x - g.x, dy = y - g.y;
+  const distance = Math.hypot(dx, dy), h0 = gz + .65, h1 = z + (sneak ? .28 : .65);
+  let tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), t = 0;
+  const sx = dx > 0 ? 1 : -1, sy = dy > 0 ? 1 : -1;
+  const stepX = dx ? Math.abs(TILE / dx) : Infinity, stepY = dy ? Math.abs(TILE / dy) : Infinity;
+  let nextX = dx ? ((tx + (dx > 0 ? 1 : 0)) * TILE - g.x) / dx : Infinity;
+  let nextY = dy ? ((ty + (dy > 0 ? 1 : 0)) * TILE - g.y) / dy : Infinity;
+  for (let i = 0; i < MW + MH + 2; i++) {
+    if (!inMap(tx, ty)) return t * distance;
+    const end = Math.min(1, nextX, nextY), roof = rLv(tx, ty);
+    const low = Math.min(h0 + (h1 - h0) * t, h0 + (h1 - h0) * end);
+    const obstruction = roof > 0 ? roof + (robAt(tx, ty) ? 1 : 0) : OPAQUE.has(G0[ty][tx]) ? 1 : 0;
+    if (obstruction && low < obstruction - .001) return t * distance;
+    if (end >= 1) return distance;
+    t = end;
+    if (nextX < nextY) { tx += sx; nextX += stepX; }
+    else { ty += sy; nextY += stepY; }
+  }
+  return 0;
+}
+function sightLine(g, x, y, elev, sneak, targetFloor = flOf(g)) {
+  if (flOf(g) !== targetFloor) return false; // floors/ceilings are opaque; winSee is the explicit window exception
+  if (elev || g.z) return roofSightRange(g, x, y, elev || 0, sneak) >= dist(g.x, g.y, x, y) - 1;
+  const L0 = CUR_F; setLayer(flOf(g));
+  const visible = los(g.x, g.y, x, y); setLayer(L0); return visible;
+}
+function canSee(g, x, y, light, hidden, sneak, elev, targetFloor = flOf(g)) {
+  if (targetFloor !== flOf(g)) return 0;
   // 높이: 옥상 밑(건물 안)에서는 옥상 위를 못 보고, 옥상 위에서는 옥상 밑을 못 본다
   const gz = g.z || 0; elev = elev || 0;
   if (elev > gz && !gz && roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) return 0;
   if (gz && elev < gz && !elev && roofAt(Math.floor(x / TILE), Math.floor(y / TILE))) return 0;
-  const ign = elev || gz; elev = elev > gz ? elev - gz : 0;
+  const targetZ = elev; elev = elev > gz ? elev - gz : 0;
   const d = dist(g.x, g.y, x, y);
   const r = guardRanges(g);
   const watch = g.lookout && elev;  // 망꾼: 옥상 위 사람은 하늘을 배경으로 실루엣이 드러난다
@@ -86,7 +116,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
   if (d > eff) return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34) || (!sneak && !hidden && S.player.mode === 'run' && S.player.moving && d < 72 && Math.abs(x - S.player.x) + Math.abs(y - S.player.y) < 2));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;
-  if (!los(g.x, g.y, x, y, ign)) return 0;
+  if (!sightLine(g, x, y, targetZ, sneak, targetFloor)) return 0;
   // 쉐도우 택틱스식 줄무늬 구역: 웅크리면 시야 바깥쪽 띠에서 보이지 않는다 — 어두운 곳은 바깥 45%, 밝은 곳은 바깥 20%만 (밝은 데서 늘 웅크리는 게 정답이 되지 않게)
   if (sneak && !watch && g.state !== 'ALERT' && d > eff * (light < 0.5 ? 0.55 : 0.8)) return 0;
   // 코만도스식 낮은 엄폐: 모래주머니 바로 뒤에서 웅크리면 가려진다
@@ -97,7 +127,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
 function exposure() {
   const P = S.player;
   if (P.hide || P.under || P.vent || P.ledge) return 0;
-  if (S.guards.some(g => g.seen && g.state === 'ALERT' && !g.civ && flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0))) return 2;
+  if (S.guards.some(g => g.seen && g.state === 'ALERT' && !g.civ && (flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) || g.sightFl === flOf(P) && g.sightZ === (P.z || 0) && S.t - g.sightAt >= 0 && S.t - g.sightAt <= .12))) return 2;
   const pv = (P.trav && P.trav.base) || P, sneak = P.cover ? 2 : P.mode === 'sneak' && !P.trav, elev = P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.climb || g.doomed) continue;

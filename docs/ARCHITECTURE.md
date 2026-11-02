@@ -31,6 +31,10 @@
 
 [실측·검증·제거 목록](REFACTOR_V141.md)
 
+## 높이별 시야·경비 이동 (v143)
+
+`ai/perception.js`의 `sightLine`과 `roofSightRange`가 층·지붕·옥상 구조물의 차폐를 계산한다. 경비 시야 원뿔과 전투도 이를 따른다. `ai/navigation.js`는 실제 보행 연결 영역을 캐시하고, 그 영역 사이의 계단·배관을 선택한다. 문은 경로 계획과 현장 개방을 분리한다. `41_building_search.js`는 실제 마지막 목격 현장 확인 후 분담 수색을 진행한다. [변경·검증](AI_HEIGHT_V143.md)
+
 ## 플레이 HUD (v142)
 
 플레이 HUD의 스타일은 `src/hud.css`가 소유한다. `build.py`는 기존 테마 뒤의 `__HUD_CSS__` 위치에 삽입한다. 템플릿에는 DOM, `80_hud.js`에는 게임 상태와 표시의 연결을 둔다. [변경·검증](HUD_V142.md)

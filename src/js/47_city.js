@@ -56,7 +56,7 @@ function cityUpdate(dt) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
     const seen = cops.some(g => g.state === 'ALERT' && g.seen);
     if (seen) { S.wantLost = 0; for (const g of cops) copChase(g); }
-    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), false, false, P.z) > 0) copChase(g); }
+    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = 2.2; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} — 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);

@@ -9,7 +9,7 @@ function updateGun(g, dt, sameF) {
   if (g.aim >= GUN_AIM) {
     g.aim = 0; g.gunCd = GUN_CD; sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
     S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
-    if (los(g.x, g.y, P.x, P.y) && canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z) > 0) hurtPlayer(null, '총에 맞았다.');
+    if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.');
     else toast('총알이 빗나갔다', 1.2);
   }
   return true;
