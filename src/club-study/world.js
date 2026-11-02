@@ -4,6 +4,7 @@ import {makeMaterials} from './materials.js';
 import {createVisibility} from './visibility.js';
 import {createPassages} from './passages.js';
 import {createLighting} from './lighting.js';
+import {createFixtures} from './fixtures.js';
 import {createCutaway} from './reveal.js';
 export const FLOOR=2.8;
 const boxG=new THREE.BoxGeometry(1,1,1),postG=new THREE.CylinderGeometry(.028,.028,1,8);
@@ -50,7 +51,7 @@ export function buildWorld(G,scene){
   for(let z=0;z<G.MH;z++)for(let x=0;x<G.MW;x++){
    const ch=grid[z][x],bi=atB(x,z),originalB=bld[bi],b=bi===0&&fl===1?{...originalB,x0:11,y1:12}:originalB;if(!fl&&bi<0&&x>0&&z>0&&x<G.MW-1&&z<G.MH-1)continue;if(fl&&(!b||b.h<=fl))continue;
    if(ch==='V')continue;
-   if(b&&ch!=='V'&&!holes.has(`${fl}:${x},${z}`))box(group,bi===0&&!(G.STAGE.episode&&!fl&&z<8)?mat.wood:mat.concrete,x+.5,fl*FLOOR-.05,z+.5,1,.1,1);
+   if(b&&ch!=='V'&&!holes.has(`${fl}:${x},${z}`))box(group,bi===1&&G.STAGE.dining?(z<=5?mat.tile:mat.wood):bi===0&&!(G.STAGE.episode&&!fl&&z<8)?mat.wood:mat.concrete,x+.5,fl*FLOOR-.05,z+.5,1,.1,1);
    const door=allDoors.get(`${fl}:${x},${z}`),win=allWindows.get(`${fl}:${x},${z}`),edge=b&&(x===b.x0||x===b.x1||z===b.y0||z===b.y1);
    if(door||win){
     const vert=door?!door.horiz:x===b?.x0||x===b?.x1;const g=new THREE.Group();g.position.set(x+.5,fl*FLOOR,z+.5);g.rotation.y=vert?Math.PI/2:0;group.add(g);
@@ -59,15 +60,15 @@ export function buildWorld(G,scene){
     if(win)box(g,wallM,0,h/2,0,1,h,1);box(g,wallM,0,(top+FLOOR)/2,0,1,FLOOR-top,1);
     for(const s of [-1,1]){box(g,mat.trim,s*.46,(h+top)/2,0,.08,top-h,.99);box(g,mat.steel,s*.43,(h+top)/2,.51,.025,top-h,.035);}box(g,mat.trim,0,top-.035,0,.98,.07,1);
     if(door){
-     const pivot=new THREE.Group();pivot.position.set(-.415,.02,0);g.add(pivot);box(pivot,mat.metal,.415,1.06,0,.83,2.12,.075);box(pivot,mat.trim,.415,.52,-.045,.65,.73,.025);box(pivot,mat.glass,.415,1.56,-.046,.65,.55,.015);box(pivot,mat.steel,.75,.99,-.09,.035,.14,.04);pivot.userData.dynamic=true;doors.push({d:door,pivot,group:g});
-     if(door.keyLock==='code')for(const side of [-1,1]){const keypad=new THREE.Group();keypad.position.set(.35,1.32,side*.54);g.add(keypad);keypad.userData.dynamic=true;box(keypad,mat.dark,0,0,0,.17,.28,.055);const led=mat.warm.clone();led.color.set('#9eb6a3');led.emissive.set('#7c9c84');box(keypad,led,0,.08,side*.035,.105,.027,.015);for(let j=0;j<9;j++)box(keypad,mat.steel,(j%3-1)*.038,-.005-Math.floor(j/3)*.04,side*.035,.025,.025,.012);batchStatic(keypad);doors.at(-1).keypads??=[];doors.at(-1).keypads.push({keypad,led});}
+     const pivot=new THREE.Group();pivot.position.set(-.415,.02,0);g.add(pivot);box(pivot,mat.metal,.415,1.06,0,.83,2.12,.075);box(pivot,mat.trim,.415,.52,-.045,.65,.73,.025);box(pivot,mat.glass,.415,1.56,-.046,.65,.55,.015);box(pivot,mat.steel,.75,.99,-.09,.035,.14,.04);pivot.userData.dynamic=true;pivot.traverse(o=>o.userData.portalFrame=true);doors.push({d:door,pivot,group:g});if((G.STAGE.cutawayBuildings||[0]).includes(bi))frontCuts.push({group:g,bi,fl,x:x+.5,z:z+.5,height:FLOOR,portal:'door',vertical:vert});for(const dx of [-.43,.43]){const frame=box(g,mat.trim,dx,1.09,.02,.045,2.17,.05);frame.userData.portalFrame=true;}const lintel=box(g,mat.trim,0,2.14,.02,.9,.055,.05);lintel.userData.portalFrame=true;
+     if(door.keyLock)for(const side of [-1,1]){const keypad=new THREE.Group();keypad.position.set(.35,1.32,side*.54);g.add(keypad);keypad.userData.dynamic=true;keypad.userData.portalFrame=true;box(keypad,mat.dark,0,0,0,.17,.28,.055);const led=mat.warm.clone();led.color.set('#9eb6a3');led.emissive.set('#7c9c84');box(keypad,led,0,.08,side*.035,.105,.027,.015);if(door.keyLock==='code')for(let j=0;j<9;j++)box(keypad,mat.steel,(j%3-1)*.038,-.005-Math.floor(j/3)*.04,side*.035,.025,.025,.012);if(door.keyLock!=='code')box(keypad,mat.paper,0,-.04,side*.037,.11,.012,.018);batchStatic(keypad);doors.at(-1).keypads??=[];doors.at(-1).keypads.push({keypad,led,kind:door.keyLock});}
      if(!fl&&bi===0){box(g,mat.concrete,0,.015,.55,1.02,.05,.26);const canopy=box(g,mat.trim,0,2.25,.48,1.7,.11,1.8);canopy.userData.dynamic=true;canopies.push(canopy);const s=sign(g,'백야',1.2,.28);s.position.set(0,2.02,.52);}
-    }else{const pivot=new THREE.Group();g.add(pivot);box(pivot,mat.glass,0,(h+top)/2,0,.82,top-h-.1,.04);box(pivot,mat.steel,0,(h+top)/2,.04,.025,top-h-.08,.04);box(g,mat.trim,0,h+.01,.12,1.08,.07,1.28);pivot.userData.dynamic=true;windows.push({w:win,pivot});if(bi===0)frontCuts.push({group:g,fl,x:x+.5,z:z+.5,height:FLOOR});}
+    }else{const pivot=new THREE.Group();g.add(pivot);box(pivot,mat.glass,0,(h+top)/2,0,.82,top-h-.1,.04);box(pivot,mat.steel,0,(h+top)/2,.04,.025,top-h-.08,.04);box(g,mat.trim,0,h+.01,.12,1.08,.07,1.28);pivot.userData.dynamic=true;pivot.traverse(o=>o.userData.portalFrame=true);for(const dx of [-.43,.43]){const frame=box(g,mat.trim,dx,(h+top)/2,.02,.045,top-h,.05);frame.userData.portalFrame=true;}const lintel=box(g,mat.trim,0,top-.03,.02,.9,.055,.05);lintel.userData.portalFrame=true;windows.push({w:win,pivot});if((G.STAGE.cutawayBuildings||[0]).includes(bi))frontCuts.push({group:g,bi,fl,x:x+.5,z:z+.5,height:FLOOR,portal:'window'});}
    }else if('#NSXV'.includes(ch)&&ch!=='V'){
     const materials=[mat.brick,mat.brick,mat.concrete,mat.concrete,mat.brick,mat.brick];if(b){if(z===b.y0)materials[4]=mat.plaster;if(z===b.y1)materials[5]=mat.plaster;if(x===b.x0)materials[0]=mat.plaster;if(x===b.x1)materials[1]=mat.plaster;}
     if(bi<0){box(group,mat.trim,x+.5,.18,z+.5,1,.36,1);if((x+z)%2===0){for(const a of [-.27,.27])bar(group,mat.trim,new THREE.Vector3(x+.5+a,.3,z+.5),new THREE.Vector3(x+.5+a,1.25,z+.5),.012);}continue;}
     const h=FLOOR,m=box(group,edge&&(x===b.x1||z===b.y1)?mat.brick:edge?materials:mat.plaster,x+.5,fl*FLOOR+h/2,z+.5,1,h,1);
-    if(bi===0){m.userData.dynamic=true;frontWalls.push({mesh:m,fl,height:h});}
+    if((G.STAGE.cutawayBuildings||[0]).includes(bi)){m.userData.dynamic=true;frontWalls.push({mesh:m,bi,fl,height:h});}
     if(edge&&bi===0)box(group,mat.trim,x+.5,fl*FLOOR+.12,z+.5,1.015,.17,1.015);
    }
   }
@@ -96,21 +97,24 @@ export function buildWorld(G,scene){
   if(hidden.has(`${f.fl||0}:${f.x},${f.y}`))continue;
   if(['desk','desk2','table','tableS'].includes(f.t)){
    box(p,mat.wood,x,y+.78,z,w,.1,d);for(const a of [-1,1])for(const b of [-1,1])box(p,mat.trim,x+a*(w/2-.08),y+.37,z+b*(d/2-.07),.055,.74,.055);
-   if(f.t.startsWith('desk')){box(p,mat.dark,x-.1,y+1.04,z-.13,.36,.4,.06);box(p,mat.trim,x-.1,y+.83,z-.13,.07,.16,.06);box(p,mat.dark,x-.1,y+.85,z+.13,.4,.025,.15);box(p,mat.paper,x+.23,y+.85,z+.15,.16,.018,.21);}
+   if(f.t.startsWith('desk')&&!(G.S.camRoom&&f.x===G.S.camRoom.tx&&f.y===G.S.camRoom.ty-1&&(f.fl||0)===G.S.camRoom.fl)){box(p,mat.dark,x-.1,y+1.04,z-.13,.36,.4,.06);box(p,mat.trim,x-.1,y+.83,z-.13,.07,.16,.06);box(p,mat.dark,x-.1,y+.85,z+.13,.4,.025,.15);box(p,mat.paper,x+.23,y+.85,z+.15,.16,.018,.21);}
   }else if(f.t==='bar'){box(p,mat.dark,x,y+.48,z,w,.95,d);box(p,mat.wood,x,y+1.01,z,w+.06,.1,d+.05);box(p,mat.steel,x,y+.2,z+d/2,w,.035,.035);for(let k=0;k<f.w*2;k++){mesh(p,new THREE.CylinderGeometry(.025,.033,.2,8),mat.glass,x-w/2+.15+k*.32,y+1.15,z-.1);}}
   else if(f.t==='sofa'){box(p,mat.leather,x,y+.4,z,w,.3,d);box(p,mat.leather,x,y+.7,z-d/2+.1,w,.65,.18);for(const side of [-1,1])box(p,mat.leather,x+side*(w/2-.07),y+.55,z,.14,.52,d);for(let k=0;k<f.w;k++)box(p,mat.leather,f.x+.5+k,y+.6,z+.04,.78,.14,d-.2);}
-  else if(['locker','wardrobe','cab','shelf','shelfS'].includes(f.t)){cabinet(p,mat,x,y,z,w,d,f.t==='locker');}
+  else if(['locker','wardrobe','cab'].includes(f.t)){cabinet(p,mat,x,y,z,w,d,f.t==='locker');}
+  else if(['shelf','shelfS'].includes(f.t)){box(p,mat.dark,x,y+.53,z,w,1.06,d);box(p,mat.wood,x,y+1.08,z,w+.04,.065,d+.04);for(const a of [-1,1])box(p,mat.wood,x+a*(w/2-.035),y+.55,z,.07,1.05,d);for(const h of [.1,.52]){box(p,mat.wood,x,y+h,z,w,.05,d);for(let k=0;k<4;k++)box(p,mat.paper,x-w/2+.12+k*.15,y+h+.18,z+d/2-.16,.09,.3,.2);}}
   else if(f.t==='chairD'||f.t==='chair'){box(p,mat.leather,x,y+.49,z,.45,.12,.45);box(p,mat.leather,x,y+.8,z-.19,.46,.59,.09);for(const a of [-1,1])for(const b of [-1,1])box(p,mat.trim,x+a*.17,y+.23,z+b*.17,.025,.46,.025);}
+  else if(f.t==='toilet'){box(p,mat.paper,x,y+.58,z-.23,.5,.65,.2);mesh(p,new THREE.CylinderGeometry(.23,.15,.36,14),mat.paper,x,y+.23,z+.1,1,1,1.35);mesh(p,new THREE.TorusGeometry(.18,.035,6,18),mat.paper,x,y+.43,z+.12,1,1,1.25).rotation.x=-Math.PI/2;box(p,mat.steel,x+.13,y+.85,z-.23,.07,.025,.035);}
+  else if(f.t==='bsink'){box(p,mat.paper,x,y+.76,z,.65,.14,.5);box(p,mat.dark,x,y+.835,z,.42,.012,.29);bar(p,mat.steel,new THREE.Vector3(x,y+.8,z-.13),new THREE.Vector3(x,y+1.05,z-.13),.025);bar(p,mat.steel,new THREE.Vector3(x,y+1.05,z-.13),new THREE.Vector3(x,y+1.05,z+.02),.025);}
   else if(['boxes','spk'].includes(f.t)){box(p,mat.wood,x,y+.45,z,w,.9,d);}
   else if(f.t==='plant'){box(p,mat.concrete,x,y+.25,z,w,.5,d);for(let k=0;k<7;k++){const leaf=mesh(p,new THREE.SphereGeometry(.18,6,4),mat.leather,x+Math.sin(k)*.19,y+.6+(k%2)*.16,z+Math.cos(k)*.19,.5,1.9,1);leaf.rotation.z=k;}}
  }
  for(const h of G.S.hides){if(!['box','well','locker','wardrobe','cab'].includes(h.type))continue;const fl=h.fl||0,p=floorGroups[fl]||root,x=h.furn?h.tx+(h.w||1)/2:h.x/48,z=h.furn?h.ty+(h.h||1)/2:h.y/48;const v=h.type==='well'?passages.makeWell(p,h):h.type==='box'?dumpster(p,mat,x,z):cabinet(p,mat,x,fl*FLOOR,z,(h.w||1)*.92,(h.h||1)*.8,h.type==='locker');v.group.userData.dynamic=true;hides.push({h,v});}
  // Dense, low foliage is a real hide surface, using the existing bush occupancy/rules.
  mat.foliage=new THREE.MeshStandardMaterial({color:'#46513c',roughness:1});
- for(const h of G.S.bushes){const g=new THREE.Group();g.position.set(h.x/48,(h.fl||0)*FLOOR,h.y/48);(floorGroups[h.fl||0]||root).add(g);box(g,mat.concrete,0,.12,0,1.05,.24,1.05);box(g,mat.dark,0,.245,0,.9,.05,.9);for(let i=0;i<11;i++){const a=i*2.399,r=i?.12+(i%3)*.11:0;mesh(g,new THREE.IcosahedronGeometry(.26,1),mat.foliage,Math.cos(a)*r,.48+(i%3)*.065,Math.sin(a)*r,1,1.2,1);}g.userData.dynamic=true;hides.push({h,v:{group:g,open(){},grip(){return new THREE.Vector3(h.x/48,.5,h.y/48);}}});}
+ for(const h of G.S.bushes){const g=new THREE.Group();g.position.set(h.x/48,(h.fl||0)*FLOOR,h.y/48);(floorGroups[h.fl||0]||root).add(g);box(g,mat.dark,0,.025,0,1.24,.05,1.24);for(const d of [-1,1]){box(g,mat.concrete,d*.63,.06,0,.08,.12,1.34);box(g,mat.concrete,0,.06,d*.63,1.34,.12,.08);}const leaves=[];for(let i=0;i<15;i++){const a=i*2.399,r=i?.14+(i%3)*.14:0;const m=mat.foliage.clone();m.transparent=true;leaves.push(m);mesh(g,new THREE.IcosahedronGeometry(.25,1),m,Math.cos(a)*r,.58+(i%3)*.12,Math.sin(a)*r,1,1.2,1);}g.userData.dynamic=true;hides.push({h,v:{group:g,leaves,open(){const P=G.S.player,hidden=P.hide===h||P.hidden&&Math.floor(P.x/48)===h.tx&&Math.floor(P.y/48)===h.ty;for(const m of leaves)m.opacity=hidden?.4:1;},grip(){return new THREE.Vector3(h.x/48,.5,h.y/48);}}});}
  for(const v of G.S.vents)passages.makeVent(floorGroups[0]||root,v);
  // Foreground cutaways must never cut the container they are revealing.
- for(const {v}of [...hides,...passages.fixtures]){const clones=new Map();v.group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(!clones.has(m)){const n=m.clone();n.userData.noForeground=true;clones.set(m,n);}return clones.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
+ for(const {v}of [...hides,...passages.fixtures]){const clones=new Map();v.group.traverse(o=>{if(!o.isMesh||v.leaves)return;const clone=m=>{if(!clones.has(m)){const n=m.clone();n.userData.noForeground=true;clones.set(m,n);}return clones.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
  for(const it of G.S.items){const f=G.FURN.filter(f=>(f.fl||0)===(it.fl||0)&&f.t===it.furn).sort((a,b)=>Math.hypot(a.x+.5-it.dx/48,a.y+.5-it.dy/48)-Math.hypot(b.x+.5-it.dx/48,b.y+.5-it.dy/48))[0];const dx=it.x/48-(f?f.x+f.w/2:it.x/48),dz=it.y/48-(f?f.y+f.h/2:it.y/48),norm=Math.hypot(dx,dz)||1,x=f?f.x+f.w/2+dx/norm*.42:it.x/48,z=f?f.y+f.h/2+dz/norm*.42:it.y/48,y=(it.fl||0)*FLOOR+(f?.t.startsWith('desk')?.86:.82);const o=box(floorGroups[it.fl||0]||root,mat.wood,x,y,z,.23,.045,.3);box(o,mat.paper,0,.55,0,.82,.18,.84);o.userData.dynamic=true;items.push({it,mesh:o,at:new THREE.Vector3(x,y+.25,z)});}
  // A clue is paper on the reachable desk edge, never a marker lying on the floor.
  for(const n of G.S.notes||[]){const f=n.surface;if(!f)continue;const c=new THREE.Vector3(f.x+f.w/2,(n.fl||0)*FLOOR+.855,f.y+f.h/2),v=new THREE.Vector3(n.x/48-c.x,0,n.y/48-c.z).normalize();c.addScaledVector(v,.3);const g=new THREE.Group();g.position.copy(c);g.userData.dynamic=true;(floorGroups[n.fl||0]||root).add(g);box(g,mat.paper,0,0,0,.21,.012,.28);for(let j=0;j<5;j++)box(g,mat.trim,-.015,.008,-.075+j*.033,j===0?.15:.12,.002,.005);batchStatic(g);notes.push({n,mesh:g,at:c});}
@@ -128,21 +132,22 @@ export function buildWorld(G,scene){
   box(root,mat.brick,x,h/2,z,w,h,d);box(root,mat.trim,x,h,z,w+.2,.18,d+.2);
   for(let xx=x-w/2+.7;xx<x+w/2;xx+=1.4)for(let yy=1.4;yy<h-.4;yy+=2.3){box(root,mat.trim,xx,yy,z+d/2+.035,.72,1.1,.08);box(root,mat.glass,xx,yy,z+d/2+.09,.58,.94,.025);}
  }
- for(const o of frontWalls)frontCuts.push({group:o.mesh,fl:o.fl,x:o.mesh.position.x,z:o.mesh.position.z,height:o.height});
+ const systems=createFixtures(G,root,floorGroups,mat,visibility,{box,bar,mesh,sign,FLOOR});
+ for(const o of frontWalls)frontCuts.push({group:o.mesh,bi:o.bi,fl:o.fl,x:o.mesh.position.x,z:o.mesh.position.z,height:o.height});
  const sections=new Map(),wallMaterials=new Map();
- for(const o of frontCuts){const b=G.BLD[0],x0=o.fl===1?11:b.x0,y1=o.fl===1?12:b.y1,side=o.x<=x0+.6?'west':o.x>=b.x1+.4?'east':o.z<=b.y0+.6?'north':o.z>=y1+.4?'south':'interior',key=o.fl+':'+side;
-  let section=sections.get(key);if(!section){const group=new THREE.Group(),caps=new THREE.Group(),plane=new THREE.Plane(new THREE.Vector3(0,-1,0),o.fl*FLOOR+FLOOR+.01);group.userData.dynamic=caps.userData.dynamic=true;floorGroups[o.fl].add(group,caps);section={group,caps,plane,fl:o.fl,side};sections.set(key,section);}
-  section.group.add(o.group);o.group.userData.dynamic=false;o.group.traverse(n=>{if(!n.isMesh)return;const clone=m=>{const k=m.uuid+':'+key;if(!wallMaterials.has(k)){const c=m.clone();c.clippingPlanes=[section.plane];wallMaterials.set(k,c);}return wallMaterials.get(k);};n.material=Array.isArray(n.material)?n.material.map(clone):clone(n.material);});box(section.caps,mat.concrete,o.x,o.fl*FLOOR+.38,o.z,1.005,.035,1.005);
+ for(const o of frontCuts){const b=G.BLD[o.bi],x0=o.bi===0&&o.fl===1?11:b.x0,y1=o.bi===0&&o.fl===1?12:b.y1,side=o.x<=x0+.6?'west':o.x>=b.x1+.4?'east':o.z<=b.y0+.6?'north':o.z>=y1+.4?'south':'interior',key=o.bi+':'+o.fl+':'+side+(o.portal==='window'?':sill':'');
+  let section=sections.get(key);if(!section){const group=new THREE.Group(),caps=new THREE.Group(),plane=new THREE.Plane(new THREE.Vector3(0,-1,0),o.fl*FLOOR+FLOOR+.01);group.userData.dynamic=caps.userData.dynamic=true;floorGroups[o.fl].add(group,caps);section={group,caps,plane,bi:o.bi,fl:o.fl,side,cutHeight:o.portal==='window'?1.07:side==='interior'?1.15:.9};sections.set(key,section);}
+  section.group.add(o.group);o.group.userData.dynamic=false;o.group.traverse(n=>{if(!n.isMesh)return;for(let p=n;p&&p!==o.group;p=p.parent)if(p.userData.portalFrame)return;const clone=m=>{const k=m.uuid+':'+key;if(!wallMaterials.has(k)){const c=m.clone();c.clippingPlanes=[section.plane];c.clipShadows=true;wallMaterials.set(k,c);}return wallMaterials.get(k);};n.material=Array.isArray(n.material)?n.material.map(clone):clone(n.material);});if(o.portal==='door'){for(const edge of [-.46,.46])box(section.caps,mat.wallCut,o.x+(o.vertical?0:edge),o.fl*FLOOR+section.cutHeight,o.z+(o.vertical?edge:0),o.vertical?1.005:.085,.065,o.vertical?.085:1.005);}else box(section.caps,mat.wallCut,o.x,o.fl*FLOOR+section.cutHeight,o.z,1.005,.065,1.005);
  }
  for(const s of sections.values()){batchStatic(s.group);batchStatic(s.caps);}
  const batch={};for(let f=0;f<floorGroups.length;f++)if(floorGroups[f])batch['floor'+f]=batchStatic(floorGroups[f]);for(const o of roofs)batch['roof'+o.bi]=batchStatic(o.group);batch.street=batchStatic(root,new Set([...floorGroups.filter(Boolean),...roofs.map(o=>o.group)]));
  let view=cutaway.update();
- return{root,mat,visibility,passages,floorGroups,frontWalls,roofs,doors,windows,hides,items,notes,lamps,stairs,batch,sections,get cutaway(){return view;},update(){visibility.update();const mode=passages.update();root.visible=!mode;view=cutaway.update();const P=G.S.player;
+ return{root,mat,visibility,passages,systems,floorGroups,frontWalls,roofs,doors,windows,hides,items,notes,lamps,stairs,batch,sections,get cutaway(){return view;},update(){visibility.update();systems.update();const mode=passages.update();root.visible=!mode;view=cutaway.update();const P=G.S.player;
   if(floorGroups[1])floorGroups[1].visible=!view.focused||view.upper;
-  for(const roof of roofs)roof.group.visible=roof.bi!==0||!view.focused;
+  for(const roof of roofs)roof.group.visible=!view.buildings[roof.bi]?.focused;
   for(const canopy of canopies)canopy.visible=!view.focused;
-  for(const s of sections.values()){const lowered=view.focused&&s.fl===view.floor&&(['interior','south','east'].includes(s.side)||view.west&&s.side==='west'||view.north&&s.side==='north');s.plane.constant=s.fl*FLOOR+(lowered?.38:FLOOR)+.005;s.caps.visible=lowered;}
-  for(const {d,pivot,keypads}of doors){pivot.rotation.y=G.doorVisualOpen(d)*Math.PI*.54;for(const k of keypads||[])k.led.emissive.set(d.keyLock?'#927552':'#7c9c84');}
+  for(const s of sections.values()){const local=view.buildings[s.bi],lowered=local?.focused&&s.fl===local.floor&&(['interior','south','east'].includes(s.side)||local.west&&s.side==='west'||local.north&&s.side==='north');s.plane.constant=s.fl*FLOOR+(lowered?s.cutHeight:FLOOR)+.005;s.caps.visible=lowered;}
+  for(const {d,pivot,keypads}of doors){pivot.rotation.y=G.doorVisualOpen(d)*Math.PI*.54;for(const k of keypads||[])k.led.emissive.set(d.locked?(k.kind==='blue'?'#517f9e':'#927552'):'#7c9c84');}
   for(const {w,pivot}of windows)pivot.rotation.y=(!w.st||w.st==='open')?Math.PI*.55:0;
   for(const {h,v}of hides){v.group.visible=visibility.fixture(h)||P.hide===h||P.trav?.hideFlow?.h===h;let open=0;const T=P.trav;if(T?.hideFlow?.h===h)open=G.hideFlowOpen(T);else if(T?.accessFlow?.h===h)open=G.accessOpen(T.accessFlow);else if(G.S.amb?.h===h){const f=G.S.amb.t/1.2;open=Math.min(1,f/.18,(1-f)/.16);}v.open(open);}
   for(const o of passages.fixtures)o.v.group.visible=visibility.fixture(o.h)||G.S.player.trav?.accessFlow?.obj===o.obj;

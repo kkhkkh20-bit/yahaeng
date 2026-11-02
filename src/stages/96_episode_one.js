@@ -5,25 +5,26 @@ if(window.__EPISODE_ONE__)STAGES.push({
   brief:'폐점한 클럽. 회계책 송대건은 위층에서 마지막 정산을 하고 있다. 원본 장부도 그곳에 있다.',
   targetNames:{accountant:'송대건'},itemName:'원본 장부',itemNames:['원본 장부'],itemVerb:'회수하기',lootFurniture:['desk'],
   W:24,H:22,start:[5,18],exit:[3,19],exitName:'서쪽 골목',exits:[{at:[22,18],name:'동쪽 골목',r:40}],startA:-Math.PI/2,
-  hideTypes:['box','well','locker','wardrobe','cab'],rivals:0,noRefine:true,interiorOnly:true,floors:true,pspd:1.3,gspd:1,residents:0,kunai:2,coins:2,radioCheck:80,
+  cutawayBuildings:[0,1],hideTypes:['box','well','locker','wardrobe','cab'],rivals:0,noRefine:true,interiorOnly:true,floors:true,pspd:1.3,gspd:1,residents:0,kunai:2,coins:2,radioCheck:80,
   build(m){
     m.fill(0,0,23,21,'.');m.rect(0,0,23,21);m.fill(1,17,22,20,'=');
     m.bld(8,4,20,15,2,[[13,15],[10,4]],'w');m.set(13,15,'d');m.set(10,4,'d');
     // Lounge below, staff room and staircase above. The duct bypasses the keypad.
     m.fill(9,8,19,8,'#');m.set(14,8,'d');m.set(17,7,'Y');
     m.set(11,15,'N');m.set(16,15,'N');m.set(20,11,'N');
-    m.bld(1,2,4,12,1,[],'w');m.bld(21,2,23,11,1,[],'w');
-    // Closed neighbouring shops are context, not empty rooms with usable windows.
-    m.fill(1,2,4,12,'#');m.fill(21,2,23,11,'#');
+    m.bld(1,2,4,12,1,[[4,10]],'w');m.set(4,10,'d');m.set(4,8,'N');m.set(2,5,'#');m.set(3,5,'d');m.bld(21,2,23,11,1,[],'w');
+    // The diner and WC are usable; the record shop stays closed.
+    m.fill(21,2,23,11,'#');m.set(8,6,'d');
     m.many('H',[[6,7],[6,14]]);m.many('W',[[6,18],[6,3]]);m.many('B',[[6,12],[21,16]]);
   },
-  closedDoors:[[10,4],[13,15],[14,8]],locks:[{at:[10,4],key:'code'},{at:[14,8],key:'code'}],code:'4816',codeOpp:false,
+  closedDoors:[[10,4],[13,15],[14,8],[8,6]],locks:[{at:[8,6],key:'blue'},{at:[10,4],key:'code'},{at:[14,8],key:'code'}],code:'4816',codeOpp:false,
   vents:[[[7,5,'s',[-1,0]],[9,5],[18,10]]],buildingNames:{0:'백야 클럽',1:'골목식당',2:'음반점'},
   windowStates:[[13,4,1,'open']],
   floorTiles:Array.from({length:12},(_,j)=>Array.from({length:13},(_,i)=>{const x=8+i,y=4+j;return[1,x,y,x<11||y>12?'V':x===11||x===20||y===4||y===12?(((y===12&&[13,17].includes(x))||(y===4&&x===13))?'N':'#'):x===17&&y===7?'Y':'v'];})).flat(),
   fixedFurn:[{x:10,y:6,t:'locker',fl:0},{x:11,y:10,t:'desk',fl:0},{x:14,y:12,w:2,t:'table',fl:0},{x:18,y:12,t:'shelf',fl:0},{x:14,y:10,w:3,t:'bar',fl:0},{x:10,y:13,w:2,t:'sofa',fl:0},
-    {x:12,y:7,t:'desk',fl:1},{x:12,y:8,t:'chairD',fl:1},{x:12,y:10,w:2,t:'wardrobe',fl:1},{x:18,y:10,t:'locker',fl:1},{x:18,y:5,t:'shelf',fl:1}],
-  zones:[[8,4,20,15,'res',null,'백야 클럽 · 직원 외 출입 금지',['crew','waiter']]],zoneAllow:['crew','waiter'],
+    {x:12,y:7,t:'desk',fl:1},{x:12,y:8,t:'chairD',fl:1},{x:12,y:10,w:2,t:'wardrobe',fl:1},{x:18,y:10,t:'locker',fl:1},{x:18,y:5,t:'shelf',fl:1},{x:12,y:5,t:'desk',fl:0},
+    {x:2,y:9,t:'table',fl:0},{x:2,y:6,t:'shelf',fl:0},{x:3,y:3,t:'toilet',fl:0},{x:2,y:3,t:'locker',fl:0},{x:2,y:7,t:'bsink',fl:0},{x:2,y:11,t:'locker',fl:0}],
+  zones:[[1,2,4,12,'pub'],[8,4,20,15,'res',null,'백야 클럽 · 직원 외 출입 금지',['crew','waiter']]],zoneAllow:['crew','waiter'],
   guards:[
     {kind:'g1',at:[7,11],post:270,still:true,tag:'doorGuard',radio:false},
     {kind:'g1',route:[[14,14,3],[18,14,3],[18,11,2]],tag:'loungeGuard',radio:true},
@@ -35,13 +36,21 @@ if(window.__EPISODE_ONE__)STAGES.push({
       {at:[13,5],stay:6,name:'뒤쪽 창가',act:'통화'},
       {at:[14,10],stay:5,name:'서류장 옆',act:'서류 확인'}]},
     {kind:'civ',body:'male',at:[6,16],post:90,still:true,tag:'smoker'},
-    {kind:'civ',body:'male',model:'worker',outfit:'waiter',route:[[12,12,5],[16,13,4]],tag:'closingStaff'}
+    {kind:'civ',body:'male',model:'worker',outfit:'waiter',route:[[12,12,5],[16,13,4]],tag:'closingStaff',key:'blue'},
+    {kind:'g1',at:[12,6],post:270,still:true,tag:'camop',radio:false},
+    {kind:'g1',at:[3,11],post:90,still:true,tag:'mealGuest',radio:false},
+    {kind:'civ',at:[2,8],post:90,still:true,tag:'cook',model:'worker',outfit:'waiter'}
   ],
   interrogate:[{gives:'code',learn:'직원 출입문 비밀번호 4816',say:'직원 문은 4816. 뒷문도 같아.'},
     {gives:'routine',learn:'송대건은 2층 책상과 뒤쪽 창가를 오간다',say:'송대건은 위층이야. 통화할 땐 뒤쪽 창가로 가.'}],
   notes:[{pos:[12,10],fl:0,title:'직원 인수인계 메모',surface:{b:0,t:'desk'},lines:['직원 출입문 · 4816','송 실장님 정산 중. 위층 장부는 건드리지 말 것.'],gives:'code',learn:'직원 출입문 비밀번호 4816'}],
-  items:[[13,8,1]],lamps:[[7,13,170,1],[13,14,160,1],[13,6,135,0],[16,9,180,1,1]],
-  lampControls:[[2,12.25,5.125],[3,19.875,9.5]],
-  roomSigns:[{text:'직원 전용',at:[14,8],fl:0},{text:'정산실',at:[17,7],fl:1}],
+  items:[[13,8,1]],lamps:[[3,8,130,0],[7,13,170,1],[13,14,160,1],[13,6,135,0],[16,9,180,1,1]],
+  lampControls:[[3,12.25,5.125],[4,19.875,9.5]],
+  cams:[[19,14,180,20]],camRoom:{pos:[12,6],fl:0},buildingFuses:[{b:0,at:[8,13,7,13]}],
+  props:[{id:'apron',name:'직원 앞치마',outfit:'waiter',at:[3,6],surface:{b:1,t:'shelf',u:.45}},{id:'laxative',name:'설사약',at:[3,6],surface:{b:1,t:'shelf',u:.8}}],
+  uses:[{need:'laxative',at:[3,9],surface:{b:1,t:'table',u:.5},label:'식사에 설사약 넣기',permit:'waiter',done:'식사에 설사약을 넣었다',act:S=>{S.mealDosed=true;}}],
+  dining:{guest:'mealGuest',first:75,every:75,stay:4,toilet:[3,4],queue:[3,6],toiletA:-Math.PI/2,toiletStay:20},
+  traps:[{k:'drop',at:[17,11],fl:1,mount:[17.5,13.1],hit:[16,13,18,14],text:'백야',noOpp:true}],
+  roomSigns:[{text:'화장실',at:[3,5],fl:0},{text:'골목식당',at:[3,10],fl:0},{text:'직원 전용',at:[14,8],fl:0},{text:'정산실',at:[17,7],fl:1}],
   roofs:['cRoofA','cRoofB','cRoofA'],wires:[],challenges:['ghost','clean'],fastT:360
 });

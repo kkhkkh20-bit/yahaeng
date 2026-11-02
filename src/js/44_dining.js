@@ -51,7 +51,7 @@ function updateDining(dt){
   // 새로 준비한 양념은 다음 긴 식사 주기를 기다리지 않는다. 이미 끝난 맨밥도 새 접시로 잇는다.
   if(S.mealDosed&&m.eaten&&!m.sick){clearMealTrip(g);m.phase='idle';m.eaten=false;m.eating=0;}
   if(['walking','queue','returning'].includes(m.phase)||m.phase==='toilet'&&!m.arrived){g.glance=0;g.glanceT=8;}
-  const table=usePoint(u),atTable=!flOf(g)&&!g.z&&dist(g.x,g.y,table.x,table.y)<18&&!g.moving;
+  const table=usePoint(u),atTable=!flOf(g)&&!g.z&&dist(g.x,g.y,table.x,table.y)<32&&!g.moving;
   const dest=m.toilet||d.toilet,waiting=m.queue||d.queue||[dest[0],dest[1]+3],wc={x:tc(dest[0]),y:tc(dest[1])};
   if(m.phase==='idle'){
     if((S.t<m.next&&!S.mealDosed)||g.route.some(w=>w.once))return;
@@ -61,6 +61,8 @@ function updateDining(dt){
   m.elapsed+=dt;
   if(m.elapsed>180){clearMealTrip(g);m.phase='idle';m.next=S.t+d.every;return;}
   if(m.phase==='walking'||m.phase==='eating'){
+    // A person occupying the serving spot must not permanently consume the visit.
+    if(m.phase==='walking'&&!m.eaten&&m.waypoint?.spent&&!g.route.includes(m.waypoint)){m.waypoint=mealTrip(g,table,d.stay,'포차 식사');}
     // A completed meal remains completed if another person nudges the guest away.
     if(m.eaten&&!m.sick&&(!g.route.includes(m.waypoint)||g.wait<=0)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;g.mealT=0;return;}
     if(!atTable){g.mealT=0;if(m.phase==='eating'){m.eating=0;m.phase='walking';}return;}

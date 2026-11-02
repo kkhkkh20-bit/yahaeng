@@ -1,0 +1,20 @@
+[
+  {
+    "touch": false,
+    "closed": 72,
+    "open": 204,
+    "crouchSamples": 256,
+    "quietField": true,
+    "depthTest": true,
+    "wrongFloorHidden": true
+  },
+  {
+    "touch": true,
+    "closed": 72,
+    "open": 204,
+    "crouchSamples": 256,
+    "quietField": true,
+    "depthTest": true,
+    "wrongFloorHidden": true
+  }
+]

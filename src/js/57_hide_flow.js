@@ -1,6 +1,6 @@
 // 수거함은 뚜껑·입구·앞판을 같은 좌표로 그린다. 결과는 몸이 들어간 뒤 한 번만 적용한다.
 function hideSpace(h, bodies=0, self=false) {
-  const occupied=h.type==='box'?((S.player.hide===h?1:0)+(self&&S.player.hide!==h?1:0)):0;
+  const occupied=['box','locker','wardrobe','cab','bed'].includes(h.type)?((S.player.hide===h?1:0)+(self&&S.player.hide!==h?1:0)):0;
   return (h.bodies||0)+bodies+occupied<=(h.cap??Infinity);
 }
 function hideFootprint(h) {
@@ -138,8 +138,8 @@ function updateHideFlow(P,dt) {
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
   const at=F.route.stand,W=hideWork(T),leaveAt=F.walk+(F.handPre||0)+F.duration+(F.handPost||0);
-  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
-  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>.7&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>.7&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;finishEnvSelection();P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
   if(F.kind==='retrieve'){
     P.x=at.x;P.y=at.y;P.a=Math.atan2(h.y-at.y,h.x-at.x);
     if(!F.committed&&f>=.78){
@@ -168,7 +168,7 @@ function updateHideFlow(P,dt) {
   if(!F.opened&&f>.08){F.opened=true;play(h.type==='bush'||h.furn?'cloth':'metal',.25);}
   if(!F.closed&&!F.handPost&&f>.94){F.closed=true;play(h.type==='bush'||h.furn?'cloth':'metal',.2);}
   if(T.t>=T.dur){
-    P.trav=null;P.moving=false;if(['stash','exit','retrieve'].includes(F.kind)){P.x=at.x;P.y=at.y;}else if(P.hide){P.x=h.x;P.y=h.y;}
+    P.trav=null;P.moving=false;finishEnvSelection();if(['stash','exit','retrieve'].includes(F.kind)){P.x=at.x;P.y=at.y;}else if(P.hide){P.x=h.x;P.y=h.y;}
     if(F.kind==='exit')h.spotted=false;finishBodyRetrieval(P,F);RC=null;
   }
 }

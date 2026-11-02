@@ -6,7 +6,10 @@ function lookAround(g, dt, base, amp, hold) {
   if (g.lookT <= 0) { g.lookI = (g.lookI + 1) % 4; g.lookOff = [0, 1, 0, -1][g.lookI] * amp * rnd(0.8, 1.15) * (g.lookSide || (g.lookSide = Math.random() < 0.5 ? 1 : -1)); g.lookT = rnd(hold[0], hold[1]); }
   g.want = base + g.lookOff;
 }
+const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function moveAlong(g, speed, dt) {
+  if(g.doorWork){g.moving=false;return false;}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&npcCanOpenDoor(g,d)&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:.36};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
@@ -22,7 +25,7 @@ function moveAlong(g, speed, dt) {
     }
   }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
-  if (!g.path || !g.path.length) return true;
+  if (!g.path || !g.path.length) {if(g.pathGoal&&dist(g.x,g.y,g.pathGoal.x,g.pathGoal.y)>32){if(S.t-(g.pathFailedAt||0)>.5)pathTo(g,g.pathGoal.x,g.pathGoal.y);return false;}return true;}
   if(STAGE.artSlice&&window.__clubView?.ready)speed*=window.__clubView.pace(g.path[0].x-g.x,g.path[0].y-g.y);
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
@@ -86,10 +89,17 @@ function moveAlong(g, speed, dt) {
   g.moving = dist(startX, startY, g.x, g.y) > .01;
   return !g.path.length;
 }
+function updateNpcDoors(dt){
+  for(const d of S.doors){const W=d.npcWork;if(!W)continue;const g=S.guards.find(g=>g.doorWork===W);if(!g||['DEAD','CAPTIVE'].includes(g.state)){if(g)g.doorWork=null;d.npcWork=null;continue;}W.t+=dt;if(d.locked&&W.t>=W.dur*.76){setDoor(d,false);play('metal',.2*proxVol(g));}if(W.t>=W.dur){g.doorWork=null;d.npcWork=null;}}
+}
 const solidAtG = (tx, ty) => solidAt(tx, ty);
 function pathTo(g, x, y) {
   if (g.z) { g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE), solidFor(g.z)); if (g.path.length) { const last = g.path[g.path.length - 1]; if (rLv(Math.floor(x / TILE), Math.floor(y / TILE)) === g.z) { last.x = x; last.y = y; } } return; }
   g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
+  if(!g.path.length&&!['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state)){
+    const doors=new Set(S.doors.filter(d=>flOf(d)===flOf(g)&&npcCanOpenDoor(g,d)).map(d=>d.ty*MW+d.tx));
+    g.path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(x/TILE),Math.floor(y/TILE),(tx,ty)=>solidAt(tx,ty)&&!doors.has(ty*MW+tx));
+  }
   // 쫓거나 뒤지는 중인데 길이 막혔으면 가까운 잠긴 문을 부수고 연다
   if (!g.path.length && dist(g.x, g.y, x, y) > 60 && ['ALERT', 'SEARCH', 'CHECK', 'BODY', 'SUSPICIOUS'].includes(g.state)) {
     const d = S.doors.filter(d => d.locked && flOf(d)===flOf(g)).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
@@ -99,6 +109,8 @@ function pathTo(g, x, y) {
       g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
     }
   }
+  if(!g.path.length&&Math.floor(g.x/TILE)===Math.floor(x/TILE)&&Math.floor(g.y/TILE)===Math.floor(y/TILE)&&dist(g.x,g.y,x,y)>6&&!solidAt(Math.floor(x/TILE),Math.floor(y/TILE)))g.path=[{x,y}];
+  g.pathGoal={x,y};g.pathFailedAt=S.t;
   if (g.path.length && !solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { const last = g.path[g.path.length - 1]; last.x = x; last.y = y; }
 }
 // ---- 높이 단계: 땅(g) · 건물 위층(f층_건물) · 옥상(r구역). 자경대원은 계단·배관·베란다로 단계를 옮겨 쫓는다
@@ -326,6 +338,7 @@ function civScream(g, x, y, c, saw, kind) {
 const camOn = c => !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? !S.lightsOn : (S.bfuses || []).some(f => f.b === c.b && f.cut));
 const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀리
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
+function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
 function camRange(c, light) { return c.search ? SL_R : light > 0.3 ? 300 : 135; }
 // CCTV 관리실: 화면을 보는 사람이 있어야 CCTV가 경보로 이어진다. 관리실이 비면(쓰러뜨리면) 찍혀도 녹화만 된다
 const camWatcher = () => { if (!S.camRoom) return true; const op = npc('camop'); return !!op && !['DEAD', 'CAPTIVE', 'SLEEP', 'TERROR', 'ALERT'].includes(op.state) && !op.climb && !op.brawl && flOf(op) === S.camRoom.fl && !(op.z || 0) && dist(op.x, op.y, S.camRoom.x, S.camRoom.y) < 85; };
@@ -343,7 +356,7 @@ function updateCams(dt) {
     if (ta != null) c.a += clamp(angDiff(c.a, ta), -1.4 * dt, 1.4 * dt); else c.a = c.search ? c.a + clamp(angDiff(c.a, c.base + c.sweep * s), -0.8 * dt, 0.8 * dt) : c.base + c.sweep * clamp(s * 1.35, -1, 1);
     if (c.cool > 0) { c.cool -= dt; continue; }
     setLayer(c.fl);
-    const sees = (x, y, light) => { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; };
+    const sees = (x,y,light) => cameraSees(c,x,y,light);
     let v = 0;
     if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
     if (v > 0 && STAGE.zones && pZoneEff() === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만

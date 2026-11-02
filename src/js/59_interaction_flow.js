@@ -66,13 +66,14 @@ function updateObjectAction(P, dt) {
       if (!changed) { if (I.a.fromZ) actCarry(I.a); else actPrimary(Object.assign({}, I.a, { viaZ: true })); contactFeedback(objectActionPoint(I.a),I.a.k); }
     } finally { I.committing = false; RC = null; S.storyT = 0; hudCache.objH = null; }
   }
-  if (I.t >= I.dur) P.interact = null;
+  if (I.t >= I.dur) {P.interact = null;if(I.committed)finishEnvSelection();}
 }
 function busyEnvAction() {
   const P = S.player;
   return { k: 'none', busy: true, label: P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){
+  if(d.npcWork)return hideEase((d.npcWork.t/d.npcWork.dur-.22)/.54);
   const I=S.player.interact;
   if(I?.a.k==='door'&&(I.a.d===d||I.a.d.group?.includes(d))){const p=hideEase((I.t/I.dur-.22)/.54);return I.state?p:1-p;}
   return d.locked?0:1;

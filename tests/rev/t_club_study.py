@@ -21,9 +21,9 @@ const drive=(dx,dy)=>{const n=Math.hypot(dx,dy)||1,v=V.groundToScreen?V.groundTo
 const stop=()=>{G.input.joy=null;};
 const act=(a)=>{check(a,'action absent');G.selectEnvTarget(G.envToken(a));key('KeyX');idle();};
 const walk=(tx,ty,f=P.fl||0)=>{
- check((P.fl||0)===f,'wrong floor requested');G.setLayer(f);const doors=new Map(S.doors.filter(d=>(d.fl||0)===f).map(d=>[d.tx+','+d.ty,d]));const sol=(x,y)=>G.solidAt(x,y)&&!doors.has(x+','+y);let path=G.astar(Math.floor(P.x/48),Math.floor(P.y/48),tx,ty,sol);check(path.length||Math.floor(P.x/48)===tx&&Math.floor(P.y/48)===ty,'unreachable '+tx+','+ty);
+ check((P.fl||0)===f,'wrong floor requested');G.setLayer(f);const doors=new Map(S.doors.filter(d=>(d.fl||0)===f).map(d=>[d.tx+','+d.ty,d]));const canOpen=d=>!d.keyLock||!!P.keys?.[d.keyLock],sol=(x,y)=>G.solidAt(x,y)&&!(doors.has(x+','+y)&&canOpen(doors.get(x+','+y)));let path=G.astar(Math.floor(P.x/48),Math.floor(P.y/48),tx,ty,sol);check(path.length||Math.floor(P.x/48)===tx&&Math.floor(P.y/48)===ty,'unreachable '+tx+','+ty);
  for(const p of path){if(S.over&&S.exitOpen)break;let attempts=0;while(Math.hypot(P.x-p.x,P.y-p.y)>3&&!S.over&&attempts++<300){
-  const d=doors.get(Math.floor(p.x/48)+','+Math.floor(p.y/48));if(d&&d.locked&&Math.hypot(P.x-d.x,P.y-d.y)<59){stop();const a=G.envChoices().find(a=>a.d===d);if(a)act(a);}
+  const d=doors.get(Math.floor(p.x/48)+','+Math.floor(p.y/48));if(d&&d.locked&&Math.hypot(P.x-d.x,P.y-d.y)<59){stop();const a=G.envChoices().find(a=>a.d===d);if(a){act(a);if(S.keypad&&P.keys.code){for(const digit of G.STAGE.code)document.querySelector('#keypad [data-k=\"'+digit+'\"]').dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:window.__MOBILE_TEST__?'touch':'mouse',pointerId:71}));tick(30);}}}
   drive(p.x-P.x,p.y-P.y);tick();}check(attempts<300,'blocked walking '+tx+','+ty);
  }stop();tick(2);render();trace.push(['walk',tx,ty,f,+S.t.toFixed(2)]);};
 window.play={G,S,P,V,walk,tick,idle,act,key,render,check,stop};}'''
@@ -40,9 +40,9 @@ async def main():
   await step('entry','tick(2)')
   await step('grab',"walk(7,12);check(G.grabAction().k==='grab','rear grapple absent');key('KeyC');idle();check(P.captive,'grapple failed');tick(90);check(P.captive.say,'interrogation silent')")
   await step('ko',"key('KeyZ',4);idle();check(S.corpses.some(c=>c.ko)&&S.stats.kills===0,'tap does not KO')")
-  await step('uniform',"act(G.envChoices().find(a=>a.k==='dress'));check(P.outfit==='crew','uniform absent')")
+  await step('uniform',"act(G.envChoices().find(a=>a.k==='dress'));check(P.outfit==='crew','uniform absent');check(!G.envAction().blocked&&G.envAction().k==='carry','successful dress leaves next action blocked')")
   await step('carry',"act(G.envChoices().find(a=>a.k==='carry'));check(P.carrying,'carry absent');walk(6,8)")
-  await step('stash',"act(G.envChoices().find(a=>a.k==='carry'&&a.h));check(!P.carrying&&S.corpses[0].stashed,'stash fails')")
+  await step('stash',"act(G.envChoices().find(a=>a.k==='carry'&&a.h));check(!P.carrying&&S.corpses[0].stashed,'stash fails');check(!G.envAction().blocked,'successful stash leaves next action blocked')")
   await step('retrieve',"const h=S.corpses[0].container,c=S.corpses[0];check(G.beginHideFlow('retrieve',h,c),'retrieve rejected');idle();check(!c.stashed&&!c.carried&&!P.carrying&&h.bodies===0,'retrieve occupancy fails');act(G.envChoices().find(a=>a.k==='carry'&&!a.h));act(G.envChoices().find(a=>a.k==='carry'&&a.h));check(c.stashed&&h.bodies===1,'restash fails')")
   await step('bin',"act(G.envChoices().find(a=>a.k==='hide'));check(P.hide,'hide fails');G.leaveHide({x:0,y:1});idle();check(!P.hide,'exit fails')")
   await step('interior',"walk(10,3);walk(10,6);check(G.bldAt(Math.floor(P.x/48),Math.floor(P.y/48))===0,'did not enter')")

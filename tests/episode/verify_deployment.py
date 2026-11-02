@@ -27,7 +27,7 @@ async def main():
     cdp=await page.context.new_cdp_session(page);await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':65,'y':520}]});await cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':115,'y':520}]});await page.wait_for_timeout(650);await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
    else:
     await page.keyboard.down('ArrowRight');await page.wait_for_timeout(650);await page.keyboard.up('ArrowRight')
-   after=await page.evaluate('[__game.S.player.x,__game.S.player.y]');assert after[0]>before[0] and after[1]<before[1],(before,after)
+   after=await page.evaluate('[__game.S.player.x,__game.S.player.y]');assert after[0]>before[0] and abs(after[1]-before[1])<max(3,(after[0]-before[0])*.15),(before,after)
    # Freeze only after verifying actual browser-frame input.
    await page.evaluate('window.requestAnimationFrame=()=>0');await page.wait_for_timeout(150)
    if mobile:await page.tap('#btnPause')

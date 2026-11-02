@@ -1,7 +1,7 @@
 // A suspended object has a reachable fixing, intact chains and one delayed impact.
 function signGeometry(t) {
   const b=BLD[bldAt(t.at[0],t.at[1])],x=tc(t.at[0]),y=tc(t.at[1]);
-  return{x,y,z:rLv(t.at[0],t.at[1]),boardY:y+38,w:t.text==='실외기'?64:88,h:t.text==='실외기'?34:24,appliance:t.text==='실외기',b};
+  return{x,y,z:t.fl?0:rLv(t.at[0],t.at[1]),boardY:y+38,w:t.text==='실외기'?64:88,h:t.text==='실외기'?34:24,appliance:t.text==='실외기',b};
 }
 function signPosition(t) {
   const g=signGeometry(t);if(t.wreck)return{x:t.wreck.x,y:t.wreck.y,angle:.15};
@@ -9,7 +9,7 @@ function signPosition(t) {
   return{x:g.x+Math.sin(S.t*1.6+(t.i||0))*.7,y:g.boardY,angle:Math.sin(S.t*1.6+(t.i||0))*.007};
 }
 function signBounds(t){const g=signGeometry(t),p=signPosition(t);return{x:Math.min(g.x-g.w/2-12,p.x-g.w/2-12),y:Math.min(g.y-24,p.y-g.h/2-12),w:g.w+28,h:Math.max(g.y+20,p.y+g.h/2+14)-Math.min(g.y-24,p.y-g.h/2-12)};}
-function signFixture(t){const g=signGeometry(t);return{type:'sign',trap:t,x:g.x,y:g.y,tx:t.at[0],ty:t.at[1],z:g.z,fl:0};}
+function signFixture(t){const g=signGeometry(t);return{type:'sign',trap:t,x:g.x,y:g.y,tx:t.at[0],ty:t.at[1],z:g.z,fl:t.fl||0};}
 function signReplacesFacade(b,r){return r===0&&(S.traps||[]).some(t=>t.k==='drop'&&t.text!=='실외기'&&signGeometry(t).b===b);}
 function drawHangingSign(t,part='all',c=ctx) {
   const g=signGeometry(t),p=signPosition(t);c.save();
@@ -27,8 +27,8 @@ function drawHangingSign(t,part='all',c=ctx) {
   c.restore();
 }
 function canReleaseSign(t) {
-  const P=S.player;if(!t||t.k!=='drop'||t.used||t.busy||P.under||P.vent||P.wire||P.ledge||P.jump||P.hide||P.carrying||P.captive||flOf(P))return false;
-  const g=signGeometry(t);return g.z>0&&P.z===g.z&&objectReachable({x:g.x,y:g.y,z:g.z,fl:0},42);
+  const P=S.player;if(!t||t.k!=='drop'||t.used||t.busy||P.under||P.vent||P.wire||P.ledge||P.jump||P.hide||P.carrying||P.captive)return false;
+  const g=signGeometry(t);return (t.fl?flOf(P)===t.fl&&!P.z:g.z>0&&!flOf(P)&&P.z===g.z)&&objectReachable(signFixture(t),42);
 }
 function beginSignRelease(t) {
   const P=S.player;if(P.trav||!canReleaseSign(t))return false;
@@ -41,7 +41,7 @@ function updateSignRelease(P,dt) {
   if(!S.traps.includes(t)||flOf(P)!==F.fl||P.z!==F.z||tc(t.at[0])!==F.x||tc(t.at[1])!==F.y){t.busy=false;P.trav=null;P.x=F.stand.x;P.y=F.stand.y;return;}
   const s=signWorkSample(F,p);P.x=s.x;P.y=s.y;P.a=s.a;P.moving=false;P.vx=P.vy=0;
   if(!F.started&&p>=.65){F.started=true;t.used=true;t.busy=false;const g=signGeometry(t);t.fall={t:0,dur:.5+g.z*.08,x:(t.hit[0]+t.hit[2]+1)/2*TILE,y:(t.hit[1]+t.hit[3]+1)/2*TILE};play('metal',.45);}
-  if(p>=1){P.trav=null;P.x=F.stand.x;P.y=F.stand.y;RC=null;}
+  if(p>=1){P.trav=null;finishEnvSelection();P.x=F.stand.x;P.y=F.stand.y;RC=null;}
 }
 function drawSignWork(){const P=S.player,T=P.trav,F=T?.signFlow;if(!F)return;const s=signWorkSample(F,clamp(T.t/T.dur,0,1)),old=playerInkKey;playerInkKey=isTouch?playerKey(P):null;try{drawPR(playerKey(P),s.x,s.y,s.a,s.anim,0,1,1,0,s.frame);}finally{playerInkKey=old;}}
 function updateFallingSigns(dt) {

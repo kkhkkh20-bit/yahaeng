@@ -52,6 +52,8 @@ function secondaryEnvChoices() {
   } finally { ACT_SKIP.clear(); }
   return out;
 }
+// Release only our completed action; an externally vanished selection stays blocked.
+function finishEnvSelection(){S.envExplicit=null;S.envKey=S.envPick=S.envPickK=S.envPickP=null;S.envSel=0;closeEnvPicker();}
 function envChoices() {
   if (actionBusy()) return [];
   const hanging = S.player;
@@ -77,7 +79,9 @@ function envChoices() {
   // 시체를 멘 채 계단 칸: 오르내리기가 먼저 (내려놓기는 ⇄)
   if (P.carrying) { const st = env.filter(a => (a.k === 'up' || a.k === 'fdown') && a.l && a.l.kind === 'fstair'); if (st.length) return st.concat(z, env.filter(a => !st.includes(a))); }
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
-  return (P.carrying || (sa && (sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel'))) ? z.concat(env) : env.concat(z);
+  const list=(P.carrying || (sa && (sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel'))) ? z.concat(env) : env.concat(z);
+  if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
+  return list;
 }
 function envAction() {
   if (actionBusy()) return busyEnvAction();

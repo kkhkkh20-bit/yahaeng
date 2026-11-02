@@ -106,7 +106,7 @@ function updateAccessFlow(P,dt) {
   P.hidden=!!(P.vent||P.under||P.hide)||!s.outside;P.light=P.hidden?0:lightAt(P.x,P.y,!!P.z);
   if(F.h.type==='vent')F.obj.open=accessOpen(F)>.25;
   if(!F.sound&&F.t>=F.walk+.12){F.sound=true;play('metal',.3);noise(F.h.x,F.h.y,35,'vent',0,F.z);}
-  if(F.t>=T.dur){P.trav=null;P.moving=false;P.x=F.exit?F.stand.x:F.h.x;P.y=F.exit?F.stand.y:F.h.y;if(F.obj.open!=null)F.obj.open=false;if(F.kind==='surface')F.obj.spotted=false;RC=null;}
+  if(F.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.exit?F.stand.x:F.h.x;P.y=F.exit?F.stand.y:F.h.y;if(F.obj.open!=null)F.obj.open=false;if(F.kind==='surface')F.obj.spotted=false;RC=null;}
 }
 function drawAccessFlow() {
   const P=S.player,T=P.trav,F=T?.accessFlow;if(!F)return;const s=accessActorSample(F),h=F.h,old=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
@@ -129,5 +129,5 @@ function updateVentPull(P,dt){
   const f=clamp(A.t/A.dur,0,1),u=hideEase((f-.15)/.75);g.x=A.x0+(A.v.x-A.x0)*u;g.y=A.y0+(A.v.y-A.y0)*u;g.moving=false;
   if(f<1)return;
   g.doomed=false;g.containerMoving=false;g.takedownIntent={...A.intent,lethal:A.intent.lethal||(A.holding&&A.held>=LETHAL_HOLD)};
-  killGuard(g,'stash',{type:'vent',x:A.v.x,y:A.v.y,fl:0,z:0,bodies:0});S.stats.special++;A.v.open=false;P.trav=null;P.moving=false;play('cloth',.4);
+  killGuard(g,'stash',{type:'vent',x:A.v.x,y:A.v.y,fl:0,z:0,bodies:0});S.stats.special++;A.v.open=false;P.trav=null;P.moving=false;finishEnvSelection();play('cloth',.4);
 }
