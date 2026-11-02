@@ -1,0 +1,54 @@
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.016s
+
+OK
+PASS sprite source ownership, deduplication, late-load discard, release, failure backoff and retry
+도달 검사: 통과
+통과 tests/rev/r3.py (10초)
+통과 tests/rev/t_ability_locks.py (14초)
+통과 tests/rev/t_access_evidence.py (21초)
+통과 tests/rev/t_ai_evidence.py (13초)
+통과 tests/rev/t_assassin_skills.py (24초)
+통과 tests/rev/t_btn4.py (34초)
+통과 tests/rev/t_building_search.py (15초)
+통과 tests/rev/t_camera_presentation.py (44초)
+통과 tests/rev/t_change.py (14초)
+실패 tests/rev/t_choice.py (5초) — ["문제 ['고른 행동(lamp)을 실행해도 아무 일도 안 일어난다']"]
+통과 tests/rev/t_city.py (37초)
+통과 tests/rev/t_combat_policy.py (104초)
+통과 tests/rev/t_contract_density.py (15초)
+통과 tests/rev/t_copy_scenarios.py (20초)
+통과 tests/rev/t_cqc.py (27초)
+통과 tests/rev/t_disguise_ai.py (29초)
+통과 tests/rev/t_disguise_lighting.py (13초)
+통과 tests/rev/t_electric_skill.py (9초)
+통과 tests/rev/t_environment_targets.py (11초)
+통과 tests/rev/t_fac.py (25초)
+통과 tests/rev/t_hanging_controls.py (39초)
+통과 tests/rev/t_height_cues.py (11초)
+통과 tests/rev/t_instig.py (27초)
+통과 tests/rev/t_interaction_flow.py (51초)
+통과 tests/rev/t_ko.py (32초)
+통과 tests/rev/t_m1x.py (13초)
+통과 tests/rev/t_mission_flow.py (56초)
+통과 tests/rev/t_mission_progress.py (6초)
+통과 tests/rev/t_multilevel_pursuit.py (11초)
+통과 tests/rev/t_patrol_motion.py (5초)
+통과 tests/rev/t_pixelfx_bush.py (5초)
+통과 tests/rev/t_rel.py (51초)
+통과 tests/rev/t_roof_routes.py (14초)
+통과 tests/rev/t_scene_layers.py (11초)
+통과 tests/rev/t_skill_tree.py (10초)
+통과 tests/rev/t_sprite_ownership.py (14초)
+통과 tests/rev/t_stair_geometry.py (12초)
+통과 tests/rev/t_target_body.py (8초)
+통과 tests/rev/t_tut.py (68초)
+통과 tests/rev/t_ui2.py (14초)
+통과 tests/rev/t_v33.py (22초)
+통과 tests/rev/t_world_alignment.py (14초)
+통과 tests/rev/t_world_realism.py (12초)
+통과 tests/rev/t_zone.py (21초)
+실패 tests/mis/tm1.py (77초) — ['문제 ["두꺼비집을 내려도 자경대원이 고치러 오지 않는다 [\'전기 조작 필요\'] [\'PATROL\', False]"]']
+
+결과: 실패 tests/rev/t_choice.py, tests/mis/tm1.py (로그: build/test_logs/)

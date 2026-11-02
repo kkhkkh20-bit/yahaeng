@@ -1,0 +1,2 @@
+PASS {'poleLights': 8, 'overlap': 'pole/light/door and global fuse', 'legacyAnchors': True}
+PASS actual keyboard and mobile light-switch input

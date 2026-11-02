@@ -1,0 +1,277 @@
+{
+  "fastRegressionCount": 45,
+  "passed": 45,
+  "method": "Initial broad run: 43 passed; two old fixtures assumed free electricity. Both now explicitly own kit/electric and passed on rerun. Final electrical/PC/touch/package checks also passed after the last HUD adjustment.",
+  "tests": [
+    {
+      "test": "tests/rev/r3.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_ability_locks.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_access_evidence.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_ai_evidence.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_assassin_skills.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_btn4.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_building_search.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_camera_presentation.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_change.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_choice.py",
+      "passed": true,
+      "finalVerification": "choice-final.log",
+      "fixtureUpdatedAfterInitialRun": true
+    },
+    {
+      "test": "tests/rev/t_city.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_combat_policy.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_contract_density.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_copy_scenarios.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_cqc.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_disguise_ai.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_disguise_lighting.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_electric_skill.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_environment_targets.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_fac.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_hanging_controls.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_height_cues.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_instig.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_interaction_flow.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_ko.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_m1x.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_mission_flow.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_mission_progress.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_multilevel_pursuit.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_patrol_motion.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_pixelfx_bush.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_rel.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_roof_routes.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_scene_layers.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_skill_tree.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_sprite_ownership.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_stair_geometry.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_target_body.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_tut.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_ui2.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_v33.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_world_alignment.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_world_realism.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/rev/t_zone.py",
+      "passed": true,
+      "finalVerification": "regression-initial.log",
+      "fixtureUpdatedAfterInitialRun": false
+    },
+    {
+      "test": "tests/mis/tm1.py",
+      "passed": true,
+      "finalVerification": "mission-final.log",
+      "fixtureUpdatedAfterInitialRun": true
+    }
+  ]
+}

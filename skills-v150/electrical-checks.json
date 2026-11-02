@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "27 nodes; switch selection, direct action, pending work, building and main circuit cuts all locked; hearth and doors stay basic",
+    "real switch contact turns off/on after purchase; previous pending checkpoint cancels when ownership is absent",
+    "building cut after learning; building restoration and actual guard switch work remain independent of player ownership",
+    "only light lesson loans electrical skill; dart and ambush stay locked; no permanent unlock or cross-lesson leak"
+  ],
+  "pageErrors": []
+}
