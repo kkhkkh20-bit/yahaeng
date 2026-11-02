@@ -1,0 +1,44 @@
+[
+  {
+    "touch": false,
+    "menu": {
+      "loadedImages": 108,
+      "decodedRgbaEstimate": 334953620,
+      "spriteSources": null
+    },
+    "activeM2": {
+      "loadedImages": 118,
+      "decodedRgbaEstimate": 356080788,
+      "spriteSources": null
+    },
+    "afterTransitions": {
+      "loadedImages": 121,
+      "decodedRgbaEstimate": 353344660,
+      "spriteSources": null
+    },
+    "drawMedianMs": 10.899999991059303,
+    "drawP95Ms": 27,
+    "errors": []
+  },
+  {
+    "touch": true,
+    "menu": {
+      "loadedImages": 108,
+      "decodedRgbaEstimate": 334953620,
+      "spriteSources": null
+    },
+    "activeM2": {
+      "loadedImages": 118,
+      "decodedRgbaEstimate": 356080788,
+      "spriteSources": null
+    },
+    "afterTransitions": {
+      "loadedImages": 121,
+      "decodedRgbaEstimate": 353344660,
+      "spriteSources": null
+    },
+    "drawMedianMs": 7,
+    "drawP95Ms": 14.699999988079071,
+    "errors": []
+  }
+]

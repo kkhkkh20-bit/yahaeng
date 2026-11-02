@@ -1,0 +1,56 @@
+[
+  {
+    "release": "before",
+    "touch": false,
+    "bodyBytes": 7538268,
+    "requests": 121,
+    "idleTimeAdvanced": 0.2665999999999996,
+    "idleDraws": 16,
+    "sources": null,
+    "errors": []
+  },
+  {
+    "release": "before",
+    "touch": true,
+    "bodyBytes": 7538268,
+    "requests": 121,
+    "idleTimeAdvanced": 0.2667000000000004,
+    "idleDraws": 16,
+    "sources": null,
+    "errors": []
+  },
+  {
+    "release": "after",
+    "touch": false,
+    "bodyBytes": 3851451,
+    "requests": 102,
+    "idleTimeAdvanced": 0,
+    "idleDraws": 0,
+    "sources": {
+      "loaded": [
+        "hero",
+        "heroMotion"
+      ],
+      "pending": [],
+      "decodedRgbaEstimate": 41287680
+    },
+    "errors": []
+  },
+  {
+    "release": "after",
+    "touch": true,
+    "bodyBytes": 3851451,
+    "requests": 102,
+    "idleTimeAdvanced": 0,
+    "idleDraws": 0,
+    "sources": {
+      "loaded": [
+        "hero",
+        "heroMotion"
+      ],
+      "pending": [],
+      "decodedRgbaEstimate": 41287680
+    },
+    "errors": []
+  }
+]

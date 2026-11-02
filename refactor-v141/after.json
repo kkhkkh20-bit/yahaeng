@@ -1,0 +1,112 @@
+[
+  {
+    "touch": false,
+    "menu": {
+      "loadedImages": 87,
+      "decodedRgbaEstimate": 104135828,
+      "spriteSources": {
+        "loaded": [
+          "hero",
+          "heroMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 41287680
+      }
+    },
+    "activeM2": {
+      "loadedImages": 107,
+      "decodedRgbaEstimate": 233397396,
+      "spriteSources": {
+        "loaded": [
+          "fBob",
+          "fLong",
+          "fTail",
+          "femaleSuit",
+          "hero",
+          "heroCrew",
+          "heroCrewMotion",
+          "heroMotion",
+          "keyMotion",
+          "kid",
+          "male",
+          "old",
+          "pack",
+          "suit"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 161480704
+      }
+    },
+    "afterTransitions": {
+      "loadedImages": 100,
+      "decodedRgbaEstimate": 122526868,
+      "spriteSources": {
+        "loaded": [
+          "hero",
+          "heroMotion",
+          "keyMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 44564480
+      }
+    },
+    "drawMedianMs": 10.700000002980232,
+    "drawP95Ms": 22.30000001192093,
+    "errors": []
+  },
+  {
+    "touch": true,
+    "menu": {
+      "loadedImages": 87,
+      "decodedRgbaEstimate": 104135828,
+      "spriteSources": {
+        "loaded": [
+          "hero",
+          "heroMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 41287680
+      }
+    },
+    "activeM2": {
+      "loadedImages": 107,
+      "decodedRgbaEstimate": 233397396,
+      "spriteSources": {
+        "loaded": [
+          "fBob",
+          "fLong",
+          "fTail",
+          "femaleSuit",
+          "hero",
+          "heroCrew",
+          "heroCrewMotion",
+          "heroMotion",
+          "keyMotion",
+          "kid",
+          "male",
+          "old",
+          "pack",
+          "suit"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 161480704
+      }
+    },
+    "afterTransitions": {
+      "loadedImages": 100,
+      "decodedRgbaEstimate": 122526868,
+      "spriteSources": {
+        "loaded": [
+          "hero",
+          "heroMotion",
+          "keyMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 44564480
+      }
+    },
+    "drawMedianMs": 6.399999991059303,
+    "drawP95Ms": 10.600000008940697,
+    "errors": []
+  }
+]

@@ -1063,6 +1063,7 @@ const D = () => DIFFS[DKEY];
 // 주인공: 살금 1.1m/초 · 걷기 1.7m/초 · 달리기 3.3m/초. 추격하는 자경대원(112)은 달리는 주인공보다 조금 느리다
 const SPD = { sneak: 55, walk: 82, run: 160, gPatrol: 48, gSusp: 60, gBody: 66, gAlert: 112, target: 36, flee: 92 };
 
+
 // 메인 포스터에 맞춘 작동 시안. 기본 실행과 분리하고 ?tone=ink에서만 켠다.
 const INK_STUDY=document.documentElement.classList.contains('ink-study');
 const INK={paper:'#eee4cf',ink:'#171817',line:'#777366',red:'#b73528',muted:'#b4ad9e'};
@@ -1092,6 +1093,7 @@ function drawInkClubSigns(P){
   const bar=FURN.find(it=>it.t==='bar'&&it.seed===club&&!it.fl);
   if(bar)sign((bar.x+bar.w/2)*TILE,bar.y*TILE+TILE-11,'직원 전용',64);
 }
+
 // 물건·장소 이름 뒤의 조사. '(으)로', '을(를)' 같은 편집용 표기를 화면에 내보내지 않는다.
 function withJosa(word, pair) {
   const text = String(word == null ? '' : word); if (!text) return text;
@@ -1110,6 +1112,7 @@ function refreshItemNames() {
     const d = defs.find(d => d.id === p.id); if (d && d.name) p.name = d.name;
   }
 }
+
 // ---------------------------------------------------------------- 지도
 let G, STAGE, STAGE_I = 0;
 let POLES = [], CARS = [], CROWD = [];
@@ -1218,6 +1221,7 @@ function moveStageFixtures(st, grid, saved = false) {
     if (!P.hide && !flOf(P) && !P.z && Math.floor(P.x / TILE) === nx && Math.floor(P.y / TILE) === ny) { P.x = tc(x); P.y = tc(y); }
   }
 }
+
 // ---------------------------------------------------------------- 실내 평면 (도시: 빌라·단독·상가)
 // 빌라: 가운데 계단실 + 좌우 두 세대(뒤쪽 방·욕실, 앞쪽 거실·주방). 좁으면 한 세대. 상가: 오른쪽 계단실 + 층마다 용도(가게·PC방·학원·사무실·식당)
 let FURN = [], PLANS = [], AUTO_LAMPS = [];
@@ -1718,6 +1722,7 @@ function astar(sx, sy, gx, gy, solidAt = solidAtG) {
   return path.reverse();
 }
 
+
 // 판자의 그림과 통행 영역은 같은 구간을 쓴다. 정면 외벽 위를 지나 실제 옥상에 닿게 한다.
 let PLANKS = [], PLANK_MASK = null;
 const plankAt = (tx, ty) => PLANK_MASK && inMap(tx, ty) ? PLANK_MASK[ty * MW + tx] : 0;
@@ -1740,6 +1745,43 @@ function buildPlanks() {
     for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (inMap(x, y)) PLANK_MASK[y * MW + x] = z;
   }
 }
+
+// Image ownership is independent of missions and drawing. A late load from an
+// old mission cannot repopulate the current mission's decoded-image cache.
+function createSpriteSources(catalog, makeImage = () => new Image(), now = () => performance.now()) {
+  const loaded = Object.create(null), pending = Object.create(null);
+  let wanted = new Set();
+  const retryAt = new Map();
+  function load(name) {
+    if (!catalog?.[name]) return Promise.resolve(null);
+    wanted.add(name);
+    if (loaded[name]) return Promise.resolve(loaded[name]);
+    if (pending[name]) return pending[name];
+    if ((retryAt.get(name) || 0) > now()) return Promise.resolve(null);
+    return pending[name] = new Promise(resolve => {
+      const img = makeImage();
+      img.onload = () => {
+        delete pending[name]; retryAt.delete(name);
+        const source = { img, w:img.width, h:img.height, parts:[] };
+        if (wanted.has(name)) loaded[name] = source;
+        resolve(wanted.has(name) ? source : null);
+      };
+      img.onerror = () => { delete pending[name]; retryAt.set(name,now()+3000); resolve(null); };
+      img.src = catalog[name].src;
+    });
+  }
+  function retain(names) {
+    wanted = new Set(names);
+    for (const name of retryAt.keys()) if (!wanted.has(name)) retryAt.delete(name);
+    for (const name of Object.keys(loaded)) if (!wanted.has(name)) delete loaded[name];
+  }
+  function snapshot() {
+    return { loaded:Object.keys(loaded).sort(), pending:Object.keys(pending).sort(),
+      decodedRgbaEstimate:Object.values(loaded).reduce((n,s) => n+s.w*s.h*4,0) };
+  }
+  return { loaded, pending, load, retain, snapshot };
+}
+
 // ---------------------------------------------------------------- 그래픽
 const atlas = new Image();
 const F = A.frames;
@@ -1859,17 +1901,8 @@ function drawKitBuilding(b) {
   return true;
 }
 // 내 둘레 가구의 막힌 칸: 어두운 방에서도 어디로 지나갈 수 있는지 보이게 (가까울수록 진하게)
-function drawNearFurn(P, openB) {
-  if (P.z || P.vent || P.under || P.hide) return; const fP = flOf(P), R = 230;
-  for (const it of FURN) {
-    if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB) continue;
-    const x = it.x * TILE, y = it.y * TILE, w = it.w * TILE, h = it.h * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > R) continue;
-    const a = 0.75 * (1 - d / R), tall = FURN_TALL.has(it.t);
-    ctx.strokeStyle = tall ? `rgba(150,190,240,${a})` : `rgba(240,196,120,${a})`; ctx.lineWidth = 2; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4);
-    if (tall) { ctx.fillStyle = `rgba(150,190,240,${a})`; for (const [cx, cy] of [[x + 2, y + 2], [x + w - 2, y + 2], [x + 2, y + h - 2], [x + w - 2, y + h - 2]]) ctx.fillRect(cx - 3, cy - 3, 6, 6); }
-  }
-}
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
+
 function killBlockReason() {
   const P = S.player; if (P.ledge || actionBusy(P) || P.hide || P.vent || P.under || P.wire) return null;
   let best = null, bd = 78;
@@ -1917,6 +1950,7 @@ function drawAwareness(P) {
   }
 }
 // ---- 프리렌더 캐릭터 (3D 모델을 8방향으로 미리 찍은 시트, Commandos 방식). 색 키 시트 한 장을 역할별 옷 색으로 바꿔 쓴다
+
 const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
 const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
@@ -1936,12 +1970,12 @@ const PR_CH = 16;
 let prBase = null;  // { img, w, h, parts: [조각별 분류 캐시] }
 if (PR) { prImg.onload = () => { prBase = { img: prImg, w: prImg.width, h: prImg.height, parts: [] }; }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
-const prBodies={},prBodyLoads={};
-function prLoadBody(bn){
-  if(prBodies[bn])return Promise.resolve(prBodies[bn]);if(prBodyLoads[bn])return prBodyLoads[bn];const bm=PR?.bodies?.[bn];if(!bm)return Promise.resolve(null);
-  return prBodyLoads[bn]=new Promise(resolve=>{const im=new Image();im.onload=()=>{const body=prBodies[bn]={img:im,w:im.width,h:im.height,parts:[]};delete prBodyLoads[bn];resolve(body);};im.onerror=()=>{delete prBodyLoads[bn];resolve(null);};im.src=bm.src;});
-}
-if(PR?.bodies)for(const bn of Object.keys(PR.bodies))if(!bn.endsWith('Motion')||bn==='heroMotion')prLoadBody(bn);
+const spriteSources = createSpriteSources(PR?.bodies);
+const prBodies = spriteSources.loaded, prBodyLoads = spriteSources.pending;
+const prLoadBody = bn => spriteSources.load(bn);
+// The heroine is needed for the first lesson. NPC sources belong to the active
+// mission; rare disguise and paired-motion sources load when actually requested.
+if (PR) { prLoadBody('hero'); prLoadBody('heroMotion'); }
 // 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
 let prScr = null;
 function prRead(base, ci) {
@@ -2003,6 +2037,7 @@ function playerKey(P) {
   const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
   const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  if(!prBodies[body])prLoadBody(body);
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
   return pal === 'ninja' ? pal : pal + '@' + body;
 }
@@ -2015,7 +2050,7 @@ function prPalette(pk, body) {
 // 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로
 function prSheet(key) {
   if (prVar[key]) return prVar[key]; const [pk, bn] = prSplit(key), base = bn ? prBodies[bn] : prBase;
-  if (!base) return null; const pal = prPalette(pk, bn); if (!pal) return null;
+  if (!base) { if (bn) prLoadBody(bn); return null; } const pal = prPalette(pk, bn); if (!pal) return null;
   const sh = prVar[key] = { key, base, P4: pal.map(h => hexRgb(h).split(',').map(Number)), parts: [] };
   if (key === 'ninja' || (PR.style === 'modular' && bn && bn.startsWith('hero'))) prVar[key + '_ol'] = { key: key + '_ol', of: sh, parts: [] };  // 숨었을 때 쓰는 밝은 외곽선 실루엣 (주인공만)
   return sh;
@@ -2086,7 +2121,10 @@ function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if
 function prKeep(keys){
   prNear.clear();const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
-  const bodies=new Set([...keep].map(k=>prSplit(k)[1]));for(const bn of Object.keys(prBodies))if(bn.endsWith('Motion')&&!bodies.has(bn))delete prBodies[bn];
+  const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
+  spriteSources.retain(bodies);
+  // Preload only the normal silhouettes used by people in this mission.
+  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion')prLoadBody(bn);
 }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
@@ -2124,7 +2162,13 @@ function climbContact(key, a, frame, at, size = 1) {
   const fy=(feet[0][1]+feet[1][1])/2,fx=(feet[0][0]+feet[1][0])/2,gy=m.grounds?.climb??PR.groundY;
   return {x:at.x-(hx-PR.fr/2)*scale,y:at.y-13+(gy-hy)*scale+14,foot:{x:at.x+(fx-hx)*scale,y:at.y+(fy-hy)*scale-13},hands:hands.map(h=>({x:at.x+(h[0]-hx)*scale,y:at.y+(h[1]-hy)*scale}))};
 }
-const usePR = key => { if (!PR || !prBase) return false; if (key.endsWith('_ol')) return !!prVar[key]; const [pk, bn] = prSplit(key); return bn ? !!(PR_PAL[pk] && prBodies[bn]) : !!PR_PAL[key]; };
+const usePR = key => {
+  if (!PR || !prBase) return false;
+  if (key.endsWith('_ol')) return !!prVar[key];
+  const [pk,bn] = prSplit(key);
+  if (bn && !prBodies[bn]) { prLoadBody(bn); return false; }
+  return bn ? !!PR_PAL[pk] : !!PR_PAL[key];
+};
 const PAIR = () => !!(PR && PR.anims.carry && PR.anims.held);
 const strippedKey = c => {
   const body = prSplit(c.ch || 'strip')[1];
@@ -2145,6 +2189,7 @@ function killKT(kind, f, from) {
 const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, Math.round(kt / 3 * (nf - 1)))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 const corpseFrame=c=>c.stripped?9:c.t0!=null&&S.t-c.t0<1?(c.f0||0)+Math.floor((S.t-c.t0)*10):9;
+
 function corpseBounds(c){
   if(c.dog)return[c.x-24,c.y-26,c.x+24,c.y+22];
   const key=c.stripped?strippedKey(c):c.ch,bm=PR?.bodies?.[prSplit(key||'ninja')[1]],m=bm||PR;
@@ -2178,6 +2223,7 @@ function drawHeldBox(x, y, a, s, front) {
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
 }
 function guardAnim(g) {
+  if (g.state === 'BODY' && g.bodyWork) return 'crouch';
   if (g.swingT > 0) return 'punch';
   if ((g.drinkT > 0 || g.mealT > 0 || vipRoutine(g)) && PR && PR.anims.talk) return 'talk';
   if (holdingNow(g)) return g.moving ? 'hold' : 'holdI';
@@ -2262,6 +2308,7 @@ function drawDog(x, y, a, moving, alpha = 1, dead = false) {
 const EMOTE = { 'zz': 'em_zz', '?': 'em_q', '!': 'em_ex', '!?': 'em_exq', '...': 'em_dots', '흥': 'em_meh', '잡담…': 'em_chat', '후—': 'em_dots', '하암': 'em_zz', '담배?': 'em_q', '멍!': 'em_ex' };
 function drawEmote(txt, x, y) { const n = EMOTE[txt] || 'em_q'; blit(ctx, n, x - 21, y - 40, 42, 39); MARK_R.push([x - 21, y - 40, x + 21, y - 1]); }
 const roofPats = {};
+
 function roofPattern(name) {
   if (roofPats[name]) return roofPats[name];
   const c = document.createElement('canvas'); c.width = c.height = 48; const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
@@ -2352,12 +2399,7 @@ function buildRoofCanvas(b, i) {
   return c;
 }
 const roofOf = i => STAGE.roofs ? STAGE.roofs[i % STAGE.roofs.length] : (STAGE.roofTex || 'roofRed');
-function makeSprite(name, tint) {
-  const f = F[name]; const c = document.createElement('canvas'); c.width = f[2]; c.height = f[3];
-  const x = c.getContext('2d'); x.drawImage(atlas, f[0], f[1], f[2], f[3], 0, 0, f[2], f[3]);
-  if (tint) { x.globalCompositeOperation = 'source-atop'; x.fillStyle = tint; x.fillRect(0, 0, f[2], f[3]); }
-  return c;
-}
+
 
 // ---------------------------------------------------------------- 사운드
 let AC = null, master = null, muted = false; const SB = {};
@@ -2378,14 +2420,14 @@ function initAudio() {
 }
 const MB = {}; let musicGain = null, musicSrc = null, musicKey = null;
 function setMusic(k) {
-  if (!AC || musicKey === k) return;
+  if (!AC || musicKey === k || !['n_calm','n_tense','n_fight'].includes(k)) return;
   if (k.startsWith('n_') && !MB[k]) { if (neonPending[k]) { musicKey = '__want_' + k; return; } MB[k] = makeNeonLoop(k); }
-  if (!MB[k]) { if (A.music && A.music[k] && !MB['_' + k]) { MB['_' + k] = 1; AC.decodeAudioData(b64ToBuf(A.music[k]), b => { MB[k] = b; if (musicKey === '__want_' + k) { musicKey = null; setMusic(k); } }, () => {}); } musicKey = '__want_' + k; return; }
+  if (!MB[k]) { musicKey = '__want_' + k; return; }
   if (!musicGain) { musicGain = AC.createGain(); musicGain.connect(master); }
   const now = AC.currentTime;
   if (musicSrc) { const old = musicSrc; const og = old._g; og.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { old.stop(); } catch (e) {} }, 2000); }
   const src = AC.createBufferSource(); src.buffer = MB[k]; src.loop = true;
-  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'calm' ? 0.16 : k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
+  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
   src.connect(g); g.connect(musicGain); src._g = g; src.start(); musicSrc = src; musicKey = k;
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
@@ -2519,7 +2561,6 @@ function sfx(kind) {
   else if (kind === 'toSeen') { osc('square', 660, 660, 0.07, 0.045); osc('square', 880, 880, 0.09, 0.045, 0.08); }
 }
 // 의심 상승음: 누가 나를 알아채는 게이지(0~1)를 따라 아주 작은 음이 높아진다. 0이면 사라진다
-let riskOsc = null, riskGain = null;
 // 대사 타이핑 소리: 글자가 찍힐 때 짧은 '톡'. 말하는 사람마다 음높이가 조금 다르다
 let typeT = 0;
 function typeTick(seed) {
@@ -2529,15 +2570,9 @@ function typeTick(seed) {
   g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(0.022, now + 0.004); g.gain.exponentialRampToValueAtTime(0.0008, now + 0.035);
   o.connect(f); f.connect(g); g.connect(master); o.start(now); o.stop(now + 0.04);
 }
-// 들킬 위험 경고음은 쓰지 않는다 (계속 삐 소리가 거슬렸다). 위험은 화면 위 눈 막대로만 보여 준다
-function riskTone(r) {
-  r = 0; if (!AC || !master) return;
-  if (!riskOsc) { if (r < 0.05) return; riskOsc = AC.createOscillator(); riskGain = AC.createGain(); const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1800; riskOsc.type = 'triangle'; riskGain.gain.value = 0; riskOsc.connect(f); f.connect(riskGain); riskGain.connect(master); riskOsc.start(); }
-  const t = AC.currentTime, on = r >= 0.05 && r < 1;
-  riskGain.gain.setTargetAtTime(on ? 0.012 + 0.05 * r : 0, t, on ? 0.08 : 0.15); riskOsc.frequency.setTargetAtTime(240 + 620 * Math.min(1, r), t, 0.1);
-}
 // 메뉴·화면 버튼 딸깍 (게임 안 행동 버튼은 각자 소리가 있어 제외)
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b || b.closest('.pad') || b.closest('#keypad')) return; if (!b.closest('.screen, .sysbtns, #tacBanner')) return; try { initAudio(); } catch (er) {} sfx('click'); }, true);
+
 // ---------------------------------------------------------------- 기록
 const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 // 임무별 도전과제 (Hitman식): 깨면 별 하나 + 과제마다 별 하나. 모은 별로 다른 진입로가 열린다
@@ -2584,6 +2619,7 @@ function saveBest(id, rank) {
   b[id] = rank; try { localStorage.setItem('yahaeng.best', JSON.stringify(b)); } catch (e) {}
 }
 
+
 // 주요 의뢰는 서로 다른 잠입 문제 세 개에 집중한다. 이전 의뢰의 기록·저장은 보존한다.
 const MAIN_CONTRACTS = ['m2', 'm4', 'm6'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
@@ -2596,6 +2632,7 @@ function recordCameraEvidence(c) {
   S.cameraEvidence = true; checkObjective();
   if (fresh) toast('신원이 녹화됐다 — 보안실에서 기록을 지워야 탈출할 수 있다', 3, 'warn');
 }
+
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
 let CONTRACT_LAYOUT = null;
 function captureContractLayout() {
@@ -2654,6 +2691,7 @@ function restoreContractLayout() {
   }
   S.layoutVersion = STAGE.layoutVersion;
 }
+
 // ---------------------------------------------------------------- 상태
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
@@ -3374,6 +3412,7 @@ function renderMap(R) {
   return c;
 }
 
+
 // ---------------------------------------------------------------- 빛
 const TORCH_R = 210, TORCH_FOV = .32;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
@@ -3494,7 +3533,7 @@ function noise(x, y, r, src, fl, z) {
     let audible=d<rr;
     if(src==='whistle'&&!audible&&d<r){field=field||soundField(x,y,r);audible=(field.get(Math.floor(g.y/TILE)*MW+Math.floor(g.x/TILE))??Infinity)<r;}
     const runStep = src === 'step' && S.player.mode === 'run' && S.player.moving;
-    if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs)) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
+    if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs), g) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
     if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (audible && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
     if (audible) {
@@ -3561,6 +3600,7 @@ function respondToDecoy(heard,n){
 }
 function setIcon(g, ic) { g.icon = ic; g.iconT = 2.2; }
 function proxVol(g) { return clamp(1 - dist(g.x, g.y, S.player.x, S.player.y) / 700, 0.25, 1); }
+
 
 // 실외 조명은 벽 또는 기둥을 가진다. 광원의 지면 투영과 스위치 위치를 분리한다.
 function outdoorLampCell(x,y) {
@@ -3673,6 +3713,7 @@ function drawOutdoorLampFixtures() {
     ctx.restore();
   }
 }
+
 // 실내 CCTV는 담당 경비의 작업점이 아닌, 같은 방의 벽 모서리에 설치한다.
 // 문을 경계로 방을 나누고 실제 벽 시야로 후보를 평가한다. 외부 카메라·서치라이트는 유지한다.
 function mountIndoorCamera(c, mounted) {
@@ -3711,6 +3752,7 @@ function syncCameraLayout() {
   const mounted = [];
   for (const c of S.cams || []) { mountIndoorCamera(c, mounted); mounted.push(c); }
 }
+
 // ---------------------------------------------------------------- 구역 (공개 · 출입 금지 · 적진)
 // ---- 구역 (히트맨식): 공개 구역에선 나는 행인이다 — 수상한 짓을 보일 때만 의심받는다. 출입 금지 구역은 잠입 규칙(처음엔 경고), 적진은 보이면 적대
 // STAGE.zones = [[x0, y0, x1, y1, 'pub' | 'res' | 'hos', 높이, 이름표], ...] (뒤에 적은 것이 우선. 높이: 없으면 땅, 'roof' 지붕만, 'all' 둘 다). 따로 적지 않으면: 거리 = 공개, 건물 안·옥상 = 출입 금지
@@ -3732,21 +3774,21 @@ function zoneInfo(x, y, z) {
 const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
 const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
 const pZone = () => pZoneInfo().k;
-const disguised = () => { const P = S.player; return !!(P.outfit && !P.disguiseBlown); };
+const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !P.disguiseBlown)); };
 // 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
-const myPermits = () => { const P = S.player, a = []; if (disguised()) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
-const allowedBy = allow => !!allow && myPermits().some(o => allow.includes(o));
+const myPermits = g => { const P = S.player, a = []; if (disguised(g)) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
+const allowedBy = (allow, g) => !!allow && myPermits(g).some(o => allow.includes(o));
 const permitName = allow => { const o = myPermits().find(o => allow && allow.includes(o)); return o === S.player.outfit ? outfitName(o) : (S.player.item && S.player.item.name) || outfitName(o); };
-const permitted = zi => zi.k !== Z_PUB && allowedBy(zi.allow);
+const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
-const pZoneEff = () => { const zi = pZoneInfo(); return permitted(zi) ? Z_PUB : zi.k; };
+const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
 // 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
-const sharpEye = g => !g.dog && disguised() && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
+const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
   (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; S.stats.blown = (S.stats.blown || 0) + 1;
-  toast(why || `변장이 발각됐다 — 이 복장으로는 통과할 수 없다. 다른 옷이 필요하다`, 3, 'warn');
+  toast(why || `변장을 알아본 목격자가 있다 · 시야 밖에서 옷을 갈아입어라`, 3, 'warn');
   if (g) { gsay(g, ['잠깐, 넌 우리 사람이 아니잖아!', '너 누구야? 처음 보는 얼굴인데.', '그 옷 어디서 났어?'][g.id % 3]); g.eyeT = 0; }
 }
 function updateSharpEye(g, dt, rawVis) {
@@ -3767,20 +3809,23 @@ function suspAct(g) {
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
-  if (P.mode === 'sneak' && P.moving && g && !myPermits().length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
+  if (P.mode === 'sneak' && P.moving && g && !myPermits(g).length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
   return 0;
 }
 // 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
 const suspectLook = () => S.player.outfit || 'face';
 function rememberSuspect(g, look = suspectLook()) {
-  if (g) g.suspectLook = look;
-  S.chaseSeen = true; (S.knownLooks = S.knownLooks || {})[look] = true;
+  if (!look) return;
+  S.chaseSeen = true;
+  if (g) { g.suspectLook = look; (g.suspectMemory = g.suspectMemory || {})[look] = true; }
+  else (S.knownLooks = S.knownLooks || {})[look] = true; // Completed central report only.
 }
 const knownFace = (g, look = suspectLook()) =>
+  !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
 // 허가받은 직원이 걷거나 뛰는 것은 업무 동선이다. 실제 불법 행동은 복장과 관계없이 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits().length ? 0 : k; };
+const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));
@@ -3867,6 +3912,7 @@ function drawWarnRing(g) {
   ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
   ctx.strokeStyle = f > 0.35 ? 'rgba(242,170,70,.95)' : 'rgba(232,80,60,.95)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(g.x, g.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
 }
+
 // 계단 그림·입구·이동·도착·NPC 길찾기가 함께 쓰는 층별 구조.
 let STAIR_LAYOUT = [];
 function stairsInit(capture = false) {
@@ -3970,6 +4016,7 @@ function beginStairTravel(l, up) {
     if (up && l.kind === 'fstair') hint('floors', '계단 입구로 들어가면 아래층으로 내려간다');
   } }));
 }
+
 // ---------------------------------------------------------------- 자경대원 AI
 // 멈춰 서서 둘러보기: 정면 → 한쪽 → 정면 → 반대쪽, 매번 잠깐씩 멈춰서 본다 (계속 고개를 흔들지 않는다)
 function lookAround(g, dt, base, amp, hold) {
@@ -4166,6 +4213,7 @@ function updateClimbG(g, dt) {
   if (c.kind === 'climb') g.a = c.up ? -Math.PI / 2 : Math.PI / 2;
   if (f >= 1) { g.climb = null; g.fl = c.to.fl || 0; g.z = c.to.z || 0; g.x = c.to.x; g.y = c.to.y; g.path = null; g.repath = 0; setLayer(flOf(g)); }
 }
+
 // 경계 단계: 0 평온 · 1 경계 · 2 수색 · 3 발각
 const A_RANGE = [1, 1.12, 1.22, 1.3], A_SPEED = [1, 1.06, 1.12, 1.18], A_FOV = [1, 1.05, 1.12, 1.15];
 const A_NAME = ['평온', '경계', '수색', '발각'];
@@ -4184,7 +4232,7 @@ function setAlert(lv, dur, msg, look = suspectLook()) {
 function roofCheck() {
   if (!S || S.over) return;
   const g = S.guards.find(g => !g.civ && !g.dog && g.state === 'ALERT' && g.lastSeen);
-  if (g) startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting');
+  if (g) startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting', g);
 }
 const distracted = g => !!(g.chat || g.act === 'smoke' || g.act === 'yawn' || g.act === 'pickup');
 function spawnReinforcements() {
@@ -4270,7 +4318,7 @@ function exposure() {
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.climb || g.doomed) continue;
     if (flOf(g) !== flOf(P) || (flOf(P) && P.wire) || dist(g.x, g.y, pv.x, pv.y) > 560) continue;
-    if (STAGE.zones && !g.dog && !knownFace(g) && pZoneEff() === Z_PUB && !publicSuspicion(g)) continue;  // 공개 구역의 행인은 누가 돌아봐도 그냥 지나친다
+    if (STAGE.zones && !g.dog && !knownFace(g) && pZoneEff(g) === Z_PUB && !publicSuspicion(g)) continue;  // 공개 구역의 행인은 누가 돌아봐도 그냥 지나친다
     const gg = Object.create(g); gg.a = Math.atan2(pv.y - g.y, pv.x - g.x);  // 이쪽으로 돌아본다면
     if (canSee(gg, pv.x, pv.y, P.light, P.hidden, sneak, elev) > 0) return 1;
   }
@@ -4285,6 +4333,7 @@ function lowCovered(x0, y0, x1, y1) {
 const spdMul = () => A_SPEED[S.alevel] * D().spd * (STAGE.gspd || 1);
 
 // 주민: 싸우지 않는다. 보거나 시체를 보면 비명을 질러 자경대원을 부르고 달아난다
+
 function civWake(g, x, y) { g.state = 'PATROL'; g.meter = Math.max(g.meter, 0.45); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '!?'); play('question', 0.3 * proxVol(g)); }
 // 한 사건에 신고하러 가는 사람은 한두 명뿐: 이미 근처 사건을 신고하러 간(간) 사람이 있으면 나머지는 대부분 비명 지르며 달아난다
 function reportersNear(x, y) { const L = S.repLog || (S.repLog = []); for (let i = L.length - 1; i >= 0; i--) if (S.t - L[i].t > 12) L.splice(i, 1); return L.filter(r => dist(r.x, r.y, x, y) < 380).length; }
@@ -4302,11 +4351,11 @@ function civScream(g, x, y, c, saw, kind) {
   endChat(g); g.state = 'PANIC'; g.panicT = rnd(6, 9); g.fear = { x, y }; g.path = null; g.cowered = false; g.meter = 1; S.stats.screams = (S.stats.screams || 0) + 1;
   say([[g, ['도둑이야!', '누, 누구세요!', '사람 살려!'][(Math.random() * 3) | 0]]]);
   play('call', 0.7 * proxVol(g), 1.6); noise(g.x, g.y, 380, 'scream', flOf(g));
-  for (const o of S.guards) { if (o.civ || o.dog || o.target || ['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(o.state)) continue; if (flOf(o) !== flOf(g) && dist(o.x, o.y, g.x, g.y) < 520) goSuspicious(o, g.x + rnd(-30, 30), g.y + rnd(-30, 30), 5); }
   setAlert(2, 30, '주민이 비명을 질렀다 — 자경대원이 몰려온다');
 }
 // 사람끼리 겹치지 않게: 가까우면 서로 밀어낸다 (벽 안으로는 밀지 않는다). 나도 사람을 뚫고 지나가지 못한다
 // CCTV: 좌우로 천천히 돌며(끝에서 잠깐 멈춤) 빨간 시야 안의 나·시체를 찍는다. 다트로 부수거나, 두꺼비집·전체 조명을 내리면 꺼진다
+
 const camOn = c => !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? !S.lightsOn : (S.bfuses || []).some(f => f.b === c.b && f.cut));
 const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀리
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
@@ -4331,7 +4380,7 @@ function updateCams(dt) {
     const sees = (x,y,light) => cameraSees(c,x,y,light);
     let v = 0;
     if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
-    if (v > 0 && STAGE.zones && pZoneEff() === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
+    if (v > 0 && STAGE.zones && pZoneEff({state:''}) === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
       c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
@@ -4366,6 +4415,7 @@ function drawCams(fl) {
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }
   }
 }
+
 function separateBodies(dt) {
   const R = 26, L = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.doomed), k = Math.min(1, dt * 6), L0 = CUR_F;
   const push = (o, dx, dy) => { setLayer(flOf(o)); const sol = o.z ? solidFor(o.z) : solidAt, nx = o.x + dx, ny = o.y + dy; if (!sol(Math.floor(nx / TILE), Math.floor(o.y / TILE))) o.x = nx; if (!sol(Math.floor(o.x / TILE), Math.floor(ny / TILE))) o.y = ny; };
@@ -4409,7 +4459,7 @@ function updateCiv(g, dt) {
     // 범죄(처치·기절·운반·붙잡기·락픽·몰래 약 타기)와 무단 침입(직원이 일터의 불청객을 봄)을 따로 본다
     const crimeNow = !!((P.interact && P.interact.illegal) || P.carrying || P.captive || P.strikeT > 0 || (STAGE.zones && (P.pick || (P.useT || 0) > S.t)));
     const homeNow = !!(H && gb === H.b && pb === H.b && flOf(P) === H.fl && !P.z && !P.wire && ptx >= H.x0 && ptx <= H.x1 && pty >= H.y0 && pty <= H.y1);
-    const tresNow = !!(STAGE.zones && g.outfit && !g.child && pZoneEff() !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
+    const tresNow = !!(STAGE.zones && g.outfit && !g.child && pZoneEff(g) !== Z_PUB && dist(g.x, g.y, P.x, P.y) < 420);
     g.wary = homeNow || crimeNow || tresNow;
     const vis0 = (P.hide || P.under || P.vent || !sameF) ? 0 : canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.jump ? Math.max(1, P.z) : P.z);
     if (vis0 > 0 && !g.wary && dist(g.x, g.y, P.x, P.y) < 110 && Math.random() < dt * 0.6) g.want = Math.atan2(P.y - g.y, P.x - g.x);  // 힐끔 쳐다볼 뿐
@@ -4438,6 +4488,7 @@ function updateCiv(g, dt) {
   }
   const tr = (g.state === 'PANIC' ? 4 : 1.8) * dt; g.a += clamp(angDiff(g.a, g.want), -tr, tr);
 }
+
 const NOTICE_AT = 0.35;  // 이 아래(흰색)는 '눈치' 단계, 넘으면 노랑(의심 — 멈춰 보고 확인하러 온다), 1이면 빨강(발각)
 const awareCol = g => guardAwareness(g).color;
 function updateGuard(g, dt) {
@@ -4476,7 +4527,7 @@ function updateGuard(g, dt) {
   let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
   if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
-  let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff()) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
+  let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff(g)) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
@@ -4531,12 +4582,13 @@ function updateGuard(g, dt) {
   if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
       if (c.hideT>S.t || (c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue;
-      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
+      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c) || !claimBodyExam(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
     }
   }
 
   switch (g.state) {
     case 'PATROL': {
+      if (updateBodyCover(g)) break;
       if (g.relight) {
         const work=g.relight,l=work.l,at=lampControl(l);
         if(!l.off||l.broken||l.cut!=null){g.relight=null;g.path=null;break;}
@@ -4694,15 +4746,24 @@ function updateGuard(g, dt) {
     }
     case 'BODY': {
       const c = g.body;
-      if (!c || c.carried || (c.hidden && !g.dog) || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) { g.state = 'RETURN'; g.path = null; break; }
-      if (!g.path) pathTo(g, c.x, c.y);
-      if (moveAlong(g, SPD.gBody * spdMul(), dt) || dist(g.x, g.y, c.x, c.y) < 40) {
+      if (!bodyExamValid(g, c) || !claimBodyExam(g, c)) { g.bodyWork = null; g.body = null; g.state = 'RETURN'; g.path = null; break; }
+      const close = dist(g.x, g.y, c.x, c.y) < 40 && los(g.x, g.y, c.x, c.y, g.z || 0);
+      if (!close) { g.bodyWork = null; if (!g.path?.length) pathTo(g, c.x, c.y); moveAlong(g, SPD.gBody * spdMul(), dt); break; }
+      g.path = null; g.moving = false; g.want = Math.atan2(c.y-g.y,c.x-g.x);
+      if (!g.bodyWork) { g.bodyWork = { id:c.sceneId, t:c.ko ? 1.2 : .9 }; g.actionSpeechUntil=S.t+2; gsay(g,c.ko?'이봐, 들려? 상태를 확인할게.':'움직이지 않아… 상태 확인한다.',2); }
+      if ((g.bodyWork.t -= dt) <= 0) {
+        g.bodyWork = null;
         securityBodyFound(c,g);
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고가 났네…', '감전됐나 봐. 손대지 마.', '저런, 재수도 없지.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
-        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); if (!c.ko) after(1.5, lockExits);
+        c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); // Exits receive this incident only after a completed radio report.
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
         g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0 }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
-        startBuildingSearch(g.poi, g.fac || 'A', 'body', g);
+        const reportAt = {...g.poi}, reportedLook = c.ko ? c.assailantLook || null : null;
+        const lookouts = S.guards.filter(o => o.bodyCoverId === c.sceneId && guardHearsReport(g,o));
+        for (const o of lookouts) { o.bodyCoverId = null; if (reportedLook) rememberSuspect(o,reportedLook); }
+        const listeners = shareGuardReport(g, reportAt, reportedLook);
+        startBuildingSearch(reportAt, g.fac || 'A', 'body', g);
+        queueGuardRadio([g, ...lookouts, ...listeners], reportAt, reportedLook, true);
         g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 쓰러진 사람이 있어! 주변을 확인해!':'시체다! 근처 숨을 곳부터 확인해!',2.8);
       }
       break;
@@ -4738,6 +4799,7 @@ function updateGuard(g, dt) {
   }
 }
 // 숨을 만한 곳 목록을 만들어 하나씩 확인하러 간다
+
 function startCheck(g, at, max, radius) {
   const R = radius || 330;
   const gf = flOf(g);
@@ -4891,6 +4953,7 @@ function followLeader(g, dt, spd) {
 }
 // 순라꾼에게 맞음: 체력 1 감소, 뒤로 밀림, 잠깐 무적. 체력이 다하면 실패
 // 권총: 전체 경보(3단계)가 울린 뒤 정예·증원만 꺼낸다. 붉은 조준선으로 1초 겨눈 뒤 쏜다 — 그 사이 시야를 끊으면 빗나간다
+
 const GUN_AIM = 1.0, GUN_CD = 2.6, GUN_R = 430;
 const armed = g => !g.dog && !g.civ && !g.target && (g.elite || g.gun) && S.alevel >= 3;
 function updateGun(g, dt, sameF) {
@@ -4948,32 +5011,27 @@ function terrorAt(x, y) {
   if (n) { S.stats.terror = (S.stats.terror || 0) + n; setAlert(2, 30, `경비 ${n}명이 겁에 질려 달아난다`); bark(anyGuard(g => g.state === 'TERROR'), 'terror'); hint('terror', '겁에 질린 경비는 잠시 주변을 살피지 못한다. 이때 지나가거나 뒤에서 접근할 수 있다'); }
   else toast('시체가 떨어졌다 · 목격자 없음', 2);
 }
+
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
   const P = S.player, observed = g.seen ? pSpot() : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', observed.x, observed.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
-  if (g.seen && (P.outfit || P.disguise) && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `들통났다 — 이제 ${outfitName(P.outfit)}은 통하지 않는다` : '변장이 들통났다', 2.4, 'warn'); }
+  if (g.seen && (P.outfit || P.disguise) && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `목격자가 ${outfitName(P.outfit)}을 기억했다 · 무전 전에는 근처만 안다` : '변장이 들통났다', 2.4, 'warn'); }
   g.suspectLook = g.seen ? suspectLook() : g.suspectLook || 'face'; if (g.seen) rememberSuspect(g);  // 실제 목격한 신분만 공유한다
   g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = { ...observed }; g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0;
   if (S.fuseGuard === g) { S.fuseGuard = null; g.atFuse = false; }
   if (g.target) toast('표적이 소리쳤다 — 자경대원이 몰려온다', 2.6, 'warn');
-  let radio = !!g.radio;
-  for (const o of S.guards) {
-    if (o === g || o.civ || o.yank || o.state === 'DEAD' || o.state === 'ALERT' || o.target || o.state === 'FLEE' || o.state === 'CAPTIVE' || o.state === 'TERROR' || flOf(o) !== flOf(g) || (o.fac || 'A') !== (g.fac || 'A')) continue;
-    if (dist(o.x, o.y, g.x, g.y) < 340) { o.suspectLook = g.suspectLook; o.state = 'ALERT'; o.icon = '!'; o.iconT = 99; o.lastSeen = { ...observed }; o.lostT = 0.5; o.path = null; o.repath = 0; o.meter = 1; o.shootT = 0; if (o.radio) radio = true; }
-  }
+  const listeners = shareGuardReport(g, observed, g.suspectLook);
+  const reporters = [g, ...listeners].filter(o => o.radio);
+  const radio = reporters.length > 0;
   if (g.fac === 'B') { toast('건달파가 나를 노린다', 2, 'warn'); return; }
   if (g.fac === 'P' && STAGE.city) { copAlert(g); return; }  // 도시의 경찰: 수배로 (의뢰 판의 경찰은 자경대원처럼 경보를 올린다)  // 경찰: 조직 경보와 따로 — 수배로  // 건달파는 조직 무전망과 따로 — 전체 경보·증원 없음
   if (!radio && !g.target) {  // 무전기를 가진 자경대원이 없으면 경보가 근처에만 머문다 (증원·전체 경보 없음)
     if (S.alevel < 2) toast('근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다', 2.4);
     setAlert(2, 30);
   } else if (!g.target) {  // 무전: 바로 퍼지지 않는다. 무전기 자경대원이 몇 초간 보고하는 사이 처치하면 끊긴다
-    if (S.alevel < 3 && !S.radioCall) {
-      const rg = g.radio ? g : S.guards.filter(o => o.radio && o.state === 'ALERT' && o.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
-      if (rg) { const dur = DKEY === 'easy' ? 3.4 : DKEY === 'hard' ? 2.2 : 2.8; S.radioCall = { g: rg, t: dur, dur, at: { ...observed }, look: g.suspectLook }; rg.icon = '!'; rg.iconT = 99;
-        toast('무전기 자경대원이 보고한다 — ' + dur.toFixed(1) + '초 안에 제압하면 신고를 막을 수 있다', 2.4, 'warn'); play('metal', 0.25, 1.9); hint('radioCall', '무전 중인 경비는 멈춰 선다. 정면에서도 짧게 눌러 기절, 길게 눌러 처치할 수 있다'); }
-    }
+    queueGuardRadio(reporters, observed, g.suspectLook, true);
     setAlert(2, 30);
   } else if (!S.radioCall) {  // 표적도 바로 전체 경보가 아니라 2초 동안 소리친다 — 그 사이 처치하면 막힌다
     S.radioCall = { g, t: 2.0, dur: 2.0, at: { ...observed }, look: g.suspectLook, shout: true }; toast('표적이 사람을 부른다 — 2초 안에 막으면 퍼지지 않는다', 2.4, 'warn');
@@ -4982,16 +5040,18 @@ function goAlert(g) {
   hint('alert', '발각됐다. 시야를 끊고 숨으면 추격이 수색으로 전환된다');
 }
 function radioSpread(at, look) {
-  toast('무전으로 경보가 퍼졌다', 2.4, 'warn');
+  toast(look ? '인상착의가 무전으로 전달됐다' : '쓰러진 동료 신고 · 범인 인상착의는 모른다', 2.4, 'warn');
   startBuildingSearch(at, 'A', 'radio');
-  setAlert(3, null, null, look || 'face');
+  if (look) setAlert(3, null, null, look);
+  else setAlert(2, 35);
+  lockExits();
 }
 const radioBusy = g => !!(S.radioCall && S.radioCall.g === g);
 function updateRadioCall(dt) {
   const R = S.radioCall; if (!R) return;
   const g = R.g;
   if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.doomed) { S.radioCall = null; S.stats.radioCut = (S.stats.radioCut || 0) + 1; toast(R.shout ? '소리치기 전에 막았다 — 경보가 퍼지지 않았다' : '무전을 끊었다 — 경보가 퍼지지 않았다', 2.4, 'good'); logEv && logEv('radioCut', g.x, g.y); return; }
-  if (g.state !== 'ALERT') { S.radioCall = null; return; }
+  if (g.state !== 'ALERT' && !(R.relay && ['SEARCH','SUSPICIOUS','CHECK'].includes(g.state))) { S.radioCall = null; return; }
   if ((R.t -= dt) <= 0) { S.radioCall = null; radioSpread(R.at, R.look); }
 }
 // 벽 너머 발소리: 보이지 않는 자경대원이 들리는 거리 안에서 움직이면 발밑에 작은 소리 원 (마크 오브 더 도둑 방식)
@@ -5025,6 +5085,7 @@ function startFlee() {
   toast('표적이 북문으로 도주한다 — 빠져나가기 전에 막아라', 3.5, 'warn');
 }
 function goFlee(g) { g.state = 'FLEE'; g.path = null; g.icon = '!'; g.iconT = 99; }
+
 
 // 공유 수색: 실제 목격·신고 지점만 기억한다. 수색 지점 선정에 플레이어의 현재 위치를 쓰지 않는다.
 // 현장, 출입구, 각 층의 방, 옥상, 은신처를 서로 다른 경비에게 예약한다.
@@ -5140,7 +5201,7 @@ function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   const eligible = g => !g.civ && !g.dog && !g.target && g.tag !== 'camop' && !g.off && !g.yank && !g.doomed && !g.brawl && !g.hunt && !g.incident && !g.climb && !radioBusy(g) && (g.fac || 'A') === fac && g.why !== 'exit' && g.why !== 'blood' && (['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH', 'CHECK', 'NOTICE'].includes(g.state) || (g.state === 'ALERT' && !g.seen && g.lostT > 1));
   // A body discovery is a local spoken report, not an instant map-wide radio message.
   // Other floors can still learn of missing guards through the separate radio system.
-  const informed=g=>source!=='body'||!seed||g===seed||flOf(g)===flOf(seed)&&(g.z||0)===(seed.z||0)&&dist(g.x,g.y,seed.x,seed.y)<260*soundThrough(seed.x,seed.y,g.x,g.y);
+  const informed=g=>source==='radio'||!seed||g===seed||guardHearsReport(seed,g);
   const cand = S.guards.filter(g => eligible(g) && informed(g) && (g === seed || dist(g.x, g.y, pos.x, pos.y) < 900)).sort((a, b) => (a === seed ? -1 : b === seed ? 1 : dist(a.x, a.y, pos.x, pos.y) - dist(b.x, b.y, pos.x, pos.y)));
   let count = S.guards.filter(g => g.state === 'SEARCH' && g.searchJob?.incident === inc.id).length;
   for (const g of cand) {
@@ -5189,6 +5250,81 @@ function updateBuildingSearch(g, dt) {
   }
   finish('checked');
 }
+
+// Guard knowledge stays with its witness until a real spoken/radio report.
+function guardHearsReport(from, to, radius = 260) {
+  if (flOf(from) !== flOf(to) || (from.z || 0) !== (to.z || 0)) return false;
+  const d = dist(from.x, from.y, to.x, to.y);
+  if (d >= radius) return false;
+  const old = CUR_F; setLayer(flOf(from));
+  const heard = d < radius * soundThrough(from.x, from.y, to.x, to.y);
+  setLayer(old); return heard;
+}
+function shareGuardReport(from, at, look) {
+  const listeners = [];
+  for (const g of S.guards) {
+    if (g === from || g.civ || g.dog || g.target || g.doomed || g.yank || g.climb || g.off ||
+        (g.fac || 'A') !== (from.fac || 'A') || !guardHearsReport(from, g)) continue;
+    // A shout must not replace a direct pursuit, a casualty or a stronger assigned task.
+    if (!['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE'].includes(g.state) || g.searchJob || g.bodyCoverId || radioBusy(g)) continue;
+    endChat(g); g.act = null; g.bubble = null; g.relight = null;
+    g.state = 'SEARCH'; g.poi = { ...at }; g.lastSeen = { ...at }; g.reached = false;
+    g.path = null; g.waitBase = 5; g.meter = Math.max(g.meter || 0, .35); g.why = 'report';
+    g.reportFrom = from.id; g.reportAt = S.t; g.seen = false;
+    if (look) rememberSuspect(g, look);
+    setIcon(g, '?'); g.actionSpeechUntil = S.t + 2.4;
+    gsay(g, '들었어. 마지막으로 본 곳부터 확인한다.', 2.4);
+    listeners.push(g);
+  }
+  return listeners;
+}
+function queueGuardRadio(candidates, at, look, relay = false) {
+  if (S.radioCall || (look && S.alevel >= 3 && S.knownLooks?.[look])) return false;
+  const g = candidates.find(g => g.radio && !g.civ && !g.dog && !g.doomed &&
+    (g.fac || 'A') === 'A' && ['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state));
+  if (!g) return false;
+  const dur = DKEY === 'easy' ? 3.4 : DKEY === 'hard' ? 2.2 : 2.8;
+  S.radioCall = { g, t:dur, dur, at:{...at}, look:look || null, relay };
+  g.path = null; g.actionSpeechUntil = S.t + dur;
+  gsay(g, look ? '무전. 목격된 인상착의와 위치를 전달한다.' : '무전. 쓰러진 동료 발견. 범인은 못 봤다.', dur);
+  toast('경비가 무전 보고 중 · 제압하면 전달을 막을 수 있다', 2.4, 'warn');
+  play('metal', .25, 1.9); return true;
+}
+function bodyExamValid(g, c) {
+  return !!c && S.corpses.includes(c) && !c.discovered && !c.carried && !c.stashed &&
+    !(c.hidden && !g.dog) && flOf(c) === flOf(g) && (c.z || 0) === (g.z || 0);
+}
+function bodyExaminer(c) {
+  return S.guards.find(g => g.id === c.checkBy && !g.doomed && g.state === 'BODY' && g.body === c && bodyExamValid(g, c));
+}
+function claimBodyExam(g, c) {
+  if (!bodyExamValid(g, c)) return false;
+  if (!c.sceneId) c.sceneId = S.bodySceneSerial = (S.bodySceneSerial || 0) + 1;
+  const owner = bodyExaminer(c);
+  if (!owner || owner === g) { c.checkBy = g.id; g.bodyCoverId = null; return true; }
+  // At most one witness keeps watch. No NPC learns about the body through this claim.
+  if (!g.dog && ['PATROL','RETURN'].includes(g.state) && !S.guards.some(o => o !== g && o.bodyCoverId === c.sceneId && !o.doomed && ['PATROL','RETURN'].includes(o.state))) {
+    g.bodyCoverId = c.sceneId; g.state = 'PATROL'; g.relight = null; g.path = null; g.actionSpeechUntil = S.t + 2;
+    gsay(g, '상태 확인해. 나는 주위를 살필게.', 2);
+  }
+  return false;
+}
+function updateBodyCover(g) {
+  if (!g.bodyCoverId) return false;
+  const c = S.corpses.find(c => c.sceneId === g.bodyCoverId);
+  if (!c || !bodyExamValid(g,c) || !bodyExaminer(c)) { g.bodyCoverId = null; return false; }
+  g.path = null; g.moving = false;
+  g.want = Math.atan2(g.y-c.y,g.x-c.x) + Math.sin(S.t * .7) * .6;
+  return true;
+}
+function witnessedAssailant(g) {
+  const P = S.player;
+  if (P.hide || P.under || P.vent || flOf(P) !== flOf(g) || (P.z || 0) !== (g.z || 0)) return null;
+  const old = CUR_F; setLayer(flOf(g));
+  const saw = canSee(g, P.x, P.y, P.light, P.hidden, P.mode === 'sneak', P.z) > 0;
+  setLayer(old); return saw ? suspectLook() : null;
+}
+
 // ---------------------------------------------------------------- 사람 사는 동네 (히트맨식 2단계): 주민 신고 · 표적 일과표 · 단계형 기회 · 현장 물건
 // 구역(STAGE.zones)이 있는 판에서만 새 규칙을 쓴다. 옛 판은 그대로
 
@@ -5266,10 +5402,10 @@ function deliverReport(g) {
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
-  setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작'); lockExits();
-  if (r.saw) rememberSuspect(null, r.saw);
+  setAlert(2, 30, '주민이 근처 자경대원에게 신고했다 — 현장 확인');
+  if (r.saw) { rememberSuspect(o, r.saw); queueGuardRadio([o], {x:r.x,y:r.y,fl:flOf(g),z:g.z||0}, r.saw, true); }
   if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, '현재 복장이 신고됐다 — 다른 옷이 필요하다');
-  else if (r.saw === 'face') { toast('인상착의가 알려졌다 — 수색 중에는 거리에서도 알아본다', 2.8, 'warn'); }
+  else if (r.saw === 'face') { toast('목격자가 근처 경비에게 인상착의를 전했다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
 }
 // 출구 지키기: 시체가 발견되거나 신고가 들어오면 가까운 조직원이 탈출구로 가서 한동안 지킨다 (다른 출구·다른 때를 고르게 만든다)
@@ -5423,6 +5559,7 @@ function drawProps(fl=0) {
     ctx.fillStyle = p.outfit ? '#6fae7e' : p.id === 'box' ? '#b78a52' : '#d9d2c2'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 1.5; ctx.fillRect(-10, -9, 20, 15); ctx.strokeRect(-10, -9, 20, 15);
     ctx.restore(); if (dist(p.x, p.y, S.player.x, S.player.y) < 260) tag(v.x, v.y - 20, p.name, '#f4e3c2', 0.85); }
 }
+
 // ---------------------------------------------------------------- 메탈기어식 손맛: 붙잡아 심문 · 까마귀 무전 · 조직원 무전 점검 · 칭호
 
 // ---- 심문 (메탈기어 솔리드 3·5식): 조직원을 붙잡은 채 [도구](X)를 누르면 아는 것을 실토한다
@@ -5509,6 +5646,7 @@ function playTitle(st) {
   if ((st.interro || 0) >= 2) return ['취조관', `${st.interro}명을 심문했다`];
   return ['전문가', '무난하게 끝냈다'];
 }
+
 // A tabletop is a visual anchor; its footprint is the physical reach target.
 // Coordinates are measured on the existing baked sprites, with a top-down fallback.
 function surfaceFixture(o){
@@ -5573,6 +5711,7 @@ function syncServiceRoomLight(){
   }
   setLayer(L0);if(added){LG=null;for(const k in lightCache)delete lightCache[k];}
 }
+
 // A short, optional meal lure isolates a nearby off-duty guard. NPCs always walk there.
 function mealUse(){return (STAGE.uses||[]).find(u=>u.need==='laxative');}
 function diningGuest(){return npc(S.dining?.guest||STAGE.dining?.guest);}
@@ -5711,6 +5850,7 @@ function drawPharmacyStock(ctx,f){
     }
   }
 }
+
 // 표적에 대해 실제로 본 것과 브리핑에서 아는 것을 구분한다. 현재 위치를 추론해 갱신하지 않는다.
 function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선생' : ({ vip: '클럽 실장', collector: '수금원', boss: '조직 두목' }[g.tag] || '표적')); }
 function keyPurpose(k) {
@@ -5898,6 +6038,7 @@ function updateVipPlan(dt) {
   detour(g,d.to[0],d.to[1],32,'공중화장실','구토'); gsay(g,'으윽… 속이 왜 이래…',2.6);
   if (canObserveTarget(g)) toast('실장이 술을 마셨다 — 화장실로 향한다',2.6,'good');
 }
+
 // A recovered ledger is also leverage: summon its owner back into the office.
 // The phone reuses an actual desk; the appointment reuses walkable room space.
 function rendezvousState() {
@@ -6009,6 +6150,7 @@ function missionApproachGoal() {
 function speechPriority(g,P) {
   return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.actionSpeechUntil>S.t?60:g.chat?30:10;
 }
+
 // Security learns about incidents through a report, never through the kill count.
 const SECURITY_MEMORY = 100;
 function securityEnabled(){return !!STAGE.zones&&!STAGE.tutorial&&!STAGE.city&&STAGE.securityResponse!==false;}
@@ -6106,6 +6248,7 @@ function securityEscortPoint(leader,x,y){
   }
   return{x:leader.x,y:leader.y};
 }
+
 // ---------------------------------------------------------------- 플레이어
 function stepSound(x, y) {
   const t = tileAt(x, y); const v = (Math.random() * 3) | 0;
@@ -6138,10 +6281,9 @@ const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
-function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
@@ -6233,11 +6375,6 @@ function ledgeAt(P) {
   if (rLv(tx + 1, ty) < P.z && fx > TILE - 24) c.push({ x: 1, y: 0, d: TILE - fx });
   if (rLv(tx - 1, ty) < P.z && fx < 24) c.push({ x: -1, y: 0, d: fx });
   c.sort((a, b) => a.d - b.d); return c[0] || null;
-}
-function groundBelow(x, y, n) {  // 가장자리 바깥으로 처음 나오는 땅 칸
-  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
-  for (let k = 1; k <= 4; k++) { const gx = tx + n.x * k, gy = ty + n.y * k; if (inMap(gx, gy) && !rLv(gx, gy) && !roofAt(gx, gy) && !groundSolidP(gx, gy)) return { x: tc(gx), y: tc(gy) }; }
-  return null;
 }
 // 매달린 가장자리 밖으로 처음 나오는 낮은 자리: 땅 또는 낮은 옥상. 두 층 차이까지만 (그보다 높으면 null)
 function landBelow(x, y, n, z, maxDrop=2) {
@@ -6682,6 +6819,7 @@ function drawPushHint() {
   ctx.strokeStyle = '#8fe0ff'; ctx.lineWidth = 3.5 * sc; ctx.beginPath(); ctx.arc(k.at.x, k.at.y, 16 * sc, -Math.PI / 2, -Math.PI / 2 + TAU * k.f); ctx.stroke();
   if (k.lab) tag(k.at.x, k.at.y - 26 * sc, k.lab, '#8fe0ff', 3.6);
 }
+
 // ---------------------------------------------------------------- 세력: 의뢰 조직(A) · 라이벌 건달파(B) · 주민
 // 두 조직은 서로 적이다. 마주치면 시비가 붙고(가끔 싸움), '전쟁'이 나면 보는 즉시 싸운다.
 // 전쟁은 내가 일으킬 수 있다: 한쪽 옷을 입고 다른 쪽 조직원을 치는 걸 그쪽이 보면 / 싸움에 진 쪽 동료가 시체를 찾으면.
@@ -6996,6 +7134,7 @@ function policeCall(x, y, by) {
   if (!n) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n = 1; } }
   if (n && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
 }
+
 // ---------------------------------------------------------------- 도시 판 (GTA2식 시제품): 수배 · 경찰 · 의뢰 장소 · 병원
 // 수배 별(0~5): 사람들이 내 범행을 보면 오른다. 별만큼 경찰이 화면 밖에서 나타나 쫓는다. 경찰 눈을 피해 버티면 하나씩 내려간다
 OUTFITS.police = '경찰 제복';
@@ -7156,6 +7295,7 @@ function updateCopCars(dt) {
   if (!S.wanted) for (const v of cars) { v.chase = false; }  // 수배가 풀리면 그냥 차로 돌아간다 (경찰차 그대로 다닌다)
   if ((S.sirenT = (S.sirenT || 0) - dt) <= 0 && cars.some(v => dist(v.x, v.y, S.player.x, S.player.y) < 900)) { S.sirenT = 1.1; play('alarm', 0.12, 1.5); }
 }
+
 // ---------------------------------------------------------------- 차량 (도시 판): 도로를 다니는 차 · 세워 둔 차 · 내가 모는 차
 // 도로 격자: STAGE.roadsX(세로 도로 왼쪽 칸) · STAGE.roadsY(가로 도로 위쪽 칸), 폭 4칸. 우측 통행 — 차로 중심은 도로 안쪽에서 1칸·3칸
 // 방향 d: 0 동 · 1 남 · 2 서 · 3 북
@@ -7424,6 +7564,7 @@ function engineSound() {
   const now = AC.currentTime, sp = on ? Math.abs(v.v) / CAR_MAX : 0;
   ENG.g.gain.setTargetAtTime(on ? 0.045 + sp * 0.05 : 0, now, 0.12); ENG.o.frequency.setTargetAtTime(38 + sp * 95, now, 0.1); ENG.o2.frequency.setTargetAtTime(19 + sp * 48, now, 0.1);
 }
+
 // ---------------------------------------------------------------- 기회 (Hitman식): 직접 보거나 엿들어 알게 된 암살 수단을 임무 칸에 모은다
 function oppsInit() {
   S.opps = [];
@@ -7596,6 +7737,7 @@ function checkObjective() {
   if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); bark('master', 'done'); }
 }
 
+
 // ---------------------------------------------------------------- 전깃줄
 function wirePt(w, s) { const cx = (w.a.dx + w.b.dx) / 2, cy = (w.a.dy + w.b.dy) / 2 + w.sag * 2, u = 1 - s; return { x: u * u * w.a.dx + 2 * u * s * cx + s * s * w.b.dx, y: u * u * w.a.dy + 2 * u * s * cy + s * s * w.b.dy }; }
 function wireGround(w, s) { return { x: w.a.x + (w.b.x - w.a.x) * s, y: w.a.y + (w.b.y - w.a.y) * s }; }
@@ -7699,6 +7841,7 @@ function updateWire(P, mx, my, mag, mode, dt) {
   hint('wire', '전깃줄을 따라 이동할 수 있다. 아래에 경비가 오면 [공격]으로 덮친다. 빠르게 이동하면 소음이 커진다');
   checkObjective();
 }
+
 
 // 수거함은 뚜껑·입구·앞판을 같은 좌표로 그린다. 결과는 몸이 들어간 뒤 한 번만 적용한다.
 function hideSpace(h, bodies=0, self=false) {
@@ -8072,6 +8215,7 @@ function hideDeparture(h,stand,exit){
   if(dist(points.at(-1).x,points.at(-1).y,exit.x,exit.y)>1)points.push(exit);setLayer(L0);
   let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);return{points,length};
 }
+
 // Hands, covers and the passage use the same world contact point.
 const ACCESS_WORK=.38;
 function fixtureGrip(h,open=0) {
@@ -8205,6 +8349,7 @@ function updateVentPull(P,dt){
   g.doomed=false;g.containerMoving=false;g.takedownIntent={...A.intent,lethal:A.intent.lethal||(A.holding&&A.held>=LETHAL_HOLD)};
   killGuard(g,'stash',{type:'vent',x:A.v.x,y:A.v.y,fl:0,z:0,bodies:0});S.stats.special++;A.v.open=false;P.trav=null;P.moving=false;finishEnvSelection();play('cloth',.4);
 }
+
 // 짧게 제압, 같은 입력을 계속 누를 때만 처치. 동작 중에도 처음 고른 대상과 입력을 유지한다.
 const COMBAT_INPUTS = { atk: ['KeyZ', 'Space', 'btnAct'], env: ['KeyX', 'KeyE', 'btnCarry'], grab: ['KeyC', 'KeyQ', 'btnGrab'] };
 const LETHAL_HOLD = 1;
@@ -8311,6 +8456,7 @@ function finishKo(c, g) {
   } else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   logEv(g.target ? 'target' : 'kill', c.x, c.y); play('kill', .45); noise(c.x, c.y, 40, 'kill', c.fl);
 }
+
 // A suspended object has a reachable fixing, intact chains and one delayed impact.
 function signGeometry(t) {
   const b=BLD[bldAt(t.at[0],t.at[1])],x=tc(t.at[0]),y=tc(t.at[1]);
@@ -8372,6 +8518,7 @@ function drawHangingSigns(openB=-1) {
     if(!t.used&&S.player.z===g.z&&dist(S.player.x,S.player.y,g.x,g.y)<100){ctx.fillStyle='#d2c7a3';ctx.fillRect(g.x-3,g.y-12,6,6);}
   }
 }
+
 // 손을 쓰는 행동은 대상 확인 → 손 뻗기 → 접촉 → 마무리까지 한 번만 실행한다.
 function actionBusy(P = S.player) {
   return !!(S.ledgePull || P.lethalHold || P.trav || P.jump || P.lunge || P.grabIn || P.snap || P.pick || P.interact || S.amb || S.pull || S.killWait ||
@@ -8458,6 +8605,7 @@ function drawFacadeDoorWork(d){
   ctx.beginPath();ctx.moveTo(x-27,y+3);ctx.lineTo(x-27+w,y+3+depth);ctx.lineTo(x-27+w,y+47+depth);ctx.lineTo(x-27,y+47);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.fillStyle='#b4ae86';ctx.fillRect(x-27+w-7,y+22+depth,2,11);ctx.restore();
 }
+
 // Pose tracks use the same authored model and palette; no runtime 3D or root shifts.
 function motionKey(key,anim){const [pal,body]=prSplit(key),name=(body||'key')+'Motion';if(!PR.bodies?.[name]?.anims[anim])return null;if(!prBodies[name]){prLoadBody(name);return null;}return pal+'@'+name;}
 function actionHandPose(I){
@@ -8478,6 +8626,7 @@ function drawHandling(P,A,alpha=1,scale=1){
   const h=handlingSample(P,A),body=()=>drawPR(other,h.x,h.y,h.a,'handledLift',0,alpha,1,0,h.frame);
   if(h.y<P.y)body();drawPR(key,P.x,P.y,P.a,'handleLift',0,alpha,scale,0,h.frame);if(h.y>=P.y)body();return true;
 }
+
 // ---------------------------------------------------------------- 상호작용 대상 찾기
 // 숨을 곳 이름: 수거함(수거함) · 맨홀(맨홀) · 옷장 · 침대 밑 · 사물함
 const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', okt: '옥탑방' };
@@ -8672,6 +8821,7 @@ function ambushTarget() {
 // 끌어들여 암살: 순간이동 대신 약 1.2초 동작 — 움찔(붙잡힘) → 뒤로 끌려감 → 안으로 사라짐.
 // 그동안 끌려가는 사람이 다른 사람 눈에 보이면 목격: 조직원은 그 자리로 덮치고(발각), 주민은 소리치거나 신고하러 간다
 const AMB_DUR = 1.2;
+
 function startAmbush(g) {
   const P = S.player, h = P.hide, tx = h ? h.x : P.x, ty = h ? h.y : P.y;
   if(h&&!hideSpace(h,1))return;
@@ -8720,6 +8870,7 @@ function drawYanked(g) {
 // 창문 상태 (도시): open 열림 · lock 잠김(밖에서는 락픽, 안에서는 걸쇠를 풀면 열린다) · bar 방범창(못 지나간다, 엿보기는 된다)
 // 건물마다 하나만 열려 있고, 물건·열쇠가 있는 방의 창문은 방범창
 // 자경대원이 알아채는 흔적: 원래 잠겨 있던 창문·문이 열려 있으면 다가가 다시 잠근다 (인비저블 Inc 방식)
+
 function noteChange(kind, ref, key) { S.changes = S.changes || []; if (S.changes.some(c => c.ref === ref && !c.done)) return; S.changes.push({ kind, ref, key: key || null, x: ref.x, y: ref.y, fl: ref.fl || 0, by: null, done: false }); }
 function changeOpen(c) { return c.kind === 'win' ? winSt(c.ref) === 'open' : !c.ref.locked; }
 // 이 문을 닫으면 플레이어가 바깥으로 나갈 길이 없는가 (같은 층에서 걸어서)
@@ -8770,14 +8921,20 @@ function updateTutorial(dt = 1/60) {
     if (S.tutI >= st.length) toast('연습 완료 · 의뢰를 시작할 수 있다', 3, 'good');
   }
 }
+
+function baseWindowSealed(w) {
+  const blocked = (x,y) => !inMap(x,y) || (SOLID.has(G0[y][x]) && G0[y][x] !== 'X');
+  return [[1,0],[0,1]].every(([x,y]) => blocked(w.tx+x,w.ty+y) || blocked(w.tx-x,w.ty-y));
+}
 function winInit() {
-  S.winInit = true; 
+  S.winInit = true;
+  for (const w of S.windows) w.sealed = baseWindowSealed(w); 
   if (STAGE.tutorial) { for (const w of S.windows) w.st = bldAt(w.tx, w.ty) >= 0 ? 'lock' : 'open'; for (const w of S.windows) w.b = bldAt(w.tx, w.ty); return; }
   const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]], doorT = new Set(S.doors.map(d => d.tx + ',' + d.ty));
   const keyPts = S.items.filter(i => !i.fl).concat((S.keyItems || []).filter(i => !i.fl)).map(i => [Math.floor(i.x / TILE), Math.floor(i.y / TILE)]);
   const byB = {};
   for (const w of S.windows) {
-    const b = bldAt(w.tx, w.ty); w.b = b; if (b < 0) { w.st = 'open'; continue; }
+    const b = bldAt(w.tx, w.ty); w.b = b; if(w.sealed){w.st='bar';continue;} if (b < 0) { w.st = 'open'; continue; }
     let inner = null; for (const [dx, dy] of N4) { const x = w.tx + dx, y = w.ty + dy; if (bldAt(x, y) === b && !groundSolidP(x, y)) { inner = [x, y]; break; } }
     if (inner) {  // 창문 안쪽 방(문에서 끊긴다)에 물건·열쇠가 있으면 방범창
       const seen = new Set([inner + '']), q = [inner]; let hit = false, door = false;
@@ -8795,7 +8952,7 @@ function winInit() {
     for (const [dx, dy] of N4) { const ox = w.tx + dx, oy = w.ty + dy, ix = w.tx - dx, iy = w.ty - dy;
       if (!inMap(ox, oy) || !inMap(ix, iy) || bldAt(ox, oy) >= 0 || groundSolidP(ox, oy) || SOLID.has(g[iy][ix]) || bldAt(ix, iy) < 0) continue;
       w.out = { x: tc(ox), y: tc(oy), d: [dx, dy] }; w.inn = { x: tc(ix), y: tc(iy) }; break; } }
-  for(const [x,y,fl,state]of STAGE.windowStates||[]){const w=(fl?S.fwindows:S.windows).find(w=>w.tx===x&&w.ty===y&&flOf(w)===fl);if(w)w.st=state;}
+  for(const [x,y,fl,state]of STAGE.windowStates||[]){const w=(fl?S.fwindows:S.windows).find(w=>w.tx===x&&w.ty===y&&flOf(w)===fl);if(w&&!w.sealed)w.st=state;}
 }
 // 2층 안에서 열린 창문 앞: 창틀을 넘어 벽을 타고 내려간다
 function nearWinDrop() {
@@ -8830,6 +8987,7 @@ const LOOT = { pc: ['컴퓨터', '자료 빼내기', '빼내기', 3.0, 15], safe
   desk2: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], desk: ['책상', '책상에서 챙기기', '챙기기', 0.8, 15], wardrobe: ['옷장', '옷장 뒤지기', '뒤지기', 1.6, 35], table: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15], counter: ['계산대', '계산대 뒤지기', '뒤지기', 1.2, 25], tableS: ['탁자', '탁자에서 챙기기', '챙기기', 0.8, 15],
   nstand: ['협탁', '협탁 서랍 뒤지기', '뒤지기', 1.2, 25], bedD: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25], bed: ['침대', '침대 밑 뒤지기', '뒤지기', 1.4, 25] };
 const LOOT_PREF = ['safe', 'pc', 'cab', 'desk2', 'desk', 'nstand', 'counter', 'locker', 'wardrobe', 'table', 'tableS', 'bedD', 'bed'];
+
 function lootPlace(it, only) {  // only: 지정한 가구 종류만, 같은 건물 안에서 접근할 수 있는 자리를 찾는다
   const f0 = it.fl || 0, g = f0 ? GF[f0] : G0, tx0 = Math.floor(it.x / TILE), ty0 = Math.floor(it.y / TILE), b0 = bldAt(tx0, ty0); let best = null, bs = 1e9;
   for (const F of FURN) {
@@ -8889,16 +9047,9 @@ function drawPickProgress(P) {
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
-function drawWinBars(w) {
-  const vert = winVert(w), L = 40, T = 18;
-  ctx.save(); ctx.translate(w.x, w.y + (vert ? 0 : 5)); if (vert) ctx.rotate(Math.PI / 2);
-  ctx.strokeStyle = 'rgba(40,44,52,.95)'; ctx.lineWidth = 3; ctx.beginPath();
-  for (let i = -2; i <= 2; i++) { ctx.moveTo(i * 8, -T / 2 - 1); ctx.lineTo(i * 8, T / 2 + 1); } ctx.moveTo(-L / 2, 0); ctx.lineTo(L / 2, 0); ctx.stroke();
-  ctx.strokeStyle = 'rgba(170,176,186,.75)'; ctx.lineWidth = 1; ctx.beginPath(); for (let i = -2; i <= 2; i++) { ctx.moveTo(i * 8 - 1, -T / 2); ctx.lineTo(i * 8 - 1, T / 2); } ctx.stroke();
-  ctx.restore();
-}
+
 function windowPassage(w,P=S.player) {
-  if(flOf(P)||P.z||flOf(w))return null;
+  if(w.sealed||flOf(P)||P.z||flOf(w))return null;
   const vert=winVert(w),nx=vert?1:0,ny=vert?0:1,along=(P.x-w.x)*-ny+(P.y-w.y)*nx,side=Math.sign((P.x-w.x)*nx+(P.y-w.y)*ny);
   if(!side||Math.abs(along)>30||dist(P.x,P.y,w.x,w.y)>52)return null;
   const tx=w.tx-nx*side,ty=w.ty-ny*side;
@@ -9003,6 +9154,7 @@ function nearSewerExit() {
 const winUsable = w => !!w.link || S.wires.some(x => [x.a, x.b].some(n => n.win && n.fl === w.fl && n.tx === w.tx && n.ty === w.ty));
 // 문 행동: 색 잠금 · 한쪽에서만 풀리는 빗장(지름길) · 보통 문
 // 숫자판: 비밀번호 문 앞에서 직접 눌러 연다. 틀리면 삑 소리가 퍼진다
+
 function openKeypad(d) {
   const el = document.getElementById('keypad'); if (!el) { if (hasK('code')) { setDoor(d, false); d.group.forEach(t => t.keyLock = false); } return; }
   clearPlayerInput();closeEnvPicker();S.keypad = { d, buf: '', bad: 0 }; el.hidden = false;document.body.classList.add('keypadopen');document.getElementById('kpStatus').textContent='';el.focus({preventScroll:true}); S.player.vx = 0; S.player.vy = 0; input.aiming = null;
@@ -9012,13 +9164,6 @@ function openKeypad(d) {
 function kpShow() { const k = S.keypad; if (!k) return; const n = (STAGE.code || '0000').length; document.getElementById('kpDisp').textContent = Array.from({ length: n }, (_, i) => k.buf[i] || '·').join(' '); }
 function closeKeypad() { const el = document.getElementById('keypad'); if (el) el.hidden = true; document.body.classList.remove('keypadopen');if(el?.contains(document.activeElement))canvas.focus({preventScroll:true});if (S) S.keypad = null; }
 // 들킬 듯할 때 짧게 똑딱 — 알아채는 정도가 오를수록 높고 빠르게
-function warnTick(m) { return;  // 알아채는 중 삐삐 소리도 뺀다 (눈 막대·머리 위 표시로 충분)
-  if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = 520 + 760 * m; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.06, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.1); }
-function updateWarn(dt) {
-  let m = 0; for (const g of S.guards) if (!g.civ && g.seen && g.state !== 'ALERT' && g.state !== 'DEAD') m = Math.max(m, g.meter || 0);
-  if (m < 0.15) { S.warnT = 0; return; }
-  if ((S.warnT = (S.warnT || 0) - dt) <= 0) { S.warnT = 0.55 - 0.4 * Math.min(1, m); warnTick(m); }
-}
 // 시체가 자경대원 눈에 띌 수 있는 자리인가 (누가 그쪽을 보면 보인다)
 function updateCorpseRisk(dt) {
   if ((S.crT = (S.crT || 0) - dt) > 0) return; S.crT = 0.3;
@@ -9061,6 +9206,7 @@ function doorAct(dr) {
   return dr.keyLock && dr.locked ? { k: hasK(dr.keyLock) ? 'door' : 'keymsg', d: dr, label: hasK(dr.keyLock) ? withJosa(keyName(dr.keyLock), '으로/로') + ' 열기' : keyName(dr.keyLock) + ' 필요 · 락픽 없음' } : { k: 'door', d: dr, label: dr.locked ? '문 열기' : '문 닫기' };
 }
 // 암살하려고 다가가는 중에는 Space가 문·비번·조명·두꺼비집·쪽지 같은 다른 행동을 하지 않는다 (그 행동은 Z로 넘긴다)
+
 const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg', 'pick']);
 const KILL_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'ledgeKill', 'pushOff', 'winJump']);
 function stalkGuard() {
@@ -9193,6 +9339,7 @@ function primaryActionRaw() {
   { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
   return { k: 'none', label: '암살' };
 }
+
 function actPrimary(force) {
   if (!S || S.over || paused || !running || tactical) return;  // 전술 지도(시간 멈춤) 중에는 행동하지 않는다
   if (DLG.modal) { advanceDialog(); return; }
@@ -9413,6 +9560,7 @@ function actPrimary(force) {
   }
 }
 // 붙잡기: 바로 붙지 않는다. 등 뒤로 몇 걸음 달려 붙고(run) → 팔로 목을 감아 끌어당긴다(clinch) → 그 뒤에 끌고 다닌다
+
 const DRAG_SPD = 0.4, GRAB_CLINCH = 0.36;
 function grab(g) {
   const P = S.player; if (actionBusy(P)) return;
@@ -9428,7 +9576,7 @@ function updateGrabIn(P, dt) {
   P.x = G.x0 + (G.x1 - G.x0) * e; P.y = G.y0 + (G.y1 - G.y0) * e; P.vx = P.vy = 0; P.moving = f < 1; P.mode = 'run';
   if (f >= 1 && g.state !== 'CAPTIVE') {  // 손이 닿는 순간: 붙잡힌 상태가 된다 (이때부터 버둥거림·소리)
     if (g.state === 'DEAD') { P.grabIn = null; return; }
-    g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
+    g.capturedLook = witnessedAssailant(g); g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
     if (S.fuseGuard === g) S.fuseGuard = null;
     play('cloth', 0.55); play('thud', 0.3); contactFeedback(g,'grab');
   }
@@ -9462,15 +9610,17 @@ function travelTunnel(){const P=S.player,w=P.hide;if(w&&w.type==='well'&&!P.carr
 // 주민은 늘 기절이 기본이고, 행동 버튼을 계속 누르고 있으면 숨을 끊는다(주민 살상 — 감점)
 const koDefault = g => !!g && !g.dog && !!g.civ;
 // 표적도 기절이 기본이다. 계속 누르고 있으면(KO_HOLD) 처치한다.
+
 const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
+  const assailantLook = intent?.assailantLook !== undefined ? intent.assailantLook : witnessedAssailant(g);
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -9496,9 +9646,10 @@ function updateKoHold() {
 function wakeKO(c, by) {
   const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
   g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
-  if (g.civ) { g.state = 'PATROL'; gsay(g, '으… 머리야. 누가 뒤에서…'); return; }
+  if (c.assailantLook) { rememberSuspect(g,c.assailantLook); if (by) rememberSuspect(by,c.assailantLook); }
+  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '으… 누가 때렸는지 못 봤어요.'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
-  gsay(g, ['누가 뒤에서 쳤어! 이 근처에 있다!', '으윽… 어떤 놈이 목을…', '정신 차려 보니 바닥이야. 찾아!'][g.id % 3], 3);
+  gsay(g, c.assailantLook ? '때린 사람을 봤어. 인상착의 알려 줄게.' : '누가 때렸는지 못 봤어. 주변부터 확인하자.', 3);
 }
 // 연속 처치: 8초 안에 조직원을 또 처치하면 손맛 표시 (메탈기어·코만도스식 소탕의 리듬)
 function killStreak() {
@@ -9525,7 +9676,9 @@ function strikeKill(list, two) {
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
   const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
-  const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};delete g.takedownIntent;
+  const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
+  if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
+  delete g.takedownIntent;
   const ko=S.koNext||!intent.lethal;S.koNext=S.lethalNext=false;
   P.strikeT=dur;P.vx=P.vy=0;P.moving=false;
   P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y};
@@ -9606,6 +9759,7 @@ function killGuard(g, mode, where, quiet) {
   checkObjective();
 }
 // 사고사: 칼자국 없이 죽는다. 시체를 봐도 '사고'로 여겨 수색·비명이 없다 (옮기면 사고로 보이지 않는다)
+
 function accidentKill(g, how) {
   if (g.state === 'DEAD' || g.child) return;
   logEv('accident', g.x, g.y);
@@ -9728,6 +9882,7 @@ function cutLights() {
   for (const c of S.corpses) c.light = lightAt(c.x, c.y);
   if (STAGE.onLightsOut) try { STAGE.onLightsOut(S, SH); } catch (e) { console.warn('onLightsOut', e); }  // 의뢰마다: 정전에 반응하는 사람 (예: 발전기 보러 가는 표적)
 }
+
 function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur, cx:c.x,cy:c.y,ca:c.a }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
@@ -9751,7 +9906,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 이미 알려진 복장이라 출입 불가`, 3, 'warn');
+    if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 목격자가 기억하는 복장 · 재노출 주의`, 3, 'warn');
     else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3.2, 'good'); hint('disguise2', '초록 경계선은 현재 복장으로 통과할 수 있다. 범행이 보이거나 얼굴을 확인당하면 변장이 발각된다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장해도 범행이나 출입 권한이 없는 구역에서는 의심받는다'); }
     return;
@@ -9785,7 +9940,6 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   const c = sa.c || nearCorpse();
   if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
-function actPrimaryForce(k) { if (k === 'execute') execCaptive(); else if (k === 'choke') execCaptive(true); }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
   const P = S.player;
@@ -9811,6 +9965,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   return { k: 'none', label: '보조' };
 }
+
 function actThrow(pt) {
   if (!S || S.over || paused || !running) return;
   const P = S.player; if (actionBusy(P) || P.hide || P.under || P.vent) return;
@@ -9873,6 +10028,7 @@ function kunaiHit(k) {
 
 // 1층 높이 벽 오르기: 땅에서 벽(건물·담·컨테이너)에 바짝 붙어 있고, 그 너머가 1층 높이 옥상이면
 // 땅에서 1층 높이 옥상으로, 또는 옥상에서 한 층 더 높은 옆 옥상으로
+
 function wallUpSpot() {
   if(STAGE.interiorOnly)return null;
   const P = S.player, z0 = P.z || 0; if (flOf(P) || P.carrying || P.captive || P.jump || P.hide || P.trav || P.wire || P.under || P.vent || P.ledge) return null;
@@ -9894,6 +10050,7 @@ function wallUpSpot() {
   }
   return best;
 }
+
 const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
 function update(dt) {
@@ -9922,7 +10079,7 @@ function update(dt) {
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
-  updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt); updateWarn(dt); updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (!isTouch && e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 발각 · 추격'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(dt);
+  updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt);  updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (!isTouch && e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 발각 · 추격'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(dt);
   if (S.timeLeft) {
     const active = !S.exitOpen && (!STAGE.timeTarget || S.guards.some(g => g.target && !targetEliminated(g)));
     if (active) { S.timeLeft -= dt; if (S.timeLeft <= 0) { S.timeLeft = 0; endGame(false, STAGE.timeFail || '시간이 다 됐다.'); return; } }
@@ -10031,6 +10188,7 @@ function cameraYBounds(vh = H / SCALE) {
   const bottom = (isTouch ? Math.min(140, H * .18) : 24) / SCALE;
   return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];
 }
+
 
 // One authored visual sample: club, entrance and service lane. Geometry is the
 // existing collision grid; no invisible doors, cover or decorative obstacles.
@@ -10148,6 +10306,7 @@ function quarterRoofProps(b){
     ctx.restore();
   }
 }
+
 // 열린 실내 위에 옥상·거리 그래픽을 덮지 않는다. 사물 좌표와 상호작용은 바꾸지 않는다.
 function clipExteriorFromInterior(bi, fl) {
   if (tactical || !fl || bi < 0 || !BLD[bi]) return false;
@@ -10181,6 +10340,7 @@ function drawRoofEntrances(P) {
     ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${11 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText('계단', x, y); ctx.restore();
   }
 }
+
 // 대청소 빌라 한 채에서만 시험한다. 기존 평면·좌표·그림 캐시를 그대로 쓴다.
 function hasHeightCues(bi) {
   return !!(STAGE.heightCueBuildings && STAGE.heightCueBuildings.includes(bi) && BLD[bi]);
@@ -10238,6 +10398,7 @@ function drawRoofCoping(b) {
   for (let sx = x + TILE; sx < x + w; sx += TILE) { ctx.fillRect(sx, y + 1, 1, 5); ctx.fillRect(sx, y + h - 5, 1, 12); }
   ctx.restore();
 }
+
 // 고정 조명 표본은 켜짐·문 상태가 바뀔 때만 폐기하고, 움직이는 광원만 짧게 갱신한다.
 const GLC = { t:-1, m:new Map(), base:new Map(), S:null, sig:null, checked:-1 };
 const lightC=(x,y)=>{
@@ -10275,11 +10436,7 @@ function conePaths(g, cn, lo, blend = 0) {
   ctx.closePath();
 }
 // ---------------------------------------------------------------- 그리기
-function drawSprite(c, x, y, a, s = 0.78, alpha = 1) {
-  ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.globalAlpha = alpha;
-  ctx.drawImage(c, -c.width * s * 0.42, -c.height * s / 2, c.width * s, c.height * s);
-  ctx.restore();
-}
+
 function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; } c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
 function drawKeyIcon(k, x, y, ring) {
   if (!k || k === 'gold') return drawItemIcon('it_key', x, y, S.t, ring);
@@ -10311,15 +10468,7 @@ function drawLootItem(it) {
   drawScroll(x, y, S.t);
 }
 function drawScroll(x, y, t) { drawItemIcon('it_scroll', x, y, t, true); }
-function drawScrollOld(x, y, t) {
-  const bob = Math.sin(t * 3) * 2;
-  ctx.save(); ctx.translate(x, y + bob);
-  ctx.strokeStyle = 'rgba(242,196,107,.75)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 18 + Math.sin(t * 4) * 2, 0, TAU); ctx.stroke();
-  ctx.rotate(-0.25); ctx.fillStyle = '#e9dcc0'; ctx.fillRect(-10, -7, 20, 14);
-  ctx.fillStyle = '#c9b48a'; ctx.fillRect(-12, -8, 4, 16); ctx.fillRect(8, -8, 4, 16);
-  ctx.fillStyle = '#c2362b'; ctx.beginPath(); ctx.arc(2, 1, 3.5, 0, TAU); ctx.fill();
-  ctx.restore();
-}
+
 function drawPlayerLocator(P) {
   const k=1/SCALE,x=P.x,y=P.y+10,a=P.car?P.car.a:P.cover?Math.atan2(P.cover.y,P.cover.x):P.a;
   const col='#7fe3ff';  // 내 위치는 항상 같은 색. 위험은 중앙 상태와 시선 방향 호가 알린다.
@@ -10509,6 +10658,7 @@ function drawPlayerBody(P) {
   ctx.restore();
 }
 // 도면 시야 (Monaco): 바깥 땅에 서 있으면, 창문·열린 문으로 시선이 닿는 방 안만 보인다
+
 function drawWindowSight(P, openB) {
   if (P.z || P.wire || P.jump || P.trav || P.hide || P.vent || P.under || flOf(P)) return;
   const R = 430, WC = drawWindowSight.c || (drawWindowSight.c = {});
@@ -10699,6 +10849,7 @@ function drawFacadeExtras(b, flat, kit) {
 // ---- 옥상 살림: 옥탑방·물탱크·계단실(막힘) + 간판·채광창·텃밭·빨랫줄·태양광판·실외기·환기관(그림만)
 // 배치는 여기서 정하고 kitSpec으로 굽기에 넘긴다. 구운 kit.json에 같은 목록이 들어 있으면 막힘 칸이 된다
 const hN = (...a) => { let h = 2166136261 >>> 0; for (const v of a) { h = Math.imul(h ^ (v & 0xffff), 16777619) >>> 0; h = Math.imul(h ^ ((v >>> 16) & 0xffff), 16777619) >>> 0; } h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995) >>> 0; return (h ^ (h >>> 15)) >>> 0; };
+
 const ROOF_SOLID = { okt: 1, tank: 1, stair: 1 };
 function roofProps(b, bi) {
   if (!b.facade || b.fh !== b.h || b.piloti) return [];
@@ -10802,6 +10953,7 @@ function kitSpec() {
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };
 }
 // 3/4 정면벽: 건물 남쪽 벽 줄을 정면에서 본 벽으로 그린다 (실제 문·창문 그림)
+
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
@@ -10931,13 +11083,7 @@ function drawChimney(l) {
 // 환풍구 창살: 청록 테두리 + 가로 창살. 열려 있으면 검은 구멍
 function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.save();ctx.globalAlpha=alpha;drawVent(v,'all',ctx,v.open?1:0);ctx.restore();}
 
-function stripeFor(col) {
-  if (stripePat[col]) return stripePat[col];
-  const c = document.createElement('canvas'); c.width = c.height = 12; const x = c.getContext('2d');
-  x.strokeStyle = `rgba(${col},.55)`; x.lineWidth = 3; x.beginPath(); x.moveTo(-3, 15); x.lineTo(15, -3); x.moveTo(-3, 3); x.lineTo(3, -3); x.moveTo(9, 15); x.lineTo(15, 9); x.stroke();
-  return (stripePat[col] = ctx.createPattern(c, 'repeat'));
-}
-// 순찰로: 바닥 점선 + 방향 화살표 + 멈추는 곳 / 고정 자경대원은 지키는 방향 표시
+
 function drawRoutes(P) {
   const openB = (P.z === 0 && !P.jump) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;
   const hiddenPt = p => { const b = bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)); return b >= 0 && b !== openB && !(S.peek && S.peek.b === b) && !tactical; };
@@ -11063,6 +11209,7 @@ function drawPipeBase(l) {
   ctx.restore();
 }
 // 상호작용 대상의 색: 문 갈색 · 창문 하늘색 · 배관 회색 · 사다리/계단 황토 · 굴뚝 주황 · 환풍구 청록 · 숨을 곳 초록 · 맨홀 파랑 · 비밀 통로 보라
+
 const SCAN = { door: '#d39a5c', window: '#8fc3e6', pipe: '#c4ccd6', ladder: '#e0b070', chimney: '#f08a3c', vent: '#7fd6cc', hide: '#8fcf95', well: '#7fb0ff', secret: '#c9a0ff', lamp: '#f2c46b', fuse: '#f2c46b' };
 // 글자 표시 겹침 정리: 한 화면의 tag 를 모아 두었다가(TAGQ) 중요한 것부터 겹치지 않는 자리(위·아래 한두 줄)에 놓는다.
 // 인물·발견 표시·조작 영역을 먼저 비운다. 행동을 배치한 뒤 말풍선은 남은 자리에 둔다.
@@ -11273,6 +11420,7 @@ function drawActLabels(pa, P, ka, ga) {
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && !BLD[b].vacant && b !== openB; };
 
+
 function roofOccludes(o,openB){if(tactical||o.yank||o.fly||!coveredG(o,openB))return false;const b=BLD[bldAt(Math.floor(o.x/TILE),Math.floor(o.y/TILE))];return(b.ra??1)>=.98;}
 function drawUnderground() {
   const sc = SCALE * DPR, P = S.player;
@@ -11304,6 +11452,7 @@ function drawUnderground() {
 // 어둠: 화면 반 해상도 캔버스에 어둠을 칠하고, 불빛 자리를 지워(destination-out) 화면에 덮는다
 // 고정 조명(깜빡이지 않는 등)의 빛은 맵 전체를 1/4 해상도로 한 번만 그려 두고(켜짐·꺼짐이 바뀔 때만 다시), 매 프레임은 그 그림을 가져다 쓴다
 // — 프레임마다 등 하나하나 가림막 다각형+그라데이션을 그리던 것이 그리기 시간의 절반이었다
+
 const LIGHTQ = 4, lightCache = {};
 function lightMap(key, lamps) {
   const sig = (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
@@ -11350,6 +11499,7 @@ function darkPass(sc, lamps, clip, key) {
 }
 // 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
 // 쫓기는 중에는 할 일 대신 가장 가까운 숨을 곳(수거함·맨홀·옷장 등)을 가리킨다 — 발각을 끊는 게 먼저
+
 function chaseHide(P) {
   let best = null, bd = 700;
   for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
@@ -11382,6 +11532,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 }
 // 성능 측정: __pf 가 켜져 있을 때만 단계별 시간을 모은다
 let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t = performance.now(); if (k) { const s = pf.s || (pf.s = {}); s[k] = (s[k] || 0) + t - PM_T; } PM_T = t; }
+
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
@@ -11778,6 +11929,7 @@ function draw() {
 
 
 // 위층 창가에서 바깥을 내려다보는 사람: 바깥(1층 높이)에서 볼 때 창문에서 뻗는 옅은 시선 부채꼴 (winSee 와 같은 조건)
+
 function drawWinWatch() {
   const P = S.player;
   for (const g of S.guards) {
@@ -11793,6 +11945,7 @@ function drawWinWatch() {
     }
   }
 }
+
 // ---------------------------------------------------------------- 대사
 const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
@@ -11901,6 +12054,7 @@ function startAmb() {
   const go = buf => { if (ambSrc) return; const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; const g = AC.createGain(); g.gain.value = muted ? 0 : 0.1; s.connect(g); g.connect(master); s.start(); s._g = g; ambSrc = s; };
   if (MB.crickets) go(MB.crickets); else if (A.music && A.music.crickets) AC.decodeAudioData(b64ToBuf(A.music.crickets), b => { MB.crickets = b; go(b); }, () => {});
 }
+
 // 실행 가능한 대인 행동과 동작 중에는 설명보다 플레이를 우선한다.
 function playerActionFocus(ka,ga) {
   if(!S||!running||S.over)return false;
@@ -12018,6 +12172,7 @@ function drawAccessCues(P) {
     ctx.fillStyle='#d4dccd';ctx.font='600 10px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
   }ctx.restore();
 }
+
 // ---------------------------------------------------------------- 버튼 (레퍼런스: 히트맨의 [키] 동작 표시·길게 누르기 고리, 어쌔신 크리드의 상황별 버튼 지도, 모바일 액션 게임의 아이콘 버튼)
 // 행동마다 아이콘 하나와 짧은 동사 하나. 버튼에는 짧게, 대상 위에는 길게(자세히) 적는다
 const ICON_P = {
@@ -12102,7 +12257,7 @@ function keyMap(ka, ea, ga) {
   set('kmAct', actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none');
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
-  set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`, toolCount(input.tool) > 0);
+  set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '웅크림' : '웅크리기', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)
@@ -12113,10 +12268,11 @@ function drawHoldRing() {
   ctx.strokeStyle = '#e8473c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); ctx.restore();
   tag(x, y - 30, '계속 누르면 처치', '#ff8a76', 0.9);
 }
+
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
 // [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적도 같은 기준). 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
-// [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 잡은 뒤: [공격] 톡 기절 / 계속 처치, [행동] 숨을 곳으로 끌고 가기, 가만히 있으면 심문
+// [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 먼저 바깥에서 기절시키고 별도로 운반·은닉한다.
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
 const ATK_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'ventKill', 'pull', 'ledgeKill', 'pushOff', 'counter']);
 const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
@@ -12152,7 +12308,7 @@ function attackAction() {
   const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
   return { k: 'none', label: '공격' };
 }
-// [행동] 후보: 환경 행동 + (시체 메기·내려놓기·옷 갈아입기·줍기 등 예전 [보조] 쪽 일). 붙잡은 뒤엔 '끌고 가기'
+// [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
 const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody']);
 function secondaryEnvChoices() {
   const out = []; ACT_SKIP.clear();
@@ -12249,7 +12405,7 @@ function actEnv() {
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
   if (actionBusy()) return;
-  const a = envAction(); if (a.k === 'none') { if(a.blocked)toast('선택한 대상에 손이 닿지 않는다',1.4); return; }
+  const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다':unavailableEnvReason(),1.4,'warn'); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
@@ -12264,6 +12420,7 @@ function actGrab() {
   const a = grabAction(); if (a.k === 'grab') grab(a.g);
 }
 function cycleEnv() { if (!S || actionBusy()) return; const a = envAction(), L=envChoices(); if (!L.length || (L.length===1&&!a.blocked)) return; const i=L.findIndex(v=>envToken(v)===envToken(a)); selectEnvTarget(envToken(L[(i+1)%L.length])); play('click', 0.2); }
+
 // ---------------------------------------------------------------- HUD
 const $ = id => document.getElementById(id);
 const hud = { tool: $('btnTool'), pips: [...document.querySelectorAll('#alertPips i')], obj: $('objective'), objT: $('objTitle'), light: $('lightFill'), lightLbl: $('lightLbl'), mode: $('modeLbl'), alarm: $('alarmChip'), act: $('btnAct'), carry: $('btnCarry'), kills: $('killsLbl'), layer: $('layerLbl'), hp: $('hpPips') };
@@ -12390,28 +12547,19 @@ function objectiveLines() {
   { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const nav=goalNavigation(gl), m0 = Math.max(1, Math.round(dist(P.x, P.y, nav.x, nav.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0; distance = ` · ${nav.via?'입구 ':''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
-  if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);
+  if (S.exitOpen && STAGE.steps && (S.tutI || 0) >= STAGE.steps.length) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
   if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 초록 경계선 통과 가능`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
-  for (const g of S.guards) if (g.target && !targetEliminated(g)) { const sc = schedText(g); L.push([S.spare ? 'done' : '', targetName(g) + (S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
+  for (const g of S.guards) if (g.target) { const sc = schedText(g),down=targetEliminated(g); L.push([down||S.spare ? 'done' : '', targetName(g) + (down?' — 처치 완료':S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
   if (P.item) L.push(['info', '들고 있는 것: ' + P.item.name + (P.item.permit ? ' (배달하러 온 사람으로 통하는 곳이 있다)' : '')]);
   storyLines().forEach(l => L.push(l));
   if (showOpps) for (const o of S.opps || []) if (o.seen) { const pl = o.x != null ? (o.roof ? place(o.x, o.y, o.fl).replace(/ \d+층$/, ' 옥상') : place(o.x, o.y, o.fl)) : ''; L.push([oppDone(o) ? 'opp done' : 'opp', '기회: ' + oppText(o) + (pl && pl !== '바깥' ? ' — ' + pl : '')]); }
   if (S.timeLeft) L.push([S.timeLeft < 60 ? 'go' : '', `남은 시간 ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}`]);
   return L;
-}
-function objectiveText() {
-  if (S.exitOpen) return '탈출 지점(노란 원)으로 이동';
-  const tg = S.guards.filter(g => g.target), td = tg.filter(g => targetEliminated(g)).length;
-  const parts = [];
-  if (STAGE.keyDoors && S.doors.some(d => d.keyLock && d.locked) && !S.player.hasKey) parts.push('열쇠 확보(또는 다른 길)');
-  if (tg.length) parts.push(S.spare && td < tg.length ? '표적: 살려 둘 수 있다' : `표적 처치 ${td}/${tg.length}`);
-  if (S.items.length) parts.push(`${STAGE.itemName || '서류'} 회수 ${S.items.filter(i => i.got).length}/${S.items.length}`);
-  return parts.join(' · ');
 }
 // 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
 function floorBanner(P, ptx, pty) {
@@ -12427,8 +12575,10 @@ function updateHUD(force) {
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
   drawWanted();
-  setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name);
-  { const html = objectiveLines().filter(([c])=>!c.includes('done')).map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  const targets=S.spare?[]:S.guards.filter(g=>g.target),first=!!STAGE.firstGoal,total=targets.length+S.items.length+(first?1:0),done=targets.filter(g=>targetEliminated(g)).length+S.items.filter(i=>i.got).length+(first&&!pendingFirstGoal()?1:0);
+  const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':done===total&&evidencePending()?'기록 삭제 필요':`목표 ${done}/${total}`):'';
+  setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
+  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
@@ -12448,7 +12598,7 @@ function updateHUD(force) {
   // 경계: 한 칸에 단계 이름 + 남은 시간 (따로 뜨던 경보 칸은 표적 도주 때만)
   hud.alarm.hidden = !fleeNow; hud.alarm.dataset.lv = S.alevel;
   if (fleeNow) setText(hud.alarm, 'al', '표적 도주');
-  { const t = S.alevel === 3 ? '발각 · 숨어 ' + Math.max(0, Math.ceil(ESCAPE_T - S.unseenT)) + '초' : S.alevel ? A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초' : '평온';
+  { const t = S.alevel === 3 ? (S.guards.some(g=>g.state==='ALERT'&&g.seen)?'추격 중 · 시야 끊기':'추적 해제 '+Math.max(0,Math.ceil(ESCAPE_T-S.unseenT))+'초') : S.alevel ? A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초' : '평온';
     setText($('alertWord'), 'aw', t); const ab = $('alertBox'); if (ab && ab.dataset.lv !== String(S.alevel)) ab.dataset.lv = S.alevel; }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   { const hb = $('hpBox'), low = P.hp <= 1 && P.hpMax > 1 ? '1' : '0'; if (hb && hb.dataset.low !== low) hb.dataset.low = low; }  // 마지막 체력: 깜빡인다
@@ -12474,6 +12624,7 @@ function updateHUD(force) {
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.
   drawMini();updateStealth(lv);
+  document.body.classList.toggle('inspecting',hudInspecting());
   positionEnvPicker();
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 신원 확인 · 발각 + 이유 한 줄
@@ -12496,20 +12647,23 @@ function updateStealth(lv) {
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
   if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? '무단 침입' : '신원 노출'; }
+  else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴 확인'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
-  else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = '알려진 옷차림'; }
+  else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
+  else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '허용된 복장' : '공개 구역'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
-    riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
+
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
-  box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying);
+  if(s==='hide'&&S.alevel>=2&&(P.hide||P.hidden))why='수색 중 · 은신처도 확인한다';
+  box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
@@ -12523,13 +12677,14 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b>${input.tool === 'kunai' ? '<small>길게 처치</small>' : ''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label', P.captive ? '심문' : input.tool === 'kunai' ? '다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치' : TOOL_NAME[input.tool]);
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>도구 바꾸기</small>':input.tool === 'kunai' ? '<small>길게 처치</small>' : ''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 도구 바꾸기로 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]);
   hud.tool.classList.toggle('aiming', !!input.aiming);
-  hud.tool.classList.toggle('ready', input.padWhistle ? !(S.whistleT > 0) : input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
+  const ready=!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(input.tool!=='kunai'||!!kunaiTarget()));
+  hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
 
-function endGame(win, reason) { riskTone(0);closeKeypad();clearPlayerInput();closeEnvPicker();
+function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
   if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast((STAGE.firstSteps?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
@@ -12657,10 +12812,19 @@ function syncTutorialCue(){
   const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle'}[key];
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnCycle'])$(id)?.classList.toggle('lesson-cue',id===active);
 }
+
 // 기존 대상 버튼에서 이름을 보고 고른다. 선택은 실행하지 않으며 실행 시 대상을 다시 확인한다.
 let envPicker = null;
+function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(envPicker||document.querySelector('#hud .obj.open')));}
+function setObjectiveOpen(open){
+  const o=document.querySelector('#hud .obj');if(!o)return;
+  if(open){clearPlayerInput();closeEnvPicker();}
+  o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
+  document.body.classList.toggle('inspecting',hudInspecting());
+}
+function closeHudInspection(){closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a));
-function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false'); }
+function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
 function selectEnvTarget(token) {
   RC = null; const a = envChoices(), i = a.findIndex(v => envToken(v) === token);
   if (i < 0) { closeEnvPicker(); return false; }
@@ -12672,9 +12836,11 @@ function toggleEnvPicker() {
   if (!S || !running || paused || tactical || S.keypad || S.over || DLG.modal || actionBusy()) return;
   if (envPicker) { closeEnvPicker(); return; }
   const choices = envChoices(); if (!choices.length || (choices.length < 2 && !S.envExplicit)) return;
+  clearPlayerInput();setObjectiveOpen(false);
   const P = S.player; envPicker = {x:P.x,y:P.y,fl:flOf(P),z:P.z||0};
+  document.body.classList.toggle('inspecting',hudInspecting());
   resetHelpTip();const e = $('envPicker'); e.replaceChildren(); e.hidden = false; $('btnCycle').setAttribute('aria-expanded','true');
-  const title = document.createElement('b'); title.textContent = '행동 대상 선택'; e.append(title);
+  const title = document.createElement('b'); title.textContent = '행동 선택 · 시간 정지'; e.append(title);
   const current = envAction();
   for (const a of choices) {
     const b = document.createElement('button'), token = envToken(a); b.type = 'button'; b.textContent = a.label;
@@ -12727,6 +12893,7 @@ function unavailableEnvReason() {
   if(!objectReachable(o,100))return '벽이나 가구에 가려 손이 닿지 않는다';
   return '대상에 더 가까이 이동하기';
 }
+
 // 기존 좌표와 자산 위에 기능이 읽히는 작은 현물만 보강한다.
 function fixtureVisible(p, radius = 500) {
   const support=p.surface;if(support)p=surfaceFixture(p);
@@ -12788,19 +12955,20 @@ function drawPlanFixtures(P) {
   }
   ctx.restore();
 }
+
 // ---------------------------------------------------------------- 루프
 let lastT = 0;
 // 프레임 제한: 기본 60fps. 메뉴에서 30으로 낮출 수 있다
 let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
 function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
-// The 3D view can render below 20 fps. Advance elapsed game time in small collision
-// steps instead of discarding everything beyond .05s and slowing all movement.
+// Rendering can dip below 20 fps. Keep elapsed movement and timers, bounded into
+// small collision steps; a long interruption still cannot fast-forward the map.
 function advanceGameFrame(elapsed) {
-  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.05,elapsed));
+  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.12,elapsed));
   if(!total)return;
-  const count=STAGE.artSlice?Math.ceil(total*60):1,step=total/count;
+  const count=STAGE.artSlice?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
   for(let i=0;i<count;i++){
-    if(!running||paused||S.over||tactical||DLG.modal)break;
+    if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
     let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
     if(input.aiming)focusUpdate(dt);else update(dt);
   }
@@ -12810,17 +12978,25 @@ function frame(t) {
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; prWarm.frameGap=rawDt;perfWatch(rawDt);
   if (!S || !mapC) return;
+  // Title and mission selection are static overlays. Do not simulate or render
+  // a hidden world (or request its NPC sheets) while waiting in the menu.
+  if (!running) {
+    if (ENG) engineSound();
+    input.scan=false;document.body.classList.remove('playing','scanning','scanleg');
+    return;
+  }
   updateHelpTip();
   if (ENG && (paused || !running || S.over)) engineSound();  // 멈추면 엔진 소리도
   if (running && !paused) updateDialog(dt);
   input.scan=false;document.body.classList.remove('scanning','scanleg');document.body.classList.toggle('playing',!!(running&&S&&!S.over));
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   const pf = window.__pf, t0 = pf ? performance.now() : 0;  // 성능 측정 (__pf 를 켰을 때만)
-  if (running && !paused && !S.over && !tactical && !DLG.modal) advanceGameFrame(rawDt);
+  if (running && !paused && !S.over && !tactical && !DLG.modal && !hudInspecting()) advanceGameFrame(rawDt);
+  else if(hudInspecting()){moveCamera(dt);updateHUD();}
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
   else if (S.over) { for (const n of S.noises) n.t += dt; }
-  else if (!running) { S.t += dt; const P = S.player, kx = P.x, ky = P.y; P.x = -9999; P.y = -9999; for (const g of S.guards) updateGuard(g, dt); P.x = kx; P.y = ky; }
+
   const t1 = pf ? performance.now() : 0;
   draw();
   if (pf) { pf.u.push(t1 - t0); pf.d.push(performance.now() - t1); }
@@ -12829,7 +13005,7 @@ function frame(t) {
 // 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 목표 프레임에 가까워진 상태가 세 구간 유지되면 한 번 되돌린다
 let dprCap = 2, perfDts = [], perfSum = 0, perfBad = 0, perfGood = 0, perfUp = 1;
 function perfWatch(rawDt) {
-  if (!running || paused || !S || S.over || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
+  if (!running || paused || !S || S.over || hudInspecting() || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
   perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 2) return;
   const med = perfDts.sort((a, b) => a - b)[perfDts.length >> 1], fps = 1 / med; perfDts = []; perfSum = 0;
   const native = Math.min(2, window.devicePixelRatio || 1);
@@ -12859,6 +13035,7 @@ function toggleTactical() {
   if (tactical) hint('tac', '전술 지도: 게임이 멈춘 상태에서 자경대원 위치와 순찰로를 볼 수 있다');
 }
 window.addEventListener('resize', resize);
+
 
 // ---------------------------------------------------------------- 플레이 기록 (동선 · 진행 · 그만둔 자리)
 // 판 하나(의뢰 시작 ~ 성공·실패·그만둠)를 Firestore 문서 하나로 남긴다. 화면을 닫거나 다른 앱으로 넘어가도 그때까지를 덮어써 둔다
@@ -12919,6 +13096,53 @@ function statsEnd(result, reason) {
 function statsFlush() { if (RUN && !RUN.done && RUN.path.length > 5) statsSend(statsDoc('quit', S && S.over ? 'over' : '')); }
 window.addEventListener('pagehide', statsFlush);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') statsFlush(); });
+
+// Optional inspection and regression-test bridge. Installed after boot.
+function installGameApi() {
+  window.__game = {
+    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
+    baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
+    npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
+    validate() {
+      const issues = [];
+      STAGES.forEach((st, si) => {
+        newGame(si); winInit();
+        const sx = st.start[0], sy = st.start[1];
+        S.doors.filter(d => d.keyLock || d.gate).forEach(d => setDoor(d, false));
+        (st.keyDoors || []).forEach(([kx, ky]) => { const d = S.doors.find(d => d.tx === kx && d.ty === ky); if (!d) issues.push(`${st.id}: 열쇠 문 (${kx},${ky}) 문 아님`); else setDoor(d, false); });  // 열쇠는 얻을 수 있으므로 연 상태로 검사
+        const reach = (x, y, label) => { if (solidAt(x, y)) { issues.push(`${st.id}: ${label} (${x},${y}) 막힌 칸`); return; } if (!(x === sx && y === sy) && !astar(sx, sy, x, y).length) issues.push(`${st.id}: ${label} (${x},${y}) 도달 불가`); };
+        reach(Math.floor(st.exit[0]), Math.floor(st.exit[1]), '출구');
+        STAGE._items.forEach(p => { if (!p[2]) reach(p[0], p[1], '서류'); });
+        STAGE._g.forEach((g, gi) => { if (!g.fl) (g.route || (g.at ? [g.at] : [])).forEach(r => reach(r[0], r[1], `자경대원${gi}`)); });
+        // 위층: 그 층으로 올라오는 계단에서 닿는지
+        const fromStair = (f, x, y, label) => { const b = bldAt(x, y); const l = S.ladders.find(l => l.kind === 'fstair' && l.tfl === f && bldAt(l.tx, l.ty) === b); setLayer(f); if (!l) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 올라올 계단 없음`); else if (solidAt(x, y) || (!(l.bx === x && l.by === y) && !astar(l.bx, l.by, x, y).length)) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 도달 불가`); setLayer(0); };
+        STAGE._items.forEach(p => { if (p[2]) fromStair(p[2], p[0], p[1], '물건'); });
+        STAGE._g.forEach((g, gi) => { if (g.fl) (g.route || [g.at]).forEach(r => fromStair(g.fl, r[0], r[1], `자경대원${gi}`)); });
+        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.win && (!GF[n.fl] || GF[n.fl][n.ty][n.tx] !== 'N')) issues.push(`${st.id}: 전깃줄${wi} 창문 (${n.tx},${n.ty},${n.fl + 1}층) 창문 아님`); }));
+        if (st.fuse) reach(st.fuse[2], st.fuse[3], '퓨즈 앞');
+        if (st.flee) st.guards.forEach((g, gi) => { if (g.target) { const r = g.route[0]; if (!astar(r[0], r[1], st.flee[0], st.flee[1]).length) issues.push(`${st.id}: 표적${gi} 도주로 없음`); } });
+        S.hides.filter(b => !b.furn).forEach(b => { const ok = N8.slice(0, 4).filter(o => !solidAt(b.tx + o[0], b.ty + o[1])); if (!ok.length || !astar(sx, sy, b.tx + ok[0][0], b.ty + ok[0][1]).length) issues.push(`${st.id}: ${b.type} (${b.tx},${b.ty}) 접근 불가`); });
+        S.ladders.forEach(l => { if (l.bz === 0) reach(l.bx, l.by, l.kind === 'pipe' ? '배관 밑' : '사다리'); });
+        PIPES.forEach(p => { if (!S.ladders.some(l => l.kind === 'pipe' && l.tx === p[0] && l.ty === p[1])) issues.push(`${st.id}: 배관 (${p[0]},${p[1]}) 디딜 곳 없음`); });
+        for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'L' && !S.ladders.some(l => l.kind === 'ladder' && l.bx === x && l.by === y)) issues.push(`${st.id}: 사다리 (${x},${y}) 옆에 옥상 없음`);
+        if (st.reinf) reach(st.reinf[0], st.reinf[1], '증원 지점');
+        S.ladders.filter(l => l.kind === 'stair' || l.kind === 'fstair').forEach(l => { if (!l.bfl) reach(l.bx, l.by, '계단'); });
+        S.lamps.filter(l => l.hearth).forEach(l => { if (!S.ladders.some(c => c.kind === 'chimney' && c.lamp === l)) issues.push(`${st.id}: 아궁이 (${l.tx},${l.ty}) 굴뚝 없음`); });
+        S.vents.forEach(v => { if (v.roof ? !v.z : groundSolidP(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 자리 잘못됨`); else if (!v.roof) reach(v.tx, v.ty, '환풍구'); if (!ventAt(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 덕트 없음`); });
+        (S.cams || []).forEach(c => { const g = c.fl ? GF[c.fl] : G0; if (SOLID.has(g[c.ty][c.tx])) issues.push(`${st.id}: CCTV (${c.tx},${c.ty}) 벽 안`); });
+        S.hides.filter(h => h.type === 'well').forEach(h => { if (!ugAt(h.tx, h.ty)) issues.push(`${st.id}: 맨홀 (${h.tx},${h.ty}) 지하와 안 이어짐`); });
+        S.windows.forEach(w => { const ok = [[1, 0], [0, 1]].some(([dx, dy]) => !groundSolidP(w.tx + dx, w.ty + dy) && !groundSolidP(w.tx - dx, w.ty - dy)); if (!ok && !w.sealed) issues.push(`${st.id}: 창문 (${w.tx},${w.ty}) 양쪽이 막힘`); });
+        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.roof && !n.z) issues.push(`${st.id}: 전깃줄${wi} 끝 (${n.tx},${n.ty}) 옥상 아님`); }));
+        S.poles.forEach(o => { if (!o.wires.length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 줄 없음`); const ok = N8.slice(0, 4).filter(d => !solidAt(o.tx + d[0], o.ty + d[1])); if (!ok.length || !astar(sx, sy, o.tx + ok[0][0], o.ty + ok[0][1]).length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 접근 불가`); });
+        BLD.forEach((b, bi) => { if (b.vacant) return; if (!S.ladders.some(l => bldAt(l.tx, l.ty) === bi) && !S.wires.some(w => [w.a, w.b].some(n => n.roof && bldAt(n.tx, n.ty) === bi))) issues.push(`${st.id}: 건물${bi} 직접 오를 곳 없음`); });
+      });
+      newGame(0);
+      return issues;
+    }
+  };
+}
+
 // ---------------------------------------------------------------- 입력
 const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 document.body.classList.toggle('touch', isTouch);
@@ -12961,7 +13185,7 @@ window.addEventListener('keydown', e => {
   if(e.code==='Tab')e.preventDefault();
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(keyCode(e)) && running) e.preventDefault();
   if (e.repeat) return;
-  if (e.code !== 'Tab') closeEnvPicker();
+  if (e.code !== 'Tab') closeHudInspection();
   S.keys[keyCode(e)] = true; combatPress(e.code);
   { const c = e.code, ks = /^Arrow|^Key[ZXCV]$/.test(c) ? 'arrow' : /^Key[WASDEQF]$|^Space$/.test(c) ? 'wasd' : null; if (ks && input.kset !== ks) { input.kset = ks; if (typeof hudCache !== 'undefined') hudCache.kset = null; } }
   if (!running || S.over) return;
@@ -12990,7 +13214,7 @@ window.addEventListener('keyup', e => { if (S) { S.keys[keyCode(e)] = false; com
 // 창이 잠깐 가려지면(스크린샷·알림·다른 앱) 메뉴를 띄우지 않고 조용히 멈췄다가, 돌아오면 저절로 이어 간다 (스크린샷에 게임 화면이 그대로 찍힌다)
 function softPause(v) {
   if (!running || !S || S.over) return;
-  if (v) { if (paused) return; clearPlayerInput(); paused = true; S.autoPaused = true; riskTone(0); input.joy = null; return; }
+  if (v) { if (paused) return; clearPlayerInput(); paused = true; S.autoPaused = true;  input.joy = null; return; }
   if (S.autoPaused) { S.autoPaused = false; paused = false; }
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
@@ -13003,8 +13227,12 @@ function clearPlayerInput() {
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('pointerdown',e=>{if(!e.target.closest('#envPicker, #btnCycle'))closeEnvPicker();});
-$('envPicker').addEventListener('keydown',e=>{if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();if(e.code==='Escape'){e.preventDefault();closeEnvPicker();$('btnCycle').focus({preventScroll:true});}});
+window.addEventListener('pointerdown',e=>{if(!e.target.closest('#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
+$('envPicker').addEventListener('keydown',e=>{
+  if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
+  if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
+  if(e.code==='Escape'){e.preventDefault();closeEnvPicker();$('btnCycle').focus({preventScroll:true});}
+});
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
 
 const joyEl = $('joy'), joyKnob = $('joyKnob'), JOY_R = 60;
@@ -13111,7 +13339,7 @@ function cycleMoveMode() {
 }
 { const o=document.querySelector('#hud .obj');if(o){
   o.setAttribute('role','button');o.tabIndex=0;o.setAttribute('aria-expanded','false');o.setAttribute('aria-label','전체 목표 펼치기');
-  const toggle=()=>{const open=o.classList.toggle('open');o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');};
+  const toggle=()=>setObjectiveOpen(!o.classList.contains('open'));
   o.addEventListener('click',e=>{e.stopPropagation();toggle();});
   o.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)toggle();}});
 } }  // 휴대폰: 목표 펼치기
@@ -13155,7 +13383,7 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
-function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } } if (paused) riskTone(0);
+function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
@@ -13205,7 +13433,7 @@ function start(i, noBrief) {
   newGame(i); if(STAGE.firstSteps){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep([...ks, ...Object.keys(OUTFIT_PAL), 'police', 'rival']); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -13241,7 +13469,7 @@ function toMenu() {
   if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
-  running = false; paused = false; riskTone(0); resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
+  running = false; paused = false;  resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; showMenu('ledger');
   renderStageList();
   newGame(STAGE_I);
@@ -13253,53 +13481,13 @@ atlas.onload = async () => {
   renderStageList();
   newGame(0);
   requestAnimationFrame(frame);
-  window.__game = {
-    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
-    prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardRanges,guardFov,guardCone,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
-    mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
-    npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
-    validate() {
-      const issues = [];
-      STAGES.forEach((st, si) => {
-        newGame(si);
-        const sx = st.start[0], sy = st.start[1];
-        S.doors.filter(d => d.keyLock || d.gate).forEach(d => setDoor(d, false));
-        (st.keyDoors || []).forEach(([kx, ky]) => { const d = S.doors.find(d => d.tx === kx && d.ty === ky); if (!d) issues.push(`${st.id}: 열쇠 문 (${kx},${ky}) 문 아님`); else setDoor(d, false); });  // 열쇠는 얻을 수 있으므로 연 상태로 검사
-        const reach = (x, y, label) => { if (solidAt(x, y)) { issues.push(`${st.id}: ${label} (${x},${y}) 막힌 칸`); return; } if (!(x === sx && y === sy) && !astar(sx, sy, x, y).length) issues.push(`${st.id}: ${label} (${x},${y}) 도달 불가`); };
-        reach(Math.floor(st.exit[0]), Math.floor(st.exit[1]), '출구');
-        STAGE._items.forEach(p => { if (!p[2]) reach(p[0], p[1], '서류'); });
-        STAGE._g.forEach((g, gi) => { if (!g.fl) (g.route || (g.at ? [g.at] : [])).forEach(r => reach(r[0], r[1], `자경대원${gi}`)); });
-        // 위층: 그 층으로 올라오는 계단에서 닿는지
-        const fromStair = (f, x, y, label) => { const b = bldAt(x, y); const l = S.ladders.find(l => l.kind === 'fstair' && l.tfl === f && bldAt(l.tx, l.ty) === b); setLayer(f); if (!l) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 올라올 계단 없음`); else if (solidAt(x, y) || (!(l.bx === x && l.by === y) && !astar(l.bx, l.by, x, y).length)) issues.push(`${st.id}: ${label} (${x},${y},${f + 1}층) 도달 불가`); setLayer(0); };
-        STAGE._items.forEach(p => { if (p[2]) fromStair(p[2], p[0], p[1], '물건'); });
-        STAGE._g.forEach((g, gi) => { if (g.fl) (g.route || [g.at]).forEach(r => fromStair(g.fl, r[0], r[1], `자경대원${gi}`)); });
-        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.win && (!GF[n.fl] || GF[n.fl][n.ty][n.tx] !== 'N')) issues.push(`${st.id}: 전깃줄${wi} 창문 (${n.tx},${n.ty},${n.fl + 1}층) 창문 아님`); }));
-        if (st.fuse) reach(st.fuse[2], st.fuse[3], '퓨즈 앞');
-        if (st.flee) st.guards.forEach((g, gi) => { if (g.target) { const r = g.route[0]; if (!astar(r[0], r[1], st.flee[0], st.flee[1]).length) issues.push(`${st.id}: 표적${gi} 도주로 없음`); } });
-        S.hides.filter(b => !b.furn).forEach(b => { const ok = N8.slice(0, 4).filter(o => !solidAt(b.tx + o[0], b.ty + o[1])); if (!ok.length || !astar(sx, sy, b.tx + ok[0][0], b.ty + ok[0][1]).length) issues.push(`${st.id}: ${b.type} (${b.tx},${b.ty}) 접근 불가`); });
-        S.ladders.forEach(l => { if (l.bz === 0) reach(l.bx, l.by, l.kind === 'pipe' ? '배관 밑' : '사다리'); });
-        PIPES.forEach(p => { if (!S.ladders.some(l => l.kind === 'pipe' && l.tx === p[0] && l.ty === p[1])) issues.push(`${st.id}: 배관 (${p[0]},${p[1]}) 디딜 곳 없음`); });
-        for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'L' && !S.ladders.some(l => l.kind === 'ladder' && l.bx === x && l.by === y)) issues.push(`${st.id}: 사다리 (${x},${y}) 옆에 옥상 없음`);
-        if (st.reinf) reach(st.reinf[0], st.reinf[1], '증원 지점');
-        S.ladders.filter(l => l.kind === 'stair' || l.kind === 'fstair').forEach(l => { if (!l.bfl) reach(l.bx, l.by, '계단'); });
-        S.lamps.filter(l => l.hearth).forEach(l => { if (!S.ladders.some(c => c.kind === 'chimney' && c.lamp === l)) issues.push(`${st.id}: 아궁이 (${l.tx},${l.ty}) 굴뚝 없음`); });
-        S.vents.forEach(v => { if (v.roof ? !v.z : groundSolidP(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 자리 잘못됨`); else if (!v.roof) reach(v.tx, v.ty, '환풍구'); if (!ventAt(v.tx, v.ty)) issues.push(`${st.id}: 환풍구 (${v.tx},${v.ty}) 덕트 없음`); });
-        (S.cams || []).forEach(c => { const g = c.fl ? GF[c.fl] : G0; if (SOLID.has(g[c.ty][c.tx])) issues.push(`${st.id}: CCTV (${c.tx},${c.ty}) 벽 안`); });
-        S.hides.filter(h => h.type === 'well').forEach(h => { if (!ugAt(h.tx, h.ty)) issues.push(`${st.id}: 맨홀 (${h.tx},${h.ty}) 지하와 안 이어짐`); });
-        S.windows.forEach(w => { const ok = [[1, 0], [0, 1]].some(([dx, dy]) => !groundSolidP(w.tx + dx, w.ty + dy) && !groundSolidP(w.tx - dx, w.ty - dy)); if (!ok) issues.push(`${st.id}: 창문 (${w.tx},${w.ty}) 양쪽이 막힘`); });
-        S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.roof && !n.z) issues.push(`${st.id}: 전깃줄${wi} 끝 (${n.tx},${n.ty}) 옥상 아님`); }));
-        S.poles.forEach(o => { if (!o.wires.length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 줄 없음`); const ok = N8.slice(0, 4).filter(d => !solidAt(o.tx + d[0], o.ty + d[1])); if (!ok.length || !astar(sx, sy, o.tx + ok[0][0], o.ty + ok[0][1]).length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 접근 불가`); });
-        BLD.forEach((b, bi) => { if (b.vacant) return; if (!S.ladders.some(l => bldAt(l.tx, l.ty) === bi) && !S.wires.some(w => [w.a, w.b].some(n => n.roof && bldAt(n.tx, n.ty) === bi))) issues.push(`${st.id}: 건물${bi} 직접 오를 곳 없음`); });
-      });
-      newGame(0);
-      return issues;
-    }
-  };
+  installGameApi();
   window.__boot?.ready();
 };
 atlas.onerror=()=>window.__boot?.fail('필수 이미지 다운로드 실패');
 atlas.src = A.atlas;
 // 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
 if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
+
 })();
 
