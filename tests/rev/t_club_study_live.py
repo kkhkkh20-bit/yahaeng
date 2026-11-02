@@ -7,8 +7,11 @@ from playwright.async_api import async_playwright
 spec=importlib.util.spec_from_file_location('route',str(Path(__file__).with_name('t_club_study.py')));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 D=m.DRIVER
 start=D.index('const render=');end=D.index('const idle=',start)
-D=D[:start]+"const render=()=>{};const tick=async(n=1)=>{for(let i=0;i<n;i++){if(S.over)break;await new Promise(r=>requestAnimationFrame(r));check(!S.over||S.exitOpen&&document.getElementById('endTitle').textContent==='임무 완료','player died');}};\n"+D[end:]
+D=D[:start]+"const render=()=>{};const tick=async(n=1)=>{const end=S.t+n/60;while(S.t<end){if(S.over)break;await new Promise(r=>requestAnimationFrame(r));check(!S.over||S.exitOpen&&document.getElementById('endTitle').textContent==='임무 완료','player died');}};\n"+D[end:]
 D=D.replace('()=>{','async()=>{',1)
+# Native frames vary in duration; stop within a quarter tile instead of oscillating
+# around a three-pixel target on software rendering.
+D=D.replace(')>3&&',')>13&&')
 for name in ['idle','key','act','walk']:
  D=D.replace('const '+name+'=', 'const '+name+'=async')
 D=re.sub(r'=async([a-zA-Z_$][\w$]*)=>',r'=async \1=>',D)

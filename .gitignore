@@ -31,3 +31,6 @@ build/test_logs/
 
 /build/camera-before/
 /build/camera-validation/
+
+/build/stability-before/
+/build/stability-validation/

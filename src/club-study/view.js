@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import {buildWorld,FLOOR} from './world.js';
 import {createActors} from './actors.js';
-import {makeReveal} from './reveal.js';
 import {createSight} from './sight.js';
 import {createEffects} from './effects.js';
 import {passageMode,accessMotion,SEWER_Y,DUCT_Y} from './passages.js';
@@ -19,7 +18,7 @@ try{
  const moon=new THREE.DirectionalLight('#c0d5de',2.6);moon.position.set(-9,18,8);scene.add(moon);moon.target.position.set(12,0,10);scene.add(moon.target);moon.castShadow=true;moon.shadow.mapSize.set(1536,1536);moon.shadow.camera.left=moon.shadow.camera.bottom=-22;moon.shadow.camera.right=moon.shadow.camera.top=22;moon.shadow.camera.near=1;moon.shadow.camera.far=60;moon.shadow.normalBias=.025;moon.shadow.bias=-.00015;moon.shadow.radius=2;
  const fill=new THREE.DirectionalLight('#e4be8b',.6);fill.position.set(10,12,-9);scene.add(fill);
  const camera=new THREE.OrthographicCamera(-10,10,8,-8,.1,150),rig=createCameraRig(camera),ray=new THREE.Raycaster(),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),ndc=new THREE.Vector2();
- let world=null,people=null,reveal=null,sight=null,effects=null,state=null,lastT=0,width=0,height=0,pending=null,ready=false,lastFrame=performance.now(),frameCosts=[],contactTrace=[],degraded=false;
+ let world=null,people=null,sight=null,effects=null,state=null,lastT=0,width=0,height=0,pending=null,ready=false,lastFrame=performance.now(),frameCosts=[],contactTrace=[],degraded=false;
  const ring=new THREE.Mesh(new THREE.RingGeometry(.30,.345,48),new THREE.MeshBasicMaterial({color:'#e4ddc4',transparent:true,opacity:.95,depthWrite:false,depthTest:true}));ring.rotation.x=-Math.PI/2;ring.renderOrder=100;scene.add(ring);
  const targetRing=new THREE.Mesh(new THREE.RingGeometry(.31,.345,48),new THREE.MeshBasicMaterial({color:'#c96d57',transparent:true,opacity:.85,depthWrite:false}));targetRing.rotation.x=-Math.PI/2;scene.add(targetRing);
  function size(){const resized=rig.resize(innerWidth,innerHeight,passageMode(G.S.player),G.viewZoom||1);width=innerWidth;height=innerHeight;if(resized)renderer.setSize(width,height,false);}
@@ -28,10 +27,10 @@ try{
  const direction=rig.direction,pace=rig.pace;
  async function rebuild(){
   ready=false;loading.style.display='grid';loading.textContent='골목 불러오는 중';const S=G.S;
-  if(world){reveal?.dispose();world.passages.dispose();world.visibility.dispose();scene.remove(world.root);world.root.traverse(o=>{if(o.isMesh&&o.geometry!==ring.geometry)o.geometry.dispose();});}
+  if(world){world.passages.dispose();world.visibility.dispose();scene.remove(world.root);world.root.traverse(o=>{if(o.isMesh&&o.geometry!==ring.geometry)o.geometry.dispose();});}
   people?.dispose();
   sight?.dispose();effects?.dispose();
-  world=buildWorld(G,scene);world.visibility.setProjection(...rig.framing.slope);reveal=makeReveal(world.root,G,rig.framing.slope);people=await createActors(G,scene,world.visibility);sight=createSight(G,scene,people,world.visibility);effects=createEffects(G,scene,world.visibility);state=S;lastT=S.t;size();rig.follow(S.player.x/48,0,S.player.y/48);world.update();people.render(0);sight.update();await renderer.compileAsync(scene,camera);ready=true;loading.style.display='none';
+  world=buildWorld(G,scene);people=await createActors(G,scene,world.visibility);sight=createSight(G,scene,people,world.visibility);effects=createEffects(G,scene,world.visibility);state=S;lastT=S.t;size();rig.follow(S.player.x/48,0,S.player.y/48);world.update();people.render(0);sight.update();await renderer.compileAsync(scene,camera);ready=true;loading.style.display='none';
  }
  function rounded(c,x,y,w,h,r){c.beginPath();c.roundRect(x,y,w,h,r);}
  function badge(c,p,text,color='#e3cc8e'){
@@ -48,7 +47,7 @@ try{
    const at=env.at||env.d||env.h||env.w||env.v||env.l||env.n||env.it||null;if(at?.x!=null)badge(ctx,project(new THREE.Vector3(at.x/48,mode?people.height(P)+1.4:(at.fl||0)*FLOOR+(env.h?.type==='well'?.6:env.v?.street?1.2:1.25),at.y/48)),(matchMedia('(pointer:coarse)').matches?'':'X · ')+env.label.replace(/ ·.*$/,''));
   }
   // One compact cue per real, visible fixture; no off-screen or through-wall markers.
-  const cues=[];for(const {h,v}of world.hides){if(mode||!v.group.visible||!world.visibility.visible(h,true)||Math.hypot(h.x-P.x,h.y-P.y)>240)continue;const p=project(new THREE.Vector3(h.x/48,(h.fl||0)*FLOOR+(h.type==='well'?.3:h.type==='bush'?.9:h.furn?2.08:1.35),h.y/48));if(p.y<165||p.y>height-150||p.x<12||p.x>width-12)continue;
+  const cues=[];for(const {h,v}of world.hides){if(mode||!v.group.visible||!world.visibility.cue(h)||Math.hypot(h.x-P.x,h.y-P.y)>240)continue;const p=project(new THREE.Vector3(h.x/48,(h.fl||0)*FLOOR+(h.type==='well'?.3:h.type==='bush'?.9:h.furn?2.08:1.35),h.y/48));if(p.y<165||p.y>height-150||p.x<12||p.x>width-12)continue;
    const selected=env.h===h,name=h.type==='bush'?'화단':h.type==='box'?'수거함':h.type==='well'?'맨홀':h.type==='locker'?'사물함':'옷장',full=!G.hideSpace(h,1),bodies=(h.bodies||0)+(h.type==='bush'?G.S.corpses.filter(c=>c.hidden&&!c.stashed&&!c.carried&&(c.fl||0)===(h.fl||0)&&Math.floor(c.x/48)===h.tx&&Math.floor(c.y/48)===h.ty).length:0),occupied=bodies>0;
    ctx.strokeStyle=selected?'#e3cc8e':'#b4b9a2';ctx.fillStyle='rgba(17,27,28,.88)';ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(p.x,p.y,9,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.strokeRect(p.x-4,p.y-2,8,6);ctx.beginPath();ctx.moveTo(p.x-5,p.y-5);ctx.lineTo(p.x+5,p.y-5);ctx.stroke();
    if((P.carrying||P.captive||occupied)&&!selected)badge(ctx,{...p,y:p.y-12},name+' · '+(full?'가득 참':(Number.isFinite(h.cap)&&h.type!=='well'?bodies+'/'+h.cap:bodies+'명')),full?'#ce9c87':'#c9cbb5');cues.push({type:h.type,x:h.x,y:h.y,bodies,full});
@@ -72,12 +71,11 @@ try{
   if(contact){const weight=I?.a?.d||I?.a?.l?Math.min(1,Math.max(0,progress/.18),Math.max(0,(.62-progress)/.25)):F||A?.work?Math.min(1,Math.max(0,closing?(progress-.3)/.2:progress/.18),Math.max(0,closing?(1-progress)/.18:(.58-progress)/.22)):Math.min(1,Math.max(0,progress/.25),Math.max(0,(1-progress)/.22)),distance=people.player.driver.reach('Right',contact,weight);if(weight>.9){contactTrace.push({t:G.S.t,kind:I?.a?.k||P.pick?.kind||F?.kind||A?.F.kind,distance});if(contactTrace.length>400)contactTrace.shift();}}
   ring.position.set(P.x/48,y+.035,P.y/48);ring.visible=!P.hide||!!P.trav?.hideFlow||!!G.S.amb;
   const a=G.attackAction(),enemy=a.g||(a.list||[])[0];targetRing.visible=(!mode||a.k==='ventKill')&&!!enemy&&Math.hypot(enemy.x-P.x,enemy.y-P.y)<100;if(enemy){targetRing.position.set(enemy.x/48,people.height(enemy)+.075,enemy.y/48);const phase=G.guardAwareness(enemy).phase;targetRing.material.color.set(phase==='seen'?'#c96d57':['suspect','search'].includes(phase)?'#d2b87c':'#c5c6a1');}
-  reveal.update({floor:y,range:Math.max(7,rig.framing.groundWidth*.8),enabled:!mode&&!P.z});
   renderer.render(scene,camera);overlay(ctx,canvas,currentEnv);frameCosts.push(performance.now()-started);if(frameCosts.length>120)frameCosts.shift();
   if(!degraded&&frameCosts.length===120&&frameCosts.reduce((a,b)=>a+b,0)/120>35){renderer.setPixelRatio(.85);renderer.setSize(width,height,false);degraded=true;}
   lastFrame=performance.now();
  }
- const view={get ready(){return ready},drawPassageMap(cv){return world?.passages.drawMini(cv)||false;},draw,direction,pace,groundToScreen:rig.groundToScreen,screenToWorld,project,get framing(){return rig.framing;},actorPick(o){return project(new THREE.Vector3(o.x/48,people.height(o)+1,o.y/48));},actorScreen(o){return project(new THREE.Vector3(o.x/48,people.height(o),o.y/48));},get occlusion(){return{mode:reveal?.mode,range:reveal?.range}},get effects(){return effects},get sight(){return sight},get world(){return world},get people(){return people},get scene(){return scene},get camera(){return camera},get renderer(){return renderer},get contactTrace(){return contactTrace;},get metrics(){const a=frameCosts.slice().sort((a,b)=>a-b);return{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,pixelRatio:renderer.getPixelRatio(),medianMs:a[Math.floor(a.length*.5)]||0,p95Ms:a[Math.floor(a.length*.95)]||0};},async readyForScene(){while(pending||!ready||state!==G.S)await sleep(20);}};
+ const view={get ready(){return ready},drawPassageMap(cv){return world?.passages.drawMini(cv)||false;},draw,direction,pace,groundToScreen:rig.groundToScreen,screenToWorld,project,get framing(){return rig.framing;},actorPick(o){return project(new THREE.Vector3(o.x/48,people.height(o)+1,o.y/48));},actorScreen(o){return project(new THREE.Vector3(o.x/48,people.height(o),o.y/48));},get occlusion(){return world?.cutaway},get effects(){return effects},get sight(){return sight},get world(){return world},get people(){return people},get scene(){return scene},get camera(){return camera},get renderer(){return renderer},get contactTrace(){return contactTrace;},get metrics(){const a=frameCosts.slice().sort((a,b)=>a-b);return{drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,pixelRatio:renderer.getPixelRatio(),medianMs:a[Math.floor(a.length*.5)]||0,p95Ms:a[Math.floor(a.length*.95)]||0};},async readyForScene(){while(pending||!ready||state!==G.S)await sleep(20);}};
  window.__clubView=view;prepareEpisode();G.start(G.STAGES.findIndex(s=>window.__EPISODE_ONE__?s.episode:s.artSlice),!!window.__EPISODE_ONE__);while(G.DLG.modal)G.advanceDialog();await rebuild();
  renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();if(G.STAGE.artSlice){loading.textContent='화면 복구 중';loading.style.display='grid';}});renderer.domElement.addEventListener('webglcontextrestored',()=>{loading.style.display='none';moon.shadow.needsUpdate=true;});
 }catch(error){console.error(error);loading.textContent='새 화면을 열지 못했습니다. ';const link=document.createElement('a');link.href='../tone-study/game.html';link.textContent='기존 게임 열기';link.style.color='#e2c58b';loading.append(link);window.__clubError=String(error);}
