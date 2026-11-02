@@ -1,0 +1,45 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+  "files": {
+    "index.html": "b5529fb479146153283de8a1089b6fdfda15ec0d2da408e310388bdf197a0405",
+    "version.json": "1dbad62d5864be2703eb39ed7b4f9ed5591d1df565761f06a5eec279015f8aec",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/3858b3f7e5604b2bbca4.js": "3858b3f7e5604b2bbca496fc19325dfba9ac59d8f0ccd6fef741fa9346f3910f",
+    "assets/09e8089decec3c09fdb0.js": "09e8089decec3c09fdb09f0e13cf7463d85e835fe06af1a513b781dfbd9cd40f",
+    "assets/c7a0b8e131ae02d370dc.js": "c7a0b8e131ae02d370dcb65bfc4cd55f26ba55162a5102d7782dd6686ef4a9d1"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        184.86293670473225,
+        505.5359625
+      ],
+      "version": "v141",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        189.97740399398282,
+        505.53135
+      ],
+      "version": "v141",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    }
+  ]
+}
