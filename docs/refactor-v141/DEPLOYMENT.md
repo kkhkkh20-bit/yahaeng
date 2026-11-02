@@ -1,4 +1,4 @@
-# v141 · 산출물 검증과 공개 반영 대기
+# v141 · 배포 검증 진행
 
 - 런타임 소스 커밋: `1542cf83eeeba9c9299dd191d0cc1de02d00682b`
 - Pages 준비 커밋: `c93cbdd5d3db266f505c961bef1001a9a137a65e`
@@ -14,8 +14,6 @@
 
 Pages 루트와 `/playtest-2d/`에도 같은 파일을 준비했다. 별도 3D 아카이브와 사용자가 만든 보조 HTML은 보존했다. 그 아카이브의 참조까지 확인해 어느 HTML/JS/CSS에서도 쓰지 않는 예전 해시 스크립트만 별도로 정리했다.
 
-## 외부 연결 때문에 확인하지 못한 부분
+## 공개 배포 진행
 
-현재 작업 환경에서 GitHub·GitHub API·Cloudflare 공개 주소 요청이 모두 HTTP 503을 반환한다. `git push origin HEAD:main`은 upstream 연결 오류 또는 RPC 503으로 실패했고, 원격 ref 조회도 503이라 업로드 성공을 확인할 수 없다. 공개 CI/Cloudflare/Pages 배포 및 공개 URL 검증은 완료로 표시하지 않는다. 네트워크가 복구되면 원격 ref를 먼저 확인한 뒤 main과 준비된 gh-pages를 반영하고 `tests/tutorial/verify_deployment.py`로 두 공개 주소를 검증해야 한다.
-
-로컬 소스·배포 산출물·검수 기록은 커밋으로 저장했다. 로컬 실행 결과를 공개 사이트의 검증 결과로 간주하지 않는다.
+외부 연결이 복구되어 원격 main과 gh-pages가 직전 v140 커밋임을 확인했다. 검증된 v141 산출물을 반영하고 Cloudflare/Pages 빌드와 두 공개 주소를 확인한다. 완료 뒤 이 문서에 공개 검증 결과와 배포 커밋을 기록한다.

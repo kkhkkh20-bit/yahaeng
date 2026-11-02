@@ -1,5 +1,3 @@
-> v141은 로컬 구현·검수가 완료된 상태입니다. 현재 외부 연결의 HTTP 503 오류로 GitHub 푸시와 공개 배포 완료를 확인하지 못했습니다. [상태·로컬 산출물](docs/refactor-v141/DEPLOYMENT.md).
-
 # 게임 테스트 주소
 
 - 2D 본편 · 시야와 소리 연습 (v141): https://kkhkkh20-bit.github.io/yahaeng/?v=141
