@@ -1,0 +1,3 @@
+PASS native 2D {'mobile': False, 'before': [120, 504], 'after': [188.8315852537002, 505.5375], 'version': 'v148', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True}
+PASS native 2D {'mobile': True, 'before': [120, 504], 'after': [188.27685436401134, 505.54057500000005], 'version': 'v148', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True}
+PASS packaged hashes 6 https://kkhkkh20-bit.github.io/yahaeng/

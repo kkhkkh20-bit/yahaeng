@@ -47,8 +47,7 @@ async def main():
    await tap_tool();await q.evaluate('__tick(.02)');assert await q.evaluate('__game.S.stats.radioDecoys===1&&__game.S.tutI===3')
    await select('smoke');await tap_tool();await q.evaluate('__tick(.7);__render()');assert await q.evaluate('__game.S.smokes.length===1&&__game.S.tutI===4');await q.screenshot(path=str(O/f'smoke-{label}.png'))
    await move_to(1032,648);assert await q.evaluate('__game.S.tutI===5&&!__game.S.over'),await q.evaluate('({step:__game.S.tutI,over:__game.S.over,hp:__game.S.player.hp,guards:__game.S.guards.map(g=>[g.state,g.x,g.y])})')
-   # Movement may finish facing slightly down; one actual aim input sets the direction.
-   await select('hack');await q.evaluate('__game.S.player.a=0');await tap_tool();await q.evaluate('__tick(.8);__render()');assert await q.evaluate('!!__game.S.player.techWork');await q.screenshot(path=str(O/f'hack-{label}.png'));await q.evaluate('__tick(.9)');assert await q.evaluate('__game.S.stats.hacks===1&&__game.S.tutI===6')
+   await select('hack');await tap_tool();await q.evaluate('__tick(.8);__render()');assert await q.evaluate('!!__game.S.player.techWork');await q.screenshot(path=str(O/f'hack-{label}.png'));await q.evaluate('__tick(.9)');assert await q.evaluate('__game.S.stats.hacks===1&&__game.S.tutI===6')
    await select('blade');before=await q.evaluate('__game.S.player.blades');await tap_tool();assert await q.evaluate('(n)=>__game.S.player.blades===n',before),'Short press fires lethal blade'
    if mobile:
     r=await q.locator('#btnTool').bounding_box();await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':r['x']+r['width']/2,'y':r['y']+r['height']/2,'id':1}]})

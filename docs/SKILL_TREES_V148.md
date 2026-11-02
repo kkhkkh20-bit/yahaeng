@@ -101,3 +101,5 @@ v147 이전 사용자는 별 3개/6개로 열렸던 쌍암살·연속 암살과 
 - 1440×900·390×844·844×390·320×568 화면의 세 계열, 포인트·비용·연결선, 44px 버튼, 스크롤 후 돌아가기, 게임 화면 버튼의 실제 입력 위치를 확인한다. 패키지의 파일 해시·PC·터치 조작도 확인한다.
 
 [회귀 검사](skills-v148/regression.log) · [판정 검사](skills-v148/mechanics.json) · [PC·터치 완주](skills-v148/journey.json) · [작은 화면 검사](skills-v148/responsive.log) · [패키지 검사](skills-v148/packaged-local.json)
+
+공개 Pages·Cloudflare 두 서비스에서도 PC·터치로 기술 구매와 도구 연습을 완주했다. [배포·공개 검증](skills-v148/DEPLOYMENT.md).
