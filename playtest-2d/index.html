@@ -222,7 +222,7 @@ body.touch #dlg { top:auto; bottom:calc(14px + env(safe-area-inset-bottom,0px));
 body.dlgmodal #cmap{ visibility:hidden; }
 #dlg.modal::before { content:""; position:fixed; inset:-100vh -100vw; background:linear-gradient(180deg,rgba(3,5,10,0) 35%,rgba(3,5,10,.55)); z-index:-1; pointer-events:auto; }
 @keyframes dlgIn { from { opacity:0; transform:translate(-50%,10px); } to { opacity:1; transform:translate(-50%,0); } }
-.dlg-face { position:relative; flex:0 0 80px; height:88px; align-self:flex-start; overflow:hidden; background:#141b21; }
+.dlg-face { position:relative; flex:0 0 80px; min-height:88px; height:auto; align-self:stretch; overflow:hidden; background:#141b21; }
 .dlg-face canvas { display:block; width:96px; height:96px; position:absolute; left:50%; bottom:0; transform:translateX(-50%); }
 .dlg-box { flex:1; min-width:0; padding:0; display:flex; flex-direction:column; gap:6px; color:#e6e5df; font-family:var(--f-body); }
 .dlg-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:3px 8px; line-height:1.4; }
@@ -237,7 +237,7 @@ body.dlgmodal #cmap{ visibility:hidden; }
 #dlg.noface .dlg-box { padding:0; }
 @media (max-width:640px),(max-height:480px) {
  #dlg { width:min(600px,calc(100vw - 24px)); gap:12px; padding:12px; }
- .dlg-face { flex-basis:64px; height:76px; }
+ .dlg-face { flex-basis:64px; min-height:76px; height:auto; }
  .dlg-face canvas { width:80px; height:80px; }
  .dlg-box { gap:5px; }
  .dlg-copy p { font-size:14px; line-height:1.55; }
@@ -1019,7 +1019,7 @@ body:not(.touch) #hud .pad #btnCycle b { font-weight: 500; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v143 · 2026-11-02</footer>
+  <footer class="title-footer">v144 · 2026-11-02</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1143,6 +1143,6 @@ body:not(.touch) #hud .pad #btnCycle b { font-weight: 500; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/69da22fe70b61198d39b.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/8e06825208fdbc7a6920.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/09e8089decec3c09fdb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/630e8b64612920cb5f57.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/9dfc2082567120bf9889.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>

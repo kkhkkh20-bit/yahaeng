@@ -1,0 +1,82 @@
+[
+  {
+    "file": "before-m4-pc.png",
+    "stage": "m4",
+    "access": 19,
+    "near": []
+  },
+  {
+    "file": "before-m3-pc.png",
+    "stage": "m3",
+    "access": 19,
+    "near": [
+      "들어가 숨기"
+    ]
+  },
+  {
+    "file": "before-m5-pc.png",
+    "stage": "m5",
+    "access": 16,
+    "near": []
+  },
+  {
+    "file": "before-m4-touch.png",
+    "stage": "m4",
+    "access": 19,
+    "near": []
+  },
+  {
+    "file": "before-m3-touch.png",
+    "stage": "m3",
+    "access": 19,
+    "near": [
+      "들어가 숨기"
+    ]
+  },
+  {
+    "file": "before-m5-touch.png",
+    "stage": "m5",
+    "access": 16,
+    "near": []
+  },
+  {
+    "file": "after-m4-pc.png",
+    "stage": "m4",
+    "access": 11,
+    "near": []
+  },
+  {
+    "file": "after-m3-pc.png",
+    "stage": "m3",
+    "access": 13,
+    "near": [
+      "들어가 숨기"
+    ]
+  },
+  {
+    "file": "after-m5-pc.png",
+    "stage": "m5",
+    "access": 9,
+    "near": []
+  },
+  {
+    "file": "after-m4-touch.png",
+    "stage": "m4",
+    "access": 11,
+    "near": []
+  },
+  {
+    "file": "after-m3-touch.png",
+    "stage": "m3",
+    "access": 13,
+    "near": [
+      "들어가 숨기"
+    ]
+  },
+  {
+    "file": "after-m5-touch.png",
+    "stage": "m5",
+    "access": 9,
+    "near": []
+  }
+]

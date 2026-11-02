@@ -1,0 +1,112 @@
+The initial 38-check suite had six failures; see subsequent final reruns below.
+
+=== v144-fast-suite.log ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.016s
+
+OK
+PASS sprite source ownership, deduplication, late-load discard, release, failure backoff and retry
+도달 검사: 통과
+통과 tests/rev/r3.py (11초)
+통과 tests/rev/t_access_evidence.py (24초)
+통과 tests/rev/t_ai_evidence.py (13초)
+통과 tests/rev/t_btn4.py (35초)
+실패 tests/rev/t_building_search.py (4초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_camera_presentation.py (36초)
+통과 tests/rev/t_change.py (13초)
+통과 tests/rev/t_choice.py (10초)
+통과 tests/rev/t_city.py (30초)
+통과 tests/rev/t_combat_policy.py (74초)
+실패 tests/rev/t_contract_density.py (3초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_copy_scenarios.py (12초)
+통과 tests/rev/t_cqc.py (24초)
+통과 tests/rev/t_disguise_ai.py (24초)
+실패 tests/rev/t_environment_targets.py (3초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_fac.py (26초)
+통과 tests/rev/t_hanging_controls.py (31초)
+통과 tests/rev/t_height_cues.py (9초)
+통과 tests/rev/t_instig.py (20초)
+통과 tests/rev/t_interaction_flow.py (36초)
+통과 tests/rev/t_ko.py (31초)
+통과 tests/rev/t_m1x.py (14초)
+통과 tests/rev/t_mission_flow.py (59초)
+실패 tests/rev/t_mission_progress.py (3초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_multilevel_pursuit.py (13초)
+통과 tests/rev/t_patrol_motion.py (5초)
+통과 tests/rev/t_rel.py (49초)
+통과 tests/rev/t_roof_routes.py (18초)
+통과 tests/rev/t_scene_layers.py (12초)
+통과 tests/rev/t_sprite_ownership.py (12초)
+통과 tests/rev/t_stair_geometry.py (9초)
+실패 tests/rev/t_target_body.py (3초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_tut.py (55초)
+실패 tests/rev/t_ui2.py (9초) — ['문제 1']
+통과 tests/rev/t_v33.py (21초)
+통과 tests/rev/t_world_alignment.py (14초)
+통과 tests/rev/t_zone.py (18초)
+통과 tests/mis/tm1.py (70초)
+
+결과: 실패 tests/rev/t_building_search.py, tests/rev/t_contract_density.py, tests/rev/t_environment_targets.py, tests/rev/t_mission_progress.py, tests/rev/t_target_body.py, tests/rev/t_ui2.py (로그: build/test_logs/)
+
+
+=== v144-building-final.log ===
+PASS {'indoorPositions': 13360, 'exteriorClimbs': 0, 'cornerCameras': 6, 'searches': [{'id': 'm2', 'assigned': 6, 'checked': 16, 'upstairs': 4}, {'id': 'm4', 'assigned': 6, 'checked': 11, 'upstairs': 4}, {'id': 'm6', 'assigned': 6, 'checked': 14, 'upstairs': 4}], 'identityCues': True, 'absoluteFloors': True}
+
+
+=== v144-density-final.log ===
+PASS {'mainContracts': 3, 'securityRooms': 3, 'physicalCode': True, 'sameBuildingReuse': True, 'privacySeparation': True, 'oldSaveRecovery': True}
+
+
+=== v144-dialogue-final.log ===
+PASS 320 568 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 320 568 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 360 740 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 360 740 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 390 844 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 390 844 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 568 320 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 568 320 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 844 390 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 844 390 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 1280 800 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 1280 800 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+
+
+=== v144-environment-final.log ===
+PASS {'poleLights': 8, 'overlap': 'pole/light/door and global fuse', 'legacyAnchors': True}
+PASS actual keyboard and mobile light-switch input
+
+
+=== v144-multilevel-final.log ===
+PASS multilevel pursuit {"middleRoofOccluded": true, "exposedEdgeVisible": true, "crouchedEdgeOccluded": true, "floorsAndWallsOcclude": true, "roofCoverMatchesCone": true, "roofCombat": ["knife", "gun"], "pursuit": [{"startFloor": 0, "seconds": 7.1000000000000005, "kinds": ["stair", "roof-stair"], "at": {"fl": 0, "z": 2, "x": 1435.330866735043, "y": 436.6691332649565}, "memoryPreserved": true}, {"startFloor": 1, "seconds": 5.6000000000000005, "kinds": ["roof-stair"], "at": {"fl": 0, "z": 2, "x": 1435.330866735043, "y": 436.6691332649565}, "memoryPreserved": true}], "upperDoorPhysical": true, "stairCases": 119, "matrixMs": 3253.5}
+
+
+=== v144-progress-final.log ===
+PASS {'targets': 5, 'stories': 9, 'keypads': 2, 'legacyProgress': True, 'remainingTargets': True}
+
+
+=== v144-target-final.log ===
+PASS {'rooftopHeight': True, 'drawnOnceAboveRoof': True, 'groundGuardSeparation': True, 'movingObjective': True, 'containerRecovery': True}
+
+
+=== v144-ui-final.log ===
+항상 걷기 처음 False
+대화창 {'modal': True, 'dlgTop': 719, 'dlgBot': 830, 'faceT': 732, 'faceB': 817, 'boxT': 732, 'boxB': 817, 'padVis': 'hidden', 'H': 844, 'line': '상회 사무실의 장부를 가져오세요. 경찰이 가져간 사본도 회수해야 합니다.'}
+넘김 상회 사무실의 장부를 가져오세요. 경 → 사본은 동쪽 지구대 증거물실에 있습니
+대화 끝 버튼 visible
+계단 내려가기 fdown 움직임과 시선 최대 어긋남(도) 18
+errs []
+문제 0
+
+
+=== v144-world-test.log ===
+PASS grounded worlds {"worlds": [{"id": "m1", "access": 24, "storage": 15, "windows": 83}, {"id": "m2", "access": 13, "storage": 14, "windows": 41}, {"id": "m3", "access": 13, "storage": 8, "windows": 40}, {"id": "m4", "access": 11, "storage": 12, "windows": 35}, {"id": "m5", "access": 9, "storage": 4, "windows": 27}, {"id": "m6", "access": 6, "storage": 4, "windows": 25}, {"id": "city", "access": 53, "storage": 9, "windows": 102}], "projectiles": ["hit", "moved", "floor"], "legacy": true}
+
+
+=== v144-audit-after.log ===
+{"worlds": 11, "objects": 1860, "issues": {"m1": 0, "m2": 0, "m3": 0, "m4": 0, "m5": 0, "m6": 0, "city": 0, "t0": 0, "t1": 0, "tI": 0, "tB": 0}}
+
+
+=== v144-review.log ===
+PASS 16 actual-world and dialogue captures
