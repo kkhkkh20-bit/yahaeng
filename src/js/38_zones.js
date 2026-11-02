@@ -19,21 +19,21 @@ function zoneInfo(x, y, z) {
 const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
 const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
 const pZone = () => pZoneInfo().k;
-const disguised = () => { const P = S.player; return !!(P.outfit && !P.disguiseBlown); };
+const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !P.disguiseBlown)); };
 // 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
-const myPermits = () => { const P = S.player, a = []; if (disguised()) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
-const allowedBy = allow => !!allow && myPermits().some(o => allow.includes(o));
+const myPermits = g => { const P = S.player, a = []; if (disguised(g)) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
+const allowedBy = (allow, g) => !!allow && myPermits(g).some(o => allow.includes(o));
 const permitName = allow => { const o = myPermits().find(o => allow && allow.includes(o)); return o === S.player.outfit ? outfitName(o) : (S.player.item && S.player.item.name) || outfitName(o); };
-const permitted = zi => zi.k !== Z_PUB && allowedBy(zi.allow);
+const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
-const pZoneEff = () => { const zi = pZoneInfo(); return permitted(zi) ? Z_PUB : zi.k; };
+const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
 // 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
-const sharpEye = g => !g.dog && disguised() && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
+const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
   (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; S.stats.blown = (S.stats.blown || 0) + 1;
-  toast(why || `변장이 발각됐다 — 이 복장으로는 통과할 수 없다. 다른 옷이 필요하다`, 3, 'warn');
+  toast(why || `변장을 알아본 목격자가 있다 · 시야 밖에서 옷을 갈아입어라`, 3, 'warn');
   if (g) { gsay(g, ['잠깐, 넌 우리 사람이 아니잖아!', '너 누구야? 처음 보는 얼굴인데.', '그 옷 어디서 났어?'][g.id % 3]); g.eyeT = 0; }
 }
 function updateSharpEye(g, dt, rawVis) {
@@ -54,20 +54,23 @@ function suspAct(g) {
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
-  if (P.mode === 'sneak' && P.moving && g && !myPermits().length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
+  if (P.mode === 'sneak' && P.moving && g && !myPermits(g).length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
   return 0;
 }
 // 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
 const suspectLook = () => S.player.outfit || 'face';
 function rememberSuspect(g, look = suspectLook()) {
-  if (g) g.suspectLook = look;
-  S.chaseSeen = true; (S.knownLooks = S.knownLooks || {})[look] = true;
+  if (!look) return;
+  S.chaseSeen = true;
+  if (g) { g.suspectLook = look; (g.suspectMemory = g.suspectMemory || {})[look] = true; }
+  else (S.knownLooks = S.knownLooks || {})[look] = true; // Completed central report only.
 }
 const knownFace = (g, look = suspectLook()) =>
+  !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
 // 허가받은 직원이 걷거나 뛰는 것은 업무 동선이다. 실제 불법 행동은 복장과 관계없이 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits().length ? 0 : k; };
+const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));

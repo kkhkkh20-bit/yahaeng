@@ -948,7 +948,7 @@ function updateGrabIn(P, dt) {
   P.x = G.x0 + (G.x1 - G.x0) * e; P.y = G.y0 + (G.y1 - G.y0) * e; P.vx = P.vy = 0; P.moving = f < 1; P.mode = 'run';
   if (f >= 1 && g.state !== 'CAPTIVE') {  // 손이 닿는 순간: 붙잡힌 상태가 된다 (이때부터 버둥거림·소리)
     if (g.state === 'DEAD') { P.grabIn = null; return; }
-    g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
+    g.capturedLook = witnessedAssailant(g); g.doomed = false; g.state = 'CAPTIVE'; g.captT = 0; g.squirm = 1; g.seen = false; g.icon = null; g.path = null; g.a = P.a;
     if (S.fuseGuard === g) S.fuseGuard = null;
     play('cloth', 0.55); play('thud', 0.3); contactFeedback(g,'grab');
   }
@@ -987,10 +987,11 @@ const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
+  const assailantLook = intent?.assailantLook !== undefined ? intent.assailantLook : witnessedAssailant(g);
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -1016,9 +1017,10 @@ function updateKoHold() {
 function wakeKO(c, by) {
   const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
   g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
-  if (g.civ) { g.state = 'PATROL'; gsay(g, '으… 머리야. 누가 뒤에서…'); return; }
+  if (c.assailantLook) { rememberSuspect(g,c.assailantLook); if (by) rememberSuspect(by,c.assailantLook); }
+  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '으… 누가 때렸는지 못 봤어요.'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
-  gsay(g, ['누가 뒤에서 쳤어! 이 근처에 있다!', '으윽… 어떤 놈이 목을…', '정신 차려 보니 바닥이야. 찾아!'][g.id % 3], 3);
+  gsay(g, c.assailantLook ? '때린 사람을 봤어. 인상착의 알려 줄게.' : '누가 때렸는지 못 봤어. 주변부터 확인하자.', 3);
 }
 // 연속 처치: 8초 안에 조직원을 또 처치하면 손맛 표시 (메탈기어·코만도스식 소탕의 리듬)
 function killStreak() {
@@ -1045,7 +1047,9 @@ function strikeKill(list, two) {
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
   const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
-  const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};delete g.takedownIntent;
+  const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
+  if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
+  delete g.takedownIntent;
   const ko=S.koNext||!intent.lethal;S.koNext=S.lethalNext=false;
   P.strikeT=dur;P.vx=P.vy=0;P.moving=false;
   P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y};
@@ -1271,7 +1275,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 이미 알려진 복장이라 출입 불가`, 3, 'warn');
+    if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 목격자가 기억하는 복장 · 재노출 주의`, 3, 'warn');
     else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3.2, 'good'); hint('disguise2', '초록 경계선은 현재 복장으로 통과할 수 있다. 범행이 보이거나 얼굴을 확인당하면 변장이 발각된다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장해도 범행이나 출입 권한이 없는 구역에서는 의심받는다'); }
     return;

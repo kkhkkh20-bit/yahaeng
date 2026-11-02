@@ -58,7 +58,7 @@ async def main():
     Object.assign(P,{x:h.x,y:h.y,fl:1,z:0,hide:h,light:0,hidden:true});
     const at=G.planPt(2,0,'S');G.startBuildingSearch({x:at[0]*48+24,y:at[1]*48+24,fl:0,z:0},'A','body');
     for(let n=0;n<1500&&P.hide;n++){S.t+=.05;for(const g of S.guards){G.setLayer(g.fl||0);G.updateGuard(g,.05)}}
-    check(!P.hide&&S.guards.some(g=>g.state==='ALERT'&&g.fl===1)&&S.knownLooks?.face,'upstairs hiding place is never physically inspected '+JSON.stringify({hide:{x:h.x,y:h.y,tx:h.tx,ty:h.ty,fl:h.fl},jobs:S.searchIncidents[0].jobs.filter(j=>j.kind==='hide'),log:S.searchLog,guards:S.guards.filter(g=>g.searchJob).map(g=>({id:g.id,ref:g.searchJob,x:g.x,y:g.y,fl:g.fl}))}));
+    check(!P.hide&&S.guards.some(g=>g.state==='ALERT'&&g.fl===1&&g.suspectMemory?.face),'upstairs hiding place is never physically inspected '+JSON.stringify({hide:{x:h.x,y:h.y,tx:h.tx,ty:h.ty,fl:h.fl},jobs:S.searchIncidents[0].jobs.filter(j=>j.kind==='hide'),log:S.searchLog,guards:S.guards.filter(g=>g.searchJob).map(g=>({id:g.id,ref:g.searchJob,x:g.x,y:g.y,fl:g.fl}))}));
    }
    // Enter through the real witness -> chase -> lost sight -> squad-search state machine.
    {

@@ -42,7 +42,7 @@ async def main():
           tick(3);check(q.state==='PATROL'&&q.meter===0,'Innocent visual notice must return to routine');results.push('notice resolves');
           fixture(null);tick(2);check(q.state==='WARN','Unpermitted entry still warns');results.push('trespass warning');
           fixture('waiter');tick(2);check(q.state==='WARN','Wrong uniform cannot grant crew access');results.push('wrong uniform');
-          fixture();P.disguiseBlown=true;tick(2);check(q.state==='WARN','Compromised uniform cannot grant access');results.push('compromised uniform');
+          fixture();P.disguiseBlown=true;tick(2);check(q.state==='PATROL','Uninformed guard must still accept uniform');fixture();q.wait=999;q.post=0;q.still=true;q.idleT=999;G.rememberSuspect(q,'crew');tick(3);check(q.state==='ALERT','Actual witness must recognize compromised uniform '+JSON.stringify({state:q.state,meter:q.meter,seen:q.seen}));results.push('observer-specific uniform');
           fixture();P.captive={};tick(.1);check(q.state==='ALERT'&&P.disguiseBlown,'Witnessed crime overrides permit');results.push('crime detection');
           fixture(null);q.seen=true;G.goAlert(q); const last={...q.lastSeen};
           P.x=q.x+100; P.y=q.y+30; q.a=q.want=Math.PI;
@@ -74,12 +74,12 @@ async def main():
           check(!c.seen&&c.meter===0,'CCTV must accept unreported permitted appearance');
           P.captive={};G.updateCams(.1);check(c.seen&&c.meter>0,'CCTV must still see crime');results.push('camera identity');
           fixture();G.S.camRoom=null;const reporter={id:999,x:q.x+10,y:q.y,rep:{to:q,x:P.x,y:P.y,saw:'face',kind:'crime'}};
-          G.deliverReport(reporter);check(G.S.knownLooks.face&&!G.knownFace(q),'Late face report must not expose new uniform');results.push('resident report identity');
+          G.deliverReport(reporter);check(q.suspectMemory.face&&!G.S.knownLooks.face&&!G.knownFace(q),'Late face report must not expose new uniform');results.push('resident report identity');
           fixture();G.goSuspicious(q,q.x,q.y,4);q.why='heard';tick(.1);check(q.state==='SUSPICIOUS','Noise investigation must survive valid disguise');results.push('real investigation');
           fixture();q.seen=true;G.goAlert(q);G.takeProp({outfit:'staff'}); // watched: both looks remain known
-          check(G.S.knownLooks.crew&&G.S.knownLooks.staff,'Do not forget earlier reported uniforms');results.push('multiple identities');
+          check(q.suspectMemory.crew&&q.suspectMemory.staff&&!G.S.knownLooks.crew,'Witness remembers both looks without global leak');results.push('multiple identities');
           G.saveCheckpoint();G.S.knownLooks={};q.suspectLook='face';G.loadCheckpoint();
-          check(G.S.knownLooks.crew&&G.S.knownLooks.staff&&G.S.guards[0].suspectLook==='staff','Checkpoint must preserve suspect descriptions');results.push('checkpoint identity');
+          check(G.S.guards[0].suspectMemory.crew&&G.S.guards[0].suspectMemory.staff&&!G.S.knownLooks.crew&&G.S.guards[0].suspectLook==='staff','Checkpoint must preserve suspect descriptions');results.push('checkpoint identity');
           return results;
         }''')
         assert not errors, errors

@@ -75,10 +75,10 @@ function deliverReport(g) {
   if (r.c && !r.c.discovered && !r.c.stashed && !r.c.carried) { o.state = 'BODY'; o.body = r.c; o.path = null; setIcon(o, '!?'); }
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
-  setAlert(2, 30, '주민이 자경대원에게 신고했다 — 수색 시작'); lockExits();
-  if (r.saw) rememberSuspect(null, r.saw);
+  setAlert(2, 30, '주민이 근처 자경대원에게 신고했다 — 현장 확인');
+  if (r.saw) { rememberSuspect(o, r.saw); queueGuardRadio([o], {x:r.x,y:r.y,fl:flOf(g),z:g.z||0}, r.saw, true); }
   if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, '현재 복장이 신고됐다 — 다른 옷이 필요하다');
-  else if (r.saw === 'face') { toast('인상착의가 알려졌다 — 수색 중에는 거리에서도 알아본다', 2.8, 'warn'); }
+  else if (r.saw === 'face') { toast('목격자가 근처 경비에게 인상착의를 전했다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
 }
 // 출구 지키기: 시체가 발견되거나 신고가 들어오면 가까운 조직원이 탈출구로 가서 한동안 지킨다 (다른 출구·다른 때를 고르게 만든다)

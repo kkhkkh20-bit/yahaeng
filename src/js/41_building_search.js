@@ -112,7 +112,7 @@ function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   const eligible = g => !g.civ && !g.dog && !g.target && g.tag !== 'camop' && !g.off && !g.yank && !g.doomed && !g.brawl && !g.hunt && !g.incident && !g.climb && !radioBusy(g) && (g.fac || 'A') === fac && g.why !== 'exit' && g.why !== 'blood' && (['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH', 'CHECK', 'NOTICE'].includes(g.state) || (g.state === 'ALERT' && !g.seen && g.lostT > 1));
   // A body discovery is a local spoken report, not an instant map-wide radio message.
   // Other floors can still learn of missing guards through the separate radio system.
-  const informed=g=>source!=='body'||!seed||g===seed||flOf(g)===flOf(seed)&&(g.z||0)===(seed.z||0)&&dist(g.x,g.y,seed.x,seed.y)<260*soundThrough(seed.x,seed.y,g.x,g.y);
+  const informed=g=>source==='radio'||!seed||g===seed||guardHearsReport(seed,g);
   const cand = S.guards.filter(g => eligible(g) && informed(g) && (g === seed || dist(g.x, g.y, pos.x, pos.y) < 900)).sort((a, b) => (a === seed ? -1 : b === seed ? 1 : dist(a.x, a.y, pos.x, pos.y) - dist(b.x, b.y, pos.x, pos.y)));
   let count = S.guards.filter(g => g.state === 'SEARCH' && g.searchJob?.incident === inc.id).length;
   for (const g of cand) {

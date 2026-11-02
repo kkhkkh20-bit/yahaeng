@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v139): https://kkhkkh20-bit.github.io/yahaeng/?v=139
+- 2D 본편 · 시야와 소리 연습 (v140): https://kkhkkh20-bit.github.io/yahaeng/?v=140
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v140: 목격자별 복장 기억, 실제로 들리는 보고, 무전 완료 후 정보 공유, 동료 상태 확인과 주변 경계. [레퍼런스·설계·검증](docs/AI_REALISM_V140.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/ai-v140/)
 
 네온 빌라촌의 밤을 무대로 한 2D 탑다운 잠입 암살 웹 게임(“2D 히트맨”). 바닐라 JS 캔버스로 만들고, 빌드 결과는 HTML 파일 하나다.
 

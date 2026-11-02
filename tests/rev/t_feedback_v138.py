@@ -21,7 +21,7 @@ async def main():
     const victim=guard(600,48),near=guard(601,112),far=guard(602,400),upper=guard(603,112);upper.fl=1;S.guards=[victim,near,far,upper];victim.takedownIntent={lethal:false};G.killGuard(victim,null,null,true);
     check(S.noises.at(-1).src==='ko'&&S.noises.at(-1).r<=12,'quiet KO emits a broad impact');check([near,far,upper].every(g=>g.state==='PATROL'),'unwitnessed KO calls distant guards');const koRadius=S.noises.at(-1).r;
     // Only the discovering guard and listeners within an audible report join the immediate search.
-    const c=S.corpses[0];c.ko=false;c.light=1;c.discovered=false;near.x=c.x+10;near.state='BODY';near.body=c;near.path=null;const local=guard(604,144);S.guards=[victim,near,local,far,upper];S.t+=.02;G.updateGuard(near,.02);
+    const c=S.corpses[0];c.ko=false;c.light=1;c.discovered=false;near.x=c.x+10;near.state='BODY';near.body=c;near.path=null;const local=guard(604,144);S.guards=[victim,near,local,far,upper];S.t+=.02;G.updateGuard(near,.02);check(!c.discovered&&near.bodyWork,'inspection must take physical time');for(let i=0;i<22;i++){S.t+=.05;G.updateGuard(near,.05)}
     check(c.discovered&&near.searchJob,'body discovery did not start an actual search');check(local.searchJob,'nearby listener ignored body report');check(!far.searchJob&&!upper.searchJob,'body report telepathically recruits distant/other-floor guards');check(near.say?.includes('시체'),'body report has no spoken reason');
     const localReport={local:!!local.searchJob,distant:!!far.searchJob,otherFloor:!!upper.searchJob};
     // Actual public-space switch action: look toward the actor before the lamp is extinguished.
