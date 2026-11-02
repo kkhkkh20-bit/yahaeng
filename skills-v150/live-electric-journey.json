@@ -1,0 +1,20 @@
+[
+  {
+    "mobile": false,
+    "version": "v150",
+    "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+    "fixture": "Authored mission switch; player placed at it; guards removed to isolate UI",
+    "input": "Native keyboard / touchscreen: locked action, K tree, kit and electric purchase, switch off and on",
+    "remainingPoints": 2,
+    "pageErrors": []
+  },
+  {
+    "mobile": true,
+    "version": "v150",
+    "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+    "fixture": "Authored mission switch; player placed at it; guards removed to isolate UI",
+    "input": "Native keyboard / touchscreen: locked action, K tree, kit and electric purchase, switch off and on",
+    "remainingPoints": 2,
+    "pageErrors": []
+  }
+]
