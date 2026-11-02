@@ -1,0 +1,225 @@
+{
+  "baseline": "v140 / 0dfea17",
+  "release": "v141",
+  "decodedImagesBefore": [
+    {
+      "touch": false,
+      "menu": {
+        "loadedImages": 108,
+        "decodedRgbaEstimate": 334953620,
+        "spriteSources": null
+      },
+      "activeM2": {
+        "loadedImages": 118,
+        "decodedRgbaEstimate": 356080788,
+        "spriteSources": null
+      },
+      "afterTransitions": {
+        "loadedImages": 121,
+        "decodedRgbaEstimate": 353344660,
+        "spriteSources": null
+      },
+      "drawMedianMs": 10.899999991059303,
+      "drawP95Ms": 27,
+      "errors": []
+    },
+    {
+      "touch": true,
+      "menu": {
+        "loadedImages": 108,
+        "decodedRgbaEstimate": 334953620,
+        "spriteSources": null
+      },
+      "activeM2": {
+        "loadedImages": 118,
+        "decodedRgbaEstimate": 356080788,
+        "spriteSources": null
+      },
+      "afterTransitions": {
+        "loadedImages": 121,
+        "decodedRgbaEstimate": 353344660,
+        "spriteSources": null
+      },
+      "drawMedianMs": 7,
+      "drawP95Ms": 14.699999988079071,
+      "errors": []
+    }
+  ],
+  "decodedImagesAfter": [
+    {
+      "touch": false,
+      "menu": {
+        "loadedImages": 87,
+        "decodedRgbaEstimate": 104135828,
+        "spriteSources": {
+          "loaded": [
+            "hero",
+            "heroMotion"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 41287680
+        }
+      },
+      "activeM2": {
+        "loadedImages": 107,
+        "decodedRgbaEstimate": 233397396,
+        "spriteSources": {
+          "loaded": [
+            "fBob",
+            "fLong",
+            "fTail",
+            "femaleSuit",
+            "hero",
+            "heroCrew",
+            "heroCrewMotion",
+            "heroMotion",
+            "keyMotion",
+            "kid",
+            "male",
+            "old",
+            "pack",
+            "suit"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 161480704
+        }
+      },
+      "afterTransitions": {
+        "loadedImages": 100,
+        "decodedRgbaEstimate": 122526868,
+        "spriteSources": {
+          "loaded": [
+            "hero",
+            "heroMotion",
+            "keyMotion"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 44564480
+        }
+      },
+      "drawMedianMs": 10.700000002980232,
+      "drawP95Ms": 22.30000001192093,
+      "errors": []
+    },
+    {
+      "touch": true,
+      "menu": {
+        "loadedImages": 87,
+        "decodedRgbaEstimate": 104135828,
+        "spriteSources": {
+          "loaded": [
+            "hero",
+            "heroMotion"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 41287680
+        }
+      },
+      "activeM2": {
+        "loadedImages": 107,
+        "decodedRgbaEstimate": 233397396,
+        "spriteSources": {
+          "loaded": [
+            "fBob",
+            "fLong",
+            "fTail",
+            "femaleSuit",
+            "hero",
+            "heroCrew",
+            "heroCrewMotion",
+            "heroMotion",
+            "keyMotion",
+            "kid",
+            "male",
+            "old",
+            "pack",
+            "suit"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 161480704
+        }
+      },
+      "afterTransitions": {
+        "loadedImages": 100,
+        "decodedRgbaEstimate": 122526868,
+        "spriteSources": {
+          "loaded": [
+            "hero",
+            "heroMotion",
+            "keyMotion"
+          ],
+          "pending": [],
+          "decodedRgbaEstimate": 44564480
+        }
+      },
+      "drawMedianMs": 6.399999991059303,
+      "drawP95Ms": 10.600000008940697,
+      "errors": []
+    }
+  ],
+  "assetsBefore": 20039511,
+  "assetsAfter": 7665115,
+  "currentAssetBytesBefore": 8864040,
+  "currentAssetBytesAfter": 7665115,
+  "sourceHtmlBefore": 11417156,
+  "sourceHtmlAfter": 10218231,
+  "baselineModules": 55,
+  "modules": 95,
+  "note": "RGBA pixel estimate in controlled Chromium, not physical phone RAM or FPS.",
+  "coldLocalLoading": [
+    {
+      "release": "before",
+      "touch": false,
+      "bodyBytes": 7538268,
+      "requests": 121,
+      "idleTimeAdvanced": 0.2665999999999996,
+      "idleDraws": 16,
+      "sources": null,
+      "errors": []
+    },
+    {
+      "release": "before",
+      "touch": true,
+      "bodyBytes": 7538268,
+      "requests": 121,
+      "idleTimeAdvanced": 0.2667000000000004,
+      "idleDraws": 16,
+      "sources": null,
+      "errors": []
+    },
+    {
+      "release": "after",
+      "touch": false,
+      "bodyBytes": 3851451,
+      "requests": 102,
+      "idleTimeAdvanced": 0,
+      "idleDraws": 0,
+      "sources": {
+        "loaded": [
+          "hero",
+          "heroMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 41287680
+      },
+      "errors": []
+    },
+    {
+      "release": "after",
+      "touch": true,
+      "bodyBytes": 3851451,
+      "requests": 102,
+      "idleTimeAdvanced": 0,
+      "idleDraws": 0,
+      "sources": {
+        "loaded": [
+          "hero",
+          "heroMotion"
+        ],
+        "pending": [],
+        "decodedRgbaEstimate": 41287680
+      },
+      "errors": []
+    }
+  ]
+}

@@ -20,6 +20,13 @@ function frame(t) {
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; prWarm.frameGap=rawDt;perfWatch(rawDt);
   if (!S || !mapC) return;
+  // Title and mission selection are static overlays. Do not simulate or render
+  // a hidden world (or request its NPC sheets) while waiting in the menu.
+  if (!running) {
+    if (ENG) engineSound();
+    input.scan=false;document.body.classList.remove('playing','scanning','scanleg');
+    return;
+  }
   updateHelpTip();
   if (ENG && (paused || !running || S.over)) engineSound();  // 멈추면 엔진 소리도
   if (running && !paused) updateDialog(dt);
@@ -27,11 +34,11 @@ function frame(t) {
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   const pf = window.__pf, t0 = pf ? performance.now() : 0;  // 성능 측정 (__pf 를 켰을 때만)
   if (running && !paused && !S.over && !tactical && !DLG.modal && !hudInspecting()) advanceGameFrame(rawDt);
-  else if(hudInspecting()){riskTone(0);moveCamera(dt);updateHUD();}
+  else if(hudInspecting()){moveCamera(dt);updateHUD();}
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
   else if (S.over) { for (const n of S.noises) n.t += dt; }
-  else if (!running) { S.t += dt; const P = S.player, kx = P.x, ky = P.y; P.x = -9999; P.y = -9999; for (const g of S.guards) updateGuard(g, dt); P.x = kx; P.y = ky; }
+
   const t1 = pf ? performance.now() : 0;
   draw();
   if (pf) { pf.u.push(t1 - t0); pf.d.push(performance.now() - t1); }

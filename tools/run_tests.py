@@ -3,14 +3,14 @@
 #   1) build.py 로 빌드  2) 도달 검사(validate)  3) 회귀 테스트(병렬, 실패한 것은 한 번 더 — 시간에 민감한 것이 있다)  4) 무작위 조작(fuzz)
 #   --quick 은 fuzz 를 건너뛴다. 끝에 실패 목록을 보여 주고, 하나라도 실패하면 종료 코드 1
 # 테스트는 build/preview_city.html 을 연다. 새 테스트는 tests/rev/ 에 t_*.py 로 두면 자동으로 포함된다 (오류가 나면 0 이 아닌 코드로 끝나게 쓸 것)
-import asyncio, concurrent.futures as cf, glob, os, re, subprocess, sys, time
+import asyncio, concurrent.futures as cf, glob, os, re, shutil, subprocess, sys, time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG = os.path.join(ROOT, 'build', 'test_logs'); os.makedirs(LOG, exist_ok=True)
 SUITE = sorted(glob.glob(os.path.join(ROOT, 'tests', 'rev', 't_*.py')) + glob.glob(os.path.join(ROOT, 'tests', 'rev', 'r[0-9].py'))) + \
         [os.path.join(ROOT, 'tests', 'mis', f) for f in ('troutes.py', 'troutes2.py', 'tfeat2.py', 'tm1.py')]
 
 # 빠른 묶음 (--fast): 매번 돌리는 핵심만 — 버튼·공격·세력·도시·의뢰 1·연습·구역·창문 (몇 분). 전체는 마일스톤 때만
-FAST = ['t_ai_evidence', 't_copy_scenarios', 't_building_search', 't_contract_density', 't_access_evidence', 't_scene_layers', 't_camera_presentation', 't_patrol_motion', 't_target_body', 't_mission_flow', 't_mission_progress', 't_roof_routes', 't_height_cues', 't_combat_policy', 't_environment_targets', 't_stair_geometry', 't_world_alignment', 't_interaction_flow', 't_disguise_ai', 't_btn4', 't_hanging_controls', 't_ko', 't_cqc', 't_fac', 't_instig', 't_rel', 't_city', 't_m1x', 't_choice', 't_change', 't_v33', 't_tut', 't_ui2', 't_zone', 'r3', 'tm1']
+FAST = ['t_sprite_ownership', 't_ai_evidence', 't_copy_scenarios', 't_building_search', 't_contract_density', 't_access_evidence', 't_scene_layers', 't_camera_presentation', 't_patrol_motion', 't_target_body', 't_mission_flow', 't_mission_progress', 't_roof_routes', 't_height_cues', 't_combat_policy', 't_environment_targets', 't_stair_geometry', 't_world_alignment', 't_interaction_flow', 't_disguise_ai', 't_btn4', 't_hanging_controls', 't_ko', 't_cqc', 't_fac', 't_instig', 't_rel', 't_city', 't_m1x', 't_choice', 't_change', 't_v33', 't_tut', 't_ui2', 't_zone', 'r3', 'tm1']
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 
 def run(path, timeout=400):
@@ -29,6 +29,9 @@ async def validate():
         v = await pg.evaluate('() => window.__game.validate()'); await b.close(); return v, errs
 
 def main():
+    subprocess.run([sys.executable, os.path.join(ROOT, 'tests/integration/test_build_pipeline.py')], cwd=ROOT, check=True)
+    if shutil.which('node'):
+        subprocess.run(['node', os.path.join(ROOT, 'tests/integration/sprite_sources.cjs')], cwd=ROOT, check=True)
     if '--no-build' not in sys.argv: subprocess.run([sys.executable, os.path.join(ROOT, 'build.py')], check=True)
     v, errs = asyncio.run(validate()); print('도달 검사:', '통과' if not v and not errs else ('문제 ' + str(v) + str(errs)))
     fails = [] if not v and not errs else ['validate']

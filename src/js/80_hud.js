@@ -138,15 +138,6 @@ function objectiveLines() {
   if (S.timeLeft) L.push([S.timeLeft < 60 ? 'go' : '', `남은 시간 ${Math.floor(S.timeLeft / 60)}:${String(Math.floor(S.timeLeft % 60)).padStart(2, '0')}`]);
   return L;
 }
-function objectiveText() {
-  if (S.exitOpen) return '탈출 지점(노란 원)으로 이동';
-  const tg = S.guards.filter(g => g.target), td = tg.filter(g => targetEliminated(g)).length;
-  const parts = [];
-  if (STAGE.keyDoors && S.doors.some(d => d.keyLock && d.locked) && !S.player.hasKey) parts.push('열쇠 확보(또는 다른 길)');
-  if (tg.length) parts.push(S.spare && td < tg.length ? '표적: 살려 둘 수 있다' : `표적 처치 ${td}/${tg.length}`);
-  if (S.items.length) parts.push(`${STAGE.itemName || '서류'} 회수 ${S.items.filter(i => i.got).length}/${S.items.length}`);
-  return parts.join(' · ');
-}
 // 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
 function floorBanner(P, ptx, pty) {
   const bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
@@ -246,7 +237,7 @@ function updateStealth(lv) {
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
-    riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
+
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   if(s==='hide'&&S.alevel>=2&&(P.hide||P.hidden))why='수색 중 · 은신처도 확인한다';
   box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
@@ -270,7 +261,7 @@ function syncTools() {
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
 
-function endGame(win, reason) { riskTone(0);closeKeypad();clearPlayerInput();closeEnvPicker();
+function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
   if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast((STAGE.firstSteps?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시

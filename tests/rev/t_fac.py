@@ -33,8 +33,8 @@ async def main():
         # 3) 본 주민 입막음: 이긴 조직원이 본 주민을 쫓아가 쓰러뜨린다
         await fresh()
         r = await m.evaluate("""() => { const g = window.__game, S = g.S; const b0 = S.guards.find(q => q.fac === 'B');
-          const a = S.guards.find(q => q.fac === 'A' && !q.target && !q.civ && !q.dog); a.x = b0.x + 30; a.y = b0.y; a.fl = 0; a.z = 0;
-          const c = S.guards.find(q => q.civ && !q.child && !q.target); c.x = b0.x; c.y = b0.y + 110; c.fl = 0; c.z = 0; c.a = -Math.PI / 2; c.want = c.a; c.state = 'PATROL';
+          const a = S.guards.find(q => q.fac === 'A' && !q.target && !q.civ && !q.dog); b0.x=1830;b0.y=504;b0.fl=0;b0.z=0;a.x = 1800; a.y = 504; a.fl = 0; a.z = 0;
+          const c = S.guards.find(q => q.civ && !q.child && !q.target); c.x = b0.x; c.y = b0.y + 48;S.guards=[a,b0,c]; c.fl = 0; c.z = 0; c.a = -Math.PI / 2; c.want = c.a; c.state = 'PATROL';
           g.npcDown(b0, a, true); return [a.id, c.id, !!a.hunt, a.hunt && a.hunt.c === c]; }""")
         print('입막음 시작', r)
         await m.evaluate(HOLD, [r[1]])

@@ -1,9 +1,11 @@
 # 야행 빌드: src/ 의 모듈을 이어 붙여 HTML 파일 하나로 만든다
 #   python3 build.py          → build/yahaeng_city.html (게시본), build/preview_city.html (테스트용)
 #   python3 build.py --itch   → 위 + dist/itch/yahaeng_itch.zip (index.html 하나)
-# 모듈 순서 = 파일 이름 순서 (src/js/NN_이름.js, src/stages/NN_이름.js). 모듈은 한 즉시 실행 함수 안에 이어 붙으므로
+# 런타임 순서 = src/modules.json. 의뢰 데이터는 src/stages/NN_이름.js 순서. 모듈은 한 즉시 실행 함수 안에 이어 붙으므로
 # 서로의 함수·변수를 그대로 쓴다. 맨 위에서 실행되는 코드(const 초기화 등)는 앞 번호 모듈에만 기대야 한다.
 import base64, glob, json, os, sys, zipfile
+from tools.buildlib.modules import bundle_game
+from tools.buildlib.assets import campaign_assets
 ROOT = os.path.dirname(os.path.abspath(__file__))
 P = lambda *a: os.path.join(ROOT, *a)
 read = lambda p: open(p, encoding='utf-8').read()
@@ -14,8 +16,7 @@ def version():
     return v, datetime.date.today().isoformat()   # 화면에 '야행 v53 · 날짜' 로 보인다 (피드백 받을 때 판본 확인용)
 
 def game_js():
-    mods = sorted(glob.glob(P('src', 'js', '*.js')))
-    return "'use strict';\n(function () {\n" + ''.join(read(m) for m in mods) + "})();\n"
+    return bundle_game(ROOT)
 
 def stages_js():
     return ''.join(read(m) for m in sorted(glob.glob(P('src', 'stages', '*.js'))))
@@ -37,14 +38,15 @@ def comment_lint():
     # 줄 끝 // 주석 안에 코드처럼 보이는 것(키: 값, 키: 값, … / const / return / => / );)이 있으면 경고 — 주석이 뒤 코드를 삼킨 흔적일 수 있다
     import re
     pat = re.compile(r"(\b\w+: [^,;]{1,40}, ){2,}\w+:|\bconst \w+ =|\breturn \w|=> \{|\); \w")
-    for f in sorted(glob.glob(P('src', 'js', '*.js')) + glob.glob(P('src', 'stages', '*.js'))):
+    for f in sorted(glob.glob(P('src', 'js', '**', '*.js'), recursive=True) + glob.glob(P('src', 'stages', '*.js'))):
         for i, line in enumerate(open(f, encoding='utf-8'), 1):
             s = re.sub(r"'(\\.|[^'\\])*'|\"(\\.|[^\"\\])*\"|`(\\.|[^`\\])*`", "''", line)
             k = s.find('//')
             if k > 0 and s[:k].strip() and pat.search(s[k:]): print('주석 확인:', os.path.relpath(f, ROOT) + ':' + str(i), s[k:k + 90].strip())
 
 def build():
-    syntax_check(game_js()); comment_lint()
+    script = game_js()
+    syntax_check(script); comment_lint()
     html = read(P('src', 'template.html')).replace('<p class="credit">그래픽·음악', '<p class="credit">' + CREDIT + '그래픽·음악', 1)
     title_font = base64.b64encode(open(P('src', 'fonts', 'title-blackhansans.ttf'), 'rb').read()).decode()
     html = html.replace('__TITLE_FONT__', title_font)
@@ -69,7 +71,7 @@ def build():
     thumbs = read(P('build', 'thumbs.json')) if os.path.exists(P('build', 'thumbs.json')) else 'null'  # 의뢰 카드 지도 미리보기 (tools/thumbs.py)
     tbg = read(P('build', 'title_bg.json')) if os.path.exists(P('build', 'title_bg.json')) else 'null'  # 첫 화면 배경 (tools/titlebg.py)
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
-    html = html.replace('__ASSETS_JSON__', read(P('build', 'assets_city.json'))).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', game_js())
+    html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)
     pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'

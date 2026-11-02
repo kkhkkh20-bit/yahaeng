@@ -17,14 +17,14 @@ function initAudio() {
 }
 const MB = {}; let musicGain = null, musicSrc = null, musicKey = null;
 function setMusic(k) {
-  if (!AC || musicKey === k) return;
+  if (!AC || musicKey === k || !['n_calm','n_tense','n_fight'].includes(k)) return;
   if (k.startsWith('n_') && !MB[k]) { if (neonPending[k]) { musicKey = '__want_' + k; return; } MB[k] = makeNeonLoop(k); }
-  if (!MB[k]) { if (A.music && A.music[k] && !MB['_' + k]) { MB['_' + k] = 1; AC.decodeAudioData(b64ToBuf(A.music[k]), b => { MB[k] = b; if (musicKey === '__want_' + k) { musicKey = null; setMusic(k); } }, () => {}); } musicKey = '__want_' + k; return; }
+  if (!MB[k]) { musicKey = '__want_' + k; return; }
   if (!musicGain) { musicGain = AC.createGain(); musicGain.connect(master); }
   const now = AC.currentTime;
   if (musicSrc) { const old = musicSrc; const og = old._g; og.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { old.stop(); } catch (e) {} }, 2000); }
   const src = AC.createBufferSource(); src.buffer = MB[k]; src.loop = true;
-  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'calm' ? 0.16 : k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
+  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
   src.connect(g); g.connect(musicGain); src._g = g; src.start(); musicSrc = src; musicKey = k;
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
@@ -158,7 +158,6 @@ function sfx(kind) {
   else if (kind === 'toSeen') { osc('square', 660, 660, 0.07, 0.045); osc('square', 880, 880, 0.09, 0.045, 0.08); }
 }
 // 의심 상승음: 누가 나를 알아채는 게이지(0~1)를 따라 아주 작은 음이 높아진다. 0이면 사라진다
-let riskOsc = null, riskGain = null;
 // 대사 타이핑 소리: 글자가 찍힐 때 짧은 '톡'. 말하는 사람마다 음높이가 조금 다르다
 let typeT = 0;
 function typeTick(seed) {
@@ -167,13 +166,6 @@ function typeTick(seed) {
   o.frequency.value = (420 + (seed % 7) * 38) * (0.96 + Math.random() * 0.08);
   g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(0.022, now + 0.004); g.gain.exponentialRampToValueAtTime(0.0008, now + 0.035);
   o.connect(f); f.connect(g); g.connect(master); o.start(now); o.stop(now + 0.04);
-}
-// 들킬 위험 경고음은 쓰지 않는다 (계속 삐 소리가 거슬렸다). 위험은 화면 위 눈 막대로만 보여 준다
-function riskTone(r) {
-  r = 0; if (!AC || !master) return;
-  if (!riskOsc) { if (r < 0.05) return; riskOsc = AC.createOscillator(); riskGain = AC.createGain(); const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1800; riskOsc.type = 'triangle'; riskGain.gain.value = 0; riskOsc.connect(f); f.connect(riskGain); riskGain.connect(master); riskOsc.start(); }
-  const t = AC.currentTime, on = r >= 0.05 && r < 1;
-  riskGain.gain.setTargetAtTime(on ? 0.012 + 0.05 * r : 0, t, on ? 0.08 : 0.15); riskOsc.frequency.setTargetAtTime(240 + 620 * Math.min(1, r), t, 0.1);
 }
 // 메뉴·화면 버튼 딸깍 (게임 안 행동 버튼은 각자 소리가 있어 제외)
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b || b.closest('.pad') || b.closest('#keypad')) return; if (!b.closest('.screen, .sysbtns, #tacBanner')) return; try { initAudio(); } catch (er) {} sfx('click'); }, true);

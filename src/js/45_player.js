@@ -30,7 +30,6 @@ const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
 const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
 function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
-function cycleTool() { selectTool(TOOLS[(TOOLS.indexOf(input.tool) + 1) % TOOLS.length]); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
 function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
@@ -125,11 +124,6 @@ function ledgeAt(P) {
   if (rLv(tx + 1, ty) < P.z && fx > TILE - 24) c.push({ x: 1, y: 0, d: TILE - fx });
   if (rLv(tx - 1, ty) < P.z && fx < 24) c.push({ x: -1, y: 0, d: fx });
   c.sort((a, b) => a.d - b.d); return c[0] || null;
-}
-function groundBelow(x, y, n) {  // 가장자리 바깥으로 처음 나오는 땅 칸
-  const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
-  for (let k = 1; k <= 4; k++) { const gx = tx + n.x * k, gy = ty + n.y * k; if (inMap(gx, gy) && !rLv(gx, gy) && !roofAt(gx, gy) && !groundSolidP(gx, gy)) return { x: tc(gx), y: tc(gy) }; }
-  return null;
 }
 // 매달린 가장자리 밖으로 처음 나오는 낮은 자리: 땅 또는 낮은 옥상. 두 층 차이까지만 (그보다 높으면 null)
 function landBelow(x, y, n, z, maxDrop=2) {

@@ -31,7 +31,7 @@ async def main():
             await pg.evaluate('() => window.__game.cycleAction()')
             want = await pg.evaluate('() => window.__game.primaryAction().k')
             st0 = await pg.evaluate('() => JSON.stringify([window.__game.S.player.hide ? 1 : 0, window.__game.S.doors.map(d => d.locked ? 1 : 0).join(""), !!window.__game.S.player.trav, !!window.__game.S.player.jump, !!window.__game.S.player.pick])')
-            await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_timeout(200)
+            await pg.evaluate('() => window.__game.actPrimary()'); await pg.wait_for_function('!window.__game.actionBusy()')
             st1 = await pg.evaluate('() => JSON.stringify([window.__game.S.player.hide ? 1 : 0, window.__game.S.doors.map(d => d.locked ? 1 : 0).join(""), !!window.__game.S.player.trav, !!window.__game.S.player.jump, !!window.__game.S.player.pick])')
             print('실행', want, st0 != st1)
             if st0 == st1: bad.append(f'고른 행동({want})을 실행해도 아무 일도 안 일어난다')

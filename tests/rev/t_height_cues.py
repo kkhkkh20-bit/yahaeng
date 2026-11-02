@@ -1,4 +1,4 @@
-"""A one-building visual trial must preserve floor geometry, interaction anchors and bitmap budget."""
+"""Selected-building visual cues must preserve floor geometry, interaction anchors and bitmap budget."""
 import asyncio
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -9,7 +9,7 @@ async def main():
   await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!window.__game')
   result=await pg.evaluate('''()=>{
    const G=window.__game,check=(ok,msg)=>{if(!ok)throw Error(msg)},sig=()=>JSON.stringify({grids:G.GF.map(g=>g&&g.map(r=>r.join(''))),ladders:G.LADDERS.map(l=>[l.tx,l.ty,l.kind,l.x,l.y,l.rx,l.ry,l.bfl,l.tfl,l.tz,l.roofDoor]),doors:G.S.doors.map(d=>[d.tx,d.ty,d.fl,d.x,d.y])});
-   for(const id of ['m1','m2','m3','m4','m5','m6','city']){G.start(G.STAGES.findIndex(s=>s.id===id));check(G.BLD.filter((b,i)=>G.hasHeightCues(i)).length===(id==='m4'?1:0),'trial leaked outside chosen building '+id)}
+   for(const id of ['m1','m2','m3','m4','m5','m6','city']){G.start(G.STAGES.findIndex(s=>s.id===id));check(G.BLD.filter((b,i)=>G.hasHeightCues(i)).length===({m2:2,m4:3,m6:2}[id]||0),'height cues differ from shipped stage selection '+id)}
    G.start(G.STAGES.findIndex(s=>s.id==='m4'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();const S=G.S,P=S.player,b=G.BLD[4],snapshot=sig(),create=document.createElement;let canvases=0;
    const pixels=c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data;
    const same=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);

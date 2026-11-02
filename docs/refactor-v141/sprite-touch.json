@@ -1,0 +1,32 @@
+{
+  "touch": true,
+  "menu": {
+    "loaded": [
+      "hero",
+      "heroMotion"
+    ],
+    "pending": [],
+    "decodedRgbaEstimate": 41287680
+  },
+  "afterTutorialTransition": {
+    "loaded": [
+      "hero",
+      "heroMotion"
+    ],
+    "pending": [],
+    "decodedRgbaEstimate": 41287680
+  },
+  "unneededMotionReleased": true,
+  "lazyUniformVisible": true,
+  "sealedWindows": [
+    [
+      39,
+      5
+    ],
+    [
+      41,
+      5
+    ]
+  ],
+  "errors": []
+}

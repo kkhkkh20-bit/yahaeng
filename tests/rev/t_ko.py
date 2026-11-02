@@ -30,7 +30,7 @@ async def main():
         await pg.wait_for_timeout(2500); r = await pg.evaluate('() => [window.__game.S.guards[1].state, Math.round(window.__game.S.guards[1].meter * 100) / 100]'); print('허가 옷', r)
         if r[0] in ('WARN', 'ALERT') or r[1] > 0.5: bad.append('허가 옷인데 경고·발각된다 %s' % r)
         # 4 눈썰미: 같은 옷 반장이 가까이서 보면 알아챈다
-        await pg.evaluate('() => { const S = window.__game.S, q = S.guards[1]; q.enforcer = true; S.player.x = q.x + 70; S.player.y = q.y; }')
+        await pg.evaluate('() => { const S = window.__game.S, q = S.guards[1]; q.enforcer = true; q.a=q.want=q.post=0;q.still=true;q.glanceT=999;S.player.a=Math.PI;S.player.light=1; S.player.x = q.x + 70; S.player.y = q.y; }')
         st = None
         for t in range(20):
             await pg.wait_for_timeout(250); st = await pg.evaluate('() => [window.__game.S.guards[1].state, window.__game.S.player.disguiseBlown]')

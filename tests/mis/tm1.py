@@ -47,7 +47,7 @@ async def main():
         await pg.evaluate('() => { const c = T.S().corpses.find(c => c.tag === "kid"); T.S().player.x = c.x + 18; T.S().player.y = c.y; }'); await pg.wait_for_timeout(100)
         await pg.wait_for_function('!T.G().actionBusy()'); a1 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_function('!T.S().player.interact')
         a2 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_timeout(700)
-        await pg.evaluate('T.walk(19, 3)'); a3 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_timeout(700)
+        await pg.evaluate('T.walk(19, 3)'); a3 = await pg.evaluate('() => { const a = T.G().secondaryAction().label; T.G().actCarry(); return a; }'); await pg.wait_for_function('!T.G().actionBusy()')
         r = await pg.evaluate('() => [T.S().player.outfit, T.S().corpses.find(c => c.tag === "kid").stashed, T.S().stories.find(s => s.d.id === "smoke").step]'); print('막내', lab, a1, a2, a3, r)
         if r[0] != 'staff' or not r[1]: bad.append('막내 기절 → 조끼 → 숨기기가 안 된다 %s' % r)
         for (x, y) in [(30, 4), (30, 7), (33, 9), (36, 9)]:

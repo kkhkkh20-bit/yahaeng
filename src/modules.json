@@ -1,0 +1,385 @@
+{
+  "schema": 1,
+  "modules": [
+    {
+      "path": "00_core.js",
+      "group": "core"
+    },
+    {
+      "path": "01_ink_study.js",
+      "group": "ink_study"
+    },
+    {
+      "path": "02_copy.js",
+      "group": "copy"
+    },
+    {
+      "path": "05_map.js",
+      "group": "map"
+    },
+    {
+      "path": "10_interior.js",
+      "group": "interior"
+    },
+    {
+      "path": "11_roof_links.js",
+      "group": "roof_links"
+    },
+    {
+      "path": "runtime/sprite_sources.js",
+      "group": "runtime"
+    },
+    {
+      "path": "graphics/kit.js",
+      "group": "graphics"
+    },
+    {
+      "path": "graphics/awareness.js",
+      "group": "graphics"
+    },
+    {
+      "path": "graphics/sprite_sheets.js",
+      "group": "graphics"
+    },
+    {
+      "path": "graphics/actors.js",
+      "group": "graphics"
+    },
+    {
+      "path": "graphics/roof_canvas.js",
+      "group": "graphics"
+    },
+    {
+      "path": "20_audio.js",
+      "group": "audio"
+    },
+    {
+      "path": "25_records.js",
+      "group": "records"
+    },
+    {
+      "path": "26_contracts.js",
+      "group": "contracts"
+    },
+    {
+      "path": "27_layout_restore.js",
+      "group": "layout_restore"
+    },
+    {
+      "path": "30_state.js",
+      "group": "state"
+    },
+    {
+      "path": "35_light_noise.js",
+      "group": "light_noise"
+    },
+    {
+      "path": "36_light_fixtures.js",
+      "group": "light_fixtures"
+    },
+    {
+      "path": "37_security_camera.js",
+      "group": "security_camera"
+    },
+    {
+      "path": "38_zones.js",
+      "group": "zones"
+    },
+    {
+      "path": "39_stairs.js",
+      "group": "stairs"
+    },
+    {
+      "path": "ai/navigation.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/perception.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/civilians.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/cameras.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/people.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/guards.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/search_and_speech.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/combat.js",
+      "group": "ai"
+    },
+    {
+      "path": "ai/alerts.js",
+      "group": "ai"
+    },
+    {
+      "path": "41_building_search.js",
+      "group": "building_search"
+    },
+    {
+      "path": "41_guard_evidence.js",
+      "group": "guard_evidence"
+    },
+    {
+      "path": "42_social.js",
+      "group": "social"
+    },
+    {
+      "path": "43_cqc_radio.js",
+      "group": "cqc_radio"
+    },
+    {
+      "path": "43_surfaces.js",
+      "group": "surfaces"
+    },
+    {
+      "path": "44_dining.js",
+      "group": "dining"
+    },
+    {
+      "path": "44_mission_plan.js",
+      "group": "mission_plan"
+    },
+    {
+      "path": "44_rendezvous.js",
+      "group": "rendezvous"
+    },
+    {
+      "path": "44_security_response.js",
+      "group": "security_response"
+    },
+    {
+      "path": "45_player.js",
+      "group": "player"
+    },
+    {
+      "path": "46_factions.js",
+      "group": "factions"
+    },
+    {
+      "path": "47_city.js",
+      "group": "city"
+    },
+    {
+      "path": "48_traffic.js",
+      "group": "traffic"
+    },
+    {
+      "path": "50_opps_checkpoint.js",
+      "group": "opps_checkpoint"
+    },
+    {
+      "path": "55_wires.js",
+      "group": "wires"
+    },
+    {
+      "path": "57_hide_flow.js",
+      "group": "hide_flow"
+    },
+    {
+      "path": "58_access_flow.js",
+      "group": "access_flow"
+    },
+    {
+      "path": "58_combat_intent.js",
+      "group": "combat_intent"
+    },
+    {
+      "path": "58_sign_flow.js",
+      "group": "sign_flow"
+    },
+    {
+      "path": "59_interaction_flow.js",
+      "group": "interaction_flow"
+    },
+    {
+      "path": "59_motion_pose.js",
+      "group": "motion_pose"
+    },
+    {
+      "path": "interaction/targets.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/ambush.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/evidence.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/access.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/loot.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/nearby.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/keypad.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/selection.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/execute.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/grapple.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/takedown.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/environment.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/carry.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/tools.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/traversal.js",
+      "group": "interaction"
+    },
+    {
+      "path": "65_update.js",
+      "group": "update"
+    },
+    {
+      "path": "68_club_quarter.js",
+      "group": "club_quarter"
+    },
+    {
+      "path": "68_scene_layers.js",
+      "group": "scene_layers"
+    },
+    {
+      "path": "69_height_cues.js",
+      "group": "height_cues"
+    },
+    {
+      "path": "render/vision.js",
+      "group": "render"
+    },
+    {
+      "path": "render/icons.js",
+      "group": "render"
+    },
+    {
+      "path": "render/player.js",
+      "group": "render"
+    },
+    {
+      "path": "render/roofs.js",
+      "group": "render"
+    },
+    {
+      "path": "render/roof_props.js",
+      "group": "render"
+    },
+    {
+      "path": "render/facades.js",
+      "group": "render"
+    },
+    {
+      "path": "render/fixtures.js",
+      "group": "render"
+    },
+    {
+      "path": "render/labels.js",
+      "group": "render"
+    },
+    {
+      "path": "render/underground.js",
+      "group": "render"
+    },
+    {
+      "path": "render/lighting.js",
+      "group": "render"
+    },
+    {
+      "path": "render/goals.js",
+      "group": "render"
+    },
+    {
+      "path": "render/frame.js",
+      "group": "render"
+    },
+    {
+      "path": "render/watchers.js",
+      "group": "render"
+    },
+    {
+      "path": "75_dialog.js",
+      "group": "dialog"
+    },
+    {
+      "path": "77_play_clarity.js",
+      "group": "play_clarity"
+    },
+    {
+      "path": "78_controls.js",
+      "group": "controls"
+    },
+    {
+      "path": "79_buttons.js",
+      "group": "buttons"
+    },
+    {
+      "path": "80_hud.js",
+      "group": "hud"
+    },
+    {
+      "path": "81_action_picker.js",
+      "group": "action_picker"
+    },
+    {
+      "path": "83_plan_graphics.js",
+      "group": "plan_graphics"
+    },
+    {
+      "path": "85_loop.js",
+      "group": "loop"
+    },
+    {
+      "path": "87_stats.js",
+      "group": "stats"
+    },
+    {
+      "path": "devtools/game_api.js",
+      "group": "devtools"
+    },
+    {
+      "path": "90_input.js",
+      "group": "input"
+    }
+  ]
+}

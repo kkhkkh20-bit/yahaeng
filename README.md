@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v140): https://kkhkkh20-bit.github.io/yahaeng/?v=140
+- 2D 본편 · 시야와 소리 연습 (v141): https://kkhkkh20-bit.github.io/yahaeng/?v=141
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v141: 렌더·AI·상호작용·그래픽을 역할별로 분리하고, 명시적 빌드 목록·임무별 이미지 수명·참조 기반 배포 정리를 추가했습니다. [구조·용량·검증](docs/REFACTOR_V141.md)
 
 v140: 목격자별 복장 기억, 실제로 들리는 보고, 무전 완료 후 정보 공유, 동료 상태 확인과 주변 경계. [레퍼런스·설계·검증](docs/AI_REALISM_V140.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/ai-v140/)
 
@@ -22,7 +24,7 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 ```
 
 ## 폴더
-- `src/js/` 엔진 모듈 (번호 순서대로 이어 붙는다 — 구성은 `docs/ARCHITECTURE.md`)
+- `src/js/` 엔진 모듈 (`src/modules.json` 순서로 조합한다 — 구성은 `docs/ARCHITECTURE.md`)
 - `src/stages/` 의뢰 데이터 (의뢰 하나 = 파일 하나: `11_m1.js` … `15_m5.js`, 연습 `90_tutorial.js`, 짧은 대사 `99_dialogue.js`)
 - `src/template.html` 화면 틀·메뉴·HUD·스타일
 - `build/` 빌드 재료와 결과: `assets_city.json`(그림·소리·글꼴), `pr/`(캐릭터 8방향 시트), `kit/`(기반 키트: 바닥·나무·가구·쓰레기통), `kit_mk/`(게임이 쓰는 최종 키트: 기반 키트 + MegaKit 건물 외관·옥상 소품)

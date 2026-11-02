@@ -221,12 +221,7 @@ for k, p in sounds.items():
     if not p: continue
     out = subprocess.run(['ffmpeg', '-v', 'error', '-i', p, '-ac', '1', '-ar', '22050', '-b:a', '40k', '-f', 'mp3', '-'], capture_output=True, check=True).stdout
     snd[k] = 'data:audio/mpeg;base64,' + base64.b64encode(out).decode()
-music = {}
-for k, f in [('calm', '37 - Dark Forest.ogg'), ('tense', '28 - Tension.ogg'), ('fight', '17 - Fight.ogg')]:
-    out = subprocess.run(['ffmpeg', '-v', 'error', '-i', NA + 'Audio/Musics/' + f, '-ac', '1', '-ar', '22050', '-b:a', '36k', '-f', 'mp3', '-'], capture_output=True, check=True).stdout
-    music[k] = 'data:audio/mpeg;base64,' + base64.b64encode(out).decode()
-amb = subprocess.run(['ffmpeg', '-v', 'error', '-i', '/root/game/dl/oga/crickets.mp3', '-ac', '1', '-ar', '22050', '-b:a', '32k', '-f', 'mp3', '-'], capture_output=True, check=True).stdout
-music['crickets'] = 'data:audio/mpeg;base64,' + base64.b64encode(amb).decode()
+# Campaign mood music is synthesized by src/js/20_audio.js.
 def png_url(path):
     return 'data:image/png;base64,' + base64.b64encode(open(path, 'rb').read()).decode()
 ui = {'dialog': png_url(NA + 'Ui/Dialog/DialogueBoxSimple.png'), 'facebox': png_url(NA + 'Ui/Dialog/FacesetBox.png')}
@@ -234,11 +229,11 @@ ui = {'dialog': png_url(NA + 'Ui/Dialog/DialogueBoxSimple.png'), 'facebox': png_
 import re as _re
 from fontTools import subset as _subset
 import glob as _glob
-_txt = ''.join(open(f).read() for f in sorted(_glob.glob('/root/game/src/js/*.js') + _glob.glob('/root/game/src/stages/*.js')) + ['/root/game/src/template.html', '/root/game/build.py'])  # 글꼴에 넣을 글자: 게임에 쓰인 모든 글자
+_txt = ''.join(open(f).read() for f in sorted(_glob.glob('/root/game/src/js/**/*.js', recursive=True) + _glob.glob('/root/game/src/stages/*.js')) + ['/root/game/src/template.html', '/root/game/build.py'])  # 글꼴에 넣을 글자: 게임에 쓰인 모든 글자
 _chars = set(_txt) | set(map(chr, range(32, 127))) | set('…—·←↑↓→○●')
 open('/tmp/_chars.txt', 'w').write(''.join(sorted(_chars)))
 _subset.main(['/root/game/dl/galmuri/package/dist/Galmuri11-Bold.ttf', '--text-file=/tmp/_chars.txt', '--flavor=woff2', '--output-file=/root/game/build/galmuri_sub.woff2', '--layout-features=*'])
 font_url = 'data:font/woff2;base64,' + base64.b64encode(open('/root/game/build/galmuri_sub.woff2', 'rb').read()).decode()
 atlas_b64 = 'data:image/png;base64,' + base64.b64encode(open(APNG, 'rb').read()).decode()
-json.dump({'atlas': atlas_b64, 'frames': frames, 'sounds': snd, 'music': music, 'ui': ui, 'font': font_url}, open(f'/root/game/build/assets_{THEME}.json' if THEME else '/root/game/build/assets.json', 'w'))
-print('font', os.path.getsize('/root/game/build/galmuri_sub.woff2'), 'atlas', W, H, os.path.getsize(APNG), 'snd', sum(len(v) for v in snd.values()), 'music', sum(len(v) for v in music.values()), 'bark', sounds['bark'])
+json.dump({'atlas': atlas_b64, 'frames': frames, 'sounds': snd, 'ui': ui, 'font': font_url}, open(f'/root/game/build/assets_{THEME}.json' if THEME else '/root/game/build/assets.json', 'w'))
+print('font', os.path.getsize('/root/game/build/galmuri_sub.woff2'), 'atlas', W, H, os.path.getsize(APNG), 'snd', sum(len(v) for v in snd.values()), 'bark', sounds['bark'])
