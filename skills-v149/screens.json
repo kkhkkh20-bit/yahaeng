@@ -1,0 +1,62 @@
+[
+  {
+    "file": "tree-body-pc.png",
+    "branch": "body",
+    "width": 1440,
+    "height": 900
+  },
+  {
+    "file": "tree-body-touch-390.png",
+    "branch": "body",
+    "width": 390,
+    "height": 844
+  },
+  {
+    "file": "tree-assassin-touch-390.png",
+    "branch": "assassin",
+    "width": 390,
+    "height": 844
+  },
+  {
+    "file": "tree-tools-touch-390.png",
+    "branch": "tools",
+    "width": 390,
+    "height": 844
+  },
+  {
+    "file": "tree-body-touch-844.png",
+    "branch": "body",
+    "width": 844,
+    "height": 390
+  },
+  {
+    "file": "tree-assassin-touch-844.png",
+    "branch": "assassin",
+    "width": 844,
+    "height": 390
+  },
+  {
+    "file": "tree-tools-touch-844.png",
+    "branch": "tools",
+    "width": 844,
+    "height": 390
+  },
+  {
+    "file": "tree-body-touch-320.png",
+    "branch": "body",
+    "width": 320,
+    "height": 568
+  },
+  {
+    "file": "tree-assassin-touch-320.png",
+    "branch": "assassin",
+    "width": 320,
+    "height": 568
+  },
+  {
+    "file": "tree-tools-touch-320.png",
+    "branch": "tools",
+    "width": 320,
+    "height": 568
+  }
+]

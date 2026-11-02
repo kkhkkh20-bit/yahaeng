@@ -1,0 +1,20 @@
+[
+  {
+    "base": "http://127.0.0.1:8001/public/",
+    "mobile": false,
+    "version": "v149",
+    "completed": true,
+    "input": "Real movement, automatic bush concealment, tap bush KO, second bush entry, held lethal ambush, exit",
+    "permanentUnlocks": 0,
+    "pageErrors": []
+  },
+  {
+    "base": "http://127.0.0.1:8001/public/",
+    "mobile": true,
+    "version": "v149",
+    "completed": true,
+    "input": "Real movement, automatic bush concealment, tap bush KO, second bush entry, held lethal ambush, exit",
+    "permanentUnlocks": 0,
+    "pageErrors": []
+  }
+]
