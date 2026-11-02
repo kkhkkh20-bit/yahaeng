@@ -1,0 +1,180 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/episode-one/",
+  "files": {
+    "index.html": "481e8853922743b851f48f0bc18715903a94af2e88796abb88bda2c80896e725",
+    "actors.js": "ad0c7120f910e3de7fba480a6712022b293c135e5c29601b3d7beaa7d35ace59",
+    "batch.js": "d676e9989299c47574a35f5c765bc87f1cebbef30b5c8ba88c0e784d0f36d735",
+    "camera.js": "eaae26dcfb8b1eb018cf7b1e86350d992ab796192cd33b9e76519e0e48d30ff5",
+    "effects.js": "be2e9af685d10832297deb4cf86d8bf31ba2fbaca88d9829c9c973fbb7dada20",
+    "episode.js": "a721f1e240894512940842a71d530e41952f8e35dad65849890e196d0d7e8cfa",
+    "feedback.js": "76667ab7e32b12e53d0d7c775daeca2ac7f242d26e010ffd12427eb2f126e41a",
+    "fixtures.js": "6f87f5e8f73a26353829428bb4ae1c1e5d1d1846a0bba2e413f727944d8e577d",
+    "lighting.js": "2b0109dc3eb9fb9cdb65eae5e5ef59414fdf317c3cca8919213276ef62a68bfa",
+    "materials.js": "90c5b362c3e02d0cd1e6843e9e34c0c2ebb54eca203100c9c101738b53250243",
+    "passages.js": "d862b4bb293ee8c4efad0385830524d31d3dd5a3700abdd73ddc6a39f07389ce",
+    "pose_driver.js": "39b42a7c3787c1ae46c984bc922abbb00a99c02758dda6daf357cdc45f43fad9",
+    "reveal.js": "2fab31c0d28b414e9ba427991b10426300e1e41e0fc5f16e6cf35151f65b27b8",
+    "sight.js": "fdd2270a9c9f660ab6a92ddb4f278a27893d5afed9c0c3f5d30c7c8c20f475e9",
+    "view.js": "4d4392ff5113dc9dd586d0fcf6d59193f47e663c214d538372f8a4ac25d72016",
+    "visibility.js": "f2b8ae5e3040ead1adfa0e315443f568290d3426c843a3c1de3ad62332204d60",
+    "world.js": "88e8460a3891fdf1c1e5deafb81a8197006e0f77b3876e896f63af4dc7ec3a3b"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        316.28997623299017,
+        889.599
+      ],
+      "stage": "lastSettlement",
+      "version": "v135",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 3,
+      "framing": {
+        "pitch": 65,
+        "northUp": true,
+        "span": 14.5,
+        "width": 1000,
+        "height": 740,
+        "groundWidth": 19.594594594594593,
+        "anchor": {
+          "touch": false,
+          "x": 0.5,
+          "y": 0.6
+        },
+        "slope": [
+          0,
+          0.4663076581549986
+        ]
+      },
+      "occlusion": {
+        "bi": 0,
+        "mode": "exterior",
+        "focused": false,
+        "inside": false,
+        "west": false,
+        "north": false,
+        "upper": false,
+        "floor": 0,
+        "buildings": {
+          "0": {
+            "bi": 0,
+            "mode": "exterior",
+            "focused": false,
+            "inside": false,
+            "west": false,
+            "north": false,
+            "upper": false,
+            "floor": 0
+          },
+          "1": {
+            "bi": 1,
+            "mode": "exterior",
+            "focused": false,
+            "inside": false,
+            "west": false,
+            "north": false,
+            "upper": false,
+            "floor": 0
+          }
+        }
+      },
+      "metrics": {
+        "drawCalls": 231,
+        "triangles": 42918,
+        "pixelRatio": 1,
+        "medianMs": 11.5,
+        "p95Ms": 30.899999998509884
+      },
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "before": [
+        264,
+        888
+      ],
+      "after": [
+        396.2399700271517,
+        889.599
+      ],
+      "stage": "lastSettlement",
+      "version": "v135",
+      "target": "송대건",
+      "notes": 1,
+      "codeDoors": 3,
+      "framing": {
+        "pitch": 65,
+        "northUp": true,
+        "span": 17.31282051282051,
+        "width": 390,
+        "height": 844,
+        "groundWidth": 8,
+        "anchor": {
+          "touch": true,
+          "x": 0.45,
+          "y": 0.6
+        },
+        "slope": [
+          0,
+          0.4663076581549986
+        ]
+      },
+      "occlusion": {
+        "bi": 0,
+        "mode": "exterior",
+        "focused": false,
+        "inside": false,
+        "west": false,
+        "north": false,
+        "upper": false,
+        "floor": 0,
+        "buildings": {
+          "0": {
+            "bi": 0,
+            "mode": "exterior",
+            "focused": false,
+            "inside": false,
+            "west": false,
+            "north": false,
+            "upper": false,
+            "floor": 0
+          },
+          "1": {
+            "bi": 1,
+            "mode": "exterior",
+            "focused": false,
+            "inside": false,
+            "west": false,
+            "north": false,
+            "upper": false,
+            "floor": 0
+          }
+        }
+      },
+      "metrics": {
+        "drawCalls": 201,
+        "triangles": 40050,
+        "pixelRatio": 1,
+        "medianMs": 10.200000002980232,
+        "p95Ms": 30.5
+      },
+      "errors": []
+    }
+  ],
+  "cloudflareVersion": {
+    "edition": "2d-campaign",
+    "version": "v128-loading-fix",
+    "source_sha256": "0589f4cc2f0edf163155e5b1011a9a61062e4b98d005f04b292993ccc5d4927b",
+    "html_bytes": 159783,
+    "source_bytes": 11376729,
+    "scripts": 4,
+    "assets": 174,
+    "asset_bytes": 8826813
+  }
+}
