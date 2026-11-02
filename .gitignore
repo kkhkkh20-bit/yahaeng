@@ -38,3 +38,5 @@ build/test_logs/
 /build/integration-validation/
 
 /build/integration-before-v134/
+
+/build/tutorial-validation/

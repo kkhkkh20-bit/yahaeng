@@ -1,0 +1,197 @@
+[
+  {
+    "name": "move",
+    "stage": "tB",
+    "step": 1,
+    "t": 1.483333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      4.463312599529715,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-run",
+    "stage": "tB",
+    "step": 2,
+    "t": 1.733333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      5.3802382167565765,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-quiet",
+    "stage": "tB",
+    "step": 4,
+    "t": 3.6999999999999917,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.461227519123927,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "bush",
+    "stage": "tB",
+    "step": 5,
+    "t": 5.149999999999987,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      8.446486308777656,
+      10.553515625000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "heard",
+    "stage": "tB",
+    "step": 6,
+    "t": 5.23333333333332,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      8.451676463075541,
+      10.553515625000001
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "escape-vision",
+    "stage": "tB",
+    "step": 7,
+    "t": 6.983333333333314,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.0367301734218195,
+      10.575000000000001
+    ],
+    "guard": "NOTICE"
+  },
+  {
+    "name": "escape",
+    "stage": "tB",
+    "step": 7,
+    "t": 10.500000000000101,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      3.5193897641956298,
+      13.056845285158621
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "rear",
+    "stage": "t0",
+    "step": 1,
+    "t": 4.666666666666655,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.8537483729870425,
+      9.521484375
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "grab",
+    "stage": "t0",
+    "step": 2,
+    "t": 5.13333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "CAPTIVE"
+  },
+  {
+    "name": "ko",
+    "stage": "t0",
+    "step": 3,
+    "t": 6.1499999999999835,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "uniform",
+    "stage": "t0",
+    "step": 4,
+    "t": 7.033333333333314,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "carry",
+    "stage": "t0",
+    "step": 5,
+    "t": 7.683333333333311,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "stash",
+    "stage": "t0",
+    "step": 6,
+    "t": 12.516666666666868,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.5,
+      8.041666666666666
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "complete",
+    "stage": "t0",
+    "step": 6,
+    "t": 20.733333333333437,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      21.220126535158926,
+      8.270833333333334
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "contract",
+    "stage": "m2",
+    "step": null,
+    "t": 0.08333333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      0.5,
+      21.5
+    ],
+    "guard": "PATROL"
+  }
+]

@@ -281,10 +281,12 @@ function updateChanges(dt) {
   }
 }
 // 연습(훈련장): 단계를 차례로 확인하고 다음 할 일을 알려 준다
-function updateTutorial() {
+function updateTutorial(dt = 1/60) {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
+  if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input)){S.tutHold=0;return;}
   while (S.tutI < st.length && st[S.tutI][1](S, S.player, input)) {
-    S.tutI++; S.cpWant = true; play('switch', 0.45, 1.5);
+    const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)break;}
+    S.tutHold=0;S.tutI++; S.cpWant = true; play('switch', 0.45, 1.5);
     if (S.tutI >= st.length) toast('연습 완료 · 의뢰를 시작할 수 있다', 3, 'good');
   }
 }

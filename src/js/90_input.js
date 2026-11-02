@@ -216,9 +216,9 @@ $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
-function quickTarget() { const t0 = STAGES.findIndex(s => s.id === 'tI'); if (t0 >= 0 && !stageCleared(STAGES[t0])) return t0; const st = mainContracts().find(s => demoOk(s) && !stageCleared(s)) || mainContracts().find(demoOk); return st ? STAGES.indexOf(st) : t0; }
-function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = mainContracts().filter(demoOk).every(stageCleared) && stageCleared(STAGES[STAGES.findIndex(s => s.id === 'tI')] || {});
-  $('btnQuick').textContent = st.tutorial ? '시작하기' : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${contractNumber(st)} ${st.name}`;
+function quickTarget() { for(const id of ['tB','t0']){const i=STAGES.findIndex(s=>s.id===id);if(i>=0&&!stageCleared(STAGES[i]))return i;}const st=mainContracts().find(s=>demoOk(s)&&!stageCleared(s))||mainContracts().find(demoOk);return st?STAGES.indexOf(st):0; }
+function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = mainContracts().filter(demoOk).every(stageCleared) && ['tB','t0'].every(id=>stageCleared(STAGES.find(s=>s.id===id)||{}));
+  $('btnQuick').textContent = st.tutorial ? (st.id==='tB'?'처음 시작 · 시야와 소리':'이어서 · 뒤에서 제압') : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${contractNumber(st)} ${st.name}`;
   $('btnQuick').title = st.tutorial ? '처음 플레이하면 연습부터 시작합니다.' : (st.mission || st.name); }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
   $('stageList').dataset.filter = button.dataset.filter;
@@ -271,7 +271,7 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click', () => { const n = nextPlayable(); start(STAGE.tutorial ? STAGES.findIndex(s => mainContract(s) && demoOk(s)) : n >= 0 ? n : STAGE_I); });
+$('btnNext').addEventListener('click', () => { const n = nextPlayable(),lesson=STAGE.nextTutorial&&STAGES.findIndex(s=>s.id===STAGE.nextTutorial);start(lesson>=0?lesson:STAGE.tutorial?STAGES.findIndex(s=>mainContract(s)&&demoOk(s)):n>=0?n:STAGE_I); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
@@ -281,7 +281,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
-  newGame(i); resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
+  newGame(i); if(STAGE.firstSteps){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep([...ks, ...Object.keys(OUTFIT_PAL), 'police', 'rival']); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다

@@ -79,16 +79,6 @@ function drawRadio(x, y) {  // 무전기: 이 자경대원이 경보를 맵 전�
   ctx.strokeStyle = '#c9cfd8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x + 2, y - 6); ctx.lineTo(x + 2, y - 14); ctx.stroke();
   ctx.fillStyle = Math.floor(S.t * 2) % 2 ? '#7fe08a' : '#2f6a38'; ctx.fillRect(x - 3, y - 4, 3, 3);
 }
-// 발소리 반경: 지금 걸음으로 내는 소리가 닿는 거리. 자경대원이 그 안에 있으면 붉게
-function drawStepRing(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
-  const m = P.cover ? 'sneak' : P.mode, r = P.cover ? 0 : ({ sneak: 22, walk: 110, run: 250 }[m] + (P.carrying ? 35 : 0)) * (m === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z) * loudMul(P.x, P.y, flOf(P));
-  let heard = false;
-  for (const g of S.guards) if (!g.civ && g.state !== 'DEAD' && g.state !== 'CAPTIVE' && flOf(g) === flOf(P) && !(g.z || 0) && dist(g.x, g.y, P.x, P.y) < r * soundThrough(P.x, P.y, g.x, g.y)) { heard = true; break; }
-  const a = P.moving ? 1 : 0.55;
-  ctx.strokeStyle = heard ? `rgba(240,100,70,${0.6 * a})` : `rgba(220,226,240,${0.2 * a})`; ctx.lineWidth = heard ? 2.5 : 1.5; ctx.setLineDash([5, 7]);
-  ctx.beginPath(); ctx.ellipse(P.x, P.y + 6, r, r * 0.92, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-  if (heard && P.moving) { ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(240,100,70,.9)'; ctx.fillText('발소리가 들린다', P.x, P.y + 6 + r * 0.92 + 14); }
-}
 // 화면 밖에서 나를 보거나 쫓는 자경대원: 화면 가장자리에 화살표
 function drawOffscreen() { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   // 화면 밖 자경대원: 목표용 금색 화살표와 헷갈리지 않게 작은 눈 표시(주황=의심, 빨강=발각). 화면 안에 보이는 사람은 표시하지 않는다

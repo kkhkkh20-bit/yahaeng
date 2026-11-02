@@ -93,7 +93,7 @@ function noise(x, y, r, src, fl, z) {
   if (fl == null) fl = flOf(S.player);
   const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
   if (src !== 'scream') r = Math.max(src==='whistle'?180:0,r*loudMul(x,y,fl));  // 클럽 음악에 묻힌다
-  const nz = { x, y, r, t: 0, src, fl, z:zs }; S.noises.push(nz);
+  const nz = { x, y, r, t: 0, src, fl, z:zs }; S.noises.push(nz); if(src==='step')nz.mode=S.player.mode;
   const L0 = CUR_F; setLayer(fl);let field=null;
   for (const g of S.guards) {
     if (flOf(g) !== fl) continue;
@@ -121,6 +121,7 @@ function noise(x, y, r, src, fl, z) {
       goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
     }
   }
+  if(STAGE.firstSteps&&src==='whistle'&&nz.heard)S.lessonWhistle={heard:true,t:S.t,x,y};
   setLayer(L0);
 }
 function goSuspicious(g, x, y, look) {

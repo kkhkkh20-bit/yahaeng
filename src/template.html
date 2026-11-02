@@ -845,6 +845,12 @@ body #stealth.quiet b { font-size: 15px; }
 body #stealth.quiet small { display: none; }
 body #stealth.quiet .sth-ico { width: 24px; height: 24px; }
 body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
+/* The tutorial reuses the objective area; no modal or dialogue blocks the lesson. */
+body.tutorial-lesson #hud .obj:not(.open) #objective{max-height:none;overflow:visible;}
+body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut{display:block;-webkit-line-clamp:unset;overflow:visible;white-space:normal;}
+#objective .tut-detail{display:block;white-space:normal;letter-spacing:0;margin-top:5px;font-size:12px;line-height:1.5;color:#b9c4c1;font-weight:400;}
+#hud .lesson-cue{outline:2px solid #e6cd83;outline-offset:3px;}
+body.perception-lesson #btnAct,body.perception-lesson #btnGrab,body.perception-lesson #btnToolNext{visibility:hidden;pointer-events:none;}
 </style>
 
 <canvas id="game" tabindex="-1" aria-label="게임 화면"></canvas>

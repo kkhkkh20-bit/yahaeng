@@ -22,11 +22,12 @@ function guardCone(g, fov, rg) {
   }
   setLayer(L0); const cn = { rays, STP }; g._cone = { t: S.t, k: ck, x: g.x, y: g.y, a: g.a, cn }; return cn;
 }
-function conePaths(g, cn, lo) {
+function conePaths(g, cn, lo, blend = 0) {
   // 한 겹 원뿔: 광선마다 '이 단계 이상'인 마지막 거리까지 한 길이로 잡고(중간 구멍은 메운다), 이웃 광선과 고르게 해 매끈한 부채꼴로 그린다.
   // 길이는 그 자리 밝기를 따른다 — 불빛 쪽 광선은 길고 어두운 쪽은 짧아, 원뿔이 좌우로 다를 수 있다
   const R = cn.rays, STP = cn.STP, h = R.length > 1 ? (R[1].ra - R[0].ra) / 2 : 0.02;
-  const L = R.map(r => { let k = -1; for (let i = 0; i < r.lv.length; i++) if (r.lv[i] >= lo) k = i; return k < 0 ? 0 : Math.min(r.w, (k + 1) * STP); });
+  const reach=(r,level)=>{let k=-1;for(let i=0;i<r.lv.length;i++)if(r.lv[i]>=level)k=i;return k<0?0:Math.min(r.w,(k+1)*STP);};
+  const L = R.map(r => {const outer=reach(r,lo);return blend ? outer+(reach(r,2)-outer)*clamp(blend,0,1) : outer;});
   const M = L.map((v, i) => { const a = L[i - 1] != null ? L[i - 1] : v, b = L[i + 1] != null ? L[i + 1] : v; return Math.min(R[i].w, a * 0.25 + v * 0.5 + b * 0.25); });
   ctx.beginPath(); ctx.moveTo(g.x, g.y);
   const pt = (a, d) => ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d);
@@ -1184,9 +1185,11 @@ function draw() {
   drawLoud(0); drawCams(0);
   drawHideFixtures();
   if (!tactical && !P.z && !flOf(P) && !input.scan) drawBlockEdges(P, false);
+  const lastStep=S.noises.filter(n=>n.src==='step'&&flOf(n)===flOf(P)).at(-1);
   for (const n of S.noises) {
+    if(flOf(n)!==flOf(P)||(n.src==='step'&&n!==lastStep))continue;
     const k = n.t / 0.7; ctx.strokeStyle = n.heard ? `rgba(242,196,107,${(1 - k) * 0.75})` : n.src === 'stone' || n.src === 'glass' ? `rgba(242,196,107,${(1 - k) * 0.6})` : `rgba(220,226,240,${(1 - k) * 0.38})`;
-    ctx.lineWidth = n.heard ? 3 : 2; ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(1, n.r * (0.25 + 0.75 * k)), 0, TAU); ctx.stroke();
+    ctx.save();ctx.setLineDash([3,6]);ctx.lineWidth=n.heard?2:1;ctx.beginPath();ctx.arc(n.x,n.y,Math.max(1,n.r*(.25+.75*k)),0,TAU);ctx.stroke();ctx.restore();
   }
   PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
@@ -1273,10 +1276,10 @@ function draw() {
     const p=l.control;ctx.fillStyle='#27302d';ctx.fillRect(p.x-4,p.y-7,8,13);ctx.strokeStyle='#858b7b';ctx.lineWidth=1;ctx.strokeRect(p.x-4,p.y-7,8,13);
     ctx.fillStyle=lampOn(l)?'#c5c6a3':'#5d655c';ctx.fillRect(p.x-1,p.y-4,3,7);
   }
-  // 손전등 빛줄기
-  for (const g of S.guards) { if (!g.torch || g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) !== flOf(S.player) || !gVis(g)) continue;
-    setLayer(flOf(g)); ctx.beginPath(); ctx.moveTo(g.x, g.y); for (let i = 0; i <= 12; i++) { const a = g.a - 0.32 + 0.64 * i / 12, d = castRay(g.x, g.y, a, TORCH_R); ctx.lineTo(g.x + Math.cos(a) * d, g.y + Math.sin(a) * d); } ctx.closePath(); setLayer(flOf(S.player));
-    const gr = ctx.createRadialGradient(g.x, g.y, 6, g.x, g.y, TORCH_R); gr.addColorStop(0, 'rgba(255,244,200,.32)'); gr.addColorStop(1, 'rgba(255,244,200,0)'); ctx.fillStyle = gr; ctx.fill(); }
+  // The flashlight contributes to the same visibility field; its bulb is not a second cone.
+  for(const g of S.guards)if(g.torch&&g.state!=='DEAD'&&g.state!=='CAPTIVE'&&flOf(g)===flOf(P)&&gVis(g)){
+    ctx.fillStyle='#dfd6ab';ctx.beginPath();ctx.arc(g.x+Math.cos(g.a)*13,g.y+Math.sin(g.a)*13,2.5,0,TAU);ctx.fill();
+  }
   ctx.globalCompositeOperation = 'source-over';
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
@@ -1314,7 +1317,7 @@ function draw() {
     setLayer(0);
   }
   PM('floor');
-  if (!P.hide && !P.z && !P.jump && !P.vent && !P.trav && !P.under && running && !tactical) drawStepRing(P);
+  // Footstep sound is shown by its brief wave, never a second persistent oval around the player.
   PM('stepring');
   if (!P.hide && !P.z && (!P.jump || lowJ) && !P.vent && !travUp && !windowMotion) drawPlayer(P);
   PM('drawPlayer');
@@ -1343,14 +1346,15 @@ function draw() {
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g),quiet=!tactical&&!input.scan&&['quiet','check'].includes(awareness.phase)&&!awareness.progress;
-    const far = chs && gd > 380 ? 0.35 : quiet ? (quarterNear(P) ? .19 : .42) : 1;
+    const far = chs && gd > 380 ? 0.35 : quiet && !STAGE.firstSteps ? (quarterNear(P) ? .19 : .42) : 1;
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1, 2); ctx.fill();}
+      if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1); ctx.fill();}
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
-    { const ck = S.coneK || 0;  // 0 = 서 있음, 1 = 웅크림
-      if (ck < 0.99) { conePaths(g, cn, 1, 2); ctx.fillStyle = `rgba(${col},${(0.24 * (1 - ck) * far).toFixed(3)})`; ctx.fill(); if (ck < 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } }
-      if (ck > 0.01) { conePaths(g, cn, 2, 2); ctx.fillStyle = `rgba(${col},${(0.24 * ck * far).toFixed(3)})`; ctx.fill(); if (ck >= 0.5 && far === 1) { ctx.strokeStyle = `rgba(${col},.35)`; ctx.lineWidth = 1; ctx.stroke(); } } }
+    // Interpolate the boundary itself: one enemy, one filled field and one outline.
+    conePaths(g,cn,1,S.coneK||0);
+    ctx.fillStyle=`rgba(${col},${(.20*far).toFixed(3)})`;ctx.fill();
+    ctx.strokeStyle=`rgba(${col},${(.34*far).toFixed(3)})`;ctx.lineWidth=1;ctx.stroke();
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시

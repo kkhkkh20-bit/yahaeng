@@ -1,4 +1,5 @@
-"""Fresh title-to-contract path with real keyboard / CDP touch input and all NPCs active.
+"""Optional identity lesson with real keyboard / CDP touch input and all NPCs active.
+The new first-time path is covered by tests/tutorial/first_session.py.
 Only time is stepped; player position, inventory, AI and lesson completion are never assigned.
 This is a developer first-use review, not a study with new human players.
 """
@@ -11,7 +12,7 @@ TICK='''n=>{const G=__game;for(let i=0;i<n;i++){if(G.DLG.modal)G.updateDialog(1/
 STATE='''()=>{const G=__game,S=G.S,P=S.player,g=S.guards.find(g=>g.tag==='yard');return{x:P.x,y:P.y,stage:G.STAGE.id,step:S.tutI||0,over:S.over,hp:P.hp,detected:S.stats.detected,exit:S.exitOpen,modal:G.DLG.modal,busy:G.actionBusy(),outfit:P.outfit,captive:!!P.captive,carrying:!!P.carrying,warning:g?.state==='WARN',goal:G.nextGoal(),text:document.querySelector('#objective').textContent,kills:S.stats.kills};}'''
 async def exercise(b,mobile,bypass=False):
  pg=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];pg.on('pageerror',lambda e:errors.append(str(e)));await pg.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();let seed=117;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
- await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats&tone=ink');await pg.wait_for_function('!!window.__game',polling=100);await pg.locator('#btnQuick').click();cdp=await pg.context.new_cdp_session(pg)
+ await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats&tone=ink');await pg.wait_for_function('!!window.__game',polling=100);await pg.locator('#btnLedger').click();await pg.locator('.ledger-tabs [data-filter="training"]').click();i=await pg.evaluate('__game.STAGES.findIndex(s=>s.id==="tI")');await pg.locator('[data-i="'+str(i)+'"]').click();cdp=await pg.context.new_cdp_session(pg)
  async def tick(n):await pg.evaluate(TICK,n)
  async def state():return await pg.evaluate(STATE)
  async def shot(name):

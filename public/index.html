@@ -1075,6 +1075,12 @@ body #stealth.quiet b { font-size: 15px; }
 body #stealth.quiet small { display: none; }
 body #stealth.quiet .sth-ico { width: 24px; height: 24px; }
 body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
+/* The tutorial reuses the objective area; no modal or dialogue blocks the lesson. */
+body.tutorial-lesson #hud .obj:not(.open) #objective{max-height:none;overflow:visible;}
+body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut{display:block;-webkit-line-clamp:unset;overflow:visible;white-space:normal;}
+#objective .tut-detail{display:block;white-space:normal;letter-spacing:0;margin-top:5px;font-size:12px;line-height:1.5;color:#b9c4c1;font-weight:400;}
+#hud .lesson-cue{outline:2px solid #e6cd83;outline-offset:3px;}
+body.perception-lesson #btnAct,body.perception-lesson #btnGrab,body.perception-lesson #btnToolNext{visibility:hidden;pointer-events:none;}
 </style>
 
 <canvas id="game" tabindex="-1" aria-label="게임 화면"></canvas>
@@ -1141,7 +1147,7 @@ body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v128 · 2026-11-01</footer>
+  <footer class="title-footer">v136 · 2026-11-02</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1265,6 +1271,6 @@ body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/735daa7af947213be672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/29d2c247ab6a601506ed.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/8bccff6bdfad3c264e76.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/1ec806fe5666f500d00b.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/6afd7fcb3796ffc568ba.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>

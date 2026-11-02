@@ -1,6 +1,7 @@
 # 게임 테스트 주소
 
-- 기존 2D 게임 · 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
+- 2D 본편 · 시야와 소리 연습 (v136): https://kkhkkh20-bit.github.io/yahaeng/?v=136
+- 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
 - v133 시점·가림 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/camera-v133/
@@ -30,6 +31,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v136
+
+2D 본편으로 돌아와 시야·소리 학습을 첫 연습으로 분리했다. 다음 연습에서 붙잡기·기절·변장·은닉을 익힌다. 시야는 한 겹, 발소리는 짧은 점선 물결로 정리했다. [학습 구성·검수](docs/TUTORIAL_V136.md) · [화면](docs/tutorial-v136/index.html).
 
 ## v133
 
