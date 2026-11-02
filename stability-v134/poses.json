@@ -1,0 +1,482 @@
+[
+  {
+    "mobile": true,
+    "scene": "start",
+    "player": [
+      175.49999999999997,
+      506.40000000000026
+    ],
+    "occlusion": {
+      "mode": "exterior",
+      "focused": false,
+      "inside": false,
+      "west": false,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 92,
+      "triangles": 36770,
+      "pixelRatio": 1,
+      "medianMs": 5,
+      "p95Ms": 20.19999999552965
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "west",
+    "player": [
+      175.84739830654465,
+      506.231369319713
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": true,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 180,
+      "triangles": 39258,
+      "pixelRatio": 1,
+      "medianMs": 3.6999999955296516,
+      "p95Ms": 18.600000001490116
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "bin",
+    "player": [
+      175.53508993360583,
+      506.315514716314
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": true,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 178,
+      "triangles": 39390,
+      "pixelRatio": 1,
+      "medianMs": 3.2000000029802322,
+      "p95Ms": 7.200000002980232
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "north",
+    "player": [
+      175.9169133309776,
+      506.45612508372454
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": false,
+      "north": true,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 127,
+      "triangles": 38488,
+      "pixelRatio": 1,
+      "medianMs": 2.600000001490116,
+      "p95Ms": 7.100000001490116
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "inside",
+    "player": [
+      175.1877616832896,
+      506.6530025824723
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": true,
+      "west": false,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 240,
+      "triangles": 63254,
+      "pixelRatio": 1,
+      "medianMs": 2.5,
+      "p95Ms": 8.100000001490116
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "upper",
+    "player": [
+      175.67338448404644,
+      506.2350822993432
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": true,
+      "west": false,
+      "north": false,
+      "upper": true,
+      "floor": 1
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 191,
+      "triangles": 51668,
+      "pixelRatio": 1,
+      "medianMs": 2.5,
+      "p95Ms": 12.800000004470348
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "start",
+    "player": [
+      640.0000000000001,
+      480.00000000000017
+    ],
+    "occlusion": {
+      "mode": "exterior",
+      "focused": false,
+      "inside": false,
+      "west": false,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 213,
+      "triangles": 42668,
+      "pixelRatio": 1,
+      "medianMs": 3.7999999970197678,
+      "p95Ms": 13.700000002980232
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "west",
+    "player": [
+      640.3931651921993,
+      479.8091536067487
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": true,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 243,
+      "triangles": 42914,
+      "pixelRatio": 1,
+      "medianMs": 3.2999999970197678,
+      "p95Ms": 10.5
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "bin",
+    "player": [
+      640.039712745372,
+      479.90438447116
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": true,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 229,
+      "triangles": 42784,
+      "pixelRatio": 1,
+      "medianMs": 2.899999998509884,
+      "p95Ms": 5.200000002980232
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "north",
+    "player": [
+      640.4718382525654,
+      480.06351910448046
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": false,
+      "west": false,
+      "north": true,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 204,
+      "triangles": 41566,
+      "pixelRatio": 1,
+      "medianMs": 2.7000000029802322,
+      "p95Ms": 4.300000004470348
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "inside",
+    "player": [
+      639.6466268387362,
+      480.28633360350545
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": true,
+      "west": false,
+      "north": false,
+      "upper": false,
+      "floor": 0
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 287,
+      "triangles": 65868,
+      "pixelRatio": 1,
+      "medianMs": 2.7000000029802322,
+      "p95Ms": 5.799999997019768
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "upper",
+    "player": [
+      640.1962264717765,
+      479.81335574107754
+    ],
+    "occlusion": {
+      "mode": "floor-cutaway",
+      "focused": true,
+      "inside": true,
+      "west": false,
+      "north": false,
+      "upper": true,
+      "floor": 1
+    },
+    "framing": {
+      "pitch": 54,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0.5137431483730079,
+        0.5137431483730079
+      ]
+    },
+    "metrics": {
+      "drawCalls": 212,
+      "triangles": 52002,
+      "pixelRatio": 1,
+      "medianMs": 2.6999999955296516,
+      "p95Ms": 7.300000004470348
+    }
+  }
+]

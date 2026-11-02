@@ -1,0 +1,134 @@
+[
+  {
+    "case": "well-entry",
+    "time": 3.1999999999999935,
+    "hp": 3,
+    "at": [
+      6.5,
+      18.5
+    ],
+    "under": false,
+    "vent": null,
+    "contacts": []
+  },
+  {
+    "case": "sewer",
+    "time": 11.616666666666823,
+    "hp": 3,
+    "at": [
+      6.5,
+      3.5444442115102017
+    ],
+    "under": true,
+    "vent": null,
+    "contacts": []
+  },
+  {
+    "case": "surface",
+    "time": 13.483333333333583,
+    "hp": 3,
+    "at": [
+      7.509438105431621,
+      5.51436678170231
+    ],
+    "under": false,
+    "vent": null,
+    "contacts": []
+  },
+  {
+    "case": "vent-entry",
+    "time": 16.20000000000036,
+    "hp": 3,
+    "at": [
+      9.466816592571917,
+      5.5
+    ],
+    "under": false,
+    "vent": true,
+    "contacts": []
+  },
+  {
+    "case": "vent-exit",
+    "time": 18.866666666666877,
+    "hp": 3,
+    "at": [
+      12.482055972486535,
+      5.518610564120974
+    ],
+    "under": false,
+    "vent": false,
+    "contacts": []
+  },
+  {
+    "case": "switch",
+    "time": 19.83333333333349,
+    "hp": 3,
+    "at": [
+      12.482055972486535,
+      5.518610564120974
+    ],
+    "under": false,
+    "vent": false,
+    "contacts": [
+      {
+        "t": 18.950000000000205,
+        "kind": "lamp",
+        "distance": 1.0620712506682586e-08
+      }
+    ]
+  },
+  {
+    "case": "duct-patrol",
+    "time": 45.88333333333201,
+    "hp": 3,
+    "at": [
+      18.49999999095842,
+      10.460449897385386
+    ],
+    "under": false,
+    "vent": true,
+    "contacts": [
+      {
+        "t": 18.950000000000205,
+        "kind": "lamp",
+        "distance": 1.0620712506682586e-08
+      }
+    ]
+  },
+  {
+    "case": "vent-pull",
+    "time": 47.149999999998606,
+    "hp": 3,
+    "at": [
+      18.49999999095842,
+      10.460449897385386
+    ],
+    "under": false,
+    "vent": true,
+    "contacts": [
+      {
+        "t": 18.950000000000205,
+        "kind": "lamp",
+        "distance": 1.0620712506682586e-08
+      }
+    ]
+  },
+  {
+    "case": "return-to-room",
+    "time": 48.316666666665206,
+    "hp": 3,
+    "at": [
+      18.5,
+      11.041666666666666
+    ],
+    "under": false,
+    "vent": false,
+    "contacts": [
+      {
+        "t": 18.950000000000205,
+        "kind": "lamp",
+        "distance": 1.0620712506682586e-08
+      }
+    ]
+  }
+]

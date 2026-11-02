@@ -1,0 +1,20 @@
+[
+  {
+    "touch": true,
+    "approaches": 1,
+    "frames": 161,
+    "transitions": 0,
+    "props": 9,
+    "closeAwareness": true,
+    "layerPreserved": true
+  },
+  {
+    "touch": false,
+    "approaches": 1,
+    "frames": 161,
+    "transitions": 0,
+    "props": 9,
+    "closeAwareness": true,
+    "layerPreserved": true
+  }
+]

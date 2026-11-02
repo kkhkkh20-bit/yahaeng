@@ -1,17 +1,14 @@
-import * as THREE from 'three';
-import {passageMode} from './passages.js?v=v133-5e6252f80fa4';
-// The same tile rays as the simulation: glass transmits sight; shut doors and walls do not.
-// A small world-space texture cuts only the overhead architecture, not whole buildings.
+import {passageMode} from './passages.js?v=v134-ca9e5888bbeb';
+// Static models belong to a floor. LOS controls actor discovery and prompts,
+// not whether a bin, planter or piece of furniture exists in the world.
 export function createVisibility(G){
- const scale=4,w=G.MW*scale,h=G.MH*scale,data=new Uint8Array(w*h*4),texture=new THREE.DataTexture(data,w,h);texture.minFilter=texture.magFilter=THREE.NearestFilter;texture.generateMipmaps=false;
- const uniforms={roomSight:{value:texture},roomSize:{value:new THREE.Vector2(G.MW,G.MH)},roomSlope:{value:new THREE.Vector2(1,1)},roomOutside:{value:0}},materials=new Set();let stamp='',last=-Infinity,inside=-1,fl=0,count=0;
- const main=p=>{const b=G.BLD[0];return p.x/48>b.x0&&p.x/48<b.x1+1&&p.y/48>b.y0&&p.y/48<b.y1+1;};
- function at(x,y){const ix=Math.floor(x/48*scale),iy=Math.floor(y/48*scale);return ix>=0&&iy>=0&&ix<w&&iy<h&&data[(iy*w+ix)*4]>0;}
- function update(){const S=G.S,P=S.player,R=G.traversalRoom(P.trav);fl=P.fl||0;inside=R?.b??(P.z?-1:G.bldAt(Math.floor(P.x/48),Math.floor(P.y/48)));const outside=inside!==0&&!P.z;uniforms.roomOutside.value=outside?1:0;const key=[Math.round(P.x/6),Math.round(P.y/6),fl,inside,P.hide?.type,P.under,P.vent,...S.doors.map(d=>+d.locked)].join(':');if(stamp===key&&S.t>=last&&S.t-last<.16)return;stamp=key;last=S.t;count=0;data.fill(0);
-  if(outside&&!P.hide&&!P.under&&!P.vent){G.setLayer(0);try{const b=G.BLD[0];for(let iy=b.y0*scale;iy<(b.y1+1)*scale;iy++)for(let ix=b.x0*scale;ix<(b.x1+1)*scale;ix++){const x=(ix+.5)/scale*48,y=(iy+.5)/scale*48;if(Math.hypot(x-P.x,y-P.y)>430||!G.los(P.x,P.y,x,y))continue;data[(iy*w+ix)*4]=255;data[(iy*w+ix)*4+3]=255;count++;}}finally{G.setLayer(fl);}}
-  texture.needsUpdate=true;
+ let inside=-1,fl=0,count=0,last=-Infinity,stamp='';const scale=4,w=G.MW*scale,h=G.MH*scale,data=new Uint8Array(w*h);
+ function at(x,y){const ix=Math.floor(x/48*scale),iy=Math.floor(y/48*scale);return ix>=0&&iy>=0&&ix<w&&iy<h&&data[iy*w+ix]>0;}
+ function update(){const S=G.S,P=S.player,R=G.traversalRoom(P.trav);fl=P.fl||0;inside=R?.b??(P.z?-1:G.bldAt(Math.floor(P.x/48),Math.floor(P.y/48)));const key=[Math.floor(P.x/3),Math.floor(P.y/3),fl,inside,P.under,P.vent,...S.doors.map(d=>+d.locked)].join(':');if(stamp===key&&S.t>=last&&S.t-last<.12)return;stamp=key;last=S.t;data.fill(0);count=0;
+  if(inside!==0&&!P.z&&!P.under&&!P.vent){const restore=G.layer;G.setLayer(0);try{const b=G.BLD[0];for(let iy=b.y0*scale;iy<(b.y1+1)*scale;iy++)for(let ix=b.x0*scale;ix<(b.x1+1)*scale;ix++){const x=(ix+.5)/scale*48,y=(iy+.5)/scale*48;if(Math.hypot(x-P.x,y-P.y)<=430&&G.los(P.x,P.y,x,y)){data[iy*w+ix]=255;count++;}}}finally{G.setLayer(restore);}}
  }
- function visible(o,fixture=false){const P=G.S.player;if((o.fl||0)!==fl||(o.z||0)!==(P.z||0)||passageMode(P))return false;const b=G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48));if(b>=0&&b!==inside){if(b!==0||!at(o.x,o.y))return false;}if(fixture)return G.fixtureVisible(o,430);return true;}
- function install(group,part){if(!group)return;const clones=new Map();group.traverse(o=>{if(!o.isMesh)return;const clone=m=>{if(clones.has(m))return clones.get(m);const n=m.clone(),previous=n.onBeforeCompile;n.onBeforeCompile=shader=>{previous?.(shader);Object.assign(shader.uniforms,uniforms);shader.vertexShader='varying vec3 roomWorld;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nroomWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');shader.fragmentShader='uniform sampler2D roomSight;uniform vec2 roomSize;uniform vec2 roomSlope;uniform float roomOutside;varying vec3 roomWorld;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>',`#include <clipping_planes_fragment>\nif(roomOutside>.5 && roomWorld.y>${part==='overhead'?'.15':'.25'} && texture2D(roomSight,(roomWorld.xz-roomSlope*roomWorld.y)/roomSize).r>.5)discard;`);};n.customProgramCacheKey=()=> 'club-window-sight-'+part;clones.set(m,n);materials.add(n);return n;};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});}
- return{update,visible,at,install,texture,setProjection(x,z){uniforms.roomSlope.value.set(x,z);},get outside(){return uniforms.roomOutside.value>0},get cells(){return count},get inside(){return inside},dispose(){texture.dispose();materials.forEach(m=>m.dispose());}};
+ function fixture(o){const P=G.S.player;return(o.fl||0)===fl&&(o.z||0)===(P.z||0)&&!passageMode(P);}
+ function visible(o,isFixture=false){if(!fixture(o))return false;if(isFixture)return true;const b=G.bldAt(Math.floor(o.x/48),Math.floor(o.y/48));return b<0||b===inside||b===0&&at(o.x,o.y);}
+ function cue(o){return fixture(o)&&G.fixtureVisible(o,430);}
+ return{update,visible,fixture,cue,at,get outside(){return inside!==0},get cells(){return count},get inside(){return inside},dispose(){}};
 }
