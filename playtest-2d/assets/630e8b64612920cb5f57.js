@@ -4025,10 +4025,11 @@ function lookAround(g, dt, base, amp, hold) {
   if (g.lookT <= 0) { g.lookI = (g.lookI + 1) % 4; g.lookOff = [0, 1, 0, -1][g.lookI] * amp * rnd(0.8, 1.15) * (g.lookSide || (g.lookSide = Math.random() < 0.5 ? 1 : -1)); g.lookT = rnd(hold[0], hold[1]); }
   g.want = base + g.lookOff;
 }
+const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
-  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&npcCanOpenDoor(g,d)&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:.36};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
@@ -4109,28 +4110,22 @@ function moveAlong(g, speed, dt) {
   return !g.path.length;
 }
 function updateNpcDoors(dt){
-  for(const d of S.doors){const W=d.npcWork;if(!W)continue;const g=S.guards.find(g=>g.doorWork===W);if(!g||['DEAD','CAPTIVE'].includes(g.state)){if(g)g.doorWork=null;d.npcWork=null;continue;}W.t+=dt;if(d.locked&&W.t>=W.dur*.76){setDoor(d,false);play('metal',.2*proxVol(g));}if(W.t>=W.dur){g.doorWork=null;d.npcWork=null;}}
+  for(const d of S.doors){const W=d.npcWork;if(!W)continue;const g=S.guards.find(g=>g.doorWork===W);if(!g||['DEAD','CAPTIVE'].includes(g.state)){if(g)g.doorWork=null;d.npcWork=null;continue;}W.t+=dt;if(d.locked&&W.t>=W.dur*.76){setDoor(d,false);play(W.forced?'thud':'metal',.3*proxVol(g));if(W.forced)noise(d.x,d.y,140,'guardDoor',flOf(g),g.z||0);}if(W.t>=W.dur){g.doorWork=null;d.npcWork=null;}}
 }
 const solidAtG = (tx, ty) => solidAt(tx, ty);
+// Planning may include a locked door; opening it belongs to moveAlong at the
+// actual threshold, on every floor. A failed path never opens a remote door.
+function npcRouteSolid(g) {
+  if (g.z) return solidFor(g.z);
+  const grid = flOf(g) ? GF[flOf(g)] : G0;
+  const doors = new Set(S.doors.filter(d => d.locked && flOf(d) === flOf(g) && (npcCanOpenDoor(g, d) || npcCanForceDoor(g))).map(d => d.ty * MW + d.tx));
+  return (x, y) => !inMap(x, y) || !grid || SOLID.has(grid[y][x]) && !doors.has(y * MW + x);
+}
 function pathTo(g, x, y) {
-  if (g.z) { g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE), solidFor(g.z)); if (g.path.length) { const last = g.path[g.path.length - 1]; if (rLv(Math.floor(x / TILE), Math.floor(y / TILE)) === g.z) { last.x = x; last.y = y; } } return; }
-  g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
-  if(!g.path.length&&!['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state)){
-    const doors=new Set(S.doors.filter(d=>flOf(d)===flOf(g)&&npcCanOpenDoor(g,d)).map(d=>d.ty*MW+d.tx));
-    g.path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(x/TILE),Math.floor(y/TILE),(tx,ty)=>solidAt(tx,ty)&&!doors.has(ty*MW+tx));
-  }
-  // 쫓거나 뒤지는 중인데 길이 막혔으면 가까운 잠긴 문을 부수고 연다
-  if (!g.path.length && dist(g.x, g.y, x, y) > 60 && ['ALERT', 'SEARCH', 'CHECK', 'BODY', 'SUSPICIOUS'].includes(g.state)) {
-    const d = S.doors.filter(d => d.locked && flOf(d)===flOf(g)).sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y))[0];
-    if (d && dist(d.x, d.y, g.x, g.y) < 360) {
-      setDoor(d, false); play('thud', 0.6 * proxVol(g)); noise(d.x, d.y, 160, 'door', flOf(g));
-      if (dist(d.x, d.y, S.player.x, S.player.y) < 700) toast('자경대원이 잠긴 문을 부수고 열었다', 2.2, 'warn');
-      g.path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(x / TILE), Math.floor(y / TILE));
-    }
-  }
-  if(!g.path.length&&Math.floor(g.x/TILE)===Math.floor(x/TILE)&&Math.floor(g.y/TILE)===Math.floor(y/TILE)&&dist(g.x,g.y,x,y)>6&&!solidAt(Math.floor(x/TILE),Math.floor(y/TILE)))g.path=[{x,y}];
-  g.pathGoal={x,y};g.pathFailedAt=S.t;
-  if (g.path.length && !solidAt(Math.floor(x / TILE), Math.floor(y / TILE))) { const last = g.path[g.path.length - 1]; last.x = x; last.y = y; }
+  const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  g.path = astar(sx, sy, tx, ty, sol); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
+  if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
+  if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
 }
 // ---- 높이 단계: 땅(g) · 건물 위층(f층_건물) · 옥상(r구역). 자경대원은 계단·배관·베란다로 단계를 옮겨 쫓는다
 function lvlInit() {
@@ -4158,8 +4153,65 @@ function lvlKey(o) {
 }
 const gSpot = g => ({ fl: flOf(g), z: g.z || 0, x: g.x, y: g.y });
 const pSpot = () => { const P = S.player; return { x: P.x, y: P.y, fl: flOf(P), z: P.wire || P.under || P.vent ? 0 : P.jump ? P.jump.z1 || 0 : P.z || 0 }; };
+// Cached connected walking regions distinguish a room from the street below
+// the same XY. The old level-only BFS chose a nearby pipe behind an indoor wall
+// and never tried the longer, reachable stair chain.
+const NPC_NAV = { state: null, modes: new Map() };
+function npcRegions(g) {
+  if (NPC_NAV.state !== S) { NPC_NAV.state = S; NPC_NAV.modes.clear(); }
+  const mode = [npcCanForceDoor(g), g.hasKey || '', g.fac || ''].join(':');
+  const doors = S.doors.map(d => d.locked ? 1 : 0).join('');
+  let nav = NPC_NAV.modes.get(mode);
+  if (nav && nav.levels === S.lvl && nav.doors === doors && S.t >= nav.t && S.t - nav.t < 1) return nav;
+  nav = { levels: S.lvl, doors, t: S.t, grids: new Map() }; NPC_NAV.modes.set(mode, nav);
+  // Bound capability variants; never retain maps from an earlier mission/save.
+  if (NPC_NAV.modes.size > 8) NPC_NAV.modes.delete(NPC_NAV.modes.keys().next().value);
+  nav.region = spot => {
+    const fl = flOf(spot), z = spot.z || 0, key = z ? 'r' + z : 'f' + fl;
+    let labels = nav.grids.get(key);
+    if (!labels) {
+      labels = new Int32Array(MW * MH).fill(-1); let count = 0;
+      const sol = npcRouteSolid({ ...g, fl, z }), queue = new Int32Array(MW * MH);
+      for (let cell = 0; cell < labels.length; cell++) {
+        const x = cell % MW, y = (cell / MW) | 0; if (labels[cell] >= 0 || sol(x, y)) continue;
+        let head = 0, tail = 1; queue[0] = cell; labels[cell] = count;
+        while (head < tail) {
+          const at = queue[head++], ax = at % MW, ay = (at / MW) | 0;
+          for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+            const nx = ax + dx, ny = ay + dy, ni = ny * MW + nx;
+            if (inMap(nx, ny) && labels[ni] < 0 && !sol(nx, ny)) { labels[ni] = count; queue[tail++] = ni; }
+          }
+        }
+        count++;
+      }
+      nav.grids.set(key, labels);
+    }
+    const tx = Math.floor(spot.x / TILE), ty = Math.floor(spot.y / TILE);
+    return inMap(tx, ty) && labels[ty * MW + tx] >= 0 ? key + ':' + labels[ty * MW + tx] : null;
+  };
+  return nav;
+}
+function nextGuardHop(g, target) {
+  const nav = npcRegions(g), from = nav.region(g), to = nav.region(target);
+  if (!from || !to || from === to) return null;
+  const queue = [{ key: from, cost: 0, at: g, first: null }], best = new Map([[from, 0]]);
+  while (queue.length) {
+    queue.sort((a, b) => a.cost - b.cost); const node = queue.shift();
+    if (node.cost !== best.get(node.key)) continue;
+    if (node.key === to) return node.first;
+    for (const e of S.lvl.ends) for (const [a, b] of [[e.A, e.B], [e.B, e.A]]) {
+      if (nav.region(a) !== node.key) continue;
+      const key = nav.region(b); if (!key) continue;
+      const cost = node.cost + dist(node.at.x, node.at.y, a.x, a.y) / 140 + (['stair','fstair'].includes(e.l.kind) ? 1 : 6);
+      if (cost >= (best.get(key) ?? Infinity)) continue;
+      best.set(key, cost); queue.push({ key, cost, at: b, first: node.first || { e, from: a, to: b } });
+    }
+  }
+  return null;
+}
 // 다음에 탈 사다리 (가장 적게 갈아타는 길의 첫 칸, 같은 연결이면 가까운 것)
-function nextHop(g, fromK, toK) {
+function nextHop(g, fromK, toK, target) {
+  if (target && g !== S.player) return nextGuardHop(g, target);
   const E = S.lvl.ends, prev = { [fromK]: null }, q = [fromK];
   while (q.length) {
     const k = q.shift(); if (k === toK) break;
@@ -4178,8 +4230,8 @@ function routeTo(g, t) {
   if (g.civ || g.dog || t.fl == null) { pathTo(g, t.x, t.y); return; }
   const gk = lvlKey(gSpot(g)), tk = lvlKey(t);
   if (gk === tk) { pathTo(g, t.x, t.y); return; }
-  const h = nextHop(g, gk, tk);
-  if (!h) { pathTo(g, t.x, t.y); return; }
+  const h = nextHop(g, gk, tk, t);
+  if (!h) { g.path = []; g.pathGoal = null; return; }
   g.hop = h; pathTo(g, h.from.x, h.from.y);
 }
 // 사다리 입구에 닿았으면 실제로 올라타(내려가) 움직인다. 올라타면 true
@@ -4285,12 +4337,42 @@ function winSee(g, pv) {
   }
   return best;
 }
-function canSee(g, x, y, light, hidden, sneak, elev) {
+// Roof sight uses the height of the ray at each crossed tile. Ignoring every
+// building wall made a street lookout see the middle of a roof through its slab.
+function roofSightRange(g, x, y, z, sneak) {
+  const gz = g.z || 0, dx = x - g.x, dy = y - g.y;
+  const distance = Math.hypot(dx, dy), h0 = gz + .65, h1 = z + (sneak ? .28 : .65);
+  let tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), t = 0;
+  const sx = dx > 0 ? 1 : -1, sy = dy > 0 ? 1 : -1;
+  const stepX = dx ? Math.abs(TILE / dx) : Infinity, stepY = dy ? Math.abs(TILE / dy) : Infinity;
+  let nextX = dx ? ((tx + (dx > 0 ? 1 : 0)) * TILE - g.x) / dx : Infinity;
+  let nextY = dy ? ((ty + (dy > 0 ? 1 : 0)) * TILE - g.y) / dy : Infinity;
+  for (let i = 0; i < MW + MH + 2; i++) {
+    if (!inMap(tx, ty)) return t * distance;
+    const end = Math.min(1, nextX, nextY), roof = rLv(tx, ty);
+    const low = Math.min(h0 + (h1 - h0) * t, h0 + (h1 - h0) * end);
+    const obstruction = roof > 0 ? roof + (robAt(tx, ty) ? 1 : 0) : OPAQUE.has(G0[ty][tx]) ? 1 : 0;
+    if (obstruction && low < obstruction - .001) return t * distance;
+    if (end >= 1) return distance;
+    t = end;
+    if (nextX < nextY) { tx += sx; nextX += stepX; }
+    else { ty += sy; nextY += stepY; }
+  }
+  return 0;
+}
+function sightLine(g, x, y, elev, sneak, targetFloor = flOf(g)) {
+  if (flOf(g) !== targetFloor) return false; // floors/ceilings are opaque; winSee is the explicit window exception
+  if (elev || g.z) return roofSightRange(g, x, y, elev || 0, sneak) >= dist(g.x, g.y, x, y) - 1;
+  const L0 = CUR_F; setLayer(flOf(g));
+  const visible = los(g.x, g.y, x, y); setLayer(L0); return visible;
+}
+function canSee(g, x, y, light, hidden, sneak, elev, targetFloor = flOf(g)) {
+  if (targetFloor !== flOf(g)) return 0;
   // 높이: 옥상 밑(건물 안)에서는 옥상 위를 못 보고, 옥상 위에서는 옥상 밑을 못 본다
   const gz = g.z || 0; elev = elev || 0;
   if (elev > gz && !gz && roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE))) return 0;
   if (gz && elev < gz && !elev && roofAt(Math.floor(x / TILE), Math.floor(y / TILE))) return 0;
-  const ign = elev || gz; elev = elev > gz ? elev - gz : 0;
+  const targetZ = elev; elev = elev > gz ? elev - gz : 0;
   const d = dist(g.x, g.y, x, y);
   const r = guardRanges(g);
   const watch = g.lookout && elev;  // 망꾼: 옥상 위 사람은 하늘을 배경으로 실루엣이 드러난다
@@ -4302,7 +4384,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
   if (d > eff) return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34) || (!sneak && !hidden && S.player.mode === 'run' && S.player.moving && d < 72 && Math.abs(x - S.player.x) + Math.abs(y - S.player.y) < 2));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;
-  if (!los(g.x, g.y, x, y, ign)) return 0;
+  if (!sightLine(g, x, y, targetZ, sneak, targetFloor)) return 0;
   // 쉐도우 택틱스식 줄무늬 구역: 웅크리면 시야 바깥쪽 띠에서 보이지 않는다 — 어두운 곳은 바깥 45%, 밝은 곳은 바깥 20%만 (밝은 데서 늘 웅크리는 게 정답이 되지 않게)
   if (sneak && !watch && g.state !== 'ALERT' && d > eff * (light < 0.5 ? 0.55 : 0.8)) return 0;
   // 코만도스식 낮은 엄폐: 모래주머니 바로 뒤에서 웅크리면 가려진다
@@ -4313,7 +4395,7 @@ function canSee(g, x, y, light, hidden, sneak, elev) {
 function exposure() {
   const P = S.player;
   if (P.hide || P.under || P.vent || P.ledge) return 0;
-  if (S.guards.some(g => g.seen && g.state === 'ALERT' && !g.civ && flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0))) return 2;
+  if (S.guards.some(g => g.seen && g.state === 'ALERT' && !g.civ && (flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) || g.sightFl === flOf(P) && g.sightZ === (P.z || 0) && S.t - g.sightAt >= 0 && S.t - g.sightAt <= .12))) return 2;
   const pv = (P.trav && P.trav.base) || P, sneak = P.cover ? 2 : P.mode === 'sneak' && !P.trav, elev = P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.climb || g.doomed) continue;
@@ -4474,7 +4556,7 @@ function updateCiv(g, dt) {
         else if (S.t - g.tresT > 3) { g.meter = 0; if (!startReport(g, P.x, P.y, null, null, 'trespass')) g.tresT = S.t; return; }
       } }
     else g.meter = Math.max(0, g.meter - dt * 0.25);
-    for (const c of S.corpses) { if (c.stashed || c.carried || c.hidden || c.civSeen || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue; if (canSee(g, c.x, c.y, Math.max(0.45, c.light), false, false, false) > 0) { c.civSeen = true; if (c.accident) { setIcon(g, '!?'); continue; } if (c.byNpc) { civPanic(g, c.x, c.y, 5); return; } civScream(g, c.x, c.y, c); return; } }
+    for (const c of S.corpses) { if (c.stashed || c.carried || c.hidden || c.civSeen || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue; if (canSee(g, c.x, c.y, Math.max(0.45, c.light), false, false, c.z || 0, flOf(c)) > 0) { c.civSeen = true; if (c.accident) { setIcon(g, '!?'); continue; } if (c.byNpc) { civPanic(g, c.x, c.y, 5); return; } civScream(g, c.x, c.y, c); return; } }
     if (g.seen && g.chat) endChat(g);
     if (!g.seen && g.chat) { const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.path = null; if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 220) endChat(g); }
     else if (!g.seen) {
@@ -4582,7 +4664,7 @@ function updateGuard(g, dt) {
   if (g.state !== 'ALERT' && g.state !== 'BODY' && g.state !== 'FLEE' && !g.target && !STAGE.tutorial) {  // 연습에서는 시체를 찾지 않는다 (시키는 대로 했는데 수색이 시작되지 않게)
     for (const c of S.corpses) {
       if (c.hideT>S.t || (c.hidden && !g.dog) || c.discovered || c.carried || c.stashed || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue;
-      if (canSee(g, c.x, c.y, c.light, false, false, false) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c) || !claimBodyExam(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
+      if (canSee(g, c.x, c.y, c.light, false, false, c.z || 0, flOf(c)) > 0 || (g.dog && dist(g.x, g.y, c.x, c.y) < 90)) { if (facBody(g, c) || !claimBodyExam(g, c)) continue; if (g.dog) { play('bark', 0.5 * proxVol(g)); noise(g.x, g.y, 260, 'bark', flOf(g)); } releaseSearchJob(g); g.state = 'BODY'; g.body = c; g.path = null; setIcon(g, '!?'); play('question', 0.5); break; }
     }
   }
 
@@ -4737,8 +4819,8 @@ function updateGuard(g, dt) {
       g.atkCd = Math.max(0, (g.atkCd || 0) - dt);
       if (g.atkT > 0) {
         g.atkT -= dt; if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x);
-        if (g.atkT <= 0) { g.swingT = 0.2; g.atkCd = 1.1; if (sameF && !P.hide && !P.under && !P.vent && (P.z || 0) === (g.z || 0) && !P.jump && !P.wire && !P.trav && dist(g.x, g.y, P.x, P.y) < 54 && los(g.x, g.y, P.x, P.y)) hurtPlayer(g, g.dog ? '들개에게 물렸다.' : g.police ? '경찰 곤봉에 맞았다.' : '자경대원의 칼에 베였다.'); else play('throw', 0.4 * proxVol(g)); }
-      } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && los(g.x, g.y, P.x, P.y)) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
+        if (g.atkT <= 0) { g.swingT = 0.2; g.atkCd = 1.1; if (sameF && !P.hide && !P.under && !P.vent && (P.z || 0) === (g.z || 0) && !P.jump && !P.wire && !P.trav && dist(g.x, g.y, P.x, P.y) < 54 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) hurtPlayer(g, g.dog ? '들개에게 물렸다.' : g.police ? '경찰 곤봉에 맞았다.' : '자경대원의 칼에 베였다.'); else play('throw', 0.4 * proxVol(g)); }
+      } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
       if (g.seen && P.z > (g.z || 0) && !roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) && dist(g.x, g.y, P.x, P.y) < (g.lookout ? 260 : 130) && (g.shootT = (g.shootT || 0) + dt) > 2.2) { g.shootT = 0; play('kunai', 0.5); hurtPlayer(null, g.lookout ? '옥상 위에서 석궁 화살에 맞았다.' : ('옥상 위로 던진 병에 맞았다.')); if (S.over) return; }
       if (P.hide && P.hide.spotted && dist(g.x, g.y, P.hide.x, P.hide.y) < 60) { P.hide.spotted = false; dragOut(g, P.hide.type === 'well' ? '숨는 모습을 들켜 맨홀에서 끌려 나왔다.' : '숨는 모습을 들켜 수거함에서 끌려 나왔다.'); if (S.over) return; }
       if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
@@ -4887,6 +4969,12 @@ function drawSpeech() {
     const xs=[cx,clamp(g.x-w-26*k,vx0,vx1-w),clamp(g.x+26*k,vx0,vx1-w)];
     const ys=[above,above-h-12*k,g.y+26*k,clamp(above,vy0,vy1-h),g.y+50*k,...Array.from({length:12},(_,i)=>g.y+(72+i*18)*k)];
     for(const y of ys){if(y<vy0||y+h>vy1)continue;for(const x of xs){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
+    // A short landscape viewport can leave no room immediately above/below an
+    // actor. Preserve useful reports and alert barks in a nearby free column.
+    if(!at&&speechPriority(g,P)>=60){
+      const sides=[clamp(g.x-w-54*k,vx0,vx1-w),clamp(g.x+54*k,vx0,vx1-w)];
+      for(let y=vy0;y+h<=vy1;y+=12*k){for(const x of sides){const r=[x,y,x+w,y+h];if(!placed.some(p=>hit(r,p))){at=r;break;}}if(at)break;}
+    }
     if(!at)continue;
     const [x,y]=at;
     placed.push(at);SPEECH_R.push({x,y,w,h,speaker:g,text:g.say});
@@ -4965,7 +5053,7 @@ function updateGun(g, dt, sameF) {
   if (g.aim >= GUN_AIM) {
     g.aim = 0; g.gunCd = GUN_CD; sfx('gun'); noise(g.x, g.y, 520, 'shot', flOf(g)); S.shakeT = Math.max(S.shakeT || 0, 0.12);
     S.fx.push({ k: 'muzzle', x: g.x + Math.cos(g.a) * 18, y: g.y + Math.sin(g.a) * 18, t: 0 });
-    if (los(g.x, g.y, P.x, P.y) && canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z) > 0) hurtPlayer(null, '총에 맞았다.');
+    if (canSee(g, P.x, P.y, Math.max(0.4, P.light), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) hurtPlayer(null, '총에 맞았다.');
     else toast('총알이 빗나갔다', 1.2);
   }
   return true;
@@ -5156,11 +5244,10 @@ function releaseSearchJob(g) {
 }
 // 첫 계단 입구까지 실제로 갈 수 있는 사람만 배정한다. 잠긴 문은 접근한 뒤 연다.
 function searchLeg(g, at) {
-  const fk = lvlKey(gSpot(g)), tk = lvlKey(at), hop = fk === tk ? null : nextHop(g, fk, tk);
+  const fk = lvlKey(gSpot(g)), tk = lvlKey(at), hop = fk === tk ? null : nextHop(g, fk, tk, at);
   if (fk !== tk && !hop) return null;
   const target = hop ? hop.from : at, f = flOf(g), L0 = CUR_F; setLayer(f);
-  const doors = new Set(!f && !g.z ? S.doors.filter(d => d.locked).map(d => d.ty * MW + d.tx) : []);
-  const sol = g.z ? solidFor(g.z) : (x, y) => solidAt(x, y) && !doors.has(y * MW + x);
+  const sol = npcRouteSolid(g);
   const path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(target.x / TILE), Math.floor(target.y / TILE), sol);
   setLayer(L0);
   if (!path.length && dist(g.x, g.y, target.x, target.y) > 28) return null;
@@ -5170,10 +5257,10 @@ function searchLeg(g, at) {
 function takeSearchJob(g, inc) {
   if (!inc || inc.until < S.t) return false;
   const from = gSpot(g), fk = lvlKey(from);
-  const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at))));
-  // Sweep nearby rooms and hiding places before sending the same guard down the stairs again.
+  const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at), j.at)));
+  // A real sighting is checked first, even upstairs; then sweep nearby rooms and hiding places.
   // Only incident jobs and the guard's own floor contribute; the hidden player is never queried.
-  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650;
+  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0);
   jobs.sort((a,b)=>cost(a)-cost(b));
   let job, leg;
   for (const j of jobs) { const p = searchLeg(g, j.at); if (p) { job = j; leg = p; break; } }
@@ -5228,8 +5315,8 @@ function updateBuildingSearch(g, dt) {
       return;
     }
     if ((ref.repath -= dt) <= 0 || !g.path) { const leg = searchLeg(g, job.at); g.path = leg ? leg.path : []; g.hop = leg && leg.hop; ref.repath = .8; }
-    const next = g.path && g.path[0], doorIndex = !flOf(g) && !g.z && next ? S.doors.findIndex(d => d.locked && d.tx === Math.floor(next.x / TILE) && d.ty === Math.floor(next.y / TILE)) : -1;
-    if (doorIndex >= 0 && dist(g.x, g.y, next.x, next.y) < 65) { ref.door = { index: doorIndex, t: 1.1 }; return; }
+    const next = g.path && g.path[0], doorIndex = !g.z && next ? S.doors.findIndex(d => d.locked && flOf(d) === flOf(g) && d.tx === Math.floor(next.x / TILE) && d.ty === Math.floor(next.y / TILE)) : -1;
+    if (doorIndex >= 0 && dist(g.x, g.y, next.x, next.y) < 44) { ref.door = { index: doorIndex, t: npcCanOpenDoor(g, S.doors[doorIndex]) ? .36 : 1.1 }; return; }
     const arrived = moveAlong(g, SPD.gSusp * spdMul(), dt);
     if (hopClimb(g, arrived)) return;
     if (lvlKey(gSpot(g)) === lvlKey(job.at) && dist(g.x, g.y, job.at.x, job.at.y) < 28) { ref.inspect = job.kind === 'entrance' ? 5 : 2.4; g.path = null; g.lookT = null; g.waitBase2 = g.a;
@@ -7193,7 +7280,7 @@ function cityUpdate(dt) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
     const seen = cops.some(g => g.state === 'ALERT' && g.seen);
     if (seen) { S.wantLost = 0; for (const g of cops) copChase(g); }
-    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), false, false, P.z) > 0) copChase(g); }
+    else { S.wantLost += dt; for (const g of cops) if (g.state !== 'ALERT' && g.state !== 'DEAD' && !P.hide && !P.under && !P.vent && canSee(g, P.x, P.y, Math.max(0.4, P.light || 0), P.hidden, P.mode === 'sneak', P.z, flOf(P)) > 0) copChase(g); }
     const need = WANT_COPS[S.wanted];
     if (cops.length < need && (S.copT -= dt) <= 0) { S.copT = 2.2; spawnCop(); }
     if (S.wantLost > 10 + S.wanted * 3) { S.wanted--; S.wantLost = 0; toast(S.wanted ? `수배 ${'★'.repeat(S.wanted)} — 경찰이 놓쳤다` : '수배가 풀렸다', 2.2);
@@ -9170,7 +9257,7 @@ function updateCorpseRisk(dt) {
   for (const c of S.corpses) {
     c.risk = false; if (c.stashed || c.carried || c.discovered || c.hidden || c.accident) continue;
     for (const g of S.guards) { if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) !== flOf(c) || (g.z || 0) !== (c.z || 0) || dist(g.x, g.y, c.x, c.y) > 520) continue;
-      const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, false) > 0) { c.risk = true; break; } }
+      const gg = Object.create(g); gg.a = Math.atan2(c.y - g.y, c.x - g.x); if (canSee(gg, c.x, c.y, c.light, false, false, c.z || 0, flOf(c)) > 0) { c.risk = true; break; } }
   }
 }
 function kpBeep(ok) { if (!AC || muted) return; const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? 'sine' : 'square'; o.frequency.value = ok ? 1320 : 220; g.gain.setValueAtTime(0.08, t); g.gain.linearRampToValueAtTime(0, t + (ok ? 0.12 : 0.35)); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4); }
@@ -10417,7 +10504,7 @@ function guardCone(g, fov, rg) {
   const N = detail?24:12, STP = detail?12:18, rays = [], crouchK = (S.player.cover && flOf(g) === flOf(S.player) ? COVER_HIDE : 1), el = g.elite ? 1.1 : 1, L0 = CUR_F;
   setLayer(flOf(g));
   for (let i = 0; i <= N; i++) {
-    const a = g.a - fov + (2 * fov) * i / N, w = castRay(g.x, g.y, a, rg.lit * el, g.z || 0), ca = Math.cos(a), sa = Math.sin(a), lv = [];
+    const a = g.a - fov + (2 * fov) * i / N, ca = Math.cos(a), sa = Math.sin(a), w = g.z ? roofSightRange(g, g.x + ca * rg.lit * el, g.y + sa * rg.lit * el, g.z, false) : castRay(g.x, g.y, a, rg.lit * el), lv = [];
     for (let d = STP / 2; d < w; d += STP) { const L = lightC(g.x + ca * d, g.y + sa * d), eff = (rg.dark + (rg.lit - rg.dark) * L) * el; lv.push(d < 24 || d <= eff * crouchK * (g.state === 'ALERT' ? 1 : L < 0.5 ? 0.55 : 0.8) ? 2 : d <= eff ? 1 : 0); }  // 웅크려도 보이는 안쪽: 어두운 곳 55%, 밝은 곳 80% (canSee와 같게)
     rays.push({ a, ra: a - g.a, w, lv });
   }
@@ -10945,6 +11032,8 @@ function robBuild() {
     }
     if (!ROB_SOLID_DIM[p.t]) return; const [cw, cd] = ROB_SOLID_DIM[p.t]; for (let y = p.y; y < p.y + cd; y++) for (let x = p.x; x < p.x + cw; x++) if (inMap(x, y)) { ROB[y * MW + x] = 1; n++; } }));
   if (!n) ROB = null;
+  // Kit loading can move a roof stair landing after the first goal/path query.
+  if (S) S.lvl = null;
   if (S && S.hides) S.hides = S.hides.filter(h => h.type !== 'okt');
 }
 const ROB_SOLID_DIM = { tank: [1, 1] };
@@ -13100,7 +13189,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
-    baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {

@@ -1,0 +1,97 @@
+=== Initial core suite ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.016s
+
+OK
+PASS sprite source ownership, deduplication, late-load discard, release, failure backoff and retry
+도달 검사: 통과
+통과 tests/rev/r3.py (8초)
+통과 tests/rev/t_access_evidence.py (18초)
+통과 tests/rev/t_ai_evidence.py (11초)
+통과 tests/rev/t_btn4.py (33초)
+통과 tests/rev/t_building_search.py (14초)
+실패 tests/rev/t_camera_presentation.py (12초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_change.py (14초)
+통과 tests/rev/t_choice.py (9초)
+통과 tests/rev/t_city.py (30초)
+통과 tests/rev/t_combat_policy.py (74초)
+통과 tests/rev/t_contract_density.py (9초)
+통과 tests/rev/t_copy_scenarios.py (12초)
+통과 tests/rev/t_cqc.py (24초)
+통과 tests/rev/t_disguise_ai.py (21초)
+통과 tests/rev/t_environment_targets.py (22초)
+통과 tests/rev/t_fac.py (22초)
+통과 tests/rev/t_hanging_controls.py (30초)
+통과 tests/rev/t_height_cues.py (9초)
+통과 tests/rev/t_instig.py (22초)
+통과 tests/rev/t_interaction_flow.py (39초)
+통과 tests/rev/t_ko.py (24초)
+통과 tests/rev/t_m1x.py (13초)
+통과 tests/rev/t_mission_flow.py (57초)
+통과 tests/rev/t_mission_progress.py (9초)
+통과 tests/rev/t_multilevel_pursuit.py (10초)
+통과 tests/rev/t_patrol_motion.py (5초)
+통과 tests/rev/t_rel.py (47초)
+통과 tests/rev/t_roof_routes.py (14초)
+통과 tests/rev/t_scene_layers.py (12초)
+통과 tests/rev/t_sprite_ownership.py (12초)
+통과 tests/rev/t_stair_geometry.py (8초)
+통과 tests/rev/t_target_body.py (6초)
+통과 tests/rev/t_tut.py (55초)
+통과 tests/rev/t_ui2.py (11초)
+통과 tests/rev/t_v33.py (21초)
+통과 tests/rev/t_world_alignment.py (14초)
+통과 tests/rev/t_zone.py (18초)
+통과 tests/mis/tm1.py (71초)
+
+결과: 실패 tests/rev/t_camera_presentation.py (로그: build/test_logs/)
+
+=== Baseline v142 camera fixture (same failure) ===
+PASS 390 844 {'cases': 36, 'speechAboveBuildings': True}
+Traceback (most recent call last):
+  File "/tmp/v143-camera-baseline.py", line 46, in <module>
+    asyncio.run(main())
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/tmp/v143-camera-baseline.py", line 13, in main
+    result=await pg.evaluate('''({touch})=>{
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/async_api/_generated.py", line 9389, in evaluate
+    await self._impl_obj.evaluate(
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_page.py", line 472, in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_frame.py", line 345, in evaluate
+    await self._channel.send(
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 76, in send
+    return await self._connection.wrap_api_call(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/site-packages/playwright/_impl/_connection.py", line 632, in wrap_api_call
+    raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+playwright._impl._errors.Error: Page.evaluate: Error: speech is obscured by buildings or rendered twice
+    at check (eval at evaluate (:311:30), <anonymous>:2:46)
+    at eval (eval at evaluate (:311:30), <anonymous>:25:5)
+    at UtilityScript.evaluate (<anonymous>:318:18)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+=== Final camera check ===
+PASS 390 844 {'cases': 36, 'speechAboveBuildings': True}
+PASS 844 390 {'cases': 36, 'speechAboveBuildings': True}
+PASS 1280 720 {'cases': 36, 'speechAboveBuildings': True}
+PASS 108 camera boundary cases
+
+=== Final HUD check ===
+PASS HUD systems {'touch': False, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': True, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+PASS HUD systems {'touch': True, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': False, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+
+=== Final combat check ===
+PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: incapacitation precedes separate storage; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors
+PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation
