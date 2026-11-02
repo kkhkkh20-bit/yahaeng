@@ -1,0 +1,401 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "layout": {
+      "objective": {
+        "x": 14,
+        "y": 12,
+        "w": 233.421875,
+        "h": 59.6875
+      },
+      "status": {
+        "x": 1048.125,
+        "y": 12,
+        "w": 157.875,
+        "h": 30.796875
+      },
+      "mini": {
+        "x": 1116,
+        "y": 60,
+        "w": 150,
+        "h": 97.453125
+      },
+      "stealth": {
+        "x": 14,
+        "y": 80,
+        "w": 94.234375,
+        "h": 28
+      },
+      "controls": [
+        {
+          "id": "btnPause",
+          "x": 1222,
+          "y": 8,
+          "w": 48,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnCrouch",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "radius": "0px",
+          "background": "rgb(107, 107, 107)"
+        },
+        {
+          "id": "btnSneak",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "radius": "0px",
+          "background": "rgb(107, 107, 107)"
+        }
+      ]
+    },
+    "searchWarning": true,
+    "danger": true,
+    "objectiveInteraction": true,
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "layout": {
+      "objective": {
+        "x": 10,
+        "y": 8,
+        "w": 308,
+        "h": 52.78125
+      },
+      "status": {
+        "x": 10,
+        "y": 63.78125,
+        "w": 145.40625,
+        "h": 21.390625
+      },
+      "mini": {
+        "x": 296,
+        "y": 93,
+        "w": 84,
+        "h": 54.875
+      },
+      "stealth": {
+        "x": 10,
+        "y": 93,
+        "w": 94.234375,
+        "h": 28
+      },
+      "controls": [
+        {
+          "id": "btnPause",
+          "x": 332,
+          "y": 8,
+          "w": 48,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnCrouch",
+          "x": 192,
+          "y": 602,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnSneak",
+          "x": 292,
+          "y": 602,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnTool",
+          "x": 292,
+          "y": 710,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnToolNext",
+          "x": 292,
+          "y": 654,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnGrab",
+          "x": 192,
+          "y": 710,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnCarry",
+          "x": 192,
+          "y": 772,
+          "w": 88,
+          "h": 62,
+          "radius": "3px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnAct",
+          "x": 292,
+          "y": 772,
+          "w": 88,
+          "h": 62,
+          "radius": "3px",
+          "background": "rgba(30, 40, 28, 0.95)"
+        }
+      ]
+    },
+    "searchWarning": true,
+    "danger": true,
+    "objectiveInteraction": true,
+    "errors": []
+  },
+  {
+    "viewport": [
+      375,
+      620
+    ],
+    "touch": true,
+    "layout": {
+      "objective": {
+        "x": 10,
+        "y": 8,
+        "w": 293,
+        "h": 52.78125
+      },
+      "status": {
+        "x": 10,
+        "y": 63.78125,
+        "w": 145.40625,
+        "h": 21.390625
+      },
+      "mini": {
+        "x": 281,
+        "y": 93,
+        "w": 84,
+        "h": 54.875
+      },
+      "stealth": {
+        "x": 10,
+        "y": 93,
+        "w": 94.234375,
+        "h": 28
+      },
+      "controls": [
+        {
+          "id": "btnPause",
+          "x": 317,
+          "y": 8,
+          "w": 48,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnCrouch",
+          "x": 177,
+          "y": 378,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnSneak",
+          "x": 277,
+          "y": 378,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnTool",
+          "x": 277,
+          "y": 486,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnToolNext",
+          "x": 277,
+          "y": 430,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnGrab",
+          "x": 177,
+          "y": 486,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnCarry",
+          "x": 177,
+          "y": 548,
+          "w": 88,
+          "h": 62,
+          "radius": "3px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnAct",
+          "x": 277,
+          "y": 548,
+          "w": 88,
+          "h": 62,
+          "radius": "3px",
+          "background": "rgba(30, 40, 28, 0.95)"
+        }
+      ]
+    },
+    "searchWarning": true,
+    "danger": true,
+    "objectiveInteraction": true,
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "layout": {
+      "objective": {
+        "x": 14,
+        "y": 12,
+        "w": 480,
+        "h": 56.78125
+      },
+      "status": {
+        "x": 14,
+        "y": 72.78125,
+        "w": 157.875,
+        "h": 26.796875
+      },
+      "mini": {
+        "x": 740,
+        "y": 62,
+        "w": 90,
+        "h": 58.75
+      },
+      "stealth": {
+        "x": 14,
+        "y": 108,
+        "w": 94.234375,
+        "h": 28
+      },
+      "controls": [
+        {
+          "id": "btnPause",
+          "x": 786,
+          "y": 8,
+          "w": 48,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnCrouch",
+          "x": 346,
+          "y": 336,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnSneak",
+          "x": 446,
+          "y": 336,
+          "w": 88,
+          "h": 44,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.81)"
+        },
+        {
+          "id": "btnTool",
+          "x": 746,
+          "y": 264,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnToolNext",
+          "x": 646,
+          "y": 264,
+          "w": 88,
+          "h": 48,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnGrab",
+          "x": 556,
+          "y": 324,
+          "w": 78,
+          "h": 56,
+          "radius": "0px",
+          "background": "rgba(19, 26, 21, 0.88)"
+        },
+        {
+          "id": "btnCarry",
+          "x": 646,
+          "y": 324,
+          "w": 88,
+          "h": 56,
+          "radius": "3px",
+          "background": "rgba(19, 26, 21, 0.93)"
+        },
+        {
+          "id": "btnAct",
+          "x": 746,
+          "y": 324,
+          "w": 88,
+          "h": 56,
+          "radius": "3px",
+          "background": "rgba(30, 40, 28, 0.95)"
+        }
+      ]
+    },
+    "searchWarning": true,
+    "danger": true,
+    "objectiveInteraction": true,
+    "errors": []
+  }
+]

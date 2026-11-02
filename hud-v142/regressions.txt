@@ -1,0 +1,76 @@
+=== systems ===
+PASS HUD systems {'touch': False, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': True, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+PASS HUD systems {'touch': True, 'timing': [{'fps': 60, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 30, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 15, 'time': 1.0000000000000013, 'travel': 99.02654016469333}, {'fps': 10, 'time': 1.0000000000000013, 'travel': 99.02654016469333}], 'objectivePause': True, 'movementResumes': True, 'pickerPause': True, 'selectionDoesNotExecute': True, 'selected': '전신주 보안등 끄기', 'keyboardNavigation': False, 'chaseLabelTruthful': True, 'toolContextMatches': True, 'errors': []}
+
+
+=== tutorial ===
+PASS False move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS False light-before {'name': 'light-before', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS False light-switch {'name': 'light-switch', 'stage': 'tB', 'step': 4, 't': 5.916666666666651, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS False light-off {'name': 'light-off', 'stage': 'tB', 'step': 5, 't': 6.349999999999983, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS False dark-crossing {'name': 'dark-crossing', 'stage': 'tB', 'step': 6, 't': 10.650000000000109, 'hp': 3, 'hidden': False, 'at': [7.467753670897518, 12.471680686778937], 'guard': 'PATROL'}
+PASS False bush {'name': 'bush', 'stage': 'tB', 'step': 7, 't': 14.16666666666695, 'hp': 3, 'hidden': True, 'at': [8.46123828589648, 10.520947807465653], 'guard': 'PATROL'}
+PASS False heard {'name': 'heard', 'stage': 'tB', 'step': 8, 't': 14.250000000000288, 'hp': 3, 'hidden': True, 'at': [8.466428440194365, 10.520947807465653], 'guard': 'SUSPICIOUS'}
+PASS False escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 9, 't': 16.000000000000373, 'hp': 3, 'hidden': False, 'at': [6.051482150540642, 10.542432182465653], 'guard': 'NOTICE'}
+PASS False escape {'name': 'escape', 'stage': 'tB', 'step': 9, 't': 19.533333333333506, 'hp': 3, 'hidden': False, 'at': [3.534141741314452, 13.048148995402052], 'guard': 'SUSPICIOUS'}
+PASS False rear {'name': 'rear', 'stage': 't0', 'step': 1, 't': 4.666666666666655, 'hp': 3, 'hidden': False, 'at': [7.8537483729870425, 9.521484375], 'guard': 'PATROL'}
+PASS False grab {'name': 'grab', 'stage': 't0', 'step': 2, 't': 5.13333333333332, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'CAPTIVE'}
+PASS False ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 6.1499999999999835, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False uniform {'name': 'uniform', 'stage': 't0', 'step': 4, 't': 7.033333333333314, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False carry {'name': 'carry', 'stage': 't0', 'step': 5, 't': 7.683333333333311, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS False stash {'name': 'stash', 'stage': 't0', 'step': 6, 't': 12.516666666666868, 'hp': 3, 'hidden': False, 'at': [9.5, 8.041666666666666], 'guard': 'DEAD'}
+PASS False complete {'name': 'complete', 'stage': 't0', 'step': 6, 't': 20.733333333333437, 'hp': 3, 'hidden': False, 'at': [21.220126535158926, 8.270833333333334], 'guard': 'DEAD'}
+PASS False contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
+PASS True move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS True light-before {'name': 'light-before', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS True light-switch {'name': 'light-switch', 'stage': 'tB', 'step': 4, 't': 5.916666666666651, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS True light-off {'name': 'light-off', 'stage': 'tB', 'step': 5, 't': 6.349999999999983, 'hp': 3, 'hidden': False, 'at': [6.055411546901705, 7.875982529790726], 'guard': 'PATROL'}
+PASS True dark-crossing {'name': 'dark-crossing', 'stage': 'tB', 'step': 6, 't': 10.650000000000109, 'hp': 3, 'hidden': False, 'at': [7.467753670897518, 12.471680686778937], 'guard': 'PATROL'}
+PASS True bush {'name': 'bush', 'stage': 'tB', 'step': 7, 't': 14.16666666666695, 'hp': 3, 'hidden': True, 'at': [8.46123828589648, 10.520947807465653], 'guard': 'PATROL'}
+PASS True heard {'name': 'heard', 'stage': 'tB', 'step': 8, 't': 14.250000000000288, 'hp': 3, 'hidden': True, 'at': [8.466428440194365, 10.520947807465653], 'guard': 'SUSPICIOUS'}
+PASS True escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 9, 't': 16.000000000000373, 'hp': 3, 'hidden': False, 'at': [6.051482150540642, 10.542432182465653], 'guard': 'NOTICE'}
+PASS True escape {'name': 'escape', 'stage': 'tB', 'step': 9, 't': 19.533333333333506, 'hp': 3, 'hidden': False, 'at': [3.534141741314452, 13.048148995402052], 'guard': 'SUSPICIOUS'}
+PASS True rear {'name': 'rear', 'stage': 't0', 'step': 1, 't': 4.666666666666655, 'hp': 3, 'hidden': False, 'at': [7.8537483729870425, 9.521484375], 'guard': 'PATROL'}
+PASS True grab {'name': 'grab', 'stage': 't0', 'step': 2, 't': 5.13333333333332, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'CAPTIVE'}
+PASS True ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 6.1499999999999835, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True uniform {'name': 'uniform', 'stage': 't0', 'step': 4, 't': 7.033333333333314, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True carry {'name': 'carry', 'stage': 't0', 'step': 5, 't': 7.683333333333311, 'hp': 3, 'hidden': False, 'at': [7.958632411327154, 9.517997547397526], 'guard': 'DEAD'}
+PASS True stash {'name': 'stash', 'stage': 't0', 'step': 6, 't': 12.516666666666868, 'hp': 3, 'hidden': False, 'at': [9.5, 8.041666666666666], 'guard': 'DEAD'}
+PASS True complete {'name': 'complete', 'stage': 't0', 'step': 6, 't': 20.733333333333437, 'hp': 3, 'hidden': False, 'at': [21.220126535158926, 8.270833333333334], 'guard': 'DEAD'}
+PASS True contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
+
+
+=== combat ===
+PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: incapacitation precedes separate storage; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors
+PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation
+
+
+=== interaction ===
+PASS overlap and pickup phases, facing at contact, door intent, selected corpse and lift lock, selection stability, dress phases, single use effect and permission, target revalidation, distance revalidation, travel continuity, vent transitions, lockpick continuity, wall access, floor access, 15 mission vent roundtrips
+PASS keyboard and mobile touch, busy labels, uninterrupted dress and one completion
+
+
+=== hanging ===
+hanging controls: climb/drop, nearby enemy, both key sets, unsafe landing, outside incapacitation before storage and mobile touch passed
+
+
+=== ui ===
+항상 걷기 처음 False
+대화창 {'modal': True, 'dlgTop': 728, 'dlgBot': 830, 'faceT': 741, 'faceB': 817, 'boxT': 741, 'boxB': 817, 'padVis': 'hidden', 'H': 844, 'line': '상회 장부와 지구대에 있는 사본. 둘 다 가져와.'}
+넘김 상회 장부와 지구대에 있는 사본. 둘 → (끝)
+대화 끝 버튼 visible
+계단 내려가기 fdown 움직임과 시선 최대 어긋남(도) 24
+errs []
+문제 0
+
+
+=== build-tests ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.018s
+
+OK
