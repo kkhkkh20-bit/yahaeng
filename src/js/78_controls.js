@@ -82,7 +82,7 @@ function keyMap(ka, ea, ga) {
   set('kmAct', actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none');
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
-  set('kmX', `${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`, toolCount(input.tool) > 0);
+  set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '웅크림' : '웅크리기', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)

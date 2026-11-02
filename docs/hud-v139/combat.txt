@@ -1,0 +1,2 @@
+PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: incapacitation precedes separate storage; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors
+PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation

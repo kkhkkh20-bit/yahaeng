@@ -124,13 +124,13 @@ function objectiveLines() {
   { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const nav=goalNavigation(gl), m0 = Math.max(1, Math.round(dist(P.x, P.y, nav.x, nav.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0; distance = ` · ${nav.via?'입구 ':''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
-  if (S.exitOpen && !(STAGE.steps && (S.tutI || 0) < STAGE.steps.length)) L.push(['go', '탈출 지점(노란 원)으로']);
+  if (S.exitOpen && STAGE.steps && (S.tutI || 0) >= STAGE.steps.length) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
   if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 초록 경계선 통과 가능`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
-  for (const g of S.guards) if (g.target && !targetEliminated(g)) { const sc = schedText(g); L.push([S.spare ? 'done' : '', targetName(g) + (S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
+  for (const g of S.guards) if (g.target) { const sc = schedText(g),down=targetEliminated(g); L.push([down||S.spare ? 'done' : '', targetName(g) + (down?' — 처치 완료':S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
   if (P.item) L.push(['info', '들고 있는 것: ' + P.item.name + (P.item.permit ? ' (배달하러 온 사람으로 통하는 곳이 있다)' : '')]);
   storyLines().forEach(l => L.push(l));
@@ -161,8 +161,10 @@ function updateHUD(force) {
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
   drawWanted();
-  setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name);
-  { const html = objectiveLines().filter(([c])=>!c.includes('done')).map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  const targets=S.spare?[]:S.guards.filter(g=>g.target),first=!!STAGE.firstGoal,total=targets.length+S.items.length+(first?1:0),done=targets.filter(g=>targetEliminated(g)).length+S.items.filter(i=>i.got).length+(first&&!pendingFirstGoal()?1:0);
+  const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':done===total&&evidencePending()?'기록 삭제 필요':`목표 ${done}/${total}`):'';
+  setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
+  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('done') ? (c.includes('opp') ? '◆' : '●') : c.startsWith('go') ? '▶' : c === 'opp' ? '◇' : '○'} ${t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
@@ -182,7 +184,7 @@ function updateHUD(force) {
   // 경계: 한 칸에 단계 이름 + 남은 시간 (따로 뜨던 경보 칸은 표적 도주 때만)
   hud.alarm.hidden = !fleeNow; hud.alarm.dataset.lv = S.alevel;
   if (fleeNow) setText(hud.alarm, 'al', '표적 도주');
-  { const t = S.alevel === 3 ? '발각 · 숨어 ' + Math.max(0, Math.ceil(ESCAPE_T - S.unseenT)) + '초' : S.alevel ? A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초' : '평온';
+  { const t = S.alevel === 3 ? (S.guards.some(g=>g.state==='ALERT'&&g.seen)?'추격 중 · 시야 끊기':'추적 해제 '+Math.max(0,Math.ceil(ESCAPE_T-S.unseenT))+'초') : S.alevel ? A_NAME[S.alevel] + ' ' + Math.ceil(S.alevelT) + '초' : '평온';
     setText($('alertWord'), 'aw', t); const ab = $('alertBox'); if (ab && ab.dataset.lv !== String(S.alevel)) ab.dataset.lv = S.alevel; }
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   { const hb = $('hpBox'), low = P.hp <= 1 && P.hpMax > 1 ? '1' : '0'; if (hb && hb.dataset.low !== low) hb.dataset.low = low; }  // 마지막 체력: 깜빡인다
@@ -208,6 +210,7 @@ function updateHUD(force) {
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.
   drawMini();updateStealth(lv);
+  document.body.classList.toggle('inspecting',hudInspecting());
   positionEnvPicker();
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 신원 확인 · 발각 + 이유 한 줄
@@ -230,6 +233,7 @@ function updateStealth(lv) {
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
   if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? '무단 침입' : '신원 노출'; }
+  else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴 확인'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = '알려진 옷차림'; }
@@ -237,13 +241,15 @@ function updateStealth(lv) {
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
+  else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if (pub) { s = 'blend'; word = '섞임'; why = disguised() ? '허용된 복장' : '공개 구역'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
     riskTone(paused || S.over || tactical || DLG.modal ? 0 : r);
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
-  box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying);
+  if(s==='hide'&&S.alevel>=2&&(P.hide||P.hidden))why='수색 중 · 은신처도 확인한다';
+  box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
@@ -257,10 +263,11 @@ function syncTools() {
     const t = b.dataset.t; b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b>${input.tool === 'kunai' ? '<small>길게 처치</small>' : ''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label', P.captive ? '심문' : input.tool === 'kunai' ? '다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치' : TOOL_NAME[input.tool]);
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>도구 바꾸기</small>':input.tool === 'kunai' ? '<small>길게 처치</small>' : ''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 도구 바꾸기로 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]);
   hud.tool.classList.toggle('aiming', !!input.aiming);
-  hud.tool.classList.toggle('ready', input.padWhistle ? !(S.whistleT > 0) : input.tool === 'kunai' ? !!kunaiTarget() : toolCount(input.tool) > 0);
+  const ready=!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(input.tool!=='kunai'||!!kunaiTarget()));
+  hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
 
 function endGame(win, reason) { riskTone(0);closeKeypad();clearPlayerInput();closeEnvPicker();

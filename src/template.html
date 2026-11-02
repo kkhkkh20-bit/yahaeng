@@ -846,6 +846,49 @@ body #stealth.quiet small { display: none; }
 body #stealth.quiet .sth-ico { width: 24px; height: 24px; }
 body #stealth.quiet .sth-wing { width: 10px; opacity: .4; }
 body.touch #btnSneak > small, body.touch #btnCarry > small, body.touch #btnAct > small { font-size:11px; line-height:1.1; }
+
+/* Keep mission, personal concealment and the global search legible as different facts. */
+#alertPips { display:none; }
+#alertBox[data-lv="0"] { display:none; }
+#hud .status { gap:5px; flex-wrap:wrap; }
+#hpBox { order:1; }
+#alertBox { order:2; }
+#modeLbl,#pickLbl { order:3; }
+#hud .obj #objTitle { letter-spacing:.015em; }
+#objective .ol.done { text-decoration:line-through; color:#aab3a8; }
+#hud .obj.open::before { content:'목표 확인 · 시간 정지';display:block;font-size:12px;color:#d6bb78;margin:0 0 6px; }
+body.inspecting #stealth,body.inspecting #toasts { visibility:hidden; }
+body.touch .pad #btnToolNext { min-height:44px;bottom:188px; }
+body.touch .sysbtns button { min-height:44px; }
+body.touch .pad #btnCycle { min-height:44px;min-width:72px;right:112px; }
+body.touch #stealth.quiet { left:8px;transform:none; }
+body.touch:has(#stealth.quiet) #mini { top:calc(var(--topb,70px) + 8px);width:88px; }
+body.touch .pad #btnGrab small { font-size:11px;line-height:1.1; }
+body.touch .pad #btnGrab { opacity:1;color:var(--paper); }
+body.touch .pad #btnGrab:not(.ready) { border-color:#626b63;background:rgba(10,16,17,.84); }
+body.touch .pad #btnGrab small { color:#c6c5b5; }
+body.touch .pad #btnCycle #cycleN { font-size:11px;line-height:1.1; }
+@media (max-width:700px) {
+ #hud .status { overflow:visible; }
+ #hud .chip.hpbox,#hud .chip.pipsbox { padding:4px 7px;gap:5px; }
+ #hud .chip.hpbox .clab,#hud .chip.pipsbox .clab { font-size:12px; }
+ #hud #hpPips i { width:15px;height:11px; }
+ #hud #layerLbl { max-width:8em; }
+ #stealth { width:max-content;max-width:calc(100vw - 20px);box-sizing:border-box; }
+ #stealth .sth-txt { min-width:0;white-space:normal; }
+}
+@media (min-width:701px) and (max-height:500px) {
+ body.touch #hud .top { flex-direction:column;align-items:stretch;right:auto;width:min(430px,calc(100vw - 260px));gap:5px; }
+ body.touch #hud .obj { box-sizing:border-box;width:100%;max-width:100%; }
+ body.touch #hud .obj:not(.open) #objective { max-height:none; }
+ body.touch #hud .obj:not(.open) #objective .ol:first-child { white-space:normal;display:block;overflow:visible; }
+ body.touch #hud .sysbtns { position:fixed;top:8px;bottom:auto;right:64px;flex-direction:row; }
+ body.touch #mini,body.touch:has(#stealth.quiet) #mini { width:88px;top:62px; }
+ body.touch #hud .status { justify-content:flex-start; }
+ body.touch #modeLbl,body.touch #pickLbl { display:none; }
+ body.touch #stealth { left:8px;transform:none; }
+}
+
 /* The tutorial reuses the objective area; no modal or dialogue blocks the lesson. */
 body.tutorial-lesson #hud .obj:not(.open) #objective{max-height:none;overflow:visible;}
 body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut{display:block;-webkit-line-clamp:unset;overflow:visible;white-space:normal;}
@@ -878,7 +921,7 @@ body.perception-lesson #btnAct,body.perception-lesson #btnGrab,body.perception-l
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">웅크리기</em></span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em><i class="kx">짧게 기절 · 길게 처치</i></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
+    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
   </div>
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
@@ -891,7 +934,7 @@ body.perception-lesson #btnAct,body.perception-lesson #btnGrab,body.perception-l
       <button class="tool" type="button" data-t="coin"><kbd>3</kbd>담배 <span>2</span></button>
     </div>
     <button id="btnTool" type="button"><b>다트 3</b></button>
-    <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>바꾸기</b></button>
+    <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>도구 바꾸기</b></button>
     <button id="btnWhistle" type="button" title="휘파람 (G)"><b>휘파람</b></button>
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>

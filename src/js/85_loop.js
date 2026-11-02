@@ -3,14 +3,14 @@ let lastT = 0;
 // 프레임 제한: 기본 60fps. 메뉴에서 30으로 낮출 수 있다
 let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
 function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
-// The 3D view can render below 20 fps. Advance elapsed game time in small collision
-// steps instead of discarding everything beyond .05s and slowing all movement.
+// Rendering can dip below 20 fps. Keep elapsed movement and timers, bounded into
+// small collision steps; a long interruption still cannot fast-forward the map.
 function advanceGameFrame(elapsed) {
-  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.05,elapsed));
+  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.12,elapsed));
   if(!total)return;
-  const count=STAGE.artSlice?Math.ceil(total*60):1,step=total/count;
+  const count=STAGE.artSlice?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
   for(let i=0;i<count;i++){
-    if(!running||paused||S.over||tactical||DLG.modal)break;
+    if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
     let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
     if(input.aiming)focusUpdate(dt);else update(dt);
   }
@@ -26,7 +26,8 @@ function frame(t) {
   input.scan=false;document.body.classList.remove('scanning','scanleg');document.body.classList.toggle('playing',!!(running&&S&&!S.over));
   { const wb = document.getElementById('btnWhistle'); if (wb && S) wb.classList.toggle('cool', S.whistleT > 0); }
   const pf = window.__pf, t0 = pf ? performance.now() : 0;  // 성능 측정 (__pf 를 켰을 때만)
-  if (running && !paused && !S.over && !tactical && !DLG.modal) advanceGameFrame(rawDt);
+  if (running && !paused && !S.over && !tactical && !DLG.modal && !hudInspecting()) advanceGameFrame(rawDt);
+  else if(hudInspecting()){riskTone(0);moveCamera(dt);updateHUD();}
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
   else if (S.over) { for (const n of S.noises) n.t += dt; }
@@ -39,7 +40,7 @@ function frame(t) {
 // 시트 색칠·초상 같은 한 번짜리 멈칫(스파이크)으로는 낮추지 않는다. 목표 프레임에 가까워진 상태가 세 구간 유지되면 한 번 되돌린다
 let dprCap = 2, perfDts = [], perfSum = 0, perfBad = 0, perfGood = 0, perfUp = 1;
 function perfWatch(rawDt) {
-  if (!running || paused || !S || S.over || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
+  if (!running || paused || !S || S.over || hudInspecting() || rawDt <= 0 || rawDt > 0.25 || document.hidden) return;
   perfDts.push(rawDt); perfSum += rawDt; if (perfSum < 2) return;
   const med = perfDts.sort((a, b) => a - b)[perfDts.length >> 1], fps = 1 / med; perfDts = []; perfSum = 0;
   const native = Math.min(2, window.devicePixelRatio || 1);

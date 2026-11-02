@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
 // [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적도 같은 기준). 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
-// [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 잡은 뒤: [공격] 톡 기절 / 계속 처치, [행동] 숨을 곳으로 끌고 가기, 가만히 있으면 심문
+// [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 먼저 바깥에서 기절시키고 별도로 운반·은닉한다.
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
 const ATK_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'ventKill', 'pull', 'ledgeKill', 'pushOff', 'counter']);
 const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
@@ -37,7 +37,7 @@ function attackAction() {
   const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
   return { k: 'none', label: '공격' };
 }
-// [행동] 후보: 환경 행동 + (시체 메기·내려놓기·옷 갈아입기·줍기 등 예전 [보조] 쪽 일). 붙잡은 뒤엔 '끌고 가기'
+// [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
 const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody']);
 function secondaryEnvChoices() {
   const out = []; ACT_SKIP.clear();
@@ -134,7 +134,7 @@ function actEnv() {
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
   if (actionBusy()) return;
-  const a = envAction(); if (a.k === 'none') { if(a.blocked)toast('선택한 대상에 손이 닿지 않는다',1.4); return; }
+  const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다':unavailableEnvReason(),1.4,'warn'); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }

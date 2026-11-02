@@ -1,0 +1,34 @@
+{
+  "touch": false,
+  "timing": [
+    {
+      "fps": 60,
+      "time": 1.0000000000000013,
+      "travel": 99.02654016469333
+    },
+    {
+      "fps": 30,
+      "time": 1.0000000000000013,
+      "travel": 99.02654016469333
+    },
+    {
+      "fps": 15,
+      "time": 1.0000000000000013,
+      "travel": 99.02654016469333
+    },
+    {
+      "fps": 10,
+      "time": 1.0000000000000013,
+      "travel": 99.02654016469333
+    }
+  ],
+  "objectivePause": true,
+  "movementResumes": true,
+  "pickerPause": true,
+  "selectionDoesNotExecute": true,
+  "selected": "전신주 보안등 끄기",
+  "keyboardNavigation": true,
+  "chaseLabelTruthful": true,
+  "toolContextMatches": true,
+  "errors": []
+}

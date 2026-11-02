@@ -1,7 +1,15 @@
 // 기존 대상 버튼에서 이름을 보고 고른다. 선택은 실행하지 않으며 실행 시 대상을 다시 확인한다.
 let envPicker = null;
+function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(envPicker||document.querySelector('#hud .obj.open')));}
+function setObjectiveOpen(open){
+  const o=document.querySelector('#hud .obj');if(!o)return;
+  if(open){clearPlayerInput();closeEnvPicker();}
+  o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
+  document.body.classList.toggle('inspecting',hudInspecting());
+}
+function closeHudInspection(){closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a));
-function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false'); }
+function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
 function selectEnvTarget(token) {
   RC = null; const a = envChoices(), i = a.findIndex(v => envToken(v) === token);
   if (i < 0) { closeEnvPicker(); return false; }
@@ -13,9 +21,11 @@ function toggleEnvPicker() {
   if (!S || !running || paused || tactical || S.keypad || S.over || DLG.modal || actionBusy()) return;
   if (envPicker) { closeEnvPicker(); return; }
   const choices = envChoices(); if (!choices.length || (choices.length < 2 && !S.envExplicit)) return;
+  clearPlayerInput();setObjectiveOpen(false);
   const P = S.player; envPicker = {x:P.x,y:P.y,fl:flOf(P),z:P.z||0};
+  document.body.classList.toggle('inspecting',hudInspecting());
   resetHelpTip();const e = $('envPicker'); e.replaceChildren(); e.hidden = false; $('btnCycle').setAttribute('aria-expanded','true');
-  const title = document.createElement('b'); title.textContent = '행동 대상 선택'; e.append(title);
+  const title = document.createElement('b'); title.textContent = '행동 선택 · 시간 정지'; e.append(title);
   const current = envAction();
   for (const a of choices) {
     const b = document.createElement('button'), token = envToken(a); b.type = 'button'; b.textContent = a.label;

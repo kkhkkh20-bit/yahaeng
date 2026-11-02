@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v138): https://kkhkkh20-bit.github.io/yahaeng/?v=138
+- 2D 본편 · 시야와 소리 연습 (v139): https://kkhkkh20-bit.github.io/yahaeng/?v=139
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -31,6 +31,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v139
+
+HUD의 목표·경계·은신 표시를 정리하고 짧은 세로/가로 화면을 맞췄다. 목표·행동 선택 중에는 시간을 멈추고, 도구의 잔량·실행 가능 상태를 맞췄다. 낮은 프레임에서 이동과 타이머까지 느려지던 2D 시간 처리를 고쳤다. [전체 리뷰·검증](docs/HUD_SYSTEMS_V139.md) · [전후 화면](docs/hud-v139/index.html).
 
 ## v138
 

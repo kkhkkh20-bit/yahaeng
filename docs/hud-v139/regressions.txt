@@ -1,0 +1,29 @@
+t_play_clarity
+PASS desktop {'vision': True, 'groupedChoices': True, 'captive': True, 'noAutoCoaching': True, 'contact': True}
+PASS touch {'vision': True, 'groupedChoices': True, 'captive': True, 'noAutoCoaching': True, 'contact': True}
+
+t_environment_targets
+PASS {'poleLights': 8, 'overlap': 'pole/light/door and global fuse', 'legacyAnchors': True}
+PASS actual keyboard and mobile light-switch input
+
+t_interaction_flow
+PASS overlap and pickup phases, facing at contact, door intent, selected corpse and lift lock, selection stability, dress phases, single use effect and permission, target revalidation, distance revalidation, travel continuity, vent transitions, lockpick continuity, wall access, floor access, 15 mission vent roundtrips
+PASS keyboard and mobile touch, busy labels, uninterrupted dress and one completion
+
+t_target_body
+PASS {'rooftopHeight': True, 'drawnOnceAboveRoof': True, 'groundGuardSeparation': True, 'movingObjective': True, 'containerRecovery': True}
+
+t_hide_flow
+PASS PC {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS touch {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS actual keyboard entry, directional exit, subject-specific storage label and delayed storage
+PASS actual touch entry, directional exit, subject-specific storage label and delayed storage
+
+t_feedback_v138
+PASS feedback False {'controlled': True, 'mobile': False, 'passageOpen': True, 'oldCheckpointPassageMigrated': True, 'matchingPropGround': True, 'bushBodyHiddenAfterLowering': True, 'quietKoRadius': 7.199999999999999, 'localReport': {'local': True, 'distant': False, 'otherFloor': False}, 'witnessedLight': {'spoke': True, 'elapsed': 3.2099999999999755, 'atSwitch': 33.90119999999729}, 'unseenLightNoObjection': True, 'cabinetOpenedAndFound': True, 'blockedContainerCheck': True}
+PASS feedback True {'controlled': True, 'mobile': True, 'passageOpen': True, 'oldCheckpointPassageMigrated': True, 'matchingPropGround': True, 'bushBodyHiddenAfterLowering': True, 'quietKoRadius': 7.199999999999999, 'localReport': {'local': True, 'distant': False, 'otherFloor': False}, 'witnessedLight': {'spoke': True, 'elapsed': 3.2099999999999755, 'atSwitch': 33.90119999999729}, 'unseenLightNoObjection': True, 'cabinetOpenedAndFound': True, 'blockedContainerCheck': True}
+
+t_security_response
+PASS security PC ["unseen incidents wait for real rollcall; distinct finite response, VIP detour, pairs and save", "report deduplication, cooling, confirmed accidents and replies", "actual guard and CCTV observations report location without killer identity", "unattended CCTV defers accident assessment until operator returns; known accident answers rollcall", "shorter solo window; escort tightens physically; phone and WC opportunities retained", "missing partner investigates last seen position", "paired patrol still responds to a visible lure", "tutorials unchanged"]
+PASS security mobile ["unseen incidents wait for real rollcall; distinct finite response, VIP detour, pairs and save", "report deduplication, cooling, confirmed accidents and replies", "actual guard and CCTV observations report location without killer identity", "unattended CCTV defers accident assessment until operator returns; known accident answers rollcall", "shorter solo window; escort tightens physically; phone and WC opportunities retained", "missing partner investigates last seen position", "paired patrol still responds to a visible lure", "tutorials unchanged"]
+

@@ -1,0 +1,382 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "topHeight": 58.484375,
+    "objectiveWidth": 274,
+    "calmAlertHidden": true,
+    "title": "의뢰 01 · VIP · 목표 0/2",
+    "searchWarning": true,
+    "exposedHide": true,
+    "emptyTool": true,
+    "completedChecklist": true,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 48,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCrouch",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnSneak",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnMap",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnTool",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnToolNext",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnWhistle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnGrab",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCarry",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnAct",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCycle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "topHeight": 89.484375,
+    "objectiveWidth": 312,
+    "calmAlertHidden": true,
+    "title": "의뢰 01 · VIP · 목표 0/2",
+    "searchWarning": true,
+    "exposedHide": true,
+    "emptyTool": true,
+    "completedChecklist": true,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 48,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCrouch",
+        "w": 52.484375,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnSneak",
+        "w": 52.484375,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnMap",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnTool",
+        "w": 60,
+        "h": 60,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnToolNext",
+        "w": 58,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnWhistle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnGrab",
+        "w": 58,
+        "h": 58,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCarry",
+        "w": 70,
+        "h": 70,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnAct",
+        "w": 96,
+        "h": 96,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCycle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      375,
+      620
+    ],
+    "touch": true,
+    "topHeight": 89.484375,
+    "objectiveWidth": 297,
+    "calmAlertHidden": true,
+    "title": "의뢰 01 · VIP · 목표 0/2",
+    "searchWarning": true,
+    "exposedHide": true,
+    "emptyTool": true,
+    "completedChecklist": true,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 48,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCrouch",
+        "w": 52.484375,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnSneak",
+        "w": 52.484375,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnMap",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnTool",
+        "w": 60,
+        "h": 60,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnToolNext",
+        "w": 58,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnWhistle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnGrab",
+        "w": 58,
+        "h": 58,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCarry",
+        "w": 70,
+        "h": 70,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnAct",
+        "w": 96,
+        "h": 96,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCycle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "topHeight": 94.3125,
+    "objectiveWidth": 426,
+    "calmAlertHidden": true,
+    "title": "의뢰 01 · VIP · 목표 0/2",
+    "searchWarning": true,
+    "exposedHide": true,
+    "emptyTool": true,
+    "completedChecklist": true,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 48,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCrouch",
+        "w": 62.484375,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnSneak",
+        "w": 55.125,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnMap",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnTool",
+        "w": 60,
+        "h": 60,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnToolNext",
+        "w": 58,
+        "h": 44,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnWhistle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnGrab",
+        "w": 58,
+        "h": 58,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCarry",
+        "w": 70,
+        "h": 70,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnAct",
+        "w": 96,
+        "h": 96,
+        "visible": true,
+        "miniOverlap": false
+      },
+      {
+        "id": "btnCycle",
+        "w": 0,
+        "h": 0,
+        "visible": false,
+        "miniOverlap": false
+      }
+    ],
+    "errors": []
+  }
+]
