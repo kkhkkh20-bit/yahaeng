@@ -1,0 +1,20 @@
+[
+  {
+    "base": "file:///workspace/yahaeng/build/preview_city.html",
+    "mobile": false,
+    "version": "v149",
+    "completed": true,
+    "input": "Real movement, automatic bush concealment, tap bush KO, second bush entry, held lethal ambush, exit",
+    "permanentUnlocks": 0,
+    "pageErrors": []
+  },
+  {
+    "base": "file:///workspace/yahaeng/build/preview_city.html",
+    "mobile": true,
+    "version": "v149",
+    "completed": true,
+    "input": "Real movement, automatic bush concealment, tap bush KO, second bush entry, held lethal ambush, exit",
+    "permanentUnlocks": 0,
+    "pageErrors": []
+  }
+]

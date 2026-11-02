@@ -29,6 +29,7 @@ function dropSpot() {
   return [best[0], best[1], P.z - 1];
 }
 function kunaiTarget(weapon=input.tool) {
+  if(weapon!=='blade'&&!abilityOn('dart'))return null;
   const P = S.player; if ((weapon==='blade'?!(P.blades>0):P.kunai<=0) || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
   let best = null, bs = Infinity;
   for (const g of S.guards) {
@@ -76,6 +77,7 @@ function nearVent() {
 }
 // 바닥 환풍구를 지나는 경비를 안쪽으로 끌어들인다
 function ventAmbushTarget() {
+  if(!abilityOn('ambush'))return null;
   const P = S.player; if (!P.vent) return null;
   const v = S.vents.filter(v => !v.roof && dist(P.x, P.y, v.x, v.y) < 34)[0]; if (!v) return null;
   let best = null, bd = 50;

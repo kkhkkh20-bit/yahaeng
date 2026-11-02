@@ -1,4 +1,4 @@
-# 버튼 넷 회귀: [공격] 사람에게만(톡 기절 · 계속 처치) · [행동] 시설·시체(사람이 가까워도 공격으로 안 바뀜) · [붙잡기] 잡고 가만히 = 심문 · 기본 도구 다트
+# 버튼 넷 회귀: [공격] 사람에게만(톡 기절 · 계속 처치) · [행동] 시설·시체(사람이 가까워도 공격으로 안 바뀜) · [붙잡기] 잡고 가만히 = 심문 · 기본 도구 빈 캔 · 다트는 기술 필요
 import asyncio, sys
 from playwright.async_api import async_playwright
 SK = '() => { const g = window.__game; for (let i = 0; i < 30 && g.DLG.modal; i++) g.advanceDialog(); }'
@@ -25,7 +25,7 @@ async def main():
         if r[0] not in ('kill', 'kill2') or '기절' not in (r[1] or '') or r[2] != '처치': bad.append('[공격]이 기절/길게 처치가 아니다 %s' % r)
         if r[3] != 'door': bad.append('사람이 가까워도 [행동]은 문이어야 한다 %s' % r)
         if r[5] != 'grab': bad.append('[붙잡기]가 잡을 수 없다 %s' % r)
-        if r[6] != 'kunai': bad.append('기본 도구가 다트가 아니다 %s' % r)
+        if r[6] != 'stone' or not await pg.evaluate("__game.S.player.kunai===0&&!__game.availableTools().includes('kunai')"): bad.append('배우지 않은 다트가 기본 지급·선택된다 %s' % r)
         # [행동] = 문 (사람 옆이어도 공격하지 않는다)
         st0 = await pg.evaluate('() => { const S = window.__game.S; return S.doors.map(d => d.open ? 1 : 0).join(""); }')
         await pg.keyboard.press('KeyX'); await pg.wait_for_timeout(600)

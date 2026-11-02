@@ -1,0 +1,3 @@
+PASS native 2D {'mobile': False, 'before': [120, 504], 'after': [185.8903921929985, 505.540575], 'version': 'v149', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True}
+PASS native 2D {'mobile': True, 'before': [120, 504], 'after': [188.2657357181959, 505.53135], 'version': 'v149', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True}
+PASS packaged hashes 6 http://127.0.0.1:8001/public/

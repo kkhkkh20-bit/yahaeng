@@ -28,6 +28,7 @@ function actCoin(pt) {
 function actKunai(forced, lethal = false) {
   if (!S || S.over || paused || !running || actionBusy()) return;
   const P = S.player;
+  if(!abilityOn('dart')){toast(abilityLockText('dart'),2);return;}
   if (P.kunai <= 0) { toast('다트가 없다', 1.4); return; }
   const t = forced || kunaiTarget();
   if (!t || t.type !== 'guard' || !S.guards.includes(t.ref) || t.ref.child || t.ref.state === 'DEAD') { toast('조준할 사람이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
@@ -38,6 +39,7 @@ function actKunai(forced, lethal = false) {
   play('kunai', 0.55);
 }
 function kunaiHit(k) {
+  if(k.weapon!=='blade'&&!abilityOn('dart'))return;
   const t = k.tgt;
   if (t.type !== 'guard') return;
   const origin={x:k.x0,y:k.y0,fl:k.fl||0,z:k.z||0},g=t.ref;

@@ -1,4 +1,5 @@
 function startAmbush(g) {
+  if(!abilityOn('ambush'))return false;
   const P = S.player, h = P.hide, tx = h ? h.x : P.x, ty = h ? h.y : P.y;
   if(h&&!hideSpace(h,1))return;
   endChat(g); g.act = null; g.path = null; g.moving = false; g.yank = true; g.icon = '!'; g.iconT = 99;
@@ -13,7 +14,7 @@ function ambWitness(o, A) {
 }
 function updateAmbush(dt) {
   const A = S.amb; if (!A) return; const g = A.g;
-  if (g.state === 'DEAD') { S.amb = null; g.yank = false; return; }
+  if (!abilityOn('ambush')||g.state === 'DEAD') { S.amb = null; g.yank = false; return; }
   if(A.holding&&combatHeld(A.intent?.source))A.held+=dt;else A.holding=false;
   A.t += dt; const f = Math.min(1, A.t / AMB_DUR);
   // 0~0.15 붙잡혀 움찔 · 0.15~0.6 뒤로 끌려감 · 0.6~1 안으로 (그리기에서 줄어들며 사라진다)

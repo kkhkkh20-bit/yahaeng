@@ -10,21 +10,23 @@ const SKILL_TREE=[
  {id:'foliage',branch:'body',name:'풀숲 자세',cost:2,req:['shadow'],row:4,col:2,description:'웅크려 숨은 풀숲에서 사람의 시각 감지 거리가 22% 줄어든다. 개의 후각은 막지 못한다.'},
  {id:'sprint',branch:'body',name:'짧은 질주',cost:2,req:['swiftCrouch'],row:5,col:1,description:'달리기 속도 12% 증가. 달리기 소음과 의심은 그대로다.'},
  {id:'silentHands',branch:'assassin',name:'제압 숙련',cost:1,req:[],row:1,col:0,description:'맨손 기절의 접촉 소음 30% 감소. 목격자와 쓰러진 몸은 그대로 남는다.'},
- {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:2,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
+ {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'풀숲·은신처·엄폐·환풍구에서 끌어당겨 제압하고 가장자리에서 기습한다. 배워야 은폐한 채 공격·붙잡기를 할 수 있다.'},
+ {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:3,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
  {id:'dual',branch:'assassin',name:'쌍암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. B 길게 · 재사용 12초.'},
- {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:3,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
+ {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
  {id:'chain',branch:'assassin',name:'연속 암살',cost:3,req:['dual'],row:3,col:2,description:'첫 적을 처치한 뒤 다음 적에게 직접 이동. B 길게 · 재사용 16초. 들키면 중단.'},
- {id:'reach',branch:'assassin',name:'기습 보폭',cost:2,req:['silentHands'],row:4,col:1,description:'등 뒤 돌진·끌어당기기 거리 20% 증가. 이동 경로가 막히면 사용할 수 없다.'},
+ {id:'reach',branch:'assassin',name:'기습 보폭',cost:2,req:['silentHands'],row:5,col:1,description:'등 뒤 돌진·끌어당기기 거리 20% 증가. 이동 경로가 막히면 사용할 수 없다.'},
  {id:'flow',branch:'assassin',name:'연계 정비',cost:2,req:['chain'],row:4,col:2,description:'쌍암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
- {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:5,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
+ {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:6,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
  {id:'kit',branch:'tools',name:'현장 장비',cost:1,req:[],row:1,col:0,description:'의뢰 시작 시 락픽 1개·빈 캔 2개 추가. 맨손 시작 조건은 유지한다.'},
- {id:'kunai',branch:'tools',name:'쿠나이 운용',cost:1,req:['kit'],row:2,col:1,description:'살상용 쿠나이 2개 지급. 도구로 선택 후 1초 이상 눌렀다 떼어 투척한다.'},
+ {id:'dart',branch:'tools',name:'다트 운용',cost:1,req:['kit'],row:2,col:1,description:'다트를 배워야 조준·발사할 수 있다. 기본 2발 지급. 짧게 눌러 기절, 길게 눌러 처치한다.'},
+ {id:'kunai',branch:'tools',name:'쿠나이 운용',cost:1,req:['kit'],row:3,col:1,description:'살상용 쿠나이 2개 지급. 도구로 선택 후 1초 이상 눌렀다 떼어 투척한다.'},
  {id:'smoke',branch:'tools',name:'연막탄',cost:1,req:['kit'],row:2,col:2,description:'연막탄 1개 지급. 반경 3m·5초 동안 시선을 차단한다. 소리·접촉·개의 후각은 남는다.'},
- {id:'precision',branch:'tools',name:'투척 숙련',cost:2,req:['kunai'],row:3,col:1,description:'다트·쿠나이 사거리 30% 증가. 시작 시 다트·쿠나이 각각 1개 추가.'},
+ {id:'precision',branch:'tools',name:'투척 숙련',cost:2,req:['kunai'],row:4,col:1,description:'다트·쿠나이 사거리 30% 증가. 시작 시 배운 다트·쿠나이 각각 1개 추가.'},
  {id:'smokeMix',branch:'tools',name:'연막 조제',cost:2,req:['smoke'],row:3,col:2,description:'연막 반경 3.5m·지속 8초. 시작 시 연막탄 1개 추가.'},
- {id:'radio',branch:'tools',name:'무전기 역이용',cost:2,req:['kit'],row:4,col:0,description:'쓰러진 경비에게서 무전기를 확보한 뒤 허위 점검 지시로 경비 한 명을 유인한다. 의뢰당 2회·재사용 30초.'},
- {id:'hack',branch:'tools',name:'CCTV 해킹',cost:2,req:['radio'],row:5,col:0,description:'같은 층·약 4m 안에서 CCTV를 겨누고 1.5초 작업해 10초간 정지. 녹화 기록은 남는다. 재사용 25초.'},
- {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:0,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
+ {id:'radio',branch:'tools',name:'무전기 역이용',cost:2,req:['kit'],row:4,col:2,description:'쓰러진 경비에게서 무전기를 확보한 뒤 허위 점검 지시로 경비 한 명을 유인한다. 의뢰당 2회·재사용 30초.'},
+ {id:'hack',branch:'tools',name:'CCTV 해킹',cost:2,req:['radio'],row:5,col:2,description:'같은 층·약 4m 안에서 CCTV를 겨누고 1.5초 작업해 10초간 정지. 녹화 기록은 남는다. 재사용 25초.'},
+ {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
 ];
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
 const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=4;
@@ -48,15 +50,19 @@ function loadSkillTree(){
  return{schema:1,learned};
 }
 function skillOn(id){
- if(!S||STAGE.artSlice||STAGE.tutorial&&!STAGE.skillPractice&&!STAGE.toolPractice)return false;
- return !!S.skills?.[id]||!!S.practiceSkills?.[id]||!!STAGE.skillPractice&&['dual','chain','drop'].includes(id)||!!STAGE.toolPractice&&SKILL_BY_ID[id]?.branch==='tools';
+ if(!S||STAGE.artSlice)return false;
+ if(STAGE.tutorial&&!STAGE.skillPractice&&!STAGE.toolPractice)return !!STAGE.trialSkills?.includes(id)||!!STAGE.trialSkills?.length&&!!S.practiceSkills?.[id];
+ return !!STAGE.trialSkills?.includes(id)||!!S.skills?.[id]||!!S.practiceSkills?.[id]||!!STAGE.skillPractice&&['dual','chain','drop'].includes(id)||!!STAGE.toolPractice&&SKILL_BY_ID[id]?.branch==='tools';
 }
 function syncRuntimeSkills(){
  const previous=S.perks||{};if(!S.skillGrants&&!S.skills&&S.t>0)S.skillGrants={kit:!!(previous.pick||previous.can),precision:!!previous.dart};
+ if(S.skillRules!==149&&S.skillGrants?.precision)S.skillGrants.precisionDart=true;S.skillRules=149;
  const r=loadSkillTree();S.skills=Object.fromEntries(r.learned.map(id=>[id,true]));S.skillStars=totalStars();S.skillGrants=S.skillGrants||{};
  S.perks={sole:skillOn('quietStep'),shadow:skillOn('swiftCrouch'),reach:skillOn('reach'),pick:skillOn('kit'),can:skillOn('kit'),dart:skillOn('precision')};
- if((!STAGE.tutorial&&(!STAGE.bare||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
-  const grants={kit:{picks:1,stones:2},kunai:{blades:2},smoke:{smokes:1},precision:{kunai:1,blades:1},smokeMix:{smokes:1},radio:{radioCharges:2},hack:{hackDevice:1}};
+ if((!STAGE.tutorial&&(!STAGE.bare||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
+  if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
+  if(skillOn('dart')&&skillOn('precision')&&!S.skillGrants.precisionDart){S.player.kunai=(S.player.kunai||0)+1;S.skillGrants.precisionDart=true;}
+  const grants={kit:{picks:1,stones:2},kunai:{blades:2},smoke:{smokes:1},precision:{blades:1},smokeMix:{smokes:1},radio:{radioCharges:2},hack:{hackDevice:1}};
   for(const[id,items]of Object.entries(grants))if(skillOn(id)&&!S.skillGrants[id]){for(const[k,v]of Object.entries(items))S.player[k]=(S.player[k]||0)+v;S.skillGrants[id]=true;}
  }
  S.smokes=S.smokes||[];
@@ -79,3 +85,11 @@ const skillMoveMul=mode=>mode==='run'&&skillOn('sprint')?1.12:1;
 const skillViewMul=()=>skillOn('lookout')?1/1.1:1;
 const skillDetection=(g,light,sneak,d)=>!g.dog&&sneak&&light<.45&&d>=48&&skillOn('shadow')?.85:1;
 const projectileRange=()=>skillOn('precision')?325:250;
+
+// Concealment remains a basic movement state; attacking from it is learned separately.
+const abilityOn=id=>!!STAGE.artSlice||skillOn(id);
+function concealedAttackSource(P=S.player){
+ return !!(P.hide||P.vent||P.under||P.ledge||P.cover||P.hidden||!P.z&&P.mode==='sneak'&&tileAt(P.x,P.y)==='B');
+}
+const concealedMeleeAllowed=(P=S.player)=>!concealedAttackSource(P)||abilityOn('ambush');
+const abilityLockText=id=>(SKILL_BY_ID[id]?.name||'기술')+' 필요 · K / 메뉴의 기술 트리에서 배우기';

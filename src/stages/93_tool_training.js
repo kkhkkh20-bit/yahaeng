@@ -6,7 +6,7 @@ STAGES.push({
  lamps:[[6,7,260,1],[21,11,360,1]],wires:[],roofs:[],bricks:[],cams:[[23,13,0,0]],
  guards:[{kind:'g1',at:[6,9],post:0,still:true,radio:true},{kind:'g1',at:[12,9],post:0,still:true,radio:true},{kind:'g1',at:[27,13],post:0,still:true,radio:false}],
  steps:[
- ['웅크려 등 뒤로 접근 · {공격} 짧게 눌러 기절',S=>S.corpses.some(c=>c.guardId===0&&c.ko),S=>S.guards[0],'무전기 표시가 있는 경비다. 살아 있는 사람에게서 장비를 빼앗을 수는 없다.','attack'],
+ ['다트는 이 연습에서만 임시 지급 · {도구} 짧게 눌러 기절',S=>S.corpses.some(c=>c.guardId===0&&c.ko)&&(S.stats.kunaiUsed||0)>0,S=>S.guards[0],'다트는 본편에서 배워야 쓸 수 있다. 무전기 표시가 있는 경비다. 살아 있는 사람에게서 장비를 빼앗을 수는 없다.','tool'],
  ['도구 바꾸기로 무전기 선택 → {도구} 사용',S=>!!S.player.hasRadio,S=>S.corpses.find(c=>c.guardId===0),'쓰러진 경비 옆에서 사용하면 1초 동안 무전기를 확보한다.','tool'],
  ['무전기로 점검 위치 지시',S=>(S.stats.radioDecoys||0)>0,()=>null,'도구를 다시 사용하면 겨눈 곳으로 무전 담당 한 명이 이동한다. 벽으로 막힌 곳이나 다른 층은 제외된다.','tool'],
  ['연막탄 선택 → {도구} 사용',S=>(S.smokes||[]).length>0,()=>null,'연막은 시선을 가리지만 발소리와 개의 후각은 남는다. 도구를 누른 동안 겨누고 떼면 던진다.','tool'],

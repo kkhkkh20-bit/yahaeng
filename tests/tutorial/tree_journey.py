@@ -2,13 +2,13 @@
 import asyncio,json,sys,os
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v148';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v149';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);results=[]
   for mobile in [False,True]:
    c=await b.new_context(viewport={'width':390 if mobile else 1440,'height':844 if mobile else 900},has_touch=mobile,is_mobile=mobile);q=await c.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!__game');label=(''if REPORT=='journey'else REPORT+'-')+('touch'if mobile else'pc');cdp=await c.new_cdp_session(q)if mobile else None
-   await q.click('#btnLedger');await q.click('#btnSkillsLedger');assert await q.locator('[data-node]').count()==24
+   await q.click('#btnLedger');await q.click('#btnSkillsLedger');assert await q.locator('[data-node]').count()==26
    await q.locator('[data-learn="quietStep"]').click()
    if mobile:await q.locator('[data-branch="tools"]:is(button)').click()
    await q.locator('[data-learn="kit"]').click();await q.locator('[data-learn="smoke"]').click();assert '1P' in await q.locator('#skillSummary').text_content()
@@ -40,8 +40,7 @@ async def main():
    if mobile:await q.tap('#btnCrouch')
    else:await q.keyboard.press('Control')
    await q.evaluate('__tick(.02)');await move_to(272,456)
-   if mobile:await q.tap('#btnAct')
-   else:await q.keyboard.press('z')
+   await tap_tool()
    await q.evaluate('__tick(1.6)');assert await q.evaluate('__game.S.tutI===1'),await q.evaluate('[__game.S.tutI,__game.S.player.x,__game.S.player.y,__game.S.over]')
    await select('radio');await tap_tool();await q.evaluate('__tick(1.1)');assert await q.evaluate('__game.S.player.hasRadio&&__game.S.tutI===2')
    await tap_tool();await q.evaluate('__tick(.02)');assert await q.evaluate('__game.S.stats.radioDecoys===1&&__game.S.tutI===3')
@@ -58,6 +57,6 @@ async def main():
    await q.evaluate('__tick(.6);__render()');assert await q.evaluate('__game.S.tutI===7&&__game.S.guards[2].state==="DEAD"&&!__game.S.over'),await q.evaluate('({step:__game.S.tutI,over:__game.S.over,projectiles:__game.S.kunais,blades:__game.S.player.blades})')
    await q.screenshot(path=str(O/f'kunai-{label}.png'));exit=await q.evaluate('({x:__game.S.exit.x,y:__game.S.exit.y})');await move_to(exit['x'],exit['y']);await q.wait_for_timeout(600);assert await q.locator('#endTitle').text_content()=='연습 끝'
    assert await q.evaluate('__game.totalStars()===0&&__game.loadSkillTree().learned.length===3'),'Practice changes permanent progress';assert not errors,errors
-   results.append({'base':BASE,'version':await q.evaluate('window.__BUILD_VERSION__'),'mobile':mobile,'lesson':'tE','completed':True,'purchases':['quietStep','kit','smoke'],'remainingPoints':1,'actualTools':['radio acquisition','one fake radio instruction','smoke','CCTV hack','held lethal kunai'],'pageErrors':errors});print('PASS',label,flush=True);await c.close()
+   results.append({'base':BASE,'version':await q.evaluate('window.__BUILD_VERSION__'),'mobile':mobile,'lesson':'tE','completed':True,'purchases':['quietStep','kit','smoke'],'remainingPoints':1,'actualTools':['dart KO','radio acquisition','one fake radio instruction','smoke','CCTV hack','held lethal kunai'],'pageErrors':errors});print('PASS',label,flush=True);await c.close()
   (O/(REPORT+'.json')).write_text(json.dumps(results,ensure_ascii=False,indent=2));await b.close()
 asyncio.run(main())

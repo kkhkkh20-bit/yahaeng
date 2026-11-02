@@ -23,7 +23,7 @@ const TUT = {
   wires: [[[20, 11], [27, 11]]],
   roofs: ['cRoofG', 'cRoofA'], bricks: [1, 0],
   keyBld: [1],
-  well: 'manhole', kunai: 2, coins: 2,
+  well: 'manhole', kunai: 0, coins: 2,
   lamps: [[5, 11, 120, 1], [39, 9, 120, 1]],
   guards: [
     { kind: 'g1', at: [8, 9], post: 0, still: true },                       // 0 등 돌린 자경대원 (뒤에서 암살) — 돌아보지 않는다
@@ -57,8 +57,8 @@ STAGES.push(Object.assign({}, TUT, { id: 't0', name: '연습 2 · 잠입 기초'
   mission: '잠입 기초: 걷기·전술 지도·웅크리기·뒤에서 제압·시체 숨기기·엄폐',
   brief: '서쪽에서 동쪽으로 나아가며 첫 의뢰에 필요한 기술만 익힌다. 목표 목록 맨 위 "연습" 줄이 지금 할 일이고, 대상 위에 화살표가 뜬다. 들켜도 그 단계부터 다시 한다.',
   steps: TUT.steps.slice(0, 8).concat([['동쪽 노란 원으로 나가면 끝', () => false, S => S.exit]]) }));
-STAGES.push(Object.assign({}, TUT, { id: 't1', kitId: 't0', name: '연습 3 · 고급', sub: '연습 · 고급 (선택)', start: [20, 9], dropGuards: [0, 1],
-  mission: '고급 기술: 엿보기 · 빈 캔 유인 · 훈련 로프 · 위에서 덮치기 · 락픽',
+STAGES.push(Object.assign({}, TUT, { id: 't1', trialSkills:['dart','ambush'],kunai:2, kitId: 't0', name: '연습 3 · 고급', sub: '연습 · 고급 (선택)', start: [20, 9], dropGuards: [0, 1],
+  mission: '고급 연습 · 다트와 은신 기습은 연습에서만 임시 사용: 엿보기 · 빈 캔 유인 · 훈련 로프 · 위에서 덮치기 · 락픽',
   brief: '기본 연습 다음 구간. 창문 엿보기, 빈 캔으로 꾀어내기, 훈련 로프 타기, 위에서 덮치기, 잠긴 문 따기를 익힌다. 들켜도 그 단계부터 다시 한다.',
   steps: TUT.steps.slice(8) }));
 

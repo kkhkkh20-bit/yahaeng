@@ -117,14 +117,14 @@ function drawAccessFlow() {
 }
 // Live 3D needs the pull itself before the simulation commits the hidden body.
 function beginVentPull(g,v){
-  const P=S.player;if(!P.vent||P.trav||!g||!v)return false;
+  const P=S.player;if(!abilityOn('ambush')||!P.vent||P.trav||!g||!v)return false;
   const T={g,v,t:0,dur:1.12,x0:g.x,y0:g.y,intent:{...(g.takedownIntent||{lethal:false})},held:0,holding:true};
   g.doomed=true;g.containerMoving=true;g.path=null;g.moving=false;
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:P.x,y:P.y,f:1}],dur:T.dur,phases:[{to:1,pose:'ventPull'}],local:true,ventPull:T});return true;
 }
 function updateVentPull(P,dt){
   const T=P.trav,A=T.ventPull,g=A.g;T.t+=dt;A.t=T.t;
-  if(!S.guards.includes(g)||g.state==='DEAD'||!S.vents.includes(A.v)){g.doomed=false;g.containerMoving=false;P.trav=null;return;}
+  if(!abilityOn('ambush')||!S.guards.includes(g)||g.state==='DEAD'||!S.vents.includes(A.v)){g.doomed=false;g.containerMoving=false;P.trav=null;return;}
   if(A.holding&&combatHeld(A.intent.source))A.held+=dt;else A.holding=false;
   const f=clamp(A.t/A.dur,0,1),u=hideEase((f-.15)/.75);g.x=A.x0+(A.v.x-A.x0)*u;g.y=A.y0+(A.v.y-A.y0)*u;g.moving=false;
   if(f<1)return;

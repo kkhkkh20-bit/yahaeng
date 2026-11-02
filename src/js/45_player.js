@@ -29,14 +29,14 @@ const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { at
 const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
 const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
-function selectTool(t) { if (!availableTools().includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
+function selectTool(t) { if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
-  const P = S.player; if (!input.aiming) return;if(EXTRA_TOOLS[input.tool]){toast('이 도구는 한 번씩 사용한다',1.5);return;} input.queue = input.queue || [];
+  const P = S.player; if (!input.aiming) return;if(input.tool!=='kunai'&&EXTRA_TOOLS[input.tool]){toast('이 도구는 한 번씩 사용한다',1.5);return;} input.queue = input.queue || [];
   if (input.queue.length >= 2) { toast('투척은 최대 2개 예약 가능 · 손을 떼면 함께 사용', 1.6); return; }
   const tool = input.tool, used = input.queue.filter(q => q.tool === tool).length + 1;
   const have = tool === 'stone' ? P.stones : tool === 'coin' ? P.coins : P.kunai;
@@ -144,7 +144,7 @@ function ledgeRoot(P) {
   return{x:h.x+(PR.fr/2-(hands[0][0]+hands[1][0])/2)*scale,y:h.y+((m.grounds?.hang??PR.groundY)-(hands[0][1]+hands[1][1])/2)*scale-13};
 }
 function ledgeTargetValid(g) {
-  const P=S.player,n=P.ledge;if(!n||!g||g.child||g.civ||g.dog||g.climb||g.doomed||['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)||flOf(g)!==flOf(P)||(g.z||0)!==P.z)return false;
+  const P=S.player,n=P.ledge;if(!abilityOn('ambush')||!n||!g||g.child||g.civ||g.dog||g.climb||g.doomed||['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)||flOf(g)!==flOf(P)||(g.z||0)!==P.z)return false;
   const dx=g.x-P.x,dy=g.y-P.y,inward=-dx*n.x-dy*n.y,along=dx*-n.y+dy*n.x;
   return inward>=-8&&inward<=64&&Math.abs(along)<=36&&Math.hypot(dx,dy)<=72&&rLv(Math.floor(g.x/TILE),Math.floor(g.y/TILE))===P.z&&los(P.x,P.y,g.x,g.y,P.z)&&!!landBelow(P.x,P.y,n,P.z,Infinity);
 }
@@ -222,7 +222,7 @@ function updateSnap(P, dt) {
 }
 // 기댄 자리 옆을 지나는, 나를 보지 못한 사람
 function coverTarget() {
-  const P = S.player; if (!P.cover || P.strikeT > 0 || S.pull) return null;
+  const P = S.player; if (!abilityOn('ambush') || !P.cover || P.strikeT > 0 || S.pull) return null;
   let best = null, bd = perkOn('reach') ? 120 : 100;
   for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
 
@@ -232,7 +232,7 @@ function coverTarget() {
   return best;
 }
 function updatePull(dt) {
-  const L = S.pull; L.t += dt; const f = Math.min(1, L.t / L.dur), e = f * f, g = L.g;
+  const L = S.pull;if(!abilityOn('ambush')){L.g.doomed=false;S.pull=null;return;} L.t += dt; const f = Math.min(1, L.t / L.dur), e = f * f, g = L.g;
   g.x = L.x0 + (L.x1 - L.x0) * e; g.y = L.y0 + (L.y1 - L.y0) * e;
   if (f >= 1) {
     S.pull = null; g.doomed = false;

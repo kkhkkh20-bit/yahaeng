@@ -131,6 +131,7 @@ function jumpTarget() {
   return null;
 }
 function canKill(g, P, reach = 56) {
+  if(!concealedMeleeAllowed(P))return false;
   if (g.child || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
   if (g.state === 'ALERT' && !g.target && !radioBusy(g)) return false;
@@ -179,6 +180,7 @@ function dropTarget() {
 // 맨홀 속에서 끌어들이는 기습 암살
 // 숨은 곳(수거함·맨홀·화단)에서 지나가는 자경대원을 끌어들여 암살 — 등 뒤일 필요 없음
 function ambushTarget() {
+  if(!abilityOn('ambush'))return null;
   const P = S.player;
   const from = P.hide ? P.hide : (P.hidden && P.z === 0 && !P.carrying && !P.captive ? P : null);
   if (!from || P.strikeT > 0 || S.amb || (P.hide&&!hideSpace(P.hide,1))) return null;

@@ -1,6 +1,6 @@
 const DRAG_SPD = 0.4, GRAB_CLINCH = 0.36;
 function grab(g) {
-  const P = S.player; if (actionBusy(P)) return;
+  const P = S.player; if (actionBusy(P)||!concealedMeleeAllowed(P)) return;
   const d = Math.max(1, dist(P.x, P.y, g.x, g.y)), ux = (g.x - P.x) / d, uy = (g.y - P.y) / d;
   g.doomed = true; g.moving = false; g.path = null; P.a = Math.atan2(uy, ux); P.vx = P.vy = 0;
   const run = Math.max(0, d - 26) / 300;

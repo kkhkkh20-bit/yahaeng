@@ -3,7 +3,7 @@ import asyncio
 from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT=Path(__file__).resolve().parents[2]
-SKIP='''()=>{const g=window.__game;for(let i=0;i<60&&g.DLG.modal;i++)g.advanceDialog();g.S.guards.forEach(q=>{q.x=q.y=-9999;q.path=q.sched=q.wander=null;q.route=[{x:-9999,y:-9999,pause:999}]})}'''
+SKIP='''()=>{const g=window.__game;g.storeSkillTree({schema:1,learned:['silentHands','ambush']});g.syncRuntimeSkills();for(let i=0;i<60&&g.DLG.modal;i++)g.advanceDialog();g.S.guards.forEach(q=>{q.x=q.y=-9999;q.path=q.sched=q.wander=null;q.route=[{x:-9999,y:-9999,pause:999}]})}'''
 EDGE='''(blocked=false)=>{const g=window.__game,P=g.S.player;
  for(let y=1;y<g.MH-1;y++)for(let x=1;x<g.MW-1;x++){const z=g.rLv(x,y);if(!z||g.robAt(x,y))continue;
   for(const [nx,ny] of [[0,1],[1,0],[-1,0],[0,-1]]){if(g.rLv(x+nx,y+ny)>=z)continue;

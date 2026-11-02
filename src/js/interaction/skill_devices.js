@@ -1,6 +1,6 @@
 // The new equipment uses the existing throw/aim input and physical world layer.
-const EXTRA_TOOLS={blade:{skill:'kunai',name:'쿠나이'},smoke:{skill:'smoke',name:'연막탄'},radio:{skill:'radio',name:'무전기'},hack:{skill:'hack',name:'해킹기'}};
-const availableTools=()=>TOOLS.filter(t=>!EXTRA_TOOLS[t]||skillOn(EXTRA_TOOLS[t].skill));
+const EXTRA_TOOLS={kunai:{skill:'dart',name:'다트'},blade:{skill:'kunai',name:'쿠나이'},smoke:{skill:'smoke',name:'연막탄'},radio:{skill:'radio',name:'무전기'},hack:{skill:'hack',name:'해킹기'}};
+const availableTools=()=>TOOLS.filter(t=>!EXTRA_TOOLS[t]||abilityOn(EXTRA_TOOLS[t].skill));
 const deviceReady=t=>t==='radio'?!S.player.hasRadio||S.t>=(S.radioReadyAt||0):t==='hack'?S.t>=(S.hackReadyAt||0):true;
 function toolDetail(t){
  if(S.player.techWork)return S.player.techWork.kind==='hack'?'해킹 '+Math.floor(S.player.techWork.t/1.5*100)+'%':'무전기 확보 중';

@@ -2,14 +2,14 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/skills-v148';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/skills-v149';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
-   ok(G.SKILL_TREE.length===24&&Object.keys(G.SKILL_BRANCHES).every(k=>G.SKILL_TREE.filter(s=>s.branch===k).length===8),'Three 8-node trees missing');
+   ok(G.SKILL_TREE.length===26&&['body','assassin','tools'].every((k,i)=>G.SKILL_TREE.filter(s=>s.branch===k).length===[8,9,9][i]),'Revised 26-node trees missing');
    document.querySelector('#btnLedger').click();G.openAssassinMenu();
    ok(G.skillBudget()===4&&!G.loadSkillTree().learned.length,'Starting points are wrong');ok(!G.learnTreeSkill('chain'),'Skipped dependencies');
    for(const id of ['kit','smoke','kunai'])ok(G.learnTreeSkill(id),'Cannot learn '+id);
@@ -20,7 +20,7 @@ async def main():
    G.closeAssassinMenu();localStorage.clear();
    const mission=G.STAGES.find(s=>s.id==='m1'),legacy={_clear:true};mission.challenges.slice(0,5).forEach(id=>legacy[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:legacy}));
    const migrated=G.loadSkillTree();ok(migrated.learned.includes('dual')&&migrated.learned.includes('chain')&&migrated.learned.includes('precision'),'Legacy skills/gear lost');ok(G.skillSpent(migrated)<=G.skillBudget(),'Migration exceeds available budget');
-   localStorage.clear();passed.push('24 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
+   localStorage.clear();passed.push('26 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
    G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();let S=G.S,P=S.player;
    const base={kunai:P.kunai,stones:P.stones,picks:P.picks};
    G.openAssassinMenu();ok(G.learnTreeSkill('kit')&&G.learnTreeSkill('smoke'),'Live learning failed');

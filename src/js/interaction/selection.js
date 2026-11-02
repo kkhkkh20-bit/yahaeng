@@ -1,6 +1,7 @@
 const RISKY_K = new Set(['door', 'keypad', 'lamp', 'bfuse', 'fuse', 'read', 'keymsg', 'pick']);
 const KILL_K = new Set(['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'ledgeKill', 'pushOff', 'winJump']);
 function stalkGuard() {
+  if(!concealedMeleeAllowed())return null;
   const P = S.player; if (P.z || P.carrying || P.captive || P.hide || P.under || P.vent || P.wire) return null;
   let best = null, bd = 190;
   for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다

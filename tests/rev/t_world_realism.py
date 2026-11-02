@@ -8,7 +8,7 @@ async def main():
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
   data=await q.evaluate('''()=>{
-   const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();G.setLayer(0);return G.S},result={worlds:[],projectiles:[],legacy:true};
+   localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit','dart']}));const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();G.setLayer(0);return G.S},result={worlds:[],projectiles:[],legacy:true};
    for(const id of ['m1','m2','m3','m4','m5','m6','city']){
     const S=fresh(id),P=S.player;G.update(.01); // includes the real window initialization
     check(!S.ladders.some(l=>l.gas||l.kind==='balc'||l.kind==='chimney'),'unsupported access '+id);
