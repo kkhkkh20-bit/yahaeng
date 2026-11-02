@@ -31,5 +31,10 @@
     "finalElectricalPcAndTouch": true,
     "introductoryPcAndTouch": true,
     "guardRepairs": true
-  }
+  },
+  "evidencePublication": {
+    "status": "pending",
+    "reason": "Follow-up documentation pushes returned HTTP 503 after the runtime deployment had succeeded"
+  },
+  "additionalPublicPackageCheck": "Inconclusive transport/boot timeout on an extra check; the final local package hashes and public PC/touch electrical purchase and switch actions passed"
 }
