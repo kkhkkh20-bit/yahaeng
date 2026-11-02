@@ -1,0 +1,22 @@
+t_hide_flow 0 PASS PC {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS touch {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS actual keyboard entry, directional exit, subject-specific storage label and delayed storage
+PASS actual touch entry, directional exit, subject-specific storage label and delayed storage
+
+t_combat_policy 0 PASS crew, target and civilian: tap KO / hold kill and accurate mission outcome; container and bush: incapacitation precedes separate storage; release, different input and deliberate later finish; double takedown keeps both selected victims; dart KO / lethal intent carried to impact; holding grab remains a living grapple; fatal environment action requires uninterrupted hold; pending lethal target cannot change floors
+PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation
+
+t_ai_decisions 0 PASS AI decisions {'controlled': True, 'strip': {'x': 1800, 'y': 504}, 'oneScout': True, 'coveringGuards': 2, 'repeatStandOff': 48, 'repeatChecksNearbyHide': True, 'prioritySightAndBody': True, 'floorIsolation': True, 'physicalRepair': {'elapsed': 3.0800000000000023, 'turnedAt': 33.16479999999865, 'moved': 54.83520000000135}, 'failedPathNotArrival': True, 'deadRepairClaimReleased': True}
+
+t_building_search 0 PASS {'indoorPositions': 13360, 'exteriorClimbs': 6, 'cornerCameras': 6, 'searches': [{'id': 'm2', 'assigned': 6, 'checked': 17, 'upstairs': 4}, {'id': 'm4', 'assigned': 6, 'checked': 12, 'upstairs': 4}, {'id': 'm6', 'assigned': 6, 'checked': 14, 'upstairs': 4}], 'identityCues': True, 'absoluteFloors': True}
+
+t_light_fixtures 0 PASS {'stages': 11, 'counts': {'wall': 49, 'street': 36, 'pole': 10}, 'reachable': 95, 'legacyState': True}
+
+t_security_response 0 "tutorials unchanged"]
+PASS security mobile ["unseen incidents wait for real rollcall; distinct finite response, VIP detour, pairs and save", "report deduplication, cooling, confirmed accidents and replies", "actual guard and CCTV observations report location without killer identity", "unattended CCTV defers accident assessment until operator returns; known accident answers rollcall", "shorter solo window; escort tightens physically; phone and WC opportunities retained", "missing partner investigates last seen position", "paired patrol still responds to a visible lure", "tutorials unchanged"]
+
+t_security_response_live 0 "pairs": 2, "patrolTravel": 3998, "vipHome": 81.1, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 1, "rollcall": 55.1, "pairs": 2, "patrolTravel": 5228, "vipHome": 84.2, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 116, "rollcall": 55.1, "pairs": 2, "patrolTravel": 2463, "vipHome": 77.6, "routineResumed": true, "cooled": 155.3, "detected": 0}
+PASS live response mobile {"seed": 118, "rollcall": 55.1, "pairs": 2, "patrolTravel": 3998, "vipHome": 81.1, "routineResumed": true, "cooled": 155.3, "detected": 0}
+

@@ -1,0 +1,2 @@
+PASS desktop {'vision': True, 'groupedChoices': True, 'captive': True, 'noAutoCoaching': True, 'contact': True}
+PASS touch {'vision': True, 'groupedChoices': True, 'captive': True, 'noAutoCoaching': True, 'contact': True}

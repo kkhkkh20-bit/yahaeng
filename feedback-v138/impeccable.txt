@@ -1,0 +1,1 @@
+Detector exit 0 stdout bytes 3 stderr 

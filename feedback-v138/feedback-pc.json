@@ -1,0 +1,21 @@
+{
+  "controlled": true,
+  "mobile": false,
+  "passageOpen": true,
+  "matchingPropGround": true,
+  "bushBodyHiddenAfterLowering": true,
+  "quietKoRadius": 7.199999999999999,
+  "localReport": {
+    "local": true,
+    "distant": false,
+    "otherFloor": false
+  },
+  "witnessedLight": {
+    "spoke": true,
+    "elapsed": 3.2099999999999755,
+    "atSwitch": 33.90119999999729
+  },
+  "unseenLightNoObjection": true,
+  "cabinetOpenedAndFound": true,
+  "blockedContainerCheck": true
+}
