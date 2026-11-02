@@ -54,6 +54,7 @@ def build():
     menu_art = base64.b64encode(open(P('src', 'art', 'title-poster.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
+    html = html.replace('__HUD_CSS__', read(P('src', 'hud.css')))
     html = html.replace('__INK_DISPLAY__', base64.b64encode(open(P('src','fonts','ink-display.woff'),'rb').read()).decode())
     ink_map=base64.b64encode(open(P('src','art','ink-vip-map.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__INK_VIP_MAP__ = '+json.dumps('data:image/webp;base64,'+ink_map)+';</script>\n<script>window.__ASSETS__')

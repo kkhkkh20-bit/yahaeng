@@ -1,38 +1,12 @@
 @font-face { font-family:"Ink Display";src:url("data:font/woff;base64,__INK_DISPLAY__") format("woff");font-weight:400;font-style:normal;font-display:swap; }
 /* 작동 시안: 메인의 종이·먹·주홍을 메뉴와 플레이의 공통 언어로 사용한다. */
 .ink-study { --night:#151814; --night-2:#20241d; --ink-line:#706d5f; --paper:#eee4cf; --paper-dim:#b8b09e; --blood:#b73528; --blood-hi:#dd503c; --study-paper:#eee4cf; --study-ink:#171817; }
-.ink-study .obj,.ink-study .chip,.ink-study .sysbtns button,.ink-study .keys,.ink-study .tools,.ink-study #hintCard { background:#171b16f2; border-color:#8a806a; border-radius:0; box-shadow:none; }
-.ink-study .obj { border-left:3px solid #e5dac0; }
-.ink-study .obj small { color:#c1b697; letter-spacing:.08em; }
-.ink-study .obj .ol { font-weight:600; }
-.ink-study .chip { border:0; box-shadow:inset 0 -1px #84775f; }
-.ink-study #hpPips i,.ink-study #alertPips i { border-radius:0; }
-.ink-study .keys { border-width:0 0 1px; }
-.ink-study .keys kbd { background:transparent; border-color:#9d9175; border-radius:0; }
-.ink-study .keys .keep.on { color:#eee4cf; }
-.ink-study #mini { background:#171b16; border-color:#b5a788; }
-.ink-study .sysbtns button { color:#eee4cf; }
-.ink-study .sysbtns button.on { border-color:#c8b38b; background:#333b2a; }
-.ink-study body .pad > button { background:#171b16ed; color:#eee4cf; border-color:#a69b80; box-shadow:none; }
-.ink-study body .pad #btnAct { background:#171b16f0; border-color:#a79b7e; }
-.ink-study body .pad #btnAct.ko { background:#e7ddc7; border-color:#eee4cf; color:#171817; }
-.ink-study body .pad #btnAct.kill { background:#8f3028ed; border-color:#e1b3a1; color:#f5ead4; }
-.ink-study body .pad #btnCarry.ready { background:#403b26f0; border-color:#d8bf87; color:#f2dcae; }
-.ink-study body .pad #btnGrab.ready { background:#292f22f2; border-color:#e2d4b0; color:#eee4cf; }
-.ink-study body .pad #btnTool.ready { background:#262c22f2; border-color:#ded3b8; }
-.ink-study #stealth { --sc:#e5dbc5; background:#171b16f2; border:1px solid #8f8268; border-left:3px solid #d1c4a3; border-radius:1px; box-shadow:none; }
-.ink-study #stealth b { letter-spacing:0; font-weight:650; }
-.ink-study #stealth[data-s="hide"],.ink-study #stealth[data-s="blend"] { --sc:#e5dbc5; }
-.ink-study #stealth[data-s="risk"] { --sc:#e3bc78; color:#e3bc78; background:#292719f5; border-color:#bda56e; }
-.ink-study #stealth[data-s="risk"] small { color:#dacdae; }
-.ink-study #stealth[data-s="seen"] { --sc:#f2d9c9; background:#8e3028f5; border-color:#de8a6b; color:#fff1dd; animation:none; }
-.ink-study #stealth[data-s="risk"] .sth-wing,.ink-study #stealth[data-s="seen"] .sth-wing { background:#fff2; }
+.ink-study #hintCard{ background:#171b16f2; border-color:#8a806a; border-radius:0; box-shadow:none; }
 .ink-study #hintCard { border:1px solid #85785e; border-left:3px solid #c8b27f; }
 .ink-study #hintCard small { color:#d8c399; letter-spacing:.04em; }
 .ink-study .toast { border:1px solid #97886c; border-left:3px solid #d1b47e; border-radius:0; background:#171b16f5; box-shadow:none; }
 .ink-study .toast.warn { border-left-color:#dd7857; }
 .ink-study .toast.good { border-left-color:#b8c295; }
-.ink-study #floorBan { font-size:14px; padding:5px 10px; background:#171b16ed; border-left:2px solid #cfbe94; color:#e9dfc9; text-shadow:none; }
 /* 인게임 초상과 본문은 한 패널 안에서 정렬한다. */
 .ink-study #dlg { background:#eee4cff7; border:1px solid #171817; border-left:4px solid #b73528; border-radius:0; box-shadow:0 5px 18px #0005; }
 .ink-study .dlg-face { background:#151814; border-right:0; }
@@ -75,7 +49,7 @@
 .ink-study .pz-big { color:#171817; font-family:'Ink Display',var(--f-body); font-weight:400; }
 .ink-study .pz-big:hover { color:#a53227; }
 .ink-study .pz-side { background:#e6dcc6; color:#262820; border-color:#96896b; border-radius:0; }
-.ink-study .pz-todo small,.ink-study #saveState { color:#a89b7c; }
+.ink-study .pz-todo small{ color:#a89b7c; }
 .ink-study #missionGoals button { background:#ded3bb; border-color:#8a7e63; color:#262820; border-radius:0; }
 .ink-study #missionGoals button[aria-pressed="true"] { border-left:4px solid #a53227; }
 .ink-study #end h2,.ink-study #end .eyebrow { color:#171817; }
@@ -111,19 +85,14 @@
 
 .ink-study #endRankNote .bn b { color:#455238; }
 
-.ink-study #btnPause.hud-menu { background:#171b16f2; color:#eee4cf; border-color:#a79a7c; border-radius:0; }
-
 /* 현장 입력창과 대상 선택도 같은 종이·먹 재질로 맞춘다. */
-.ink-study #envPicker,.ink-study #keypad .kp { background:#eee4cf; color:#171817; border:1px solid #6e6655; border-radius:0; }
-.ink-study #envPicker > b { color:#4f4b40; }
-.ink-study #envPicker button,.ink-study #keypad .kpg button,.ink-study #keypad .kpx { background:#e7dcc5; border:1px solid #9d9076; border-radius:0; color:#22241e; box-shadow:none; }
-.ink-study #envPicker button[aria-pressed="true"] { border-left:3px solid #a53227; background:#f6ecd7; }
+.ink-study #keypad .kp { background:#eee4cf; color:#171817; border:1px solid #6e6655; border-radius:0; }
+.ink-study #keypad .kpg button,.ink-study #keypad .kpx { background:#e7dcc5; border:1px solid #9d9076; border-radius:0; color:#22241e; box-shadow:none; }
 .ink-study #keypad .kpg button.ok { background:#a53227; border-color:#943327; color:#fff1dc; }
 .ink-study #kpHint,.ink-study #kpStatus { color:#5d574a; }
 .ink-study #kpStatus[data-state="bad"] { color:#963225; }
 .ink-study .setbox input[type="range"] { accent-color:#a53227; }
 
-.ink-study #envPicker button small { color:#686052; }
 .ink-study #help .ctrl { background:#e8dec8; border-color:#aa9c81; border-radius:0; color:#4e4b40; }
 .ink-study #help .ctrl h3 { color:#282b24; }
 .ink-study .screen .ghost:hover,.ink-study .screen .back:hover,.ink-study .screen .pz-big:hover { background:#e2d5b9; color:#872e24; }

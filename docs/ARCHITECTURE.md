@@ -31,6 +31,10 @@
 
 [실측·검증·제거 목록](REFACTOR_V141.md)
 
+## 플레이 HUD (v142)
+
+플레이 HUD의 스타일은 `src/hud.css`가 소유한다. `build.py`는 기존 테마 뒤의 `__HUD_CSS__` 위치에 삽입한다. 템플릿에는 DOM, `80_hud.js`에는 게임 상태와 표시의 연결을 둔다. [변경·검증](HUD_V142.md)
+
 ## 의뢰 데이터 (`src/stages/`)
 의뢰 하나는 객체 하나다. 주요 항목:
 - `W, H, start, exit, build(m)`: 지도 크기·출발·출구, 지도 그리기 (`m.villa(x0, y0, x1, y1, 층수, { kind, use, signs, name })` 로 건물을 놓으면 실내 평면은 자동)

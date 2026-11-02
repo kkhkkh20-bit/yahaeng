@@ -1,0 +1,222 @@
+/* In-play interface: quiet type, a shared status line, flat thumb controls.
+   This file owns HUD layout in both the standard and ink editions. */
+#hud {
+  --hud-ink: #e1e0d5;
+  --hud-muted: #b5b9ac;
+  --hud-line: #636b60;
+  --hud-ground: #131a15ed;
+  --hud-warn: #e2c18b;
+  --hud-danger: #e4a18f;
+  position: fixed; inset: 0; pointer-events: none; color: var(--hud-ink);
+  font-family: var(--f-body); font-variant-numeric: tabular-nums;
+}
+#hud button { font-family: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#hud button:focus-visible,#hud [role="button"]:focus-visible {
+  outline: 2px solid var(--hud-ink); outline-offset: 3px;
+}
+#hud .top {
+  position: absolute; top: calc(12px + env(safe-area-inset-top,0px));
+  left: max(14px,env(safe-area-inset-left,0px)); right: 74px;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+}
+#hud .obj {
+  position: relative; display: flex; flex-direction: column; gap: 5px;
+  max-width: min(420px,55vw); min-width: 0; padding: 8px 28px 9px 10px;
+  border: 0; border-radius: 0; background: var(--hud-ground); box-shadow: none;
+  color: var(--hud-ink); font-size: 15px; line-height: 1.45; pointer-events: auto; cursor: pointer;
+}
+#hud .obj::after {
+  content: ''; position: absolute; right: 11px; top: 15px; width: 5px; height: 5px;
+  border: solid var(--hud-muted); border-width: 0 1px 1px 0; transform: rotate(45deg);
+}
+#hud .obj.open::after { transform: rotate(225deg); }
+#hud #objTitle { order: 2; display: block; margin: 0; color: var(--hud-muted); font-size: 11px; font-weight: 400; letter-spacing: 0; }
+#hud #objective { display: block; min-width: 0; }
+#hud #objective .ol { display: block; margin: 0; font-size: inherit; font-weight: 500; line-height: inherit; }
+#hud .obj:not(.open) #objective .ol:not(:first-child) { display: none; }
+#hud .obj:not(.open) #objective .ol:first-child { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+#hud .obj.open { max-height: min(55vh,440px); overflow: auto; scrollbar-color: var(--hud-line) var(--hud-ground); }
+#hud .obj.open::before { content: '목표 확인 · 시간 정지'; display: block; font-size: 11px; color: var(--hud-warn); }
+#hud .obj.open #objective .ol { padding: 8px 0; border-bottom: 1px solid #3e493d; font-size: 13px; font-weight: 400; }
+#hud #objective .ol.done { text-decoration: line-through; color: var(--hud-muted); }
+#hud #objective .tut-detail { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--hud-muted); font-weight: 400; }
+#hud .obj.urgent #objective { color: var(--hud-warn); }
+#hud .status { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 14px; padding: 7px 8px; background: var(--hud-ground); }
+#hud .chip { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--hud-muted); white-space: nowrap; font-size: 12px; line-height: 1.4; }
+#hud .clab { font-size: 11px; color: inherit; font-weight: 400; letter-spacing: 0; }
+#hud #layerLbl[data-z="res"],#hud #alertBox[data-lv="1"],#hud #alertBox[data-lv="2"] { color: var(--hud-warn); }
+#hud #layerLbl[data-z="hos"],#hud #alertBox[data-lv="3"],#hud #alarmChip { color: var(--hud-danger); }
+#hud #killsLbl,#hud #modeLbl,#hud #pickLbl,#hud #alertPips,#hud #alertBox[data-lv="0"],#hud #btnMap { display: none; }
+#hud #hpPips { display: inline-flex; align-items: center; gap: 3px; }
+#hud #hpPips i { display: block; width: 14px; height: 5px; border: 0; border-radius: 0; background: #70796b; }
+#hud #hpPips i.on { background: #d4d6c6; }
+#hud #hpBox[data-low="1"] { color: var(--hud-danger); }
+#hud #hpBox[data-low="1"] #hpPips i.on { background: var(--hud-danger); }
+#hud #wantBox { color: var(--hud-danger); }
+#hud #wantBox i { font-style: normal; opacity: .4; }
+#hud .hud-menu {
+  position: fixed; top: calc(8px + env(safe-area-inset-top,0px)); right: max(10px,env(safe-area-inset-right,0px));
+  width: 48px; min-height: 44px; padding: 8px; border: 0; border-radius: 0;
+  background: var(--hud-ground); color: var(--hud-ink); font-size: 12px; font-weight: 500;
+  pointer-events: auto; z-index: 6;
+}
+#hud .sysbtns { display: none; pointer-events: auto; }
+#hud #mini {
+  position: absolute; right: max(14px,env(safe-area-inset-right,0px)); top: 60px;
+  width: 148px; height: auto; min-height: 44px; border: 1px solid #7d8373; border-radius: 0;
+  background: #131a15; opacity: .78; box-shadow: none; pointer-events: auto; cursor: pointer;
+  image-rendering: pixelated;
+}
+#hud #stealth {
+  position: absolute; left: max(14px,env(safe-area-inset-left,0px)); top: calc(var(--topb,76px) + 8px);
+  display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100vw - 130px);
+  padding: 4px 8px; border: 0; border-radius: 0; background: var(--hud-ground); box-shadow: none;
+  color: var(--hud-ink); --sc: var(--hud-ink); transform: none; animation: none; box-sizing: border-box;
+}
+#hud .sth-eye { display: flex; align-items: center; gap: 3px; flex: 0 0 auto; }
+#hud .sth-ico { display: flex; width: 20px; height: 20px; color: var(--sc); }
+#hud .sth-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+#hud .sth-wing { display: block; width: 13px; height: 2px; background: #57604f; overflow: hidden; }
+#hud .sth-wing i { display: block; width: 0; height: 100%; background: var(--sc); }
+#hud .sth-wing.l { transform: scaleX(-1); }
+#hud .sth-txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+#hud #stealth b { font-size: 13px; line-height: 1.35; font-weight: 500; letter-spacing: 0; }
+#hud #stealth small { font-size: 11px; line-height: 1.4; color: var(--hud-muted); }
+#hud #stealth.quiet { background: #131a15b3; }
+#hud #stealth.quiet small,#hud #stealth.quiet .sth-wing { display: none; }
+#hud #stealth[data-s="risk"] { --sc: var(--hud-warn); color: var(--hud-warn); }
+#hud #stealth[data-s="seen"] { --sc: var(--hud-danger); color: var(--hud-danger); }
+#hud #stealth[data-s="seen"] small { color: #dfbfb0; }
+#hud:has(#alertBox[data-lv="2"]) #stealth[data-s="hide"] small { color: var(--hud-warn); }
+.hudfade { opacity: .8; }
+.hudfade:hover,.hudfade:focus-visible { opacity: 1; }
+#hud .keys {
+  position: absolute; left: max(14px,env(safe-area-inset-left,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px));
+  max-width: calc(100vw - 270px); display: flex; flex-wrap: wrap; gap: 7px 14px; padding: 5px 0;
+  border: 0; border-radius: 0; background: #131a15cf; color: var(--hud-muted); font-size: 11px; line-height: 1.6;
+}
+#hud .keys span { display: inline-flex; align-items: baseline; gap: 5px; }
+#hud .keys.mini span:not(.keep) { display: none; }
+#hud .keys kbd { border: 0; padding: 0; background: none; color: var(--hud-ink); font: 500 11px var(--f-body); }
+#hud .keys em { font-style: normal; }
+#hud .keys .km.on { color: var(--hud-ink); }
+#hud .pad { position: absolute; right: max(14px,env(safe-area-inset-right,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px)); pointer-events: none; }
+#hud .pad > button { display: none; }
+#hud .tools { display: flex; gap: 12px; pointer-events: auto; border: 0; background: #131a15cf; }
+#hud .tools .tool { display: inline-flex; gap: 5px; align-items: center; padding: 8px 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; color: var(--hud-muted); font-size: 11px; }
+#hud .tools .tool.on { color: var(--hud-ink); border-bottom-color: var(--hud-ink); }
+#hud .tools .tool kbd { border: 0; padding: 0; color: var(--hud-muted); font: inherit; }
+#hud .tools .tool.empty { opacity: 1; }
+#hud .joyhint { display: none; }
+#hud #saveState { position: absolute; left: 14px; bottom: 46px; font-size: 11px; color: var(--hud-muted); }
+#hud #floorBan { position: fixed; left: 50%; top: 24%; transform: translateX(-50%); padding: 6px 12px; background: var(--hud-ground); color: var(--hud-ink); font-size: 17px; font-weight: 500; opacity: 0; }
+#hud #floorBan.on { animation: hudFloor 1.4s ease-out; }
+@keyframes hudFloor { 0%,100% { opacity: 0; } 15%,70% { opacity: 1; } }
+#hud .tac { position: absolute; left: 50%; transform: translateX(-50%); bottom: 18px; padding: 12px 16px; min-height: 44px; border: 1px solid var(--hud-line); border-radius: 0; background: var(--hud-ground); color: var(--hud-ink); pointer-events: auto; z-index: 5; }
+#hud #alertVig { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 1; }
+#hud #alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 -24px 48px -40px #a9483b; }
+#hud .lesson-cue { outline: 2px solid var(--hud-warn); outline-offset: 3px; }
+body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut { display: block; -webkit-line-clamp: unset; overflow: visible; white-space: normal; }
+body.inspecting #hud #stealth,body.inspecting #hud #toasts { visibility: hidden; }
+body.scanning #hud #stealth,body.dlgmodal #hud #stealth,body:has(.screen:not([hidden])) #hud #stealth { visibility: hidden; }
+body.dlgmodal #hud .pad,body.dlgmodal #hud .keys,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud .joyhint,body.dlgmodal #hud .hud-menu { visibility: hidden; }
+body.keypadopen #hud .pad,body.keypadopen #hud .sysbtns,body.keypadopen #hud .keys { visibility: hidden; }
+body:has(.screen:not([hidden])) #hud .hud-menu { visibility: hidden; }
+body:not(.playing) #hud #alertVig { display: none; }
+@media (hover:hover) {
+  #hud .obj:hover,#hud .hud-menu:hover { background: #20291eef; }
+  #hud #mini:hover { opacity: 1; }
+  #hud .tools .tool:hover { color: var(--hud-ink); }
+}
+@media (max-width:700px) {
+  #hud .top { right: 72px; flex-direction: column; gap: 3px; left: max(10px,env(safe-area-inset-left,0px)); top: calc(8px + env(safe-area-inset-top,0px)); }
+  #hud .obj { max-width: 100%; width: 100%; box-sizing: border-box; font-size: 13px; padding: 7px 24px 7px 8px; gap: 4px; }
+  #hud #objTitle { font-size: 11px; }
+  #hud .status { justify-content: flex-start; gap: 10px; padding: 3px 6px; background: #131a15d9; }
+  #hud .chip { font-size: 11px; }
+  #hud #mini { width: 82px; right: 10px; top: calc(var(--topb,82px) + 8px); }
+  #hud #stealth { left: 10px; max-width: calc(100vw - 112px); }
+}
+body.touch #hud .keys,body.touch #hud .tools,body.touch #hud #btnWhistle { display: none; }
+body.touch #hud .pad { width: 198px; height: 192px; right: max(10px,env(safe-area-inset-right,0px)); bottom: calc(10px + env(safe-area-inset-bottom,0px)); }
+body.touch #hud .pad > button {
+  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  box-sizing: border-box; margin: 0; padding: 7px 5px; width: 88px; min-width: 44px; height: 48px; min-height: 44px;
+  border: 1px solid var(--hud-line); border-radius: 3px; box-shadow: none; background: var(--hud-ground);
+  color: var(--hud-muted); font-size: 12px; font-weight: 400; line-height: 1.3; pointer-events: auto; touch-action: none; opacity: 1;
+}
+body.touch #hud .pad > button b { font-size: 13px; font-weight: 500; line-height: 1.3; }
+body.touch #hud .pad > button small { display: block; margin: 0; font-size: 11px; line-height: 1.3; font-weight: 400; color: inherit; }
+body.touch #hud .pad > button.ready { color: var(--hud-ink); border-color: #b6bca9; background: #222b1ff2; }
+body.touch #hud .pad #btnAct { right: 0; bottom: 0; height: 62px; }
+body.touch #hud .pad #btnAct.ko { color: var(--hud-ink); border-color: #c2c6b5; background: #1e281cf2; }
+body.touch #hud .pad #btnAct.kill { color: var(--hud-danger); border-color: #b97b6b; background: #30241fed; }
+body.touch #hud .pad #btnCarry { right: 100px; bottom: 0; height: 62px; }
+body.touch #hud .pad #btnGrab { right: 100px; bottom: 76px; }
+body.touch #hud .pad #btnTool { right: 0; bottom: 76px; }
+body.touch #hud .pad #btnTool.aiming { border-color: var(--hud-ink); background: #30392bf2; color: var(--hud-ink); }
+body.touch #hud .pad #btnToolNext { right: 0; bottom: 132px; }
+body.touch #hud .pad #btnCycle { right: 100px; bottom: 132px; }
+body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnTool,
+body.touch #hud .pad #btnToolNext,body.touch #hud .pad #btnCycle {
+  border: 0; border-bottom: 1px solid var(--hud-line); border-radius: 0; background: #131a15e0;
+}
+body.touch #hud .pad #btnGrab.ready,body.touch #hud .pad #btnTool.ready,
+body.touch #hud .pad #btnCycle.ready { border-bottom-color: #c2c6b5; }
+body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after {
+  content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: calc(var(--hold,0) * 100%); background: var(--hud-danger);
+}
+body.touch #hud .sysbtns { position: fixed; right: max(10px,env(safe-area-inset-right,0px)); bottom: calc(198px + env(safe-area-inset-bottom,0px)); display: flex; gap: 12px; z-index: 3; }
+body.touch #hud .sysbtns button { box-sizing: border-box; width: 88px; min-height: 44px; padding: 8px 3px; border: 0; border-bottom: 1px solid var(--hud-line); border-radius: 0; background: #131a15cf; color: var(--hud-muted); font-size: 12px; }
+body.touch #hud .sysbtns button b { font-size: 12px; font-weight: 500; }
+body.touch #hud .sysbtns button.on { color: var(--hud-ink); border-bottom-color: var(--hud-ink); }
+body.touch #hud #btnSneak small { display: none; }
+body.touch #hud .joyhint { position: absolute; display: block; left: 12px; bottom: calc(22px + env(safe-area-inset-bottom,0px)); max-width: 140px; color: var(--hud-muted); font-size: 11px; }
+body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint { display: none; }
+body.touch #hud #saveState { bottom: 48px; }
+body.perception-lesson #hud #btnAct,body.perception-lesson #hud #btnGrab,body.perception-lesson #hud #btnToolNext { visibility: hidden; pointer-events: none; }
+@media (min-width:701px) and (max-height:500px) {
+  body.touch #hud .top { right: 350px; flex-direction: column; gap: 4px; }
+  body.touch #hud .obj { max-width: 100%; width: 100%; box-sizing: border-box; font-size: 13px; }
+  body.touch #hud .status { justify-content: flex-start; padding-top: 3px; background: #131a15d9; }
+  body.touch #hud .pad { width: 288px; height: 112px; }
+  body.touch #hud .pad #btnAct { width: 88px; height: 56px; }
+  body.touch #hud .pad #btnCarry { right: 100px; width: 88px; height: 56px; }
+  body.touch #hud .pad #btnGrab { right: 200px; bottom: 0; width: 78px; height: 56px; }
+  body.touch #hud .pad #btnTool { right: 0; bottom: 68px; }
+  body.touch #hud .pad #btnToolNext { right: 100px; bottom: 68px; }
+  body.touch #hud .pad #btnCycle { right: 200px; bottom: 68px; width: 78px; }
+  body.touch #hud .sysbtns { right: 310px; bottom: calc(10px + env(safe-area-inset-bottom,0px)); }
+  body.touch #hud #mini { width: 88px; top: 62px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  #hud *,#hud *::before,#hud *::after { animation: none; transition: none; }
+}
+/* The desktop target chooser is a real alternative to the Tab shortcut. */
+body:not(.touch) #hud .pad #btnCycle {
+  position: absolute; right: 0; bottom: 44px; display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; width: 100px; min-height: 44px; padding: 8px 10px; pointer-events: auto;
+  border: 1px solid var(--hud-line); border-radius: 2px; background: var(--hud-ground);
+  color: var(--hud-ink); font-size: 12px;
+}
+body:not(.touch) #hud .pad #btnCycle b { font-weight: 500; }
+
+/* Focused action selection shares the HUD palette and a single list surface. */
+#hud #envPicker {
+  box-sizing: border-box; position: fixed; z-index: 25; width: min(250px,calc(100vw - 124px));
+  max-height: min(55dvh,calc(100dvh - var(--topb,70px) - 24px)); overflow: auto;
+  padding: 12px; pointer-events: auto; border: 1px solid var(--hud-line); border-radius: 0;
+  background: #131a15fa; color: var(--hud-ink); box-shadow: none;
+  scrollbar-color: var(--hud-line) var(--hud-ground);
+}
+#hud #envPicker > b { display: block; padding: 0 0 8px; color: var(--hud-muted); font-size: 11px; font-weight: 400; }
+#hud #envPicker button {
+  box-sizing: border-box; display: block; width: 100%; min-height: 44px; text-align: left;
+  white-space: normal; font-size: 13px; line-height: 1.4; padding: 10px 12px; margin: 0;
+  border: 0; border-bottom: 1px solid #3e493d; border-radius: 0;
+  background: none; color: var(--hud-muted);
+}
+#hud #envPicker button[aria-pressed="true"] { background: #303a2b; color: var(--hud-ink); border-bottom-color: #b6bca9; }
+#hud #envPicker button small { display: block; margin-top: 3px; color: var(--hud-muted); font-size: 11px; }
+#hud #envPicker button:last-child { border: 0; }
+#hud #envPicker button:disabled { opacity: .55; }

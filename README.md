@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v141): https://kkhkkh20-bit.github.io/yahaeng/?v=141
+- 2D 본편 · 시야와 소리 연습 (v142): https://kkhkkh20-bit.github.io/yahaeng/?v=142
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v142: 플레이 HUD의 반복 테두리·큰 원형 버튼을 줄이고, 목표와 위험 안내를 정돈했습니다. [변경·검증](docs/HUD_V142.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/hud-v142/)
 
 v141: 렌더·AI·상호작용·그래픽을 역할별로 분리하고, 명시적 빌드 목록·임무별 이미지 수명·참조 기반 배포 정리를 추가했습니다. [구조·용량·검증](docs/REFACTOR_V141.md)
 
