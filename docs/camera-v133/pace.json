@@ -1,0 +1,214 @@
+[
+  {
+    "touch": false,
+    "edition": "campaign",
+    "version": "v133",
+    "scale": 1.25,
+    "pspd": 1.3,
+    "screen": [
+      1280,
+      800
+    ],
+    "results": [
+      {
+        "direction": "right",
+        "pxPerSecond": 133.12622113199174,
+        "mode": "walk"
+      },
+      {
+        "direction": "up",
+        "pxPerSecond": 133.12622113199345,
+        "mode": "walk"
+      },
+      {
+        "direction": "left",
+        "pxPerSecond": 133.12622113199174,
+        "mode": "walk"
+      },
+      {
+        "direction": "down",
+        "pxPerSecond": 133.12622113199345,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-right",
+        "pxPerSecond": 133.12622113199112,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-right",
+        "pxPerSecond": 133.12622113199058,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-left",
+        "pxPerSecond": 133.12622113199112,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-left",
+        "pxPerSecond": 133.12622113199058,
+        "mode": "walk"
+      }
+    ]
+  },
+  {
+    "touch": false,
+    "edition": "current",
+    "version": "v133",
+    "scale": 1.25,
+    "pspd": 1.3,
+    "screen": [
+      1280,
+      800
+    ],
+    "results": [
+      {
+        "direction": "right",
+        "pxPerSecond": 122.41491598344018,
+        "mode": "walk"
+      },
+      {
+        "direction": "up",
+        "pxPerSecond": 122.4149159834398,
+        "mode": "walk"
+      },
+      {
+        "direction": "left",
+        "pxPerSecond": 122.41491598344018,
+        "mode": "walk"
+      },
+      {
+        "direction": "down",
+        "pxPerSecond": 122.41491598344055,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-right",
+        "pxPerSecond": 122.41491598343998,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-right",
+        "pxPerSecond": 122.41491598344065,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-left",
+        "pxPerSecond": 122.41491598344065,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-left",
+        "pxPerSecond": 122.41491598344012,
+        "mode": "walk"
+      }
+    ]
+  },
+  {
+    "touch": true,
+    "edition": "campaign",
+    "version": "v133",
+    "scale": 1.015625,
+    "pspd": 1.3,
+    "screen": [
+      390,
+      844
+    ],
+    "results": [
+      {
+        "direction": "right",
+        "pxPerSecond": 108.1650546697432,
+        "mode": "walk"
+      },
+      {
+        "direction": "up",
+        "pxPerSecond": 108.16505466974377,
+        "mode": "walk"
+      },
+      {
+        "direction": "left",
+        "pxPerSecond": 108.1650546697432,
+        "mode": "walk"
+      },
+      {
+        "direction": "down",
+        "pxPerSecond": 108.16505466974377,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-right",
+        "pxPerSecond": 108.16505466974233,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-right",
+        "pxPerSecond": 108.16505466974233,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-left",
+        "pxPerSecond": 108.16505466974233,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-left",
+        "pxPerSecond": 108.16505466974233,
+        "mode": "walk"
+      }
+    ]
+  },
+  {
+    "touch": true,
+    "edition": "current",
+    "version": "v133",
+    "scale": 1.015625,
+    "pspd": 1.3,
+    "screen": [
+      390,
+      844
+    ],
+    "results": [
+      {
+        "direction": "right",
+        "pxPerSecond": 108.16505466974301,
+        "mode": "walk"
+      },
+      {
+        "direction": "up",
+        "pxPerSecond": 108.16505466974263,
+        "mode": "walk"
+      },
+      {
+        "direction": "left",
+        "pxPerSecond": 108.16505466974301,
+        "mode": "walk"
+      },
+      {
+        "direction": "down",
+        "pxPerSecond": 108.1650546697434,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-right",
+        "pxPerSecond": 108.16505466974247,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-right",
+        "pxPerSecond": 108.1650546697438,
+        "mode": "walk"
+      },
+      {
+        "direction": "up-left",
+        "pxPerSecond": 108.16505466974333,
+        "mode": "walk"
+      },
+      {
+        "direction": "down-left",
+        "pxPerSecond": 108.16505466974306,
+        "mode": "walk"
+      }
+    ]
+  }
+]

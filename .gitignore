@@ -28,3 +28,6 @@ build/test_logs/
 /dist/yahaeng-2d-cloudflare.zip
 
 /build/boot-validation/
+
+/build/camera-before/
+/build/camera-validation/

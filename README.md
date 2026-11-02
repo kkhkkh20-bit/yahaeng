@@ -3,6 +3,7 @@
 - 기존 2D 게임 · 외부 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
+- v133 시점·가림 전후 비교: https://kkhkkh20-bit.github.io/yahaeng/camera-v133/
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
@@ -29,6 +30,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v133
+
+사선 카메라를 높이고 모바일의 가로 지면 범위를 넓혔다. 지붕의 원형 점무늬 구멍을 통로를 따르는 건물 절개로 교체하고, 창문 시야·화면 방향 이동·핀치 확대를 함께 맞췄다. [참고 화면·변경·검수](docs/CAMERA_REVIEW_V133.md).
 
 ## v132
 

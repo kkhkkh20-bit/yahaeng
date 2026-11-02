@@ -85,6 +85,10 @@ export function buildWorld(G,scene){
   roofs.push({bi,group:g});
   if(bi!==0){const s=sign(g,bi===1?'골목식당':'레코드',2.3,.47,bi===1?'#d7ba92':'#a7bfc0',bi===1?'#49382b':'#233536');s.position.set(cx,2.2,b.y1+1.02);box(g,mat.metal,cx,1.02,b.y1+.72,w-.8,1.7,.1);for(let j=.25;j<1.8;j+=.1)box(g,mat.trim,cx,j,b.y1+.79,w-.85,.015,.018);}
  }
+ // Architecture owns separate materials: cutaways must never erase desks,
+ // stair treads, containers or the door leaf being handled by the player.
+ const architectureMaterials=new Map(),leaves=new Set([...doors.map(o=>o.pivot),...windows.map(o=>o.pivot)]);
+ for(const g of [...floorGroups.filter(Boolean),...roofs.map(o=>o.group)])g.traverse(o=>{if(!o.isMesh)return;for(let p=o;p&&p!==g;p=p.parent)if(leaves.has(p))return;const clone=m=>{if(!architectureMaterials.has(m)){const n=m.clone();n.userData.tacticalOccluder=true;architectureMaterials.set(m,n);}return architectureMaterials.get(m);};o.material=Array.isArray(o.material)?o.material.map(clone):clone(o.material);});
  // Actual furniture footprints, built at human scale. No decorative blocking objects.
  const hidden=new Set(G.S.hides.filter(h=>h.furn&&['locker','wardrobe','cab'].includes(h.type)).map(h=>`${h.fl||0}:${h.tx},${h.ty}`));
  for(const f of G.FURN){const p=floorGroups[f.fl||0];if(!p)continue;const x=f.x+f.w/2,z=f.y+f.h/2,y=(f.fl||0)*FLOOR,w=f.w*.92,d=f.h*.83;

@@ -1,0 +1,242 @@
+[
+  {
+    "mobile": true,
+    "scene": "start",
+    "player": [
+      194.99999999999957,
+      527.8162371817199
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 0
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 72,
+      "triangles": 33458,
+      "pixelRatio": 1,
+      "medianMs": 4.899999998509884,
+      "p95Ms": 28.5
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "west",
+    "player": [
+      195.42953831592635,
+      527.6648483894772
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 88.61910227110528
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 224,
+      "triangles": 40506,
+      "pixelRatio": 1,
+      "medianMs": 4.700000002980232,
+      "p95Ms": 28.5
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "bin",
+    "player": [
+      195.04338671404818,
+      527.7390940262962
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 88.61999999090592
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 209,
+      "triangles": 40408,
+      "pixelRatio": 1,
+      "medianMs": 4.0999999940395355,
+      "p95Ms": 18.100000001490116
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "north",
+    "player": [
+      195.51548970361046,
+      527.8631658811311
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 88.61999999999989
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 187,
+      "triangles": 39448,
+      "pixelRatio": 1,
+      "medianMs": 3.399999998509884,
+      "p95Ms": 24.399999998509884
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "inside",
+    "player": [
+      194.61393501867724,
+      528.036886762568
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 0.0008977288947111646
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 185,
+      "triangles": 56974,
+      "pixelRatio": 1,
+      "medianMs": 3.5,
+      "p95Ms": 24.399999998509884
+    }
+  },
+  {
+    "mobile": true,
+    "scene": "upper",
+    "player": [
+      195.21438008730004,
+      527.6005922862443
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 9.094077729624582e-09
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 277,
+      "triangles": 50900,
+      "pixelRatio": 1,
+      "medianMs": 3.2000000029802322,
+      "p95Ms": 16.100000001490116
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "start",
+    "player": [
+      639.9999999999998,
+      496.8533875307375
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 0
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 212,
+      "triangles": 39324,
+      "pixelRatio": 1,
+      "medianMs": 4.300000004470348,
+      "p95Ms": 24.5
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "west",
+    "player": [
+      640.3931651921989,
+      496.7171911130061
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 83.99914907213771
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 369,
+      "triangles": 44466,
+      "pixelRatio": 1,
+      "medianMs": 3.899999998509884,
+      "p95Ms": 23.899999998509884
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "bin",
+    "player": [
+      640.0397127453715,
+      496.78515206510633
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 83.99999999138002
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 337,
+      "triangles": 44310,
+      "pixelRatio": 1,
+      "medianMs": 4.600000001490116,
+      "p95Ms": 18.5
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "north",
+    "player": [
+      640.4718382525648,
+      496.89871756993983
+    ],
+    "occlusion": {
+      "occluded": true,
+      "radius": 83.99999999999991
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 315,
+      "triangles": 42606,
+      "pixelRatio": 1,
+      "medianMs": 4.899999998509884,
+      "p95Ms": 26.5
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "inside",
+    "player": [
+      639.6466268387359,
+      497.0577278402874
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 0.0008509278622854642
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 314,
+      "triangles": 59952,
+      "pixelRatio": 1,
+      "medianMs": 4.600000001490116,
+      "p95Ms": 19.299999997019768
+    }
+  },
+  {
+    "mobile": false,
+    "scene": "upper",
+    "player": [
+      640.1962264717761,
+      496.658378596509
+    ],
+    "occlusion": {
+      "occluded": false,
+      "radius": 8.619978890639413e-09
+    },
+    "framing": null,
+    "metrics": {
+      "drawCalls": 362,
+      "triangles": 51690,
+      "pixelRatio": 1,
+      "medianMs": 3.0999999940395355,
+      "p95Ms": 13.100000001490116
+    }
+  }
+]

@@ -6,7 +6,7 @@ from http.server import ThreadingHTTPServer
 from playwright.async_api import async_playwright
 spec=importlib.util.spec_from_file_location('route',str(Path(__file__).with_name('t_club_study.py')));m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
 EXTRA='''()=>{const {G,S,P,V,tick,check,stop,render}=play;
-const tunnel=(kind,tx,ty)=>{const test=kind==='sewer'?G.ugAt:G.ventAt,sol=(x,y)=>!test(x,y);const path=G.astar(Math.floor(P.x/48),Math.floor(P.y/48),tx,ty,sol);check(path.length,'passage disconnected '+tx+','+ty);for(const at of path){let n=0;while(Math.hypot(P.x-at.x,P.y-at.y)>3&&n++<400){const dx=at.x-P.x,dy=at.y-P.y,x=(dx-dy)/Math.SQRT2,y=(dx+dy)/Math.sqrt(6),len=Math.hypot(x,y)||1;G.input.joy={x:x/len*.5,y:y/len*.5,mag:.5};tick();}check(n<400,'passage movement blocked');}stop();tick(3);render();};play.tunnel=tunnel;}'''
+const tunnel=(kind,tx,ty)=>{const test=kind==='sewer'?G.ugAt:G.ventAt,sol=(x,y)=>!test(x,y);const path=G.astar(Math.floor(P.x/48),Math.floor(P.y/48),tx,ty,sol);check(path.length,'passage disconnected '+tx+','+ty);for(const at of path){let n=0;while(Math.hypot(P.x-at.x,P.y-at.y)>3&&n++<400){const dx=at.x-P.x,dy=at.y-P.y,v=V.groundToScreen?V.groundToScreen(dx,dy):{x:(dx-dy)/Math.SQRT2,y:(dx+dy)/Math.sqrt(6)},x=v.x,y=v.y,len=Math.hypot(x,y)||1;G.input.joy={x:x/len*.5,y:y/len*.5,mag:.5};tick();}check(n<400,'passage movement blocked');}stop();tick(3);render();};play.tunnel=tunnel;}'''
 async def main():
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(m.H,directory=str(m.R)));threading.Thread(target=server.serve_forever,daemon=True).start();mobile=len(sys.argv)>1;results=[]
  async with async_playwright()as p:

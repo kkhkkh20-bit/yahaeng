@@ -61,7 +61,7 @@ function targetScale() {
   if (P && P.car) return BASE_SCALE * userZoom * (0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더)
   return BASE_SCALE * userZoom * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
-function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem('yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 너무 멀리(전지적 시점)는 못 빼게. 전체는 전술 지도로
+function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.artSlice?'yahaeng.tacticalZoom':'yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
 function toggleTactical() {
   if (!running || !S || S.over || S.entrySel || paused || DLG.modal || S.keypad) return;
   clearPlayerInput();closeEnvPicker();

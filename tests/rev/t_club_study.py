@@ -17,7 +17,7 @@ const check=(v,m)=>{if(!v)throw Error(m+' '+JSON.stringify({t:S.t,hp:P.hp,at:[P.
 const render=()=>{const t=S.t;G.benchDraw(1);S.t=t;};const tick=(n=1)=>{for(let i=0;i<n;i++){if(S.over)break;G.update(1/60);G.updateDialog(1/60);++frames;check(!S.over||S.exitOpen&&document.getElementById('endTitle').textContent==='임무 완료','player died');}};
 const idle=()=>{for(let i=0;G.actionBusy()&&i<600;i++)tick();check(!G.actionBusy(),'action never finishes');tick(8);render();};
 const key=(code,n=3)=>{const b=window.__MOBILE_TEST__&&document.getElementById(({KeyC:'btnGrab',KeyZ:'btnAct',KeyX:'btnCarry'})[code]);if(b)b.dispatchEvent(new PointerEvent('pointerdown',{pointerId:11,pointerType:'touch',bubbles:true}));else window.dispatchEvent(new KeyboardEvent('keydown',{code,bubbles:true}));tick(n);if(b)b.dispatchEvent(new PointerEvent('pointerup',{pointerId:11,pointerType:'touch',bubbles:true}));else window.dispatchEvent(new KeyboardEvent('keyup',{code,bubbles:true}));};
-const drive=(dx,dy)=>{const n=Math.hypot(dx,dy)||1,x=(dx-dy)/Math.SQRT2,y=(dx+dy)/Math.sqrt(6),m=Math.hypot(x,y)||1;G.input.joy={x:x/m*.55,y:y/m*.55,mag:.55};};
+const drive=(dx,dy)=>{const n=Math.hypot(dx,dy)||1,v=V.groundToScreen?V.groundToScreen(dx,dy):{x:(dx-dy)/Math.SQRT2,y:(dx+dy)/Math.sqrt(6)},x=v.x,y=v.y,m=Math.hypot(x,y)||1;G.input.joy={x:x/m*.55,y:y/m*.55,mag:.55};};
 const stop=()=>{G.input.joy=null;};
 const act=(a)=>{check(a,'action absent');G.selectEnvTarget(G.envToken(a));key('KeyX');idle();};
 const walk=(tx,ty,f=P.fl||0)=>{

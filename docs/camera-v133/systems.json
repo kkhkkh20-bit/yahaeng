@@ -1,0 +1,388 @@
+[
+  {
+    "mobile": false,
+    "case": "window",
+    "cells": 412,
+    "at": [
+      11.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
+    "case": "wall",
+    "cells": 2,
+    "at": [
+      18.5,
+      16.5
+    ],
+    "cues": [
+      {
+        "type": "bush",
+        "x": 1032,
+        "y": 792,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": false,
+    "case": "closed-door",
+    "cells": 4,
+    "at": [
+      13.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
+    "case": "open-door",
+    "cells": 423,
+    "at": [
+      13.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
+    "case": "hide-discovery",
+    "cells": 7,
+    "at": [
+      6.5,
+      13.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": false,
+    "case": "bush",
+    "cells": 7,
+    "at": [
+      6.5,
+      13.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": false,
+    "case": "window-pass",
+    "cells": 0,
+    "at": [
+      11.5,
+      14.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
+    "case": "fade",
+    "cells": 0,
+    "at": [
+      12.5,
+      13.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": false,
+    "case": "feedback",
+    "cells": 12,
+    "at": [
+      5.5,
+      18.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "well",
+        "x": 312,
+        "y": 888,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": false,
+    "case": "blood-clean",
+    "cells": 12,
+    "at": [
+      5.5,
+      18.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "well",
+        "x": 312,
+        "y": 888,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": false,
+    "case": "capacity",
+    "cells": 91,
+    "at": [
+      6.5,
+      8.125
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 360,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "window",
+    "cells": 412,
+    "at": [
+      11.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "wall",
+    "cells": 2,
+    "at": [
+      18.5,
+      16.5
+    ],
+    "cues": [
+      {
+        "type": "bush",
+        "x": 1032,
+        "y": 792,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "closed-door",
+    "cells": 4,
+    "at": [
+      13.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "open-door",
+    "cells": 423,
+    "at": [
+      13.5,
+      16.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "hide-discovery",
+    "cells": 7,
+    "at": [
+      6.5,
+      13.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "bush",
+    "cells": 7,
+    "at": [
+      6.5,
+      13.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "window-pass",
+    "cells": 0,
+    "at": [
+      11.5,
+      14.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "fade",
+    "cells": 0,
+    "at": [
+      12.5,
+      13.5
+    ],
+    "cues": []
+  },
+  {
+    "mobile": true,
+    "case": "feedback",
+    "cells": 12,
+    "at": [
+      5.5,
+      18.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "well",
+        "x": 312,
+        "y": 888,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "blood-clean",
+    "cells": 12,
+    "at": [
+      5.5,
+      18.5
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 696,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "well",
+        "x": 312,
+        "y": 888,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  },
+  {
+    "mobile": true,
+    "case": "capacity",
+    "cells": 91,
+    "at": [
+      6.5,
+      8.125
+    ],
+    "cues": [
+      {
+        "type": "box",
+        "x": 312,
+        "y": 360,
+        "bodies": 0,
+        "full": false
+      },
+      {
+        "type": "bush",
+        "x": 312,
+        "y": 600,
+        "bodies": 0,
+        "full": false
+      }
+    ]
+  }
+]

@@ -31,7 +31,7 @@ const inView = (x, y, m = 60) => Math.abs(x - cam.x) < W / SCALE / 2 + m && Math
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
 let userZoom = 1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
 try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
-try { const z = parseFloat(localStorage.getItem('yahaeng.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 예전 저장값(확대해 둔 시점)은 쓰지 않는다
+try { const z = parseFloat(localStorage.getItem(window.__CLUB_STUDY__?'yahaeng.tacticalZoom':'yahaeng.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 사선 화면은 기존 2D 확대 값을 물려받지 않는다
   const r = localStorage.getItem('yahaeng.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
