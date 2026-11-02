@@ -57,7 +57,7 @@ function actVerb(a, ic) {
   if(a.k==='ventIn')return '들어가기';
   if(a.k==='ventOut')return '나오기';
   if (a.k === 'dropItem') return '내려놓기';
-  if (a.k === 'drag') return '끌고 기절';
+  if (a.k === 'drag') return '먼저 기절';
   if (a.k === 'finish') return '처치';
   if (a.k === 'ledgeKill') return '끌어내리기';
   if (a.k === 'camroom') return 'CCTV 끄기';

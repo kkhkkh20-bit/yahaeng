@@ -673,8 +673,10 @@ function updateGuard(g, dt) {
       const spot = g.checks[0];
       if (!spot || (spot.fl || 0) !== flOf(g) || (spot.z || 0) !== (g.z || 0)) { g.state = 'RETURN'; g.path = null; g.icon = null; break; }
       if (g.inspect == null) {
-        if (!g.path) pathTo(g, spot.x, spot.y);
-        if (moveAlong(g, SPD.gSusp * spdMul(), dt) || dist(g.x, g.y, spot.x, spot.y) < 54) { g.path = null; g.inspect = 1.6; setIcon(g, '?'); }
+        const at=searchStandNear(spot);if(!at){g.checks.shift();g.path=null;break;}
+        if (!g.path) pathTo(g, at.x, at.y);
+        moveAlong(g, SPD.gSusp * spdMul(), dt);
+        if(dist(g.x,g.y,at.x,at.y)<24){g.path = null; g.inspect = 1.6;setIcon(g,'?');beginHideInspection(g,spot,g.inspect);}
       } else {
         g.want = Math.atan2(spot.y - g.y, spot.x - g.x);
         g.inspect -= dt;
@@ -683,7 +685,7 @@ function updateGuard(g, dt) {
           const inThis = (P.hide && P.hide === spot) || (spot.type === 'bush' && P.hidden && flOf(P) === flOf(g) && (P.z || 0) === (g.z || 0) && dist(P.x, P.y, spot.x, spot.y) < 44);
           if (inThis) { dragOut(g, spot.type === 'bush' ? '화단을 헤치던 자경대원에게 들켰다.' : spot.type === 'well' ? '맨홀 안을 비추던 자경대원에게 들켰다.' : `${hideIn(spot)}을 뒤지던 자경대원에게 들켰다.`); if (S.over) return; break; }
           if (spot.bodies > 0 && !spot.found) { spot.found = true;for(const c of S.corpses)if(c.container===spot)securityBodyFound(c,g); S.stats.bodies++; bossRadio('body'); setIcon(g, '!?'); setAlert(2, 35, '숨겨둔 시체가 발견됐다'); }
-          if (spot.type === 'bush') for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && dist(c.x, c.y, spot.x, spot.y) < 50) { securityBodyFound(c,g);c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 시체가 발견됐다'); }
+          if (spot.type === 'bush') for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && flOf(c)===flOf(g)&&(c.z||0)===(g.z||0)&&dist(c.x, c.y, spot.x, spot.y) < 50) { securityBodyFound(c,g);c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 사람이 발견됐다'); }
         }
       }
       break;
@@ -729,6 +731,7 @@ function updateGuard(g, dt) {
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
         g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0 }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
         startBuildingSearch(g.poi, g.fac || 'A', 'body', g);
+        g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 쓰러진 사람이 있어! 주변을 확인해!':'시체다! 근처 숨을 곳부터 확인해!',2.8);
       }
       break;
     }
@@ -767,9 +770,9 @@ function startCheck(g, at, max, radius) {
   const R = radius || 330;
   const gf = flOf(g);
   const cand = S.hides.filter(h => (h.fl || 0) === gf && (h.z || 0) === (g.z || 0) && dist(h.x, h.y, at.x, at.y) < R);
-  const bushes = gf ? [] : S.bushes.filter(b => dist(b.x, b.y, at.x, at.y) < Math.min(R, 240)).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
+  const bushes = gf||g.z ? [] : S.bushes.filter(b => dist(b.x, b.y, at.x, at.y) < Math.min(R, 240)).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
   const picked = []; for (const b of bushes) if (!picked.some(p => dist(p.x, p.y, b.x, b.y) < 80)) picked.push(b);
-  const list = cand.concat(picked.slice(0, 2)).filter(s => astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), s.tx, s.ty).length || dist(g.x, g.y, s.x, s.y) < 60)
+  const list = cand.concat(picked.slice(0, 2)).filter(s => {const p=searchStandNear(s);return p&&(astar(Math.floor(g.x / TILE),Math.floor(g.y / TILE),Math.floor(p.x/TILE),Math.floor(p.y/TILE)).length||dist(g.x,g.y,p.x,p.y)<28);})
     .sort((a, b) => dist(a.x, a.y, g.x, g.y) - dist(b.x, b.y, g.x, g.y)).slice(0, max);
   if (!list.length) { g.state = 'RETURN'; g.path = null; g.icon = null; return false; }
   g.state = 'CHECK'; g.checks = list; g.inspect = null; g.path = null; setIcon(g, '?');

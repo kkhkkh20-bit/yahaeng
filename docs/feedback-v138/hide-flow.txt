@@ -1,0 +1,4 @@
+PASS PC {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS touch {'entries': 209, 'stores': 2, 'drags': 3, 'ambushes': 4, 'sides': ['0,1', '-1,0', '1,0', '0,-1']}
+PASS actual keyboard entry, directional exit, subject-specific storage label and delayed storage
+PASS actual touch entry, directional exit, subject-specific storage label and delayed storage

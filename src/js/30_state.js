@@ -454,6 +454,21 @@ function lotTile(h) {  // 맨땅 칸: 어두운 콘크리트 + 잔 얼룩 + 가�
   if (v === 3) { x.fillStyle = 'rgba(0,0,0,.12)'; x.beginPath(); x.ellipse(26, 22, 12, 8, 0.4, 0, Math.PI * 2); x.fill(); }
   return (lotC[v] = c);
 }
+// A prop replaces its map cell, not the paving beneath it.
+function propGround(ch,tx,ty) {
+  if(!'COHWZLP'.includes(ch))return ch;
+  const counts=new Map();
+  for(const [dx,dy]of N8){const c=G[ty+dy]?.[tx+dx];if(c&&'.,=gdwvth'.includes(c))counts.set(c,(counts.get(c)||0)+1);}
+  return [...counts].sort((a,b)=>b[1]-a[1])[0]?.[0]||',';
+}
+function drawStreetPlanter(c,tx,ty){
+  const x=tc(tx),y=tc(ty);c.save();c.translate(x,y);
+  c.fillStyle='#11171588';c.beginPath();c.ellipse(2,15,22,10,0,0,TAU);c.fill();
+  c.fillStyle='#4a4336';c.beginPath();c.moveTo(-21,-9);c.lineTo(21,-9);c.lineTo(17,18);c.lineTo(-17,18);c.closePath();c.fill();
+  c.fillStyle='#756a52';c.fillRect(-23,-12,46,7);c.fillStyle='#252c20';c.fillRect(-19,-12,38,3);
+  for(const [dx,dy,r]of [[-10,-19,10],[9,-20,11],[0,-29,10],[-15,-28,7],[15,-31,7]]){c.fillStyle=dy<-25?'#455c3c':'#344b32';c.beginPath();c.arc(dx,dy,r,0,TAU);c.fill();}
+  c.restore();
+}
 function kitGround(ch, tx, ty) {
   const h = (((tx * 73856093) ^ (ty * 19349663)) >>> 0) % 100;
   if (ch === 'T' || ch === 'B') { const n = [[0, 1], [0, -1], [1, 0], [-1, 0]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]); ch = n.includes('g') ? 'g' : n.includes('d') ? 'd' : n.includes('=') ? '=' : '.'; }
@@ -580,9 +595,9 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx]; if(quarterFloor(x,ch,tx,ty))continue; let b = base(ch, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
-    const kg = KIT ? kitGround(ch, tx, ty) : null;
+    const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
   }
   x.strokeStyle = 'rgba(200,225,245,.35)'; x.lineWidth = 2;
@@ -651,7 +666,7 @@ function renderMap(R) {
       x.strokeStyle = '#2a2a30'; x.lineWidth = 2; x.strokeRect(px + 3, py + 5, 42, 38);
     }
     if (ch === 'C') draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
-    if (ch === 'O') draw(tx % 2 ? 'pot0' : 'pot1', px, py);
+    if (ch === 'O') drawStreetPlanter(x,tx,ty);
     if (ch === 'R') draw('rock', px, py);
     if(ch==='H'){x.fillStyle='rgba(0,0,0,.2)';x.fillRect(px+4,py+8,TILE-8,TILE-12);}
     if (ch === 'U') {  // 컨테이너·창고 옥상 (높이 1): 골함석, 남쪽 끝은 앞면

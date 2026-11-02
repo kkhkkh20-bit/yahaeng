@@ -1,0 +1,8 @@
+t_target_body 0 PASS {'rooftopHeight': True, 'drawnOnceAboveRoof': True, 'groundGuardSeparation': True, 'movingObjective': True, 'containerRecovery': True}
+
+t_environment_targets 0 PASS {'poleLights': 8, 'overlap': 'pole/light/door and global fuse', 'legacyAnchors': True}
+PASS actual keyboard and mobile light-switch input
+
+t_interaction_flow 0 PASS overlap and pickup phases, facing at contact, door intent, selected corpse and lift lock, selection stability, dress phases, single use effect and permission, target revalidation, distance revalidation, travel continuity, vent transitions, lockpick continuity, wall access, floor access, 15 mission vent roundtrips
+PASS keyboard and mobile touch, busy labels, uninterrupted dress and one completion
+

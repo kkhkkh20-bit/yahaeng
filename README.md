@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v137): https://kkhkkh20-bit.github.io/yahaeng/?v=137
+- 2D 본편 · 시야와 소리 연습 (v138): https://kkhkkh20-bit.github.io/yahaeng/?v=138
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -31,6 +31,10 @@ python3 tools/run_tests.py       # 빌드 → 도달 검사 → 회귀 테스트
 - `dist/itch/` itch.io 올릴 파일과 페이지 문구
 - `docs/` 설계 문서·배치도
 - `VERSION` 지금 판본 (시작 화면에 현재 버전과 빌드 날짜를 표시한다)
+
+## v138
+
+클럽 옆 통로와 소품 바닥을 맞추고, 기절 소리와 동료 발견 신고를 구분했다. 조명을 끄는 모습을 본 경비의 항의·복구와 실제 은신처 수색을 연결했다. 붙잡은 적은 먼저 기절시킨 뒤 운반하며, 화단에는 안쪽으로 내려놓아 숨긴다. [변경·검수](docs/FEEDBACK_V138.md) · [비교 화면](docs/feedback-v138/index.html).
 
 ## v137
 

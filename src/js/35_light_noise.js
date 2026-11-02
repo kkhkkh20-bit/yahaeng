@@ -89,6 +89,19 @@ function soundField(x,y,r){
     }
   }return distances;
 }
+// Sample witnesses before extinguishing the light, using actual sight and floor rules.
+function lampSwitchWitnesses(l){
+  const P=S.player,L0=CUR_F;setLayer(flOf(P));const light=lightAt(P.x,P.y,!!P.z);
+  const list=S.guards.filter(g=>!g.civ&&!g.dog&&!g.target&&!g.doomed&&!g.climb&&['PATROL','RETURN','SUSPICIOUS'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&canSee(g,P.x,P.y,light,P.hidden,P.mode==='sneak',P.z)>0);
+  setLayer(L0);return list;
+}
+function respondToLampOff(l,watchers){
+  if(!l.off||l.broken||l.cut!=null||!watchers.length)return;
+  const at=lampControl(l),g=watchers.sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
+  if(S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l))return;
+  releaseSearchJob(g);endChat(g);g.state='PATROL';g.path=null;g.act=null;g.bubble=null;g.soundWatchUntil=0;g.sense=null;g.hearT=0;g.poi=null;
+  g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'불 끄지 마세요. 다시 켭니다.',2.4);
+}
 function noise(x, y, r, src, fl, z) {
   if (fl == null) fl = flOf(S.player);
   const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
@@ -112,6 +125,7 @@ function noise(x, y, r, src, fl, z) {
       if (g.state === 'FUSE' && src !== 'stone') continue;
       if (g.state === 'BODY' || g.state === 'LURE') continue;
       if(g.seen||g.state==='NOTICE'&&g.why==='saw')continue;
+      nz.heard=true;
       if(!STAGE.tutorial&&!g.dog&&!g.target&&!g.elite&&(src==='whistle'||src==='stone')){nz.heard=true;if(['SEARCH','CHECK'].includes(g.state)||g.state==='SUSPICIOUS'&&(g.why!=='heard'||!g.reached&&g.poi&&dist(g.poi.x,g.poi.y,x,y)>96)){rememberSound(g,nz);continue;}decoys.push({g,d});continue;}
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)

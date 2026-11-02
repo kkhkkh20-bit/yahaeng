@@ -1,0 +1,4 @@
+PASS PC {"arrivalSeconds": 28, "maxStep": 4.06, "waitingSeconds": 35, "retry": true, "checkpoint": true, "preparationLead": true, "forcedExit": true}
+PASS touch {"arrivalSeconds": 28, "maxStep": 4.06, "waitingSeconds": 35, "retry": true, "checkpoint": true, "preparationLead": true, "forcedExit": true}
+PASS actual keyboard phone contact, recovery and one appointment
+PASS actual touch phone contact, recovery and one appointment

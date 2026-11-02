@@ -31,10 +31,11 @@ async def main():
    }passed.push('crew, target and civilian: tap KO / hold kill and accurate mission outcome');
    for(const type of ['box','bush'])for(const held of [false,true]){
     fresh('target');g.state='CAPTIVE';P.captive=g;const h={type,x:P.x+24,y:P.y,tx:33,ty:21,fl:0,z:0,bodies:0,cap:3};S.hides=[h];
-    const a=G.envAction();check(a.k==='drag'&&a.label.includes('기절')&&a.hold==='처치',type+' drag label');
+    const a=G.envAction();check(a.k==='execute'&&a.label.includes('기절')&&a.hold==='처치',type+' captive must be incapacitated outside');
     press('KeyX');G.actEnv();advance(.08);if(!held)release('KeyX');advance(3.5);release('KeyX');
-    check(S.stats.kills===(held?1:0)&&S.corpses[0].ko===!held,type+' drag input ignored nonlethal tap');
-   }passed.push('container and bush: same environment button controls tap/hold');
+    check(S.stats.kills===(held?1:0)&&S.corpses[0].ko===!held,type+' captive input ignored nonlethal tap');
+   check(!P.hide&&!P.trav&&!S.corpses[0].stashed&&h.bodies===0,'live captive was stored');
+   }passed.push('container and bush: incapacitation precedes separate storage');
    fresh('target');press('KeyZ');G.actAttack();advance(.2);release('KeyZ');press('KeyX');advance(1.4);release('KeyX');check(S.stats.kills===0,'another button completed lethal hold');
    advance(.2);check(G.attackAction().k==='finish','unconscious target cannot be finished later');
    press('KeyZ');G.actAttack();advance(.4);release('KeyZ');check(S.stats.kills===0&&!P.lethalHold,'early release killed unconscious person');
@@ -80,7 +81,7 @@ async def main():
     assert await ui.evaluate('window.__game.S.player.captive===window.__g&&window.__game.S.stats.kills===0'),'Real grapple input kills target'
    for held in [False,True]:
     await ui.evaluate('''()=>{__fresh();const S=window.__game.S,P=S.player;P.captive=__g;__g.state='CAPTIVE';S.hides=[{type:'bush',x:P.x+24,y:P.y,tx:33,ty:21,fl:0,z:0,cap:3,bodies:0}];__step(2)}''')
-    assert await ui.evaluate("document.querySelector('#btnCarry').textContent.includes('끌고 기절')&&document.querySelector('#btnCarry').textContent.includes('길게 처치')")
+    assert await ui.evaluate("document.querySelector('#btnCarry').textContent.includes('기절')&&document.querySelector('#btnCarry').textContent.includes('길게 처치')")
     await down('KeyX','#btnCarry')
     if not held:await up('KeyX')
     if held:
@@ -90,5 +91,5 @@ async def main():
     assert await ui.evaluate('(held)=>window.__game.S.stats.kills===(held?1:0)&&!!window.__game.S.corpses[0].ko===!held',held),'Real environment tap/hold differs from attack policy'
    await ui.evaluate('__fresh()');await down('KeyZ','#btnAct');await ui.evaluate('__step(25);window.dispatchEvent(new Event("blur"));__step(10);window.dispatchEvent(new Event("focus"))');await up('KeyZ');await ui.evaluate('__step(90)');assert await ui.evaluate('window.__game.S.stats.kills===0&&window.__game.S.corpses[0].ko'),'App switch continued lethal input'
    await context.close()
-  assert not errors,errors;print('PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and bush drag');await b.close()
+  assert not errors,errors;print('PASS visible grab prompt, both PC key sets and actual mobile touch: tap/hold attack, grapple and outside incapacitation');await b.close()
 asyncio.run(main())

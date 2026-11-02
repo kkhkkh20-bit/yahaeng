@@ -493,16 +493,7 @@ function nearBushSpot() {
   for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b, 64)) { bd = d; best = b; } }
   return best;
 }
-// 실행 거리 밖에서도 붙잡은 적과 함께 들어갈 곳과 행동 키를 미리 안내한다.
-function captiveDragPreview() {
-  const P = S.player; if (!P.captive || P.trav || P.grabIn || P.jump) return null;
-  let best = null, bd = 144;
-  for (const h of [...S.hides, ...S.bushes]) {
-    if ((h.fl || 0) !== flOf(P) || (h.z || 0) !== (P.z || 0) || !hideSpace(h,1,true)) continue;
-    const d = dist(P.x, P.y, h.x, h.y); if (d < bd) { best = h; bd = d; }
-  }
-  return best;
-}
+
 function nearFuse() { const P = S.player; return !P.z && !P.fl && STAGE.fuse && !ACT_SKIP.has(STAGE.fuse) && S.lightsOn && objectReachable({ x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, 62); }
 
 function nearVent() {
@@ -666,9 +657,6 @@ function primaryActionRaw() {
     return { k: 'none', label: '암살' };
   }
   if (P.captive) {
-    const h = nearHide();
-    if (h && hideSpace(h,1,true)) return { k: 'drag', h, label: h.type === 'well' ? '맨홀로 끌고 가 기절' : `${withJosa(hideName(h), '으로/로')} 끌고 가 기절` };
-    const bs = nearBushSpot(); if (bs) return { k: 'drag', h: bs, label: '화단으로 끌고 가 기절' };
     return { k: 'execute', label: '기절', hold: '처치' };
   }
   if (P.hidden) { const ag = ambushTarget(); if (ag) return { k: 'ambush', g: ag, label: '끌어들여 암살' }; }
@@ -704,7 +692,7 @@ function primaryActionRaw() {
   const h = nearHide();
   if(h&&!P.carrying)return hideSpace(h,0,true)?{k:'hide',h,label:'들어가 숨기'}:{k:'keymsg',h,label:hideName(h)+' 가득 참'};
   if(h&&P.carrying)return hideSpace(h,1)?{k:'stash',h,c:P.carrying,label:P.carrying.ko?'기절자 넣기':'시체 넣기'}:{k:'keymsg',h,label:hideName(h)+' 가득 참'};
-  if (P.carrying) return { k: 'none', label: '—' };  // 메고 있는 동안 큰 버튼이 조명·문을 가리키지 않게 (내려놓기는 [보조])
+  if (P.carrying) {const bs=nearBushSpot();return bs?{k:'stash',h:bs,c:P.carrying,label:'화단에 숨기기'}:{k:'none',label:'—'};}
   const tp = nearTrap(); if (tp) return { k: 'trap', tp, label: tp.label };
   if (nearFuse()) return { k: 'fuse', targetObject: STAGE.fuse, at: { x: tc(STAGE.fuse[0]), y: tc(STAGE.fuse[1]) }, label: '전체 조명 끄기' };
   // 문과 두꺼비집·조명이 함께 가까우면 더 가까운 쪽
@@ -918,7 +906,8 @@ function actPrimary(force) {
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
-      const l = a.l; l.off = !l.off; play('switch', 0.45); noise(l.x, l.y, 25, 'switch');
+      const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
+      if(l.off)respondToLampOff(l,watchers);
       for (const c of S.corpses) c.light = lightAt(c.x, c.y);
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 영영 끄려면 다트로 깨라');
       break;
@@ -937,7 +926,7 @@ function actPrimary(force) {
     }
     case 'finish': finishKo(a.c, a.c.g); P.strikeT = .35; checkObjective(); break;
     case 'execute': execCaptive(); break;
-    case 'drag': { if(P.captive)beginHideFlow('drag',a.h,P.captive);break; }
+    case 'drag': { if(P.captive)execCaptive(true);break; } // Legacy input also incapacitates outside; storage is a separate action.
     case 'retrieve': beginHideFlow('retrieve',a.h,a.c); break;
     case 'hide': enterHide(a.h); break;
     case 'stash': actCarry({ k: 'carry', c: P.carrying, h: a.h }); break;
@@ -967,7 +956,7 @@ function updateGrabIn(P, dt) {
     P.grabIn = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0));
     if (g.state !== 'CAPTIVE') return;
     P.captive = g;
-    hint('grab', '붙잡은 적은 약 9초 후 빠져나간다. [행동]으로 은신처에 끌고 가기: 짧게 기절, 길게 처치');
+    hint('grab', '붙잡은 적은 약 9초 후 빠져나간다. 먼저 짧게 눌러 기절시킨 뒤 운반해 화단·수거함에 숨긴다');
   }
 }
 // 숨기: 바로 사라지지 않는다. 쓰레기통 = 다가가 테를 짚고 몸을 넘겨 안으로 가라앉음 · 화단 = 웅크려 파고듦 · 맨홀 = 가장자리에서 사다리로 내려감
@@ -996,16 +985,16 @@ const koDefault = g => !!g && !g.dog && !!g.civ;
 const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
-function koPerson(g, mode, where, intent) {
+function koPerson(g, mode, where, intent, quiet) {
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
-  if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++; S.stats.stashed++; }
+  if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
-  noise(g.x, g.y, 30, 'ko', flOf(g));
+  noise(g.x, g.y, quiet?12:30, 'ko', flOf(g),g.z||0);
   if (S.fuseGuard === g) S.fuseGuard = null;
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')); }
   armKoHold(c, g, intent);
@@ -1081,7 +1070,7 @@ function updatePairCombat(P,dt) {
   if(!A.committed&&t>=at){
     A.committed=true;g.takedownIntent=A.intent;g.pairDown=true;S.koNext=A.ko;
     const nd=S.decals.length,nf=S.fx.length,nc=S.corpses.length;
-    try{killGuard(g,null,null,A.quiet);}finally{delete g.pairDown;}
+    try{killGuard(g,null,null,A.quiet||A.kind==='choke');}finally{delete g.pairDown;}
     S.fx.length=nf;if(A.kind==='choke')S.decals.length=nd;
     A.c=S.corpses.length>nc?S.corpses.at(-1):null;
     if(A.c){const x=P.x+Math.cos(P.a)*24,y=P.y+Math.sin(P.a)*24,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
@@ -1107,7 +1096,7 @@ const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t 
 function killGuard(g, mode, where, quiet) {
   if (g.child) return;
   const intent = g.takedownIntent; delete g.takedownIntent;
-  if (S.koNext || (intent && !intent.lethal) || (!S.lethalNext && (g.civ || koDefault(g)))) { S.lethalNext = false; S.koNext = false; sfx('stingerKO'); return koPerson(g, mode, where, intent); }
+  if (S.koNext || (intent && !intent.lethal) || (!S.lethalNext && (g.civ || koDefault(g)))) { S.lethalNext = false; S.koNext = false; sfx('stingerKO'); return koPerson(g, mode, where, intent, quiet); }
   g.unconscious = false;
   sfx('stinger');  // 조용한 처치의 손맛 (플레이어만 듣는다)
   S.lethalNext = false;
@@ -1121,7 +1110,7 @@ function killGuard(g, mode, where, quiet) {
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);
   const intoWell = mode === 'stash';
-  if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
+  if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (g.z) noise(g.x, g.y, 60, 'kill', flOf(g));  // 옥상: 핏자국을 남기지 않는다 (아래층에서 보이거나 닦을 수 없는 피가 생기지 않게)
   else { c.bleed = ++S.trailN || (S.trailN = 1); S.decals.push({ x: g.x + rnd(-6, 6), y: g.y + rnd(-6, 6), r: rnd(14, 19), rot: rnd(0, TAU), fl: flOf(g), trail: c.bleed, k: 0 }); noise(g.x, g.y, 60, 'kill', flOf(g)); }  // 처치한 자리에 핏자국. 이 시체를 옮기면 같은 번호로 핏방울이 이어진다
@@ -1300,7 +1289,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   if (P.carrying) {
-    const c = P.carrying; const b = sa.h || nearHide(), pc = pairCarry(P);
+    const c = P.carrying; const b = sa.h || nearHide() || nearBushSpot(), pc = pairCarry(P);
     if (b) {beginHideFlow('stash',b,c);return;}
     if (pc) {  // 앞에 내려놓는다: 어깨에서 내려 → 안아 내림 → 허리 숙여 바닥에 눕힌다
       const ox = P.x + Math.cos(P.a) * 26, oy = P.y + Math.sin(P.a) * 26; if (!solidAt(Math.floor(ox / TILE), Math.floor(oy / TILE))) { c.x = ox; c.y = oy; } else { c.x = P.x; c.y = P.y; }
@@ -1328,7 +1317,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   if (P.captive) return { k: 'execute', label: '기절시키기', hold: '처치' };
   if (P.carrying) {
     if (!nearHide()) { const tg = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.target && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 300 && dist(g.x, g.y, P.x, P.y) > 70 && los(P.x, P.y, g.x, g.y) && Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < 1.0).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0]; if (tg) return { k: 'throwBody', g: tg, label: '시체 던지기 (겁주기)' }; }
-    { const nh = nearHide(); return { k: 'carry', c: P.carrying, h: nh, label: nh ? (hideSpace(nh,1)?(P.carrying.ko?'기절자 넣기':'시체 넣기'):hideName(nh)+' 가득 참'):'내려놓기' }; }
+    { const nh = nearHide()||nearBushSpot(); return { k: 'carry', c: P.carrying, h: nh, label: nh ? (hideSpace(nh,1)?(nh.type==='bush'?'화단에 숨기기':P.carrying.ko?'기절자 넣기':'시체 넣기'):hideName(nh)+' 가득 참'):'내려놓기' }; }
   }
   if (P.z || P.jump) return { k: 'none', label: '보조' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 · ${P.candy}개` };

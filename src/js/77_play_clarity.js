@@ -52,9 +52,7 @@ function encounterRows(P, ka, ga, pa) {
   const victim=ka&&(ka.c||ka.g||ka.kill||ka.list?.[0]||ka.stalk);
   if(P.captive) {
     if(canInterrogate())rows.push({key:key('grab'),text:'심문',detail:'',ready:true});
-    rows.push({key:key('atk'),text:'기절',detail:'길게 처치',ready:true});
-    const h=pa?.k==='drag'?pa.h:captiveDragPreview(),ready=pa?.k==='drag';
-    if(ready)rows.push({key:key('env'),text:'끌고 가 기절',detail:hideName(h)+' · 길게 처치',ready:true});
+    rows.push({key:key('atk'),text:'기절',detail:'이후 운반·은닉 · 길게 처치',ready:true});
     return rows;
   }
   if(victim&&ka.k!=='none')rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 처치':ka.stalk?'더 가까이':'',ready:ka.k!=='none'});

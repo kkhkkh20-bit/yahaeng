@@ -60,7 +60,7 @@ function envChoices() {
   if (hanging.ledge) return hanging.trav || hanging.jump ? [] : [{ k: 'ledgeUp', label: '올라가기', at: { x: hanging.x, y: hanging.y - 20 } }];
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
-  if(P.captive){const d=rawChoices().find(a=>a.k==='drag');if(d)return[d];const h=nearHide();return h&&!hideSpace(h,1,true)?[{k:'keymsg',h,at:h,label:'공간 부족'}]:[];}
+  if(P.captive)return[{k:'execute',label:'먼저 기절시키기',hold:'처치'}];
   const stored=!P.hide&&!P.carrying&&!P.captive&&nearHide();
   const recover=stored&&S.corpses.filter(c=>c.stashed&&c.container===stored).sort((a,b)=>(b.target&&b.ko?2:!b.stripped&&b.outfit?1:0)-(a.target&&a.ko?2:!a.stripped&&a.outfit?1:0))[0];
   const retrieval=recover?{k:'retrieve',h:stored,c:recover,at:stored,label:recover.target&&recover.ko?'기절한 표적 꺼내기':recover.ko?'기절자 꺼내기':'시체 꺼내기'}:null;

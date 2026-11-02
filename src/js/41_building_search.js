@@ -35,9 +35,9 @@ function searchFloorPoints(bi, f) {
 function searchStandNear(spot) {
   const f = flOf(spot), z = spot.z || 0, L0 = CUR_F; setLayer(f);
   const sol = z ? solidFor(z) : solidAt, x = Math.floor(spot.x / TILE), y = Math.floor(spot.y / TILE);
-  const choices = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => !sol(x + dx, y + dy));
-  setLayer(L0); if (!choices.length) return null;
-  const p = choices[0]; return { x: tc(x + p[0]), y: tc(y + p[1]), fl: f, z };
+  const choices=spot.type&&spot.type!=='bush'?hidePerimeter(spot).filter(p=>!spot.furn||spot.type==='bed'||p.ny===1):[[0,0],[1,0],[-1,0],[0,1],[0,-1]].map(([dx,dy])=>({tx:x+dx,ty:y+dy}));
+  const p=choices.find(p=>inMap(p.tx,p.ty)&&!sol(p.tx,p.ty));setLayer(L0);
+  return p?{x:tc(p.tx),y:tc(p.ty),fl:f,z}:null;
 }
 function buildingSearchJobs(at, bi) {
   const jobs = [], add = (p, kind, priority, extra) => {
@@ -56,8 +56,8 @@ function buildingSearchJobs(at, bi) {
   } else {
     for (const [dx, dy] of [[120, 0], [-120, 0], [0, 120], [0, -120]]) add(searchStandNear({ ...at, x: at.x + dx, y: at.y + dy }), 'perimeter', 2);
   }
-  (S.hides || []).forEach((h, i) => { if ((bi >= 0 ? bldAt(h.tx, h.ty) === bi : dist(h.x, h.y, at.x, at.y) < 240) && h.type !== 'well') add(searchStandNear(h), 'hide', 3.4, { hideIndex: i }); });
-  (S.bushes || []).forEach((h, i) => { if (!at.z && !at.fl && dist(h.x, h.y, at.x, at.y) < 180) add(searchStandNear(h), 'hide', 4.5, { bushIndex: i }); });
+  (S.hides || []).forEach((h, i) => { if (bi >= 0 ? bldAt(h.tx, h.ty) === bi : flOf(h)===flOf(at)&&(h.z||0)===(at.z||0)&&dist(h.x, h.y, at.x, at.y) < 240) add(searchStandNear(h), 'hide', 1.6, { hideIndex: i }); });
+  (S.bushes || []).forEach((h, i) => { if (!at.z && !at.fl && dist(h.x, h.y, at.x, at.y) < 180) add(searchStandNear(h), 'hide', 1.7, { bushIndex: i }); });
   return jobs;
 }
 function releaseSearchJob(g) {
@@ -110,7 +110,10 @@ function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   if (source !== 'body' && inc.source === 'body') { inc.source = source; inc.at = pos; }
   for (const job of inc.jobs) if (job.claim != null && !S.guards.some(g => g.id === job.claim && g.state === 'SEARCH' && g.searchJob?.incident === inc.id && g.searchJob.job === job.id)) job.claim = null;
   const eligible = g => !g.civ && !g.dog && !g.target && g.tag !== 'camop' && !g.off && !g.yank && !g.doomed && !g.brawl && !g.hunt && !g.incident && !g.climb && !radioBusy(g) && (g.fac || 'A') === fac && g.why !== 'exit' && g.why !== 'blood' && (['PATROL', 'RETURN', 'SUSPICIOUS', 'SEARCH', 'CHECK', 'NOTICE'].includes(g.state) || (g.state === 'ALERT' && !g.seen && g.lostT > 1));
-  const cand = S.guards.filter(g => eligible(g) && (g === seed || dist(g.x, g.y, pos.x, pos.y) < 900)).sort((a, b) => (a === seed ? -1 : b === seed ? 1 : dist(a.x, a.y, pos.x, pos.y) - dist(b.x, b.y, pos.x, pos.y)));
+  // A body discovery is a local spoken report, not an instant map-wide radio message.
+  // Other floors can still learn of missing guards through the separate radio system.
+  const informed=g=>source!=='body'||!seed||g===seed||flOf(g)===flOf(seed)&&(g.z||0)===(seed.z||0)&&dist(g.x,g.y,seed.x,seed.y)<260*soundThrough(seed.x,seed.y,g.x,g.y);
+  const cand = S.guards.filter(g => eligible(g) && informed(g) && (g === seed || dist(g.x, g.y, pos.x, pos.y) < 900)).sort((a, b) => (a === seed ? -1 : b === seed ? 1 : dist(a.x, a.y, pos.x, pos.y) - dist(b.x, b.y, pos.x, pos.y)));
   let count = S.guards.filter(g => g.state === 'SEARCH' && g.searchJob?.incident === inc.id).length;
   for (const g of cand) {
     if (count >= 6) break;
@@ -140,18 +143,21 @@ function updateBuildingSearch(g, dt) {
     if (doorIndex >= 0 && dist(g.x, g.y, next.x, next.y) < 65) { ref.door = { index: doorIndex, t: 1.1 }; return; }
     const arrived = moveAlong(g, SPD.gSusp * spdMul(), dt);
     if (hopClimb(g, arrived)) return;
-    if (lvlKey(gSpot(g)) === lvlKey(job.at) && dist(g.x, g.y, job.at.x, job.at.y) < 28) { ref.inspect = job.kind === 'entrance' ? 5 : 2.4; g.path = null; g.lookT = null; g.waitBase2 = g.a; }
+    if (lvlKey(gSpot(g)) === lvlKey(job.at) && dist(g.x, g.y, job.at.x, job.at.y) < 28) { ref.inspect = job.kind === 'entrance' ? 5 : 2.4; g.path = null; g.lookT = null; g.waitBase2 = g.a;
+      const h=job.hideIndex!=null?S.hides[job.hideIndex]:job.bushIndex!=null?S.bushes[job.bushIndex]:null;if(h)beginHideInspection(g,h,ref.inspect);
+    }
     else if (ref.elapsed > 40 || (ref.elapsed > 3 && !g.path?.length && !g.hop)) finish('unreachable');
     return;
   }
-  g.moving = false; lookAround(g, dt, g.waitBase2, 2.2, [.35, .65]);
+  g.moving = false;const inspecting=job.hideIndex!=null?S.hides[job.hideIndex]:job.bushIndex!=null?S.bushes[job.bushIndex]:null;
+  if(inspecting)g.want=Math.atan2(inspecting.y-g.y,inspecting.x-g.x);else lookAround(g, dt, g.waitBase2, 2.2, [.35, .65]);
   if ((ref.inspect -= dt) > 0) return;
   const h = job.hideIndex != null ? S.hides[job.hideIndex] : job.bushIndex != null ? S.bushes[job.bushIndex] : null;
   if (h && flOf(h) === flOf(g) && (h.z || 0) === (g.z || 0) && dist(g.x, g.y, h.x, h.y) < 80) {
     const P = S.player;
     if (flOf(P) === flOf(g) && (P.z || 0) === (g.z || 0) && (P.hide === h || (job.bushIndex != null && P.hidden && dist(P.x, P.y, h.x, h.y) < 44))) { releaseSearchJob(g); dragOut(g, '은신처를 확인하던 경비에게 발각됐다.'); return; }
-    if (h.bodies > 0 && !h.found) { h.found = true; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '숨겨둔 시체가 발견됐다'); }
-    if (job.bushIndex != null) for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && flOf(c) === flOf(g) && (c.z || 0) === (g.z || 0) && dist(c.x, c.y, h.x, h.y) < 50) { c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 시체가 발견됐다'); }
+    if (h.bodies > 0 && !h.found) { h.found = true;for(const c of S.corpses)if(c.container===h){securityBodyFound(c,g);c.discovered=true;} S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '숨겨둔 사람이 발견됐다'); }
+    if (job.bushIndex != null) for (const c of S.corpses) if (c.hidden && !c.discovered && !c.stashed && flOf(c) === flOf(g) && (c.z || 0) === (g.z || 0) && dist(c.x, c.y, h.x, h.y) < 50) { securityBodyFound(c,g);c.discovered = true; c.hidden = false; S.stats.bodies++; bossRadio('body'); setAlert(2, 35, '화단 속 사람이 발견됐다'); }
   }
   finish('checked');
 }

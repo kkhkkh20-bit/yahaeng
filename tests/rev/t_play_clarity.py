@@ -31,7 +31,7 @@ async def main():
     G.grab(g);for(let i=0;i<90;i++){S.t+=1/60;G.updatePlayer(1/60)}check(P.captive===g,'actual grab failed');
     const before=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(before.length===2&&before[0].text==='심문'&&before[1].text==='기절','captive choices not grouped');
     const h={type:'bush',x:P.x+26,y:P.y,fl:0,z:0,tx:Math.floor((P.x+26)/48),ty:Math.floor(P.y/48),bodies:0,cap:2};S.bushes=[h];S.t+=.01;
-    const env=G.envAction(),drag=G.encounterRows(P,G.attackAction(),G.grabAction(),env);check(env.k==='drag'&&drag.some(r=>r.text==='끌고 가 기절'&&r.ready&&r.detail.includes('길게 처치')),'drag falsely described as harmless movement');
+    const env=G.envAction(),drag=G.encounterRows(P,G.attackAction(),G.grabAction(),env);check(env.k==='execute'&&drag.some(r=>r.text==='기절'&&r.ready&&r.detail.includes('운반'))&&!drag.some(r=>r.text.includes('끌고')),'captive instructions skip outside incapacitation');
     G.actGrab();for(let i=0;i<20;i++){S.t+=1/60;G.updatePlayer(1/60)}const asked=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(g.questioned&&!asked.some(r=>r.text.includes('심문'))&&asked.some(r=>r.text==='기절'),'interrogation stays ready after use');const notices=S.toasts.length;G.startAim();check(S.toasts.length===notices,'repeated interrogation shows filler notice');
     // No map text repeats the full selected objective; preserve navigation and destination floor.
     check(G.goalMarkerCaption({text:'의뢰: 장부 훔치기',via:true,fl:1},25)==='2층 입구 · 25m','entrance/floor navigation lost');
