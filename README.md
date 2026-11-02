@@ -1,7 +1,7 @@
 # 야행 · 기존 2D 버전 외부 테스트
 
-v128 기존 2D 캠페인의 고정 배포본. 새 사선 시점 구역은 포함하지 않는다.
-소스 기준: https://github.com/kkhkkh20-bit/yahaeng/commit/ce76dc5
+v136 기존 2D 본편 개선판. 첫 연습에서 시야·소리를 익히고 다음 연습에서 제압·변장·은닉을 배운다. 시야는 적당 한 겹이다. 새 사선 시점 구역은 포함하지 않는다.
+소스 기준: https://github.com/kkhkkh20-bit/yahaeng/commit/907f77c
 
 ## 이미 만든 Workers 프로젝트에서 배포
 
