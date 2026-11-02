@@ -57,7 +57,7 @@ function update(dt) {
     for (const g of S.guards) { if ((g.state !== 'PATROL' && g.state !== 'RETURN') || flOf(g) || g.civ || g.target || g.dog || g.post != null || g.follow != null) continue; const d = dist(g.x, g.y, fb.x, fb.y); if (d < bd) { bd = d; best = g; } }
     if (best) { best.state = 'FUSE'; best.fuseAt = fb; best.path = null; best.atFuse = false; setIcon(best, '?'); fb.guard = best; }
   }
-  if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; for (const c of S.corpses) c.light = lightAt(c.x, c.y); }
+  if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; refreshBodyLighting(); }
   for (const c of S.corpses) if (c.fly) { const f = c.fly; f.t += dt; const k = Math.min(1, f.t / f.dur); c.x = f.x0 + (f.x1 - f.x0) * k; c.y = f.y0 + (f.y1 - f.y0) * k; if (k >= 1) { c.fly = null; c.light = lightAt(c.x, c.y); play('thud', 0.7); if (c.accident) noise(c.x, c.y, 140, 'crash', c.fl || 0); else { S.decals.push({ x: c.x, y: c.y, r: 16, rot: rnd(0, TAU) }); terrorAt(c.x, c.y); } } }  // 추락사(사고)는 피·공포 없이 쿵 소리만 — 와서 보면 '사고가 났네'
   for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s)); } }
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);

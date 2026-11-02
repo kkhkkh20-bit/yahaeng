@@ -28,7 +28,7 @@ async def main():
             return G.zoneInfo(P.x,P.y,P.z);
           };
           window.tick = (seconds) => {const G=window.__game; for(let t=0;t<seconds;t+=.05){G.S.t+=.05;G.updateGuard(window.q,.05)}};
-          window.finishHands = () => {const G=window.__game;for(let t=0;t<1;t+=.02){G.S.t+=.02;G.updatePlayer(.02)}};
+          window.finishHands = () => {const G=window.__game;for(let t=0;t<3.2;t+=.02){G.S.t+=.02;G.updatePlayer(.02)}};
           window.check = (ok,msg) => {if(!ok)throw Error(msg)};
         }''')
         result = await pg.evaluate('''() => {
@@ -37,7 +37,7 @@ async def main():
           const y=q.y; tick(3); check(q.state==='PATROL'&&q.meter===0&&q.y>y+20,'Authorized guard must continue patrol'); results.push('authorized patrol');
           fixture(); P.mode='run';P.moving=true;
           for(let i=0;i<50;i++){G.noise(P.x,P.y,180,'step');tick(.1)}
-          check(q.state==='PATROL'&&!q.hearT&&q.meter===0,'Authorized footsteps/running must not repeatedly pull guards off duty'); results.push('authorized footsteps');
+          check(q.meter>0||q.eyeT>0,'Running in a restricted area must draw attention despite a uniform'); results.push('uniform running attention');
           fixture(); q.state='NOTICE';q.why='saw';q.meter=.8;q.poi={x:P.x,y:P.y};q.noticeT=0;
           tick(3);check(q.state==='PATROL'&&q.meter===0,'Innocent visual notice must return to routine');results.push('notice resolves');
           fixture(null);tick(2);check(q.state==='WARN','Unpermitted entry still warns');results.push('trespass warning');
@@ -45,7 +45,7 @@ async def main():
           fixture();P.disguiseBlown=true;tick(2);check(q.state==='PATROL','Uninformed guard must still accept uniform');fixture();q.wait=999;q.post=0;q.still=true;q.idleT=999;G.rememberSuspect(q,'crew');tick(3);check(q.state==='ALERT','Actual witness must recognize compromised uniform '+JSON.stringify({state:q.state,meter:q.meter,seen:q.seen}));results.push('observer-specific uniform');
           fixture();P.captive={};tick(.1);check(q.state==='ALERT'&&P.disguiseBlown,'Witnessed crime overrides permit');results.push('crime detection');
           fixture(null);q.seen=true;G.goAlert(q); const last={...q.lastSeen};
-          P.x=q.x+100; P.y=q.y+30; q.a=q.want=Math.PI;
+          P.x=q.x+200; P.y=q.y+30; q.a=q.want=Math.PI;
           G.takeProp({outfit:'crew'});
           check(!G.knownFace(q)&&!P.disguiseBlown,'Unseen fresh clothing must not be recognized');
           q.a=q.want=0;tick(1);check(!q.seen&&q.lastSeen.x===last.x&&q.lastSeen.y===last.y,'Pursuer must retain old sighting');

@@ -30,6 +30,7 @@
   exits: [{ at: [17, 26.4], name: '남쪽 담 개구멍', r: 46 }],
   // 구역: 단지 전체가 조직 땅 — 조직원 옷이면 걸어서 지나간다
   zones: [[1, 1, 42, 26, 'hos', null, '조직 창고 단지 · 적진']],  // 적진: 보이면 경고 없이 바로 쫓는다 (조직원 옷이면 통과)
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   locks: [{ b: 0, door: 'vault', key: 'gold' }],
   keyItems: [{ key: 'pin', b: 0, fl: 0, at: 'VA' }, { key: 'gear', b: 1, fl: 0, at: 'R' }],

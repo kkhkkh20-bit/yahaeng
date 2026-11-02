@@ -50,6 +50,11 @@ function dynamicLightAt(x,y,elev,l){
 }
 
 function lightAt(x,y,elev){return dynamicLightAt(x,y,elev,ambientLightAt(x,y,elev));}
+function refreshBodyLighting() {
+  const L0=CUR_F;
+  for (const c of S.corpses) { setLayer(flOf(c)); c.light=lightAt(c.x,c.y,!!c.z); }
+  setLayer(L0);
+}
 
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');

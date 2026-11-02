@@ -22,7 +22,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 목격자가 기억하는 복장 · 재노출 주의`, 3, 'warn');
-    else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3.2, 'good'); hint('disguise2', '초록 경계선은 현재 복장으로 통과할 수 있다. 범행이 보이거나 얼굴을 확인당하면 변장이 발각된다'); }
+    else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3.2, 'good'); hint('disguise2', '복장은 일반 출입만 허용한다. 보안구역에서는 통하지 않고, 가까이 오래 있으면 일반 경비도 신원을 확인한다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장해도 범행이나 출입 권한이 없는 구역에서는 의심받는다'); }
     return;
   }

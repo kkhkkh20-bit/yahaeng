@@ -8,16 +8,21 @@ const Z_PUB = 0, Z_RES = 1, Z_HOS = 2, Z_NAME = ['공개', '출입 금지', '적
 const OUTFITS = { crew: '자경대원 옷', staff: '상회 직원 조끼', courier: '택배 기사 옷', waiter: '클럽 직원 옷', cater: '출장 뷔페 조끼', parcel: '택배 상자' };
 const outfitOf = g => g.outfit || (g.civ || g.dog || g.target ? null : 'crew');
 const outfitName = o => OUTFITS[o] || '변장';
-function zoneInfo(x, y, z) {
+function zoneInfo(x, y, z, floor = CUR_F) {
   if (!STAGE.zones) return { k: Z_HOS, allow: [] };
   const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE), up = (z || 0) > 0, base = up ? [] : (STAGE.zoneAllow || ['crew']);
   const bi = bldAt(tx, ty);
   let k = up || (bi >= 0 && !BLD[bi].vacant) ? Z_RES : Z_PUB, allow = base;
   for (const r of STAGE.zones) if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && (r[5] === 'all' || up === (r[5] === 'roof'))) { k = r[4] === 'pub' ? Z_PUB : r[4] === 'hos' ? Z_HOS : Z_RES; allow = r[7] || base; }
-  return { k, allow };
+  // A uniform is not clearance for records, safes or the command offices.
+  const p = bi >= 0 && PLANS[bi]?.[floor], v = p?.vault;
+  const secure = groundedWorld() && !up && bi >= 0 && (
+    (STAGE.secureFloors || []).some(([b,f]) => b === bi && f === floor) ||
+    (v && tx >= v.x0 && tx <= v.x1 && ty >= v.y0 && ty <= v.y1));
+  return { k: secure ? Math.max(k, Z_RES) : k, allow: secure ? [] : allow, secure: !!secure };
 }
 const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
-const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
+const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z, flOf(P)); };
 const pZone = () => pZoneInfo().k;
 const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !P.disguiseBlown)); };
 // 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
@@ -28,7 +33,12 @@ const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
 // 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
-const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
+function routineIdentityCheck(g) {
+  return groundedWorld() && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
+    pZoneInfo().k !== Z_PUB && (outfitOf(g) === S.player.outfit || g.post != null || S.alevel >= 1);
+}
+const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit) || routineIdentityCheck(g)));
+const identityTime = g => routineIdentityCheck(g) ? (S.alevel >= 2 ? 3.5 : 5.5) : EYE_T;
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
@@ -39,12 +49,12 @@ function blowDisguise(g, why) {
 function updateSharpEye(g, dt, rawVis) {
   g.eyeWatching=false;
   if (!sharpEye(g)) { g.eyeT = 0; return; }
-  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
+  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = routineIdentityCheck(g) ? 105 : g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI * .6;
-  g.eyeWatching=rawVis>0&&d<R&&faceVisible;
-  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
-    hint('eye', '눈 표시가 있는 인물은 얼굴을 알아본다. 가까이서 오래 마주 보면 변장이 발각된다');
-    if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
+  g.eyeWatching=rawVis>0&&d<R&&(faceVisible||groundedWorld());
+  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } if (!g.eyeT && routineIdentityCheck(g)) gsay(g, '잠깐. 어느 근무조입니까?', 2.4); g.eyeT = (g.eyeT || 0) + dt * (faceVisible ? 1 : .55); g.want = Math.atan2(P.y - g.y, P.x - g.x);
+    hint('eye', '허용 복장도 신원 확인을 피할 수는 없다. 눈 표시가 차오르면 거리를 벌리거나 시야를 벗어나라');
+    if (g.eyeT >= identityTime(g)) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
@@ -54,7 +64,7 @@ function suspAct(g) {
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
-  if (P.mode === 'sneak' && P.moving && g && !myPermits(g).length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
+  if (P.mode === 'sneak' && P.moving && g && (groundedWorld() || !myPermits(g).length) && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 허용 복장도 몸을 낮춰 움직이면 시선을 끈다
   return 0;
 }
 // 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
@@ -69,8 +79,8 @@ const knownFace = (g, look = suspectLook()) =>
   !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
-// 허가받은 직원이 걷거나 뛰는 것은 업무 동선이다. 실제 불법 행동은 복장과 관계없이 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length ? 0 : k; };
+// 허가 복장은 정상 보행을 허용한다. 제한구역의 수상한 이동과 불법 행동은 별도로 판정한다.
+const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length && (!groundedWorld() || pZoneInfo().k === Z_PUB) ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));
@@ -143,9 +153,9 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
-  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
+  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)) || routineIdentityCheck(g))) return;
   const P = S.player, on = sharpEye(g); if (!on && !(g.enforcer && dist(g.x, g.y, P.x, P.y) < 420)) return;
-  const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / EYE_T, 0, 1);
+  const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / identityTime(g), 0, 1);
   ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.fillStyle = on ? (f > 0 ? '#ffd06a' : '#f4f1ea') : 'rgba(244,241,234,.55)';
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
   if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }

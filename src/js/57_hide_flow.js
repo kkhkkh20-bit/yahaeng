@@ -254,10 +254,10 @@ function drawLitContainer(h,part='all') {
   l.globalCompositeOperation='source-atop';
   const fl=flOf(h);
   if(fl){const tint=['','255,196,130','140,196,255','160,230,170','226,170,255','255,150,150'][fl]||'200,200,200';l.fillStyle=`rgba(${tint},.09)`;l.fillRect(0,0,w,v);}
-  const sc=SCALE*DPR;
+  const sc=SCALE*DPR,ds=.5/DPR;
   if((fl||!DBG.dark)&&!DBG.dk1&&darkC.width>0){
-    const sx=((b.x-cam.x)*sc+W/2*DPR)*.5,sy=((b.y-cam.y)*sc+H/2*DPR)*.5;
-    l.imageSmoothingEnabled=true;l.drawImage(darkC,sx,sy,w*sc*.5,v*sc*.5,0,0,w,v);l.imageSmoothingEnabled=false;
+    const sx=((b.x-cam.x)*sc+W/2*DPR)*ds,sy=((b.y-cam.y)*sc+H/2*DPR)*ds;
+    l.imageSmoothingEnabled=true;l.drawImage(darkC,sx,sy,w*sc*ds,v*sc*ds,0,0,w,v);l.imageSmoothingEnabled=false;
   }
   // Add the same lamp colour as the surrounding floor, then restore the fixture alpha.
   l.setTransform(1,0,0,1,-b.x,-b.y);l.globalCompositeOperation='lighter';

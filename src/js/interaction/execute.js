@@ -129,7 +129,7 @@ function actPrimary(force) {
     case 'smother': {
       const l = a.l.lamp; l.off = true; play('cloth', 0.45); noise(l.x, l.y, 130, 'smoke');
       S.fx.push({ k: 'smoke', x: a.l.ux, y: a.l.uy, t: 0 });
-      for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+      refreshBodyLighting();
       toast('굴뚝을 막았다 — 연기가 방에 차며 불이 꺼졌다. 안의 자경대원이 다시 불을 피우러 온다', 3, 'good');
       break;
     }
@@ -195,7 +195,7 @@ function actPrimary(force) {
     case 'lamp': {
       const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
       if(l.off)respondToLampOff(l,watchers);
-      for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+      refreshBodyLighting();
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');
       break;
     }

@@ -55,8 +55,8 @@ async def main():
           prop('new candidate',-10);S.t+=.02;
           check(G.envAction().k==='carry'&&G.envAction().c===c,'Candidate insertion must preserve action as well as object');passed.push('selection stability');
           fresh();const cloth=body(24);choose('dress',cloth);G.actEnv();
-          check(!P.outfit&&!cloth.stripped,'Dress must wait for contact');advance(.2);G.actEnv();check(!P.outfit,'Dress cannot skip preparation');
-          advance(.35);check(P.outfit==='crew'&&cloth.stripped&&P.interact,'Dress applies once and completes recovery');advance(.35);check(!P.interact&&S.stats.dressed===1,'Dress must finish once');passed.push('dress phases');
+          check(!P.outfit&&!cloth.stripped&&P.interact.illegal,'Dress must wait for contact and remain visible as suspicious');advance(.2);G.actEnv();check(!P.outfit,'Dress cannot skip preparation');
+          advance(2.4);check(!P.outfit&&!cloth.stripped&&P.interact,'Clothing stays unchanged before the full change');advance(.45);check(!P.interact&&S.stats.dressed===1,'Dress must finish once');passed.push('dress phases');
           fresh();P.item={id:'dose'};G.STAGE.uses=[{need:'dose',at:[33,21],fl:0,permit:'waiter',act:s=>s.effect=(s.effect||0)+1}];
           P.outfit=P.disguise='waiter';P.disguiseBlown=false;G.actEnv();check(!S.effect&&!S.usesDone[0],'Use effect must wait for hands to touch');
           advance(.15);G.actEnv();advance(.32);check(S.effect===1&&S.usesDone[0]&&P.interact,'Use effect must commit exactly once');advance(.4);check(!P.interact&&!(P.useT>S.t),'Authorized work must remain innocent');passed.push('single use effect and permission');
@@ -121,7 +121,7 @@ async def main():
                 for key in ['KeyZ', 'KeyX', 'KeyC']:
                     await ui.keyboard.press(key)
             assert await ui.evaluate('window.__game.S.player.interact===window.__I'), 'Repeated real input must preserve animation'
-            await ui.evaluate('window.__step(60)')
+            await ui.evaluate('window.__step(200)')
             assert await ui.evaluate("!window.__game.S.player.interact&&window.__game.S.player.outfit==='crew'&&window.__game.S.stats.dressed===1")
             await context.close()
         assert not errors, errors

@@ -46,6 +46,8 @@
   zones: [[9, 7, 34, 24, 'res', null, '회장 댁 마당 · 잔치 일꾼만', ['cater', 'crew']],
           [9, 16, 14, 22, 'res', null, '창고 부엌 · 뷔페 일꾼만', ['cater', 'crew']],
           [11, 2, 29, 3, 'pub']],
+  workBuildings: [0, 1],
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   traps: [{ k: 'shock', sw: [36, 24], zone: [19, 22, 24, 23], noOpp: true },
           { k: 'drop', at: [21, 11], hit: [19, 14, 23, 15], text: '실외기', label: '실외기 떨어뜨리기', noOpp: true }],

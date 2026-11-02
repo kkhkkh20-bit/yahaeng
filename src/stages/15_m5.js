@@ -9,6 +9,7 @@
   W: 40, H: 26, start: [0, 24], exit: [39.5, 13], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   // 구역: 남쪽 거리·국밥집·골목은 공개(기본). 본부·본부 앞길·차고·뒷골목은 조직원만 — 조직원 옷이면 걸어서 지나간다
   zones: [[12, 2, 27, 10, 'hos', null, '조직 본부 · 적진'], [12, 11, 27, 14, 'res', null, '본부 앞길 · 조직원만'], [29, 2, 38, 10, 'hos', null, '차고 · 적진'], [0, 1, 39, 1, 'res', null, '뒷골목 · 조직원만']],
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   build(m) {
     m.fill(0, 0, 39, 25, '.'); for (let x = 0; x < 40; x++) m.set(x, 0, '#');

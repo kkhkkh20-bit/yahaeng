@@ -209,7 +209,7 @@ function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
     const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
+    toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();
   p.taken = true; P.item = p; play('cloth', 0.4); play('click', 0.3);

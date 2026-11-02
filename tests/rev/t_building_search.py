@@ -86,9 +86,9 @@ async def main():
     const S=fresh('m1'),P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.target&&!g.elite);S.guards=[g];S.facOn=false;S.corpses=[];S.decals=[];S.alevel=0;S.knownLooks={};
     Object.assign(g,{x:30.5*48,y:3.5*48,fl:0,z:0,a:0,want:0,state:'PATROL',wait:999,post:0,still:true,idleT:999,enforcer:false,radio:false,meter:0});
     Object.assign(P,{x:g.x+96,y:g.y,fl:0,z:0,a:0,outfit:'crew',disguise:'sam',disguiseBlown:false,light:1,hidden:false,mode:'walk',moving:false,hide:null,under:null,vent:null,captive:null,carrying:null,strikeT:0});G.setLayer(0);
-    for(let n=0;n<240;n++){S.t+=.05;G.updateGuard(g,.05)}
+    P.x=g.x+180;for(let n=0;n<240;n++){S.t+=.05;G.updateGuard(g,.05)}
     check(!P.disguiseBlown&&g.state==='PATROL'&&G.exposure()===0,'valid uniform turns red when watched');
-    g.enforcer=true;for(let n=0;n<100;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&!g.eyeT,'enforcer recognizes back of head');
+    P.x=g.x+96;g.enforcer=true;for(let n=0;n<30;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&g.eyeT>0,'Turning away must not grant permanent identity immunity');
     P.a=Math.PI;for(let n=0;n<30;n++)G.updateGuard(g,.05);G.updateStealth(1);check(g.eyeT>0&&!P.disguiseBlown&&document.querySelector('#expoLbl').textContent==='신원 확인 중','missing fair identity warning');
     for(let n=0;n<40;n++)G.updateGuard(g,.05);check(P.disguiseBlown&&g.state==='ALERT'&&G.exposure()===2,'confirmed face check does not become real detection');
     P.hide={};check(G.exposure()===0,'stale sight remains red after hiding');

@@ -58,6 +58,7 @@
           [33, 5, 35, 13, 'res', null, '직원 계단 복도', ['waiter', 'crew']],
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
           [2, 26, 11, 32, 'pub'], [13, 26, 22, 32, 'pub'], [38, 5, 42, 8, 'pub']],    // 포차 · 약국 · 공중화장실
+  secureFloors: [[0, 1], [0, 2], [1, 1]],
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],

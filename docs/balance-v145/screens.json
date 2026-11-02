@@ -1,0 +1,126 @@
+[
+  {
+    "file": "before-m2-pc.png",
+    "sid": "m2",
+    "bi": 0,
+    "player": {
+      "x": 360,
+      "y": 408
+    },
+    "light": 0.04,
+    "zone": {
+      "k": 1,
+      "allow": [
+        "crew"
+      ]
+    }
+  },
+  {
+    "file": "before-m5-pc.png",
+    "sid": "m5",
+    "bi": 0,
+    "player": {
+      "x": 936,
+      "y": 312
+    },
+    "light": 1,
+    "zone": {
+      "k": 2,
+      "allow": [
+        "crew"
+      ]
+    }
+  },
+  {
+    "file": "before-m2-touch.png",
+    "sid": "m2",
+    "bi": 0,
+    "player": {
+      "x": 360,
+      "y": 408
+    },
+    "light": 0.04,
+    "zone": {
+      "k": 1,
+      "allow": [
+        "crew"
+      ]
+    }
+  },
+  {
+    "file": "before-m5-touch.png",
+    "sid": "m5",
+    "bi": 0,
+    "player": {
+      "x": 936,
+      "y": 312
+    },
+    "light": 1,
+    "zone": {
+      "k": 2,
+      "allow": [
+        "crew"
+      ]
+    }
+  },
+  {
+    "file": "after-m2-pc.png",
+    "sid": "m2",
+    "bi": 0,
+    "player": {
+      "x": 360,
+      "y": 408
+    },
+    "light": 1,
+    "zone": {
+      "k": 1,
+      "allow": [],
+      "secure": true
+    }
+  },
+  {
+    "file": "after-m5-pc.png",
+    "sid": "m5",
+    "bi": 0,
+    "player": {
+      "x": 936,
+      "y": 312
+    },
+    "light": 1,
+    "zone": {
+      "k": 2,
+      "allow": [],
+      "secure": true
+    }
+  },
+  {
+    "file": "after-m2-touch.png",
+    "sid": "m2",
+    "bi": 0,
+    "player": {
+      "x": 360,
+      "y": 408
+    },
+    "light": 1,
+    "zone": {
+      "k": 1,
+      "allow": [],
+      "secure": true
+    }
+  },
+  {
+    "file": "after-m5-touch.png",
+    "sid": "m5",
+    "bi": 0,
+    "player": {
+      "x": 936,
+      "y": 312
+    },
+    "light": 1,
+    "zone": {
+      "k": 2,
+      "allow": [],
+      "secure": true
+    }
+  }
+]

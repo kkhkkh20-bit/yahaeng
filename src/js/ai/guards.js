@@ -108,7 +108,7 @@ function updateGuard(g, dt) {
           if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);break;
         }
         g.path=null;g.moving=false;work.t-=dt;
-        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));for(const c of S.corpses)c.light=lightAt(c.x,c.y);if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
+        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));refreshBodyLighting();if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
         break;
       }
       g.lampScan = (g.lampScan || 0) - dt;

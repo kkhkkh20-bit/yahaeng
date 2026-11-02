@@ -77,6 +77,7 @@ const STAGES = [
           [27, 13, 38, 17, 'pub'],                                        // 상회 매장(정문 포함)도 손님 공간 — 사무실·창고·계단 복도부터 출입 금지
           [76, 3, 90, 23, 'res', null, '지구대 · 경찰만', ['police']], [76, 3, 90, 23, 'res', 'roof', '지구대 옥상', ['police']],   // 지구대·주차장: 경찰 제복이면 지나다닌다
           [4, 52, 16, 58, 'res', null, '당구장 · 건달파 소굴', ['rival']], [22, 52, 36, 58, 'res', null, '조직 사무동', ['crew']], [42, 52, 52, 58, 'pub']],
+  secureFloors: [[1, 1]],
   zoneAllow: ['crew', 'staff'],
   locks: [{ b: 6, door: 'vault', key: 'blue' }],                       // 증거물실 금고 문: 파란 카드키
   copBeats: [[[74, 2, 2], [74, 44, 3]], [[4, 45, 2], [66, 45, 2]]],   // 순찰 경찰: 세로 큰길 동쪽 보도 · 가로 큰길 북쪽 보도
@@ -214,6 +215,7 @@ const STAGES = [
           [33, 5, 35, 13, 'res', null, '직원 계단 복도', ['waiter', 'crew']],
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
           [2, 26, 11, 32, 'pub'], [13, 26, 22, 32, 'pub'], [38, 5, 42, 8, 'pub']],    // 포차 · 약국 · 공중화장실
+  secureFloors: [[0, 1], [0, 2], [1, 1]],
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],
@@ -348,6 +350,8 @@ const STAGES = [
   zones: [[9, 7, 34, 24, 'res', null, '회장 댁 마당 · 잔치 일꾼만', ['cater', 'crew']],
           [9, 16, 14, 22, 'res', null, '창고 부엌 · 뷔페 일꾼만', ['cater', 'crew']],
           [11, 2, 29, 3, 'pub']],
+  workBuildings: [0, 1],
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   traps: [{ k: 'shock', sw: [36, 24], zone: [19, 22, 24, 23], noOpp: true },
           { k: 'drop', at: [21, 11], hit: [19, 14, 23, 15], text: '실외기', label: '실외기 떨어뜨리기', noOpp: true }],
@@ -428,6 +432,7 @@ const STAGES = [
   // 구역: 큰길·포차·남쪽 골목은 공개(기본). 건물 안과 북쪽 뒷골목은 조직원만
   zones: [[1, 2, 8, 10, 'res', null, '폐사무소 · 연락책 거점', ['crew']], [10, 2, 20, 10, 'res', null, '창고 · 조직원만'], [22, 2, 32, 10, 'res', null, '사무동 · 조직원만'], [34, 2, 46, 10, 'res', null, '클럽 · 조직원만'],
           [1, 17, 12, 24, 'res', null, '빌라 · 조직원 숙소'], [0, 1, 47, 1, 'res', null, '뒷골목 · 조직원만']],
+  secureFloors: [[2, 1], [3, 1]],
   zoneAllow: ['crew'],
   build(m) {
     m.fill(0, 0, 47, 27, '.'); for (let x = 0; x < 48; x++) m.set(x, 0, '#');
@@ -532,6 +537,7 @@ const STAGES = [
   W: 40, H: 26, start: [0, 24], exit: [39.5, 13], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   // 구역: 남쪽 거리·국밥집·골목은 공개(기본). 본부·본부 앞길·차고·뒷골목은 조직원만 — 조직원 옷이면 걸어서 지나간다
   zones: [[12, 2, 27, 10, 'hos', null, '조직 본부 · 적진'], [12, 11, 27, 14, 'res', null, '본부 앞길 · 조직원만'], [29, 2, 38, 10, 'hos', null, '차고 · 적진'], [0, 1, 39, 1, 'res', null, '뒷골목 · 조직원만']],
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   build(m) {
     m.fill(0, 0, 39, 25, '.'); for (let x = 0; x < 40; x++) m.set(x, 0, '#');
@@ -638,6 +644,7 @@ const STAGES = [
   exits: [{ at: [17, 26.4], name: '남쪽 담 개구멍', r: 46 }],
   // 구역: 단지 전체가 조직 땅 — 조직원 옷이면 걸어서 지나간다
   zones: [[1, 1, 42, 26, 'hos', null, '조직 창고 단지 · 적진']],  // 적진: 보이면 경고 없이 바로 쫓는다 (조직원 옷이면 통과)
+  secureFloors: [[0, 1]],
   zoneAllow: ['crew'],
   locks: [{ b: 0, door: 'vault', key: 'gold' }],
   keyItems: [{ key: 'pin', b: 0, fl: 0, at: 'VA' }, { key: 'gear', b: 1, fl: 0, at: 'R' }],
@@ -3016,7 +3023,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
-  applyWorldPolicy(); capturePhysicalLayout();
+  applyWorldPolicy(); syncWorkLights(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -3528,6 +3535,11 @@ function dynamicLightAt(x,y,elev,l){
 }
 
 function lightAt(x,y,elev){return dynamicLightAt(x,y,elev,ambientLightAt(x,y,elev));}
+function refreshBodyLighting() {
+  const L0=CUR_F;
+  for (const c of S.corpses) { setLayer(flOf(c)); c.light=lightAt(c.x,c.y,!!c.z); }
+  setLayer(L0);
+}
 
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
@@ -3777,6 +3789,50 @@ function drawOutdoorLampFixtures() {
   }
 }
 
+// Workplaces have ceiling fixtures throughout their usable rooms, rather than
+// one randomly generated pool of light. Exterior night and sleeping homes stay dark.
+function syncWorkLights() {
+  if (!groundedWorld()) return;
+  const L0 = CUR_F;
+  PLANS.forEach((floors, bi) => {
+    const b = BLD[bi];
+    if (b.vacant || (b.kind !== 'shop' && !(STAGE.workBuildings || []).includes(bi))) return;
+    (floors || []).forEach((p, fl) => {
+      if (!p) return;
+      setLayer(fl);
+      const local = S.lamps.filter(l => !l.outdoor && !l.hearth && flOf(l) === fl && bldAt(Math.floor(l.x / TILE), Math.floor(l.y / TILE)) === bi);
+      const candidates = [];
+      for (let y = b.y0 + 1; y < b.y1; y++) for (let x = b.x0 + 1; x < b.x1; x++) {
+        if (SOLID.has(G[y][x])) continue;
+        // The dance floor keeps its coloured lighting; VIP rooms and offices do not.
+        const r = p.store;
+        if (r && ['club', 'vip'].includes(r.use) && x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) continue;
+        candidates.push({x:tc(x), y:tc(y)});
+      }
+      // Grid centres first, then fill any remaining occluded corners/partitions.
+      candidates.sort((a,c) => ((Math.floor(c.x/TILE)%3===1&&Math.floor(c.y/TILE)%3===1)?1:0)-((Math.floor(a.x/TILE)%3===1&&Math.floor(a.y/TILE)%3===1)?1:0));
+      for (const at of candidates) {
+        if (local.some(l => dist(l.x,l.y,at.x,at.y) <= l.r * .66 && los(l.x,l.y,at.x,at.y))) continue;
+        let control = at, nearest = Infinity;
+        for (const c of candidates) {
+          const x = Math.floor(c.x/TILE), y = Math.floor(c.y/TILE), d = dist(c.x,c.y,at.x,at.y);
+          if (d >= nearest || d > 190 || !los(at.x,at.y,c.x,c.y)) continue;
+          const wall = [[1,0],[-1,0],[0,1],[0,-1]].find(([dx,dy]) => G[y+dy]?.[x+dx] === '#');
+          if (wall) { nearest=d; control={x:c.x+wall[0]*15,y:c.y+wall[1]*15}; }
+        }
+        const lamp = {x:at.x,y:at.y,r:240,fl,outdoor:false,broken:false,off:false,workLight:true,col:'236,221,189',control:{...control,fl,z:0},poly:[]};
+        const fuse = (S.bfuses || []).find(f => f.b === bi && f.cut);
+        if (fuse) { lamp.cut=bi; lamp.cutWas=false; lamp.off=true; }
+        for (let i=0;i<180;i++) { const a=i/180*TAU,d=Math.min(lamp.r,castRay(lamp.x,lamp.y,a,lamp.r)+20);lamp.poly.push(lamp.x+Math.cos(a)*d,lamp.y+Math.sin(a)*d); }
+        local.push(lamp); S.lamps.push(lamp);
+      }
+    });
+  });
+  setLayer(L0); LG=null; refreshBodyLighting();
+  for (const k in lightCache) delete lightCache[k];
+  S.floorC={};
+}
+
 // 실내 CCTV는 담당 경비의 작업점이 아닌, 같은 방의 벽 모서리에 설치한다.
 // 문을 경계로 방을 나누고 실제 벽 시야로 후보를 평가한다. 외부 카메라·서치라이트는 유지한다.
 function mountIndoorCamera(c, mounted) {
@@ -3826,16 +3882,21 @@ const Z_PUB = 0, Z_RES = 1, Z_HOS = 2, Z_NAME = ['공개', '출입 금지', '적
 const OUTFITS = { crew: '자경대원 옷', staff: '상회 직원 조끼', courier: '택배 기사 옷', waiter: '클럽 직원 옷', cater: '출장 뷔페 조끼', parcel: '택배 상자' };
 const outfitOf = g => g.outfit || (g.civ || g.dog || g.target ? null : 'crew');
 const outfitName = o => OUTFITS[o] || '변장';
-function zoneInfo(x, y, z) {
+function zoneInfo(x, y, z, floor = CUR_F) {
   if (!STAGE.zones) return { k: Z_HOS, allow: [] };
   const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE), up = (z || 0) > 0, base = up ? [] : (STAGE.zoneAllow || ['crew']);
   const bi = bldAt(tx, ty);
   let k = up || (bi >= 0 && !BLD[bi].vacant) ? Z_RES : Z_PUB, allow = base;
   for (const r of STAGE.zones) if (tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3] && (r[5] === 'all' || up === (r[5] === 'roof'))) { k = r[4] === 'pub' ? Z_PUB : r[4] === 'hos' ? Z_HOS : Z_RES; allow = r[7] || base; }
-  return { k, allow };
+  // A uniform is not clearance for records, safes or the command offices.
+  const p = bi >= 0 && PLANS[bi]?.[floor], v = p?.vault;
+  const secure = groundedWorld() && !up && bi >= 0 && (
+    (STAGE.secureFloors || []).some(([b,f]) => b === bi && f === floor) ||
+    (v && tx >= v.x0 && tx <= v.x1 && ty >= v.y0 && ty <= v.y1));
+  return { k: secure ? Math.max(k, Z_RES) : k, allow: secure ? [] : allow, secure: !!secure };
 }
 const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
-const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z); };
+const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z, flOf(P)); };
 const pZone = () => pZoneInfo().k;
 const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !P.disguiseBlown)); };
 // 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
@@ -3846,7 +3907,12 @@ const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
 // 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
-const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
+function routineIdentityCheck(g) {
+  return groundedWorld() && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
+    pZoneInfo().k !== Z_PUB && (outfitOf(g) === S.player.outfit || g.post != null || S.alevel >= 1);
+}
+const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit) || routineIdentityCheck(g)));
+const identityTime = g => routineIdentityCheck(g) ? (S.alevel >= 2 ? 3.5 : 5.5) : EYE_T;
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
@@ -3857,12 +3923,12 @@ function blowDisguise(g, why) {
 function updateSharpEye(g, dt, rawVis) {
   g.eyeWatching=false;
   if (!sharpEye(g)) { g.eyeT = 0; return; }
-  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
+  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = routineIdentityCheck(g) ? 105 : g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI * .6;
-  g.eyeWatching=rawVis>0&&d<R&&faceVisible;
-  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
-    hint('eye', '눈 표시가 있는 인물은 얼굴을 알아본다. 가까이서 오래 마주 보면 변장이 발각된다');
-    if (g.eyeT >= EYE_T) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
+  g.eyeWatching=rawVis>0&&d<R&&(faceVisible||groundedWorld());
+  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } if (!g.eyeT && routineIdentityCheck(g)) gsay(g, '잠깐. 어느 근무조입니까?', 2.4); g.eyeT = (g.eyeT || 0) + dt * (faceVisible ? 1 : .55); g.want = Math.atan2(P.y - g.y, P.x - g.x);
+    hint('eye', '허용 복장도 신원 확인을 피할 수는 없다. 눈 표시가 차오르면 거리를 벌리거나 시야를 벗어나라');
+    if (g.eyeT >= identityTime(g)) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
   else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
@@ -3872,7 +3938,7 @@ function suspAct(g) {
   if (P.trav && P.trav.phases.some(ph => ph.pose !== 'walk')) return 1;
   if (P.jump && (P.jump.vault || P.jump.z1 || P.z)) return 1;
   if (P.mode === 'run' && P.moving && g && dist(g.x, g.y, P.x, P.y) < 220) return 0.8;  // 사람 가까이서 뛰면 눈길을 끈다
-  if (P.mode === 'sneak' && P.moving && g && !myPermits(g).length && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 변장·택배 상자가 있으면 웅크려 걸어도 신경 쓰지 않는다
+  if (P.mode === 'sneak' && P.moving && g && (groundedWorld() || !myPermits(g).length) && dist(g.x, g.y, P.x, P.y) < 170) return 0.35;  // 허용 복장도 몸을 낮춰 움직이면 시선을 끈다
   return 0;
 }
 // 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
@@ -3887,8 +3953,8 @@ const knownFace = (g, look = suspectLook()) =>
   !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
-// 허가받은 직원이 걷거나 뛰는 것은 업무 동선이다. 실제 불법 행동은 복장과 관계없이 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length ? 0 : k; };
+// 허가 복장은 정상 보행을 허용한다. 제한구역의 수상한 이동과 불법 행동은 별도로 판정한다.
+const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length && (!groundedWorld() || pZoneInfo().k === Z_PUB) ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));
@@ -3961,9 +4027,9 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
-  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
+  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)) || routineIdentityCheck(g))) return;
   const P = S.player, on = sharpEye(g); if (!on && !(g.enforcer && dist(g.x, g.y, P.x, P.y) < 420)) return;
-  const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / EYE_T, 0, 1);
+  const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / identityTime(g), 0, 1);
   ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.fillStyle = on ? (f > 0 ? '#ffd06a' : '#f4f1ea') : 'rgba(244,241,234,.55)';
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
   if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
@@ -4527,7 +4593,7 @@ function updateCams(dt) {
     if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
     if (v > 0 && STAGE.zones && pZoneEff({state:''}) === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
     c.seen = v > 0;
-    if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
+    if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (!STAGE.zones && S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
       c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       const at = pSpot(); rememberSuspect(null); startBuildingSearch(at, 'A', 'camera'); }
@@ -4744,7 +4810,7 @@ function updateGuard(g, dt) {
           if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);break;
         }
         g.path=null;g.moving=false;work.t-=dt;
-        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));for(const c of S.corpses)c.light=lightAt(c.x,c.y);if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
+        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));refreshBodyLighting();if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
         break;
       }
       g.lampScan = (g.lampScan || 0) - dt;
@@ -5682,7 +5748,7 @@ function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
     const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
+    toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();
   p.taken = true; P.item = p; play('cloth', 0.4); play('click', 0.3);
@@ -7858,7 +7924,7 @@ function loadCheckpoint() {
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   delete S.contact; resetHelpTip(); refreshItemNames(); initPreparationProgress(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
@@ -8247,10 +8313,10 @@ function drawLitContainer(h,part='all') {
   l.globalCompositeOperation='source-atop';
   const fl=flOf(h);
   if(fl){const tint=['','255,196,130','140,196,255','160,230,170','226,170,255','255,150,150'][fl]||'200,200,200';l.fillStyle=`rgba(${tint},.09)`;l.fillRect(0,0,w,v);}
-  const sc=SCALE*DPR;
+  const sc=SCALE*DPR,ds=.5/DPR;
   if((fl||!DBG.dark)&&!DBG.dk1&&darkC.width>0){
-    const sx=((b.x-cam.x)*sc+W/2*DPR)*.5,sy=((b.y-cam.y)*sc+H/2*DPR)*.5;
-    l.imageSmoothingEnabled=true;l.drawImage(darkC,sx,sy,w*sc*.5,v*sc*.5,0,0,w,v);l.imageSmoothingEnabled=false;
+    const sx=((b.x-cam.x)*sc+W/2*DPR)*ds,sy=((b.y-cam.y)*sc+H/2*DPR)*ds;
+    l.imageSmoothingEnabled=true;l.drawImage(darkC,sx,sy,w*sc*ds,v*sc*ds,0,0,w,v);l.imageSmoothingEnabled=false;
   }
   // Add the same lamp colour as the surrounding floor, then restore the fixture alpha.
   l.setTransform(1,0,0,1,-b.x,-b.y);l.globalCompositeOperation='lighter';
@@ -8686,7 +8752,7 @@ function objectReachable(o, radius = 60) {
   setLayer(L0); return ok||!!(b&&hx>=b.x0&&hx<b.x1&&hy>=b.y0&&hy<b.y1);
 }
 const OBJECT_FLOW = {
-  pickup: [0.42, '줍는 중', 'ground'], dress: [0.8, '갈아입는 중', 'dress'],
+  pickup: [0.42, '줍는 중', 'ground'], dress: [3, '갈아입는 중', 'dress'],
   callMeet: [.9, '통화 중', 'hands'],
   read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
@@ -8715,7 +8781,7 @@ function beginObjectAction(a) {
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
   P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
-    illegal: a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
+    illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;
@@ -8726,7 +8792,7 @@ function updateObjectAction(P, dt) {
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * (I.a.k==='read'?1:I.a.k==='door'?.76:.6)) {
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
     I.committed = true; I.committing = true;
     try {
@@ -9612,7 +9678,7 @@ function actPrimary(force) {
     case 'smother': {
       const l = a.l.lamp; l.off = true; play('cloth', 0.45); noise(l.x, l.y, 130, 'smoke');
       S.fx.push({ k: 'smoke', x: a.l.ux, y: a.l.uy, t: 0 });
-      for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+      refreshBodyLighting();
       toast('굴뚝을 막았다 — 연기가 방에 차며 불이 꺼졌다. 안의 자경대원이 다시 불을 피우러 온다', 3, 'good');
       break;
     }
@@ -9678,7 +9744,7 @@ function actPrimary(force) {
     case 'lamp': {
       const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
       if(l.off)respondToLampOff(l,watchers);
-      for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+      refreshBodyLighting();
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');
       break;
     }
@@ -10015,7 +10081,7 @@ function drawTrapsRoof(openB=-1){drawHangingSigns(openB);}
 function bldPower(fb, on) {
   fb.cut = !on; fb.t = 5;
   for (const l of S.lamps) if (!l.outdoor && !l.hearth && bldAt(Math.floor(l.x / TILE), Math.floor(l.y / TILE)) === fb.b) { if (on) { if (l.cut != null) { l.off = l.cutWas; l.cut = null; } } else if (l.cut == null) { l.cutWas = l.off; l.off = true; l.cut = fb.b; } }
-  for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+  refreshBodyLighting();
   if (on) { const B = BLD[fb.b]; if (dist(S.player.x, S.player.y, fb.x, fb.y) < 900) toast(`${B.plate || B.name || '건물'} 전기가 다시 들어왔다`, 2.2); }
 }
 function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
@@ -10023,7 +10089,7 @@ function cutLights() {
   S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast((STAGE.powerName || '구역 조명')+' 전원 차단 · 경비가 복구하러 온다', 3); setAlert(1, 30);
   S.fuseT = 2.5;
-  for (const c of S.corpses) c.light = lightAt(c.x, c.y);
+  refreshBodyLighting();
   if (STAGE.onLightsOut) try { STAGE.onLightsOut(S, SH); } catch (e) { console.warn('onLightsOut', e); }  // 의뢰마다: 정전에 반응하는 사람 (예: 발전기 보러 가는 표적)
 }
 
@@ -10051,7 +10117,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
     const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 목격자가 기억하는 복장 · 재노출 주의`, 3, 'warn');
-    else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 초록 경계선은 통과 가능`, 3.2, 'good'); hint('disguise2', '초록 경계선은 현재 복장으로 통과할 수 있다. 범행이 보이거나 얼굴을 확인당하면 변장이 발각된다'); }
+    else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3.2, 'good'); hint('disguise2', '복장은 일반 출입만 허용한다. 보안구역에서는 통하지 않고, 가까이 오래 있으면 일반 경비도 신원을 확인한다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장해도 범행이나 출입 권한이 없는 구역에서는 의심받는다'); }
     return;
   }
@@ -10247,7 +10313,7 @@ function update(dt) {
     for (const g of S.guards) { if ((g.state !== 'PATROL' && g.state !== 'RETURN') || flOf(g) || g.civ || g.target || g.dog || g.post != null || g.follow != null) continue; const d = dist(g.x, g.y, fb.x, fb.y); if (d < bd) { bd = d; best = g; } }
     if (best) { best.state = 'FUSE'; best.fuseAt = fb; best.path = null; best.atFuse = false; setIcon(best, '?'); fb.guard = best; }
   }
-  if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; for (const c of S.corpses) c.light = lightAt(c.x, c.y); }
+  if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; refreshBodyLighting(); }
   for (const c of S.corpses) if (c.fly) { const f = c.fly; f.t += dt; const k = Math.min(1, f.t / f.dur); c.x = f.x0 + (f.x1 - f.x0) * k; c.y = f.y0 + (f.y1 - f.y0) * k; if (k >= 1) { c.fly = null; c.light = lightAt(c.x, c.y); play('thud', 0.7); if (c.accident) noise(c.x, c.y, 140, 'crash', c.fl || 0); else { S.decals.push({ x: c.x, y: c.y, r: 16, rot: rnd(0, TAU) }); terrorAt(c.x, c.y); } } }  // 추락사(사고)는 피·공포 없이 쿵 소리만 — 와서 보면 '사고가 났네'
   for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s)); } }
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);
@@ -12690,7 +12756,7 @@ function objectiveLines() {
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
-  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 초록 경계선 통과 가능`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
+  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 허용 구역만 통과 · 가까운 신원 확인 주의`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
   for (const g of S.guards) if (g.target) { const sc = schedText(g),down=targetEliminated(g); L.push([down||S.spare ? 'done' : '', targetName(g) + (down?' — 처치 완료':S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
@@ -12724,7 +12790,7 @@ function updateHUD(force) {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 && !P.vent && !P.under ? (ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 && !P.vent && !P.under ? (zi0.secure ? '보안구역' : ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
   floorBanner(P, ptx, pty);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : indoor ? 'in' : 'out';
   hud.layer.dataset.z = !P.vent && !P.under && zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
@@ -13239,7 +13305,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
-    groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
@@ -13262,7 +13328,7 @@ function installGameApi() {
         if (st.flee) st.guards.forEach((g, gi) => { if (g.target) { const r = g.route[0]; if (!astar(r[0], r[1], st.flee[0], st.flee[1]).length) issues.push(`${st.id}: 표적${gi} 도주로 없음`); } });
         S.hides.filter(b => !b.furn).forEach(b => { const ok = N8.slice(0, 4).filter(o => !solidAt(b.tx + o[0], b.ty + o[1])); if (!ok.length || !astar(sx, sy, b.tx + ok[0][0], b.ty + ok[0][1]).length) issues.push(`${st.id}: ${b.type} (${b.tx},${b.ty}) 접근 불가`); });
         S.ladders.forEach(l => { if (l.bz === 0) reach(l.bx, l.by, l.kind === 'pipe' ? '배관 밑' : '사다리'); });
-        PIPES.forEach(p => { if (!S.ladders.some(l => l.kind === 'pipe' && l.tx === p[0] && l.ty === p[1])) issues.push(`${st.id}: 배관 (${p[0]},${p[1]}) 디딜 곳 없음`); });
+        if (!groundedWorld()) PIPES.forEach(p => { if (!S.ladders.some(l => l.kind === 'pipe' && l.tx === p[0] && l.ty === p[1])) issues.push(`${st.id}: 배관 (${p[0]},${p[1]}) 디딜 곳 없음`); });
         for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) if (G[y][x] === 'L' && !S.ladders.some(l => l.kind === 'ladder' && l.bx === x && l.by === y)) issues.push(`${st.id}: 사다리 (${x},${y}) 옆에 옥상 없음`);
         if (st.reinf) reach(st.reinf[0], st.reinf[1], '증원 지점');
         S.ladders.filter(l => l.kind === 'stair' || l.kind === 'fstair').forEach(l => { if (!l.bfl) reach(l.bx, l.by, '계단'); });
@@ -13273,7 +13339,7 @@ function installGameApi() {
         S.windows.forEach(w => { const ok = [[1, 0], [0, 1]].some(([dx, dy]) => !groundSolidP(w.tx + dx, w.ty + dy) && !groundSolidP(w.tx - dx, w.ty - dy)); if (!ok && !w.sealed) issues.push(`${st.id}: 창문 (${w.tx},${w.ty}) 양쪽이 막힘`); });
         S.wires.forEach((w, wi) => [w.a, w.b].forEach(n => { if (n.roof && !n.z) issues.push(`${st.id}: 전깃줄${wi} 끝 (${n.tx},${n.ty}) 옥상 아님`); }));
         S.poles.forEach(o => { if (!o.wires.length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 줄 없음`); const ok = N8.slice(0, 4).filter(d => !solidAt(o.tx + d[0], o.ty + d[1])); if (!ok.length || !astar(sx, sy, o.tx + ok[0][0], o.ty + ok[0][1]).length) issues.push(`${st.id}: 전봇대 (${o.tx},${o.ty}) 접근 불가`); });
-        BLD.forEach((b, bi) => { if (b.vacant) return; if (!S.ladders.some(l => bldAt(l.tx, l.ty) === bi) && !S.wires.some(w => [w.a, w.b].some(n => n.roof && bldAt(n.tx, n.ty) === bi))) issues.push(`${st.id}: 건물${bi} 직접 오를 곳 없음`); });
+        BLD.forEach((b, bi) => { if (b.vacant || (groundedWorld() && !b.plan)) return; if (!S.ladders.some(l => bldAt(l.tx, l.ty) === bi) && !S.wires.some(w => [w.a, w.b].some(n => n.roof && bldAt(n.tx, n.ty) === bi))) issues.push(`${st.id}: 건물${bi} 직접 오를 곳 없음`); });
       });
       newGame(0);
       return issues;
