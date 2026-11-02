@@ -2,6 +2,7 @@
   "controlled": true,
   "mobile": false,
   "passageOpen": true,
+  "oldCheckpointPassageMigrated": true,
   "matchingPropGround": true,
   "bushBodyHiddenAfterLowering": true,
   "quietKoRadius": 7.199999999999999,

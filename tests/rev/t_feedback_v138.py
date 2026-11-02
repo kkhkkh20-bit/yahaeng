@@ -14,6 +14,8 @@ async def main():
     let S=fresh(),P=S.player;const base={...S.guards.find(g=>!g.civ&&!g.dog&&!g.elite&&!g.target)};
     check(G.G0[16][21]===','&&!G.solidAt(21,16),'club-side passage remains blocked');
     check(G.propGround('O',13,7)===',','planter has a different paving tile');
+    G.G0[16][21]='O';S.stats.ko=2;G.saveCheckpoint();G.G0[16][21]=',';check(G.loadCheckpoint()&&G.G0[16][21]===','&&G.S.stats.ko===2,'old checkpoint restores the retired obstruction or loses mission progress');S=fresh();P=S.player;
+
     const strip={x:1800,y:504},guard=(id,dx)=>({...base,id,x:strip.x+dx,y:strip.y,fl:0,z:0,a:Math.PI,want:Math.PI,seen:false,meter:0,state:'PATROL',route:[{x:strip.x+dx,y:strip.y,pause:999}],ri:0,wait:999,post:Math.PI,glance:0,glanceT:999,path:null,poi:null,radio:false,torch:false,relight:null,chat:null,act:null,follow:null,homeFl:0,securityBuddy:null});
     S.guards=[];S.lamps=[];S.corpses=[];S.decals=[];P.under=true;
     const victim=guard(600,48),near=guard(601,112),far=guard(602,400),upper=guard(603,112);upper.fl=1;S.guards=[victim,near,far,upper];victim.takedownIntent={lethal:false};G.killGuard(victim,null,null,true);
@@ -43,7 +45,7 @@ async def main():
     S=fresh();P=S.player;S.guards=[];S.corpses=[];const bush=S.bushes.find(b=>!S.hides.some(h=>Math.hypot(h.x-b.x,h.y-b.y)<100));check(bush,'no isolated real bush');Object.assign(P,{x:bush.x,y:bush.y,fl:0,z:0,a:0,mode:'walk',under:false,hide:null});const carried={x:P.x,y:P.y,fl:0,z:0,ch:'sam',g:base,ko:true,carried:true,stashed:false,hidden:false,light:1};P.carrying=carried;S.corpses=[carried];
     check(G.envChoices().some(a=>a.h===bush&&a.label.includes('숨기')),'bush storage action is missing');G.actCarry({k:'carry',c:carried,h:bush});check(P.trav?.hideFlow?.kind==='stash'&&!carried.hidden,'bush storage skips the lowering motion');for(let i=0;i<130;i++)G.update(.01);
     check(carried.ko&&carried.hidden&&!carried.carried&&!carried.stashed&&!P.carrying&&!P.hide&&carried.x===bush.x&&carried.y===bush.y,'body dropped outside the bush instead of hidden');
-    return {controlled:true,mobile:('ontouchstart' in window),passageOpen:true,matchingPropGround:true,bushBodyHiddenAfterLowering:true,quietKoRadius:koRadius,localReport,witnessedLight:light,unseenLightNoObjection:true,cabinetOpenedAndFound:true,blockedContainerCheck:true};
+    return {controlled:true,mobile:('ontouchstart' in window),passageOpen:true,oldCheckpointPassageMigrated:true,matchingPropGround:true,bushBodyHiddenAfterLowering:true,quietKoRadius:koRadius,localReport,witnessedLight:light,unseenLightNoObjection:true,cabinetOpenedAndFound:true,blockedContainerCheck:true};
    }''')
    assert not errors,errors;(O/f'feedback-{"touch"if mobile else"pc"}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('PASS feedback',mobile,result,flush=True);await page.close()
   await b.close()

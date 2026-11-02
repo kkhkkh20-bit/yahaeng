@@ -9,6 +9,8 @@ function captureContractLayout() {
   };
 }
 function restoreContractLayout() {
+  // Remove retired props from saved grids without resetting the rest of the mission.
+  for(const [x,y,old,ch]of STAGE.retiredProps||[])if(G0[y]?.[x]===old)G0[y][x]=ch;
   const T = CONTRACT_LAYOUT;
   if (!T || T.id !== STAGE.id || (S.layoutVersion || 0) >= STAGE.layoutVersion) return;
   const areas = (STAGE.rebuiltSites || []).map(i => BLD[i]);

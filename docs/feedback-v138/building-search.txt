@@ -1,0 +1,1 @@
+PASS {'indoorPositions': 13360, 'exteriorClimbs': 6, 'cornerCameras': 6, 'searches': [{'id': 'm2', 'assigned': 6, 'checked': 17, 'upstairs': 4}, {'id': 'm4', 'assigned': 6, 'checked': 12, 'upstairs': 4}, {'id': 'm6', 'assigned': 6, 'checked': 13, 'upstairs': 4}], 'identityCues': True, 'absoluteFloors': True}
