@@ -1,0 +1,41 @@
+{
+  "version": "v149",
+  "checkedAtKST": "2026-11-03",
+  "status": "prepared_not_deployed",
+  "runtimeCommit": "78e52d99d56f57faf90831033e03330be997c5fb",
+  "pagesPreparedCommit": "a1c0b564babc75e2c0da97d23ac00842a88af10a",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v149",
+    "source_sha256": "7b68318fdb67f2f646ede8f07e80c026beb588363a1008336054d8e3af0aa137",
+    "html_bytes": 150730,
+    "source_bytes": 10373487,
+    "scripts": 4,
+    "assets": 175,
+    "asset_bytes": 7809047,
+    "deployed_assets": 175,
+    "deployed_asset_bytes": 7809047
+  },
+  "verification": {
+    "fastRegression": 44,
+    "buildOwnership": 6,
+    "allStageReachability": true,
+    "keyboardAndCDPTouch": [
+      "introductory lessons",
+      "equipment lesson",
+      "ambush lesson"
+    ],
+    "finalFocused": [
+      "ability locks including cover",
+      "combat policy",
+      "assassin skills",
+      "4 viewport skill UI",
+      "packaged hashes and native input"
+    ]
+  },
+  "deploymentBlocks": {
+    "github": "Source main and gh-pages pushes both failed with HTTP 503 from session upstream connection",
+    "cloudflare": "Wrangler requires CLOUDFLARE_API_TOKEN; no deployment credential is configured"
+  },
+  "livePagesVersion": "v148"
+}
