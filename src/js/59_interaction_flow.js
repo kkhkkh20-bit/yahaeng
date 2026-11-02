@@ -29,6 +29,7 @@ function objectActionPoint(a) {
   return a.at || actObj(a);
 }
 function objectActionValid(a, item) {
+  if(!electricalActionAllowed(a))return false;
   const P = S.player;
   if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);
   if (a.k === 'dropItem') return !!P.item && P.item === item;
@@ -41,6 +42,7 @@ function objectActionValid(a, item) {
 }
 function beginObjectAction(a) {
   if (!OBJECT_FLOW[a.k]) return false;
+  if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return true;}
   const P = S.player, item = P.item;
   if (!objectActionValid(a, item)) return true;
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);

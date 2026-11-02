@@ -8,14 +8,14 @@ const isAtk = a => !!a && (ATK_K.has(a.k) || !!a.kill);
 // 겹친 대상까지 훑은 행동 후보 (사람 근처 '공격 우선' 바꾸기 없이 날것 그대로)
 // 한 프레임 안에서 화면·버튼·라벨이 같은 계산을 되풀이하지 않게 (시각·위치가 같으면 그대로). 버튼을 누를 땐 새로 구한다
 let RC = null;
-const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
+const rcKey = () => { const P = S.player; return S.t + '|' + P.x + '|' + P.y + '|' + (P.fl || 0) + '|' + (P.z || 0) + '|' + !!P.interact + !!P.pick + !!P.trav + !!P.lunge + !!P.grabIn + '|' + (P.strikeT > 0) + '|' + !!P.hidden + '|' + !!S.skills?.ambush + '|' + !!S.practiceSkills?.ambush + '|' + !!S.skills?.electric + '|' + !!S.practiceSkills?.electric + '|' + !!P.captive + !!P.carrying + !!P.hide + !!P.ledge + !!P.wire; };
 function rawChoices(n = 7) {
   const key = rcKey(); if (RC && RC.key === key) return RC.out.slice();
   const out = rawChoices0(n); RC = { key, out }; return out.slice();
 }
 function rawChoices0(n) {
   const out = []; ACT_SKIP.clear(); let firstPref;
-  try { for (let i = 0; i < n; i++) { const a = combatLabel(primaryActionRaw()); if (!i) firstPref=S.ikPref; if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
+  try { for (let i = 0; i < n; i++) { const a = combatLabel(electricalChoice(primaryActionRaw())); if (!i) firstPref=S.ikPref; if (!a || a.k === 'none') break; const o = actObj(a); if (out.some(x => x.k === a.k && actObj(x) === o)) break; out.push(a); if (!o) break; ACT_SKIP.add(o); } }
   finally { ACT_SKIP.clear(); if(firstPref!==undefined)S.ikPref=firstPref; }
   return out;
 }

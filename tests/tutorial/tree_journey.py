@@ -2,13 +2,13 @@
 import asyncio,json,sys,os
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v149';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v150';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);results=[]
   for mobile in [False,True]:
    c=await b.new_context(viewport={'width':390 if mobile else 1440,'height':844 if mobile else 900},has_touch=mobile,is_mobile=mobile);q=await c.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!__game');label=(''if REPORT=='journey'else REPORT+'-')+('touch'if mobile else'pc');cdp=await c.new_cdp_session(q)if mobile else None
-   await q.click('#btnLedger');await q.click('#btnSkillsLedger');assert await q.locator('[data-node]').count()==26
+   await q.click('#btnLedger');await q.click('#btnSkillsLedger');assert await q.locator('[data-node]').count()==27
    await q.locator('[data-learn="quietStep"]').click()
    if mobile:await q.locator('[data-branch="tools"]:is(button)').click()
    await q.locator('[data-learn="kit"]').click();await q.locator('[data-learn="smoke"]').click();assert '1P' in await q.locator('#skillSummary').text_content()

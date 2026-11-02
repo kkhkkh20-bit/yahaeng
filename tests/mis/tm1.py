@@ -16,7 +16,7 @@ async def main():
     bad = []
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': 1280, 'height': 720}); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
+        await pg.add_init_script("localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit','electric']}))");await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
         async def fresh():
             await pg.evaluate('() => window.__game.start(0)'); await pg.wait_for_timeout(300); await pg.evaluate(SK); await pg.evaluate(H)
         # 1 택배: 트럭 옆 상자를 들고 → 샛길 → 뒷마당(자경대원 ③ 앞) → 뒷문 → 창고 → (직원·② 없을 때) 사무실 장부

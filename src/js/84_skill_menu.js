@@ -5,7 +5,7 @@ function openAssassinMenu(){
   assassinMenu={from,practice:from!=='ledger'&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
   clearPlayerInput();closeHudInspection();if(running)paused=true;
   if(from==='ledger')$('ledger').hidden=true;if(from==='pause')$('pause').hidden=true;
-  if(assassinMenu.practice)skillBranch=STAGE.toolPractice?'tools':'assassin';
+  if(assassinMenu.practice)skillBranch=STAGE.toolPractice||STAGE.trialSkills?.includes('electric')?'tools':'assassin';
   $('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
 }
 function closeAssassinMenu(){

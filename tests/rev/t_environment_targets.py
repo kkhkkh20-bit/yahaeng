@@ -3,6 +3,7 @@ import asyncio
 from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT = Path(__file__).resolve().parents[2]
+ELECTRICAL="localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit','electric']}))"
 
 async def main():
     async with async_playwright() as p:
@@ -10,7 +11,7 @@ async def main():
         pg = await b.new_page()
         errors = []
         pg.on('pageerror', lambda e: errors.append(str(e)))
-        await pg.add_init_script('window.requestAnimationFrame=()=>0')
+        await pg.add_init_script(ELECTRICAL);await pg.add_init_script('window.requestAnimationFrame=()=>0')
         await pg.goto((ROOT / 'build/preview_city.html').as_uri())
         await pg.wait_for_function('!!window.__game')
         result = await pg.evaluate('''() => {
@@ -59,7 +60,7 @@ async def main():
         for mobile in [False, True]:
             context = await b.new_context(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile)
             ui = await context.new_page()
-            ui.on('pageerror', lambda e: errors.append(str(e)))
+            ui.on('pageerror', lambda e: errors.append(str(e)));await ui.add_init_script(ELECTRICAL)
             await ui.add_init_script('''(()=>{let q=[],t=1000;window.requestAnimationFrame=f=>q.push(f);window.__step=n=>{for(let i=0;i<n;i++){t+=16.7;const a=q;q=[];a.forEach(f=>f(t))}}})()''')
             await ui.goto((ROOT / 'build/preview_city.html').as_uri())
             await ui.wait_for_function('!!window.__game')

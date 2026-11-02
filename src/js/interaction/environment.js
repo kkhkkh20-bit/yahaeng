@@ -109,6 +109,7 @@ function drawTrapsGround() {
 }
 function drawTrapsRoof(openB=-1){drawHangingSigns(openB);}
 function bldPower(fb, on) {
+  if(!on&&!abilityOn('electric'))return false;
   fb.cut = !on; fb.t = 5;
   for (const l of S.lamps) if (!l.outdoor && !l.hearth && bldAt(Math.floor(l.x / TILE), Math.floor(l.y / TILE)) === fb.b) { if (on) { if (l.cut != null) { l.off = l.cutWas; l.cut = null; } } else if (l.cut == null) { l.cutWas = l.off; l.off = true; l.cut = fb.b; } }
   refreshBodyLighting();
@@ -116,6 +117,7 @@ function bldPower(fb, on) {
 }
 function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
 function cutLights() {
+  if(!abilityOn('electric'))return false;
   S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast((STAGE.powerName || '구역 조명')+' 전원 차단 · 경비가 복구하러 온다', 3); setAlert(1, 30);
   S.fuseT = 2.5;

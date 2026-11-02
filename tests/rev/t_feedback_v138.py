@@ -10,7 +10,7 @@ async def main():
    page=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await page.goto((R/'build/preview_city.html').as_uri()+'?nostats&tone=ink');await page.wait_for_function('!!__game')
    result=await page.evaluate('''()=>{
-    const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.S.facOn=false;G.S.cams=[];G.setLayer(0);return G.S;};
+    localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit','electric']}));const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.S.facOn=false;G.S.cams=[];G.setLayer(0);return G.S;};
     let S=fresh(),P=S.player;const base={...S.guards.find(g=>!g.civ&&!g.dog&&!g.elite&&!g.target)};
     check(G.G0[16][21]===','&&!G.solidAt(21,16),'club-side passage remains blocked');
     check(G.propGround('O',13,7)===',','planter has a different paving tile');
@@ -22,12 +22,12 @@ async def main():
     check(S.noises.at(-1).src==='ko'&&S.noises.at(-1).r<=12,'quiet KO emits a broad impact');check([near,far,upper].every(g=>g.state==='PATROL'),'unwitnessed KO calls distant guards');const koRadius=S.noises.at(-1).r;
     // Only the discovering guard and listeners within an audible report join the immediate search.
     const c=S.corpses[0];c.ko=false;c.light=1;c.discovered=false;near.x=c.x+10;near.state='BODY';near.body=c;near.path=null;const local=guard(604,144);S.guards=[victim,near,local,far,upper];S.t+=.02;G.updateGuard(near,.02);check(!c.discovered&&near.bodyWork,'inspection must take physical time');for(let i=0;i<22;i++){S.t+=.05;G.updateGuard(near,.05)}
-    check(c.discovered&&near.searchJob,'body discovery did not start an actual search');check(local.searchJob,'nearby listener ignored body report');check(!far.searchJob&&!upper.searchJob,'body report telepathically recruits distant/other-floor guards');check(near.say?.includes('시체'),'body report has no spoken reason');
+    check(c.discovered&&near.searchJob,'body discovery did not start an actual search');check(local.searchJob,'nearby listener ignored body report');check(!far.searchJob&&!upper.searchJob,'body report telepathically recruits distant/other-floor guards');check(/시체|사망자/.test(near.say||''),'body report has no spoken reason');
     const localReport={local:!!local.searchJob,distant:!!far.searchJob,otherFloor:!!upper.searchJob};
     // Actual public-space switch action: look toward the actor before the lamp is extinguished.
     S=fresh();P=S.player;S.corpses=[];S.decals=[];P.under=false;Object.assign(P,{x:strip.x+48,y:strip.y,z:0,fl:0,a:0,mode:'walk',hidden:false});
     const watcher=guard(610,192),lamp={x:P.x,y:P.y,fl:0,z:0,r:350,outdoor:false,off:false,control:{x:P.x,y:P.y,fl:0,z:0}};S.guards=[watcher];S.lamps=[lamp];G.actPrimary({k:'lamp',l:lamp,at:lamp.control,viaZ:true});
-    let observed=false,said=false;for(let i=0;i<40;i++){G.update(.01);if(lamp.off&&watcher.relight?.witnessed){observed=true;said=watcher.say?.includes('불 끄지');break;}}
+    let observed=false,said=false;for(let i=0;i<40;i++){G.update(.01);if(lamp.off&&watcher.relight?.witnessed){observed=true;said=watcher.say?.includes('다시 켤');break;}}
     check(observed&&said,'watching guard neither objects nor restores switched light');check(G.visibleSpeechCandidates(P,false,true).includes(watcher),'action focus suppresses the switch objection');const before=watcher.x;
     let elapsed=0,atSwitch=null;for(let i=0;i<600&&lamp.off;i++){G.update(.01);elapsed+=.01;if(!lamp.off)atSwitch=Math.hypot(watcher.x-lamp.control.x,watcher.y-lamp.control.y);}
     check(!lamp.off&&watcher.x<before-30&&atSwitch<=34.1,'observed light restore is remote or never completes');const light={spoke:said,elapsed,atSwitch};

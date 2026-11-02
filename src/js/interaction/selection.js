@@ -33,7 +33,8 @@ function primaryAction() {
 }
 function cycleAction() { if (!S) return; const a = primaryAction(); if (!(a.choices > 1)) return; S.actSel = (S.actSel || 0) + 1; play('click', 0.2); }
 function primaryActionOne() {
-  const a = primaryActionRaw();
+  const a = electricalChoice(primaryActionRaw());
+  if(a.skillLocked)return a;
   if (RISKY_K.has(a.k) && !(S.actPick && S.actPick === oid(actObj(a)))) { const sg = stalkGuard(); if (sg) return { k: 'none', stalk: sg, held: a, label: koTap(sg) ? '기절시키기' : '암살' }; }  // 이미 다루던 시설 행동은 사람이 다가와도 그대로 둔다 (공격은 F·⇄로)
   const v = a.g || (a.list && a.list[0]) || a.kill || ((a.k === 'execute' || a.k === 'drag') && S.player.captive) || null;
   if (v && ((koDefault(v) && !v.civ) || (koFirst(v) && (a.k === 'kill' || a.k === 'kill2'))) && a.label && /암살|처치/.test(a.label) && !['ledgeKill', 'pushOff'].includes(a.k)) { a.label = a.label.replace('표적 암살', '기절시키기').replace(/암살|처치/, '기절'); a.hold = '처치'; }

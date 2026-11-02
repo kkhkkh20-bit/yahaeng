@@ -2,7 +2,7 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/skills-v149';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/skills-v150';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();records=[]

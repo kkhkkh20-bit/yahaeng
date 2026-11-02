@@ -12,7 +12,7 @@ async def main():
     bad = []
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': 1280, 'height': 720}); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
+        await pg.add_init_script("localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit','electric']}))");await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
         si = await pg.evaluate("() => window.__game.STAGES.findIndex(s => s.id === 'm1')")
         await pg.evaluate(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await pg.evaluate(SK); await pg.evaluate(FREEZE)
         f = await pg.evaluate(FIND); print('겹친 자리', f)

@@ -24,6 +24,7 @@ const SKILL_TREE=[
  {id:'smoke',branch:'tools',name:'연막탄',cost:1,req:['kit'],row:2,col:2,description:'연막탄 1개 지급. 반경 3m·5초 동안 시선을 차단한다. 소리·접촉·개의 후각은 남는다.'},
  {id:'precision',branch:'tools',name:'투척 숙련',cost:2,req:['kunai'],row:4,col:1,description:'다트·쿠나이 사거리 30% 증가. 시작 시 배운 다트·쿠나이 각각 1개 추가.'},
  {id:'smokeMix',branch:'tools',name:'연막 조제',cost:2,req:['smoke'],row:3,col:2,description:'연막 반경 3.5m·지속 8초. 시작 시 연막탄 1개 추가.'},
+ {id:'electric',branch:'tools',name:'전기 조작',cost:1,req:['kit'],row:5,col:1,description:'조명 스위치와 건물·구역 분전반을 조작한다. 전기를 다루는 기술을 배워야 불을 끄거나 켤 수 있다. 경비는 꺼진 조명을 복구한다.'},
  {id:'radio',branch:'tools',name:'무전기 역이용',cost:2,req:['kit'],row:4,col:2,description:'쓰러진 경비에게서 무전기를 확보한 뒤 허위 점검 지시로 경비 한 명을 유인한다. 의뢰당 2회·재사용 30초.'},
  {id:'hack',branch:'tools',name:'CCTV 해킹',cost:2,req:['radio'],row:5,col:2,description:'같은 층·약 4m 안에서 CCTV를 겨누고 1.5초 작업해 10초간 정지. 녹화 기록은 남는다. 재사용 25초.'},
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
@@ -93,3 +94,10 @@ function concealedAttackSource(P=S.player){
 }
 const concealedMeleeAllowed=(P=S.player)=>!concealedAttackSource(P)||abilityOn('ambush');
 const abilityLockText=id=>(SKILL_BY_ID[id]?.name||'기술')+' 필요 · K / 메뉴의 기술 트리에서 배우기';
+
+// Player electrical controls share one unlock; guard repairs use their own behaviour.
+const electricalAction=a=>a.k==='lamp'&&!a.l?.hearth||a.k==='bfuse'||a.k==='fuse';
+const electricalActionAllowed=a=>!electricalAction(a)||abilityOn('electric');
+function electricalChoice(a){
+ return electricalActionAllowed(a)?a:{...a,label:'전기 조작 필요',skillLocked:'electric',reason:abilityLockText('electric')};
+}
