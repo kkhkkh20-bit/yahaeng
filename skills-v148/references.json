@@ -1,0 +1,75 @@
+[
+  {
+    "title": "Assassin’s Creed Shadows – Progression Gameplay Overview",
+    "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1792751526047854",
+    "date": 1740762614,
+    "retrieved": "2026-11-02",
+    "notes": [
+      "서로 다른 Mastery 트리에 포인트를 투자해 플레이 방식을 고른다.",
+      "포인트 초기화가 가능하며 배운 액티브 기술은 슬롯에 배치한다."
+    ],
+    "quotes": [
+      "Mastery points can also be reset at any time, if you wish to change your playstyle."
+    ]
+  },
+  {
+    "title": "Assassin’s Creed Shadows – Parkour System Overview",
+    "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1787858252881510",
+    "date": 1736269382,
+    "retrieved": "2026-11-02",
+    "notes": [
+      "이동 수단과 지형을 함께 설계하며 인물의 기동 능력이 경로 선택에 영향을 준다."
+    ],
+    "quotes": []
+  },
+  {
+    "title": "Assassin's Creed Shadows - Stealth Gameplay Overview",
+    "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1783872411987203",
+    "date": 1732208545,
+    "retrieved": "2026-11-02",
+    "notes": [
+      "웅크림·그림자·풀숲·연막과 적 유형에 따른 대응을 함께 설계한다.",
+      "쌍암살은 전용 스킬과 가까이 선 두 대상을 조건으로 삼는다."
+    ],
+    "quotes": [
+      "Some enemies will not be easily tricked by your Smoke Bombs..."
+    ]
+  },
+  {
+    "title": "AC Mirage Title Update 1.1.0 - Release Notes",
+    "url": "https://steamstore-a.akamaihd.net/news/externalpost/steam_community_announcements/1816307528970395",
+    "date": 1763382448,
+    "retrieved": "2026-11-02",
+    "notes": [
+      "Engineer 2가 도구 개조 조합을 확장한다.",
+      "시작된 연속 처치를 취소하는 선택지도 추가했다."
+    ],
+    "quotes": [
+      "Added an option to cancel the chain kill once started."
+    ]
+  },
+  {
+    "title": "Watch_Dogs® 2 official Steam store description",
+    "url": "https://store.steampowered.com/app/447040/",
+    "retrieved": "2026-11-02",
+    "notes": [
+      "플레이 방식에 맞춰 능력을 선택하고 해커 도구를 업그레이드한다.",
+      "연결된 장치와 도시 시설을 해킹 대상으로 삼는다."
+    ],
+    "quotes": [
+      "Hack into every connected device and take control of the city infrastructure."
+    ]
+  },
+  {
+    "title": "Dishonored 2 official Steam store description",
+    "url": "https://store.steampowered.com/app/403640/",
+    "retrieved": "2026-11-02",
+    "notes": [
+      "업그레이드 트리로 능력을 바꾸고 신체 능력·가젯·무기를 조합한다.",
+      "잠입·비살상·직접 전투에 서로 다른 조합을 제공한다."
+    ],
+    "quotes": [
+      "Advanced bonecharm crafting and all-new upgrade trees allow you to customize your powers in vastly different ways."
+    ]
+  }
+]

@@ -968,15 +968,55 @@ body.touch #hud #btnSkill { right:10px; bottom:calc(254px + env(safe-area-inset-
 body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden; }
 #skillSummary,#skillTrainingNote,.skill-controls { color:#b9bdaf; font-size:13px; line-height:1.8; }
 #skillCards { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0; }
-#skillCards .assassin-card { display:flex; flex-direction:column; gap:12px; text-align:left; min-height:200px; padding:20px; border:1px solid #59604f; border-radius:2px; background:#1c241e; color:#ded5bd; white-space:normal; }
-#skillCards .assassin-card b { font-size:20px; font-weight:500; }
-#skillCards .assassin-card span { font-size:13px; line-height:1.8; }
-#skillCards .assassin-card small { margin-top:auto; font-size:12px; color:#d0b879; }
-#skillCards .assassin-card[aria-pressed="true"] { border-color:#d0b879; background:#2b3022; }
-#skillCards .assassin-card:disabled { opacity:.55; cursor:default; }
 #btnSkillsLedger { margin:0 0 16px; }
-@media(max-width:600px) { #skillCards { grid-template-columns:1fr; gap:12px; margin:16px 0; } #skillCards .assassin-card { min-height:0; padding:16px; gap:8px; } }
-@media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } #skillCards .assassin-card { min-height:150px; } }
+
+/* Three dependency graphs; only the active branch occupies small touch screens. */
+#skillScreen .panel { width:min(1180px,calc(100vw - 40px)); max-width:1180px; }
+#skillScreen .sub-head { margin-bottom:16px; }
+#skillSummary { position:sticky; top:0; z-index:3; padding:10px 0; background:#10151f; color:#dfcf9f; font-size:16px; }
+#skillBranches { display:none; }
+#skillCards { grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; align-items:start; margin:18px 0 28px; }
+.skill-tree > h3 { font-size:20px; font-weight:500; margin:0 0 4px; color:#d6c391; }
+.skill-tree > p { margin:0 0 20px; font-size:12px; color:#adb5a8; }
+.skill-graph { position:relative; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:30px 12px; }
+.skill-links { position:absolute; inset:0; pointer-events:none; overflow:visible; }
+.skill-links path { fill:none; stroke:#555e50; stroke-width:1.5; }
+.skill-links path.learned { stroke:#b29e68; }
+.skill-node { position:relative; z-index:1; padding:14px 12px; background:#19201b; border:1px solid #414c40; border-radius:0; min-width:0; }
+.skill-node.learned { border-color:#9c946e; background:#252c21; }
+.skill-node h4 { font-size:15px; font-weight:500; margin:0 0 10px; color:#ded5bd; }
+.skill-node p { font-size:12px; line-height:1.7; margin:0 0 12px; color:#b9c0b1; word-break:keep-all; overflow-wrap:anywhere; }
+.skill-node small { display:block; font-size:10px; line-height:1.6; color:#a9b1a1; }
+.skill-node button { display:block; width:100%; min-height:44px; margin:10px 0 0; padding:8px 4px; border:1px solid #817b5f; border-radius:0; background:#303629; color:#e3d3a3; font-size:12px; white-space:normal; }
+.skill-node button:disabled { color:#9ba294; background:#1c231d; border-color:#414b3c; opacity:1; cursor:default; }
+.skill-node .skill-equip { background:none; }
+.skill-node .skill-equip[aria-pressed="true"] { border-color:#c0b17c; color:#e3d3a3; }
+.skill-reset { margin:20px 0; }.skill-reset small { display:block; margin-top:10px; font-size:12px; line-height:1.7; color:#a9b1a1; }
+@media(max-width:900px) {
+ #skillScreen .panel { width:calc(100vw - 32px); }
+ #skillBranches { display:flex; position:sticky; top:50px; z-index:3; gap:8px; padding:8px 0 14px; background:#10151f; }
+ #skillBranches button { flex:1; min-height:44px; border:1px solid #4a5545; background:#19201b; color:#b9c0b1; border-radius:0; }
+ #skillBranches button[aria-pressed="true"] { border-color:#c0b17c; color:#e3d3a3; }
+ #skillCards { display:block; }
+ .skill-tree:not(.current) { display:none; }
+ .skill-graph { gap:30px 14px; }
+ .skill-node { padding:14px; }
+}
+@media(max-width:360px) { .skill-node { padding:10px 8px; }.skill-node h4 { font-size:13px; }.skill-node p { font-size:11px; }.skill-graph { gap:28px 10px; } }
+body:not(.touch) #hud .tools { max-width:calc(100vw - 28px); flex-wrap:wrap; justify-content:flex-end; }
+body:not(.touch) #hud .tools .tool { min-height:44px; }
+
+#skillScreen .panel { gap:14px; }
+.skill-toolbar { position:sticky; top:calc(-20px - env(safe-area-inset-top,0px)); z-index:4; background:#10151f; padding-bottom:12px; border-bottom:1px solid #424a3e; }
+#skillScreen .skill-toolbar .sub-head { position:static; margin:0; padding:10px 0; border:0; }
+#skillScreen #skillSummary { position:static; margin:6px 0; padding:4px 0; }
+#skillScreen #skillTrainingNote { margin:0; font-size:12px; line-height:1.7; }
+#skillScreen #skillBranches { position:static; padding:12px 0 0; }
+@media(max-width:900px) { .skill-tree>h3,.skill-tree>p { display:none; } }
+@media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } }
+
+.skill-node h4 { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px; }
+.skill-cost { color:#a6ae9c; font-size:11px; font-weight:400; }
 
 </style>
 
@@ -1004,7 +1044,7 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">웅크리기</em></span><span><kbd>Shift</kbd>달리기</span>
-    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>B</kbd>암살 기술 · 길게</span><span><kbd>K</kbd>기술 목록</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
+    <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>B</kbd>암살 기술 · 길게</span><span><kbd>K</kbd>기술 트리</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
   </div>
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
@@ -1016,6 +1056,10 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
       <button class="tool on" type="button" data-t="kunai"><kbd>1</kbd>다트 <span>3</span></button>
       <button class="tool" type="button" data-t="stone"><kbd>2</kbd>빈 캔 <span>3</span></button>
       <button class="tool" type="button" data-t="coin"><kbd>3</kbd>담배 <span>2</span></button>
+      <button class="tool" type="button" data-t="blade" hidden>쿠나이 <span>0</span></button>
+      <button class="tool" type="button" data-t="smoke" hidden>연막탄 <span>0</span></button>
+      <button class="tool" type="button" data-t="radio" hidden>무전기 <span>0</span></button>
+      <button class="tool" type="button" data-t="hack" hidden>해킹기 <span>0</span></button>
     </div>
     <button id="btnTool" type="button"><b>다트 3</b></button>
     <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>도구 바꾸기</b></button>
@@ -1045,7 +1089,7 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v147 · 2026-11-02</footer>
+  <footer class="title-footer">v148 · 2026-11-02</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1055,7 +1099,7 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
       <button type="button" data-filter="missions" aria-pressed="true">의뢰</button>
       <button type="button" data-filter="training" aria-pressed="false">연습</button>
     </div>
-    <button class="ghost" id="btnSkillsLedger" type="button">암살 기술</button>
+    <button class="ghost" id="btnSkillsLedger" type="button">기술 트리</button>
     <div id="stageList" class="ledger-list" data-filter="missions"></div>
     <details class="ledger-extra" id="modBox" hidden><summary>재도전 조건</summary><div class="stages">
       <div class="diff" id="modSel"><button type="button" data-m="">기본</button><button type="button" data-m="reinf">순찰 증원</button><button type="button" data-m="timer">제한 시간</button><button type="button" data-m="bright">환한 밤</button><button type="button" data-m="bare">맨손</button></div>
@@ -1066,11 +1110,15 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
 
 <div class="screen sub" id="skillScreen" hidden>
   <div class="panel">
-    <div class="sub-head"><button class="back" id="btnSkillsBack" type="button">돌아가기</button><h2>암살 기술</h2></div>
-    <p id="skillSummary"></p>
-    <div id="skillCards" role="group" aria-label="사용할 기술 선택"></div>
-    <p id="skillTrainingNote"></p>
-    <p class="skill-controls">기술 버튼을 1초 동안 누르면 발동한다. PC: B 발동 · K 목록<br>의뢰 선택 → 연습 → 암살 기술에서 먼저 익힐 수 있다.</p>
+    <div class="skill-toolbar">
+      <div class="sub-head"><button class="back" id="btnSkillsBack" type="button">돌아가기</button><h2>기술 트리</h2></div>
+      <p id="skillSummary"></p>
+      <p id="skillTrainingNote"></p>
+      <div id="skillBranches" role="group" aria-label="기술 계열"></div>
+    </div>
+    <div id="skillCards" aria-label="세 계열의 기술 트리"></div>
+    <div class="skill-reset"><button id="btnSkillReset" class="ghost" type="button">다시 배우기 · 포인트 돌려받기</button><small id="skillResetNote"></small></div>
+    <p class="skill-controls">배운 도구는 도구 바꾸기로 선택한다. 쌍암살·연속 암살은 기술 버튼을 1초 동안 눌러 발동한다. PC: B 암살 기술 · F/V 도구 · K 기술 트리<br>의뢰 선택 → 연습의 암살 기술·현장 도구에서 먼저 익힐 수 있다.</p>
   </div>
 </div>
 
@@ -1093,7 +1141,7 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
       <div class="ctrl">
         <p class="control-note">공격·다트: 짧게 기절 · 길게 처치</p>
         <div class="kbonly"><dl class="control-grid">
-          <dt>이동</dt><dd>WASD / 방향키</dd><dt>공격</dt><dd>Space / Z</dd><dt>행동</dt><dd>E / X</dd><dt>붙잡기·심문</dt><dd>Q / C</dd><dt>도구</dt><dd>F / V · 1–3 선택</dd><dt>웅크리기</dt><dd>Ctrl · Shift 달리기</dd><dt>대상 선택</dt><dd>Tab</dd><dt>암살 기술</dt><dd>B 길게 · K 기술 목록</dd><dt>지도·메뉴</dt><dd>M / Esc</dd><dt>그 밖의 조작</dt><dd>G 휘파람 · R 이동 속도<br>T 단서 전환 · N 음소거<br>H 키 안내 · −/+ 배율</dd>
+          <dt>이동</dt><dd>WASD / 방향키</dd><dt>공격</dt><dd>Space / Z</dd><dt>행동</dt><dd>E / X</dd><dt>붙잡기·심문</dt><dd>Q / C</dd><dt>도구</dt><dd>F / V · 1–3 선택</dd><dt>웅크리기</dt><dd>Ctrl · Shift 달리기</dd><dt>대상 선택</dt><dd>Tab</dd><dt>암살 기술</dt><dd>B 길게 · K 기술 트리</dd><dt>지도·메뉴</dt><dd>M / Esc</dd><dt>그 밖의 조작</dt><dd>G 휘파람 · R 이동 속도<br>T 단서 전환 · N 음소거<br>H 키 안내 · −/+ 배율</dd>
         </dl></div>
         <div class="touch-controls"><dl class="control-grid">
           <dt>이동</dt><dd>왼쪽 화면 드래그</dd><dt>공격</dt><dd>기절·처치</dd><dt>행동</dt><dd>사물 조작·운반</dd><dt>붙잡기</dt><dd>등 뒤에서 붙잡기<br>다시 눌러 심문</dd><dt>도구</dt><dd>다트·유인 · 바꾸기로 선택</dd><dt>대상</dt><dd>겹친 사물 선택</dd><dt>암살 기술</dt><dd>기술 버튼 길게 · 메뉴에서 선택</dd><dt>지도</dt><dd>미니맵 터치</dd>
@@ -1120,7 +1168,7 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
     <div class="pz-menu">
       <span class="fx-sub" id="pzSub"></span>
       <button class="pz-big" id="btnResume" type="button">계속하기</button>
-      <button class="pz-big" id="btnSkillsPause" type="button">암살 기술</button>
+      <button class="pz-big" id="btnSkillsPause" type="button">기술 트리</button>
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
@@ -1181,6 +1229,6 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/3be42c234035dd6f48d0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/ec2874e5c93420aeb292.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/038ca4eaded6a1db4f80.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/483b45842f9114687738.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/c4cf99c51ea2791123ee.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/f0063cb87feec575843b.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
