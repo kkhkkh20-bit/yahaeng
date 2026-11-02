@@ -15,6 +15,7 @@ function drawPlayerBody(P) {
   if(P.trav?.hideFlow||P.trav?.accessFlow||P.trav?.signFlow)return;
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
+  if(P.assassinAnim&&drawAssassinActors(P,playerLook))return;
   if (P.car) return;  // 차 안: 차가 곧 나
   if (P.wire) {
     // 전깃줄에 두 손으로 매달린 모습 (땅에는 그림자)

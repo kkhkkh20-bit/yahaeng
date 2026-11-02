@@ -104,7 +104,8 @@ function drawSpeech() {
 }
 function updateChats(dt) {
   updateTalks(dt);
-  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
+  if(STAGE.noAmbientChats)return;
+  const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
     const a = gs[i], b = gs[j];

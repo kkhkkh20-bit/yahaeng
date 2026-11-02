@@ -12,7 +12,7 @@ function actorMarker(g,c){
 }
 function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(p.x,p.y,p.rx,p.ry,0,0,TAU);ctx.stroke();}
 function drawBody(c, lift = 0) {
-  if (c.hideT > S.t) return;  // 목 조르는 동안은 주인공과 함께 그린다
+  if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
@@ -85,6 +85,7 @@ function drawLastSeen() {
   }
 }
 function drawGuard(g) {
+  if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once
   if(g.containerMoving||g.ledgeFalling)return;
   if (g.state === 'CAPTIVE' && S.player.captive === g && pairGrab(S.player)) return;

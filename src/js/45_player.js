@@ -359,6 +359,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if(updateAssassinSkill(P,dt))return;
   if (updatePairCombat(P,dt)) return;
   if (P.lethalHold && updateLethalHold(P, dt)) return;
   if (P.interact) { updateObjectAction(P, dt); return; }

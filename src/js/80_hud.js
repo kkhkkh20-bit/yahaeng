@@ -97,7 +97,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 달리기: [()=>input.walkLock?'[이동]을 달리기로 바꾼 뒤 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 암살 기술에서','K · 기술 목록에서'], 달리기: [()=>input.walkLock?'[이동]을 달리기로 바꾼 뒤 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -148,6 +148,7 @@ function floorBanner(P, ptx, pty) {
 }
 function updateHUD(force) {
   if (force) hudCache = {};
+  syncAssassinHUD();
   const P = S.player;
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
@@ -263,7 +264,7 @@ function syncTools() {
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
-  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast((STAGE.firstSteps?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
+  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice)?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
   const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
 }
@@ -308,7 +309,7 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 의뢰에서는 별을 모아 해금할 수 있다.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -385,6 +386,6 @@ function syncTutorialCue(){
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4],key=(typeof cue==='function'?cue(S,S.player):cue)||'',token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle'}[key];
-  for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnCycle'])$(id)?.classList.toggle('lesson-cue',id===active);
+  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause'}[key];
+  for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }

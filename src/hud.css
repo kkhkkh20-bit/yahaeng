@@ -220,3 +220,28 @@ body:not(.touch) #hud .pad #btnCycle b { font-weight: 500; }
 #hud #envPicker button small { display: block; margin-top: 3px; color: var(--hud-muted); font-size: 11px; }
 #hud #envPicker button:last-child { border: 0; }
 #hud #envPicker button:disabled { opacity: .55; }
+
+/* One compact ability button; preparation uses the same held-input convention. */
+#hud #btnSkill {
+  position: absolute; right: 14px; bottom: 108px; width: 166px; min-height: 48px;
+  box-sizing: border-box; padding: 7px 12px; text-align: left; pointer-events: auto;
+  border: 1px solid var(--hud-line); border-radius: 2px; color: var(--hud-muted);
+  background: linear-gradient(90deg,#4c503b var(--skill-hold,0%),transparent 0),var(--hud-ground);
+  touch-action: none; user-select: none;
+}
+#hud #btnSkill b,#hud #btnSkill small { display:block; font-size:12px; line-height:1.5; font-weight:400; }
+#hud #btnSkill small { font-size:10px; }
+#hud #btnSkill.ready { color:var(--hud-ink); border-color:#b9ad82; }
+body.touch #hud #btnSkill { right:10px; bottom:calc(254px + env(safe-area-inset-bottom,0px)); width:188px; }
+body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden; }
+#skillSummary,#skillTrainingNote,.skill-controls { color:#b9bdaf; font-size:13px; line-height:1.8; }
+#skillCards { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:24px 0; }
+#skillCards .assassin-card { display:flex; flex-direction:column; gap:12px; text-align:left; min-height:200px; padding:20px; border:1px solid #59604f; border-radius:2px; background:#1c241e; color:#ded5bd; white-space:normal; }
+#skillCards .assassin-card b { font-size:20px; font-weight:500; }
+#skillCards .assassin-card span { font-size:13px; line-height:1.8; }
+#skillCards .assassin-card small { margin-top:auto; font-size:12px; color:#d0b879; }
+#skillCards .assassin-card[aria-pressed="true"] { border-color:#d0b879; background:#2b3022; }
+#skillCards .assassin-card:disabled { opacity:.55; cursor:default; }
+#btnSkillsLedger { margin:0 0 16px; }
+@media(max-width:600px) { #skillCards { grid-template-columns:1fr; gap:12px; margin:16px 0; } #skillCards .assassin-card { min-height:0; padding:16px; gap:8px; } }
+@media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } #skillCards .assassin-card { min-height:150px; } }

@@ -22,7 +22,7 @@ function updateOpps(dt) {
 }
 function drawCorpseRisk() {
   for (const c of S.corpses) {
-    if (c.stashed || flOf(c) !== flOf(S.player)) continue;
+    if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
       ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
@@ -128,7 +128,7 @@ function updateCheckpoint(dt) {
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
   const P = S.player;
-  if (S.alevel >= 2 || S.radioCall || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
+  if (S.alevel >= 2 || S.radioCall || P.skillHold || P.assassinAnim || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
   if (S.guards.some(g => !g.civ && (['ALERT', 'NOTICE', 'BODY', 'WARN'].includes(g.state) || (g.eyeT || 0) > .05))) return;
   S.cpWant = false; saveCheckpoint();
 }
@@ -145,7 +145,7 @@ function loadCheckpoint() {
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.vfx=[]; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   delete S.contact; if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게

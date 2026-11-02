@@ -66,6 +66,10 @@
       "group": "records"
     },
     {
+      "path": "26_assassin_skills.js",
+      "group": "progression"
+    },
+    {
       "path": "26_contracts.js",
       "group": "contracts"
     },
@@ -266,6 +270,10 @@
       "group": "interaction"
     },
     {
+      "path": "interaction/assassin_skills.js",
+      "group": "interaction"
+    },
+    {
       "path": "interaction/environment.js",
       "group": "interaction"
     },
@@ -376,6 +384,10 @@
     {
       "path": "83_plan_graphics.js",
       "group": "plan_graphics"
+    },
+    {
+      "path": "84_skill_menu.js",
+      "group": "skills_ui"
     },
     {
       "path": "85_loop.js",

@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v146): https://kkhkkh20-bit.github.io/yahaeng/?v=146
+- 2D 본편 · 시야와 소리 연습 (v147): https://kkhkkh20-bit.github.io/yahaeng/
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v147: 별 3개에 쌍암살, 6개에 연속 암살을 배운다. K로 선택하고 B를 길게 눌러 발동하며, 새 암살 기술 연습에서 둘 다 시험할 수 있다. [조사·구현·검증](docs/ASSASSIN_SKILLS_V147.md) · [화면](https://kkhkkh20-bit.github.io/yahaeng/skills-v147/).
 
 v146: PixelFX 효과 8종을 접촉·타격·총구·획득·풀숲·착지에 적용했습니다. 풀숲의 플레이어용 숨기 행동을 제거하고 웅크려 걸어 들어가는 자동 은폐로 튜토리얼과 조작을 통일했습니다. [변경·검증](docs/EFFECTS_V146.md) · [전후 화면](https://kkhkkh20-bit.github.io/yahaeng/effects-v146/)
 

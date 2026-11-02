@@ -18,7 +18,7 @@ window.addEventListener('keydown', e => {
   const overlay = document.querySelector('.screen:not([hidden])');
   if (overlay) {
     if (e.code === 'Escape') {
-      const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu' }[overlay.id];
+      const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu', skillScreen:'btnSkillsBack' }[overlay.id];
       if (back) { e.preventDefault(); $(back).click(); }
     }
     return;
@@ -50,6 +50,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
   if (e.code === 'KeyF' || e.code === 'KeyV') startAim('key');
+  if(e.code==='KeyB')beginAssassinSkill();
+  if(e.code==='KeyK')openAssassinMenu();
   if (e.code === 'KeyR') cycleMoveLock();
   if (e.code === 'Digit1') selectTool('kunai');
   if (e.code === 'Digit2') selectTool('stone');
@@ -74,10 +76,10 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
-  for(const id of ['btnAct','btnCarry','btnGrab','btnTool'])document.getElementById(id)?.classList.remove('down');
+  for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.skillHold=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
@@ -152,6 +154,10 @@ function bindBtn(id, fn) {
 bindBtn('btnAct', actAttack);
 bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
+bindBtn('btnSkill',beginAssassinSkill);
+$('btnSkillsLedger').addEventListener('click',openAssassinMenu);
+$('btnSkillsPause').addEventListener('click',openAssassinMenu);
+$('btnSkillsBack').addEventListener('click',closeAssassinMenu);
 {
   const b = $('btnTool');
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람

@@ -152,7 +152,7 @@ function killList() {
   if (P.lunge || P.grabIn) return [];
   let list = S.guards.filter(g => !ACT_SKIP.has(g) && canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
   if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && !ACT_SKIP.has(g) && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
-  if (list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
+  if (STAGE.artSlice && list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
   return list.slice(0, 1);
 }
 // 옥상 위에서 아래로 떨어지며 암살

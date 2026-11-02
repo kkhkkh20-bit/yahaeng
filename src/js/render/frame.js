@@ -313,7 +313,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   PM('nearmarks');
-  if(running)drawEffects(P,openB);
+  if(running){drawEffects(P,openB);drawAssassinTargets();}
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}

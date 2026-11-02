@@ -1,5 +1,5 @@
 // 짧게 제압, 같은 입력을 계속 누를 때만 처치. 동작 중에도 처음 고른 대상과 입력을 유지한다.
-const COMBAT_INPUTS = { atk: ['KeyZ', 'Space', 'btnAct'], env: ['KeyX', 'KeyE', 'btnCarry'], grab: ['KeyC', 'KeyQ', 'btnGrab'] };
+const COMBAT_INPUTS = { skill:['KeyB','btnSkill'], atk: ['KeyZ', 'Space', 'btnAct'], env: ['KeyX', 'KeyE', 'btnCarry'], grab: ['KeyC', 'KeyQ', 'btnGrab'] };
 const LETHAL_HOLD = 1;
 function combatPress(id) {
   input.pressSerial = (input.pressSerial || 0) + 1;
@@ -18,6 +18,7 @@ function combatRelease(id) {
   if (!S) return;
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
+  if(S.player.skillHold?.source.id===id)S.player.skillHold=null;
   if (input.pressIds) delete input.pressIds[id];
 }
 function combatVictims(a) {

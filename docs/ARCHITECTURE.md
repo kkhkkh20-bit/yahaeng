@@ -31,6 +31,10 @@
 
 [실측·검증·제거 목록](REFACTOR_V141.md)
 
+## 암살 기술 (v147)
+
+`26_assassin_skills.js`가 기존 의뢰 별 해금과 대상·같은 층·빈 이동 경로를 판정한다. `interaction/assassin_skills.js`가 특정 입력·대상 ID에 묶인 준비/타격/이동/중단을 처리하고, `84_skill_menu.js`가 선택 화면·HUD·대상 표시를 소유한다. `92_assassin_training.js`는 같은 규칙을 사용하는 선택 연습이다. 체크포인트는 진행 중인 동작을 취소하되 완료된 사망과 재사용 시간을 유지한다. [조사·조건·검증](ASSASSIN_SKILLS_V147.md)
+
 ## 효과·풀숲 (v146)
 
 `graphics/effects.js`가 단일 프리렌더 아틀라스와 최대 24개 효과의 생성·만료·층별 그리기를 소유한다. `tools/bake_pixelfx.py`와 `tools/bake_pixelfx.mjs`가 고정한 PixelFX 소스로 아틀라스를 만들고, `tools/buildlib/assets.py`가 이미지·프레임·라이선스를 빌드에 넣는다. 게임은 라이브러리의 파티클 연산을 실행하지 않는다. 효과는 기존 행위의 실제 접촉·명중·획득에서 호출하고 판정·소리는 바꾸지 않는다. 풀숲의 플레이어 은폐는 `45_player.js`의 이동·자세 규칙을 사용하며 컨테이너 흐름의 진입 대상에서는 제외한다. [변경·검증](EFFECTS_V146.md)
