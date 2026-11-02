@@ -1,12 +1,12 @@
 """Use the actual ledger, crouched keyboard movement, both skills and exit."""
-import asyncio,json,sys
+import asyncio,json,sys,os
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2]
 BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri()
 async def main():
  async with async_playwright() as p:
-  b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!window.__game');await q.click('#btnLedger');await q.click('[data-filter="training"]');idx=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="tS")');await q.click('[data-i="'+str(idx)+'"]');await q.wait_for_function('__game.STAGE.id==="tS"');await q.evaluate('''()=>{const G=__game;while(G.DLG.modal)G.advanceDialog();window.__tick=t=>{for(let n=0;n<t-1e-6;n+=.01)G.update(.01)}}''')
+  b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!window.__game');await q.click('#btnLedger');await q.click('[data-filter="training"]');idx=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="tS")');await q.click('[data-i="'+str(idx)+'"]');await q.wait_for_function('__game.STAGE.id==="tS"');await q.evaluate('''()=>{const G=__game;while(G.DLG.modal)G.advanceDialog();window.__tick=t=>{for(let n=0;n<t-1e-6;n+=.01)G.update(.01)}}''')
   async def move_to(x,y):
    for target,axis,lo,hi in [(y,'y','ArrowUp','ArrowDown'),(x,'x','ArrowLeft','ArrowRight')]:
     for _ in range(80):

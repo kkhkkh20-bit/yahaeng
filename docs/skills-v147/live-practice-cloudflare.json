@@ -1,0 +1,17 @@
+{
+  "result": {
+    "over": true,
+    "kills": 4,
+    "dual": 1,
+    "chain": 1,
+    "exitOpen": true,
+    "stage": "tS",
+    "stars": 0,
+    "position": [
+      1298.9786171653307,
+      650.6657478196796
+    ]
+  },
+  "errors": [],
+  "input": "Actual keyboard movement from ledger through both abilities to exit; packaged build; no position changes"
+}

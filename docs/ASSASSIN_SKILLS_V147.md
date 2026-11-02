@@ -49,3 +49,5 @@ Ubisoft가 Steam 공식 공지로 배포한 원문을 Steam News API에서 확�
 1280×800 PC, 390×844·844×390·320×568 터치 화면에서 기술 선택·준비·타격·이동을 촬영하고 버튼이 가려지거나 화면 밖에 있지 않은지 확인했다. [화면 정보](skills-v147/screens.json).
 
 패키지에서 의뢰 목록으로 연습을 열고, 좌표 변경 없이 실제 키보드로 웅크려 이동하여 두 기술과 출구까지 완주했다. 결과 화면이 열린 뒤에도 의뢰 별은 0개다. [연습 완주](skills-v147/native-practice.json) · [패키지 검사](skills-v147/packaged-local.json). 마지막 연습 조정 후 기술·잡담 관련 검사와 패키지 조작을 다시 확인했다.
+
+공개 Pages·Cloudflare의 파일 일치, PC·터치 입력, 암살 연습 완주도 확인했다. [배포 검증](skills-v147/DEPLOYMENT.md).
