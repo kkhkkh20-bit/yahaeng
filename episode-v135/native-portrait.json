@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "case": "bush",
+      "t": 5.016599999999997,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        6.5,
+        12.5,
+        0
+      ],
+      "dining": "idle"
+    },
+    {
+      "case": "bush-exit",
+      "t": 7.066399999999989,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        7.5,
+        12.5,
+        0
+      ],
+      "dining": "idle"
+    },
+    {
+      "case": "supplies",
+      "t": 13.866000000000124,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        3.499436213000527,
+        6.660455320752534,
+        0
+      ],
+      "dining": "idle"
+    },
+    {
+      "case": "meal",
+      "t": 20.615999999999968,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        5.452742900277916,
+        9.337767916517222,
+        0
+      ],
+      "dining": "walking"
+    },
+    {
+      "case": "bathroom",
+      "t": 36.365999999999076,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        3.500252505705984,
+        5.676733491757634,
+        0
+      ],
+      "dining": "toilet"
+    }
+  ],
+  "errors": [],
+  "note": "Native browser frames, live AI, DPR .75 / shadow 512, software GPU; not real-device FPS.",
+  "video_retained_locally": true
+}

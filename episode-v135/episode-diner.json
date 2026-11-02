@@ -1,0 +1,195 @@
+{
+  "route": "diner",
+  "touch": true,
+  "cases": [
+    {
+      "case": "entry",
+      "t": 0.03333333333333333,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        5.5,
+        18.5,
+        0
+      ],
+      "kills": 0,
+      "ko": null,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "diner-supplies",
+      "t": 7.449999999999979,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        3.5000000202710235,
+        6.501142332172599,
+        0
+      ],
+      "kills": 0,
+      "ko": null,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "dose-meal",
+      "t": 11.316666666666809,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        5.499203133633859,
+        9.482476034287314,
+        0
+      ],
+      "kills": 0,
+      "ko": null,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "wc-interrogation",
+      "t": 26.71666666666643,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        3.4999999940823723,
+        5.041666666666667,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "wc-stash",
+      "t": 30.41666666666622,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        2.5,
+        4.25,
+        0
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "staff-entry",
+      "t": 50.13333333333177,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.49373421718144,
+        6.506566414871052,
+        1
+      ],
+      "kills": 0,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "target",
+      "t": 51.58333333333169,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.480575113322393,
+        6.520357974168596,
+        1
+      ],
+      "kills": 0,
+      "ko": 2,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "finish-target",
+      "t": 53.1333333333316,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.480575113322393,
+        6.520357974168596,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        false
+      ],
+      "exit": false
+    },
+    {
+      "case": "ledger",
+      "t": 54.516666666664854,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.500041830321772,
+        7.4979018424099655,
+        1
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "descent",
+      "t": 65.5333333333309,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        13.500035091501873,
+        16.516972663297185,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    },
+    {
+      "case": "extraction",
+      "t": 69.93333333333065,
+      "hp": 3,
+      "alarm": 0,
+      "at": [
+        4.509105883640775,
+        18.490922177149525,
+        0
+      ],
+      "kills": 1,
+      "ko": 1,
+      "items": [
+        true
+      ],
+      "exit": true
+    }
+  ],
+  "errors": [],
+  "note": "Live AI with fixed simulation steps; not a device FPS benchmark."
+}

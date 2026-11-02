@@ -1,8 +1,8 @@
 import * as THREE from 'three';
-import {loadModular,colorModular} from './lib/modular_models.js?v=v134-ca9e5888bbeb';
-import {createPoseDriver} from './pose_driver.js?v=v134-ca9e5888bbeb';
-import {FLOOR} from './world.js?v=v134-ca9e5888bbeb';
-import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v134-ca9e5888bbeb';
+import {loadModular,colorModular} from './lib/modular_models.js?v=v135-5442be5db15c';
+import {createPoseDriver} from './pose_driver.js?v=v135-5442be5db15c';
+import {FLOOR} from './world.js?v=v135-5442be5db15c';
+import {SEWER_Y,DUCT_Y,WELL_HIDE_Y,accessMotion} from './passages.js?v=v135-5442be5db15c';
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const ease=v=>{v=clamp(v);return v*v*(3-2*v)};
 function pbr(rig){const mats=[];rig.model.traverse(o=>{if(!o.isMesh)return;const cv=m=>{const n=new THREE.MeshStandardMaterial({color:m.color,roughness:.83,metalness:0});n.userData={...m.userData};mats.push(n);return n};o.material=Array.isArray(o.material)?o.material.map(cv):cv(o.material);o.castShadow=o.receiveShadow=true;});rig.mats=mats;return rig;}
@@ -11,7 +11,7 @@ export async function createActors(G,scene,visibility){
  let disposed=false;
  const corpseOf=o=>G.S.corpses.find(c=>c.g===o||o.id!=null&&c.guardId===o.id),guardOf=c=>c&&(c.g||G.S.guards.find(g=>g.id===c.guardId));
  const authoredModel=o=>G.STAGE.guards.find(d=>d.tag&&d.tag===o.tag)?.model||(o.civ?'male':'guard');
- async function make(o){const name=o===player?'hero':authoredModel(o),a=pbr(await loadModular(name)),b=pbr(await loadModular('guard')),driver=createPoseDriver(a,b);driver.root.visible=false;if(!disposed)scene.add(driver.root);const actor={o,rig:a,driver,look:null,phase:0,last:[o.x,o.y],previous:null,name};actors.set(o,actor);return actor;}
+ async function make(o){const name=o===player?'hero':authoredModel(o),a=pbr(await loadModular(name)),b=pbr(await loadModular('guard')),driver=createPoseDriver(a,b);driver.root.visible=false;driver.root.userData.actor=true;driver.root.userData.entityId=o===player?'player':o.id;if(!disposed)scene.add(driver.root);const actor={o,rig:a,driver,look:null,phase:0,last:[o.x,o.y],previous:null,name};actors.set(o,actor);return actor;}
  await make(player);for(const g of G.S.guards)await make(g);
  function ensureOutfit(a){const corpse=corpseOf(a.o),name=a.o===player?(({crew:'heroCrew',staff:'heroWorker',courier:'heroWorker',waiter:'heroSuit',cater:'heroWorker'})[player.outfit]||'hero'):(corpse?.stripped?'male':authoredModel(a.o));if(name===a.name||a.loading)return;a.loading=true;loadModular(name).then(r=>{a.rig=pbr(r);a.driver.setPrimary(a.rig);if(a.o===paired)actors.get(player).driver.setPartner(a.rig);a.name=name;a.look=null;a.previous=null;colour(a);}).finally(()=>a.loading=false);}
 
@@ -45,18 +45,22 @@ export async function createActors(G,scene,visibility){
      const exit=F.kind==='exit',q=exit?1-core:core,u=ease((q-.12)/.73),cab=!!h.furn;x=(at.x+(h.x-at.x)*u)/48;z=(at.y+(h.y-at.y)*u)/48;
      if(h.type==='well'){x=P.x/48;z=P.y/48;y=WELL_HIDE_Y*(exit?1-ease((core-.38)/.46):ease((core-.16)/.78));d.renderPose('climb',Math.floor(core*7)%2,angle);}
      else if(cab)d.renderFrame(u>.02&&u<.98?'Walk':'Idle',((exit?1-u:u)*Math.hypot(h.x-at.x,h.y-at.y)/82)%1,angle,0,undefined,false,u>.02&&u<.98?{walk:true}:{sway:0});
-     else{d.renderHidePose('duck',clamp(u*.95),angle);if(h.type!=='bush')y+=Math.sin(u*Math.PI)*.35;}
-     visible=exit||q<.98||cab;
+     else{if(h.type==='bush')d.renderFrame('Idle',0,angle,u*.85,undefined,false,{sway:0});else d.renderHidePose('duck',clamp(u*.95),angle);if(h.type!=='bush')y+=Math.sin(u*Math.PI)*.35;}
+     visible=exit||q<.98||cab||h.type==='bush';
     }
    }else if(o===P&&P.trav?.ventPull){const A=P.trav.ventPull,f=clamp(A.t/A.dur);angle=Math.atan2(A.y0-P.y,A.x0-P.x);d.pair('grab','Idle',0,angle);d.offsetPartner(new THREE.Vector3((A.g.x-P.x)/48*250,(0-DUCT_Y)*(1-ease((f-.25)/.7))*250,(A.g.y-P.y)/48*250));d.partner.visible=f<.96;
    }else if(o===P&&P.trav?.accessFlow){const a=accessMotion(P,G);if(a.walking)d.renderFrame('Walk',(P.gaitTime||0)%1,angle,0);else if(a.work)d.renderAccessPose('low',clamp(a.work.p),angle);else if(a.pose==='climb'){d.renderPose('climb',Math.floor(a.p*7)%2,angle);}else d.renderHidePose('duck',a.F.exit?1-a.p:a.p,angle);
    }else if(o===P&&(P.vent||P.under)){d.renderFrame(P.moving?'Walk':'Idle',P.moving?a.phase%1:0,angle,P.vent?.95:P.mode==='sneak'?.65:0,undefined,false,P.moving?undefined:{sway:0});}
-   else if(o===P&&(P.pick||P.interact)){const I=P.pick||P.interact,f=clamp((I.t||0)/(I.dur||.6)),p=f<.2?f/.2*.4:f>.82?.72+(f-.82)/.18*.28:.45+Math.sin(f*8)*.025;d.renderAccessPose(P.pick?.kind==='clean'?'low':'high',clamp(p),angle);}
+   else if(o===P&&P.trav?.signFlow){d.renderAccessPose('high',clamp(P.trav.t/P.trav.dur),angle);}
+   else if(o===P&&(P.pick||P.interact)){const I=P.pick||P.interact,f=clamp((I.t||0)/(I.dur||.6)),p=f<.2?f/.2*.4:f>.82?.72+(f-.82)/.18*.28:.45+Math.sin(f*8)*.025;d.renderAccessPose(P.pick?.kind==='clean'||I.pose==='ground'&&!I.a?.p?.surface?'low':'high',clamp(p),angle);}
    else if(o===P&&P.trav?.room&&!P.trav.stairs){const T=P.trav,phase=G.travPose(T),f=clamp(T.t/T.dur);if(T.crossing){const up=!T.down,edge=T.down?.4:(T.phases.find(p=>p.pose==='climb')?.to||.72),rise=up?ease((f-.1)/Math.max(.01,edge-.1)):1-ease((f-.4)/.45);y=(T.room.fl||1)*FLOOR*rise;const pts=T.pts.map(p=>({...p,y:p.y+(!T.studyPhysical&&(p.f===edge||T.down&&p.f===.4)?44:0)}));let k=0;while(k<pts.length-2&&f>pts[k+1].f)k++;const a=pts[k],b=pts[k+1],u=clamp((f-a.f)/(b.f-a.f));z=(a.y+(b.y-a.y)*u)/48;}
     if(phase.pose==='walk')d.renderFrame('Walk',a.phase%1,angle,0);else if(phase.pose==='climb'){d.renderPose('climb',Math.floor(phase.g*7)%2,angle);}else if(phase.pose==='vault')d.renderHidePose('pass',phase.g,angle);else d.renderHidePose('duck',phase.g*.75,angle);
    }
-   else if(o===P&&P.hide){visible=false;d.renderFrame('Idle',0,angle,0);}
+   else if(o===P&&P.hide){visible=P.hide.type==='bush';d.renderFrame('Idle',0,angle,visible?.85:0,undefined,false,{sway:0});}
    else if((o===P?P.strikeT>0:o.swingT>0)){d.renderFrame('Punch',(G.S.t*.7)% .68,angle,0);}
+   else if(o.doorWork){d.renderAccessPose('high',clamp(o.doorWork.t/o.doorWork.dur),angle);}
+   else if(o.tag===G.S.dining?.guest&&G.S.dining?.phase==='eating'){d.renderAccessPose('high',.4+Math.sin(G.S.t*5)*.06,angle);}
+   else if(o.tag===G.S.dining?.guest&&G.S.dining?.phase==='toilet'&&G.S.dining.arrived){d.renderHidePose('duck',.2,angle);}
    else if(o.moving){const run=o===P?P.mode==='run':['ALERT','PANIC'].includes(o.state);d.renderFrame(run?'Run':'Walk',a.phase%(run?.63:1),angle,o===P&&P.mode==='sneak'?.65:0);}
    else d.renderFrame('Idle',0,angle,o===P&&P.mode==='sneak'?.65:0,undefined,false,o===P&&P.mode==='sneak'?undefined:{sway:Math.sin(G.S.t)*.15});
    if(a.previous&&dt>0&&dt<.15){const target=d.snapshot();d.mix(a.previous,target,1-Math.exp(-dt*20));}a.previous=d.snapshot();d.root.scale.setScalar(1/250);d.root.position.set(x,y,z);d.root.visible=visible&&(o===P||floor===(P.fl||0)&&visibility.visible({x:x*48,y:z*48,fl:floor,z:o.z||0}));d.root.updateMatrixWorld(true);

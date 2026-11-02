@@ -1,0 +1,36 @@
+[
+  {
+    "touch": true,
+    "props": [
+      {
+        "id": "apron",
+        "pixels": 195
+      },
+      {
+        "id": "laxative",
+        "pixels": 105
+      },
+      {
+        "id": "open-door-NPC",
+        "pixels": 848
+      }
+    ]
+  },
+  {
+    "touch": false,
+    "props": [
+      {
+        "id": "apron",
+        "pixels": 272
+      },
+      {
+        "id": "laxative",
+        "pixels": 137
+      },
+      {
+        "id": "open-door-NPC",
+        "pixels": 1105
+      }
+    ]
+  }
+]

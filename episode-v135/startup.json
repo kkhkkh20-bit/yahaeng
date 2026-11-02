@@ -1,0 +1,24 @@
+[
+  {
+    "edition": "integration-before-v134",
+    "initial": {
+      "roots": 9,
+      "owned": 9,
+      "orphaned": 0,
+      "guards": 8,
+      "drawCalls": 92
+    },
+    "errors": []
+  },
+  {
+    "edition": "episode-one",
+    "initial": {
+      "roots": 12,
+      "owned": 12,
+      "orphaned": 0,
+      "guards": 11,
+      "drawCalls": 236
+    },
+    "errors": []
+  }
+]

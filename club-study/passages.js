@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {batchStatic} from './batch.js?v=v134-ca9e5888bbeb';
+import {batchStatic} from './batch.js?v=v135-5442be5db15c';
 export const SEWER_Y=-2.2,DUCT_Y=-1.05,WELL_HIDE_Y=-1.7;
 const clamp=v=>Math.max(0,Math.min(1,v)),ease=v=>{v=clamp(v);return v*v*(3-2*v)};
 export function passageMode(P){const F=P.trav?.accessFlow;if(F){const p=clamp((F.t-F.walk-F.pre)/F.core);if(F.kind==='sewerDown')return p>.04?'sewer':null;if(F.kind==='surface')return p<.72?'sewer':null;if(F.kind==='ventIn')return p>.5?'duct':null;if(F.kind==='ventOut')return p<.5?'duct':null;}return P.under?'sewer':P.vent?'duct':null;}

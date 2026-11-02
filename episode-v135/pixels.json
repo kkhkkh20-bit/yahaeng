@@ -1,0 +1,600 @@
+[
+  {
+    "touch": false,
+    "scene": "start",
+    "bodyPixels": 1146,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 640,
+      "y": 480.0000000000002,
+      "z": -0.5391458819029011
+    }
+  },
+  {
+    "touch": false,
+    "scene": "west",
+    "bodyPixels": 940,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 640.1112039094121,
+      "y": 479.5968601238029,
+      "z": -0.5391004213530699
+    }
+  },
+  {
+    "touch": false,
+    "scene": "bin",
+    "bodyPixels": 770,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 639.9445101149734,
+      "y": 479.8988087524581,
+      "z": -0.5391344709509636
+    }
+  },
+  {
+    "touch": false,
+    "scene": "north",
+    "bodyPixels": 879,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 15
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 640.389157761045,
+      "y": 479.7479355983119,
+      "z": -0.5391174575594655
+    }
+  },
+  {
+    "touch": false,
+    "scene": "inside",
+    "bodyPixels": 1019,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 640.0003921875209,
+      "y": 480.45327833389086,
+      "z": -0.5391969963758223
+    }
+  },
+  {
+    "touch": false,
+    "scene": "upper",
+    "bodyPixels": 966,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 14.5,
+      "width": 1280,
+      "height": 800,
+      "groundWidth": 23.2,
+      "anchor": {
+        "touch": false,
+        "x": 0.5,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 640.0556023499469,
+      "y": 479.73309134514943,
+      "z": -0.5391573248027098
+    }
+  },
+  {
+    "touch": true,
+    "scene": "start",
+    "bodyPixels": 888,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.49999999999997,
+      "y": 506.40000000000026,
+      "z": -0.5391458819029012
+    }
+  },
+  {
+    "touch": true,
+    "scene": "west",
+    "bodyPixels": 756,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 24
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.59825907933217,
+      "y": 506.0437881250169,
+      "z": -0.5391004213530699
+    }
+  },
+  {
+    "touch": true,
+    "scene": "bin",
+    "bodyPixels": 601,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 24
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.45096948440232,
+      "y": 506.31058804611723,
+      "z": -0.5391344709509638
+    }
+  },
+  {
+    "touch": true,
+    "scene": "north",
+    "bodyPixels": 687,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 10
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.84385736542328,
+      "y": 506.1772774700712,
+      "z": -0.5391174575594656
+    }
+  },
+  {
+    "touch": true,
+    "scene": "inside",
+    "bodyPixels": 800,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 25
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.5003465344424,
+      "y": 506.8005139028358,
+      "z": -0.5391969963758223
+    }
+  },
+  {
+    "touch": true,
+    "scene": "upper",
+    "bodyPixels": 762,
+    "probes": [
+      {
+        "dx": 0,
+        "dz": 0,
+        "green": 24
+      },
+      {
+        "dx": -1.15,
+        "dz": 0,
+        "green": 25
+      },
+      {
+        "dx": 1.15,
+        "dz": 0,
+        "green": 24
+      },
+      {
+        "dx": 0,
+        "dz": -1.15,
+        "green": 24
+      },
+      {
+        "dx": 0,
+        "dz": 1.15,
+        "green": 25
+      }
+    ],
+    "framing": {
+      "pitch": 65,
+      "northUp": true,
+      "span": 17.31282051282051,
+      "width": 390,
+      "height": 844,
+      "groundWidth": 8,
+      "anchor": {
+        "touch": true,
+        "x": 0.45,
+        "y": 0.6
+      },
+      "slope": [
+        0,
+        0.4663076581549986
+      ]
+    },
+    "player": {
+      "x": 175.54912988889828,
+      "y": 506.1641611807533,
+      "z": -0.5391573248027097
+    }
+  }
+]
