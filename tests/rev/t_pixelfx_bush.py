@@ -29,7 +29,7 @@ async def main():
    const P2=G.S.player;check(!P2.hide&&P2.hidden&&P2.mode==='sneak'&&P2.hp===2&&G.input.sneakToggle,'Old container-style bush save was not migrated');
    const T=G.S;T.vfx=[];T.noises=[];const hp=P2.hp,at={x:P2.x,y:P2.y,fl:0,z:0};G.cam.x=P2.x;G.cam.y=P2.y;
    for(let i=0;i<50;i++)G.spawnEffect('dust',at);check(T.vfx.length===24,'Effect pool grows without a bound');T.t+=3;G.updateEffects();check(!T.vfx.length,'Expired effects leak');
-   const names=Object.keys(G.effectAtlas.meta.effects);check(names.length===8,'Missing baked effects');for(const name of names)G.spawnEffect(name,at);
+   const names=Object.keys(G.effectAtlas.meta.effects);check(names.length===9,'Missing baked effects');for(const name of names)G.spawnEffect(name,at);
    G.spawnEffect('leaf',{...at,z:1});G.spawnEffect('leaf',{...at,fl:1});
    let draws=0,canvases=0;const draw=G.ctx.drawImage,create=document.createElement;
    G.ctx.drawImage=function(...a){draws++;return draw.apply(this,a)};document.createElement=function(tag,...a){if(tag==='canvas')canvases++;return create.call(this,tag,...a)};

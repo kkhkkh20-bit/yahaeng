@@ -13,7 +13,7 @@ const CH = {
   nokey: ['카드·비밀번호 없이 완료하기', () => !S.stats.keyDoors],
   vent: ['환풍구를 한 번 이상 쓰기', () => (S.stats.vents || 0) > 0],
   intel: ['엿듣기나 쪽지로 정보 얻기', () => (S.learned || []).length > 0],
-  nolure: ['던지는 도구 안 쓰기', () => S.stats.stonesUsed === 0 && S.stats.kunaiUsed === 0],
+  nolure: ['던지는 도구 안 쓰기', () => !['stonesUsed','kunaiUsed','coins','bladesUsed','smokesUsed'].some(k=>(S.stats[k]||0)>0)],
   fast: ['제한 시간 안에 완료하기', () => S.t < (STAGE.fastT || 330)],
   disguise: ['변장한 채로 표적 처치', () => !!S.stats.disguiseKill],
   noalarm: ['경보를 한 번도 울리지 않기', () => S.stats.alarms === 0],
@@ -27,16 +27,11 @@ const mmss = t => { const m = Math.floor(t / 60), s = Math.round(t % 60); return
 const chName = id => id === 'fast' ? `${mmss(STAGE.fastT || 330)} 안에 완료하기` : (CH[id] || ['?'])[0];
 function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
-// 별점 해금 장비 (도시): 모든 의뢰의 별을 합친 수로 열린다
-const PERKS = [[3, 'pick', '락픽 +1'], [6, 'dart', '다트 +1'], [9, 'sole', '고무 밑창 — 걷기 소음 25% 감소'], [12, 'can', '빈 캔 +2'], [16, 'reach', '긴 팔 — 끌어당기기·돌진 거리 20% 증가'], [20, 'shadow', '그림자 걸음 — 웅크리기 이동 속도 20% 증가']];
-const totalStars = () => STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s):0),0);
+const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
-function applyPerks() {
-  S.perks = {}; const n = totalStars(); S.stars0 = n; for (const [need, k] of PERKS) if (n >= need) S.perks[k] = true;
-  const P = S.player; if (S.perks.pick) P.picks++; if (S.perks.dart) P.kunai++; if (S.perks.can) P.stones += 2;
-}
+function applyPerks() { S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
-function earnedChallengeStars(st){const c=loadCh()[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
+function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
 function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.best') || '{}') || {}; } catch (e) { return {}; } }
 function saveBest(id, rank) {

@@ -66,6 +66,10 @@
       "group": "records"
     },
     {
+      "path": "25_skill_tree.js",
+      "group": "progression"
+    },
+    {
       "path": "26_assassin_skills.js",
       "group": "progression"
     },
@@ -271,6 +275,10 @@
     },
     {
       "path": "interaction/assassin_skills.js",
+      "group": "interaction"
+    },
+    {
+      "path": "interaction/skill_devices.js",
       "group": "interaction"
     },
     {

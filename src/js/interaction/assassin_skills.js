@@ -27,7 +27,7 @@ function commitAssassinHit(A,index){
   const c=S.corpses.find(c=>c.guardId===g.id&&!c.ko);
   if(!c)return false;
   c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.65,angle:P.a});
-  if(index===0){S.skillReadyAt=S.t+ASSASSIN_SKILLS[A.key].cooldown;S.stats.assassinUses=(S.stats.assassinUses||0)+1;}
+  if(index===0){S.skillReadyAt=S.t+ASSASSIN_SKILLS[A.key].cooldown*(skillOn('flow')?.8:1);S.stats.assassinUses=(S.stats.assassinUses||0)+1;}
   return true;
 }
 function updateAssassinSkill(P,dt){

@@ -28,13 +28,13 @@ function dropSpot() {
   if (!best || dist(P.x, P.y, tc(best[0]), tc(best[1])) > 72) return null;
   return [best[0], best[1], P.z - 1];
 }
-function kunaiTarget() {
-  const P = S.player; if (P.kunai <= 0 || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
+function kunaiTarget(weapon=input.tool) {
+  const P = S.player; if ((weapon==='blade'?!(P.blades>0):P.kunai<=0) || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
   let best = null, bs = Infinity;
   for (const g of S.guards) {
     if (g.child || g.dog || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P)) continue;
     const d = dist(P.x, P.y, g.x, g.y), ad = Math.abs(angDiff(P.a, Math.atan2(g.y-P.y, g.x-P.x)));
-    if (d < 20 || d > 250 || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
+    if (d < 20 || d > projectileRange() || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
     const score = ad * 160 + d * .4;
     if (score < bs) { bs = score; best = { type:'guard',ref:g,x:g.x,y:g.y,fl:flOf(g),z:g.z||0 }; }
   }

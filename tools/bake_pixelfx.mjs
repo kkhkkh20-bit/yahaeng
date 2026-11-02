@@ -6,7 +6,7 @@ import {loadEffect,renderFrames,contactSheet} from '../.agents/skills/pixelfx/ve
 import {encodePNG} from '../.agents/skills/pixelfx/vendor/pixelfx/tools/lib/png.mjs';
 import * as foliage from './pixelfx/foliage.mjs';
 import * as dust from './pixelfx/dust.mjs';
-const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),round=Number(process.argv[2]||3),OUT=join(ROOT,'build/effects-v146/round-'+round);
+const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..'),round=Number(process.argv[2]||3),OUT=join(ROOT,'build/pixelfx-preview/integrated/round-'+round);
 mkdirSync(OUT,{recursive:true});mkdirSync(join(ROOT,'src/art/fx'),{recursive:true});
 const gray=['#252b2e','#4c5558','#737d7d','#9fa8a0','#c4cabb','#e1e1ce','#f1edd9'];
 const defs=[
@@ -17,12 +17,13 @@ const defs=[
  ['dart','impacts/hit-spark',.32,{palette:gray,height:0,light:.02},.55],
  ['muzzle','projectiles/muzzle-pistol',.58,{height:0,light:.16},.9],
  ['loot','pickups/collect-burst',.32,{palette:['#3d3e30','#666247','#8a8052','#aaa373','#d0c08d','#dfd3aa','#eee4c7','#f5edda'],light:.05},.6],
- ['shock','lightning/zap-hit',.4,{light:.16},.8]
+ ['shock','lightning/zap-hit',.4,{light:.16},.8],
+ ['smoke','explosions/smoke-bomb',.38,{palette:['#151a1b','#252d2d','#374141','#4b5553','#626c68','#818983','#a0a59a'],canister:['#151a1b','#252d2d','#374141','#4b5553','#626c68'],light:0},.85]
 ];
 const all=[],manifest={version:1,upstream:'a84159688af3ca37a4be05a0d422b94451b2e24e',effects:{}};
 for(const [key,recipe,scale,options,opacity] of defs){
  const fx=typeof recipe==='string'?await loadEffect(recipe):{id:key,mod:recipe,meta:recipe.meta};
- const r=renderFrames(fx,{fps:20,actor:false,options}),second=renderFrames(fx,{fps:20,actor:false,options});
+ const fps=key==='smoke'?10:20,r=renderFrames(fx,{fps,actor:false,options}),second=renderFrames(fx,{fps,actor:false,options});
  if(r.frames.some((f,i)=>!Buffer.from(f.clear).equals(Buffer.from(second.frames[i].clear))))throw Error('Non-deterministic '+key);
  if(typeof recipe!=='string'&&r.frames.at(-1).clear.some(v=>v))throw Error('Custom effect does not end empty '+key);
  writeFileSync(join(OUT,key+'.png'),contactSheet(fx,r,{max:12,zoom:2}));
@@ -35,7 +36,7 @@ for(const [key,recipe,scale,options,opacity] of defs){
   }
   frames.push({w,h,rgba});
  }
- manifest.effects[key]={frames:[],fps:20,duration:fx.meta.duration,origin:fx.meta.origin.map(n=>Math.round(n*scale)),recipe:typeof recipe==='string'?recipe:'tools/pixelfx/'+(key==='leaf'?'foliage':'dust')+'.mjs'};
+ manifest.effects[key]={frames:[],fps,duration:fx.meta.duration,origin:fx.meta.origin.map(n=>Math.round(n*scale)),recipe:typeof recipe==='string'?recipe:'tools/pixelfx/'+(key==='leaf'?'foliage':'dust')+'.mjs'};
  all.push({key,frames});
 }
 const width=1024;let x=0,y=0,row=0;

@@ -48,7 +48,7 @@ function kunaiHit(k) {
     spawnEffect('dart',{x:g.x,y:g.y-22,fl:flOf(g),z:g.z||0},{angle:Math.atan2(g.y-k.y0,g.x-k.x0),scale:.7});
     g.takedownIntent = { source: null, lethal: !!k.lethal }; S.lethalNext = !!k.lethal; if (!k.lethal) S.koNext = true;
     killGuard(g); S.stats.special++; dartBlame(g);
-    toast(k.lethal ? '다트로 처치했다' : '다트로 기절시켰다', 1.6, 'good');
+    toast(k.weapon==='blade'?'쿠나이로 처치했다':k.lethal ? '다트로 처치했다' : '다트로 기절시켰다', 1.6, 'good');
   }
 }
 

@@ -50,6 +50,7 @@ function actPrimary(force) {
       break;
     }
     case 'drop': {
+      if(!STAGE.tutorial&&!skillOn('drop'))break;
       // 위에서 덮치기: 그 자리로 순간이동하지 않고 뛰어내려 덮친다 (내려앉는 순간 처치)
       const g = a.g, z0 = P.z || 0; P.wire = null; P.a = Math.atan2(g.y - P.y, g.x - P.x); g.doomed = true; g.path = null; g.moving = false;
       P.jump = { x0: P.x, y0: P.y, x1: g.x, y1: g.y, t: 0, dur: 0.26 + z0 * 0.05, z1: 0, arc: 10, noise: 40, killG: g, dropKill: true }; P.z = 0; play('throw', 0.3);

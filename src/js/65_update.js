@@ -4,6 +4,7 @@ function update(dt) {
   if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
+  updateSkillDevices();
   updateNpcDoors(dt);
   updatePlayer(dt);
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록

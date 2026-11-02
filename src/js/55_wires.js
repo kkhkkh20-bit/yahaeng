@@ -53,7 +53,7 @@ function wireExitAction() {
 }
 // 줄 아래(실외, 맨땅)를 지나는 자경대원 위로 떨어진다
 function wireDropTarget() {
-  const P = S.player; if (!P.wire || P.strikeT > 0) return null;
+  const P = S.player; if ((!STAGE.tutorial&&!skillOn('drop')) || !P.wire || P.strikeT > 0) return null;
   let best = null, bd = 74;
   for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
 

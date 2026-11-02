@@ -108,6 +108,7 @@ function respondToLampOff(l,watchers){
   g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
 }
 function noise(x, y, r, src, fl, z) {
+  r=skillNoise(src,r);
   if (fl == null) fl = flOf(S.player);
   const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
   if (src !== 'scream') r = Math.max(src==='whistle'?180:0,r*loudMul(x,y,fl));  // 클럽 음악에 묻힌다

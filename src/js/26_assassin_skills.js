@@ -1,17 +1,17 @@
-// Earned abilities reuse existing mission stars. No second currency or grind reset.
+// Active assassination abilities use ownership from the shared skill tree.
 const ASSASSIN_SKILLS={
-  dual:{name:'쌍암살',stars:3,cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
-  chain:{name:'연속 암살',stars:6,cooldown:16,description:'등 뒤의 적을 처리한 뒤 가까운 다음 적에게 직접 이동해 한 번 더 공격한다.'}
+  dual:{name:'쌍암살',cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
+  chain:{name:'연속 암살',cooldown:16,description:'등 뒤의 적을 처리한 뒤 가까운 다음 적에게 직접 이동해 한 번 더 공격한다.'}
 };
 function initAssassinSkills(){
-  S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
+  syncRuntimeSkills();S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
   let key='dual';try{key=localStorage.getItem('yahaeng.assassinSkill')||key;}catch(e){}
   S.selectedSkill=ASSASSIN_SKILLS[key]?key:'dual';
-  if(!STAGE.skillPractice&&S.skillStars<ASSASSIN_SKILLS[S.selectedSkill].stars)S.selectedSkill='dual';
+  if(!STAGE.skillPractice&&!skillOn(S.selectedSkill))S.selectedSkill='dual';
   if(STAGE.skillPractice)S.selectedSkill=S.practiceSkill||'dual';
   cancelAssassinSkill();
 }
-const assassinUnlocked=(key=S.selectedSkill)=>!!ASSASSIN_SKILLS[key]&&(!!STAGE.skillPractice||(S.skillStars??0)>=ASSASSIN_SKILLS[key].stars);
+const assassinUnlocked=(key=S.selectedSkill)=>!!ASSASSIN_SKILLS[key]&&skillOn(key);
 const assassinSupported=()=>!!S&&!STAGE.artSlice&&(!STAGE.tutorial||!!STAGE.skillPractice);
 function assassinPath(a,b){
   if(flOf(a)!==flOf(b)||(a.z||0)!==(b.z||0))return false;
@@ -46,8 +46,8 @@ function assassinOpportunity(key=S.selectedSkill){
   }return null;
 }
 function assassinReason(){
-  const P=S.player,k=S.selectedSkill,d=ASSASSIN_SKILLS[k];
-  if(!assassinUnlocked(k))return `의뢰 별 ${d.stars}개로 해금 · 기술 연습에서 사용 가능`;
+  const P=S.player,k=S.selectedSkill;
+  if(!assassinUnlocked(k))return 'K · 기술 트리에서 선행 기술과 포인트를 확인';
   if(S.t<S.skillReadyAt)return `회복 ${Math.ceil(S.skillReadyAt-S.t)}초`;
   if(P.z||P.hide||P.vent||P.under||P.carrying||P.captive)return '빈손으로 같은 층의 등 뒤에서 접근';
   return k==='dual'?'붙어 있는 두 적의 등 뒤로 접근':'가까운 두 적의 등 뒤와 이동 경로 확보';

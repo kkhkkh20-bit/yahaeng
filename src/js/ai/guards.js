@@ -54,7 +54,7 @@ function updateGuard(g, dt) {
     // 어쌔신 크리드식 발견: 한 번에 들키지 않고 게이지가 찬다. 보통 거리 2~3초, 코앞·밝은 곳은 1초 남짓
     const wary = ['SUSPICIOUS', 'SEARCH', 'NOTICE', 'CHECK', 'BODY'].includes(g.state);
     const dP = dist(g.x, g.y, P.x, P.y), runK = P.mode === 'run' && P.moving ? 2 : 1, nearK = dP < 120 ? 1.5 * (1 - dP / 120) : 0;  // 뛰는 사람·코앞의 사람은 금방 알아본다
-    const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6 + nearK) * runK * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
+    const rate = disguiseMul(g) * D().rate * (0.08 + vis * 0.6 + nearK) * runK * (P.carrying || P.captive ? 1.8 : 1) * (g.state === 'SUSPICIOUS' || g.state === 'SEARCH' ? 1.3 : 1) * skillDetection(g,P.light,P.mode==='sneak',dP) * (P.mode !== 'run' && !P.carrying && inCrowd(P.x, P.y, flOf(P)) ? 0.35 : 1);
     g.meter = Math.min(pz === Z_PUB && zk < 1 ? 0.9 : 1, g.meter + rate * zk * dt); g.holdT = 0.8;  // 거리에서 웅크린 정도로는 쳐다보기만 한다
     if (g.state !== 'ALERT') {
       if (g.meter >= 1 && pz === Z_RES && !g.warned && !suspAct(g) && !knownFace(g) && !g.civ && !g.target) startWarn(g);  // 출입 금지: 처음엔 나가라고 경고한다

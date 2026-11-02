@@ -109,16 +109,17 @@ function canSee(g, x, y, light, hidden, sneak, elev, targetFloor = flOf(g)) {
   const r = guardRanges(g);
   const watch = g.lookout && elev;  // 망꾼: 옥상 위 사람은 하늘을 배경으로 실루엣이 드러난다
   let eff = r.dark + (r.lit - r.dark) * (watch ? Math.max(light, 0.6) : light);
-  if (hidden) eff = Math.min(eff, 36);
+  if (hidden) eff = Math.min(eff, skillOn('foliage')?28:36);
   if (elev) eff *= g.lookout ? (elev >= 3 ? 0.8 : 1.05) : elev >= 3 ? 0.35 : elev >= 2 ? 0.45 : 0.55;  // 망꾼은 옥상을 본다
   if (g.elite) eff *= 1.1;
   if (sneak === 2) eff *= COVER_HIDE;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
   if (d > eff) return 0;
+  if(d>=24&&smokeRayRange(g,x,y,d)<d-4)return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34) || (!sneak && !hidden && S.player.mode === 'run' && S.player.moving && d < 72 && Math.abs(x - S.player.x) + Math.abs(y - S.player.y) < 2));
   if (!near && Math.abs(angDiff(g.a, Math.atan2(y - g.y, x - g.x))) > guardFov(g)) return 0;
   if (!sightLine(g, x, y, targetZ, sneak, targetFloor)) return 0;
   // 쉐도우 택틱스식 줄무늬 구역: 웅크리면 시야 바깥쪽 띠에서 보이지 않는다 — 어두운 곳은 바깥 45%, 밝은 곳은 바깥 20%만 (밝은 데서 늘 웅크리는 게 정답이 되지 않게)
-  if (sneak && !watch && g.state !== 'ALERT' && d > eff * (light < 0.5 ? 0.55 : 0.8)) return 0;
+  if (sneak && !hidden && !watch && g.state !== 'ALERT' && d > eff * (light < 0.5 ? 0.55 : 0.8)) return 0;
   // 코만도스식 낮은 엄폐: 모래주머니 바로 뒤에서 웅크리면 가려진다
   if (sneak && !elev && lowCovered(g.x, g.y, x, y)) return 0;
   return 1 - d / eff;

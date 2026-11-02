@@ -27,16 +27,16 @@ const input = { walkLock: (() => { const touch = matchMedia('(pointer: coarse)')
 // PC 키 두 벌: 마지막으로 누른 쪽 이름을 화면에 보여 준다 (방향키 손 = Z X C V · WASD 손 = Space E Q F)
 const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { atk: 'Space', env: 'E', grab: 'Q', tool: 'F' } };
 const KK = k => KEYSET[input.kset || 'arrow'][k];
-const TOOLS = ['kunai', 'stone', 'coin'], TOOL_NAME = { stone: '빈 캔', coin: '담배', kunai: '다트' };
-const toolCount = t => { const P = S.player; return t === 'stone' ? P.stones : t === 'coin' ? P.coins : P.kunai; };
-function selectTool(t) { if (!TOOLS.includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
+const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
+const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
+function selectTool(t) { if (!availableTools().includes(t)) return; input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return; if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
-  const P = S.player; if (!input.aiming) return; input.queue = input.queue || [];
+  const P = S.player; if (!input.aiming) return;if(EXTRA_TOOLS[input.tool]){toast('이 도구는 한 번씩 사용한다',1.5);return;} input.queue = input.queue || [];
   if (input.queue.length >= 2) { toast('투척은 최대 2개 예약 가능 · 손을 떼면 함께 사용', 1.6); return; }
   const tool = input.tool, used = input.queue.filter(q => q.tool === tool).length + 1;
   const have = tool === 'stone' ? P.stones : tool === 'coin' ? P.coins : P.kunai;
@@ -66,7 +66,7 @@ function releaseAim() {
   const pt = aimPoint(), lethal = performance.now() - input.aiming.t0 >= LETHAL_HOLD * 1000; input.aiming = null;
   const q = input.queue || []; input.queue = [];
   if (!canAim()) return;
-  if (input.tool === 'stone') actThrow(pt); else if (input.tool === 'coin') actCoin(pt); else actKunai(undefined, lethal);
+  if(input.tool==='blade')actBlade(lethal);else if(input.tool==='smoke')actSmoke(pt);else if(input.tool==='radio')actRadio(pt);else if(input.tool==='hack')actHack();else if(input.tool==='stone')actThrow(pt);else if(input.tool==='coin')actCoin(pt);else actKunai(undefined,lethal);
   if (q.length) { S.qRun = q; S.qRunT = 0.1; }
   syncTools();
 }
@@ -359,6 +359,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  if(updateTechWork(P,dt))return;
   if(updateAssassinSkill(P,dt))return;
   if (updatePairCombat(P,dt)) return;
   if (P.lethalHold && updateLethalHold(P, dt)) return;
@@ -471,7 +472,7 @@ function updatePlayer(dt) {
   // 조작감: 아주 짧은 가속·감속(무게감), 모서리에 걸리면 옆으로 미끄러져 빠져나간다
   if (P.adrenT > 0) P.adrenT -= dt;
   const viewPace=STAGE.artSlice&&window.__clubView?.ready?window.__clubView.pace(mx,my):1;
-  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? 0.6 : P.captive ? DRAG_SPD : 1) * (P.cover ? COVER_SPD : 1) * (STAGE.pspd || 1) * viewPace;
+  const sp0 = SPD[mode] * (P.adrenT > 0 ? 1.3 : 1) * (mode === 'sneak' && perkOn('shadow') ? 1.2 : 1) * (P.carrying ? (skillOn('bodyCarry')?.75:.6) : P.captive ? DRAG_SPD : 1) * (P.cover ? COVER_SPD : 1) * (STAGE.pspd || 1) * viewPace * skillMoveMul(mode);
   const tvx = mag > 0.05 ? mx / mag * sp0 : 0, tvy = mag > 0.05 ? my / mag * sp0 : 0;
   const kk = 1 - Math.exp(-dt * (mag > 0.05 ? 24 : 30));
   P.vx = (P.vx || 0) + (tvx - (P.vx || 0)) * kk; P.vy = (P.vy || 0) + (tvy - (P.vy || 0)) * kk;
@@ -499,7 +500,7 @@ function updatePlayer(dt) {
     P.stepT -= dt;
     if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
       P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
-      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * (mode === 'walk' && perkOn('sole') ? 0.75 : 1) * floorMul(P.x, P.y, P.z);
+      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
       play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
       { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
       if (P.carrying) play('cloth', 0.12);

@@ -1,6 +1,6 @@
 # 게임 테스트 주소
 
-- 2D 본편 · 시야와 소리 연습 (v147): https://kkhkkh20-bit.github.io/yahaeng/
+- 2D 본편 · 세 계열 기술 트리 (v148): https://kkhkkh20-bit.github.io/yahaeng/
 - 2D Cloudflare 테스트: https://yahaeng.kkhkkh-20.workers.dev/
 - 새 사선 시점 구역: https://kkhkkh20-bit.github.io/yahaeng/club-study/
 - 에피소드 01 · 마지막 정산: https://kkhkkh20-bit.github.io/yahaeng/episode-one/
@@ -8,6 +8,8 @@
 - Cloudflare 배포 설명: [docs/CLOUDFLARE_2D_PLAYTEST.md](docs/CLOUDFLARE_2D_PLAYTEST.md)
 
 # 야행
+
+v148: 신체·암살·도구 각 8개, 총 24개 기술을 선행 조건과 포인트로 선택해 배운다. 처음 4P와 의뢰 별 보상을 사용하며, 쿠나이·연막·무전 역이용·CCTV 해킹과 현장 도구 연습을 추가했다. [전체 기술·조사·검증](docs/SKILL_TREES_V148.md) · [실제 화면](https://kkhkkh20-bit.github.io/yahaeng/skills-v148/).
 
 v147: 별 3개에 쌍암살, 6개에 연속 암살을 배운다. K로 선택하고 B를 길게 눌러 발동하며, 새 암살 기술 연습에서 둘 다 시험할 수 있다. [조사·구현·검증](docs/ASSASSIN_SKILLS_V147.md) · [화면](https://kkhkkh20-bit.github.io/yahaeng/skills-v147/).
 

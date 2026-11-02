@@ -10,7 +10,7 @@ function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
   if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
-  if (k === 'gear') { P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔·다트', 2.6, 'good'); return; }
+  if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔·다트', 2.6, 'good'); return; }
   toast((msg || withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')) + (keyPurpose(k) ? ' · '+keyPurpose(k) : ''), 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '대형 수거함');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
@@ -134,7 +134,7 @@ function canKill(g, P, reach = 56) {
   if (g.child || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
   if (g.state === 'ALERT' && !g.target && !radioBusy(g)) return false;
-  const behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > 1.75;
+  const behind = Math.abs(angDiff(g.a, Math.atan2(P.y - g.y, P.x - g.x))) > (skillOn('blindside')&&!g.elite&&!g.civ?1.4:1.75);
   if (g.civ) return (behind || g.state === 'SLEEP' || g.state === 'PANIC' || g.state === 'REPORT') && los(P.x, P.y, g.x, g.y);
   if (!behind && !(g.target && (g.state === 'FLEE' || (g.state !== 'ALERT' && d < 36))) && !(radioBusy(g) && d <= 56)) return false;
   return los(P.x, P.y, g.x, g.y) && (d <= 56 || lungeClear(P, g));
@@ -157,13 +157,13 @@ function killList() {
 }
 // 옥상 위에서 아래로 떨어지며 암살
 function dropTarget() {
-  const P = S.player; if (!P.z || P.z >= 3 || P.strikeT > 0 || P.jump) return null;
+  const P = S.player; if ((!STAGE.tutorial&&!skillOn('drop')) || !P.z || P.z >= 3 || P.strikeT > 0 || P.jump) return null;
   // 옥상 가장자리 바깥의 맨땅 칸(뛰어내릴 자리)을 먼저 찾는다
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
   const edges = N8.map(o => [tx + o[0], ty + o[1]]).filter(([x, y]) => !roofAt(x, y) && bldAt(x, y) < 0 && !groundSolidP(x, y));
   if (!edges.length) return null;
   let best = null, bd = P.z >= 2 ? 132 : 118;
-  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
+  for (const g of S.guards) { if (g.child||g.civ||g.dog||g.elite) continue;
 
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || (g.state === 'ALERT' && !g.target) || flOf(g) || g.z || g.climb) continue;
     // 옥상 아래(건물 안)에 있는 사람은 옥상 위에서 칠 수 없다

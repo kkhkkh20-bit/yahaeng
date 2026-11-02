@@ -67,7 +67,7 @@ STAGES.push(Object.assign({}, TUT, { id: 't1', kitId: 't0', name: '연습 3 · �
 const npcT = (S, t) => S.guards.find(g => g.tag === t);
 const inR = (P, r) => P.x >= r[0] * 48 && P.x < (r[2] + 1) * 48 && P.y >= r[1] * 48 && P.y < (r[3] + 1) * 48;
 STAGES.push({
-  id: 'tI', no: '00', name: '연습 1 · 신분', sub: '연습 · 신분 (약 4분, 먼저 하기)', tutorial: true, kitId: 't0',
+  id: 'tI', no: '00', name: '연습 4 · 신분', sub: '선택 연습 · 신분과 출입 권한 (약 4분)', tutorial: true, kitId: 't0',
   mission: '이 게임의 기본 규칙: 공개·출입 금지 구역 구분, 엿듣기·기절·변장·은신·신원 확인', itemName: '', itemNames: [],
   brief: '서쪽에서 동쪽으로 걸으며 이 게임의 규칙을 익힌다. 거리(공개 구역)에선 나는 그냥 행인이다. 주황 경계선 안은 출입 금지 — 그곳 사람의 옷을 입으면 경계선이 초록으로 바뀌고 지나다닐 수 있다. 목표 목록 맨 위 "연습" 줄이 지금 할 일이다.',
   W: 44, H: 16, start: [1, 10], exit: [43.5, 10], startA: 0, noRefine: true, floors: false, pspd: 1.25, gspd: 0.9, residents: 0, candy: 0,

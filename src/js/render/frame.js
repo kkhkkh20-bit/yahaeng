@@ -313,7 +313,7 @@ function draw() {
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   PM('nearmarks');
-  if(running){drawEffects(P,openB);drawAssassinTargets();}
+  if(running){drawSkillDevices(P,openB);drawEffects(P,openB);drawAssassinTargets();}
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
@@ -350,7 +350,7 @@ function draw() {
     S.paNow = pa; drawActLabels(pa, P, ka, ga);
     const nc = !P.carrying && nearCorpse();
     if(nc&&nc!==ka.c){ctx.setLineDash([5,5]);drawTargetRing(nc,'rgba(232,227,214,.8)',nc);ctx.setLineDash([]);}
-    if (input.aiming && input.tool !== 'kunai') {
+    if (input.aiming && !['kunai','blade','hack'].includes(input.tool)) {
       const ap = aimPoint();
       if (ap) {
         const col = input.tool === 'coin' ? '242,196,107' : '215,220,230';
@@ -358,7 +358,7 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + ap.x) / 2, (P.y + ap.y) / 2 - ap.d * 0.25, ap.x, ap.y); ctx.stroke(); ctx.setLineDash([]);
         ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(ap.x, ap.y, 12, 0, TAU); ctx.stroke();
         if (input.tool === 'stone') { ctx.strokeStyle = `rgba(${col},.25)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(ap.x, ap.y, 240, 0, TAU); ctx.stroke(); }
-        tag(ap.x, ap.y - 26, `${TOOL_NAME[input.tool]} — 놓으면 던짐`, `rgb(${col})`);
+        tag(ap.x, ap.y - 26, `${TOOL_NAME[input.tool]} — ${input.tool==='radio'?'놓으면 사용':'놓으면 던짐'}`, `rgb(${col})`);
       }
     }
     if (input.aiming && input.queue && input.queue.length) input.queue.forEach((q, i) => {  // 예약한 행동
@@ -366,8 +366,8 @@ function draw() {
       ctx.strokeStyle = 'rgba(127,214,204,.9)'; ctx.lineWidth = 2.5; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
       ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, `예약 ${i + 1} · ${TOOL_NAME[q.tool]}`, '#7fd6cc');
     });
-    const kt = input.aiming ? kunaiTarget() : null;
-    if (kt && input.aiming && input.tool === 'kunai') { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, '다트 — 짧게 기절 · 길게 처치', '#d7dbe2'); }
+    const kt=input.aiming&&['kunai','blade'].includes(input.tool)?kunaiTarget():null;
+    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, input.tool==='blade'?'쿠나이 — 길게 누른 뒤 놓으면 처치':'다트 — 짧게 기절 · 길게 처치', '#d7dbe2'); }
     if (kt && input.aiming) {
       ctx.save(); ctx.translate(kt.x, kt.y); ctx.rotate(S.t * 1.5); ctx.strokeStyle = 'rgba(215,219,226,.85)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();
