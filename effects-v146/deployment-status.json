@@ -1,0 +1,45 @@
+{
+  "version": "v146",
+  "source_commit": "c7c3c2ccb75f4afd8bb4db7d5958120b0b25a75e",
+  "pages_commit": "41df589390b7663da80324db080c99831259668d",
+  "native_local": "passed PC and touch",
+  "native_public": "passed PC and touch at both base URLs using normal static asset paths",
+  "observations": [
+    {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "index": {
+        "status": 200,
+        "sha256": "514f6161993161fe103df22f21a6c615f3f7d6d8b5fc7ac7e11392c419dbffa4",
+        "matches_local": true
+      },
+      "version.json?verify=v146": {
+        "status": 200,
+        "sha256": "9300898c98e2d1a86ef5c6d0c3746fbab00f7486d45da009079c889fa3088eb7",
+        "matches_local": true
+      },
+      "assets/efca07b39d1ccc8b65a8.webp": {
+        "status": 200,
+        "sha256": "efca07b39d1ccc8b65a813df02dd05361eb9e35f401fe94a4ff688b48bd27121",
+        "matches_local": true
+      }
+    },
+    {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "index": {
+        "status": 200,
+        "sha256": "514f6161993161fe103df22f21a6c615f3f7d6d8b5fc7ac7e11392c419dbffa4",
+        "matches_local": true
+      },
+      "version.json?verify=v146": {
+        "status": 200,
+        "sha256": "9300898c98e2d1a86ef5c6d0c3746fbab00f7486d45da009079c889fa3088eb7",
+        "matches_local": true
+      },
+      "assets/efca07b39d1ccc8b65a8.webp": {
+        "status": 200,
+        "sha256": "efca07b39d1ccc8b65a813df02dd05361eb9e35f401fe94a4ff688b48bd27121",
+        "matches_local": true
+      }
+    }
+  ]
+}
