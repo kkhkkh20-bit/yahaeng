@@ -26,9 +26,10 @@ async def main():
    if mobile:await page.tap('#btnCrouch')
    else:await page.keyboard.press('Control')
    assert await page.evaluate('__game.input.sneakToggle')
+   await page.locator('#hud .obj').click();assert await page.evaluate('__game.hudInspecting()');inspect_time=await page.evaluate('__game.S.t');await page.wait_for_timeout(350);assert await page.evaluate('__game.S.t')==inspect_time,'live objective panel does not pause game time';await page.locator('#hud .obj').click();await page.wait_for_timeout(150);assert await page.evaluate('__game.S.t')>inspect_time,'live objective panel does not resume game time'
    await page.click('#btnPause');assert await page.locator('#pause').is_visible();await page.click('#btnMenu2');assert await page.locator('#ledger').is_visible();await page.locator('.ledger-tabs [data-filter="training"]').click();i=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")');await page.locator('[data-i="'+str(i)+'"]').click();assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.wait_for_timeout(300);await page.screenshot(path=str(O/f'{NAME}-{"touch"if mobile else"pc"}.png'));assert not errors,errors
-   info={'mobile':mobile,'before':before,'after':after,'version':release,'stage':'tB','errors':errors,'threeDRequests':False};result['browsers'].append(info);print('PASS native 2D',info,flush=True);await page.close()
+   info={'mobile':mobile,'before':before,'after':after,'version':release,'stage':'tB','errors':errors,'threeDRequests':False,'objectivePauseAndResume':True};result['browsers'].append(info);print('PASS native 2D',info,flush=True);await page.close()
   await b.close()
  (O/f'{NAME}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('PASS packaged hashes',len(result['files']),BASE,flush=True)
 if __name__=='__main__':asyncio.run(main())
