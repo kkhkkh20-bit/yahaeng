@@ -1,0 +1,85 @@
+Initial suite: 39 of 40 passed; the building identity test and validation expected retired rules. Final reruns follow.
+Final validate: PASS [] []
+
+=== v145-fast.log ===
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.028s
+
+OK
+PASS sprite source ownership, deduplication, late-load discard, release, failure backoff and retry
+도달 검사: 문제 ['m2: 배관 (42,7) 디딜 곳 없음', 'm2: 건물2 직접 오를 곳 없음'][]
+통과 tests/rev/r3.py (8초)
+통과 tests/rev/t_access_evidence.py (19초)
+통과 tests/rev/t_ai_evidence.py (10초)
+통과 tests/rev/t_btn4.py (32초)
+실패 tests/rev/t_building_search.py (8초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_camera_presentation.py (39초)
+통과 tests/rev/t_change.py (14초)
+통과 tests/rev/t_choice.py (6초)
+통과 tests/rev/t_city.py (31초)
+통과 tests/rev/t_combat_policy.py (68초)
+통과 tests/rev/t_contract_density.py (7초)
+통과 tests/rev/t_copy_scenarios.py (12초)
+통과 tests/rev/t_cqc.py (24초)
+통과 tests/rev/t_disguise_ai.py (20초)
+통과 tests/rev/t_disguise_lighting.py (10초)
+통과 tests/rev/t_environment_targets.py (21초)
+통과 tests/rev/t_fac.py (24초)
+통과 tests/rev/t_hanging_controls.py (36초)
+통과 tests/rev/t_height_cues.py (13초)
+통과 tests/rev/t_instig.py (25초)
+통과 tests/rev/t_interaction_flow.py (57초)
+통과 tests/rev/t_ko.py (39초)
+통과 tests/rev/t_m1x.py (14초)
+통과 tests/rev/t_mission_flow.py (63초)
+통과 tests/rev/t_mission_progress.py (14초)
+통과 tests/rev/t_multilevel_pursuit.py (18초)
+통과 tests/rev/t_patrol_motion.py (8초)
+통과 tests/rev/t_rel.py (50초)
+통과 tests/rev/t_roof_routes.py (13초)
+통과 tests/rev/t_scene_layers.py (12초)
+통과 tests/rev/t_sprite_ownership.py (12초)
+통과 tests/rev/t_stair_geometry.py (9초)
+통과 tests/rev/t_target_body.py (6초)
+통과 tests/rev/t_tut.py (56초)
+통과 tests/rev/t_ui2.py (13초)
+통과 tests/rev/t_v33.py (22초)
+통과 tests/rev/t_world_alignment.py (20초)
+통과 tests/rev/t_world_realism.py (15초)
+통과 tests/rev/t_zone.py (20초)
+통과 tests/mis/tm1.py (72초)
+
+결과: 실패 validate, tests/rev/t_building_search.py (로그: build/test_logs/)
+
+
+=== v145-balance-final.log ===
+PASS {"rooms": [{"id": "m1", "tiles": 640, "min": 0.662, "mean": 0.983, "added": 86}, {"id": "m2", "tiles": 344, "min": 0.662, "mean": 0.984, "added": 42}, {"id": "m3", "tiles": 188, "min": 0.662, "mean": 0.995, "added": 27}, {"id": "m4", "tiles": 276, "min": 0.662, "mean": 0.988, "added": 32}, {"id": "m5", "tiles": 181, "min": 0.662, "mean": 0.987, "added": 22}, {"id": "m6", "tiles": 297, "min": 0.662, "mean": 0.985, "added": 35}, {"id": "city", "tiles": 593, "min": 0.662, "mean": 0.985, "added": 77}], "ordinaryIdentity": true, "distanceEscape": true, "floorSeparation": true, "lighting": {"lit": 1, "dark": 0.04}, "cameraSecureRoom": true, "bodyFloorLighting": true, "legacyCircuit": true}
+
+
+=== v145-building-final.log ===
+PASS {'indoorPositions': 13360, 'exteriorClimbs': 0, 'cornerCameras': 6, 'searches': [{'id': 'm2', 'assigned': 6, 'checked': 16, 'upstairs': 4}, {'id': 'm4', 'assigned': 6, 'checked': 11, 'upstairs': 4}, {'id': 'm6', 'assigned': 6, 'checked': 14, 'upstairs': 4}], 'identityCues': True, 'absoluteFloors': True}
+
+
+=== v145-disguise-final.log ===
+PASS authorized patrol, uniform running attention, notice resolves, trespass warning, wrong uniform, observer-specific uniform, crime detection, unseen change, watched change, body clothing, radio memory, enforcer, floor separation, wall separation, camera identity, resident report identity, real investigation, multiple identities, checkpoint identity
+
+
+=== v145-interactions-final.log ===
+PASS overlap and pickup phases, facing at contact, door intent, selected corpse and lift lock, selection stability, dress phases, single use effect and permission, target revalidation, distance revalidation, travel continuity, vent transitions, lockpick continuity, wall access, floor access, 15 mission vent roundtrips
+PASS keyboard and mobile touch, busy labels, uninterrupted dress and one completion
+
+
+=== v145-light-fixtures.log ===
+PASS {'stages': 11, 'counts': {'wall': 49, 'street': 36, 'pole': 10}, 'reachable': 95, 'legacyState': True}
+
+
+=== v145-fixture-lighting-final.log ===
+PASS PC base {"records": [{"id": "m2", "key": "box:0", "dark": 41.9, "lit": 91.4}, {"id": "m2", "key": "well:0", "dark": 40.5, "lit": 87.6}, {"id": "m2", "key": "locker:0", "dark": 54.9, "lit": 119.4}, {"id": "m2", "key": "wardrobe:0", "dark": 54.3, "lit": 118.6}, {"id": "m2", "key": "locker:1", "dark": 57.6, "lit": 131.1}, {"id": "m2", "key": "wardrobe:1", "dark": 57.1, "lit": 130.8}, {"id": "m2", "key": "locker:2", "dark": 58, "lit": 131.5}, {"id": "m3", "key": "box:0", "dark": 47.7, "lit": 94.4}, {"id": "m3", "key": "well:0", "dark": 42.5, "lit": 83.6}, {"id": "m3", "key": "wardrobe:0", "dark": 64.9, "lit": 122.3}], "maxDelta": 6.4, "allocated": 0}
+PASS mobile device DPR 2 base {"records": [{"id": "m2", "key": "box:0", "dark": 41.9, "lit": 91.3}, {"id": "m2", "key": "well:0", "dark": 39.3, "lit": 86}, {"id": "m2", "key": "locker:0", "dark": 54.9, "lit": 119.1}, {"id": "m2", "key": "wardrobe:0", "dark": 54.3, "lit": 118.6}, {"id": "m2", "key": "locker:1", "dark": 57.6, "lit": 131}, {"id": "m2", "key": "wardrobe:1", "dark": 57.2, "lit": 130.8}, {"id": "m2", "key": "locker:2", "dark": 58, "lit": 131.6}, {"id": "m3", "key": "box:0", "dark": 47.7, "lit": 94.3}, {"id": "m3", "key": "well:0", "dark": 41.1, "lit": 81.2}, {"id": "m3", "key": "wardrobe:0", "dark": 64.9, "lit": 122}], "maxDelta": 6.4, "allocated": 0}
+PASS PC ink {"records": [{"id": "m2", "key": "box:0", "dark": 43, "lit": 91.1}, {"id": "m2", "key": "well:0", "dark": 41.6, "lit": 86.9}, {"id": "m2", "key": "locker:0", "dark": 54.9, "lit": 118.3}, {"id": "m2", "key": "wardrobe:0", "dark": 54.3, "lit": 118.3}, {"id": "m2", "key": "locker:1", "dark": 57.2, "lit": 130}, {"id": "m2", "key": "wardrobe:1", "dark": 56.6, "lit": 130.1}, {"id": "m2", "key": "locker:2", "dark": 57.4, "lit": 130.6}, {"id": "m3", "key": "box:0", "dark": 47.7, "lit": 94.4}, {"id": "m3", "key": "well:0", "dark": 42.5, "lit": 83.6}, {"id": "m3", "key": "wardrobe:0", "dark": 64.9, "lit": 122.3}], "maxDelta": 6.3, "allocated": 0}
+PASS mobile device DPR 2 ink {"records": [{"id": "m2", "key": "box:0", "dark": 43, "lit": 91.1}, {"id": "m2", "key": "well:0", "dark": 40.7, "lit": 85.1}, {"id": "m2", "key": "locker:0", "dark": 54.9, "lit": 118.3}, {"id": "m2", "key": "wardrobe:0", "dark": 54.4, "lit": 118.3}, {"id": "m2", "key": "locker:1", "dark": 57.2, "lit": 130.1}, {"id": "m2", "key": "wardrobe:1", "dark": 56.8, "lit": 130.1}, {"id": "m2", "key": "locker:2", "dark": 57.4, "lit": 130.8}, {"id": "m3", "key": "box:0", "dark": 47.7, "lit": 94.3}, {"id": "m3", "key": "well:0", "dark": 41.1, "lit": 81.2}, {"id": "m3", "key": "wardrobe:0", "dark": 64.9, "lit": 122}], "maxDelta": 6.4, "allocated": 0}
+
+
+=== v145-review-final.log ===
+PASS 12 before/after/blackout PC and touch captures

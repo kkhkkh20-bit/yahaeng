@@ -1,0 +1,63 @@
+{
+  "rooms": [
+    {
+      "id": "m1",
+      "tiles": 640,
+      "min": 0.662,
+      "mean": 0.983,
+      "added": 86
+    },
+    {
+      "id": "m2",
+      "tiles": 344,
+      "min": 0.662,
+      "mean": 0.984,
+      "added": 42
+    },
+    {
+      "id": "m3",
+      "tiles": 188,
+      "min": 0.662,
+      "mean": 0.995,
+      "added": 27
+    },
+    {
+      "id": "m4",
+      "tiles": 276,
+      "min": 0.662,
+      "mean": 0.988,
+      "added": 32
+    },
+    {
+      "id": "m5",
+      "tiles": 181,
+      "min": 0.662,
+      "mean": 0.987,
+      "added": 22
+    },
+    {
+      "id": "m6",
+      "tiles": 297,
+      "min": 0.662,
+      "mean": 0.985,
+      "added": 35
+    },
+    {
+      "id": "city",
+      "tiles": 593,
+      "min": 0.662,
+      "mean": 0.985,
+      "added": 77
+    }
+  ],
+  "ordinaryIdentity": true,
+  "distanceEscape": true,
+  "floorSeparation": true,
+  "lighting": {
+    "lit": 1,
+    "dark": 0.04
+  },
+  "cameraSecureRoom": true,
+  "bodyFloorLighting": true,
+  "legacyCircuit": true
+}
