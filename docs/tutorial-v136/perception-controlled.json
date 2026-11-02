@@ -46,6 +46,7 @@
       ],
       "over": false,
       "used": 1,
+      "sneak": true,
       "step": 0,
       "guard": "PATROL"
     }
@@ -97,6 +98,7 @@
       ],
       "over": false,
       "used": 1,
+      "sneak": true,
       "step": 0,
       "guard": "PATROL"
     }

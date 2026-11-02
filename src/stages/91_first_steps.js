@@ -17,7 +17,7 @@ const FIRST_STEPS = {
   steps:[
     ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '작은 파란 발밑 고리가 내 위치다.', 'move'],
     ['{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', 'run'],
-    ['{살금} 몸을 낮추고 조금 이동', (S,P)=>P.moving&&P.mode==='sneak'&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:6.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', 'crouch'],
+    [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 조금 이동':'{살금} 몸을 낮추고 조금 이동', (S,P)=>P.moving&&P.mode==='sneak'&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:6.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 밝은 곳에서는 멀리 본다.', 'move', 1.1],
     ['몸을 낮춘 채 풀숲 안으로 이동', (S,P)=>P.hidden&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.bushes[0], '시야 안이라도 풀숲에 몸을 숨기면 보이지 않는다. 적이 바짝 오면 위험하다.', 'move'],
     ['풀숲에 숨은 채 {휘파람}', S=>!!S.lessonWhistle?.heard, S=>S.bushes[0], '보이지 않아도 소리를 들으면 그곳을 확인하러 온다.', 'whistle'],
@@ -39,7 +39,7 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
   mission:'등 뒤에서 붙잡고 기절시킨 뒤 옷을 바꾸고 흔적을 숨긴다.',
   brief:'시야와 소리를 피해 등 뒤로 접근한다. 한 번에 한 행동씩 익힌다.',
   steps:[
-    ['{살금} 등 뒤의 표시로 접근', (S,P,I)=>I.sneakToggle&&Math.hypot(P.x-(8.5*48-30),P.y-9.5*48)<24, ()=>({x:8.5*48-30,y:9.5*48}), '조용히 다가가면 뒤에서는 나를 보지 못한다.', 'crouch'],
+    [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 등 뒤 표시로 접근':'{살금} 등 뒤의 표시로 접근', (S,P,I)=>I.sneakToggle&&Math.hypot(P.x-(8.5*48-30),P.y-9.5*48)<24, ()=>({x:8.5*48-30,y:9.5*48}), '조용히 다가가면 뒤에서는 나를 보지 못한다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['등 뒤에서 {붙잡기}', (S,P)=>!!P.captive||S.guards[0].state==='DEAD', S=>S.guards[0], '붙잡은 뒤 가만히 있으면 심문한다.', 'grab'],
     ['{공격} 짧게 눌렀다 떼기', S=>S.guards[0].state==='DEAD', S=>S.guards[0], '짧게 누르면 기절. 길게 누르면 처치.', 'attack'],
     [(S,P)=>P.carrying?'{행동} · 먼저 내려놓기':S.envPickK==='dress'?'{행동} · 옷 갈아입기':'{대상}에서 옷 갈아입기 선택', (S,P)=>P.outfit==='crew', S=>S.corpses[0], '행동이 여러 개면 대상을 골라 실행한다. 옷이 맞으면 직원 구역을 통과한다.', (S,P)=>P.carrying||S.envPickK==='dress'?'env':'cycle'],

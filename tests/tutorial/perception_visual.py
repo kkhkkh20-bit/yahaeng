@@ -27,12 +27,12 @@ async def main():
     try{for(const blend of [0,.25,.5,.75,1]){S.coneK=blend;records=[];G.benchDraw(1);const fills=records.filter(r=>r.kind==='fill'),strokes=records.filter(r=>r.kind==='stroke');check(fills.length===1&&strokes.length===1,'duplicated vision at '+blend+' '+JSON.stringify(records.map(r=>[r.kind,r.style,r.points.length])));samples.push({blend,fills:fills.length,outlines:strokes.length,maxRange:Math.max(...fills[0].points.map(([x,y])=>Math.hypot(x-g.x,y-g.y)))});}}finally{for(const n of names)c[n]=old[n];}
     check(!ellipses,'persistent extra player sound oval');for(let i=1;i<samples.length;i++)check(samples[i].maxRange<=samples[i-1].maxRange+.01,'crouch boundary grows');
     // A real facing/lighting detection must fail the practice and restore a safe checkpoint.
-    G.start(G.STAGES.findIndex(s=>s.id==='tB'));G.update(.02);G.saveCheckpoint();const before=[G.S.player.x,G.S.player.y];Object.assign(G.S.player,{x:10.5*48,y:8.2*48,mode:'walk',hidden:false});
+    G.start(G.STAGES.findIndex(s=>s.id==='tB'));G.input.sneakToggle=true;G.update(.02);G.saveCheckpoint();G.input.sneakToggle=false;const before=[G.S.player.x,G.S.player.y];Object.assign(G.S.player,{x:10.5*48,y:8.2*48,mode:'walk',hidden:false});
     for(let i=0;i<180&&!G.S.over;i++)G.update(1/60);check(G.S.over,'practice ignores actual visual detection');
     return{samples,persistentSoundOvals:ellipses,recoveryBefore:before,failed:true};
    }''')
    await pg.wait_for_timeout(1600)
-   recovered=await pg.evaluate('({at:[__game.S.player.x,__game.S.player.y],over:__game.S.over,used:__game.CP.used,step:__game.S.tutI||0,guard:__game.S.guards[0].state})');assert not recovered['over'] and recovered['used']==1 and recovered['at']==result['recoveryBefore'],recovered
+   recovered=await pg.evaluate('({at:[__game.S.player.x,__game.S.player.y],over:__game.S.over,used:__game.CP.used,sneak:__game.input.sneakToggle,step:__game.S.tutI||0,guard:__game.S.guards[0].state})');assert not recovered['over'] and recovered['used']==1 and recovered['at']==result['recoveryBefore'] and recovered['sneak'],recovered
    result['mobile']=mobile;result['recovered']=recovered;assert not errors,errors;results.append(result);print('PASS controlled',result,flush=True);await pg.close()
   await b.close()
  (O/'perception-controlled.json').write_text(json.dumps(results,ensure_ascii=False,indent=2));server.shutdown()
