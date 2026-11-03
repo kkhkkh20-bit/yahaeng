@@ -1,0 +1,45 @@
+{
+  "base": "http://127.0.0.1:8001/public/",
+  "files": {
+    "index.html": "4bacba4b4c919c79bc7094ce2b455183e20adffebe81e1cbf9d6d6871ee5c1ab",
+    "version.json": "c3846dfe26d8737d0eaf1a6edad2b728d9ecbbb9569f746eccaac077c89821a4",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/5e5e25dcadc451007683.js": "5e5e25dcadc451007683a34871489d38327cf04f5da1b935bef1ae66cf533d8f",
+    "assets/c4cf99c51ea2791123ee.js": "c4cf99c51ea2791123eeb9db40a3f4d0ab346805359bba7800bf712893a1a55b",
+    "assets/cf1146d3bb46d9540428.js": "cf1146d3bb46d9540428c72f2a83b437b8b9752f324930a74ab75e320d09b7bd"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        187.1412279432174,
+        505.540575
+      ],
+      "version": "v151",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        188.26528328164645,
+        505.53135
+      ],
+      "version": "v151",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true
+    }
+  ]
+}

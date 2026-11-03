@@ -394,6 +394,10 @@
       "group": "plan_graphics"
     },
     {
+      "path": "83_skill_visuals.js",
+      "group": "skills_visuals"
+    },
+    {
       "path": "84_skill_menu.js",
       "group": "skills_ui"
     },

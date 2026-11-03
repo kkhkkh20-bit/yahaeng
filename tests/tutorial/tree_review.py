@@ -2,7 +2,7 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/skills-v150';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/skills-v151';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();records=[]
@@ -18,7 +18,8 @@ async def main():
    if width<=900:
     await q.evaluate('''()=>{const G=__game,st=G.STAGES.find(s=>s.id==='m1'),record={_clear:true};st.challenges.slice(0,5).forEach(k=>record[k]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:record}));G.storeSkillTree({schema:1,learned:[]});}''')
     await q.locator('button[data-branch="tools"]').click()
-    for skill in ['kit','radio','hack','signal']:await q.locator('[data-learn="'+skill+'"]').click(timeout=5000)
+    for skill in ['kit','radio','hack','signal']:
+     await q.locator('[data-select="'+skill+'"]').click();await q.locator('[data-learn="'+skill+'"]').click(timeout=5000)
     assert await q.evaluate('__game.loadSkillTree().learned.includes("signal")'),'Cannot learn deep tool nodes in small viewport'
    await q.evaluate('''()=>{const e=document.querySelector('#skillScreen');e.scrollTop=e.scrollHeight}''');await q.wait_for_timeout(50);r=await q.locator('#btnSkillsBack').bounding_box();assert r and r['y']>=0 and r['y']+r['height']<=height,'Back button disappears when scrolling';await q.click('#btnSkillsBack');assert await q.locator('#ledger').is_visible()
    # Preview the real skill button in the landscape action layout as well.

@@ -1,0 +1,17 @@
+{
+  "reviewer": "independent skill_ui_review",
+  "disposition": "ship",
+  "scope": "Read-only visual and source review",
+  "evidence": [
+    "learned-pc.png",
+    "tree-body-pc.png",
+    "tree-assassin-touch-390.png",
+    "tree-tools-touch-844.png",
+    "tree-tools-touch-320.png"
+  ],
+  "materialFindings": [],
+  "limitations": [
+    "Preview hidden at viewport heights <=700px to preserve effects and controls",
+    "Functional touch/equip/persistence assertions rely on builder tests, not the independent screenshot review"
+  ]
+}

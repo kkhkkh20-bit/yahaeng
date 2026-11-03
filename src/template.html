@@ -623,16 +623,23 @@ __HUD_CSS__
 </div>
 
 <div class="screen sub" id="skillScreen" hidden>
-  <div class="panel">
-    <div class="skill-toolbar">
-      <div class="sub-head"><button class="back" id="btnSkillsBack" type="button">돌아가기</button><h2>기술 트리</h2></div>
-      <p id="skillSummary"></p>
-      <p id="skillTrainingNote"></p>
-      <div id="skillBranches" role="group" aria-label="기술 계열"></div>
+  <div class="panel skill-panel">
+    <header class="skill-toolbar">
+      <div class="sub-head"><button class="back" id="btnSkillsBack" type="button" aria-label="기술 트리 닫기">돌아가기</button><h2>기술 트리</h2></div>
+      <p id="skillSummary" aria-live="polite"></p>
+    </header>
+    <nav id="skillBranches" aria-label="기술 계열"></nav>
+    <div class="skill-layout">
+      <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
+        <div id="skillCards" aria-label="신체·암살·도구 기술"></div>
+      </div>
+      <aside id="skillDetail" class="skill-detail" aria-label="선택한 기술 설명"></aside>
     </div>
-    <div id="skillCards" aria-label="세 계열의 기술 트리"></div>
-    <div class="skill-reset"><button id="btnSkillReset" class="ghost" type="button">다시 배우기 · 포인트 돌려받기</button><small id="skillResetNote"></small></div>
-    <p class="skill-controls">배운 도구는 도구 바꾸기로 선택한다. 쌍암살·연속 암살은 기술 버튼을 1초 동안 눌러 발동한다. PC: B 암살 기술 · F/V 도구 · K 기술 트리<br>의뢰 선택 → 연습의 암살 기술·현장 도구에서 먼저 익힐 수 있다.</p>
+    <footer class="skill-footer">
+      <div class="skill-loadout" id="skillLoadout" aria-label="장착할 암살 기술"></div>
+      <div class="skill-reset"><button id="btnSkillReset" class="ghost" type="button">포인트 재배분</button><small id="skillResetNote"></small></div>
+    </footer>
+    <p id="skillTrainingNote" class="skill-sr"></p>
   </div>
 </div>
 

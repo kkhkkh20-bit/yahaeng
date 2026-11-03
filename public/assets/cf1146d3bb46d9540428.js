@@ -13639,6 +13639,85 @@ function drawPlanFixtures(P) {
   ctx.restore();
 }
 
+// Small authored symbols and a static demonstration using the existing sprite cache.
+const SKILL_SIGILS={
+ quietStep:'M14 6c3 0 4 4 3 7l-3 4-4-2 1-5c0-2 1-4 3-4ZM10 19l4 2-1 4-5-1Z M23 12c3 0 4 4 3 7l-3 4-4-2 1-5c0-2 1-4 3-4ZM19 25l4 2-1 4-5-1Z',
+ quietCrouch:'M12 17l4-5 6 2 3 6M16 12l2-5M15 19l-5 6 8 2M21 20l-2 7h8 M5 13l3 2M5 20h3',
+ lookout:'M3 18c8-11 22-11 30 0-8 11-22 11-30 0ZM18 13a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z M18 3v4M5 6l3 3M31 6l-3 3',
+ swiftCrouch:'M14 16l5-5 6 4M19 11l1-5M17 18l-5 7h7M24 17l-3 9h8 M3 14h8M2 20h7M4 26h4',
+ shadow:'M23 4a13 13 0 1 0 9 20A14 14 0 0 1 23 4Z M17 18l3-3 5 3M20 15v-3M20 20l-4 5h10',
+ landing:'M18 5v12M13 12l5 5 5-5M10 21l4 4h8l4-4M5 28c8 5 18 5 26 0',
+ foliage:'M18 31V13M18 22C4 23 3 14 4 8c10 0 14 5 14 14ZM18 17C31 18 34 9 32 4c-9 0-14 5-14 13Z M7 30l-4-5M29 30l4-5',
+ sprint:'M21 10l-5 8 7 4-3 10M16 18l-5 9H5M21 10l6 7h6M21 5h1 M3 11h10M2 17h8',
+ silentHands:'M12 27V16c0-3 3-3 3 0V9c0-3 3-3 3 0v7-10c0-3 3-3 3 0v10-7c0-3 3-3 3 0v12l3-4c2-3 5 0 3 3l-5 10H14Z',
+ ambush:'M3 28h30M7 28V10h9v18M21 20l4-4 5 3M25 16v-5M22 22l-2 6M28 22l4 6M9 6h5',
+ drop:'M7 7h22M18 4v13M13 12l5 5 5-5M18 23l-5 8M18 23l5 8M13 22l5-3 5 3',
+ dual:'M8 4l7 13-3 5-4-6ZM28 4l-7 13 3 5 4-6ZM7 23l7 4M10 25l-3 6M29 23l-7 4M26 25l3 6M17 25h2',
+ bodyCarry:'M11 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM11 12v12l-4 8M11 23l6 9M11 14l10 1 6 7M21 15l3-7h6M24 8l6 4',
+ chain:'M7 6l8 8-4 5-4-7ZM23 17l7 8-4 6-5-7ZM18 8h10M25 5l3 3-3 3M8 26h10M15 23l3 3-3 3',
+ reach:'M11 10l6 7 8-3M17 17l-5 8-8 3M17 17l6 8h8M26 6h7M30 3l3 3-3 3M10 4h1',
+ flow:'M8 13a12 12 0 0 1 21-4l3 4M25 13h7V6M28 23A12 12 0 0 1 7 27l-3-4M11 23H4v7 M17 11l5 7-5 7',
+ blindside:'M4 13c8-8 20-8 28 0M18 8v10M13 13l5 5 5-5M3 25h10M8 21l5 4-5 4M24 24l6 6M30 24l-6 6',
+ kit:'M6 11h24v19H6ZM13 11V6h10v5M6 18h24M15 16v5h6v-5',
+ dart:'M8 28L26 10M23 5l8 8M6 30l3-8 5 5ZM17 14l5 5M28 8l4-4',
+ kunai:'M6 30l8-8M13 23l-4-4L30 3l-5 22-5-4ZM11 25l-4-4M4 32l-1-1',
+ smoke:'M13 21h10l2 11H11ZM16 21v-4h5M9 13C0 9 9 2 14 6c0-7 12-5 11 1 9-2 11 9 2 9H14',
+ precision:'M18 3v5M18 28v5M3 18h5M28 18h5M18 9a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
+ smokeMix:'M13 4h10M15 4v10L7 29c-1 2 1 3 3 3h16c2 0 4-1 3-3l-8-15V4M12 24h13M13 12H6M9 8v8',
+ electric:'M21 2L7 21h10l-2 13 14-20H19ZM5 7l3 2M31 27l-3-2',
+ radio:'M10 12h16v20H10ZM13 12V3M17 17h5M15 23h6M15 27h6M26 5c5 1 7 4 7 8M26 9c2 0 3 2 3 4',
+ hack:'M5 9h22v17H5ZM9 30h14M16 26v4M10 15l-3 3 3 3M20 15l3 3-3 3M16 14l-3 8M27 4l5 5M30 2l4 4',
+ signal:'M5 12h8v12H5ZM23 12h8v12h-8ZM13 18h10M18 4v9M15 7l3-3 3 3M18 23v9M15 29l3 3 3-3'
+};
+const skillSigil=(id,cls='')=>`<svg class="${cls}" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${SKILL_SIGILS[id]||SKILL_SIGILS.kit}"/></svg>`;
+const skillLock='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2M3 7h10v8H3Z"/></svg>';
+function skillUseText(d){
+ if(['dual','chain'].includes(d.id))return '장착한 뒤 B 또는 기술 버튼을 길게 누르기';
+ if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
+ if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';
+ if(d.id==='electric')return '스위치·분전반 앞에서 행동 버튼';
+ if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '도구 바꾸기로 선택한 뒤 도구 버튼';
+ return '배우면 해당 상황에서 자동 적용';
+}
+function drawSkillPreview(id){
+ const canvas=$('skillPreview');if(!canvas)return;
+ const c=canvas.getContext('2d'),d=SKILL_BY_ID[id],w=480,h=220;canvas.width=w;canvas.height=h;c.imageSmoothingEnabled=false;
+ c.fillStyle='#202c2d';c.fillRect(0,0,w,h);
+ // The game palette and cached sprites form a static explanation, never a live simulation.
+ c.strokeStyle='#2c3a3a';c.lineWidth=1;for(let x=0;x<w;x+=40){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}for(let y=20;y<h;y+=40){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+ c.fillStyle='#131e23';c.fillRect(0,0,w,34);c.fillStyle='#566063';c.fillRect(0,33,w,3);
+ const sprite=(key,x,y,anim='idle',a=0)=>{
+  const sh=prSheet(key);if(!sh||!PR)return;const[col]=PR.anims[anim]||PR.anims.idle,ci=Math.floor(col/PR_CH),part=prPart(sh,ci);if(!part)return;
+  const scale=2.15,fr=PR.fr,dw=fr*scale,gy=(PR.grounds?.[anim]??PR.groundY)*scale;
+  c.fillStyle='#07131588';c.beginPath();c.ellipse(x,y+7,24,8,0,0,TAU);c.fill();c.drawImage(part,(col-ci*PR_CH)*fr,prDir(a)*fr,fr,fr,x-dw/2,y-gy,dw,dw);
+ };
+ c.strokeStyle='#b5a16e';c.lineWidth=1.5;c.setLineDash([4,5]);
+ if(d.branch==='body'){
+  if(id==='foliage'){c.fillStyle='#314b3a';for(const[x,y,r]of[[125,130,25],[150,122,28],[172,139,24],[141,149,27]]){c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}}
+  if(id==='shadow'){c.fillStyle='#0b151cbb';c.fillRect(0,36,220,184);}
+  const pose=id==='sprint'?'run':id==='quietStep'?'walk':'crouch';sprite('ninja',145,156,pose);sprite('sam',345,157,'idle',0);
+  if(id==='lookout'){c.strokeRect(75,63,325,125);}
+  else if(id==='landing'){c.beginPath();c.moveTo(146,48);c.lineTo(146,86);c.moveTo(137,76);c.lineTo(146,86);c.lineTo(155,76);c.stroke();}
+  else {c.beginPath();c.ellipse(145,160,id==='sprint'?72:46,18,0,0,TAU);c.stroke();}
+  c.beginPath();c.moveTo(192,164);c.lineTo(288,164);c.stroke();
+ }else if(d.branch==='assassin'){
+  if(id==='drop'){c.fillStyle='#4d5753';c.fillRect(85,69,125,14);c.fillStyle='#111d22';c.fillRect(85,83,125,92);sprite('ninja',153,79,'crouch');}
+  else if(id==='bodyCarry'){sprite('ninja',206,159,'carryI');sprite('sam',206,159,'carriedI');}
+  else{sprite('ninja',id==='silentHands'?184:170,159,'sneak');}
+  if(id==='ambush'){c.fillStyle='#3e5d4499';for(const x of [145,170,190]){c.beginPath();c.arc(x,145,22,0,TAU);c.fill();}}
+  if(id!=='bodyCarry')sprite('sam',245,153,'idle');if(['dual','chain','flow'].includes(id))sprite('sam',306,166,'idle');
+  c.beginPath();c.moveTo(160,181);c.lineTo(305,181);c.stroke();c.setLineDash([]);c.fillStyle='#cbb77b';c.beginPath();c.moveTo(309,181);c.lineTo(299,176);c.lineTo(299,186);c.fill();
+ }else{
+  sprite('ninja',145,160,'idle');c.fillStyle='#404d4e';c.fillRect(321,57,43,81);c.strokeStyle='#9eac9e';c.strokeRect(321,57,43,81);
+  if(id==='electric'){c.fillStyle='#c5aa65';c.fillRect(333,80,18,25);c.fillStyle='#1a282a';c.fillRect(340,84,4,15);}
+  else if(['hack','signal'].includes(id)){c.fillStyle='#192b2b';c.fillRect(326,63,33,39);c.strokeStyle='#8caa91';c.beginPath();c.moveTo(331,87);c.lineTo(338,77);c.lineTo(346,87);c.lineTo(354,70);c.stroke();}
+  else if(['smoke','smokeMix'].includes(id)){c.fillStyle='#73807888';for(const[x,y,r]of[[325,137,31],[354,123,39],[374,148,33]]){c.beginPath();c.arc(x,y,r,0,TAU);c.fill();}}
+  else sprite('sam',342,158,'idle',Math.PI);
+  c.beginPath();c.moveTo(186,136);c.lineTo(299,115);c.stroke();
+ }
+ c.setLineDash([]);
+}
+
 let assassinMenu=null;
 function openAssassinMenu(){
   if(DLG.modal||S?.keypad||!$('end').hidden)return;
@@ -13662,44 +13741,65 @@ function chooseAssassinSkill(key){
   else{try{localStorage.setItem('yahaeng.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
-let skillBranch='body';
+let skillBranch='body',skillFocused='quietStep';
+function skillViewState(d){
+ const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
+ let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.assassinSkill')||active;}catch(e){}
+ return{practice,known,parents,points:skillBudget()-skillSpent(r),active};
+}
+function selectSkillNode(id,focus=false){
+ const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;
+ for(const b of $('skillBranches').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
+ for(const s of $('skillCards').querySelectorAll('.skill-tree'))s.classList.toggle('current',s.dataset.branch===skillBranch);
+ for(const n of $('skillCards').querySelectorAll('[data-node]')){const selected=n.dataset.node===id;n.classList.toggle('selected',selected);n.querySelector('button').setAttribute('aria-pressed',String(selected));}
+ renderSkillDetail();drawSkillLinks();
+ if(focus){const b=$('skillCards').querySelector('[data-select="'+id+'"]');b?.focus({preventScroll:true});b?.scrollIntoView({block:'nearest',inline:'nearest'});}
+}
+function renderSkillDetail(){
+ const d=SKILL_BY_ID[skillFocused],v=skillViewState(d),pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;
+ const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<div>'+skillSigil(d.id,'skill-detail-emblem')+'<h3>'+d.name+'</h3></div>';
+ const state=document.createElement('div');state.className='skill-detail-state';const label=v.known?'배운 기술':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?'포인트 부족':'배울 수 있는 기술';state.innerHTML='<span class="'+(v.known?'known':'')+'">'+label+'</span><span>'+SKILL_BRANCHES[d.branch].name+' · '+d.cost+'P</span>';head.append(state);pane.append(head);
+ const figure=document.createElement('figure');figure.className='skill-preview';figure.innerHTML='<canvas id="skillPreview" width="480" height="220" aria-label="'+d.name+' 사용 장면 안내"></canvas><figcaption>동작 안내</figcaption>';pane.append(figure);
+ const body=document.createElement('div');body.className='skill-description';const description=document.createElement('p');description.textContent=d.description;const use=document.createElement('div');use.className='skill-use';use.innerHTML=skillSigil(d.id)+'<span>'+skillUseText(d)+'</span>';body.append(description,use);pane.append(body);
+ const req=document.createElement('div');req.className='skill-prereqs';const note=document.createElement('p');note.textContent=d.req.length?'먼저 배울 기술':'선행 기술 없이 시작할 수 있다.';req.append(note);
+ for(const id of d.req){const b=document.createElement('button');b.type='button';b.textContent=SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':'필요');b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.append(req);
+ const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
+ if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}pane.append(actions);drawSkillPreview(d.id);
+}
 function renderAssassinMenu(){
- const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),points=skillBudget()-skillSpent(r);
- let selected=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{selected=localStorage.getItem('yahaeng.assassinSkill')||selected;}catch(e){}
- $('skillSummary').textContent=practice?'연습용 적용 · 포인트와 본편 기록은 바뀌지 않는다.':`사용 가능 ${points}P · 사용 ${skillSpent(r)} / 총 ${skillBudget()}P`;
- $('skillTrainingNote').textContent='처음 4P · 의뢰 별 1개마다 1P. 선행 기술부터 배운다. 신체 효과는 자동 적용되며 쌍암살·연속 암살은 하나를 장착한다.';
+ const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn||document.activeElement?.dataset.skill,scroll=$('skillBoard').scrollTop;
+ if(!SKILL_BY_ID[skillFocused]||SKILL_BY_ID[skillFocused].branch!==skillBranch)skillFocused=SKILL_TREE.find(d=>d.branch===skillBranch).id;
+ $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
+ $('skillTrainingNote').textContent='아이콘을 선택해 효과와 선행 기술을 확인한다. 처음 4P · 의뢰 별 1개마다 1P.';
  $('btnSkillReset').hidden=assassinMenu.from!=='ledger'&&!practice;
- $('skillResetNote').textContent=assassinMenu.from==='ledger'?'다시 배우기를 누르면 배운 기술을 초기화하고 포인트를 돌려받는다.':practice?'연습에서 적용한 기술은 의뢰를 나가면 사라진다.':'포인트 재배분은 의뢰 선택 화면에서 할 수 있다.';
- const list=$('skillCards');list.replaceChildren();
- const tabs=$('skillBranches');tabs.replaceChildren();
+ $('skillResetNote').textContent=assassinMenu.from==='ledger'?'재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 의뢰 선택 화면에서 가능하다.';
+ const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
-  const tab=document.createElement('button');tab.type='button';tab.textContent=meta.name;tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{skillBranch=branch;renderAssassinMenu();};tabs.append(tab);
-  const section=document.createElement('section');section.className='skill-tree';section.dataset.branch=branch;section.classList.toggle('current',branch===skillBranch);
-  const heading=document.createElement('h3');heading.textContent=meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
+  const defs=SKILL_TREE.filter(d=>d.branch===branch),count=defs.filter(d=>skillViewState(d).known).length;
+  const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{const previous=defs.find(d=>d.id===skillFocused);selectSkillNode(previous?.id||defs[0].id);$('skillBoard').scrollTop=0;};tabs.append(tab);
+  const section=document.createElement('section');section.className='skill-tree';section.dataset.branch=branch;section.classList.toggle('current',branch===skillBranch);section.setAttribute('aria-label',meta.name+' 기술 트리');
+  const heading=document.createElement('h3');heading.innerHTML=skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
   const graph=document.createElement('div');graph.className='skill-graph';section.append(graph);list.append(section);
-  for(const d of SKILL_TREE.filter(d=>d.branch===branch)){
-   const known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
-   const article=document.createElement('article');article.className='skill-node'+(known?' learned':'');article.dataset.node=d.id;article.style.gridRow=String(d.row);article.style.gridColumn=d.col?String(d.col):'1 / -1';
-   const title=document.createElement('h4');title.textContent=d.name;const cost=document.createElement('span');cost.className='skill-cost';cost.textContent=d.cost+'P';title.append(cost);const desc=document.createElement('p');desc.textContent=d.description;
-   const req=document.createElement('small');req.textContent=d.req.length?'선행: '+d.req.map(id=>SKILL_BY_ID[id].name).join(' · '):'시작 기술';
-   const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=known||!parents||!practice&&points<d.cost;learn.textContent=known?'배움':!parents?d.cost+'P · 선행 필요':practice?'연습에 적용':`${d.cost}P 배우기`;learn.onclick=()=>learnTreeSkill(d.id);learn.setAttribute('aria-label',d.name+' · '+learn.textContent);
-   article.append(title,desc,req,learn);
-   if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.className='skill-equip';equip.dataset.skill=d.id;equip.disabled=!known;equip.textContent=known&&selected===d.id?'장착 중':'장착';equip.setAttribute('aria-pressed',String(known&&selected===d.id));equip.onclick=()=>chooseAssassinSkill(d.id);article.append(equip);}
-   graph.append(article);
+  for(const d of defs){
+   const v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.parents&&(v.practice||v.points>=d.cost)?' available':'')+(d.id===skillFocused?' selected':'');article.dataset.node=d.id;article.style.gridRow=String(d.row);article.style.gridColumn=d.col?String(d.col):'1 / -1';
+   const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed',String(d.id===skillFocused));b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':!v.parents?'선행 기술 필요':d.cost+'P'));b.title=d.name;b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':!v.parents?skillLock:d.cost+'P')+'</span>';b.onclick=()=>selectSkillNode(d.id);b.onfocus=()=>{if(skillFocused!==d.id)selectSkillNode(d.id);};
+   b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,at={x:d.col||1.5,y:d.row},candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:(x.col||1.5)-at.x,dy:x.row-at.y})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
+   const label=document.createElement('span');label.className='skill-label';label.textContent=d.name;article.append(b,label);graph.append(article);
   }
  }
- requestAnimationFrame(drawSkillLinks);
+ const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>{skillFocused=id;skillBranch='assassin';chooseAssassinSkill(id);};slots.append(b);}
+ renderSkillDetail();$('skillBoard').scrollTop=scroll;drawSkillLinks();requestAnimationFrame(drawSkillLinks);
+ if(focus)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
  const ns='http://www.w3.org/2000/svg';
  for(const graph of $('skillCards').querySelectorAll('.skill-graph')){
-  graph.querySelector('svg')?.remove();if(!graph.clientWidth)continue;
-  const svg=document.createElementNS(ns,'svg');svg.classList.add('skill-links');svg.setAttribute('aria-hidden','true');svg.setAttribute('width',graph.clientWidth);svg.setAttribute('height',graph.scrollHeight);
-  const bounds=graph.getBoundingClientRect();
+  graph.querySelector('.skill-links')?.remove();if(!graph.clientWidth)continue;
+  const svg=document.createElementNS(ns,'svg');svg.classList.add('skill-links');svg.setAttribute('aria-hidden','true');svg.setAttribute('width',graph.clientWidth);svg.setAttribute('height',graph.scrollHeight);const bounds=graph.getBoundingClientRect();
   for(const node of graph.querySelectorAll('[data-node]'))for(const id of SKILL_BY_ID[node.dataset.node].req){
    const parent=graph.querySelector('[data-node="'+id+'"]');if(!parent)continue;
-   const a=parent.getBoundingClientRect(),b=node.getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top,mid=y1-14;
-   const path=document.createElementNS(ns,'path');path.setAttribute('d',`M${x0} ${y0} V${mid} H${x1} V${y1}`);path.classList.toggle('learned',node.classList.contains('learned'));svg.append(path);
+   const a=parent.querySelector('button').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top,skip=SKILL_BY_ID[node.dataset.node].row-SKILL_BY_ID[id].row>1,rail=x1<graph.clientWidth/2?7:graph.clientWidth-7;
+   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',skip?`M${x0} ${y0} V${y0+13} H${rail} V${y1-12} H${x1} V${y1}`:`M${x0} ${y0} C${x0} ${y0+16} ${x1} ${y1-16} ${x1} ${y1}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('available',!node.classList.contains('learned')&&skillViewState(SKILL_BY_ID[id]).known);svg.append(path);
   }graph.prepend(svg);
  }
 }
