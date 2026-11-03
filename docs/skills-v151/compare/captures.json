@@ -1,0 +1,78 @@
+{
+  "beforeCommit": "2d5ae0a1d7f949bdba26a3500c60d38df6da0560",
+  "method": "Actual archived v150 and current v151 packages; same viewport, same 4P, no learned skills; original screenshots with no image alterations",
+  "captures": [
+    {
+      "image": "before-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "branch": "all",
+      "state": {
+        "version": "v150",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "fae58c03771657cfdb85ae0e04ec970bb1ac2a3e614afce72b48f6432217fe24",
+      "imageSha256": "7a3327976cc6269c81e2b5764cf4267e83162c0df348d46d1d7e55d20eede57a",
+      "pageErrors": []
+    },
+    {
+      "image": "before-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "branch": "assassin",
+      "state": {
+        "version": "v150",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "fae58c03771657cfdb85ae0e04ec970bb1ac2a3e614afce72b48f6432217fe24",
+      "imageSha256": "89b5dac48358bb1f9db85a2d722b046bd3e4cc9eef0813d0cb46051438f41d2b",
+      "pageErrors": []
+    },
+    {
+      "image": "after-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "branch": "all",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "8f73ffa48d242da3dd935073c4f57644a1e632d93749ff463150a39faa0f7052",
+      "pageErrors": []
+    },
+    {
+      "image": "after-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "branch": "assassin",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "bf237c55489880f6a46a0fdb40ad1e5bee3e97155aa806cca25be422d736f5f4",
+      "pageErrors": []
+    }
+  ]
+}
