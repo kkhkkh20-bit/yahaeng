@@ -81,7 +81,7 @@ function drawLastSeen() {
     // 기억한 위치는 사람을 복제하지 않고 바닥의 십자 표식으로만 남긴다.
     const k=1/SCALE;ctx.save();ctx.strokeStyle='#d7b76c';ctx.lineWidth=1.5*k;ctx.beginPath();
     ctx.moveTo(q.x-6*k,q.y);ctx.lineTo(q.x+6*k,q.y);ctx.moveTo(q.x,q.y-6*k);ctx.lineTo(q.x,q.y+6*k);ctx.stroke();ctx.restore();
-    ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = '700 14px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
+    ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
 function drawGuard(g) {

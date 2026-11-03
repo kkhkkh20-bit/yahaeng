@@ -7,9 +7,9 @@ function tag(x, y, text, col, alpha = 1, key, pri) { if (window.__skip && window
   drawTag(x, y, text, col, alpha, key);
 }
 function tagRect(x, y, text, key) {
-  const k = Math.max(1, 0.95 / SCALE); ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
+  const k = Math.max(1, 0.95 / SCALE); ctx.font = uiFont(13 * k);
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k; let kw = 0;
-  if (key) { ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; kw = Math.max(h, ctx.measureText(key).width + 9 * k) + 2 * k; }
+  if (key) { ctx.font = uiFont(13 * k); kw = Math.max(h, ctx.measureText(key).width + 9 * k) + 2 * k; }
   return [x - w / 2 - kw, y - h / 2, x + w / 2, y + h / 2];
 }
 function flushTags() {
@@ -37,16 +37,16 @@ function flushTags() {
 }
 function drawTag(x, y, text, col, alpha = 1, key) {
   const k = Math.max(1, 0.95 / SCALE);  // 화면이 축소돼 있어도 글자는 읽을 수 있는 크기로
-  ctx.globalAlpha = alpha; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center';
+  ctx.globalAlpha = alpha; ctx.font = uiFont(13 * k); ctx.textAlign = 'center';
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k;
-  ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const kcw = key ? Math.max(h, ctx.measureText(key).width + 9 * k) : 0, kw = key ? kcw + 2 * k : 0;
-  ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
+  ctx.font = uiFont(13 * k); const kcw = key ? Math.max(h, ctx.measureText(key).width + 9 * k) : 0, kw = key ? kcw + 2 * k : 0;
+  ctx.font = uiFont(13 * k);
   ctx.fillStyle = INK_STUDY?'#191b18f0':'rgba(8,11,18,.86)'; ctx.fillRect(x - w / 2, y - h / 2, w, h);
-  ctx.fillStyle = col; ctx.fillRect(x - w / 2, y - h / 2, 3 * k, h);
+  ctx.fillStyle = col; ctx.fillRect(x - w / 2, y - h / 2, k, h);
   ctx.fillStyle = INK_STUDY?INK.paper:'#efeadf'; ctx.fillText(text, x + k, y + 4.5 * k);
   if (key) {  // 누를 키를 작은 키캡으로
     const kx = x - w / 2 - kw; ctx.fillStyle = col; ctx.fillRect(kx, y - h / 2, kcw, h); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(kx, y + h / 2 - 3 * k, kcw, 3 * k);
-    ctx.fillStyle = '#0b0d12'; ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText(key, kx + kcw / 2, y + 4 * k);
+    ctx.fillStyle = '#0b0d12'; ctx.font = uiFont(13 * k); ctx.fillText(key, kx + kcw / 2, y + 4 * k);
   }
   ctx.globalAlpha = 1;
 }
@@ -118,14 +118,14 @@ function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '운반 중에는 통과 불가 · [행동]으로 내려놓기' : P.captive ? '붙잡은 상태에서는 통과 불가' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
-        if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
+        if (why) { ctx.font = uiFont(11 * k); const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     if (m.d > 170 || (m.roofDoor && paAt && dist(paAt.x, paAt.y, m.x, m.y) < 2)) continue;  // 선택된 옥탑문은 문 테두리와 행동 안내만
     const a = Math.max(0.3, 1 - m.d / 170) * 0.8, r = 8 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
     if (ICON_P[m.g]) { const sc = (13 * k) / 24; ctx.save(); ctx.translate(m.x - 12 * sc, y - 12 * sc); ctx.scale(sc, sc); ctx.strokeStyle = m.col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(nearPath(m.g)); ctx.restore(); }
-    else { ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
-    if (false && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
+    else { ctx.fillStyle = m.col; ctx.font = uiFont(13 * k); ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
+    if (false && m.lab) { ctx.font = uiFont(11.5 * k); const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
   }
   ctx.globalAlpha = 1;
 }
@@ -167,7 +167,7 @@ function drawScan(openB) {
     if (FURN_TALL.has(it.t)) { ctx.fillStyle = 'rgba(110,150,220,.22)'; ctx.fillRect(x + 3, y + 3, w - 6, h - 6); ctx.strokeStyle = 'rgba(140,180,240,.85)'; ctx.lineWidth = 2; ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); }
     else { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); ctx.setLineDash([]); }
   }
-  labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = `700 ${13 * kS}px "IBM Plex Sans KR",sans-serif`;
+  labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = uiFont(13 * kS);
   for (const L of labs) { const w = ctx.measureText(L.text).width + 14 * kS, h = 19 * kS, r = [L.x - w / 2, L.y - h / 2, L.x + w / 2, L.y + h / 2];
     if (placed.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue; placed.push(r); tag(L.x, L.y, L.text, L.col); if (placed.length >= 18) break; }
 }

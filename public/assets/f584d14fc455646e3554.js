@@ -1098,7 +1098,7 @@ const BARKS = {
 const A = window.__ASSETS__;
 const NEONY = () => !!(STAGE && STAGE.neon);  // 네온 동네(강남 등): 건물 윤곽·간판·조명이 네온
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
-if (A.font && window.FontFace) { try { const ff = new FontFace('Galmuri', `url(${A.font})`); ff.load().then(f => document.fonts.add(f)).catch(() => {}); } catch (e) {} }
+
 const TILE = 48;
 let MW = 44, MH = 30;
 // 땅(z=0)에서 막히는 칸 / 시야를 가리는 칸
@@ -1131,6 +1131,10 @@ const D = () => DIFFS[DKEY];
 const SPD = { sneak: 55, walk: 82, run: 160, gPatrol: 48, gSusp: 60, gBody: 66, gAlert: 112, target: 36, flee: 92 };
 
 
+// The DOM and canvas share the same complete Korean UI face and regular weight.
+const UI_FONT_FAMILY='"Yahaeng UI",sans-serif';
+const uiFont=size=>'400 '+size+'px '+UI_FONT_FAMILY;
+
 // 메인 포스터에 맞춘 작동 시안. 기본 실행과 분리하고 ?tone=ink에서만 켠다.
 const INK_STUDY=document.documentElement.classList.contains('ink-study');
 const INK={paper:'#eee4cf',ink:'#171817',line:'#777366',red:'#b73528',muted:'#b4ad9e'};
@@ -1155,7 +1159,7 @@ function drawInkDance(x,it){
 function drawInkClubSigns(P){
   if(!INK_STUDY||STAGE.id!=='m2'||flOf(P)||P.z||P.under||P.vent||tactical)return;
   const club=BLD.findIndex(b=>b.name==='클럽'),plan=PLANS[club]?.[0],vip=plan?.vip;
-  const sign=(x,y,text,w=48)=>{if(!inView(x,y,80))return;ctx.save();ctx.fillStyle='#141815';ctx.fillRect(x-w/2,y-8,w,16);ctx.strokeStyle='#b2a582';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-7.5,w-1,15);ctx.fillStyle='#e4d8b8';ctx.font='600 10px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+.5);ctx.restore();};
+  const sign=(x,y,text,w=48)=>{if(!inView(x,y,80))return;ctx.save();ctx.fillStyle='#141815';ctx.fillRect(x-w/2,y-8,w,16);ctx.strokeStyle='#b2a582';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-7.5,w-1,15);ctx.fillStyle='#e4d8b8';ctx.font=uiFont(10);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+.5);ctx.restore();};
   if(vip)sign(tc(vip.door[0]),tc(vip.door[1])-22,'VIP');
   const bar=FURN.find(it=>it.t==='bar'&&it.seed===club&&!it.fl);
   if(bar)sign((bar.x+bar.w/2)*TILE,bar.y*TILE+TILE-11,'직원 전용',64);
@@ -1587,7 +1591,7 @@ function planInterior(g, b, bi, f) {
 }
 const USE_NAME = { store: '가게', food: '식당', pc: 'PC방', academy: '학원', office: '사무실' };
 function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
-  x.font = '700 13px "IBM Plex Sans KR", sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(232,227,214,.3)';
+  x.font = uiFont(13); x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = 'rgba(232,227,214,.3)';
   const lab = (r, t) => { if (!r || r.x1 < rx0 || r.x0 > rx1 || r.y1 < ry0 || r.y0 > ry1) return; x.fillText(t, (r.x0 + r.x1 + 1) / 2 * TILE, (r.y0 + r.y1 + 1) / 2 * TILE); };
   PLANS.forEach((fls, bi) => { const p = fls && fls[f]; if (!p) return; const b = BLD[bi];if(INK_STUDY&&STAGE.id==='m2'&&b.name==='클럽')return;
     p.units.forEach(u => { if (!u.rooms.length && f === 0 && b.piloti) { lab(u.living, '주차장'); return; } lab(u.living, '거실'); u.rooms.forEach((r, i) => lab(r, i ? '작은방' : '안방')); lab(u.bath, '욕실'); });
@@ -1977,7 +1981,7 @@ function kitCanvas(b) {
     if (t === 's') {
       x.fillStyle = col; x.fillRect(gx, gy, gw, gh);
       const words = ['노래방', 'PC방', '호프', '당구장', '24시', '모텔', '사우나', '찜질방', '치킨', '소주방'], wd = words[(b.x0 * 7 + b.y0 * 13 + i) % words.length];
-      x.font = `700 ${Math.round(gh * 0.72)}px Galmuri, "IBM Plex Sans KR", sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.font = uiFont(Math.round(gh * 0.72)); x.textAlign = 'center'; x.textBaseline = 'middle';
       x.lineWidth = 3; x.strokeStyle = 'rgba(20,6,30,.85)'; x.strokeText(wd, gx + gw / 2, gy + gh / 2 + 1); x.fillStyle = '#fff6fb'; x.fillText(wd, gx + gw / 2, gy + gh / 2 + 1);
     } else { x.fillStyle = t === 'w' ? '#ffd8a0' : 'rgba(255,214,150,.3)'; x.fillRect(gx, gy, gw, gh); }  // 채광창은 바닥에 깔린 유리라 은은하게
   });
@@ -2077,7 +2081,7 @@ function drawAwareMark(g) {
   ctx.save(); ctx.clip(); ctx.fillStyle = col; const top = y + h * 0.55 - (h * 1.55) * m; ctx.fillRect(x - w, top, w * 2, y + h * 0.55 - top); ctx.restore();
   ctx.lineWidth = 2 * k; ctx.strokeStyle = col; ctx.stroke();
   const glyph = al ? '!' : awareness.phase==='search'||awareness.phase==='suspect' ? '?' : '';
-  if (glyph) { ctx.font = `900 ${Math.round(13 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = m > 0.55 ? '#140d08' : col; ctx.fillText(glyph, x, y - h * 0.32); ctx.textBaseline = 'alphabetic'; }
+  if (glyph) { ctx.font = uiFont(Math.round(13 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = m > 0.55 ? '#140d08' : col; ctx.fillText(glyph, x, y - h * 0.32); ctx.textBaseline = 'alphabetic'; }
   ctx.restore();
 }
 // 내 둘레의 방향 표시: 나를 보고 있는 사람 쪽으로 호가 생기고 게이지만큼 길고 진해진다. 시야에서 놓친 자리에는 흐린 그림자(마지막으로 본 곳)
@@ -2423,7 +2427,7 @@ function drawLastSeen() {
     // 기억한 위치는 사람을 복제하지 않고 바닥의 십자 표식으로만 남긴다.
     const k=1/SCALE;ctx.save();ctx.strokeStyle='#d7b76c';ctx.lineWidth=1.5*k;ctx.beginPath();
     ctx.moveTo(q.x-6*k,q.y);ctx.lineTo(q.x+6*k,q.y);ctx.moveTo(q.x,q.y-6*k);ctx.lineTo(q.x,q.y+6*k);ctx.stroke();ctx.restore();
-    ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = '700 14px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
+    ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
 function drawGuard(g) {
@@ -5333,7 +5337,7 @@ function drawSpeech() {
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
   const vx0=cam.x-W/SCALE/2+8/SCALE,vx1=cam.x+W/SCALE/2-8/SCALE,vy0=cam.y-H/SCALE/2+8/SCALE,vy1=cam.y+H/SCALE/2-8/SCALE;
   const hit=(a,b)=>a[0]<b[2]+gap&&a[2]+gap>b[0]&&a[1]<b[3]+gap&&a[3]+gap>b[1];
-  ctx.save();ctx.font=`500 ${12*k}px "IBM Plex Sans KR",sans-serif`;
+  ctx.save();ctx.font=uiFont(12*k);
   for(const g of who) {
     if(SPEECH_R.length>=1)break;
     // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.
@@ -5550,7 +5554,7 @@ function drawRadioCall() {
   drawRadio(x, y + 4);
   ctx.strokeStyle = `rgba(232,71,60,${0.5 + 0.4 * Math.sin(S.t * 12)})`; ctx.lineWidth = 2;
   for (let i = 1; i <= 2; i++) { ctx.beginPath(); ctx.arc(x + 4, y - 8, 6 * i, -1.2, -0.2); ctx.stroke(); }
-  ctx.font = '700 12px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffb3a8'; ctx.fillText('무전 중', x + 6, y - 21); ctx.textAlign = 'left';
+  ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillStyle = '#ffb3a8'; ctx.fillText('무전 중', x + 6, y - 21); ctx.textAlign = 'left';
 }
 function startFlee() {
   if (S.fleeing) return; S.fleeing = true;
@@ -6308,7 +6312,7 @@ function drawSurfaceArt(p,ctx){
     ctx.fillStyle=p.dosed?'#c8ad76':'#d8d2b9';ctx.fillRect(p.x-3,p.y-6,6,6);return;
   }
   ctx.fillStyle='#182321';ctx.fillRect(p.x-25,p.y-34,50,20);ctx.strokeStyle='#7e8877';ctx.lineWidth=1;ctx.strokeRect(p.x-25,p.y-34,50,20);
-  ctx.fillStyle='#c6c6b0';ctx.textAlign='center';ctx.font='700 12px "IBM Plex Sans KR",sans-serif';ctx.fillText(p.text,p.x,p.y-20);ctx.textAlign='left';
+  ctx.fillStyle='#c6c6b0';ctx.textAlign='center';ctx.font=uiFont(12);ctx.fillText(p.text,p.x,p.y-20);ctx.textAlign='left';
 }
 function drawPharmacyStock(ctx,f){
   const x=f.x*TILE,y=f.y*TILE;
@@ -8066,7 +8070,7 @@ function drawCorpseRisk() {
   for (const c of S.corpses) {
     if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
+      ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
 }
 function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
@@ -8077,7 +8081,7 @@ function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const x = o.x, y = o.y - 34 * k, s = 7 * k, pulse = 0.7 + 0.3 * Math.sin(S.t * 3);
     ctx.fillStyle = `rgba(242,196,107,${0.9 * pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(x, y - s); ctx.lineTo(x + s, y); ctx.lineTo(x, y + s); ctx.lineTo(x - s, y); ctx.closePath(); ctx.stroke(); ctx.fill();
-    ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)';
+    ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.85)';
     const lab = '기회', tw = ctx.measureText(lab).width + 8 * k; ctx.fillRect(x - tw / 2, y - s - 17 * k, tw, 15 * k); ctx.fillStyle = '#f2c46b'; ctx.fillText(lab, x, y - s - 6 * k); ctx.textAlign = 'left';
   }
 }
@@ -8965,7 +8969,7 @@ function drawHangingSign(t,part='all',c=ctx) {
   c.translate(p.x,p.y);c.rotate(p.angle);if(t.wreck&&!g.appliance)c.scale(1,.45);c.fillStyle='#05090870';c.fillRect(-g.w/2+3,-g.h/2+5,g.w,g.h);
   c.fillStyle=g.appliance?'#626c67':'#333f3c';c.fillRect(-g.w/2,-g.h/2,g.w,g.h);c.strokeStyle='#939785';c.lineWidth=2;c.strokeRect(-g.w/2,-g.h/2,g.w,g.h);
   if(g.appliance){c.strokeStyle='#26322e';c.beginPath();c.arc(10,0,11,0,TAU);c.stroke();for(let k=0;k<4;k++){c.beginPath();c.moveTo(-24,-9+k*6);c.lineTo(-7,-9+k*6);c.stroke();}}
-  else{c.fillStyle='#d4cfb8';c.font='600 13px "IBM Plex Sans KR",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(t.text||'간판',0,1,g.w-8);}
+  else{c.fillStyle='#d4cfb8';c.font=uiFont(13);c.textAlign='center';c.textBaseline='middle';c.fillText(t.text||'간판',0,1,g.w-8);}
   c.restore();
 }
 function canReleaseSign(t) {
@@ -9534,7 +9538,7 @@ function drawPickProgress(P) {
   const K = P.pick || P.interact; if (!K || (P.interact && K.dur < 0.5)) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
   ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(P.interact ? (K.pose === 'dress' ? '변장' : '사용') : K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+  ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(P.interact ? (K.pose === 'dress' ? '변장' : '사용') : K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
@@ -10444,7 +10448,7 @@ function drawSkillDevices(P,openB){
  }
  for(const s of S.smokeThrows||[])if(flOf(s.at)===flOf(P)){const f=clamp((S.t-s.t0)/s.dur,0,1),x=s.x+(s.at.x-s.x)*f,y=s.y+(s.at.y-s.y)*f-Math.sin(f*Math.PI)*30;ctx.fillStyle='#a5ada2';ctx.fillRect(x-3,y-5,6,10);}
  if(input.aiming&&input.tool==='hack'){const c=hackTarget();if(c){ctx.strokeStyle='#bdc9ae';ctx.lineWidth=1.5;ctx.strokeRect(c.x-13,c.y-17,26,26);}}
- for(const c of S.cams||[])if(c.hackedUntil>S.t&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<220&&inView(c.x,c.y)){ctx.fillStyle='#c8d5bd';ctx.font='11px Galmuri,sans-serif';ctx.textAlign='center';ctx.fillText('정지 '+Math.ceil(c.hackedUntil-S.t)+'초',c.x,c.y-24);}
+ for(const c of S.cams||[])if(c.hackedUntil>S.t&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<220&&inView(c.x,c.y)){ctx.fillStyle='#c8d5bd';ctx.font=uiFont(11);ctx.textAlign='center';ctx.fillText('정지 '+Math.ceil(c.hackedUntil-S.t)+'초',c.x,c.y-24);}
 }
 
 function accidentKill(g, how) {
@@ -10944,7 +10948,7 @@ function quarterFacade(b){
     ctx.fillStyle='#0a1712';ctx.fillRect(cx-43,yy-24,86,72);quarterSprite(ctx,'doorframe',cx-25,yy-5,50,48);
     ctx.fillStyle='#77826e';ctx.fillRect(cx-45,yy-26,90,5);ctx.fillStyle='#162b22';ctx.fillRect(cx-43,yy-21,86,7);ctx.fillStyle='#d7b27d';ctx.fillRect(cx-37,yy-15,74,2);
     ctx.fillStyle='#101c19';ctx.fillRect(cx-34,yy-12,68,60);ctx.fillStyle='#9b9d85';ctx.fillRect(cx-33,yy-18,66,4);ctx.fillStyle='#647865';ctx.fillRect(cx-33,yy-14,4,62);ctx.fillRect(cx+29,yy-14,4,62);
-    ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font='600 9px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
+    ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font=uiFont(9);ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
     drawFacadeDoorWork(d);
     ctx.fillStyle='#8b917e';ctx.fillRect(cx-35,bot-3,70,5);ctx.fillStyle='#26392e';ctx.fillRect(cx-33,bot+2,66,6);ctx.fillStyle='#b5a57d';ctx.fillRect(cx-26,bot+3,52,1);
     const g=ctx.createLinearGradient(0,bot,0,bot+58);g.addColorStop(0,'rgba(192,169,112,.22)');g.addColorStop(1,'rgba(192,169,112,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-23,bot+6);ctx.lineTo(cx+23,bot+6);ctx.lineTo(cx+49,bot+58);ctx.lineTo(cx-49,bot+58);ctx.fill();
@@ -11026,7 +11030,7 @@ function drawRoofEntrances(P) {
     const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${11 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText('계단', x, y); ctx.restore();
+    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('계단', x, y); ctx.restore();
   }
 }
 
@@ -11474,7 +11478,7 @@ function drawRoof1(b, i, roof) {
     if (b.kit && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
-      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left'; ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
+      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left'; ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
       return;
     }
     const sh = b.h * 6;
@@ -11485,7 +11489,7 @@ function drawRoof1(b, i, roof) {
     ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     if (hasHeightCues(i)) drawRoofCoping(b);
-    ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
     ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
   }
@@ -11504,13 +11508,13 @@ function drawFacadeExtras(b, flat, kit) {
       const g = ctx.createRadialGradient(px - 2, py - 2, 1, px, py, 7); g.addColorStop(0, '#ffe58a'); g.addColorStop(0.6, '#d6ad2c'); g.addColorStop(1, '#7a5e12');
       ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, 6, 0, TAU); ctx.fill(); ctx.strokeStyle = '#3a2e0a'; ctx.lineWidth = 1; ctx.stroke();
     }
-    for (const tx of b.balc || []) { const x0 = tx * TILE - 18, w = TILE + 36, y = (b.y1 + 1) * TILE - 2; ctx.fillStyle = '#6b6f78'; ctx.fillRect(x0, y, w, 7); ctx.fillStyle = '#2b2f37'; for (let x = x0 + 2; x < x0 + w - 1; x += 7) ctx.fillRect(x, y + 1, 2, 5); ctx.fillStyle = 'rgba(242,196,107,.8)'; ctx.font = '700 12px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('2층 베란다', tx * TILE + TILE / 2, y + 17); }
+    for (const tx of b.balc || []) { const x0 = tx * TILE - 18, w = TILE + 36, y = (b.y1 + 1) * TILE - 2; ctx.fillStyle = '#6b6f78'; ctx.fillRect(x0, y, w, 7); ctx.fillStyle = '#2b2f37'; for (let x = x0 + 2; x < x0 + w - 1; x += 7) ctx.fillRect(x, y + 1, 2, 5); ctx.fillStyle = 'rgba(242,196,107,.8)'; ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillText('2층 베란다', tx * TILE + TILE / 2, y + 17); }
     return;
   }
   const top = (b.y1 - b.fh + 1) * TILE - 4, bot = (b.y1 + 1) * TILE + 6;
   if (b.tint) { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgb(${b.tint})`; ctx.fillRect(b.x0 * TILE, top + 4, (b.x1 - b.x0 + 1) * TILE, bot - top - 10); ctx.globalCompositeOperation = 'source-over'; }
   if (b.plate && b.kind !== 'shop' && b.fh >= 2) {  // 건물 이름판 (꼭대기 층 벽)
-    ctx.font = '700 15px Galmuri, "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(b.plate).width + 18, cx = (b.x0 + b.x1 + 1) * TILE / 2, py = top + 8;
+    ctx.font = uiFont(15); const tw = ctx.measureText(b.plate).width + 18, cx = (b.x0 + b.x1 + 1) * TILE / 2, py = top + 8;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - tw / 2 + 3, py + 3, tw, 22);
     ctx.fillStyle = b.church ? '#5a1418' : '#23303a'; ctx.fillRect(cx - tw / 2, py, tw, 22);
     ctx.strokeStyle = b.church ? '#ff6a6a' : '#c9a646'; ctx.lineWidth = 1.5; ctx.strokeRect(cx - tw / 2 + 1, py + 1, tw - 2, 20);
@@ -11705,7 +11709,7 @@ function drawNeonSigns() {
       for (const [pad, a] of [[22, 0.08], [12, 0.15], [4, 0.28]]) { ctx.fillStyle = `rgba(${rgb},${a * flick})`; ctx.fillRect(r.x - pad, r.y - pad, r.w + pad * 2, r.h + pad * 2); }
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 0.35 + 0.65 * flick; ctx.fillStyle = '#0c0a12'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = r.c[0]; ctx.lineWidth = 2; ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
-      ctx.fillStyle = r.c[1]; ctx.font = '700 15px Galmuri, "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = r.c[1]; ctx.font = uiFont(15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       if (r.vert) { [...r.txt].forEach((ch, k) => { if (14 + k * 22 < r.h) ctx.fillText(ch, r.x + r.w / 2, r.y + 14 + k * 22); }); } else ctx.fillText(r.txt, r.x + r.w / 2, r.y + r.h / 2 + 1);
       ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
     }
@@ -11755,7 +11759,7 @@ function drawShopSigns(b) {
     const bw = Math.min(wAll - 24, Math.max(110, txt.length * 26 + 30)), bx = x0 + 12 + ((hs + r * 7) % Math.max(1, wAll - 24 - bw)), by = r === 0 ? yy - 22 : yy + 1;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(bx + 3, by + 3, bw, 20);
     ctx.fillStyle = c[0]; ctx.fillRect(bx, by, bw, 20); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.5; ctx.strokeRect(bx + 1, by + 1, bw - 2, 18);
-    ctx.font = '700 15px Galmuri, "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = uiFont(15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = c[1]; ctx.fillText(txt, bx + bw / 2, by + 11); ctx.textBaseline = 'alphabetic'; b.signRects.push({ x: bx, y: by, w: bw, h: 20, c, txt, on: on || club, k: r });
     if (on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,240,200,.12)'; ctx.fillRect(bx, by, bw, 20); ctx.globalCompositeOperation = 'source-over'; }
     else { ctx.fillStyle = 'rgba(4,8,22,.45)'; ctx.fillRect(bx, by, bw, 20); }
@@ -11911,9 +11915,9 @@ function tag(x, y, text, col, alpha = 1, key, pri) { if (window.__skip && window
   drawTag(x, y, text, col, alpha, key);
 }
 function tagRect(x, y, text, key) {
-  const k = Math.max(1, 0.95 / SCALE); ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
+  const k = Math.max(1, 0.95 / SCALE); ctx.font = uiFont(13 * k);
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k; let kw = 0;
-  if (key) { ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; kw = Math.max(h, ctx.measureText(key).width + 9 * k) + 2 * k; }
+  if (key) { ctx.font = uiFont(13 * k); kw = Math.max(h, ctx.measureText(key).width + 9 * k) + 2 * k; }
   return [x - w / 2 - kw, y - h / 2, x + w / 2, y + h / 2];
 }
 function flushTags() {
@@ -11941,16 +11945,16 @@ function flushTags() {
 }
 function drawTag(x, y, text, col, alpha = 1, key) {
   const k = Math.max(1, 0.95 / SCALE);  // 화면이 축소돼 있어도 글자는 읽을 수 있는 크기로
-  ctx.globalAlpha = alpha; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center';
+  ctx.globalAlpha = alpha; ctx.font = uiFont(13 * k); ctx.textAlign = 'center';
   const w = ctx.measureText(text).width + 12 * k, h = 18 * k;
-  ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const kcw = key ? Math.max(h, ctx.measureText(key).width + 9 * k) : 0, kw = key ? kcw + 2 * k : 0;
-  ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`;
+  ctx.font = uiFont(13 * k); const kcw = key ? Math.max(h, ctx.measureText(key).width + 9 * k) : 0, kw = key ? kcw + 2 * k : 0;
+  ctx.font = uiFont(13 * k);
   ctx.fillStyle = INK_STUDY?'#191b18f0':'rgba(8,11,18,.86)'; ctx.fillRect(x - w / 2, y - h / 2, w, h);
-  ctx.fillStyle = col; ctx.fillRect(x - w / 2, y - h / 2, 3 * k, h);
+  ctx.fillStyle = col; ctx.fillRect(x - w / 2, y - h / 2, k, h);
   ctx.fillStyle = INK_STUDY?INK.paper:'#efeadf'; ctx.fillText(text, x + k, y + 4.5 * k);
   if (key) {  // 누를 키를 작은 키캡으로
     const kx = x - w / 2 - kw; ctx.fillStyle = col; ctx.fillRect(kx, y - h / 2, kcw, h); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(kx, y + h / 2 - 3 * k, kcw, 3 * k);
-    ctx.fillStyle = '#0b0d12'; ctx.font = `800 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText(key, kx + kcw / 2, y + 4 * k);
+    ctx.fillStyle = '#0b0d12'; ctx.font = uiFont(13 * k); ctx.fillText(key, kx + kcw / 2, y + 4 * k);
   }
   ctx.globalAlpha = 1;
 }
@@ -12022,14 +12026,14 @@ function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip
     // 오르내리는 곳·창문·문: 가까이 오면 실제로 서야 할 자리에 바닥 고리를 그린다. 바로 앞인데 다른 행동이 잡혀 있으면 이유를 적는다
     if (WAY.has(m.g) && !m.roofDoor && m.d < 150) { const on = paAt && dist(paAt.x, paAt.y, m.x, m.y) < 30; ctx.strokeStyle = m.col; ctx.globalAlpha = on ? 0.95 : 0.5; ctx.lineWidth = on ? 2.5 : 1.5; ctx.setLineDash(on ? [] : [4, 4]); ctx.beginPath(); ctx.ellipse(m.x, m.y + 4 * k, 20 * k, 11 * k, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
       if (!on && m.d < 60) { const why = P.carrying && !/^[↑↓]\d+층/.test(m.lab || '') ? '운반 중에는 통과 불가 · [행동]으로 내려놓기' : P.captive ? '붙잡은 상태에서는 통과 불가' : pa && pa.choices > 1 ? (isTouch ? '[대상] 버튼으로 바꾸기' : 'Tab으로 바꾸기') : pa && pa.k !== 'none' ? '한 걸음 더 가까이' : '';
-        if (why) { ctx.font = `600 ${11 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
+        if (why) { ctx.font = uiFont(11 * k); const tw = ctx.measureText(why).width + 10 * k; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(m.x - tw / 2, m.y + 18 * k, tw, 15 * k); ctx.fillStyle = '#ffb36b'; ctx.textAlign = 'center'; ctx.fillText(why, m.x, m.y + 29 * k); } } }
     if (m.d > 170 || (m.roofDoor && paAt && dist(paAt.x, paAt.y, m.x, m.y) < 2)) continue;  // 선택된 옥탑문은 문 테두리와 행동 안내만
     const a = Math.max(0.3, 1 - m.d / 170) * 0.8, r = 8 * k, y = m.y - 22 * k;
     ctx.globalAlpha = a; ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.beginPath(); ctx.arc(m.x, y, r, 0, TAU); ctx.fill();
     ctx.strokeStyle = m.col; ctx.lineWidth = 2; ctx.stroke();
     if (ICON_P[m.g]) { const sc = (13 * k) / 24; ctx.save(); ctx.translate(m.x - 12 * sc, y - 12 * sc); ctx.scale(sc, sc); ctx.strokeStyle = m.col; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(nearPath(m.g)); ctx.restore(); }
-    else { ctx.fillStyle = m.col; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
-    if (false && m.lab) { ctx.font = `600 ${11.5 * k}px "IBM Plex Sans KR",sans-serif`; const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
+    else { ctx.fillStyle = m.col; ctx.font = uiFont(13 * k); ctx.textAlign = 'center'; ctx.fillText(m.g, m.x, y + 4 * k); }
+    if (false && m.lab) { ctx.font = uiFont(11.5 * k); const tw = ctx.measureText(m.lab).width + 8 * k; ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.fillRect(m.x + r + 2 * k, y - 7 * k, tw, 14 * k); ctx.fillStyle = m.col; ctx.textAlign = 'left'; ctx.fillText(m.lab, m.x + r + 6 * k, y + 4 * k); }
   }
   ctx.globalAlpha = 1;
 }
@@ -12071,7 +12075,7 @@ function drawScan(openB) {
     if (FURN_TALL.has(it.t)) { ctx.fillStyle = 'rgba(110,150,220,.22)'; ctx.fillRect(x + 3, y + 3, w - 6, h - 6); ctx.strokeStyle = 'rgba(140,180,240,.85)'; ctx.lineWidth = 2; ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); }
     else { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); ctx.setLineDash([]); }
   }
-  labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = `700 ${13 * kS}px "IBM Plex Sans KR",sans-serif`;
+  labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = uiFont(13 * kS);
   for (const L of labs) { const w = ctx.measureText(L.text).width + 14 * kS, h = 19 * kS, r = [L.x - w / 2, L.y - h / 2, L.x + w / 2, L.y + h / 2];
     if (placed.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue; placed.push(r); tag(L.x, L.y, L.text, L.col); if (placed.length >= 18) break; }
 }
@@ -12202,7 +12206,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   if(gl.tut&&m<3)return;  // 손에 닿는 연습 대상은 행동 표시가 대신한다. 버튼 영역으로 밀려난 화살표도 인물을 덮지 않는다.
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const topPx = Math.max((drawMini.tb || 70) + 40,($('stealth')?.getBoundingClientRect().bottom||0)+24), botPx = document.body.classList.contains('touch') ? 270 : 70;
   const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
@@ -12216,7 +12220,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
     ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(242,196,107,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
-    const txt = short; ctx.font = `700 ${13 * k}px "IBM Plex Sans KR",sans-serif`; const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
+    const txt = short; ctx.font = uiFont(13 * k); const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
     const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + th, Math.max(sx0 + th, rEdge - th)), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
     tag(lx, ly, txt, '#f2c46b', 1, null, 2.6);
   }
@@ -12298,7 +12302,7 @@ function draw() {
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
-    if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = '700 13px "IBM Plex Sans KR",sans-serif'; ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
+    if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
   }
   PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
@@ -12413,7 +12417,7 @@ function draw() {
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
-    { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = '700 17px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
+    { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = uiFont(17); const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
   }
   PM('floor');
@@ -12527,7 +12531,7 @@ function draw() {
   setLayer(flOf(P));
   PM('poles');
   if (running && !tactical && !DBG.ui) drawLastSeen();
-  if (S.entrySel) STAGE.entries.forEach((e, i) => { const p = entryPos(e), pulse = 0.6 + 0.4 * Math.sin(S.t * 5 + i); ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 34, 0, TAU); ctx.stroke(); ctx.fillStyle = 'rgba(242,196,107,.95)'; ctx.font = '700 30px Galmuri, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), p.x, p.y + 10); tag(p.x, p.y - 52, e.name, '#f2c46b'); });
+  if (S.entrySel) STAGE.entries.forEach((e, i) => { const p = entryPos(e), pulse = 0.6 + 0.4 * Math.sin(S.t * 5 + i); ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 34, 0, TAU); ctx.stroke(); ctx.fillStyle = 'rgba(242,196,107,.95)'; ctx.font = uiFont(30); ctx.textAlign = 'center'; ctx.fillText(String(i + 1), p.x, p.y + 10); tag(p.x, p.y - 52, e.name, '#f2c46b'); });
   // 맨홀 속에 숨어 있거나 살피기 중이면 지하 수로·덕트 길을 비춰 보여 준다
   { const P = S.player, inWell = P.hide && P.hide.type === 'well';
     if (running && !P.under && !P.vent && (input.scan || tactical || inWell)) {
@@ -12557,7 +12561,7 @@ function draw() {
       const pos = a => { if(a.c&&a.k!=='retrieve'){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = '700 11px "IBM Plex Sans KR", sans-serif'; const tw = ctx.measureText(lab).width + 12;
+      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = uiFont(11); const tw = ctx.measureText(lab).width + 12;
         ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
     }
     const ring = (g,col,c) => drawTargetRing(g,col,c);
@@ -12607,13 +12611,13 @@ function draw() {
   if (input.aiming && running && !S.over) {  // 조준하는 동안 세상은 멈춰 있다 — 화면 테두리와 글로 알려 준다
     ctx.strokeStyle = 'rgba(120,190,255,.45)'; ctx.lineWidth = 6; ctx.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
     ctx.fillStyle = 'rgba(8,14,26,.72)'; const lw = 170 * DPR; ctx.fillRect(canvas.width / 2 - lw / 2, canvas.height - 150 * DPR, lw, 26 * DPR);
-    ctx.fillStyle = 'rgba(168,220,255,.95)'; ctx.font = `700 ${13 * DPR}px "IBM Plex Sans KR",sans-serif`; ctx.textAlign = 'center'; ctx.fillText('시간 멈춤 · 조준 중', canvas.width / 2, canvas.height - 132 * DPR);
+    ctx.fillStyle = 'rgba(168,220,255,.95)'; ctx.font = uiFont(13 * DPR); ctx.textAlign = 'center'; ctx.fillText('시간 멈춤 · 조준 중', canvas.width / 2, canvas.height - 132 * DPR);
   }
   if (input.aiming && running && !S.over) {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = '700 13px "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
@@ -12815,8 +12819,8 @@ function encounterSize(rows) {
   const k=1/SCALE,limit=Math.min(280,W-24)*k,entries=[];let line=0,used=0,width=0;
   for(const r of rows.filter(r=>r.ready!==false)){
     const label=isTouch?(r.text==='심문'?'심문':r.key):r.text;
-    ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const keyWidth=isTouch?0:Math.max(16*k,ctx.measureText(r.key).width+6*k);
-    ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;const w=Math.min(limit,keyWidth+(keyWidth?7*k:0)+ctx.measureText(label).width+4*k);
+    ctx.font=uiFont(10*k);const keyWidth=isTouch?0:Math.max(16*k,ctx.measureText(r.key).width+6*k);
+    ctx.font=uiFont(12*k);const w=Math.min(limit,keyWidth+(keyWidth?7*k:0)+ctx.measureText(label).width+4*k);
     if(used&&used+12*k+w>limit){line++;used=0;}
     const dx=used?used+12*k:0;entries.push({...r,label,keyWidth,dx,dy:line*18*k,w});used=dx+w;width=Math.max(width,used);
   }
@@ -12829,10 +12833,10 @@ function drawEncounter(x,y,rows) {
   ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.lineJoin='round';
   entries.forEach(r=>{
     const yy=top+r.dy+13*k;let tx=left+r.dx+2*k;
-    if(!isTouch){ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const kw=r.keyWidth;
+    if(!isTouch){ctx.font=uiFont(10*k);const kw=r.keyWidth;
       ctx.fillStyle='#111820df';ctx.fillRect(tx,yy-12*k,kw,16*k);ctx.fillStyle='#dddccf';ctx.textAlign='center';ctx.fillText(r.key,tx+kw/2,yy);ctx.textAlign='left';tx+=kw+7*k;
     }
-    const tw=r.w-(tx-left-r.dx);ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;ctx.strokeStyle='#080e13ee';ctx.lineWidth=3*k;ctx.strokeText(r.label,tx,yy,tw);ctx.fillStyle='#f0eddf';ctx.fillText(r.label,tx,yy,tw);
+    const tw=r.w-(tx-left-r.dx);ctx.font=uiFont(12*k);ctx.strokeStyle='#080e13ee';ctx.lineWidth=1.5*k;ctx.strokeText(r.label,tx,yy,tw);ctx.fillStyle='#f0eddf';ctx.fillText(r.label,tx,yy,tw);
   });ctx.restore();
 }
 function queueEncounter(P,rows) {
@@ -12869,7 +12873,7 @@ function drawAccessCues(P) {
     if(seen.has(token)||!fixtureVisible({...m,fl:flOf(P)},220))continue;seen.add(token);
     ctx.save();ctx.translate(m.x,m.y);ctx.rotate(Math.atan2(g.d[1],g.d[0]));ctx.fillStyle='#222d32cc';ctx.fillRect(-12,-15,24,30);
     ctx.strokeStyle='#b8c4b6';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,-11);ctx.lineTo(-8,11);ctx.moveTo(8,-11);ctx.lineTo(8,11);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#d4dccd';ctx.font='600 10px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
+    ctx.fillStyle='#d4dccd';ctx.font=uiFont(10);ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
   }ctx.restore();
 }
 
@@ -12947,8 +12951,8 @@ function actVerb(a, ic) {
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
-  // 그림 없이 글자만: 무엇을 하는지 동사로 바로 읽히게
-  const html = `<b>${v}</b>` + hold;
+  // Share the authored action symbols with world prompts; keep the verb and accessible label.
+  const html = icon(ic==='dot'?(key==='actH'?'ko':'grab'):ic,18)+`<b>${v}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', actionCaption(a, a.label || v)); }
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
@@ -13164,7 +13168,7 @@ function drawMini() {
   // 화면에 보이는 범위
   x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
   if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
-  for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = '700 7px monospace'; x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
+  for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = uiFont(7); x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록
   for (const g of S.guards) {
     if (g.state === 'DEAD' && !(g.target && !targetEliminated(g))) continue;
@@ -13178,7 +13182,7 @@ function drawMini() {
   for (const c of S.cams || []) if (!c.broken && c.fl === flOf(P)) { x.fillStyle = camOn(c) ? '#ff4a4a' : '#6a6a6a'; x.fillRect(T(c.x) - 2, T(c.y) - 2, 4, 4); }
   // 나
   x.save(); x.translate(T(P.x), T(P.y)); x.rotate(P.a); x.fillStyle = '#7fe3ff'; x.beginPath(); x.moveTo(5, 0); x.lineTo(-3.5, -3.5); x.lineTo(-2, 0); x.lineTo(-3.5, 3.5); x.closePath(); x.fill(); x.restore();
-  if (P.fl || P.z) { x.fillStyle = '#7fe3ff'; x.font = '700 9px monospace'; x.textAlign = 'left'; x.fillText(P.fl ? (P.fl + 1) + 'F' : 'R', T(P.x) + 5, T(P.y) - 4); }
+  if (P.fl || P.z) { x.fillStyle = '#7fe3ff'; x.font = uiFont(9); x.textAlign = 'left'; x.fillText(P.fl ? (P.fl + 1) + 'F' : 'R', T(P.x) + 5, T(P.y) - 4); }
 }
 // 판 지도 그림: 구운 지도를 줄여 그리고 출발(하늘)·탈출(노랑)·훔칠 것(금색 ◆)·표적(빨강 ●)을 찍는다
 function stageMap(w, labels) {
@@ -13187,7 +13191,7 @@ function stageMap(w, labels) {
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
-    if (labels && lab) { const brief=labels==='brief'; x.font = `${brief?500:700} ${Math.round(R * (brief?2:3.2))}px "IBM Plex Sans KR",sans-serif`; x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 5, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);
+    if (labels && lab) { const brief=labels==='brief'; x.font = uiFont(Math.round(R*(brief?2:3.2))); x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 5, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);
       if(brief) { x.fillStyle='#0d151de8'; x.fillRect(LX-hw,LY-R*1.75,hw*2,R*2.5); x.fillStyle='#e4e5df'; }
       else { x.lineWidth=3; x.strokeStyle='rgba(7,10,18,.95)'; x.strokeText(lab,LX,LY); x.fillStyle=col; }
       x.fillText(lab,LX,LY); } };
@@ -13408,7 +13412,7 @@ function drawEndMap() {
   const ex = S.exit; if (ex) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; x.beginPath(); x.arc(T(ex.x), T(ex.y), 6, 0, TAU); x.stroke(); }
   for (const e of S.events || []) {
     const px = T(e.x), py = T(e.y);
-    if (e.k === 'seen') { x.fillStyle = '#ff9a3c'; x.font = '800 13px monospace'; x.textAlign = 'center'; x.fillText('!', px, py + 4); continue; }
+    if (e.k === 'seen') { x.fillStyle = '#ff9a3c'; x.font = uiFont(13); x.textAlign = 'center'; x.fillText('!', px, py + 4); continue; }
     if (e.k === 'found') { x.strokeStyle = '#ff5a4a'; x.lineWidth = 1.5; x.beginPath(); x.arc(px, py, 6, 0, TAU); x.stroke(); continue; }
     x.strokeStyle = e.k === 'accident' ? '#f2c46b' : e.k === 'target' ? '#ff3a3a' : '#e8473c'; x.lineWidth = e.k === 'target' ? 3 : 2;
     x.beginPath(); x.moveTo(px - 4, py - 4); x.lineTo(px + 4, py + 4); x.moveTo(px + 4, py - 4); x.lineTo(px - 4, py + 4); x.stroke();
@@ -13489,9 +13493,9 @@ function renderStageList() {
     const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
     const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
-      <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
+      <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${fee}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
@@ -13856,7 +13860,7 @@ function drawSkillLinks(){
   for(const node of graph.querySelectorAll('[data-node]'))for(const id of SKILL_BY_ID[node.dataset.node].req){
    const parent=graph.querySelector('[data-node="'+id+'"]');if(!parent)continue;
    const a=parent.querySelector('button').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top+4,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-7;
-   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} C${x0} ${y0+32} ${x1} ${y1-32} ${x1} ${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
+   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${y0+26} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
  }
 }
@@ -13877,7 +13881,7 @@ function syncAssassinHUD(){
 }
 function drawAssassinTargets(){
   const h=S.player.skillHold;if(!h)return;
-  ctx.save();ctx.fillStyle='#ded2ad';ctx.font='bold 12px Galmuri,sans-serif';ctx.textAlign='center';
+  ctx.save();ctx.fillStyle='#ded2ad';ctx.font=uiFont(12);ctx.textAlign='center';
   h.ids.forEach((id,i)=>{const g=assassinAt(id);if(g)ctx.fillText(String(i+1),g.x,g.y-58);});ctx.restore();
 }
 function updateAssassinPractice(){
@@ -14387,7 +14391,7 @@ function beginEntry() {
   let box = $('entryBox');
   if (!box) {
     box = document.createElement('div'); box.id = 'entryBox';
-    box.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,12,20,.92);border:1px solid #3a4250;padding:12px 14px;max-width:min(680px,94vw);font-family:Galmuri,"IBM Plex Sans KR",sans-serif;color:#e8e3d6;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+    box.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,12,20,.92);border:1px solid #3a4250;padding:12px 14px;max-width:min(680px,94vw);font-family:var(--f-body);font-weight:400;color:#e8e3d6;box-shadow:0 6px 24px rgba(0,0,0,.5)';
     document.body.appendChild(box);
   }
   box.innerHTML = '<div style="font-size:13px;letter-spacing:.12em;color:#f2c46b;margin-bottom:8px">정찰 — 진입로를 고른다' + (isTouch ? '' : ' (숫자 키)') + '</div>' +
@@ -14417,6 +14421,8 @@ function toMenu() {
 }
 
 atlas.onload = async () => {
+  // Load the shared face before text measurements; failure keeps the common fallback.
+  if(document.fonts)try{await document.fonts.load('400 14px "Yahaeng UI"');}catch(e){}
   // Optional furniture images load independently; they must not hold up the menu.
   resize();
   renderStageList();

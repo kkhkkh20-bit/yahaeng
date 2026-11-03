@@ -57,7 +57,7 @@ function drawNeonSigns() {
       for (const [pad, a] of [[22, 0.08], [12, 0.15], [4, 0.28]]) { ctx.fillStyle = `rgba(${rgb},${a * flick})`; ctx.fillRect(r.x - pad, r.y - pad, r.w + pad * 2, r.h + pad * 2); }
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = 0.35 + 0.65 * flick; ctx.fillStyle = '#0c0a12'; ctx.fillRect(r.x, r.y, r.w, r.h); ctx.strokeStyle = r.c[0]; ctx.lineWidth = 2; ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
-      ctx.fillStyle = r.c[1]; ctx.font = '700 15px Galmuri, "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = r.c[1]; ctx.font = uiFont(15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       if (r.vert) { [...r.txt].forEach((ch, k) => { if (14 + k * 22 < r.h) ctx.fillText(ch, r.x + r.w / 2, r.y + 14 + k * 22); }); } else ctx.fillText(r.txt, r.x + r.w / 2, r.y + r.h / 2 + 1);
       ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
     }
@@ -107,7 +107,7 @@ function drawShopSigns(b) {
     const bw = Math.min(wAll - 24, Math.max(110, txt.length * 26 + 30)), bx = x0 + 12 + ((hs + r * 7) % Math.max(1, wAll - 24 - bw)), by = r === 0 ? yy - 22 : yy + 1;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(bx + 3, by + 3, bw, 20);
     ctx.fillStyle = c[0]; ctx.fillRect(bx, by, bw, 20); ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.5; ctx.strokeRect(bx + 1, by + 1, bw - 2, 18);
-    ctx.font = '700 15px Galmuri, "IBM Plex Sans KR", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = uiFont(15); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillStyle = c[1]; ctx.fillText(txt, bx + bw / 2, by + 11); ctx.textBaseline = 'alphabetic'; b.signRects.push({ x: bx, y: by, w: bw, h: 20, c, txt, on: on || club, k: r });
     if (on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,240,200,.12)'; ctx.fillRect(bx, by, bw, 20); ctx.globalCompositeOperation = 'source-over'; }
     else { ctx.fillStyle = 'rgba(4,8,22,.45)'; ctx.fillRect(bx, by, bw, 20); }

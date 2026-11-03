@@ -22,7 +22,7 @@ function drawInkDance(x,it){
 function drawInkClubSigns(P){
   if(!INK_STUDY||STAGE.id!=='m2'||flOf(P)||P.z||P.under||P.vent||tactical)return;
   const club=BLD.findIndex(b=>b.name==='클럽'),plan=PLANS[club]?.[0],vip=plan?.vip;
-  const sign=(x,y,text,w=48)=>{if(!inView(x,y,80))return;ctx.save();ctx.fillStyle='#141815';ctx.fillRect(x-w/2,y-8,w,16);ctx.strokeStyle='#b2a582';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-7.5,w-1,15);ctx.fillStyle='#e4d8b8';ctx.font='600 10px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+.5);ctx.restore();};
+  const sign=(x,y,text,w=48)=>{if(!inView(x,y,80))return;ctx.save();ctx.fillStyle='#141815';ctx.fillRect(x-w/2,y-8,w,16);ctx.strokeStyle='#b2a582';ctx.lineWidth=1;ctx.strokeRect(x-w/2+.5,y-7.5,w-1,15);ctx.fillStyle='#e4d8b8';ctx.font=uiFont(10);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+.5);ctx.restore();};
   if(vip)sign(tc(vip.door[0]),tc(vip.door[1])-22,'VIP');
   const bar=FURN.find(it=>it.t==='bar'&&it.seed===club&&!it.fl);
   if(bar)sign((bar.x+bar.w/2)*TILE,bar.y*TILE+TILE-11,'직원 전용',64);

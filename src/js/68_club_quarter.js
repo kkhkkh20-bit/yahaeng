@@ -63,7 +63,7 @@ function quarterFacade(b){
     ctx.fillStyle='#0a1712';ctx.fillRect(cx-43,yy-24,86,72);quarterSprite(ctx,'doorframe',cx-25,yy-5,50,48);
     ctx.fillStyle='#77826e';ctx.fillRect(cx-45,yy-26,90,5);ctx.fillStyle='#162b22';ctx.fillRect(cx-43,yy-21,86,7);ctx.fillStyle='#d7b27d';ctx.fillRect(cx-37,yy-15,74,2);
     ctx.fillStyle='#101c19';ctx.fillRect(cx-34,yy-12,68,60);ctx.fillStyle='#9b9d85';ctx.fillRect(cx-33,yy-18,66,4);ctx.fillStyle='#647865';ctx.fillRect(cx-33,yy-14,4,62);ctx.fillRect(cx+29,yy-14,4,62);
-    ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font='600 9px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
+    ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font=uiFont(9);ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
     drawFacadeDoorWork(d);
     ctx.fillStyle='#8b917e';ctx.fillRect(cx-35,bot-3,70,5);ctx.fillStyle='#26392e';ctx.fillRect(cx-33,bot+2,66,6);ctx.fillStyle='#b5a57d';ctx.fillRect(cx-26,bot+3,52,1);
     const g=ctx.createLinearGradient(0,bot,0,bot+58);g.addColorStop(0,'rgba(192,169,112,.22)');g.addColorStop(1,'rgba(192,169,112,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-23,bot+6);ctx.lineTo(cx+23,bot+6);ctx.lineTo(cx+49,bot+58);ctx.lineTo(cx-49,bot+58);ctx.fill();

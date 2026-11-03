@@ -95,5 +95,5 @@ function drawSkillDevices(P,openB){
  }
  for(const s of S.smokeThrows||[])if(flOf(s.at)===flOf(P)){const f=clamp((S.t-s.t0)/s.dur,0,1),x=s.x+(s.at.x-s.x)*f,y=s.y+(s.at.y-s.y)*f-Math.sin(f*Math.PI)*30;ctx.fillStyle='#a5ada2';ctx.fillRect(x-3,y-5,6,10);}
  if(input.aiming&&input.tool==='hack'){const c=hackTarget();if(c){ctx.strokeStyle='#bdc9ae';ctx.lineWidth=1.5;ctx.strokeRect(c.x-13,c.y-17,26,26);}}
- for(const c of S.cams||[])if(c.hackedUntil>S.t&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<220&&inView(c.x,c.y)){ctx.fillStyle='#c8d5bd';ctx.font='11px Galmuri,sans-serif';ctx.textAlign='center';ctx.fillText('정지 '+Math.ceil(c.hackedUntil-S.t)+'초',c.x,c.y-24);}
+ for(const c of S.cams||[])if(c.hackedUntil>S.t&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<220&&inView(c.x,c.y)){ctx.fillStyle='#c8d5bd';ctx.font=uiFont(11);ctx.textAlign='center';ctx.fillText('정지 '+Math.ceil(c.hackedUntil-S.t)+'초',c.x,c.y-24);}
 }

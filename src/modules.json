@@ -6,6 +6,10 @@
       "group": "core"
     },
     {
+      "path": "00_ui_typography.js",
+      "group": "presentation"
+    },
+    {
       "path": "01_ink_study.js",
       "group": "ink_study"
     },

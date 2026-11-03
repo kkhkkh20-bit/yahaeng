@@ -122,7 +122,7 @@ function drawSurfaceArt(p,ctx){
     ctx.fillStyle=p.dosed?'#c8ad76':'#d8d2b9';ctx.fillRect(p.x-3,p.y-6,6,6);return;
   }
   ctx.fillStyle='#182321';ctx.fillRect(p.x-25,p.y-34,50,20);ctx.strokeStyle='#7e8877';ctx.lineWidth=1;ctx.strokeRect(p.x-25,p.y-34,50,20);
-  ctx.fillStyle='#c6c6b0';ctx.textAlign='center';ctx.font='700 12px "IBM Plex Sans KR",sans-serif';ctx.fillText(p.text,p.x,p.y-20);ctx.textAlign='left';
+  ctx.fillStyle='#c6c6b0';ctx.textAlign='center';ctx.font=uiFont(12);ctx.fillText(p.text,p.x,p.y-20);ctx.textAlign='left';
 }
 function drawPharmacyStock(ctx,f){
   const x=f.x*TILE,y=f.y*TILE;

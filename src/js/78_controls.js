@@ -72,8 +72,8 @@ function actVerb(a, ic) {
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
-  // 그림 없이 글자만: 무엇을 하는지 동사로 바로 읽히게
-  const html = `<b>${v}</b>` + hold;
+  // Share the authored action symbols with world prompts; keep the verb and accessible label.
+  const html = icon(ic==='dot'?(key==='actH'?'ko':'grab'):ic,18)+`<b>${v}</b>` + hold;
   if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', actionCaption(a, a.label || v)); }
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게

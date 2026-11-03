@@ -1,0 +1,247 @@
+{
+  "method": "Actual production packages; identical viewport, seed, starting 4P and controlled real mission position; original screenshots, no image modifications",
+  "captures": [
+    {
+      "image": "before-title-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "2b81631cd29166caa278a1aaf735ba6d97e2f1ee0a495320d9e82a81da6fc32c",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-ledger-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "32205a182ffbd87dc5ae85122fcebbf2b31442627ff8e2987e950d4475fd06a4",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-skills-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "4f3cf9820ab7401abdc68396729752a226fe4b718e8619b37292313923bf7a27",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-skill-detail-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "7c44bbe43f448b013a6798190e410de13a34c3716320b36eb5dcef6d9723eb20",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-brief-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "a943e92e2c95e2a01aa1531fc8880070b79b906f303d6e3508641fa67aa53f3e",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-dialogue-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "2336d44a5a507fbd14a48a0f05f439791010293823b089b1bab3cd4e84048cc2",
+      "pageErrors": [],
+      "controlledResultFixture": false,
+      "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+    },
+    {
+      "image": "before-hud-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "4cbd81a0699bdab8e53046500ebe50f6a366a79c15a81086dca66060b35de740",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-pause-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "a147aedab233b3d8cd9063dae7de6d88d6b9a06533e06ec6dd7a52ae3c9df9c9",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-settings-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "353d6728d0aaffe619c542413c2c644a0f4166eff777c6674dec82a3ed2b8101",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-result-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "6427a24d9187d2d07c3ba4502fc5447a8bb2ce04694a32bccc3036adb06ef38a",
+      "pageErrors": [],
+      "controlledResultFixture": true
+    },
+    {
+      "image": "before-title-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "28c1f21a979eec4b61cb6708d05b6815ebcab5a121e17ff3baf266a1c964a8ee",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-ledger-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "9ec6c6526a23ad31214f365f544be99a2098be765913a0a3de39d29a76907f53",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-skills-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "2a1e7b801ce4a0b0cacf069672ead9262ae18a3d001a3e6c5408841b636f1bdf",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-skill-detail-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "1eac3a00f8c373e4b59b7084d57257e2e881b74a95e9ada0e55f4eac93ae48d7",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-brief-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "9218454d73ba087120f7e5be087dabb25a15ff3205195c26fbb394ea7caad9b0",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-dialogue-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "3a3a46718b2de256d74faaf7b2815b8e1a650ed66917ba5927c5664d5d8bff74",
+      "pageErrors": [],
+      "controlledResultFixture": false,
+      "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+    },
+    {
+      "image": "before-hud-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "edef161a2d4f3fcba1ae2cc62dc2477ea2823f0004168f5e23cc1c10fef8ef55",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-pause-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "ec8154354adad50e9817f0f05f4099470914cec1d32abba61ba137cf363702a4",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-settings-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "ff81c1303a82c2b1340af4d31c4b4301e7681606886dd56a3b3e55d49423b81c",
+      "pageErrors": [],
+      "controlledResultFixture": false
+    },
+    {
+      "image": "before-result-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v152",
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "cb65e7ec67d4925341e1063f50b88b38a685be7dd74d92d6af1fddb6755517d3",
+      "pageErrors": [],
+      "controlledResultFixture": true
+    }
+  ]
+}

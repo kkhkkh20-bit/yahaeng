@@ -1,7 +1,7 @@
 const A = window.__ASSETS__;
 const NEONY = () => !!(STAGE && STAGE.neon);  // 네온 동네(강남 등): 건물 윤곽·간판·조명이 네온
 const hexRgb = h => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
-if (A.font && window.FontFace) { try { const ff = new FontFace('Galmuri', `url(${A.font})`); ff.load().then(f => document.fonts.add(f)).catch(() => {}); } catch (e) {} }
+
 const TILE = 48;
 let MW = 44, MH = 30;
 // 땅(z=0)에서 막히는 칸 / 시야를 가리는 칸

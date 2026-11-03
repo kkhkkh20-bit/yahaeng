@@ -53,7 +53,7 @@ function drawPickProgress(P) {
   const K = P.pick || P.interact; if (!K || (P.interact && K.dur < 0.5)) return; const k = Math.max(1, 0.95 / SCALE), f = Math.min(1, K.t / K.dur), x = P.x, y = P.y - 44 * k;
   ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 13 * k, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 3 * k; ctx.beginPath(); ctx.arc(x, y, 13 * k, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
-  ctx.font = `700 ${Math.round(12 * k)}px "IBM Plex Sans KR", sans-serif`; ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(P.interact ? (K.pose === 'dress' ? '변장' : '사용') : K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
+  ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.fillStyle = '#f2c46b'; ctx.fillText(P.interact ? (K.pose === 'dress' ? '변장' : '사용') : K.kind === 'latch' ? '걸쇠' : K.kind === 'clean' ? '닦기' : K.kind === 'loot' ? K.short : '락픽', x, y + 4 * k); ctx.textAlign = 'left';
 }
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살

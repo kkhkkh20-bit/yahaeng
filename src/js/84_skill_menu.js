@@ -98,7 +98,7 @@ function drawSkillLinks(){
   for(const node of graph.querySelectorAll('[data-node]'))for(const id of SKILL_BY_ID[node.dataset.node].req){
    const parent=graph.querySelector('[data-node="'+id+'"]');if(!parent)continue;
    const a=parent.querySelector('button').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top+4,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-7;
-   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} C${x0} ${y0+32} ${x1} ${y1-32} ${x1} ${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
+   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${y0+26} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
  }
 }
@@ -119,7 +119,7 @@ function syncAssassinHUD(){
 }
 function drawAssassinTargets(){
   const h=S.player.skillHold;if(!h)return;
-  ctx.save();ctx.fillStyle='#ded2ad';ctx.font='bold 12px Galmuri,sans-serif';ctx.textAlign='center';
+  ctx.save();ctx.fillStyle='#ded2ad';ctx.font=uiFont(12);ctx.textAlign='center';
   h.ids.forEach((id,i)=>{const g=assassinAt(id);if(g)ctx.fillText(String(i+1),g.x,g.y-58);});ctx.restore();
 }
 function updateAssassinPractice(){

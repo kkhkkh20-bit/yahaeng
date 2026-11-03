@@ -309,7 +309,7 @@ function beginEntry() {
   let box = $('entryBox');
   if (!box) {
     box = document.createElement('div'); box.id = 'entryBox';
-    box.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,12,20,.92);border:1px solid #3a4250;padding:12px 14px;max-width:min(680px,94vw);font-family:Galmuri,"IBM Plex Sans KR",sans-serif;color:#e8e3d6;box-shadow:0 6px 24px rgba(0,0,0,.5)';
+    box.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:rgba(10,12,20,.92);border:1px solid #3a4250;padding:12px 14px;max-width:min(680px,94vw);font-family:var(--f-body);font-weight:400;color:#e8e3d6;box-shadow:0 6px 24px rgba(0,0,0,.5)';
     document.body.appendChild(box);
   }
   box.innerHTML = '<div style="font-size:13px;letter-spacing:.12em;color:#f2c46b;margin-bottom:8px">정찰 — 진입로를 고른다' + (isTouch ? '' : ' (숫자 키)') + '</div>' +
@@ -339,6 +339,8 @@ function toMenu() {
 }
 
 atlas.onload = async () => {
+  // Load the shared face before text measurements; failure keeps the common fallback.
+  if(document.fonts)try{await document.fonts.load('400 14px "Yahaeng UI"');}catch(e){}
   // Optional furniture images load independently; they must not hold up the menu.
   resize();
   renderStageList();

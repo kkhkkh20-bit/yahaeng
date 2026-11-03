@@ -65,8 +65,8 @@ function encounterSize(rows) {
   const k=1/SCALE,limit=Math.min(280,W-24)*k,entries=[];let line=0,used=0,width=0;
   for(const r of rows.filter(r=>r.ready!==false)){
     const label=isTouch?(r.text==='심문'?'심문':r.key):r.text;
-    ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const keyWidth=isTouch?0:Math.max(16*k,ctx.measureText(r.key).width+6*k);
-    ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;const w=Math.min(limit,keyWidth+(keyWidth?7*k:0)+ctx.measureText(label).width+4*k);
+    ctx.font=uiFont(10*k);const keyWidth=isTouch?0:Math.max(16*k,ctx.measureText(r.key).width+6*k);
+    ctx.font=uiFont(12*k);const w=Math.min(limit,keyWidth+(keyWidth?7*k:0)+ctx.measureText(label).width+4*k);
     if(used&&used+12*k+w>limit){line++;used=0;}
     const dx=used?used+12*k:0;entries.push({...r,label,keyWidth,dx,dy:line*18*k,w});used=dx+w;width=Math.max(width,used);
   }
@@ -79,10 +79,10 @@ function drawEncounter(x,y,rows) {
   ctx.save();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.lineJoin='round';
   entries.forEach(r=>{
     const yy=top+r.dy+13*k;let tx=left+r.dx+2*k;
-    if(!isTouch){ctx.font=`600 ${10*k}px "IBM Plex Sans KR",sans-serif`;const kw=r.keyWidth;
+    if(!isTouch){ctx.font=uiFont(10*k);const kw=r.keyWidth;
       ctx.fillStyle='#111820df';ctx.fillRect(tx,yy-12*k,kw,16*k);ctx.fillStyle='#dddccf';ctx.textAlign='center';ctx.fillText(r.key,tx+kw/2,yy);ctx.textAlign='left';tx+=kw+7*k;
     }
-    const tw=r.w-(tx-left-r.dx);ctx.font=`600 ${12*k}px "IBM Plex Sans KR",sans-serif`;ctx.strokeStyle='#080e13ee';ctx.lineWidth=3*k;ctx.strokeText(r.label,tx,yy,tw);ctx.fillStyle='#f0eddf';ctx.fillText(r.label,tx,yy,tw);
+    const tw=r.w-(tx-left-r.dx);ctx.font=uiFont(12*k);ctx.strokeStyle='#080e13ee';ctx.lineWidth=1.5*k;ctx.strokeText(r.label,tx,yy,tw);ctx.fillStyle='#f0eddf';ctx.fillText(r.label,tx,yy,tw);
   });ctx.restore();
 }
 function queueEncounter(P,rows) {
@@ -119,6 +119,6 @@ function drawAccessCues(P) {
     if(seen.has(token)||!fixtureVisible({...m,fl:flOf(P)},220))continue;seen.add(token);
     ctx.save();ctx.translate(m.x,m.y);ctx.rotate(Math.atan2(g.d[1],g.d[0]));ctx.fillStyle='#222d32cc';ctx.fillRect(-12,-15,24,30);
     ctx.strokeStyle='#b8c4b6';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,-11);ctx.lineTo(-8,11);ctx.moveTo(8,-11);ctx.lineTo(8,11);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#d4dccd';ctx.font='600 10px "IBM Plex Sans KR",sans-serif';ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
+    ctx.fillStyle='#d4dccd';ctx.font=uiFont(10);ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
   }ctx.restore();
 }

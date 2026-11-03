@@ -10,12 +10,16 @@ PLAIN='--plain' in sys.argv
 async def main():
  result={'base':BASE,'files':{},'browsers':[]};release=(R/'VERSION').read_text().strip()
  async with httpx.AsyncClient(timeout=90,follow_redirects=True)as client:
-  for name in ['index.html','version.json',*re.findall(r'<script defer src="\./([^\"]+)"',(R/'public/index.html').read_text())]:
+  local_html=(R/'public/index.html').read_text();font_files=re.findall(r'\./(assets/[a-f0-9]+\.(?:woff2|woff|ttf))',local_html)
+  scripts=re.findall(r'<script defer src="\./([^"]+)"',local_html)
+  for name in ['index.html','version.json',*scripts,*dict.fromkeys(font_files)]:
    data=(await client.get(BASE+(''if PLAIN and name=='index.html'else name)+(''if PLAIN else '?verify='+release))).raise_for_status().content;digest=hashlib.sha256(data).hexdigest();assert digest==hashlib.sha256((R/'public'/name).read_bytes()).hexdigest(),name;result['files'][name]=digest
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
   for mobile in [False,True]:
    page=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda q:requests.append(q.url));await page.add_init_script('localStorage.clear()');await page.goto(BASE+(''if PLAIN else '?v='+release+'&nostats'),timeout=120000);await page.wait_for_function('window.__boot?.state.ready',timeout=120000);assert await page.evaluate('window.__BUILD_VERSION__')==release
+   assert await page.evaluate('document.fonts.check(\'400 14px "Yahaeng UI"\')'), 'Shared UI face not ready'
+   font_cdp=await page.context.new_cdp_session(page);await font_cdp.send('DOM.enable');await font_cdp.send('CSS.enable');root=await font_cdp.send('DOM.getDocument');node=await font_cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#btnLedger'});face=await font_cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert face['fonts']and all(f['isCustomFont']and f['familyName']=='IBM Plex Sans KR'for f in face['fonts']),face
    assert not await page.evaluate('!!window.__CLUB_STUDY__||!!window.__EPISODE_ONE__||!!window.__clubView');assert not any('.glb' in q or '/three.'in q or '/view.js'in q for q in requests)
    if mobile:await page.tap('#btnQuick')
    else:await page.click('#btnQuick')
@@ -30,7 +34,7 @@ async def main():
    await page.locator('#hud .obj').click();assert await page.evaluate('__game.hudInspecting()');inspect_time=await page.evaluate('__game.S.t');await page.wait_for_timeout(350);assert await page.evaluate('__game.S.t')==inspect_time,'live objective panel does not pause game time';await page.locator('#hud .obj').click();await page.wait_for_timeout(150);assert await page.evaluate('__game.S.t')>inspect_time,'live objective panel does not resume game time'
    await page.click('#btnPause');assert await page.locator('#pause').is_visible();await page.click('#btnMenu2');assert await page.locator('#ledger').is_visible();await page.locator('.ledger-tabs [data-filter="training"]').click();i=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")');await page.locator('[data-i="'+str(i)+'"]').click();assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.wait_for_timeout(300);await page.screenshot(path=str(O/f'{NAME}-{"touch"if mobile else"pc"}.png'));assert not errors,errors
-   info={'mobile':mobile,'before':before,'after':after,'version':release,'stage':'tB','errors':errors,'threeDRequests':False,'objectivePauseAndResume':True};result['browsers'].append(info);print('PASS native 2D',info,flush=True);await page.close()
+   info={'mobile':mobile,'before':before,'after':after,'version':release,'stage':'tB','errors':errors,'threeDRequests':False,'objectivePauseAndResume':True,'customUIFont':face};result['browsers'].append(info);print('PASS native 2D',info,flush=True);await page.close()
   await b.close()
  (O/f'{NAME}.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('PASS packaged hashes',len(result['files']),BASE,flush=True)
 if __name__=='__main__':asyncio.run(main())

@@ -1,7 +1,7 @@
 // This small script runs before the deferred game downloads, so the menu never
 // presents dead buttons while a large bundle is still arriving.
 (function(){
- var queued=null,ready=false,done=0,failed=false,box=document.createElement('div');box.id='bootStatus';box.setAttribute('role','status');box.setAttribute('aria-live','polite');box.style.cssText='font:14px system-ui;color:#d2c9b5;margin-top:18px;line-height:1.6;max-width:360px';
+ var queued=null,ready=false,done=0,failed=false,box=document.createElement('div');box.id='bootStatus';box.setAttribute('role','status');box.setAttribute('aria-live','polite');box.style.cssText='font:400 14px var(--f-body);color:#d2c9b5;margin-top:18px;line-height:1.6;max-width:360px';
  var panel=document.querySelector('.title-panel');if(panel)panel.appendChild(box);
  function text(value){box.textContent=value;}
  function fail(message){if(ready)return;failed=true;box.textContent='게임을 불러오지 못했습니다. ';var retry=document.createElement('a');retry.textContent='다시 연결';retry.style.color='inherit';retry.href=location.pathname+'?retry='+Date.now();box.appendChild(retry);var detail=document.createElement('small');detail.style.cssText='display:block;overflow-wrap:anywhere;opacity:.7';detail.textContent=String(message||'다운로드 연결 확인').slice(0,180);box.appendChild(detail);document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});}

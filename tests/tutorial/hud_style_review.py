@@ -32,9 +32,9 @@ async def main():
    await q.evaluate('''()=>{const G=__game,S=fresh();S.guards=S.guards.filter(g=>g.target);S.alevel=3;S.alevelT=30;S.expo=2;S.player.hp=1;}''');await shot('danger');assert await q.locator('#expoLbl').inner_text()=='발각'
    # The objective still opens through its real click handler and pauses time.
    await q.locator('#hud .obj').click();assert await q.evaluate('__game.hudInspecting()');await shot('goals');await q.locator('#hud .obj').click();assert not await q.evaluate('__game.hudInspecting()')
-   await q.evaluate("()=>{const G=__game,S=fresh();S.player.kunai=0;G.input.tool='kunai';G.input.padWhistle=false;}")
+   await q.evaluate("()=>{const G=__game,S=fresh();S.player.stones=0;G.input.tool='stone';G.input.padWhistle=false;}")
    await shot('empty-tool');assert '도구 바꾸기'in await q.locator('#btnTool').inner_text();assert not await q.locator('#btnTool').evaluate('e=>e.classList.contains("ready")')
-   await q.evaluate("()=>{const G=__game,S=fresh();S.guards=[];const l=S.lamps.find(l=>l.mount?.kind==='pole'),at=G.lampControl(l);Object.assign(S.player,{x:at.x,y:at.y,fl:0,z:0});G.updateHUD(true);}")
+   await q.evaluate("()=>{const G=__game,S=fresh();S.guards=[];const l=S.lamps.find(l=>l.mount?.kind==='pole'),at=G.lampControl(l);Object.assign(S.player,{x:at.x,y:at.y,fl:0,z:0});S.corpses.push({x:S.player.x,y:S.player.y+20,fl:0,z:0,ch:'sam',ko:false,carried:false,stashed:false,target:false,civ:false});G.updateHUD(true);}")
    await q.locator('#btnCycle').click();assert await q.evaluate('__game.hudInspecting()');await shot('picker');await q.keyboard.press('Escape');assert not await q.evaluate('__game.hudInspecting()')
    assert not errors,errors;results.append({'viewport':[w,h],'touch':touch,'layout':layout,'searchWarning':True,'danger':True,'objectiveInteraction':True,'errors':errors});await q.close()
   await b.close()

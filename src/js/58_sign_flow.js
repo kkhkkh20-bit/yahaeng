@@ -23,7 +23,7 @@ function drawHangingSign(t,part='all',c=ctx) {
   c.translate(p.x,p.y);c.rotate(p.angle);if(t.wreck&&!g.appliance)c.scale(1,.45);c.fillStyle='#05090870';c.fillRect(-g.w/2+3,-g.h/2+5,g.w,g.h);
   c.fillStyle=g.appliance?'#626c67':'#333f3c';c.fillRect(-g.w/2,-g.h/2,g.w,g.h);c.strokeStyle='#939785';c.lineWidth=2;c.strokeRect(-g.w/2,-g.h/2,g.w,g.h);
   if(g.appliance){c.strokeStyle='#26322e';c.beginPath();c.arc(10,0,11,0,TAU);c.stroke();for(let k=0;k<4;k++){c.beginPath();c.moveTo(-24,-9+k*6);c.lineTo(-7,-9+k*6);c.stroke();}}
-  else{c.fillStyle='#d4cfb8';c.font='600 13px "IBM Plex Sans KR",sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(t.text||'간판',0,1,g.w-8);}
+  else{c.fillStyle='#d4cfb8';c.font=uiFont(13);c.textAlign='center';c.textBaseline='middle';c.fillText(t.text||'간판',0,1,g.w-8);}
   c.restore();
 }
 function canReleaseSign(t) {

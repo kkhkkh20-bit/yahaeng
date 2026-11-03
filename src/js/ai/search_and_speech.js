@@ -63,7 +63,7 @@ function drawSpeech() {
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
   const vx0=cam.x-W/SCALE/2+8/SCALE,vx1=cam.x+W/SCALE/2-8/SCALE,vy0=cam.y-H/SCALE/2+8/SCALE,vy1=cam.y+H/SCALE/2-8/SCALE;
   const hit=(a,b)=>a[0]<b[2]+gap&&a[2]+gap>b[0]&&a[1]<b[3]+gap&&a[3]+gap>b[1];
-  ctx.save();ctx.font=`500 ${12*k}px "IBM Plex Sans KR",sans-serif`;
+  ctx.save();ctx.font=uiFont(12*k);
   for(const g of who) {
     if(SPEECH_R.length>=1)break;
     // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.

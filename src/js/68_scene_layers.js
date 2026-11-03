@@ -28,6 +28,6 @@ function drawRoofEntrances(P) {
     const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `700 ${11 * k}px "IBM Plex Sans KR",sans-serif`; ctx.fillText('계단', x, y); ctx.restore();
+    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('계단', x, y); ctx.restore();
   }
 }

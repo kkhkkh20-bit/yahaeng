@@ -1,0 +1,390 @@
+[
+  {
+    "mode": "pc",
+    "viewport": [
+      1440,
+      900
+    ],
+    "missionRows": [
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      }
+    ],
+    "realFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    "straightEdges": 24,
+    "nodes": 27,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 70,
+        "h": 44,
+        "x": 1360,
+        "y": 8,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      }
+    ],
+    "pauseAndResume": true,
+    "pageErrors": []
+  },
+  {
+    "mode": "mobile",
+    "viewport": [
+      390,
+      844
+    ],
+    "missionRows": [
+      {
+        "height": 154,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 154,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 151,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      }
+    ],
+    "realFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    "straightEdges": 24,
+    "nodes": 27,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 64,
+        "h": 44,
+        "x": 316,
+        "y": 8,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCrouch",
+        "w": 88,
+        "h": 44,
+        "x": 192,
+        "y": 602,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnSneak",
+        "w": 88,
+        "h": 44,
+        "x": 292,
+        "y": 602,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnTool",
+        "w": 88,
+        "h": 48,
+        "x": 292,
+        "y": 710,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnToolNext",
+        "w": 88,
+        "h": 48,
+        "x": 292,
+        "y": 654,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnGrab",
+        "w": 88,
+        "h": 48,
+        "x": 192,
+        "y": 710,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCarry",
+        "w": 72,
+        "h": 72,
+        "x": 208,
+        "y": 762,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnAct",
+        "w": 72,
+        "h": 72,
+        "x": 308,
+        "y": 762,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      }
+    ],
+    "pauseAndResume": true,
+    "pageErrors": []
+  },
+  {
+    "mode": "landscape",
+    "viewport": [
+      844,
+      390
+    ],
+    "missionRows": [
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 191,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      }
+    ],
+    "realFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    "straightEdges": 24,
+    "nodes": 27,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 70,
+        "h": 44,
+        "x": 764,
+        "y": 8,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCrouch",
+        "w": 88,
+        "h": 44,
+        "x": 346,
+        "y": 336,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnSneak",
+        "w": 88,
+        "h": 44,
+        "x": 446,
+        "y": 336,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnTool",
+        "w": 88,
+        "h": 48,
+        "x": 746,
+        "y": 264,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnToolNext",
+        "w": 88,
+        "h": 48,
+        "x": 646,
+        "y": 264,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnGrab",
+        "w": 78,
+        "h": 56,
+        "x": 556,
+        "y": 324,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCarry",
+        "w": 76,
+        "h": 60,
+        "x": 658,
+        "y": 320,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnAct",
+        "w": 76,
+        "h": 60,
+        "x": 758,
+        "y": 320,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      }
+    ],
+    "pauseAndResume": true,
+    "pageErrors": []
+  },
+  {
+    "mode": "small",
+    "viewport": [
+      320,
+      568
+    ],
+    "missionRows": [
+      {
+        "height": 154,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 154,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      },
+      {
+        "height": 151,
+        "font": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif",
+        "weight": "400"
+      }
+    ],
+    "realFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ]
+    },
+    "straightEdges": 24,
+    "nodes": 27,
+    "controls": [
+      {
+        "id": "btnPause",
+        "w": 64,
+        "h": 44,
+        "x": 246,
+        "y": 8,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCrouch",
+        "w": 88,
+        "h": 44,
+        "x": 122,
+        "y": 326,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnSneak",
+        "w": 88,
+        "h": 44,
+        "x": 222,
+        "y": 326,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnTool",
+        "w": 88,
+        "h": 48,
+        "x": 222,
+        "y": 434,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnToolNext",
+        "w": 88,
+        "h": 48,
+        "x": 222,
+        "y": 378,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnGrab",
+        "w": 88,
+        "h": 48,
+        "x": 122,
+        "y": 434,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnCarry",
+        "w": 72,
+        "h": 72,
+        "x": 138,
+        "y": 486,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      },
+      {
+        "id": "btnAct",
+        "w": 72,
+        "h": 72,
+        "x": 238,
+        "y": 486,
+        "weight": "400",
+        "family": "\"Yahaeng UI\", \"Apple SD Gothic Neo\", \"Malgun Gothic\", sans-serif"
+      }
+    ],
+    "pauseAndResume": true,
+    "pageErrors": []
+  },
+  {
+    "blockedFontBootAndStart": true
+  }
+]

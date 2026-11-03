@@ -1,0 +1,14 @@
+{
+  "family": "IBM Plex Sans KR",
+  "cssFamily": "Yahaeng UI",
+  "weight": 400,
+  "format": "woff2",
+  "source": "https://github.com/google/fonts/blob/main/ofl/ibmplexsanskr/IBMPlexSansKR-Regular.ttf",
+  "sourceTtfSha256": "53750379270312368cf7641901f43a98dd892e3d9d5798cf25cdc245c85c71c0",
+  "woff2Sha256": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615",
+  "bytes": 561500,
+  "license": "OFL-IBMPlexSansKR.txt",
+  "coverage": "All 11,172 precomposed Hangul syllables; 12,224 mapped characters",
+  "conversion": "FontTools WOFF2 transform and the already installed Node Brotli codec; glyph outlines and naming unchanged",
+  "runtimeDependencies": "None; self-hosted immutable font asset"
+}

@@ -51,6 +51,14 @@ class BuildPipeline(unittest.TestCase):
    self.assertFalse((out/'assets/retired.js').exists())
    self.assertEqual((out/'version.json').read_bytes(),version)
    self.assertEqual((out/'index.html').read_bytes(),index)
+ def test_fonts_are_cacheable_and_retained(self):
+  with tempfile.TemporaryDirectory()as tmp:
+   r=Path(tmp);source=r/'source.html';out=r/'release'
+   source.write_text('<html><style>@font-face{font-family:fixture;src:url("data:font/woff2;base64,eA==")}</style><script>window.__BUILD_VERSION__="fixture";'+(' '*600)+'</script></html>')
+   with contextlib.redirect_stdout(io.StringIO()):package(source,out)
+   self.assertNotIn('data:font/',(out/'index.html').read_text())
+   fonts=list((out/'assets').glob('*.woff2'));self.assertEqual(len(fonts),1);self.assertEqual(fonts[0].read_bytes(),b'x')
+   self.assertEqual(prune_assets(out)['pruned_assets'],0)
  def test_unused_recorded_music_is_not_in_campaign(self):
   shipped=json.loads(campaign_assets(R));original=json.loads((R/'build/assets_city.json').read_text())
   self.assertNotIn('music',shipped)

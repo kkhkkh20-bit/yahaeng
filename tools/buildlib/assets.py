@@ -8,6 +8,8 @@ def campaign_assets(root):
     # All campaign mood tracks are generated n_* WebAudio loops. Four unused
     # legacy recordings used to add 1.19 MB of base64 to every HTML release.
     assets.pop('music', None)
+    # UI and canvas now share the complete self-hosted face in interface.css.
+    assets.pop('font', None)
     fx = Path(root) / 'src/art/fx'
     if (fx / 'pixelfx.json').exists():
         assets['pixelfx'] = json.loads((fx / 'pixelfx.json').read_text())

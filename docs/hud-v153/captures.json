@@ -1,0 +1,497 @@
+{
+  "method": "Unaltered v152/v153 production captures; identical seed, viewport, starting 4P and fixed real mission position. Dialogue typewriter settled. Result is a controlled display sample, not a completed mission claim.",
+  "before": {
+    "method": "Actual production packages; identical viewport, seed, starting 4P and controlled real mission position; original screenshots, no image modifications",
+    "captures": [
+      {
+        "image": "before-title-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "2b81631cd29166caa278a1aaf735ba6d97e2f1ee0a495320d9e82a81da6fc32c",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-ledger-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "32205a182ffbd87dc5ae85122fcebbf2b31442627ff8e2987e950d4475fd06a4",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-skills-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "4f3cf9820ab7401abdc68396729752a226fe4b718e8619b37292313923bf7a27",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-skill-detail-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "7c44bbe43f448b013a6798190e410de13a34c3716320b36eb5dcef6d9723eb20",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-brief-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "a943e92e2c95e2a01aa1531fc8880070b79b906f303d6e3508641fa67aa53f3e",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-dialogue-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "2336d44a5a507fbd14a48a0f05f439791010293823b089b1bab3cd4e84048cc2",
+        "pageErrors": [],
+        "controlledResultFixture": false,
+        "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+      },
+      {
+        "image": "before-hud-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "4cbd81a0699bdab8e53046500ebe50f6a366a79c15a81086dca66060b35de740",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-pause-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "a147aedab233b3d8cd9063dae7de6d88d6b9a06533e06ec6dd7a52ae3c9df9c9",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-settings-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "353d6728d0aaffe619c542413c2c644a0f4166eff777c6674dec82a3ed2b8101",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-result-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "6427a24d9187d2d07c3ba4502fc5447a8bb2ce04694a32bccc3036adb06ef38a",
+        "pageErrors": [],
+        "controlledResultFixture": true
+      },
+      {
+        "image": "before-title-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "28c1f21a979eec4b61cb6708d05b6815ebcab5a121e17ff3baf266a1c964a8ee",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-ledger-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "9ec6c6526a23ad31214f365f544be99a2098be765913a0a3de39d29a76907f53",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-skills-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "2a1e7b801ce4a0b0cacf069672ead9262ae18a3d001a3e6c5408841b636f1bdf",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-skill-detail-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "1eac3a00f8c373e4b59b7084d57257e2e881b74a95e9ada0e55f4eac93ae48d7",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-brief-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "9218454d73ba087120f7e5be087dabb25a15ff3205195c26fbb394ea7caad9b0",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-dialogue-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "3a3a46718b2de256d74faaf7b2815b8e1a650ed66917ba5927c5664d5d8bff74",
+        "pageErrors": [],
+        "controlledResultFixture": false,
+        "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+      },
+      {
+        "image": "before-hud-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "edef161a2d4f3fcba1ae2cc62dc2477ea2823f0004168f5e23cc1c10fef8ef55",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-pause-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "ec8154354adad50e9817f0f05f4099470914cec1d32abba61ba137cf363702a4",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-settings-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "ff81c1303a82c2b1340af4d31c4b4301e7681606886dd56a3b3e55d49423b81c",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "before-result-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v152",
+        "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "imageSha256": "cb65e7ec67d4925341e1063f50b88b38a685be7dd74d92d6af1fddb6755517d3",
+        "pageErrors": [],
+        "controlledResultFixture": true
+      }
+    ]
+  },
+  "after": {
+    "method": "Actual production packages; identical viewport, seed, starting 4P and controlled real mission position; original screenshots, no image modifications",
+    "captures": [
+      {
+        "image": "after-title-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "9d35859c7ffef2ae67bc62018124210690bd294c690f5b07121dbe613be6a9b2",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-ledger-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "3895c5d060bc485fedb09c80b09d305335c8b30c8eb1377662749ba0792a0da1",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-skills-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "d33201448db84e84e013feb2c018ddf4106de93abeda5a8dd5cdaaff6ac6d775",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-skill-detail-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "7298444a662f68f6ea6c7af330b7fb47f11732c876594fb14b07effb96d750ea",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-brief-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "b486c4158c7ffd8ea0f0eb0a36f28b208f89ecb7266326790a848d0238a531ff",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-dialogue-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "508d22d3056e03e019c5d007ff0f1620f90149505b45e19c93a3fa3a9121ab53",
+        "pageErrors": [],
+        "controlledResultFixture": false,
+        "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+      },
+      {
+        "image": "after-hud-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "a55e0cc833f06a4eb7d1f3ecd7ab41b4b100ebf9ce934e5954ffe293495bab4c",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-pause-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "73e80782d16f8d5beeedb04d8d6e1464757ee9876d0f2d7b934a763fa0b646d3",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-settings-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "f0460ff3d9814cb8ac10dfe57fbb7fe35b71cc2a0d0e8668d96c34f1c0738aec",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-result-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "1da34fb49175aefc73280f7ffa0ae5e9ee3d0fdf732c25dacd49d1e1e51d4a85",
+        "pageErrors": [],
+        "controlledResultFixture": true
+      },
+      {
+        "image": "after-title-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "87dc6d4125c3053e627cffb755a39cf1f18f19734f25d1619838da009a6439dd",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-ledger-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "547c6c6c5b6bbffadef2059e4e81b43de832bbad47ac47fe6676f8bb7f33ca4d",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-skills-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "e2ac091fe6f4813de3222c4c781930a392f6fa1c9d487520a7a905ebdbd1e0e0",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-skill-detail-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "d0cd54fb94bb8a33e7cfc438464a261f80d949e96d9ed5113b65b8776459b706",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-brief-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "6f54a89f050dd3367f97a76954ef3f9385c4ca05ad994205af8f475b047860cb",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-dialogue-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "055ce006d8ff0fc06332fb7a0a1577767e7e9365684351e14b36a744ebc2c37b",
+        "pageErrors": [],
+        "controlledResultFixture": false,
+        "captureNote": "Typewriter settled for 3 seconds; no world simulation advanced"
+      },
+      {
+        "image": "after-hud-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "0d77826c1859c7f4fbf66a3b5d7fa59872afb09157dee9d1a17be29ab84cee69",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-pause-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "64c3ad53ca0be9ecd7130d45bac79e7e0fa5fc2e106bafe05bdb8dda77f5705e",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-settings-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "933dd5f594e24064a292932aca684314480eec6c85781338cead42928c4e087b",
+        "pageErrors": [],
+        "controlledResultFixture": false
+      },
+      {
+        "image": "after-result-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "753b659a8bfde9ab068d57bec8b323e66c434aab85f19f4412233f9a8031ec2a",
+        "pageErrors": [],
+        "controlledResultFixture": true
+      }
+    ]
+  }
+}
