@@ -259,6 +259,17 @@ body.touch #hud #btnCrouch.down>.hud-art,body.touch #hud #btnCrouch:active>.hud-
 
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch #hud #btnSkill{left:auto;right:250px;bottom:max(12px,env(safe-area-inset-bottom));width:140px}}
 
+/* Reserved context slots: clothing/grab above equipment, target choice above that.
+   No gameplay touch controls are exposed in the keyboard HUD. */
+body:not(.touch) #hud .pad,body:not(.touch) #hud .sysbtns,#hud #btnSkill{display:none}
+body.touch #hud .pad :is(#btnGrab,#btnDress){right:94px;bottom:156px;width:72px;height:64px;min-width:72px}
+body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
+@media(orientation:landscape) and (max-height:500px) and (min-width:500px){
+ body.touch #hud .pad #btnCycle{right:176px;bottom:76px;width:56px}
+ body.touch #hud .sysbtns{right:calc(max(16px,env(safe-area-inset-right)) + 9px)}
+ body.touch #hud #mini{top:max(12px,env(safe-area-inset-top));right:calc(max(16px,env(safe-area-inset-right)) + 76px);width:70px}
+}
+
 /* The whole prerequisite graph stays unfolded; inspection opens on the right. */
 #btnSkillsLedger { margin:0 0 16px; }
 #skillScreen { --sk-ground:#0e171c; --sk-panel:#142127; --sk-line:#344248; --sk-ink:#e7e4d6; --sk-muted:#a6b2b3; --sk-gold:#d7ba73; padding:0; overflow:hidden; background:var(--sk-ground); color:var(--sk-ink); }

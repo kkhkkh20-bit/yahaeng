@@ -32,7 +32,9 @@ async def main():
     await q.evaluate('''()=>{const S=__game.S,P=S.player;S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,hidden:false,stashed:false,g:{id:901,x:P.x,y:P.y,fl:0,z:0,state:'DEAD',child:false}}];S.t+=.1;__game.updateHUD(true)}''')
     danger=await attack.evaluate('(e)=>getComputedStyle(e).backgroundImage');assert normal!=danger and await attack.evaluate('e=>e.classList.contains("kill")'),'Lethal finishing action has no distinct frame'
    await q.evaluate(SETUP);await q.screenshot(path=str(O/f'play-{name}.png'))
-   await q.click('#btnToolNext');await q.screenshot(path=str(O/f'equipment-{name}.png'))
+   if touch:await q.click('#btnToolNext')
+   else:await q.keyboard.press('i')
+   await q.screenshot(path=str(O/f'equipment-{name}.png'))
    # All visible text must stay inside the equipment surface, including the close control.
    assert await q.locator('#loadout').evaluate('e=>e.scrollWidth<=e.clientWidth+1')
    await q.keyboard.press('Escape');assert not errors,errors;rows.append({'viewport':name,'frameImages':len(frames),'controls':controls,'nativeStates':touch,'pageErrors':errors});print('PASS graphite finish',name,flush=True);await q.close()

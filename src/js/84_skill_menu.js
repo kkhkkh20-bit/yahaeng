@@ -123,5 +123,5 @@ function drawAssassinTargets(){
 function updateAssassinPractice(){
   if(!STAGE.skillPractice||S.over||S.player.assassinAnim||S.player.skillHold)return;
   const step=S.tutI||0,ids=step<2?[0,1]:step>=3&&step<5?[2,3]:[];
-  if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 길게 누르거나 B·기술 버튼을 사용하자.');
+  if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 1초 동안 누르거나 PC에서 B를 길게 누르자.');
 }

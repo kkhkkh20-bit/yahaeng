@@ -40,14 +40,15 @@ async def main():
    await q.evaluate('''()=>{const{S,P,G}=fixture;S.guards=[];S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false,a:0,t0:0}];P.killAnim=null;P.strikeT=0;S.koHold=null;S.t+=1;fixture.draw();}''')
    await q.screenshot(path=str(O/f'{LABEL}-clothing-{name}.png'))
    if not BEFORE:
-    assert await q.locator('#btnDress').is_visible(),'clothing must be visible without opening target picker'
+    assert (await q.locator('#btnDress').is_visible())==touch,'direct clothing is a mobile control'
     assert await q.locator('#btnGrab').is_hidden(),'grab and clothing share one touch slot'
-    boxes=await q.evaluate('''()=>{const b=document.querySelector('#btnDress').getBoundingClientRect();return{width:b.width,height:b.height,left:b.left,right:b.right,top:b.top,bottom:b.bottom,overlaps:[...document.querySelectorAll('.pad > button:not([hidden]),#btnSkill:not([hidden]),.sysbtns button,#hud .keys')].filter(e=>e.id!=='btnDress'&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden').filter(e=>{const r=e.getBoundingClientRect();return r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top}).map(e=>e.id)}}''')
-    assert boxes['width']>=44 and boxes['height']>=44 and boxes['left']>=0 and boxes['right']<=w and boxes['top']>=0 and boxes['bottom']<=h and not boxes['overlaps'],boxes
+    if touch:
+     boxes=await q.evaluate('''()=>{const b=document.querySelector('#btnDress').getBoundingClientRect();return{width:b.width,height:b.height,left:b.left,right:b.right,top:b.top,bottom:b.bottom,overlaps:[...document.querySelectorAll('.pad > button:not([hidden]),#btnSkill:not([hidden]),.sysbtns button,#hud .keys')].filter(e=>e.id!=='btnDress'&&getComputedStyle(e).display!=='none'&&getComputedStyle(e).visibility!=='hidden').filter(e=>{const r=e.getBoundingClientRect();return r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top}).map(e=>e.id)}}''')
+     assert boxes['width']>=44 and boxes['height']>=44 and boxes['left']>=0 and boxes['right']<=w and boxes['top']>=0 and boxes['bottom']<=h and not boxes['overlaps'],boxes
     # The dedicated control executes the shared three-second action, not an instant change.
     if touch:await q.tap('#btnDress')
     else:
-     await q.focus('#btnDress');await q.keyboard.press('Enter')
+     await q.keyboard.press('Shift+Tab');await q.locator('[data-env-token^="dress:"]').click();await q.keyboard.press('x')
     assert await q.evaluate('!!fixture.P.interact&&!fixture.P.outfit&&!fixture.S.corpses[0].stripped')
     await q.evaluate('fixture.tick(150);fixture.draw()');assert await q.evaluate('!fixture.P.outfit&&!fixture.S.corpses[0].stripped')
     await q.evaluate('fixture.tick(40);fixture.draw()');assert await q.evaluate("fixture.P.outfit==='crew'&&fixture.S.stats.dressed===1&&fixture.S.corpses[0].stripped")
@@ -56,15 +57,15 @@ async def main():
     assert await q.evaluate("fixture.G.envChoices().some(a=>a.k==='carry')")
     # An out-of-reach live guard must not bury clothes again; an immediately usable grab keeps priority.
     await q.evaluate(SETUP);await q.evaluate('''()=>{const{S,P,g}=fixture;g.x=P.x+100;S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true}];S.t+=1;fixture.draw();}''')
-    assert await q.locator('#btnDress').is_visible(),'distant guard must not bury clothes'
+    assert (await q.locator('#btnDress').is_visible())==touch and await q.evaluate("fixture.G.envChoices().some(a=>a.k==='dress')"),'distant guard must not bury clothes'
     await q.evaluate('fixture.g.x=fixture.P.x+40;fixture.S.t+=1;fixture.draw()')
     assert await q.locator('#btnDress').is_hidden() and await q.evaluate("!document.getElementById('btnGrab').hidden&&__game.grabAction().k==='grab'"),'immediate grab keeps its control'
     if touch:assert await q.locator('#btnGrab').is_visible()
     # A stale visible control must not fall back to carrying when the clothes are gone.
     await q.evaluate('fixture.S.guards=[];fixture.S.t+=1;fixture.draw();fixture.S.corpses[0].stripped=true')
-    if touch:await q.tap('#btnDress')
-    else:await q.click('#btnDress')
-    assert await q.evaluate('!fixture.P.interact&&!fixture.P.carrying&&!fixture.P.outfit'),'stale clothing button must be a no-op'
+    if touch:
+     await q.tap('#btnDress');assert await q.evaluate('!fixture.P.interact&&!fixture.P.carrying&&!fixture.P.outfit'),'stale clothing button must be a no-op'
+    else:assert await q.locator('#btnDress').is_hidden()
    assert not errs,errs;rows.append({'viewport':name,'attackAt40px':attack,'pageErrors':errs,'clothingTiming':None if BEFORE else'unchanged at 2.5 seconds; changed once after 3 seconds','fixtures':'controlled open ground and downed body; native input'});print('PASS',LABEL,name,flush=True);await q.close()
   await b.close()
  (O/f'{LABEL}-checks.json').write_text(json.dumps({'base':url,'rows':rows},ensure_ascii=False,indent=2));server.shutdown()

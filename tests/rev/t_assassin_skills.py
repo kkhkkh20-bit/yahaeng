@@ -34,7 +34,7 @@ async def main():
   await q.evaluate(FRESH)
   checks+=await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();if(G.S.skillStars||G.assassinOpportunity())throw Error('Practice unlocked campaign skill');const s=G.STAGES.find(s=>s.id==='m1'),ids=s.challenges.slice(0,2),record={_clear:true};ids.forEach(k=>record[k]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:record}));localStorage.removeItem('yahaeng.skillTree.v1');G.initAssassinSkills();if(G.S.skillStars!==3)throw Error('Does not reuse earned mission stars');G.openAssassinMenu();if(document.querySelector('[data-skill="dual"]').disabled||!document.querySelector('[data-skill="chain"]').disabled)throw Error('Incorrect unlock threshold');G.chooseAssassinSkill('chain');if(G.S.selectedSkill!=='dual')throw Error('Locked skill selected');G.closeAssassinMenu();s.challenges.slice(0,5).forEach(k=>record[k]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:record}));localStorage.removeItem('yahaeng.skillTree.v1');G.initAssassinSkills();if(G.S.skillStars!==6)throw Error('Six-star record counted incorrectly');G.openAssassinMenu();G.chooseAssassinSkill('chain');G.closeAssassinMenu();G.initAssassinSkills();if(G.S.selectedSkill!=='chain'||localStorage.getItem('yahaeng.assassinSkill')!=='chain')throw Error('Earned chain choice not persisted');localStorage.clear();return ['practice does not unlock campaign; existing 3/6-star progress unlocks and persists skills'];}''')
   await q.evaluate(FRESH)
-  checks+=await q.evaluate('''()=>{const G=__game,S=G.S;G.killGuard(S.guards[0]);G.update(.02);if(!S.over||!S.toasts.some(t=>t.text.includes('기술 버튼')))throw Error('Practice failure hides the relevant instruction');return ['practice wrong-action retry explains the skill input'];}''')
+  checks+=await q.evaluate('''()=>{const G=__game,S=G.S;G.killGuard(S.guards[0]);G.update(.02);if(!S.over||!S.toasts.some(t=>t.text.includes('공격을 1초')))throw Error('Practice failure hides the relevant instruction');return ['practice wrong-action retry explains the skill input'];}''')
   # A visible third guard is still able to see the actual attack and react.
   await q.evaluate(FRESH)
   checks+=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;const w=S.guards[2];Object.assign(w,{x:P.x-100,y:P.y,a:0,post:0,want:0,seen:false});S.guards=S.guards.slice(0,3);press();tick(2.5);if(!w.seen&&w.state!=='ALERT'&&!(w.meter>0))throw Error('Skill grants invisibility against witness');return ['third-party witness retains normal vision'];}''')
@@ -47,13 +47,13 @@ async def main():
    cdp=await c.new_cdp_session(ui)if mobile else None
    async def down():
     if mobile:
-     r=await ui.locator('#btnSkill').bounding_box();await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':r['x']+r['width']/2,'y':r['y']+r['height']/2,'id':1}]})
+     r=await ui.locator('#btnAct').bounding_box();await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':r['x']+r['width']/2,'y':r['y']+r['height']/2,'id':1}]})
     else:await ui.keyboard.down('b')
    async def up(cancel=False):
     if mobile:await cdp.send('Input.dispatchTouchEvent',{'type':'touchCancel'if cancel else'touchEnd','touchPoints':[]})
     else:await ui.keyboard.up('b')
    await down();await ui.evaluate('tick(.5)');await up(True);await ui.evaluate('tick(1)');assert await ui.evaluate('!__game.S.stats.kills&&!__game.S.player.skillHold')
-   await down();await ui.evaluate('tick(.5)');assert await ui.locator('#btnSkill').text_content()and await ui.evaluate('!!__game.S.player.skillHold'),(mobile,await ui.evaluate('({t:__game.S.t,over:__game.S.over,hold:__game.S.player.skillHold,down:document.querySelector("#btnSkill").className,choice:__game.assassinOpportunity(),keys:__game.S.keys})')); await ui.evaluate('tick(2)');await up();assert await ui.evaluate('__game.S.stats.dualAssassinations===1&&__game.S.tutI===2'),(mobile,await ui.evaluate('({stats:__game.S.stats,t:__game.S.t,step:__game.S.tutI,over:__game.S.over})'))
+   await down();await ui.evaluate('tick(.5)');assert await ui.locator('#btnAct').text_content()and await ui.evaluate('!!__game.S.player.skillHold'),(mobile,await ui.evaluate('({t:__game.S.t,over:__game.S.over,hold:__game.S.player.skillHold,down:document.querySelector("#btnSkill").className,choice:__game.assassinOpportunity(),keys:__game.S.keys})')); await ui.evaluate('tick(2)');await up();assert await ui.evaluate('__game.S.stats.dualAssassinations===1&&__game.S.tutI===2'),(mobile,await ui.evaluate('({stats:__game.S.stats,t:__game.S.t,step:__game.S.tutI,over:__game.S.over})'))
    if mobile:await ui.locator('#btnPause').click();await ui.locator('#btnSkillsPause').click()
    else:await ui.keyboard.press('k')
    assert await ui.locator('#skillScreen').is_visible();await ui.locator('[data-skill="chain"]').click()

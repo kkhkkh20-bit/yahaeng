@@ -34,7 +34,7 @@ function toggleEnvPicker() {
     b.addEventListener('pointerdown',ev=>ev.stopPropagation());
     b.addEventListener('click',ev=>{ev.preventDefault();selectEnvTarget(token);updateHUD(true);}); e.append(b);
   }
-  const b = document.createElement('button'); b.type = 'button'; b.textContent = '닫기'; b.onclick=()=>{closeEnvPicker();$('btnCycle').focus({preventScroll:true});}; e.append(b);
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = '닫기'; b.onclick=()=>{closeEnvPicker();(isTouch?$('btnCycle'):canvas).focus({preventScroll:true});}; e.append(b);
   positionEnvPicker();
   e.querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
 }

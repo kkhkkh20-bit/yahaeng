@@ -1,6 +1,6 @@
 STAGES.push({
  id:'tS',no:'00',name:'연습 5 · 암살 기술',sub:'선택 연습 · 동시 암살과 연속 암살',tutorial:true,skillPractice:true,noSupport:true,noAmbientChats:true,
- mission:'동시 암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. B·기술 버튼으로도 사용할 수 있다.',
+ mission:'동시 암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. PC에서는 B를 길게 눌러도 사용할 수 있다.',
  W:32,H:18,start:[3,9],exit:[28,13],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,bare:true,kunai:0,coins:0,items:[],itemName:'',itemNames:[],well:'manhole',
  build(m){m.fill(0,0,31,17,',');m.rect(0,0,31,17);m.fill(1,7,30,11,'.');m.fill(1,6,30,6,'=');m.fill(1,12,30,12,'=');m.many('Z',[[14,7],[14,8],[14,10],[14,11]]);m.many('T',[[4,3],[11,3],[20,3],[28,3],[4,15],[25,15]]);},
  lamps:[[8,6,350,1],[21,6,400,1]],wires:[],roofs:[],bricks:[],

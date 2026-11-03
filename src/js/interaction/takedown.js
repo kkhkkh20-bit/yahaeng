@@ -127,8 +127,10 @@ function killGuard(g, mode, where, quiet) {
   play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); if(!g.pairDown)after(.18,()=>{if(!S.over)play('thud',.45);}); S.shakeT = quiet ? 0.12 : 0.18;
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
-  if(pixelFxEnabled())spawnEffect(quiet?'dust':'strike',{x:g.x,y:g.y-18,fl:flOf(g),z:g.z||0},{angle:quiet?0:S.player.a,scale:quiet?.5:.8});
-  else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
+  if(intent?.visual!=='assassin'){
+    if(pixelFxEnabled())spawnEffect(quiet?'dust':'strike',{x:g.x,y:g.y-18,fl:flOf(g),z:g.z||0},{angle:quiet?0:S.player.a,scale:quiet?.5:.8});
+    else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
+  }
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);

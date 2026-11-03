@@ -5,7 +5,7 @@ function closeLoadout(focus=false){
   loadoutOpen=false;$('loadout').hidden=true;$('loadoutShade').hidden=true;
   $('btnToolNext').setAttribute('aria-expanded','false');document.body.classList.remove('loadout-open');
   document.body.classList.toggle('inspecting',hudInspecting());
-  if(focus)$('btnToolNext').focus({preventScroll:true});
+  if(focus)(isTouch?$('btnToolNext'):canvas).focus({preventScroll:true});
 }
 function toggleLoadout(){
   if(loadoutOpen){closeLoadout(true);return;}
@@ -18,7 +18,7 @@ function toggleLoadout(){
 }
 function handleLoadoutKey(e){
   e.stopPropagation();
-  if(e.code==='Escape'){e.preventDefault();closeLoadout(true);return;}
+  if(e.code==='Escape'||e.code==='KeyI'){e.preventDefault();closeLoadout(true);return;}
   if(e.code==='Tab'){
     e.preventDefault();const buttons=[...$('loadout').querySelectorAll('button')].filter(b=>!b.disabled&&!b.hidden&&b.getBoundingClientRect().width),i=buttons.indexOf(document.activeElement);
     buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length]?.focus({preventScroll:true});return;
@@ -27,6 +27,7 @@ function handleLoadoutKey(e){
   if(!['Enter','Space'].includes(e.code))e.preventDefault();
 }
 function initLoadout(){
+  $('loadout').querySelector('p').textContent=isTouch?'도구를 고른 뒤 화면의 도구 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
   $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
   $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
   $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});

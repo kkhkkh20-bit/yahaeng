@@ -1,4 +1,13 @@
 // A held input prepares a lethal skill. Victims are locked by id, not retargeted.
+// Shared contact/recovery beats keep the sprite, actual hit and VFX on one clock.
+const ASSASSIN_BEATS={firstHit:.34,dualHit:.41,move:.62,secondHit:.25,firstEnd:1.05,secondEnd:.8,stop:.055};
+function assassinAttackFrame(A,frames){
+  const second=A.phase==='second',hit=A.hits[second?1:0],wind=second?ASSASSIN_BEATS.secondHit:ASSASSIN_BEATS.firstHit;
+  const t=S.t-(second?A.secondAt:A.t0),contact=Math.max(1,Math.round((frames-1)/3));
+  if(hit==null)return Math.min(contact-1,Math.floor(clamp(t/wind,0,1)*contact));
+  const recovery=(second?ASSASSIN_BEATS.secondEnd:ASSASSIN_BEATS.firstEnd)-wind;
+  return Math.min(frames-1,contact+Math.floor(Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact)));
+}
 function beginAssassinSkill(group='skill',tap=null){
   if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
   const choice=assassinOpportunity(),source=combatSource(group);
@@ -29,12 +38,13 @@ function commitAssassinHit(A,index){
   const P=S.player,g=assassinAt(A.ids[index]);
   if(!skillVictimStillValid(g,P,66))return false;
   A.hits[index]=S.t;P.a=Math.atan2(g.y-P.y,g.x-P.x);
-  g.doomed=false;g.takedownIntent={source:null,lethal:true,assailantLook:witnessedAssailant(g)};
+  g.doomed=false;g.takedownIntent={source:null,lethal:true,visual:'assassin',assailantLook:witnessedAssailant(g)};
   S.koNext=false;S.lethalNext=true;g.pairDown=true;
   try{killGuard(g,null,null,true);}finally{delete g.pairDown;}
   const c=S.corpses.find(c=>c.guardId===g.id&&!c.ko);
   if(!c)return false;
-  c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.65,angle:P.a});
+  c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.6,alpha:.8,angle:P.a,startAt:.05});
+  S.hitStop=Math.max(S.hitStop||0,ASSASSIN_BEATS.stop);
   if(index===0){S.skillReadyAt=S.t+ASSASSIN_SKILLS[A.key].cooldown*(skillOn('flow')?.8:1);S.stats.assassinUses=(S.stats.assassinUses||0)+1;}
   return true;
 }
@@ -55,13 +65,13 @@ function updateAssassinSkill(P,dt){
   if(flOf(P)!==A.fl||(P.z||0)!==A.z||P.hurtT>0||P.hide||P.carrying||P.captive){cancelAssassinSkill();return false;}
   P.vx=P.vy=0;P.moving=false;P.hidden=false;P.light=lightAt(P.x,P.y,false);
   const t=S.t-A.t0;
-  if(A.hits[0]==null&&t>=.34&&!commitAssassinHit(A,0)){cancelAssassinSkill();return false;}
+  if(A.hits[0]==null&&t>=ASSASSIN_BEATS.firstHit&&!commitAssassinHit(A,0)){cancelAssassinSkill();return false;}
   if(A.key==='dual'){
     if(dist(P.x,P.y,A.x,A.y)>8){cancelAssassinSkill();return false;}
-    if(A.hits[1]==null&&t>=.41&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
-    if(t>=1.05)finishAssassinSkill(A);return true;
+    if(A.hits[1]==null&&t>=ASSASSIN_BEATS.dualHit&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+    if(t>=ASSASSIN_BEATS.firstEnd)finishAssassinSkill(A);return true;
   }
-  if(t<.62)return true;
+  if(t<ASSASSIN_BEATS.move)return true;
   const second=assassinAt(A.ids[1]);
   if(A.phase==='first'){
     if(!skillVictimStillValid(second,P,195)){cancelAssassinSkill();return false;}
@@ -72,10 +82,14 @@ function updateAssassinSkill(P,dt){
     if(!skillVictimStillValid(second,P,195)||!assassinPath(P,A.to)){cancelAssassinSkill();return false;}
     const f=clamp((S.t-A.moveAt)/A.moveDur,0,1),x=P.x,y=P.y;
     P.x=A.from.x+(A.to.x-A.from.x)*f;P.y=A.from.y+(A.to.y-A.from.y)*f;P.a=Math.atan2(A.to.y-y,A.to.x-x);P.moving=true;advancePlayerGait(P,x,y,dt,SPD.run);
+    if(!reducedFxMotion.matches&&pixelFxEnabled()&&dist(x,y,P.x,P.y)>0){
+      const trail=A.trail||(A.trail=[]),last=trail.at(-1);
+      if(!last||dist(last.x,last.y,x,y)>=10){trail.push({x,y,a:P.a,t:S.t,frame:Math.floor(S.t*12.7)%(PR?.anims?.run?.[1]||8)});if(trail.length>3)trail.shift();}
+    }
     if(f>=1){A.phase='second';A.secondAt=S.t;second.doomed=true;endChat(second);P.a=Math.atan2(second.y-P.y,second.x-P.x);}return true;
   }
-  if(A.hits[1]==null&&S.t-A.secondAt>=.25&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
-  if(S.t-A.secondAt>=.8)finishAssassinSkill(A);return true;
+  if(A.hits[1]==null&&S.t-A.secondAt>=ASSASSIN_BEATS.secondHit&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+  if(S.t-A.secondAt>=ASSASSIN_BEATS.secondEnd)finishAssassinSkill(A);return true;
 }
 function finishAssassinSkill(A){
   if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;}
@@ -83,8 +97,14 @@ function finishAssassinSkill(A){
 }
 function drawAssassinActors(P,key,alpha=1){
   const A=P.assassinAnim;if(!A)return false;
-  const t=S.t-A.t0,move=A.phase==='move',attackT=A.phase==='second'?S.t-A.secondAt:t;
-  const fi=PR?.anims?.stab?Math.min(PR.anims.stab[1]-1,Math.floor(clamp(attackT/1.05,0,1)*PR.anims.stab[1])):0;
+  const move=A.phase==='move',fi=assassinAttackFrame(A,PR?.anims?.stab?.[1]||10);
+  // Three short-lived snapshots of our actual directional sprite, never a dummy actor.
+  if(!reducedFxMotion.matches)for(const ghost of A.trail||[]){
+    const age=S.t-ghost.t;if(age<0||age>=.14)continue;
+    const fade=alpha*.18*(1-age/.14)*(.3+.7*ambientLightAt(ghost.x,ghost.y,!!P.z));
+    if(usePR(key))drawPR(key,ghost.x,ghost.y,ghost.a,'run',0,fade,1,0,ghost.frame);
+    else drawChar(key,ghost.x,ghost.y,ghost.a,true,fade,3,false);
+  }
   if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
   for(let i=0;i<A.ids.length;i++){
     const g=assassinAt(A.ids[i]);if(!g)continue;

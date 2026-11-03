@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------- 입력
-const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+// Touch-capable PCs still use the keyboard HUD when their primary pointer is a mouse.
+const isTouch = matchMedia('(pointer: coarse)').matches;
 document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
@@ -51,7 +52,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
-  if (e.code === 'KeyF' || e.code === 'KeyV') startAim('key');
+  if (e.code === 'KeyF' || e.code === 'KeyV') { if(input.padWhistle&&!S.player.captive)whistle();else startAim('key'); }
   if(e.code==='KeyB')beginAssassinSkill();
   if(e.code==='KeyK')openAssassinMenu();
   if (e.code === 'KeyR') cycleMoveLock();
@@ -62,7 +63,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyN') toggleMute();
   if (e.code === 'KeyM') toggleTactical();
   if (e.code === 'KeyG') whistle();
-  if (e.code === 'Tab') cycleEnv();  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'KeyI') { e.preventDefault(); toggleLoadout(); }
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
@@ -91,7 +93,7 @@ window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadou
 $('envPicker').addEventListener('keydown',e=>{
   if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
   if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
-  if(e.code==='Escape'){e.preventDefault();closeEnvPicker();$('btnCycle').focus({preventScroll:true});}
+  if(e.code==='Escape'){e.preventDefault();closeEnvPicker();(isTouch?$('btnCycle'):canvas).focus({preventScroll:true});}
 });
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
 

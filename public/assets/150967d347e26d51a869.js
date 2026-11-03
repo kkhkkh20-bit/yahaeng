@@ -944,7 +944,7 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
 });
 STAGES.push({
  id:'tS',no:'00',name:'연습 5 · 암살 기술',sub:'선택 연습 · 동시 암살과 연속 암살',tutorial:true,skillPractice:true,noSupport:true,noAmbientChats:true,
- mission:'동시 암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. B·기술 버튼으로도 사용할 수 있다.',
+ mission:'동시 암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. PC에서는 B를 길게 눌러도 사용할 수 있다.',
  W:32,H:18,start:[3,9],exit:[28,13],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,bare:true,kunai:0,coins:0,items:[],itemName:'',itemNames:[],well:'manhole',
  build(m){m.fill(0,0,31,17,',');m.rect(0,0,31,17);m.fill(1,7,30,11,'.');m.fill(1,6,30,6,'=');m.fill(1,12,30,12,'=');m.many('Z',[[14,7],[14,8],[14,10],[14,11]]);m.many('T',[[4,3],[11,3],[20,3],[28,3],[4,15],[25,15]]);},
  lamps:[[8,6,350,1],[21,6,400,1]],wires:[],roofs:[],bricks:[],
@@ -2085,12 +2085,13 @@ function drawKitBuilding(b) {
 const FX_META=A.pixelfx||null,FX_LIMIT=24;
 const fxAtlas=FX_META?Object.assign(new Image(),{src:FX_META.src}):null;
 const pixelFxEnabled=()=>!!FX_META&&!STAGE?.artSlice;
+const reducedFxMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function spawnEffect(kind,at,opts={}) {
   if(!S||!at||!pixelFxEnabled()||!FX_META.effects[kind]||!Number.isFinite(at.x)||!Number.isFinite(at.y))return false;
   const fl=at.fl??flOf(S.player),z=at.z??S.player.z??0;
   if(fl!==flOf(S.player)||Math.abs(at.x-S.player.x)>900||Math.abs(at.y-S.player.y)>900)return false;
-  const list=S.vfx||(S.vfx=[]),duration=FX_META.effects[kind].duration;
-  list.push({kind,x:at.x,y:at.y,fl,z,t0:S.t,duration,scale:opts.scale??1,angle:opts.angle||0,alpha:opts.alpha??1});
+  const list=S.vfx||(S.vfx=[]),m=FX_META.effects[kind],offset=clamp(opts.startAt??0,0,Math.max(0,m.duration-1/m.fps)),duration=m.duration-offset;
+  list.push({kind,x:at.x,y:at.y,fl,z,t0:S.t,duration,offset,scale:opts.scale??1,angle:opts.angle||0,alpha:opts.alpha??1});
   if(list.length>FX_LIMIT)list.splice(0,list.length-FX_LIMIT);
   return true;
 }
@@ -2103,7 +2104,7 @@ function drawEffects(P,openB) {
     const b=bldAt(Math.floor(f.x/TILE),Math.floor(f.y/TILE));
     if(!tactical&&!f.z&&b>=0&&b!==openB)continue;
     const m=FX_META.effects[f.kind],t=S.t-f.t0;if(t<0||t>=f.duration)continue;
-    const rect=m.frames[Math.min(m.frames.length-1,Math.floor(t*m.fps))];
+    const rect=m.frames[Math.min(m.frames.length-1,Math.floor((t+(f.offset||0))*m.fps))];
     const fade=clamp((f.duration-t)/.12,0,1),physical=['leaf','dust','strike','impact'].includes(f.kind);
     ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);ctx.scale(f.scale,f.scale);ctx.imageSmoothingEnabled=false;
     ctx.globalAlpha=f.alpha*fade*(physical?(.3+.7*ambientLightAt(f.x,f.y,!!f.z)):1);
@@ -10512,8 +10513,10 @@ function killGuard(g, mode, where, quiet) {
   play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); if(!g.pairDown)after(.18,()=>{if(!S.over)play('thud',.45);}); S.shakeT = quiet ? 0.12 : 0.18;
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
-  if(pixelFxEnabled())spawnEffect(quiet?'dust':'strike',{x:g.x,y:g.y-18,fl:flOf(g),z:g.z||0},{angle:quiet?0:S.player.a,scale:quiet?.5:.8});
-  else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
+  if(intent?.visual!=='assassin'){
+    if(pixelFxEnabled())spawnEffect(quiet?'dust':'strike',{x:g.x,y:g.y-18,fl:flOf(g),z:g.z||0},{angle:quiet?0:S.player.a,scale:quiet?.5:.8});
+    else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
+  }
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   S.corpses.push(c);
@@ -10536,6 +10539,15 @@ function killGuard(g, mode, where, quiet) {
 // 사고사: 칼자국 없이 죽는다. 시체를 봐도 '사고'로 여겨 수색·비명이 없다 (옮기면 사고로 보이지 않는다)
 
 // A held input prepares a lethal skill. Victims are locked by id, not retargeted.
+// Shared contact/recovery beats keep the sprite, actual hit and VFX on one clock.
+const ASSASSIN_BEATS={firstHit:.34,dualHit:.41,move:.62,secondHit:.25,firstEnd:1.05,secondEnd:.8,stop:.055};
+function assassinAttackFrame(A,frames){
+  const second=A.phase==='second',hit=A.hits[second?1:0],wind=second?ASSASSIN_BEATS.secondHit:ASSASSIN_BEATS.firstHit;
+  const t=S.t-(second?A.secondAt:A.t0),contact=Math.max(1,Math.round((frames-1)/3));
+  if(hit==null)return Math.min(contact-1,Math.floor(clamp(t/wind,0,1)*contact));
+  const recovery=(second?ASSASSIN_BEATS.secondEnd:ASSASSIN_BEATS.firstEnd)-wind;
+  return Math.min(frames-1,contact+Math.floor(Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact)));
+}
 function beginAssassinSkill(group='skill',tap=null){
   if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
   const choice=assassinOpportunity(),source=combatSource(group);
@@ -10566,12 +10578,13 @@ function commitAssassinHit(A,index){
   const P=S.player,g=assassinAt(A.ids[index]);
   if(!skillVictimStillValid(g,P,66))return false;
   A.hits[index]=S.t;P.a=Math.atan2(g.y-P.y,g.x-P.x);
-  g.doomed=false;g.takedownIntent={source:null,lethal:true,assailantLook:witnessedAssailant(g)};
+  g.doomed=false;g.takedownIntent={source:null,lethal:true,visual:'assassin',assailantLook:witnessedAssailant(g)};
   S.koNext=false;S.lethalNext=true;g.pairDown=true;
   try{killGuard(g,null,null,true);}finally{delete g.pairDown;}
   const c=S.corpses.find(c=>c.guardId===g.id&&!c.ko);
   if(!c)return false;
-  c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.65,angle:P.a});
+  c.skillAnimating=true;spawnEffect('strike',{x:g.x,y:g.y-20,fl:flOf(g),z:g.z||0},{scale:.6,alpha:.8,angle:P.a,startAt:.05});
+  S.hitStop=Math.max(S.hitStop||0,ASSASSIN_BEATS.stop);
   if(index===0){S.skillReadyAt=S.t+ASSASSIN_SKILLS[A.key].cooldown*(skillOn('flow')?.8:1);S.stats.assassinUses=(S.stats.assassinUses||0)+1;}
   return true;
 }
@@ -10592,13 +10605,13 @@ function updateAssassinSkill(P,dt){
   if(flOf(P)!==A.fl||(P.z||0)!==A.z||P.hurtT>0||P.hide||P.carrying||P.captive){cancelAssassinSkill();return false;}
   P.vx=P.vy=0;P.moving=false;P.hidden=false;P.light=lightAt(P.x,P.y,false);
   const t=S.t-A.t0;
-  if(A.hits[0]==null&&t>=.34&&!commitAssassinHit(A,0)){cancelAssassinSkill();return false;}
+  if(A.hits[0]==null&&t>=ASSASSIN_BEATS.firstHit&&!commitAssassinHit(A,0)){cancelAssassinSkill();return false;}
   if(A.key==='dual'){
     if(dist(P.x,P.y,A.x,A.y)>8){cancelAssassinSkill();return false;}
-    if(A.hits[1]==null&&t>=.41&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
-    if(t>=1.05)finishAssassinSkill(A);return true;
+    if(A.hits[1]==null&&t>=ASSASSIN_BEATS.dualHit&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+    if(t>=ASSASSIN_BEATS.firstEnd)finishAssassinSkill(A);return true;
   }
-  if(t<.62)return true;
+  if(t<ASSASSIN_BEATS.move)return true;
   const second=assassinAt(A.ids[1]);
   if(A.phase==='first'){
     if(!skillVictimStillValid(second,P,195)){cancelAssassinSkill();return false;}
@@ -10609,10 +10622,14 @@ function updateAssassinSkill(P,dt){
     if(!skillVictimStillValid(second,P,195)||!assassinPath(P,A.to)){cancelAssassinSkill();return false;}
     const f=clamp((S.t-A.moveAt)/A.moveDur,0,1),x=P.x,y=P.y;
     P.x=A.from.x+(A.to.x-A.from.x)*f;P.y=A.from.y+(A.to.y-A.from.y)*f;P.a=Math.atan2(A.to.y-y,A.to.x-x);P.moving=true;advancePlayerGait(P,x,y,dt,SPD.run);
+    if(!reducedFxMotion.matches&&pixelFxEnabled()&&dist(x,y,P.x,P.y)>0){
+      const trail=A.trail||(A.trail=[]),last=trail.at(-1);
+      if(!last||dist(last.x,last.y,x,y)>=10){trail.push({x,y,a:P.a,t:S.t,frame:Math.floor(S.t*12.7)%(PR?.anims?.run?.[1]||8)});if(trail.length>3)trail.shift();}
+    }
     if(f>=1){A.phase='second';A.secondAt=S.t;second.doomed=true;endChat(second);P.a=Math.atan2(second.y-P.y,second.x-P.x);}return true;
   }
-  if(A.hits[1]==null&&S.t-A.secondAt>=.25&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
-  if(S.t-A.secondAt>=.8)finishAssassinSkill(A);return true;
+  if(A.hits[1]==null&&S.t-A.secondAt>=ASSASSIN_BEATS.secondHit&&!commitAssassinHit(A,1)){cancelAssassinSkill();return false;}
+  if(S.t-A.secondAt>=ASSASSIN_BEATS.secondEnd)finishAssassinSkill(A);return true;
 }
 function finishAssassinSkill(A){
   if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;}
@@ -10620,8 +10637,14 @@ function finishAssassinSkill(A){
 }
 function drawAssassinActors(P,key,alpha=1){
   const A=P.assassinAnim;if(!A)return false;
-  const t=S.t-A.t0,move=A.phase==='move',attackT=A.phase==='second'?S.t-A.secondAt:t;
-  const fi=PR?.anims?.stab?Math.min(PR.anims.stab[1]-1,Math.floor(clamp(attackT/1.05,0,1)*PR.anims.stab[1])):0;
+  const move=A.phase==='move',fi=assassinAttackFrame(A,PR?.anims?.stab?.[1]||10);
+  // Three short-lived snapshots of our actual directional sprite, never a dummy actor.
+  if(!reducedFxMotion.matches)for(const ghost of A.trail||[]){
+    const age=S.t-ghost.t;if(age<0||age>=.14)continue;
+    const fade=alpha*.18*(1-age/.14)*(.3+.7*ambientLightAt(ghost.x,ghost.y,!!P.z));
+    if(usePR(key))drawPR(key,ghost.x,ghost.y,ghost.a,'run',0,fade,1,0,ghost.frame);
+    else drawChar(key,ghost.x,ghost.y,ghost.a,true,fade,3,false);
+  }
   if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
   for(let i=0;i<A.ids.length;i++){
     const g=assassinAt(A.ids[i]);if(!g)continue;
@@ -10714,7 +10737,7 @@ function updateTechWork(P,dt){
  P.vx=P.vy=0;P.moving=false;P.light=lightAt(P.x,P.y);P.hidden=false;w.t+=dt;
  if(w.t>=(w.kind==='hack'?1.5:1)){
   if(w.kind==='radio'){P.hasRadio=true;if(!S.skillGrants.radio){P.radioCharges=2;S.skillGrants.radio=true;}toast('무전기 확보 · 도구를 다시 사용해 점검 위치를 지시',2.6);}
-  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('dart',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.5});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
+  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
   P.techWork=null;play('switch',.3);syncTools();
  }return true;
 }
@@ -13674,7 +13697,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[공격]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -13981,7 +14004,7 @@ function syncTutorialCue(){
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
+  const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnAct',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }
 
@@ -14021,7 +14044,7 @@ function toggleEnvPicker() {
     b.addEventListener('pointerdown',ev=>ev.stopPropagation());
     b.addEventListener('click',ev=>{ev.preventDefault();selectEnvTarget(token);updateHUD(true);}); e.append(b);
   }
-  const b = document.createElement('button'); b.type = 'button'; b.textContent = '닫기'; b.onclick=()=>{closeEnvPicker();$('btnCycle').focus({preventScroll:true});}; e.append(b);
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = '닫기'; b.onclick=()=>{closeEnvPicker();(isTouch?$('btnCycle'):canvas).focus({preventScroll:true});}; e.append(b);
   positionEnvPicker();
   e.querySelector('button[aria-pressed="true"]')?.focus({preventScroll:true});
 }
@@ -14073,7 +14096,7 @@ function closeLoadout(focus=false){
   loadoutOpen=false;$('loadout').hidden=true;$('loadoutShade').hidden=true;
   $('btnToolNext').setAttribute('aria-expanded','false');document.body.classList.remove('loadout-open');
   document.body.classList.toggle('inspecting',hudInspecting());
-  if(focus)$('btnToolNext').focus({preventScroll:true});
+  if(focus)(isTouch?$('btnToolNext'):canvas).focus({preventScroll:true});
 }
 function toggleLoadout(){
   if(loadoutOpen){closeLoadout(true);return;}
@@ -14086,7 +14109,7 @@ function toggleLoadout(){
 }
 function handleLoadoutKey(e){
   e.stopPropagation();
-  if(e.code==='Escape'){e.preventDefault();closeLoadout(true);return;}
+  if(e.code==='Escape'||e.code==='KeyI'){e.preventDefault();closeLoadout(true);return;}
   if(e.code==='Tab'){
     e.preventDefault();const buttons=[...$('loadout').querySelectorAll('button')].filter(b=>!b.disabled&&!b.hidden&&b.getBoundingClientRect().width),i=buttons.indexOf(document.activeElement);
     buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length]?.focus({preventScroll:true});return;
@@ -14095,6 +14118,7 @@ function handleLoadoutKey(e){
   if(!['Enter','Space'].includes(e.code))e.preventDefault();
 }
 function initLoadout(){
+  $('loadout').querySelector('p').textContent=isTouch?'도구를 고른 뒤 화면의 도구 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
   $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
   $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
   $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});
@@ -14388,7 +14412,7 @@ function drawAssassinTargets(){
 function updateAssassinPractice(){
   if(!STAGE.skillPractice||S.over||S.player.assassinAnim||S.player.skillHold)return;
   const step=S.tutI||0,ids=step<2?[0,1]:step>=3&&step<5?[2,3]:[];
-  if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 길게 누르거나 B·기술 버튼을 사용하자.');
+  if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 1초 동안 누르거나 PC에서 B를 길게 누르자.');
 }
 
 // ---------------------------------------------------------------- 루프
@@ -14546,7 +14570,7 @@ function installGameApi() {
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
-    ASSASSIN_SKILLS, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {
@@ -14589,7 +14613,8 @@ function installGameApi() {
 }
 
 // ---------------------------------------------------------------- 입력
-const isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+// Touch-capable PCs still use the keyboard HUD when their primary pointer is a mouse.
+const isTouch = matchMedia('(pointer: coarse)').matches;
 document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
@@ -14641,7 +14666,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
-  if (e.code === 'KeyF' || e.code === 'KeyV') startAim('key');
+  if (e.code === 'KeyF' || e.code === 'KeyV') { if(input.padWhistle&&!S.player.captive)whistle();else startAim('key'); }
   if(e.code==='KeyB')beginAssassinSkill();
   if(e.code==='KeyK')openAssassinMenu();
   if (e.code === 'KeyR') cycleMoveLock();
@@ -14652,7 +14677,8 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyN') toggleMute();
   if (e.code === 'KeyM') toggleTactical();
   if (e.code === 'KeyG') whistle();
-  if (e.code === 'Tab') cycleEnv();  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'Tab') { if(e.shiftKey)toggleEnvPicker();else cycleEnv(); }  // 겹친 대상 중 다른 것 고르기
+  if (e.code === 'KeyI') { e.preventDefault(); toggleLoadout(); }
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
@@ -14681,7 +14707,7 @@ window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadou
 $('envPicker').addEventListener('keydown',e=>{
   if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
   if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
-  if(e.code==='Escape'){e.preventDefault();closeEnvPicker();$('btnCycle').focus({preventScroll:true});}
+  if(e.code==='Escape'){e.preventDefault();closeEnvPicker();(isTouch?$('btnCycle'):canvas).focus({preventScroll:true});}
 });
 canvas.addEventListener('wheel', e => { if (!running) return; e.preventDefault(); setZoom(userZoom * (e.deltaY > 0 ? 0.92 : 1.08)); }, { passive: false });
 

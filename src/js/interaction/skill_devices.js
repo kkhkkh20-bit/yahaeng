@@ -76,7 +76,7 @@ function updateTechWork(P,dt){
  P.vx=P.vy=0;P.moving=false;P.light=lightAt(P.x,P.y);P.hidden=false;w.t+=dt;
  if(w.t>=(w.kind==='hack'?1.5:1)){
   if(w.kind==='radio'){P.hasRadio=true;if(!S.skillGrants.radio){P.radioCharges=2;S.skillGrants.radio=true;}toast('무전기 확보 · 도구를 다시 사용해 점검 위치를 지시',2.6);}
-  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('dart',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.5});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
+  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
   P.techWork=null;play('switch',.3);syncTools();
  }return true;
 }

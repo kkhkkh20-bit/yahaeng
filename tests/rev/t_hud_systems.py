@@ -23,7 +23,7 @@ async def main():
    assert not await q.evaluate('__game.hudInspecting()');assert await q.evaluate('__game.S.t')>a['t'];assert await q.evaluate('__game.S.player.x')>x0+5,'leaving objectives does not move the player';assert not await q.locator('#hud .obj').evaluate('e=>e.classList.contains("open")')
    await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guards=[];Object.assign(P,{fl:0,z:0,trav:null,jump:null,interact:null});S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];G.updateHUD(true);__step(2);if(G.envChoices().length<2)throw Error('no overlapping body actions');}''')
    if touch:await q.locator('#btnCycle').tap()
-   else:await q.locator('#btnCycle').click()
+   else:await q.keyboard.press('Shift+Tab')
    assert await q.locator('#envPicker').is_visible();await q.screenshot(path=str(O/f'picker-{"touch"if touch else"pc"}.png'));a=await q.evaluate('__game.S.t');await q.evaluate('__step(120)');assert await q.evaluate('__game.S.t')==a,'action picker continues world time'
    if not touch:
     first=await q.evaluate('document.activeElement.dataset.envToken');await q.keyboard.press('ArrowDown');assert await q.evaluate('document.activeElement.dataset.envToken')!=first;assert await q.locator('#envPicker').is_visible()
