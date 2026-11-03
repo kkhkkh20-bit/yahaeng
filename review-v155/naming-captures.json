@@ -1,0 +1,93 @@
+{
+  "method": "Actual production packages, fresh 4P, same selected skill and viewport, original screenshots",
+  "captures": [
+    {
+      "image": "before-names-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v154",
+      "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+      "imageSha256": "70ea104457458c5c8169712a2431c27326a78c65cdd369edf2185258e9bdeed0",
+      "errors": []
+    },
+    {
+      "image": "before-names-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v154",
+      "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+      "imageSha256": "11d9f68d00ba941a591abbe67daced4daeefc842d075e92ab27625a2198c68ac",
+      "errors": []
+    },
+    {
+      "image": "before-names-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v154",
+      "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+      "imageSha256": "13f39105487d1e87b80bb659923ec27e16b48170e17753cc65daf7e852c0db88",
+      "errors": []
+    },
+    {
+      "image": "before-names-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v154",
+      "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+      "imageSha256": "6a8354c50acca9a9b8c3cd3f6e0d45407b55a45361d6b8f430afdb4f8ea5e1ca",
+      "errors": []
+    },
+    {
+      "image": "after-names-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "1455df10efe8911c2afdd53d1dd3a36e7bb59d929a628a8cf247f48c8f41338d",
+      "errors": []
+    },
+    {
+      "image": "after-names-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "47e5e2a275c574e7533a4478a3e02353b94a5c9082fde8b93f58a829a4144952",
+      "errors": []
+    },
+    {
+      "image": "after-names-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "c2440b3f37953409ef9b420e8d915b4427e908a20ce4c793f1cabf91e31be06c",
+      "errors": []
+    },
+    {
+      "image": "after-names-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "7eb27da7a9ec5c44abd5fd2f44a1dad20a1420e1fe33463e9d03c55bdfd8a13e",
+      "errors": []
+    }
+  ]
+}

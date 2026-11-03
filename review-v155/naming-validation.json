@@ -1,0 +1,41 @@
+{
+  "version": "v155",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v155",
+    "source_sha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+    "html_bytes": 122702,
+    "source_bytes": 11108461,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8382617,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8382617
+  },
+  "naming": {
+    "dual": [
+      "쌍암살",
+      "동시 암살"
+    ],
+    "quietCrouch": [
+      "낮은 발걸음",
+      "조용한 잠행"
+    ],
+    "swiftCrouch": [
+      "낮은 보행",
+      "빠른 잠행"
+    ],
+    "flow": [
+      "연계 정비",
+      "빠른 재정비"
+    ]
+  },
+  "behaviorChanges": false,
+  "verified": [
+    "Four viewport render and font checks",
+    "Existing skill ownership, purchase, effects and movement checks",
+    "Existing simultaneous/chain assassination native inputs and cancellation checks",
+    "PC and touch first two tutorials and first contract entry"
+  ],
+  "detection": "6 inherited spacing/10px briefing legend findings; no CSS introduced by rename; recorded, not counted as a clean detector pass"
+}
