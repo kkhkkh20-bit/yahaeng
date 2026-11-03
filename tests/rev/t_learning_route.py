@@ -6,7 +6,7 @@ R=Path(__file__).resolve().parents[2];O=R/'build/lessons-v159';O.mkdir(exist_ok=
 async def main():
  checks=[]
  async with async_playwright()as p:
-  b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
+  b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100)
   checks=await q.evaluate('''()=>{
    const G=__game,out=[],check=(v,s)=>{if(!v)throw Error(s)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
    const order=['tB','t0','m2','tL','m4','tR','m6'],done={};
@@ -24,7 +24,7 @@ async def main():
   }''')
   await q.wait_for_timeout(1450);assert await q.evaluate('!__game.S.over&&(__game.S.tutI||0)===recoveryBefore&&__game.cpReady()'),'tutorial failure did not restore saved safe step';checks.append('real tutorial failure timer restores checkpoint, not whole lesson')
   for w,h in [(1440,900),(390,844),(844,390),(320,568)]:
-   z=await b.new_page(viewport={'width':w,'height':h},has_touch=w!=1440);z.on('pageerror',lambda e:errors.append(str(e)));await z.add_init_script('window.requestAnimationFrame=()=>0');await z.goto((R/'build/preview_city.html').as_uri());await z.wait_for_function('!!__game')
+   z=await b.new_page(viewport={'width':w,'height':h},has_touch=w!=1440);z.on('pageerror',lambda e:errors.append(str(e)));await z.add_init_script('window.requestAnimationFrame=()=>0');await z.goto((R/'build/preview_city.html').as_uri());await z.wait_for_function('!!window.__game',polling=100)
    await z.evaluate('''()=>{const G=__game;for(const id of ['tB','t0','tL','tR']){G.start(G.STAGES.findIndex(s=>s.id===id));for(let n=0;n<G.STAGE.steps.length;n++){G.S.tutI=n;G.updateHUD(true);const e=document.getElementById('objective'),box=document.querySelector('#hud .obj').getBoundingClientRect();if(e.scrollHeight>e.clientHeight+1||box.right>innerWidth||box.left<0)throw Error('clipped instruction '+id+':'+n);}}}''');await z.close()
   checks.append('all24 lesson instructions fit desktop, portrait, landscape and320px viewports');assert not errors,errors;await b.close()
  (O/'learning-checks.json').write_text(json.dumps({'checks':checks,'errors':errors,'method':'Controlled completion-record/step/failed-state fixtures; actual recovery timer and rendered DOM; separate native journeys verify playable lessons.'},ensure_ascii=False,indent=2));print('PASS','; '.join(checks))
