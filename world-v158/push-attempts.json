@@ -1,0 +1,58 @@
+[
+  {
+    "attempt": 1,
+    "at": "2026-11-03T08:13:16Z",
+    "results": {
+      "source": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      },
+      "pages": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      }
+    }
+  },
+  {
+    "attempt": 2,
+    "at": "2026-11-03T08:13:36Z",
+    "results": {
+      "source": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      },
+      "pages": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      }
+    }
+  },
+  {
+    "attempt": 3,
+    "at": "2026-11-03T08:13:56Z",
+    "results": {
+      "source": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      },
+      "pages": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      }
+    }
+  },
+  {
+    "attempt": 4,
+    "at": "2026-11-03T08:14:16Z",
+    "results": {
+      "source": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      },
+      "pages": {
+        "exit": 128,
+        "output": "remote: upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: Invalid argument|remote address:envoy://cloudflare_https_tunnel/\nfatal: unable to access 'https://github.com/kkhkkh20-bit/yahaeng.git/': The requested URL returned error: 503\n"
+      }
+    }
+  }
+]
