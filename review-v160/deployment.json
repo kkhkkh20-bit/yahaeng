@@ -1,6 +1,82 @@
 {
-  "status": "pending",
+  "status": "verified",
   "version": "v160",
   "sourcePackageSha256": "e75c953e9cf11aa80185858576b5e86de9a257951049838c29add1feb6588778",
-  "local": "55regressions; nativePC/touch fourlessons; publicpublication pending"
+  "runtimeCommit": "96d0cf0c18f59d3a688b8e502e3e82b17da3d810",
+  "pagesRuntimeCommit": "f003843777b0f350d3115e26cbc6bef6b009ecf3",
+  "verifiedAt": "2026-11-03T10:16:24Z",
+  "endpoints": {
+    "cloudflare": {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "packageFiles": 8,
+      "nativePCAndTouch": true,
+      "fourLessons": "completed",
+      "order": "tB→t0→m2; tL→tR→m4; m6 direct ledger entry and actual pin pickup",
+      "earlyCrouchRecovery": true,
+      "bodyDropRecovery": true,
+      "documentCueAssertions": true,
+      "evidence": "cloudflare-episodes.json"
+    },
+    "pages": {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "packageFiles": 8,
+      "nativePCAndTouch": true,
+      "fourLessons": "completed",
+      "order": "tB→t0→m2; tL→tR→m4; m6 direct ledger entry and actual pin pickup",
+      "earlyCrouchRecovery": true,
+      "bodyDropRecovery": true,
+      "documentCueAssertions": true,
+      "evidence": "pages-episodes.json"
+    }
+  },
+  "nativeBuilds": {
+    "attempt": 6,
+    "time": "2026-11-03T09:59:46Z",
+    "runtimeCommit": "96d0cf0c18f59d3a688b8e502e3e82b17da3d810",
+    "endpoints": {
+      "pages": {
+        "version": "v160",
+        "source_sha256": "e75c953e9cf11aa80185858576b5e86de9a257951049838c29add1feb6588778",
+        "matches": true
+      },
+      "cloudflare": {
+        "version": "v160",
+        "source_sha256": "e75c953e9cf11aa80185858576b5e86de9a257951049838c29add1feb6588778",
+        "matches": true
+      }
+    },
+    "workers": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/b5122881-d3db-4642-9bea-8eb521cb1f52"
+      }
+    ],
+    "pagesBuild": {
+      "status": "built",
+      "commit": "f003843777b0f350d3115e26cbc6bef6b009ecf3",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "local": {
+    "regressionScripts": 55,
+    "buildChecks": 7,
+    "reachability": "pass",
+    "controlledContractGuidance": "pass: known intel, prerequisites, manual routes, open doors/keys, body recovery and exit",
+    "nativeBasicEventsPerDevice": 18,
+    "nativeEpisodeEventsPerDevice": 14,
+    "originalComparisons": 32,
+    "requiredOriginalsIndependentlyReviewed": 22,
+    "independentVerdict": "ship"
+  },
+  "verification": "Cloudflare8file hashes viaHTTP; Pages8file hashes viaactualsame-origin browser fetch/WebCrypto because the managed proxy intermittently failed raw font downloads. Both compare exact same expected local bytes. Download-only retries happen before gameplay and never replace gameplay assertions.",
+  "limits": [
+    "No human novice study",
+    "No entire live-AI main-contract completion claim",
+    "No physical-phone FPS/thermal benchmark"
+  ],
+  "comparisonScope": "Same actual inputs for early-crouch case, actual m4entry/ledger; NEXT destination comparison only is a forcedresultfixture, notplaythrough evidence."
 }
