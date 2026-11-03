@@ -1,0 +1,28 @@
+[
+  {
+    "mobile": false,
+    "version": "v152",
+    "nativeInput": "keyboard Z",
+    "unlearned96pxAttackBlocked": true,
+    "purchases": [
+      "silentHands",
+      "reach"
+    ],
+    "learnedApproachMovedAndKO": true,
+    "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+    "pageErrors": []
+  },
+  {
+    "mobile": true,
+    "version": "v152",
+    "nativeInput": "touch attack",
+    "unlearned96pxAttackBlocked": true,
+    "purchases": [
+      "silentHands",
+      "reach"
+    ],
+    "learnedApproachMovedAndKO": true,
+    "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+    "pageErrors": []
+  }
+]

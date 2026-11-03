@@ -1,0 +1,134 @@
+[
+  {
+    "mode": "desktop",
+    "viewport": [
+      1440,
+      900
+    ],
+    "geometry": {
+      "pageOverflow": false,
+      "minButton": 54,
+      "branches": [
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "unfoldedNodes": 27,
+    "realEdges": 24,
+    "path": [
+      "kit",
+      "radio",
+      "hack",
+      "signal"
+    ],
+    "pathCost": 7,
+    "rightInspector": true,
+    "realPurchases": [
+      "silentHands",
+      "reach"
+    ],
+    "remainingPoints": 1,
+    "missionRewardPanels": 3,
+    "pageErrors": []
+  },
+  {
+    "mode": "mobile",
+    "viewport": [
+      390,
+      844
+    ],
+    "geometry": {
+      "pageOverflow": false,
+      "minButton": 54,
+      "branches": [
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "unfoldedNodes": 27,
+    "realEdges": 24,
+    "path": [
+      "kit",
+      "radio",
+      "hack",
+      "signal"
+    ],
+    "pathCost": 7,
+    "rightInspector": true,
+    "realPurchases": [
+      "silentHands",
+      "reach"
+    ],
+    "remainingPoints": 1,
+    "missionRewardPanels": 3,
+    "pageErrors": []
+  },
+  {
+    "mode": "landscape",
+    "viewport": [
+      844,
+      390
+    ],
+    "geometry": {
+      "pageOverflow": false,
+      "minButton": 54,
+      "branches": [
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "unfoldedNodes": 27,
+    "realEdges": 24,
+    "path": [
+      "kit",
+      "radio",
+      "hack",
+      "signal"
+    ],
+    "pathCost": 7,
+    "rightInspector": true,
+    "realPurchases": [
+      "silentHands",
+      "reach"
+    ],
+    "remainingPoints": 1,
+    "missionRewardPanels": 3,
+    "pageErrors": []
+  },
+  {
+    "mode": "small",
+    "viewport": [
+      320,
+      568
+    ],
+    "geometry": {
+      "pageOverflow": false,
+      "minButton": 54,
+      "branches": [
+        "block",
+        "block",
+        "block"
+      ]
+    },
+    "unfoldedNodes": 27,
+    "realEdges": 24,
+    "path": [
+      "kit",
+      "radio",
+      "hack",
+      "signal"
+    ],
+    "pathCost": 7,
+    "rightInspector": true,
+    "realPurchases": [
+      "silentHands",
+      "reach"
+    ],
+    "remainingPoints": 1,
+    "missionRewardPanels": 3,
+    "pageErrors": []
+  }
+]
