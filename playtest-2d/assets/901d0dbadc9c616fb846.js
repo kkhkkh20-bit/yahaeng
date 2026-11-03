@@ -627,7 +627,9 @@ const STAGES = [
   powerArea: [15, 12, 38, 25], powerName: "창고 마당 조명",
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   bare: true, candy: 0, noSupport: true, itemVerb: '챙기기', briefBy: '상황', kitStyle: 'industrial',
-  firstGoal: { text: '감방에서 나가기', where: '감금동 1층 감방', done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
+  firstGoal: { text: '감방에서 나가기', where: '감금동 1층 감방',
+    guide:S=>{const pin=S.keyItems.find(k=>k.key==='pin'&&!k.got),P=S.player;if(pin&&!(P.picks>0))return{text:'바닥의 머리핀 줍기',x:pin.x,y:pin.y,fl:pin.fl||0};const door=S.doors.filter(d=>d.locked&&d.keyLock&&!(d.fl||0)).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];return door?{text:'간수가 등을 돌리면 감방 문 앞에서 행동',x:door.x,y:door.y,fl:0}:null;},
+    done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
   build(m) {
     m.fill(0, 0, 43, 27, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 27, '#'); } for (let y = 0; y < 28; y++) m.set(0, y, '#');
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다
@@ -882,29 +884,28 @@ STAGES.push({
 });
 // The first visit teaches one action at a time, using the campaign's real rules.
 const FIRST_STEPS = {
-  id:'tB', no:'00', name:'연습 1 · 시야와 소리', sub:'기초 연습 (약 3분)', tutorial:true, firstSteps:true, trialSkills:['electric'],
-  mission:'보이는 곳과 들리는 소리를 구분하고, 풀숲에서 시선을 피해 빠져나온다.',
+  id:'tB', no:'00', name:'연습 1 · 시야와 소리', sub:'기초 연습 (약 3분)', tutorial:true, firstSteps:true, noSupport:true,noAmbientChats:true,
+  mission:'경비에게 들키지 않고 골목 남쪽 출구로 빠져나간다.',
   brief:'한 번에 한 가지씩 직접 익힌다. 실수하면 방금 배운 단계부터 다시 시작한다.',
   W:26,H:18,start:[2,10],exit:[3,14],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,
   well:'manhole',kunai:0,coins:0,bare:true,wires:[],roofs:[],bricks:[],challenges:[],
   build(m){
     m.fill(0,0,25,17,',');m.rect(0,0,25,17);
     m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');
-    m.many('B',[[8,10]]);m.many('H',[[20,8]]);
+    m.fill(6,9,8,9,'#'); // 낮은 골목 담 뒤로 시야를 끊고 빠져나온다.
+    m.many('B',[[9,10]]);m.many('H',[[20,8]]);
     m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);
   },
   lamps:[[3,7,130,1],[10,9,300,1],[22,7,160,1],[6,7,400,1]],
   guards:[{kind:'g1',tag:'practice',at:[10,6],post:90,still:true,radio:false}],
   items:[],itemName:'',itemNames:[],nextTutorial:'t0',
   steps:[
-    ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '작은 파란 발밑 고리가 내 위치다.', 'move'],
+    ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '내 캐릭터를 움직여 골목 남쪽 출구로 나가는 연습이다. 먼저 오른쪽 표시를 따라가자.', 'move'],
     ['{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', 'run'],
     [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 조금 이동':'{살금} 몸을 낮추고 조금 이동', (S,P)=>P.moving&&P.mode==='sneak'&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:6.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 밝은 곳에서는 멀리 본다.', 'move', 1.1],
-    ['연습용 전기 조작 · 스위치에서 {행동}', S=>!!S.lamps[3].off, S=>S.lamps[3].control||S.lamps[3], '빛을 끄면 적의 시야가 짧아진다. 이 기술은 연습용이다. 의뢰에서는 전기 조작을 배워야 한다.', 'env'],
-    ['아래쪽 어두운 길을 따라 이동', (S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24, S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48}, '어둠에서는 덜 보인다. 손전등과 발소리는 여전히 위험하다.', 'move'],
-    [(S,P)=>P.mode==='sneak'?'웅크린 채 풀숲 안으로 이동':'{살금} 웅크린 다음 풀숲 안으로 이동', (S,P)=>P.hidden&&!P.hide&&!P.trav&&Math.floor(P.x/48)===8&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '웅크려 들어가면 몸이 가려진다. 일어서거나 풀숲 밖으로 나오면 은폐가 풀린다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['풀숲에 숨은 채 {휘파람}', (S,P)=>P.hidden&&!!S.lessonWhistle?.heard&&!!S.lessonWhistle?.hidden, S=>S.bushes[0], '불을 꺼도 소리는 들린다. 소리 난 곳으로 적을 유인한다.', 'whistle'],
+    ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 그 바깥에서는 몸이 드러나도 보지 못한다.', 'move', 1.1],
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 풀숲 안으로 이동':'{살금} 웅크린 다음 풀숲 안으로 이동', (S,P)=>P.hidden&&!P.hide&&!P.trav&&Math.floor(P.x/48)===9&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '웅크려 들어가면 몸이 가려진다. 일어서거나 풀숲 밖으로 나오면 은폐가 풀린다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['풀숲에 숨은 채 {휘파람}', (S,P)=>P.hidden&&!!S.lessonWhistle?.heard&&!!S.lessonWhistle?.hidden, S=>S.bushes[0], '숨어 있어도 소리는 들린다. 적은 소리가 난 곳으로 확인하러 온다.', 'whistle'],
     ['{이동} 왼쪽 표시로 빠져나오기', (S,P)=>!P.hidden&&!P.hide&&P.x<6.7*48, ()=>({x:6*48,y:10.5*48}), '적이 소리 난 곳을 보는 동안 조용히 다른 쪽으로 빠진다.', 'move'],
     ['아래쪽 노란 원으로 이동', ()=>false, S=>S.exit, '시야를 피하고 소리를 줄인다. 다음 연습에서는 뒤에서 제압한다.', 'move']
   ]
@@ -917,19 +918,28 @@ for(const [id,n] of [['t0',2],['tI',3],['t1',4]]){
 
 STAGES.find(s=>s.id==='tI').sub='연습 · 신분 (선택, 약 4분)';
 
-// Interaction practice follows the perception lesson; cover and map tricks stay optional.
+// A short freight alley practices the campaign's close contact and physical cleanup.
 Object.assign(STAGES.find(s=>s.id==='t0'),{
-  disguise:true, name:'연습 2 · 뒤에서 제압', sub:'기초 연습 (약 2분)', dropGuards:[1,2,3],
-  mission:'등 뒤에서 붙잡고 기절시킨 뒤 옷을 바꾸고 흔적을 숨긴다.',
-  brief:'시야와 소리를 피해 등 뒤로 접근한다. 한 번에 한 행동씩 익힌다.',
+  name:'연습 2 · 제압과 몸 숨기기',sub:'의뢰 01 준비 · 물류 골목',disguise:false,
+  W:23,H:17,start:[2,10],exit:[20,10],startA:0,noSupport:true,noAmbientChats:true,bare:true,
+  dropGuards:[],items:[],itemName:'',itemNames:[],wires:[],roofs:[],bricks:[],keyBld:[],
+  mission:'골목 경비를 뒤에서 제압하고 풀숲에 숨긴 뒤 반대편 출구로 나간다.',
+  brief:'골목을 지키는 경비는 한 명이다. 풀숲에서 나와 등 뒤로 바짝 접근하고, 쓰러진 몸은 풀숲으로 옮긴다.',
+  build(m){
+    m.fill(0,0,22,16,',');m.rect(0,0,22,16);
+    m.fill(1,8,21,12,'.');m.fill(1,7,21,7,'=');m.fill(1,13,21,13,'=');
+    m.vacant(3,2,19,5,'lot','물류 적치장');m.fill(3,3,7,4,'U');m.fill(14,3,18,4,'U');
+    m.many('B',[[7,10],[7,11]]);m.many('T',[[2,3],[21,3],[3,15],[19,15]]);
+  },
+  lamps:[[5,7,180,1],[16,7,200,1]],
+  guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
   steps:[
-    [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 등 뒤 표시로 접근':'{살금} 등 뒤의 표시로 접근', (S,P,I)=>I.sneakToggle&&Math.hypot(P.x-(8.5*48-30),P.y-9.5*48)<24, ()=>({x:8.5*48-30,y:9.5*48}), '조용히 다가가면 뒤에서는 나를 보지 못한다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['등 뒤에서 {붙잡기}', (S,P)=>!!P.captive||S.guards[0].state==='DEAD', S=>S.guards[0], '붙잡은 뒤 가만히 있으면 심문한다.', 'grab'],
-    ['{공격} 짧게 눌렀다 떼기', S=>S.guards[0].state==='DEAD', S=>S.guards[0], '짧게 누르면 기절. 길게 누르면 처치.', 'attack'],
-    [(S,P)=>P.carrying?'{행동} · 먼저 내려놓기':S.envPickK==='dress'?'{행동} · 옷 갈아입기':'{대상}에서 옷 갈아입기 선택', (S,P)=>P.outfit==='crew', S=>S.corpses[0], '행동이 여러 개면 대상을 골라 실행한다. 옷이 맞으면 직원 구역을 통과한다.', (S,P)=>P.carrying||S.envPickK==='dress'?'env':'cycle'],
-    ['{행동} · 쓰러진 경비 운반', (S,P)=>!!P.carrying||S.corpses.some(c=>c.stashed), S=>S.corpses[0], '같은 버튼이 지금 가능한 행동으로 바뀐다.', 'env'],
-    ['수거함 앞에서 {행동} · 넣기', S=>S.corpses.some(c=>c.stashed), S=>S.hides.find(h=>h.type==='box'&&h.tx===9), '다른 경비가 발견하기 전에 흔적을 숨긴다.', 'env'],
-    ['오른쪽 노란 원으로 이동', ()=>false, S=>S.exit, '의뢰에서는 목표를 마친 뒤 탈출한다. 같은 곳의 반복 유인은 경계한다.', 'move']
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&Math.floor(P.x/48)===7||S.guards[0].state==='DEAD', S=>S.bushes[0],'풀숲에 들어가는 버튼은 없다. 웅크려 걸어 들어가면 자동으로 숨는다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-28),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=32||S.guards[0].state==='DEAD',()=>({x:10.5*48-28,y:10.5*48}),'숨은 채 공격하는 기술은 아직 없다. 풀숲 밖에서 한 걸음 거리까지 다가간다.','move'],
+    ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>S.guards[0].state==='DEAD',S=>S.guards[0],'짧게 누르면 기절, 길게 누르면 처치한다. 이 연습은 짧게 눌러 보자.','attack'],
+    ['몸 옆에서 {행동} · 운반',(S,P)=>!!P.carrying||S.corpses.some(c=>c.hidden||c.stashed),S=>S.corpses[0],'먼저 쓰러뜨린 다음 몸을 옮긴다. 운반 중에는 느려지고 뛸 수 없다.','env'],
+    [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move'],
+    ['오른쪽 출구로 이동',()=>false,S=>S.exit,'목적을 마치면 노란 출구로 나온다. 다음은 같은 행동을 실제 의뢰에서 사용한다.','move']
   ]
 });
 STAGES.push({
@@ -1068,6 +1078,45 @@ if(window.__EPISODE_ONE__)STAGES.push({
   traps:[{k:'drop',at:[17,11],fl:1,mount:[17.5,13.1],hit:[16,13,18,14],text:'백야',noOpp:true}],
   roomSigns:[{text:'화장실',at:[3,5],fl:0},{text:'골목식당',at:[3,10],fl:0},{text:'직원 전용',at:[14,8],fl:0},{text:'정산실',at:[17,7],fl:1}],
   roofs:['cRoofA','cRoofB','cRoofA'],wires:[],challenges:['ghost','clean'],fastT:360
+});
+// Short rehearsals introduce the next episode's new problem, without granting skills.
+STAGES.push({...FIRST_STEPS,
+  id:'tL',name:'의뢰 02 준비 · 빛과 그림자',sub:'상가 후문 · 조명과 시야',start:[6,10],nextTutorial:null,
+  build(m){FIRST_STEPS.build(m);m.fill(6,9,8,9,'.');},
+  lamps:FIRST_STEPS.lamps.map((l,i)=>i===1?[l[0],l[1],130,l[3]]:[...l]),
+  trialSkills:['electric'],mission:'후문 보안등을 끄고 짧아진 시야 밖으로 돌아 골목을 빠져나간다.',
+  brief:'이번에는 밝은 길을 건너야 한다. 안전한 곳에서 시야를 확인하고 보안등을 꺼 보자.',
+  endText:'조명을 끄면 적의 시야가 짧아진다. 본편에서는 전기 조작을 배운 경우에 사용할 수 있다.',
+  steps:[
+    ['표시에서 멈춰 밝은 길의 시야 확인',(S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24,()=>({x:6.5*48,y:10.5*48}),'이곳은 시야 밖이다. 오른쪽 밝은 길은 경비의 부채꼴 안에 들어간다.','move',1.1],
+    ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'이 구간에서만 전기 조작을 임시로 쓴다. 본편에서는 기술을 배워야 한다.','env'],
+    ['아래쪽 어두운 길을 따라 표시로 이동',(S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24,S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48},'빛이 줄어 부채꼴도 짧아졌다. 손전등과 소리는 사라지지 않는다.','move'],
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 안전한 길로 복귀':'{살금} 왼쪽 안전한 길로 복귀',(S,P)=>P.mode==='sneak'&&P.x<6.7*48,()=>({x:6*48,y:12.5*48}),'어두워도 뛰면 들린다. 조용히 이동한 뒤 출구로 나간다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음 의뢰에서는 배운 전기 기술이 있을 때 조명을 이용하거나, 다른 잠입로를 고른다.','move']
+  ]
+});
+const lessonStair=S=>S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
+STAGES.push({
+  id:'tR',no:'00',name:'의뢰 03 준비 · 실내와 계단',sub:'연락 거점 · 2층 서류 회수',tutorial:true,episodeLesson:true,lessonLoot:true,
+  noSupport:true,noAmbientChats:true,noRefine:true,floors:true,residents:0,bare:true,kunai:0,coins:0,well:'manhole',pspd:1.25,gspd:.8,
+  W:25,H:23,start:[12,19],exit:[4,19],startA:-Math.PI/2,
+  mission:'연락 거점 2층에서 서류를 회수하고 처음 들어온 골목으로 빠져나간다.',
+  brief:'다음 의뢰는 실내에서 시작한다. 먼저 경비 없는 연락 거점에서 문과 계단을 익힌다. 물건을 챙긴 뒤 내려와야 탈출할 수 있다.',
+  build(m){
+    m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');
+    m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:['연락 거점',''],name:'연락 거점'});
+    m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16]]);
+  },
+  wires:[],roofs:['cRoofG'],bricks:[0],lamps:[[5,17,180,1],[20,17,160,1]],guards:[],
+  items:[{b:0,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],challenges:[],
+  endText:'층이 다르면 같은 위치여도 손이 닿지 않는다. 계단으로 같은 층에 도착한 뒤 행동한다.',
+  steps:[
+    ['건물 앞문으로 들어가기',(S,P)=>P.x>6*48&&P.x<19*48&&P.y>3*48&&P.y<14*48&&!P.z,()=>({x:9.5*48,y:13.5*48}),'건물 안으로 들어간다. 문이 잠겼다면 행동 버튼에 가능한 방법이 표시된다.','move'],
+    ['계단 표시 앞에서 {행동} · 2층으로',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'실내의 층과 옥상은 다른 공간이다. 계단 앞까지 이동한 뒤 행동한다.','env'],
+    ['2층의 연락 서류 챙기기',S=>S.items.every(i=>i.got),S=>S.items[0],'작은 금색 표시는 회수할 물건이다. 같은 층에서 가까이 접근해 행동한다.','env'],
+    ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'표시에서 계단 안쪽으로 걸어가거나 행동을 누른다. 출구는 1층 밖에 있다.','env'],
+    ['건물을 나와 왼쪽 골목 출구로 이동',()=>false,S=>S.exit,'본편에서는 실내 경비와 카메라도 살핀다. 먼저 안전한 길과 현재 층부터 확인하자.','move']
+  ]
 });
 // Spoken lines convey the assignment or an observable event. Controls and
 // mechanical explanations belong in objectives/help, not in a character's mouth.
@@ -2972,6 +3021,29 @@ function recordCameraEvidence(c) {
   if (fresh) toast('신원이 녹화됐다 — 보안실에서 기록을 지워야 탈출할 수 있다', 3, 'warn');
 }
 
+// Recommendation only: the ledger always permits direct contract selection.
+const LEARNING_ROUTE=['tB','t0','m2','tL','m4','tR','m6'];
+function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
+function recommendedStage(){
+  for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!stageCleared(STAGES[i]))return i;}
+  const st=mainContracts().find(demoOk);return st?STAGES.indexOf(st):0;
+}
+function learningNext(){
+  const at=LEARNING_ROUTE.indexOf(STAGE.id);
+  if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(STAGES[i].tutorial&&stageCleared(STAGES[i]))continue;return i;}return -1;}
+  return recommendedStage();
+}
+function learningNextLabel(){
+  const i=learningNext(),st=STAGES[i];if(!st)return '다음 의뢰';
+  return st.tutorial?st.name.replace(/^연습 \d · /,'다음 연습 · '):'의뢰 '+contractNumber(st)+' · '+st.name;
+}
+
+function initLessonLayout(){
+  if(!STAGE.episodeLesson)return;
+  const l=S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
+  if(l)S.lessonLayout={up:{...stairLower(l).up.entry,fl:0},down:{...stairUpper(l).down.entry,fl:1}};
+}
+
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
 let CONTRACT_LAYOUT = null;
 function captureContractLayout() {
@@ -3168,7 +3240,7 @@ function newGame(si) {
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
-  if (!STAGE.tutorial) S.items.forEach(it => lootPlace(it,STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
+  if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach(it => lootPlace(it,STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
@@ -3230,7 +3302,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  stairsInit(true); buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
+  stairsInit(true);initLessonLayout(); buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 방 기준점을 잡은 뒤 syncCameraLayout에서 벽 모서리에 설치)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;
@@ -9587,10 +9659,11 @@ function updateChanges(dt) {
 function updateTutorial(dt = 1/60) {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
   if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input)){S.tutHold=0;return;}
-  while (S.tutI < st.length && st[S.tutI][1](S, S.player, input)) {
-    const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)break;}
-    S.tutHold=0;S.tutI++; S.cpWant = true; play('switch', 0.45, 1.5);
-    if (S.tutI >= st.length) toast('연습 완료 · 의뢰를 시작할 수 있다', 3, 'good');
+  // Let the new instruction render before accepting an already-satisfied condition.
+  if(S.t-(S.tutStepAt??-1)<.35)return;
+  if(S.tutI<st.length&&st[S.tutI][1](S,S.player,input)){
+    const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)return;}
+    S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;play('switch',.45,1.5);
   }
 }
 
@@ -12454,7 +12527,7 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const frame=goalViewport();
   const sy0=cam.y-hh+frame.top/SCALE,sy1=cam.y-hh+frame.bottom/SCALE,sx0=cam.x-hw+frame.left/SCALE,sx1=cam.x-hw+frame.right/SCALE;
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
-    if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
+    if (m < 3 && !gl.tut) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
     ctx.strokeStyle = `rgba(242,196,107,${pulse})`; ctx.lineWidth = 2 * k; ctx.setLineDash(gl.area?[9*k,7*k]:gl.lastSeen?[3*k,4*k]:[]); ctx.beginPath(); ctx.arc(gl.x, gl.y, (gl.area?32:20) * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#f2c46b'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
@@ -13568,7 +13641,7 @@ function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x 
 function pendingFirstGoal() {
   const fg = STAGE.firstGoal; if (!fg) return null;
   try { if (fg.done(S, SH)) return null; } catch (e) {}
-  return fg;
+  return fg.guide?{...fg,...fg.guide(S)}:fg;
 }
 // 의뢰 목표는 목적만 안내한다. 선택한 단서만 잠시 추적하고, 준비 행동으로 공략을 강요하지 않는다.
 function nextGoal() {
@@ -13578,7 +13651,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const fg = pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; }
+  { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
   return pinnedMissionGoal();
@@ -13590,6 +13663,7 @@ function objectiveLines() {
   { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const nav=goalNavigation(gl), m0 = Math.max(1, Math.round(dist(P.x, P.y, nav.x, nav.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0; distance = ` · ${nav.via?'입구 ':''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
+  if(STAGE.steps)return L;
   if (S.exitOpen && STAGE.steps && (S.tutI || 0) >= STAGE.steps.length) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
@@ -13777,7 +13851,7 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '동시 암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.endText ? STAGE.endText : STAGE.firstSteps ? '시야를 피해 숨고 소리로 시선을 돌렸다. 다음은 가까이 접근해 제압하는 연습이다.' : STAGE.skillPractice ? '동시 암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '은신 → 가까이 제압 → 몸 숨기기. 의뢰 01에서도 이 순서로 첫 순찰을 지나가자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -13801,8 +13875,8 @@ function showEnd(win, reason) {
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if(win&&!STAGE.tutorial){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
   drawEndMap();
-  $('btnNext').textContent=STAGE.nextTutorial?'다음 연습 · 뒤에서 제압':STAGE.tutorial?'의뢰 01 시작':'다음 의뢰';
-  $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
+  $('btnNext').textContent=learningNextLabel();
+  $('btnNext').hidden = !(win && learningNext() >= 0);
   $('btnCP').hidden = win || !cpReady();
   $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
@@ -13828,7 +13902,7 @@ function renderStageList() {
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
     const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
-    const sub = s.tutorial ? ((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1].replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
+    const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
@@ -13836,7 +13910,7 @@ function renderStageList() {
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => mainContract(s)), archive = list.filter(([s]) => !s.tutorial && !s.city && !mainContract(s)), city = list.filter(([s]) => s.city);
+  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => mainContract(s)), archive = list.filter(([s]) => !s.tutorial && !s.city && !mainContract(s)), city = list.filter(([s]) => s.city);
   $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
@@ -13852,6 +13926,7 @@ function renderStageList() {
 function syncTutorialCue(){
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4],key=(typeof cue==='function'?cue(S,S.player):cue)||'',token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
+  const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
   const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
@@ -14372,6 +14447,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
@@ -14650,10 +14726,13 @@ $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
-function quickTarget() { for(const id of ['tB','t0']){const i=STAGES.findIndex(s=>s.id===id);if(i>=0&&!stageCleared(STAGES[i]))return i;}const st=mainContracts().find(s=>demoOk(s)&&!stageCleared(s))||mainContracts().find(demoOk);return st?STAGES.indexOf(st):0; }
-function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = mainContracts().filter(demoOk).every(stageCleared) && ['tB','t0'].every(id=>stageCleared(STAGES.find(s=>s.id===id)||{}));
-  $('btnQuick').textContent = st.tutorial ? (st.id==='tB'?'처음 시작 · 시야와 소리':'이어서 · 뒤에서 제압') : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${contractNumber(st)} ${st.name}`;
-  $('btnQuick').title = st.tutorial ? '처음 플레이하면 연습부터 시작합니다.' : (st.mission || st.name); }
+function quickTarget(){return recommendedStage();}
+function syncQuick(){
+  const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
+  const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||stageCleared(STAGES[i]);});
+  $('btnQuick').textContent=st.tutorial?(st.id==='tB'?'처음 시작 · 시야와 소리':st.name.replace(/^연습 \d · /,'이어서 · ')):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').title=st.mission||st.name;
+}
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
   $('stageList').dataset.filter = button.dataset.filter;
   document.querySelectorAll('.ledger-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
@@ -14705,7 +14784,7 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click', () => { const n = nextPlayable(),lesson=STAGE.nextTutorial&&STAGES.findIndex(s=>s.id===STAGE.nextTutorial);start(lesson>=0?lesson:STAGE.tutorial?STAGES.findIndex(s=>mainContract(s)&&demoOk(s)):n>=0?n:STAGE_I); });
+$('btnNext').addEventListener('click',()=>{const i=learningNext();if(i>=0)start(i);});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));

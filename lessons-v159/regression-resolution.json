@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "uniqueRegressionScripts": 54,
+  "initialFullSuitePassed": 53,
+  "initialFailure": "t_pixelfx_bush obsolete stage6/7 after lesson moved to4/5",
+  "resolution": "updated only fixture step numbers; same conceal/storage/effects assertions passed",
+  "finalRuntimePackageSha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
+  "finalTargetedChecks": [
+    "t_pixelfx_bush",
+    "t_learning_route",
+    "t_interface",
+    "first_session native packaged keyboard/touch incl dropped-body recovery",
+    "episode_lessons native packaged keyboard/touch incl actual m6pin pickup"
+  ],
+  "fullSuiteCommand": "tools/run_tests.py --fast --quick --no-build",
+  "fuzz": "not run (--quick)",
+  "scope": "Main-contract regressions passed in initial full suite; final tutorial cue/visibility changes verified with targeted checks and all4native lessons. No whole-game guarantee."
+}
