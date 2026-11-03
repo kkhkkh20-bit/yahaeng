@@ -178,6 +178,10 @@
       "group": "dining"
     },
     {
+      "path": "44_action_flow.js",
+      "group": "mission_plan"
+    },
+    {
       "path": "44_mission_plan.js",
       "group": "mission_plan"
     },

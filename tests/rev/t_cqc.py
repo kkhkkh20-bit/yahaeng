@@ -18,7 +18,10 @@ async def main():
         ev = pg.evaluate
         si = await ev("() => window.__game.STAGES.findIndex(s => s.id === 'm2')")
         async def fresh(keep):
-            await ev(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await ev(SK); await ev(FREEZE, keep)
+            await ev(f'() => window.__game.start({si})'); await pg.wait_for_timeout(300); await ev(SK)
+            # The authored v156 pair is close; isolate this interrogation test from its witness.
+            if 26 in keep: await ev(PIN, [26, 33, 2, 0])
+            await ev(FREEZE, keep)
         async def grab(i, x, y):
             await ev(PIN, [i, x, y, 0]); await ev(BEHIND, i); await pg.wait_for_timeout(60)
             await ev('() => window.__game.actCarry()'); await pg.wait_for_timeout(700)

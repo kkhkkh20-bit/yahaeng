@@ -23,7 +23,7 @@ async def main():
    localStorage.clear();S=fresh('m1');P=S.player;const guard=S.guards.find(g=>!g.dog&&!g.civ&&!g.child);
    Object.assign(P,{hidden:true,mode:'sneak',hide:null,vent:null,ledge:null,under:false});
    ok(!G.concealedMeleeAllowed()&&!G.canKill(guard,P),'Concealed ordinary attack bypass');
-   ok(G.attackAction().skillLocked==='ambush','No visible attack lock');
+   ok(!G.attackAction().skillLocked,'Empty surroundings advertise locked attack');Object.assign(guard,{x:P.x+28,y:P.y,fl:P.fl||0,z:P.z||0,a:0});ok(G.attackAction().skillLocked==='ambush','Nearby concealed victim has no visible attack lock');
    G.grab(guard);ok(!P.grabIn&&!P.captive,'Direct grab bypass');
    ok(G.startAmbush(guard)===false&&!S.amb&&!guard.yank,'Direct ambush mutates guard');
    ok(!G.prepareCombat({k:'kill',list:[guard]})&&!G.prepareCombat({k:'ambush',g:guard}),'Combat intent bypass');

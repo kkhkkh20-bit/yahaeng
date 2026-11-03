@@ -81,6 +81,7 @@ function missionGoalCandidates() {
 function pinnedMissionGoal() {
   const a = missionGoalCandidates(), P = S.player;
   let g = a.find(g => g.id === S.goalPin);
+  if(!g&&STAGE.priorityTarget)g=a.find(v=>v.g);
   if (!g) { g = a.sort((a, b) => dist(P.x,P.y,a.x,a.y) + Math.abs(flOf(P)-(a.fl||0))*300 - dist(P.x,P.y,b.x,b.y) - Math.abs(flOf(P)-(b.fl||0))*300)[0]; S.goalPin = g ? g.id : null; }
   return g ? { ...g, text: '의뢰: ' + g.text } : null;
 }

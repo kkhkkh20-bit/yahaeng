@@ -46,7 +46,7 @@ async def main():
         print('입막음', s)
         if s[0] != 'DEAD' or not s[1]: bad.append('본 주민을 입막음하지 못했다 %s' % s)
         if s[3]: bad.append('조직이 해친 주민이 내 감점이 됐다 %s' % s)
-        # 4) 출입 금지 구역에 들어온 주민: 경고 뒤 때려 눕힌다
+        # 4) 본편의 무단 출입 주민: 경고 뒤 공개 구역으로 안내하며 공격하지 않는다
         await fresh()
         r = await m.evaluate("""() => { const g = window.__game, S = g.S, T = 48;
           for (const a of S.guards) { if (a.fac !== 'A' || a.target || a.dog || (a.fl || 0) || g.zoneAt(a.x, a.y, 0) === g.Z_PUB) continue;
@@ -58,12 +58,13 @@ async def main():
         if not r: bad.append('출입 금지 구역 자리를 못 찾았다')
         else:
             await m.evaluate(HOLD, r[:2])
-            for t in range(24):
+            await m.evaluate('window.__game.S.t=50')
+            for t in range(7):
                 await m.wait_for_timeout(1000)
-                s = await m.evaluate("(id) => { const S = window.__game.S, c = S.guards.find(q => q.id === id); return [c.state, S.corpses.some(k => k.g === c && k.byNpc), S.alevel]; }", r[1])
-                if s[0] == 'DEAD': break
-            print('구역 폭행', s)
-            if s[0] != 'DEAD' or not s[1]: bad.append('구역에 들어온 주민을 때려 눕히지 않는다 %s' % s)
+                s = await m.evaluate("(id) => { const S = window.__game.S, c = S.guards.find(q => q.id === id); return [c.state, S.corpses.some(k => k.g === c && k.byNpc), S.alevel, c.shooUntil || 0, window.__game.zoneAt(c.x,c.y,0)]; }", r[1])
+                if s[0] == 'PANIC' or s[3]: break
+            print('구역 안내', s)
+            if s[0] == 'DEAD' or s[1] or not(s[3] or s[4]==0): bad.append('안내해야 할 주민을 쓰러뜨렸다 %s' % s)
         # 5) 누명: 건달 점퍼를 입고 조직원을 쓰러뜨린 걸 다른 조직원이 보면 전쟁
         await fresh()
         r = await m.evaluate("""() => { const g = window.__game, S = g.S, P = S.player; const as = S.guards.filter(q => q.fac === 'A' && !q.target && !q.dog && !(q.fl || 0));

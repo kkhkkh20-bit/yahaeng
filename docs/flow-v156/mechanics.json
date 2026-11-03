@@ -1,0 +1,14 @@
+{
+  "checks": [
+    "Body first at calm/search/chase; explicit disguise still commits physically",
+    "Cover only advertises a real close target; exit action preserves basic combat and skill gate",
+    "Optional entry follows concealment, actual downed guard, body concealment; manual goals/save/budget preserved",
+    "Authored paired guards support owned ability; actual toast once, no unlock grants",
+    "Second authored encounter supports actual chain range and path",
+    "Campaign trespass warning directs civilian out physically, no generated body",
+    "Live 30s entry, seed 1: {\"npcDown\": 0, \"playerKills\": 0, \"guards\": 30}",
+    "Live 30s entry, seed 42: {\"npcDown\": 0, \"playerKills\": 0, \"guards\": 30}",
+    "Live 30s entry, seed 777: {\"npcDown\": 0, \"playerKills\": 0, \"guards\": 30}"
+  ],
+  "pageErrors": []
+}

@@ -18,9 +18,9 @@ async def main():
       Object.assign(P,{x:G.MW*24,y:edge==='top'?24:G.MH*48-24,z:0,fl:0,moving:false,mode:'walk'});
       for(let n=0;n<150;n++)G.moveCamera(1/60);
       const s=G.SCALE,h=innerHeight,bottom=(G.MH*48-G.cam.y)*s+h/2;
-      if(G.MH*48*s>=h&&edge==='bottom')check(h-bottom<=(innerWidth===320?h*.55:touch?Math.min(140,h*.18):24)+1,id+' excessive blank below map');
+      if(G.MH*48*s>=h&&edge==='bottom')check(h-bottom<=(touch?h-G.touchPlayFrame().y:24)+1,id+' excessive blank below map');
       const bounds=G.cameraYBounds();check(G.cam.y>=bounds[0]-1&&G.cam.y<=bounds[1]+1,id+' camera outside vertical bounds');
-      const sy=(P.y-G.cam.y)*s+h/2;check(sy>8&&sy<h-8,id+' player clipped at boundary');if(innerWidth===320)check(sy+48<document.querySelector('.sysbtns').getBoundingClientRect().top,id+' short portrait controls cover player at map edge');cases++;
+      const sy=(P.y-G.cam.y)*s+h/2;check(sy>8&&sy<h-8,id+' player clipped at boundary');if(touch)check(sy+48<G.touchPlayFrame().bottom,id+' mobile controls cover player at map edge');cases++;
      }
      // Moving along the last tiles eases toward the limit without a sudden camera jump.
      P.y=G.MH*48-240;for(let n=0;n<150;n++)G.moveCamera(1/60);

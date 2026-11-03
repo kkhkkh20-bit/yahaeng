@@ -213,7 +213,7 @@ function enterCover(n, quiet) {
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
   P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26); S.coverFx = { t: S.t, x: P.x - n.x * 14, y: P.y - n.y * 14, nx: n.x, ny: n.y };  // 붙는 순간 벽에 퍼지는 빛 (붙었다는 느낌)
-  hint('cover', '벽에 붙음: 잘 안 보이고 발소리가 없다. 벽 따라 옆걸음, 반대로 밀면 떨어진다');
+  hint('cover', '벽에 붙음 · 행동을 누르거나 반대로 밀면 나온다. 공격하려면 배운 은신 기습이 필요하다');
 }
 function updateSnap(P, dt) {
   const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
@@ -464,7 +464,7 @@ function updatePlayer(dt) {
     const into = mag > 0.05 ? -(mx * P.cover.x + my * P.cover.y) / mag : 0;
     if (!n || away > 0.45 || P.carrying || P.captive || mode === 'run' || (P.cover.auto && mag > 0.05 && into < 0.7)) { P.cover = null; }
     else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; if (Math.abs(al) > 0.2) { P.coverSide = Math.sign(al); P.coverSideT = S.t; } mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
-  } else if (mag > 0.05 && mode !== 'run' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT) {
+  } else if (mag > 0.05 && mode === 'sneak' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT) {
     P.idleWall = 0;
     const n = coverAt(P), sn = mode === 'sneak', dot = n ? (mx * n.x + my * n.y) / mag : 0; if (n && dot < (sn ? -0.6 : -0.92) && (!sn || n.d < 18)) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.15) hint('coverPush', '벽 쪽으로 잠깐(0.5초) 밀면 등을 붙인다'); if (P.coverPush > COVER_PUSH) { enterCover(n); mag = 0; P.coverPush = 0; } } else P.coverPush = 0;  // 벽을 향해 거의 똑바로 잠깐 밀어야 기댄다 (비스듬히 걸을 땐 안 걸린다)
   } else {

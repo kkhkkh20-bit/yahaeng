@@ -269,7 +269,7 @@ function newGame(si) {
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
   resetHelpTip();
-  syncCameraLayout(); captureContractLayout(); initPreparationProgress(); initMissionPlan(); closeEnvPicker(); updateTargetIntel(); updateHUD(true);
+  syncCameraLayout(); captureContractLayout(); initPreparationProgress(); initActionFlow(); initMissionPlan(); closeEnvPicker(); updateTargetIntel(); updateHUD(true);
 }
 
 // 평면 건물 안의 자리 찾기: where = 'L'(왼쪽 세대 거실) 'R'(오른쪽 세대 거실) 'S'(가게·사무실) 'bed'(첫 방) 'bath'

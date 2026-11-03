@@ -146,7 +146,7 @@ function updateGuard(g, dt) {
         if (g.act) {
           g.actT -= dt; g.bubble = g.act === 'smoke' ? '후—' : '하암';
           if (g.actT <= 0) { g.act = null; g.bubble = null; g.idleT = rnd(10, 22); }
-        } else if (!S.alevel && !g.target && !g.elite && !g.dog) {
+        } else if (!S.alevel && !g.target && !g.elite && !g.dog && !g.still) {
           g.idleT = (g.idleT == null ? rnd(4, 14) : g.idleT) - dt;
           if (g.idleT <= 0) { g.act = Math.random() < 0.6 ? 'smoke' : 'yawn'; g.actT = g.act === 'smoke' ? rnd(5, 8) : rnd(1.6, 2.4); }
         }

@@ -196,3 +196,8 @@ function ambushTarget() {
 // 끌어들여 암살: 순간이동 대신 약 1.2초 동작 — 움찔(붙잡힘) → 뒤로 끌려감 → 안으로 사라짐.
 // 그동안 끌려가는 사람이 다른 사람 눈에 보이면 목격: 조직원은 그 자리로 덮치고(발각), 주민은 소리치거나 신고하러 간다
 const AMB_DUR = 1.2;
+
+function concealedAttackCandidate(P=S.player){
+  const radius=P.hide?80:P.vent?80:P.cover?60:P.hidden?60:meleeReach(P);
+  return S.guards.find(g=>!g.child&&!g.climb&&!g.yank&&!['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(P.x,P.y,g.x,g.y)<=radius&&sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))||null;
+}

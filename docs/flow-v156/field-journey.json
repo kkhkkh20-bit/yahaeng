@@ -1,0 +1,159 @@
+{
+  "base": "http://127.0.0.1:8001/public/",
+  "runs": [
+    {
+      "mobile": false,
+      "ready": {
+        "t": 16.6399999999998,
+        "at": [
+          712.2303702229474,
+          456.2376998968133
+        ],
+        "hp": 3,
+        "opportunity": {
+          "key": "dual",
+          "ids": [
+            9,
+            10
+          ],
+          "at": null
+        },
+        "notice": {
+          "market-pair": true
+        },
+        "pair": [
+          {
+            "id": 9,
+            "x": 744,
+            "y": 456,
+            "a": 0,
+            "state": "PATROL",
+            "seen": false,
+            "meter": 0
+          },
+          {
+            "id": 10,
+            "x": 744,
+            "y": 408,
+            "a": 0,
+            "state": "PATROL",
+            "seen": false,
+            "meter": 0
+          }
+        ],
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        }
+      },
+      "result": {
+        "t": 19.173333333333524,
+        "hp": 3,
+        "dual": 1,
+        "kills": 2,
+        "corpses": [
+          {
+            "id": 9,
+            "ko": false
+          },
+          {
+            "id": 10,
+            "ko": false
+          }
+        ],
+        "owned": [
+          "silentHands",
+          "dual"
+        ],
+        "points": 1,
+        "errors": []
+      },
+      "method": "Actual skill purchases, native keyboard/CDP joystick and attack; live campaign AI and cameras, fixed clock; no actor, inventory or HP overrides; authored encounter, not full contract"
+    },
+    {
+      "mobile": true,
+      "ready": {
+        "t": 16.6399999999998,
+        "at": [
+          712.2303702229474,
+          456.2376998968133
+        ],
+        "hp": 3,
+        "opportunity": {
+          "key": "dual",
+          "ids": [
+            9,
+            10
+          ],
+          "at": null
+        },
+        "notice": {
+          "market-pair": true
+        },
+        "pair": [
+          {
+            "id": 9,
+            "x": 744,
+            "y": 456,
+            "a": 0,
+            "state": "PATROL",
+            "seen": false,
+            "meter": 0
+          },
+          {
+            "id": 10,
+            "x": 744,
+            "y": 408,
+            "a": 0,
+            "state": "PATROL",
+            "seen": false,
+            "meter": 0
+          }
+        ],
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        }
+      },
+      "result": {
+        "t": 19.173333333333524,
+        "hp": 3,
+        "dual": 1,
+        "kills": 2,
+        "corpses": [
+          {
+            "id": 9,
+            "ko": false
+          },
+          {
+            "id": 10,
+            "ko": false
+          }
+        ],
+        "owned": [
+          "silentHands",
+          "dual"
+        ],
+        "points": 1,
+        "errors": []
+      },
+      "method": "Actual skill purchases, native keyboard/CDP joystick and attack; live campaign AI and cameras, fixed clock; no actor, inventory or HP overrides; authored encounter, not full contract"
+    }
+  ]
+}

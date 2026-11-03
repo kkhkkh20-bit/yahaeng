@@ -2,6 +2,8 @@
 // 표적(클럽 실장)에게 가는 길 셋: 간판 사고 · 구토제 → 혼자 공중화장실 · 금고(장부·파란 카드키) → VIP룸 뒷문
 {
   id: 'm2', no: '02', name: 'VIP', sub: '의뢰 01', fee: '80만',
+  priorityTarget:true,entryRoute:{guard:28,bush:[1,18],bounds:[0,14,8,23]},
+  skillEncounters:[{id:'market-pair',skill:'dual',guards:[9,10],text:'야시장 경비 둘 · 등 뒤에서 공격 길게'},{id:'rear-chain',skill:'chain',guards:[4,26],text:'뒷골목 순찰 둘 · 이동 경로를 확인하고 공격 길게'},{id:'west-light',skill:'electric',at:[6,19],text:'서쪽 가로등 · 불을 끄면 복구하러 오는 경비를 유인할 수 있다'}],
   mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
@@ -13,7 +15,7 @@
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '실장과 장부. 둘 다 넘기면 끝이다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
+  brief: '서쪽 풀숲을 따라 들어가 순찰의 등 뒤를 노려라. 몸을 풀숲에 숨긴 뒤 클럽 실장에게 접근한다. 실장 처치와 장부 회수 후 탈출한다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -38,6 +40,7 @@
     [[14, 4], [17, 4], [14, 10], [18, 7], [16, 13], [19, 12]].forEach(([x, y], i) => m.tent(x, y, 'RBGYRB'[i]));
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
     m.fill(21, 6, 21, 7, 'U'); m.set(21, 8, ',');                                                     // 클럽 측면 적치물. 옥상 접근은 직원 계단으로
+    m.many('B',[[1,18],[1,17],[3,18]]);
     m.many('T', [[47, 15], [53, 14]]); m.many('B', [[45, 13], [52, 13], [44, 17]]);
     [6, 24, 40, 52].forEach(x => m.pole(x, 19, 2));
     m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34], [22, 17], [37, 15], [6, 1], [25, 1]]);   // 22,17·37,15 = 네온 골목 양 끝 (문지기·순찰 처리 뒤 숨길 곳) · 6,1 = 사무동 뒷골목 · 25,1 = 클럽 뒷골목 서쪽
@@ -111,12 +114,12 @@
     { kind: 'g2', b: 1, fl: 0, at: 'VD', post: 90, elite: true },                     // 1 VIP룸 앞문 경호 (얼굴을 안다 — 변장도 알아본다)
     { kind: 'g1', tag: 'bouncer', at: [24, 16], post: 90 },                            // 2 클럽 문지기
     { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
-    { kind: 'g1', smoker: true, route: [[23, 2, 4], [29, 2, 4]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
+    { kind: 'g1', smoker: true, route: [[24, 2, 5], [26, 2, 5]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
     { kind: 'g2', b: 0, at: 'VB', post: 90 },                                         // 6 금고 앞
     { kind: 'g1', enforcer: true, b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
-    { kind: 'g1', at: [15, 9], post: 0 }, { kind: 'g2', at: [17, 9], post: 180 },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
+    { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g2', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
@@ -132,9 +135,9 @@
     { kind: 'civ', tag: 'mom', body: 'fBob', at: [20, 14], post: 180 },              // 24 엄마
     { kind: 'civ', tag: 'child', child: true, parent: 'mom', wander: [17, 14, 21, 16], at: [18, 15] },   // 25 아이 (손댈 수 없다 — 사탕)
     // 조직원 더: 뒤쪽은 조직 땅이다 (메탈기어식으로 하나씩 처리하며 나아갈 수 있게)
-    { kind: 'g2', route: [[31, 2, 4], [37, 1, 4]] },                         // 26 클럽 뒷골목 동쪽 (뒷문 앞)
+    { kind: 'g2', route: [[26, 2, 5], [29, 2, 5]] },                         // 26 클럽 뒷골목 동쪽 (뒷문 앞)
     { kind: 'g1', route: [[2, 2, 4], [11, 2, 4]] },                          // 27 사무동 뒷골목 (어둡다 · 6,1 수거함)
-    { kind: 'g2', route: [[1, 7, 3], [1, 17, 3]] },                          // 28 사무동 서쪽 골목
+    { kind: 'g2', tag:'entryPatrol',route: [[3, 17, 8], [5, 17, 5]] },                          // 28 사무동 서쪽 골목
     { kind: 'g2', tag: 'vipEscort', at: [26, 6], follow: 0, elite: true, escortWait: [
       {rect:[39,6,41,7,0],at:[40,9]},
       {kind:'smoke',rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },

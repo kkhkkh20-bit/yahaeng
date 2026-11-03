@@ -6,7 +6,7 @@ function update(dt) {
   S.t += dt;
   updateSkillDevices();
   updateNpcDoors(dt);
-  updatePlayer(dt);
+  updatePlayer(dt); updateActionFlow();
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록
     if (S.trailT <= 0) { S.trailT = 0.35; const l = S.trail[S.trail.length - 1]; if (!l || dist(l.x, l.y, P.x, P.y) > 20) S.trail.push({ x: P.x, y: P.y, z: P.z || 0, fl: flOf(P) }); } }
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
@@ -101,7 +101,16 @@ function updateAlert(dt) {
     }
   }
 }
-const compactTouchFrame=()=>isTouch&&W<=360&&H<=640&&H>W*1.3;
+let touchFrameCache=null;
+function touchPlayFrame(){
+  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden;
+  if(touchFrameCache?.key===key)return touchFrameCache;
+  const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
+  const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
+  const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
+  const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
+  return touchFrameCache={key,y:clamp(preferred,Math.min(upper,lower-8),Math.max(80,lower-8)),bottom:Math.min(...tops,H-24)};
+}
 function moveCamera(dt) {
   { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
   const k = 1 - Math.pow(0.0015, dt);
@@ -117,8 +126,8 @@ function moveCamera(dt) {
   if (isTouch) {
     const cv = S.player.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : 0, ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : 0;  // 운전: 달리는 앞쪽을 더 보여 준다
     const tx = clamp(S.player.x + lx, Math.min(vw / 2 - 40 / SCALE, MW * TILE / 2), Math.max(MW * TILE - vw / 2 + 140 / SCALE, MW * TILE / 2));
-    // 세로는 화면 높이의 60%, 가로는 56%에 서서 위쪽 지형을 더 보게 한다.
-    const anchor=compactTouchFrame()?.45:H>W*1.3?.60:.56,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
+    // 기본 앞보기를 유지하되 실제 조작부 위에 캐릭터와 근접 안내가 들어오게 한다.
+    const anchor=touchPlayFrame().y/H,bounds=cameraYBounds(vh),ty=clamp(S.player.y+ly+vh*(.5-anchor),bounds[0],bounds[1]);
     cam.x += (tx - cam.x) * k; cam.y += (ty - cam.y) * k;
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
@@ -133,9 +142,9 @@ function moveCamera(dt) {
   }
 }
 function cameraYBounds(vh = H / SCALE) {
-  const middle = MH * TILE / 2, compact=compactTouchFrame(),top = (compact?H*.45:isTouch ? 190 : 24) / SCALE;
-  // 하단 조작부의 얕은 여백만 남긴다. 경계에 가까워지면 카메라가 먼저 멈춰 위쪽 지형을 보여 준다.
-  const bottom = (compact?H*.55:isTouch ? Math.min(140, H * .18) : 24) / SCALE;
+  const middle=MH*TILE/2,frame=isTouch?touchPlayFrame():null,top=(frame?frame.y:24)/SCALE;
+  // 맵 끝에서도 같은 플레이 영역을 확보한다. 하단 조작부가 캐릭터를 밀어내지 않는다.
+  const bottom=(frame?H-frame.y:24)/SCALE;
   return [Math.min(vh / 2 - top, middle), Math.max(MH * TILE - vh / 2 + bottom, middle)];
 }
 

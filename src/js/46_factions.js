@@ -204,8 +204,26 @@ function updateFaction(g, dt) {
   if ((g.facT = (g.facT || 0) - dt) > 0) return false; g.facT = 0.4;
   return facScan(g);
 }
+function ambientEntryGrace(){return mainContract(STAGE)&&S.t<45&&!S.war&&S.rumorT==null;}
+function guideCivilianOut(g,c){
+  if(c.shooUntil>S.t)return;
+  c.shooUntil=S.t+15;c.shooT=S.t;const previous=CUR_F;setLayer(flOf(c));
+  let exit=null,score=Infinity;
+  try{
+    for(let dy=-7;dy<=7;dy++)for(let dx=-7;dx<=7;dx++){
+      const tx=Math.floor(c.x/TILE)+dx,ty=Math.floor(c.y/TILE)+dy;
+      if(!inMap(tx,ty)||solidFor(c.z||0)(tx,ty)||zoneAt(tc(tx),tc(ty),c.z||0)!==Z_PUB)continue;
+      const d=dist(c.x,c.y,tc(tx),tc(ty));if(d>=score)continue;
+      const path=astar(Math.floor(c.x/TILE),Math.floor(c.y/TILE),tx,ty);
+      if(path.length){exit={x:tc(tx),y:tc(ty),path};score=d;}
+    }
+    civPanic(c,g.x,g.y,8);
+    if(exit){c.path=exit.path;c.cowered=true;c.want=Math.atan2(exit.y-c.y,exit.x-c.x);}
+  }finally{setLayer(previous);}
+  gsay(g,'여긴 출입 금지야. 밖으로 나가.',2);
+}
 function facScan(g) {
-  const P = S.player;
+  const P = S.player;if(ambientEntryGrace())return false;
   if (g.fac !== 'P' && S.guards.some(c => c.fac === 'P' && c.brawl && npcAlive(c) && dist(c.x, c.y, g.x, g.y) < 260)) return false;  // 경찰이 바로 옆에서 제압 중이면 새 싸움을 걸지 않는다
   for (const o of S.guards) {
     if (!o.fac || o.fac === g.fac || o.fac === 'P' || o.x < 0 || o.y < 0 || !npcAlive(o) || factionAvoids(g, o) || o.target || flOf(o) !== flOf(g) || (o.z || 0) !== (g.z || 0)) continue;
@@ -225,6 +243,7 @@ function facScan(g) {
   if (g.fac === 'A' && STAGE.zones) for (const c of S.guards) {
     if (!c.civ || c.child || !npcAlive(c) || factionAvoids(g, c) || c.outfit || c.enforcer || flOf(c) !== flOf(g) || dist(c.x, c.y, g.x, g.y) > 170 || zoneAt(c.x, c.y, 0) === Z_PUB || !los(g.x, g.y, c.x, c.y)) continue;
     if (!c.shooT) { c.shooT = S.t; gsay(g, '안쪽으로 들어오지 마.', 2); continue; }
+    if (S.t - c.shooT > 4 && mainContract(STAGE)&&!S.war){guideCivilianOut(g,c);continue;}
     if (S.t - c.shooT > 4) { g.hunt = { c, t0: S.t, beat: true }; civPanic(c, g.x, g.y, 6); return true; }
   }
   return false;

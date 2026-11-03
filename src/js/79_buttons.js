@@ -28,7 +28,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
 }
 function attackAction() {
   const P = S.player; if (actionBusy(P)) return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };
-  if(!concealedMeleeAllowed(P))return{k:'none',label:'은신 기습 필요',skillLocked:'ambush'};
+  if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
   const a = rawChoices().find(isAtk); if (a) {
@@ -43,15 +43,17 @@ function attackAction() {
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
-const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody']);
+const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody','uncover']);
 function secondaryEnvChoices() {
   const out = []; ACT_SKIP.clear();
   try {
     for (let i = 0; i < 6; i++) {
       const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
       const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
+      if(a.k==='dress'&&!STAGE.tutorial)out.push({k:'carry',c:a.c,label:a.c.ko?'기절자 운반':'시체 운반',fromZ:true});
+      if(a.k==='throwBody'&&!STAGE.tutorial)out.push({k:'carry',c:S.player.carrying,label:'내려놓기',fromZ:true});
       out.push(Object.assign({}, a, { fromZ: true }));
-      if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
+      if (a.k === 'dress'&&STAGE.tutorial) out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
       if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick)out.unshift(quick);}
       if (!o) break; ACT_SKIP.add(o);
     }
@@ -85,7 +87,7 @@ function envChoices() {
   // 시체를 멘 채 계단 칸: 오르내리기가 먼저 (내려놓기는 ⇄)
   if (P.carrying) { const st = env.filter(a => (a.k === 'up' || a.k === 'fdown') && a.l && a.l.kind === 'fstair'); if (st.length) return st.concat(z, env.filter(a => !st.includes(a))); }
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
-  const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel'))) ? z.concat(env) : env.concat(z);
+  const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel' || sa.k === 'uncover'))) ? z.concat(env) : env.concat(z);
   if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
   return list;
 }
@@ -99,7 +101,7 @@ function envAction() {
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
   if (!stay) S.envExplicit = null;
   if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
-  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  if (key !== S.envKey) { S.envKey = key; const preferBody=!S.envExplicit&&S.envPickK==='dress'&&['carry','quickStash'].includes(L[0].k);const j = stay&&!preferBody ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
   S.envPick = pk; S.envPickK = a.k;
@@ -109,7 +111,7 @@ function grabAction() {
   const P = S.player; if (actionBusy(P)) return { k: 'none', busy: true, label: '붙잡기' };
   if (P.ledge || P.wire) { const ok = !P.jump && !P.trav && (P.ledge ? landBelow(P.x, P.y, P.ledge, P.z) : wireFallOk()); return { k: ok ? (P.ledge ? 'ledgeDrop' : 'wireFall') : 'none', label: '떨어지기', blocked: !ok }; }
   if (P.car) return { k: 'none', label: '붙잡기' }; if (P.captive) return { k: 'none', label: canInterrogate() ? '심문 중' : '붙잡는 중' };
-  if(!concealedMeleeAllowed(P))return{k:'none',label:'은신 기습 필요',reason:'기술 트리에서 배우기'};
+  if(!concealedMeleeAllowed(P))return concealedAttackCandidate(P)?{k:'none',label:'은신 기습 필요',reason:'기술 트리에서 배우기'}:{k:'none',label:'붙잡기'};
   const g = grabTarget(); if (g) return { k: 'grab', g, label: '붙잡기' };
   // 공격 사거리 밖에서도 별도 붙잡기 입력을 먼저 알린다. 실행 가능 판정은 grabTarget 그대로다.
   if (P.hide || P.carrying || P.under || P.vent || P.z) return { k: 'none', label: '붙잡기' };
