@@ -1,0 +1,278 @@
+[
+  {
+    "time": 10.019999999999875,
+    "kills": 0,
+    "npcDown": 4,
+    "npcCiv": 4,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 1
+  },
+  {
+    "time": 30.01999999999945,
+    "kills": 0,
+    "npcDown": 5,
+    "npcCiv": 5,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": false,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 1
+  },
+  {
+    "time": 10.019999999999875,
+    "kills": 0,
+    "npcDown": 4,
+    "npcCiv": 4,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": false,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 42
+  },
+  {
+    "time": 30.01999999999945,
+    "kills": 0,
+    "npcDown": 5,
+    "npcCiv": 5,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": false,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 42
+  },
+  {
+    "time": 10.019999999999875,
+    "kills": 0,
+    "npcDown": 4,
+    "npcCiv": 4,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": false,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 777
+  },
+  {
+    "time": 30.01999999999945,
+    "kills": 0,
+    "npcDown": 5,
+    "npcCiv": 5,
+    "alert": 0,
+    "corpses": [
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": false,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      },
+      {
+        "id": null,
+        "ko": true,
+        "byNpc": true,
+        "byCar": null,
+        "npcBy": null,
+        "kind": "civ"
+      }
+    ],
+    "seed": 777
+  }
+]

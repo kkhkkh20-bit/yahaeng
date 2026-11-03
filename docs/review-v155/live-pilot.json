@@ -1,0 +1,576 @@
+[
+  {
+    "stage": "m2",
+    "trace": [
+      {
+        "stage": "m2",
+        "t": 2.0333333333333345,
+        "at": [
+          24,
+          1032,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "objective": "장부 훔치기 · 사무동 1층 · 20m",
+        "status": "의심 없음",
+        "attack": "공격",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [],
+        "bodyRecords": [],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 0,
+        "observer": null,
+        "guards": 40,
+        "targets": 1,
+        "corpses": 0,
+        "bushes": 16,
+        "hides": 32,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "entry"
+      },
+      {
+        "stage": "m2",
+        "t": 6.766666666666568,
+        "at": [
+          362.1442696802292,
+          1020.1389512485392,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 1,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 1,
+          "stashed": 0,
+          "special": 0,
+          "ko": 1
+        },
+        "objective": "장부 훔치기 · 사무동 1층 · 19m",
+        "status": "발각\n신원 노출",
+        "attack": "기절한 대상 처치",
+        "env": "옷 갈아입기 — 자경대원 옷",
+        "envChoices": [
+          {
+            "k": "dress",
+            "label": "옷 갈아입기 — 자경대원 옷"
+          },
+          {
+            "k": "carry",
+            "label": "운반"
+          }
+        ],
+        "witnesses": [
+          {
+            "id": 5,
+            "kind": "g1",
+            "fl": 0,
+            "z": 0,
+            "distance": 81.23349665114935,
+            "line": true
+          }
+        ],
+        "bodyRecords": [
+          {
+            "guardId": 11,
+            "ko": true,
+            "byNpc": null,
+            "byCar": null,
+            "npcBy": null,
+            "kind": "g1",
+            "hidden": false
+          }
+        ],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 2,
+        "observer": "seen",
+        "guards": 40,
+        "targets": 1,
+        "corpses": 1,
+        "bushes": 16,
+        "hides": 32,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [
+          "근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다",
+          "기절시켰다 · 동료가 발견하면 깨우고 수색한다"
+        ],
+        "label": "first-encounter"
+      },
+      {
+        "stage": "m2",
+        "t": 7.579999999999885,
+        "at": [
+          362.1442696802292,
+          1020.1389512485392,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 1,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 1,
+          "stashed": 0,
+          "special": 0,
+          "ko": 1
+        },
+        "objective": "장부 훔치기 · 사무동 1층 · 19m",
+        "status": "발각\n신원 노출",
+        "attack": "공격",
+        "env": "내려놓기",
+        "envChoices": [
+          {
+            "k": "carry",
+            "label": "내려놓기"
+          }
+        ],
+        "witnesses": [
+          {
+            "id": 5,
+            "kind": "g1",
+            "fl": 0,
+            "z": 0,
+            "distance": 18.65200405006371,
+            "line": true
+          }
+        ],
+        "bodyRecords": [
+          {
+            "guardId": 11,
+            "ko": true,
+            "byNpc": null,
+            "byCar": null,
+            "npcBy": null,
+            "kind": "g1",
+            "hidden": false
+          }
+        ],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 2,
+        "observer": "seen",
+        "guards": 40,
+        "targets": 1,
+        "corpses": 1,
+        "bushes": 16,
+        "hides": 32,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [
+          "근처 경비에게 발각 · 무전기가 없어 전체 경보는 전달되지 않는다",
+          "기절시켰다 · 동료가 발견하면 깨우고 수색한다"
+        ],
+        "label": "carrying"
+      },
+      {
+        "stage": "m2",
+        "t": 15.613333333333049,
+        "at": [
+          462.79768257052547,
+          894.402786036626,
+          null,
+          0
+        ],
+        "hp": 0,
+        "over": true,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 1,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 1,
+          "stashed": 0,
+          "special": 0,
+          "ko": 1
+        },
+        "objective": "장부 훔치기 · 사무동 1층 · 16m",
+        "status": "발각\n신원 노출",
+        "attack": "더 가까이 접근",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [
+          {
+            "id": 5,
+            "kind": "g1",
+            "fl": 0,
+            "z": 0,
+            "distance": 63.74663216764324,
+            "line": true
+          },
+          {
+            "id": 6,
+            "kind": "g2",
+            "fl": 0,
+            "z": 0,
+            "distance": 481.3704617029249,
+            "line": true
+          },
+          {
+            "id": 28,
+            "kind": "g2",
+            "fl": 0,
+            "z": 0,
+            "distance": 214.0728854007844,
+            "line": true
+          }
+        ],
+        "bodyRecords": [
+          {
+            "guardId": 11,
+            "ko": true,
+            "byNpc": null,
+            "byCar": null,
+            "npcBy": null,
+            "kind": "g1",
+            "hidden": false
+          }
+        ],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 2,
+        "observer": "seen",
+        "guards": 40,
+        "targets": 1,
+        "corpses": 1,
+        "bushes": 16,
+        "hides": 32,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "approach-building"
+      }
+    ],
+    "pageErrors": [],
+    "input": "Native CDP joystick/action buttons with fixed simulation clock; live guards, cameras, HP and fresh inventory. No player/NPC teleport, HP or AI overrides. Early encounter review, not full mission completion."
+  },
+  {
+    "stage": "m4",
+    "trace": [
+      {
+        "stage": "m4",
+        "t": 2.0333333333333345,
+        "at": [
+          2280,
+          1272,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "objective": "클럽 실장 처치하기 · 클럽 · 30m",
+        "status": "의심 없음",
+        "attack": "더 가까이 접근",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [],
+        "bodyRecords": [],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 0,
+        "observer": null,
+        "guards": 30,
+        "targets": 2,
+        "corpses": 0,
+        "bushes": 6,
+        "hides": 26,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "entry"
+      },
+      {
+        "stage": "m4",
+        "t": 10.0666666666665,
+        "at": [
+          2290,
+          1330,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "npcDown": 2,
+          "npcCiv": 2
+        },
+        "objective": "클럽 실장 처치하기 · 클럽 · 35m",
+        "status": "벽에 붙음",
+        "attack": "은신 기습 필요",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [],
+        "bodyRecords": [
+          {
+            "guardId": null,
+            "ko": true,
+            "byNpc": true,
+            "byCar": null,
+            "npcBy": null,
+            "kind": "civ",
+            "hidden": false
+          },
+          {
+            "guardId": null,
+            "ko": true,
+            "byNpc": true,
+            "byCar": null,
+            "npcBy": null,
+            "kind": "civ",
+            "hidden": false
+          }
+        ],
+        "cover": {
+          "x": -1,
+          "y": 0,
+          "d": 14,
+          "kind": "wall",
+          "auto": null
+        },
+        "hidden": false,
+        "kit": {
+          "picks": 2,
+          "stones": 2,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 0,
+        "observer": null,
+        "guards": 30,
+        "targets": 2,
+        "corpses": 2,
+        "bushes": 6,
+        "hides": 26,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "early-movement"
+      }
+    ],
+    "pageErrors": [],
+    "input": "Native CDP joystick/action buttons with fixed simulation clock; live guards, cameras, HP and fresh inventory. No player/NPC teleport, HP or AI overrides. Early encounter review, not full mission completion."
+  },
+  {
+    "stage": "m6",
+    "trace": [
+      {
+        "stage": "m6",
+        "t": 2.0333333333333345,
+        "at": [
+          216,
+          264,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "objective": "감방에서 나가기 · 감금동 1층 감방",
+        "status": "숨음",
+        "attack": "공격",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [],
+        "bodyRecords": [],
+        "cover": null,
+        "hidden": false,
+        "kit": {
+          "picks": 0,
+          "stones": 0,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 0,
+        "observer": null,
+        "guards": 11,
+        "targets": 0,
+        "corpses": 0,
+        "bushes": 2,
+        "hides": 9,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "entry"
+      },
+      {
+        "stage": "m6",
+        "t": 10.0666666666665,
+        "at": [
+          642.3999999998106,
+          324,
+          null,
+          0
+        ],
+        "hp": 3,
+        "over": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "objective": "감방에서 나가기 · 감금동 1층 감방",
+        "status": "벽에 붙음",
+        "attack": "은신 기습 필요",
+        "env": "행동",
+        "envChoices": [],
+        "witnesses": [],
+        "bodyRecords": [],
+        "cover": {
+          "x": 0,
+          "y": -1,
+          "d": 12,
+          "kind": "wall",
+          "auto": null
+        },
+        "hidden": false,
+        "kit": {
+          "picks": 1,
+          "stones": 0,
+          "darts": 0,
+          "smoke": null
+        },
+        "skills": {},
+        "alert": 0,
+        "observer": null,
+        "guards": 11,
+        "targets": 0,
+        "corpses": 0,
+        "bushes": 2,
+        "hides": 9,
+        "tools": [
+          "stone",
+          "coin"
+        ],
+        "toasts": [],
+        "label": "early-movement"
+      }
+    ],
+    "pageErrors": [],
+    "input": "Native CDP joystick/action buttons with fixed simulation clock; live guards, cameras, HP and fresh inventory. No player/NPC teleport, HP or AI overrides. Early encounter review, not full mission completion."
+  }
+]

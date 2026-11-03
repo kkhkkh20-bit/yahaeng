@@ -1,0 +1,9 @@
+[
+  {
+    "title": "Assassin's Creed Shadows - Stealth Gameplay Overview",
+    "url": "https://steamcommunity.com/games/3159330/announcements/detail/4478361902017151341",
+    "retrieval": "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=3159330&count=10&maxlength=0&enddate=1732208546",
+    "excerpt": "DOUBLE ASSASSINATIONS [/h2] \n\nWe know that players are always looking for efficiency in their stealth runs, and this is why we are bringing back Double Assassinations in Assassin's Creed Shadows. By equipping the Tanto as one of your main weapons and unlocking the dedicated skill, you can eliminate two enemies standing next to each other at once with your Hidden Blade - whether on the ground or from the air. \n\n \n[h2] GRABBING ENEMIES [/h2] \n\nWhile undetected, you can briefly grab and drag enemies in any d",
+    "interpretation": "Two adjacent targets eliminated at once. 동시 암살 is a descriptive Korean naming choice for this game; not a claim about the official Korean localization."
+  }
+]

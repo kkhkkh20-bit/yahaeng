@@ -1,6 +1,6 @@
 // Active assassination abilities use ownership from the shared skill tree.
 const ASSASSIN_SKILLS={
-  dual:{name:'쌍암살',cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
+  dual:{name:'동시 암살',cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
   chain:{name:'연속 암살',cooldown:16,description:'등 뒤의 적을 처리한 뒤 가까운 다음 적에게 직접 이동해 한 번 더 공격한다.'}
 };
 function initAssassinSkills(){

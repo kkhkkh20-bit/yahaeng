@@ -930,19 +930,19 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
   ]
 });
 STAGES.push({
- id:'tS',no:'00',name:'연습 5 · 암살 기술',sub:'선택 연습 · 쌍암살과 연속 암살',tutorial:true,skillPractice:true,noSupport:true,noAmbientChats:true,
- mission:'쌍암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. B·기술 버튼으로도 사용할 수 있다.',
+ id:'tS',no:'00',name:'연습 5 · 암살 기술',sub:'선택 연습 · 동시 암살과 연속 암살',tutorial:true,skillPractice:true,noSupport:true,noAmbientChats:true,
+ mission:'동시 암살과 연속 암살의 거리·방향·이동 조건을 익힌다.',brief:'살상 기술 연습. 빈손으로 등 뒤에 접근해 공격을 1초 동안 누른다. B·기술 버튼으로도 사용할 수 있다.',
  W:32,H:18,start:[3,9],exit:[28,13],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,bare:true,kunai:0,coins:0,items:[],itemName:'',itemNames:[],well:'manhole',
  build(m){m.fill(0,0,31,17,',');m.rect(0,0,31,17);m.fill(1,7,30,11,'.');m.fill(1,6,30,6,'=');m.fill(1,12,30,12,'=');m.many('Z',[[14,7],[14,8],[14,10],[14,11]]);m.many('T',[[4,3],[11,3],[20,3],[28,3],[4,15],[25,15]]);},
  lamps:[[8,6,350,1],[21,6,400,1]],wires:[],roofs:[],bricks:[],
  guards:[{kind:'g1',at:[9,8],post:0,still:true,radio:false},{kind:'g1',at:[9,9],post:0,still:true,radio:false},{kind:'g1',at:[19,9],post:0,still:true,radio:false},{kind:'g1',at:[21,9],post:0,still:true,radio:false}],
  steps:[
- [(S,P)=>P.mode==='sneak'?'두 경비의 등 뒤 표시로 이동':'{살금} 두 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(9*48+8),P.y-9*48)<12,()=>({x:(9*48+8),y:9*48}),'발소리를 줄여 접근하자. 쌍암살은 붙어 있는 두 적을 함께 처리한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
- ['{공격} 길게 · 두 경비 쌍암살',S=>(S.stats.dualAssassinations||0)>0,S=>S.guards[0],'두 적 모두 등 뒤에서 가까이 접근해야 한다. 공격을 1초 동안 누르면 발동한다. 짧게 떼면 한 명만 기절한다.','attack'],
+ [(S,P)=>P.mode==='sneak'?'두 경비의 등 뒤 표시로 이동':'{살금} 두 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(9*48+8),P.y-9*48)<12,()=>({x:(9*48+8),y:9*48}),'발소리를 줄여 접근하자. 동시 암살은 붙어 있는 두 적을 함께 처리한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+ ['{공격} 길게 · 두 경비 동시 암살',S=>(S.stats.dualAssassinations||0)>0,S=>S.guards[0],'두 적 모두 등 뒤에서 가까이 접근해야 한다. 공격을 1초 동안 누르면 발동한다. 짧게 떼면 한 명만 기절한다.','attack'],
  ['{기술목록} 연속 암살 선택',S=>S.selectedSkill==='chain',()=>null,'연속 암살은 첫 적을 처리한 뒤 다음 적까지 직접 이동한다.','skills'],
  [(S,P)=>P.mode==='sneak'?'다음 경비의 등 뒤 표시로 이동':'{살금} 다음 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(19*48-6),P.y-9.5*48)<12,()=>({x:(19*48-6),y:9.5*48}),'웅크려 접근하고 통로로 지나가자. 두 번째 적까지 길이 트여 있어야 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
  ['{공격} 길게 · 연속 암살',S=>(S.stats.chainAssassinations||0)>0,S=>S.guards[2],'이동 중 들키거나 길이 막히면 다음 공격은 중단된다.','attack'],
- ['아래쪽 출구로 이동',()=>false,S=>S.exit,'의뢰에서는 포인트로 선행 기술을 배우고 쌍암살·연속 암살을 선택한다.','move']
+ ['아래쪽 출구로 이동',()=>false,S=>S.exit,'의뢰에서는 포인트로 선행 기술을 배우고 동시 암살·연속 암살을 선택한다.','move']
  ]
 });
 STAGES.push({
@@ -2792,9 +2792,9 @@ function skillLegacyPoints(record){
 const SKILL_BRANCHES={body:{name:'신체',note:'소음 · 은폐 · 기동'},assassin:{name:'암살',note:'기습 · 연계 · 운반'},tools:{name:'도구',note:'투척 · 연막 · 전자장비'}};
 const SKILL_TREE=[
  {id:'quietStep',branch:'body',name:'가벼운 발',cost:1,req:[],row:1,col:0,description:'걷기 발소리 범위 25% 감소. 유리·철판의 추가 소음은 남는다.'},
- {id:'quietCrouch',branch:'body',name:'낮은 발걸음',cost:1,req:['quietStep'],row:2,col:1,description:'웅크린 이동의 발소리 범위 35% 감소.'},
+ {id:'quietCrouch',branch:'body',name:'조용한 잠행',cost:1,req:['quietStep'],row:2,col:1,description:'웅크린 이동의 발소리 범위 35% 감소.'},
  {id:'lookout',branch:'body',name:'주변 살피기',cost:1,req:['quietStep'],row:2,col:2,description:'일반 카메라를 10% 넓힌다. 다른 층이나 벽 너머를 투시하지 않는다.'},
- {id:'swiftCrouch',branch:'body',name:'낮은 보행',cost:2,req:['quietCrouch'],row:3,col:1,description:'웅크린 이동 속도 20% 증가.'},
+ {id:'swiftCrouch',branch:'body',name:'빠른 잠행',cost:2,req:['quietCrouch'],row:3,col:1,description:'웅크린 이동 속도 20% 증가.'},
  {id:'shadow',branch:'body',name:'어둠 적응',cost:2,req:['quietCrouch'],row:3,col:2,description:'어두운 곳에서 웅크리면 시각 발견 게이지가 15% 느리게 찬다. 접촉 감지는 유지된다.'},
  {id:'landing',branch:'body',name:'유연한 착지',cost:2,req:['swiftCrouch'],row:4,col:1,description:'일반 착지 소음 40% 감소. 사람이나 물건이 떨어지는 소리는 줄이지 않는다.'},
  {id:'foliage',branch:'body',name:'풀숲 자세',cost:2,req:['shadow'],row:4,col:2,description:'웅크려 숨은 풀숲에서 사람의 시각 감지 거리가 22% 줄어든다. 개의 후각은 막지 못한다.'},
@@ -2802,11 +2802,11 @@ const SKILL_TREE=[
  {id:'silentHands',branch:'assassin',name:'제압 숙련',cost:1,req:[],row:1,col:0,description:'맨손 기절의 접촉 소음 30% 감소. 목격자와 쓰러진 몸은 그대로 남는다.'},
  {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'풀숲·은신처·엄폐·환풍구에서 끌어당겨 제압하고 가장자리에서 기습한다. 배워야 은폐한 채 공격·붙잡기를 할 수 있다.'},
  {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:3,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
- {id:'dual',branch:'assassin',name:'쌍암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
+ {id:'dual',branch:'assassin',name:'동시 암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
  {id:'chain',branch:'assassin',name:'연속 암살',cost:3,req:['dual'],row:3,col:2,description:'첫 적을 처치한 뒤 다음 적에게 직접 이동. 공격 또는 B 길게 · 재사용 16초. 들키면 중단.'},
  {id:'reach',branch:'assassin',name:'접근 암살',cost:2,req:['silentHands'],row:5,col:1,description:'기본 제압은 1m 이내에서만 가능하다. 이 기술을 배우면 약 세 걸음 거리(3.5m)에서 적의 등 뒤로 직접 접근해 제압한다. 벽·가구를 통과할 수 없다.'},
- {id:'flow',branch:'assassin',name:'연계 정비',cost:2,req:['chain'],row:4,col:2,description:'쌍암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
+ {id:'flow',branch:'assassin',name:'빠른 재정비',cost:2,req:['chain'],row:4,col:2,description:'동시 암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
  {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:6,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
  {id:'kit',branch:'tools',name:'현장 장비',cost:1,req:[],row:1,col:0,description:'의뢰 시작 시 락픽 1개·빈 캔 2개 추가. 맨손 시작 조건은 유지한다.'},
  {id:'dart',branch:'tools',name:'다트 운용',cost:1,req:['kit'],row:2,col:1,description:'다트를 배워야 조준·발사할 수 있다. 기본 2발 지급. 짧게 눌러 기절, 길게 눌러 처치한다.'},
@@ -2895,7 +2895,7 @@ function electricalChoice(a){
 
 // Active assassination abilities use ownership from the shared skill tree.
 const ASSASSIN_SKILLS={
-  dual:{name:'쌍암살',cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
+  dual:{name:'동시 암살',cooldown:12,description:'붙어 있는 두 적의 등 뒤에서 함께 처리한다. 두 대상 모두 가까이 있어야 한다.'},
   chain:{name:'연속 암살',cooldown:16,description:'등 뒤의 적을 처리한 뒤 가까운 다음 적에게 직접 이동해 한 번 더 공격한다.'}
 };
 function initAssassinSkills(){
@@ -13505,7 +13505,7 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '동시 암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -13817,11 +13817,11 @@ function skillTreeLayout(branch){
 }
 const SKILL_UTILITY={
  quietStep:'경비가 돌아서는 틈에 걸어서 거리를 좁히기',quietCrouch:'경비 바로 옆 통로를 낮은 자세로 지나가기',lookout:'접근하기 전에 순찰과 출구를 함께 살피기',swiftCrouch:'순찰이 돌아오기 전에 어두운 구간을 통과하기',shadow:'불이 약한 방에서 발각되기 전 이동할 시간 벌기',landing:'옥상에서 내려온 뒤 착지점 수색을 줄이기',foliage:'풀숲 가까이 순찰이 지나갈 때 버티기',sprint:'노출된 도로를 짧은 틈에 건너기',
- silentHands:'주변 경비가 접촉 소리를 듣는 범위 줄이기',ambush:'풀숲이나 엄폐 뒤에서 모습을 드러내지 않고 제압하기',drop:'지상 순찰을 우회해 위에서 접근하기',dual:'서로를 지켜보는 두 경비를 동시에 처리하기',bodyCarry:'동료 순찰이 돌아오기 전에 몸을 치우기',chain:'떨어져 순찰하는 두 경비를 연달아 처리하기',reach:'멀어지는 적을 따라잡아 뒤에서 제압하기',flow:'다음 순찰을 상대할 때 암살 기술을 빨리 다시 준비하기',blindside:'정확한 정후방을 잡기 어려운 좁은 통로에서 기습하기',
+ silentHands:'주변 경비가 접촉 소리를 듣는 범위 줄이기',ambush:'풀숲이나 엄폐 뒤에서 모습을 드러내지 않고 제압하기',drop:'지상 순찰을 우회해 위에서 접근하기',dual:'가까이 붙은 두 경비를 한 번에 처리하기',bodyCarry:'동료 순찰이 돌아오기 전에 몸을 치우기',chain:'떨어져 순찰하는 두 경비를 연달아 처리하기',reach:'멀어지는 적을 따라잡아 뒤에서 제압하기',flow:'다음 순찰을 상대할 때 암살 기술을 빨리 다시 준비하기',blindside:'정확한 정후방을 잡기 어려운 좁은 통로에서 기습하기',
  kit:'잠긴 경로를 열거나 캔으로 순찰 방향 바꾸기',dart:'접근하기 어려운 적을 멀리서 기절시키기',kunai:'위험 구역에 들어가기 전에 적을 원거리에서 처치하기',smoke:'카메라와 경비가 보는 길을 잠시 가리고 통과하기',precision:'더 멀리서 투척하고 추가 탄약으로 경로 선택 폭 늘리기',smokeMix:'몸을 운반하거나 긴 통로를 건널 시간을 벌기',electric:'조명을 꺼서 사람의 시야를 줄이고 복구하러 오는 경비 유인하기',radio:'확보한 무전기로 순찰 한 명만 다른 곳으로 보내기',hack:'전원을 끄러 들어가지 않고 CCTV 통과 시간 만들기',signal:'CCTV에 더 멀리서 개입하고 안전하게 통과할 시간 늘리기'
 };
 function skillBenefit(d){
- const pairs={reach:['1m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['쌍암살 12초 · 연속 16초','쌍암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
+ const pairs={reach:['1m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['동시 암살 12초 · 연속 16초','동시 암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
  return pairs[d.id];
 }
 
