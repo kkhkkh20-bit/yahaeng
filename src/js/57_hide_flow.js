@@ -121,18 +121,30 @@ function hideRoutePoint(points,d) {
 function cancelHideFlow(P,T) {
   const F=T.hideFlow;if(F.g){F.g.containerMoving=false;F.g.doomed=false;if(F.g.state==='DEAD'&&P.captive===F.g)P.captive=null;}
   if(F.c&&!S.corpses.includes(F.c)&&P.carrying===F.c)P.carrying=null;
-  P.trav=null;P.moving=false;if(!P.hide){P.x=F.from.x;P.y=F.from.y;}RC=null;
+  P.trav=null;P.moving=false;if(!P.hide&&!F.quick){P.x=F.from.x;P.y=F.from.y;}RC=null;
 }
 function finishBodyRetrieval(P,F){
   if(F.kind!=='retrieve'||P.carrying!==F.c)return;
   const c=F.c;c.carried=false;c.x=P.x;c.y=P.y;c.a=P.a;c.hidden=tileAt(c.x,c.y)==='B';P.carrying=null;
   startBodyAnim('drop',c,.5);play('cloth',.25);
 }
+// Follow the authored approach, allowing the final hand lean against this fixture only.
+function hideMotionClear(P,F,to){
+  const previous=CUR_F;setLayer(F.fl);
+  try{
+    const solid=solidFor(F.z),b=F.geo.footprint,n=Math.max(1,Math.ceil(dist(P.x,P.y,to.x,to.y)/8));
+    for(let i=0;i<=n;i++)for(const [dx,dy]of [[-10,-10],[10,-10],[-10,10],[10,10]]){
+      const x=P.x+(to.x-P.x)*i/n+dx,y=P.y+(to.y-P.y)*i/n+dy;
+      if(solid(Math.floor(x/TILE),Math.floor(y/TILE))&&!(F.h.type!=='bush'&&x>=b.x0&&x<b.x1&&y>=b.y0&&y<b.y1))return false;
+    }return true;
+  }finally{setLayer(previous);}
+}
 function updateHideFlow(P,dt) {
   const T=P.trav,F=T.hideFlow,h=F.h;T.t+=dt;
   if(!S.hides.includes(h)&&!(S.bushes||[]).includes(h)){cancelHideFlow(P,T);return;}
   if(flOf(h)!==F.fl||(h.z||0)!==F.z||h.x!==F.hx||h.y!==F.hy){cancelHideFlow(P,T);return;}
   if(flOf(P)!==F.fl||(P.z||0)!==F.z||F.g&&!F.committed&&(P.captive!==F.g||F.g.state!=='CAPTIVE')||F.c&&!F.committed&&(!S.corpses.includes(F.c)||(F.kind==='retrieve'?P.carrying||!F.c.stashed||F.c.container!==h:P.carrying!==F.c))){cancelHideFlow(P,T);return;}
+  if(F.quick&&!F.committed&&(P.hurtT>0||h.type==='bush'&&tileAt(h.x,h.y)!=='B'||!hideMotionClear(P,F,T.t<F.walk?hideRoutePoint(F.route.points,T.t*130):F.route.stand))){cancelHideFlow(P,T);return;}
   if(F.intent){if(F.holding&&combatHeld(F.intent.source))F.held+=dt;else F.holding=false;}
   F.witnessed=F.witnessed||S.guards.some(g=>g.seen&&flOf(g)===F.fl&&(g.z||0)===F.z&&!['DEAD','CAPTIVE'].includes(g.state));
   const f=hideFlowProgress(T),walking=T.t<F.walk;

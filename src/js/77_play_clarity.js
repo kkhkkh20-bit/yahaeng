@@ -55,7 +55,7 @@ function encounterRows(P, ka, ga, pa) {
     rows.push({key:key('atk'),text:'기절',detail:'이후 운반·은닉 · 길게 처치',ready:true});
     return rows;
   }
-  if(victim&&ka.k!=='none')rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 처치':ka.stalk?'더 가까이':'',ready:ka.k!=='none'});
+  if(victim&&ka.k!=='none')rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 '+ka.hold:ka.stalk?'더 가까이':'',ready:ka.k!=='none'});
   if(ga?.k==='grab')rows.push({key:key('grab'),text:'붙잡기',detail:ga.reason||'',ready:ga.k==='grab'});
   if(rows.length&&pa?.k==='steal')rows.push({key:key('env'),text:pa.label,detail:'',ready:true});
   return rows;

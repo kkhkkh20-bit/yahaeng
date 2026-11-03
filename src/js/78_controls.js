@@ -40,7 +40,7 @@ function actIcon(a) {
   if (a.k === 'pickup' && a.p && a.p.outfit) return 'dress';
   const k = a.k, lb = a.label || '';
   if (KILLISH.has(k) || ((k === 'winJump' || k === 'up') && a.kill)) return /기절|끌어내리기/.test(lb) ? 'ko' : 'kill';
-  return ({ hide: 'hide', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
+  return ({ hide: 'hide', quickStash:'stash', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
     down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: a.h?'hide':'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
     clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
@@ -87,7 +87,7 @@ function keyMap(ka, ea, ga) {
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '웅크림' : '웅크리기', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)
-function holdFrac() { const p = S.player.lethalHold, h = S.koHold, flow=S.player.trav?.hideFlow||S.player.trav?.ventPull||S.amb; if(flow?.intent&&flow.holding&&!flow.committed)return clamp(flow.held/LETHAL_HOLD,0,1);return p ? clamp(p.t / LETHAL_HOLD, 0, 1) : h ? clamp((S.t - h.t0) / KO_HOLD, 0, 1) : 0; }
+function holdFrac() { const skill=S.player.skillHold;if(skill)return clamp((S.t-skill.t0)/LETHAL_HOLD,0,1);const p = S.player.lethalHold, h = S.koHold, flow=S.player.trav?.hideFlow||S.player.trav?.ventPull||S.amb; if(flow?.intent&&flow.holding&&!flow.committed)return clamp(flow.held/LETHAL_HOLD,0,1);return p ? clamp(p.t / LETHAL_HOLD, 0, 1) : h ? clamp((S.t - h.t0) / KO_HOLD, 0, 1) : 0; }
 function drawHoldRing() {
   const flow=S.player.trav?.hideFlow||S.player.trav?.ventPull||S.amb,h=S.koHold||S.player.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?{a:{g:flow.g},container:flow.h}:null);if(!h)return; const f = holdFrac(), c = h.container || h.c || (h.a && h.a.c) || combatVictims(h.a)[0] || actObj(h.a) || S.player, marker=actorMarker(c,h.container?null:h.a?.c||h.c),x=marker.x,y=marker.y-marker.ry-14;
   ctx.save(); ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(x, y, 16, 0, TAU); ctx.stroke();

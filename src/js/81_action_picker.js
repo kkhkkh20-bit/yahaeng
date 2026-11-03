@@ -8,7 +8,7 @@ function setObjectiveOpen(open){
   document.body.classList.toggle('inspecting',hudInspecting());
 }
 function closeHudInspection(){closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
-const envToken = a => a.k + ':' + oid(actObj(a));
+const envToken = a => a.k + ':' + oid(actObj(a))+(a.k==='quickStash'?':'+oid(a.h):'');
 function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
 function selectEnvTarget(token) {
   RC = null; const a = envChoices(), i = a.findIndex(v => envToken(v) === token);

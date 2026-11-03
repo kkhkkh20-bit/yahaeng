@@ -380,3 +380,8 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
 body:not(.touch) #hud .tools { max-width:calc(100vw - 28px); flex-wrap:wrap; justify-content:flex-end; }
 body:not(.touch) #hud .tools .tool { min-height:44px; }
 @media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } }
+
+/* Short portrait: retain the legacy training key without covering the play area. */
+@media(max-width:360px) and (max-height:640px) and (orientation:portrait) {
+  body.touch #hud #btnSkill { left:10px; right:auto; bottom:calc(100px + env(safe-area-inset-bottom,0px)); width:92px; min-height:56px; padding:6px; }
+}

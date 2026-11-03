@@ -80,7 +80,7 @@ function clearPlayerInput() {
   for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.skillHold=null;S.player.techWork=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
@@ -149,7 +149,7 @@ canvas.addEventListener('touchend', endJoy); canvas.addEventListener('touchcance
 function bindBtn(id, fn) {
   const b = $(id);
   b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); combatPress(id); fn(); });  // '눌림'을 먼저 — 행동 안에서 길게 누르기(기절 뒤 처치·조르기)를 알아보게
-  const up = () => { b.classList.remove('down'); combatRelease(id); };
+  const up = e => { b.classList.remove('down'); combatRelease(id,e.type!=='pointerup'); };
   b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up);
 }
 bindBtn('btnAct', actAttack);

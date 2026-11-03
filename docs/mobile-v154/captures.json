@@ -1,0 +1,396 @@
+{
+  "before": {
+    "method": "Unmodified production packages, seed 42, identical viewport and controlled scene. Temporary training abilities are identical. Body scene uses the same existing mission bush and a controlled downed guard; not a mission playthrough. Held scene applies the same attack input for 0.4 seconds.",
+    "captures": [
+      {
+        "image": "before-attack-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "36651fb0881bddd10ffdf592b80f352b4017a425d39875e25426aa8b8762c268",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-held-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "b052e5e22e036e490a5678d81e45eb7d299fbe01dd3b0c9f82ebcb4c6c875e56",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-concealment-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "62f01f9d3c68baaabf3dd318b018bb107ee7b89b4d60ae5347ddf565e0febdef",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-body-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "e6a54ae029794ba826f9626d79216a9b2995774217650581c75c04fe431c61c2",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-attack-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "36035163e62d77f8dc3dab719716bddb9c25863b54e75d96b1b5cb3c83eb09dd",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-held-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "ee10fc311e65406342bdce7fb6b350593ec49d03de33b8f230b435e2cd80566d",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-concealment-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "7a01e9d4bcd502754b6eec1af3b15623a68cb8512c097b6e379d863454c10f1d",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-body-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "fced263fd6ec2c8b05e00d104d7900c700f8d766b0e04e8c498eb800a1cc0ba2",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-attack-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "39525a9aa290f5d1c98241d9f8fb7877ba461f3276aaf1b6e5b722e0159f13ae",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-held-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "c395edc0392db2869b1ad13b8fe430b1b6bff25626e9b993930c7e432c3ca310",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-concealment-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "263f173d26dec4d28e918a73391bb3fb1a290d57f523e4e4d086c619b8b8da03",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-body-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "e5aa4b0a99c7c60d2bfd893e8f841fbf6ba72725ecfb07f78171708580a0ffb4",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-attack-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "c9e8d1c512fee7bf1ab6f58d60965935bcaa73258fe3f7b5a44aaf43c4005e85",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-held-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "f6a9f8142197b9cce2bd06a70d39712bf3bb23596be46e88d8865569124a7e0e",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-concealment-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "b6769d31066a20a0c3be4f9f0431d579fb2236f6cfc5e621fa1fd4bf64c1f4b3",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "before-body-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v153",
+        "sourcePackageSha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "imageSha256": "3c494cef2353513efaf8304fcd1e9623e88a8afa4ad1e4562176baa0396f98e8",
+        "pageErrors": [],
+        "fixture": true
+      }
+    ]
+  },
+  "after": {
+    "method": "Unmodified production packages, seed 42, identical viewport and controlled scene. Temporary training abilities are identical. Body scene uses the same existing mission bush and a controlled downed guard; not a mission playthrough. Held scene applies the same attack input for 0.4 seconds.",
+    "captures": [
+      {
+        "image": "after-attack-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "de186b19d0423cf97a54d190cc9dc481ce7b4bab912082a33c2166f532954477",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-held-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "e3862f22ed1d1540a1941357f6f0af18bff8ad17fd012194622b27b615369b69",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-concealment-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "5b5d2c30825d0ec4c77fef84653de69382cc00fca29880f7f8b42c96ae9827a2",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-body-pc.png",
+        "viewport": [
+          1440,
+          900
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "3d977ffad4e1343f9528fc307c81757ff7c5fd94a3971944c5302af00cd0625f",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-attack-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "10234140fd95858453e7ad32d648bac83fcb9cb4a96ae34d0c5e50e42027542c",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-held-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "bd87c86aa3921b82ee104fa86b5123d4222ac7ade2a081b324bda093ade66513",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-concealment-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "fda2d6c3acbb2aa514276e3adb1737ebad402aab4f998ec8072f7b355705f0c1",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-body-mobile.png",
+        "viewport": [
+          390,
+          844
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "cb9c311a9a54d1839393679b9bb4eace72e562a8e62cafe6951161405d21add1",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-attack-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "b897240b4eac58f51d28195d7c6c88bd596c20f1eacb43375789e9655453e0c5",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-held-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "47a539ba6e3cc6366db0e0291b0061b8be03ef7956b18adf9ee6cdda00553cdf",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-concealment-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "9e1e01701d6394871672b7edcdd980cbc36dc1221cda090627b2a9026c17e2cf",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-body-landscape.png",
+        "viewport": [
+          844,
+          390
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "5e0b8e2807599a43068ef044cf20421979bec0a870a593fbc0243eea90336aed",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-attack-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "9fe566fd89db65d5b053b70c282c6f13e5aef65258b14e1cd8baba8f3568ce39",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-held-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "647929e20e94a297b42fd0f72ef2e8490304aa293365820042326fa7871f02cb",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-concealment-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "01df089088392574f68b1c26159d7b797f54d7517371e9626bffc607be32cc78",
+        "pageErrors": [],
+        "fixture": true
+      },
+      {
+        "image": "after-body-small.png",
+        "viewport": [
+          320,
+          568
+        ],
+        "version": "v154",
+        "sourcePackageSha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "imageSha256": "7147b6b467f89556c318d41d465cbac4b979d01dcb07a18b41d3f5b515dacd11",
+        "pageErrors": [],
+        "fixture": true
+      }
+    ]
+  }
+}

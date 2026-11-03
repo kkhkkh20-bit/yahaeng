@@ -14,11 +14,11 @@ function combatHeld(source) {
   if (!source || ((input.pressIds || {})[source.id] || 0) !== source.serial) return false;
   return source.id.startsWith('btn') ? !!($(source.id) && $(source.id).classList.contains('down')) : !!S.keys[source.id];
 }
-function combatRelease(id) {
+function combatRelease(id, cancelled=false) {
   if (!S) return;
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
-  if(S.player.skillHold?.source.id===id)S.player.skillHold=null;
+  if(S.player.skillHold?.source.id===id){const h=S.player.skillHold;S.player.skillHold=null;if(!cancelled)releaseAssassinTap(h);}
   if (input.pressIds) delete input.pressIds[id];
 }
 function combatVictims(a) {

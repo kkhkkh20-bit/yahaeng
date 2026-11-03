@@ -1,0 +1,62 @@
+{
+  "disposition": "fix",
+  "scope": "v154 ordinary extension: attack labels and held feedback, default body cleanup, concealed player readability, and four requested viewports. No approved comp; v153 captures are code-led fidelity references.",
+  "persistence": {
+    "finding": "The requested hide → close approach → ambush → explicit body cleanup loop is more direct. Attack gives a tap KO / held learned-skill distinction, held input visibly reports preparation, and the campaign action default now names body hiding.",
+    "evidence": "All sixteen required after screenshots opened individually and show their named scene at the requested viewport; none are blank, wrong-state, or partially loaded. Supplied mechanics.json reports tap/held/cancel and physical body handling checks with no page errors. This review did not run those tests or real-device play, and screenshots do not establish a completed mission."
+  },
+  "fidelity": {
+    "finding": "The incumbent dark HUD, muted warm accents, thin authored action symbols and Korean typography are preserved. This local extension does not introduce a replacement visual world.",
+    "comparison": "Compared all four small before scenes and representative before mobile attack/concealment. The small-screen control obstruction is inherited, not a regression; campaign mobile body removes the extra skill button and changes the default from outfit changing to explicit body hiding.",
+    "detector": "build/mobile-v154/design-detection.json contains an empty findings array. Existing interface.css and hud.css were not changed."
+  },
+  "ceiling": {
+    "finding": "A narrow responsive correction is sufficient. The 390×844, 844×390 and 1440×900 captures support readable new labels and held feedback. The 320×568 captures still fail the requested visibility of the player while concealed and during the action loop.",
+    "limit": "Do not redesign the HUD or alter the visual system. The blocking issue is an inherited obstruction that directly prevents the newly requested mobile usability outcome, rather than unrelated pre-existing drift."
+  },
+  "material_fixes": [
+    {
+      "id": "M1",
+      "priority": "high",
+      "title": "Keep the player and immediate interaction visible at 320×568",
+      "evidence_type": "screenshot",
+      "evidence": [
+        ".impeccable/review/v154/after-concealment-small.png",
+        ".impeccable/review/v154/after-attack-small.png",
+        ".impeccable/review/v154/after-held-small.png",
+        ".impeccable/review/v154/after-body-small.png"
+      ],
+      "finding": "The crouch/run row lies across the centered action area (roughly y326–370). In concealment the crouched player's body and ground silhouette sit behind the crouch control; in the attack/held scenes that row and the skill strip obscure the player/contact area; in the body scene the row crosses the player/body area and the target-cycle annotation is partially covered by the next row. The clearer player outline cannot serve its purpose behind these controls.",
+      "inheritance": "The corresponding v153 before screenshots show the same placement. It is not introduced by v154, but it blocks the explicitly requested concealed-player readability and four-viewport mobile loop.",
+      "required_change": "Reserve an unobstructed play area on the short portrait viewport: adjust the small-screen camera framing and/or the existing control placement so the player, immediate target/body and contextual annotation stay above or clear of the controls. Preserve the incumbent palette, type, symbols, usable button sizes and existing campaign control count.",
+      "acceptance": "Recapture the same sixteen files after the single batch. At 320×568 the concealed player, close-contact pair, held target feedback and body interaction must be visibly clear of controls and text strips. The other three viewport layouts must retain their current readability."
+    }
+  ],
+  "keep": [
+    "The attack button's 기절 / 길게 쌍암살 label states the immediate and held actions.",
+    "The held button, target numbering and 준비 41% strip visibly distinguish preparation from a completed attack.",
+    "The campaign mobile action label 시체 숨기기 names the intended body cleanup and avoids the prior default outfit action.",
+    "The campaign mobile skill button removal reduces clutter while retaining the legacy training control in its explicitly documented compatibility scope.",
+    "The brighter concealed-player outline at the larger viewports and concise crouch/bush training copy support the requested stealth state.",
+    "Source inspection supports retaining the normal 32px melee contact gate and cancellation path; the separate supplied mechanics record, rather than these screenshots, is the evidence offered for physical behavior."
+  ],
+  "inspected_after_files": [
+    ".impeccable/review/v154/after-attack-pc.png",
+    ".impeccable/review/v154/after-attack-mobile.png",
+    ".impeccable/review/v154/after-attack-landscape.png",
+    ".impeccable/review/v154/after-attack-small.png",
+    ".impeccable/review/v154/after-held-pc.png",
+    ".impeccable/review/v154/after-held-mobile.png",
+    ".impeccable/review/v154/after-held-landscape.png",
+    ".impeccable/review/v154/after-held-small.png",
+    ".impeccable/review/v154/after-body-pc.png",
+    ".impeccable/review/v154/after-body-mobile.png",
+    ".impeccable/review/v154/after-body-landscape.png",
+    ".impeccable/review/v154/after-body-small.png",
+    ".impeccable/review/v154/after-concealment-pc.png",
+    ".impeccable/review/v154/after-concealment-mobile.png",
+    ".impeccable/review/v154/after-concealment-landscape.png",
+    ".impeccable/review/v154/after-concealment-small.png"
+  ],
+  "review_method": "Independent fresh-context read-only source and screenshot review; only this requested JSON artifact was written."
+}

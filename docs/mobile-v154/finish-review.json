@@ -1,0 +1,50 @@
+{
+  "disposition": "ship",
+  "review_type": "verdict_pass",
+  "scope": "M1 only: clear the player and immediate interaction at 320×568 while preserving the other three captured viewport layouts. This is a score of the listed fix, not a fresh whole-surface review.",
+  "persistence": {
+    "finding": "The correction preserves the accepted control actions and addresses the one blocking visibility finding. All sixteen recaptured after files were opened individually and show the correct named scene and viewport."
+  },
+  "fidelity": {
+    "finding": "The small portrait framing now raises the player/contact area above the control rows. The legacy training skill strip moves to the lower left without covering the contact area. Palette, typography, symbols, control shapes and campaign control count remain consistent in the captured correction.",
+    "other_viewports": "The 1440×900, 390×844 and 844×390 scenes retain their prior readable framing and controls for the specific M1 regression check."
+  },
+  "ceiling": {
+    "finding": "M1 is resolved. No further correction is owed under this verdict pass.",
+    "limits": "Screenshot evidence establishes visible placement in these controlled fixtures. This pass does not claim real-device play, completed missions, exhaustive map-edge behavior, or independently rerun gameplay tests."
+  },
+  "material_fixes": [
+    {
+      "id": "M1",
+      "title": "Keep the player and immediate interaction visible at 320×568",
+      "status": "resolved",
+      "evidence_type": "recaptured screenshots",
+      "score": "In after-concealment-small.png the crouched player's outline and feet are visible above the crouch/run row. In after-attack-small.png and after-held-small.png the player and target pair remain clear of that row; preparation feedback is readable in the relocated lower-left training control. In after-body-small.png the player/body and target-cycle annotation sit above the first control row. The other twelve captures retain the prior usable layouts.",
+      "remaining_work": []
+    }
+  ],
+  "keep": [
+    "The narrow small-portrait framing correction and unobstructed immediate action area.",
+    "The relocated small training skill strip and original campaign control count.",
+    "The existing visual system and readable action/held feedback at all four captured sizes."
+  ],
+  "inspected_after_files": [
+    ".impeccable/review/v154/after-attack-pc.png",
+    ".impeccable/review/v154/after-attack-mobile.png",
+    ".impeccable/review/v154/after-attack-landscape.png",
+    ".impeccable/review/v154/after-attack-small.png",
+    ".impeccable/review/v154/after-held-pc.png",
+    ".impeccable/review/v154/after-held-mobile.png",
+    ".impeccable/review/v154/after-held-landscape.png",
+    ".impeccable/review/v154/after-held-small.png",
+    ".impeccable/review/v154/after-body-pc.png",
+    ".impeccable/review/v154/after-body-mobile.png",
+    ".impeccable/review/v154/after-body-landscape.png",
+    ".impeccable/review/v154/after-body-small.png",
+    ".impeccable/review/v154/after-concealment-pc.png",
+    ".impeccable/review/v154/after-concealment-mobile.png",
+    ".impeccable/review/v154/after-concealment-landscape.png",
+    ".impeccable/review/v154/after-concealment-small.png"
+  ],
+  "initial_review": "build/mobile-v154/finish-review-initial.json"
+}

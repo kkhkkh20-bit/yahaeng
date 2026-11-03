@@ -31,7 +31,7 @@ const SKILL_SIGILS={
 const skillSigil=(id,cls='')=>`<svg class="${cls}" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${SKILL_SIGILS[id]||SKILL_SIGILS.kit}"/></svg>`;
 const skillLock='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2M3 7h10v8H3Z"/></svg>';
 function skillUseText(d){
- if(['dual','chain'].includes(d.id))return '장착한 뒤 B 또는 기술 버튼을 길게 누르기';
+ if(['dual','chain'].includes(d.id))return '장착 후 공격 길게 · 짧게 떼면 한 명 기절 / B도 가능';
  if(d.id==='reach')return '등 뒤에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';

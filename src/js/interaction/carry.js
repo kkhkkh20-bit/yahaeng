@@ -9,6 +9,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'env' }); return; }
   const sa = force || secondaryAction();
   if (!(P.interact && P.interact.committing) && beginObjectAction(Object.assign({}, sa, { fromZ: true }))) return;
+  if(sa.k==='quickStash'){beginQuickStash(sa);return;}
   if (sa.viaZ) { actPrimary(sa); return; }
   if (sa.k === 'cover') { enterCover(sa.n); return; }
   if (sa.k === 'ledge') { P.ledge = { x: sa.n.x, y: sa.n.y }; P.ledgeLock = true; P.vx = P.vy = 0; play('cloth', 0.3); hint('ledge', '매달림: 옥상 자경대원에게 안 보인다. 위로 밀면 올라서고, 밖으로 밀면 손을 놓고 뛰어내린다(2층 높이까지). 가까이 온 자경대원은 끌어내린다'); return; }
@@ -53,7 +54,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
@@ -79,4 +80,28 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   const hp = envOnly ? {} : primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   return { k: 'none', label: '보조' };
+}
+
+// Explicit one-press clean-up: only an existing downed body, then lift, walk and store.
+function quickStashChoice(c){
+  const P=S.player;
+  if(STAGE.tutorial&&!STAGE.flowPractice||P.carrying||P.captive||P.hide||P.under||P.vent||P.z||actionBusy(P)||!S.corpses.includes(c)||c.carried||c.stashed||c.hidden||!objectReachable(c,46))return null;
+  const places=[...S.hides,...(S.bushes||[])].filter(h=>hideSpace(h,1)&&(h.type!=='bush'||tileAt(h.x,h.y)==='B')&&objectReachable(h,60)).sort((a,b)=>hideDistance(a)-hideDistance(b));
+  for(const h of places){const route=hideApproach(h);if(route&&route.length<=96)return{k:'quickStash',c,h,fromZ:true,label:c.ko?'기절자 숨기기':'시체 숨기기'};}
+  return null;
+}
+function beginQuickStash(a){
+  const P=S.player,choice=quickStashChoice(a.c);
+  if(!choice||choice.h!==a.h)return;
+  actCarry({k:'carry',c:a.c,quick:true});if(P.carrying!==a.c)return;
+  P.quickStash={c:a.c,h:a.h,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,readyAt:S.t+.55};
+}
+function updateQuickStash(P,dt){
+  const q=P.quickStash;if(!q)return false;
+  if(S.over||P.hurtT>0||P.carrying!==q.c||!S.corpses.includes(q.c)||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||P.trav||!hideSpace(q.h,1)||q.h.type==='bush'&&tileAt(q.h.x,q.h.y)!=='B'||!objectReachable(q.h,60)||![...S.hides,...(S.bushes||[])].includes(q.h)){P.quickStash=null;return false;}
+  P.hidden=false;P.light=lightAt(P.x,P.y,!!P.z);P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,(P.strikeT||0)-dt);
+  if(S.t<q.readyAt)return true;
+  P.quickStash=null;const route=hideApproach(q.h);
+  if(route&&route.length<=96&&beginHideFlow('stash',q.h,q.c)&&P.trav?.hideFlow)P.trav.hideFlow.quick=true;
+  return !!P.trav;
 }

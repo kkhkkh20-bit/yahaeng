@@ -7,7 +7,7 @@ ROOT=Path(__file__).resolve().parents[2]
 async def main():
  async with async_playwright() as p:
   browser=await p.chromium.launch();total=0
-  for width,height,touch in [(390,844,True),(844,390,True),(1280,720,False)]:
+  for width,height,touch in [(320,568,True),(390,844,True),(844,390,True),(1280,720,False)]:
    pg=await browser.new_page(viewport={'width':width,'height':height},has_touch=touch);errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
    await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!__game')
    result=await pg.evaluate('''({touch})=>{
@@ -18,9 +18,9 @@ async def main():
       Object.assign(P,{x:G.MW*24,y:edge==='top'?24:G.MH*48-24,z:0,fl:0,moving:false,mode:'walk'});
       for(let n=0;n<150;n++)G.moveCamera(1/60);
       const s=G.SCALE,h=innerHeight,bottom=(G.MH*48-G.cam.y)*s+h/2;
-      if(G.MH*48*s>=h&&edge==='bottom')check(h-bottom<=(touch?Math.min(140,h*.18):24)+1,id+' excessive blank below map');
+      if(G.MH*48*s>=h&&edge==='bottom')check(h-bottom<=(innerWidth===320?h*.55:touch?Math.min(140,h*.18):24)+1,id+' excessive blank below map');
       const bounds=G.cameraYBounds();check(G.cam.y>=bounds[0]-1&&G.cam.y<=bounds[1]+1,id+' camera outside vertical bounds');
-      const sy=(P.y-G.cam.y)*s+h/2;check(sy>8&&sy<h-8,id+' player clipped at boundary');cases++;
+      const sy=(P.y-G.cam.y)*s+h/2;check(sy>8&&sy<h-8,id+' player clipped at boundary');if(innerWidth===320)check(sy+48<document.querySelector('.sysbtns').getBoundingClientRect().top,id+' short portrait controls cover player at map edge');cases++;
      }
      // Moving along the last tiles eases toward the limit without a sudden camera jump.
      P.y=G.MH*48-240;for(let n=0;n<150;n++)G.moveCamera(1/60);

@@ -1,9 +1,17 @@
 // A held input prepares a lethal skill. Victims are locked by id, not retargeted.
-function beginAssassinSkill(){
+function beginAssassinSkill(group='skill',tap=null){
   if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
-  const choice=assassinOpportunity(),source=combatSource('skill');
+  const choice=assassinOpportunity(),source=combatSource(group);
   if(!choice||!source){toast(assassinReason(),2.2);return;}
-  const P=S.player;P.skillHold={...choice,source,t0:S.t,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.vx=P.vy=0;P.moving=false;
+  const P=S.player;P.skillHold={...choice,source,tap,t0:S.t,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.vx=P.vy=0;P.moving=false;
+}
+// A short attack press retains its original single victim. Cancel events never attack.
+function releaseAssassinTap(h){
+  if(!h.tap||!running||paused||tactical||S.over||DLG.modal||S.keypad||S.t-h.t0>=LETHAL_HOLD)return;
+  const P=S.player,choice=assassinOpportunity(h.key);
+  if(P.hurtT>0||flOf(P)!==h.fl||(P.z||0)!==h.z||dist(P.x,P.y,h.x,h.y)>8||!choice||choice.ids.some((id,i)=>id!==h.ids[i]))return;
+  // The released press cannot borrow another held key's lethal intention.
+  actPrimary({...h.tap,viaZ:true,inputGroup:'atk',combatSource:{id:h.source.id,serial:-1}});
 }
 function cancelAssassinSkill(){
   if(!S?.player)return;const P=S.player,A=P.assassinAnim;

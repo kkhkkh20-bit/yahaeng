@@ -53,3 +53,10 @@ function assassinReason(){
   if(P.z||P.hide||P.vent||P.under||P.carrying||P.captive)return '빈손으로 같은 층의 등 뒤에서 접근';
   return k==='dual'?'붙어 있는 두 적의 등 뒤로 접근':'가까운 두 적의 등 뒤와 이동 경로 확보';
 }
+
+function assassinPreview(){
+  const P=S.player,key=S.selectedSkill+'|'+P.x+'|'+P.y+'|'+flOf(P)+'|'+(P.z||0);
+  let scan=hudCache.skillScan;
+  if(!scan||scan.key!==key||S.t<scan.t||S.t-scan.t>=.1)scan=hudCache.skillScan={key,t:S.t,choice:assassinOpportunity()};
+  return scan.choice;
+}
