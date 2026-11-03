@@ -1,0 +1,143 @@
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.018s
+
+OK
+PASS sprite source ownership, deduplication, late-load discard, release, failure backoff and retry
+도달 검사: 통과
+통과 tests/rev/r3.py (13초)
+통과 tests/rev/t_ability_locks.py (18초)
+통과 tests/rev/t_access_evidence.py (24초)
+통과 tests/rev/t_ai_evidence.py (16초)
+통과 tests/rev/t_assassin_skills.py (12초)
+통과 tests/rev/t_btn4.py (41초)
+통과 tests/rev/t_building_search.py (19초)
+통과 tests/rev/t_camera_presentation.py (81초)
+통과 tests/rev/t_change.py (17초)
+통과 tests/rev/t_choice.py (16초)
+통과 tests/rev/t_city.py (44초)
+통과 tests/rev/t_combat_policy.py (127초)
+통과 tests/rev/t_continuity_review.py (65초)
+통과 tests/rev/t_contract_density.py (15초)
+통과 tests/rev/t_copy_scenarios.py (28초)
+통과 tests/rev/t_cqc.py (31초)
+통과 tests/rev/t_disguise_ai.py (38초)
+통과 tests/rev/t_disguise_lighting.py (17초)
+통과 tests/rev/t_electric_skill.py (13초)
+통과 tests/rev/t_environment_targets.py (26초)
+통과 tests/rev/t_fac.py (29초)
+통과 tests/rev/t_hanging_controls.py (34초)
+통과 tests/rev/t_height_cues.py (8초)
+통과 tests/rev/t_instig.py (20초)
+통과 tests/rev/t_interaction_flow.py (49초)
+통과 tests/rev/t_interface.py (30초)
+통과 tests/rev/t_ko.py (32초)
+통과 tests/rev/t_learning_route.py (25초)
+통과 tests/rev/t_m1x.py (15초)
+통과 tests/rev/t_mission_flow.py (78초)
+통과 tests/rev/t_mission_progress.py (8초)
+통과 tests/rev/t_mobile_flow.py (75초)
+통과 tests/rev/t_multilevel_pursuit.py (12초)
+통과 tests/rev/t_patrol_motion.py (5초)
+실패 tests/rev/t_pixelfx_bush.py (2초) — ['    at UtilityScript.<anonymous> (<anonymous>:1:44)']
+통과 tests/rev/t_recovery_buffer.py (34초)
+통과 tests/rev/t_rel.py (56초)
+통과 tests/rev/t_review_fixes.py (28초)
+통과 tests/rev/t_roof_routes.py (30초)
+통과 tests/rev/t_scene_layers.py (23초)
+통과 tests/rev/t_skill_diagram.py (14초)
+통과 tests/rev/t_skill_rewards_range.py (14초)
+통과 tests/rev/t_skill_tree.py (18초)
+통과 tests/rev/t_sprite_ownership.py (21초)
+통과 tests/rev/t_stair_geometry.py (17초)
+통과 tests/rev/t_target_body.py (10초)
+통과 tests/rev/t_tut.py (132초)
+통과 tests/rev/t_ui2.py (15초)
+통과 tests/rev/t_v33.py (22초)
+통과 tests/rev/t_world_alignment.py (18초)
+통과 tests/rev/t_world_boundary.py (29초)
+통과 tests/rev/t_world_realism.py (11초)
+통과 tests/rev/t_zone.py (21초)
+통과 tests/mis/tm1.py (78초)
+
+결과: 실패 tests/rev/t_pixelfx_bush.py (로그: build/test_logs/)
+
+--- Resolution after the final runtime changes ---
+The bush test used obsolete tutorial step indices6/7. The new foliage lesson is4/5. Only those fixture indices were updated; standing/no-hide-button/automatic crouch/body storage/effects/floor/cap assertions remain.
+
+Bush regression
+PASS {"standing": true, "noHideAction": true, "autoConceal": true, "walkOut": true, "bodyStorage": true, "legacySave": true, "effects": ["leaf", "dust", "impact", "strike", "dart", "muzzle", "loot", "shock", "smoke"], "cap": 24, "frameCanvases": 0, "floorAndHeight": true}
+
+Learning order, recovery and24instructions at4viewports
+PASS one shared episode order respects all seven completion states; result route joins next episode and skips already completed rehearsals; all lesson steps resolve goals without exceptions, one objective line and no free permanent skills/points; direct contract selection remains possible and trial skills end; episode03 starts with an actual reachable pin marker instead of unlocated escape text; real tutorial failure timer restores checkpoint, not whole lesson; all24 lesson instructions fit desktop, portrait, landscape and320px viewports
+
+HUD interface and font fallback
+PASS pc
+PASS mobile
+PASS landscape
+PASS small
+PASS font failure fallback
+
+Final packaged PC/touch basic lessons including dropped-body recovery
+PASS False move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS False sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS False bush {'name': 'bush', 'stage': 'tB', 'step': 5, 't': 5.8499999999999845, 'hp': 3, 'hidden': True, 'at': [9.449090475444306, 10.553515625000001], 'guard': 'PATROL'}
+PASS False heard {'name': 'heard', 'stage': 'tB', 'step': 6, 't': 5.933333333333318, 'hp': 3, 'hidden': True, 'at': [9.454280629742192, 10.553515625000001], 'guard': 'SUSPICIOUS'}
+PASS False escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 7, 't': 8.38333333333333, 'hp': 3, 'hidden': False, 'at': [6.0367301734218195, 10.575000000000001], 'guard': 'SUSPICIOUS'}
+PASS False escape {'name': 'escape', 'stage': 'tB', 'step': 7, 't': 11.90000000000017, 'hp': 3, 'hidden': False, 'at': [3.5193897641956298, 13.056845285158621], 'guard': 'NOTICE'}
+PASS False conceal {'name': 'conceal', 'stage': 't0', 'step': 1, 't': 3.683333333333325, 'hp': 3, 'hidden': True, 'at': [7.445328234098152, 10.521484375], 'guard': 'PATROL'}
+PASS False rear {'name': 'rear', 'stage': 't0', 'step': 2, 't': 5.433333333333319, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'PATROL'}
+PASS False ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 7.183333333333313, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS False carry {'name': 'carry', 'stage': 't0', 'step': 4, 't': 7.833333333333311, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS False drop-recovery {'name': 'drop-recovery', 'stage': 't0', 'step': 4, 't': 8.433333333333332, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS False carry-again {'name': 'carry-again', 'stage': 't0', 'step': 4, 't': 9.083333333333364, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS False stash {'name': 'stash', 'stage': 't0', 'step': 5, 't': 12.76666666666688, 'hp': 3, 'hidden': True, 'at': [7.562761742519155, 10.534374999999999], 'guard': 'DEAD'}
+PASS False complete {'name': 'complete', 'stage': 't0', 'step': 5, 't': 20.816666666666766, 'hp': 3, 'hidden': False, 'at': [19.04417299990023, 10.555859374999999], 'guard': 'DEAD'}
+PASS False contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
+PASS True move {'name': 'move', 'stage': 'tB', 'step': 1, 't': 1.483333333333333, 'hp': 3, 'hidden': False, 'at': [4.463312599529715, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-run {'name': 'sound-run', 'stage': 'tB', 'step': 2, 't': 1.733333333333332, 'hp': 3, 'hidden': False, 'at': [5.3802382167565765, 10.532031250000001], 'guard': 'PATROL'}
+PASS True sound-quiet {'name': 'sound-quiet', 'stage': 'tB', 'step': 4, 't': 3.6999999999999917, 'hp': 3, 'hidden': False, 'at': [6.461227519123927, 10.532031250000001], 'guard': 'PATROL'}
+PASS True bush {'name': 'bush', 'stage': 'tB', 'step': 5, 't': 5.8499999999999845, 'hp': 3, 'hidden': True, 'at': [9.449090475444306, 10.553515625000001], 'guard': 'PATROL'}
+PASS True heard {'name': 'heard', 'stage': 'tB', 'step': 6, 't': 5.933333333333318, 'hp': 3, 'hidden': True, 'at': [9.454280629742192, 10.553515625000001], 'guard': 'SUSPICIOUS'}
+PASS True escape-vision {'name': 'escape-vision', 'stage': 'tB', 'step': 7, 't': 8.38333333333333, 'hp': 3, 'hidden': False, 'at': [6.0367301734218195, 10.575000000000001], 'guard': 'SUSPICIOUS'}
+PASS True escape {'name': 'escape', 'stage': 'tB', 'step': 7, 't': 11.90000000000017, 'hp': 3, 'hidden': False, 'at': [3.5193897641956298, 13.056845285158621], 'guard': 'NOTICE'}
+PASS True conceal {'name': 'conceal', 'stage': 't0', 'step': 1, 't': 3.683333333333325, 'hp': 3, 'hidden': True, 'at': [7.445328234098152, 10.521484375], 'guard': 'PATROL'}
+PASS True rear {'name': 'rear', 'stage': 't0', 'step': 2, 't': 5.433333333333319, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'PATROL'}
+PASS True ko {'name': 'ko', 'stage': 't0', 'step': 3, 't': 7.183333333333313, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS True carry {'name': 'carry', 'stage': 't0', 'step': 4, 't': 7.833333333333311, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS True drop-recovery {'name': 'drop-recovery', 'stage': 't0', 'step': 4, 't': 8.433333333333332, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS True carry-again {'name': 'carry-again', 'stage': 't0', 'step': 4, 't': 9.083333333333364, 'hp': 3, 'hidden': False, 'at': [9.871104516311398, 10.521484375], 'guard': 'DEAD'}
+PASS True stash {'name': 'stash', 'stage': 't0', 'step': 5, 't': 12.76666666666688, 'hp': 3, 'hidden': True, 'at': [7.562761742519155, 10.534374999999999], 'guard': 'DEAD'}
+PASS True complete {'name': 'complete', 'stage': 't0', 'step': 5, 't': 20.816666666666766, 'hp': 3, 'hidden': False, 'at': [19.04417299990023, 10.555859374999999], 'guard': 'DEAD'}
+PASS True contract {'name': 'contract', 'stage': 'm2', 'step': None, 't': 0.08333333333333333, 'hp': 3, 'hidden': False, 'at': [0.5, 21.5], 'guard': 'PATROL'}
+
+Final packaged PC/touch episode lessons including real m6pin pickup
+PASS False light-observe {'stage': 'tL', 'step': 1, 't': 1.5166666666666662, 'at': [312, 504], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '스위치 옆에서 X · 조명 끄기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-observe'}
+PASS False light-off {'stage': 'tL', 'step': 2, 't': 3.866666666666658, 'at': [288.08333333333354, 375.1922974473115], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '아래쪽 어두운 길을 따라 표시로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-off'}
+PASS False dark-crossing {'stage': 'tL', 'step': 3, 't': 6.949999999999981, 'at': [360.7396637536001, 601.7270304204505], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': 'Ctrl을 눌러 왼쪽 안전한 길로 복귀', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'dark-crossing'}
+PASS False light-complete {'stage': 'tL', 'step': 4, 't': 10.700000000000111, 'at': [169.19352446620454, 626.7366924744846], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': True, 'goal': '남쪽 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-complete'}
+PASS False episode02 {'stage': 'm4', 'step': None, 't': 0.05, 'at': [2280, 1272], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '의뢰: 클럽 실장 처치하기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode02'}
+PASS False indoor-entry {'stage': 'tR', 'step': 0, 't': 1.5166666666666662, 'at': [600, 936], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '건물 앞문으로 들어가기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'indoor-entry'}
+PASS False inside {'stage': 'tR', 'step': 1, 't': 7.966666666666644, 'at': [457.1434577363861, 649.0837564179054], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '계단 표시 앞에서 X · 2층으로', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'inside'}
+PASS False upstairs {'stage': 'tR', 'step': 2, 't': 22.116666666666692, 'at': [792, 312], 'fl': 1, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '2층의 연락 서류 챙기기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'upstairs'}
+PASS False document {'stage': 'tR', 'step': 3, 't': 32.59999999999943, 'at': [648.3702487956355, 457.1971197967167], 'fl': 1, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '계단으로 다시 1층에 내려오기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'document'}
+PASS False downstairs {'stage': 'tR', 'step': 4, 't': 43.83333333333213, 'at': [841.03125, 311.3224936226667], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '건물을 나와 왼쪽 골목 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'downstairs'}
+PASS False indoor-complete {'stage': 'tR', 'step': 4, 't': 62.26666666666441, 'at': [285.74258933463346, 936.2944721802808], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': True, 'goal': '건물을 나와 왼쪽 골목 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'indoor-complete'}
+PASS False episode03 {'stage': 'm6', 'step': None, 't': 0.05, 'at': [216, 264], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '바닥의 머리핀 줍기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode03'}
+PASS False episode03-pin {'stage': 'm6', 'step': None, 't': 3.849999999999991, 'at': [455.14476065251705, 265.0725], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '간수가 등을 돌리면 감방 문 앞에서 행동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode03-pin'}
+PASS True light-observe {'stage': 'tL', 'step': 1, 't': 1.5166666666666662, 'at': [312, 504], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '스위치 옆에서 [행동] · 조명 끄기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-observe'}
+PASS True light-off {'stage': 'tL', 'step': 2, 't': 3.866666666666658, 'at': [288.08333333333354, 375.1922974473115], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '아래쪽 어두운 길을 따라 표시로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-off'}
+PASS True dark-crossing {'stage': 'tL', 'step': 3, 't': 6.949999999999981, 'at': [360.7396637536001, 601.7270304204505], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '[웅크리기]를 눌러 왼쪽 안전한 길로 복귀', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'dark-crossing'}
+PASS True light-complete {'stage': 'tL', 'step': 4, 't': 10.700000000000111, 'at': [169.19352446620454, 626.7366924744846], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': True, 'goal': '남쪽 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': True, 'name': 'light-complete'}
+PASS True episode02 {'stage': 'm4', 'step': None, 't': 0.05, 'at': [2280, 1272], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '의뢰: 클럽 실장 처치하기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode02'}
+PASS True indoor-entry {'stage': 'tR', 'step': 0, 't': 1.5166666666666662, 'at': [600, 936], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '건물 앞문으로 들어가기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'indoor-entry'}
+PASS True inside {'stage': 'tR', 'step': 1, 't': 7.966666666666644, 'at': [457.1434577363861, 649.0837564179054], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '계단 표시 앞에서 [행동] · 2층으로', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'inside'}
+PASS True upstairs {'stage': 'tR', 'step': 2, 't': 22.116666666666692, 'at': [792, 312], 'fl': 1, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '2층의 연락 서류 챙기기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'upstairs'}
+PASS True document {'stage': 'tR', 'step': 3, 't': 32.59999999999943, 'at': [648.3702487956355, 457.1971197967167], 'fl': 1, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '계단으로 다시 1층에 내려오기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'document'}
+PASS True downstairs {'stage': 'tR', 'step': 4, 't': 43.83333333333213, 'at': [841.03125, 311.3224936226667], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '건물을 나와 왼쪽 골목 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'downstairs'}
+PASS True indoor-complete {'stage': 'tR', 'step': 4, 't': 62.26666666666441, 'at': [285.74258933463346, 936.2944721802808], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': True, 'goal': '건물을 나와 왼쪽 골목 출구로 이동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'indoor-complete'}
+PASS True episode03 {'stage': 'm6', 'step': None, 't': 0.05, 'at': [216, 264], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '바닥의 머리핀 줍기', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode03'}
+PASS True episode03-pin {'stage': 'm6', 'step': None, 't': 3.849999999999991, 'at': [455.14476065251705, 265.0725], 'fl': 0, 'z': 0, 'hp': 3, 'detected': 0, 'over': False, 'goal': '간수가 등을 돌리면 감방 문 앞에서 행동', 'inventory': {'dart': 0}, 'budget': 4, 'electric': False, 'name': 'episode03-pin'}
+
+Final resolution: all54distinct regression scripts covered; initial53passed, stale bush fixture corrected and passed. Final changed tutorial/HUD/route behavior additionally passed targeted checks and packaged native keyboard/touch journeys. This is not a claim of a second complete54-script run after the late tutorial-only cue changes.

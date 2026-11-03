@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "one shared episode order respects all seven completion states",
+    "result route joins next episode and skips already completed rehearsals",
+    "all lesson steps resolve goals without exceptions, one objective line and no free permanent skills/points",
+    "direct contract selection remains possible and trial skills end",
+    "episode03 starts with an actual reachable pin marker instead of unlocated escape text",
+    "real tutorial failure timer restores checkpoint, not whole lesson",
+    "all24 lesson instructions fit desktop, portrait, landscape and320px viewports"
+  ],
+  "errors": [],
+  "method": "Controlled completion-record/step/failed-state fixtures; actual recovery timer and rendered DOM; separate native journeys verify playable lessons."
+}

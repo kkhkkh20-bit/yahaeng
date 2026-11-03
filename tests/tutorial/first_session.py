@@ -1,12 +1,13 @@
 """Complete the two introductory 2D lessons with real controls and active AI.
 The fixed clock verifies gameplay and input; it is not a device FPS benchmark.
 """
-import asyncio,json,sys,threading
+import asyncio,json,sys,threading,os
 from pathlib import Path
 from functools import partial
 from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/tutorial-validation';O.mkdir(parents=True,exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/os.environ.get('YH_LESSON_DIR','build/tutorial-validation');O.mkdir(parents=True,exist_ok=True)
+BASE=sys.argv[1]if len(sys.argv)>1 else None;PREFIX=(sys.argv[2]+'-')if len(sys.argv)>2 else''
 class H(SimpleHTTPRequestHandler):
  def log_message(self,*a):pass
 DRIVER='''()=>{
@@ -20,12 +21,12 @@ DRIVER='''()=>{
 async def main():
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(H,directory=str(R)));threading.Thread(target=server.serve_forever,daemon=True).start()
  async with async_playwright()as p:
-  browser=await p.chromium.launch()
+  browser=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE and BASE.startswith('https:')else None)
   for mobile in [False,True]:
    page=await browser.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile)
    errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
-   await page.goto(f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink');await page.wait_for_function('!!window.__game');await page.evaluate(DRIVER)
+   await page.goto(BASE or f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink');await page.wait_for_function('!!window.__game');await page.evaluate(DRIVER)
    await page.locator('#btnQuick').click();assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.evaluate('lesson.tick(30);lesson.render()')
    movement_cdp=await page.context.new_cdp_session(page)
@@ -50,9 +51,9 @@ async def main():
     try:await page.evaluate('()=>{const {G,check,tick,render,key,idle}=lesson;'+code+';render();}')
     except Exception:
      await page.screenshot(path=str(O/f'failure-{mobile}.png'));raise
-    info=await page.evaluate('({name:'+json.dumps(name)+',stage:__game.STAGE.id,step:__game.S.tutI,t:__game.S.t,hp:__game.S.player.hp,hidden:__game.S.player.hidden,at:[__game.S.player.x/48,__game.S.player.y/48],guard:__game.S.guards[0].state})');await page.evaluate('(o)=>lessonTrace.push(o)',info)
+    info=await page.evaluate('({name:'+json.dumps(name)+',stage:__game.STAGE.id,step:__game.S.tutI,t:__game.S.t,hp:__game.S.player.hp,hidden:__game.S.player.hidden,at:[__game.S.player.x/48,__game.S.player.y/48],guard:__game.S.guards[0]?.state})');await page.evaluate('(o)=>lessonTrace.push(o)',info)
     assert await page.evaluate('(()=>{const e=document.querySelector("#objective");return e.clientHeight>=e.scrollHeight-1})()'),'tutorial text is clipped'
-    await page.screenshot(path=str(O/f'{"touch"if mobile else"pc"}-{name}.png'));print('PASS',mobile,name,info,flush=True)
+    await page.screenshot(path=str(O/f'{PREFIX}{"touch"if mobile else"pc"}-{name}.png'));print('PASS',mobile,name,info,flush=True)
    async def press(code,button,n=4):
     if mobile:
      box=await page.locator('#'+button).bounding_box();await page.touchscreen.tap(box['x']+box['width']/2,box['y']+box['height']/2)
@@ -74,24 +75,14 @@ async def main():
    else:await page.keyboard.press('Control')
    await walk(6.5*48,10.5*48)
    await step('sound-quiet','check(G.S.tutI===3,"quiet movement");tick(75);check(G.S.tutI===4,"observe the vision field")')
-   # The same open ground is visible when lit and safe only while the lamp is off.
-   await step('light-before','window.lightProbe={x:7.5*48,y:12.5*48};const p=lightProbe,g=G.S.guards[0];p.lit=G.lightAt(p.x,p.y);check(G.canSee(g,p.x,p.y,p.lit,false,1,0)>0,"light exercise starts outside actual vision")')
-   stand=await page.evaluate('(()=>{const l=__game.S.lamps[3],at=__game.lampControl(l);return{x:at.x+(l.mount?.nx||0)*24,y:at.y+(l.mount?.ny||0)*24}})()')
-   await walk(stand['x'],stand['y'])
-   await step('light-switch','check(G.envAction().k==="lamp"&&G.envAction().l===G.S.lamps[3],"lamp is not default reachable action")')
-   await press('x','btnCarry')
-   await step('light-off','check(G.S.tutI===5&&G.S.lamps[3].off,"lamp switch did not complete");const p=lightProbe;p.dark=G.lightAt(p.x,p.y);check(p.dark<p.lit&&G.canSee(G.S.guards[0],p.x,p.y,p.dark,false,1,0)===0,"switch does not shrink actual vision")')
-   await walk(6.5*48,12.5*48);await walk(7.5*48,12.5*48)
-   await step('dark-crossing','check(G.S.tutI===6&&!G.S.player.hidden&&!G.S.guards[0].seen,"darkness was not the reason passage succeeded")')
-   await walk(6.5*48,10.5*48)
    # Verify that the bush is in a real sight field, rather than a safe decorative corner.
-   await walk(8.5*48,10.5*48)
-   await step('bush','check(G.S.tutI===7&&G.S.player.hidden,"bush concealment");const S=G.S,P=S.player,g=S.guards[0];check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),false,1,0)>0,"bush is not in vision");check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),true,1,0)===0,"concealment not applied")')
+   await walk(9.5*48,10.5*48)
+   await step('bush','check(G.S.tutI===5&&G.S.player.hidden,"bush concealment");const S=G.S,P=S.player,g=S.guards[0];check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),false,1,0)>0,"bush is not in vision");check(G.canSee(g,P.x,P.y,G.lightAt(P.x,P.y),true,1,0)===0,"concealment not applied")')
    if mobile:await page.tap('#btnTool')
    else:await page.keyboard.press('g')
-   await step('heard','tick(5);check(G.S.tutI===8&&G.S.lessonWhistle.heard,"whistle not heard");check(G.S.guards[0].why==="heard"&&!G.S.guards[0].seen,"hearing became visual detection")')
+   await step('heard','tick(5);check(G.S.tutI===6&&G.S.lessonWhistle.heard,"whistle not heard");check(G.S.guards[0].why==="heard"&&!G.S.guards[0].seen,"hearing became visual detection")')
    await walk(6*48,10.5*48)
-   await step('escape-vision','check(G.S.tutI===9,"quiet escape")')
+   await step('escape-vision','check(G.S.tutI===7,"quiet escape")')
    await walk(3.5*48,14.5*48)
    await step('escape','tick(5);check(G.S.over&&G.S.exitOpen,"first lesson did not complete")')
    # The actual result button starts the next lesson, not a contract or the old identity tutorial.
@@ -99,28 +90,27 @@ async def main():
    if not await page.evaluate('__game.input.sneakToggle'):
     if mobile:await page.tap('#btnCrouch')
     else:await page.keyboard.press('Control')
-   await walk(8.5*48-29,9.5*48)
-   await step('rear','check(G.S.tutI===1,"rear approach");check(G.grabAction().k==="grab","rear grab absent")')
-   await press('c','btnGrab');await step('grab','check(G.S.tutI===2&&G.S.player.captive,"grab lesson")')
-   await press('z','btnAct');await step('ko','check(G.S.tutI===3&&G.S.corpses[0].ko&&G.S.stats.kills===0,"short press did not KO")')
-   if await page.evaluate('__game.envAction().k')!='dress':
-    if mobile:
-     await page.tap('#btnCycle');await page.locator('#envPicker button').filter(has_text='옷 갈아입기').first.tap()
-    else:await page.keyboard.press('Tab')
-   await press('x','btnCarry');await step('uniform','check(G.S.tutI===4&&G.S.player.outfit==="crew","uniform lesson")')
-   await press('x','btnCarry');await step('carry','check(G.S.tutI===5&&G.S.player.carrying,"carry lesson")')
-   await walk(9.5*48,8.5*48)
-   await press('x','btnCarry');await step('stash','check(G.S.tutI===6&&G.S.corpses[0].stashed,"stash lesson")')
-   await walk(21.5*48,9.5*48)
+   await walk(7.5*48,10.5*48)
+   await step('conceal','check(G.S.tutI===1&&G.S.player.hidden,"second lesson foliage")')
+   await walk(10.5*48-28,10.5*48)
+   await step('rear','check(G.S.tutI===2&&!G.S.player.hidden&&G.attackAction().k!=="none","close rear contact")')
+   await press('z','btnAct');await page.evaluate('lesson.tick(30)')
+   await step('ko','check(G.S.tutI===3&&G.S.corpses[0].ko&&G.S.stats.kills===0,"short press did not KO");check(!G.S.player.disguise,"basic lesson forces disguise")')
+   await press('x','btnCarry');await step('carry','check(G.S.tutI===4&&G.S.player.carrying,"carry lesson")')
+   await press('x','btnCarry');await step('drop-recovery','check(!G.S.player.carrying&&G.S.tutI===4&&G.nextGoal().x===G.S.corpses[0].x,"dropped body loses guidance")')
+   await press('x','btnCarry');await step('carry-again','check(!!G.S.player.carrying&&G.S.tutI===4,"cannot recover dropped body")')
+   await walk(7.5*48,10.5*48)
+   await press('x','btnCarry');await step('stash','check(G.S.tutI===5&&G.S.corpses[0].hidden,"foliage storage lesson")')
+   await walk(20.5*48,10.5*48)
    await step('complete','tick(5);check(G.S.over&&G.S.exitOpen,"interaction lesson incomplete")')
    await page.wait_for_timeout(650);await page.click('#btnNext');assert await page.locator('#brief').is_visible();assert await page.evaluate('__game.STAGE.id')=='m2';await page.click('#btnBrGo')
    for _ in range(12):
     if not await page.evaluate('__game.DLG.modal'):break
     if mobile:await page.tap('#dlg')
     else:await page.keyboard.press('Space')
-   await step('contract','tick(5);check(!G.DLG.modal&&!document.body.classList.contains("perception-lesson")&&!document.body.classList.contains("tutorial-lesson"),"lesson controls leaked into contract")')
+   await step('contract','tick(5);check(!G.DLG.modal&&!document.body.classList.contains("perception-lesson")&&!document.body.classList.contains("tutorial-lesson")&&!document.body.hasAttribute("data-lesson")&&getComputedStyle(document.getElementById("btnGrab")).visibility==="visible","lesson controls leaked into contract")')
    assert not errors,errors
-   (O/f'{"touch"if mobile else"pc"}.json').write_text(json.dumps(await page.evaluate('lessonTrace'),ensure_ascii=False,indent=2));await page.close()
+   (O/f'{PREFIX}{"touch"if mobile else"pc"}.json').write_text(json.dumps(await page.evaluate('lessonTrace'),ensure_ascii=False,indent=2));await page.close()
   await browser.close()
  server.shutdown()
 if __name__=='__main__':asyncio.run(main())

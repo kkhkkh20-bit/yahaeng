@@ -10,7 +10,9 @@
   powerArea: [15, 12, 38, 25], powerName: "창고 마당 조명",
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   bare: true, candy: 0, noSupport: true, itemVerb: '챙기기', briefBy: '상황', kitStyle: 'industrial',
-  firstGoal: { text: '감방에서 나가기', where: '감금동 1층 감방', done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
+  firstGoal: { text: '감방에서 나가기', where: '감금동 1층 감방',
+    guide:S=>{const pin=S.keyItems.find(k=>k.key==='pin'&&!k.got),P=S.player;if(pin&&!(P.picks>0))return{text:'바닥의 머리핀 줍기',x:pin.x,y:pin.y,fl:pin.fl||0};const door=S.doors.filter(d=>d.locked&&d.keyLock&&!(d.fl||0)).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];return door?{text:'간수가 등을 돌리면 감방 문 앞에서 행동',x:door.x,y:door.y,fl:0}:null;},
+    done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) },
   build(m) {
     m.fill(0, 0, 43, 27, ','); for (let x = 0; x < 44; x++) { m.set(x, 0, '#'); m.set(x, 27, '#'); } for (let y = 0; y < 28; y++) m.set(0, y, '#');
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다

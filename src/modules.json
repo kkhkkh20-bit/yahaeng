@@ -86,6 +86,10 @@
       "group": "contracts"
     },
     {
+      "path": "26_learning_route.js",
+      "group": "contracts"
+    },
+    {
       "path": "27_layout_restore.js",
       "group": "layout_restore"
     },

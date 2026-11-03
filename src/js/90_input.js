@@ -228,10 +228,13 @@ $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
-function quickTarget() { for(const id of ['tB','t0']){const i=STAGES.findIndex(s=>s.id===id);if(i>=0&&!stageCleared(STAGES[i]))return i;}const st=mainContracts().find(s=>demoOk(s)&&!stageCleared(s))||mainContracts().find(demoOk);return st?STAGES.indexOf(st):0; }
-function syncQuick() { const i = quickTarget(), st = STAGES[i]; if (!st || !$('btnQuick')) return; const done = mainContracts().filter(demoOk).every(stageCleared) && ['tB','t0'].every(id=>stageCleared(STAGES.find(s=>s.id===id)||{}));
-  $('btnQuick').textContent = st.tutorial ? (st.id==='tB'?'처음 시작 · 시야와 소리':'이어서 · 뒤에서 제압') : done ? `다시 하기: ${st.name}` : `이어서: 의뢰 ${contractNumber(st)} ${st.name}`;
-  $('btnQuick').title = st.tutorial ? '처음 플레이하면 연습부터 시작합니다.' : (st.mission || st.name); }
+function quickTarget(){return recommendedStage();}
+function syncQuick(){
+  const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
+  const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||stageCleared(STAGES[i]);});
+  $('btnQuick').textContent=st.tutorial?(st.id==='tB'?'처음 시작 · 시야와 소리':st.name.replace(/^연습 \d · /,'이어서 · ')):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').title=st.mission||st.name;
+}
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
   $('stageList').dataset.filter = button.dataset.filter;
   document.querySelectorAll('.ledger-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
@@ -283,7 +286,7 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click', () => { const n = nextPlayable(),lesson=STAGE.nextTutorial&&STAGES.findIndex(s=>s.id===STAGE.nextTutorial);start(lesson>=0?lesson:STAGE.tutorial?STAGES.findIndex(s=>mainContract(s)&&demoOk(s)):n>=0?n:STAGE_I); });
+$('btnNext').addEventListener('click',()=>{const i=learningNext();if(i>=0)start(i);});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));

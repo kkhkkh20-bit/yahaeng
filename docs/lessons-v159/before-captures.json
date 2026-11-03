@@ -1,0 +1,197 @@
+{
+  "method": "Unedited original packaged entry states, controlled selection, four viewports. Native gameplay completion is recorded separately.",
+  "captures": [
+    {
+      "image": "before-ledger-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "6b2157ce4f9f3c8631ea033d002c0df3939964d224add26864cc0475e6982566",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-tB-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "a7f2b8bde8a6f0e9693420bc4802de6a41806f68a6931df463bc8d9fe8e6083a",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-t0-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "9934c8396ee4710fe398db84b22e7c477d9407ef9bf9c671e617f7f09cb3da3d",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-m6-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "179c8c93cdcc684d232e9107607963f0da513685c6d822a796bf04a59074a45d",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-ledger-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "4193ab19bbe93c99e34901185774ec23f09683b572034a6b0a9bd0c5024fb475",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-tB-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "2f704a1d1047e07bc4128d84c371e52828eaa7c9d6b3d790ae0391bc190fd3ec",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-t0-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "a572dce1d40dda587479bb39b4b14f9a85f228cf7ace746cea2e09dd6c636e19",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-m6-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "74eecd83a9f6a30d31f16c7c91cfd44c406cb46119de4192e557db779e292068",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-ledger-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "eda79d50a423c6d2cbcc34290a414ce701d95d482724ff52c3dbe9a705be9266",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-tB-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "9eba51b78ac117a64bc9fc29901c72445968fc4f5cb7591bb8fc635132998ef1",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-t0-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "3ce34482e82f73acd3be785ed9ec93a3a7263e065c9613527bcc2a674531871a",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-m6-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "84acdac99df6ed520b6c32337a95fdcf059e83dec3a86d0550276627e9a391ad",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-ledger-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "a1d3028fa87900aa79ef4d1131acd3bac511d748326322f7b58d636268381fd0",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-tB-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "1c6aa67bc4a5c8ec324e8f594e883e6fcb4d59c3fcb148d2b4c4aea195e0df8d",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-t0-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "3486be3c9d7f8df3eec020c987ac008a544203cdb1f5236ae8c41bddbe01f9be",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    },
+    {
+      "image": "before-m6-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "f16f9fb65a0df565712cad12e41c2cff77a1c5b7f29a792d9e3c967916267925",
+      "errors": [],
+      "method": "Fresh seeded package, actual stage entry/menu, dialogues dismissed, then48native simulation frames let the real entry fade finish; no actor placement. Not a full playthrough."
+    }
+  ]
+}

@@ -34,8 +34,8 @@ async def main():
    const g=S.guards.find(g=>!g.civ&&!g.dog&&!g.target),l=S.lamps.find(l=>!l.hearth&&!l.fl&&!l.z&&!l.broken),control=G.lampControl(l);
    l.off=true;Object.assign(g,{x:control.x,y:control.y+20,fl:0,z:0,state:'PATROL',relight:{l,t:.01},path:null,meter:0,seen:false,doomed:false,climb:null});S.player.x=S.player.y=-9999;G.updateGuard(g,.02);ok(!l.off&&!g.relight,'Untrained player prevents real guard relighting');
    passed.push('building cut after learning; building restoration and actual guard switch work remain independent of player ownership');
-   S=fresh('tB');ok(G.skillOn('electric')&&!G.skillOn('dart')&&!G.skillOn('ambush'),'Perception lesson has wrong trial skills');
-   ok(G.STAGE.steps[4][3].includes('배워야'),'Light lesson does not explain real mission unlock');S=fresh('t0');ok(!G.skillOn('electric'),'Trial leaks into basic takedown lesson');S=fresh('m1');ok(!G.skillOn('electric')&&!G.loadSkillTree().learned.length,'Trial unlock becomes permanent');
+   S=fresh('tB');ok(!G.skillOn('electric'),'First lesson overloads electrical skill');S=fresh('tL');ok(G.skillOn('electric')&&!G.skillOn('dart')&&!G.skillOn('ambush'),'Perception lesson has wrong trial skills');
+   ok(G.STAGE.steps[1][3].includes('배워야'),'Light lesson does not explain real mission unlock');S=fresh('t0');ok(!G.skillOn('electric'),'Trial leaks into basic takedown lesson');S=fresh('m1');ok(!G.skillOn('electric')&&!G.loadSkillTree().learned.length,'Trial unlock becomes permanent');
    passed.push('only light lesson loans electrical skill; dart and ambush stay locked; no permanent unlock or cross-lesson leak');return passed;
   }''')
   assert not errors,errors

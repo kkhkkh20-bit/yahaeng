@@ -135,7 +135,7 @@ function newGame(si) {
   S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
-  if (!STAGE.tutorial) S.items.forEach(it => lootPlace(it,STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
+  if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach(it => lootPlace(it,STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
@@ -197,7 +197,7 @@ function newGame(si) {
   // 바닥에 놓인 카드키: { key, b, fl, at } 또는 { key, pos: [x, y], fl }
   S.keyItems = (STAGE.keyItems || []).map(k => { const q = k.pos || planPt(k.b, k.fl || 0, k.at || 'bed'); return { key: k.key, x: tc(q[0]), y: tc(q[1]), fl: k.fl || 0, got: false }; });
   BLD.forEach(b => { let n = 0; for (let x = b.x0; x <= b.x1; x++) if ('#NSX'.includes(G[b.y1][x]) || S.doors.some(d => d.tx === x && d.ty === b.y1)) n++; b.facade = (n === b.x1 - b.x0 + 1 || b.piloti) && b.y1 - b.y0 >= 2; b.fh = b.facade ? clamp(b.h, 1, b.y1 - b.y0 - 1) : 0; b.fl = null; });
-  stairsInit(true); buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
+  stairsInit(true);initLessonLayout(); buildFRM(true); autoSigns(); factionsInit(); if (STAGE.city) cityInit(); else if (STAGE.roadsX || STAGE.copBeats) streetInit();  // 의뢰 판에도 교통·순찰 경찰
   // CCTV: [x, y, 방향°, 좌우°, 층] 또는 { b, fl, at, sweep } (실내: 방 기준점을 잡은 뒤 syncCameraLayout에서 벽 모서리에 설치)
   S.cams = (STAGE.cams || []).map(c => {
     let x, y, fl, base, sweep;

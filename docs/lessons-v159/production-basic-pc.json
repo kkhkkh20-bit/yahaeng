@@ -1,0 +1,210 @@
+[
+  {
+    "name": "move",
+    "stage": "tB",
+    "step": 1,
+    "t": 1.483333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      4.463312599529715,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-run",
+    "stage": "tB",
+    "step": 2,
+    "t": 1.733333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      5.3802382167565765,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-quiet",
+    "stage": "tB",
+    "step": 4,
+    "t": 3.6999999999999917,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.461227519123927,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "bush",
+    "stage": "tB",
+    "step": 5,
+    "t": 5.8499999999999845,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      9.449090475444306,
+      10.553515625000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "heard",
+    "stage": "tB",
+    "step": 6,
+    "t": 5.933333333333318,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      9.454280629742192,
+      10.553515625000001
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "escape-vision",
+    "stage": "tB",
+    "step": 7,
+    "t": 8.38333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.0367301734218195,
+      10.575000000000001
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "escape",
+    "stage": "tB",
+    "step": 7,
+    "t": 11.90000000000017,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      3.5193897641956298,
+      13.056845285158621
+    ],
+    "guard": "NOTICE"
+  },
+  {
+    "name": "conceal",
+    "stage": "t0",
+    "step": 1,
+    "t": 3.683333333333325,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      7.445328234098152,
+      10.521484375
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "rear",
+    "stage": "t0",
+    "step": 2,
+    "t": 5.433333333333319,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.871104516311398,
+      10.521484375
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "ko",
+    "stage": "t0",
+    "step": 3,
+    "t": 7.183333333333313,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.871104516311398,
+      10.521484375
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "carry",
+    "stage": "t0",
+    "step": 4,
+    "t": 7.833333333333311,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.871104516311398,
+      10.521484375
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "drop-recovery",
+    "stage": "t0",
+    "step": 4,
+    "t": 8.433333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.871104516311398,
+      10.521484375
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "carry-again",
+    "stage": "t0",
+    "step": 4,
+    "t": 9.083333333333364,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.871104516311398,
+      10.521484375
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "stash",
+    "stage": "t0",
+    "step": 5,
+    "t": 12.76666666666688,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      7.562761742519155,
+      10.534374999999999
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "complete",
+    "stage": "t0",
+    "step": 5,
+    "t": 20.816666666666766,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      19.04417299990023,
+      10.555859374999999
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "contract",
+    "stage": "m2",
+    "step": null,
+    "t": 0.08333333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      0.5,
+      21.5
+    ],
+    "guard": "PATROL"
+  }
+]
