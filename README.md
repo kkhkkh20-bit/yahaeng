@@ -9,7 +9,7 @@
 
 # 야행
 
-v150 작업본: 도구 계열에 **전기 조작**을 추가했다. 현장 장비 다음에 1P로 배우면 조명 스위치와 건물·구역 분전반을 조작한다. 시야·소리 기초 연습에서는 임시 기술로 체험한다. 총 27개 기술이다. [변경·검증](docs/ELECTRIC_SKILL_V150.md). Pages 본편에 v149·v150을 함께 반영했다. Cloudflare 테스트 주소의 상태는 [배포 기록](docs/skills-v150/DEPLOYMENT.md)을 참조한다.
+v150 작업본: 도구 계열에 **전기 조작**을 추가했다. 현장 장비 다음에 1P로 배우면 조명 스위치와 건물·구역 분전반을 조작한다. 시야·소리 기초 연습에서는 임시 기술로 체험한다. 총 27개 기술이다. [변경·검증](docs/ELECTRIC_SKILL_V150.md). Pages와 Cloudflare 모두 v149·v150을 함께 반영했다. main에 게시하면 기존 Workers Builds가 Cloudflare에 자동 배포한다. [자동 반영·공개 검증](docs/skills-v150/DEPLOYMENT.md).
 
 v149: 다트 기본 지급을 없애고, 다트 운용과 은신 기습을 배워야 사용하도록 바꿨다. 신체 8개·암살 9개·도구 9개, 총 26개 기술을 선행 조건과 포인트로 선택해 배운다. 처음 4P와 의뢰 별 보상을 사용하며, 쿠나이·연막·무전 역이용·CCTV 해킹과 현장 도구 연습을 추가했다. [초기 능력·해금 변경](docs/ABILITY_LOCKS_V149.md) · [기술·조사](docs/SKILL_TREES_V148.md) · [실제 화면](https://kkhkkh20-bit.github.io/yahaeng/skills-v149/).
 
