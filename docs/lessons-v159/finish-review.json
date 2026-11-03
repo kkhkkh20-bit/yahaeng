@@ -1,8 +1,8 @@
 {
   "disposition": "ship",
-  "scope": "Fresh independent finish review of the v159 beginner tutorial extension; code-led within the inherited 2D night-game HUD and renderer.",
+  "scope": "Verdict pass scoring F1 only, against the final recaptured originals; prior review context is retained below and is not a new whole-surface approval.",
   "evidence": {
-    "required_originals_opened": 26,
+    "required_originals_opened": 28,
     "entry_originals_hash_verified": 16,
     "entry_viewports": [
       [
@@ -28,13 +28,14 @@
       "before-m6-mobile.png",
       "before-ledger-mobile.png"
     ],
-    "source_sha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
-    "manifest_bytes_sha256": "b8a97446685db5272ed16ef610d57d167e8f086c14b7c34da806924803a43d8b",
+    "source_sha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+    "manifest_bytes_sha256": "9324e8eac1faafc200eff403e136ca3f50475055625c5c0f5eeead7109321159",
     "detector": "Existing build/lessons-v159/design-detection.json is []; detector not rerun.",
-    "limitations": "Entry captures prove settled entry composition, not playthrough. Production journey logs and action-state screenshots separately support PC/touch completion of the four rehearsals and their joins, including m6 pin pickup. No novice user study or whole-main-contract completion is asserted."
+    "limitations": "Entry captures prove settled entry composition, not playthrough. Production journey logs and action-state screenshots separately support PC/touch completion of the four rehearsals and their joins, including m6 pin pickup. No novice user study or whole-main-contract completion is asserted.",
+    "verdict_pass": "Opened all 28 final required originals, including both new document-ready captures. All 16 entry-image hashes match the final source package metadata. Production episodes contain 14 events per PC/touch run and no reported errors."
   },
   "persistence": {
-    "result": "pass within inherited-extension scope",
+    "result": "unchanged from full review; final package evidence verified",
     "details": [
       "Root PRODUCT.md and DESIGN.md do not exist; this is explicitly recorded, not represented as their presence.",
       "Parent reports session launcher SCOPED_EXISTING_ALLOWED. Existing product truth persists in docs/GAME_REVIEW_V157.md and docs/TUTORIAL_CAMPAIGN_V159.md; the latter records the beginner outcome, seven-stage order, inherited visual authority, narrow code-led path, and evidence limits.",
@@ -43,7 +44,7 @@
     ]
   },
   "fidelity": {
-    "result": "faithful",
+    "result": "F1 resolved; no fix-induced material regression observed in the recaptured evidence",
     "matrix": [
       {
         "element": "TYPE",
@@ -68,7 +69,7 @@
       {
         "element": "Single objective and matching control",
         "status": "match",
-        "evidence": "Required entry and action-state captures retain one current objective plus purpose. The crouch, attack, and action controls are accented for their actual required action; unused core-lesson controls are hidden. Source syncTutorialCue and lesson CSS agree with the rendered controls."
+        "evidence": "F1 resolved in production-episodes-mobile-upstairs.png: the nearby descent control has no gold lesson outline while the document objective and left goal remain active. production-episodes-mobile-document-ready.png shows the gold outline on 챙기기 beside the actual document. Corresponding PC originals show the same landing and real pickup context. syncTutorialCue gates env by current goal floor, distance <=64px and allowed real action kind; computed move/env key participates in the cache token. Native test assertions explicitly reject the landing accent and require the document accent before actual pickup."
       },
       {
         "element": "Close approach, knockout, carry, concealment and recovery",
@@ -98,9 +99,27 @@
     ]
   },
   "ceiling": {
-    "result": "reached for the scoped beginner-flow quality bar",
-    "details": "The extension uses the game's native spatial markers, cones, foliage, physical body movement, switch state and floor transitions to teach actions through outcomes. The supplied originals show no material clipping or player/control obstruction in the required viewport set. Wider claims about first-time human comprehension remain unproven and are not needed for this disposition."
+    "result": "F1 quality requirement reached",
+    "details": "The corrected cue now guides movement until the document interaction is actually available, then highlights the correct pickup. This verdict does not reopen the broader craft review or establish novice user-study results."
   },
   "material_fixes": [],
-  "keep": "Keep the calm one-action/one-reason progression, real close approach and body recovery, consistent existing HUD, optional direct contract choice, and strict removal of tutorial-only skills at the main-contract join."
+  "keep": "Keep the calm one-action/one-reason progression, real close approach and body recovery, consistent existing HUD, optional direct contract choice, and strict removal of tutorial-only skills at the main-contract join.",
+  "review_correction": "The initial ship response missed F1 and was superseded by the fix finding. This verdict scores that single finding resolved after the targeted correction.",
+  "resolved_fixes": [
+    {
+      "id": "F1",
+      "status": "resolved",
+      "evidence": [
+        ".impeccable/review/v159/production-episodes-mobile-upstairs.png",
+        ".impeccable/review/v159/production-episodes-mobile-document-ready.png",
+        ".impeccable/review/v159/production-episodes-pc-upstairs.png",
+        ".impeccable/review/v159/production-episodes-pc-document-ready.png",
+        "src/js/80_hud.js:389",
+        "tests/tutorial/episode_lessons.py:57",
+        "build/lessons-v159/production-episodes.json"
+      ],
+      "remaining": "clear"
+    }
+  ],
+  "fix_induced_regressions": []
 }

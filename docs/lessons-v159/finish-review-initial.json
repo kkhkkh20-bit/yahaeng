@@ -1,0 +1,106 @@
+{
+  "disposition": "ship",
+  "scope": "Fresh independent finish review of the v159 beginner tutorial extension; code-led within the inherited 2D night-game HUD and renderer.",
+  "evidence": {
+    "required_originals_opened": 26,
+    "entry_originals_hash_verified": 16,
+    "entry_viewports": [
+      [
+        1440,
+        900
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "baseline_originals_opened": [
+      "before-tB-mobile.png",
+      "before-t0-mobile.png",
+      "before-m6-mobile.png",
+      "before-ledger-mobile.png"
+    ],
+    "source_sha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
+    "manifest_bytes_sha256": "b8a97446685db5272ed16ef610d57d167e8f086c14b7c34da806924803a43d8b",
+    "detector": "Existing build/lessons-v159/design-detection.json is []; detector not rerun.",
+    "limitations": "Entry captures prove settled entry composition, not playthrough. Production journey logs and action-state screenshots separately support PC/touch completion of the four rehearsals and their joins, including m6 pin pickup. No novice user study or whole-main-contract completion is asserted."
+  },
+  "persistence": {
+    "result": "pass within inherited-extension scope",
+    "details": [
+      "Root PRODUCT.md and DESIGN.md do not exist; this is explicitly recorded, not represented as their presence.",
+      "Parent reports session launcher SCOPED_EXISTING_ALLOWED. Existing product truth persists in docs/GAME_REVIEW_V157.md and docs/TUTORIAL_CAMPAIGN_V159.md; the latter records the beginner outcome, seven-stage order, inherited visual authority, narrow code-led path, and evidence limits.",
+      "No approved comp, new visual identity, new font, or new raster asset is part of this extension; comp gates and new-world asset obligations are inapplicable.",
+      "The reviewed entry originals match their recorded image hashes and the manifest source_sha256 identifies the final runtime package."
+    ]
+  },
+  "fidelity": {
+    "result": "faithful",
+    "matrix": [
+      {
+        "element": "TYPE",
+        "status": "match",
+        "evidence": "Original before/after mobile renders retain the current Plex Sans KR regular character, restrained size hierarchy, and existing HUD treatment. Current objective and reason wrap readably at 320px and landscape."
+      },
+      {
+        "element": "MATERIAL",
+        "status": "match",
+        "evidence": "The same textured night-world map renderer, actors, foliage, lights, interiors, and control surfaces carry the new scenarios. No substitute visual vocabulary or fake material was added."
+      },
+      {
+        "element": "GROUND",
+        "status": "match",
+        "evidence": "Before/after original game and ledger captures preserve the incumbent dark, cool game field and dark green-black HUD/ledger. The existing world is the authority for this extension."
+      },
+      {
+        "element": "First actionable instruction",
+        "status": "match",
+        "evidence": "after-tB-{pc,mobile,landscape,small}.png names movement and a right-hand marker; the reason explains moving the player's character toward the alley exit. Player, marker, current instruction, and controls remain distinguishable."
+      },
+      {
+        "element": "Single objective and matching control",
+        "status": "match",
+        "evidence": "Required entry and action-state captures retain one current objective plus purpose. The crouch, attack, and action controls are accented for their actual required action; unused core-lesson controls are hidden. Source syncTutorialCue and lesson CSS agree with the rendered controls."
+      },
+      {
+        "element": "Close approach, knockout, carry, concealment and recovery",
+        "status": "match",
+        "evidence": "production-basic-{pc,touch}-rear.png shows the actual close rear position and short-press KO instruction. touch-drop-recovery directs the player to the dropped body and accents carry; touch-stash reaches the exit step. Source t0 removes mandatory disguise/grab/cycle and retains six concrete steps."
+      },
+      {
+        "element": "Lighting rehearsal",
+        "status": "match",
+        "evidence": "production-episodes-mobile-light-off.png shows the switch already off and the next crossing instruction; mobile-dark-crossing shows crouch guidance outside the shortened cone. Native PC/touch traces complete tL and join m4, with light .675 to .04 and visibility .219 to 0."
+      },
+      {
+        "element": "Indoor and stairs rehearsal",
+        "status": "match",
+        "evidence": "mobile-upstairs/document/downstairs and pc-upstairs show distinct real floors, reachable document, return stairs and exit guidance. Native traces complete tR and join m6."
+      },
+      {
+        "element": "Progression and temporary permissions",
+        "status": "match",
+        "evidence": "26_learning_route.js uses tB,t0,m2,tL,m4,tR,m6, skips cleared rehearsals and keeps direct contract selection. Native traces retain budget 4 and remove trial electric permission on m4. Tutorial progression advances once per update with a .35s minimum."
+      },
+      {
+        "element": "m6 first action",
+        "status": "match",
+        "evidence": "All four after-m6 originals locate the hairpin; 16_m6.js switches to the actual locked cell door after pickup. Both native episode traces reach that door-directed goal after actual pin pickup."
+      }
+    ]
+  },
+  "ceiling": {
+    "result": "reached for the scoped beginner-flow quality bar",
+    "details": "The extension uses the game's native spatial markers, cones, foliage, physical body movement, switch state and floor transitions to teach actions through outcomes. The supplied originals show no material clipping or player/control obstruction in the required viewport set. Wider claims about first-time human comprehension remain unproven and are not needed for this disposition."
+  },
+  "material_fixes": [],
+  "keep": "Keep the calm one-action/one-reason progression, real close approach and body recovery, consistent existing HUD, optional direct contract choice, and strict removal of tutorial-only skills at the main-contract join."
+}

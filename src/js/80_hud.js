@@ -387,7 +387,15 @@ function renderStageList() {
 
 // One short instruction in the existing objective area, with one matching control accent.
 function syncTutorialCue(){
-  const step=STAGE.steps?.[S.tutI||0],cue=step?.[4],key=(typeof cue==='function'?cue(S,S.player):cue)||'',token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
+  const step=STAGE.steps?.[S.tutI||0],cue=step?.[4];
+  let key=(typeof cue==='function'?cue(S,S.player):cue)||'';
+  // A nearby stair is a valid action, but it is not the document we are teaching.
+  // Keep the movement goal until the lesson's actual target is in reach.
+  if(key==='env'&&['tB','t0','tL','tR'].includes(STAGE.id)){
+    const at=step?.[2]?.(S),P=S.player,a=envAction(),allowed=step?.[6];
+    if(!at||flOf(at)!==flOf(P)||dist(P.x,P.y,at.x,at.y)>64||a.k==='none'||allowed&&!allowed.includes(a.k))key='move';
+  }
+  const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
