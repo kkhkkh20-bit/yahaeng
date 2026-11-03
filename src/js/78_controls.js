@@ -38,6 +38,7 @@ const icon = (k, s = 26) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}"
 const KILLISH = new Set(['kill', 'kill2', 'drop', 'ambush', 'ventKill', 'pull', 'execute', 'drag', 'finish', 'ledgeKill', 'pushOff']);
 function actIcon(a) {
   if (a.k === 'pickup' && a.p && a.p.outfit) return 'dress';
+  if (a.k === 'finish') return 'kill'; // A downed victim's finishing action is lethal, not another knockout.
   const k = a.k, lb = a.label || '';
   if (KILLISH.has(k) || ((k === 'winJump' || k === 'up') && a.kill)) return /기절|끌어내리기/.test(lb) ? 'ko' : 'kill';
   return ({ hide: 'hide', quickStash:'stash', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',

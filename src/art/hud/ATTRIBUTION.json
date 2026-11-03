@@ -74,6 +74,11 @@
       "file": "stone.svg",
       "author": "Yahaeng",
       "description": "Authored can silhouette to match the actual empty-can tool."
+    },
+    {
+      "files": "frames/*.svg",
+      "author": "Yahaeng",
+      "description": "Original graphite nine-slice panel and four-state control/primary surfaces. Built by tools/art/build_hud_frames.py. Approved A concept direction; no reference-game graphics included."
     }
   ]
 }

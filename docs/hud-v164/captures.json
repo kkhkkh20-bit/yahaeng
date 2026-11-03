@@ -1,0 +1,49 @@
+{
+  "method": "Same deterministic seed, stage m1, player at 768,744 and viewport. Original unedited game captures. Not a mission completion record.",
+  "release": {
+    "edition": "2d-campaign",
+    "version": "v164",
+    "source_sha256": "60f51da8d6327002880ddff5a18dbb0b24b1c1a3a15ca66516cd9ab31e5048cb",
+    "html_bytes": 176694,
+    "source_bytes": 11194963,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8415127,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8415127
+  },
+  "images": [
+    {
+      "file": "before-mobile.png",
+      "sha256": "d5a9c4c9e64cf13839e7ab8dcbe9df3a4d123ba44a2bbbb2274667ff68bbf097"
+    },
+    {
+      "file": "before-small.png",
+      "sha256": "6641b3af358e8ca57f8a44de4f96daa57df3d4a9e89d3d4fdfb3c27211231def"
+    },
+    {
+      "file": "before-landscape.png",
+      "sha256": "7bd1e5c3daf96bc0295b97de932af2c61afa3203ce3bd311457c5d79e7d6bcb9"
+    },
+    {
+      "file": "before-pc.png",
+      "sha256": "a186a77dcd125711a979004a1b15a5b132de871e5cc3bb8534dcefe916bad541"
+    },
+    {
+      "file": "after-mobile.png",
+      "sha256": "254dd328364c4a486ea4def399a3fd0581ef47cf3bac566460f0f737ff19bbd2"
+    },
+    {
+      "file": "after-small.png",
+      "sha256": "bc7487b4af13ead51bd2e04a7ce7628d021ed81de35bdca37d42895ee67d6a9c"
+    },
+    {
+      "file": "after-landscape.png",
+      "sha256": "1a05210734ca2a68ad31d3ab23d25b03cdc5b5bd47458eecd8259afafb7715bf"
+    },
+    {
+      "file": "after-pc.png",
+      "sha256": "048a1bee19ade85210bb2aaf7ded806631a9b3c3aba443463bd1e73557e9863f"
+    }
+  ]
+}

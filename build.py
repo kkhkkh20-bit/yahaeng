@@ -56,7 +56,7 @@ def build():
     menu_art = base64.b64encode(open(P('src', 'art', 'title-poster.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
-    icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','*.svg'))))+'}'
+    icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','**','*.svg'),recursive=True)))+'}'
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
     html = html.replace('__UI_FONT__', base64.b64encode(open(P('src','fonts','ui-regular.woff2'),'rb').read()).decode())

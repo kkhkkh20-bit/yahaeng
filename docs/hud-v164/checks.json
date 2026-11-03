@@ -1,0 +1,174 @@
+[
+  {
+    "viewport": "mobile",
+    "frameImages": 9,
+    "controls": [
+      {
+        "id": "btnPause",
+        "x": 318,
+        "y": 12,
+        "w": 58,
+        "h": 44
+      },
+      {
+        "id": "btnCrouch",
+        "x": 18,
+        "y": 764,
+        "w": 58,
+        "h": 58
+      },
+      {
+        "id": "btnTool",
+        "x": 303,
+        "y": 672,
+        "w": 62,
+        "h": 62
+      },
+      {
+        "id": "btnToolNext",
+        "x": 208,
+        "y": 690,
+        "w": 72,
+        "h": 50
+      },
+      {
+        "id": "btnCarry",
+        "x": 206,
+        "y": 756,
+        "w": 72,
+        "h": 72
+      },
+      {
+        "id": "btnAct",
+        "x": 294,
+        "y": 748,
+        "w": 80,
+        "h": 80
+      }
+    ],
+    "nativeStates": true,
+    "pageErrors": []
+  },
+  {
+    "viewport": "small",
+    "frameImages": 9,
+    "controls": [
+      {
+        "id": "btnPause",
+        "x": 248,
+        "y": 12,
+        "w": 58,
+        "h": 44
+      },
+      {
+        "id": "btnCrouch",
+        "x": 14,
+        "y": 408,
+        "w": 58,
+        "h": 58
+      },
+      {
+        "id": "btnTool",
+        "x": 237,
+        "y": 400,
+        "w": 62,
+        "h": 62
+      },
+      {
+        "id": "btnToolNext",
+        "x": 142,
+        "y": 418,
+        "w": 72,
+        "h": 50
+      },
+      {
+        "id": "btnCarry",
+        "x": 140,
+        "y": 484,
+        "w": 72,
+        "h": 72
+      },
+      {
+        "id": "btnAct",
+        "x": 228,
+        "y": 476,
+        "w": 80,
+        "h": 80
+      }
+    ],
+    "nativeStates": true,
+    "pageErrors": []
+  },
+  {
+    "viewport": "landscape",
+    "frameImages": 9,
+    "controls": [
+      {
+        "id": "btnPause",
+        "x": 764,
+        "y": 12,
+        "w": 64,
+        "h": 44
+      },
+      {
+        "id": "btnCrouch",
+        "x": 18,
+        "y": 310,
+        "w": 58,
+        "h": 58
+      },
+      {
+        "id": "btnTool",
+        "x": 757,
+        "y": 222,
+        "w": 62,
+        "h": 62
+      },
+      {
+        "id": "btnToolNext",
+        "x": 662,
+        "y": 240,
+        "w": 72,
+        "h": 50
+      },
+      {
+        "id": "btnCarry",
+        "x": 660,
+        "y": 306,
+        "w": 72,
+        "h": 72
+      },
+      {
+        "id": "btnAct",
+        "x": 748,
+        "y": 298,
+        "w": 80,
+        "h": 80
+      }
+    ],
+    "nativeStates": true,
+    "pageErrors": []
+  },
+  {
+    "viewport": "pc",
+    "frameImages": 9,
+    "controls": [
+      {
+        "id": "btnPause",
+        "x": 1192,
+        "y": 18,
+        "w": 64,
+        "h": 44
+      },
+      {
+        "id": "btnToolNext",
+        "x": 1146,
+        "y": 732,
+        "w": 110,
+        "h": 48
+      }
+    ],
+    "nativeStates": false,
+    "pageErrors": []
+  }
+]
