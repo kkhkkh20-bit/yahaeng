@@ -1,0 +1,13 @@
+{
+  "inputAt": {
+    "busy": true,
+    "remaining": 0.15000000000002123,
+    "body": 1
+  },
+  "after": {
+    "carrying": false,
+    "corpses": 1,
+    "remaining": 0
+  },
+  "method": "Controlled native keyboard KO, environment tap150ms before recovery end; no whole mission claim."
+}

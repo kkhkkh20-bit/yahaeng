@@ -1,0 +1,453 @@
+{
+  "method": "Original production renders, fresh4P/seed42. South-east uses native right4/down4 from actual m4 start with liveAI. Other corners explicitly place the player near the edge then use native movement; controlled edge-framing fixtures, not playthroughs. Camera, viewport and game conditions match.",
+  "captures": [
+    {
+      "image": "after-south-east-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "52c9ee5fa2cecc2d25aff9fa55eeefdd7085a8c4e952e086f9ceda9e3ff29e3f",
+      "errors": [],
+      "controlledEdgeFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-west-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "1d8e7e573e0d941b7c70a882a7df8e3071e9e38b6d129ae7cabcc006588281e7",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-west-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "d8ca31e103aff4b160e1f777ce7c201e6dc4134cc73c9f6d9456d151206fe6d4",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-east-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "c94ef460f72bdfc07cac0f0df5a8ee08c676d8ed4bc9fa11a7a4833499b25dda",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          2290,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-east-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "899b6e073441cae0f1d4344cf710f0e2e32131a7120040c2c7d645b8424e6248",
+      "errors": [],
+      "controlledEdgeFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-west-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "996d4609c5d5b2831c63df7d86e3e455cf256c4ac2a21046b7ff9d15c7ce20b5",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-west-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "615d7568517f08ba6f4bdebe659caeb2b6819863797d50ec902f7e814479d01b",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-east-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "842141e345422ba049682349bbfa3d87f6a599b74e1b3eb0934a912693395bc2",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          2290,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-east-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "80a9793e9736526dea2d3df768ca5edb200e876abe64d7513ecf1b343e24be1a",
+      "errors": [],
+      "controlledEdgeFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-west-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "2e243a002f7ec05bf51be889b893fa208309e01926b52cc1b6b9e4453a9dbd76",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-west-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "fb0b07c08f025d87d854f52d00cadf79870ee78bba1ad74ccacb11d5e92b7940",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-east-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "9db0e7c2e6342b95e2b8b79ee296d37e9584d0b554d596fc7b5f83f18096e854",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          2290,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-east-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "adb0a34bb8d9b635e1a8dfc08148dd896035124143e1d5a59fd858e120414c8c",
+      "errors": [],
+      "controlledEdgeFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-south-west-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "027f65869d4d87ddbdd6a4e76be83b87aea96bb31171b5a00af1a6ceeaeaba0a",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-west-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "162b137460c9c13161291c5a03fdd34351fe6097e76b59bcc9d02d7af8131a15",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          14,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "after-north-east-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v158",
+      "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+      "imageSha256": "c2d6bb5aa3a64b1f2a60860905ab103f6b55b224311f88382b54ed2646c6264f",
+      "errors": [],
+      "controlledEdgeFixture": true,
+      "state": {
+        "at": [
+          2290,
+          61
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,951 @@
+{
+  "rows": [
+    {
+      "sid": "m2",
+      "origin": {
+        "fl": 2,
+        "z": 0,
+        "x": 552,
+        "y": 312,
+        "k": "f2_0"
+      },
+      "goal": {
+        "fl": 0,
+        "z": 3,
+        "x": 552,
+        "y": 312,
+        "k": "r0"
+      },
+      "reached": [
+        990,
+        991,
+        993,
+        992
+      ],
+      "trace": [
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 2,
+            "z": 0,
+            "state": "ALERT",
+            "path": null,
+            "climb": true
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 271,
+            "fl": 2,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 511,
+            "y": 360,
+            "fl": 2,
+            "z": 0,
+            "state": "ALERT",
+            "path": 2,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 353,
+            "fl": 2,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 552,
+            "y": 312,
+            "fl": 0,
+            "z": 3,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ]
+      ],
+      "at": [
+        {
+          "id": 990,
+          "x": 552,
+          "y": 312,
+          "fl": 0,
+          "z": 3,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 991,
+          "x": 552,
+          "y": 312,
+          "fl": 0,
+          "z": 3,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 992,
+          "x": 552,
+          "y": 312,
+          "fl": 0,
+          "z": 3,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 993,
+          "x": 552,
+          "y": 312,
+          "fl": 0,
+          "z": 3,
+          "state": "ALERT",
+          "dist": 0
+        }
+      ]
+    },
+    {
+      "sid": "m4",
+      "origin": {
+        "fl": 0,
+        "z": 0,
+        "x": 936,
+        "y": 216,
+        "k": "g"
+      },
+      "goal": {
+        "fl": 0,
+        "z": 1,
+        "x": 936,
+        "y": 216,
+        "k": "r0"
+      },
+      "reached": [
+        990,
+        992,
+        993,
+        991
+      ],
+      "trace": [
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 0,
+            "state": "ALERT",
+            "path": null,
+            "climb": true
+          },
+          {
+            "id": 991,
+            "x": 892.4499436340964,
+            "y": 173.4035175259608,
+            "fl": 0,
+            "z": 0,
+            "state": "ALERT",
+            "path": 3,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 175,
+            "fl": 0,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 895,
+            "y": 216,
+            "fl": 0,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 936,
+            "y": 216,
+            "fl": 0,
+            "z": 1,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ]
+      ],
+      "at": [
+        {
+          "id": 990,
+          "x": 936,
+          "y": 216,
+          "fl": 0,
+          "z": 1,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 991,
+          "x": 936,
+          "y": 216,
+          "fl": 0,
+          "z": 1,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 992,
+          "x": 936,
+          "y": 216,
+          "fl": 0,
+          "z": 1,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 993,
+          "x": 936,
+          "y": 216,
+          "fl": 0,
+          "z": 1,
+          "state": "ALERT",
+          "dist": 0
+        }
+      ]
+    },
+    {
+      "sid": "m6",
+      "origin": {
+        "fl": 1,
+        "z": 0,
+        "x": 888,
+        "y": 264,
+        "k": "f1_0"
+      },
+      "goal": {
+        "fl": 0,
+        "z": 2,
+        "x": 888,
+        "y": 264,
+        "k": "r0"
+      },
+      "reached": [
+        990,
+        991,
+        993,
+        992
+      ],
+      "trace": [
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 1,
+            "z": 0,
+            "state": "ALERT",
+            "path": null,
+            "climb": true
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 223,
+            "fl": 1,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 847,
+            "y": 312,
+            "fl": 1,
+            "z": 0,
+            "state": "ALERT",
+            "path": 2,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 305,
+            "fl": 1,
+            "z": 0,
+            "state": "ALERT",
+            "path": 1,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ],
+        [
+          {
+            "id": 990,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 991,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 992,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          },
+          {
+            "id": 993,
+            "x": 888,
+            "y": 264,
+            "fl": 0,
+            "z": 2,
+            "state": "ALERT",
+            "path": 0,
+            "climb": false
+          }
+        ]
+      ],
+      "at": [
+        {
+          "id": 990,
+          "x": 888,
+          "y": 264,
+          "fl": 0,
+          "z": 2,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 991,
+          "x": 888,
+          "y": 264,
+          "fl": 0,
+          "z": 2,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 992,
+          "x": 888,
+          "y": 264,
+          "fl": 0,
+          "z": 2,
+          "state": "ALERT",
+          "dist": 0
+        },
+        {
+          "id": 993,
+          "x": 888,
+          "y": 264,
+          "fl": 0,
+          "z": 2,
+          "state": "ALERT",
+          "dist": 0
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "method": "Controlled four-pursuer roof recall, actual authored stairs/collision, hidden player, no new sighting or teleport. 60 simulated seconds, route/movement loop isolates crowd navigation from search policy; not a playthrough."
+}
