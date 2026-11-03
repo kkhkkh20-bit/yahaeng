@@ -1,0 +1,283 @@
+{
+  "version": "v153",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v153",
+    "source_sha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+    "html_bytes": 122383,
+    "source_bytes": 11102552,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8377027,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8377027
+  },
+  "nativeBuilds": {
+    "attempt": 3,
+    "time": "2026-11-03T03:26:30Z",
+    "runtimeCommit": "d029b728ecd32c4f86f986d8ab51dbd2d993dedf",
+    "endpoints": {
+      "pages": {
+        "version": "v153",
+        "source_sha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "matches": true
+      },
+      "cloudflare": {
+        "version": "v153",
+        "source_sha256": "ae6683ace729042b466026a31e063a788351fcda25e87ff566543275104a2669",
+        "matches": true
+      }
+    },
+    "workers": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/18c80397-9bd2-4faf-8bf8-3c8a724bb1b5"
+      }
+    ],
+    "pagesBuild": {
+      "status": "built",
+      "commit": "806f05e7b43c8c7d12188b48f79a8620559ef20b",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "publicPackages": {
+    "pages": {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "files": {
+        "index.html": "40aa7162920685fdb8e64795ff6fd5cf5b94da46a013a1c8119dbfe3217fd1a9",
+        "version.json": "61b647b4e572867394f5d37953cb6f5ad06321f3ab78e165c7ca9028ea32c700",
+        "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+        "assets/2df62c591e9c8b98e0c4.js": "2df62c591e9c8b98e0c442c7c7623c71dfb00fe3d279f84967f34ff1da801878",
+        "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+        "assets/f584d14fc455646e3554.js": "f584d14fc455646e35548f4b345bbd058ce29931a3876bed2f30abe75b042fea",
+        "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+        "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+      },
+      "browsers": [
+        {
+          "mobile": false,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            187.60118929762382,
+            505.53135
+          ],
+          "version": "v153",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true,
+          "customUIFont": {
+            "fonts": [
+              {
+                "familyName": "IBM Plex Sans KR",
+                "postScriptName": "IBMPlexSansKR-Regular",
+                "isCustomFont": true,
+                "glyphCount": 5
+              }
+            ]
+          }
+        },
+        {
+          "mobile": true,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            189.97811639706714,
+            505.54057500000005
+          ],
+          "version": "v153",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true,
+          "customUIFont": {
+            "fonts": [
+              {
+                "familyName": "IBM Plex Sans KR",
+                "postScriptName": "IBMPlexSansKR-Regular",
+                "isCustomFont": true,
+                "glyphCount": 5
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "cloudflare": {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "files": {
+        "index.html": "40aa7162920685fdb8e64795ff6fd5cf5b94da46a013a1c8119dbfe3217fd1a9",
+        "version.json": "61b647b4e572867394f5d37953cb6f5ad06321f3ab78e165c7ca9028ea32c700",
+        "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+        "assets/2df62c591e9c8b98e0c4.js": "2df62c591e9c8b98e0c442c7c7623c71dfb00fe3d279f84967f34ff1da801878",
+        "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+        "assets/f584d14fc455646e3554.js": "f584d14fc455646e35548f4b345bbd058ce29931a3876bed2f30abe75b042fea",
+        "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+        "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+      },
+      "browsers": [
+        {
+          "mobile": false,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            185.1868291833967,
+            505.53135000000003
+          ],
+          "version": "v153",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true,
+          "customUIFont": {
+            "fonts": [
+              {
+                "familyName": "IBM Plex Sans KR",
+                "postScriptName": "IBMPlexSansKR-Regular",
+                "isCustomFont": true,
+                "glyphCount": 5
+              }
+            ]
+          }
+        },
+        {
+          "mobile": true,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            188.26547871167344,
+            505.53135
+          ],
+          "version": "v153",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true,
+          "customUIFont": {
+            "fonts": [
+              {
+                "familyName": "IBM Plex Sans KR",
+                "postScriptName": "IBMPlexSansKR-Regular",
+                "isCustomFont": true,
+                "glyphCount": 5
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "nativeInterface": [
+    {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "touch": false,
+      "version": "v153",
+      "straightEdges": 24,
+      "unfoldedBranches": 3,
+      "purchased": [
+        "kit",
+        "electric"
+      ],
+      "remainingPoints": 2,
+      "detailWeight": "400",
+      "nativeMenuReturn": true,
+      "pageErrors": []
+    },
+    {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "touch": true,
+      "version": "v153",
+      "straightEdges": 24,
+      "unfoldedBranches": 3,
+      "purchased": [
+        "kit",
+        "electric"
+      ],
+      "remainingPoints": 2,
+      "detailWeight": "400",
+      "nativeMenuReturn": true,
+      "pageErrors": []
+    },
+    {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "touch": false,
+      "version": "v153",
+      "straightEdges": 24,
+      "unfoldedBranches": 3,
+      "purchased": [
+        "kit",
+        "electric"
+      ],
+      "remainingPoints": 2,
+      "detailWeight": "400",
+      "nativeMenuReturn": true,
+      "pageErrors": []
+    },
+    {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "touch": true,
+      "version": "v153",
+      "straightEdges": 24,
+      "unfoldedBranches": 3,
+      "purchased": [
+        "kit",
+        "electric"
+      ],
+      "remainingPoints": 2,
+      "detailWeight": "400",
+      "nativeMenuReturn": true,
+      "pageErrors": []
+    }
+  ],
+  "comparison": {
+    "base": "https://kkhkkh20-bit.github.io/yahaeng/hud-v153/",
+    "files": [
+      {
+        "name": "index.html",
+        "sha256": "b63614b5438de6d33dbe4d1915265c45765ef51073c263ba7b6ef55b47571bb0"
+      },
+      {
+        "name": "captures.json",
+        "sha256": "87167ceec8d9082ba2259573e5ab3c113f860d38454d841cd93a3bc818ce9170"
+      },
+      {
+        "name": "before-pause-pc.png",
+        "sha256": "a147aedab233b3d8cd9063dae7de6d88d6b9a06533e06ec6dd7a52ae3c9df9c9"
+      },
+      {
+        "name": "after-pause-pc.png",
+        "sha256": "73e80782d16f8d5beeedb04d8d6e1464757ee9876d0f2d7b934a763fa0b646d3"
+      },
+      {
+        "name": "before-skills-pc.png",
+        "sha256": "4f3cf9820ab7401abdc68396729752a226fe4b718e8619b37292313923bf7a27"
+      },
+      {
+        "name": "after-skills-pc.png",
+        "sha256": "d33201448db84e84e013feb2c018ddf4106de93abeda5a8dd5cdaaff6ac6d775"
+      },
+      {
+        "name": "before-hud-mobile.png",
+        "sha256": "edef161a2d4f3fcba1ae2cc62dc2477ea2823f0004168f5e23cc1c10fef8ef55"
+      },
+      {
+        "name": "after-hud-mobile.png",
+        "sha256": "0d77826c1859c7f4fbf66a3b5d7fa59872afb09157dee9d1a17be29ab84cee69"
+      }
+    ],
+    "playtestMatches": true
+  }
+}

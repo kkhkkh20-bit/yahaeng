@@ -37,3 +37,5 @@
 Impeccable의 기존 화면 확장 예외를 적용했다. PRODUCT.md·DESIGN.md는 기존부터 없으며, 새 시각 정체성을 만들거나 제품 사실을 바꾸지 않았다. 독립 검수는 24개 화면과 소스를 검토해 `ship`을 반환했다. 실제 기기 조작 검증은 별도 자동화 결과이며 독립 검수자가 직접 플레이했다고 쓰지 않는다.
 
 기계 검출은 컴파일된 UI에서 한 번 실행했다. 실제 브리핑 버튼의 낮은 hover 대비는 수정했고, 이전 그림자와 작은 범례도 정리했다. 나머지 항목은 11px 정보 표시와 기존 shorthand/cascade의 정적 경고로, 실제 계산값과 렌더링을 함께 검토했다. [검출 및 처리 범위](hud-v153/design-detect-resolution.json).
+
+배포 확인: [Cloudflare](https://yahaeng.kkhkkh-20.workers.dev/)와 [GitHub Pages](https://kkhkkh20-bit.github.io/yahaeng/) 모두 v153이다. Workers Builds 성공·Pages 빌드 완료, 각 주소의 HTML·버전·스크립트·폰트 8개 파일 해시 일치, 실제 Regular 서체 사용, PC·터치 이동·일시정지·기술 구매·직선 연결·메뉴 복귀를 확인했다. [공개 검증](hud-v153/deployment.json).
