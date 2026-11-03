@@ -1,0 +1,12 @@
+문 [11, 11, 0, 1]
+버튼 셋 ['kill', '달려들어 기절', '처치', 'door', '문 닫기', 'grab', 'stone']
+X = 문 [False, 'PATROL', 0]
+Space 톡 ['DEAD', True, 0, 1]
+시체 [행동] ['carry'] True
+Z 길게 ['DEAD', False, 1, 0]
+붙잡음 [True, '기절', 'execute']
+가만히 → 심문 [True, 1]
+붙잡은 뒤 톡 ['DEAD', True, 0, 1]
+키 안내 ZXCV SpaceEQF
+버튼 위치 [['btnAct', 308, 762, 72], ['btnCarry', 208, 762, 72], ['btnGrab', 192, 710, 88], ['btnTool', 292, 710, 88], ['btnToolNext', 292, 654, 88], ['btnCrouch', 192, 602, 88], ['btnSneak', 292, 602, 88]]
+통과 []

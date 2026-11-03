@@ -77,7 +77,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
-  for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
+  for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
   if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
@@ -155,6 +155,8 @@ function bindBtn(id, fn) {
 bindBtn('btnAct', actAttack);
 bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
+bindBtn('btnDress', actDress);
+$('btnDress').addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)actDress();}});
 bindBtn('btnSkill',beginAssassinSkill);
 $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);

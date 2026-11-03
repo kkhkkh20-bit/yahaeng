@@ -201,6 +201,11 @@ function updateHUD(force) {
   hud.carry.classList.toggle('ready', !!ea.bufferable||ea.k !== 'none'&&!ea.skillLocked);
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1 || ea.blocked&&n>0); if (!cb.hidden) setText($('cycleN'), 'cycN', ea.blocked?'다시 선택':(ea.choiceI + 1) + '/' + n); } }
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
+  { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
+    const dress=!STAGE.tutorial&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
+    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress;
+    if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
+  }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.

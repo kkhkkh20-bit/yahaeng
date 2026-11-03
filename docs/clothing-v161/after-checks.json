@@ -1,0 +1,33 @@
+{
+  "base": "http://127.0.0.1:34371/public/",
+  "rows": [
+    {
+      "viewport": "pc",
+      "attackAt40px": "kill",
+      "pageErrors": [],
+      "clothingTiming": "unchanged at 2.5 seconds; changed once after 3 seconds",
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "mobile",
+      "attackAt40px": "kill",
+      "pageErrors": [],
+      "clothingTiming": "unchanged at 2.5 seconds; changed once after 3 seconds",
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "landscape",
+      "attackAt40px": "kill",
+      "pageErrors": [],
+      "clothingTiming": "unchanged at 2.5 seconds; changed once after 3 seconds",
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "small",
+      "attackAt40px": "kill",
+      "pageErrors": [],
+      "clothingTiming": "unchanged at 2.5 seconds; changed once after 3 seconds",
+      "fixtures": "controlled open ground and downed body; native input"
+    }
+  ]
+}

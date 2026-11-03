@@ -152,16 +152,16 @@ body.touch #hud .pad #btnAct { right: 0; bottom: 0; height: 62px; }
 body.touch #hud .pad #btnAct.ko { color: var(--hud-ink); border-color: #c2c6b5; background: #1e281cf2; }
 body.touch #hud .pad #btnAct.kill { color: var(--hud-danger); border-color: #b97b6b; background: #30241fed; }
 body.touch #hud .pad #btnCarry { right: 100px; bottom: 0; height: 62px; }
-body.touch #hud .pad #btnGrab { right: 100px; bottom: 76px; }
+body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress { right: 100px; bottom: 76px; }
 body.touch #hud .pad #btnTool { right: 0; bottom: 76px; }
 body.touch #hud .pad #btnTool.aiming { border-color: var(--hud-ink); background: #30392bf2; color: var(--hud-ink); }
 body.touch #hud .pad #btnToolNext { right: 0; bottom: 132px; }
 body.touch #hud .pad #btnCycle { right: 100px; bottom: 132px; }
-body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnTool,
+body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress,body.touch #hud .pad #btnTool,
 body.touch #hud .pad #btnToolNext,body.touch #hud .pad #btnCycle {
   border: 0; border-bottom: 1px solid var(--hud-line); border-radius: 0; background: #131a15e0;
 }
-body.touch #hud .pad #btnGrab.ready,body.touch #hud .pad #btnTool.ready,
+body.touch #hud .pad #btnGrab.ready,body.touch #hud .pad #btnDress.ready,body.touch #hud .pad #btnTool.ready,
 body.touch #hud .pad #btnCycle.ready { border-bottom-color: #c2c6b5; }
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after {
   content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: calc(var(--hold,0) * 100%); background: var(--hud-danger);
@@ -182,7 +182,7 @@ body.perception-lesson #hud #btnAct,body.perception-lesson #hud #btnGrab,body.pe
   body.touch #hud .pad { width: 288px; height: 112px; }
   body.touch #hud .pad #btnAct { width: 88px; height: 56px; }
   body.touch #hud .pad #btnCarry { right: 100px; width: 88px; height: 56px; }
-  body.touch #hud .pad #btnGrab { right: 200px; bottom: 0; width: 78px; height: 56px; }
+  body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress { right: 200px; bottom: 0; width: 78px; height: 56px; }
   body.touch #hud .pad #btnTool { right: 0; bottom: 68px; }
   body.touch #hud .pad #btnToolNext { right: 100px; bottom: 68px; }
   body.touch #hud .pad #btnCycle { right: 200px; bottom: 68px; width: 78px; }
@@ -394,3 +394,12 @@ body[data-lesson="perception"] #hud #btnCarry,
 body[data-lesson="body"] #hud #btnTool,
 body[data-lesson="indoor"] #hud #btnTool,
 body[data-lesson="indoor"] #hud #btnAct { visibility: hidden; pointer-events: none; }
+
+/* The clothing shortcut shares the inactive grab slot on touch screens. */
+body:not(.touch) #hud .pad #btnDress {
+  position:absolute; right:112px; bottom:44px; display:flex; align-items:center; justify-content:center;
+  gap:6px; width:112px; min-height:44px; padding:8px; pointer-events:auto;
+  border:1px solid var(--hud-line); border-radius:0; background:var(--hud-ground);
+  color:var(--hud-ink); font-size:12px;
+}
+body:not(.touch) #hud .pad #btnDress b { font-weight:400; }

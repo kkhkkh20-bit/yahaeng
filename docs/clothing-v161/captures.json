@@ -1,0 +1,157 @@
+{
+  "before": {
+    "edition": "2d-campaign",
+    "version": "v160",
+    "source_sha256": "e75c953e9cf11aa80185858576b5e86de9a257951049838c29add1feb6588778",
+    "html_bytes": 123170,
+    "source_bytes": 11137880,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8411568,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8411568
+  },
+  "after": {
+    "edition": "2d-campaign",
+    "version": "v161",
+    "source_sha256": "fca7e059f3f3dd05b1964be340a45212262e97c0cb954e9b77f3647a94cd5e11",
+    "html_bytes": 123891,
+    "source_bytes": 11139742,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8412709,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8412709
+  },
+  "method": "Same controlled seed/coordinates and actors in the packaged builds. Native keyboard/touch attack and clothing assertions run separately. Original screenshots, no image processing. Not a full mission playthrough.",
+  "captures": [
+    {
+      "file": "after-clothing-landscape.png",
+      "size": [
+        844,
+        390
+      ],
+      "sha256": "fdaba2796433cfb673864962c1650a8597bf666ccbc0bbb180f023a182f65446"
+    },
+    {
+      "file": "after-clothing-mobile.png",
+      "size": [
+        390,
+        844
+      ],
+      "sha256": "1a6cc38ccc4e64cff9f3198409bfb6edaffbc0aecd5f68634f3074ebab8c8a22"
+    },
+    {
+      "file": "after-clothing-pc.png",
+      "size": [
+        1280,
+        800
+      ],
+      "sha256": "a5a067de9ce47151fd844e3dc4e4e5aafe95206f26f8dd8230164dd38f382958"
+    },
+    {
+      "file": "after-clothing-small.png",
+      "size": [
+        320,
+        568
+      ],
+      "sha256": "09fc8b3caf45ea2145597b223b4a55ea262ab875f5f34086ff6bb3285b74e4bc"
+    },
+    {
+      "file": "after-range-landscape.png",
+      "size": [
+        844,
+        390
+      ],
+      "sha256": "3cd0f1ddc79cf46288f64cf1c2479b0f3e69feb01d300fa3a3501cfe072b219d"
+    },
+    {
+      "file": "after-range-mobile.png",
+      "size": [
+        390,
+        844
+      ],
+      "sha256": "911be53687c68fee4b32a83eede67fc88671e89f055b3313838373ebafc4f8f2"
+    },
+    {
+      "file": "after-range-pc.png",
+      "size": [
+        1280,
+        800
+      ],
+      "sha256": "122ec1a3588fc9cf4b6a9dec00028a0f7698fdf2cf7c51a0e548bdf8b53782d1"
+    },
+    {
+      "file": "after-range-small.png",
+      "size": [
+        320,
+        568
+      ],
+      "sha256": "413d86f24b482d04e335081b19567b20c8f9a3b8b47530bfe74532f56ef3c570"
+    },
+    {
+      "file": "before-clothing-landscape.png",
+      "size": [
+        844,
+        390
+      ],
+      "sha256": "7a4fdfd280afa99459a596014c9e40016529f7ad7b31022dcc1fae6cc5ea6879"
+    },
+    {
+      "file": "before-clothing-mobile.png",
+      "size": [
+        390,
+        844
+      ],
+      "sha256": "8612092e137ea81e39385353682ae17f9dcdfe031b51e79ed0bf60fe7469fd57"
+    },
+    {
+      "file": "before-clothing-pc.png",
+      "size": [
+        1280,
+        800
+      ],
+      "sha256": "cba975e2aa74375614ed8f73196ebdc03edc76c277f9bfa2982fbf2d61e9beea"
+    },
+    {
+      "file": "before-clothing-small.png",
+      "size": [
+        320,
+        568
+      ],
+      "sha256": "3cad53f5ecaca55183a1e93758c32bb76e73bca37e2159b1a59c96910e22db14"
+    },
+    {
+      "file": "before-range-landscape.png",
+      "size": [
+        844,
+        390
+      ],
+      "sha256": "ee08201a6a6e8f37f07693d93095f57a5c20818d9cddb34f2b61ecfc3d44b2d3"
+    },
+    {
+      "file": "before-range-mobile.png",
+      "size": [
+        390,
+        844
+      ],
+      "sha256": "c031a43689c688989f8ab7091d807af0e599ff87838b73cc8c4cf5b6fe03b403"
+    },
+    {
+      "file": "before-range-pc.png",
+      "size": [
+        1280,
+        800
+      ],
+      "sha256": "e3acf96db924c846ed7db4a27c6408109f3f56db45f8a46adf06b0dac0bf8f67"
+    },
+    {
+      "file": "before-range-small.png",
+      "size": [
+        320,
+        568
+      ],
+      "sha256": "8827977b24a5749cc4f5abce34d053cd77bb92bc33d6cc54bb5942fd1ddeec97"
+    }
+  ]
+}

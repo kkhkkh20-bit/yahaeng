@@ -149,6 +149,17 @@ function actEnv() {
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
+// Clothing stays directly available beside a body; carrying remains the main action.
+function clothingAction(){
+  const P=S.player;
+  if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;
+  return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
+}
+function actDress(){
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial||actionBusy())return;
+  RC=null;const a=clothingAction();
+  if(a&&selectEnvTarget(envToken(a)))actEnv();
+}
 function actGrab() {
   if(STAGE.firstSteps)return;
   RC = null;

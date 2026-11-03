@@ -1,0 +1,33 @@
+{
+  "base": "http://127.0.0.1:40043/build/clothing-v161/before-public/",
+  "rows": [
+    {
+      "viewport": "pc",
+      "attackAt40px": "none",
+      "pageErrors": [],
+      "clothingTiming": null,
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "mobile",
+      "attackAt40px": "none",
+      "pageErrors": [],
+      "clothingTiming": null,
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "landscape",
+      "attackAt40px": "none",
+      "pageErrors": [],
+      "clothingTiming": null,
+      "fixtures": "controlled open ground and downed body; native input"
+    },
+    {
+      "viewport": "small",
+      "attackAt40px": "none",
+      "pageErrors": [],
+      "clothingTiming": null,
+      "fixtures": "controlled open ground and downed body; native input"
+    }
+  ]
+}

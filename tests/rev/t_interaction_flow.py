@@ -115,7 +115,9 @@ async def main():
             await ui.evaluate('()=>{window.__I=window.__game.S.player.interact;window.__step(8)}')
             assert await ui.evaluate("!!window.__I&&document.querySelector('#btnCarry').textContent.includes('갈아입는 중')"), 'Busy clothing label must match the action'
             if mobile:
-                for selector in ['#btnAct', '#btnCarry', '#btnGrab']:
+                assert await ui.locator('#btnDress').is_disabled(), 'Clothing control must stay disabled during the change'
+                assert await ui.locator('#btnGrab').is_hidden(), 'Busy clothing keeps the same contextual slot'
+                for selector in ['#btnAct', '#btnCarry']:
                     await ui.locator(selector).tap()
             else:
                 for key in ['KeyZ', 'KeyX', 'KeyC']:

@@ -130,7 +130,7 @@ function jumpTarget() {
   }
   return null;
 }
-const MELEE_CONTACT=32,LUNGE=112;
+const MELEE_CONTACT=48,LUNGE=112;
 const meleeReach=(P=S.player)=>STAGE.artSlice?134:skillOn('reach')&&!P.carrying?LUNGE:MELEE_CONTACT;
 function canKill(g,P,reach=meleeReach(P)){return meleeCandidate(g,P,Math.min(reach,g.civ?MELEE_CONTACT:meleeReach(P)));}
 function meleeCandidate(g, P, reach) {
