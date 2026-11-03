@@ -1,0 +1,55 @@
+{
+  "version": "v151",
+  "checkedAtKST": "2026-11-03",
+  "status": "deployed",
+  "runtimeSourceCommit": "c68202ffcb7cbbb0f9d9e529624da2c4a9149391",
+  "runtimePagesCommit": "5fbd28ef1f31b33673d44172f5f4f312c065a679",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v151",
+    "source_sha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+    "html_bytes": 159275,
+    "source_bytes": 10395929,
+    "scripts": 4,
+    "assets": 175,
+    "asset_bytes": 7822944,
+    "deployed_assets": 175,
+    "deployed_asset_bytes": 7822944
+  },
+  "pages": {
+    "url": "https://kkhkkh20-bit.github.io/yahaeng/",
+    "exactPackagedFiles": 6,
+    "nativePcAndTouch": "passed"
+  },
+  "cloudflare": {
+    "url": "https://yahaeng.kkhkkh-20.workers.dev/",
+    "automaticBuild": {
+      "completed_at": "2026-11-03T01:34:33Z",
+      "conclusion": "success",
+      "details_url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/b146a42f-c9fc-4c64-b3be-9f900f0701d9",
+      "id": 125670049452,
+      "name": "Workers Builds: yahaeng",
+      "output": {
+        "annotations_count": 0,
+        "annotations_url": "https://api.github.com/repos/kkhkkh20-bit/yahaeng/check-runs/125670049452/annotations",
+        "summary": "\nBuild ID: [b146a42f-c9fc-4c64-b3be-9f900f0701d9](https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/b146a42f-c9fc-4c64-b3be-9f900f0701d9)\nScript: [yahaeng](https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production)\nVersion ID: 3b91f3fd-b3c9-4fe2-936f-a6a59253b0c1\n",
+        "text": null,
+        "title": "Workers Builds: yahaeng"
+      },
+      "started_at": "2026-11-03T01:34:33Z",
+      "status": "completed"
+    },
+    "exactPackagedFiles": 6,
+    "nativePcAndTouch": "passed"
+  },
+  "validation": {
+    "fastRegressions": 46,
+    "buildOwnershipChecks": 6,
+    "allMissionReachability": true,
+    "diagramNodes": 27,
+    "actualPrerequisiteEdges": 24,
+    "independentVisualReview": "ship",
+    "previewIsStatic": true,
+    "physicalPhoneFpsMeasured": false
+  }
+}
