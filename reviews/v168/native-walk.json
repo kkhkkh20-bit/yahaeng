@@ -1,0 +1,58 @@
+[
+  {
+    "touch": false,
+    "version": "v168",
+    "seconds": 98.93666666668035,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 1,
+      "special": 0,
+      "ko": 1,
+      "dressed": 1,
+      "camUnplugged": 2,
+      "keyDoors": 1,
+      "gotAs": "crew"
+    },
+    "learned": [],
+    "cleared": true,
+    "rank": "등급\n그림자",
+    "pageErrors": [],
+    "method": "Fresh save; real mission selection; native keyboard or CDP joystick/actions; all campaign actors and security active; stepped clock; no actor/health/inventory/skills/progress overrides."
+  },
+  {
+    "touch": true,
+    "version": "v168",
+    "seconds": 112.43666666668726,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 1,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 1,
+      "stashed": 1,
+      "special": 0,
+      "ko": 1,
+      "dressed": 1,
+      "camUnplugged": 2,
+      "keyDoors": 1,
+      "gotAs": "crew"
+    },
+    "learned": [],
+    "cleared": true,
+    "rank": "등급\n암살자",
+    "pageErrors": [],
+    "method": "Fresh save; real mission selection; native keyboard or CDP joystick/actions; all campaign actors and security active; stepped clock; no actor/health/inventory/skills/progress overrides."
+  }
+]
