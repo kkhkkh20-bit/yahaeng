@@ -857,6 +857,20 @@ body.touch #hud .pad>button.down::before,body.touch #hud .pad>button.down>b,body
 @media(min-width:701px) and (max-height:500px){#hud .obj{border-width:6px;padding:2px 26px 2px 30px}#hud .obj::before{left:4px;top:6px}#hud #loadout{padding:12px}}
 @media(hover:hover){#hud button:hover{filter:brightness(1.08) drop-shadow(0 2px 2px #0005)}}
 
+/* Render silhouettes as actual SVG nodes above the frame compositing layer. */
+#hud .hud-art{position:relative;z-index:1;display:block;width:24px;height:24px;flex-shrink:0;fill:currentColor;stroke:none;pointer-events:none}
+body.touch #hud .pad>button>svg.hud-art,#hud .pad #btnDress>svg.hud-art{display:block;width:25px;height:25px}
+body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
+body.touch #hud .pad #btnCarry>svg.hud-art{width:27px;height:27px}
+#hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
+#hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress)::before,
+body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress)::before,
+body.touch #hud #btnCrouch::before,#hud #btnWhistle::before,#hud #tools .tool::before{content:none;display:none}
+#hud #btnCrouch>svg.hud-art{width:24px;height:24px}
+#hud #tools .tool>svg.hud-art{width:32px;height:32px}
+#hud #btnWhistle>svg.hud-art{grid-row:span 2;width:28px;height:28px;color:var(--hud-metal)}
+body.touch #hud .pad>button.down>svg.hud-art,body.touch #hud .pad>button:active>svg.hud-art{transform:translateY(1px)}
+
 /* The whole prerequisite graph stays unfolded; inspection opens on the right. */
 #btnSkillsLedger { margin:0 0 16px; }
 #skillScreen { --sk-ground:#0e171c; --sk-panel:#142127; --sk-line:#344248; --sk-ink:#e7e4d6; --sk-muted:#a6b2b3; --sk-gold:#d7ba73; padding:0; overflow:hidden; background:var(--sk-ground); color:var(--sk-ink); }
@@ -1419,7 +1433,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       </ul>
     </details>
     <details class="rulesbox"><summary class="rules-h">출처</summary>
-    <p class="credit">HUD 아이콘: <a href="https://game-icons.net/" target="_blank" rel="noopener">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 마스크) · 효과: <a href="https://github.com/patch-gg/pixelfx" target="_blank" rel="noopener">PixelFX · Patch / Hugo Duprez</a> (MIT) · 건물 외관: <a href="https://quaternius.com/packs/downtowncitymegakit.html" target="_blank" rel="noopener">Quaternius Downtown City MegaKit</a> (CC0) · 배경 3D 모델: <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Kenney Retro Urban Kit</a> · <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Furniture Kit</a> (CC0) · 캐릭터 3D 모델: <a href="https://quaternius.com/packs/ultimatemodularwomen.html" target="_blank" rel="noopener">Quaternius Ultimate Modular Women</a> · <a href="https://quaternius.com/packs/ultimatemodularcharacters.html" target="_blank" rel="noopener">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href="https://kenney.nl/assets/rpg-urban-pack" target="_blank" rel="noopener">Kenney RPG Urban Pack</a> (CC0) · 그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
+    <p class="credit">HUD 아이콘: <a href="https://game-icons.net/" target="_blank" rel="noopener">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · 효과: <a href="https://github.com/patch-gg/pixelfx" target="_blank" rel="noopener">PixelFX · Patch / Hugo Duprez</a> (MIT) · 건물 외관: <a href="https://quaternius.com/packs/downtowncitymegakit.html" target="_blank" rel="noopener">Quaternius Downtown City MegaKit</a> (CC0) · 배경 3D 모델: <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Kenney Retro Urban Kit</a> · <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Furniture Kit</a> (CC0) · 캐릭터 3D 모델: <a href="https://quaternius.com/packs/ultimatemodularwomen.html" target="_blank" rel="noopener">Quaternius Ultimate Modular Women</a> · <a href="https://quaternius.com/packs/ultimatemodularcharacters.html" target="_blank" rel="noopener">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href="https://kenney.nl/assets/rpg-urban-pack" target="_blank" rel="noopener">Kenney RPG Urban Pack</a> (CC0) · 그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
   </div>
 </div>
@@ -1491,6 +1505,6 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/05ab97b0efd5dd5fe00a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/3ee4e79b430b2127d160.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/9a995d5c38e3931b6cb5.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/043332bbe4f3ca635874.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/c29d2b7e11c65caed9be.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
