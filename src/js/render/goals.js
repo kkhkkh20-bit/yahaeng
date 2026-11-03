@@ -10,8 +10,8 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
-  const topPx = Math.max((drawMini.tb || 70) + 40,($('stealth')?.getBoundingClientRect().bottom||0)+24), botPx = document.body.classList.contains('touch') ? 270 : 70;
-  const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
+  const frame=goalViewport();
+  const sy0=cam.y-hh+frame.top/SCALE,sy1=cam.y-hh+frame.bottom/SCALE,sx0=cam.x-hw+frame.left/SCALE,sx1=cam.x-hw+frame.right/SCALE;
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
     if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;

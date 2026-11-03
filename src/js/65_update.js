@@ -1,6 +1,6 @@
 const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
-function update(dt) {
+function update(dt, present=true) {
   if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
@@ -75,13 +75,13 @@ function update(dt) {
   if (S.flash > 0) S.flash -= dt;
   if (S.fade > 0) S.fade -= dt;
   moveCamera(dt);
-  updateHUD();
+  if(present)updateHUD();
 }
 // 집중(조준) 중: 주인공 방향만 돌고 세상은 멈춘다
-function focusUpdate(dt) {
+function focusUpdate(dt, present=true) {
   updatePlayer(dt);
   for (const m of S.toasts) m.t -= dt * 0.5;
-  moveCamera(dt); updateHUD();
+  moveCamera(dt); if(present)updateHUD();
 }
 function updateAlert(dt) {
   if (S.alevel === 3) {

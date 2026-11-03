@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "Saved crouch restored in all three main contracts and basic training",
+    "Real foliage concealment survives reload after standing",
+    "Manual target and clue remain until completed; completed selections release automatic guidance",
+    "First body cleanup queues checkpoint, waits through search, saves only when safe without rewards",
+    "120ms catch-up retains seven physics steps and movement with one HUD presentation",
+    "Actual pause menu can return to automatic flow, with selected state and keyboard focus preserved",
+    "320x568 pause menu scrolls to the last target and back to automatic guidance using real taps",
+    "Actual marker rendering at four viewports, three zooms and three main contracts: 36 cases, 18 measured arrows"
+  ],
+  "pageErrors": []
+}

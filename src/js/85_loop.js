@@ -9,11 +9,14 @@ function advanceGameFrame(elapsed) {
   const total=Math.max(0,Math.min(STAGE.artSlice?.25:.12,elapsed));
   if(!total)return;
   const count=STAGE.artSlice?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
+  let advanced=false;
   for(let i=0;i<count;i++){
     if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
     let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
-    if(input.aiming)focusUpdate(dt);else update(dt);
+    advanced=true;
+    if(input.aiming)focusUpdate(dt,false);else update(dt,false);
   }
+  if(advanced&&running&&!S.over)updateHUD();
 }
 function frame(t) {
   requestAnimationFrame(frame);

@@ -1,6 +1,6 @@
 """Optional preparations must not prescribe a solution or replace a chosen goal.
 
-Controlled scenes test HUD/selection/save rules. The separate route runner walks
+Controlled scenes test HUD/selection/save rules after skipping the optional entry guide. The separate route runner walks
 all six missions using real inputs with NPC simulation frozen.
 """
 import asyncio, json, sys
@@ -20,7 +20,7 @@ async def main():
    await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats&tone=ink')
    await pg.wait_for_function('!!__game',polling=100)
    result=await pg.evaluate('''()=>{
-    const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===(id||'m2')));while(G.DLG.modal)G.advanceDialog();G.setOppMode(1);G.update(.001);return G.S};
+    const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===(id||'m2')));while(G.DLG.modal)G.advanceDialog();G.setOppMode(1);if(G.S.actionEntry)G.S.actionEntry.phase='skipped';G.update(.001);return G.S};
     let S=fresh(),P=S.player;const pin=G.nextGoal().id;
     check(pin&&!S.storyTrack,'fresh run auto-selects a clue');
     G.takeProp(S.props.find(p=>p.id==='emetic'));G.updateStories(.5);
@@ -67,7 +67,7 @@ async def main():
    await pg.evaluate('__game.updateHUD(true);__game.benchDraw(2)')
    assert '단서:' in await pg.locator('#objective').inner_text()
    await pg.locator('#btnPause').click()
-   await pg.locator('#missionGoals > button').first.click()
+   await pg.locator('#missionGoals [data-track="item:0"]').click()
    assert await pg.evaluate('!__game.nextGoal().story&&__game.nextGoal().id===__game.S.goalPin')
    await pg.locator('#btnResume').click()
    await pg.evaluate('__game.updateHUD(true);__game.benchDraw(2)')

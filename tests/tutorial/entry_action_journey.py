@@ -2,7 +2,7 @@
 import asyncio,json,sys,os
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/flow-v156';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/os.environ.get('YH_JOURNEY_DIR','build/flow-v156');O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else 'http://127.0.0.1:8001/public/';NAME=sys.argv[2]if len(sys.argv)>2 else 'entry-journey'
 async def main():
  reports=[]
@@ -11,7 +11,7 @@ async def main():
   for mobile in [False,True]:
    q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');await q.goto(BASE,timeout=120000);await q.wait_for_function('!!__game',timeout=120000);await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo');await q.evaluate('''()=>{while(__game.DLG.modal)__game.advanceDialog();window.tick=s=>{for(let t=0;t<s-1e-6;t+=.01){if(!__game.S.over)__game.update(.01)}};tick(.7)}''');cdp=await q.context.new_cdp_session(q);trace=[]
    async def record(name):
-    await q.evaluate('__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(2)');state=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{t:S.t,at:[P.x,P.y],hp:P.hp,detected:S.stats.detected,over:S.over,entry:S.actionEntry,hidden:P.hidden,goal:G.nextGoal()?.text,env:G.envAction().k,stats:S.stats,skillBudget:G.skillBudget()}}''');state['step']=name;trace.append(state);await q.screenshot(path=str(O/f'{NAME}-{"mobile"if mobile else"pc"}-{name}.png'));assert not state['over'],state;print('PASS',mobile,name,state,flush=True)
+    await q.evaluate('__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(2)');state=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{t:S.t,at:[P.x,P.y],hp:P.hp,detected:S.stats.detected,over:S.over,entry:S.actionEntry,hidden:P.hidden,goal:G.nextGoal()?.text,env:G.envAction().k,stats:S.stats,skillBudget:G.skillBudget(),checkpoint:G.cpReady(),sneakToggle:G.input.sneakToggle}}''');state['step']=name;trace.append(state);await q.screenshot(path=str(O/f'{NAME}-{"mobile"if mobile else"pc"}-{name}.png'));assert not state['over'],state;print('PASS',mobile,name,state,flush=True)
    async def move(x,y):
     for target,axis,lo,hi in [(x,'x','ArrowLeft','ArrowRight'),(y,'y','ArrowUp','ArrowDown')]:
      for _ in range(300):
@@ -51,7 +51,14 @@ async def main():
     await press('x','btnCarry');await move(168,888)
    await press('x','btnCarry');await record('stored');assert await q.evaluate('__game.S.corpses.some(c=>c.guardId===__game.STAGE.entryRoute.guard&&c.hidden)&&__game.S.actionEntry.phase==="done"&&!__game.S.player.carrying')
    await move(168,888);await record('next-cover');assert await q.evaluate('__game.S.player.hidden&&__game.S.player.hp===3&&__game.S.stats.detected===0&&__game.skillBudget()===4&&__game.nextGoal().id==="target:0"');assert not errors,errors
-   reports.append({'mobile':mobile,'trace':trace,'errors':errors,'method':'Actual menu, keyboard/CDP joystick and action buttons; fixed simulation clock; live NPCs/cameras, no actor placement or inventory/HP overrides; entry encounter only, not entire contract completion'});await q.close()
+   if '--resume' in sys.argv:
+    await q.evaluate('tick(.8)')
+    assert await q.evaluate('__game.cpReady()&&__game.CP.S.actionEntry.phase==="done"'),'First clean-up did not create a safe checkpoint'
+    if mobile:await q.tap('#btnCrouch')
+    else:await q.keyboard.press('Control')
+    await q.evaluate('tick(.1)');await q.click('#btnPause');await q.click('#btnMenu2');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]');assert await q.locator('#btnBrCP').is_visible();await q.screenshot(path=str(O/f'{NAME}-{"mobile"if mobile else"pc"}-resume-offer.png'));await q.click('#btnBrCP');await q.evaluate('tick(.2)');await record('restored')
+    assert await q.evaluate('__game.S.actionEntry.phase==="done"&&__game.S.player.hidden&&__game.input.sneakToggle&&__game.S.player.hp===3&&__game.S.stats.ko===1&&__game.S.stats.stashed===1&&__game.skillBudget()===4'),'Stored checkpoint loses posture or clean-up progress'
+   reports.append({'mobile':mobile,'trace':trace,'errors':errors,'method':'Actual menu, keyboard/CDP joystick and action buttons; fixed simulation clock; live NPCs/cameras, no actor placement or inventory/HP overrides; entry encounter and optional real stored-checkpoint menu restore, not entire contract completion'});await q.close()
   await b.close()
  (O/f'{NAME}.json').write_text(json.dumps({'base':BASE,'runs':reports},ensure_ascii=False,indent=2))
 asyncio.run(main())

@@ -1,0 +1,14 @@
+PASS free approach PC {"preparations": 4, "goalStable": true, "manualTracking": true, "legacySave": true, "missedMeeting": true}
+PASS free approach mobile {"preparations": 4, "goalStable": true, "manualTracking": true, "legacySave": true, "missedMeeting": true}
+PASS target first m1 PC
+PASS target first m2 PC
+PASS target first m3 PC
+PASS target first m4 PC
+PASS target first m5 PC
+PASS target first m6 PC
+PASS target first m1 mobile
+PASS target first m2 mobile
+PASS target first m3 mobile
+PASS target first m4 mobile
+PASS target first m5 mobile
+PASS target first m6 mobile

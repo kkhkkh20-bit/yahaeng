@@ -43,7 +43,7 @@ function updateActionFlow(){
   const P=S.player,e=S.actionEntry,d=STAGE.entryRoute;
   if(e&&d&&!['done','skipped'].includes(e.phase)){
     const c=S.corpses.find(c=>c.guardId===d.guard);
-    if(c?.hidden||c?.stashed)e.phase='done';
+    if(c?.hidden||c?.stashed){e.phase='done';S.cpWant=true;}
     else if(c)e.phase='body';
     else if(!P.carrying&&(P.x<tc(d.bounds[0])-TILE||P.x>tc(d.bounds[2])||P.y<tc(d.bounds[1])||P.y>tc(d.bounds[3])))e.phase='skipped';
     else if(P.hidden&&P.mode==='sneak'&&dist(P.x,P.y,tc(d.bush[0]),tc(d.bush[1]))<90)e.phase='approach';

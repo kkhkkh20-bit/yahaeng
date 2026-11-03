@@ -165,7 +165,7 @@ const trackedStory = () => S.storyTrackManual && (S.stories || []).find(st => st
 function selectStory(id) {
   const st = (S.stories || []).find(st => st.d.id === id && st.found && !st.done && !st.moot);
   if (id != null && (!oppMode || !st)) return false;
-  S.storyTrack = id; S.storyTrackManual = !!st; hudCache.objH = null; renderMissionGoals(); return true;
+  S.storyTrack = id; S.storyTrackManual = !!st;if(st){S.goalManual=false;S.goalPin=null;} hudCache.objH = null; renderMissionGoals(); return true;
 }
 function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;

@@ -154,7 +154,7 @@ function loadCheckpoint() {
   S.koHold = null; S.player.lethalHold = null; S.player.techWork=null; input.pressIds = {};
   S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
   closeKeypad();clearPlayerInput();
-  if(STAGE.tutorial){input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();}
+  input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   toast('체크포인트에서 다시 시작 (' + CP.used + '번째)', 2.4); syncTools();

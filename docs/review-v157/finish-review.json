@@ -1,0 +1,62 @@
+{
+  "disposition": "ship",
+  "version": "v157",
+  "source_sha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+  "scope": "Fresh independent finish review of the six supplied gameplay/HUD corrections, sampled production source, and required marker/resume/tracking capture matrix. No whole-campaign or physical-device approval.",
+  "persistence": {
+    "status": "pass",
+    "findings": [
+      "This is a narrow extension of the established night-world interface. Existing font, palette, menu/control CSS and visual composition remain authoritative; no PRODUCT.md or DESIGN.md creation or system change is warranted.",
+      "Checkpoint loading restores the saved stance after clearing transient input, rather than reusing the stance chosen after saving. Controlled foliage captures show a concealed crouching player and the matching hidden-state HUD.",
+      "Entry-body cleanup requests a checkpoint exactly when the entry phase completes. Existing alert/action/guard safe-save gates remain in use, with no reward, ability, HP or detection-policy grant in the change."
+    ]
+  },
+  "fidelity": {
+    "status": "pass",
+    "reference": "Established implementation and representative original before captures; code-led extension with no approved comp.",
+    "findings": [
+      "Opened every required after image: marker, resume and tracking at 1440x900, 390x844, 844x390 and 320x568. All 12 show their named state; PNG dimensions and SHA256 values independently match after-captures.json and its v157 package identity.",
+      "Player, control field and goal marker remain legible at the supplied sizes. The landscape marker rectangle now uses measured control positions and maintains non-inverted vertical bounds.",
+      "The pause menu adds Automatic guidance in the existing 48px row vocabulary. Explicit selection has a visible border, aria-pressed tracks the actual manual mode, and the existing keyboard-focus treatment is retained.",
+      "The 320x568 pause menu continues below the viewport in its existing scroll container. Supplied focused interaction evidence scrolls the last target into the viewport, asserts its full bounding box is visible, selects it by touch, and scrolls back to select Automatic guidance. It is ordinary reachable scrolling, not clipping.",
+      "Regular-weight Korean typography, muted matte HUD surfaces, reserved gold guidance, and the dark illustrated scene remain coherent. No added HUD panel or visual-world drift was found."
+    ]
+  },
+  "ceiling": {
+    "status": "appropriate for scoped extension",
+    "findings": [
+      "The changes improve saved-state trust, player control over guidance, and presentation work without broadening the established interface or altering the stealth challenge.",
+      "Completed manual objective/clue selections release their flags, while valid explicit choices remain selected. Choosing Automatic guidance clears both manual modes and restores the action-flow path.",
+      "HUD presentation is moved outside the catch-up loop while physics updates retain their existing elapsed-time bounds and substeps. Supplied production-package instrumentation shows 120ms with seven updates and one HUD presentation, and 33ms with two updates and one presentation. The focused pause test also asserts the automatic row is aria-pressed=true and retains keyboard focus after rerender.",
+      "Mechanics evidence covers the six correction areas, including 36 marker renders. The supplied PC/CDP-touch entry journey reaches a real KO, carry, stash, menu exit and stored-checkpoint resume with 3HP, 1KO, 1stash and 4P retained. It is an entry encounter, not full contract completion.",
+      "The supplied local package/font/pause evidence and completed regression log support this scope. Headless elapsed-time samples establish reduced repeated HUD work, not actual-phone FPS."
+    ]
+  },
+  "material_fixes": [],
+  "keep": [
+    "Restore saved crouch after transient inputs are cleared.",
+    "Retain explicit guidance choices until completion, and keep a direct Automatic guidance escape.",
+    "Queue entry cleanup checkpoints through the shared safety gates.",
+    "Derive marker space from real controls and bound its top below its bottom.",
+    "Simulate catch-up substeps while presenting the HUD once.",
+    "Preserve the existing night world, IBM Plex regular-weight text, restrained controls, player challenge and current brand-document boundary."
+  ],
+  "evidence": {
+    "required_screenshots_opened": 12,
+    "capture_integrity": "All required image SHA256 hashes and viewport dimensions verified against after-captures.json.",
+    "mechanics": "build/review-v157/mechanics.json",
+    "continuation": "build/review-v157/continuation-journey.json",
+    "presentation": "build/review-v157/presentation.json",
+    "local_package": "build/tutorial-validation/local-v157.json",
+    "detector": "build/review-v157/design-detection.json contains []",
+    "regressions": "/tmp/tests-v157.log ends with all tests passed",
+    "limits": [
+      "No browser interaction was performed by this reviewer.",
+      "No physical-phone performance measurement.",
+      "Controlled resume captures isolate stance and do not represent campaign progress.",
+      "No whole-campaign completion claim."
+    ],
+    "mechanics_groups": 8,
+    "small_pause_scroll": "Focused test source and mechanics.json inspected: visible last-target bounding box, real touch selection, then scroll and touch return to automatic guidance."
+  }
+}

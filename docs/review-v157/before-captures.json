@@ -1,0 +1,341 @@
+{
+  "method": "Original production renders, fresh4P/seed42. Marker scene uses native right4/down4 with liveAI. Resume scene explicitly places the player in foliage to isolate a saved real crouch, native stand and checkpoint reload; not a playthrough. Tracking uses actual paused goal selection and compares available controls, no objective grants.",
+  "captures": [
+    {
+      "image": "before-marker-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "01b6c9d80203a7fd50ca7bf3d9103f0605cd388ca2ae615e8c15e62ee2b99add",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-resume-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "5ec0ea50e2286b10228ef9d37448a15e8d6f80b7a6805e562c4e9036dba77410",
+      "errors": [],
+      "controlledStanceFixture": true,
+      "state": {
+        "at": [
+          72,
+          888
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-tracking-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "0ecf51d92f9de49396c4bf010dedeacaa90554598a490566d189f8620ee5ad2c",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": true
+      }
+    },
+    {
+      "image": "before-marker-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "109f19b83bec558d82f35306b2f3a4940b5b1bbba4d955dc8c91bea463e333a7",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-resume-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "15ceb08579bc851dc2e349ee0b01e6e5f10c38f971ffb7c30e7955bb4b329beb",
+      "errors": [],
+      "controlledStanceFixture": true,
+      "state": {
+        "at": [
+          72,
+          888
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-tracking-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "fdeaf189709a859e62674064ed266c194a430e55d74017e940af370d2e11a604",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": true
+      }
+    },
+    {
+      "image": "before-marker-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "4a44a79fee4d362b2a2fcb208b261c707032a86df67af13adc0236bf5c22c36f",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-resume-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "54c43f419ea46d320d2a7671f254cf1c06ff1642c39da2cd344c21f6209046a0",
+      "errors": [],
+      "controlledStanceFixture": true,
+      "state": {
+        "at": [
+          72,
+          888
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-tracking-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "a89d6332b5aadcde02520ad4fd228db1e8ba29dbce9030dba530040efa142b7b",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": true
+      }
+    },
+    {
+      "image": "before-marker-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "d0ade3958d7c6efa9e8a84e1f5b89c63f587cf846890a2efb0ebc63d911e6c8b",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-resume-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "b4cc252eeb6c120eaf22f0f54b023f556535da16b933a98c5fc04851e65a1f47",
+      "errors": [],
+      "controlledStanceFixture": true,
+      "state": {
+        "at": [
+          72,
+          888
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": false
+      }
+    },
+    {
+      "image": "before-tracking-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v156",
+      "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+      "imageSha256": "931e457a21285c567421acd316ae4dd6727f5b3ac91f04e3144b199a977da72a",
+      "errors": [],
+      "controlledStanceFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0,
+        "hidden": false,
+        "sneakToggle": false,
+        "manual": true
+      }
+    }
+  ]
+}

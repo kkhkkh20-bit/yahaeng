@@ -81,9 +81,16 @@ function missionGoalCandidates() {
 function pinnedMissionGoal() {
   const a = missionGoalCandidates(), P = S.player;
   let g = a.find(g => g.id === S.goalPin);
-  if(!g&&STAGE.priorityTarget)g=a.find(v=>v.g);
-  if (!g) { g = a.sort((a, b) => dist(P.x,P.y,a.x,a.y) + Math.abs(flOf(P)-(a.fl||0))*300 - dist(P.x,P.y,b.x,b.y) - Math.abs(flOf(P)-(b.fl||0))*300)[0]; S.goalPin = g ? g.id : null; }
+  if (!g) { g = (STAGE.priorityTarget&&a.find(v=>v.g))||a.sort((a, b) => dist(P.x,P.y,a.x,a.y) + Math.abs(flOf(P)-(a.fl||0))*300 - dist(P.x,P.y,b.x,b.y) - Math.abs(flOf(P)-(b.fl||0))*300)[0]; S.goalPin = g ? g.id : null; }
   return g ? { ...g, text: '의뢰: ' + g.text } : null;
+}
+function syncMissionTracking(){
+  if(S.goalManual&&!missionGoalCandidates().some(g=>g.id===S.goalPin)){S.goalManual=false;S.goalPin=null;}
+  if(S.storyTrackManual&&!trackedStory()){S.storyTrackManual=false;S.storyTrack=null;}
+}
+function selectAutoGoal(){
+  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;
+  hudCache.objH=null;renderMissionGoals();
 }
 function selectMissionGoal(id) {
   if (!missionGoalCandidates().some(g => g.id === id)) return false;
@@ -91,12 +98,14 @@ function selectMissionGoal(id) {
 }
 function renderMissionGoals() {
   const el = $('missionGoals'); if (!el || !S || STAGE.tutorial || STAGE.city) { if (el) el.replaceChildren(); return; }
+  syncMissionTracking();
   const focus = el.contains(document.activeElement) && document.activeElement.dataset.track, expanded = el.querySelector('details')?.open;
   el.replaceChildren();
+  const auto=document.createElement('button');auto.type='button';auto.textContent='자동 안내';auto.dataset.track='auto';auto.setAttribute('aria-pressed',String(!S.goalManual&&!S.storyTrackManual));auto.onclick=selectAutoGoal;el.append(auto);
   for (const g of missionGoalCandidates()) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = g.text + ' · ' + g.where;
     b.dataset.track = g.id;
-    b.setAttribute('aria-pressed', String(g.id === S.goalPin && !(oppMode && trackedStory()))); b.onclick = () => selectMissionGoal(g.id); el.append(b);
+    b.setAttribute('aria-pressed', String(S.goalManual&&g.id === S.goalPin && !(oppMode && trackedStory()))); b.onclick = () => selectMissionGoal(g.id); el.append(b);
   }
   const clues = oppMode && !S.exitOpen && (S.stories || []).filter(st => st.found && !st.done && !st.moot);
   if (clues && clues.length) {

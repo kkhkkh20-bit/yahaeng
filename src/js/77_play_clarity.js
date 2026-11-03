@@ -26,6 +26,11 @@ function goalMarkerCaption(g, meters) {
   const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?(g.viaTo?.z?`${g.viaTo.z}층 옥상 입구`:`${(g.viaTo?.fl??g.fl??0)+1}층 입구`):g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
   return [place, meters+'m'].filter(Boolean).join(' · ');
 }
+function goalViewport(){
+  const bottom=Math.max(80,isTouch?Math.min(H-24,touchPlayFrame().bottom-32):H-70);
+  const desiredTop=Math.max((drawMini.tb||70)+40,($('stealth')?.getBoundingClientRect().bottom||0)+24);
+  return{left:34,right:W-34,top:clamp(desiredTop,24,Math.max(24,bottom-48)),bottom};
+}
 function guardAwareness(g) {
   if (!g || ['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state) || g.doomed) return {phase:'quiet',color:'#aab8bf',progress:0,direct:false};
   const P=S.player,same=flOf(g)===flOf(P)&&(g.z||0)===(P.z||0);

@@ -1,0 +1,53 @@
+{
+  "runs": [
+    {
+      "version": "v156",
+      "rows": [
+        {
+          "requestedSeconds": 0.016666667,
+          "simulatedSeconds": 0.016666667,
+          "hudPresentations": 1,
+          "elapsedMs": 4.9000000059604645
+        },
+        {
+          "requestedSeconds": 0.033333333,
+          "simulatedSeconds": 0.03333333299999999,
+          "hudPresentations": 2,
+          "elapsedMs": 6.5
+        },
+        {
+          "requestedSeconds": 0.12,
+          "simulatedSeconds": 0.12000000000000004,
+          "hudPresentations": 7,
+          "elapsedMs": 20.69999998807907
+        }
+      ],
+      "label": "before"
+    },
+    {
+      "version": "v157",
+      "rows": [
+        {
+          "requestedSeconds": 0.016666667,
+          "simulatedSeconds": 0.016666667,
+          "hudPresentations": 1,
+          "elapsedMs": 4.199999988079071
+        },
+        {
+          "requestedSeconds": 0.033333333,
+          "simulatedSeconds": 0.03333333299999999,
+          "hudPresentations": 1,
+          "elapsedMs": 4.300000011920929
+        },
+        {
+          "requestedSeconds": 0.12,
+          "simulatedSeconds": 0.12000000000000004,
+          "hudPresentations": 1,
+          "elapsedMs": 8
+        }
+      ],
+      "label": "after"
+    }
+  ],
+  "method": "Same actual production packages/390x844/seed42/liveAI. Counts actual attack-button HUD style writes while advanceGameFrame advances16.7,33.3,120ms; elapsed headless sample only, not real-device FPS."
+}
