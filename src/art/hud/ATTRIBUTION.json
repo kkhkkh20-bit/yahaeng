@@ -1,7 +1,7 @@
 {
   "license": "CC BY 3.0",
   "license_url": "https://creativecommons.org/licenses/by/3.0/",
-  "adaptation": "Original silhouettes rendered as tinted CSS masks. SVG geometry unchanged.",
+  "adaptation": "Original silhouettes rendered in a single tint. SVG geometry unchanged.",
   "icons": [
     {
       "file": "attack.svg",

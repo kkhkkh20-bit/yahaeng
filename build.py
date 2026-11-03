@@ -21,7 +21,7 @@ def game_js():
 def stages_js():
     return ''.join(read(m) for m in sorted(glob.glob(P('src', 'stages', '*.js'))))
 
-CREDIT = ("HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 마스크) · "
+CREDIT = ("HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · "
           "효과: <a href=\"https://github.com/patch-gg/pixelfx\" target=\"_blank\" rel=\"noopener\">PixelFX · Patch / Hugo Duprez</a> (MIT) · "
           "건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymegakit.html\" target=\"_blank\" rel=\"noopener\">Quaternius Downtown City MegaKit</a> (CC0) · "
           "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · "
@@ -77,6 +77,8 @@ def build():
     thumbs = read(P('build', 'thumbs.json')) if os.path.exists(P('build', 'thumbs.json')) else 'null'  # 의뢰 카드 지도 미리보기 (tools/thumbs.py)
     tbg = read(P('build', 'title_bg.json')) if os.path.exists(P('build', 'title_bg.json')) else 'null'  # 첫 화면 배경 (tools/titlebg.py)
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
+    hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
+    html=html.replace('<script>window.__BUILD_VERSION__','<script>window.__HUD_ART__='+json.dumps(hud_art)+';window.__BUILD_VERSION__',1)
     html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)

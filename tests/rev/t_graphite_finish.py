@@ -13,6 +13,9 @@ async def main():
    # Decode every embedded frame; do not ship broken image placeholders.
    frames=await q.evaluate('''async()=>{const s=getComputedStyle(document.documentElement),names=[...s].filter(k=>k.startsWith('--art-frame-'));return await Promise.all(names.map(async k=>{const i=new Image();i.src=s.getPropertyValue(k).trim().slice(4,-1).replace(/^['"]|['"]$/g,'');await i.decode();return[k,i.naturalWidth,i.naturalHeight]}))}''')
    assert len(frames)==9 and all(r[1]>0 and r[2]>0 for r in frames),frames
+   if touch:
+    for id in ['btnAct','btnCarry','btnToolNext','btnTool','btnCrouch']:
+     assert await q.locator('#'+id+' > svg.hud-art').evaluate('e=>e.getBoundingClientRect().width>=22&&e.getBBox().width>0&&getComputedStyle(e).display!=="none"'),id
    controls=await q.locator('#hud button').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height}})''')
    assert all(e['w']>=44 and e['h']>=44 and 0<=e['x'] and 0<=e['y'] and e['x']+e['w']<=w+.5 and e['y']+e['h']<=h+.5 for e in controls),controls
    if touch:

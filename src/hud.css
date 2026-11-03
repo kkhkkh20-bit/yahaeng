@@ -235,6 +235,20 @@ body.touch #hud .pad>button.down::before,body.touch #hud .pad>button.down>b,body
 @media(min-width:701px) and (max-height:500px){#hud .obj{border-width:6px;padding:2px 26px 2px 30px}#hud .obj::before{left:4px;top:6px}#hud #loadout{padding:12px}}
 @media(hover:hover){#hud button:hover{filter:brightness(1.08) drop-shadow(0 2px 2px #0005)}}
 
+/* Render silhouettes as actual SVG nodes above the frame compositing layer. */
+#hud .hud-art{position:relative;z-index:1;display:block;width:24px;height:24px;flex-shrink:0;fill:currentColor;stroke:none;pointer-events:none}
+body.touch #hud .pad>button>svg.hud-art,#hud .pad #btnDress>svg.hud-art{display:block;width:25px;height:25px}
+body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
+body.touch #hud .pad #btnCarry>svg.hud-art{width:27px;height:27px}
+#hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
+#hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress)::before,
+body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress)::before,
+body.touch #hud #btnCrouch::before,#hud #btnWhistle::before,#hud #tools .tool::before{content:none;display:none}
+#hud #btnCrouch>svg.hud-art{width:24px;height:24px}
+#hud #tools .tool>svg.hud-art{width:32px;height:32px}
+#hud #btnWhistle>svg.hud-art{grid-row:span 2;width:28px;height:28px;color:var(--hud-metal)}
+body.touch #hud .pad>button.down>svg.hud-art,body.touch #hud .pad>button:active>svg.hud-art{transform:translateY(1px)}
+
 /* The whole prerequisite graph stays unfolded; inspection opens on the right. */
 #btnSkillsLedger { margin:0 0 16px; }
 #skillScreen { --sk-ground:#0e171c; --sk-panel:#142127; --sk-line:#344248; --sk-ink:#e7e4d6; --sk-muted:#a6b2b3; --sk-gold:#d7ba73; padding:0; overflow:hidden; background:var(--sk-ground); color:var(--sk-ink); }

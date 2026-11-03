@@ -30,6 +30,8 @@ function initLoadout(){
   $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
   $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
   $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});
-  $('btnToolNext').innerHTML='<b>장비</b>';
+  $('btnToolNext').innerHTML=hudArt('equipment')+'<b>장비</b>';
+  $('btnWhistle').insertAdjacentHTML('afterbegin',hudArt('whistle'));
+  $('tools').querySelectorAll('.tool').forEach(b=>b.insertAdjacentHTML('afterbegin',hudArt(b.dataset.t==='kunai'?'dart':b.dataset.t)));
   $('btnToolNext').setAttribute('aria-label','장비 선택');$('btnToolNext').setAttribute('aria-haspopup','dialog');$('btnToolNext').setAttribute('aria-expanded','false');
 }
