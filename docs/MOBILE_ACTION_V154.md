@@ -20,3 +20,5 @@
 검증 원본은 같은 폴더의 `mechanics.json`, `production-journey.json`, `captures.json`, `design-detection.json`에 있다. 실제 키보드/터치 입력과 활성 AI로 은신 기습 연습을 완료했다. 고정 시뮬레이션 시계로 동작을 검증하며 실제 휴대폰 FPS 측정으로 주장하지 않는다. 촬영은 실제 v153/v154 배포 패키지를 사용한다. 몸 장면은 같은 실제 의뢰 풀숲과 배치한 쓰러진 경비를 쓰는 비교용 장면이며 미션 완료 증거와 구분한다.
 
 Impeccable 독립 검수의 첫 판정은 작은 화면의 플레이 영역 가림에 대한 `fix`였다. 수정 후 같은 16개 화면을 다시 검토해 해당 M1 항목을 `resolved`, 판정을 `ship`으로 기록했다. 이 재검수는 M1 해결 여부에 한정하며 실제 기기 플레이 검증으로 주장하지 않는다. 배포 기록은 같은 폴더에 별도로 추가한다. 기존 PRODUCT.md와 DESIGN.md는 없으며, 이번 변경은 기존 시각 체계 안의 조작·상태 확장이다. 새 시각 체계나 외부 의존성을 설치하지 않는다.
+
+배포 완료: [Cloudflare](https://yahaeng.kkhkkh-20.workers.dev/)와 [GitHub Pages](https://kkhkkh20-bit.github.io/yahaeng/) 모두 v154다. 네이티브 Workers Builds 성공·Pages 빌드 완료, 각 사이트의 HTML/버전/4개 스크립트/2개 서체 8개 파일 일치, 실제 Regular 서체·PC/터치 이동·일시정지 및 새 연습의 실제 조작 완료를 확인했다. [공개 배포 검증](mobile-v154/deployment.json).

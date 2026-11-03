@@ -1,0 +1,608 @@
+{
+  "version": "v154",
+  "verifiedAt": "2026-11-03T05:03:15.354294+00:00",
+  "runtimeSourceCommit": "f09d2e939d595d384b6569360d73d4e45d949234",
+  "runtimePagesCommit": "93cd036f2c668b6c43256850344526c1a23126aa",
+  "release": {
+    "edition": "2d-campaign",
+    "version": "v154",
+    "source_sha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+    "html_bytes": 122698,
+    "source_bytes": 11108415,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8382575,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8382575
+  },
+  "nativeBuilds": {
+    "attempt": 4,
+    "time": "2026-11-03T05:01:15Z",
+    "runtimeCommit": "f09d2e939d595d384b6569360d73d4e45d949234",
+    "endpoints": {
+      "pages": {
+        "version": "v154",
+        "source_sha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "matches": true
+      },
+      "cloudflare": {
+        "version": "v154",
+        "source_sha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+        "matches": true
+      }
+    },
+    "workers": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/8619a866-1106-4eb1-ae3d-7fe17df8ead5"
+      }
+    ],
+    "pagesBuild": {
+      "status": "built",
+      "commit": "93cd036f2c668b6c43256850344526c1a23126aa",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "publicChecks": {
+    "cloudflare": {
+      "packageAndNativeControls": {
+        "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+        "files": {
+          "index.html": "497067eebe4f67488af4197b99457da70baa153316cacfdda30811026f0329eb",
+          "version.json": "274b18663fd01e83e6a7c2a0c8a6a64b7328210082f6dc2a412b3ffc22328103",
+          "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+          "assets/c2f4e5454ea6bd036ae4.js": "c2f4e5454ea6bd036ae4c6fd5648c905934740fe3f4c835549d9763411ad623b",
+          "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+          "assets/850e9cd2f2ac84dc2aa5.js": "850e9cd2f2ac84dc2aa51e1a9228dd71477ba97e3ecba1ca1d70160f87538623",
+          "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+          "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+        },
+        "browsers": [
+          {
+            "mobile": false,
+            "before": [
+              120,
+              504
+            ],
+            "after": [
+              186.56441910787345,
+              505.5359625
+            ],
+            "version": "v154",
+            "stage": "tB",
+            "errors": [],
+            "threeDRequests": false,
+            "objectivePauseAndResume": true,
+            "customUIFont": {
+              "fonts": [
+                {
+                  "familyName": "IBM Plex Sans KR",
+                  "postScriptName": "IBMPlexSansKR-Regular",
+                  "isCustomFont": true,
+                  "glyphCount": 5
+                }
+              ]
+            }
+          },
+          {
+            "mobile": true,
+            "before": [
+              120,
+              504
+            ],
+            "after": [
+              188.2663702767947,
+              505.54057500000005
+            ],
+            "version": "v154",
+            "stage": "tB",
+            "errors": [],
+            "threeDRequests": false,
+            "objectivePauseAndResume": true,
+            "customUIFont": {
+              "fonts": [
+                {
+                  "familyName": "IBM Plex Sans KR",
+                  "postScriptName": "IBMPlexSansKR-Regular",
+                  "isCustomFont": true,
+                  "glyphCount": 5
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "nativeActionJourney": {
+        "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+        "results": [
+          {
+            "mobile": false,
+            "trace": [
+              {
+                "step": 1,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": null,
+                "stashed": 0,
+                "default": "none"
+              },
+              {
+                "step": 2,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "carry"
+              },
+              {
+                "step": 3,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "none"
+              },
+              {
+                "step": 4,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "carry"
+              },
+              {
+                "step": 5,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "none"
+              },
+              {
+                "step": 6,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 2,
+                "default": "quickStash"
+              },
+              {
+                "step": 7,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 3,
+                "default": "none"
+              }
+            ],
+            "completed": true,
+            "errors": [],
+            "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+          },
+          {
+            "mobile": true,
+            "trace": [
+              {
+                "step": 1,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": null,
+                "stashed": 0,
+                "default": "none"
+              },
+              {
+                "step": 2,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "carry"
+              },
+              {
+                "step": 3,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "none"
+              },
+              {
+                "step": 4,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "carry"
+              },
+              {
+                "step": 5,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "none"
+              },
+              {
+                "step": 6,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 2,
+                "default": "quickStash"
+              },
+              {
+                "step": 7,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 3,
+                "default": "none"
+              }
+            ],
+            "completed": true,
+            "errors": [],
+            "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+          }
+        ]
+      }
+    },
+    "pages": {
+      "packageAndNativeControls": {
+        "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+        "files": {
+          "index.html": "497067eebe4f67488af4197b99457da70baa153316cacfdda30811026f0329eb",
+          "version.json": "274b18663fd01e83e6a7c2a0c8a6a64b7328210082f6dc2a412b3ffc22328103",
+          "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+          "assets/c2f4e5454ea6bd036ae4.js": "c2f4e5454ea6bd036ae4c6fd5648c905934740fe3f4c835549d9763411ad623b",
+          "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+          "assets/850e9cd2f2ac84dc2aa5.js": "850e9cd2f2ac84dc2aa51e1a9228dd71477ba97e3ecba1ca1d70160f87538623",
+          "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+          "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+        },
+        "browsers": [
+          {
+            "mobile": false,
+            "before": [
+              120,
+              504
+            ],
+            "after": [
+              186.56402887166928,
+              505.53135000000003
+            ],
+            "version": "v154",
+            "stage": "tB",
+            "errors": [],
+            "threeDRequests": false,
+            "objectivePauseAndResume": true,
+            "customUIFont": {
+              "fonts": [
+                {
+                  "familyName": "IBM Plex Sans KR",
+                  "postScriptName": "IBMPlexSansKR-Regular",
+                  "isCustomFont": true,
+                  "glyphCount": 5
+                }
+              ]
+            }
+          },
+          {
+            "mobile": true,
+            "before": [
+              120,
+              504
+            ],
+            "after": [
+              188.2760683098217,
+              505.53135
+            ],
+            "version": "v154",
+            "stage": "tB",
+            "errors": [],
+            "threeDRequests": false,
+            "objectivePauseAndResume": true,
+            "customUIFont": {
+              "fonts": [
+                {
+                  "familyName": "IBM Plex Sans KR",
+                  "postScriptName": "IBMPlexSansKR-Regular",
+                  "isCustomFont": true,
+                  "glyphCount": 5
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "nativeActionJourney": {
+        "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+        "results": [
+          {
+            "mobile": false,
+            "trace": [
+              {
+                "step": 1,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": null,
+                "stashed": 0,
+                "default": "none"
+              },
+              {
+                "step": 2,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "carry"
+              },
+              {
+                "step": 3,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "none"
+              },
+              {
+                "step": 4,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "carry"
+              },
+              {
+                "step": 5,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "none"
+              },
+              {
+                "step": 6,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 2,
+                "default": "quickStash"
+              },
+              {
+                "step": 7,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 3,
+                "default": "none"
+              }
+            ],
+            "completed": true,
+            "errors": [],
+            "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+          },
+          {
+            "mobile": true,
+            "trace": [
+              {
+                "step": 1,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": null,
+                "stashed": 0,
+                "default": "none"
+              },
+              {
+                "step": 2,
+                "over": false,
+                "at": [
+                  310.6795400219865,
+                  408.61875
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "carry"
+              },
+              {
+                "step": 3,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 0,
+                "ko": 1,
+                "stashed": 1,
+                "default": "none"
+              },
+              {
+                "step": 4,
+                "over": false,
+                "at": [
+                  791.6090800439731,
+                  409.23749999999995
+                ],
+                "hidden": true,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "carry"
+              },
+              {
+                "step": 5,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 1,
+                "stashed": 2,
+                "default": "none"
+              },
+              {
+                "step": 6,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 2,
+                "default": "quickStash"
+              },
+              {
+                "step": 7,
+                "over": false,
+                "at": [
+                  904.6573700659601,
+                  505.48749999999995
+                ],
+                "hidden": false,
+                "kills": 1,
+                "ko": 2,
+                "stashed": 3,
+                "default": "none"
+              }
+            ],
+            "completed": true,
+            "errors": [],
+            "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+          }
+        ]
+      }
+    }
+  },
+  "comparison": {
+    "base": "https://kkhkkh20-bit.github.io/yahaeng/mobile-v154/",
+    "exactFiles": [
+      "index.html",
+      "captures.json",
+      "before-body-small.png",
+      "after-body-small.png",
+      "before-body-mobile.png",
+      "after-body-mobile.png"
+    ]
+  },
+  "limits": "Browser keyboard and CDP touch; fixed clock for action journey, live browser frames for boot/movement/pause. No physical-phone FPS claim."
+}
