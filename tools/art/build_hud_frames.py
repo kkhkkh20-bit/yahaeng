@@ -35,11 +35,15 @@ def art(state='idle',primary=False,panel=False):
  <path d="M{cut+6} {h-9}H{w-cut-6}" stroke="#000" stroke-opacity=".6" stroke-width="1"/></g>'''
  if state=='pressed':body+=f'<path d="{inset}" fill="none" stroke="#02050a" stroke-width="2" opacity=".8"/>'
  return f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">{defs}{body}</svg>\n'
+def circle_art(state):
+ hi,lo,face1,face2,lip=STATES[state]
+ return f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="rim" x2=".65" y2="1"><stop stop-color="{hi}"/><stop offset="1" stop-color="{lo}"/></linearGradient><linearGradient id="face" x2="0" y2="1"><stop stop-color="{face1}"/><stop offset="1" stop-color="{face2}"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="#05080d"/><circle cx="32" cy="32" r="30" fill="url(#rim)"/><circle cx="32" cy="32" r="27" fill="#090d13"/><circle cx="32" cy="32" r="25.5" fill="url(#face)" stroke="{lip}" stroke-opacity=".3" stroke-width=".7"/></svg>\n'''
 def main():
  OUT.mkdir(parents=True,exist_ok=True)
  for state in STATES:
   (OUT/f'frame-control-{state}.svg').write_text(art(state))
   (OUT/f'frame-primary-{state}.svg').write_text(art(state,primary=True))
  (OUT/'frame-panel.svg').write_text(art(panel=True))
- print('Authored 9 graphite frame assets')
+ for state in ['idle','ready','pressed']:(OUT/f'frame-crouch-{state}.svg').write_text(circle_art(state))
+ print('Authored 12 graphite frame assets')
 if __name__=='__main__':main()

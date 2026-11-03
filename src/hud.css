@@ -131,12 +131,12 @@ body.touch #hud .pad #btnDress::before{width:25px;height:25px}
 body.touch #hud .pad #btnGrab small{display:none}
 body.touch #hud .pad #btnCycle{right:176px;bottom:76px;width:56px;height:48px;min-height:48px;padding:4px;background:#14171dd9;border-color:#bfc7d355;box-shadow:none}
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{content:'';position:absolute;left:20%;bottom:10px;width:calc(var(--hold,0) * 60%);height:2px;background:var(--hud-danger);border-radius:2px}
-body.touch #hud .sysbtns{display:flex;position:fixed;left:max(18px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));pointer-events:auto}
+body.touch #hud .sysbtns{display:flex;position:fixed;left:auto;right:calc(max(16px,env(safe-area-inset-right)) + 9px);bottom:calc(max(16px,env(safe-area-inset-bottom)) + 166px);pointer-events:auto}
 body.touch #hud #btnCrouch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:58px;min-height:58px;padding:5px;border:1px solid #8a95a660;border-radius:15px;background:#14171dcc;color:var(--hud-muted)}
 body.touch #hud #btnCrouch::before{content:'';width:24px;height:24px;mask:var(--art-crouch) center/contain no-repeat;background:currentColor}
 body.touch #hud #btnCrouch b{font-size:10px;font-weight:400}
 body.touch #hud #btnCrouch.on{color:var(--hud-metal);border-color:var(--hud-metal)}
-body.touch #hud #btnSkill{right:16px;bottom:190px;width:170px}
+body.touch #hud #btnSkill{right:16px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 236px);width:170px}
 body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;font-size:10px;color:var(--hud-muted)}
 body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint{display:none}
 body.touch #hud #saveState{bottom:145px;left:18px}
@@ -169,9 +169,9 @@ body:not(.playing) #hud #alertVig{display:none}
 }
 @media(max-width:360px){
  body.touch #hud .pad{right:12px;bottom:12px}
- body.touch #hud .sysbtns{bottom:102px;left:14px}
+ body.touch #hud .sysbtns{left:auto;right:calc(max(12px,env(safe-area-inset-right)) + 9px);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 166px)}
  body.touch #hud .joyhint{bottom:174px;left:14px}
- body.touch #hud #btnSkill{left:14px;right:auto;bottom:174px;width:130px}
+ body.touch #hud #btnSkill{left:auto;right:12px;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 236px);width:96px}
 }
 @media(hover:hover){#hud button:hover{filter:brightness(1.15)}#hud #mini:hover{opacity:1}}
 @media(prefers-reduced-motion:reduce){#hud *,#hud *::before,#hud *::after{animation:none;transition:none}}
@@ -216,10 +216,10 @@ body.touch #hud .pad #btnAct{border:0;border-image:none;border-radius:0;padding:
 body.touch #hud .pad #btnAct.ready,body.touch #hud .pad #btnAct.ko{background-image:var(--art-frame-primary-ready);color:#eef2f8}
 body.touch #hud .pad #btnAct.kill{background-image:var(--art-frame-primary-danger);color:#dfabb0}
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{border-radius:0;bottom:11px;background:#d8a0a7}
-body.touch #hud #btnCrouch{border:6px solid transparent;border-image:var(--art-frame-control-idle) 12 fill stretch;border-radius:0;background:none;box-shadow:none;padding:2px;gap:3px;color:#bdc7d5;filter:drop-shadow(0 2px 3px #0006)}
-body.touch #hud #btnCrouch.on{border-image-source:var(--art-frame-control-ready);color:#eff4fb}
+body.touch #hud #btnCrouch{box-sizing:border-box;width:58px;height:58px;min-height:58px;border:0;border-image:none;border-radius:50%;background:var(--art-frame-crouch-idle) center/100% 100% no-repeat;box-shadow:none;padding:3px;gap:3px;color:#bdc7d5;filter:drop-shadow(0 2px 3px #0006)}
+body.touch #hud #btnCrouch.on{border-image:none;background-image:var(--art-frame-crouch-ready);color:#eff4fb}
 /* Pressed assets retain the same hit box and content geometry. */
-body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active,body.touch #hud #btnCrouch:active,
+body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active,
 #hud .hud-menu:active,#hud .pad #btnToolNext:active,#hud .pad #btnCycle:active,#hud .pad #btnDress:active,
 #hud #loadout #tools .tool:active,#hud #loadout #btnWhistle:active,#hud #loadout #btnSneak:active,#hud #loadout #btnLoadoutClose:active{border-image-source:var(--art-frame-control-pressed);color:#b9c4d6}
 body.touch #hud .pad #btnAct.down,body.touch #hud .pad #btnAct:active{border-image:none;background-image:var(--art-frame-primary-pressed);color:#c8d3e5}
@@ -248,6 +248,16 @@ body.touch #hud #btnCrouch::before,#hud #btnWhistle::before,#hud #tools .tool::b
 #hud #tools .tool>svg.hud-art{width:32px;height:32px}
 #hud #btnWhistle>svg.hud-art{grid-row:span 2;width:28px;height:28px;color:var(--hud-metal)}
 body.touch #hud .pad>button.down>svg.hud-art,body.touch #hud .pad>button:active>svg.hud-art{transform:translateY(1px)}
+
+/* Keep the left thumb free for movement; the crouch control has no rectangular frame. */
+body.touch #hud #btnCrouch.down,body.touch #hud #btnCrouch:active{border:0;border-image:none;border-radius:50%;background-image:var(--art-frame-crouch-pressed);color:#c9d5e7}
+body.touch #hud #btnCrouch.down>.hud-art,body.touch #hud #btnCrouch:active>.hud-art{transform:translateY(1px)}
+@media(orientation:landscape) and (max-height:360px) and (min-width:500px){
+ body.touch #hud .sysbtns{left:auto;right:calc(max(16px,env(safe-area-inset-right)) + 101px)}
+ body.touch #hud .top{right:210px}
+}
+
+@media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch #hud #btnSkill{left:auto;right:250px;bottom:max(12px,env(safe-area-inset-bottom));width:140px}}
 
 /* The whole prerequisite graph stays unfolded; inspection opens on the right. */
 #btnSkillsLedger { margin:0 0 16px; }

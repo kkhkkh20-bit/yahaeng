@@ -12,7 +12,7 @@ async def main():
    await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate(SETUP)
    # Decode every embedded frame; do not ship broken image placeholders.
    frames=await q.evaluate('''async()=>{const s=getComputedStyle(document.documentElement),names=[...s].filter(k=>k.startsWith('--art-frame-'));return await Promise.all(names.map(async k=>{const i=new Image();i.src=s.getPropertyValue(k).trim().slice(4,-1).replace(/^['"]|['"]$/g,'');await i.decode();return[k,i.naturalWidth,i.naturalHeight]}))}''')
-   assert len(frames)==9 and all(r[1]>0 and r[2]>0 for r in frames),frames
+   assert len(frames)==12 and all(r[1]>0 and r[2]>0 for r in frames),frames
    if touch:
     for id in ['btnAct','btnCarry','btnToolNext','btnTool','btnCrouch']:
      assert await q.locator('#'+id+' > svg.hud-art').evaluate('e=>e.getBoundingClientRect().width>=22&&e.getBBox().width>0&&getComputedStyle(e).display!=="none"'),id
