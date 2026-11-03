@@ -1,0 +1,12 @@
+{
+  "localMirrors": "identical root and playtest-2d: index, manifest, all177runtime assets",
+  "version": "v158",
+  "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+  "preservedUserFiles": [
+    "actions.html",
+    "configure-pages.yml",
+    "run.html"
+  ],
+  "archivedEditions": "unchanged",
+  "doesNotProvePublicDeployment": true
+}

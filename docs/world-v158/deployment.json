@@ -1,6 +1,43 @@
 {
-  "status": "pending",
+  "status": "blocked",
   "version": "v158",
   "sourcePackageSha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
-  "note": "Local production package and 53-script regression verified; public build and browser verification still pending."
+  "runtimeCommit": "6962bb1c16faab58f737628ef25f45f813d7a1a6",
+  "pagesRuntimeCommit": "3051abc3c4361f0cc6d9930ec9518d1c5d31a3aa",
+  "verifiedAt": "2026-11-03T08:14:56Z",
+  "localVerification": {
+    "regressionScripts": 53,
+    "buildChecks": 7,
+    "reachability": "pass",
+    "boundaryRenderCases": 144,
+    "productionPackageFiles": 8,
+    "cleanupInput": "PC and touch:6cases each passed",
+    "nativeCampaignJourney": "PC and touch: actual KO, carry, foliage store, menu and stored checkpoint resume passed",
+    "independentFinish": "ship",
+    "gallery": "32 originals,32interactive combinations, slider passed",
+    "localPagesMirrors": "index,version,all177runtime assets match root and playtest-2d"
+  },
+  "publication": {
+    "sourcePush": "failed HTTP503",
+    "pagesPush": "failed HTTP503",
+    "retries": 4,
+    "nativeWorkersBuild": "not triggered for this runtime commit",
+    "publicVersionAndBrowserVerification": "not possible: GitHub API, git remote and both public endpoints returned same upstream HTTP503"
+  },
+  "network": {
+    "environment": "connected/running; unrestricted network policy enforced; no configured credential or identity change needed",
+    "error": "upstream connect error or disconnect/reset before headers; cloudflare_https_tunnel transport immediate connect Invalid argument",
+    "diagnosticHistory": "not_found"
+  },
+  "lastPreviouslyVerifiedPublicVersion": "v157, not reverified during this outage",
+  "proof": [
+    "push-attempts.json",
+    "local-package.json",
+    "local-mirrors.json",
+    "campaign-journey.json",
+    "production-recovery.json",
+    "mechanics.json",
+    "regression.txt",
+    "finish-review.json"
+  ]
 }
