@@ -2,7 +2,7 @@
 import asyncio,json,sys,os
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v151';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else (R/'build/preview_city.html').as_uri();REPORT=sys.argv[2]if len(sys.argv)>2 else 'journey';O=R/'build/skills-v152';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);results=[]
@@ -10,9 +10,14 @@ async def main():
    c=await b.new_context(viewport={'width':390 if mobile else 1440,'height':844 if mobile else 900},has_touch=mobile,is_mobile=mobile);q=await c.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(BASE);await q.wait_for_function('!!__game');label=(''if REPORT=='journey'else REPORT+'-')+('touch'if mobile else'pc');cdp=await c.new_cdp_session(q)if mobile else None
    await q.click('#btnLedger');await q.click('#btnSkillsLedger');assert await q.locator('[data-node]').count()==27
    await q.locator('[data-select="quietStep"]').click();await q.locator('[data-learn="quietStep"]').click()
-   if mobile:await q.locator('[data-branch="tools"]:is(button)').click()
-   await q.locator('[data-select="kit"]').click();await q.locator('[data-learn="kit"]').click();await q.locator('[data-select="smoke"]').click();await q.locator('[data-learn="smoke"]').click();assert '1P' in await q.locator('#skillSummary').text_content()
+   if mobile:
+    await q.locator('.skill-detail-close').click();await q.locator('[data-branch="tools"]:is(button)').click()
+   await q.locator('[data-select="kit"]').click();await q.locator('[data-learn="kit"]').click()
+   if mobile:await q.locator('.skill-detail-close').click()
+   await q.locator('[data-select="smoke"]').click();await q.locator('[data-learn="smoke"]').click();assert '1P' in await q.locator('#skillSummary').text_content()
    await q.evaluate('__game.drawSkillLinks()');await q.screenshot(path=str(O/f'tree-purchase-{label}.png'))
+
+   if mobile:await q.locator('.skill-detail-close').click()
    await q.click('#btnSkillsBack');await q.click('[data-filter="training"]');idx=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="tE")');await q.click('[data-i="'+str(idx)+'"]');await q.wait_for_function('__game.STAGE.id==="tE"');await q.evaluate('''()=>{const G=__game;while(G.DLG.modal)G.advanceDialog();window.__tick=seconds=>{for(let n=0;n<seconds-1e-6;n+=.01)G.update(.01)};window.__render=()=>{const G=__game,S=G.S;S.fade=0;S.shakeT=0;G.cam.x=S.player.x;G.cam.y=S.player.y-20;G.updateHUD(true);G.benchDraw(1)}}''')
    async def tap_tool():
     if mobile:await q.tap('#btnTool')

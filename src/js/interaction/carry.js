@@ -70,7 +70,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   }
   if (P.z || P.jump) return { k: 'none', label: '보조' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 · ${P.candy}개` };
-  const kl0 = killList(), kl = kl0.filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
+  const kl0=killList(),kh=S.guards.filter(g=>g.hasKey&&meleeCandidate(g,P,60)).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0]; if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length && !envOnly) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };

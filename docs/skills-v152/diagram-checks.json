@@ -1,0 +1,12 @@
+{
+  "nodes": 27,
+  "actualPrerequisiteEdges": 24,
+  "iconsSurviveBranchChanges": true,
+  "inspectDoesNotPurchase": true,
+  "prerequisiteNavigation": true,
+  "realPointPurchases": true,
+  "insufficientPointsBlocked": true,
+  "arrowNavigation": true,
+  "refundAndEscape": true,
+  "pageErrors": []
+}

@@ -12,7 +12,7 @@ async def main():
         async def fresh(keep):
             await pg.evaluate('() => window.__game.start(0)'); await pg.wait_for_timeout(250); await pg.evaluate(SK); await pg.evaluate(FREEZE, keep)
         async def behind(i):  # i번 경비 바로 뒤(서쪽)에 선다
-            await pg.evaluate(f'() => {{ const S = window.__game.S, P = S.player, q = S.guards[{i}]; P.x = q.x - 34; P.y = q.y; P.a = 0; P.z = 0; P.fl = 0; }}')
+            await pg.evaluate(f'() => {{ const S = window.__game.S, P = S.player, q = S.guards[{i}]; P.x = q.x - 28; P.y = q.y; P.a = 0; P.z = 0; P.fl = 0; }}')
         # 1 조직원도 톡 누르면 기절이 먼저 (계속 누르면 처치)
         await fresh([2]); await pg.evaluate(PIN, [2, 33, 3, 0]); await behind(2)
         lab = await pg.evaluate('() => window.__game.primaryAction().label'); print('행동 이름', lab)

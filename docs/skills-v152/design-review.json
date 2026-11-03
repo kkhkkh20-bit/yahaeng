@@ -1,0 +1,26 @@
+{
+  "disposition": "ship",
+  "scope": "Fresh independent screenshot/source review of skill screen; no live-device claim",
+  "reviewer": "impeccable_finish_reviewer",
+  "sections": {
+    "persistence": "Authorized ordinary extension, incumbent implementation supplies visual authority; no PRODUCT.md/DESIGN.md or approved comp",
+    "fidelity": "All 12 required captures valid. Circular sigils, dark teal/gold, real sprites, full prerequisite paths, right inspector and explicit mission rewards match request",
+    "ceiling": "No material overlap or illegibility found across 1440x900,390x844,844x390,320x568; six detector findings on unchanged settings/briefing",
+    "material_fixes": [],
+    "keep": "Circular graph, full-route highlight, explicit costs/benefits, sprites, right-side inspection"
+  },
+  "screenshots": [
+    "overview-desktop.png",
+    "detail-desktop.png",
+    "rewards-desktop.png",
+    "overview-mobile.png",
+    "detail-mobile.png",
+    "rewards-mobile.png",
+    "overview-landscape.png",
+    "detail-landscape.png",
+    "rewards-landscape.png",
+    "overview-small.png",
+    "detail-small.png",
+    "rewards-small.png"
+  ]
+}

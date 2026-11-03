@@ -937,10 +937,10 @@ STAGES.push({
  lamps:[[8,6,350,1],[21,6,400,1]],wires:[],roofs:[],bricks:[],
  guards:[{kind:'g1',at:[9,8],post:0,still:true,radio:false},{kind:'g1',at:[9,9],post:0,still:true,radio:false},{kind:'g1',at:[19,9],post:0,still:true,radio:false},{kind:'g1',at:[21,9],post:0,still:true,radio:false}],
  steps:[
- [(S,P)=>P.mode==='sneak'?'두 경비의 등 뒤 표시로 이동':'{살금} 두 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-8.75*48,P.y-9*48)<12,()=>({x:8.75*48,y:9*48}),'발소리를 줄여 접근하자. 쌍암살은 붙어 있는 두 적을 함께 처리한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+ [(S,P)=>P.mode==='sneak'?'두 경비의 등 뒤 표시로 이동':'{살금} 두 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(9*48+8),P.y-9*48)<12,()=>({x:(9*48+8),y:9*48}),'발소리를 줄여 접근하자. 쌍암살은 붙어 있는 두 적을 함께 처리한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
  ['{기술} 길게 · 두 경비 쌍암살',S=>(S.stats.dualAssassinations||0)>0,S=>S.guards[0],'두 적 모두 등 뒤에서 가까이 접근해야 한다. 1초 동안 눌러 발동한다.','skill'],
  ['{기술목록} 연속 암살 선택',S=>S.selectedSkill==='chain',()=>null,'연속 암살은 첫 적을 처리한 뒤 다음 적까지 직접 이동한다.','skills'],
- [(S,P)=>P.mode==='sneak'?'다음 경비의 등 뒤 표시로 이동':'{살금} 다음 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-18.625*48,P.y-9.5*48)<12,()=>({x:18.625*48,y:9.5*48}),'웅크려 접근하고 통로로 지나가자. 두 번째 적까지 길이 트여 있어야 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+ [(S,P)=>P.mode==='sneak'?'다음 경비의 등 뒤 표시로 이동':'{살금} 다음 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(19*48-6),P.y-9.5*48)<12,()=>({x:(19*48-6),y:9.5*48}),'웅크려 접근하고 통로로 지나가자. 두 번째 적까지 길이 트여 있어야 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
  ['{기술} 길게 · 연속 암살',S=>(S.stats.chainAssassinations||0)>0,S=>S.guards[2],'이동 중 들키거나 길이 막히면 다음 공격은 중단된다.','skill'],
  ['아래쪽 출구로 이동',()=>false,S=>S.exit,'의뢰에서는 포인트로 선행 기술을 배우고 쌍암살·연속 암살을 선택한다.','move']
  ]
@@ -2755,7 +2755,7 @@ function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') |
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
 const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
-function applyPerks() { S.perks={}; S.stars0=totalStars(); }
+function applyPerks() { loadSkillTree();S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
 function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
@@ -2765,6 +2765,21 @@ function saveBest(id, rank) {
   b[id] = rank; try { localStorage.setItem('yahaeng.best', JSON.stringify(b)); } catch (e) {}
 }
 
+
+// Achievement flags are the receipt: replaying a cleared goal cannot mint points.
+const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched'};
+function skillRewardRows(stage,record=loadCh()){
+ if(stage.tutorial||stage.city||!stage.challenges)return[];
+ const main=Object.hasOwn(SKILL_SIGNATURES,stage.id),saved=record[stage.id]||{},ids=[...new Set([...stage.challenges,...(stage.legacyChallenges||[])])];
+ return[{id:'_clear',name:'미션 첫 완료',points:main?2:1,earned:!!saved._clear},...ids.map(id=>({id,name:id==='fast'?mmss(stage.fastT||330)+' 안에 완료하기':CH[id]?.[0]||id,points:main&&SKILL_SIGNATURES[stage.id]===id?2:1,earned:!!saved[id],signature:main&&SKILL_SIGNATURES[stage.id]===id,retired:!stage.challenges.includes(id)}))];
+}
+const missionSkillPoints=(record=loadCh())=>STAGES.reduce((n,stage)=>n+skillRewardRows(stage,record).filter(r=>r.earned).reduce((a,r)=>a+r.points,0),0);
+const oldPracticePoints=()=>{const record=loadCh();return STAGES.filter(s=>s.tutorial||s.city).reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
+function skillLegacyPoints(record){
+ // Only v151 practice credit is carried forward; new practice has no permanent reward.
+ const max=STAGES.filter(s=>s.tutorial||s.city).reduce((n,s)=>n+(s.challenges?1+new Set([...(s.challenges||[]),...(s.legacyChallenges||[])]).size:0),0);
+ return record?.rewardVersion===152?Math.min(max,Math.max(0,Math.floor(Number(record.legacyPoints)||0))):oldPracticePoints();
+}
 
 // One finite budget, three prerequisite graphs. Effects are read by the owning systems.
 const SKILL_BRANCHES={body:{name:'신체',note:'소음 · 은폐 · 기동'},assassin:{name:'암살',note:'기습 · 연계 · 운반'},tools:{name:'도구',note:'투척 · 연막 · 전자장비'}};
@@ -2783,7 +2798,7 @@ const SKILL_TREE=[
  {id:'dual',branch:'assassin',name:'쌍암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
  {id:'chain',branch:'assassin',name:'연속 암살',cost:3,req:['dual'],row:3,col:2,description:'첫 적을 처치한 뒤 다음 적에게 직접 이동. B 길게 · 재사용 16초. 들키면 중단.'},
- {id:'reach',branch:'assassin',name:'기습 보폭',cost:2,req:['silentHands'],row:5,col:1,description:'등 뒤 돌진·끌어당기기 거리 20% 증가. 이동 경로가 막히면 사용할 수 없다.'},
+ {id:'reach',branch:'assassin',name:'접근 암살',cost:2,req:['silentHands'],row:5,col:1,description:'기본 제압은 1m 이내에서만 가능하다. 이 기술을 배우면 약 세 걸음 거리(3.5m)에서 적의 등 뒤로 직접 접근해 제압한다. 벽·가구를 통과할 수 없다.'},
  {id:'flow',branch:'assassin',name:'연계 정비',cost:2,req:['chain'],row:4,col:2,description:'쌍암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
  {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:6,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
  {id:'kit',branch:'tools',name:'현장 장비',cost:1,req:[],row:1,col:0,description:'의뢰 시작 시 락픽 1개·빈 캔 2개 추가. 맨손 시작 조건은 유지한다.'},
@@ -2800,7 +2815,7 @@ const SKILL_TREE=[
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
 const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=4;
 let volatileSkillTree=null;
-const skillBudget=()=>SKILL_START_POINTS+totalStars();
+function skillBudget(){let r=volatileSkillTree;try{r=JSON.parse(localStorage.getItem(SKILL_STORE))||r;}catch(e){}return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);
 function storeSkillTree(record){try{localStorage.setItem(SKILL_STORE,JSON.stringify(record));volatileSkillTree=null;return true;}catch(e){volatileSkillTree=record;return false;}}
 function loadSkillTree(){
@@ -2813,10 +2828,11 @@ function loadSkillTree(){
   if(stars>=3){add('dual');add('kit');}if(stars>=6){add('chain');add('precision');}if(stars>=9)add('quietStep');if(stars>=16)add('reach');if(stars>=20)add('swiftCrouch');
   record={schema:1,learned:SKILL_TREE.filter(s=>owned.has(s.id)).map(s=>s.id)};storeSkillTree(record);
  }
- const want=new Set(record?.schema===1&&Array.isArray(record.learned)?record.learned:[]),learned=[],owned=new Set(),budget=skillBudget();let spent=0;
+ const legacyPoints=skillLegacyPoints(record),migrate=record?.rewardVersion!==152;
+ const want=new Set(record?.schema===1&&Array.isArray(record.learned)?record.learned:[]),learned=[],owned=new Set(),budget=SKILL_START_POINTS+missionSkillPoints()+legacyPoints;let spent=0;
  // Topological order and budget checks reject malformed, duplicate and orphan entries.
  for(const s of SKILL_TREE)if(want.has(s.id)&&s.req.every(k=>owned.has(k))&&spent+s.cost<=budget){learned.push(s.id);owned.add(s.id);spent+=s.cost;}
- return{schema:1,learned};
+ const result={schema:1,rewardVersion:152,legacyPoints,learned};if(migrate)storeSkillTree(result);return result;
 }
 function skillOn(id){
  if(!S||STAGE.artSlice)return false;
@@ -2846,7 +2862,7 @@ function learnTreeSkill(id){
 }
 function resetTreeSkills(){
  if(!assassinMenu||assassinMenu.from!=='ledger'&&!assassinMenu.practice)return false;
- if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else storeSkillTree({schema:1,learned:[]});
+ if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
 }
 const skillNoise=(src,r)=>r*(src==='step'?(S.player.mode==='walk'&&skillOn('quietStep')?.75:S.player.mode==='sneak'&&skillOn('quietCrouch')?.65:1):src==='land'&&skillOn('landing')?.6:src==='ko'&&skillOn('silentHands')?.7:1);
@@ -2908,7 +2924,7 @@ function assassinLanding(g,from){
 function assassinOpportunity(key=S.selectedSkill){
   const P=S.player;
   if(!concealedMeleeAllowed(P)||!assassinSupported()||!assassinUnlocked(key)||S.t<S.skillReadyAt||P.z||P.wire||P.ledge||P.car||P.hurtT>0||P.hide||P.vent||P.under||P.carrying||P.captive||P.jump||P.trav||P.lunge||P.grabIn||P.interact||P.pick||P.strikeT>0||P.assassinAnim)return null;
-  const first=S.guards.filter(g=>assassinVictim(g,P,62)).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
+  const first=S.guards.filter(g=>assassinVictim(g,P,Math.min(62,meleeReach(P)))).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
   for(const a of first){
     const others=S.guards.filter(g=>g!==a&&assassinVictim(g,P,key==='dual'?62:195)&&dist(a.x,a.y,g.x,g.y)<=(key==='dual'?54:132)&&dist(a.x,a.y,g.x,g.y)>=(key==='dual'?10:55));
     const b=others.sort((b,c)=>dist(a.x,a.y,b.x,b.y)-dist(a.x,a.y,c.x,c.y))[0];if(!b)continue;
@@ -7080,6 +7096,7 @@ function updatePlayer(dt) {
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {
+    if(!abilityOn('reach')||P.lunge.list.some(g=>g.state==='DEAD'||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||!lungeClear(P,g))){P.lunge.list.forEach(g=>{g.doomed=false;delete g.takedownIntent;});P.lunge=null;P.moving=false;return;}
     const x=P.x,y=P.y,L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
     P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;advancePlayerGait(P,x,y,dt,SPD.run);
     if (f >= 1) { P.lunge = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0)); if (L.list.every(g => g.state !== 'DEAD')) strikeKill(L.list, L.two); else L.list.forEach(g => { g.doomed = false; }); }
@@ -8172,6 +8189,7 @@ function loadCheckpoint() {
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
   robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
+  if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
@@ -8851,6 +8869,7 @@ function combatLabel(a) {
   return a;
 }
 function prepareCombat(a) {
+  if(['kill','kill2','grab'].includes(a.k)&&!(a.list||[a.g]).every(g=>g&&canKill(g,S.player)))return false;
   if(!abilityOn('ambush')&&(['ambush','pull','ventKill','ledgeKill'].includes(a.k)||!concealedMeleeAllowed()&&(combatVictims(a).length||a.k==='grab'))){toast(abilityLockText('ambush'),2);return false;}
   const source = a.combatSource || combatSource(a.inputGroup || 'atk');
   if (needsLethalHold(a) && !a.confirmedHold) {
@@ -9225,7 +9244,10 @@ function jumpTarget() {
   }
   return null;
 }
-function canKill(g, P, reach = 56) {
+const MELEE_CONTACT=32,LUNGE=112;
+const meleeReach=(P=S.player)=>STAGE.artSlice?134:skillOn('reach')&&!P.carrying?LUNGE:MELEE_CONTACT;
+function canKill(g,P,reach=meleeReach(P)){return meleeCandidate(g,P,Math.min(reach,g.civ?MELEE_CONTACT:meleeReach(P)));}
+function meleeCandidate(g, P, reach) {
   if(!concealedMeleeAllowed(P))return false;
   if (g.child || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
@@ -9241,13 +9263,11 @@ function lungeClear(P, g) {
   for (let i = 1; i < n; i++) { const x = P.x + (g.x - P.x) * i / n, y = P.y + (g.y - P.y) * i / n; if (sol(Math.floor(x / TILE), Math.floor(y / TILE))) return false; }
   return true;
 }
-const LUNGE = 112;  // 등 뒤에서 이 거리 안이면 달려들어 암살
 // 땅 위 암살 대상 (최대 2명 — 붙어 있으면 동시 암살)
 function killList() {
   const P = S.player; if (P.carrying || P.captive || P.strikeT > 0 || P.hide || P.jump || P.wire || P.trav || P.under || P.vent) return [];
   if (P.lunge || P.grabIn) return [];
   let list = S.guards.filter(g => !ACT_SKIP.has(g) && canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
-  if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && !ACT_SKIP.has(g) && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
   if (STAGE.artSlice && list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
   return list.slice(0, 1);
 }
@@ -9732,7 +9752,7 @@ function primaryActionRaw() {
   if (P.ledge) { const lg = ledgeTarget(); return lg ? { k: 'ledgeKill', g: lg, label: lg.civ ? '끌어내리기' : '끌어내려 떨어뜨리기' } : { k: 'ledgeUp', label: '올라서기' }; }
   if (P.z) {
     const po = pushOffTarget(); if (po) return { k: 'pushOff', g: po, at: po.climb.to, label: '배관에서 밀어 떨어뜨리기' };
-    const kz = killList(); if (kz.length) return { k: kz.length === 2 && !kz.some(g => g.civ) ? 'kill2' : 'kill', list: kz.length === 2 && kz.some(g => g.civ) ? kz.slice(0, 1) : kz, label: (dist(P.x, P.y, kz[0].x, kz[0].y) > 56 ? '달려들어 ' : '') + (kz[0].target ? '표적 암살' : '암살') };
+    const kz = killList(); if (kz.length) return { k: kz.length === 2 && !kz.some(g => g.civ) ? 'kill2' : 'kill', list: kz.length === 2 && kz.some(g => g.civ) ? kz.slice(0, 1) : kz, label: (dist(P.x, P.y, kz[0].x, kz[0].y) > MELEE_CONTACT ? '달려들어 ' : '') + (kz[0].target ? '표적 암살' : '암살') };
     if (P.cover) { const cg = coverTarget(); if (cg) return { k: 'pull', g: cg, label: cg.civ ? '끌어당겨 기절시키기' : '끌어당겨 암살' }; }  // 옥탑방 벽에 기대 있을 때
     const tz = nearTrap(); if (tz) return { k: 'trap', tp: tz, label: tz.label };
     const hz = nearHide(); if (hz && !(P.carrying && hz.bodies >= hz.cap)) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
@@ -9756,7 +9776,7 @@ function primaryActionRaw() {
   const kl = killList();
   if (kl.length === 2 && !kl.some(g => g.civ)) return { k: 'kill2', list: kl, label: '동시 암살' };
   if (kl.length === 2) kl.length = 1;
-  if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > 56 ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
+  if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > MELEE_CONTACT ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: nt, label: nt.read ? '메모 다시 읽기' : nt.title+' 읽기' };
   {const call=nearRendezvous();if(call)return call;}
   const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: `${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
@@ -9988,7 +10008,7 @@ function actPrimary(force) {
     case 'kill': case 'kill2': {
       const g0 = a.list[0], d0 = dist(P.x, P.y, g0.x, g0.y);
       P.a = Math.atan2(g0.y - P.y, g0.x - P.x);
-      if (d0 > 40) {  // 달려들기: 짧게 돌진해 등 뒤에 붙은 뒤 처치
+      if (d0 > MELEE_CONTACT) {  // 배운 접근 암살: 실제로 등 뒤에 붙은 뒤 제압
         const ux = (g0.x - P.x) / d0, uy = (g0.y - P.y) / d0;
         a.list.forEach(g => { g.doomed = true; g.moving = false; });
         P.lunge = { x0: P.x, y0: P.y, x1: g0.x - ux * 26, y1: g0.y - uy * 26, t: 0, dur: 0.12 + d0 / 480, list: a.list, two: a.k === 'kill2' };
@@ -10033,7 +10053,7 @@ function actPrimary(force) {
 
 const DRAG_SPD = 0.4, GRAB_CLINCH = 0.36;
 function grab(g) {
-  const P = S.player; if (actionBusy(P)||!concealedMeleeAllowed(P)) return;
+  const P = S.player; if (actionBusy(P)||!concealedMeleeAllowed(P)||!g||!canKill(g,P)||g.elite||g.dog) return;
   const d = Math.max(1, dist(P.x, P.y, g.x, g.y)), ux = (g.x - P.x) / d, uy = (g.y - P.y) / d;
   g.doomed = true; g.moving = false; g.path = null; P.a = Math.atan2(uy, ux); P.vx = P.vy = 0;
   const run = Math.max(0, d - 26) / 300;
@@ -10130,8 +10150,8 @@ function killStreak() {
 }
 const lastKO = () => { const c = S.corpses[S.corpses.length - 1]; return !!(c && c.ko); };
 function strikeKill(list, two) {
-  if(!concealedMeleeAllowed())return;
-  const P = S.player; P.strikeT = 0.32;
+  const P=S.player;if(!concealedMeleeAllowed()||!list.length||list.some(g=>dist(P.x,P.y,g.x,g.y)>(STAGE.artSlice?134:MELEE_CONTACT)||flOf(P)!==flOf(g)||(P.z||0)!==(g.z||0)||!los(P.x,P.y,g.x,g.y))){list.forEach(g=>{g.doomed=false;delete g.takedownIntent;});return;}
+  P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
   const kind = pairK ? 'choke' : null;
@@ -10148,7 +10168,7 @@ function strikeKill(list, two) {
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
-  const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  const P = S.player;if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
   if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
   delete g.takedownIntent;
@@ -10161,7 +10181,7 @@ function pairKill(g, kind, from, quiet) {
 function updatePairCombat(P,dt) {
   const A=P.killAnim;if(!A?.g)return false;
   const g=A.g,t=S.t-A.t0;
-  if(!A.committed&&!concealedMeleeAllowed(P)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
+  if(!A.committed&&(!concealedMeleeAllowed(P)||!A.from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
     g.doomed=false;if(g.state==='CAPTIVE')g.state='RETURN';P.killAnim=null;P.strikeT=0;return false;
   }
   P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,A.dur-t);
@@ -10626,7 +10646,7 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   }
   if (P.z || P.jump) return { k: 'none', label: '보조' };
   const ch = nearChild(); if (ch) return { k: 'candy', g: ch, label: `사탕 주기 · ${P.candy}개` };
-  const kl0 = killList(), kl = kl0.filter(g => dist(g.x, g.y, P.x, P.y) <= 60); const kh = kl.find(g => g.hasKey); if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
+  const kl0=killList(),kh=S.guards.filter(g=>g.hasKey&&meleeCandidate(g,P,60)).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0]; if (kh) return { k: 'steal', g: kh, label: keyName(kh.hasKey) + ' 훔치기' };
   const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length && !envOnly) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
@@ -12987,7 +13007,7 @@ function attackAction() {
   const c = nearFinish(); if (c) return combatLabel({ k: 'finish', c, g: c.g });
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
   // 등 뒤에 있을 때만 다가가기 표시 (정면이면 공격을 권하지 않는다)
-  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
+  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: dist(P.x,P.y,sg.x,sg.y)>meleeReach(P)?'더 가까이 접근':koTap(sg)?'기절':'처치' };
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
@@ -13195,7 +13215,7 @@ function showBrief(go) {
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   $('brTodo').innerHTML = briefTodo().filter(r => r[2] !== '신원 기록' && r[2] !== '이탈').map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
-  $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
+  $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
   { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) { b.textContent = '이어 하기'; const time = document.createElement('small'); time.textContent = new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); b.appendChild(time); }
@@ -13407,16 +13427,16 @@ function showEnd(win, reason) {
     const bonus = [['전체 경보 0', !(st.full || 0)], ['주민 살상 0', st.extraKills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['남은 CCTV 기록 0', !evidencePending() && !(st.camRec || 0)]];
     S.bonus = bonus;
     if (STAGE.challenges) {
-      const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
+      loadSkillTree();const all = loadCh(), before=skillRewardRows(STAGE,all), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
       S.chRes = STAGE.challenges.map(id => { const ok = !!(CH[id] && CH[id][1]()), fresh = ok && !mine[id]; if (ok) mine[id] = true; return [id, ok, fresh, !!mine[id]]; });
-      saveCh(all);
+      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);saveCh(all);
     }
     const n = bonus.filter(b => b[1]).length;
     rank = n === 5 ? '그림자' : n === 4 ? '암살자' : n === 3 ? '침입자' : '소란꾼';
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 의뢰 별 보상을 포인트로 써서 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -13438,7 +13458,7 @@ function showEnd(win, reason) {
         + (ENTRY_PICK && (STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
-  if(win&&!STAGE.tutorial&&S.stars0!=null&&totalStars()>S.stars0)$('endRankNote').innerHTML+=`<div class="ent">기술 포인트 +${totalStars()-S.stars0}P · 기술 트리에서 배울 수 있다</div>`;
+  if(win&&!STAGE.tutorial){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
   drawEndMap();
   $('btnNext').textContent=STAGE.nextTutorial?'다음 연습 · 뒤에서 제압':STAGE.tutorial?'의뢰 01 시작':'다음 의뢰';
   $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
@@ -13471,7 +13491,7 @@ function renderStageList() {
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
@@ -13673,6 +13693,7 @@ const skillSigil=(id,cls='')=>`<svg class="${cls}" viewBox="0 0 36 36" fill="non
 const skillLock='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2M3 7h10v8H3Z"/></svg>';
 function skillUseText(d){
  if(['dual','chain'].includes(d.id))return '장착한 뒤 B 또는 기술 버튼을 길게 누르기';
+ if(d.id==='reach')return '등 뒤에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';
  if(d.id==='electric')return '스위치·분전반 앞에서 행동 버튼';
@@ -13718,6 +13739,23 @@ function drawSkillPreview(id){
  c.setLineDash([]);
 }
 
+// Layout is derived from prerequisites, so a line always means a real unlock.
+function skillPath(id){const s=SKILL_BY_ID[id];return s?[...s.req.flatMap(skillPath),id]:[];}
+function skillTreeLayout(branch){
+ const defs=SKILL_TREE.filter(s=>s.branch===branch),positions={},children=id=>defs.filter(s=>s.req.includes(id));let leaf=0;
+ function visit(s,depth){const kids=children(s.id),start=leaf;if(kids.length)kids.forEach(k=>visit(k,depth+1));else leaf++;positions[s.id]={row:depth,col:start+leaf,depth};}
+ defs.filter(s=>!s.req.length).forEach(s=>visit(s,1));return{positions,leaves:leaf};
+}
+const SKILL_UTILITY={
+ quietStep:'경비가 돌아서는 틈에 걸어서 거리를 좁히기',quietCrouch:'경비 바로 옆 통로를 낮은 자세로 지나가기',lookout:'접근하기 전에 순찰과 출구를 함께 살피기',swiftCrouch:'순찰이 돌아오기 전에 어두운 구간을 통과하기',shadow:'불이 약한 방에서 발각되기 전 이동할 시간 벌기',landing:'옥상에서 내려온 뒤 착지점 수색을 줄이기',foliage:'풀숲 가까이 순찰이 지나갈 때 버티기',sprint:'노출된 도로를 짧은 틈에 건너기',
+ silentHands:'주변 경비가 접촉 소리를 듣는 범위 줄이기',ambush:'풀숲이나 엄폐 뒤에서 모습을 드러내지 않고 제압하기',drop:'지상 순찰을 우회해 위에서 접근하기',dual:'서로를 지켜보는 두 경비를 동시에 처리하기',bodyCarry:'동료 순찰이 돌아오기 전에 몸을 치우기',chain:'떨어져 순찰하는 두 경비를 연달아 처리하기',reach:'멀어지는 적을 따라잡아 뒤에서 제압하기',flow:'다음 순찰을 상대할 때 암살 기술을 빨리 다시 준비하기',blindside:'정확한 정후방을 잡기 어려운 좁은 통로에서 기습하기',
+ kit:'잠긴 경로를 열거나 캔으로 순찰 방향 바꾸기',dart:'접근하기 어려운 적을 멀리서 기절시키기',kunai:'위험 구역에 들어가기 전에 적을 원거리에서 처치하기',smoke:'카메라와 경비가 보는 길을 잠시 가리고 통과하기',precision:'더 멀리서 투척하고 추가 탄약으로 경로 선택 폭 늘리기',smokeMix:'몸을 운반하거나 긴 통로를 건널 시간을 벌기',electric:'조명을 꺼서 사람의 시야를 줄이고 복구하러 오는 경비 유인하기',radio:'확보한 무전기로 순찰 한 명만 다른 곳으로 보내기',hack:'전원을 끄러 들어가지 않고 CCTV 통과 시간 만들기',signal:'CCTV에 더 멀리서 개입하고 안전하게 통과할 시간 늘리기'
+};
+function skillBenefit(d){
+ const pairs={reach:['1m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['쌍암살 12초 · 연속 16초','쌍암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
+ return pairs[d.id];
+}
+
 let assassinMenu=null;
 function openAssassinMenu(){
   if(DLG.modal||S?.keypad||!$('end').hidden)return;
@@ -13726,7 +13764,7 @@ function openAssassinMenu(){
   clearPlayerInput();closeHudInspection();if(running)paused=true;
   if(from==='ledger')$('ledger').hidden=true;if(from==='pause')$('pause').hidden=true;
   if(assassinMenu.practice)skillBranch=STAGE.toolPractice||STAGE.trialSkills?.includes('electric')?'tools':'assassin';
-  $('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
+  skillDetailMode=null;$('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
 }
 function closeAssassinMenu(){
   const m=assassinMenu;if(!m)return;$('skillScreen').hidden=true;assassinMenu=null;clearPlayerInput();
@@ -13741,65 +13779,84 @@ function chooseAssassinSkill(key){
   else{try{localStorage.setItem('yahaeng.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
-let skillBranch='body',skillFocused='quietStep';
+let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;
 function skillViewState(d){
  const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
  let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.assassinSkill')||active;}catch(e){}
  return{practice,known,parents,points:skillBudget()-skillSpent(r),active};
 }
+function closeSkillDetail(){skillDetailMode=null;syncSkillDetail();$('skillCards').querySelector('[data-select="'+skillFocused+'"]')?.focus({preventScroll:true});}
+function syncSkillDetail(){
+ const open=!!skillDetailMode;$('skillDetail').hidden=!open;$('skillDetailShade').hidden=!open;$('skillScreen').classList.toggle('detail-open',open);
+ const route=new Set(open&&skillDetailMode==='skill'?skillPath(skillFocused):[]);
+ for(const n of $('skillCards').querySelectorAll('[data-node]')){const selected=route.has(n.dataset.node)&&n.dataset.node===skillFocused;n.classList.toggle('selected',selected);n.classList.toggle('in-path',route.has(n.dataset.node));n.querySelector('button').setAttribute('aria-pressed',String(selected));}
+ drawSkillLinks();requestAnimationFrame(drawSkillLinks);
+}
+function detailCloseButton(){const b=document.createElement('button');b.type='button';b.className='skill-detail-close';b.setAttribute('aria-label','기술 설명 닫기');b.textContent='닫기';b.onclick=closeSkillDetail;return b;}
 function selectSkillNode(id,focus=false){
- const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;
+ const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;skillDetailMode='skill';renderSkillDetail();syncSkillDetail();
  for(const b of $('skillBranches').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
- for(const s of $('skillCards').querySelectorAll('.skill-tree'))s.classList.toggle('current',s.dataset.branch===skillBranch);
- for(const n of $('skillCards').querySelectorAll('[data-node]')){const selected=n.dataset.node===id;n.classList.toggle('selected',selected);n.querySelector('button').setAttribute('aria-pressed',String(selected));}
- renderSkillDetail();drawSkillLinks();
- if(focus){const b=$('skillCards').querySelector('[data-select="'+id+'"]');b?.focus({preventScroll:true});b?.scrollIntoView({block:'nearest',inline:'nearest'});}
+ const button=$('skillCards').querySelector('[data-select="'+id+'"]');if(focus)button?.focus({preventScroll:true});button?.scrollIntoView({block:'nearest',inline:'nearest'});
+ if(innerWidth<1000&&!focus)$('skillDetail').querySelector('.skill-detail-close').focus({preventScroll:true});
 }
 function renderSkillDetail(){
- const d=SKILL_BY_ID[skillFocused],v=skillViewState(d),pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;
+ if(skillDetailMode==='rewards'){renderSkillRewards();return;}if(skillDetailMode!=='skill')return;
+ const d=SKILL_BY_ID[skillFocused],v=skillViewState(d),pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;pane.append(detailCloseButton());
  const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<div>'+skillSigil(d.id,'skill-detail-emblem')+'<h3>'+d.name+'</h3></div>';
- const state=document.createElement('div');state.className='skill-detail-state';const label=v.known?'배운 기술':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?'포인트 부족':'배울 수 있는 기술';state.innerHTML='<span class="'+(v.known?'known':'')+'">'+label+'</span><span>'+SKILL_BRANCHES[d.branch].name+' · '+d.cost+'P</span>';head.append(state);pane.append(head);
+ const state=document.createElement('div');state.className='skill-detail-state';const label=v.known?(v.practice?'연습용 적용 중':'배운 기술'):!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?'포인트 부족':'배울 수 있는 기술';state.innerHTML='<span class="'+(v.known?'known':'')+'">'+label+'</span><span>'+SKILL_BRANCHES[d.branch].name+' · '+d.cost+'P</span>';head.append(state);pane.append(head);
  const figure=document.createElement('figure');figure.className='skill-preview';figure.innerHTML='<canvas id="skillPreview" width="480" height="220" aria-label="'+d.name+' 사용 장면 안내"></canvas><figcaption>동작 안내</figcaption>';pane.append(figure);
- const body=document.createElement('div');body.className='skill-description';const description=document.createElement('p');description.textContent=d.description;const use=document.createElement('div');use.className='skill-use';use.innerHTML=skillSigil(d.id)+'<span>'+skillUseText(d)+'</span>';body.append(description,use);pane.append(body);
- const req=document.createElement('div');req.className='skill-prereqs';const note=document.createElement('p');note.textContent=d.req.length?'먼저 배울 기술':'선행 기술 없이 시작할 수 있다.';req.append(note);
- for(const id of d.req){const b=document.createElement('button');b.type='button';b.textContent=SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':'필요');b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.append(req);
+ const body=document.createElement('div');body.className='skill-description';const benefit=skillBenefit(d);body.innerHTML='<dl class="skill-benefit"><div><dt>기본</dt><dd>'+benefit[0]+'</dd></div><div><dt>습득 후</dt><dd>'+benefit[1]+'</dd></div></dl><p>'+d.description+'</p><p class="skill-purpose">'+SKILL_UTILITY[d.id]+'</p><div class="skill-use">'+skillSigil(d.id)+'<span>'+skillUseText(d)+'</span></div>';pane.append(body);
+ const req=document.createElement('div');req.className='skill-prereqs';const path=skillPath(d.id),missing=path.filter(id=>!skillViewState(SKILL_BY_ID[id]).known),cost=missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0),note=document.createElement('p');note.textContent=v.known?'습득 경로':path.length===1?'이 기술부터 시작할 수 있다.':'습득 순서 · 여기까지 남은 비용 '+cost+'P';req.append(note);
+ for(const[id,index]of path.map((id,i)=>[id,i])){const b=document.createElement('button');b.type='button';b.textContent=(index+1)+'. '+SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':SKILL_BY_ID[id].cost+'P');b.dataset.path=id;b.setAttribute('aria-current',String(id===d.id));b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.insertBefore(req,figure);
  const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
  if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}pane.append(actions);drawSkillPreview(d.id);
 }
+function renderSkillRewards(){
+ const pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;pane.append(detailCloseButton());
+ const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<h3>미션 업적</h3><p class="skill-reward-note">첫 완료 2P · 주요 업적 2P · 나머지 업적 1P<br>각 보상은 한 번만 지급된다.</p>';pane.append(head);
+ for(const stage of mainContracts()){
+  const rows=skillRewardRows(stage).filter(r=>!r.retired||r.earned),section=document.createElement('section');section.className='skill-reward-mission';const earned=rows.filter(r=>r.earned).reduce((n,r)=>n+r.points,0);section.innerHTML='<h4>의뢰 '+contractNumber(stage)+' · '+stage.name.replace(/^의뢰 \d+ · /,'')+'</h4><p>'+earned+' / '+rows.reduce((n,r)=>n+r.points,0)+'P 획득</p><ul>'+rows.map(r=>'<li class="'+(r.earned?'earned':'')+'"><span>'+r.name+(r.signature?' <small>주요 업적</small>':'')+'</span><b>'+(r.earned?'완료 · ':'')+r.points+'P</b></li>').join('')+'</ul>';pane.append(section);
+ }
+ const record=loadSkillTree(),foot=document.createElement('p');foot.className='skill-reward-note';foot.textContent='시작 포인트 4P · 현재까지 미션 보상 '+missionSkillPoints()+'P'+(record.legacyPoints?' · 이전 연습 기록 이월 '+record.legacyPoints+'P':'')+' · 연습은 포인트를 지급하지 않는다. 이전 의뢰의 첫 완료·업적은 각각 1P.';pane.append(foot);
+}
+function handleSkillDetailKey(e){
+ if(!skillDetailMode)return false;
+ if(e.code==='Escape'){e.preventDefault();closeSkillDetail();return true;}
+ if(e.code==='Tab'&&innerWidth<1000){const buttons=[...$('skillDetail').querySelectorAll('button:not(:disabled)')],i=buttons.indexOf(document.activeElement);if(i<0||e.shiftKey&&i===0||!e.shiftKey&&i===buttons.length-1){e.preventDefault();buttons[e.shiftKey?buttons.length-1:0]?.focus();return true;}}return false;
+}
 function renderAssassinMenu(){
- const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn||document.activeElement?.dataset.skill,scroll=$('skillBoard').scrollTop;
- if(!SKILL_BY_ID[skillFocused]||SKILL_BY_ID[skillFocused].branch!==skillBranch)skillFocused=SKILL_TREE.find(d=>d.branch===skillBranch).id;
+ const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
  $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
- $('skillTrainingNote').textContent='아이콘을 선택해 효과와 선행 기술을 확인한다. 처음 4P · 의뢰 별 1개마다 1P.';
- $('btnSkillReset').hidden=assassinMenu.from!=='ledger'&&!practice;
- $('skillResetNote').textContent=assassinMenu.from==='ledger'?'재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 의뢰 선택 화면에서 가능하다.';
+ $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
+ $('btnSkillReset').hidden=assassinMenu.from!=='ledger'&&!practice;$('skillResetNote').textContent=assassinMenu.from==='ledger'?'재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 의뢰 선택 화면에서 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
-  const defs=SKILL_TREE.filter(d=>d.branch===branch),count=defs.filter(d=>skillViewState(d).known).length;
-  const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{const previous=defs.find(d=>d.id===skillFocused);selectSkillNode(previous?.id||defs[0].id);$('skillBoard').scrollTop=0;};tabs.append(tab);
-  const section=document.createElement('section');section.className='skill-tree';section.dataset.branch=branch;section.classList.toggle('current',branch===skillBranch);section.setAttribute('aria-label',meta.name+' 기술 트리');
+  const defs=SKILL_TREE.filter(d=>d.branch===branch),layout=skillTreeLayout(branch),count=defs.filter(d=>skillViewState(d).known).length;
+  const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{skillBranch=branch;if(skillDetailMode)closeSkillDetail();for(const b of tabs.children)b.setAttribute('aria-pressed',String(b===tab));section.scrollIntoView({block:'nearest',inline:'center'});};tabs.append(tab);
+  const section=document.createElement('section');section.className='skill-tree';section.dataset.branch=branch;section.style.setProperty('--leaves',layout.leaves);section.setAttribute('aria-label',meta.name+' 기술 트리');
   const heading=document.createElement('h3');heading.innerHTML=skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
   const graph=document.createElement('div');graph.className='skill-graph';section.append(graph);list.append(section);
   for(const d of defs){
-   const v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.parents&&(v.practice||v.points>=d.cost)?' available':'')+(d.id===skillFocused?' selected':'');article.dataset.node=d.id;article.style.gridRow=String(d.row);article.style.gridColumn=d.col?String(d.col):'1 / -1';
-   const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed',String(d.id===skillFocused));b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':!v.parents?'선행 기술 필요':d.cost+'P'));b.title=d.name;b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':!v.parents?skillLock:d.cost+'P')+'</span>';b.onclick=()=>selectSkillNode(d.id);b.onfocus=()=>{if(skillFocused!==d.id)selectSkillNode(d.id);};
-   b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,at={x:d.col||1.5,y:d.row},candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:(x.col||1.5)-at.x,dy:x.row-at.y})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
+   const at=layout.positions[d.id],v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.parents&&(v.practice||v.points>=d.cost)?' available':'');article.dataset.node=d.id;article.style.gridRow=String(at.row);article.style.gridColumn=at.col+' / span 2';
+   const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed','false');b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':d.cost+'P'+(!v.parents?' · 선행 기술 필요':'')));b.title=d.name;b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':d.cost+'P')+'</span>';b.onclick=()=>selectSkillNode(d.id);
+   b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:layout.positions[x.id].col-at.col,dy:layout.positions[x.id].row-at.row})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
    const label=document.createElement('span');label.className='skill-label';label.textContent=d.name;article.append(b,label);graph.append(article);
   }
  }
- const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>{skillFocused=id;skillBranch='assassin';chooseAssassinSkill(id);};slots.append(b);}
- renderSkillDetail();$('skillBoard').scrollTop=scroll;drawSkillLinks();requestAnimationFrame(drawSkillLinks);
- if(focus)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
+ const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>chooseAssassinSkill(id);slots.append(b);}
+ $('btnSkillRewards').onclick=()=>{skillDetailMode='rewards';renderSkillRewards();syncSkillDetail();if(innerWidth<1000)$('skillDetail').querySelector('button').focus();};$('skillDetailShade').onclick=closeSkillDetail;
+ renderSkillDetail();syncSkillDetail();board.scrollTop=scroll.top;board.scrollLeft=scroll.left;
+ if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
- const ns='http://www.w3.org/2000/svg';
+ const ns='http://www.w3.org/2000/svg',route=new Set(skillDetailMode==='skill'?skillPath(skillFocused):[]);
  for(const graph of $('skillCards').querySelectorAll('.skill-graph')){
   graph.querySelector('.skill-links')?.remove();if(!graph.clientWidth)continue;
   const svg=document.createElementNS(ns,'svg');svg.classList.add('skill-links');svg.setAttribute('aria-hidden','true');svg.setAttribute('width',graph.clientWidth);svg.setAttribute('height',graph.scrollHeight);const bounds=graph.getBoundingClientRect();
   for(const node of graph.querySelectorAll('[data-node]'))for(const id of SKILL_BY_ID[node.dataset.node].req){
    const parent=graph.querySelector('[data-node="'+id+'"]');if(!parent)continue;
-   const a=parent.querySelector('button').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top,skip=SKILL_BY_ID[node.dataset.node].row-SKILL_BY_ID[id].row>1,rail=x1<graph.clientWidth/2?7:graph.clientWidth-7;
-   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',skip?`M${x0} ${y0} V${y0+13} H${rail} V${y1-12} H${x1} V${y1}`:`M${x0} ${y0} C${x0} ${y0+16} ${x1} ${y1-16} ${x1} ${y1}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('available',!node.classList.contains('learned')&&skillViewState(SKILL_BY_ID[id]).known);svg.append(path);
+   const a=parent.querySelector('button').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=a.bottom-bounds.top+4,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-7;
+   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} C${x0} ${y0+32} ${x1} ${y1-32} ${x1} ${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
  }
 }
@@ -13976,7 +14033,7 @@ function installGameApi() {
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
-    challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
+    skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     ASSASSIN_SKILLS, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
@@ -14038,6 +14095,7 @@ window.addEventListener('keydown', e => {
   }
   const overlay = document.querySelector('.screen:not([hidden])');
   if (overlay) {
+    if(overlay.id==='skillScreen'&&handleSkillDetailKey(e))return;
     if (e.code === 'Escape') {
       const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu', skillScreen:'btnSkillsBack' }[overlay.id];
       if (back) { e.preventDefault(); $(back).click(); }

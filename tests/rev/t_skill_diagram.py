@@ -2,12 +2,14 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/skills-v151';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/skills-v152';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch();q=await b.new_page(viewport={'width':1440,'height':900});errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game');await q.click('#btnLedger');await q.click('#btnSkillsLedger')
+  assert await q.locator('#skillDetail').is_hidden()
   assert await q.locator('[data-node]').count()==27
+  assert await q.locator('.skill-tree:visible').count()==3
   assert await q.locator('#skillLoadout [aria-pressed="true"]').count()==0,'Unlearned skill looks equipped'
   assert await q.locator('[data-node] > button > svg').count()==27,'Rendering links removes the skill symbols'
   assert await q.locator('.skill-links path').count()==24,'Prerequisite graph differs from game data'
@@ -18,7 +20,7 @@ async def main():
   assert await q.locator('#skillDetail h3').text_content()=='전기 조작'
   assert await q.locator('[data-learn="electric"]').is_disabled()
   assert await q.evaluate('!__game.loadSkillTree().learned.length'),'Inspecting a node purchases it'
-  await q.locator('#skillDetail .skill-prereqs button').click()
+  await q.locator('#skillDetail .skill-prereqs button').first.click()
   assert await q.locator('#skillDetail h3').text_content()=='현장 장비'
   assert await q.locator('[data-select="kit"]').evaluate('(b)=>b===document.activeElement'),'Prerequisite link does not move keyboard focus'
   await q.locator('[data-learn="kit"]').click();await q.locator('[data-select="electric"]').click();await q.locator('[data-learn="electric"]').click()
@@ -30,7 +32,9 @@ async def main():
   assert await q.evaluate('__game.loadSkillTree().learned.length===4'),'Keyboard navigation spends points'
   await q.locator('[data-select="electric"]').click();await q.screenshot(path=str(O/'learned-pc.png'))
   await q.click('#btnSkillReset');assert await q.evaluate('!__game.loadSkillTree().learned.length');assert await q.locator('[data-node].learned').count()==0
-  await q.keyboard.press('Escape');assert await q.locator('#ledger').is_visible()
+  await q.keyboard.press('Escape');assert await q.locator('#skillDetail').is_hidden()
+  await q.click('#btnSkillRewards');assert await q.locator('.skill-reward-mission').count()==3
+  await q.keyboard.press('Escape');await q.keyboard.press('Escape');assert await q.locator('#ledger').is_visible()
   assert not errors,errors
   (O/'diagram-checks.json').write_text(json.dumps({'nodes':27,'actualPrerequisiteEdges':24,'iconsSurviveBranchChanges':True,'inspectDoesNotPurchase':True,'prerequisiteNavigation':True,'realPointPurchases':True,'insufficientPointsBlocked':True,'arrowNavigation':True,'refundAndEscape':True,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS circle inspection, 27 icons, 24 real edges, prerequisite focus, learning, insufficient points, keyboard, refund and return');await b.close()
 asyncio.run(main())

@@ -15,7 +15,7 @@ const SKILL_TREE=[
  {id:'dual',branch:'assassin',name:'쌍암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
  {id:'chain',branch:'assassin',name:'연속 암살',cost:3,req:['dual'],row:3,col:2,description:'첫 적을 처치한 뒤 다음 적에게 직접 이동. B 길게 · 재사용 16초. 들키면 중단.'},
- {id:'reach',branch:'assassin',name:'기습 보폭',cost:2,req:['silentHands'],row:5,col:1,description:'등 뒤 돌진·끌어당기기 거리 20% 증가. 이동 경로가 막히면 사용할 수 없다.'},
+ {id:'reach',branch:'assassin',name:'접근 암살',cost:2,req:['silentHands'],row:5,col:1,description:'기본 제압은 1m 이내에서만 가능하다. 이 기술을 배우면 약 세 걸음 거리(3.5m)에서 적의 등 뒤로 직접 접근해 제압한다. 벽·가구를 통과할 수 없다.'},
  {id:'flow',branch:'assassin',name:'연계 정비',cost:2,req:['chain'],row:4,col:2,description:'쌍암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
  {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:6,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
  {id:'kit',branch:'tools',name:'현장 장비',cost:1,req:[],row:1,col:0,description:'의뢰 시작 시 락픽 1개·빈 캔 2개 추가. 맨손 시작 조건은 유지한다.'},
@@ -32,7 +32,7 @@ const SKILL_TREE=[
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
 const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=4;
 let volatileSkillTree=null;
-const skillBudget=()=>SKILL_START_POINTS+totalStars();
+function skillBudget(){let r=volatileSkillTree;try{r=JSON.parse(localStorage.getItem(SKILL_STORE))||r;}catch(e){}return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);
 function storeSkillTree(record){try{localStorage.setItem(SKILL_STORE,JSON.stringify(record));volatileSkillTree=null;return true;}catch(e){volatileSkillTree=record;return false;}}
 function loadSkillTree(){
@@ -45,10 +45,11 @@ function loadSkillTree(){
   if(stars>=3){add('dual');add('kit');}if(stars>=6){add('chain');add('precision');}if(stars>=9)add('quietStep');if(stars>=16)add('reach');if(stars>=20)add('swiftCrouch');
   record={schema:1,learned:SKILL_TREE.filter(s=>owned.has(s.id)).map(s=>s.id)};storeSkillTree(record);
  }
- const want=new Set(record?.schema===1&&Array.isArray(record.learned)?record.learned:[]),learned=[],owned=new Set(),budget=skillBudget();let spent=0;
+ const legacyPoints=skillLegacyPoints(record),migrate=record?.rewardVersion!==152;
+ const want=new Set(record?.schema===1&&Array.isArray(record.learned)?record.learned:[]),learned=[],owned=new Set(),budget=SKILL_START_POINTS+missionSkillPoints()+legacyPoints;let spent=0;
  // Topological order and budget checks reject malformed, duplicate and orphan entries.
  for(const s of SKILL_TREE)if(want.has(s.id)&&s.req.every(k=>owned.has(k))&&spent+s.cost<=budget){learned.push(s.id);owned.add(s.id);spent+=s.cost;}
- return{schema:1,learned};
+ const result={schema:1,rewardVersion:152,legacyPoints,learned};if(migrate)storeSkillTree(result);return result;
 }
 function skillOn(id){
  if(!S||STAGE.artSlice)return false;
@@ -78,7 +79,7 @@ function learnTreeSkill(id){
 }
 function resetTreeSkills(){
  if(!assassinMenu||assassinMenu.from!=='ledger'&&!assassinMenu.practice)return false;
- if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else storeSkillTree({schema:1,learned:[]});
+ if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
 }
 const skillNoise=(src,r)=>r*(src==='step'?(S.player.mode==='walk'&&skillOn('quietStep')?.75:S.player.mode==='sneak'&&skillOn('quietCrouch')?.65:1):src==='land'&&skillOn('landing')?.6:src==='ko'&&skillOn('silentHands')?.7:1);

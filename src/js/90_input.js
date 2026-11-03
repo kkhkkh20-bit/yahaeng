@@ -17,6 +17,7 @@ window.addEventListener('keydown', e => {
   }
   const overlay = document.querySelector('.screen:not([hidden])');
   if (overlay) {
+    if(overlay.id==='skillScreen'&&handleSkillDetailKey(e))return;
     if (e.code === 'Escape') {
       const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu', skillScreen:'btnSkillsBack' }[overlay.id];
       if (back) { e.preventDefault(); $(back).click(); }

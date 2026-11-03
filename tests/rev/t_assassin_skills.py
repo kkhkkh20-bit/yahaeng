@@ -3,7 +3,7 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/skills-v147';O.mkdir(exist_ok=True)
-FRESH='''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tS'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;Object.assign(P,{x:420,y:432,mode:'sneak'});G.input.sneakToggle=true;G.update(.02);window.tick=(seconds,full=true)=>{for(let t=0;t<seconds-1e-6;t+=.01){if(full)G.update(.01);else{S.t+=.01;G.updatePlayer(.01)}}};window.press=()=>{S.keys.KeyB=true;G.combatPress('KeyB');G.beginAssassinSkill()};window.release=()=>{S.keys.KeyB=false;G.combatRelease('KeyB')};window.__skillChain=()=>{S.selectedSkill='chain';S.practiceSkill='chain';S.tutI=4;P.x=888;P.y=456;};}'''
+FRESH='''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tS'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;Object.assign(P,{x:440,y:432,mode:'sneak'});G.input.sneakToggle=true;G.update(.02);window.tick=(seconds,full=true)=>{for(let t=0;t<seconds-1e-6;t+=.01){if(full)G.update(.01);else{S.t+=.01;G.updatePlayer(.01)}}};window.press=()=>{S.keys.KeyB=true;G.combatPress('KeyB');G.beginAssassinSkill()};window.release=()=>{S.keys.KeyB=false;G.combatRelease('KeyB')};window.__skillChain=()=>{S.selectedSkill='chain';S.practiceSkill='chain';S.tutI=4;P.x=906;P.y=456;};}'''
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
@@ -60,7 +60,7 @@ async def main():
    assert await ui.evaluate('localStorage.getItem("yahaeng.assassinSkill")===null'),'Practice selection was persisted'
    await ui.locator('#btnSkillsBack').click()
    if mobile:await ui.locator('#btnResume').click()
-   await ui.evaluate('tick(.02);__game.S.player.x=888;__game.S.player.y=456;tick(.02)');await down();await ui.evaluate('tick(3.6)');await up();assert await ui.evaluate('__game.S.stats.chainAssassinations===1&&__game.S.tutI===5&&!__game.S.over')
+   await ui.evaluate('tick(.02);__game.S.player.x=906;__game.S.player.y=456;tick(.02)');await down();await ui.evaluate('tick(3.6)');await up();assert await ui.evaluate('__game.S.stats.chainAssassinations===1&&__game.S.tutI===5&&!__game.S.over')
    # App switch clears a fresh pending press.
    await ui.evaluate(FRESH);await down();await ui.evaluate('tick(.5);window.dispatchEvent(new Event("blur"));window.dispatchEvent(new Event("focus"))');await up();await ui.evaluate('tick(2)');assert await ui.evaluate('!__game.S.stats.kills')
    await c.close()

@@ -180,7 +180,7 @@ function actPrimary(force) {
     case 'kill': case 'kill2': {
       const g0 = a.list[0], d0 = dist(P.x, P.y, g0.x, g0.y);
       P.a = Math.atan2(g0.y - P.y, g0.x - P.x);
-      if (d0 > 40) {  // 달려들기: 짧게 돌진해 등 뒤에 붙은 뒤 처치
+      if (d0 > MELEE_CONTACT) {  // 배운 접근 암살: 실제로 등 뒤에 붙은 뒤 제압
         const ux = (g0.x - P.x) / d0, uy = (g0.y - P.y) / d0;
         a.list.forEach(g => { g.doomed = true; g.moving = false; });
         P.lunge = { x0: P.x, y0: P.y, x1: g0.x - ux * 26, y1: g0.y - uy * 26, t: 0, dur: 0.12 + d0 / 480, list: a.list, two: a.k === 'kill2' };

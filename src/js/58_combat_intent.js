@@ -38,6 +38,7 @@ function combatLabel(a) {
   return a;
 }
 function prepareCombat(a) {
+  if(['kill','kill2','grab'].includes(a.k)&&!(a.list||[a.g]).every(g=>g&&canKill(g,S.player)))return false;
   if(!abilityOn('ambush')&&(['ambush','pull','ventKill','ledgeKill'].includes(a.k)||!concealedMeleeAllowed()&&(combatVictims(a).length||a.k==='grab'))){toast(abilityLockText('ambush'),2);return false;}
   const source = a.combatSource || combatSource(a.inputGroup || 'atk');
   if (needsLethalHold(a) && !a.confirmedHold) {

@@ -35,7 +35,7 @@ function attackAction() {
   const c = nearFinish(); if (c) return combatLabel({ k: 'finish', c, g: c.g });
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
   // 등 뒤에 있을 때만 다가가기 표시 (정면이면 공격을 권하지 않는다)
-  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: koTap(sg) ? '기절' : '처치' };
+  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: dist(P.x,P.y,sg.x,sg.y)>meleeReach(P)?'더 가까이 접근':koTap(sg)?'기절':'처치' };
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.

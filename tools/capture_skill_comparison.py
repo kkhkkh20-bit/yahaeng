@@ -9,7 +9,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
  def log_message(self,*args):pass
 async def capture(args):
  output=(R/args.output).resolve();output.mkdir(parents=True,exist_ok=True)
- before=R/'build/skills-v151/compare-v150';before.mkdir(parents=True,exist_ok=True)
+ before=R/'build/skills-v152'/('compare-'+args.before_revision);before.mkdir(parents=True,exist_ok=True)
  archive=subprocess.check_output(['git','archive','--format=tar',args.before_revision,'public/index.html','public/version.json','public/assets'],cwd=R)
  with tarfile.open(fileobj=io.BytesIO(archive))as t:t.extractall(before,filter='data')
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(R)));threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -30,9 +30,11 @@ async def capture(args):
      assert state['version']==package['version']and state['points']==4 and not state['learned']and state['nodes']==27,state
      assert not errors,errors
      name=f'{label}-{mode}.png';await page.screenshot(path=str(output/name))
-     records.append({'image':name,'viewport':[width,height],'branch':'assassin'if mobile else'all','state':state,'sourcePackageSha256':package['source_sha256'],'imageSha256':hashlib.sha256((output/name).read_bytes()).hexdigest(),'pageErrors':errors});print('CAPTURED',name,state['version'],flush=True);await page.close()
+     records.append({'image':name,'viewport':[width,height],'branch':'assassin'if mobile else'all','state':state,'sourcePackageSha256':package['source_sha256'],'imageSha256':hashlib.sha256((output/name).read_bytes()).hexdigest(),'pageErrors':errors});print('CAPTURED',name,state['version'],flush=True)
+     await page.locator('[data-select="reach"]').click();await page.evaluate('__game.drawSkillLinks()');await page.wait_for_timeout(100)
+     name=f'{label}-detail-{mode}.png';await page.screenshot(path=str(output/name));records.append({'image':name,'viewport':[width,height],'selectedSkill':'reach','state':state,'sourcePackageSha256':package['source_sha256'],'imageSha256':hashlib.sha256((output/name).read_bytes()).hexdigest(),'pageErrors':errors});await page.close()
    await browser.close()
  finally:server.shutdown();server.server_close()
- (output/'captures.json').write_text(json.dumps({'beforeCommit':subprocess.check_output(['git','rev-parse',args.before_revision],cwd=R,text=True).strip(),'method':'Actual archived v150 and current v151 packages; same viewport, same 4P, no learned skills; original screenshots with no image alterations','captures':records},ensure_ascii=False,indent=2)+'\n')
+ (output/'captures.json').write_text(json.dumps({'beforeCommit':subprocess.check_output(['git','rev-parse',args.before_revision],cwd=R,text=True).strip(),'method':'Actual archived v151 and current v152 packages; same viewport, same 4P, no learned skills; original screenshots with no image alterations','captures':records},ensure_ascii=False,indent=2)+'\n')
 if __name__=='__main__':
- parser=argparse.ArgumentParser();parser.add_argument('--before-revision',default='2d5ae0a');parser.add_argument('--output',default='docs/skills-v151/compare');asyncio.run(capture(parser.parse_args()))
+ parser=argparse.ArgumentParser();parser.add_argument('--before-revision',default='508d636');parser.add_argument('--output',default='docs/skills-v152/compare');asyncio.run(capture(parser.parse_args()))

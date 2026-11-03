@@ -46,8 +46,8 @@ function killStreak() {
 }
 const lastKO = () => { const c = S.corpses[S.corpses.length - 1]; return !!(c && c.ko); };
 function strikeKill(list, two) {
-  if(!concealedMeleeAllowed())return;
-  const P = S.player; P.strikeT = 0.32;
+  const P=S.player;if(!concealedMeleeAllowed()||!list.length||list.some(g=>dist(P.x,P.y,g.x,g.y)>(STAGE.artSlice?134:MELEE_CONTACT)||flOf(P)!==flOf(g)||(P.z||0)!==(g.z||0)||!los(P.x,P.y,g.x,g.y))){list.forEach(g=>{g.doomed=false;delete g.takedownIntent;});return;}
+  P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
   const kind = pairK ? 'choke' : null;
@@ -64,7 +64,7 @@ function strikeKill(list, two) {
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
-  const P = S.player, dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  const P = S.player;if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
   if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
   delete g.takedownIntent;
@@ -77,7 +77,7 @@ function pairKill(g, kind, from, quiet) {
 function updatePairCombat(P,dt) {
   const A=P.killAnim;if(!A?.g)return false;
   const g=A.g,t=S.t-A.t0;
-  if(!A.committed&&!concealedMeleeAllowed(P)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
+  if(!A.committed&&(!concealedMeleeAllowed(P)||!A.from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
     g.doomed=false;if(g.state==='CAPTIVE')g.state='RETURN';P.killAnim=null;P.strikeT=0;return false;
   }
   P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,A.dur-t);

@@ -9,7 +9,7 @@ from playwright.async_api import async_playwright
 SK = '() => { const g = window.__game; for (let i = 0; i < 40 && g.DLG.modal; i++) g.advanceDialog(); }'
 FREEZE = '''(keep) => { const S = window.__game.S; S.guards.forEach((g, i) => { if (!keep.includes(i)) { g.x = -9999; g.y = -9999; g.route = [{ x: -9999, y: -9999, pause: 999 }]; g.wander = null; g.sched = null; g.path = null; } }); }'''
 PIN = '''([i, x, y, a]) => { const q = window.__game.S.guards[i]; q.x = x * 48 + 24; q.y = y * 48 + 24; q.a = a; q.want = a; q.route = [{ x: q.x, y: q.y, pause: 999 }]; q.path = null; q.wait = 99; q.post = a * 180 / Math.PI; q.state = 'PATROL'; q.meter = 0; }'''
-BEHIND = '''(i) => { const S = window.__game.S, P = S.player, q = S.guards[i]; P.x = q.x - Math.cos(q.a) * 40; P.y = q.y - Math.sin(q.a) * 40; P.a = q.a; P.z = 0; P.fl = q.fl || 0; window.__game.setLayer(P.fl); P.mode = 'sneak'; }'''
+BEHIND = '''(i) => { const S = window.__game.S, P = S.player, q = S.guards[i]; P.x = q.x - Math.cos(q.a) * 28; P.y = q.y - Math.sin(q.a) * 28; P.a = q.a; P.z = 0; P.fl = q.fl || 0; window.__game.setLayer(P.fl); P.mode = 'sneak'; }'''
 async def main():
     bad = []
     async with async_playwright() as p:

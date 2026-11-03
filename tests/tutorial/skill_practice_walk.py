@@ -15,10 +15,10 @@ async def main():
      if abs(delta)<3:break
      key=lo if delta<0 else hi;await q.keyboard.down(key);await q.evaluate('t=>__tick(t)',min(.15,abs(delta)/68.75));await q.keyboard.up(key)
     else:raise AssertionError(('movement blocked',x,y,await q.evaluate('[__game.S.player.x,__game.S.player.y]')))
-  await q.keyboard.press('Control');await q.evaluate('__tick(.02)');await move_to(420,432);assert await q.evaluate('__game.S.tutI===1')
+  await q.keyboard.press('Control');await q.evaluate('__tick(.02)');await move_to(440,432);assert await q.evaluate('__game.S.tutI===1')
   await q.keyboard.down('b');await q.evaluate('__tick(2.5)');await q.keyboard.up('b');assert await q.evaluate('__game.S.tutI===2')
   await q.keyboard.press('k');await q.click('[data-skill="chain"]');await q.keyboard.press('Escape');await q.evaluate('__tick(.02)')
-  await move_to(894,456);assert await q.evaluate('__game.S.tutI===4'),await q.evaluate('[__game.S.tutI,__game.S.player.x,__game.S.player.y]')
+  await move_to(906,456);assert await q.evaluate('__game.S.tutI===4'),await q.evaluate('[__game.S.tutI,__game.S.player.x,__game.S.player.y]')
   await q.keyboard.down('b');await q.evaluate('__tick(3.6)');await q.keyboard.up('b');assert await q.evaluate('__game.S.tutI===5&&!__game.S.over'),await q.evaluate('({step:__game.S.tutI,over:__game.S.over,stats:__game.S.stats,anim:__game.S.player.assassinAnim,choice:__game.assassinOpportunity(),guards:__game.S.guards.map(g=>({id:g.id,state:g.state,x:g.x,y:g.y,a:g.a,seen:g.seen,meter:g.meter}))})')
   exit=await q.evaluate('({x:__game.S.exit.x,y:__game.S.exit.y})');await move_to(exit['x'],exit['y'])
   await q.wait_for_timeout(600);assert await q.locator('#endTitle').text_content()=='연습 끝'

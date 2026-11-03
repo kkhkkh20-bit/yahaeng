@@ -67,7 +67,7 @@
  const at=o=>[{x:Math.floor(o.x/48),y:Math.floor(o.y/48),f:o.fl||0}];
  const approach=(g,r=40)=>{const goals=[];for(let y=Math.floor(g.y/48)-1;y<=Math.floor(g.y/48)+1;y++)for(let x=Math.floor(g.x/48)-1;x<=Math.floor(g.x/48)+1;x++)if(Math.hypot(x*48+24-g.x,y*48+24-g.y)<=r&&pass(x,y,g.fl||0)&&(g.target||Math.cos(Math.atan2(y*48+24-g.y,x*48+24-g.x)-g.a)<-.2))goals.push({x,y,f:g.fl||0});return goals};
  const attack=(g,lethal)=>{
-  walk(approach(g),'approach '+g.id);P.a=Math.atan2(g.y-P.y,g.x-P.x);
+  walk(approach(g),'approach '+g.id);for(let n=0;n<120&&Math.hypot(g.x-P.x,g.y-P.y)>28;n++){drive(g.x-P.x,g.y-P.y);tick();}stop();P.a=Math.atan2(g.y-P.y,g.x-P.x);
   const a=G.attackAction();check((a.list||[a.g]).includes(g),'target not selected '+g.id+' '+JSON.stringify({k:a.k,at:[P.x,P.y],g:[g.x,g.y]}));
   S.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();
   for(let i=0;i<(lethal?180:5);i++)tick();S.keys.KeyZ=false;G.combatRelease('KeyZ');idle();

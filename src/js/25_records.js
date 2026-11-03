@@ -29,7 +29,7 @@ function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') |
 function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
 const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
-function applyPerks() { S.perks={}; S.stars0=totalStars(); }
+function applyPerks() { loadSkillTree();S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
 function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}

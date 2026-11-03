@@ -1,0 +1,150 @@
+{
+  "beforeCommit": "508d636e92fc2fe00228e4843d1bf311b1cf51d1",
+  "method": "Actual archived v151 and current v152 packages; same viewport, same 4P, no learned skills; original screenshots with no image alterations",
+  "captures": [
+    {
+      "image": "before-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "branch": "all",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "8f73ffa48d242da3dd935073c4f57644a1e632d93749ff463150a39faa0f7052",
+      "pageErrors": []
+    },
+    {
+      "image": "before-detail-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "selectedSkill": "reach",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "e88506b9383e66c73f17a0eb428028f0322b35ccdbb1cfd05157ae7d30f5521d",
+      "pageErrors": []
+    },
+    {
+      "image": "before-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "branch": "assassin",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "bf237c55489880f6a46a0fdb40ad1e5bee3e97155aa806cca25be422d736f5f4",
+      "pageErrors": []
+    },
+    {
+      "image": "before-detail-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "selectedSkill": "reach",
+      "state": {
+        "version": "v151",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "2239e6c72cf3d85a9f8d8239b8cea1a0570d626dd36d809abae7cb7f0a5068af",
+      "imageSha256": "1ae2d7e6d1de767ab1815aa019063484feb3c4159cbbede1ca7cca95abb33ec8",
+      "pageErrors": []
+    },
+    {
+      "image": "after-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "branch": "all",
+      "state": {
+        "version": "v152",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "4f3cf9820ab7401abdc68396729752a226fe4b718e8619b37292313923bf7a27",
+      "pageErrors": []
+    },
+    {
+      "image": "after-detail-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "selectedSkill": "reach",
+      "state": {
+        "version": "v152",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "7c44bbe43f448b013a6798190e410de13a34c3716320b36eb5dcef6d9723eb20",
+      "pageErrors": []
+    },
+    {
+      "image": "after-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "branch": "assassin",
+      "state": {
+        "version": "v152",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "1212f659057122f268b06194dc8c97f7980dbd6a8de964d525720307af4e7295",
+      "pageErrors": []
+    },
+    {
+      "image": "after-detail-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "selectedSkill": "reach",
+      "state": {
+        "version": "v152",
+        "points": 4,
+        "learned": [],
+        "nodes": 27,
+        "inkTheme": true
+      },
+      "sourcePackageSha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+      "imageSha256": "de518a7e6f46c5c48c1ef8b92efdd0d30d3707069b3ad715c570ca5836ba8713",
+      "pageErrors": []
+    }
+  ]
+}

@@ -12,7 +12,7 @@ async def main():
         await pg.keyboard.down('ArrowRight'); await pg.wait_for_timeout(900); await pg.keyboard.up('ArrowRight'); print('1', await st())
         await pg.keyboard.press('m'); await pg.wait_for_timeout(300); await pg.keyboard.press('m'); await pg.wait_for_timeout(300); print('2', await st())
         await pg.keyboard.press('ControlLeft'); await pg.wait_for_timeout(300); print('3', await st())
-        await ev('() => { const P = T.S().player, g = T.S().guards[0]; P.x = g.x - 60; P.y = g.y; P.a = 0; }'); await pg.wait_for_timeout(200)
+        await ev('() => { const P = T.S().player, g = T.S().guards[0]; P.x = g.x - 28; P.y = g.y; P.a = 0; }'); await pg.wait_for_timeout(200)
         await pg.keyboard.press('Space'); await pg.wait_for_timeout(900); print('4', await st())
         await ev('() => { const P = T.S().player, c = T.S().corpses[0]; P.x = c.x - 20; P.y = c.y; }'); await pg.wait_for_timeout(200); await pg.keyboard.press('e'); await pg.wait_for_timeout(300)
         await to(9 * 48 + 24, 8 * 48 + 20, -1.5708); await pg.keyboard.press('KeyE'); await pg.wait_for_timeout(700); print('5', await st())

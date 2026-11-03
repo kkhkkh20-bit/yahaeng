@@ -66,6 +66,10 @@
       "group": "records"
     },
     {
+      "path": "25_skill_rewards.js",
+      "group": "progression"
+    },
+    {
       "path": "25_skill_tree.js",
       "group": "progression"
     },
@@ -396,6 +400,10 @@
     {
       "path": "83_skill_visuals.js",
       "group": "skills_visuals"
+    },
+    {
+      "path": "83_skill_paths.js",
+      "group": "skills_ui"
     },
     {
       "path": "84_skill_menu.js",

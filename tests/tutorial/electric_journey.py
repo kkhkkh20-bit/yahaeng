@@ -5,7 +5,7 @@ first_session.py separately verifies the complete light lesson with actual movem
 import asyncio,json,os,sys
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else(R/'build/preview_city.html').as_uri();O=R/'build/skills-v151';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];BASE=sys.argv[1]if len(sys.argv)>1 else(R/'build/preview_city.html').as_uri();O=R/'build/skills-v152';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None);results=[]
@@ -28,8 +28,12 @@ async def main():
    await press();assert await q.evaluate('!lampFixture.off&&!__game.S.player.interact'),'Unlearned switch commits'
    await q.keyboard.press('k')
    if mobile:await q.locator('button[data-branch="tools"]').click()
-   await q.locator('[data-select="kit"]').click();await q.locator('[data-learn="kit"]').click();await q.locator('[data-select="electric"]').click();await q.locator('[data-learn="electric"]').click();assert await q.evaluate('__game.skillOn("electric")&&__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())===2')
-   await q.screenshot(path=str(O/f'electric-learn-{label}.png'));await q.click('#btnSkillsBack');await q.evaluate('selectSwitch();render()')
+   await q.locator('[data-select="kit"]').click();await q.locator('[data-learn="kit"]').click()
+   if mobile:await q.locator('.skill-detail-close').click()
+   await q.locator('[data-select="electric"]').click();await q.locator('[data-learn="electric"]').click();assert await q.evaluate('__game.skillOn("electric")&&__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())===2')
+   await q.screenshot(path=str(O/f'electric-learn-{label}.png'));
+   if mobile:await q.locator('.skill-detail-close').click()
+   await q.click('#btnSkillsBack');await q.evaluate('selectSwitch();render()')
    assert await q.evaluate('!__game.envAction().skillLocked');await press();assert await q.evaluate('lampFixture.off&&!__game.lampOn(lampFixture)'),'Learned switch cannot turn off'
    await q.screenshot(path=str(O/f'electric-off-{label}.png'));await press();assert await q.evaluate('!lampFixture.off'),'Learned switch cannot turn on';assert not errors,errors
    results.append({'mobile':mobile,'version':await q.evaluate('window.__BUILD_VERSION__'),'base':BASE,'fixture':'Authored mission switch; player placed at it; guards removed to isolate UI','input':'Native keyboard / touchscreen: locked action, K tree, kit and electric purchase, switch off and on','remainingPoints':2,'pageErrors':errors});print('PASS',label,flush=True);await q.close()

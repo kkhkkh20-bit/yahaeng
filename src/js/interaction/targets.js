@@ -130,7 +130,10 @@ function jumpTarget() {
   }
   return null;
 }
-function canKill(g, P, reach = 56) {
+const MELEE_CONTACT=32,LUNGE=112;
+const meleeReach=(P=S.player)=>STAGE.artSlice?134:skillOn('reach')&&!P.carrying?LUNGE:MELEE_CONTACT;
+function canKill(g,P,reach=meleeReach(P)){return meleeCandidate(g,P,Math.min(reach,g.civ?MELEE_CONTACT:meleeReach(P)));}
+function meleeCandidate(g, P, reach) {
   if(!concealedMeleeAllowed(P))return false;
   if (g.child || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.doomed || g.climb || flOf(g) !== flOf(P) || (g.z || 0) !== (P.z || 0)) return false;
   const d = dist(P.x, P.y, g.x, g.y); if (d > reach) return false;
@@ -146,13 +149,11 @@ function lungeClear(P, g) {
   for (let i = 1; i < n; i++) { const x = P.x + (g.x - P.x) * i / n, y = P.y + (g.y - P.y) * i / n; if (sol(Math.floor(x / TILE), Math.floor(y / TILE))) return false; }
   return true;
 }
-const LUNGE = 112;  // 등 뒤에서 이 거리 안이면 달려들어 암살
 // 땅 위 암살 대상 (최대 2명 — 붙어 있으면 동시 암살)
 function killList() {
   const P = S.player; if (P.carrying || P.captive || P.strikeT > 0 || P.hide || P.jump || P.wire || P.trav || P.under || P.vent) return [];
   if (P.lunge || P.grabIn) return [];
   let list = S.guards.filter(g => !ACT_SKIP.has(g) && canKill(g, P)).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y));
-  if (!list.length && !P.carrying) list = S.guards.filter(g => !g.civ && !ACT_SKIP.has(g) && canKill(g, P, (P.mode === 'run' && P.moving ? 64 : LUNGE) * (perkOn('reach') ? 1.2 : 1))).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y)).slice(0, 1);
   if (STAGE.artSlice && list.length >= 2 && dist(list[0].x, list[0].y, list[1].x, list[1].y) < 112) return [list[0], list[1]];
   return list.slice(0, 1);
 }

@@ -89,7 +89,7 @@ function showBrief(go) {
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   $('brTodo').innerHTML = briefTodo().filter(r => r[2] !== '신원 기록' && r[2] !== '이탈').map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
-  $('brCh').innerHTML = (STAGE.challenges || []).map(id => '<li>' + chName(id) + '</li>').join('');
+  $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
   { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) { b.textContent = '이어 하기'; const time = document.createElement('small'); time.textContent = new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); b.appendChild(time); }
@@ -301,16 +301,16 @@ function showEnd(win, reason) {
     const bonus = [['전체 경보 0', !(st.full || 0)], ['주민 살상 0', st.extraKills === 0], ['시체·기절자 발견 0', st.bodies === 0], ['목격자 0', STAGE.zones ? !(st.witness || 0) : !(st.screams || 0)], ['남은 CCTV 기록 0', !evidencePending() && !(st.camRec || 0)]];
     S.bonus = bonus;
     if (STAGE.challenges) {
-      const all = loadCh(), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
+      loadSkillTree();const all = loadCh(), before=skillRewardRows(STAGE,all), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
       S.chRes = STAGE.challenges.map(id => { const ok = !!(CH[id] && CH[id][1]()), fresh = ok && !mine[id]; if (ok) mine[id] = true; return [id, ok, fresh, !!mine[id]]; });
-      saveCh(all);
+      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);saveCh(all);
     }
     const n = bonus.filter(b => b[1]).length;
     rank = n === 5 ? '그림자' : n === 4 ? '암살자' : n === 3 ? '침입자' : '소란꾼';
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 의뢰 별 보상을 포인트로 써서 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.firstSteps ? '시야와 소리를 익혔다. 다음은 뒤에서 제압하는 연습이다.' : STAGE.skillPractice ? '쌍암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '기본을 익혔다. 의뢰 01에서 경로를 골라 잠입해 보자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -332,7 +332,7 @@ function showEnd(win, reason) {
         + (ENTRY_PICK && (STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
-  if(win&&!STAGE.tutorial&&S.stars0!=null&&totalStars()>S.stars0)$('endRankNote').innerHTML+=`<div class="ent">기술 포인트 +${totalStars()-S.stars0}P · 기술 트리에서 배울 수 있다</div>`;
+  if(win&&!STAGE.tutorial){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
   drawEndMap();
   $('btnNext').textContent=STAGE.nextTutorial?'다음 연습 · 뒤에서 제압':STAGE.tutorial?'의뢰 01 시작':'다음 의뢰';
   $('btnNext').hidden = !(win && (STAGE.tutorial || nextPlayable() >= 0));
@@ -365,7 +365,7 @@ function renderStageList() {
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>${fee}
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));

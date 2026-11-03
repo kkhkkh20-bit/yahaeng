@@ -373,6 +373,7 @@ function updatePlayer(dt) {
   if (S.amb) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 끌어들이는 동안은 제자리
   if (P.snap) { updateSnap(P, dt); P.light = lightAt(P.x, P.y, P.z > 0); return; }
   if (P.lunge) {
+    if(!abilityOn('reach')||P.lunge.list.some(g=>g.state==='DEAD'||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||!lungeClear(P,g))){P.lunge.list.forEach(g=>{g.doomed=false;delete g.takedownIntent;});P.lunge=null;P.moving=false;return;}
     const x=P.x,y=P.y,L = P.lunge; L.t += dt; const f = Math.min(1, L.t / L.dur), e = 1 - (1 - f) * (1 - f);
     P.x = L.x0 + (L.x1 - L.x0) * e; P.y = L.y0 + (L.y1 - L.y0) * e; P.moving = true; P.mode = 'run'; P.vx = 0; P.vy = 0;advancePlayerGait(P,x,y,dt,SPD.run);
     if (f >= 1) { P.lunge = null; P.moving = false; collide(P, P.z ? 10 : 13, solidFor(P.z || 0)); if (L.list.every(g => g.state !== 'DEAD')) strikeKill(L.list, L.two); else L.list.forEach(g => { g.doomed = false; }); }

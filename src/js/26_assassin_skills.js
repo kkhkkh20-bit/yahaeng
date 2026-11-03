@@ -36,7 +36,7 @@ function assassinLanding(g,from){
 function assassinOpportunity(key=S.selectedSkill){
   const P=S.player;
   if(!concealedMeleeAllowed(P)||!assassinSupported()||!assassinUnlocked(key)||S.t<S.skillReadyAt||P.z||P.wire||P.ledge||P.car||P.hurtT>0||P.hide||P.vent||P.under||P.carrying||P.captive||P.jump||P.trav||P.lunge||P.grabIn||P.interact||P.pick||P.strikeT>0||P.assassinAnim)return null;
-  const first=S.guards.filter(g=>assassinVictim(g,P,62)).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
+  const first=S.guards.filter(g=>assassinVictim(g,P,Math.min(62,meleeReach(P)))).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
   for(const a of first){
     const others=S.guards.filter(g=>g!==a&&assassinVictim(g,P,key==='dual'?62:195)&&dist(a.x,a.y,g.x,g.y)<=(key==='dual'?54:132)&&dist(a.x,a.y,g.x,g.y)>=(key==='dual'?10:55));
     const b=others.sort((b,c)=>dist(a.x,a.y,b.x,b.y)-dist(a.x,a.y,c.x,c.y))[0];if(!b)continue;
