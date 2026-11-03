@@ -1,0 +1,11 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/review-v157/",
+  "exactFiles": {
+    "index.html": "a57975d8cda5a12df178e81e25e069641caa7dac5fd854a76aa12b981b6dda24",
+    "details.html": "fc8c27fdeaaa1ac24dba42f05ee50ed8275b7bda811ee300bde46bf11617968a",
+    "before-resume-mobile.png": "15ceb08579bc851dc2e349ee0b01e6e5f10c38f971ffb7c30e7955bb4b329beb",
+    "after-resume-mobile.png": "fd44e77345b51efc7b397a71bca2702ed289c3f086e240d51901376c9a8e2bf6",
+    "before-marker-landscape.png": "4a44a79fee4d362b2a2fcb208b261c707032a86df67af13adc0236bf5c22c36f",
+    "after-marker-landscape.png": "2699358722020e7bdbd5f2ec5673fed4e71dbd5fdc0a01725da733b746b61854"
+  }
+}

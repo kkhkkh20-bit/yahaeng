@@ -1,0 +1,32 @@
+{
+  "attempt": 3,
+  "time": "2026-11-03T07:29:21Z",
+  "runtimeCommit": "03ffb834dc576fcab551c01448bf54075d19680b",
+  "endpoints": {
+    "pages": {
+      "version": "v157",
+      "source_sha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+      "matches": true
+    },
+    "cloudflare": {
+      "version": "v157",
+      "source_sha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+      "matches": true
+    }
+  },
+  "workers": [
+    {
+      "name": "Workers Builds: yahaeng",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/944b7fea-2df7-48da-b3c5-c79df57f3885"
+    }
+  ],
+  "pagesBuild": {
+    "status": "built",
+    "commit": "b83271e599dccb2945d240ea4b8ae6f44ff4d445",
+    "error": {
+      "message": null
+    }
+  }
+}

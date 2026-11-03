@@ -1,0 +1,67 @@
+{
+  "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+  "files": {
+    "index.html": "dea8aa040e71ff3ca9cbc412ce0a8ad7e9af84ca4d875dc7b46b43eb8cd2d21c",
+    "version.json": "a8c125c67fa5ac46f9eba3114d262c9e116b04686de9160e99ff5fdde6095eb5",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/a53212eaf0d93cb91972.js": "a53212eaf0d93cb919722f951c93fdf839178622b3da2c54ca54633a106429fe",
+    "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+    "assets/3575b79e5796c96873a0.js": "3575b79e5796c96873a0381e5d48971a46ac1fcdc9e07422ac88b13189880907",
+    "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+    "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        185.88262759490442,
+        505.54057500000005
+      ],
+      "version": "v157",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        188.277073544201,
+        505.540575
+      ],
+      "version": "v157",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    }
+  ]
+}
