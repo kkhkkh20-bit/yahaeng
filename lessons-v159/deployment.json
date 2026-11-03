@@ -1,7 +1,101 @@
 {
-  "status": "pending-final-cue-fix",
+  "status": "verified",
   "version": "v159",
   "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
-  "previousPublicPackageSha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
-  "local": "F1 fixed and all4native lessons PC/touch rerun; final independent verdict and publication verification pending"
+  "runtimeCommit": "ba0b038d91fd71c2891b96be6d6abea5a2f433bf",
+  "pagesRuntimeCommit": "16420107f1a5d6ab669cf5d1fcad4071e00476e6",
+  "verifiedAt": "2026-11-03T09:26:54Z",
+  "nativeBuilds": {
+    "attempt": 2,
+    "time": "2026-11-03T09:20:20Z",
+    "runtimeCommit": "ba0b038d91fd71c2891b96be6d6abea5a2f433bf",
+    "endpoints": {
+      "pages": {
+        "version": "v159",
+        "source_sha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+        "matches": true
+      },
+      "cloudflare": {
+        "version": "v159",
+        "source_sha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+        "matches": true
+      }
+    },
+    "workers": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/beff3983-6273-4217-bbac-3d7b43c6aed4"
+      }
+    ],
+    "pagesBuild": {
+      "status": "built",
+      "commit": "16420107f1a5d6ab669cf5d1fcad4071e00476e6",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "endpoints": {
+    "cloudflare": {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "packageFiles": 8,
+      "nativePCAndTouch": true,
+      "fourLessonsCompleted": true,
+      "mainEpisodeJoins": [
+        "m2",
+        "m4",
+        "m6"
+      ],
+      "droppedBodyRecovery": true,
+      "documentCueNegativeAndPositiveAssertions": true,
+      "realCellPinPickup": true,
+      "method": "Native menu, keyboard/CDP touch; fixed simulation clock and random; live AI and collision; no actor placement, stat/inventory/step overrides; not whole main-contract completion."
+    },
+    "pages": {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "packageFiles": 8,
+      "nativePCAndTouch": true,
+      "fourLessonsCompleted": true,
+      "mainEpisodeJoins": [
+        "m2",
+        "m4",
+        "m6"
+      ],
+      "droppedBodyRecovery": true,
+      "documentCueNegativeAndPositiveAssertions": true,
+      "realCellPinPickup": true,
+      "method": "Native menu, keyboard/CDP touch; fixed simulation clock and random; live AI and collision; no actor placement, stat/inventory/step overrides; not whole main-contract completion."
+    }
+  },
+  "localRegression": {
+    "status": "passed",
+    "uniqueRegressionScripts": 54,
+    "initialFullSuitePassed": 53,
+    "initialFailure": "t_pixelfx_bush obsolete stage6/7 after lesson moved to4/5",
+    "resolution": "updated only fixture step numbers; same conceal/storage/effects assertions passed",
+    "finalRuntimePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+    "finalTargetedChecks": [
+      "t_pixelfx_bush",
+      "t_learning_route",
+      "t_interface",
+      "first_session native packaged keyboard/touch incl dropped-body recovery",
+      "episode_lessons native packaged keyboard/touch incl actual m6pin pickup",
+      "F1 exact goal/floor/distance/action-kind cue; native no accent at landing and accent at document, PC/touch"
+    ],
+    "fullSuiteCommand": "tools/run_tests.py --fast --quick --no-build",
+    "fuzz": "not run (--quick)",
+    "scope": "Main-contract regressions passed in initial full suite; final tutorial cue/visibility changes verified with targeted checks and all4native lessons. No whole-game guarantee.",
+    "finalCueReview": "ship; F1 resolved; original ship superseded; initial/fix/final records preserved"
+  },
+  "independentFinish": "Initial ship superseded by F1 correction; final F1 verdict ship,28 originals reviewed. Initial/fix/final reports preserved.",
+  "captureEvidence": "32 original controlled entry/menu comparisons, four viewports. Native production journeys recorded separately.",
+  "verificationHarness": "Controlled-clock boot readiness polls wall time independently of disabled requestAnimationFrame. Initial public wait timeouts were not treated as proof of a game failure.",
+  "previousPendingRelease": "Includes the previously unpushed v158 exterior, cleanup input and guard-navigation fixes.",
+  "limits": [
+    "No human novice study",
+    "No complete live-AI main-contract playthroughs",
+    "No physical-phone FPS/thermal benchmark"
+  ]
 }

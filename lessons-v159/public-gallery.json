@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/index.html",
+      "status": 200,
+      "sha256": "1a15dd0de3dc15d60f73ae7ee38d6122c2acb19179d053cd44e35c85232d5ec4"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/after-captures.json",
+      "status": 200,
+      "sha256": "4ae4ce7d4492444e28ac4f732b367902480871ae1726d1d087cdf9624484a2ad"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/before-t0-mobile.png",
+      "status": 200,
+      "sha256": "a572dce1d40dda587479bb39b4b14f9a85f228cf7ace746cea2e09dd6c636e19"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/after-t0-mobile.png",
+      "status": 200,
+      "sha256": "e9d8783101966bbcd39c7237c86d2eef0b0ea7a5ae195615920c36e52b05815d"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/after-tB-small.png",
+      "status": 200,
+      "sha256": "15a4f92eec2081fb3ee6d1059009498565b612b2070fd259e85279130ae2256a"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/after-m6-landscape.png",
+      "status": 200,
+      "sha256": "9f6ee9e332c32a4331cc9d4373ba565215dc3c8ce13c71406b8cc56828075bbc"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/production-episodes-mobile-dark-crossing.png",
+      "status": 200,
+      "sha256": "d262dd0625359ac7794aeb2caf906ac108b1f9a9a4319943a46f14c3bbcf97ea"
+    },
+    {
+      "url": "https://kkhkkh20-bit.github.io/yahaeng/lessons-v159/production-episodes-mobile-upstairs.png",
+      "status": 200,
+      "sha256": "612d2ad96ba03d033559636bc5cb048fe2d8d4924161fc19ae66b1fd608a5d77"
+    }
+  ],
+  "exactOriginals": true,
+  "scope": "Index, capture metadata and six original screenshots. Release-note text may be updated with publication proof."
+}

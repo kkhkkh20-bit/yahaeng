@@ -39,5 +39,11 @@
     "mechanics.json",
     "regression.txt",
     "finish-review.json"
-  ]
+  ],
+  "supersededBy": {
+    "version": "v159",
+    "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+    "status": "included and verified in the cumulative v159 release",
+    "proof": "../lessons-v159/deployment.json"
+  }
 }
