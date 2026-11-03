@@ -1,0 +1,325 @@
+{
+  "base": "http://127.0.0.1:8001/public/",
+  "runs": [
+    {
+      "mobile": false,
+      "trace": [
+        {
+          "t": 3.4933333333333034,
+          "at": [
+            74.05000000000007,
+            888.4973676098691
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "approach"
+          },
+          "hidden": true,
+          "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+          "env": "none",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0
+          },
+          "skillBudget": 4,
+          "step": "cover"
+        },
+        {
+          "t": 6.526666666666573,
+          "at": [
+            235.35613239012855,
+            838.6979518993809
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "approach"
+          },
+          "hidden": false,
+          "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+          "env": "none",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0
+          },
+          "skillBudget": 4,
+          "step": "contact"
+        },
+        {
+          "t": 7.749999999999881,
+          "at": [
+            235.35613239012855,
+            838.6979518993809
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "body"
+          },
+          "hidden": false,
+          "goal": "쓰러진 순찰을 풀숲에 숨기기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "down"
+        },
+        {
+          "t": 11.973333333333127,
+          "at": [
+            168.00313239013025,
+            886.5327313334593
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "done"
+          },
+          "hidden": true,
+          "goal": "의뢰: 클럽 실장 처치하기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 1,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "stored"
+        },
+        {
+          "t": 12.026666666666461,
+          "at": [
+            168.00313239013025,
+            886.5327313334593
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "done"
+          },
+          "hidden": true,
+          "goal": "의뢰: 클럽 실장 처치하기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 1,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "next-cover"
+        }
+      ],
+      "errors": [],
+      "method": "Actual menu, keyboard/CDP joystick and action buttons; fixed simulation clock; live NPCs/cameras, no actor placement or inventory/HP overrides; entry encounter only, not entire contract completion"
+    },
+    {
+      "mobile": true,
+      "trace": [
+        {
+          "t": 3.4933333333333034,
+          "at": [
+            74.05000000000007,
+            888.4973676098691
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "approach"
+          },
+          "hidden": true,
+          "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+          "env": "none",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0
+          },
+          "skillBudget": 4,
+          "step": "cover"
+        },
+        {
+          "t": 6.526666666666573,
+          "at": [
+            235.35613239012855,
+            838.6979518993809
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "approach"
+          },
+          "hidden": false,
+          "goal": "서쪽 순찰 · 등 뒤에 바짝 접근",
+          "env": "none",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0
+          },
+          "skillBudget": 4,
+          "step": "contact"
+        },
+        {
+          "t": 7.749999999999881,
+          "at": [
+            235.35613239012855,
+            838.6979518993809
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "body"
+          },
+          "hidden": false,
+          "goal": "쓰러진 순찰을 풀숲에 숨기기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 0,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "down"
+        },
+        {
+          "t": 11.973333333333127,
+          "at": [
+            168.00313239013025,
+            886.5327313334593
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "done"
+          },
+          "hidden": true,
+          "goal": "의뢰: 클럽 실장 처치하기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 1,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "stored"
+        },
+        {
+          "t": 12.026666666666461,
+          "at": [
+            168.00313239013025,
+            886.5327313334593
+          ],
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "entry": {
+            "phase": "done"
+          },
+          "hidden": true,
+          "goal": "의뢰: 클럽 실장 처치하기",
+          "env": "carry",
+          "stats": {
+            "camEver": 0,
+            "kills": 0,
+            "extraKills": 0,
+            "bodies": 0,
+            "detected": 0,
+            "stonesUsed": 0,
+            "kunaiUsed": 0,
+            "alarms": 0,
+            "stashed": 1,
+            "special": 0,
+            "ko": 1
+          },
+          "skillBudget": 4,
+          "step": "next-cover"
+        }
+      ],
+      "errors": [],
+      "method": "Actual menu, keyboard/CDP joystick and action buttons; fixed simulation clock; live NPCs/cameras, no actor placement or inventory/HP overrides; entry encounter only, not entire contract completion"
+    }
+  ]
+}

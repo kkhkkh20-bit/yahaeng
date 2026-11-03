@@ -1,0 +1,405 @@
+{
+  "method": "Original production renders, fresh 4P and seed42, same viewport. Map-edge and wall use native movement with live AI; entry is real mission start. Body scene is explicitly controlled incapacitated-guard fixture under search, not a playthrough.",
+  "captures": [
+    {
+      "image": "before-map-edge-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "d64805207964da95c24ee5b53c684ff423d73a90dd150a3be40827e4981bd4f1",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 2
+      }
+    },
+    {
+      "image": "before-wall-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "9d1d6bbc0d80f498f1ae8af95096a5f621b1e33bdfdbbfd481055e495e2d134c",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          642.3999999998106,
+          324
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "감방에서 나가기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-entry-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "de78e56193ea240e7aa9c7c09cd8b4f7edf2fc9fad7a557f8ede7439e2d7fff4",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-body-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "097c722f03b549c40cb2fbb53c6fc461604bd94722b91cd499c690902e3757ac",
+      "errors": [],
+      "controlledBodyFixture": true,
+      "state": {
+        "at": [
+          1032,
+          792
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "dress",
+        "attack": "기절한 대상 처치",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 2,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-map-edge-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "8aa790744122b9adcf93bbea20c0b09b7a5e61711b1d635d9a2ae1a82db36f0c",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 2
+      }
+    },
+    {
+      "image": "before-wall-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "48360aac1d7dd1d55b259827241a759e118ed1d10d594a3aca8965ffa94f62fa",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          642.3999999998106,
+          324
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "감방에서 나가기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-entry-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "4a17f571c71f5870a4169ae18cc1edbf65d0ce07bf99ef234b429aae7d8d061f",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-body-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "54bc2a4a27276167bfad10d89640d548fafcfef385b9a886bec3edc1ac4893ae",
+      "errors": [],
+      "controlledBodyFixture": true,
+      "state": {
+        "at": [
+          1032,
+          792
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "dress",
+        "attack": "기절한 대상 처치",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 2,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-map-edge-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "3b236d479878d74be95ceab1617825b5696ff730a66a360db35b794d35b9ddcb",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 2
+      }
+    },
+    {
+      "image": "before-wall-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "8af15fe3e8d5361b73356508ea66acd8709ffabe71a0f7d13ee63af8f2367a28",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          642.3999999998106,
+          324
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "감방에서 나가기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-entry-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "6dda6061a313dac7ee4a9cb7f3c0416728855cc9fb9d53e9ec8e3d7c85505653",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-body-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "53f5c88a8eeee6c387a15209a4d990142ed0a5efcff9e214abcd76df644b64c4",
+      "errors": [],
+      "controlledBodyFixture": true,
+      "state": {
+        "at": [
+          1032,
+          792
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "dress",
+        "attack": "기절한 대상 처치",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 2,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-map-edge-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "9f13886cfda525264f00beb8e49b8e17787b3ecb47aee4cbdc7a9b46354fa396",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          2290,
+          1330
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "의뢰: 클럽 실장 처치하기",
+        "alert": 0,
+        "npcDown": 2
+      }
+    },
+    {
+      "image": "before-wall-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "c854c80f0de244f9d175bb2d96c33649c28dee5d6514e5295146664692c633a2",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          642.3999999998106,
+          324
+        ],
+        "mode": "sneak",
+        "cover": true,
+        "env": "none",
+        "attack": "은신 기습 필요",
+        "goal": "감방에서 나가기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-entry-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "b5420c0477d71029e8c11010b8f9d56de816e765e4c87d4188f3d41cc9278020",
+      "errors": [],
+      "controlledBodyFixture": false,
+      "state": {
+        "at": [
+          24,
+          1032
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "none",
+        "attack": "공격",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 0,
+        "npcDown": 0
+      }
+    },
+    {
+      "image": "before-body-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v155",
+      "sourcePackageSha256": "fc455ee903d5578dd483fae2485761966d0eeebe489c07f6bdc888e99a241a71",
+      "imageSha256": "803e6719425d76b8bbba2fec4df9154a4475ceadc328c499252a974554ca513d",
+      "errors": [],
+      "controlledBodyFixture": true,
+      "state": {
+        "at": [
+          1032,
+          792
+        ],
+        "mode": "walk",
+        "cover": false,
+        "env": "dress",
+        "attack": "기절한 대상 처치",
+        "goal": "의뢰: 장부 훔치기",
+        "alert": 2,
+        "npcDown": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "disposition": "ship",
+  "persistence": {
+    "status": "pass",
+    "scope": "Ordinary code-led extension of the established game, limited to the five findings in docs/GAME_REVIEW_V155.md; no approved comp or new visual world.",
+    "specifics": [
+      "PRODUCT.md and DESIGN.md are absent. The supplied launcher decision SCOPED_EXISTING_ALLOWED and explicit narrow-extension boundary permit preserving the incumbent without creating brand documents; absence is disclosed, not treated as a new-world persistence failure.",
+      "docs/FLOW_FIXES_V156.md records the requested flow, preserved visual commitments, implementation and evidence limits.",
+      "public/version.json identifies v156 and source_sha256 3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23; all 16 after captures carry this package identity. Their dimensions and image hashes were independently checked against after-captures.json.",
+      "No comp-led state, approval, region-diff or concept-seed obligation applies to this local extension."
+    ]
+  },
+  "fidelity": {
+    "status": "faithful",
+    "evidence": "Opened every required after-{map-edge,wall,entry,body}-{pc,mobile,landscape,small}.png at 1440x900,390x844,844x390,320x568. All are valid. Also opened the before mobile map-edge/wall/entry and small body comparisons. Reviewed entry-journey.json, field-journey.json, mechanics.json, the final test-log result and representative changed source; did not play or render the game.",
+    "matrix": [
+      {
+        "element": "TYPE",
+        "state": "match",
+        "evidence": "The incumbent regular Korean sans voice, small HUD hierarchy and control lettering remain consistent in the before/after comparisons; supplied commitment is IBM Plex Sans KR Regular 400, with no font/CSS change."
+      },
+      {
+        "element": "MATERIAL",
+        "state": "match",
+        "evidence": "Existing authored top-down streets, figures, buildings, light cones and restrained flat HUD are retained; no replacement illustration or imitation physical material is introduced."
+      },
+      {
+        "element": "GROUND",
+        "state": "match",
+        "evidence": "The incumbent near-black night field and muted scene palette persist in the provided before/after images. Dark map-edge margins are legitimate off-map camera space and do not indicate a failed capture."
+      },
+      {
+        "element": "Player and close encounter clear of mobile controls",
+        "state": "match",
+        "evidence": "All three touch sizes show the player above the highest control row in map-edge, wall, entry and body states; the downed-body interaction is also above controls. Source derives its anchor/bounds from actual control rectangles."
+      },
+      {
+        "element": "Body cleanup before disguise",
+        "state": "match",
+        "evidence": "All body captures visibly offer 기절자 운반 during search. The picker remains available; source retains explicit dress and mechanics evidence reports its actual execution at calm/search/chase."
+      },
+      {
+        "element": "Wall contact and attack communication",
+        "state": "match",
+        "evidence": "Wall captures show neutral attack without a skill-required message; native-movement metadata records walk/cover:false. Source requires crouching for automatic cover, provides uncover action and checks for a nearby real target before a locked-ability message."
+      },
+      {
+        "element": "Optional opening action loop and mission priority",
+        "state": "match",
+        "evidence": "Entry captures lead with crouching toward western vegetation. PC and CDP-touch traces progress through approach, actual KO, carry and concealment to phase done and the club-manager primary target, retaining HP3, detected0 and skillBudget4. Source permits leaving the route and preserves manual goals. Ambient checks report zero NPC downs at 30s for seeds1/42/777."
+      },
+      {
+        "element": "Purchased skills connected to campaign encounters",
+        "state": "match",
+        "evidence": "The supplied native-input PC/touch journeys purchase silentHands and dual, travel to the live paired guards and execute dual once, producing two bodies with one point left. Source also authors chain/electric opportunities and gates notices on actual ownership/state; mechanics evidence checks chain spacing/path. No free ability grant is present in sampled flow code."
+      },
+      {
+        "element": "Truth and craft floor within changed scope",
+        "state": "match",
+        "evidence": "Body screenshots are explicitly labeled controlled KO fixtures; native journeys are separate fixed-clock automation evidence. No full-contract, physical-device FPS or general usability claim is made. Detector findings are []; the scoped changes add no decorative chrome, typography or artwork."
+      }
+    ],
+    "limits": "This is approval of the requested five-finding extension and the supplied state/viewport evidence. It does not certify every campaign, every interactive state, novice fun, or physical-phone performance."
+  },
+  "ceiling": {
+    "status": "reached",
+    "specifics": "The supplied quality bar is met within the established HUD: mobile encounter clearance, body-first recovery, intentional cover, optional close-action onboarding and earned ability use. No unused visual device is material to this narrow request; a broader motion, ornament or identity exercise would exceed scope."
+  },
+  "material_fixes": [],
+  "keep": "Keep the muted night world, IBM Plex Regular 400 and existing controls/menu; preserve real witness/search behavior, short-KO/hold-lethal input, explicit disguise, optional routes and purchased skill gates without free grants or detection buffs."
+}
