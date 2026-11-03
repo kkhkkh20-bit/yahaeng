@@ -1,12 +1,12 @@
 {
   "edition": "2d-campaign",
-  "version": "v162",
-  "source_sha256": "15f6c6abfc6fb25696faf47b1fc13c2b89ee78599bfb240998f6083bf073f7f9",
-  "html_bytes": 123891,
-  "source_bytes": 11140070,
+  "version": "v163",
+  "source_sha256": "72e1dc1ba22cb381dff486528769b4aba4a73b5a39c9368c2f8bb5d117fbdc7f",
+  "html_bytes": 152811,
+  "source_bytes": 11170967,
   "scripts": 4,
   "assets": 177,
-  "asset_bytes": 8413037,
+  "asset_bytes": 8415014,
   "deployed_assets": 177,
-  "deployed_asset_bytes": 8413037
+  "deployed_asset_bytes": 8415014
 }

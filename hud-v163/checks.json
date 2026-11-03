@@ -1,0 +1,38 @@
+[
+  {
+    "viewport": "mobile",
+    "baselineButtons": 6,
+    "pauseAndResume": true,
+    "selectionDoesNotUseTool": true,
+    "keyboardContainment": true,
+    "contextClothing": true,
+    "errors": []
+  },
+  {
+    "viewport": "small",
+    "baselineButtons": 6,
+    "pauseAndResume": true,
+    "selectionDoesNotUseTool": true,
+    "keyboardContainment": true,
+    "contextClothing": true,
+    "errors": []
+  },
+  {
+    "viewport": "landscape",
+    "baselineButtons": 6,
+    "pauseAndResume": true,
+    "selectionDoesNotUseTool": true,
+    "keyboardContainment": true,
+    "contextClothing": true,
+    "errors": []
+  },
+  {
+    "viewport": "pc",
+    "baselineButtons": 2,
+    "pauseAndResume": true,
+    "selectionDoesNotUseTool": true,
+    "keyboardContainment": true,
+    "contextClothing": true,
+    "errors": []
+  }
+]

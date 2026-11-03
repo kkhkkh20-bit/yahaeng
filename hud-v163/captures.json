@@ -1,0 +1,49 @@
+{
+  "method": "Same deterministic seed, viewport, stage m1 and player coordinates 768,744. Unedited actual screenshots. Controlled comparison, not a full mission playthrough.",
+  "currentRelease": {
+    "edition": "2d-campaign",
+    "version": "v163",
+    "source_sha256": "72e1dc1ba22cb381dff486528769b4aba4a73b5a39c9368c2f8bb5d117fbdc7f",
+    "html_bytes": 152811,
+    "source_bytes": 11170967,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8415014,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8415014
+  },
+  "images": [
+    {
+      "file": "before-mobile.png",
+      "sha256": "be212be44b27ee3ecf817a9915b9be090b905f409b9662fac52bc2edfc5f485f"
+    },
+    {
+      "file": "before-small.png",
+      "sha256": "1485646e34ed720183f14331a41cf4366bfb6655545f4aa617f8a146c9b27651"
+    },
+    {
+      "file": "before-landscape.png",
+      "sha256": "1801d9ab764a3515249e5fd117322611e3d92ba99af3ef1bf756bc31f120bbf2"
+    },
+    {
+      "file": "before-pc.png",
+      "sha256": "fd4cae4f8b8be142f1adfc0303ab4977509908cfaf70a9eb46c6acd36dea7bf5"
+    },
+    {
+      "file": "after-mobile.png",
+      "sha256": "ae78e20980ec202add4842b8513363fa9b3e1ce1d644c32d97130ee096cc0297"
+    },
+    {
+      "file": "after-small.png",
+      "sha256": "6641b3af358e8ca57f8a44de4f96daa57df3d4a9e89d3d4fdfb3c27211231def"
+    },
+    {
+      "file": "after-landscape.png",
+      "sha256": "7bd1e5c3daf96bc0295b97de932af2c61afa3203ce3bd311457c5d79e7d6bcb9"
+    },
+    {
+      "file": "after-pc.png",
+      "sha256": "4f5f313c3aac43db6395eebb0a1108f4617605e5ff55a2ff041a0fa1588104a3"
+    }
+  ]
+}
