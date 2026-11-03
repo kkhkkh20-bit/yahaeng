@@ -77,7 +77,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
-  for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
+  for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
   if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
@@ -104,7 +104,7 @@ for(const type of ['touchend','touchcancel'])canvas.addEventListener(type,e=>{if
 canvas.addEventListener('touchstart', e => {
   closeEnvPicker();
   for (const t of e.changedTouches) {
-    if (joyId === null && t.clientX < W * 0.6 && running) {
+    if (joyId === null && t.clientX < W * 0.6 && running && !paused && !S.over && !DLG.modal && !S.keypad) {
       document.body.classList.add('joyused');
       joyId = t.identifier; joyO = { x: t.clientX, y: t.clientY };
       joyEl.style.left = (t.clientX - JOY_R) + 'px'; joyEl.style.top = (t.clientY - JOY_R) + 'px'; joyEl.hidden = false;
@@ -140,7 +140,7 @@ canvas.addEventListener('touchstart', e => { for (const t of e.changedTouches) t
 const endJoy = e => {
   for (const t of e.changedTouches) {
     const o = touchT[t.identifier]; delete touchT[t.identifier];
-    if (o && Math.hypot(t.clientX - o.x, t.clientY - o.y) < 10 && performance.now() - o.t < 320) markAt(t.clientX, t.clientY);
+    if (e.type === 'touchend' && o && Math.hypot(t.clientX - o.x, t.clientY - o.y) < 10 && performance.now() - o.t < 320) markAt(t.clientX, t.clientY);
     if (t.identifier === joyId) { joyId = null; input.joy = null; joyEl.hidden = true; }
   }
 };
@@ -148,8 +148,8 @@ canvas.addEventListener('touchend', endJoy); canvas.addEventListener('touchcance
 
 function bindBtn(id, fn) {
   const b = $(id);
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); combatPress(id); fn(); });  // '눌림'을 먼저 — 행동 안에서 길게 누르기(기절 뒤 처치·조르기)를 알아보게
-  const up = e => { b.classList.remove('down'); combatRelease(id,e.type!=='pointerup'); };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); if(e.button!==0||b.dataset.pressPointer!==undefined)return; b.dataset.pressPointer=String(e.pointerId); initAudio(); b.classList.add('down'); combatPress(id); fn(); });  // 한 버튼은 누르기 시작한 포인터만 소유한다. 이동 조이스틱의 다른 손가락은 허용한다.
+  const up = e => { if(b.dataset.pressPointer!==String(e.pointerId))return; delete b.dataset.pressPointer; b.classList.remove('down'); combatRelease(id,e.type!=='pointerup'); };
   b.addEventListener('pointerup', up); b.addEventListener('pointerleave', up); b.addEventListener('pointercancel', up);
 }
 bindBtn('btnAct', actAttack);
