@@ -82,7 +82,7 @@ function stairTravel(l, actor, up) {
   const pts = nodes.map(([p], i) => ({ x: p.x, y: p.y, f: lengths[i] / total }));
   const dest = up ? { fl: roof ? 0 : l.tfl, z: roof ? l.tz : 0 } : { fl: l.bfl || 0, z: 0 };
   return { pts, phases: nodes.slice(1).map((n, i) => ({ to: pts[i+1].f, pose: n[1] })), dur: Math.max(.75, total / (actor.carrying || actor.captive ? 100 : 135)),
-    crossing: { at: pts[cross].f, fl: dest.fl, z: dest.z }, stairs: { up, roof, dest, lower: lower.up.entry, upper: pad } };
+    crossing: { at: pts[cross].f, fl: dest.fl, z: dest.z }, stairs: { up, roof, dest, lower: lower.up.entry, upper: pad, key:stairPassKey(l) } };
 }
 function crossStairLevel(actor, T, f) {
   if (!T.crossing || T.crossed || f < T.crossing.at) return;

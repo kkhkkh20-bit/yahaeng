@@ -10,7 +10,7 @@ const SKILL_TREE=[
  {id:'foliage',branch:'body',name:'풀숲 자세',cost:2,req:['shadow'],row:4,col:2,description:'웅크려 숨은 풀숲에서 사람의 시각 감지 거리가 22% 줄어든다. 개의 후각은 막지 못한다.'},
  {id:'sprint',branch:'body',name:'짧은 질주',cost:2,req:['swiftCrouch'],row:5,col:1,description:'달리기 속도 12% 증가. 달리기 소음과 의심은 그대로다.'},
  {id:'silentHands',branch:'assassin',name:'제압 숙련',cost:1,req:[],row:1,col:0,description:'맨손 기절의 접촉 소음 30% 감소. 목격자와 쓰러진 몸은 그대로 남는다.'},
- {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'풀숲·은신처·엄폐·환풍구에서 끌어당겨 제압하고 가장자리에서 기습한다. 배워야 은폐한 채 공격·붙잡기를 할 수 있다.'},
+ {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'벽에 붙어 지나가는 적을 끌어당기고, 풀숲·은신처·환풍구·가장자리에서 기습한다. 제압 숙련 다음에 1P로 배운다. 시작 4P로 첫 의뢰 전에도 배울 수 있다.'},
  {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:3,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
  {id:'dual',branch:'assassin',name:'동시 암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},

@@ -71,7 +71,11 @@ function searchLeg(g, at) {
   if (fk !== tk && !hop) return null;
   const target = hop ? hop.from : at, f = flOf(g), L0 = CUR_F; setLayer(f);
   const sol = npcRouteSolid(g);
-  const path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(target.x / TILE), Math.floor(target.y / TILE), sol);
+  const sx=Math.floor(g.x/TILE),sy=Math.floor(g.y/TILE),tx=Math.floor(target.x/TILE),ty=Math.floor(target.y/TILE);
+  const path = astar(sx,sy,tx,ty,sol);
+  // A* is empty inside one tile. Still walk the final pixels to the stair mouth;
+  // otherwise a 22px entry check loses the hop at the search's 28px tolerance.
+  if(!path.length&&sx===tx&&sy===ty&&!sol(tx,ty)&&dist(g.x,g.y,target.x,target.y)>6)path.push({x:target.x,y:target.y});
   setLayer(L0);
   if (!path.length && dist(g.x, g.y, target.x, target.y) > 28) return null;
   if (path.length) Object.assign(path[path.length - 1], { x: target.x, y: target.y });

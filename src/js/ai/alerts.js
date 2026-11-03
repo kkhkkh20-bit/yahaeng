@@ -1,6 +1,6 @@
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
-  const P = S.player, observed = g.seen ? pSpot() : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
+  const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', observed.x, observed.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
   if (g.seen && (P.outfit || P.disguise) && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `목격자가 ${outfitName(P.outfit)}을 기억했다 · 무전 전에는 근처만 안다` : '변장이 들통났다', 2.4, 'warn'); }

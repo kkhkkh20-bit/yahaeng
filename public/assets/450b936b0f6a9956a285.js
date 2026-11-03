@@ -2853,7 +2853,7 @@ const SKILL_TREE=[
  {id:'foliage',branch:'body',name:'풀숲 자세',cost:2,req:['shadow'],row:4,col:2,description:'웅크려 숨은 풀숲에서 사람의 시각 감지 거리가 22% 줄어든다. 개의 후각은 막지 못한다.'},
  {id:'sprint',branch:'body',name:'짧은 질주',cost:2,req:['swiftCrouch'],row:5,col:1,description:'달리기 속도 12% 증가. 달리기 소음과 의심은 그대로다.'},
  {id:'silentHands',branch:'assassin',name:'제압 숙련',cost:1,req:[],row:1,col:0,description:'맨손 기절의 접촉 소음 30% 감소. 목격자와 쓰러진 몸은 그대로 남는다.'},
- {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'풀숲·은신처·엄폐·환풍구에서 끌어당겨 제압하고 가장자리에서 기습한다. 배워야 은폐한 채 공격·붙잡기를 할 수 있다.'},
+ {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'벽에 붙어 지나가는 적을 끌어당기고, 풀숲·은신처·환풍구·가장자리에서 기습한다. 제압 숙련 다음에 1P로 배운다. 시작 4P로 첫 의뢰 전에도 배울 수 있다.'},
  {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:3,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
  {id:'dual',branch:'assassin',name:'동시 암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
@@ -4472,7 +4472,7 @@ function stairTravel(l, actor, up) {
   const pts = nodes.map(([p], i) => ({ x: p.x, y: p.y, f: lengths[i] / total }));
   const dest = up ? { fl: roof ? 0 : l.tfl, z: roof ? l.tz : 0 } : { fl: l.bfl || 0, z: 0 };
   return { pts, phases: nodes.slice(1).map((n, i) => ({ to: pts[i+1].f, pose: n[1] })), dur: Math.max(.75, total / (actor.carrying || actor.captive ? 100 : 135)),
-    crossing: { at: pts[cross].f, fl: dest.fl, z: dest.z }, stairs: { up, roof, dest, lower: lower.up.entry, upper: pad } };
+    crossing: { at: pts[cross].f, fl: dest.fl, z: dest.z }, stairs: { up, roof, dest, lower: lower.up.entry, upper: pad, key:stairPassKey(l) } };
 }
 function crossStairLevel(actor, T, f) {
   if (!T.crossing || T.crossed || f < T.crossing.at) return;
@@ -4502,10 +4502,10 @@ function lookAround(g, dt, base, amp, hold) {
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
-function npcPostLegClear(a,b){
+function npcPostLegClear(a,b,sol=solidAt){
   const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
   for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
-    if(solidAt(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
+    if(sol(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
   }
   return true;
 }
@@ -4526,8 +4526,51 @@ function avoidStreetPost(g){
     return;
   }
 }
+const stairPassKey=l=>[l.kind,l.tx,l.ty,l.bfl||0,l.tfl??l.tz].join(':');
+function stairPassBusy(key,except){
+  return S.guards.some(o=>o!==except&&o.climb?.stairs?.key===key)||S.player!==except&&S.player.trav?.stairs?.key===key;
+}
+// A fixed post at the mouth cannot be avoided like a person in an open street.
+// Ask a calm NPC to walk to a clear side position, wait, then return to the post.
+function requestStairSpace(g){
+  const h=g.hop;if(!h||!['fstair','stair'].includes(h.e.l.kind)||dist(g.x,g.y,h.from.x,h.from.y)>100)return;
+  const key=stairPassKey(h.e.l),entry=h.from;
+  for(const o of S.guards){
+    if(o===g||o.climb||o.hop||o.stairYield||o.doomed||o.yank||o.brawl||o.hunt||o.incident||o.raid||o.target||o.dog||o.child||o.follow!=null||o.searchJob||o.relight||o.bodyWork||o.path?.length||o.moving||!['PATROL','RETURN'].includes(o.state)||flOf(o)!==flOf(g)||(o.z||0)!==(g.z||0)||dist(o.x,o.y,entry.x,entry.y)>32)continue;
+    const solid=npcRouteSolid(o),grid=flOf(o)?GF[flOf(o)]:G0,sol=(x,y)=>solid(x,y)||!o.z&&grid?.[y]?.[x]==='Y',spots=[];
+    for(const [dx,dy]of N8){
+      const at={x:o.x+dx*40,y:o.y+dy*40};
+      if(dist(at.x,at.y,entry.x,entry.y)<36||!npcPostLegClear(o,at,sol))continue;
+      if(S.guards.some(a=>a!==o&&a.state!=='DEAD'&&a.state!=='CAPTIVE'&&flOf(a)===flOf(o)&&(a.z||0)===(o.z||0)&&(dist(a.x,a.y,at.x,at.y)<30||a.stairYield&&dist(a.stairYield.aside.x,a.stairYield.aside.y,at.x,at.y)<30)))continue;
+      const P=S.player;if(!P.hide&&!P.under&&!P.vent&&flOf(P)===flOf(o)&&(P.z||0)===(o.z||0)&&dist(P.x,P.y,at.x,at.y)<30)continue;
+      spots.push(at);
+    }
+    spots.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y)||dist(b.x,b.y,g.x,g.y)-dist(a.x,a.y,g.x,g.y));
+    if(!spots.length)continue;
+    endChat(o);o.act=null;o.bubble=null;
+    o.stairYield={key,entry:{...entry},home:gSpot(o),aside:spots[0],phase:'out',t0:S.t};
+    o.path=[{...spots[0]}];o.pathGoal={...spots[0]};o.walkProgress=null;
+  }
+}
+function updateStairYield(g,dt){
+  const w=g.stairYield;if(!w)return false;
+  if(!['PATROL','RETURN'].includes(g.state)||g.brawl||g.hunt||g.climb||flOf(g)!==w.home.fl||(g.z||0)!==w.home.z){g.stairYield=null;g.path=null;g.pathGoal=null;g.repath=0;return false;}
+  if(w.phase==='wait'){
+    g.moving=false;
+    const approaching=S.guards.some(o=>o!==g&&o.hop&&stairPassKey(o.hop.e.l)===w.key&&dist(o.x,o.y,o.hop.from.x,o.hop.from.y)<100);
+    if(S.t-w.t0<8&&(S.t<w.until||approaching||stairPassBusy(w.key,g)))return true;
+    w.phase='home';pathTo(g,w.home.x,w.home.y);
+  }
+  if(moveAlong(g,SPD.gPatrol*.85,dt)){
+    g.path=null;g.pathGoal=null;
+    if(w.phase==='out'){w.phase='wait';w.until=S.t+.8;}
+    else{g.stairYield=null;g.repath=0;}
+  }
+  return true;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
+  requestStairSpace(g);
   if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
@@ -4672,6 +4715,14 @@ function lvlKey(o) {
 }
 const gSpot = g => ({ fl: flOf(g), z: g.z || 0, x: g.x, y: g.y });
 const pSpot = () => { const P = S.player; return { x: P.x, y: P.y, fl: flOf(P), z: P.wire || P.under || P.vent ? 0 : P.jump ? P.jump.z1 || 0 : P.z || 0 }; };
+// A witnessed stair entry predicts its known landing, never the unseen player's
+// later position. Without this, losing sight on the flight leaves pursuit below.
+function observedPlayerSpot(g){
+  const P=S.player,T=P.trav;
+  if(!g.seen||!T?.stairs)return pSpot();
+  const end=T.pts[T.pts.length-1],dest=T.stairs.dest;
+  return {x:end.x,y:end.y,fl:dest.fl,z:dest.z,viaStair:T.stairs.key};
+}
 // Cached connected walking regions distinguish a room from the street below
 // the same XY. The old level-only BFS chose a nearby pipe behind an indoor wall
 // and never tried the longer, reachable stair chain.
@@ -4759,6 +4810,7 @@ function hopClimb(g, arrived) {
   const d = dist(g.x, g.y, h.from.x, h.from.y);
   if (d > (['fstair', 'stair'].includes(h.e.l.kind) ? 22 : arrived ? 90 : 22)) { if (arrived) g.hop = null; return false; }
   if (['fstair', 'stair'].includes(h.e.l.kind)) {
+    if(stairPassBusy(stairPassKey(h.e.l),g)){g.moving=false;return true;}
     const up = (h.to.z || 0) + (h.to.fl || 0) > (h.from.z || 0) + (h.from.fl || 0);
     g.climb = Object.assign(stairTravel(h.e.l, g, up), { from: h.from, to: h.to, t: 0, kind: 'stair', up });
     g.hop = null; g.path = null; return true;
@@ -5080,7 +5132,8 @@ function updateCiv(g, dt) {
     if (g.seen && g.chat) endChat(g);
     if (!g.seen && g.chat) { const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.path = null; if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 220) endChat(g); }
     else if (!g.seen) {
-      if (g.wander) {  // 군중: 구역 안에서 이리저리
+      if(updateStairYield(g,dt)){} // Perception above stays active while making room.
+      else if (g.wander) {  // 군중: 구역 안에서 이리저리
         if (g.wait > 0) g.wait -= dt;
         else { if (!g.path) { const [x0, y0, x1, y1] = g.wander; for (let t = 0; t < 8; t++) { const tx = x0 + Math.floor(Math.random() * (x1 - x0 + 1)), ty = y0 + Math.floor(Math.random() * (y1 - y0 + 1)); if (!solidAt(tx, ty) && !serviceCell(tx,ty,flOf(g))) { pathTo(g, tc(tx), tc(ty)); break; } } if (!g.path) g.wait = 1; }
           if (g.path && moveAlong(g, SPD.gPatrol * 0.7 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = rnd(1.5, 5); g.path = null; g.want = g.a + rnd(-2, 2); } }
@@ -5125,17 +5178,17 @@ function updateGuard(g, dt) {
 
   if (g.startle) { const da = angDiff(g.a, g.startle.a), st = 16 * dt; if (Math.abs(da) <= st) { g.a = g.startle.a; g.want = g.a; g.startle = null; } else g.a += Math.sign(da) * st; }  // 화들짝 돌아보기 (약 0.2초)
   const sameF = flOf(g) === flOf(P) && !(flOf(P) && P.wire);
-  const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
-  let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
-  if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
-  if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
+  const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0),stairHidden=P.trav?.stairs&&travPose(P.trav).pose==='stairHidden';
+  let vis = (P.hide || P.under || P.vent || !sameF || onLedge || stairHidden) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
+  if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire&&!stairHidden) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
+  if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump&&!stairHidden && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
   let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff(g)) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
   if(g.seen){g.sightAt=S.t;g.sightFl=flOf(P);g.sightZ=P.z||0;}
   if (radioBusy(g)) {
-    if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
+    if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
     g.path = null; return;  // 보고 중에도 실제 시야만 사용한다
   }
   if (g.state === 'NOTICE' && g.why === 'saw' && pz === Z_PUB && !knownFace(g) && !publicSuspicion(g)) {
@@ -5188,7 +5241,7 @@ function updateGuard(g, dt) {
     }
   }
 
-  switch (g.state) {
+  if(!updateStairYield(g,dt))switch (g.state) {
     case 'PATROL': {
       if (updateBodyCover(g)) break;
       if (g.relight) {
@@ -5326,7 +5379,7 @@ function updateGuard(g, dt) {
       break;
     }
     case 'ALERT': {
-      if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
+      if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
       g.chased = true;
       if (g.target) { if (STAGE.flee) { goFlee(g); break; } if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x); if (g.lostT > 5) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0.4; } break; }
       if (!g.seen && g.lostT > 1.2 && !g.dog && startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting', g)) break;
@@ -5621,7 +5674,7 @@ function terrorAt(x, y) {
 
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
-  const P = S.player, observed = g.seen ? pSpot() : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
+  const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', observed.x, observed.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
   if (g.seen && (P.outfit || P.disguise) && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `목격자가 ${outfitName(P.outfit)}을 기억했다 · 무전 전에는 근처만 안다` : '변장이 들통났다', 2.4, 'warn'); }
@@ -5767,7 +5820,11 @@ function searchLeg(g, at) {
   if (fk !== tk && !hop) return null;
   const target = hop ? hop.from : at, f = flOf(g), L0 = CUR_F; setLayer(f);
   const sol = npcRouteSolid(g);
-  const path = astar(Math.floor(g.x / TILE), Math.floor(g.y / TILE), Math.floor(target.x / TILE), Math.floor(target.y / TILE), sol);
+  const sx=Math.floor(g.x/TILE),sy=Math.floor(g.y/TILE),tx=Math.floor(target.x/TILE),ty=Math.floor(target.y/TILE);
+  const path = astar(sx,sy,tx,ty,sol);
+  // A* is empty inside one tile. Still walk the final pixels to the stair mouth;
+  // otherwise a 22px entry check loses the hop at the search's 28px tolerance.
+  if(!path.length&&sx===tx&&sy===ty&&!sol(tx,ty)&&dist(g.x,g.y,target.x,target.y)>6)path.push({x:target.x,y:target.y});
   setLayer(L0);
   if (!path.length && dist(g.x, g.y, target.x, target.y) > 28) return null;
   if (path.length) Object.assign(path[path.length - 1], { x: target.x, y: target.y });
@@ -7177,7 +7234,7 @@ function enterCover(n, quiet) {
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
   P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26); S.coverFx = { t: S.t, x: P.x - n.x * 14, y: P.y - n.y * 14, nx: n.x, ny: n.y };  // 붙는 순간 벽에 퍼지는 빛 (붙었다는 느낌)
-  hint('cover', '벽에 붙음 · 행동을 누르거나 반대로 밀면 나온다. 공격하려면 배운 은신 기습이 필요하다');
+  hint('cover', abilityOn('ambush')?'벽에 붙음 · 공격은 톡 눌러 기절, 계속 눌러 처치. 행동을 누르거나 반대로 밀면 나온다.':'벽에 붙음 · 공격은 제압 숙련(1P) → 은신 기습(1P)을 배워야 한다. 처음부터 K / 메뉴 > 기술 트리에서 배울 수 있다. 행동이나 반대 방향으로 해제.');
 }
 function updateSnap(P, dt) {
   const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
@@ -13409,7 +13466,7 @@ function padButton(el, key, a, idle) {
 function keyMap(ka, ea, ga) {
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
-  set('kmAct', actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
+  set('kmAct', ka.skillLocked?(SKILL_BY_ID[ka.skillLocked]?.name||'기술')+' 미습득 · K 기술 트리':actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none'&&!ea.skillLocked);
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
   set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);

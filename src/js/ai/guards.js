@@ -32,17 +32,17 @@ function updateGuard(g, dt) {
 
   if (g.startle) { const da = angDiff(g.a, g.startle.a), st = 16 * dt; if (Math.abs(da) <= st) { g.a = g.startle.a; g.want = g.a; g.startle = null; } else g.a += Math.sign(da) * st; }  // 화들짝 돌아보기 (약 0.2초)
   const sameF = flOf(g) === flOf(P) && !(flOf(P) && P.wire);
-  const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0);
-  let vis = (P.hide || P.under || P.vent || !sameF || onLedge) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
-  if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
-  if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
+  const pv = (P.trav && P.trav.base) || P, onLedge = P.ledge && (g.z || 0) === (P.z || 0),stairHidden=P.trav?.stairs&&travPose(P.trav).pose==='stairHidden';
+  let vis = (P.hide || P.under || P.vent || !sameF || onLedge || stairHidden) ? 0 : canSee(g, pv.x, pv.y, P.light, P.hidden, P.cover ? 2 : P.mode === 'sneak' && !P.trav, P.jump ? Math.max(1, P.z) : P.trav ? P.trav.elev || 0 : P.z);
+  if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire&&!stairHidden) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
+  if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump&&!stairHidden && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
   let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff(g)) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
   if(g.seen){g.sightAt=S.t;g.sightFl=flOf(P);g.sightZ=P.z||0;}
   if (radioBusy(g)) {
-    if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
+    if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
     g.path = null; return;  // 보고 중에도 실제 시야만 사용한다
   }
   if (g.state === 'NOTICE' && g.why === 'saw' && pz === Z_PUB && !knownFace(g) && !publicSuspicion(g)) {
@@ -95,7 +95,7 @@ function updateGuard(g, dt) {
     }
   }
 
-  switch (g.state) {
+  if(!updateStairYield(g,dt))switch (g.state) {
     case 'PATROL': {
       if (updateBodyCover(g)) break;
       if (g.relight) {
@@ -233,7 +233,7 @@ function updateGuard(g, dt) {
       break;
     }
     case 'ALERT': {
-      if (g.seen) { g.lastSeen = pSpot(); g.lostT = 0; } else g.lostT += dt;
+      if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
       g.chased = true;
       if (g.target) { if (STAGE.flee) { goFlee(g); break; } if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x); if (g.lostT > 5) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0.4; } break; }
       if (!g.seen && g.lostT > 1.2 && !g.dog && startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting', g)) break;

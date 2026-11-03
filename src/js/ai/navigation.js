@@ -8,10 +8,10 @@ function lookAround(g, dt, base, amp, hold) {
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
-function npcPostLegClear(a,b){
+function npcPostLegClear(a,b,sol=solidAt){
   const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
   for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
-    if(solidAt(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
+    if(sol(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
   }
   return true;
 }
@@ -32,8 +32,51 @@ function avoidStreetPost(g){
     return;
   }
 }
+const stairPassKey=l=>[l.kind,l.tx,l.ty,l.bfl||0,l.tfl??l.tz].join(':');
+function stairPassBusy(key,except){
+  return S.guards.some(o=>o!==except&&o.climb?.stairs?.key===key)||S.player!==except&&S.player.trav?.stairs?.key===key;
+}
+// A fixed post at the mouth cannot be avoided like a person in an open street.
+// Ask a calm NPC to walk to a clear side position, wait, then return to the post.
+function requestStairSpace(g){
+  const h=g.hop;if(!h||!['fstair','stair'].includes(h.e.l.kind)||dist(g.x,g.y,h.from.x,h.from.y)>100)return;
+  const key=stairPassKey(h.e.l),entry=h.from;
+  for(const o of S.guards){
+    if(o===g||o.climb||o.hop||o.stairYield||o.doomed||o.yank||o.brawl||o.hunt||o.incident||o.raid||o.target||o.dog||o.child||o.follow!=null||o.searchJob||o.relight||o.bodyWork||o.path?.length||o.moving||!['PATROL','RETURN'].includes(o.state)||flOf(o)!==flOf(g)||(o.z||0)!==(g.z||0)||dist(o.x,o.y,entry.x,entry.y)>32)continue;
+    const solid=npcRouteSolid(o),grid=flOf(o)?GF[flOf(o)]:G0,sol=(x,y)=>solid(x,y)||!o.z&&grid?.[y]?.[x]==='Y',spots=[];
+    for(const [dx,dy]of N8){
+      const at={x:o.x+dx*40,y:o.y+dy*40};
+      if(dist(at.x,at.y,entry.x,entry.y)<36||!npcPostLegClear(o,at,sol))continue;
+      if(S.guards.some(a=>a!==o&&a.state!=='DEAD'&&a.state!=='CAPTIVE'&&flOf(a)===flOf(o)&&(a.z||0)===(o.z||0)&&(dist(a.x,a.y,at.x,at.y)<30||a.stairYield&&dist(a.stairYield.aside.x,a.stairYield.aside.y,at.x,at.y)<30)))continue;
+      const P=S.player;if(!P.hide&&!P.under&&!P.vent&&flOf(P)===flOf(o)&&(P.z||0)===(o.z||0)&&dist(P.x,P.y,at.x,at.y)<30)continue;
+      spots.push(at);
+    }
+    spots.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y)||dist(b.x,b.y,g.x,g.y)-dist(a.x,a.y,g.x,g.y));
+    if(!spots.length)continue;
+    endChat(o);o.act=null;o.bubble=null;
+    o.stairYield={key,entry:{...entry},home:gSpot(o),aside:spots[0],phase:'out',t0:S.t};
+    o.path=[{...spots[0]}];o.pathGoal={...spots[0]};o.walkProgress=null;
+  }
+}
+function updateStairYield(g,dt){
+  const w=g.stairYield;if(!w)return false;
+  if(!['PATROL','RETURN'].includes(g.state)||g.brawl||g.hunt||g.climb||flOf(g)!==w.home.fl||(g.z||0)!==w.home.z){g.stairYield=null;g.path=null;g.pathGoal=null;g.repath=0;return false;}
+  if(w.phase==='wait'){
+    g.moving=false;
+    const approaching=S.guards.some(o=>o!==g&&o.hop&&stairPassKey(o.hop.e.l)===w.key&&dist(o.x,o.y,o.hop.from.x,o.hop.from.y)<100);
+    if(S.t-w.t0<8&&(S.t<w.until||approaching||stairPassBusy(w.key,g)))return true;
+    w.phase='home';pathTo(g,w.home.x,w.home.y);
+  }
+  if(moveAlong(g,SPD.gPatrol*.85,dt)){
+    g.path=null;g.pathGoal=null;
+    if(w.phase==='out'){w.phase='wait';w.until=S.t+.8;}
+    else{g.stairYield=null;g.repath=0;}
+  }
+  return true;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
+  requestStairSpace(g);
   if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
@@ -178,6 +221,14 @@ function lvlKey(o) {
 }
 const gSpot = g => ({ fl: flOf(g), z: g.z || 0, x: g.x, y: g.y });
 const pSpot = () => { const P = S.player; return { x: P.x, y: P.y, fl: flOf(P), z: P.wire || P.under || P.vent ? 0 : P.jump ? P.jump.z1 || 0 : P.z || 0 }; };
+// A witnessed stair entry predicts its known landing, never the unseen player's
+// later position. Without this, losing sight on the flight leaves pursuit below.
+function observedPlayerSpot(g){
+  const P=S.player,T=P.trav;
+  if(!g.seen||!T?.stairs)return pSpot();
+  const end=T.pts[T.pts.length-1],dest=T.stairs.dest;
+  return {x:end.x,y:end.y,fl:dest.fl,z:dest.z,viaStair:T.stairs.key};
+}
 // Cached connected walking regions distinguish a room from the street below
 // the same XY. The old level-only BFS chose a nearby pipe behind an indoor wall
 // and never tried the longer, reachable stair chain.
@@ -265,6 +316,7 @@ function hopClimb(g, arrived) {
   const d = dist(g.x, g.y, h.from.x, h.from.y);
   if (d > (['fstair', 'stair'].includes(h.e.l.kind) ? 22 : arrived ? 90 : 22)) { if (arrived) g.hop = null; return false; }
   if (['fstair', 'stair'].includes(h.e.l.kind)) {
+    if(stairPassBusy(stairPassKey(h.e.l),g)){g.moving=false;return true;}
     const up = (h.to.z || 0) + (h.to.fl || 0) > (h.from.z || 0) + (h.from.fl || 0);
     g.climb = Object.assign(stairTravel(h.e.l, g, up), { from: h.from, to: h.to, t: 0, kind: 'stair', up });
     g.hop = null; g.path = null; return true;

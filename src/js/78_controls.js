@@ -83,7 +83,7 @@ function padButton(el, key, a, idle) {
 function keyMap(ka, ea, ga) {
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
-  set('kmAct', actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
+  set('kmAct', ka.skillLocked?(SKILL_BY_ID[ka.skillLocked]?.name||'기술')+' 미습득 · K 기술 트리':actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none'&&!ea.skillLocked);
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
   set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);

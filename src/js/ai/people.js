@@ -60,7 +60,8 @@ function updateCiv(g, dt) {
     if (g.seen && g.chat) endChat(g);
     if (!g.seen && g.chat) { const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.path = null; if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 220) endChat(g); }
     else if (!g.seen) {
-      if (g.wander) {  // 군중: 구역 안에서 이리저리
+      if(updateStairYield(g,dt)){} // Perception above stays active while making room.
+      else if (g.wander) {  // 군중: 구역 안에서 이리저리
         if (g.wait > 0) g.wait -= dt;
         else { if (!g.path) { const [x0, y0, x1, y1] = g.wander; for (let t = 0; t < 8; t++) { const tx = x0 + Math.floor(Math.random() * (x1 - x0 + 1)), ty = y0 + Math.floor(Math.random() * (y1 - y0 + 1)); if (!solidAt(tx, ty) && !serviceCell(tx,ty,flOf(g))) { pathTo(g, tc(tx), tc(ty)); break; } } if (!g.path) g.wait = 1; }
           if (g.path && moveAlong(g, SPD.gPatrol * 0.7 * (g.body === 'old' ? 0.65 : 1), dt)) { g.wait = rnd(1.5, 5); g.path = null; g.want = g.a + rnd(-2, 2); } }

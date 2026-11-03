@@ -213,7 +213,7 @@ function enterCover(n, quiet) {
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
   P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26); S.coverFx = { t: S.t, x: P.x - n.x * 14, y: P.y - n.y * 14, nx: n.x, ny: n.y };  // 붙는 순간 벽에 퍼지는 빛 (붙었다는 느낌)
-  hint('cover', '벽에 붙음 · 행동을 누르거나 반대로 밀면 나온다. 공격하려면 배운 은신 기습이 필요하다');
+  hint('cover', abilityOn('ambush')?'벽에 붙음 · 공격은 톡 눌러 기절, 계속 눌러 처치. 행동을 누르거나 반대로 밀면 나온다.':'벽에 붙음 · 공격은 제압 숙련(1P) → 은신 기습(1P)을 배워야 한다. 처음부터 K / 메뉴 > 기술 트리에서 배울 수 있다. 행동이나 반대 방향으로 해제.');
 }
 function updateSnap(P, dt) {
   const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
