@@ -5,6 +5,7 @@ are never moved or completed by script. Pathfinding supplies walkable waypoints 
 import asyncio,json,os,sys
 from pathlib import Path
 from playwright.async_api import async_playwright
+from browser_support import open_game
 R=Path(__file__).resolve().parents[2];O=R/os.environ.get('YH_LESSON_DIR','build/review-v160');O.mkdir(exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else(R/'build/preview_city.html').as_uri();NAME=sys.argv[2]if len(sys.argv)>2 else'episode-journey'
 async def main():
@@ -12,7 +13,7 @@ async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
   for mobile in [False,True]:
-   q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');res=await q.goto(BASE,timeout=120000);print('BOOT',mobile,res.status,await q.evaluate('({boot:window.__boot?.state,game:!!window.__game,font:document.fonts.status})'),flush=True);await q.wait_for_function('!!window.__game&&(!window.__boot||window.__boot.state.ready)',timeout=120000,polling=100);await q.evaluate('window.tick=(n=1)=>{for(let i=0;i<n;i++){if(__game.S.over)break;__game.update(1/60);__game.updateDialog(1/60)}}');cdp=await q.context.new_cdp_session(q);trace=[]
+   q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');await open_game(q,BASE);await q.evaluate('window.tick=(n=1)=>{for(let i=0;i<n;i++){if(__game.S.over)break;__game.update(1/60);__game.updateDialog(1/60)}}');cdp=await q.context.new_cdp_session(q);trace=[]
    async def record(name):
     await q.evaluate('__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(1)');row=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI,t:S.t,at:[P.x,P.y],fl:P.fl||0,z:P.z||0,hp:P.hp,detected:S.stats.detected,over:S.over,goal:G.nextGoal()?.text,inventory:{dart:P.kunai},budget:G.skillBudget(),electric:G.skillOn('electric')}}''');row['name']=name;trace.append(row);
     if row['over']:await q.wait_for_timeout(650)

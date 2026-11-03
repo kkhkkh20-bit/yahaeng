@@ -1,0 +1,623 @@
+{
+  "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+  "runs": [
+    {
+      "mobile": false,
+      "trace": [
+        {
+          "stage": "tL",
+          "step": 1,
+          "t": 1.5166666666666662,
+          "at": [
+            312,
+            504
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "스위치 옆에서 X · 조명 끄기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-observe"
+        },
+        {
+          "stage": "tL",
+          "step": 2,
+          "t": 3.866666666666658,
+          "at": [
+            288.08333333333354,
+            375.1922974473115
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "아래쪽 어두운 길을 따라 표시로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-off"
+        },
+        {
+          "stage": "tL",
+          "step": 3,
+          "t": 6.949999999999981,
+          "at": [
+            360.7396637536001,
+            601.7270304204505
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "Ctrl을 눌러 왼쪽 안전한 길로 복귀",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "dark-crossing"
+        },
+        {
+          "stage": "tL",
+          "step": 4,
+          "t": 10.700000000000111,
+          "at": [
+            169.19352446620454,
+            626.7366924744846
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": true,
+          "goal": "남쪽 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-complete"
+        },
+        {
+          "stage": "tR",
+          "step": 0,
+          "t": 1.5166666666666662,
+          "at": [
+            600,
+            936
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "건물 앞문으로 들어가기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "indoor-entry"
+        },
+        {
+          "stage": "tR",
+          "step": 1,
+          "t": 7.966666666666644,
+          "at": [
+            457.1434577363861,
+            649.0837564179054
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "계단 표시 앞에서 X · 2층으로",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "inside"
+        },
+        {
+          "stage": "tR",
+          "step": 2,
+          "t": 22.116666666666692,
+          "at": [
+            792,
+            312
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "2층의 연락 서류 챙기기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "upstairs"
+        },
+        {
+          "stage": "tR",
+          "step": 2,
+          "t": 31.399999999999498,
+          "at": [
+            648.3702487956355,
+            457.1971197967167
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "2층의 연락 서류 챙기기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "document-ready"
+        },
+        {
+          "stage": "tR",
+          "step": 3,
+          "t": 32.6166666666661,
+          "at": [
+            648.3702487956355,
+            457.1971197967167
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "계단으로 다시 1층에 내려오기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "document"
+        },
+        {
+          "stage": "tR",
+          "step": 4,
+          "t": 43.84999999999879,
+          "at": [
+            841.03125,
+            311.3224936226667
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "건물을 나와 왼쪽 골목 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "downstairs"
+        },
+        {
+          "stage": "tR",
+          "step": 4,
+          "t": 62.28333333333108,
+          "at": [
+            285.74258933463346,
+            936.2944721802808
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": true,
+          "goal": "건물을 나와 왼쪽 골목 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "indoor-complete"
+        },
+        {
+          "stage": "m4",
+          "step": null,
+          "t": 0.05,
+          "at": [
+            2280,
+            1272
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "의뢰: 수금원 처치하기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode02"
+        },
+        {
+          "stage": "m6",
+          "step": null,
+          "t": 0.05,
+          "at": [
+            216,
+            264
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "바닥의 머리핀 줍기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode03"
+        },
+        {
+          "stage": "m6",
+          "step": null,
+          "t": 3.849999999999991,
+          "at": [
+            455.14476065251705,
+            265.0725
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "간수가 등을 돌리면 감방 문 앞에서 행동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode03-pin"
+        }
+      ],
+      "lightBefore": {
+        "lit": 0.6749999999999998,
+        "seen": 0.21926704549925502
+      },
+      "lightAfter": {
+        "lit": 0.04,
+        "seen": 0
+      },
+      "errors": [],
+      "method": "Native menu, keyboard/CDP joystick and action taps; fixed clock and random seed; live simulation; no actor placement, stat/skill/inventory overrides or scripted step completion. A* only plans physical walk waypoints. tL to tR to m4 uses actual result buttons; m6 is selected directly in the ledger for the entry check. Does not complete entire main contracts."
+    },
+    {
+      "mobile": true,
+      "trace": [
+        {
+          "stage": "tL",
+          "step": 1,
+          "t": 1.5166666666666662,
+          "at": [
+            312,
+            504
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "스위치 옆에서 [행동] · 조명 끄기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-observe"
+        },
+        {
+          "stage": "tL",
+          "step": 2,
+          "t": 3.866666666666658,
+          "at": [
+            288.08333333333354,
+            375.1922974473115
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "아래쪽 어두운 길을 따라 표시로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-off"
+        },
+        {
+          "stage": "tL",
+          "step": 3,
+          "t": 6.949999999999981,
+          "at": [
+            360.7396637536001,
+            601.7270304204505
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "[웅크리기]를 눌러 왼쪽 안전한 길로 복귀",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "dark-crossing"
+        },
+        {
+          "stage": "tL",
+          "step": 4,
+          "t": 10.700000000000111,
+          "at": [
+            169.19352446620454,
+            626.7366924744846
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": true,
+          "goal": "남쪽 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": true,
+          "name": "light-complete"
+        },
+        {
+          "stage": "tR",
+          "step": 0,
+          "t": 1.5166666666666662,
+          "at": [
+            600,
+            936
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "건물 앞문으로 들어가기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "indoor-entry"
+        },
+        {
+          "stage": "tR",
+          "step": 1,
+          "t": 7.966666666666644,
+          "at": [
+            457.1434577363861,
+            649.0837564179054
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "계단 표시 앞에서 [행동] · 2층으로",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "inside"
+        },
+        {
+          "stage": "tR",
+          "step": 2,
+          "t": 22.116666666666692,
+          "at": [
+            792,
+            312
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "2층의 연락 서류 챙기기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "upstairs"
+        },
+        {
+          "stage": "tR",
+          "step": 2,
+          "t": 31.399999999999498,
+          "at": [
+            648.3702487956355,
+            457.1971197967167
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "2층의 연락 서류 챙기기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "document-ready"
+        },
+        {
+          "stage": "tR",
+          "step": 3,
+          "t": 32.6166666666661,
+          "at": [
+            648.3702487956355,
+            457.1971197967167
+          ],
+          "fl": 1,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "계단으로 다시 1층에 내려오기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "document"
+        },
+        {
+          "stage": "tR",
+          "step": 4,
+          "t": 43.84999999999879,
+          "at": [
+            841.03125,
+            311.3224936226667
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "건물을 나와 왼쪽 골목 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "downstairs"
+        },
+        {
+          "stage": "tR",
+          "step": 4,
+          "t": 62.28333333333108,
+          "at": [
+            285.74258933463346,
+            936.2944721802808
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": true,
+          "goal": "건물을 나와 왼쪽 골목 출구로 이동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "indoor-complete"
+        },
+        {
+          "stage": "m4",
+          "step": null,
+          "t": 0.05,
+          "at": [
+            2280,
+            1272
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "의뢰: 수금원 처치하기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode02"
+        },
+        {
+          "stage": "m6",
+          "step": null,
+          "t": 0.05,
+          "at": [
+            216,
+            264
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "바닥의 머리핀 줍기",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode03"
+        },
+        {
+          "stage": "m6",
+          "step": null,
+          "t": 3.849999999999991,
+          "at": [
+            455.14476065251705,
+            265.0725
+          ],
+          "fl": 0,
+          "z": 0,
+          "hp": 3,
+          "detected": 0,
+          "over": false,
+          "goal": "간수가 등을 돌리면 감방 문 앞에서 행동",
+          "inventory": {
+            "dart": 0
+          },
+          "budget": 4,
+          "electric": false,
+          "name": "episode03-pin"
+        }
+      ],
+      "lightBefore": {
+        "lit": 0.6749999999999998,
+        "seen": 0.21926704549925502
+      },
+      "lightAfter": {
+        "lit": 0.04,
+        "seen": 0
+      },
+      "errors": [],
+      "method": "Native menu, keyboard/CDP joystick and action taps; fixed clock and random seed; live simulation; no actor placement, stat/skill/inventory overrides or scripted step completion. A* only plans physical walk waypoints. tL to tR to m4 uses actual result buttons; m6 is selected directly in the ledger for the entry check. Does not complete entire main contracts."
+    }
+  ]
+}

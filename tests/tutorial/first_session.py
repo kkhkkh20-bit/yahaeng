@@ -6,6 +6,7 @@ from pathlib import Path
 from functools import partial
 from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from playwright.async_api import async_playwright
+from browser_support import open_game
 R=Path(__file__).resolve().parents[2];O=R/os.environ.get('YH_LESSON_DIR','build/tutorial-validation');O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else None;PREFIX=(sys.argv[2]+'-')if len(sys.argv)>2 else''
 class H(SimpleHTTPRequestHandler):
@@ -26,7 +27,7 @@ async def main():
    page=await browser.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile)
    errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
-   await page.goto(BASE or f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink',timeout=120000);await page.wait_for_function('!!window.__game&&(!window.__boot||window.__boot.state.ready)',timeout=120000,polling=100);await page.evaluate(DRIVER)
+   await open_game(page,BASE or f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink');await page.evaluate(DRIVER)
    await page.locator('#btnQuick').click();assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.evaluate('lesson.tick(30);lesson.render()')
    movement_cdp=await page.context.new_cdp_session(page)

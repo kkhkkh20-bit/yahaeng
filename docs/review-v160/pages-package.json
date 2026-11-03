@@ -1,0 +1,68 @@
+{
+  "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+  "files": {
+    "index.html": "b07b62a7430aafb5dd2a3814db05dd4a384866a2c5ff80863576c770fa5dcb29",
+    "version.json": "8f5079a650f041396024752c0b82a1890b5893b89692aec32d88978d6e8bce2d",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/86d1e340ff31181a3e24.js": "86d1e340ff31181a3e2439a32768ab51dc1b69927773ac20723413897647c0e4",
+    "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
+    "assets/23c651c604be88f4d4c2.js": "23c651c604be88f4d4c240f2bf1056573a5a6d420fe42f959debfebeb570a6ce",
+    "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+    "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        185.89782095803434,
+        505.540575
+      ],
+      "version": "v160",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        188.27703851840803,
+        505.54057500000005
+      ],
+      "version": "v160",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    }
+  ],
+  "hashMethod": "Same-origin browser fetch and WebCrypto SHA256; identical expected local bytes"
+}
