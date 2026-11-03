@@ -15,7 +15,7 @@
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '서쪽 풀숲을 따라 들어가 순찰의 등 뒤를 노려라. 몸을 풀숲에 숨긴 뒤 클럽 실장에게 접근한다. 실장 처치와 장부 회수 후 탈출한다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
+  brief: '서쪽 풀숲에서 순찰의 등을 노리고, 옷을 갈아입은 뒤 몸을 화단에 숨긴다. 남쪽 적재물은 정문 경비의 시선을 가려 준다. 거리는 손님으로 걸을 수 있고, CCTV도 공개 구역의 평범한 손님은 신고하지 않는다. 카메라는 시야를 피해 지나가거나 뒤로 접근해 전선을 분리할 수 있다. 녹화된 신원은 사무동 2층 관리실에서 지운다. 야시장 대화에서 금고 번호를 알아내 장부를 회수하면 사무동 1층 내선으로 실장을 불러낼 수 있다. 클럽의 독살·간판 사고도 선택할 수 있다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -41,6 +41,8 @@
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
     m.fill(21, 6, 21, 7, 'U'); m.set(21, 8, ',');                                                     // 클럽 측면 적치물. 옥상 접근은 직원 계단으로
     m.many('B',[[1,18],[1,17],[3,18]]);
+    // A readable pocket for the first disguise/cleanup, screened from the front sentry.
+    m.fill(5,16,6,16,'C');m.set(5,18,'B');
     m.many('T', [[47, 15], [53, 14]]); m.many('B', [[45, 13], [52, 13], [44, 17]]);
     [6, 24, 40, 52].forEach(x => m.pole(x, 19, 2));
     m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34], [22, 17], [37, 15], [6, 1], [25, 1]]);   // 22,17·37,15 = 네온 골목 양 끝 (문지기·순찰 처리 뒤 숨길 곳) · 6,1 = 사무동 뒷골목 · 25,1 = 클럽 뒷골목 서쪽
@@ -116,7 +118,7 @@
     { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
     { kind: 'g1', smoker: true, route: [[24, 2, 5], [26, 2, 5]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
-    { kind: 'g2', b: 0, at: 'VB', post: 90 },                                         // 6 금고 앞
+    { kind: 'g2', b: 0, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
     { kind: 'g1', enforcer: true, b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
     { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g2', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기

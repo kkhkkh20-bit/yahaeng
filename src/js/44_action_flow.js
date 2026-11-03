@@ -28,9 +28,11 @@ function bodyRecoveryGoal(){
 }
 function actionFlowGoal(){
   const recovery=bodyRecoveryGoal();if(recovery)return recovery;
+  const P=S.player;
   const e=S.actionEntry,d=STAGE.entryRoute;if(!e||!d||['done','skipped'].includes(e.phase))return null;
   const g=S.guards.find(g=>g.id===d.guard),c=S.corpses.find(c=>c.guardId===d.guard);
   if(e.phase==='shade')return{text:'웅크려 서쪽 풀숲으로 이동',where:'서쪽 골목',x:tc(d.bush[0]),y:tc(d.bush[1]),fl:0};
+  if(c&&!c.stripped&&!P.disguise)return{text:'순찰 옷으로 갈아입기',where:isTouch?'몸 옆에서 옷 갈아입기':'몸 옆에서 Y · 옷 갈아입기',x:c.x,y:c.y,fl:flOf(c)};
   if(c)return{text:'쓰러진 순찰을 풀숲에 숨기기',where:'몸 옆에서 행동',x:c.x,y:c.y,fl:flOf(c)};
   return g?{text:'서쪽 순찰 · 등 뒤에 바짝 접근',where:'짧게 기절 · 길게 처치',x:g.x,y:g.y,fl:flOf(g),z:g.z||0}:null;
 }

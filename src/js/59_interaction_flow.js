@@ -22,7 +22,7 @@ const OBJECT_FLOW = {
   read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
   door: [0.48, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
-  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands']
+  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands'],camCable:[2,'전선 분리 중','hands']
 };
 function objectActionPoint(a) {
   if (a.k === 'use') return usePoint(a.n.u);
@@ -31,6 +31,7 @@ function objectActionPoint(a) {
 function objectActionValid(a, item) {
   if(!electricalActionAllowed(a))return false;
   const P = S.player;
+  if(a.k==='camCable')return cameraCableReachable(a.targetObject);
   if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);
   if (a.k === 'dropItem') return !!P.item && P.item === item;
   if (a.k === 'pickup') return !a.p.taken && objectReachable(a.p);
@@ -48,7 +49,7 @@ function beginObjectAction(a) {
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
   P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
-    illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
+    illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || a.k==='camCable' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;
@@ -59,7 +60,7 @@ function updateObjectAction(P, dt) {
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
     I.committed = true; I.committing = true;
     try {

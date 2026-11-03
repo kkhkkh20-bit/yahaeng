@@ -127,6 +127,7 @@ function primaryActionRaw() {
     return res;
   }
   { const cr = S.camRoom; if (cr && !ACT_SKIP.has(cr) && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', targetObject: cr, at: { x: cr.x, y: cr.y }, label: 'CCTV 끄기 · 녹화 삭제' }; }  // 관리실 화면
+  { const c=nearCameraCable();if(c)return{k:'camCable',targetObject:c,at:c,label:'CCTV 전선 분리 · 2초'}; }
   { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: `벽 잡고 오르기 · ${wu.z}층 옥상` }; }
   { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
   { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)

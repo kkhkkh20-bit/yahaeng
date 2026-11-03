@@ -52,6 +52,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
+  if (e.code === 'KeyY') actDress();
   if (e.code === 'KeyF' || e.code === 'KeyV') { if(input.padWhistle&&!S.player.captive)whistle();else startAim('key'); }
   if(e.code==='KeyB')beginAssassinSkill();
   if(e.code==='KeyK')openAssassinMenu();

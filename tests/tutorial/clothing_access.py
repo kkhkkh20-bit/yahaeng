@@ -48,7 +48,7 @@ async def main():
     # The dedicated control executes the shared three-second action, not an instant change.
     if touch:await q.tap('#btnDress')
     else:
-     await q.keyboard.press('Shift+Tab');await q.locator('[data-env-token^="dress:"]').click();await q.keyboard.press('x')
+     await q.keyboard.press('y')
     assert await q.evaluate('!!fixture.P.interact&&!fixture.P.outfit&&!fixture.S.corpses[0].stripped')
     await q.evaluate('fixture.tick(150);fixture.draw()');assert await q.evaluate('!fixture.P.outfit&&!fixture.S.corpses[0].stripped')
     await q.evaluate('fixture.tick(40);fixture.draw()');assert await q.evaluate("fixture.P.outfit==='crew'&&fixture.S.stats.dressed===1&&fixture.S.corpses[0].stripped")

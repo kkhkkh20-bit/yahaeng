@@ -552,6 +552,7 @@ __INTERFACE_CSS__
   <canvas id="mini" width="200" height="140" role="button" tabindex="0" aria-label="전술 지도 열기" title="미니맵 — 누르면 전술 지도"></canvas>
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
   <div class="keys">
+    <span id="dressKey" class="keep km" hidden><kbd>Y</kbd>옷 갈아입기</span>
     <span><kbd>WASD</kbd><kbd>←↑↓→</kbd>이동(기본 걷기)</span><span class="keep km"><kbd>Ctrl</kbd><em id="kmSneak">웅크리기</em></span><span><kbd>Shift</kbd>달리기</span>
     <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>I</kbd>장비 선택</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>B</kbd>암살 기술 · 길게</span><span><kbd>K</kbd>기술 트리</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
   </div>
@@ -584,7 +585,7 @@ __INTERFACE_CSS__
     <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>도구 바꾸기</b></button>
 
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
-    <button id="btnDress" type="button" hidden aria-label="옷 갈아입기"><b>옷 갈아입기</b></button>
+    <button id="btnDress" type="button" hidden aria-label="옷 갈아입기 · Y"><b>옷 갈아입기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>
     <button id="btnAct" type="button" title="공격 (Z · Space)"><b>공격</b></button>
     <button id="btnCycle" type="button" hidden aria-label="다른 대상 고르기"><b>대상</b><small id="cycleN">1/2</small></button>

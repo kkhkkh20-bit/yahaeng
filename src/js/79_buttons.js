@@ -50,11 +50,10 @@ function secondaryEnvChoices() {
     for (let i = 0; i < 6; i++) {
       const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
       const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
-      if(a.k==='dress'&&!STAGE.tutorial)out.push({k:'carry',c:a.c,label:a.c.ko?'기절자 운반':'시체 운반',fromZ:true});
       if(a.k==='throwBody'&&!STAGE.tutorial)out.push({k:'carry',c:S.player.carrying,label:'내려놓기',fromZ:true});
       out.push(Object.assign({}, a, { fromZ: true }));
-      if (a.k === 'dress'&&STAGE.tutorial) out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
-      if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick)out.unshift(quick);}
+      if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
+      if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick){if(a.k==='dress')out.push(quick);else out.unshift(quick);}}
       if (!o) break; ACT_SKIP.add(o);
     }
   } finally { ACT_SKIP.clear(); }
@@ -89,7 +88,8 @@ function envChoices() {
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
   const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel' || sa.k === 'uncover'))) ? z.concat(env) : env.concat(z);
   if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
-  return list;
+  // Locked skill previews stay discoverable without hiding a usable door or object.
+  return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
 function envAction() {
   if (actionBusy()) return busyEnvAction();
@@ -101,7 +101,7 @@ function envAction() {
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
   if (!stay) S.envExplicit = null;
   if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
-  if (key !== S.envKey) { S.envKey = key; const preferBody=!S.envExplicit&&S.envPickK==='dress'&&['carry','quickStash'].includes(L[0].k);const j = stay&&!preferBody ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
   S.envPick = pk; S.envPickK = a.k;
@@ -149,7 +149,7 @@ function actEnv() {
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
-// Clothing stays directly available beside a body; carrying remains the main action.
+// Clothing has its own input and remains selected while nearby candidates change.
 function clothingAction(){
   const P=S.player;
   if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;

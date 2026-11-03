@@ -116,8 +116,8 @@ function updateGuard(g, dt) {
         g.lampScan = 0.6;
         const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l));
         if (l) { g.relight = { l, t: 1.8 }; g.path = null; setIcon(g, '?'); break; }
-        const bc = g.dog ? null : (S.cams || []).find(c => c.broken && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
-        if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 부서진 CCTV를 발견했다', 2.2, 'warn'); break; }
+        const bc = g.dog ? null : (S.cams || []).find(c => (c.broken||c.unplugged) && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
+        if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 '+(bc.unplugged?'전선이 빠진':'부서진')+' CCTV를 발견했다', 2.2, 'warn'); break; }
       }
       if(g.soundWatchUntil>S.t){g.want=g.glanceA;g.path=null;break;}
       if (g.follow != null) { followLeader(g, dt, spd); break; }

@@ -1,4 +1,11 @@
-const camOn = c => !(c.hackedUntil>S.t) && !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
+const camOn = c => !(c.hackedUntil>S.t) && !c.broken && !c.unplugged && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
+function cameraCableReachable(c){
+  const P=S.player;
+  return !!c&&S.cams.includes(c)&&!c.search&&camOn(c)&&!P.hide&&!P.under&&!P.vent&&!P.z&&!P.carrying&&!P.captive&&objectReachable(c,40);
+}
+function nearCameraCable(){
+  return S.cams.filter(c=>!ACT_SKIP.has(c)&&cameraCableReachable(c)).sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||null;
+}
 const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀리
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
 function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)||smokeRayRange(c,x,y,d)<d-4) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
@@ -33,7 +40,7 @@ function updateCams(dt) {
       if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { securityBodyFound(k,null); k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
   }
   setLayer(L0);
-  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 관리실에서 끄거나 해당 건물 전원을 차단할 수 있다');
+  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', (STAGE.zones?'공개 구역에서 평범하게 걸으면 CCTV는 신고하지 않는다. ':'')+'시야를 피해 접근해 행동으로 전선 분리 · 기술 불필요. 이미 녹화된 기록은 관리실에서 삭제한다');
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
@@ -52,7 +59,9 @@ function drawCams(fl) {
     }
     ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a);
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-7, -5, 20, 12); ctx.fillStyle = c.broken ? '#4a4d55' : '#d8dbe2'; ctx.fillRect(-9, -6, 18, 11); ctx.fillStyle = '#2a2d34'; ctx.fillRect(7, -4, 5, 7);
-    ctx.fillStyle = c.broken ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.fillStyle = c.broken||c.unplugged ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill();
+    if(c.unplugged){ctx.strokeStyle='#777e89';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-17,3);ctx.lineTo(-17,10);ctx.stroke();}
+    ctx.restore();
     if (c.broken && Math.random() < 0.05) S.fx.push({ k: 'smoke', x: c.x, y: c.y, t: 0 });
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }
   }

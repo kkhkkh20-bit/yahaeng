@@ -44,7 +44,7 @@ function actIcon(a) {
   return ({ hide: 'hide', quickStash:'stash', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
     down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: a.h?'hide':'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
-    clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
+    clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light', camCable: 'light' })[k] || 'dot';
 }
 const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
@@ -81,6 +81,7 @@ function padButton(el, key, a, idle) {
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {
+  $('dressKey').hidden=!!STAGE.tutorial||!clothingAction();
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
   set('kmAct', ka.skillLocked?(SKILL_BY_ID[ka.skillLocked]?.name||'기술')+' 미습득 · K 기술 트리':actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);

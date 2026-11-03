@@ -172,7 +172,7 @@ const STAGES = [
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '서쪽 풀숲을 따라 들어가 순찰의 등 뒤를 노려라. 몸을 풀숲에 숨긴 뒤 클럽 실장에게 접근한다. 실장 처치와 장부 회수 후 탈출한다. 장부를 확보하면 사무동 내선으로 실장을 불러낼 수 있다. 클럽에서 기회를 노려도 된다.',
+  brief: '서쪽 풀숲에서 순찰의 등을 노리고, 옷을 갈아입은 뒤 몸을 화단에 숨긴다. 남쪽 적재물은 정문 경비의 시선을 가려 준다. 거리는 손님으로 걸을 수 있고, CCTV도 공개 구역의 평범한 손님은 신고하지 않는다. 카메라는 시야를 피해 지나가거나 뒤로 접근해 전선을 분리할 수 있다. 녹화된 신원은 사무동 2층 관리실에서 지운다. 야시장 대화에서 금고 번호를 알아내 장부를 회수하면 사무동 1층 내선으로 실장을 불러낼 수 있다. 클럽의 독살·간판 사고도 선택할 수 있다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -198,6 +198,8 @@ const STAGES = [
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
     m.fill(21, 6, 21, 7, 'U'); m.set(21, 8, ',');                                                     // 클럽 측면 적치물. 옥상 접근은 직원 계단으로
     m.many('B',[[1,18],[1,17],[3,18]]);
+    // A readable pocket for the first disguise/cleanup, screened from the front sentry.
+    m.fill(5,16,6,16,'C');m.set(5,18,'B');
     m.many('T', [[47, 15], [53, 14]]); m.many('B', [[45, 13], [52, 13], [44, 17]]);
     [6, 24, 40, 52].forEach(x => m.pole(x, 19, 2));
     m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34], [22, 17], [37, 15], [6, 1], [25, 1]]);   // 22,17·37,15 = 네온 골목 양 끝 (문지기·순찰 처리 뒤 숨길 곳) · 6,1 = 사무동 뒷골목 · 25,1 = 클럽 뒷골목 서쪽
@@ -273,7 +275,7 @@ const STAGES = [
     { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
     { kind: 'g1', smoker: true, route: [[24, 2, 5], [26, 2, 5]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
-    { kind: 'g2', b: 0, at: 'VB', post: 90 },                                         // 6 금고 앞
+    { kind: 'g2', b: 0, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
     { kind: 'g1', enforcer: true, b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
     { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g2', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
@@ -5010,7 +5012,14 @@ function civScream(g, x, y, c, saw, kind) {
 // 사람끼리 겹치지 않게: 가까우면 서로 밀어낸다 (벽 안으로는 밀지 않는다). 나도 사람을 뚫고 지나가지 못한다
 // CCTV: 좌우로 천천히 돌며(끝에서 잠깐 멈춤) 빨간 시야 안의 나·시체를 찍는다. 관리실이나 해당 구역의 전원으로 제어한다
 
-const camOn = c => !(c.hackedUntil>S.t) && !c.broken && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
+const camOn = c => !(c.hackedUntil>S.t) && !c.broken && !c.unplugged && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
+function cameraCableReachable(c){
+  const P=S.player;
+  return !!c&&S.cams.includes(c)&&!c.search&&camOn(c)&&!P.hide&&!P.under&&!P.vent&&!P.z&&!P.carrying&&!P.captive&&objectReachable(c,40);
+}
+function nearCameraCable(){
+  return S.cams.filter(c=>!ACT_SKIP.has(c)&&cameraCableReachable(c)).sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||null;
+}
 const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀리
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
 function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)||smokeRayRange(c,x,y,d)<d-4) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
@@ -5045,7 +5054,7 @@ function updateCams(dt) {
       if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { securityBodyFound(k,null); k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }
   }
   setLayer(L0);
-  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', 'CCTV는 범행·무단 침입을 녹화한다. 관리실에 담당자가 있으면 신고된다. 관리실에서 끄거나 해당 건물 전원을 차단할 수 있다');
+  if ((S.cams || []).some(c => camOn(c) && c.fl === flOf(P) && dist(c.x, c.y, P.x, P.y) < 420)) hint('cctv', (STAGE.zones?'공개 구역에서 평범하게 걸으면 CCTV는 신고하지 않는다. ':'')+'시야를 피해 접근해 행동으로 전선 분리 · 기술 불필요. 이미 녹화된 기록은 관리실에서 삭제한다');
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
@@ -5064,7 +5073,9 @@ function drawCams(fl) {
     }
     ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a);
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-7, -5, 20, 12); ctx.fillStyle = c.broken ? '#4a4d55' : '#d8dbe2'; ctx.fillRect(-9, -6, 18, 11); ctx.fillStyle = '#2a2d34'; ctx.fillRect(7, -4, 5, 7);
-    ctx.fillStyle = c.broken ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill(); ctx.restore();
+    ctx.fillStyle = c.broken||c.unplugged ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill();
+    if(c.unplugged){ctx.strokeStyle='#777e89';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-17,3);ctx.lineTo(-17,10);ctx.stroke();}
+    ctx.restore();
     if (c.broken && Math.random() < 0.05) S.fx.push({ k: 'smoke', x: c.x, y: c.y, t: 0 });
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }
   }
@@ -5262,8 +5273,8 @@ function updateGuard(g, dt) {
         g.lampScan = 0.6;
         const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l));
         if (l) { g.relight = { l, t: 1.8 }; g.path = null; setIcon(g, '?'); break; }
-        const bc = g.dog ? null : (S.cams || []).find(c => c.broken && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
-        if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 부서진 CCTV를 발견했다', 2.2, 'warn'); break; }
+        const bc = g.dog ? null : (S.cams || []).find(c => (c.broken||c.unplugged) && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
+        if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 '+(bc.unplugged?'전선이 빠진':'부서진')+' CCTV를 발견했다', 2.2, 'warn'); break; }
       }
       if(g.soundWatchUntil>S.t){g.want=g.glanceA;g.path=null;break;}
       if (g.follow != null) { followLeader(g, dt, spd); break; }
@@ -6544,9 +6555,11 @@ function bodyRecoveryGoal(){
 }
 function actionFlowGoal(){
   const recovery=bodyRecoveryGoal();if(recovery)return recovery;
+  const P=S.player;
   const e=S.actionEntry,d=STAGE.entryRoute;if(!e||!d||['done','skipped'].includes(e.phase))return null;
   const g=S.guards.find(g=>g.id===d.guard),c=S.corpses.find(c=>c.guardId===d.guard);
   if(e.phase==='shade')return{text:'웅크려 서쪽 풀숲으로 이동',where:'서쪽 골목',x:tc(d.bush[0]),y:tc(d.bush[1]),fl:0};
+  if(c&&!c.stripped&&!P.disguise)return{text:'순찰 옷으로 갈아입기',where:isTouch?'몸 옆에서 옷 갈아입기':'몸 옆에서 Y · 옷 갈아입기',x:c.x,y:c.y,fl:flOf(c)};
   if(c)return{text:'쓰러진 순찰을 풀숲에 숨기기',where:'몸 옆에서 행동',x:c.x,y:c.y,fl:flOf(c)};
   return g?{text:'서쪽 순찰 · 등 뒤에 바짝 접근',where:'짧게 기절 · 길게 처치',x:g.x,y:g.y,fl:flOf(g),z:g.z||0}:null;
 }
@@ -6786,6 +6799,20 @@ function updateVipPlan(dt) {
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m2'){
+    const P=S.player,vip=npc('vip'),item=S.items[0];
+    if(item&&!item.got){
+      if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'야시장에서 금고 번호 엿듣기',where:'공개 구역 · 대화가 끝날 때까지 가까이 대기',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
+      return{text:'사무동 1층 금고에서 장부 회수',where:'자경대원 옷 · 금고 비밀번호',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
+    }
+    if(vip&&!targetEliminated(vip)){
+      const r=rendezvousState();
+      if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
+      if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
+      return{...targetKnowledge(vip),g:vip,id:'target:'+vip.id,text:'의뢰: 실장 처치하기',routeGuide:true};
+    }
+    return null;
+  }
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
   const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+targetName(g)+' 처치하기',where:[why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
@@ -9357,7 +9384,7 @@ const OBJECT_FLOW = {
   read: [.45, '읽는 중', 'hands'],
   use: [0.65, '사용 중', 'hands'], dropItem: [0.3, '내려놓는 중', 'ground'],
   door: [0.48, '문 조작 중', 'hands'], lamp: [0.35, '조작 중', 'hands'],
-  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands']
+  bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands'],camCable:[2,'전선 분리 중','hands']
 };
 function objectActionPoint(a) {
   if (a.k === 'use') return usePoint(a.n.u);
@@ -9366,6 +9393,7 @@ function objectActionPoint(a) {
 function objectActionValid(a, item) {
   if(!electricalActionAllowed(a))return false;
   const P = S.player;
+  if(a.k==='camCable')return cameraCableReachable(a.targetObject);
   if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);
   if (a.k === 'dropItem') return !!P.item && P.item === item;
   if (a.k === 'pickup') return !a.p.taken && objectReachable(a.p);
@@ -9383,7 +9411,7 @@ function beginObjectAction(a) {
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
   P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
-    illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
+    illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || a.k==='camCable' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;
@@ -9394,7 +9422,7 @@ function updateObjectAction(P, dt) {
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
     I.committed = true; I.committing = true;
     try {
@@ -10159,6 +10187,7 @@ function primaryActionRaw() {
     return res;
   }
   { const cr = S.camRoom; if (cr && !ACT_SKIP.has(cr) && !S.camsOff && flOf(P) === cr.fl && !P.z && !P.carrying && dist(P.x, P.y, cr.x, cr.y) < 46) return { k: 'camroom', targetObject: cr, at: { x: cr.x, y: cr.y }, label: 'CCTV 끄기 · 녹화 삭제' }; }  // 관리실 화면
+  { const c=nearCameraCable();if(c)return{k:'camCable',targetObject:c,at:c,label:'CCTV 전선 분리 · 2초'}; }
   { const wu = wallUpSpot(); if (wu) return { k: 'wallUp', s: wu, at: wu.at, label: `벽 잡고 오르기 · ${wu.z}층 옥상` }; }
   { const bd = nearBlood(); if (bd) return { k: 'clean', d: bd, at: { x: bd.x, y: bd.y }, label: '핏자국 닦기' }; }
   { const rc = rumorTarget(); if (rc) return { k: 'rumor', c: rc, at: { x: rc.x, y: rc.y }, label: '소문 흘리기' }; }  // 거리 주민에게 조직 싸움을 부추긴다  // 닦기는 다른 할 일이 없을 때만 (숨기·문·계단을 가로채지 않게)
@@ -10357,6 +10386,7 @@ function actPrimary(force) {
       break;
     }
     case 'callMeet': {callRendezvous();break;}
+    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · 기존 녹화는 관리실에서 삭제',2.5,'good');break;}
     case 'camroom': { S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
@@ -13427,7 +13457,7 @@ function actIcon(a) {
   return ({ hide: 'hide', quickStash:'stash', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
     down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: a.h?'hide':'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
-    clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light' })[k] || 'dot';
+    clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light', camCable: 'light' })[k] || 'dot';
 }
 const VERB = { counter: '반격', loot: '빼 오기', clean: '닦기', use: '쓰기', ko: '기절', kill: '처치', grab: '붙잡기', hide: '숨기', stash: '넣기', climb: '오르기', down: '내려가기', door: '문', window: '넘어가기', wire: '줄 타기', carry: '운반', dress: '옷 입기', pickup: '줍기', use: '쓰기', read: '읽기', pick: '따기', light: '불', trap: '함정', leave: '나오기', wall: '기대기', key: '훔치기', candy: '사탕' };
 // 버튼용 짧은 동사: 원래 이름이 짧으면 그대로, 길면 아이콘 동사
@@ -13464,6 +13494,7 @@ function padButton(el, key, a, idle) {
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {
+  $('dressKey').hidden=!!STAGE.tutorial||!clothingAction();
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
   set('kmAct', ka.skillLocked?(SKILL_BY_ID[ka.skillLocked]?.name||'기술')+' 미습득 · K 기술 트리':actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none' || ka.stalk);
@@ -13533,11 +13564,10 @@ function secondaryEnvChoices() {
     for (let i = 0; i < 6; i++) {
       const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
       const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
-      if(a.k==='dress'&&!STAGE.tutorial)out.push({k:'carry',c:a.c,label:a.c.ko?'기절자 운반':'시체 운반',fromZ:true});
       if(a.k==='throwBody'&&!STAGE.tutorial)out.push({k:'carry',c:S.player.carrying,label:'내려놓기',fromZ:true});
       out.push(Object.assign({}, a, { fromZ: true }));
-      if (a.k === 'dress'&&STAGE.tutorial) out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
-      if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick)out.unshift(quick);}
+      if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
+      if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick){if(a.k==='dress')out.push(quick);else out.unshift(quick);}}
       if (!o) break; ACT_SKIP.add(o);
     }
   } finally { ACT_SKIP.clear(); }
@@ -13572,7 +13602,8 @@ function envChoices() {
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
   const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel' || sa.k === 'uncover'))) ? z.concat(env) : env.concat(z);
   if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
-  return list;
+  // Locked skill previews stay discoverable without hiding a usable door or object.
+  return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
 function envAction() {
   if (actionBusy()) return busyEnvAction();
@@ -13584,7 +13615,7 @@ function envAction() {
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
   if (!stay) S.envExplicit = null;
   if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
-  if (key !== S.envKey) { S.envKey = key; const preferBody=!S.envExplicit&&S.envPickK==='dress'&&['carry','quickStash'].includes(L[0].k);const j = stay&&!preferBody ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
   S.envPick = pk; S.envPickK = a.k;
@@ -13632,7 +13663,7 @@ function actEnv() {
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
-// Clothing stays directly available beside a body; carrying remains the main action.
+// Clothing has its own input and remains selected while nearby candidates change.
 function clothingAction(){
   const P=S.player;
   if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;
@@ -14619,7 +14650,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
-    contractRouteGoal,
+    contractRouteGoal,cameraCableReachable,nearCameraCable,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
@@ -14723,6 +14754,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
+  if (e.code === 'KeyY') actDress();
   if (e.code === 'KeyF' || e.code === 'KeyV') { if(input.padWhistle&&!S.player.captive)whistle();else startAim('key'); }
   if(e.code==='KeyB')beginAssassinSkill();
   if(e.code==='KeyK')openAssassinMenu();

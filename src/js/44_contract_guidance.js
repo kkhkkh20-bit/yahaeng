@@ -1,6 +1,20 @@
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m2'){
+    const P=S.player,vip=npc('vip'),item=S.items[0];
+    if(item&&!item.got){
+      if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'야시장에서 금고 번호 엿듣기',where:'공개 구역 · 대화가 끝날 때까지 가까이 대기',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
+      return{text:'사무동 1층 금고에서 장부 회수',where:'자경대원 옷 · 금고 비밀번호',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
+    }
+    if(vip&&!targetEliminated(vip)){
+      const r=rendezvousState();
+      if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
+      if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
+      return{...targetKnowledge(vip),g:vip,id:'target:'+vip.id,text:'의뢰: 실장 처치하기',routeGuide:true};
+    }
+    return null;
+  }
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
   const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+targetName(g)+' 처치하기',where:[why,at.where].filter(Boolean).join(' · '),routeGuide:true};};

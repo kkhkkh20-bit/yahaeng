@@ -31,8 +31,8 @@ async def main():
    assert await q.evaluate('!__game.envChoices().some(a=>a.k==="quickStash")')
    await q.evaluate('down("KeyZ");__game.actAttack();tick(.08);up("KeyZ");tick(1.4)')
    state=await q.evaluate('''()=>{const G=__game,c=G.S.corpses[0],L=G.envChoices();return {ko:c?.ko,default:G.envAction().k,kinds:L.map(a=>a.k),hide:!!G.quickStashChoice(c)}}''')
-   assert state['ko']and state['default']=='quickStash'and'carry'in state['kinds'],state
-   await q.evaluate('__game.S.player.hidden=true;down("KeyX");__game.actEnv();up("KeyX");tick(.2)')
+   assert state['ko']and state['default']=='dress'and'carry'in state['kinds']and'quickStash'in state['kinds'],state
+   await q.evaluate('__game.selectEnvTarget(__game.envToken(__game.envChoices().find(a=>a.k==="quickStash")));__game.S.player.hidden=true;down("KeyX");__game.actEnv();up("KeyX");tick(.2)')
    assert await q.evaluate('!__game.S.player.hidden&&__game.S.corpses[0].carried&&!__game.S.corpses[0].hidden&&!__game.S.corpses[0].stashed&&!!__game.S.player.quickStash'),'Body vanished before lifting finished'
    if reason!='store':
     await q.evaluate('''reason=>{const G=__game,S=G.S,P=S.player,h=S.bushes[0];if(reason==='full')h.cap=0;if(reason==='gone')S.bushes=[];if(reason==='floor')h.fl=1;if(reason==='damage')P.hurtT=.5;if(reason==='pause')G.clearPlayerInput();if(reason==='wall')G.G0[22][33]='#';if(reason==='save'){G.saveCheckpoint();G.loadCheckpoint()}}''',reason)
@@ -46,7 +46,7 @@ async def main():
   # Actual container geometry also keeps the body outside until the storage contact.
   for reason in ['store','filledDuringOpen','damageDuringOpen']:
    await q.evaluate(BODY)
-   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,g=S.guards[0];Object.assign(P,{x:1656,y:1080});Object.assign(g,{x:1626,y:1080,a:Math.PI,want:Math.PI});S.bushes=[];P.hidden=false;G.G0[22][33]='.';G.G0[22][34]='.';G.G0[21][34]='#';S.hides=[{type:'box',tx:34,ty:21,x:1656,y:1032,fl:0,z:0,bodies:0,cap:1}];down('KeyZ');G.actAttack();tick(.08);up('KeyZ');tick(1.4);if(G.envAction().k!=='quickStash')throw Error('Box not offered: '+JSON.stringify(G.envChoices()));down('KeyX');G.actEnv();up('KeyX');tick(.7);if(!P.trav?.hideFlow?.quick||S.corpses[0].stashed)throw Error('No physical box opening')}''')
+   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,g=S.guards[0];Object.assign(P,{x:1656,y:1080});Object.assign(g,{x:1626,y:1080,a:Math.PI,want:Math.PI});S.bushes=[];P.hidden=false;G.G0[22][33]='.';G.G0[22][34]='.';G.G0[21][34]='#';S.hides=[{type:'box',tx:34,ty:21,x:1656,y:1032,fl:0,z:0,bodies:0,cap:1}];down('KeyZ');G.actAttack();tick(.08);up('KeyZ');tick(1.4);const stash=G.envChoices().find(a=>a.k==='quickStash');if(!stash)throw Error('Box not offered: '+JSON.stringify(G.envChoices()));G.selectEnvTarget(G.envToken(stash));down('KeyX');G.actEnv();up('KeyX');tick(.7);if(!P.trav?.hideFlow?.quick||S.corpses[0].stashed)throw Error('No physical box opening')}''')
    await q.evaluate('''reason=>{const S=__game.S;if(reason==='filledDuringOpen')S.hides[0].bodies=1;if(reason==='damageDuringOpen')S.player.hurtT=.5;tick(3);const c=S.corpses[0];if(reason==='store'?!c.stashed||c.carried||S.hides[0].bodies!==1:c.stashed||!c.carried)throw Error('Box '+reason+' '+JSON.stringify(c))}''',reason)
    checks.append('container '+reason)
   # Touch uses the same attack source; pointer cancellation must never execute the tap fallback.
@@ -68,6 +68,7 @@ async def main():
    await press();await ui.evaluate('tick(.35);__game.updateHUD(true)');assert await ui.evaluate('+document.querySelector("#btnAct").style.getPropertyValue("--hold")>0');await release(mobile);await ui.evaluate('tick(1.5)');assert await ui.evaluate('__game.S.corpses.length===0'if mobile else'__game.S.corpses.length===1&&__game.S.corpses[0].ko'),(mobile,w,h,await ui.evaluate('({corpses:__game.S.corpses.length,hold:!!__game.S.player.skillHold,stats:__game.S.stats})'))
    await ui.evaluate(SKILL);await press();await ui.evaluate('tick(2.6)');await release();assert await ui.evaluate('__game.S.stats.dualAssassinations===1')
    await ui.evaluate(BODY);await press();await ui.evaluate('tick(.08)');await release();await ui.evaluate('tick(1.5);__game.updateHUD(true)')
+   await ui.evaluate("__game.selectEnvTarget(__game.envToken(__game.envChoices().find(a=>a.k==='quickStash')));__game.updateHUD(true)")
    if mobile:await ui.locator('#btnCarry').tap()
    else:await ui.keyboard.press('x')
    await ui.evaluate('tick(3)');assert await ui.evaluate('__game.S.corpses[0].hidden&&!__game.S.player.carrying')
