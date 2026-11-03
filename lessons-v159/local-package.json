@@ -1,12 +1,12 @@
 {
   "base": "http://127.0.0.1:8001/public/",
   "files": {
-    "index.html": "b6af93f3db00b91bf4e650ae4012e88a1046c01ddc72d791329daec13e52f934",
-    "version.json": "b8a97446685db5272ed16ef610d57d167e8f086c14b7c34da806924803a43d8b",
+    "index.html": "9c08c3726e43978e580d766a3b65624f2bb455b94a3ebeb03cda2adc29cfd4f9",
+    "version.json": "9324e8eac1faafc200eff403e136ca3f50475055625c5c0f5eeead7109321159",
     "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
     "assets/2160755994748dca13c6.js": "2160755994748dca13c659bf2d01dc7e0d627bd69663fb68c849b3bb127f355f",
     "assets/9a995d5c38e3931b6cb5.js": "9a995d5c38e3931b6cb5c06339bab13e68abb550027aa7e089f1bdb73ec2fa78",
-    "assets/901d0dbadc9c616fb846.js": "901d0dbadc9c616fb846a6d683285301ddb1ad2f2dff83fe7d99f6ac4d49a82c",
+    "assets/8a6a812c4fb760a0572a.js": "8a6a812c4fb760a0572a13812cd2b4af4b289010994a00b5c0456a3cb5806f8a",
     "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
     "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
   },
@@ -18,8 +18,8 @@
         504
       ],
       "after": [
-        186.5644617372723,
-        505.53135000000003
+        186.52698500602438,
+        505.5359625
       ],
       "version": "v159",
       "stage": "tB",
@@ -44,8 +44,8 @@
         504
       ],
       "after": [
-        188.26589740539572,
-        505.53135000000003
+        192.7235402399029,
+        505.5359625
       ],
       "version": "v159",
       "stage": "tB",

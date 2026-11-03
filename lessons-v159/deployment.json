@@ -1,6 +1,7 @@
 {
-  "status": "pending",
+  "status": "pending-final-cue-fix",
   "version": "v159",
-  "sourcePackageSha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
-  "local": "54regression issues resolved; four native lessons keyboard/touch; independent ship; public builds and verification pending"
+  "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+  "previousPublicPackageSha256": "bb72a0cf3804a07a3f48618342ee93c65a6e06510f25eedabf47c93f72fcfc30",
+  "local": "F1 fixed and all4native lessons PC/touch rerun; final independent verdict and publication verification pending"
 }

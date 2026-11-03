@@ -937,8 +937,8 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
     [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&Math.floor(P.x/48)===7||S.guards[0].state==='DEAD', S=>S.bushes[0],'풀숲에 들어가는 버튼은 없다. 웅크려 걸어 들어가면 자동으로 숨는다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-28),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=32||S.guards[0].state==='DEAD',()=>({x:10.5*48-28,y:10.5*48}),'숨은 채 공격하는 기술은 아직 없다. 풀숲 밖에서 한 걸음 거리까지 다가간다.','move'],
     ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>S.guards[0].state==='DEAD',S=>S.guards[0],'짧게 누르면 기절, 길게 누르면 처치한다. 이 연습은 짧게 눌러 보자.','attack'],
-    ['몸 옆에서 {행동} · 운반',(S,P)=>!!P.carrying||S.corpses.some(c=>c.hidden||c.stashed),S=>S.corpses[0],'먼저 쓰러뜨린 다음 몸을 옮긴다. 운반 중에는 느려지고 뛸 수 없다.','env'],
-    [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move'],
+    ['몸 옆에서 {행동} · 운반',(S,P)=>!!P.carrying||S.corpses.some(c=>c.hidden||c.stashed),S=>S.corpses[0],'먼저 쓰러뜨린 다음 몸을 옮긴다. 운반 중에는 느려지고 뛸 수 없다.','env',0,['carry','quickStash']],
+    [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move',0,['carry','quickStash','stash']],
     ['오른쪽 출구로 이동',()=>false,S=>S.exit,'목적을 마치면 노란 출구로 나온다. 다음은 같은 행동을 실제 의뢰에서 사용한다.','move']
   ]
 });
@@ -1089,7 +1089,7 @@ STAGES.push({...FIRST_STEPS,
   endText:'조명을 끄면 적의 시야가 짧아진다. 본편에서는 전기 조작을 배운 경우에 사용할 수 있다.',
   steps:[
     ['표시에서 멈춰 밝은 길의 시야 확인',(S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24,()=>({x:6.5*48,y:10.5*48}),'이곳은 시야 밖이다. 오른쪽 밝은 길은 경비의 부채꼴 안에 들어간다.','move',1.1],
-    ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'이 구간에서만 전기 조작을 임시로 쓴다. 본편에서는 기술을 배워야 한다.','env'],
+    ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'이 구간에서만 전기 조작을 임시로 쓴다. 본편에서는 기술을 배워야 한다.','env',0,['lamp']],
     ['아래쪽 어두운 길을 따라 표시로 이동',(S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24,S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48},'빛이 줄어 부채꼴도 짧아졌다. 손전등과 소리는 사라지지 않는다.','move'],
     [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 안전한 길로 복귀':'{살금} 왼쪽 안전한 길로 복귀',(S,P)=>P.mode==='sneak'&&P.x<6.7*48,()=>({x:6*48,y:12.5*48}),'어두워도 뛰면 들린다. 조용히 이동한 뒤 출구로 나간다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음 의뢰에서는 배운 전기 기술이 있을 때 조명을 이용하거나, 다른 잠입로를 고른다.','move']
@@ -1112,9 +1112,9 @@ STAGES.push({
   endText:'층이 다르면 같은 위치여도 손이 닿지 않는다. 계단으로 같은 층에 도착한 뒤 행동한다.',
   steps:[
     ['건물 앞문으로 들어가기',(S,P)=>P.x>6*48&&P.x<19*48&&P.y>3*48&&P.y<14*48&&!P.z,()=>({x:9.5*48,y:13.5*48}),'건물 안으로 들어간다. 문이 잠겼다면 행동 버튼에 가능한 방법이 표시된다.','move'],
-    ['계단 표시 앞에서 {행동} · 2층으로',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'실내의 층과 옥상은 다른 공간이다. 계단 앞까지 이동한 뒤 행동한다.','env'],
-    ['2층의 연락 서류 챙기기',S=>S.items.every(i=>i.got),S=>S.items[0],'작은 금색 표시는 회수할 물건이다. 같은 층에서 가까이 접근해 행동한다.','env'],
-    ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'표시에서 계단 안쪽으로 걸어가거나 행동을 누른다. 출구는 1층 밖에 있다.','env'],
+    ['계단 표시 앞에서 {행동} · 2층으로',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'실내의 층과 옥상은 다른 공간이다. 계단 앞까지 이동한 뒤 행동한다.','env',0,['up']],
+    ['2층의 연락 서류 챙기기',S=>S.items.every(i=>i.got),S=>S.items[0],'작은 금색 표시는 회수할 물건이다. 같은 층에서 가까이 접근해 행동한다.','env',0,['loot']],
+    ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'표시에서 계단 안쪽으로 걸어가거나 행동을 누른다. 출구는 1층 밖에 있다.','env',0,['fdown']],
     ['건물을 나와 왼쪽 골목 출구로 이동',()=>false,S=>S.exit,'본편에서는 실내 경비와 카메라도 살핀다. 먼저 안전한 길과 현재 층부터 확인하자.','move']
   ]
 });
@@ -13924,7 +13924,15 @@ function renderStageList() {
 
 // One short instruction in the existing objective area, with one matching control accent.
 function syncTutorialCue(){
-  const step=STAGE.steps?.[S.tutI||0],cue=step?.[4],key=(typeof cue==='function'?cue(S,S.player):cue)||'',token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
+  const step=STAGE.steps?.[S.tutI||0],cue=step?.[4];
+  let key=(typeof cue==='function'?cue(S,S.player):cue)||'';
+  // A nearby stair is a valid action, but it is not the document we are teaching.
+  // Keep the movement goal until the lesson's actual target is in reach.
+  if(key==='env'&&['tB','t0','tL','tR'].includes(STAGE.id)){
+    const at=step?.[2]?.(S),P=S.player,a=envAction(),allowed=step?.[6];
+    if(!at||flOf(at)!==flOf(P)||dist(P.x,P.y,at.x,at.y)>64||a.k==='none'||allowed&&!allowed.includes(a.k))key='move';
+  }
+  const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
