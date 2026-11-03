@@ -2857,7 +2857,7 @@ const SKILL_TREE=[
  {id:'dual',branch:'assassin',name:'동시 암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
  {id:'chain',branch:'assassin',name:'연속 암살',cost:3,req:['dual'],row:3,col:2,description:'첫 적을 처치한 뒤 다음 적에게 직접 이동. 공격 또는 B 길게 · 재사용 16초. 들키면 중단.'},
- {id:'reach',branch:'assassin',name:'접근 암살',cost:2,req:['silentHands'],row:5,col:1,description:'기본 제압은 1m 이내에서만 가능하다. 이 기술을 배우면 약 세 걸음 거리(3.5m)에서 적의 등 뒤로 직접 접근해 제압한다. 벽·가구를 통과할 수 없다.'},
+ {id:'reach',branch:'assassin',name:'접근 암살',cost:2,req:['silentHands'],row:5,col:1,description:'기본 제압은 1.5m 이내에서 가능하다. 이 기술을 배우면 약 세 걸음 거리(3.5m)에서 적의 등 뒤로 직접 접근해 제압한다. 벽·가구를 통과할 수 없다.'},
  {id:'flow',branch:'assassin',name:'빠른 재정비',cost:2,req:['chain'],row:4,col:2,description:'동시 암살·연속 암살의 재사용 대기시간 20% 감소. 전투 중 즉시 초기화하지 않는다.'},
  {id:'blindside',branch:'assassin',name:'기습 포착',cost:2,req:['reach'],row:6,col:1,description:'일반 경비의 후방 공격 허용 각도를 약 20도 넓힌다. 정예·주민에게는 적용하지 않는다.'},
  {id:'kit',branch:'tools',name:'현장 장비',cost:1,req:[],row:1,col:0,description:'의뢰 시작 시 락픽 1개·빈 캔 2개 추가. 맨손 시작 조건은 유지한다.'},
@@ -9519,7 +9519,7 @@ function jumpTarget() {
   }
   return null;
 }
-const MELEE_CONTACT=32,LUNGE=112;
+const MELEE_CONTACT=48,LUNGE=112;
 const meleeReach=(P=S.player)=>STAGE.artSlice?134:skillOn('reach')&&!P.carrying?LUNGE:MELEE_CONTACT;
 function canKill(g,P,reach=meleeReach(P)){return meleeCandidate(g,P,Math.min(reach,g.civ?MELEE_CONTACT:meleeReach(P)));}
 function meleeCandidate(g, P, reach) {
@@ -13549,6 +13549,17 @@ function actEnv() {
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
 }
+// Clothing stays directly available beside a body; carrying remains the main action.
+function clothingAction(){
+  const P=S.player;
+  if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;
+  return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
+}
+function actDress(){
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial||actionBusy())return;
+  RC=null;const a=clothingAction();
+  if(a&&selectEnvTarget(envToken(a)))actEnv();
+}
 function actGrab() {
   if(STAGE.firstSteps)return;
   RC = null;
@@ -13764,6 +13775,11 @@ function updateHUD(force) {
   hud.carry.classList.toggle('ready', !!ea.bufferable||ea.k !== 'none'&&!ea.skillLocked);
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1 || ea.blocked&&n>0); if (!cb.hidden) setText($('cycleN'), 'cycN', ea.blocked?'다시 선택':(ea.choiceI + 1) + '/' + n); } }
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
+  { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
+    const dress=!STAGE.tutorial&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
+    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress;
+    if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
+  }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.
@@ -14202,7 +14218,7 @@ const SKILL_UTILITY={
  kit:'잠긴 경로를 열거나 캔으로 순찰 방향 바꾸기',dart:'접근하기 어려운 적을 멀리서 기절시키기',kunai:'위험 구역에 들어가기 전에 적을 원거리에서 처치하기',smoke:'카메라와 경비가 보는 길을 잠시 가리고 통과하기',precision:'더 멀리서 투척하고 추가 탄약으로 경로 선택 폭 늘리기',smokeMix:'몸을 운반하거나 긴 통로를 건널 시간을 벌기',electric:'조명을 꺼서 사람의 시야를 줄이고 복구하러 오는 경비 유인하기',radio:'확보한 무전기로 순찰 한 명만 다른 곳으로 보내기',hack:'전원을 끄러 들어가지 않고 CCTV 통과 시간 만들기',signal:'CCTV에 더 멀리서 개입하고 안전하게 통과할 시간 늘리기'
 };
 function skillBenefit(d){
- const pairs={reach:['1m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['동시 암살 12초 · 연속 16초','동시 암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
+ const pairs={reach:['1.5m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['동시 암살 12초 · 연속 16초','동시 암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
  return pairs[d.id];
 }
 
@@ -14610,7 +14626,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
-  for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
+  for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
   if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
@@ -14688,6 +14704,8 @@ function bindBtn(id, fn) {
 bindBtn('btnAct', actAttack);
 bindBtn('btnCarry', actEnv);
 bindBtn('btnGrab', actGrab);
+bindBtn('btnDress', actDress);
+$('btnDress').addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)actDress();}});
 bindBtn('btnSkill',beginAssassinSkill);
 $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);
