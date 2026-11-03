@@ -359,6 +359,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  updateRecoveryInput(P);
   if(updateQuickStash(P,dt))return;
   if(updateTechWork(P,dt))return;
   if(updateAssassinSkill(P,dt))return;

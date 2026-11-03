@@ -4429,6 +4429,30 @@ function lookAround(g, dt, base, amp, hold) {
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
+function npcPostLegClear(a,b){
+  const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
+  for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
+    if(solidAt(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
+  }
+  return true;
+}
+function avoidStreetPost(g){
+  if(flOf(g)||g.z||!g.path?.length)return;
+  const next=g.path[0],dx=next.x-g.x,dy=next.y-g.y,d=Math.hypot(dx,dy);if(d<1)return;
+  for(const l of S.lamps){
+    const m=l.mount;if(m?.kind!=='street')continue;
+    const u=clamp(((m.ax-g.x)*dx+(m.ay-g.y)*dy)/(d*d),0,1);
+    if(u<=0||dist(g.x+dx*u,g.y+dy*u,m.ax,m.ay)>=19)continue;
+    const ux=dx/d,uy=dy/d,options=[];
+    for(const side of [1,-1]){
+      const a={x:m.ax-uy*side*24-ux*24,y:m.ay+ux*side*24-uy*24,detour:true,postDetour:true};
+      const b={x:m.ax-uy*side*24+ux*24,y:m.ay+ux*side*24+uy*24,detour:true,postDetour:true};
+      if(npcPostLegClear(g,a)&&npcPostLegClear(a,b)&&npcPostLegClear(b,next))options.push({a,b,cost:dist(g.x,g.y,a.x,a.y)+dist(a.x,a.y,b.x,b.y)+dist(b.x,b.y,next.x,next.y)});
+    }
+    options.sort((a,b)=>a.cost-b.cost);if(options.length){g.path.unshift(options[0].a,options[0].b);g.detourT=1.2;}
+    return;
+  }
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
   if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
@@ -4448,6 +4472,7 @@ function moveAlong(g, speed, dt) {
   }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) {if(g.pathGoal&&dist(g.x,g.y,g.pathGoal.x,g.pathGoal.y)>32){if(S.t-(g.pathFailedAt||0)>.5)pathTo(g,g.pathGoal.x,g.pathGoal.y);return false;}return true;}
+  avoidStreetPost(g);
   if(STAGE.artSlice&&window.__clubView?.ready)speed*=window.__clubView.pace(g.path[0].x-g.x,g.path[0].y-g.y);
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
@@ -4525,6 +4550,25 @@ function npcRouteSolid(g) {
 }
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  // A remembered sound/contact can fall inside a bin or wall. Keep that
+  // observation, but walk to a reachable neighboring cell and actually arrive.
+  // astar's automatic fallback otherwise leaves pathGoal inside the obstacle,
+  // so a guard already beside it keeps retrying the same empty route forever.
+  if(sol(tx,ty)){
+    const candidates=[];
+    for(let r=1;r<=2;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r||sol(tx+dx,ty+dy))continue;
+      candidates.push({tx:tx+dx,ty:ty+dy,x:tc(tx+dx),y:tc(ty+dy),distance:Math.hypot(dx,dy)});
+    }
+    candidates.sort((a,b)=>a.distance-b.distance||dist(g.x,g.y,a.x,a.y)-dist(g.x,g.y,b.x,b.y));
+    for(const at of candidates){
+      const path=astar(sx,sy,at.tx,at.ty,sol);
+      if(!path.length&&(sx!==at.tx||sy!==at.ty))continue;
+      g.path=path;g.pathGoal={x:at.x,y:at.y};g.pathFailedAt=S.t;
+      if(!path.length&&dist(g.x,g.y,at.x,at.y)>6)g.path=[{...g.pathGoal}];
+      return;
+    }
+  }
   g.path = astar(sx, sy, tx, ty, sol); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
   if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
   if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
@@ -7180,6 +7224,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  updateRecoveryInput(P);
   if(updateQuickStash(P,dt))return;
   if(updateTechWork(P,dt))return;
   if(updateAssassinSkill(P,dt))return;
@@ -9206,6 +9251,8 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
+  if(P.recoveryQueue)return{k:'none',busy:true,label:'몸 정리 대기'};
+  if(recoveryInputCandidate(P))return{k:'none',busy:true,bufferable:true,label:'몸 정리 예약'};
   return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){
@@ -10826,6 +10873,27 @@ function updateQuickStash(P,dt){
   return !!P.trav;
 }
 
+// A late cleanup tap follows this exact takedown once. It never queues attacks
+// or chooses a different body, and movement/pause/damage cancel the intention.
+function recoveryInputCandidate(P=S.player){
+  const A=P.killAnim,c=A?.c;
+  if(!A?.committed||!c||A.dur-(S.t-A.t0)>.25||P.carrying||P.captive||P.hide||P.under||P.vent||P.z||P.hurtT>0)return null;
+  return S.corpses.includes(c)&&!c.carried&&!c.stashed&&!c.hidden&&objectReachable(c,46)?c:null;
+}
+function queueRecoveryInput(){
+  const P=S.player,c=recoveryInputCandidate(P);if(!c)return false;
+  P.recoveryQueue={c,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.6};return true;
+}
+function updateRecoveryInput(P){
+  const q=P.recoveryQueue;if(!q)return;
+  const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
+  if(S.t>q.until||moving||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.corpses.includes(q.c)||q.c.carried||q.c.stashed||q.c.hidden){P.recoveryQueue=null;return;}
+  if(actionBusy(P))return;
+  P.recoveryQueue=null;
+  if(!objectReachable(q.c,46))return;
+  const choice=quickStashChoice(q.c);actCarry(choice||{k:'carry',c:q.c,fromZ:true});
+}
+
 function actThrow(pt) {
   if (!S || S.over || paused || !running) return;
   const P = S.player; if (actionBusy(P) || P.hide || P.under || P.vent) return;
@@ -12404,6 +12472,82 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 // 성능 측정: __pf 가 켜져 있을 때만 단계별 시간을 모은다
 let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t = performance.now(); if (k) { const s = pf.s || (pf.s = {}); s[k] = (s[k] || 0) + t - PM_T; } PM_T = t; }
 
+// The playable rectangle ends at a visible town wall. The streets beyond it
+// are scenery, drawn only for the current viewport with a small shared cache.
+const exteriorArt={signature:'',blocks:new Map(),wall:null,ground:null,pattern:null};
+function exteriorAssets(){
+  const signature=[kitOk(kitG.asph0),kitOk(kitTex.wall),kitOk(kitTex.concrete)].join(':');
+  if(exteriorArt.signature!==signature){exteriorArt.signature=signature;exteriorArt.blocks.clear();exteriorArt.wall=exteriorArt.ground=exteriorArt.pattern=null;}
+  return exteriorArt;
+}
+function exteriorGround(){
+  const cache=exteriorAssets();if(cache.ground)return cache.ground;
+  const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#303a34';x.fillRect(0,0,96,96);
+  if(kitOk(kitG.asph0)){x.drawImage(kitG.asph0,0,0,96,96);x.fillStyle='#233127cc';x.fillRect(0,0,96,96);}
+  return cache.ground=c;
+}
+function exteriorBlock(variant){
+  const cache=exteriorAssets();if(cache.blocks.has(variant))return cache.blocks.get(variant);
+  const c=document.createElement('canvas');c.width=288;c.height=224;const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+  const bx=18+variant%3*9,by=25+(variant%2)*16,bw=222-(variant%3)*16,bh=114+(variant%2)*28;
+  x.fillStyle='#18231dc0';x.fillRect(bx+12,by+16,bw+10,bh+35);
+  x.fillStyle=['#333f36','#34413b','#3a4035'][variant%3];x.fillRect(bx,by,bw,bh);
+  if(kitOk(kitTex.concrete)){x.globalAlpha=.14;x.fillStyle=x.createPattern(kitTex.concrete,'repeat');x.fillRect(bx,by,bw,bh);x.globalAlpha=1;}
+  x.strokeStyle='#697265';x.lineWidth=3;x.strokeRect(bx+2,by+2,bw-4,bh-4);
+  x.strokeStyle='#202e27';x.lineWidth=4;x.strokeRect(bx+7,by+7,bw-14,bh-14);
+  x.fillStyle='#303a31';x.fillRect(bx,by+bh,bw,27);
+  if(kitOk(kitTex.wall)){x.globalAlpha=.18;x.fillStyle=x.createPattern(kitTex.wall,'repeat');x.fillRect(bx,by+bh,bw,27);x.globalAlpha=1;}
+  x.fillStyle='#111f1b';for(let i=0;i<4;i++)x.fillRect(bx+18+i*48,by+bh+6,24,13);
+  x.fillStyle='#a49b66';x.globalAlpha=.42;x.fillRect(bx+18+(variant%4)*48,by+bh+6,24,13);x.globalAlpha=1;
+  x.fillStyle='#747b68';x.fillRect(bx+26,by+26,32,24);x.fillStyle='#38473c';x.fillRect(bx+30,by+30,24,16);x.strokeStyle='#7e8570';x.lineWidth=1;for(let k=0;k<4;k++){x.beginPath();x.moveTo(bx+32,by+32+k*4);x.lineTo(bx+52,by+32+k*4);x.stroke();}
+  x.fillStyle='#727762';x.fillRect(bx+bw-51,by+bh-44,28,20);x.fillStyle='#303c32';x.fillRect(bx+bw-48,by+bh-41,22,14);
+  x.strokeStyle='#68715f';x.lineWidth=2;x.beginPath();x.moveTo(bx+44,by+50);x.lineTo(bx+44,by+bh-18);x.lineTo(bx+bw-28,by+bh-18);x.stroke();
+  cache.blocks.set(variant,c);return c;
+}
+function exteriorWall(){
+  const cache=exteriorAssets();if(cache.wall)return cache.wall;
+  const c=document.createElement('canvas');c.width=192;c.height=32;const x=c.getContext('2d');x.fillStyle='#475044';x.fillRect(0,0,192,32);
+  if(kitOk(kitTex.wall)){x.globalAlpha=.38;x.drawImage(kitTex.wall,0,0,192,32);x.globalAlpha=1;}
+  x.fillStyle='#222f27';x.fillRect(0,26,192,6);x.fillStyle='#8a8d75';x.fillRect(0,0,192,5);x.fillStyle='#64705b';x.fillRect(0,5,192,3);
+  x.fillStyle='#333f33';x.fillRect(0,3,13,26);x.fillStyle='#96967d';x.fillRect(0,0,15,6);
+  return cache.wall=c;
+}
+function exteriorGates(){
+  const width=MW*TILE,height=MH*TILE,points=[{x:tc(STAGE.start[0]),y:tc(STAGE.start[1])},...(S.exits||[]).map(e=>({...e,exit:true}))],out=[];
+  for(const p of points){const options=[['west',p.x,p.y,height],['east',width-p.x,p.y,height],['north',p.y,p.x,width],['south',height-p.y,p.x,width]].sort((a,b)=>a[1]-b[1]),[side,d,along,length]=options[0];if(d>72)continue;
+    const at=clamp(along,48,length-48),old=out.find(g=>g.side===side&&Math.abs(g.at-at)<80);if(old){old.exit=old.exit||p.exit;continue;}out.push({side,at,exit:!!p.exit});}
+  return out;
+}
+function drawTownExterior(){
+  if(STAGE.artSlice)return;
+  const [vx,vy,vw,vh]=viewRect(40),width=MW*TILE,height=MH*TILE;
+  if(vx>=0&&vy>=0&&vx+vw<=width&&vy+vh<=height)return;
+  const cache=exteriorAssets(),ground=exteriorGround();cache.pattern=cache.pattern||ctx.createPattern(ground,'repeat');
+  ctx.save();ctx.beginPath();ctx.rect(vx,vy,vw,vh);ctx.rect(0,0,width,height);ctx.clip('evenodd');ctx.fillStyle=cache.pattern;ctx.fillRect(vx,vy,vw,vh);
+  const block=(x,y)=>{const v=(((Math.round(x)*73856093)^(Math.round(y)*19349663))>>>0)%6;ctx.drawImage(exteriorBlock(v),x,y);};
+  for(let x=Math.floor(vx/288)*288;x<vx+vw;x+=288){
+    for(let y=height+88+Math.max(0,Math.floor((vy-height-88)/224))*224;y<vy+vh;y+=224)block(x,y);
+    for(let y=-88-224-Math.max(0,Math.floor((-vy-vh-88)/224))*224;y+224>vy;y-=224)if(y<vy+vh)block(x,y);
+  }
+  for(let y=Math.max(-88,Math.floor(vy/224)*224);y<Math.min(height+88,vy+vh);y+=224){
+    for(let x=width+88+Math.max(0,Math.floor((vx-width-88)/288))*288;x<vx+vw;x+=288)block(x,y);
+    for(let x=-88-288-Math.max(0,Math.floor((-vx-vw-88)/288))*288;x+288>vx;x-=288)if(x<vx+vw)block(x,y);
+  }
+  // Pavement and curbs continue around the inaccessible neighboring blocks.
+  ctx.fillStyle='#515b4b';ctx.fillRect(-48,-48,width+96,20);ctx.fillRect(-48,height+28,width+96,20);ctx.fillRect(-48,-28,20,height+56);ctx.fillRect(width+28,-28,20,height+56);
+  ctx.strokeStyle='#7b806d';ctx.lineWidth=2;ctx.strokeRect(-48,-48,width+96,height+96);
+  const wall=exteriorWall();
+  for(let x=Math.floor(vx/192)*192;x<Math.min(width,vx+vw);x+=192)if(x+192>0){ctx.drawImage(wall,x,-32);ctx.drawImage(wall,x,height);}
+  for(let y=Math.floor(vy/192)*192;y<Math.min(height,vy+vh);y+=192)if(y+192>0){for(const x of [0,width+32]){ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/2);ctx.drawImage(wall,0,0);ctx.restore();}}
+  for(const g of exteriorGates()){
+    ctx.save();if(g.side==='south')ctx.translate(g.at,height);else if(g.side==='north')ctx.translate(g.at,-32);else{ctx.translate(g.side==='west'?0:width+32,g.at);ctx.rotate(Math.PI/2);}
+    ctx.fillStyle='#28392f';ctx.fillRect(-42,0,84,32);ctx.fillStyle='#596b58';ctx.fillRect(-42,2,84,5);ctx.fillRect(-42,27,84,4);
+    if(!g.exit||!S.exitOpen){ctx.fillStyle='#6d7c63';for(let x=-38;x<42;x+=9)ctx.fillRect(x,7,3,20);ctx.fillStyle='#a89b64';ctx.fillRect(-3,17,7,5);}
+    ctx.fillStyle='#7d8570';ctx.fillRect(-46,0,7,34);ctx.fillRect(39,0,7,34);ctx.restore();
+  }
+  ctx.restore();
+}
+
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
@@ -12537,6 +12681,7 @@ function draw() {
   PM('fx');
   // 어둠
   if (!DBG.dark) darkPass(sc, S.lamps.filter(l => !flOf(l)), null);
+  drawTownExterior();
   PM('dark');
   worldTransform(ctx, sc);
   ctx.globalCompositeOperation = 'lighter';
@@ -13300,7 +13445,7 @@ function actEnv() {
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
-  if (actionBusy()) return;
+  if (actionBusy()) {queueRecoveryInput();return;}
   const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다':unavailableEnvReason(),1.4,'warn'); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();
@@ -13516,7 +13661,7 @@ function updateHUD(force) {
   hud.act.style.setProperty('--hold', COMBAT_INPUTS.atk.includes(source) ? progress : '0');
   hud.carry.style.setProperty('--hold', COMBAT_INPUTS.env.includes(source) ? progress : '0');
   padButton(hud.carry, 'carryH', ea, P.ledge || P.wire ? '올라가기' : '행동');
-  hud.carry.classList.toggle('ready', ea.k !== 'none'&&!ea.skillLocked);
+  hud.carry.classList.toggle('ready', !!ea.bufferable||ea.k !== 'none'&&!ea.skillLocked);
   { const cb = $('btnCycle'); if (cb) { const n = ea.choices || 0; cb.hidden = !(n > 1 || ea.blocked&&n>0); if (!cb.hidden) setText($('cycleN'), 'cycN', ea.blocked?'다시 선택':(ea.choiceI + 1) + '/' + n); } }
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -14227,6 +14372,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
@@ -14356,7 +14502,7 @@ function clearPlayerInput() {
   for(const id of ['btnAct','btnCarry','btnGrab','btnTool','btnSkill'])document.getElementById(id)?.classList.remove('down');
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));

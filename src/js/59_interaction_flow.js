@@ -72,6 +72,8 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
+  if(P.recoveryQueue)return{k:'none',busy:true,label:'몸 정리 대기'};
+  if(recoveryInputCandidate(P))return{k:'none',busy:true,bufferable:true,label:'몸 정리 예약'};
   return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){

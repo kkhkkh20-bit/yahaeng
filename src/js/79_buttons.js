@@ -144,7 +144,7 @@ function actEnv() {
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
   if (input.aiming) { queueAim(); return; }
-  if (actionBusy()) return;
+  if (actionBusy()) {queueRecoveryInput();return;}
   const a = envAction(); if (a.k === 'none') { toast(a.blocked?'선택한 대상에 손이 닿지 않는다':unavailableEnvReason(),1.4,'warn'); return; }
   if (a.fromZ) actCarry(a); else actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'env' }));
   S.envExplicit=null; closeEnvPicker();

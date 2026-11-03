@@ -302,6 +302,10 @@
       "group": "interaction"
     },
     {
+      "path": "interaction/recovery_input.js",
+      "group": "interaction"
+    },
+    {
       "path": "interaction/tools.js",
       "group": "interaction"
     },
@@ -368,6 +372,10 @@
     {
       "path": "render/goals.js",
       "group": "render"
+    },
+    {
+      "path": "graphics/world_border.js",
+      "group": "graphics"
     },
     {
       "path": "render/frame.js",

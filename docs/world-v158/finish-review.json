@@ -1,0 +1,62 @@
+{
+  "disposition": "ship",
+  "persistence": {
+    "result": "pass at the narrow extension scope",
+    "basis": "Existing code-led game world; no approved comp, PRODUCT.md, DESIGN.md, QUALITY BAR card or full five-block direction contract was supplied. The calling brief explicitly scopes this as an extension of the established night palette, current HUD and Plex KR Regular 400. No new visual-world approval or comp phase is implied.",
+    "version": "v158",
+    "source_sha256": "c8dd0dd22c72483a08521f70d480a2b6a466f0cdef1cc52d9c23ae94c3bfff32",
+    "evidence": "All 16 required original captures opened individually, correct dimensions/corners and usable render states; their hashes match after-captures.json and its source hash matches public/version.json. South-east is native movement from m4 start; the other three corners are controlled edge fixtures followed by native movement, not playthroughs."
+  },
+  "fidelity": {
+    "matrix": [
+      {
+        "element": "TYPE",
+        "status": "match",
+        "evidence": "The supplied renders retain the established compact Korean HUD typography and hierarchy. Font files/computed font resolution were not independently measured."
+      },
+      {
+        "element": "MATERIAL",
+        "status": "match",
+        "evidence": "src/js/graphics/world_border.js uses the existing kit asphalt, wall and concrete textures with bounded cached canvas roof/wall tiles; the final originals visibly render textured roofs, vents, parapets and physical perimeter walls in the game's existing pixel world."
+      },
+      {
+        "element": "GROUND",
+        "status": "match",
+        "evidence": "The exterior is a muted green night street surface, legible beside the dark playable streets across all four viewport classes. The 16 originals show no black off-map void. Exact color matching has no approved comp authority here."
+      },
+      {
+        "element": "Boundary communicates playable limit",
+        "status": "match",
+        "evidence": "All four corner groups visibly place a continuous physical wall immediately outside the playable edge. world_border.js clips exterior scenery outside [0,MW*TILE] x [0,MH*TILE]; render/frame.js draws it after playable darkness. No grid or collider expansion is introduced by this renderer."
+      },
+      {
+        "element": "Scenery does not promise actions",
+        "status": "match",
+        "evidence": "Neighboring roofs and streets continue beyond the wall with no action markers, doors offered as controls, NPCs or target labels. Scenery is drawn only and does not register gameplay entities."
+      },
+      {
+        "element": "Player visibility at boundaries",
+        "status": "match",
+        "evidence": "Actor silhouette remains recognizable at every corner on PC, portrait, landscape and small screens. Mobile action controls remain below the actor. At south-west PC the thin keyboard legend crosses the feet/lower legs, but does not conceal the body or obscure the direction of the visible boundary; this is below a material blocker."
+      },
+      {
+        "element": "Late cleanup intention",
+        "status": "match",
+        "evidence": "interaction/recovery_input.js accepts the committed exact corpse only in the final .25 seconds, executes it once after actionBusy clears, and cancels on movement, damage, position/floor/height changes, expiration or missing/stashed/carried body. 90_input.js clears it on input reset. production-recovery.json reports six controlled cases passed on keyboard and touch."
+      },
+      {
+        "element": "Reachable AI destination and physical post avoidance",
+        "status": "match",
+        "evidence": "ai/navigation.js sets pathGoal to an actually reachable neighboring cell for a solid observation while preserving lastSeen. Street-post detours validate sampled physical legs. mechanics.json records three blocked inspections and four real street-post pursuit fixtures, including repeated replanning, arriving without memory changes."
+      }
+    ],
+    "validation": "The existing single detector result is []; it was not rerun. /tmp/tests-v158.log ends with all tests passing. campaign-journey.json records native keyboard/touch entry encounter, KO/carry, foliage storage and checkpoint menu restore with live actors.",
+    "limits": "Static render review plus source and existing test-evidence inspection. No independent browser session, complete contract playthrough, every combat branch, or whole-game guarantee. The boundary render probes are controlled fixtures; campaign journey covers the entry flow only."
+  },
+  "ceiling": {
+    "result": "reached for this extension",
+    "basis": "The new perimeter uses the established game's native devices: tiled material, wall posts, gates, curb continuation, roof fixtures and restrained night depth. Further ornament, exterior inhabitants or interactive-looking detail would dilute the separation between playable town and scenery. No material ambition gap requires another polish round."
+  },
+  "material_fixes": [],
+  "keep": "Keep the existing night town, current HUD and Plex KR Regular 400; keep all m2/m4/m6 playable grids, detection and skills intact, the explicit wall/scenery distinction, exact-victim cleanup cancellation, reachable AI goals and bounded exterior cache."
+}

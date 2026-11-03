@@ -1,0 +1,28 @@
+[
+  {
+    "mobile": false,
+    "checks": [
+      "late tap carries exact KO victim once",
+      "pause cancels intention",
+      "movement cancels intention",
+      "damage cancels intention",
+      "missing victim does not switch bodies",
+      "earlier unrelated tap is not buffered"
+    ],
+    "errors": [],
+    "method": "Actual keyboard/CDP touch in a controlled single-victim timing scene, not a campaign playthrough."
+  },
+  {
+    "mobile": true,
+    "checks": [
+      "late tap carries exact KO victim once",
+      "pause cancels intention",
+      "movement cancels intention",
+      "damage cancels intention",
+      "missing victim does not switch bodies",
+      "earlier unrelated tap is not buffered"
+    ],
+    "errors": [],
+    "method": "Actual keyboard/CDP touch in a controlled single-victim timing scene, not a campaign playthrough."
+  }
+]

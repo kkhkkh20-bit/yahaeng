@@ -131,6 +131,7 @@ function draw() {
   PM('fx');
   // 어둠
   if (!DBG.dark) darkPass(sc, S.lamps.filter(l => !flOf(l)), null);
+  drawTownExterior();
   PM('dark');
   worldTransform(ctx, sc);
   ctx.globalCompositeOperation = 'lighter';

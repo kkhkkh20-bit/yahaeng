@@ -8,6 +8,30 @@ function lookAround(g, dt, base, amp, hold) {
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
 const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
+function npcPostLegClear(a,b){
+  const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
+  for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
+    if(solidAt(Math.floor((a.x+(b.x-a.x)*i/steps+dx)/TILE),Math.floor((a.y+(b.y-a.y)*i/steps+dy)/TILE)))return false;
+  }
+  return true;
+}
+function avoidStreetPost(g){
+  if(flOf(g)||g.z||!g.path?.length)return;
+  const next=g.path[0],dx=next.x-g.x,dy=next.y-g.y,d=Math.hypot(dx,dy);if(d<1)return;
+  for(const l of S.lamps){
+    const m=l.mount;if(m?.kind!=='street')continue;
+    const u=clamp(((m.ax-g.x)*dx+(m.ay-g.y)*dy)/(d*d),0,1);
+    if(u<=0||dist(g.x+dx*u,g.y+dy*u,m.ax,m.ay)>=19)continue;
+    const ux=dx/d,uy=dy/d,options=[];
+    for(const side of [1,-1]){
+      const a={x:m.ax-uy*side*24-ux*24,y:m.ay+ux*side*24-uy*24,detour:true,postDetour:true};
+      const b={x:m.ax-uy*side*24+ux*24,y:m.ay+ux*side*24+uy*24,detour:true,postDetour:true};
+      if(npcPostLegClear(g,a)&&npcPostLegClear(a,b)&&npcPostLegClear(b,next))options.push({a,b,cost:dist(g.x,g.y,a.x,a.y)+dist(a.x,a.y,b.x,b.y)+dist(b.x,b.y,next.x,next.y)});
+    }
+    options.sort((a,b)=>a.cost-b.cost);if(options.length){g.path.unshift(options[0].a,options[0].b);g.detourT=1.2;}
+    return;
+  }
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
   if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
@@ -27,6 +51,7 @@ function moveAlong(g, speed, dt) {
   }else g.walkProgress=null;
   const startX = g.x, startY = g.y; g.moving = false;
   if (!g.path || !g.path.length) {if(g.pathGoal&&dist(g.x,g.y,g.pathGoal.x,g.pathGoal.y)>32){if(S.t-(g.pathFailedAt||0)>.5)pathTo(g,g.pathGoal.x,g.pathGoal.y);return false;}return true;}
+  avoidStreetPost(g);
   if(STAGE.artSlice&&window.__clubView?.ready)speed*=window.__clubView.pace(g.path[0].x-g.x,g.path[0].y-g.y);
   // 군중 우회가 같은 자리에서 반복되면 원래 목적지로 다시 길을 잡는다.
   // 짧게 양보 우회만 멈추고 벽 판정과 몸 간격 보정은 그대로 적용한다.
@@ -104,6 +129,25 @@ function npcRouteSolid(g) {
 }
 function pathTo(g, x, y) {
   const sol = npcRouteSolid(g), sx = Math.floor(g.x / TILE), sy = Math.floor(g.y / TILE), tx = Math.floor(x / TILE), ty = Math.floor(y / TILE);
+  // A remembered sound/contact can fall inside a bin or wall. Keep that
+  // observation, but walk to a reachable neighboring cell and actually arrive.
+  // astar's automatic fallback otherwise leaves pathGoal inside the obstacle,
+  // so a guard already beside it keeps retrying the same empty route forever.
+  if(sol(tx,ty)){
+    const candidates=[];
+    for(let r=1;r<=2;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+      if(Math.max(Math.abs(dx),Math.abs(dy))!==r||sol(tx+dx,ty+dy))continue;
+      candidates.push({tx:tx+dx,ty:ty+dy,x:tc(tx+dx),y:tc(ty+dy),distance:Math.hypot(dx,dy)});
+    }
+    candidates.sort((a,b)=>a.distance-b.distance||dist(g.x,g.y,a.x,a.y)-dist(g.x,g.y,b.x,b.y));
+    for(const at of candidates){
+      const path=astar(sx,sy,at.tx,at.ty,sol);
+      if(!path.length&&(sx!==at.tx||sy!==at.ty))continue;
+      g.path=path;g.pathGoal={x:at.x,y:at.y};g.pathFailedAt=S.t;
+      if(!path.length&&dist(g.x,g.y,at.x,at.y)>6)g.path=[{...g.pathGoal}];
+      return;
+    }
+  }
   g.path = astar(sx, sy, tx, ty, sol); g.pathGoal = { x, y }; g.pathFailedAt = S.t;
   if (!g.path.length && sx === tx && sy === ty && dist(g.x, g.y, x, y) > 6 && !sol(tx, ty)) g.path = [{ x, y }];
   if (g.path.length && !sol(tx, ty)) Object.assign(g.path[g.path.length - 1], { x, y });
