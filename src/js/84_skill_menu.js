@@ -105,7 +105,7 @@ function drawSkillLinks(){
 window.addEventListener('resize',()=>{if(!$('skillScreen').hidden)drawSkillLinks();});
 function syncAssassinHUD(){
   const b=$('btnSkill');if(!b||!S)return;
-  b.hidden=!assassinSupported()||S.over||isTouch&&!STAGE.skillPractice;
+  b.hidden=!assassinSupported()||S.over||!STAGE.skillPractice&&(isTouch||!assassinUnlocked());
   if(b.hidden)return;
   const P=S.player,d=ASSASSIN_SKILLS[S.selectedSkill];
   // Readiness may lag 0.1s; the actual input and both impacts always revalidate.

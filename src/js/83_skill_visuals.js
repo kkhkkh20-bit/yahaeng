@@ -36,7 +36,7 @@ function skillUseText(d){
  if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';
  if(d.id==='electric')return '스위치·분전반 앞에서 행동 버튼';
- if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '도구 바꾸기로 선택한 뒤 도구 버튼';
+ if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '장비에서 선택한 뒤 도구 버튼';
  return '배우면 해당 상황에서 자동 적용';
 }
 function drawSkillPreview(id){

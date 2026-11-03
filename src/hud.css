@@ -1,239 +1,181 @@
-/* In-play interface: quiet type, a shared status line, flat thumb controls.
-   This file owns HUD layout in both the standard and ink editions. */
-#hud {
-  --hud-ink: #e1e0d5;
-  --hud-muted: #b5b9ac;
-  --hud-line: #636b60;
-  --hud-ground: #131a15ed;
-  --hud-warn: #e2c18b;
-  --hud-danger: #e4a18f;
-  position: fixed; inset: 0; pointer-events: none; color: var(--hud-ink);
-  font-family: var(--f-body); font-variant-numeric: tabular-nums;
+/* Night field kit: etched silhouettes, warm metal, one compact action cluster. */
+#hud{--hud-ink:#eee9dc;--hud-muted:#b4b9b3;--hud-line:#6a736c;--hud-ground:#10191bed;--hud-gold:#c9ae77;--hud-warn:#e8bf7c;--hud-danger:#efa18e;position:fixed;inset:0;pointer-events:none;color:var(--hud-ink);font-family:var(--f-body);font-variant-numeric:tabular-nums}
+#hud button{font-family:inherit;font-weight:400;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#hud button:focus-visible,#hud [role=button]:focus-visible{outline:2px solid #efdaa8;outline-offset:4px}
+#hud .top{position:absolute;top:max(20px,env(safe-area-inset-top));left:max(24px,env(safe-area-inset-left));right:220px;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+#hud .obj{position:relative;max-width:min(440px,100%);box-sizing:border-box;min-width:0;padding:10px 36px 12px 48px;display:flex;flex-direction:column;gap:5px;background:linear-gradient(90deg,#10191bf2,#10191ba8);border-left:2px solid var(--hud-gold);color:var(--hud-ink);font-size:15px;line-height:1.5;cursor:pointer;pointer-events:auto}
+#hud .obj::before{content:'夜';position:absolute;left:12px;top:14px;color:var(--hud-gold);font-size:21px;line-height:1.3}
+#hud .obj::after{content:'';position:absolute;right:15px;top:20px;width:5px;height:5px;border:solid var(--hud-gold);border-width:0 1px 1px 0;transform:rotate(45deg)}
+#hud .obj.open::after{transform:rotate(225deg)}
+#hud #objTitle{order:-1;font-size:10px;letter-spacing:.14em;color:var(--hud-gold);font-weight:400}
+#hud #objective .ol{display:block;margin:0;font-size:inherit;font-weight:400;line-height:inherit}
+#hud .obj:not(.open) #objective .ol:not(:first-child){display:none}
+#hud .obj:not(.open) #objective .ol:first-child{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#hud .obj.open{max-height:min(52dvh,440px);overflow:auto;background:#10191bfa}
+#hud .obj.open #objective .ol{font-size:13px;padding:10px 0;border-bottom:1px solid #c9ae7733}
+#hud #objective .ol.done{text-decoration:line-through;color:var(--hud-muted)}
+#hud #objective .tut-detail{display:block;margin-top:5px;font-size:12px;line-height:1.5;color:var(--hud-muted)}
+#hud .obj.urgent #objective{color:var(--hud-warn)}
+#hud .status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:0 4px;background:none;text-shadow:0 2px 4px #000}
+#hud .chip{display:inline-flex;align-items:center;gap:7px;padding:0;border:0;background:none;font-size:11px;line-height:1.5;color:var(--hud-muted);white-space:nowrap}
+#hud .clab{font-size:10px;font-weight:400}
+#hud #layerLbl::before{content:'';width:4px;height:4px;border:1px solid currentColor;transform:rotate(45deg)}
+#hud #killsLbl,#hud #modeLbl,#hud #pickLbl,#hud #alertPips,#hud #alertBox[data-lv="0"],#hud #btnMap{display:none}
+#hud #layerLbl[data-z=res],#hud #alertBox[data-lv="1"],#hud #alertBox[data-lv="2"]{color:var(--hud-warn)}
+#hud #layerLbl[data-z=hos],#hud #alertBox[data-lv="3"],#hud #alarmChip,#hud #wantBox{color:var(--hud-danger)}
+#hud #hpPips{display:inline-flex;gap:3px}
+#hud #hpPips i{display:block;width:18px;height:4px;background:#424e48;transform:skew(-15deg)}
+#hud #hpPips i.on{background:#d9d7bf;box-shadow:0 1px 4px #000}
+#hud #hpBox[data-low="1"] #hpPips i.on{background:var(--hud-danger)}
+#hud .hud-menu{position:absolute;right:max(24px,env(safe-area-inset-right));top:max(18px,env(safe-area-inset-top));display:flex;align-items:center;justify-content:center;gap:9px;min-height:44px;width:64px;padding:8px;border:1px solid #c9ae7740;border-radius:4px;background:var(--hud-ground);color:var(--hud-ink);font-size:11px;pointer-events:auto;z-index:6}
+#hud .hud-menu::before{content:'';width:6px;height:11px;border-inline:2px solid var(--hud-gold)}
+#hud #mini{position:absolute;right:max(24px,env(safe-area-inset-right));top:76px;width:142px;height:auto;min-height:44px;padding:5px;border:1px solid #b5a47b80;border-radius:3px;outline:3px solid #10191b99;background:#10191b;opacity:.88;pointer-events:auto;cursor:pointer;box-shadow:0 8px 24px #0005;box-sizing:border-box}
+#hud #stealth{position:absolute;left:max(24px,env(safe-area-inset-left));top:calc(var(--topb,110px) + 14px);display:flex;align-items:center;gap:10px;max-width:calc(100vw - 130px);padding:5px 0;background:none;color:var(--hud-ink);--sc:var(--hud-ink);text-shadow:0 2px 4px #000}
+#hud .sth-eye{display:flex;align-items:center;gap:4px;flex-shrink:0}
+#hud .sth-ico{display:flex;width:24px;height:24px}
+#hud .sth-ico svg{width:100%;height:100%;fill:none;stroke:var(--sc);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#hud .sth-wing{display:block;width:15px;height:2px;background:#86928366;overflow:hidden}
+#hud .sth-wing.l{transform:scaleX(-1)}
+#hud .sth-wing i{display:block;width:0;height:100%;background:var(--sc)}
+#hud .sth-txt{display:flex;flex-direction:column;gap:2px;min-width:0}
+#hud #stealth b{font-size:12px;font-weight:400}
+#hud #stealth small{font-size:10px;color:var(--hud-muted)}
+#hud #stealth.quiet small{display:none}
+#hud #stealth[data-s=risk]{--sc:var(--hud-warn);color:var(--hud-warn)}
+#hud #stealth[data-s=seen]{--sc:var(--hud-danger);color:var(--hud-danger)}
+.hudfade{opacity:.72}.hudfade:hover,.hudfade:focus-visible{opacity:1}
+#hud .keys{position:absolute;left:max(24px,env(safe-area-inset-left));bottom:max(20px,env(safe-area-inset-bottom));max-width:calc(100vw - 240px);display:flex;flex-wrap:wrap;gap:12px 18px;padding:12px 14px;background:#10191bd9;border-top:1px solid #c9ae7750;border-radius:3px;color:var(--hud-muted);font-size:11px;line-height:1.5}
+#hud .keys span{display:inline-flex;align-items:center;gap:7px}
+#hud .keys.mini span:not(.keep){display:none}
+#hud .keys kbd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 3px;box-sizing:border-box;border:1px solid #a6ae9c80;border-radius:3px;color:var(--hud-ink);font:400 10px var(--f-body);background:#22302c}
+#hud .keys em{font-style:normal}#hud .keys .km.on{color:var(--hud-ink)}
+#hud .pad{position:absolute;right:max(24px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));pointer-events:none}
+#hud .pad>button{display:none}
+#hud .pad #btnToolNext{display:flex;align-items:center;justify-content:center;gap:8px;position:absolute;right:0;bottom:0;width:110px;min-height:48px;padding:8px;border:1px solid #c9ae7770;border-radius:4px;background:var(--hud-ground);color:var(--hud-ink);pointer-events:auto;font-size:12px}
+#hud button b{font-weight:400}
+#hud .pad #btnToolNext::before{content:'';width:24px;height:24px;background:var(--hud-gold);mask:var(--art-equipment) center/contain no-repeat}
+#hud #btnCycle{position:absolute;right:0;bottom:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:64px;min-height:44px;padding:5px 8px;border:1px solid #c9ae7750;border-radius:4px;background:var(--hud-ground);color:var(--hud-ink);font-size:11px;pointer-events:auto}
+#hud #btnDress{position:absolute;right:76px;bottom:60px;display:flex;align-items:center;justify-content:center;gap:7px;min-height:48px;min-width:110px;border:1px solid #c9ae7780;border-radius:4px;background:var(--hud-ground);color:var(--hud-ink);pointer-events:auto;font-size:12px}
+#hud #btnDress::before{content:'';width:24px;height:24px;mask:var(--art-dress) center/contain no-repeat;background:var(--hud-gold)}
+#hud #btnDress>svg{display:none}
+#hud .sysbtns{display:none}
+#hud .joyhint{display:none}
+#hud #saveState{position:absolute;left:24px;bottom:76px;font-size:10px;color:var(--hud-muted)}
+#hud #floorBan{position:fixed;left:50%;top:24%;transform:translateX(-50%);padding:6px 12px;background:var(--hud-ground);color:var(--hud-ink);font-size:16px;opacity:0}
+#hud #floorBan.on{animation:hudFloor 1.4s ease-out}
+@keyframes hudFloor{0%,100%{opacity:0}15%,70%{opacity:1}}
+#hud .tac{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;min-height:44px;padding:12px 16px;background:var(--hud-ground);border:1px solid var(--hud-gold);border-radius:3px;color:var(--hud-ink);pointer-events:auto;z-index:5}
+#hud #alertVig{position:fixed;inset:0;opacity:0;pointer-events:none;z-index:1}
+#hud #alertVig[data-a="3"]{opacity:1;box-shadow:inset 0 -24px 48px -40px #a9483b}
+#hud .lesson-cue{outline:2px solid var(--hud-warn);outline-offset:4px}
+#hud #envPicker{box-sizing:border-box;position:fixed;z-index:25;width:min(260px,calc(100vw - 124px));max-height:min(55dvh,calc(100dvh - var(--topb,70px) - 24px));overflow:auto;padding:12px;pointer-events:auto;border:1px solid #c9ae7780;border-radius:6px;background:#10191bfa;box-shadow:0 16px 48px #0008;color:var(--hud-ink)}
+#hud #envPicker>b{display:block;padding:4px 8px 12px;color:var(--hud-gold);font-size:11px;font-weight:400}
+#hud #envPicker button{box-sizing:border-box;display:block;width:100%;min-height:44px;text-align:left;font-size:13px;line-height:1.4;padding:10px 12px;margin:0;border:0;border-bottom:1px solid #c9ae7728;border-radius:3px;background:none;color:var(--hud-muted)}
+#hud #envPicker button[aria-pressed=true]{background:#c9ae771a;color:var(--hud-ink)}
+#hud #envPicker button small{display:block;margin-top:3px;font-size:11px}
+#hud #btnSkill{position:absolute;right:24px;bottom:122px;width:166px;min-height:48px;padding:8px 12px;border:1px solid #c9ae7770;border-radius:4px;color:var(--hud-ink);background:linear-gradient(90deg,#6a6246 var(--skill-hold,0%),transparent 0),var(--hud-ground);pointer-events:auto;touch-action:none}
+#hud #btnSkill b,#hud #btnSkill small{display:block;font-size:12px;font-weight:400}#hud #btnSkill small{font-size:10px}
+/* A deliberate selection surface, not another row of persistent controls. */
+#hud #loadoutShade{position:fixed;inset:0;z-index:30;width:100%;height:100%;padding:0;margin:0;border:0;border-radius:0;background:#050b10a8;pointer-events:auto;backdrop-filter:blur(3px)}
+#hud #loadout{position:fixed;z-index:31;right:max(24px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));box-sizing:border-box;width:340px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:22px;border:1px solid #b6a47b88;border-radius:8px;background:#131f22;box-shadow:0 24px 80px #0009;pointer-events:auto;color:var(--hud-ink)}
+#hud #loadout header{display:flex;align-items:center;justify-content:space-between;gap:10px}
+#hud #loadout header small{font-size:10px;letter-spacing:.16em;color:var(--hud-gold)}
+#hud #loadout h2{font-size:23px;font-weight:400;margin:5px 0 0}
+#hud #btnLoadoutClose{min-width:44px;min-height:44px;border:1px solid #c9ae7740;background:none;border-radius:4px;color:var(--hud-muted);font-size:11px}
+#hud #loadout p{font-size:11px;line-height:1.7;color:var(--hud-muted);margin:14px 0 18px}
+#hud #tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:none;padding:0;border:0;pointer-events:auto}
+#hud #tools .tool{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:94px;padding:10px 6px;border:1px solid #81908260;border-radius:5px;background:#0d171a;color:var(--hud-muted);font-size:11px}
+#hud #tools .tool.on{border-color:var(--hud-gold);background:#c9ae7714;color:var(--hud-ink)}
+#hud #tools .tool.on::after{content:'';position:absolute;right:5px;top:5px;width:4px;height:4px;border:1px solid var(--hud-gold);transform:rotate(45deg)}
+#hud #tools .tool.empty{color:#8f9993}
+#hud #tools .tool kbd{display:none}
+#hud #tools .tool span{position:absolute;right:6px;bottom:5px;font-size:10px;color:var(--hud-gold)}
+#hud #tools .tool::before{content:'';width:32px;height:32px;background:currentColor;mask:var(--tool-art,var(--art-dart)) center/contain no-repeat}
+#hud [data-t=kunai],#hud [data-art=dart]{--tool-art:var(--art-dart)}
+#hud [data-t=stone],#hud [data-art=stone]{--tool-art:var(--art-stone)}
+#hud [data-t=coin],#hud [data-art=coin]{--tool-art:var(--art-coin)}
+#hud [data-t=blade],#hud [data-art=blade]{--tool-art:var(--art-blade)}
+#hud [data-t=smoke],#hud [data-art=smoke]{--tool-art:var(--art-smoke)}
+#hud [data-t=radio],#hud [data-art=radio]{--tool-art:var(--art-radio)}
+#hud [data-t=hack],#hud [data-art=hack]{--tool-art:var(--art-hack)}
+#hud [data-art=whistle]{--tool-art:var(--art-whistle)}
+#hud #btnWhistle{display:grid;grid-template-columns:28px 1fr;align-items:center;gap:4px 12px;width:100%;min-height:64px;padding:10px 12px;margin:10px 0 0;border:1px solid #81908260;border-radius:5px;background:#0d171a;color:var(--hud-ink);text-align:left}
+#hud #btnWhistle::before{content:'';grid-row:span 2;width:28px;height:28px;mask:var(--art-whistle) center/contain no-repeat;background:var(--hud-gold)}
+#hud #btnWhistle b{font-size:12px}#hud #btnWhistle small{font-size:10px;color:var(--hud-muted)}
+#hud #btnWhistle[aria-pressed=true]{border-color:var(--hud-gold)}
+#hud #loadout footer{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #c9ae7733;padding-top:14px;margin-top:18px;font-size:12px;color:var(--hud-muted)}
+#hud #btnSneak{display:flex;align-items:center;gap:10px;min-height:44px;padding:8px 12px;border:1px solid #c9ae7750;border-radius:4px;background:none;color:var(--hud-ink);font-size:12px}
+#hud #btnSneak small{font-size:10px;color:var(--hud-muted)}
+#hud .loadout-note{display:block;font-size:10px;color:var(--hud-gold);text-align:center;margin-top:18px}
+body.loadout-open #hud .pad,body.loadout-open #hud .sysbtns,body.loadout-open #hud .keys,body.loadout-open #hud .hud-menu{visibility:hidden}
+body.touch #hud .keys{display:none}
+body.touch #hud .pad{width:210px;height:166px;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom))}
+body.touch #hud .pad>button{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;box-sizing:border-box;margin:0;padding:6px;width:64px;min-width:44px;height:64px;min-height:44px;border:1px solid #b6bcac80;border-radius:8px;background:#10191be6;box-shadow:inset 0 1px 0 #f2e6c51a,0 4px 16px #0004;color:var(--hud-muted);font-size:11px;line-height:1.3;pointer-events:auto;touch-action:none}
+body.touch #hud .pad>button b{font-size:11px;line-height:1.3;font-weight:400}
+body.touch #hud .pad>button small{font-size:9px;line-height:1.3;font-weight:400;color:inherit}
+body.touch #hud .pad>button>svg{display:none}
+body.touch #hud .pad>button.ready{color:var(--hud-ink);border-color:var(--hud-gold)}
+body.touch #hud .pad #btnAct{right:0;bottom:0;width:80px;height:80px;border-radius:50%;border:1px solid #d2bd8b99;background:radial-gradient(circle at 40% 30%,#394038,#111b1de8 80%);box-shadow:inset 0 0 0 4px #10191b,inset 0 0 0 5px #c9ae7733,0 6px 24px #0006}
+body.touch #hud .pad #btnAct::before{content:'';width:30px;height:30px;mask:var(--art-attack) center/contain no-repeat;background:currentColor}
+body.touch #hud .pad #btnAct.ko{color:#e4d7b0}body.touch #hud .pad #btnAct.kill{color:var(--hud-danger);border-color:#cf8977}
+body.touch #hud .pad #btnCarry{right:96px;bottom:0;width:72px;height:72px;border-radius:18px;background:#172327eb}
+body.touch #hud .pad #btnCarry::before{content:'';width:27px;height:27px;mask:var(--art-action) center/contain no-repeat;background:currentColor}
+body.touch #hud .pad #btnTool{right:9px;bottom:94px;width:62px;height:62px;border-radius:15px}
+body.touch #hud .pad #btnTool::before{content:'';width:25px;height:25px;mask:var(--tool-art,var(--art-dart)) center/contain no-repeat;background:currentColor}
+body.touch #hud .pad #btnTool small{display:none}
+body.touch #hud .pad #btnToolNext{right:94px;bottom:88px;width:72px;height:50px;min-height:50px;flex-direction:row;gap:5px;padding:7px;background:#10191bd9;border-color:#c9ae7755;box-shadow:none}
+body.touch #hud .pad #btnToolNext::before{width:22px;height:22px}
+body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress{right:176px;bottom:0;width:56px;min-width:44px;height:64px;min-height:64px;border-radius:10px;padding:5px;background:#172327eb}
+body.touch #hud .pad #btnGrab::before{content:'';width:25px;height:25px;mask:var(--art-grab) center/contain no-repeat;background:currentColor}
+body.touch #hud .pad #btnDress::before{width:25px;height:25px}
+body.touch #hud .pad #btnGrab small{display:none}
+body.touch #hud .pad #btnCycle{right:176px;bottom:76px;width:56px;height:48px;min-height:48px;padding:4px;background:#10191bd9;border-color:#c9ae7755;box-shadow:none}
+body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{content:'';position:absolute;left:20%;bottom:10px;width:calc(var(--hold,0) * 60%);height:2px;background:var(--hud-danger);border-radius:2px}
+body.touch #hud .sysbtns{display:flex;position:fixed;left:max(18px,env(safe-area-inset-left));bottom:max(22px,env(safe-area-inset-bottom));pointer-events:auto}
+body.touch #hud #btnCrouch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:58px;min-height:58px;padding:5px;border:1px solid #b6bcac60;border-radius:15px;background:#10191bcc;color:var(--hud-muted)}
+body.touch #hud #btnCrouch::before{content:'';width:24px;height:24px;mask:var(--art-crouch) center/contain no-repeat;background:currentColor}
+body.touch #hud #btnCrouch b{font-size:10px;font-weight:400}
+body.touch #hud #btnCrouch.on{color:var(--hud-gold);border-color:var(--hud-gold)}
+body.touch #hud #btnSkill{right:16px;bottom:190px;width:170px}
+body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;font-size:10px;color:var(--hud-muted)}
+body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint{display:none}
+body.touch #hud #saveState{bottom:145px;left:18px}
+body[data-lesson] #hud #btnGrab,body[data-lesson] #hud #btnCycle,body[data-lesson] #hud #btnSkill,body[data-lesson] #hud .keys,
+body[data-lesson=perception] #hud #btnCarry,body[data-lesson=body] #hud #btnTool,body[data-lesson=indoor] #hud #btnTool,body[data-lesson=indoor] #hud #btnAct{visibility:hidden;pointer-events:none}
+body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut{display:block;-webkit-line-clamp:unset;overflow:visible}
+body.scanning #hud #stealth,body.dlgmodal #hud #stealth,body:has(.screen:not([hidden])) #hud #stealth,body.inspecting #hud #stealth,body.inspecting #hud #toasts{visibility:hidden}
+body.dlgmodal #hud .pad,body.dlgmodal #hud .keys,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud .joyhint,body.dlgmodal #hud .hud-menu,body.dlgmodal #hud #btnSkill,body.keypadopen #hud .pad,body.keypadopen #hud .sysbtns,body.keypadopen #hud .keys,body.keypadopen #hud #btnSkill,body:has(.screen:not([hidden])) #hud .hud-menu{visibility:hidden}
+body:not(.playing) #hud #alertVig{display:none}
+@media(max-width:700px){
+ #hud .top{top:max(12px,env(safe-area-inset-top));left:max(14px,env(safe-area-inset-left));right:88px;gap:8px}
+ #hud .obj{width:100%;max-width:100%;padding:8px 24px 9px 34px;font-size:12px;gap:3px}
+ #hud .obj::before{left:8px;top:15px;font-size:17px}#hud .obj::after{right:11px;top:16px}
+ #hud #objTitle{font-size:9px;letter-spacing:.06em}
+ #hud .status{gap:6px 12px;padding:0 0 0 4px}#hud .chip{font-size:10px}#hud .clab{display:none}#hud #hpPips i{width:13px}
+ #hud .hud-menu{right:14px;top:max(12px,env(safe-area-inset-top));width:58px;min-height:44px}
+ #hud #mini{right:14px;top:72px;width:70px;padding:3px}
+ #hud #stealth{left:14px;top:calc(var(--topb,108px) + 10px);max-width:calc(100vw - 108px)}
+ #hud #stealth b{font-size:11px}#hud .sth-ico{width:20px;height:20px}#hud .sth-wing{width:9px}
+ #hud #loadout{right:14px;bottom:max(14px,env(safe-area-inset-bottom));padding:20px}
 }
-#hud button { font-family: inherit; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#hud button:focus-visible,#hud [role="button"]:focus-visible {
-  outline: 2px solid var(--hud-ink); outline-offset: 3px;
+@media(min-width:701px) and (max-height:500px){
+ #hud .top{top:12px;left:18px;right:170px;gap:6px}#hud .obj{max-width:390px;padding:8px 32px 8px 38px;font-size:12px}#hud .obj::before{left:10px;top:12px;font-size:18px}
+ #hud .hud-menu{top:12px;right:16px}#hud #mini{top:70px;right:16px;width:96px}
+ body.touch #hud .pad{bottom:12px;right:16px}
+ #hud #loadout{width:400px;padding:16px;bottom:14px;max-height:calc(100dvh - 28px)}
+ #hud #tools{grid-template-columns:repeat(4,minmax(0,1fr))}#hud #tools .tool{min-height:72px}
+ #hud #loadout h2{font-size:20px}#hud #loadout p{margin:8px 0 10px}#hud #loadout footer{margin-top:10px;padding-top:8px}#hud .loadout-note{margin-top:10px}
+ body.touch #hud #btnSkill{right:250px;bottom:12px;width:140px}
 }
-#hud .top {
-  position: absolute; top: calc(12px + env(safe-area-inset-top,0px));
-  left: max(14px,env(safe-area-inset-left,0px)); right: 74px;
-  display: flex; justify-content: space-between; align-items: flex-start; gap: 24px;
+@media(max-width:360px){
+ body.touch #hud .pad{right:12px;bottom:12px}
+ body.touch #hud .sysbtns{bottom:102px;left:14px}
+ body.touch #hud .joyhint{bottom:174px;left:14px}
+ body.touch #hud #btnSkill{left:14px;right:auto;bottom:174px;width:130px}
 }
-#hud .obj {
-  position: relative; display: flex; flex-direction: column; gap: 5px;
-  max-width: min(420px,55vw); min-width: 0; padding: 8px 28px 9px 10px;
-  border: 0; border-radius: 0; background: var(--hud-ground); box-shadow: none;
-  color: var(--hud-ink); font-size: 15px; line-height: 1.45; pointer-events: auto; cursor: pointer;
-}
-#hud .obj::after {
-  content: ''; position: absolute; right: 11px; top: 15px; width: 5px; height: 5px;
-  border: solid var(--hud-muted); border-width: 0 1px 1px 0; transform: rotate(45deg);
-}
-#hud .obj.open::after { transform: rotate(225deg); }
-#hud #objTitle { order: 2; display: block; margin: 0; color: var(--hud-muted); font-size: 11px; font-weight: 400; letter-spacing: 0; }
-#hud #objective { display: block; min-width: 0; }
-#hud #objective .ol { display: block; margin: 0; font-size: inherit; font-weight:400; line-height: inherit; }
-#hud .obj:not(.open) #objective .ol:not(:first-child) { display: none; }
-#hud .obj:not(.open) #objective .ol:first-child { white-space: normal; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-#hud .obj.open { max-height: min(55vh,440px); overflow: auto; scrollbar-color: var(--hud-line) var(--hud-ground); }
-#hud .obj.open::before { content: '목표 확인 · 시간 정지'; display: block; font-size: 11px; color: var(--hud-warn); }
-#hud .obj.open #objective .ol { padding: 8px 0; border-bottom: 1px solid #3e493d; font-size: 13px; font-weight: 400; }
-#hud #objective .ol.done { text-decoration: line-through; color: var(--hud-muted); }
-#hud #objective .tut-detail { display: block; margin-top: 5px; font-size: 12px; line-height: 1.5; color: var(--hud-muted); font-weight: 400; }
-#hud .obj.urgent #objective { color: var(--hud-warn); }
-#hud .status { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 14px; padding: 7px 8px; background: var(--hud-ground); }
-#hud .chip { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; color: var(--hud-muted); white-space: nowrap; font-size: 12px; line-height: 1.4; }
-#hud .clab { font-size: 11px; color: inherit; font-weight: 400; letter-spacing: 0; }
-#hud #layerLbl[data-z="res"],#hud #alertBox[data-lv="1"],#hud #alertBox[data-lv="2"] { color: var(--hud-warn); }
-#hud #layerLbl[data-z="hos"],#hud #alertBox[data-lv="3"],#hud #alarmChip { color: var(--hud-danger); }
-#hud #killsLbl,#hud #modeLbl,#hud #pickLbl,#hud #alertPips,#hud #alertBox[data-lv="0"],#hud #btnMap { display: none; }
-#hud #hpPips { display: inline-flex; align-items: center; gap: 3px; }
-#hud #hpPips i { display: block; width: 14px; height: 5px; border: 0; border-radius: 0; background: #70796b; }
-#hud #hpPips i.on { background: #d4d6c6; }
-#hud #hpBox[data-low="1"] { color: var(--hud-danger); }
-#hud #hpBox[data-low="1"] #hpPips i.on { background: var(--hud-danger); }
-#hud #wantBox { color: var(--hud-danger); }
-#hud #wantBox i { font-style: normal; opacity: .4; }
-#hud .hud-menu {
-  position: fixed; top: calc(8px + env(safe-area-inset-top,0px)); right: max(10px,env(safe-area-inset-right,0px));
-  width: 48px; min-height: 44px; padding: 8px; border: 0; border-radius: 0;
-  background: var(--hud-ground); color: var(--hud-ink); font-size: 12px; font-weight:400;
-  pointer-events: auto; z-index: 6;
-}
-#hud .sysbtns { display: none; pointer-events: auto; }
-#hud #mini {
-  position: absolute; right: max(14px,env(safe-area-inset-right,0px)); top: 60px;
-  width: 148px; height: auto; min-height: 44px; border: 1px solid #7d8373; border-radius: 0;
-  background: #131a15; opacity: .78; box-shadow: none; pointer-events: auto; cursor: pointer;
-  image-rendering: pixelated;
-}
-#hud #stealth {
-  position: absolute; left: max(14px,env(safe-area-inset-left,0px)); top: calc(var(--topb,76px) + 8px);
-  display: flex; align-items: center; gap: 7px; width: max-content; max-width: calc(100vw - 130px);
-  padding: 4px 8px; border: 0; border-radius: 0; background: var(--hud-ground); box-shadow: none;
-  color: var(--hud-ink); --sc: var(--hud-ink); transform: none; animation: none; box-sizing: border-box;
-}
-#hud .sth-eye { display: flex; align-items: center; gap: 3px; flex: 0 0 auto; }
-#hud .sth-ico { display: flex; width: 20px; height: 20px; color: var(--sc); }
-#hud .sth-ico svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-#hud .sth-wing { display: block; width: 13px; height: 2px; background: #57604f; overflow: hidden; }
-#hud .sth-wing i { display: block; width: 0; height: 100%; background: var(--sc); }
-#hud .sth-wing.l { transform: scaleX(-1); }
-#hud .sth-txt { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-#hud #stealth b { font-size: 13px; line-height: 1.35; font-weight:400; letter-spacing: 0; }
-#hud #stealth small { font-size: 11px; line-height: 1.4; color: var(--hud-muted); }
-#hud #stealth.quiet { background: #131a15b3; }
-#hud #stealth.quiet small,#hud #stealth.quiet .sth-wing { display: none; }
-#hud #stealth[data-s="risk"] { --sc: var(--hud-warn); color: var(--hud-warn); }
-#hud #stealth[data-s="seen"] { --sc: var(--hud-danger); color: var(--hud-danger); }
-#hud #stealth[data-s="seen"] small { color: #dfbfb0; }
-#hud:has(#alertBox[data-lv="2"]) #stealth[data-s="hide"] small { color: var(--hud-warn); }
-.hudfade { opacity: .8; }
-.hudfade:hover,.hudfade:focus-visible { opacity: 1; }
-#hud .keys {
-  position: absolute; left: max(14px,env(safe-area-inset-left,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px));
-  max-width: calc(100vw - 270px); display: flex; flex-wrap: wrap; gap: 7px 14px; padding: 5px 0;
-  border: 0; border-radius: 0; background: #131a15cf; color: var(--hud-muted); font-size: 11px; line-height: 1.6;
-}
-#hud .keys span { display: inline-flex; align-items: baseline; gap: 5px; }
-#hud .keys.mini span:not(.keep) { display: none; }
-#hud .keys kbd { border: 0; padding: 0; background: none; color: var(--hud-ink); font: 400 11px var(--f-body); }
-#hud .keys em { font-style: normal; }
-#hud .keys .km.on { color: var(--hud-ink); }
-#hud .pad { position: absolute; right: max(14px,env(safe-area-inset-right,0px)); bottom: calc(12px + env(safe-area-inset-bottom,0px)); pointer-events: none; }
-#hud .pad > button { display: none; }
-#hud .tools { display: flex; gap: 12px; pointer-events: auto; border: 0; background: #131a15cf; }
-#hud .tools .tool { display: inline-flex; gap: 5px; align-items: center; padding: 8px 0; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: none; color: var(--hud-muted); font-size: 11px; }
-#hud .tools .tool.on { color: var(--hud-ink); border-bottom-color: var(--hud-ink); }
-#hud .tools .tool kbd { border: 0; padding: 0; color: var(--hud-muted); font: inherit; }
-#hud .tools .tool.empty { opacity: 1; }
-#hud .joyhint { display: none; }
-#hud #saveState { position: absolute; left: 14px; bottom: 46px; font-size: 11px; color: var(--hud-muted); }
-#hud #floorBan { position: fixed; left: 50%; top: 24%; transform: translateX(-50%); padding: 6px 12px; background: var(--hud-ground); color: var(--hud-ink); font-size: 17px; font-weight:400; opacity: 0; }
-#hud #floorBan.on { animation: hudFloor 1.4s ease-out; }
-@keyframes hudFloor { 0%,100% { opacity: 0; } 15%,70% { opacity: 1; } }
-#hud .tac { position: absolute; left: 50%; transform: translateX(-50%); bottom: 18px; padding: 12px 16px; min-height: 44px; border: 1px solid var(--hud-line); border-radius: 0; background: var(--hud-ground); color: var(--hud-ink); pointer-events: auto; z-index: 5; }
-#hud #alertVig { position: fixed; inset: 0; pointer-events: none; opacity: 0; z-index: 1; }
-#hud #alertVig[data-a="3"] { opacity: 1; box-shadow: inset 0 -24px 48px -40px #a9483b; }
-#hud .lesson-cue { outline: 2px solid var(--hud-warn); outline-offset: 3px; }
-body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut { display: block; -webkit-line-clamp: unset; overflow: visible; white-space: normal; }
-body.inspecting #hud #stealth,body.inspecting #hud #toasts { visibility: hidden; }
-body.scanning #hud #stealth,body.dlgmodal #hud #stealth,body:has(.screen:not([hidden])) #hud #stealth { visibility: hidden; }
-body.dlgmodal #hud .pad,body.dlgmodal #hud .keys,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud .joyhint,body.dlgmodal #hud .hud-menu { visibility: hidden; }
-body.keypadopen #hud .pad,body.keypadopen #hud .sysbtns,body.keypadopen #hud .keys { visibility: hidden; }
-body:has(.screen:not([hidden])) #hud .hud-menu { visibility: hidden; }
-body:not(.playing) #hud #alertVig { display: none; }
-@media (hover:hover) {
-  #hud .obj:hover,#hud .hud-menu:hover { background: #20291eef; }
-  #hud #mini:hover { opacity: 1; }
-  #hud .tools .tool:hover { color: var(--hud-ink); }
-}
-@media (max-width:700px) {
-  #hud .top { right: 72px; flex-direction: column; gap: 3px; left: max(10px,env(safe-area-inset-left,0px)); top: calc(8px + env(safe-area-inset-top,0px)); }
-  #hud .obj { max-width: 100%; width: 100%; box-sizing: border-box; font-size: 13px; padding: 7px 24px 7px 8px; gap: 4px; }
-  #hud #objTitle { font-size: 11px; }
-  #hud .status { justify-content: flex-start; gap: 10px; padding: 3px 6px; background: #131a15d9; }
-  #hud .chip { font-size: 11px; }
-  #hud #mini { width: 82px; right: 10px; top: calc(var(--topb,82px) + 8px); }
-  #hud #stealth { left: 10px; max-width: calc(100vw - 112px); }
-}
-body.touch #hud .keys,body.touch #hud .tools,body.touch #hud #btnWhistle { display: none; }
-body.touch #hud .pad { width: 198px; height: 192px; right: max(10px,env(safe-area-inset-right,0px)); bottom: calc(10px + env(safe-area-inset-bottom,0px)); }
-body.touch #hud .pad > button {
-  position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  box-sizing: border-box; margin: 0; padding: 7px 5px; width: 88px; min-width: 44px; height: 48px; min-height: 44px;
-  border: 1px solid var(--hud-line); border-radius: 3px; box-shadow: none; background: var(--hud-ground);
-  color: var(--hud-muted); font-size: 12px; font-weight: 400; line-height: 1.3; pointer-events: auto; touch-action: none; opacity: 1;
-}
-body.touch #hud .pad > button b { font-size: 13px; font-weight:400; line-height: 1.3; }
-body.touch #hud .pad > button small { display: block; margin: 0; font-size: 11px; line-height: 1.3; font-weight: 400; color: inherit; }
-body.touch #hud .pad > button.ready { color: var(--hud-ink); border-color: #b6bca9; background: #222b1ff2; }
-body.touch #hud .pad #btnAct { right: 0; bottom: 0; height: 62px; }
-body.touch #hud .pad #btnAct.ko { color: var(--hud-ink); border-color: #c2c6b5; background: #1e281cf2; }
-body.touch #hud .pad #btnAct.kill { color: var(--hud-danger); border-color: #b97b6b; background: #30241fed; }
-body.touch #hud .pad #btnCarry { right: 100px; bottom: 0; height: 62px; }
-body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress { right: 100px; bottom: 76px; }
-body.touch #hud .pad #btnTool { right: 0; bottom: 76px; }
-body.touch #hud .pad #btnTool.aiming { border-color: var(--hud-ink); background: #30392bf2; color: var(--hud-ink); }
-body.touch #hud .pad #btnToolNext { right: 0; bottom: 132px; }
-body.touch #hud .pad #btnCycle { right: 100px; bottom: 132px; }
-body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress,body.touch #hud .pad #btnTool,
-body.touch #hud .pad #btnToolNext,body.touch #hud .pad #btnCycle {
-  border: 0; border-bottom: 1px solid var(--hud-line); border-radius: 0; background: #131a15e0;
-}
-body.touch #hud .pad #btnGrab.ready,body.touch #hud .pad #btnDress.ready,body.touch #hud .pad #btnTool.ready,
-body.touch #hud .pad #btnCycle.ready { border-bottom-color: #c2c6b5; }
-body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after {
-  content: ''; position: absolute; left: 0; bottom: 0; height: 2px; width: calc(var(--hold,0) * 100%); background: var(--hud-danger);
-}
-body.touch #hud .sysbtns { position: fixed; right: max(10px,env(safe-area-inset-right,0px)); bottom: calc(198px + env(safe-area-inset-bottom,0px)); display: flex; gap: 12px; z-index: 3; }
-body.touch #hud .sysbtns button { box-sizing: border-box; width: 88px; min-height: 44px; padding: 8px 3px; border: 0; border-bottom: 1px solid var(--hud-line); border-radius: 0; background: #131a15cf; color: var(--hud-muted); font-size: 12px; }
-body.touch #hud .sysbtns button b { font-size: 12px; font-weight:400; }
-body.touch #hud .sysbtns button.on { color: var(--hud-ink); border-bottom-color: var(--hud-ink); }
-body.touch #hud #btnSneak small { display: none; }
-body.touch #hud .joyhint { position: absolute; display: block; left: 12px; bottom: calc(22px + env(safe-area-inset-bottom,0px)); max-width: 140px; color: var(--hud-muted); font-size: 11px; }
-body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint { display: none; }
-body.touch #hud #saveState { bottom: 48px; }
-body.perception-lesson #hud #btnAct,body.perception-lesson #hud #btnGrab,body.perception-lesson #hud #btnToolNext { visibility: hidden; pointer-events: none; }
-@media (min-width:701px) and (max-height:500px) {
-  body.touch #hud .top { right: 350px; flex-direction: column; gap: 4px; }
-  body.touch #hud .obj { max-width: 100%; width: 100%; box-sizing: border-box; font-size: 13px; }
-  body.touch #hud .status { justify-content: flex-start; padding-top: 3px; background: #131a15d9; }
-  body.touch #hud .pad { width: 288px; height: 112px; }
-  body.touch #hud .pad #btnAct { width: 88px; height: 56px; }
-  body.touch #hud .pad #btnCarry { right: 100px; width: 88px; height: 56px; }
-  body.touch #hud .pad #btnGrab,body.touch #hud .pad #btnDress { right: 200px; bottom: 0; width: 78px; height: 56px; }
-  body.touch #hud .pad #btnTool { right: 0; bottom: 68px; }
-  body.touch #hud .pad #btnToolNext { right: 100px; bottom: 68px; }
-  body.touch #hud .pad #btnCycle { right: 200px; bottom: 68px; width: 78px; }
-  body.touch #hud .sysbtns { right: 310px; bottom: calc(10px + env(safe-area-inset-bottom,0px)); }
-  body.touch #hud #mini { width: 88px; top: 62px; }
-}
-@media (prefers-reduced-motion:reduce) {
-  #hud *,#hud *::before,#hud *::after { animation: none; transition: none; }
-}
-/* The desktop target chooser is a real alternative to the Tab shortcut. */
-body:not(.touch) #hud .pad #btnCycle {
-  position: absolute; right: 0; bottom: 44px; display: flex; align-items: center; justify-content: space-between;
-  gap: 8px; width: 100px; min-height: 44px; padding: 8px 10px; pointer-events: auto;
-  border: 1px solid var(--hud-line); border-radius: 2px; background: var(--hud-ground);
-  color: var(--hud-ink); font-size: 12px;
-}
-body:not(.touch) #hud .pad #btnCycle b { font-weight:400; }
+@media(hover:hover){#hud button:hover{filter:brightness(1.15)}#hud #mini:hover{opacity:1}}
+@media(prefers-reduced-motion:reduce){#hud *,#hud *::before,#hud *::after{animation:none;transition:none}}
 
-/* Focused action selection shares the HUD palette and a single list surface. */
-#hud #envPicker {
-  box-sizing: border-box; position: fixed; z-index: 25; width: min(250px,calc(100vw - 124px));
-  max-height: min(55dvh,calc(100dvh - var(--topb,70px) - 24px)); overflow: auto;
-  padding: 12px; pointer-events: auto; border: 1px solid var(--hud-line); border-radius: 0;
-  background: #131a15fa; color: var(--hud-ink); box-shadow: none;
-  scrollbar-color: var(--hud-line) var(--hud-ground);
-}
-#hud #envPicker > b { display: block; padding: 0 0 8px; color: var(--hud-muted); font-size: 11px; font-weight: 400; }
-#hud #envPicker button {
-  box-sizing: border-box; display: block; width: 100%; min-height: 44px; text-align: left;
-  white-space: normal; font-size: 13px; line-height: 1.4; padding: 10px 12px; margin: 0;
-  border: 0; border-bottom: 1px solid #3e493d; border-radius: 0;
-  background: none; color: var(--hud-muted);
-}
-#hud #envPicker button[aria-pressed="true"] { background: #303a2b; color: var(--hud-ink); border-bottom-color: #b6bca9; }
-#hud #envPicker button small { display: block; margin-top: 3px; color: var(--hud-muted); font-size: 11px; }
-#hud #envPicker button:last-child { border: 0; }
-#hud #envPicker button:disabled { opacity: .55; }
-
-/* One compact ability button; preparation uses the same held-input convention. */
-#hud #btnSkill {
-  position: absolute; right: 14px; bottom: 108px; width: 166px; min-height: 48px;
-  box-sizing: border-box; padding: 7px 12px; text-align: left; pointer-events: auto;
-  border: 1px solid var(--hud-line); border-radius: 2px; color: var(--hud-muted);
-  background: linear-gradient(90deg,#4c503b var(--skill-hold,0%),transparent 0),var(--hud-ground);
-  touch-action: none; user-select: none;
-}
-#hud #btnSkill b,#hud #btnSkill small { display:block; font-size:12px; line-height:1.5; font-weight:400; }
-#hud #btnSkill small { font-size:10px; }
-#hud #btnSkill.ready { color:var(--hud-ink); border-color:#b9ad82; }
-body.touch #hud #btnSkill { right:10px; bottom:calc(254px + env(safe-area-inset-bottom,0px)); width:188px; }
-body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden; }
 /* The whole prerequisite graph stays unfolded; inspection opens on the right. */
 #btnSkillsLedger { margin:0 0 16px; }
 #skillScreen { --sk-ground:#0e171c; --sk-panel:#142127; --sk-line:#344248; --sk-ink:#e7e4d6; --sk-muted:#a6b2b3; --sk-gold:#d7ba73; padding:0; overflow:hidden; background:var(--sk-ground); color:var(--sk-ink); }
@@ -377,29 +319,3 @@ body.dlgmodal #hud #btnSkill,body.keypadopen #hud #btnSkill { visibility:hidden;
  .skill-graph { grid-auto-rows:100px; }
  .skill-instructions { margin-top:8px; }
 }
-body:not(.touch) #hud .tools { max-width:calc(100vw - 28px); flex-wrap:wrap; justify-content:flex-end; }
-body:not(.touch) #hud .tools .tool { min-height:44px; }
-@media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } }
-
-/* Short portrait: retain the legacy training key without covering the play area. */
-@media(max-width:360px) and (max-height:640px) and (orientation:portrait) {
-  body.touch #hud #btnSkill { left:10px; right:auto; bottom:calc(100px + env(safe-area-inset-bottom,0px)); width:92px; min-height:56px; padding:6px; }
-}
-
-/* Core lessons reveal only the actions they use; campaign controls stay in place. */
-body[data-lesson] #hud #btnGrab,body[data-lesson] #hud #btnToolNext,
-body[data-lesson] #hud #btnCycle,body[data-lesson] #hud #btnSkill,
-body[data-lesson] #hud .keys,
-body[data-lesson="perception"] #hud #btnCarry,
-body[data-lesson="body"] #hud #btnTool,
-body[data-lesson="indoor"] #hud #btnTool,
-body[data-lesson="indoor"] #hud #btnAct { visibility: hidden; pointer-events: none; }
-
-/* The clothing shortcut shares the inactive grab slot on touch screens. */
-body:not(.touch) #hud .pad #btnDress {
-  position:absolute; right:112px; bottom:44px; display:flex; align-items:center; justify-content:center;
-  gap:6px; width:112px; min-height:44px; padding:8px; pointer-events:auto;
-  border:1px solid var(--hud-line); border-radius:0; background:var(--hud-ground);
-  color:var(--hud-ink); font-size:12px;
-}
-body:not(.touch) #hud .pad #btnDress b { font-weight:400; }

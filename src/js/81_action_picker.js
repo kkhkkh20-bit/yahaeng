@@ -1,13 +1,13 @@
 // 기존 대상 버튼에서 이름을 보고 고른다. 선택은 실행하지 않으며 실행 시 대상을 다시 확인한다.
 let envPicker = null;
-function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(envPicker||document.querySelector('#hud .obj.open')));}
+function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(loadoutOpen||envPicker||document.querySelector('#hud .obj.open')));}
 function setObjectiveOpen(open){
   const o=document.querySelector('#hud .obj');if(!o)return;
-  if(open){clearPlayerInput();closeEnvPicker();}
+  if(open){clearPlayerInput();closeEnvPicker();closeLoadout();}
   o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
   document.body.classList.toggle('inspecting',hudInspecting());
 }
-function closeHudInspection(){closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
+function closeHudInspection(){closeLoadout();closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a))+(a.k==='quickStash'?':'+oid(a.h):'');
 function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
 function selectEnvTarget(token) {

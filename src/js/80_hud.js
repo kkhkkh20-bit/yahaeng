@@ -97,7 +97,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[걷기]를 눌러 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -203,7 +203,7 @@ function updateHUD(force) {
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
     const dress=!STAGE.tutorial&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
-    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress;
+    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -261,12 +261,12 @@ function syncTools() {
   if (!S) return; const P = S.player;
   const known=availableTools();if(!known.includes(input.tool)){input.tool=known.find(t=>toolCount(t)>0)||'stone';input.aiming=null;}
   document.querySelectorAll('#tools .tool').forEach(b => {
-    const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
+    const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool&&!input.padWhistle);b.setAttribute('aria-pressed',String(t===input.tool&&!input.padWhistle)); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, t==='radio'&&!P.hasRadio?'미확보':t==='hack'?'':String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>도구 바꾸기</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 도구 바꾸기로 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
-  hud.tool.classList.toggle('aiming', !!input.aiming);
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
+  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
@@ -404,6 +404,6 @@ function syncTutorialCue(){
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
+  const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }

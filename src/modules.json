@@ -418,6 +418,10 @@
       "group": "action_picker"
     },
     {
+      "path": "82_hud_loadout.js",
+      "group": "hud_loadout"
+    },
+    {
       "path": "83_plan_graphics.js",
       "group": "plan_graphics"
     },

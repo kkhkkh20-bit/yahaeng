@@ -1,0 +1,17 @@
+{
+  "method": "Static screenshot inspection, no claim of running these reference games. Reference art is not included in the game.",
+  "references": [
+    {
+      "game": "HITMAN World of Assassination",
+      "gallery": "https://steamcommunity.com/app/1659040/screenshots/?browsefilter=mostrecent",
+      "screenshot": "https://images.steamusercontent.com/ugc/11566531439320741580/95A46BD203142CE349F528A54C6FB84ED3069E37/",
+      "applied": "Separate objective hierarchy, navigation and selected equipment; contextual secondary actions."
+    },
+    {
+      "game": "Dead Cells",
+      "gallery": "https://steamcommunity.com/app/588650/screenshots/?browsefilter=mostrecent",
+      "screenshot": "https://images.steamusercontent.com/ugc/13437760580788893649/016CEFEDAEB725AB1615DA5F60B61DB6DBB1F05E/",
+      "applied": "Group the selected equipment and its count into a compact slot; reserve the scene for play."
+    }
+  ]
+}

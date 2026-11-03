@@ -21,7 +21,7 @@ async def main():
    else:
     await q.keyboard.down('ArrowRight');await q.evaluate('__step(20)');await q.keyboard.up('ArrowRight')
    assert not await q.evaluate('__game.hudInspecting()');assert await q.evaluate('__game.S.t')>a['t'];assert await q.evaluate('__game.S.player.x')>x0+5,'leaving objectives does not move the player';assert not await q.locator('#hud .obj').evaluate('e=>e.classList.contains("open")')
-   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guards=[];const l=S.lamps.find(l=>l.mount?.kind==='pole');const at=G.lampControl(l);Object.assign(P,{x:at.x,y:at.y,fl:0,z:0,trav:null,jump:null,interact:null});G.updateHUD(true);__step(2);if(G.envChoices().length<2)throw Error('no actual overlapping pole and light');}''')
+   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.guards=[];Object.assign(P,{fl:0,z:0,trav:null,jump:null,interact:null});S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];G.updateHUD(true);__step(2);if(G.envChoices().length<2)throw Error('no overlapping body actions');}''')
    if touch:await q.locator('#btnCycle').tap()
    else:await q.locator('#btnCycle').click()
    assert await q.locator('#envPicker').is_visible();await q.screenshot(path=str(O/f'picker-{"touch"if touch else"pc"}.png'));a=await q.evaluate('__game.S.t');await q.evaluate('__step(120)');assert await q.evaluate('__game.S.t')==a,'action picker continues world time'

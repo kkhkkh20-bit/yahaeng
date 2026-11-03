@@ -960,14 +960,14 @@ STAGES.push({
 });
 STAGES.push({
  id:'tE',no:'00',name:'연습 6 · 현장 도구',sub:'선택 연습 · 쿠나이·연막·무전·해킹',tutorial:true,toolPractice:true,noSupport:true,noAmbientChats:true,
- mission:'무전기를 확보해 유인하고 연막·CCTV 해킹·쿠나이를 사용한다.',brief:'이 연습에서는 도구 계열을 무료로 사용한다. 장비는 도구 바꾸기로 선택한다.',
+ mission:'무전기를 확보해 유인하고 연막·CCTV 해킹·쿠나이를 사용한다.',brief:'이 연습에서는 도구 계열을 무료로 사용한다. 장비는 장비에서 선택한다.',
  W:34,H:21,start:[3,9],exit:[28,17],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.8,residents:0,bare:true,kunai:0,coins:0,items:[],itemNames:[],itemName:'',well:'manhole',
  build(m){m.fill(0,0,33,20,',');m.rect(0,0,33,20);m.fill(1,7,32,15,'.');m.fill(1,6,32,6,'=');m.fill(1,16,32,16,'=');m.many('T',[[4,3],[12,3],[22,3],[30,3],[5,18],[18,18]]);},
  lamps:[[6,7,260,1],[21,11,360,1]],wires:[],roofs:[],bricks:[],cams:[[23,13,0,0]],
  guards:[{kind:'g1',at:[6,9],post:0,still:true,radio:true},{kind:'g1',at:[12,9],post:0,still:true,radio:true},{kind:'g1',at:[27,13],post:0,still:true,radio:false}],
  steps:[
  ['다트는 이 연습에서만 임시 지급 · {도구} 짧게 눌러 기절',S=>S.corpses.some(c=>c.guardId===0&&c.ko)&&(S.stats.kunaiUsed||0)>0,S=>S.guards[0],'다트는 본편에서 배워야 쓸 수 있다. 무전기 표시가 있는 경비다. 살아 있는 사람에게서 장비를 빼앗을 수는 없다.','tool'],
- ['도구 바꾸기로 무전기 선택 → {도구} 사용',S=>!!S.player.hasRadio,S=>S.corpses.find(c=>c.guardId===0),'쓰러진 경비 옆에서 사용하면 1초 동안 무전기를 확보한다.','tool'],
+ ['장비에서 무전기 선택 → {도구} 사용',S=>!!S.player.hasRadio,S=>S.corpses.find(c=>c.guardId===0),'쓰러진 경비 옆에서 사용하면 1초 동안 무전기를 확보한다.','tool'],
  ['무전기로 점검 위치 지시',S=>(S.stats.radioDecoys||0)>0,()=>null,'도구를 다시 사용하면 겨눈 곳으로 무전 담당 한 명이 이동한다. 벽으로 막힌 곳이나 다른 층은 제외된다.','tool'],
  ['연막탄 선택 → {도구} 사용',S=>(S.smokes||[]).length>0,()=>null,'연막은 시선을 가리지만 발소리와 개의 후각은 남는다. 도구를 누른 동안 겨누고 떼면 던진다.','tool'],
  ['아래 통로를 지나 CCTV 뒤의 표시로 이동',(S,P)=>Math.hypot(P.x-21.5*48,P.y-13.5*48)<18,()=>({x:21.5*48,y:13.5*48}),'카메라는 오른쪽을 향한다. 시야 밖에서 장비를 사용하자.','move'],
@@ -13671,7 +13671,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[걷기]를 눌러 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['도구 칸을 눌러', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[기술 버튼]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -13777,7 +13777,7 @@ function updateHUD(force) {
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = `<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
     const dress=!STAGE.tutorial&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
-    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress;
+    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -13835,12 +13835,12 @@ function syncTools() {
   if (!S) return; const P = S.player;
   const known=availableTools();if(!known.includes(input.tool)){input.tool=known.find(t=>toolCount(t)>0)||'stone';input.aiming=null;}
   document.querySelectorAll('#tools .tool').forEach(b => {
-    const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool); b.classList.toggle('empty', toolCount(t) <= 0);
+    const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool&&!input.padWhistle);b.setAttribute('aria-pressed',String(t===input.tool&&!input.padWhistle)); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, t==='radio'&&!P.hasRadio?'미확보':t==='hack'?'':String(toolCount(t)));
   });
-  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>도구 바꾸기</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 도구 바꾸기로 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
-  hud.tool.classList.toggle('aiming', !!input.aiming);
+  { const html = P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`; if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
+  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
@@ -13978,20 +13978,20 @@ function syncTutorialCue(){
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
+  const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnSkill',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }
 
 // 기존 대상 버튼에서 이름을 보고 고른다. 선택은 실행하지 않으며 실행 시 대상을 다시 확인한다.
 let envPicker = null;
-function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(envPicker||document.querySelector('#hud .obj.open')));}
+function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG.modal&&(loadoutOpen||envPicker||document.querySelector('#hud .obj.open')));}
 function setObjectiveOpen(open){
   const o=document.querySelector('#hud .obj');if(!o)return;
-  if(open){clearPlayerInput();closeEnvPicker();}
+  if(open){clearPlayerInput();closeEnvPicker();closeLoadout();}
   o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
   document.body.classList.toggle('inspecting',hudInspecting());
 }
-function closeHudInspection(){closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
+function closeHudInspection(){closeLoadout();closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a))+(a.k==='quickStash'?':'+oid(a.h):'');
 function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
 function selectEnvTarget(token) {
@@ -14061,6 +14061,42 @@ function unavailableEnvReason() {
   if(flOf(o)!==flOf(P)||(o.z||0)!==(P.z||0))return '다른 층에 있는 대상이다 — 연결 입구로 이동하기';
   if(!objectReachable(o,100))return '벽이나 가구에 가려 손이 닿지 않는다';
   return '대상에 더 가까이 이동하기';
+}
+
+// Equipment is chosen deliberately while the world is stopped, then used by the tool control.
+let loadoutOpen=false;
+function closeLoadout(focus=false){
+  if(!loadoutOpen)return;
+  loadoutOpen=false;$('loadout').hidden=true;$('loadoutShade').hidden=true;
+  $('btnToolNext').setAttribute('aria-expanded','false');document.body.classList.remove('loadout-open');
+  document.body.classList.toggle('inspecting',hudInspecting());
+  if(focus)$('btnToolNext').focus({preventScroll:true});
+}
+function toggleLoadout(){
+  if(loadoutOpen){closeLoadout(true);return;}
+  if(!S||!running||paused||S.over||tactical||DLG.modal||S.keypad||actionBusy())return;
+  clearPlayerInput();closeEnvPicker();setObjectiveOpen(false);syncTools();
+  loadoutOpen=true;$('loadout').hidden=false;$('loadoutShade').hidden=false;
+  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');
+  const selected=$('tools').querySelector('.tool.on:not([hidden])');
+  (input.padWhistle?$('btnWhistle'):selected||$('btnLoadoutClose')).focus({preventScroll:true});
+}
+function handleLoadoutKey(e){
+  e.stopPropagation();
+  if(e.code==='Escape'){e.preventDefault();closeLoadout(true);return;}
+  if(e.code==='Tab'){
+    e.preventDefault();const buttons=[...$('loadout').querySelectorAll('button')].filter(b=>!b.disabled&&!b.hidden&&b.getBoundingClientRect().width),i=buttons.indexOf(document.activeElement);
+    buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length]?.focus({preventScroll:true});return;
+  }
+  // Preserve native Enter/Space activation inside the dialog, consume game shortcuts.
+  if(!['Enter','Space'].includes(e.code))e.preventDefault();
+}
+function initLoadout(){
+  $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
+  $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
+  $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});
+  $('btnToolNext').innerHTML='<b>장비</b>';
+  $('btnToolNext').setAttribute('aria-label','장비 선택');$('btnToolNext').setAttribute('aria-haspopup','dialog');$('btnToolNext').setAttribute('aria-expanded','false');
 }
 
 // 기존 좌표와 자산 위에 기능이 읽히는 작은 현물만 보강한다.
@@ -14163,7 +14199,7 @@ function skillUseText(d){
  if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';
  if(d.id==='electric')return '스위치·분전반 앞에서 행동 버튼';
- if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '도구 바꾸기로 선택한 뒤 도구 버튼';
+ if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '장비에서 선택한 뒤 도구 버튼';
  return '배우면 해당 상황에서 자동 적용';
 }
 function drawSkillPreview(id){
@@ -14329,7 +14365,7 @@ function drawSkillLinks(){
 window.addEventListener('resize',()=>{if(!$('skillScreen').hidden)drawSkillLinks();});
 function syncAssassinHUD(){
   const b=$('btnSkill');if(!b||!S)return;
-  b.hidden=!assassinSupported()||S.over||isTouch&&!STAGE.skillPractice;
+  b.hidden=!assassinSupported()||S.over||!STAGE.skillPractice&&(isTouch||!assassinUnlocked());
   if(b.hidden)return;
   const P=S.player,d=ASSASSIN_SKILLS[S.selectedSkill];
   // Readiness may lag 0.1s; the actual input and both impacts always revalidate.
@@ -14553,6 +14589,7 @@ document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
 window.addEventListener('keydown', e => {
+  if(loadoutOpen){handleLoadoutKey(e);return;}
   if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
   if (menu) {
@@ -14626,6 +14663,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
+  closeLoadout();
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
@@ -14634,7 +14672,7 @@ function clearPlayerInput() {
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('pointerdown',e=>{if(!e.target.closest('#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
+window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadoutShade,#btnToolNext,#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
 $('envPicker').addEventListener('keydown',e=>{
   if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
   if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
@@ -14718,8 +14756,8 @@ $('btnSkillReset').addEventListener('click',resetTreeSkills);
   b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
   b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
 }
-document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(availableTools()[(availableTools().indexOf(input.tool)+1)%availableTools().length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
-// 휴대폰 도구 버튼 한 개에 던질 것(다트·빈 캔·담배)과 휘파람을 함께 담는다 — [바꾸기]로 돌아가며 고른다
+document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('click', e => { e.preventDefault(); selectTool(b.dataset.t);closeLoadout(true); }));
+// 도구 순환 보조 함수. 실제 HUD는 장비 패널에서 명시적으로 고른다.
 function cyclePadTool() {
   const L = [...availableTools(), 'whistle'], cur = input.padWhistle ? 'whistle' : input.tool; let i = L.indexOf(cur);
   for (let k = 1; k <= L.length; k++) { const t = L[(i + k) % L.length]; if (t === 'whistle') { input.padWhistle = true; syncTools(); play('click', 0.2); return; } if (toolCount(t) > 0) { selectTool(t); return; } }
@@ -14760,9 +14798,9 @@ function cycleMoveMode() {
 { const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
 { const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
 { const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); toggleEnvPicker(); }); }
-{ const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
+initLoadout();
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) cycleMoveMode(); b.blur(); }); }
-{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!running) return; cyclePadTool(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }  // 도구 바꾸기 칩: 남은 것이 있는 다음 도구 → … → 휘파람
+{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('click', e => { e.stopPropagation();toggleLoadout(); }); }
 { const b = document.getElementById('btnCrouch'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (running) toggleSneak(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 웅크리기 전환 (Ctrl)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)

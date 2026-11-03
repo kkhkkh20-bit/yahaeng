@@ -65,7 +65,7 @@ async def main():
    else:
     async def press():await ui.keyboard.down('z')
     async def release(cancel=False):await ui.keyboard.up('z')
-   await press();await ui.evaluate('tick(.35);__game.updateHUD(true)');assert await ui.evaluate('+document.querySelector("#btnAct").style.getPropertyValue("--hold")>0');await release(mobile);await ui.evaluate('tick(1.5)');assert await ui.evaluate('__game.S.corpses.length===0'if mobile else'__game.S.corpses.length===1&&__game.S.corpses[0].ko')
+   await press();await ui.evaluate('tick(.35);__game.updateHUD(true)');assert await ui.evaluate('+document.querySelector("#btnAct").style.getPropertyValue("--hold")>0');await release(mobile);await ui.evaluate('tick(1.5)');assert await ui.evaluate('__game.S.corpses.length===0'if mobile else'__game.S.corpses.length===1&&__game.S.corpses[0].ko'),(mobile,w,h,await ui.evaluate('({corpses:__game.S.corpses.length,hold:!!__game.S.player.skillHold,stats:__game.S.stats})'))
    await ui.evaluate(SKILL);await press();await ui.evaluate('tick(2.6)');await release();assert await ui.evaluate('__game.S.stats.dualAssassinations===1')
    await ui.evaluate(BODY);await press();await ui.evaluate('tick(.08)');await release();await ui.evaluate('tick(1.5);__game.updateHUD(true)')
    if mobile:await ui.locator('#btnCarry').tap()

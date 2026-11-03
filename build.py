@@ -21,7 +21,8 @@ def game_js():
 def stages_js():
     return ''.join(read(m) for m in sorted(glob.glob(P('src', 'stages', '*.js'))))
 
-CREDIT = ("효과: <a href=\"https://github.com/patch-gg/pixelfx\" target=\"_blank\" rel=\"noopener\">PixelFX · Patch / Hugo Duprez</a> (MIT) · "
+CREDIT = ("HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 마스크) · "
+          "효과: <a href=\"https://github.com/patch-gg/pixelfx\" target=\"_blank\" rel=\"noopener\">PixelFX · Patch / Hugo Duprez</a> (MIT) · "
           "건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymegakit.html\" target=\"_blank\" rel=\"noopener\">Quaternius Downtown City MegaKit</a> (CC0) · "
           "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · "
           "캐릭터 3D 모델: <a href=\"https://quaternius.com/packs/ultimatemodularwomen.html\" target=\"_blank\" rel=\"noopener\">Quaternius Ultimate Modular Women</a> · <a href=\"https://quaternius.com/packs/ultimatemodularcharacters.html\" target=\"_blank\" rel=\"noopener\">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href=\"https://kenney.nl/assets/rpg-urban-pack\" target=\"_blank\" rel=\"noopener\">Kenney RPG Urban Pack</a> (CC0) · ")
@@ -55,7 +56,8 @@ def build():
     menu_art = base64.b64encode(open(P('src', 'art', 'title-poster.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
-    html = html.replace('__HUD_CSS__', read(P('src', 'hud.css')))
+    icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','*.svg'))))+'}'
+    html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
     html = html.replace('__UI_FONT__', base64.b64encode(open(P('src','fonts','ui-regular.woff2'),'rb').read()).decode())
     html = html.replace('__UI_FONT_LICENSE__','\n'.join(line.rstrip()for line in read(P('src','fonts','OFL-IBMPlexSansKR.txt')).splitlines()))

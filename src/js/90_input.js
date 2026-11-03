@@ -4,6 +4,7 @@ document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
 window.addEventListener('keydown', e => {
+  if(loadoutOpen){handleLoadoutKey(e);return;}
   if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
   if (menu) {
@@ -77,6 +78,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
+  closeLoadout();
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
@@ -85,7 +87,7 @@ function clearPlayerInput() {
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('pointerdown',e=>{if(!e.target.closest('#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
+window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadoutShade,#btnToolNext,#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
 $('envPicker').addEventListener('keydown',e=>{
   if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
   if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
@@ -169,8 +171,8 @@ $('btnSkillReset').addEventListener('click',resetTreeSkills);
   b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
   b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
 }
-document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('pointerdown', e => { e.preventDefault(); if (b.dataset.t === input.tool) selectTool(availableTools()[(availableTools().indexOf(input.tool)+1)%availableTools().length]); else selectTool(b.dataset.t); }));  // 고른 도구만 보이고, 누르면 다음 도구로
-// 휴대폰 도구 버튼 한 개에 던질 것(다트·빈 캔·담배)과 휘파람을 함께 담는다 — [바꾸기]로 돌아가며 고른다
+document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('click', e => { e.preventDefault(); selectTool(b.dataset.t);closeLoadout(true); }));
+// 도구 순환 보조 함수. 실제 HUD는 장비 패널에서 명시적으로 고른다.
 function cyclePadTool() {
   const L = [...availableTools(), 'whistle'], cur = input.padWhistle ? 'whistle' : input.tool; let i = L.indexOf(cur);
   for (let k = 1; k <= L.length; k++) { const t = L[(i + k) % L.length]; if (t === 'whistle') { input.padWhistle = true; syncTools(); play('click', 0.2); return; } if (toolCount(t) > 0) { selectTool(t); return; } }
@@ -211,9 +213,9 @@ function cycleMoveMode() {
 { const b = document.getElementById('btnWalk'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) toggleWalkLock(); b.blur(); }); }
 { const kp = document.getElementById('keypad'); if (kp) kp.addEventListener('pointerdown', e => { const b = e.target.closest('[data-k]'); if (!b) return; e.preventDefault(); e.stopPropagation(); initAudio(); kpPress(b.dataset.k); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }
 { const b = document.getElementById('btnCycle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); toggleEnvPicker(); }); }
-{ const b = document.getElementById('btnWhistle'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); whistle(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
+initLoadout();
 { const b = document.getElementById('btnSneak'); if (b) b.addEventListener('click', e => { e.stopPropagation(); if (running) cycleMoveMode(); b.blur(); }); }
-{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (!running) return; cyclePadTool(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 120); }); }  // 도구 바꾸기 칩: 남은 것이 있는 다음 도구 → … → 휘파람
+{ const b = document.getElementById('btnToolNext'); if (b) b.addEventListener('click', e => { e.stopPropagation();toggleLoadout(); }); }
 { const b = document.getElementById('btnCrouch'); if (b) b.addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); if (running) toggleSneak(); b.classList.add('down'); setTimeout(() => b.classList.remove('down'), 140); }); }
 { const ml = document.getElementById('modeLbl'); if (ml) { ml.style.pointerEvents = 'auto'; ml.style.cursor = 'pointer'; ml.title = '누르면 웅크리기 전환 (Ctrl)'; ml.addEventListener('click', () => { if (running) toggleSneak(); }); } }
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)

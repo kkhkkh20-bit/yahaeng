@@ -544,7 +544,7 @@ __INTERFACE_CSS__
       <span class="chip want" id="wantBox" hidden title="수배"></span>
       <div id="floorBan" aria-live="polite"></div>
       <span class="chip alarm" id="alarmChip" hidden>경계</span>
-      <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnSneak" type="button" title="이동 속도 전환 · 걷기 / 달리기"><small>이동</small><b id="moveLbl">걷기</b></button><button id="btnMap" type="button">지도</button></span>
+      <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnMap" type="button">지도</button></span>
     </div>
   </div>
   <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
@@ -558,9 +558,11 @@ __INTERFACE_CSS__
   <div id="alertVig" aria-hidden="true"></div>
   <div class="joyhint">왼쪽을 끌어 이동</div>
   <small id="saveState" aria-live="polite" hidden></small>
-  <div id="envPicker" role="group" aria-label="행동 대상 선택" hidden></div>
-  <button id="btnSkill" type="button" hidden><b>동시 암살</b><small>등 뒤에서 준비</small></button>
-  <div class="pad">
+
+  <button id="loadoutShade" type="button" hidden aria-label="장비 선택 닫기" tabindex="-1"></button>
+  <section id="loadout" role="dialog" aria-modal="true" aria-labelledby="loadoutTitle" hidden>
+    <header><div><small>현장 장비</small><h2 id="loadoutTitle">사용할 도구</h2></div><button id="btnLoadoutClose" type="button" aria-label="장비 선택 닫기">닫기</button></header>
+    <p>도구를 고른 뒤 화면의 도구 버튼으로 사용합니다.</p>
     <div id="tools" class="tools" role="group" aria-label="도구 고르기">
       <button class="tool on" type="button" data-t="kunai"><kbd>1</kbd>다트 <span>3</span></button>
       <button class="tool" type="button" data-t="stone"><kbd>2</kbd>빈 캔 <span>3</span></button>
@@ -570,9 +572,17 @@ __INTERFACE_CSS__
       <button class="tool" type="button" data-t="radio" hidden>무전기 <span>0</span></button>
       <button class="tool" type="button" data-t="hack" hidden>해킹기 <span>0</span></button>
     </div>
+
+    <button id="btnWhistle" type="button" title="휘파람 (G)"><b>휘파람</b><small>소리로 유인 · 횟수 제한 없음</small></button>
+    <footer><span>이동 속도</span><button id="btnSneak" type="button" title="이동 속도 전환 · 걷기 / 달리기"><b id="moveLbl">걷기</b><small>눌러서 전환</small></button></footer>
+    <small class="loadout-note">장비 선택 중에는 시간이 멈춥니다.</small>
+  </section>
+  <div id="envPicker" role="group" aria-label="행동 대상 선택" hidden></div>
+  <button id="btnSkill" type="button" hidden><b>동시 암살</b><small>등 뒤에서 준비</small></button>
+  <div class="pad">
     <button id="btnTool" type="button"><b>다트 3</b></button>
     <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>도구 바꾸기</b></button>
-    <button id="btnWhistle" type="button" title="휘파람 (G)"><b>휘파람</b></button>
+
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnDress" type="button" hidden aria-label="옷 갈아입기"><b>옷 갈아입기</b></button>
     <button id="btnCarry" type="button" title="행동 (X · E)"><b>행동</b></button>
