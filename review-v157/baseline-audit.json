@@ -1,0 +1,705 @@
+{
+  "posture": {
+    "mode": "walk",
+    "toggle": false,
+    "hidden": false,
+    "savedMode": "sneak"
+  },
+  "completedGoal": {
+    "nextGoal": {
+      "x": 1416,
+      "y": 456,
+      "fl": 0,
+      "z": 0,
+      "where": "클럽",
+      "area": true,
+      "id": "target:0",
+      "text": "의뢰: 클럽 실장 처치하기",
+      "g": {
+        "id": 0,
+        "smoker": false,
+        "fl": 0,
+        "civ": false,
+        "wander": null,
+        "club": false,
+        "look": 0,
+        "doc": false,
+        "sleep": false,
+        "kind": "t",
+        "elite": false,
+        "lookout": false,
+        "dog": false,
+        "hasKey": null,
+        "target": true,
+        "follow": null,
+        "escortWait": null,
+        "x": 1224,
+        "y": 312,
+        "a": 0,
+        "want": 0,
+        "route": [
+          {
+            "x": 1224,
+            "y": 312,
+            "pause": 18
+          },
+          {
+            "x": 1416,
+            "y": 504,
+            "pause": 16
+          },
+          {
+            "x": 1320,
+            "y": 744,
+            "pause": 16
+          }
+        ],
+        "post": null,
+        "ri": 1,
+        "path": null,
+        "z": 0,
+        "homeFl": 0,
+        "radio": false,
+        "wait": 0,
+        "waitBase": 0,
+        "carryTo": null,
+        "child": false,
+        "parent": null,
+        "tag": "vip",
+        "body": null,
+        "sched": [
+          {
+            "at": [
+              25,
+              6
+            ],
+            "stay": 18,
+            "name": "VIP룸",
+            "act": "양주"
+          },
+          {
+            "at": [
+              29,
+              10
+            ],
+            "stay": 16,
+            "name": "클럽 홀 바",
+            "act": "양주"
+          },
+          {
+            "at": [
+              27,
+              15
+            ],
+            "stay": 16,
+            "name": "클럽 앞 간판 밑",
+            "act": "담배"
+          }
+        ],
+        "schedKey": "sign",
+        "outfit": null,
+        "enforcer": false,
+        "state": "PATROL",
+        "meter": 0,
+        "poi": null,
+        "lostT": 0,
+        "still": false,
+        "glanceT": 13.057500544935465,
+        "glance": 0,
+        "glanceA": 0,
+        "stepT": 0,
+        "icon": null,
+        "iconT": 0,
+        "repath": 0,
+        "seen": false,
+        "routeLine": [
+          {
+            "x": 1224,
+            "y": 312,
+            "stop": true
+          },
+          {
+            "x": 1272,
+            "y": 312
+          },
+          {
+            "x": 1320,
+            "y": 360
+          },
+          {
+            "x": 1320,
+            "y": 408
+          },
+          {
+            "x": 1320,
+            "y": 456
+          },
+          {
+            "x": 1368,
+            "y": 504
+          },
+          {
+            "x": 1416,
+            "y": 504
+          },
+          {
+            "x": 1416,
+            "y": 504,
+            "stop": true
+          },
+          {
+            "x": 1368,
+            "y": 504
+          },
+          {
+            "x": 1320,
+            "y": 552
+          },
+          {
+            "x": 1272,
+            "y": 600
+          },
+          {
+            "x": 1224,
+            "y": 648
+          },
+          {
+            "x": 1224,
+            "y": 696
+          },
+          {
+            "x": 1224,
+            "y": 744
+          },
+          {
+            "x": 1272,
+            "y": 744
+          },
+          {
+            "x": 1320,
+            "y": 744
+          },
+          {
+            "x": 1320,
+            "y": 744,
+            "stop": true
+          },
+          {
+            "x": 1272,
+            "y": 744
+          },
+          {
+            "x": 1224,
+            "y": 744
+          },
+          {
+            "x": 1224,
+            "y": 696
+          },
+          {
+            "x": 1224,
+            "y": 648
+          },
+          {
+            "x": 1224,
+            "y": 600
+          },
+          {
+            "x": 1224,
+            "y": 552
+          },
+          {
+            "x": 1272,
+            "y": 504
+          },
+          {
+            "x": 1320,
+            "y": 456
+          },
+          {
+            "x": 1320,
+            "y": 408
+          },
+          {
+            "x": 1320,
+            "y": 360
+          },
+          {
+            "x": 1272,
+            "y": 360
+          },
+          {
+            "x": 1224,
+            "y": 312
+          }
+        ],
+        "fac": "A"
+      }
+    },
+    "manual": true,
+    "pin": "item:0"
+  },
+  "worlds": [
+    {
+      "stage": "m1",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        }
+      ]
+    },
+    {
+      "stage": "m2",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1404.2728835749217,
+              "y": 504
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1327.6920095157739,
+              "y": 547.6720769204843
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1232.3903075564765,
+              "y": 320.39030755647616
+            }
+          ],
+          "corpses": []
+        }
+      ]
+    },
+    {
+      "stage": "m3",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 7,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1032,
+              "y": 1116.240000000001
+            }
+          ],
+          "corpses": [
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": false,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            }
+          ]
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 7,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1311.628660105287,
+              "y": 896.3713398947134
+            }
+          ],
+          "corpses": [
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": false,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            }
+          ]
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 7,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1032,
+              "y": 1013.554568913084
+            }
+          ],
+          "corpses": [
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": false,
+              "npc": true,
+              "by": null
+            },
+            {
+              "id": null,
+              "ko": true,
+              "npc": true,
+              "by": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "m4",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1494.1239012642593,
+              "y": 648
+            },
+            {
+              "id": 2,
+              "state": "PATROL",
+              "x": 1848,
+              "y": 216
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 925.2611962866167,
+              "y": 696
+            },
+            {
+              "id": 2,
+              "state": "PATROL",
+              "x": 1848,
+              "y": 216
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 1,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1601.3735681475318,
+              "y": 686.0256599230362
+            },
+            {
+              "id": 2,
+              "state": "PATROL",
+              "x": 1840.986298514308,
+              "y": 213.66845444181564
+            }
+          ],
+          "corpses": []
+        }
+      ]
+    },
+    {
+      "stage": "m5",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 805.4414092365332,
+              "y": 360
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 1106.4405193635994,
+              "y": 317.47493123571843
+            }
+          ],
+          "corpses": []
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [
+            {
+              "id": 0,
+              "state": "PATROL",
+              "x": 648,
+              "y": 323.53908979980565
+            }
+          ],
+          "corpses": []
+        }
+      ]
+    },
+    {
+      "stage": "m6",
+      "trace": [
+        {
+          "t": 29.99999999999945,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        },
+        {
+          "t": 60.00000000000378,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        },
+        {
+          "t": 119.99999999999326,
+          "hp": 3,
+          "over": false,
+          "npcDown": 0,
+          "playerKills": 0,
+          "war": false,
+          "alert": 0,
+          "targets": [],
+          "corpses": []
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "method": "Production v156. Checkpoint is controlled save of actual crouch input; goal fixture marks item complete only to isolate lifetime. World runs seed42/no input/live AI, no actor or health overrides; not a mission playthrough."
+}

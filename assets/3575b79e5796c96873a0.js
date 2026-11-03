@@ -5981,7 +5981,7 @@ const trackedStory = () => S.storyTrackManual && (S.stories || []).find(st => st
 function selectStory(id) {
   const st = (S.stories || []).find(st => st.d.id === id && st.found && !st.done && !st.moot);
   if (id != null && (!oppMode || !st)) return false;
-  S.storyTrack = id; S.storyTrackManual = !!st; hudCache.objH = null; renderMissionGoals(); return true;
+  S.storyTrack = id; S.storyTrackManual = !!st;if(st){S.goalManual=false;S.goalPin=null;} hudCache.objH = null; renderMissionGoals(); return true;
 }
 function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
@@ -6385,7 +6385,7 @@ function updateActionFlow(){
   const P=S.player,e=S.actionEntry,d=STAGE.entryRoute;
   if(e&&d&&!['done','skipped'].includes(e.phase)){
     const c=S.corpses.find(c=>c.guardId===d.guard);
-    if(c?.hidden||c?.stashed)e.phase='done';
+    if(c?.hidden||c?.stashed){e.phase='done';S.cpWant=true;}
     else if(c)e.phase='body';
     else if(!P.carrying&&(P.x<tc(d.bounds[0])-TILE||P.x>tc(d.bounds[2])||P.y<tc(d.bounds[1])||P.y>tc(d.bounds[3])))e.phase='skipped';
     else if(P.hidden&&P.mode==='sneak'&&dist(P.x,P.y,tc(d.bush[0]),tc(d.bush[1]))<90)e.phase='approach';
@@ -6494,9 +6494,16 @@ function missionGoalCandidates() {
 function pinnedMissionGoal() {
   const a = missionGoalCandidates(), P = S.player;
   let g = a.find(g => g.id === S.goalPin);
-  if(!g&&STAGE.priorityTarget)g=a.find(v=>v.g);
-  if (!g) { g = a.sort((a, b) => dist(P.x,P.y,a.x,a.y) + Math.abs(flOf(P)-(a.fl||0))*300 - dist(P.x,P.y,b.x,b.y) - Math.abs(flOf(P)-(b.fl||0))*300)[0]; S.goalPin = g ? g.id : null; }
+  if (!g) { g = (STAGE.priorityTarget&&a.find(v=>v.g))||a.sort((a, b) => dist(P.x,P.y,a.x,a.y) + Math.abs(flOf(P)-(a.fl||0))*300 - dist(P.x,P.y,b.x,b.y) - Math.abs(flOf(P)-(b.fl||0))*300)[0]; S.goalPin = g ? g.id : null; }
   return g ? { ...g, text: '의뢰: ' + g.text } : null;
+}
+function syncMissionTracking(){
+  if(S.goalManual&&!missionGoalCandidates().some(g=>g.id===S.goalPin)){S.goalManual=false;S.goalPin=null;}
+  if(S.storyTrackManual&&!trackedStory()){S.storyTrackManual=false;S.storyTrack=null;}
+}
+function selectAutoGoal(){
+  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;
+  hudCache.objH=null;renderMissionGoals();
 }
 function selectMissionGoal(id) {
   if (!missionGoalCandidates().some(g => g.id === id)) return false;
@@ -6504,12 +6511,14 @@ function selectMissionGoal(id) {
 }
 function renderMissionGoals() {
   const el = $('missionGoals'); if (!el || !S || STAGE.tutorial || STAGE.city) { if (el) el.replaceChildren(); return; }
+  syncMissionTracking();
   const focus = el.contains(document.activeElement) && document.activeElement.dataset.track, expanded = el.querySelector('details')?.open;
   el.replaceChildren();
+  const auto=document.createElement('button');auto.type='button';auto.textContent='자동 안내';auto.dataset.track='auto';auto.setAttribute('aria-pressed',String(!S.goalManual&&!S.storyTrackManual));auto.onclick=selectAutoGoal;el.append(auto);
   for (const g of missionGoalCandidates()) {
     const b = document.createElement('button'); b.type = 'button'; b.textContent = g.text + ' · ' + g.where;
     b.dataset.track = g.id;
-    b.setAttribute('aria-pressed', String(g.id === S.goalPin && !(oppMode && trackedStory()))); b.onclick = () => selectMissionGoal(g.id); el.append(b);
+    b.setAttribute('aria-pressed', String(S.goalManual&&g.id === S.goalPin && !(oppMode && trackedStory()))); b.onclick = () => selectMissionGoal(g.id); el.append(b);
   }
   const clues = oppMode && !S.exitOpen && (S.stories || []).filter(st => st.found && !st.done && !st.moot);
   if (clues && clues.length) {
@@ -8305,7 +8314,7 @@ function loadCheckpoint() {
   S.koHold = null; S.player.lethalHold = null; S.player.techWork=null; input.pressIds = {};
   S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
   closeKeypad();clearPlayerInput();
-  if(STAGE.tutorial){input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();}
+  input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();
   resetDialog(); running = true; paused = false;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
   toast('체크포인트에서 다시 시작 (' + CP.used + '번째)', 2.4); syncTools();
@@ -10900,7 +10909,7 @@ function wallUpSpot() {
 
 const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
-function update(dt) {
+function update(dt, present=true) {
   if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
@@ -10975,13 +10984,13 @@ function update(dt) {
   if (S.flash > 0) S.flash -= dt;
   if (S.fade > 0) S.fade -= dt;
   moveCamera(dt);
-  updateHUD();
+  if(present)updateHUD();
 }
 // 집중(조준) 중: 주인공 방향만 돌고 세상은 멈춘다
-function focusUpdate(dt) {
+function focusUpdate(dt, present=true) {
   updatePlayer(dt);
   for (const m of S.toasts) m.t -= dt * 0.5;
-  moveCamera(dt); updateHUD();
+  moveCamera(dt); if(present)updateHUD();
 }
 function updateAlert(dt) {
   if (S.alevel === 3) {
@@ -12374,8 +12383,8 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
-  const topPx = Math.max((drawMini.tb || 70) + 40,($('stealth')?.getBoundingClientRect().bottom||0)+24), botPx = document.body.classList.contains('touch') ? 270 : 70;
-  const sy0 = cam.y - hh + topPx / SCALE, sy1 = cam.y + hh - botPx / SCALE, sx0 = cam.x - hw + 34 / SCALE, sx1 = cam.x + hw - 34 / SCALE;  // 그릴 수 있는 안쪽 사각형 (세계 좌표)
+  const frame=goalViewport();
+  const sy0=cam.y-hh+frame.top/SCALE,sy1=cam.y-hh+frame.bottom/SCALE,sx0=cam.x-hw+frame.left/SCALE,sx1=cam.x-hw+frame.right/SCALE;
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 금색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
     if (m < 3) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
@@ -12946,6 +12955,11 @@ function goalMarkerCaption(g, meters) {
   const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?(g.viaTo?.z?`${g.viaTo.z}층 옥상 입구`:`${(g.viaTo?.fl??g.fl??0)+1}층 입구`):g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
   return [place, meters+'m'].filter(Boolean).join(' · ');
 }
+function goalViewport(){
+  const bottom=Math.max(80,isTouch?Math.min(H-24,touchPlayFrame().bottom-32):H-70);
+  const desiredTop=Math.max((drawMini.tb||70)+40,($('stealth')?.getBoundingClientRect().bottom||0)+24);
+  return{left:34,right:W-34,top:clamp(desiredTop,24,Math.max(24,bottom-48)),bottom};
+}
 function guardAwareness(g) {
   if (!g || ['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state) || g.doomed) return {phase:'quiet',color:'#aab8bf',progress:0,direct:false};
   const P=S.player,same=flOf(g)===flOf(P)&&(g.z||0)===(P.z||0);
@@ -13416,6 +13430,7 @@ function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
   if (STAGE.city) return cityGoal();
+  syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const fg = pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.at ? tc(fg.at[0]) : null, y: fg.at ? tc(fg.at[1]) : null, fl: fg.at ? fg.at[2] || 0 : 0 }; }
@@ -14076,11 +14091,14 @@ function advanceGameFrame(elapsed) {
   const total=Math.max(0,Math.min(STAGE.artSlice?.25:.12,elapsed));
   if(!total)return;
   const count=STAGE.artSlice?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
+  let advanced=false;
   for(let i=0;i<count;i++){
     if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
     let dt=step;if(S.hitStop>0){S.hitStop-=step;dt=step*.06;}
-    if(input.aiming)focusUpdate(dt);else update(dt);
+    advanced=true;
+    if(input.aiming)focusUpdate(dt,false);else update(dt,false);
   }
+  if(advanced&&running&&!S.over)updateHUD();
 }
 function frame(t) {
   requestAnimationFrame(frame);
@@ -14209,6 +14227,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
