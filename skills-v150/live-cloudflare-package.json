@@ -1,0 +1,11 @@
+{
+  "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+  "files": {
+    "index.html": "84f40a1684cae25fb7b78be3d42a91af736e2acd634fa2a1c4071ddab52d6af5",
+    "version.json": "5e318d0ce9ddc9fc6874a69ff1bf8a41ffc33058600ca626b650e2fa7482f1de",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/953f7610619dc936fc8f.js": "953f7610619dc936fc8fc5d6e2e8226dcf91d1b5f1f270302e0880b226491c9f",
+    "assets/c4cf99c51ea2791123ee.js": "c4cf99c51ea2791123eeb9db40a3f4d0ab346805359bba7800bf712893a1a55b",
+    "assets/28b7225ddb56f9019bd0.js": "28b7225ddb56f9019bd008ea87036f6f80e371b77c43e6c3e633d5fab09de544"
+  }
+}

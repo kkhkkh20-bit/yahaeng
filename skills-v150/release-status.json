@@ -9,10 +9,23 @@
     "nativeElectricalPcAndTouch": "passed"
   },
   "cloudflare": {
-    "status": "not_updated",
+    "status": "deployed",
     "url": "https://yahaeng.kkhkkh-20.workers.dev/",
-    "lastObservedVersion": "v148",
-    "directDeploy": "No configured Cloudflare API credential in this runtime; main automatic deployment has not been observed"
+    "lastObservedVersion": "v150",
+    "automaticDeploy": "GitHub main push → existing Cloudflare Workers Builds integration",
+    "runtimeSourceCommit": "2a29a4ac031f1dd12cdf81b9eb07339a4c176aac",
+    "buildCheck": {
+      "completed_at": "2026-11-02T16:34:46Z",
+      "conclusion": "success",
+      "details_url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/fae66aee-796f-45e5-92df-1f7920a213a4",
+      "id": 125405385669,
+      "name": "Workers Builds: yahaeng",
+      "started_at": "2026-11-02T16:34:46Z",
+      "status": "completed"
+    },
+    "nativeElectricalPcAndTouch": "passed",
+    "packagedFileHashes": 6,
+    "sourceMatchesPages": true
   },
   "package": {
     "edition": "2d-campaign",
@@ -31,10 +44,5 @@
     "finalElectricalPcAndTouch": true,
     "introductoryPcAndTouch": true,
     "guardRepairs": true
-  },
-  "evidencePublication": {
-    "status": "pending",
-    "reason": "Follow-up documentation pushes returned HTTP 503 after the runtime deployment had succeeded"
-  },
-  "additionalPublicPackageCheck": "Inconclusive transport/boot timeout on an extra check; the final local package hashes and public PC/touch electrical purchase and switch actions passed"
+  }
 }
