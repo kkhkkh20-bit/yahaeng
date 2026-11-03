@@ -1003,6 +1003,11 @@ body:not(.touch) #hud .tools { max-width:calc(100vw - 28px); flex-wrap:wrap; jus
 body:not(.touch) #hud .tools .tool { min-height:44px; }
 @media(min-width:701px) and (max-height:500px) { body.touch #hud #btnSkill { bottom:calc(140px + env(safe-area-inset-bottom,0px)); } }
 
+/* Short portrait: retain the legacy training key without covering the play area. */
+@media(max-width:360px) and (max-height:640px) and (orientation:portrait) {
+  body.touch #hud #btnSkill { left:10px; right:auto; bottom:calc(100px + env(safe-area-inset-bottom,0px)); width:92px; min-height:56px; padding:6px; }
+}
+
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -1362,7 +1367,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v153 · 2026-11-03</footer>
+  <footer class="title-footer">v154 · 2026-11-03</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1511,6 +1516,6 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/2df62c591e9c8b98e0c4.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/c2f4e5454ea6bd036ae4.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/9a995d5c38e3931b6cb5.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/f584d14fc455646e3554.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/850e9cd2f2ac84dc2aa5.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>

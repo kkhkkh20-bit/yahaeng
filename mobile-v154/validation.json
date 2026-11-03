@@ -1,0 +1,38 @@
+{
+  "regressionScripts": 49,
+  "buildUnitChecks": 7,
+  "newFlowChecks": 24,
+  "cameraBoundaryCases": 144,
+  "viewports": [
+    [
+      1440,
+      900
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ],
+    [
+      320,
+      568
+    ]
+  ],
+  "pageErrors": [],
+  "scope": "Fixed-clock native keyboard/touch and active AI; no physical-phone FPS benchmark",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v154",
+    "source_sha256": "0c20f181311447351f97f9cb8882017a5c168050244072f25a29bdc7c18a80b6",
+    "html_bytes": 122698,
+    "source_bytes": 11108415,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8382575,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8382575
+  }
+}

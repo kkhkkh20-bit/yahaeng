@@ -1,0 +1,203 @@
+{
+  "base": "http://127.0.0.1:8001/public/",
+  "results": [
+    {
+      "mobile": false,
+      "trace": [
+        {
+          "step": 1,
+          "over": false,
+          "at": [
+            310.6795400219865,
+            408.61875
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": null,
+          "stashed": 0,
+          "default": "none"
+        },
+        {
+          "step": 2,
+          "over": false,
+          "at": [
+            310.6795400219865,
+            408.61875
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": 1,
+          "stashed": 1,
+          "default": "carry"
+        },
+        {
+          "step": 3,
+          "over": false,
+          "at": [
+            791.6090800439731,
+            409.23749999999995
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": 1,
+          "stashed": 1,
+          "default": "none"
+        },
+        {
+          "step": 4,
+          "over": false,
+          "at": [
+            791.6090800439731,
+            409.23749999999995
+          ],
+          "hidden": true,
+          "kills": 1,
+          "ko": 1,
+          "stashed": 2,
+          "default": "carry"
+        },
+        {
+          "step": 5,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 1,
+          "stashed": 2,
+          "default": "none"
+        },
+        {
+          "step": 6,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 2,
+          "stashed": 2,
+          "default": "quickStash"
+        },
+        {
+          "step": 7,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 2,
+          "stashed": 3,
+          "default": "none"
+        }
+      ],
+      "completed": true,
+      "errors": [],
+      "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+    },
+    {
+      "mobile": true,
+      "trace": [
+        {
+          "step": 1,
+          "over": false,
+          "at": [
+            310.6795400219865,
+            408.61875
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": null,
+          "stashed": 0,
+          "default": "none"
+        },
+        {
+          "step": 2,
+          "over": false,
+          "at": [
+            310.6795400219865,
+            408.61875
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": 1,
+          "stashed": 1,
+          "default": "carry"
+        },
+        {
+          "step": 3,
+          "over": false,
+          "at": [
+            791.6090800439731,
+            409.23749999999995
+          ],
+          "hidden": true,
+          "kills": 0,
+          "ko": 1,
+          "stashed": 1,
+          "default": "none"
+        },
+        {
+          "step": 4,
+          "over": false,
+          "at": [
+            791.6090800439731,
+            409.23749999999995
+          ],
+          "hidden": true,
+          "kills": 1,
+          "ko": 1,
+          "stashed": 2,
+          "default": "carry"
+        },
+        {
+          "step": 5,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 1,
+          "stashed": 2,
+          "default": "none"
+        },
+        {
+          "step": 6,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 2,
+          "stashed": 2,
+          "default": "quickStash"
+        },
+        {
+          "step": 7,
+          "over": false,
+          "at": [
+            904.6573700659601,
+            505.48749999999995
+          ],
+          "hidden": false,
+          "kills": 1,
+          "ko": 2,
+          "stashed": 3,
+          "default": "none"
+        }
+      ],
+      "completed": true,
+      "errors": [],
+      "input": "Native keyboard or CDP joystick/buttons; active AI, fixed simulation clock; no player position changes"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "checks": [
+    "attack tap",
+    "attack held",
+    "attack cancel",
+    "attack blur",
+    "attack floor",
+    "attack turn",
+    "attack move",
+    "attack held physical chain",
+    "body store",
+    "body full",
+    "body gone",
+    "body floor",
+    "body damage",
+    "body pause",
+    "body wall",
+    "body save",
+    "container store",
+    "container filledDuringOpen",
+    "container damageDuringOpen",
+    "native 390x844 tap/cancel, held double and one-press body disposal",
+    "native 844x390 tap/cancel, held double and one-press body disposal",
+    "320px portrait reserves player and contact area above controls",
+    "native 320x568 tap/cancel, held double and one-press body disposal",
+    "native 1440x900 tap/cancel, held double and one-press body disposal"
+  ],
+  "pageErrors": []
+}

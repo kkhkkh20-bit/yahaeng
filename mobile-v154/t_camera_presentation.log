@@ -1,0 +1,5 @@
+PASS 320 568 {'cases': 36, 'speechAboveBuildings': True}
+PASS 390 844 {'cases': 36, 'speechAboveBuildings': True}
+PASS 844 390 {'cases': 36, 'speechAboveBuildings': True}
+PASS 1280 720 {'cases': 36, 'speechAboveBuildings': True}
+PASS 144 camera boundary cases
