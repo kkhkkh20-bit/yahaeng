@@ -2,24 +2,24 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/lessons-v159';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/review-v160';O.mkdir(exist_ok=True)
 async def main():
  checks=[]
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100)
   checks=await q.evaluate('''()=>{
    const G=__game,out=[],check=(v,s)=>{if(!v)throw Error(s)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
-   const order=['tB','t0','m2','tL','m4','tR','m6'],done={};
+   const order=['tB','t0','m2','tL','tR','m4','m6'],done={};
    for(const id of order){localStorage.setItem('yahaeng.ch',JSON.stringify(done));check(G.STAGES[G.recommendedStage()].id===id,'recommendation '+id);done[id]={_clear:true};}
    out.push('one shared episode order respects all seven completion states');
-   localStorage.clear();fresh('m2');check(G.STAGES[G.learningNext()].id==='tL','episode02 rehearsal skipped');fresh('m4');check(G.STAGES[G.learningNext()].id==='tR','episode03 rehearsal skipped');
+   localStorage.clear();fresh('m2');check(G.STAGES[G.learningNext()].id==='tL','episode02 rehearsal skipped');fresh('tL');check(G.STAGES[G.learningNext()].id==='tR','stairs rehearsal skipped');fresh('tR');check(G.STAGES[G.learningNext()].id==='m4','stairs follows required contract');fresh('m4');check(G.STAGES[G.learningNext()].id==='m6','episode03 transition');
    localStorage.setItem('yahaeng.ch',JSON.stringify({tL:{_clear:true},tR:{_clear:true}}));fresh('m2');check(G.STAGES[G.learningNext()].id==='m4','completed rehearsal forced again');fresh('m4');check(G.STAGES[G.learningNext()].id==='m6','completed third rehearsal forced again');out.push('result route joins next episode and skips already completed rehearsals');
    localStorage.clear();
    for(const id of ['tB','t0','tL','tR']){const S=fresh(id),P=S.player;G.update(.02);check(!S.exitOpen,'early open '+id);check(!S.player.kunai&&!G.abilityOn('dart')&&!G.abilityOn('ambush'),'free skill '+id);check(G.skillOn('electric')===(id==='tL'),'electrical loan '+id);check(G.skillBudget()===4,'free points '+id);for(let i=0;i<G.STAGE.steps.length;i++){S.tutI=i;check(G.nextGoal()?.tut,'missing tutorial goal '+id+':'+i);check(G.objectiveLines().length===1,'competing goal lines '+id+':'+i);G.updateHUD(true);}S.tutI=0;G.checkObjective();}
    out.push('all lesson steps resolve goals without exceptions, one objective line and no free permanent skills/points');
    fresh('m4');check(!G.skillOn('electric'),'trial leaked into contract');check(G.S.guards.length>0,'native contract missing');out.push('direct contract selection remains possible and trial skills end');
    fresh('m6');check(Number.isFinite(G.nextGoal().x)&&G.nextGoal().text.includes('머리핀'),'cell entry has no actionable marker');out.push('episode03 starts with an actual reachable pin marker instead of unlocated escape text');
-   const S=fresh('tB');G.update(.5);G.saveCheckpoint();const before=G.CP.S.tutI||0;G.endGame(false,'recovery test');check(S.over,'failure not entered');window.recoveryBefore=before;
+   const S=fresh('tB');S.tutI=1;G.input.sneakToggle=true;G.update(.02);G.updateHUD(true);check(G.nextGoal().text.includes('일어서기')&&document.getElementById('btnCrouch').classList.contains('lesson-cue'),'early crouch recovery');G.input.sneakToggle=false;G.input.walkLock=true;G.update(.02);check(G.nextGoal().text.includes('걷기 고정'),'walk lock recovery');out.push('early crouch and walking lock get matching recovery instructions');G.update(.5);G.saveCheckpoint();const before=G.CP.S.tutI||0;G.endGame(false,'recovery test');check(S.over,'failure not entered');window.recoveryBefore=before;
    return out;
   }''')
   await q.wait_for_timeout(1450);assert await q.evaluate('!__game.S.over&&(__game.S.tutI||0)===recoveryBefore&&__game.cpReady()'),'tutorial failure did not restore saved safe step';checks.append('real tutorial failure timer restores checkpoint, not whole lesson')

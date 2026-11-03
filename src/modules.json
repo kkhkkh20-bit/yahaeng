@@ -190,6 +190,10 @@
       "group": "mission_plan"
     },
     {
+      "path": "44_contract_guidance.js",
+      "group": "mission_plan"
+    },
+    {
       "path": "44_rendezvous.js",
       "group": "rendezvous"
     },

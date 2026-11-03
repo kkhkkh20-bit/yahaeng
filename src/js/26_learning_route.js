@@ -1,5 +1,5 @@
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['tB','t0','m2','tL','m4','tR','m6'];
+const LEARNING_ROUTE=['tB','t0','m2','tL','tR','m4','m6'];
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
   for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!stageCleared(STAGES[i]))return i;}

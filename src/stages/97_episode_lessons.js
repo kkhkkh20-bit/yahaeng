@@ -11,16 +11,16 @@ STAGES.push({...FIRST_STEPS,
     ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'이 구간에서만 전기 조작을 임시로 쓴다. 본편에서는 기술을 배워야 한다.','env',0,['lamp']],
     ['아래쪽 어두운 길을 따라 표시로 이동',(S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24,S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48},'빛이 줄어 부채꼴도 짧아졌다. 손전등과 소리는 사라지지 않는다.','move'],
     [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 안전한 길로 복귀':'{살금} 왼쪽 안전한 길로 복귀',(S,P)=>P.mode==='sneak'&&P.x<6.7*48,()=>({x:6*48,y:12.5*48}),'어두워도 뛰면 들린다. 조용히 이동한 뒤 출구로 나간다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음 의뢰에서는 배운 전기 기술이 있을 때 조명을 이용하거나, 다른 잠입로를 고른다.','move']
+    ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음은 실내와 계단 연습이다. 본편의 조명은 전기 기술을 배운 경우에 조작한다.','move']
   ]
 });
 const lessonStair=S=>S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
 STAGES.push({
-  id:'tR',no:'00',name:'의뢰 03 준비 · 실내와 계단',sub:'연락 거점 · 2층 서류 회수',tutorial:true,episodeLesson:true,lessonLoot:true,
+  id:'tR',no:'00',name:'의뢰 02 준비 · 실내와 계단',sub:'연락 거점 · 2층 서류 회수',tutorial:true,episodeLesson:true,lessonLoot:true,
   noSupport:true,noAmbientChats:true,noRefine:true,floors:true,residents:0,bare:true,kunai:0,coins:0,well:'manhole',pspd:1.25,gspd:.8,
   W:25,H:23,start:[12,19],exit:[4,19],startA:-Math.PI/2,
   mission:'연락 거점 2층에서 서류를 회수하고 처음 들어온 골목으로 빠져나간다.',
-  brief:'다음 의뢰는 실내에서 시작한다. 먼저 경비 없는 연락 거점에서 문과 계단을 익힌다. 물건을 챙긴 뒤 내려와야 탈출할 수 있다.',
+  brief:'다음 의뢰는 사무동 2층까지 들어가야 한다. 경비 없는 연락 거점에서 문과 계단을 먼저 익힌다. 물건을 챙긴 뒤 내려와야 탈출할 수 있다.',
   build(m){
     m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');
     m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:['연락 거점',''],name:'연락 거점'});

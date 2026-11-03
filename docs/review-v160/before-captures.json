@@ -1,0 +1,196 @@
+{
+  "captures": [
+    {
+      "image": "before-earlyrun-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "bc39bb236735dfc8ab582f7367c0936f22f3752efd7578e6c7e459d53f569513",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-m4-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "a73edb12aaa74ee3f198402db495470802810c42485293cd1c27b01f67ea3277",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-next-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "2ad9a13aa8fae1d727e54926d89d02bcc8584a1a3320b89851e54fc6e73f3459",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-ledger-pc.png",
+      "viewport": [
+        1440,
+        900
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "6189d79b4fde29fc7ca5c1153eb29a47dac2f8c029d9cffd2863cfedcdfac0f0",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-earlyrun-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "a4ac9366f23844ebb2ecb43fc0b38c841fe23d3738229e244b9c3e36eff79c69",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-m4-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "1f0062849791229fc0b0ae980a4109b828e6de98d76cf2ca9249897d2e9a6dcb",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-next-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "d8d9c20dbad12bc47cd028022b2b070cc9d8b7bb7a7b758d9492292d0cb711dd",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-ledger-mobile.png",
+      "viewport": [
+        390,
+        844
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "419e9248a2dd76d4027011660fe4282ac4ec2a2286e97d012201ebc6ed7ccbc5",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-earlyrun-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "191fa6f6ecbde7078b6cabb8790d8bc8ab1a48e68f52c09b671cfa60c0e8350f",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-m4-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "e7a8d7f08ac88d1381b34f5d631ad5e3c0635dbd029849d5fd444fd4978314f6",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-next-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "8914e47832a9adb60ec84da05673168352e2602ed8b2f22364cf01cb712c825d",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-ledger-landscape.png",
+      "viewport": [
+        844,
+        390
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "a806970327dc8dfeb5170d2983350868455cfa590897339868e393973f019a89",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-earlyrun-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "485da880b10d1188f848baeeb71863a5f5635f5e70e73d5df3ef0c6129b9d3fa",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-m4-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "46a470c34b6c8f1528658ba5534352edaf2b14da55c4b31022254f9eb6ea59ee",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-next-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "5d37ddaba18b9ffa52fc86d450a148516089936226f159bf3ef72b338775044e",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    },
+    {
+      "image": "before-ledger-small.png",
+      "viewport": [
+        320,
+        568
+      ],
+      "version": "v159",
+      "sourcePackageSha256": "9d0c0a78a2841dbc95b597a2e8df264b4d1e1b7c2d4cdc43cf87fbdbf229c863",
+      "imageSha256": "26b6454638bbecab442417e555c90c371095bc7aaccd6c29a2063a58eb0c4973",
+      "errors": [],
+      "method": "Same seeded package/viewport. Earlyrun uses actual crouch and100right-input frames. m4/ledger are actual entry/menu. Next is an explicitly forced result solely to compare destination label, not a playthrough."
+    }
+  ]
+}
