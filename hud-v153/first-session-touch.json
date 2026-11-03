@@ -1,0 +1,249 @@
+[
+  {
+    "name": "move",
+    "stage": "tB",
+    "step": 1,
+    "t": 1.483333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      4.463312599529715,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-run",
+    "stage": "tB",
+    "step": 2,
+    "t": 1.733333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      5.3802382167565765,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "sound-quiet",
+    "stage": "tB",
+    "step": 4,
+    "t": 3.6999999999999917,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.461227519123927,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "light-before",
+    "stage": "tB",
+    "step": 4,
+    "t": 3.6999999999999917,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.461227519123927,
+      10.532031250000001
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "light-switch",
+    "stage": "tB",
+    "step": 4,
+    "t": 5.916666666666651,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.055411546901705,
+      7.875982529790726
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "light-off",
+    "stage": "tB",
+    "step": 5,
+    "t": 6.349999999999983,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.055411546901705,
+      7.875982529790726
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "dark-crossing",
+    "stage": "tB",
+    "step": 6,
+    "t": 10.650000000000109,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.467753670897518,
+      12.471680686778937
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "bush",
+    "stage": "tB",
+    "step": 7,
+    "t": 14.16666666666695,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      8.46123828589648,
+      10.520947807465653
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "heard",
+    "stage": "tB",
+    "step": 8,
+    "t": 14.250000000000288,
+    "hp": 3,
+    "hidden": true,
+    "at": [
+      8.466428440194365,
+      10.520947807465653
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "escape-vision",
+    "stage": "tB",
+    "step": 9,
+    "t": 16.000000000000373,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      6.051482150540642,
+      10.542432182465653
+    ],
+    "guard": "NOTICE"
+  },
+  {
+    "name": "escape",
+    "stage": "tB",
+    "step": 9,
+    "t": 19.533333333333506,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      3.534141741314452,
+      13.048148995402052
+    ],
+    "guard": "SUSPICIOUS"
+  },
+  {
+    "name": "rear",
+    "stage": "t0",
+    "step": 1,
+    "t": 4.666666666666655,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.8537483729870425,
+      9.521484375
+    ],
+    "guard": "PATROL"
+  },
+  {
+    "name": "grab",
+    "stage": "t0",
+    "step": 2,
+    "t": 5.13333333333332,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "CAPTIVE"
+  },
+  {
+    "name": "ko",
+    "stage": "t0",
+    "step": 3,
+    "t": 6.1499999999999835,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "uniform",
+    "stage": "t0",
+    "step": 4,
+    "t": 9.250000000000039,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "carry",
+    "stage": "t0",
+    "step": 5,
+    "t": 9.900000000000071,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      7.958632411327154,
+      9.517997547397526
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "stash",
+    "stage": "t0",
+    "step": 6,
+    "t": 14.733333333333645,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      9.5,
+      8.041666666666666
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "complete",
+    "stage": "t0",
+    "step": 6,
+    "t": 22.949999999999978,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      21.220126535158926,
+      8.270833333333334
+    ],
+    "guard": "DEAD"
+  },
+  {
+    "name": "contract",
+    "stage": "m2",
+    "step": null,
+    "t": 0.08333333333333333,
+    "hp": 3,
+    "hidden": false,
+    "at": [
+      0.5,
+      21.5
+    ],
+    "guard": "PATROL"
+  }
+]

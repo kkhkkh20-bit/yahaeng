@@ -1,0 +1,124 @@
+{
+  "scope": "One static scan of compiled final UI before the mechanical correction",
+  "findings": [
+    {
+      "antipattern": "low-contrast",
+      "name": "Low contrast text",
+      "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": ":hover state 1.1:1 (need 4.5:1) — text #e4e8df on #ffd98a"
+    },
+    {
+      "antipattern": "tiny-text",
+      "name": "Tiny body text",
+      "description": "Body text below 12px is hard to read, especially on high-DPI screens. Use at least 14px for body content, 16px is ideal.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "11px body text"
+    },
+    {
+      "antipattern": "cramped-padding",
+      "name": "Cramped padding",
+      "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "<div> \"pz-sets\": children flush against border-top on top (no inset)"
+    },
+    {
+      "antipattern": "cramped-padding",
+      "name": "Cramped padding",
+      "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "<div> \"ctrl\": children flush against border on right/left (no inset)"
+    },
+    {
+      "antipattern": "cramped-padding",
+      "name": "Cramped padding",
+      "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "<div> \"pz-side\": children flush against border on right/left (no inset)"
+    },
+    {
+      "antipattern": "cramped-padding",
+      "name": "Cramped padding",
+      "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "<div> \"br-radio\": children flush against border-top/left on left (no inset)"
+    },
+    {
+      "antipattern": "undersized-ui-text",
+      "name": "Undersized functional text",
+      "description": "Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "10px functional text \"출발\" (below 11px floor)"
+    },
+    {
+      "antipattern": "undersized-ui-text",
+      "name": "Undersized functional text",
+      "description": "Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "10px functional text \"회수 물품\" (below 11px floor)"
+    },
+    {
+      "antipattern": "undersized-ui-text",
+      "name": "Undersized functional text",
+      "description": "Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "10px functional text \"표적\" (below 11px floor)"
+    },
+    {
+      "antipattern": "undersized-ui-text",
+      "name": "Undersized functional text",
+      "description": "Interactive and content-bearing UI text (links, buttons, nav items, labels, table cells, meta rows, timecodes) below 11px is a legibility failure, not a style choice. WCAG sets no absolute pixel floor, but functional text under 11px is a defensible quality bar: it fails on high-DPI and small viewports and it degrades tap and read targets. The 11px floor holds even inside a footer; only non-interactive legal smallprint gets the softer 10px floor. Being ON the DESIGN.md size ramp does not exempt a value here: adding 8px to the ramp launders the token but not the legibility problem, and that is exactly the escape hatch this rule closes. Exempts sup/sub, visually-hidden (sr-only) text, and code/terminal contexts. Decorative letterspaced micro-labels are still functional and stay in scope.",
+      "severity": "warning",
+      "category": "quality",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "10px functional text \"탈출\" (below 11px floor)"
+    },
+    {
+      "antipattern": "dark-glow",
+      "name": "Glowing shadow accents",
+      "description": "Colored glow shadows — a zero-offset chromatic halo (box- or text-shadow) on any background, or any colored blurred shadow on a dark background — are the default \"cool\" look of AI-generated UIs. Use neutral elevation shadows and subtle, purposeful lighting instead.",
+      "severity": "warning",
+      "category": "slop",
+      "file": "/workspace/yahaeng/public/index.html",
+      "line": 0,
+      "snippet": "Zero-offset text-shadow glow (#f2c46b)"
+    }
+  ],
+  "corrections": [
+    "Fixed actual briefing CTA hover contrast: removed inherited #ffd98a background; explicit high-specificity normal/hover styles now use shared dark/ink palette",
+    "Removed obsolete zero-offset briefing text shadow",
+    "Briefing legend and checkpoint caption floor raised to 11px"
+  ],
+  "remainingContext": [
+    "11px dense HUD metadata is intentional; menu/prose roles are 14–15px, headings 24–48px",
+    "pz-sets border-top is disabled in settings; ctrl only has a top rule with 24px top padding; pz-side only a left rule with 28px inset; br-radio has no box boundary after final specific cascade. These static shorthand/cascade findings should be judged against actual screenshots/computed CSS."
+  ]
+}
