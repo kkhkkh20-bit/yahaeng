@@ -1,0 +1,249 @@
+{
+  "version": "v152",
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v152",
+    "source_sha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+    "html_bytes": 160368,
+    "source_bytes": 10408593,
+    "scripts": 4,
+    "assets": 175,
+    "asset_bytes": 7834515,
+    "deployed_assets": 175,
+    "deployed_asset_bytes": 7834515
+  },
+  "nativeBuilds": {
+    "attempt": 2,
+    "time": "2026-11-03T02:33:27Z",
+    "runtimeCommit": "9f804d0247f6a1de244dbc15ad7a30c1e035cf7e",
+    "endpoints": {
+      "pages": {
+        "version": "v152",
+        "source_sha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "matches": true
+      },
+      "cloudflare": {
+        "version": "v152",
+        "source_sha256": "19fcac4480341bb83c3f7986bb19dcc7c2cc9ccce10412d08342a78d7e6067c8",
+        "matches": true
+      }
+    },
+    "workers": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/dca7f29f-44f6-46b0-8b53-8cd2c6012609"
+      }
+    ],
+    "pagesBuild": {
+      "status": "built",
+      "commit": "848e1baaddf1e08c23cd778193f44e4f151cd783",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "publicPackages": {
+    "pages": {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "files": {
+        "index.html": "07a131d6404f38320e9cb028bdff1b2716608b149c48ca65ef2dab9910ce2ec6",
+        "version.json": "6b4ce236ffbb0a236da0c02c4a5393ebc039e34dc338b5df15f92f8cf07e809c",
+        "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+        "assets/78ea103d1fc6c3cf26a6.js": "78ea103d1fc6c3cf26a6dfe6c6e27286bbfcb4aca456f32e9f1e78475a592ed9",
+        "assets/c4cf99c51ea2791123ee.js": "c4cf99c51ea2791123eeb9db40a3f4d0ab346805359bba7800bf712893a1a55b",
+        "assets/9fdc6f57a52fa06e985d.js": "9fdc6f57a52fa06e985d054fb7cbdfd63187e9d39eeae9e6f436a561e78b09f4"
+      },
+      "browsers": [
+        {
+          "mobile": false,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            186.55364004193797,
+            505.53135
+          ],
+          "version": "v152",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true
+        },
+        {
+          "mobile": true,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            188.27660547038454,
+            505.54057500000005
+          ],
+          "version": "v152",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true
+        }
+      ]
+    },
+    "cloudflare": {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "files": {
+        "index.html": "07a131d6404f38320e9cb028bdff1b2716608b149c48ca65ef2dab9910ce2ec6",
+        "version.json": "6b4ce236ffbb0a236da0c02c4a5393ebc039e34dc338b5df15f92f8cf07e809c",
+        "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+        "assets/78ea103d1fc6c3cf26a6.js": "78ea103d1fc6c3cf26a6dfe6c6e27286bbfcb4aca456f32e9f1e78475a592ed9",
+        "assets/c4cf99c51ea2791123ee.js": "c4cf99c51ea2791123eeb9db40a3f4d0ab346805359bba7800bf712893a1a55b",
+        "assets/9fdc6f57a52fa06e985d.js": "9fdc6f57a52fa06e985d054fb7cbdfd63187e9d39eeae9e6f436a561e78b09f4"
+      },
+      "browsers": [
+        {
+          "mobile": false,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            187.60986080721733,
+            505.54057500000005
+          ],
+          "version": "v152",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true
+        },
+        {
+          "mobile": true,
+          "before": [
+            120,
+            504
+          ],
+          "after": [
+            188.27723782373403,
+            505.540575
+          ],
+          "version": "v152",
+          "stage": "tB",
+          "errors": [],
+          "threeDRequests": false,
+          "objectivePauseAndResume": true
+        }
+      ]
+    }
+  },
+  "nativeSkillInputs": {
+    "pages": {
+      "base": "https://kkhkkh20-bit.github.io/yahaeng/",
+      "checks": [
+        {
+          "mobile": false,
+          "version": "v152",
+          "nativeInput": "keyboard Z",
+          "unlearned96pxAttackBlocked": true,
+          "purchases": [
+            "silentHands",
+            "reach"
+          ],
+          "learnedApproachMovedAndKO": true,
+          "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+          "pageErrors": []
+        },
+        {
+          "mobile": true,
+          "version": "v152",
+          "nativeInput": "touch attack",
+          "unlearned96pxAttackBlocked": true,
+          "purchases": [
+            "silentHands",
+            "reach"
+          ],
+          "learnedApproachMovedAndKO": true,
+          "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+          "pageErrors": []
+        }
+      ]
+    },
+    "cloudflare": {
+      "base": "https://yahaeng.kkhkkh-20.workers.dev/",
+      "checks": [
+        {
+          "mobile": false,
+          "version": "v152",
+          "nativeInput": "keyboard Z",
+          "unlearned96pxAttackBlocked": true,
+          "purchases": [
+            "silentHands",
+            "reach"
+          ],
+          "learnedApproachMovedAndKO": true,
+          "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+          "pageErrors": []
+        },
+        {
+          "mobile": true,
+          "version": "v152",
+          "nativeInput": "touch attack",
+          "unlearned96pxAttackBlocked": true,
+          "purchases": [
+            "silentHands",
+            "reach"
+          ],
+          "learnedApproachMovedAndKO": true,
+          "fixture": "Isolated guard on a real mission floor; authored gameplay and actual purchase/attack controls",
+          "pageErrors": []
+        }
+      ]
+    }
+  },
+  "comparison": {
+    "base": "https://kkhkkh20-bit.github.io/yahaeng/skills-v152/compare/",
+    "files": [
+      {
+        "name": "after-detail-mobile.png",
+        "sha256": "de518a7e6f46c5c48c1ef8b92efdd0d30d3707069b3ad715c570ca5836ba8713"
+      },
+      {
+        "name": "after-detail-pc.png",
+        "sha256": "7c44bbe43f448b013a6798190e410de13a34c3716320b36eb5dcef6d9723eb20"
+      },
+      {
+        "name": "after-mobile.png",
+        "sha256": "1212f659057122f268b06194dc8c97f7980dbd6a8de964d525720307af4e7295"
+      },
+      {
+        "name": "after-pc.png",
+        "sha256": "4f3cf9820ab7401abdc68396729752a226fe4b718e8619b37292313923bf7a27"
+      },
+      {
+        "name": "before-detail-mobile.png",
+        "sha256": "1ae2d7e6d1de767ab1815aa019063484feb3c4159cbbede1ca7cca95abb33ec8"
+      },
+      {
+        "name": "before-detail-pc.png",
+        "sha256": "e88506b9383e66c73f17a0eb428028f0322b35ccdbb1cfd05157ae7d30f5521d"
+      },
+      {
+        "name": "before-mobile.png",
+        "sha256": "bf237c55489880f6a46a0fdb40ad1e5bee3e97155aa806cca25be422d736f5f4"
+      },
+      {
+        "name": "before-pc.png",
+        "sha256": "8f73ffa48d242da3dd935073c4f57644a1e632d93749ff463150a39faa0f7052"
+      },
+      {
+        "name": "captures.json",
+        "sha256": "65c2628b05048bc926d588dd13b98251171eeb9d624b3cf7ed25d6f452818f25"
+      },
+      {
+        "name": "index.html",
+        "sha256": "09271971479b0afbfbfeabd0e8ffda4bc24d67cb6aba5a3a3349f39ebe1d9b84"
+      }
+    ],
+    "playtestMatches": true
+  }
+}
