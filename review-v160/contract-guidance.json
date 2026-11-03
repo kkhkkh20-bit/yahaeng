@@ -1,0 +1,13 @@
+{
+  "checks": [
+    "collector first; unseen motion does not update known area",
+    "manual objectives and clues remain user controlled",
+    "dropped red card, cash bag, blue card then VIP",
+    "memo, real2F card route, then1F contract",
+    "already acquired keys and physically opened doors bypass unnecessary preparation",
+    "body cleanup and completed exit take precedence",
+    "basic world hints match visible controls; normal hints preserved"
+  ],
+  "errors": [],
+  "method": "Controlled completion/position/open-door fixtures; does not imply a full mission playthrough."
+}
