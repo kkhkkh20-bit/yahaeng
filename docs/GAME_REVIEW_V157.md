@@ -41,3 +41,5 @@
 핵심 회귀 스크립트 **51개**, 빌드 검사 **7개**, 도달 검사를 통과했다. [전체 결과](review-v157/regression.txt). 별도로 기존 선택 경로 검사도 PC·터치에서 통과했다. [선택 경로 검사](review-v157/optional-goals.txt). 독립 UI 검수는 네 크기의 원본 12장·동작 기록·변경 코드를 확인해 **ship**으로 판정했고 수정 요구는 없었다. [검수 기록](review-v157/finish-review.json). 이 판정은 이번 여섯 변경과 제공된 상태에 한정한다. 배포 상태는 같은 폴더에 별도로 기록한다. UI 검출은 [빈 경고 목록](review-v157/design-detection.json)이었다. 기존 IBM Plex Regular 400·색·메뉴·조작부를 유지하고, 새 아트·외부 패키지·초기 능력을 추가하지 않는다. episode-one/club-study 보관 판본은 변경하지 않았다.
 
 이번 검토는 코드·통제 회귀·실제 첫 진입과 저장 복구에 대한 것이다. 일반 사용자 재미 평가, 모든 본편의 활성 AI 전체 완주, 실물 휴대폰 발열·배터리·FPS 검증은 하지 않았다.
+
+공개 배포 완료: [Cloudflare](https://yahaeng.kkhkkh-20.workers.dev/)와 [GitHub Pages](https://kkhkkh20-bit.github.io/yahaeng/) 모두 v157·동일 패키지다. Workers Builds 성공과 Pages 빌드를 확인했고, 양쪽에서 각각 8개 파일 해시·실제 서체·PC/터치 입력·첫 제압과 몸 숨기기·저장된 이어 하기를 검증했다. [공개 배포 기록](review-v157/deployment.json). 앞서 HTTP 503으로 배포하지 못한 v156 수정도 이번 버전에 누적 포함한다.

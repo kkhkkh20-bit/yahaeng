@@ -16,5 +16,11 @@
   "lastVerifiedProduction": "v155 from prior release; current public hosts unavailable through this session",
   "blocker": "upstream connect error; immediate connect error Invalid argument; envoy cloudflare_https_tunnel",
   "managedNetworkPolicy": "unrestricted and enforced, environment connected; no policy denial or authentication rejection reported",
-  "evidenceLimits": "All functional evidence in this folder is local production-package testing; no v156 public success is claimed."
+  "evidenceLimits": "All functional evidence in this folder is local production-package testing; no v156 public success is claimed.",
+  "laterPublication": {
+    "version": "v157",
+    "status": "verified",
+    "evidence": "../review-v157/deployment.json",
+    "includesAllV156Fixes": true
+  }
 }

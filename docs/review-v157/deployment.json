@@ -1,0 +1,58 @@
+{
+  "status": "verified",
+  "version": "v157",
+  "checkedAt": "2026-11-03T16:31:47.695453+09:00",
+  "sourcePackageSha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+  "runtimeCommit": "03ffb834dc576fcab551c01448bf54075d19680b",
+  "pagesRuntimeCommit": "b83271e599dccb2945d240ea4b8ae6f44ff4d445",
+  "nativeBuilds": {
+    "cloudflare": [
+      {
+        "name": "Workers Builds: yahaeng",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://dash.cloudflare.com/16fbf9f8389e8ddbdd9c0e3bba5b823a/workers/services/view/yahaeng/production/builds/944b7fea-2df7-48da-b3c5-c79df57f3885"
+      }
+    ],
+    "pages": {
+      "status": "built",
+      "commit": "b83271e599dccb2945d240ea4b8ae6f44ff4d445",
+      "error": {
+        "message": null
+      }
+    }
+  },
+  "endpoints": {
+    "pages": {
+      "version": "v157",
+      "source_sha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+      "matches": true
+    },
+    "cloudflare": {
+      "version": "v157",
+      "source_sha256": "62567c4143751d5ee9d26e98ac0ad0b89b69d4d9179e84ed9f39a33cb5d6372f",
+      "matches": true
+    }
+  },
+  "publicValidation": {
+    "cloudflare": {
+      "package": "cloudflare-package.json",
+      "journey": "cloudflare-continuation.json",
+      "exactFiles": 8,
+      "pcAndTouch": true,
+      "nativeFrameInputAndFont": true,
+      "realEntryAndStoredCheckpointRestore": true
+    },
+    "pages": {
+      "package": "pages-package.json",
+      "journey": "pages-continuation.json",
+      "exactFiles": 8,
+      "pcAndTouch": true,
+      "nativeFrameInputAndFont": true,
+      "realEntryAndStoredCheckpointRestore": true
+    }
+  },
+  "gallery": "public-gallery.json",
+  "includesPreviouslyUnpublishedV156Fixes": true,
+  "scope": "PC and CDP touch: actual entry KO, carry, hide, leave menu and stored-checkpoint resume, with live AI/fixed simulation clock and no actor/HP/inventory grants. No physical-device FPS or full-campaign claim."
+}
