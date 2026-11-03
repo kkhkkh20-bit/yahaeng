@@ -1,0 +1,20 @@
+{
+  "status": "blocked_before_publication",
+  "version": "v156",
+  "sourcePackageSha256": "3deb1e4e92d23c56728a5dfd732b0dc72ca6b287408b9d73c0162772a6ce5c23",
+  "runtimeCommit": "62effa964ded1ea8e86219f43c4e26471fd4dc9d",
+  "preparedPagesCommit": "eec4b0b07083f78f13be9990590b0151223fccbd",
+  "checkedAt": "2026-11-03T06:57:14.858238+00:00",
+  "localPackageValidation": "passed: 8 exact file hashes, PC and touch native input, IBM Plex Regular custom font, objective pause/resume, no page errors",
+  "publicVerification": "not run: session outbound HTTPS proxy returns HTTP 503 for GitHub API, git and both public hosts",
+  "publication": {
+    "sourceMainPush": "failed HTTP503",
+    "pagesPush": "failed HTTP503",
+    "cloudflareBuildTriggered": false,
+    "publicUpdateVerified": false
+  },
+  "lastVerifiedProduction": "v155 from prior release; current public hosts unavailable through this session",
+  "blocker": "upstream connect error; immediate connect error Invalid argument; envoy cloudflare_https_tunnel",
+  "managedNetworkPolicy": "unrestricted and enforced, environment connected; no policy denial or authentication rejection reported",
+  "evidenceLimits": "All functional evidence in this folder is local production-package testing; no v156 public success is claimed."
+}
