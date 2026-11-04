@@ -223,7 +223,9 @@ const STAGES = [
           [33, 5, 35, 13, 'res', null, '직원 계단 복도', ['waiter', 'crew']],
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
           [2, 26, 11, 32, 'pub'], [13, 26, 22, 32, 'pub'], [38, 5, 42, 8, 'pub']],    // 포차 · 약국 · 공중화장실
-  secureFloors: [[0, 1], [0, 2], [1, 1]],
+  // Office desks and stairs are a guard's normal workplace. The vault remains
+  // protected by its physical room; the club's private upper floor stays secure.
+  secureFloors: [[1, 1]],
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} },
@@ -311,7 +313,7 @@ const STAGES = [
     { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],
-  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
+  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '경비 재킷은 사무동 사무실·계단의 통행을 허용한다. 1층 금고 안은 별도 출입 제한 구역이다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
 },
 // ───────── 임무 3 (보통+): 잔칫날 — 히트맨식. 동네 회장 댁 마당 잔치. 길·노점 골목·철물점은 공개, 마당은 뷔페 일꾼(조끼)이면 다닌다
 // 표적(회장)에게 가는 길 셋: 연못가 감전 · 단상 위 실외기 · 정전 → 혼자 발전기 보러 온 회장. 서류는 본채 2층 (초록 카드키 또는 창문·지붕)
@@ -1154,8 +1156,8 @@ STAGES.push({
     ['공개 구역의 CCTV 앞을 걸어 지나가기',(S,P,I,h)=>P.mode==='walk'&&Math.hypot(P.x-20.5*48,P.y-12.5*48)<23&&h.camera(S.cams[0]).visible>0&&!h.camera(S.cams[0]).detectable,()=>({x:20.5*48,y:12.5*48}),'부채꼴은 감시 범위다. 공개 구역의 평범한 통행은 녹화 게이지를 채우지 않는다.','move',1],
     ['오른쪽에 놓인 옷으로 갈아입기',(S,P)=>P.outfit==='crew',()=>({x:24.5*48,y:12.5*48}),'이 옷은 직원 구역의 통행을 허용한다. 훔치기까지 허용하는 옷은 아니다.','env',0,['pickup']],
     ['직원 구역에 들어가 통행 허용 확인',(S,P,I,h)=>Math.hypot(P.x-20.5*48,P.y-11.5*48)<23&&h.access(P).allowed&&!h.camera(S.cams[0]).detectable,()=>({x:20.5*48,y:11.5*48}),'카메라 앞이어도 허용 복장으로 지나다닐 수 있다. 서류는 아직 꺼내지 않는다.','move',1],
-    ['눈 표시 경비 앞에서 신원 확인 관찰',S=>(npcT(S,'identityCoach').eyeT||0)>.4,()=>({x:15.5*48,y:7.5*48}),'눈 표시가 있는 사람은 가까이 오래 있으면 알아본다. 게이지가 차기 전에 다음 표시로 물러난다.','move'],
-    ['아래 공개 구역으로 물러나기',(S,P)=>Math.hypot(P.x-15.5*48,P.y-10.5*48)<23&&!npcT(S,'identityCoach').eyeWatching&&!P.disguiseBlown,()=>({x:15.5*48,y:10.5*48}),'거리나 시야를 끊으면 신원 확인이 멈춘다. 옷을 입었다고 사람에게 계속 붙어 있어도 되는 것은 아니다.','move'],
+    ['눈 표시 경비 앞에서 멈춰 신원 확인 관찰',S=>(npcT(S,'identityCoach').eyeT||0)>.4,()=>({x:15.5*48,y:7.5*48}),'표시까지 걸어간 뒤 멈춘다. 눈 표시가 있는 담당자와 멈춰 마주 보면 얼굴을 확인한다.','move'],
+    ['아래 공개 구역으로 걸어 나가기',(S,P)=>Math.hypot(P.x-15.5*48,P.y-10.5*48)<23&&!npcT(S,'identityCoach').eyeWatching&&!P.disguiseBlown,()=>({x:15.5*48,y:10.5*48}),'걸어서 지나가거나 얼굴을 돌리면 신원 확인이 멈춘다. 일반 경비는 정상 복장으로 걷는 사람을 검문하지 않는다.','move'],
     ['오른쪽 기록 구역의 통행 불가 표지 확인',(S,P,I,h)=>Math.hypot(P.x-24.5*48,P.y-10.5*48)<23&&!h.access({x:25.5*48,y:10.5*48,fl:0,z:0}).allowed,()=>({x:24.5*48,y:10.5*48}),'이 경계 너머는 어떤 옷도 출입을 허용하지 않는다. 들어가기 전에 문턱의 권한 표시를 확인한다.','move',.8],
     ['서류 앞에서 훔치기 위험 표시 확인',(S,P,I,h)=>Math.hypot(P.x-S.items[0].x,P.y-S.items[0].y)<24&&h.camera(S.cams[0],true).detectable,S=>S.items[0],'통행은 허용돼도 지금 훔치면 CCTV 게이지가 찬다. 먼저 카메라 뒤로 돌아간다.','move',.8],
     ['카메라 뒤에서 전선 분리',S=>!!S.cams[0].unplugged,()=>({x:20.5*48,y:6.5*48}),'오른쪽으로 돌아 카메라 뒤에 접근한다. 전선 분리는 배우는 기술이나 다트 없이 쓸 수 있다.','env',0,['camCable']],
@@ -4498,14 +4500,10 @@ const permitName = allow => { const o = myPermits().find(o => allow && allow.inc
 const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
-// 평온할 때 일반 경비는 동료 복장을 받아들인다. 신원 확인 담당자와
-// 정예·표적만 근접 확인하며, 경계가 올라가면 일반 경비도 검문한다.
-function routineIdentityCheck(g) {
-  return groundedWorld() && S.alevel>=1 && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
-    pZoneInfo().k !== Z_PUB && (outfitOf(g) === S.player.outfit || g.post != null || S.alevel >= 1);
-}
-const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit) || routineIdentityCheck(g)));
-const identityTime = g => routineIdentityCheck(g) ? (S.alevel >= 2 ? 3.5 : 5.5) : EYE_T;
+// Only designated people know their colleagues' faces. An unrelated alarm
+// does not teach ordinary guards an unseen new identity.
+const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit)));
+const identityTime = () => EYE_T;
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
   const P = S.player; if (!P.outfit || P.disguiseBlown) return;
@@ -4516,13 +4514,14 @@ function blowDisguise(g, why) {
 function updateSharpEye(g, dt, rawVis) {
   g.eyeWatching=false;
   if (!sharpEye(g)) { g.eyeT = 0; return; }
-  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = routineIdentityCheck(g) ? 105 : g.target ? 90 : EYE_R;  // 표적은 바로 앞(90px)까지 와야 변장을 알아본다
-  const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI * .6;
-  g.eyeWatching=rawVis>0&&d<R&&(faceVisible||groundedWorld());
-  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } if (!g.eyeT && routineIdentityCheck(g)) gsay(g, '잠깐. 어느 근무조입니까?', 2.4); g.eyeT = (g.eyeT || 0) + dt * (faceVisible ? 1 : .55); g.want = Math.atan2(P.y - g.y, P.x - g.x);
+  const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;
+  const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI / 3;
+  const passing=P.mode==='walk'&&P.moving;
+  g.eyeWatching=rawVis>0&&d<R&&faceVisible&&!passing;
+  if(!g.eyeWatching){g.eyeT=0;return;}
+  if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '허용 복장도 신원 확인을 피할 수는 없다. 눈 표시가 차오르면 거리를 벌리거나 시야를 벗어나라');
     if (g.eyeT >= identityTime(g)) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
-  else g.eyeT = Math.max(0, (g.eyeT || 0) - dt * 0.6);
 }
 // 공개 구역에서 보는 이가 수상하게 여길 짓: 1 = 바로 의심(끌기·처치·타기·넘기·락픽·던지기), 0.35 = 가까이서 웅크려 살금살금, 0 = 그냥 행인
 function suspAct(g) {
@@ -4624,14 +4623,14 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
-  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)) || routineIdentityCheck(g))) return;
+  if (!STAGE.zones || g.state === 'DEAD' || (g.state==='ALERT'&&g.seen) || g.dog || !(g.enforcer || (!g.civ && (g.elite || g.target)))) return;
   const P = S.player, on = sharpEye(g); if (!on && !(g.enforcer && dist(g.x, g.y, P.x, P.y) < 420)) return;
   const x = g.x, y = g.y - 52, f = clamp((g.eyeT || 0) / identityTime(g), 0, 1);
   ctx.save(); ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.fillStyle = on ? (f > 0 ? '#ffd06a' : '#f4f1ea') : 'rgba(244,241,234,.55)';
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
   if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
   ctx.restore();
-  if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g)))tag(g.x,g.y-77,f>0?'신원 확인 중 · 거리 벌리기':'가까이서 신원 확인','#d7c6a3',1,null,2.3);
+  if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g)))tag(g.x,g.y-77,f>0?'신원 확인 중 · 걸어서 벗어나기':'얼굴 확인 담당','#d7c6a3',1,null,2.3);
 }
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)
 function drawWarnRing(g) {
@@ -14472,7 +14471,7 @@ function updateStealth(lv) {
   else if(observer?.camera){s='risk';word=observer.g.search?'서치라이트에 노출':'CCTV 녹화 게이지';why=cameraAssessment(observer.g).reason+' · 가득 차기 전에 시야 밖으로';}
   else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
   else if(observer?.g.state==='WARN'){s='risk';word='퇴거 경고 · '+Math.max(0,Math.ceil(observer.g.warnEnd-S.t))+'초';why=(zi?.secure?'보안구역':'출입 권한 없음')+' · 허용 구역으로 나가세요';}
-  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '복장이 허용돼도 가까이 오래 있으면 발각'; }
+  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '마주 보는 중 · 걸어서 벗어나기'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
   else if(S.alevel>=2&&S.knownLooks?.[suspectLook()]&&!P.hide&&!P.hidden){s='risk';word='인상착의 공유됨';why='같은 차림을 알아보면 추격 · 시야 밖에서 변장';}

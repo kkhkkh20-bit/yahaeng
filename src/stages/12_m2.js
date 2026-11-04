@@ -66,7 +66,9 @@
           [33, 5, 35, 13, 'res', null, '직원 계단 복도', ['waiter', 'crew']],
           [23, 5, 32, 7, 'res', null, 'VIP룸', ['waiter']],
           [2, 26, 11, 32, 'pub'], [13, 26, 22, 32, 'pub'], [38, 5, 42, 8, 'pub']],    // 포차 · 약국 · 공중화장실
-  secureFloors: [[0, 1], [0, 2], [1, 1]],
+  // Office desks and stairs are a guard's normal workplace. The vault remains
+  // protected by its physical room; the club's private upper floor stays secure.
+  secureFloors: [[1, 1]],
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} },
@@ -154,5 +156,5 @@
     { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 }
   ],
   items: [{ b: 0, fl: 0, at: 'VA' }],
-  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
+  hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '경비 재킷은 사무동 사무실·계단의 통행을 허용한다. 1층 금고 안은 별도 출입 제한 구역이다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
 },

@@ -32,7 +32,8 @@ async def main():
    Object.assign(P,{x:g.x+90,y:g.y,fl:0,z:0,a:Math.PI,outfit:'crew',disguise:'sam',disguiseBlown:false,blown:{},light:1,hidden:false,mode:'walk',moving:false,hide:null,under:null,vent:null,wire:null,ledge:null,trav:null,jump:null,cover:null,captive:null,carrying:null,strikeT:0,useT:0,pick:null});G.setLayer(0);
    const tick=s=>{for(let t=0;t<s;t+=.05){S.t+=.05;G.updateGuard(g,.05)}};
    tick(7);check(!P.disguiseBlown&&!g.eyeT&&g.state==='PATROL','Calm ordinary guard rejects a valid uniform');
-   S.alevel=1;tick(1);check(!P.disguiseBlown&&g.eyeT>0,'Heightened security check should give time to move away');
+   S.alevel=2;tick(7);check(!P.disguiseBlown&&!g.eyeT&&g.state==='PATROL','Alarm invents an unreported uniform identity');
+   g.enforcer=true;tick(1);check(!P.disguiseBlown&&g.eyeT>0,'Marked face check should give time to move away');
    P.x=g.x+180;tick(2);check(!P.disguiseBlown&&g.eyeT===0,'Distance must interrupt identity check');
    P.x=g.x+90;tick(6);check(P.disguiseBlown&&G.knownFace(g),'Ordinary close guard never verifies identity');
    // A wall and a different floor block identity checks as well as attacks.
@@ -44,11 +45,11 @@ async def main():
    let pair;for(const a of pts)for(const b of pts)if(!pair&&Math.hypot(a.x-b.x,a.y-b.y)>160&&Math.hypot(a.x-b.x,a.y-b.y)<220&&G.sightLine({...a,fl:1,z:0},b.x,b.y,0,false,1))pair=[a,b];check(pair,'No lit office visibility fixture');
    const eye={...pair[0],fl:1,z:0,a:Math.atan2(pair[1].y-pair[0].y,pair[1].x-pair[0].x),state:'PATROL'};
    check(G.canSee(eye,pair[1].x,pair[1].y,G.lightAt(pair[1].x,pair[1].y),false,false,0,1)>0&&G.canSee(eye,pair[1].x,pair[1].y,.04,false,false,0,1)===0,'Work lights fail to extend actual sight');
-   Object.assign(P,{...pair[1],fl:1,z:0,outfit:'crew',disguise:'sam',disguiseBlown:false,light:1,mode:'walk',hide:null,under:null,vent:null,wire:null,carrying:null,captive:null,interact:null});const body=S.corpses[0];S.corpses=[];S.camRoom=null;S.alevel=0;S.stats.camRec=0;S.cams=[{...eye,fl:1,b:bi,base:eye.a,sweep:0,ph:0,period:10,meter:0,cool:0}];G.updateCams(.7);check(S.stats.camRec===1,'Uniform slows CCTV in a secure room '+JSON.stringify({count:S.stats.camRec,c:S.cams[0],p:{x:P.x,y:P.y,fl:P.fl},zone:G.zoneInfo(P.x,P.y,0,1)}));S.cams=[];S.corpses=[body];for(const a of S.lamps)if(!a.outdoor&&G.bldAt(Math.floor(a.x/48),Math.floor(a.y/48))===bi)a.off=true;
+   Object.assign(P,{...pair[1],fl:1,z:0,outfit:'crew',disguise:'sam',disguiseBlown:false,light:1,mode:'walk',hide:null,under:null,vent:null,wire:null,carrying:null,captive:null,interact:null});const body=S.corpses[0];S.corpses=[];S.camRoom=null;S.alevel=0;S.stats.camRec=0;S.cams=[{...eye,fl:1,b:bi,base:eye.a,sweep:0,ph:0,period:10,meter:0,cool:0}];G.updateCams(.7);check(!S.stats.camRec,'Camera records authorized office passage');P.captive={};G.updateCams(.7);check(S.stats.camRec===1,'Camera misses a witnessed office crime '+JSON.stringify({count:S.stats.camRec,c:S.cams[0],p:{x:P.x,y:P.y,fl:P.fl},zone:G.zoneInfo(P.x,P.y,0,1)}));P.captive=null;S.cams=[];S.corpses=[body];for(const a of S.lamps)if(!a.outdoor&&G.bldAt(Math.floor(a.x/48),Math.floor(a.y/48))===bi)a.off=true;
    G.refreshBodyLighting();check(S.corpses[0].light<.1,'Body stays bright after blackout');const dark=G.lightAt(l.x,l.y,false);check(lit>.8&&dark<.1,'Lights do not affect actual detection brightness');
    P.hp=2;G.saveCheckpoint();G.CP.S.lamps=G.CP.S.lamps.filter(a=>!a.workLight);G.CP.S.bfuses.find(f=>f.b===bi).cut=true;
    check(G.loadCheckpoint(),'Legacy checkpoint rejected');S=G.S;check(S.player.hp===2,'Checkpoint health reset');const restored=S.lamps.filter(a=>a.workLight&&G.bldAt(Math.floor(a.x/48),Math.floor(a.y/48))===bi);check(restored.length&&restored.every(a=>a.off&&a.cut===bi),'Added fixtures ignore cut building circuit');
-   return {rooms,calmUniformAccepted:true,heightenedIdentity:true,distanceEscape:true,floorSeparation:true,lighting:{lit,dark},cameraSecureRoom:true,bodyFloorLighting:true,legacyCircuit:true};
+   return {rooms,calmUniformAccepted:true,unreportedUniformAccepted:true,markedFaceCheck:true,distanceEscape:true,floorSeparation:true,lighting:{lit,dark},cameraSecureRoom:true,bodyFloorLighting:true,legacyCircuit:true};
   }''')
   assert not errors,errors;(O/'mechanics.json').write_text(json.dumps(result,ensure_ascii=False,indent=2));print('PASS',json.dumps(result,ensure_ascii=False),flush=True);await b.close()
 asyncio.run(main())

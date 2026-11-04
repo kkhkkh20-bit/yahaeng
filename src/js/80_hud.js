@@ -309,7 +309,7 @@ function updateStealth(lv) {
   else if(observer?.camera){s='risk';word=observer.g.search?'서치라이트에 노출':'CCTV 녹화 게이지';why=cameraAssessment(observer.g).reason+' · 가득 차기 전에 시야 밖으로';}
   else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
   else if(observer?.g.state==='WARN'){s='risk';word='퇴거 경고 · '+Math.max(0,Math.ceil(observer.g.warnEnd-S.t))+'초';why=(zi?.secure?'보안구역':'출입 권한 없음')+' · 허용 구역으로 나가세요';}
-  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '복장이 허용돼도 가까이 오래 있으면 발각'; }
+  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '마주 보는 중 · 걸어서 벗어나기'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
   else if(S.alevel>=2&&S.knownLooks?.[suspectLook()]&&!P.hide&&!P.hidden){s='risk';word='인상착의 공유됨';why='같은 차림을 알아보면 추격 · 시야 밖에서 변장';}

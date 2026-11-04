@@ -88,7 +88,7 @@ async def main():
     Object.assign(P,{x:g.x+96,y:g.y,fl:0,z:0,a:0,outfit:'crew',disguise:'sam',disguiseBlown:false,light:1,hidden:false,mode:'walk',moving:false,hide:null,under:null,vent:null,captive:null,carrying:null,strikeT:0});G.setLayer(0);
     P.x=g.x+180;for(let n=0;n<240;n++){S.t+=.05;G.updateGuard(g,.05)}
     check(!P.disguiseBlown&&g.state==='PATROL'&&G.exposure()===0,'valid uniform turns red when watched');
-    P.x=g.x+96;g.enforcer=true;for(let n=0;n<30;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&g.eyeT>0,'Turning away must not grant permanent identity immunity');
+    P.x=g.x+96;g.enforcer=true;for(let n=0;n<30;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&!g.eyeT,'Back of head reveals identity');
     P.a=Math.PI;for(let n=0;n<30;n++)G.updateGuard(g,.05);G.updateStealth(1);check(g.eyeT>0&&!P.disguiseBlown&&document.querySelector('#expoLbl').textContent==='신원 확인 중','missing fair identity warning');
     for(let n=0;n<40;n++)G.updateGuard(g,.05);check(P.disguiseBlown&&g.state==='ALERT'&&G.exposure()===2,'confirmed face check does not become real detection');
     P.hide={};check(G.exposure()===0,'stale sight remains red after hiding');
