@@ -1470,7 +1470,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v180 · 2026-11-04</footer>
+  <footer class="title-footer">v181 · 2026-11-04</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1547,6 +1547,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       </ul>
     </details>
     <details class="rulesbox"><summary class="rules-h">출처</summary>
+    <p class="credit">조명 기구: <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Kenney Furniture Kit</a> · <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Retro Urban Kit</a> (CC0), 게임 시점에 맞춰 2D로 렌더링.</p>
     <p class="credit">HUD 아이콘: <a href="https://game-icons.net/" target="_blank" rel="noopener">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · 효과: <a href="https://github.com/patch-gg/pixelfx" target="_blank" rel="noopener">PixelFX · Patch / Hugo Duprez</a> (MIT) · 건물 외관: <a href="https://quaternius.com/packs/downtowncitymegakit.html" target="_blank" rel="noopener">Quaternius Downtown City MegaKit</a> (CC0) · 배경 3D 모델: <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Kenney Retro Urban Kit</a> · <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Furniture Kit</a> (CC0) · 캐릭터 3D 모델: <a href="https://quaternius.com/packs/ultimatemodularwomen.html" target="_blank" rel="noopener">Quaternius Ultimate Modular Women</a> · <a href="https://quaternius.com/packs/ultimatemodularcharacters.html" target="_blank" rel="noopener">Ultimate Modular Characters</a> (CC0, 8방향 프리렌더) · 그래픽(도시): <a href="https://kenney.nl/assets/rpg-urban-pack" target="_blank" rel="noopener">Kenney RPG Urban Pack</a> (CC0) · 그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
   </div>
@@ -1620,15 +1621,16 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
  function fail(message){if(ready)return;failed=true;box.textContent='게임을 불러오지 못했습니다. ';var retry=document.createElement('a');retry.textContent='다시 연결';retry.style.color='inherit';retry.href=location.pathname+'?retry='+Date.now();box.appendChild(retry);var detail=document.createElement('small');detail.style.cssText='display:block;overflow-wrap:anywhere;opacity:.7';detail.textContent=String(message||'다운로드 연결 확인').slice(0,180);box.appendChild(detail);document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});}
  function menu(id){['intro','help','ledger'].forEach(function(k){document.getElementById(k).hidden=k!==id;});}
  document.addEventListener('click',function(e){if(ready)return;var b=e.target.closest('button');if(!b)return;if(b.id==='btnHelp'){e.preventDefault();e.stopImmediatePropagation();menu('help');return;}if(b.id==='btnHelpBack'){e.preventDefault();e.stopImmediatePropagation();menu('intro');return;}if(b.id==='btnQuick'||b.id==='btnLedger'){e.preventDefault();e.stopImmediatePropagation();queued=b.id;menu('intro');if(!failed)text('게임 불러오는 중 · 준비되면 열립니다');}},true);
- window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/4');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
+ window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/5');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
  document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.setAttribute('aria-busy','true');});text('게임 불러오는 중');
  window.addEventListener('error',function(e){if(!ready&&e.message)fail(e.message);});window.addEventListener('unhandledrejection',function(e){if(!ready)fail(e.reason&&e.reason.message||e.reason);});
  setTimeout(function(){if(!ready&&!failed)fail('30초 동안 준비되지 않았습니다. 다시 연결해 주세요.');},30000);
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/73762ce3d192179ffb8a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/bf765bd98030162c83ae.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/734f33951fa6546397e2.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/d3da9939d6cad891c05a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
