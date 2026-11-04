@@ -3,6 +3,7 @@
 {
   id: 'm2', no: '02', name: 'VIP', sub: '의뢰 01', fee: '80만',
   priorityTarget:true,entryRoute:{guard:28,bush:[1,18],bounds:[0,14,8,23]},
+  decoySearchTime:6,decoyLookoutTime:7,whistleRange:380,
   skillEncounters:[{id:'market-pair',skill:'dual',guards:[9,10],text:'야시장 경비 둘 · 등 뒤에서 공격 길게'},{id:'rear-chain',skill:'chain',guards:[4,26],text:'뒷골목 순찰 둘 · 이동 경로를 확인하고 공격 길게'},{id:'west-light',skill:'electric',at:[6,19],text:'서쪽 가로등 · 불을 끄면 복구하러 오는 경비를 유인할 수 있다'}],
   mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],

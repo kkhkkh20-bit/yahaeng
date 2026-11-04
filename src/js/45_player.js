@@ -112,8 +112,11 @@ function whistle() {
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
-  noise(x, y, 230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  noise(x, y, STAGE.whistleRange||230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  const cue=S.noises.at(-1);
+  if(cue?.investigators?.length===1&&!cue.otherInvestigators?.length&&!S.splitLureNoticed){S.splitLureNoticed=true;toast('한 명이 확인 중 · 웅크려 자리를 옮겨 뒤를 노리기',3,'info');}
   if(STAGE.openingContract&&!S.noises.at(-1)?.heard)toast('반응 없음 · 경비가 가까워질 때 다시 불기',2,'info');
+  else if(!cue?.heard)toast('반응 없음 · 더 가까운 엄폐물에서 다시 불기',2,'info');
   hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기

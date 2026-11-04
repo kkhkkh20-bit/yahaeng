@@ -50,12 +50,15 @@ function updateActionFlow(){
   if(e&&!['done','skipped'].includes(e.phase))return;
   if(S.t-(S.skillNoticeScan??-1)<.35)return;S.skillNoticeScan=S.t;
   for(const opportunity of STAGE.skillEncounters||[]){
-    if(!skillOn(opportunity.skill)||S.skillNotices[opportunity.id]||['dual','chain'].includes(opportunity.skill)&&S.selectedSkill!==opportunity.skill)continue;
+    const basicPair=opportunity.skill==='dual'&&!skillOn('dual');
+    if(!basicPair&&(!skillOn(opportunity.skill)||['dual','chain'].includes(opportunity.skill)&&S.selectedSkill!==opportunity.skill))continue;
+    if(S.skillNotices[basicPair?'split:'+opportunity.id:opportunity.id])continue;
     const actors=(opportunity.guards||[]).map(id=>S.guards.find(g=>g.id===id));
     if(actors.some(g=>!g||g.doomed||['DEAD','CAPTIVE','ALERT'].includes(g.state)))continue;
     if(actors.length===2){const d=dist(actors[0].x,actors[0].y,actors[1].x,actors[1].y);if(opportunity.skill==='dual'&&d>54||opportunity.skill==='chain'&&(d<55||d>132))continue;}
     const at=actors[0]||{x:tc(opportunity.at[0]),y:tc(opportunity.at[1]),fl:0,z:0};
     if(flOf(at)!==flOf(P)||(at.z||0)!==(P.z||0)||dist(P.x,P.y,at.x,at.y)>240||!sightLine(P,at.x,at.y,at.z||0,false,flOf(at)))continue;
+    if(basicPair){if(actors.some(g=>g.elite||g.target||g.dog||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g))))continue;const tools=P.stones>0?'빈 캔·휘파람':isTouch?'장비 → 휘파람':'G 휘파람';if(fieldSkillNotice('split:'+opportunity.id,'경비 둘 · '+tools+'으로 한 명 유인'))return;continue;}
     if(fieldSkillNotice(opportunity.id,SKILL_BY_ID[opportunity.skill].name+' · '+opportunity.text))return;
   }
   const ready=assassinOpportunity();
