@@ -1,0 +1,71 @@
+{
+  "checked_date": "2026-11-04",
+  "screenshots": [
+    {
+      "slug": "travellers-rest",
+      "name": "Travellers Rest",
+      "app_id": 1139980,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1139980/ss_d8ed1e680d4604d9f7dfffa945925cef73cf236b.1920x1080.jpg?t=1793007805",
+      "store_url": "https://store.steampowered.com/app/1139980/",
+      "copyright": "Credits:<br />\r\nMusic/Sfx -  @paudamiariera<br />\r\nFont - 8-bit Limit - Brian Kent<br />\r\nFont - PIXELADE - Antaviana Typeface Division",
+      "file": "images/travellers-rest.jpg",
+      "screenshot_index": 3,
+      "bytes": 868669
+    },
+    {
+      "slug": "tavern-master",
+      "name": "Tavern Master",
+      "app_id": 1525700,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1525700/ss_6519b1eae02bc1f98f74ba196877b83cbe10dcd7.1920x1080.jpg?t=1760183607",
+      "store_url": "https://store.steampowered.com/app/1525700/",
+      "copyright": "",
+      "file": "images/tavern-master.jpg",
+      "screenshot_index": 3,
+      "bytes": 545221
+    },
+    {
+      "slug": "hitman",
+      "name": "HITMAN World of Assassination",
+      "app_id": 1659040,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1659040/ss_691a534e333e33a4d6b994c9d63be26c83a687d7.1920x1080.jpg?t=1793706156",
+      "store_url": "https://store.steampowered.com/app/1659040/",
+      "copyright": "HITMAN 3 © 2020 IO Interactive A/S. IO Interactive, IOI logos, HITMAN, HITMAN logos, and WORLD OF ASSASSINATION are trademarks or registered trademarks owned by or exclusively licensed to IO Interactive A/S. All other trademarks are the property of their respective owners. All rights reserved.",
+      "file": "images/hitman.jpg",
+      "screenshot_index": 5,
+      "bytes": 523809
+    },
+    {
+      "slug": "styx",
+      "name": "Styx: Shards of Darkness",
+      "app_id": 355790,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/355790/ss_55c2d25ef6587962064ea4b0820033cba9381e24.1920x1080.jpg?t=1778174587",
+      "store_url": "https://store.steampowered.com/app/355790/",
+      "copyright": "",
+      "file": "images/styx.jpg",
+      "screenshot_index": 4,
+      "bytes": 2182234
+    },
+    {
+      "slug": "ravenous-devils",
+      "name": "Ravenous Devils",
+      "app_id": 1615290,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1615290/ss_511b016086cb51317223b1de68c841926f35db0f.1920x1080.jpg?t=1778135029",
+      "store_url": "https://store.steampowered.com/app/1615290/",
+      "copyright": "All rights reserved to BAD VICES GAMES SNC DI VECCHI ELEONORA E GAMBADORI CRISTIAN",
+      "file": "images/ravenous-devils.jpg",
+      "screenshot_index": 0,
+      "bytes": 521646
+    },
+    {
+      "slug": "crossroads-inn",
+      "name": "Crossroads Inn Anniversary Edition",
+      "app_id": 867290,
+      "source": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/867290/ss_0464ccc13ae6a8a02b31bf798fdce27463e25b1a.1920x1080.jpg?t=1732093045",
+      "store_url": "https://store.steampowered.com/app/867290/",
+      "copyright": "© 2021 Klabater SA. Crossroads Inn and Klabater are trademarks of Klabater SA. Developed and Published by Klabater. All rights reserved.",
+      "file": "images/crossroads-inn.jpg",
+      "screenshot_index": 4,
+      "bytes": 741739
+    }
+  ]
+}
