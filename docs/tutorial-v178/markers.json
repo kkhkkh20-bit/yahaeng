@@ -1,0 +1,62 @@
+[
+  {
+    "viewport": [
+      1419,
+      911
+    ],
+    "checks": [
+      "all seven movement/run/crouch destinations remain drawn below 3m",
+      "nearby whistle action keeps its button cue without duplicate destination",
+      "first movement step still requires actual arrival",
+      "near-target checkpoint restores visible movement guidance",
+      "second lesson rear approach remains visible before attack range",
+      "campaign navigation remains separate"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "checks": [
+      "all seven movement/run/crouch destinations remain drawn below 3m",
+      "nearby whistle action keeps its button cue without duplicate destination",
+      "first movement step still requires actual arrival",
+      "near-target checkpoint restores visible movement guidance",
+      "second lesson rear approach remains visible before attack range",
+      "campaign navigation remains separate"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "checks": [
+      "all seven movement/run/crouch destinations remain drawn below 3m",
+      "nearby whistle action keeps its button cue without duplicate destination",
+      "first movement step still requires actual arrival",
+      "near-target checkpoint restores visible movement guidance",
+      "second lesson rear approach remains visible before attack range",
+      "campaign navigation remains separate"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "checks": [
+      "all seven movement/run/crouch destinations remain drawn below 3m",
+      "nearby whistle action keeps its button cue without duplicate destination",
+      "first movement step still requires actual arrival",
+      "near-target checkpoint restores visible movement guidance",
+      "second lesson rear approach remains visible before attack range",
+      "campaign navigation remains separate"
+    ],
+    "errors": []
+  }
+]

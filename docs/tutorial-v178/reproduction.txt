@@ -1,0 +1,19 @@
+LIVE pc start {"stage": "tB", "step": 0, "x": 120, "y": 504, "goal": {"text": "방향키로 오른쪽 표시까지 이동", "where": "", "x": 216, "y": 504, "fl": 0, "tut": true}, "mode": "walk", "hidden": false, "over": false, "t": 0.17000000000000012, "hp": 3, "whistle": null, "stats": {"camEver": 0, "kills": 0, "extraKills": 0, "bodies": 0, "detected": 0, "stonesUsed": 0, "kunaiUsed": 0, "alarms": 0, "stashed": 0, "special": 0}}
+Traceback (most recent call last):
+  File "/workspace/yahaeng/tests/tutorial/first_steps_live.py", line 126, in <module>
+    asyncio.run(main(parser.parse_args()))
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/workspace/yahaeng/tests/tutorial/first_steps_live.py", line 90, in main
+    await snapshot('near-first-marker',True)
+  File "/workspace/yahaeng/tests/tutorial/first_steps_live.py", line 43, in snapshot
+    assert painted and painted['step']==s['step'],('movement goal invisible before completion',name,label,s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('movement goal invisible before completion', 'pc', 'near-first-marker', {'stage': 'tB', 'step': 0, 'x': 151.03506910033187, 'y': 505.540575, 'goal': {'text': '방향키로 오른쪽 표시까지 이동', 'where': '', 'x': 216, 'y': 504, 'fl': 0, 'tut': True}, 'mode': 'walk', 'hidden': False, 'over': False, 't': 0.8867000000000003, 'hp': 3, 'whistle': None, 'stats': {'camEver': 0, 'kills': 0, 'extraKills': 0, 'bodies': 0, 'detected': 0, 'stonesUsed': 0, 'kunaiUsed': 0, 'alarms': 0, 'stashed': 0, 'special': 0}})

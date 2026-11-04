@@ -1,0 +1,150 @@
+"""Live first two lessons: native input and rendered markers, no stepped clock/state overrides.
+Known-map developer playback, not a novice usability study.
+"""
+import argparse, asyncio, json, os, threading
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from playwright.async_api import async_playwright
+from browser_support import open_game
+
+async def main(args):
+    out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
+    server=None
+    if not args.url:
+        server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(Path(__file__).resolve().parents[2])))
+        threading.Thread(target=server.serve_forever,daemon=True).start()
+        args.url=f'http://127.0.0.1:{server.server_port}/build/preview_city.html'
+    reports=[]
+    async with async_playwright() as p:
+        browser=await p.chromium.launch(executable_path='/usr/bin/chromium',proxy={'server':os.environ['HTTPS_PROXY']} if args.url.startswith('https:') else None)
+        for mobile in ([False] if args.probe_only else [False,True]):
+            name='mobile' if mobile else 'pc'
+            page=await browser.new_page(viewport={'width':390 if mobile else 1419,'height':844 if mobile else 911},has_touch=mobile,is_mobile=mobile)
+            errors=[];rows=[]
+            page.on('pageerror',lambda e:errors.append(str(e)))
+            await page.add_init_script('localStorage.clear()')
+            await open_game(page,args.url+'?nostats&review=first-steps')
+            await page.click('#btnLedger');await page.click('[data-filter="training"]')
+            index=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")')
+            await page.click(f'[data-i="{index}"]')
+            cdp=await page.context.new_cdp_session(page)
+            await page.evaluate('''()=>{
+                window.__goalProbe=null;window.__goalPaint=null;
+                const c=__game.ctx,arc=c.arc;
+                c.arc=function(x,y,r,...rest){const p=window.__goalProbe;
+                    if(p&&__game.S.tutI===p.step&&Math.abs(x-p.x)<.01&&Math.abs(y-p.y)<.01&&r>5&&r<80)
+                        window.__goalPaint={step:p.step,at:performance.now(),x,y,r};
+                    return arc.call(this,x,y,r,...rest);
+                };
+            }''')
+            async def state():
+                return await page.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI||0,x:P.x,y:P.y,goal:G.nextGoal(),mode:P.mode,hidden:P.hidden,over:S.over,t:S.t,hp:P.hp,whistle:S.lessonWhistle,stats:S.stats}}''')
+            async def snapshot(label,marker=False):
+                s=await state()
+                if marker:
+                    await page.evaluate('s=>{window.__goalProbe={...s.goal,step:s.step};window.__goalPaint=null}',s)
+                    await page.wait_for_timeout(130)
+                    painted=await page.evaluate('window.__goalPaint')
+                    await page.screenshot(path=str(out/f'{name}-{label}.png'))
+                    assert painted and painted['step']==s['step'],('movement goal invisible before completion',name,label,s)
+                else:
+                    await page.screenshot(path=str(out/f'{name}-{label}.png'))
+                rows.append({'label':label,**s});print('LIVE',name,label,json.dumps(s,ensure_ascii=False),flush=True)
+                return s
+            async def key(name,on):
+                if on:await page.keyboard.down(name)
+                else:await page.keyboard.up(name)
+            async def joystick(dx=None,dy=None):
+                if dx is None:await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]});return
+                await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'id':1,'x':55,'y':520}]})
+                await cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'id':1,'x':55+dx,'y':520+dy}]})
+            async def move(x=None,y=None):
+                for axis,target,pos,neg in [('x',x,'ArrowRight','ArrowLeft'),('y',y,'ArrowDown','ArrowUp')]:
+                    if target is None:continue
+                    active=None;start=asyncio.get_running_loop().time()
+                    try:
+                        while True:
+                            s=await state();delta=target-s[axis]
+                            if abs(delta)<4 or s['over']:break
+                            assert asyncio.get_running_loop().time()-start<14,('movement blocked',axis,target,s)
+                            direction=1 if delta>0 else -1
+                            wanted=pos if direction>0 else neg
+                            if active!=wanted:
+                                if active:
+                                    if mobile:await joystick()
+                                    else:await key(active,False)
+                                if mobile:await joystick(direction*24 if axis=='x' else 0,direction*24 if axis=='y' else 0)
+                                else:await key(wanted,True)
+                                active=wanted
+                            await page.wait_for_timeout(30)
+                    finally:
+                        if active:
+                            if mobile:await joystick()
+                            else:await key(active,False)
+                    await page.wait_for_timeout(50)
+            async def press(key_name,button):
+                if mobile:await page.tap(button)
+                else:await page.keyboard.press(key_name)
+                await page.wait_for_timeout(90)
+            async def wait_step(target):
+                await page.wait_for_function('n=>__game.S.tutI>=n',arg=target,timeout=6000,polling=50)
+            passed=False
+            try:
+                await snapshot('start',True)
+                await move(x=150)
+                assert (await state())['step']==0
+                await snapshot('near-first-marker',True)
+                if args.probe_only:
+                    passed=True
+                    continue
+                await move(x=216);await wait_step(1)
+                await snapshot('run-instruction',True)
+                if mobile:await joystick(55,0)
+                else:await key('Shift',True);await key('ArrowRight',True)
+                try:await wait_step(2)
+                finally:
+                    if mobile:await joystick()
+                    else:await key('ArrowRight',False);await key('Shift',False)
+                s=await snapshot('quiet-instruction',True)
+                assert not ('왼쪽' in s['goal']['text'] and s['goal']['x']>s['x']+4),('instruction points away from actual goal',s)
+                await press('Control','#btnCrouch');await move(x=216,y=504);await wait_step(3)
+                await move(x=260);await snapshot('near-observe-marker',True)
+                await move(x=312);await wait_step(4)
+                await snapshot('bush-instruction',True)
+                await move(x=456,y=504);await wait_step(5)
+                await snapshot('hidden')
+                await press('g','#btnTool');await wait_step(6)
+                await move(x=288);await wait_step(7)
+                await snapshot('exit-instruction',True)
+                await move(x=168,y=696)
+                await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
+                s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
+                await page.click('#btnNext');await page.wait_for_function('__game.STAGE.id==="t0"')
+                if (await state())['mode']!='sneak':await press('Control','#btnCrouch')
+                await move(x=360,y=504);await wait_step(1)
+                await move(x=440);await snapshot('near-rear-marker',True)
+                await move(x=476);await wait_step(2)
+                await press('z','#btnAct')
+                await page.wait_for_function('__game.S.tutI===3&&!__game.actionBusy()',timeout=6000)
+                await snapshot('body-knockout')
+                await press('x','#btnCarry')
+                await page.wait_for_function('__game.S.tutI===4&&!__game.actionBusy()',timeout=6000)
+                await move(x=360,y=504)
+                await press('x','#btnCarry');await wait_step(5)
+                await snapshot('body-hidden')
+                await move(x=984,y=504)
+                await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
+                await snapshot('body-clear')
+                await page.click('#btnNext');await page.wait_for_function('__game.STAGE.id==="tC"')
+                assert not errors,errors
+                passed=True
+            finally:
+                (out/f'{name}.json').write_text(json.dumps({'passed':passed,'url':args.url,'rows':rows,'errors':errors,'method':__doc__},ensure_ascii=False,indent=2))
+                await page.close()
+        await browser.close()
+    if server:server.shutdown()
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('--url');parser.add_argument('--out',default='build/tutorial-v178/live');parser.add_argument('--probe-only',action='store_true')
+    asyncio.run(main(parser.parse_args()))
