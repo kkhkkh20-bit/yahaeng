@@ -1,0 +1,84 @@
+{
+  "license": "CC BY 3.0",
+  "license_url": "https://creativecommons.org/licenses/by/3.0/",
+  "adaptation": "Original silhouettes rendered in a single tint. SVG geometry unchanged.",
+  "icons": [
+    {
+      "file": "attack.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/daggers.html"
+    },
+    {
+      "file": "grab.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/grab.html"
+    },
+    {
+      "file": "equipment.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/backpack.html"
+    },
+    {
+      "file": "crouch.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/kneeling.html"
+    },
+    {
+      "file": "action.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/hand.html"
+    },
+    {
+      "file": "dress.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/clothes.html"
+    },
+    {
+      "file": "whistle.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/whistle.html"
+    },
+    {
+      "file": "dart.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/plain-dagger.html"
+    },
+    {
+      "file": "coin.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/cigarette.html"
+    },
+    {
+      "file": "smoke.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/smoking-orb.html"
+    },
+    {
+      "file": "radio.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/walkie-talkie.html"
+    },
+    {
+      "file": "hack.svg",
+      "author": "Delapouite",
+      "source": "https://game-icons.net/1x1/delapouite/cctv-camera.html"
+    },
+    {
+      "file": "blade.svg",
+      "author": "Lorc",
+      "source": "https://game-icons.net/1x1/lorc/curvy-knife.html"
+    }
+  ],
+  "original_art": [
+    {
+      "file": "stone.svg",
+      "author": "Yahaeng",
+      "description": "Authored can silhouette to match the actual empty-can tool."
+    },
+    {
+      "files": "frames/*.svg",
+      "author": "Yahaeng",
+      "description": "Original graphite nine-slice panel and four-state control/primary surfaces and three-state circular crouch surfaces. Built by tools/art/build_hud_frames.py. Approved A concept direction; no reference-game graphics included."
+    }
+  ]
+}

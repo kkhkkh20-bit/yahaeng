@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0e131c">
+<title>야행 · Godot VIP 비교판</title>
+<link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080d15;color:#e0ddd6;font-family:system-ui,sans-serif;overscroll-behavior:none}
+#canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
+#loading{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,#25303a,#0b1018 70%);padding:28px}
+article{max-width:510px;width:100%}.eyebrow{font-size:12px;letter-spacing:3px;color:#a39686}h1{font-size:54px;margin:12px 0 8px;font-weight:600}p{font-size:15px;line-height:1.7;color:#acb4be}progress{width:100%;height:4px;accent-color:#a5bdbb;margin:24px 0 8px}small{color:#83909c;font-size:12px}
+button,a{color:#c8d7d8}button{padding:12px 20px;background:#253b46;border:1px solid #65747d;border-radius:6px;cursor:pointer}footer{margin-top:30px;font-size:12px}#failure{display:none;color:#e4b7a5}
+#rotate{display:none;position:fixed;inset:0;z-index:4;place-content:center;text-align:center;background:#101923;padding:32px;line-height:1.8}
+@media(orientation:portrait) and (pointer:coarse){#rotate{display:grid}}
+</style>
+<canvas id="canvas" tabindex="0" aria-label="야행 VIP 게임 화면"></canvas>
+<div id="rotate"><div style="font-size:44px">↻</div><p>가로 화면으로 플레이해 주세요.<br>화면을 돌리면 이동 스틱과 행동 버튼이 나타납니다.</p></div>
+<div id="loading"><article><div class="eyebrow">YAHAENG / VIP</div><h1>야행</h1><p>실장을 제거하고, 장부를 회수해 탈출하세요.<br>기존 리소스를 옮겨 만든 Godot 비교판입니다.</p><progress id="progress" aria-label="게임 다운로드"></progress><small id="status">게임 준비 중 · 첫 실행은 약 12MB를 다운로드합니다.</small><p id="failure" role="alert"></p><button id="retry" hidden>다시 불러오기</button><footer><a href="../">기존 게임</a> &nbsp; · &nbsp; <a href="credits.html" target="_blank" rel="noopener">제작·리소스 출처</a> &nbsp; · &nbsp; <a href="https://github.com/kkhkkh20-bit/yahaeng/tree/main/godot" target="_blank" rel="noopener">Godot 프로젝트</a></footer></article></div>
+<noscript>게임을 실행하려면 JavaScript를 켜 주세요.</noscript>
+<script src="index.js"></script>
+<script type="module">
+const config = __GODOT_CONFIG__;
+const engine = new Engine(config);
+const originalFetch = window.fetch.bind(window);
+const wasmURL = new URL('index.wasm',location.href);
+// Only this engine's WASM is gzip-packed. Other application requests are untouched.
+window.fetch = async function(input,options){
+  const url = new URL(typeof input==='string'||input instanceof URL ? input : input.url,location.href);
+  if(url.origin!==wasmURL.origin || url.pathname!==wasmURL.pathname) return originalFetch(input,options);
+  const response = await originalFetch(new URL('index.wasm.gz',location.href),options);
+  if(!response.ok) throw Error(`엔진 다운로드 실패 (${response.status})`);
+  let body;
+  if(typeof window.DecompressionStream==='function') body=response.body.pipeThrough(new DecompressionStream('gzip'));
+  else {
+    const {gunzipSync}=await import('./fflate.module.js');
+    body=gunzipSync(new Uint8Array(await response.arrayBuffer()));
+  }
+  return new Response(body,{headers:{'Content-Type':'application/wasm','Content-Length':String(config.fileSizes['index.wasm'])}});
+};
+const progress=document.querySelector('#progress'),status=document.querySelector('#status');
+document.querySelector('#retry').onclick=()=>location.reload();
+const fail=error=>{
+ console.error(error);
+ document.querySelector('#failure').textContent='실행하지 못했습니다. WebGL 2를 지원하는 최신 브라우저에서 다시 시도해 주세요. '+String(error.message||error);
+ document.querySelector('#failure').style.display='block';
+ document.querySelector('#retry').hidden=false;
+ status.textContent='다운로드 또는 실행 오류';
+};
+const missing=Engine.getMissingFeatures({threads:false});
+if(missing.length) fail(Error(missing.join(', ')));
+else engine.startGame({onProgress:(current,total)=>{
+ if(total>0){progress.max=total;progress.value=current;status.textContent=`게임 준비 중 ${Math.min(100,Math.round(current/total*100))}%`}
+}}).then(()=>{
+ document.querySelector('#loading').remove();
+ document.querySelector('#canvas').focus();
+}).catch(fail);
+document.addEventListener('contextmenu',e=>e.preventDefault());
+</script>
+</html>
