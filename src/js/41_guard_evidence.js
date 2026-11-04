@@ -7,7 +7,7 @@ function guardHearsReport(from, to, radius = 260) {
   const heard = d < radius * soundThrough(from.x, from.y, to.x, to.y);
   setLayer(old); return heard;
 }
-function shareGuardReport(from, at, look) {
+function shareGuardReport(from, at, look, source='player') {
   const listeners = [];
   for (const g of S.guards) {
     if (g === from || g.civ || g.dog || g.target || g.doomed || g.yank || g.climb || g.off ||
@@ -15,12 +15,12 @@ function shareGuardReport(from, at, look) {
     // A shout must not replace a direct pursuit, a casualty or a stronger assigned task.
     if (!['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE'].includes(g.state) || g.searchJob || g.bodyCoverId || radioBusy(g)) continue;
     endChat(g); g.act = null; g.bubble = null; g.relight = null;
-    g.state = 'SEARCH'; g.poi = { ...at }; g.lastSeen = { ...at }; g.reached = false;
+    g.state = 'SEARCH'; g.poi = { ...at,clue:source }; g.lastSeen = { ...at,clue:source }; g.reached = false;
     g.path = null; g.waitBase = 5; g.meter = Math.max(g.meter || 0, .35); g.why = 'report';
     g.reportFrom = from.id; g.reportAt = S.t; g.seen = false;
     if (look) rememberSuspect(g, look);
     setIcon(g, '?'); g.actionSpeechUntil = S.t + 2.4;
-    gsay(g, '알았어. 마지막으로 본 곳부터 갈게.', 2.4);
+    gsay(g, source==='body'?'알았어. 쓰러진 사람이 있는 곳부터 확인할게.':'알았어. 마지막으로 본 곳부터 갈게.', 2.4);
     listeners.push(g);
   }
   return listeners;

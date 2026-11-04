@@ -50,12 +50,16 @@ async def main():
      else:raise AssertionError((name,'route timeout',target,axis,s))
    async def env(kind):
     await draw()
+    for _ in range(80):
+     if not await q.evaluate('__game.actionBusy()'):break
+     await tick(.05)
+    else:raise AssertionError((name,'action did not recover',kind))
     if await q.evaluate('__game.envAction().k')!=kind:
      if touch:await q.tap('#btnCycle')
      else:await q.keyboard.press('Shift+Tab')
-     if not await q.locator('[data-env-token^="'+kind+':"]').count():
+     if await q.locator('[data-env-token^="'+kind+':"]').count():await q.locator('[data-env-token^="'+kind+':"]').first.click()
+     elif await q.evaluate('__game.envAction().k')!=kind:
       await q.screenshot(path=str(O/(name+'-missing-'+kind+'.png')));print('MISSING',kind,await q.evaluate('({p:[__game.S.player.x,__game.S.player.y,__game.S.player.hp],t:__game.S.t,choices:__game.envChoices().map(a=>[a.k,a.label]),vip:[__game.S.guards[0].x,__game.S.guards[0].y,__game.S.guards[0].wait]})'),flush=True);raise AssertionError('missing '+kind)
-     await q.locator('[data-env-token^="'+kind+':"]').first.click()
     await action('x','#btnCarry');await tick(3.3)
    if APPROACH=='smoke':
     for at in [(1272,1032),(1272,840)]:await move(*at)
@@ -94,14 +98,30 @@ async def main():
     await tick(.1)
    else:raise AssertionError('camera sweep did not recur')
    await action('x','#btnCarry');await tick(2.2)
-   for at in [(264,504),(240,445)]:await move(*at)
+   await move(264,504)
+   gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
+   # The office patrol can identify a nearby disguise. Observe a real gap
+   # before operating its doorway; a fixed schedule is not a stealth strategy.
+   for _ in range(300):
+    if await q.evaluate('at=>{const g=__game.S.guards[6];return g.state!=="ALERT"&&Math.hypot(g.x-at.x,g.y-at.y)>150}',gate):break
+    await tick(.1)
+   else:raise AssertionError((name,'office patrol never leaves the vault entrance'))
+   await move(240,445)
    await action('x','#btnCarry')
    for key in ['0','4','1','7']:
     if touch:await q.tap('#keypad [data-k="'+key+'"]')
     else:await q.keyboard.press(key)
    await tick(.6)
-   for at in [(264,384),(264,312)]:await move(*at)
+   await move(gate['x'],gate['y']-40)
+   for _ in range(200):
+    if not await q.evaluate('at=>__game.doorBlocked(__game.S.doors.find(d=>d.x===at.x&&d.y===at.y&&!(d.fl||0)))',gate):break
+    await tick(.1)
+   else:raise AssertionError((name,'vault doorway never clears'))
+   await env('door')
+   assert await q.evaluate('at=>__game.S.doors.find(d=>d.x===at.x&&d.y===at.y&&!(d.fl||0)).locked',gate),'physical vault door did not close'
+   await move(264,312)
    await env('loot');assert await q.evaluate('__game.S.items[0].got&&!__game.evidencePending()')
+   await move(gate['x'],gate['y']-40);await env('door')
    if APPROACH=='meeting':
     for at in [(264,504),(216,504)]:await move(*at)
     await env('callMeet');await move(216,600)

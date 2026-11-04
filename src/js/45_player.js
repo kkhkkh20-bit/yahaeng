@@ -199,11 +199,14 @@ function coverAt(P, prev) {
   if (P.wire || P.jump || P.hide || P.vent || P.under || P.trav || P.ledge) return null;
   // 옥상 위: 옥탑방·물탱크·계단실 벽에만 기댄다 (옥상 끝은 기댈 벽이 아니다)
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, sol = P.z ? (x, y) => robAt(x, y) && lvAt(x, y) === P.z : groundSolidP, c = [];
-  const kd = (x, y) => { if (P.z) return 'wall'; const ch = inMap(x, y) ? G0[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
-  if (sol(tx, ty - 1) && fy < 22) c.push({ x: 0, y: 1, d: fy, kind: kd(tx, ty - 1) });
-  if (sol(tx, ty + 1) && fy > TILE - 22) c.push({ x: 0, y: -1, d: TILE - fy, kind: kd(tx, ty + 1) });
-  if (sol(tx - 1, ty) && fx < 22) c.push({ x: 1, y: 0, d: fx, kind: kd(tx - 1, ty) });
-  if (sol(tx + 1, ty) && fx > TILE - 22) c.push({ x: -1, y: 0, d: TILE - fx, kind: kd(tx + 1, ty) });
+  const grid=flOf(P)?GF[flOf(P)]:G0;
+  const kd = (x, y) => { if (P.z) return 'wall'; const ch = inMap(x, y) ? grid[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
+  // Narrow utility poles still collide, but cannot conceal a whole person.
+  const support=(x,y)=>sol(x,y)&&(P.z||!inMap(x,y)||grid[y][x]!=='P');
+  if (support(tx, ty - 1) && fy < 22) c.push({ x: 0, y: 1, d: fy, kind: kd(tx, ty - 1) });
+  if (support(tx, ty + 1) && fy > TILE - 22) c.push({ x: 0, y: -1, d: TILE - fy, kind: kd(tx, ty + 1) });
+  if (support(tx - 1, ty) && fx < 22) c.push({ x: 1, y: 0, d: fx, kind: kd(tx - 1, ty) });
+  if (support(tx + 1, ty) && fx > TILE - 22) c.push({ x: -1, y: 0, d: TILE - fx, kind: kd(tx + 1, ty) });
   if (prev) { const same = c.find(o => o.x === prev.x && o.y === prev.y); if (same) return same; }
   c.sort((a, b) => a.d - b.d); return c[0] || null;
 }

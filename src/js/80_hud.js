@@ -312,7 +312,7 @@ function updateStealth(lv) {
   else if (e === 1 && !pub) { const watched=physicallyObserved();s = watched?'risk':'hide';word = watched?'시야 안':'시야 밖';why = inBush && !P.hidden ? '웅크려야 숨는다' : watched ? '발견 게이지가 차기 전에 시야 밖으로' : banned ? '통행 불가 · 경비가 돌아보면 발각 위험' : '돌아보면 보일 수 있음'; }
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
-  else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
+  else if (pub) { s = 'blend'; word = S.alevel>=2?(physicallyObserved()?'통행 중':'현재 시야 밖'):'의심 없음'; why = S.alevel>=2?'주변 수색 중 · 통행만 허용 · 수상한 행동 주의':disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;

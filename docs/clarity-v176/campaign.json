@@ -1,0 +1,18 @@
+[
+  {
+    "touch": false,
+    "openingResult": "접근 방식\n순찰 틈으로 접근\n수고비\n22만\n소요 시간\n0분 22초\n발각 횟수\n0회",
+    "vipGoal": "클럽 실장 처치하기 · 흡연 중 · 경호원은 입구에서 대기 · 바깥 · 1m",
+    "freshMissionStands": true,
+    "errors": [],
+    "method": "UI-only opening -> VIP handoff in normal browser time, desktop and touch.\nKnown-map input route; no engine API, seed, RAF or gameplay-state overrides.\nMenu pauses between observations; reported times are not novice benchmarks."
+  },
+  {
+    "touch": true,
+    "openingResult": "접근 방식\n순찰 틈으로 접근\n수고비\n22만\n소요 시간\n0분 23초\n발각 횟수\n0회",
+    "vipGoal": "클럽 실장 처치하기 · 흡연 중 · 경호원은 입구에서 대기 · 바깥 · 1m",
+    "freshMissionStands": true,
+    "errors": [],
+    "method": "UI-only opening -> VIP handoff in normal browser time, desktop and touch.\nKnown-map input route; no engine API, seed, RAF or gameplay-state overrides.\nMenu pauses between observations; reported times are not novice benchmarks."
+  }
+]

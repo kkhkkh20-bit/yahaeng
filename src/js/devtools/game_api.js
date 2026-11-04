@@ -1,6 +1,7 @@
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,

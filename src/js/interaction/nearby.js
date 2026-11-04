@@ -61,7 +61,19 @@ function nearDoor() {
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;
   return best;
 }
-function doorBlocked(d) { return d.group.some(t => S.guards.some(g => g.state !== 'DEAD' && Math.floor(g.x / TILE) === t.tx && Math.floor(g.y / TILE) === t.ty) || S.corpses.some(c => !c.stashed && !c.carried && Math.floor(c.x / TILE) === t.tx && Math.floor(c.y / TILE) === t.ty)); }
+function doorBlocker(d) {
+  for (const t of d.group) {
+    const here=o=>flOf(o)===flOf(t)&&(o.z||0)===(t.z||0)&&Math.floor(o.x/TILE)===t.tx&&Math.floor(o.y/TILE)===t.ty;
+    const g=S.guards.find(g=>!g.off&&g.state!=='DEAD'&&here(g));if(g)return{entity:g,body:false};
+    const c=S.corpses.find(c=>!c.stashed&&!c.carried&&here(c));if(c)return{entity:c,body:true};
+  }
+  return null;
+}
+function doorBlocked(d) { return !!doorBlocker(d); }
+function doorBlockMessage(blocker) {
+  const o=blocker.entity;
+  return blocker.body?(o.ko?'기절자가':'시체가')+' 문을 막고 있다 · 옮긴 뒤 닫기':(o.dog?'들개가':o.civ?'사람이':'경비가')+' 문을 지나가는 중 · 비킨 뒤 닫기';
+}
 function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; const grid=flOf(t)?GF[flOf(t)]:G0; grid[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;

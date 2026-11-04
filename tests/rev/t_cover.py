@@ -1,4 +1,4 @@
-# 벽에 붙기 회귀: 기대기 버튼이 없다 · 웅크려 벽에 닿으면 바로 붙는다(붙는 동작 거침) · 붙어서 옆걸음하면 발소리 없음 · 붙으면 보이는 거리가 줄고 원뿔에도 반영 · 벽 반대로 밀면 떨어진다
+# 벽에 붙기 회귀: 기대기 버튼이 없다 · 웅크려 벽을 0.5초 밀면 붙는다(붙는 동작 거침) · 붙어서 옆걸음하면 발소리 없음 · 붙으면 보이는 거리가 줄고 원뿔에도 반영 · 벽 반대로 밀면 떨어진다
 import asyncio, sys
 from playwright.async_api import async_playwright
 SK = '() => { const g = window.__game; for (let i = 0; i < 30 && g.DLG.modal; i++) g.advanceDialog(); }'
@@ -8,9 +8,9 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(viewport={'width': 1280, 'height': 720}); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///root/game/build/preview_city.html'); await pg.wait_for_timeout(1500)
-        await pg.evaluate('() => window.__game.start(0)'); await pg.wait_for_timeout(300); await pg.evaluate(SK); await pg.evaluate(FREEZE)
+        await pg.evaluate('() => window.__game.start(window.__game.STAGES.findIndex(s=>s.id==="m2"))'); await pg.wait_for_timeout(300); await pg.evaluate(SK); await pg.evaluate(FREEZE)
         # 건물 남쪽 벽 아래 한 칸 떨어진 곳 (창문 아래 칸 옆)
-        r = await pg.evaluate('''() => { const G = window.__game, S = G.S, P = S.player; const w = S.windows.find(w => w.b >= 0 && G.bldAt(w.tx, w.ty + 1) < 0 && !(w.fl || 0));
+        r = await pg.evaluate('''() => { const G = window.__game, S = G.S, P = S.player; const w = S.windows.find(w => w.b >= 0 && !w.roof && !w.z && G.bldAt(w.tx, w.ty + 1) < 0 && !(w.fl || 0));
             const B = G.BLD[w.b]; P.x = w.tx * 48 + 24 - 30; P.y = (B.y1 + 1) * 48 + 40; P.a = -Math.PI / 2; P.z = 0; P.fl = 0; P.cover = null; window.__wy = (B.y1 + 1) * 48; return [w.tx, B.y1]; }''')
         await pg.wait_for_timeout(100)
         lab = await pg.evaluate('() => window.__game.secondaryAction().label'); print('특수 버튼', lab)
@@ -39,9 +39,9 @@ async def main():
         # 보이는 거리: 붙으면 0.42배
         await pg.wait_for_timeout(300)
         v = await pg.evaluate('''() => { const G = window.__game, S = G.S, P = S.player, g = S.guards.find(g => !g.civ && !g.dog && !g.target); g.x = P.x + 150; g.y = P.y + 60; g.a = Math.atan2(P.y - g.y, P.x - g.x); g.state = 'PATROL'; g.fl = 0; g.z = 0;
-            const a = G.canSee(g, P.x, P.y, 1, false, 2, 0), b = G.canSee(g, P.x, P.y, 1, false, true, 0), c = G.canSee(g, P.x, P.y, 1, false, false, 0); g.x = -9999; return [a, b > 0, c > 0]; }''')
+            const a = G.canSee(g, P.x, P.y, 1, false, 2, 0), b = G.canSee(g, P.x, P.y, 1, false, true, 0), c = G.canSee(g, P.x, P.y, 1, false, false, 0); g.x = -9999; return [a, b, c]; }''')
         print('밝은 곳 150px: 붙음/웅크림/서기', v)
-        if v[0] > 0 or not v[2]: bad.append('붙어도 보이는 거리가 줄지 않는다 %s' % v)
+        if not (0 <= v[0] < v[1] <= v[2] and v[2] > 0): bad.append('엄폐·웅크림·서기의 노출 감소 순서가 틀렸다 %s' % v)
         # 벽 반대쪽(아래)으로 밀면 떨어진다
         await pg.evaluate('() => { window.__game.S.keys.ArrowDown = true; }'); await pg.wait_for_timeout(300); await pg.evaluate('() => { window.__game.S.keys.ArrowDown = false; window.__game.input.sneakToggle = false; }')
         r = await pg.evaluate('() => !!window.__game.S.player.cover'); print('떨어지기', r)

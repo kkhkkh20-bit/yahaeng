@@ -240,7 +240,7 @@ function draw() {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
       const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
       if (!dup) {
-      tag(g.poi.x, g.poi.y, g.why === 'saw' ? '봤다' : '들었다', g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
+      tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');

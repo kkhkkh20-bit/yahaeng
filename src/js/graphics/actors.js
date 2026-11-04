@@ -67,9 +67,9 @@ function drawLastSeen() {
   const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
-    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.searchJob ? g.searchOrigin : g.poi) : null;
+    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.state==='SEARCH'&&g.searchJob ? g.searchOrigin : g.poi) : null;
     if (!q || flOf(q) !== flOf(P) || (q.z || 0) !== (P.z || 0) || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
-    pts.push({ x: q.x, y: q.y, hot: false, body: g.searchJob && (S.searchIncidents || []).find(i => i.id === g.searchJob.incident)?.source === 'body', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
+    pts.push({ x: q.x, y: q.y, hot: false,info:investigationReadout(g) });
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;
@@ -77,7 +77,7 @@ function drawLastSeen() {
       const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
       ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
-      tag(q.x, q.y + 30, q.exit ? '출구 경비 위치' : q.blood ? '핏자국 발견 지점' : q.heard ? '소리가 난 지점' : q.body ? '발견된 현장' : '마지막 목격 지점', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
+      tag(q.x, q.y + 30, q.info.site, q.hot ? '#e85a46' : '#f2c46b', 0.85); }
     // 기억한 위치는 사람을 복제하지 않고 바닥의 십자 표식으로만 남긴다.
     const k=1/SCALE;ctx.save();ctx.strokeStyle='#d7b76c';ctx.lineWidth=1.5*k;ctx.beginPath();
     ctx.moveTo(q.x-6*k,q.y);ctx.lineTo(q.x+6*k,q.y);ctx.moveTo(q.x,q.y-6*k);ctx.lineTo(q.x,q.y+6*k);ctx.stroke();ctx.restore();

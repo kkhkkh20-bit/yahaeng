@@ -149,14 +149,14 @@ function noise(x, y, r, src, fl, z) {
   if(STAGE.firstSteps&&src==='whistle'&&nz.heard)S.lessonWhistle={heard:true,hidden:!!S.player.hidden,t:S.t,x,y};
   setLayer(L0);
 }
-function goSuspicious(g, x, y, look) {
+function goSuspicious(g, x, y, look, reason='inspect') {
   if (g.state === 'WARN') return;  // 나가라고 경고하는 중엔 다른 데 정신 팔지 않는다
   releaseSearchJob(g);
   endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35 * proxVol(g)); }
   g.soundApproach=null;g.soundWatchUntil=0;
-  g.state = 'SUSPICIOUS'; g.poi = { x, y, fl: flOf(g), z: g.z || 0 }; g.path = null; g.wait = 0; g.waitBase = look || 3.5; g.reached = false; g.glance = 0;
+  g.state = 'SUSPICIOUS'; g.why=reason;g.poi = { x, y, fl: flOf(g), z: g.z || 0 }; g.path = null; g.wait = 0; g.waitBase = look || 3.5; g.reached = false; g.glance = 0;
 }
 // Only guards who heard the cue remember it; nearby visible colleagues can split roles.
 function rememberSound(g,n){
