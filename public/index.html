@@ -1,5 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><script>window.__INK_FORCE__=true;</script>
-<meta charset="utf-8">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body><meta charset="utf-8">
 <title>야행</title>
 <!-- Title font license:
 Copyright 2015 The Black Han Sans Project Authors (https://github.com/zesstype/Black-Han-Sans)
@@ -1084,6 +1083,8 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 #hud #stealth #accessLbl[hidden],#hud #stealth #actionRiskLbl[hidden]{display:none}
 #hud #stealth.quiet[data-camera=pass] #lightLbl{display:block}
 @media(max-width:700px){#hud #stealth #accessLbl,#hud #stealth #actionRiskLbl{font-size:10px;max-width:calc(100vw - 144px)}}
+/* Field radio must not steal the left movement finger during a live escape. */
+#dlg:not(.modal),#dlg:not(.modal) *{pointer-events:none}
 
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
@@ -1427,7 +1428,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v173 · 2026-11-04</footer>
+  <footer class="title-footer">v174 · 2026-11-04</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1580,6 +1581,6 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/b2575f4df84e47ff95de.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/d15976ed67b63faffc0e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/ecec2386dd85c08fed75.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/804691abc6b3ca46e23e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>

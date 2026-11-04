@@ -5,6 +5,7 @@ function keyPurpose(k) {
   return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
 function vipRoutine(g) {
+  if(STAGE.openingContract&&g.tag==='runner'&&g.state==='PATROL'&&!g.moving&&!g.doomed)return 'smoke';
   if(STAGE.id!=='m2'||g.tag!=='vip'||g.state!=='PATROL'||g.moving||g.doomed||g.climb||g.wait<=0)return null;
   const s=schedNow(g);return s?.cur?.act==='담배'?'smoke':s?.cur?.act==='양주'?'drink':null;
 }

@@ -1,0 +1,4 @@
+PASS opening 1280 5 groups
+PASS opening 390 6 groups
+PASS opening 844 6 groups
+PASS opening 320 6 groups

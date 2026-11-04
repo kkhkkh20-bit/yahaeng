@@ -227,8 +227,9 @@ function draw() {
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
     conePaths(g,cn,1,S.coneK||0);
-    ctx.fillStyle=`rgba(${col},${(.20*far).toFixed(3)})`;ctx.fill();
-    ctx.strokeStyle=`rgba(${col},${(.34*far).toFixed(3)})`;ctx.lineWidth=1;ctx.stroke();
+    const routinePass=quiet&&STAGE.zones&&!g.dog&&!knownFace(g)&&pZoneEff(g)===Z_PUB&&!publicSuspicion(g);
+    if(!routinePass){ctx.fillStyle=`rgba(${col},${(.20*far).toFixed(3)})`;ctx.fill();}
+    ctx.strokeStyle=`rgba(${col},${((routinePass?.18:.34)*far).toFixed(3)})`;ctx.lineWidth=1;ctx.stroke();
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시

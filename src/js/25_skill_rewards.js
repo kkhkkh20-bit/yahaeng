@@ -1,7 +1,7 @@
 // Achievement flags are the receipt: replaying a cleared goal cannot mint points.
 const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched'};
 function skillRewardRows(stage,record=loadCh()){
- if(stage.tutorial||stage.city||!stage.challenges)return[];
+ if(stage.tutorial||stage.city||stage.openingContract||!stage.challenges)return[];
  const main=Object.hasOwn(SKILL_SIGNATURES,stage.id),saved=record[stage.id]||{},ids=[...new Set([...stage.challenges,...(stage.legacyChallenges||[])])];
  return[{id:'_clear',name:'미션 첫 완료',points:main?2:1,earned:!!saved._clear},...ids.map(id=>({id,name:id==='fast'?mmss(stage.fastT||330)+' 안에 완료하기':CH[id]?.[0]||id,points:main&&SKILL_SIGNATURES[stage.id]===id?2:1,earned:!!saved[id],signature:main&&SKILL_SIGNATURES[stage.id]===id,retired:!stage.challenges.includes(id)}))];
 }

@@ -1,0 +1,37 @@
+{
+  "version": "v174",
+  "release": {
+    "edition": "2d-campaign",
+    "version": "v174",
+    "source_sha256": "2d5f9a00083ee1ea5b368a5478f5d22cc6ee8d81588043b427d5cc5369a5c88b",
+    "html_bytes": 186471,
+    "source_bytes": 11267927,
+    "scripts": 4,
+    "assets": 177,
+    "asset_bytes": 8478170,
+    "deployed_assets": 177,
+    "deployed_asset_bytes": 8478170
+  },
+  "regression": {
+    "total": 71,
+    "initialPassed": 69,
+    "initialEnvironmentFailures": [
+      "t_interface.py and t_mission_identity.py expected an HTTP server at port 8001; connection refused."
+    ],
+    "resolved": "Started local server, reran both: all four viewports and blocked-font case passed.",
+    "reachability": "passed",
+    "buildPipeline": "7 checks passed",
+    "spriteOwnership": "passed",
+    "optionalLessons": "all five completed via keyboard and touch",
+    "openingNative": "two approaches × keyboard/touch; also separately rerun after radio change",
+    "normalRAF": "UI-only PC and touch clear and transition into VIP"
+  },
+  "focusedRules": [
+    "PASS opening 1280 5 groups",
+    "PASS opening 390 6 groups",
+    "PASS opening 844 6 groups",
+    "PASS opening 320 6 groups"
+  ],
+  "package": "8 exact local package hashes plus native frame input, objective pause/resume, optional lessons entry and actual custom font",
+  "startup": "PC/touch cold start, queued engine download and failed-download fallback passed"
+}
