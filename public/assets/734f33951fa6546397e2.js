@@ -14171,6 +14171,8 @@ function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
+  el.querySelector('.br-scroll').scrollTop = 0;
+  $('brMapDetails').open = !isTouch || innerWidth >= 900;
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
