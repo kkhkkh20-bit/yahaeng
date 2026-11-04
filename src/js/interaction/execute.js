@@ -190,7 +190,7 @@ function actPrimary(force) {
       break;
     }
     case 'callMeet': {callRendezvous();break;}
-    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · 기존 녹화는 관리실에서 삭제',2.5,'good');break;}
+    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · '+(S.cameraEvidence||S.stats.camRec>0?'남은 녹화는 관리실에서 삭제':'현재 남은 녹화 없음'),2.5,'good');break;}
     case 'camroom': { S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
@@ -208,7 +208,7 @@ function actPrimary(force) {
     case 'door': {
       const d = a.d; if (d.gate && d.locked) { d.gate = null; toast('빗장을 풀었다 — 지름길이 열렸다', 2, 'good'); S.stats.gates = (S.stats.gates || 0) + 1; }
       if (d.keyLock && d.locked) { const kn = keyName(d.keyLock); noteChange('door', d, d.keyLock); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; d.group.forEach(t => t.keyLock = false); toast(withJosa(kn, '으로/로') + ' 문을 열었다', 1.8, 'good'); }
-      if (!d.locked && doorBlocked(d)) { toast('문 앞에 무언가 있어 닫을 수 없다', 1.6); break; }
+      const blocker=!d.locked&&doorBlocker(d);if(blocker){toast(doorBlockMessage(blocker),2.2,'warn');break;}
       setDoor(d, !d.locked); play(d.locked ? 'metal' : 'cloth', 0.45); noise(d.x, d.y, 35, 'door');
       for (const g of S.guards) if (g.path) g.path = null;
       if (d.locked) hint('lock', '잠긴 문은 자경대원이 돌아서 간다. 쫓기거나 수색 중인 자경대원은 문을 부순다');

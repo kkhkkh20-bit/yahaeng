@@ -1,0 +1,62 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "checks": [
+      "actual delayed door contact ignores other floors/heights, respects real actor/body and persists on restore",
+      "fresh mission stands; walking preference, checkpoint and pause semantics preserved",
+      "real utility pole has no magnetic cover; intentional wall cover and release remain",
+      "actual canvas distinguishes exposed unconscious and dead people",
+      "actual body inspection/report, real pursuit, person sight, new trace and sound have truthful labels"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "checks": [
+      "actual delayed door contact ignores other floors/heights, respects real actor/body and persists on restore",
+      "fresh mission stands; walking preference, checkpoint and pause semantics preserved",
+      "real utility pole has no magnetic cover; intentional wall cover and release remain",
+      "actual canvas distinguishes exposed unconscious and dead people",
+      "actual body inspection/report, real pursuit, person sight, new trace and sound have truthful labels"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "checks": [
+      "actual delayed door contact ignores other floors/heights, respects real actor/body and persists on restore",
+      "fresh mission stands; walking preference, checkpoint and pause semantics preserved",
+      "real utility pole has no magnetic cover; intentional wall cover and release remain",
+      "actual canvas distinguishes exposed unconscious and dead people",
+      "actual body inspection/report, real pursuit, person sight, new trace and sound have truthful labels"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "touch": true,
+    "checks": [
+      "actual delayed door contact ignores other floors/heights, respects real actor/body and persists on restore",
+      "fresh mission stands; walking preference, checkpoint and pause semantics preserved",
+      "real utility pole has no magnetic cover; intentional wall cover and release remain",
+      "actual canvas distinguishes exposed unconscious and dead people",
+      "actual body inspection/report, real pursuit, person sight, new trace and sound have truthful labels"
+    ],
+    "errors": []
+  }
+]

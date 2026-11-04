@@ -24,7 +24,7 @@ function drawCorpseRisk() {
   for (const c of S.corpses) {
     if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
+      ctx.font = uiFont(12); ctx.textAlign = 'center';const label=bodyRiskText(c),width=ctx.measureText(label).width+12; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x-width/2,c.y-34,width,15); ctx.fillStyle = '#ff9a86'; ctx.fillText(label, c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체·기절자를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
 }
 function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이

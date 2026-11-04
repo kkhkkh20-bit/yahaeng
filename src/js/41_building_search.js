@@ -102,7 +102,7 @@ function takeSearchJob(g, inc) {
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.y) || STAGE.tutorial || STAGE.city) return false;
   if (!S.lvl) lvlInit();
-  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0 }, bi = searchBuildingAt(pos);
+  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0,...(at.clue?{clue:at.clue}:{}) }, bi = searchBuildingAt(pos);
   S.searchIncidents = (S.searchIncidents || []).filter(i => i.until > S.t);
   let inc = S.searchIncidents.find(i => i.fac === fac && i.b === bi && flOf(i.at) === pos.fl && i.at.z === pos.z && dist(i.at.x, i.at.y, pos.x, pos.y) < 100);
   if (!inc) {

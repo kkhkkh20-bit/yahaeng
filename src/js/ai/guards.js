@@ -183,7 +183,7 @@ function updateGuard(g, dt) {
     }
     case 'NOTICE': {
       g.want = Math.atan2(g.poi.y - g.y, g.poi.x - g.x);
-      if (!g.seen) { g.noticeT += dt; if (g.noticeT > 0.9 || g.meter <= 0) goSuspicious(g, g.poi.x, g.poi.y, 4); }
+      if (!g.seen) { g.noticeT += dt; if (g.noticeT > 0.9 || g.meter <= 0) goSuspicious(g, g.poi.x, g.poi.y, 4,'saw'); }
       break;
     }
     case 'SUSPICIOUS': case 'SEARCH': {
@@ -251,7 +251,7 @@ function updateGuard(g, dt) {
       } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
       if (g.lookout && g.seen && P.z > (g.z || 0) && !roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) && dist(g.x, g.y, P.x, P.y) < (g.lookout ? 260 : 130) && (g.shootT = (g.shootT || 0) + dt) > 2.2) { g.shootT = 0; play('kunai', 0.5); hurtPlayer(null, g.lookout ? '옥상 위에서 석궁 화살에 맞았다.' : ('옥상 위로 던진 병에 맞았다.')); if (S.over) return; }
       if (P.hide && P.hide.spotted && dist(g.x, g.y, P.hide.x, P.hide.y) < 60) { P.hide.spotted = false; dragOut(g, P.hide.type === 'well' ? '숨는 모습을 들켜 맨홀에서 끌려 나왔다.' : '숨는 모습을 들켜 수거함에서 끌려 나왔다.'); if (S.over) return; }
-      if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
+      if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = {...g.lastSeen,clue:'player'}; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
       break;
     }
     case 'BODY': {
@@ -267,11 +267,11 @@ function updateGuard(g, dt) {
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고 났어. 사람들 접근 막아.', '감전됐나 봐. 손대지 마.', '사람 쓰러졌다. 지원 요청해.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
         c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); // Exits receive this incident only after a completed radio report.
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
-        g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0 }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
+        g.state = 'SEARCH';g.why='body';g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0,clue:'body' }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
         const reportAt = {...g.poi}, reportedLook = c.ko ? c.assailantLook || null : null;
         const lookouts = S.guards.filter(o => o.bodyCoverId === c.sceneId && guardHearsReport(g,o));
         for (const o of lookouts) { o.bodyCoverId = null; if (reportedLook) rememberSuspect(o,reportedLook); }
-        const listeners = shareGuardReport(g, reportAt, reportedLook);
+        const listeners = shareGuardReport(g, reportAt, reportedLook,'body');
         startBuildingSearch(reportAt, g.fac || 'A', 'body', g);
         queueGuardRadio([g, ...lookouts, ...listeners], reportAt, reportedLook, true);
         g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'사망자 발견. 출입구 막고 주변 수색해.',2.8);

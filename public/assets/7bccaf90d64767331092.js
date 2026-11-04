@@ -2542,9 +2542,9 @@ function drawLastSeen() {
   const P = S.player, pts = []; if (chaseNow()) return;  // 쫓기는 중엔 지금 내 자리가 곧 '마지막 목격 지점'이다
   for (const g of S.guards) {
     if (g.civ || g.dog || g.state === 'DEAD' || flOf(g) !== flOf(P)) continue;
-    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.searchJob ? g.searchOrigin : g.poi) : null;
+    const q = g.state === 'ALERT' ? g.lastSeen : ['SUSPICIOUS', 'SEARCH', 'NOTICE'].includes(g.state) && g.why ? (g.state==='SEARCH'&&g.searchJob ? g.searchOrigin : g.poi) : null;
     if (!q || flOf(q) !== flOf(P) || (q.z || 0) !== (P.z || 0) || pts.some(o => dist(o.x, o.y, q.x, q.y) < 40)) continue;
-    pts.push({ x: q.x, y: q.y, hot: false, body: g.searchJob && (S.searchIncidents || []).find(i => i.id === g.searchJob.incident)?.source === 'body', heard: g.state !== 'ALERT' && g.why === 'heard', blood: g.state !== 'ALERT' && g.why === 'blood', exit: g.state !== 'ALERT' && g.why === 'exit' });
+    pts.push({ x: q.x, y: q.y, hot: false,info:investigationReadout(g) });
   }
   for (const q of pts) {
     if (dist(q.x, q.y, P.x, P.y) < 30) continue;
@@ -2552,7 +2552,7 @@ function drawLastSeen() {
       const col = q.hot ? '232,90,70' : '242,196,107', rr = 120 + 8 * Math.sin(S.t * 2);
       ctx.fillStyle = `rgba(${col},.06)`; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(${col},.55)`; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.lineDashOffset = -S.t * 12; ctx.beginPath(); ctx.arc(q.x, q.y, rr, 0, TAU); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
-      tag(q.x, q.y + 30, q.exit ? '출구 경비 위치' : q.blood ? '핏자국 발견 지점' : q.heard ? '소리가 난 지점' : q.body ? '발견된 현장' : '마지막 목격 지점', q.hot ? '#e85a46' : '#f2c46b', 0.85); }
+      tag(q.x, q.y + 30, q.info.site, q.hot ? '#e85a46' : '#f2c46b', 0.85); }
     // 기억한 위치는 사람을 복제하지 않고 바닥의 십자 표식으로만 남긴다.
     const k=1/SCALE;ctx.save();ctx.strokeStyle='#d7b76c';ctx.lineWidth=1.5*k;ctx.beginPath();
     ctx.moveTo(q.x-6*k,q.y);ctx.lineTo(q.x+6*k,q.y);ctx.moveTo(q.x,q.y-6*k);ctx.lineTo(q.x,q.y+6*k);ctx.stroke();ctx.restore();
@@ -4087,14 +4087,14 @@ function noise(x, y, r, src, fl, z) {
   if(STAGE.firstSteps&&src==='whistle'&&nz.heard)S.lessonWhistle={heard:true,hidden:!!S.player.hidden,t:S.t,x,y};
   setLayer(L0);
 }
-function goSuspicious(g, x, y, look) {
+function goSuspicious(g, x, y, look, reason='inspect') {
   if (g.state === 'WARN') return;  // 나가라고 경고하는 중엔 다른 데 정신 팔지 않는다
   releaseSearchJob(g);
   endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35 * proxVol(g)); }
   g.soundApproach=null;g.soundWatchUntil=0;
-  g.state = 'SUSPICIOUS'; g.poi = { x, y, fl: flOf(g), z: g.z || 0 }; g.path = null; g.wait = 0; g.waitBase = look || 3.5; g.reached = false; g.glance = 0;
+  g.state = 'SUSPICIOUS'; g.why=reason;g.poi = { x, y, fl: flOf(g), z: g.z || 0 }; g.path = null; g.wait = 0; g.waitBase = look || 3.5; g.reached = false; g.glance = 0;
 }
 // Only guards who heard the cue remember it; nearby visible colleagues can split roles.
 function rememberSound(g,n){
@@ -4505,6 +4505,15 @@ function drawWarnRing(g) {
 
 // Permission, observation and illegal work are separate facts. These readouts
 // query the same rules as perception; they never grant clearance or suppress AI.
+const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['제보 조사','제보된 조사 지점'],trace:['이상 흔적 조사','흔적 조사 지점']};
+function investigationReadout(g){
+  const searching=g.state==='SEARCH'&&g.searchJob;
+  const inc=searching&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident);
+  const at=searching?g.searchOrigin:g.poi;
+  const kind=g.state==='ALERT'?'player':inc?.source==='sighting'?'player':inc?.source==='camera'?'camera':inc?.source==='body'||inc?.at?.clue==='body'||at?.clue==='body'?'body':at?.clue==='player'?'player':g.why==='saw'?'person':g.why==='heard'?'sound':g.why==='blood'?'blood':g.why==='exit'?'exit':['radio','report'].includes(g.why)||inc?.source==='radio'?'report':'trace';
+  return{kind,tag:searching?'수색 중인 지점':INVESTIGATION_LABELS[kind][0],site:INVESTIGATION_LABELS[kind][1]};
+}
+const bodyRiskText=c=>c.ko?'눈에 띄는 기절자':'눈에 띄는 시체';
 function accessReadout(at=S.player){
   const zi=zoneInfo(at.x,at.y,at.z||0,flOf(at)),P=S.player,uniform=P.outfit?outfitName(P.outfit):'평상복';
   if(!STAGE.zones)return{zi,allowed:false,text:uniform+' · 잠입 구역'};
@@ -5494,7 +5503,7 @@ function updateGuard(g, dt) {
     }
     case 'NOTICE': {
       g.want = Math.atan2(g.poi.y - g.y, g.poi.x - g.x);
-      if (!g.seen) { g.noticeT += dt; if (g.noticeT > 0.9 || g.meter <= 0) goSuspicious(g, g.poi.x, g.poi.y, 4); }
+      if (!g.seen) { g.noticeT += dt; if (g.noticeT > 0.9 || g.meter <= 0) goSuspicious(g, g.poi.x, g.poi.y, 4,'saw'); }
       break;
     }
     case 'SUSPICIOUS': case 'SEARCH': {
@@ -5562,7 +5571,7 @@ function updateGuard(g, dt) {
       } else if (g.seen && sameF && (P.z || 0) === (g.z || 0) && !P.trav && !g.atkCd && dist(g.x, g.y, P.x, P.y) < 46 && sightLine(g, P.x, P.y, P.z, P.mode === 'sneak', flOf(P))) { g.atkT = g.dog ? 0.35 : 0.55; play('knife', 0.4); }
       if (g.lookout && g.seen && P.z > (g.z || 0) && !roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) && dist(g.x, g.y, P.x, P.y) < (g.lookout ? 260 : 130) && (g.shootT = (g.shootT || 0) + dt) > 2.2) { g.shootT = 0; play('kunai', 0.5); hurtPlayer(null, g.lookout ? '옥상 위에서 석궁 화살에 맞았다.' : ('옥상 위로 던진 병에 맞았다.')); if (S.over) return; }
       if (P.hide && P.hide.spotted && dist(g.x, g.y, P.hide.x, P.hide.y) < 60) { P.hide.spotted = false; dragOut(g, P.hide.type === 'well' ? '숨는 모습을 들켜 맨홀에서 끌려 나왔다.' : '숨는 모습을 들켜 수거함에서 끌려 나왔다.'); if (S.over) return; }
-      if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = g.lastSeen; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
+      if (g.lostT > 4.5) { g.state = 'SEARCH'; g.poi = {...g.lastSeen,clue:'player'}; g.reached = false; g.path = null; g.waitBase = 3; g.meter = 0.5; g.shootT = 0; setIcon(g, '?'); }
       break;
     }
     case 'BODY': {
@@ -5578,11 +5587,11 @@ function updateGuard(g, dt) {
         if (c.accident) { c.discovered = true; g.state = 'RETURN'; g.path = null; g.icon = null; gsay(g, ['사고 났어. 사람들 접근 막아.', '감전됐나 봐. 손대지 마.', '사람 쓰러졌다. 지원 요청해.'][(g.id + S.corpses.indexOf(c)) % 3]); break; }
         c.discovered = true; S.stats.bodies++; bossRadio('body'); logEv('found', c.x, c.y); setAlert(2, 35, c.ko ? '자경대원이 쓰러진 사람을 깨웠다 — 수색 시작' : '자경대원이 시체를 발견했다 — 수색 시작'); // Exits receive this incident only after a completed radio report.
         if (c.ko && c.g) wakeKO(c, g);  // 기절한 사람은 깨워 일으킨다 — 깬 사람도 함께 수색한다
-        g.state = 'SEARCH'; g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0 }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
+        g.state = 'SEARCH';g.why='body';g.poi = { x: c.x, y: c.y, fl: flOf(c), z: c.z || 0,clue:'body' }; g.reached = true; g.wait = 5; g.waitBase2 = g.a; g.waitT = 0; g.path = null;
         const reportAt = {...g.poi}, reportedLook = c.ko ? c.assailantLook || null : null;
         const lookouts = S.guards.filter(o => o.bodyCoverId === c.sceneId && guardHearsReport(g,o));
         for (const o of lookouts) { o.bodyCoverId = null; if (reportedLook) rememberSuspect(o,reportedLook); }
-        const listeners = shareGuardReport(g, reportAt, reportedLook);
+        const listeners = shareGuardReport(g, reportAt, reportedLook,'body');
         startBuildingSearch(reportAt, g.fac || 'A', 'body', g);
         queueGuardRadio([g, ...lookouts, ...listeners], reportAt, reportedLook, true);
         g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'사망자 발견. 출입구 막고 주변 수색해.',2.8);
@@ -6017,7 +6026,7 @@ function takeSearchJob(g, inc) {
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.y) || STAGE.tutorial || STAGE.city) return false;
   if (!S.lvl) lvlInit();
-  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0 }, bi = searchBuildingAt(pos);
+  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0,...(at.clue?{clue:at.clue}:{}) }, bi = searchBuildingAt(pos);
   S.searchIncidents = (S.searchIncidents || []).filter(i => i.until > S.t);
   let inc = S.searchIncidents.find(i => i.fac === fac && i.b === bi && flOf(i.at) === pos.fl && i.at.z === pos.z && dist(i.at.x, i.at.y, pos.x, pos.y) < 100);
   if (!inc) {
@@ -6089,7 +6098,7 @@ function guardHearsReport(from, to, radius = 260) {
   const heard = d < radius * soundThrough(from.x, from.y, to.x, to.y);
   setLayer(old); return heard;
 }
-function shareGuardReport(from, at, look) {
+function shareGuardReport(from, at, look, source='player') {
   const listeners = [];
   for (const g of S.guards) {
     if (g === from || g.civ || g.dog || g.target || g.doomed || g.yank || g.climb || g.off ||
@@ -6097,12 +6106,12 @@ function shareGuardReport(from, at, look) {
     // A shout must not replace a direct pursuit, a casualty or a stronger assigned task.
     if (!['PATROL', 'RETURN', 'SUSPICIOUS', 'NOTICE'].includes(g.state) || g.searchJob || g.bodyCoverId || radioBusy(g)) continue;
     endChat(g); g.act = null; g.bubble = null; g.relight = null;
-    g.state = 'SEARCH'; g.poi = { ...at }; g.lastSeen = { ...at }; g.reached = false;
+    g.state = 'SEARCH'; g.poi = { ...at,clue:source }; g.lastSeen = { ...at,clue:source }; g.reached = false;
     g.path = null; g.waitBase = 5; g.meter = Math.max(g.meter || 0, .35); g.why = 'report';
     g.reportFrom = from.id; g.reportAt = S.t; g.seen = false;
     if (look) rememberSuspect(g, look);
     setIcon(g, '?'); g.actionSpeechUntil = S.t + 2.4;
-    gsay(g, '알았어. 마지막으로 본 곳부터 갈게.', 2.4);
+    gsay(g, source==='body'?'알았어. 쓰러진 사람이 있는 곳부터 확인할게.':'알았어. 마지막으로 본 곳부터 갈게.', 2.4);
     listeners.push(g);
   }
   return listeners;
@@ -7478,11 +7487,14 @@ function coverAt(P, prev) {
   if (P.wire || P.jump || P.hide || P.vent || P.under || P.trav || P.ledge) return null;
   // 옥상 위: 옥탑방·물탱크·계단실 벽에만 기댄다 (옥상 끝은 기댈 벽이 아니다)
   const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE), fx = P.x - tx * TILE, fy = P.y - ty * TILE, sol = P.z ? (x, y) => robAt(x, y) && lvAt(x, y) === P.z : groundSolidP, c = [];
-  const kd = (x, y) => { if (P.z) return 'wall'; const ch = inMap(x, y) ? G0[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
-  if (sol(tx, ty - 1) && fy < 22) c.push({ x: 0, y: 1, d: fy, kind: kd(tx, ty - 1) });
-  if (sol(tx, ty + 1) && fy > TILE - 22) c.push({ x: 0, y: -1, d: TILE - fy, kind: kd(tx, ty + 1) });
-  if (sol(tx - 1, ty) && fx < 22) c.push({ x: 1, y: 0, d: fx, kind: kd(tx - 1, ty) });
-  if (sol(tx + 1, ty) && fx > TILE - 22) c.push({ x: -1, y: 0, d: TILE - fx, kind: kd(tx + 1, ty) });
+  const grid=flOf(P)?GF[flOf(P)]:G0;
+  const kd = (x, y) => { if (P.z) return 'wall'; const ch = inMap(x, y) ? grid[y][x] : '#'; return ch === 'T' ? 'tree' : ch === 'A' ? 'car' : 'wall'; };
+  // Narrow utility poles still collide, but cannot conceal a whole person.
+  const support=(x,y)=>sol(x,y)&&(P.z||!inMap(x,y)||grid[y][x]!=='P');
+  if (support(tx, ty - 1) && fy < 22) c.push({ x: 0, y: 1, d: fy, kind: kd(tx, ty - 1) });
+  if (support(tx, ty + 1) && fy > TILE - 22) c.push({ x: 0, y: -1, d: TILE - fy, kind: kd(tx, ty + 1) });
+  if (support(tx - 1, ty) && fx < 22) c.push({ x: 1, y: 0, d: fx, kind: kd(tx - 1, ty) });
+  if (support(tx + 1, ty) && fx > TILE - 22) c.push({ x: -1, y: 0, d: TILE - fx, kind: kd(tx + 1, ty) });
   if (prev) { const same = c.find(o => o.x === prev.x && o.y === prev.y); if (same) return same; }
   c.sort((a, b) => a.d - b.d); return c[0] || null;
 }
@@ -8644,7 +8656,7 @@ function drawCorpseRisk() {
   for (const c of S.corpses) {
     if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x - 34, c.y - 34, 68, 15); ctx.fillStyle = '#ff9a86'; ctx.fillText('눈에 띄는 시체', c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
+      ctx.font = uiFont(12); ctx.textAlign = 'center';const label=bodyRiskText(c),width=ctx.measureText(label).width+12; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x-width/2,c.y-34,width,15); ctx.fillStyle = '#ff9a86'; ctx.fillText(label, c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체·기절자를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
 }
 function drawOpps(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
@@ -10216,7 +10228,19 @@ function nearDoor() {
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;
   return best;
 }
-function doorBlocked(d) { return d.group.some(t => S.guards.some(g => g.state !== 'DEAD' && Math.floor(g.x / TILE) === t.tx && Math.floor(g.y / TILE) === t.ty) || S.corpses.some(c => !c.stashed && !c.carried && Math.floor(c.x / TILE) === t.tx && Math.floor(c.y / TILE) === t.ty)); }
+function doorBlocker(d) {
+  for (const t of d.group) {
+    const here=o=>flOf(o)===flOf(t)&&(o.z||0)===(t.z||0)&&Math.floor(o.x/TILE)===t.tx&&Math.floor(o.y/TILE)===t.ty;
+    const g=S.guards.find(g=>!g.off&&g.state!=='DEAD'&&here(g));if(g)return{entity:g,body:false};
+    const c=S.corpses.find(c=>!c.stashed&&!c.carried&&here(c));if(c)return{entity:c,body:true};
+  }
+  return null;
+}
+function doorBlocked(d) { return !!doorBlocker(d); }
+function doorBlockMessage(blocker) {
+  const o=blocker.entity;
+  return blocker.body?(o.ko?'기절자가':'시체가')+' 문을 막고 있다 · 옮긴 뒤 닫기':(o.dog?'들개가':o.civ?'사람이':'경비가')+' 문을 지나가는 중 · 비킨 뒤 닫기';
+}
 function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; const grid=flOf(t)?GF[flOf(t)]:G0; grid[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;
@@ -10635,7 +10659,7 @@ function actPrimary(force) {
       break;
     }
     case 'callMeet': {callRendezvous();break;}
-    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · 기존 녹화는 관리실에서 삭제',2.5,'good');break;}
+    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · '+(S.cameraEvidence||S.stats.camRec>0?'남은 녹화는 관리실에서 삭제':'현재 남은 녹화 없음'),2.5,'good');break;}
     case 'camroom': { S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
@@ -10653,7 +10677,7 @@ function actPrimary(force) {
     case 'door': {
       const d = a.d; if (d.gate && d.locked) { d.gate = null; toast('빗장을 풀었다 — 지름길이 열렸다', 2, 'good'); S.stats.gates = (S.stats.gates || 0) + 1; }
       if (d.keyLock && d.locked) { const kn = keyName(d.keyLock); noteChange('door', d, d.keyLock); S.stats.keyDoors = (S.stats.keyDoors || 0) + 1; d.group.forEach(t => t.keyLock = false); toast(withJosa(kn, '으로/로') + ' 문을 열었다', 1.8, 'good'); }
-      if (!d.locked && doorBlocked(d)) { toast('문 앞에 무언가 있어 닫을 수 없다', 1.6); break; }
+      const blocker=!d.locked&&doorBlocker(d);if(blocker){toast(doorBlockMessage(blocker),2.2,'warn');break;}
       setDoor(d, !d.locked); play(d.locked ? 'metal' : 'cloth', 0.45); noise(d.x, d.y, 35, 'door');
       for (const g of S.guards) if (g.path) g.path = null;
       if (d.locked) hint('lock', '잠긴 문은 자경대원이 돌아서 간다. 쫓기거나 수색 중인 자경대원은 문을 부순다');
@@ -13281,7 +13305,7 @@ function draw() {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
       const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
       if (!dup) {
-      tag(g.poi.x, g.poi.y, g.why === 'saw' ? '봤다' : '들었다', g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
+      tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
@@ -14301,7 +14325,7 @@ function updateStealth(lv) {
   else if (e === 1 && !pub) { const watched=physicallyObserved();s = watched?'risk':'hide';word = watched?'시야 안':'시야 밖';why = inBush && !P.hidden ? '웅크려야 숨는다' : watched ? '발견 게이지가 차기 전에 시야 밖으로' : banned ? '통행 불가 · 경비가 돌아보면 발각 위험' : '돌아보면 보일 수 있음'; }
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
-  else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
+  else if (pub) { s = 'blend'; word = S.alevel>=2?(physicallyObserved()?'통행 중':'현재 시야 밖'):'의심 없음'; why = S.alevel>=2?'주변 수색 중 · 통행만 허용 · 수상한 행동 주의':disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
@@ -15030,6 +15054,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
@@ -15385,7 +15410,7 @@ function start(i, noBrief) {
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
-  syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 항상 걷기는 판이 바뀌어도 유지
+  input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
   newGame(i); if(STAGE.firstSteps||STAGE.openingContract){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
