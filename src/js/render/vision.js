@@ -35,4 +35,17 @@ function conePaths(g, cn, lo, blend = 0) {
   pt(g.a + R[0].ra - h, M[0]); for (let i = 0; i < R.length; i++) pt(g.a + R[i].ra, M[i]); pt(g.a + R[R.length - 1].ra + h, M[R.length - 1]);
   ctx.closePath();
 }
+// Presentation only: retain the existing sampled shape, lighting and AI rules.
+// A nearby neutral outline must remain readable even during permitted passage.
+function guardConeInk(g, P, awareness, view = {}) {
+  const d = Math.hypot(g.x - P.x, g.y - P.y), proximity = 1 - clamp((d - 100) / 360, 0, 1);
+  const inspecting = !!(view.tactical || view.scan);
+  const quiet = !inspecting && ['quiet', 'check'].includes(awareness.phase) && !awareness.progress;
+  const routine = quiet && STAGE.zones && !g.dog && !knownFace(g) && pZoneEff(g) === Z_PUB && !publicSuspicion(g);
+  const distantChase = view.chase && d > 380 ? .55 : 1;
+  const fill = inspecting ? .20 : routine ? .035 * proximity : quiet ? .035 + .085 * proximity : .15 + .05 * proximity;
+  const stroke = inspecting ? .64 : quiet ? .14 + .34 * proximity : .48 + .16 * proximity;
+  return {fill:fill*distantChase, stroke:stroke*distantChase,
+    width:(quiet ? 1.15 : 1.4) / clamp(view.scale || 1, .65, 1.4)};
+}
 // ---------------------------------------------------------------- 그리기

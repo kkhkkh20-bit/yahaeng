@@ -219,17 +219,16 @@ function draw() {
     // 쫓기는 중: 멀리 있는 시야는 옅게, 겁먹은 주민 시야·표시는 가까운 것만 — 나와 가까운 위협이 먼저 보이게
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
-    const awareness=guardAwareness(g),quiet=!tactical&&!input.scan&&['quiet','check'].includes(awareness.phase)&&!awareness.progress;
-    const far = chs && gd > 380 ? 0.35 : quiet && !STAGE.firstSteps ? (quarterNear(P) ? .19 : .42) : 1;
+    const awareness=guardAwareness(g);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
       if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1); ctx.fill();}
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
     conePaths(g,cn,1,S.coneK||0);
-    const routinePass=quiet&&STAGE.zones&&!g.dog&&!knownFace(g)&&pZoneEff(g)===Z_PUB&&!publicSuspicion(g);
-    if(!routinePass){ctx.fillStyle=`rgba(${col},${(.20*far).toFixed(3)})`;ctx.fill();}
-    ctx.strokeStyle=`rgba(${col},${((routinePass?.18:.34)*far).toFixed(3)})`;ctx.lineWidth=1;ctx.stroke();
+    const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,chase:chs,scale:SCALE});
+    if(ink.fill>0){ctx.fillStyle=`rgba(${col},${ink.fill.toFixed(3)})`;ctx.fill();}
+    ctx.strokeStyle=`rgba(${col},${ink.stroke.toFixed(3)})`;ctx.lineWidth=ink.width;ctx.stroke();
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
