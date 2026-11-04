@@ -24,6 +24,8 @@ async def main(args):
                 await page.add_init_script('localStorage.clear()')
                 await page.goto(args.url+'?nostats&mobile-release-check',wait_until='domcontentloaded')
                 await page.locator('#btnQuick').wait_for(state='visible',timeout=60000)
+                await page.wait_for_function('!!window.__game',timeout=60000)
+                await page.evaluate('document.fonts.ready')
                 metrics=await page.evaluate('''()=>({width:innerWidth,scale:visualViewport.scale,mode:document.compatMode,
                     viewport:[...document.head.querySelectorAll('meta[name=viewport]')].map(e=>e.content)})''')
                 assert abs(metrics['width']-width)<2,metrics
