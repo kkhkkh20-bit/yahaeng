@@ -53,8 +53,8 @@ async def main():
                 Object.assign(P,G.stairLower(stair).up.entry,{outfit:'crew',disguise:'sam',fl:0,z:0,mode:'sneak'});G.setLayer(0);S.cams=[];
                 const other={...base,x:P.x+16,y:P.y,fl:0,z:0,a:0,state:'PATROL',meter:0,seen:false,climb:null,doomed:false};S.guards=[other];
                 const up=G.envChoices().find(a=>a.k==='up'&&a.l===stair);ok(up,'original stairs unavailable');G.selectEnvTarget(G.envToken(up));G.updateHUD(true);
-                const text=document.querySelector('#actionRiskLbl').textContent;ok(text.includes('2층 진입')&&text.includes('복장 통행 불가'),'nearby actor hides selected stair permission preview');
-                out.push('selected original stair previews secure-floor access');
+                const text=document.querySelector('#actionRiskLbl').textContent;ok(text.includes('2층 진입')&&text.includes('현재 복장 통행 허용'),'nearby actor hides selected stair permission preview');
+                out.push('selected original stair previews authorized office access');
 
                 S=fresh('tC');P=S.player;S.guards=[];Object.assign(P,{x:984,y:600,light:1});G.updateCams(.4);
                 const cable=G.workRiskReadout({k:'camCable'});ok(cable?.kind==='camera'&&cable.text.includes('카메라가 돌아간 뒤'),'camera cable has no actionable timing hint');
