@@ -30,7 +30,7 @@ function flushTags() {
       } if(at)break; }
       if(!at)continue;
     }
-    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
+    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!blocks.concat(placed).some(p => hit(r, p))) { at = [y, r]; break; } }
     if (!at) { if (t.pri < 2) continue; at = [t.y, tagBounds(t,t.x,t.y)]; }
     placed.push(at[1]); ACTION_R.push(at[1]); if(t.rows)drawEncounter(t.x,at[0],t.rows);else drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
   }

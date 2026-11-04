@@ -37,6 +37,7 @@ function updateGuard(g, dt) {
   if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire&&!stairHidden) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump&&!stairHidden && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
   let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff(g)) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
+  g.rawSeen=vis>0;g.rawSightAt=S.t; // Physical sight before an authorized passerby is ignored.
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;

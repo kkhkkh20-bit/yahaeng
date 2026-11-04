@@ -1,0 +1,162 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "checks": [
+      "public passage is observed geometrically but not recorded",
+      "uniform permits passage, illegal theft fills actual camera meter; preview is pure and HUD agrees",
+      "leaving view, disabling camera and changing floors remove active observation",
+      "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
+      "actual stair selection previews secure upper-floor access before traversal",
+      "real enforcer starts separate identity timer; retreat stops it without changing permission",
+      "real recording persists after sight ends and actual console clears it"
+    ],
+    "layout": [
+      {
+        "id": "accessLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      },
+      {
+        "id": "actionRiskLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      },
+      {
+        "id": "expoLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "checks": [
+      "public passage is observed geometrically but not recorded",
+      "uniform permits passage, illegal theft fills actual camera meter; preview is pure and HUD agrees",
+      "leaving view, disabling camera and changing floors remove active observation",
+      "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
+      "actual stair selection previews secure upper-floor access before traversal",
+      "real enforcer starts separate identity timer; retreat stops it without changing permission",
+      "real recording persists after sight ends and actual console clears it"
+    ],
+    "layout": [
+      {
+        "id": "accessLbl",
+        "right": 249.375,
+        "left": 70,
+        "width": 179.375,
+        "scroll": 179
+      },
+      {
+        "id": "actionRiskLbl",
+        "right": 249.375,
+        "left": 70,
+        "width": 179.375,
+        "scroll": 179
+      },
+      {
+        "id": "expoLbl",
+        "right": 249.375,
+        "left": 70,
+        "width": 179.375,
+        "scroll": 179
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "checks": [
+      "public passage is observed geometrically but not recorded",
+      "uniform permits passage, illegal theft fills actual camera meter; preview is pure and HUD agrees",
+      "leaving view, disabling camera and changing floors remove active observation",
+      "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
+      "actual stair selection previews secure upper-floor access before traversal",
+      "real enforcer starts separate identity timer; retreat stops it without changing permission",
+      "real recording persists after sight ends and actual console clears it"
+    ],
+    "layout": [
+      {
+        "id": "accessLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      },
+      {
+        "id": "actionRiskLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      },
+      {
+        "id": "expoLbl",
+        "right": 293.3125,
+        "left": 96,
+        "width": 197.3125,
+        "scroll": 197
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "touch": true,
+    "checks": [
+      "public passage is observed geometrically but not recorded",
+      "uniform permits passage, illegal theft fills actual camera meter; preview is pure and HUD agrees",
+      "leaving view, disabling camera and changing floors remove active observation",
+      "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
+      "actual stair selection previews secure upper-floor access before traversal",
+      "real enforcer starts separate identity timer; retreat stops it without changing permission",
+      "real recording persists after sight ends and actual console clears it"
+    ],
+    "layout": [
+      {
+        "id": "accessLbl",
+        "right": 226,
+        "left": 70,
+        "width": 156,
+        "scroll": 156
+      },
+      {
+        "id": "actionRiskLbl",
+        "right": 226,
+        "left": 70,
+        "width": 156,
+        "scroll": 156
+      },
+      {
+        "id": "expoLbl",
+        "right": 226,
+        "left": 70,
+        "width": 156,
+        "scroll": 156
+      }
+    ],
+    "errors": []
+  }
+]

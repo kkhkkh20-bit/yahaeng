@@ -453,3 +453,12 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
  .br-identities .mission-id b{font-size:17px}
 }
 @media(min-width:701px) and (max-height:500px){#missionIdentity canvas{width:24px;height:24px}#missionIdentity{padding-block:0 4px}#missionIdentity b{font-size:11px}}
+
+/* Permission remains visible even when the live observation indicator is quiet. */
+#hud #stealth #accessLbl{display:block;font-size:11px;color:#ccd4df;line-height:1.5;max-width:300px}
+#hud #stealth #accessLbl[data-access=denied]{color:#e7b58d}
+#hud #stealth #actionRiskLbl{display:block;font-size:11px;max-width:300px;line-height:1.5;color:#d8c3a4}
+#hud #stealth #actionRiskLbl[data-risk=camera],#hud #stealth #actionRiskLbl[data-risk=witness]{color:#efb095}
+#hud #stealth #accessLbl[hidden],#hud #stealth #actionRiskLbl[hidden]{display:none}
+#hud #stealth.quiet[data-camera=pass] #lightLbl{display:block}
+@media(max-width:700px){#hud #stealth #accessLbl,#hud #stealth #actionRiskLbl{font-size:10px;max-width:calc(100vw - 144px)}}

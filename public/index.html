@@ -1076,6 +1076,15 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 }
 @media(min-width:701px) and (max-height:500px){#missionIdentity canvas{width:24px;height:24px}#missionIdentity{padding-block:0 4px}#missionIdentity b{font-size:11px}}
 
+/* Permission remains visible even when the live observation indicator is quiet. */
+#hud #stealth #accessLbl{display:block;font-size:11px;color:#ccd4df;line-height:1.5;max-width:300px}
+#hud #stealth #accessLbl[data-access=denied]{color:#e7b58d}
+#hud #stealth #actionRiskLbl{display:block;font-size:11px;max-width:300px;line-height:1.5;color:#d8c3a4}
+#hud #stealth #actionRiskLbl[data-risk=camera],#hud #stealth #actionRiskLbl[data-risk=witness]{color:#efb095}
+#hud #stealth #accessLbl[hidden],#hud #stealth #actionRiskLbl[hidden]{display:none}
+#hud #stealth.quiet[data-camera=pass] #lightLbl{display:block}
+@media(max-width:700px){#hud #stealth #accessLbl,#hud #stealth #actionRiskLbl{font-size:10px;max-width:calc(100vw - 144px)}}
+
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -1355,7 +1364,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <span class="sysbtns"><button id="btnCrouch" class="tonly" type="button" title="웅크리기 (Ctrl)" aria-pressed="false"><b>웅크리기</b></button><button id="btnMap" type="button">지도</button></span>
     </div>
   </div>
-  <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
+  <div id="stealth" data-s="hide"><span class="sth-eye" aria-hidden="true"><span class="sth-wing l"><i id="sthWL"></i></span><span class="sth-ico" id="sthIco"></span><span class="sth-wing r"><i id="sthWR"></i></span></span><span class="sth-txt"><small id="accessLbl" hidden></small><b id="expoLbl" data-e="0">숨음</b><small id="lightLbl">어둠 속</small><small id="actionRiskLbl" hidden></small></span><span hidden><i id="lightFill" data-level="lo"></i></span></div>
   <div id="toasts" aria-live="polite"></div>
   <canvas id="mini" width="200" height="140" role="button" tabindex="0" aria-label="전술 지도 열기" title="미니맵 — 누르면 전술 지도"></canvas>
   <button id="tacBanner" class="tac" type="button" hidden>전술 지도 — 게임 정지 중 · 누르면 계속</button>
@@ -1418,7 +1427,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v172 · 2026-11-04</footer>
+  <footer class="title-footer">v173 · 2026-11-04</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1571,6 +1580,6 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/047599c352ecc06d7244.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/b2575f4df84e47ff95de.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/da042313b819aafdf93a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/71f617baea178da03e87.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>

@@ -10,6 +10,14 @@ const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀�
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
 function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)||smokeRayRange(c,x,y,d)<d-4) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
 function camRange(c, light) { return c.search ? SL_R : light > 0.3 ? 300 : 135; }
+// The preview and live detector share geometry and permission tests. An allowed
+// uniform excuses ordinary passage, never work witnessed by the camera.
+function cameraAssessment(c,plannedWork=false){
+  const P=S.player;if(!camOn(c)||flOf(P)!==c.fl||P.hide||P.under||P.vent||P.z||P.wire)return{visible:0,detectable:false,reason:''};
+  const previous=CUR_F;setLayer(c.fl);let visible;try{visible=cameraSees(c,P.x,P.y,P.light);}finally{setLayer(previous);}
+  const known=knownFace({state:''}),illegal=plannedWork||!!suspAct(null),allowed=STAGE.zones&&pZoneEff({state:''})===Z_PUB;
+  return{visible,detectable:visible>0&&(!allowed||illegal||known),reason:illegal?'수상한 작업':known?'공유된 인상착의':pZoneInfo().secure?'보안구역 침입':'출입 권한 없음'};
+}
 // CCTV 관리실: 화면을 보는 사람이 있어야 CCTV가 경보로 이어진다. 관리실이 비면(쓰러뜨리면) 찍혀도 녹화만 된다
 const camWatcher = () => { if (!S.camRoom) return true; const op = npc('camop'); return !!op && !['DEAD', 'CAPTIVE', 'SLEEP', 'TERROR', 'ALERT'].includes(op.state) && !op.climb && !op.brawl && flOf(op) === S.camRoom.fl && !(op.z || 0) && dist(op.x, op.y, S.camRoom.x, S.camRoom.y) < 85; };
 function camReport(c, text, x, y) {
@@ -27,9 +35,7 @@ function updateCams(dt) {
     if (c.cool > 0) { c.cool -= dt; continue; }
     setLayer(c.fl);
     const sees = (x,y,light) => cameraSees(c,x,y,light);
-    let v = 0;
-    if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
-    if (v > 0 && STAGE.zones && pZoneEff({state:''}) === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
+    const assessment=cameraAssessment(c),v=assessment.detectable?assessment.visible:0;
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (!STAGE.zones && S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
       c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
@@ -53,9 +59,10 @@ function drawCams(fl) {
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
       if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기
       else {
-      ctx.fillStyle = `rgba(255,60,60,${0.17 + c.meter * 0.2})`; path(R); ctx.fill();  // CCTV 시야: 자경대원 원뿔만큼 또렷하게
-      ctx.fillStyle = `rgba(255,60,60,${0.24 + c.meter * 0.25})`; path(135); ctx.fill();
-      ctx.strokeStyle = `rgba(255,110,110,${0.85 + c.meter * 0.15})`; ctx.lineWidth = 2.2; ctx.setLineDash([5, 5]); path(R); ctx.stroke(); ctx.setLineDash([]); }
+      const recording=c.seen&&c.meter>0,col=recording?'255,115,90':'157,182,210';
+      ctx.fillStyle = `rgba(${col},${0.09 + c.meter * 0.22})`; path(R); ctx.fill();
+      ctx.fillStyle = `rgba(${col},${0.12 + c.meter * 0.24})`; path(135); ctx.fill();
+      ctx.strokeStyle = `rgba(${col},${0.55 + c.meter * 0.4})`; ctx.lineWidth = 2.2; ctx.setLineDash([5, 5]); path(R); ctx.stroke(); ctx.setLineDash([]); }
     }
     ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a);
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-7, -5, 20, 12); ctx.fillStyle = c.broken ? '#4a4d55' : '#d8dbe2'; ctx.fillRect(-9, -6, 18, 11); ctx.fillStyle = '#2a2d34'; ctx.fillRect(7, -4, 5, 7);

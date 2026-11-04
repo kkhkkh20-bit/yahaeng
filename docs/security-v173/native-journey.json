@@ -1,0 +1,58 @@
+[
+  {
+    "touch": false,
+    "version": "v173",
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0,
+      "dressed": 1,
+      "cpUsed": 1,
+      "camUnplugged": 1,
+      "gotAs": "crew"
+    },
+    "learned": [],
+    "budget": 4,
+    "cleared": true,
+    "rank": "등급\n그림자",
+    "errors": [],
+    "method": "Fresh-save native keyboard/CDP touch rehearsal with campaign detectors active.\nOnly simulation time is stepped. No actor, health, inventory, skill or objective overrides.",
+    "deliberateMistake": "Actual recorded theft with valid uniform, failure, and timed checkpoint recovery before successful cable disconnection and collection."
+  },
+  {
+    "touch": true,
+    "version": "v173",
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0,
+      "dressed": 1,
+      "cpUsed": 1,
+      "camUnplugged": 1,
+      "gotAs": "crew"
+    },
+    "learned": [],
+    "budget": 4,
+    "cleared": true,
+    "rank": "등급\n그림자",
+    "errors": [],
+    "method": "Fresh-save native keyboard/CDP touch rehearsal with campaign detectors active.\nOnly simulation time is stepped. No actor, health, inventory, skill or objective overrides.",
+    "deliberateMistake": "Actual recorded theft with valid uniform, failure, and timed checkpoint recovery before successful cable disconnection and collection."
+  }
+]

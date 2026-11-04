@@ -108,7 +108,11 @@ async def main():
    await press('x','btnCarry');await step('stash','check(G.S.tutI===5&&G.S.corpses[0].hidden,"foliage storage lesson")')
    await walk(20.5*48,10.5*48)
    await step('complete','tick(5);check(G.S.over&&G.S.exitOpen,"interaction lesson incomplete")')
-   await page.wait_for_timeout(650);await page.click('#btnNext');assert await page.locator('#brief').is_visible();assert await page.evaluate('__game.STAGE.id')=='m2';await page.click('#btnBrGo')
+   await page.wait_for_timeout(650);await page.click('#btnNext');assert await page.evaluate('__game.STAGE.id')=='tC';assert not await page.locator('#brief').is_visible()
+   await step('security-next','tick(5);check(G.STAGE.securityLesson&&!G.S.over,"security rehearsal does not follow basic takedown")')
+   # The standalone security journey completes the new lesson. Direct contract
+   # selection must also remain available without forcing its completion.
+   await page.click('#btnPause');await page.click('#btnMenu2');await page.click('[data-filter="missions"]');mi=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await page.click(f'[data-i="{mi}"]');assert await page.locator('#brief').is_visible();await page.click('#btnBrGo')
    for _ in range(12):
     if not await page.evaluate('__game.DLG.modal'):break
     if mobile:await page.tap('#dlg')
