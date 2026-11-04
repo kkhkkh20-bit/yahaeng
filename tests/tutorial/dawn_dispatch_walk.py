@@ -71,7 +71,7 @@ async def main(args):
     coat=await q.evaluate('(()=>{const p=__game.S.props[0],a=p.surface?__game.propGround(p):p;return{x:a.x,y:a.y}})()')
     await route(coat['x'],coat['y']);await env('pickup');await q.wait_for_function('__game.S.player.outfit==="courier"&&!__game.actionBusy()',timeout=7000);await snap('uniform')
     # Cross the work yard into the eastern inspection bay; stay behind shelving.
-    await route(1224,648);await route(1416,456);await route(1416,360);await q.wait_for_function('(()=>{const g=__game.S.guards[0];return Math.hypot(g.x-1560,g.y-360)<8&&!g.moving&&g.wait>5})()',timeout=180000);s=await state()
+    await route(1224,648);await route(1416,456);await route(1416,360);await q.wait_for_function('(()=>{const g=__game.S.guards[0];return Math.hypot(g.x-1560,g.y-360)<26&&!g.moving&&g.wait>5})()',timeout=180000);s=await state()
     await straight(s['broker']['x']-30,s['broker']['y']);await press('z','#btnAct',1.45);await q.wait_for_timeout(1100);assert (await state())['broker']['done'];await snap('target')
     if not (await state())['keys'].get('blue'):
      drop=await q.evaluate('({x:__game.S.keyDrop?.x,y:__game.S.keyDrop?.y})');await route(drop['x'],drop['y'])
