@@ -79,6 +79,63 @@ function briefTodo() {
   out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
   return out;
 }
+// The briefing, permanent HUD and visible-world labels use the same identities.
+// Location comes from disclosed knowledge, never an unobserved actor position.
+function missionIdentities(){
+  const rows=[];
+  if(!S.spare)for(const g of S.guards)if(g.target){
+    const complete=targetEliminated(g),at=targetKnowledge(g);
+    rows.push({id:'target:'+g.id,kind:'target',name:targetName(g),verb:'처치',where:STAGE.id==='m2'&&g.tag==='vip'?'클럽 1층 · VIP룸과 홀':at.where,complete,
+      status:complete?'처치 완료':at.unconscious?'기절 · 처치 미완료':'처치 대상',key:charOf(g)});
+  }
+  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류';rows.push({id:'item:'+i,kind:'item',name,art:name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?'회수 완료':'회수 물품'});});
+  return rows;
+}
+function makeMissionIdentity(row,brief){
+  const el=document.createElement('div');el.className='mission-id '+row.kind+(row.complete?' complete':'');el.dataset.missionId=row.id;
+  const cv=document.createElement('canvas');cv.width=brief?192:72;cv.height=brief?128:72;cv.dataset.missionArt=row.kind;cv.dataset.key=row.key||row.art||'';cv.setAttribute('aria-hidden','true');el.appendChild(cv);
+  const text=document.createElement('div'),type=document.createElement('small'),name=document.createElement('b'),status=document.createElement('span');
+  type.textContent=brief?(row.kind==='target'?'제거할 사람':'가져올 물건'):row.status;name.textContent=row.name;status.textContent=brief?row.verb+' · '+row.where:row.complete?'✓ 완료':row.status;
+  text.append(type,name);if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
+}
+function refreshMissionIdentityArt(){
+  const roots=[$('missionIdentity'),!$('brief').hidden&&$('brIdentity')].filter(el=>el&&!el.hidden);
+  for(const cv of roots.flatMap(el=>[...el.querySelectorAll('canvas[data-mission-art]:not([data-ready])')])){
+    const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
+    if(cv.dataset.missionArt==='target'){
+      const portrait=w>h?document.createElement('canvas'):cv;if(w>h){portrait.width=portrait.height=h;}
+      if(!drawFace(portrait,{key:cv.dataset.key,col:'#d8dce5'}))continue;
+      if(w>h)c.drawImage(portrait,0,0);
+      // Alongside the face, show the actual clothed actor used in the level.
+      if(w>h){
+        const key=cv.dataset.key,bn=prSplit(key)[1],meta=PR.bodies?.[bn]||PR,anim=meta.anims.idleC?'idleC':'idle',col=meta.anims[anim][0],sh=prSheet(key),ci=Math.floor(col/PR_CH),part=sh&&prPart(sh,ci);
+        if(!part)continue;
+        c.fillStyle='#161c24';c.fillRect(w*.59,0,w*.41,h);c.imageSmoothingEnabled=false;
+        c.drawImage(part,(col-ci*PR_CH)*PR.fr,prDir(Math.PI/2)*PR.fr,PR.fr,PR.fr,w*.50,h*.12,h,h);
+      }
+    }else{
+      if(!atlas.complete||!atlas.naturalWidth)continue;
+      c.fillStyle='#151b23';c.fillRect(0,0,w,h);
+      if(cv.dataset.key==='radio'){
+        const s=Math.min(w,h)*.74/36;c.save();c.translate((w-s*36)/2,(h-s*36)/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.lineWidth=1.8;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(SKILL_SIGILS.radio));c.restore();
+      }else if(cv.dataset.key==='cash'){
+        const s=Math.min(w,h)/64;c.save();c.translate(w/2,h/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.fillStyle='#303c49';c.lineWidth=2;c.fillRect(-22,-12,44,29);c.strokeRect(-22,-12,44,29);c.strokeRect(-10,-21,20,9);c.fillStyle='#c9b68f';c.fillRect(-5,-3,10,9);c.restore();
+      }else{
+        c.imageSmoothingEnabled=false;
+        if(w>h){const s=h*.83/TILE;c.save();c.translate((w-TILE*s)/2,(h-TILE*s)/2);c.scale(s,s);drawFurnArt(c,{t:'safe',x:0,y:0,w:1,h:1,fl:0,seed:0});c.restore();}
+        const sz=Math.min(w,h)*(w>h?.34:.54);blit(c,'it_scroll',w>h?w*.64:(w-sz)/2,w>h?h*.59:(h-sz)/2,sz,sz);
+      }
+    }
+    cv.dataset.ready='1';
+  }
+}
+function syncMissionIdentity(){
+  const el=$('missionIdentity');if(!el)return;
+  const active=mainContract(STAGE)&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
+  const rows=missionIdentities(),signature=JSON.stringify(rows.map(r=>[r.id,r.key,r.art,r.status]));
+  if(hudCache.identity!==signature){el.replaceChildren(...rows.map(r=>makeMissionIdentity(r,false)));hudCache.identity=signature;}
+  refreshMissionIdentityArt();
+}
 // 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]
 function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
@@ -88,7 +145,11 @@ function showBrief(go) {
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
-  $('brTodo').innerHTML = briefTodo().filter(r => r[2] !== '신원 기록' && r[2] !== '이탈').map(([mk, c, t, w]) => `<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
+  const identities=mainContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
+  $('brPurpose').hidden=STAGE.id!=='m2';$('brPurpose').textContent='실장을 제거하고, 그의 장부를 가져온다.';
+  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
+  $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
+  $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
   $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
@@ -154,6 +215,7 @@ function updateHUD(force) {
   if (force) hudCache = {};
   syncAssassinHUD();
   const P = S.player;
+  syncMissionIdentity();
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=(S.cpStored?'저장됨':'이번 실행에 저장됨')+(isTouch?' · 메뉴에서 재시도':' · F9 재시도');} }
   drawWanted();

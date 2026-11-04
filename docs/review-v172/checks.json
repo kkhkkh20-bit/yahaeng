@@ -1,0 +1,287 @@
+{
+  "coreScripts": 69,
+  "allPassed": true,
+  "scripts": [
+    {
+      "path": "tests/rev/r3.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_ability_locks.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_access_evidence.py",
+      "seconds": 11
+    },
+    {
+      "path": "tests/rev/t_ai_evidence.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_assassin_skills.py",
+      "seconds": 12
+    },
+    {
+      "path": "tests/rev/t_btn4.py",
+      "seconds": 24
+    },
+    {
+      "path": "tests/rev/t_building_search.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_camera_cable.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_camera_presentation.py",
+      "seconds": 19
+    },
+    {
+      "path": "tests/rev/t_change.py",
+      "seconds": 9
+    },
+    {
+      "path": "tests/rev/t_choice.py",
+      "seconds": 5
+    },
+    {
+      "path": "tests/rev/t_city.py",
+      "seconds": 24
+    },
+    {
+      "path": "tests/rev/t_combat_policy.py",
+      "seconds": 33
+    },
+    {
+      "path": "tests/rev/t_continuity_review.py",
+      "seconds": 18
+    },
+    {
+      "path": "tests/rev/t_contract_density.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_contract_guidance.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_copy_scenarios.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_cqc.py",
+      "seconds": 20
+    },
+    {
+      "path": "tests/rev/t_crouch_layout.py",
+      "seconds": 11
+    },
+    {
+      "path": "tests/rev/t_dart_intent.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_disguise_ai.py",
+      "seconds": 10
+    },
+    {
+      "path": "tests/rev/t_disguise_lighting.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_effects_motion.py",
+      "seconds": 5
+    },
+    {
+      "path": "tests/rev/t_electric_skill.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_environment_targets.py",
+      "seconds": 9
+    },
+    {
+      "path": "tests/rev/t_fac.py",
+      "seconds": 18
+    },
+    {
+      "path": "tests/rev/t_graphite_finish.py",
+      "seconds": 17
+    },
+    {
+      "path": "tests/rev/t_hanging_controls.py",
+      "seconds": 16
+    },
+    {
+      "path": "tests/rev/t_height_cues.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_hud_loadout.py",
+      "seconds": 18
+    },
+    {
+      "path": "tests/rev/t_hud_systems.py",
+      "seconds": 15
+    },
+    {
+      "path": "tests/rev/t_input_boundaries.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_instig.py",
+      "seconds": 17
+    },
+    {
+      "path": "tests/rev/t_interaction_flow.py",
+      "seconds": 21
+    },
+    {
+      "path": "tests/rev/t_interface.py",
+      "seconds": 14
+    },
+    {
+      "path": "tests/rev/t_ko.py",
+      "seconds": 26
+    },
+    {
+      "path": "tests/rev/t_learning_route.py",
+      "seconds": 11
+    },
+    {
+      "path": "tests/rev/t_m1x.py",
+      "seconds": 10
+    },
+    {
+      "path": "tests/rev/t_mission_flow.py",
+      "seconds": 36
+    },
+    {
+      "path": "tests/rev/t_mission_identity.py",
+      "seconds": 24
+    },
+    {
+      "path": "tests/rev/t_mission_progress.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_mobile_controls.py",
+      "seconds": 26
+    },
+    {
+      "path": "tests/rev/t_mobile_flow.py",
+      "seconds": 22
+    },
+    {
+      "path": "tests/rev/t_multilevel_pursuit.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_patrol_motion.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_pixelfx_bush.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_recovery_buffer.py",
+      "seconds": 13
+    },
+    {
+      "path": "tests/rev/t_rel.py",
+      "seconds": 46
+    },
+    {
+      "path": "tests/rev/t_replay_loop.py",
+      "seconds": 9
+    },
+    {
+      "path": "tests/rev/t_review_fixes.py",
+      "seconds": 9
+    },
+    {
+      "path": "tests/rev/t_review_gameflow.py",
+      "seconds": 8
+    },
+    {
+      "path": "tests/rev/t_roof_routes.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_scene_layers.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_skill_diagram.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_skill_rewards_range.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_skill_tree.py",
+      "seconds": 5
+    },
+    {
+      "path": "tests/rev/t_sprite_ownership.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_stair_geometry.py",
+      "seconds": 4
+    },
+    {
+      "path": "tests/rev/t_stair_traffic.py",
+      "seconds": 6
+    },
+    {
+      "path": "tests/rev/t_stair_witness.py",
+      "seconds": 28
+    },
+    {
+      "path": "tests/rev/t_target_body.py",
+      "seconds": 3
+    },
+    {
+      "path": "tests/rev/t_tut.py",
+      "seconds": 98
+    },
+    {
+      "path": "tests/rev/t_ui2.py",
+      "seconds": 9
+    },
+    {
+      "path": "tests/rev/t_v33.py",
+      "seconds": 17
+    },
+    {
+      "path": "tests/rev/t_world_alignment.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_world_boundary.py",
+      "seconds": 17
+    },
+    {
+      "path": "tests/rev/t_world_realism.py",
+      "seconds": 7
+    },
+    {
+      "path": "tests/rev/t_zone.py",
+      "seconds": 15
+    },
+    {
+      "path": "tests/mis/tm1.py",
+      "seconds": 69
+    }
+  ],
+  "buildPipelineTests": 7,
+  "reachValidator": true,
+  "spriteOwnership": true,
+  "command": "PYTHONPATH=/workspace/work/yahaeng-input-review:/workspace/yahaeng/tests/tutorial python3 tools/run_tests.py --fast --quick --no-build",
+  "extendedClarityDiagnostic": "The optional t_play_clarity script fails the same attack/grab fixture on deployed baseline v171; excluded from the passing core report."
+}

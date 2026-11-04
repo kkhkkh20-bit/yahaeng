@@ -27,14 +27,9 @@ function bodyRecoveryGoal(){
   return h?{text:P.carrying.ko?'기절자 숨길 곳으로 이동':'몸을 숨길 곳으로 이동',where:hideName(h),x:h.x,y:h.y,fl:flOf(h),z:h.z||0,recovery:true}:null;
 }
 function actionFlowGoal(){
-  const recovery=bodyRecoveryGoal();if(recovery)return recovery;
-  const P=S.player;
-  const e=S.actionEntry,d=STAGE.entryRoute;if(!e||!d||['done','skipped'].includes(e.phase))return null;
-  const g=S.guards.find(g=>g.id===d.guard),c=S.corpses.find(c=>c.guardId===d.guard);
-  if(e.phase==='shade')return{text:'웅크려 서쪽 풀숲으로 이동',where:'서쪽 골목',x:tc(d.bush[0]),y:tc(d.bush[1]),fl:0};
-  if(c&&!c.stripped&&!P.disguise)return{text:'순찰 옷으로 갈아입기',where:isTouch?'몸 옆에서 옷 갈아입기':'몸 옆에서 Y · 옷 갈아입기',x:c.x,y:c.y,fl:flOf(c)};
-  if(c)return{text:'쓰러진 순찰을 풀숲에 숨기기',where:'몸 옆에서 행동',x:c.x,y:c.y,fl:flOf(c)};
-  return g?{text:'서쪽 순찰 · 등 뒤에 바짝 접근',where:'짧게 기절 · 길게 처치',x:g.x,y:g.y,fl:flOf(g),z:g.z||0}:null;
+  // Choosing to carry a body needs recovery guidance. A living patrol, an
+  // available uniform or an untouched body is never a mandatory contract goal.
+  return bodyRecoveryGoal();
 }
 function fieldSkillNotice(id,text){
   if(S.skillNotices[id]||S.t-(S.skillNoticeAt??-20)<8)return false;
@@ -46,7 +41,7 @@ function updateActionFlow(){
   if(e&&d&&!['done','skipped'].includes(e.phase)){
     const c=S.corpses.find(c=>c.guardId===d.guard);
     if(c?.hidden||c?.stashed){e.phase='done';S.cpWant=true;}
-    else if(c)e.phase='body';
+    else if(c){e.phase='body';if(!S.entryMeansNoticed){S.entryMeansNoticed=true;toast('경비는 의뢰 대상이 아니다 · 옷은 사무동 진입에 이용할 수 있다',4);}}
     else if(!P.carrying&&(P.x<tc(d.bounds[0])-TILE||P.x>tc(d.bounds[2])||P.y<tc(d.bounds[1])||P.y>tc(d.bounds[3])))e.phase='skipped';
     else if(P.hidden&&P.mode==='sneak'&&dist(P.x,P.y,tc(d.bush[0]),tc(d.bush[1]))<90)e.phase='approach';
   }

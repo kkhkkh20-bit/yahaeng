@@ -534,7 +534,7 @@ __INTERFACE_CSS__
 <div id="hud" hidden>
   <button id="btnPause" class="hud-menu" type="button" title="메뉴 (Esc)">메뉴</button>
   <div class="top">
-    <div class="obj"><small id="objTitle">의뢰 목표</small><span id="objective"></span></div>
+    <div class="obj"><small id="objTitle">의뢰 목표</small><div id="missionIdentity" hidden aria-label="의뢰 완료 조건"></div><span id="objective"></span></div>
     <div class="status">
             <span class="chip layer" id="layerLbl" data-l="out">지상</span>
       <span class="chip" id="modeLbl">걷기</span>
@@ -715,7 +715,10 @@ __INTERFACE_CSS__
     <div class="br-info">
       <span class="fx-sub" id="brSub"></span>
       <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <p id="brPurpose" class="br-purpose" hidden></p>
+      <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
+      <p class="br-exit" id="brOutcome" hidden></p>
       <details class="br-details" id="brDetails"><summary>현장 정보</summary>
         <div class="br-radio" id="brRadio"><b>현장 정보</b><p id="brLine"></p></div>
         <div id="brChBox"><small class="br-chl">추가 목표 · 선택</small><ul class="br-chips" id="brCh"></ul></div>

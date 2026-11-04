@@ -1,0 +1,50 @@
+[
+  {
+    "touch": false,
+    "hp": 3,
+    "seconds": 38.67666666666754,
+    "code": true,
+    "corpses": 0,
+    "disguise": null,
+    "goal": "사무동 1층 금고에서 장부 회수",
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0
+    },
+    "identities": "처치 대상\n클럽 실장\n회수 물품\n장부",
+    "errors": [],
+    "method": "Native route from the fresh first contract to public intel, leaving every guard alone.\nStepped simulation clock with all actors/security active; no state or inventory overrides."
+  },
+  {
+    "touch": true,
+    "hp": 3,
+    "seconds": 38.67666666666754,
+    "code": true,
+    "corpses": 0,
+    "disguise": null,
+    "goal": "사무동 1층 금고에서 장부 회수",
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0
+    },
+    "identities": "처치 대상\n클럽 실장\n회수 물품\n장부",
+    "errors": [],
+    "method": "Native route from the fresh first contract to public intel, leaving every guard alone.\nStepped simulation clock with all actors/security active; no state or inventory overrides."
+  }
+]

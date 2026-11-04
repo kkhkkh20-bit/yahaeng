@@ -1,0 +1,158 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "layout": {
+      "list": [
+        {
+          "x": 40,
+          "y": 55,
+          "right": 233,
+          "bottom": 89,
+          "width": 193,
+          "height": 34,
+          "scroll": 193
+        },
+        {
+          "x": 245,
+          "y": 55,
+          "right": 438,
+          "bottom": 89,
+          "width": 193,
+          "height": 34,
+          "scroll": 193
+        }
+      ],
+      "overlap": false,
+      "overflow": false,
+      "goal": "장부의 단서 · 야시장에서 금고 번호 엿듣기"
+    },
+    "controlledCases": [
+      "KO remains incomplete",
+      "only real target and item complete the contract",
+      "resume rebuilds correct identities",
+      "lessons keep their own flow"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "layout": {
+      "list": [
+        {
+          "x": 24,
+          "y": 40.5,
+          "right": 150,
+          "bottom": 68.1875,
+          "width": 126,
+          "height": 27.6875,
+          "scroll": 126
+        },
+        {
+          "x": 157,
+          "y": 40.5,
+          "right": 283,
+          "bottom": 68.1875,
+          "width": 126,
+          "height": 27.6875,
+          "scroll": 126
+        }
+      ],
+      "overlap": false,
+      "overflow": false,
+      "goal": "장부의 단서 · 야시장에서 금고 번호 엿듣기"
+    },
+    "controlledCases": [
+      "KO remains incomplete",
+      "only real target and item complete the contract",
+      "resume rebuilds correct identities",
+      "lessons keep their own flow"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "layout": {
+      "list": [
+        {
+          "x": 32,
+          "y": 42,
+          "right": 202,
+          "bottom": 71.09375,
+          "width": 170,
+          "height": 29.09375,
+          "scroll": 170
+        },
+        {
+          "x": 214,
+          "y": 42,
+          "right": 384,
+          "bottom": 71.09375,
+          "width": 170,
+          "height": 29.09375,
+          "scroll": 170
+        }
+      ],
+      "overlap": false,
+      "overflow": false,
+      "goal": "장부의 단서 · 야시장에서 금고 번호 엿듣기"
+    },
+    "controlledCases": [
+      "KO remains incomplete",
+      "only real target and item complete the contract",
+      "resume rebuilds correct identities",
+      "lessons keep their own flow"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      740
+    ],
+    "touch": true,
+    "layout": {
+      "list": [
+        {
+          "x": 24,
+          "y": 40.5,
+          "right": 115,
+          "bottom": 68.1875,
+          "width": 91,
+          "height": 27.6875,
+          "scroll": 91
+        },
+        {
+          "x": 122,
+          "y": 40.5,
+          "right": 213,
+          "bottom": 68.1875,
+          "width": 91,
+          "height": 27.6875,
+          "scroll": 91
+        }
+      ],
+      "overlap": false,
+      "overflow": false,
+      "goal": "장부의 단서 · 야시장에서 금고 번호 엿듣기"
+    },
+    "controlledCases": [
+      "KO remains incomplete",
+      "only real target and item complete the contract",
+      "resume rebuilds correct identities",
+      "lessons keep their own flow"
+    ],
+    "errors": []
+  }
+]

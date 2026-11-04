@@ -24,7 +24,8 @@ function actorTextBlocks() {
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
   const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?(g.viaTo?.z?`${g.viaTo.z}층 옥상 입구`:`${(g.viaTo?.fl??g.fl??0)+1}층 입구`):g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
-  return [place, meters+'m'].filter(Boolean).join(' · ');
+  const identity=!g.via&&!g.exit&&!g.shelter&&(g.marker||(g.g?.target?targetName(g.g)+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):''));
+  return [identity||place, meters+'m'].filter(Boolean).join(' · ');
 }
 function goalViewport(){
   const bottom=Math.max(80,isTouch?Math.min(H-24,touchPlayFrame().bottom-32):H-70);
