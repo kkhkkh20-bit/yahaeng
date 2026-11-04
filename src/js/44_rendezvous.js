@@ -40,7 +40,8 @@ function finishRendezvous(phase) {
   const r=S.rendezvous,g=rendezvousTarget();if(!r)return;
   // Cancel this appointment only; an alarm, other detour or remembered face survives.
   if(g&&r.waypoint){const i=g.route.indexOf(r.waypoint);if(i>=0){g.route.splice(i,1);if(g.sched){g.sched=g.sched.slice();g.sched.splice(i,1);}if(g.ri>i)g.ri--;g.ri=g.route.length?g.ri%g.route.length:0;if(g.state==='PATROL'){g.path=null;g.wait=0;}}}
-  r.phase=phase;r.cooldown=12;r.waypoint=null;S.goalNavCache=null;
+  r.phase=phase;r.finishedAt=S.t;r.cooldown=12;r.waypoint=null;S.goalNavCache=null;
+  if(phase==='interrupted')toast('실장이 약속을 중단했다 · 조용해진 뒤 재통화하거나 직접 접근',3,'warn');
 }
 function updateRendezvous(dt) {
   const r=rendezvousState();if(!r)return;

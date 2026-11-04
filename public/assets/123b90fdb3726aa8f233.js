@@ -172,16 +172,16 @@ const STAGES = [
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '실장은 클럽 VIP룸과 홀을 오간다. 장부는 옆 사무동 1층 금고에 있다. 거리와 야시장, 클럽 홀은 손님으로 걸어 다닐 수 있다. 경비를 처리할 필요는 없다. 직원 전용 구역에 들어갈 때 변장이나 다른 진입로를 이용한다. 야시장 대화에서 금고 번호를 알아내고 장부를 회수하면 사무동 내선으로 실장을 불러낼 수 있다. 공중화장실의 직원 옷, 술병에 넣는 구토제, 간판 사고도 선택할 수 있다. CCTV는 공개 구역의 평범한 손님을 신고하지 않는다. 녹화됐다면 사무동 2층 관리실에서 신원 기록을 지운다.',
+  brief: '실장은 클럽 앞에서 담배를 피운 뒤 홀로 들어간다. 공개 구역에서는 손님처럼 걸어 다닐 수 있다. 실장을 먼저 처리하면 그가 지닌 금고 번호 메모로 사무동 1층의 장부를 찾는다. 장부를 먼저 회수해 내선으로 실장을 불러내도 된다. 공중화장실의 직원 옷과 약국의 구토제, 클럽 옥상의 간판은 다른 공략에 쓸 수 있다. 감시 시야 안에서 훔치거나 공격하면 발각될 수 있다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
-  W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
+  W: 56, H: 36, start: [18, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
   build(m) {
     m.fill(0, 0, 55, 35, ','); for (let x = 0; x < 56; x++) m.set(x, 0, '#');
     // 바닥 먼저: 큰길(보도 19·24, 차도 20~23) · 사무동 앞마당 · 야시장 · 네온 골목 · 동쪽 샛길 · 빌라 앞마당
     m.fill(0, 20, 55, 23, '.'); m.fill(0, 19, 55, 19, '='); m.fill(0, 24, 55, 24, '=');
     m.fill(1, 14, 12, 18, '=');
-    m.fill(22, 15, 37, 17, '='); m.fill(22, 18, 43, 18, '#'); m.set(29, 18, '='); m.set(30, 18, '=');   // 네온 골목: 남쪽 담에 두 칸 입구, 동쪽은 샛길로 트였다
+    m.fill(22, 15, 37, 17, '='); m.fill(22, 18, 43, 18, '#'); m.fill(25, 18, 31, 18, '=');   // 클럽 앞 보행 진입로를 넓히고 양옆 서비스 골목은 담으로 구분
     m.fill(13, 18, 21, 18, '#'); m.set(17, 18, '=');                                                     // 야시장 남쪽 담: 가운데 한 칸으로 큰길과 이어진다
     // 북쪽 줄: 사무동 · 야시장 · 클럽 · 공중화장실 · 빌라
     m.villa(2, 4, 12, 13, 3, { kind: 'shop', use: ['vault', 'office', 'office'], signs: ['', '', ''], plate: '사무동', name: '사무동', back: true });   // 0
@@ -197,6 +197,8 @@ const STAGES = [
     [[14, 4], [17, 4], [14, 10], [18, 7], [16, 13], [19, 12]].forEach(([x, y], i) => m.tent(x, y, 'RBGYRB'[i]));
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
     m.fill(21, 6, 21, 7, 'U'); m.set(21, 8, ',');                                                     // 클럽 측면 적치물. 옥상 접근은 직원 계단으로
+    // A screened smoking bay: its western entrance stays walkable.
+    m.fill(25,15,25,16,'C');m.fill(29,15,29,16,'C');m.fill(27,16,28,16,'C');
     m.many('B',[[1,18],[1,17],[3,18]]);
     // A readable pocket for the first disguise/cleanup, screened from the front sentry.
     m.fill(5,16,6,16,'C');m.set(5,18,'B');
@@ -224,16 +226,17 @@ const STAGES = [
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
           { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} },
-          { id:'spareUniform',name:'놓고 간 직원 옷',outfit:'waiter',at:[39,7] }],
+          { id:'spareUniform',name:'놓고 간 직원 옷',outfit:'waiter',at:[39,7] },
+          { id:'officeCoat',name:'예비 경비 재킷',outfit:'crew',at:[9,16] }],
   uses: [{ need: 'emetic', at: [29, 10], surface:{b:1,t:'bar',u:.3}, label: '실장 술병에 구토제 넣기', permit: 'waiter', done: '실장 술병에 구토제를 넣었다',
            act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } },
          { need:'laxative',at:[5,29],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
            done:'양념통에 설사약을 넣었다',act:S=>{S.mealDosed=true;} }],
   intel: [
-    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 25, first: 4, lines: [[0, '장부 가져왔어?'], [1, '사무동 금고에 있어. 번호는 0417이야.']] },
-    { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 28, first: 5,
+    { g: [9, 10], key: 1, gives: 'code', learn: '사무동 금고 비밀번호 0417', every: 12, first: 2, lines: [[0, '장부 가져왔어?'], [1, '사무동 금고에 있어. 번호는 0417이야.']] },
+    { g: [14, 15], key: 1, gives: 'emetic', learn: '실장은 속이 약하다 — 구토제를 타면 배탈이 나 골목 공중화장실로 향한다', every: 16, first: 3,
       lines: [[0, '실장님 술병은 따로 챙겨 둬.'], [1, '알았어. 속 안 좋다고 공중화장실 다녀오시던데.']] },
-    { g: [2, 3], key: 1, gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', every: 26, first: 8,
+    { g: [2, 3], key: 1, gives: 'sign', learn: '실장은 가끔 클럽 앞 간판 밑에 나와 담배를 피운다', every: 18, first: 2,
       lines: [[0, '실장님 나가시면 넌 입구 지켜. 담배는 혼자 피우신대.'], [1, '간판 아래는 비워 둬. 고정대 수리 아직 안 됐어.']] }
   ],
   // 붙잡은 조직원 심문: 아직 모르는 것부터 하나씩 분다
@@ -246,20 +249,20 @@ const STAGES = [
     { id: 'sign', targetTag: 'vip', name: '간판 밑 담배', reveal: (S, h) => h.knows('간판') || (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 200),
       steps: [{ text: '클럽 옥상의 간판으로 이동', at: [27, 12, 0], done: (S, h) => (S.player.z > 0 && h.dist(S.player.x, S.player.y, h.tc(27), h.tc(12)) < 160) || h.eliminated('vip') },
               { text: '실장이 간판 아래에 오면 고정 풀기', at: [27, 15, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip') || S.vipPlan?.phase === 'done', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
+    { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip') || S.vipPlan?.phase === 'done', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0],
       steps: [{ text: '약국에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
               { text: '직원 옷 구하기 · 공중화장실 또는 직원', at: [39, 7, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '실장 술병에 구토제 넣기', at: [29, 10, 0], done: S => !!S.usesDone[0] },
               { text: '공중화장실로 이동해 실장 기다리기', at: [39, 7, 0], done: (S, h) => !!S.vipPlan?.reachedToilet || S.vipPlan?.phase==='done' || h.eliminated('vip') },
               { text: '화장실 문 닫아 경호원 시야 가리기', at: [40, 8, 0], done: (S,h) => S.doors.some(d=>d.tx===40&&d.ty===8&&d.locked)||h.eliminated('vip') },
               { text: '혼자 있는 실장 등 뒤에서 공격 길게', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호'),
+    { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호') || !!S.player.keys?.code,
       steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
               { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
               { text: 'VIP룸에 있는 실장 처치하기', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
   challenges: ['unrecorded', 'accident', 'intel'], legacyChallenges: ['purge','streak3','clean','nobody'],
-  entries: [{ name: '서쪽 큰길', desc: '기본 출발', at: [0, 21] }, { name: '빌라 옥상', desc: '별 3개 — 옥상에서 시작', at: [48, 6], z: 2, need: 3 },
+  entries: [{ name: '클럽 앞 큰길', desc: '기본 출발 · 공개 구역에서 관찰', at: [18, 21] }, { name: '빌라 옥상', desc: '별 3개 — 옥상에서 시작', at: [48, 6], z: 2, need: 3 },
             { name: '클럽 직원', desc: '별 4개 — 직원 옷을 입고 뒷골목에서', at: [40, 2], need: 4, outfit: 'waiter' }],
   keyItems: [{ key: 'blue', b: 0, fl: 0, at: 'VC' }],
   well: 'manhole', kunai: 2, coins: 3, reinf: [55, 21],
@@ -271,10 +274,10 @@ const STAGES = [
   radios: [1, 3, 6, 9, 27],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
     // 0 표적: 클럽 실장. VIP룸 → 홀 바에서 양주 → 클럽 앞 간판 밑에서 담배
-    { kind: 't', target: true, tag: 'vip', schedKey: 'sign', sched: [{ at: [25, 6], stay: 18, name: 'VIP룸', act: '양주' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '양주' }, { at: [27, 15], stay: 16, name: '클럽 앞 간판 밑', act: '담배' }] },
+    { kind: 't', target: true, tag: 'vip', key:'code', startPause:24, schedKey: 'sign', sched: [{ at: [27, 15], stay: 20, name: '클럽 앞 간판 밑', act: '담배' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '양주' }, { at: [25, 6], stay: 18, name: 'VIP룸', act: '양주' }] },
     { kind: 'g2', b: 1, fl: 0, at: 'VD', post: 90, elite: true },                     // 1 VIP룸 앞문 경호 (얼굴을 안다 — 변장도 알아본다)
     { kind: 'g1', tag: 'bouncer', at: [24, 16], post: 90 },                            // 2 클럽 문지기
-    { kind: 'g2', route: [[23, 16, 6], [36, 16, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
+    { kind: 'g2', route: [[23, 17, 6], [36, 17, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
     { kind: 'g1', smoker: true, route: [[24, 2, 5], [26, 2, 5]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
     { kind: 'g2', b: 0, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
@@ -2896,6 +2899,40 @@ function saveBest(id, rank) {
 }
 
 
+// Successful approaches are a collection, independent of skill currency and rank.
+const VIP_APPROACHES=[
+  {id:'smoke',name:'흡연 동선 매복',hint:'클럽 앞에서 경호원이 물러나는 순간을 살핀다.'},
+  {id:'emetic',name:'화장실 유인',hint:'약국의 구토제와 공중화장실의 직원 옷으로 술병에 접근한다.'},
+  {id:'sign',name:'간판 사고',hint:'클럽 옥상에서 실장이 담배 피우는 자리 위의 간판을 살핀다.'},
+  {id:'meeting',name:'장부로 불러낸 매복',hint:'장부를 먼저 챙긴 뒤 사무동 내선으로 실장을 혼자 불러낸다.'}
+];
+function vipApproachRecords(record=loadCh()){
+  const raw=record.m2?._approaches||{},out={};
+  for(const d of VIP_APPROACHES){const v=raw[d.id];if(v&&Number.isFinite(v.best)&&v.best>=0&&v.clears>0)out[d.id]={best:v.best,clears:Math.min(999,Math.floor(v.clears)),clean:!!v.clean};}
+  return out;
+}
+function nextVipApproach(record=loadCh()){
+  const owned=vipApproachRecords(record);return VIP_APPROACHES.find(d=>!owned[d.id])||null;
+}
+function recordVipApproach(record){
+  if(STAGE.id!=='m2'||S.vipReceiptSaved||!S.exitOpen||!S.items.every(i=>i.got)||!S.guards.some(g=>g.tag==='vip'&&targetEliminated(g))||evidencePending())return null;
+  const d=VIP_APPROACHES.find(d=>d.name===S.missionApproach);
+  if(!d){S.vipReceiptSaved=true;return S.vipReceipt={id:null,name:S.missionApproach||'자유 접근',fresh:false,count:Object.keys(vipApproachRecords(record)).length};}
+  const rows=vipApproachRecords(record),old=rows[d.id],time=Math.max(0,Math.floor(S.t));
+  rows[d.id]={clears:Math.min(999,(old?.clears||0)+1),best:old?Math.min(old.best,time):time,clean:!!old?.clean||!S.stats.detected&&!S.stats.alarms&&!S.stats.extraKills&&!S.stats.bodies&&!(S.stats.witness||0)&&!(S.stats.camEver||0)};
+  (record.m2||(record.m2={}))._approaches=rows;S.vipReceiptSaved=true;
+  return S.vipReceipt={id:d.id,name:d.name,fresh:!old,count:Object.keys(rows).length};
+}
+function vipPassportHTML(){
+  if(STAGE.id!=='m2'||!S.vipReceipt)return '';
+  const owned=vipApproachRecords(),next=nextVipApproach();
+  return '<div class="vip-passport"><b>특별 공략 기록 · '+Object.keys(owned).length+'/'+VIP_APPROACHES.length+'</b><div class="vip-methods">'+VIP_APPROACHES.map(d=>'<span class="'+(owned[d.id]?'earned':'')+'">'+(owned[d.id]?'✓ ':'○ ')+d.name+(owned[d.id]?'<small>'+mmss(owned[d.id].best)+' · '+(owned[d.id].clean?'은밀 완료':'흔적 줄이기')+'</small>':'')+'</span>').join('')+'</div>'+(next?'<p>다음 도전 · '+next.name+'<small>'+next.hint+'</small></p>':'<p>네 가지 공략 완료 · 같은 방법에서 발각과 흔적을 줄여 보자.</p>')+'</div>';
+}
+function retryContract(){
+  const intent=STAGE.id==='m2'?(S.vipReceipt?nextVipApproach()?.id:S.vipIntent):null;
+  start(STAGE_I,true);if(intent)S.vipIntent=intent;skipDialog();
+}
+
 // Achievement flags are the receipt: replaying a cleared goal cannot mint points.
 const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched'};
 function skillRewardRows(stage,record=loadCh()){
@@ -3517,7 +3554,7 @@ function makeGuard(d, i) {
     id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
-    post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.route ? 0 : 999, waitBase: 0,
+    post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.startPause ?? (d.route ? 0 : 999), waitBase: 0,
     carryTo: d.carryTo != null ? d.carryTo : null, child: !!d.child, parent: d.parent || null, tag: d.tag || null, body: d.child ? 'kid' : d.body !== undefined ? d.body : d.kind === 'civ' ? autoBody(i) : null, sched: d.sched ? d.sched.slice() : null, schedKey: d.schedKey || null, outfit: d.outfit || null, enforcer: !!d.enforcer, state: 'PATROL', meter: 0, poi: null, lostT: 0, still: !!d.still, glanceT: d.elite ? rnd(5, 9) : rnd(12, 24), glance: 0, glanceA: 0, stepT: 0, icon: null, iconT: 0, repath: 0, seen: false
   };
 }
@@ -4476,11 +4513,11 @@ function accessReadout(at=S.player){
   if(permitted(zi))return{zi,allowed:true,text:permitName(zi.allow)+' · 통행 허용'};
   return{zi,allowed:false,text:zi.secure||!zi.allow.length?'보안구역 · 복장으로 통행 불가':uniform+' · 통행 불가',need:zi.allow.map(outfitName).join(' / ')};
 }
-const ILLEGAL_WORK=new Set(['loot','pick','carry','dress','clean','camCable','camroom','window','vjump','ventIn']);
+const ILLEGAL_WORK=new Set(['loot','pick','carry','dress','clean','camCable','camroom','window','vjump','ventIn','kill','kill2','finish','grab']);
 function workRiskReadout(action){
   const kind=action?.k==='pickup'&&action.p?.outfit?'dress':action?.k;
   if(!ILLEGAL_WORK.has(kind))return null;
-  const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입'})[kind];
+  const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입',kill:'제압·처치',kill2:'제압·처치',finish:'처치',grab:'붙잡기'})[kind];
   const camera=S.cams.find(c=>!c.search&&cameraAssessment(c,true).detectable);
   if(camera)return{kind:'camera',camera,text:verb+' → CCTV 녹화 위험 · 시야 밖에서 작업'};
   const witness=S.guards.find(g=>g.rawSightAt!=null&&S.t-g.rawSightAt>=0&&S.t-g.rawSightAt<.15&&g.rawSeen&&!g.dog&&!g.doomed&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state));
@@ -4491,7 +4528,7 @@ function syncSecurityReadout(){
   const el=$('accessLbl'),risk=$('actionRiskLbl');if(!el||!risk)return;
   const active=!!STAGE.zones&&!STAGE.firstSteps;el.hidden=!active;risk.hidden=true;if(!active)return;
   const access=accessReadout();el.textContent=access.text;el.dataset.access=access.allowed?'allowed':'denied';el.title=access.need?'필요한 복장: '+access.need:access.allowed?'통행 권한이다. 훔치기와 신원 확인은 별도 판정한다.':'이 구역의 출입 권한이 없다.';
-  const action=envAction(),work=workRiskReadout(action);
+  const action=envAction(),attack=attackAction(),work=workRiskReadout(ILLEGAL_WORK.has(attack.k)&&!attack.busy?attack:action);
   if(work){risk.hidden=false;risk.textContent=work.text;risk.dataset.risk=work.kind;}
   else if(['up','fdown'].includes(action.k)&&action.l?.kind==='fstair'){
     const l=action.l,fl=action.k==='up'?l.tfl:l.bfl,entry=accessReadout({x:l.x,y:l.y,fl,z:0});
@@ -6741,7 +6778,8 @@ function recordMissionOutcome() {
   if(STAGE.id!=='m2' || S.missionApproach)return;
   const g=npc('vip');if(!g || !targetEliminated(g))return;
   const c=S.corpses.find(c=>c.target);
-  S.missionApproach=c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
+  const exact=VIP_APPROACHES.find(d=>d.id===c?.vipApproach);
+  S.missionApproach=exact?exact.name:c?.vipApproach==='backdoor'?'VIP룸 뒷문 접근':c?.vipApproach==='direct'?'직접 접근':c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
     c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.rendezvous?.calls&&S.rendezvous.waiting>0&&c&&dist(c.x,c.y,S.rendezvous.room.x,S.rendezvous.room.y)<120?'장부로 불러낸 매복':S.vipBackDoorUsed?'VIP룸 뒷문 접근':c&&S.vipSmokingSeen&&inRect(c,[25,15,29,16,0])?'흡연 동선 매복':'직접 접근';
 }
 function serviceCell(tx,ty,fl) {
@@ -6820,7 +6858,7 @@ function syncMissionTracking(){
   if(S.storyTrackManual&&!trackedStory()){S.storyTrackManual=false;S.storyTrack=null;}
 }
 function selectAutoGoal(){
-  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;
+  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;S.vipIntent=null;
   hudCache.objH=null;renderMissionGoals();
 }
 function selectMissionGoal(id) {
@@ -6927,6 +6965,53 @@ function updateVipPlan(dt) {
   if (canObserveTarget(g)) toast('실장이 술을 마셨다 — 화장실로 향한다',2.6,'good');
 }
 
+// The public club is the first observation point. Actual actions, rather than a
+// forced checklist, decide whether the player pursues the target or ledger first.
+function vipContractGoal(){
+  const P=S.player,g=npc('vip'),item=S.items[0];if(!g)return null;
+  const dead=targetEliminated(g),r=rendezvousState();
+  if(!dead){
+    if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
+    const approach=missionApproachGoal();if(approach)return{...approach,routeGuide:true};
+    if(!S.goalManual&&S.vipIntent==='emetic'&&!S.usesDone[0]&&P.item?.id!=='emetic'){
+      const p=S.props.find(p=>p.id==='emetic');if(p&&!p.taken)return{...p,text:'화장실 유인 · 약국에서 구토제 챙기기',where:'공개 구역 · 공중화장실에 직원 옷',routeGuide:true};
+    }
+    if(!S.goalManual&&S.vipIntent==='sign'){
+      const trap=S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used);if(trap)return{...signFixture(trap),text:'간판 사고 · 클럽 옥상으로 접근',where:'직원 복도 계단으로 · 직원 옷은 공중화장실',routeGuide:true};
+    }
+    if(item?.got&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
+    const vaultFirst=S.vipIntent==='meeting'||P.keys?.code&&P.x<14*TILE;
+    if(!vaultFirst&&!item?.got){
+      if(!S.vipObserved)return{text:'클럽 앞에서 실장 관찰',where:'공개 구역 · 걸어서 접근 · 장부부터 회수해도 된다',marker:'흡연 구역 입구',x:tc(26),y:16*TILE-6,fl:0,routeGuide:true,area:true};
+      const at=targetKnowledge(g),seen=canObserveTarget(g),smoke=seen&&vipRoutine(g)==='smoke';
+      return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),smoke?'흡연 중 · 경호원은 입구에서 대기':'',at.where].filter(Boolean).join(' · '),routeGuide:true};
+    }
+  }
+  if(item&&!item.got){
+    if(!P.keys?.code&&S.keyDrop?.key==='code')return{...S.keyDrop,text:'실장의 금고 번호 메모 챙기기',where:'가까이 가면 회수 · 장부 금고에 사용',marker:'금고 번호',routeGuide:true};
+    if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'장부의 단서 · 야시장에서 금고 번호 엿듣기',where:dead?'실장 메모 또는 야시장 대화':'장부를 먼저 회수하는 경로 · 공개 구역',marker:'장부 단서',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
+    return{text:'사무동 1층 금고에서 장부 회수',where:P.outfit==='crew'?'감시 시야 밖에서 작업 · 전선 분리는 기술 없이 가능':'사무동 앞 예비 재킷으로 통행 가능 · 작업은 감시 주의',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
+  }
+  if(!dead){const at=targetKnowledge(g);return{...at,g,text:'의뢰: '+missionTargetText(g,at),where:at.where,routeGuide:true};}
+  return null;
+}
+function updateVipContract(){
+  if(STAGE.id!=='m2')return;
+  const g=npc('vip');if(!g)return;
+  if(!S.vipObserved&&!targetEliminated(g)&&canObserveTarget(g)){S.vipObserved=true;S.cpWant=true;}
+  // Upgrade a living target in an old save without moving actors or changing AI.
+  if(S.vipMemoVersion!==1){if(!targetEliminated(g)&&g.state!=='DEAD'&&!S.player.keys?.code&&!g.hasKey)g.hasKey='code';S.vipMemoVersion=1;}
+}
+function vipHitContext(g){
+  if(STAGE.id!=='m2'||g.tag!=='vip')return null;
+  const r=S.rendezvous;
+  if(S.vipPlan?.phase==='sick'&&inRect(g,[39,6,41,7,0]))return 'emetic';
+  const called=r?.calls&&(['travelling','waiting'].includes(r.phase)||['interrupted','left'].includes(r.phase)&&S.t-(r.finishedAt??-99)>=0&&S.t-r.finishedAt<12);
+  if(called&&flOf(g)===r.room.fl&&dist(g.x,g.y,r.room.x,r.room.y)<120)return 'meeting';
+  if(g.state==='PATROL'&&!g.moving&&g.wait>0&&schedNow(g)?.cur?.act==='담배'&&inRect(g,[25,15,29,16,0]))return 'smoke';
+  return S.vipBackDoorUsed&&inRect(g,[23,5,32,7,0])?'backdoor':'direct';
+}
+
 // Contextual help in the existing objective. This never gates actions or victory.
 function openingGoal(){
   if(!STAGE.openingContract)return null;
@@ -6957,20 +7042,7 @@ function contractRouteGoal(){
     const it=S.items[0];if(!it||it.got)return null;
     return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
   }
-  if(STAGE.id==='m2'){
-    const P=S.player,vip=npc('vip'),item=S.items[0];
-    if(item&&!item.got){
-      if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'장부의 단서 · 야시장에서 금고 번호 엿듣기',where:'공개 구역 · 경비를 피해 걸어서 갈 수 있다',marker:'장부 단서',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
-      return{text:'사무동 1층 금고에서 장부 회수',where:'직원 전용 구역 · 변장이나 다른 진입로 이용',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
-    }
-    if(vip&&!targetEliminated(vip)){
-      const r=rendezvousState();
-      if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
-      if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
-      const at=targetKnowledge(vip);return{...at,g:vip,id:'target:'+vip.id,text:'의뢰: '+missionTargetText(vip,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};
-    }
-    return null;
-  }
+  if(STAGE.id==='m2')return vipContractGoal();
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
   const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
@@ -7036,7 +7108,8 @@ function finishRendezvous(phase) {
   const r=S.rendezvous,g=rendezvousTarget();if(!r)return;
   // Cancel this appointment only; an alarm, other detour or remembered face survives.
   if(g&&r.waypoint){const i=g.route.indexOf(r.waypoint);if(i>=0){g.route.splice(i,1);if(g.sched){g.sched=g.sched.slice();g.sched.splice(i,1);}if(g.ri>i)g.ri--;g.ri=g.route.length?g.ri%g.route.length:0;if(g.state==='PATROL'){g.path=null;g.wait=0;}}}
-  r.phase=phase;r.cooldown=12;r.waypoint=null;S.goalNavCache=null;
+  r.phase=phase;r.finishedAt=S.t;r.cooldown=12;r.waypoint=null;S.goalNavCache=null;
+  if(phase==='interrupted')toast('실장이 약속을 중단했다 · 조용해진 뒤 재통화하거나 직접 접근',3,'warn');
 }
 function updateRendezvous(dt) {
   const r=rendezvousState();if(!r)return;
@@ -10651,6 +10724,7 @@ const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
+  const vipApproach=vipHitContext(g);
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   const assailantLook = intent?.assailantLook !== undefined ? intent.assailantLook : witnessedAssailant(g);
   g.unconscious = true; logEv('ko', g.x, g.y);
@@ -10658,7 +10732,7 @@ function koPerson(g, mode, where, intent, quiet) {
   facWitness(g); cityVictim(g);
   const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
-  S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
+  c.vipApproach=vipApproach;S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
   noise(g.x, g.y, quiet?12:30, 'ko', flOf(g),g.z||0);
@@ -10766,6 +10840,7 @@ function execCaptive(ko) {
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
+  const vipApproach=vipHitContext(g);
   if (g.child) return;
   const intent = g.takedownIntent; delete g.takedownIntent;
   if (S.koNext || (intent && !intent.lethal) || (!S.lethalNext && (g.civ || koDefault(g)))) { S.lethalNext = false; S.koNext = false; sfx('stingerKO'); return koPerson(g, mode, where, intent, quiet); }
@@ -10783,7 +10858,7 @@ function killGuard(g, mode, where, quiet) {
   }
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
-  S.corpses.push(c);
+  c.vipApproach=vipApproach;S.corpses.push(c);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
@@ -11410,7 +11485,7 @@ function update(dt, present=true) {
   updateSecurityResponse(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   if(STAGE.firstSteps&&S.guards.some(g=>g.state==='ALERT')&&cpReady()){endGame(false,'적의 시야에 드러났다 — 시야 밖이나 풀숲으로 이동하자');return;}
-  updateVipPlan(dt);
+  updateVipPlan(dt);updateVipContract();
   updateDining(dt);
   updateRendezvous(dt);
   if ((S.targetIntelT = (S.targetIntelT || 0) - dt) <= 0) { S.targetIntelT = .15; updateTargetIntel(); }
@@ -14092,7 +14167,7 @@ function nextGoal() {
   { const opening=openingGoal();if(opening)return opening; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
-  if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
+  if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
   return pinnedMissionGoal();
 }
 // 목표 목록: 무엇을 어디서 (건물 이름·층) — 한 줄씩, 끝낸 것은 줄 긋기
@@ -14298,7 +14373,7 @@ function showEnd(win, reason) {
     if (STAGE.challenges) {
       loadSkillTree();const all = loadCh(), before=skillRewardRows(STAGE,all), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
       S.chRes = STAGE.challenges.map(id => { const ok = !!(CH[id] && CH[id][1]()), fresh = ok && !mine[id]; if (ok) mine[id] = true; return [id, ok, fresh, !!mine[id]]; });
-      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);saveCh(all);
+      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);recordVipApproach(all);saveCh(all);
     }
     const n = bonus.filter(b => b[1]).length;
     rank = n === 5 ? '그림자' : n === 4 ? '암살자' : n === 3 ? '침입자' : '소란꾼';
@@ -14328,6 +14403,8 @@ function showEnd(win, reason) {
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if(win&&!STAGE.tutorial&&!STAGE.openingContract){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
+  {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
+  if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = !(win && learningNext() >= 0);
@@ -14355,12 +14432,13 @@ function renderStageList() {
     const mods=!s.tutorial&&modCount?`<span class="st-rank">추가 조건 ${modCount}/4</span>`:'';
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
+    const passport=s.id==='m2'?'<span class="st-rank">공략 '+Object.keys(vipApproachRecords()).length+'/'+VIP_APPROACHES.length+'</span>':'';
     const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${fee}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
@@ -15294,7 +15372,7 @@ $('btnCheckpointPause').addEventListener('click',()=>{if(cpReady())loadCheckpoin
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);
-$('btnRetry').addEventListener('click', () => start(STAGE_I, true));
+$('btnRetry').addEventListener('click', retryContract);
 $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => s.city); if (ci >= 0) start(ci, true); });  // 다시 하기는 브리핑 없이 바로
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)

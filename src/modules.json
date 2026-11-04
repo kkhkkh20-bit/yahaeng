@@ -70,6 +70,10 @@
       "group": "records"
     },
     {
+      "path": "25_vip_records.js",
+      "group": "vip_records"
+    },
+    {
       "path": "25_skill_rewards.js",
       "group": "progression"
     },
@@ -192,6 +196,10 @@
     {
       "path": "44_mission_plan.js",
       "group": "mission_plan"
+    },
+    {
+      "path": "44_vip_contract.js",
+      "group": "vip_contract"
     },
     {
       "path": "44_opening_contract.js",

@@ -1,0 +1,16 @@
+[
+  {
+    "mobile": false,
+    "before": "클럽 앞에서 실장 관찰 · 공개 구역 · 걸어서 접근 · 장부부터 회수해도 된다 · 15m",
+    "after": "클럽 실장 처치하기 · 흡연 중 · 경호원은 입구에서 대기 · 바깥 · 1m",
+    "errors": [],
+    "method": "UI-only keyboard/touch; normal RAF; fresh profile; no engine API or controlled random/time/state"
+  },
+  {
+    "mobile": true,
+    "before": "클럽 앞에서 실장 관찰 · 공개 구역 · 걸어서 접근 · 장부부터 회수해도 된다 · 15m",
+    "after": "클럽 실장 처치하기 · 흡연 중 · 경호원은 입구에서 대기 · 바깥 · 1m",
+    "errors": [],
+    "method": "UI-only keyboard/touch; normal RAF; fresh profile; no engine API or controlled random/time/state"
+  }
+]

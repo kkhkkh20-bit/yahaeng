@@ -1,0 +1,70 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "touch": false,
+    "checks": [
+      "public observation first, real opening window and free objective order",
+      "actual available attack previews existing camera rules before action",
+      "real physical memo, completed-run receipt and idempotent replay currency",
+      "different actual setups accumulate without changing skill rewards",
+      "physically summoned arrival counts as the planned ambush before the target stops",
+      "failure, incomplete state and historical clear flags cannot mint an approach",
+      "later fights do not inherit an earlier smoking stamp; free approach still gets next-method suggestion"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "touch": true,
+    "checks": [
+      "public observation first, real opening window and free objective order",
+      "actual available attack previews existing camera rules before action",
+      "real physical memo, completed-run receipt and idempotent replay currency",
+      "different actual setups accumulate without changing skill rewards",
+      "physically summoned arrival counts as the planned ambush before the target stops",
+      "failure, incomplete state and historical clear flags cannot mint an approach",
+      "later fights do not inherit an earlier smoking stamp; free approach still gets next-method suggestion"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "touch": true,
+    "checks": [
+      "public observation first, real opening window and free objective order",
+      "actual available attack previews existing camera rules before action",
+      "real physical memo, completed-run receipt and idempotent replay currency",
+      "different actual setups accumulate without changing skill rewards",
+      "physically summoned arrival counts as the planned ambush before the target stops",
+      "failure, incomplete state and historical clear flags cannot mint an approach",
+      "later fights do not inherit an earlier smoking stamp; free approach still gets next-method suggestion"
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "touch": true,
+    "checks": [
+      "public observation first, real opening window and free objective order",
+      "actual available attack previews existing camera rules before action",
+      "real physical memo, completed-run receipt and idempotent replay currency",
+      "different actual setups accumulate without changing skill rewards",
+      "physically summoned arrival counts as the planned ambush before the target stops",
+      "failure, incomplete state and historical clear flags cannot mint an approach",
+      "later fights do not inherit an earlier smoking stamp; free approach still gets next-method suggestion"
+    ],
+    "errors": []
+  }
+]

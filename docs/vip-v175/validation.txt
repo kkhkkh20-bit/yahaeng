@@ -1,0 +1,37 @@
+Core: 71/72 initially passed; obsolete cleanup goal expectation fixed and remaining test passed.
+Build pipeline: 7 passed. Sprite ownership and reachability passed.
+
+PASS 9 review-fix mechanics
+
+PASS VIP choice 1280 7 groups
+PASS VIP choice 390 7 groups
+PASS VIP choice 844 7 groups
+PASS VIP choice 320 7 groups
+
+PASS PC {"arrivalSeconds": 23.6, "maxStep": 3.37, "waitingSeconds": 35, "retry": true, "checkpoint": true, "preparationLead": true, "forcedExit": true}
+PASS touch {"arrivalSeconds": 23.6, "maxStep": 3.37, "waitingSeconds": 35, "retry": true, "checkpoint": true, "preparationLead": true, "forcedExit": true}
+PASS actual keyboard phone contact, recovery and one appointment
+PASS actual touch phone contact, recovery and one appointment
+
+PASS poison keyboard 0 {'drankAt': 23, 'bathroom': True, 'escortWaits': True, 'killed': True}
+PASS sign keyboard 0 {'accident': True}
+PASS backdoor keyboard 0 {'blueDoor': True, 'actors': 40}
+PASS poison keyboard 1 {'drankAt': 26, 'bathroom': True, 'escortWaits': True, 'killed': True}
+PASS sign keyboard 1 {'accident': True}
+PASS backdoor keyboard 1 {'blueDoor': True, 'actors': 40}
+PASS poison touch 0 {'drankAt': 25, 'bathroom': True, 'escortWaits': True, 'killed': True}
+PASS sign touch 0 {'accident': True}
+PASS backdoor touch 0 {'blueDoor': True, 'actors': 40}
+PASS poison touch 1 {'drankAt': 26, 'bathroom': True, 'escortWaits': True, 'killed': True}
+PASS sign touch 1 {'accident': True}
+PASS backdoor touch 1 {'blueDoor': True, 'actors': 40}
+PASS twelve live scenes; no NPC freezing
+
+PASS security readout 1280 False 8 groups
+PASS security readout 390 True 8 groups
+PASS security readout 844 True 8 groups
+PASS security readout 320 True 8 groups
+
+PASS native 2D {'mobile': False, 'before': [312, 648], 'after': [378.7537580071906, 649.6021979999999], 'version': 'v175', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True, 'customUIFont': {'fonts': [{'familyName': 'IBM Plex Sans KR', 'postScriptName': 'IBMPlexSansKR-Regular', 'isCustomFont': True, 'glyphCount': 5}]}}
+PASS native 2D {'mobile': True, 'before': [312, 648], 'after': [385.8543390985382, 649.58301], 'version': 'v175', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True, 'customUIFont': {'fonts': [{'familyName': 'IBM Plex Sans KR', 'postScriptName': 'IBMPlexSansKR-Regular', 'isCustomFont': True, 'glyphCount': 5}]}}
+PASS packaged hashes 8 http://127.0.0.1:8001/public/

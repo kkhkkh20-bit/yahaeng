@@ -1345,6 +1345,13 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 #brief .br-legend { font-size:11px; }
 #brief .br-acts button small { font-size:11px; color:var(--ui-muted); }
 
+/* Completed methods and the next attempt share the existing result screen. */
+.vip-passport{margin:0 0 18px;padding:16px 0;border-block:1px solid #5b646f;color:#d9dde2;font-size:14px;line-height:1.6}
+.vip-passport>b{font-size:16px;color:#eceef2}.vip-methods{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0;color:#919ba6}.vip-methods .earned{color:#d5dbe2}
+.vip-passport p{margin:10px 0 0;color:#d8c3a4}.vip-passport small{display:block;margin-top:3px;color:#aeb7c2;font-size:12px}
+
+.vip-methods>span{flex:1 1 180px}.vip-methods small{margin-top:0;font-size:11px;color:#a1acb8}
+
 </style>
 
 <canvas id="game" tabindex="-1" aria-label="게임 화면"></canvas>
@@ -1428,7 +1435,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v174 · 2026-11-04</footer>
+  <footer class="title-footer">v175 · 2026-11-04</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1556,6 +1563,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
     <div id="endRank" hidden></div>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
+    <div id="vipPassport" hidden></div>
     <details class="endmore"><summary>상세 기록</summary><p class="credit" id="endRankNote"></p>
       <dl id="endMore"></dl>
       <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
@@ -1581,6 +1589,6 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/d15976ed67b63faffc0e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/36ae6cd9cb977f63ffaf.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/804691abc6b3ca46e23e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/123b90fdb3726aa8f233.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
