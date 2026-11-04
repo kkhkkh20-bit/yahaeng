@@ -63,6 +63,11 @@ func _process(dt: float) -> void:
 		diagnostics_time -= dt
 		if diagnostics_time <= 0 and player != null:
 			diagnostics_time = 0.25
+			# Canvas stretching may keep a landscape logical viewport in portrait.
+			# Match the browser overlay's actual media query instead.
+			if started and not finished and bool(JavaScriptBridge.eval("matchMedia('(orientation:portrait) and (pointer:coarse)').matches")):
+				paused = true
+				attack_active = false
 			_inspect_web([])
 
 static func cell(p: Vector2i) -> Vector2:
@@ -484,4 +489,4 @@ func checkpoint_info() -> Dictionary:
 	for actor in actors:
 		if actor.role == "guard":
 			guards.append({"floor": actor.floor_index, "x": actor.position.x, "y": actor.position.y, "state": actor.state, "memory_floor": actor.memory_floor})
-	return {"floor": player.floor_index, "x": player.position.x, "y": player.position.y, "uniform": uniform, "ledger": ledger, "target_dead": target.dead, "hp": hp, "won": won, "started": started, "elapsed": elapsed, "detections": detections, "guards": guards, "crouched": player.crouched, "covered": player.covered, "touch_controls": hud.touch_mode, "viewport": [hud.size.x,hud.size.y], "speed": player.velocity.length()}
+	return {"floor": player.floor_index, "x": player.position.x, "y": player.position.y, "uniform": uniform, "ledger": ledger, "target_dead": target.dead, "hp": hp, "won": won, "started": started, "paused": paused, "elapsed": elapsed, "detections": detections, "guards": guards, "crouched": player.crouched, "covered": player.covered, "touch_controls": hud.touch_mode, "viewport": [hud.size.x,hud.size.y], "speed": player.velocity.length()}
