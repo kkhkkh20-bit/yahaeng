@@ -116,16 +116,21 @@ function noise(x, y, r, src, fl, z) {
   else if(src==='step'&&S.player.mode==='run'&&!S.player.vent&&!S.player.under)spawnEffect('dust',{x,y,fl,z:zs},{scale:.35,alpha:.65});
   const nz = { x, y, r, t: 0, src, fl, z:zs }; S.noises.push(nz); if(src==='step')nz.mode=S.player.mode;
   const L0 = CUR_F; setLayer(fl);let field=null;const decoys=[];
+  const runStep=src==='step'&&S.player.mode==='run'&&S.player.moving;
+  // Hearing ordinary shoes is not evidence of an intruder. Only distinctive
+  // movement sounds interrupt human routines, regardless of unseen clearance.
+  const stepKind=src!=='step'?null:runStep?'run':!zs&&MAT[tileAt(x,y)]?'surface':S.player.carrying?'drag':null;
+  if(src==='step')nz.stepKind=stepKind;
   for (const g of S.guards) {
     if (flOf(g) !== fl) continue;
     if (src === 'guardDoor' && g.searchJob) continue;  // 동료가 수색 중 여는 문에 다시 몰리지 않는다
     { const gz = g.z || 0, gIn = !gz && !flOf(g) && !!roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); if ((zs > 0 && gIn) || (srcIn && gz > 0)) continue; }  // 옥상 발소리는 아래 실내에서 안 들리고, 실내 소리는 옥상에서 안 들린다
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.state === 'TERROR') continue;
+    if(src==='step'&&!g.dog&&!stepKind)continue;
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
     let audible=d<rr;
     if(src==='whistle'&&!audible&&d<r){field=field||soundField(x,y,r);audible=(field.get(Math.floor(g.y/TILE)*MW+Math.floor(g.x/TILE))??Infinity)<r;}
-    const runStep = src === 'step' && S.player.mode === 'run' && S.player.moving;
     if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs), g) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
     if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (audible && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
@@ -141,7 +146,7 @@ function noise(x, y, r, src, fl, z) {
       if (src === 'whistle' && !g.dog) { g.startle={a:Math.atan2(y-g.y,x-g.x)};gsay(g, ['누구야?', '지금 누가 불렀어?', '저쪽에서 났지?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
-      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
+      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearKind=stepKind; g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
       goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
       if((src==='whistle'||src==='stone')&&g.state==='SUSPICIOUS')(nz.otherInvestigators||(nz.otherInvestigators=[])).push(g.id);
     }
