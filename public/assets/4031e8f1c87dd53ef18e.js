@@ -164,7 +164,7 @@ const STAGES = [
   mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],
   heightCueBuildings: [0, 1],
-  vipDrink: { at: [29, 10], to: [40, 6] },
+  vipDrink: { at: [29, 10], to: [40, 7], toiletA:-Math.PI/4 },
   dining: { guest: 'mealGuest', first: 60, every: 75, stay: 6, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
   buildingNames: {2:'공중화장실'},
   fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
@@ -172,7 +172,7 @@ const STAGES = [
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
   rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '서쪽 풀숲에서 순찰의 등을 노리고, 옷을 갈아입은 뒤 몸을 화단에 숨긴다. 남쪽 적재물은 정문 경비의 시선을 가려 준다. 거리는 손님으로 걸을 수 있고, CCTV도 공개 구역의 평범한 손님은 신고하지 않는다. 카메라는 시야를 피해 지나가거나 뒤로 접근해 전선을 분리할 수 있다. 녹화된 신원은 사무동 2층 관리실에서 지운다. 야시장 대화에서 금고 번호를 알아내 장부를 회수하면 사무동 1층 내선으로 실장을 불러낼 수 있다. 클럽의 독살·간판 사고도 선택할 수 있다.',
+  brief: '서쪽 풀숲에서 순찰의 등을 노리고, 옷을 갈아입은 뒤 몸을 화단에 숨긴다. 남쪽 적재물은 정문 경비의 시선을 가려 준다. 거리는 손님으로 걸을 수 있고, CCTV도 공개 구역의 평범한 손님은 신고하지 않는다. 카메라는 시야를 피해 지나가거나 뒤로 접근해 전선을 분리할 수 있다. 녹화된 신원은 사무동 2층 관리실에서 지운다. 야시장 대화에서 금고 번호를 알아내 장부를 회수하면 사무동 1층 내선으로 실장을 불러낼 수 있다. 공중화장실에 놓인 직원 옷을 이용하면 사람을 해치지 않고 술병에 접근할 수도 있다. 간판 사고도 선택할 수 있다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [0, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -223,7 +223,8 @@ const STAGES = [
   secureFloors: [[0, 1], [0, 2], [1, 1]],
   zoneAllow: ['crew'],
   props: [{ id: 'emetic', name: '구토제', at: [16, 30], surface:{b:5,t:'shelf',u:.28} },
-          { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} }],
+          { id: 'laxative', name: '설사약', at: [17, 30], surface:{b:5,t:'shelf',u:.72} },
+          { id:'spareUniform',name:'놓고 간 직원 옷',outfit:'waiter',at:[39,7] }],
   uses: [{ need: 'emetic', at: [29, 10], surface:{b:1,t:'bar',u:.3}, label: '실장 술병에 구토제 넣기', permit: 'waiter', done: '실장 술병에 구토제를 넣었다',
            act: S => { S.vipPlan = { phase: 'prepared', drinking: 0 }; } },
          { need:'laxative',at:[5,29],surface:{b:4,t:'table',u:.85},label:'양념통에 설사약 넣기',permit:'waiter',
@@ -247,10 +248,11 @@ const STAGES = [
               { text: '실장이 간판 아래에 오면 고정 풀기', at: [27, 15, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'emetic', targetTag: 'vip', name: '화장실 유인', moot: (S, h) => h.eliminated('vip') || S.vipPlan?.phase === 'done', reveal: (S, h) => h.knows('배탈') || !!(S.player.item && S.player.item.id === 'emetic'),
       steps: [{ text: '약국에서 구토제 챙기기', at: [16, 30, 0], done: S => (S.player.item && S.player.item.id === 'emetic') || !!S.usesDone[0] },
-              { text: '클럽 직원 복장 구하기', at: [32, 3, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
+              { text: '직원 옷 구하기 · 공중화장실 또는 직원', at: [39, 7, 0], done: S => (S.player.outfit === 'waiter' && !S.player.disguiseBlown) || !!S.usesDone[0] },
               { text: '실장 술병에 구토제 넣기', at: [29, 10, 0], done: S => !!S.usesDone[0] },
-              { text: '실장이 바에서 술을 마시는지 확인하기', at: [29, 10, 0], done: (S, h) => !!(S.vipPlan && ['sick','done'].includes(S.vipPlan.phase)) || h.eliminated('vip') },
-              { text: '공중화장실에서 실장 처치', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
+              { text: '공중화장실로 이동해 실장 기다리기', at: [39, 7, 0], done: (S, h) => !!S.vipPlan?.reachedToilet || S.vipPlan?.phase==='done' || h.eliminated('vip') },
+              { text: '화장실 문 닫아 경호원 시야 가리기', at: [40, 8, 0], done: (S,h) => S.doors.some(d=>d.tx===40&&d.ty===8&&d.locked)||h.eliminated('vip') },
+              { text: '혼자 있는 실장 등 뒤에서 공격 길게', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호'),
       steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
               { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
@@ -429,10 +431,10 @@ const STAGES = [
   id: 'm4', no: '04', name: '대청소', sub: '의뢰 02', fee: '150만',
   mission: '수금원·VIP 처치 · 창고 현금과 사무동 계약서 회수 후 탈출',
   itemName: '현금 가방', itemNames: ['현금 가방', '계약서'],
-  brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입 비밀번호는 북서쪽 폐사무소 연락책의 메모에 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 1층 금고의 계약서를 챙긴다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
+  brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입번호는 창고 정산 쪽지나 북서쪽 폐사무소 연락책 메모에서 알아낼 수 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 1층 금고의 계약서를 챙긴다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   physicalAreas: [[14, 12, 17, 15], [27, 14, 30, 15], [40, 12, 42, 15], [17, 20, 19, 21]],
   powerArea: [9, 11, 33, 16], powerName: "상가 앞 보안등",
-  W: 48, H: 28, start: [47, 26], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
+  W: 48, H: 28, start: [47, 16], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
   heightCueBuildings: [2, 3, 4],
   // 구역: 큰길·포차·남쪽 골목은 공개(기본). 건물 안과 북쪽 뒷골목은 조직원만
   zones: [[1, 2, 8, 10, 'res', null, '폐사무소 · 연락책 거점', ['crew']], [10, 2, 20, 10, 'res', null, '창고 · 조직원만'], [22, 2, 32, 10, 'res', null, '사무동 · 조직원만'], [34, 2, 46, 10, 'res', null, '클럽 · 조직원만'],
@@ -480,7 +482,8 @@ const STAGES = [
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 2, door: 'vault', key: 'green' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,
   fixedFurn:[{x:6,y:5,t:'desk'}],
-  notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 1층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 1층 계약서 금고를 연다' }],
+  notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 1층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 1층 계약서 금고를 연다' },
+          { b:1,fl:0,at:'L',title:'창고 정산 쪽지',lines:['사무동 출입번호 7316.','계약서 금고의 초록 카드키는 사무동 2층 보안실에 있다.'],gives:'code',learn:'창고 정산 쪽지: 사무동 출입번호 7316 · 초록 카드키는 2층 보안실' }],
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 2, fl: 1, at: 'S' }, { key: 'supplies', b: 7, fl: 0, at: 'R' }],
   exits: [{ at: [17, 23], r: 42, name: '공터 하수구' }],
   well: 'manhole', kunai: 2, coins: 3, reinf: [47, 13],
@@ -524,8 +527,8 @@ const STAGES = [
       steps: [{ text: '수금원을 쓰러뜨려 빨간 카드키 얻기 (경호원이 붙어 다닌다)', at: [20, 13, 0], done: (S, h) => !!(S.player.keys || {}).red || h.eliminated('collector') },
               { text: '창고 금고에서 현금 가방과 파란 카드키 챙기기', at: [13, 4, 0], done: S => S.items[0].got && !!(S.player.keys || {}).blue },
               { text: '파란 카드키로 VIP룸 뒷문을 열고 VIP 처치하기', at: [40, 4, 0], done: (S, h) => h.eliminated('vip') }] },
-    { id: 'green', name: '사무동 출입', reveal: (S, h) => h.knows('폐사무소') || h.knows('사무동 출입') || !!S.player.keys.code,
-      steps: [{ text: '북서쪽 폐사무소에서 연락책의 출입 메모 확인', at: [6, 6, 0], done: S => !!(S.player.keys || {}).code || S.items[1].got },
+    { id: 'green', name: '사무동 출입', reveal: (S, h) => S.items[0].got || h.knows('폐사무소') || h.knows('사무동 출입') || !!S.player.keys.code,
+      steps: [{ text: '창고 정산 쪽지 확인 · 연락책 메모도 가능', at: [11, 8, 0], done: S => !!(S.player.keys || {}).code || S.items[1].got },
               { text: '비밀번호로 사무동에 들어가 2층 보안실의 초록 카드키 챙기기', at: [25, 6, 1], done: S => !!(S.player.keys || {}).green || S.items[1].got },
               { text: '사무동 1층 금고에서 계약서 챙기기', at: [25, 4, 0], done: S => S.items[1].got }] }
   ],
@@ -637,6 +640,8 @@ const STAGES = [
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다
     m.fill(39, 18, 43, 23, '.');                                                                          // 정문 앞 길
     m.villa(3, 3, 19, 12, 2, { kind: 'shop', use: ['vault', 'office'], signs: ['', ''], plate: '감금동', name: '감금동', back: true });   // 0 감방(금고 방) · 2층 사무실
+    // Screening the cell exit leaves the jailer to read before the office guard.
+    m.fill(8,8,8,9,'C');
     m.villa(24, 3, 37, 11, 1, { kind: 'shop', use: ['office'], signs: [''], plate: '경비실', name: '경비실' });                        // 1 압수품
     m.villa(24, 16, 34, 24, 1, { kind: 'shop', use: ['store'], signs: ['자재'], name: '자재 창고' });                                  // 2
     m.villa(3, 16, 14, 24, 2, { kind: 'house', name: '숙소' });                                                                      // 3
@@ -6144,16 +6149,31 @@ function storiesInit() {
   S.storyTrack = null;
   S.storyTrackManual = false;
 }
+// Found clues deserve feedback in the default minimal mode too. Queue only
+// player-earned discoveries; never switch their chosen route or reveal a target.
+function queueStoryNotice(st,kind){
+  if(!oppMode||STAGE.tutorial||S.t<2)return;
+  const queue=S.storyNotices||(S.storyNotices=[]);
+  if(kind==='done')S.storyNotices=queue.filter(n=>n.id!==st.d.id);
+  (S.storyNotices||(S.storyNotices=[])).push({id:st.d.id,kind});
+}
+function updateStoryNotices(){
+  if(!oppMode||DLG.modal||S.alevel>=2||actionBusy()||S.t-(S.storyNoticeAt??-10)<5)return;
+  const queue=S.storyNotices||[];
+  while(queue.length){const n=queue.shift(),st=S.stories.find(s=>s.d.id===n.id);if(!st||st.moot||n.kind==='found'&&st.done)continue;
+    S.storyNoticeAt=S.t;toast((n.kind==='done'?'기회 완료 — ':'새로운 기회 — ')+st.d.name+(n.kind==='found'?(isTouch?' · 목표에서 선택':' · T로 추적'):''),3.2,'good');play('click',.35,1.3);break;}
+}
 function updateStories(dt) {
+  updateStoryNotices();
   if (!S.stories) storiesInit();
   if ((S.storyT = (S.storyT || 0) - dt) > 0) return; S.storyT = 0.3;
   for (const st of S.stories) {
     if (st.done || st.moot) continue;
     if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
-      st.found = true; if (oppMode===2) { toast('단서 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
+      st.found = true; queueStoryNotice(st,'found'); }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
-    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode===2) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
+    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1;if(oppMode===2)toast('기회 완료 — '+st.d.name,2.6,'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
     else if (adv && oppMode === 2 && trackedStory() === st) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
     let moot = S.exitOpen && !st.d.keepOpen;
     if (!st.done && st.d.moot) { try { moot = moot || !!st.d.moot(S, SH); } catch (e) { if (!st.err3) { st.err3 = 1; console.warn('story moot', st.d.id, e); } } }
@@ -6172,7 +6192,7 @@ function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
   for (const st of S.stories) { if (!st.found || st.moot || st.done) continue; const tr = trackedStory() === st, s = storyStep(st);
     if (tr && !S.exitOpen && !pendingFirstGoal()) continue;  // 같은 단계를 맨 위와 목록에 두 번 쓰지 않는다
-    L.push(['opp', '단서: ' + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : '')]); }
+    L.push(['opp', '단서: ' + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : ''),s?.at?st.d.id:null]); }
   return L;
 }
 function trackNextStory() {
@@ -6777,7 +6797,7 @@ function updateVipPlan(dt) {
   if (!g || !v || v.phase === 'done') return;
   if(v.phase==='sick'){
     const d=STAGE.vipDrink,at=!flOf(g)&&!g.z&&dist(g.x,g.y,tc(d.to[0]),tc(d.to[1]))<65;
-    if(at&&!g.moving)v.reachedToilet=true;
+    if(at&&!g.moving){v.reachedToilet=true;if(g.state==='PATROL'&&d.toiletA!=null){g.want=d.toiletA;g.a+=clamp(angDiff(g.a,d.toiletA),-dt*8,dt*8);g.glance=0;g.glanceT=2;}}
     const pending=g.route.some(w=>w.once&&dist(w.x,w.y,tc(d.to[0]),tc(d.to[1]))<20);
     if(!at&&(v.reachedToilet||!pending)){v.phase='done';S.goalNavCache=null;}
     return;
@@ -6829,7 +6849,7 @@ function contractRouteGoal(){
   }
   if(!S.items[1]?.got){
     const officeDoors=S.doors.filter(d=>d.keyLock==='code');
-    if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.find(n=>n.gives==='code'&&!n.read);if(note)return object(note,'폐사무소의 출입 메모 확인','사무동 비밀번호');}
+    if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.filter(n=>n.gives==='code'&&!n.read).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];if(note)return object(note,note.title+' 확인','사무동 비밀번호');}
     if(!keys.green&&locked('green')){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 1층 계약서 금고용');}
     return object(S.items[1],'사무동 1층에서 계약서 회수','초록 카드키 · 계약서 금고');
   }
@@ -8479,6 +8499,8 @@ const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
 // 처음 달성한 준비만 센다. 같은 복장과 문을 반복 조작해도 증가하지 않는다.
 function preparationTokens() {
   const P = S.player, a = [];
+  if(STAGE.id==='m6'&&!pendingFirstGoal())a.push('entry:escaped-cell');
+  if(mainContract(STAGE)&&flOf(P)>0)a.push('floor:'+bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))+':'+flOf(P));
   for (const s of S.learned || []) a.push('clue:' + s);
   for (const k of Object.keys(P.keys || {})) if (P.keys[k]) a.push('key:' + k);
   for (const k of Object.keys(P.got || {})) if (P.got[k]) a.push('equipment:' + k);
@@ -13842,12 +13864,12 @@ function updateHUD(force) {
   syncAssassinHUD();
   const P = S.player;
   syncTutorialCue();
-  { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
+  { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=(S.cpStored?'저장됨':'이번 실행에 저장됨')+(isTouch?' · 메뉴에서 재시도':' · F9 재시도');} }
   drawWanted();
   const targets=S.spare?[]:S.guards.filter(g=>g.target),first=!!STAGE.firstGoal,total=targets.length+S.items.length+(first?1:0),done=targets.filter(g=>targetEliminated(g)).length+S.items.filter(i=>i.got).length+(first&&!pendingFirstGoal()?1:0);
   const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':done===total&&evidencePending()?'기록 삭제 필요':`목표 ${done}/${total}`):'';
   setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
-  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  { const html = objectiveLines().map(([c, t, story]) => `<span class="ol ${c}">${story?`<button type="button" data-story-route="${story}">${t} · 추적</button>`:c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
@@ -14103,8 +14125,11 @@ function setObjectiveOpen(open){
   const o=document.querySelector('#hud .obj');if(!o)return;
   if(open){clearPlayerInput();closeEnvPicker();closeLoadout();}
   o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
+  o.setAttribute('role',open?'group':'button');
   document.body.classList.toggle('inspecting',hudInspecting());
 }
+hud.obj.addEventListener('click',e=>{const b=e.target.closest('[data-story-route]');if(!b)return;e.preventDefault();e.stopPropagation();if(selectStory(b.dataset.storyRoute)){setObjectiveOpen(false);canvas.focus({preventScroll:true});}});
+hud.obj.addEventListener('keydown',e=>{if(!e.target.closest('[data-story-route]'))return;e.stopPropagation();if(e.code==='Escape'){e.preventDefault();setObjectiveOpen(false);document.querySelector('#hud .obj').focus({preventScroll:true});}});
 function closeHudInspection(){closeLoadout();closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a))+(a.k==='quickStash'?':'+oid(a.h):'');
 function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
@@ -14171,7 +14196,7 @@ function unavailableEnvReason() {
   if(P.ledge || P.wire) return '안전하게 올라설 곳이 없다';
   const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken).map(l=>lampControl(l))]
     .filter(o=>Number.isFinite(o.x)&&dist(P.x,P.y,o.x,o.y)<100).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
-  const o=a[0]; if(!o)return '조작할 물체 가까이 이동하기';
+  const o=a.find(o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0))||a[0]; if(!o)return '조작할 물체 가까이 이동하기';
   if(flOf(o)!==flOf(P)||(o.z||0)!==(P.z||0))return '다른 층에 있는 대상이다 — 연결 입구로 이동하기';
   if(!objectReachable(o,100))return '벽이나 가구에 가려 손이 닿지 않는다';
   return '대상에 더 가까이 이동하기';
@@ -14650,7 +14675,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
-    contractRouteGoal,cameraCableReachable,nearCameraCable,
+    contractRouteGoal,cameraCableReachable,nearCameraCable,updateStoryNotices,updateStories,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
@@ -14720,6 +14745,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   const overlay = document.querySelector('.screen:not([hidden])');
+  if(e.code==='F9'&&!e.repeat&&S&&running&&cpReady()&&(!overlay||['pause','end'].includes(overlay.id))&&!S.keypad){e.preventDefault();loadCheckpoint();return;}
   if (overlay) {
     if(overlay.id==='skillScreen'&&handleSkillDetailKey(e))return;
     if (e.code === 'Escape') {
@@ -14959,7 +14985,7 @@ $('btnPortrait').addEventListener('click', () => document.body.classList.add('po
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
-  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
+  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
@@ -14987,6 +15013,7 @@ $('btnRoutes').classList.toggle('on', showRoutes);$('btnRoutes').setAttribute('a
   if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
 $('tacBanner').addEventListener('click', e => { toggleTactical(); if (!e.detail) $('mini').focus({ preventScroll: true }); });
 $('btnResume').addEventListener('click', () => setPause(false));
+$('btnCheckpointPause').addEventListener('click',()=>{if(cpReady())loadCheckpoint();});
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);

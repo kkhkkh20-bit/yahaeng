@@ -18,6 +18,8 @@
     for (let y = 0; y < 28; y++) if (y < 18 || y > 23) m.set(43, y, '#');                              // 동쪽 담: 정문(18~23)만 트였다
     m.fill(39, 18, 43, 23, '.');                                                                          // 정문 앞 길
     m.villa(3, 3, 19, 12, 2, { kind: 'shop', use: ['vault', 'office'], signs: ['', ''], plate: '감금동', name: '감금동', back: true });   // 0 감방(금고 방) · 2층 사무실
+    // Screening the cell exit leaves the jailer to read before the office guard.
+    m.fill(8,8,8,9,'C');
     m.villa(24, 3, 37, 11, 1, { kind: 'shop', use: ['office'], signs: [''], plate: '경비실', name: '경비실' });                        // 1 압수품
     m.villa(24, 16, 34, 24, 1, { kind: 'shop', use: ['store'], signs: ['자재'], name: '자재 창고' });                                  // 2
     m.villa(3, 16, 14, 24, 2, { kind: 'house', name: '숙소' });                                                                      // 3

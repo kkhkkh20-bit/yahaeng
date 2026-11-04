@@ -143,16 +143,31 @@ function storiesInit() {
   S.storyTrack = null;
   S.storyTrackManual = false;
 }
+// Found clues deserve feedback in the default minimal mode too. Queue only
+// player-earned discoveries; never switch their chosen route or reveal a target.
+function queueStoryNotice(st,kind){
+  if(!oppMode||STAGE.tutorial||S.t<2)return;
+  const queue=S.storyNotices||(S.storyNotices=[]);
+  if(kind==='done')S.storyNotices=queue.filter(n=>n.id!==st.d.id);
+  (S.storyNotices||(S.storyNotices=[])).push({id:st.d.id,kind});
+}
+function updateStoryNotices(){
+  if(!oppMode||DLG.modal||S.alevel>=2||actionBusy()||S.t-(S.storyNoticeAt??-10)<5)return;
+  const queue=S.storyNotices||[];
+  while(queue.length){const n=queue.shift(),st=S.stories.find(s=>s.d.id===n.id);if(!st||st.moot||n.kind==='found'&&st.done)continue;
+    S.storyNoticeAt=S.t;toast((n.kind==='done'?'기회 완료 — ':'새로운 기회 — ')+st.d.name+(n.kind==='found'?(isTouch?' · 목표에서 선택':' · T로 추적'):''),3.2,'good');play('click',.35,1.3);break;}
+}
 function updateStories(dt) {
+  updateStoryNotices();
   if (!S.stories) storiesInit();
   if ((S.storyT = (S.storyT || 0) - dt) > 0) return; S.storyT = 0.3;
   for (const st of S.stories) {
     if (st.done || st.moot) continue;
     if (!st.found) { let rv = false; try { rv = st.d.reveal ? !!st.d.reveal(S, SH) : false; } catch (e) { if (!st.err) { st.err = 1; console.warn('story reveal', st.d.id, e); } } if (!rv) continue;
-      st.found = true; if (oppMode===2) { toast('단서 발견 — ' + st.d.name, 3, 'good'); play('click', 0.35, 1.3); } }
+      st.found = true; queueStoryNotice(st,'found'); }
     let adv = false;
     while (st.step < st.d.steps.length) { let ok = false; try { ok = !!st.d.steps[st.step].done(S, SH); } catch (e) { if (!st.err2) { st.err2 = 1; console.warn('story step', st.d.id, e); } } if (!ok) break; st.step++; adv = true; }
-    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1; if (oppMode===2) toast('기회 완료 — ' + st.d.name, 2.6, 'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
+    if (st.step >= st.d.steps.length) { st.done = true; S.stats.stories = (S.stats.stories || 0) + 1;if(oppMode===2)toast('기회 완료 — '+st.d.name,2.6,'good'); if (S.storyTrack === st.d.id) S.storyTrack = null; }
     else if (adv && oppMode === 2 && trackedStory() === st) toast('다음 — ' + st.d.steps[st.step].text, 2.6);
     let moot = S.exitOpen && !st.d.keepOpen;
     if (!st.done && st.d.moot) { try { moot = moot || !!st.d.moot(S, SH); } catch (e) { if (!st.err3) { st.err3 = 1; console.warn('story moot', st.d.id, e); } } }
@@ -171,7 +186,7 @@ function storyLines() {
   const L = []; if (!oppMode || !S.stories) return L;
   for (const st of S.stories) { if (!st.found || st.moot || st.done) continue; const tr = trackedStory() === st, s = storyStep(st);
     if (tr && !S.exitOpen && !pendingFirstGoal()) continue;  // 같은 단계를 맨 위와 목록에 두 번 쓰지 않는다
-    L.push(['opp', '단서: ' + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : '')]); }
+    L.push(['opp', '단서: ' + st.d.name + (oppMode === 2 && s ? ' — ' + s.text : ''),s?.at?st.d.id:null]); }
   return L;
 }
 function trackNextStory() {
