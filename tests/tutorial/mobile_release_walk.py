@@ -34,9 +34,30 @@ async def main(args):
                 await page.tap('#btnQuick')
                 assert await page.evaluate('__game.STAGE.id')=='p0'
                 assert await page.evaluate('document.querySelector("#brief").scrollWidth<=innerWidth+1')
-                assert await page.locator('#btnBrGo').evaluate('e=>e.getBoundingClientRect().height>=44')
+                async def departure_visible():
+                    state=await page.locator('#btnBrGo').evaluate('''e=>{const r=e.getBoundingClientRect();return{
+                        x:r.x,y:r.y,w:r.width,h:r.height,
+                        hit:e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)),
+                        viewport:[innerWidth,innerHeight]}}''')
+                    assert state['h']>=48 and state['y']>=0 and state['y']+state['h']<=state['viewport'][1]+1,state
+                    assert state['x']>=0 and state['x']+state['w']<=state['viewport'][0]+1 and state['hit'],state
+                    return state
+                await departure_visible() # No auto-scroll may rescue the primary action.
                 await page.screenshot(path=str(out/f'{engine}-{width}x{height}-brief.png'))
-                await page.tap('#btnBrGo') # Trusted tap scrolls the button into view if needed.
+                await page.tap('#brDetails>summary')
+                await departure_visible()
+                await page.tap('#brMapDetails>summary')
+                await page.locator('#brief .br-scroll').evaluate('e=>e.scrollTop=e.scrollHeight')
+                await departure_visible()
+                # Layout fixture: an existing checkpoint adds a third footer action.
+                await page.locator('#btnBrCP').evaluate('e=>{e.hidden=false;e.innerHTML="이어 하기<small>11. 4. 오후 8:30</small>"}')
+                await departure_visible()
+                await page.locator('#btnBrCP').evaluate('e=>e.hidden=true')
+                await page.set_viewport_size({'width':width,'height':max(320,height-90)})
+                await departure_visible() # Browser chrome can reduce the usable height.
+                await page.set_viewport_size({'width':width,'height':height})
+                box=await departure_visible()
+                await page.touchscreen.tap(box['x']+box['w']/2,box['y']+box['h']/2)
                 await page.locator('#hud').wait_for(state='visible')
                 controls=['btnCrouch','btnAct','btnCarry','btnGrab','btnTool','btnToolNext']
                 boxes=[]

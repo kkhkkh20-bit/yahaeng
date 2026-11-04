@@ -716,6 +716,7 @@ __INTERFACE_CSS__
 </div>
 
 <div class="screen fx" id="brief" hidden>
+  <div class="br-scroll">
   <div class="br-wrap">
     <div class="br-info">
       <span class="fx-sub" id="brSub"></span>
@@ -728,13 +729,15 @@ __INTERFACE_CSS__
         <div class="br-radio" id="brRadio"><b>현장 정보</b><p id="brLine"></p></div>
         <div id="brChBox"><small class="br-chl">추가 목표 · 선택</small><ul class="br-chips" id="brCh"></ul></div>
       </details>
-      <div class="br-acts"><button class="cta" id="btnBrGo" type="button">출발</button><button class="ghost" id="btnBrCP" type="button" hidden>이어 하기</button><button class="ghost" id="btnBrBack" type="button">돌아가기</button></div>
     </div>
-    <div class="br-mapcol">
+    <details class="br-mapcol" id="brMapDetails" open>
+      <summary>현장 지도</summary>
       <div class="br-frame"><div class="br-map" id="brMap"></div></div>
       <div class="br-legend"><span><i class="mk dot" style="--c:#7fd6ff"></i>출발</span><span class="lg-it"><i class="mk dia" style="--c:#f2c46b"></i>회수 물품</span><span class="lg-tg"><i class="mk dot" style="--c:#e8473c"></i>표적</span><span><i class="mk ring" style="--c:#f2c46b"></i>탈출</span></div>
-    </div>
+    </details>
   </div>
+  </div>
+  <footer class="br-acts"><button class="ghost" id="btnBrBack" type="button">돌아가기</button><button class="ghost" id="btnBrCP" type="button" hidden>이어 하기</button><button class="cta" id="btnBrGo" type="button">출발 <span aria-hidden="true">→</span></button></footer>
 </div>
 <div class="screen" id="end" hidden>
   <div class="panel">
