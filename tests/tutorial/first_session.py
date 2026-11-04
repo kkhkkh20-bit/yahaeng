@@ -28,7 +28,7 @@ async def main():
    errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
    await open_game(page,BASE or f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink');await page.evaluate(DRIVER)
-   await page.locator('#btnQuick').click();assert await page.evaluate('__game.STAGE.id')=='tB'
+   await page.locator('#btnLedger').click();await page.locator('.ledger-tabs [data-filter="training"]').click();await page.locator('[data-i="'+str(await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")'))+'"]').click();assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.evaluate('lesson.tick(30);lesson.render()')
    movement_cdp=await page.context.new_cdp_session(page)
    async def walk(x,y):

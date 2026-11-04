@@ -57,6 +57,12 @@ function activeObserver() {
   }
   return best;
 }
+// Physical sight, permission and potential exposure are different. In particular,
+// exposure() turns a hypothetical guard toward the player; it is not current sight.
+function physicallyObserved(){
+  return S.guards.some(g=>g.rawSeen&&g.rawSightAt!=null&&S.t-g.rawSightAt>=0&&S.t-g.rawSightAt<.15&&!g.doomed&&!['DEAD','CAPTIVE','TERROR','SLEEP'].includes(g.state))||
+    S.cams.some(c=>cameraAssessment(c).visible>0);
+}
 function encounterRows(P, ka, ga, pa) {
   if(actionBusy(P))return [];
   const rows=[],key=k=>isTouch?{atk:'공격',grab:'붙잡기',env:'행동'}[k]:KK(k);

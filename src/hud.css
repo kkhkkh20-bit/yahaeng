@@ -462,3 +462,5 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 #hud #stealth #accessLbl[hidden],#hud #stealth #actionRiskLbl[hidden]{display:none}
 #hud #stealth.quiet[data-camera=pass] #lightLbl{display:block}
 @media(max-width:700px){#hud #stealth #accessLbl,#hud #stealth #actionRiskLbl{font-size:10px;max-width:calc(100vw - 144px)}}
+/* Field radio must not steal the left movement finger during a live escape. */
+#dlg:not(.modal),#dlg:not(.modal) *{pointer-events:none}

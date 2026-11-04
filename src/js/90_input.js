@@ -235,12 +235,12 @@ $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('y
 $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
-// 첫 화면 '바로 시작': 연습 1을 안 했으면 연습 1, 했으면 아직 못 깬 첫 의뢰
+// First assassination, then the contracts; drills remain available in the ledger.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
   const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
-  const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||stageCleared(STAGES[i]);});
-  $('btnQuick').textContent=st.tutorial?(st.id==='tB'?'처음 시작 · 시야와 소리':st.name.replace(/^연습 \d · /,'이어서 · ')):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
+  $('btnQuick').textContent=st.openingContract?'시작 · 첫 암살':st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -305,7 +305,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 항상 걷기는 판이 바뀌어도 유지
   running = true; paused = false;
-  newGame(i); if(STAGE.firstSteps){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
+  newGame(i); if(STAGE.firstSteps||STAGE.openingContract){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다

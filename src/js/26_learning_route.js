@@ -1,11 +1,14 @@
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['tB','t0','tC','m2','tL','tR','m4','m6'];
+const LEARNING_ROUTE=['p0','m2','m4','m6'];
+const OPTIONAL_LESSON_NEXT={tB:'t0',t0:'tC',tC:'m2',tL:'tR',tR:'m4'};
+const learningComplete=st=>stageCleared(st)||st.openingContract&&mainContracts().some(stageCleared);
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
-  for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!stageCleared(STAGES[i]))return i;}
+  for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!learningComplete(STAGES[i]))return i;}
   const st=mainContracts().find(demoOk);return st?STAGES.indexOf(st):0;
 }
 function learningNext(){
+  if(OPTIONAL_LESSON_NEXT[STAGE.id])return learningStageIndex(OPTIONAL_LESSON_NEXT[STAGE.id]);
   const at=LEARNING_ROUTE.indexOf(STAGE.id);
   if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(STAGES[i].tutorial&&stageCleared(STAGES[i]))continue;return i;}return -1;}
   return recommendedStage();

@@ -1,0 +1,3 @@
+PASS native 2D {'mobile': False, 'before': [312, 648], 'after': [380.5251756245766, 649.597401], 'version': 'v174', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True, 'customUIFont': {'fonts': [{'familyName': 'IBM Plex Sans KR', 'postScriptName': 'IBMPlexSansKR-Regular', 'isCustomFont': True, 'glyphCount': 5}]}}
+PASS native 2D {'mobile': True, 'before': [312, 648], 'after': [384.77640200132146, 649.5926039999999], 'version': 'v174', 'stage': 'tB', 'errors': [], 'threeDRequests': False, 'objectivePauseAndResume': True, 'customUIFont': {'fonts': [{'familyName': 'IBM Plex Sans KR', 'postScriptName': 'IBMPlexSansKR-Regular', 'isCustomFont': True, 'glyphCount': 5}]}}
+PASS packaged hashes 8 http://127.0.0.1:8001/public/

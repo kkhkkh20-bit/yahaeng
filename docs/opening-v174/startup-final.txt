@@ -1,0 +1,4 @@
+PASS {'engine': 'chromium', 'mobile': False, 'ready': True, 'settings': True, 'contracts': True, 'start': True}
+PASS {'engine': 'chromium', 'mobile': True, 'ready': True, 'settings': True, 'contracts': True, 'start': True}
+PASS delayed download
+PASS failed download

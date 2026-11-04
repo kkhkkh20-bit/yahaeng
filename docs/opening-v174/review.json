@@ -1,0 +1,31 @@
+{
+  "version": "v174",
+  "iterations": [
+    {
+      "finding": "Opening target was at screen edge and natural upward movement met a crate.",
+      "change": "Move spawn toward the western lane; shorten the crate screen so the sound route remains open."
+    },
+    {
+      "finding": "The objective offered a lethal hold before actual melee reach.",
+      "change": "Query the actual available attack; ask to approach until contact is possible. KO, carried and stashed targets retain finishing guidance."
+    },
+    {
+      "finding": "A whistle outside hearing range had no explicit feedback.",
+      "change": "Expose a no-response message and bring the patrol route past the concealed lure position; hearing still uses the ordinary sound simulation."
+    },
+    {
+      "finding": "The nonmodal confirmation radio intercepted the first mobile escape gesture.",
+      "change": "Nonmodal radio and its descendants pass pointer events through; modal dialogue keeps interaction."
+    }
+  ],
+  "verification": {
+    "clockSteppedNative": "Both approaches completed on keyboard and CDP touch with full health, no alert, no civilian/guard kill, no skills and the existing 4P budget. Engine time is not a human completion estimate.",
+    "ordinaryBrowserReplay": "UI-only native keyboard and touch; ordinary RAF, no seed, no engine reads or state manipulation. Both completed and advanced to VIP. Both were rank assassin, with 0 player detections; do not equate a successful clear with a fun new-user study.",
+    "focusedFixtures": "Four viewports; initial actual sight versus hypothetical exposure, deliberate/diagonal cover, KO victory gate, progress preservation, touch controls, movement through nonmodal radio."
+  },
+  "remaining": [
+    "VIP still introduces more systems than the opening. This release improves the entry, not all contract pacing.",
+    "The two opening routes share a basic rear takedown. They demonstrate choice but do not prove sustained replay value.",
+    "Developer replays cannot replace independent new-player observation or establish willingness to pay."
+  ]
+}

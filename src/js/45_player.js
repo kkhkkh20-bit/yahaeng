@@ -113,6 +113,7 @@ function whistle() {
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
   noise(x, y, 230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  if(STAGE.openingContract&&!S.noises.at(-1)?.heard)toast('반응 없음 · 경비가 가까워질 때 다시 불기',2,'info');
   hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기
@@ -467,7 +468,7 @@ function updatePlayer(dt) {
     else { P.cover = Object.assign(n, { auto: P.cover.auto && !(mag > 0.05 && into >= 0.7) }); mode = 'sneak'; P.mode = 'sneak'; if (mag > 0.05) { const al = mx * -n.y + my * n.x; mx = -n.y * al; my = n.x * al; if (Math.abs(al) > 0.2) { P.coverSide = Math.sign(al); P.coverSideT = S.t; } mag = Math.abs(al); if (mag < 0.2) mag = 0; } }
   } else if (mag > 0.05 && mode === 'sneak' && !P.carrying && !P.captive && (!P.z || ROB) && !P.strikeT) {
     P.idleWall = 0;
-    const n = coverAt(P), sn = mode === 'sneak', dot = n ? (mx * n.x + my * n.y) / mag : 0; if (n && dot < (sn ? -0.6 : -0.92) && (!sn || n.d < 18)) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.15) hint('coverPush', '벽 쪽으로 잠깐(0.5초) 밀면 등을 붙인다'); if (P.coverPush > COVER_PUSH) { enterCover(n); mag = 0; P.coverPush = 0; } } else P.coverPush = 0;  // 벽을 향해 거의 똑바로 잠깐 밀어야 기댄다 (비스듬히 걸을 땐 안 걸린다)
+    const n = coverAt(P), dot = n ? (mx * n.x + my * n.y) / mag : 0; if (n && dot < -0.92 && n.d < 18) { P.coverPush = (P.coverPush || 0) + dt; if (P.coverPush > 0.15) hint('coverPush', '벽 쪽으로 잠깐(0.5초) 밀면 등을 붙인다'); if (P.coverPush > COVER_PUSH) { enterCover(n); mag = 0; P.coverPush = 0; } } else P.coverPush = 0;  // Diagonal obstacle avoidance must not become sticky cover.
   } else {
     P.coverPush = 0;
     P.idleWall = 0;  // 벽 근처에 멈춰 있기만 해서는 붙지 않는다 (벽 쪽으로 1초 밀어야 붙는다)

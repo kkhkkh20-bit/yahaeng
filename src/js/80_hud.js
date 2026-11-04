@@ -131,7 +131,7 @@ function refreshMissionIdentityArt(){
 }
 function syncMissionIdentity(){
   const el=$('missionIdentity');if(!el)return;
-  const active=mainContract(STAGE)&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
+  const active=(mainContract(STAGE)||STAGE.openingContract)&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
   const rows=missionIdentities(),signature=JSON.stringify(rows.map(r=>[r.id,r.key,r.art,r.status]));
   if(hudCache.identity!==signature){el.replaceChildren(...rows.map(r=>makeMissionIdentity(r,false)));hudCache.identity=signature;}
   refreshMissionIdentityArt();
@@ -145,8 +145,8 @@ function showBrief(go) {
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
-  const identities=mainContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
-  $('brPurpose').hidden=STAGE.id!=='m2';$('brPurpose').textContent='실장을 제거하고, 그의 장부를 가져온다.';
+  const identities=mainContract(STAGE)||STAGE.openingContract?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
+  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 그의 장부를 가져온다.';
   $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
@@ -175,6 +175,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
+  { const opening=openingGoal();if(opening)return opening; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
@@ -308,7 +309,7 @@ function updateStealth(lv) {
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
-  else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? zi.secure?'보안구역 · 복장 통행 불가':'금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
+  else if (e === 1 && !pub) { const watched=physicallyObserved();s = watched?'risk':'hide';word = watched?'시야 안':'시야 밖';why = inBush && !P.hidden ? '웅크려야 숨는다' : watched ? '발견 게이지가 차기 전에 시야 밖으로' : banned ? '통행 불가 · 경비가 돌아보면 발각 위험' : '돌아보면 보일 수 있음'; }
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
   else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
@@ -412,7 +413,7 @@ function showEnd(win, reason) {
         + (ENTRY_PICK && (STAGE.entries || []).some(e => e.need && e.need <= n) ? `<div class="ent">열린 진입로: ${(STAGE.entries || []).filter(e => (e.need || 0) <= n).map(e => e.name).join(' · ')}</div>` : ''); })()
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
-  if(win&&!STAGE.tutorial){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
+  if(win&&!STAGE.tutorial&&!STAGE.openingContract){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = !(win && learningNext() >= 0);
@@ -449,7 +450,7 @@ function renderStageList() {
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => mainContract(s)), archive = list.filter(([s]) => !s.tutorial && !s.city && !mainContract(s)), city = list.filter(([s]) => s.city);
+  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => s.openingContract).concat(list.filter(([s]) => mainContract(s))), archive = list.filter(([s]) => !s.tutorial && !s.city && !s.openingContract && !mainContract(s)), city = list.filter(([s]) => s.city);
   $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
