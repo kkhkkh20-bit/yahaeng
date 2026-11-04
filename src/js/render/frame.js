@@ -367,8 +367,9 @@ function draw() {
       ctx.strokeStyle = 'rgba(127,214,204,.9)'; ctx.lineWidth = 2.5; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
       ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, `예약 ${i + 1} · ${TOOL_NAME[q.tool]}`, '#7fd6cc');
     });
-    const kt=input.aiming&&['kunai','blade'].includes(input.tool)?kunaiTarget():null;
-    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, input.tool==='blade'?'쿠나이 — 길게 누른 뒤 놓으면 처치':'다트 — 짧게 기절 · 길게 처치', '#d7dbe2'); }
+    const kt=!input.padWhistle&&['kunai','blade'].includes(input.tool)&&canAim()?kunaiTarget():null;
+    if(kt&&!input.aiming){ctx.save();ctx.strokeStyle='#d7dbe2a0';ctx.lineWidth=1.2/SCALE;ctx.setLineDash([3/SCALE,4/SCALE]);drawTargetRing(kt.ref,ctx.strokeStyle);ctx.restore();if(S.marked===kt.ref)tag(kt.x,kt.y-30,projectileName(kt.ref)+' · '+TOOL_NAME[input.tool],'#d7dbe2');}
+    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, projectileName(kt.ref)+' · '+(input.tool==='blade'?'길게 처치':'짧게 기절 · 길게 처치'), '#d7dbe2'); }
     if (kt && input.aiming) {
       ctx.save(); ctx.translate(kt.x, kt.y); ctx.rotate(S.t * 1.5); ctx.strokeStyle = 'rgba(215,219,226,.85)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();

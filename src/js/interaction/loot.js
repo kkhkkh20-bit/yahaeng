@@ -19,7 +19,7 @@ function nearLoot() {
   }
   return best;
 }
-function startLoot(it) { if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+function startLoot(it) { const P=S.player;if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
   hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
@@ -36,7 +36,7 @@ function nearBlood() {
 function startClean(d) { const P = S.player; P.pick = { kind: 'clean', d, x: d.x, y: d.y, t: 0, nt: 0.1, dur: d.r >= 10 ? 2.6 : 0.9 }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(d.y - P.y, d.x - P.x); hint('clean', '핏자국 닦기: 움직이면 멈춘다. 닦는 모습이 보이면 수상하게 여긴다'); }
 function updatePick(P, mag, dt) {
   const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
-  if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
+  if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast(P.hurtT>.4?'피격으로 작업 중단':'이동해서 작업 중단', 1.2); return; }
   K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; if (K.kind === 'clean') { play('cloth', 0.12, 1.3); noise(K.x, K.y, 30, 'pick'); } else if (K.kind === 'loot') { play(K.short === '빼내기' ? 'click' : 'cloth', 0.12, 1.4); noise(K.x, K.y, K.loud, 'pick'); } else { play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); } }
   if (K.t < K.dur) return;
   P.pick = null;

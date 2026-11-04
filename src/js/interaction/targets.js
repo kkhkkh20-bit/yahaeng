@@ -10,7 +10,7 @@ function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
   if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
-  if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔·다트', 2.6, 'good'); return; }
+  if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔'+(abilityOn('dart')?'·다트':''), 2.6, 'good'); return; }
   toast((msg || withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')) + (keyPurpose(k) ? ' · '+keyPurpose(k) : ''), 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '대형 수거함');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';

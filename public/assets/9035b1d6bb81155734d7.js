@@ -434,7 +434,7 @@ const STAGES = [
   brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입번호는 창고 정산 쪽지나 북서쪽 폐사무소 연락책 메모에서 알아낼 수 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 1층 금고의 계약서를 챙긴다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   physicalAreas: [[14, 12, 17, 15], [27, 14, 30, 15], [40, 12, 42, 15], [17, 20, 19, 21]],
   powerArea: [9, 11, 33, 16], powerName: "상가 앞 보안등",
-  W: 48, H: 28, start: [47, 16], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
+  W: 48, H: 28, start: [31, 16], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
   heightCueBuildings: [2, 3, 4],
   // 구역: 큰길·포차·남쪽 골목은 공개(기본). 건물 안과 북쪽 뒷골목은 조직원만
   zones: [[1, 2, 8, 10, 'res', null, '폐사무소 · 연락책 거점', ['crew']], [10, 2, 20, 10, 'res', null, '창고 · 조직원만'], [22, 2, 32, 10, 'res', null, '사무동 · 조직원만'], [34, 2, 46, 10, 'res', null, '클럽 · 조직원만'],
@@ -627,7 +627,8 @@ const STAGES = [
   mission: '감방 탈출 후 감금동 2층에서 제비의 무전기를 회수하고 탈출',
   itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
   heightCueBuildings: [0, 1],
-  brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
+  fixedFurn:[{x:15,y:9,t:'locker',fl:1}],
+  brief: '까마귀가 우리를 넘겼다. 감방 바닥의 머리핀으로 간수가 등을 돌렸을 때 문을 딸 수 있다. 압수품은 동쪽 경비실에 있다. 되찾을지는 선택이다. 제비의 무전기는 감금동 동쪽 계단으로 올라가는 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 2층은 보안구역이라 조직원 옷으로도 통과할 수 없다. 경비의 시선을 피하거나 유인·제압할 기회를 만든다. 신원이 CCTV에 녹화되면 경비실에서 기록을 지워야 탈출할 수 있다.',
   physicalAreas: [[19, 15, 19, 15]],
   powerArea: [15, 12, 38, 25], powerName: "창고 마당 조명",
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -686,15 +687,16 @@ const STAGES = [
     { id: 'cell', name: '감방 나가기', moot: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]), reveal: () => true,
       steps: [{ text: '감방 바닥에서 머리핀 찾기 — 락픽 대신 쓴다', at: null, done: S => !!(S.player.got || {}).pin || S.player.picks > 0 || !!S.player.keys.red },
               { text: '감방 문 따기 — 간수가 등을 돌렸을 때', at: null, done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) }] },
-    { id: 'gear', name: '압수품', reveal: (S, h) => !h.inRect(S.player, [3, 3, 19, 12, 0]) || h.knows('압수품'),
-      steps: [{ text: '경비실에서 빼앗긴 장비 되찾기 (락픽·빈 캔·다트)', at: null, done: S => !!(S.player.got || {}).gear }] },
-    { id: 'radio', name: '제비의 무전기', reveal: () => true,
-      steps: [{ text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: null, done: S => S.items.every(i => i.got) }] }
+    { id: 'gear', name: '압수품 · 선택 경로', reveal: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) || h.knows('압수품'),
+      steps: [{ text: '동쪽 경비실에서 압수품 되찾기 · 배운 투척 기술도 사용 가능', at: [33,7,0], done: S => !!(S.player.got || {}).gear }] },
+    { id: 'radio', name: '제비의 무전기', reveal: (S,h) => !h.inRect(S.player,[4,4,15,6,0]),
+      steps: [{ text:'동쪽 계단으로 2층 진입 · 보안구역은 복장 통행 불가',at:[17,6,1],done:S=>(S.player.fl||0)===1||S.items.every(i=>i.got)},
+              { text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: [13,6,1], done: S => S.items.every(i => i.got) }] }
   ],
   endText: '제비의 무전기를 회수해 빠져나왔다. 이제 이곳에 잡혀온 경위를 확인해야 한다.',
   challenges: ['unrecorded', 'ghost', 'untouched', 'clean', 'fast'], fastT: 210,
   well: 'manhole', kunai: 2, coins: 0, reinf: [43, 20],
-  hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '경비실의 압수품 가방에서 락픽·빈 캔·다트를 되찾을 수 있다. 장비 없이도 휘파람과 맨손을 쓸 수 있다.', '조직원을 쓰러뜨려 옷을 입으면 단지 안을 걸어서 지나갈 수 있다. 정문 정예는 얼굴을 안다.']
+  hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '압수품 회수는 선택이다. 락픽·빈 캔을 되찾고, 배운 투척 기술도 사용할 수 있다. 맨손과 휘파람은 장비 없이도 쓴다.', '조직원 옷은 마당에서 통하지만 감금동 2층 보안구역과 정문 정예는 피해야 한다.']
 },
 // ───────── 도시 (시제품): GTA2식 자유 이동. 도로 격자 위로 차가 다니고, 차를 빼앗아 몰 수 있다. 의뢰 장소에 들어가면 의뢰가 시작된다
 // 블록 12개(가로 4 × 세로 3). 블록마다 16칸, 도로는 4칸(양방향 2차선, 우측 통행). 블록 가장자리 한 칸은 보도
@@ -6678,7 +6680,7 @@ function updateTargetIntel() {
   initMissionPlan();
   const L0 = CUR_F; setLayer(flOf(S.player));
   for (const g of S.guards) if (g.target && !targetEliminated(g) && canObserveTarget(g)) {
-    S.targetIntel[g.id] = { ...gSpot(targetPosition(g)), t: S.t };
+    S.targetIntel[g.id] = { ...gSpot(targetPosition(g)), t: S.t, unconscious:!!S.corpses.find(c=>c.g===g&&c.ko) };
   }
   setLayer(L0);
 }
@@ -6686,7 +6688,7 @@ function targetKnowledge(g) {
   initMissionPlan();
   // 직접 옮겨 숨긴 기절 표적은 플레이어가 위치를 안다. 예전 활동 구역으로 안내하지 않는다.
   const body=S.corpses.find(c=>c.g===g&&c.ko&&(c.playerHandled||c.stashed&&c.container||S.player.carrying===c));
-  if(body)return{...gSpot(body),where:(body.stashed&&body.container?hideName(body.container)+' · ':'')+placeName(body.x,body.y,flOf(body))+' · 기절',stored:!!body.stashed};
+  if(body)return{...gSpot(body),where:(body.stashed&&body.container?hideName(body.container)+' · ':'')+placeName(body.x,body.y,flOf(body))+' · 기절',stored:!!body.stashed,unconscious:true};
   if (oppMode === 2) return { ...gSpot(targetPosition(g)), where: placeName(targetPosition(g).x, targetPosition(g).y, flOf(targetPosition(g))), live: true };
   const m = S.targetIntel[g.id];
   if (m && S.t - m.t < 15) return { ...m, live: S.t - m.t < .3, lastSeen: S.t - m.t >= .3,
@@ -6696,9 +6698,11 @@ function targetKnowledge(g) {
 function missionGoalCandidates() {
   const a = [];
   S.items.forEach((it, i) => { if (!it.got) a.push({ id: 'item:' + i, text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0, z: 0 }); });
-  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) a.push({ ...targetKnowledge(g), id: 'target:' + g.id, text: targetName(g) + ' 처치하기', g });
+  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) {const at=targetKnowledge(g);a.push({ ...at, id: 'target:' + g.id, text: missionTargetText(g,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '), g });}
   return a;
 }
+const missionTargetText=(g,at)=>at.unconscious?'기절한 '+targetName(g)+' 마무리':targetName(g)+' 처치하기';
+const missionTargetHint=at=>at.unconscious?(at.stored?'은닉처에서 꺼낸 뒤 공격 길게':'몸 가까이에서 공격 길게'):'';
 function pinnedMissionGoal() {
   const a = missionGoalCandidates(), P = S.player;
   let g = a.find(g => g.id === S.goalPin);
@@ -6820,6 +6824,10 @@ function updateVipPlan(dt) {
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m6'){
+    const it=S.items[0];if(!it||it.got)return null;
+    return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+  }
   if(STAGE.id==='m2'){
     const P=S.player,vip=npc('vip'),item=S.items[0];
     if(item&&!item.got){
@@ -6830,13 +6838,13 @@ function contractRouteGoal(){
       const r=rendezvousState();
       if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
       if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
-      return{...targetKnowledge(vip),g:vip,id:'target:'+vip.id,text:'의뢰: 실장 처치하기',routeGuide:true};
+      const at=targetKnowledge(vip);return{...at,g:vip,id:'target:'+vip.id,text:'의뢰: '+missionTargetText(vip,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};
     }
     return null;
   }
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
-  const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+targetName(g)+' 처치하기',where:[why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
+  const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
   const object=(at,text,where)=>at?{x:at.x,y:at.y,fl:flOf(at),z:0,text,where,routeGuide:true}:null;
   const locked=key=>S.doors.some(d=>d.locked&&d.keyLock===key);
   if(collector&&!targetEliminated(collector))return target(collector,'빨간 카드키');
@@ -8537,9 +8545,10 @@ function updateCheckpoint(dt) {
   if (!cpOn() || S.over) return;
   updatePreparationProgress();
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
+  const P=S.player,sheltered=S.alevel===2&&!S.radioCall&&(P.hide&&!P.hide.spotted||P.hidden)&&!(S.expo>0)&&!actionBusy(P)&&!S.guards.some(g=>!g.civ&&!['DEAD','CAPTIVE'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<200);
+  S.cpShelterT=sheltered?(S.cpShelterT||0)+dt:0;
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
-  const P = S.player;
-  if (S.alevel >= 2 || S.radioCall || P.techWork || P.skillHold || P.assassinAnim || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
+  if (S.alevel >= 2 && !(S.alevel===2&&S.cpShelterT>=3) || S.radioCall || P.techWork || P.skillHold || P.assassinAnim || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
   if (S.guards.some(g => !g.civ && (['ALERT', 'NOTICE', 'BODY', 'WARN'].includes(g.state) || (g.eyeT || 0) > .05))) return;
   S.cpWant = false; saveCheckpoint();
 }
@@ -9519,7 +9528,7 @@ function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
   if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
-  if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔·다트', 2.6, 'good'); return; }
+  if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔'+(abilityOn('dart')?'·다트':''), 2.6, 'good'); return; }
   toast((msg || withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')) + (keyPurpose(k) ? ' · '+keyPurpose(k) : ''), 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '대형 수거함');
 const hideIn = h => h.type === 'bed' ? '침대 밑' : hideName(h) + ' 안';
@@ -9901,7 +9910,7 @@ function nearLoot() {
   }
   return best;
 }
-function startLoot(it) { if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const P = S.player, L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+function startLoot(it) { const P=S.player;if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
   hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
@@ -9918,7 +9927,7 @@ function nearBlood() {
 function startClean(d) { const P = S.player; P.pick = { kind: 'clean', d, x: d.x, y: d.y, t: 0, nt: 0.1, dur: d.r >= 10 ? 2.6 : 0.9 }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(d.y - P.y, d.x - P.x); hint('clean', '핏자국 닦기: 움직이면 멈춘다. 닦는 모습이 보이면 수상하게 여긴다'); }
 function updatePick(P, mag, dt) {
   const K = P.pick; P.moving = false; P.mode = 'sneak'; P.light = lightAt(P.x, P.y, false); P.hidden = false;
-  if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast('그만뒀다', 1.2); return; }
+  if (mag > 0.25 || P.hurtT > 0.4) { P.pick = null; toast(P.hurtT>.4?'피격으로 작업 중단':'이동해서 작업 중단', 1.2); return; }
   K.t += dt; if ((K.nt -= dt) <= 0) { K.nt = 0.55; if (K.kind === 'clean') { play('cloth', 0.12, 1.3); noise(K.x, K.y, 30, 'pick'); } else if (K.kind === 'loot') { play(K.short === '빼내기' ? 'click' : 'cloth', 0.12, 1.4); noise(K.x, K.y, K.loud, 'pick'); } else { play('click', 0.14, 1.6 + Math.random() * 0.4); if (K.kind !== 'latch') noise(K.x, K.y, K.kind === 'door' ? 80 : 55, 'pick'); } }
   if (K.t < K.dur) return;
   P.pick = null;
@@ -9974,10 +9983,12 @@ function kunaiTarget(weapon=input.tool) {
   if(weapon!=='blade'&&!abilityOn('dart'))return null;
   const P = S.player; if ((weapon==='blade'?!(P.blades>0):P.kunai<=0) || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
   let best = null, bs = Infinity;
+  const marked=S.marked&&!['DEAD','CAPTIVE'].includes(S.marked.state)?S.marked:null;
   for (const g of S.guards) {
+    if(marked&&g!==marked)continue;
     if (g.child || g.dog || g.doomed || g.climb || g.civ&&!g.target&&S.marked!==g || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P)) continue;
     const d = dist(P.x, P.y, g.x, g.y), ad = Math.abs(angDiff(P.a, Math.atan2(g.y-P.y, g.x-P.x)));
-    if (d < 20 || d > projectileRange() || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
+    if (d < 20 || d > projectileRange() || !marked&&ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
     const score = ad * 160 + d * .4-(S.marked===g?240:0);
     if (score < bs) { bs = score; best = { type:'guard',ref:g,x:g.x,y:g.y,fl:flOf(g),z:g.z||0,explicitCivilian:S.marked===g }; }
   }
@@ -10785,13 +10796,14 @@ function assassinOwnsActor(g){const A=S.player.assassinAnim;return !!A&&A.ids.in
 const EXTRA_TOOLS={kunai:{skill:'dart',name:'다트'},blade:{skill:'kunai',name:'쿠나이'},smoke:{skill:'smoke',name:'연막탄'},radio:{skill:'radio',name:'무전기'},hack:{skill:'hack',name:'해킹기'}};
 const availableTools=()=>TOOLS.filter(t=>!EXTRA_TOOLS[t]||abilityOn(EXTRA_TOOLS[t].skill));
 const deviceReady=t=>t==='radio'?!S.player.hasRadio||S.t>=(S.radioReadyAt||0):t==='hack'?S.t>=(S.hackReadyAt||0):true;
+const projectileName=g=>g.target?targetName(g):g.civ?'주민':g.elite?'정예 경비':g.radio?'무전 담당':'경비';
 function toolDetail(t){
  if(S.player.techWork)return S.player.techWork.kind==='hack'?'해킹 '+Math.floor(S.player.techWork.t/1.5*100)+'%':'무전기 확보 중';
- if(t==='blade')return '길게 · 살상 투척';
+ if(t==='blade'||t==='kunai'){const g=kunaiTarget(t)?.ref;return g?projectileName(g)+(t==='blade'?' · 길게 처치':' · 짧게 기절'):S.marked&&!['DEAD','CAPTIVE'].includes(S.marked.state)?'지정 대상 · 접근 필요':'대상 탭·클릭으로 지정';}
  if(t==='smoke')return skillOn('smokeMix')?'시선 차단 8초':'시선 차단 5초';
  if(t==='radio')return !S.player.hasRadio?'쓰러진 무전 담당에게 접근':!deviceReady(t)?'재사용 '+Math.ceil(S.radioReadyAt-S.t)+'초':'겨눈 위치로 점검 지시';
  if(t==='hack')return !deviceReady(t)?'재사용 '+Math.ceil(S.hackReadyAt-S.t)+'초':hackTarget()?'CCTV 해킹 · 1.5초':'같은 층 CCTV를 겨누기';
- return t==='kunai'?'길게 처치':'';
+ return '';
 }
 function actBlade(lethal=false){
  if(!skillOn('kunai'))return false;if(!lethal){toast('쿠나이는 살상 도구다 · 1초 이상 눌렀다 떼기',2);return false;}
@@ -11216,6 +11228,7 @@ function kunaiHit(k) {
     spawnEffect('dart',{x:g.x,y:g.y-22,fl:flOf(g),z:g.z||0},{angle:Math.atan2(g.y-k.y0,g.x-k.x0),scale:.7});
     g.takedownIntent = { source: null, lethal: !!k.lethal }; S.lethalNext = !!k.lethal; if (!k.lethal) S.koNext = true;
     killGuard(g); S.stats.special++; dartBlame(g);
+    const body=S.corpses.find(c=>c.g===g&&c.ko);if(body)body.playerHandled=true;
     toast(k.weapon==='blade'?'쿠나이로 처치했다':k.lethal ? '다트로 처치했다' : '다트로 기절시켰다', 1.6, 'good');
   }
 }
@@ -13188,8 +13201,9 @@ function draw() {
       ctx.strokeStyle = 'rgba(127,214,204,.9)'; ctx.lineWidth = 2.5; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
       ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, `예약 ${i + 1} · ${TOOL_NAME[q.tool]}`, '#7fd6cc');
     });
-    const kt=input.aiming&&['kunai','blade'].includes(input.tool)?kunaiTarget():null;
-    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, input.tool==='blade'?'쿠나이 — 길게 누른 뒤 놓으면 처치':'다트 — 짧게 기절 · 길게 처치', '#d7dbe2'); }
+    const kt=!input.padWhistle&&['kunai','blade'].includes(input.tool)&&canAim()?kunaiTarget():null;
+    if(kt&&!input.aiming){ctx.save();ctx.strokeStyle='#d7dbe2a0';ctx.lineWidth=1.2/SCALE;ctx.setLineDash([3/SCALE,4/SCALE]);drawTargetRing(kt.ref,ctx.strokeStyle);ctx.restore();if(S.marked===kt.ref)tag(kt.x,kt.y-30,projectileName(kt.ref)+' · '+TOOL_NAME[input.tool],'#d7dbe2');}
+    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, projectileName(kt.ref)+' · '+(input.tool==='blade'?'길게 처치':'짧게 기절 · 길게 처치'), '#d7dbe2'); }
     if (kt && input.aiming) {
       ctx.save(); ctx.translate(kt.x, kt.y); ctx.rotate(S.t * 1.5); ctx.strokeStyle = 'rgba(215,219,226,.85)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();
@@ -13664,6 +13678,9 @@ function envChoices() {
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
   const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel' || sa.k === 'uncover'))) ? z.concat(env) : env.concat(z);
   if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
+  // At mission furniture, carrying or an already exposed uniform must not hide
+  // collection. A useful new outfit and every explicit selection keep priority.
+  if(!P.carrying){const loot=list.find(a=>a.k==='loot'&&S.items.includes(a.it)&&!a.it.got),dress=list.find(a=>a.k==='dress'&&!(P.blown||{})[a.c.outfit||'crew']);if(loot&&!dress){loot.missionPriority=true;list.splice(list.indexOf(loot),1);list.unshift(loot);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
@@ -13677,7 +13694,7 @@ function envAction() {
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
   if (!stay) S.envExplicit = null;
   if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
-  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  if (key !== S.envKey) { S.envKey = key; const j = stay && (S.envExplicit||!L[0].missionPriority) ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay||!S.envExplicit&&L[0].missionPriority) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
   S.envPick = pk; S.envPickK = a.k;
@@ -13896,7 +13913,8 @@ function objectiveLines() {
 // 층·높이가 바뀌면 화면 가운데 위에 큰 글씨로 잠깐 (지금 몇 층인지 바로 알게)
 function floorBanner(P, ptx, pty) {
   const bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
-  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층 실내` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
+  const secure=STAGE.zones&&!P.z&&zoneInfo(P.x,P.y,0,flOf(P)).secure;
+  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층${secure?' · 보안구역 · 복장 통행 불가':' 실내'}` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
   if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
   if (S._flk == null) { S._flk = k; return; }
   if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
@@ -13984,7 +14002,7 @@ function updateStealth(lv) {
   const zi = STAGE.zones ? pZoneInfo() : null, banned = zi && zi.k !== Z_PUB && !permitted(zi);
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
-  if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? '무단 침입' : '신원 노출'; }
+  if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? zi.secure?'보안구역 침입':'무단 침입' : '신원 노출'; }
   else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴 확인'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
@@ -13992,7 +14010,7 @@ function updateStealth(lv) {
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
-  else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? '금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
+  else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? zi.secure?'보안구역 · 복장 통행 불가':'금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
   else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '허용된 복장' : '공개 구역'; }
@@ -14018,6 +14036,7 @@ function syncTools() {
   });
   { const art=P.captive?'grab':input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;const html=hudArt(art)+(P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`); if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
   hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
+  if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
   hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
@@ -14906,7 +14925,7 @@ function markAt(cx, cy) {
   let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorPick(g):null,d=ip?Math.hypot(ip.x-cx,ip.y-cy):dist(g.x,g.y-14,wx,wy); if (d < bd) { bd = d; best = g; } }
   if (!best) return false;
   S.marked = S.marked === best ? null : best; play('click', 0.25);
-  if (S.marked) toast((best.target ? '표적' : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰로와 시야를 고정 표시한다', 1.8);
+  if (S.marked) toast((best.target ? targetName(best) : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰·시야 표시'+(abilityOn('dart')&&!best.dog&&!best.child?' · 다트 대상 지정':''), 1.8);
   return true;
 }
 canvas.addEventListener('mousedown', e => { if (e.button === 0 && !isTouch) markAt(e.clientX, e.clientY); });

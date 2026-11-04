@@ -2,13 +2,14 @@
 const EXTRA_TOOLS={kunai:{skill:'dart',name:'다트'},blade:{skill:'kunai',name:'쿠나이'},smoke:{skill:'smoke',name:'연막탄'},radio:{skill:'radio',name:'무전기'},hack:{skill:'hack',name:'해킹기'}};
 const availableTools=()=>TOOLS.filter(t=>!EXTRA_TOOLS[t]||abilityOn(EXTRA_TOOLS[t].skill));
 const deviceReady=t=>t==='radio'?!S.player.hasRadio||S.t>=(S.radioReadyAt||0):t==='hack'?S.t>=(S.hackReadyAt||0):true;
+const projectileName=g=>g.target?targetName(g):g.civ?'주민':g.elite?'정예 경비':g.radio?'무전 담당':'경비';
 function toolDetail(t){
  if(S.player.techWork)return S.player.techWork.kind==='hack'?'해킹 '+Math.floor(S.player.techWork.t/1.5*100)+'%':'무전기 확보 중';
- if(t==='blade')return '길게 · 살상 투척';
+ if(t==='blade'||t==='kunai'){const g=kunaiTarget(t)?.ref;return g?projectileName(g)+(t==='blade'?' · 길게 처치':' · 짧게 기절'):S.marked&&!['DEAD','CAPTIVE'].includes(S.marked.state)?'지정 대상 · 접근 필요':'대상 탭·클릭으로 지정';}
  if(t==='smoke')return skillOn('smokeMix')?'시선 차단 8초':'시선 차단 5초';
  if(t==='radio')return !S.player.hasRadio?'쓰러진 무전 담당에게 접근':!deviceReady(t)?'재사용 '+Math.ceil(S.radioReadyAt-S.t)+'초':'겨눈 위치로 점검 지시';
  if(t==='hack')return !deviceReady(t)?'재사용 '+Math.ceil(S.hackReadyAt-S.t)+'초':hackTarget()?'CCTV 해킹 · 1.5초':'같은 층 CCTV를 겨누기';
- return t==='kunai'?'길게 처치':'';
+ return '';
 }
 function actBlade(lethal=false){
  if(!skillOn('kunai'))return false;if(!lethal){toast('쿠나이는 살상 도구다 · 1초 이상 눌렀다 떼기',2);return false;}

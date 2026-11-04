@@ -88,6 +88,9 @@ function envChoices() {
   // 맨홀 안: [행동] = 지하로 (나오기는 조이스틱을 밀면)
   const list=(P.carrying || (sa && (sa.k === 'quickStash' || sa.k === 'carry' || sa.k === 'dress' || sa.k === 'tunnel' || sa.k === 'uncover'))) ? z.concat(env) : env.concat(z);
   if(!P.carrying&&!P.hide&&!P.under&&!P.vent){const distance=a=>{const o=objectActionPoint(a);return o?.x!=null?dist(P.x,P.y,o.x,o.y):Infinity;},work=list.filter(a=>a.k==='pickup'||a.k==='use').sort((a,b)=>distance(a)-distance(b))[0];if(work&&list[0]!==work&&distance(work)+12<distance(list[0])){list.splice(list.indexOf(work),1);list.unshift(work);}}
+  // At mission furniture, carrying or an already exposed uniform must not hide
+  // collection. A useful new outfit and every explicit selection keep priority.
+  if(!P.carrying){const loot=list.find(a=>a.k==='loot'&&S.items.includes(a.it)&&!a.it.got),dress=list.find(a=>a.k==='dress'&&!(P.blown||{})[a.c.outfit||'crew']);if(loot&&!dress){loot.missionPriority=true;list.splice(list.indexOf(loot),1);list.unshift(loot);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
@@ -101,7 +104,7 @@ function envAction() {
   const stay = anchor && anchor.fl === flOf(PP) && anchor.z === (PP.z || 0) && Math.hypot(PP.x - anchor.x, PP.y - anchor.y) < 30;
   if (!stay) S.envExplicit = null;
   if (stay && S.envExplicit && !L.some(a=>envToken(a)===S.envExplicit)) return {k:'none',label:'대상이 사라짐',blocked:true,choices:L.length,choiceI:-1};
-  if (key !== S.envKey) { S.envKey = key; const j = stay ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay) S.envSel = 0;
+  if (key !== S.envKey) { S.envKey = key; const j = stay && (S.envExplicit||!L[0].missionPriority) ? L.findIndex(a => a.k === S.envPickK && oid(actObj(a)) === S.envPick) : -1; S.envSel = j >= 0 ? j : 0; } else if (!stay||!S.envExplicit&&L[0].missionPriority) S.envSel = 0;
   const i = (S.envSel || 0) % L.length, a = L[i], pk = oid(actObj(a));
   if (!stay || pk !== S.envPick || a.k !== S.envPickK) S.envPickP = { x: PP.x, y: PP.y, fl: flOf(PP), z: PP.z || 0 };
   S.envPick = pk; S.envPickK = a.k;

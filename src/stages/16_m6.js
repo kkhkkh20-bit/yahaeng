@@ -5,7 +5,8 @@
   mission: '감방 탈출 후 감금동 2층에서 제비의 무전기를 회수하고 탈출',
   itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
   heightCueBuildings: [0, 1],
-  brief: '까마귀가 우리를 넘겼다. 장비는 모두 빼앗겼고 감방 문 열쇠는 간수가 차고 있다. 감방 바닥 어딘가에 머리핀이 떨어져 있을 거다. 압수품은 경비실 어딘가에 있다. 제비의 무전기는 감금동 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
+  fixedFurn:[{x:15,y:9,t:'locker',fl:1}],
+  brief: '까마귀가 우리를 넘겼다. 감방 바닥의 머리핀으로 간수가 등을 돌렸을 때 문을 딸 수 있다. 압수품은 동쪽 경비실에 있다. 되찾을지는 선택이다. 제비의 무전기는 감금동 동쪽 계단으로 올라가는 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 2층은 보안구역이라 조직원 옷으로도 통과할 수 없다. 경비의 시선을 피하거나 유인·제압할 기회를 만든다. 신원이 CCTV에 녹화되면 경비실에서 기록을 지워야 탈출할 수 있다.',
   physicalAreas: [[19, 15, 19, 15]],
   powerArea: [15, 12, 38, 25], powerName: "창고 마당 조명",
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -64,13 +65,14 @@
     { id: 'cell', name: '감방 나가기', moot: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]), reveal: () => true,
       steps: [{ text: '감방 바닥에서 머리핀 찾기 — 락픽 대신 쓴다', at: null, done: S => !!(S.player.got || {}).pin || S.player.picks > 0 || !!S.player.keys.red },
               { text: '감방 문 따기 — 간수가 등을 돌렸을 때', at: null, done: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) }] },
-    { id: 'gear', name: '압수품', reveal: (S, h) => !h.inRect(S.player, [3, 3, 19, 12, 0]) || h.knows('압수품'),
-      steps: [{ text: '경비실에서 빼앗긴 장비 되찾기 (락픽·빈 캔·다트)', at: null, done: S => !!(S.player.got || {}).gear }] },
-    { id: 'radio', name: '제비의 무전기', reveal: () => true,
-      steps: [{ text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: null, done: S => S.items.every(i => i.got) }] }
+    { id: 'gear', name: '압수품 · 선택 경로', reveal: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) || h.knows('압수품'),
+      steps: [{ text: '동쪽 경비실에서 압수품 되찾기 · 배운 투척 기술도 사용 가능', at: [33,7,0], done: S => !!(S.player.got || {}).gear }] },
+    { id: 'radio', name: '제비의 무전기', reveal: (S,h) => !h.inRect(S.player,[4,4,15,6,0]),
+      steps: [{ text:'동쪽 계단으로 2층 진입 · 보안구역은 복장 통행 불가',at:[17,6,1],done:S=>(S.player.fl||0)===1||S.items.every(i=>i.got)},
+              { text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: [13,6,1], done: S => S.items.every(i => i.got) }] }
   ],
   endText: '제비의 무전기를 회수해 빠져나왔다. 이제 이곳에 잡혀온 경위를 확인해야 한다.',
   challenges: ['unrecorded', 'ghost', 'untouched', 'clean', 'fast'], fastT: 210,
   well: 'manhole', kunai: 2, coins: 0, reinf: [43, 20],
-  hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '경비실의 압수품 가방에서 락픽·빈 캔·다트를 되찾을 수 있다. 장비 없이도 휘파람과 맨손을 쓸 수 있다.', '조직원을 쓰러뜨려 옷을 입으면 단지 안을 걸어서 지나갈 수 있다. 정문 정예는 얼굴을 안다.']
+  hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '압수품 회수는 선택이다. 락픽·빈 캔을 되찾고, 배운 투척 기술도 사용할 수 있다. 맨손과 휘파람은 장비 없이도 쓴다.', '조직원 옷은 마당에서 통하지만 감금동 2층 보안구역과 정문 정예는 피해야 한다.']
 },
