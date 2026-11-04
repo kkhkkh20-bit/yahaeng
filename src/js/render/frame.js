@@ -142,14 +142,10 @@ function draw() {
     const nn = NEONY() || !!l.col, lc = inkLampColor(l) || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
     gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
-    if(!l.outdoor) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
+    if(l.hearth) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
   }
   ctx.globalCompositeOperation = 'source-over';
-  // 실내등 스위치는 광원과 떨어진 실제 벽 위치에 그린다.
-  for(const l of S.lamps)if(!l.outdoor&&!flOf(l)&&l.control&&inView(l.control.x,l.control.y,40)){
-    const p=l.control;ctx.fillStyle='#27302d';ctx.fillRect(p.x-4,p.y-7,8,13);ctx.strokeStyle='#858b7b';ctx.lineWidth=1;ctx.strokeRect(p.x-4,p.y-7,8,13);
-    ctx.fillStyle=lampOn(l)?'#c5c6a3':'#5d655c';ctx.fillRect(p.x-1,p.y-4,3,7);
-  }
+  drawIndoorLampFixtures(0);
   // The flashlight contributes to the same visibility field; its bulb is not a second cone.
   for(const g of S.guards)if(g.torch&&g.state!=='DEAD'&&g.state!=='CAPTIVE'&&flOf(g)===flOf(P)&&gVis(g)){
     ctx.fillStyle='#dfd6ab';ctx.beginPath();ctx.arc(g.x+Math.cos(g.a)*13,g.y+Math.sin(g.a)*13,2.5,0,TAU);ctx.fill();
@@ -158,9 +154,6 @@ function draw() {
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
   ctx.globalCompositeOperation = 'source-over';
-  // 깨진 조명 표시
-  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
-  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(l.x - 5, l.y - 5); ctx.lineTo(l.x + 5, l.y + 5); ctx.moveTo(l.x + 5, l.y - 5); ctx.lineTo(l.x - 5, l.y + 5); ctx.stroke(); }
 
   PM('neon+speech');
   // 내 모습은 어둠과 화단 위에 그려 언제나 확인할 수 있게 (숨은 상태면 반투명 + 외곽선)
@@ -186,6 +179,7 @@ function draw() {
     ctx.globalCompositeOperation = 'lighter';
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
+    drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = uiFont(17); const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
@@ -291,9 +285,8 @@ function draw() {
   drawSignWork();
   drawLedgePull();
   if (P.vent && !tactical) {
-    // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
-    ctx.globalAlpha = 0.92; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
+    // Crawl through the duct overlay in the same scene; keep the room readable.
+    ctx.globalAlpha = 0.62; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
     for (const v of S.vents) { ctx.strokeStyle = v.roof ? 'rgba(242,196,107,.8)' : 'rgba(127,214,204,.9)'; ctx.lineWidth = 2; ctx.strokeRect(v.x - 13, v.y - 13, 26, 26); ctx.fillStyle = v.roof ? 'rgba(242,196,107,.25)' : 'rgba(127,214,204,.18)'; ctx.fillRect(v.x - 13, v.y - 13, 26, 26); }
     drawPlayer(P);
     drawAccessFlow();
@@ -339,7 +332,7 @@ function draw() {
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
     if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
-    if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
+    if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
       const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
       if (!d.dx) { ctx.fillRect(d.x - 12, d.y - 32, 24, 32); ctx.strokeRect(d.x - 12, d.y - 32, 24, 32); }

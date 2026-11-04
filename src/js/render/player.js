@@ -55,9 +55,9 @@ function drawPlayerBody(P) {
     drawPR(playerLook,P.x,P.y,j.face??P.a,j.releasedHang?'drop':'leap',0,1,1,-yo,Math.round(f*12));ctx.restore();return;
   }
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
-    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
-    ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    drawHangPR(playerLook,hx,hy+2,Math.atan2(-n.y,-n.x),fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
+    const n = P.ledge,h=ledgeGrip(P),nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
+    ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(h.x - 60, h.y - 202, 120, 206); ctx.clip(); }
+    drawHangPR(playerLook,h.x,h.y,h.a,fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
     return;
   }
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {

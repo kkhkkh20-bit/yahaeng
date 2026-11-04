@@ -13,10 +13,10 @@ async def main():
    check(!P.hidden&&!P.hide&&S.tutI===4,'Standing in a bush should not conceal the player');
    check(!G.envChoices().some(a=>a.k==='hide'&&a.h?.type==='bush'),'Bush still advertises a hide button');
    check(!G.beginHideFlow('enter',h)&&!P.trav,'Forced bush entry starts container animation');
-   G.actPrimary({k:'hide',h});check(!P.hide&&!P.trav,'Old hide action teleports into a bush');return{standing:true,noHideAction:true};
+   G.actPrimary({k:'hide',h,viaZ:true});check(!P.hide&&!P.trav,'Old hide action teleports into a bush');return{standing:true,noHideAction:true};
   }''')
   await q.keyboard.press('Control');await q.evaluate('__game.update(.05)')
-  await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;if(!P.hidden||P.hide||P.trav||S.tutI!==5)throw Error('Crouch must automatically conceal and advance lesson');P.x-=70;G.update(.05);if(P.hidden||P.hide)throw Error('Walk-out does not release concealment')}''')
+  await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;if(!P.hidden||P.hide||P.trav||S.tutI!==5)throw Error('Crouch must automatically conceal and advance lesson '+JSON.stringify({hidden:P.hidden,hide:P.hide,trav:!!P.trav,step:S.tutI,mode:P.mode,sneak:G.input.sneakToggle,x:P.x,y:P.y,bush:S.bushes[0],overlay:[...document.querySelectorAll('.screen:not([hidden])')].map(e=>e.id)}));P.x-=70;G.update(.05);if(P.hidden||P.hide)throw Error('Walk-out does not release concealment')}''')
   await q.keyboard.press('Control')
   extra=await q.evaluate('''()=>{
    const G=__game,S=G.S,P=S.player,h=S.bushes[0],check=(v,m)=>{if(!v)throw Error(m)};

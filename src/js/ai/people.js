@@ -58,6 +58,7 @@ function updateCiv(g, dt) {
     else g.meter = Math.max(0, g.meter - dt * 0.25);
     for (const c of S.corpses) { if (c.stashed || c.carried || c.hidden || c.civSeen || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue; if (canSee(g, c.x, c.y, Math.max(0.45, c.light), false, false, c.z || 0, flOf(c)) > 0) { c.civSeen = true; if (c.accident) { setIcon(g, '!?'); continue; } if (c.byNpc) { civPanic(g, c.x, c.y, 5); return; } civScream(g, c.x, c.y, c); return; } }
     if (g.seen && g.chat) endChat(g);
+    if(!g.seen&&updateRoomRelight(g,dt,SPD.gPatrol*.7))return;
     if (!g.seen && g.chat) { const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.path = null; if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 220) endChat(g); }
     else if (!g.seen) {
       if(updateStairYield(g,dt)){} // Perception above stays active while making room.

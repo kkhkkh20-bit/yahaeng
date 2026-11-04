@@ -67,6 +67,12 @@ def build():
     for key, item in quarter.items():
         item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','quarter',key+'.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__QUARTER__ = '+json.dumps(quarter)+';</script>\n<script>window.__ASSETS__')
+    # Ceiling candidates stay in the source catalog. The cutaway runtime uses
+    # wall-mounted fixtures, avoiding floating pendant props in room walkways.
+    lights={k:v for k,v in json.load(open(P('src','art','lights','meta.json'))).items() if not k.startswith('ceiling-')}
+    for key,item in lights.items():
+        item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','lights',key+'.webp'),'rb').read()).decode()
+    html=html.replace('<script>window.__ASSETS__','<script>window.__LIGHT_ART__ = '+json.dumps(lights)+';</script>\n<script>window.__ASSETS__')
     meta = json.load(open(P('build', 'pr', 'pr_meta.json')))
     meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'key.webp'), 'rb').read()).decode()
     if meta.get('faces') and os.path.exists(P('build', 'pr', 'face.webp')): meta['faces']['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'face.webp'), 'rb').read()).decode()

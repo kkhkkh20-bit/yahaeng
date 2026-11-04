@@ -25,11 +25,13 @@ const OBJECT_FLOW = {
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands'],camCable:[2,'전선 분리 중','hands']
 };
 function objectActionPoint(a) {
+  if(a.k==='lamp')return lampControl(a.l);
   if (a.k === 'use') return usePoint(a.n.u);
   return a.at || actObj(a);
 }
 function objectActionValid(a, item) {
   if(!electricalActionAllowed(a))return false;
+  if(a.k==='lamp'&&(!a.l||a.l.broken||a.l.cut!=null||!a.l.outdoor&&!a.l.hearth&&!a.l.control))return false;
   const P = S.player;
   if(a.k==='camCable')return cameraCableReachable(a.targetObject);
   if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);

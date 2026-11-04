@@ -157,7 +157,8 @@ function drawScan(openB) {
   if (!fP && STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '두꺼비집', 40);
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
   for (const c of S.cams || []) if (c.fl === flOf(S.player) && !c.broken) box(c.x, c.y, '#ff5a5a', 'CCTV', 28);
-  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { const p=lampControl(l);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+  const lightControls=new Set();
+  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && (l.outdoor||l.control)) { const p=lampControl(l),key=l.circuit||l;if(lightControls.has(key)||!on(p.x,p.y))continue;lightControls.add(key);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
   if (!fP) for (const o of S.poles) if (wireUsable() && o.wires.length) box(o.x, o.y, SCAN.ladder, STAGE.tutorial ? '훈련 지주 ↑' : '전봇대 ↑', 36);
   if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (wireUsable() && n.roof) box(n.dx, n.dy, SCAN.ladder, STAGE.tutorial ? '훈련 로프' : '전깃줄', 26);
   for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });

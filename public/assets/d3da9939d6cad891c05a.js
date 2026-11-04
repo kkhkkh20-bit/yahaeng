@@ -1096,15 +1096,15 @@ STAGES.push({...FIRST_STEPS,
   id:'tL',name:'의뢰 02 준비 · 빛과 그림자',sub:'상가 후문 · 조명과 시야',start:[6,10],nextTutorial:null,
   build(m){FIRST_STEPS.build(m);m.fill(6,9,8,9,'.');},
   lamps:FIRST_STEPS.lamps.map((l,i)=>i===1?[l[0],l[1],130,l[3]]:[...l]),
-  trialSkills:['electric'],mission:'후문 보안등을 끄고 짧아진 시야 밖으로 돌아 골목을 빠져나간다.',
+  mission:'후문 보안등을 끄고 짧아진 시야 밖으로 돌아 골목을 빠져나간다.',
   brief:'이번에는 밝은 길을 건너야 한다. 안전한 곳에서 시야를 확인하고 보안등을 꺼 보자.',
-  endText:'조명을 끄면 적의 시야가 짧아진다. 본편에서는 전기 조작을 배운 경우에 사용할 수 있다.',
+  endText:'조명을 끄면 적의 시야가 짧아진다. 스위치는 처음부터 쓸 수 있다. 불이 꺼진 곳의 사람은 확인하러 올 수 있다.',
   steps:[
     ['표시에서 멈춰 밝은 길의 시야 확인',(S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24,()=>({x:6.5*48,y:10.5*48}),'이곳은 시야 밖이다. 오른쪽 밝은 길은 경비의 부채꼴 안에 들어간다.','move',1.1],
-    ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'이 구간에서만 전기 조작을 임시로 쓴다. 본편에서는 기술을 배워야 한다.','env',0,['lamp']],
+    ['스위치 옆에서 {행동} · 조명 끄기',S=>!!S.lamps[3].off,S=>S.lamps[3].control||S.lamps[3],'조명 스위치는 기술 없이 사용할 수 있다. 사람이 있는 방에서는 불이 꺼지면 확인하러 올 수 있다.','env',0,['lamp']],
     ['아래쪽 어두운 길을 따라 표시로 이동',(S,P)=>S.lamps[3].off&&!P.hidden&&Math.hypot(P.x-7.5*48,P.y-12.5*48)<24,S=>S.player.y<12*48?{x:6.5*48,y:12.5*48}:{x:7.5*48,y:12.5*48},'빛이 줄어 부채꼴도 짧아졌다. 손전등과 소리는 사라지지 않는다.','move'],
     [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 안전한 길로 복귀':'{살금} 왼쪽 안전한 길로 복귀',(S,P)=>P.mode==='sneak'&&P.x<6.7*48,()=>({x:6*48,y:12.5*48}),'어두워도 뛰면 들린다. 조용히 이동한 뒤 출구로 나간다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음은 실내와 계단 연습이다. 본편의 조명은 전기 기술을 배운 경우에 조작한다.','move']
+    ['남쪽 출구로 이동',()=>false,S=>S.exit,'다음은 실내와 계단 연습이다. 조명 스위치는 기본 행동이다. 분전반을 다루는 기술은 별도로 배운다.','move']
   ]
 });
 const lessonStair=S=>S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
@@ -2974,7 +2974,7 @@ const SKILL_TREE=[
  {id:'smoke',branch:'tools',name:'연막탄',cost:1,req:['kit'],row:2,col:2,description:'연막탄 1개 지급. 반경 3m·5초 동안 시선을 차단한다. 소리·접촉·개의 후각은 남는다.'},
  {id:'precision',branch:'tools',name:'투척 숙련',cost:2,req:['kunai'],row:4,col:1,description:'다트·쿠나이 사거리 30% 증가. 시작 시 배운 다트·쿠나이 각각 1개 추가.'},
  {id:'smokeMix',branch:'tools',name:'연막 조제',cost:2,req:['smoke'],row:3,col:2,description:'연막 반경 3.5m·지속 8초. 시작 시 연막탄 1개 추가.'},
- {id:'electric',branch:'tools',name:'전기 조작',cost:1,req:['kit'],row:5,col:1,description:'조명 스위치와 건물·구역 분전반을 조작한다. 전기를 다루는 기술을 배워야 불을 끄거나 켤 수 있다. 경비는 꺼진 조명을 복구한다.'},
+ {id:'electric',branch:'tools',name:'배전반 조작',cost:1,req:['kit'],row:5,col:1,description:'건물·구역 분전반을 내려 넓은 범위의 전원을 차단한다. 일반 조명 스위치는 기술 없이 사용할 수 있다. 꺼진 방의 사람은 스위치를 확인한다.'},
  {id:'radio',branch:'tools',name:'무전기 역이용',cost:2,req:['kit'],row:4,col:2,description:'쓰러진 경비에게서 무전기를 확보한 뒤 허위 점검 지시로 경비 한 명을 유인한다. 의뢰당 2회·재사용 30초.'},
  {id:'hack',branch:'tools',name:'CCTV 해킹',cost:2,req:['radio'],row:5,col:2,description:'같은 층·약 4m 안에서 CCTV를 겨누고 1.5초 작업해 10초간 정지. 녹화 기록은 남는다. 재사용 25초.'},
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
@@ -3046,11 +3046,11 @@ function concealedAttackSource(P=S.player){
 const concealedMeleeAllowed=(P=S.player)=>!concealedAttackSource(P)||abilityOn('ambush');
 const abilityLockText=id=>(SKILL_BY_ID[id]?.name||'기술')+' 필요 · K / 메뉴의 기술 트리에서 배우기';
 
-// Player electrical controls share one unlock; guard repairs use their own behaviour.
-const electricalAction=a=>a.k==='lamp'&&!a.l?.hearth||a.k==='bfuse'||a.k==='fuse';
+// Ordinary light switches are basic actions; building power work is specialized.
+const electricalAction=a=>a.k==='bfuse'||a.k==='fuse';
 const electricalActionAllowed=a=>!electricalAction(a)||abilityOn('electric');
 function electricalChoice(a){
- return electricalActionAllowed(a)?a:{...a,label:'전기 조작 필요',skillLocked:'electric',reason:abilityLockText('electric')};
+ return electricalActionAllowed(a)?a:{...a,label:'배전반 조작 필요',skillLocked:'electric',reason:abilityLockText('electric')};
 }
 
 // Active assassination abilities use ownership from the shared skill tree.
@@ -3273,7 +3273,7 @@ function newGame(si) {
   // 아궁이(벽난로): 방을 밝히는 불. 옥상의 굴뚝과 이어진다
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
   mountOutdoorLamps(lamps);
-  (STAGE.lampControls||[]).forEach(([i,x,y])=>{const l=lamps[i];if(l)l.control={x:x*TILE,y:y*TILE,fl:l.fl||0,z:0};});
+  (STAGE.lampControls||[]).forEach(([i,x,y])=>{const l=lamps[i];if(l){l.control={x:x*TILE,y:y*TILE,fl:l.fl||0,z:0};l.authoredControl=true;}});
   lamps.forEach(l => { setLayer(l.fl); l.poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU; const d = Math.min(l.r, castRay(l.x, l.y, a, l.r) + 20); l.poly.push(l.x + Math.cos(a) * d, l.y + Math.sin(a) * d); } }); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
   // 군중: 클럽 안(층마다)과 지정한 바깥 자리. 사람들이 돌아다니고, 그 사이에 섞이면 잘 안 보이고 소리도 묻힌다
   CROWD = [];
@@ -3476,7 +3476,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
-  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); capturePhysicalLayout();
+  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncRoomSwitches(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -3947,7 +3947,7 @@ function lampControl(l) {
   const o = (S.poles || []).find(o => Math.abs(o.x - l.x) < 1 && Math.abs(o.y - l.y) < TILE);
   return o ? { x: o.x + 12, y: o.y + 6, fl: 0, z: 0 } : l;
 }
-const lampName = l => l.mount?.kind==='wall'?'벽부등':l.mount?.kind==='street'?'가로등':l.pole?'전신주 보안등':'조명';
+const lampName = l => l.roomSwitch?(l.roomName||'실내')+' 조명 스위치':l.mount?.kind==='wall'?'벽부등':l.mount?.kind==='street'?'가로등':l.pole?'전신주 보안등':'조명';
 // 등 격자: 밝기를 물을 때마다 판의 등 전부(도시는 수백 개)를 훑지 않게, 160px 칸마다 빛이 닿을 수 있는 등만 모아 둔다
 const LG_C = 160, LG_NONE = [];
 let LG = null;
@@ -4041,7 +4041,7 @@ function lampSwitchWitnesses(l){
 function respondToLampOff(l,watchers){
   if(!l.off||l.broken||l.cut!=null||!watchers.length)return;
   const at=lampControl(l),g=watchers.sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
-  if(S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l))return;
+  if(S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&sameLampCircuit(o.relight?.l,l)))return;
   releaseSearchJob(g);endChat(g);g.state='PATROL';g.path=null;g.act=null;g.bubble=null;g.soundWatchUntil=0;g.sense=null;g.hearT=0;g.poi=null;
   g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
 }
@@ -4221,8 +4221,11 @@ function collideLightPosts(o,r,solid) {
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
     const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
-    const on=lampOn(l),x=l.x,y=l.y-m.height;
+    const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
     ctx.save();
+    const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
+    const baked=art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
       ctx.fillStyle='#454e53';ctx.fillRect(m.ax-4,m.ay-8,8,12);
@@ -4236,6 +4239,7 @@ function drawOutdoorLampFixtures() {
     ctx.fillStyle='#202a30';ctx.fillRect(x-9,y-5,18,8);ctx.strokeStyle='#8b9694';ctx.lineWidth=1;ctx.strokeRect(x-9,y-5,18,8);
     ctx.fillStyle=l.broken?'#403d3a':on?'#efe0ad':'#66716d';ctx.fillRect(x-6,y-1,12,3);
     if(l.broken){ctx.strokeStyle='#b0aaa0';ctx.beginPath();ctx.moveTo(x-5,y-3);ctx.lineTo(x+4,y+3);ctx.stroke();}
+    }
     if(m.kind!=='pole') {
       const p=lampControl(l);ctx.strokeStyle='#586970';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.ax,m.ay-10);ctx.lineTo(p.x,p.y-3);ctx.stroke();ctx.fillStyle='#26333a';ctx.fillRect(p.x-4,p.y-8,8,12);ctx.strokeStyle='#808b88';ctx.strokeRect(p.x-4,p.y-8,8,12);
       ctx.fillStyle=on?'#c3cba1':'#525e61';ctx.fillRect(p.x-1,p.y-5,2,5);
@@ -4287,6 +4291,127 @@ function syncWorkLights() {
   setLayer(L0); LG=null; refreshBodyLighting();
   for (const k in lightCache) delete lightCache[k];
   S.floorC={};
+}
+
+// A room has one wall control. Lights remain at their authored positions so
+// changing the fixture/control does not silently change stealth illumination.
+const lampCircuit = l => l.circuit ? S.lamps.filter(o=>o.circuit===l.circuit) : [l];
+const sameLampCircuit = (a,b) => !!a&&!!b&&(a===b||!!a.circuit&&a.circuit===b.circuit);
+const lampCircuitOff = l => lampCircuit(l).every(o=>o.off||o.broken);
+function setLampCircuit(l,off) {
+  for(const o of lampCircuit(l))if(!o.broken&&o.cut==null)o.off=off;
+  refreshBodyLighting();
+}
+function syncRoomSwitches() {
+  const L0=CUR_F,regions=new Map(),doors=new Set();
+  S.lightRooms={};
+  for(const d of S.doors||[])for(const p of d.group||[d])doors.add((flOf(p)||0)+':'+p.tx+','+p.ty);
+  for(const l of S.lamps) {
+    if(l.outdoor||l.hearth)continue;
+    const fl=flOf(l),bi=bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),b=BLD[bi],p=PLANS[bi]?.[fl];setLayer(fl);
+    const tx=Math.floor(l.x/TILE),ty=Math.floor(l.y/TILE);
+    const rooms=p?[p.store,...p.units.flatMap(u=>[u.living,...u.rooms,u.bath])].filter(Boolean):[];
+    const room=rooms.filter(r=>tx>=r.x0&&tx<=r.x1&&ty>=r.y0&&ty<=r.y1).sort((a,b)=>(a.x1-a.x0+1)*(a.y1-a.y0+1)-(b.x1-b.x0+1)*(b.y1-b.y0+1))[0];
+    const bounds=room||b||{x0:0,y0:0,x1:MW-1,y1:MH-1};
+    const key=fl+':'+bi+':'+[bounds.x0,bounds.y0,bounds.x1,bounds.y1].join(',');
+    let region=regions.get(key);
+    if(!region){
+      const seen=new Map(),parts=[];
+      const inside=(x,y)=>x>=bounds.x0&&x<=bounds.x1&&y>=bounds.y0&&y<=bounds.y1&&inMap(x,y)&&!'#NVHOW~UP'.includes(G[y][x])&&!doors.has(fl+':'+x+','+y);
+      for(let y=bounds.y0;y<=bounds.y1;y++)for(let x=bounds.x0;x<=bounds.x1;x++){
+        if(!inside(x,y)||seen.has(x+','+y))continue;
+        const part={id:parts.length,cells:[],sites:[]},q=[[x,y]];seen.set(x+','+y,part);
+        for(let i=0;i<q.length;i++){
+          const [cx,cy]=q[i];part.cells.push([cx,cy]);
+          if(!SOLID.has(G[cy][cx]))for(const [nx,ny]of N8.slice(0,4)){
+            if(G[cy+ny]?.[cx+nx]!=='#')continue;
+            const at={x:tc(cx)+nx*19,y:tc(cy)+ny*19,fl,z:0,nx,ny,tx:cx,ty:cy};
+            const entrances=(room?.door?[room.door]:[]).concat((S.doors||[]).filter(d=>flOf(d)===fl).map(d=>[d.tx,d.ty]));
+            at.score=entrances.length?Math.min(...entrances.map(([dx,dy])=>Math.hypot(cx-dx,cy-dy))):Math.hypot(cx-tx,cy-ty);
+            // Prefer an entry wall; leave the actual doorway and floor free.
+            if(entrances.some(([dx,dy])=>Math.abs(cx-dx)+Math.abs(cy-dy)<=2))at.score-=4;
+            part.sites.push(at);
+          }
+          for(const [dx,dy]of N8.slice(0,4)){const nx=cx+dx,ny=cy+dy,k=nx+','+ny;if(inside(nx,ny)&&!seen.has(k)){seen.set(k,part);q.push([nx,ny]);}}
+        }
+        part.sites.sort((a,b)=>a.score-b.score||a.ty-b.ty||a.tx-b.tx);parts.push(part);
+      }
+      region={seen,parts};regions.set(key,region);
+    }
+    let part=region.seen.get(tx+','+ty);
+    if(!part){let best=Infinity;for(const candidate of region.parts)for(const [x,y]of candidate.cells){const d=Math.hypot(x-tx,y-ty);if(d<best){best=d;part=candidate;}}}
+    const authored=l.authoredControl&&l.control;
+    const at=authored||part?.sites[0];
+    // An inaccessible fixture is never a magical switch in the room centre.
+    l.control=at?{...at}:null;
+    l.circuit=at?(authored?'authored:'+fl+':'+at.x+','+at.y:'room:'+key+':'+part.id):null;
+    l.roomSwitch=!!at;
+    if(part?.sites.length){
+      const used=part.fixtureSites||(part.fixtureSites=[]);
+      const sites=part.sites.filter(s=>!used.some(u=>dist(u.x,u.y,s.x,s.y)<32));
+      const site=(sites.length?sites:part.sites).reduce((best,s)=>!best||dist(l.x,l.y,s.x,s.y)<dist(l.x,l.y,best.x,best.y)?s:best,null);
+      l.fixture={x:site.x+site.nx*5,y:site.y+site.ny*5,nx:-site.nx,ny:-site.ny};used.push(site);
+    }else l.fixture=null;
+    l.roomName=room===p?.store?({club:'클럽',vip:'VIP룸',office:'사무실',pc:'PC방',food:'식당'}[room?.use]||'실내'):p?.units.some(u=>u.bath===room)?'욕실':p?.units.some(u=>u.living===room)?'거실':room?'방':'실내';
+    if(l.circuit&&!S.lightRooms[l.circuit])S.lightRooms[l.circuit]={fl,cells:(part?.cells||[[tx,ty]]).map(([x,y])=>y*MW+x)};
+  }
+  setLayer(L0);
+}
+function roomLightOccupants(l) {
+  const room=S.lightRooms?.[l.circuit];if(!room)return [];
+  return S.guards.filter(g=>!g.dog&&!g.child&&!g.doomed&&!g.climb&&!g.z&&flOf(g)===room.fl&&['PATROL','RETURN','SUSPICIOUS'].includes(g.state)&&room.cells.includes(Math.floor(g.y/TILE)*MW+Math.floor(g.x/TILE)));
+}
+function reactToRoomDarkness(l,watchers) {
+  const people=roomLightOccupants(l),at=lampControl(l);
+  for(const g of people){
+    endChat(g);g.path=null;g.act=null;g.glanceA=Math.atan2(at.y-g.y,at.x-g.x);g.want=g.glanceA;g.soundWatchUntil=S.t+1.5;setIcon(g,'?');
+    gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 스위치 확인해.',2.4);
+  }
+  const repair=people.filter(g=>!g.target).sort((a,b)=>(a.civ?1:0)-(b.civ?1:0)||dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
+  if(repair&&!S.guards.some(g=>g.relight&&sameLampCircuit(g.relight.l,l))){
+    repair.state='PATROL';repair.relight={l,t:.8,delay:1.3,roomNotice:true};repair.path=null;
+  }else if(!people.length)respondToLampOff(l,watchers);
+}
+function updateRoomRelight(g,dt,spd) {
+  const work=g.relight;if(!work)return false;
+  const l=work.l,at=lampControl(l);
+  if(!l.off||l.broken||l.cut!=null){g.relight=null;g.path=null;return true;}
+  g.want=Math.atan2(at.y-g.y,at.x-g.x);g.a+=clamp(angDiff(g.a,g.want),-4*dt,4*dt);
+  if(work.delay>0){work.delay-=dt;return true;}
+  if(dist(g.x,g.y,at.x,at.y)>34||!los(g.x,g.y,at.x,at.y,g.z||0)){
+    work.approach=(work.approach||0)+dt;
+    if(work.approach>10){g.relight=null;g.path=null;g.relightRetryAt=S.t+6;return true;}
+    if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);return true;
+  }
+  g.path=null;g.moving=false;work.t-=dt;
+  if(work.t<=0){setLampCircuit(l,false);g.relight=null;g.icon=null;play('switch',.4*proxVol(g));gsay(g,'불은 켜 둬야지.',1.8);if(dist(g.x,g.y,S.player.x,S.player.y)<700)toast((g.civ?'주민':'경비')+'이 스위치로 조명을 다시 켰다',2);if(!g.civ)setAlert(1,20);}
+  return true;
+}
+
+// Kenney CC0 fixtures are baked into 2D; no model loading in the game.
+const lightArtImages={};
+for(const [name,a]of Object.entries(window.__LIGHT_ART__||{}))lightArtImages[name]={...a,img:Object.assign(new Image(),{src:a.src})};
+function drawLightArt(name,x,y,alpha=1,scale=1) {
+  const a=lightArtImages[name];if(!a||!a.img.complete||!a.img.naturalWidth)return false;
+  ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha*=alpha;ctx.drawImage(a.img,x+a.ox*scale,y+a.oy*scale,a.w*scale,a.h*scale);ctx.restore();return true;
+}
+const lightArtRotation=(nx,ny)=>Math.abs(nx)>Math.abs(ny)?nx>0?3:1:ny>0?2:0;
+function drawIndoorLampFixtures(fl,building=-1) {
+  const controls=new Set(),fixtures=new Set();
+  for(const l of S.lamps){
+    if(l.outdoor||l.hearth||flOf(l)!==fl||building>=0&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))!==building)continue;
+    const f=l.fixture,fk=f&&f.x+','+f.y;
+    if(f&&!fixtures.has(fk)&&inView(f.x,f.y,70)){
+      fixtures.add(fk);drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
+      if(lampOn(l)){const glow=ctx.createRadialGradient(f.x,f.y-16,0,f.x,f.y-16,12);glow.addColorStop(0,'rgba('+(l.col||'255,222,170')+',.3)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(f.x-12,f.y-28,24,24);}
+      if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,f.y-19);ctx.lineTo(f.x+3,f.y-13);ctx.stroke();}
+    }
+    const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
+    // A small wall plate, separate from fixtures and their ground light pools.
+    ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);
+    ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
+    ctx.fillStyle=lampCircuitOff(l)?'#20282e':'#59656e';ctx.fillRect(p.x-2,p.y+(lampCircuitOff(l)?-1:-6),4,2);
+  }
 }
 
 // 실내 CCTV는 담당 경비의 작업점이 아닌, 같은 방의 벽 모서리에 설치한다.
@@ -5307,6 +5432,7 @@ function updateCiv(g, dt) {
     else g.meter = Math.max(0, g.meter - dt * 0.25);
     for (const c of S.corpses) { if (c.stashed || c.carried || c.hidden || c.civSeen || flOf(c) !== flOf(g) || (c.z || 0) !== (g.z || 0)) continue; if (canSee(g, c.x, c.y, Math.max(0.45, c.light), false, false, c.z || 0, flOf(c)) > 0) { c.civSeen = true; if (c.accident) { setIcon(g, '!?'); continue; } if (c.byNpc) { civPanic(g, c.x, c.y, 5); return; } civScream(g, c.x, c.y, c); return; } }
     if (g.seen && g.chat) endChat(g);
+    if(!g.seen&&updateRoomRelight(g,dt,SPD.gPatrol*.7))return;
     if (!g.seen && g.chat) { const o = g.chat.with; g.want = Math.atan2(o.y - g.y, o.x - g.x); g.path = null; if (o.state !== 'PATROL' || dist(g.x, g.y, o.x, o.y) > 220) endChat(g); }
     else if (!g.seen) {
       if(updateStairYield(g,dt)){} // Perception above stays active while making room.
@@ -5422,23 +5548,11 @@ function updateGuard(g, dt) {
   if(!updateStairYield(g,dt))switch (g.state) {
     case 'PATROL': {
       if (updateBodyCover(g)) break;
-      if (g.relight) {
-        const work=g.relight,l=work.l,at=lampControl(l);
-        if(!l.off||l.broken||l.cut!=null){g.relight=null;g.path=null;break;}
-        g.want=Math.atan2(at.y-g.y,at.x-g.x);
-        if(dist(g.x,g.y,at.x,at.y)>34||!los(g.x,g.y,at.x,at.y,g.z||0)){
-          work.approach=(work.approach||0)+dt;
-          if(work.approach>7){g.relight=null;g.path=null;g.relightRetryAt=S.t+6;break;}
-          if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);break;
-        }
-        g.path=null;g.moving=false;work.t-=dt;
-        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));refreshBodyLighting();if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
-        break;
-      }
+      if (updateRoomRelight(g,dt,spd)) break;
       g.lampScan = (g.lampScan || 0) - dt;
       if (g.lampScan <= 0 && !g.target && !(g.relightRetryAt>S.t)) {
         g.lampScan = 0.6;
-        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l));
+        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && (l.outdoor||l.hearth||l.control) && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&sameLampCircuit(o.relight?.l,l)));
         if (l) { g.relight = { l, t: 1.8 }; g.path = null; setIcon(g, '?'); break; }
         const bc = g.dog ? null : (S.cams || []).find(c => (c.broken||c.unplugged) && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
         if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 '+(bc.unplugged?'전선이 빠진':'부서진')+' CCTV를 발견했다', 2.2, 'warn'); break; }
@@ -7428,7 +7542,9 @@ function landBelow(x, y, n, z, maxDrop=2) {
 }
 const ledgeDraw = P => { const n = P.ledge; return { x: P.x + n.x * 20, y: P.y + (n.y > 0 ? 34 : n.y < 0 ? -8 : 10) }; };
 function ledgeGrip(P) {
-  const n=P.ledge;return{x:P.x+n.x*14,y:P.y+n.y*14+(n.y>0?6:0)+2,a:Math.atan2(-n.y,-n.x)};
+  // The hanging sheet presents the opposite profile to the standing/vault
+  // sheet. Keep this visual correction at the shared hand anchor, not in input.
+  const n=P.ledge;return{x:P.x+n.x*14,y:P.y+n.y*14+(n.y>0?6:0)+2,a:Math.atan2(n.y,n.x)};
 }
 function ledgeRoot(P) {
   const h=ledgeGrip(P),key=playerKey(P),m=PR.bodies?.[prSplit(key)[1]]||PR,row=prDir(h.a),hands=m.hangHands?.[row]?.[0]||PR.hangHands?.[row]?.[0],scale=m.scales?.hang||PR.scales?.hang||1;
@@ -8783,7 +8899,7 @@ function loadCheckpoint() {
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.vfx=[]; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncRoomSwitches(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
@@ -9638,11 +9754,13 @@ const OBJECT_FLOW = {
   bfuse: [0.5, '조작 중', 'hands'], fuse: [0.5, '조작 중', 'hands'], camroom: [2.4, '기록 삭제 중', 'hands'],camCable:[2,'전선 분리 중','hands']
 };
 function objectActionPoint(a) {
+  if(a.k==='lamp')return lampControl(a.l);
   if (a.k === 'use') return usePoint(a.n.u);
   return a.at || actObj(a);
 }
 function objectActionValid(a, item) {
   if(!electricalActionAllowed(a))return false;
+  if(a.k==='lamp'&&(!a.l||a.l.broken||a.l.cut!=null||!a.l.outdoor&&!a.l.hearth&&!a.l.control))return false;
   const P = S.player;
   if(a.k==='camCable')return cameraCableReachable(a.targetObject);
   if(a.k==='callMeet')return rendezvousReady()&&a.p===rendezvousState()?.phone&&objectReachable(a.p,60);
@@ -10220,7 +10338,8 @@ function nearCorpse() {
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.broken || l.cut != null || (l.outdoor && mainPowerOff(l)) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
+  const skippedCircuits=new Set([...ACT_SKIP].map(o=>o?.circuit).filter(Boolean));
+  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.circuit&&skippedCircuits.has(l.circuit) || l.broken || l.cut != null || (!l.outdoor&&!l.hearth&&!l.control) || (l.outdoor && mainPowerOff(l)) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {
@@ -10455,7 +10574,7 @@ function primaryActionRaw() {
   const dr = nearDoor(), bf = nearBFuse(), lp = nearLamp(), cands = [];
   if (dr && !P.carrying) cands.push({ k: 'door', d: dist(P.x, P.y, dr.x, dr.y), a: () => doorAct(dr) });
   if (bf) cands.push({ k: 'bfuse', d: dist(P.x, P.y, bf.x, bf.y), a: () => ({ k: 'bfuse', fb: bf, label: '건물 전원 끄기' }) });
-  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lampControl(lp).x, lampControl(lp).y), a: () => ({ k: 'lamp', l: lp, at: lampControl(lp), label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lampName(lp)+(lp.off?' 켜기':' 끄기') }) });
+  if (lp) cands.push({ k: 'lamp', d: dist(P.x, P.y, lampControl(lp).x, lampControl(lp).y), a: () => ({ k: 'lamp', l: lp, at: lampControl(lp), label: lp.hearth ? (lp.off ? '불 피우기' : '아궁이 불 끄기') : lampName(lp)+(lampCircuitOff(lp)?' 켜기':' 끄기') }) });
   if (cands.length) {
     cands.sort((a, b) => a.d - b.d); let pick = cands[0];
     const pref = cands.find(c => c.k === S.ikPref); if (pref && pref !== pick && pref.d - pick.d < 24) pick = pref;
@@ -10668,8 +10787,8 @@ function actPrimary(force) {
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
-      const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
-      if(l.off)respondToLampOff(l,watchers);
+      const l = a.l,off=!lampCircuitOff(l),watchers=off?lampSwitchWitnesses(l):[];setLampCircuit(l,off); play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
+      if(l.off){if(l.roomSwitch)reactToRoomDarkness(l,watchers);else respondToLampOff(l,watchers);}
       refreshBodyLighting();
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');
       break;
@@ -11993,9 +12112,9 @@ function drawPlayerBody(P) {
     drawPR(playerLook,P.x,P.y,j.face??P.a,j.releasedHang?'drop':'leap',0,1,1,-yo,Math.round(f*12));ctx.restore();return;
   }
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
-    const n = P.ledge, hx = P.x + n.x * 14, hy = P.y + n.y * 14 + (n.y > 0 ? 6 : 0), nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
-    ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(hx - 60, hy - 200, 120, 206); ctx.clip(); }
-    drawHangPR(playerLook,hx,hy+2,Math.atan2(-n.y,-n.x),fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
+    const n = P.ledge,h=ledgeGrip(P),nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
+    ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(h.x - 60, h.y - 202, 120, 206); ctx.clip(); }
+    drawHangPR(playerLook,h.x,h.y,h.a,fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
     return;
   }
   if (usePR(playerLook) && PR.anims.climb && (P.trav || (P.jump && P.jump.vault))) {
@@ -12839,7 +12958,8 @@ function drawScan(openB) {
   if (!fP && STAGE.fuse && S.lightsOn) box(tc(STAGE.fuse[0]), tc(STAGE.fuse[1]), SCAN.fuse, '두꺼비집', 40);
   if (!flOf(S.player)) for (const fb of S.bfuses || []) if (!fb.cut) box(fb.x, fb.y - 26, SCAN.fuse, '두꺼비집', 30);
   for (const c of S.cams || []) if (c.fl === flOf(S.player) && !c.broken) box(c.x, c.y, '#ff5a5a', 'CCTV', 28);
-  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && on(l.x, l.y)) { const p=lampControl(l);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
+  const lightControls=new Set();
+  for (const l of S.lamps) if (flOf(l) === fP && !l.hearth && !l.broken && (l.outdoor||l.control)) { const p=lampControl(l),key=l.circuit||l;if(lightControls.has(key)||!on(p.x,p.y))continue;lightControls.add(key);ctx.strokeStyle = SCAN.lamp; ctx.lineWidth = 2; ctx.globalAlpha = 0.8 * pulse; ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, TAU); ctx.stroke(); ctx.globalAlpha = 1; }
   if (!fP) for (const o of S.poles) if (wireUsable() && o.wires.length) box(o.x, o.y, SCAN.ladder, STAGE.tutorial ? '훈련 지주 ↑' : '전봇대 ↑', 36);
   if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (wireUsable() && n.roof) box(n.dx, n.dy, SCAN.ladder, STAGE.tutorial ? '훈련 로프' : '전깃줄', 26);
   for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
@@ -13225,14 +13345,10 @@ function draw() {
     const nn = NEONY() || !!l.col, lc = inkLampColor(l) || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
     gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
     ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
-    if(!l.outdoor) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
+    if(l.hearth) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
   }
   ctx.globalCompositeOperation = 'source-over';
-  // 실내등 스위치는 광원과 떨어진 실제 벽 위치에 그린다.
-  for(const l of S.lamps)if(!l.outdoor&&!flOf(l)&&l.control&&inView(l.control.x,l.control.y,40)){
-    const p=l.control;ctx.fillStyle='#27302d';ctx.fillRect(p.x-4,p.y-7,8,13);ctx.strokeStyle='#858b7b';ctx.lineWidth=1;ctx.strokeRect(p.x-4,p.y-7,8,13);
-    ctx.fillStyle=lampOn(l)?'#c5c6a3':'#5d655c';ctx.fillRect(p.x-1,p.y-4,3,7);
-  }
+  drawIndoorLampFixtures(0);
   // The flashlight contributes to the same visibility field; its bulb is not a second cone.
   for(const g of S.guards)if(g.torch&&g.state!=='DEAD'&&g.state!=='CAPTIVE'&&flOf(g)===flOf(P)&&gVis(g)){
     ctx.fillStyle='#dfd6ab';ctx.beginPath();ctx.arc(g.x+Math.cos(g.a)*13,g.y+Math.sin(g.a)*13,2.5,0,TAU);ctx.fill();
@@ -13241,9 +13357,6 @@ function draw() {
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
   ctx.globalCompositeOperation = 'source-over';
-  // 깨진 조명 표시
-  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.off && !l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.45)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(l.x, l.y, 6, 0, TAU); ctx.stroke(); }
-  for (const l of S.lamps) if (!l.outdoor && !flOf(l) && l.broken) { ctx.strokeStyle = 'rgba(232,227,214,.5)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(l.x - 5, l.y - 5); ctx.lineTo(l.x + 5, l.y + 5); ctx.moveTo(l.x + 5, l.y - 5); ctx.lineTo(l.x - 5, l.y + 5); ctx.stroke(); }
 
   PM('neon+speech');
   // 내 모습은 어둠과 화단 위에 그려 언제나 확인할 수 있게 (숨은 상태면 반투명 + 외곽선)
@@ -13269,6 +13382,7 @@ function draw() {
     ctx.globalCompositeOperation = 'lighter';
     for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
+    drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = uiFont(17); const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
     setLayer(0);
@@ -13374,9 +13488,8 @@ function draw() {
   drawSignWork();
   drawLedgePull();
   if (P.vent && !tactical) {
-    // 환풍구 층: 아래(방)는 어둡게 비치고, 덕트와 창살만 또렷하게
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(3,6,10,.5)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore();
-    ctx.globalAlpha = 0.92; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
+    // Crawl through the duct overlay in the same scene; keep the room readable.
+    ctx.globalAlpha = 0.62; drawBig(ctx, ventC, ...viewRect(60)); ctx.globalAlpha = 1;
     for (const v of S.vents) { ctx.strokeStyle = v.roof ? 'rgba(242,196,107,.8)' : 'rgba(127,214,204,.9)'; ctx.lineWidth = 2; ctx.strokeRect(v.x - 13, v.y - 13, 26, 26); ctx.fillStyle = v.roof ? 'rgba(242,196,107,.25)' : 'rgba(127,214,204,.18)'; ctx.fillRect(v.x - 13, v.y - 13, 26, 26); }
     drawPlayer(P);
     drawAccessFlow();
@@ -13422,7 +13535,7 @@ function draw() {
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
     if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
-    if (pa.k === 'lamp') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(pa.l.x, pa.l.y, 16, 0, TAU); ctx.stroke(); }
+    if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
       const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
       if (!d.dx) { ctx.fillRect(d.x - 12, d.y - 32, 24, 32); ctx.strokeRect(d.x - 12, d.y - 32, 24, 32); }
@@ -13942,6 +14055,8 @@ function envChoices() {
   // At mission furniture, carrying or an already exposed uniform must not hide
   // collection. A useful new outfit and every explicit selection keep priority.
   if(!P.carrying){const loot=list.find(a=>a.k==='loot'&&S.items.includes(a.it)&&!a.it.got),dress=list.find(a=>a.k==='dress'&&!(P.blown||{})[a.c.outfit||'crew']);if(loot&&!dress){loot.missionPriority=true;list.splice(list.indexOf(loot),1);list.unshift(loot);}}
+  // A wall switch beside a coded door must not replace opening that door.
+  if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }
@@ -14599,7 +14714,7 @@ function drawEnvSelection() {
 function unavailableEnvReason() {
   const P=S.player;
   if(P.ledge || P.wire) return '안전하게 올라설 곳이 없다';
-  const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken).map(l=>lampControl(l))]
+  const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken&&(l.outdoor||l.hearth||l.control)).map(l=>lampControl(l))]
     .filter(o=>Number.isFinite(o.x)&&dist(P.x,P.y,o.x,o.y)<100).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
   const o=a.find(o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0))||a[0]; if(!o)return '조작할 물체 가까이 이동하기';
   if(flOf(o)!==flOf(P)||(o.z||0)!==(P.z||0))return '다른 층에 있는 대상이다 — 연결 입구로 이동하기';
@@ -14745,7 +14860,7 @@ function skillUseText(d){
  if(d.id==='reach')return '등 뒤에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='ambush')return '은폐 상태에서 공격 · 짧게 기절 / 길게 처치';
  if(d.id==='drop')return '옥상 가장자리에서 아래의 적에게 공격';
- if(d.id==='electric')return '스위치·분전반 앞에서 행동 버튼';
+ if(d.id==='electric')return '건물·구역 분전반 앞에서 행동 버튼';
  if(['dart','kunai','smoke','radio','hack'].includes(d.id))return '장비에서 선택한 뒤 도구 버튼';
  return '배우면 해당 상황에서 자동 적용';
 }
@@ -14798,10 +14913,10 @@ function skillTreeLayout(branch){
 const SKILL_UTILITY={
  quietStep:'경비가 돌아서는 틈에 걸어서 거리를 좁히기',quietCrouch:'경비 바로 옆 통로를 낮은 자세로 지나가기',lookout:'접근하기 전에 순찰과 출구를 함께 살피기',swiftCrouch:'순찰이 돌아오기 전에 어두운 구간을 통과하기',shadow:'불이 약한 방에서 발각되기 전 이동할 시간 벌기',landing:'옥상에서 내려온 뒤 착지점 수색을 줄이기',foliage:'풀숲 가까이 순찰이 지나갈 때 버티기',sprint:'노출된 도로를 짧은 틈에 건너기',
  silentHands:'주변 경비가 접촉 소리를 듣는 범위 줄이기',ambush:'풀숲이나 엄폐 뒤에서 모습을 드러내지 않고 제압하기',drop:'지상 순찰을 우회해 위에서 접근하기',dual:'가까이 붙은 두 경비를 한 번에 처리하기',bodyCarry:'동료 순찰이 돌아오기 전에 몸을 치우기',chain:'떨어져 순찰하는 두 경비를 연달아 처리하기',reach:'멀어지는 적을 따라잡아 뒤에서 제압하기',flow:'다음 순찰을 상대할 때 암살 기술을 빨리 다시 준비하기',blindside:'정확한 정후방을 잡기 어려운 좁은 통로에서 기습하기',
- kit:'잠긴 경로를 열거나 캔으로 순찰 방향 바꾸기',dart:'접근하기 어려운 적을 멀리서 기절시키기',kunai:'위험 구역에 들어가기 전에 적을 원거리에서 처치하기',smoke:'카메라와 경비가 보는 길을 잠시 가리고 통과하기',precision:'더 멀리서 투척하고 추가 탄약으로 경로 선택 폭 늘리기',smokeMix:'몸을 운반하거나 긴 통로를 건널 시간을 벌기',electric:'조명을 꺼서 사람의 시야를 줄이고 복구하러 오는 경비 유인하기',radio:'확보한 무전기로 순찰 한 명만 다른 곳으로 보내기',hack:'전원을 끄러 들어가지 않고 CCTV 통과 시간 만들기',signal:'CCTV에 더 멀리서 개입하고 안전하게 통과할 시간 늘리기'
+ kit:'잠긴 경로를 열거나 캔으로 순찰 방향 바꾸기',dart:'접근하기 어려운 적을 멀리서 기절시키기',kunai:'위험 구역에 들어가기 전에 적을 원거리에서 처치하기',smoke:'카메라와 경비가 보는 길을 잠시 가리고 통과하기',precision:'더 멀리서 투척하고 추가 탄약으로 경로 선택 폭 늘리기',smokeMix:'몸을 운반하거나 긴 통로를 건널 시간을 벌기',electric:'건물·구역 전원을 차단하고 복구하러 오는 경비 유인하기',radio:'확보한 무전기로 순찰 한 명만 다른 곳으로 보내기',hack:'전원을 끄러 들어가지 않고 CCTV 통과 시간 만들기',signal:'CCTV에 더 멀리서 개입하고 안전하게 통과할 시간 늘리기'
 };
 function skillBenefit(d){
- const pairs={reach:['1.5m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['전기 장치 조작 불가','조명·분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['동시 암살 12초 · 연속 16초','동시 암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
+ const pairs={reach:['1.5m 이내에서 접촉 제압','3.5m에서 직접 접근 후 제압'],ambush:['은신 상태 공격 불가','풀숲·엄폐·은신처에서 기습'],dart:['다트 조준·발사 불가','다트 사용 · 기본 2발'],electric:['일반 조명 스위치 조작','건물·구역 분전반 조작'],dual:['한 명씩 제압','붙어 있는 두 적 동시 처치'],chain:['첫 적만 처치','다음 적에게 이동해 연속 처치'],drop:['옥상에서 기습 불가','가장자리에서 낙하 기습'],smoke:['연막 사용 불가','반경 3m · 5초 시선 차단'],kunai:['쿠나이 사용 불가','살상용 쿠나이 2개'],radio:['허위 무전 불가','확보한 무전기로 유인 · 2회'],hack:['원격 CCTV 정지 불가','4m · 10초 정지'],signal:['해킹 4m · 10초','5.5m · 15초'],quietStep:['걷기 소음 100%','걷기 소음 75%'],quietCrouch:['웅크리기 소음 100%','웅크리기 소음 65%'],swiftCrouch:['웅크리기 속도 100%','웅크리기 속도 120%'],sprint:['달리기 속도 100%','달리기 속도 112%'],bodyCarry:['운반 속도 60%','운반 속도 75%'],silentHands:['기절 접촉 소음 100%','기절 접촉 소음 70%'],landing:['착지 소음 100%','착지 소음 60%'],shadow:['어두운 곳 발견 속도 100%','웅크리면 발견 속도 85%'],foliage:['풀숲 시각 감지 1.1m','풀숲 시각 감지 0.9m'],lookout:['기본 화면 범위','화면 범위 10% 확대'],flow:['동시 암살 12초 · 연속 16초','동시 암살 9.6초 · 연속 12.8초'],smokeMix:['연막 3m · 5초','3.5m · 8초 · 1개 추가'],precision:['투척 사거리 100%','130% · 배운 투척 도구 1개 추가'],blindside:['기본 후방 허용 각도','일반 경비 후방 약 20도 확대'],kit:['기본 소지품','락픽 1개 · 빈 캔 2개 추가']};
  return pairs[d.id];
 }
 
@@ -15081,6 +15196,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,

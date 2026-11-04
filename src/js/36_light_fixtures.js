@@ -86,8 +86,11 @@ function collideLightPosts(o,r,solid) {
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
     const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
-    const on=lampOn(l),x=l.x,y=l.y-m.height;
+    const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
     ctx.save();
+    const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
+    const baked=art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
       ctx.fillStyle='#454e53';ctx.fillRect(m.ax-4,m.ay-8,8,12);
@@ -101,6 +104,7 @@ function drawOutdoorLampFixtures() {
     ctx.fillStyle='#202a30';ctx.fillRect(x-9,y-5,18,8);ctx.strokeStyle='#8b9694';ctx.lineWidth=1;ctx.strokeRect(x-9,y-5,18,8);
     ctx.fillStyle=l.broken?'#403d3a':on?'#efe0ad':'#66716d';ctx.fillRect(x-6,y-1,12,3);
     if(l.broken){ctx.strokeStyle='#b0aaa0';ctx.beginPath();ctx.moveTo(x-5,y-3);ctx.lineTo(x+4,y+3);ctx.stroke();}
+    }
     if(m.kind!=='pole') {
       const p=lampControl(l);ctx.strokeStyle='#586970';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.ax,m.ay-10);ctx.lineTo(p.x,p.y-3);ctx.stroke();ctx.fillStyle='#26333a';ctx.fillRect(p.x-4,p.y-8,8,12);ctx.strokeStyle='#808b88';ctx.strokeRect(p.x-4,p.y-8,8,12);
       ctx.fillStyle=on?'#c3cba1':'#525e61';ctx.fillRect(p.x-1,p.y-5,2,5);
