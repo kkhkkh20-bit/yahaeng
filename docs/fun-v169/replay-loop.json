@@ -1,0 +1,40 @@
+[
+  {
+    "touch": false,
+    "retry": {
+      "hp": 3,
+      "item": false,
+      "detected": 0,
+      "used": 1,
+      "points": 4
+    },
+    "checks": [
+      "earned default-mode discovery once; manual objective preserved",
+      "guidance off stays quiet, including after re-enable",
+      "discovery waits through combat",
+      "safe escape and floor milestones save without rewards",
+      "authored street entry, alternate information and real cell screen",
+      "expanded objective chooses an earned route with touch/keyboard, resumes without attack"
+    ],
+    "errors": []
+  },
+  {
+    "touch": true,
+    "retry": {
+      "hp": 3,
+      "item": false,
+      "detected": 0,
+      "used": 1,
+      "points": 4
+    },
+    "checks": [
+      "earned default-mode discovery once; manual objective preserved",
+      "guidance off stays quiet, including after re-enable",
+      "discovery waits through combat",
+      "safe escape and floor milestones save without rewards",
+      "authored street entry, alternate information and real cell screen",
+      "expanded objective chooses an earned route with touch/keyboard, resumes without attack"
+    ],
+    "errors": []
+  }
+]

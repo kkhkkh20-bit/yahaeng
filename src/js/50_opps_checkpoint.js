@@ -91,6 +91,8 @@ const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
 // 처음 달성한 준비만 센다. 같은 복장과 문을 반복 조작해도 증가하지 않는다.
 function preparationTokens() {
   const P = S.player, a = [];
+  if(STAGE.id==='m6'&&!pendingFirstGoal())a.push('entry:escaped-cell');
+  if(mainContract(STAGE)&&flOf(P)>0)a.push('floor:'+bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))+':'+flOf(P));
   for (const s of S.learned || []) a.push('clue:' + s);
   for (const k of Object.keys(P.keys || {})) if (P.keys[k]) a.push('key:' + k);
   for (const k of Object.keys(P.got || {})) if (P.got[k]) a.push('equipment:' + k);

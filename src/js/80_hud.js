@@ -154,12 +154,12 @@ function updateHUD(force) {
   syncAssassinHUD();
   const P = S.player;
   syncTutorialCue();
-  { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=S.cpStored?'저장됨':'이번 실행에 저장됨';} }
+  { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=(S.cpStored?'저장됨':'이번 실행에 저장됨')+(isTouch?' · 메뉴에서 재시도':' · F9 재시도');} }
   drawWanted();
   const targets=S.spare?[]:S.guards.filter(g=>g.target),first=!!STAGE.firstGoal,total=targets.length+S.items.length+(first?1:0),done=targets.filter(g=>targetEliminated(g)).length+S.items.filter(i=>i.got).length+(first&&!pendingFirstGoal()?1:0);
   const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':done===total&&evidencePending()?'기록 삭제 필요':`목표 ${done}/${total}`):'';
   setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
-  { const html = objectiveLines().map(([c, t]) => `<span class="ol ${c}">${c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  { const html = objectiveLines().map(([c, t, story]) => `<span class="ol ${c}">${story?`<button type="button" data-story-route="${story}">${t} · 추적</button>`:c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';

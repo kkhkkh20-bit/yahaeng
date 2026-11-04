@@ -177,7 +177,7 @@ function updateVipPlan(dt) {
   if (!g || !v || v.phase === 'done') return;
   if(v.phase==='sick'){
     const d=STAGE.vipDrink,at=!flOf(g)&&!g.z&&dist(g.x,g.y,tc(d.to[0]),tc(d.to[1]))<65;
-    if(at&&!g.moving)v.reachedToilet=true;
+    if(at&&!g.moving){v.reachedToilet=true;if(g.state==='PATROL'&&d.toiletA!=null){g.want=d.toiletA;g.a+=clamp(angDiff(g.a,d.toiletA),-dt*8,dt*8);g.glance=0;g.glanceT=2;}}
     const pending=g.route.some(w=>w.once&&dist(w.x,w.y,tc(d.to[0]),tc(d.to[1]))<20);
     if(!at&&(v.reachedToilet||!pending)){v.phase='done';S.goalNavCache=null;}
     return;

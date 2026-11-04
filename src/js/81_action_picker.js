@@ -5,8 +5,11 @@ function setObjectiveOpen(open){
   const o=document.querySelector('#hud .obj');if(!o)return;
   if(open){clearPlayerInput();closeEnvPicker();closeLoadout();}
   o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
+  o.setAttribute('role',open?'group':'button');
   document.body.classList.toggle('inspecting',hudInspecting());
 }
+hud.obj.addEventListener('click',e=>{const b=e.target.closest('[data-story-route]');if(!b)return;e.preventDefault();e.stopPropagation();if(selectStory(b.dataset.storyRoute)){setObjectiveOpen(false);canvas.focus({preventScroll:true});}});
+hud.obj.addEventListener('keydown',e=>{if(!e.target.closest('[data-story-route]'))return;e.stopPropagation();if(e.code==='Escape'){e.preventDefault();setObjectiveOpen(false);document.querySelector('#hud .obj').focus({preventScroll:true});}});
 function closeHudInspection(){closeLoadout();closeEnvPicker();setObjectiveOpen(false);document.body.classList.remove('inspecting');}
 const envToken = a => a.k + ':' + oid(actObj(a))+(a.k==='quickStash'?':'+oid(a.h):'');
 function closeEnvPicker() { envPicker = null; const e = $('envPicker'); if (e) { e.hidden = true; e.replaceChildren(); } const b = $('btnCycle'); if (b) b.setAttribute('aria-expanded','false');document.body.classList.toggle('inspecting',hudInspecting()); }
@@ -73,7 +76,7 @@ function unavailableEnvReason() {
   if(P.ledge || P.wire) return '안전하게 올라설 곳이 없다';
   const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken).map(l=>lampControl(l))]
     .filter(o=>Number.isFinite(o.x)&&dist(P.x,P.y,o.x,o.y)<100).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
-  const o=a[0]; if(!o)return '조작할 물체 가까이 이동하기';
+  const o=a.find(o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0))||a[0]; if(!o)return '조작할 물체 가까이 이동하기';
   if(flOf(o)!==flOf(P)||(o.z||0)!==(P.z||0))return '다른 층에 있는 대상이다 — 연결 입구로 이동하기';
   if(!objectReachable(o,100))return '벽이나 가구에 가려 손이 닿지 않는다';
   return '대상에 더 가까이 이동하기';

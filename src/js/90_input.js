@@ -18,6 +18,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   const overlay = document.querySelector('.screen:not([hidden])');
+  if(e.code==='F9'&&!e.repeat&&S&&running&&cpReady()&&(!overlay||['pause','end'].includes(overlay.id))&&!S.keypad){e.preventDefault();loadCheckpoint();return;}
   if (overlay) {
     if(overlay.id==='skillScreen'&&handleSkillDetailKey(e))return;
     if (e.code === 'Escape') {
@@ -257,7 +258,7 @@ $('btnPortrait').addEventListener('click', () => document.body.classList.add('po
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
-  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name); renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
+  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
@@ -285,6 +286,7 @@ $('btnRoutes').classList.toggle('on', showRoutes);$('btnRoutes').setAttribute('a
   if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
 $('tacBanner').addEventListener('click', e => { toggleTactical(); if (!e.detail) $('mini').focus({ preventScroll: true }); });
 $('btnResume').addEventListener('click', () => setPause(false));
+$('btnCheckpointPause').addEventListener('click',()=>{if(cpReady())loadCheckpoint();});
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
 $('btnMenu2').addEventListener('click', () => { setPause(false); toMenu(); });
 $('btnMenu').addEventListener('click', toMenu);

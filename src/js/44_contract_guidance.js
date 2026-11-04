@@ -31,7 +31,7 @@ function contractRouteGoal(){
   }
   if(!S.items[1]?.got){
     const officeDoors=S.doors.filter(d=>d.keyLock==='code');
-    if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.find(n=>n.gives==='code'&&!n.read);if(note)return object(note,'폐사무소의 출입 메모 확인','사무동 비밀번호');}
+    if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.filter(n=>n.gives==='code'&&!n.read).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];if(note)return object(note,note.title+' 확인','사무동 비밀번호');}
     if(!keys.green&&locked('green')){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 1층 계약서 금고용');}
     return object(S.items[1],'사무동 1층에서 계약서 회수','초록 카드키 · 계약서 금고');
   }
