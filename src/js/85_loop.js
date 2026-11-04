@@ -23,6 +23,7 @@ function frame(t) {
   if (FPS_CAP < 60 && lastT && t - lastT < 1000 / FPS_CAP - 4) return;  // 이번 화면 갱신은 건너뛴다
   const rawDt = (t - lastT) / 1000 || 0, dt = Math.min(0.05, rawDt); lastT = t; prWarm.frameGap=rawDt;perfWatch(rawDt);
   if (!S || !mapC) return;
+  if(!$('brief').hidden)refreshMissionIdentityArt();
   // Title and mission selection are static overlays. Do not simulate or render
   // a hidden world (or request its NPC sheets) while waiting in the menu.
   if (!running) {

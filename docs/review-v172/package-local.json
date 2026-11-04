@@ -1,0 +1,67 @@
+{
+  "base": "http://127.0.0.1:8001/public/",
+  "files": {
+    "index.html": "f96ffbd9ad1bdd0c4f029711832579b87ce5ea97e1a16df025bc5fc4efad4190",
+    "version.json": "e9bc458a8ff88184122c34871ffb8719ad340fdb448335306a929273d5637900",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/047599c352ecc06d7244.js": "047599c352ecc06d72442928c71f2baad030c8427e5b995ee9f1eead52dbd6f0",
+    "assets/fee38bf62436e2af0d1d.js": "fee38bf62436e2af0d1d6331fb3a26632f18bbc5b5b2098a282ac02766b4fe86",
+    "assets/da042313b819aafdf93a.js": "da042313b819aafdf93a3d3b8348ac4f29aa2abe9842487f7d8bbc132f36e07d",
+    "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+    "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        189.31017312209755,
+        505.5359625
+      ],
+      "version": "v172",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        185.89041149412225,
+        505.54057500000005
+      ],
+      "version": "v172",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    }
+  ]
+}
