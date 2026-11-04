@@ -16,6 +16,7 @@ FAST.append('t_tutorial_markers')
 FAST.append('t_room_switches')
 FAST.append('t_ledge_facing')
 FAST.append('t_pair_counterplay')
+FAST.append('t_ordinary_footsteps')
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 
 def run(path, timeout=400):

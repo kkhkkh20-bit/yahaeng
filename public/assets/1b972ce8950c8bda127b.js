@@ -4055,16 +4055,21 @@ function noise(x, y, r, src, fl, z) {
   else if(src==='step'&&S.player.mode==='run'&&!S.player.vent&&!S.player.under)spawnEffect('dust',{x,y,fl,z:zs},{scale:.35,alpha:.65});
   const nz = { x, y, r, t: 0, src, fl, z:zs }; S.noises.push(nz); if(src==='step')nz.mode=S.player.mode;
   const L0 = CUR_F; setLayer(fl);let field=null;const decoys=[];
+  const runStep=src==='step'&&S.player.mode==='run'&&S.player.moving;
+  // Hearing ordinary shoes is not evidence of an intruder. Only distinctive
+  // movement sounds interrupt human routines, regardless of unseen clearance.
+  const stepKind=src!=='step'?null:runStep?'run':!zs&&MAT[tileAt(x,y)]?'surface':S.player.carrying?'drag':null;
+  if(src==='step')nz.stepKind=stepKind;
   for (const g of S.guards) {
     if (flOf(g) !== fl) continue;
     if (src === 'guardDoor' && g.searchJob) continue;  // 동료가 수색 중 여는 문에 다시 몰리지 않는다
     { const gz = g.z || 0, gIn = !gz && !flOf(g) && !!roofAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); if ((zs > 0 && gIn) || (srcIn && gz > 0)) continue; }  // 옥상 발소리는 아래 실내에서 안 들리고, 실내 소리는 옥상에서 안 들린다
     if (g.state === 'DEAD' || g.state === 'ALERT' || g.state === 'FLEE' || g.state === 'CAPTIVE' || g.state === 'TERROR') continue;
+    if(src==='step'&&!g.dog&&!stepKind)continue;
     const d = dist(g.x, g.y, x, y);
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
     let audible=d<rr;
     if(src==='whistle'&&!audible&&d<r){field=field||soundField(x,y,r);audible=(field.get(Math.floor(g.y/TILE)*MW+Math.floor(g.x/TILE))??Infinity)<r;}
-    const runStep = src === 'step' && S.player.mode === 'run' && S.player.moving;
     if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs), g) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
     if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (audible && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
@@ -4080,7 +4085,7 @@ function noise(x, y, r, src, fl, z) {
       if (src === 'whistle' && !g.dog) { g.startle={a:Math.atan2(y-g.y,x-g.x)};gsay(g, ['누구야?', '지금 누가 불렀어?', '저쪽에서 났지?'][(g.id + (S.stats.whistles || 0)) % 3]); }
       if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
-      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
+      if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearKind=stepKind; g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
       goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
       if((src==='whistle'||src==='stone')&&g.state==='SUSPICIOUS')(nz.otherInvestigators||(nz.otherInvestigators=[])).push(g.id);
     }
@@ -4493,9 +4498,10 @@ const permitName = allow => { const o = myPermits().find(o => allow && allow.inc
 const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
-// 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
+// 평온할 때 일반 경비는 동료 복장을 받아들인다. 신원 확인 담당자와
+// 정예·표적만 근접 확인하며, 경계가 올라가면 일반 경비도 검문한다.
 function routineIdentityCheck(g) {
-  return groundedWorld() && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
+  return groundedWorld() && S.alevel>=1 && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
     pZoneInfo().k !== Z_PUB && (outfitOf(g) === S.player.outfit || g.post != null || S.alevel >= 1);
 }
 const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit) || routineIdentityCheck(g)));
@@ -5525,8 +5531,8 @@ function updateGuard(g, dt) {
   } else if (g.state !== 'ALERT') { if (g.holdT > 0) g.holdT -= dt; else g.meter = Math.max(0, g.meter - dt * 0.3); }  // 시야에서 벗어나도 잠깐은 게이지가 남는다
   const sx0 = g.x, sy0 = g.y;
   if (g.hearT > 0) {
-    if (g.state !== 'PATROL' && g.state !== 'RETURN') g.hearT = 0;
-    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
+    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { g.hearT = 0; g.hearP=null; g.hearKind=null; }
+    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; g.hearKind=null; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
   }
 
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
@@ -14465,6 +14471,7 @@ function updateStealth(lv) {
   if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? zi.secure?'보안구역 침입':'무단 침입' : '신원 노출'; }
   else if(observer?.camera){s='risk';word=observer.g.search?'서치라이트에 노출':'CCTV 녹화 게이지';why=cameraAssessment(observer.g).reason+' · 가득 차기 전에 시야 밖으로';}
   else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
+  else if(observer?.g.state==='WARN'){s='risk';word='퇴거 경고 · '+Math.max(0,Math.ceil(observer.g.warnEnd-S.t))+'초';why=(zi?.secure?'보안구역':'출입 권한 없음')+' · 허용 구역으로 나가세요';}
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '복장이 허용돼도 가까이 오래 있으면 발각'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
@@ -14485,7 +14492,7 @@ function updateStealth(lv) {
   box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
   const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
   box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
-  const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
+  const k = s + '|' + word + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
   const ico = observer?.camera?'camera':P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }

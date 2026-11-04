@@ -32,9 +32,10 @@ const permitName = allow => { const o = myPermits().find(o => allow && allow.inc
 const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
-// 눈썰미: 같은 옷 무리 중 반장·사장(enforcer)은 가까이서 보면 변장을 알아챈다. 정예·표적은 어떤 옷이든 알아본다
+// 평온할 때 일반 경비는 동료 복장을 받아들인다. 신원 확인 담당자와
+// 정예·표적만 근접 확인하며, 경계가 올라가면 일반 경비도 검문한다.
 function routineIdentityCheck(g) {
-  return groundedWorld() && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
+  return groundedWorld() && S.alevel>=1 && !g.civ && !g.dog && !g.elite && !g.target && !g.enforcer &&
     pZoneInfo().k !== Z_PUB && (outfitOf(g) === S.player.outfit || g.post != null || S.alevel >= 1);
 }
 const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(g) === S.player.outfit : (g.elite || g.target || (g.enforcer && outfitOf(g) === S.player.outfit) || routineIdentityCheck(g)));

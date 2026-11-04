@@ -70,8 +70,8 @@ function updateGuard(g, dt) {
   } else if (g.state !== 'ALERT') { if (g.holdT > 0) g.holdT -= dt; else g.meter = Math.max(0, g.meter - dt * 0.3); }  // 시야에서 벗어나도 잠깐은 게이지가 남는다
   const sx0 = g.x, sy0 = g.y;
   if (g.hearT > 0) {
-    if (g.state !== 'PATROL' && g.state !== 'RETURN') g.hearT = 0;
-    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
+    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { g.hearT = 0; g.hearP=null; g.hearKind=null; }
+    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; g.hearKind=null; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
   }
 
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
