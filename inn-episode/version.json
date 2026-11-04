@@ -1,0 +1,9 @@
+{
+  "edition": "inn-0.2",
+  "above_ground_floors": 3,
+  "rooms": 6,
+  "public_stair_flights": 2,
+  "secret_stair_flights": 2,
+  "gameplay_checks": 86,
+  "build_checks": 7
+}

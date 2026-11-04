@@ -1437,7 +1437,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">inn-0.1</footer>
+  <footer class="title-footer">inn-0.2</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -2722,15 +2722,17 @@ const BARKS = {
   terror: ['사람이 떨어졌어! 비켜!', '여기 사람이 쓰러졌어. 도와줘!']
 };
 
-// A self-contained episode. Campaign stage data is never loaded by this edition.
+// Edition-only stage data replaces the playable campaign list at build time.
 const INN_ROOMS = [
-  {id:1,name:'참나무방',at:[30,10],door:[30,13],secret:[30,7],bed:[29,8]},
-  {id:2,name:'사슴방',at:[37,10],door:[37,13],secret:[37,7],bed:[36,8]},
-  {id:3,name:'달빛방',at:[44,10],door:[44,13],secret:[44,7],bed:[43,8]},
-  {id:4,name:'장미방',at:[30,21],door:[30,17],secret:[30,24],bed:[28,18]},
-  {id:5,name:'잿빛방',at:[37,21],door:[37,17],secret:[37,24],bed:[35,18]},
-  {id:6,name:'왕관방',at:[44,21],door:[44,17],secret:[44,24],bed:[42,18]}
+  {id:1,no:201,fl:1,name:'참나무방',at:[30,10],door:[30,13],secret:[30,7],bed:[29,8]},
+  {id:2,no:202,fl:1,name:'사슴방',at:[37,10],door:[37,13],secret:[37,7],bed:[36,8]},
+  {id:3,no:203,fl:1,name:'달빛방',at:[44,10],door:[44,13],secret:[44,7],bed:[43,8]},
+  {id:4,no:204,fl:1,name:'장미방',at:[30,23],door:[30,19],secret:[30,26],bed:[28,20]},
+  {id:5,no:301,fl:2,name:'잿빛방',at:[34,10],door:[34,13],secret:[34,7],bed:[29,8]},
+  {id:6,no:302,fl:2,name:'왕관방',at:[44,10],door:[44,13],secret:[44,7],bed:[43,8]}
 ];
+const INN_FLIGHTS={public:[29,15],secret:[45,26]};
+const INN_PANELS=[{fl:0,at:[40,27]},...[1,2].map(fl=>({fl,at:[40,24]})),...INN_ROOMS.map(r=>({fl:r.fl,at:r.secret}))];
 const INN_GUESTS = [
   {tag:'marshal',name:'로덴 경',faction:'적사자 왕국',color:'#ae5850',want:6,secret:'서쪽 전선을 팔아넘긴 장교. 적사자 왕국의 비밀 의뢰 표적.'},
   {tag:'merchant',name:'마르타',faction:'황금길 상단',color:'#bf9955',want:2,secret:'사슴방 책상에 군수품 거래 장부를 두었다.'},
@@ -2744,22 +2746,18 @@ const INN_STAGE_DATA = [{
   mission:'여관을 운영하며 80G를 벌고, 비밀 의뢰 하나를 끝낸 뒤 카운터에서 밤을 마감한다.',
   brief:'전쟁 중에도 국경의 여관에는 불이 켜진다. 객실을 배정하고 저녁을 내어라. 손님들이 잔을 비우는 동안 누군가는 거래 장부를 숨기고, 누군가는 밀서를 품는다.',
   W:56,H:58,start:[18,33],exit:[26,40],exitName:'국경길',
-  noRefine:true,interiorOnly:true,floors:false,residents:0,traffic:0,radios:[],
+  noRefine:true,interiorOnly:true,floors:true,residents:0,traffic:0,radios:[],
   trialSkills:['quietStep','quietCrouch','silentHands','ambush','bodyCarry','kit','dart','kunai'],
   build(m){
     m.fill(0,0,55,57,'g');m.rect(0,0,55,42);m.fill(0,43,55,57,'#');
     m.fill(8,30,48,39,',');m.fill(16,30,20,40,'=');m.fill(16,37,53,40,'=');
     m.fill(5,40,54,42,',');m.fill(54,40,55,42,',');
-    m.bld(6,4,49,30,0,[[17,30],[18,30],[6,10]],'w');
+    m.bld(6,4,49,30,3,[[17,30],[18,30],[6,10]],'w');
     m.fill(18,4,18,13,'#');m.fill(6,14,25,14,'#');m.set(12,14,'w');m.set(22,14,'w');
-    m.fill(26,4,26,30,'#');m.set(26,15,'w');
-    m.fill(27,4,27,13,'#');m.fill(27,17,27,30,'#');
-    m.fill(27,7,49,7,'#');m.fill(27,13,49,13,'#');
-    m.fill(27,17,49,17,'#');m.fill(27,24,49,24,'#');
-    for(const x of [34,41]){m.fill(x,7,x,13,'#');m.fill(x,17,x,24,'#');}
-    for(const r of INN_ROOMS)m.set(r.door[0],r.door[1],'w');
-    // Service passage behind the rooms. Both entries and room panels start shut.
-    m.set(26,6,'#');m.set(27,6,'#');m.set(26,27,'#');m.set(27,27,'#');
+    m.fill(26,4,26,13,'#');m.fill(26,19,26,30,'#');
+    // Public stair lobby and expanded banquet hall; the service stair is hidden.
+    m.fill(40,24,49,24,'#');m.fill(40,24,40,30,'#');
+    m.set(...INN_FLIGHTS.public,'Y');m.set(...INN_FLIGHTS.secret,'Y');
     m.set(8,6,'Q');
     for(const [x,y]of [[3,4],[2,12],[3,21],[3,33],[8,38],[13,39],[51,6],[53,16],[52,27],[50,35]])m.set(x,y,'T');
     for(const [x,y]of [[5,32],[5,34],[8,36],[10,36],[31,33],[33,34],[46,33],[48,34],[50,30]])m.set(x,y,'B');
@@ -2770,16 +2768,20 @@ const INN_STAGE_DATA = [{
     m.fill(25,51,47,51,'#');
   },
   lamps:[[14,22,310,0,0,'255,190,113'],[22,22,220,0,0,'255,183,97'],[12,9,210,0,0,'255,185,106'],[22,9,170,0,0,'255,185,106'],
-    [30,10,145,0,0,'255,187,120'],[37,10,145,0,0,'255,187,120'],[44,10,145,0,0,'255,187,120'],
-    [30,21,145,0,0,'255,187,120'],[37,21,145,0,0,'255,187,120'],[44,21,145,0,0,'255,187,120'],
+    [35,10,270,0,0,'255,187,120'],[36,21,270,0,0,'255,187,120'],
+    ...INN_ROOMS.map(r=>[...r.at,r.fl===2?200:145,0,r.fl,'255,187,120']),
+    ...[1,2].flatMap(fl=>[[15,9,270,0,fl,'255,187,120'],[15,24,280,0,fl,'255,187,120'],[34,17,230,0,fl,'255,187,120'],[39,21,210,0,fl,'255,187,120']]),
     [35,15,240,0,0,'255,187,120'],[18,32,230,1,0,'255,179,91'],[39,34,160,1,0,'255,179,91'],[12,48,200,0,0,'255,159,79'],[35,53,220,0,0,'255,159,79']],
   zones:[[0,0,55,57,'pub']],wires:[],roofs:[],bricks:[],hideTypes:['wardrobe','bed'],
   fixedFurn:[
     {t:'table',x:10,y:18,w:2,h:1},{t:'table',x:18,y:18,w:2,h:1},{t:'table',x:10,y:23,w:2,h:1},{t:'table',x:18,y:23,w:2,h:1},
     {t:'counter',x:20,y:27,w:4,h:1},{t:'counter',x:9,y:11,w:5,h:1},{t:'shelf',x:7,y:5,w:1,h:3},
     {t:'table',x:21,y:7,w:2,h:1},
-    ...INN_ROOMS.flatMap(r=>[{t:'bed',x:r.bed[0],y:r.bed[1],w:2,h:2},{t:'table',x:r.at[0]+1,y:r.at[1],w:1,h:1},
-      {t:'wardrobe',x:r.bed[0]+3,y:r.bed[1],w:1,h:1}]),
+    ...INN_ROOMS.flatMap(r=>[{t:'bed',x:r.bed[0],y:r.bed[1],w:2,h:2,fl:r.fl},{t:'table',x:r.at[0]+1,y:r.at[1],w:1,h:1,fl:r.fl},
+      {t:'wardrobe',x:r.bed[0]+3,y:r.bed[1],w:1,h:1,fl:r.fl}]),
+    ...[[31,9],[39,9],[31,21],[36,21],[43,21]].map(([x,y])=>({t:'table',x,y,w:2,h:1})),
+    ...[1,2].flatMap(fl=>[{t:'table',x:11,y:9,w:4,h:1,fl},{t:'shelf',x:7,y:5,w:1,h:3,fl},{t:'table',x:12,y:24,w:4,h:1,fl}]),
+    {t:'table',x:35,y:21,w:6,h:1,fl:2},{t:'shelf',x:35,y:19,w:2,h:1,fl:1},
     {t:'table',x:13,y:47,w:3,h:1},{t:'boxes',x:8,y:52,w:2,h:2},
     {t:'table',x:28,y:34,w:2,h:2,innKind:'well'},
     {t:'table',x:7,y:32,w:2,h:2,innKind:'wagon'}
@@ -2789,11 +2791,11 @@ const INN_STAGE_DATA = [{
       sched:[{at:[9+(i%2)*8,17+Math.floor(i/2)*4],stay:26+i*3,name:'술집',act:'저녁 식사'},
         {at:[36+i,32+(i%2)*3],stay:18,name:'안뜰',act:'바람 쐬기'}]})),
     {kind:'g1',tag:'gatekeeper',at:[24,36],route:[[24,36,5],[30,38,3],[46,37,4]],radio:false},
-    {kind:'g2',tag:'escort',route:[[29,15,5],[45,15,6],[24,32,8]],radio:false},
+    {kind:'g2',tag:'escort',at:[12,33],follow:0,radio:false},
     {kind:'civ',tag:'cook',outfit:'staff',at:[12,9],post:90},
     ...Array.from({length:6},(_,i)=>({kind:'civ',tag:'patron'+i,at:[8+(i%2)*9,19+Math.floor(i/2)*4],post:i%2?180:0}))
   ],
-  targetNames:{marshal:'로덴 경'},items:[[38,10]],itemName:'군수품 거래 장부',itemNames:['군수품 거래 장부'],lootFurniture:['table'],
+  targetNames:{marshal:'로덴 경'},items:[[38,10,1]],itemName:'군수품 거래 장부',itemNames:['군수품 거래 장부'],lootFurniture:['table'],
   props:[{id:'innSleep',name:'잠의 가루',at:[15,9]},{id:'innPoison',name:'검은 독약',at:[16,9]},{id:'innEmetic',name:'배탈약',at:[15,12]}],
   uses:[],challenges:['ghost','nobody','intel'],
   intel:[
@@ -4468,18 +4470,18 @@ const CH = {
 };
 const mmss = t => { const m = Math.floor(t / 60), s = Math.round(t % 60); return m + '분' + (s ? ' ' + s + '초' : ''); };
 const chName = id => id === 'fast' ? `${mmss(STAGE.fastT || 330)} 안에 완료하기` : (CH[id] || ['?'])[0];
-function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.inn.ch') || '{}') || {}; } catch (e) { return {}; } }
-function saveCh(o) { try { localStorage.setItem('yahaeng.inn.ch', JSON.stringify(o)); } catch (e) {} }
+function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.inn.v02.ch') || '{}') || {}; } catch (e) { return {}; } }
+function saveCh(o) { try { localStorage.setItem('yahaeng.inn.v02.ch', JSON.stringify(o)); } catch (e) {} }
 const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
 function applyPerks() { loadSkillTree();S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
 function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
-function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.inn.best') || '{}') || {}; } catch (e) { return {}; } }
+function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.inn.v02.best') || '{}') || {}; } catch (e) { return {}; } }
 function saveBest(id, rank) {
   const b = loadBest(); if (b[id] && RANKS.indexOf(b[id]) >= RANKS.indexOf(rank)) return;
-  b[id] = rank; try { localStorage.setItem('yahaeng.inn.best', JSON.stringify(b)); } catch (e) {}
+  b[id] = rank; try { localStorage.setItem('yahaeng.inn.v02.best', JSON.stringify(b)); } catch (e) {}
 }
 
 
@@ -4530,7 +4532,7 @@ const SKILL_TREE=[
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
 ];
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
-const SKILL_STORE='yahaeng.inn.skillTree.v1',SKILL_START_POINTS=4;
+const SKILL_STORE='yahaeng.inn.v02.skillTree.v1',SKILL_START_POINTS=4;
 let volatileSkillTree=null;
 function skillBudget(){let r=volatileSkillTree;try{r=JSON.parse(localStorage.getItem(SKILL_STORE))||r;}catch(e){}return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);
@@ -4610,7 +4612,7 @@ const ASSASSIN_SKILLS={
 };
 function initAssassinSkills(){
   syncRuntimeSkills();S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
-  let key='dual';try{key=localStorage.getItem('yahaeng.inn.assassinSkill')||key;}catch(e){}
+  let key='dual';try{key=localStorage.getItem('yahaeng.inn.v02.assassinSkill')||key;}catch(e){}
   S.selectedSkill=ASSASSIN_SKILLS[key]?key:'dual';
   if(!STAGE.skillPractice&&!skillOn(S.selectedSkill))S.selectedSkill='dual';
   if(STAGE.skillPractice)S.selectedSkill=S.practiceSkill||'dual';
@@ -4793,16 +4795,16 @@ const viewRect = (m = 0) => { const hw = W / SCALE / 2 + m, hh = H / SCALE / 2 +
 const inView = (x, y, m = 60) => Math.abs(x - cam.x) < W / SCALE / 2 + m && Math.abs(y - cam.y) < H / SCALE / 2 + m;
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
 let userZoom = 1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
-try { const o = localStorage.getItem('yahaeng.inn.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
-try { const z = parseFloat(localStorage.getItem(window.__CLUB_STUDY__?'yahaeng.inn.tacticalZoom':'yahaeng.inn.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 사선 화면은 기존 2D 확대 값을 물려받지 않는다
-  const r = localStorage.getItem('yahaeng.inn.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
+try { const o = localStorage.getItem('yahaeng.inn.v02.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
+try { const z = parseFloat(localStorage.getItem(window.__CLUB_STUDY__?'yahaeng.inn.v02.tacticalZoom':'yahaeng.inn.v02.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 사선 화면은 기존 2D 확대 값을 물려받지 않는다
+  const r = localStorage.getItem('yahaeng.inn.v02.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
 let running = false, paused = false;
 
 // 의뢰 변형 (깬 의뢰에만): 같은 지도를 다른 조건으로 다시 (히트맨 에스컬레이션 방식)
 const MODS = { reinf: ['순찰 증원', '순찰 경비 2명 추가 · 기존 동선의 반대 방향으로 순찰'], timer: ['제한 시간', '제한 시간 6분'], bright: ['환한 밤', '경비의 어둠 속 시야 거리 1.5배'], bare: ['맨손', '락픽·돌멩이·독침 없이 시작한다'] };
-let MOD = ''; try { const m = localStorage.getItem('yahaeng.inn.mod'); if (MODS[m]) MOD = m; } catch (e) {}
+let MOD = ''; try { const m = localStorage.getItem('yahaeng.inn.v02.mod'); if (MODS[m]) MOD = m; } catch (e) {}
 const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
 // 판 안 예약 동작: 게임 시간(S.t)으로 센다 — 일시정지하면 멈추고, 판이 바뀌면 사라진다 (setTimeout 은 이전 판 일이 새 판에 끼어들었다)
 function after(sec, fn) { if (S) (S.timers || (S.timers = [])).push({ at: S.t + sec, fn }); }
@@ -9617,8 +9619,8 @@ OUTFITS.police = '경찰 제복';
 OUTFIT_PAL.police = ['#dba57e', '#1c2a4a', '#2e4a86', '#121826', '#d8dce6']; PR_PAL.police = OUTFIT_PAL.police;  // 남색 제복
 const WANT_COPS = [0, 2, 4, 6, 7, 8];
 let CITY_RET = null;  // 의뢰를 마치면 돌아올 자리 { id, x, y }
-const cityDone = () => { try { return JSON.parse(localStorage.getItem('yahaeng.inn.cityDone') || '{}'); } catch (e) { return {}; } };
-function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.setItem('yahaeng.inn.cityDone', JSON.stringify(d)); } catch (e) {} }
+const cityDone = () => { try { return JSON.parse(localStorage.getItem('yahaeng.inn.v02.cityDone') || '{}'); } catch (e) { return {}; } };
+function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.setItem('yahaeng.inn.v02.cityDone', JSON.stringify(d)); } catch (e) {} }
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
@@ -10094,7 +10096,7 @@ function cloneDeep(o, memo = new Map()) {
   return c;
 }
 // 체크포인트를 기기에 남긴다 (새로고침·앱을 다시 열어도 이어 하기). 같은 객체를 여러 곳에서 가리키는 관계를 살려 JSON으로 바꾼다
-const CP_KEY = 'yahaeng.inn.cp';
+const CP_KEY = 'yahaeng.inn.v02.cp';
 function packGraph(root) {
   const ids = new Map(), nodes = [];
   const enc = v => {
@@ -15527,7 +15529,7 @@ function updateHUD(force) {
   hud.pips.forEach((p, i) => p.classList.toggle('on', i < S.alevel));
   { const hb = $('hpBox'), low = P.hp <= 1 && P.hpMax > 1 ? '1' : '0'; if (hb && hb.dataset.low !== low) hb.dataset.low = low; }  // 마지막 체력: 경고색으로 표시한다
   { const v = $('alertVig'); if (v) { const chase = S.guards.some(g => g.state === 'ALERT' && !g.civ && g.seen), a = S.over ? 0 : chase ? 3 : S.alevel >= 2 ? 2 : S.alevel >= 1 ? 1 : 0; if (hudCache.vig !== a) { hudCache.vig = a; v.dataset.a = a; } } }  // 화면 가장자리 경계 빛
-  if (!document.body.classList.contains('joyseen') && S.t > 12) { document.body.classList.add('joyseen'); try { localStorage.setItem('yahaeng.inn.joyseen', '1'); } catch (e) {} }
+  if (!document.body.classList.contains('joyseen') && S.t > 12) { document.body.classList.add('joyseen'); try { localStorage.setItem('yahaeng.inn.v02.joyseen', '1'); } catch (e) {} }
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.setAttribute('role','img'); hud.hp.setAttribute('aria-label', '체력 '+hpKey); hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i aria-hidden="true" class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
   updateHelpTip();
   { const pl = $('pickLbl'); if (pl) { pl.hidden = false; setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
@@ -16050,13 +16052,13 @@ function chooseAssassinSkill(key){
   const d=ASSASSIN_SKILLS[key],practice=assassinMenu?.practice;if(!d)return;
   if(!practice&&!loadSkillTree().learned.includes(key))return;
   if(practice){S.practiceSkill=key;S.selectedSkill=key;S.skillReadyAt=S.t;}
-  else{try{localStorage.setItem('yahaeng.inn.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
+  else{try{localStorage.setItem('yahaeng.inn.v02.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
 let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;
 function skillViewState(d){
  const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
- let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.inn.assassinSkill')||active;}catch(e){}
+ let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.inn.v02.assassinSkill')||active;}catch(e){}
  return{practice,known,parents,points:skillBudget()-skillSpent(r),active};
 }
 function closeSkillDetail(){skillDetailMode=null;syncSkillDetail();$('skillCards').querySelector('[data-select="'+skillFocused+'"]')?.focus({preventScroll:true});}
@@ -16161,8 +16163,8 @@ function updateAssassinPractice(){
 // ---------------------------------------------------------------- 루프
 let lastT = 0;
 // 프레임 제한: 기본 60fps. 메뉴에서 30으로 낮출 수 있다
-let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.inn.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
-function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.inn.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
+let FPS_CAP = (() => { try { const v = +localStorage.getItem('yahaeng.inn.v02.fps2'); if (v === 30 || v === 60) return v; } catch (e) {} return 60; })();  // 기본 60fps (휴대폰도). 메뉴의 '절전 30fps'로 낮출 수 있다
+function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.inn.v02.fps2', String(v)); } catch (e) {} const b = document.getElementById('btnFps'); if (b) b.textContent = v+' fps'; perfDts = []; perfSum = 0; }
 // Rendering can dip below 20 fps. Keep elapsed movement and timers, bounded into
 // small collision steps; a long interruption still cannot fast-forward the map.
 function advanceGameFrame(elapsed) {
@@ -16232,7 +16234,7 @@ function targetScale() {
   if (P && P.car) return BASE_SCALE * userZoom * (0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더)
   return BASE_SCALE * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
-function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.artSlice?'yahaeng.inn.tacticalZoom':'yahaeng.inn.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
+function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.artSlice?'yahaeng.inn.v02.tacticalZoom':'yahaeng.inn.v02.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
 function toggleTactical() {
   if (!running || !S || S.over || S.entrySel || paused || DLG.modal || S.keypad) return;
   clearPlayerInput();closeEnvPicker();
@@ -16250,7 +16252,7 @@ const STATS_STEP = 1.0;  // 동선 기록 간격(초, 게임 시간)
 let RUN = null;
 const statsOn = () => !!(STATS_CFG.projectId && STATS_CFG.apiKey) && location.protocol !== 'file:' && !/[?&]nostats/.test(location.search);
 const rid = n => Array.from({ length: n }, () => 'abcdefghijkmnpqrstuvwxyz23456789'[Math.floor(Math.random() * 32)]).join('');
-const statsPid = () => { try { let p = localStorage.getItem('yahaeng.inn.pid'); if (!p) { p = rid(12); localStorage.setItem('yahaeng.inn.pid', p); } return p; } catch (e) { return 'anon'; } };
+const statsPid = () => { try { let p = localStorage.getItem('yahaeng.inn.v02.pid'); if (!p) { p = rid(12); localStorage.setItem('yahaeng.inn.v02.pid', p); } return p; } catch (e) { return 'anon'; } };
 const STATS_SID = rid(8);  // 이번에 페이지를 연 한 번
 function statsBegin(how) {
   if (RUN && !RUN.done) statsEnd('left');  // 끝내지 않고 다른 판으로 넘어감
@@ -16364,8 +16366,8 @@ const innMoney = n => Math.round(n)+'G';
 const innMeta = tag => INN_GUESTS.find(g=>g.tag===tag);
 const innRoom = id => INN_ROOMS.find(r=>r.id===id);
 const innGuest = tag => S.guards.find(g=>g.tag===tag);
-const innCellar = () => S.player.y>43*TILE;
-const innNear = (at,r=105) => !S.player.z&&!flOf(S.player)&&dist(S.player.x,S.player.y,tc(at[0]),tc(at[1]))<r;
+const innCellar = () => !flOf(S.player)&&S.player.y>43*TILE;
+const innNear = (at,r=105,fl=0) => !S.player.z&&flOf(S.player)===fl&&dist(S.player.x,S.player.y,tc(at[0]),tc(at[1]))<r;
 const innEscape = value => String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 newGame = function(si){
@@ -16379,9 +16381,9 @@ newGame = function(si){
   S.guards.forEach(g=>{g.innName=innMeta(g.tag)?.name||({cook:'고용 대기 중인 요리사',gatekeeper:'여관 경비',escort:'사절의 호위'}[g.tag]);g.radio=false;g.gun=false;g.torch=false;});
   S.cpWant=false;S.exitOpen=false;
   STAGE.uses=INN_ROOMS.flatMap(r=>['Sleep','Poison','Emetic'].map(d=>({
-    need:'inn'+d,at:[r.at[0]+1,r.at[1]],label:r.name+' 식사에 '+({Sleep:'잠의 가루',Poison:'독약',Emetic:'배탈약'}[d])+' 넣기',
+    need:'inn'+d,at:[r.at[0]+1,r.at[1]],fl:r.fl,label:r.no+'호 식사에 '+({Sleep:'잠의 가루',Poison:'독약',Emetic:'배탈약'}[d])+' 넣기',
     done:r.name+'의 식사에 약을 넣었다',act:()=>innDose(r.id,d)})));
-  cam.x=S.player.x;cam.y=S.player.y;
+  innInitFloors();cam.x=S.player.x;cam.y=S.player.y;
 };
 
 checkObjective = function(){if(STAGE.id==='inn'){if(S)S.exitOpen=false;return;}return innBase.checkObjective();};
@@ -16402,20 +16404,21 @@ function innAssign(tag,id){
   if(Object.values(o.rooms).includes(tag)||o.rooms[id])return false;
   o.rooms[id]=tag;o.gold+=18;o.revenue+=18;
   g.innRoom=id;g.wander=null;g.sched=null;g.path=null;g.wait=0;g.ri=0;
-  g.route=[{x:tc(r.at[0]),y:tc(r.at[1]),pause:55},{x:tc(9+(g.id%2)*8),y:tc(17+(g.id%3)*4),pause:24},
-    {x:tc(r.at[0]),y:tc(r.at[1]),pause:55}];
-  buildRouteLine(g);innLog(innMeta(tag).name+'에게 '+r.name+'을 내주었다 · 18G');return true;
+  g.route=[{x:tc(r.at[0]),y:tc(r.at[1]),fl:r.fl,pause:55},{x:tc(9+(g.id%2)*8),y:tc(17+(g.id%3)*4),fl:0,pause:24},
+    {x:tc(r.at[0]),y:tc(r.at[1]),fl:r.fl,pause:55}];
+  buildRouteLine(g);innLog(innMeta(tag).name+'에게 '+(r.fl+1)+'층 '+r.no+'호를 내주었다 · 18G');return true;
 }
 function innServe(id,automatic=false){
   const o=S.inn,r=innRoom(id),tag=o.rooms[id],g=innGuest(tag);
   if(!r||!tag||!g||g.state==='DEAD'||o.trays[id]||o.stock<=0)return false;
   if(!automatic&&!innNear([12,12],175))return false;
   if(automatic&&(!o.staff.cook||!o.staff.server))return false;
-  o.stock--;o.gold+=8;o.revenue+=8;o.trays[id]={tag,dose:null,consumed:false,eating:0};
+  if(automatic&&!innStaffDelivery(id))return false;
+  o.stock--;o.gold+=8;o.revenue+=8;o.trays[id]={tag,dose:null,consumed:false,eating:0,delivered:!automatic};
   innLog(r.name+'에 저녁 식사를 준비했다 · 8G');return true;
 }
 function innDose(id,dose){
-  const tray=S.inn.trays[id];if(!tray||tray.consumed||tray.dose)return false;
+  const tray=S.inn.trays[id];if(!tray||!tray.delivered||tray.consumed||tray.dose)return false;
   tray.dose=dose;
   for(let i=0;i<STAGE.uses.length;i++)if(Math.floor(i/3)===id-1)S.usesDone[i]=true;
   S.player.useT=S.t+1.1;S.player.strikeT=Math.max(.55,S.player.strikeT||0);
@@ -16425,7 +16428,7 @@ const innNearUse=nearUse;
 nearUse=function(){
   const n=innNearUse();if(STAGE.id!=='inn'||!n)return n;
   const id=Math.floor(n.i/3)+1,tray=S.inn?.trays[id];
-  return tray&&!tray.consumed&&!tray.dose?n:null;
+  return tray&&tray.delivered&&!tray.consumed&&!tray.dose?n:null;
 };
 
 function innHire(role){
@@ -16436,7 +16439,7 @@ function innHire(role){
   if(!g){g=makeGuard({kind:'civ',tag:'server',outfit:'staff',at:[23,26]},S.guards.length);S.guards.push(g);}
   g.innName=role==='cook'?'요리사':'급사';g.sched=null;g.wander=null;g.wait=0;g.path=null;g.ri=0;
   g.route=(role==='cook'?[[12,9,3],[15,12,3]]:[[12,15,2],[8,22,3],[24,26,2],[34,15,2]])
-    .map(([x,y,pause])=>({x:tc(x),y:tc(y),pause}));
+    .map(([x,y,pause])=>({x:tc(x),y:tc(y),fl:0,pause}));
   buildRouteLine(g);innLog(g.innName+'를 고용했다 · '+innMoney(cost));return true;
 }
 function innBuy(){
@@ -16444,8 +16447,8 @@ function innBuy(){
   S.inn.gold-=20;S.inn.stock+=12;innLog('납품 마차에서 식재료 12개를 샀다 · 20G');return true;
 }
 function innBarGuest(){
-  if(S.inn.stock<=0||S.player.item||S.player.carrying)return null;
-  return S.guards.filter(g=>g.civ&&g.state==='PATROL'&&!['cook','server'].includes(g.tag)&&g.x<26*TILE&&g.y>16*TILE&&g.y<29*TILE&&
+  if(flOf(S.player)||S.inn.stock<=0||S.player.item||S.player.carrying)return null;
+  return S.guards.filter(g=>!flOf(g)&&g.civ&&g.state==='PATROL'&&!['cook','server'].includes(g.tag)&&g.x<26*TILE&&g.y>16*TILE&&g.y<29*TILE&&
     S.t-(S.inn.served[g.id]??-99)>25&&dist(g.x,g.y,S.player.x,S.player.y)<125&&los(g.x,g.y,S.player.x,S.player.y))
     .sort((a,b)=>dist(a.x,a.y,S.player.x,S.player.y)-dist(b.x,b.y,S.player.x,S.player.y))[0];
 }
@@ -16454,18 +16457,17 @@ function innBarSale(){
   S.inn.served[g.id]=S.t;S.inn.stock--;S.inn.gold+=3;S.inn.revenue+=3;
   gsay(g,'따뜻한 식사와 맥주라니, 살겠군.',2.5);innLog('술과 식사를 내왔다 · 3G');return true;
 }
-function innSecretDoor(at){
-  const [x,y]=at;
-  if(G0[y][x]!=='#'&&[S.player,...S.guards.filter(g=>g.state!=='DEAD')].some(g=>Math.floor(g.y/TILE)===y&&[x,...(x===26?[27]:[])].includes(Math.floor(g.x/TILE)))){
+function innSecretDoor(at,fl=flOf(S.player)){
+  const [x,y]=at,grid=innGrid(fl);
+  if(grid[y][x]!=='#'&&[S.player,...S.guards.filter(g=>g.state!=='DEAD')].some(g=>flOf(g)===fl&&Math.floor(g.y/TILE)===y&&Math.floor(g.x/TILE)===x)){
     toast('문턱에서 한 걸음 물러난 뒤 벽을 닫아야 한다.',2);return false;
   }
-  G0[y][x]=G0[y][x]==='#'?'w':'#';
-  if(x===26)G0[y][27]=G0[y][x];
-  S.inn.mapRevision=(S.inn.mapRevision||0)+1;mapC=bigify(renderMap());miniBase=null;
-  for(const l of S.lamps){l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}}
+  grid[y][x]=grid[y][x]==='#'?'w':'#';
+  const current=CUR_F;setLayer(0);mapC=bigify(renderMap());innRefreshFloorMaps();miniBase=null;S.lvl=null;NPC_NAV.state=null;
+  for(const l of S.lamps){setLayer(flOf(l));l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}}setLayer(current);
   for(const key in lightCache)delete lightCache[key];
-  noise(S.player.x,S.player.y,30,'door',0);
-  innLog(G0[y][x]==='#'?'숨겨진 벽을 닫았다.':'객실 뒤 비밀 통로를 열었다.');
+  noise(S.player.x,S.player.y,30,'door',fl);
+  innLog(grid[y][x]==='#'?'숨겨진 벽을 닫았다.':'객실 뒤 비밀 통로를 열었다.');
 }
 function innStairs(){
   const P=S.player,to=innCellar()?[9,8]:[10,46];
@@ -16487,11 +16489,10 @@ function innImprison(index){
   return true;
 }
 function innNearest(){
-  if(!S?.inn||S.player.z||flOf(S.player)||S.player.hide||S.player.trav)return null;
+  if(!S?.inn||S.player.z||S.player.hide||S.player.trav)return null;
   if(S.player.carrying&&innCellar())for(let i=0;i<3;i++)if(innNear([28+i*7,52],100))return {k:'innCell',index:i,label:S.inn.cells[i]!=null?'감방 사용 중':S.player.carrying.ko?'감방에 가두기':'생포한 사람만 수감 가능'};
   if(innNear(innCellar()?[10,46]:[9,8],75))return {k:'innStairs',label:innCellar()?'주방으로 올라가기':'지하 저장고로 내려가기'};
-  const secrets=[[26,6],[26,27],...INN_ROOMS.map(r=>r.secret)];
-  for(const at of secrets)if(innNear(at,66))return {k:'innSecret',at,label:G0[at[1]][at[0]]==='#'?'비밀 벽 열기':'비밀 벽 닫기'};
+  for(const panel of INN_PANELS)if(innNear(panel.at,66,panel.fl))return {k:'innSecret',at:panel.at,fl:panel.fl,label:innGrid(panel.fl)[panel.at[1]][panel.at[0]]==='#'?'비밀 벽 열기':'비밀 벽 닫기'};
   if(innNear([21,28],150))return {k:'innBook',tab:'rooms',label:'숙박 장부 · 객실 배정'};
   if(innNear([12,12],150))return {k:'innBook',tab:'kitchen',label:'주방 · 저녁 준비'};
   if(innNear([8,32],130))return {k:'innBuy',label:'식재료 12개 구매 · 20G'};
@@ -16506,6 +16507,7 @@ envAction=function(){
   const a=innBase.envAction();if(STAGE.id!=='inn'||actionBusy())return a;
   // Held medicine expresses intent when a quest ledger shares the dining table.
   const use=envChoices().find(choice=>choice.k==='use');if(use)return use;
+  if(a.l?.kind==='fstair')a.label=(a.l.innSecret?'비밀 계단 · ':'')+(a.k==='fdown'?(a.l.bfl+1)+'층으로 내려가기':(a.l.tfl+1)+'층으로 올라가기');
   return innNearest()||a;
 };
 actEnv=function(){
@@ -16514,7 +16516,7 @@ actEnv=function(){
   const a=envAction();
   switch(a.k){
     case'innStairs':innStairs();return;
-    case'innSecret':innSecretDoor(a.at);return;
+    case'innSecret':innSecretDoor(a.at,a.fl);return;
     case'innCell':innImprison(a.index);return;
     case'innBook':innOpenPanel(a.tab);return;
     case'innBuy':if(!innBuy())toast('구매할 돈이 부족하다.',2);return;
@@ -16536,10 +16538,11 @@ function innRaid(){
 update=function(dt,present=true){
   innBase.update(dt,present);if(STAGE.id!=='inn'||!S.inn||S.over||S.inn.closed)return;
   const o=S.inn;
+  innUpdateDeliveries();
   for(const [id,tray]of Object.entries(o.trays)){
-    if(tray.consumed)continue;const g=innGuest(tray.tag),r=innRoom(+id);
+    if(tray.consumed||!tray.delivered)continue;const g=innGuest(tray.tag),r=innRoom(+id);
     if(!g||g.state!=='PATROL'||g.climb||g.grabbed)continue;
-    if(dist(g.x,g.y,tc(r.at[0]),tc(r.at[1]))<38&&!g.moving){
+    if(flOf(g)===r.fl&&dist(g.x,g.y,tc(r.at[0]),tc(r.at[1]))<38&&!g.moving){
       tray.eating+=dt;g.mealT=tray.eating;
       if(tray.eating>=5){
         tray.consumed=true;g.mealT=0;
@@ -16548,6 +16551,7 @@ update=function(dt,present=true){
           killGuard(g,null,null,true);innLog(g.innName+(tray.dose==='Sleep'?'가 식사를 마치고 쓰러졌다.':'가 독이 든 식사를 먹고 숨졌다.'));
         }else if(tray.dose==='Emetic'){
           detour(g,45,38,35,'안뜰 구석','몸이 좋지 않다');gsay(g,'속이… 잠깐 바깥에 다녀오겠소.',3);
+          const wp=g.route.find(w=>w.once&&!w.spent);if(wp)wp.fl=0;
           innLog(g.innName+'가 몸이 좋지 않아 안뜰 구석으로 향한다.');
         }
       }
@@ -16564,7 +16568,7 @@ update=function(dt,present=true){
   if(S.t>=o.nextService){
     o.nextService=S.t+15;
     if(o.staff.cook&&o.staff.server&&S.alevel<2&&o.stock>0){
-      const customers=S.guards.filter(g=>g.civ&&g.state==='PATROL'&&g.y>16*TILE&&g.y<28*TILE&&g.x<26*TILE&&!['cook','server'].includes(g.tag)).length;
+      const customers=S.guards.filter(g=>!flOf(g)&&g.civ&&g.state==='PATROL'&&g.y>16*TILE&&g.y<28*TILE&&g.x<26*TILE&&!['cook','server'].includes(g.tag)).length;
       if(customers){const income=Math.min(customers,4)*3;o.stock--;o.gold+=income;o.revenue+=income;}
     }
   }
@@ -16581,7 +16585,7 @@ function innRefreshChrome(){
   $('innGold').textContent=innMoney(o.gold);$('innRevenue').textContent=innMoney(o.revenue)+' / 80G';
   $('innHeat').textContent=o.heat<20?'평온':o.heat<50?'의심':o.heat<80?'수색':'위기';
   $('innHeat').dataset.hot=o.heat>=50?'true':'false';
-  $('innPlace').textContent=innCellar()?'지하 저장고':S.player.x>26*TILE&&S.player.y<30*TILE?'객실동':S.player.y>30*TILE?'여관 마당':'술집과 주방';
+  $('innPlace').textContent=innCellar()?'지하 · 저장고와 감방':!flOf(S.player)&&S.player.y>30*TILE?'1층 · 여관 마당':innFloorName(flOf(S.player));
   const current=envAction(),label=current.k==='none'?'손님을 맞이하고 여관을 둘러보세요':current.label;
   $('innPrompt').textContent=label;
 }
@@ -16602,8 +16606,8 @@ function innRenderPanel(){
   if(tab==='rooms'){
     content='<p class="inn-note">숙박료 18G · 객실 배정과 고용은 술집 남쪽 카운터에서 합니다. 배정한 손님은 직접 객실로 걸어갑니다.</p><div class="inn-room-grid">'+INN_ROOMS.map(r=>{
       const tag=o.rooms[r.id],guest=innMeta(tag),tray=o.trays[r.id];
-      return '<article class="inn-room"><span class="inn-eyebrow">객실 '+String(r.id).padStart(2,'0')+'</span><h3>'+r.name+'</h3><p>'+(guest?guest.name+' · '+guest.faction:'빈 객실')+'</p>'+
-        (guest?'<small>'+(tray?tray.consumed?'식사 마침':tray.dose?'약을 넣은 식사':'식사 준비됨':'아직 식사 없음')+'</small>':
+      return '<article class="inn-room"><span class="inn-eyebrow">'+(r.fl+1)+'층 · '+r.no+'호</span><h3>'+r.name+'</h3><p>'+(guest?guest.name+' · '+guest.faction:'빈 객실')+'</p>'+
+        (guest?'<small>'+(tray?tray.consumed?'식사 마침':!tray.delivered?'급사 배달 중':tray.dose?'약을 넣은 식사':'식사 준비됨':'아직 식사 없음')+'</small>':
         '<label>손님<select id="innAssign'+r.id+'" '+(!atDesk?'disabled':'')+'>'+INN_GUESTS.filter(g=>!Object.values(o.rooms).includes(g.tag)&&innGuest(g.tag)?.state!=='DEAD').map(g=>'<option value="'+g.tag+'">'+g.name+' · '+g.faction+'</option>').join('')+'</select></label><button data-assign="'+r.id+'" '+(!atDesk?'disabled':'')+'>객실 배정 · 18G</button>')+'</article>';
     }).join('')+'</div>';
   }else if(tab==='kitchen'){
@@ -16633,8 +16637,8 @@ function innInstallUI(){
       <canvas id="innWelcomeMap" aria-hidden="true"></canvas><div class="inn-welcome-shade"></div>
       <div class="inn-welcome-copy"><div class="inn-seal" aria-hidden="true">♜</div><p class="inn-eyebrow">야행 외전 · 국경의 밤</p>
       <h1>검은 잔<span>여관</span></h1><p class="inn-welcome-line">문밖에는 전쟁이,<br>잔 아래에는 비밀이.</p>
-      <p class="inn-welcome-desc">여섯 개의 객실. 세 개의 깃발.<br>손님을 맞고, 소문을 듣고, 당신만의 밤을 준비하세요.</p>
-      <button id="innBegin" class="inn-primary">여관 문 열기 <span>→</span></button><small>별도 에피소드 · 첫 영업 시제품 0.1</small></div>
+      <p class="inn-welcome-desc">지상 3층, 여섯 객실, 세 개의 깃발.<br>손님을 맞고, 소문을 듣고, 당신만의 밤을 준비하세요.</p>
+      <button id="innBegin" class="inn-primary">여관 문 열기 <span>→</span></button><small>별도 에피소드 · 다층 여관 0.2</small></div>
       <div class="inn-welcome-caption"><span>검은 잔 여관</span><p>국경의 공용 여관 · 늦가을</p></div>
     </section>
     <div id="innChrome" class="inn-chrome" hidden><header><div class="inn-brand"><span>♜</span><div><b>검은 잔 여관</b><small id="innPlace">여관 마당</small></div></div>
@@ -16675,6 +16679,107 @@ function innBeginShift(){
   if(S?.inn)S.inn.closed=false;
   innClosePanel();$('innWelcome').hidden=true;start(0,true);
   $('innChrome').hidden=false;S.toasts=[];renderToasts();toast('손님을 맞아주세요. 술집 남쪽 카운터에서 객실을 배정합니다.',5);
+}
+
+// Authored floor grids and a small bridge from civilian itineraries to the
+// engine's shared stair graph. All climbing uses stairTravel/updateClimbG.
+const innLevelBase={buildFloors,pathTo,moveAlong,updateGuard,buildRouteLine,routeTo,nextGuardHop,loadCheckpoint};
+let innFloorMaps=[];
+const innGrid=fl=>(fl?GF[fl]:G0);
+const innFloorName=fl=>['1층 · 술집과 주방','2층 · 일반 객실','3층 · 귀빈실과 접견실'][fl]||'여관';
+const innVisible=o=>flOf(o)===flOf(S.player)&&(o.y>43*TILE)===innCellar();
+
+buildFloors=function(st){
+  if(st.id!=='inn')return innLevelBase.buildFloors(st);
+  GF=[null];STAIRW={};
+  for(const fl of [1,2]){
+    const g=Array.from({length:MH},()=>Array(MW).fill('V'));
+    const fill=(x0,y0,x1,y1,ch)=>{for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)g[y][x]=ch;};
+    fill(6,4,49,30,'w');fill(6,4,49,4,'#');fill(6,30,49,30,'#');fill(6,4,6,30,'#');fill(49,4,49,30,'#');
+    fill(26,4,26,30,'#');g[16][26]='w';
+    fill(27,7,47,7,'#');fill(27,13,47,13,'#');fill(27,7,27,13,'#');fill(47,7,47,24,'#');
+    if(fl===1){
+      for(const x of [34,41])fill(x,7,x,13,'#');
+      fill(27,19,34,19,'#');fill(27,26,34,26,'#');fill(27,19,27,26,'#');fill(34,19,34,26,'#');
+      fill(35,24,47,24,'#');
+    }else{fill(39,7,39,13,'#');fill(27,24,47,24,'#');}
+    for(const r of INN_ROOMS.filter(r=>r.fl===fl))g[r.door[1]][r.door[0]]='w';
+    for(const at of Object.values(INN_FLIGHTS))g[at[1]][at[0]]='Y';
+    stairWells(g,fl);GF[fl]=g;
+  }
+};
+
+function innRefreshFloorMaps(){
+  const previous=CUR_F;innFloorMaps=[];
+  for(const fl of [1,2]){setLayer(fl);innFloorMaps[fl]=bigify(renderMap());}
+  setLayer(previous);
+}
+function innInitFloors(){
+  S.ladders=S.ladders.filter(l=>l.kind==='fstair');
+  for(const l of S.ladders)if(l.kind==='fstair')l.innSecret=l.tx===INN_FLIGHTS.secret[0]&&l.ty===INN_FLIGHTS.secret[1];
+  S.lvl=null;NPC_NAV.state=null;innRefreshFloorMaps();
+}
+loadCheckpoint=function(){
+  const restored=innLevelBase.loadCheckpoint();
+  if(restored&&STAGE.id==='inn'){
+    const current=flOf(S.player);setLayer(0);mapC=bigify(renderMap());setLayer(current);
+    innInitFloors();innRefreshChrome();
+  }
+  return restored;
+};
+
+buildRouteLine=function(g){
+  if(STAGE.id==='inn'&&g.route.some(w=>w.fl!=null&&w.fl!==flOf(g))){g.routeLine=null;return;}
+  return innLevelBase.buildRouteLine(g);
+};
+nextGuardHop=function(g,target){
+  if(STAGE.id!=='inn')return innLevelBase.nextGuardHop(g,target);
+  // Public stair knowledge is shared. Hidden stairs are reserved for the owner.
+  const ends=S.lvl.ends;S.lvl.ends=ends.filter(e=>!e.l.innSecret);
+  try{return innLevelBase.nextGuardHop(g,target);}finally{S.lvl.ends=ends;}
+};
+function innRouteCivilian(g,target){
+  const wasCiv=g.civ;g.civ=false;g.innRouting=true;
+  try{innLevelBase.routeTo(g,target);}finally{g.civ=wasCiv;g.innRouting=false;}
+}
+pathTo=function(g,x,y){
+  if(STAGE.id==='inn'&&g.civ&&!g.innRouting&&['PATROL','RETURN'].includes(g.state)){
+    const wp=g.route[g.ri];
+    if(wp?.fl!=null&&wp.fl!==flOf(g)&&Math.abs(x-wp.x)<1&&Math.abs(y-wp.y)<1){innRouteCivilian(g,wp);return;}
+  }
+  return innLevelBase.pathTo(g,x,y);
+};
+moveAlong=function(g,speed,dt){
+  const arrived=innLevelBase.moveAlong(g,speed,dt);
+  if(STAGE.id==='inn'&&g.civ){
+    if(g.hop&&hopClimb(g,arrived))return false;
+    const wp=g.route[g.ri];
+    if(wp?.fl!=null&&wp.fl!==flOf(g))return false;
+  }
+  return arrived;
+};
+updateGuard=function(g,dt){
+  if(STAGE.id==='inn'&&g.civ&&g.climb&&g.state!=='DEAD'&&g.state!=='CAPTIVE'){
+    g.seen=false;updateClimbG(g,dt);return;
+  }
+  return innLevelBase.updateGuard(g,dt);
+};
+
+function innStaffDelivery(id){
+  const r=innRoom(id),g=innGuest('server');if(!r||!g||g.state!=='PATROL'||g.climb)return false;
+  if(g.innDelivery!=null)return false;
+  g.innDelivery=id;g.path=null;g.hop=null;g.wait=0;g.ri=0;
+  g.route=[{x:tc(r.at[0]),y:tc(r.at[1]),fl:r.fl,pause:2},{x:tc(12),y:tc(15),fl:0,pause:3}];
+  return true;
+}
+function innUpdateDeliveries(){
+  const g=innGuest('server');if(!g||g.innDelivery==null||g.state!=='PATROL'||g.climb)return;
+  const id=g.innDelivery,r=innRoom(id),tray=S.inn.trays[id];
+  if(!tray||tray.delivered){
+    if(!flOf(g)&&dist(g.x,g.y,tc(12),tc(15))<40){g.innDelivery=null;g.route=[{x:tc(12),y:tc(15),fl:0,pause:3},{x:tc(17),y:tc(22),fl:0,pause:4}];g.ri=0;g.path=null;g.wait=0;}
+    return;
+  }
+  if(flOf(g)===r.fl&&dist(g.x,g.y,tc(r.at[0]),tc(r.at[1]))<42){tray.delivered=true;innLog(r.no+'호에 급사가 식사를 배달했다.');}
 }
 
 // Original, deterministic canvas assets. No city facade/vehicle/character art is
@@ -16722,7 +16827,7 @@ function innFurn(c,f){
     innWood(c,x+3,y+4,w-6,h-5,true);innBox(c,x+9,y+10,w-18,h-20,'#d0bc93');
     innBox(c,x+13,y+15,w-26,18,'#e3d5b3','#af9e7d');
     const palette=['#7e554c','#6c7e78','#8d7851','#6c677a','#65734f','#8c5d48'];
-    const room=INN_ROOMS.find(r=>r.bed[0]===f.x&&r.bed[1]===f.y);const col=palette[(room?.id||1)-1];
+    const room=INN_ROOMS.find(r=>r.fl===(f.fl||0)&&r.bed[0]===f.x&&r.bed[1]===f.y);const col=palette[(room?.id||1)-1];
     innBox(c,x+10,y+39,w-20,h-49,col,'#c1a674');
     for(let py=y+44;py<y+h-12;py+=10)innBox(c,x+12,py,w-24,1,'#dbc69044');
     innBox(c,x+3,y+1,w-6,8,'#aa7d4b','#4a372b');innBox(c,x+3,y+h-13,w-6,9,'#9c7046','#453328');return;
@@ -16751,10 +16856,11 @@ function innFurn(c,f){
   }
 }
 renderMap=function(){
-  const c=document.createElement('canvas');c.width=MW*TILE;c.height=MH*TILE;const a=c.getContext('2d');a.imageSmoothingEnabled=false;
+  const fl=CUR_F,grid=innGrid(fl),c=document.createElement('canvas');c.width=MW*TILE;c.height=MH*TILE;const a=c.getContext('2d');a.imageSmoothingEnabled=false;
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
-    const ch=G0[y][x],px=x*TILE,py=y*TILE,n=innHash(x,y);
-    if(ch==='w'||ch==='K'||ch==='E'||ch==='Q')innWood(a,px,py,TILE,TILE,x>=27&&(y<=6||y>=25&&y<=29));
+    const ch=grid[y][x],px=x*TILE,py=y*TILE,n=innHash(x,y);
+    if(ch==='V')innBox(a,px,py,TILE,TILE,'#16231d');
+    else if(ch==='w'||ch==='Y'||ch==='K'||ch==='E'||ch==='Q')innWood(a,px,py,TILE,TILE,x>=27&&(y<=6||y>=25&&y<=29));
     else if(ch==='h')innStone(a,px,py,TILE,TILE,true);
     else if(ch==='='){
       innBox(a,px,py,48,48,'#504e3f');
@@ -16773,21 +16879,27 @@ renderMap=function(){
     if(ch==='B')for(let k=0;k<8;k++){const q=innHash(x,y,k);innEllipse(a,px+7+q%34,py+10+(q>>>8)%30,9+q%7,7+q%5,['#3e6244','#4b7149','#62834e','#719251'][k%4]);}
   }
   // Carpet and border remain clear of furniture and match the authored hall.
-  innBox(a,14*TILE,16*TILE,3*TILE,13*TILE,'#855343');innBox(a,14*TILE+5,16*TILE+5,3*TILE-10,13*TILE-10,'#664638','#ad8c54');
-  for(let y=17;y<29;y+=2){a.strokeStyle='#b18b53';a.lineWidth=2;a.strokeRect(15*TILE+8,y*TILE+8,28,28);}
-  for(const f of FURN)innFurn(a,f);
+  if(!fl){
+    innBox(a,14*TILE,16*TILE,3*TILE,13*TILE,'#855343');innBox(a,14*TILE+5,16*TILE+5,3*TILE-10,13*TILE-10,'#664638','#ad8c54');
+    for(let y=17;y<29;y+=2){a.strokeStyle='#b18b53';a.lineWidth=2;a.strokeRect(15*TILE+8,y*TILE+8,28,28);}
+  }else{
+    innBox(a,8*TILE,16*TILE,39*TILE,36,fl===2?'#805a49':'#59614b');
+    innBox(a,8*TILE+5,16*TILE+5,39*TILE-10,26,fl===2?'#674837':'#68705a','#b09a65');
+  }
+  for(const f of FURN)if((f.fl||0)===fl)innFurn(a,f);
   // Entry thresholds and runner through the guest wing.
-  innBox(a,28*TILE,15*TILE+8,20*TILE,30,'#59614b');innBox(a,28*TILE+5,15*TILE+12,20*TILE-10,22,'#68705a','#aba27b');
-  for(const r of INN_ROOMS){
+  for(const r of INN_ROOMS.filter(r=>r.fl===fl)){
     const [x,y]=r.door;innBox(a,x*TILE,y*TILE,48,48,'#332c24');innWood(a,x*TILE+3,y*TILE+3,42,42,true);
-    innBox(a,x*TILE+8,y*TILE+18,32,13,'#b39960');innText(a,String(r.id).padStart(2,'0'),tc(x),y*TILE+29,11,'#2c2c24');
+    innBox(a,x*TILE+8,y*TILE+18,32,13,'#b39960');innText(a,String(r.no),tc(x),y*TILE+29,11,'#2c2c24');
     innText(a,r.name,tc(r.at[0]),tc(r.at[1])+55,14,'#cbb993');
   }
   // The reception's handwritten book and kitchen hearth are distinctive anchors.
+  if(!fl){
   innBox(a,21*TILE+6,27*TILE+5,29,24,'#dfcea2','#806c48');innBox(a,21*TILE+20,27*TILE+7,1,20,'#9c8058');
   innText(a,'숙박 · 안내',22*TILE,29*TILE-8,15,'#dec798');
   innText(a,'주방',12*TILE,13*TILE-5,18,'#dfc598');innText(a,'주인의 방',22*TILE,12*TILE,15,'#c1ad85');
   innText(a,'검은 잔 술집',15*TILE,16*TILE-7,21,'#d9bf87');
+  innText(a,'연회홀',38*TILE,19*TILE,21,'#d9bf87');
   innText(a,'마당 · 국경길',30*TILE,40*TILE-8,18,'#c7ba8d');
   innText(a,'지하 저장고',17*TILE,46*TILE,20,'#b7b08f');
   for(let i=0;i<3;i++){
@@ -16799,6 +16911,20 @@ renderMap=function(){
     innBox(a,(at[0]-1)*TILE,at[1]*TILE,2*TILE,TILE,'#292c27');
     for(let k=0;k<6;k++)innBox(a,(at[0]-1)*TILE+4+k*14,at[1]*TILE+4,10,TILE-8,['#8b7858','#786a4d'][k%2]);
     innText(a,'↧',tc(at[0]),tc(at[1])+4,20,'#e2c07d');
+  }
+  }else{
+    innText(a,fl===1?'여행자의 휴게실':'귀빈 접견실',15*TILE,7*TILE,21,'#d9bf87');
+    innText(a,fl===1?'하인 휴게실 · 린넨':'조용한 응접실',15*TILE,22*TILE,18,'#c1ad85');
+    innText(a,fl===1?'공용 세면실':'비밀 회담실',39*TILE,23*TILE,17,'#c1ad85');
+  }
+  const stairCells=new Set();
+  for(const l of S?.ladders||[]){
+    if(l.kind!=='fstair'||(l.bfl!==fl&&l.tfl!==fl))continue;
+    const key=l.tx+','+l.ty;if(stairCells.has(key))continue;stairCells.add(key);
+    drawStairs(a,l.tx,l.ty);
+    const geometry=stairFloor(l.tx,l.ty,fl),up=S.ladders.some(s=>s.kind==='fstair'&&s.tx===l.tx&&s.ty===l.ty&&s.bfl===fl);
+    if(up)innText(a,(l.innSecret?'비밀 ':'')+(fl+2)+'층 ↑',geometry.up.entry.x-30,geometry.up.entry.y+53,13,'#dfc18c');
+    if(fl>0)innText(a,(l.innSecret?'비밀 ':'')+fl+'층 ↓',geometry.down.entry.x+30,geometry.down.entry.y+27,13,'#b6c9ac');
   }
   return c;
 };
@@ -16829,6 +16955,7 @@ function innDrawActor(o,hero=false,body=false){
   if(body){ctx.rotate((o.a||0)+Math.PI/2);ctx.drawImage(innSprite(tint,0,false),-21,-34,43,57);}
   else{
     const crouch=hero&&(S.player.mode==='sneak'||input.sneakToggle);ctx.drawImage(innSprite(tint,frame,back),-24,crouch?-39:-53,48,crouch?45:64);
+    if(!hero&&g?.innDelivery!=null&&!S.inn.trays[g.innDelivery]?.delivered){innBox(ctx,-15,-23,30,5,'#c2aa7d');innEllipse(ctx,0,-25,10,5,'#d9c8a3');}
     if(hero){ctx.strokeStyle=S.player.hidden?'#92bea4':'#dfc78b';ctx.lineWidth=1.7;ctx.beginPath();ctx.ellipse(0,7,19,10,0,0,TAU);ctx.stroke();
       const a=o.a||0;ctx.strokeStyle='#e3cea3';ctx.beginPath();ctx.moveTo(Math.cos(a)*21,6+Math.sin(a)*13);ctx.lineTo(Math.cos(a)*27,6+Math.sin(a)*17);ctx.stroke();
     }
@@ -16848,68 +16975,70 @@ function innTree(x,y){
 function innDrawFood(){
   for(const [id,tray]of Object.entries(S.inn?.trays||{})){
     const r=innRoom(+id),x=tc(r.at[0]+1),y=tc(r.at[1]);
+    if(r.fl!==flOf(S.player)||!tray.delivered)continue;
     innEllipse(ctx,x,y,16,11,'#c5b998');innEllipse(ctx,x,y-1,12,7,tray.consumed?'#8a826a':'#725532');
     if(!tray.consumed){innEllipse(ctx,x-4,y-2,5,3,'#c9a66a');innEllipse(ctx,x+5,y+1,4,3,'#6d824d');}
     if(tray.dose&&!tray.consumed)innEllipse(ctx,x+18,y-10,3,3,tray.dose==='Poison'?'#a2b977':tray.dose==='Sleep'?'#afb5d3':'#b9a267');
   }
   for(const p of S.props||[]){
-    if(p.taken||!p.id.startsWith('inn'))continue;
+    if(p.taken||!p.id.startsWith('inn')||!innVisible(p))continue;
     const color=p.id==='innSleep'?'#a9a2be':p.id==='innPoison'?'#849c68':'#c2a06c';
     innEllipse(ctx,p.x,p.y+4,10,5,'#17251a88');innBox(ctx,p.x-6,p.y-14,12,18,color,'#d3c194');innBox(ctx,p.x-3,p.y-20,6,7,'#a48b5e');
     innBox(ctx,p.x-4,p.y-7,8,5,'#d7cba7');if(dist(p.x,p.y,S.player.x,S.player.y)<115)innText(ctx,p.name,p.x,p.y-28,12,'#e0cba3');
   }
 }
 function innRenderMini(){
-  const c=$('mini');if(!c)return;const a=c.getContext('2d'),surface=!innCellar();
-  a.clearRect(0,0,c.width,c.height);const sy=surface?0:43*TILE,sh=surface?43*TILE:15*TILE;
-  drawBig(a,mapC,0,sy,MW*TILE,sh,0,0,c.width,c.height);
-  const px=S.player.x/(MW*TILE)*c.width,py=(S.player.y-sy)/sh*c.height;
+  const c=$('mini');if(!c)return;const a=c.getContext('2d'),fl=flOf(S.player),surface=!innCellar();
+  a.clearRect(0,0,c.width,c.height);const sx=fl?6*TILE:0,sw=fl?44*TILE:MW*TILE,sy=fl?4*TILE:surface?0:43*TILE,sh=fl?27*TILE:surface?43*TILE:15*TILE;
+  drawBig(a,fl?innFloorMaps[fl]:mapC,sx,sy,sw,sh,0,0,c.width,c.height);
+  const px=(S.player.x-sx)/sw*c.width,py=(S.player.y-sy)/sh*c.height;
   innEllipse(a,px,py,3,3,'#f7e1a0');
 }
 draw=function(){
-  const P=S.player,cellar=innCellar(),sc=SCALE*DPR;
+  const P=S.player,fl=flOf(P),cellar=innCellar(),sc=SCALE*DPR;
+  setLayer(fl);
   ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#17231c';ctx.fillRect(0,0,canvas.width,canvas.height);
   worldTransform(ctx,sc);ctx.imageSmoothingEnabled=false;
   SPEECH_R=[];MARK_R=[];ACTION_R=[];TAGQ=[];S.openB=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE));
   ctx.save();ctx.beginPath();ctx.rect(0,(cellar?43:0)*TILE,MW*TILE,(cellar?15:43)*TILE);ctx.clip();
-  drawBig(ctx,mapC,...viewRect(100));
+  drawBig(ctx,fl?innFloorMaps[fl]:mapC,...viewRect(100));
   // Warm fixtures glow locally; detection continues to use the engine's lamps.
   for(const l of S.lamps){
-    if(!lampOn(l)||!inView(l.x,l.y,l.r)||(l.y>43*TILE)!==cellar)continue;
+    if(!lampOn(l)||!innVisible(l)||!inView(l.x,l.y,l.r))continue;
     const g=ctx.createRadialGradient(l.x,l.y,2,l.x,l.y,l.r*.85);
     g.addColorStop(0,'#ffd28b24');g.addColorStop(1,'#ffd28b00');ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);
     if(!l.hearth){innBox(ctx,l.x-2,l.y-17,4,13,'#ead9ab');innEllipse(ctx,l.x,l.y-20,3,5+Math.sin(S.t*9+l.x), '#ffd58d');}
   }
-  if(!cellar){
+  if(!cellar&&!fl){
     const fx=tc(8),fy=tc(6);innStone(ctx,fx-19,fy-22,38,40,true);
     for(let i=0;i<3;i++)innEllipse(ctx,fx-9+i*9,fy-3,6,11+Math.sin(S.t*9+i)*4,['#d28a41','#efba63','#f3d08b'][i]);
   }
   innDrawFood();
-  for(const it of S.items)if(!it.got&&inView(it.x,it.y,80)){
+  for(const it of S.items)if(!it.got&&innVisible(it)&&inView(it.x,it.y,80)){
     innBox(ctx,it.x-10,it.y-9,20,18,'#af8d53','#e1c48b');innBox(ctx,it.x-1,it.y-8,2,16,'#695030');
     if(dist(P.x,P.y,it.x,it.y)<150)innText(ctx,'군수품 장부',it.x,it.y-21,12,'#e4d2a5');
   }
-  for(const d of S.decals)if((d.y>43*TILE)===cellar)innEllipse(ctx,d.x,d.y,d.r,d.r*.5,'#6b3a2f88');
+  for(const d of S.decals)if(innVisible(d))innEllipse(ctx,d.x,d.y,d.r,d.r*.5,'#6b3a2f88');
   if(tactical||input.scan)for(const g of S.guards){
-    if(g.state==='DEAD'||g.civ||(g.y>43*TILE)!==cellar)continue;
+    if(g.state==='DEAD'||g.civ||!innVisible(g))continue;
     ctx.fillStyle='rgba(213,178,104,.11)';ctx.strokeStyle='rgba(213,178,104,.35)';ctx.lineWidth=1;
     conePaths(g,guardCone(g,guardFov(g),guardRanges(g)),1,2);ctx.fill();ctx.stroke();
   }
   const actors=[];
-  for(const g of S.guards)if(g.state!=='DEAD'&&(g.y>43*TILE)===cellar&&inView(g.x,g.y,120))actors.push({y:g.y,draw:()=>innDrawActor(g)});
-  for(const c of S.corpses)if(!c.stashed&&!c.carried&&(c.y>43*TILE)===cellar&&inView(c.x,c.y,100))actors.push({y:c.y,draw:()=>innDrawActor(c,false,true)});
+  for(const g of S.guards)if(g.state!=='DEAD'&&innVisible(g)&&inView(g.x,g.y,120))actors.push({y:g.y,draw:()=>innDrawActor(g)});
+  for(const c of S.corpses)if(!c.stashed&&!c.carried&&innVisible(c)&&inView(c.x,c.y,100))actors.push({y:c.y,draw:()=>innDrawActor(c,false,true)});
   if(cellar)for(let i=0;i<3;i++){
     const id=S.inn.cells[i];if(id==null)continue;const c=S.corpses.find(c=>c.guardId===id);
     if(c)actors.push({y:c.y,draw:()=>innDrawActor(c,false,true)});
   }
   actors.push({y:P.y,draw:()=>{innDrawActor(P,true);if(P.carrying)innDrawActor({...P.carrying,x:P.x+12,y:P.y-18},false,true);}});
-  if(!cellar)for(let y=0;y<43;y++)for(let x=0;x<MW;x++)if(G0[y][x]==='T'&&inView(tc(x),tc(y),160))actors.push({y:tc(y),draw:()=>innTree(tc(x),tc(y))});
+  if(!cellar&&!fl)for(let y=0;y<43;y++)for(let x=0;x<MW;x++)if(G0[y][x]==='T'&&inView(tc(x),tc(y),160))actors.push({y:tc(y),draw:()=>innTree(tc(x),tc(y))});
   actors.sort((a,b)=>a.y-b.y);for(const actor of actors)actor.draw();
   for(const n of S.noises){
-    if((n.y>43*TILE)!==cellar)continue;ctx.strokeStyle=n.heard?'#e4bf7588':'#d4d9b344';ctx.lineWidth=1.5;ctx.setLineDash([3,7]);
+    if(!innVisible(n))continue;ctx.strokeStyle=n.heard?'#e4bf7588':'#d4d9b344';ctx.lineWidth=1.5;ctx.setLineDash([3,7]);
     ctx.beginPath();ctx.arc(n.x,n.y,Math.max(1,n.r*(.2+n.t)),0,TAU);ctx.stroke();ctx.setLineDash([]);
   }
-  for(const s of S.stones){const k=Math.min(1,s.t/s.dur);innEllipse(ctx,s.x0+(s.x1-s.x0)*k,s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*30,4,3,'#d4c69f');}
+  for(const s of S.stones){if(flOf(s)!==fl)continue;const k=Math.min(1,s.t/s.dur);innEllipse(ctx,s.x0+(s.x1-s.x0)*k,s.y0+(s.y1-s.y0)*k-Math.sin(k*Math.PI)*30,4,3,'#d4c69f');}
   drawSpeech();flushTags();ctx.restore();
   ctx.setTransform(1,0,0,1,0,0);
   const vignette=ctx.createRadialGradient(canvas.width*.5,canvas.height*.5,canvas.height*.15,canvas.width*.5,canvas.height*.5,canvas.width*.75);
@@ -17145,13 +17274,13 @@ initLoadout();
 // 설정: 소리 크기 · 밝기 · 전체 화면 (값은 이 브라우저에 기억)
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
-let VOL = +lsGet('yahaeng.inn.vol', 90) / 100, BRI = +lsGet('yahaeng.inn.bri', 100) / 100;
+let VOL = +lsGet('yahaeng.inn.v02.vol', 90) / 100, BRI = +lsGet('yahaeng.inn.v02.bri', 100) / 100;
 function applyVol() { if (master) master.gain.value = VOL; }
 function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';for(const [id,out]of [['volR','volValue'],['briR','briValue']]){const v=$(id).value+'%';$(out).value=v;$(id).setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);}}
 function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
 $('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri(); syncSettingValues();
-$('volR').addEventListener('input', e => { VOL = +e.target.value / 100;if(VOL>0&&muted)toggleMute(); lsSet('yahaeng.inn.vol', e.target.value); applyVol(); syncSettingValues(); });
-$('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.inn.bri', e.target.value); applyBri(); syncSettingValues(); });
+$('volR').addEventListener('input', e => { VOL = +e.target.value / 100;if(VOL>0&&muted)toggleMute(); lsSet('yahaeng.inn.v02.vol', e.target.value); applyVol(); syncSettingValues(); });
+$('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.inn.v02.bri', e.target.value); applyBri(); syncSettingValues(); });
 $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
@@ -17185,7 +17314,7 @@ $('btnMute').addEventListener('click', toggleMute);
   cv.addEventListener('pointerdown', e => { if (tactical && S && S.tacCam) drag = { x: e.clientX, y: e.clientY }; });
   window.addEventListener('pointermove', e => { if (!drag || !tactical || !S || !S.tacCam) return; S.tacCam.x -= (e.clientX - drag.x) / SCALE; S.tacCam.y -= (e.clientY - drag.y) / SCALE; drag = { x: e.clientX, y: e.clientY }; });
   window.addEventListener('pointerup', () => { drag = null; }); }
-try { if (localStorage.getItem('yahaeng.inn.joyseen')) document.body.classList.add('joyseen'); } catch (e) {}
+try { if (localStorage.getItem('yahaeng.inn.v02.joyseen')) document.body.classList.add('joyseen'); } catch (e) {}
 $('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);
 $('btnPause').addEventListener('click', togglePause);
 for(const id of ['btnPause','btnCrouch','btnSneak','btnToolNext','btnCycle'])$(id).addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code))e.stopPropagation();});
@@ -17200,10 +17329,10 @@ $('btnMap').addEventListener('click', toggleTactical);
 } }  // 도시: 지도 버튼 대신 미니맵을 누른다
 $('btnZoomOut').addEventListener('click', () => setZoom(userZoom - 0.12));
 $('btnZoomIn').addEventListener('click', () => setZoom(userZoom + 0.12));
-$('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes);$('btnRoutes').setAttribute('aria-pressed',String(showRoutes)); try { localStorage.setItem('yahaeng.inn.routes2', showRoutes ? '1' : '0'); } catch (e) {} });
+$('btnRoutes').addEventListener('click', () => { showRoutes = !showRoutes; $('btnRoutes').classList.toggle('on', showRoutes);$('btnRoutes').setAttribute('aria-pressed',String(showRoutes)); try { localStorage.setItem('yahaeng.inn.v02.routes2', showRoutes ? '1' : '0'); } catch (e) {} });
 $('btnRoutes').classList.toggle('on', showRoutes);$('btnRoutes').setAttribute('aria-pressed',String(showRoutes));
 { const bo = $('btnOpps'), lab = () => { bo.textContent = '단서: ' + ['끔', '최소', '전체'][oppMode]; bo.classList.toggle('on', oppMode > 0); };
-  if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.inn.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
+  if (bo) { lab(); bo.addEventListener('click', () => { oppMode = (oppMode + 2) % 3; showOpps = oppMode > 0; lab(); hudCache.objH = null; try { localStorage.setItem('yahaeng.inn.v02.opps', ['0', '1m', '2'][oppMode]); } catch (e) {} }); } }
 $('tacBanner').addEventListener('click', e => { toggleTactical(); if (!e.detail) $('mini').focus({ preventScroll: true }); });
 $('btnResume').addEventListener('click', () => setPause(false));
 $('btnRestart2').addEventListener('click', () => { setPause(false); start(STAGE_I, true); });
@@ -17217,7 +17346,7 @@ function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (
 $('btnNext').addEventListener('click',()=>{const i=learningNext();if(i>=0)start(i);});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
-document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.inn.mod', MOD); } catch (e) {} renderStageList(); }));
+document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.inn.v02.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
@@ -17299,7 +17428,7 @@ atlas.onload=async function(){
     open:innOpenPanel,close:innClosePanel,imprison:innImprison,settle:innSettle,
     nearest:innNearest,raid:innRaid,
     // Observe shared-engine data without introducing alternative game rules.
-    get edition(){return 'inn-0.1';}
+    get edition(){return 'inn-0.2';}
   };
 };
 
