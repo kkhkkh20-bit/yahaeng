@@ -59,6 +59,7 @@ function updateObjectAction(P, dt) {
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
+  if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
   if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
@@ -73,8 +74,8 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
-  if(P.recoveryQueue)return{k:'none',busy:true,label:'몸 정리 대기'};
-  if(recoveryInputCandidate(P))return{k:'none',busy:true,bufferable:true,label:'몸 정리 예약'};
+  if(P.recoveryQueue)return{k:'none',busy:true,label:P.recoveryQueue.kind==='dress'?'갈아입기 대기':'몸 정리 대기'};
+  const next=recoveryInputAction();if(next)return{k:'none',busy:true,bufferable:true,label:next.k==='dress'?'갈아입기 예약':'몸 정리 예약'};
   return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){

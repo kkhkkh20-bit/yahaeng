@@ -30,13 +30,25 @@ function actKunai(forced, lethal = false) {
   const P = S.player;
   if(!abilityOn('dart')){toast(abilityLockText('dart'),2);return;}
   if (P.kunai <= 0) { toast('다트가 없다', 1.4); return; }
-  const t = forced || kunaiTarget();
-  if (!t || t.type !== 'guard' || !S.guards.includes(t.ref) || t.ref.child || t.ref.state === 'DEAD') { toast('조준할 사람이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
+  const shot=projectileShot(forced||kunaiTarget());
+  if (!shot) { toast('겨눈 경비나 표적이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
   P.kunai--; S.stats.kunaiUsed++;
-  P.a = Math.atan2(t.y - P.y, t.x - P.x);
-  const d = dist(P.x, P.y, t.x, t.y);
-  (S.throwT = S.t + 0.7), S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: {...t,fl:flOf(t.ref),z:t.ref.z||0}, fl:flOf(P), z:P.z||0, lethal });
+  P.a = Math.atan2(shot.tgt.y-P.y,shot.tgt.x-P.x);
+  (S.throwT = S.t + 0.7), S.kunais.push({x0:P.x,y0:P.y,t:0,...shot,fl:flOf(P),z:P.z||0,lethal});
   play('kunai', 0.55);
+}
+// A fixed intercept, estimated from observed movement. The projectile never
+// homes after release; cover, a sudden turn or a floor change can still defeat it.
+function projectileShot(t){
+  const P=S.player,g=t?.ref;
+  if(t?.type!=='guard'||!S.guards.includes(g)||g.child||g.dog||g.doomed||g.climb||['DEAD','CAPTIVE'].includes(g.state)||g.civ&&!g.target&&!t.explicitCivilian||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||dist(P.x,P.y,g.x,g.y)>projectileRange()||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))return null;
+  let x=g.x,y=g.y,dur=.08+dist(P.x,P.y,x,y)/1400;
+  const m=g.projectileMotion,recent=m&&g.moving&&S.t>=m.t&&S.t-m.t<.1&&m.fl===flOf(g)&&m.z===(g.z||0)&&Math.hypot(m.vx,m.vy)<260;
+  if(recent){
+    for(let i=0;i<2;i++){x=g.x+m.vx*dur;y=g.y+m.vy*dur;dur=.08+dist(P.x,P.y,x,y)/1400;}
+    if(!sightLine(P,x,y,g.z||0,false,flOf(g))){x=g.x;y=g.y;dur=.08+dist(P.x,P.y,x,y)/1400;}
+  }
+  return{dur,tgt:{...t,x,y,fl:flOf(g),z:g.z||0}};
 }
 function kunaiHit(k) {
   if(k.weapon!=='blade'&&!abilityOn('dart'))return;

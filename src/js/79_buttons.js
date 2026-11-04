@@ -152,11 +152,13 @@ function actEnv() {
 // Clothing has its own input and remains selected while nearby candidates change.
 function clothingAction(){
   const P=S.player;
+  if(actionBusy(P)){const a=recoveryInputAction('dress');return a?{...a,bufferable:true}:null;}
   if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;
   return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
 }
 function actDress(){
-  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial||actionBusy())return;
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial)return;
+  if(actionBusy()){queueRecoveryInput('dress');return;}
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }

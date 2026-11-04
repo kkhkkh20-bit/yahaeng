@@ -4657,6 +4657,7 @@ function moveAlong(g, speed, dt) {
   }
   collideLightPosts(g,11,g.z?solidFor(g.z):solidAt);
   g.moving = dist(startX, startY, g.x, g.y) > .01;
+  g.projectileMotion={vx:(g.x-startX)/Math.max(dt,.001),vy:(g.y-startY)/Math.max(dt,.001),t:S.t,fl:flOf(g),z:g.z||0};
   return !g.path.length;
 }
 function updateNpcDoors(dt){
@@ -9443,6 +9444,7 @@ function updateObjectAction(P, dt) {
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
   if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
   I.t = Math.min(I.dur, I.t + dt);
+  if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
   if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
     if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
@@ -9457,8 +9459,8 @@ function updateObjectAction(P, dt) {
 }
 function busyEnvAction() {
   const P = S.player;
-  if(P.recoveryQueue)return{k:'none',busy:true,label:'몸 정리 대기'};
-  if(recoveryInputCandidate(P))return{k:'none',busy:true,bufferable:true,label:'몸 정리 예약'};
+  if(P.recoveryQueue)return{k:'none',busy:true,label:P.recoveryQueue.kind==='dress'?'갈아입기 대기':'몸 정리 대기'};
+  const next=recoveryInputAction();if(next)return{k:'none',busy:true,bufferable:true,label:next.k==='dress'?'갈아입기 예약':'몸 정리 예약'};
   return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){
@@ -9477,10 +9479,20 @@ function drawFacadeDoorWork(d){
 // Pose tracks use the same authored model and palette; no runtime 3D or root shifts.
 function motionKey(key,anim){const [pal,body]=prSplit(key),name=(body||'key')+'Motion';if(!PR.bodies?.[name]?.anims[anim])return null;if(!prBodies[name]){prLoadBody(name);return null;}return pal+'@'+name;}
 function actionHandPose(I){
+  if(I.pose==='dress')return clothingPose(I);
   const f=clamp(I.t/I.dur,0,1),ground=I.pose==='ground'||I.pose==='dress'||I.kind==='clean'||I.kind==='loot'&&['bed','bedD','nstand'].includes(I.it?.furn),anim=ground?'openLow':'openHigh';
   let p=f;
   if(I.dur>1){const reach=clamp(I.t/.18,0,1),release=clamp((I.dur-I.t)/.16,0,1);p=I.t<.18?reach*.5:I.dur-I.t<.16?1-release*.5:.5+Math.sin(I.t*16)*.045;}
   const key=playerKey(S.player),m=PR.bodies?.[prSplit(key)[1]]||PR,n=(m.anims[anim]||PR.anims[anim])[1];return{anim,frame:Math.round(p*(n-1))};
+}
+// Take the garment low, rise, adjust it at the torso, then return to the stance.
+function clothingPose(I){
+  const f=clamp(I.t/I.dur,0,1);
+  if(f<.42)return{anim:'openLow',frame:Math.round(8*clamp(f/.12,0,1)+Math.sin(I.t*7)*.6)};
+  if(f<.62)return{anim:'duck',frame:Math.round(8*(1-hideEase((f-.42)/.2)))};
+  if(f>.85&&S.player.mode==='sneak')return{anim:'duck',frame:Math.round(8*hideEase((f-.85)/.15))};
+  const p=f<.85?clamp((f-.62)/.1,0,1)*.5:.5+.5*hideEase((f-.85)/.15);
+  return{anim:'openHigh',frame:Math.round(p*16)};
 }
 function drawVaultPR(key,x,y,a,f,alpha=1,scale=1,lift=0){
   const k=motionKey(key,'vaultPass');return k?drawPR(k,x,y,a,'vaultPass',0,alpha,scale,lift,Math.round(clamp(f,0,1)*16)):drawPR(key,x,y,a,'vault',0,alpha,scale,lift,f<.3?0:f<.75?1:2);
@@ -9963,11 +9975,11 @@ function kunaiTarget(weapon=input.tool) {
   const P = S.player; if ((weapon==='blade'?!(P.blades>0):P.kunai<=0) || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
   let best = null, bs = Infinity;
   for (const g of S.guards) {
-    if (g.child || g.dog || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P)) continue;
+    if (g.child || g.dog || g.doomed || g.climb || g.civ&&!g.target&&S.marked!==g || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P) || (g.z||0)!==(P.z||0)) continue;
     const d = dist(P.x, P.y, g.x, g.y), ad = Math.abs(angDiff(P.a, Math.atan2(g.y-P.y, g.x-P.x)));
     if (d < 20 || d > projectileRange() || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
-    const score = ad * 160 + d * .4;
-    if (score < bs) { bs = score; best = { type:'guard',ref:g,x:g.x,y:g.y,fl:flOf(g),z:g.z||0 }; }
+    const score = ad * 160 + d * .4-(S.marked===g?240:0);
+    if (score < bs) { bs = score; best = { type:'guard',ref:g,x:g.x,y:g.y,fl:flOf(g),z:g.z||0,explicitCivilian:S.marked===g }; }
   }
   return best;
 }
@@ -10565,7 +10577,8 @@ function pairKill(g, kind, from, quiet) {
   delete g.takedownIntent;
   const ko=S.koNext||!intent.lethal;S.koNext=S.lethalNext=false;
   P.strikeT=dur;P.vx=P.vy=0;P.moving=false;
-  P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y};
+  P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y,
+    victimOffset:from?null:{x:g.x-P.x-Math.cos(P.a)*24,y:g.y-P.y-Math.sin(P.a)*24}};
   P.riseT=S.t+dur+.22;g.doomed=true;g.moving=false;g.path=null;g.say=null;g.icon=null;
 }
 // Contact, incapacitation and lowering all advance on the same clock as the pose.
@@ -10782,9 +10795,9 @@ function toolDetail(t){
 }
 function actBlade(lethal=false){
  if(!skillOn('kunai'))return false;if(!lethal){toast('쿠나이는 살상 도구다 · 1초 이상 눌렀다 떼기',2);return false;}
- const P=S.player,t=kunaiTarget('blade');if(!canAim()||!t||!(P.blades>0))return false;
- P.blades--;S.stats.bladesUsed=(S.stats.bladesUsed||0)+1;P.a=Math.atan2(t.y-P.y,t.x-P.x);
- S.throwT=S.t+.7;S.kunais.push({x0:P.x,y0:P.y,t:0,dur:.08+dist(P.x,P.y,t.x,t.y)/1400,tgt:{...t,fl:flOf(t.ref),z:t.ref.z||0},fl:flOf(P),z:P.z||0,lethal:true,weapon:'blade'});play('kunai',.45);return true;
+ const P=S.player;if(!canAim()||!(P.blades>0))return false;const shot=projectileShot(kunaiTarget('blade'));if(!shot)return false;
+ P.blades--;S.stats.bladesUsed=(S.stats.bladesUsed||0)+1;P.a=Math.atan2(shot.tgt.y-P.y,shot.tgt.x-P.x);
+ S.throwT=S.t+.7;S.kunais.push({x0:P.x,y0:P.y,t:0,...shot,fl:flOf(P),z:P.z||0,lethal:true,weapon:'blade'});play('kunai',.45);return true;
 }
 function smokeCells(at,r){
  const f0=CUR_F;setLayer(flOf(at));const cells={},queue=[[Math.floor(at.x/TILE),Math.floor(at.y/TILE)]],queued=new Set([queue[0].join(',')]);
@@ -11072,12 +11085,19 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length && !envOnly) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
-  const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };
+  const nc = nearCorpse(),dress=corpseClothingAction(nc);if(dress)return dress;
   if (nc) return { k: 'carry', c: nc, label: '운반' };
   if(envOnly&&P.cover)return{k:'uncover',label:'엄폐에서 나오기'};
   const hp = envOnly ? {} : primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   return { k: 'none', label: '보조' };
+}
+
+// One eligibility rule for the action button, clothing shortcut and late input.
+function corpseClothingAction(c){
+  const P=S.player;
+  if(!c||!(STAGE.disguise||STAGE.zones)||!S.corpses.includes(c)||c.carried||c.stashed||c.dog||c.stripped||c.target||!(c.outfit||!STAGE.zones&&!(c.ch||'').startsWith('civ'))||P.disguise&&!P.disguiseBlown&&(c.outfit||'crew')===P.outfit||!objectReachable(c,46))return null;
+  return{k:'dress',c,fromZ:true,label:(P.blown||{})[c.outfit||'crew']?'옷 갈아입기 (이미 들통난 옷)':'옷 갈아입기 — '+outfitName(c.outfit||'crew')};
 }
 
 // Explicit one-press clean-up: only an existing downed body, then lift, walk and store.
@@ -11104,16 +11124,22 @@ function updateQuickStash(P,dt){
   return !!P.trav;
 }
 
-// A late cleanup tap follows this exact takedown once. It never queues attacks
-// or chooses a different body, and movement/pause/damage cancel the intention.
+// Follow the same body and action across the final lowering beat. A late press
+// must not carry away the uniform the player was about to wear.
 function recoveryInputCandidate(P=S.player){
   const A=P.killAnim,c=A?.c;
   if(!A?.committed||!c||A.dur-(S.t-A.t0)>.25||P.carrying||P.captive||P.hide||P.under||P.vent||P.z||P.hurtT>0)return null;
   return S.corpses.includes(c)&&!c.carried&&!c.stashed&&!c.hidden&&objectReachable(c,46)?c:null;
 }
-function queueRecoveryInput(){
+function recoveryInputAction(kind){
+  const c=recoveryInputCandidate();if(!c)return null;
+  const dress=corpseClothingAction(c);
+  return kind==='dress'?dress:dress||{k:'cleanup',c,label:'몸 숨기기'};
+}
+function queueRecoveryInput(kind){
   const P=S.player,c=recoveryInputCandidate(P);if(!c)return false;
-  P.recoveryQueue={c,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.6};return true;
+  const a=recoveryInputAction(kind);if(!a)return false;
+  if(!P.recoveryQueue)P.recoveryQueue={c,kind:a.k,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.6};return true;
 }
 function updateRecoveryInput(P){
   const q=P.recoveryQueue;if(!q)return;
@@ -11122,6 +11148,7 @@ function updateRecoveryInput(P){
   if(actionBusy(P))return;
   P.recoveryQueue=null;
   if(!objectReachable(q.c,46))return;
+  if(q.kind==='dress'){const a=corpseClothingAction(q.c);if(a)actCarry(a);return;}
   const choice=quickStashChoice(q.c);actCarry(choice||{k:'carry',c:q.c,fromZ:true});
 }
 
@@ -11157,13 +11184,25 @@ function actKunai(forced, lethal = false) {
   const P = S.player;
   if(!abilityOn('dart')){toast(abilityLockText('dart'),2);return;}
   if (P.kunai <= 0) { toast('다트가 없다', 1.4); return; }
-  const t = forced || kunaiTarget();
-  if (!t || t.type !== 'guard' || !S.guards.includes(t.ref) || t.ref.child || t.ref.state === 'DEAD') { toast('조준할 사람이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
+  const shot=projectileShot(forced||kunaiTarget());
+  if (!shot) { toast('겨눈 경비나 표적이 없다 · 조명과 CCTV는 스위치나 전원으로 끈다', 1.6); return; }
   P.kunai--; S.stats.kunaiUsed++;
-  P.a = Math.atan2(t.y - P.y, t.x - P.x);
-  const d = dist(P.x, P.y, t.x, t.y);
-  (S.throwT = S.t + 0.7), S.kunais.push({ x0: P.x, y0: P.y, t: 0, dur: 0.08 + d / 1400, tgt: {...t,fl:flOf(t.ref),z:t.ref.z||0}, fl:flOf(P), z:P.z||0, lethal });
+  P.a = Math.atan2(shot.tgt.y-P.y,shot.tgt.x-P.x);
+  (S.throwT = S.t + 0.7), S.kunais.push({x0:P.x,y0:P.y,t:0,...shot,fl:flOf(P),z:P.z||0,lethal});
   play('kunai', 0.55);
+}
+// A fixed intercept, estimated from observed movement. The projectile never
+// homes after release; cover, a sudden turn or a floor change can still defeat it.
+function projectileShot(t){
+  const P=S.player,g=t?.ref;
+  if(t?.type!=='guard'||!S.guards.includes(g)||g.child||g.dog||g.doomed||g.climb||['DEAD','CAPTIVE'].includes(g.state)||g.civ&&!g.target&&!t.explicitCivilian||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||dist(P.x,P.y,g.x,g.y)>projectileRange()||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))return null;
+  let x=g.x,y=g.y,dur=.08+dist(P.x,P.y,x,y)/1400;
+  const m=g.projectileMotion,recent=m&&g.moving&&S.t>=m.t&&S.t-m.t<.1&&m.fl===flOf(g)&&m.z===(g.z||0)&&Math.hypot(m.vx,m.vy)<260;
+  if(recent){
+    for(let i=0;i<2;i++){x=g.x+m.vx*dur;y=g.y+m.vy*dur;dur=.08+dist(P.x,P.y,x,y)/1400;}
+    if(!sightLine(P,x,y,g.z||0,false,flOf(g))){x=g.x;y=g.y;dur=.08+dist(P.x,P.y,x,y)/1400;}
+  }
+  return{dur,tgt:{...t,x,y,fl:flOf(g),z:g.z||0}};
 }
 function kunaiHit(k) {
   if(k.weapon!=='blade'&&!abilityOn('dart'))return;
@@ -11753,8 +11792,9 @@ function drawPlayerBody(P) {
     }
     if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = playerLook, s1 = sc / 3;
-      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt), j = kt > 0.9 && kt < 1.5 ? Math.sin(S.t * 40) * (1.6 - (kt - 1) * 2) : 0;
-        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + j, P.y, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
+      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt), j = !reducedFxMotion.matches&&kt > 0.9 && kt < 1.5 ? Math.sin((S.t-KA.t0)*18)*.55*(1-(kt-1)/.5) : 0,
+          approach=1-hideEase(clamp((S.t-KA.t0)/.14,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
+        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx + j, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
       const j = Math.sin(S.t * 40) * 1.5; drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(KA.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
     }
     const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)
@@ -13688,11 +13728,13 @@ function actEnv() {
 // Clothing has its own input and remains selected while nearby candidates change.
 function clothingAction(){
   const P=S.player;
+  if(actionBusy(P)){const a=recoveryInputAction('dress');return a?{...a,bufferable:true}:null;}
   if(!nearCorpse()&&!S.props.some(p=>p.outfit&&!p.taken&&flOf(p)===flOf(P)&&dist(P.x,P.y,p.x,p.y)<64))return null;
   return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
 }
 function actDress(){
-  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial||actionBusy())return;
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial)return;
+  if(actionBusy()){queueRecoveryInput('dress');return;}
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }
@@ -14675,7 +14717,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
-    contractRouteGoal,cameraCableReachable,nearCameraCable,updateStoryNotices,updateStories,
+    contractRouteGoal,cameraCableReachable,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,

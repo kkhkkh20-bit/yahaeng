@@ -70,7 +70,8 @@ function pairKill(g, kind, from, quiet) {
   delete g.takedownIntent;
   const ko=S.koNext||!intent.lethal;S.koNext=S.lethalNext=false;
   P.strikeT=dur;P.vx=P.vy=0;P.moving=false;
-  P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y};
+  P.killAnim={ch:charOf(g),t0:S.t,kind,dur,from,g,intent:{...intent,pairStarted:S.t},ko,quiet,fl:flOf(P),z:P.z||0,x:P.x,y:P.y,
+    victimOffset:from?null:{x:g.x-P.x-Math.cos(P.a)*24,y:g.y-P.y-Math.sin(P.a)*24}};
   P.riseT=S.t+dur+.22;g.doomed=true;g.moving=false;g.path=null;g.say=null;g.icon=null;
 }
 // Contact, incapacitation and lowering all advance on the same clock as the pose.

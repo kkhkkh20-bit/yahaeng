@@ -12,9 +12,9 @@ function toolDetail(t){
 }
 function actBlade(lethal=false){
  if(!skillOn('kunai'))return false;if(!lethal){toast('쿠나이는 살상 도구다 · 1초 이상 눌렀다 떼기',2);return false;}
- const P=S.player,t=kunaiTarget('blade');if(!canAim()||!t||!(P.blades>0))return false;
- P.blades--;S.stats.bladesUsed=(S.stats.bladesUsed||0)+1;P.a=Math.atan2(t.y-P.y,t.x-P.x);
- S.throwT=S.t+.7;S.kunais.push({x0:P.x,y0:P.y,t:0,dur:.08+dist(P.x,P.y,t.x,t.y)/1400,tgt:{...t,fl:flOf(t.ref),z:t.ref.z||0},fl:flOf(P),z:P.z||0,lethal:true,weapon:'blade'});play('kunai',.45);return true;
+ const P=S.player;if(!canAim()||!(P.blades>0))return false;const shot=projectileShot(kunaiTarget('blade'));if(!shot)return false;
+ P.blades--;S.stats.bladesUsed=(S.stats.bladesUsed||0)+1;P.a=Math.atan2(shot.tgt.y-P.y,shot.tgt.x-P.x);
+ S.throwT=S.t+.7;S.kunais.push({x0:P.x,y0:P.y,t:0,...shot,fl:flOf(P),z:P.z||0,lethal:true,weapon:'blade'});play('kunai',.45);return true;
 }
 function smokeCells(at,r){
  const f0=CUR_F;setLayer(flOf(at));const cells={},queue=[[Math.floor(at.x/TILE),Math.floor(at.y/TILE)]],queued=new Set([queue[0].join(',')]);
