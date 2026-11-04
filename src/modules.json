@@ -114,6 +114,14 @@
       "group": "light_fixtures"
     },
     {
+      "path": "36_room_switches.js",
+      "group": "light_fixtures"
+    },
+    {
+      "path": "36_light_art.js",
+      "group": "light_fixtures"
+    },
+    {
       "path": "37_security_camera.js",
       "group": "security_camera"
     },

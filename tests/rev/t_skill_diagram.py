@@ -17,7 +17,7 @@ async def main():
    await q.locator('button[data-branch="'+branch+'"]').click()
   assert await q.locator('[data-node] > button > svg').count()==27,'Branch switching destroys symbols'
   await q.locator('[data-select="electric"]').click()
-  assert await q.locator('#skillDetail h3').text_content()=='전기 조작'
+  assert await q.locator('#skillDetail h3').text_content()=='배전반 조작'
   assert await q.locator('[data-learn="electric"]').is_disabled()
   assert await q.evaluate('!__game.loadSkillTree().learned.length'),'Inspecting a node purchases it'
   await q.locator('#skillDetail .skill-prereqs button').first.click()

@@ -50,7 +50,8 @@ function nearCorpse() {
 }
 function nearLamp() {
   const P = S.player; if (P.z || P.jump || P.hide) return null; let best = null, bd = 48;
-  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.broken || l.cut != null || (l.outdoor && mainPowerOff(l)) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
+  const skippedCircuits=new Set([...ACT_SKIP].map(o=>o?.circuit).filter(Boolean));
+  for (const l of S.lamps) { if (ACT_SKIP.has(l) || l.circuit&&skippedCircuits.has(l.circuit) || l.broken || l.cut != null || (!l.outdoor&&!l.hearth&&!l.control) || (l.outdoor && mainPowerOff(l)) || flOf(l) !== flOf(P)) continue; const at = lampControl(l), d = dist(P.x, P.y, at.x, at.y); if (d < bd && objectReachable(at, 48)) { bd = d; best = l; } }
   return best;
 }
 function nearDoor() {

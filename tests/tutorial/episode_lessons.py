@@ -48,7 +48,7 @@ async def main():
      if await q.locator('#intro').is_visible():await q.click('#btnLedger')
      else:await q.click('#btnPause');await q.click('#btnMenu2')
     await q.click('.ledger-tabs [data-filter="training"]');i=await q.evaluate('id=>__game.STAGES.findIndex(s=>s.id===id)',sid);await q.click(f'[data-i="{i}"]');await q.evaluate('tick(90)');assert await q.evaluate('__game.STAGE.id')==sid
-   await select('tL');await record('light-observe');assert await q.evaluate('__game.S.tutI===1&&__game.skillOn("electric")')
+   await select('tL');await record('light-observe');assert await q.evaluate('__game.S.tutI===1&&!__game.skillOn("electric")')
    before=await q.evaluate('''()=>{const G=__game,x=7.5*48,y=12.5*48,lit=G.lightAt(x,y);return{lit,seen:G.canSee(G.S.guards[0],x,y,lit,false,1,0)}}''');assert before['seen']>0,before
    at=await q.evaluate('''()=>{const G=__game,l=G.S.lamps[3],at=G.lampControl(l);return{x:at.x+(l.mount?.nx||0)*24,y:at.y+(l.mount?.ny||0)*24}}''');await walk(at['x'],at['y']);assert await q.evaluate('__game.envAction().k==="lamp"');await key('x','btnCarry');assert await q.evaluate('__game.S.tutI===2&&__game.S.lamps[3].off');await record('light-off')
    after=await q.evaluate('''()=>{const G=__game,x=7.5*48,y=12.5*48,lit=G.lightAt(x,y);return{lit,seen:G.canSee(G.S.guards[0],x,y,lit,false,1,0)}}''');assert after['lit']<before['lit']and after['seen']==0,(before,after)

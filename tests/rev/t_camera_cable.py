@@ -33,8 +33,8 @@ async def main():
     G.doAct({k:'camCable',targetObject:c,at:c,label:'CCTV 전선 분리'});S.cams=[];tick(2.1);ok(!c.unplugged,'vanished target committed');S.cams=[c];out.push('moving or removed target cancels without changing records');
     G.doAct({k:'camCable',targetObject:c,at:c,label:'CCTV 전선 분리'});tick(2.1);G.saveCheckpoint();ok(G.loadCheckpoint()&&G.S.cams[0].unplugged&&!G.camOn(G.S.cams[0]),'save forgets unplugged cable');out.push('physical cable state survives checkpoint');return out;
    }''')
-   await q.evaluate('''()=>{const G=__game;localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:235,y:445,fl:0,z:0});G.setLayer(0);const L=G.envChoices();if(G.envAction().k!=='keypad'||!L.some(a=>a.skillLocked==='electric'))throw Error('Unlearned lamp hides usable vault keypad');const locked=L.find(a=>a.skillLocked);G.selectEnvTarget(G.envToken(locked));if(!G.envAction().skillLocked)throw Error('Explicit locked preview changed action');}''')
-   assert not errors,errors;rows.append({'touch':touch,'checks':['native input,2s duration, illegal work, records preserved',*checks,'actual office keypad before unlearned lamps; explicit preview preserved']});await q.close()
+   await q.evaluate('''()=>{const G=__game;localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:235,y:445,fl:0,z:0});G.setLayer(0);const L=G.envChoices();if(G.envAction().k!=='keypad'||L.some(a=>a.k==='lamp'&&a.skillLocked))throw Error('Basic light controls hide vault keypad or remain skill locked');}''')
+   assert not errors,errors;rows.append({'touch':touch,'checks':['native input,2s duration, illegal work, records preserved',*checks,'office keypad stays usable beside basic light controls']});await q.close()
   await b.close()
  (O/'camera-cable.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2));print('PASS base CCTV cable PC/mobile:',rows)
 asyncio.run(main())

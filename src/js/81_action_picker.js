@@ -74,7 +74,7 @@ function drawEnvSelection() {
 function unavailableEnvReason() {
   const P=S.player;
   if(P.ledge || P.wire) return '안전하게 올라설 곳이 없다';
-  const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken).map(l=>lampControl(l))]
+  const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken&&(l.outdoor||l.hearth||l.control)).map(l=>lampControl(l))]
     .filter(o=>Number.isFinite(o.x)&&dist(P.x,P.y,o.x,o.y)<100).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
   const o=a.find(o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0))||a[0]; if(!o)return '조작할 물체 가까이 이동하기';
   if(flOf(o)!==flOf(P)||(o.z||0)!==(P.z||0))return '다른 층에 있는 대상이다 — 연결 입구로 이동하기';

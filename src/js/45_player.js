@@ -137,7 +137,9 @@ function landBelow(x, y, n, z, maxDrop=2) {
 }
 const ledgeDraw = P => { const n = P.ledge; return { x: P.x + n.x * 20, y: P.y + (n.y > 0 ? 34 : n.y < 0 ? -8 : 10) }; };
 function ledgeGrip(P) {
-  const n=P.ledge;return{x:P.x+n.x*14,y:P.y+n.y*14+(n.y>0?6:0)+2,a:Math.atan2(-n.y,-n.x)};
+  // The hanging sheet presents the opposite profile to the standing/vault
+  // sheet. Keep this visual correction at the shared hand anchor, not in input.
+  const n=P.ledge;return{x:P.x+n.x*14,y:P.y+n.y*14+(n.y>0?6:0)+2,a:Math.atan2(n.y,n.x)};
 }
 function ledgeRoot(P) {
   const h=ledgeGrip(P),key=playerKey(P),m=PR.bodies?.[prSplit(key)[1]]||PR,row=prDir(h.a),hands=m.hangHands?.[row]?.[0]||PR.hangHands?.[row]?.[0],scale=m.scales?.hang||PR.scales?.hang||1;

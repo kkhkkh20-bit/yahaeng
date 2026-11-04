@@ -196,8 +196,8 @@ function actPrimary(force) {
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
-      const l = a.l,watchers=!l.off?lampSwitchWitnesses(l):[];l.off = !l.off; play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
-      if(l.off)respondToLampOff(l,watchers);
+      const l = a.l,off=!lampCircuitOff(l),watchers=off?lampSwitchWitnesses(l):[];setLampCircuit(l,off); play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
+      if(l.off){if(l.roomSwitch)reactToRoomDarkness(l,watchers);else respondToLampOff(l,watchers);}
       refreshBodyLighting();
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');
       break;

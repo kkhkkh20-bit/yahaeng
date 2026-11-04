@@ -91,6 +91,8 @@ function envChoices() {
   // At mission furniture, carrying or an already exposed uniform must not hide
   // collection. A useful new outfit and every explicit selection keep priority.
   if(!P.carrying){const loot=list.find(a=>a.k==='loot'&&S.items.includes(a.it)&&!a.it.got),dress=list.find(a=>a.k==='dress'&&!(P.blown||{})[a.c.outfit||'crew']);if(loot&&!dress){loot.missionPriority=true;list.splice(list.indexOf(loot),1);list.unshift(loot);}}
+  // A wall switch beside a coded door must not replace opening that door.
+  if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
   return list.filter(a=>!a.skillLocked).concat(list.filter(a=>a.skillLocked));
 }

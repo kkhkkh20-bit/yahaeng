@@ -99,23 +99,11 @@ function updateGuard(g, dt) {
   if(!updateStairYield(g,dt))switch (g.state) {
     case 'PATROL': {
       if (updateBodyCover(g)) break;
-      if (g.relight) {
-        const work=g.relight,l=work.l,at=lampControl(l);
-        if(!l.off||l.broken||l.cut!=null){g.relight=null;g.path=null;break;}
-        g.want=Math.atan2(at.y-g.y,at.x-g.x);
-        if(dist(g.x,g.y,at.x,at.y)>34||!los(g.x,g.y,at.x,at.y,g.z||0)){
-          work.approach=(work.approach||0)+dt;
-          if(work.approach>7){g.relight=null;g.path=null;g.relightRetryAt=S.t+6;break;}
-          if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);break;
-        }
-        g.path=null;g.moving=false;work.t-=dt;
-        if(work.t<=0){l.off=false;g.relight=null;g.icon=null;play('switch',.4*proxVol(g));refreshBodyLighting();if(dist(g.x,g.y,P.x,P.y)<700)toast('경비가 조명을 다시 켰다',2);setAlert(1,20);}
-        break;
-      }
+      if (updateRoomRelight(g,dt,spd)) break;
       g.lampScan = (g.lampScan || 0) - dt;
       if (g.lampScan <= 0 && !g.target && !(g.relightRetryAt>S.t)) {
         g.lampScan = 0.6;
-        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&o.relight?.l===l));
+        const l = g.dog ? null : S.lamps.find(l => l.off && !l.broken && !l.cold && l.cut == null && (l.outdoor||l.hearth||l.control) && flOf(l) === flOf(g) && dist(l.x, l.y, g.x, g.y) < 95 && los(g.x, g.y, l.x, l.y) && !S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&sameLampCircuit(o.relight?.l,l)));
         if (l) { g.relight = { l, t: 1.8 }; g.path = null; setIcon(g, '?'); break; }
         const bc = g.dog ? null : (S.cams || []).find(c => (c.broken||c.unplugged) && !c.noticed && c.fl === flOf(g) && dist(c.x, c.y, g.x, g.y) < 170 && los(g.x, g.y, c.x, c.y));
         if (bc) { bc.noticed = true; goSuspicious(g, bc.x, bc.y + 30, 4); bark(g, 'calm'); if (dist(g.x, g.y, S.player.x, S.player.y) < 700) toast('자경대원이 '+(bc.unplugged?'전선이 빠진':'부서진')+' CCTV를 발견했다', 2.2, 'warn'); break; }
