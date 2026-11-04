@@ -82,10 +82,11 @@ def build():
     html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))
     open(P('build', 'yahaeng_city.html'), 'w', encoding='utf-8').write(html)
-    pre = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>'
-    open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(pre + html)
+    # Preview the exact same complete document that is packaged for release.
+    # A preview-only viewport used to hide the iPhone release's 980px layout bug.
+    open(P('build', 'preview_city.html'), 'w', encoding='utf-8').write(html)
     demo = html.replace('window.__THUMBS = ', "window.__DEMO = 'all'; window.__THUMBS = ", 1)  # itch 데모: 연습 + 의뢰 전부 (도시 시제품만 뺀다)
-    open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(pre + demo)
+    open(P('build', 'preview_demo.html'), 'w', encoding='utf-8').write(demo)
     for edition in (['club-study'] if '--club' in sys.argv else []) + (['episode-one'] if '--episode' in sys.argv else []):
         flags='window.__CLUB_STUDY__=true;'+('window.__EPISODE_ONE__=true;' if edition=='episode-one' else '')
         study=html.replace('<script>window.__ASSETS__','<script>'+flags+'</script><script>window.__ASSETS__',1)
@@ -102,12 +103,13 @@ def build():
             code=read(path)
             code=re.sub(r"(from\s+['\"])(\./[^'\"]+\.js)(['\"])",lambda m:m[1]+m[2]+'?v='+asset_rev+m[3],code)
             open(path,'w',encoding='utf-8').write(code)
-        open(os.path.join(folder,'index.html'),'w',encoding='utf-8').write(pre+head+study+'<script type="module" src="./view.js?v='+asset_rev+'"></script>')
+        study=study.replace('</head>',head+'</head>',1).replace('</body>','<script type="module" src="./view.js?v='+asset_rev+'"></script></body>',1)
+        open(os.path.join(folder,'index.html'),'w',encoding='utf-8').write(study)
     print('ok', len(html), v, h)
     if '--cloudflare' in sys.argv:
         # Regular 2D campaign only. The dedicated art-slice flag/modules are absent.
         folder=P('dist','cloudflare-2d');os.makedirs(folder,exist_ok=True)
-        payload=pre+'<script>window.__INK_FORCE__=true;</script>\n'+html
+        payload=html.replace('<head>','<head><script>window.__INK_FORCE__=true;</script>',1)
         files={'index.html':payload,'_headers':'/\n  Cache-Control: no-cache\n/index.html\n  Cache-Control: no-cache\n',
                'version.json':json.dumps({'version':v,'build_date':h,'edition':'2d-campaign'},ensure_ascii=False)+'\n'}
         for name,data in files.items():
@@ -119,7 +121,7 @@ def build():
         print('cloudflare',archive,os.path.getsize(archive))
     if '--itch' in sys.argv:
         os.makedirs(P('dist', 'itch'), exist_ok=True); z = P('dist', 'itch', 'yahaeng_itch.zip')
-        with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as f: f.writestr('index.html', pre + demo)
+        with zipfile.ZipFile(z, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as f: f.writestr('index.html', demo)
         print('itch', z, os.path.getsize(z))
 
 if __name__ == '__main__': build()

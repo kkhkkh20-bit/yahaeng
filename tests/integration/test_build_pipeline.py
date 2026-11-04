@@ -1,5 +1,6 @@
 """Build ownership and deletion safety: disconnected files may never ship silently."""
 import contextlib,io,json,sys,tempfile,unittest
+from html.parser import HTMLParser
 from pathlib import Path
 R=Path(__file__).resolve().parents[2];sys.path.insert(0,str(R))
 from tools.buildlib.modules import runtime_modules
@@ -7,6 +8,24 @@ from tools.buildlib.release_assets import prune_assets
 from tools.buildlib.assets import campaign_assets
 from tools.package_cloudflare_2d import package
 class BuildPipeline(unittest.TestCase):
+ def test_release_and_preview_share_mobile_document(self):
+  class Document(HTMLParser):
+   def __init__(self):super().__init__();self.in_head=False;self.viewports=[];self.doctypes=[]
+   def handle_decl(self,decl):self.doctypes.append(decl.lower())
+   def handle_starttag(self,tag,attrs):
+    if tag=='head':self.in_head=True
+    attrs=dict(attrs)
+    if tag=='meta' and attrs.get('name')=='viewport':self.viewports.append((self.in_head,attrs.get('content','')))
+   def handle_endtag(self,tag):
+    if tag=='head':self.in_head=False
+  for path in ['src/template.html','build/yahaeng_city.html','build/preview_city.html','public/index.html']:
+   with self.subTest(path=path):
+    doc=Document();doc.feed((R/path).read_text())
+    self.assertEqual(doc.doctypes,['doctype html'])
+    self.assertEqual(len(doc.viewports),1)
+    in_head,content=doc.viewports[0];self.assertTrue(in_head)
+    self.assertIn('width=device-width',content);self.assertIn('initial-scale=1',content)
+  self.assertEqual((R/'build/yahaeng_city.html').read_bytes(),(R/'build/preview_city.html').read_bytes())
  def test_all_runtime_modules_are_owned_once(self):
   modules=runtime_modules(R)
   self.assertEqual(set(modules),set((R/'src/js').rglob('*.js')))
