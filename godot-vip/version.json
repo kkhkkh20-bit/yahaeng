@@ -1,0 +1,76 @@
+{
+  "version": "godot-vip-1",
+  "engine": "Godot 4.6.3",
+  "threads": false,
+  "files": {
+    "credits.html": {
+      "bytes": 3269,
+      "sha256": "75939d6db9624a58661d8333617f4e4da97a2bddf657784fb2ad272bef7b574c"
+    },
+    "fflate.module.js": {
+      "bytes": 89384,
+      "sha256": "209a4412eb48ce609edb4391992a792ffcc3983d30ee7e2b0b89a8c470f3cd8a"
+    },
+    "index.audio.position.worklet.js": {
+      "bytes": 2973,
+      "sha256": "be33985bc7160d6bf9646f259cd86b259cd67b02ccb297ee5c44f8ac84327bc8"
+    },
+    "index.audio.worklet.js": {
+      "bytes": 7298,
+      "sha256": "5b476a9c9ce642c0ee4256436d1bc31d9c38f868aca0f9a8e2a57c18d2dec2a3"
+    },
+    "index.html": {
+      "bytes": 4981,
+      "sha256": "2c1e3c0b1dc02dc77974367396da5f57373582130e5727de1e4d09597220a6cf"
+    },
+    "index.js": {
+      "bytes": 315759,
+      "sha256": "e3f56ee40e6f84371053db06692cfac15e2c8659547b11c6b2dfa1996dabd981"
+    },
+    "index.pck": {
+      "bytes": 2145828,
+      "sha256": "c14732a87f25ba68b68c3531d04561c509d1c91606c809f28a32c8346d4b19b2"
+    },
+    "index.wasm.gz": {
+      "bytes": 9382282,
+      "sha256": "9352825a316f4449b81d326706e78be95ed5a81c0e797f35879ef8b39bc505bd"
+    },
+    "licenses/Characters-CC0.txt": {
+      "bytes": 620,
+      "sha256": "078c2880f9db479df6cbd54023a6b1019c924c180681a2158f516b725865af0a"
+    },
+    "licenses/Godot-COPYRIGHT.txt": {
+      "bytes": 99790,
+      "sha256": "b3330849267d56ddd3d62a513817506606c2195034411fe05859f0140bff9d8a"
+    },
+    "licenses/Godot-LICENSE.txt": {
+      "bytes": 1149,
+      "sha256": "b0435e3b3e4e55238f05f4b306f30524a1b2e20147810d436eaa554fa6855c80"
+    },
+    "licenses/IBM-Plex-OFL.txt": {
+      "bytes": 4456,
+      "sha256": "7e6b2818edbd8f6a01ae80641cc8f16a51080d08fb4e532be3a0b6f74adb07da"
+    },
+    "licenses/Kenney-CC0.txt": {
+      "bytes": 592,
+      "sha256": "e3bd7bf3ebb68ea93d4d04e460513acd120dff1419307411779a230b1ef9d3c3"
+    },
+    "licenses/PixelFX-MIT.txt": {
+      "bytes": 1890,
+      "sha256": "e0a4a8f70d6a40c4a8f5cefdcf35138d5ecc97c3c54db8471ffd2aa0b3a5665d"
+    },
+    "licenses/Quaternius-CC0.txt": {
+      "bytes": 826,
+      "sha256": "36c51fb08a9324abd5c2de457a1702f3b6233f09ee6ac412085f62d757fa7339"
+    },
+    "licenses/fflate-LICENSE.txt": {
+      "bytes": 1069,
+      "sha256": "805f6cb28bb8b6d3a0badd83c93bccd9671fa01a3b4b92b7042b0743325ac243"
+    },
+    "project.zip": {
+      "bytes": 2897893,
+      "sha256": "53a45134ed379625dc1a16e91f4a01efd2d08bea5daf89ac940e93199cecf78b"
+    }
+  },
+  "wasm_uncompressed_sha256": "26b61ce95247012ab3dca3ff51e96d1cdbff44ee91a8c20a83e150afca83f1b6"
+}
