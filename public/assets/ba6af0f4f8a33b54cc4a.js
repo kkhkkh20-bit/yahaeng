@@ -12978,7 +12978,9 @@ function chaseHide(P) {
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
-  if(gl.tut&&m<3)return;  // 손에 닿는 연습 대상은 행동 표시가 대신한다. 버튼 영역으로 밀려난 화살표도 인물을 덮지 않는다.
+  // Nearby action targets have a button cue; a movement target still needs its
+  // destination marker until the lesson actually advances.
+  if(gl.tut&&m<3&&!gl.moveCue)return;
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
@@ -14198,7 +14200,11 @@ function pendingFirstGoal() {
 // 의뢰 목표는 목적만 안내한다. 선택한 단서만 잠시 추적하고, 준비 행동으로 공략을 강요하지 않는다.
 function nextGoal() {
   const P = S.player;
-  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) { const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S); return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y, fl: (tg && tg.fl) || 0, tut: true }; }
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {
+    const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
+    return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
+      fl: (tg && tg.fl) || 0, tut: true, moveCue:['move','run','crouch'].includes(tutorialCue()) };
+  }
   if (STAGE.city) return cityGoal();
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
@@ -14494,7 +14500,7 @@ function renderStageList() {
 
 
 // One short instruction in the existing objective area, with one matching control accent.
-function syncTutorialCue(){
+function tutorialCue(){
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4];
   let key=(typeof cue==='function'?cue(S,S.player):cue)||'';
   // A nearby stair is a valid action, but it is not the document we are teaching.
@@ -14503,6 +14509,10 @@ function syncTutorialCue(){
     const at=step?.[2]?.(S),P=S.player,a=envAction(),allowed=step?.[6];
     if(!at||flOf(at)!==flOf(P)||dist(P.x,P.y,at.x,at.y)>64||a.k==='none'||allowed&&!allowed.includes(a.k))key='move';
   }
+  return key;
+}
+function syncTutorialCue(){
+  const key=tutorialCue();
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
