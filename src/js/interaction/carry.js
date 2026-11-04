@@ -75,12 +75,19 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   const kg = kl0.filter(g => !g.elite && !g.dog); if (kg.length && !envOnly) return { k: 'grab', g: kg[0], label: kg[0].civ || kg[0].target ? '붙잡기' : '붙잡기 → 심문' };  // 암살이 닿는 거리면 붙잡기도 닿는다 (달려가 붙는다)
   const nu = nearUse(); if (nu) return { k: 'use', n: nu, label: nu.u.label };
   const pp = nearProp(); if (pp) return { k: 'pickup', p: pp, label: pp.outfit ? '옷 갈아입기 — ' + outfitName(pp.outfit) : '줍기 — ' + pp.name };
-  const nc = nearCorpse(); if (nc && (STAGE.disguise || STAGE.zones) && !nc.dog && !nc.stripped && !nc.target && (nc.outfit || (!STAGE.zones && !(nc.ch || '').startsWith('civ'))) && !(P.disguise && !P.disguiseBlown && (nc.outfit || 'crew') === P.outfit)) return { k: 'dress', c: nc, label: (P.blown || {})[nc.outfit || 'crew'] ? '옷 갈아입기 (이미 들통난 옷)' : '옷 갈아입기 — ' + outfitName(nc.outfit || 'crew') };
+  const nc = nearCorpse(),dress=corpseClothingAction(nc);if(dress)return dress;
   if (nc) return { k: 'carry', c: nc, label: '운반' };
   if(envOnly&&P.cover)return{k:'uncover',label:'엄폐에서 나오기'};
   const hp = envOnly ? {} : primaryAction(); if (hp.held) return Object.assign({}, hp.held, { viaZ: true }); if (hp.alt && hp.alt.k !== 'keymsg') return Object.assign({}, hp.alt, { viaZ: true });
   if (P.item) return { k: 'dropItem', label: P.item.name + ' 내려놓기' };
   return { k: 'none', label: '보조' };
+}
+
+// One eligibility rule for the action button, clothing shortcut and late input.
+function corpseClothingAction(c){
+  const P=S.player;
+  if(!c||!(STAGE.disguise||STAGE.zones)||!S.corpses.includes(c)||c.carried||c.stashed||c.dog||c.stripped||c.target||!(c.outfit||!STAGE.zones&&!(c.ch||'').startsWith('civ'))||P.disguise&&!P.disguiseBlown&&(c.outfit||'crew')===P.outfit||!objectReachable(c,46))return null;
+  return{k:'dress',c,fromZ:true,label:(P.blown||{})[c.outfit||'crew']?'옷 갈아입기 (이미 들통난 옷)':'옷 갈아입기 — '+outfitName(c.outfit||'crew')};
 }
 
 // Explicit one-press clean-up: only an existing downed body, then lift, walk and store.

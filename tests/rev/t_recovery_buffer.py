@@ -16,13 +16,24 @@ async def main():
      await q.evaluate('__game.updateHUD(true)');r=await q.locator('#'+button).bounding_box();await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':r['x']+r['width']/2,'y':r['y']+r['height']/2,'id':1}]});await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
     else:await q.keyboard.press(key)
    async def scene(at=1):
-    await q.evaluate(SETUP);await tap('z','btnAct');await q.evaluate('s=>tick(s)',at)
+    await q.evaluate(SETUP);await q.evaluate("Object.assign(__game.S.player,{disguise:'sam',outfit:'crew'})");await tap('z','btnAct');await q.evaluate('s=>tick(s)',at)
    await scene();before=await q.evaluate('({remaining:__game.S.player.strikeT,busy:__game.actionBusy()})');assert .1<before['remaining']<.2,before;await tap('x','btnCarry');assert await q.evaluate('!!__game.S.player.recoveryQueue');await q.evaluate('__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(1)');await q.screenshot(path=str(O/f'{NAME}-{"mobile"if mobile else"pc"}-queued.png'));await q.evaluate('tick(.4)');assert await q.evaluate('__game.S.player.carrying===__game.S.corpses[0]&&!__game.S.player.recoveryQueue&&__game.S.corpses.length===1&&!__game.S.stats.kills');await q.evaluate('__game.updateHUD(true);__game.benchDraw(1)');await q.screenshot(path=str(O/f'{NAME}-{"mobile"if mobile else"pc"}-carried.png'));passed=['late tap carries exact KO victim once']
    await scene();await tap('x','btnCarry');await q.click('#btnPause');await q.click('#btnResume');await q.evaluate('tick(.4)');assert await q.evaluate('!__game.S.player.carrying&&!__game.S.player.recoveryQueue');passed.append('pause cancels intention')
    await scene();await tap('x','btnCarry');await q.keyboard.down('ArrowLeft');await q.evaluate('tick(.4)');await q.keyboard.up('ArrowLeft');assert await q.evaluate('!__game.S.player.carrying&&!__game.S.player.recoveryQueue');passed.append('movement cancels intention')
    await scene();await tap('x','btnCarry');await q.evaluate('__game.S.player.hurtT=2;tick(.4)');assert await q.evaluate('!__game.S.player.carrying&&!__game.S.player.recoveryQueue');passed.append('damage cancels intention')
    await scene();await tap('x','btnCarry');await q.evaluate('const S=__game.S;S.corpses[0].stashed=true;S.corpses.push({...S.corpses[0],stashed:false});tick(.4)');assert await q.evaluate('!__game.S.player.carrying&&!__game.S.player.recoveryQueue');passed.append('missing victim does not switch bodies')
    await scene(.6);await tap('x','btnCarry');assert not await q.evaluate('!!__game.S.player.recoveryQueue');await q.evaluate('tick(.8)');assert not await q.evaluate('!!__game.S.player.carrying');passed.append('earlier unrelated tap is not buffered')
+   # The same late action must wear a useful uniform, never hide it first.
+   for shortcut in [False,True]:
+    await scene();await q.evaluate("Object.assign(__game.S.player,{disguise:null,outfit:null});__game.updateHUD(true)")
+    await tap('y'if shortcut else'x','btnDress'if shortcut else'btnCarry')
+    assert await q.evaluate("__game.S.player.recoveryQueue?.kind==='dress'&&!__game.S.player.outfit&&!__game.S.player.carrying")
+    await q.evaluate('tick(.4)');assert await q.evaluate("__game.S.player.interact?.a.k==='dress'&&!__game.S.corpses[0].stripped&&!__game.S.player.carrying")
+    await q.evaluate('tick(3.1)');assert await q.evaluate("__game.S.player.outfit==='crew'&&__game.S.corpses[0].stripped&&!__game.S.player.carrying&&__game.S.stats.dressed===1")
+   passed.append('late action and clothing shortcut both dress the exact victim through a full action')
+   await scene();await q.evaluate("Object.assign(__game.S.player,{disguise:null,outfit:null})");await tap('x','btnCarry');await q.evaluate('__game.S.corpses[0].stripped=true;tick(.4)')
+   assert await q.evaluate('!__game.S.player.interact&&!__game.S.player.carrying&&!__game.S.player.recoveryQueue')
+   passed.append('invalidated clothing never changes into carrying')
    assert not errors,errors;reports.append({'mobile':mobile,'checks':passed,'errors':errors,'method':'Actual keyboard/CDP touch in a controlled single-victim timing scene, not a campaign playthrough.'});print('PASS recovery buffer',mobile,passed,flush=True);await q.close()
   await b.close()
  (O/f'{NAME}.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2))

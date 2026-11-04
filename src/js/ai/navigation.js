@@ -156,6 +156,7 @@ function moveAlong(g, speed, dt) {
   }
   collideLightPosts(g,11,g.z?solidFor(g.z):solidAt);
   g.moving = dist(startX, startY, g.x, g.y) > .01;
+  g.projectileMotion={vx:(g.x-startX)/Math.max(dt,.001),vy:(g.y-startY)/Math.max(dt,.001),t:S.t,fl:flOf(g),z:g.z||0};
   return !g.path.length;
 }
 function updateNpcDoors(dt){
