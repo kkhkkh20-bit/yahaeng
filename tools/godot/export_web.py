@@ -17,6 +17,7 @@ subprocess.run(["godot", "--headless", "--path", str(ROOT / "godot"), "--export-
 html = (OUT / "index.html").read_text()
 config = json.loads(re.search(r"const GODOT_CONFIG = (.*);", html)[1])
 config["ensureCrossOriginIsolationHeaders"] = False
+config["packRevision"] = hashlib.sha256((OUT / "index.pck").read_bytes()).hexdigest()[:16]
 PUBLIC.mkdir(parents=True, exist_ok=True)
 for name in ["index.js", "index.pck", "index.audio.worklet.js", "index.audio.position.worklet.js"]:
     shutil.copyfile(OUT / name, PUBLIC / name)

@@ -24,9 +24,14 @@ const config = __GODOT_CONFIG__;
 const engine = new Engine(config);
 const originalFetch = window.fetch.bind(window);
 const wasmURL = new URL('index.wasm',location.href);
+const packURL = new URL('index.pck',location.href);
 // Only this engine's WASM is gzip-packed. Other application requests are untouched.
 window.fetch = async function(input,options){
   const url = new URL(typeof input==='string'||input instanceof URL ? input : input.url,location.href);
+  if(url.origin===packURL.origin && url.pathname===packURL.pathname){
+    url.searchParams.set('v',config.packRevision);
+    return originalFetch(url,options);
+  }
   if(url.origin!==wasmURL.origin || url.pathname!==wasmURL.pathname) return originalFetch(input,options);
   const response = await originalFetch(new URL('index.wasm.gz',location.href),options);
   if(!response.ok) throw Error(`엔진 다운로드 실패 (${response.status})`);
