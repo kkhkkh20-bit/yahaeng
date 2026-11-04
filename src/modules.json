@@ -118,6 +118,10 @@
       "group": "zones"
     },
     {
+      "path": "39_security_readout.js",
+      "group": "perception"
+    },
+    {
       "path": "39_stairs.js",
       "group": "stairs"
     },

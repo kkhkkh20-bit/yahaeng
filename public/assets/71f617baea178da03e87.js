@@ -1127,6 +1127,38 @@ STAGES.push({
     ['건물을 나와 왼쪽 골목 출구로 이동',()=>false,S=>S.exit,'본편에서는 실내 경비와 카메라도 살핀다. 먼저 안전한 길과 현재 층부터 확인하자.','move']
   ]
 });
+// Rehearse the actual campaign detectors, permissions and free cable interaction.
+// No temporary ability, immunity or scripted camera bypass is granted.
+STAGES.push({
+  id:'tC',no:'00',name:'의뢰 01 준비 · 복장과 CCTV',sub:'의뢰 01 준비 · 통행과 작업의 차이',tutorial:true,securityLesson:true,lessonLoot:true,
+  noSupport:true,noAmbientChats:true,noRefine:true,floors:false,residents:0,bare:true,kunai:0,coins:0,well:'manhole',pspd:1.25,gspd:.8,
+  W:34,H:18,start:[18,12],exit:[30,13],startA:0,wires:[],roofs:[],bricks:[],
+  mission:'복장의 출입 권한과 감시 판정을 확인하고, CCTV 전선을 분리한 뒤 서류를 가져온다.',
+  brief:'같은 옷으로도 통행과 훔치기의 판정은 다르다. 화면의 통행 권한, 신원 확인, CCTV 게이지를 실제 행동으로 확인한다.',
+  build(m){
+    m.fill(0,0,33,17,',');m.rect(0,0,33,17);m.fill(1,12,32,14,'.');m.fill(12,3,30,11,'h');
+    m.fill(11,2,31,2,'#');m.fill(11,2,11,11,'#');m.fill(31,2,31,11,'#');
+    m.many('C',[[28,5],[29,5],[28,8]]);m.many('B',[[4,13],[8,13]]);m.many('T',[[5,5],[8,6],[32,5]]);
+  },
+  zones:[[16,3,24,11,'res',null,'직원 구역',['crew']],[12,3,15,8,'res',null,'신원 확인 구역',['crew']],[25,3,30,11,'res',null,'기록 구역 · 복장 통행 불가',[]]],
+  props:[{id:'lessonUniform',name:'연습용 자경대원 옷',outfit:'crew',at:[24,12]}],
+  fixedFurn:[{x:20,y:10,w:1,h:1,t:'desk'}],lootFurniture:['desk'],items:[[20,11]],itemName:'연습 서류',itemNames:['연습 서류'],
+  cams:[[20,7,90,0]],lamps:[[20,9,420,0],[15,5,240,0],[27,10,200,0]],
+  guards:[{kind:'g1',tag:'identityCoach',at:[15,5],post:90,still:true,enforcer:true,radio:false}],challenges:[],
+  endText:'복장은 해당 구역의 통행 권한이다. 가까운 신원 확인과 훔치기는 별도 판정이다. 감시 시야를 피하거나 카메라 뒤에서 전선을 분리한 뒤 작업하자.',
+  steps:[
+    ['공개 구역의 CCTV 앞을 걸어 지나가기',(S,P,I,h)=>P.mode==='walk'&&Math.hypot(P.x-20.5*48,P.y-12.5*48)<23&&h.camera(S.cams[0]).visible>0&&!h.camera(S.cams[0]).detectable,()=>({x:20.5*48,y:12.5*48}),'부채꼴은 감시 범위다. 공개 구역의 평범한 통행은 녹화 게이지를 채우지 않는다.','move',1],
+    ['오른쪽에 놓인 옷으로 갈아입기',(S,P)=>P.outfit==='crew',()=>({x:24.5*48,y:12.5*48}),'이 옷은 직원 구역의 통행을 허용한다. 훔치기까지 허용하는 옷은 아니다.','env',0,['pickup']],
+    ['직원 구역에 들어가 통행 허용 확인',(S,P,I,h)=>Math.hypot(P.x-20.5*48,P.y-11.5*48)<23&&h.access(P).allowed&&!h.camera(S.cams[0]).detectable,()=>({x:20.5*48,y:11.5*48}),'카메라 앞이어도 허용 복장으로 지나다닐 수 있다. 서류는 아직 꺼내지 않는다.','move',1],
+    ['눈 표시 경비 앞에서 신원 확인 관찰',S=>(npcT(S,'identityCoach').eyeT||0)>.4,()=>({x:15.5*48,y:7.5*48}),'눈 표시가 있는 사람은 가까이 오래 있으면 알아본다. 게이지가 차기 전에 다음 표시로 물러난다.','move'],
+    ['아래 공개 구역으로 물러나기',(S,P)=>Math.hypot(P.x-15.5*48,P.y-10.5*48)<23&&!npcT(S,'identityCoach').eyeWatching&&!P.disguiseBlown,()=>({x:15.5*48,y:10.5*48}),'거리나 시야를 끊으면 신원 확인이 멈춘다. 옷을 입었다고 사람에게 계속 붙어 있어도 되는 것은 아니다.','move'],
+    ['오른쪽 기록 구역의 통행 불가 표지 확인',(S,P,I,h)=>Math.hypot(P.x-24.5*48,P.y-10.5*48)<23&&!h.access({x:25.5*48,y:10.5*48,fl:0,z:0}).allowed,()=>({x:24.5*48,y:10.5*48}),'이 경계 너머는 어떤 옷도 출입을 허용하지 않는다. 들어가기 전에 문턱의 권한 표시를 확인한다.','move',.8],
+    ['서류 앞에서 훔치기 위험 표시 확인',(S,P,I,h)=>Math.hypot(P.x-S.items[0].x,P.y-S.items[0].y)<24&&h.camera(S.cams[0],true).detectable,S=>S.items[0],'통행은 허용돼도 지금 훔치면 CCTV 게이지가 찬다. 먼저 카메라 뒤로 돌아간다.','move',.8],
+    ['카메라 뒤에서 전선 분리',S=>!!S.cams[0].unplugged,()=>({x:20.5*48,y:6.5*48}),'오른쪽으로 돌아 카메라 뒤에 접근한다. 전선 분리는 배우는 기술이나 다트 없이 쓸 수 있다.','env',0,['camCable']],
+    ['감시가 꺼진 뒤 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'경비에게도 작업이 보이지 않는지 확인하고 행동한다. 통행 권한과 목격 여부를 함께 판단한다.','env',0,['loot']],
+    ['남동쪽 출구로 이동',()=>false,S=>S.exit,'본편에서도 옷의 권한, 눈 표시, CCTV와 작업 위험을 같은 방식으로 읽는다.','move']
+  ]
+});
 // Spoken lines convey the assignment or an observable event. Controls and
 // mechanical explanations belong in objectives/help, not in a character's mouth.
 const DIALOGUE = {
@@ -3032,7 +3064,7 @@ function recordCameraEvidence(c) {
 }
 
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['tB','t0','m2','tL','tR','m4','m6'];
+const LEARNING_ROUTE=['tB','t0','tC','m2','tL','tR','m4','m6'];
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
   for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!stageCleared(STAGES[i]))return i;}
@@ -4350,8 +4382,10 @@ function zoneEdges() {
   const walk = (x, y) => inMap(x, y) && !SOLID.has(G[y][x]);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     if (!walk(x, y)) continue; const ia = zoneInfo(tc(x), tc(y), 0), a = ia.k;
-    for (const [dx, dy] of [[1, 0], [0, 1]]) { const nx = x + dx, ny = y + dy; if (!walk(nx, ny)) continue; const ib = zoneInfo(tc(nx), tc(ny), 0), b = ib.k; if (a === b || Math.min(a, b) !== Z_PUB) continue;
-      E.push({ x0: (x + dx) * TILE, y0: (y + dy) * TILE, x1: (x + 1) * TILE, y1: (y + 1) * TILE, k: Math.max(a, b), allow: (a === Z_PUB ? ib : ia).allow, ix: a === Z_PUB ? dx : -dx, iy: a === Z_PUB ? dy : -dy }); }
+    for (const [dx, dy] of [[1, 0], [0, 1]]) { const nx = x + dx, ny = y + dy; if (!walk(nx, ny)) continue; const ib = zoneInfo(tc(nx), tc(ny), 0), b = ib.k;
+      if(a===b&&(a===Z_PUB||ia.secure===ib.secure&&ia.allow.join('|')===ib.allow.join('|')))continue;
+      E.push({ x0: (x + dx) * TILE, y0: (y + dy) * TILE, x1: (x + 1) * TILE, y1: (y + 1) * TILE, k: Math.max(a, b), allow: (a === Z_PUB ? ib : ia).allow, ix: a === Z_PUB ? dx : -dx, iy: a === Z_PUB ? dy : -dy,
+        a:ia,b:ib,ax:tc(x),ay:tc(y),bx:tc(nx),by:tc(ny) }); }
   }
   setLayer(L0); return (S.zEdges = E);
 }
@@ -4362,7 +4396,8 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const far = tactical ? 1e9 : 520;
   for (const e of zoneEdges()) {
     const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d > far) continue;
-    const col = zoneCol(e.k, e.allow), a = tactical ? 0.8 : Math.max(0.25, 0.85 - d / 700);
+    const to=dist(P.x,P.y,e.ax,e.ay)<=dist(P.x,P.y,e.bx,e.by)?e.b:e.a;
+    const col = to.k===Z_PUB?'170,200,235':zoneCol(to.k,to.allow), a = tactical ? 0.8 : Math.max(0.25, 0.85 - d / 700);
     ctx.strokeStyle = `rgba(${col},${a})`; ctx.lineWidth = 3; ctx.setLineDash([8, 5]); ctx.beginPath(); ctx.moveTo(e.x0, e.y0); ctx.lineTo(e.x1, e.y1); ctx.stroke(); ctx.setLineDash([]);
     const g = ctx.createLinearGradient(mx, my, mx + e.ix * 18, my + e.iy * 18); g.addColorStop(0, `rgba(${col},${a * 0.35})`); g.addColorStop(1, `rgba(${col},0)`);  // 금지 쪽으로 번지는 옅은 띠
     ctx.fillStyle = g; ctx.fillRect(Math.min(e.x0, e.x0 + e.ix * 18) - (e.ix ? 0 : 0), Math.min(e.y0, e.y0 + e.iy * 18), e.ix ? 18 : e.x1 - e.x0, e.iy ? 18 : e.y1 - e.y0);
@@ -4373,12 +4408,13 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > far) continue;
     ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
     const lo = Math.max(x + 60, cam.x - W / SCALE / 2 + 110 / SCALE), hi = Math.min(x + w - 60, cam.x + W / SCALE / 2 - 110 / SCALE), lx = lo <= hi ? clamp(x + w / 2, lo, hi) : x + w / 2;  // 구역이 화면에 걸쳐 있으면 이름표를 보이는 쪽으로
-    if ((!INK_STUDY||STAGE.id!=='m2'||input.scan||tactical)&&((d<320&&!chaseNow())||tactical)) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통과' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
+    if ((!INK_STUDY||STAGE.id!=='m2'||input.scan||tactical)&&((d<320&&!chaseNow())||tactical)) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통행 허용' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
   }
   // 가까운 문턱에 '출입 금지' 표지 (가장 가까운 하나만). 허가 옷을 입었으면 '통과'
-  if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && pZone() === Z_PUB) { bd = d; best = e; } }
-    if (best) { const ok = allowedBy(best.allow);
-      tag((best.x0 + best.x1) / 2 + best.ix * 26, (best.y0 + best.y1) / 2 + best.iy * 26, ok ? '통과 — ' + permitName(best.allow) : best.k === Z_HOS ? '적진' : '출입 금지', ok ? '#8fe0a4' : best.k === Z_HOS ? '#ff8a76' : '#f2b45a', 0.9); } }
+  if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && sightLine(P,mx,my,0,P.mode==='sneak',0)) { bd = d; best = e; } }
+    if (best) { const to=dist(P.x,P.y,best.ax,best.ay)<=dist(P.x,P.y,best.bx,best.by)?best.b:best.a,ok=to.k===Z_PUB||permitted(to);
+      const text=ok?(to.k===Z_PUB?'공개 구역':'통행 허용 — '+permitName(to.allow)):to.secure||!to.allow.length?'복장 통행 불가':to.allow.map(outfitName).join(' / ')+' 필요';
+      tag((best.x0 + best.x1) / 2, (best.y0 + best.y1) / 2,text,ok?'#b4cbe0':'#f2b45a',.95,null,2.3); } }
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
@@ -4389,12 +4425,45 @@ function drawSharpEye(g) {
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
   if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
   ctx.restore();
+  if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g)))tag(g.x,g.y-77,f>0?'신원 확인 중 · 거리 벌리기':'가까이서 신원 확인','#d7c6a3',1,null,2.3);
 }
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)
 function drawWarnRing(g) {
   if (g.state !== 'WARN' || !g.warnEnd) return; const f = clamp((g.warnEnd - S.t) / 4.5, 0, 1);
   ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
   ctx.strokeStyle = f > 0.35 ? 'rgba(242,170,70,.95)' : 'rgba(232,80,60,.95)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(g.x, g.y, 26, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke();
+}
+
+// Permission, observation and illegal work are separate facts. These readouts
+// query the same rules as perception; they never grant clearance or suppress AI.
+function accessReadout(at=S.player){
+  const zi=zoneInfo(at.x,at.y,at.z||0,flOf(at)),P=S.player,uniform=P.outfit?outfitName(P.outfit):'평상복';
+  if(!STAGE.zones)return{zi,allowed:false,text:uniform+' · 잠입 구역'};
+  if(zi.k===Z_PUB)return{zi,allowed:true,text:uniform+' · 공개 구역'};
+  if(permitted(zi))return{zi,allowed:true,text:permitName(zi.allow)+' · 통행 허용'};
+  return{zi,allowed:false,text:zi.secure||!zi.allow.length?'보안구역 · 복장으로 통행 불가':uniform+' · 통행 불가',need:zi.allow.map(outfitName).join(' / ')};
+}
+const ILLEGAL_WORK=new Set(['loot','pick','carry','dress','clean','camCable','camroom','window','vjump','ventIn']);
+function workRiskReadout(action){
+  const kind=action?.k==='pickup'&&action.p?.outfit?'dress':action?.k;
+  if(!ILLEGAL_WORK.has(kind))return null;
+  const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입'})[kind];
+  const camera=S.cams.find(c=>!c.search&&cameraAssessment(c,true).detectable);
+  if(camera)return{kind:'camera',camera,text:verb+' → CCTV 녹화 위험 · 시야 밖에서 작업'};
+  const witness=S.guards.find(g=>g.rawSightAt!=null&&S.t-g.rawSightAt>=0&&S.t-g.rawSightAt<.15&&g.rawSeen&&!g.dog&&!g.doomed&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state));
+  if(witness)return{kind:'witness',text:verb+' → 경비 목격 위험 · 시야 밖에서 작업'};
+  return{kind:'work',text:verb+'는 수상한 행동 · 복장과 별도 판정'};
+}
+function syncSecurityReadout(){
+  const el=$('accessLbl'),risk=$('actionRiskLbl');if(!el||!risk)return;
+  const active=!!STAGE.zones&&!STAGE.firstSteps;el.hidden=!active;risk.hidden=true;if(!active)return;
+  const access=accessReadout();el.textContent=access.text;el.dataset.access=access.allowed?'allowed':'denied';el.title=access.need?'필요한 복장: '+access.need:access.allowed?'통행 권한이다. 훔치기와 신원 확인은 별도 판정한다.':'이 구역의 출입 권한이 없다.';
+  const action=envAction(),work=workRiskReadout(action);
+  if(work){risk.hidden=false;risk.textContent=work.text;risk.dataset.risk=work.kind;}
+  else if(['up','fdown'].includes(action.k)&&action.l?.kind==='fstair'){
+    const l=action.l,fl=action.k==='up'?l.tfl:l.bfl,entry=accessReadout({x:l.x,y:l.y,fl,z:0});
+    risk.hidden=false;risk.textContent=(fl+1)+'층 진입 · '+(entry.allowed?'현재 복장 통행 허용':entry.zi.secure?'보안구역 · 복장 통행 불가':entry.need+' 필요');risk.dataset.risk=entry.allowed?'entry':'witness';
+  }
 }
 
 // 계단 그림·입구·이동·도착·NPC 길찾기가 함께 쓰는 층별 구조.
@@ -5032,6 +5101,14 @@ const CAM_FOV = 0.42, SL_FOV = 0.2, SL_R = 520;  // 서치라이트: 좁고 멀�
 const camFov = c => c.search ? SL_FOV : CAM_FOV;
 function cameraSees(c,x,y,light) { const d = dist(c.x, c.y, x, y); if (d > camRange(c, light)||smokeRayRange(c,x,y,d)<d-4) return 0; if (Math.abs(angDiff(c.a, Math.atan2(y - c.y, x - c.x))) > camFov(c)) return 0; if (castRay(c.x, c.y, Math.atan2(y - c.y, x - c.x), d) < d - 6) return 0; return c.search ? 1 - d / (SL_R + 80) : 1 - d / 360; }
 function camRange(c, light) { return c.search ? SL_R : light > 0.3 ? 300 : 135; }
+// The preview and live detector share geometry and permission tests. An allowed
+// uniform excuses ordinary passage, never work witnessed by the camera.
+function cameraAssessment(c,plannedWork=false){
+  const P=S.player;if(!camOn(c)||flOf(P)!==c.fl||P.hide||P.under||P.vent||P.z||P.wire)return{visible:0,detectable:false,reason:''};
+  const previous=CUR_F;setLayer(c.fl);let visible;try{visible=cameraSees(c,P.x,P.y,P.light);}finally{setLayer(previous);}
+  const known=knownFace({state:''}),illegal=plannedWork||!!suspAct(null),allowed=STAGE.zones&&pZoneEff({state:''})===Z_PUB;
+  return{visible,detectable:visible>0&&(!allowed||illegal||known),reason:illegal?'수상한 작업':known?'공유된 인상착의':pZoneInfo().secure?'보안구역 침입':'출입 권한 없음'};
+}
 // CCTV 관리실: 화면을 보는 사람이 있어야 CCTV가 경보로 이어진다. 관리실이 비면(쓰러뜨리면) 찍혀도 녹화만 된다
 const camWatcher = () => { if (!S.camRoom) return true; const op = npc('camop'); return !!op && !['DEAD', 'CAPTIVE', 'SLEEP', 'TERROR', 'ALERT'].includes(op.state) && !op.climb && !op.brawl && flOf(op) === S.camRoom.fl && !(op.z || 0) && dist(op.x, op.y, S.camRoom.x, S.camRoom.y) < 85; };
 function camReport(c, text, x, y) {
@@ -5049,9 +5126,7 @@ function updateCams(dt) {
     if (c.cool > 0) { c.cool -= dt; continue; }
     setLayer(c.fl);
     const sees = (x,y,light) => cameraSees(c,x,y,light);
-    let v = 0;
-    if (flOf(P) === c.fl && !P.hide && !P.under && !P.vent && !P.z && !P.wire) v = sees(P.x, P.y, P.light);
-    if (v > 0 && STAGE.zones && pZoneEff({state:''}) === Z_PUB && !suspAct(null) && !knownFace({ state: '' })) v = 0;  // 구역 판: 공개 구역의 손님(허가 옷 포함)은 찍혀도 문제없다 — 수상한 짓을 할 때만
+    const assessment=cameraAssessment(c),v=assessment.detectable?assessment.visible:0;
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (!STAGE.zones && S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
       c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
@@ -5075,9 +5150,10 @@ function drawCams(fl) {
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
       if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기
       else {
-      ctx.fillStyle = `rgba(255,60,60,${0.17 + c.meter * 0.2})`; path(R); ctx.fill();  // CCTV 시야: 자경대원 원뿔만큼 또렷하게
-      ctx.fillStyle = `rgba(255,60,60,${0.24 + c.meter * 0.25})`; path(135); ctx.fill();
-      ctx.strokeStyle = `rgba(255,110,110,${0.85 + c.meter * 0.15})`; ctx.lineWidth = 2.2; ctx.setLineDash([5, 5]); path(R); ctx.stroke(); ctx.setLineDash([]); }
+      const recording=c.seen&&c.meter>0,col=recording?'255,115,90':'157,182,210';
+      ctx.fillStyle = `rgba(${col},${0.09 + c.meter * 0.22})`; path(R); ctx.fill();
+      ctx.fillStyle = `rgba(${col},${0.12 + c.meter * 0.24})`; path(135); ctx.fill();
+      ctx.strokeStyle = `rgba(${col},${0.55 + c.meter * 0.4})`; ctx.lineWidth = 2.2; ctx.setLineDash([5, 5]); path(R); ctx.stroke(); ctx.setLineDash([]); }
     }
     ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.a);
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(-7, -5, 20, 12); ctx.fillStyle = c.broken ? '#4a4d55' : '#d8dbe2'; ctx.fillRect(-9, -6, 18, 11); ctx.fillStyle = '#2a2d34'; ctx.fillRect(7, -4, 5, 7);
@@ -5202,6 +5278,7 @@ function updateGuard(g, dt) {
   if (!vis && !sameF && flOf(g) >= 1 && !flOf(P) && !P.z && !P.hide && !P.under && !P.vent && !P.wire&&!stairHidden) vis = winSee(g, pv);  // 위층 창가의 사람은 창밖 거리를 내려다본다
   if (g.dog && sameF && !vis && !P.hide && !P.under && !P.vent && !P.z && !P.jump&&!stairHidden && dist(g.x, g.y, P.x, P.y) < 100 && los(g.x, g.y, P.x, P.y)) vis = 0.5;  // 냄새
   let zk = 1; const pz = STAGE.zones ? (g.police && g.beat ? Z_PUB : pZoneEff(g)) : Z_HOS;  // 순찰 경찰은 구역 출입을 따지지 않는다 (범행만 본다). 지구대를 지키는 경찰은 따진다
+  g.rawSeen=vis>0;g.rawSightAt=S.t; // Physical sight before an authorized passerby is ignored.
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
@@ -6017,7 +6094,7 @@ const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.
 // 구버전 저장의 '비번' 정보도 현재 '비밀번호' 단서와 같은 정보로 인식한다.
 const knows = s => (S.learned || []).some(t => t.replace(/비번/g, '비밀번호').includes(s.replace(/비번/g, '비밀번호')));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
-const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
+const SH = { camera:(c,work=false)=>cameraAssessment(c,work),access:at=>accessReadout(at),npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
   eliminated: t => { const g = npc(t); return !!g && targetEliminated(g); },
   detour: (t, x, y, stay, name, act) => detour(npc(t), x, y, stay, name, act), say: (t, text) => { const g = npc(t); if (g && g.state !== 'DEAD') gsay(g, text, 2.6); } };
 // 일과에서 벗어나 한 번 들르기 (배탈 → 화장실 등): 지금 가는 곳 앞에 끼워 넣고, 다 머물고 떠날 때 지운다. 일과표(sched)도 같이 끼워 이름표가 맞게
@@ -9808,10 +9885,10 @@ function updateChanges(dt) {
 // 연습(훈련장): 단계를 차례로 확인하고 다음 할 일을 알려 준다
 function updateTutorial(dt = 1/60) {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
-  if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input)){S.tutHold=0;return;}
+  if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input,SH)){S.tutHold=0;return;}
   // Let the new instruction render before accepting an already-satisfied condition.
   if(S.t-(S.tutStepAt??-1)<.35)return;
-  if(S.tutI<st.length&&st[S.tutI][1](S,S.player,input)){
+  if(S.tutI<st.length&&st[S.tutI][1](S,S.player,input,SH)){
     const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)return;}
     S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;play('switch',.45,1.5);
   }
@@ -11281,6 +11358,7 @@ function update(dt, present=true) {
   if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
+  if(STAGE.securityLesson&&cpReady()&&(S.player.disguiseBlown||(S.stats.camRec||0)>0)){endGame(false,S.player.disguiseBlown?'신원 확인 게이지가 찼다 — 거리나 시야를 끊자':'CCTV 게이지가 찼다 — 통행과 작업은 별도 판정이다');return;}
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
   updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt);  updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (!isTouch && e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 발각 · 추격'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(dt);
   if (S.timeLeft) {
@@ -11358,7 +11436,7 @@ function updateAlert(dt) {
 }
 let touchFrameCache=null;
 function touchPlayFrame(){
-  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden;
+  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden+'|'+($('stealth')?.offsetHeight||0);
   if(touchFrameCache?.key===key)return touchFrameCache;
   const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
@@ -12460,7 +12538,7 @@ function flushTags() {
       } if(at)break; }
       if(!at)continue;
     }
-    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!placed.some(p => hit(r, p))) { at = [y, r]; break; } }
+    if(!at) for (const dy of [0, -1, 1, -2, 2, -3]) { const y = t.y + dy * lh, r = tagBounds(t,t.x,y); if (!blocks.concat(placed).some(p => hit(r, p))) { at = [y, r]; break; } }
     if (!at) { if (t.pri < 2) continue; at = [t.y, tagBounds(t,t.x,t.y)]; }
     placed.push(at[1]); ACTION_R.push(at[1]); if(t.rows)drawEncounter(t.x,at[0],t.rows);else drawTag(t.x, at[0], t.text, t.col, t.alpha, t.key);
   }
@@ -13404,7 +13482,12 @@ function activeObserver() {
     if(g.dog||(g.civ&&!g.eyeWatching)||dist(g.x,g.y,S.player.x,S.player.y)>700)continue;
     const a=guardAwareness(g);if(!a.direct||!a.progress)continue;
     if(!best||a.progress>best.progress)best={...a,g};
-  }return best;
+  }
+  for(const c of S.cams||[]){
+    if(c.cool>0||!c.meter||!cameraAssessment(c).detectable)continue;
+    const progress=clamp(c.meter,0,1);if(!best||progress>best.progress)best={g:c,camera:true,phase:'check',color:'#f2b48f',progress,direct:true};
+  }
+  return best;
 }
 function encounterRows(P, ka, ga, pa) {
   if(actionBusy(P))return [];
@@ -13416,7 +13499,7 @@ function encounterRows(P, ka, ga, pa) {
     return rows;
   }
   if(victim&&ka.k!=='none')rows.push({key:key('atk'),text:ka.k==='none'?(koTap(victim)?'기절':'처치'):(ka.label||'기절').replace(/^달려들어 /,''),detail:ka.holdOnly?'길게 누르기':ka.hold?'길게 '+ka.hold:ka.stalk?'더 가까이':'',ready:ka.k!=='none'});
-  if(ga?.k==='grab'&&!['tB','t0','tL','tR'].includes(STAGE.id))rows.push({key:key('grab'),text:'붙잡기',detail:ga.reason||'',ready:ga.k==='grab'});
+  if(ga?.k==='grab'&&!['tB','t0','tC','tL','tR'].includes(STAGE.id))rows.push({key:key('grab'),text:'붙잡기',detail:ga.reason||'',ready:ga.k==='grab'});
   if(rows.length&&pa?.k==='steal')rows.push({key:key('env'),text:pa.label,detail:'',ready:true});
   return rows;
 }
@@ -13953,6 +14036,7 @@ function objectiveLines() {
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
   if(STAGE.steps)return L;
+  if(evidencePending()&&S.camRoom)L.push(['go','CCTV 기록 남음 — '+placeName(S.camRoom.x,S.camRoom.y,S.camRoom.fl)+' 보안실에서 삭제 · 전선 분리로는 지워지지 않음']);
   if (S.exitOpen && STAGE.steps && (S.tutI || 0) >= STAGE.steps.length) L.push(['go', '탈출 지점(노란 원)으로']);
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
@@ -13985,7 +14069,7 @@ function updateHUD(force) {
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=(S.cpStored?'저장됨':'이번 실행에 저장됨')+(isTouch?' · 메뉴에서 재시도':' · F9 재시도');} }
   drawWanted();
   const targets=S.spare?[]:S.guards.filter(g=>g.target),first=!!STAGE.firstGoal,total=targets.length+S.items.length+(first?1:0),done=targets.filter(g=>targetEliminated(g)).length+S.items.filter(i=>i.got).length+(first&&!pendingFirstGoal()?1:0);
-  const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':done===total&&evidencePending()?'기록 삭제 필요':`목표 ${done}/${total}`):'';
+  const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':`목표 ${done}/${total}`)+(evidencePending()?' · CCTV 기록 남음':''):'';
   setText(hud.objT, 'objT', (mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
   { const html = objectiveLines().map(([c, t, story]) => `<span class="ol ${c}">${story?`<button type="button" data-story-route="${story}">${t} · 추적</button>`:c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
@@ -14043,6 +14127,7 @@ function updateHUD(force) {
 }
 // 은신 상태 표시 (화면 위 가운데): 숨음 · 섞임 · 신원 확인 · 발각 + 이유 한 줄
 const STH_ICO = {
+  camera:'<svg viewBox="0 0 24 24"><path d="M3 7h13v10H3zM16 10l5-3v10l-5-3M7 17v4M4 21h9"/></svg>',
   hide: '<svg viewBox="0 0 24 24"><path d="M3 11c2.5 3.2 5.5 4.8 9 4.8s6.5-1.6 9-4.8"/><path d="M6.5 14.6l-1.6 2.2M12 15.8v2.6M17.5 14.6l1.6 2.2"/></svg>',
   blend: '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="8" r="3"/><path d="M2.5 20c.6-3.6 2.8-5.6 5.5-5.6s4.9 2 5.5 5.6M11.5 15.3c1.2-.6 2.9-.9 5-.9 2.7 0 4.9 2 5.5 5.6"/></svg>',
   risk: '<svg viewBox="0 0 24 24"><path d="M2.5 12c2.6-4 5.8-6 9.5-6s6.9 2 9.5 6c-2.6 4-5.8 6-9.5 6s-6.9-2-9.5-6z"/><path d="M5 12h14" opacity=".55"/><path class="f" d="M8.8 12a3.2 3.2 0 006.4 0z"/></svg>',
@@ -14051,6 +14136,7 @@ const STH_ICO = {
 };
 function updateStealth(lv) {
   const box = $('stealth'); if (!box || !S) return; const P = S.player;
+  syncSecurityReadout();
   { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
   const e = P.hide || P.under || P.vent ? 0 : S.expo || 0;
@@ -14061,17 +14147,19 @@ function updateStealth(lv) {
   const inBush = !P.z && tileAt(P.x, P.y) === 'B';
   let s, word, why;
   if (e === 2 || observer?.phase==='seen') { s = 'seen'; word = '발각'; why = banned ? zi.secure?'보안구역 침입':'무단 침입' : '신원 노출'; }
+  else if(observer?.camera){s='risk';word=observer.g.search?'서치라이트에 노출':'CCTV 녹화 게이지';why=cameraAssessment(observer.g).reason+' · 가득 차기 전에 시야 밖으로';}
   else if(P.hide?.spotted){s='risk';word='은신처 노출';why='들어가는 것을 봤다 · 다른 곳으로';}
-  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '얼굴 확인'; }
+  else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '복장이 허용돼도 가까이 오래 있으면 발각'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
   else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
+  else if(S.alevel>=2&&S.knownLooks?.[suspectLook()]&&!P.hide&&!P.hidden){s='risk';word='인상착의 공유됨';why='같은 차림을 알아보면 추격 · 시야 밖에서 변장';}
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다
   else if (e === 1 && !pub) { s = 'risk'; word = '들킬 수 있음'; why = inBush && !P.hidden ? '웅크려야 숨는다' : banned ? zi.secure?'보안구역 · 복장 통행 불가':'금지 구역 · 시야 안' : lv > 0.55 ? '빛 아래 · 시야 안' : '돌아보면 보인다'; }
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
-  else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '허용된 복장' : '공개 구역'; }
+  else if (pub) { s = 'blend'; word = '의심 없음'; why = disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
   else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
@@ -14079,10 +14167,12 @@ function updateStealth(lv) {
     const w = Math.round(Math.min(1, r) * 100) + '%'; if (hudCache.sthW !== w) { hudCache.sthW = w; $('sthWL').style.width = w; $('sthWR').style.width = w; } }
   if(s==='hide'&&S.alevel>=2&&(P.hide||P.hidden))why='수색 중 · 은신처도 확인한다';
   box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
+  const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
+  box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
   const k = s + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
-  const ico = P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
+  const ico = observer?.camera?'camera':P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
 }
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
@@ -14103,7 +14193,7 @@ function syncTools() {
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
-  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice)?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
+  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson)?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
   const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
 }
@@ -14148,7 +14238,7 @@ function showEnd(win, reason) {
     saveBest(STAGE.id + '_' + DKEY, rank); saveBest(STAGE.id, rank); clearStoredCP(STAGE.id);  // 깬 의뢰의 체크포인트는 지운다
   }
   $('endTitle').textContent = win ? (STAGE.tutorial ? '연습 끝' : '임무 완료') : '실패';
-  $('endSub').textContent = win ? (STAGE.endText ? STAGE.endText : STAGE.firstSteps ? '시야를 피해 숨고 소리로 시선을 돌렸다. 다음은 가까이 접근해 제압하는 연습이다.' : STAGE.skillPractice ? '동시 암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '은신 → 가까이 제압 → 몸 숨기기. 의뢰 01에서도 이 순서로 첫 순찰을 지나가자.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
+  $('endSub').textContent = win ? (STAGE.endText ? STAGE.endText : STAGE.firstSteps ? '시야를 피해 숨고 소리로 시선을 돌렸다. 다음은 가까이 접근해 제압하는 연습이다.' : STAGE.skillPractice ? '동시 암살과 연속 암살 연습을 마쳤다. 미션 완료와 업적 보상으로 필요한 기술을 배울 수 있다.' : STAGE.toolPractice ? '도구 연습을 마쳤다. 기술 트리에서 필요한 장비를 골라 배우자.' : STAGE.id === 'tI' ? '의뢰 01을 시작할 수 있다.' : STAGE.id === 't0' ? '은신 → 가까이 제압 → 몸 숨기기. 다음은 복장 통행과 CCTV 판정을 익힌다.' : STAGE.tutorial ? '고급 기술까지 익혔다. 이제 의뢰 01부터 시작하자.' : STAGE.endText || '') : (reason || '') + ' 경로와 타이밍을 바꿔 다시 시도해 보자.';
   { const rb = $('endRank'); if (rb) { rb.hidden = !(win && rank); rb.dataset.r = rank; rb.innerHTML = rank ? `<small>등급</small><b>${rank}</b>` : ''; } }
   if (win && STAGE.spare) { const tg = S.guards.find(g => g.target); $('endSub').textContent += ($('endSub').textContent ? ' · ' : '') + (tg && !targetEliminated(tg) ? STAGE.spare.endSpared : S.realized ? STAGE.spare.endRealized : STAGE.spare.endKilled); }
   const ttl = win ? playTitle(st) : null;
@@ -14207,7 +14297,7 @@ function renderStageList() {
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => mainContract(s)), archive = list.filter(([s]) => !s.tutorial && !s.city && !mainContract(s)), city = list.filter(([s]) => s.city);
+  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => mainContract(s)), archive = list.filter(([s]) => !s.tutorial && !s.city && !mainContract(s)), city = list.filter(([s]) => s.city);
   $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
@@ -14795,7 +14885,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
-    contractRouteGoal,cameraCableReachable,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
+    contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,

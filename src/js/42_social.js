@@ -8,7 +8,7 @@ const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.
 // 구버전 저장의 '비번' 정보도 현재 '비밀번호' 단서와 같은 정보로 인식한다.
 const knows = s => (S.learned || []).some(t => t.replace(/비번/g, '비밀번호').includes(s.replace(/비번/g, '비밀번호')));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
-const SH = { npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
+const SH = { camera:(c,work=false)=>cameraAssessment(c,work),access:at=>accessReadout(at),npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
   eliminated: t => { const g = npc(t); return !!g && targetEliminated(g); },
   detour: (t, x, y, stay, name, act) => detour(npc(t), x, y, stay, name, act), say: (t, text) => { const g = npc(t); if (g && g.state !== 'DEAD') gsay(g, text, 2.6); } };
 // 일과에서 벗어나 한 번 들르기 (배탈 → 화장실 등): 지금 가는 곳 앞에 끼워 넣고, 다 머물고 떠날 때 지운다. 일과표(sched)도 같이 끼워 이름표가 맞게
