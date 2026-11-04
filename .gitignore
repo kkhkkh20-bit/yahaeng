@@ -107,3 +107,8 @@ build/test_logs/
 /build/review-v172/
 
 /build/security-v173/
+
+# Godot editor caches and local exports (published web artifacts live in public/).
+/godot/.godot/
+/godot/export_credentials.cfg
+/build/godot-vip/
