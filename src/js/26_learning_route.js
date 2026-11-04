@@ -1,5 +1,5 @@
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['p0','m2','m4','m6'];
+const LEARNING_ROUTE=['p0','m2','m4','m6','m7'];
 const OPTIONAL_LESSON_NEXT={tB:'t0',t0:'tC',tC:'m2',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||st.openingContract&&mainContracts().some(stageCleared);
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}

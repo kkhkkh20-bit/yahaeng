@@ -8,13 +8,13 @@ async def main():
   b=await p.chromium.launch();pg=await b.new_page();errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
   await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!__game')
   await pg.locator('#btnLedger').click()
-  assert await pg.locator('#stageList > button.stage:not(.tut)').count()==4
+  assert await pg.locator('#stageList > button.stage:not(.tut)').count()==5
   assert await pg.locator('.lg-archive').first.locator('button.stage').count()==3
   result=await pg.evaluate('''()=>{
    const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setLayer(0);G.S.player.x=G.S.player.y=-9999;return G.S},tick=n=>{for(let i=0;i<n;i++){G.S.t+=1/60;G.updatePlayer(1/60)}};
-   check(G.mainContracts().map(s=>s.id).join()==='m2,m4,m6','main contract selection');check(G.mainContracts().map(G.contractNumber).join()==='01,02,03','main contract numbering');
+   check(G.mainContracts().map(s=>s.id).join()==='m2,m4,m6,m7','main contract selection');check(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04','main contract numbering');
    let rooms=0;
-   for(const id of ['m2','m4','m6']){
+   for(const id of ['m2','m4','m6','m7']){
     const S=fresh(id),P=S.player,cr=S.camRoom;check(cr&&G.STAGE.securityEvidence,'missing evidence terminal '+id);G.setLayer(cr.fl);check(!G.solidAt(cr.tx,cr.ty),'terminal inside wall '+id);G.setLayer(0);
     for(const g of S.guards.filter(g=>['vipEscort','camop','contact'].includes(g.tag))){G.setLayer(g.fl);check(!G.solidAt(Math.floor(g.x/48),Math.floor(g.y/48)),'special actor inside wall '+id+' '+g.tag)}G.setLayer(0);rooms++;
     S.guards=[];S.items.forEach(i=>i.got=true);S.corpses=[];G.checkObjective();check(S.exitOpen&&!G.evidencePending(),'clean route forced to erase evidence '+id);
@@ -34,7 +34,7 @@ async def main():
    {const S=fresh('m2'),g=S.guards.find(g=>g.tag==='vipEscort'),L=S.guards[g.follow];S.player.x=S.player.y=-9999;Object.assign(L,{x:40.5*48,y:6.5*48,fl:0,z:0});Object.assign(g,{x:40.5*48,y:10.5*48,fl:0,z:0,path:null});for(let i=0;i<360;i++){S.t+=1/60;G.followLeader(g,1/60,60)}check(g.waitingPrivacy&&g.y>8*48&&Math.hypot(g.x-40.5*48,g.y-9.5*48)<40,'escort follows into private toilet');L.x=29.5*48;L.y=10.5*48;G.followLeader(g,1/60,60);check(!g.waitingPrivacy&&g.path?.length,'escort does not resume after privacy');}
    // Model a v90 save inside the now removed upper floor, including a hidden KO target.
    {const S=fresh('m4'),P=S.player;P.hp=2;P.keys.red=true;S.items[0].got=true;G.saveCheckpoint();const cp=G.CP,Q=cp.S.player;cp.S.layoutVersion=0;Object.assign(Q,{x:16.5*48,y:20.5*48,fl:1,z:0});const old={x:Q.x,y:Q.y,tx:16,ty:20,fl:1,type:'bed',furn:true,bodies:1,cap:1};cp.S.hides.push(old);Q.hide=old;const v=cp.S.guards.find(g=>g.target&&g.tag==='vip');v.state='DEAD';v.unconscious=true;cp.S.corpses.push({g:v,target:true,ko:true,stashed:true,container:old,x:Q.x,y:Q.y,fl:1,z:0});for(let y=17;y<=24;y++)for(let x=14;x<=20;x++){cp.grids[0][y][x]='#';cp.grids[1][y][x]='w'}cp.S.guards=cp.S.guards.filter(g=>!['vipEscort','camop','contact'].includes(g.tag));cp.S.guards.forEach((g,i)=>g.id=i);cp.S.notes=[];cp.S.camRoom=null;check(G.loadCheckpoint(),'old save refused');const R=G.S,A=R.player,c=R.corpses.find(c=>c.target&&c.ko);check(A.hp===2&&A.keys.red&&R.items[0].got,'old save loses progress');check(A.fl===0&&A.hide?.type==='box'&&c.container===A.hide&&c.ko&&c.stashed,'hidden player/target not recovered into real yard container');G.setLayer(0);check(G.tileG(17,20)!=='#'&&G.tileG(17,20)!=='V','old invisible walls remain');check(!R.ladders.some(l=>l.kind==='ladder'&&l.tx===19&&l.ty===21)&&G.rLv(18,21)===1,'legacy save restores retired ladder or loses designated loading cargo');check(R.guards.some(g=>g.tag==='contact')&&R.notes.length&&R.camRoom,'old save misses new mission sources');}
-   return{mainContracts:3,securityRooms:rooms,physicalCode:true,sameBuildingReuse:true,privacySeparation:true,oldSaveRecovery:true};
+   return{mainContracts:4,securityRooms:rooms,physicalCode:true,sameBuildingReuse:true,privacySeparation:true,oldSaveRecovery:true};
   }''')
   assert not errors,errors;print('PASS',result);await b.close()
 asyncio.run(main())

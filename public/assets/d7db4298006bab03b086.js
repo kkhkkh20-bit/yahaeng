@@ -790,9 +790,73 @@ const STAGES = [
   well: 'manhole', kunai: 3, coins: 3,
   hints: ['도로에 선 차 옆에서 [행동] — 운전자를 끌어내고 탄다. 사람들이 보면 수배가 붙는다.', '빨간 표시는 의뢰 장소다. 앞에서 [행동]을 누르면 의뢰가 시작된다.']
 },
+// Episode 04: a compact depot. A legitimate uniform, a physical archive key,
+// or the rear duct offer different approaches without granting combat skills.
+{
+  id:'m7',no:'07',name:'새벽배송',sub:'의뢰 04',fee:'180만',
+  mission:'운송책 오태식 처치 · 운송명세서 회수 후 탈출',
+  targetNames:{broker:'오태식'},itemName:'운송명세서',itemNames:['운송명세서'],priorityTarget:true,
+  brief:'제비의 무전에 야간 집하장 이름이 남아 있었다. 운송책 오태식은 정문에서 출고를 확인한 뒤 창고를 돈다. 그를 처리하고 분류창고 서쪽 기록보관실의 운송명세서를 가져온다. 택배 조끼는 작업장·배송 사무실의 통행을 허용한다. 기록보관실은 별도 제한 구역이며, 오태식의 파란 카드로 문을 열거나 북쪽 거리의 환풍구로 우회할 수 있다.',
+  endText:'운송명세서에서 다음 인계 장소를 찾았다. 새벽 배송망은 아직 움직이고 있다.',
+  W:40,H:28,start:[5,23],exit:[1.5,24],exitName:'서쪽 시장 골목',exits:[{at:[38,24],name:'동쪽 큰길',r:42}],startA:-Math.PI/2,
+  noRefine:true,floors:true,pspd:1.3,gspd:1,residents:0,well:'manhole',workBuildings:[0,1],securityEvidence:true,
+  build(m){
+    m.fill(0,0,39,27,',');m.rect(0,0,39,27);m.fill(1,21,38,25,'.');m.fill(1,21,38,21,'=');m.fill(1,25,38,25,'=');
+    // Depot fence, a broad staffed entrance and a rear public service lane.
+    m.rect(10,3,37,20);m.fill(12,20,15,20,'=');m.fill(11,4,36,19,'h');
+    m.bld(16,4,35,12,1,[[25,12],[16,7]],'h');m.set(25,12,'d');m.set(16,7,'d');
+    // Physically separate the records cage from normal sorting/work aisles.
+    m.fill(23,5,23,11,'#');m.set(23,9,'d');
+    m.villa(25,14,35,20,2,{kind:'shop',use:['office','office'],signs:['배송 사무실','배차실'],name:'배송 사무실',back:true});
+    m.villa(1,13,8,20,1,{kind:'shop',use:['food'],signs:['기사 식당'],name:'기사 식당'});
+    m.fill(16,19,17,19,'C'); // Loading pallets screen the first cleanup from the yard patrol.
+    m.many('H',[[13,22],[7,11],[24,13]]);m.many('W',[[8,24],[38,4]]);
+    m.many('B',[[9,5],[9,18],[11,22],[22,13],[36,8],[36,19]]);
+    m.many('T',[[2,4],[6,9],[3,12]]);m.many('O',[[11,9]]);
+    m.car(18,23,2);m.car(31,23,0);[5,22,36].forEach(x=>m.pole(x,25,2));
+    mat(m,'r',[[12,5],[13,5],[14,5]]);mat(m,'p',[[30,13],[31,13]]);
+  },
+  wires:[...chain(25,[5,22,36])],
+  buildingNames:{0:'분류창고',1:'배송 사무실',2:'기사 식당'},
+  fixedFurn:[{x:19,y:6,w:2,t:'desk'},{x:17,y:5,t:'locker'},{x:21,y:5,t:'shelf'},
+    {x:26,y:5,w:2,t:'shelf'},{x:30,y:5,w:2,t:'shelf'},{x:26,y:8,w:2,t:'shelf'},{x:30,y:8,w:2,t:'shelf'},{x:19,y:8,w:1,h:3,r:1,t:'shelf'},{x:6,y:16,t:'locker'}],
+  zones:[[11,4,36,19,'res',null,'집하장 작업 구역',['courier','crew']],
+    [16,4,35,12,'res',null,'분류창고',['courier','crew']],
+    [17,5,22,11,'res',null,'기록보관실 · 복장 통행 불가',[]],
+    [1,13,8,20,'pub']],zoneAllow:['courier','crew'],
+  locks:[{at:[23,9],key:'blue'},{at:[16,7],key:'blue'}],closedDoors:[[23,9],[16,7]],keyPurposes:{blue:'분류창고 서쪽 기록보관실'},
+  vents:[[[15,2,'s',[0,-1]],[18,10],[28,10]]],
+  props:[{id:'depotVest',name:'예비 택배 조끼',outfit:'courier',at:[6,17],surface:{b:2,t:'locker',u:.5}}],
+  guards:[
+    {kind:'t',target:true,tag:'broker',at:[13,20],startPause:32,still:true,briefWhere:'집하장 정문 · 출고 확인',post:0,key:'blue',schedKey:'dispatch',sched:[
+      {at:[13,20],stay:24,name:'정문 출고 확인',act:'서류 확인'},
+      {at:[24,16],stay:12,name:'상차 대기장',act:'통화'},
+      {at:[28,10],stay:10,name:'분류창고',act:'화물 확인'}]},
+    {kind:'g1',at:[16,18],post:0,still:true,radio:false},
+    {kind:'g2',route:[[12,14,4],[22,14,3],[22,18,3],[12,18,4]],radio:true},
+    {kind:'g1',route:[[21,10,5],[21,6,4]],still:true,tag:'archiveGuard',radio:false},
+    {kind:'g1',b:1,fl:0,patrol:true,from:'L',to:'R',radio:false},
+    {kind:'g1',b:1,fl:1,at:'S',post:180,tag:'camop',radio:true},
+    {kind:'civ',outfit:'courier',at:[4,21],post:90,still:true,tag:'driver'},
+    {kind:'civ',outfit:'courier',route:[[24,16,5],[19,16,4]],tag:'loader'},
+    {kind:'civ',b:2,at:'L',post:90,tag:'cook'}],
+  items:[[19,7]],lootFurniture:['desk'],
+  lamps:[[6,22,180,1],[13,19,150,1],[20,16,190,1],[36,13,150,1]],
+  cams:[[28,6,90,55]],camRoom:{b:1,fl:1,at:'S'},
+  intel:[{g:[6,8],key:0,gives:'depot',learn:'기사 식당에 예비 택배 조끼가 있다. 입고 걸으면 작업장을 통과한다.',every:18,first:3,
+    lines:[[0,'오늘 조끼 안 가져왔는데.'],[1,'식당에 예비 조끼 있어. 그거 입고 들어가.']] }],
+  notes:[{pos:[5,18],title:'출고 안내',lines:['기록보관실은 분류창고 서쪽. 파란 카드는 운송책 오태식이 관리한다.','북쪽 거리 환풍구는 창고 바닥 덕트와 이어진다.'],gives:'dispatch',learn:'북쪽 환풍구로 기록보관실에 우회할 수 있다.'}],
+  stories:[{id:'rear-duct',name:'북쪽 점검 덕트',reveal:(S,h)=>h.knows('환풍구'),steps:[
+    {text:'북쪽 거리의 환풍구로 이동',at:[15,2,0],done:S=>!!S.player.vent||S.items[0].got},
+    {text:'덕트 서쪽 갈림길로 기록보관실 잠입',at:[18,10,0],done:S=>S.items[0].got}]}],
+  challenges:['ghost','nobody','noalarm','nolure'],fastT:420,kunai:0,coins:0,
+  hints:['오태식은 정문 출고 확인을 마친 뒤 상차 대기장과 창고를 돈다. 경비는 의뢰 대상이 아니다.',
+    '택배 조끼로 작업장과 사무실을 걸어 다닐 수 있다. 기록보관실의 문턱은 별도 통행 제한이다.',
+    '파란 카드는 오태식이 지닌다. 북쪽 점검 덕트는 카드를 사용하지 않는 다른 길이다.']
+},
 ];
 // 쉬운 것부터: 장부 털기 → VIP → 잔칫날 → 대청소 → 본부 (구역 규칙 판이 앞, 수고비도 이 순서로 오른다. 데모 의뢰 1~3이 이어진다)
-(o => STAGES.sort((a, b) => (a.city ? 99 : o.indexOf(a.id)) - (b.city ? 99 : o.indexOf(b.id))))(['m1', 'm2', 'm3', 'm4', 'm5', 'm6']);
+(o => STAGES.sort((a, b) => (a.city ? 99 : o.indexOf(a.id)) - (b.city ? 99 : o.indexOf(b.id))))(['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7']);
 STAGES.forEach((st, i) => { st.no = String(i + 1).padStart(2, '0'); st.sub = st.sub.replace(/^임무( \d)? ·/, `임무 ${i + 1} ·`); });
 // ───────── 연습: 훈련장 — 한 칸씩 기술을 익힌다 (목록 맨 앞에 보인다)
 // 연습은 둘로 나눈다: 기본(약 3분, 첫 의뢰 전에 필요한 것만)과 고급(선택). 같은 지도를 쓰고, 쓰지 않는 자경대원은 빼 둔다
@@ -1178,7 +1242,9 @@ const DIALOGUE = {
   m5: [['master', '보스는 본부 2층에 있습니다. 장부는 1층 금고에 있어요.'],
        ['master', '정문 경비는 직원 얼굴을 압니다. 복장만 바꿔서는 오래 버티기 어렵습니다.']],
   m6: [['hero', '감방이다. 장비도 전부 없어졌다.'],
-       ['hero', '제비도 잡혀 왔을 텐데. 나가서 확인해야겠어.']]
+       ['hero', '제비도 잡혀 왔을 텐데. 나가서 확인해야겠어.']],
+  m7: [['hero', '제비의 무전에 나온 집하장이다. 오태식은 지금 정문에서 출고를 확인한다.'],
+       ['hero', '그자를 처리하고 운송명세서를 가져오자. 다음 인계 장소가 적혀 있을 거야.']]
 };
 const BARKS = {
   alert: ['거기 멈춰!', '침입자다! 지원 요청!', '저 사람 잡아!'],
@@ -1426,7 +1492,7 @@ function moveStageFixtures(st, grid, saved = false) {
 
 // Shared physical rules for the current 2D streets. Training rigs and archived
 // episodes keep their authored traversal; utility fixtures are not access routes.
-const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (/^m[1-6]$/.test(st.id) || st.city);
+const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (/^m[1-9]\d*$/.test(st.id) || st.city);
 function physicalAccess(l) {
   if (!groundedWorld()) return true;
   if ((STAGE.retiredClimbs || []).some(([x,y])=>l.tx===x&&l.ty===y)) return false;
@@ -2937,7 +3003,7 @@ function retryContract(){
 }
 
 // Achievement flags are the receipt: replaying a cleared goal cannot mint points.
-const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched'};
+const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched',m7:'ghost'};
 function skillRewardRows(stage,record=loadCh()){
  if(stage.tutorial||stage.city||stage.openingContract||!stage.challenges)return[];
  const main=Object.hasOwn(SKILL_SIGNATURES,stage.id),saved=record[stage.id]||{},ids=[...new Set([...stage.challenges,...(stage.legacyChallenges||[])])];
@@ -3119,8 +3185,9 @@ function assassinPreview(){
   return scan.choice;
 }
 
-// 주요 의뢰는 서로 다른 잠입 문제 세 개에 집중한다. 이전 의뢰의 기록·저장은 보존한다.
-const MAIN_CONTRACTS = ['m2', 'm4', 'm6'];
+// The campaign continues after the prison escape. Existing contract IDs keep
+// their records, saves and displayed numbers.
+const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
 const contractNumber = s => mainContract(s) ? String(MAIN_CONTRACTS.indexOf(s.id) + 1).padStart(2, '0') : s.no;
@@ -3133,7 +3200,7 @@ function recordCameraEvidence(c) {
 }
 
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['p0','m2','m4','m6'];
+const LEARNING_ROUTE=['p0','m2','m4','m6','m7'];
 const OPTIONAL_LESSON_NEXT={tB:'t0',t0:'tC',tC:'m2',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||st.openingContract&&mainContracts().some(stageCleared);
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
@@ -6907,6 +6974,7 @@ function updateActionFlow(){
 function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선생' : ({ vip: '클럽 실장', collector: '수금원', boss: '조직 두목' }[g.tag] || '표적')); }
 function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
+  if(STAGE.keyPurposes?.[k])return STAGE.keyPurposes[k];
   return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
 function vipRoutine(g) {
@@ -6943,7 +7011,7 @@ function initMissionPlan() {
     const bi = bldAt(Math.floor(x / TILE), Math.floor(y / TILE)), b = BLD[bi];
     S.targetBrief[g.id] = { x: b ? (b.x0 + b.x1 + 1) * TILE / 2 : Math.round(x / (TILE * 6)) * TILE * 6,
       y: b ? (b.y0 + b.y1 + 1) * TILE / 2 : Math.round(y / (TILE * 6)) * TILE * 6, fl: d?.fl || 0, z: 0,
-      where: b ? (b.name || b.plate || '활동 건물') + (d?.fl ? ' '+(d.fl+1)+'층' : '') : g.tag === 'collector' ? '큰길 · 수금 동선' : '알려진 활동 구역', area: true };
+      where: d?.briefWhere || (b ? (b.name || b.plate || '활동 건물') + (d?.fl ? ' '+(d.fl+1)+'층' : '') : g.tag === 'collector' ? '큰길 · 수금 동선' : '알려진 활동 구역'), area: true };
   }
 }
 function canObserveTarget(g) {
@@ -7178,6 +7246,16 @@ function updateOpeningContract(){
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m7'){
+    const g=npc('broker'),it=S.items[0];
+    if(g&&!targetEliminated(g)){const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};}
+    if(it&&!it.got){
+      const key=!S.player.keys?.blue&&S.keyDrop?.key==='blue'?S.keyDrop:null;
+      if(key)return{x:key.x,y:key.y,fl:flOf(key),z:0,text:'파란 카드 줍기',where:'운송책이 떨어뜨린 기록보관실 카드',routeGuide:true};
+      return{x:it.x,y:it.y,fl:flOf(it),z:0,text:'분류창고 서쪽에서 운송명세서 회수',where:S.player.keys?.blue?'파란 카드 · 기록보관실 문':'북쪽 거리 환풍구로 우회 가능',routeGuide:true};
+    }
+    return null;
+  }
   if(STAGE.id==='m6'){
     const it=S.items[0];if(!it||it.got)return null;
     return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
@@ -14613,7 +14691,7 @@ function renderStageList() {
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
     const passport=s.id==='m2'?'<span class="st-rank">공략 '+Object.keys(vipApproachRecords()).length+'/'+VIP_APPROACHES.length+'</span>':'';
-    const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
+    const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수',m7:'운송책 · 운송명세서 회수'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>

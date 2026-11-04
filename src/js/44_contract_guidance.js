@@ -1,6 +1,16 @@
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m7'){
+    const g=npc('broker'),it=S.items[0];
+    if(g&&!targetEliminated(g)){const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};}
+    if(it&&!it.got){
+      const key=!S.player.keys?.blue&&S.keyDrop?.key==='blue'?S.keyDrop:null;
+      if(key)return{x:key.x,y:key.y,fl:flOf(key),z:0,text:'파란 카드 줍기',where:'운송책이 떨어뜨린 기록보관실 카드',routeGuide:true};
+      return{x:it.x,y:it.y,fl:flOf(it),z:0,text:'분류창고 서쪽에서 운송명세서 회수',where:S.player.keys?.blue?'파란 카드 · 기록보관실 문':'북쪽 거리 환풍구로 우회 가능',routeGuide:true};
+    }
+    return null;
+  }
   if(STAGE.id==='m6'){
     const it=S.items[0];if(!it||it.got)return null;
     return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};

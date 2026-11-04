@@ -1,5 +1,5 @@
 // Achievement flags are the receipt: replaying a cleared goal cannot mint points.
-const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched'};
+const SKILL_SIGNATURES={m2:'accident',m4:'nobody',m6:'untouched',m7:'ghost'};
 function skillRewardRows(stage,record=loadCh()){
  if(stage.tutorial||stage.city||stage.openingContract||!stage.challenges)return[];
  const main=Object.hasOwn(SKILL_SIGNATURES,stage.id),saved=record[stage.id]||{},ids=[...new Set([...stage.challenges,...(stage.legacyChallenges||[])])];

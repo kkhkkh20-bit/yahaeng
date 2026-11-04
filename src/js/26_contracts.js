@@ -1,5 +1,6 @@
-// 주요 의뢰는 서로 다른 잠입 문제 세 개에 집중한다. 이전 의뢰의 기록·저장은 보존한다.
-const MAIN_CONTRACTS = ['m2', 'm4', 'm6'];
+// The campaign continues after the prison escape. Existing contract IDs keep
+// their records, saves and displayed numbers.
+const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
 const contractNumber = s => mainContract(s) ? String(MAIN_CONTRACTS.indexOf(s.id) + 1).padStart(2, '0') : s.no;

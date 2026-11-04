@@ -2,6 +2,7 @@
 function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선생' : ({ vip: '클럽 실장', collector: '수금원', boss: '조직 두목' }[g.tag] || '표적')); }
 function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
+  if(STAGE.keyPurposes?.[k])return STAGE.keyPurposes[k];
   return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
 function vipRoutine(g) {
@@ -38,7 +39,7 @@ function initMissionPlan() {
     const bi = bldAt(Math.floor(x / TILE), Math.floor(y / TILE)), b = BLD[bi];
     S.targetBrief[g.id] = { x: b ? (b.x0 + b.x1 + 1) * TILE / 2 : Math.round(x / (TILE * 6)) * TILE * 6,
       y: b ? (b.y0 + b.y1 + 1) * TILE / 2 : Math.round(y / (TILE * 6)) * TILE * 6, fl: d?.fl || 0, z: 0,
-      where: b ? (b.name || b.plate || '활동 건물') + (d?.fl ? ' '+(d.fl+1)+'층' : '') : g.tag === 'collector' ? '큰길 · 수금 동선' : '알려진 활동 구역', area: true };
+      where: d?.briefWhere || (b ? (b.name || b.plate || '활동 건물') + (d?.fl ? ' '+(d.fl+1)+'층' : '') : g.tag === 'collector' ? '큰길 · 수금 동선' : '알려진 활동 구역'), area: true };
   }
 }
 function canObserveTarget(g) {

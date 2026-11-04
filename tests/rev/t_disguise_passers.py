@@ -35,7 +35,7 @@ async def main():
    for(const fl of [0,1,2]){Object.assign(P,{x:360,y:456,fl,z:0,outfit:'crew',disguiseBlown:false});G.setLayer(fl);ok(G.accessReadout().allowed,'guard cannot use normal office floor '+fl);}
    Object.assign(P,{x:264,y:312,fl:0});G.setLayer(0);ok(!G.accessReadout().allowed&&G.accessReadout().zi.secure,'vault clearance was removed');
    Object.assign(P,{x:1224,y:312,fl:1});G.setLayer(1);ok(!G.accessReadout().allowed&&G.accessReadout().zi.secure,'private club upper floor lost clearance');
-   ok(document.querySelector('#pauseVersion').textContent.includes('v184'),'in-game version missing');results.push('office circulation accepts guard uniform; vault and private club keep clearance; menu shows runtime version');
+   ok(document.querySelector('#pauseVersion').textContent.includes(window.__BUILD_VERSION__),'in-game version missing');results.push('office circulation accepts guard uniform; vault and private club keep clearance; menu shows runtime version');
    return results;
   }''');assert not errors,errors
   out=R/'build/disguise-v184';out.mkdir(exist_ok=True);(out/'rules.json').write_text(json.dumps(checks,ensure_ascii=False,indent=2));print('PASS',checks);await b.close()
