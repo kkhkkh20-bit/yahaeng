@@ -5,20 +5,7 @@ function contractRouteGoal(){
     const it=S.items[0];if(!it||it.got)return null;
     return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
   }
-  if(STAGE.id==='m2'){
-    const P=S.player,vip=npc('vip'),item=S.items[0];
-    if(item&&!item.got){
-      if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'장부의 단서 · 야시장에서 금고 번호 엿듣기',where:'공개 구역 · 경비를 피해 걸어서 갈 수 있다',marker:'장부 단서',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
-      return{text:'사무동 1층 금고에서 장부 회수',where:'직원 전용 구역 · 변장이나 다른 진입로 이용',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
-    }
-    if(vip&&!targetEliminated(vip)){
-      const r=rendezvousState();
-      if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
-      if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
-      const at=targetKnowledge(vip);return{...at,g:vip,id:'target:'+vip.id,text:'의뢰: '+missionTargetText(vip,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};
-    }
-    return null;
-  }
+  if(STAGE.id==='m2')return vipContractGoal();
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
   const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),why,at.where].filter(Boolean).join(' · '),routeGuide:true};};

@@ -178,7 +178,7 @@ function nextGoal() {
   { const opening=openingGoal();if(opening)return opening; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
-  if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at; return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, story: st.d.id, storyName: st.d.name }; } }
+  if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
   return pinnedMissionGoal();
 }
 // 목표 목록: 무엇을 어디서 (건물 이름·층) — 한 줄씩, 끝낸 것은 줄 긋기
@@ -384,7 +384,7 @@ function showEnd(win, reason) {
     if (STAGE.challenges) {
       loadSkillTree();const all = loadCh(), before=skillRewardRows(STAGE,all), mine = all[STAGE.id] || (all[STAGE.id] = {}); mine._clear = true; if (S.mod) mine['mod_' + S.mod] = true;
       S.chRes = STAGE.challenges.map(id => { const ok = !!(CH[id] && CH[id][1]()), fresh = ok && !mine[id]; if (ok) mine[id] = true; return [id, ok, fresh, !!mine[id]]; });
-      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);saveCh(all);
+      S.skillRewards=skillRewardRows(STAGE,all).filter(r=>r.earned&&!before.find(b=>b.id===r.id)?.earned);recordVipApproach(all);saveCh(all);
     }
     const n = bonus.filter(b => b[1]).length;
     rank = n === 5 ? '그림자' : n === 4 ? '암살자' : n === 3 ? '침입자' : '소란꾼';
@@ -414,6 +414,8 @@ function showEnd(win, reason) {
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if(win&&!STAGE.tutorial&&!STAGE.openingContract){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
+  {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
+  if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = !(win && learningNext() >= 0);
@@ -441,12 +443,13 @@ function renderStageList() {
     const mods=!s.tutorial&&modCount?`<span class="st-rank">추가 조건 ${modCount}/4</span>`:'';
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
+    const passport=s.id==='m2'?'<span class="st-rank">공략 '+Object.keys(vipApproachRecords()).length+'/'+VIP_APPROACHES.length+'</span>':'';
     const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${fee}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));

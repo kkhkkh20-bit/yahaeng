@@ -13,7 +13,8 @@ function recordMissionOutcome() {
   if(STAGE.id!=='m2' || S.missionApproach)return;
   const g=npc('vip');if(!g || !targetEliminated(g))return;
   const c=S.corpses.find(c=>c.target);
-  S.missionApproach=c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
+  const exact=VIP_APPROACHES.find(d=>d.id===c?.vipApproach);
+  S.missionApproach=exact?exact.name:c?.vipApproach==='backdoor'?'VIP룸 뒷문 접근':c?.vipApproach==='direct'?'직접 접근':c && c.accident && S.traps.some(t=>t.k==='drop'&&t.used&&inZone(c,t.hit))?'간판 사고':
     c && S.vipPlan?.phase==='sick' && inRect(c,[39,6,41,7,0])?'화장실 유인':S.rendezvous?.calls&&S.rendezvous.waiting>0&&c&&dist(c.x,c.y,S.rendezvous.room.x,S.rendezvous.room.y)<120?'장부로 불러낸 매복':S.vipBackDoorUsed?'VIP룸 뒷문 접근':c&&S.vipSmokingSeen&&inRect(c,[25,15,29,16,0])?'흡연 동선 매복':'직접 접근';
 }
 function serviceCell(tx,ty,fl) {
@@ -92,7 +93,7 @@ function syncMissionTracking(){
   if(S.storyTrackManual&&!trackedStory()){S.storyTrackManual=false;S.storyTrack=null;}
 }
 function selectAutoGoal(){
-  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;
+  S.goalManual=false;S.goalPin=null;S.storyTrack=null;S.storyTrackManual=false;S.vipIntent=null;
   hudCache.objH=null;renderMissionGoals();
 }
 function selectMissionGoal(id) {

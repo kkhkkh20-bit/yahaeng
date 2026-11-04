@@ -21,8 +21,8 @@ async def main():
    assert await q.locator('#brIdentity canvas[data-ready]').count()==2,'actual actor/object art not ready'
    await q.screenshot(path=str(O/f'brief-{width}.png'),full_page=True)
    await q.click('#btnBrGo');await q.keyboard.press('Escape');await q.evaluate('for(let i=0;i<14;i++)__game.advanceGameFrame(.05);__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(1)')
-   assert await q.evaluate('__game.nextGoal().routeGuide&&__game.nextGoal().text.includes("장부")&&!__game.nextGoal().g'),'living guard hijacks mission'
-   assert await q.evaluate('__game.goalMarkerCaption(__game.nextGoal(),25).includes("장부 단서")'),'world marker does not identify the clue'
+   assert await q.evaluate('__game.nextGoal().routeGuide&&__game.nextGoal().text.includes("관찰")&&!__game.nextGoal().g'),'living guard hijacks mission'
+   assert await q.evaluate('__game.goalMarkerCaption(__game.nextGoal(),25).includes("흡연 구역 입구")'),'world marker does not identify the clue'
    assert await q.locator('#missionIdentity .mission-id').count()==2
    assert await q.locator('#missionIdentity button').count()==0,'new action buttons added'
    layout=await q.evaluate('''()=>{const list=[...document.querySelectorAll('#missionIdentity .mission-id')].map(e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height,scroll:e.scrollWidth}});return{list,overlap:list[0].right>list[1].x,overflow:list.some(r=>r.scroll>r.width+1||r.right>innerWidth),goal:__game.nextGoal().text}}''');assert not layout['overlap']and not layout['overflow'],layout
