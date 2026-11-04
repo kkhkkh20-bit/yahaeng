@@ -1,0 +1,67 @@
+[
+  {
+    "touch": false,
+    "version": "v171",
+    "seconds": 8.119999999999873,
+    "hp": 3,
+    "goal": {
+      "text": "빨간 카드키 줍기",
+      "where": "수금원이 떨어뜨린 카드",
+      "unconscious": null
+    },
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 1,
+      "alarms": 1,
+      "stashed": 0,
+      "special": 1
+    },
+    "target": {
+      "state": "DEAD",
+      "ko": false
+    },
+    "learned": [
+      "kit",
+      "dart"
+    ],
+    "method": "Fresh profile, native keyboard or CDP joystick/actions/marking; stepped main clock; no actor/state overrides."
+  },
+  {
+    "touch": true,
+    "version": "v171",
+    "seconds": 8.13666666666654,
+    "hp": 3,
+    "goal": {
+      "text": "의뢰: 기절한 수금원 마무리",
+      "where": "몸 가까이에서 공격 길게 · 빨간 카드키 · 바깥 · 기절",
+      "unconscious": true
+    },
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 1,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 1,
+      "ko": 1
+    },
+    "target": {
+      "state": "DEAD",
+      "ko": true
+    },
+    "learned": [
+      "kit",
+      "dart"
+    ],
+    "method": "Fresh profile, native keyboard or CDP joystick/actions/marking; stepped main clock; no actor/state overrides."
+  }
+]

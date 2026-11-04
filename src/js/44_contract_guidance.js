@@ -1,6 +1,10 @@
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
 // selected clues and physical body recovery take precedence in nextGoal().
 function contractRouteGoal(){
+  if(STAGE.id==='m6'){
+    const it=S.items[0];if(!it||it.got)return null;
+    return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+  }
   if(STAGE.id==='m2'){
     const P=S.player,vip=npc('vip'),item=S.items[0];
     if(item&&!item.got){
@@ -11,13 +15,13 @@ function contractRouteGoal(){
       const r=rendezvousState();
       if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
       if(r&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
-      return{...targetKnowledge(vip),g:vip,id:'target:'+vip.id,text:'의뢰: 실장 처치하기',routeGuide:true};
+      const at=targetKnowledge(vip);return{...at,g:vip,id:'target:'+vip.id,text:'의뢰: '+missionTargetText(vip,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '),routeGuide:true};
     }
     return null;
   }
   if(STAGE.id!=='m4')return null;
   const P=S.player,keys=P.keys||{},collector=npc('collector'),vip=npc('vip');
-  const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+targetName(g)+' 처치하기',where:[why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
+  const target=(g,why)=>{const at=targetKnowledge(g);return{...at,g,id:'target:'+g.id,text:'의뢰: '+missionTargetText(g,at),where:[missionTargetHint(at),why,at.where].filter(Boolean).join(' · '),routeGuide:true};};
   const object=(at,text,where)=>at?{x:at.x,y:at.y,fl:flOf(at),z:0,text,where,routeGuide:true}:null;
   const locked=key=>S.doors.some(d=>d.locked&&d.keyLock===key);
   if(collector&&!targetEliminated(collector))return target(collector,'빨간 카드키');

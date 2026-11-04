@@ -1,0 +1,13 @@
+{
+  "method": "Fresh profile, real mission UI and native keyboard; live AI/security; stepped main clock; no actor/health/inventory/skills/progress overrides. Learned kit, dart, smoke through the normal skill UI.",
+  "milestones": [
+    "gear recovered",
+    "security offline",
+    "upper floor [{'id': 2, 'state': 'DEAD', 'unconscious': True}, {'id': 3, 'state': 'DEAD', 'unconscious': True}]",
+    "radio approach {'hp': 1, 'counters': 2, 'near': ['책상에서 챙기기 — 제비의 무전기', '옷 갈아입기 (이미 들통난 옷)', '운반']}",
+    "radio recovered",
+    "stair state {'fl': 1, 'hp': 0, 'over': True, 'trav': False, 'at': [639.3274702101754, 480.4665148302787], 'env': ['dress', 'carry']}"
+  ],
+  "fullClear": false,
+  "limit": "Radio recovered; died while moving to the exit on the upper floor. Full m6 escape is not verified."
+}

@@ -57,7 +57,7 @@ function updateTargetIntel() {
   initMissionPlan();
   const L0 = CUR_F; setLayer(flOf(S.player));
   for (const g of S.guards) if (g.target && !targetEliminated(g) && canObserveTarget(g)) {
-    S.targetIntel[g.id] = { ...gSpot(targetPosition(g)), t: S.t };
+    S.targetIntel[g.id] = { ...gSpot(targetPosition(g)), t: S.t, unconscious:!!S.corpses.find(c=>c.g===g&&c.ko) };
   }
   setLayer(L0);
 }
@@ -65,7 +65,7 @@ function targetKnowledge(g) {
   initMissionPlan();
   // 직접 옮겨 숨긴 기절 표적은 플레이어가 위치를 안다. 예전 활동 구역으로 안내하지 않는다.
   const body=S.corpses.find(c=>c.g===g&&c.ko&&(c.playerHandled||c.stashed&&c.container||S.player.carrying===c));
-  if(body)return{...gSpot(body),where:(body.stashed&&body.container?hideName(body.container)+' · ':'')+placeName(body.x,body.y,flOf(body))+' · 기절',stored:!!body.stashed};
+  if(body)return{...gSpot(body),where:(body.stashed&&body.container?hideName(body.container)+' · ':'')+placeName(body.x,body.y,flOf(body))+' · 기절',stored:!!body.stashed,unconscious:true};
   if (oppMode === 2) return { ...gSpot(targetPosition(g)), where: placeName(targetPosition(g).x, targetPosition(g).y, flOf(targetPosition(g))), live: true };
   const m = S.targetIntel[g.id];
   if (m && S.t - m.t < 15) return { ...m, live: S.t - m.t < .3, lastSeen: S.t - m.t >= .3,
@@ -75,9 +75,11 @@ function targetKnowledge(g) {
 function missionGoalCandidates() {
   const a = [];
   S.items.forEach((it, i) => { if (!it.got) a.push({ id: 'item:' + i, text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0, z: 0 }); });
-  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) a.push({ ...targetKnowledge(g), id: 'target:' + g.id, text: targetName(g) + ' 처치하기', g });
+  if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) {const at=targetKnowledge(g);a.push({ ...at, id: 'target:' + g.id, text: missionTargetText(g,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '), g });}
   return a;
 }
+const missionTargetText=(g,at)=>at.unconscious?'기절한 '+targetName(g)+' 마무리':targetName(g)+' 처치하기';
+const missionTargetHint=at=>at.unconscious?(at.stored?'은닉처에서 꺼낸 뒤 공격 길게':'몸 가까이에서 공격 길게'):'';
 function pinnedMissionGoal() {
   const a = missionGoalCandidates(), P = S.player;
   let g = a.find(g => g.id === S.goalPin);

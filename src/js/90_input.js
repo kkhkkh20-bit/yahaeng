@@ -137,7 +137,7 @@ function markAt(cx, cy) {
   let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorPick(g):null,d=ip?Math.hypot(ip.x-cx,ip.y-cy):dist(g.x,g.y-14,wx,wy); if (d < bd) { bd = d; best = g; } }
   if (!best) return false;
   S.marked = S.marked === best ? null : best; play('click', 0.25);
-  if (S.marked) toast((best.target ? '표적' : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰로와 시야를 고정 표시한다', 1.8);
+  if (S.marked) toast((best.target ? targetName(best) : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰·시야 표시'+(abilityOn('dart')&&!best.dog&&!best.child?' · 다트 대상 지정':''), 1.8);
   return true;
 }
 canvas.addEventListener('mousedown', e => { if (e.button === 0 && !isTouch) markAt(e.clientX, e.clientY); });
