@@ -20,7 +20,9 @@ async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
   for mobile in [False,True]:
-   page=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile);errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda q:requests.append(q.url));await page.add_init_script('localStorage.clear()');await open_game(page,BASE+(''if PLAIN else '?v='+release+'&nostats'));assert await page.evaluate('window.__BUILD_VERSION__')==release
+   page=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile);errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda q:requests.append(q.url));await page.add_init_script('localStorage.clear()');await open_game(page,BASE+(''if PLAIN else '?v='+release+'&nostats'));assert await page.evaluate('window.__BUILD_VERSION__')==release
+   assert await page.evaluate('document.compatMode==="CSS1Compat"&&document.head.querySelectorAll("meta[name=viewport]").length===1'), 'Release document lacks standards/mobile viewport'
+   assert await page.evaluate('Math.abs(innerWidth-'+str(390 if mobile else 1280)+')<2'), 'Mobile layout viewport expanded beyond the device width'
    if BROWSER_HASHES and not result['files']:
     result['hashMethod']='Same-origin browser fetch and WebCrypto SHA256; identical expected local bytes'
     for name in paths:
