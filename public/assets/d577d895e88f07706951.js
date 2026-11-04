@@ -9975,7 +9975,7 @@ function kunaiTarget(weapon=input.tool) {
   const P = S.player; if ((weapon==='blade'?!(P.blades>0):P.kunai<=0) || P.hide || P.under || P.vent || P.carrying || P.captive || P.strikeT > 0 || P.jump) return null;
   let best = null, bs = Infinity;
   for (const g of S.guards) {
-    if (g.child || g.dog || g.doomed || g.climb || g.civ&&!g.target&&S.marked!==g || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P) || (g.z||0)!==(P.z||0)) continue;
+    if (g.child || g.dog || g.doomed || g.climb || g.civ&&!g.target&&S.marked!==g || ['DEAD','CAPTIVE'].includes(g.state) || flOf(g) !== flOf(P)) continue;
     const d = dist(P.x, P.y, g.x, g.y), ad = Math.abs(angDiff(P.a, Math.atan2(g.y-P.y, g.x-P.x)));
     if (d < 20 || d > projectileRange() || ad > .9 || !sightLine(P,g.x,g.y,g.z||0,false,flOf(g))) continue;
     const score = ad * 160 + d * .4-(S.marked===g?240:0);
@@ -11195,7 +11195,7 @@ function actKunai(forced, lethal = false) {
 // homes after release; cover, a sudden turn or a floor change can still defeat it.
 function projectileShot(t){
   const P=S.player,g=t?.ref;
-  if(t?.type!=='guard'||!S.guards.includes(g)||g.child||g.dog||g.doomed||g.climb||['DEAD','CAPTIVE'].includes(g.state)||g.civ&&!g.target&&!t.explicitCivilian||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0)||dist(P.x,P.y,g.x,g.y)>projectileRange()||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))return null;
+  if(t?.type!=='guard'||!S.guards.includes(g)||g.child||g.dog||g.doomed||g.climb||['DEAD','CAPTIVE'].includes(g.state)||g.civ&&!g.target&&!t.explicitCivilian||flOf(g)!==flOf(P)||t.fl!=null&&t.fl!==flOf(g)||t.z!=null&&t.z!==(g.z||0)||dist(P.x,P.y,g.x,g.y)>projectileRange()||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))return null;
   let x=g.x,y=g.y,dur=.08+dist(P.x,P.y,x,y)/1400;
   const m=g.projectileMotion,recent=m&&g.moving&&S.t>=m.t&&S.t-m.t<.1&&m.fl===flOf(g)&&m.z===(g.z||0)&&Math.hypot(m.vx,m.vy)<260;
   if(recent){
