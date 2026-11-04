@@ -12,7 +12,8 @@
       "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
       "actual stair selection previews secure upper-floor access before traversal",
       "real enforcer starts separate identity timer; retreat stops it without changing permission",
-      "real recording persists after sight ends and actual console clears it"
+      "real recording persists after sight ends and actual console clears it",
+      "older checkpoint boundary cache is rebuilt before rendering"
     ],
     "layout": [
       {
@@ -52,7 +53,8 @@
       "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
       "actual stair selection previews secure upper-floor access before traversal",
       "real enforcer starts separate identity timer; retreat stops it without changing permission",
-      "real recording persists after sight ends and actual console clears it"
+      "real recording persists after sight ends and actual console clears it",
+      "older checkpoint boundary cache is rebuilt before rendering"
     ],
     "layout": [
       {
@@ -92,7 +94,8 @@
       "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
       "actual stair selection previews secure upper-floor access before traversal",
       "real enforcer starts separate identity timer; retreat stops it without changing permission",
-      "real recording persists after sight ends and actual console clears it"
+      "real recording persists after sight ends and actual console clears it",
+      "older checkpoint boundary cache is rebuilt before rendering"
     ],
     "layout": [
       {
@@ -132,7 +135,8 @@
       "public hall, organization office, club staff room, vault and secure upper floor have distinct actual rights",
       "actual stair selection previews secure upper-floor access before traversal",
       "real enforcer starts separate identity timer; retreat stops it without changing permission",
-      "real recording persists after sight ends and actual console clears it"
+      "real recording persists after sight ends and actual console clears it",
+      "older checkpoint boundary cache is rebuilt before rendering"
     ],
     "layout": [
       {

@@ -286,6 +286,6 @@
   "pipelineTests": 7,
   "reachValidation": true,
   "spriteOwnership": true,
-  "latestFocusedChecks": "t_security_readout rerun on the final package, including uniform pickup and console work previews; 7 groups across 4 viewport sizes.",
+  "latestFocusedChecks": "Final package: 8 security groups across 4 viewport sizes, including legacy boundary checkpoint restoration; continuity, replay-loop and mission-progress scripts rerun after cache invalidation fix.",
   "command": "PYTHONPATH=/workspace/work/yahaeng-input-review:/workspace/yahaeng/tests/tutorial python3 tools/run_tests.py --fast --quick --no-build"
 }
