@@ -1,3 +1,7 @@
+// Most objectives are recoverable objects; authored terminal work uses the same
+// interruptible action and checkpoint progress, with explicit prerequisite text.
+const itemObjectiveAction = it => STAGE.itemActions?.[S.items.indexOf(it)] || null;
+const itemObjectiveText = (it,verb=STAGE.itemVerb||'훔치기') => itemObjectiveAction(it)?.label || ((STAGE.itemNames||[])[S.items.indexOf(it)]||STAGE.itemName||'서류')+' '+verb;
 function lootPlace(it, only) {  // only: 지정한 가구 종류만, 같은 건물 안에서 접근할 수 있는 자리를 찾는다
   const f0 = it.fl || 0, g = f0 ? GF[f0] : G0, tx0 = Math.floor(it.x / TILE), ty0 = Math.floor(it.y / TILE), b0 = bldAt(tx0, ty0); let best = null, bs = 1e9;
   for (const F of FURN) {
@@ -19,13 +23,20 @@ function nearLoot() {
   }
   return best;
 }
-function startLoot(it) { const P=S.player;if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: L[3], short: L[2], loud: L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
-  hint('loot', '가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
+function startLoot(it) { const P=S.player,A=itemObjectiveAction(it);if(A?.requires!=null&&!S.items[A.requires]?.got){toast(A.requiresText,2.4,'warn');return;}if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: A?.duration??L[3], short: A?.short||L[2], loud: A?.loud??L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+  hint(A?'terminalWork':'loot', A?'배차 작업 중에는 움직이면 중단된다. 작업 모습이 보이면 들킬 수 있다.':'가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
   const P = S.player; it.got = true; spawnEffect('loot',{x:it.dx??it.x,y:it.dy??it.y,fl:flOf(it),z:0},{scale:.8});finishEnvSelection(); play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) { const zi = STAGE.zones ? pZoneInfo() : null, by = zi && zi.k !== Z_PUB ? myPermits().find(o => zi.allow && zi.allow.includes(o)) : disguised() ? P.outfit : null; const U = S.usedPermit || {}; S.stats.gotAs = by || (P.item && P.item.permit && U[P.item.permit] ? P.item.permit : disguised() && U[P.outfit] ? P.outfit : 'self'); }  // 그 신분이 실제로 금지 구역에 들여보내 준 적이 있으면 인정  // 어떤 신분으로 훔쳤나 (도전 과제) — 그 자리를 실제로 허가해 준 신분만 친다
   const left = S.items.filter(i => !i.got).length, nm = (STAGE.itemNames || [])[S.items.indexOf(it)] || STAGE.itemName || '서류';
-  toast(left ? `${nm} 회수 · 남은 물품 ${left}개` : `${nm} 회수`, 2.4, 'good');
+  const A=itemObjectiveAction(it),remaining=S.items.some(i=>!i.got&&itemObjectiveAction(i))?'작업':'물품';
+  toast(A?.complete||(left ? `${nm} 회수 · 남은 ${remaining} ${left}개` : `${nm} 회수`), 2.4, 'good');
+  // A stopped dispatch is a local, observable fault: its operator comes over.
+  // It does not reveal the player's identity or raise a remote alarm.
+  const g=A?.inspectTag&&npc(A.inspectTag);
+  if(g&&['PATROL','RETURN'].includes(g.state)&&flOf(g)===flOf(it)){
+    endChat(g);goSuspicious(g,it.x,it.y,7);g.why='heard';gsay(g,'배차가 멈췄네. 단말부터 확인해 보자.',3);
+  }
 }
 // 핏자국 닦기: 핏자국 위에서 [행동]. 움직이면 멈춘다. 큰 자국 2.6초 · 핏방울 0.9초. 닦는 동안은 수상한 행동이라 보이면 들킨다
 function nearBlood() {

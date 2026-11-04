@@ -1,6 +1,8 @@
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
-let CONTRACT_LAYOUT = null;
+let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null;
 function captureContractLayout() {
+  S.itemLayoutVersion=STAGE.itemLayoutVersion||0;
+  MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items)}:null;
   S.layoutVersion = STAGE.layoutVersion || 0;
   CONTRACT_LAYOUT = !STAGE.layoutVersion ? null : {
     id: STAGE.id, grids: [G0, ...GF.slice(1)].map(g => g && g.map(r => r.slice())),
@@ -9,6 +11,11 @@ function captureContractLayout() {
   };
 }
 function restoreContractLayout() {
+  const I=MISSION_ITEM_LAYOUT;
+  if(I&&I.id===STAGE.id&&(S.itemLayoutVersion||0)<I.version){
+    for(let i=S.items.length;i<I.items.length;i++)S.items.push(cloneDeep(I.items[i]));
+    S.itemLayoutVersion=I.version;S.exitOpen=false;
+  }
   // Remove retired props from saved grids without resetting the rest of the mission.
   for(const [x,y,old,ch]of STAGE.retiredProps||[])if(G0[y]?.[x]===old)G0[y][x]=ch;
   const T = CONTRACT_LAYOUT;

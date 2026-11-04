@@ -534,7 +534,7 @@ function updatePlayer(dt) {
   }
   if (S.keyDrop && P.z === 0 && flOf(P) === (S.keyDrop.fl || 0) && dist(P.x, P.y, S.keyDrop.x, S.keyDrop.y) < 34) { const k = S.keyDrop.key || 'gold'; S.keyDrop = null; giveKey(k, withJosa(keyName(k), '을/를') + ' 주웠다'); bark('hero', 'key'); }
   for (const it of S.keyItems || []) if (!it.got && !P.z && !P.under && !P.vent && flOf(P) === it.fl && dist(P.x, P.y, it.x, it.y) < 34) { it.got = true; giveKey(it.key, withJosa(keyName(it.key), '을/를') + ' 찾았다'); }
-  for (const it of S.items) if (!it.got && !it.furn && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) takeItem(it);  // 가구 위 물건은 [행동]으로 시간을 들여 빼 온다
+  for (const it of S.items) if (!it.got && !it.furn && !itemObjectiveAction(it) && P.z === 0 && flOf(it) === flOf(P) && dist(P.x, P.y, it.x, it.y) < 32) takeItem(it);  // 가구 위 물건은 [행동]으로 시간을 들여 빼 온다
   if (P.z >= 3) hint('top', '3층 옥상에서는 멀리 볼 수 있다. 높이가 너무 높아 아래 경비를 덮칠 수는 없다');
   if (P.z) {
     hint('roof', '옥상에서는 망꾼의 시야를 주의해야 한다. 아래에 경비가 오면 [공격]으로 덮칠 수 있다');

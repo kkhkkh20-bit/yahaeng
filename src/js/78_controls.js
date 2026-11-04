@@ -64,7 +64,7 @@ function actVerb(a, ic) {
   if (a.k === 'ledgeKill') return '끌어내리기';
   if (a.k === 'camroom') return 'CCTV 끄기';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';
-  if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기
+  if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return itemObjectiveAction(a.it)?.short||LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기
   if (lb.length <= 6) return lb;
   const ws = lb.split(' '), two = ws.slice(-2).join(' ');  // 길면 끝말(무엇을 하는지)만: '실장 술병에 배탈약 타기' → '배탈약 타기'
   return two.length <= 6 ? two : ws[ws.length - 1].length <= 6 ? ws[ws.length - 1] : VERB[ic] || lb.slice(0, 5);

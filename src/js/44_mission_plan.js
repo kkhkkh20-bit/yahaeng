@@ -77,7 +77,7 @@ function targetKnowledge(g) {
 }
 function missionGoalCandidates() {
   const a = [];
-  S.items.forEach((it, i) => { if (!it.got) a.push({ id: 'item:' + i, text: ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' ' + (STAGE.itemVerb || '훔치기'), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0, z: 0 }); });
+  S.items.forEach((it, i) => { if (!it.got) a.push({ id: 'item:' + i, text: itemObjectiveText(it), where: placeName(it.x, it.y, it.fl, it.b), x: it.x, y: it.y, fl: it.fl || 0, z: 0 }); });
   if (!S.spare) for (const g of S.guards) if (g.target && !targetEliminated(g)) {const at=targetKnowledge(g);a.push({ ...at, id: 'target:' + g.id, text: missionTargetText(g,at),where:[missionTargetHint(at),at.where].filter(Boolean).join(' · '), g });}
   return a;
 }

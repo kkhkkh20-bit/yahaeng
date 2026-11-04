@@ -9,6 +9,8 @@ function contractRouteGoal(){
       if(key)return{x:key.x,y:key.y,fl:flOf(key),z:0,text:'파란 카드 줍기',where:'운송책이 떨어뜨린 기록보관실 카드',routeGuide:true};
       return{x:it.x,y:it.y,fl:flOf(it),z:0,text:'분류창고 서쪽에서 운송명세서 회수',where:S.player.keys?.blue?'파란 카드 · 기록보관실 문':'북쪽 거리 환풍구로 우회 가능',routeGuide:true};
     }
+    const work=S.items[1];
+    if(work&&!work.got)return{x:work.x,y:work.y,fl:flOf(work),z:0,id:'item:1',text:'배송 사무실 2층에서 새벽배송 중단',where:'명세서의 출고 번호 · 배차 단말 · 중단 후 관리자가 확인하러 온다',routeGuide:true};
     return null;
   }
   if(STAGE.id==='m6'){
