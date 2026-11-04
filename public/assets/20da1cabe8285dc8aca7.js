@@ -160,6 +160,7 @@ const STAGES = [
 {
   id: 'm2', no: '02', name: 'VIP', sub: '의뢰 01', fee: '80만',
   priorityTarget:true,entryRoute:{guard:28,bush:[1,18],bounds:[0,14,8,23]},
+  decoySearchTime:6,decoyLookoutTime:7,whistleRange:380,
   skillEncounters:[{id:'market-pair',skill:'dual',guards:[9,10],text:'야시장 경비 둘 · 등 뒤에서 공격 길게'},{id:'rear-chain',skill:'chain',guards:[4,26],text:'뒷골목 순찰 둘 · 이동 경로를 확인하고 공격 길게'},{id:'west-light',skill:'electric',at:[6,19],text:'서쪽 가로등 · 불을 끄면 복구하러 오는 경비를 유인할 수 있다'}],
   mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
   itemName: '장부', itemNames: ['장부'],
@@ -4081,6 +4082,7 @@ function noise(x, y, r, src, fl, z) {
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
       goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
+      if((src==='whistle'||src==='stone')&&g.state==='SUSPICIOUS')(nz.otherInvestigators||(nz.otherInvestigators=[])).push(g.id);
     }
   }
   if(decoys.length)respondToDecoy(decoys,nz);
@@ -4114,17 +4116,21 @@ function cautiousSoundPoint(g,n){
 function respondToDecoy(heard,n){
   const active=g=>g.state==='SUSPICIOUS'&&g.why==='heard'&&g.poi&&dist(g.poi.x,g.poi.y,n.x,n.y)<80;
   let pending=heard.slice().sort((a,b)=>(active(b.g)?1:0)-(active(a.g)?1:0)||a.d-b.d);
+  n.investigators=[];n.lookouts=[];
   while(pending.length){
     const first=pending.shift(),group=[first,...pending.filter(o=>flOf(o.g)===flOf(first.g)&&(o.g.z||0)===(first.g.z||0)&&dist(o.g.x,o.g.y,first.g.x,first.g.y)<240&&los(o.g.x,o.g.y,first.g.x,first.g.y,o.g.z||0))];
     pending=pending.filter(o=>!group.includes(o));
     for(const o of group){
       const g=o.g,h=rememberSound(g,n),a=Math.atan2(n.y-g.y,n.x-g.x);
       if(o===first){
-        const repeat=h.hits>1;goSuspicious(g,n.x,n.y,repeat?5:3.5);g.why='heard';
+        const repeat=h.hits>1;goSuspicious(g,n.x,n.y,Math.max(repeat?5:3.5,STAGE.decoySearchTime||0));g.why='heard';n.investigators.push(g.id);
         if(repeat)g.soundApproach=cautiousSoundPoint(g,n);
-        g.startle={a};if(repeat)gsay(g,'또 같은 곳이야. 조심해.');else gsay(g,group.length>1?'내가 확인할게. 뒤를 봐.':'누구야?');
+        g.startle={a};if(repeat)gsay(g,'또 같은 곳이야. 조심해.');else gsay(g,group.length>1?'내가 확인할게. 넌 여기 지켜.':'누구야?');
       }else{
-        endChat(g);g.state='PATROL';g.path=null;g.poi=null;g.act=null;g.bubble=null;g.glance=0;g.glanceA=a;g.soundWatchUntil=S.t+5;setIcon(g,'?');
+        // The lookout covers the original post instead of tracking the same
+        // sound as the investigator. Repeated lures still make both cautious.
+        const facing=h.hits>1?a:g.post??g.a;
+        endChat(g);g.state='PATROL';g.path=null;g.poi=null;g.act=null;g.bubble=null;g.glance=0;g.glanceA=facing;g.soundWatchUntil=S.t+(STAGE.decoyLookoutTime||5);n.lookouts.push(g.id);setIcon(g,'?');
       }
     }
   }
@@ -6873,12 +6879,15 @@ function updateActionFlow(){
   if(e&&!['done','skipped'].includes(e.phase))return;
   if(S.t-(S.skillNoticeScan??-1)<.35)return;S.skillNoticeScan=S.t;
   for(const opportunity of STAGE.skillEncounters||[]){
-    if(!skillOn(opportunity.skill)||S.skillNotices[opportunity.id]||['dual','chain'].includes(opportunity.skill)&&S.selectedSkill!==opportunity.skill)continue;
+    const basicPair=opportunity.skill==='dual'&&!skillOn('dual');
+    if(!basicPair&&(!skillOn(opportunity.skill)||['dual','chain'].includes(opportunity.skill)&&S.selectedSkill!==opportunity.skill))continue;
+    if(S.skillNotices[basicPair?'split:'+opportunity.id:opportunity.id])continue;
     const actors=(opportunity.guards||[]).map(id=>S.guards.find(g=>g.id===id));
     if(actors.some(g=>!g||g.doomed||['DEAD','CAPTIVE','ALERT'].includes(g.state)))continue;
     if(actors.length===2){const d=dist(actors[0].x,actors[0].y,actors[1].x,actors[1].y);if(opportunity.skill==='dual'&&d>54||opportunity.skill==='chain'&&(d<55||d>132))continue;}
     const at=actors[0]||{x:tc(opportunity.at[0]),y:tc(opportunity.at[1]),fl:0,z:0};
     if(flOf(at)!==flOf(P)||(at.z||0)!==(P.z||0)||dist(P.x,P.y,at.x,at.y)>240||!sightLine(P,at.x,at.y,at.z||0,false,flOf(at)))continue;
+    if(basicPair){if(actors.some(g=>g.elite||g.target||g.dog||!sightLine(P,g.x,g.y,g.z||0,false,flOf(g))))continue;const tools=P.stones>0?'빈 캔·휘파람':isTouch?'장비 → 휘파람':'G 휘파람';if(fieldSkillNotice('split:'+opportunity.id,'경비 둘 · '+tools+'으로 한 명 유인'))return;continue;}
     if(fieldSkillNotice(opportunity.id,SKILL_BY_ID[opportunity.skill].name+' · '+opportunity.text))return;
   }
   const ready=assassinOpportunity();
@@ -7517,8 +7526,11 @@ function whistle() {
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
-  noise(x, y, 230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  noise(x, y, STAGE.whistleRange||230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  const cue=S.noises.at(-1);
+  if(cue?.investigators?.length===1&&!cue.otherInvestigators?.length&&!S.splitLureNoticed){S.splitLureNoticed=true;toast('한 명이 확인 중 · 웅크려 자리를 옮겨 뒤를 노리기',3,'info');}
   if(STAGE.openingContract&&!S.noises.at(-1)?.heard)toast('반응 없음 · 경비가 가까워질 때 다시 불기',2,'info');
+  else if(!cue?.heard)toast('반응 없음 · 더 가까운 엄폐물에서 다시 불기',2,'info');
   hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기

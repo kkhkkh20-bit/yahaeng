@@ -143,6 +143,7 @@ function noise(x, y, r, src, fl, z) {
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
       goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
+      if((src==='whistle'||src==='stone')&&g.state==='SUSPICIOUS')(nz.otherInvestigators||(nz.otherInvestigators=[])).push(g.id);
     }
   }
   if(decoys.length)respondToDecoy(decoys,nz);
@@ -176,17 +177,21 @@ function cautiousSoundPoint(g,n){
 function respondToDecoy(heard,n){
   const active=g=>g.state==='SUSPICIOUS'&&g.why==='heard'&&g.poi&&dist(g.poi.x,g.poi.y,n.x,n.y)<80;
   let pending=heard.slice().sort((a,b)=>(active(b.g)?1:0)-(active(a.g)?1:0)||a.d-b.d);
+  n.investigators=[];n.lookouts=[];
   while(pending.length){
     const first=pending.shift(),group=[first,...pending.filter(o=>flOf(o.g)===flOf(first.g)&&(o.g.z||0)===(first.g.z||0)&&dist(o.g.x,o.g.y,first.g.x,first.g.y)<240&&los(o.g.x,o.g.y,first.g.x,first.g.y,o.g.z||0))];
     pending=pending.filter(o=>!group.includes(o));
     for(const o of group){
       const g=o.g,h=rememberSound(g,n),a=Math.atan2(n.y-g.y,n.x-g.x);
       if(o===first){
-        const repeat=h.hits>1;goSuspicious(g,n.x,n.y,repeat?5:3.5);g.why='heard';
+        const repeat=h.hits>1;goSuspicious(g,n.x,n.y,Math.max(repeat?5:3.5,STAGE.decoySearchTime||0));g.why='heard';n.investigators.push(g.id);
         if(repeat)g.soundApproach=cautiousSoundPoint(g,n);
-        g.startle={a};if(repeat)gsay(g,'또 같은 곳이야. 조심해.');else gsay(g,group.length>1?'내가 확인할게. 뒤를 봐.':'누구야?');
+        g.startle={a};if(repeat)gsay(g,'또 같은 곳이야. 조심해.');else gsay(g,group.length>1?'내가 확인할게. 넌 여기 지켜.':'누구야?');
       }else{
-        endChat(g);g.state='PATROL';g.path=null;g.poi=null;g.act=null;g.bubble=null;g.glance=0;g.glanceA=a;g.soundWatchUntil=S.t+5;setIcon(g,'?');
+        // The lookout covers the original post instead of tracking the same
+        // sound as the investigator. Repeated lures still make both cautious.
+        const facing=h.hits>1?a:g.post??g.a;
+        endChat(g);g.state='PATROL';g.path=null;g.poi=null;g.act=null;g.bubble=null;g.glance=0;g.glanceA=facing;g.soundWatchUntil=S.t+(STAGE.decoyLookoutTime||5);n.lookouts.push(g.id);setIcon(g,'?');
       }
     }
   }
