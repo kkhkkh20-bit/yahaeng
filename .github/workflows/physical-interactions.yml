@@ -9,6 +9,9 @@ on:
       - 'build.py'
       - 'VERSION'
       - '.github/workflows/physical-interactions.yml'
+concurrency:
+  group: physical-interactions-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -33,7 +36,9 @@ jobs:
       - name: Verify interaction state transitions
         run: node tests/integration/physical_interactions.cjs
       - name: Build the playable game
-        run: python build.py
+        run: |
+          python build.py
+          python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Browser regression and native keyboard/touch playback
         env:
           PYTHONPATH: ${{ github.workspace }}/tests/support:${{ github.workspace }}/tests/tutorial
@@ -44,6 +49,7 @@ jobs:
           trap 'kill "$server_pid" || true' EXIT
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
+          YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Save review evidence and packaged assets on this PR
@@ -60,6 +66,9 @@ jobs:
               if p.exists():
                   image=Image.open(p);image.thumbnail((1100,850));image.save(out/(name+'.png'),optimize=True)
           for p in src.glob('*.json'):(out/p.name).write_bytes(p.read_bytes())
+          for p in Path('build/physical-v190').glob('*.png'):
+              image=Image.open(p);image.thumbnail((1100,850));image.save(out/p.name,optimize=True)
+          for p in Path('build/physical-v190/vip').glob('*.json'):(out/p.name).write_bytes(p.read_bytes())
           PY
           git add public docs/physical-v190
           if ! git diff --cached --quiet; then
