@@ -2576,7 +2576,7 @@ const heroVisualStates=new WeakMap();
 function updateHeroVisual(P){
  const anim=P.carrying?'carry':P.captive?'grab':P.cover?'hugStep':P.item?.id==='box'?'hold':P.mode==='run'?'run':P.mode==='sneak'?'sneak':'walk';
  let v=heroVisualStates.get(P);if(!v){v={phase:0,gait:P.gaitTime||0,time:S.t,crouch:P.mode==='sneak'?1:0,moving:false,anim};heroVisualStates.set(P,v);}
- const dt=clamp(S.t-v.time,0,.06),moving=!!P.moving&&(P.travelSpeed==null||P.travelSpeed>6);
+ const dt=clamp(S.t-v.time,0,.06),moving=P.travelSpeed==null?!!P.moving:P.travelSpeed>6;
  v.phase=(v.phase+Math.max(0,(P.gaitTime||0)-v.gait)/(HERO_LOOP[anim]||1))%1;
  if(v.moving&&!moving&&v.anim==='walk'&&!actionBusy(P)){v.stopAt=S.t;v.stopPhase=Math.round(v.phase*4)%4;}
  if(moving||actionBusy(P))v.stopAt=null;
