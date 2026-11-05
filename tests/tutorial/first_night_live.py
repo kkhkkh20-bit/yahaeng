@@ -46,7 +46,7 @@ async def main(args):
     await c.record('camera-cable-disconnected');await c.move(y=360);await c.move(984,312)
     await c.press('x','#btnCarry');await wait('__game.S.items.every(i=>i.got)')
     await c.move(y=648);await c.move(168,744);await next_contract('p2')
-    assert await q.evaluate('__game.STAGE.id')=='m2'
+    assert await q.evaluate('__game.STAGE.id')=='e1'
     result=await q.evaluate('({budget:__game.skillBudget(),learned:__game.loadSkillTree().learned,records:JSON.parse(localStorage.getItem("yahaeng.ch"))})')
     assert result['budget']==6 and not result['learned'],result
     assert all(result['records'][id]['_clear']for id in ['p0','p1','p2']),result

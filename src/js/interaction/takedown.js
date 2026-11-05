@@ -1,4 +1,4 @@
-const simpleTarget = g => !!((STAGE.openingContract || mainContract(STAGE)) && g?.target && !S.spare && !g.civ && !g.dog);
+const simpleTarget = g => !!((introductoryContract(STAGE) || mainContract(STAGE)) && g?.target && !S.spare && !g.civ && !g.dog);
 const koFirst = g => !!g && !g.dog && !g.civ && !simpleTarget(g);
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)

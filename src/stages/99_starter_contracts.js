@@ -27,7 +27,7 @@ STAGES.push({
   fee:'30만',purpose:'CCTV 뒤에서 전선을 분리하고 배송 명세서를 회수한다.',
   mission:'비어 있는 창고에서 CCTV를 끄고 배송 명세서를 가져온다.',
   brief:'경비가 비운 작은 창고다. 카메라 뒤쪽에는 시야가 닿지 않는다. 뒤로 접근해 행동으로 전선을 분리한다. 조작은 2초가 걸린다. CCTV가 꺼지면 명세서를 챙겨 골목으로 나온다.',
-  endText:'암살, 복장 통행, CCTV를 하나씩 경험했다. 이제 클럽 실장과 장부·거래 암호표를 노리는 본 의뢰로 간다.',
+  endText:'암살, 복장 통행, CCTV를 하나씩 경험했다. 다음은 경비 한 명이 있는 골목에서 움직이는 연락책을 처리한다.',
   W:26,H:18,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
   kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,

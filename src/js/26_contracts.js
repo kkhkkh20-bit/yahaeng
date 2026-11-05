@@ -3,7 +3,7 @@
 const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
-const introductoryContract = s => !!(s.openingContract || s.starterContract);
+const introductoryContract = s => !!(s.openingContract || s.starterContract || s.apprenticeContract);
 const contractNumber = s => mainContract(s) ? String(MAIN_CONTRACTS.indexOf(s.id) + 1).padStart(2, '0') : s.no;
 const evidencePending = () => !!(STAGE.securityEvidence && S.camRoom && S.cameraEvidence && !S.camsOff);
 function recordCameraEvidence(c) {

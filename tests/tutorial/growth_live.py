@@ -1,0 +1,70 @@
+"""Known-map beginner episodes with native input and ordinary RAF.
+Fresh save; active AI; no clock, seed, actor, health, skill or progress overrides.
+Map/path reads only supply walkable waypoints. Not a human usability study.
+"""
+import argparse,asyncio,json,math
+from pathlib import Path
+from playwright.async_api import async_playwright
+from browser_support import open_game
+from action_flow_live import Controls
+
+async def main(args):
+ out=Path(args.out);out.mkdir(parents=True,exist_ok=True);reports=[]
+ async with async_playwright()as p:
+  b=await p.chromium.launch()
+  for mobile in ([args.device=='mobile']if args.device else[False,True]):
+   name='mobile'if mobile else'pc';q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile,record_video_dir=str(out/'video'))
+   errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=growth');c=Controls(q,await q.context.new_cdp_session(q),mobile)
+   async def wait(expr,timeout=7000):await q.wait_for_function(expr,timeout=timeout,polling=50)
+   async def env(kind):
+    if await q.evaluate('__game.envAction().k')!=kind:
+     await c.press('Tab','#btnCycle') if mobile else await q.keyboard.press('Shift+Tab')
+     row=q.locator('[data-env-token^="'+kind+':"]');assert await row.count(),(kind,await q.evaluate('__game.envChoices().map(a=>a.k)'))
+     await row.first.click()
+    await c.press('x','#btnCarry');await q.wait_for_timeout(100);await wait('!__game.actionBusy()')
+   async def route(x,y):
+    points=await q.evaluate('''({x,y})=>{const G=__game,P=G.S.player,doors=new Set(G.S.doors.filter(d=>!d.keyLock&&(d.fl||0)===(P.fl||0)).map(d=>d.ty*G.MW+d.tx)),end=Math.floor(y/48)*G.MW+Math.floor(x/48),shafts=new Set(G.S.ladders.filter(l=>(l.bfl||0)===(P.fl||0)).map(l=>l.ty*G.MW+l.tx));return G.astar(Math.floor(P.x/48),Math.floor(P.y/48),Math.floor(x/48),Math.floor(y/48),(tx,ty)=>G.solidAt(tx,ty)&&!doors.has(ty*G.MW+tx)||shafts.has(ty*G.MW+tx)&&ty*G.MW+tx!==end).concat([{x,y}])}''',{'x':x,'y':y});assert points
+    floor=await q.evaluate('__game.S.player.fl||0')
+    for point in points:
+     if await q.evaluate('(()=>{const a=__game.envAction();return a.k==="door"&&a.d.locked})()'):await env('door')
+     await c.move(point['x'],point['y'])
+     if await q.evaluate('__game.S.player.fl||0')!=floor:break
+   async def finish(id,budget):
+    await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
+    s=await c.record('cleared-'+id);assert s['hp']==3 and not s['stats']['detected'] and not s['stats'].get('camRec',0),s
+    assert await q.evaluate('__game.skillBudget()')==budget
+    await q.screenshot(path=str(out/(name+'-'+id+'-clear.png')));await q.click('#btnNext');await q.click('#btnBrGo')
+   try:
+    await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="e1")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo')
+    await c.press('Control','#btnCrouch');await c.move(600,888);await c.move(960,696);await c.move(y=408)
+    await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
+    await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+    await c.move(960,696);await c.move(600,888);await c.move(168,888);await finish('e1',5)
+    assert await q.evaluate('__game.STAGE.id')=='e2'
+    await c.move(504,888);await env('pickup');await wait('__game.S.player.outfit==="crew"')
+    await c.move(600,552);await c.move(744,552)
+    rear=await q.evaluate('(()=>{const c=__game.S.cams[0];return{x:c.x-32,y:c.y}})()');await c.move(rear['x'],600);await c.move(y=rear['y']);await env('camCable');await wait('!__game.camOn(__game.S.cams[0])')
+    await q.screenshot(path=str(out/(name+'-warehouse-camera.png')));await c.move(y=360);await c.move(1320,312);await env('loot');await wait('__game.S.items[0].got')
+    await c.move(y=552);await c.move(x=600);await c.move(y=936);await c.move(168,936);await finish('e2',6)
+    assert await q.evaluate('__game.STAGE.id')=='e3'
+    await c.move(408,888);await env('pickup');await c.move(456,936);await c.move(y=648)
+    stair=await q.evaluate('(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==="fstair");return{up:G.stairLower(l).up.entry,down:G.stairUpper(l).down.entry}})()')
+    await route(stair['up']['x'],stair['up']['y']);
+    if await q.evaluate('__game.S.player.fl||0')==0:await env('up')
+    await wait('__game.S.player.fl===1&&!__game.actionBusy()');await c.record('first-real-upstairs-contract')
+    it=await q.evaluate('({x:__game.S.items[0].x,y:__game.S.items[0].y})');await route(it['x'],it['y']);await env('loot');await wait('__game.S.items[0].got');await q.screenshot(path=str(out/(name+'-upstairs-ledger.png')))
+    await route(stair['down']['x'],stair['down']['y']);
+    if await q.evaluate('__game.S.player.fl||0')==1:await env('fdown')
+    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',7)
+    assert await q.evaluate('__game.STAGE.id')=='m2'
+    assert await q.evaluate('!__game.loadSkillTree().learned.length')
+    assert not errors,errors;reports.append({'device':name,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE GROWTH',name,flush=True)
+   except Exception:
+    await c.record('failed');print(await q.evaluate('({stage:__game.STAGE.id,fl:__game.S.player.fl,env:__game.envAction().k,goal:__game.nextGoal()?.text})'),flush=True);await q.screenshot(path=str(out/(name+'-failed.png')));raise
+   finally:
+    (out/(name+'.json')).write_text(json.dumps({'events':c.events,'errors':errors},ensure_ascii=False,indent=2));await c.steer();await q.close();await q.video.save_as(str(out/(name+'.webm')))
+  await b.close()
+ (out/'summary.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2))
+
+if __name__=='__main__':
+ parser=argparse.ArgumentParser();parser.add_argument('--url',default='http://127.0.0.1:8005/public/');parser.add_argument('--out',default='build/growth-v195/live');parser.add_argument('--device',choices=['pc','mobile']);asyncio.run(main(parser.parse_args()))

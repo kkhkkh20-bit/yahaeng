@@ -185,7 +185,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter; }
+  { const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
@@ -353,7 +353,7 @@ function syncTools() {
   hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
   if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
   hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
-  hud.tool.hidden=!!STAGE.starterContract&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
+  hud.tool.hidden=!!(STAGE.starterContract||STAGE.apprenticeContract)&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
@@ -432,7 +432,7 @@ function showEnd(win, reason) {
   renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win;
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
-  if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=STAGE.starterContract?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
+  if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=(STAGE.starterContract||STAGE.apprenticeContract)?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = !(win && learningNext() >= 0);
@@ -464,14 +464,14 @@ function renderStageList() {
     const cardLine={m2:'클럽 실장 · 장부와 암호표',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기와 인계서',m7:'운송책 · 명세서 · 새벽배송 중단'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
-      <span class="st-no">${s.tutorial ? tno : introductoryContract(s) ? "첫 밤 "+(["p0","p1","p2"].indexOf(s.id)+1) : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
+      <span class="st-no">${s.tutorial ? tno : s.apprenticeContract ? s.no : introductoryContract(s) ? "첫 밤 "+(["p0","p1","p2"].indexOf(s.id)+1) : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
       <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk&&!introductoryContract(s) ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => introductoryContract(s)).concat(list.filter(([s]) => mainContract(s))), archive = list.filter(([s]) => !s.tutorial && !s.city && !introductoryContract(s) && !mainContract(s)), city = list.filter(([s]) => s.city);
-  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
+  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = ['p0','p1','p2','e1','e2','e3',...MAIN_CONTRACTS].map(id=>list.find(([s])=>s.id===id)).filter(Boolean), archive = list.filter(([s]) => !s.tutorial && !s.city && !introductoryContract(s) && !mainContract(s)), city = list.filter(([s]) => s.city);
+  $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec chapter">첫 밤 · 기본 행동 익히기</div>` + miss.map((entry,n)=>{const s=entry[0],prev=miss[n-1]?.[0];return(s.apprenticeContract&&!prev?.apprenticeContract?'<div class="lg-sec chapter">입문 의뢰 · 배운 방법을 조합하기</div>':mainContract(s)&&!mainContract(prev||{})?'<div class="lg-sec chapter">본 의뢰 · 여러 경로로 공략하기</div>':'')+row(entry)}).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const record=loadSkillTree();$('perkBox').hidden=true;$('btnSkillsLedger').textContent='기술 트리 · '+(skillBudget()-skillSpent(record))+'P'; }

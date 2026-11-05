@@ -216,3 +216,5 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 .vip-passport p{margin:10px 0 0;color:#d8c3a4}.vip-passport small{display:block;margin-top:3px;color:#aeb7c2;font-size:12px}
 
 .vip-methods>span{flex:1 1 180px}.vip-methods small{margin-top:0;font-size:11px;color:#a1acb8}
+
+.ledger-list[data-filter="missions"] .lg-sec.chapter { display:block; }

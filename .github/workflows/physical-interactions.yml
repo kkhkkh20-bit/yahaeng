@@ -17,7 +17,7 @@ permissions:
 jobs:
   browser-review:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,6 +61,7 @@ jobs:
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
           python tests/tutorial/first_night_live.py --url http://127.0.0.1:8001/public/ --out build/first-night-v194/ci-live
+          python tests/tutorial/growth_live.py --url http://127.0.0.1:8001/public/ --out build/growth-v195/ci-live
           python tests/tutorial/action_flow_live.py --url http://127.0.0.1:8001/public/ --out build/action-flow-v192/ci-live
           YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
       - name: Package the exact tested build
@@ -110,5 +111,6 @@ jobs:
             build/action-flow-v192/
             build/interface-v193/
             build/first-night-v194/
+            build/growth-v195/
             public/version.json
           retention-days: 7

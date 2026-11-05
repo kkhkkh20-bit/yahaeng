@@ -92,7 +92,7 @@ const cpOn = () => DKEY !== 'hard' || !!(STAGE && STAGE.tutorial);
 function preparationTokens() {
   const P = S.player, a = [];
   if(STAGE.id==='m6'&&!pendingFirstGoal())a.push('entry:escaped-cell');
-  if(mainContract(STAGE)&&flOf(P)>0)a.push('floor:'+bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))+':'+flOf(P));
+  if((mainContract(STAGE)||STAGE.apprenticeContract)&&flOf(P)>0)a.push('floor:'+bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))+':'+flOf(P));
   for (const s of S.learned || []) a.push('clue:' + s);
   for (const k of Object.keys(P.keys || {})) if (P.keys[k]) a.push('key:' + k);
   for (const k of Object.keys(P.got || {})) if (P.got[k]) a.push('equipment:' + k);
