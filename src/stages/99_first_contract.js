@@ -8,7 +8,7 @@ STAGES.push({
   endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 경비 재킷으로 감시 앞을 지나가 보자.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
-  bare:true,kunai:0,coins:0,well:'manhole',pspd:1.3,gspd:.85,radioCheck:0,
+  bare:true,ownedLoadout:true,kunai:0,coins:0,well:'manhole',pspd:1.3,gspd:.85,radioCheck:0,
   securityResponse:false,wires:[],roofs:[],bricks:[],items:[],challenges:[],
   build(m){
     m.fill(0,0,23,18,',');m.rect(0,0,23,18);

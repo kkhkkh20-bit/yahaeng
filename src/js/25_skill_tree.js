@@ -61,8 +61,8 @@ function syncRuntimeSkills(){
  if(S.skillRules!==149&&S.skillGrants?.precision)S.skillGrants.precisionDart=true;S.skillRules=149;
  const r=loadSkillTree();S.skills=Object.fromEntries(r.learned.map(id=>[id,true]));S.skillStars=totalStars();S.skillGrants=S.skillGrants||{};
  S.perks={sole:skillOn('quietStep'),shadow:skillOn('swiftCrouch'),reach:skillOn('reach'),pick:skillOn('kit'),can:skillOn('kit'),dart:skillOn('precision')};
- if((!STAGE.tutorial&&(!STAGE.bare||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
-  if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
+ if((!STAGE.tutorial&&(!STAGE.bare||STAGE.ownedLoadout||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
+  if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.ownedLoadout?2:STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
   if(skillOn('dart')&&skillOn('precision')&&!S.skillGrants.precisionDart){S.player.kunai=(S.player.kunai||0)+1;S.skillGrants.precisionDart=true;}
   const grants={kit:{picks:1,stones:2},kunai:{blades:2},smoke:{smokes:1},precision:{blades:1},smokeMix:{smokes:1},radio:{radioCharges:2},hack:{hackDevice:1}};
   for(const[id,items]of Object.entries(grants))if(skillOn(id)&&!S.skillGrants[id]){for(const[k,v]of Object.entries(items))S.player[k]=(S.player[k]||0)+v;S.skillGrants[id]=true;}
@@ -73,7 +73,7 @@ function learnTreeSkill(id){
  const s=SKILL_BY_ID[id];if(!s||!assassinMenu)return false;
  if(assassinMenu.practice){S.practiceSkills=S.practiceSkills||{};if(!s.req.every(k=>skillOn(k)))return false;S.practiceSkills[id]=true;syncRuntimeSkills();renderAssassinMenu();syncTools();return true;}
  const r=loadSkillTree();if(r.learned.includes(id)||!s.req.every(k=>r.learned.includes(k))||skillBudget()-skillSpent(r)<s.cost)return false;
- r.learned.push(id);const stored=storeSkillTree(r);if(S&&running)syncRuntimeSkills();
+ r.learned.push(id);const stored=storeSkillTree(r);choseFieldSkill(id);if(S&&running)syncRuntimeSkills();
  if(ASSASSIN_SKILLS[id])chooseAssassinSkill(id);else renderAssassinMenu();if(S){hudCache.skillScan=null;syncTools();}
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
@@ -87,13 +87,13 @@ function resetTreeSkills(){
 const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]==='skills';
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
- const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0;if(el.hidden)return;
+ const record=loadSkillTree(),points=skillBudget()-skillSpent(record),field=fieldSkillPreparation(after);
+ el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0&&!field;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
- head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
- note.textContent='기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
- copy.append(head,note);button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(copy,button);
+ head.textContent=field?.head||(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
+ note.textContent=field?field.note+(points>0?' · 남은 '+points+'P는 기술 트리에서 사용 가능.':''):'기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
+ copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;

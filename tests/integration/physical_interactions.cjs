@@ -27,7 +27,7 @@ function scene(){
   nearHide:()=>null,nearBushSpot:()=>null,nearCorpse:()=>null,beginHideFlow:()=>{P.trav={hideFlow:{}};return true;},hideSpace:()=>true,hideApproach:()=>({length:24}),hideDistance:()=>24,
   electricalActionAllowed:()=>true,actObj:a=>a.p||a.d||a.l||a.targetObject||a.c,
   closeEnvPicker:()=>{},finishEnvSelection:()=>{},contactFeedback:()=>{},
-  logEv:()=>{},vipHitContext:()=>null,witnessedAssailant:()=>null,facWitness:()=>{},cityVictim:()=>{},spawnEffect:()=>{},armKoHold:()=>{},
+  fieldTakedownSkills:()=>{},logEv:()=>{},vipHitContext:()=>null,witnessedAssailant:()=>null,facWitness:()=>{},cityVictim:()=>{},spawnEffect:()=>{},armKoHold:()=>{},
   setIcon:()=>{},rememberSuspect:()=>{},startReport:()=>false,civScream:()=>{},goAlert:g=>g.state='ALERT'
  };
  q.collide=P=>q.collision(P);q.castRay=(x,y,a,d)=>q.ray(d);q.noise=(...a)=>q.sounds.push(a);q.toast=t=>q.toasts.push(t);

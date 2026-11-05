@@ -6,7 +6,7 @@ function update(dt, present=true) {
   S.t += dt;
   updateSkillDevices();
   updateNpcDoors(dt);
-  updatePlayer(dt); updateActionFlow(); updateOpeningContract();
+  updatePlayer(dt); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록
     if (S.trailT <= 0) { S.trailT = 0.35; const l = S.trail[S.trail.length - 1]; if (!l || dist(l.x, l.y, P.x, P.y) > 20) S.trail.push({ x: P.x, y: P.y, z: P.z || 0, fl: flOf(P) }); } }
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
@@ -62,7 +62,7 @@ function update(dt, present=true) {
   }
   if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; refreshBodyLighting(); }
   for (const c of S.corpses) if (c.fly) { const f = c.fly; f.t += dt; const k = Math.min(1, f.t / f.dur); c.x = f.x0 + (f.x1 - f.x0) * k; c.y = f.y0 + (f.y1 - f.y0) * k; if (k >= 1) { c.fly = null; c.light = lightAt(c.x, c.y); play('thud', 0.7); if (c.accident) noise(c.x, c.y, 140, 'crash', c.fl || 0); else { S.decals.push({ x: c.x, y: c.y, r: 16, rot: rnd(0, TAU) }); terrorAt(c.x, c.y); } } }  // 추락사(사고)는 피·공포 없이 쿵 소리만 — 와서 보면 '사고가 났네'
-  for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s)); } }
+  for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s));recordFieldSkill('kit','빈 캔을 던져 확인할 소리를 냈다'); } }
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);
   updateAssassinPractice(); updateEffects();
   for (const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < 0.45);

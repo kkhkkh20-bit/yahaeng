@@ -29,7 +29,7 @@ function actSmoke(pt){
  P.smokes--;S.smokeThrows=S.smokeThrows||[];S.smokeThrows.push({x:P.x,y:P.y,at,t0:S.t,dur:.25+reach/500,r:skillOn('smokeMix')?112:96,life:skillOn('smokeMix')?8:5});S.throwT=S.t+.6;S.stats.smokesUsed=(S.stats.smokesUsed||0)+1;play('throw',.3);return true;
 }
 function updateSkillDevices(){
- for(const s of S.smokeThrows||[])if(!s.done&&S.t-s.t0>=s.dur){s.done=true;const at=s.at,c={...at,r:s.r,t0:S.t,until:S.t+s.life,cells:smokeCells(at,s.r)};S.smokes.push(c);if(S.smokes.length>3)S.smokes.shift();S.smokeSerial=(S.smokeSerial||0)+1;noise(at.x,at.y,140,'smoke',at.fl,0);play('land',.3);}
+ for(const s of S.smokeThrows||[])if(!s.done&&S.t-s.t0>=s.dur){s.done=true;const at=s.at,c={...at,r:s.r,t0:S.t,until:S.t+s.life,cells:smokeCells(at,s.r)};S.smokes.push(c);recordFieldSkill('smoke','연막을 펼쳐 시선을 가렸다');recordFieldSkill('smokeMix','반경 3.5m·8초 연막을 펼쳤다');if(S.smokes.length>3)S.smokes.shift();S.smokeSerial=(S.smokeSerial||0)+1;noise(at.x,at.y,140,'smoke',at.fl,0);play('land',.3);}
  S.smokeThrows=(S.smokeThrows||[]).filter(s=>!s.done);const count=S.smokes.length;S.smokes=S.smokes.filter(s=>s.until>S.t);if(S.smokes.length!==count)S.smokeSerial=(S.smokeSerial||0)+1;
 }
 function smokeContains(s,x,y){return !!s.cells[Math.floor(x/TILE)+','+Math.floor(y/TILE)]&&dist(x,y,s.x,s.y)<=s.r;}
@@ -64,7 +64,7 @@ function actRadio(pt){
  if(!groundSolidP(Math.floor(at.x/TILE),Math.floor(at.y/TILE)))for(const g of S.guards.filter(g=>g.radio&&!g.civ&&!g.dog&&!g.target&&!g.elite&&!g.doomed&&!g.climb&&flOf(g)===flOf(P)&&!(g.z||0)&&['PATROL','RETURN'].includes(g.state)&&dist(g.x,g.y,at.x,at.y)<420).sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))){
   const route=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(at.x/TILE),Math.floor(at.y/TILE),npcRouteSolid(g));if(route.length||dist(g.x,g.y,at.x,at.y)<TILE){chosen=g;break;}
  }
- if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';gsay(chosen,'통로 점검 지시 확인. 이동한다.',2.4);P.radioCharges--;S.radioReadyAt=S.t+30;S.throwT=S.t+.7;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
+ if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';gsay(chosen,'통로 점검 지시 확인. 이동한다.',2.4);P.radioCharges--;S.radioReadyAt=S.t+30;S.throwT=S.t+.7;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
  setLayer(f0);return !!chosen;
 }
 function actHack(){
@@ -77,7 +77,7 @@ function updateTechWork(P,dt){
  P.vx=P.vy=0;P.moving=false;P.light=lightAt(P.x,P.y);P.hidden=false;w.t+=dt;
  if(w.t>=(w.kind==='hack'?1.5:1)){
   if(w.kind==='radio'){P.hasRadio=true;if(!S.skillGrants.radio){P.radioCharges=2;S.skillGrants.radio=true;}toast('무전기 확보 · 도구를 다시 사용해 점검 위치를 지시',2.6);}
-  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
+  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;recordFieldSkill('hack','CCTV 일시 정지 · 기존 녹화는 남음');recordFieldSkill('signal','해킹 정지 시간이 15초로 늘었다');spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
   P.techWork=null;play('switch',.3);syncTools();
  }return true;
 }

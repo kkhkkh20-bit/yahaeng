@@ -11,7 +11,7 @@ function koPerson(g, mode, where, intent, quiet) {
   facWitness(g); cityVictim(g);
   const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
-  c.vipApproach=vipApproach;S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
+  c.vipApproach=vipApproach;S.corpses.push(c);fieldTakedownSkills(intent,true); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
   noise(g.x, g.y, quiet?12:30, 'ko', flOf(g),g.z||0);
@@ -152,7 +152,7 @@ function killGuard(g, mode, where, quiet) {
   }
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
-  c.vipApproach=vipApproach;S.corpses.push(c);
+  c.vipApproach=vipApproach;S.corpses.push(c);fieldTakedownSkills(intent,false);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }

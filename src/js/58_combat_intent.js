@@ -50,7 +50,7 @@ function prepareCombat(a) {
     if (source) S.player.lethalHold = { a: Object.assign({}, a), source, targets: combatVictims(a).map(g => ({ g, fl: flOf(g), z: g.z || 0 })), t: 0, x: S.player.x, y: S.player.y, fl: flOf(S.player), z: S.player.z || 0 };
     return false;
   }
-  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null };
+  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null, fieldSkill: a.k==='drop'?'drop':['ambush','pull','ventKill','ledgeKill'].includes(a.k)||concealedAttackSource()?'ambush':a.k==='kill'&&dist(S.player.x,S.player.y,g.x,g.y)>MELEE_CONTACT?'reach':null };
   return true;
 }
 function updateLethalHold(P, dt) {

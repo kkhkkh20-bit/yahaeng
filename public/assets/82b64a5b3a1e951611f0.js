@@ -1277,7 +1277,7 @@ STAGES.push({
   endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 경비 재킷으로 감시 앞을 지나가 보자.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
-  bare:true,kunai:0,coins:0,well:'manhole',pspd:1.3,gspd:.85,radioCheck:0,
+  bare:true,ownedLoadout:true,kunai:0,coins:0,well:'manhole',pspd:1.3,gspd:.85,radioCheck:0,
   securityResponse:false,wires:[],roofs:[],bricks:[],items:[],challenges:[],
   build(m){
     m.fill(0,0,23,18,',');m.rect(0,0,23,18);
@@ -1308,9 +1308,9 @@ STAGES.push({
  brief:'운반책과 거래하던 연락책이 증인 명단을 넘기러 나왔다. 그는 동쪽 적치장과 골목 사이를 왕복한다. 경비는 한 명이다. 연락책이 멈추거나 등을 보일 때 조용히 접근하자. 카메라와 잠긴 문은 없다. 표적만 처리하고 빠져나오면 된다.',
  endText:'명단이 넘어가는 것을 막았다. 연락책이 쓰던 창고에 거래 명세서가 남아 있다. 첫 완료 기술 포인트로 원하는 기술을 배우고 다음 의뢰로 가자.',
  W:32,H:22,start:[5,18],exit:[3,18],exitName:'서쪽 골목',startA:0,
- bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+ bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.75,securityResponse:false,radioCheck:0,wires:[],roofs:[],bricks:[],items:[],challenges:[],
- build(m){m.fill(0,0,31,21,',');m.rect(0,0,31,21);m.fill(1,15,30,19,'.');m.fill(7,5,29,14,'=');m.fill(14,10,16,12,'C');m.fill(25,3,29,3,'C');m.many('B',[[9,13],[10,13],[20,11],[20,12]]);m.many('T',[[3,5],[5,10],[29,19]]);m.car(25,12,1);},
+ build(m){m.fill(0,0,31,21,',');m.rect(0,0,31,21);m.fill(1,15,30,19,'.');m.fill(7,5,29,14,'=');m.fill(14,10,16,12,'C');m.fill(25,3,29,3,'C');m.many('B',[[9,13],[10,13],[20,11],[20,12],[20,15]]);m.many('T',[[3,5],[5,10],[29,19]]);m.car(25,12,1);},
  zones:[[0,0,31,21,'pub',null,'공개 골목',[]]],lamps:[[30,8,250,1],[6,15,190,1]],
  guards:[{kind:'t',tag:'contact',target:true,route:[[22,8,10],[27,8,10]],radio:false},{kind:'g1',tag:'lookout',route:[[12,16,5],[24,16,6]],radio:false}],
 });
@@ -1321,12 +1321,12 @@ STAGES.push({
  brief:'연락책이 쓰던 창고에 거래 명세서가 있다. 경비 둘과 CCTV 한 대가 지킨다. 골목의 예비 재킷으로 평범하게 걸어 들어갈 수 있다. 카메라 뒤에서 전선을 분리하면 책상 작업이 안전해진다. 만약 신원이 녹화되면 골목의 관리 단말에서 기록을 지운 뒤 나가자.',
  endText:'명세서에서 연락 거점의 주소를 찾았다. 그곳 2층의 장부로 배후를 확인하자.',
  W:34,H:23,start:[5,19],exit:[3,19],exitName:'서쪽 골목',startA:0,
- bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+ bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,wires:[],roofs:[],bricks:[],challenges:[],
  build(m){m.fill(0,0,33,22,',');m.rect(0,0,33,22);m.fill(1,16,32,20,'.');m.fill(14,3,31,14,'h');m.fill(14,3,31,3,'#');m.fill(14,3,14,14,'#');m.fill(31,3,31,14,'#');m.fill(14,14,31,14,'#');m.fill(18,14,19,14,'h');m.fill(14,10,14,11,'h');m.many('C',[[15,4],[16,4],[30,4],[30,5]]);m.many('B',[[8,17],[12,14],[12,13]]);m.many('T',[[4,5],[7,9],[31,20]]);},
  zones:[[0,0,33,22,'pub',null,'골목',[]],[14,3,31,14,'res',null,'거래 창고',['crew']]],
  props:[{id:'warehouseCoat',name:'예비 경비 재킷',outfit:'crew',at:[10,18]}],
- guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false},{kind:'g1',tag:'warehousePatrol',route:[[16,9,8],[21,9,8]],radio:false}],
+ guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false},{kind:'g1',tag:'warehousePatrol',route:[[16,9,8],[21,9,8],[19,11,0],[19,12,6]],radio:false}],
  fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
  cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0,name:'골목 관리 단말'},
@@ -1340,7 +1340,7 @@ STAGES.push({
   mission:'연락 거점 2층 장부 회수 후 서쪽 골목으로 탈출',
   brief:'명세서가 가리킨 연락 거점이다. 배후의 이름이 적힌 장부는 2층에 있다. 경비는 1층에 한 명뿐이다. 골목의 예비 재킷을 입고 앞문으로 들어가자. 계단은 기술 없이 오르내릴 수 있다. 2층에서 장부를 챙긴 뒤 계단으로 내려와 왼쪽 골목으로 빠져나온다. 카메라는 없다.',
   endText:'장부는 클럽 실장을 가리킨다. 암살, 복장, CCTV와 층 이동을 익혔다. 이제 VIP에서 배운 방법을 조합해 보자.',
-  rivals:0,securityResponse:false,radioCheck:0,
+  rivals:0,ownedLoadout:true,securityResponse:false,radioCheck:0,
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'연락 거점',['crew']]],
   props:[{id:'officeCoat',name:'예비 경비 재킷',outfit:'crew',at:[8,18]}],
   guards:[{kind:'g1',tag:'officeKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false}],
@@ -1356,7 +1356,7 @@ STAGES.push({
   brief:'까마귀가 예비 경비 재킷을 남겼다. 재킷을 입으면 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 서류는 경비의 등 뒤에 있다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
   endText:'같은 길도 복장을 갖추면 걸어서 통과할 수 있다. 다음 의뢰에서는 CCTV 한 대를 다룬다.',
   W:26,H:18,start:[6,14],exit:[3,15],exitName:'들어온 골목',startA:0,
-  bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
   kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,
   wires:[],roofs:[],bricks:[],challenges:[],
   build(m){
@@ -1378,7 +1378,7 @@ STAGES.push({
   brief:'경비가 비운 작은 창고다. 카메라 뒤쪽에는 시야가 닿지 않는다. 뒤로 접근해 행동으로 전선을 분리한다. 조작은 2초가 걸린다. CCTV가 꺼지면 명세서를 챙겨 골목으로 나온다.',
   endText:'암살, 복장 통행, CCTV를 하나씩 경험했다. 다음은 경비 한 명이 있는 골목에서 움직이는 연락책을 처리한다.',
   W:26,H:18,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
-  bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
   kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,
   wires:[],roofs:[],bricks:[],guards:[],challenges:[],
   build(m){
@@ -3230,8 +3230,8 @@ function syncRuntimeSkills(){
  if(S.skillRules!==149&&S.skillGrants?.precision)S.skillGrants.precisionDart=true;S.skillRules=149;
  const r=loadSkillTree();S.skills=Object.fromEntries(r.learned.map(id=>[id,true]));S.skillStars=totalStars();S.skillGrants=S.skillGrants||{};
  S.perks={sole:skillOn('quietStep'),shadow:skillOn('swiftCrouch'),reach:skillOn('reach'),pick:skillOn('kit'),can:skillOn('kit'),dart:skillOn('precision')};
- if((!STAGE.tutorial&&(!STAGE.bare||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
-  if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
+ if((!STAGE.tutorial&&(!STAGE.bare||STAGE.ownedLoadout||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
+  if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.ownedLoadout?2:STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
   if(skillOn('dart')&&skillOn('precision')&&!S.skillGrants.precisionDart){S.player.kunai=(S.player.kunai||0)+1;S.skillGrants.precisionDart=true;}
   const grants={kit:{picks:1,stones:2},kunai:{blades:2},smoke:{smokes:1},precision:{blades:1},smokeMix:{smokes:1},radio:{radioCharges:2},hack:{hackDevice:1}};
   for(const[id,items]of Object.entries(grants))if(skillOn(id)&&!S.skillGrants[id]){for(const[k,v]of Object.entries(items))S.player[k]=(S.player[k]||0)+v;S.skillGrants[id]=true;}
@@ -3242,7 +3242,7 @@ function learnTreeSkill(id){
  const s=SKILL_BY_ID[id];if(!s||!assassinMenu)return false;
  if(assassinMenu.practice){S.practiceSkills=S.practiceSkills||{};if(!s.req.every(k=>skillOn(k)))return false;S.practiceSkills[id]=true;syncRuntimeSkills();renderAssassinMenu();syncTools();return true;}
  const r=loadSkillTree();if(r.learned.includes(id)||!s.req.every(k=>r.learned.includes(k))||skillBudget()-skillSpent(r)<s.cost)return false;
- r.learned.push(id);const stored=storeSkillTree(r);if(S&&running)syncRuntimeSkills();
+ r.learned.push(id);const stored=storeSkillTree(r);choseFieldSkill(id);if(S&&running)syncRuntimeSkills();
  if(ASSASSIN_SKILLS[id])chooseAssassinSkill(id);else renderAssassinMenu();if(S){hudCache.skillScan=null;syncTools();}
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
@@ -3256,13 +3256,13 @@ function resetTreeSkills(){
 const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]==='skills';
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
- const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0;if(el.hidden)return;
+ const record=loadSkillTree(),points=skillBudget()-skillSpent(record),field=fieldSkillPreparation(after);
+ el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0&&!field;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
- head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
- note.textContent='기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
- copy.append(head,note);button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(copy,button);
+ head.textContent=field?.head||(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
+ note.textContent=field?field.note+(points>0?' · 남은 '+points+'P는 기술 트리에서 사용 가능.':''):'기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
+ copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
@@ -3290,6 +3290,68 @@ const electricalAction=a=>a.k==='bfuse'||a.k==='fuse';
 const electricalActionAllowed=a=>!electricalAction(a)||abilityOn('electric');
 function electricalChoice(a){
  return electricalActionAllowed(a)?a:{...a,label:'배전반 조작 필요',skillLocked:'electric',reason:abilityLockText('electric')};
+}
+
+// A chosen skill follows the player into a real contract. Practice loans never count.
+const FIELD_LEARNING_STORE='yahaeng.fieldLearning.v1';
+let volatileFieldLearning=null;
+function loadFieldLearning(){
+ let r=volatileFieldLearning;try{r=JSON.parse(localStorage.getItem(FIELD_LEARNING_STORE))||r;}catch(e){}
+ return{active:SKILL_BY_ID[r?.active]?r.active:null,used:r?.used&&typeof r.used==='object'?r.used:{}};
+}
+function storeFieldLearning(r){try{localStorage.setItem(FIELD_LEARNING_STORE,JSON.stringify(r));volatileFieldLearning=null;}catch(e){volatileFieldLearning=r;}}
+function choseFieldSkill(id){const r=loadFieldLearning();r.active=id;delete r.used[id];storeFieldLearning(r);}
+const realSkillField=()=>!!S&&!S.over&&!STAGE.tutorial&&!STAGE.artSlice&&!STAGE.skillPractice&&!STAGE.toolPractice&&!STAGE.trialSkills?.length&&(introductoryContract(STAGE)||mainContract(STAGE));
+function recordFieldSkill(id,detail){
+ if(!realSkillField()||!S.skills?.[id]||!skillOn(id))return false;
+ S.fieldSkillUses=S.fieldSkillUses||{};if(S.fieldSkillUses[id])return false;
+ const use={stage:STAGE.id,detail};S.fieldSkillUses[id]=use;
+ const r=loadFieldLearning();r.used[id]=use;storeFieldLearning(r);
+ if(r.active===id)S.fieldSkillToast={id,detail,at:S.t+1.8};return true;
+}
+function fieldTakedownSkills(intent,ko){
+ if(intent?.fieldSkill)recordFieldSkill(intent.fieldSkill,intent.fieldSkill==='reach'?'거리를 좁혀 제압했다':intent.fieldSkill==='drop'?'위에서 내려와 적을 제압했다':'은신한 자리에서 적을 끌어들였다');
+ if(ko&&intent?.source)recordFieldSkill('silentHands','맨손 제압의 접촉 소음 30% 감소');
+}
+function fieldSkillPlan(id){
+ const plans={
+  reach:'표적이 등을 보일 때 약 세 걸음 거리에서 공격. 몸을 직접 움직여 접근한다.',
+  ambush:STAGE.id==='e1'?'아래쪽 순찰로 옆 화단에 웅크려 숨고, 경비가 가까워지면 공격.':'화단이나 은신처에서 숨은 채 가까이 온 적을 공격.',
+  dual:STAGE.id==='e2'?'순찰병이 문지기 뒤에 합류할 때 두 적의 등 뒤에서 공격을 길게. 한 명씩 처리하거나 복장으로 지나가도 된다.':'붙어 있는 두 적의 등 뒤에서 공격을 길게. 흩어져 있으면 한 명씩 처리해도 된다.',
+  chain:'떨어진 두 적의 등 뒤에서 연속 암살을 시작. 이동 중 들키면 중단된다.',
+  dart:'도구에서 다트를 선택하고 경비를 겨냥. 짧게 발사하면 기절한다. CCTV에는 전선 차단을 사용.',
+  kunai:'도구에서 쿠나이를 선택하고 적을 겨냥. 1초 이상 눌렀다 떼면 처치한다.',
+  smoke:'도구에서 연막탄을 선택해 사용. 연기 속에서는 시선을 가리지만 소리와 접촉은 남는다.',
+  hack:'가까운 CCTV를 겨냥해 해킹기를 사용. 1.5초 작업 뒤 일시 정지하며 기존 녹화는 남는다.',
+  quietStep:'평범하게 걸을 때 발소리 범위가 줄어든다. 걷기 자체는 침입의 증거가 아니다.',
+  quietCrouch:'웅크려 이동해 줄어든 발소리 범위를 확인하자.',
+  swiftCrouch:'웅크려 이동하면 이전보다 20% 빠르게 접근할 수 있다.',
+  bodyCarry:'쓰러진 사람을 행동 버튼으로 들어 옮겨 보자. 운반 속도가 빨라졌다.',
+  silentHands:'일반 경비 뒤에서 공격을 짧게 눌러 기절시키면 접촉 소음이 줄어든다.',
+ };
+ return plans[id]||SKILL_BY_ID[id]?.description||'';
+}
+function pendingFieldSkill(){const r=loadFieldLearning();return r.active&&!r.used[r.active]&&loadSkillTree().learned.includes(r.active)?r.active:null;}
+function fieldSkillPreparation(after){
+ const used=after&&S?.fieldSkillUses,ids=used?Object.keys(used).filter(id=>SKILL_BY_ID[id]&&loadSkillTree().learned.includes(id)):[];
+ if(ids.length)return{head:'이번 의뢰에서 활용한 기술',note:ids.map(id=>SKILL_BY_ID[id].name+' · '+used[id].detail).join(' / ')};
+ const id=pendingFieldSkill();return id?{head:'익힌 기술 · '+SKILL_BY_ID[id].name,note:fieldSkillPlan(id)}:null;
+}
+function updateFieldLearning(dt){
+ if(!realSkillField())return;
+ const P=S.player,prior=S.fieldStride;S.fieldStride={x:P.x,y:P.y,fl:flOf(P),z:P.z||0};
+ const chosen=loadFieldLearning(),id=chosen.active&&!chosen.used[chosen.active]&&S.skills?.[chosen.active]?chosen.active:null,moved=prior&&prior.fl===flOf(P)&&prior.z===(P.z||0)&&dist(prior.x,prior.y,P.x,P.y)>.2&&dist(prior.x,prior.y,P.x,P.y)<20;
+ if(id&&moved&&P.moving&&!actionBusy(P)){
+  const detail=id==='swiftCrouch'&&P.mode==='sneak'?'웅크린 이동 속도 20% 증가':id==='sprint'&&P.mode==='run'?'달리기 속도 12% 증가':id==='bodyCarry'&&P.carrying?'운반 속도 60% → 75%':id==='lookout'?'일반 카메라 시야 10% 확장':null;
+  if(detail){S.fieldMoveTime=(S.fieldMoveTime||0)+dt;if(S.fieldMoveTime>=2)recordFieldSkill(id,detail);}
+ }else S.fieldMoveTime=0;
+ if(S.fieldSkillToast&&S.t>=S.fieldSkillToast.at&&!actionBusy(P)){const u=S.fieldSkillToast;S.fieldSkillToast=null;toast(SKILL_BY_ID[u.id].name+' 활용 · '+u.detail,3,'good');}
+ if(!id||actionBusy(P)||S.alevel>=2)return;
+ if(id==='reach'){
+  const a=attackAction(),g=a?.g||a?.list?.[0];if(a?.k==='kill'&&g&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)fieldSkillNotice('learned-reach','익힌 접근 암살 · 지금 공격하면 직접 다가가 제압한다');
+ }else if((id==='dual'||id==='chain')&&assassinOpportunity(id))fieldSkillNotice('learned-'+id,'익힌 '+SKILL_BY_ID[id].name+' · 두 적의 등 뒤다. 공격을 길게 누르면 시작한다');
+ else if(id==='ambush'&&ambushTarget())fieldSkillNotice('learned-ambush','익힌 은신 기습 · 숨은 채 공격해 가까운 적을 끌어들인다');
+ else if(id==='dart'&&input.tool==='kunai'&&kunaiTarget())fieldSkillNotice('learned-dart','익힌 다트 · 짧게 발사하면 겨눈 경비를 기절시킨다');
 }
 
 // Active assassination abilities use ownership from the shared skill tree.
@@ -4302,6 +4364,8 @@ function respondToLampOff(l,watchers){
 }
 function noise(x, y, r, src, fl, z) {
   r=skillNoise(src,r);
+  if(src==='step'&&S.player.moving){if(S.player.mode==='walk')recordFieldSkill('quietStep','걷기 발소리 범위 25% 감소');else if(S.player.mode==='sneak')recordFieldSkill('quietCrouch','웅크린 발소리 범위 35% 감소');}
+  if(src==='land')recordFieldSkill('landing','일반 착지 소음 40% 감소');
   if (fl == null) fl = flOf(S.player);
   const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
   if (src !== 'scream') r = Math.max(src==='whistle'?180:0,r*loudMul(x,y,fl));  // 클럽 음악에 묻힌다
@@ -9948,7 +10012,7 @@ function prepareCombat(a) {
     if (source) S.player.lethalHold = { a: Object.assign({}, a), source, targets: combatVictims(a).map(g => ({ g, fl: flOf(g), z: g.z || 0 })), t: 0, x: S.player.x, y: S.player.y, fl: flOf(S.player), z: S.player.z || 0 };
     return false;
   }
-  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null };
+  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null, fieldSkill: a.k==='drop'?'drop':['ambush','pull','ventKill','ledgeKill'].includes(a.k)||concealedAttackSource()?'ambush':a.k==='kill'&&dist(S.player.x,S.player.y,g.x,g.y)>MELEE_CONTACT?'reach':null };
   return true;
 }
 function updateLethalHold(P, dt) {
@@ -11182,7 +11246,7 @@ function actPrimary(force) {
     case 'camroom': { S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
-    case 'bfuse': { bldPower(a.fb, false); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
+    case 'bfuse': { bldPower(a.fb, false);recordFieldSkill('electric','건물 배전반의 전원을 차단했다'); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
       const l = a.l,off=!lampCircuitOff(l),watchers=off?lampSwitchWitnesses(l):[];setLampCircuit(l,off); play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
       if(l.off){if(l.roomSwitch)reactToRoomDarkness(l,watchers);else respondToLampOff(l,watchers);}
@@ -11276,7 +11340,7 @@ function koPerson(g, mode, where, intent, quiet) {
   facWitness(g); cityVictim(g);
   const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
-  c.vipApproach=vipApproach;S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
+  c.vipApproach=vipApproach;S.corpses.push(c);fieldTakedownSkills(intent,true); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
   noise(g.x, g.y, quiet?12:30, 'ko', flOf(g),g.z||0);
@@ -11417,7 +11481,7 @@ function killGuard(g, mode, where, quiet) {
   }
   facWitness(g); cityVictim(g);
   const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
-  c.vipApproach=vipApproach;S.corpses.push(c);
+  c.vipApproach=vipApproach;S.corpses.push(c);fieldTakedownSkills(intent,false);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
@@ -11530,7 +11594,7 @@ function updateAssassinSkill(P,dt){
   if(S.t-A.secondAt>=ASSASSIN_BEATS.secondEnd)finishAssassinSkill(A);return true;
 }
 function finishAssassinSkill(A){
-  if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;}
+  if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;recordFieldSkill(A.key,'두 적을 실제로 제압했다');recordFieldSkill('flow','연계 기술 재사용 대기시간 20% 감소');}
   cancelAssassinSkill();
 }
 function drawAssassinActors(P,key,alpha=1){
@@ -11588,7 +11652,7 @@ function actSmoke(pt){
  P.smokes--;S.smokeThrows=S.smokeThrows||[];S.smokeThrows.push({x:P.x,y:P.y,at,t0:S.t,dur:.25+reach/500,r:skillOn('smokeMix')?112:96,life:skillOn('smokeMix')?8:5});S.throwT=S.t+.6;S.stats.smokesUsed=(S.stats.smokesUsed||0)+1;play('throw',.3);return true;
 }
 function updateSkillDevices(){
- for(const s of S.smokeThrows||[])if(!s.done&&S.t-s.t0>=s.dur){s.done=true;const at=s.at,c={...at,r:s.r,t0:S.t,until:S.t+s.life,cells:smokeCells(at,s.r)};S.smokes.push(c);if(S.smokes.length>3)S.smokes.shift();S.smokeSerial=(S.smokeSerial||0)+1;noise(at.x,at.y,140,'smoke',at.fl,0);play('land',.3);}
+ for(const s of S.smokeThrows||[])if(!s.done&&S.t-s.t0>=s.dur){s.done=true;const at=s.at,c={...at,r:s.r,t0:S.t,until:S.t+s.life,cells:smokeCells(at,s.r)};S.smokes.push(c);recordFieldSkill('smoke','연막을 펼쳐 시선을 가렸다');recordFieldSkill('smokeMix','반경 3.5m·8초 연막을 펼쳤다');if(S.smokes.length>3)S.smokes.shift();S.smokeSerial=(S.smokeSerial||0)+1;noise(at.x,at.y,140,'smoke',at.fl,0);play('land',.3);}
  S.smokeThrows=(S.smokeThrows||[]).filter(s=>!s.done);const count=S.smokes.length;S.smokes=S.smokes.filter(s=>s.until>S.t);if(S.smokes.length!==count)S.smokeSerial=(S.smokeSerial||0)+1;
 }
 function smokeContains(s,x,y){return !!s.cells[Math.floor(x/TILE)+','+Math.floor(y/TILE)]&&dist(x,y,s.x,s.y)<=s.r;}
@@ -11623,7 +11687,7 @@ function actRadio(pt){
  if(!groundSolidP(Math.floor(at.x/TILE),Math.floor(at.y/TILE)))for(const g of S.guards.filter(g=>g.radio&&!g.civ&&!g.dog&&!g.target&&!g.elite&&!g.doomed&&!g.climb&&flOf(g)===flOf(P)&&!(g.z||0)&&['PATROL','RETURN'].includes(g.state)&&dist(g.x,g.y,at.x,at.y)<420).sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))){
   const route=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(at.x/TILE),Math.floor(at.y/TILE),npcRouteSolid(g));if(route.length||dist(g.x,g.y,at.x,at.y)<TILE){chosen=g;break;}
  }
- if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';gsay(chosen,'통로 점검 지시 확인. 이동한다.',2.4);P.radioCharges--;S.radioReadyAt=S.t+30;S.throwT=S.t+.7;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
+ if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';gsay(chosen,'통로 점검 지시 확인. 이동한다.',2.4);P.radioCharges--;S.radioReadyAt=S.t+30;S.throwT=S.t+.7;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
  setLayer(f0);return !!chosen;
 }
 function actHack(){
@@ -11636,7 +11700,7 @@ function updateTechWork(P,dt){
  P.vx=P.vy=0;P.moving=false;P.light=lightAt(P.x,P.y);P.hidden=false;w.t+=dt;
  if(w.t>=(w.kind==='hack'?1.5:1)){
   if(w.kind==='radio'){P.hasRadio=true;if(!S.skillGrants.radio){P.radioCharges=2;S.skillGrants.radio=true;}toast('무전기 확보 · 도구를 다시 사용해 점검 위치를 지시',2.6);}
-  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
+  else{target.hackedUntil=S.t+(skillOn('signal')?15:10);target.meter=0;S.hackReadyAt=S.t+25;S.stats.hacks=(S.stats.hacks||0)+1;recordFieldSkill('hack','CCTV 일시 정지 · 기존 녹화는 남음');recordFieldSkill('signal','해킹 정지 시간이 15초로 늘었다');spawnEffect('hack',{x:target.x,y:target.y,fl:flOf(target),z:0},{scale:.85});toast('CCTV 일시 정지 · 기존 녹화 기록은 남아 있다',2.5);}
   P.techWork=null;play('switch',.3);syncTools();
  }return true;
 }
@@ -11778,7 +11842,7 @@ function bldPower(fb, on) {
 function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
 function cutLights() {
   if(!abilityOn('electric'))return false;
-  S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
+  S.lightsOn = false;recordFieldSkill('electric','구역 배전반의 전원을 차단했다'); play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast((STAGE.powerName || '구역 조명')+' 전원 차단 · 경비가 복구하러 온다', 3); setAlert(1, 30);
   S.fuseT = 2.5;
   refreshBodyLighting();
@@ -12060,6 +12124,7 @@ function kunaiHit(k) {
     spawnEffect('dart',{x:g.x,y:g.y-22,fl:flOf(g),z:g.z||0},{angle:Math.atan2(g.y-k.y0,g.x-k.x0),scale:.7});
     g.takedownIntent = { source: null, lethal: !!k.lethal }; S.lethalNext = !!k.lethal; if (!k.lethal) S.koNext = true;
     killGuard(g); S.stats.special++; dartBlame(g);
+    if(S.corpses.some(c=>c.g===g)){recordFieldSkill(k.weapon==='blade'?'kunai':'dart',k.lethal?'투척한 도구로 적을 처치했다':'다트가 명중해 적이 기절했다');if(dist(k.x0,k.y0,g.x,g.y)>250)recordFieldSkill('precision','기본 사거리 밖의 적에게 명중했다');}
     const body=S.corpses.find(c=>c.g===g&&c.ko);if(body)body.playerHandled=true;
     toast(k.weapon==='blade'?'쿠나이로 처치했다':k.lethal ? '다트로 처치했다' : '다트로 기절시켰다', 1.6, 'good');
   }
@@ -12098,7 +12163,7 @@ function update(dt, present=true) {
   S.t += dt;
   updateSkillDevices();
   updateNpcDoors(dt);
-  updatePlayer(dt); updateActionFlow(); updateOpeningContract();
+  updatePlayer(dt); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록
     if (S.trailT <= 0) { S.trailT = 0.35; const l = S.trail[S.trail.length - 1]; if (!l || dist(l.x, l.y, P.x, P.y) > 20) S.trail.push({ x: P.x, y: P.y, z: P.z || 0, fl: flOf(P) }); } }
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
@@ -12154,7 +12219,7 @@ function update(dt, present=true) {
   }
   if (S._lightsWas !== S.lightsOn) { S._lightsWas = S.lightsOn; refreshBodyLighting(); }
   for (const c of S.corpses) if (c.fly) { const f = c.fly; f.t += dt; const k = Math.min(1, f.t / f.dur); c.x = f.x0 + (f.x1 - f.x0) * k; c.y = f.y0 + (f.y1 - f.y0) * k; if (k >= 1) { c.fly = null; c.light = lightAt(c.x, c.y); play('thud', 0.7); if (c.accident) noise(c.x, c.y, 140, 'crash', c.fl || 0); else { S.decals.push({ x: c.x, y: c.y, r: 16, rot: rnd(0, TAU) }); terrorAt(c.x, c.y); } } }  // 추락사(사고)는 피·공포 없이 쿵 소리만 — 와서 보면 '사고가 났네'
-  for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s)); } }
+  for (const s of S.stones) { s.t += dt; if (s.t >= s.dur && !s.done) { s.done = true; play('stone', 0.5 * clamp(1 - dist(s.x1, s.y1, S.player.x, S.player.y) / 600, 0.2, 1)); noise(s.x1, s.y1, 240, 'stone', flOf(s));recordFieldSkill('kit','빈 캔을 던져 확인할 소리를 냈다'); } }
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);
   updateAssassinPractice(); updateEffects();
   for (const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < 0.45);
@@ -15099,7 +15164,7 @@ function showEnd(win, reason) {
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if(win&&!STAGE.tutorial&&!STAGE.openingContract){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
-  renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win;
+  renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win&&!Object.keys(S.fieldSkillUses||{}).length;
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=(STAGE.starterContract||STAGE.apprenticeContract)?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
@@ -15738,6 +15803,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,

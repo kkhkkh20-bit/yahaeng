@@ -92,7 +92,7 @@ function updateAssassinSkill(P,dt){
   if(S.t-A.secondAt>=ASSASSIN_BEATS.secondEnd)finishAssassinSkill(A);return true;
 }
 function finishAssassinSkill(A){
-  if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;}
+  if(A.hits.every(t=>t!=null)){S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']=(S.stats[A.key==='dual'?'dualAssassinations':'chainAssassinations']||0)+1;S.stats.special++;recordFieldSkill(A.key,'두 적을 실제로 제압했다');recordFieldSkill('flow','연계 기술 재사용 대기시간 20% 감소');}
   cancelAssassinSkill();
 }
 function drawAssassinActors(P,key,alpha=1){

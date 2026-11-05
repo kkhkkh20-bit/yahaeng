@@ -118,7 +118,7 @@ function bldPower(fb, on) {
 function nearBFuse() { const P = S.player; if (P.z || P.fl || P.wire || P.jump || P.hide || P.carrying || P.captive) return null; let best = null, bd = 50; for (const fb of S.bfuses || []) { if (fb.cut || ACT_SKIP.has(fb)) continue; const d = dist(P.x, P.y, fb.x, fb.y); if (d < bd && objectReachable(fb, 50)) { bd = d; best = fb; } } return best; }
 function cutLights() {
   if(!abilityOn('electric'))return false;
-  S.lightsOn = false; play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
+  S.lightsOn = false;recordFieldSkill('electric','구역 배전반의 전원을 차단했다'); play('fuse', 0.6); setTimeout(() => play('switch', 0.5), 120);
   toast((STAGE.powerName || '구역 조명')+' 전원 차단 · 경비가 복구하러 온다', 3); setAlert(1, 30);
   S.fuseT = 2.5;
   refreshBodyLighting();
