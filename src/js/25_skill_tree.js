@@ -88,7 +88,7 @@ const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]=
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!(mainContract(STAGE)||STAGE.openingContract)||points<=0;if(el.hidden)return;
+ el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
@@ -98,7 +98,7 @@ function renderSkillPreparation(id,after=false){
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
  hudCache.skillPromptAt=S.t;
- const record=loadSkillTree(),points=mainContract(STAGE)||STAGE.openingContract||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
+ const record=loadSkillTree(),points=mainContract(STAGE)||introductoryContract(STAGE)||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
  if(points>0)b.dataset.points=points;else delete b.dataset.points;
  b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
 }

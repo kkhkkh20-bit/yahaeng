@@ -1,4 +1,5 @@
-const koFirst = g => !!g && !g.dog && !g.civ;
+const simpleTarget = g => !!((STAGE.openingContract || mainContract(STAGE)) && g?.target && !S.spare && !g.civ && !g.dog);
+const koFirst = g => !!g && !g.dog && !g.civ && !simpleTarget(g);
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
@@ -53,8 +54,8 @@ function strikeKill(list, two) {
   P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? 'choke' : null;
-  if (pairK) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
+  const kind = pairK ? simpleTarget(g0)&&g0.takedownIntent?.lethal?'stab':'choke' : null;
+  if (pairK && !simpleTarget(g0)) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
   if (pairK) P.a = g0.a;
   list.forEach(g => {
     g.doomed = false; if (koFirst(g)) S.koNext = true;  // 조직원은 먼저 기절 (계속 누르면 updateKoHold 가 숨을 끊는다)

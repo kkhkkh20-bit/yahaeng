@@ -76,7 +76,7 @@ async def main():
     for at in [(1272,1032),(1272,840)]:await move(*at)
     await action('Control','#btnCrouch');await move(1272,744);await move(1292,744)
     assert await q.evaluate('__game.attackAction().k!=="none"'),'rear attack not available'
-    await action('z','#btnAct',1.5);await tick(1.3)
+    await action('z','#btnAct',.04);await tick(1.3)
     assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])'),'smoking target not killed'
     await draw();await q.screenshot(path=str(O/(name+'-target.png')))
     drop=await q.evaluate('({x:__game.S.keyDrop?.x,y:__game.S.keyDrop?.y,code:!!__game.S.player.keys.code})')
@@ -141,8 +141,9 @@ async def main():
     print('OFFICE WAIT',json.dumps({'gate':gate,'observed':observed,'last':view,'player':await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,hp:__game.S.player.hp,outfit:__game.S.player.outfit,blown:__game.S.player.disguiseBlown,alarm:__game.S.alevel,stats:__game.S.stats})')},ensure_ascii=False),flush=True)
     raise AssertionError((name,'office patrol never gives a visible doorway gap'))
    print('OFFICE GAP',json.dumps({'gate':gate,'observed':observed,'selected':view},ensure_ascii=False),flush=True)
-   await move(240,445)
-   await action('x','#btnCarry')
+   await move(gate['x'],445)
+   await env('keypad')
+   await q.locator('#keypad').wait_for(state='visible')
    for key in ['0','4','1','7']:
     if touch:await q.tap('#keypad [data-k="'+key+'"]')
     else:await q.keyboard.press(key)

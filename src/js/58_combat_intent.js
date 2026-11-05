@@ -28,10 +28,13 @@ function combatVictims(a) {
   return a.list || [a.g || (a.c && a.c.g) || a.kill || (['cap', 'execute', 'drag'].includes(a.k) && S.player.captive)].filter(Boolean);
 }
 function needsLethalHold(a) {
+  if(simpleAssassination(a))return false;
   return ['ledgeKill', 'pushOff', 'finish'].includes(a.k) || (a.k === 'trap' && a.tp && !!a.tp.t) || combatVictims(a).some(g => g.dog);
 }
+function simpleAssassination(a){const gs=combatVictims(a);return ['kill','finish','cap','execute','drop','ambush','pull','ventKill','ledgeKill','pushOff'].includes(a.k)&&gs.length===1&&simpleTarget(gs[0]);}
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
+  if(simpleAssassination(a))return Object.assign({},a,{label:'표적 암살',hold:null,holdOnly:false});
   if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 처치' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '처치' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
     const label = a.k === 'drag' ? '먼저 기절시키기' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? (a.label||'기절') : (a.label || '기절').replace(/암살|처치/g, '기절');
@@ -47,7 +50,7 @@ function prepareCombat(a) {
     if (source) S.player.lethalHold = { a: Object.assign({}, a), source, targets: combatVictims(a).map(g => ({ g, fl: flOf(g), z: g.z || 0 })), t: 0, x: S.player.x, y: S.player.y, fl: flOf(S.player), z: S.player.z || 0 };
     return false;
   }
-  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold, container: a.k === 'drag' ? a.h : null };
+  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null };
   return true;
 }
 function updateLethalHold(P, dt) {

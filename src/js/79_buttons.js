@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
-// [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적도 같은 기준). 공격할 사람이 닿을 때만 켜진다
+// [공격] 큰 버튼 — 지정 표적은 한 번에 암살, 나머지는 톡 = 기절, 계속 누르면 처치. 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
 // [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 먼저 바깥에서 기절시키고 별도로 운반·은닉한다.
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
@@ -30,7 +30,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
   if (P.car) return { k: 'none', label: '경적', honk: true };
-  if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
+  if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
     if(choice&&choice.ids[0]===(action.g||action.list?.[0])?.id)action.hold=ASSASSIN_SKILLS[choice.key].name;
@@ -66,7 +66,7 @@ function envChoices() {
   if (hanging.ledge) return hanging.trav || hanging.jump ? [] : [{ k: 'ledgeUp', label: '올라가기', at: { x: hanging.x, y: hanging.y - 20 } }];
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
-  if(P.captive)return[{k:'execute',label:'먼저 기절시키기',hold:'처치'}];
+  if(P.captive)return[combatLabel({k:'execute',g:P.captive,label:'먼저 기절시키기',hold:'처치'})];
   const stored=!P.hide&&!P.carrying&&!P.captive&&nearHide();
   const recover=stored&&S.corpses.filter(c=>c.stashed&&c.container===stored).sort((a,b)=>(b.target&&b.ko?2:!b.stripped&&b.outfit?1:0)-(a.target&&a.ko?2:!a.stripped&&a.outfit?1:0))[0];
   const retrieval=recover?{k:'retrieve',h:stored,c:recover,at:stored,label:recover.target&&recover.ko?'기절한 표적 꺼내기':recover.ko?'기절자 꺼내기':'시체 꺼내기'}:null;

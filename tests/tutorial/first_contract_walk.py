@@ -1,5 +1,5 @@
 """First assassination via actual controls, with all actors and rules alive.
-Two approaches on PC and touch, then the real result button into VIP.
+Two approaches on PC and touch, then the real result button into the disguise contract.
 Only the clock and random seed are controlled. No actor, health, inventory,
 skill, alert, objective or completion overrides. Not a human timing benchmark.
 """
@@ -69,7 +69,7 @@ async def main():
      else:await move(6.5*48,8.5*48)
      await move(14.5*48-28,8.5*48);await snap('contact')
      assert await q.evaluate('__game.attackAction().k!=="none"'),'no actual rear attack'
-     await action('z','#btnAct',1.45);await tick(1.25)
+     await action('z','#btnAct',.04);await tick(1.25)
      assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])&&__game.S.exitOpen'),'actual lethal action did not open exit'
      await snap('target-down')
      await move(6.5*48,8.5*48);await move(6.5*48,13.5*48);await move(3.5*48,15.5*48)
@@ -78,7 +78,7 @@ async def main():
      assert await q.locator('#end').get_attribute('data-win')=='1';assert data['hp']>0 and not data['skills'] and data['budget']==4,data
      assert data['stats']['extraKills']==0 and data['stats'].get('crewKills',0)==0,data
      assert data['approach']==('소리로 경비 유인'if approach=='lure'else'순찰 틈으로 접근'),data
-     await q.click('#btnNext');assert await q.evaluate('__game.STAGE.id')=='m2';assert await q.locator('#brief').is_visible()
+     await q.click('#btnNext');assert await q.evaluate('__game.STAGE.id')=='p1';assert await q.locator('#brief').is_visible()
      assert not errors,errors;data.update(touch=touch,method='Native keyboard / CDP touch; stepped clock and seed; no gameplay state overrides',errors=errors);rows.append(data);print('PASS',label,json.dumps(data,ensure_ascii=False),flush=True)
     except Exception:
      await snap('failure');print('FAIL STATE',await q.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,hp:__game.S.player.hp,hidden:__game.S.player.hidden},guards:__game.S.guards.map(g=>({x:g.x,y:g.y,state:g.state,why:g.why,a:g.a})),goal:__game.nextGoal()?.text,stats:__game.S.stats})'),flush=True);raise

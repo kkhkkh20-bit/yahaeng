@@ -23,7 +23,8 @@ async def main():
             G.setLayer(0);Object.assign(g,{x:P.x+28,y:P.y,z:0,fl:0,a:0,state:'PATROL',meter:0,hasKey:null});
             const watched=ids.map(k=>S.stories.find(s=>s.d.id===k));for(const st of watched){check(st,'missing story');st.found=true;st.step=st.d.steps.length-1}
             const tick=()=>{S.t+=.01;G.updatePlayer(.01);G.updateKoHold();G.runTimers()};
-            const old=G.cpProgress();S.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let i=0;i<8;i++)tick();S.keys.KeyZ=false;G.combatRelease('KeyZ');for(let i=0;i<160;i++)tick();
+            // Establish an actual unconscious body independently of the new one-tap assassination input.
+            const old=G.cpProgress();S.koNext=true;G.killGuard(g);for(let i=0;i<160;i++)tick();
             check(g.unconscious&&!G.targetEliminated(g),id+' fixture must be unconscious');G.updateStories(1);
             for(const st of watched)check(!st.done&&!st.moot,id+' unconscious target completes or hides '+st.d.id);
             check(G.cpProgress()===old&&!S.exitOpen,id+' unconscious target counts as completed progress');

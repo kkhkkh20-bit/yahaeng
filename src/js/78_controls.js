@@ -88,6 +88,8 @@ function keyMap(ka, ea, ga) {
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none'&&!ea.skillLocked);
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
   set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);
+  $('kmX').parentElement.hidden=!!STAGE.starterContract&&!S.player.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
+  $('kmAct').parentElement.hidden=STAGE.starterContract==='camera'&&!S.guards.length;
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '웅크림' : '웅크리기', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)

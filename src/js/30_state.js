@@ -132,7 +132,7 @@ function newGame(si) {
   };
   S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70, name: STAGE.exitName || '' };
   S.exits = [S.exit].concat((STAGE.exits || []).map(e => ({ x: tc(e.at[0]), y: e.at[1] * TILE + TILE / 2, r: e.r || 60, name: e.name || '' })));  // 탈출구가 여럿이면 가까운 곳으로 (지름길)
-  S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
+  S.mod = modNow; applyPerks(); if (STAGE.tutorial || introductoryContract(STAGE)) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
   if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach((it,i) => lootPlace(it,STAGE.itemFurniture?.[i]||STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다

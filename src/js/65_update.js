@@ -27,6 +27,7 @@ function update(dt, present=true) {
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if(STAGE.securityLesson&&cpReady()&&(S.player.disguiseBlown||(S.stats.camRec||0)>0)){endGame(false,S.player.disguiseBlown?'신원 확인 게이지가 찼다 — 거리나 시야를 끊자':'CCTV 게이지가 찼다 — 통행과 작업은 별도 판정이다');return;}
+  updateStarterContract();if(S.over)return;
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
   updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt);  updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (!isTouch && e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 발각 · 추격'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(dt);
   if (S.timeLeft) {

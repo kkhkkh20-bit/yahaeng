@@ -1270,11 +1270,11 @@ const BARKS = {
 // A real, compact assassination before the optional lessons. No scripted success,
 // loaned skill, forced route or invulnerable actor: both approaches use live AI.
 STAGES.push({
-  id:'p0',no:'00',name:'담배 한 대',sub:'첫 의뢰 · 폐차장',openingContract:true,
+  id:'p0',no:'00',name:'담배 한 대',sub:'첫 밤 1 · 첫 암살',openingContract:true,
   fee:'20만',priorityTarget:true,targetNames:{runner:'운반책'},
   mission:'증인을 넘기는 운반책 한 명을 처치하고 들어온 골목으로 탈출한다.',
   brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 서쪽 적치장에는 모서리를 돌아 시야를 끊을 길이 있다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
-  endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 클럽 실장과 그의 장부를 노린다.',
+  endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 경비 재킷으로 감시 앞을 지나가 보자.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
   bare:true,kunai:0,coins:0,well:'manhole',pspd:1.3,gspd:.85,radioCheck:0,
@@ -1298,6 +1298,50 @@ STAGES.push({
     {kind:'t',tag:'runner',target:true,at:[14,8],post:0,still:true,radio:false},
     {kind:'g1',tag:'patrol',route:[[9,11,5],[20,11,5],[20,4,3],[12,4,3]],radio:false}
   ]
+});
+// Two small, real contracts bridge the first assassination and the full city.
+// They use ordinary permissions, loot, cameras and earned records, not loaned skills.
+STAGES.push({
+  id:'p1',no:'00',name:'빌린 제복',sub:'첫 밤 2 · 복장으로 통과',starterContract:'disguise',
+  fee:'25만',purpose:'경비 재킷을 입고 물류실의 출고 서류를 회수한다.',
+  mission:'예비 경비 재킷을 입고 물류실의 출고 서류를 가져온다.',
+  brief:'까마귀가 예비 경비 재킷을 남겼다. 재킷을 입으면 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 서류는 경비의 등 뒤에 있다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
+  endText:'같은 길도 복장을 갖추면 걸어서 통과할 수 있다. 다음 의뢰에서는 CCTV 한 대를 다룬다.',
+  W:26,H:18,start:[6,14],exit:[3,15],exitName:'들어온 골목',startA:0,
+  bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+  kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,
+  wires:[],roofs:[],bricks:[],challenges:[],
+  build(m){
+    m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
+    m.fill(10,3,23,11,'h');m.fill(10,3,23,3,'#');m.fill(10,3,10,11,'#');m.fill(23,3,23,11,'#');m.fill(10,11,23,11,'#');m.fill(16,11,17,11,'h');
+    m.many('C',[[11,4],[12,4],[21,4],[22,4]]);m.many('B',[[5,13],[7,13]]);m.many('T',[[4,4],[7,6],[24,14]]);
+  },
+  zones:[[0,0,25,17,'pub',null,'골목',[]],[10,3,23,11,'res',null,'물류실',['crew']]],
+  props:[{id:'starterUniform',name:'예비 경비 재킷',outfit:'crew',at:[13,14]}],
+  guards:[{kind:'g1',tag:'doorkeeper',at:[16,9],post:90,still:true,radio:false}],
+  fixedFurn:[{x:17,y:5,t:'desk',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
+  items:[[17,6]],itemName:'출고 서류',itemNames:['출고 서류'],itemPlaces:['물류실 · 책상'],
+  lamps:[[22,7,420,0],[13,14,220,1]],starterPass:[16.5,11],
+});
+STAGES.push({
+  id:'p2',no:'00',name:'꺼진 눈',sub:'첫 밤 3 · CCTV 한 대',starterContract:'camera',
+  fee:'30만',purpose:'CCTV 뒤에서 전선을 분리하고 배송 명세서를 회수한다.',
+  mission:'비어 있는 창고에서 CCTV를 끄고 배송 명세서를 가져온다.',
+  brief:'경비가 비운 작은 창고다. 카메라 뒤쪽에는 시야가 닿지 않는다. 뒤로 접근해 행동으로 전선을 분리한다. 조작은 2초가 걸린다. CCTV가 꺼지면 명세서를 챙겨 골목으로 나온다.',
+  endText:'암살, 복장 통행, CCTV를 하나씩 경험했다. 이제 클럽 실장과 장부·거래 암호표를 노리는 본 의뢰로 간다.',
+  W:26,H:18,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
+  bare:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
+  kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,
+  wires:[],roofs:[],bricks:[],guards:[],challenges:[],
+  build(m){
+    m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
+    m.fill(12,5,24,12,'h');m.fill(12,4,24,4,'#');m.fill(12,4,12,9,'#');m.fill(24,4,24,12,'#');
+    m.many('C',[[21,5],[22,5],[23,5],[23,10]]);m.many('B',[[6,12],[8,12]]);m.many('T',[[4,5],[8,4],[23,15]]);
+  },
+  zones:[[0,0,25,17,'pub',null,'빈 창고',[]]],
+  fixedFurn:[{x:20,y:5,t:'desk',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
+  cams:[[16,5,0,10]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
+  lamps:[[23,7,420,0],[16,10,300,0]],
 });
 
 'use strict';
@@ -3165,7 +3209,7 @@ const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]=
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!(mainContract(STAGE)||STAGE.openingContract)||points<=0;if(el.hidden)return;
+ el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
@@ -3175,7 +3219,7 @@ function renderSkillPreparation(id,after=false){
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
  hudCache.skillPromptAt=S.t;
- const record=loadSkillTree(),points=mainContract(STAGE)||STAGE.openingContract||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
+ const record=loadSkillTree(),points=mainContract(STAGE)||introductoryContract(STAGE)||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
  if(points>0)b.dataset.points=points;else delete b.dataset.points;
  b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
 }
@@ -3268,6 +3312,7 @@ function assassinPreview(){
 const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
+const introductoryContract = s => !!(s.openingContract || s.starterContract);
 const contractNumber = s => mainContract(s) ? String(MAIN_CONTRACTS.indexOf(s.id) + 1).padStart(2, '0') : s.no;
 const evidencePending = () => !!(STAGE.securityEvidence && S.camRoom && S.cameraEvidence && !S.camsOff);
 function recordCameraEvidence(c) {
@@ -3278,9 +3323,9 @@ function recordCameraEvidence(c) {
 }
 
 // Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['p0','m2','m4','m6','m7'];
+const LEARNING_ROUTE=['p0','p1','p2','m2','m4','m6','m7'];
 const OPTIONAL_LESSON_NEXT={tB:'t0',t0:'tC',tC:'m2',tL:'tR',tR:'m4'};
-const learningComplete=st=>stageCleared(st)||st.openingContract&&mainContracts().some(stageCleared);
+const learningComplete=st=>stageCleared(st)||introductoryContract(st)&&mainContracts().some(stageCleared);
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
   for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!learningComplete(STAGES[i]))return i;}
@@ -3289,12 +3334,12 @@ function recommendedStage(){
 function learningNext(){
   if(OPTIONAL_LESSON_NEXT[STAGE.id])return learningStageIndex(OPTIONAL_LESSON_NEXT[STAGE.id]);
   const at=LEARNING_ROUTE.indexOf(STAGE.id);
-  if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(STAGES[i].tutorial&&stageCleared(STAGES[i]))continue;return i;}return -1;}
+  if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(STAGES[i].tutorial&&stageCleared(STAGES[i])||STAGES[i].starterContract&&learningComplete(STAGES[i]))continue;return i;}return -1;}
   return recommendedStage();
 }
 function learningNextLabel(){
   const i=learningNext(),st=STAGES[i];if(!st)return '다음 의뢰';
-  return st.tutorial?st.name.replace(/^연습 \d · /,'다음 연습 · '):'의뢰 '+contractNumber(st)+' · '+st.name;
+  return st.starterContract?'다음 의뢰 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'다음 연습 · '):'의뢰 '+contractNumber(st)+' · '+st.name;
 }
 
 function initLessonLayout(){
@@ -3510,7 +3555,7 @@ function newGame(si) {
   };
   S.exit = { x: tc(STAGE.exit[0]), y: STAGE.exit[1] * TILE + TILE / 2, r: 70, name: STAGE.exitName || '' };
   S.exits = [S.exit].concat((STAGE.exits || []).map(e => ({ x: tc(e.at[0]), y: e.at[1] * TILE + TILE / 2, r: e.r || 60, name: e.name || '' })));  // 탈출구가 여럿이면 가까운 곳으로 (지름길)
-  S.mod = modNow; applyPerks(); if (STAGE.tutorial) S.cpWant = true;
+  S.mod = modNow; applyPerks(); if (STAGE.tutorial || introductoryContract(STAGE)) S.cpWant = true;
   (STAGE.dropGuards || []).forEach(i => { const g = S.guards[i]; if (g) { g.state = 'DEAD'; g.x = g.y = -9999; g.path = null; g.dropped = true; } });  // 연습 나눔: 이 판에서 쓰지 않는 자경대원
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
   if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach((it,i) => lootPlace(it,STAGE.itemFurniture?.[i]||STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
@@ -7326,9 +7371,9 @@ function openingGoal(){
   const P=S.player,at=targetKnowledge(g),body=S.corpses.find(c=>c.g===g&&c.ko);
   const whistle=isTouch?'휘파람으로':'G로',attack=isTouch?'공격':KK('atk');
   let hint='순찰을 기다리거나 숨어서 '+whistle+' 경비 유인';
-  if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격} 길게':body.stashed?'은닉처에서 꺼낸 뒤 {공격} 길게':'기절은 미완료 · 몸 가까이에서 {공격} 길게';
+  if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격}':body.stashed?'은닉처에서 꺼낸 뒤 {공격}':'기절은 미완료 · 몸 가까이에서 {공격} 처치';
   else if(P.hidden||P.cover)hint=whistle+' 경비 유인 가능 · 공격 전 풀숲/엄폐에서 나오기';
-  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction();hint=action.k!=='none'&&!action.busy?attack+' 길게 처치 · 짧게 누르면 기절':isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
+  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction();hint=action.k!=='none'&&!action.busy?attack+' 한 번 · 표적 암살':isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
   else if(S.guards.some(g=>!g.target&&g.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(g.state)))hint='경비가 소리를 확인 중 · 표적의 등 뒤로';
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};
@@ -7340,6 +7385,30 @@ function updateOpeningContract(){
   const target=npc('runner');if(target&&targetEliminated(target)&&!S.missionApproach){
     S.missionApproach=guard?.state==='DEAD'?'경비 제압 후 접근':S.openingLured?'소리로 경비 유인':'순찰 틈으로 접근';
   }
+}
+
+// One concrete next action; the normal objective rules still allow other solutions.
+function starterGoal(){
+  if(!STAGE.starterContract)return null;
+  const P=S.player,it=S.items.find(i=>!i.got);
+  if(!it)return null;
+  if(STAGE.starterContract==='disguise'){
+    const coat=S.props.find(p=>p.id==='starterUniform'&&!p.taken);
+    if(P.outfit!=='crew'&&coat)return{x:coat.x,y:coat.y,fl:0,text:'예비 경비 재킷 입기',where:tutText('{행동} 갈아입기 · 3초'),starter:true};
+    if(P.outfit==='crew'&&!S.starterPass){const at=STAGE.starterPass;return{x:at[0]*TILE+TILE/2,y:at[1]*TILE+TILE/2,fl:0,text:'재킷을 입고 물류실 입구로 걷기',where:'지금 복장은 통행 허용 · 경비를 공격할 필요 없다',starter:true};}
+    return{x:it.x,y:it.y,fl:0,text:'경비 등 뒤에서 출고 서류 챙기기',where:tutText('{행동} 회수 · 작업 중에는 시선 밖에서'),starter:true};
+  }
+  const c=S.cams.find(c=>camOn(c));
+  if(c)return{x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32,fl:0,text:'CCTV 뒤에서 전선 분리',where:tutText('{행동} · 2초 조작 · 뒤쪽은 시야 밖'),starter:true};
+  return{x:it.x,y:it.y,fl:0,text:'감시가 꺼진 뒤 배송 명세서 챙기기',where:tutText('{행동} 회수'),starter:true};
+}
+function updateStarterContract(){
+  if(!STAGE.starterContract)return;
+  if(STAGE.starterContract==='disguise'&&!S.starterPass&&S.player.outfit==='crew'&&S.guards.some(g=>g.rawSeen&&!g.seen)){
+    S.starterPass=true;S.cpWant=true;toast('자경대원 옷 · 평범한 통행 허용',2.2,'good');
+  }
+  if(STAGE.starterContract==='camera'&&!S.starterCameraSaved&&S.cams.every(c=>!camOn(c))){S.starterCameraSaved=true;S.cpWant=true;}
+  if(STAGE.starterContract==='camera'&&(S.stats.camRec||0)>0&&cpReady())endGame(false,'작업 중 카메라에 찍혔다 · 뒤쪽에서 먼저 전선을 분리하자');
 }
 
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
@@ -9788,10 +9857,13 @@ function combatVictims(a) {
   return a.list || [a.g || (a.c && a.c.g) || a.kill || (['cap', 'execute', 'drag'].includes(a.k) && S.player.captive)].filter(Boolean);
 }
 function needsLethalHold(a) {
+  if(simpleAssassination(a))return false;
   return ['ledgeKill', 'pushOff', 'finish'].includes(a.k) || (a.k === 'trap' && a.tp && !!a.tp.t) || combatVictims(a).some(g => g.dog);
 }
+function simpleAssassination(a){const gs=combatVictims(a);return ['kill','finish','cap','execute','drop','ambush','pull','ventKill','ledgeKill','pushOff'].includes(a.k)&&gs.length===1&&simpleTarget(gs[0]);}
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
+  if(simpleAssassination(a))return Object.assign({},a,{label:'표적 암살',hold:null,holdOnly:false});
   if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 처치' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '처치' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
     const label = a.k === 'drag' ? '먼저 기절시키기' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? (a.label||'기절') : (a.label || '기절').replace(/암살|처치/g, '기절');
@@ -9807,7 +9879,7 @@ function prepareCombat(a) {
     if (source) S.player.lethalHold = { a: Object.assign({}, a), source, targets: combatVictims(a).map(g => ({ g, fl: flOf(g), z: g.z || 0 })), t: 0, x: S.player.x, y: S.player.y, fl: flOf(S.player), z: S.player.z || 0 };
     return false;
   }
-  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold, container: a.k === 'drag' ? a.h : null };
+  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null };
   return true;
 }
 function updateLethalHold(P, dt) {
@@ -11122,7 +11194,8 @@ function travelTunnel(){const P=S.player,w=P.hide;if(w&&w.type==='well'&&!P.carr
 const koDefault = g => !!g && !g.dog && !!g.civ;
 // 표적도 기절이 기본이다. 계속 누르고 있으면(KO_HOLD) 처치한다.
 
-const koFirst = g => !!g && !g.dog && !g.civ;
+const simpleTarget = g => !!((STAGE.openingContract || mainContract(STAGE)) && g?.target && !S.spare && !g.civ && !g.dog);
+const koFirst = g => !!g && !g.dog && !g.civ && !simpleTarget(g);
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
@@ -11177,8 +11250,8 @@ function strikeKill(list, two) {
   P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? 'choke' : null;
-  if (pairK) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
+  const kind = pairK ? simpleTarget(g0)&&g0.takedownIntent?.lethal?'stab':'choke' : null;
+  if (pairK && !simpleTarget(g0)) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
   if (pairK) P.a = g0.a;
   list.forEach(g => {
     g.doomed = false; if (koFirst(g)) S.koNext = true;  // 조직원은 먼저 기절 (계속 누르면 updateKoHold 가 숨을 끊는다)
@@ -11977,6 +12050,7 @@ function update(dt, present=true) {
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if(STAGE.securityLesson&&cpReady()&&(S.player.disguiseBlown||(S.stats.camRec||0)>0)){endGame(false,S.player.disguiseBlown?'신원 확인 게이지가 찼다 — 거리나 시야를 끊자':'CCTV 게이지가 찼다 — 통행과 작업은 별도 판정이다');return;}
+  updateStarterContract();if(S.over)return;
   if (S.shakeT > 0) S.shakeT = Math.max(0, S.shakeT - dt);
   updateRadioCall(dt); updateAmbush(dt); runTimers(); updateRadioCheck(dt); updateAlert(dt); updateCheckpoint(dt);  updateCorpseRisk(dt); if ((S.expoT = (S.expoT || 0) - dt) <= 0) { S.expoT = 0.1; const e = exposure(); if (!isTouch && e === 1 && S.expo === 0) hint('expo', '발밑 고리: 파랑 숨음 · 노랑 누가 보면 보임 · 빨강 발각 · 추격'); S.expo = e; } updateOpps(dt); if (!S.winInit) winInit(); updateChanges(dt); if (STAGE.steps) updateTutorial(dt);
   if (S.timeLeft) {
@@ -14332,6 +14406,8 @@ function keyMap(ka, ea, ga) {
   set('kmZ', actionCaption(ea, ea.busy ? ea.label : ea.k === 'none' ? '행동' : actVerb(ea, actIcon(ea))), ea.k !== 'none'&&!ea.skillLocked);
   set('kmQ', S.player.ledge || S.player.wire ? '떨어지기' : S.player.captive ? (canInterrogate() ? '심문' : '붙잡는 중') : '붙잡기' + (ga.reason ? ' · ' + ga.reason : ''), ga.k !== 'none' || canInterrogate());
   set('kmX',S.player.captive?'심문':input.padWhistle?'휘파람':`${TOOL_NAME[input.tool]} ${toolCount(input.tool)}${input.tool === 'kunai' ? ' · 짧게 기절 / 길게 처치' : ''}`,S.player.captive?canInterrogate():input.padWhistle?!(S.whistleT>0):toolCount(input.tool)>0);
+  $('kmX').parentElement.hidden=!!STAGE.starterContract&&!S.player.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
+  $('kmAct').parentElement.hidden=STAGE.starterContract==='camera'&&!S.guards.length;
   set('kmSneak', S.player.mode === 'sneak' || input.sneakToggle ? '웅크림' : '웅크리기', S.player.mode === 'sneak' || input.sneakToggle);
 }
 // 길게 누르는 중: 버튼 둘레와 대상 위에 차오르는 고리 (히트맨식)
@@ -14344,7 +14420,7 @@ function drawHoldRing() {
 }
 
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
-// [공격] 큰 버튼 — 톡 = 기절, 계속 누르면 처치 (표적도 같은 기준). 공격할 사람이 닿을 때만 켜진다
+// [공격] 큰 버튼 — 지정 표적은 한 번에 암살, 나머지는 톡 = 기절, 계속 누르면 처치. 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
 // [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 먼저 바깥에서 기절시키고 별도로 운반·은닉한다.
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
@@ -14375,7 +14451,7 @@ function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
   if (P.car) return { k: 'none', label: '경적', honk: true };
-  if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
+  if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
     if(choice&&choice.ids[0]===(action.g||action.list?.[0])?.id)action.hold=ASSASSIN_SKILLS[choice.key].name;
@@ -14411,7 +14487,7 @@ function envChoices() {
   if (hanging.ledge) return hanging.trav || hanging.jump ? [] : [{ k: 'ledgeUp', label: '올라가기', at: { x: hanging.x, y: hanging.y - 20 } }];
   if (hanging.wire) { const exit = wireExitAction(); return exit ? [exit] : []; }
   const P = S.player, z = secondaryEnvChoices(), sa = z[0];
-  if(P.captive)return[{k:'execute',label:'먼저 기절시키기',hold:'처치'}];
+  if(P.captive)return[combatLabel({k:'execute',g:P.captive,label:'먼저 기절시키기',hold:'처치'})];
   const stored=!P.hide&&!P.carrying&&!P.captive&&nearHide();
   const recover=stored&&S.corpses.filter(c=>c.stashed&&c.container===stored).sort((a,b)=>(b.target&&b.ko?2:!b.stripped&&b.outfit?1:0)-(a.target&&a.ko?2:!a.stripped&&a.outfit?1:0))[0];
   const retrieval=recover?{k:'retrieve',h:stored,c:recover,at:stored,label:recover.target&&recover.ko?'기절한 표적 꺼내기':recover.ko?'기절자 꺼내기':'시체 꺼내기'}:null;
@@ -14613,7 +14689,7 @@ function missionIdentities(){
     rows.push({id:'target:'+g.id,kind:'target',name:targetName(g),verb:'처치',where:STAGE.id==='m2'&&g.tag==='vip'?'클럽 1층 · VIP룸과 홀':at.where,complete,
       status:complete?'처치 완료':at.unconscious?'기절 · 처치 미완료':'처치 대상',key:charOf(g)});
   }
-  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',action=itemObjectiveAction(it),work=action&&action.kind!=='recovery';rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:action?.verb||'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(action?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
+  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',action=itemObjectiveAction(it),work=action&&action.kind!=='recovery';rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:action?.verb||'회수',where:STAGE.itemPlaces?.[i]||placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(action?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
   return rows;
 }
 function makeMissionIdentity(row,brief){
@@ -14659,7 +14735,7 @@ function refreshMissionIdentityArt(){
 }
 function syncMissionIdentity(){
   const el=$('missionIdentity');if(!el)return;
-  const active=(mainContract(STAGE)||STAGE.openingContract)&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
+  const active=(mainContract(STAGE)||introductoryContract(STAGE))&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
   const rows=missionIdentities(),signature=JSON.stringify(rows.map(r=>[r.id,r.key,r.art,r.status]));
   if(hudCache.identity!==signature){el.replaceChildren(...rows.map(r=>makeMissionIdentity(r,false)));hudCache.identity=signature;}
   refreshMissionIdentityArt();
@@ -14675,8 +14751,8 @@ function showBrief(go) {
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
-  const identities=mainContract(STAGE)||STAGE.openingContract?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
-  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.';
+  const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
+  $('brPurpose').hidden=STAGE.id!=='m2'&&!introductoryContract(STAGE);$('brPurpose').textContent=STAGE.purpose|| (STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.');
   $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
@@ -14710,7 +14786,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const opening=openingGoal();if(opening)return opening; }
+  { const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
@@ -14721,6 +14797,7 @@ function objectiveLines() {
   const L = [], P = S.player;
   const place = placeName;
   { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const nav=goalNavigation(gl), m0 = Math.max(1, Math.round(dist(P.x, P.y, nav.x, nav.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0; distance = ` · ${nav.via?'입구 ':''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
+  if(introductoryContract(STAGE))return L;
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
   if(STAGE.steps)return L;
@@ -14753,6 +14830,7 @@ function updateHUD(force) {
   updateSkillPrompt(force);
   syncAssassinHUD();
   const P = S.player;
+  hud.act.hidden=STAGE.starterContract==='camera'&&!S.guards.length;
   syncMissionIdentity();
   syncTutorialCue();
   { const e=$('saveState'); if(e){e.hidden=S.cpSavedAt==null || S.t-S.cpSavedAt>2.5; e.textContent=(S.cpStored?'저장됨':'이번 실행에 저장됨')+(isTouch?' · 메뉴에서 재시도':' · F9 재시도');} }
@@ -14876,6 +14954,7 @@ function syncTools() {
   hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
   if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
   hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
+  hud.tool.hidden=!!STAGE.starterContract&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
 }
@@ -14883,7 +14962,7 @@ function syncTools() {
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
   S.over = true;
-  if (!win && STAGE.tutorial && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson)?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
+  if (!win && (STAGE.tutorial||introductoryContract(STAGE)) && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson||introductoryContract(STAGE))?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
   const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
 }
@@ -14954,6 +15033,7 @@ function showEnd(win, reason) {
   renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win;
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
+  if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=STAGE.starterContract?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = !(win && learningNext() >= 0);
@@ -14976,7 +15056,7 @@ function renderStageList() {
   const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
-    const stars = s.challenges && st ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">★ ${st}</span>` : '';
+    const stars = !introductoryContract(s) && s.challenges && st ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">★ ${st}</span>` : '';
     const modCount=Object.keys(MODS).filter(k=>(loadCh()[s.id]||{})['mod_'+k]).length;
     const mods=!s.tutorial&&modCount?`<span class="st-rank">추가 조건 ${modCount}/4</span>`:'';
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
@@ -14985,13 +15065,13 @@ function renderStageList() {
     const cardLine={m2:'클럽 실장 · 장부와 암호표',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기와 인계서',m7:'운송책 · 명세서 · 새벽배송 중단'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
-      <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
+      <span class="st-no">${s.tutorial ? tno : introductoryContract(s) ? "첫 밤 "+(["p0","p1","p2"].indexOf(s.id)+1) : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
-      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
+      <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk&&!introductoryContract(s) ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
   const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => s.openingContract).concat(list.filter(([s]) => mainContract(s))), archive = list.filter(([s]) => !s.tutorial && !s.city && !s.openingContract && !mainContract(s)), city = list.filter(([s]) => s.city);
+  const tuts = list.filter(([s]) => s.tutorial).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = list.filter(([s]) => introductoryContract(s)).concat(list.filter(([s]) => mainContract(s))), archive = list.filter(([s]) => !s.tutorial && !s.city && !introductoryContract(s) && !mainContract(s)), city = list.filter(([s]) => s.city);
   $('stageList').innerHTML = `<div class="lg-sec">연습</div>` + tuts.map(row).join('') + `<div class="lg-sec">의뢰</div>` + miss.map(row).join('') + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
     + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
@@ -15889,7 +15969,7 @@ function quickTarget(){return recommendedStage();}
 function syncQuick(){
   const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.openingContract?'시작 · 첫 암살':st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').textContent=st.openingContract?'시작 · 첫 암살':st.starterContract?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -15954,7 +16034,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); if(STAGE.firstSteps||STAGE.openingContract){input.sneakToggle=false;input.walkLock=false;input.padWhistle=true;syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
+  newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다

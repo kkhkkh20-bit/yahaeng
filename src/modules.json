@@ -218,6 +218,10 @@
       "group": "opening_contract"
     },
     {
+      "path": "44_starter_contracts.js",
+      "group": "opening_contract"
+    },
+    {
       "path": "44_contract_guidance.js",
       "group": "mission_plan"
     },
