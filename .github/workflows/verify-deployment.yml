@@ -12,6 +12,17 @@ jobs:
   public-browser-check:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: workers
+            origin: https://yahaeng.kkhkkh-20.workers.dev/
+          - target: pages
+            origin: https://kkhkkh20-bit.github.io/yahaeng/
+    env:
+      VERIFY_TARGET: ${{ matrix.target }}
+      VERIFY_ORIGIN: ${{ matrix.origin }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,21 +34,24 @@ jobs:
         run: |
           python -m pip install playwright httpx
           python -m playwright install --with-deps chromium
-      - name: Wait for both production packages
+      - name: Wait for the tested production package
         run: |
           python - <<'PY'
-          import hashlib,json,time,httpx
+          import hashlib,json,os,time,httpx
           from pathlib import Path
           root=Path('public');expected=json.loads((root/'version.json').read_text())
-          urls={'workers':'https://yahaeng.kkhkkh-20.workers.dev/','pages':'https://kkhkkh20-bit.github.io/yahaeng/'}
+          urls={os.environ['VERIFY_TARGET']:os.environ['VERIFY_ORIGIN']}
           ready={}
           with httpx.Client(timeout=20,follow_redirects=True) as client:
-              for attempt in range(80):
+              for attempt in range(60):
                   for name,url in urls.items():
                       if name in ready:continue
                       try:
                           r=client.get(url+'version.json',params={'check':time.time_ns()});r.raise_for_status()
-                          if r.json()!=expected:continue
+                          actual=r.json()
+                          if actual!=expected:
+                              if attempt%10==0:print('WAIT',name,'expected',expected['version'],'observed',actual.get('version'),actual.get('source_sha256'),flush=True)
+                              continue
                           r=client.get(url+'index.html',params={'check':time.time_ns()});r.raise_for_status()
                           if hashlib.sha256(r.content).digest()!=hashlib.sha256((root/'index.html').read_bytes()).digest():continue
                           ready[name]={'url':url,'version':expected['version'],'source_sha256':expected['source_sha256']}
@@ -47,16 +61,14 @@ jobs:
                   if len(ready)==len(urls):break
                   time.sleep(3)
           Path('build/public-deployment-proof.json').write_text(json.dumps(ready,indent=2))
-          if len(ready)!=len(urls):raise SystemExit('Both tested production packages are not ready')
+          if len(ready)!=len(urls):raise SystemExit('Tested production package is not ready')
           PY
-      - name: Verify Workers hashes and native desktop/mobile input
-        run: python tests/tutorial/verify_deployment.py https://yahaeng.kkhkkh-20.workers.dev/ workers --plain
-      - name: Verify Pages hashes and native desktop/mobile input
-        run: python tests/tutorial/verify_deployment.py https://kkhkkh20-bit.github.io/yahaeng/ pages --plain
+      - name: Verify package hashes and native desktop/mobile input
+        run: python tests/tutorial/verify_deployment.py "$VERIFY_ORIGIN" "$VERIFY_TARGET" --plain
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: public-game-verification-${{ github.run_id }}
+          name: public-game-verification-${{ matrix.target }}-${{ github.run_id }}
           path: |
             build/public-deployment-proof.json
             build/tutorial-validation/
