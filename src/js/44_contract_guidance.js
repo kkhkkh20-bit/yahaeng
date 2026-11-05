@@ -14,8 +14,10 @@ function contractRouteGoal(){
     return null;
   }
   if(STAGE.id==='m6'){
-    const it=S.items[0];if(!it||it.got)return null;
-    return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+    const radio=S.items[0],paper=S.items[1];
+    if(radio&&!radio.got)return{x:radio.x,y:radio.y,fl:flOf(radio),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(radio.x,radio.y,flOf(radio))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+    if(paper&&!paper.got)return{x:paper.x,y:paper.y,fl:flOf(paper),id:'item:1',text:'남동쪽 자재 창고에서 까마귀 인계서 확보',where:'마당 건너 창고 · 순찰의 시선 밖에서 서류 회수',routeGuide:true};
+    return null;
   }
   if(STAGE.id==='m2')return vipContractGoal();
   if(STAGE.id!=='m4')return null;
@@ -35,8 +37,8 @@ function contractRouteGoal(){
   if(!S.items[1]?.got){
     const officeDoors=S.doors.filter(d=>d.keyLock==='code');
     if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.filter(n=>n.gives==='code'&&!n.read).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];if(note)return object(note,note.title+' 확인','사무동 비밀번호');}
-    if(!keys.green&&locked('green')){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 1층 계약서 금고용');}
-    return object(S.items[1],'사무동 1층에서 계약서 회수','초록 카드키 · 계약서 금고');
+    if(!keys.green){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 남서쪽 숙소 금고용');}
+    return object(S.items[1],'남서쪽 숙소 2층 금고에서 계약서 회수','초록 카드키 · 금고 앞에서 행동');
   }
   return null;
 }

@@ -88,7 +88,7 @@ function missionIdentities(){
     rows.push({id:'target:'+g.id,kind:'target',name:targetName(g),verb:'처치',where:STAGE.id==='m2'&&g.tag==='vip'?'클럽 1층 · VIP룸과 홀':at.where,complete,
       status:complete?'처치 완료':at.unconscious?'기절 · 처치 미완료':'처치 대상',key:charOf(g)});
   }
-  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',work=itemObjectiveAction(it);rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:work?.verb||'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(work?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
+  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',action=itemObjectiveAction(it),work=action&&action.kind!=='recovery';rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:action?.verb||'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(action?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
   return rows;
 }
 function makeMissionIdentity(row,brief){
@@ -451,7 +451,7 @@ function renderStageList() {
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
     const passport=s.id==='m2'?'<span class="st-rank">공략 '+Object.keys(vipApproachRecords()).length+'/'+VIP_APPROACHES.length+'</span>':'';
-    const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수',m7:'운송책 · 명세서 · 새벽배송 중단'};
+    const cardLine={m2:'클럽 실장 · 장부와 암호표',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기와 인계서',m7:'운송책 · 명세서 · 새벽배송 중단'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>

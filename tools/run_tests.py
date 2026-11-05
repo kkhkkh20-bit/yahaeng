@@ -19,6 +19,7 @@ FAST.append('t_pair_counterplay')
 FAST.append('t_ordinary_footsteps')
 FAST.append('t_disguise_passers')
 FAST.append('t_dawn_dispatch')
+FAST.append('t_campaign_depth')
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 
 def run(path, timeout=400):

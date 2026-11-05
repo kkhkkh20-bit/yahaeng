@@ -5,18 +5,18 @@
   priorityTarget:true,entryRoute:{guard:28,bush:[1,18],bounds:[0,14,8,23]},
   decoySearchTime:6,decoyLookoutTime:7,whistleRange:380,
   skillEncounters:[{id:'market-pair',skill:'dual',guards:[9,10],text:'야시장 경비 둘 · 등 뒤에서 공격 길게'},{id:'rear-chain',skill:'chain',guards:[4,26],text:'뒷골목 순찰 둘 · 이동 경로를 확인하고 공격 길게'},{id:'west-light',skill:'electric',at:[6,19],text:'서쪽 가로등 · 불을 끄면 복구하러 오는 경비를 유인할 수 있다'}],
-  mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
-  itemName: '장부', itemNames: ['장부'],
-  heightCueBuildings: [0, 1],
+  mission: '클럽 실장 처치 · 사무동 장부와 회계 숙소의 거래 암호표 확보 후 탈출',
+  itemName: '장부', itemNames: ['장부','거래 암호표'],
+  heightCueBuildings: [0, 1, 7],
   vipDrink: { at: [29, 10], to: [40, 7], toiletA:-Math.PI/4 },
   dining: { guest: 'mealGuest', first: 60, every: 75, stay: 6, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
-  buildingNames: {2:'공중화장실'},
-  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
+  buildingNames: {2:'공중화장실',7:'회계 숙소'},
+  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0},{x:49,y:27,fl:1,t:'cab'}],
   roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
-  rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '실장은 클럽 앞에서 담배를 피운 뒤 홀로 들어간다. 공개 구역에서는 손님처럼 걸어 다닐 수 있다. 실장을 먼저 처리하면 그가 지닌 금고 번호 메모로 사무동 1층의 장부를 찾는다. 장부를 먼저 회수해 내선으로 실장을 불러내도 된다. 공중화장실의 직원 옷과 약국의 구토제, 클럽 옥상의 간판은 다른 공략에 쓸 수 있다. 감시 시야 안에서 훔치거나 공격하면 발각될 수 있다.',
+  rendezvous: { b: 0, fl: 0, item:0, target: 'vip', stay: 35 },
+  brief: '실장은 클럽 앞에서 담배를 피운 뒤 홀로 들어간다. 공개 구역에서는 손님처럼 걸어 다닐 수 있다. 실장을 먼저 처리하면 그가 지닌 금고 번호 메모로 사무동 1층의 장부를 찾는다. 장부를 먼저 회수해 내선으로 실장을 불러내도 된다. 공중화장실의 직원 옷과 약국의 구토제, 클럽 옥상의 간판은 다른 공략에 쓸 수 있다. 장부의 가명은 남동쪽 회계 숙소 2층의 거래 암호표와 대조해야 한다. 그곳을 순찰하는 경비의 틈을 보고 암호표까지 확보한 뒤 탈출한다. 경비 재킷으로 숙소 안을 걸어 다닐 수 있지만 서류를 훔치는 모습은 들키면 안 된다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [18, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -36,7 +36,7 @@
     m.villa(2, 26, 11, 32, 1, { kind: 'shop', use: ['food'], signs: ['포차'], name: '포차' });                                                       // 4
     m.villa(13, 26, 22, 32, 1, { kind: 'shop', use: ['store'], signs: ['약국'], name: '약국' });                                                    // 5
     m.villa(25, 26, 37, 33, 2);                                                                                                                    // 6
-    m.villa(41, 26, 51, 32, 2, { kind: 'house' });                                                                                                 // 7
+    m.villa(41, 26, 51, 32, 2, { kind: 'house',name:'회계 숙소' });                                                                                                 // 7
     // 야시장 노점 천막과 물건
     [[14, 4], [17, 4], [14, 10], [18, 7], [16, 13], [19, 12]].forEach(([x, y], i) => m.tent(x, y, 'RBGYRB'[i]));
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
@@ -103,7 +103,7 @@
               { text: '화장실 문 닫아 경호원 시야 가리기', at: [40, 8, 0], done: (S,h) => S.doors.some(d=>d.tx===40&&d.ty===8&&d.locked)||h.eliminated('vip') },
               { text: '혼자 있는 실장 등 뒤에서 공격 길게', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호') || !!S.player.keys?.code,
-      steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
+      steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items[0].got && !!(S.player.keys || {}).blue },
               { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
               { text: 'VIP룸에 있는 실장 처치하기', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
@@ -153,8 +153,9 @@
       {kind:'smoke',rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
     { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true },
     // 식당에서 쉬는 경비: 음식 유인은 가까운 대상에게 곧바로 효과가 나고, 화장실은 목격자가 없다.
-    { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 }
+    { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 },
+    {kind:'g1',tag:'cipherKeeper',fl:1,route:[[43,28,9],[48,28,9]],still:true}
   ],
-  items: [{ b: 0, fl: 0, at: 'VA' }],
+  items: [{ b: 0, fl: 0, at: 'VA' },{b:7,fl:1,at:'R'}],itemFurniture:[null,['cab']],itemLayoutVersion:1,itemPatrols:[{tag:'cipherKeeper'}],
   hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '경비 재킷은 사무동 사무실·계단의 통행을 허용한다. 1층 금고 안은 별도 출입 제한 구역이다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
 },

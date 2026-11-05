@@ -3,7 +3,7 @@ function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선�
 function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
   if(STAGE.keyPurposes?.[k])return STAGE.keyPurposes[k];
-  return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
+  return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'남서쪽 숙소 2층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
 function vipRoutine(g) {
   if(STAGE.openingContract&&g.tag==='runner'&&g.state==='PATROL'&&!g.moving&&!g.doomed)return 'smoke';

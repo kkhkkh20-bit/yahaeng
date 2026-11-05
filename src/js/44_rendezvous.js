@@ -17,7 +17,7 @@ function rendezvousState() {
 function rendezvousTarget(){return STAGE.rendezvous?npc(STAGE.rendezvous.target):null;}
 function rendezvousReady() {
   const r=rendezvousState(),g=rendezvousTarget();
-  return !!(r&&g&&S.items.length&&S.items.every(it=>it.got)&&!targetEliminated(g)&&g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&
+  return !!(r&&g&&S.items.length&&(STAGE.rendezvous.item!=null?!!S.items[STAGE.rendezvous.item]?.got:S.items.every(it=>it.got))&&!targetEliminated(g)&&g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&
     !['travelling','waiting'].includes(r.phase)&&r.cooldown<=0&&S.alevel<2&&S.vipPlan?.phase!=='sick'&&S.vipPlan?.phase!=='drinking');
 }
 function nearRendezvous() {

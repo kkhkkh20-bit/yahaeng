@@ -2,7 +2,7 @@
 let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null;
 function captureContractLayout() {
   S.itemLayoutVersion=STAGE.itemLayoutVersion||0;
-  MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items)}:null;
+  MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items),patrols:(STAGE.itemPatrols||[]).map(p=>({legacy:p.legacy,g:cloneDeep(S.guards.find(g=>g.tag===p.tag))}))}:null;
   S.layoutVersion = STAGE.layoutVersion || 0;
   CONTRACT_LAYOUT = !STAGE.layoutVersion ? null : {
     id: STAGE.id, grids: [G0, ...GF.slice(1)].map(g => g && g.map(r => r.slice())),
@@ -14,6 +14,13 @@ function restoreContractLayout() {
   const I=MISSION_ITEM_LAYOUT;
   if(I&&I.id===STAGE.id&&(S.itemLayoutVersion||0)<I.version){
     for(let i=S.items.length;i<I.items.length;i++)S.items.push(cloneDeep(I.items[i]));
+    for(const i of STAGE.itemRelocations||[])if(S.items[i]&&!S.items[i].got&&I.items[i])Object.assign(S.items[i],cloneDeep(I.items[i]));
+    for(const p of I.patrols||[]){
+      let g=S.guards.find(g=>g.tag===p.g.tag);
+      if(!g&&p.legacy!=null){g=S.guards[p.legacy];if(g)g.tag=p.g.tag;}
+      if(!g){g=cloneDeep(p.g);g.id=S.guards.length;S.guards.push(g);}
+      else if(g.state!=='DEAD'){g.route=cloneDeep(p.g.route);g.ri=0;g.path=null;}
+    }
     S.itemLayoutVersion=I.version;S.exitOpen=false;
   }
   // Remove retired props from saved grids without resetting the rest of the mission.

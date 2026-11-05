@@ -162,18 +162,18 @@ const STAGES = [
   priorityTarget:true,entryRoute:{guard:28,bush:[1,18],bounds:[0,14,8,23]},
   decoySearchTime:6,decoyLookoutTime:7,whistleRange:380,
   skillEncounters:[{id:'market-pair',skill:'dual',guards:[9,10],text:'야시장 경비 둘 · 등 뒤에서 공격 길게'},{id:'rear-chain',skill:'chain',guards:[4,26],text:'뒷골목 순찰 둘 · 이동 경로를 확인하고 공격 길게'},{id:'west-light',skill:'electric',at:[6,19],text:'서쪽 가로등 · 불을 끄면 복구하러 오는 경비를 유인할 수 있다'}],
-  mission: '클럽 실장 처치 · 사무동 1층 금고의 장부 회수 후 탈출',
-  itemName: '장부', itemNames: ['장부'],
-  heightCueBuildings: [0, 1],
+  mission: '클럽 실장 처치 · 사무동 장부와 회계 숙소의 거래 암호표 확보 후 탈출',
+  itemName: '장부', itemNames: ['장부','거래 암호표'],
+  heightCueBuildings: [0, 1, 7],
   vipDrink: { at: [29, 10], to: [40, 7], toiletA:-Math.PI/4 },
   dining: { guest: 'mealGuest', first: 60, every: 75, stay: 6, toilet: [7, 28], waitAt:[3,28], queue:[7,30], toiletA:-Math.PI/2, toiletStay: 32 },
-  buildingNames: {2:'공중화장실'},
-  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0}],
+  buildingNames: {2:'공중화장실',7:'회계 숙소'},
+  fixedFurn: [{x:39,y:6,t:'bsink',r:3},{x:41,y:6,t:'toilet',r:3},{x:29,y:9,w:2,t:'bar'},{x:7,y:27,t:'toilet',r:0},{x:6,y:27,t:'bsink',r:0},{x:49,y:27,fl:1,t:'cab'}],
   roomPatches:[{bounds:[3,27,7,31],floors:[[3,29,7,31,'h']],furniture:[
     {t:'table',from:[4,29],to:[4,30]},{t:'chair',from:[3,29],remove:true},{t:'chair',from:[6,29],remove:true}],
     tiles:[[5,27,'#'],[5,28,'#'],[6,29,'#'],[7,29,'h']],doors:[[7,29]]}],
-  rendezvous: { b: 0, fl: 0, target: 'vip', stay: 35 },
-  brief: '실장은 클럽 앞에서 담배를 피운 뒤 홀로 들어간다. 공개 구역에서는 손님처럼 걸어 다닐 수 있다. 실장을 먼저 처리하면 그가 지닌 금고 번호 메모로 사무동 1층의 장부를 찾는다. 장부를 먼저 회수해 내선으로 실장을 불러내도 된다. 공중화장실의 직원 옷과 약국의 구토제, 클럽 옥상의 간판은 다른 공략에 쓸 수 있다. 감시 시야 안에서 훔치거나 공격하면 발각될 수 있다.',
+  rendezvous: { b: 0, fl: 0, item:0, target: 'vip', stay: 35 },
+  brief: '실장은 클럽 앞에서 담배를 피운 뒤 홀로 들어간다. 공개 구역에서는 손님처럼 걸어 다닐 수 있다. 실장을 먼저 처리하면 그가 지닌 금고 번호 메모로 사무동 1층의 장부를 찾는다. 장부를 먼저 회수해 내선으로 실장을 불러내도 된다. 공중화장실의 직원 옷과 약국의 구토제, 클럽 옥상의 간판은 다른 공략에 쓸 수 있다. 장부의 가명은 남동쪽 회계 숙소 2층의 거래 암호표와 대조해야 한다. 그곳을 순찰하는 경비의 틈을 보고 암호표까지 확보한 뒤 탈출한다. 경비 재킷으로 숙소 안을 걸어 다닐 수 있지만 서류를 훔치는 모습은 들키면 안 된다.',
   physicalAreas: [[21, 6, 21, 8]], retiredClimbs: [[22,6]],
   powerArea: [1, 1, 20, 21], powerName: "사무동 외부등",
   W: 56, H: 36, start: [18, 21], exit: [55.5, 21.5], exitName:'동쪽 큰길',exits:[{at:[.25,16.5],name:'서쪽 골목',r:42}], startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -193,7 +193,7 @@ const STAGES = [
     m.villa(2, 26, 11, 32, 1, { kind: 'shop', use: ['food'], signs: ['포차'], name: '포차' });                                                       // 4
     m.villa(13, 26, 22, 32, 1, { kind: 'shop', use: ['store'], signs: ['약국'], name: '약국' });                                                    // 5
     m.villa(25, 26, 37, 33, 2);                                                                                                                    // 6
-    m.villa(41, 26, 51, 32, 2, { kind: 'house' });                                                                                                 // 7
+    m.villa(41, 26, 51, 32, 2, { kind: 'house',name:'회계 숙소' });                                                                                                 // 7
     // 야시장 노점 천막과 물건
     [[14, 4], [17, 4], [14, 10], [18, 7], [16, 13], [19, 12]].forEach(([x, y], i) => m.tent(x, y, 'RBGYRB'[i]));
     m.many('O', [[13, 7], [20, 4], [16, 9], [13, 16]]); m.many('H', [[20, 10]]); // Keep the club-side passage beside the large bin clear.
@@ -260,7 +260,7 @@ const STAGES = [
               { text: '화장실 문 닫아 경호원 시야 가리기', at: [40, 8, 0], done: (S,h) => S.doors.some(d=>d.tx===40&&d.ty===8&&d.locked)||h.eliminated('vip') },
               { text: '혼자 있는 실장 등 뒤에서 공격 길게', at: [40, 7, 0], done: (S, h) => h.eliminated('vip') }] },
     { id: 'vault', targetTag: 'vip', name: '금고와 뒷문', moot: (S, h) => h.eliminated('vip'), reveal: (S, h) => h.knows('비밀번호') || !!S.player.keys?.code,
-      steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items.every(i => i.got) && !!(S.player.keys || {}).blue },
+      steps: [{ text: '사무동 1층 금고에서 장부와 파란 카드키 챙기기', at: [7, 6, 0], done: S => S.items[0].got && !!(S.player.keys || {}).blue },
               { text: '뒷골목 직원 복도를 지나 파란 카드키로 VIP룸 뒷문 열기', at: [33, 6, 0], done: (S, h) => h.inRect(S.player, [23, 5, 32, 7, 0]) || h.eliminated('vip') },
               { text: 'VIP룸에 있는 실장 처치하기', at: [25, 6, 0], done: (S, h) => h.eliminated('vip') }] }
   ],
@@ -310,9 +310,10 @@ const STAGES = [
       {kind:'smoke',rect:[26,15,28,16,0],at:[31,15],face:Math.PI/2,say:'입구 보겠습니다.'}] },
     { kind: 'g1', tag: 'camop', b: 0, fl: 1, at: 'S', post: 180, enforcer: true },
     // 식당에서 쉬는 경비: 음식 유인은 가까운 대상에게 곧바로 효과가 나고, 화장실은 목격자가 없다.
-    { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 }
+    { kind: 'g1', tag: 'mealGuest', at: [5, 31], post: 90 },
+    {kind:'g1',tag:'cipherKeeper',fl:1,route:[[43,28,9],[48,28,9]],still:true}
   ],
-  items: [{ b: 0, fl: 0, at: 'VA' }],
+  items: [{ b: 0, fl: 0, at: 'VA' },{b:7,fl:1,at:'R'}],itemFurniture:[null,['cab']],itemLayoutVersion:1,itemPatrols:[{tag:'cipherKeeper'}],
   hints: ['거리·야시장·클럽 홀은 손님으로 드나든다. 대화하는 둘 가까이 서 있으면 엿듣는다 — 들은 말은 기회가 된다.', '경비 재킷은 사무동 사무실·계단의 통행을 허용한다. 1층 금고 안은 별도 출입 제한 구역이다.', '클럽 직원 복장으로 뒷골목·직원 복도·바 안쪽을 통과할 수 있다. 눈 표시가 있는 경비에게는 얼굴을 보이지 않는 편이 좋다.']
 },
 // ───────── 임무 3 (보통+): 잔칫날 — 히트맨식. 동네 회장 댁 마당 잔치. 길·노점 골목·철물점은 공개, 마당은 뷔페 일꾼(조끼)이면 다닌다
@@ -435,9 +436,9 @@ const STAGES = [
 // ───────── 임무 4 (어려움): 대청소 — 표적 둘, 금고 둘, 카드 셋이 얽힌다
 {
   id: 'm4', no: '04', name: '대청소', sub: '의뢰 02', fee: '150만',
-  mission: '수금원·VIP 처치 · 창고 현금과 사무동 계약서 회수 후 탈출',
+  mission: '수금원·VIP 처치 · 창고 현금과 남서쪽 숙소 계약서 회수 후 탈출',
   itemName: '현금 가방', itemNames: ['현금 가방', '계약서'],
-  brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입번호는 창고 정산 쪽지나 북서쪽 폐사무소 연락책 메모에서 알아낼 수 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 1층 금고의 계약서를 챙긴다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
+  brief: '큰길·포차·남쪽 골목은 사람들이 다니는 거리다 — 걸으면 아무도 신경 쓰지 않는다. 창고·사무동·클럽·빌라·뒷골목은 조직원만 다닌다. 북서쪽 폐사무소 입구에는 연락책이 남긴 예비 조직원 재킷이 있다. 수금원은 빨간 카드키를 지니고 경호원과 큰길을 돈다. 창고 금고는 빨간 카드키로 열린다. 금고 안에는 현금 가방과 VIP룸 뒷문용 파란 카드키가 있다. 사무동 출입번호는 창고 정산 쪽지나 북서쪽 폐사무소 연락책 메모에서 알아낼 수 있다. 사무동 2층 보안실에서 초록 카드키를 확보한 뒤 남서쪽 조직 숙소 2층 금고의 계약서를 챙긴다. 초록 카드는 그 금고를 여는 카드다. 숙소의 순찰을 살피고 금고 앞에서 카드를 사용한다. 수금원은 포차 남쪽 골목으로도 돌아 정산한다. 남쪽 공터의 차량·컨테이너 뒤에는 숨을 수 있고, 하수구로 탈출할 수 있다. 창고 금고와 VIP룸 천장엔 환풍구가 지난다. 신원이 CCTV에 녹화되면 보안실에서 기록을 지워야 탈출할 수 있다. 카메라를 피하거나 먼저 꺼 두면 기록 삭제는 필요 없다.',
   physicalAreas: [[14, 12, 17, 15], [27, 14, 30, 15], [40, 12, 42, 15], [17, 20, 19, 21]],
   powerArea: [9, 11, 33, 16], powerName: "상가 앞 보안등",
   W: 48, H: 28, start: [31, 16], exit: [0.5, 13.5], startA: Math.PI, noRefine: true, floors: true, pspd: 1.3, gspd: 1.15, residents: 0,
@@ -447,6 +448,7 @@ const STAGES = [
           [1, 17, 12, 24, 'res', null, '빌라 · 조직원 숙소'], [0, 1, 47, 1, 'res', null, '뒷골목 · 조직원만']],
   secureFloors: [[2, 1], [3, 1]],
   zoneAllow: ['crew'],
+  props:[{id:'contactCoat',name:'연락책이 남긴 예비 재킷',outfit:'crew',at:[2,10]}],
   build(m) {
     m.fill(0, 0, 47, 27, '.'); for (let x = 0; x < 48; x++) m.set(x, 0, '#');
     m.fill(0, 11, 47, 11, '='); m.fill(0, 16, 47, 16, '='); m.fill(0, 25, 47, 27, '=');
@@ -455,9 +457,9 @@ const STAGES = [
     m.fill(4, 5, 4, 8, '#'); m.set(4, 7, 'r'); m.fill(5, 10, 8, 10, '#');
     m.many('R', [[2, 3], [6, 3], [7, 7], [2, 9]]); m.many('B', [[6, 9], [3, 8]]); m.set(2, 7, 'H');
     m.villa(10, 2, 20, 10, 1, { kind: 'shop', use: ['vault'], signs: ['창고'], name: '창고', back: true });              // 1 금고(빨강)
-    m.villa(22, 2, 32, 10, 2, { kind: 'shop', use: ['vault', 'office'], signs: ['', ''], plate: '사무동', name: '사무동', back: true });  // 2 금고(초록)
+    m.villa(22, 2, 32, 10, 2, { kind: 'shop', use: ['vault', 'office'], signs: ['', ''], plate: '사무동', name: '사무동', back: true });  // 2 보안실(초록 카드)
     m.villa(34, 2, 46, 10, 2, { kind: 'shop', use: ['vip', 'office'], signs: ['CLUB', ''], name: '클럽', back: true });  // 3 VIP(파랑 뒷문)
-    m.villa(1, 17, 12, 24, 3, { name: '빌라' });                                                                       // 4 3층에 초록 카드키
+    m.villa(1, 17, 12, 24, 3, { name: '빌라' });                                                                       // 4 2층 계약서 금고
     m.vacant(14, 17, 20, 24, 'lot', '공터 적치장'); // 5 잠입용 은폐·탈출로. 건물 그림과 옥상 판정이 없다
     m.car(15, 19, 1); // 공터의 납작한 컨테이너·사다리를 제거한다. 바닥과 이동 판정도 열린 공터다.
     m.many('B', [[18, 18], [19, 24]]); m.set(17, 23, 'W'); m.set(19, 19, 'H');
@@ -485,11 +487,11 @@ const STAGES = [
   shift: { every: 80, first: 100, add: [{ kind: 'g2', route: [[2, 13, 2], [45, 13, 2]] }, { kind: 'g1', route: [[46, 2, 2], [46, 24, 2]] }, { kind: 'g2', route: [[9, 1, 2], [33, 1, 2]] }], msg: '교대 시간 · 순찰 경비 1명 추가' },
   challenges: ['unrecorded', 'accident', 'intel', 'ghost', 'clean', 'nobody', 'fast'], fastT: 660,
   layoutVersion: 2, rebuiltSites: [0, 5], rivalBuilding: 7,
-  locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 2, door: 'vault', key: 'green' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
+  locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,
-  fixedFurn:[{x:6,y:5,t:'desk'}],
-  notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 1층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 1층 계약서 금고를 연다' },
-          { b:1,fl:0,at:'L',title:'창고 정산 쪽지',lines:['사무동 출입번호 7316.','계약서 금고의 초록 카드키는 사무동 2층 보안실에 있다.'],gives:'code',learn:'창고 정산 쪽지: 사무동 출입번호 7316 · 초록 카드키는 2층 보안실' }],
+  fixedFurn:[{x:6,y:5,t:'desk'},{x:8,y:19,fl:1,t:'safe'}],keyPurposes:{green:'남서쪽 조직 숙소 2층 계약서 금고'},
+  notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 남서쪽 숙소 2층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 남서쪽 숙소 2층 계약서 금고를 연다' },
+          { b:1,fl:0,at:'L',title:'창고 정산 쪽지',lines:['사무동 출입번호 7316.','숙소 2층 계약서 금고의 초록 카드키는 사무동 2층 보안실에 있다.'],gives:'code',learn:'창고 정산 쪽지: 사무동 출입번호 7316 · 초록 카드키는 2층 보안실' }],
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 2, fl: 1, at: 'S' }, { key: 'supplies', b: 7, fl: 0, at: 'R' }],
   exits: [{ at: [17, 23], r: 42, name: '공터 하수구' }],
   well: 'manhole', kunai: 2, coins: 3, reinf: [47, 13],
@@ -499,7 +501,7 @@ const STAGES = [
   cams: [[21, 12, 90, 70], [34, 1, 180, 40], { b: 1, fl: 0, at: 'VB', sweep: 35 }, { b: 2, fl: 0, at: 'VB', sweep: 35 }],
   radios: [3, 6, 9, 10],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
-    { kind: 't', target: true, tag: 'collector', route: [[10, 13, 2], [33, 13, 2], [33, 14, 1], [10, 14, 1]], key: 'red' },   // 0 수금원 — 빨간 카드키
+    { kind: 't', target: true, tag: 'collector', route: [[10,13,3],[33,13,3],[34,25,7],[23,25,7],[23,14,2],[10,14,2]], key: 'red' },   // 0 수금원 — 빨간 카드키
     { kind: 'g2', follow: 0 },                                                   // 1 수금원 경호
     { kind: 't', target: true, tag: 'vip', b: 3, fl: 0, at: 'V', post: 180 },     // 2 VIP
     { kind: 'g2', b: 3, fl: 0, at: 'VD', post: 90, elite: true },                // 3 VIP 앞문 정예
@@ -511,7 +513,7 @@ const STAGES = [
     { kind: 'g1', b: 4, patrol: true },                                          // 9
     { kind: 'g2', at: [45, 12], post: 180, lookout: true },                      // 10 동쪽 망꾼
     { kind: 'g1', route: [[2, 15, 2], [45, 15, 2]] },                            // 11 큰길 순찰
-    { kind: 'g2', b: 4, fl: 1, patrol: true },
+    {kind:'g2',tag:'contractKeeper',fl:1,route:[[3,23,8],[8,21,8]],still:true},
     // 13~18 거리 사람들: 큰길을 오가는 행인 · 포차 손님 (둘은 사무동 간판 이야기를 한다)
     { kind: 'civ', wander: [2, 12, 10, 15], at: [6, 14] }, { kind: 'civ', body: 'fBob', wander: [18, 12, 26, 15], at: [21, 14] }, { kind: 'civ', wander: [31, 12, 39, 15], at: [35, 15] },
     { kind: 'civ', at: [24, 21], post: 0 }, { kind: 'civ', body: 'fTail', at: [25, 21], post: 180 }, { kind: 'civ', wander: [23, 18, 32, 23], at: [29, 21] },
@@ -519,7 +521,8 @@ const STAGES = [
     { kind: 'g1', tag: 'camop', b: 2, fl: 1, at: 'S', post: 180, enforcer: true },
     { kind: 'g1', tag: 'contact', route: [[6, 6, 5], [7, 9, 3], [3, 6, 4]], key: 'code', enforcer: true }
   ],
-  items: [{ b: 1, fl: 0, at: 'VA' }, { b: 2, fl: 0, at: 'VA' }],
+  items: [{ b: 1, fl: 0, at: 'VA' }, { b: 4, fl: 1, at: 'R' }],itemFurniture:[null,['safe']],
+  itemLayoutVersion:1,itemRelocations:[1],itemPatrols:[{tag:'collector',legacy:0},{tag:'contractKeeper',legacy:12}],itemActions:[null,{kind:'recovery',label:'숙소 2층 금고에서 계약서 회수',verb:'회수',short:'꺼내기',requiresKey:'green',requiresText:'사무동 2층 보안실의 초록 카드키가 필요하다',duration:2.2,complete:'계약서 회수 완료'}],
   // 사고: 사무동 옥상의 헐거운 간판. 수금원과 경호원이 그 밑 큰길을 지난다
   traps: [{ k: 'drop', at: [27, 8], hit: [25, 11, 29, 14], text: '금성상사', noOpp: true }],
   intel: [{ g: [16, 17], key: 3, gives: 'sign', learn: '사무동 간판이 헐겁다 — 수금원이 그 밑을 지난다. 출입 비밀번호는 북서쪽 폐사무소 연락책에게, 초록 카드키는 사무동 2층 보안실에 있다', every: 32, first: 6,
@@ -536,9 +539,9 @@ const STAGES = [
     { id: 'green', name: '사무동 출입', reveal: (S, h) => S.items[0].got || h.knows('폐사무소') || h.knows('사무동 출입') || !!S.player.keys.code,
       steps: [{ text: '창고 정산 쪽지 확인 · 연락책 메모도 가능', at: [11, 8, 0], done: S => !!(S.player.keys || {}).code || S.items[1].got },
               { text: '비밀번호로 사무동에 들어가 2층 보안실의 초록 카드키 챙기기', at: [25, 6, 1], done: S => !!(S.player.keys || {}).green || S.items[1].got },
-              { text: '사무동 1층 금고에서 계약서 챙기기', at: [25, 4, 0], done: S => S.items[1].got }] }
+              { text: '남서쪽 숙소 2층 금고에서 계약서 챙기기', at: [8,20,1], done: S => S.items[1].got }] }
   ],
-  hints: ['수금원에게서 빨간 카드키를 얻을 수 있다. 경호원을 따돌리거나 함께 제압할 기회를 노릴 수 있다.', '포차 손님들 이야기를 들어 보면 수금원을 사고로 처리할 길이 보인다.', '창고 금고와 VIP룸은 옥상 환풍구로도 들어간다.']
+  hints: ['수금원에게서 빨간 카드키를 얻을 수 있다. 경호원을 따돌리거나 함께 제압할 기회를 노릴 수 있다.', '포차 손님들 이야기를 들어 보면 수금원을 사고로 처리할 길이 보인다. 포차 남쪽 정산 동선은 큰길보다 사람 눈이 적다.', '창고 금고와 VIP룸은 옥상 환풍구로도 들어간다.']
 },
 // ───────── 임무 5 (보통): 본부 — 옷을 빼앗아 입고 정면으로 걸어 들어간다
 {
@@ -627,14 +630,14 @@ const STAGES = [
   hints: ['무전기 경비를 신고 전에 제압하면 전체 경보의 전달을 막을 수 있다. 조직원을 모두 제압하면 추가 수고비를 받는다.', '쓰러뜨린 조직원 옆에서 [행동] → 옷 갈아입기. 걸어 다니면 조직원은 멀리서 의심하지 않는다.', '변장해도 범행은 숨길 수 없다. 눈 표시가 있는 인물의 신원 확인과 들개의 후각을 주의해야 한다.', '자경대원을 누르면 그 자경대원의 순찰로와 시야를 고정 표시한다.']
 },
 // ───────── 임무 6 (스토리): 배신 — 까마귀가 올빼미와 제비를 조직에 넘겼다. 감방에서 맨손으로 깨어나 빠져나간다
-// 길: 감방 탈출(침대 밑 머리핀으로 따기 · 천장 환풍구) → 압수품 되찾기(선택) → 2층 사무실의 제비 무전기 → 동쪽 정문 또는 남쪽 담 개구멍
+// 길: 감방 탈출(침대 밑 머리핀으로 따기 · 천장 환풍구) → 압수품 되찾기(선택) → 2층 사무실의 제비 무전기 → 남동쪽 자재 창고의 인계서 → 동쪽 정문 또는 남쪽 담 개구멍
 {
   id: 'm6', no: '06', name: '배신', sub: '의뢰 03', fee: '',
-  mission: '감방 탈출 후 감금동 2층에서 제비의 무전기를 회수하고 탈출',
-  itemName: '제비의 무전기', itemNames: ['제비의 무전기'],
+  mission: '감방 탈출 후 감금동 2층에서 제비의 무전기와 남동쪽 자재 창고의 까마귀 인계서를 확보하고 탈출',
+  itemName: '제비의 무전기', itemNames: ['제비의 무전기','까마귀 인계서'],
   heightCueBuildings: [0, 1],
-  fixedFurn:[{x:15,y:9,t:'locker',fl:1}],
-  brief: '까마귀가 우리를 넘겼다. 감방 바닥의 머리핀으로 간수가 등을 돌렸을 때 문을 딸 수 있다. 압수품은 동쪽 경비실에 있다. 되찾을지는 선택이다. 제비의 무전기는 감금동 동쪽 계단으로 올라가는 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 2층은 보안구역이라 조직원 옷으로도 통과할 수 없다. 경비의 시선을 피하거나 유인·제압할 기회를 만든다. 신원이 CCTV에 녹화되면 경비실에서 기록을 지워야 탈출할 수 있다.',
+  fixedFurn:[{x:15,y:9,t:'locker',fl:1},{x:31,y:17,fl:0,t:'cab'}],
+  brief: '까마귀가 우리를 넘겼다. 감방 바닥의 머리핀으로 간수가 등을 돌렸을 때 문을 딸 수 있다. 압수품은 동쪽 경비실에 있다. 되찾을지는 선택이다. 제비의 무전기는 감금동 동쪽 계단으로 올라가는 2층 사무실에 있다 — 그것만은 두고 갈 수 없다. 우리를 넘긴 거래를 증명할 까마귀 인계서는 남동쪽 자재 창고의 보관함에 있다. 마당을 가로질러 창고로 접근한 뒤, 안쪽 순찰의 시선이 비는 틈에 서류를 확보하고 탈출한다. 조직원 옷으로 마당과 자재 창고를 걸어 다닐 수 있지만, 서류를 훔치는 모습은 들키면 안 된다. 감금동 2층은 보안구역이라 조직원 옷으로도 통과할 수 없다. 경비의 시선을 피하거나 유인·제압할 기회를 만든다. 신원이 CCTV에 녹화되면 경비실에서 기록을 지워야 탈출할 수 있다.',
   physicalAreas: [[19, 15, 19, 15]],
   powerArea: [15, 12, 38, 25], powerName: "창고 마당 조명",
   W: 44, H: 28, startAt: { b: 0, fl: 0, at: 'VC' }, start: [10, 6], exit: [43.5, 20.5], exitName: '동쪽 정문 밖', startA: Math.PI / 2, noRefine: true, floors: true, pspd: 1.3, gspd: 1.05, residents: 0,
@@ -683,9 +686,10 @@ const STAGES = [
     { kind: 'g2', route: [[4, 14, 2], [38, 14, 2]] },                                                   // 6 마당 동서 순찰
     { kind: 'g1', at: [41, 18], post: 180, elite: true }, { kind: 'g2', at: [41, 23], post: 180 },       // 7·8 정문
     { kind: 'g1', b: 3, fl: 1, at: 'bed', post: 90, sleep: true },                                      // 9 숙소에서 자는 조직원
-    { kind: 'dog', route: [[9, 26, 1.5], [27, 26, 1.5]] }                                               // 10 남쪽 담 개
+    { kind: 'dog', route: [[9, 26, 1.5], [27, 26, 1.5]] },
+    {kind:'g1',tag:'paperKeeper',route:[[26,18,9],[30,21,9]],still:true}                                               // 11 자재 창고 순찰
   ],
-  items: [{ b: 0, fl: 1, at: 'R' }],
+  items: [{ b: 0, fl: 1, at: 'R' },{b:2,fl:0,at:'R'}],itemFurniture:[null,['cab']],itemLayoutVersion:1,itemPatrols:[{tag:'paperKeeper'}],
   intel: [{ g: [2, 3], key: 2, gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', every: 24, first: 4,
             lines: [[0, '두 사람 넘긴 게 까마귀라며?'], [1, '응. 그쪽 연락 받고 우리가 인수했잖아.'], [1, '여자는 어젯밤에 죽었대. 무전기는 여기 보관하고.'], [0, '남자는 아래 감방에 있어. 내일 이송한대.']] }],
   interrogate: [{ gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', say: '까마귀가 넘겼어. 여자는 어제 죽었고, 무전기는 2층에 있어.' }],
@@ -696,11 +700,11 @@ const STAGES = [
     { id: 'gear', name: '압수품 · 선택 경로', reveal: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]) || h.knows('압수품'),
       steps: [{ text: '동쪽 경비실에서 압수품 되찾기 · 배운 투척 기술도 사용 가능', at: [33,7,0], done: S => !!(S.player.got || {}).gear }] },
     { id: 'radio', name: '제비의 무전기', reveal: (S,h) => !h.inRect(S.player,[4,4,15,6,0]),
-      steps: [{ text:'동쪽 계단으로 2층 진입 · 보안구역은 복장 통행 불가',at:[17,6,1],done:S=>(S.player.fl||0)===1||S.items.every(i=>i.got)},
-              { text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: [13,6,1], done: S => S.items.every(i => i.got) }] }
+      steps: [{ text:'동쪽 계단으로 2층 진입 · 보안구역은 복장 통행 불가',at:[17,6,1],done:S=>(S.player.fl||0)===1||S.items[0].got},
+              { text: '감금동 2층 사무실에서 제비의 무전기 챙기기', at: [13,6,1], done: S => S.items[0].got }] }
   ],
-  endText: '제비의 무전기를 회수해 빠져나왔다. 이제 이곳에 잡혀온 경위를 확인해야 한다.',
-  challenges: ['unrecorded', 'ghost', 'untouched', 'clean', 'fast'], fastT: 210,
+  endText: '제비의 무전기와 까마귀가 서명한 인계서를 확보했다. 우리를 넘긴 거래와 집하장 연락 주파수가 함께 남아 있다.',
+  challenges: ['unrecorded', 'ghost', 'untouched', 'clean', 'fast'], fastT: 420,
   well: 'manhole', kunai: 2, coins: 0, reinf: [43, 20],
   hints: ['감방 바닥의 머리핀으로 문을 딸 수 있다. 간수가 등을 돌릴 때 딴다 — 긁는 소리가 난다.', '압수품 회수는 선택이다. 락픽·빈 캔을 되찾고, 배운 투척 기술도 사용할 수 있다. 맨손과 휘파람은 장비 없이도 쓴다.', '조직원 옷은 마당에서 통하지만 감금동 2층 보안구역과 정문 정예는 피해야 한다.']
 },
@@ -1236,7 +1240,7 @@ STAGES.push({
 const DIALOGUE = {
   m1: [['master', '상회 사무실의 장부를 가져오세요. 경찰이 가져간 사본도 회수해야 합니다.'],
        ['master', '사본은 동쪽 지구대 증거물실에 있습니다. 출입 카드는 2층 당직자가 갖고 있어요.']],
-  m2: [['master', '제거할 사람은 클럽 실장 한 명입니다. 옆 사무동 금고의 장부도 가져오세요.'],
+  m2: [['master', '제거할 사람은 클럽 실장 한 명입니다. 사무동 금고의 장부와 남동쪽 회계 숙소의 거래 암호표도 가져오세요.'],
        ['hero', '먼저 거리에서 살펴보자. 경비를 건드릴 필요는 없어.']],
   m3: [['master', '회장은 오늘 자택에서 손님을 받습니다. 행사장 출입은 직원만 가능합니다.'],
        ['master', '회장을 처리하고, 본채 2층의 서류를 가져오세요.']],
@@ -1244,7 +1248,7 @@ const DIALOGUE = {
   m5: [['master', '보스는 본부 2층에 있습니다. 장부는 1층 금고에 있어요.'],
        ['master', '정문 경비는 직원 얼굴을 압니다. 복장만 바꿔서는 오래 버티기 어렵습니다.']],
   m6: [['hero', '감방이다. 장비도 전부 없어졌다.'],
-       ['hero', '제비도 잡혀 왔을 텐데. 나가서 확인해야겠어.']],
+       ['hero', '제비도 잡혀 왔을 텐데. 나가서 무전기와 우리를 넘긴 인계 기록부터 찾아야겠어.']],
   m7: [['hero', '제비의 무전에 나온 집하장이다. 오태식은 지금 창고 동쪽에서 화물을 확인한다.'],
        ['hero', '오태식과 명세서, 그리고 사무실 2층 배차 단말. 출고까지 끊어야 오늘 밤 화물이 나가지 못해.']]
 };
@@ -3231,7 +3235,7 @@ function initLessonLayout(){
 let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null;
 function captureContractLayout() {
   S.itemLayoutVersion=STAGE.itemLayoutVersion||0;
-  MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items)}:null;
+  MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items),patrols:(STAGE.itemPatrols||[]).map(p=>({legacy:p.legacy,g:cloneDeep(S.guards.find(g=>g.tag===p.tag))}))}:null;
   S.layoutVersion = STAGE.layoutVersion || 0;
   CONTRACT_LAYOUT = !STAGE.layoutVersion ? null : {
     id: STAGE.id, grids: [G0, ...GF.slice(1)].map(g => g && g.map(r => r.slice())),
@@ -3243,6 +3247,13 @@ function restoreContractLayout() {
   const I=MISSION_ITEM_LAYOUT;
   if(I&&I.id===STAGE.id&&(S.itemLayoutVersion||0)<I.version){
     for(let i=S.items.length;i<I.items.length;i++)S.items.push(cloneDeep(I.items[i]));
+    for(const i of STAGE.itemRelocations||[])if(S.items[i]&&!S.items[i].got&&I.items[i])Object.assign(S.items[i],cloneDeep(I.items[i]));
+    for(const p of I.patrols||[]){
+      let g=S.guards.find(g=>g.tag===p.g.tag);
+      if(!g&&p.legacy!=null){g=S.guards[p.legacy];if(g)g.tag=p.g.tag;}
+      if(!g){g=cloneDeep(p.g);g.id=S.guards.length;S.guards.push(g);}
+      else if(g.state!=='DEAD'){g.route=cloneDeep(p.g.route);g.ri=0;g.path=null;}
+    }
     S.itemLayoutVersion=I.version;S.exitOpen=false;
   }
   // Remove retired props from saved grids without resetting the rest of the mission.
@@ -6984,7 +6995,7 @@ function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선�
 function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
   if(STAGE.keyPurposes?.[k])return STAGE.keyPurposes[k];
-  return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'사무동 1층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
+  return k==='blue'?'클럽 VIP룸 뒷문':STAGE.id==='m4'&&k==='green'?'남서쪽 숙소 2층 계약서 금고':STAGE.id==='m4'&&k==='red'?'창고 현금 금고':'';
 }
 function vipRoutine(g) {
   if(STAGE.openingContract&&g.tag==='runner'&&g.state==='PATROL'&&!g.moving&&!g.doomed)return 'smoke';
@@ -7210,6 +7221,7 @@ function vipContractGoal(){
     return{text:'사무동 1층 금고에서 장부 회수',where:P.outfit==='crew'?'감시 시야 밖에서 작업 · 전선 분리는 기술 없이 가능':'사무동 앞 예비 재킷으로 통행 가능 · 작업은 감시 주의',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
   }
   if(!dead){const at=targetKnowledge(g);return{...at,g,text:'의뢰: '+missionTargetText(g,at),where:at.where,routeGuide:true};}
+  const cipher=S.items[1];if(cipher&&!cipher.got)return{x:cipher.x,y:cipher.y,fl:flOf(cipher),id:'item:1',text:'남동쪽 회계 숙소 2층에서 거래 암호표 회수',where:'장부의 가명을 해독할 대조표 · 경비 순찰을 관찰',routeGuide:true};
   return null;
 }
 function updateVipContract(){
@@ -7268,8 +7280,10 @@ function contractRouteGoal(){
     return null;
   }
   if(STAGE.id==='m6'){
-    const it=S.items[0];if(!it||it.got)return null;
-    return{x:it.x,y:it.y,fl:flOf(it),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(it.x,it.y,flOf(it))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+    const radio=S.items[0],paper=S.items[1];
+    if(radio&&!radio.got)return{x:radio.x,y:radio.y,fl:flOf(radio),text:flOf(S.player)?'2층 사무실에서 제비의 무전기 회수':'동쪽 계단으로 감금동 2층 잠입',where:placeName(radio.x,radio.y,flOf(radio))+(flOf(S.player)?' · 보안구역 · 복장 통행 불가':' · 압수품 회수는 선택'),routeGuide:true};
+    if(paper&&!paper.got)return{x:paper.x,y:paper.y,fl:flOf(paper),id:'item:1',text:'남동쪽 자재 창고에서 까마귀 인계서 확보',where:'마당 건너 창고 · 순찰의 시선 밖에서 서류 회수',routeGuide:true};
+    return null;
   }
   if(STAGE.id==='m2')return vipContractGoal();
   if(STAGE.id!=='m4')return null;
@@ -7289,8 +7303,8 @@ function contractRouteGoal(){
   if(!S.items[1]?.got){
     const officeDoors=S.doors.filter(d=>d.keyLock==='code');
     if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.filter(n=>n.gives==='code'&&!n.read).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];if(note)return object(note,note.title+' 확인','사무동 비밀번호');}
-    if(!keys.green&&locked('green')){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 1층 계약서 금고용');}
-    return object(S.items[1],'사무동 1층에서 계약서 회수','초록 카드키 · 계약서 금고');
+    if(!keys.green){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 남서쪽 숙소 금고용');}
+    return object(S.items[1],'남서쪽 숙소 2층 금고에서 계약서 회수','초록 카드키 · 금고 앞에서 행동');
   }
   return null;
 }
@@ -7314,7 +7328,7 @@ function rendezvousState() {
 function rendezvousTarget(){return STAGE.rendezvous?npc(STAGE.rendezvous.target):null;}
 function rendezvousReady() {
   const r=rendezvousState(),g=rendezvousTarget();
-  return !!(r&&g&&S.items.length&&S.items.every(it=>it.got)&&!targetEliminated(g)&&g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&
+  return !!(r&&g&&S.items.length&&(STAGE.rendezvous.item!=null?!!S.items[STAGE.rendezvous.item]?.got:S.items.every(it=>it.got))&&!targetEliminated(g)&&g.state==='PATROL'&&!g.climb&&!g.grabbed&&!g.doomed&&!g.brawl&&
     !['travelling','waiting'].includes(r.phase)&&r.cooldown<=0&&S.alevel<2&&S.vipPlan?.phase!=='sick'&&S.vipPlan?.phase!=='drinking');
 }
 function nearRendezvous() {
@@ -10357,13 +10371,14 @@ function nearLoot() {
   }
   return best;
 }
-function startLoot(it) { const P=S.player,A=itemObjectiveAction(it);if(A?.requires!=null&&!S.items[A.requires]?.got){toast(A.requiresText,2.4,'warn');return;}if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: A?.duration??L[3], short: A?.short||L[2], loud: A?.loud??L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
-  hint(A?'terminalWork':'loot', A?'배차 작업 중에는 움직이면 중단된다. 작업 모습이 보이면 들킬 수 있다.':'가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
+function itemObjectiveBlock(it){const A=itemObjectiveAction(it);return A?.requiresKey&&!S.player.keys?.[A.requiresKey]||A?.requires!=null&&!S.items[A.requires]?.got?A.requiresText||'먼저 필요한 물품을 확보해야 한다':'';}
+function startLoot(it) { const P=S.player,A=itemObjectiveAction(it);if(itemObjectiveBlock(it)){toast(itemObjectiveBlock(it),2.4,'warn');return;}if(P.hurtT>.4){toast('피격에서 회복 중 — 잠시 뒤 다시 챙기기',1.8,'warn');return;}if (!S.saidLoot) { S.saidLoot = true; bossRadio('loot', true); } const L = LOOT[it.furn]; P.pick = { kind: 'loot', it, x: it.dx, y: it.dy, t: 0, nt: 0.15, dur: A?.duration??L[3], short: A?.short||L[2], loud: A?.loud??L[4] }; P.vx = P.vy = 0; P.cover = null; P.a = Math.atan2(it.dy - P.y, it.dx - P.x);
+  hint(A&&A.kind!=='recovery'?'terminalWork':'loot', A&&A.kind!=='recovery'?'작업 중에는 움직이면 중단된다. 작업 모습이 보이면 들킬 수 있다.':'가구에서 훔치기: 끝날 때까지 움직이지 마라. 하는 동안은 수상한 행동이라 보이면 들킨다'); }
 // 물건을 손에 넣음 (바닥에서 줍기·가구에서 빼오기 공용)
 function takeItem(it) {
   const P = S.player; it.got = true; spawnEffect('loot',{x:it.dx??it.x,y:it.dy??it.y,fl:flOf(it),z:0},{scale:.8});finishEnvSelection(); play('switch', 0.6); play('cloth', 0.3); if (!S.stats.gotAs) { const zi = STAGE.zones ? pZoneInfo() : null, by = zi && zi.k !== Z_PUB ? myPermits().find(o => zi.allow && zi.allow.includes(o)) : disguised() ? P.outfit : null; const U = S.usedPermit || {}; S.stats.gotAs = by || (P.item && P.item.permit && U[P.item.permit] ? P.item.permit : disguised() && U[P.outfit] ? P.outfit : 'self'); }  // 그 신분이 실제로 금지 구역에 들여보내 준 적이 있으면 인정  // 어떤 신분으로 훔쳤나 (도전 과제) — 그 자리를 실제로 허가해 준 신분만 친다
   const left = S.items.filter(i => !i.got).length, nm = (STAGE.itemNames || [])[S.items.indexOf(it)] || STAGE.itemName || '서류';
-  const A=itemObjectiveAction(it),remaining=S.items.some(i=>!i.got&&itemObjectiveAction(i))?'작업':'물품';
+  const A=itemObjectiveAction(it),remaining=S.items.some(i=>!i.got&&itemObjectiveAction(i)&&itemObjectiveAction(i).kind!=='recovery')?'작업':'물품';
   toast(A?.complete||(left ? `${nm} 회수 · 남은 ${remaining} ${left}개` : `${nm} 회수`), 2.4, 'good');
   // A stopped dispatch is a local, observable fault: its operator comes over.
   // It does not reveal the player's identity or raise a remote alarm.
@@ -10658,7 +10673,7 @@ function primaryActionRaw() {
   if (kl.length === 1) return { k: 'kill', list: kl, label: kl[0].civ ? '기절시키기' : (dist(P.x, P.y, kl[0].x, kl[0].y) > MELEE_CONTACT ? '달려들어 ' : '') + (kl[0].target ? '표적 암살' : '암살') };
   const nt = nearNote(); if (nt) return { k: 'read', n: nt, at: nt, label: nt.read ? '메모 다시 읽기' : nt.title+' 읽기' };
   {const call=nearRendezvous();if(call)return call;}
-  const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: itemObjectiveAction(lt)?itemObjectiveAction(lt).label+(itemObjectiveAction(lt).requires!=null&&!S.items[itemObjectiveAction(lt).requires]?.got?' · 명세서 필요':''):`${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
+  const lt = nearLoot(); if (lt) { const L = LOOT[lt.furn]; return { k: 'loot', it: lt, at: { x: lt.dx, y: lt.dy }, label: itemObjectiveAction(lt)?itemObjectiveAction(lt).label+(itemObjectiveBlock(lt)?(itemObjectiveAction(lt).requiresKey?' · 카드 필요':' · 명세서 필요'):''):`${L[1]} — ${(STAGE.itemNames || [])[S.items.indexOf(lt)] || STAGE.itemName || '서류'}` }; }
   { const fdE = nearFloorDown(), swE = fdE && fdE.kind !== 'balc' && nearSideWin();  // 내려가는 자리와 옆 건물 창문이 붙어 있으면 더 가까운 쪽 하나만
     if (swE && dist(P.x, P.y, downPt(fdE).x, downPt(fdE).y) <= dist(P.x, P.y, swE.x, swE.y)) return { k: 'fdown', l: fdE, at: downMark(fdE), label: `내려가기 · ${fdE.bfl + 1}층` }; }
   const sw = nearSideWin(); if (sw) { const L = sw.link, v = landingVictim(tc(L.tx + L.dir), tc(L.ty), sw.fl); if (v) return { k: 'winJump', w: sw, kill: v, at: { x: v.x, y: v.y }, label: v.civ ? '창문 넘어 기절시키기' : '창문 넘어 암살' }; return { k: 'winJump', w: sw, at: { x: sw.x, y: sw.y }, label: `창문 건너 옆 건물 ${sw.fl + 1}층으로` }; }
@@ -14350,7 +14365,7 @@ function missionIdentities(){
     rows.push({id:'target:'+g.id,kind:'target',name:targetName(g),verb:'처치',where:STAGE.id==='m2'&&g.tag==='vip'?'클럽 1층 · VIP룸과 홀':at.where,complete,
       status:complete?'처치 완료':at.unconscious?'기절 · 처치 미완료':'처치 대상',key:charOf(g)});
   }
-  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',work=itemObjectiveAction(it);rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:work?.verb||'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(work?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
+  S.items.forEach((it,i)=>{const name=STAGE.itemNames?.[i]||STAGE.itemName||'서류',action=itemObjectiveAction(it),work=action&&action.kind!=='recovery';rows.push({id:'item:'+i,kind:'item',name,art:work?'terminal':name.includes('무전기')?'radio':name.includes('현금')?'cash':'document',verb:action?.verb||'회수',where:placeName(it.x,it.y,flOf(it),it.b),complete:!!it.got,status:it.got?(action?.complete||'회수 완료'):(work?'현장 작업':'회수 물품')});});
   return rows;
 }
 function makeMissionIdentity(row,brief){
@@ -14713,7 +14728,7 @@ function renderStageList() {
     const map = !s.tutorial && window.__THUMBS && __THUMBS[s.id] ? `<img class="st-map" src="${INK_STUDY&&s.id==='m2'?window.__INK_VIP_MAP__:__THUMBS[s.id]}" alt="${s.name} 지도">` : '';
     const fee = s.fee ? `<span class="st-fee"><small>수고비</small>${s.fee}</span>` : '';
     const passport=s.id==='m2'?'<span class="st-rank">공략 '+Object.keys(vipApproachRecords()).length+'/'+VIP_APPROACHES.length+'</span>':'';
-    const cardLine={m2:'클럽 실장 · 장부 회수',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기 회수',m7:'운송책 · 명세서 · 새벽배송 중단'};
+    const cardLine={m2:'클럽 실장 · 장부와 암호표',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기와 인계서',m7:'운송책 · 명세서 · 새벽배송 중단'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
       <span class="st-no">${s.tutorial ? tno : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>

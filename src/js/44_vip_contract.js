@@ -26,6 +26,7 @@ function vipContractGoal(){
     return{text:'사무동 1층 금고에서 장부 회수',where:P.outfit==='crew'?'감시 시야 밖에서 작업 · 전선 분리는 기술 없이 가능':'사무동 앞 예비 재킷으로 통행 가능 · 작업은 감시 주의',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
   }
   if(!dead){const at=targetKnowledge(g);return{...at,g,text:'의뢰: '+missionTargetText(g,at),where:at.where,routeGuide:true};}
+  const cipher=S.items[1];if(cipher&&!cipher.got)return{x:cipher.x,y:cipher.y,fl:flOf(cipher),id:'item:1',text:'남동쪽 회계 숙소 2층에서 거래 암호표 회수',where:'장부의 가명을 해독할 대조표 · 경비 순찰을 관찰',routeGuide:true};
   return null;
 }
 function updateVipContract(){

@@ -16,7 +16,7 @@ async def main():
  rows=[]
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
-  for touch in [False,True]:
+  for touch in ([os.environ['YH_DEVICE']=='mobile'] if os.environ.get('YH_DEVICE') else [False,True]):
    name=LABEL+('-mobile'if touch else'-pc');q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();'+(''if REALTIME else'window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}'))
    await open_game(q,BASE+'?review=v175&nostats');await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo')
@@ -60,7 +60,7 @@ async def main():
      if await q.locator('[data-env-token^="'+kind+':"]').count():await q.locator('[data-env-token^="'+kind+':"]').first.click()
      elif await q.evaluate('__game.envAction().k')!=kind:
       await q.screenshot(path=str(O/(name+'-missing-'+kind+'.png')));print('MISSING',kind,await q.evaluate('({p:[__game.S.player.x,__game.S.player.y,__game.S.player.hp],t:__game.S.t,choices:__game.envChoices().map(a=>[a.k,a.label]),vip:[__game.S.guards[0].x,__game.S.guards[0].y,__game.S.guards[0].wait]})'),flush=True);raise AssertionError('missing '+kind)
-    await action('x','#btnCarry');await tick(3.3)
+    await action('x','#btnCarry');await tick(.35 if REALTIME and kind=='door' else 3.3)
    if APPROACH=='smoke':
     for at in [(1272,1032),(1272,840)]:await move(*at)
     await action('Control','#btnCrouch');await move(1272,744);await move(1292,744)
@@ -118,10 +118,11 @@ async def main():
     await tick(.1)
    else:raise AssertionError((name,'vault doorway never clears'))
    await env('door')
-   assert await q.evaluate('at=>__game.S.doors.find(d=>d.x===at.x&&d.y===at.y&&!(d.fl||0)).locked',gate),'physical vault door did not close'
+   # A live patrol can reopen the physical door; closure itself is not a goal.
    await move(264,312)
    await env('loot');assert await q.evaluate('__game.S.items[0].got&&!__game.evidencePending()')
-   await move(gate['x'],gate['y']-40);await env('door')
+   await move(gate['x'],gate['y']-40)
+   if await q.evaluate('at=>__game.S.doors.find(d=>d.x===at.x&&d.y===at.y&&!(d.fl||0)).locked',gate):await env('door')
    if APPROACH=='meeting':
     for at in [(264,504),(216,504)]:await move(*at)
     await env('callMeet');await move(216,600)
@@ -131,8 +132,31 @@ async def main():
      await tick(.1)
     else:raise AssertionError('target failed to reach appointment')
     await action('z','#btnAct',2.2)
+   assert not await q.evaluate('__game.S.exitOpen'),'ledger/target skipped the southeast cipher'
+   async def route_local(x,y):
+    path=await q.evaluate('''({x,y})=>{const G=__game,P=G.S.player;G.setLayer(P.fl||0);const doors=new Map(G.S.doors.filter(d=>(d.fl||0)===(P.fl||0)&&!d.keyLock).map(d=>[d.ty*G.MW+d.tx,d])),shafts=new Set(G.S.ladders.filter(l=>(l.bfl||0)===(P.fl||0)).map(l=>l.ty*G.MW+l.tx)),end=Math.floor(y/48)*G.MW+Math.floor(x/48);return G.astar(Math.floor(P.x/48),Math.floor(P.y/48),Math.floor(x/48),Math.floor(y/48),(tx,ty)=>(G.solidAt(tx,ty)&&!doors.has(ty*G.MW+tx))||(shafts.has(ty*G.MW+tx)&&ty*G.MW+tx!==end)).map(p=>({x:p.x,y:p.y}));}''',{'x':x,'y':y});assert path,(x,y)
+    fl=await q.evaluate('__game.S.player.fl||0')
+    for p0 in path:
+     if await q.evaluate('p=>__game.S.doors.some(d=>d.locked&&(d.fl||0)===(__game.S.player.fl||0)&&Math.abs(d.x-p.x)<2&&Math.abs(d.y-p.y)<2)',p0):await env('door')
+     await move(p0['x'],p0['y'])
+     if await q.evaluate('(__game.S.player.fl||0)')!=fl:return
+    await move(x,y)
+   await move(264,696);await route_local(2376,1224)
+   stair=await q.evaluate('(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==="fstair"&&G.bldAt(l.tx,l.ty)===7&&l.tfl===1);return{up:G.stairLower(l).up.entry,down:G.stairUpper(l).down.entry}})()')
+   await route_local(stair['up']['x'],stair['up']['y'])
+   if not await q.evaluate('__game.S.player.fl'):await env('up')
+   await tick(1);assert await q.evaluate('__game.S.player.fl===1')
+   for _ in range(900):
+    if await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="cipherKeeper");return g.x<44*48&&g.wait>6&&Math.cos(g.a)<-.7})()'):break
+    await tick(.1)
+   else:raise AssertionError('cipher patrol never gives a working window')
+   paper=await q.evaluate('({x:__game.S.items[1].x,y:__game.S.items[1].y})');await route_local(paper['x'],paper['y']);await env('loot');assert await q.evaluate('__game.S.items[1].got&&__game.S.exitOpen')
+   await draw();await q.screenshot(path=str(O/(name+'-cipher.png')))
+   await route_local(stair['down']['x'],stair['down']['y']);await tick(2)
+   if await q.evaluate('__game.S.player.fl'):await env('fdown')
+   await route_local(2376,1224);await route_local(2664,1056)
    assert await q.evaluate('__game.S.exitOpen'),'ledger/target did not complete contract'
-   for at in [(264,696),(72,696),(36,816)]:await move(*at)
+   # The east exit closes the club/office/southeast apartment circuit.
    await q.wait_for_function('document.querySelector("#end").dataset.win==="1"&&!document.querySelector("#end").hidden',timeout=4000,polling=100)
    result=await q.evaluate('''()=>{const G=__game,S=G.S;return{version:__BUILD_VERSION__,seconds:S.t,hp:S.player.hp,stats:S.stats,skills:G.loadSkillTree().learned,approach:S.missionApproach,receipt:S.vipReceipt,records:JSON.parse(localStorage.getItem('yahaeng.ch')).m2._approaches,next:document.querySelector('#btnRetry').textContent}}''')
    assert result['hp']>0 and not result['skills'] and not errors,(result,errors)
