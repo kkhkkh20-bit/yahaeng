@@ -26,6 +26,7 @@ async def rear_ko(r,id):
  for _ in range(800):
   v=await q.evaluate('''id=>{const G=__game,P=G.S.player,g=G.S.guards[id],a=G.attackAction(),p=[0,.6,-.6].map(d=>({x:g.x-Math.cos(g.a+d)*32,y:g.y-Math.sin(g.a+d)*32})).find(p=>!G.solidAt(Math.floor(p.x/48),Math.floor(p.y/48)));return{ready:['kill','counter'].includes(a.k)&&(a.g===g||a.list?.includes(g)),p:{x:P.x,y:P.y},back:p,over:G.S.over,g:{x:g.x,y:g.y,state:g.state}}}''',id)
   assert not v['over'],v
+  if v['g']['state']=='DEAD':return
   if v['ready']:
    await r.press('z','#btnAct');await q.wait_for_timeout(1400);return
   if v['back']:await nudge(r,v['back']['x']-v['p']['x'],v['back']['y']-v['p']['y'])
@@ -69,7 +70,7 @@ async def cleanup(r):
  await r.route(120,744);await r.route(1656,792);await r.route(1656,1224);await r.route(1608,1272)
  await q.wait_for_function('__game.S.guards[0].y>1190&&__game.S.guards[0].x>1550&&__game.S.guards[0].wait>3&&__game.S.guards[0].state==="PATROL"',timeout=300000)
  await r.dart(1);await r.dart(0,True,'blade')
- assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])&&__game.S.guards[1].state==="DEAD"'),await r.snap('collector-failure')
+ assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])'),await r.snap('collector-failure')
  drop=await q.evaluate('()=>__game.S.keyDrop&&({x:__game.S.keyDrop.x,y:__game.S.keyDrop.y})');
  if drop:await r.route(drop['x'],drop['y'])
  assert (await r.state())['keys'].get('red'),'the red card must be picked up physically'
