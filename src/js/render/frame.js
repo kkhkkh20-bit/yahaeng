@@ -215,8 +215,7 @@ function draw() {
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g);
-    if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      if(showField){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, guardCone(g,fov,rg), 1); ctx.fill();}
+    if (g.civ && !g.wary && g.state !== 'PANIC' && !showField) {  // 선택하지 않은 주민은 큰 시야 표시를 생략한다
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.

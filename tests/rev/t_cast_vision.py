@@ -45,6 +45,10 @@ async def main():
     try{G.benchDraw(1)}finally{ctx.stroke=stroke;ctx.beginPath=begin;ctx.closePath=close}
     ok(painted===1,'actual renderer painted '+painted+' guard boundaries');
     ok(G.selectVisionFocus().actor===S.guards[2],'manual selection ignored');ok(S.guards.filter(G.showVisionField).length===1,'more than one live guard field');ok(before===ai(),'render mutated detection or player state');out.push('selected field is exclusive; render preserves AI');
+    const civilian=S.guards[2];civilian.civ=true;let civilianBoundary=false;
+    ctx.stroke=function(){if(/^rgba\\(196,\\s*236,\\s*190,\\s*0\\.6/.test(this.strokeStyle))civilianBoundary=true;return stroke.apply(this,arguments)};
+    try{G.benchDraw(1)}finally{ctx.stroke=stroke}
+    ok(civilianBoundary&&S.guards.filter(G.showVisionField).length===1,'selected civilian witness has no readable field');civilian.civ=false;out.push('civilian witness selection also draws a clear field');
     Object.assign(S.guards[0],{seen:true,meter:.55});G.benchDraw(1);ok(G.selectVisionFocus().actor===S.guards[0],'real suspicion did not override selected guard');
     Object.assign(S.guards[1],{seen:true,meter:.8});G.benchDraw(1);ok(G.selectVisionFocus().actor===S.guards[1],'higher threat not focused');ok(S.guards.filter(G.showVisionField).length===1,'multiple observers paint overlapping fields');out.push('multiple observers retain detection while the greatest danger owns the field');
     Object.assign(S.guards[0],{state:'ALERT',meter:1});G.benchDraw(1);ok(G.selectVisionFocus().actor===S.guards[0],'identified attacker loses focus to a partial check');
