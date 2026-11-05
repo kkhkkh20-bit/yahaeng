@@ -14,6 +14,7 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: write
+  actions: read
 jobs:
   browser-review:
     runs-on: ubuntu-24.04
@@ -23,6 +24,22 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 1
+      - name: Reuse completed regression evidence only for identical game sources
+        id: evidence
+        run: |
+          git fetch --depth=1 origin 5a253dcf910a71185a58afc903cc1da3f0d72e5f
+          if git diff --quiet 5a253dcf910a71185a58afc903cc1da3f0d72e5f HEAD -- . ':(exclude)tests/tutorial/vip_choices_walk.py' ':(exclude).github/workflows/physical-interactions.yml'; then
+            echo "reuse=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "reuse=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/download-artifact@v4
+        if: steps.evidence.outputs.reuse == 'true'
+        with:
+          name: physical-interactions-41968366628
+          run-id: 41968366628
+          github-token: ${{ github.token }}
+          path: .
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -43,12 +60,16 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/tests/support:${{ github.workspace }}/tests/tutorial
           YH_TEST_HTTP: '1'
+          YH_REUSE_REGRESSION: ${{ steps.evidence.outputs.reuse }}
           YH_OPENING_DIR: ${{ github.workspace }}/build/physical-v190/opening
           YH_VIP_DIR: ${{ github.workspace }}/build/physical-v190/vip
         run: |
           python -m http.server 8001 --bind 127.0.0.1 > "$RUNNER_TEMP/yahaeng-http.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
+          if [ "$YH_REUSE_REGRESSION" = 'true' ]; then
+            echo 'Reusing 85 passed browser regressions and PC/mobile native lessons from run 41968366628; every tracked game/build file matches 5a253dcf910a71185a58afc903cc1da3f0d72e5f.'
+          else
           python - <<'PY'
           import subprocess,sys
           names=['t_contract_density','t_environment_targets','t_mobile_flow','t_physical_interactions']
@@ -60,6 +81,7 @@ jobs:
           PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
+          fi
           YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html

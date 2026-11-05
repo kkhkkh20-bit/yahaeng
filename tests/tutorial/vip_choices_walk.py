@@ -112,10 +112,19 @@ async def main():
    gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
    # The office patrol can identify a nearby disguise. Observe a real gap
    # before operating its doorway; a fixed schedule is not a stealth strategy.
-   for _ in range(300):
-    if await q.evaluate('at=>{const g=__game.S.guards[6];return g.state!=="ALERT"&&Math.hypot(g.x-at.x,g.y-at.y)>150}',gate):break
+   observed=[]
+   for n in range(300):
+    view=await q.evaluate('at=>{const g=__game.S.guards[6],dx=at.x-g.x,dy=at.y-g.y,d=Math.hypot(dx,dy);return{id:g.id,state:g.state,x:g.x,y:g.y,a:g.a,d,facing:(dx*Math.cos(g.a)+dy*Math.sin(g.a))/Math.max(1,d),wait:g.wait,seen:g.seen,why:g.why}}',gate)
+    if n%50==0:observed.append(view)
+    # Opening a permitted doorway needs a real line-of-sight gap, not an
+    # arbitrary distance that a short indoor patrol might never reach.
+    if view['state']!="ALERT" and (view['d']>150 or view['facing']<-.25):break
     await tick(.1)
-   else:raise AssertionError((name,'office patrol never leaves the vault entrance'))
+   else:
+    await draw();await q.screenshot(path=str(O/(name+'-office-wait.png')))
+    print('OFFICE WAIT',json.dumps({'gate':gate,'observed':observed,'last':view,'player':await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,hp:__game.S.player.hp,outfit:__game.S.player.outfit,blown:__game.S.player.disguiseBlown,alarm:__game.S.alevel,stats:__game.S.stats})')},ensure_ascii=False),flush=True)
+    raise AssertionError((name,'office patrol never gives a visible doorway gap'))
+   print('OFFICE GAP',json.dumps({'gate':gate,'observed':observed,'selected':view},ensure_ascii=False),flush=True)
    await move(240,445)
    await action('x','#btnCarry')
    for key in ['0','4','1','7']:
