@@ -155,7 +155,7 @@ function loadCheckpoint() {
   if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initActionFlow(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
-  S.koHold = null; S.player.lethalHold = null; S.player.techWork=null; input.pressIds = {};
+  S.koHold = null; S.player.lethalHold = null; S.player.techWork=null;S.player.followupAttack=null; input.pressIds = {};
   S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
   closeKeypad();clearPlayerInput();
   input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();

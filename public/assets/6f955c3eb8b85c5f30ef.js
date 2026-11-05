@@ -3103,9 +3103,52 @@ function learnTreeSkill(id){
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
 function resetTreeSkills(){
- if(!assassinMenu||assassinMenu.from!=='ledger'&&!assassinMenu.practice)return false;
+ if(!assassinMenu||!['ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
  if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
+}
+
+// Preparation suggests a route; every purchase still uses the real tree and budget.
+const SKILL_PLANS=[
+ {id:'ambush',why:'벽·풀숲·환풍구에 숨었다가 기습하려면',use:'제압 숙련 → 은신 기습'},
+ {id:'reach',why:'등 뒤에서 접근할 수 있는 거리를 늘리려면',use:'제압 숙련 → 접근 암살'},
+ {id:'swiftCrouch',why:'조용히 접근하는 이동을 빠르게 하고 싶다면',use:'가벼운 발 → 조용한 잠행 → 빠른 잠행'},
+ {id:'dart',why:'떨어진 경비 한 명을 제압하고 싶다면',use:'현장 장비 → 다트 운용'},
+ {id:'dual',why:'붙어 있는 경비 둘을 함께 처리하려면',use:'제압 숙련 → 동시 암살'},
+ {id:'chain',why:'첫 암살 뒤 다음 적까지 이어 가려면',use:'동시 암살 → 연속 암살'}
+];
+function skillPlanState(plan,record=loadSkillTree()){
+ const missing=skillPath(plan.id).filter(id=>!record.learned.includes(id));
+ return{...plan,missing,next:missing[0],cost:missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0)};
+}
+function renderSkillPreparation(id,after=false){
+ const el=$(id);if(!el)return;
+ const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
+ el.hidden=!mainContract(STAGE)||points<=0;if(el.hidden)return;
+ const plan=SKILL_PLANS.map(p=>skillPlanState(p,record)).find(p=>p.next);
+ el.replaceChildren();
+ const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
+ head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
+ note.textContent=plan?plan.why+' · '+plan.use+' (남은 경로 '+plan.cost+'P)':'남은 포인트로 다음 공략을 준비하세요.';
+ copy.append(head,note);button.type='button';button.textContent='기술 고르기';button.onclick=()=>{openAssassinMenu();if(assassinMenu&&plan){assassinMenu.plan=plan.id;selectSkillNode(plan.next);}};el.append(copy,button);
+}
+function renderSkillPlans(){
+ const el=$('skillPlans');el.replaceChildren();el.hidden=!!assassinMenu?.practice;if(el.hidden)return;
+ const record=loadSkillTree(),points=skillBudget()-skillSpent(record),plans=SKILL_PLANS.map(p=>skillPlanState(p,record)).filter(p=>p.next).slice(0,3);
+ for(const p of plans){
+  const b=document.createElement('button');b.type='button';b.dataset.plan=p.id;
+  b.textContent=SKILL_BY_ID[p.id].name+' · 다음 '+SKILL_BY_ID[p.next].name+' '+SKILL_BY_ID[p.next].cost+'P';
+  b.title=p.why+' · '+p.use+' · 남은 경로 '+p.cost+'P'+(points<SKILL_BY_ID[p.next].cost?' · 포인트를 더 모아야 합니다':'');
+  b.onclick=()=>{assassinMenu.plan=p.id;selectSkillNode(p.next);};el.append(b);
+ }
+ el.hidden=!plans.length;
+}
+function updateSkillPrompt(force=false){
+ if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
+ hudCache.skillPromptAt=S.t;
+ const record=loadSkillTree(),points=mainContract(STAGE)?skillBudget()-skillSpent(record):0,b=$('btnPause');
+ if(points>0)b.dataset.points=points;else delete b.dataset.points;
+ b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
 }
 const skillNoise=(src,r)=>r*(src==='step'?(S.player.mode==='walk'&&skillOn('quietStep')?.75:S.player.mode==='sneak'&&skillOn('quietCrouch')?.65:1):src==='land'&&skillOn('landing')?.6:src==='ko'&&skillOn('silentHands')?.7:1);
 const skillMoveMul=mode=>mode==='run'&&skillOn('sprint')?1.12:1;
@@ -7891,6 +7934,7 @@ function updateTrav(P, dt) {
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
   updateRecoveryInput(P);
+  updateFollowupAttack(P);
   if(updateQuickStash(P,dt))return;
   if(updateTechWork(P,dt))return;
   if(updateAssassinSkill(P,dt))return;
@@ -8031,7 +8075,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
-    P.stepT -= dt;
+    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
     if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
       P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
       const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
@@ -9026,7 +9070,7 @@ function loadCheckpoint() {
   if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initActionFlow(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
-  S.koHold = null; S.player.lethalHold = null; S.player.techWork=null; input.pressIds = {};
+  S.koHold = null; S.player.lethalHold = null; S.player.techWork=null;S.player.followupAttack=null; input.pressIds = {};
   S.envExplicit=S.envKey=S.envPick=S.envPickK=S.envPickP=null; S.envSel=0;
   closeKeypad();clearPlayerInput();
   input.sneakToggle=S.player.mode==='sneak'||!!S.player.hidden;syncSneakBtn();
@@ -9692,6 +9736,7 @@ function combatHeld(source) {
 }
 function combatRelease(id, cancelled=false) {
   if (!S) return;
+  const q=S.player.followupAttack;if(q?.source.id===id){if(cancelled)S.player.followupAttack=null;else q.tap=true;}
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
   if(S.player.skillHold?.source.id===id){const h=S.player.skillHold;S.player.skillHold=null;if(!cancelled)releaseAssassinTap(h);}
@@ -11104,6 +11149,12 @@ function updatePairCombat(P,dt) {
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
   if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);S.shakeT=Math.max(S.shakeT||0,.06);}
+  const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
+  const held=S.koHold,lethalPending=held?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(held.source);
+  if(A.landed&&t>=A.dur*.88&&(moving||P.followupAttack)&&!P.recoveryQueue&&!lethalPending){
+    if(A.c){A.c.hideT=S.t;A.c.t0=null;}
+    P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;return false;
+  }
   if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
   return true;
 }
@@ -11634,8 +11685,41 @@ function recoveryInputAction(kind){
 }
 function queueRecoveryInput(kind){
   const P=S.player,c=recoveryInputCandidate(P);if(!c)return false;
+  P.followupAttack=null;
   const a=recoveryInputAction(kind);if(!a)return false;
   if(!P.recoveryQueue)P.recoveryQueue={c,kind:a.k,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.6};return true;
+}
+
+// A fresh late press may continue into one nearby visible victim. Never retarget,
+// borrow a different held key, or convert a released tap into a lethal hold.
+function followupWindow(P=S.player){
+ const A=P.killAnim;
+ if(A?.committed&&A.dur-(S.t-A.t0)<=.22)return true;
+ const B=P.assassinAnim;
+ if(!B||B.hits.some(t=>t==null))return false;
+ const end=B.key==='dual'?B.t0+ASSASSIN_BEATS.firstEnd:B.phase==='second'?B.secondAt+ASSASSIN_BEATS.secondEnd:Infinity;
+ return end-S.t<=.22;
+}
+const followupVictim=(g,P)=>!g.civ&&!g.dog&&!g.seen&&g.meter<NOTICE_AT&&['PATROL','RETURN','SLEEP','SUSPICIOUS'].includes(g.state)&&canKill(g,P,meleeReach(P));
+function followupCandidate(P=S.player){
+ if(!followupWindow(P)||STAGE.artSlice||P.hurtT>0||P.carrying||P.captive||P.recoveryQueue||P.hide||P.vent||P.under||P.z)return null;
+ return S.guards.filter(g=>followupVictim(g,P))
+  .sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0]||null;
+}
+function queueFollowupAttack(){
+ const P=S.player,g=followupCandidate(P),source=combatSource('atk');if(!g||!source)return false;
+ if(!P.followupAttack)P.followupAttack={g,source,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.5,tap:false};
+ return true;
+}
+function updateFollowupAttack(P){
+ const q=P.followupAttack;if(!q)return;
+ const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
+ if(S.over||S.t>q.until||moving||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.guards.includes(q.g)||!followupVictim(q.g,P)) {P.followupAttack=null;return;}
+ if(actionBusy(P))return;
+ P.followupAttack=null;
+ const source=q.tap?{id:q.source.id,serial:-1}:q.source;
+ if(!q.tap&&!combatHeld(source))return;
+ actPrimary({k:'kill',list:[q.g],viaZ:true,inputGroup:'atk',combatSource:source});
 }
 function updateRecoveryInput(P){
   const q=P.recoveryQueue;if(!q)return;
@@ -14123,7 +14207,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
   return a;
 }
 function attackAction() {
-  const P = S.player; if (actionBusy(P)) return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };
+  const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return { k: 'cap', label: '기절', hold: '처치' };
@@ -14229,7 +14313,7 @@ function actAttack() {
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
   const P = S.player;
-  if (actionBusy(P)) { queueGrabAttack(); return; }
+  if (actionBusy(P)) { if(!queueFollowupAttack())queueGrabAttack(); return; }
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
@@ -14429,6 +14513,7 @@ function showBrief(go) {
   $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
+  renderSkillPreparation('brSkills');
   $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
   $('brChBox').hidden = !(STAGE.challenges || []).length;
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
@@ -14498,6 +14583,7 @@ function floorBanner(P, ptx, pty) {
 }
 function updateHUD(force) {
   if (force) hudCache = {};
+  updateSkillPrompt(force);
   syncAssassinHUD();
   const P = S.player;
   syncMissionIdentity();
@@ -14698,6 +14784,7 @@ function showEnd(win, reason) {
       : '보너스 목표 ' + S.bonus.map(b => `<span class="bn ${b[1] ? 'ok' : ''}">${b[1] ? '●' : '○'} ${b[0]}</span>`).join(' ');
   if (S.mod) $('endRankNote').innerHTML += `<div class="ent">변형: ${MODS[S.mod][0]}${win ? ' · 완료' : ''}</div>`;
   if(win&&!STAGE.tutorial&&!STAGE.openingContract){const rewards=S.skillRewards||[],sum=rewards.reduce((n,r)=>n+r.points,0);$('endRankNote').innerHTML+=`<div class="ent skill-receipt"><b>기술 포인트 +${sum}P</b>${sum?rewards.map(r=>'<div>'+r.name+' · +'+r.points+'P</div>').join(''):' · 이미 받은 업적은 다시 지급되지 않는다.'}</div>`;}
+  renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win;
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   drawEndMap();
@@ -15055,18 +15142,20 @@ function skillBenefit(d){
 
 let assassinMenu=null;
 function openAssassinMenu(){
-  if(DLG.modal||S?.keypad||!$('end').hidden)return;
-  const from=!$('ledger').hidden?'ledger':!$('pause').hidden?'pause':'play';
+  if(DLG.modal||S?.keypad)return;
+  const from=['ledger','brief','end','pause'].find(id=>!$(id).hidden)||'play';
   assassinMenu={from,practice:from!=='ledger'&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
   clearPlayerInput();closeHudInspection();if(running)paused=true;
-  if(from==='ledger')$('ledger').hidden=true;if(from==='pause')$('pause').hidden=true;
+  if(from!=='play')$(from).hidden=true;
   if(assassinMenu.practice)skillBranch=STAGE.toolPractice||STAGE.trialSkills?.includes('electric')?'tools':'assassin';
   skillDetailMode=null;$('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
 }
 function closeAssassinMenu(){
   const m=assassinMenu;if(!m)return;$('skillScreen').hidden=true;assassinMenu=null;clearPlayerInput();
-  if(m.from==='ledger'){$('ledger').hidden=false;renderStageList();}
-  else if(m.from==='pause')$('pause').hidden=false;
+  if(m.from!=='play')$(m.from).hidden=false;
+  if(m.from==='ledger')renderStageList();
+  if(m.from==='brief')renderSkillPreparation('brSkills');
+  if(m.from==='end')renderSkillPreparation('endSkills',true);
   if(running)paused=m.paused;
 }
 function chooseAssassinSkill(key){
@@ -15091,6 +15180,7 @@ function syncSkillDetail(){
 }
 function detailCloseButton(){const b=document.createElement('button');b.type='button';b.className='skill-detail-close';b.setAttribute('aria-label','기술 설명 닫기');b.textContent='닫기';b.onclick=closeSkillDetail;return b;}
 function selectSkillNode(id,focus=false){
+ if(assassinMenu?.plan&&!skillPath(assassinMenu.plan).includes(id))assassinMenu.plan=null;
  const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;skillDetailMode='skill';renderSkillDetail();syncSkillDetail();
  for(const b of $('skillBranches').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
  const button=$('skillCards').querySelector('[data-select="'+id+'"]');if(focus)button?.focus({preventScroll:true});button?.scrollIntoView({block:'nearest',inline:'nearest'});
@@ -15106,7 +15196,9 @@ function renderSkillDetail(){
  const req=document.createElement('div');req.className='skill-prereqs';const path=skillPath(d.id),missing=path.filter(id=>!skillViewState(SKILL_BY_ID[id]).known),cost=missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0),note=document.createElement('p');note.textContent=v.known?'습득 경로':path.length===1?'이 기술부터 시작할 수 있다.':'습득 순서 · 여기까지 남은 비용 '+cost+'P';req.append(note);
  for(const[id,index]of path.map((id,i)=>[id,i])){const b=document.createElement('button');b.type='button';b.textContent=(index+1)+'. '+SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':SKILL_BY_ID[id].cost+'P');b.dataset.path=id;b.setAttribute('aria-current',String(id===d.id));b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.insertBefore(req,figure);
  const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
- if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}pane.append(actions);drawSkillPreview(d.id);
+ if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}
+ if(v.known&&assassinMenu?.plan){const plan=SKILL_PLANS.find(p=>p.id===assassinMenu.plan),next=plan&&skillPlanState(plan).next;if(next){const b=document.createElement('button');b.type='button';b.dataset.nextPlan=next;b.textContent='다음: '+SKILL_BY_ID[next].name+' · '+SKILL_BY_ID[next].cost+'P 보기';b.onclick=()=>selectSkillNode(next);actions.append(b);}}
+ pane.append(actions);drawSkillPreview(d.id);
 }
 function renderSkillRewards(){
  const pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;pane.append(detailCloseButton());
@@ -15124,8 +15216,11 @@ function handleSkillDetailKey(e){
 function renderAssassinMenu(){
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
  $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
+ renderSkillPlans();
+ $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용하세요. 추천 경로를 보거나 원하는 기술을 직접 고를 수 있습니다.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
- $('btnSkillReset').hidden=assassinMenu.from!=='ledger'&&!practice;$('skillResetNote').textContent=assassinMenu.from==='ledger'?'재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 의뢰 선택 화면에서 가능하다.';
+ const preparing=['ledger','brief','end'].includes(assassinMenu.from);
+ $('btnSkillReset').hidden=!preparing&&!practice;$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
   const defs=SKILL_TREE.filter(d=>d.branch===branch),layout=skillTreeLayout(branch),count=defs.filter(d=>skillViewState(d).known).length;
@@ -15469,7 +15564,7 @@ function clearPlayerInput() {
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.followupAttack=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));

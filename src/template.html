@@ -642,6 +642,7 @@ __INTERFACE_CSS__
     </header>
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button">미션 업적 · 포인트 얻기</button></div>
     <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
+    <nav id="skillPlans" class="skill-plans" aria-label="추천 습득 경로"></nav>
     <div class="skill-layout">
       <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
         <div id="skillCards" aria-label="신체·암살·도구 기술"></div>
@@ -725,6 +726,7 @@ __INTERFACE_CSS__
       <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
+      <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
       <p class="br-exit" id="brOutcome" hidden></p>
       <details class="br-details" id="brDetails"><summary>현장 정보</summary>
@@ -748,6 +750,7 @@ __INTERFACE_CSS__
     <div id="endRank" hidden></div>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
+    <section id="endSkills" class="skill-preparation" aria-label="다음 의뢰 기술 준비" hidden></section>
     <div id="vipPassport" hidden></div>
     <details class="endmore"><summary>상세 기록</summary><p class="credit" id="endRankNote"></p>
       <dl id="endMore"></dl>

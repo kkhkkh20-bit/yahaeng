@@ -369,6 +369,7 @@ function updateTrav(P, dt) {
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
   updateRecoveryInput(P);
+  updateFollowupAttack(P);
   if(updateQuickStash(P,dt))return;
   if(updateTechWork(P,dt))return;
   if(updateAssassinSkill(P,dt))return;
@@ -509,7 +510,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
-    P.stepT -= dt;
+    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
     if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
       P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
       const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);

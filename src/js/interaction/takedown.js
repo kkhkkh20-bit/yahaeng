@@ -104,6 +104,12 @@ function updatePairCombat(P,dt) {
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
   if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);S.shakeT=Math.max(S.shakeT||0,.06);}
+  const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
+  const held=S.koHold,lethalPending=held?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(held.source);
+  if(A.landed&&t>=A.dur*.88&&(moving||P.followupAttack)&&!P.recoveryQueue&&!lethalPending){
+    if(A.c){A.c.hideT=S.t;A.c.t0=null;}
+    P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;return false;
+  }
   if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
   return true;
 }
