@@ -19,7 +19,7 @@ for left,right in zip(a,b):
 save(comparison,O/'locomotion-before-after.gif')
 for name in ['takedowns','interaction']:
  frames=animated(B/f'round-2/{name}.gif');save(frames,O/(name+'.gif'))
-for name,folder in [('pc',B/'live'),('mobile',B/'mobile-final')]:
+for name,folder in [('pc',B/'final-live'),('mobile',B/'final-live')]:
  report=json.loads((folder/f'{name}.json').read_text());assert report['passed'],name
  times={r['label']:r['videoSeconds'] for r in report['rows']};start=times['body-knockout']-1.25;end=times['body-hidden']+.15
  clip(folder/f'{name}.webm',start,end-start,f'native-{name}-takedown-carry.gif','crop=640:360:(iw-640)/2:(ih-360)/2,scale=640:360:flags=neighbor'if name=='pc'else'crop=360:280:(iw-360)/2:310,scale=540:420:flags=neighbor')

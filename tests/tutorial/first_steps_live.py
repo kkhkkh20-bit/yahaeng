@@ -164,7 +164,7 @@ async def main(args):
                 if (await state())['mode']!='sneak':await press('Control','#btnCrouch')
                 await move(x=360,y=504);await wait_step(1)
                 await move(x=440);await snapshot('near-rear-marker',True)
-                await move(x=476);await wait_step(2)
+                await move(x=(await state())['goal']['x']);await wait_step(2)
                 await press('z','#btnAct')
                 await page.wait_for_function('__game.S.tutI===3&&!__game.actionBusy()',timeout=6000)
                 await snapshot('body-knockout')
