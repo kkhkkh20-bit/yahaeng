@@ -1,5 +1,6 @@
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
+  visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
   if (S.player.under && !tactical) { drawUnderground(); return; }
@@ -91,7 +92,7 @@ function draw() {
     if (g.target) {drawTargetRing(g,'rgba(194,54,43,.85)');if(targetKnowledge(g).live)tag(g.x,g.y-62,'● '+targetName(g)+' · 처치 대상','#f0a39b',1,null,2.4);}
   }
   PM('guards');
-  drawGhosts(); drawTagged();
+  drawTagged();
   if (P.hide) { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.strokeRect(P.hide.x - 22, P.hide.y - 22, 44, 44); ctx.setLineDash([]); }
   // (땅 위 주인공은 어둠·화단 위에 그린다 — 아래쪽 참고)
   const vx0 = Math.max(0, Math.floor((cam.x - W / SCALE / 2) / TILE) - 2), vx1 = Math.min(MW - 1, Math.ceil((cam.x + W / SCALE / 2) / TILE) + 2);
@@ -209,20 +210,22 @@ function draw() {
     const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : guardAwareness(g).phase==='seen' ? ('230,70,60') : (guardAwareness(g).phase==='search'||guardAwareness(g).phase==='suspect') ? ('242,196,107') : ('170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 한 겹: 내 자세에 맞는 범위만 그린다 — 서 있으면 넓은 원뿔, 웅크리면(벽에 붙으면 더) 좁아진 원뿔. 바뀔 때 0.2초 동안 부드럽게 줄고 는다
-    if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
+    if (DBG.cone) return; const showField=showVisionField(g); setLayer(0);
     // 쫓기는 중: 멀리 있는 시야는 옅게, 겁먹은 주민 시야·표시는 가까운 것만 — 나와 가까운 위협이 먼저 보이게
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1); ctx.fill();}
+      if(showField){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, guardCone(g,fov,rg), 1); ctx.fill();}
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
-    conePaths(g,cn,1,S.coneK||0);
-    const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,chase:chs,scale:SCALE});
+    if(showField){
+    conePaths(g,guardCone(g,fov,rg),1,S.coneK||0);
+    const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,selected:visionFrame?.actor===g&&visionFrame.reason==='selected',chase:chs,scale:SCALE});
     if(ink.fill>0){ctx.fillStyle=`rgba(${col},${ink.fill.toFixed(3)})`;ctx.fill();}
     ctx.strokeStyle=`rgba(${col},${ink.stroke.toFixed(3)})`;ctx.lineWidth=ink.width;ctx.stroke();
+    }else drawFacingCue(g);
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
@@ -304,6 +307,7 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   PM('misc');
+  drawGhosts();
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   PM('nearmarks');

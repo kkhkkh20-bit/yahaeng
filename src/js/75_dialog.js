@@ -3,15 +3,14 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
-  const P = S && S.player;
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: P ? playerKey(P) : 'ninja', role: P && P.disguise && P.outfit ? outfitName(P.outfit) + ' 옷' : '', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: 'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'noble', role: '', face: 'fc_master' };
+  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', role: '의뢰인', face: 'fc_master' };
+  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '의사', face: 'fc_doc' };
   if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
-  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '', face: 'fc_doc' };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
-    return { name: w.dog ? '들개' : w.lookout ? '망꾼' : w.elite ? '정예' : w.target ? '표적' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: w.enforcer ? '반장' : '', face: w.dog ? null : 'fc_' + charOf(w) }; }
+    return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: w.enforcer ? '반장' : '', face: w.dog ? null : 'fc_' + charOf(w) }; }
   return { name: '', col: '#9fb6d8', key: null, role: '', face: null };
 }
 // 초상 시트(키 색)를 팔레트별로 한 번 칠해 둔다
@@ -60,6 +59,8 @@ function say(lines, modal, onEnd) {
     for (const [w, text] of lines) { const dur = Math.min(4.5, 1.4 + text.length / 14); S.sayQ.push({ at, w, text, dur }); at += dur * 0.85; }
     if (onEnd) onEnd(); return;
   }
+  const speakers=[...new Set(lines.map(l=>l[0]))];
+  $('dlgContext').textContent=speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
   DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();
 }
 function updateSayQ() {

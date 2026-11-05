@@ -10,6 +10,9 @@ const PR_PAL = {
   civ7: ['#c99068', '#1a1a1a', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#5a3a1a', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#202020', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
   ...OUTFIT_PAL,
 };
+// Rank changes the model and behaviour, not the faction's uniform. Keep the
+// legacy keys: corpses, old saves and the player's stolen clothes use them too.
+for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다

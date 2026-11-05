@@ -1194,8 +1194,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 */
 @font-face { font-family:"Yahaeng UI"; src:url("./assets/15a13a3d5355b9f8e4a6.woff2") format("woff2"); font-style:normal; font-weight:400; font-display:swap; }
 :root {
- --ui-ground:#10191b; --ui-panel:#172326; --ui-line:#435451;
- --ui-ink:#e4e8df; --ui-muted:#a9b8b1; --ui-accent:#d0c19a;
+ --ui-ground:#10141b; --ui-panel:#1b222c; --ui-line:#485362;
+ --ui-ink:#ece9e1; --ui-muted:#b0b8c2; --ui-accent:#d7c2a3;
  --night:var(--ui-ground); --night-2:var(--ui-panel); --paper:var(--ui-ink);
  --paper-dim:var(--ui-muted); --ink-line:var(--ui-line); --lamp:var(--ui-accent);
  --f-body:"Yahaeng UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
@@ -1247,9 +1247,9 @@ button:focus-visible,summary:focus-visible,a:focus-visible,input:focus-visible {
 .lg-archive summary,.ledger-extra summary { min-height:44px; padding:14px 0; }
 /* Pause leaves the actual running scene underneath a quiet matte veil. */
 .screen.fx { background:var(--ui-ground); }
-.screen.fx::before { opacity:.07; filter:none; }
+.screen.fx::before { opacity:.12; filter:saturate(.45); }
 .screen.fx::after { display:none; }
-#pause.screen.fx { background:#0b1315e8; }
+#pause.screen.fx { background:#0d121aeb; }
 #pause::before { display:none; }
 .pz-wrap { width:min(1120px,100%); grid-template-columns:minmax(0,1fr) minmax(0,440px); gap:80px; padding:40px 32px; }
 .pz-menu { gap:4px; }
@@ -1316,10 +1316,14 @@ button:focus-visible,summary:focus-visible,a:focus-visible,input:focus-visible {
 .skill-detail-actions button:disabled { background:none; color:var(--ui-muted); border-color:var(--ui-line); }
 .skill-links path { stroke-width:1; }
 .skill-links path.in-path { stroke-width:2; }
-#dlg { background:#10191bf2; border:1px solid var(--ui-line); border-radius:0; box-shadow:none; }
+#dlg { background:#151c26f5; border:1px solid #606c7b; border-radius:8px; box-shadow:inset 0 1px #c8d1df18; padding:14px; gap:16px; }
 .dlg-box,.dlg-box b,.dlg-box p { font-family:var(--f-body); font-weight:400; color:var(--ui-ink); }
-.dlg-box b { color:var(--ui-accent); }
+.dlg-box b { color:var(--ui-ink); font-size:17px; letter-spacing:0; }
 .dlg-box small,.dlg-box i { color:var(--ui-muted); }
+.dlg-context { color:#bac6d4; font-size:11px; line-height:1.5; padding-bottom:6px; border-bottom:1px solid #485362; overflow-wrap:anywhere; }
+.dlg-head { gap:4px 12px; }
+.dlg-face { border-radius:4px; }
+.dlg-box i { font-size:12px; }
 .toast { border:0; border-bottom:1px solid var(--ui-line); border-radius:0; box-shadow:none; background:#10191bf2; }
 #hintCard { border:1px solid var(--ui-line); border-radius:0; box-shadow:none; background:#10191bf2; }
 @media(max-width:700px) {
@@ -1350,40 +1354,51 @@ button:focus-visible,summary:focus-visible,a:focus-visible,input:focus-visible {
 body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 
 /* Explicit briefing states also override the older high-specificity button rules. */
-#brief::before { opacity:.07; }
-#brief .br-acts .cta { background:#dce1e6; color:#17202b; border:1px solid #f1f4f6; border-radius:4px; box-shadow:inset 0 -2px 0 #a7b1bc,0 2px 6px #0004; }
-#brief .br-acts .cta:hover { background:#f0f3f6; border-color:#fff; }
+#brief::before { opacity:.12; }
 #brief .br-legend { font-size:11px; }
 #brief .br-acts button small { font-size:11px; color:var(--ui-muted); }
 
 /* Keep departure outside the scrolling briefing, including short phone screens. */
 #brief { display:flex; flex-direction:column; align-items:center; padding:0; overflow:hidden; }
-#brief .br-scroll { flex:1 1 auto; min-height:0; width:100%; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; }
-#brief .br-wrap { margin:auto; padding-block:max(24px,env(safe-area-inset-top,0px)) 24px; gap:32px; }
+#brief .br-scroll { display:flex; flex:1 1 auto; min-height:0; width:100%; padding:28px 24px; box-sizing:border-box; overflow-y:auto; overscroll-behavior:contain; touch-action:pan-y; }
+#brief .br-wrap { margin:auto; padding:28px; gap:32px; align-items:start; background:#141b24ed; border:1px solid var(--ui-line); border-radius:8px; }
 #brief .br-info { gap:14px; }
-#brief .br-name { font-size:clamp(24px,3vw,32px); line-height:1.2; letter-spacing:-.03em; }
-#brief .fx-sub { font-size:12px; }
+#brief .br-head { padding-bottom:18px; border-bottom:1px solid var(--ui-line); align-items:center; }
+#brief .br-name { margin:0 0 8px; font-size:clamp(30px,3.2vw,42px); line-height:1.2; letter-spacing:-.03em; }
+#brief .fx-sub { font-size:12px; display:block; }
 #brief .br-fee small { font-size:11px; }
 #brief .br-fee b { font-size:20px; }
 #brief .br-purpose { font-size:14px; line-height:1.6; }
-#brief .br-identities { grid-template-columns:1fr; gap:8px; }
-#brief .br-identities .mission-id { display:grid; grid-template-columns:96px minmax(0,1fr); align-items:center; }
-#brief .br-identities canvas { width:96px; height:72px; aspect-ratio:auto; object-fit:contain; border-bottom:0; box-shadow:none; }
+#brief .br-identities { grid-template-columns:1fr; gap:0; }
+#brief .br-identities .mission-id { display:grid; grid-template-columns:84px minmax(0,1fr); align-items:center; padding:8px 0; background:none; border:0; border-bottom:1px solid #48536299; box-shadow:none; }
+#brief .br-identities canvas { width:84px; height:64px; aspect-ratio:auto; object-fit:contain; border-bottom:0; box-shadow:none; }
 #brief .br-identities .mission-id>div { padding:8px 10px; }
 #brief .br-identities .mission-id b { font-size:17px; line-height:1.4; }
 #brief .br-exit { font-size:12px; }
-#brief .br-mapcol>summary { min-height:44px; display:list-item; align-content:center; margin-left:16px; cursor:pointer; color:var(--ui-muted); font-size:13px; }
-#brief .br-frame { padding:0; }
+#brief .br-mapcol>summary { min-height:44px; display:list-item; align-content:center; margin-left:16px; cursor:pointer; color:var(--ui-ink); font-size:14px; }
+#brief .br-frame { padding:4px; background:#0b1018; border-color:#677383; border-radius:3px; }
 #brief .br-legend { padding:8px 0 0; }
-#brief .br-acts { position:relative; bottom:auto; flex:0 0 auto; box-sizing:border-box; width:min(1180px,100%); margin:0; padding:12px max(24px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px)); background:#111922; border-top:1px solid #64717e66; box-shadow:0 -8px 24px #0003; align-items:center; flex-wrap:nowrap; gap:8px; }
+#brief .br-acts { position:relative; bottom:auto; flex:0 0 auto; box-sizing:border-box; width:100%; margin:0; padding:14px max(24px,calc((100vw - 1124px)/2),env(safe-area-inset-right,0px)) max(14px,env(safe-area-inset-bottom,0px)); background:#141b24; border-top:1px solid #64717e66; box-shadow:0 -8px 24px #0003; align-items:center; flex-wrap:nowrap; gap:8px; }
 #brief .br-acts button { min-height:48px; padding:10px 16px; line-height:1.4; }
 #brief #btnBrBack { margin-right:auto; }
 #brief #btnBrGo { flex:0 1 240px; font-size:16px; display:flex; align-items:center; justify-content:center; gap:24px; }
+#brief .br-acts .cta { background:#9b3e36; color:#fff4e8; border:1px solid #c77b70; border-radius:4px; box-shadow:inset 0 1px #f8dbbf30; }
+#brief .br-acts .cta:hover { background:#b14b42; border-color:#e3ada0; }
+.br-cast { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding-block:0 16px; border-bottom:1px solid var(--ui-line); }
+.br-cast>div { min-width:0; display:flex; flex-direction:column; gap:6px; }
+.br-cast canvas { display:block; width:44px; height:44px; border-radius:3px; background:#0c131c; }
+.br-cast b,.br-cast small { display:block; line-height:1.6; }
+.br-cast b { font-size:14px; color:var(--ui-ink); }
+.br-cast small { font-size:11px; color:var(--ui-muted); }
+.br-cast>div:first-child b { color:#bcd7ea; }
 @media (max-width:820px),(orientation:portrait) {
- #brief .br-wrap { padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px)); gap:14px; }
+ #brief .br-scroll { display:block; padding:calc(12px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) 12px max(10px,env(safe-area-inset-left,0px)); }
+ #brief .br-wrap { padding:18px 14px; gap:14px; }
  #brief .br-info { gap:12px; }
  #brief .br-acts { padding:10px max(16px,env(safe-area-inset-right,0px)) max(10px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px)); }
  #brief #btnBrGo { flex:1 1 auto; }
+ #dlg { gap:10px; padding:10px; }
+ .dlg-box b { font-size:15px; }
 }
 
 /* Completed methods and the next attempt share the existing result screen. */
@@ -1463,7 +1478,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
-  <div class="dlg-box"><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
+  <div class="dlg-box"><div id="dlgContext" class="dlg-context"></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
 </div>
 <div id="joy" hidden><div id="joyKnob"></div></div>
 
@@ -1477,7 +1492,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v192 · 2026-11-05</footer>
+  <footer class="title-footer">v193 · 2026-11-05</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1545,6 +1560,8 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
         </dl></div>
       </div>
       <ul class="rules compact-rules">
+        <li><strong>시야</strong>인물을 클릭·탭하면 시야와 순찰로를 고정한다. 발견되기 시작하면 발견자의 시야가 우선 표시된다. 지도에서는 전체 시야를 확인할 수 있다. 표시하지 않은 인물도 주변을 본다.</li>
+        <li><strong>소속</strong>회녹색 제복은 자경대원, 붉은 점퍼는 건달파, 파란 제복은 경찰이다. 옷 색은 소속이며, 물음표·붉은 경고는 경계 상태다.</li>
         <li><strong>신분</strong>허용된 복장이면 출입할 수 있다. 눈 표시 인물은 변장을 확인한다.</li>
         <li><strong>흔적</strong>기절한 사람은 깨어날 수 있다. 시체·핏자국이 발견되면 수색이 시작된다.</li>
         <li><strong>발각</strong>경비는 마지막 목격 지점과 연결된 건물·층을 수색한다.</li>
@@ -1571,7 +1588,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v192 · 2026-11-05</small>
+      <small class="fx-sub" id="pauseVersion">v193 · 2026-11-05</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -1583,8 +1600,12 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
   <div class="br-scroll">
   <div class="br-wrap">
     <div class="br-info">
-      <span class="fx-sub" id="brSub"></span>
-      <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-head"><div><h2 class="br-name" id="brName"></h2><span class="fx-sub" id="brSub"></span></div><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-cast" aria-label="당신과 연락하는 인물">
+        <div><canvas width="96" height="96" data-speaker="hero" aria-hidden="true"></canvas><span><b>올빼미</b><small>당신 · 잠입 암살자</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="master" aria-hidden="true"></canvas><span><b>까마귀</b><small>의뢰인</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="aide" aria-hidden="true"></canvas><span><b>제비</b><small>현장 지원</small></span></div>
+      </div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
       <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>
@@ -1639,8 +1660,8 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/1cb0cff3ced009943395.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/44414e5dafcb37574e17.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/55f0ddb5ac509d02dd87.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/d7f8398f966f283bfbe2.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

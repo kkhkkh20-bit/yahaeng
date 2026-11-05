@@ -99,6 +99,7 @@ function makeMissionIdentity(row,brief){
   text.append(type,name);if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
+  if(!$('brief').hidden)for(const cv of document.querySelectorAll('.br-cast canvas:not([data-ready])'))if(drawFace(cv,speakerOf(cv.dataset.speaker)))cv.dataset.ready='1';
   const roots=[$('missionIdentity'),!$('brief').hidden&&$('brIdentity')].filter(el=>el&&!el.hidden);
   for(const cv of roots.flatMap(el=>[...el.querySelectorAll('canvas[data-mission-art]:not([data-ready])')])){
     const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
@@ -121,9 +122,11 @@ function refreshMissionIdentityArt(){
       }else if(cv.dataset.key==='cash'){
         const s=Math.min(w,h)/64;c.save();c.translate(w/2,h/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.fillStyle='#303c49';c.lineWidth=2;c.fillRect(-22,-12,44,29);c.strokeRect(-22,-12,44,29);c.strokeRect(-10,-21,20,9);c.fillStyle='#c9b68f';c.fillRect(-5,-3,10,9);c.restore();
       }else{
-        c.imageSmoothingEnabled=false;
-        if(w>h){const s=h*.83/TILE;c.save();c.translate((w-TILE*s)/2,(h-TILE*s)/2);c.scale(s,s);drawFurnArt(c,{t:'safe',x:0,y:0,w:1,h:1,fl:0,seed:0});c.restore();}
-        const sz=Math.min(w,h)*(w>h?.34:.54);blit(c,'it_scroll',w>h?w*.64:(w-sz)/2,w>h?h*.59:(h-sz)/2,sz,sz);
+        // A ledger is the objective; the safe it sits in is not its identity.
+        const s=Math.min(w,h)*.72;c.save();c.translate((w-s)/2,(h-s)/2);c.scale(s/48,s/48);
+        c.fillStyle='#b7aa8c';c.fillRect(9,3,31,41);c.fillStyle='#33424c';c.fillRect(6,1,30,41);
+        c.strokeStyle='#89969e';c.lineWidth=1;c.strokeRect(6.5,1.5,30,41);c.fillStyle='#d8c6a3';c.fillRect(6,1,5,41);
+        c.fillStyle='#e0d5bd';c.fillRect(16,12,15,2);c.fillRect(16,18,15,2);c.fillRect(16,24,10,2);c.restore();
       }
     }
     cv.dataset.ready='1';
@@ -148,7 +151,7 @@ function showBrief(go) {
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   const identities=mainContract(STAGE)||STAGE.openingContract?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
-  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 그의 장부를 가져온다.';
+  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.';
   $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();

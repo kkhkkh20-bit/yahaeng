@@ -39,7 +39,7 @@ function conePaths(g, cn, lo, blend = 0) {
 // A nearby neutral outline must remain readable even during permitted passage.
 function guardConeInk(g, P, awareness, view = {}) {
   const d = Math.hypot(g.x - P.x, g.y - P.y), proximity = 1 - clamp((d - 100) / 360, 0, 1);
-  const inspecting = !!(view.tactical || view.scan);
+  const inspecting = !!(view.tactical || view.scan || view.selected);
   const quiet = !inspecting && ['quiet', 'check'].includes(awareness.phase) && !awareness.progress;
   const routine = quiet && STAGE.zones && !g.dog && !knownFace(g) && pZoneEff(g) === Z_PUB && !publicSuspicion(g);
   const distantChase = view.chase && d > 380 ? .55 : 1;
@@ -47,5 +47,40 @@ function guardConeInk(g, P, awareness, view = {}) {
   const stroke = inspecting ? .64 : quiet ? .14 + .34 * proximity : .48 + .16 * proximity;
   return {fill:fill*distantChase, stroke:stroke*distantChase,
     width:(quiet ? 1.15 : 1.4) / clamp(view.scale || 1, .65, 1.4)};
+}
+// One complete field in live play. Selection is only a presentation preference:
+// detection, witness tests and permission checks still run for every observer.
+let visionFrame = null;
+function selectVisionFocus() {
+  const P=S.player, same=o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0);
+  const openB=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)), exposed=o=>o.z||!coveredG(o,openB);
+  const eligible=g=>same(g)&&exposed(g)&&!g.climb&&!g.doomed&&!g.ledgeFalling&&!g.containerMoving&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state);
+  let danger=null;
+  const consider=(actor,camera,progress,identified=false)=>{
+    if(progress<=.02)return;
+    const score=progress+(identified?2:0)+(visionFrame?.actor===actor ? .06 : 0);
+    if(!danger||score>danger.score)danger={actor,camera,score,reason:'danger'};
+  };
+  for(const g of S.guards)if(eligible(g)){
+    const a=guardAwareness(g);if(a.direct)consider(g,false,a.progress,a.phase==='seen');
+  }
+  for(const c of S.cams||[])if(same(c)&&camOn(c)&&c.meter>.02&&cameraAssessment(c).detectable)consider(c,true,c.meter,c.meter>=1);
+  if(danger)return danger;
+  if(S.marked&&S.guards.includes(S.marked)&&eligible(S.marked))return {actor:S.marked,camera:false,reason:'selected'};
+  let nearest=null;
+  const considerNear=(actor,camera)=>{
+    const d=dist(actor.x,actor.y,P.x,P.y)-(visionFrame?.actor===actor ? 65 : 0);
+    if(d<460&&(!nearest||d<nearest.distance))nearest={actor,camera,distance:d,reason:'nearby'};
+  };
+  for(const g of S.guards)if(eligible(g)&&(!g.civ||g.wary||g.eyeWatching))considerNear(g,false);
+  for(const c of S.cams||[])if(same(c)&&camOn(c)&&exposed(c))considerNear(c,true);
+  return nearest;
+}
+function showVisionField(actor) { return !!(tactical||input.scan||visionFrame?.actor===actor); }
+function drawFacingCue(g) {
+  if(g.civ||g.dog)return;
+  const r=19,k=1/clamp(SCALE,.65,1.4),a=g.a;
+  ctx.save();ctx.strokeStyle='#b6c0c9';ctx.lineWidth=1.3*k;
+  ctx.beginPath();ctx.arc(g.x,g.y,r,a-.24,a+.24);ctx.stroke();ctx.restore();
 }
 // ---------------------------------------------------------------- 그리기

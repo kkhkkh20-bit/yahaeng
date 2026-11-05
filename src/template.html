@@ -601,7 +601,7 @@ __INTERFACE_CSS__
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
-  <div class="dlg-box"><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
+  <div class="dlg-box"><div id="dlgContext" class="dlg-context"></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
 </div>
 <div id="joy" hidden><div id="joyKnob"></div></div>
 
@@ -683,6 +683,8 @@ __INTERFACE_CSS__
         </dl></div>
       </div>
       <ul class="rules compact-rules">
+        <li><strong>시야</strong>인물을 클릭·탭하면 시야와 순찰로를 고정한다. 발견되기 시작하면 발견자의 시야가 우선 표시된다. 지도에서는 전체 시야를 확인할 수 있다. 표시하지 않은 인물도 주변을 본다.</li>
+        <li><strong>소속</strong>회녹색 제복은 자경대원, 붉은 점퍼는 건달파, 파란 제복은 경찰이다. 옷 색은 소속이며, 물음표·붉은 경고는 경계 상태다.</li>
         <li><strong>신분</strong>허용된 복장이면 출입할 수 있다. 눈 표시 인물은 변장을 확인한다.</li>
         <li><strong>흔적</strong>기절한 사람은 깨어날 수 있다. 시체·핏자국이 발견되면 수색이 시작된다.</li>
         <li><strong>발각</strong>경비는 마지막 목격 지점과 연결된 건물·층을 수색한다.</li>
@@ -721,8 +723,12 @@ __INTERFACE_CSS__
   <div class="br-scroll">
   <div class="br-wrap">
     <div class="br-info">
-      <span class="fx-sub" id="brSub"></span>
-      <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-head"><div><h2 class="br-name" id="brName"></h2><span class="fx-sub" id="brSub"></span></div><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-cast" aria-label="당신과 연락하는 인물">
+        <div><canvas width="96" height="96" data-speaker="hero" aria-hidden="true"></canvas><span><b>올빼미</b><small>당신 · 잠입 암살자</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="master" aria-hidden="true"></canvas><span><b>까마귀</b><small>의뢰인</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="aide" aria-hidden="true"></canvas><span><b>제비</b><small>현장 지원</small></span></div>
+      </div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
       <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>

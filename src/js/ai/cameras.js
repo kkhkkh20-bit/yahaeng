@@ -54,7 +54,7 @@ function drawCams(fl) {
     for (let i = 0; i < 3; i++) { const on = !S.camsOff; ctx.fillStyle = on ? `rgba(120,190,255,${0.55 + 0.25 * Math.sin(S.t * 7 + i * 2)})` : '#2a2d34'; ctx.fillRect(cr.x - 24 + i * 17, cr.y - 28, 14, 11); } }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
-    if (on) {
+    if (on && (c.search || showVisionField(c))) {
       setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(flOf(S.player));
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
       if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기

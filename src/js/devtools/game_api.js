@@ -2,7 +2,7 @@
 function installGameApi() {
   window.__game = {
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
-    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,
+    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,

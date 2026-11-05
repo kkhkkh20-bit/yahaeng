@@ -2326,6 +2326,9 @@ const PR_PAL = {
   civ7: ['#c99068', '#1a1a1a', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#5a3a1a', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#202020', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
   ...OUTFIT_PAL,
 };
+// Rank changes the model and behaviour, not the faction's uniform. Keep the
+// legacy keys: corpses, old saves and the player's stolen clothes use them too.
+for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
@@ -2654,12 +2657,10 @@ function drawChar(key, x, y, a, moving, alpha = 1, scale = 3, attack = false, li
 // 마지막 목격 지점(Mark of the Ninja): 자경대원이 의심하거나 쫓는 자리에 내 잔상을 남겨, 놈들이 어디를 보는지 알려 준다
 function drawMarked() {
   const g = S.marked; if (!g) return; if (g.state === 'DEAD') { S.marked = null; return; }
-  if (flOf(g) !== flOf(S.player)) return;
+  if (flOf(g) !== flOf(S.player) || (g.z||0)!==(S.player.z||0) || (!g.z&&coveredG(g,bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))))) return;
   const pts = g.routeLine ? g.routeLine.concat([g.routeLine[0]]) : null;
   if (pts) { ctx.strokeStyle = 'rgba(255,214,90,.85)'; ctx.lineWidth = 3.5; ctx.setLineDash([10, 6]); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]); for (const p of g.routeLine) if (p.stop) { ctx.fillStyle = 'rgba(255,214,90,.8)'; ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, TAU); ctx.fill(); } }
-  // 시야: 지금 보는 방향의 원뿔 테두리를 진하게
-  const rg = guardRanges(g), fov = guardFov(g);  // 실제로 보이는 범위(밝기 반영)의 테두리
-  ctx.strokeStyle = 'rgba(255,214,90,.9)'; ctx.lineWidth = 2.5; conePaths(g, guardCone(g, fov, rg), 1, 2); ctx.stroke();
+  // The live overlay owns the single field, including a danger override.
   ctx.strokeStyle = 'rgba(255,214,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
 }
 function drawGhosts() { drawMarked(); }
@@ -5525,7 +5526,7 @@ function drawCams(fl) {
     for (let i = 0; i < 3; i++) { const on = !S.camsOff; ctx.fillStyle = on ? `rgba(120,190,255,${0.55 + 0.25 * Math.sin(S.t * 7 + i * 2)})` : '#2a2d34'; ctx.fillRect(cr.x - 24 + i * 17, cr.y - 28, 14, 11); } }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
-    if (on) {
+    if (on && (c.search || showVisionField(c))) {
       setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(flOf(S.player));
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
       if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기
@@ -12347,7 +12348,7 @@ function conePaths(g, cn, lo, blend = 0) {
 // A nearby neutral outline must remain readable even during permitted passage.
 function guardConeInk(g, P, awareness, view = {}) {
   const d = Math.hypot(g.x - P.x, g.y - P.y), proximity = 1 - clamp((d - 100) / 360, 0, 1);
-  const inspecting = !!(view.tactical || view.scan);
+  const inspecting = !!(view.tactical || view.scan || view.selected);
   const quiet = !inspecting && ['quiet', 'check'].includes(awareness.phase) && !awareness.progress;
   const routine = quiet && STAGE.zones && !g.dog && !knownFace(g) && pZoneEff(g) === Z_PUB && !publicSuspicion(g);
   const distantChase = view.chase && d > 380 ? .55 : 1;
@@ -12355,6 +12356,41 @@ function guardConeInk(g, P, awareness, view = {}) {
   const stroke = inspecting ? .64 : quiet ? .14 + .34 * proximity : .48 + .16 * proximity;
   return {fill:fill*distantChase, stroke:stroke*distantChase,
     width:(quiet ? 1.15 : 1.4) / clamp(view.scale || 1, .65, 1.4)};
+}
+// One complete field in live play. Selection is only a presentation preference:
+// detection, witness tests and permission checks still run for every observer.
+let visionFrame = null;
+function selectVisionFocus() {
+  const P=S.player, same=o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0);
+  const openB=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)), exposed=o=>o.z||!coveredG(o,openB);
+  const eligible=g=>same(g)&&exposed(g)&&!g.climb&&!g.doomed&&!g.ledgeFalling&&!g.containerMoving&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state);
+  let danger=null;
+  const consider=(actor,camera,progress,identified=false)=>{
+    if(progress<=.02)return;
+    const score=progress+(identified?2:0)+(visionFrame?.actor===actor ? .06 : 0);
+    if(!danger||score>danger.score)danger={actor,camera,score,reason:'danger'};
+  };
+  for(const g of S.guards)if(eligible(g)){
+    const a=guardAwareness(g);if(a.direct)consider(g,false,a.progress,a.phase==='seen');
+  }
+  for(const c of S.cams||[])if(same(c)&&camOn(c)&&c.meter>.02&&cameraAssessment(c).detectable)consider(c,true,c.meter,c.meter>=1);
+  if(danger)return danger;
+  if(S.marked&&S.guards.includes(S.marked)&&eligible(S.marked))return {actor:S.marked,camera:false,reason:'selected'};
+  let nearest=null;
+  const considerNear=(actor,camera)=>{
+    const d=dist(actor.x,actor.y,P.x,P.y)-(visionFrame?.actor===actor ? 65 : 0);
+    if(d<460&&(!nearest||d<nearest.distance))nearest={actor,camera,distance:d,reason:'nearby'};
+  };
+  for(const g of S.guards)if(eligible(g)&&(!g.civ||g.wary||g.eyeWatching))considerNear(g,false);
+  for(const c of S.cams||[])if(same(c)&&camOn(c)&&exposed(c))considerNear(c,true);
+  return nearest;
+}
+function showVisionField(actor) { return !!(tactical||input.scan||visionFrame?.actor===actor); }
+function drawFacingCue(g) {
+  if(g.civ||g.dog)return;
+  const r=19,k=1/clamp(SCALE,.65,1.4),a=g.a;
+  ctx.save();ctx.strokeStyle='#b6c0c9';ctx.lineWidth=1.3*k;
+  ctx.beginPath();ctx.arc(g.x,g.y,r,a-.24,a+.24);ctx.stroke();ctx.restore();
 }
 // ---------------------------------------------------------------- 그리기
 
@@ -13541,6 +13577,7 @@ function drawTownExterior(){
 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
+  visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
   if (S.player.under && !tactical) { drawUnderground(); return; }
@@ -13632,7 +13669,7 @@ function draw() {
     if (g.target) {drawTargetRing(g,'rgba(194,54,43,.85)');if(targetKnowledge(g).live)tag(g.x,g.y-62,'● '+targetName(g)+' · 처치 대상','#f0a39b',1,null,2.4);}
   }
   PM('guards');
-  drawGhosts(); drawTagged();
+  drawTagged();
   if (P.hide) { ctx.strokeStyle = 'rgba(127,174,134,.9)'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.strokeRect(P.hide.x - 22, P.hide.y - 22, 44, 44); ctx.setLineDash([]); }
   // (땅 위 주인공은 어둠·화단 위에 그린다 — 아래쪽 참고)
   const vx0 = Math.max(0, Math.floor((cam.x - W / SCALE / 2) / TILE) - 2), vx1 = Math.min(MW - 1, Math.ceil((cam.x + W / SCALE / 2) / TILE) + 2);
@@ -13750,20 +13787,22 @@ function draw() {
     const col = g.civ ? (g.state === 'PANIC' ? '232,90,80' : '196,236,190') : guardAwareness(g).phase==='seen' ? ('230,70,60') : (guardAwareness(g).phase==='search'||guardAwareness(g).phase==='suspect') ? ('242,196,107') : ('170,200,235');
     // 시야는 그 자리의 밝기만큼만 뻗는다 (판정 canSee 와 같은 식): 어두운 곳은 짧게, 불빛·손전등 아래는 길게
     // 한 겹: 내 자세에 맞는 범위만 그린다 — 서 있으면 넓은 원뿔, 웅크리면(벽에 붙으면 더) 좁아진 원뿔. 바뀔 때 0.2초 동안 부드럽게 줄고 는다
-    if (DBG.cone) return; const cn = guardCone(g, fov, rg); setLayer(0);
+    if (DBG.cone) return; const showField=showVisionField(g); setLayer(0);
     // 쫓기는 중: 멀리 있는 시야는 옅게, 겁먹은 주민 시야·표시는 가까운 것만 — 나와 가까운 위협이 먼저 보이게
     const chs = chaseNow(), gd = chs ? dist(g.x, g.y, P.x, P.y) : 0;
     if (chs && g.civ) { if (gd < 220 && g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
     const awareness=guardAwareness(g);
     if (g.civ && !g.wary && g.state !== 'PANIC') {  // 경계하지 않는 주민: 시선만 옅게
-      if(!quarterNear(P)||tactical||input.scan){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, cn, 1); ctx.fill();}
+      if(showField){ctx.fillStyle = 'rgba(196,236,190,.05)'; conePaths(g, guardCone(g,fov,rg), 1); ctx.fill();}
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
-    conePaths(g,cn,1,S.coneK||0);
-    const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,chase:chs,scale:SCALE});
+    if(showField){
+    conePaths(g,guardCone(g,fov,rg),1,S.coneK||0);
+    const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,selected:visionFrame?.actor===g&&visionFrame.reason==='selected',chase:chs,scale:SCALE});
     if(ink.fill>0){ctx.fillStyle=`rgba(${col},${ink.fill.toFixed(3)})`;ctx.fill();}
     ctx.strokeStyle=`rgba(${col},${ink.stroke.toFixed(3)})`;ctx.lineWidth=ink.width;ctx.stroke();
+    }else drawFacingCue(g);
     if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30);
     if (g.act === 'smoke' || vipRoutine(g)==='smoke') { const t = S.t * 1.5 + g.id; for (let i = 0; i < 3; i++) { const f = (t + i / 3) % 1; ctx.fillStyle = `rgba(210,215,222,${0.35 * (1 - f)})`; ctx.beginPath(); ctx.arc(g.x + Math.cos(g.a) * 14 + f * 8, g.y + Math.sin(g.a) * 14 - 24 - f * 16, 3 + f * 5, 0, TAU); ctx.fill(); } }
     // 왜 의심하는지: 들은 곳(귀) / 본 곳(눈) 으로 점선과 표시
@@ -13845,6 +13884,7 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   PM('misc');
+  drawGhosts();
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
   PM('nearmarks');
@@ -13953,15 +13993,14 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
-  const P = S && S.player;
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: P ? playerKey(P) : 'ninja', role: P && P.disguise && P.outfit ? outfitName(P.outfit) + ' 옷' : '', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: 'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'noble', role: '', face: 'fc_master' };
+  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', role: '의뢰인', face: 'fc_master' };
+  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '의사', face: 'fc_doc' };
   if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
-  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '', face: 'fc_doc' };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
-    return { name: w.dog ? '들개' : w.lookout ? '망꾼' : w.elite ? '정예' : w.target ? '표적' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: w.enforcer ? '반장' : '', face: w.dog ? null : 'fc_' + charOf(w) }; }
+    return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: w.enforcer ? '반장' : '', face: w.dog ? null : 'fc_' + charOf(w) }; }
   return { name: '', col: '#9fb6d8', key: null, role: '', face: null };
 }
 // 초상 시트(키 색)를 팔레트별로 한 번 칠해 둔다
@@ -14010,6 +14049,8 @@ function say(lines, modal, onEnd) {
     for (const [w, text] of lines) { const dur = Math.min(4.5, 1.4 + text.length / 14); S.sayQ.push({ at, w, text, dur }); at += dur * 0.85; }
     if (onEnd) onEnd(); return;
   }
+  const speakers=[...new Set(lines.map(l=>l[0]))];
+  $('dlgContext').textContent=speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
   DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();
 }
 function updateSayQ() {
@@ -14581,6 +14622,7 @@ function makeMissionIdentity(row,brief){
   text.append(type,name);if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
+  if(!$('brief').hidden)for(const cv of document.querySelectorAll('.br-cast canvas:not([data-ready])'))if(drawFace(cv,speakerOf(cv.dataset.speaker)))cv.dataset.ready='1';
   const roots=[$('missionIdentity'),!$('brief').hidden&&$('brIdentity')].filter(el=>el&&!el.hidden);
   for(const cv of roots.flatMap(el=>[...el.querySelectorAll('canvas[data-mission-art]:not([data-ready])')])){
     const c=cv.getContext('2d'),w=cv.width,h=cv.height;c.clearRect(0,0,w,h);
@@ -14603,9 +14645,11 @@ function refreshMissionIdentityArt(){
       }else if(cv.dataset.key==='cash'){
         const s=Math.min(w,h)/64;c.save();c.translate(w/2,h/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.fillStyle='#303c49';c.lineWidth=2;c.fillRect(-22,-12,44,29);c.strokeRect(-22,-12,44,29);c.strokeRect(-10,-21,20,9);c.fillStyle='#c9b68f';c.fillRect(-5,-3,10,9);c.restore();
       }else{
-        c.imageSmoothingEnabled=false;
-        if(w>h){const s=h*.83/TILE;c.save();c.translate((w-TILE*s)/2,(h-TILE*s)/2);c.scale(s,s);drawFurnArt(c,{t:'safe',x:0,y:0,w:1,h:1,fl:0,seed:0});c.restore();}
-        const sz=Math.min(w,h)*(w>h?.34:.54);blit(c,'it_scroll',w>h?w*.64:(w-sz)/2,w>h?h*.59:(h-sz)/2,sz,sz);
+        // A ledger is the objective; the safe it sits in is not its identity.
+        const s=Math.min(w,h)*.72;c.save();c.translate((w-s)/2,(h-s)/2);c.scale(s/48,s/48);
+        c.fillStyle='#b7aa8c';c.fillRect(9,3,31,41);c.fillStyle='#33424c';c.fillRect(6,1,30,41);
+        c.strokeStyle='#89969e';c.lineWidth=1;c.strokeRect(6.5,1.5,30,41);c.fillStyle='#d8c6a3';c.fillRect(6,1,5,41);
+        c.fillStyle='#e0d5bd';c.fillRect(16,12,15,2);c.fillRect(16,18,15,2);c.fillRect(16,24,10,2);c.restore();
       }
     }
     cv.dataset.ready='1';
@@ -14630,7 +14674,7 @@ function showBrief(go) {
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   const identities=mainContract(STAGE)||STAGE.openingContract?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
-  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 그의 장부를 가져온다.';
+  $('brPurpose').hidden=STAGE.id!=='m2'&&!STAGE.openingContract;$('brPurpose').textContent=STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.';
   $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
@@ -15544,7 +15588,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
-    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,
+    doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,

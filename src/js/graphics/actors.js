@@ -53,12 +53,10 @@ function drawChar(key, x, y, a, moving, alpha = 1, scale = 3, attack = false, li
 // 마지막 목격 지점(Mark of the Ninja): 자경대원이 의심하거나 쫓는 자리에 내 잔상을 남겨, 놈들이 어디를 보는지 알려 준다
 function drawMarked() {
   const g = S.marked; if (!g) return; if (g.state === 'DEAD') { S.marked = null; return; }
-  if (flOf(g) !== flOf(S.player)) return;
+  if (flOf(g) !== flOf(S.player) || (g.z||0)!==(S.player.z||0) || (!g.z&&coveredG(g,bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))))) return;
   const pts = g.routeLine ? g.routeLine.concat([g.routeLine[0]]) : null;
   if (pts) { ctx.strokeStyle = 'rgba(255,214,90,.85)'; ctx.lineWidth = 3.5; ctx.setLineDash([10, 6]); ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.setLineDash([]); for (const p of g.routeLine) if (p.stop) { ctx.fillStyle = 'rgba(255,214,90,.8)'; ctx.beginPath(); ctx.arc(p.x, p.y, 6, 0, TAU); ctx.fill(); } }
-  // 시야: 지금 보는 방향의 원뿔 테두리를 진하게
-  const rg = guardRanges(g), fov = guardFov(g);  // 실제로 보이는 범위(밝기 반영)의 테두리
-  ctx.strokeStyle = 'rgba(255,214,90,.9)'; ctx.lineWidth = 2.5; conePaths(g, guardCone(g, fov, rg), 1, 2); ctx.stroke();
+  // The live overlay owns the single field, including a danger override.
   ctx.strokeStyle = 'rgba(255,214,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 26, 0, TAU); ctx.stroke();
 }
 function drawGhosts() { drawMarked(); }

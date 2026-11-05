@@ -107,5 +107,6 @@ jobs:
             build/tutorial-validation/
             build/physical-v190/
             build/action-flow-v192/
+            build/interface-v193/
             public/version.json
           retention-days: 7
