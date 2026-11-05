@@ -139,7 +139,11 @@ async def main():
    await env('door')
    # A live patrol can reopen the physical door; closure itself is not a goal.
    await move(264,312)
-   await env('loot');assert await q.evaluate('__game.S.items[0].got&&!__game.evidencePending()')
+   await env('loot')
+   ledger=await q.evaluate('({t:__game.S.t,hp:__game.S.player.hp,p:{x:__game.S.player.x,y:__game.S.player.y},items:__game.S.items.map(i=>i.got),busy:__game.actionBusy(),evidence:__game.evidencePending(),stats:__game.S.stats,cams:__game.S.cams.map(c=>({x:c.x,y:c.y,unplugged:c.unplugged,meter:c.meter})),toasts:__game.S.toasts.map(t=>t.text),seen:__game.S.guards.filter(g=>g.seen).map(g=>({id:g.id,state:g.state,why:g.why}))})')
+   print('LEDGER STATE',json.dumps(ledger,ensure_ascii=False),flush=True)
+   if not ledger['items'][0] or ledger['evidence']:
+    await q.screenshot(path=str(O/(name+'-ledger-incomplete.png')));raise AssertionError(('ledger route incomplete',ledger))
    await move(gate['x'],gate['y']-40)
    if await q.evaluate('at=>__game.S.doors.find(d=>d.x===at.x&&d.y===at.y&&!(d.fl||0)).locked',gate):await env('door')
    if APPROACH=='meeting':
