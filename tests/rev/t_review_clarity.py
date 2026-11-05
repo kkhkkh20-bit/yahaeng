@@ -5,7 +5,7 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2]
-O=Path('/workspace/work/clarity-v176/rules');O.mkdir(parents=True,exist_ok=True)
+O=R/'build/physical-v190/clarity';O.mkdir(parents=True,exist_ok=True)
 async def main():
  rows=[]
  async with async_playwright()as p:

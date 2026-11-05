@@ -6,7 +6,7 @@ if os.environ.get('YH_TEST_HTTP')=='1':
  from functools import partial
  from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
  from urllib.parse import urlparse,unquote
- from playwright.async_api import Page
+ from playwright.async_api import Page,BrowserType
  ROOT=Path(__file__).resolve().parents[2]
  class Quiet(SimpleHTTPRequestHandler):
   def log_message(self,*args):pass
@@ -21,3 +21,9 @@ if os.environ.get('YH_TEST_HTTP')=='1':
    url=f'http://127.0.0.1:{server.server_port}/{p.relative_to(ROOT)}'
   return await original_goto(self,url,**kwargs)
  Page.goto=http_goto
+
+ original_launch=BrowserType.launch
+ async def portable_launch(self,**kwargs):
+  if kwargs.get('executable_path')=='/usr/bin/chromium' and not Path('/usr/bin/chromium').exists():kwargs.pop('executable_path')
+  return await original_launch(self,**kwargs)
+ BrowserType.launch=portable_launch

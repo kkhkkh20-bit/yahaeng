@@ -23,7 +23,7 @@ function scene(){
   surfacePoint:o=>({x:o.x,y:o.y}),surfaceFixture:o=>o,
   withJosa:s=>s,play:()=>{},hint:()=>{},after:()=>{},gsay:()=>{},bossRadio:()=>{},rnd:(a,b)=>(a+b)/2,
   prSplit:k=>(k||'').split('@'),lightAt:()=>1,tileAt:()=>'.',floorMul:()=>1,stepSound:()=> 'step',pairCarry:()=>true,
-  nearHide:()=>null,nearBushSpot:()=>null,nearCorpse:()=>null,hideSpace:()=>true,hideApproach:()=>({length:24}),hideDistance:()=>24,
+  nearHide:()=>null,nearBushSpot:()=>null,nearCorpse:()=>null,beginHideFlow:()=>{P.trav={hideFlow:{}};return true;},hideSpace:()=>true,hideApproach:()=>({length:24}),hideDistance:()=>24,
   electricalActionAllowed:()=>true,actObj:a=>a.p||a.d||a.l||a.targetObject||a.c,
   closeEnvPicker:()=>{},finishEnvSelection:()=>{},contactFeedback:()=>{},
   logEv:()=>{},vipHitContext:()=>null,witnessedAssailant:()=>null,facWitness:()=>{},cityVictim:()=>{},spawnEffect:()=>{},armKoHold:()=>{},
@@ -34,7 +34,7 @@ function scene(){
  q.takeProp=p=>{p.taken=true;P.item=p;};
  vm.createContext(q);
  vm.runInContext([looks,stripped,gait,read('src/js/38_zones.js'),read('src/js/59_interaction_flow.js'),read('src/js/interaction/carry.js'),read('src/js/interaction/takedown.js'),
-  'globalThis.api={charOf,outfitOf,stripBodyClothing,bodyName,actCarry,secondaryAction,beginQuickStash,actionBusy,wakeKO,koPerson,objectApproachPoint,beginObjectAction,updateObjectAction,updateSharpEye};'].join('\n'),q);
+  'globalThis.api={charOf,outfitOf,stripBodyClothing,bodyName,actCarry,secondaryAction,beginQuickStash,updateQuickStash,actionBusy,wakeKO,koPerson,objectApproachPoint,beginObjectAction,updateObjectAction,updateSharpEye};'].join('\n'),q);
  q.P=P;q.tick=(s,dt=.01)=>{for(let t=0;t<s-1e-8;t+=dt){q.S.t+=dt;if(P.interact)q.api.updateObjectAction(P,dt);}};
  return q;
 }
@@ -70,6 +70,11 @@ check('quick storage waits for the full lift',()=>{
  const q=scene(),c={x:24,y:0,ch:'crew',fl:0,z:0},h={x:24,y:24,type:'box'};q.S.corpses=[c];q.S.hides=[h];
  q.api.beginQuickStash({c,h});assert.equal(q.P.carrying,c);assert(q.P.quickStash.readyAt>=q.S.t+q.P.bodyAnim.dur);
 });
+check('quick storage keeps waiting through the last busy lift frame',()=>{
+ const q=scene(),c={x:24,y:0,ch:'crew',fl:0,z:0},h={x:24,y:24,type:'box'};q.S.corpses=[c];q.S.hides=[h];
+ q.api.beginQuickStash({c,h});q.S.t+=.7001;q.P.strikeT=.02;q.api.updateQuickStash(q.P,.005);
+ assert(q.P.quickStash);assert.equal(q.P.trav,undefined);q.S.t+=.02;q.api.updateQuickStash(q.P,.02);assert(q.P.trav?.hideFlow?.quick);
+});
 check('distant pickup approaches physically before its single contact effect',()=>{
  const q=scene(),p={x:60,y:0,fl:0};q.api.beginObjectAction({k:'pickup',p});
  assert(q.P.interact.approach);assert.equal(q.P.x,0);q.tick(.08);assert(q.P.x>0&&q.P.x<32);assert.equal(q.effects.length,0);
@@ -81,7 +86,7 @@ check('near pickup uses the existing contact beat without extra movement',()=>{
 });
 check('a wall surface sets the approach stop before the wall',()=>{
  const q=scene();q.ray=()=>34;
- const at=q.api.objectApproachPoint({k:'lamp'},{x:40,y:0});assert.equal(at.x,6);
+ const at=q.api.objectApproachPoint({k:'lamp'},{x:44,y:0});assert.equal(at.x,6);
 });
 check('approach collision cancels without teleport or remote acquisition',()=>{
  const q=scene(),p={x:60,y:0,fl:0};q.collision=P=>P.x=0;q.api.beginObjectAction({k:'pickup',p});q.tick(.1);
@@ -91,13 +96,17 @@ check('low frame rates still collide in short substeps',()=>{
  const q=scene(),p={x:60,y:0,fl:0};q.collision=P=>{if(P.x>=10)P.x=9;};q.api.beginObjectAction({k:'pickup',p});q.tick(.3,.1);
  assert(q.P.x<=9);assert.equal(q.effects.length,0);assert.equal(p.taken,undefined);
 });
-check('moved or removed targets cannot finish a queued hand action',()=>{
+check('moved targets cannot finish a queued hand action',()=>{
  const q=scene(),p={x:60,y:0,fl:0};q.api.beginObjectAction({k:'pickup',p});p.x=160;q.tick(.1);assert.equal(q.P.interact,null);assert.equal(q.effects.length,0);
 });
 check('external displacement, damage and floor changes cancel contact',()=>{
  for(const change of [q=>q.P.x+=30,q=>q.P.hurtT=.2,q=>q.P.fl=1]){
   const q=scene(),p={x:60,y:0,fl:0};q.api.beginObjectAction({k:'pickup',p});change(q);q.tick(.6);assert.equal(q.effects.length,0);assert.equal(q.P.interact,null);
  }
+});
+check('an existing injury does not block a fresh action, but a new hit interrupts it',()=>{
+ const q=scene(),p={x:24,y:0,fl:0};q.P.hurtT=.5;q.api.beginObjectAction({k:'pickup',p});q.tick(.5);assert.equal(p.taken,true);
+ const next={x:24,y:0,fl:0};q.api.beginObjectAction({k:'pickup',p:next});q.P.hurtT=.8;q.tick(.5);assert.equal(next.taken,undefined);
 });
 check('door handle and clothing actions keep their existing authored position',()=>{
  const q=scene(),d={x:60,y:0,fl:0,locked:true};q.api.beginObjectAction({k:'door',d});assert.equal(q.P.interact.approach,null);

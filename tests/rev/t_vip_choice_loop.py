@@ -4,7 +4,7 @@ Full walking routes live separately in tutorial/vip_choices_walk.py.
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=Path('/workspace/work/vip-v175/rules');O.mkdir(parents=True,exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/physical-v190/vip-rules';O.mkdir(parents=True,exist_ok=True)
 async def main():
  rows=[]
  async with async_playwright()as p:

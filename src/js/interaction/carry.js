@@ -107,7 +107,7 @@ function updateQuickStash(P,dt){
   const q=P.quickStash;if(!q)return false;
   if(S.over||P.hurtT>0||P.carrying!==q.c||!S.corpses.includes(q.c)||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||P.trav||!hideSpace(q.h,1)||q.h.type==='bush'&&tileAt(q.h.x,q.h.y)!=='B'||!objectReachable(q.h,60)||![...S.hides,...(S.bushes||[])].includes(q.h)){P.quickStash=null;return false;}
   P.hidden=false;P.light=lightAt(P.x,P.y,!!P.z);P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,(P.strikeT||0)-dt);
-  if(S.t<q.readyAt)return true;
+  if(S.t<q.readyAt||P.strikeT>0||P.bodyAnim&&S.t-P.bodyAnim.t0<P.bodyAnim.dur)return true;
   P.quickStash=null;const route=hideApproach(q.h);
   if(route&&route.length<=96&&beginHideFlow('stash',q.h,q.c)&&P.trav?.hideFlow)P.trav.hideFlow.quick=true;
   return !!P.trav;

@@ -43,10 +43,21 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/tests/support:${{ github.workspace }}/tests/tutorial
           YH_TEST_HTTP: '1'
+          YH_OPENING_DIR: ${{ github.workspace }}/build/physical-v190/opening
+          YH_VIP_DIR: ${{ github.workspace }}/build/physical-v190/vip
         run: |
           python -m http.server 8001 --bind 127.0.0.1 > "$RUNNER_TEMP/yahaeng-http.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
+          python - <<'PY'
+          import subprocess,sys
+          names=['t_contract_density','t_environment_targets','t_mobile_flow','t_physical_interactions']
+          failed=[]
+          for name in names:
+              r=subprocess.run([sys.executable,'tests/rev/'+name+'.py'])
+              if r.returncode:failed.append(name)
+          if failed:raise SystemExit('Focused failures: '+', '.join(failed))
+          PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
           YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
@@ -75,6 +86,16 @@ jobs:
             git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Package verified v190 build and native playback evidence'
             git push origin HEAD:"$REVIEW_BRANCH"
           fi
+      - name: Print failed scene details
+        if: failure()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          for p in sorted(Path('build/test_logs').glob('*.log')):
+              text=p.read_text()
+              if 'Traceback' in text or 'AssertionError' in text:
+                  print(str(p)+'\\n'+text[-14000:])
+          PY
       - name: Upload all verification evidence
         if: always()
         uses: actions/upload-artifact@v4

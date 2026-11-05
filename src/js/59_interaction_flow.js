@@ -50,7 +50,7 @@ function objectApproachPoint(a,at){
  if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
  const o=at.surface?surfaceFixture(at):at;
  if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;
- const d=dist(P.x,P.y,o.x,o.y);if(d<30)return null;
+ const d=dist(P.x,P.y,o.x,o.y);if(d<=40)return null;
  const angle=Math.atan2(o.y-P.y,o.x-P.x),layer=CUR_F;setLayer(flOf(P));
  const hit=castRay(P.x,P.y,angle,d,P.z||0);setLayer(layer);
  const step=Math.min(34,Math.max(0,Math.min(d,hit)-28));
@@ -81,7 +81,7 @@ function beginObjectAction(a) {
   const P = S.player, item = P.item;
   if (!objectActionValid(a, item)) return true;
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
-  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
+  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0, hurtT:P.hurtT||0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
     illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || a.k==='camCable' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
@@ -92,7 +92,8 @@ function beginObjectAction(a) {
 function updateObjectAction(P, dt) {
   const I = P.interact;
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
-  if (P.hurtT>0||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  if ((P.hurtT||0)>(I.hurtT||0)+.001||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  I.hurtT=P.hurtT||0;
   if(I.approach){updateObjectApproach(P,I,dt);return;}
   I.t = Math.min(I.dur, I.t + dt);
   if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
