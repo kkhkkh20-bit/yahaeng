@@ -22,7 +22,7 @@ async def main():
    await q.add_init_script('localStorage.clear();'+(''if REALTIME else'window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}'))
    await open_game(q,BASE+'?review=v175&nostats');await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]')
    if PREP:
-    await q.locator('#brSkills button').click();await q.locator('[data-learn="silentHands"]').click();await q.locator('[data-next-plan="ambush"]').click();await q.locator('[data-learn="ambush"]').click()
+    await q.locator('#brSkills button').click();await q.locator('[data-select="silentHands"]').click();await q.locator('[data-learn="silentHands"]').click();await q.locator('.skill-detail-close').click();await q.locator('[data-select="ambush"]').click();await q.locator('[data-learn="ambush"]').click()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     await q.click('#btnSkillsBack');assert await q.locator('#brief').is_visible();await q.screenshot(path=str(O/(name+'-prepared.png')))
    await q.click('#btnBrGo')
@@ -177,10 +177,9 @@ async def main():
    if PREP:
     before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');await q.locator('#endSkills button').click()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
-    await q.locator('[data-plan="swiftCrouch"]').click()
     for skill in ['quietStep','quietCrouch','swiftCrouch']:
-     if skill!='quietStep':await q.locator('[data-next-plan="'+skill+'"]').click()
-     await q.locator('[data-learn="'+skill+'"]').click()
+     await q.locator('[data-select="'+skill+'"]').click()
+     await q.locator('[data-learn="'+skill+'"]').click();await q.locator('.skill-detail-close').click()
     after=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert before-after==4
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     await q.click('#btnSkillsBack');assert await q.locator('#end').is_visible();result['afterSkills']=await q.evaluate('__game.loadSkillTree().learned');await q.screenshot(path=str(O/(name+'-upgraded.png')))

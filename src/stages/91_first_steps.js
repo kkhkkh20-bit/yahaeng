@@ -17,6 +17,7 @@ const FIRST_STEPS = {
   items:[],itemName:'',itemNames:[],nextTutorial:'t0',
   steps:[
     ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '내 캐릭터를 움직여 골목 남쪽 출구로 나가는 연습이다. 먼저 오른쪽 표시를 따라가자.', 'move'],
+    ['{기술창} 원하는 기술 하나 배우기', S=>Object.keys(S.skills||{}).length>0, null, '시작 포인트 4P가 있다. 기술을 선택하고 「배우기」를 누른 뒤 연습으로 돌아오자.', 'skills'],
     [(S,P)=>P.mode==='sneak'?'{일어서기} 일어서기':'{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', (S,P)=>P.mode==='sneak'?'crouch':'run'],
     [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 왼쪽 표시까지 이동':'{살금} 몸을 낮추고 왼쪽 표시까지 이동', (S,P)=>P.moving&&P.mode==='sneak'&&Math.hypot(P.x-4.5*48,P.y-10.5*48)<24&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:4.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 그 바깥에서는 몸이 드러나도 보지 못한다.', 'move', 1.1],

@@ -258,7 +258,7 @@ $('btnPortrait').addEventListener('click', () => document.body.classList.add('po
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
-  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
+  if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기

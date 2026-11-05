@@ -99,25 +99,58 @@ async def main(args):
                     passed=True
                     continue
                 await move(x=216);await wait_step(1)
+                await snapshot('skill-reminder')
+                assert not (await state())['goal'].get('moveCue')
+                await press('k','#btnPause')
+                if mobile:await page.tap('#btnSkillsPause')
+                assert await page.locator('#skillDetail').is_hidden()
+                await page.click('[data-select="kit"]');await page.click('[data-learn="kit"]')
+                await page.click('.skill-detail-close');await page.click('#btnSkillsBack')
+                if mobile:await page.tap('#btnResume')
+                await wait_step(2)
+                assert await page.evaluate('__game.loadSkillTree().learned.includes("kit")&&__game.skillSpent(__game.loadSkillTree())===1')
                 await snapshot('run-instruction',True)
                 if mobile:await joystick(55,0)
                 else:await key('Shift',True);await key('ArrowRight',True)
-                try:await wait_step(2)
+                try:await wait_step(3)
                 finally:
                     if mobile:await joystick()
                     else:await key('ArrowRight',False);await key('Shift',False)
                 s=await snapshot('quiet-instruction',True)
                 assert not ('왼쪽' in s['goal']['text'] and s['goal']['x']>s['x']+4),('instruction points away from actual goal',s)
-                await press('Control','#btnCrouch');await move(x=216,y=504);await wait_step(3)
+                await press('Control','#btnCrouch');await move(x=216,y=504);await wait_step(4)
                 await move(x=260);await snapshot('near-observe-marker',True)
-                await move(x=312);await wait_step(4)
+                await move(x=312);await wait_step(5)
                 await snapshot('bush-instruction',True)
-                await move(x=456,y=504);await wait_step(5)
+                await move(x=456,y=504);await wait_step(6)
                 await snapshot('hidden')
-                await press('g','#btnTool');await wait_step(6)
-                await move(x=288);await wait_step(7)
-                await snapshot('exit-instruction',True)
-                await move(x=168,y=696)
+                await press('g','#btnTool');await wait_step(7)
+                # Keep moving while escaping the real search. Capturing a marker
+                # at the intermediate point used to leave the player standing in
+                # the searching guard's line of sight for a screenshot.
+                active=[]
+                try:
+                    for _ in range(400):
+                        st=await state()
+                        if st['over']:break
+                        dx=168-st['x'];dy=696-st['y']
+                        vx=(1 if dx>0 else -1)if abs(dx)>8 else 0
+                        vy=(1 if dy>0 else -1)if abs(dy)>8 else 0
+                        wanted=([('ArrowRight'if vx>0 else'ArrowLeft')]if vx else[])+([('ArrowDown'if vy>0 else'ArrowUp')]if vy else[])
+                        if wanted!=active:
+                            if mobile:
+                                if active:await joystick()
+                                await joystick(vx*24,vy*24)
+                            else:
+                                for k in active:await key(k,False)
+                                for k in wanted:await key(k,True)
+                            active=wanted
+                        await page.wait_for_timeout(30)
+                    else:raise AssertionError(('exit movement timed out',await state()))
+                finally:
+                    if mobile:await joystick()
+                    else:
+                        for k in active:await key(k,False)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
                 await page.click('#btnNext');await page.wait_for_function('__game.STAGE.id==="t0"')
@@ -140,6 +173,9 @@ async def main(args):
                 assert not errors,errors
                 passed=True
             finally:
+                if not passed:
+                    print('LIVE FAILURE',name,await state(),await page.evaluate('({overlays:[...document.querySelectorAll(".screen:not([hidden])")].map(e=>e.id),keys:__game.S.keys,autoPaused:__game.S.autoPaused,skills:__game.S.skills,exit:__game.S.exit,open:__game.S.exitOpen})'),flush=True)
+                    await page.screenshot(path=str(out/f'{name}-failure.png'))
                 (out/f'{name}.json').write_text(json.dumps({'passed':passed,'url':args.url,'rows':rows,'errors':errors,'method':__doc__},ensure_ascii=False,indent=2))
                 await page.close()
         await browser.close()

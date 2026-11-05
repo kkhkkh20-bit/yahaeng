@@ -83,45 +83,22 @@ function resetTreeSkills(){
  renderAssassinMenu();return true;
 }
 
-// Preparation suggests a route; every purchase still uses the real tree and budget.
-const SKILL_PLANS=[
- {id:'ambush',why:'벽·풀숲·환풍구에 숨었다가 기습하려면',use:'제압 숙련 → 은신 기습'},
- {id:'reach',why:'등 뒤에서 접근할 수 있는 거리를 늘리려면',use:'제압 숙련 → 접근 암살'},
- {id:'swiftCrouch',why:'조용히 접근하는 이동을 빠르게 하고 싶다면',use:'가벼운 발 → 조용한 잠행 → 빠른 잠행'},
- {id:'dart',why:'떨어진 경비 한 명을 제압하고 싶다면',use:'현장 장비 → 다트 운용'},
- {id:'dual',why:'붙어 있는 경비 둘을 함께 처리하려면',use:'제압 숙련 → 동시 암살'},
- {id:'chain',why:'첫 암살 뒤 다음 적까지 이어 가려면',use:'동시 암살 → 연속 암살'}
-];
-function skillPlanState(plan,record=loadSkillTree()){
- const missing=skillPath(plan.id).filter(id=>!record.learned.includes(id));
- return{...plan,missing,next:missing[0],cost:missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0)};
-}
+// Teach spending in the first lesson; the player chooses every skill.
+const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]==='skills';
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!mainContract(STAGE)||points<=0;if(el.hidden)return;
- const plan=SKILL_PLANS.map(p=>skillPlanState(p,record)).find(p=>p.next);
+ el.hidden=!(mainContract(STAGE)||STAGE.openingContract)||points<=0;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
- note.textContent=plan?plan.why+' · '+plan.use+' (남은 경로 '+plan.cost+'P)':'남은 포인트로 다음 공략을 준비하세요.';
- copy.append(head,note);button.type='button';button.textContent='기술 고르기';button.onclick=()=>{openAssassinMenu();if(assassinMenu&&plan){assassinMenu.plan=plan.id;selectSkillNode(plan.next);}};el.append(copy,button);
-}
-function renderSkillPlans(){
- const el=$('skillPlans');el.replaceChildren();el.hidden=!!assassinMenu?.practice;if(el.hidden)return;
- const record=loadSkillTree(),points=skillBudget()-skillSpent(record),plans=SKILL_PLANS.map(p=>skillPlanState(p,record)).filter(p=>p.next).slice(0,3);
- for(const p of plans){
-  const b=document.createElement('button');b.type='button';b.dataset.plan=p.id;
-  b.textContent=SKILL_BY_ID[p.id].name+' · 다음 '+SKILL_BY_ID[p.next].name+' '+SKILL_BY_ID[p.next].cost+'P';
-  b.title=p.why+' · '+p.use+' · 남은 경로 '+p.cost+'P'+(points<SKILL_BY_ID[p.next].cost?' · 포인트를 더 모아야 합니다':'');
-  b.onclick=()=>{assassinMenu.plan=p.id;selectSkillNode(p.next);};el.append(b);
- }
- el.hidden=!plans.length;
+ note.textContent='기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
+ copy.append(head,note);button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(copy,button);
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
  hudCache.skillPromptAt=S.t;
- const record=loadSkillTree(),points=mainContract(STAGE)?skillBudget()-skillSpent(record):0,b=$('btnPause');
+ const record=loadSkillTree(),points=mainContract(STAGE)||STAGE.openingContract||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
  if(points>0)b.dataset.points=points;else delete b.dataset.points;
  b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
 }

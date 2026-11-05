@@ -7,16 +7,16 @@ async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!__game&&__game.effectAtlas.ready')
-  await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tB'));while(G.DLG.modal)G.advanceDialog();G.S.guards=[];G.S.tutI=4;const P=G.S.player,h=G.S.bushes[0];Object.assign(P,{x:h.x,y:h.y,fl:0,z:0,mode:'walk',hide:null,hidden:false,trav:null});G.input.sneakToggle=false;G.setLayer(0);G.update(.05)}''')
+  await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tB'));while(G.DLG.modal)G.advanceDialog();G.S.guards=[];G.S.tutI=5;const P=G.S.player,h=G.S.bushes[0];Object.assign(P,{x:h.x,y:h.y,fl:0,z:0,mode:'walk',hide:null,hidden:false,trav:null});G.input.sneakToggle=false;G.setLayer(0);G.update(.05)}''')
   r=await q.evaluate('''()=>{
    const G=__game,S=G.S,P=S.player,h=S.bushes[0],check=(v,m)=>{if(!v)throw Error(m)};
-   check(!P.hidden&&!P.hide&&S.tutI===4,'Standing in a bush should not conceal the player');
+   check(!P.hidden&&!P.hide&&S.tutI===5,'Standing in a bush should not conceal the player');
    check(!G.envChoices().some(a=>a.k==='hide'&&a.h?.type==='bush'),'Bush still advertises a hide button');
    check(!G.beginHideFlow('enter',h)&&!P.trav,'Forced bush entry starts container animation');
    G.actPrimary({k:'hide',h,viaZ:true});check(!P.hide&&!P.trav,'Old hide action teleports into a bush');return{standing:true,noHideAction:true};
   }''')
   await q.keyboard.press('Control');await q.evaluate('__game.update(.05)')
-  await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;if(!P.hidden||P.hide||P.trav||S.tutI!==5)throw Error('Crouch must automatically conceal and advance lesson '+JSON.stringify({hidden:P.hidden,hide:P.hide,trav:!!P.trav,step:S.tutI,mode:P.mode,sneak:G.input.sneakToggle,x:P.x,y:P.y,bush:S.bushes[0],overlay:[...document.querySelectorAll('.screen:not([hidden])')].map(e=>e.id)}));P.x-=70;G.update(.05);if(P.hidden||P.hide)throw Error('Walk-out does not release concealment')}''')
+  await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;if(!P.hidden||P.hide||P.trav||S.tutI!==6)throw Error('Crouch must automatically conceal and advance lesson '+JSON.stringify({hidden:P.hidden,hide:P.hide,trav:!!P.trav,step:S.tutI,mode:P.mode,sneak:G.input.sneakToggle,x:P.x,y:P.y,bush:S.bushes[0],overlay:[...document.querySelectorAll('.screen:not([hidden])')].map(e=>e.id)}));P.x-=70;G.update(.05);if(P.hidden||P.hide)throw Error('Walk-out does not release concealment')}''')
   await q.keyboard.press('Control')
   extra=await q.evaluate('''()=>{
    const G=__game,S=G.S,P=S.player,h=S.bushes[0],check=(v,m)=>{if(!v)throw Error(m)};

@@ -21,13 +21,13 @@ async def main():
                 const S=G.S,P=S.player,c=G.ctx,stroke=c.stroke,fill=c.fill;
                 let ink=0;c.stroke=function(){ink++;return stroke.apply(this,arguments)};c.fill=function(){ink++;return fill.apply(this,arguments)};
                 try{
-                    for(const step of [0,1,2,3,4,6,7]){
+                    for(const step of [0,2,3,4,5,7,8]){
                         S.tutI=step;P.mode='sneak';let target=G.STAGE.steps[step][2](S);Object.assign(P,{x:target.x-52,y:target.y,fl:0,z:0});
                         G.updateHUD(true);G.moveCamera(1);const goal=G.nextGoal();
                         ok(goal.moveCue,'movement cue missing '+step);ink=0;G.drawGoal(P);ok(ink>0,'close movement marker disappears '+step);
                     }
                     out.push('all seven movement/run/crouch destinations remain drawn below 3m');
-                    S.tutI=5;const bush=S.bushes[0];Object.assign(P,{x:bush.x,y:bush.y,hidden:true});G.updateHUD(true);G.moveCamera(1);
+                    S.tutI=6;const bush=S.bushes[0];Object.assign(P,{x:bush.x,y:bush.y,hidden:true});G.updateHUD(true);G.moveCamera(1);
                     ok(!G.nextGoal().moveCue,'whistle incorrectly requests movement');ink=0;G.drawGoal(P);ok(ink===0,'close whistle target covers the player');
                     out.push('nearby whistle action keeps its button cue without duplicate destination');
                     S.tutI=0;Object.assign(P,{x:150,y:504,hidden:false});for(let i=0;i<10;i++)G.update(.01);ok(S.tutI===0,'drawing change prematurely completes the first step');

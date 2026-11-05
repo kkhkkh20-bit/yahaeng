@@ -986,6 +986,7 @@ const FIRST_STEPS = {
   items:[],itemName:'',itemNames:[],nextTutorial:'t0',
   steps:[
     ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '내 캐릭터를 움직여 골목 남쪽 출구로 나가는 연습이다. 먼저 오른쪽 표시를 따라가자.', 'move'],
+    ['{기술창} 원하는 기술 하나 배우기', S=>Object.keys(S.skills||{}).length>0, null, '시작 포인트 4P가 있다. 기술을 선택하고 「배우기」를 누른 뒤 연습으로 돌아오자.', 'skills'],
     [(S,P)=>P.mode==='sneak'?'{일어서기} 일어서기':'{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', (S,P)=>P.mode==='sneak'?'crouch':'run'],
     [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 왼쪽 표시까지 이동':'{살금} 몸을 낮추고 왼쪽 표시까지 이동', (S,P)=>P.moving&&P.mode==='sneak'&&Math.hypot(P.x-4.5*48,P.y-10.5*48)<24&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:4.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
     ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 그 바깥에서는 몸이 드러나도 보지 못한다.', 'move', 1.1],
@@ -3108,45 +3109,22 @@ function resetTreeSkills(){
  renderAssassinMenu();return true;
 }
 
-// Preparation suggests a route; every purchase still uses the real tree and budget.
-const SKILL_PLANS=[
- {id:'ambush',why:'벽·풀숲·환풍구에 숨었다가 기습하려면',use:'제압 숙련 → 은신 기습'},
- {id:'reach',why:'등 뒤에서 접근할 수 있는 거리를 늘리려면',use:'제압 숙련 → 접근 암살'},
- {id:'swiftCrouch',why:'조용히 접근하는 이동을 빠르게 하고 싶다면',use:'가벼운 발 → 조용한 잠행 → 빠른 잠행'},
- {id:'dart',why:'떨어진 경비 한 명을 제압하고 싶다면',use:'현장 장비 → 다트 운용'},
- {id:'dual',why:'붙어 있는 경비 둘을 함께 처리하려면',use:'제압 숙련 → 동시 암살'},
- {id:'chain',why:'첫 암살 뒤 다음 적까지 이어 가려면',use:'동시 암살 → 연속 암살'}
-];
-function skillPlanState(plan,record=loadSkillTree()){
- const missing=skillPath(plan.id).filter(id=>!record.learned.includes(id));
- return{...plan,missing,next:missing[0],cost:missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0)};
-}
+// Teach spending in the first lesson; the player chooses every skill.
+const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]==='skills';
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record);
- el.hidden=!mainContract(STAGE)||points<=0;if(el.hidden)return;
- const plan=SKILL_PLANS.map(p=>skillPlanState(p,record)).find(p=>p.next);
+ el.hidden=!(mainContract(STAGE)||STAGE.openingContract)||points<=0;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
- note.textContent=plan?plan.why+' · '+plan.use+' (남은 경로 '+plan.cost+'P)':'남은 포인트로 다음 공략을 준비하세요.';
- copy.append(head,note);button.type='button';button.textContent='기술 고르기';button.onclick=()=>{openAssassinMenu();if(assassinMenu&&plan){assassinMenu.plan=plan.id;selectSkillNode(plan.next);}};el.append(copy,button);
-}
-function renderSkillPlans(){
- const el=$('skillPlans');el.replaceChildren();el.hidden=!!assassinMenu?.practice;if(el.hidden)return;
- const record=loadSkillTree(),points=skillBudget()-skillSpent(record),plans=SKILL_PLANS.map(p=>skillPlanState(p,record)).filter(p=>p.next).slice(0,3);
- for(const p of plans){
-  const b=document.createElement('button');b.type='button';b.dataset.plan=p.id;
-  b.textContent=SKILL_BY_ID[p.id].name+' · 다음 '+SKILL_BY_ID[p.next].name+' '+SKILL_BY_ID[p.next].cost+'P';
-  b.title=p.why+' · '+p.use+' · 남은 경로 '+p.cost+'P'+(points<SKILL_BY_ID[p.next].cost?' · 포인트를 더 모아야 합니다':'');
-  b.onclick=()=>{assassinMenu.plan=p.id;selectSkillNode(p.next);};el.append(b);
- }
- el.hidden=!plans.length;
+ note.textContent='기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
+ copy.append(head,note);button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(copy,button);
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
  hudCache.skillPromptAt=S.t;
- const record=loadSkillTree(),points=mainContract(STAGE)?skillBudget()-skillSpent(record):0,b=$('btnPause');
+ const record=loadSkillTree(),points=mainContract(STAGE)||STAGE.openingContract||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
  if(points>0)b.dataset.points=points;else delete b.dataset.points;
  b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
 }
@@ -14522,7 +14500,7 @@ function showBrief(go) {
   $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
-const TUT_KEY = { 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[공격]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
+const TUT_KEY = { 기술창:['메뉴 > 기술 트리에서','K로 기술 트리를 열어'], 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[공격]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
 const tutText = t => (typeof t==='function'?t(S,S.player):t).replace(/\{(\S+?)\}/g, (m, k) => { if (!TUT_KEY[k]) return m; const v = TUT_KEY[k][isTouch ? 0 : 1]; return typeof v === 'function' ? v() : v; });
 // 자리 이름: 건물 이름(간판)·층 — 목표 목록과 '지금 할 일'에 함께 쓴다
 function placeName(x, y, fl, b) { const bi = b != null ? b : bldAt(Math.floor(x / TILE), Math.floor(y / TILE)); if (bi < 0) return '바깥'; const B = BLD[bi]; const nm = (B.name === '빌라' && B.plate ? B.plate : B.name) || B.plate || (B.kind === 'shop' ? ((B.signs || [])[fl || 0] || '상가') + ' 건물' : B.kind === 'house' ? '단독주택' : '빌라'); return B.vacant ? nm : nm + ' ' + ((fl || 0) + 1) + '층'; }
@@ -14855,6 +14833,7 @@ function syncTutorialCue(){
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
   const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnAct',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
+  $('btnSkillsPause').classList.toggle('lesson-cue',key==='skills');
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }
 
@@ -15180,7 +15159,6 @@ function syncSkillDetail(){
 }
 function detailCloseButton(){const b=document.createElement('button');b.type='button';b.className='skill-detail-close';b.setAttribute('aria-label','기술 설명 닫기');b.textContent='닫기';b.onclick=closeSkillDetail;return b;}
 function selectSkillNode(id,focus=false){
- if(assassinMenu?.plan&&!skillPath(assassinMenu.plan).includes(id))assassinMenu.plan=null;
  const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;skillDetailMode='skill';renderSkillDetail();syncSkillDetail();
  for(const b of $('skillBranches').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
  const button=$('skillCards').querySelector('[data-select="'+id+'"]');if(focus)button?.focus({preventScroll:true});button?.scrollIntoView({block:'nearest',inline:'nearest'});
@@ -15197,7 +15175,6 @@ function renderSkillDetail(){
  for(const[id,index]of path.map((id,i)=>[id,i])){const b=document.createElement('button');b.type='button';b.textContent=(index+1)+'. '+SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':SKILL_BY_ID[id].cost+'P');b.dataset.path=id;b.setAttribute('aria-current',String(id===d.id));b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.insertBefore(req,figure);
  const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
  if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}
- if(v.known&&assassinMenu?.plan){const plan=SKILL_PLANS.find(p=>p.id===assassinMenu.plan),next=plan&&skillPlanState(plan).next;if(next){const b=document.createElement('button');b.type='button';b.dataset.nextPlan=next;b.textContent='다음: '+SKILL_BY_ID[next].name+' · '+SKILL_BY_ID[next].cost+'P 보기';b.onclick=()=>selectSkillNode(next);actions.append(b);}}
  pane.append(actions);drawSkillPreview(d.id);
 }
 function renderSkillRewards(){
@@ -15216,8 +15193,7 @@ function handleSkillDetailKey(e){
 function renderAssassinMenu(){
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
  $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
- renderSkillPlans();
- $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용하세요. 추천 경로를 보거나 원하는 기술을 직접 고를 수 있습니다.';
+ $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':skillLessonActive()?'원하는 기술을 선택하고 「배우기」를 누르세요. 쓴 포인트와 배운 기술은 본편 의뢰에도 이어집니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
  const preparing=['ledger','brief','end'].includes(assassinMenu.from);
  $('btnSkillReset').hidden=!preparing&&!practice;$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
@@ -15736,7 +15712,7 @@ $('btnPortrait').addEventListener('click', () => document.body.classList.add('po
 $('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
-  if (paused && S) { closeEnvPicker(); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
+  if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
