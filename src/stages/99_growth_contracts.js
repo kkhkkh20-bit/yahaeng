@@ -28,7 +28,7 @@ STAGES.push({
  guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false},{kind:'g1',tag:'warehousePatrol',route:[[16,9,8],[21,9,8]],radio:false}],
  fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
- cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0},
+ cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0,name:'골목 관리 단말'},
  lamps:[[30,10,380,0],[8,20,200,1]],
 });
 {
@@ -43,6 +43,6 @@ STAGES.push({
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'연락 거점',['crew']]],
   props:[{id:'officeCoat',name:'예비 경비 재킷',outfit:'crew',at:[8,18]}],
   guards:[{kind:'g1',tag:'officeKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false}],
-  itemName:'연락 장부',itemNames:['연락 장부'],itemPlaces:['연락 거점 2층 · 서류장'],challenges:[],
+  itemName:'연락 장부',itemNames:['연락 장부'],itemPlaces:['연락 거점 2층 · 책상'],challenges:[],
  });
 }

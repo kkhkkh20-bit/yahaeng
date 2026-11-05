@@ -1329,7 +1329,7 @@ STAGES.push({
  guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false},{kind:'g1',tag:'warehousePatrol',route:[[16,9,8],[21,9,8]],radio:false}],
  fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
- cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0},
+ cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0,name:'골목 관리 단말'},
  lamps:[[30,10,380,0],[8,20,200,1]],
 });
 {
@@ -1344,7 +1344,7 @@ STAGES.push({
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'연락 거점',['crew']]],
   props:[{id:'officeCoat',name:'예비 경비 재킷',outfit:'crew',at:[8,18]}],
   guards:[{kind:'g1',tag:'officeKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false}],
-  itemName:'연락 장부',itemNames:['연락 장부'],itemPlaces:['연락 거점 2층 · 서류장'],challenges:[],
+  itemName:'연락 장부',itemNames:['연락 장부'],itemPlaces:['연락 거점 2층 · 책상'],challenges:[],
  });
 }
 // Two small, real contracts bridge the first assassination and the full city.
@@ -14853,7 +14853,7 @@ function nextGoal() {
   }
   if (STAGE.city) return cityGoal();
   syncMissionTracking();
-  if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
+  if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: STAGE.camRoom?.name || placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
@@ -15134,7 +15134,7 @@ function renderStageList() {
     const cardLine={m2:'클럽 실장 · 장부와 암호표',m4:'표적 둘 · 현금과 계약서',m6:'감방 탈출 · 무전기와 인계서',m7:'운송책 · 명세서 · 새벽배송 중단'};
     const sub = s.tutorial ? (((s.sub || '').match(/\(([^)]*)\)/) || ['', ''])[1]||s.sub||s.mission).replace(/, /g, ' · ') : (cardLine[s.id]||s.mission), tno = (s.name.match(/^연습 (\d)/) || ['', ''])[1];
     return `<button class="stage ${s.tutorial ? 'tut' : ''} ${i === next ? 'next' : ''}" type="button" data-i="${i}">
-      <span class="st-no">${s.tutorial ? tno : s.apprenticeContract ? s.no : introductoryContract(s) ? "첫 밤 "+(["p0","p1","p2"].indexOf(s.id)+1) : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
+      <span class="st-no">${s.tutorial ? tno : s.apprenticeContract ? s.id.slice(1).padStart(2,"0") : introductoryContract(s) ? String(["p0","p1","p2"].indexOf(s.id)+1).padStart(2,"0") : contractNumber(s)}</span><span class="st-name">${s.name.replace(/^연습 \d · /, '')}</span>
       <span class="st-mis">${sub}</span>${map}
       <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk&&!introductoryContract(s) ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
