@@ -66,6 +66,7 @@ function selectVisionFocus() {
   }
   for(const c of S.cams||[])if(same(c)&&camOn(c)&&c.meter>.02&&cameraAssessment(c).detectable)consider(c,true,c.meter,c.meter>=1);
   if(danger)return danger;
+  if(S.visionCamera&&(S.cams||[]).includes(S.visionCamera)&&same(S.visionCamera)&&exposed(S.visionCamera)&&camOn(S.visionCamera))return {actor:S.visionCamera,camera:true,reason:'selected'};
   if(S.marked&&S.guards.includes(S.marked)&&eligible(S.marked))return {actor:S.marked,camera:false,reason:'selected'};
   let nearest=null;
   const considerNear=(actor,camera)=>{

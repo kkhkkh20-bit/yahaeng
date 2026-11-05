@@ -69,6 +69,7 @@ function drawCams(fl) {
     ctx.fillStyle = c.broken||c.unplugged ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill();
     if(c.unplugged){ctx.strokeStyle='#777e89';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-17,3);ctx.lineTo(-17,10);ctx.stroke();}
     ctx.restore();
+    if(S.visionCamera===c){ctx.strokeStyle='#c5d7e8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,15,0,TAU);ctx.stroke();}
     if (c.broken && Math.random() < 0.05) S.fx.push({ k: 'smoke', x: c.x, y: c.y, t: 0 });
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }
   }

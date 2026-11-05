@@ -5541,6 +5541,7 @@ function drawCams(fl) {
     ctx.fillStyle = c.broken||c.unplugged ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill();
     if(c.unplugged){ctx.strokeStyle='#777e89';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-17,3);ctx.lineTo(-17,10);ctx.stroke();}
     ctx.restore();
+    if(S.visionCamera===c){ctx.strokeStyle='#c5d7e8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,15,0,TAU);ctx.stroke();}
     if (c.broken && Math.random() < 0.05) S.fx.push({ k: 'smoke', x: c.x, y: c.y, t: 0 });
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }
   }
@@ -12375,6 +12376,7 @@ function selectVisionFocus() {
   }
   for(const c of S.cams||[])if(same(c)&&camOn(c)&&c.meter>.02&&cameraAssessment(c).detectable)consider(c,true,c.meter,c.meter>=1);
   if(danger)return danger;
+  if(S.visionCamera&&(S.cams||[]).includes(S.visionCamera)&&same(S.visionCamera)&&exposed(S.visionCamera)&&camOn(S.visionCamera))return {actor:S.visionCamera,camera:true,reason:'selected'};
   if(S.marked&&S.guards.includes(S.marked)&&eligible(S.marked))return {actor:S.marked,camera:false,reason:'selected'};
   let nearest=null;
   const considerNear=(actor,camera)=>{
@@ -15776,8 +15778,14 @@ function markAt(cx, cy) {
   if (!S || !running || paused || S.over || DLG.modal || S.keypad) return false;
   const r = canvas.getBoundingClientRect(), wx = cam.x + (cx - r.left - W / 2) / SCALE, wy = cam.y + (cy - r.top - H / 2) / SCALE;
   let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorPick(g):null,d=ip?Math.hypot(ip.x-cx,ip.y-cy):dist(g.x,g.y-14,wx,wy); if (d < bd) { bd = d; best = g; } }
-  if (!best) return false;
-  S.marked = S.marked === best ? null : best; play('click', 0.25);
+  const camera=(S.cams||[]).filter(c=>c.fl===flOf(S.player)&&!S.player.z&&camOn(c)&&dist(c.x,c.y,wx,wy)<Math.min(28,bd)).sort((a,b)=>dist(a.x,a.y,wx,wy)-dist(b.x,b.y,wx,wy))[0];
+  if (camera) {
+    S.visionCamera=S.visionCamera===camera?null:camera;S.marked=null;play('click',.25);
+    if(S.visionCamera)toast('CCTV 주시 — 시야 표시 · 다시 눌러 해제',1.8);
+    return true;
+  }
+  if(!best)return false;
+  S.visionCamera=null;S.marked = S.marked === best ? null : best; play('click', 0.25);
   if (S.marked) toast((best.target ? targetName(best) : best.civ ? '주민' : best.elite ? '정예' : best.dog ? '개' : '자경대원') + ' 주시 — 순찰·시야 표시'+(abilityOn('dart')&&!best.dog&&!best.child?' · 다트 대상 지정':''), 1.8);
   return true;
 }

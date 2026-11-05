@@ -70,6 +70,15 @@ async def main():
     if touch:await q.touchscreen.tap(pos['x'],pos['y'])
     else:await q.mouse.click(pos['x'],pos['y'])
     assert await q.evaluate('__game.S.marked===__game.S.guards[0]'),'native guard selection failed'
+   # A camera must remain inspectable even when a guard is closer. It is not
+   # stored in S.marked, which is also the explicit dart target.
+   cam=await q.evaluate("""()=>{const G=__game,r=document.querySelector('#game').getBoundingClientRect(),points=[[.5,.58],[.4,.7],[.6,.6]].map(([x,y])=>({x:innerWidth*x,y:innerHeight*y})),p=points.find(p=>document.elementFromPoint(p.x,p.y)?.id==='game');if(!p)throw Error('no uncovered camera selection fixture');const c={x:G.cam.x+(p.x-r.left-innerWidth/2)/G.SCALE,y:G.cam.y+(p.y-r.top-innerHeight/2)/G.SCALE,fl:0,z:0,a:1.57,meter:0,seen:false,search:false,broken:false};G.S.cams=[c];G.benchDraw(1);return p}""")
+   if touch:await q.touchscreen.tap(cam['x'],cam['y'])
+   else:await q.mouse.click(cam['x'],cam['y'])
+   assert await q.evaluate('__game.S.visionCamera===__game.S.cams[0]&&!__game.S.marked&&__game.selectVisionFocus().camera&&__game.selectVisionFocus().reason==="selected"'),('native camera inspection failed',w,cam,await q.evaluate('(p)=>({hit:document.elementFromPoint(p.x,p.y)?.outerHTML.slice(0,180),selected:!!__game.S.visionCamera,marked:__game.S.marked?.id,focus:__game.selectVisionFocus()?.reason,actor:__game.selectVisionFocus()?.actor?.id,paused:!!document.querySelector("#pause:not([hidden])")})',cam))
+   if touch:await q.touchscreen.tap(cam['x'],cam['y'])
+   else:await q.mouse.click(cam['x'],cam['y'])
+   assert await q.evaluate('!__game.S.visionCamera'),'camera inspection toggle failed'
    assert not errors,errors
    reports.append({'viewport':[w,h],'geometry':geometry,'checks':checks,'errors':errors});print('PASS cast and vision',w,len(checks),'groups',flush=True);await q.close()
   await b.close()
