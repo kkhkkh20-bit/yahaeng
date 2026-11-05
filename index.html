@@ -919,6 +919,15 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 #skillBranches button span { margin-left:8px; color:var(--sk-muted); font-size:11px; font-variant-numeric:tabular-nums; }
 #btnSkillRewards { min-height:44px; margin:0; padding:8px 12px; border:1px solid var(--sk-line); border-radius:0; background:none; color:var(--sk-gold); font-size:12px; }
 .skill-instructions { margin:14px 0 0; color:var(--sk-muted); font-size:12px; line-height:1.7; flex-shrink:0; }
+.skill-plans { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; flex-shrink:0; }
+.skill-plans button { padding:7px 10px; min-height:38px; border:1px solid #3e494e; border-radius:5px; background:#172027; color:#c8c3b4; font-size:11px; }
+.skill-preparation { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid #39454b; border-radius:6px; background:#151d23; text-align:left; }
+.skill-preparation > div { min-width:0; flex:1; }
+.skill-preparation b { display:block; color:#d5ccba; font-size:13px; font-weight:500; }
+.skill-preparation p { margin:5px 0 0; color:#9ea9af; font-size:11px; line-height:1.6; overflow-wrap:anywhere; }
+.skill-preparation button { flex-shrink:0; min-height:44px; padding:8px 12px; border:1px solid #657176; border-radius:5px; background:#222e35; color:#e2dfd4; font-size:12px; }
+#btnPause[data-points]::after { content:attr(data-points) 'P'; color:#cbbd9a; font-size:10px; margin-left:5px; }
+@media(max-width:600px) { .skill-preparation { gap:8px; padding:10px; } .skill-preparation button { padding:8px; } .skill-plans { flex-wrap:nowrap; overflow-x:auto; } .skill-plans button { white-space:nowrap; min-height:44px; } }
 .skill-layout { position:relative; display:grid; grid-template-columns:minmax(0,1fr); flex:1; min-height:0; padding:22px 0 18px; gap:24px; }
 .detail-open .skill-layout { grid-template-columns:minmax(0,1fr) 334px; }
 .skill-board { min-height:0; overflow:auto; overscroll-behavior:contain; padding:4px 8px 12px; touch-action:pan-x pan-y; }
@@ -1470,7 +1479,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v187 · 2026-11-05</footer>
+  <footer class="title-footer">v188 · 2026-11-05</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1497,6 +1506,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
     </header>
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button">미션 업적 · 포인트 얻기</button></div>
     <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
+    <nav id="skillPlans" class="skill-plans" aria-label="추천 습득 경로"></nav>
     <div class="skill-layout">
       <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
         <div id="skillCards" aria-label="신체·암살·도구 기술"></div>
@@ -1564,7 +1574,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v187 · 2026-11-05</small>
+      <small class="fx-sub" id="pauseVersion">v188 · 2026-11-05</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -1580,6 +1590,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <div class="br-head"><h2 class="br-name" id="brName"></h2><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
+      <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
       <p class="br-exit" id="brOutcome" hidden></p>
       <details class="br-details" id="brDetails"><summary>현장 정보</summary>
@@ -1603,6 +1614,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
     <div id="endRank" hidden></div>
     <p id="endSub"></p>
     <dl id="endStats"></dl>
+    <section id="endSkills" class="skill-preparation" aria-label="다음 의뢰 기술 준비" hidden></section>
     <div id="vipPassport" hidden></div>
     <details class="endmore"><summary>상세 기록</summary><p class="credit" id="endRankNote"></p>
       <dl id="endMore"></dl>
@@ -1630,8 +1642,8 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/57b7ba9a5ab08ae790e4.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/01e2d94de45ea100fd13.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/f379e38d950c1694346d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/6f955c3eb8b85c5f30ef.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
