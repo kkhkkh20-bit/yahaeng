@@ -18,7 +18,7 @@ async def main():
   for name in ([]if BROWSER_HASHES else paths):
    data=(await get_checked(client,BASE+(''if PLAIN and name=='index.html'else name)+(''if PLAIN else '?verify='+release))).content;digest=hashlib.sha256(data).hexdigest();assert digest==hashlib.sha256((R/'public'/name).read_bytes()).hexdigest(),name;result['files'][name]=digest
  async with async_playwright()as p:
-  b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
+  b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')and os.environ.get('HTTPS_PROXY')else None)
   for mobile in [False,True]:
    page=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile);errors=[];requests=[];page.on('pageerror',lambda e:errors.append(str(e)));page.on('request',lambda q:requests.append(q.url));await page.add_init_script('localStorage.clear()');await open_game(page,BASE+(''if PLAIN else '?v='+release+'&nostats'));assert await page.evaluate('window.__BUILD_VERSION__')==release
    assert await page.evaluate('document.compatMode==="CSS1Compat"&&document.head.querySelectorAll("meta[name=viewport]").length===1'), 'Release document lacks standards/mobile viewport'
