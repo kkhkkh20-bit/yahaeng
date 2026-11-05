@@ -2576,7 +2576,7 @@ const heroVisualStates=new WeakMap();
 function updateHeroVisual(P){
  const anim=P.carrying?'carry':P.captive?'grab':P.cover?'hugStep':P.item?.id==='box'?'hold':P.mode==='run'?'run':P.mode==='sneak'?'sneak':'walk';
  let v=heroVisualStates.get(P);if(!v){v={phase:0,gait:P.gaitTime||0,time:S.t,crouch:P.mode==='sneak'?1:0,moving:false,anim};heroVisualStates.set(P,v);}
- const dt=clamp(S.t-v.time,0,.06),moving=P.travelSpeed==null?!!P.moving:P.travelSpeed>6;
+ const dt=clamp(S.t-v.time,0,.06),moving=(P.travelSpeed==null?!!P.moving:P.travelSpeed>6)&&!!(P.moving||Math.hypot(P.vx||0,P.vy||0)>.1);
  v.phase=(v.phase+Math.max(0,(P.gaitTime||0)-v.gait)/(HERO_LOOP[anim]||1))%1;
  if(v.moving&&!moving&&v.anim==='walk'&&!actionBusy(P)){v.stopAt=S.t;v.stopPhase=Math.round(v.phase*4)%4;}
  if(moving||actionBusy(P))v.stopAt=null;
@@ -12391,7 +12391,7 @@ function drawPlayerBody(P) {
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
   }
   const blink = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
-  const sc = 3 * lift, mv = (P.travelSpeed==null?P.moving:P.travelSpeed>6) || !!P.jump;
+  const sc = 3 * lift, mv = !!heroVisualStates.get(P)?.moving || !!P.jump;
   // 자세: 살금살금은 몸을 낮추고, 달리기는 발 접촉의 작은 먼지로 표현한다
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
   if(P.jump?.downward&&usePR(playerLook)){

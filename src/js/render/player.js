@@ -47,7 +47,7 @@ function drawPlayerBody(P) {
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
   }
   const blink = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
-  const sc = 3 * lift, mv = (P.travelSpeed==null?P.moving:P.travelSpeed>6) || !!P.jump;
+  const sc = 3 * lift, mv = !!heroVisualStates.get(P)?.moving || !!P.jump;
   // 자세: 살금살금은 몸을 낮추고, 달리기는 발 접촉의 작은 먼지로 표현한다
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;
   if(P.jump?.downward&&usePR(playerLook)){
