@@ -1,0 +1,56 @@
+[
+  {
+    "version": "v190",
+    "seconds": 184.1475570000264,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 1,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 2,
+      "stashed": 0,
+      "special": 0,
+      "ko": 0,
+      "stories": 1,
+      "dressed": 1,
+      "camUnplugged": 2,
+      "keyDoors": 1,
+      "gotAs": "crew",
+      "screams": 1,
+      "witness": 1
+    },
+    "skills": [
+      "silentHands",
+      "ambush"
+    ],
+    "approach": "흡연 동선 매복",
+    "receipt": {
+      "id": "smoke",
+      "name": "흡연 동선 매복",
+      "fresh": true,
+      "count": 1
+    },
+    "records": {
+      "smoke": {
+        "clears": 1,
+        "best": 184,
+        "clean": false
+      }
+    },
+    "next": "다른 방법으로",
+    "afterSkills": [
+      "quietStep",
+      "quietCrouch",
+      "swiftCrouch",
+      "silentHands",
+      "ambush"
+    ],
+    "touch": false,
+    "method": "Fresh save; native keyboard or CDP touch; all actors and security active; normal RAF and unseeded randomness; no actor, health, inventory, skills, alert or objective overrides",
+    "errors": []
+  }
+]

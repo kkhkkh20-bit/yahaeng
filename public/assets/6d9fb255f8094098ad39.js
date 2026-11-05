@@ -2116,6 +2116,7 @@ const spr = {};
 function blit(c, name, dx, dy, dw, dh, sx = 0, sy = 0, sw, sh) { const f = F[name]; if (!f) return; c.drawImage(atlas, f[0] + sx, f[1] + sy, sw || f[2], sh || f[3], dx, dy, dw, dh); }
 const dirOf = a => { const c = Math.cos(a), s = Math.sin(a); return Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1); };
 const charOf = g => {
+  if(g.stripped)return g.strippedLook||'strip';
   const base = charBase(g);
   // An explicit civilian shape wins; role-specific outfits keep their own
   // workwear silhouette (for example the courier's helmet).
@@ -4582,7 +4583,7 @@ const Z_PUB = 0, Z_RES = 1, Z_HOS = 2, Z_NAME = ['공개', '출입 금지', '적
 // ---- 신분(옷): 출입 금지·적진 구역마다 '허가 옷'이 있다. 허가된 옷을 입으면 그 구역 안에서도 행인처럼 대우받는다
 // 구역 8번째 칸 = 허가 옷 목록. 적지 않으면: 땅은 STAGE.zoneAllow(기본: 자경대원 옷), 옥상은 아무도 없음
 const OUTFITS = { crew: '자경대원 옷', staff: '상회 직원 조끼', courier: '택배 기사 옷', waiter: '클럽 직원 옷', cater: '출장 뷔페 조끼', parcel: '택배 상자' };
-const outfitOf = g => g.outfit || (g.civ || g.dog || g.target ? null : 'crew');
+const outfitOf = g => g.stripped ? null : g.outfit || (g.civ || g.dog || g.target ? null : 'crew');
 const outfitName = o => OUTFITS[o] || '변장';
 function zoneInfo(x, y, z, floor = CUR_F) {
   if (!STAGE.zones) return { k: Z_HOS, allow: [] };
@@ -4625,8 +4626,12 @@ function updateSharpEye(g, dt, rawVis) {
   const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI / 3;
   const passing=P.mode==='walk'&&P.moving;
-  g.eyeWatching=rawVis>0&&d<R&&faceVisible&&!passing;
-  if(!g.eyeWatching){g.eyeT=0;return;}
+  const visible=rawVis>0&&d<R&&faceVisible;
+  g.eyeWatching=visible&&!passing;
+  if(!visible){g.eyeT=0;return;}
+  // Walking is innocent. A check already begun fades rather than forgetting
+  // the face instantly, and never advances while the player walks away.
+  if(passing){g.eyeT=Math.max(0,(g.eyeT||0)-dt*.5);return;}
   if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
     hint('eye', '허용 복장도 신원 확인을 피할 수는 없다. 눈 표시가 차오르면 거리를 벌리거나 시야를 벗어나라');
     if (g.eyeT >= identityTime(g)) { const of = P.outfit; blowDisguise(g); if (g.civ) { if (!(STAGE.zones && startReport(g, P.x, P.y, null, of, 'disguise'))) civScream(g, P.x, P.y); } else { g.seen = true; g.meter = 1; goAlert(g); } } }
@@ -7551,6 +7556,17 @@ function stepSound(x, y) {
   return 'step_c' + v;
 }
 function advancePlayerGait(P,x,y,dt,speed){const d=Math.hypot(P.x-x,P.y-y);P.travelSpeed=d/Math.max(dt,.001);P.gaitTime=(P.gaitTime||0)+d/Math.max(1,speed);}
+function playerFootsteps(P,mode,ox,oy){
+    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
+    if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
+      P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
+      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
+      play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
+      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
+      if (P.carrying) play('cloth', 0.12);
+      if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
+    }
+}
 // 바닥 재질: 유리 조각(x) · 철판(m) · 물웅덩이(p) · 자갈(r) 은 발소리가 커진다
 const MAT = { x: 2.3, m: 1.8, p: 1.7, r: 1.45 };
 const MAT_NAME = { x: '유리 조각', m: '철판', p: '물웅덩이', r: '자갈' };
@@ -8053,15 +8069,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
-    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
-    if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
-      P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
-      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
-      play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
-      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
-      if (P.carrying) play('cloth', 0.12);
-      if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
-    }
+    playerFootsteps(P,mode,ox,oy);
   }
   autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)
@@ -8293,13 +8301,13 @@ function npcDown(o, by, lethal) {
   const blamed = by && ['A', 'B'].includes(by.fac) && ['A', 'B'].includes(o.fac) && by.fac !== o.fac && S.guards.some(w => w !== o && w !== by && w.fac === o.fac && npcAlive(w) && sameNpcLevel(w, by) && canSee(w, by.x, by.y, Math.max(.4, lightAt(by.x, by.y)), false, false, by.z || 0) > 0) ? by.fac : null;
   o.state = 'DEAD'; o.icon = null; o.path = null; o.say = null; o.brawl = null; o.hunt = null; o.moving = false;
   play(lethal ? 'kill' : 'thud', 0.5 * proxVol(o)); noise(o.x, o.y, 90, 'fight', flOf(o));
-  const c = { fl: flOf(o), z: o.z || 0, ch: charOf(o), g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
+  const c = { fl: flOf(o), z: o.z || 0, ch: charOf(o), stripped:!!o.stripped, g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
   S.corpses.push(c); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
   if (blamed) c.blamed = blamed;  // 실제 목격된 조직만 현장 증거로 남긴다
   if (by && by.fac && by.fac !== 'P' && o.civ) policeCall(o.x, o.y, by);
   if (S.fuseGuard === o) S.fuseGuard = null;
   if (o.hasKey) { const k = o.hasKey; o.hasKey = null; S.keyDrop = { x: c.x + 14, y: c.y + 10, key: k, fl: c.fl || 0 }; }
-  if (!lethal && !o.civ) after(25, () => { const i = S.corpses.indexOf(c); if (i < 0 || c.carried || c.stashed || !c.ko) return; S.corpses.splice(i, 1); o.state = 'PATROL'; o.x = c.x; o.y = c.y; o.meter = 0.3; o.path = null; gsay(o, '누가 친 거야. 다들 괜찮아?'); });
+  if (!lethal && !o.civ) after(25, () => { const i = S.corpses.indexOf(c); if (i < 0 || c.carried || c.stashed || !c.ko) return; if(c.stripped)stripBodyClothing(c);S.corpses.splice(i, 1); o.state = 'PATROL'; o.x = c.x; o.y = c.y; o.meter = 0.3; o.path = null; gsay(o, '누가 친 거야. 다들 괜찮아?'); });
   // 범행을 본 주민: 이긴 쪽이 쫓아가 입을 막는다
   if (by && !by.civ && npcAlive(by)) {
     const w = S.guards.filter(q => q.civ && npcAlive(q) && !q.child && flOf(q) === flOf(o) && dist(q.x, q.y, o.x, o.y) < 300 && ((q.state === 'PANIC' && q.fear && dist(q.fear.x, q.fear.y, o.x, o.y) < 220) || canSee(q, o.x, o.y, Math.max(0.4, lightAt(o.x, o.y)), false, false, 0) > 0))
@@ -9915,23 +9923,59 @@ function objectActionValid(a, item) {
   const o = objectActionPoint(a);
   return (!o || objectReachable(Object.assign({ fl: flOf(P), z: P.z || 0 }, o), a.k === 'fuse' ? 62 : 60)) && !(a.l && a.l.broken);
 }
+// A short, colliding approach belongs to the selected action. Door handles
+// already use their authored contact pose; clothes and carried bodies stay put.
+function objectApproachPoint(a,at){
+ const P=S.player;
+ if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
+ let o=at.surface?surfaceFixture(at):at;
+ if(o.furn===true){const b=hideFootprint(o);o={x:clamp(P.x,b.x0,b.x1),y:clamp(P.y,b.y0,b.y1)};}
+ if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;
+ const d=dist(P.x,P.y,o.x,o.y);if(d<=40)return null;
+ const angle=Math.atan2(o.y-P.y,o.x-P.x),layer=CUR_F;setLayer(flOf(P));
+ const hit=castRay(P.x,P.y,angle,d,P.z||0);setLayer(layer);
+ const step=Math.min(34,Math.max(0,Math.min(d,hit)-28));
+ return step>2?{x:P.x+Math.cos(angle)*step,y:P.y+Math.sin(angle)*step,t:0}:null;
+}
+function updateObjectApproach(P,I,dt){
+ const at=I.approach;at.t+=dt;
+ if(at.t>.85||!objectActionValid(I.a,I.item)){P.interact=null;P.moving=false;return;}
+ const layer=CUR_F;setLayer(flOf(P));
+ const ox=P.x,oy=P.y,mode=P.mode==='sneak'?'sneak':'walk',spd=mode==='sneak'?65:100;
+ P.mode=mode;P.a+=clamp(angDiff(P.a,I.face),-dt*18,dt*18);
+ let budget=Math.min(36,spd*dt),blocked=false;
+ while(budget>.001){
+  const d=dist(P.x,P.y,at.x,at.y);if(d<.5)break;
+  const x=P.x,y=P.y,n=Math.min(3,budget,d);P.x+=(at.x-x)/d*n;P.y+=(at.y-y)/d*n;
+  collide(P,P.z?10:13,solidFor(P.z||0));budget-=n;
+  if(dist(x,y,P.x,P.y)<.01){blocked=true;break;}
+ }
+ const moved=dist(ox,oy,P.x,P.y);P.moving=moved>.01;P.vx=P.vy=0;
+ advancePlayerGait(P,ox,oy,dt,SPD[mode]*(STAGE.pspd||1));playerFootsteps(P,mode,ox,oy);
+ I.x=P.x;I.y=P.y;P.light=lightAt(P.x,P.y,!!P.z);setLayer(layer);
+ if(blocked){P.interact=null;P.moving=false;toast('조작할 공간이 없다 · 옆으로 이동해 다시 시도',1.8);return;}
+ if(dist(P.x,P.y,at.x,at.y)<.5){I.approach=null;P.moving=false;}
+}
 function beginObjectAction(a) {
   if (!OBJECT_FLOW[a.k]) return false;
   if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return true;}
   const P = S.player, item = P.item;
   if (!objectActionValid(a, item)) return true;
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
-  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0,
+  P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0, hurtT:P.hurtT||0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
     illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || a.k==='camCable' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
+  P.interact.approach=objectApproachPoint(a,at);
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;
 }
 function updateObjectAction(P, dt) {
   const I = P.interact;
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
-  if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  if ((P.hurtT||0)>(I.hurtT||0)+.001||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  I.hurtT=P.hurtT||0;
+  if(I.approach){updateObjectApproach(P,I,dt);return;}
   I.t = Math.min(I.dur, I.t + dt);
   if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
@@ -9950,7 +9994,7 @@ function busyEnvAction() {
   const P = S.player;
   if(P.recoveryQueue)return{k:'none',busy:true,label:P.recoveryQueue.kind==='dress'?'갈아입기 대기':'몸 정리 대기'};
   const next=recoveryInputAction();if(next)return{k:'none',busy:true,bufferable:true,label:next.k==='dress'?'갈아입기 예약':'몸 정리 예약'};
-  return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
+  return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.approach?'다가가는 중':P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){
   if(d.npcWork)return hideEase((d.npcWork.t/d.npcWork.dur-.22)/.54);
@@ -11031,7 +11075,7 @@ function koPerson(g, mode, where, intent, quiet) {
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
   c.vipApproach=vipApproach;S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
@@ -11056,12 +11100,14 @@ function updateKoHold() {
 }
 // 기절한 사람이 발견되면 깨어나 함께 수색한다
 function wakeKO(c, by) {
-  const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
+  const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return;
+  if(c.stripped)stripBodyClothing(c);  // Includes bodies restored from older checkpoints.
+  S.corpses.splice(i, 1);
   g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
   if (c.assailantLook) { rememberSuspect(g,c.assailantLook); if (by) rememberSuspect(by,c.assailantLook); }
-  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '뒤에서 맞았어요. 누군지는 못 봤어요.'); return; }
+  if (g.civ) { g.state = 'PATROL'; gsay(g, c.stripped ? '내 옷까지 가져갔어요!' : c.assailantLook ? '나를 때린 사람을 봤어요!' : '뒤에서 맞았어요. 누군지는 못 봤어요.'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
-  gsay(g, c.assailantLook ? '때린 사람 봤어. 인상착의 보낼게.' : '뒤에서 당했어. 주변 확인해 줘.', 3);
+  gsay(g, c.stripped ? '옷을 빼앗겼어. 주변 확인해 줘.' : c.assailantLook ? '때린 사람 봤어. 인상착의 보낼게.' : '뒤에서 당했어. 주변 확인해 줘.', 3);
 }
 // 연속 처치: 8초 안에 조직원을 또 처치하면 손맛 표시 (메탈기어·코만도스식 소탕의 리듬)
 function killStreak() {
@@ -11164,7 +11210,7 @@ function killGuard(g, mode, where, quiet) {
     else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
   }
   facWitness(g); cityVictim(g);
-  const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
+  const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   c.vipApproach=vipApproach;S.corpses.push(c);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
@@ -11533,6 +11579,11 @@ function cutLights() {
   if (STAGE.onLightsOut) try { STAGE.onLightsOut(S, SH); } catch (e) { console.warn('onLightsOut', e); }  // 의뢰마다: 정전에 반응하는 사람 (예: 발전기 보러 가는 표적)
 }
 
+function bodyName(c){return c?.ko?'기절자':'시체';}
+function stripBodyClothing(c){
+  c.stripped=true;
+  if(c.g){c.g.strippedLook=strippedKey(c);c.g.stripped=true;c.g.outfit=null;}
+}
 function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur, cx:c.x,cy:c.y,ca:c.a }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
@@ -11556,18 +11607,13 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); c.stripped = true; after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); stripBodyClothing(c); after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     if (P.disguiseBlown) toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 · 목격자가 기억하는 복장 · 재노출 주의`, 3, 'warn');
     else if (STAGE.zones) { toast(`${withJosa(outfitName(of), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3.2, 'good'); hint('disguise2', '복장은 일반 출입만 허용한다. 보안구역에서는 통하지 않고, 가까이 오래 있으면 일반 경비도 신원을 확인한다'); }
     else { toast('조직원 옷으로 갈아입었다 — 걸어 다니면 멀리서는 의심받지 않는다. 정예·표적은 얼굴을 안다', 3.2, 'good'); hint('disguise', '변장해도 범행이나 출입 권한이 없는 구역에서는 의심받는다'); }
     return;
   }
-  if (sa.k === 'throwBody') {
-    const c = P.carrying, g = sa.g; P.carrying = null; c.carried = false; c.discovered = true; S.stats.bodies++;
-    const a = Math.atan2(g.y - P.y, g.x - P.x), d = Math.max(30, dist(P.x, P.y, g.x, g.y) - 26);
-    c.fly = { x0: P.x, y0: P.y, x1: P.x + Math.cos(a) * d, y1: P.y + Math.sin(a) * d, t: 0, dur: 0.35 + d / 900 };
-    P.strikeT = 0.25; play('throw', 0.6); return;
-  }
+  if (sa.k === 'throwBody') return;  // Reject old queued projectile actions without dropping the carried person.
   if (sa.k === 'steal') {
     const g = sa.g; const sk = g.hasKey; g.hasKey = null; P.keys[sk] = true; P.hasKey = true; finishEnvSelection();play('click', 0.4); S.stats.steal = (S.stats.steal || 0) + 1;
     if (P.mode !== 'sneak' && Math.random() < 0.5) { g.meter = 0.75; g.want = Math.atan2(P.y - g.y, P.x - g.x); g.state = 'NOTICE'; g.poi = { x: P.x, y: P.y }; g.noticeT = 0; setIcon(g, '?'); toast('열쇠를 훔쳤다 — 그런데 눈치챈 것 같다!', 2.4, 'warn'); }
@@ -11579,17 +11625,17 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     if (b) {beginHideFlow('stash',b,c);return;}
     if (pc) {  // 앞에 내려놓는다: 어깨에서 내려 → 안아 내림 → 허리 숙여 바닥에 눕힌다
       const ox = P.x + Math.cos(P.a) * 26, oy = P.y + Math.sin(P.a) * 26; if (!solidAt(Math.floor(ox / TILE), Math.floor(oy / TILE))) { c.x = ox; c.y = oy; } else { c.x = P.x; c.y = P.y; }
-      c.a = P.a; c.t0 = null; c.td = null; c.hideT = S.t + 0.5; startBodyAnim('drop', c, 0.5); }
+      c.a = P.a; c.t0 = null; c.td = null; c.hideT = S.t + 0.6; startBodyAnim('drop', c, 0.6); }
     c.carried = false; P.carrying = null;
     c.hidden = tileAt(c.x, c.y) === 'B';
     if (!c.hidden && solidAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE))) { c.x = P.x; c.y = P.y; c.hidden = P.hidden; }
     c.light = lightAt(c.x, c.y);
     play('drop', 0.5); noise(c.x, c.y, 70, 'drop');
-    toast(c.hidden ? '시체를 화단에 숨겼다' : '시체를 내려놓았다 (눈에 띌 수 있음)', 2.2, c.hidden ? 'good' : '');
+    toast(bodyName(c)+(c.hidden ? '를 화단에 숨겼다' : '를 내려놓았다 (눈에 띌 수 있음)'), 2.2, c.hidden ? 'good' : '');
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.55, { cx, cy, ca }); } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
@@ -11601,7 +11647,6 @@ function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡�
   if (P.hide) return P.hide.type === 'well' && ugAt(P.hide.tx, P.hide.ty) ? { k: 'tunnel', label: '지하로' } : { k: 'none', label: '—' };
   if (P.captive) return { k: 'execute', label: '기절시키기', hold: '처치' };
   if (P.carrying) {
-    if (!nearHide()) { const tg = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.target && flOf(g) === flOf(P) && dist(g.x, g.y, P.x, P.y) < 300 && dist(g.x, g.y, P.x, P.y) > 70 && los(P.x, P.y, g.x, g.y) && Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < 1.0).sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0]; if (tg) return { k: 'throwBody', g: tg, label: '시체 던지기 (겁주기)' }; }
     { const nh = nearHide()||nearBushSpot(); return { k: 'carry', c: P.carrying, h: nh, label: nh ? (hideSpace(nh,1)?(nh.type==='bush'?'화단에 숨기기':P.carrying.ko?'기절자 넣기':'시체 넣기'):hideName(nh)+' 가득 참'):'내려놓기' }; }
   }
   if (P.z || P.jump) return { k: 'none', label: '보조' };
@@ -11637,13 +11682,13 @@ function beginQuickStash(a){
   const P=S.player,choice=quickStashChoice(a.c);
   if(!choice||choice.h!==a.h)return;
   actCarry({k:'carry',c:a.c,quick:true});if(P.carrying!==a.c)return;
-  P.quickStash={c:a.c,h:a.h,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,readyAt:S.t+.55};
+  P.quickStash={c:a.c,h:a.h,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,readyAt:S.t+Math.max(.55,P.bodyAnim?.dur||0)};
 }
 function updateQuickStash(P,dt){
   const q=P.quickStash;if(!q)return false;
   if(S.over||P.hurtT>0||P.carrying!==q.c||!S.corpses.includes(q.c)||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||P.trav||!hideSpace(q.h,1)||q.h.type==='bush'&&tileAt(q.h.x,q.h.y)!=='B'||!objectReachable(q.h,60)||![...S.hides,...(S.bushes||[])].includes(q.h)){P.quickStash=null;return false;}
   P.hidden=false;P.light=lightAt(P.x,P.y,!!P.z);P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,(P.strikeT||0)-dt);
-  if(S.t<q.readyAt)return true;
+  if(S.t<q.readyAt||P.strikeT>0||P.bodyAnim&&S.t-P.bodyAnim.t0<P.bodyAnim.dur)return true;
   P.quickStash=null;const route=hideApproach(q.h);
   if(route&&route.length<=96&&beginHideFlow('stash',q.h,q.c)&&P.trav?.hideFlow)P.trav.hideFlow.quick=true;
   return !!P.trav;
@@ -12353,6 +12398,7 @@ function drawPlayerBody(P) {
   }
   if(isTouch&&!P.trav&&!P.jump&&!P.under&&!P.vent)drawPlayerLocator(P);
   if (usePR(playerLook)) {
+    if(P.interact?.approach){drawPR(playerLook,P.x,P.y,P.a,P.mode==='sneak'?'sneak':'walk',P.gaitTime??S.t,blink?.35:1,sc/3,-yo);return;}
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
       if(P.interact?.a.k==='door'){const I=P.interact,p=clamp(I.t/I.dur,0,1),d=I.a.d,s=accessHandSample({type:'panel',x:d.x,y:d.y},{x:I.x,y:I.y},p,!I.state,true);drawPR(playerLook,s.x,s.y,P.a,s.anim,0,blink?.35:1,sc/3,0,s.frame);return;}
@@ -14201,14 +14247,13 @@ function attackAction() {
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
-const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody','uncover']);
+const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel','uncover']);
 function secondaryEnvChoices() {
   const out = []; ACT_SKIP.clear();
   try {
     for (let i = 0; i < 6; i++) {
       const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
       const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
-      if(a.k==='throwBody'&&!STAGE.tutorial)out.push({k:'carry',c:S.player.carrying,label:'내려놓기',fromZ:true});
       out.push(Object.assign({}, a, { fromZ: true }));
       if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
       if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick){if(a.k==='dress')out.push(quick);else out.unshift(quick);}}
