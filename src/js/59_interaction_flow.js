@@ -48,7 +48,8 @@ function objectActionValid(a, item) {
 function objectApproachPoint(a,at){
  const P=S.player;
  if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
- const o=at.surface?surfaceFixture(at):at;
+ let o=at.surface?surfaceFixture(at):at;
+ if(o.furn===true){const b=hideFootprint(o);o={x:clamp(P.x,b.x0,b.x1),y:clamp(P.y,b.y0,b.y1)};}
  if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;
  const d=dist(P.x,P.y,o.x,o.y);if(d<=40)return null;
  const angle=Math.atan2(o.y-P.y,o.x-P.x),layer=CUR_F;setLayer(flOf(P));

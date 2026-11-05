@@ -9,6 +9,7 @@ const looks=slice(kit,'const charOf =','// ---- 프리렌더 배경');
 const sprite=read('src/js/graphics/sprite_sheets.js');
 const stripped=slice(sprite,'const strippedKey =','const pairCarry =');
 const gait=slice(read('src/js/45_player.js'),'function advancePlayerGait(','// 바닥 재질:');
+const factionDown=slice(read('src/js/46_factions.js'),'function npcDown(','// 내가 쓰러뜨린 조직원:');
 function scene(){
  const P={x:0,y:0,a:0,fl:0,z:0,mode:'walk',hurtT:0,stepT:0,strikeT:0,moving:false};
  const q={Math,Set,Object,Number,Infinity,console,
@@ -22,7 +23,7 @@ function scene(){
   setLayer:()=>{},solidFor:()=>()=>false,solidAt:()=>false,bldAt:()=>-1,groundedWorld:()=>true,
   surfacePoint:o=>({x:o.x,y:o.y}),surfaceFixture:o=>o,
   withJosa:s=>s,play:()=>{},hint:()=>{},after:()=>{},gsay:()=>{},bossRadio:()=>{},rnd:(a,b)=>(a+b)/2,
-  prSplit:k=>(k||'').split('@'),lightAt:()=>1,tileAt:()=>'.',floorMul:()=>1,stepSound:()=> 'step',pairCarry:()=>true,
+  prSplit:k=>(k||'').split('@'),npcAlive:o=>o&&o.state!=='DEAD'&&o.state!=='CAPTIVE',proxVol:()=>1,hideFootprint:o=>o.bounds,lightAt:()=>1,tileAt:()=>'.',floorMul:()=>1,stepSound:()=> 'step',pairCarry:()=>true,
   nearHide:()=>null,nearBushSpot:()=>null,nearCorpse:()=>null,beginHideFlow:()=>{P.trav={hideFlow:{}};return true;},hideSpace:()=>true,hideApproach:()=>({length:24}),hideDistance:()=>24,
   electricalActionAllowed:()=>true,actObj:a=>a.p||a.d||a.l||a.targetObject||a.c,
   closeEnvPicker:()=>{},finishEnvSelection:()=>{},contactFeedback:()=>{},
@@ -33,8 +34,8 @@ function scene(){
  q.actPrimary=a=>{q.effects.push(a.k);if(a.p)a.p.taken=true;if(a.d)a.d.locked=!a.d.locked;};
  q.takeProp=p=>{p.taken=true;P.item=p;};
  vm.createContext(q);
- vm.runInContext([looks,stripped,gait,read('src/js/38_zones.js'),read('src/js/59_interaction_flow.js'),read('src/js/interaction/carry.js'),read('src/js/interaction/takedown.js'),
-  'globalThis.api={charOf,outfitOf,stripBodyClothing,bodyName,actCarry,secondaryAction,beginQuickStash,updateQuickStash,actionBusy,wakeKO,koPerson,objectApproachPoint,beginObjectAction,updateObjectAction,updateSharpEye};'].join('\n'),q);
+ vm.runInContext([looks,stripped,gait,read('src/js/38_zones.js'),read('src/js/59_interaction_flow.js'),read('src/js/interaction/carry.js'),read('src/js/interaction/takedown.js'),factionDown,
+  'globalThis.api={charOf,outfitOf,stripBodyClothing,bodyName,actCarry,secondaryAction,beginQuickStash,updateQuickStash,actionBusy,wakeKO,koPerson,npcDown,objectApproachPoint,beginObjectAction,updateObjectAction,updateSharpEye};'].join('\n'),q);
  q.P=P;q.tick=(s,dt=.01)=>{for(let t=0;t<s-1e-8;t+=dt){q.S.t+=dt;if(P.interact)q.api.updateObjectAction(P,dt);}};
  return q;
 }
@@ -53,6 +54,10 @@ check('old checkpoints repair stripped clothing and preserve body shape',()=>{
 check('unstripped colleague keeps their own uniform after wake',()=>{
  const q=scene(),g={kind:'g1',outfit:'crew'},c={g,ch:'crew',ko:true,x:24,y:0};
  q.S.corpses=[c];q.api.wakeKO(c);assert.equal(q.api.outfitOf(g),'crew');assert.equal(g.stripped,undefined);
+});
+check('faction knockouts also retain stripped clothing',()=>{
+ const q=scene(),g={x:24,y:0,state:'PATROL',stripped:true,strippedLook:'strip@male',kind:'g1'};
+ q.S.guards=[g];q.api.npcDown(g);assert.equal(q.S.corpses[0].stripped,true);assert.equal(q.S.corpses[0].outfit,null);
 });
 check('carry lift and grounded drop retain nonlethal identity',()=>{
  const q=scene(),c={x:24,y:0,a:0,ch:'crew',ko:true,fl:0,z:0};q.S.corpses=[c];
@@ -87,6 +92,12 @@ check('near pickup uses the existing contact beat without extra movement',()=>{
 check('a wall surface sets the approach stop before the wall',()=>{
  const q=scene();q.ray=()=>34;
  const at=q.api.objectApproachPoint({k:'lamp'},{x:44,y:0});assert.equal(at.x,6);
+});
+check('surface work approaches the furniture edge, never its centre',()=>{
+ const q=scene();q.surfaceFixture=o=>o.physical;
+ const item={surface:{},physical:{furn:true,x:100,y:0,bounds:{x0:24,y0:-12,x1:120,y1:12}}};
+ assert.equal(q.api.objectApproachPoint({k:'read'},item),null);
+ item.physical.bounds.x0=60;assert.equal(q.api.objectApproachPoint({k:'read'},item).x,32);
 });
 check('approach collision cancels without teleport or remote acquisition',()=>{
  const q=scene(),p={x:60,y:0,fl:0};q.collision=P=>P.x=0;q.api.beginObjectAction({k:'pickup',p});q.tick(.1);
