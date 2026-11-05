@@ -50,7 +50,7 @@ async def main():
    assert not await q.evaluate('__game.envChoices().some(a=>a.k==="throwBody")')
    await press();await q.evaluate('physicalTick(.7)')
    assert await q.evaluate('!__game.S.player.carrying&&__game.S.corpses[0].ko&&__game.S.toasts.some(t=>t.text.includes("기절자"))')
-   await q.evaluate('''()=>{const {S,P,g}=physicalFresh();g.x=g.y=-9999;window.pickupStart=P.x;window.pickupProp={id:'review',name:'검토 물건',x:P.x+60,y:P.y,fl:0};S.props=[pickupProp];physicalChoose('pickup');__game.updateHUD(true);}''')
+   await q.evaluate('''()=>{const {S,P,g}=physicalFresh();g.x=g.y=-9999;window.pickupStart=P.x;window.pickupProp={id:'review',name:'검토 물건',x:P.x+56,y:P.y,fl:0};S.props=[pickupProp];physicalChoose('pickup');__game.updateHUD(true);}''')
    await press();await q.evaluate('physicalTick(.08)')
    assert await q.evaluate('__game.S.player.x>pickupStart&&__game.S.player.x<pickupStart+34&&!pickupProp.taken')
    await q.screenshot(path=str(O/f'{"mobile"if touch else"pc"}-approach.png'))
