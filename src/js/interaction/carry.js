@@ -4,6 +4,12 @@ function stripBodyClothing(c){
   if(c.g){c.g.strippedLook=strippedKey(c);c.g.stripped=true;c.g.outfit=null;}
 }
 function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur, cx:c.x,cy:c.y,ca:c.a }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
+// Once the body is secured, a directional input starts the first carrying step.
+// Quick storage still waits for the complete lift and its container contact.
+function releaseCarryStride(P,mag){
+  const A=P.bodyAnim;
+  if(mag>.15&&A?.k==='lift'&&P.carrying===A.c&&!P.quickStash&&!(P.hurtT>0)&&S.t-A.t0>=A.dur*.78){P.bodyAnim=null;P.strikeT=0;}
+}
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   const P = S.player;
@@ -54,7 +60,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); if(sa.fromRecovery){P.bodyAnim.t0-=.12;P.strikeT=.58;} } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고

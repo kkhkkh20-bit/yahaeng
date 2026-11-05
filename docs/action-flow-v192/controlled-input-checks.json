@@ -1,0 +1,36 @@
+[
+  {
+    "mobile": false,
+    "checks": [
+      "released approach press travels into actual contact, one nonlethal victim",
+      "turn, floor, damage, notice, replacement, stop, retreat, pause and touch cancel discard the original intention",
+      "short expiry, limited anticipation range and released press cannot borrow another held attack",
+      "early recovery tap connects only after landing; movement begins after the load is secured",
+      "held approach direction flows into carrying; a new retreat direction cancels it",
+      "useful clothing keeps its separate full action"
+    ],
+    "escapeGeometry": {
+      "wall": true,
+      "pocket": true,
+      "entry": true,
+      "path": 5
+    }
+  },
+  {
+    "mobile": true,
+    "checks": [
+      "released approach press travels into actual contact, one nonlethal victim",
+      "turn, floor, damage, notice, replacement, stop, retreat, pause and touch cancel discard the original intention",
+      "short expiry, limited anticipation range and released press cannot borrow another held attack",
+      "early recovery tap connects only after landing; movement begins after the load is secured",
+      "held approach direction flows into carrying; a new retreat direction cancels it",
+      "useful clothing keeps its separate full action"
+    ],
+    "escapeGeometry": {
+      "wall": true,
+      "pocket": true,
+      "entry": true,
+      "path": 5
+    }
+  }
+]

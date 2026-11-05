@@ -1273,7 +1273,7 @@ STAGES.push({
   id:'p0',no:'00',name:'담배 한 대',sub:'첫 의뢰 · 폐차장',openingContract:true,
   fee:'20만',priorityTarget:true,targetNames:{runner:'운반책'},
   mission:'증인을 넘기는 운반책 한 명을 처치하고 들어온 골목으로 탈출한다.',
-  brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
+  brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 서쪽 적치장에는 모서리를 돌아 시야를 끊을 길이 있다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
   endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 클럽 실장과 그의 장부를 노린다.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
@@ -1285,7 +1285,10 @@ STAGES.push({
     m.fill(5,3,21,11,'=');
     // A short screen separates the exposed front path and the quiet western lane.
     m.fill(9,9,10,10,'C');m.fill(16,3,20,3,'C');
-    m.car(19,6,1);m.many('B',[[7,11],[7,10]]);
+    // A second corner lets a fleeing player leave the remembered bush and
+    // change direction behind actual cover. The western entry stays open.
+    m.fill(4,8,4,10,'C');
+    m.car(19,6,1);m.many('B',[[7,11],[7,10],[2,8],[3,8]]);
     m.many('T',[[2,4],[3,9],[22,4],[22,11],[2,17],[21,17]]);
     m.many('H',[[6,5]]);
   },
@@ -7973,6 +7976,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  updateApproachAttack(P);
   updateRecoveryInput(P);
   updateFollowupAttack(P);
   if(updateQuickStash(P,dt))return;
@@ -8073,6 +8077,7 @@ function updatePlayer(dt) {
     if (!canAim()) input.aiming = null;
     else { if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
   }
+  releaseCarryStride(P,mag);
   if (P.strikeT > 0) { P.strikeT = Math.max(0, P.strikeT - dt); mag = 0; }  // 0 아래로 내려가면 '공격 중'으로 남아 벽 기대기가 막혔다
   // 벽에 기대기: 벽(가구·차 포함) 쪽으로 잠깐 밀면 등을 붙인다. 기댄 채로는 벽을 따라 옆걸음만, 벽에서 떨어지는 쪽으로 밀면 나온다
   if (P.cover) {
@@ -9769,6 +9774,7 @@ function combatHeld(source) {
 function combatRelease(id, cancelled=false) {
   if (!S) return;
   const q=S.player.followupAttack;if(q?.source.id===id){if(cancelled)S.player.followupAttack=null;else q.tap=true;}
+  const approach=S.player.approachAttack;if(approach?.source.id===id){if(cancelled)S.player.approachAttack=null;else approach.tap=true;}
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
   if(S.player.skillHold?.source.id===id){const h=S.player.skillHold;S.player.skillHold=null;if(!cancelled)releaseAssassinTap(h);}
@@ -10844,7 +10850,7 @@ function actPrimary(force) {
   if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return;}
   if (!prepareCombat(a)) return;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
-  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람에게는 [공격], 문·조명·쪽지는 [행동]'); return; }
+  if (a.k === 'none') { if(a.stalk){queueApproachAttack(a.stalk);hint('stalk', '사람에게는 [공격], 문·조명·쪽지는 [행동]');}else{S.qBuf=.25;S.qKill=false;} return; }
   if (!(P.interact && P.interact.committing) && beginObjectAction(a)) return;
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
@@ -11181,6 +11187,15 @@ function strikeKill(list, two) {
 // 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
+function pairRecoveryReady(P){
+  const A=P.killAnim,h=S.koHold;
+  return !!(A?.landed&&S.t-A.t0>=A.dur*.88&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
+}
+function releasePairCombat(P){
+  const A=P.killAnim;if(!A)return;
+  if(A.c){A.c.hideT=S.t;A.c.t0=null;}
+  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;
+}
 function pairKill(g, kind, from, quiet) {
   const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
@@ -11222,10 +11237,8 @@ function updatePairCombat(P,dt) {
   }
   if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)spawnEffect('dust',{x:A.c.x,y:A.c.y,fl:A.fl,z:A.z},{scale:.32,alpha:.45});S.shakeT=Math.max(S.shakeT||0,.06);}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
-  const held=S.koHold,lethalPending=held?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(held.source);
-  if(A.landed&&t>=A.dur*.88&&(moving||P.followupAttack)&&!P.recoveryQueue&&!lethalPending){
-    if(A.c){A.c.hideT=S.t;A.c.t0=null;}
-    P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;return false;
+  if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
+    releasePairCombat(P);return false;
   }
   if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
   return true;
@@ -11633,6 +11646,12 @@ function stripBodyClothing(c){
   if(c.g){c.g.strippedLook=strippedKey(c);c.g.stripped=true;c.g.outfit=null;}
 }
 function startBodyAnim(k, c, dur, o) { const P = S.player; P.bodyAnim = Object.assign({ k, c, t0: S.t, dur, cx:c.x,cy:c.y,ca:c.a }, o || {}); P.strikeT = Math.max(P.strikeT || 0, dur); P.moving = false; }
+// Once the body is secured, a directional input starts the first carrying step.
+// Quick storage still waits for the complete lift and its container contact.
+function releaseCarryStride(P,mag){
+  const A=P.bodyAnim;
+  if(mag>.15&&A?.k==='lift'&&P.carrying===A.c&&!P.quickStash&&!(P.hurtT>0)&&S.t-A.t0>=A.dur*.78){P.bodyAnim=null;P.strikeT=0;}
+}
 function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을 그대로 실행
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   const P = S.player;
@@ -11683,7 +11702,7 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
     return;
   }
   const c = sa.c || nearCorpse();
-  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
+  if (c && !c.carried && !c.stashed && objectReachable(c, 46)) { const cx = c.x, cy = c.y, ca = c.a; c.carried = true; c.hidden = false; c.accident = null;c.playerHandled=true; P.carrying = c; if (pairCarry(P)) { P.a = Math.atan2(cy - P.y, cx - P.x); startBodyAnim('lift', c, 0.7, { cx, cy, ca }); if(sa.fromRecovery){P.bodyAnim.t0-=.12;P.strikeT=.58;} } play('cloth', 0.5); if(!sa.quick)hint('carry', '운반 중엔 느리고 뛸 수 없다. 화단 위나 수거함·맨홀 옆에서 다시 누르면 숨긴다'); }
 }
 // 보조 버튼에 걸린 행동: 열쇠 훔치기 > 붙잡기 > 운반
 function secondaryAction(envOnly) {  // envOnly: [행동] 버튼용 — 붙잡기·겹친 시설 행동은 빼고
@@ -11746,7 +11765,7 @@ function updateQuickStash(P,dt){
 // must not carry away the uniform the player was about to wear.
 function recoveryInputCandidate(P=S.player){
   const A=P.killAnim,c=A?.c;
-  if(!A?.committed||!c||A.dur-(S.t-A.t0)>.25||P.carrying||P.captive||P.hide||P.under||P.vent||P.z||P.hurtT>0)return null;
+  if(!A?.committed||!c||A.dur-(S.t-A.t0)>.45||P.carrying||P.captive||P.hide||P.under||P.vent||P.z||P.hurtT>0)return null;
   return S.corpses.includes(c)&&!c.carried&&!c.stashed&&!c.hidden&&objectReachable(c,46)?c:null;
 }
 function recoveryInputAction(kind){
@@ -11758,7 +11777,7 @@ function queueRecoveryInput(kind){
   const P=S.player,c=recoveryInputCandidate(P);if(!c)return false;
   P.followupAttack=null;
   const a=recoveryInputAction(kind);if(!a)return false;
-  if(!P.recoveryQueue)P.recoveryQueue={c,kind:a.k,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,until:S.t+.6};return true;
+  if(!P.recoveryQueue)P.recoveryQueue={c,kind:a.k,x:P.x,y:P.y,fl:flOf(P),z:P.z||0,movement:playerMoveIntent(),until:P.killAnim.t0+P.killAnim.dur+.25};return true;
 }
 
 // A fresh late press may continue into one nearby visible victim. Never retarget,
@@ -11794,13 +11813,42 @@ function updateFollowupAttack(P){
 }
 function updateRecoveryInput(P){
   const q=P.recoveryQueue;if(!q)return;
-  const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
-  if(S.t>q.until||moving||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.corpses.includes(q.c)||q.c.carried||q.c.stashed||q.c.hidden){P.recoveryQueue=null;return;}
+  const movement=playerMoveIntent(),moving=!!(movement.x||movement.y),changed=moving&&(!q.movement||movement.x*q.movement.x+movement.y*q.movement.y<.5);
+  if(S.t>q.until||changed||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.corpses.includes(q.c)||q.c.carried||q.c.stashed||q.c.hidden){P.recoveryQueue=null;return;}
+  if(q.kind==='cleanup'&&P.killAnim?.c===q.c&&pairRecoveryReady(P))releasePairCombat(P);
   if(actionBusy(P))return;
   P.recoveryQueue=null;
   if(!objectReachable(q.c,46))return;
   if(q.kind==='dress'){const a=corpseClothingAction(q.c);if(a)actCarry(a);return;}
-  const choice=quickStashChoice(q.c);actCarry(choice||{k:'carry',c:q.c,fromZ:true});
+  const choice=quickStashChoice(q.c);actCarry(choice||{k:'carry',c:q.c,fromZ:true,fromRecovery:true});
+}
+
+// Remember one rear approach and its exact press. The player still walks the
+// distance; this never grants a lunge, a larger contact range or a new victim.
+function playerMoveIntent(){
+  const joy=input.joy,useJoy=joy?.mag>.1,x=useJoy?joy.x:(S.keys.ArrowRight?1:0)-(S.keys.ArrowLeft?1:0),y=useJoy?joy.y:(S.keys.ArrowDown?1:0)-(S.keys.ArrowUp?1:0),mag=Math.hypot(x,y);
+  return mag>.15?{x:x/mag,y:y/mag}:{x:0,y:0};
+}
+function approachingVictim(g,P=S.player){
+  const m=playerMoveIntent(),d=dist(P.x,P.y,g.x,g.y);
+  return (m.x*(g.x-P.x)+m.y*(g.y-P.y))/Math.max(1,d)>.65;
+}
+function approachVictimValid(g,P=S.player){
+  return !!g&&S.guards.includes(g)&&!g.civ&&!g.dog&&!g.seen&&g.meter<NOTICE_AT&&meleeCandidate(g,P,MELEE_CONTACT+18)&&approachingVictim(g,P);
+}
+function queueApproachAttack(g){
+  const P=S.player,source=combatSource('atk');
+  if(!source||actionBusy(P)||P.carrying||P.captive||P.hide||P.vent||P.under||P.z||P.car||P.wire||P.ledge||STAGE.artSlice||!approachVictimValid(g,P))return false;
+  if(P.approachAttack)return true;
+  P.approachAttack={g,source,until:S.t+.32,fl:flOf(P),z:P.z||0,tap:false};S.qBuf=0;S.qKill=false;return true;
+}
+function updateApproachAttack(P){
+  const q=P.approachAttack;if(!q)return;
+  if(S.over||S.t>q.until||P.hurtT>0||actionBusy(P)||P.carrying||P.captive||P.hide||P.vent||P.under||P.car||P.wire||P.ledge||flOf(P)!==q.fl||(P.z||0)!==q.z||!approachVictimValid(q.g,P)){P.approachAttack=null;return;}
+  if(!canKill(q.g,P,MELEE_CONTACT))return;
+  P.approachAttack=null;
+  if(!q.tap&&!combatHeld(q.source))return;
+  actPrimary({k:'kill',list:[q.g],viaZ:true,inputGroup:'atk',combatSource:q.tap?{id:q.source.id,serial:-1}:q.source});
 }
 
 function actThrow(pt) {
@@ -11913,7 +11961,7 @@ function update(dt, present=true) {
   if (S.pull) updatePull(dt);
   updateLedgePull(dt);
   updateKoHold(); statsTick(); if (STAGE.zones || STAGE.stories) updateStories(dt);
-  if (S.qBuf > 0) { S.qBuf -= dt; const qa = S.qKill ? attackAction() : primaryAction(); if (qa.k !== 'none' && (!S.qKill || isAtk(qa))) { S.qBuf = 0; actPrimary(S.qKill ? Object.assign({}, qa, { viaZ: true }) : undefined); } }  // [공격]을 미리 눌러 두면 닿는 순간 공격
+  if (S.qBuf > 0) { S.qBuf -= dt; const qa = primaryAction(); if (!S.qKill && qa.k !== 'none'&&!isAtk(qa)) { S.qBuf = 0; actPrimary(); } } // Generic object taps cannot turn into an attack on a new person.
   updateChats(dt);
   updateSecurityResponse(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
@@ -14390,7 +14438,7 @@ function actAttack() {
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
-  if (a.k === 'none') { if(a.skillLocked)toast(abilityLockText(a.skillLocked),2); if (a.stalk) { S.qBuf = 0.5; S.qKill = true; } return; }
+  if (a.k === 'none') { if(a.skillLocked)toast(abilityLockText(a.skillLocked),2); if (a.stalk) queueApproachAttack(a.stalk); return; }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
   const choice=assassinOpportunity();
@@ -15499,7 +15547,7 @@ function installGameApi() {
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
-    drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
+    drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
@@ -15635,7 +15683,7 @@ function clearPlayerInput() {
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
   document.getElementById('joy').hidden=true;document.getElementById('joyKnob').style.transform='translate(0,0)';
-  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.recoveryQueue=null;S.player.followupAttack=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
+  if(S){S.keys={};S.koHold=null;S.qBuf=0;S.qKill=false;S.player.lethalHold=null;S.player.attackQueue=null;S.player.approachAttack=null;S.player.recoveryQueue=null;S.player.followupAttack=null;S.player.skillHold=null;S.player.quickStash=null;S.player.techWork=null;}
 }
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));

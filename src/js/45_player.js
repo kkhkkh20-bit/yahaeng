@@ -379,6 +379,7 @@ function updateTrav(P, dt) {
 }
 function updatePlayer(dt) {
   const P = S.player, k = S.keys;
+  updateApproachAttack(P);
   updateRecoveryInput(P);
   updateFollowupAttack(P);
   if(updateQuickStash(P,dt))return;
@@ -479,6 +480,7 @@ function updatePlayer(dt) {
     if (!canAim()) input.aiming = null;
     else { if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
   }
+  releaseCarryStride(P,mag);
   if (P.strikeT > 0) { P.strikeT = Math.max(0, P.strikeT - dt); mag = 0; }  // 0 아래로 내려가면 '공격 중'으로 남아 벽 기대기가 막혔다
   // 벽에 기대기: 벽(가구·차 포함) 쪽으로 잠깐 밀면 등을 붙인다. 기댄 채로는 벽을 따라 옆걸음만, 벽에서 떨어지는 쪽으로 밀면 나온다
   if (P.cover) {

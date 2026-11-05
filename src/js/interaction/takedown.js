@@ -66,6 +66,15 @@ function strikeKill(list, two) {
 // 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
+function pairRecoveryReady(P){
+  const A=P.killAnim,h=S.koHold;
+  return !!(A?.landed&&S.t-A.t0>=A.dur*.88&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
+}
+function releasePairCombat(P){
+  const A=P.killAnim;if(!A)return;
+  if(A.c){A.c.hideT=S.t;A.c.t0=null;}
+  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;
+}
 function pairKill(g, kind, from, quiet) {
   const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
@@ -107,10 +116,8 @@ function updatePairCombat(P,dt) {
   }
   if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)spawnEffect('dust',{x:A.c.x,y:A.c.y,fl:A.fl,z:A.z},{scale:.32,alpha:.45});S.shakeT=Math.max(S.shakeT||0,.06);}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
-  const held=S.koHold,lethalPending=held?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(held.source);
-  if(A.landed&&t>=A.dur*.88&&(moving||P.followupAttack)&&!P.recoveryQueue&&!lethalPending){
-    if(A.c){A.c.hideT=S.t;A.c.t0=null;}
-    P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;return false;
+  if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
+    releasePairCombat(P);return false;
   }
   if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
   return true;

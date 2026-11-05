@@ -4,7 +4,7 @@ STAGES.push({
   id:'p0',no:'00',name:'담배 한 대',sub:'첫 의뢰 · 폐차장',openingContract:true,
   fee:'20만',priorityTarget:true,targetNames:{runner:'운반책'},
   mission:'증인을 넘기는 운반책 한 명을 처치하고 들어온 골목으로 탈출한다.',
-  brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
+  brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 서쪽 적치장에는 모서리를 돌아 시야를 끊을 길이 있다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
   endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 클럽 실장과 그의 장부를 노린다.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
@@ -16,7 +16,10 @@ STAGES.push({
     m.fill(5,3,21,11,'=');
     // A short screen separates the exposed front path and the quiet western lane.
     m.fill(9,9,10,10,'C');m.fill(16,3,20,3,'C');
-    m.car(19,6,1);m.many('B',[[7,11],[7,10]]);
+    // A second corner lets a fleeing player leave the remembered bush and
+    // change direction behind actual cover. The western entry stays open.
+    m.fill(4,8,4,10,'C');
+    m.car(19,6,1);m.many('B',[[7,11],[7,10],[2,8],[3,8]]);
     m.many('T',[[2,4],[3,9],[22,4],[22,11],[2,17],[21,17]]);
     m.many('H',[[6,5]]);
   },

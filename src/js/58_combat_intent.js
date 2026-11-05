@@ -17,6 +17,7 @@ function combatHeld(source) {
 function combatRelease(id, cancelled=false) {
   if (!S) return;
   const q=S.player.followupAttack;if(q?.source.id===id){if(cancelled)S.player.followupAttack=null;else q.tap=true;}
+  const approach=S.player.approachAttack;if(approach?.source.id===id){if(cancelled)S.player.approachAttack=null;else approach.tap=true;}
   if (S.koHold && S.koHold.source && S.koHold.source.id === id) S.koHold = null;
   if (S.player.lethalHold && S.player.lethalHold.source.id === id) S.player.lethalHold = null;
   if(S.player.skillHold?.source.id===id){const h=S.player.skillHold;S.player.skillHold=null;if(!cancelled)releaseAssassinTap(h);}

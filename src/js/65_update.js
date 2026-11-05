@@ -14,7 +14,7 @@ function update(dt, present=true) {
   if (S.pull) updatePull(dt);
   updateLedgePull(dt);
   updateKoHold(); statsTick(); if (STAGE.zones || STAGE.stories) updateStories(dt);
-  if (S.qBuf > 0) { S.qBuf -= dt; const qa = S.qKill ? attackAction() : primaryAction(); if (qa.k !== 'none' && (!S.qKill || isAtk(qa))) { S.qBuf = 0; actPrimary(S.qKill ? Object.assign({}, qa, { viaZ: true }) : undefined); } }  // [공격]을 미리 눌러 두면 닿는 순간 공격
+  if (S.qBuf > 0) { S.qBuf -= dt; const qa = primaryAction(); if (!S.qKill && qa.k !== 'none'&&!isAtk(qa)) { S.qBuf = 0; actPrimary(); } } // Generic object taps cannot turn into an attack on a new person.
   updateChats(dt);
   updateSecurityResponse(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }

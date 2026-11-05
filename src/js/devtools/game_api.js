@@ -5,7 +5,7 @@ function installGameApi() {
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,
     contractRouteGoal,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
-    drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput,
+    drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
     buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,

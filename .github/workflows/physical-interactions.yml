@@ -60,6 +60,7 @@ jobs:
           PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
+          python tests/tutorial/action_flow_live.py --url http://127.0.0.1:8001/public/ --out build/action-flow-v192/ci-live
           YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
@@ -105,5 +106,6 @@ jobs:
             build/test_logs/
             build/tutorial-validation/
             build/physical-v190/
+            build/action-flow-v192/
             public/version.json
           retention-days: 7

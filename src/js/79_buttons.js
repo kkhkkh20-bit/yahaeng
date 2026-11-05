@@ -136,7 +136,7 @@ function actAttack() {
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
-  if (a.k === 'none') { if(a.skillLocked)toast(abilityLockText(a.skillLocked),2); if (a.stalk) { S.qBuf = 0.5; S.qKill = true; } return; }
+  if (a.k === 'none') { if(a.skillLocked)toast(abilityLockText(a.skillLocked),2); if (a.stalk) queueApproachAttack(a.stalk); return; }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
   const choice=assassinOpportunity();

@@ -6,7 +6,7 @@ function actPrimary(force) {
   if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return;}
   if (!prepareCombat(a)) return;
   // 입력 버퍼: 지금 할 수 있는 게 없으면 잠깐 안에 생기는 행동을 대신 실행 (암살하러 다가가는 중이면 암살만 기다린다)
-  if (a.k === 'none') { S.qBuf = a.stalk ? 0.5 : 0.25; S.qKill = !!a.stalk; if (a.stalk) hint('stalk', '사람에게는 [공격], 문·조명·쪽지는 [행동]'); return; }
+  if (a.k === 'none') { if(a.stalk){queueApproachAttack(a.stalk);hint('stalk', '사람에게는 [공격], 문·조명·쪽지는 [행동]');}else{S.qBuf=.25;S.qKill=false;} return; }
   if (!(P.interact && P.interact.committing) && beginObjectAction(a)) return;
   S.qBuf = 0; S.qKill = false; P.vx = 0; P.vy = 0;
   switch (a.k) {
