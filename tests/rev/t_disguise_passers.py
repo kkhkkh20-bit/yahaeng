@@ -25,7 +25,7 @@ async def main():
     let f=fresh(2,role);f.P.moving=true;f.tick(12);ok(!f.g.eyeT&&!f.g.eyeWatching&&!f.P.disguiseBlown&&!f.S.stats.detected,'walking passer is auto-identified '+role);
     f=fresh(0,role);f.P.a=0;f.tick(12);ok(!f.g.eyeT&&!f.P.disguiseBlown,'back of head reveals identity '+role);
     f=fresh(0,role);f.tick(1);ok(f.g.eyeT>0&&!f.P.disguiseBlown,'marked face check has no warning '+role);
-    f.P.moving=true;f.tick(.1);ok(!f.g.eyeT&&!f.g.eyeWatching,'walking away retains identity progress');
+    const remembered=f.g.eyeT;f.P.moving=true;f.tick(.1);ok(f.g.eyeT>0&&f.g.eyeT<remembered&&!f.g.eyeWatching&&!f.P.disguiseBlown,'walking must fade an existing check without building suspicion');
     f.P.moving=false;f.P.a=0;f.tick(4);ok(!f.P.disguiseBlown,'paused with back turned still identified');
     f.P.a=Math.PI;f.tick(3.2);ok(f.P.disguiseBlown&&f.g.state==='ALERT','real stationary face check no longer works '+role);
    }results.push('marked roles ignore walking and back-facing passers; uninterrupted stationary face checks remain real');

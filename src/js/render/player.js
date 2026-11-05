@@ -102,6 +102,7 @@ function drawPlayerBody(P) {
   }
   if(isTouch&&!P.trav&&!P.jump&&!P.under&&!P.vent)drawPlayerLocator(P);
   if (usePR(playerLook)) {
+    if(P.interact?.approach){drawPR(playerLook,P.x,P.y,P.a,P.mode==='sneak'?'sneak':'walk',P.gaitTime??S.t,blink?.35:1,sc/3,-yo);return;}
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
       if(P.interact?.a.k==='door'){const I=P.interact,p=clamp(I.t/I.dur,0,1),d=I.a.d,s=accessHandSample({type:'panel',x:d.x,y:d.y},{x:I.x,y:I.y},p,!I.state,true);drawPR(playerLook,s.x,s.y,P.a,s.anim,0,blink?.35:1,sc/3,0,s.frame);return;}

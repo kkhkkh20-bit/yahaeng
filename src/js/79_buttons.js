@@ -43,14 +43,13 @@ function attackAction() {
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
-const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel', 'throwBody','uncover']);
+const ENV_Z = new Set(['carry', 'dress', 'pickup', 'use', 'dropItem', 'candy', 'steal', 'ledge', 'tunnel','uncover']);
 function secondaryEnvChoices() {
   const out = []; ACT_SKIP.clear();
   try {
     for (let i = 0; i < 6; i++) {
       const a = secondaryAction(true); if (!a || !ENV_Z.has(a.k)) break;
       const o = actObj(a); if (out.some(b => b.k === a.k && actObj(b) === o)) break;
-      if(a.k==='throwBody'&&!STAGE.tutorial)out.push({k:'carry',c:S.player.carrying,label:'내려놓기',fromZ:true});
       out.push(Object.assign({}, a, { fromZ: true }));
       if (a.k === 'dress') out.push({ k: 'carry', c: a.c, label: '운반', fromZ: true });
       if(a.c&&['dress','carry'].includes(a.k)){const quick=quickStashChoice(a.c);if(quick){if(a.k==='dress')out.push(quick);else out.unshift(quick);}}

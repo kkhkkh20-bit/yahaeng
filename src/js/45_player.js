@@ -8,6 +8,17 @@ function stepSound(x, y) {
   return 'step_c' + v;
 }
 function advancePlayerGait(P,x,y,dt,speed){const d=Math.hypot(P.x-x,P.y-y);P.travelSpeed=d/Math.max(dt,.001);P.gaitTime=(P.gaitTime||0)+d/Math.max(1,speed);}
+function playerFootsteps(P,mode,ox,oy){
+    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
+    if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
+      P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
+      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
+      play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
+      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
+      if (P.carrying) play('cloth', 0.12);
+      if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
+    }
+}
 // 바닥 재질: 유리 조각(x) · 철판(m) · 물웅덩이(p) · 자갈(r) 은 발소리가 커진다
 const MAT = { x: 2.3, m: 1.8, p: 1.7, r: 1.45 };
 const MAT_NAME = { x: '유리 조각', m: '철판', p: '물웅덩이', r: '자갈' };
@@ -510,15 +521,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
-    P.stepT -= Math.hypot(P.x-ox,P.y-oy)/Math.max(1,SPD[mode]*(STAGE.pspd||1));
-    if (P.moving && P.travelSpeed>6 && P.stepT <= 0) {
-      P.stepT = { sneak: 0.62, walk: 0.5, run: 0.32 }[mode];  // 발소리 간격: 느려진 걸음에 맞춤
-      const r = ({ sneak: 22, walk: 110, run: 250 }[mode] + (P.carrying ? 35 : 0)) * floorMul(P.x, P.y, P.z);
-      play(P.z ? 'step_w' + ((Math.random() * 3) | 0) : stepSound(P.x, P.y), { sneak: 0.12, walk: 0.32, run: 0.55 }[mode] * (P.z ? 0.7 : 1));
-      { const mt = P.z ? null : tileAt(P.x, P.y); if (MAT[mt]) { play(mt === 'x' ? 'glass' : mt === 'm' ? 'metal' : mt === 'p' ? 'drop' : 'step_d0', mt === 'x' ? 0.18 : 0.14, mt === 'p' ? 1.7 : 1.5); hint('mat', '유리·철판·물웅덩이·자갈은 발소리가 크다. 돌아가라'); } }
-      if (P.carrying) play('cloth', 0.12);
-      if (!P.cover) noise(P.x, P.y, r, 'step', null, P.z);  // 벽에 붙어 옆걸음: 소리 없음
-    }
+    playerFootsteps(P,mode,ox,oy);
   }
   autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);
   { const c = P.carrying; if (c && c.bleed && !P.z && !c.ko) {  // 처치한 시체를 메고 가면 핏방울이 길게 남는다 (기절시킨 사람은 피를 흘리지 않는다)

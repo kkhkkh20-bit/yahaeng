@@ -8,7 +8,7 @@ function koPerson(g, mode, where, intent, quiet) {
   g.unconscious = true; logEv('ko', g.x, g.y);
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
-  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
+  const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
   spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
   c.vipApproach=vipApproach;S.corpses.push(c); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
@@ -33,12 +33,14 @@ function updateKoHold() {
 }
 // 기절한 사람이 발견되면 깨어나 함께 수색한다
 function wakeKO(c, by) {
-  const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return; S.corpses.splice(i, 1);
+  const g = c.g, i = S.corpses.indexOf(c); if (!g || i < 0) return;
+  if(c.stripped)stripBodyClothing(c);  // Includes bodies restored from older checkpoints.
+  S.corpses.splice(i, 1);
   g.unconscious = false; g.x = c.x; g.y = c.y; g.fl = c.fl; g.z = c.z || 0; g.a = c.a; g.meter = 0.6; g.path = null; g.icon = null; g.woke = true;
   if (c.assailantLook) { rememberSuspect(g,c.assailantLook); if (by) rememberSuspect(by,c.assailantLook); }
-  if (g.civ) { g.state = 'PATROL'; gsay(g, c.assailantLook ? '나를 때린 사람을 봤어요!' : '뒤에서 맞았어요. 누군지는 못 봤어요.'); return; }
+  if (g.civ) { g.state = 'PATROL'; gsay(g, c.stripped ? '내 옷까지 가져갔어요!' : c.assailantLook ? '나를 때린 사람을 봤어요!' : '뒤에서 맞았어요. 누군지는 못 봤어요.'); return; }
   g.state = 'SEARCH'; g.poi = { x: c.x + rnd(-40, 40), y: c.y + rnd(-40, 40) }; g.reached = false; g.waitBase = 4; setIcon(g, '?');
-  gsay(g, c.assailantLook ? '때린 사람 봤어. 인상착의 보낼게.' : '뒤에서 당했어. 주변 확인해 줘.', 3);
+  gsay(g, c.stripped ? '옷을 빼앗겼어. 주변 확인해 줘.' : c.assailantLook ? '때린 사람 봤어. 인상착의 보낼게.' : '뒤에서 당했어. 주변 확인해 줘.', 3);
 }
 // 연속 처치: 8초 안에 조직원을 또 처치하면 손맛 표시 (메탈기어·코만도스식 소탕의 리듬)
 function killStreak() {
@@ -141,7 +143,7 @@ function killGuard(g, mode, where, quiet) {
     else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
   }
   facWitness(g); cityVictim(g);
-  const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
+  const c = { guardId:g.id, ko:false, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, fac: g.fac, tag: g.tag, outfit: outfitOf(g), dog: !!g.dog, x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), target: g.target, t0: S.t };
   c.vipApproach=vipApproach;S.corpses.push(c);
   const intoWell = mode === 'stash';
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }

@@ -43,6 +43,38 @@ function objectActionValid(a, item) {
   const o = objectActionPoint(a);
   return (!o || objectReachable(Object.assign({ fl: flOf(P), z: P.z || 0 }, o), a.k === 'fuse' ? 62 : 60)) && !(a.l && a.l.broken);
 }
+// A short, colliding approach belongs to the selected action. Door handles
+// already use their authored contact pose; clothes and carried bodies stay put.
+function objectApproachPoint(a,at){
+ const P=S.player;
+ if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
+ const o=at.surface?surfaceFixture(at):at;
+ if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;
+ const d=dist(P.x,P.y,o.x,o.y);if(d<30)return null;
+ const angle=Math.atan2(o.y-P.y,o.x-P.x),layer=CUR_F;setLayer(flOf(P));
+ const hit=castRay(P.x,P.y,angle,d,P.z||0);setLayer(layer);
+ const step=Math.min(34,Math.max(0,Math.min(d,hit)-28));
+ return step>2?{x:P.x+Math.cos(angle)*step,y:P.y+Math.sin(angle)*step,t:0}:null;
+}
+function updateObjectApproach(P,I,dt){
+ const at=I.approach;at.t+=dt;
+ if(at.t>.85||!objectActionValid(I.a,I.item)){P.interact=null;P.moving=false;return;}
+ const layer=CUR_F;setLayer(flOf(P));
+ const ox=P.x,oy=P.y,mode=P.mode==='sneak'?'sneak':'walk',spd=mode==='sneak'?65:100;
+ P.mode=mode;P.a+=clamp(angDiff(P.a,I.face),-dt*18,dt*18);
+ let budget=Math.min(36,spd*dt),blocked=false;
+ while(budget>.001){
+  const d=dist(P.x,P.y,at.x,at.y);if(d<.5)break;
+  const x=P.x,y=P.y,n=Math.min(3,budget,d);P.x+=(at.x-x)/d*n;P.y+=(at.y-y)/d*n;
+  collide(P,P.z?10:13,solidFor(P.z||0));budget-=n;
+  if(dist(x,y,P.x,P.y)<.01){blocked=true;break;}
+ }
+ const moved=dist(ox,oy,P.x,P.y);P.moving=moved>.01;P.vx=P.vy=0;
+ advancePlayerGait(P,ox,oy,dt,SPD[mode]*(STAGE.pspd||1));playerFootsteps(P,mode,ox,oy);
+ I.x=P.x;I.y=P.y;P.light=lightAt(P.x,P.y,!!P.z);setLayer(layer);
+ if(blocked){P.interact=null;P.moving=false;toast('조작할 공간이 없다 · 옆으로 이동해 다시 시도',1.8);return;}
+ if(dist(P.x,P.y,at.x,at.y)<.5){I.approach=null;P.moving=false;}
+}
 function beginObjectAction(a) {
   if (!OBJECT_FLOW[a.k]) return false;
   if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return true;}
@@ -53,13 +85,15 @@ function beginObjectAction(a) {
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,
     illegal: a.k === 'dress' || (a.k === 'pickup' && !!a.p.outfit) || a.k === 'camroom' || a.k==='camCable' || (a.k === 'use' && !(a.n.u.permit && myPermits().includes(a.n.u.permit))), committed: false,
     state: a.k === 'door' ? a.d.locked : a.k === 'lamp' ? a.l.off : null };
+  P.interact.approach=objectApproachPoint(a,at);
   P.cover = null; P.vx = P.vy = 0; P.moving = false; S.qBuf = 0; S.qKill = false; RC = null;
   return true;
 }
 function updateObjectAction(P, dt) {
   const I = P.interact;
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
-  if (flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  if (P.hurtT>0||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  if(I.approach){updateObjectApproach(P,I,dt);return;}
   I.t = Math.min(I.dur, I.t + dt);
   if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
@@ -78,7 +112,7 @@ function busyEnvAction() {
   const P = S.player;
   if(P.recoveryQueue)return{k:'none',busy:true,label:P.recoveryQueue.kind==='dress'?'갈아입기 대기':'몸 정리 대기'};
   const next=recoveryInputAction();if(next)return{k:'none',busy:true,bufferable:true,label:next.k==='dress'?'갈아입기 예약':'몸 정리 예약'};
-  return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.label : P.pick ? '작업 중' : '동작 중' };
+  return { k: 'none', busy: true, label: P.quickStash ? '들어 올리는 중' : P.lethalHold ? '길게 누르는 중' : P.trav?.hideFlow ? ({enter:'들어가는 중',exit:'나오는 중',stash:'넣는 중',retrieve:'꺼내는 중',drag:'끌고 들어가는 중'}[P.trav.hideFlow.kind]) : P.interact ? P.interact.approach?'다가가는 중':P.interact.label : P.pick ? '작업 중' : '동작 중' };
 }
 function doorVisualOpen(d){
   if(d.npcWork)return hideEase((d.npcWork.t/d.npcWork.dur-.22)/.54);
