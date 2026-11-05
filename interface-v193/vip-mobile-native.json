@@ -1,0 +1,83 @@
+[
+  {
+    "version": "v193",
+    "seconds": 304.52955866671874,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 1,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 1,
+      "stashed": 0,
+      "special": 0,
+      "ko": 0,
+      "dressed": 1,
+      "camUnplugged": 2,
+      "keyDoors": 1,
+      "gotAs": "crew"
+    },
+    "skills": [
+      "silentHands",
+      "ambush"
+    ],
+    "approach": "흡연 동선 매복",
+    "receipt": {
+      "id": "smoke",
+      "name": "흡연 동선 매복",
+      "fresh": true,
+      "count": 1
+    },
+    "records": {
+      "smoke": {
+        "clears": 1,
+        "best": 304,
+        "clean": false
+      }
+    },
+    "next": "다른 방법으로",
+    "afterSkills": [
+      "quietStep",
+      "quietCrouch",
+      "swiftCrouch",
+      "silentHands",
+      "ambush"
+    ],
+    "touch": true,
+    "method": "Fresh save; native keyboard or CDP touch; all actors and security active; normal RAF and unseeded randomness; no actor, health, inventory, skills, alert or objective overrides",
+    "errors": [],
+    "milestones": [
+      {
+        "kind": "pickup",
+        "at": 44.895808340996155
+      },
+      {
+        "kind": "camCable",
+        "at": 52.16935124500014
+      },
+      {
+        "kind": "door",
+        "at": 124.42717165700014
+      },
+      {
+        "kind": "loot",
+        "at": 126.76079751199723
+      },
+      {
+        "kind": "door",
+        "at": 130.64075722100097
+      },
+      {
+        "kind": "up",
+        "at": 218.7384272939962
+      },
+      {
+        "kind": "loot",
+        "at": 259.48731140599557
+      }
+    ]
+  }
+]
