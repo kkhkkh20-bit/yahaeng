@@ -87,7 +87,8 @@ async def main(args):
      else:
       await q.click('#btnQuick');await q.click('#btnBrGo');await c.move(984,432,True);await c.move(x=984)
       await q.wait_for_function('__game.S.guards.some(g=>g.state==="ALERT"&&g.seen)',timeout=45000,polling=30);await c.record('actually-seen')
-      await c.move(360,400,True);await c.move(y=576,run=True);await c.move(x=168,run=True);await c.press('Control','#btnCrouch');await c.move(y=408);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
+      # Column 2 is the open lane; column 3 runs straight into the tree.
+      await c.move(360,400,True);await c.move(y=576,run=True);await c.move(x=120,run=True);await c.press('Control','#btnCrouch');await c.move(y=408);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
       await q.screenshot(path=str(out/(name+'-pocket.png')))
       for delay,label in [(3000,'search-after-3s'),(7000,'search-after-10s')]:await q.wait_for_timeout(delay);await c.record(label)
       result=c.events[-1];assert result['hp']==pocket['hp'] and result['hidden'] and not any(g['seen']and g['state']=='ALERT'for g in result['guards']),result
