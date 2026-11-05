@@ -3,7 +3,7 @@ Default mode steps the clock with a seed. YH_REALTIME=1 uses ordinary RAF and
 unseeded randomness. Route navigation reads game coordinates; actions use native
 keyboard/touch. No actor, inventory, skill, health, alert or progress overrides.
 """
-import asyncio,json,os,sys
+import asyncio,json,os,sys,time
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
@@ -18,7 +18,7 @@ async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch(proxy={'server':os.environ['HTTPS_PROXY']}if BASE.startswith('https:')else None)
   for touch in ([os.environ['YH_DEVICE']=='mobile'] if os.environ.get('YH_DEVICE') else [False,True]):
-   name=LABEL+('-mobile'if touch else'-pc');q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
+   name=LABEL+('-mobile'if touch else'-pc');video_options={'record_video_dir':str(O/'video')}if os.environ.get('YH_RECORD_VIDEO')=='1'else{};video_started=time.monotonic();milestones=[];q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch,**video_options);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();'+(''if REALTIME else'window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}'))
    await open_game(q,BASE+'?review=v175&nostats');await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]')
    if PREP:
@@ -56,7 +56,7 @@ async def main():
       else:await q.keyboard.up(lo if d<0 else hi)
      else:raise AssertionError((name,'route timeout',target,axis,s))
    async def env(kind):
-    await draw()
+    milestones.append({'kind':kind,'at':time.monotonic()-video_started});await draw()
     for _ in range(80):
      if not await q.evaluate('__game.actionBusy()'):break
      await tick(.05)
@@ -193,7 +193,8 @@ async def main():
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     await q.click('#btnSkillsBack');assert await q.locator('#end').is_visible();result['afterSkills']=await q.evaluate('__game.loadSkillTree().learned');await q.screenshot(path=str(O/(name+'-upgraded.png')))
    await q.click('#btnRetry');await tick(.2);expected='emetic'if APPROACH=='smoke'else'smoke';assert await q.evaluate('id=>__game.STAGE.id==="m2"&&__game.S.vipIntent===id',expected),'next untried method not selected'
-   result.update(touch=touch,method='Fresh save; native keyboard or CDP touch; all actors and security active; '+('normal RAF and unseeded randomness'if REALTIME else'stepped clock and seed')+'; no actor, health, inventory, skills, alert or objective overrides',errors=errors);rows.append(result);print('PASS VIP',APPROACH,name,json.dumps(result,ensure_ascii=False),flush=True);await q.close()
+   result.update(touch=touch,method='Fresh save; native keyboard or CDP touch; all actors and security active; '+('normal RAF and unseeded randomness'if REALTIME else'stepped clock and seed')+'; no actor, health, inventory, skills, alert or objective overrides',errors=errors,milestones=milestones);rows.append(result);print('PASS VIP',APPROACH,name,json.dumps(result,ensure_ascii=False),flush=True);await q.close()
+   if video_options:await q.video.save_as(str(O/(name+'.webm')))
   await b.close()
  (O/(LABEL+'-walk.json')).write_text(json.dumps(rows,ensure_ascii=False,indent=2))
 asyncio.run(main())

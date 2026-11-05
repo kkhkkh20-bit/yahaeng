@@ -115,7 +115,7 @@ function contactFeedback(at,kind) {
   if(pixelFxEnabled()){
     const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
     if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
-    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.5});
+    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.3,alpha:.65});
     else if(['door','pick','lamp','bfuse','fuse'].includes(kind))spawnEffect('dart',touch,{scale:.45,alpha:.6});
   }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};

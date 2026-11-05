@@ -16,6 +16,7 @@ const EL = 52 * Math.PI / 180, VIEW = 560, CY = 210;
 const cam = new THREE.OrthographicCamera(-VIEW / 2, VIEW / 2, VIEW / 2, -VIEW / 2, 1, 6000);
 cam.position.set(0, CY + Math.sin(EL) * 2500, Math.cos(EL) * 2500); cam.lookAt(0, CY, 0);
 function renderSprite(cameraDrop = 0, frameScale = 1) {
+  frameScale*=window.fluidPadding||1;  // Offline dense-pose margin, exported with each clip.
   cam.left=-VIEW*frameScale/2;cam.right=VIEW*frameScale/2;cam.top=VIEW*frameScale/2;cam.bottom=-VIEW*frameScale/2;cam.updateProjectionMatrix();window.frameScale=frameScale;
   // Flat corpses and lowered climbing poses extend below a standing frame.
   // Move the bake camera, then export its ground anchor for runtime placement.
@@ -453,6 +454,67 @@ window.renderHidePose = (kind, t, dirA) => {
   model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.updateMatrixWorld(true);
   model2.visible=false;shadow.visible=false;renderSprite(0,1.6);shadow.visible=true;
   return renderer.domElement.toDataURL('image/png');
+};
+
+// Build-time poses for the existing heroine; exported 2D frames only.
+// Body roots and grounded feet remain fixed throughout every planted action.
+window.renderFluidPose=(name,t,dirA)=>{
+ const neutral=()=>renderFrame('Walk',.25,0,0,undefined,false,{sway:0});
+ const finish=()=>{
+  scene.add(model);model2.visible=false;grp.rotation.y=0;
+  model.rotation.set(0,0,0);model.updateMatrixWorld(true);model.position.y-=feetY(bones);
+  model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+  shadow.visible=false;renderSprite(0,1);shadow.visible=true;
+  return renderer.domElement.toDataURL('image/png');
+ };
+ if(name==='idleC'||name==='crouch'){
+  if(name==='idleC')neutral();else renderFrame('Idle',0,0,.75);
+  model.rotation.set(0,0,0);model.updateMatrixWorld(true);
+  const breath=Math.sin(t*Math.PI*2);
+  rotWB(bones.Spine,.012*breath);rotWB(bones.Spine1,.012*breath);
+  aimB(bones.Neck,bones.Head,V3(.012*Math.sin(t*Math.PI*2),1,.025));
+  return finish();
+ }
+ if(name==='workHigh'||name==='workLow'){
+  renderAccessPose(name==='workHigh'?'high':'low',.5,0);
+  model.rotation.set(0,0,0);model.updateMatrixWorld(true);
+  const pulse=Math.sin(t*Math.PI*2);rotWB(bones.RightForeArm,.045*pulse);rotWB(bones.RightHand,.1*pulse);rotWB(bones.LeftHand,-.045*pulse);
+  model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+  shadow.visible=false;renderSprite(0,1.8);shadow.visible=true;return renderer.domElement.toDataURL('image/png');
+ }
+ if(name.startsWith('settle')){
+  const phase=Number(name.slice(6))/4;
+  renderFrame('Walk',phase,0,0);const A=snapPose();neutral();const B=snapPose();
+  mixPose(A,B,t*t*(3-2*t));return finish();
+ }
+ if(name==='dress'){
+  const keys=[0,.24,.43,.62,.82,1];
+  const pose=i=>{
+   if(i===1){renderAccessPose('low',.5,0);return;}
+   neutral();model.rotation.set(0,0,0);model.updateMatrixWorld(true);
+   if(i===2||i===3||i===4){
+    const right=i===2,left=i===3;
+    for(const [sd,side]of [['Left',1],['Right',-1]]){
+     aimB(bones[sd+'Arm'],bones[sd+'ForeArm'],V3(.2*side,-.65,.6));
+     aimB(bones[sd+'ForeArm'],bones[sd+'Hand'],V3((right&&sd==='Right'||left&&sd==='Left'?-.8:.08)*side,.55,.4));
+    }
+    rotWB(bones.Spine1,i===2?-.035:i===3?.035:0);
+   }
+  };
+  let k=0;while(k<keys.length-2&&t>keys[k+1])k++;
+  pose(k);const A=snapPose();pose(k+1);const B=snapPose();
+  const f=Math.max(0,Math.min(1,(t-keys[k])/(keys[k+1]-keys[k])));mixPose(A,B,f*f*(3-2*f));
+  return finish();
+ }
+ if(name==='hugStep'){
+  const p=t*4,k=Math.floor(p)%4,f=p-Math.floor(p);
+  renderPose('hugStep',k,dirA);const A=snapPose();renderPose('hugStep',(k+1)%4,dirA);const B=snapPose();
+  mixPose(A,B,f);model2.visible=false;shadow.visible=false;renderSprite(0,1);shadow.visible=true;
+  return renderer.domElement.toDataURL('image/png');
+ }
+ if(name==='climb')return renderPose('climb',t*4,dirA);
+ if(name==='hang')return renderFrame('Idle',0,dirA,0,Math.sin(t*Math.PI*2)*.7);
+ throw Error('Unknown fluid pose '+name);
 };
 
 </script></body></html>

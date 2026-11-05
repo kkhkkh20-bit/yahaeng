@@ -4,9 +4,9 @@ const ASSASSIN_BEATS={firstHit:.34,dualHit:.41,move:.62,secondHit:.25,firstEnd:1
 function assassinAttackFrame(A,frames){
   const second=A.phase==='second',hit=A.hits[second?1:0],wind=second?ASSASSIN_BEATS.secondHit:ASSASSIN_BEATS.firstHit;
   const t=S.t-(second?A.secondAt:A.t0),contact=Math.max(1,Math.round((frames-1)/3));
-  if(hit==null)return Math.min(contact-1,Math.floor(clamp(t/wind,0,1)*contact));
+  if(hit==null)return Math.min(contact-1,clamp(t/wind,0,1)*contact);
   const recovery=(second?ASSASSIN_BEATS.secondEnd:ASSASSIN_BEATS.firstEnd)-wind;
-  return Math.min(frames-1,contact+Math.floor(Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact)));
+  return Math.min(frames-1,contact+Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact));
 }
 function beginAssassinSkill(group='skill',tap=null){
   if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
@@ -105,14 +105,14 @@ function drawAssassinActors(P,key,alpha=1){
     if(usePR(key))drawPR(key,ghost.x,ghost.y,ghost.a,'run',0,fade,1,0,ghost.frame);
     else drawChar(key,ghost.x,ghost.y,ghost.a,true,fade,3,false);
   }
-  if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
+  if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',move?heroMotionClock(P,'run'):S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
   for(let i=0;i<A.ids.length;i++){
     const g=assassinAt(A.ids[i]);if(!g)continue;
     // Only the surprised/struck victim belongs to this animation; the next guard
     // keeps patrolling and can notice the approach until the second attack starts.
     if(i===1&&A.key==='chain'&&!A.hits[1]&&A.phase!=='second')continue;
     const hit=A.hits[i],k=charOf(g);
-    if(usePR(k)&&hit!=null){const frames=PR.anims.death?.[1]||6;drawPR(k,g.x,g.y,g.a,'death',0,1,1,0,Math.min(frames-1,Math.floor((S.t-hit)*12)));}
+    if(usePR(k)&&hit!=null){const frames=PR.anims.death?.[1]||6;drawPR(k,g.x,g.y,g.a,'death',0,1,1,0,Math.min(frames-1,(S.t-hit)*12));}
     else if(hit!=null)blit(ctx,'dead_'+k,g.x-24,g.y-26,48,48);
     else if(g.state!=='DEAD'){if(usePR(k))drawPR(k,g.x,g.y,g.a,'idle',S.t,1,1);else drawChar(k,g.x,g.y,g.a,false,1,3);}
   }return true;

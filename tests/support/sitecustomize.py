@@ -25,5 +25,9 @@ if os.environ.get('YH_TEST_HTTP')=='1':
  original_launch=BrowserType.launch
  async def portable_launch(self,**kwargs):
   if kwargs.get('executable_path')=='/usr/bin/chromium' and not Path('/usr/bin/chromium').exists():kwargs.pop('executable_path')
+  if not kwargs.get('executable_path') and not Path(self.executable_path).exists():
+   from shutil import which
+   installed=which('chromium')
+   if installed:kwargs['executable_path']=installed
   return await original_launch(self,**kwargs)
  BrowserType.launch=portable_launch

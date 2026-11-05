@@ -20,7 +20,7 @@ FAST.append('t_ordinary_footsteps')
 FAST.append('t_disguise_passers')
 FAST.append('t_dawn_dispatch')
 FAST.append('t_campaign_depth')
-FAST.extend(['t_skill_preparation','t_assassination_rhythm','t_physical_interactions'])
+FAST.extend(['t_skill_preparation','t_assassination_rhythm','t_physical_interactions','t_hero_fluid_motion'])
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 
 def run(path, timeout=400):

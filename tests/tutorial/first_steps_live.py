@@ -1,7 +1,7 @@
 """Live first two lessons: native input and rendered markers, no stepped clock/state overrides.
 Known-map developer playback, not a novice usability study.
 """
-import argparse, asyncio, json, os, threading
+import argparse, asyncio, json, os, threading, time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -18,9 +18,11 @@ async def main(args):
     reports=[]
     async with async_playwright() as p:
         browser=await p.chromium.launch(executable_path='/usr/bin/chromium',proxy={'server':os.environ['HTTPS_PROXY']} if args.url.startswith('https:') else None)
-        for mobile in ([False] if args.probe_only else [False,True]):
+        for mobile in ([args.device=='mobile']if args.device else[False]if args.probe_only else[False,True]):
             name='mobile' if mobile else 'pc'
-            page=await browser.new_page(viewport={'width':390 if mobile else 1419,'height':844 if mobile else 911},has_touch=mobile,is_mobile=mobile)
+            video_options={'record_video_dir':str(out/'video'),'record_video_size':{'width':390 if mobile else 1419,'height':844 if mobile else 911}}if os.environ.get('YH_RECORD_VIDEO')=='1'else{}
+            video_started=time.monotonic()
+            page=await browser.new_page(viewport={'width':390 if mobile else 1419,'height':844 if mobile else 911},has_touch=mobile,is_mobile=mobile,**video_options)
             errors=[];rows=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             await page.add_init_script('localStorage.clear()')
@@ -50,7 +52,7 @@ async def main(args):
                     assert painted and painted['step']==s['step'],('movement goal invisible before completion',name,label,s)
                 else:
                     await page.screenshot(path=str(out/f'{name}-{label}.png'))
-                rows.append({'label':label,**s});print('LIVE',name,label,json.dumps(s,ensure_ascii=False),flush=True)
+                rows.append({'label':label,'videoSeconds':time.monotonic()-video_started,**s});print('LIVE',name,label,json.dumps(s,ensure_ascii=False),flush=True)
                 return s
             async def key(name,on):
                 if on:await page.keyboard.down(name)
@@ -77,13 +79,18 @@ async def main(args):
                                 if mobile:await joystick(direction*24 if axis=='x' else 0,direction*24 if axis=='y' else 0)
                                 else:await key(wanted,True)
                                 active=wanted
-                            await page.wait_for_timeout(30)
+                            if mobile and abs(delta)<20:
+                                # Short native thumb pulses brake before contact; do
+                                # not overshoot the guard while the renderer records.
+                                await page.wait_for_timeout(18);await joystick();active=None;await page.wait_for_timeout(60)
+                            else:await page.wait_for_timeout(30)
                     finally:
                         if active:
                             if mobile:await joystick()
                             else:await key(active,False)
                     await page.wait_for_timeout(50)
             async def press(key_name,button):
+                if key_name=='z':print('ATTACK INPUT',name,await page.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,a:__game.S.player.a,mode:__game.S.player.mode,hidden:__game.S.player.hidden},g:{x:__game.S.guards[0].x,y:__game.S.guards[0].y,a:__game.S.guards[0].a,state:__game.S.guards[0].state},action:__game.attackAction().k,pointer:document.querySelector("#btnAct").dataset.pressPointer})'),flush=True)
                 if mobile:await page.tap(button)
                 else:await page.keyboard.press(key_name)
                 await page.wait_for_timeout(90)
@@ -178,9 +185,10 @@ async def main(args):
                     await page.screenshot(path=str(out/f'{name}-failure.png'))
                 (out/f'{name}.json').write_text(json.dumps({'passed':passed,'url':args.url,'rows':rows,'errors':errors,'method':__doc__},ensure_ascii=False,indent=2))
                 await page.close()
+                if video_options:await page.video.save_as(str(out/f'{name}.webm'))
         await browser.close()
     if server:server.shutdown()
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--url');parser.add_argument('--out',default='build/tutorial-v178/live');parser.add_argument('--probe-only',action='store_true')
+    parser=argparse.ArgumentParser();parser.add_argument('--url');parser.add_argument('--out',default='build/tutorial-v178/live');parser.add_argument('--probe-only',action='store_true');parser.add_argument('--device',choices=['pc','mobile'])
     asyncio.run(main(parser.parse_args()))

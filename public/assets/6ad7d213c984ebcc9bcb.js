@@ -2399,7 +2399,8 @@ function playerKey(P) {
   const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
   if(!prBodies[body])prLoadBody(body);
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
-  return pal === 'ninja' ? pal : pal + '@' + body;
+  const gait=PR.fluidBodies?.[body]?.gait;if(gait&&!prBodies[gait])prLoadBody(gait);
+  return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:'hero');
 }
 function prPalette(pk, body) {
   const pal = PR_PAL[pk];
@@ -2446,8 +2447,8 @@ function prBlit(sh, col, row, dx, dy, dw, dh) {
 const PR_WARM1 = ['idle', 'walk', 'idleC', 'talk'], PR_WARM2 = ['run', 'death', 'crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
 function prWarmParts(key, names) {
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn], out = new Set();
-  if(bn?.endsWith('Motion')){for(let ci=0;ci*PR_CH<bm.cols;ci++)out.add(ci);return [...out];}
-  if (key === 'ninja') { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
+  if(bn?.endsWith('Motion')&&!bm.fluid){for(let ci=0;ci*PR_CH<bm.cols;ci++)out.add(ci);return [...out];}
+  if (key === 'ninja'&&!PR.fluidBodies) { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
   for (const a of names) { const r = (bm && bm.anims[a]) || (!bm && PR.anims[a]); if (!r) continue; for (let c = r[0]; c < r[0] + r[1]; c++) out.add(Math.floor(c / PR_CH)); }
   return [...out];
 }
@@ -2479,7 +2480,8 @@ const prNear = new Set();
 function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
-  prNear.clear();const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  prNear.clear();const fluidKeys=[...keys,'ninja'].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
@@ -2490,33 +2492,33 @@ const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 let playerInkKey=null;
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {
-  const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
-  if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
-  const sh = prSheet(key); if (!sh) return false;
-  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 * DRAG_SPD / 0.55 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
-  const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
-  // 촬영 여백을 넓힌 동작은 저장한 배율로 실제 인물 크기를 되돌린다.
-  scale *= (bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1;
-  const fr = PR.fr, dw = fr * scale;
-  const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
-  const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
-  if(key===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired ? .16 : .28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
-  ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
-  return true;
+  const original=key,plain=key.replace(/_ol$/,''),resolved=fluidSprite(key,anim,t,frame);
+  let bm=PR.bodies?.[prSplit(plain)[1]];
+  if(resolved){key=resolved.key;bm=resolved.meta;frame=resolved.frame;}
+  else if(bm&&!bm.anims[anim]){key=prSplit(key)[0];bm=null;}
+  const sh=prSheet(key);if(!sh)return false;
+  const [c0,nf]=(bm&&bm.anims[anim])||PR.anims[anim]||PR.anims.idle;
+  const fps=anim==='run'?12.7:anim==='sneak'?7:anim==='walk'?9:anim==='punch'?12:anim==='carry'||anim==='carried'?7:anim==='grab'||anim==='held'?6*DRAG_SPD/.55:anim==='climb'?7:anim==='hold'?9:anim==='talk'?2.6:anim==='idleC'?.7:1.6;
+  const fi=frame>=0?clamp(Math.round(frame),0,nf-1):Math.floor(t*fps)%nf;
+  scale*=((bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1);
+  const dw=PR.fr*scale,anchor=bm?.anims[anim]&&bm.grounds?.[anim],gy=(anchor!=null?anchor:PR.grounds?.[anim]??PR.groundY)*scale;
+  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:.28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
+  ctx.globalAlpha=alpha;prBlit(sh,c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);ctx.globalAlpha=1;return true;
 }
 // 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.
 function drawHangPR(key, x, y, a, frame, alpha = 1, anim = 'hang') {
-  const m=PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims[anim]||PR.anims[anim],fi=clamp(frame,0,n-1),row=prDir(a);
-  const hands=m[anim+'Hands']?.[row]?.[fi]||PR[anim+'Hands']?.[row]?.[fi],s=m.scales?.hang||PR.scales?.hang||1;
+  const resolved=fluidSprite(key,anim,0,frame);if(resolved)key=resolved.key;
+  const m=resolved?.meta||PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims[anim]||PR.anims[anim],fi=resolved?.frame??clamp(Math.round(frame),0,n-1),row=prDir(a);
+  const hands=m[anim+'Hands']?.[row]?.[fi]||PR[anim+'Hands']?.[row]?.[fi],s=m.scales?.[anim]||m.scales?.hang||PR.scales?.hang||1;
   let hx=hands?(hands[0][0]+hands[1][0])/2:PR.hangHand[0],hy=hands?(hands[0][1]+hands[1][1])/2:PR.hangHand[1];
-  if(anim==='ledgePull'&&hands){const base=m.hangHands?.[row]?.[0]||PR.hangHands[row][0];hx=hands[0][0]-(base[0][0]-base[1][0])/2;hy=hands[0][1]-(base[0][1]-base[1][1])/2;}
+  if(anim==='ledgePull'&&hands){const base=m.hangHands?.[row]?.[0]||PR.hangHands[row][0];const ratio=(m.scales?.hang||s)/s;hx=hands[0][0]-(base[0][0]-base[1][0])*ratio/2;hy=hands[0][1]-(base[0][1]-base[1][1])*ratio/2;}
   const dx=x-hx*s,dy=y-hy*s,dw=PR.fr*s,sh=prSheet(key),ol=prVar[key+'_ol'];
   if(ol&&(isTouch||alpha<1)){ctx.globalAlpha=.65*alpha;prBlit(ol,c+fi,row,dx,dy,dw,dw);}
   ctx.globalAlpha=alpha;prBlit(sh,c+fi,row,dx,dy,dw,dw);ctx.globalAlpha=1;
 }
 // 배관은 발 기준 오프셋 대신 실제로 구운 두 손의 접점을 관 축에 맞춘다.
 function climbContact(key, a, frame, at, size = 1) {
-  const bm=PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),hands=m?.climbHands?.[row]?.[frame],feet=m?.climbFeet?.[row]?.[frame];
+  const resolved=fluidSprite(key,'climb',0,frame),bm=resolved?.meta||PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),fi=resolved?.frame??clamp(Math.round(frame),0,(m.anims.climb||PR.anims.climb)[1]-1),hands=m?.climbHands?.[row]?.[fi],feet=m?.climbFeet?.[row]?.[fi];
   if(!hands||!feet)return null;
   const scale=size*(m.scales?.climb||1),hx=(hands[0][0]+hands[1][0])/2,hy=(hands[0][1]+hands[1][1])/2;
   const fy=(feet[0][1]+feet[1][1])/2,fx=(feet[0][0]+feet[1][0])/2,gy=m.grounds?.climb??PR.groundY;
@@ -2546,9 +2548,53 @@ function killKT(kind, f, from) {
   if (f < A[2]) return 1 + easeIO((f - A[1]) / (A[2] - A[1]));
   return 2 + easeIO(Math.min(1, (f - A[2]) / (1 - A[2])));
 }
-const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, Math.round(kt / 3 * (nf - 1)))); };
+const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, kt / 3 * (nf - 1))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 const corpseFrame=c=>c.stripped?9:c.t0!=null&&S.t-c.t0<1?(c.f0||0)+Math.floor((S.t-c.t0)*10):9;
+
+// Dense, offline-authored frames. Missing/cold sources always retain the legacy
+// pose, so an uncached outfit can never make either actor disappear.
+function fluidSource(key,anim){
+ if(!PR?.fluidBodies)return null;
+ const plain=key.replace(/_ol$/,''),body=prSplit(plain)[1]||'key',routes=PR.fluidBodies[body];
+ if(!routes)return null;
+ for(const name of Object.values(routes))if(PR.bodies[name]?.anims[anim])return name;
+ return null;
+}
+function warmFluidPose(key,anim){const name=fluidSource(key,anim);if(name)prLoadBody(name);}
+function fluidSprite(key,anim,t,frame=-1){
+ const name=fluidSource(key,anim);if(!name)return null;
+ if(!prBodies[name]){prLoadBody(name);return null;}
+ const outline=key.endsWith('_ol'),plain=key.replace(/_ol$/,''),[pal,body]=prSplit(plain),old=PR.bodies?.[body]||PR,m=PR.bodies[name],n=m.anims[anim][1],loop=m.loops?.[anim];
+ const before=old.anims[anim]?.[1]||n;
+ const f=frame>=0?(loop?frame/before*n:frame/Math.max(1,before-1)*(n-1)):loop?((t%loop+loop)%loop)/loop*n:Math.floor(t*1.6)%n;
+ const actual=loop?((Math.floor(f)%n)+n)%n:clamp(Math.round(f),0,n-1),target=pal+'@'+name;
+ prSheet(target);return{key:target+(outline?'_ol':''),meta:m,frame:actual};
+}
+const HERO_LOOP={walk:1,run:.64,sneak:1.24,carry:8/7,grab:.55/.4,hold:8/9,hugStep:4/4.5};
+const heroVisualStates=new WeakMap();
+function updateHeroVisual(P){
+ const anim=P.carrying?'carry':P.captive?'grab':P.cover?'hugStep':P.item?.id==='box'?'hold':P.mode==='run'?'run':P.mode==='sneak'?'sneak':'walk';
+ let v=heroVisualStates.get(P);if(!v){v={phase:0,gait:P.gaitTime||0,time:S.t,crouch:P.mode==='sneak'?1:0,moving:false,anim};heroVisualStates.set(P,v);}
+ const dt=clamp(S.t-v.time,0,.06),moving=!!P.moving&&(P.travelSpeed==null||P.travelSpeed>6);
+ v.phase=(v.phase+Math.max(0,(P.gaitTime||0)-v.gait)/(HERO_LOOP[anim]||1))%1;
+ if(v.moving&&!moving&&v.anim==='walk'&&!actionBusy(P)){v.stopAt=S.t;v.stopPhase=Math.round(v.phase*4)%4;}
+ if(moving||actionBusy(P))v.stopAt=null;
+ v.crouch=clamp(v.crouch+(P.mode==='sneak'?1:-1)*dt/.18,0,1);
+ if(P.strikeT>0&&(!(v.strikeRemaining>0)||P.strikeT>v.strikeRemaining+.02)){v.strikeDuration=P.strikeT;v.strikeAt=S.t;}
+ v.strikeRemaining=P.strikeT||0;v.gait=P.gaitTime||0;v.time=S.t;v.moving=moving;v.anim=anim;
+ // Decode action poses during actual play, rather than blocking first input.
+ if(S.t>.3&&!v.actionWarm){v.actionWarm=true;warmFluidPose(playerKey(P),'duck');}
+ return v;
+}
+function heroMotionClock(P,anim,fallback=P.gaitTime??S.t){const v=heroVisualStates.get(P);return v&&HERO_LOOP[anim]?v.phase*HERO_LOOP[anim]:fallback;}
+function heroTransitionPose(P,moving){
+ const v=heroVisualStates.get(P);if(!v||moving||P.carrying||P.captive||P.cover||P.strikeT>0)return null;
+ if(v.crouch>0&&v.crouch<1)return{anim:'duck',frame:v.crouch*8};
+ if(v.stopAt!=null&&S.t-v.stopAt<.16&&P.mode!=='sneak')return{anim:'settle'+v.stopPhase,frame:clamp((S.t-v.stopAt)/.16,0,1)*6};
+ return null;
+}
+function heroStrikeFrame(P){const v=heroVisualStates.get(P);return v?.strikeDuration?clamp(1-(P.strikeT||0)/v.strikeDuration,0,1)*3:-1;}
 
 function corpseBounds(c){
   if(c.dog)return[c.x-24,c.y-26,c.x+24,c.y+22];
@@ -10015,12 +10061,14 @@ function actionHandPose(I){
   if(I.pose==='dress')return clothingPose(I);
   const f=clamp(I.t/I.dur,0,1),ground=I.pose==='ground'||I.pose==='dress'||I.kind==='clean'||I.kind==='loot'&&['bed','bedD','nstand'].includes(I.it?.furn),anim=ground?'openLow':'openHigh';
   let p=f;
+  if(I.dur>1&&I.t>=.18&&I.dur-I.t>=.16){const key=playerKey(S.player),name=ground?'workLow':'workHigh',source=fluidSource(key,name);if(source){warmFluidPose(key,name);if(prBodies[source])return{anim:name,frame:((I.t-.18)/.7%1)*PR.bodies[source].anims[name][1]};}}
   if(I.dur>1){const reach=clamp(I.t/.18,0,1),release=clamp((I.dur-I.t)/.16,0,1);p=I.t<.18?reach*.5:I.dur-I.t<.16?1-release*.5:.5+Math.sin(I.t*16)*.045;}
   const key=playerKey(S.player),m=PR.bodies?.[prSplit(key)[1]]||PR,n=(m.anims[anim]||PR.anims[anim])[1];return{anim,frame:Math.round(p*(n-1))};
 }
 // Take the garment low, rise, adjust it at the torso, then return to the stance.
 function clothingPose(I){
-  const f=clamp(I.t/I.dur,0,1);
+  const f=clamp(I.t/I.dur,0,1),key=playerKey(S.player);
+  const name=fluidSource(key,'dress');if(name){warmFluidPose(key,'dress');if(prBodies[name]){if(S.player.mode==='sneak'&&f>.88)return{anim:'duck',frame:(f-.88)/.12*8};return{anim:'dress',frame:f*(PR.bodies[name].anims.dress[1]-1)};}}
   if(f<.42)return{anim:'openLow',frame:Math.round(8*clamp(f/.12,0,1)+Math.sin(I.t*7)*.6)};
   if(f<.62)return{anim:'duck',frame:Math.round(8*(1-hideEase((f-.42)/.2)))};
   if(f>.85&&S.player.mode==='sneak')return{anim:'duck',frame:Math.round(8*hideEase((f-.85)/.15))};
@@ -11134,7 +11182,7 @@ function strikeKill(list, two) {
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
 const KILL_DUR = { stab: 0.95, choke: 1.15 };
 function pairKill(g, kind, from, quiet) {
-  const P = S.player;if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
   if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
   delete g.takedownIntent;
@@ -11172,7 +11220,7 @@ function updatePairCombat(P,dt) {
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);S.shakeT=Math.max(S.shakeT||0,.06);}
+  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)spawnEffect('dust',{x:A.c.x,y:A.c.y,fl:A.fl,z:A.z},{scale:.32,alpha:.45});S.shakeT=Math.max(S.shakeT||0,.06);}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   const held=S.koHold,lethalPending=held?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(held.source);
   if(A.landed&&t>=A.dur*.88&&(moving||P.followupAttack)&&!P.recoveryQueue&&!lethalPending){
@@ -11236,9 +11284,9 @@ const ASSASSIN_BEATS={firstHit:.34,dualHit:.41,move:.62,secondHit:.25,firstEnd:1
 function assassinAttackFrame(A,frames){
   const second=A.phase==='second',hit=A.hits[second?1:0],wind=second?ASSASSIN_BEATS.secondHit:ASSASSIN_BEATS.firstHit;
   const t=S.t-(second?A.secondAt:A.t0),contact=Math.max(1,Math.round((frames-1)/3));
-  if(hit==null)return Math.min(contact-1,Math.floor(clamp(t/wind,0,1)*contact));
+  if(hit==null)return Math.min(contact-1,clamp(t/wind,0,1)*contact);
   const recovery=(second?ASSASSIN_BEATS.secondEnd:ASSASSIN_BEATS.firstEnd)-wind;
-  return Math.min(frames-1,contact+Math.floor(Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact)));
+  return Math.min(frames-1,contact+Math.max(0,S.t-hit-ASSASSIN_BEATS.stop)/Math.max(.01,recovery-ASSASSIN_BEATS.stop)*(frames-contact));
 }
 function beginAssassinSkill(group='skill',tap=null){
   if(!S||!running||S.over||paused||tactical||DLG.modal||S.keypad||!assassinSupported()||actionBusy())return;
@@ -11337,14 +11385,14 @@ function drawAssassinActors(P,key,alpha=1){
     if(usePR(key))drawPR(key,ghost.x,ghost.y,ghost.a,'run',0,fade,1,0,ghost.frame);
     else drawChar(key,ghost.x,ghost.y,ghost.a,true,fade,3,false);
   }
-  if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
+  if(usePR(key))drawPR(key,P.x,P.y,P.a,move?'run':'stab',move?heroMotionClock(P,'run'):S.t,alpha,1,0,move?undefined:fi);else drawChar(key,P.x,P.y,P.a,move,alpha,3,true);
   for(let i=0;i<A.ids.length;i++){
     const g=assassinAt(A.ids[i]);if(!g)continue;
     // Only the surprised/struck victim belongs to this animation; the next guard
     // keeps patrolling and can notice the approach until the second attack starts.
     if(i===1&&A.key==='chain'&&!A.hits[1]&&A.phase!=='second')continue;
     const hit=A.hits[i],k=charOf(g);
-    if(usePR(k)&&hit!=null){const frames=PR.anims.death?.[1]||6;drawPR(k,g.x,g.y,g.a,'death',0,1,1,0,Math.min(frames-1,Math.floor((S.t-hit)*12)));}
+    if(usePR(k)&&hit!=null){const frames=PR.anims.death?.[1]||6;drawPR(k,g.x,g.y,g.a,'death',0,1,1,0,Math.min(frames-1,(S.t-hit)*12));}
     else if(hit!=null)blit(ctx,'dead_'+k,g.x-24,g.y-26,48,48);
     else if(g.state!=='DEAD'){if(usePR(k))drawPR(k,g.x,g.y,g.a,'idle',S.t,1,1);else drawChar(k,g.x,g.y,g.a,false,1,3);}
   }return true;
@@ -12304,6 +12352,7 @@ function drawPlayerLocator(P) {
   ctx.fillStyle='#7fe3ff';ctx.strokeStyle='#081015';ctx.lineWidth=1.5*k;ctx.beginPath();ctx.moveTo(px+dx*3*k,py+dy*3*k);ctx.lineTo(px-dx*3*k-dy*3*k,py-dy*3*k+dx*3*k);ctx.lineTo(px-dx*3*k+dy*3*k,py-dy*3*k-dx*3*k);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
 }
 function drawPlayer(P) {
+  updateHeroVisual(P);
   const previous=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
@@ -12321,7 +12370,7 @@ function drawPlayerBody(P) {
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.ellipse(sx, sy, 13, 6.5, 0, 0, TAU); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(sx, sy, 19, 9.5, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = 'rgba(160,230,255,.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(h.x, h.y + 46); ctx.lineTo(sx, sy); ctx.stroke(); ctx.setLineDash([]); }
     if (usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 프리렌더 매달림: 두 손을 줄에 맞추고, 움직이면 다리를 흔들며 옮겨 간다
-      const nf=PR.anims.hang[1],fi=P.moving?Math.floor(S.t*6)%nf:0;
+      const nf=PR.anims.hang[1],fi=P.moving?(S.t*6)%nf:0;
       drawHangPR(playerLook,h.x+sw,h.y+2,P.wire.fa??-Math.PI/2,fi,blinkW?.3:dim?.75:1);
       ctx.globalAlpha = 1; return;
     }
@@ -12351,7 +12400,7 @@ function drawPlayerBody(P) {
     drawPR(playerLook,P.x,P.y,j.face??P.a,j.releasedHang?'drop':'leap',0,1,1,-yo,Math.round(f*12));ctx.restore();return;
   }
   if (P.ledge && usePR(playerLook) && PR.anims.hang && PR.hangHand) {  // 옥상 끝에 두 손으로 매달림
-    const n = P.ledge,h=ledgeGrip(P),nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?Math.round(clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12):P.moving?Math.floor(S.t*6)%nf:0;
+    const n = P.ledge,h=ledgeGrip(P),nf=PR.anims.hang[1],anim=S.ledgePull?'ledgePull':'hang',fi=S.ledgePull?clamp(S.ledgePull.t/S.ledgePull.dur,0,1)*12:P.moving?(S.t*6)%nf:0;
     ctx.save(); if (n.y < 0) { ctx.beginPath(); ctx.rect(h.x - 60, h.y - 202, 120, 206); ctx.clip(); }
     drawHangPR(playerLook,h.x,h.y,h.a,fi,n.y<0?.75:1,anim);ctx.restore();ctx.globalAlpha=1;
     return;
@@ -12366,15 +12415,15 @@ function drawPlayerBody(P) {
       if (tp.pose === 'stairRise' || tp.pose === 'stairSink') {
         const depth = (tp.pose === 'stairRise' ? 1 - tp.g : tp.g) * 28, pc = pairCarry(P), pg = !pc && pairGrab(P), anim = pc ? 'carry' : pg ? 'grab' : 'walk';
         ctx.save(); ctx.beginPath(); ctx.rect(P.x - 100, P.y - 150, 200, 165); ctx.clip();
-        drawPR(PK, P.x, P.y + depth, P.a, anim, P.gaitTime??S.t, al, s1, 0);
-        if (pc || pg) drawPR(pc ? carryKey(P.carrying) : charOf(P.captive), P.x, P.y + depth, P.a, pc ? 'carried' : 'held', P.gaitTime??S.t, al, s1, 0);
+        drawPR(PK, P.x, P.y + depth, P.a, anim, heroMotionClock(P,anim), al, s1, 0);
+        if (pc || pg) drawPR(pc ? carryKey(P.carrying) : charOf(P.captive), P.x, P.y + depth, P.a, pc ? 'carried' : 'held', heroMotionClock(P,anim), al, s1, 0);
         ctx.restore(); return;
       }
     }
     if(tp.pose==='walk'){
       const pc=pairCarry(P),pg=!pc&&pairGrab(P);
-      drawPR(PK,P.x,P.y,P.a,pc?'carry':pg?'grab':'walk',P.gaitTime??T.t,al,s1);
-      if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',P.gaitTime??T.t,al,s1);
+      drawPR(PK,P.x,P.y,P.a,pc?'carry':pg?'grab':'walk',heroMotionClock(P,pc?'carry':pg?'grab':'walk'),al,s1);
+      if(pc||pg)drawPR(pc?carryKey(P.carrying):charOf(P.captive),P.x,P.y,P.a,pc?'carried':'held',heroMotionClock(P,pc?'carry':pg?'grab':'walk'),al,s1);
       return;
     }
 
@@ -12391,14 +12440,14 @@ function drawPlayerBody(P) {
       if (T.hangOk && PR.anims.hang && PR.hangHand) { const nf=PR.anims.hang[1],fi=Math.min(nf-1,Math.floor(tp.g*nf)),sw=Math.sin(tp.g*Math.PI)*2;
         drawHangPR(PK,P.x,P.y+2+sw,T.face,fi,al);return; }
       drawPR(PK, P.x, P.y, T.face, 'climb', 0, al, s1, 14, 0); return; }
-    if (tp.pose === 'climb') { const frame=((Math.floor(T.t*7)*(T.down?-1:1))%4+4)%4;
+    if (tp.pose === 'climb') { const frame=(((T.t*7)*(T.down?-1:1))%4+4)%4;
       const grip=T.pipe&&climbContact(PK,T.face,frame,pipeGripAt(T));
       drawPR(PK,grip?grip.x:P.x,grip?grip.y:P.y,T.face??P.a,'climb',0,al,grip?1:s1,14,frame);if(isTouch&&grip)drawPlayerLocator({...P,...grip.foot,a:T.face,cover:null});return; }
     if (tp.pose === 'vault') { drawVaultPR(PK,P.x,P.y,T.face??P.a,tp.g,al,s1,Math.sin(tp.g*Math.PI)*10); return; }
   }
   if(isTouch&&!P.trav&&!P.jump&&!P.under&&!P.vent)drawPlayerLocator(P);
   if (usePR(playerLook)) {
-    if(P.interact?.approach){drawPR(playerLook,P.x,P.y,P.a,P.mode==='sneak'?'sneak':'walk',P.gaitTime??S.t,blink?.35:1,sc/3,-yo);return;}
+    if(P.interact?.approach){drawPR(playerLook,P.x,P.y,P.a,P.mode==='sneak'?'sneak':'walk',heroMotionClock(P,P.mode==='sneak'?'sneak':'walk'),blink?.35:1,sc/3,-yo);return;}
     // 프리렌더: 자세가 애니메이션으로 구분된다 (서기·걷기·달리기·웅크려 걷기·웅크림·찌르기)
     if ((P.interact || P.pick) && PR.anims.stoop && PR.anims.lift) {
       if(P.interact?.a.k==='door'){const I=P.interact,p=clamp(I.t/I.dur,0,1),d=I.a.d,s=accessHandSample({type:'panel',x:d.x,y:d.y},{x:I.x,y:I.y},p,!I.state,true);drawPR(playerLook,s.x,s.y,P.a,s.anim,0,blink?.35:1,sc/3,0,s.frame);return;}
@@ -12444,7 +12493,7 @@ function drawPlayerBody(P) {
         if (f < 0.5) { an = 'crouch'; fr = 0; ang = P.snap.a0 + angDiff(P.snap.a0, aw) * (f / 0.5); }
         else { an = 'hug'; fr = 0; const b = Math.sin((f - 0.5) / 0.5 * Math.PI) * 2.5; ox = -n.x * b; oy = -n.y * b; }
       } else if (mv) {  // 옆걸음: 몸 왼쪽(화면 기준 sin a, -cos a)으로 가면 앞으로, 오른쪽이면 거꾸로
-        const lx = Math.sin(aw), ly = -Math.cos(aw), fw = (P.vx * lx + P.vy * ly) >= 0, i = Math.floor(S.t * 4.5) % 4;  // 느린 옆걸음에 맞춘 걸음 속도
+        const lx = Math.sin(aw), ly = -Math.cos(aw), fw = (P.vx * lx + P.vy * ly) >= 0, i = (heroMotionClock(P,'hugStep')*4.5) % 4;  // 느린 옆걸음에 맞춘 걸음 속도
         an = 'hugStep'; fr = fw ? i : (4 - i) % 4;
       } else {  // 멈춤: 방금 움직인 쪽을 살피고, 오래 있으면 가끔 좌우를 번갈아 본다
         an = 'hug'; const side = P.coverSide && S.t - (P.coverSideT || 0) < 1.6 ? P.coverSide : 0;
@@ -12456,8 +12505,9 @@ function drawPlayerBody(P) {
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
     const rising = !mv && P.riseT && S.t < P.riseT && !pc && !pg;
-    const anim = P.techWork ? (P.techWork.kind==='radio'?'crouch':'talk') : pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'duck' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
-    const t = mv&&!P.jump?(P.gaitTime??S.t):S.t, s = sc / 3, PK = playerLook, rf=rising?Math.round(clamp((P.riseT-S.t)/.22,0,1)*8):-1;
+    const anim = P.techWork ? (P.techWork.kind==='radio'?'workLow':'workHigh') : pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'duck' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
+    const transition=heroTransitionPose(P,mv),visualAnim=transition?.anim||anim;
+    const t=mv&&!P.jump?heroMotionClock(P,anim):S.t,s=sc/3,PK=playerLook,rf=transition?.frame??(P.strikeT>0?heroStrikeFrame(P):rising?clamp((P.riseT-S.t)/.22,0,1)*8:-1);
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)
     const other = pc ? [carryKey(P.carrying), mv ? 'carried' : 'carriedI'] : pg ? [charOf(P.captive), mv ? 'held' : 'heldI'] : null;
     const shake = pg ? Math.sin(S.t * 31) * 1.2 : 0;
@@ -12467,10 +12517,10 @@ function drawPlayerBody(P) {
       ctx.fillStyle = 'rgba(120,200,255,.10)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = `rgba(160,230,255,${pulse})`; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 20, 9, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
       }
-      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.25 : (P.hidden||crouch&&P.light<.22) ? .62 : .85, s, -yo,rf); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
+      if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, visualAnim, t, blink ? 0.25 : (P.hidden||crouch&&P.light<.22) ? .62 : .85, s, -yo,rf); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true);
       if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.3 : 0.92, s, -yo);
-      if (prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, anim, t, blink ? 0.3 : isTouch ? .48 : .32, s, -yo,rf);
-    } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, anim, t, blink ? 0.35 : 1, s, -yo,rf); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
+      if (prVar[playerOutline]) drawPR(playerOutline, P.x, P.y, P.a, visualAnim, t, blink ? 0.3 : isTouch ? .48 : .32, s, -yo,rf);
+    } else { if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, false); drawPR(PK, P.x, P.y, P.a, visualAnim, t, blink ? 0.35 : 1, s, -yo,rf); if (other) drawPR(other[0], P.x + shake, P.y, P.a, other[1], t, blink ? 0.35 : 1, s, -yo); if (hold) drawHeldBox(P.x, P.y + yo, P.a, s, true); }
     return;
   }
   if (crouch) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(P.x, P.y + 14, 19, 8, 0, 0, TAU); ctx.fill(); }
@@ -14076,7 +14126,7 @@ function contactFeedback(at,kind) {
   if(pixelFxEnabled()){
     const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
     if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
-    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.5});
+    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.3,alpha:.65});
     else if(['door','pick','lamp','bfuse','fuse'].includes(kind))spawnEffect('dart',touch,{scale:.45,alpha:.6});
   }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
@@ -15455,7 +15505,7 @@ function installGameApi() {
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
-    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget, get BLD() { return BLD; }, jumpTarget, nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; }, get GF() { return GF; }, setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: why => hurtPlayer(null, why), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {

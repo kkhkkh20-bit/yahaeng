@@ -4,12 +4,14 @@ function actionHandPose(I){
   if(I.pose==='dress')return clothingPose(I);
   const f=clamp(I.t/I.dur,0,1),ground=I.pose==='ground'||I.pose==='dress'||I.kind==='clean'||I.kind==='loot'&&['bed','bedD','nstand'].includes(I.it?.furn),anim=ground?'openLow':'openHigh';
   let p=f;
+  if(I.dur>1&&I.t>=.18&&I.dur-I.t>=.16){const key=playerKey(S.player),name=ground?'workLow':'workHigh',source=fluidSource(key,name);if(source){warmFluidPose(key,name);if(prBodies[source])return{anim:name,frame:((I.t-.18)/.7%1)*PR.bodies[source].anims[name][1]};}}
   if(I.dur>1){const reach=clamp(I.t/.18,0,1),release=clamp((I.dur-I.t)/.16,0,1);p=I.t<.18?reach*.5:I.dur-I.t<.16?1-release*.5:.5+Math.sin(I.t*16)*.045;}
   const key=playerKey(S.player),m=PR.bodies?.[prSplit(key)[1]]||PR,n=(m.anims[anim]||PR.anims[anim])[1];return{anim,frame:Math.round(p*(n-1))};
 }
 // Take the garment low, rise, adjust it at the torso, then return to the stance.
 function clothingPose(I){
-  const f=clamp(I.t/I.dur,0,1);
+  const f=clamp(I.t/I.dur,0,1),key=playerKey(S.player);
+  const name=fluidSource(key,'dress');if(name){warmFluidPose(key,'dress');if(prBodies[name]){if(S.player.mode==='sneak'&&f>.88)return{anim:'duck',frame:(f-.88)/.12*8};return{anim:'dress',frame:f*(PR.bodies[name].anims.dress[1]-1)};}}
   if(f<.42)return{anim:'openLow',frame:Math.round(8*clamp(f/.12,0,1)+Math.sin(I.t*7)*.6)};
   if(f<.62)return{anim:'duck',frame:Math.round(8*(1-hideEase((f-.42)/.2)))};
   if(f>.85&&S.player.mode==='sneak')return{anim:'duck',frame:Math.round(8*hideEase((f-.85)/.15))};

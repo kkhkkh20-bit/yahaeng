@@ -86,7 +86,8 @@ function playerKey(P) {
   const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
   if(!prBodies[body])prLoadBody(body);
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
-  return pal === 'ninja' ? pal : pal + '@' + body;
+  const gait=PR.fluidBodies?.[body]?.gait;if(gait&&!prBodies[gait])prLoadBody(gait);
+  return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:'hero');
 }
 function prPalette(pk, body) {
   const pal = PR_PAL[pk];
@@ -133,8 +134,8 @@ function prBlit(sh, col, row, dx, dy, dw, dh) {
 const PR_WARM1 = ['idle', 'walk', 'idleC', 'talk'], PR_WARM2 = ['run', 'death', 'crouch', 'carried', 'carriedI', 'held', 'heldI', 'stabbed', 'choked', 'lifted'];
 function prWarmParts(key, names) {
   const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn], out = new Set();
-  if(bn?.endsWith('Motion')){for(let ci=0;ci*PR_CH<bm.cols;ci++)out.add(ci);return [...out];}
-  if (key === 'ninja') { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
+  if(bn?.endsWith('Motion')&&!bm.fluid){for(let ci=0;ci*PR_CH<bm.cols;ci++)out.add(ci);return [...out];}
+  if (key === 'ninja'&&!PR.fluidBodies) { for (let ci = 0; ci * PR_CH < PR.cols; ci++) out.add(ci); return [...out]; }  // 주인공은 모든 동작을 쓴다
   for (const a of names) { const r = (bm && bm.anims[a]) || (!bm && PR.anims[a]); if (!r) continue; for (let c = r[0]; c < r[0] + r[1]; c++) out.add(Math.floor(c / PR_CH)); }
   return [...out];
 }
@@ -166,7 +167,8 @@ const prNear = new Set();
 function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
-  prNear.clear();const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  prNear.clear();const fluidKeys=[...keys,'ninja'].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
@@ -177,33 +179,33 @@ const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
 let playerInkKey=null;
 function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -1) {
-  const bn = prSplit(key)[1], bm = bn && PR.bodies && PR.bodies[bn];
-  if (bm && !bm.anims[anim]) key = prSplit(key)[0];  // 체형 시트에 없는 동작은 기본 체형으로
-  const sh = prSheet(key); if (!sh) return false;
-  const [c0, nf] = (bm && bm.anims[anim]) || PR.anims[anim] || PR.anims.idle, fps = anim === 'run' ? 12.7 : anim === 'sneak' ? 7 : anim === 'walk' ? 9 : anim === 'punch' ? 12 : anim === 'carry' || anim === 'carried' ? 7 : anim === 'grab' || anim === 'held' ? 6 * DRAG_SPD / 0.55 : anim === 'climb' ? 7 : anim === 'hold' ? 9 : anim === 'talk' ? 2.6 : anim === 'idleC' ? 0.7 : 1.6;
-  const fi = frame >= 0 ? Math.min(nf - 1, frame) : Math.floor(t * fps) % nf;
-  // 촬영 여백을 넓힌 동작은 저장한 배율로 실제 인물 크기를 되돌린다.
-  scale *= (bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1;
-  const fr = PR.fr, dw = fr * scale;
-  const anchor = bm && bm.anims[anim] && bm.grounds && bm.grounds[anim];
-  const gy = (anchor != null ? anchor : PR.grounds && PR.grounds[anim] != null ? PR.grounds[anim] : PR.groundY) * scale;
-  if(key===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired ? .16 : .28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
-  ctx.globalAlpha = alpha; prBlit(sh, c0 + fi, prDir(a), x - dw / 2, y + 13 - gy - lift, dw, dw); ctx.globalAlpha = 1;
-  return true;
+  const original=key,plain=key.replace(/_ol$/,''),resolved=fluidSprite(key,anim,t,frame);
+  let bm=PR.bodies?.[prSplit(plain)[1]];
+  if(resolved){key=resolved.key;bm=resolved.meta;frame=resolved.frame;}
+  else if(bm&&!bm.anims[anim]){key=prSplit(key)[0];bm=null;}
+  const sh=prSheet(key);if(!sh)return false;
+  const [c0,nf]=(bm&&bm.anims[anim])||PR.anims[anim]||PR.anims.idle;
+  const fps=anim==='run'?12.7:anim==='sneak'?7:anim==='walk'?9:anim==='punch'?12:anim==='carry'||anim==='carried'?7:anim==='grab'||anim==='held'?6*DRAG_SPD/.55:anim==='climb'?7:anim==='hold'?9:anim==='talk'?2.6:anim==='idleC'?.7:1.6;
+  const fi=frame>=0?clamp(Math.round(frame),0,nf-1):Math.floor(t*fps)%nf;
+  scale*=((bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1);
+  const dw=PR.fr*scale,anchor=bm?.anims[anim]&&bm.grounds?.[anim],gy=(anchor!=null?anchor:PR.grounds?.[anim]??PR.groundY)*scale;
+  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:.28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
+  ctx.globalAlpha=alpha;prBlit(sh,c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);ctx.globalAlpha=1;return true;
 }
 // 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.
 function drawHangPR(key, x, y, a, frame, alpha = 1, anim = 'hang') {
-  const m=PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims[anim]||PR.anims[anim],fi=clamp(frame,0,n-1),row=prDir(a);
-  const hands=m[anim+'Hands']?.[row]?.[fi]||PR[anim+'Hands']?.[row]?.[fi],s=m.scales?.hang||PR.scales?.hang||1;
+  const resolved=fluidSprite(key,anim,0,frame);if(resolved)key=resolved.key;
+  const m=resolved?.meta||PR.bodies?.[prSplit(key)[1]]||PR,[c,n]=m.anims[anim]||PR.anims[anim],fi=resolved?.frame??clamp(Math.round(frame),0,n-1),row=prDir(a);
+  const hands=m[anim+'Hands']?.[row]?.[fi]||PR[anim+'Hands']?.[row]?.[fi],s=m.scales?.[anim]||m.scales?.hang||PR.scales?.hang||1;
   let hx=hands?(hands[0][0]+hands[1][0])/2:PR.hangHand[0],hy=hands?(hands[0][1]+hands[1][1])/2:PR.hangHand[1];
-  if(anim==='ledgePull'&&hands){const base=m.hangHands?.[row]?.[0]||PR.hangHands[row][0];hx=hands[0][0]-(base[0][0]-base[1][0])/2;hy=hands[0][1]-(base[0][1]-base[1][1])/2;}
+  if(anim==='ledgePull'&&hands){const base=m.hangHands?.[row]?.[0]||PR.hangHands[row][0];const ratio=(m.scales?.hang||s)/s;hx=hands[0][0]-(base[0][0]-base[1][0])*ratio/2;hy=hands[0][1]-(base[0][1]-base[1][1])*ratio/2;}
   const dx=x-hx*s,dy=y-hy*s,dw=PR.fr*s,sh=prSheet(key),ol=prVar[key+'_ol'];
   if(ol&&(isTouch||alpha<1)){ctx.globalAlpha=.65*alpha;prBlit(ol,c+fi,row,dx,dy,dw,dw);}
   ctx.globalAlpha=alpha;prBlit(sh,c+fi,row,dx,dy,dw,dw);ctx.globalAlpha=1;
 }
 // 배관은 발 기준 오프셋 대신 실제로 구운 두 손의 접점을 관 축에 맞춘다.
 function climbContact(key, a, frame, at, size = 1) {
-  const bm=PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),hands=m?.climbHands?.[row]?.[frame],feet=m?.climbFeet?.[row]?.[frame];
+  const resolved=fluidSprite(key,'climb',0,frame),bm=resolved?.meta||PR?.bodies?.[prSplit(key)[1]],m=bm?.climbHands?bm:PR,row=prDir(a),fi=resolved?.frame??clamp(Math.round(frame),0,(m.anims.climb||PR.anims.climb)[1]-1),hands=m?.climbHands?.[row]?.[fi],feet=m?.climbFeet?.[row]?.[fi];
   if(!hands||!feet)return null;
   const scale=size*(m.scales?.climb||1),hx=(hands[0][0]+hands[1][0])/2,hy=(hands[0][1]+hands[1][1])/2;
   const fy=(feet[0][1]+feet[1][1])/2,fx=(feet[0][0]+feet[1][0])/2,gy=m.grounds?.climb??PR.groundY;
@@ -233,6 +235,6 @@ function killKT(kind, f, from) {
   if (f < A[2]) return 1 + easeIO((f - A[1]) / (A[2] - A[1]));
   return 2 + easeIO(Math.min(1, (f - A[2]) / (1 - A[2])));
 }
-const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, Math.round(kt / 3 * (nf - 1)))); };
+const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, kt / 3 * (nf - 1))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
 const corpseFrame=c=>c.stripped?9:c.t0!=null&&S.t-c.t0<1?(c.f0||0)+Math.floor((S.t-c.t0)*10):9;
