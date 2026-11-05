@@ -27,8 +27,8 @@ jobs:
       - name: Reuse completed regression evidence only for identical game sources
         id: evidence
         run: |
-          git fetch --depth=1 origin 5a253dcf910a71185a58afc903cc1da3f0d72e5f
-          if git diff --quiet 5a253dcf910a71185a58afc903cc1da3f0d72e5f HEAD -- . ':(exclude)tests/tutorial/vip_choices_walk.py' ':(exclude).github/workflows/physical-interactions.yml'; then
+          git fetch --depth=1 origin c23ce8f33ea4a115fe932525d1be96ab75df3d3e
+          if git diff --quiet c23ce8f33ea4a115fe932525d1be96ab75df3d3e HEAD -- . ':(exclude)tests/rev/t_physical_interactions.py' ':(exclude).github/workflows/physical-interactions.yml'; then
             echo "reuse=true" >> "$GITHUB_OUTPUT"
           else
             echo "reuse=false" >> "$GITHUB_OUTPUT"
@@ -36,8 +36,8 @@ jobs:
       - uses: actions/download-artifact@v4
         if: steps.evidence.outputs.reuse == 'true'
         with:
-          name: physical-interactions-41968366628
-          run-id: 41968366628
+          name: physical-interactions-41970267779
+          run-id: 41970267779
           github-token: ${{ github.token }}
           path: .
       - uses: actions/setup-python@v5
@@ -68,7 +68,8 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
           if [ "$YH_REUSE_REGRESSION" = 'true' ]; then
-            echo 'Reusing 85 passed browser regressions and PC/mobile native lessons from run 41968366628; every tracked game/build file matches 5a253dcf910a71185a58afc903cc1da3f0d72e5f.'
+            echo 'Reusing completed regressions, PC/mobile lessons and native VIP from run 41970267779; every tracked game/build file matches c23ce8f33ea4a115fe932525d1be96ab75df3d3e.'
+            python tests/rev/t_physical_interactions.py
           else
           python - <<'PY'
           import subprocess,sys
@@ -81,8 +82,8 @@ jobs:
           PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
-          fi
           YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
+          fi
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Save review evidence and packaged assets on this PR

@@ -18,7 +18,7 @@ async def main():
     window.physicalFresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();G.setLayer(0);
      const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.target&&!g.elite);
      for(const key of ['props','corpses','hides','bushes','notes','lamps','bfuses','cams','items','windows','fwindows','doors','ladders','wires','traps'])S[key]=[];
-     S.facOn=false;S.t=10;S.guards=[g];let at;
+     S.facOn=false;S.t=10;S.fade=0;S.guards=[g];let at; // Isolated player clock does not advance the global entry fade.
      for(let y=12;y<G.MH-3&&!at;y++)for(let x=3;x<G.MW-4;x++){
       if(G.bldAt(x,y)>=0||Math.hypot((x+.5)*48-S.exit.x,(y+.5)*48-S.exit.y)<180)continue;
       if([-1,0,1].every(dy=>[0,1,2].every(dx=>!G.solidAt(x+dx,y+dy)))){at={x:(x+.5)*48,y:(y+.5)*48};break;}
