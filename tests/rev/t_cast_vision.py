@@ -37,6 +37,7 @@ async def main():
     Object.assign(P,{x:984,y:600,fl:0,z:0,mode:'walk',disguise:null,outfit:null});G.setLayer(0);S.cams=[];
     S.guards=[0,1,2].map((n)=>({...base,id:n,x:1064+n*70,y:600,fl:0,z:0,a:Math.PI,state:'PATROL',meter:0,seen:false,rawSeen:false,eyeWatching:false,eyeT:0,climb:null,doomed:false}));
     S.marked=S.guards[2];const ai=()=>JSON.stringify([P,S.stats,S.guards.map(g=>[g.state,g.meter,g.seen,g.eyeT])]);
+    ok(G.workRiskReadout({k:'camCable'}).text.includes('2초'),'camera work duration is hidden before starting');
     const before=ai();G.S.fade=0;G.updateHUD(true);G.moveCamera(1);
     const ctx=G.ctx,stroke=ctx.stroke,begin=ctx.beginPath,close=ctx.closePath;let painted=0,closed=false;
     ctx.beginPath=function(){closed=false;return begin.apply(this,arguments)};ctx.closePath=function(){closed=true;return close.apply(this,arguments)};

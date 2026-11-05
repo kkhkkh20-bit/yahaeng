@@ -42,6 +42,7 @@ async def main():
      previous=None;still=0
      for n in range(240):
       s=await q.evaluate('axis=>({v:__game.S.player[axis],over:__game.S.over,hp:__game.S.player.hp})',axis);d=target-s['v']
+      assert s['hp']>0,(name,'died during movement',x,y,s)
       if abs(d)<2.5 or s['over']:break
       still=still+1 if previous is not None and abs(previous-s['v'])<.03 else 0
       if still>=6:
@@ -102,23 +103,38 @@ async def main():
     if touch:await q.tap('#btnCycle')
     else:await q.keyboard.press('Shift+Tab')
     await q.locator('[data-env-token^="camCable:"]').click()
-   for _ in range(100):
-    phase=await q.evaluate('__game.S.t%9')
-    if 5.1<=phase<=5.3:break
+   # Observe a full work-length camera gap. A momentarily clear sweep can
+   # return during the two-second cable action. Also wait for the live patrol
+   # to face away; ordinary passage permission does not excuse tampering.
+   for _ in range(1500):
+    safe=await q.evaluate("""()=>{
+      const G=__game,S=G.S,P=S.player,g=S.guards[6],c=G.nearCameraCable();
+      if(!c||G.workRiskReadout({k:'camCable'})?.kind!=='work'||!['PATROL','RETURN'].includes(g.state)||Math.cos(g.a)<.75||g.x<P.x+70)return false;
+      const bearing=Math.atan2(P.y-c.y,P.x-c.x);
+      for(let t=0;t<=2.4;t+=.1){
+        const a=c.base+c.sweep*Math.max(-1,Math.min(1,Math.sin((S.t+t+c.ph)*Math.PI*2/c.period)*1.35));
+        if(Math.abs(Math.atan2(Math.sin(a-bearing),Math.cos(a-bearing)))<G.camFov(c)+.05)return false;
+      }
+      return true;
+    }""")
+    assert await q.evaluate('__game.S.player.hp>0'),(name,'died while observing camera work window')
+    if safe:break
     await tick(.1)
-   else:raise AssertionError('camera sweep did not recur')
+   else:raise AssertionError('no safe camera work window')
    await action('x','#btnCarry');await tick(2.2)
-   await move(264,504)
+   # Wait outside the patrolled hallway, not inside an enforcer's reach.
+   await move(180,600)
    gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
    # The office patrol can identify a nearby disguise. Observe a real gap
    # before operating its doorway; a fixed schedule is not a stealth strategy.
    observed=[]
-   for n in range(300):
+   for n in range(1200):
     view=await q.evaluate('at=>{const g=__game.S.guards[6],dx=at.x-g.x,dy=at.y-g.y,d=Math.hypot(dx,dy);return{id:g.id,state:g.state,x:g.x,y:g.y,a:g.a,d,facing:(dx*Math.cos(g.a)+dy*Math.sin(g.a))/Math.max(1,d),wait:g.wait,seen:g.seen,why:g.why}}',gate)
+    assert await q.evaluate('__game.S.player.hp>0'),(name,'died while observing office doorway',view)
     if n%50==0:observed.append(view)
-    # Opening a permitted doorway needs a real line-of-sight gap, not an
-    # arbitrary distance that a short indoor patrol might never reach.
-    if view['state']!="ALERT" and (view['d']>150 or view['facing']<-.25):break
+    # This endpoint pauses facing away. Leave enough time to enter and
+    # operate the physical vault door before the patrol returns.
+    if view['state'] in ['PATROL','RETURN'] and view['x']>=400 and view['wait']>2.6 and __import__('math').cos(view['a'])>.8:break
     await tick(.1)
    else:
     await draw();await q.screenshot(path=str(O/(name+'-office-wait.png')))

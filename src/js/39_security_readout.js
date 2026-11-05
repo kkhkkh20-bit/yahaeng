@@ -22,11 +22,12 @@ function workRiskReadout(action){
   const kind=action?.k==='pickup'&&action.p?.outfit?'dress':action?.k;
   if(!ILLEGAL_WORK.has(kind))return null;
   const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입',kill:'제압·처치',kill2:'제압·처치',finish:'처치',grab:'붙잡기'})[kind];
+  const duration=kind==='camCable'?' · '+OBJECT_FLOW.camCable[0]+'초 소요':'';
   const camera=S.cams.find(c=>!c.search&&cameraAssessment(c,true).detectable);
-  if(camera)return{kind:'camera',camera,text:verb+' → CCTV 녹화 위험 · '+(kind==='camCable'?'카메라가 돌아간 뒤 작업':'시야 밖에서 작업')};
+  if(camera)return{kind:'camera',camera,text:verb+' → CCTV 녹화 위험 · '+(kind==='camCable'?'카메라가 돌아간 뒤 작업':'시야 밖에서 작업')+duration};
   const witness=S.guards.find(g=>g.rawSightAt!=null&&S.t-g.rawSightAt>=0&&S.t-g.rawSightAt<.15&&g.rawSeen&&!g.dog&&!g.doomed&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state));
-  if(witness)return{kind:'witness',text:verb+' → 경비 목격 위험 · 시야 밖에서 작업'};
-  return{kind:'work',text:verb+' · 수상한 행동 · 복장과 별도 판정'};
+  if(witness)return{kind:'witness',text:verb+' → 경비 목격 위험 · 시야 밖에서 작업'+duration};
+  return{kind:'work',text:verb+' · 수상한 행동 · 복장과 별도 판정'+duration};
 }
 function syncSecurityReadout(){
   const el=$('accessLbl'),risk=$('actionRiskLbl');if(!el||!risk)return;
