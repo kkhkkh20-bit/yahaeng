@@ -1,0 +1,37 @@
+{
+  "sourceCommit": "9dd099a82c9fbf1fa144c8ae1506f2024219c6cb",
+  "sourceWorkflow": "https://github.com/kkhkkh20-bit/yahaeng/actions/runs/42186436571",
+  "conclusion": "success",
+  "jobs": {
+    "browser": 127787791922,
+    "mobile": 127787792349,
+    "pc": 127787792352
+  },
+  "fastRegressionsPassed": 96,
+  "nativeOfficeSwitch": [
+    "pc",
+    "mobile"
+  ],
+  "nativeOfficeVisit": {
+    "input": "keyboard",
+    "normalRAF": true,
+    "actorsActive": true,
+    "playerTeleports": false,
+    "hp": 3,
+    "detected": 0
+  },
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v201",
+    "source_sha256": "e2d9d2eca3cbb9e171df6a117f9a2a3f30f7603ef47e8a21ece267efdf1e6fb5",
+    "html_bytes": 200677,
+    "source_bytes": 15903375,
+    "scripts": 6,
+    "assets": 260,
+    "asset_bytes": 11901858,
+    "deployed_assets": 260,
+    "deployed_asset_bytes": 11901858
+  },
+  "localPackageHashes": 11,
+  "pagesCommit": "b9dd4c8733cdc74787d80f0abb2af61ae74977f5"
+}

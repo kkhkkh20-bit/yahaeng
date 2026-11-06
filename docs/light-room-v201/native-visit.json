@@ -1,0 +1,1919 @@
+{
+  "events": [
+    {
+      "label": "press-x",
+      "version": "v201",
+      "t": 6.866400000000026,
+      "x": 454.3937536833341,
+      "y": 813.1842399071485,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1320,
+          "y": 744
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1422.1565759999937,
+          "y": 840
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 408,
+          "y": 504
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 398.29448213544345,
+          "y": 417.70551786455655
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 446.29448213544356,
+          "y": 1070.2944821354436
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1606.4780405578697,
+          "y": 621.4812444695922
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 315.7875090060905,
+          "y": 888
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2444.6146560000498,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1831.2629521949455,
+          "y": 487.2629521949466
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1416,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 414.15657599999855,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 840
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1469.449191984675,
+          "y": 509.4491919846749
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2328,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.1032699771026,
+          "y": 587.6888632113748
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2620.8064892529237,
+          "y": 124.80648925292377
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 230.3920740121796
+        },
+        {
+          "id": 40,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2661.6055438151143,
+          "y": 123.71755334391078
+        }
+      ],
+      "over": false
+    },
+    {
+      "label": "press-x",
+      "version": "v201",
+      "t": 16.665999999999986,
+      "x": 554.8785085390703,
+      "y": 312.8878819017288,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "dressed": 1
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1320,
+          "y": 744
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1752,
+          "y": 840
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1215.5968560000001,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 283.9891440000002,
+          "y": 456
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 382.3310175429838,
+          "y": 409.0381786020732
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 862.0891890060859,
+          "y": 1080
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1656,
+          "y": 277.88442800638273
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 672.209898012181,
+          "y": 936
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2200.016640000118,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1848,
+          "y": 216
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1407.4320000000002,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 552,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 840
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1541.8065771762713,
+          "y": 744
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2328,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.3031452541925,
+          "y": 586.9115559648071
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 273.17438724049765
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 425.6129254035133
+        },
+        {
+          "id": 40,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 512.6137432488076
+        }
+      ],
+      "over": false
+    },
+    {
+      "label": "in-pilot-room",
+      "version": "v201",
+      "t": 23.732399999999767,
+      "x": 409.7188573798367,
+      "y": 359.93976995740627,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "dressed": 1
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1320,
+          "y": 744
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1752,
+          "y": 840
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 408,
+          "y": 504
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 408
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1085.5661910060849,
+          "y": 1080
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 168
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 943.5596580121858,
+          "y": 936
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2023.6392960001538,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2072.124596460356,
+          "y": 183.8754035396442
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 277.1214240000003,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 840
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1541.8065771762713,
+          "y": 744
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2246.608283999998,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.3031452541925,
+          "y": 586.9115559648071
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 462.89381821642
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 604.1079274035138
+        },
+        {
+          "id": 40,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2607.3302527511896,
+          "y": 648
+        }
+      ],
+      "over": false
+    },
+    {
+      "label": "press-x",
+      "version": "v201",
+      "t": 24.165699999999784,
+      "x": 409.7188573798367,
+      "y": 359.85140405223893,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "dressed": 1
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1314.3300000000002,
+          "y": 744
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1752,
+          "y": 840
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 408,
+          "y": 504
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 408
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1085.5661910060849,
+          "y": 1080
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 168
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 960.1983780121858,
+          "y": 936
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2012.8241280001537,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2083.889948202621,
+          "y": 172.1100517973795
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 270.6954240000002,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 840
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1541.8065771762713,
+          "y": 744
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2228.0457119999983,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.3031452541925,
+          "y": 586.9115559648071
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 481.45639021642023
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 622.670499403514
+        },
+        {
+          "id": 40,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2588.76768075119,
+          "y": 648
+        }
+      ],
+      "over": false
+    },
+    {
+      "label": "room-off",
+      "version": "v201",
+      "t": 25.015699999999782,
+      "x": 409.7188573798367,
+      "y": 359.85140405223893,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "dressed": 1
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1282.2000000000007,
+          "y": 744
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1752,
+          "y": 840
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 382.2967139999999,
+          "y": 504
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 408
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1096.276191006085,
+          "y": 1080
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 168
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 992.8383780121857,
+          "y": 936
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1991.6081280001529,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2114.827509006089,
+          "y": 168
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 270.6954240000002,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "PATROL",
+          "seen": false,
+          "x": 168,
+          "y": 840
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1541.8065771762713,
+          "y": 744
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2191.631711999997,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.3031452541925,
+          "y": 586.9115559648071
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2664,
+          "y": 517.8703902164201
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2652.915500596485,
+          "y": 648
+        },
+        {
+          "id": 40,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2552.3536807511887,
+          "y": 648
+        }
+      ],
+      "over": false
+    },
+    {
+      "label": "reaction-after-10s",
+      "version": "v201",
+      "t": 36.165299999999576,
+      "x": 411.32105537983676,
+      "y": 458.34318400100864,
+      "hp": 3,
+      "mode": "walk",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "dressed": 1
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1551.4324526637656,
+          "y": 855.4864104409385
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1321.7531825700112,
+          "y": 462.7160098206783
+        },
+        {
+          "id": 2,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1176,
+          "y": 792
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1436.9359096535256,
+          "y": 869.7676298855972
+        },
+        {
+          "id": 4,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 120
+        },
+        {
+          "id": 5,
+          "state": "PATROL",
+          "seen": false,
+          "x": 360,
+          "y": 744
+        },
+        {
+          "id": 6,
+          "state": "PATROL",
+          "seen": false,
+          "x": 371.8164384000004,
+          "y": 504
+        },
+        {
+          "id": 7,
+          "state": "PATROL",
+          "seen": false,
+          "x": 349.4808767999993,
+          "y": 456
+        },
+        {
+          "id": 8,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 408
+        },
+        {
+          "id": 9,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 456
+        },
+        {
+          "id": 10,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 408
+        },
+        {
+          "id": 11,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1620.5431344121678,
+          "y": 1032
+        },
+        {
+          "id": 12,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1368,
+          "y": 552
+        },
+        {
+          "id": 13,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 168
+        },
+        {
+          "id": 14,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1368
+        },
+        {
+          "id": 15,
+          "state": "PATROL",
+          "seen": false,
+          "x": 504,
+          "y": 1464
+        },
+        {
+          "id": 16,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 1368
+        },
+        {
+          "id": 17,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1401.1007670182853,
+          "y": 984
+        },
+        {
+          "id": 18,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1713.314112000125,
+          "y": 1176
+        },
+        {
+          "id": 19,
+          "state": "PATROL",
+          "seen": false,
+          "x": 744,
+          "y": 360
+        },
+        {
+          "id": 20,
+          "state": "PATROL",
+          "seen": false,
+          "x": 936,
+          "y": 744
+        },
+        {
+          "id": 21,
+          "state": "PATROL",
+          "seen": false,
+          "x": 696,
+          "y": 648
+        },
+        {
+          "id": 22,
+          "state": "PATROL",
+          "seen": false,
+          "x": 216,
+          "y": 1368
+        },
+        {
+          "id": 23,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2542.972149006078,
+          "y": 168
+        },
+        {
+          "id": 24,
+          "state": "PATROL",
+          "seen": false,
+          "x": 984,
+          "y": 696
+        },
+        {
+          "id": 25,
+          "state": "PATROL",
+          "seen": false,
+          "x": 888,
+          "y": 744
+        },
+        {
+          "id": 26,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1416,
+          "y": 120
+        },
+        {
+          "id": 27,
+          "state": "PATROL",
+          "seen": false,
+          "x": 229.5138576,
+          "y": 120
+        },
+        {
+          "id": 28,
+          "state": "CHECK",
+          "seen": false,
+          "x": 264,
+          "y": 846.678
+        },
+        {
+          "id": 29,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1471.2889343622282,
+          "y": 890.6224698209436
+        },
+        {
+          "id": 30,
+          "state": "PATROL",
+          "seen": false,
+          "x": 399.782679224344,
+          "y": 379.498976078082
+        },
+        {
+          "id": 31,
+          "state": "PATROL",
+          "seen": false,
+          "x": 264,
+          "y": 1512
+        },
+        {
+          "id": 32,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2088,
+          "y": 1368
+        },
+        {
+          "id": 33,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 504
+        },
+        {
+          "id": 34,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1560,
+          "y": 552
+        },
+        {
+          "id": 35,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1512,
+          "y": 600
+        },
+        {
+          "id": 36,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1464,
+          "y": 648
+        },
+        {
+          "id": 37,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1584.3031452541925,
+          "y": 586.9115559648071
+        },
+        {
+          "id": 38,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2314.766965312046,
+          "y": 739.5037158401561
+        },
+        {
+          "id": 39,
+          "state": "PATROL",
+          "seen": false,
+          "x": 2376,
+          "y": 744
+        },
+        {
+          "id": 40,
+          "state": "CHECK",
+          "seen": false,
+          "x": 2330.3311395232768,
+          "y": 760.2458155694475
+        }
+      ],
+      "over": false
+    }
+  ],
+  "errors": [],
+  "method": "Native keyboard, normal RAF, active AI, standalone selected mission only; no player teleport, actor or rule overrides."
+}
