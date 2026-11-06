@@ -14618,7 +14618,7 @@ function startAmb() {
 
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '올빼미, 들립니까? 배차실 2층에 서류가 있습니다. 우선 오른쪽으로 가 봅시다.',
+ '연락책이 사라졌습니다, 올빼미. 단서는 배차실 2층의 서류입니다.',
  '상자 옆 풀숲이 보이죠? 몸을 낮추면 경비 눈을 피할 수 있습니다.',
  '좋습니다. 풀숲에서 나와 저 경비의 등 뒤까지 조용히 접근하세요.',
  '살려 두고 옷만 빌립시다. 공격을 짧게 누르고 떼세요. 길게 누르면 죽습니다.',
@@ -14632,11 +14632,12 @@ const OPENING_RADIO=[
 function episodeRadioMessage(){
  if(!S||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
  const P=S.player,goal=nextGoal();if(!goal)return null;
- const chase=S.guards.some(g=>g.state==='ALERT'&&(g.seen||knownFace(g))&&flOf(g)===flOf(P));
+ const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
  if(chase)return{text:'들켰습니다. 지금은 싸우지 말고 모퉁이를 돌아 시야부터 끊으세요. 숨으면 다시 기회가 옵니다.',action:'모퉁이·풀숲으로 이동 · 시야 밖에서 수습'};
- if(P.captive)return{text:'붙잡았군요. 짧게 공격하면 기절시킬 수 있습니다. 그 뒤 옷을 얻으세요.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'시야를 끊었습니다. 지금은 숨어서 기다리세요. 경비가 지나가면 다시 움직입시다.',action:'숨은 채 대기 · 수색이 잦아들면 의뢰 계속'};
+ if(P.captive)return P.captive.target?{text:'표적을 붙잡았군요. 이번 의뢰는 처치입니다. 공격을 1초 길게 누르세요. 짧게 누르면 기절합니다.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'붙잡았군요. 짧게 공격하면 기절시킬 수 있습니다. 그 뒤 옷을 얻으세요.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
-  const i=S.tutI||0,step=STAGE.steps[i];
+  const i=S.tutI||0;
   const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':OPENING_RADIO[i]||OPENING_RADIO[9];
   return{text,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
