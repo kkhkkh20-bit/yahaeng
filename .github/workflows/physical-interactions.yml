@@ -59,13 +59,6 @@ jobs:
           if failed:raise SystemExit('Focused failures: '+', '.join(failed))
           PY
           python tools/run_tests.py --fast --quick --no-build
-          python tests/tutorial/first_steps_live.py --out build/physical-v190/live
-          python tests/tutorial/beginner_live.py --url http://127.0.0.1:8001/public/ --out build/beginner-v197/ci-live
-          python tests/tutorial/first_night_live.py --url http://127.0.0.1:8001/public/ --out build/first-night-v194/ci-live
-          python tests/tutorial/field_learning_live.py --url http://127.0.0.1:8001/public/ --out build/field-v196/ci-live
-          python tests/tutorial/growth_live.py --url http://127.0.0.1:8001/public/ --out build/growth-v195/ci-live
-          python tests/tutorial/action_flow_live.py --url http://127.0.0.1:8001/public/ --out build/action-flow-v192/ci-live
-          YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/physical-v190/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v190 smoke
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Save review evidence and packaged assets on this PR
@@ -116,6 +109,62 @@ jobs:
             build/growth-v195/
             build/field-v196/
             build/beginner-v197/
+            build/linear-v198/
+            public/version.json
+          retention-days: 7
+
+  native-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [pc, mobile]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright pillow httpx
+          python -m playwright install --with-deps chromium
+      - name: Build the same playable package
+        run: |
+          python build.py
+          python tools/package_cloudflare_2d.py build/yahaeng_city.html
+      - name: Native linear journey, interactions and advanced missions
+        env:
+          PYTHONPATH: ${{ github.workspace }}/tests/support:${{ github.workspace }}/tests/tutorial
+          YH_TEST_HTTP: '1'
+          REVIEW_DEVICE: ${{ matrix.device }}
+        run: |
+          python -m http.server 8001 --bind 127.0.0.1 > "$RUNNER_TEMP/yahaeng-native-http.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          python tests/tutorial/first_steps_live.py --device "$REVIEW_DEVICE" --out build/linear-v198/first-live
+          python tests/tutorial/beginner_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/beginner
+          python tests/tutorial/first_night_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/first-night
+          python tests/tutorial/field_learning_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/field
+          python tests/tutorial/growth_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/growth
+          python tests/tutorial/action_flow_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/action
+          if [ "$REVIEW_DEVICE" = pc ]; then
+            YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/linear-v198/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v198 smoke
+          fi
+      - name: Package the exact tested build
+        run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
+      - name: Upload native playback evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.device }}-${{ github.run_id }}
+          path: |
             build/linear-v198/
             public/version.json
           retention-days: 7
