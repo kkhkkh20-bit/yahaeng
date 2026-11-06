@@ -54,7 +54,7 @@ async def main():
    context=await b.new_context(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},is_mobile=mobile,has_touch=mobile)
    ui=await context.new_page();ui.on('pageerror',lambda e:errors.append(str(e)))
    await ui.add_init_script('''(()=>{let q=[],t=1000;window.requestAnimationFrame=f=>q.push(f);window.__step=n=>{for(let i=0;i<n;i++){t+=16.7;const a=q;q=[];a.forEach(f=>f(t))}}})()''')
-   await ui.goto((ROOT/'build/preview_city.html').as_uri());await ui.wait_for_function('!!window.__game')
+   await ui.goto((ROOT/'build/preview_city.html').as_uri());await ui.wait_for_function('!!window.__game',polling=100)
    await ui.evaluate('''()=>{window.__fresh=()=>{const G=window.__game;G.start(G.STAGES.findIndex(s=>s.id==='m1'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();const S=G.S,P=S.player,base=S.guards.find(g=>!g.dog&&!g.civ&&!g.child);
      for(const k of ['props','hides','notes','lamps','doors','ladders','wires','poles','corpses','items','windows','fwindows','bfuses','traps','bushes'])S[k]=[];
      S.vehicles=null;S.camRoom=null;S.facOn=false;S.keys={};G.input.pressIds={};Object.assign(P,{x:33*48,y:21*48,fl:0,z:0,a:0});G.setLayer(0);G.cam.x=P.x;G.cam.y=P.y;

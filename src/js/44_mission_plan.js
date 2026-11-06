@@ -1,5 +1,6 @@
 // 표적에 대해 실제로 본 것과 브리핑에서 아는 것을 구분한다. 현재 위치를 추론해 갱신하지 않는다.
 function targetName(g) { return STAGE.targetNames?.[g.tag] || (g.doc ? '한 선생' : ({ vip: '클럽 실장', collector: '수금원', boss: '조직 두목' }[g.tag] || '표적')); }
+const targetProfile = g => g?.target && STAGE.targetCast?.[g.tag] || null;
 function keyPurpose(k) {
   if(!mainContract(STAGE))return '';
   if(STAGE.keyPurposes?.[k])return STAGE.keyPurposes[k];
@@ -29,6 +30,9 @@ function initMissionPlan() {
     for(const e of STAGE.exits||[]){const x=tc(e.at[0]),y=tc(e.at[1]);if(!S.exits.some(o=>dist(o.x,o.y,x,y)<1))S.exits.push({x,y,r:e.r||60,name:e.name||''});}
     if(S.exits[0]&&!S.exits[0].name)S.exits[0].name=STAGE.exitName;S.vipContractVersion=2;
   }
+  // Appearance is authored by identity, so old checkpoints get the same cast
+  // without changing positions, AI, clothing permissions or elimination state.
+  for(const c of S.corpses){const g=c.g||S.guards.find(g=>g.id===c.guardId);if(g?.target&&targetProfile(g))c.ch=c.stripped?(g.strippedLook||'strip'):charOf(g);}
   S.targetIntel = S.targetIntel || {};
   S.targetBrief = S.targetBrief || {};
   // v93의 약 사용은 곧바로 화장실 일과를 만들었다. 기존 우회는 그대로 이어간다.

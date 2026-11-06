@@ -10,7 +10,7 @@ function speakerOf(w) {
   if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '의사', face: 'fc_doc' };
   if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
-    return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: w.enforcer ? '반장' : '', face: w.dog ? null : 'fc_' + charOf(w) }; }
+    return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: targetProfile(w)?.role || (w.enforcer ? '반장' : ''), face: w.dog ? null : 'fc_' + charOf(w) }; }
   return { name: '', col: '#9fb6d8', key: null, role: '', face: null };
 }
 // 초상 시트(키 색)를 팔레트별로 한 번 칠해 둔다

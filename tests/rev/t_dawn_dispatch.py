@@ -10,7 +10,7 @@ async def main():
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},checks=[],fresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m7'));while(G.DLG.modal)G.advanceDialog();return G.S};
-   const st=G.STAGES.find(s=>s.id==='m7');ok(st&&G.mainContracts().at(-1)===st&&G.contractNumber(st)==='04','new episode not in main campaign');
+   const st=G.STAGES.find(s=>s.id==='m7');ok(st&&G.mainContracts()[3]===st&&G.contractNumber(st)==='04','new episode not in main campaign');
    localStorage.setItem('yahaeng.ch',JSON.stringify(Object.fromEntries(['p0','m2','m4','m6'].map(id=>[id,{_clear:true}]))));ok(G.STAGES[G.recommendedStage()].id==='m7','existing completed saves do not recommend new episode');
    G.start(G.STAGES.findIndex(s=>s.id==='m6'));while(G.DLG.modal)G.advanceDialog();ok(G.STAGES[G.learningNext()].id==='m7','prison result does not lead to new episode');localStorage.clear();
    let S=fresh(),P=S.player;ok(G.groundedWorld()&&!S.ladders.some(l=>l.kind==='pipe')&&P.candy===0,'new stage loses the existing physical policy');

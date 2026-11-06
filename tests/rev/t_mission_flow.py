@@ -18,14 +18,14 @@ async def main():
         pg.on('pageerror', lambda e: errors.append(str(e)))
         await pg.add_init_script('window.requestAnimationFrame=()=>0')
         await pg.goto((ROOT / 'build/preview_city.html').as_uri())
-        await pg.wait_for_function('!!window.__game')
+        await pg.wait_for_function('!!window.__game',polling=100)
         runs = 0
         for mobile in [False, True]:
             for alt in range(3):
                 for sid in ['m1', 'm2', 'm3', 'm4', 'm5', 'm6']:
                     try:
                         result = await pg.evaluate(FLOW, {'sid':sid, 'alt':alt, 'mobile':mobile})
-                        await pg.wait_for_function("!document.getElementById('end').hidden && document.getElementById('endTitle').textContent==='임무 완료'", polling=100)
+                        await pg.wait_for_function("!document.getElementById('end').hidden && document.getElementById('end').dataset.win==='1'", polling=100)
                     except Exception:
                         print('FAILED', sid, alt, mobile, await pg.evaluate('window.__flowTrace'))
                         raise

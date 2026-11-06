@@ -1,6 +1,6 @@
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '연락책이 사라졌습니다, 올빼미. 단서는 배차실 2층의 서류입니다.',
+ '제비가 사라졌습니다, 올빼미. 마지막 단서는 배차실 2층의 서류입니다.',
  '상자 옆 풀숲이 보이죠? 몸을 낮추면 경비 눈을 피할 수 있습니다.',
  '좋습니다. 풀숲에서 나와 저 경비의 등 뒤까지 조용히 접근하세요.',
  '살려 두고 옷만 빌립시다. 공격을 짧게 누르고 떼세요. 길게 누르면 죽습니다.',
@@ -12,7 +12,7 @@ const OPENING_RADIO=[
  '동쪽 골목에 차를 대 놨습니다. 잘했습니다, 올빼미. 이제 나옵시다.'
 ];
 function episodeRadioMessage(){
- if(!S||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
+ if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
  const P=S.player,goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
  if(chase)return{text:'들켰습니다. 지금은 싸우지 말고 모퉁이를 돌아 시야부터 끊으세요. 숨으면 다시 기회가 옵니다.',action:'모퉁이·풀숲으로 이동 · 시야 밖에서 수습'};

@@ -60,7 +60,7 @@
   ],
   items: [{ b: 0, fl: 1, at: 'R' },{b:2,fl:0,at:'R'}],itemFurniture:[null,['cab']],itemLayoutVersion:1,itemPatrols:[{tag:'paperKeeper'}],
   intel: [{ g: [2, 3], key: 2, gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', every: 24, first: 4,
-            lines: [[0, '두 사람 넘긴 게 까마귀라며?'], [1, '응. 그쪽 연락 받고 우리가 인수했잖아.'], [1, '여자는 어젯밤에 죽었대. 무전기는 여기 보관하고.'], [0, '남자는 아래 감방에 있어. 내일 이송한대.']] }],
+            lines: [[0, '두 사람 넘긴 게 까마귀라며?'], [1, '응. 그쪽 연락 받고 우리가 인수했잖아.'], [1, '여자는 어젯밤에 죽었대. 무전기는 여기 보관하고.'], [0, '올빼미는 아래 감방에 있어. 내일 이송한대.']] }],
   interrogate: [{ gives: 'truth', learn: '까마귀가 올빼미와 제비를 함께 넘겼다 — 제비는 어젯밤 죽었다', say: '까마귀가 넘겼어. 여자는 어제 죽었고, 무전기는 2층에 있어.' }],
   stories: [
     { id: 'cell', name: '감방 나가기', moot: (S, h) => !h.inRect(S.player, [4, 4, 15, 6, 0]), reveal: () => true,

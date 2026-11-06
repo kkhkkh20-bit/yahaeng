@@ -7,6 +7,8 @@ function blit(c, name, dx, dy, dw, dh, sx = 0, sy = 0, sw, sh) { const f = F[nam
 const dirOf = a => { const c = Math.cos(a), s = Math.sin(a); return Math.abs(c) > Math.abs(s) ? (c > 0 ? 3 : 2) : (s > 0 ? 0 : 1); };
 const charOf = g => {
   if(g.stripped)return g.strippedLook||'strip';
+  const profile = g.target && STAGE.targetCast?.[g.tag];
+  if(profile)return profile.key;
   const base = charBase(g);
   // An explicit civilian shape wins; role-specific outfits keep their own
   // workwear silhouette (for example the courier's helmet).

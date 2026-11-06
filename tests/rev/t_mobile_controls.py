@@ -12,7 +12,7 @@ async def main():
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    # Having the API present must not turn a mouse PC into a phone.
    await q.add_init_script("window.requestAnimationFrame=()=>0;localStorage.clear();if(!matchMedia('(pointer: coarse)').matches)Object.defineProperty(window,'ontouchstart',{value:null,configurable:true})")
-   await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate(SETUP)
+   await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100);await q.evaluate(SETUP)
    for scene in ['empty','grab','clothes']:
     await q.evaluate('scene',scene)
     controls=await q.locator('#hud button,#mini').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height}})''')

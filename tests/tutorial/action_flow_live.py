@@ -43,10 +43,12 @@ class Controls:
    await self.touch('touchStart',2,r['x']+r['width']/2,r['y']+r['height']/2)
    state=await self.q.evaluate('({approach:!!__game.S.player.approachAttack,recovery:!!__game.S.player.recoveryQueue})')
    if lethal:await self.q.wait_for_function('ids=>ids.length&&ids.every(id=>__game.targetEliminated(__game.S.guards.find(g=>g.id===id)))',arg=victims,timeout=10000,polling=50)
+   if not lethal:await self.q.wait_for_timeout(80)
    await self.touch('touchEnd',2)
   else:
    await self.q.keyboard.down(key);state=await self.q.evaluate('({approach:!!__game.S.player.approachAttack,recovery:!!__game.S.player.recoveryQueue})')
    if lethal:await self.q.wait_for_function('ids=>ids.length&&ids.every(id=>__game.targetEliminated(__game.S.guards.find(g=>g.id===id)))',arg=victims,timeout=10000,polling=50)
+   if not lethal:await self.q.wait_for_timeout(80)
    await self.q.keyboard.up(key)
   return state
  async def move(self,x=None,y=None,run=False):

@@ -218,3 +218,10 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 .vip-methods>span{flex:1 1 180px}.vip-methods small{margin-top:0;font-size:11px;color:#a1acb8}
 
 .ledger-list[data-filter="missions"] .lg-sec.chapter { display:block; }
+
+/* The clue and the silhouette explain the job before departure. */
+#brief .br-story { margin:8px 0 16px; padding:10px 0 10px 12px; border-left:2px solid #9a8870; color:var(--ui-muted); font-size:13px; line-height:1.65; }
+#brief .target-profile { display:block; margin:4px 0; color:#c5b79e; font-size:12px; font-style:normal; line-height:1.5; }
+#brief .mission-id > div { min-width:0; }
+#brief .mission-id b { overflow-wrap:anywhere; }
+#endSub { white-space:pre-line; }

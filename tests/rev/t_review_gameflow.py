@@ -17,7 +17,7 @@ async def main():
    if touch:await q.touchscreen.tap(point['x'],point['y'])
    else:await q.mouse.click(point['x'],point['y'])
    assert await q.evaluate('__game.S.marked===__game.S.guards[0]&&__game.kunaiTarget()?.ref===__game.S.marked'),'native marked target outside facing lost'
-   await q.evaluate('__game.updateHUD(true)');assert '수금원'in await q.locator('#btnTool').get_attribute('aria-label')
+   await q.evaluate('__game.updateHUD(true)');assert '장무혁'in await q.locator('#btnTool').get_attribute('aria-label')
    if touch:await q.tap('#btnTool')
    else:await q.keyboard.press('v')
    assert await q.evaluate('__game.S.kunais.length===1&&__game.S.kunais[0].tgt.ref===__game.S.marked')

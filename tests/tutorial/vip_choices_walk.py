@@ -146,6 +146,19 @@ async def main():
    await action('x','#btnCarry');await tick(2.2)
    # Wait outside the patrolled hallway, not inside an enforcer's reach.
    await move(180,600)
+   # Subdue the ordinary hallway patrol from its observed rear. Keeping it
+   # active through a safe's keypad, door and theft depends on a single short
+   # pause; a real nonlethal takedown gives the player a repeatable opening.
+   await move(264,552)
+   for _ in range(1500):
+    if await q.evaluate('(()=>{const g=__game.S.guards[6];return g.state==="PATROL"&&g.x<=270&&g.y<465&&g.wait>4.5&&Math.sin(g.a)<-.6})()'):break
+    await tick(.1)
+   else:raise AssertionError('hallway patrol never exposes its rear')
+   if await q.evaluate('__game.S.player.mode')!='sneak':await action('Control','#btnCrouch')
+   await move(264,490);await action('z','#btnAct');await tick(1.5)
+   assert await q.evaluate('__game.S.guards[6].unconscious'),'hallway rear takedown failed'
+   if await q.evaluate('__game.S.player.mode')=='sneak':await action('Control','#btnCrouch')
+   await move(180,504);await move(180,600)
    gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
    # The office patrol can identify a nearby disguise. Observe a real gap
    # before operating its doorway; a fixed schedule is not a stealth strategy.
@@ -156,7 +169,7 @@ async def main():
     if n%50==0:observed.append(view)
     # This endpoint pauses facing away. Leave enough time to enter and
     # operate the physical vault door before the patrol returns.
-    if view['state'] in ['PATROL','RETURN'] and view['x']>=400 and view['wait']>2.6 and __import__('math').cos(view['a'])>.8:break
+    if await q.evaluate('__game.S.guards[6].unconscious') or view['state'] in ['PATROL','RETURN'] and view['x']>=400 and view['wait']>2.6 and __import__('math').cos(view['a'])>.8:break
     await tick(.1)
    else:
     await draw();await q.screenshot(path=str(O/(name+'-office-wait.png')))

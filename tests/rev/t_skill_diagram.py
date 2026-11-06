@@ -33,7 +33,7 @@ async def main():
   await q.locator('[data-select="electric"]').click();await q.screenshot(path=str(O/'learned-pc.png'))
   await q.click('#btnSkillReset');assert await q.evaluate('!__game.loadSkillTree().learned.length');assert await q.locator('[data-node].learned').count()==0
   await q.keyboard.press('Escape');assert await q.locator('#skillDetail').is_hidden()
-  await q.click('#btnSkillRewards');assert await q.locator('.skill-reward-mission').count()==4
+  await q.click('#btnSkillRewards');assert await q.locator('.skill-reward-mission').count()==5
   await q.keyboard.press('Escape');await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible()
   assert not errors,errors
   (O/'diagram-checks.json').write_text(json.dumps({'nodes':27,'actualPrerequisiteEdges':24,'iconsSurviveBranchChanges':True,'inspectDoesNotPurchase':True,'prerequisiteNavigation':True,'realPointPurchases':True,'insufficientPointsBlocked':True,'arrowNavigation':True,'refundAndEscape':True,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS circle inspection, 27 icons, 24 real edges, prerequisite focus, learning, insufficient points, keyboard, refund and return');await b.close()
