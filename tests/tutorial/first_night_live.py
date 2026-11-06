@@ -36,11 +36,12 @@ async def main(args):
     await c.move(y=696);await c.move(168,744);await next_contract('p1')
     assert await q.evaluate('__game.STAGE.id')=='p2'
     # Deliberately attempt visible work first: the actual camera must record it,
-    # then the real recovery timer returns us to the safe entrance.
+    # the story continues and an explicit native retry returns to the checkpoint.
     await c.move(696,648);await c.move(y=360);await c.move(984,312);await c.press('x','#btnCarry')
-    await wait('__game.S.over&&__game.S.stats.camRec>0');await c.record('recorded-work-mistake');assert await q.evaluate('__game.searchCauseReadout().kind')=='camera'
+    await wait('!__game.S.over&&__game.S.stats.camRec>0&&__game.S.items[0].got');await c.record('recorded-work-mistake-keeps-playing');assert await q.evaluate('__game.searchCauseReadout().kind')=='camera'
+    await c.press('Escape','#btnPause');await c.press('F9','#btnCheckpointPause')
     await wait('!__game.S.over&&__game.S.stats.cpUsed===1');assert await q.evaluate('!__game.S.items[0].got&&__game.camOn(__game.S.cams[0])')
-    await c.record('automatic-safe-retry')
+    await c.record('explicit-native-safe-retry')
     await c.move(696,648);await c.move(y=312)
     rear=await q.evaluate('(()=>{const c=__game.S.cams[0];return{x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32}})()')
     await c.move(rear['x'],rear['y']);await q.screenshot(path=str(out/(name+'-camera-rear.png')));await c.press('x','#btnCarry');await wait('!__game.camOn(__game.S.cams[0])')
