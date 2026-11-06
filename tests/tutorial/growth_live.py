@@ -18,6 +18,7 @@ async def main(args):
    errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=growth');c=Controls(q,await q.context.new_cdp_session(q),mobile)
    async def wait(expr,timeout=7000):await q.wait_for_function(expr,timeout=timeout,polling=50)
    async def env(kind):
+    assert await q.evaluate('k=>__game.envChoices().some(a=>a.k===k)',kind),(kind,'not in reach',await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,choices:__game.envChoices().map(a=>a.k)})'))
     if await q.evaluate('__game.envAction().k')!=kind:
      await c.press('Tab','#btnCycle') if mobile else await q.keyboard.press('Shift+Tab')
      row=q.locator('[data-env-token^="'+kind+':"]');assert await row.count(),(kind,await q.evaluate('__game.envChoices().map(a=>a.k)'))
@@ -38,27 +39,30 @@ async def main(args):
      cause=await q.evaluate('__game.searchCauseReadout()');assert cause['kind']=='body' and '내 신원 미확인'in cause['text'],cause
     await q.screenshot(path=str(out/(name+'-'+id+'-clear.png')));await continue_episode(q);await q.click('#btnBrGo')
    try:
-    await standalone_stage(q,'e1');await q.click('#btnBrGo')
-    await c.press('Control','#btnCrouch');await c.move(600,888);await c.move(960,696);await c.move(y=408)
-    await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
-    await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
-    await c.move(960,696);await c.move(600,888);await c.move(168,888);await finish('e1',2)
-    assert await q.evaluate('__game.STAGE.id')=='e2'
-    await acquire_uniform(q,c)
-    await c.move(600,552);await c.move(744,552)
-    rear=await q.evaluate('(()=>{const c=__game.S.cams[0];return{x:c.x-32,y:c.y}})()');await c.move(rear['x'],600);await c.move(y=rear['y']);await env('camCable');await wait('!__game.camOn(__game.S.cams[0])')
-    await q.screenshot(path=str(out/(name+'-warehouse-camera.png')));await c.move(y=360);await c.move(1320,312);await env('loot');await wait('__game.S.items[0].got')
-    await c.move(y=552);await c.move(x=600);await c.move(y=936);await c.move(168,936);await finish('e2',3)
-    assert await q.evaluate('__game.STAGE.id')=='e3'
-    await acquire_uniform(q,c);await c.move(456,936);await c.move(y=648)
-    stair=await q.evaluate('(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==="fstair");return{up:G.stairLower(l).up.entry,down:G.stairUpper(l).down.entry}})()')
-    await route(stair['up']['x'],stair['up']['y']);
-    if await q.evaluate('__game.S.player.fl||0')==0:await env('up')
-    await wait('__game.S.player.fl===1&&!__game.actionBusy()');await c.record('first-real-upstairs-contract')
-    it=await q.evaluate('({x:__game.S.items[0].x,y:__game.S.items[0].y})');await route(it['x'],it['y']);await env('loot');await wait('__game.S.items[0].got');await q.screenshot(path=str(out/(name+'-upstairs-ledger.png')))
-    await route(stair['down']['x'],stair['down']['y']);
-    if await q.evaluate('__game.S.player.fl||0')==1:await env('fdown')
-    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',4)
+    if not args.bridge_only:
+     await standalone_stage(q,'e1');await q.click('#btnBrGo')
+     await c.press('Control','#btnCrouch');await c.move(600,888);await c.move(960,696);await c.move(y=408)
+     await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
+     await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+     await c.move(960,696);await c.move(600,888);await c.move(168,888);await finish('e1',2)
+     assert await q.evaluate('__game.STAGE.id')=='e2'
+     await acquire_uniform(q,c)
+     await c.move(600,552);await c.move(744,552)
+     rear=await q.evaluate('(()=>{const c=__game.S.cams[0];return{x:c.x-32,y:c.y}})()');await c.move(rear['x'],600);await c.move(y=rear['y']);await env('camCable');await wait('!__game.camOn(__game.S.cams[0])')
+     await q.screenshot(path=str(out/(name+'-warehouse-camera.png')));await c.move(y=360);await c.move(1320,312);await env('loot');await wait('__game.S.items[0].got')
+     await c.move(y=552);await c.move(x=600);await c.move(y=936);await c.move(168,936);await finish('e2',3)
+     assert await q.evaluate('__game.STAGE.id')=='e3'
+     await acquire_uniform(q,c);await c.move(456,936);await c.move(y=648)
+     stair=await q.evaluate('(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==="fstair");return{up:G.stairLower(l).up.entry,down:G.stairUpper(l).down.entry}})()')
+     await route(stair['up']['x'],stair['up']['y']);
+     if await q.evaluate('__game.S.player.fl||0')==0:await env('up')
+     await wait('__game.S.player.fl===1&&!__game.actionBusy()');await c.record('first-real-upstairs-contract')
+     it=await q.evaluate('({x:__game.S.items[0].x,y:__game.S.items[0].y})');await route(it['x'],it['y']);await env('loot');await wait('__game.S.items[0].got');await q.screenshot(path=str(out/(name+'-upstairs-ledger.png')))
+     await route(stair['down']['x'],stair['down']['y']);
+     if await q.evaluate('__game.S.player.fl||0')==1:await env('fdown')
+     await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',4)
+    else:
+     await standalone_stage(q,'e4');await q.click('#btnBrGo')
     assert await q.evaluate('__game.STAGE.id')=='e4'
     await acquire_uniform(q,c);await c.move(456,936);await c.move(y=648)
     camera=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])')
@@ -69,7 +73,7 @@ async def main(args):
     it=await q.evaluate('({x:__game.S.items[0].x,y:__game.S.items[0].y})');await route(it['x'],it['y']);await env('loot');await wait('__game.S.items[0].got');await q.screenshot(path=str(out/(name+'-exchange-upstairs.png')))
     await route(stair['down']['x'],stair['down']['y'])
     if await q.evaluate('__game.S.player.fl||0'):await env('fdown')
-    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e4',5)
+    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e4',2 if args.bridge_only else 5)
     assert await q.evaluate('__game.STAGE.id')=='e5'
     await acquire_uniform(q,c);await c.move(456,936);await c.move(y=648)
     stair=await q.evaluate('__game.S.lessonLayout');await route(stair['up']['x'],stair['up']['y'])
@@ -81,7 +85,7 @@ async def main(args):
     target=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return{x:g.x-40,y:g.y}})()');await route(target['x'],target['y']);await q.screenshot(path=str(out/(name+'-broker-rear.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards.find(g=>g.tag==="broker"))&&!__game.actionBusy()')
     await route(stair['down']['x'],stair['down']['y'])
     if await q.evaluate('__game.S.player.fl||0'):await env('fdown')
-    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e5',6)
+    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e5',3 if args.bridge_only else 6)
     assert await q.evaluate('__game.STAGE.id')=='m2'
     assert await q.evaluate('__game.loadSkillTree().learned.length>0&&!__game.campaignSkillState().canLearn')
     assert not errors,errors;reports.append({'device':name,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE GROWTH',name,flush=True)
@@ -93,4 +97,4 @@ async def main(args):
  (out/'summary.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2))
 
 if __name__=='__main__':
- parser=argparse.ArgumentParser();parser.add_argument('--url',default='http://127.0.0.1:8005/public/');parser.add_argument('--out',default='build/growth-v195/live');parser.add_argument('--device',choices=['pc','mobile']);asyncio.run(main(parser.parse_args()))
+ parser=argparse.ArgumentParser();parser.add_argument('--url',default='http://127.0.0.1:8005/public/');parser.add_argument('--out',default='build/growth-v195/live');parser.add_argument('--device',choices=['pc','mobile']);parser.add_argument('--bridge-only',action='store_true');asyncio.run(main(parser.parse_args()))

@@ -2,7 +2,7 @@
 {
  const base=STAGES.find(s=>s.id==='e3');
  const common={...base,storyEpisode:true,physicalWorld:true,episodeLesson:true,props:[],guards:[],items:[],cams:[],roofs:[],bricks:[],buildingNames:{0:'동네 교환실'},
-  build(m,office=false){m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:office?['새벽 부동산','협의실']:['통신 관리','교환실'],name:office?'새벽 부동산':'교환실'});m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16],[7,18]]);},
+  build(m,office=false){m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:office?['새벽 부동산','협의실']:['통신 관리','교환실'],name:office?'새벽 부동산':'교환실'});m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16],[6,18]]);},
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'직원 구역',['crew']]],
   cams:[[12,5,0,12]],securityEvidence:true,camRoom:{pos:[4,17],fl:0,name:'골목 관리 단말'},
   guards:[{kind:'g1',tag:'uniformDonor',at:[8,18],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false},{kind:'g1',tag:'upperKeeper',b:0,fl:1,at:'S',post:180,still:true,radio:false}],

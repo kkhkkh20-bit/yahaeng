@@ -1401,7 +1401,7 @@ STAGES.push({
 {
  const base=STAGES.find(s=>s.id==='e3');
  const common={...base,storyEpisode:true,physicalWorld:true,episodeLesson:true,props:[],guards:[],items:[],cams:[],roofs:[],bricks:[],buildingNames:{0:'동네 교환실'},
-  build(m,office=false){m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:office?['새벽 부동산','협의실']:['통신 관리','교환실'],name:office?'새벽 부동산':'교환실'});m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16],[7,18]]);},
+  build(m,office=false){m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:office?['새벽 부동산','협의실']:['통신 관리','교환실'],name:office?'새벽 부동산':'교환실'});m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16],[6,18]]);},
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'직원 구역',['crew']]],
   cams:[[12,5,0,12]],securityEvidence:true,camRoom:{pos:[4,17],fl:0,name:'골목 관리 단말'},
   guards:[{kind:'g1',tag:'uniformDonor',at:[8,18],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false},{kind:'g1',tag:'upperKeeper',b:0,fl:1,at:'S',post:180,still:true,radio:false}],
@@ -5804,14 +5804,14 @@ function civScream(g, x, y, c, saw, kind) {
 const camOn = c => !(c.hackedUntil>S.t) && !c.broken && !c.unplugged && !(S.camsOff && !c.search) && !(c.outdoor ? mainPowerOff(c) : (S.bfuses || []).some(f => f.b === c.b && f.cut));
 function cameraCableReachable(c){
   const P=S.player;
-  return !!c&&S.cams.includes(c)&&!c.search&&camOn(c)&&!P.hide&&!P.under&&!P.vent&&!P.z&&!P.carrying&&!P.captive&&objectReachable(c,40);
+  return !!c&&S.cams.includes(c)&&!c.search&&camOn(c)&&!P.hide&&!P.under&&!P.vent&&!P.z&&!P.carrying&&!P.captive&&objectReachable(c,46);
 }
 // A corner-mounted camera has no walkable space behind the wall. Service it
-// along either wall, outside its full sweep, with the same physical reach rule.
+// along either wall with the same physical reach rule.
 function cameraServicePoint(c){
  const rear={x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32,fl:c.fl};
  if(!c.wallMount)return rear;
- const {sx,sy}=c.wallMount,points=[{x:c.x-sx*5,y:c.y-sy*39,fl:c.fl},{x:c.x-sx*39,y:c.y-sy*5,fl:c.fl}],previous=CUR_F;
+ const {sx,sy}=c.wallMount,points=[{x:c.x-sx*5,y:c.y-sy*36,fl:c.fl},{x:c.x-sx*36,y:c.y-sy*5,fl:c.fl}],previous=CUR_F;
  setLayer(c.fl);
  try{
   const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34);

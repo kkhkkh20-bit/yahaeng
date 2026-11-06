@@ -30,7 +30,12 @@ async def standalone_stage(page,id,brief=True):
 async def acquire_uniform(page,controls,tag='uniformDonor'):
     g=await page.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);if(!g)throw Error("No authored uniform donor "+tag);return{x:g.x,y:g.y,a:g.a}}',tag)
     import math
-    await controls.move(g['x']-math.cos(g['a'])*40,g['y']-math.sin(g['a'])*40)
+    await controls.move(g['x']-math.cos(g['a'])*80,g['y']-math.sin(g['a'])*80)
+    if await page.evaluate('__game.S.player.mode')!='sneak':await controls.press('Control','#btnCrouch')
+    await controls.move(g['x']-math.cos(g['a'])*32,g['y']-math.sin(g['a'])*32)
+    ready="tag=>{const a=__game.attackAction();return a.k!=='none'&&(a.list||[a.g]).some(g=>g?.tag===tag)}"
+    if not await page.evaluate(ready,tag):await controls.move(g['x']-math.cos(g['a'])*28,g['y']-math.sin(g['a'])*28)
+    assert await page.evaluate(ready,tag),'Rear contact is not in reach'
     await controls.press('z','#btnAct')
     await page.wait_for_function('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);return g.unconscious&&!__game.actionBusy()}',arg=tag,timeout=7000)
     if await page.evaluate('__game.envAction().k')!='dress':
