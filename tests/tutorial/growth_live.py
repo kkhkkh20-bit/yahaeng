@@ -25,7 +25,7 @@ async def main(args):
      await row.first.click()
     await c.press('x','#btnCarry');await q.wait_for_timeout(100);await wait('!__game.actionBusy()')
    async def route(x,y):
-    points=await q.evaluate('''({x,y})=>{const G=__game,P=G.S.player,doors=new Set(G.S.doors.filter(d=>!d.keyLock&&(d.fl||0)===(P.fl||0)).map(d=>d.ty*G.MW+d.tx)),end=Math.floor(y/48)*G.MW+Math.floor(x/48),shafts=new Set(G.S.ladders.filter(l=>(l.bfl||0)===(P.fl||0)).map(l=>l.ty*G.MW+l.tx));return G.astar(Math.floor(P.x/48),Math.floor(P.y/48),Math.floor(x/48),Math.floor(y/48),(tx,ty)=>G.solidAt(tx,ty)&&!doors.has(ty*G.MW+tx)||shafts.has(ty*G.MW+tx)&&ty*G.MW+tx!==end).concat([{x,y}])}''',{'x':x,'y':y});assert points
+    points=await q.evaluate('''({x,y})=>{const G=__game,P=G.S.player,doors=new Set(G.S.doors.filter(d=>!d.keyLock&&(d.fl||0)===(P.fl||0)).map(d=>d.ty*G.MW+d.tx)),end=Math.floor(y/48)*G.MW+Math.floor(x/48),shafts=new Set(G.S.ladders.filter(l=>(l.bfl||0)===(P.fl||0)||l.tfl===(P.fl||0)).flatMap(l=>{const pts=[{x:l.tx*48+24,y:l.ty*48+24}];if(l.kind==='fstair')pts.push(((P.fl||0)===l.tfl?G.stairUpper(l).down:G.stairLower(l).up).entry);return pts.map(p=>Math.floor(p.y/48)*G.MW+Math.floor(p.x/48))}));return G.astar(Math.floor(P.x/48),Math.floor(P.y/48),Math.floor(x/48),Math.floor(y/48),(tx,ty)=>G.solidAt(tx,ty)&&!doors.has(ty*G.MW+tx)||shafts.has(ty*G.MW+tx)&&ty*G.MW+tx!==end).concat([{x,y}])}''',{'x':x,'y':y});assert points
     floor=await q.evaluate('__game.S.player.fl||0')
     for point in points:
      if await q.evaluate('(()=>{const a=__game.envAction();return a.k==="door"&&a.d.locked})()'):await env('door')
@@ -83,9 +83,11 @@ async def main(args):
     await route(camera['x'],camera['y'])
     await wait('(()=>{const G=__game,g=G.S.guards.find(g=>g.tag==="broker");return g.moving&&g.x>500&&Math.cos(g.a)<-.9&&!G.cameraAssessment(G.S.cams[0],true).visible&&G.workRiskReadout(G.envAction())?.kind!=="witness"})()',90000)
     await env('camCable');await wait('!__game.camOn(__game.S.cams[0])');safe=await c.record('broker-camera-disconnected');assert not safe['stats'].get('cpUsed',0) and not safe['stats'].get('camRec',0),safe
-    await route(stair['down']['x'],stair['down']['y'])
+    assert await q.evaluate('__game.S.player.fl===1'),'camera route accidentally descended'
     await wait('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return g.x>650&&Math.cos(g.a)>.9&&g.wait>10})()',90000)
-    target=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return{x:g.x-40,y:g.y}})()');await route(target['x'],target['y']);await q.screenshot(path=str(out/(name+'-broker-rear.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards.find(g=>g.tag==="broker"))&&!__game.actionBusy()')
+    target=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return{x:g.x-40,y:g.y}})()');await route(target['x'],target['y']);assert await q.evaluate('__game.S.player.fl===1'),'attack route accidentally descended'
+    await wait('(()=>{const G=__game,g=G.S.guards.find(g=>g.tag==="broker"),P=G.S.player;return g.wait>3&&(P.x-g.x)*Math.cos(g.a)+(P.y-g.y)*Math.sin(g.a)<0&&G.attackAction().list?.includes(g)})()',90000)
+    await q.screenshot(path=str(out/(name+'-broker-rear.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards.find(g=>g.tag==="broker"))&&!__game.actionBusy()')
     await route(stair['down']['x'],stair['down']['y'])
     if await q.evaluate('__game.S.player.fl||0'):await env('fdown')
     await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e5',3 if args.bridge_only else 6)
@@ -93,7 +95,7 @@ async def main(args):
     assert await q.evaluate('__game.loadSkillTree().learned.length>0&&!__game.campaignSkillState().canLearn')
     assert not errors,errors;reports.append({'device':name,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE GROWTH',name,flush=True)
    except Exception:
-    await c.record('failed');print(await q.evaluate('({stage:__game.STAGE.id,fl:__game.S.player.fl,env:__game.envAction().k,goal:__game.nextGoal()?.text})'),flush=True);await q.screenshot(path=str(out/(name+'-failed.png')));raise
+    await c.record('failed');print(await q.evaluate('({stage:__game.STAGE.id,fl:__game.S.player.fl,env:__game.envAction().k,goal:__game.nextGoal()?.text,attack:__game.attackAction().k,reason:__game.attackAction().label,a:__game.S.guards.find(g=>g.tag==="broker")?.a,layer:__game.layer,stairs:__game.S.ladders.map(l=>({x:l.tx,y:l.ty,bfl:l.bfl,tfl:l.tfl}))})'),flush=True);await q.screenshot(path=str(out/(name+'-failed.png')));raise
    finally:
     (out/(name+'.json')).write_text(json.dumps({'events':c.events,'errors':errors},ensure_ascii=False,indent=2));await c.steer();await q.close();await q.video.save_as(str(out/(name+'.webm')))
   await b.close()
