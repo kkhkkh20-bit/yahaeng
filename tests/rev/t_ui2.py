@@ -1,5 +1,5 @@
 # 휴대폰 화면 회귀:
-#  1 대화창은 화면 아래에, 얼굴 칸은 대화 상자와 위아래가 맞는다
+#  1 대화창은 화면 아래에, 얼굴은 대화문 첫 줄에 맞추고 상자 안에 머문다
 #  2 대화 중엔 조작 버튼이 감춰지고, 화면 아무 데나 눌러도 다음 대사로 넘어간다
 #  3 처음 켜면 [항상 걷기]가 꺼져 있다 (이동은 자유 — 걷기 고정은 스스로 켠다)
 #  4 계단을 내려갈 때 걸어가는 쪽을 본다 (뒷걸음질 없음)
@@ -19,7 +19,7 @@ async def main():
         print('대화창', r)
         if not r['modal']: bad.append('시작 대화가 안 뜬다')
         if r['dlgTop'] < r['H'] * 0.55: bad.append(f'대화창이 화면 아래에 있지 않다 {r}')
-        if abs(r['faceT'] - r['boxT']) > 2 or abs(r['faceB'] - r['boxB']) > 2: bad.append(f'얼굴 칸과 대화 상자 위아래가 어긋난다 {r}')
+        if abs(r['faceT'] - r['boxT']) > 2 or r['faceB'] > r['dlgBot'] + 2 or r['faceB'] - r['faceT'] < 64: bad.append(f'얼굴이 첫 줄과 어긋나거나 대화 상자를 벗어난다 {r}')
         if r['padVis'] != 'hidden': bad.append('대화 중에도 조작 버튼이 보인다')
         first = r['line']
         await pg.touchscreen.tap(195, 200); await pg.wait_for_timeout(250)   # 화면 위쪽 아무 데나 (대화창 밖)
