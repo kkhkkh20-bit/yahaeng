@@ -14,6 +14,7 @@ FAST = ['t_menu', 't_new_campaign', 't_linear_campaign', 't_review_clarity', 't_
 FAST.extend(['t_original_readability','t_cast_vision'])
 FAST.append('t_tutorial_markers')
 FAST.append('t_room_switches')
+FAST.append('t_room_finish')
 FAST.append('t_ledge_facing')
 FAST.extend(['t_field_learning','t_beginner_clarity'])
 FAST.append('t_pair_counterplay')

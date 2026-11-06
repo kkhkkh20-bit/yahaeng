@@ -14,3 +14,5 @@
 - v123 클럽 기준 구역: `src/art/quarter/`의 14개 모델 샘플은 Kenney Furniture Kit와 Quaternius Downtown City MegaKit(CC0)를 기존 2D 좌표에 맞춰 다시 구운 것. 원본 SHA-256·고정 리비전·두 라이선스는 같은 폴더에 보관. `tools/prerender/bake_quarter.py`로 재생성하며 AI 이미지 생성은 사용하지 않았다. 사용 범위·미적용 후보는 `docs/CLUB_QUARTER_V123.md`에 기록.
 
 - 현재 UI·캔버스 안내 글꼴(v153): [IBM Plex Sans KR Regular](https://github.com/google/fonts/tree/main/ofl/ibmplexsanskr) (IBM, SIL OFL 1.1). 전체 한글 11,172음절을 포함한 WOFF2를 자체 제공하며, 출처·변환·해시는 `src/fonts/ui-font.json`, 라이선스는 `src/fonts/OFL-IBMPlexSansKR.txt`. 제목의 야행 로고는 기존 Black Han Sans를 유지한다. Galmuri는 이전 보관판의 출처다.
+
+- v201 사무동 2층 시범 방: [Quaternius Ultimate House Interior](https://quaternius.com/packs/ultimatehomeinterior.html)의 의자·소파·서랍장과 [Poly Haven Industrial Wall Lamp](https://polyhaven.com/a/industrial_wall_lamp)(Kuutti Siitonen), 모두 CC0. 스위치·미닫이 창문·사무 책상은 직접 제작했다. 원본 파일·SHA-256·라이선스는 `tools/prerender/room_finish_src/`, 구운 2D WebP 48장은 `src/art/room-finish/`에 보관한다. Blender는 제작 도구로만 사용하며 게임은 계속 2D로 실행된다. 적용·검증 범위는 `docs/LIGHT_ROOM_V201.md` 참고.

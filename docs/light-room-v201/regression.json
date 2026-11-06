@@ -1,0 +1,22 @@
+{
+  "sprites": 48,
+  "pilotCount": 4,
+  "windows": 4,
+  "lit": [
+    1,
+    1,
+    1
+  ],
+  "dark": [
+    0.04,
+    0.04,
+    0.04
+  ],
+  "wallLit": 0.04,
+  "wallDark": 0.04,
+  "facadeLit": 130.39814814814815,
+  "facadeDark": 51.71296296296296,
+  "basicSwitch": true,
+  "checkpointStable": true,
+  "isolated": true
+}

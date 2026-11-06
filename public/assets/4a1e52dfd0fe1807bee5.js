@@ -1900,6 +1900,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
 // 가구: 막힌 칸은 어두운 판(그림자) 위에 그린다. 막힘·엄폐 구분 테두리는 살피기(Alt) 때만
 function drawFurn(x, it) {
+  if(drawRoomFinishFurn(x,it))return;
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
   if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
   drawFurnArt(x, it);
@@ -3812,7 +3813,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
-  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncRoomSwitches(); capturePhysicalLayout();
+  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -4267,7 +4268,7 @@ function renderMap(R) {
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.hearth || flOf(l) !== CUR_F) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 
@@ -4748,6 +4749,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
   const controls=new Set(),fixtures=new Set();
   for(const l of S.lamps){
     if(l.outdoor||l.hearth||flOf(l)!==fl||building>=0&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))!==building)continue;
+    if(l.roomFinish)continue;
     const f=l.fixture,fk=f&&f.x+','+f.y;
     if(f&&!fixtures.has(fk)&&inView(f.x,f.y,70)){
       fixtures.add(fk);drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
@@ -4760,6 +4762,91 @@ function drawIndoorLampFixtures(fl,building=-1) {
     ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
     ctx.fillStyle=lampCircuitOff(l)?'#20282e':'#59656e';ctx.fillRect(p.x-2,p.y+(lampCircuitOff(l)?-1:-6),4,2);
   }
+  drawRoomFinishFixtures(fl,building);
+}
+
+// A single authored office is the free-asset lighting pilot. All art is 2D at runtime.
+const roomArt={};
+for(const[key,a]of Object.entries(window.__ROOM_ART__||{})){
+ const img=new Image();roomArt[key]={...a,img};img.onload=()=>{if(S?.roomFinish)S.floorC={};};img.src=a.src;
+}
+function roomArtDraw(x,key,px,py,alpha=1,scale=1){
+ const a=roomArt[key];if(!a?.img.complete||!a.img.naturalWidth)return false;
+ x.save();x.globalAlpha*=alpha;x.imageSmoothingEnabled=false;x.drawImage(a.img,px+a.ox*scale,py+a.oy*scale,a.w*scale,a.h*scale);x.restore();return true;
+}
+const roomArtRotation=(nx,ny)=>Math.abs(nx)>Math.abs(ny)?nx>0?1:3:ny>0?0:2;
+function restoreRoomFinishOrigins(){
+ for(const l of S.lamps||[])if(l.finishOrigin){Object.assign(l,l.finishOrigin);delete l.roomFinish;delete l.finishOrigin;}
+}
+function initRoomFinish(){
+ restoreRoomFinishOrigins();
+ for(const w of S.fwindows||[])delete w.roomFinish;
+ S.roomFinish=null;
+ if(STAGE.id!=='m2'||window.__ROOM_FINISH_BASELINE__)return;
+ const b=0,fl=1,room=PLANS[b]?.[fl]?.store;
+ if(BLD[b]?.name!=='사무동'||room?.use!=='office')return;
+ const within=(x,y)=>x>=room.x0&&x<=room.x1&&y>=room.y0&&y<=room.y1;
+ const lamps=S.lamps.filter(l=>!l.outdoor&&!l.hearth&&flOf(l)===fl&&l.fixture&&within(Math.floor(l.x/TILE),Math.floor(l.y/TILE)));
+ if(!lamps.length)return;
+ S.roomFinish={b,fl,room:{...room},circuits:[...new Set(lamps.map(l=>l.circuit))]};
+ const L0=CUR_F;setLayer(fl);
+ for(const l of lamps){
+  l.finishOrigin={x:l.x,y:l.y,r:l.r,col:l.col};l.roomFinish=true;
+  // Put the emitter just inside the mounted fixture, never in the old room centre.
+  l.x=l.fixture.x+l.fixture.nx*8;l.y=l.fixture.y+l.fixture.ny*8;l.r=300;l.col='235,218,183';
+  l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r));l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+ }
+ for(const w of S.fwindows||[]){
+  if(w.fl!==fl||bldAt(w.tx,w.ty)!==b)continue;
+  w.roomFinish=[[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>within(w.tx+dx,w.ty+dy));
+ }
+ setLayer(L0);LG=null;for(const key in lightCache)delete lightCache[key];S.floorC={};refreshBodyLighting();
+}
+function roomFinishFurnKey(it){
+ const f=S?.roomFinish,r=f?.room;if(STAGE.id!=='m2'||!f||it.fl!==f.fl||it.x<r.x0||it.x>r.x1||it.y<r.y0||it.y>r.y1)return null;
+ const kind={sofa:'sofa',chairD:'chair',cab:'cab',desk2:'desk'}[it.t];return kind?kind+'-'+(it.r||0):null;
+}
+function drawRoomFinishFurn(x,it){
+ const key=roomFinishFurnKey(it);if(!key||!roomArt[key]?.img.naturalWidth)return false;
+ x.save();x.fillStyle='rgba(9,13,18,.22)';x.beginPath();x.ellipse((it.x+it.w/2)*TILE,(it.y+it.h/2)*TILE,it.w*TILE*.46,it.h*TILE*.35,0,0,TAU);x.fill();x.restore();
+ return roomArtDraw(x,key,it.x*TILE,it.y*TILE);
+}
+function roomFinishLamps(){const f=S?.roomFinish;return f?S.lamps.filter(l=>l.roomFinish&&flOf(l)===f.fl):[];}
+function roomFinishWindowLit(w){return !!w.roomFinish&&roomFinishLamps().some(l=>lampOn(l));}
+function drawRoomFinishWindow(w,alpha=1,ex=w.x,ey=w.y){
+ if(!w.roomFinish||!S.roomFinish)return false;
+ const b=BLD[S.roomFinish.b],nx=w.tx===b.x0?1:w.tx===b.x1?-1:0,ny=w.ty===b.y0?1:w.ty===b.y1?-1:0;
+ const lit=roomFinishWindowLit(w),opened=winSt(w)==='open',r=roomArtRotation(nx,ny);
+ return roomArtDraw(ctx,'window-'+Number(lit)+'-'+Number(opened)+'-'+r,ex,ey,alpha);
+}
+function drawRoomFinishFacadeWindow(w,x,y){
+ if(!w.roomFinish||!S.roomFinish)return false;
+ return roomArtDraw(ctx,'window-'+Number(roomFinishWindowLit(w))+'-'+Number(winSt(w)==='open')+'-0',x,y+10,1,.68);
+}
+function drawRoomFinishExterior(openB){
+ const f=S.roomFinish;if(!f||openB===f.b)return;const b=BLD[f.b];
+ if(!b?.facade||f.fl>=b.fh)return;
+ // Window-sight overlays contain the ground-floor plan. Upper-floor panes
+ // stay on their facade row and retain their own room's electrical state.
+ for(const w of S.fwindows||[])if(w.roomFinish&&w.ty===b.y1)
+  drawRoomFinishFacadeWindow(w,w.tx*TILE+24,(b.y1-f.fl)*TILE+24);
+}
+function drawRoomFinishFixtures(fl,building){
+ const f=S.roomFinish;if(!f||f.fl!==fl||building>=0&&building!==f.b)return;
+ const controls=new Set();
+ for(const l of roomFinishLamps()){
+  const m=l.fixture,on=lampOn(l);if(!m)continue;
+  roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.x,m.y);
+  if(on){const y=m.y-35;ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(m.x,y,0,m.x,y,10);g.addColorStop(0,'rgba(255,212,142,.28)');g.addColorStop(1,'rgba(255,212,142,0)');ctx.fillStyle=g;ctx.fillRect(m.x-10,y-10,20,20);ctx.restore();}
+  if(l.broken){ctx.strokeStyle='#89867c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(m.x-3,m.y-38);ctx.lineTo(m.x+3,m.y-29);ctx.stroke();}
+  if(!l.control||controls.has(l.circuit))continue;controls.add(l.circuit);
+  const p=l.control;roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(-p.nx,-p.ny),p.x+p.nx*5,p.y+p.ny*5);
+ }
+}
+function drawRoomFinishGlow(l,color){
+ if(!l.roomFinish)return false;
+ ctx.save();ctx.beginPath();for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
+ const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.65);g.addColorStop(0,`rgba(${color},.075)`);g.addColorStop(1,`rgba(${color},0)`);ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();return true;
 }
 
 // 실내 CCTV는 담당 경비의 작업점이 아닌, 같은 방의 벽 모서리에 설치한다.
@@ -9365,7 +9452,7 @@ function loadCheckpoint() {
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.vfx=[]; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); syncWorkLights(); syncRoomSwitches(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
@@ -13372,6 +13459,7 @@ function paintWindow(w,lit,L=44,T=20) {
   ctx.fillStyle='#899084';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c6c6ae';ctx.fillRect(left-2,T/2,L+4,1);
 }
 function drawWindow(w, alpha) {
+  if(drawRoomFinishWindow(w,alpha))return;
   if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
   paintWindow(w,w._lit,winVert(w)?36:44,winVert(w)?14:20);ctx.restore();
@@ -13395,6 +13483,7 @@ function paintSideWindow(w,lit,side){
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
+  if(drawRoomFinishWindow(w,.9))return;
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
@@ -14026,7 +14115,7 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
     ctx.globalCompositeOperation = 'lighter';
-    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
+    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { if(drawRoomFinishGlow(l,inkLampColor(l)||'235,218,183'))continue;const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
     ctx.globalCompositeOperation = 'source-over';
     drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
@@ -14117,6 +14206,7 @@ function draw() {
     // 옥상 위·벽을 타는 자경대원
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
     drawWindowSight(P, openB);
+    if(!DBG.roofs)drawRoomFinishExterior(openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && !windowMotion && front(P.x, P.y)) drawPlayer(P);
   }
@@ -15905,6 +15995,8 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
+    get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,

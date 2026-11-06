@@ -52,6 +52,7 @@ function paintWindow(w,lit,L=44,T=20) {
   ctx.fillStyle='#899084';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c6c6ae';ctx.fillRect(left-2,T/2,L+4,1);
 }
 function drawWindow(w, alpha) {
+  if(drawRoomFinishWindow(w,alpha))return;
   if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
   paintWindow(w,w._lit,winVert(w)?36:44,winVert(w)?14:20);ctx.restore();
@@ -75,6 +76,7 @@ function paintSideWindow(w,lit,side){
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
+  if(drawRoomFinishWindow(w,.9))return;
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;

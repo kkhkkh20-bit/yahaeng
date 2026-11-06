@@ -10,6 +10,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
   const controls=new Set(),fixtures=new Set();
   for(const l of S.lamps){
     if(l.outdoor||l.hearth||flOf(l)!==fl||building>=0&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))!==building)continue;
+    if(l.roomFinish)continue;
     const f=l.fixture,fk=f&&f.x+','+f.y;
     if(f&&!fixtures.has(fk)&&inView(f.x,f.y,70)){
       fixtures.add(fk);drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
@@ -22,4 +23,5 @@ function drawIndoorLampFixtures(fl,building=-1) {
     ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
     ctx.fillStyle=lampCircuitOff(l)?'#20282e':'#59656e';ctx.fillRect(p.x-2,p.y+(lampCircuitOff(l)?-1:-6),4,2);
   }
+  drawRoomFinishFixtures(fl,building);
 }

@@ -130,6 +130,10 @@
       "group": "light_fixtures"
     },
     {
+      "path": "36_room_finish.js",
+      "group": "light_fixtures"
+    },
+    {
       "path": "37_security_camera.js",
       "group": "security_camera"
     },

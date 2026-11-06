@@ -1,6 +1,8 @@
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
+    get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,

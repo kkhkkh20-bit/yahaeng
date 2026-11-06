@@ -21,7 +21,8 @@ def game_js():
 def stages_js():
     return ''.join(read(m) for m in sorted(glob.glob(P('src', 'stages', '*.js'))))
 
-CREDIT = ("HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · "
+CREDIT = ("시범 실내 모델: <a href=\"https://quaternius.com/packs/ultimatehomeinterior.html\" target=\"_blank\" rel=\"noopener\">Quaternius House Interior</a> · <a href=\"https://polyhaven.com/a/industrial_wall_lamp\" target=\"_blank\" rel=\"noopener\">Industrial Wall Lamp / Kuutti Siitonen, Poly Haven</a> (CC0) · "
+"HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · "
           "효과: <a href=\"https://github.com/patch-gg/pixelfx\" target=\"_blank\" rel=\"noopener\">PixelFX · Patch / Hugo Duprez</a> (MIT) · "
           "건물 외관: <a href=\"https://quaternius.com/packs/downtowncitymegakit.html\" target=\"_blank\" rel=\"noopener\">Quaternius Downtown City MegaKit</a> (CC0) · "
           "배경 3D 모델: <a href=\"https://kenney.nl/assets/retro-urban-kit\" target=\"_blank\" rel=\"noopener\">Kenney Retro Urban Kit</a> · <a href=\"https://kenney.nl/assets/furniture-kit\" target=\"_blank\" rel=\"noopener\">Furniture Kit</a> (CC0) · "
@@ -78,6 +79,10 @@ def build():
     for key,item in lights.items():
         item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','lights',key+'.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__LIGHT_ART__ = '+json.dumps(lights)+';</script>\n<script>window.__ASSETS__')
+    room_art=json.load(open(P('src','art','room-finish','meta.json')))
+    for key,item in room_art.items():
+        item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','room-finish',key+'.webp'),'rb').read()).decode()
+    html=html.replace('<script>window.__ASSETS__','<script>window.__ROOM_ART__ = '+json.dumps(room_art)+';</script>\n<script>window.__ASSETS__')
     meta = json.load(open(P('build', 'pr', 'pr_meta.json')))
     meta['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'key.webp'), 'rb').read()).decode()
     if meta.get('faces') and os.path.exists(P('build', 'pr', 'face.webp')): meta['faces']['src'] = 'data:image/webp;base64,' + base64.b64encode(open(P('build', 'pr', 'face.webp'), 'rb').read()).decode()

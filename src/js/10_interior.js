@@ -256,6 +256,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
 // 가구: 막힌 칸은 어두운 판(그림자) 위에 그린다. 막힘·엄폐 구분 테두리는 살피기(Alt) 때만
 function drawFurn(x, it) {
+  if(drawRoomFinishFurn(x,it))return;
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
   if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
   drawFurnArt(x, it);

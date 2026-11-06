@@ -59,6 +59,7 @@ jobs:
           if failed:raise SystemExit('Focused failures: '+', '.join(failed))
           PY
           python tools/run_tests.py --fast --quick --no-build
+          python tests/tutorial/room_finish_live.py --url http://127.0.0.1:8001/public/
           python tools/capture_ink_interface.py after --out build/ink-v199
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
@@ -102,6 +103,7 @@ jobs:
           name: physical-interactions-${{ github.run_id }}
           path: |
             build/test_logs/
+            build/light-room-v201/
             build/tutorial-validation/
             build/physical-v190/
             build/action-flow-v192/
