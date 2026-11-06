@@ -1,6 +1,6 @@
 # First mission clarity — v197
 
-A fresh quick start now teaches one action at a time inside the real first mission: walk, crouch, approach the marked target, assassinate and leave. The guide does not lock attacks, victory or alternative routes. Existing clears and older in-progress checkpoints continue without repeating these controls. Completed control steps are saved through the normal safe-checkpoint rules.
+A fresh quick start now teaches one action at a time inside the real first mission: walk, crouch, approach the marked target, assassinate and leave. The guide does not lock attacks, victory or alternative routes. Existing clears and older in-progress checkpoints continue without repeating these controls. An early knockout yields immediately to unfinished-target recovery; it cannot grant victory or trap the player in movement instructions. Completed control steps are saved through the normal safe-checkpoint rules.
 
 The opening briefing keeps the mission and departure button prominent. The full skill tree remains available through the existing menu; the first result invites the player to spend their four starting points. No skill is recommended, purchased or granted automatically.
 
@@ -10,7 +10,7 @@ Search feedback persists after a toast disappears and distinguishes a body repor
 
 ## Verification
 
-- Controlled fixtures: seven guidance/readiness/selection/cause groups at 1280×800, 390×844, 320×720 and 844×390. Separate existing fixtures exercise an actual AI body inspection/report and rendered KO/dead-body labels.
+- Controlled fixtures: eight guidance/readiness/selection/cause groups at 1280×800, 390×844, 320×720 and 844×390. Separate existing fixtures exercise an actual AI body inspection/report and rendered KO/dead-body labels.
 - Native first-entry clears on PC and emulated touch: ordinary RAF, fresh saves, unseeded active actors, native keyboard/CDP joystick. Both completed a real assassination, carrying, concealment and escape with 3 HP, zero personal detections and no purchased skills.
 - Native first-night sequence on both devices: p0 → p1 → p2, real uniform passage and timed theft, deliberate CCTV recording mistake, automatic safe retry, rear cable disconnection, paper recovery and escape. No actor, health, clock, inventory or skill overrides.
 - Fresh first-control screenshots and visible layout checks at all four viewports. No overlapping visible action buttons. The completed first-mission journeys remain separate from these short layout checks.

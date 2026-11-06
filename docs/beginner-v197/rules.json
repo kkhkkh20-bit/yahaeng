@@ -7,6 +7,7 @@
     "checks": [
       "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
       "legacy and completed saves bypass introductory controls",
+      "an early knockout yields to real unfinished-target recovery without granting victory",
       "out-of-reach attack explains approach; real contact alone enables assassination",
       "paper guidance and selected physical action agree across range and floor boundaries",
       "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
@@ -57,6 +58,7 @@
     "checks": [
       "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
       "legacy and completed saves bypass introductory controls",
+      "an early knockout yields to real unfinished-target recovery without granting victory",
       "out-of-reach attack explains approach; real contact alone enables assassination",
       "paper guidance and selected physical action agree across range and floor boundaries",
       "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
@@ -107,6 +109,7 @@
     "checks": [
       "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
       "legacy and completed saves bypass introductory controls",
+      "an early knockout yields to real unfinished-target recovery without granting victory",
       "out-of-reach attack explains approach; real contact alone enables assassination",
       "paper guidance and selected physical action agree across range and floor boundaries",
       "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
@@ -157,6 +160,7 @@
     "checks": [
       "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
       "legacy and completed saves bypass introductory controls",
+      "an early knockout yields to real unfinished-target recovery without granting victory",
       "out-of-reach attack explains approach; real contact alone enables assassination",
       "paper guidance and selected physical action agree across range and floor boundaries",
       "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
@@ -168,9 +172,9 @@
         "id": "objective",
         "visible": true,
         "left": 32,
-        "right": 384,
-        "width": 352,
-        "scroll": 352
+        "right": 351.875,
+        "width": 319.875,
+        "scroll": 320
       },
       {
         "id": "lightLbl",

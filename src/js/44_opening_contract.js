@@ -11,13 +11,14 @@ function initBeginnerEntry(){
 function updateBeginnerEntry(){
   const b=S.beginnerEntry;if(!b||b.step>=2)return;
   const P=S.player,g=npc('runner');
-  if(g&&targetEliminated(g)){b.step=2;return;}
+  if(g&&(targetEliminated(g)||g.unconscious)){b.step=2;S.cpWant=true;return;}
   if(b.step===0&&P.moving&&dist(P.x,P.y,b.x,b.y)>=40)b.step=1;
   if(b.step===1&&P.mode==='sneak'){b.step=2;S.cpWant=true;}
 }
 function beginnerEntryGoal(){
   const b=S.beginnerEntry;if(!b||b.step>=2||!beginnerEntryNeeded())return null;
-  return b.step===0?{x:b.x+64,y:b.y,fl:0,text:'먼저, 골목에서 움직여 보기',where:isTouch?(input.walkLock?'왼쪽을 끌어 걷기 · 달리기는 장비에서 설정':'왼쪽을 조금 끌면 걷기 · 끝까지 끌면 달리기'):tutText('{이동} 오른쪽 표시까지 걷기'),moveCue:true}:
+  const g=npc('runner');if(g&&(targetEliminated(g)||g.unconscious))return null;
+  return b.step===0?{x:b.x+64,y:b.y,fl:0,text:'먼저, 골목에서 움직여 보기',where:isTouch?(input.walkLock?'걷기 고정 중 · 달리기는 장비에서':'왼쪽 조금: 걷기 · 끝까지: 달리기'):tutText('{이동} 오른쪽 표시까지 걷기'),moveCue:true}:
     {text:'몸을 낮춰 조용히 접근하기',where:tutText('{살금} 몸을 낮추기 · 발소리가 작아진다')};
 }
 
