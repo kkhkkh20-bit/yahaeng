@@ -27,12 +27,13 @@ async def main():
    const it=S.items[0];Object.assign(P,{x:it.x,y:it.y,vx:0,vy:0});tick(.1);ok(!it.got,'paper automatically collected');G.actEnv();tick(.7);ok(!it.got&&P.pick,'theft finishes too early');tick(.7);ok(it.got&&S.exitOpen&&!S.stats.detected,'behind-guard theft');
    G.showEnd(true);const points=G.skillBudget();ok(points===2,'first earned point');G.showEnd(true);ok(G.skillBudget()===points,'duplicate reward');out.push('real wardrobe, legal guard sight, interruptible paper theft and single earned reward');
    localStorage.clear();S=fresh('p2');P=S.player;ok(!S.guards.length&&S.cams.length===1&&S.items[0].furn,'camera contract overload/automatic pickup');
-   Object.assign(P,{x:S.items[0].x,y:S.items[0].y});G.actEnv();tick(2);ok(S.over&&(S.stats.camRec||0)>0,'actual CCTV theft did not produce a recoverable failure');
+   Object.assign(P,{x:S.items[0].x,y:S.items[0].y});G.actEnv();tick(2);ok(!S.over&&S.items[0].got&&(S.stats.camRec||0)>0,'camera mistake forced a story restart or ignored recording');
    return out;
   }''')
-  await q.wait_for_timeout(1450)
+  assert await q.evaluate('!__game.S.over&&__game.S.items[0].got&&__game.S.stats.camRec>0'),'camera recording immediately fails the story'
+  assert await q.evaluate('__game.loadCheckpoint()'),'explicit retry unavailable'
   assert await q.evaluate('!__game.S.over&&!__game.S.items[0].got&&__game.camOn(__game.S.cams[0])&&!__game.S.stats.camRec&&__game.S.player.hp===3'),'recorded theft did not restore safe checkpoint'
-  checks.append('real CCTV recording retries automatically at a safe checkpoint')
+  checks.append('CCTV mistakes continue the story; explicit retry restores the safe checkpoint')
   await q.evaluate('''()=>{
    const G=__game,S=G.S,P=S.player,c=S.cams[0];Object.assign(P,{x:c.x-32,y:c.y,cover:null,vx:0,vy:0});G.actEnv();
    for(let n=0;n<190;n++)G.update(.01);if(!G.camOn(c))throw Error('Cable disabled before2s');for(let n=0;n<80;n++)G.update(.01);

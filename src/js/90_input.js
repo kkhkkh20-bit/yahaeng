@@ -253,7 +253,7 @@ function syncQuick(){
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
   $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':st.openingContract?'시작 · 첫 암살':(st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':(st.storyEpisode||st.openingContract||st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {

@@ -600,6 +600,7 @@ __INK_UI_CSS__
 <div id="keypad" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="kpTitle"><div class="kp"><div class="kp-info"><b id="kpTitle">비밀번호 입력</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small><small id="kpStatus" role="status" aria-live="polite"></small></div>
   <div class="kpg"><button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" data-k="&lt;" class="fn">지움</button><button type="button" data-k="0">0</button><button type="button" data-k="ok" class="fn ok">확인</button></div>
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
+<aside id="episodeRadio" hidden aria-label="까마귀의 무전"><canvas id="episodeRadioFace" width="128" height="128" aria-hidden="true"></canvas><div class="episode-radio-copy"><b>까마귀 <span>· 무전</span></b><p id="episodeRadioText"></p><small id="episodeRadioAction"></small></div></aside>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
   <div class="dlg-box"><div id="dlgContext" class="dlg-context"></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
@@ -623,7 +624,7 @@ __INK_UI_CSS__
 
 <dialog id="newCampaignDialog" aria-labelledby="newCampaignTitle" aria-describedby="newCampaignNote">
   <h2 id="newCampaignTitle">처음부터 시작할까요?</h2>
-  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 체크포인트가 초기화되고 첫 연습부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
+  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 체크포인트가 초기화되고 첫 에피소드부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
   <p id="newCampaignError" role="alert" hidden></p>
   <div class="new-campaign-actions">
     <button id="btnNewCampaignCancel" class="ghost" type="button" autofocus>취소</button>

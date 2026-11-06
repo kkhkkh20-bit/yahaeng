@@ -23,7 +23,7 @@ async def main():
    }
    out.push('short tap, cancelled hold and deliberate 1s hold distinguish knockout/death on every main human target');
    ok(G.STAGES.every(s=>!(s.props||[]).some(p=>p.outfit)),'abandoned wardrobe remains in stage data');let S=fresh('p1'),P=S.player,g=S.guards.find(g=>g.tag==='uniformDonor');ok(g&&!S.props.some(p=>p.outfit),'no real donor');G.saveCheckpoint();G.CP.S.guards=G.CP.S.guards.filter(g=>g.tag!=='uniformDonor');G.CP.S.props.push({id:'oldCoat',outfit:'crew',x:P.x,y:P.y});ok(G.loadCheckpoint(),'old save restore');S=G.S;ok(S.guards.filter(g=>g.tag==='uniformDonor').length===1&&!S.props.some(p=>p.outfit),'old save left clothing or lacks donor');G.saveCheckpoint();G.loadCheckpoint();ok(G.S.guards.filter(g=>g.tag==='uniformDonor').length===1,'save duplicates donor');
-   S=fresh('tB');ok(G.MW===34&&G.BLD.length>=3&&S.items[0].furn&&!S.props.some(p=>p.outfit)&&G.STAGE.steps.length===8,'opening is still an empty drill');out.push('no loose outfits; old saves repair real donor once; depot has physical buildings, desk and eight connected actions');return out;
+   S=fresh('tB');ok(G.MW===34&&G.BLD.length>=3&&S.items[0].furn&&!S.props.some(p=>p.outfit)&&G.STAGE.steps.length===10&&S.items[0].fl===1&&S.ladders.some(l=>l.kind==='fstair'),'opening is still an empty drill');out.push('no loose outfits; old saves repair real donor once; depot has physical buildings, desk upstairs and ten connected actions');return out;
   }''')
   assert not errors,errors;out=R/'build/progression-v203';out.mkdir(exist_ok=True);(out/'rules.json').write_text(json.dumps(checks,ensure_ascii=False,indent=2));print('PASS',checks);await b.close()
 asyncio.run(main())

@@ -25,7 +25,7 @@ function starterGoal(){
     return learningObjectGoal(it,'loot','경비 등 뒤에서 출고 서류 챙기기','작업 중에는 시선 밖에서');
   }
   const c=S.cams.find(c=>camOn(c));
-  if(c)return learningObjectGoal(c,'camCable','CCTV 뒤에서 전선 분리','2초 조작 · 뒤쪽은 시야 밖',{x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32});
+  if(c)return learningObjectGoal(c,'camCable','CCTV 시야 밖에서 전선 분리','2초 조작 · 뒤쪽은 시야 밖',cameraServicePoint(c));
   return learningObjectGoal(it,'loot','감시가 꺼진 뒤 배송 명세서 챙기기','서류 앞에서 작업');
 }
 function updateStarterContract(){
@@ -34,7 +34,7 @@ function updateStarterContract(){
     S.starterPass=true;S.cpWant=true;toast('자경대원 옷 · 평범한 통행 허용',2.2,'good');
   }
   if(STAGE.starterContract==='camera'&&!S.starterCameraSaved&&S.cams.every(c=>!camOn(c))){S.starterCameraSaved=true;S.cpWant=true;}
-  if(STAGE.starterContract==='camera'&&(S.stats.camRec||0)>0&&cpReady())endGame(false,'작업 중 카메라에 찍혔다 · 뒤쪽에서 먼저 전선을 분리하자');
+  if(STAGE.starterContract==='camera'&&!STAGE.storyEpisode&&(S.stats.camRec||0)>0&&cpReady())endGame(false,'작업 중 카메라에 찍혔다 · 뒤쪽에서 먼저 전선을 분리하자');
 }
 
 // Learned rules are combined gradually; these are suggestions, not victory gates.
@@ -45,13 +45,20 @@ function apprenticeGoal(){
     const g=npc('contact');if(!g||targetEliminated(g))return null;
     const at=targetKnowledge(g),a=attackAction(),ready=a.k!=='none'&&!a.busy&&combatVictims(a).includes(g);return{...at,g,text:at.area?'동쪽 적치장에서 연락책 찾기':'연락책 뒤에서 암살',where:tutText(ready?'{공격} 1초 길게 · 살해 (짧게는 기절)':g.unconscious?'기절은 미완료 · 쓰러진 몸 가까이 접근':'{살금} 등 뒤로 접근 · 사람을 누르면 시야 확인')};
   }
+  if(STAGE.id==='e5'){
+    const g=npc('broker');if(!g||targetEliminated(g))return null;
+    const disguise=disguiseAcquisitionGoal();if(disguise)return disguise;
+    if(!flOf(P)){const l=lessonStair(S);if(l)return{...stairLower(l).up.entry,fl:0,text:'중개인이 있는 2층으로 이동',where:'직원 옷으로 통행 · 서류와 표적은 같은 층에서 접근'};}
+    const c=S.cams.find(c=>camOn(c));if(c)return learningObjectGoal(c,'camCable','복도 CCTV 시야 밖에서 전선 분리','2초 작업 · 경비가 등을 보일 때',cameraServicePoint(c));
+    return{...targetKnowledge(g),g,text:g.unconscious?'기절한 중개인 마무리':'혼자 있는 중개인의 등 뒤로 접근',where:tutText('{공격} 1초 길게 살해 · 짧게는 기절')};
+  }
   const it=S.items.find(i=>!i.got);if(!it)return null;
   const disguise=disguiseAcquisitionGoal();if(disguise)return disguise;
-  if(STAGE.id==='e2'){
+  if(['e2','e4'].includes(STAGE.id)){
     const c=S.cams.find(c=>camOn(c));
-    if(c)return learningObjectGoal(c,'camCable','경비 시선 밖에서 CCTV 전선 분리','2초 조작 · 카메라 뒤쪽으로',{x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32});
+    if(c)return learningObjectGoal(c,'camCable','경비 시선 밖에서 CCTV 전선 분리','2초 조작 · 카메라 시야 밖으로',cameraServicePoint(c));
   }
-  if(STAGE.id==='e3'&&!flOf(P)){
+  if(['e3','e4','e5'].includes(STAGE.id)&&!flOf(P)){
     const l=lessonStair(S);if(l){const a=envAction(),ready=a.k==='up'&&a.l===l;return{...stairLower(l).up.entry,fl:0,text:'계단으로 2층에 올라가기',where:ready?tutText('{행동} 올라가기 · 기술 없이 이용 가능'):'계단 입구 표시로 이동 · 기술 없이 이용 가능'};}
   }
   return learningObjectGoal(it,'loot',(STAGE.itemNames?.[0]||STAGE.itemName)+' 챙기기','작업 모습은 시야 밖에서');

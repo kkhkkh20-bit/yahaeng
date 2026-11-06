@@ -1,7 +1,8 @@
 // One story route. The player continues the next unfinished episode.
-const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','m2','m4','m6','m7'];
+const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7'];
 const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
-const learningComplete=st=>stageCleared(st)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
+const learningComplete=st=>stageCleared(st)||['e4','e5'].includes(st.id)&&mainContracts().some(stageCleared)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
+function episodeNumber(st=STAGE){const i=LEARNING_ROUTE.indexOf(st.id);return i<0?'':String(i+1).padStart(2,'0');}
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
   for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!learningComplete(STAGES[i]))return i;}
@@ -15,7 +16,7 @@ function learningNext(){
 }
 function learningNextLabel(){
   const i=learningNext(),st=STAGES[i];if(!st)return '다음 의뢰';
-  return (st.starterContract||st.apprenticeContract)?'다음 의뢰 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'다음 연습 · '):'의뢰 '+contractNumber(st)+' · '+st.name;
+  return '다음 에피소드 · '+st.name;
 }
 
 function initLessonLayout(){

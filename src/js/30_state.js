@@ -302,7 +302,7 @@ function resolveGuard(d) {
   if (d.sched && !d.route) d = Object.assign({}, d, { route: schedRoute(d) });  // 일과표 → 경로
   if (d.b == null) return d;
   const f = d.fl || 0, o = Object.assign({}, d);
-  if (d.patrol) { const a = planPt(d.b, f, d.from || 'L'), c = planPt(d.b, f, d.to || 'R'); o.route = [[a[0], a[1], 2], [c[0], c[1], 2]]; delete o.at; }
+  if (d.patrol) { const a = planPt(d.b, f, d.from || 'L'), c = planPt(d.b, f, d.to || 'R'); o.route = [[a[0], a[1], d.patrolPause??2], [c[0], c[1], d.patrolPause??2]]; delete o.at; }
   else o.at = planPt(d.b, f, d.at || 'L');
   return o;
 }

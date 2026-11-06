@@ -11,7 +11,7 @@ let hudBlockFrame=null;
 function hudTextBlocks() {
   if(hudBlockFrame)return hudBlockFrame;
   const cr=canvas.getBoundingClientRect();
-  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#toasts .toast')]
+  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#episodeRadio:not([hidden]),#toasts .toast')]
     .filter(e=>getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden]'))
     .map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
     .map(r=>[cam.x+(r.left-cr.left-W/2-5)/SCALE,cam.y+(r.top-cr.top-H/2-5)/SCALE,cam.x+(r.right-cr.left-W/2+5)/SCALE,cam.y+(r.bottom-cr.top-H/2+5)/SCALE]);

@@ -117,20 +117,20 @@
   radios: [1, 3, 6, 9, 27],  // 무전기를 든 조직원 (guards 순번) — 무리마다 하나, 먼저 처리하면 경보가 퍼지지 않는다
   guards: [
     // 0 표적: 클럽 실장. VIP룸 → 홀 바에서 양주 → 클럽 앞 간판 밑에서 담배
-    { kind: 't', target: true, tag: 'vip', key:'code', startPause:24, schedKey: 'sign', sched: [{ at: [27, 15], stay: 20, name: '클럽 앞 간판 밑', act: '담배' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '양주' }, { at: [25, 6], stay: 18, name: 'VIP룸', act: '양주' }] },
+    { kind: 't', target: true, tag: 'vip', key:'code', startPause:32, schedKey: 'sign', sched: [{ at: [27, 15], stay: 28, name: '클럽 앞 간판 밑', act: '담배' }, { at: [29, 10], stay: 16, name: '클럽 홀 바', act: '양주' }, { at: [25, 6], stay: 18, name: 'VIP룸', act: '양주' }] },
     { kind: 'g2', b: 1, fl: 0, at: 'VD', post: 90, elite: true },                     // 1 VIP룸 앞문 경호 (얼굴을 안다 — 변장도 알아본다)
     { kind: 'g1', tag: 'bouncer', at: [24, 16], post: 90 },                            // 2 클럽 문지기
     { kind: 'g2', route: [[23, 17, 6], [36, 17, 6]] },                                // 3 네온 골목 순찰 (문지기와 간판 이야기)
     { kind: 'g1', smoker: true, route: [[24, 2, 5], [26, 2, 5]] },                                  // 4 클럽 뒷골목 서쪽 (상자 더미 앞까지)
     { kind: 'g1', at: [7, 15], post: 90 },                                            // 5 사무동 정문
-    { kind: 'g2', b: 0, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
+    { kind: 'g2', b: 0, patrolPause:6, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
     { kind: 'g1', enforcer: true, b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
     { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g2', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
-    { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 20, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
+    { kind: 'civ', tag: 'waiter', outfit: 'waiter', sched: [{ at: [30, 11], stay: 28, name: '클럽 홀', act: '서빙' }, { at: [32, 3], stay: 18, name: '뒷골목', act: '담배' }] },   // 13 담배 피우러 나가는 직원
     { kind: 'civ', outfit: 'waiter', at: [10, 28], post: 90 }, { kind: 'civ', outfit: 'waiter', body: 'fBob', at: [10, 30], post: 270 },                                 // 14·15 포차에서 쉬는 직원 둘 — 실장 배탈 이야기
     // 동네 사람들
     { kind: 'civ', tag: 'pharm', body: 'old', at: [18, 28], post: 180 },             // 16 약사

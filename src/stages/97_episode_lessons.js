@@ -1,7 +1,7 @@
 // Short rehearsals introduce the next episode's new problem, without granting skills.
 STAGES.push({...FIRST_STEPS,
   id:'tL',name:'의뢰 02 준비 · 빛과 그림자',sub:'상가 후문 · 조명과 시야',start:[6,10],nextTutorial:null,
-  W:26,H:18,exit:[20,10],zones:undefined,buildingNames:undefined,build(m){m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');m.many('B',[[7,10]]);m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);},
+  W:26,H:18,floors:false,episodeLesson:false,storyEpisode:false,exit:[20,10],zones:undefined,buildingNames:undefined,build(m){m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');m.many('B',[[7,10]]);m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);},
   guards:[{kind:'g1',tag:'practice',at:[10,6],post:90,still:true,radio:false}],items:[],itemActions:[],fixedFurn:[],lessonLoot:false,
   lamps:[[3,7,130,1],[10,9,130,1],[22,7,160,1],[6,7,400,1]],
   mission:'후문 보안등을 끄고 짧아진 시야 밖으로 돌아 골목을 빠져나간다.',

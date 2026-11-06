@@ -3,6 +3,18 @@ function cameraCableReachable(c){
   const P=S.player;
   return !!c&&S.cams.includes(c)&&!c.search&&camOn(c)&&!P.hide&&!P.under&&!P.vent&&!P.z&&!P.carrying&&!P.captive&&objectReachable(c,40);
 }
+// A corner-mounted camera has no walkable space behind the wall. Service it
+// along either wall, outside its full sweep, with the same physical reach rule.
+function cameraServicePoint(c){
+ const rear={x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32,fl:c.fl};
+ if(!c.wallMount)return rear;
+ const {sx,sy}=c.wallMount,points=[{x:c.x-sx*5,y:c.y-sy*39,fl:c.fl},{x:c.x-sx*39,y:c.y-sy*5,fl:c.fl}],previous=CUR_F;
+ setLayer(c.fl);
+ try{
+  const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34);
+  return valid.sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||{x:tc(c.tx),y:tc(c.ty),fl:c.fl};
+ }finally{setLayer(previous);}
+}
 function nearCameraCable(){
   return S.cams.filter(c=>!ACT_SKIP.has(c)&&cameraCableReachable(c)).sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||null;
 }

@@ -171,7 +171,7 @@ function clothingAction(){
   return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
 }
 function actDress(){
-  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial)return;
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial&&!STAGE.storyEpisode)return;
   if(actionBusy()){queueRecoveryInput('dress');return;}
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();

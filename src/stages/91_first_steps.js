@@ -1,10 +1,10 @@
 // A small Korean freight depot: every lesson action advances the same infiltration.
 const FIRST_STEPS = {
- id:'tB',no:'00',name:'첫 잠입 · 야간 하역장',sub:'첫 스테이지 · 제압과 변장',tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
- noSupport:true,noAmbientChats:true,noRefine:true,floors:false,pspd:1.25,gspd:.8,residents:0,
- mission:'경비를 기절시켜 옷을 훔쳐 입고, 몸을 숨긴 뒤 배차실의 서류를 회수한다.',
- brief:'영업이 끝난 하역장이다. 상자와 풀숲을 따라 혼자 있는 경비의 뒤로 접근한다. 기절시킨 경비의 옷으로 배차실에 들어가 연락 서류를 챙기고 동쪽 골목으로 나온다.',
- endText:'기절 → 옷 훔쳐 입기 → 몸 숨기기 → 서류 회수. 첫 잠입 보상 1P로 기술 하나를 배우거나 모아 두고 다음 의뢰로 가자.',
+ id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
+ noSupport:true,noAmbientChats:true,noRefine:true,floors:true,pspd:1.25,gspd:.8,residents:0,
+ mission:'야간 배차실 2층에서 연락 서류를 회수하고 동쪽 골목으로 빠져나온다.',
+ brief:'연락책이 사라졌다. 마지막으로 남긴 서류는 대성 물류 배차실 2층에 있다. 까마귀가 무전으로 길을 봐 준다. 상자 뒤를 지키는 경비의 옷을 이용하면 직원처럼 들어갈 수 있다. 서류를 확보하면 동쪽 골목으로 빠져나온다.',
+ endText:'까마귀: 서류 확인했습니다. 사라진 연락책이 운반책 한 명을 지목했군요. 다음 밤에는 그를 찾아갑시다. 기술 포인트 1P는 다음 출발 전에 사용하거나 모아 둘 수 있습니다.',
  W:34,H:23,start:[2,10],exit:[29,15],exitName:'동쪽 골목',startA:0,well:'manhole',bare:true,ownedLoadout:true,
  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
  industrialBuildings:[0,2],
@@ -12,26 +12,28 @@ const FIRST_STEPS = {
  build(m){
   m.fill(0,0,33,22,',');m.rect(0,0,33,22);
   m.fill(1,8,32,12,'=');m.fill(1,13,32,17,'.');m.fill(1,13,32,13,'=');m.fill(1,17,32,17,'=');
-  m.bld(1,1,12,6,2,[],'h');m.bld(14,7,21,12,1,[[14,10],[21,10]],'w');
+  m.bld(1,1,12,6,2,[],'h');m.villa(14,3,24,14,2,{kind:'shop',use:['store','office'],signs:['대성 물류','배차실'],name:'야간 배차실'});m.set(14,10,'d');
   m.bld(2,19,13,21,1,[[8,19]],'h');
   m.fill(6,9,8,9,'C');m.many('B',[[7,10],[2,12],[12,12],[24,17]]);
-  m.fill(23,4,26,6,'C');m.fill(24,8,25,9,'C');m.car(27,9,1);m.car(17,18,2);m.car(5,15,0);
+  m.fill(27,3,30,5,'C');m.car(27,9,1);m.car(17,18,2);m.car(5,15,0);
   m.many('T',[[4,7],[12,3],[30,3],[31,12],[2,18],[28,20]]);m.many('H',[[22,11]]);
  },
  lamps:[[3,7,130,1],[10,9,240,1],[30,13,230,1],[6,7,300,1],[19,9,210,0]],
  guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
- zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,7,21,12,'res',null,'배차실 · 직원만',['crew']]],
- fixedFurn:[{x:18,y:8,t:'desk2',w:2,h:1},{x:20,y:8,t:'cab',w:1,h:1},{x:15,y:11,t:'chairD',w:1,h:1}],
- items:[[18,9]],itemName:'연락 서류',itemNames:['연락 서류'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:'t0',
+ zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,3,24,14,'res',null,'배차실 · 직원만',['crew']]],zoneAllow:['crew'],
+ fixedFurn:[],
+ items:[{b:1,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
  steps:[
-  ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'배차실 서류를 가져와 동쪽 골목으로 빠져나간다. 먼저 상자 옆 풀숲으로 접근하자.','move'],
+  ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'까마귀가 길을 보고 있다. 서류는 배차실 2층에 있다.','move'],
   [(S,P)=>P.mode==='sneak'?'웅크린 채 상자 옆 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&!P.hide&&!P.trav||!S.guards[0]||S.guards[0].state==='DEAD',S=>S.bushes.find(b=>Math.abs(b.x-360)<2&&Math.abs(b.y-504)<2),'상자와 풀숲이 경비의 시야를 가린다. 풀숲 밖에서 제압한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
   ['풀숲을 나와 경비의 등 뒤로 접근',(S,P)=>!S.guards[0]||S.guards[0].state==='DEAD'||!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44&&(P.x-S.guards[0].x)*Math.cos(S.guards[0].a)+(P.y-S.guards[0].y)*Math.sin(S.guards[0].a)<0,S=>{const g=S.guards[0];return g?{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40}:S.bushes[0];},'발밑의 뒤쪽 표시까지 접근한다. 표적도 일반 경비도 짧게 누르면 기절한다.','move'],
   ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>!S.guards[0]||S.guards[0].state==='DEAD',S=>S.guards[0],'기절은 살아 있으며 깨어날 수 있다. 1초 길게 누르면 살해한다. 이번에는 짧게 누르고 손을 떼자.','attack'],
   [(S,P)=>P.carrying?'{행동} 몸을 내려놓고 옷 훔쳐 입기':'몸 옆에서 {행동} · 옷 훔쳐 입기',(S,P)=>P.outfit==='crew',S=>S.corpses[0]||S.guards[0],'옷은 사람에게서 얻는다. 갈아입는 3초 동안 움직이지 않는다. 이 복장으로 배차실을 통과할 수 있다.','env',0,['dress','carry','drop','retrieve','leave']],
   [(S,P)=>P.carrying?'상자 옆 풀숲에서 {행동} · 몸 숨기기':'몸 옆에서 {행동} · 운반',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?{x:360,y:504}:S.corpses[0],'옷을 입은 뒤 경비가 발견되지 않게 풀숲에 숨긴다.',(S,P)=>P.carrying&&Math.hypot(P.x-360,P.y-504)>48?'move':'env',0,['carry','quickStash','stash']],
-  ['배차실에 들어가 책상 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'직원 옷으로 왼쪽 출입구를 통과한다. 배차실 책상 앞에서 행동한다.','env',0,['loot']],
-  ['배차실을 나와 동쪽 골목 출구로 이동',()=>false,S=>S.exit,'첫 완료 보상은 1P. 지금 기술 하나를 배우거나 다음 의뢰까지 모아 둘 수 있다.','move']
+  ['배차실에 들어가 계단으로 2층에 올라가기',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'직원 옷은 통행을 돕는다. 계단은 기술 없이 이용한다.','env',0,['up','door']],
+  ['2층 책상에서 연락 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'서류 앞에서 행동한다. 작업이 끝나면 들고 나간다.','env',0,['loot']],
+  ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'동쪽 골목은 1층 밖이다. 계단을 내려간다.','env',0,['fdown']],
+  ['배차실을 나와 동쪽 골목으로 빠져나오기',()=>false,S=>S.exit,'다음 출발 전에 기술 포인트 1P를 사용할 수 있다.','move']
  ]
 };
 STAGES.push(FIRST_STEPS);

@@ -44,6 +44,7 @@ function frame(t) {
   else if (S.over) { for (const n of S.noises) n.t += dt; }
 
   const t1 = pf ? performance.now() : 0;
+  syncEpisodeRadio();
   draw();
   if (pf) { pf.u.push(t1 - t0); pf.d.push(performance.now() - t1); }
 }

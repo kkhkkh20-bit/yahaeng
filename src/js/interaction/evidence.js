@@ -42,6 +42,7 @@ function updateChanges(dt) {
 function updateTutorial(dt = 1/60) {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
   if(STAGE.id==='tB'&&[4,5].includes(S.tutI)&&S.guards[0]&&S.guards[0].state!=='DEAD'&&S.guards[0].state!=='CAPTIVE'&&!S.corpses.some(c=>c.guardId===S.guards[0].id)){S.tutI=2;S.tutHold=0;S.tutStepAt=S.t;hudCache.objH=null;toast('경비가 깨어났다 · 다시 등 뒤로 접근하자',2.4);}
+  if(STAGE.firstSteps&&STAGE.storyEpisode){if(S.items[0]?.got&&S.tutI<8){S.tutI=flOf(S.player)?8:9;S.tutStepAt=S.t;hudCache.objH=null;}else if(flOf(S.player)===1&&S.tutI<7){S.tutI=7;S.tutStepAt=S.t;hudCache.objH=null;}}
   if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input,SH)){S.tutHold=0;return;}
   // Let the new instruction render before accepting an already-satisfied condition.
   if(S.t-(S.tutStepAt??-1)<.35)return;

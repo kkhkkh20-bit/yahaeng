@@ -40,7 +40,7 @@ async def main(args):
                 };
             }''')
             async def state():
-                return await page.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI||0,x:P.x,y:P.y,goal:G.nextGoal(),mode:P.mode,hidden:P.hidden,over:S.over,t:S.t,hp:P.hp,whistle:S.lessonWhistle,stats:S.stats}}''')
+                return await page.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI||0,x:P.x,y:P.y,goal:(()=>{const g=G.nextGoal();return g&&Object.fromEntries(['text','where','x','y','fl','tut','moveCue'].map(k=>[k,g[k]]))})(),radio:document.getElementById('episodeRadio').innerText,mode:P.mode,hidden:P.hidden,over:S.over,t:S.t,hp:P.hp,whistle:S.lessonWhistle,stats:S.stats}}''')
             async def snapshot(label,marker=False):
                 s=await state()
                 if marker:
@@ -97,6 +97,14 @@ async def main(args):
                 elif mobile:await page.tap(button)
                 else:await page.keyboard.press(key_name)
                 await page.wait_for_timeout(90)
+            async def route(x,y):
+                points=await page.evaluate('''({x,y})=>{const G=__game,P=G.S.player,doors=new Set(G.S.doors.filter(d=>!d.keyLock&&(d.fl||0)===(P.fl||0)).map(d=>d.ty*G.MW+d.tx)),end=Math.floor(y/48)*G.MW+Math.floor(x/48),shafts=new Set(G.S.ladders.filter(l=>(l.bfl||0)===(P.fl||0)).map(l=>l.ty*G.MW+l.tx));return G.astar(Math.floor(P.x/48),Math.floor(P.y/48),Math.floor(x/48),Math.floor(y/48),(tx,ty)=>G.solidAt(tx,ty)&&!doors.has(ty*G.MW+tx)||shafts.has(ty*G.MW+tx)&&ty*G.MW+tx!==end).concat([{x,y}])}''',{'x':x,'y':y})
+                assert points
+                floor=await page.evaluate('__game.S.player.fl||0')
+                for point in points:
+                    if await page.evaluate('(()=>{const a=__game.envAction();return a.k==="door"&&a.d.locked})()'):await press('x','#btnCarry');await page.wait_for_function('!__game.actionBusy()')
+                    await move(x=point['x'],y=point['y'])
+                    if await page.evaluate('__game.S.player.fl||0')!=floor:break
             async def wait_step(target):
                 await page.wait_for_function('n=>__game.S.tutI>=n',arg=target,timeout=6000,polling=50)
             passed=False
@@ -115,7 +123,7 @@ async def main(args):
                     await press('Shift+Tab','#btnCycle');await page.locator('[data-env-token^="lamp:"]').first.click()
                 await press('x','#btnCarry');await page.wait_for_function('__game.S.lamps.some(l=>l.off)&&!__game.actionBusy()')
                 assert (await state())['step']==0,('lamp detour advanced lesson',await state())
-                await snapshot('early-lamp-guide');assert '오른쪽 표시' in await page.locator('#objective').inner_text()
+                await snapshot('early-lamp-guide');assert '오른쪽 표시' in await page.locator('#objective').inner_text();assert '까마귀' in await page.locator('#episodeRadio').inner_text() and '오른쪽' in await page.locator('#episodeRadioAction').inner_text()
                 await move(y=504);await move(x=216);await wait_step(1)
                 await press('Control','#btnCrouch');await move(x=360,y=504);await wait_step(2)
                 await snapshot('concealed')
@@ -124,9 +132,16 @@ async def main(args):
                 await wait_step(4);await press('x','#btnCarry');await page.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000);await snapshot('stolen-uniform');await wait_step(5);await press('x','#btnCarry');await page.wait_for_function('!!__game.S.player.carrying&&!__game.actionBusy()',timeout=6000)
                 await move(x=360,y=504);await press('x','#btnCarry');await page.wait_for_function('__game.S.corpses[0].hidden&&!__game.actionBusy()',timeout=6000)
                 await wait_step(6);await snapshot('body-hidden')
-                at=await page.evaluate('__game.S.items[0]');await move(x=at['x'],y=at['y']);await press('x','#btnCarry')
-                await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(7)
-                await snapshot('dossier-recovered');await move(y=504);await move(x=1104,y=744);await move(x=1416,y=744)
+                stairs=await page.evaluate('__game.S.lessonLayout')
+                await route(stairs['up']['x'],stairs['up']['y'])
+                if not await page.evaluate('__game.S.player.fl||0'):await press('x','#btnCarry')
+                await page.wait_for_function('__game.S.player.fl===1&&!__game.actionBusy()',timeout=6000);await wait_step(7);await snapshot('dispatch-upstairs')
+                at=await page.evaluate('__game.S.items[0]');await route(at['x'],at['y']);await press('x','#btnCarry')
+                await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(8)
+                await snapshot('dossier-recovered');await route(stairs['down']['x'],stairs['down']['y'])
+                if await page.evaluate('__game.S.player.fl||0'):await press('x','#btnCarry')
+                await page.wait_for_function('!__game.S.player.fl&&!__game.actionBusy()',timeout=6000);await wait_step(9)
+                await route(1416,744)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
