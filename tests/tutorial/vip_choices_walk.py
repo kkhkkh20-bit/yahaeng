@@ -158,24 +158,8 @@ async def main():
    await move(264,490);await action('z','#btnAct');await tick(1.5)
    assert await q.evaluate('__game.S.guards[6].unconscious'),'hallway rear takedown failed'
    if await q.evaluate('__game.S.player.mode')=='sneak':await action('Control','#btnCrouch')
-   await move(180,504);await move(180,600)
    gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
-   # The office patrol can identify a nearby disguise. Observe a real gap
-   # before operating its doorway; a fixed schedule is not a stealth strategy.
-   observed=[]
-   for n in range(1200):
-    view=await q.evaluate('at=>{const g=__game.S.guards[6],dx=at.x-g.x,dy=at.y-g.y,d=Math.hypot(dx,dy);return{id:g.id,state:g.state,x:g.x,y:g.y,a:g.a,d,facing:(dx*Math.cos(g.a)+dy*Math.sin(g.a))/Math.max(1,d),wait:g.wait,seen:g.seen,why:g.why}}',gate)
-    assert await q.evaluate('__game.S.player.hp>0'),(name,'died while observing office doorway',view)
-    if n%50==0:observed.append(view)
-    # This endpoint pauses facing away. Leave enough time to enter and
-    # operate the physical vault door before the patrol returns.
-    if await q.evaluate('__game.S.guards[6].unconscious') or view['state'] in ['PATROL','RETURN'] and view['x']>=400 and view['wait']>2.6 and __import__('math').cos(view['a'])>.8:break
-    await tick(.1)
-   else:
-    await draw();await q.screenshot(path=str(O/(name+'-office-wait.png')))
-    print('OFFICE WAIT',json.dumps({'gate':gate,'observed':observed,'last':view,'player':await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,hp:__game.S.player.hp,outfit:__game.S.player.outfit,blown:__game.S.player.disguiseBlown,alarm:__game.S.alevel,stats:__game.S.stats})')},ensure_ascii=False),flush=True)
-    raise AssertionError((name,'office patrol never gives a visible doorway gap'))
-   print('OFFICE GAP',json.dumps({'gate':gate,'observed':observed,'selected':view},ensure_ascii=False),flush=True)
+   print('OFFICE GAP',json.dumps({'gate':gate,'patrolKO':True}),flush=True)
    await move(gate['x'],445)
    await env('keypad')
    await q.locator('#keypad').wait_for(state='visible')
