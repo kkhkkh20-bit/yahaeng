@@ -94,8 +94,20 @@ async def main():
     for at in [(888,936),(648,936),(456,936),(456,816)]:await move(*at)
    await move(416,816);await move(416,792)
    if await q.evaluate('__game.S.player.mode')!='sneak':await action('Control','#btnCrouch')
+   # The real street patrol can reach this bay at different times. Observe a
+   # clear work window instead of assuming an unobserved three-second change.
+   clear_since=None
+   for _ in range(900):
+    watch=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor');return{t:S.t,threats:S.guards.filter(g=>g!==donor&&!g.civ&&!g.dog&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state)&&(g.fl||0)===(P.fl||0)&&(g.z||0)===(P.z||0)&&Math.hypot(g.x-P.x,g.y-P.y)<380&&(Math.hypot(g.x-P.x,g.y-P.y)<170&&G.sightLine(g,P.x,P.y,P.z,false,P.fl||0)||G.canSee(g,P.x,P.y,1,false,false,P.z,P.fl||0)>0||G.canSee(g,donor.x,donor.y,1,false,false,donor.z,donor.fl||0)>0)).map(g=>({id:g.id,state:g.state,x:g.x,y:g.y}))}}''')
+    if not watch['threats']:
+     if clear_since is None:clear_since=watch['t']
+     if watch['t']-clear_since>=.6:break
+    else:clear_since=None
+    await tick(.1)
+   else:raise AssertionError(('no safe uniform window',watch))
+   print('UNIFORM GAP',json.dumps(watch),flush=True)
    await action('z','#btnAct');await tick(1.4);assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious')
-   await env('dress');assert await q.evaluate('__game.S.player.outfit==="crew"'),'guard uniform not stolen'
+   await env('dress');assert await q.evaluate('__game.S.player.outfit==="crew"'),'guard uniform not stolen';print('UNIFORM ACQUIRED',await q.evaluate('({outfit:__game.S.player.outfit,hp:__game.S.player.hp,t:__game.S.t})'),flush=True)
    await move(456,792);await move(456,816)
    if APPROACH!='smoke':
     for at in [(648,816),(648,504)]:await move(*at)
