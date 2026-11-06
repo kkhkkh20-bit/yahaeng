@@ -59,6 +59,7 @@ jobs:
           if failed:raise SystemExit('Focused failures: '+', '.join(failed))
           PY
           python tools/run_tests.py --fast --quick --no-build
+          python tools/capture_ink_interface.py after --out build/ink-v199
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Save review evidence and packaged assets on this PR
@@ -110,6 +111,7 @@ jobs:
             build/field-v196/
             build/beginner-v197/
             build/linear-v198/
+            build/ink-v199/
             public/version.json
           retention-days: 7
 

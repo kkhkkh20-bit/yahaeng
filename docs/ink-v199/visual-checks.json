@@ -1,0 +1,118 @@
+[
+  {
+    "device": "pc",
+    "viewport": [
+      1440,
+      900
+    ],
+    "errors": [],
+    "inkMaterial": {
+      "width": 1024,
+      "height": 343
+    },
+    "headingFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        },
+        {
+          "familyName": "East Sea Dokdo",
+          "postScriptName": "EastSeaDokdo-Regular",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    "version": "v199"
+  },
+  {
+    "device": "mobile",
+    "viewport": [
+      390,
+      844
+    ],
+    "errors": [],
+    "inkMaterial": {
+      "width": 1024,
+      "height": 343
+    },
+    "headingFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        },
+        {
+          "familyName": "East Sea Dokdo",
+          "postScriptName": "EastSeaDokdo-Regular",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    "version": "v199"
+  },
+  {
+    "device": "landscape",
+    "viewport": [
+      844,
+      390
+    ],
+    "errors": [],
+    "inkMaterial": {
+      "width": 1024,
+      "height": 343
+    },
+    "headingFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        },
+        {
+          "familyName": "East Sea Dokdo",
+          "postScriptName": "EastSeaDokdo-Regular",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    "version": "v199"
+  },
+  {
+    "device": "small",
+    "viewport": [
+      320,
+      568
+    ],
+    "errors": [],
+    "inkMaterial": {
+      "width": 1024,
+      "height": 343
+    },
+    "headingFont": {
+      "fonts": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        },
+        {
+          "familyName": "East Sea Dokdo",
+          "postScriptName": "EastSeaDokdo-Regular",
+          "isCustomFont": true,
+          "glyphCount": 4
+        }
+      ]
+    },
+    "version": "v199"
+  }
+]

@@ -531,6 +531,7 @@ body.inspecting #toasts{ visibility:hidden; }
 __INK_STUDY_CSS__
 __HUD_CSS__
 __INTERFACE_CSS__
+__INK_UI_CSS__
 </style>
 </head>
 <body>
@@ -539,7 +540,7 @@ __INTERFACE_CSS__
 <div id="hud" hidden>
   <button id="btnPause" class="hud-menu" type="button" title="메뉴 (Esc)">메뉴</button>
   <div class="top">
-    <div class="obj"><small id="objTitle">의뢰 목표</small><div id="missionIdentity" hidden aria-label="의뢰 완료 조건"></div><span id="objective"></span></div>
+    <div class="obj"><div class="hud-portrait" aria-label="당신 · 올빼미"><canvas id="hudFace" width="128" height="128" aria-hidden="true"></canvas><span>올빼미</span></div><small id="objTitle">의뢰 목표</small><div id="missionIdentity" hidden aria-label="의뢰 완료 조건"></div><span id="objective"></span></div>
     <div class="status">
             <span class="chip layer" id="layerLbl" data-l="out">지상</span>
       <span class="chip" id="modeLbl">걷기</span>
@@ -641,7 +642,7 @@ __INTERFACE_CSS__
       <div class="sub-head"><button class="back" id="btnSkillsBack" type="button" aria-label="기술 트리 닫기">돌아가기</button><h2>기술 트리</h2></div>
       <p id="skillSummary" aria-live="polite"></p>
     </header>
-    <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button">미션 업적 · 포인트 얻기</button></div>
+    <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button" aria-label="미션 업적과 기술 포인트 보상 보기">업적 · 보상</button></div>
     <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
     <div class="skill-layout">
       <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
@@ -696,7 +697,7 @@ __INTERFACE_CSS__
     </details>
     <details class="rulesbox"><summary class="rules-h">출처</summary>
     <p class="credit">조명 기구: <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Kenney Furniture Kit</a> · <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Retro Urban Kit</a> (CC0), 게임 시점에 맞춰 2D로 렌더링.</p>
-    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
+    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 화면 제목: East Sea Dokdo (YoonDesign, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
   </div>
 </div>

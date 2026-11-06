@@ -99,6 +99,7 @@ function makeMissionIdentity(row,brief){
   text.append(type,name);if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
+  const hero=$('hudFace');if(hero&&!hero.dataset.ready&&drawFace(hero,speakerOf('hero')))hero.dataset.ready='1';
   if(!$('brief').hidden)for(const cv of document.querySelectorAll('.br-cast canvas:not([data-ready])'))if(drawFace(cv,speakerOf(cv.dataset.speaker)))cv.dataset.ready='1';
   const roots=[$('missionIdentity'),!$('brief').hidden&&$('brIdentity')].filter(el=>el&&!el.hidden);
   for(const cv of roots.flatMap(el=>[...el.querySelectorAll('canvas[data-mission-art]:not([data-ready])')])){
@@ -134,9 +135,11 @@ function refreshMissionIdentityArt(){
 }
 function syncMissionIdentity(){
   const el=$('missionIdentity');if(!el)return;
-  const active=(mainContract(STAGE)||introductoryContract(STAGE))&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active)return;
-  const rows=missionIdentities(),signature=JSON.stringify(rows.map(r=>[r.id,r.key,r.art,r.status]));
-  if(hudCache.identity!==signature){el.replaceChildren(...rows.map(r=>makeMissionIdentity(r,false)));hudCache.identity=signature;}
+  const active=(mainContract(STAGE)||introductoryContract(STAGE))&&!STAGE.tutorial;el.hidden=!active;el.parentElement.classList.toggle('with-identities',active);if(!active){refreshMissionIdentityArt();return;}
+  const rows=missionIdentities(),goal=nextGoal(),tracked=goal?.g?.target?'target:'+goal.g.id:goal?.id;
+  const current=(rows.find(r=>r.id===tracked)||rows.find(r=>!r.complete)||rows[0])?.id;
+  const signature=JSON.stringify([current,rows.map(r=>[r.id,r.key,r.art,r.status])]);
+  if(hudCache.identity!==signature){el.replaceChildren(...rows.map(r=>{const card=makeMissionIdentity(r,false);card.dataset.current=String(r.id===current);return card;}));hudCache.identity=signature;}
   refreshMissionIdentityArt();
 }
 // 의뢰 브리핑: 시작 전에 지도·할 일·도전 과제를 한 장으로 보여 주고 [출발]

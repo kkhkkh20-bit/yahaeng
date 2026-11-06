@@ -59,6 +59,11 @@ def build():
     icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','**','*.svg'),recursive=True)))+'}'
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
+    ink_ui=read(P('src','ink-interface.css'))
+    ink_ui=ink_ui.replace('__INK_HEADING_FONT__',base64.b64encode(open(P('src','fonts','ink-headings.woff2'),'rb').read()).decode())
+    ink_ui=ink_ui.replace('__INK_HEADING_LICENSE__','\n'.join(line.rstrip() for line in read(P('src','fonts','OFL-EastSeaDokdo.txt')).splitlines()))
+    ink_ui=ink_ui.replace('__INK_WASH__',base64.b64encode(open(P('src','art','hud','ink-wash.webp'),'rb').read()).decode())
+    html=html.replace('__INK_UI_CSS__',ink_ui)
     html = html.replace('__UI_FONT__', base64.b64encode(open(P('src','fonts','ui-regular.woff2'),'rb').read()).decode())
     html = html.replace('__UI_FONT_LICENSE__','\n'.join(line.rstrip()for line in read(P('src','fonts','OFL-IBMPlexSansKR.txt')).splitlines()))
     ink_map=base64.b64encode(open(P('src','art','ink-vip-map.webp'),'rb').read()).decode()

@@ -1,0 +1,7 @@
+{
+  "name": "Yahaeng charcoal ink wash",
+  "origin": "Original OpenAI image generation for Yahaeng v199",
+  "prompt": "Create one original production-ready 2D game UI background asset: a single long horizontal charcoal-black sumi ink wash panel, flat front view, isolated on a fully transparent background. Landscape aspect ratio about 4:1. The central 80 percent is a solid very dark cool charcoal (#11151a) with very subtle dry ink fibers so small white Korean game HUD text will be perfectly readable on top. Organic hand-brushed outer edges have restrained rough paper fibers and sparse dry brush breaks. Horizontally brushed, slightly tapered natural ends. Sharp high resolution material detail, premium stealth game interface craftsmanship, sober modern Korean noir mood. No text, no letters, no numbers, no logos, no icons, no characters, no scenery, no border frame, no gold, no green, no glowing effects, no multiple panels or asset sheet. This is an original asset, not an imitation of any copyrighted game art. Panel occupies almost all canvas width and 75 percent of canvas height, leave a transparent margin around all sides.",
+  "production": "Trim transparent margins; resize to 1024px width; WebP with alpha. Original generation is preserved separately.",
+  "reference_usage": "Official Mark of the Ninja screenshots were inspected for interface hierarchy only. No game artwork was copied."
+}
