@@ -45,7 +45,7 @@
     m.fill(25,15,25,16,'C');m.fill(29,15,29,16,'C');m.fill(27,16,28,16,'C');
     m.many('B',[[1,18],[1,17],[3,18]]);
     // A readable pocket for the first disguise/cleanup, screened from the front sentry.
-    m.fill(5,16,6,16,'C');m.set(5,18,'B');
+    m.fill(5,16,6,16,'C');m.set(7,17,'C');m.set(5,18,'B'); // Staggered crates screen the uniform bay from the western patrol.
     m.many('T', [[47, 15], [53, 14]]); m.many('B', [[45, 13], [52, 13], [44, 17]]);
     [6, 24, 40, 52].forEach(x => m.pole(x, 19, 2));
     m.many('H', [[1, 15], [37, 2], [43, 16], [12, 34], [38, 34], [22, 17], [37, 15], [6, 1], [25, 1]]);   // 22,17·37,15 = 네온 골목 양 끝 (문지기·순찰 처리 뒤 숨길 곳) · 6,1 = 사무동 뒷골목 · 25,1 = 클럽 뒷골목 서쪽

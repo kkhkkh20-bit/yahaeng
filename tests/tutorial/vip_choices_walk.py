@@ -98,7 +98,7 @@ async def main():
    # clear work window instead of assuming an unobserved three-second change.
    clear_since=None
    for _ in range(900):
-    watch=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor');return{t:S.t,threats:S.guards.filter(g=>g!==donor&&!g.civ&&!g.dog&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state)&&(g.fl||0)===(P.fl||0)&&(g.z||0)===(P.z||0)&&Math.hypot(g.x-P.x,g.y-P.y)<380&&(Math.hypot(g.x-P.x,g.y-P.y)<170&&G.sightLine(g,P.x,P.y,P.z,false,P.fl||0)||G.canSee(g,P.x,P.y,1,false,false,P.z,P.fl||0)>0||G.canSee(g,donor.x,donor.y,1,false,false,donor.z,donor.fl||0)>0)).map(g=>({id:g.id,state:g.state,x:g.x,y:g.y}))}}''')
+    watch=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor');return{t:S.t,threats:S.guards.filter(g=>g!==donor&&!g.civ&&!g.dog&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state)&&(g.fl||0)===(P.fl||0)&&(g.z||0)===(P.z||0)&&Math.hypot(g.x-P.x,g.y-P.y)<380&&(G.sightLine(g,P.x,P.y,P.z,false,P.fl||0)||G.sightLine(g,donor.x,donor.y,donor.z,false,donor.fl||0))).map(g=>({id:g.id,state:g.state,x:g.x,y:g.y}))}}''')
     if not watch['threats']:
      if clear_since is None:clear_since=watch['t']
      if watch['t']-clear_since>=.6:break
