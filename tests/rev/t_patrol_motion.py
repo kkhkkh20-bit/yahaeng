@@ -9,7 +9,7 @@ async def main():
   b=await p.chromium.launch();pg=await b.new_page();errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
   await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!__game')
   result=await pg.evaluate('''()=>{
-   const G=__game,check=(v,m)=>{if(!v)throw Error(m)};G.start(G.STAGES.findIndex(s=>s.id==='m5'));for(let n=0;n<60&&G.DLG.modal;n++)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>g.rival),other=S.guards.find(g=>!g.civ&&!g.dog&&!g.target&&!g.rival);P.x=P.y=-9999;G.setLayer(0);
+   const G=__game,check=(v,m)=>{if(!v)throw Error(m)};G.STAGES.find(s=>s.id==='m5').rivals=3;G.start(G.STAGES.findIndex(s=>s.id==='m5'));for(let n=0;n<60&&G.DLG.modal;n++)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>g.rival),other=S.guards.find(g=>!g.civ&&!g.dog&&!g.target&&!g.rival);P.x=P.y=-9999;G.setLayer(0);
    Object.assign(g,{x:34*48+24,y:24*48+24,z:0,fl:0,state:'PATROL',path:null,moving:false});
    const x=37*48+24,y=g.y;check(G.inTurf('B',g.x,g.y)&&!G.inTurf('B',x,y),'missing territory boundary fixture');G.pathTo(g,x,y);check(g.path.length,'territory boundary blocks path');for(let i=0;i<180&&g.path.length;i++)G.moveAlong(g,100,1/60);check(Math.hypot(g.x-x,g.y-y)<1,'cannot leave faction territory');
    g.path=[{x:g.x,y:g.y}];g.moving=true;G.moveAlong(g,100,1/60);check(!g.moving,'completed path still walks');g.path=[];g.moving=true;G.moveAlong(g,100,1/60);check(!g.moving,'empty path still walks');

@@ -15,7 +15,8 @@ async def main():
             await fresh(sid)
             r = await m.evaluate("() => { const S = window.__game.S; return [S.facOn, S.guards.filter(g => g.fac === 'B' && g.outfit === 'rival').length]; }")
             print('배치', sid, r)
-            if sid.startswith('m') and r[1] != 3: bad.append('%s 건달파가 셋이 아니다 %s' % (sid, r))
+            if sid in ['m2','m3','m4'] and r[1] != 3: bad.append('%s 건달파가 셋이 아니다 %s' % (sid, r))
+            if sid == 'm5' and r[1]: bad.append('본부 결전에 무관한 건달파가 생성됐다 %s' % r)
             if sid == 't0' and (r[0] or r[1]): bad.append('연습판에 세력이 켜졌다 %s' % r)
         # 2) 전쟁: 마주치면 싸우고, 쓰러진 사람은 내 통계·경보와 무관
         await fresh()

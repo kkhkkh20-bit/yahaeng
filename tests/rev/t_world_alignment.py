@@ -22,7 +22,8 @@ async def main():
           const overlaps=(a,b)=>!(a[2]<b[0]||a[0]>b[2]||a[3]<b[1]||a[1]>b[3]);
           for(let repeat=0;repeat<3;repeat++)for(const id of ['m1','m2','m3','m4','m5','m6']){
             const S=fresh(id);
-            if(['m2','m3','m4','m5'].includes(id))check(S.guards.filter(g=>g.rival).length===3,id+' must retain three rivals');
+            if(['m2','m3','m4'].includes(id))check(S.guards.filter(g=>g.rival).length===3,id+' must retain three rivals');
+            if(id==='m5')check(S.guards.filter(g=>g.rival).length===0,'headquarters story must not spawn an unrelated gang');
             for(const r of S.turf.B){
               check(!S.turf.A.some(a=>overlaps(r,a)),id+' A/B territories must not overlap');
               for(const b of G.BLD)if(overlaps(r,[b.x0,b.y0,b.x1,b.y1]))check(b.gang==='B',id+' rival border encloses another faction building');

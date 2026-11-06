@@ -26,7 +26,7 @@ async def main():
      P.y=G.MH*48-240;for(let n=0;n<150;n++)G.moveCamera(1/60);
      for(let n=0;n<100;n++){P.y+=2;const y=G.cam.y;G.moveCamera(1/60);check(Math.abs(G.cam.y-y)*G.SCALE<10,id+' camera snaps at map edge')}
     }
-    G.start(G.STAGES.findIndex(s=>s.id==='m5'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setZoom(1);const S=G.S,P=S.player,g=S.guards.find(g=>g.rival);S.guards.forEach(q=>{q.x=q.y=-9999});Object.assign(P,{x:27*48+24,y:24*48+24,z:0,fl:0});for(let i=0;i<150;i++)G.moveCamera(1/60);
+    G.start(G.STAGES.findIndex(s=>s.id==='m5'));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setZoom(1);const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.target);S.guards.forEach(q=>{q.x=q.y=-9999});Object.assign(P,{x:27*48+24,y:24*48+24,z:0,fl:0});for(let i=0;i<150;i++)G.moveCamera(1/60);
     Object.assign(g,{x:P.x,y:P.y,z:0,fl:0,state:'PATROL',say:'건물 앞 말풍선 검사',meter:0,icon:null});
     // This is heard mission dialogue; ambient chatter deliberately yields during close actions.
     S.intel={presentation:{cur:{sp:g}}};
