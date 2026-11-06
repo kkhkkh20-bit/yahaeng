@@ -131,7 +131,6 @@ function grabAction() {
   return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?(near.seen?'교전 중':'경계 중'):!behind?'등 뒤로':'더 가까이' };
 }
 function actAttack() {
-  if(STAGE.firstSteps)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
@@ -176,7 +175,6 @@ function actDress(){
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }
 function actGrab() {
-  if(STAGE.firstSteps)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }

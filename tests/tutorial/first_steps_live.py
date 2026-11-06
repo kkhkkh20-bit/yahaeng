@@ -1,5 +1,5 @@
 """Fresh linear tutorial → first assassination → next episode: native input and rendered markers, no stepped clock/state overrides.
-Known-map developer playback, not a novice usability study.
+Ends with a selected optional rehearsal using the actually purchased build. Known-map developer playback, not a novice usability study.
 """
 import argparse, asyncio, json, os, threading, time
 from functools import partial
@@ -104,61 +104,28 @@ async def main(args):
                 if args.probe_only:
                     passed=True
                     continue
-                await move(x=216);await wait_step(1)
-                await snapshot('skill-reminder')
-                assert not (await state())['goal'].get('moveCue')
-                await press('k','#btnPause')
-                if mobile:await page.tap('#btnSkillsPause')
-                assert await page.locator('#skillDetail').is_hidden()
-                await page.click('[data-select="kit"]');await page.click('[data-learn="kit"]')
-                await page.click('.skill-detail-close');await page.click('#btnSkillsBack')
-                if mobile:await page.tap('#btnResume')
-                await wait_step(2)
-                assert await page.evaluate('__game.loadSkillTree().learned.includes("kit")&&__game.skillSpent(__game.loadSkillTree())===1')
-                await snapshot('run-instruction',True)
-                if mobile:await joystick(55,0)
-                else:await key('Shift',True);await key('ArrowRight',True)
-                try:await wait_step(3)
-                finally:
-                    if mobile:await joystick()
-                    else:await key('ArrowRight',False);await key('Shift',False)
-                s=await snapshot('quiet-instruction',True)
-                assert not ('왼쪽' in s['goal']['text'] and s['goal']['x']>s['x']+4),('instruction points away from actual goal',s)
-                await press('Control','#btnCrouch');await move(x=216,y=504);await wait_step(4)
-                await move(x=260);await snapshot('near-observe-marker',True)
-                await move(x=312);await wait_step(5)
-                await snapshot('bush-instruction',True)
-                await move(x=456,y=504);await wait_step(6)
-                await snapshot('hidden')
-                await press('g','#btnTool');await wait_step(7)
-                # Keep moving while escaping the real search. Capturing a marker
-                # at the intermediate point used to leave the player standing in
-                # the searching guard's line of sight for a screenshot.
-                active=[]
-                try:
-                    for _ in range(400):
-                        st=await state()
-                        if st['over']:break
-                        dx=168-st['x'];dy=696-st['y']
-                        vx=(1 if dx>0 else -1)if abs(dx)>8 else 0
-                        vy=(1 if dy>0 else -1)if abs(dy)>8 else 0
-                        wanted=([('ArrowRight'if vx>0 else'ArrowLeft')]if vx else[])+([('ArrowDown'if vy>0 else'ArrowUp')]if vy else[])
-                        if wanted!=active:
-                            if mobile:
-                                if active:await joystick()
-                                await joystick(vx*24,vy*24)
-                            else:
-                                for k in active:await key(k,False)
-                                for k in wanted:await key(k,True)
-                            active=wanted
-                        await page.wait_for_timeout(30)
-                    else:raise AssertionError(('exit movement timed out',await state()))
-                finally:
-                    if mobile:await joystick()
-                    else:
-                        for k in active:await key(k,False)
+                # Optional early interaction must retain the actual movement goal.
+                lamp=await page.evaluate('''()=>{const l=__game.S.lamps.find(l=>l.outdoor&&!l.pole),p=__game.lampControl(l);return{x:p.x,y:p.y};}''')
+                await move(x=lamp['x'],y=lamp['y'])
+                if await page.evaluate('__game.envAction().k')!='lamp':
+                    await press('Shift+Tab','#btnCycle');await page.locator('[data-env-token^="lamp:"]').first.click()
+                await press('x','#btnCarry');await page.wait_for_function('__game.S.lamps.some(l=>l.off)&&!__game.actionBusy()')
+                assert (await state())['step']==0,('lamp detour advanced lesson',await state())
+                await snapshot('early-lamp-guide');assert '오른쪽 표시' in await page.locator('#objective').inner_text()
+                await move(x=150,y=504);await move(x=216);await wait_step(1)
+                await press('Control','#btnCrouch');await move(x=360,y=504);await wait_step(2)
+                await snapshot('concealed')
+                await move(x=464,y=504);await wait_step(3);await snapshot('rear-approach')
+                await press('z','#btnAct');await page.wait_for_function('__game.S.guards[0].state==="DEAD"&&!__game.actionBusy()',timeout=6000)
+                await wait_step(4);await press('x','#btnCarry');await page.wait_for_function('!!__game.S.player.carrying&&!__game.actionBusy()',timeout=6000)
+                await move(x=360,y=504);await press('x','#btnCarry');await page.wait_for_function('__game.S.corpses[0].hidden&&!__game.actionBusy()',timeout=6000)
+                await wait_step(5);await snapshot('body-hidden')
+                at=await page.evaluate('__game.S.items[0]');await move(x=at['x'],y=at['y']);await press('x','#btnCarry')
+                await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(6)
+                await snapshot('dossier-recovered');await move(x=984,y=504)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
+                assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
                 await continue_episode(page)
                 await page.wait_for_function('__game.STAGE.id==="p0"')
                 await page.click('#btnBrGo')
@@ -175,6 +142,15 @@ async def main(args):
                 assert s['hp']==3 and s['stats']['detected']==0,s
                 await continue_episode(page)
                 assert await page.evaluate('__game.STAGE.id==="p1"')
+                # The same purchased build must work inside an optional tutorial.
+                await standalone_stage(page,'t0');await page.click('#btnBrGo')
+                assert await page.evaluate('__game.skillOn("dart")&&__game.S.player.kunai===2&&!__game.input.padWhistle')
+                await press('Control','#btnCrouch');await move(x=432 if mobile else 360,y=504)
+                if mobile:
+                    target=await page.evaluate('()=>{const G=__game,g=G.S.guards[0];return{x:(g.x-G.cam.x)*G.SCALE+innerWidth/2,y:(g.y-20-G.cam.y)*G.SCALE+innerHeight/2}}');await page.touchscreen.tap(target['x'],target['y'])
+                await press('v','#btnTool');await page.wait_for_function('__game.S.guards[0].state==="DEAD"&&__game.S.stats.kunaiUsed===1',timeout=6000)
+                s=await snapshot('earned-dart-in-tutorial');assert s['hp']==3 and s['stats']['detected']==0
+                assert await page.evaluate('__game.S.player.kunai===1')
                 assert not errors,errors
                 passed=True
             finally:

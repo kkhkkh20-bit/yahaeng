@@ -31,7 +31,7 @@ let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;
 function skillViewState(d){
  const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
  let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.assassinSkill')||active;}catch(e){}
- return{practice,known,parents,points:skillBudget()-skillSpent(r),active};
+ return{practice,known,parents,canLearn:skillLearningAllowed(),points:skillBudget()-skillSpent(r),active};
 }
 function closeSkillDetail(){skillDetailMode=null;syncSkillDetail();$('skillCards').querySelector('[data-select="'+skillFocused+'"]')?.focus({preventScroll:true});}
 function syncSkillDetail(){
@@ -51,12 +51,12 @@ function renderSkillDetail(){
  if(skillDetailMode==='rewards'){renderSkillRewards();return;}if(skillDetailMode!=='skill')return;
  const d=SKILL_BY_ID[skillFocused],v=skillViewState(d),pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;pane.append(detailCloseButton());
  const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<div>'+skillSigil(d.id,'skill-detail-emblem')+'<h3>'+d.name+'</h3></div>';
- const state=document.createElement('div');state.className='skill-detail-state';const label=v.known?(v.practice?'연습용 적용 중':'배운 기술'):!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?'포인트 부족':'배울 수 있는 기술';state.innerHTML='<span class="'+(v.known?'known':'')+'">'+label+'</span><span>'+SKILL_BRANCHES[d.branch].name+' · '+d.cost+'P</span>';head.append(state);pane.append(head);
+ const state=document.createElement('div');state.className='skill-detail-state';const label=v.known?(v.practice?'연습용 적용 중':'배운 기술'):!v.canLearn?'출발 준비에서 습득':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?'포인트 부족':'배울 수 있는 기술';state.innerHTML='<span class="'+(v.known?'known':'')+'">'+label+'</span><span>'+SKILL_BRANCHES[d.branch].name+' · '+d.cost+'P</span>';head.append(state);pane.append(head);
  const figure=document.createElement('figure');figure.className='skill-preview';figure.innerHTML='<canvas id="skillPreview" width="480" height="220" aria-label="'+d.name+' 사용 장면 안내"></canvas><figcaption>동작 안내</figcaption>';pane.append(figure);
  const body=document.createElement('div');body.className='skill-description';const benefit=skillBenefit(d);body.innerHTML='<dl class="skill-benefit"><div><dt>기본</dt><dd>'+benefit[0]+'</dd></div><div><dt>습득 후</dt><dd>'+benefit[1]+'</dd></div></dl><p>'+d.description+'</p><p class="skill-purpose">'+SKILL_UTILITY[d.id]+'</p><div class="skill-use">'+skillSigil(d.id)+'<span>'+skillUseText(d)+'</span></div>';pane.append(body);
  const req=document.createElement('div');req.className='skill-prereqs';const path=skillPath(d.id),missing=path.filter(id=>!skillViewState(SKILL_BY_ID[id]).known),cost=missing.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0),note=document.createElement('p');note.textContent=v.known?'습득 경로':path.length===1?'이 기술부터 시작할 수 있다.':'습득 순서 · 여기까지 남은 비용 '+cost+'P';req.append(note);
  for(const[id,index]of path.map((id,i)=>[id,i])){const b=document.createElement('button');b.type='button';b.textContent=(index+1)+'. '+SKILL_BY_ID[id].name+' · '+(skillViewState(SKILL_BY_ID[id]).known?'배움':SKILL_BY_ID[id].cost+'P');b.dataset.path=id;b.setAttribute('aria-current',String(id===d.id));b.onclick=()=>selectSkillNode(id,true);req.append(b);}pane.insertBefore(req,figure);
- const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
+ const actions=document.createElement('div');actions.className='skill-detail-actions';const learn=document.createElement('button');learn.type='button';learn.dataset.learn=d.id;learn.disabled=!v.canLearn||v.known||!v.parents||!v.practice&&v.points<d.cost;learn.textContent=v.known?'배움':!v.canLearn?'출발 준비에서 습득':!v.parents?'선행 기술 필요':!v.practice&&v.points<d.cost?d.cost+'P 필요 · 현재 '+v.points+'P':v.practice?'연습에 적용':d.cost+'P · 배우기';learn.setAttribute('aria-label',d.name+' · '+learn.textContent);learn.onclick=()=>learnTreeSkill(d.id);actions.append(learn);
  if(ASSASSIN_SKILLS[d.id]){const equip=document.createElement('button');equip.type='button';equip.id='btnSkillEquip';equip.className='skill-equip';equip.disabled=!v.known;equip.textContent=!v.known?'배워야 장착':v.active===d.id?'장착 중':'장착';equip.onclick=()=>chooseAssassinSkill(d.id);actions.append(equip);}
  pane.append(actions);drawSkillPreview(d.id);
 }
@@ -75,11 +75,11 @@ function handleSkillDetailKey(e){
 }
 function renderAssassinMenu(){
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
- $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
- $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':skillLessonActive()?'원하는 기술을 선택하고 「배우기」를 누르세요. 쓴 포인트와 배운 기술은 본편 의뢰에도 이어집니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
+ $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 4P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
+ $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?'플레이 중에는 기술을 배우지 않습니다. 현재 임무를 마친 뒤 출발 준비에서 습득하세요.':practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
  const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
- $('btnSkillReset').hidden=!preparing&&!practice;$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
+ $('btnSkillReset').hidden=!skillLearningAllowed();$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
   const defs=SKILL_TREE.filter(d=>d.branch===branch),layout=skillTreeLayout(branch),count=defs.filter(d=>skillViewState(d).known).length;
@@ -88,7 +88,7 @@ function renderAssassinMenu(){
   const heading=document.createElement('h3');heading.innerHTML=skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
   const graph=document.createElement('div');graph.className='skill-graph';section.append(graph);list.append(section);
   for(const d of defs){
-   const at=layout.positions[d.id],v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.parents&&(v.practice||v.points>=d.cost)?' available':'');article.dataset.node=d.id;article.style.gridRow=String(at.row);article.style.gridColumn=at.col+' / span 2';
+   const at=layout.positions[d.id],v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.canLearn&&v.parents&&(v.practice||v.points>=d.cost)?' available':'');article.dataset.node=d.id;article.style.gridRow=String(at.row);article.style.gridColumn=at.col+' / span 2';
    const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed','false');b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':d.cost+'P'+(!v.parents?' · 선행 기술 필요':'')));b.title=d.name;b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':d.cost+'P')+'</span>';b.onclick=()=>selectSkillNode(d.id);
    b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:layout.positions[x.id].col-at.col,dy:layout.positions[x.id].row-at.row})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
    const label=document.createElement('span');label.className='skill-label';label.textContent=d.name;article.append(b,label);graph.append(article);

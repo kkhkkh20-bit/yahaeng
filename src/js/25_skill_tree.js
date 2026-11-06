@@ -10,7 +10,7 @@ const SKILL_TREE=[
  {id:'foliage',branch:'body',name:'풀숲 자세',cost:2,req:['shadow'],row:4,col:2,description:'웅크려 숨은 풀숲에서 사람의 시각 감지 거리가 22% 줄어든다. 개의 후각은 막지 못한다.'},
  {id:'sprint',branch:'body',name:'짧은 질주',cost:2,req:['swiftCrouch'],row:5,col:1,description:'달리기 속도 12% 증가. 달리기 소음과 의심은 그대로다.'},
  {id:'silentHands',branch:'assassin',name:'제압 숙련',cost:1,req:[],row:1,col:0,description:'맨손 기절의 접촉 소음 30% 감소. 목격자와 쓰러진 몸은 그대로 남는다.'},
- {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'벽에 붙어 지나가는 적을 끌어당기고, 풀숲·은신처·환풍구·가장자리에서 기습한다. 제압 숙련 다음에 1P로 배운다. 시작 4P로 첫 의뢰 전에도 배울 수 있다.'},
+ {id:'ambush',branch:'assassin',name:'은신 기습',cost:1,req:['silentHands'],row:2,col:1,description:'벽에 붙어 지나가는 적을 끌어당기고, 풀숲·은신처·환풍구·가장자리에서 기습한다. 제압 숙련 다음에 1P로 배운다. 첫 스테이지 수료 후 출발 준비에서 배울 수 있다.'},
  {id:'drop',branch:'assassin',name:'낙하 암살',cost:1,req:['silentHands'],row:3,col:1,description:'옥상 가장자리에서 [공격]으로 바깥의 적을 덮친다. 실제 착지와 빈 경로가 필요하다.'},
  {id:'dual',branch:'assassin',name:'동시 암살',cost:2,req:['silentHands'],row:2,col:2,description:'서로 붙어 있는 두 적의 등 뒤에서 함께 처치. 공격 또는 B 길게 · 재사용 12초.'},
  {id:'bodyCarry',branch:'assassin',name:'시체 운반',cost:1,req:['drop'],row:4,col:1,description:'기절자·시체 운반 속도가 기본 보행의 60%에서 75%가 된다.'},
@@ -53,7 +53,6 @@ function loadSkillTree(){
 }
 function skillOn(id){
  if(!S||STAGE.artSlice)return false;
- if(STAGE.tutorial&&!STAGE.skillPractice&&!STAGE.toolPractice)return !!STAGE.trialSkills?.includes(id)||!!STAGE.trialSkills?.length&&!!S.practiceSkills?.[id];
  return !!STAGE.trialSkills?.includes(id)||!!S.skills?.[id]||!!S.practiceSkills?.[id]||!!STAGE.skillPractice&&['dual','chain','drop'].includes(id)||!!STAGE.toolPractice&&SKILL_BY_ID[id]?.branch==='tools';
 }
 function syncRuntimeSkills(){
@@ -61,7 +60,7 @@ function syncRuntimeSkills(){
  if(S.skillRules!==149&&S.skillGrants?.precision)S.skillGrants.precisionDart=true;S.skillRules=149;
  const r=loadSkillTree();S.skills=Object.fromEntries(r.learned.map(id=>[id,true]));S.skillStars=totalStars();S.skillGrants=S.skillGrants||{};
  S.perks={sole:skillOn('quietStep'),shadow:skillOn('swiftCrouch'),reach:skillOn('reach'),pick:skillOn('kit'),can:skillOn('kit'),dart:skillOn('precision')};
- if((!STAGE.tutorial&&(!STAGE.bare||STAGE.ownedLoadout||S.gearRecovered)&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
+ if((((!STAGE.tutorial||STAGE.ownedLoadout)&&(!STAGE.bare||STAGE.ownedLoadout||S.gearRecovered))&&S.mod!=='bare')||STAGE.toolPractice||!!STAGE.trialSkills?.length||STAGE.skillPractice&&Object.keys(S.practiceSkills||{}).length){
   if(skillOn('dart')&&!S.skillGrants.dart){S.player.kunai=Math.max(S.player.kunai||0,STAGE.toolPractice?2:Math.max(0,(STAGE.ownedLoadout?2:STAGE.kunai??2)+D().kunaiAdd));S.skillGrants.dart=true;}
   if(skillOn('dart')&&skillOn('precision')&&!S.skillGrants.precisionDart){S.player.kunai=(S.player.kunai||0)+1;S.skillGrants.precisionDart=true;}
   const grants={kit:{picks:1,stones:2},kunai:{blades:2},smoke:{smokes:1},precision:{blades:1},smokeMix:{smokes:1},radio:{radioCharges:2},hack:{hackDevice:1}};
@@ -71,6 +70,7 @@ function syncRuntimeSkills(){
 }
 function learnTreeSkill(id){
  const s=SKILL_BY_ID[id];if(!s||!assassinMenu)return false;
+ if(!skillLearningAllowed())return false;
  if(assassinMenu.practice){S.practiceSkills=S.practiceSkills||{};if(!s.req.every(k=>skillOn(k)))return false;S.practiceSkills[id]=true;syncRuntimeSkills();renderAssassinMenu();syncTools();return true;}
  const r=loadSkillTree();if(r.learned.includes(id)||!s.req.every(k=>r.learned.includes(k))||skillBudget()-skillSpent(r)<s.cost)return false;
  r.learned.push(id);const stored=storeSkillTree(r);choseFieldSkill(id);if(S&&running)syncRuntimeSkills();
@@ -78,13 +78,16 @@ function learnTreeSkill(id){
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
 function resetTreeSkills(){
- if(!assassinMenu||assassinMenu.training||!['intro','ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
+ if(!assassinMenu||assassinMenu.training||!skillLearningAllowed())return false;
  if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
 }
 
-// Teach spending in the first lesson; the player chooses every skill.
-const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]==='skills';
+// A play/pause overlay is a reference, never a shop. The first clear opens preparation.
+function skillLearningAllowed(){
+ const m=assassinMenu;if(!m||!['intro','ledger','brief','end'].includes(m.from))return false;
+ return campaignHasProgress()||m.from==='brief'&&!STAGE.firstSteps;
+}
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record),field=fieldSkillPreparation(after);
@@ -98,9 +101,7 @@ function renderSkillPreparation(id,after=false){
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
  hudCache.skillPromptAt=S.t;
- const record=loadSkillTree(),points=mainContract(STAGE)||introductoryContract(STAGE)||skillLessonActive()?skillBudget()-skillSpent(record):0,b=$('btnPause');
- if(points>0)b.dataset.points=points;else delete b.dataset.points;
- b.setAttribute('aria-label','메뉴'+(points>0?' · 기술 '+points+'포인트 사용 가능':''));
+ const b=$('btnPause');delete b.dataset.points;b.setAttribute('aria-label','메뉴');
 }
 const skillNoise=(src,r)=>r*(src==='step'?(S.player.mode==='walk'&&skillOn('quietStep')?.75:S.player.mode==='sneak'&&skillOn('quietCrouch')?.65:1):src==='land'&&skillOn('landing')?.6:src==='ko'&&skillOn('silentHands')?.7:1);
 const skillMoveMul=mode=>mode==='run'&&skillOn('sprint')?1.12:1;
@@ -114,7 +115,7 @@ function concealedAttackSource(P=S.player){
  return !!(P.hide||P.vent||P.under||P.ledge||P.cover||P.hidden||!P.z&&P.mode==='sneak'&&tileAt(P.x,P.y)==='B');
 }
 const concealedMeleeAllowed=(P=S.player)=>!concealedAttackSource(P)||abilityOn('ambush');
-const abilityLockText=id=>(SKILL_BY_ID[id]?.name||'기술')+' 필요 · K / 메뉴의 기술 트리에서 배우기';
+const abilityLockText=id=>(SKILL_BY_ID[id]?.name||'기술')+' 필요 · 다음 출발 준비에서 배우기';
 
 // Ordinary light switches are basic actions; building power work is specialized.
 const electricalAction=a=>a.k==='bfuse'||a.k==='fuse';

@@ -144,7 +144,7 @@ body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint{display:none}
 body.touch.entry-learning #hud .joyhint{display:none}
 body.touch #hud #saveState{bottom:145px;left:18px}
 body[data-lesson] #hud #btnGrab,body[data-lesson] #hud #btnCycle,body[data-lesson] #hud #btnSkill,body[data-lesson] #hud .keys,
-body[data-lesson=perception] #hud #btnCarry,body[data-lesson=body] #hud #btnTool,body[data-lesson=indoor] #hud #btnTool,body[data-lesson=indoor] #hud #btnAct{visibility:hidden;pointer-events:none}
+body[data-lesson=indoor] #hud #btnAct{visibility:hidden;pointer-events:none}
 body.tutorial-lesson #hud .obj:not(.open) #objective .ol.tut{display:block;-webkit-line-clamp:unset;overflow:visible}
 body.scanning #hud #stealth,body.dlgmodal #hud #stealth,body:has(.screen:not([hidden])) #hud #stealth,body.inspecting #hud #stealth,body.inspecting #hud #toasts{visibility:hidden}
 body.dlgmodal #hud .pad,body.dlgmodal #hud .keys,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud .joyhint,body.dlgmodal #hud .hud-menu,body.dlgmodal #hud #btnSkill,body.keypadopen #hud .pad,body.keypadopen #hud .sysbtns,body.keypadopen #hud .keys,body.keypadopen #hud #btnSkill,body:has(.screen:not([hidden])) #hud .hud-menu{visibility:hidden}

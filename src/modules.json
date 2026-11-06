@@ -134,6 +134,10 @@
       "group": "light_fixtures"
     },
     {
+      "path": "36_field_items.js",
+      "group": "light_fixtures"
+    },
+    {
       "path": "37_security_camera.js",
       "group": "security_camera"
     },

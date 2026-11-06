@@ -21,7 +21,7 @@ const ILLEGAL_WORK=new Set(['loot','pick','carry','dress','clean','camCable','ca
 function workRiskReadout(action){
   const kind=action?.k==='pickup'&&action.p?.outfit?'dress':action?.k;
   if(!ILLEGAL_WORK.has(kind))return null;
-  const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입',kill:'제압·처치',kill2:'제압·처치',finish:'처치',grab:'붙잡기'})[kind];
+  const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'감시망 정지',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입',kill:'제압·처치',kill2:'제압·처치',finish:'처치',grab:'붙잡기'})[kind];
   const duration=kind==='camCable'?' · '+OBJECT_FLOW.camCable[0]+'초 소요':'';
   const camera=S.cams.find(c=>!c.search&&cameraAssessment(c,true).detectable);
   if(camera)return{kind:'camera',camera,text:verb+' 시 CCTV 녹화 위험 · '+(kind==='camCable'?'카메라가 돌아간 뒤 작업':'시야 밖에서 작업')+duration};

@@ -18,7 +18,7 @@ async def main():
    G.actKunai(t);ok(P.kunai===7&&!S.kunais.length,'Direct dart launch bypasses skill');
    G.kunaiHit({x0:g.x-20,y0:g.y,tgt:{...t,fl:g.fl||0,z:g.z||0},fl:g.fl||0,z:g.z||0,lethal:true});ok(g.state!=='DEAD','Old projectile bypasses skill');
    G.saveCheckpoint();ok(G.loadCheckpoint(),'Checkpoint failed');S=G.S;P=S.player;ok(P.kunai===7&&!G.abilityOn('dart'),'Checkpoint grants ability or discards old stock');
-   G.openAssassinMenu();ok(G.learnTreeSkill('kit')&&G.learnTreeSkill('dart'),'Dart cannot be purchased');G.closeAssassinMenu();ok(G.availableTools().includes('kunai')&&P.kunai===7,'Learning duplicates old stock');
+   G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','dart']});G.syncRuntimeSkills();ok(G.availableTools().includes('kunai')&&P.kunai===7,'Learning duplicates old stock');
    P.kunai=0;G.syncRuntimeSkills();ok(P.kunai===0,'Sync refills darts');G.saveCheckpoint();G.loadCheckpoint();ok(G.S.player.kunai===0,'Checkpoint refills darts');
    passed.push('no starting darts; stock, aim, selection, direct launch, old projectile and checkpoint cannot bypass; learned stock is granted once');
    localStorage.clear();S=fresh('m1');P=S.player;const guard=S.guards.find(g=>!g.dog&&!g.civ&&!g.child);
@@ -29,17 +29,17 @@ async def main():
    ok(G.startAmbush(guard)===false&&!S.amb&&!guard.yank,'Direct ambush mutates guard');
    ok(!G.prepareCombat({k:'kill',list:[guard]})&&!G.prepareCombat({k:'ambush',g:guard}),'Combat intent bypass');
    Object.assign(P,{hidden:false,mode:'walk',cover:{x:1,y:0}});ok(!G.concealedMeleeAllowed()&&!G.prepareCombat({k:'pull',g:guard}),'Cover pull bypasses skill');G.updateHUD(true);ok(document.getElementById('kmAct').textContent.includes('은신 기습 미습득'),'Keyboard HUD hides the cover skill requirement');P.cover=null;ok(G.concealedMeleeAllowed(),'Basic open takedown was gated');
-   G.openAssassinMenu();ok(G.learnTreeSkill('silentHands')&&G.learnTreeSkill('ambush'),'Ambush cannot be purchased');G.closeAssassinMenu();ok(G.skillBudget()-G.skillSpent(G.loadSkillTree())===2,'Starting ambush path should cost two points');P.hidden=true;
+   G.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','ambush']});G.syncRuntimeSkills();ok(G.skillBudget()-G.skillSpent(G.loadSkillTree())===2,'Starting ambush path should cost two points');P.hidden=true;
    ok(G.concealedMeleeAllowed(),'Learned concealed attack unavailable');G.startAmbush(guard);ok(S.amb?.g===guard&&guard.yank,'Learned ambush fails');
    passed.push('concealed attack, grab and special entry gates; ordinary rear combat stays basic; learned ambush starts');
    localStorage.clear();S=fresh('m1');P=S.player;P.hidden=true;P.lunge={list:[S.guards[0]]};P.grabIn={g:S.guards[0]};G.saveCheckpoint();ok(G.loadCheckpoint()&&!G.S.player.lunge&&!G.S.player.grabIn,'Old concealed pending action survives checkpoint');
    localStorage.clear();for(const id of ['tB','t0']){S=fresh(id);ok(!G.abilityOn('dart')&&!G.abilityOn('ambush')&&!S.player.kunai,'Basic lesson grants advanced ability');}
    S=fresh('tE');ok(G.abilityOn('dart')&&S.player.kunai>0,'Equipment trial lacks dart');
    S=fresh('tA');ok(G.abilityOn('ambush')&&!G.abilityOn('dart')&&!S.player.kunai,'Ambush trial grants unrelated abilities');
-   G.openAssassinMenu();ok(G.learnTreeSkill('quietStep')&&G.skillOn('quietStep'),'Practice menu selection is ineffective');G.closeAssassinMenu();
+   G.S.practiceSkills={quietStep:true};G.syncRuntimeSkills();ok(G.skillOn('quietStep'),'Practice fixture ineffective');
    S=fresh('m1');ok(!G.abilityOn('dart')&&!G.abilityOn('ambush')&&!G.skillOn('quietStep')&&!G.loadSkillTree().learned.length&&!S.player.kunai,'Trial leaked into mission');
    localStorage.setItem('yahaeng.ch',JSON.stringify({m1:{_clear:true}}));G.storeSkillTree({schema:1,learned:['kit','kunai','precision']});S=fresh('m1');P=S.player;ok(P.kunai===0,'Precision grants unlearned dart');
-   G.openAssassinMenu();ok(G.learnTreeSkill('dart'),'Dart cannot be learned after precision');G.closeAssassinMenu();ok(P.kunai===3,'Learned dart plus precision stock incorrect');P.kunai--;G.syncRuntimeSkills();ok(P.kunai===2,'Precision regrants dart');
+   G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','dart','kunai','precision']});G.syncRuntimeSkills();ok(P.kunai===3,'Learned dart plus precision stock incorrect');P.kunai--;G.syncRuntimeSkills();ok(P.kunai===2,'Precision regrants dart');
    passed.push('only explicit lessons grant temporary trials; no persistent trial unlocks; precision respects separate dart ownership');
    return passed;
   }''')

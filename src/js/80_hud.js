@@ -180,6 +180,8 @@ function pendingFirstGoal() {
 function nextGoal() {
   const P = S.player;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {
+    if(STAGE.id==='tB'&&P.captive)return{text:tutText('{공격} 짧게 눌러 붙잡은 경비 기절시키기'),where:'이 동작이 끝나면 원래 안내가 이어진다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'attack'};
+    if(STAGE.id==='tB'&&P.hide)return{text:tutText('{행동} 은신처에서 나오기'),where:'나온 뒤 원래 안내를 계속한다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
     return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
       fl: (tg && tg.fl) || 0, tut: true, moveCue:['move','run','crouch'].includes(tutorialCue()) };
@@ -201,7 +203,7 @@ function objectiveLines() {
   { const gl = !STAGE.steps && nextGoal(); if (gl) { let distance = ''; if (gl.x != null && gl.y != null) { const nav=goalNavigation(gl), m0 = Math.max(1, Math.round(dist(P.x, P.y, nav.x, nav.y) / 32)), m = m0 > 20 ? Math.round(m0 / 5) * 5 : m0; distance = ` · ${nav.via?'입구 ':''}${m}m`; } L.push(['go goal', `${gl.text}${gl.where && gl.where !== '바깥' ? ' · ' + gl.where : ''}${distance}`]); } }
   if(introductoryContract(STAGE))return L;
   if (S.mod) L.push(['info', '변형: ' + MODS[S.mod][0] + ' — ' + MODS[S.mod][1]]);
-  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${tutText(STAGE.steps[S.tutI||0][0])}${STAGE.steps[S.tutI||0][3]?'<small class="tut-detail">'+STAGE.steps[S.tutI||0][3]+'</small>':''}`]);
+  if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {const g=nextGoal(),s=STAGE.steps[S.tutI||0];L.push(['go tut', `${(S.tutI||0)+1}/${STAGE.steps.length} · ${g.text}${g.interrupt?'<small class="tut-detail">'+g.where+'</small>':s[3]?'<small class="tut-detail">'+s[3]+'</small>':''}`]);}
   if(STAGE.steps)return L;
   if(evidencePending()&&S.camRoom)L.push(['go','CCTV 기록 남음 — '+placeName(S.camRoom.x,S.camRoom.y,S.camRoom.fl)+' 보안실에서 삭제 · 전선 분리로는 지워지지 않음']);
   if (S.exitOpen && STAGE.steps && (S.tutI || 0) >= STAGE.steps.length) L.push(['go', '탈출 지점(노란 원)으로']);
@@ -490,6 +492,8 @@ function renderStageList() {
 
 // One short instruction in the existing objective area, with one matching control accent.
 function tutorialCue(){
+  if(STAGE.id==='tB'&&S.player.captive)return 'attack';
+  if(STAGE.id==='tB'&&S.player.hide)return 'env';
   if(beginnerEntryGoal())return S.beginnerEntry.step===0?'move':'crouch';
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4];
   let key=(typeof cue==='function'?cue(S,S.player):cue)||'';
@@ -507,7 +511,7 @@ function syncTutorialCue(){
   const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽을 끌어 걷기\n웅크림: 조용히 · 달리기: 장비에서 설정':'왼쪽 조금 끌기: 걷기\n끝까지: 달리기 · 웅크림: 조용히';if(joyHint.textContent!==text)joyHint.textContent=text;}
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
-  const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
+  const lesson={tB:'body',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
   const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnAct',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   $('btnSkillsPause').classList.toggle('lesson-cue',key==='skills');

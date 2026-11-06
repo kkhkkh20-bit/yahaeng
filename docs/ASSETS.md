@@ -16,3 +16,7 @@
 - 현재 UI·캔버스 안내 글꼴(v153): [IBM Plex Sans KR Regular](https://github.com/google/fonts/tree/main/ofl/ibmplexsanskr) (IBM, SIL OFL 1.1). 전체 한글 11,172음절을 포함한 WOFF2를 자체 제공하며, 출처·변환·해시는 `src/fonts/ui-font.json`, 라이선스는 `src/fonts/OFL-IBMPlexSansKR.txt`. 제목의 야행 로고는 기존 Black Han Sans를 유지한다. Galmuri는 이전 보관판의 출처다.
 
 - v201 사무동 2층 시범 방: [Quaternius Ultimate House Interior](https://quaternius.com/packs/ultimatehomeinterior.html)의 의자·소파·서랍장과 [Poly Haven Industrial Wall Lamp](https://polyhaven.com/a/industrial_wall_lamp)(Kuutti Siitonen), 모두 CC0. 스위치·미닫이 창문·사무 책상은 직접 제작했다. 원본 파일·SHA-256·라이선스는 `tools/prerender/room_finish_src/`, 구운 2D WebP 48장은 `src/art/room-finish/`에 보관한다. Blender는 제작 도구로만 사용하며 게임은 계속 2D로 실행된다. 적용·검증 범위는 `docs/LIGHT_ROOM_V201.md` 참고.
+
+## v202 접힌 복장과 서류
+
+`src/art/field-items/`의 재킷·앞치마·폴더·종이는 프로젝트에서 직접 만든 기하·재질을 구운 원본 에셋이다. 제작 소스는 `tools/prerender/field_items_scene.py`, 재생성은 Blender 4.3.2와 Pillow로 `python tools/prerender/bake_field_items.py` 실행. 2D WebP 4장 총 6,036바이트, 배포 시 Blender나 3D 실행 코드는 필요 없다. 외부 원본·유료 에셋·추가 라이선스 의무는 없다. 기존 캐릭터와 동일한 48px/m 투영 및 게임 조명을 따른다.

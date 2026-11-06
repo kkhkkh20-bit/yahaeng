@@ -14,7 +14,7 @@ async def main():
         # 문 하나를 골라 그 옆(바깥 칸)에 경비를 세우고, 주인공은 경비 등 뒤 + 문 앞
         async def setup():
             await fresh([2])
-            return await pg.evaluate('''() => { const g = window.__game, S = g.S, P = S.player;g.openAssassinMenu();g.learnTreeSkill('silentHands');g.learnTreeSkill('reach');g.closeAssassinMenu();
+            return await pg.evaluate('''() => { const g = window.__game, S = g.S, P = S.player;g.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','reach']});g.syncRuntimeSkills();
               for (const d of S.doors) { for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const tx = d.tx + dx, ty = d.ty + dy, tx2 = d.tx + dx * 2, ty2 = d.ty + dy * 2;
                 if (g.solidAt(tx, ty) || g.solidAt(tx2, ty2)) continue;
                 const q = S.guards[2]; q.x = tx2 * 48 + 24; q.y = ty2 * 48 + 24; q.a = Math.atan2(dy, dx); q.want = q.a; q.route = [{ x: q.x, y: q.y, pause: 999 }]; q.path = null; q.wait = 99; q.state = 'PATROL'; q.meter = 0;

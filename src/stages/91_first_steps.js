@@ -1,30 +1,29 @@
 // The first visit teaches one action at a time, using the campaign's real rules.
 const FIRST_STEPS = {
-  id:'tB', no:'00', name:'연습 1 · 시야와 소리', sub:'기초 연습 (약 3분)', tutorial:true, firstSteps:true, noSupport:true,noAmbientChats:true,
-  mission:'경비에게 들키지 않고 골목 남쪽 출구로 빠져나간다.',
-  brief:'한 번에 한 가지씩 직접 익힌다. 실수하면 방금 배운 단계부터 다시 시작한다.',
-  W:26,H:18,start:[2,10],exit:[3,14],startA:0,noRefine:true,floors:false,pspd:1.25,gspd:.9,residents:0,
-  well:'manhole',kunai:0,coins:0,bare:true,wires:[],roofs:[],bricks:[],challenges:[],
+  id:'tB',no:'00',name:'첫 잠입 · 골목의 서류',sub:'첫 스테이지 · 제압과 회수',tutorial:true,firstSteps:true,lessonLoot:true,
+  noSupport:true,noAmbientChats:true,noRefine:true,floors:false,pspd:1.25,gspd:.8,residents:0,
+  mission:'경비를 조용히 제압하고 몸을 숨긴 뒤 서류를 회수해 골목을 빠져나간다.',
+  brief:'한 명의 경비, 한 묶음의 서류. 왼쪽 풀숲으로 접근해 등 뒤에서 제압하고, 몸을 숨긴 뒤 책상의 서류를 챙긴다.',
+  endText:'첫 잠입을 마쳤다. 다음 출발 준비에서 4P로 원하는 기술을 배우자. 다음 임무부터 배운 기술과 장비를 사용할 수 있다.',
+  W:26,H:18,start:[2,10],exit:[20,10],exitName:'골목 출구',startA:0,well:'manhole',bare:true,ownedLoadout:true,
+  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
   build(m){
-    m.fill(0,0,25,17,',');m.rect(0,0,25,17);
-    m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');
-    m.fill(6,9,8,9,'#'); // 낮은 골목 담 뒤로 시야를 끊고 빠져나온다.
-    m.many('B',[[9,10]]);m.many('H',[[20,8]]);
+    m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');
+    m.fill(6,9,8,9,'#');m.many('B',[[7,10]]);m.many('H',[[20,8]]);
     m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);
   },
   lamps:[[3,7,130,1],[10,9,300,1],[22,7,160,1],[6,7,400,1]],
-  guards:[{kind:'g1',tag:'practice',at:[10,6],post:90,still:true,radio:false}],
-  items:[],itemName:'',itemNames:[],nextTutorial:'t0',
+  guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
+  fixedFurn:[{x:15,y:9,t:'desk',w:2,h:1}],items:[[15,10]],itemName:'연락 서류',itemNames:['연락 서류'],
+  itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:'t0',
   steps:[
-    ['{이동} 오른쪽 표시까지 이동', (S,P)=>P.x>4*48, ()=>({x:4.5*48,y:10.5*48}), '내 캐릭터를 움직여 골목 남쪽 출구로 나가는 연습이다. 먼저 오른쪽 표시를 따라가자.', 'move'],
-    ['{기술창} 원하는 기술 하나 배우기', S=>Object.keys(S.skills||{}).length>0, null, '시작 포인트 4P가 있다. 기술을 선택하고 「배우기」를 누른 뒤 연습으로 돌아오자.', 'skills'],
-    [(S,P)=>P.mode==='sneak'?'{일어서기} 일어서기':'{달리기} 잠깐 뛰어 보기', (S,P)=>P.moving&&P.mode==='run'&&S.noises.some(n=>n.src==='step'&&n.mode==='run'), ()=>({x:5.5*48,y:10.5*48}), '퍼졌다 사라지는 점선 원은 발소리다. 뛰면 멀리 들린다.', (S,P)=>P.mode==='sneak'?'crouch':'run'],
-    [(S,P)=>P.mode==='sneak'?'몸을 낮춘 채 왼쪽 표시까지 이동':'{살금} 몸을 낮추고 왼쪽 표시까지 이동', (S,P)=>P.moving&&P.mode==='sneak'&&Math.hypot(P.x-4.5*48,P.y-10.5*48)<24&&S.noises.some(n=>n.src==='step'&&n.mode==='sneak'), ()=>({x:4.5*48,y:10.5*48}), '웅크린 걸음은 조용하다. 적은 뒤에서도 발소리를 듣는다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['부채꼴 바깥 표시에서 잠깐 멈추기', (S,P)=>!P.moving&&Math.hypot(P.x-6.5*48,P.y-10.5*48)<24, ()=>({x:6.5*48,y:10.5*48}), '부채꼴은 적이 보는 곳이다. 그 바깥에서는 몸이 드러나도 보지 못한다.', 'move', 1.1],
-    [(S,P)=>P.mode==='sneak'?'웅크린 채 풀숲 안으로 이동':'{살금} 웅크린 다음 풀숲 안으로 이동', (S,P)=>P.hidden&&!P.hide&&!P.trav&&Math.floor(P.x/48)===9&&Math.floor(P.y/48)===10, S=>S.player.y>10.8*48||S.player.y<10.2*48?{x:6.5*48,y:10.5*48}:S.bushes[0], '웅크려 들어가면 몸이 가려진다. 일어서거나 풀숲 밖으로 나오면 은폐가 풀린다.', (S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['풀숲에 숨은 채 {휘파람}', (S,P)=>P.hidden&&!!S.lessonWhistle?.heard&&!!S.lessonWhistle?.hidden, S=>S.bushes[0], '숨어 있어도 소리는 들린다. 적은 소리가 난 곳으로 확인하러 온다.', 'whistle'],
-    ['{이동} 왼쪽 표시로 빠져나오기', (S,P)=>!P.hidden&&!P.hide&&P.x<6.7*48, ()=>({x:6*48,y:10.5*48}), '적이 소리 난 곳을 보는 동안 조용히 다른 쪽으로 빠진다.', 'move'],
-    ['아래쪽 노란 원으로 이동', ()=>false, S=>S.exit, '시야를 피하고 소리를 줄인다. 다음 연습에서는 뒤에서 제압한다.', 'move']
+    ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'책상의 서류를 챙겨 오른쪽 골목으로 빠져나간다. 먼저 경비의 등 뒤로 다가가자.','move'],
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&!P.hide&&!P.trav||(!S.guards[0]||S.guards[0].state==='DEAD'),S=>S.bushes[0],'풀숲에서는 몸이 가려진다. 기본 제압은 풀숲 밖에서 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['풀숲을 나와 경비의 등 뒤로 접근',(S,P)=>(!S.guards[0]||S.guards[0].state==='DEAD')||!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44&&(P.x-S.guards[0].x)*Math.cos(S.guards[0].a)+(P.y-S.guards[0].y)*Math.sin(S.guards[0].a)<0,S=>{const g=S.guards[0];return g?{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40}:S.bushes[0];},'경비가 돌아보면 잠시 거리를 두고, 다시 등을 보일 때 다가간다.','move'],
+    ['{공격} 짧게 눌러 경비 제압',S=>(!S.guards[0]||S.guards[0].state==='DEAD'),S=>S.guards[0],'짧게 누르면 기절시킨다. 제압 동작이 끝나면 바로 몸을 옮길 수 있다.','attack'],
+    [(S,P)=>P.carrying?'풀숲으로 옮긴 뒤 {행동} · 몸 숨기기':'몸 옆에서 {행동} · 운반',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'메고 이동한 뒤 풀숲에서 행동을 한 번 더 누른다. 내려놨다면 다시 운반할 수 있다.',(S,P)=>P.carrying&&Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'move':'env',0,['carry','quickStash','stash']],
+    ['책상의 연락 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'서류철 앞에서 행동을 누르고 작업이 끝날 때까지 기다린다.','env',0,['loot']],
+    ['오른쪽 골목 출구로 이동',()=>false,S=>S.exit,'첫 임무를 마치면 출발 준비에서 기술을 배운다. 다음 스테이지에서 바로 활용할 수 있다.','move']
   ]
 };
 STAGES.push(FIRST_STEPS);
@@ -51,11 +50,11 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
   lamps:[[5,7,180,1],[16,7,200,1]],
   guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
   steps:[
-    [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&Math.floor(P.x/48)===7||S.guards[0].state==='DEAD', S=>S.bushes[0],'풀숲에 들어가는 버튼은 없다. 웅크려 걸어 들어가면 자동으로 숨는다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-40),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44||S.guards[0].state==='DEAD',()=>({x:10.5*48-40,y:10.5*48}),'숨은 채 공격하는 기술은 아직 없다. 풀숲 밖에서 한 걸음 거리까지 다가간다.','move'],
-    ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>S.guards[0].state==='DEAD',S=>S.guards[0],'짧게 누르면 기절, 길게 누르면 처치한다. 이 연습은 짧게 눌러 보자.','attack'],
+    [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&Math.floor(P.x/48)===7||(!S.guards[0]||S.guards[0].state==='DEAD'), S=>S.bushes[0],'풀숲에 들어가는 버튼은 없다. 웅크려 걸어 들어가면 자동으로 숨는다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
+    ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-40),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44||(!S.guards[0]||S.guards[0].state==='DEAD'),()=>({x:10.5*48-40,y:10.5*48}),'숨은 채 공격하는 기술은 아직 없다. 풀숲 밖에서 한 걸음 거리까지 다가간다.','move'],
+    ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>(!S.guards[0]||S.guards[0].state==='DEAD'),S=>S.guards[0],'짧게 누르면 기절, 길게 누르면 처치한다. 이 연습은 짧게 눌러 보자.','attack'],
     ['몸 옆에서 {행동} · 운반',(S,P)=>!!P.carrying||S.corpses.some(c=>c.hidden||c.stashed),S=>S.corpses[0],'먼저 쓰러뜨린 다음 몸을 옮긴다. 운반 중에는 느려지고 뛸 수 없다.','env',0,['carry','quickStash']],
-    [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move',0,['carry','quickStash','stash']],
+    [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move',0,['carry','quickStash','stash']],
     ['오른쪽 출구로 이동',()=>false,S=>S.exit,'목적을 마치면 노란 출구로 나온다. 다음은 같은 행동을 실제 의뢰에서 사용한다.','move']
   ]
 });

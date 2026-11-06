@@ -10,7 +10,7 @@ async def main():
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    ok(G.SKILL_TREE.length===27&&['body','assassin','tools'].every((k,i)=>G.SKILL_TREE.filter(s=>s.branch===k).length===[8,9,10][i]),'Revised 27-node trees missing');
-   document.querySelector('#btnSkillsIntro').click();
+   localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true}}));document.querySelector('#btnSkillsIntro').click();
    ok(G.skillBudget()===4&&!G.loadSkillTree().learned.length,'Starting points are wrong');ok(!G.learnTreeSkill('chain'),'Skipped dependencies');
    for(const id of ['kit','smoke','kunai'])ok(G.learnTreeSkill(id),'Cannot learn '+id);
    ok(G.skillSpent(G.loadSkillTree())===3&&!G.learnTreeSkill('kunai'),'Duplicate purchase');ok(!G.learnTreeSkill('radio'),'Overspent points');
@@ -23,11 +23,11 @@ async def main():
    localStorage.clear();passed.push('27 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
    G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();let S=G.S,P=S.player;
    const base={kunai:P.kunai,stones:P.stones,picks:P.picks};
-   G.openAssassinMenu();ok(G.learnTreeSkill('kit')&&G.learnTreeSkill('smoke'),'Live learning failed');
+   G.openAssassinMenu();ok(!G.learnTreeSkill('kit')&&!G.learnTreeSkill('smoke'),'Field learning is still available');G.closeAssassinMenu();G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','smoke']});G.syncRuntimeSkills();
    ok(P.picks===base.picks+1&&P.stones===base.stones+2&&P.smokes===1,'Learned equipment not supplied');P.smokes--;G.syncRuntimeSkills();ok(!P.smokes,'Skill sync refilled consumed supplies');
    ok(!G.resetTreeSkills(),'Can reset/refill during a mission');G.closeAssassinMenu();
    G.saveCheckpoint();ok(G.loadCheckpoint(),'Checkpoint unavailable');S=G.S;P=S.player;ok(!P.smokes,'Checkpoint migration refilled supplies');
-   passed.push('live learning grants once, mission reset blocked and checkpoint does not refill');
+   passed.push('owned loadout grants once, field learning and reset blocked and checkpoint does not refill');
    G.start(G.STAGES.findIndex(s=>s.id==='tE'));while(G.DLG.modal)G.advanceDialog();S=G.S;P=S.player;const guard=S.guards[0];
    window.__tick=(seconds,full=false)=>{for(let t=0;t<seconds-1e-6;t+=.01){if(full)G.update(.01);else{S.t+=.01;G.updatePlayer(.01);G.updateSkillDevices()}}};
    S.guards=S.guards.slice(0,1);Object.assign(P,{x:guard.x-48,y:guard.y,fl:0,z:0,a:0});
@@ -73,7 +73,7 @@ async def main():
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.elite);S.guards=[g];let place=null;
    for(let y=1;y<G.MH-1&&!place;y++)for(let x=1;x<G.MW-1&&!place;x++){const z=G.rLv(x,y);if(z<1||z>2||G.robAt(x,y))continue;for(const[dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(!G.rLv(nx,ny)&&G.bldAt(nx,ny)<0&&!G.solidAt(nx,ny)){place={x,y,z,nx,ny};break;}}}
    ok(place,'No real roof edge available');Object.assign(P,{x:place.x*48+24,y:place.y*48+24,z:place.z,fl:0,strikeT:0,carrying:null,captive:null,hide:null,jump:null,trav:null,wire:null});Object.assign(g,{x:place.nx*48+24,y:place.ny*48+24,z:0,fl:0,state:'PATROL',child:false,civ:false,dog:false,elite:false,doomed:false,climb:null});
-   ok(!G.dropTarget(),'Unlearned drop is available');G.openAssassinMenu();ok(G.learnTreeSkill('silentHands')&&G.learnTreeSkill('drop'),'Could not learn drop');G.closeAssassinMenu();ok(G.dropTarget()===g,'Learned real roof drop unavailable');
+   ok(!G.dropTarget(),'Unlearned drop is available');G.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','drop']});G.syncRuntimeSkills();ok(G.dropTarget()===g,'Learned real roof drop unavailable');
    S.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();ok(!!P.jump,'Roof attack did not create physical movement');for(let i=0;i<180;i++){S.t+=.01;G.updatePlayer(.01);G.updateKoHold();}S.keys.KeyZ=false;G.combatRelease('KeyZ');
    ok(!P.jump&&P.z===0&&Math.hypot(P.x-g.x,P.y-g.y)<40&&g.state==='DEAD'&&S.stats.kills===1,'Drop did not physically land and finish deliberate kill');
    return ['learned drop from a real roof: locked before purchase, physical descent and held lethal outcome'];

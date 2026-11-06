@@ -297,7 +297,7 @@ $('btnNewCampaignConfirm').addEventListener('click',restartCampaign);
 $('newCampaignDialog').addEventListener('close',()=>{if(!running&&!$('intro').hidden)$('btnNewCampaign').focus({preventScroll:true});});
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
-  if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
+  if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 정보 보기'; $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
 $('btnMute').addEventListener('click', toggleMute);
 { let drag = null; const cv = document.getElementById('game');  // 세로 전술 지도 끌어 옮기기
@@ -345,7 +345,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
+  newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','전체 목표 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다

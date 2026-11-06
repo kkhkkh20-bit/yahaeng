@@ -191,7 +191,7 @@ function actPrimary(force) {
     }
     case 'callMeet': {callRendezvous();break;}
     case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · '+(S.cameraEvidence||S.stats.camRec>0?'남은 녹화는 관리실에서 삭제':'현재 남은 녹화 없음'),2.5,'good');break;}
-    case 'camroom': { S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast('관리실: CCTV를 모두 끄고 ' + (n ? `녹화 ${n}건을 지웠다` : '녹화를 지웠다') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
+    case 'camroom': { const wasStopped=S.camsOff,hadRecording=cameraRecordingExists();S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast((wasStopped?'관리실: ':'관리실: CCTV 감시망 정지 · ') + (n ? `녹화 기록 ${n}건 삭제` : hadRecording?'저장된 녹화 기록 삭제':'삭제할 녹화 기록 없음') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false);recordFieldSkill('electric','건물 배전반의 전원을 차단했다'); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }

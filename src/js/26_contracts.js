@@ -5,6 +5,7 @@ const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === i
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
 const introductoryContract = s => !!(s.openingContract || s.starterContract || s.apprenticeContract);
 const contractNumber = s => mainContract(s) ? String(MAIN_CONTRACTS.indexOf(s.id) + 1).padStart(2, '0') : s.no;
+const cameraRecordingExists=()=>!!S?.cameraEvidence||(S?.stats?.camRec||0)>0;
 const evidencePending = () => !!(STAGE.securityEvidence && S.camRoom && S.cameraEvidence && !S.camsOff);
 function recordCameraEvidence(c) {
   if (!STAGE.securityEvidence || !S.camRoom || c.search || S.camsOff) return;

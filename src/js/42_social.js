@@ -8,7 +8,7 @@ const inRect = (o, r) => { const tx = Math.floor(o.x / TILE), ty = Math.floor(o.
 // 구버전 저장의 '비번' 정보도 현재 '비밀번호' 단서와 같은 정보로 인식한다.
 const knows = s => (S.learned || []).some(t => t.replace(/비번/g, '비밀번호').includes(s.replace(/비번/g, '비밀번호')));
 // 스테이지 데이터(따로 읽히는 스크립트)의 조건 함수에 넘기는 도구: (S, h) => h.npc('boss') ...
-const SH = { camera:(c,work=false)=>cameraAssessment(c,work),access:at=>accessReadout(at),npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
+const SH = { lightOn:l=>lampOn(l),cameraOn:c=>camOn(c),camera:(c,work=false)=>cameraAssessment(c,work),access:at=>accessReadout(at),npc: t => npc(t), inRect: (o, r) => inRect(o, r), knows: s => knows(s), dist: (a, b, c, d) => dist(a, b, c, d), tc: v => tc(v), allGot: () => S.items.every(i => i.got),
   eliminated: t => { const g = npc(t); return !!g && targetEliminated(g); },
   detour: (t, x, y, stay, name, act) => detour(npc(t), x, y, stay, name, act), say: (t, text) => { const g = npc(t); if (g && g.state !== 'DEAD') gsay(g, text, 2.6); } };
 // 일과에서 벗어나 한 번 들르기 (배탈 → 화장실 등): 지금 가는 곳 앞에 끼워 넣고, 다 머물고 떠날 때 지운다. 일과표(sched)도 같이 끼워 이름표가 맞게
@@ -241,9 +241,13 @@ function useItem(n) {
   toast(u.done || '했다', 2.4, 'good');
 }
 function drawProps(fl=0) {
-  for (const p of S.props || []) { if (p.taken || p.fl !== fl) continue;
-    const v=surfacePoint(p);ctx.save(); ctx.translate(v.x, v.y); ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(-11, -4, 24, 12);
-    if(['emetic','laxative'].includes(p.id)){drawMedicineArt(ctx,p);ctx.restore();continue;}
-    ctx.fillStyle = p.outfit ? '#6fae7e' : p.id === 'box' ? '#b78a52' : '#d9d2c2'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 1.5; ctx.fillRect(-10, -9, 20, 15); ctx.strokeRect(-10, -9, 20, 15);
-    ctx.restore(); if (dist(p.x, p.y, S.player.x, S.player.y) < 260) tag(v.x, v.y - 20, p.name, '#f4e3c2', 0.85); }
+ for(const p of S.props||[]){if(p.taken||p.fl!==fl)continue;
+  const v=surfacePoint(p),key=p.outfit?(p.outfit==='waiter'?'apron':'coat'):/서류|문서|장부|명세|암호|보고서|서신/.test(p.name||'')?'folder':null;
+  ctx.save();ctx.translate(v.x,v.y);
+  if(['emetic','laxative'].includes(p.id))drawMedicineArt(ctx,p);
+  else if(!key||!drawFieldItem(ctx,key,0,0)){
+   ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(-11,-4,24,12);ctx.fillStyle=p.outfit?'#536147':p.id==='box'?'#b78a52':'#d9d2c2';ctx.strokeStyle='rgba(7,10,18,.9)';ctx.lineWidth=1.5;ctx.fillRect(-10,-9,20,15);ctx.strokeRect(-10,-9,20,15);
+  }
+  ctx.restore();if(dist(p.x,p.y,S.player.x,S.player.y)<260)tag(v.x,v.y-24,p.name||'물품','#f4e3c2',.85);
+ }
 }

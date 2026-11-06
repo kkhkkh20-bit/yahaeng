@@ -6,7 +6,7 @@ R=Path(__file__).resolve().parents[2];O=R/'build/skills-v152';O.mkdir(exist_ok=T
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch();q=await b.new_page(viewport={'width':1440,'height':900});errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-  await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game');await q.click('#btnSkillsIntro')
+  await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true}}));localStorage.setItem("yahaeng.skillTree.v1",JSON.stringify({schema:1,rewardVersion:152,legacyPoints:0,learned:[]}))');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game');await q.click('#btnSkillsIntro')
   assert await q.locator('#skillDetail').is_hidden()
   assert await q.locator('[data-node]').count()==27
   assert await q.locator('.skill-tree:visible').count()==3

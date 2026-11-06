@@ -45,6 +45,7 @@ const stageCleared = st => !!(loadCh()[st.id] || {})._clear;
 function after(sec, fn) { if (S) (S.timers || (S.timers = [])).push({ at: S.t + sec, fn }); }
 function runTimers() { const T = S && S.timers; if (!T || !T.length) return; const now = S.t, due = T.filter(o => o.at <= now); if (!due.length) return; S.timers = T.filter(o => o.at > now); for (const o of due) { if (S.over) return; try { o.fn(); } catch (e) { console.error(e); } } }
 function newGame(si) {
+  if(STAGES[si]?.tutorial)STAGES[si].ownedLoadout=true;
   STAGE_I = si; STAGE = STAGES[si]; CP = null;
   const modNow = MOD && !STAGE.tutorial && stageCleared(STAGE) ? MOD : '';
   pickAlts(STAGE);

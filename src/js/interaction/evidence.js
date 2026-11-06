@@ -41,6 +41,7 @@ function updateChanges(dt) {
 // 연습(훈련장): 단계를 차례로 확인하고 다음 할 일을 알려 준다
 function updateTutorial(dt = 1/60) {
   const st = STAGE.steps; if (!st || S.over) return; S.tutI = S.tutI || 0;
+  if(STAGE.id==='tB'&&S.tutI===4&&S.guards[0]&&S.guards[0].state!=='DEAD'&&S.guards[0].state!=='CAPTIVE'&&!S.corpses.some(c=>c.guardId===S.guards[0].id)){S.tutI=2;S.tutHold=0;S.tutStepAt=S.t;hudCache.objH=null;toast('경비가 깨어났다 · 다시 등 뒤로 접근하자',2.4);}
   if(S.tutI<st.length&&!st[S.tutI][1](S,S.player,input,SH)){S.tutHold=0;return;}
   // Let the new instruction render before accepting an already-satisfied condition.
   if(S.t-(S.tutStepAt??-1)<.35)return;

@@ -10,7 +10,7 @@ async def main():
   checks=await q.evaluate('''()=>{
    const G=__game,out=[],ok=(v,m)=>{if(!v)throw Error(m)};
    const fresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.target&&!g.dog&&!g.child);S.guards=[g];S.cams=[];S.facOn=false;S.t=10;G.setLayer(0);Object.assign(P,{x:1584,y:1008,a:0,fl:0,z:0,hidden:false,cover:null});Object.assign(g,{x:1764,y:1008,a:0,fl:0,z:0,state:'PATROL',moving:false,doomed:false,climb:null,doorWork:null,follow:null,path:null});return{S,P,g}};
-   let {S,P,g}=fresh();G.openAssassinMenu();ok(G.learnTreeSkill('kit')&&G.learnTreeSkill('dart'),'dart purchase failed');G.closeAssassinMenu();
+   G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','dart']});let {S,P,g}=fresh();
    ({S,P,g}=fresh());const civilian={...g,id:999,civ:true,target:false,x:P.x+50};S.guards.push(civilian);
    ok(G.kunaiTarget()?.ref===g,'nearby civilian steals a guard shot');S.guards=[civilian];ok(!G.kunaiTarget(),'unmarked civilian auto-selected');S.marked=civilian;const intentional=G.kunaiTarget();ok(intentional?.ref===civilian&&intentional.explicitCivilian,'deliberately marked civilian unavailable');civilian.child=true;ok(!G.kunaiTarget(),'child selectable');out.push('automatic guard/target selection; civilian requires explicit mark; child excluded');
    ({S,P,g}=fresh());const ammo=P.kunai;g.fl=1;G.actKunai({type:'guard',ref:g,x:g.x,y:g.y});ok(P.kunai===ammo&&!S.kunais.length,'queued stale floor consumes ammo');g.fl=0;g.x=P.x+600;G.actKunai({type:'guard',ref:g,x:g.x,y:g.y});ok(P.kunai===ammo,'out-of-range forced shot consumes ammo');out.push('queued targets revalidate floor and range before spending ammunition');

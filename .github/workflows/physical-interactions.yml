@@ -104,6 +104,7 @@ jobs:
           path: |
             build/test_logs/
             build/light-room-v201/
+            build/tutorial-v202/
             build/tutorial-validation/
             build/physical-v190/
             build/action-flow-v192/

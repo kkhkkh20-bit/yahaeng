@@ -26,6 +26,6 @@ function drawLootItem(it) {
   const x = it.dx || it.x, y = it.dy || it.y;
   if (it.furn === 'pc') { const a = 0.45 + 0.35 * Math.sin(S.t * 5); ctx.fillStyle = `rgba(120,220,255,${a})`; ctx.fillRect(x - 12, y - 8, 24, 14); ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.strokeRect(x - 13, y - 9, 26, 16); return; }
   if (it.furn === 'safe' || it.furn === 'cab' || it.furn === 'locker' || it.furn === 'wardrobe' || it.furn === 'nstand') { const a = 0.55 + 0.35 * Math.sin(S.t * 4); ctx.fillStyle = `rgba(242,196,107,${a})`; ctx.fillRect(x - 9, y - 2, 18, 4); ctx.beginPath(); ctx.arc(x, y + 8, 3, 0, TAU); ctx.fill(); return; }
-  drawScroll(x, y, S.t);
+  if(!drawFieldItem(ctx,'folder',x,y))drawScroll(x, y, S.t);
 }
-function drawScroll(x, y, t) { drawItemIcon('it_scroll', x, y, t, true); }
+function drawScroll(x,y,t){if(!drawFieldItem(ctx,'folder',x,y))drawItemIcon('it_scroll',x,y,t,true);}

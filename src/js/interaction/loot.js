@@ -1,7 +1,7 @@
 // Most objectives are recoverable objects; authored terminal work uses the same
 // interruptible action and checkpoint progress, with explicit prerequisite text.
 const itemObjectiveAction = it => STAGE.itemActions?.[S.items.indexOf(it)] || null;
-const itemObjectiveText = (it,verb=STAGE.itemVerb||'훔치기') => itemObjectiveAction(it)?.label || ((STAGE.itemNames||[])[S.items.indexOf(it)]||STAGE.itemName||'서류')+' '+verb;
+const itemObjectiveText = (it,verb=STAGE.itemVerb||(itemObjectiveAction(it)?.kind==='recovery'?'챙기기':'훔치기')) => itemObjectiveAction(it)?.label || ((STAGE.itemNames||[])[S.items.indexOf(it)]||STAGE.itemName||'서류')+' '+verb;
 function lootPlace(it, only) {  // only: 지정한 가구 종류만, 같은 건물 안에서 접근할 수 있는 자리를 찾는다
   const f0 = it.fl || 0, g = f0 ? GF[f0] : G0, tx0 = Math.floor(it.x / TILE), ty0 = Math.floor(it.y / TILE), b0 = bldAt(tx0, ty0); let best = null, bs = 1e9;
   for (const F of FURN) {

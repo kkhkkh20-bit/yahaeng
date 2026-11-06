@@ -62,7 +62,7 @@ function actVerb(a, ic) {
   if (a.k === 'drag') return '먼저 기절';
   if (a.k === 'finish') return '처치';
   if (a.k === 'ledgeKill') return '끌어내리기';
-  if (a.k === 'camroom') return 'CCTV 끄기';
+  if(a.k==='camroom')return S.camsOff?'기록 지우기':cameraRecordingExists()?'감시 정지·기록 삭제':'감시망 정지';
   if (a.k === 'door' || a.k === 'keypad') return lb.length <= 6 ? lb : '문';
   if (a.k === 'loot' && a.it && LOOT[a.it.furn]) return itemObjectiveAction(a.it)?.short||LOOT[a.it.furn][2];  // 챙기기 · 뒤지기 · 꺼내기 · 빼내기
   if (lb.length <= 6) return lb;
