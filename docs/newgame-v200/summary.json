@@ -1,0 +1,122 @@
+[
+  {
+    "device": "pc",
+    "version": "v200",
+    "reset": {
+      "stage": "tB",
+      "skills": {
+        "schema": 1,
+        "rewardVersion": 152,
+        "legacyPoints": 0,
+        "learned": []
+      },
+      "budget": 4,
+      "record": {},
+      "field": {
+        "active": null,
+        "used": {}
+      },
+      "cp": null,
+      "best": null,
+      "city": null,
+      "mod": null,
+      "prefs": [
+        "42",
+        "115",
+        "1",
+        "keep"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "device": "mobile",
+    "version": "v200",
+    "reset": {
+      "stage": "tB",
+      "skills": {
+        "schema": 1,
+        "rewardVersion": 152,
+        "legacyPoints": 0,
+        "learned": []
+      },
+      "budget": 4,
+      "record": {},
+      "field": {
+        "active": null,
+        "used": {}
+      },
+      "cp": null,
+      "best": null,
+      "city": null,
+      "mod": null,
+      "prefs": [
+        "42",
+        "115",
+        "1",
+        "keep"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "device": "landscape",
+    "version": "v200",
+    "reset": {
+      "stage": "tB",
+      "skills": {
+        "schema": 1,
+        "rewardVersion": 152,
+        "legacyPoints": 0,
+        "learned": []
+      },
+      "budget": 4,
+      "record": {},
+      "field": {
+        "active": null,
+        "used": {}
+      },
+      "cp": null,
+      "best": null,
+      "city": null,
+      "mod": null,
+      "prefs": [
+        "42",
+        "115",
+        "1",
+        "keep"
+      ]
+    },
+    "errors": []
+  },
+  {
+    "device": "small",
+    "version": "v200",
+    "reset": {
+      "stage": "tB",
+      "skills": {
+        "schema": 1,
+        "rewardVersion": 152,
+        "legacyPoints": 0,
+        "learned": []
+      },
+      "budget": 4,
+      "record": {},
+      "field": {
+        "active": null,
+        "used": {}
+      },
+      "cp": null,
+      "best": null,
+      "city": null,
+      "mod": null,
+      "prefs": [
+        "42",
+        "115",
+        "1",
+        "keep"
+      ]
+    },
+    "errors": []
+  }
+]

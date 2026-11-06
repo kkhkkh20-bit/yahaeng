@@ -15,6 +15,7 @@ function closeAssassinMenu(){
   if(m.training&&m.advanceTo>=0){start(m.advanceTo);return;}
   if(m.from!=='play')$(m.from).hidden=false;
   if(m.from==='ledger')renderStageList();
+  if(m.from==='intro')syncQuick();
   if(m.from==='brief')renderSkillPreparation('brSkills');
   if(m.from==='end')renderSkillPreparation('endSkills',true);
   if(running)paused=m.paused;

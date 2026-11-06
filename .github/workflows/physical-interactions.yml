@@ -112,6 +112,7 @@ jobs:
             build/beginner-v197/
             build/linear-v198/
             build/ink-v199/
+            build/newgame-v200/
             public/version.json
           retention-days: 7
 

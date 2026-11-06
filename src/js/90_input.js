@@ -5,6 +5,10 @@ document.body.classList.toggle('touch', isTouch);
 const WASD = { KeyW: 'ArrowUp', KeyA: 'ArrowLeft', KeyS: 'ArrowDown', KeyD: 'ArrowRight' };
 const keyCode = e => WASD[e.code] || e.code;
 window.addEventListener('keydown', e => {
+  if($('newCampaignDialog').open){
+    if(e.code==='Tab'){e.preventDefault();const buttons=[...$('newCampaignDialog').querySelectorAll('button')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
+    return;
+  }
   if(loadoutOpen){handleLoadoutKey(e);return;}
   if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
@@ -245,6 +249,7 @@ document.addEventListener('fullscreenchange', () => { $('btnFull').textContent =
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
+  $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
   $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
@@ -264,6 +269,32 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
+// Only campaign data is reset. Display, sound and control preferences are retained.
+const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod'];
+function hasCampaignSave(){
+  if(campaignHasProgress()||Object.keys(loadBest()).length||Object.keys(cityDone()||{}).length)return true;
+  const skills=loadSkillTree();if(skills.learned.length||skills.legacyPoints||loadFieldLearning().active||Object.keys(loadFieldLearning().used).length||CP)return true;
+  try{return !!localStorage.getItem(CP_KEY);}catch(e){return false;}
+}
+function restartCampaign(){
+  if(!$('newCampaignDialog').open||running||$('intro').hidden)return false;
+  const previous=[];
+  try{
+    // Read everything before mutating; restore removed records if storage rejects a write.
+    for(const key of CAMPAIGN_SAVE_KEYS)previous.push([key,localStorage.getItem(key)]);
+    for(const key of CAMPAIGN_SAVE_KEYS)localStorage.removeItem(key);
+  }catch(e){
+    for(const[key,value]of previous)try{if(value!==null)localStorage.setItem(key,value);}catch(ignored){}
+    $('newCampaignError').textContent='저장 기록을 초기화하지 못했습니다. 브라우저의 저장 공간 설정을 확인하고 다시 시도하세요.';
+    $('newCampaignError').hidden=false;return false;
+  }
+  CP=null;volatileSkillTree=null;volatileFieldLearning=null;MOD='';
+  $('newCampaignDialog').close('start');syncQuick();initAudio();beginCampaign();return true;
+}
+$('btnNewCampaign').addEventListener('click',()=>{if(running||$('intro').hidden)return;$('newCampaignError').hidden=true;$('newCampaignDialog').showModal();});
+$('btnNewCampaignCancel').addEventListener('click',()=>$('newCampaignDialog').close('cancel'));
+$('btnNewCampaignConfirm').addEventListener('click',restartCampaign);
+$('newCampaignDialog').addEventListener('close',()=>{if(!running&&!$('intro').hidden)$('btnNewCampaign').focus({preventScroll:true});});
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
