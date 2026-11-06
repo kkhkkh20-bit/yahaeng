@@ -21,9 +21,11 @@ function updateOpps(dt) {
   }
 }
 function drawCorpseRisk() {
+  const selected=envAction().c;
   for (const c of S.corpses) {
     if (c.skillAnimating || c.stashed || flOf(c) !== flOf(S.player)) continue;
     if (c.risk && !c.carried && dist(c.x, c.y, S.player.x, S.player.y) < 700) { const pu = 0.45 + 0.35 * Math.sin(S.t * 6); ctx.strokeStyle = `rgba(240,90,70,${pu})`; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.ellipse(c.x, c.y + 4, 26, 15, 0, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+      if(selected===c)continue;
       ctx.font = uiFont(12); ctx.textAlign = 'center';const label=bodyRiskText(c),width=ctx.measureText(label).width+12; ctx.fillStyle = 'rgba(7,10,18,.8)'; ctx.fillRect(c.x-width/2,c.y-34,width,15); ctx.fillStyle = '#ff9a86'; ctx.fillText(label, c.x, c.y - 23); ctx.textAlign = 'left'; hint('corpseRisk', '붉은 점선은 노출된 시체·기절자를 뜻한다. 경비가 발견하기 전에 [행동]으로 운반해 숨길 수 있다'); }
   }
 }
@@ -152,7 +154,7 @@ function loadCheckpoint() {
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
-  if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initActionFlow(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
+  if(S.player.hide?.type==='bush'){S.player.hide=null;S.player.trav=null;S.player.mode='sneak';S.player.hidden=true;input.sneakToggle=true;syncSneakBtn();} resetHelpTip(); refreshItemNames(); initPreparationProgress(); initActionFlow(); initBeginnerEntry(); initMissionPlan(); S.goalNavCache=null; closeEnvPicker(); setLayer(flOf(S.player)); cam.x = S.player.x; cam.y = S.player.y; hudCache = {}; miniBase = null;
   tactical = false; $('tacBanner').hidden = true; input.aiming = null; input.scan = false; if (input.queue) input.queue.length = 0;
   S.keys = {}; input.joy = null; S.qBuf = 0; S.qKill = false; S.player.vx = 0; S.player.vy = 0;  // 저장 당시 눌린 키·조이스틱이 이어지지 않게
   S.koHold = null; S.player.lethalHold = null; S.player.techWork=null;S.player.followupAttack=null; input.pressIds = {};
@@ -173,6 +175,6 @@ function checkObjective() {
   const trainingReady = !STAGE.steps || (S.tutI||0)>=STAGE.steps.length-1;
   const ready = trainingReady && !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
   S.exitOpen = ready;
-  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else bark('master', 'done'); }
+  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else if(!S.items.length&&S.guards.some(g=>g.target))say([['master','표적 제거 확인. 출구로 이동하세요.']],false);else bark('master', 'done'); }
 }
 

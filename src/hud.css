@@ -139,8 +139,9 @@ body.touch #hud #btnCrouch::before{content:'';width:24px;height:24px;mask:var(--
 body.touch #hud #btnCrouch b{font-size:10px;font-weight:400}
 body.touch #hud #btnCrouch.on{color:var(--hud-metal);border-color:var(--hud-metal)}
 body.touch #hud #btnSkill{right:16px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 236px);width:170px}
-body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;font-size:10px;color:var(--hud-muted)}
+body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;max-width:min(190px,calc(100vw - 200px));font-size:11px;line-height:1.5;color:var(--hud-muted);white-space:pre-line}
 body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint{display:none}
+body.touch.entry-learning #hud .joyhint{display:none}
 body.touch #hud #saveState{bottom:145px;left:18px}
 body[data-lesson] #hud #btnGrab,body[data-lesson] #hud #btnCycle,body[data-lesson] #hud #btnSkill,body[data-lesson] #hud .keys,
 body[data-lesson=perception] #hud #btnCarry,body[data-lesson=body] #hud #btnTool,body[data-lesson=indoor] #hud #btnTool,body[data-lesson=indoor] #hud #btnAct{visibility:hidden;pointer-events:none}

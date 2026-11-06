@@ -1,0 +1,202 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "checks": [
+      "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
+      "legacy and completed saves bypass introductory controls",
+      "out-of-reach attack explains approach; real contact alone enables assassination",
+      "paper guidance and selected physical action agree across range and floor boundaries",
+      "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
+      "persistent body vs player vs CCTV causes, known identity, new outfit and ended search",
+      "optional work preview is conditional, not an accusation"
+    ],
+    "layout": [
+      {
+        "id": "objective",
+        "visible": true,
+        "left": 40,
+        "right": 432.484375,
+        "width": 392.484375,
+        "scroll": 392
+      },
+      {
+        "id": "lightLbl",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      },
+      {
+        "id": "btnAct",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      },
+      {
+        "id": "btnCarry",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "checks": [
+      "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
+      "legacy and completed saves bypass introductory controls",
+      "out-of-reach attack explains approach; real contact alone enables assassination",
+      "paper guidance and selected physical action agree across range and floor boundaries",
+      "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
+      "persistent body vs player vs CCTV causes, known identity, new outfit and ended search",
+      "optional work preview is conditional, not an accusation"
+    ],
+    "layout": [
+      {
+        "id": "objective",
+        "visible": true,
+        "left": 24,
+        "right": 283,
+        "width": 259,
+        "scroll": 259
+      },
+      {
+        "id": "lightLbl",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      },
+      {
+        "id": "btnAct",
+        "visible": true,
+        "left": 294,
+        "right": 374,
+        "width": 80,
+        "scroll": 80
+      },
+      {
+        "id": "btnCarry",
+        "visible": true,
+        "left": 206,
+        "right": 278,
+        "width": 72,
+        "scroll": 60
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      320,
+      720
+    ],
+    "checks": [
+      "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
+      "legacy and completed saves bypass introductory controls",
+      "out-of-reach attack explains approach; real contact alone enables assassination",
+      "paper guidance and selected physical action agree across range and floor boundaries",
+      "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
+      "persistent body vs player vs CCTV causes, known identity, new outfit and ended search",
+      "optional work preview is conditional, not an accusation"
+    ],
+    "layout": [
+      {
+        "id": "objective",
+        "visible": true,
+        "left": 24,
+        "right": 213,
+        "width": 189,
+        "scroll": 189
+      },
+      {
+        "id": "lightLbl",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      },
+      {
+        "id": "btnAct",
+        "visible": true,
+        "left": 228,
+        "right": 308,
+        "width": 80,
+        "scroll": 80
+      },
+      {
+        "id": "btnCarry",
+        "visible": true,
+        "left": 140,
+        "right": 212,
+        "width": 72,
+        "scroll": 60
+      }
+    ],
+    "errors": []
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "checks": [
+      "fresh move/crouch inside real mission, no skill purchase, checkpoint continuation",
+      "legacy and completed saves bypass introductory controls",
+      "out-of-reach attack explains approach; real contact alone enables assassination",
+      "paper guidance and selected physical action agree across range and floor boundaries",
+      "recent personal takedown beats implicit lamp, deliberate selection stays authoritative",
+      "persistent body vs player vs CCTV causes, known identity, new outfit and ended search",
+      "optional work preview is conditional, not an accusation"
+    ],
+    "layout": [
+      {
+        "id": "objective",
+        "visible": true,
+        "left": 32,
+        "right": 384,
+        "width": 352,
+        "scroll": 352
+      },
+      {
+        "id": "lightLbl",
+        "visible": false,
+        "left": 0,
+        "right": 0,
+        "width": 0,
+        "scroll": 0
+      },
+      {
+        "id": "btnAct",
+        "visible": true,
+        "left": 748,
+        "right": 828,
+        "width": 80,
+        "scroll": 80
+      },
+      {
+        "id": "btnCarry",
+        "visible": true,
+        "left": 660,
+        "right": 732,
+        "width": 72,
+        "scroll": 60
+      }
+    ],
+    "errors": []
+  }
+]

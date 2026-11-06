@@ -37,7 +37,7 @@ async def main(args):
     # Deliberately attempt visible work first: the actual camera must record it,
     # then the real recovery timer returns us to the safe entrance.
     await c.move(696,648);await c.move(y=360);await c.move(984,312);await c.press('x','#btnCarry')
-    await wait('__game.S.over&&__game.S.stats.camRec>0');await c.record('recorded-work-mistake')
+    await wait('__game.S.over&&__game.S.stats.camRec>0');await c.record('recorded-work-mistake');assert await q.evaluate('__game.searchCauseReadout().kind')=='camera'
     await wait('!__game.S.over&&__game.S.stats.cpUsed===1');assert await q.evaluate('!__game.S.items[0].got&&__game.camOn(__game.S.cams[0])')
     await c.record('automatic-safe-retry')
     await c.move(696,648);await c.move(y=312)

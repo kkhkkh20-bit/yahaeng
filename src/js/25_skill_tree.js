@@ -88,7 +88,7 @@ const skillLessonActive=()=>!!STAGE?.firstSteps&&STAGE.steps?.[S?.tutI||0]?.[4]=
 function renderSkillPreparation(id,after=false){
  const el=$(id);if(!el)return;
  const record=loadSkillTree(),points=skillBudget()-skillSpent(record),field=fieldSkillPreparation(after);
- el.hidden=!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0&&!field;if(el.hidden)return;
+ el.hidden=id==='brSkills'&&!!beginnerEntryGoal()||!(mainContract(STAGE)||introductoryContract(STAGE))||points<=0&&!field;if(el.hidden)return;
  el.replaceChildren();
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=field?.head||(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';

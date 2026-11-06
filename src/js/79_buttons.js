@@ -39,7 +39,7 @@ function attackAction() {
   const c = nearFinish(); if (c) return combatLabel({ k: 'finish', c, g: c.g });
   // 다가가는 중: 미리 눌러 두면 닿는 순간 공격. 지나가는 행인까지 표시하지 않게 가까울 때만 (주민 90 · 조직원 150)
   // 등 뒤에 있을 때만 다가가기 표시 (정면이면 공격을 권하지 않는다)
-  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: dist(P.x,P.y,sg.x,sg.y)>meleeReach(P)?'더 가까이 접근':koTap(sg)?'기절':'처치' };
+  const sg = stalkGuard(); if (sg && dist(P.x, P.y, sg.x, sg.y) < (sg.civ ? 90 : 150) && Math.abs(angDiff(sg.a, Math.atan2(P.y - sg.y, P.x - sg.x))) > 1.75) return { k: 'none', stalk: sg, label: '더 가까이' };
   return { k: 'none', label: '공격' };
 }
 // [행동] 후보: 환경 행동 + 운반·내려놓기·옷 갈아입기·줍기. 붙잡은 뒤엔 먼저 기절.
@@ -90,6 +90,10 @@ function envChoices() {
   // At mission furniture, carrying or an already exposed uniform must not hide
   // collection. A useful new outfit and every explicit selection keep priority.
   if(!P.carrying){const loot=list.find(a=>a.k==='loot'&&S.items.includes(a.it)&&!a.it.got),dress=list.find(a=>a.k==='dress'&&!(P.blown||{})[a.c.outfit||'crew']);if(loot&&!dress){loot.missionPriority=true;list.splice(list.indexOf(loot),1);list.unshift(loot);}}
+  if(!P.carrying&&!list[0]?.missionPriority){
+    const body=list.find(a=>['dress','carry','quickStash'].includes(a.k)&&a.c?.playerHandled&&S.t-a.c.t0<12);
+    if(body){body.missionPriority=true;list.splice(list.indexOf(body),1);list.unshift(body);}
+  }
   // A wall switch beside a coded door must not replace opening that door.
   if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.
@@ -136,7 +140,12 @@ function actAttack() {
   if (P.car) { honk(); return; }
   if (P.captive) { actPrimary({ k: 'execute', viaZ: true, inputGroup: 'atk' }); return; }  // 기절 → 계속 누르면 처치 (updateKoHold)
   const a = attackAction();
-  if (a.k === 'none') { if(a.skillLocked)toast(abilityLockText(a.skillLocked),2); if (a.stalk) queueApproachAttack(a.stalk); return; }
+  if (a.k === 'none') {
+    if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
+    else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5);}
+    else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);
+    return;
+  }
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
   const choice=assassinOpportunity();

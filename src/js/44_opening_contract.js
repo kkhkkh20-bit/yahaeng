@@ -1,13 +1,36 @@
+// First contact is taught inside the real mission, without locking other actions.
+function beginnerEntryNeeded(){
+  return STAGE.id==='p0'&&!STAGES.some(st=>(st.id==='tB'||LEARNING_ROUTE.includes(st.id))&&stageCleared(st));
+}
+function initBeginnerEntry(){
+  if(S.beginnerEntry||!beginnerEntryNeeded())return;
+  const P=S.player;
+  // A checkpoint made before this guide must continue where the player left off.
+  S.beginnerEntry={step:S.t>1?2:0,x:P.x,y:P.y};
+}
+function updateBeginnerEntry(){
+  const b=S.beginnerEntry;if(!b||b.step>=2)return;
+  const P=S.player,g=npc('runner');
+  if(g&&targetEliminated(g)){b.step=2;return;}
+  if(b.step===0&&P.moving&&dist(P.x,P.y,b.x,b.y)>=40)b.step=1;
+  if(b.step===1&&P.mode==='sneak'){b.step=2;S.cpWant=true;}
+}
+function beginnerEntryGoal(){
+  const b=S.beginnerEntry;if(!b||b.step>=2||!beginnerEntryNeeded())return null;
+  return b.step===0?{x:b.x+64,y:b.y,fl:0,text:'먼저, 골목에서 움직여 보기',where:isTouch?(input.walkLock?'왼쪽을 끌어 걷기 · 달리기는 장비에서 설정':'왼쪽을 조금 끌면 걷기 · 끝까지 끌면 달리기'):tutText('{이동} 오른쪽 표시까지 걷기'),moveCue:true}:
+    {text:'몸을 낮춰 조용히 접근하기',where:tutText('{살금} 몸을 낮추기 · 발소리가 작아진다')};
+}
+
 // Contextual help in the existing objective. This never gates actions or victory.
 function openingGoal(){
   if(!STAGE.openingContract)return null;
   const g=npc('runner');if(!g||targetEliminated(g))return null;
   const P=S.player,at=targetKnowledge(g),body=S.corpses.find(c=>c.g===g&&c.ko);
   const whistle=isTouch?'휘파람으로':'G로',attack=isTouch?'공격':KK('atk');
-  let hint='순찰을 기다리거나 숨어서 '+whistle+' 경비 유인';
+  let hint='빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인';
   if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격}':body.stashed?'은닉처에서 꺼낸 뒤 {공격}':'기절은 미완료 · 몸 가까이에서 {공격} 처치';
   else if(P.hidden||P.cover)hint=whistle+' 경비 유인 가능 · 공격 전 풀숲/엄폐에서 나오기';
-  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction();hint=action.k!=='none'&&!action.busy?attack+' 한 번 · 표적 암살':isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
+  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction(),risk=workRiskReadout(action),ready=action.k!=='none'&&!action.busy&&combatVictims(action).includes(g);hint=ready?(risk?.kind==='witness'?'경비가 보고 있다 · 시선이 돌아갈 때까지 대기':attack+' 한 번 · 표적 암살'):isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
   else if(S.guards.some(g=>!g.target&&g.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(g.state)))hint='경비가 소리를 확인 중 · 표적의 등 뒤로';
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};

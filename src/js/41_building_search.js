@@ -101,6 +101,7 @@ function takeSearchJob(g, inc) {
 }
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.y) || STAGE.tutorial || STAGE.city) return false;
+  if(['body','sighting','camera'].includes(source))recordSearchCause(source==='sighting'?'player':source);
   if (!S.lvl) lvlInit();
   const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0,...(at.clue?{clue:at.clue}:{}) }, bi = searchBuildingAt(pos);
   S.searchIncidents = (S.searchIncidents || []).filter(i => i.until > S.t);

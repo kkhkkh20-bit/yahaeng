@@ -1,0 +1,217 @@
+{
+  "method": "Fresh save, normal RAF, native clicks/keys/CDP joystick; no gameplay state overrides. First two control actions only; complete clears are in beginner_live.py.",
+  "rows": [
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "layout": {
+        "boxes": [
+          {
+            "id": "btnPause",
+            "visible": true,
+            "x": 1192,
+            "y": 18,
+            "w": 64,
+            "h": 44
+          }
+        ],
+        "overlaps": [],
+        "font": true,
+        "goal": "운반책 처치 · 빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인 · 12m",
+        "version": "v197"
+      },
+      "errors": []
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "layout": {
+        "boxes": [
+          {
+            "id": "btnPause",
+            "visible": true,
+            "x": 318,
+            "y": 12,
+            "w": 58,
+            "h": 44
+          },
+          {
+            "id": "btnCrouch",
+            "visible": true,
+            "x": 307,
+            "y": 604,
+            "w": 58,
+            "h": 58
+          },
+          {
+            "id": "btnCarry",
+            "visible": true,
+            "x": 206,
+            "y": 756,
+            "w": 72,
+            "h": 72
+          },
+          {
+            "id": "btnAct",
+            "visible": true,
+            "x": 294,
+            "y": 748,
+            "w": 80,
+            "h": 80
+          },
+          {
+            "id": "btnTool",
+            "visible": true,
+            "x": 303,
+            "y": 672,
+            "w": 62,
+            "h": 62
+          },
+          {
+            "id": "btnToolNext",
+            "visible": true,
+            "x": 208,
+            "y": 690,
+            "w": 72,
+            "h": 50
+          }
+        ],
+        "overlaps": [],
+        "font": true,
+        "goal": "운반책 처치 · 빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인 · 11m",
+        "version": "v197"
+      },
+      "errors": []
+    },
+    {
+      "viewport": [
+        320,
+        720
+      ],
+      "layout": {
+        "boxes": [
+          {
+            "id": "btnPause",
+            "visible": true,
+            "x": 248,
+            "y": 12,
+            "w": 58,
+            "h": 44
+          },
+          {
+            "id": "btnCrouch",
+            "visible": true,
+            "x": 241,
+            "y": 484,
+            "w": 58,
+            "h": 58
+          },
+          {
+            "id": "btnCarry",
+            "visible": true,
+            "x": 140,
+            "y": 636,
+            "w": 72,
+            "h": 72
+          },
+          {
+            "id": "btnAct",
+            "visible": true,
+            "x": 228,
+            "y": 628,
+            "w": 80,
+            "h": 80
+          },
+          {
+            "id": "btnTool",
+            "visible": true,
+            "x": 237,
+            "y": 552,
+            "w": 62,
+            "h": 62
+          },
+          {
+            "id": "btnToolNext",
+            "visible": true,
+            "x": 142,
+            "y": 570,
+            "w": 72,
+            "h": 50
+          }
+        ],
+        "overlaps": [],
+        "font": true,
+        "goal": "운반책 처치 · 빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인 · 11m",
+        "version": "v197"
+      },
+      "errors": []
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "layout": {
+        "boxes": [
+          {
+            "id": "btnPause",
+            "visible": true,
+            "x": 764,
+            "y": 12,
+            "w": 64,
+            "h": 44
+          },
+          {
+            "id": "btnCrouch",
+            "visible": true,
+            "x": 761,
+            "y": 150,
+            "w": 58,
+            "h": 58
+          },
+          {
+            "id": "btnCarry",
+            "visible": true,
+            "x": 660,
+            "y": 306,
+            "w": 72,
+            "h": 72
+          },
+          {
+            "id": "btnAct",
+            "visible": true,
+            "x": 748,
+            "y": 298,
+            "w": 80,
+            "h": 80
+          },
+          {
+            "id": "btnTool",
+            "visible": true,
+            "x": 757,
+            "y": 222,
+            "w": 62,
+            "h": 62
+          },
+          {
+            "id": "btnToolNext",
+            "visible": true,
+            "x": 662,
+            "y": 240,
+            "w": 72,
+            "h": 50
+          }
+        ],
+        "overlaps": [],
+        "font": true,
+        "goal": "운반책 처치 · 빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인 · 11m",
+        "version": "v197"
+      },
+      "errors": []
+    }
+  ]
+}

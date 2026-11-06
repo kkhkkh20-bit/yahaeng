@@ -33,6 +33,8 @@ async def main(args):
     await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
     s=await c.record('cleared-'+id);assert s['hp']==3 and not s['stats']['detected'] and not s['stats'].get('camRec',0),s
     assert await q.evaluate('__game.skillBudget()')==budget
+    if s['stats']['bodies'] and await q.evaluate('__game.S.alevel>=2'):
+     cause=await q.evaluate('__game.searchCauseReadout()');assert cause['kind']=='body' and '내 신원 미확인'in cause['text'],cause
     await q.screenshot(path=str(out/(name+'-'+id+'-clear.png')));await q.click('#btnNext');await q.click('#btnBrGo')
    try:
     await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="e1")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo')

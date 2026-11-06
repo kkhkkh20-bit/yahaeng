@@ -185,7 +185,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: STAGE.camRoom?.name || placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
+  { const entry=beginnerEntryGoal();if(entry)return entry;const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
@@ -269,7 +269,7 @@ function updateHUD(force) {
   // 버튼 넷: [공격] 사람에게만 · [행동] 시설·시체 · [붙잡기] 등 뒤에서 · [다트](도구)
   const ka = attackAction(), ea = envAction(), ga = grabAction();
   padButton(hud.act, 'actH', ka, '공격');
-  hud.act.classList.toggle('ready', ka.k !== 'none' || !!ka.stalk);
+  hud.act.classList.toggle('ready', ka.k !== 'none'&&!ka.busy&&!ka.skillLocked);
   const ki = ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
   const flow=P.trav?.hideFlow||P.trav?.ventPull||S.amb,held=P.skillHold||S.koHold||P.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?flow.intent:null), source = held && held.source && held.source.id, progress = holdFrac().toFixed(3);
@@ -336,6 +336,7 @@ function updateStealth(lv) {
   box.classList.toggle('quiet',(s==='blend'||s==='hide')&&!observer?.progress&&!P.captive&&!P.carrying&&S.alevel<2);
   const passCamera=(S.cams||[]).some(c=>!c.search&&cameraAssessment(c).visible>0&&!cameraAssessment(c).detectable);
   box.dataset.camera=passCamera?'pass':'';if(passCamera&&s==='blend')why='CCTV 통행 허용 · 훔치면 녹화 대상';
+  const cause=searchCauseReadout();if(cause)why=cause.text+(observer?.camera?' · CCTV 시야에서 벗어나기':s==='hide'&&(P.hide||P.hidden)?' · 은신 유지':'');
   const k = s + '|' + word + '|' + why; if (hudCache.sth === k) return; hudCache.sth = k;
   if (hudCache.sthS && hudCache.sthS !== s && S.t - (hudCache.sthSfxT || -9) > 0.35) { hudCache.sthSfxT = S.t; sfx({ hide: 'toHide', blend: 'toBlend', risk: 'toRisk', seen: 'toSeen' }[s]); } hudCache.sthS = s;  // 상태가 바뀌면 작은 신호음
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
@@ -484,6 +485,7 @@ function renderStageList() {
 
 // One short instruction in the existing objective area, with one matching control accent.
 function tutorialCue(){
+  if(beginnerEntryGoal())return S.beginnerEntry.step===0?'move':'crouch';
   const step=STAGE.steps?.[S.tutI||0],cue=step?.[4];
   let key=(typeof cue==='function'?cue(S,S.player):cue)||'';
   // A nearby stair is a valid action, but it is not the document we are teaching.
@@ -496,6 +498,8 @@ function tutorialCue(){
 }
 function syncTutorialCue(){
   const key=tutorialCue();
+  document.body.classList.toggle('entry-learning',!!beginnerEntryGoal());
+  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽을 끌어 걷기\n웅크림: 조용히 · 달리기: 장비에서 설정':'왼쪽 조금 끌기: 걷기\n끝까지: 달리기 · 웅크림: 조용히';if(joyHint.textContent!==text)joyHint.textContent=text;}
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'perception',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;

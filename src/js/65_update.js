@@ -6,7 +6,7 @@ function update(dt, present=true) {
   S.t += dt;
   updateSkillDevices();
   updateNpcDoors(dt);
-  updatePlayer(dt); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();
+  updatePlayer(dt); updateBeginnerEntry(); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록
     if (S.trailT <= 0) { S.trailT = 0.35; const l = S.trail[S.trail.length - 1]; if (!l || dist(l.x, l.y, P.x, P.y) > 20) S.trail.push({ x: P.x, y: P.y, z: P.z || 0, fl: flOf(P) }); } }
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
@@ -99,7 +99,7 @@ function updateAlert(dt) {
     if (S.alevelT <= 0) {
       const was = S.alevel; S.alevel--; S.alevelT = S.alevel === 1 ? 45 : 0;
       if (was === 2) for (const g of S.guards) if (['SEARCH', 'CHECK', 'SUSPICIOUS', 'ALERT'].includes(g.state) && !g.target) { g.state = 'RETURN'; g.path = null; g.checks = []; g.inspect = null; g.icon = null; }
-      toast(was === 2 ? '수색이 끝났다 — 자경대원들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) { bark(anyGuard(), S.chaseSeen && BARKS.calmLost ? 'calmLost' : S.stats.bodies && BARKS.calmBody ? 'calmBody' : 'calm'); S.chaseSeen = false; S.knownLooks = {}; S.guards.forEach(g => { g.chased = false; }); }
+      toast(was === 2 ? '수색이 끝났다 — 자경대원들이 제자리로 돌아간다 (경계는 유지)' : '경계가 풀렸다', 2.6); if (was === 2) { S.searchCause=null;bark(anyGuard(), S.chaseSeen && BARKS.calmLost ? 'calmLost' : S.stats.bodies && BARKS.calmBody ? 'calmBody' : 'calm'); S.chaseSeen = false; S.knownLooks = {}; S.guards.forEach(g => { g.chased = false; }); }
     }
   }
 }

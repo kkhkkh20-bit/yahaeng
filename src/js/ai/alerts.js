@@ -1,5 +1,6 @@
 function goAlert(g) {
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
+  recordSearchCause('player');
   const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', observed.x, observed.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
@@ -26,6 +27,7 @@ function goAlert(g) {
   hint('alert', '발각됐다. 시야를 끊고 숨으면 추격이 수색으로 전환된다');
 }
 function radioSpread(at, look) {
+  recordSearchCause(look?'player':'body');
   toast(look ? '인상착의가 무전으로 전달됐다' : '쓰러진 동료 신고 · 범인 인상착의는 모른다', 2.4, 'warn');
   startBuildingSearch(at, 'A', 'radio');
   if (look) setAlert(3, null, null, look);

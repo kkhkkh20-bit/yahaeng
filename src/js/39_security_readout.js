@@ -24,10 +24,10 @@ function workRiskReadout(action){
   const verb=({loot:'훔치기',pick:'락픽',carry:'운반',dress:'갈아입기',clean:'흔적 지우기',camCable:'전선 분리',camroom:'기록 삭제',window:'창문 넘기',vjump:'창문 넘기',ventIn:'환풍구 진입',kill:'제압·처치',kill2:'제압·처치',finish:'처치',grab:'붙잡기'})[kind];
   const duration=kind==='camCable'?' · '+OBJECT_FLOW.camCable[0]+'초 소요':'';
   const camera=S.cams.find(c=>!c.search&&cameraAssessment(c,true).detectable);
-  if(camera)return{kind:'camera',camera,text:verb+' → CCTV 녹화 위험 · '+(kind==='camCable'?'카메라가 돌아간 뒤 작업':'시야 밖에서 작업')+duration};
+  if(camera)return{kind:'camera',camera,text:verb+' 시 CCTV 녹화 위험 · '+(kind==='camCable'?'카메라가 돌아간 뒤 작업':'시야 밖에서 작업')+duration};
   const witness=S.guards.find(g=>g.rawSightAt!=null&&S.t-g.rawSightAt>=0&&S.t-g.rawSightAt<.15&&g.rawSeen&&!g.dog&&!g.doomed&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state));
-  if(witness)return{kind:'witness',text:verb+' → 경비 목격 위험 · 시야 밖에서 작업'+duration};
-  return{kind:'work',text:verb+' · 수상한 행동 · 복장과 별도 판정'+duration};
+  if(witness)return{kind:'witness',text:verb+' 시 경비 목격 위험 · 시야 밖에서 작업'+duration};
+  return{kind:'work',text:verb+' 시 목격에 주의 · 복장과 별도 판정'+duration};
 }
 function syncSecurityReadout(){
   const el=$('accessLbl'),risk=$('actionRiskLbl');if(!el||!risk)return;
@@ -42,4 +42,16 @@ function syncSecurityReadout(){
     risk.hidden=false;risk.textContent=(fl+1)+'층 진입 · '+(entry.allowed?'현재 복장 통행 허용':entry.zi.secure?'보안구역 · 복장 통행 불가':entry.need+' 필요');risk.dataset.risk=entry.allowed?'entry':'witness';
   }
   else if(!attack.busy){const hit=workRiskReadout(attack);if(hit){risk.hidden=false;risk.textContent=hit.text;risk.dataset.risk=hit.kind;}}
+}
+
+function recordSearchCause(kind){
+  if(S.alevel>=2&&S.searchCause?.kind==='player'&&kind!=='player')return;
+  S.searchCause={kind,t:S.t};
+}
+function searchCauseReadout(){
+  if(S.alevel<2)return null;
+  const kind=S.searchCause?.kind||'trace';
+  const known=!!S.knownLooks?.[suspectLook()]||!!S.player.disguiseBlown||S.guards.some(g=>!['DEAD','CAPTIVE'].includes(g.state)&&knownFace(g));
+  const reason=kind==='body'?'쓰러진 사람 발견':kind==='player'?'내 모습 목격':kind==='camera'?'CCTV 목격':kind==='sound'?'소리 신고':kind==='blood'?'핏자국 발견':'이상 흔적 신고';
+  return{kind,text:reason+' · '+(known?'내 인상착의 알려짐':kind==='player'?'마지막 목격 지점 수색 중':'내 신원 미확인')};
 }

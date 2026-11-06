@@ -1,0 +1,1158 @@
+[
+  {
+    "device": "pc",
+    "result": {
+      "budget": 6,
+      "learned": [],
+      "records": {
+        "p0": {
+          "_clear": true
+        },
+        "p1": {
+          "_clear": true
+        },
+        "p2": {
+          "_clear": true
+        }
+      }
+    },
+    "events": [
+      {
+        "label": "press-Control",
+        "version": "v197",
+        "t": 0.40330000000000027,
+        "x": 312,
+        "y": 648,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 469.98644399999995,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "press-z",
+        "version": "v197",
+        "t": 10.832900000000008,
+        "x": 668.014258706123,
+        "y": 399.71140426706285,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 831.6849720000013,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "one-tap-assassination",
+        "version": "v197",
+        "t": 11.954472933333346,
+        "x": 668.014258706123,
+        "y": 399.71140426706285,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 870.5811213280006,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "cleared-p0",
+        "version": "v197",
+        "t": 23.253972933333152,
+        "x": 171.1542133470234,
+        "y": 675.144507811015,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 984,
+            "y": 552
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 3.5331999999999963,
+        "x": 652.1000380634654,
+        "y": 697.5997994999999,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "ordinary-disguised-passage",
+        "version": "v197",
+        "t": 10.499600000000026,
+        "x": 844.5547745260322,
+        "y": 545.647961175144,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 13.499500000000078,
+        "x": 846.156972526032,
+        "y": 308.67590860691877,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "cleared-p1",
+        "version": "v197",
+        "t": 24.549049999999994,
+        "x": 226.0077240090268,
+        "y": 705.5378532893935,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1,
+          "gotAs": "crew"
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 10.266200000000017,
+        "x": 988.2920418758869,
+        "y": 308.79682227949735,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "recorded-work-mistake",
+        "version": "v197",
+        "t": 10.949500000000032,
+        "x": 988.2920418758869,
+        "y": 308.56207641961663,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 1,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 1,
+          "stashed": 0,
+          "special": 0,
+          "camRec": 1
+        },
+        "guards": [],
+        "over": true
+      },
+      {
+        "label": "automatic-safe-retry",
+        "version": "v197",
+        "t": 0.1332500000000073,
+        "x": 312,
+        "y": 648,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 9.116350000000011,
+        "x": 748.4480421279366,
+        "y": 265.91791043976417,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "camera-cable-disconnected",
+        "version": "v197",
+        "t": 11.232850000000036,
+        "x": 748.4480421279366,
+        "y": 265.91791043976417,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 15.316050000000116,
+        "x": 983.5514187030922,
+        "y": 310.39046530134374,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "cleared-p2",
+        "version": "v197",
+        "t": 28.24884999999999,
+        "x": 165.1929893285384,
+        "y": 674.9087504130149,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1,
+          "gotAs": "self"
+        },
+        "guards": [],
+        "over": true
+      }
+    ],
+    "errors": [],
+    "method": "Known-map first-night journey, ordinary RAF and native keyboard/CDP touch.\nFresh saves, active actors, no gameplay state/clock/seed/skill overrides.\nThis verifies playability, not first-time human comprehension or physical iOS.\n"
+  },
+  {
+    "device": "mobile",
+    "result": {
+      "budget": 6,
+      "learned": [],
+      "records": {
+        "p0": {
+          "_clear": true
+        },
+        "p1": {
+          "_clear": true
+        },
+        "p2": {
+          "_clear": true
+        }
+      }
+    },
+    "events": [
+      {
+        "label": "press-Control",
+        "version": "v197",
+        "t": 0.2533999999999996,
+        "x": 312,
+        "y": 648,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 464.78791199999995,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "press-z",
+        "version": "v197",
+        "t": 11.762900000000016,
+        "x": 672.548439295677,
+        "y": 401.1435972685455,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 863.9373720000032,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "one-tap-assassination",
+        "version": "v197",
+        "t": 13.321204000000026,
+        "x": 672.548439295677,
+        "y": 401.1435972685455,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 917.9793547200018,
+            "y": 552
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "cleared-p0",
+        "version": "v197",
+        "t": 25.40400399999977,
+        "x": 166.16204279778486,
+        "y": 674.1976526397536,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 984,
+            "y": 512.6983120000008
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 3.6664999999999983,
+        "x": 655.6485582277816,
+        "y": 697.599,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "ordinary-disguised-passage",
+        "version": "v197",
+        "t": 10.8662,
+        "x": 848.1006373949164,
+        "y": 538.5423090837475,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 14.482800000000019,
+        "x": 848.1006373949164,
+        "y": 323.09603106582796,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "cleared-p1",
+        "version": "v197",
+        "t": 26.21899999999982,
+        "x": 226.1721969190043,
+        "y": 705.643412175464,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "dressed": 1,
+          "gotAs": "crew"
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 792,
+            "y": 456
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 10.982900000000003,
+        "x": 991.8388550951438,
+        "y": 306.7709555586663,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "recorded-work-mistake",
+        "version": "v197",
+        "t": 11.849500000000004,
+        "x": 991.8388550951438,
+        "y": 306.7709555586663,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 1,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 1,
+          "stashed": 0,
+          "special": 0,
+          "camRec": 1
+        },
+        "guards": [],
+        "over": true
+      },
+      {
+        "label": "automatic-safe-retry",
+        "version": "v197",
+        "t": 0.10009999999999127,
+        "x": 312,
+        "y": 648,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 9.516400000000024,
+        "x": 750.2136679471191,
+        "y": 255.24609294805714,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "camera-cable-disconnected",
+        "version": "v197",
+        "t": 11.816300000000036,
+        "x": 750.2136679471191,
+        "y": 255.24609294805714,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "press-x",
+        "version": "v197",
+        "t": 16.549500000000045,
+        "x": 988.6980304277371,
+        "y": 304.8180745349746,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1
+        },
+        "guards": [],
+        "over": false
+      },
+      {
+        "label": "cleared-p2",
+        "version": "v197",
+        "t": 30.098799999999933,
+        "x": 165.01598470084173,
+        "y": 674.964621700735,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": true,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "cpUsed": 1,
+          "camUnplugged": 1,
+          "gotAs": "self"
+        },
+        "guards": [],
+        "over": true
+      }
+    ],
+    "errors": [],
+    "method": "Known-map first-night journey, ordinary RAF and native keyboard/CDP touch.\nFresh saves, active actors, no gameplay state/clock/seed/skill overrides.\nThis verifies playability, not first-time human comprehension or physical iOS.\n"
+  }
+]

@@ -60,6 +60,7 @@ jobs:
           PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/first_steps_live.py --out build/physical-v190/live
+          python tests/tutorial/beginner_live.py --url http://127.0.0.1:8001/public/ --out build/beginner-v197/ci-live
           python tests/tutorial/first_night_live.py --url http://127.0.0.1:8001/public/ --out build/first-night-v194/ci-live
           python tests/tutorial/field_learning_live.py --url http://127.0.0.1:8001/public/ --out build/field-v196/ci-live
           python tests/tutorial/growth_live.py --url http://127.0.0.1:8001/public/ --out build/growth-v195/ci-live
@@ -114,5 +115,6 @@ jobs:
             build/first-night-v194/
             build/growth-v195/
             build/field-v196/
+            build/beginner-v197/
             public/version.json
           retention-days: 7

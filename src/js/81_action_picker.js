@@ -74,6 +74,8 @@ function drawEnvSelection() {
 function unavailableEnvReason() {
   const P=S.player;
   if(P.ledge || P.wire) return '안전하게 올라설 곳이 없다';
+  const item=(S.items||[]).find(it=>!it.got&&flOf(it)===flOf(P)&&dist(P.x,P.y,it.x,it.y)<100);
+  if(item)return objectReachable(item,100)?'서류 앞 표시로 더 가까이 이동하기':'가구 옆 통로로 돌아 서류 앞에 서기';
   const a=[...(S.props||[]).filter(p=>!p.taken),...(S.doors||[]),...(S.hides||[]),...(S.lamps||[]).filter(l=>!l.broken&&(l.outdoor||l.hearth||l.control)).map(l=>lampControl(l))]
     .filter(o=>Number.isFinite(o.x)&&dist(P.x,P.y,o.x,o.y)<100).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
   const o=a.find(o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0))||a[0]; if(!o)return '조작할 물체 가까이 이동하기';

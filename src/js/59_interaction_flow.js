@@ -80,7 +80,7 @@ function beginObjectAction(a) {
   if (!OBJECT_FLOW[a.k]) return false;
   if(!electricalActionAllowed(a)){toast(abilityLockText('electric'),2);return true;}
   const P = S.player, item = P.item;
-  if (!objectActionValid(a, item)) return true;
+  if (!objectActionValid(a, item)) {toast('손이 닿지 않는다 · 대상 앞으로 이동해 다시 시도',1.6);return true;}
   const [dur, label, pose] = OBJECT_FLOW[a.k === 'pickup' && a.p.outfit ? 'dress' : a.k], at = objectActionPoint(a);
   P.interact = { a: Object.assign({}, a), item, t: 0, dur, label, pose:a.k==='pickup'&&a.p.surface?'hands':pose, x: P.x, y: P.y, fl: flOf(P), z: P.z || 0, hurtT:P.hurtT||0,
     face: at && Number.isFinite(at.x) ? Math.atan2(surfacePoint(at).y - P.y, surfacePoint(at).x - P.x) : P.a,

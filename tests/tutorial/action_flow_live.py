@@ -86,10 +86,11 @@ async def main(args):
       result['takedownToStride']=round(stride['t']-attack['t'],3);result['liftToStride']=round(stride['t']-lift['t'],3);result['earlyInputAccepted']=queued['recovery']
      else:
       await q.click('#btnQuick');await q.click('#btnBrGo');await c.move(984,432,True);await c.move(x=984)
-      await q.wait_for_function('__game.S.guards.some(g=>g.state==="ALERT"&&g.seen)',timeout=45000,polling=30);await c.record('actually-seen')
-      # Column 2 is the open lane; column 3 runs straight into the tree.
-      await c.move(360,400,True);await c.move(y=576,run=True);await c.move(x=120,run=True);await c.press('Control','#btnCrouch');await c.move(y=408);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
-      await q.screenshot(path=str(out/(name+'-pocket.png')))
+      await q.wait_for_function('__game.S.guards.some(g=>g.state==="ALERT"&&g.seen)',timeout=45000,polling=30);await c.record('actually-seen');assert await q.evaluate('__game.searchCauseReadout().kind')=='player'
+      # Run around both corners before crouching behind the screen. Crouching
+      # out in the open lets the pursuer catch up; column 2 avoids the tree.
+      await c.move(y=400,run=True);await c.move(x=360,run=True);await c.move(y=576,run=True);await c.move(x=120,run=True);await c.move(y=408,run=True);await c.press('Control','#btnCrouch');await q.wait_for_function('__game.S.player.hidden',timeout=2000,polling=20);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
+      assert '내 모습 목격'in await q.locator('#lightLbl').inner_text();await q.screenshot(path=str(out/(name+'-pocket.png')))
       for delay,label in [(3000,'search-after-3s'),(7000,'search-after-10s')]:await q.wait_for_timeout(delay);await c.record(label)
       result=c.events[-1];assert result['hp']==pocket['hp'] and result['hidden'] and not any(g['seen']and g['state']=='ALERT'for g in result['guards']),result
      assert not errors,errors

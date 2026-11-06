@@ -764,8 +764,9 @@ body.touch #hud #btnCrouch::before{content:'';width:24px;height:24px;mask:var(--
 body.touch #hud #btnCrouch b{font-size:10px;font-weight:400}
 body.touch #hud #btnCrouch.on{color:var(--hud-metal);border-color:var(--hud-metal)}
 body.touch #hud #btnSkill{right:16px;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 236px);width:170px}
-body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;font-size:10px;color:var(--hud-muted)}
+body.touch #hud .joyhint{display:block;position:absolute;left:18px;bottom:100px;max-width:min(190px,calc(100vw - 200px));font-size:11px;line-height:1.5;color:var(--hud-muted);white-space:pre-line}
 body.touch.joyused #hud .joyhint,body.touch.joyseen #hud .joyhint{display:none}
+body.touch.entry-learning #hud .joyhint{display:none}
 body.touch #hud #saveState{bottom:145px;left:18px}
 body[data-lesson] #hud #btnGrab,body[data-lesson] #hud #btnCycle,body[data-lesson] #hud #btnSkill,body[data-lesson] #hud .keys,
 body[data-lesson=perception] #hud #btnCarry,body[data-lesson=body] #hud #btnTool,body[data-lesson=indoor] #hud #btnTool,body[data-lesson=indoor] #hud #btnAct{visibility:hidden;pointer-events:none}
@@ -1441,7 +1442,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
     <span class="keep km"><kbd id="kkAtk">Z</kbd><em id="kmAct">공격</em></span><span class="keep km"><kbd id="kkEnv">X</kbd><em id="kmZ">행동</em></span><span class="keep km"><kbd id="kkGrab">C</kbd><em id="kmQ">붙잡기</em></span><span class="keep km"><kbd id="kkTool">V</kbd><em id="kmX">다트</em></span><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>도구</span><span><kbd>I</kbd>장비 선택</span><span><kbd>G</kbd>휘파람</span><span><kbd>Tab</kbd>겹친 대상 바꾸기</span><span><kbd>B</kbd>암살 기술 · 길게</span><span><kbd>K</kbd>기술 트리</span><span><kbd>M</kbd>지도</span><span><kbd>T</kbd>기회 추적</span><span><kbd>−</kbd><kbd>+</kbd>확대</span><span class="keep"><kbd>H</kbd>키 안내</span>
   </div>
   <div id="alertVig" aria-hidden="true"></div>
-  <div class="joyhint">왼쪽을 끌어 이동</div>
+  <div class="joyhint">왼쪽 조금 끌기: 걷기<br>끝까지: 달리기 · 웅크림: 조용히</div>
   <small id="saveState" aria-live="polite" hidden></small>
 
   <button id="loadoutShade" type="button" hidden aria-label="장비 선택 닫기" tabindex="-1"></button>
@@ -1494,7 +1495,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v196 · 2026-11-05</footer>
+  <footer class="title-footer">v197 · 2026-11-06</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1590,7 +1591,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v196 · 2026-11-05</small>
+      <small class="fx-sub" id="pauseVersion">v197 · 2026-11-06</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -1662,8 +1663,8 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/eea7fb3f16610973acfa.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/cb890c52b22abf4cb220.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/82b64a5b3a1e951611f0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/3ff15e63599c3c400019.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
