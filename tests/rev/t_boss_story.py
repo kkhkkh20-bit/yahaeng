@@ -36,11 +36,13 @@ async def main():
     ok(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05','legacy contract numbers changed');
     localStorage.setItem('yahaeng.ch',JSON.stringify(Object.fromEntries(ids.filter(id=>id!=='m5').map(id=>[id,{_clear:true}]))));
     const budget=G.skillBudget();ok(G.STAGES[G.recommendedStage()].id==='m5','finished old campaign cannot continue to finale');ok(!JSON.parse(localStorage.getItem('yahaeng.ch')).m5&&G.skillBudget()===budget,'route mints a clear or points');
+    for(const c of G.S.cams.filter(c=>c.tx===22&&[4,7].includes(c.ty))){const p=G.cameraServicePoint(c);G.setLayer(c.fl);ok([-13,13].every(dx=>[-13,13].every(dy=>!G.solidAt(Math.floor((p.x+dx)/48),Math.floor((p.y+dy)/48)))),'camera rear is inside a wall or furniture');}G.setLayer(0);
     const g=G.S.guards.find(g=>g.target),before=JSON.stringify([g.x,g.y,g.state,g.meter,G.S.player.hp,G.S.stats.detected,G.S.stats.kills]);
     const look=G.characterLook(g),sp=G.speakerOf('master');ok(look===sp.key+'@old','crow does not match familiar handler');
-    G.saveCheckpoint();ok(G.loadCheckpoint(),'checkpoint failed');const restored=G.S.guards.find(g=>g.target);
+    G.saveCheckpoint();G.CP.grids[0][7][23]='E';G.CP.grids[0][9][13]='w';const locker=G.CP.S.hides.find(h=>h.furn&&h.type==='locker'&&h.tx===13&&h.ty===9);Object.assign(locker,{tx:23,ty:7,x:1128,y:360});ok(G.loadCheckpoint(),'checkpoint failed');ok(G.G0[7][23]==='w'&&G.G0[9][13]==='E'&&G.S.hides.find(h=>h.furn&&h.type==='locker'&&h.tx===13&&h.ty===9),'old camera furniture and hiding space were not migrated');const restored=G.S.guards.find(g=>g.target);
     ok(G.characterLook(restored)===look&&JSON.stringify([restored.x,restored.y,restored.state,restored.meter,G.S.player.hp,G.S.stats.detected,G.S.stats.kills])===before,'cast migration changes gameplay state');
-    const S=G.S;S.koNext=true;G.killGuard(restored);G.saveCheckpoint();G.CP.S.corpses.find(c=>c.target).ch='noble';ok(G.loadCheckpoint(),'old KO checkpoint failed');
+    G.saveCheckpoint();const oldHide=G.CP.S.hides.find(h=>h.furn&&h.type==='locker'&&h.tx===13&&h.ty===9);Object.assign(oldHide,{tx:23,ty:7,x:1128,y:360,bodies:1});const hiddenBody={x:1128,y:360,fl:0,stashed:true,container:oldHide,ko:true};G.CP.S.corpses.push(hiddenBody);G.CP.S.player.hide=oldHide;Object.assign(G.CP.S.player,{x:1128,y:360,hidden:true});ok(G.loadCheckpoint()&&G.S.player.x===648&&G.S.player.y===456&&G.S.player.hide.bodies===1&&G.S.corpses.at(-1).x===648&&G.S.corpses.at(-1).ko,'hidden player or stored body lost on furniture migration');G.S.player.hide=null;G.S.player.hidden=false;
+    const S=G.S;S.koNext=true;G.killGuard(S.guards.find(g=>g.target));G.saveCheckpoint();G.CP.S.corpses.find(c=>c.target).ch='noble';ok(G.loadCheckpoint(),'old KO checkpoint failed');
     ok(G.S.corpses.find(c=>c.target).ch===look&&G.S.guards.find(g=>g.target).unconscious,'old body has wrong identity or is killed by migration');
     return ['old campaign continues at finale without a reward','numbering and checkpoint state preserved','familiar handler and boss share appearance','old unconscious target keeps identity and life'];
    }''')

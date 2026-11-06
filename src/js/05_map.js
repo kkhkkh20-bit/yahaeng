@@ -62,7 +62,12 @@ function installRoomPatches(st,saved=false){
     for(const m of p.furniture||[]){
       const f=FURN.find(f=>f.t===m.t&&(f.fl||0)===fl&&((f.x===m.from[0]&&f.y===m.from[1])||(m.to&&f.x===m.to[0]&&f.y===m.to[1])));if(!f)continue;
       if(m.remove){FURN.splice(FURN.indexOf(f),1);continue;}
-      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
+      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;
+      if(saved&&FURN_HIDE[f.t]){
+        const h=S.hides.find(h=>h.furn&&h.type===f.t&&flOf(h)===fl&&((h.tx===m.from[0]&&h.ty===m.from[1])||(h.tx===f.x&&h.ty===f.y)));
+        if(h){Object.assign(h,{tx:f.x,ty:f.y,x:(f.x+f.w/2)*TILE,y:(f.y+f.h/2)*TILE,r:f.r});for(const o of [S.player,...S.corpses])if(o.hide===h||o.stashed&&o.container===h){o.x=h.x;o.y=h.y;}}
+      }
+      for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
     }
     for(const [x,y,ch]of p.tiles||[])grid[y][x]=ch;
     if(!saved)continue;

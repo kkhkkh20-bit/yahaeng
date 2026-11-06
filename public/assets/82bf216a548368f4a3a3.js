@@ -1487,13 +1487,16 @@ campaignStage('m4').brief=campaignStage('m4').brief.replaceAll('수금원','수�
 campaignStage('m4').notes?.forEach(n=>{if(n.lines)n.lines=n.lines.map(l=>l.replaceAll('클럽 실장','상권 보스 백철민'));});
 Object.assign(campaignStage('m7'),{purpose:'운송 보스 오태식을 처치하고 배송망을 끊어 남은 증인들의 이송을 막는다.'});
 campaignStage('m7').brief='안전모와 주황색 작업복을 입은 오태식이 운송 보스다. '+campaignStage('m7').brief;
-Object.assign(campaignStage('m5'),{name:'마지막 의뢰',sub:'마지막 밤 · 금성회 본부',storyEpisode:true,noSupport:true,briefBy:'독자 행동',
+Object.assign(campaignStage('m5'),{name:'마지막 의뢰',sub:'마지막 밤 · 금성회 본부',storyEpisode:true,noSupport:true,rivals:0,briefBy:'독자 행동',
  purpose:'까마귀를 처치하고 증인 거래 원본 장부를 회수한다.',mission:'본부 2층 까마귀 처치 · 1층 원본 장부 회수 후 탈출',itemName:'원본 장부',itemNames:['원본 장부'],
  buildingNames:{0:'금성회 본부'},
  brief:'백발에 적갈색 정장을 입은 까마귀가 2층에 있다. 1층 금고에는 증인 거래 원본 장부가 있다. 남쪽 골목에서 혼자 쉬는 조직원의 옷을 얻으면 본부 앞길과 1층을 통행할 수 있다. 2층 보안구역은 옷으로 통과할 수 없고, 정문 정예도 얼굴을 확인한다. 뒷문과 계단, 배관을 살펴 접근하자. 금고 번호는 1층 사무실의 대화에서 들을 수 있다. 까마귀와 장부가 목표다. 다른 조직원을 모두 처치할 필요는 없다.'});
 Object.assign(campaignStage('m5').guards[5],{still:true,smoker:true});
 const finaleBuild=campaignStage('m5').build;
 campaignStage('m5').build=m=>{finaleBuild(m);m.many('B',[[11,18]]);};
+// Leave real service space behind the ground-floor camera. The generated
+// locker previously filled that space; keep it against the office wall.
+campaignStage('m5').roomPatches=[{bounds:[12,2,27,10],furniture:[{t:'locker',from:[23,7],to:[13,9]}],tiles:[[23,7,'w']]}];
 // The final job rewards the same assassination/stealth rules as earlier jobs.
 campaignStage('m5').stories=campaignStage('m5').stories.filter(s=>s.id!=='purge');
 delete campaignStage('m5').purgeBonus;
@@ -1659,7 +1662,12 @@ function installRoomPatches(st,saved=false){
     for(const m of p.furniture||[]){
       const f=FURN.find(f=>f.t===m.t&&(f.fl||0)===fl&&((f.x===m.from[0]&&f.y===m.from[1])||(m.to&&f.x===m.to[0]&&f.y===m.to[1])));if(!f)continue;
       if(m.remove){FURN.splice(FURN.indexOf(f),1);continue;}
-      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
+      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;
+      if(saved&&FURN_HIDE[f.t]){
+        const h=S.hides.find(h=>h.furn&&h.type===f.t&&flOf(h)===fl&&((h.tx===m.from[0]&&h.ty===m.from[1])||(h.tx===f.x&&h.ty===f.y)));
+        if(h){Object.assign(h,{tx:f.x,ty:f.y,x:(f.x+f.w/2)*TILE,y:(f.y+f.h/2)*TILE,r:f.r});for(const o of [S.player,...S.corpses])if(o.hide===h||o.stashed&&o.container===h){o.x=h.x;o.y=h.y;}}
+      }
+      for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
     }
     for(const [x,y,ch]of p.tiles||[])grid[y][x]=ch;
     if(!saved)continue;
