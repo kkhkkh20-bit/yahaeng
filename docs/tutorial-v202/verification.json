@@ -1,0 +1,43 @@
+{
+  "version": "v202",
+  "sourceHead": "e762cab6aa0d54a115f7ef469d48c1b37f2b622b",
+  "sourceTree": "21f3f7ae3e0143393821d30afca3319d56e9edf3",
+  "ci": {
+    "id": 42204306284,
+    "attempt": 2,
+    "conclusion": "success",
+    "head_sha": "e762cab6aa0d54a115f7ef469d48c1b37f2b622b",
+    "html_url": "https://github.com/kkhkkh20-bit/yahaeng/actions/runs/42204306284"
+  },
+  "jobs": [
+    {
+      "id": 127856555085,
+      "name": "native-review (pc)",
+      "conclusion": "success"
+    },
+    {
+      "id": 127856556827,
+      "name": "browser-review",
+      "conclusion": "success"
+    },
+    {
+      "id": 127856558172,
+      "name": "native-review (mobile)",
+      "conclusion": "success"
+    }
+  ],
+  "regressions": 97,
+  "physicalGroups": 20,
+  "buildTests": 8,
+  "nativeFirstSession": [
+    "pc",
+    "mobile"
+  ],
+  "interfaceScenes": 36,
+  "package": {
+    "edition": "2d-campaign",
+    "version": "v202",
+    "source_sha256": "8c696366477e3694b490f3c2ace37b5a9746473168d1ca0f6ef0e3490a07808b"
+  },
+  "limits": "Known-map developer journeys; not a novice usability study. Initial intermittent test failures are retained in TUTORIAL_REWORK_V202.md."
+}
