@@ -47,7 +47,7 @@ function objectActionValid(a, item) {
 // already use their authored contact pose; clothes and carried bodies stay put.
 function objectApproachPoint(a,at){
  const P=S.player;
- if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
+ if(!at||['door','dress','dropItem','camCable'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
  let o=at.surface?surfaceFixture(at):at;
  if(o.furn===true){const b=hideFootprint(o);o={x:clamp(P.x,b.x0,b.x1),y:clamp(P.y,b.y0,b.y1)};}
  if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;

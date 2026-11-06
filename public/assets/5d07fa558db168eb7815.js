@@ -283,7 +283,7 @@ const STAGES = [
     { kind: 'g2', b: 0, patrolPause:6, patrol: true, from: 'VB', to: 'R' },                           // 6 금고 앞 ↔ 사무실: 관찰하면 지나갈 틈이 있다
     { kind: 'g1', enforcer: true, b: 0, fl: 1, patrol: true, from: 'L', to: 'R' },                    // 7 사무동 2층
     { kind: 'g2', b: 0, fl: 2, at: 'S', post: 270 },                                  // 8 사무동 3층
-    { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g2', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
+    { kind: 'g1', at: [15, 9], post: 0,still:true }, { kind: 'g1', at: [15, 8], post: 0,still:true },     // 9·10 야시장에서 쉬는 조직원 둘 — 금고 비밀번호 이야기
     { kind: 'g1', route: [[3, 21, 2], [52, 21, 2]] },                                  // 11 큰길 순찰
     // 클럽 직원 (옷이 곧 신분)
     { kind: 'civ', tag: 'bartender', outfit: 'waiter', body: 'fTail', enforcer: true, wander: [24, 10, 31, 12], at: [28, 11] },                                                       // 12 바텐더
@@ -10457,7 +10457,7 @@ function objectActionValid(a, item) {
 // already use their authored contact pose; clothes and carried bodies stay put.
 function objectApproachPoint(a,at){
  const P=S.player;
- if(!at||['door','dress','dropItem'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
+ if(!at||['door','dress','dropItem','camCable'].includes(a.k)||a.k==='pickup'&&a.p.outfit||P.carrying)return null;
  let o=at.surface?surfaceFixture(at):at;
  if(o.furn===true){const b=hideFootprint(o);o={x:clamp(P.x,b.x0,b.x1),y:clamp(P.y,b.y0,b.y1)};}
  if(!Number.isFinite(o.x)||!Number.isFinite(o.y))return null;

@@ -30,6 +30,10 @@ async def standalone_stage(page,id,brief=True):
 async def acquire_uniform(page,controls,tag='uniformDonor'):
     g=await page.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);if(!g)throw Error("No authored uniform donor "+tag);return{x:g.x,y:g.y,a:g.a}}',tag)
     import math
+    safe_y=await page.evaluate('y=>Math.min(y,(__game.STAGE.H-2)*48+24)',g['y']+120)
+    await controls.move(y=safe_y)
+    await controls.move(x=g['x']-math.cos(g['a'])*80)
+    if await page.evaluate('__game.S.player.mode')!='sneak':await controls.press('Control','#btnCrouch')
     await controls.move(g['x']-math.cos(g['a'])*80,g['y']-math.sin(g['a'])*80)
     if await page.evaluate('__game.S.player.mode')!='sneak':await controls.press('Control','#btnCrouch')
     await controls.move(g['x']-math.cos(g['a'])*32,g['y']-math.sin(g['a'])*32)
@@ -45,3 +49,4 @@ async def acquire_uniform(page,controls,tag='uniformDonor'):
     await controls.press('x','#btnCarry')
     await page.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000)
     assert await page.evaluate('tag=>__game.S.guards.find(g=>g.tag===tag).stripped',tag)
+    if await page.evaluate('__game.S.player.mode')=='sneak':await controls.press('Control','#btnCrouch')
