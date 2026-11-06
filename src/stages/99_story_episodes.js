@@ -18,7 +18,7 @@
   brief:'중개인은 2층 창가와 책상 사이를 오간다. 한 곳에 오래 멈추니 등을 보일 때 접근하자. 계단을 오르기 전에 골목 경비의 옷을 얻을 수 있다. 2층 카메라의 시야 밖에서 전선을 분리하면 접근할 틈이 생긴다. 다른 경비까지 처리할 필요는 없다.',
   endText:'중개인은 연락하지 못했다. 이제 실장이 남았다. 클럽과 사무동은 넓지만, 지금까지 해 온 일과 같다. 먼저 골목에서 길을 보고 한 가지씩 해결하자.',
   cams:[[12,5,0,12,1]],
-  guards:[common.guards[0],common.guards[1],{kind:'t',tag:'broker',target:true,b:0,fl:1,patrol:true,patrolPause:14,radio:false}],
+  guards:[common.guards[0],common.guards[1],{kind:'t',tag:'broker',target:true,still:true,b:0,fl:1,patrol:true,patrolPause:14,radio:false}],
   items:[],itemName:'',itemNames:[],itemPlaces:[],itemActions:[],
  });
 }

@@ -15,7 +15,7 @@ async def main(args):
   b=await p.chromium.launch()
   for mobile in ([args.device=='mobile']if args.device else[False,True]):
    name='mobile'if mobile else'pc';q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile,record_video_dir=str(out/'video'))
-   errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=growth');c=Controls(q,await q.context.new_cdp_session(q),mobile)
+   errors=[];q.on('pageerror',lambda e:errors.append(str(e)));q.on('console',lambda m:print('GAME TRACE',name,m.text,flush=True) if m.text.startswith('AUTO RETRY') else None);await q.add_init_script('''localStorage.clear();const later=window.setTimeout;window.setTimeout=function(fn,ms,...rest){if(ms===1300)console.log('AUTO RETRY',document.getElementById('toasts')?.innerText,new Error().stack);return later(fn,ms,...rest)}''');await open_game(q,args.url+'?nostats&review=growth');c=Controls(q,await q.context.new_cdp_session(q),mobile)
    async def wait(expr,timeout=7000):await q.wait_for_function(expr,timeout=timeout,polling=50)
    async def env(kind):
     assert await q.evaluate('k=>__game.envChoices().some(a=>a.k===k)',kind),(kind,'not in reach',await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,choices:__game.envChoices().map(a=>a.k)})'))
@@ -33,7 +33,7 @@ async def main(args):
      if await q.evaluate('__game.S.player.fl||0')!=floor:break
    async def finish(id,budget):
     await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
-    s=await c.record('cleared-'+id);assert s['hp']==3 and not s['stats']['detected'] and not s['stats'].get('camRec',0),s
+    s=await c.record('cleared-'+id);assert s['hp']==3 and not s['stats']['detected'] and not s['stats'].get('camRec',0) and not s['stats'].get('cpUsed',0),s
     assert await q.evaluate('__game.skillBudget()')==budget
     if s['stats']['bodies'] and await q.evaluate('__game.S.alevel>=2'):
      cause=await q.evaluate('__game.searchCauseReadout()');assert cause['kind']=='body' and '내 신원 미확인'in cause['text'],cause
@@ -80,8 +80,11 @@ async def main(args):
     if not await q.evaluate('__game.S.player.fl||0'):await env('up')
     await wait('__game.S.player.fl===1&&!__game.actionBusy()')
     camera=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])')
-    await route(camera['x'],camera['y']);await env('camCable');await wait('!__game.camOn(__game.S.cams[0])')
-    await wait('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return Math.cos(g.a)>.9&&g.wait>10})()',90000)
+    await route(camera['x'],camera['y'])
+    await wait('(()=>{const G=__game,g=G.S.guards.find(g=>g.tag==="broker");return g.moving&&g.x>500&&Math.cos(g.a)<-.9&&!G.cameraAssessment(G.S.cams[0],true).visible&&G.workRiskReadout(G.envAction())?.kind!=="witness"})()',90000)
+    await env('camCable');await wait('!__game.camOn(__game.S.cams[0])');safe=await c.record('broker-camera-disconnected');assert not safe['stats'].get('cpUsed',0) and not safe['stats'].get('camRec',0),safe
+    await route(stair['down']['x'],stair['down']['y'])
+    await wait('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return g.x>650&&Math.cos(g.a)>.9&&g.wait>10})()',90000)
     target=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return{x:g.x-40,y:g.y}})()');await route(target['x'],target['y']);await q.screenshot(path=str(out/(name+'-broker-rear.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards.find(g=>g.tag==="broker"))&&!__game.actionBusy()')
     await route(stair['down']['x'],stair['down']['y'])
     if await q.evaluate('__game.S.player.fl||0'):await env('fdown')

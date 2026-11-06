@@ -1318,7 +1318,7 @@ STAGES.push({
  kunai:0,coins:0,pspd:1.3,gspd:.75,securityResponse:false,radioCheck:0,wires:[],roofs:[],bricks:[],items:[],challenges:[],
  build(m){m.fill(0,0,31,21,',');m.rect(0,0,31,21);m.fill(1,15,30,19,'.');m.fill(7,5,29,14,'=');m.fill(14,10,16,12,'C');m.fill(25,3,29,3,'C');m.many('B',[[9,13],[10,13],[20,11],[20,12],[20,15]]);m.many('T',[[3,5],[5,10],[29,19]]);m.car(25,12,1);},
  zones:[[0,0,31,21,'pub',null,'공개 골목',[]]],lamps:[[30,8,250,1],[6,15,190,1]],
- guards:[{kind:'t',tag:'contact',target:true,route:[[22,8,14],[27,8,14]],radio:false},{kind:'g1',tag:'lookout',route:[[12,16,5],[24,16,6]],radio:false}],
+ guards:[{kind:'t',tag:'contact',target:true,still:true,route:[[22,8,14],[27,8,14]],radio:false},{kind:'g1',tag:'lookout',route:[[12,16,5],[24,16,6]],radio:false}],
 });
 STAGES.push({
  id:'e2',no:'입문 2',name:'창고의 거래',sub:'입문 2 · 복장과 CCTV',apprenticeContract:true,
@@ -1417,7 +1417,7 @@ STAGES.push({
   brief:'중개인은 2층 창가와 책상 사이를 오간다. 한 곳에 오래 멈추니 등을 보일 때 접근하자. 계단을 오르기 전에 골목 경비의 옷을 얻을 수 있다. 2층 카메라의 시야 밖에서 전선을 분리하면 접근할 틈이 생긴다. 다른 경비까지 처리할 필요는 없다.',
   endText:'중개인은 연락하지 못했다. 이제 실장이 남았다. 클럽과 사무동은 넓지만, 지금까지 해 온 일과 같다. 먼저 골목에서 길을 보고 한 가지씩 해결하자.',
   cams:[[12,5,0,12,1]],
-  guards:[common.guards[0],common.guards[1],{kind:'t',tag:'broker',target:true,b:0,fl:1,patrol:true,patrolPause:14,radio:false}],
+  guards:[common.guards[0],common.guards[1],{kind:'t',tag:'broker',target:true,still:true,b:0,fl:1,patrol:true,patrolPause:14,radio:false}],
   items:[],itemName:'',itemNames:[],itemPlaces:[],itemActions:[],
  });
 }

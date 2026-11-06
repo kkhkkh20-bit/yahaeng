@@ -11,7 +11,7 @@ STAGES.push({
  kunai:0,coins:0,pspd:1.3,gspd:.75,securityResponse:false,radioCheck:0,wires:[],roofs:[],bricks:[],items:[],challenges:[],
  build(m){m.fill(0,0,31,21,',');m.rect(0,0,31,21);m.fill(1,15,30,19,'.');m.fill(7,5,29,14,'=');m.fill(14,10,16,12,'C');m.fill(25,3,29,3,'C');m.many('B',[[9,13],[10,13],[20,11],[20,12],[20,15]]);m.many('T',[[3,5],[5,10],[29,19]]);m.car(25,12,1);},
  zones:[[0,0,31,21,'pub',null,'공개 골목',[]]],lamps:[[30,8,250,1],[6,15,190,1]],
- guards:[{kind:'t',tag:'contact',target:true,route:[[22,8,14],[27,8,14]],radio:false},{kind:'g1',tag:'lookout',route:[[12,16,5],[24,16,6]],radio:false}],
+ guards:[{kind:'t',tag:'contact',target:true,still:true,route:[[22,8,14],[27,8,14]],radio:false},{kind:'g1',tag:'lookout',route:[[12,16,5],[24,16,6]],radio:false}],
 });
 STAGES.push({
  id:'e2',no:'입문 2',name:'창고의 거래',sub:'입문 2 · 복장과 CCTV',apprenticeContract:true,
