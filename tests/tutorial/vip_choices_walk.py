@@ -212,6 +212,11 @@ async def main():
     if await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="cipherKeeper");return g.x<44*48&&g.wait>8&&Math.cos(g.a)<-.7})()'):break
     await tick(.1)
    else:raise AssertionError('cipher patrol never gives a working window')
+   # Use the observed rear opening to subdue the keeper. A timed theft
+   # followed by walking back past an awakened patrol is not a safe escape.
+   rear=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="cipherKeeper");return{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40}})()')
+   await route_local(rear['x'],rear['y']);await action('z','#btnAct');await tick(1.4)
+   assert await q.evaluate('__game.S.guards.find(g=>g.tag==="cipherKeeper").unconscious'),'cipher keeper was not knocked out'
    paper=await q.evaluate('({x:__game.S.items[1].x,y:__game.S.items[1].y})');await route_local(paper['x'],paper['y']);await env('loot')
    if not await q.evaluate('__game.S.items[1].got&&__game.S.exitOpen'):
     await q.screenshot(path=str(O/(name+'-cipher-incomplete.png')));print('CIPHER STATE',await q.evaluate('({t:__game.S.t,hp:__game.S.player.hp,items:__game.S.items.map(i=>i.got),busy:__game.actionBusy(),evidence:__game.evidencePending(),stats:__game.S.stats,seen:__game.S.guards.filter(g=>g.seen).map(g=>({id:g.id,state:g.state,why:g.why}))})'),flush=True);raise AssertionError('cipher route incomplete')
@@ -226,13 +231,15 @@ async def main():
    assert result['hp']>0 and (set(result['skills'])=={'silentHands','ambush'}if PREP else not result['skills']) and not errors,(result,errors)
    assert result['receipt']['id']==APPROACH,(APPROACH,result)
    await q.screenshot(path=str(O/(name+'-clear.png')))
+   print('VIP EXIT',json.dumps(result,ensure_ascii=False),flush=True)
    if PREP:
     before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert await q.locator('#skillScreen').is_visible()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
-    for skill in ['quietStep','quietCrouch','swiftCrouch']:
+    assert before==1,('first VIP clear should add exactly 1P',before)
+    for skill in ['quietStep']:
      await q.locator('[data-select="'+skill+'"]').click()
      await q.locator('[data-learn="'+skill+'"]').click();await q.locator('.skill-detail-close').click()
-    after=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert before-after==4
+    after=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert before-after==1
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     await spend_episode_points(q);result['afterSkills']=await q.evaluate('__game.loadSkillTree().learned');await q.screenshot(path=str(O/(name+'-upgraded.png')))
    await continue_episode(q);assert await q.evaluate('__game.STAGE.id==="m4"'), 'linear continuation skipped next episode'
