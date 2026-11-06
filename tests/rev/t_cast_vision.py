@@ -13,7 +13,7 @@ async def main():
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0')
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100)
-   await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]')
+   await q.evaluate('__game.start(__game.STAGES.findIndex(s=>s.id==="m2"),true)')
    await q.wait_for_function('!__game.warmStatus.pending',polling=100);await q.evaluate('__game.updateHUD(true)')
    assert '올빼미' in await q.locator('.br-cast').inner_text() and '당신 · 잠입 암살자' in await q.locator('.br-cast').inner_text()
    assert '의뢰인' in await q.locator('.br-cast').inner_text() and '현장 지원' in await q.locator('.br-cast').inner_text()

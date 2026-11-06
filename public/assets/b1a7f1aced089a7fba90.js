@@ -1267,13 +1267,13 @@ const BARKS = {
   key: [''],
   terror: ['사람이 떨어졌어! 비켜!', '여기 사람이 쓰러졌어. 도와줘!']
 };
-// A real, compact assassination before the optional lessons. No scripted success,
-// loaned skill, forced route or invulnerable actor: both approaches use live AI.
+// First real assassination after the opening tutorial. One live target,
+// a clear rear approach and an exposed front route; normal perception stays active.
 STAGES.push({
   id:'p0',no:'00',name:'담배 한 대',sub:'첫 밤 1 · 첫 암살',openingContract:true,
   fee:'20만',priorityTarget:true,targetNames:{runner:'운반책'},
   mission:'증인을 넘기는 운반책 한 명을 처치하고 들어온 골목으로 탈출한다.',
-  brief:'운반책이 오늘 밤 증인의 은신처를 조직에 넘긴다. 폐차장에서 담배를 피우는 남자가 표적이다. 경비는 한 명, 같은 길을 순찰한다. 순찰이 지나가길 기다리거나 숨어서 휘파람으로 불러내면 틈이 생긴다. 서쪽 적치장에는 모서리를 돌아 시야를 끊을 길이 있다. 표적만 처리하고 들어온 골목으로 돌아오면 된다.',
+  brief:'폐차장에서 담배를 피우는 운반책 한 명이 표적이다. 서쪽 적치장 옆으로 돌아 등 뒤에 접근하자. 표적을 처리한 뒤 들어온 골목으로 돌아오면 된다.',
   endText:'증인의 은신처는 넘어가지 않았다. 다음 의뢰에서는 경비 재킷으로 감시 앞을 지나가 보자.',
   W:24,H:19,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,
@@ -1295,8 +1295,7 @@ STAGES.push({
   zones:[[5,3,21,11,'res',null,'폐차장 · 출입 금지',[]]],
   lamps:[[14,7,240,1],[18,11,180,1],[4,13,145,1]],
   guards:[
-    {kind:'t',tag:'runner',target:true,at:[14,8],post:0,still:true,radio:false},
-    {kind:'g1',tag:'patrol',route:[[9,11,5],[20,11,5],[20,4,3],[12,4,3]],radio:false}
+    {kind:'t',tag:'runner',target:true,at:[14,8],post:0,still:true,radio:false}
   ]
 });
 // Small real episodes combine learned rules before the full city contracts.
@@ -3247,7 +3246,7 @@ function learnTreeSkill(id){
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
 function resetTreeSkills(){
- if(!assassinMenu||!['ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
+ if(!assassinMenu||assassinMenu.training||!['intro','ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
  if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
 }
@@ -3432,19 +3431,19 @@ function recordCameraEvidence(c) {
   if (fresh) toast('신원이 녹화됐다 — 보안실에서 기록을 지워야 탈출할 수 있다', 3, 'warn');
 }
 
-// Recommendation only: the ledger always permits direct contract selection.
-const LEARNING_ROUTE=['p0','p1','p2','e1','e2','e3','m2','m4','m6','m7'];
-const OPTIONAL_LESSON_NEXT={tB:'t0',t0:'tC',tC:'e1',tL:'tR',tR:'m4'};
-const learningComplete=st=>stageCleared(st)||introductoryContract(st)&&mainContracts().some(stageCleared);
+// One story route. The player continues the next unfinished episode.
+const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','m2','m4','m6','m7'];
+const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
+const learningComplete=st=>stageCleared(st)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
 function recommendedStage(){
   for(const id of LEARNING_ROUTE){const i=learningStageIndex(id);if(i>=0&&!learningComplete(STAGES[i]))return i;}
-  const st=mainContracts().find(demoOk);return st?STAGES.indexOf(st):0;
+  return -1;
 }
 function learningNext(){
   if(OPTIONAL_LESSON_NEXT[STAGE.id]){const i=learningStageIndex(OPTIONAL_LESSON_NEXT[STAGE.id]);return STAGE.id==='tC'&&i>=0&&learningComplete(STAGES[i])?recommendedStage():i;}
   const at=LEARNING_ROUTE.indexOf(STAGE.id);
-  if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(STAGES[i].tutorial&&stageCleared(STAGES[i])||introductoryContract(STAGES[i])&&learningComplete(STAGES[i]))continue;return i;}return -1;}
+  if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(learningComplete(STAGES[i]))continue;return i;}return -1;}
   return recommendedStage();
 }
 function learningNextLabel(){
@@ -3456,6 +3455,26 @@ function initLessonLayout(){
   if(!STAGE.episodeLesson)return;
   const l=S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
   if(l)S.lessonLayout={up:{...stairLower(l).up.entry,fl:0},down:{...stairUpper(l).down.entry,fl:1}};
+}
+
+function campaignHasProgress(){return STAGES.some(s=>(LEARNING_ROUTE.includes(s.id)||s.tutorial)&&stageCleared(s));}
+function campaignSkillState(){
+  const r=loadSkillTree(),points=skillBudget()-skillSpent(r),owned=new Set(r.learned);
+  const choices=SKILL_TREE.filter(d=>!owned.has(d.id)&&d.cost<=points&&d.req.every(id=>owned.has(id)));
+  return{points,canLearn:choices.length>0,choices:choices.map(d=>d.id)};
+}
+function openEpisodeTraining(next=learningNext()){
+  if(!S||!S.over||$('end').dataset.win!=='1'||!LEARNING_ROUTE.includes(STAGE.id))return false;
+  openAssassinMenu();if(!assassinMenu)return false;
+  assassinMenu.training=true;assassinMenu.practice=false;assassinMenu.advanceTo=next;
+  renderAssassinMenu();return true;
+}
+function beginCampaign(){
+  const next=recommendedStage();if(next<0)return;
+  if(campaignHasProgress()&&campaignSkillState().canLearn){
+    openAssassinMenu();assassinMenu.training=true;assassinMenu.practice=false;assassinMenu.advanceTo=next;renderAssassinMenu();return;
+  }
+  start(next);
 }
 
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
@@ -7520,10 +7539,10 @@ function openingGoal(){
   if(!STAGE.openingContract)return null;
   const g=npc('runner');if(!g||targetEliminated(g))return null;
   const P=S.player,at=targetKnowledge(g),body=S.corpses.find(c=>c.g===g&&c.ko);
-  const whistle=isTouch?'휘파람으로':'G로',attack=isTouch?'공격':KK('atk');
+  const attack=isTouch?'공격':KK('atk');
   let hint='빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인';
   if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격}':body.stashed?'은닉처에서 꺼낸 뒤 {공격}':'기절은 미완료 · 몸 가까이에서 {공격} 처치';
-  else if(P.hidden||P.cover)hint=whistle+' 경비 유인 가능 · 공격 전 풀숲/엄폐에서 나오기';
+  else if(P.hidden||P.cover)hint='서쪽 적치장 옆으로 돌아 등 뒤에 접근 · 공격 전 은신에서 나오기';
   else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction(),risk=workRiskReadout(action),ready=action.k!=='none'&&!action.busy&&combatVictims(action).includes(g);hint=ready?(risk?.kind==='witness'?'경비가 보고 있다 · 시선이 돌아갈 때까지 대기':attack+' 한 번 · 표적 암살'):isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
   else if(S.guards.some(g=>!g.target&&g.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(g.state)))hint='경비가 소리를 확인 중 · 표적의 등 뒤로';
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
@@ -7534,7 +7553,7 @@ function updateOpeningContract(){
   const guard=npc('patrol');
   if(guard?.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(guard.state))S.openingLured=true;
   const target=npc('runner');if(target&&targetEliminated(target)&&!S.missionApproach){
-    S.missionApproach=guard?.state==='DEAD'?'경비 제압 후 접근':S.openingLured?'소리로 경비 유인':'순찰 틈으로 접근';
+    S.missionApproach=guard?.state==='DEAD'?'경비 제압 후 접근':S.openingLured?'소리로 경비 유인':'표적 등 뒤로 접근';
   }
 }
 
@@ -8536,12 +8555,7 @@ const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx 
 const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
 function drawGangFlags(P) {
   if (!S.turf) return;
-  BLD.forEach(b => { if (!b.gang || (!tactical && flOf(P) && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === BLD.indexOf(b))) return; const x = b.x0 * TILE + 10, y = b.y0 * TILE + 8; if (!inView(x, y, 80)) return;
-    const [bg, fg] = GANG_COL[b.gang], w = Math.sin(S.t * 3 + b.x0) * 2;
-    ctx.strokeStyle = '#c9ccd3'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y + 34); ctx.lineTo(x, y - 14); ctx.stroke();
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 36, y - 3 + w); ctx.lineTo(x, y + 8); ctx.closePath(); ctx.fill(); ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.stroke();
-    if (dist(P.x, P.y, x, y) < 700 || tactical) tag(x + 44, y - 4, b.gang === 'B' ? '건달파 건물' : '조직 건물', b.gang === 'B' ? '#ff8a76' : '#e0b450', 0.9);
-  });
+  // Building affiliation is carried by people and access rules, without rooftop flags.
   for (const r of S.turf.B) { if (!r.dyn) continue;  // 건달파 거리 구역: 붉은 점선 (가까울 때)
     const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 520 && !tactical) continue;
     ctx.strokeStyle = 'rgba(200,60,50,.45)'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 7]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);
@@ -14952,7 +14966,7 @@ function showBrief(go) {
   $('btnBrGo').onclick = () => { el.hidden = true; paused = false; go(); };
   { const sc = storedCP(STAGE.id), b = $('btnBrCP'); b.hidden = !sc; if (sc) { b.textContent = '이어 하기'; const time = document.createElement('small'); time.textContent = new Date(sc.at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }); b.appendChild(time); }
     b.onclick = () => { el.hidden = true; paused = false; if (resumeStoredCP(STAGE_I)) { play('bell', 0.6); startAmb(); } else go(); }; }
-  $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; showMenu('ledger'); renderStageList(); };
+  $('btnBrBack').onclick = () => { el.hidden = true; paused = false; running = false; $('hud').hidden = true; syncQuick(); showMenu('intro'); };
 }
 // 연습 문구의 조작 이름: 휴대폰은 버튼 이름, PC는 키
 const TUT_KEY = { 기술창:['메뉴 > 기술 트리에서','K로 기술 트리를 열어'], 일어서기:['[웅크림]을 눌러','Ctrl을 눌러'], 기술:['[공격]','B'], 기술목록:['메뉴 > 기술 트리의 암살 계열에서','K · 암살 계열에서'], 달리기: [()=>input.walkLock?'[장비]에서 걷기를 달리기로 바꾼 뒤 화면 왼쪽을 끝까지 끌어':'화면 왼쪽을 끝까지 끌어',()=>input.walkLock?'R로 걷기 고정을 끈 뒤 Shift+방향키로':'Shift+방향키로'], 휘파람:['[휘파람] 누르기','G 누르기'], 이동: ['화면 왼쪽을 끌어', '방향키로'], 지도: ['미니맵을 눌러', 'M으로'], 살금: ['[웅크리기]를 눌러', 'Ctrl을 눌러'], 공격: ['[공격]', () => KK('atk')], 붙잡기: ['[붙잡기]', () => KK('grab')], 행동: ['[행동]', () => KK('env')], 보조: ['[행동]', () => KK('env')], 도구: ['도구 버튼을', () => KK('tool') + '를'], 바꾸기: ['[장비]에서 빈 캔을 골라', '2로'], 대상: ['[대상]', 'Tab'] };
@@ -15227,12 +15241,14 @@ function showEnd(win, reason) {
   if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=(STAGE.starterContract||STAGE.apprenticeContract)?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
-  $('btnNext').hidden = !(win && learningNext() >= 0);
+  $('btnNext').hidden = true;
   $('btnCP').hidden = win || !cpReady();
   $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
+  $('btnRetry').hidden=win;$('btnMenu').textContent='처음 화면';
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
+  if(win)openEpisodeTraining();
 }
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());
@@ -15587,15 +15603,18 @@ function skillBenefit(d){
 let assassinMenu=null;
 function openAssassinMenu(){
   if(DLG.modal||S?.keypad)return;
-  const from=['ledger','brief','end','pause'].find(id=>!$(id).hidden)||'play';
-  assassinMenu={from,practice:from!=='ledger'&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
+  const from=['ledger','brief','end','pause','intro'].find(id=>!$(id).hidden)||'play';
+  assassinMenu={from,practice:!['intro','ledger'].includes(from)&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
   clearPlayerInput();closeHudInspection();if(running)paused=true;
-  if(from!=='play')$(from).hidden=true;
+  if(from!=='play'&&from!=='end')$(from).hidden=true;
   if(assassinMenu.practice)skillBranch=STAGE.toolPractice||STAGE.trialSkills?.includes('electric')?'tools':'assassin';
   skillDetailMode=null;$('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
 }
 function closeAssassinMenu(){
-  const m=assassinMenu;if(!m)return;$('skillScreen').hidden=true;assassinMenu=null;clearPlayerInput();
+  const m=assassinMenu;if(!m)return;
+  if(m.training&&campaignSkillState().canLearn){renderAssassinMenu();$('skillSummary').focus({preventScroll:true});return;}
+  $('skillScreen').hidden=true;$('end').inert=false;assassinMenu=null;clearPlayerInput();
+  if(m.training&&m.advanceTo>=0){start(m.advanceTo);return;}
   if(m.from!=='play')$(m.from).hidden=false;
   if(m.from==='ledger')renderStageList();
   if(m.from==='brief')renderSkillPreparation('brSkills');
@@ -15660,7 +15679,7 @@ function renderAssassinMenu(){
  $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
  $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':skillLessonActive()?'원하는 기술을 선택하고 「배우기」를 누르세요. 쓴 포인트와 배운 기술은 본편 의뢰에도 이어집니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
- const preparing=['ledger','brief','end'].includes(assassinMenu.from);
+ const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
  $('btnSkillReset').hidden=!preparing&&!practice;$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
@@ -15679,6 +15698,7 @@ function renderAssassinMenu(){
  const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · 공격 길게 / B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>chooseAssassinSkill(id);slots.append(b);}
  $('btnSkillRewards').onclick=()=>{skillDetailMode='rewards';renderSkillRewards();syncSkillDetail();if(innerWidth<1000)$('skillDetail').querySelector('button').focus();};$('skillDetailShade').onclick=closeSkillDetail;
  renderSkillDetail();syncSkillDetail();board.scrollTop=scroll.top;board.scrollLeft=scroll.left;
+ syncEpisodeTraining();
  if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
@@ -15715,6 +15735,22 @@ function updateAssassinPractice(){
   if(!STAGE.skillPractice||S.over||S.player.assassinAnim||S.player.skillHold)return;
   const step=S.tutI||0,ids=step<2?[0,1]:step>=3&&step<5?[2,3]:[];
   if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 1초 동안 누르거나 PC에서 B를 길게 누르자.');
+}
+
+function syncEpisodeTraining(){
+  const m=assassinMenu,b=$('btnSkillsBack'),el=$('skillScreen'),active=!!m?.training;
+  el.classList.toggle('episode-training',active);$('end').inert=active&&m.from==='end';
+  el.querySelector('h2').textContent=active?'기술 익히기':'기술 트리';
+  b.disabled=false;b.setAttribute('aria-disabled',String(active&&campaignSkillState().canLearn));
+  b.textContent='돌아가기';b.setAttribute('aria-label','기술 트리 닫기');
+  if(!active)return;
+  const state=campaignSkillState();
+  $('btnSkillReset').hidden=true;$('skillResetNote').textContent='';
+  $('skillSummary').tabIndex=-1;
+  $('skillSummary').innerHTML='<strong>'+state.points+'P</strong> 남음';
+  el.querySelector('.skill-instructions').textContent=(m.from==='end'?STAGE.name+' 완료 · ':'다음 출발 전 · ')+(state.canLearn?'남은 포인트로 원하는 기술을 배우세요. 배울 수 있는 기술이 없으면 다음 에피소드로 이어집니다.':state.points>0?'현재 배울 수 있는 기술이 없습니다. 남은 '+state.points+'P는 다음 에피소드로 이어집니다.':'기술 준비를 마쳤습니다. 다음 에피소드로 이어가세요.');
+  b.textContent=state.canLearn?'남은 포인트 사용하기':m.advanceTo>=0?'다음 에피소드':'여정 마치기';
+  b.setAttribute('aria-label',state.canLearn?'원하는 기술에 남은 '+state.points+'포인트를 사용하세요':b.textContent);
 }
 
 // ---------------------------------------------------------------- 루프
@@ -15865,6 +15901,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
@@ -15933,7 +15970,7 @@ window.addEventListener('keydown', e => {
     if (e.code === 'Escape' && menu !== 'intro') { e.preventDefault(); $(menu === 'ledger' ? 'btnLedgerBack' : 'btnHelpBack').click(); }
     if (menu === 'intro' && ['ArrowDown', 'ArrowUp'].includes(e.code)) {
       e.preventDefault();
-      const buttons = [...document.querySelectorAll('.title-acts button')], i = buttons.indexOf(document.activeElement);
+      const buttons = [...document.querySelectorAll('.title-acts button')].filter(b=>!b.hidden&&!b.disabled), i = buttons.indexOf(document.activeElement);
       buttons[i < 0 ? (e.code === 'ArrowDown' ? 0 : buttons.length - 1) : (i + (e.code === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length].focus();
     }
     return;
@@ -16091,6 +16128,7 @@ bindBtn('btnGrab', actGrab);
 bindBtn('btnDress', actDress);
 $('btnDress').addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)actDress();}});
 bindBtn('btnSkill',beginAssassinSkill);
+$('btnSkillsIntro').addEventListener('click',openAssassinMenu);
 $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);
 $('btnSkillsBack').addEventListener('click',closeAssassinMenu);
@@ -16162,12 +16200,13 @@ $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('y
 $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
-// First assassination, then the contracts; drills remain available in the ledger.
+// The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
-  const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
+  const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
+  $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.openingContract?'시작 · 첫 암살':(st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':st.openingContract?'시작 · 첫 암살':(st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -16175,14 +16214,14 @@ document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEve
   document.querySelectorAll('.ledger-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
   renderStageList();
 }));
-$('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); document.querySelector('.ledger-tabs button[aria-pressed="true"]').focus({ preventScroll: true }); });
+$('btnLedger').addEventListener('click', () => { syncQuick();showMenu('intro'); });
 $('btnHelp').addEventListener('click', () => { showMenu('help'); $('help').querySelectorAll('details').forEach(d=>d.open=false); $('btnHelpBack').focus({ preventScroll: true }); });
-$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnLedger').focus({ preventScroll: true }); });
+$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnQuick').focus({ preventScroll: true }); });
 $('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); $('btnSet2').focus({ preventScroll: true }); } else { showMenu('intro'); $('btnHelp').focus({ preventScroll: true }); } });
 $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0;h.querySelectorAll('details').forEach(d=>d.open=false); });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
-$('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
+$('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
@@ -16222,11 +16261,12 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click',()=>{const i=learningNext();if(i>=0)start(i);});
+$('btnNext').addEventListener('click',()=>{if(S?.over)openEpisodeTraining();});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
@@ -16272,7 +16312,7 @@ function toMenu() {
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
   running = false; paused = false;  resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
-  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; showMenu('ledger');
+  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();
   newGame(STAGE_I);
 }

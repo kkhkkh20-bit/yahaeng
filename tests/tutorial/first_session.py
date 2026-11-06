@@ -1,4 +1,4 @@
-"""Complete the two introductory 2D lessons with real controls and active AI.
+"""Standalone optional-lesson fixtures with real controls and active AI.
 The fixed clock verifies gameplay and input; it is not a device FPS benchmark.
 """
 import asyncio,json,sys,threading,os
@@ -7,6 +7,7 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler,ThreadingHTTPServer
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=R/os.environ.get('YH_LESSON_DIR','build/tutorial-validation');O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else None;PREFIX=(sys.argv[2]+'-')if len(sys.argv)>2 else''
 class H(SimpleHTTPRequestHandler):
@@ -28,7 +29,7 @@ async def main():
    errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    await page.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
    await open_game(page,BASE or f'http://127.0.0.1:{server.server_port}/build/preview_city.html?nostats&tone=ink');await page.evaluate(DRIVER)
-   await page.locator('#btnLedger').click();await page.locator('.ledger-tabs [data-filter="training"]').click();await page.locator('[data-i="'+str(await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")'))+'"]').click();assert await page.evaluate('__game.STAGE.id')=='tB'
+   await standalone_stage(page,'tB');assert await page.evaluate('__game.STAGE.id')=='tB'
    await page.evaluate('lesson.tick(30);lesson.render()')
    movement_cdp=await page.context.new_cdp_session(page)
    async def walk(x,y):
@@ -98,8 +99,8 @@ async def main():
    await step('escape-vision','check(G.S.tutI===8,"quiet escape")')
    await walk(3.5*48,14.5*48)
    await step('escape','tick(5);check(G.S.over&&G.S.exitOpen,"first lesson did not complete")')
-   # The actual result button starts the next lesson, not a contract or the old identity tutorial.
-   await page.wait_for_timeout(650);assert await page.locator('#btnNext').is_visible();await page.click('#btnNext');await page.evaluate('lesson.tick(10);lesson.render()');assert await page.evaluate('__game.STAGE.id')=='t0'
+   # Standalone lesson coverage; the separate fresh journey checks canonical continuation.
+   await page.wait_for_timeout(650);assert await page.locator('#skillScreen').is_visible();await standalone_stage(page,'t0',False);await page.evaluate('lesson.tick(10);lesson.render()');assert await page.evaluate('__game.STAGE.id')=='t0'
    if not await page.evaluate('__game.input.sneakToggle'):
     if mobile:await page.tap('#btnCrouch')
     else:await page.keyboard.press('Control')
@@ -116,11 +117,11 @@ async def main():
    await press('x','btnCarry');await step('stash','check(G.S.tutI===5&&G.S.corpses[0].hidden,"foliage storage lesson")')
    await walk(20.5*48,10.5*48)
    await step('complete','tick(5);check(G.S.over&&G.S.exitOpen,"interaction lesson incomplete")')
-   await page.wait_for_timeout(650);await page.click('#btnNext');assert await page.evaluate('__game.STAGE.id')=='tC';assert not await page.locator('#brief').is_visible()
+   await page.wait_for_timeout(650);await standalone_stage(page,'tC',False);assert await page.evaluate('__game.STAGE.id')=='tC';assert not await page.locator('#brief').is_visible()
    await step('security-next','tick(5);check(G.STAGE.securityLesson&&!G.S.over,"security rehearsal does not follow basic takedown")')
    # The standalone security journey completes the new lesson. Direct contract
-   # selection must also remain available without forcing its completion.
-   await page.click('#btnPause');await page.click('#btnMenu2');await page.click('[data-filter="missions"]');mi=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await page.click(f'[data-i="{mi}"]');assert await page.locator('#brief').is_visible();await page.click('#btnBrGo')
+   # fixtures still verify that lesson-only controls do not leak into a contract.
+   await page.click('#btnPause');await page.click('#btnMenu2');assert await page.locator('#intro').is_visible();await standalone_stage(page,'m2');assert await page.locator('#brief').is_visible();await page.click('#btnBrGo')
    for _ in range(12):
     if not await page.evaluate('__game.DLG.modal'):break
     if mobile:await page.tap('#dlg')

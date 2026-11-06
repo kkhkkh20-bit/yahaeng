@@ -472,3 +472,17 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 @media(max-width:700px){#hud #stealth #accessLbl,#hud #stealth #actionRiskLbl{font-size:10px;max-width:calc(100vw - 144px)}}
 /* Field radio must not steal the left movement finger during a live escape. */
 #dlg:not(.modal),#dlg:not(.modal) *{pointer-events:none}
+
+/* Episode training covers the result and keeps the continuation within reach. */
+#skillScreen { z-index:5; }
+#skillScreen.episode-training .skill-toolbar .sub-head { flex-wrap:wrap; gap:10px 20px; }
+#skillScreen.episode-training .back { color:var(--sk-ink); }
+#skillScreen.episode-training .back[aria-disabled="true"] { color:var(--sk-muted); }
+@media(max-width:699px) {
+ #skillScreen.episode-training .skill-toolbar { align-items:flex-start; gap:10px; }
+ #skillScreen.episode-training .sub-head h2 { order:-1; width:100%; font-size:20px; }
+ #skillScreen.episode-training #skillSummary { white-space:nowrap; }
+}
+
+#skillScreen.episode-training .back::before { transform:rotate(225deg); }
+#skillScreen.episode-training .back[aria-disabled="true"]::before { display:none; }

@@ -1,4 +1,4 @@
-"""Known-map fresh first mission using ordinary RAF and native keyboard/CDP touch.
+"""Standalone stage fixture. Known-map fresh first mission using ordinary RAF and native keyboard/CDP touch.
 No actor, clock, random, health, progression or inventory overrides. This verifies
 first-entry action handoffs and a complete clear, not naive-human comprehension.
 """
@@ -6,6 +6,7 @@ import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 from action_flow_live import Controls
 async def main(args):
  out=Path(args.out);out.mkdir(parents=True,exist_ok=True);reports=[]
@@ -17,16 +18,14 @@ async def main(args):
    async def shot(label):await c.record(label);await q.screenshot(path=str(out/(name+'-'+label+'.png')))
    async def wait(expr):await q.wait_for_function(expr,timeout=6000,polling=40)
    try:
-    await q.click('#btnQuick');assert await q.locator('#brSkills').is_hidden();await shot('simple-brief');await q.click('#btnBrGo');await wait('__game.cpReady()');await q.wait_for_timeout(750);await shot('first-movement')
+    await standalone_stage(q,'p0');assert await q.locator('#brSkills').is_hidden();await shot('simple-brief');await q.click('#btnBrGo');await wait('__game.cpReady()');await q.wait_for_timeout(750);await shot('first-movement')
     assert '움직여 보기'in await q.locator('#objective').inner_text()
     await c.move(x=370);await wait('__game.S.beginnerEntry.step===1');assert '몸을 낮춰'in await q.locator('#objective').inner_text();await shot('crouch-cue')
     await c.press('Control','#btnCrouch');await wait('__game.S.beginnerEntry.step===2');await shot('target-handoff')
     await c.move(360,504);await c.move(y=408);await c.move(x=618)
     assert await q.evaluate('__game.attackAction().k')=='none';assert '더 가까이'in await q.locator('#btnAct').get_attribute('aria-label');await c.press('z','#btnAct');await wait('__game.S.toasts.some(t=>t.text.includes("아직 손이 닿지"))');await shot('honest-approach')
     await c.move(x=660);await wait('__game.attackAction().k!=="none"');
-    # Observe the live patrol and wait for its northbound leg: the lamp lights
-    # this killing ground, and a ready attack can still have a witness.
-    await q.wait_for_function('(()=>{const g=__game.S.guards[1];return g.state==="PATROL"&&g.x>950&&g.y<490&&g.y>250&&Math.sin(g.a)<-.6&&!g.rawSeen})()',timeout=90000,polling=30)
+    # First real assassination has one target and no overlapping patrol.
     await shot('real-contact');await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
     assert await q.evaluate('["dress","carry","quickStash"].includes(__game.envAction().k)');await shot('body-handoff')
     # A useful uniform may come first. Choose carrying explicitly through the

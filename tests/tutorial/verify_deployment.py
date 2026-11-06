@@ -30,11 +30,12 @@ async def main():
      assert digest==hashlib.sha256((R/'public'/name).read_bytes()).hexdigest(),name;result['files'][name]=digest
 
    assert await page.evaluate('document.fonts.check(\'400 14px "Yahaeng UI"\')'), 'Shared UI face not ready'
-   font_cdp=await page.context.new_cdp_session(page);await font_cdp.send('DOM.enable');await font_cdp.send('CSS.enable');root=await font_cdp.send('DOM.getDocument');node=await font_cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#btnLedger'});face=await font_cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert face['fonts']and all(f['isCustomFont']and f['familyName']=='IBM Plex Sans KR'for f in face['fonts']),face
+   font_cdp=await page.context.new_cdp_session(page);await font_cdp.send('DOM.enable');await font_cdp.send('CSS.enable');root=await font_cdp.send('DOM.getDocument');node=await font_cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#btnQuick'});face=await font_cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert face['fonts']and all(f['isCustomFont']and f['familyName']=='IBM Plex Sans KR'for f in face['fonts']),face
    assert not await page.evaluate('!!window.__CLUB_STUDY__||!!window.__EPISODE_ONE__||!!window.__clubView');assert not any('.glb' in q or '/three.'in q or '/view.js'in q for q in requests)
+   await page.click('#btnSkillsIntro');assert await page.locator('#skillScreen').is_visible();await page.click('#btnSkillsBack')
    if mobile:await page.tap('#btnQuick')
    else:await page.click('#btnQuick')
-   assert await page.evaluate('__game.STAGE.id')=='p0';await page.click('#btnBrGo');before=await page.evaluate('[__game.S.player.x,__game.S.player.y]')
+   assert await page.evaluate('__game.STAGE.id')=='tB';before=await page.evaluate('[__game.S.player.x,__game.S.player.y]')
    if mobile:
     cdp=await page.context.new_cdp_session(page);await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':65,'y':520}]});await cdp.send('Input.dispatchTouchEvent',{'type':'touchMove','touchPoints':[{'x':110,'y':520}]});await page.wait_for_timeout(650);await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
    else:await page.keyboard.down('ArrowRight');await page.wait_for_timeout(650);await page.keyboard.up('ArrowRight')

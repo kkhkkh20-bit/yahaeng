@@ -5,6 +5,7 @@ import asyncio,json,os,sys
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=R/'build/security-v173';O.mkdir(exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else(R/'build/preview_city.html').as_uri()
 LABEL=sys.argv[2]if len(sys.argv)>2 else'local'
@@ -15,7 +16,7 @@ async def main():
   for touch in [False,True]:
    name=LABEL+('-touch'if touch else'-pc');q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}')
-   await open_game(q,BASE+'?nostats');await q.click('#btnLedger');await q.click('[data-filter="training"]');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="tC")');await q.click(f'[data-i="{i}"]')
+   await open_game(q,BASE+'?nostats');await standalone_stage(q,'tC',False)
    await q.evaluate('''()=>{while(__game.DLG.modal)__game.advanceDialog();window.tick=s=>{for(let t=0;t<s-1e-6;t+=.01)if(!__game.S.over)__game.advanceGameFrame(.01)};tick(.7)}''');cdp=await q.context.new_cdp_session(q)
    async def tick(s):await q.evaluate('s=>tick(s)',s)
    async def snapshot():return await q.evaluate('''()=>{const G=__game,S=G.S;return{t:S.t,step:S.tutI,at:[S.player.x,S.player.y],hp:S.player.hp,over:S.over,exit:S.exitOpen,outfit:S.player.outfit,cam:S.cams.map(c=>({meter:c.meter,unplugged:c.unplugged})),env:G.envAction().label,goal:G.nextGoal().text,toasts:S.toasts.map(t=>t.text)}}''')

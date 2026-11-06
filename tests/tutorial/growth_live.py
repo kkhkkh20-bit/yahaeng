@@ -1,11 +1,12 @@
-"""Known-map beginner episodes with native input and ordinary RAF.
-Fresh save; active AI; no clock, seed, actor, health, skill or progress overrides.
+"""Standalone stage fixture. Known-map beginner episodes with native input and ordinary RAF.
+Standalone selected-stage fixture; fresh save; active AI; no clock, seed, actor, health, skill or progress overrides.
 Map/path reads only supply walkable waypoints. Not a human usability study.
 """
 import argparse,asyncio,json,math
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 from action_flow_live import Controls
 
 async def main(args):
@@ -35,9 +36,9 @@ async def main(args):
     assert await q.evaluate('__game.skillBudget()')==budget
     if s['stats']['bodies'] and await q.evaluate('__game.S.alevel>=2'):
      cause=await q.evaluate('__game.searchCauseReadout()');assert cause['kind']=='body' and '내 신원 미확인'in cause['text'],cause
-    await q.screenshot(path=str(out/(name+'-'+id+'-clear.png')));await q.click('#btnNext');await q.click('#btnBrGo')
+    await q.screenshot(path=str(out/(name+'-'+id+'-clear.png')));await continue_episode(q);await q.click('#btnBrGo')
    try:
-    await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="e1")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo')
+    await standalone_stage(q,'e1');await q.click('#btnBrGo')
     await c.press('Control','#btnCrouch');await c.move(600,888);await c.move(960,696);await c.move(y=408)
     await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
     await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
@@ -59,7 +60,7 @@ async def main(args):
     if await q.evaluate('__game.S.player.fl||0')==1:await env('fdown')
     await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',7)
     assert await q.evaluate('__game.STAGE.id')=='m2'
-    assert await q.evaluate('!__game.loadSkillTree().learned.length')
+    assert await q.evaluate('__game.loadSkillTree().learned.length>0&&!__game.campaignSkillState().canLearn')
     assert not errors,errors;reports.append({'device':name,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE GROWTH',name,flush=True)
    except Exception:
     await c.record('failed');print(await q.evaluate('({stage:__game.STAGE.id,fl:__game.S.player.fl,env:__game.envAction().k,goal:__game.nextGoal()?.text})'),flush=True);await q.screenshot(path=str(out/(name+'-failed.png')));raise

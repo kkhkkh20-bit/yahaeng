@@ -26,6 +26,6 @@ async def main():
     box=await q.locator('#btnBrGo').bounding_box();assert box and box['y']>=0 and box['y']+box['height']<=h+1,(w,h,id,box)
     await q.click('#btnBrGo');await q.evaluate('__game.update(.1);__game.updateHUD(true)')
     assert await q.evaluate('(()=>{const e=document.getElementById("objective");return e.scrollHeight<=e.clientHeight+1})()'),(w,h,id,'clipped goal')
-  await q.click('#btnPause');await q.click('#btnMenu2');assert await q.locator('.lg-sec.chapter:visible').count()==3,'growth chapters not visible'
+  await q.click('#btnPause');await q.click('#btnMenu2');assert await q.locator('#intro').is_visible() and await q.locator('#ledger').is_hidden(),'exit must return to linear campaign title'
   assert not errors,errors;await b.close();print('PASS GROWTH:', '; '.join(checks),flush=True)
 asyncio.run(main())

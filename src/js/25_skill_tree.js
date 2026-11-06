@@ -78,7 +78,7 @@ function learnTreeSkill(id){
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
 function resetTreeSkills(){
- if(!assassinMenu||!['ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
+ if(!assassinMenu||assassinMenu.training||!['intro','ledger','brief','end'].includes(assassinMenu.from)&&!assassinMenu.practice)return false;
  if(assassinMenu.practice){S.practiceSkills={};syncRuntimeSkills();}else{const record=loadSkillTree();record.learned=[];storeSkillTree(record);}
  renderAssassinMenu();return true;
 }

@@ -1,0 +1,86 @@
+[
+  {
+    "device": "pc",
+    "passed": true,
+    "errors": [],
+    "milestones": [
+      {
+        "label": "clear",
+        "stage": "tB",
+        "hp": 3,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "whistles": 1
+        }
+      },
+      {
+        "label": "first-real-clear",
+        "stage": "p0",
+        "hp": 3,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        }
+      }
+    ]
+  },
+  {
+    "device": "mobile",
+    "passed": true,
+    "errors": [],
+    "milestones": [
+      {
+        "label": "clear",
+        "stage": "tB",
+        "hp": 3,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0,
+          "whistles": 1
+        }
+      },
+      {
+        "label": "first-real-clear",
+        "stage": "p0",
+        "hp": 3,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        }
+      }
+    ]
+  }
+]

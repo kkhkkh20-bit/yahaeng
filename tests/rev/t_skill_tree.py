@@ -10,7 +10,7 @@ async def main():
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    ok(G.SKILL_TREE.length===27&&['body','assassin','tools'].every((k,i)=>G.SKILL_TREE.filter(s=>s.branch===k).length===[8,9,10][i]),'Revised 27-node trees missing');
-   document.querySelector('#btnLedger').click();G.openAssassinMenu();
+   document.querySelector('#btnSkillsIntro').click();
    ok(G.skillBudget()===4&&!G.loadSkillTree().learned.length,'Starting points are wrong');ok(!G.learnTreeSkill('chain'),'Skipped dependencies');
    for(const id of ['kit','smoke','kunai'])ok(G.learnTreeSkill(id),'Cannot learn '+id);
    ok(G.skillSpent(G.loadSkillTree())===3&&!G.learnTreeSkill('kunai'),'Duplicate purchase');ok(!G.learnTreeSkill('radio'),'Overspent points');

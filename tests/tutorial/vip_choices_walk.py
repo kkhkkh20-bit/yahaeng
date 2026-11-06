@@ -1,4 +1,4 @@
-"""Native, unskilled VIP walkthrough with every campaign actor and camera active.
+"""Standalone stage fixture. Native, unskilled VIP walkthrough with every campaign actor and camera active.
 Default mode steps the clock with a seed. YH_REALTIME=1 uses ordinary RAF and
 unseeded randomness. Route navigation reads game coordinates; actions use native
 keyboard/touch. No actor, inventory, skill, health, alert or progress overrides.
@@ -7,6 +7,7 @@ import asyncio,json,os,sys,time
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=Path(os.environ.get('YH_VIP_DIR','/workspace/work/vip-v175/native'));O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else'http://127.0.0.1:8001/public/'
 LABEL=sys.argv[2]if len(sys.argv)>2 else'local'
@@ -20,7 +21,7 @@ async def main():
   for touch in ([os.environ['YH_DEVICE']=='mobile'] if os.environ.get('YH_DEVICE') else [False,True]):
    name=LABEL+('-mobile'if touch else'-pc');video_options={'record_video_dir':str(O/'video')}if os.environ.get('YH_RECORD_VIDEO')=='1'else{};video_started=time.monotonic();milestones=[];q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch,**video_options);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();'+(''if REALTIME else'window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}'))
-   await open_game(q,BASE+'?review=v175&nostats');await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]')
+   await open_game(q,BASE+'?review=v175&nostats');await standalone_stage(q,'m2')
    if PREP:
     await q.locator('#brSkills button').click();await q.locator('[data-select="silentHands"]').click();await q.locator('[data-learn="silentHands"]').click();await q.locator('.skill-detail-close').click();await q.locator('[data-select="ambush"]').click();await q.locator('[data-learn="ambush"]').click()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
@@ -205,16 +206,16 @@ async def main():
    assert result['receipt']['id']==APPROACH,(APPROACH,result)
    await q.screenshot(path=str(O/(name+'-clear.png')))
    if PREP:
-    before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');await q.locator('#endSkills button').click()
+    before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert await q.locator('#skillScreen').is_visible()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     for skill in ['quietStep','quietCrouch','swiftCrouch']:
      await q.locator('[data-select="'+skill+'"]').click()
      await q.locator('[data-learn="'+skill+'"]').click();await q.locator('.skill-detail-close').click()
     after=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert before-after==4
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
-    await q.click('#btnSkillsBack');assert await q.locator('#end').is_visible();result['afterSkills']=await q.evaluate('__game.loadSkillTree().learned');await q.screenshot(path=str(O/(name+'-upgraded.png')))
-   await q.click('#btnRetry');await tick(.2);expected='emetic'if APPROACH=='smoke'else'smoke';assert await q.evaluate('id=>__game.STAGE.id==="m2"&&__game.S.vipIntent===id',expected),'next untried method not selected'
-   result.update(touch=touch,method='Fresh save; native keyboard or CDP touch; all actors and security active; '+('normal RAF and unseeded randomness'if REALTIME else'stepped clock and seed')+'; no actor, health, inventory, skills, alert or objective overrides',errors=errors,milestones=milestones);rows.append(result);print('PASS VIP',APPROACH,name,json.dumps(result,ensure_ascii=False),flush=True);await q.close()
+    await spend_episode_points(q);result['afterSkills']=await q.evaluate('__game.loadSkillTree().learned');await q.screenshot(path=str(O/(name+'-upgraded.png')))
+   await continue_episode(q);assert await q.evaluate('__game.STAGE.id==="m4"'), 'linear continuation skipped next episode'
+   result.update(touch=touch,method='Standalone selected-stage fixture; fresh save; native keyboard or CDP touch; all actors and security active; '+('normal RAF and unseeded randomness'if REALTIME else'stepped clock and seed')+'; no actor, health, inventory, skills, alert or objective overrides',errors=errors,milestones=milestones);rows.append(result);print('PASS VIP',APPROACH,name,json.dumps(result,ensure_ascii=False),flush=True);await q.close()
    if video_options:await q.video.save_as(str(O/(name+'.webm')))
   await b.close()
  (O/(LABEL+'-walk.json')).write_text(json.dumps(rows,ensure_ascii=False,indent=2))

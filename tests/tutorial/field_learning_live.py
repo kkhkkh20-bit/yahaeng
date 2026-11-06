@@ -1,10 +1,11 @@
-"""Fresh saves, native UI purchases and input, normal RAF and unseeded active AI.
+"""Standalone selected-stage fixtures, fresh saves, native UI purchases and input, normal RAF and unseeded active AI.
 Known-map execution checks, not a new-player usability study. No gameplay overrides.
 """
 import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 from action_flow_live import Controls
 async def main(args):
  out=Path(args.out);out.mkdir(parents=True,exist_ok=True);reports=[]
@@ -16,7 +17,7 @@ async def main(args):
     errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=field-learning');c=Controls(q,await q.context.new_cdp_session(q),mobile)
     async def wait(expr,timeout=7000):await q.wait_for_function(expr,timeout=timeout,polling=50)
     try:
-     await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="e1")');await q.click(f'[data-i="{i}"]');await q.click('#brSkills button')
+     await standalone_stage(q,'e1');await q.click('#brSkills button')
      for id in (['kit','dart']if skill=='dart'else['silentHands',skill]):
       await q.click(f'[data-select="{id}"]');await q.click(f'[data-learn="{id}"]');await q.click('.skill-detail-close')
      await q.click('#btnSkillsBack');assert (await q.locator('#brSkills').inner_text()).startswith('익힌 기술');await q.screenshot(path=str(out/(name+'-chosen.png')))

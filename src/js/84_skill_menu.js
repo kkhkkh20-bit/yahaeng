@@ -1,15 +1,18 @@
 let assassinMenu=null;
 function openAssassinMenu(){
   if(DLG.modal||S?.keypad)return;
-  const from=['ledger','brief','end','pause'].find(id=>!$(id).hidden)||'play';
-  assassinMenu={from,practice:from!=='ledger'&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
+  const from=['ledger','brief','end','pause','intro'].find(id=>!$(id).hidden)||'play';
+  assassinMenu={from,practice:!['intro','ledger'].includes(from)&&!!(STAGE?.skillPractice||STAGE?.toolPractice||STAGE?.trialSkills?.length),paused};
   clearPlayerInput();closeHudInspection();if(running)paused=true;
-  if(from!=='play')$(from).hidden=true;
+  if(from!=='play'&&from!=='end')$(from).hidden=true;
   if(assassinMenu.practice)skillBranch=STAGE.toolPractice||STAGE.trialSkills?.includes('electric')?'tools':'assassin';
   skillDetailMode=null;$('skillScreen').hidden=false;renderAssassinMenu();$('btnSkillsBack').focus();
 }
 function closeAssassinMenu(){
-  const m=assassinMenu;if(!m)return;$('skillScreen').hidden=true;assassinMenu=null;clearPlayerInput();
+  const m=assassinMenu;if(!m)return;
+  if(m.training&&campaignSkillState().canLearn){renderAssassinMenu();$('skillSummary').focus({preventScroll:true});return;}
+  $('skillScreen').hidden=true;$('end').inert=false;assassinMenu=null;clearPlayerInput();
+  if(m.training&&m.advanceTo>=0){start(m.advanceTo);return;}
   if(m.from!=='play')$(m.from).hidden=false;
   if(m.from==='ledger')renderStageList();
   if(m.from==='brief')renderSkillPreparation('brSkills');
@@ -74,7 +77,7 @@ function renderAssassinMenu(){
  $('skillSummary').innerHTML=practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
  $('skillScreen').querySelector('.skill-instructions').textContent=practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':skillLessonActive()?'원하는 기술을 선택하고 「배우기」를 누르세요. 쓴 포인트와 배운 기술은 본편 의뢰에도 이어집니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
- const preparing=['ledger','brief','end'].includes(assassinMenu.from);
+ const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
  $('btnSkillReset').hidden=!preparing&&!practice;$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
@@ -93,6 +96,7 @@ function renderAssassinMenu(){
  const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · 공격 길게 / B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>chooseAssassinSkill(id);slots.append(b);}
  $('btnSkillRewards').onclick=()=>{skillDetailMode='rewards';renderSkillRewards();syncSkillDetail();if(innerWidth<1000)$('skillDetail').querySelector('button').focus();};$('skillDetailShade').onclick=closeSkillDetail;
  renderSkillDetail();syncSkillDetail();board.scrollTop=scroll.top;board.scrollLeft=scroll.left;
+ syncEpisodeTraining();
  if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
@@ -129,4 +133,20 @@ function updateAssassinPractice(){
   if(!STAGE.skillPractice||S.over||S.player.assassinAnim||S.player.skillHold)return;
   const step=S.tutI||0,ids=step<2?[0,1]:step>=3&&step<5?[2,3]:[];
   if(ids.length&&!S.stats[step<2?'dualAssassinations':'chainAssassinations']&&ids.some(id=>assassinAt(id)?.state==='DEAD'))endGame(false,'암살 기술로 두 대상을 처리하는 연습이다. 공격을 1초 동안 누르거나 PC에서 B를 길게 누르자.');
+}
+
+function syncEpisodeTraining(){
+  const m=assassinMenu,b=$('btnSkillsBack'),el=$('skillScreen'),active=!!m?.training;
+  el.classList.toggle('episode-training',active);$('end').inert=active&&m.from==='end';
+  el.querySelector('h2').textContent=active?'기술 익히기':'기술 트리';
+  b.disabled=false;b.setAttribute('aria-disabled',String(active&&campaignSkillState().canLearn));
+  b.textContent='돌아가기';b.setAttribute('aria-label','기술 트리 닫기');
+  if(!active)return;
+  const state=campaignSkillState();
+  $('btnSkillReset').hidden=true;$('skillResetNote').textContent='';
+  $('skillSummary').tabIndex=-1;
+  $('skillSummary').innerHTML='<strong>'+state.points+'P</strong> 남음';
+  el.querySelector('.skill-instructions').textContent=(m.from==='end'?STAGE.name+' 완료 · ':'다음 출발 전 · ')+(state.canLearn?'남은 포인트로 원하는 기술을 배우세요. 배울 수 있는 기술이 없으면 다음 에피소드로 이어집니다.':state.points>0?'현재 배울 수 있는 기술이 없습니다. 남은 '+state.points+'P는 다음 에피소드로 이어집니다.':'기술 준비를 마쳤습니다. 다음 에피소드로 이어가세요.');
+  b.textContent=state.canLearn?'남은 포인트 사용하기':m.advanceTo>=0?'다음 에피소드':'여정 마치기';
+  b.setAttribute('aria-label',state.canLearn?'원하는 기술에 남은 '+state.points+'포인트를 사용하세요':b.textContent);
 }

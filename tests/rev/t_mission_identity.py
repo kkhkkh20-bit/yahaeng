@@ -11,7 +11,7 @@ async def main():
   for width,height,touch in [(1280,800,False),(390,844,True),(844,390,True),(320,740,True)]:
    q=await b.new_page(viewport={'width':width,'height':height},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0');await q.goto(BASE+'?nostats');await q.wait_for_function('!!window.__game',polling=100)
-   await q.click('#btnLedger');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]')
+   await q.evaluate('__game.start(__game.STAGES.findIndex(s=>s.id==="m2"),true)')
    await q.wait_for_function('!!__game.warmStatus&&!__game.warmStatus.pending',polling=100)
    await q.evaluate('__game.updateHUD(true)')
    assert await q.locator('#brIdentity .mission-id').count()==3

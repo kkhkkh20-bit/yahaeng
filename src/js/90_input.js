@@ -12,7 +12,7 @@ window.addEventListener('keydown', e => {
     if (e.code === 'Escape' && menu !== 'intro') { e.preventDefault(); $(menu === 'ledger' ? 'btnLedgerBack' : 'btnHelpBack').click(); }
     if (menu === 'intro' && ['ArrowDown', 'ArrowUp'].includes(e.code)) {
       e.preventDefault();
-      const buttons = [...document.querySelectorAll('.title-acts button')], i = buttons.indexOf(document.activeElement);
+      const buttons = [...document.querySelectorAll('.title-acts button')].filter(b=>!b.hidden&&!b.disabled), i = buttons.indexOf(document.activeElement);
       buttons[i < 0 ? (e.code === 'ArrowDown' ? 0 : buttons.length - 1) : (i + (e.code === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length].focus();
     }
     return;
@@ -170,6 +170,7 @@ bindBtn('btnGrab', actGrab);
 bindBtn('btnDress', actDress);
 $('btnDress').addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();e.stopPropagation();if(!e.repeat)actDress();}});
 bindBtn('btnSkill',beginAssassinSkill);
+$('btnSkillsIntro').addEventListener('click',openAssassinMenu);
 $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);
 $('btnSkillsBack').addEventListener('click',closeAssassinMenu);
@@ -241,12 +242,13 @@ $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('y
 $('btnFull').hidden=!document.fullscreenEnabled;
 $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen({navigationUI:'hide'});}catch(e){}});
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
-// First assassination, then the contracts; drills remain available in the ledger.
+// The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
-  const st=STAGES[quickTarget()];if(!st||!$('btnQuick'))return;
+  const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
+  $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.openingContract?'시작 · 첫 암살':(st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':st.openingContract?'시작 · 첫 암살':(st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -254,14 +256,14 @@ document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEve
   document.querySelectorAll('.ledger-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
   renderStageList();
 }));
-$('btnLedger').addEventListener('click', () => { initAudio(); renderStageList(); showMenu('ledger'); document.querySelector('.ledger-tabs button[aria-pressed="true"]').focus({ preventScroll: true }); });
+$('btnLedger').addEventListener('click', () => { syncQuick();showMenu('intro'); });
 $('btnHelp').addEventListener('click', () => { showMenu('help'); $('help').querySelectorAll('details').forEach(d=>d.open=false); $('btnHelpBack').focus({ preventScroll: true }); });
-$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnLedger').focus({ preventScroll: true }); });
+$('btnLedgerBack').addEventListener('click', () => { syncQuick(); showMenu('intro'); $('btnQuick').focus({ preventScroll: true }); });
 $('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); $('btnSet2').focus({ preventScroll: true }); } else { showMenu('intro'); $('btnHelp').focus({ preventScroll: true }); } });
 $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0;h.querySelectorAll('details').forEach(d=>d.open=false); });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
-$('btnQuick').addEventListener('click', () => { initAudio(); start(quickTarget()); });
+$('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
 function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 트리'+(points>0?' · '+points+'P 사용 가능':''); $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
@@ -301,11 +303,12 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click',()=>{const i=learningNext();if(i>=0)start(i);});
+$('btnNext').addEventListener('click',()=>{if(S?.over)openEpisodeTraining();});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
@@ -351,7 +354,7 @@ function toMenu() {
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
   running = false; paused = false;  resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
-  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; showMenu('ledger');
+  $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();
   newGame(STAGE_I);
 }

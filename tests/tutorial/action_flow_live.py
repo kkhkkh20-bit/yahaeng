@@ -1,11 +1,12 @@
-"""Known-map native input review: rear approach/handoff and a real pursuit.
-Normal RAF, unseeded active AI, fresh saves. No actor/progress/health overrides.
+"""Standalone stage fixture. Known-map native input review: rear approach/handoff and a real pursuit.
+Normal RAF, unseeded active AI, standalone selected-stage fixtures. No actor/progress/health overrides.
 --legacy permits a second environment press after v191 ignores the early one.
 """
 import argparse,asyncio,json,time
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 
 class Controls:
  def __init__(self,page,cdp,mobile):self.q=page;self.cdp=cdp;self.mobile=mobile;self.points={};self.keys=[];self.axis=None;self.events=[]
@@ -68,7 +69,7 @@ async def main(args):
     await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=action-flow');c=Controls(q,await q.context.new_cdp_session(q),mobile)
     try:
      if scenario=='handoff':
-      await q.click('#btnLedger');await q.click('[data-filter="training"]');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="t0")');await q.click(f'[data-i="{i}"]')
+      await standalone_stage(q,'t0')
       if await q.locator('#brief').is_visible():await q.click('#btnBrGo')
       await c.press('Control','#btnCrouch');await c.move(360,504);await c.move(x=438)
       await c.steer('x');await q.wait_for_function('__game.S.guards[0].x-__game.S.player.x<=63',timeout=3000,polling=10)
@@ -85,7 +86,7 @@ async def main(args):
       await c.move(360,504);await c.press('x','#btnCarry');await q.wait_for_function('__game.S.stats.stashed===1',timeout=4000);result=await c.record('hidden');assert result['hp']==3 and result['stats'].get('ko')==1 and not result['stats']['kills'] and not result['stats']['detected'],result
       result['takedownToStride']=round(stride['t']-attack['t'],3);result['liftToStride']=round(stride['t']-lift['t'],3);result['earlyInputAccepted']=queued['recovery']
      else:
-      await q.click('#btnQuick');await q.click('#btnBrGo');await c.move(984,432,True);await c.move(x=984)
+      await standalone_stage(q,'p0');await q.click('#btnBrGo');await c.move(984,432,True);await c.move(760,408,True)
       await q.wait_for_function('__game.S.guards.some(g=>g.state==="ALERT"&&g.seen)',timeout=45000,polling=30);await c.record('actually-seen');assert await q.evaluate('__game.searchCauseReadout().kind')=='player'
       # Run around both corners before crouching behind the screen. Crouching
       # out in the open lets the pursuer catch up; column 2 avoids the tree.

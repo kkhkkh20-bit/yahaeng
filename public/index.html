@@ -1098,6 +1098,20 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 /* Field radio must not steal the left movement finger during a live escape. */
 #dlg:not(.modal),#dlg:not(.modal) *{pointer-events:none}
 
+/* Episode training covers the result and keeps the continuation within reach. */
+#skillScreen { z-index:5; }
+#skillScreen.episode-training .skill-toolbar .sub-head { flex-wrap:wrap; gap:10px 20px; }
+#skillScreen.episode-training .back { color:var(--sk-ink); }
+#skillScreen.episode-training .back[aria-disabled="true"] { color:var(--sk-muted); }
+@media(max-width:699px) {
+ #skillScreen.episode-training .skill-toolbar { align-items:flex-start; gap:10px; }
+ #skillScreen.episode-training .sub-head h2 { order:-1; width:100%; font-size:20px; }
+ #skillScreen.episode-training #skillSummary { white-space:nowrap; }
+}
+
+#skillScreen.episode-training .back::before { transform:rotate(225deg); }
+#skillScreen.episode-training .back[aria-disabled="true"]::before { display:none; }
+
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -1491,11 +1505,12 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
     <h1>야행</h1>
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
-      <button class="ghost" id="btnLedger" type="button">의뢰 선택</button>
+      <button class="ghost" id="btnSkillsIntro" type="button">기술</button>
+      <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v197 · 2026-11-06</footer>
+  <footer class="title-footer">v198 · 2026-11-06</footer>
 </div>
 
 <div class="screen sub" id="ledger" hidden>
@@ -1591,7 +1606,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v197 · 2026-11-06</small>
+      <small class="fx-sub" id="pauseVersion">v198 · 2026-11-06</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -1641,7 +1656,7 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
       <dl id="endMore"></dl>
       <figure class="endmap"><canvas id="endMap" width="10" height="10"></canvas><figcaption><i class="l1"></i>지나간 길 <i class="l2"></i>옥상·위층 <b class="x1">×</b>처치 <b class="x2">×</b>사고사 <b class="x3">!</b>발각 <b class="x4">○</b>시체 발견</figcaption></figure>
     </details>
-    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="cta" id="btnCity" type="button" hidden>도시로 돌아가기</button><button class="ghost" id="btnRetry" type="button">다시 하기</button><button class="ghost" id="btnMenu" type="button">의뢰 선택</button></div>
+    <div class="row endacts"><button class="cta" id="btnNext" type="button" hidden>다음 의뢰</button><button class="cta" id="btnCP" type="button" hidden>체크포인트부터</button><button class="cta" id="btnCity" type="button" hidden>도시로 돌아가기</button><button class="ghost" id="btnRetry" type="button">다시 하기</button><button class="ghost" id="btnMenu" type="button">처음 화면</button></div>
   </div>
 </div>
 
@@ -1652,19 +1667,19 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
  var queued=null,ready=false,done=0,failed=false,box=document.createElement('div');box.id='bootStatus';box.setAttribute('role','status');box.setAttribute('aria-live','polite');box.style.cssText='font:400 14px var(--f-body);color:#d2c9b5;margin-top:18px;line-height:1.6;max-width:360px';
  var panel=document.querySelector('.title-panel');if(panel)panel.appendChild(box);
  function text(value){box.textContent=value;}
- function fail(message){if(ready)return;failed=true;box.textContent='게임을 불러오지 못했습니다. ';var retry=document.createElement('a');retry.textContent='다시 연결';retry.style.color='inherit';retry.href=location.pathname+'?retry='+Date.now();box.appendChild(retry);var detail=document.createElement('small');detail.style.cssText='display:block;overflow-wrap:anywhere;opacity:.7';detail.textContent=String(message||'다운로드 연결 확인').slice(0,180);box.appendChild(detail);document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});}
+ function fail(message){if(ready)return;failed=true;box.textContent='게임을 불러오지 못했습니다. ';var retry=document.createElement('a');retry.textContent='다시 연결';retry.style.color='inherit';retry.href=location.pathname+'?retry='+Date.now();box.appendChild(retry);var detail=document.createElement('small');detail.style.cssText='display:block;overflow-wrap:anywhere;opacity:.7';detail.textContent=String(message||'다운로드 연결 확인').slice(0,180);box.appendChild(detail);document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.removeAttribute('aria-busy');});}
  function menu(id){['intro','help','ledger'].forEach(function(k){document.getElementById(k).hidden=k!==id;});}
- document.addEventListener('click',function(e){if(ready)return;var b=e.target.closest('button');if(!b)return;if(b.id==='btnHelp'){e.preventDefault();e.stopImmediatePropagation();menu('help');return;}if(b.id==='btnHelpBack'){e.preventDefault();e.stopImmediatePropagation();menu('intro');return;}if(b.id==='btnQuick'||b.id==='btnLedger'){e.preventDefault();e.stopImmediatePropagation();queued=b.id;menu('intro');if(!failed)text('게임 불러오는 중 · 준비되면 열립니다');}},true);
- window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/5');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
- document.querySelectorAll('#btnQuick,#btnLedger').forEach(function(b){b.setAttribute('aria-busy','true');});text('게임 불러오는 중');
+ document.addEventListener('click',function(e){if(ready)return;var b=e.target.closest('button');if(!b)return;if(b.id==='btnHelp'){e.preventDefault();e.stopImmediatePropagation();menu('help');return;}if(b.id==='btnHelpBack'){e.preventDefault();e.stopImmediatePropagation();menu('intro');return;}if(b.id==='btnQuick'||b.id==='btnSkillsIntro'){e.preventDefault();e.stopImmediatePropagation();queued=b.id;menu('intro');if(!failed)text('게임 불러오는 중 · 준비되면 열립니다');}},true);
+ window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/5');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
+ document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.setAttribute('aria-busy','true');});text('게임 불러오는 중');
  window.addEventListener('error',function(e){if(!ready&&e.message)fail(e.message);});window.addEventListener('unhandledrejection',function(e){if(!ready)fail(e.reason&&e.reason.message||e.reason);});
  setTimeout(function(){if(!ready&&!failed)fail('30초 동안 준비되지 않았습니다. 다시 연결해 주세요.');},30000);
 })();
 </script>
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/cb890c52b22abf4cb220.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/ded426d87558018cb7fd.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/acf421711248f0ebcd39.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/b1a7f1aced089a7fba90.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

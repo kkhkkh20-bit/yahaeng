@@ -1,4 +1,4 @@
-"""Live first two lessons: native input and rendered markers, no stepped clock/state overrides.
+"""Fresh linear tutorial → first assassination → next episode: native input and rendered markers, no stepped clock/state overrides.
 Known-map developer playback, not a novice usability study.
 """
 import argparse, asyncio, json, os, threading, time
@@ -7,6 +7,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import standalone_stage, continue_episode, spend_episode_points
 
 async def main(args):
     out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
@@ -27,9 +28,7 @@ async def main(args):
             page.on('pageerror',lambda e:errors.append(str(e)))
             await page.add_init_script('localStorage.clear()')
             await open_game(page,args.url+'?nostats&review=first-steps')
-            await page.click('#btnLedger');await page.click('[data-filter="training"]')
-            index=await page.evaluate('__game.STAGES.findIndex(s=>s.id==="tB")')
-            await page.click(f'[data-i="{index}"]')
+            await page.click('#btnQuick')
             cdp=await page.context.new_cdp_session(page)
             await page.evaluate('''()=>{
                 window.__goalProbe=null;window.__goalPaint=null;
@@ -160,23 +159,22 @@ async def main(args):
                         for k in active:await key(k,False)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
-                await page.click('#btnNext');await page.wait_for_function('__game.STAGE.id==="t0"')
-                if (await state())['mode']!='sneak':await press('Control','#btnCrouch')
-                await move(x=360,y=504);await wait_step(1)
-                await move(x=440);await snapshot('near-rear-marker',True)
-                await move(x=(await state())['goal']['x']);await wait_step(2)
+                await continue_episode(page)
+                await page.wait_for_function('__game.STAGE.id==="p0"')
+                await page.click('#btnBrGo')
+                await page.wait_for_function('__game.cpReady()')
+                await press('Control','#btnCrouch')
+                await move(x=360,y=504);await move(y=408);await move(x=618)
+                await snapshot('first-real-approach')
+                await move(x=660)
                 await press('z','#btnAct')
-                await page.wait_for_function('__game.S.tutI===3&&!__game.actionBusy()',timeout=6000)
-                await snapshot('body-knockout')
-                await press('x','#btnCarry')
-                await page.wait_for_function('__game.S.tutI===4&&!__game.actionBusy()',timeout=6000)
-                await move(x=360,y=504)
-                await press('x','#btnCarry');await wait_step(5)
-                await snapshot('body-hidden')
-                await move(x=984,y=504)
-                await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
-                await snapshot('body-clear')
-                await page.click('#btnNext');await page.wait_for_function('__game.STAGE.id==="tC"')
+                await page.wait_for_function('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+                await move(x=360,y=648);await move(x=168,y=744)
+                await page.locator('#end[data-win="1"]').wait_for(state='visible')
+                s=await snapshot('first-real-clear')
+                assert s['hp']==3 and s['stats']['detected']==0,s
+                await continue_episode(page)
+                assert await page.evaluate('__game.STAGE.id==="p1"')
                 assert not errors,errors
                 passed=True
             finally:

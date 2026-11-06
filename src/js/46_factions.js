@@ -99,12 +99,7 @@ const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx 
 const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
 function drawGangFlags(P) {
   if (!S.turf) return;
-  BLD.forEach(b => { if (!b.gang || (!tactical && flOf(P) && bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) === BLD.indexOf(b))) return; const x = b.x0 * TILE + 10, y = b.y0 * TILE + 8; if (!inView(x, y, 80)) return;
-    const [bg, fg] = GANG_COL[b.gang], w = Math.sin(S.t * 3 + b.x0) * 2;
-    ctx.strokeStyle = '#c9ccd3'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y + 34); ctx.lineTo(x, y - 14); ctx.stroke();
-    ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(x, y - 14); ctx.lineTo(x + 36, y - 3 + w); ctx.lineTo(x, y + 8); ctx.closePath(); ctx.fill(); ctx.strokeStyle = fg; ctx.lineWidth = 2; ctx.stroke();
-    if (dist(P.x, P.y, x, y) < 700 || tactical) tag(x + 44, y - 4, b.gang === 'B' ? '건달파 건물' : '조직 건물', b.gang === 'B' ? '#ff8a76' : '#e0b450', 0.9);
-  });
+  // Building affiliation is carried by people and access rules, without rooftop flags.
   for (const r of S.turf.B) { if (!r.dyn) continue;  // 건달파 거리 구역: 붉은 점선 (가까울 때)
     const x = r[0] * TILE, y = r[1] * TILE, w = (r[2] - r[0] + 1) * TILE, h = (r[3] - r[1] + 1) * TILE, d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > 520 && !tactical) continue;
     ctx.strokeStyle = 'rgba(200,60,50,.45)'; ctx.lineWidth = 2.5; ctx.setLineDash([10, 7]); ctx.strokeRect(x, y, w, h); ctx.setLineDash([]);

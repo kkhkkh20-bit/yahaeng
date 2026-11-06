@@ -6,7 +6,7 @@ R=Path(__file__).resolve().parents[2]
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch();q=await b.new_page();await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!window.__game',polling=100)
-  await q.click('#btnQuick');await q.click('#btnBrGo');await q.wait_for_timeout(250)
+  await q.evaluate('__game.start(__game.STAGES.findIndex(s=>s.id==="p0"),true)');await q.click('#btnBrGo');await q.wait_for_timeout(250)
   rows=await q.evaluate('''()=>{
    const G=__game,P=G.S.player,c=G.ctx,draw=c.drawImage,rows=[],ok=(v,m)=>{if(!v)throw Error(m)};
    for(const [nx,ny,row]of [[1,0,0],[0,1,2],[-1,0,4],[0,-1,6]]){
