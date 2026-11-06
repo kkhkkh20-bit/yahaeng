@@ -1112,6 +1112,26 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 #skillScreen.episode-training .back::before { transform:rotate(225deg); }
 #skillScreen.episode-training .back[aria-disabled="true"]::before { display:none; }
 
+/* Quiet radio from Crow, near the action; movement remains available. */
+#episodeRadio{position:fixed;z-index:24;display:flex;gap:11px;align-items:flex-start;box-sizing:border-box;padding:12px 15px 12px 11px;border:1px solid #727b83;border-left:3px solid #b9a580;background:linear-gradient(110deg,#101820f7,#151d25ee);box-shadow:0 5px 18px #0008,inset 0 0 0 2px #0a101660;pointer-events:none;color:#ece9df;font-family:var(--f-body);border-radius:2px}
+#episodeRadio[hidden]{display:none}
+#episodeRadioFace{width:44px;height:52px;object-fit:cover;border-bottom:1px solid #a8997c;flex:0 0 44px}
+#episodeRadio .episode-radio-copy{min-width:0;flex:1}
+#episodeRadio b{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;color:#d5c6aa}
+#episodeRadio b span{font-size:10px;color:#9aa5ae;font-weight:400}
+#episodeRadio p{font-size:14px;line-height:1.5;margin:4px 0 6px;word-break:keep-all;overflow-wrap:anywhere}
+#episodeRadio small{display:block;color:#aebac3;font-size:11px;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere}
+body.episode-coached #dlg:not(.modal),body.episode-coached #hud #objective .tut-detail{display:none}
+@media(max-width:480px){#episodeRadio{gap:8px;padding:9px 11px 9px 8px}#episodeRadioFace{width:34px;height:43px;flex-basis:34px}#episodeRadio p{font-size:13px}body.episode-coached #mini{visibility:hidden}}
+@media(max-height:480px){#episodeRadio{gap:8px;padding:8px 11px}#episodeRadioFace{width:32px;height:39px;flex-basis:32px}#episodeRadio p{font-size:12px;margin:3px 0}#episodeRadio small{font-size:10px}}
+
+@media(max-width:360px) and (min-height:481px){
+ body.episode-coached #hud .obj{padding:6px 12px;min-height:0}
+ body.episode-coached #hud .obj #objective,body.episode-coached #hud .obj .hud-portrait{display:none}
+ #episodeRadio{padding:7px 9px}#episodeRadioFace{display:none}
+ #episodeRadio p{font-size:12px;line-height:1.4;margin:3px 0}#episodeRadio small{font-size:10px;line-height:1.35}
+}
+
 /* Shared in-game UI. One complete Korean face and one weight, across every state.
 Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -1802,6 +1822,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 <div id="keypad" hidden tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="kpTitle"><div class="kp"><div class="kp-info"><b id="kpTitle">비밀번호 입력</b><div id="kpDisp">· · · ·</div><small id="kpHint"></small><small id="kpStatus" role="status" aria-live="polite"></small></div>
   <div class="kpg"><button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button><button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button><button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button><button type="button" data-k="&lt;" class="fn">지움</button><button type="button" data-k="0">0</button><button type="button" data-k="ok" class="fn ok">확인</button></div>
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
+<aside id="episodeRadio" hidden aria-label="까마귀의 무전"><canvas id="episodeRadioFace" width="128" height="128" aria-hidden="true"></canvas><div class="episode-radio-copy"><b>까마귀 <span>· 무전</span></b><p id="episodeRadioText"></p><small id="episodeRadioAction"></small></div></aside>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
   <div class="dlg-box"><div id="dlgContext" class="dlg-context"></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
@@ -1820,12 +1841,12 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v203 · 2026-11-06</footer>
+  <footer class="title-footer">v204 · 2026-11-06</footer>
 </div>
 
 <dialog id="newCampaignDialog" aria-labelledby="newCampaignTitle" aria-describedby="newCampaignNote">
   <h2 id="newCampaignTitle">처음부터 시작할까요?</h2>
-  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 체크포인트가 초기화되고 첫 연습부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
+  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 체크포인트가 초기화되고 첫 에피소드부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
   <p id="newCampaignError" role="alert" hidden></p>
   <div class="new-campaign-actions">
     <button id="btnNewCampaignCancel" class="ghost" type="button" autofocus>취소</button>
@@ -1926,7 +1947,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v203 · 2026-11-06</small>
+      <small class="fx-sub" id="pauseVersion">v204 · 2026-11-06</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2000,8 +2021,8 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/9d90b2533d99885e05b9.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/6847ebd95cf47ce7a3ca.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/234571fa98f124d534dc.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/42ce5ff3df2f957b4543.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
