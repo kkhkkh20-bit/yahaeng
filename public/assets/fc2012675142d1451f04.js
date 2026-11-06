@@ -1020,7 +1020,7 @@ Object.assign(STAGES.find(s=>s.id==='t0'),{
   guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
   steps:[
     [(S,P)=>P.mode==='sneak'?'웅크린 채 왼쪽 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&Math.floor(P.x/48)===7||(!S.guards[0]||S.guards[0].state==='DEAD'), S=>S.bushes[0],'풀숲에 들어가는 버튼은 없다. 웅크려 걸어 들어가면 자동으로 숨는다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
-    ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-40),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44||(!S.guards[0]||S.guards[0].state==='DEAD'),()=>({x:10.5*48-40,y:10.5*48}),'숨은 채 공격하는 기술은 아직 없다. 풀숲 밖에서 한 걸음 거리까지 다가간다.','move'],
+    ['풀숲을 나와 등 뒤 표시까지 바짝 접근',(S,P)=>!P.hidden&&P.mode==='sneak'&&Math.hypot(P.x-(10.5*48-40),P.y-10.5*48)<12&&Math.hypot(P.x-S.guards[0].x,P.y-S.guards[0].y)<=44||(!S.guards[0]||S.guards[0].state==='DEAD'),()=>({x:10.5*48-40,y:10.5*48}),'기본 제압은 풀숲 밖에서 한 걸음 거리까지 다가간다. 이미 배운 기습이나 도구도 사용할 수 있다.','move'],
     ['{공격} 짧게 눌렀다 떼어 기절시키기',S=>(!S.guards[0]||S.guards[0].state==='DEAD'),S=>S.guards[0],'짧게 누르면 기절, 길게 누르면 처치한다. 이 연습은 짧게 눌러 보자.','attack'],
     ['몸 옆에서 {행동} · 운반',(S,P)=>!!P.carrying||S.corpses.some(c=>c.hidden||c.stashed),S=>S.corpses[0],'먼저 쓰러뜨린 다음 몸을 옮긴다. 운반 중에는 느려지고 뛸 수 없다.','env',0,['carry','quickStash']],
     [(S,P)=>!P.carrying?'몸 옆에서 {행동} · 다시 운반':Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)>48?'몸을 멘 채 왼쪽 풀숲으로 이동':'풀숲에서 {행동} · 몸 숨기기',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?S.bushes[0]:S.corpses[0],'내 몸은 웅크리면 숨는다. 들고 있는 몸은 풀숲에서 행동을 눌러 숨긴다.',(S,P)=>!P.carrying||Math.hypot(P.x-S.bushes[0].x,P.y-S.bushes[0].y)<=48?'env':'move',0,['carry','quickStash','stash']],
@@ -1040,7 +1040,7 @@ STAGES.push({
  ['{기술목록} 연속 암살 선택',S=>S.selectedSkill==='chain',()=>null,'연속 암살은 첫 적을 처리한 뒤 다음 적까지 직접 이동한다.','skills'],
  [(S,P)=>P.mode==='sneak'?'다음 경비의 등 뒤 표시로 이동':'{살금} 다음 경비의 등 뒤로 접근',(S,P)=>P.mode==='sneak'&&Math.hypot(P.x-(19*48-6),P.y-9.5*48)<12,()=>({x:(19*48-6),y:9.5*48}),'웅크려 접근하고 통로로 지나가자. 두 번째 적까지 길이 트여 있어야 한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
  ['{공격} 길게 · 연속 암살',S=>(S.stats.chainAssassinations||0)>0,S=>S.guards[2],'이동 중 들키거나 길이 막히면 다음 공격은 중단된다.','attack'],
- ['아래쪽 출구로 이동',()=>false,S=>S.exit,'의뢰에서는 포인트로 선행 기술을 배우고 동시 암살·연속 암살을 선택한다.','move']
+ ['아래쪽 출구로 이동',()=>false,S=>S.exit,'다음 출발 준비에서 포인트로 선행 기술을 배운다. 현장에서는 배운 동시 암살·연속 암살을 장착할 수 있다.','move']
  ]
 });
 STAGES.push({
@@ -1076,7 +1076,7 @@ STAGES.push({
  ['세 번째 경비의 등 뒤에 바짝 접근',(S,P)=>Math.hypot(P.x-(19.5*48-30),P.y-10.5*48)<10,()=>({x:19.5*48-30,y:10.5*48}),'표시까지 몸을 낮춰 이동하자. 기본 공격은 한 걸음 거리에서만 닿는다.','move'],
  ['{공격} 짧게 · 경비 기절시키기',S=>S.corpses.some(c=>c.guardId===2&&c.ko),S=>S.guards[2],'공격을 짧게 누른다. 아직 살아 있는 적부터 은닉처에 넣을 수는 없다.','attack'],
  ['{행동} 한 번 · 쓰러진 경비 숨기기',S=>S.corpses.some(c=>c.guardId===2&&c.hidden),S=>S.corpses.find(c=>c.guardId===2)||S.guards[2],'몸 옆에서 행동을 한 번 누르면 들어 올려 가까운 풀숲에 넣는다. 다른 행동은 대상 바꾸기로 고른다.','env'],
- ['풀숲에서 나와 아래쪽 출구로 이동',()=>false,S=>S.exit,'연습을 마쳐도 기술을 자동으로 배우지 않는다. 기술 트리에서 직접 선택하자.','move']
+ ['풀숲에서 나와 아래쪽 출구로 이동',()=>false,S=>S.exit,'기술은 다음 출발 준비에서 선택한다. 이미 배운 기술은 이 연습에서도 사용할 수 있다.','move']
  ]
 });
 // The authored art slice is loaded only by its dedicated build, not the contract list.
