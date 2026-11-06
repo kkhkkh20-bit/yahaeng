@@ -84,10 +84,28 @@ function releaseAim() {
 // 조이스틱: 살짝 = 살금살금, 반쯤 = 걷기, 끝까지 = 달리기
 const JOY_WALK = 0.38, JOY_RUN = 0.86;
 
-function drawRadio(x, y) {  // 무전기: 이 자경대원이 경보를 맵 전체에 퍼뜨린다
-  ctx.fillStyle = 'rgba(8,11,18,.85)'; ctx.fillRect(x - 6, y - 8, 12, 15); ctx.fillStyle = '#3a3f48'; ctx.fillRect(x - 4, y - 6, 8, 11);
-  ctx.strokeStyle = '#c9cfd8'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x + 2, y - 6); ctx.lineTo(x + 2, y - 14); ctx.stroke();
-  ctx.fillStyle = Math.floor(S.t * 2) % 2 ? '#7fe08a' : '#2f6a38'; ctx.fillRect(x - 3, y - 4, 3, 3);
+// Worn equipment stays inside the actor silhouette; inspection supplies its meaning.
+function drawRadio(x,y) {
+  ctx.fillStyle='#10171c';ctx.fillRect(x-2,y-4,5,8);
+  ctx.fillStyle='#46535a';ctx.fillRect(x-1,y-3,3,5);
+  ctx.fillStyle='#afb6ad';ctx.fillRect(x+1,y-7,1,4);
+  ctx.fillStyle='#7b947e';ctx.fillRect(x,y-2,1,1);
+  ctx.fillStyle='#222b30';ctx.fillRect(x-1,y+1,3,1);
+}
+function drawActorGear(g) {
+  if(g.dog||g.civ&&g.state==='SLEEP'||g.climb||g.yank||g.containerMoving||g.ledgeFalling)return;
+  const side=Math.cos(g.a)<0?-1:1,bob=g.moving?Math.sin(S.t*10+g.id*.37)*.5:0;
+  ctx.save();
+  if(g.radio)drawRadio(g.x+side*5,g.y-19+bob);
+  if(g.hasKey&&g.hasKey!=='gold'&&g.hasKey!=='code') {
+    ctx.strokeStyle='#9c9e94';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(g.x-2,g.y-34+bob);ctx.lineTo(g.x+1,g.y-27+bob);ctx.lineTo(g.x+3,g.y-34+bob);ctx.stroke();
+    ctx.fillStyle='#d2d0bc';ctx.fillRect(g.x-1,g.y-28+bob,4,5);ctx.fillStyle='#677e83';ctx.fillRect(g.x,g.y-27+bob,2,2);
+  }
+  ctx.restore();
+  if((input.scan||S.marked===g)&&dist(g.x,g.y,S.player.x,S.player.y)<460) {
+    const traits=[g.radio?'무전기 소지':null,g.hasKey?keyName(g.hasKey)+' 소지':null].filter(Boolean);
+    if(traits.length)tag(g.x,g.y-72,traits.join(' · '),'#c8c9bb',.95);
+  }
 }
 // 화면 밖에서 나를 보거나 쫓는 자경대원: 화면 가장자리에 화살표
 function drawOffscreen() { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이

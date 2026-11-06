@@ -28,29 +28,26 @@ function combatVictims(a) {
   return a.list || [a.g || (a.c && a.c.g) || a.kill || (['cap', 'execute', 'drag'].includes(a.k) && S.player.captive)].filter(Boolean);
 }
 function needsLethalHold(a) {
-  if(simpleAssassination(a))return false;
   return ['ledgeKill', 'pushOff', 'finish'].includes(a.k) || (a.k === 'trap' && a.tp && !!a.tp.t) || combatVictims(a).some(g => g.dog);
 }
-function simpleAssassination(a){const gs=combatVictims(a);return ['kill','finish','cap','execute','drop','ambush','pull','ventKill','ledgeKill','pushOff'].includes(a.k)&&gs.length===1&&simpleTarget(gs[0]);}
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
-  if(simpleAssassination(a))return Object.assign({},a,{label:'표적 암살',hold:null,holdOnly:false});
-  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 처치' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '처치' });
+  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '살해' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
     const label = a.k === 'drag' ? '먼저 기절시키기' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? (a.label||'기절') : (a.label || '기절').replace(/암살|처치/g, '기절');
-    return Object.assign({}, a, { label, hold: '처치' });
+    return Object.assign({}, a, { label:combatVictims(a).some(g=>g.target)?'표적 기절':label, hold: '살해' });
   }
   return a;
 }
 function prepareCombat(a) {
   if(['kill','kill2','grab'].includes(a.k)&&!(a.list||[a.g]).every(g=>g&&canKill(g,S.player)))return false;
-  if(!abilityOn('ambush')&&(['ambush','pull','ventKill','ledgeKill'].includes(a.k)||!concealedMeleeAllowed()&&(combatVictims(a).length||a.k==='grab'))){toast(abilityLockText('ambush'),2);return false;}
+  if(a.k!=='finish'&&!abilityOn('ambush')&&(['ambush','pull','ventKill','ledgeKill'].includes(a.k)||!concealedMeleeAllowed()&&(combatVictims(a).length||a.k==='grab'))){toast(abilityLockText('ambush'),2);return false;}
   const source = a.combatSource || combatSource(a.inputGroup || 'atk');
   if (needsLethalHold(a) && !a.confirmedHold) {
     if (source) S.player.lethalHold = { a: Object.assign({}, a), source, targets: combatVictims(a).map(g => ({ g, fl: flOf(g), z: g.z || 0 })), t: 0, x: S.player.x, y: S.player.y, fl: flOf(S.player), z: S.player.z || 0 };
     return false;
   }
-  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold || simpleAssassination(a), container: a.k === 'drag' ? a.h : null, fieldSkill: a.k==='drop'?'drop':['ambush','pull','ventKill','ledgeKill'].includes(a.k)||concealedAttackSource()?'ambush':a.k==='kill'&&dist(S.player.x,S.player.y,g.x,g.y)>MELEE_CONTACT?'reach':null };
+  for (const g of combatVictims(a)) g.takedownIntent = { source, lethal: !!a.confirmedHold, container: a.k === 'drag' ? a.h : null, fieldSkill: a.k==='drop'?'drop':['ambush','pull','ventKill','ledgeKill'].includes(a.k)||concealedAttackSource()?'ambush':a.k==='kill'&&dist(S.player.x,S.player.y,g.x,g.y)>MELEE_CONTACT?'reach':null };
   return true;
 }
 function updateLethalHold(P, dt) {
@@ -58,7 +55,7 @@ function updateLethalHold(P, dt) {
   const a = h.a, gs = combatVictims(a);
   const invalid = gs.some(g => g.child || (a.k !== 'finish' && g.state === 'DEAD') || (a.k === 'pushOff' && !g.climb) || (a.k==='ledgeKill'&&!ledgeTargetValid(g)) || (a.k === 'finish' ? !a.c.container && dist(P.x, P.y, a.c.x, a.c.y) > 60 : dist(P.x, P.y, g.x, g.y) > 180));
   const obscured = gs.some(g => a.k === 'finish' ? !a.c.container && !objectReachable(a.c, 60) : !los(P.x, P.y, g.x, g.y, Math.max(P.z || 0, g.z || 0)));
-  if (!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
+  if (a.k!=='finish'&&!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
   if ((a.k === 'finish' && (!a.c || !a.c.ko)) || (a.k === 'trap' && (!a.tp.t || a.tp.t.used))) { P.lethalHold = null; return false; }
   P.vx = P.vy = 0; P.moving = false; h.t += dt;
   if (h.t >= LETHAL_HOLD) { P.lethalHold = null; actPrimary(Object.assign({}, a, { viaZ: true, confirmedHold: true, combatSource: h.source })); }
@@ -97,7 +94,6 @@ function targetPosition(g) {
 }
 
 function nearFinish() {
-  if(!concealedMeleeAllowed())return null;
   const P = S.player; if (actionBusy(P) || P.carrying || P.captive || P.wire || P.ledge) return null;
   return S.corpses.filter(c => c.ko && c.g && flOf(c) === flOf(P) && (c.z || 0) === (P.z || 0) &&
     (c.container ? P.hide && c.container.x === P.hide.x && c.container.y === P.hide.y : !c.stashed && objectReachable(c, 46)))
@@ -107,9 +103,11 @@ function finishKo(c, g) {
   if (!c || !c.ko || !S.corpses.includes(c)) return;
   delete g.takedownIntent; c.ko = false; c.g = null; g.unconscious = false; S.stats.ko--; S.stats.kills++;
   if (g.target) {
+    if(S.player.disguise&&!S.player.disguiseBlown)S.stats.disguiseKill=true;
     bossRadio('target', true);
     const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;
     toast(left ? `표적 제거 — 남은 표적 ${left}` : '표적 제거', 3, 'good');
   } else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
+  toast((g.target?'표적 살해':'살해')+' · 다시 깨어나지 않는다',2.4);
   logEv(g.target ? 'target' : 'kill', c.x, c.y); play('kill', .45); noise(c.x, c.y, 40, 'kill', c.fl);
 }

@@ -36,6 +36,7 @@ function initRoomFinish(){
  setLayer(L0);LG=null;for(const key in lightCache)delete lightCache[key];S.floorC={};refreshBodyLighting();
 }
 function roomFinishFurnKey(it){
+ if(STAGE.firstSteps&&it.fl===0){const kind={desk2:'desk',chairD:'chair',cab:'cab'}[it.t];if(kind)return kind+'-'+(it.r||0);}
  const f=S?.roomFinish,r=f?.room;if(STAGE.id!=='m2'||!f||it.fl!==f.fl||it.x<r.x0||it.x>r.x1||it.y<r.y0||it.y>r.y1)return null;
  const kind={sofa:'sofa',chairD:'chair',cab:'cab',desk2:'desk'}[it.t];return kind?kind+'-'+(it.r||0):null;
 }

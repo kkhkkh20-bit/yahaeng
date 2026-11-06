@@ -62,9 +62,11 @@ function drawRadioCall() {
   const k = 1 - R.t / R.dur, x = g.x + 34, y = g.y - 30;
   ctx.fillStyle = 'rgba(8,11,18,.8)'; ctx.beginPath(); ctx.arc(x, y, 15, 0, TAU); ctx.fill();
   ctx.strokeStyle = '#e8473c'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 15, -Math.PI / 2, -Math.PI / 2 + TAU * k); ctx.stroke();
-  drawRadio(x, y + 4);
-  ctx.strokeStyle = `rgba(232,71,60,${0.5 + 0.4 * Math.sin(S.t * 12)})`; ctx.lineWidth = 2;
-  for (let i = 1; i <= 2; i++) { ctx.beginPath(); ctx.arc(x + 4, y - 8, 6 * i, -1.2, -0.2); ctx.stroke(); }
+  // A transmission status glyph, rather than a second floating physical radio.
+  ctx.strokeStyle='#ffb3a8';ctx.lineWidth=1.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x,y+6);ctx.lineTo(x,y-1);ctx.stroke();
+  for(let i=1;i<=2;i++){ctx.beginPath();ctx.arc(x,y+1,4*i,-Math.PI*.85,-Math.PI*.15);ctx.stroke();}
+  ctx.lineCap='butt';
   ctx.font = uiFont(12); ctx.textAlign = 'center'; ctx.fillStyle = '#ffb3a8'; ctx.fillText('무전 중', x + 6, y - 21); ctx.textAlign = 'left';
 }
 function startFlee() {

@@ -1,7 +1,7 @@
-"""Two native walking laps in the reported office, with the actual spare coat.
+"""Two native walking laps in the reported office, with the a subdued guard’s uniform.
 
 Only player location/facing/floor is positioned to isolate the reported office
-encounter. The coat is taken through the real action UI; all authored NPCs,
+encounter. The guard is knocked out and the uniform stolen through the real action UI; all authored NPCs,
 cameras, health and inventory remain active under normal RAF and randomness.
 This is not a complete mission clear or an unassisted novice playthrough.
 """
@@ -22,12 +22,15 @@ async def main(args):
    for _ in range(20):
     if not await q.evaluate('__game.DLG.modal'):break
     await q.click('#dlg');await q.wait_for_timeout(30)
-   await q.evaluate('Object.assign(__game.S.player,{x:456,y:816,fl:0,z:0});__game.moveCamera(1);__game.updateHUD(true)')
-   if await q.evaluate('__game.envAction().k')!='pickup':
-    await q.click('#btnCycle');await q.locator('[data-env-token^="pickup:"]').first.click()
+   await q.evaluate('Object.assign(__game.S.player,{x:416,y:792,fl:0,z:0});__game.moveCamera(1);__game.updateHUD(true)')
+   if mobile:await q.tap('#btnAct')
+   else:await q.keyboard.press('z')
+   await q.wait_for_function('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious&&!__game.actionBusy()')
+   if await q.evaluate('__game.envAction().k')!='dress':
+    await q.click('#btnCycle');await q.locator('[data-env-token^="dress:"]').first.click()
    if mobile:await q.tap('#btnCarry')
    else:await q.keyboard.press('x')
-   await q.wait_for_function('__game.S.player.outfit==="crew"');assert await q.evaluate('__game.S.props.find(p=>p.id==="officeCoat").taken')
+   await q.wait_for_function('__game.S.player.outfit==="crew"');assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").stripped')
    await q.evaluate('Object.assign(__game.S.player,{x:408,y:552,fl:1,z:0,a:0});__game.setLayer(1);__game.moveCamera(1)')
    async def state():return await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,gs=[7,30].map(i=>S.guards[i]);return{version:__BUILD_VERSION__,p:{x:P.x,y:P.y,hp:P.hp,mode:P.mode,moving:P.moving,blown:!!P.disguiseBlown},t:S.t,detected:S.stats.detected,alarm:S.alevel,over:S.over,access:G.accessReadout().allowed,label:document.querySelector('#expoLbl').textContent,physical:gs.some(g=>g.rawSeen),meter:Math.max(...gs.map(g=>g.meter||0)),eye:Math.max(...gs.map(g=>g.eyeT||0)),guards:gs.map(g=>({id:g.id,state:g.state,why:g.why,seen:g.seen}))}}''')
    start=await state();trace=[];cdp=await q.context.new_cdp_session(q);suspected=False

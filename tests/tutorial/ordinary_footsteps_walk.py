@@ -1,7 +1,7 @@
-"""Native ordinary walking after actually equipping the authored office coat.
+"""Native ordinary walking after actually equipping the a subdued guard’s uniform.
 
 Only player location/facing/floor is positioned to isolate the reported office
-encounter. The coat is taken through the real action UI; all authored NPCs,
+encounter. The guard is knocked out and the uniform stolen through the real action UI; all authored NPCs,
 cameras, health and inventory remain active under normal RAF and randomness.
 This is not a complete mission clear or an unassisted novice playthrough.
 """
@@ -22,12 +22,15 @@ async def main(args):
    for _ in range(20):
     if not await q.evaluate('__game.DLG.modal'):break
     await q.click('#dlg');await q.wait_for_timeout(30)
-   await q.evaluate('Object.assign(__game.S.player,{x:456,y:816,fl:0,z:0});__game.moveCamera(1);__game.updateHUD(true)')
-   if await q.evaluate('__game.envAction().k')!='pickup':
-    await q.click('#btnCycle');await q.locator('[data-env-token^="pickup:"]').first.click()
+   await q.evaluate('Object.assign(__game.S.player,{x:416,y:792,fl:0,z:0});__game.moveCamera(1);__game.updateHUD(true)')
+   if mobile:await q.tap('#btnAct')
+   else:await q.keyboard.press('z')
+   await q.wait_for_function('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious&&!__game.actionBusy()')
+   if await q.evaluate('__game.envAction().k')!='dress':
+    await q.click('#btnCycle');await q.locator('[data-env-token^="dress:"]').first.click()
    if mobile:await q.tap('#btnCarry')
    else:await q.keyboard.press('x')
-   await q.wait_for_function('__game.S.player.outfit==="crew"');assert await q.evaluate('__game.S.props.find(p=>p.id==="officeCoat").taken')
+   await q.wait_for_function('__game.S.player.outfit==="crew"');assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").stripped')
    await q.evaluate('Object.assign(__game.S.player,{x:168,y:504,fl:1,z:0,a:0});__game.setLayer(1);__game.moveCamera(1)')
    async def state():return await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{version:__BUILD_VERSION__,p:{x:P.x,y:P.y,fl:P.fl,hp:P.hp,mode:P.mode,outfit:P.outfit,blown:!!P.disguiseBlown},t:S.t,detected:S.stats.detected,alarm:S.alevel,over:S.over,steps:S.noises.filter(n=>n.src==='step').map(n=>({mode:n.mode,kind:n.stepKind??null})),guards:[7,30].map(i=>{const g=S.guards[i];return{id:i,x:g.x,y:g.y,a:g.a,state:g.state,why:g.why,hearT:g.hearT||0,hearKind:g.hearKind||null,seen:g.seen,eye:g.eyeT||0}})}}''')
    before=await state();cdp=await q.context.new_cdp_session(q)

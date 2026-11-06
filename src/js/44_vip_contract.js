@@ -7,10 +7,10 @@ function vipContractGoal(){
     if(r&&['travelling','waiting'].includes(r.phase))return rendezvousGoal();
     const approach=missionApproachGoal();if(approach)return{...approach,routeGuide:true};
     if(!S.goalManual&&S.vipIntent==='emetic'&&!S.usesDone[0]&&P.item?.id!=='emetic'){
-      const p=S.props.find(p=>p.id==='emetic');if(p&&!p.taken)return{...p,text:'화장실 유인 · 약국에서 구토제 챙기기',where:'공개 구역 · 공중화장실에 직원 옷',routeGuide:true};
+      const p=S.props.find(p=>p.id==='emetic');if(p&&!p.taken)return{...p,text:'화장실 유인 · 약국에서 구토제 챙기기',where:'공개 구역 · 직원을 기절시켜 옷 획득',routeGuide:true};
     }
     if(!S.goalManual&&S.vipIntent==='sign'){
-      const trap=S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used);if(trap)return{...signFixture(trap),text:'간판 사고 · 클럽 옥상으로 접근',where:'직원 복도 계단으로 · 직원 옷은 공중화장실',routeGuide:true};
+      const trap=S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used);if(trap)return{...signFixture(trap),text:'간판 사고 · 클럽 옥상으로 접근',where:'직원 복도 계단으로 · 직원 옷은 기절한 직원에게서',routeGuide:true};
     }
     if(item?.got&&rendezvousReady()&&!r.calls)return{...r.phone,text:'내선으로 실장 부르기',where:'사무동 1층 · 경호원은 밖에서 대기',routeGuide:true};
     const vaultFirst=S.vipIntent==='meeting'||P.keys?.code&&P.x<14*TILE;
@@ -23,7 +23,7 @@ function vipContractGoal(){
   if(item&&!item.got){
     if(!P.keys?.code&&S.keyDrop?.key==='code')return{...S.keyDrop,text:'실장의 금고 번호 메모 챙기기',where:'가까이 가면 회수 · 장부 금고에 사용',marker:'금고 번호',routeGuide:true};
     if(!P.keys?.code&&S.doors.some(d=>d.locked&&d.keyLock==='code'))return{text:'장부의 단서 · 야시장에서 금고 번호 엿듣기',where:dead?'실장 메모 또는 야시장 대화':'장부를 먼저 회수하는 경로 · 공개 구역',marker:'장부 단서',x:tc(14),y:tc(10),fl:0,routeGuide:true,area:true};
-    return{text:'사무동 1층 금고에서 장부 회수',where:P.outfit==='crew'?'감시 시야 밖에서 작업 · 전선 분리는 기술 없이 가능':'사무동 앞 예비 재킷으로 통행 가능 · 작업은 감시 주의',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
+    return{text:'사무동 1층 금고에서 장부 회수',where:P.outfit==='crew'?'감시 시야 밖에서 작업 · 전선 분리는 기술 없이 가능':'경비를 기절시켜 옷을 훔쳐 입으면 통행 가능 · 작업은 감시 주의',marker:'장부 금고',x:item.x,y:item.y,fl:flOf(item),routeGuide:true};
   }
   if(!dead){const at=targetKnowledge(g);return{...at,g,text:'의뢰: '+missionTargetText(g,at),where:at.where,routeGuide:true};}
   const cipher=S.items[1];if(cipher&&!cipher.got)return{x:cipher.x,y:cipher.y,fl:flOf(cipher),id:'item:1',text:'남동쪽 회계 숙소 2층에서 거래 암호표 회수',where:'장부의 가명을 해독할 대조표 · 경비 순찰을 관찰',routeGuide:true};

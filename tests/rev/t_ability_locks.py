@@ -11,7 +11,7 @@ async def main():
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    const fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
    let S=fresh('m1'),P=S.player;
-   ok(G.skillBudget()===4&&G.skillSpent(G.loadSkillTree())===0,'Fresh campaign must offer four starting points');
+   ok(G.skillBudget()===1&&G.skillSpent(G.loadSkillTree())===0,'Fresh campaign must offer one first-clear point');
    ok(P.kunai===0&&!G.availableTools().includes('kunai')&&!G.abilityOn('dart'),'Dart is a starting ability');
    P.kunai=7;G.input.tool='kunai';G.startAim();ok(!G.input.aiming,'Forced stock permits aim');G.syncTools();ok(G.input.tool!=='kunai','Locked dart remains selected');
    const g=S.guards.find(g=>!g.dog&&!g.civ&&!g.child),t={type:'guard',ref:g,x:g.x,y:g.y};
@@ -29,7 +29,7 @@ async def main():
    ok(G.startAmbush(guard)===false&&!S.amb&&!guard.yank,'Direct ambush mutates guard');
    ok(!G.prepareCombat({k:'kill',list:[guard]})&&!G.prepareCombat({k:'ambush',g:guard}),'Combat intent bypass');
    Object.assign(P,{hidden:false,mode:'walk',cover:{x:1,y:0}});ok(!G.concealedMeleeAllowed()&&!G.prepareCombat({k:'pull',g:guard}),'Cover pull bypasses skill');G.updateHUD(true);ok(document.getElementById('kmAct').textContent.includes('은신 기습 미습득'),'Keyboard HUD hides the cover skill requirement');P.cover=null;ok(G.concealedMeleeAllowed(),'Basic open takedown was gated');
-   G.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','ambush']});G.syncRuntimeSkills();ok(G.skillBudget()-G.skillSpent(G.loadSkillTree())===2,'Starting ambush path should cost two points');P.hidden=true;
+   G.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','ambush']});G.syncRuntimeSkills();ok(G.skillBudget()-G.skillSpent(G.loadSkillTree())===0,'Preserved ambush path must not grant unspent bonus points');P.hidden=true;
    ok(G.concealedMeleeAllowed(),'Learned concealed attack unavailable');G.startAmbush(guard);ok(S.amb?.g===guard&&guard.yank,'Learned ambush fails');
    passed.push('concealed attack, grab and special entry gates; ordinary rear combat stays basic; learned ambush starts');
    localStorage.clear();S=fresh('m1');P=S.player;P.hidden=true;P.lunge={list:[S.guards[0]]};P.grabIn={g:S.guards[0]};G.saveCheckpoint();ok(G.loadCheckpoint()&&!G.S.player.lunge&&!G.S.player.grabIn,'Old concealed pending action survives checkpoint');

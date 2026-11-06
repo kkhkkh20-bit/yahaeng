@@ -17,15 +17,15 @@ async def main():
    out.push('three real contracts start safely with one goal and no free skills');
    for(const id of ['p0','m2','m4','m7']){
     const S=fresh(id),P=S.player,g=S.guards.find(g=>g.target);S.guards=[g];S.cams=[];Object.assign(P,{x:P.x,y:P.y,fl:0,z:0,mode:'sneak',cover:null,hidden:false});Object.assign(g,{x:P.x+28,y:P.y,fl:0,z:0,a:0,state:'PATROL'});G.setLayer(0);
-    const a={k:'kill',list:[g]};ok(G.combatLabel(a).label==='표적 암살'&&!G.combatLabel(a).hold,'target button '+id);ok(G.prepareCombat(a)&&g.takedownIntent.lethal,'target intent '+id);
-    S.spare=true;ok(G.combatLabel(a).label!=='표적 암살','spare target forced lethal '+id);S.spare=false;
+    const a={k:'kill',list:[g]};ok(G.combatLabel(a).label==='표적 기절'&&G.combatLabel(a).hold==='살해','target button '+id);ok(G.prepareCombat(a)&&!g.takedownIntent.lethal,'target intent '+id);
+    S.spare=true;ok(!g.takedownIntent.lethal,'spare target forced lethal '+id);S.spare=false;
    }
-   out.push('one-tap designated-target intent stays consistent throughout the main campaign; spare mode preserved');
-   let S=fresh('p1'),P=S.player,coat=S.props.find(p=>p.outfit),g=S.guards[0];ok(S.guards.length===1&&!S.cams.length&&S.items[0].furn,'disguise contract overload/automatic pickup');
-   Object.assign(P,{x:coat.x,y:coat.y});G.actEnv();tick(3.3);ok(P.outfit==='crew','ordinary wardrobe action');
+   out.push('tap is nonlethal for all human targets; deliberate hold required; spare mode preserved');
+   let S=fresh('p1'),P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor'),g=S.guards[0];ok(S.guards.length===2&&!S.cams.length&&S.items[0].furn,'disguise contract overload/automatic pickup');
+   S.koNext=true;G.killGuard(donor);Object.assign(P,{x:donor.x-32,y:donor.y});G.actEnv();tick(3.3);ok(P.outfit==='crew'&&donor.stripped,'uniform was not obtained from a subdued guard');
    Object.assign(P,{x:g.x+48,y:g.y+92});tick(.5);ok(g.rawSeen&&!g.seen&&g.state==='PATROL'&&S.starterPass&&!S.stats.detected,'legal ordinary walking causes suspicion');
    const it=S.items[0];Object.assign(P,{x:it.x,y:it.y,vx:0,vy:0});tick(.1);ok(!it.got,'paper automatically collected');G.actEnv();tick(.7);ok(!it.got&&P.pick,'theft finishes too early');tick(.7);ok(it.got&&S.exitOpen&&!S.stats.detected,'behind-guard theft');
-   G.showEnd(true);const points=G.skillBudget();ok(points===5,'first earned point');G.showEnd(true);ok(G.skillBudget()===points,'duplicate reward');out.push('real wardrobe, legal guard sight, interruptible paper theft and single earned reward');
+   G.showEnd(true);const points=G.skillBudget();ok(points===2,'first earned point');G.showEnd(true);ok(G.skillBudget()===points,'duplicate reward');out.push('real wardrobe, legal guard sight, interruptible paper theft and single earned reward');
    localStorage.clear();S=fresh('p2');P=S.player;ok(!S.guards.length&&S.cams.length===1&&S.items[0].furn,'camera contract overload/automatic pickup');
    Object.assign(P,{x:S.items[0].x,y:S.items[0].y});G.actEnv();tick(2);ok(S.over&&(S.stats.camRec||0)>0,'actual CCTV theft did not produce a recoverable failure');
    return out;

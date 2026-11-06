@@ -88,9 +88,13 @@ async def main(args):
                             if mobile:await joystick()
                             else:await key(active,False)
                     await page.wait_for_timeout(50)
-            async def press(key_name,button):
+            async def press(key_name,button,lethal=False):
                 if key_name=='z':print('ATTACK INPUT',name,await page.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,a:__game.S.player.a,mode:__game.S.player.mode,hidden:__game.S.player.hidden},g:{x:__game.S.guards[0].x,y:__game.S.guards[0].y,a:__game.S.guards[0].a,state:__game.S.guards[0].state},action:__game.attackAction().k,pointer:document.querySelector("#btnAct").dataset.pressPointer})'),flush=True)
-                if mobile:await page.tap(button)
+                if lethal:
+                    if mobile:
+                        rect=await page.locator(button).bounding_box();await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'id':2,'x':rect['x']+rect['width']/2,'y':rect['y']+rect['height']/2}]});await page.wait_for_function('__game.targetEliminated(__game.S.guards[0])',timeout=10000,polling=50);await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
+                    else:await page.keyboard.down(key_name);await page.wait_for_function('__game.targetEliminated(__game.S.guards[0])',timeout=10000,polling=50);await page.keyboard.up(key_name)
+                elif mobile:await page.tap(button)
                 else:await page.keyboard.press(key_name)
                 await page.wait_for_timeout(90)
             async def wait_step(target):
@@ -112,17 +116,17 @@ async def main(args):
                 await press('x','#btnCarry');await page.wait_for_function('__game.S.lamps.some(l=>l.off)&&!__game.actionBusy()')
                 assert (await state())['step']==0,('lamp detour advanced lesson',await state())
                 await snapshot('early-lamp-guide');assert '오른쪽 표시' in await page.locator('#objective').inner_text()
-                await move(x=150,y=504);await move(x=216);await wait_step(1)
+                await move(y=504);await move(x=216);await wait_step(1)
                 await press('Control','#btnCrouch');await move(x=360,y=504);await wait_step(2)
                 await snapshot('concealed')
                 await move(x=464,y=504);await wait_step(3);await snapshot('rear-approach')
                 await press('z','#btnAct');await page.wait_for_function('__game.S.guards[0].state==="DEAD"&&!__game.actionBusy()',timeout=6000)
-                await wait_step(4);await press('x','#btnCarry');await page.wait_for_function('!!__game.S.player.carrying&&!__game.actionBusy()',timeout=6000)
+                await wait_step(4);await press('x','#btnCarry');await page.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000);await snapshot('stolen-uniform');await wait_step(5);await press('x','#btnCarry');await page.wait_for_function('!!__game.S.player.carrying&&!__game.actionBusy()',timeout=6000)
                 await move(x=360,y=504);await press('x','#btnCarry');await page.wait_for_function('__game.S.corpses[0].hidden&&!__game.actionBusy()',timeout=6000)
-                await wait_step(5);await snapshot('body-hidden')
+                await wait_step(6);await snapshot('body-hidden')
                 at=await page.evaluate('__game.S.items[0]');await move(x=at['x'],y=at['y']);await press('x','#btnCarry')
-                await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(6)
-                await snapshot('dossier-recovered');await move(x=984,y=504)
+                await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(7)
+                await snapshot('dossier-recovered');await move(y=504);await move(x=1104,y=744);await move(x=1416,y=744)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
@@ -134,7 +138,7 @@ async def main(args):
                 await move(x=360,y=504);await move(y=408);await move(x=618)
                 await snapshot('first-real-approach')
                 await move(x=660)
-                await press('z','#btnAct')
+                await press('z','#btnAct');await page.wait_for_function('__game.S.guards[0].unconscious&&!__game.actionBusy()');assert await page.evaluate('!__game.S.exitOpen&&__game.S.stats.kills===0');await snapshot('target-tap-only-unconscious');await press('z','#btnAct',True)
                 await page.wait_for_function('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
                 await move(x=360,y=648);await move(x=168,y=744)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible')

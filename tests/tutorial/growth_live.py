@@ -6,7 +6,7 @@ import argparse,asyncio,json,math
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import standalone_stage, continue_episode, spend_episode_points, acquire_uniform
 from action_flow_live import Controls
 
 async def main(args):
@@ -41,16 +41,16 @@ async def main(args):
     await standalone_stage(q,'e1');await q.click('#btnBrGo')
     await c.press('Control','#btnCrouch');await c.move(600,888);await c.move(960,696);await c.move(y=408)
     await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
-    await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
-    await c.move(960,696);await c.move(600,888);await c.move(168,888);await finish('e1',5)
+    await c.move(x=1292);await q.screenshot(path=str(out/(name+'-moving-target-contact.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+    await c.move(960,696);await c.move(600,888);await c.move(168,888);await finish('e1',2)
     assert await q.evaluate('__game.STAGE.id')=='e2'
-    await c.move(504,888);await env('pickup');await wait('__game.S.player.outfit==="crew"')
+    await acquire_uniform(q,c)
     await c.move(600,552);await c.move(744,552)
     rear=await q.evaluate('(()=>{const c=__game.S.cams[0];return{x:c.x-32,y:c.y}})()');await c.move(rear['x'],600);await c.move(y=rear['y']);await env('camCable');await wait('!__game.camOn(__game.S.cams[0])')
     await q.screenshot(path=str(out/(name+'-warehouse-camera.png')));await c.move(y=360);await c.move(1320,312);await env('loot');await wait('__game.S.items[0].got')
-    await c.move(y=552);await c.move(x=600);await c.move(y=936);await c.move(168,936);await finish('e2',6)
+    await c.move(y=552);await c.move(x=600);await c.move(y=936);await c.move(168,936);await finish('e2',3)
     assert await q.evaluate('__game.STAGE.id')=='e3'
-    await c.move(408,888);await env('pickup');await c.move(456,936);await c.move(y=648)
+    await acquire_uniform(q,c);await c.move(456,936);await c.move(y=648)
     stair=await q.evaluate('(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==="fstair");return{up:G.stairLower(l).up.entry,down:G.stairUpper(l).down.entry}})()')
     await route(stair['up']['x'],stair['up']['y']);
     if await q.evaluate('__game.S.player.fl||0')==0:await env('up')
@@ -58,7 +58,7 @@ async def main(args):
     it=await q.evaluate('({x:__game.S.items[0].x,y:__game.S.items[0].y})');await route(it['x'],it['y']);await env('loot');await wait('__game.S.items[0].got');await q.screenshot(path=str(out/(name+'-upstairs-ledger.png')))
     await route(stair['down']['x'],stair['down']['y']);
     if await q.evaluate('__game.S.player.fl||0')==1:await env('fdown')
-    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',7)
+    await wait('!__game.S.player.fl&&!__game.actionBusy()');await route(456,648);await c.move(y=936);await c.move(216,936);await finish('e3',4)
     assert await q.evaluate('__game.STAGE.id')=='m2'
     assert await q.evaluate('__game.loadSkillTree().learned.length>0&&!__game.campaignSkillState().canLearn')
     assert not errors,errors;reports.append({'device':name,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE GROWTH',name,flush=True)

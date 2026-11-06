@@ -30,26 +30,25 @@ const SKILL_TREE=[
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
 ];
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
-const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=4;
+const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=1;
 let volatileSkillTree=null;
-function skillBudget(){let r=volatileSkillTree;try{r=JSON.parse(localStorage.getItem(SKILL_STORE))||r;}catch(e){}return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
+function skillBudget(){const r=loadSkillTree();return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);
 function storeSkillTree(record){try{localStorage.setItem(SKILL_STORE,JSON.stringify(record));volatileSkillTree=null;return true;}catch(e){volatileSkillTree=record;return false;}}
 function loadSkillTree(){
  let raw=null;try{raw=localStorage.getItem(SKILL_STORE);}catch(e){if(volatileSkillTree)return volatileSkillTree;}
  if(!raw&&volatileSkillTree)return volatileSkillTree;
  let record;try{record=JSON.parse(raw);}catch(e){}
- if(!raw){
-  const owned=new Set(),add=id=>{if(owned.has(id))return;for(const req of SKILL_BY_ID[id].req)add(req);owned.add(id);},stars=totalStars();
-  // One-time v147 migration, including automatically granted equipment.
-  if(stars>=3){add('dual');add('kit');}if(stars>=6){add('chain');add('precision');}if(stars>=9)add('quietStep');if(stars>=16)add('reach');if(stars>=20)add('swiftCrouch');
-  record={schema:1,learned:SKILL_TREE.filter(s=>owned.has(s.id)).map(s=>s.id)};storeSkillTree(record);
- }
- const legacyPoints=skillLegacyPoints(record),migrate=record?.rewardVersion!==152;
+ if(!raw){record={schema:1,rewardVersion:203,legacyPoints:0,learned:[]};storeSkillTree(record);}
+ const migrate=record?.rewardVersion!==203;
+ // Preserve valid purchased skills once, discard old unspent starting/achievement bonuses.
+ const valid=new Set();for(const d of SKILL_TREE)if(record?.schema===1&&record.learned?.includes(d.id)&&d.req.every(id=>valid.has(id)))valid.add(d.id);
+ const invested=SKILL_TREE.filter(d=>valid.has(d.id)).reduce((n,d)=>n+d.cost,0);
+ const legacyPoints=migrate?Math.max(0,invested-SKILL_START_POINTS-missionSkillPoints()):skillLegacyPoints(record);
  const want=new Set(record?.schema===1&&Array.isArray(record.learned)?record.learned:[]),learned=[],owned=new Set(),budget=SKILL_START_POINTS+missionSkillPoints()+legacyPoints;let spent=0;
  // Topological order and budget checks reject malformed, duplicate and orphan entries.
  for(const s of SKILL_TREE)if(want.has(s.id)&&s.req.every(k=>owned.has(k))&&spent+s.cost<=budget){learned.push(s.id);owned.add(s.id);spent+=s.cost;}
- const result={schema:1,rewardVersion:152,legacyPoints,learned};if(migrate)storeSkillTree(result);return result;
+ const result={schema:1,rewardVersion:203,legacyPoints,learned};if(migrate)storeSkillTree(result);return result;
 }
 function skillOn(id){
  if(!S||STAGE.artSlice)return false;

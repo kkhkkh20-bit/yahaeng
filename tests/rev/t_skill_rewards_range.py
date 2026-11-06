@@ -10,17 +10,13 @@ async def main():
   checks=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    const fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
-   ok(G.skillBudget()===4,'Fresh budget');G.loadSkillTree();fresh('tB');G.showEnd(true);ok(G.skillBudget()===4,'Practice mints permanent points');
-   let S=fresh('m2');Object.assign(S.stats,{camEver:1});S.learned=[];G.showEnd(false);ok(G.skillBudget()===4,'Failure pays');
-   S=fresh('m2');S.stats.camEver=1;S.learned=[];G.showEnd(true);ok(G.skillBudget()===6&&S.skillRewards.length===1&&S.skillRewards[0].points===2,'First clear receipt');
-   G.showEnd(true);ok(G.skillBudget()===6&&!S.skillRewards.length,'Repeated clear pays twice');
-   S=fresh('m4');Object.assign(S.stats,{camEver:1,detected:1,extraKills:1,bodies:0});S.t=999;S.learned=[];G.showEnd(true);ok(G.skillBudget()===10&&S.skillRewards.some(r=>r.id==='nobody'&&r.points===2),'Signature reward');
-   const record=JSON.parse(localStorage.getItem('yahaeng.ch'));ok(G.missionSkillPoints(record)===6,'Point derivation disagrees with receipts');
-   localStorage.setItem('yahaeng.ch',JSON.stringify({...record,unknown:{_clear:true,ghost:true}}));ok(G.skillBudget()===10,'Unknown record mints points');passed.push('practice/failure/replay cannot mint; real first-clear and signature receipts; known mission flags only');
-   localStorage.clear();localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true}}));localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['kit']}));
-   let r=G.loadSkillTree();ok(r.learned.includes('kit')&&r.legacyPoints===1&&G.skillBudget()===5,'Old practice credit lost');
-   localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true},t0:{_clear:true}}));ok(G.skillBudget()===5,'New practice earns legacy credit');
-   G.openAssassinMenu();G.resetTreeSkills();G.closeAssassinMenu();ok(G.loadSkillTree().legacyPoints===1&&G.skillBudget()===5,'Refund resets credit migration');passed.push('v151 learned/unspent practice credit carried once, including reset/reload');
+   ok(G.skillBudget()===1,'Fresh budget');G.loadSkillTree();fresh('tB');G.showEnd(true);ok(G.skillBudget()===1,'Practice mints permanent points');
+   let S=fresh('m2');S.stats.camEver=1;G.showEnd(false);ok(G.skillBudget()===1,'Failure pays');
+   S=fresh('m2');S.stats.camEver=1;G.showEnd(true);ok(G.skillBudget()===2&&S.skillRewards.length===1&&S.skillRewards[0].points===1,'First clear receipt');G.showEnd(true);ok(G.skillBudget()===2&&!S.skillRewards.length,'Replay pays');
+   S=fresh('m4');Object.assign(S.stats,{camEver:1,detected:1,extraKills:1,bodies:0});S.t=999;G.showEnd(true);ok(G.skillBudget()===3&&S.skillRewards.length===1,'Achievements inflate currency');
+   const record=JSON.parse(localStorage.getItem('yahaeng.ch'));ok(G.missionSkillPoints(record)===2,'Mission receipt derivation');localStorage.setItem('yahaeng.ch',JSON.stringify({...record,unknown:{_clear:true,ghost:true}}));ok(G.skillBudget()===3,'Unknown flags pay');passed.push('only first mission completion gives 1P; practice/failure/replay/achievements never multiply rewards');
+   localStorage.clear();localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true}}));localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,rewardVersion:152,legacyPoints:8,learned:['kit','dart','smoke']}));
+   let r=G.loadSkillTree();ok(r.learned.length===3&&G.skillBudget()===3&&r.legacyPoints===2,'Purchased build lost or unspent bonus retained');G.loadSkillTree();ok(G.skillBudget()===3,'Migration repeats');passed.push('existing learned build retained once; old unspent grants discarded');
    localStorage.clear();S=fresh('m1');const P=S.player,base=S.guards.find(g=>!g.civ&&!g.child&&!g.dog);G.setLayer(0);
    Object.assign(P,{x:33*48,y:21*48,fl:0,z:0,mode:'walk',hidden:false,cover:null,hide:null,strikeT:0});
    const g={...base,id:111,x:P.x+96,y:P.y,fl:0,z:0,a:0,state:'PATROL',still:true,target:false,civ:false,dog:false,elite:false,child:false,climb:null,doomed:false,seen:false,meter:0};S.guards=[g];S.corpses=[];

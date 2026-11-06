@@ -10,7 +10,6 @@ function openAssassinMenu(){
 }
 function closeAssassinMenu(){
   const m=assassinMenu;if(!m)return;
-  if(m.training&&campaignSkillState().canLearn){renderAssassinMenu();$('skillSummary').focus({preventScroll:true});return;}
   $('skillScreen').hidden=true;$('end').inert=false;assassinMenu=null;clearPlayerInput();
   if(m.training&&m.advanceTo>=0){start(m.advanceTo);return;}
   if(m.from!=='play')$(m.from).hidden=false;
@@ -62,11 +61,11 @@ function renderSkillDetail(){
 }
 function renderSkillRewards(){
  const pane=$('skillDetail');pane.replaceChildren();pane.scrollTop=0;pane.append(detailCloseButton());
- const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<h3>미션 업적</h3><p class="skill-reward-note">첫 완료 2P · 주요 업적 2P · 나머지 업적 1P<br>각 보상은 한 번만 지급된다.</p>';pane.append(head);
+ const head=document.createElement('div');head.className='skill-detail-head';head.innerHTML='<h3>미션 업적</h3><p class="skill-reward-note">첫 잠입 후 1P · 이후 의뢰 첫 완료마다 1P<br>별·추가 업적·재도전은 포인트를 지급하지 않는다.</p>';pane.append(head);
  for(const stage of mainContracts()){
   const rows=skillRewardRows(stage).filter(r=>!r.retired||r.earned),section=document.createElement('section');section.className='skill-reward-mission';const earned=rows.filter(r=>r.earned).reduce((n,r)=>n+r.points,0);section.innerHTML='<h4>의뢰 '+contractNumber(stage)+' · '+stage.name.replace(/^의뢰 \d+ · /,'')+'</h4><p>'+earned+' / '+rows.reduce((n,r)=>n+r.points,0)+'P 획득</p><ul>'+rows.map(r=>'<li class="'+(r.earned?'earned':'')+'"><span>'+r.name+(r.signature?' <small>주요 업적</small>':'')+'</span><b>'+(r.earned?'완료 · ':'')+r.points+'P</b></li>').join('')+'</ul>';pane.append(section);
  }
- const record=loadSkillTree(),foot=document.createElement('p');foot.className='skill-reward-note';foot.textContent='시작 포인트 4P · 현재까지 미션 보상 '+missionSkillPoints()+'P'+(record.legacyPoints?' · 이전 연습 기록 이월 '+record.legacyPoints+'P':'')+' · 연습은 포인트를 지급하지 않는다. 이전 의뢰의 첫 완료·업적은 각각 1P.';pane.append(foot);
+ const record=loadSkillTree(),foot=document.createElement('p');foot.className='skill-reward-note';foot.textContent='첫 잠입 보상 1P · 현재까지 미션 보상 '+missionSkillPoints()+'P'+(record.legacyPoints?' · 기존 습득 기술 보존 '+record.legacyPoints+'P':'')+' · 포인트를 모아 더 비싼 기술을 배울 수 있다.';pane.append(foot);
 }
 function handleSkillDetailKey(e){
  if(!skillDetailMode)return false;
@@ -75,7 +74,7 @@ function handleSkillDetailKey(e){
 }
 function renderAssassinMenu(){
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
- $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 4P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
+ $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 1P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
  $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?'플레이 중에는 기술을 배우지 않습니다. 현재 임무를 마친 뒤 출발 준비에서 습득하세요.':practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
  $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
  const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
@@ -140,14 +139,14 @@ function syncEpisodeTraining(){
   const m=assassinMenu,b=$('btnSkillsBack'),el=$('skillScreen'),active=!!m?.training;
   el.classList.toggle('episode-training',active);$('end').inert=active&&m.from==='end';
   el.querySelector('h2').textContent=active?'기술 익히기':'기술 트리';
-  b.disabled=false;b.setAttribute('aria-disabled',String(active&&campaignSkillState().canLearn));
+  b.disabled=false;b.setAttribute('aria-disabled','false');
   b.textContent='돌아가기';b.setAttribute('aria-label','기술 트리 닫기');
   if(!active)return;
   const state=campaignSkillState();
   $('btnSkillReset').hidden=true;$('skillResetNote').textContent='';
   $('skillSummary').tabIndex=-1;
   $('skillSummary').innerHTML='<strong>'+state.points+'P</strong> 남음';
-  el.querySelector('.skill-instructions').textContent=(m.from==='end'?STAGE.name+' 완료 · ':'다음 출발 전 · ')+(state.canLearn?'남은 포인트로 원하는 기술을 배우세요. 배울 수 있는 기술이 없으면 다음 에피소드로 이어집니다.':state.points>0?'현재 배울 수 있는 기술이 없습니다. 남은 '+state.points+'P는 다음 에피소드로 이어집니다.':'기술 준비를 마쳤습니다. 다음 에피소드로 이어가세요.');
-  b.textContent=state.canLearn?'남은 포인트 사용하기':m.advanceTo>=0?'다음 에피소드':'여정 마치기';
-  b.setAttribute('aria-label',state.canLearn?'원하는 기술에 남은 '+state.points+'포인트를 사용하세요':b.textContent);
+  el.querySelector('.skill-instructions').textContent=(m.from==='end'?STAGE.name+' 완료 · ':'다음 출발 전 · ')+(state.points>0?'의뢰 첫 완료마다 1P. 지금 배우거나 모아 두고 2~3P 기술을 배울 수 있습니다.':'기술 준비를 마쳤습니다. 다음 에피소드로 이어가세요.');
+  b.textContent=m.advanceTo>=0?(state.points>0?'모아 두고 다음 의뢰':'다음 에피소드'):'여정 마치기';
+  b.setAttribute('aria-label',b.textContent);
 }

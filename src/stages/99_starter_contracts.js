@@ -3,8 +3,8 @@
 STAGES.push({
   id:'p1',no:'00',name:'빌린 제복',sub:'첫 밤 2 · 복장으로 통과',starterContract:'disguise',
   fee:'25만',purpose:'경비 재킷을 입고 물류실의 출고 서류를 회수한다.',
-  mission:'예비 경비 재킷을 입고 물류실의 출고 서류를 가져온다.',
-  brief:'까마귀가 예비 경비 재킷을 남겼다. 재킷을 입으면 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 서류는 경비의 등 뒤에 있다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
+  mission:'골목 경비를 기절시켜 옷을 훔쳐 입고 물류실의 출고 서류를 가져온다.',
+  brief:'혼자 있는 골목 경비를 기절시킨 뒤 옷을 훔쳐 입는다. 이 재킷으로 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 서류는 경비의 등 뒤에 있다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
   endText:'같은 길도 복장을 갖추면 걸어서 통과할 수 있다. 다음 의뢰에서는 CCTV 한 대를 다룬다.',
   W:26,H:18,start:[6,14],exit:[3,15],exitName:'들어온 골목',startA:0,
   bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
@@ -16,7 +16,7 @@ STAGES.push({
     m.many('C',[[11,4],[12,4],[21,4],[22,4]]);m.many('B',[[5,13],[7,13]]);m.many('T',[[4,4],[7,6],[24,14]]);
   },
   zones:[[0,0,25,17,'pub',null,'골목',[]],[10,3,23,11,'res',null,'물류실',['crew']]],
-  props:[{id:'starterUniform',name:'예비 경비 재킷',outfit:'crew',at:[13,14]}],
+  props:[],
   guards:[{kind:'g1',tag:'doorkeeper',at:[16,9],post:90,still:true,radio:false}],
   fixedFurn:[{x:17,y:5,t:'desk',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
   items:[[17,6]],itemName:'출고 서류',itemNames:['출고 서류'],itemPlaces:['물류실 · 책상'],

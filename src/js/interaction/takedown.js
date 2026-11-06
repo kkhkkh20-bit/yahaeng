@@ -1,5 +1,4 @@
-const simpleTarget = g => !!((introductoryContract(STAGE) || mainContract(STAGE)) && g?.target && !S.spare && !g.civ && !g.dog);
-const koFirst = g => !!g && !g.dog && !g.civ && !simpleTarget(g);
+const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
@@ -18,8 +17,8 @@ function koPerson(g, mode, where, intent, quiet) {
   if (S.fuseGuard === g) S.fuseGuard = null;
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')); }
   armKoHold(c, g, intent);
-  toast(g.civ ? '주민을 기절시켰다 · 다른 사람이 발견하면 신고할 수 있다' : '기절시켰다 · 동료가 발견하면 깨우고 수색한다', 2.4);
-  hint('ko', g.civ ? '주민을 기절시키면 살상 감점은 없다. 길게 눌러 처치하면 수고비가 줄어든다' : '[공격]을 톡 누르면 기절, 계속 누르고 있으면 처치');
+  toast(g.civ ? '주민을 기절시켰다 · 다른 사람이 발견하면 신고할 수 있다' : '기절 · 살아 있으며 다시 깨어날 수 있다', 2.4);
+  hint('ko', g.civ ? '주민을 기절시키면 살상 감점은 없다. 길게 눌러 처치하면 수고비가 줄어든다' : '[공격] 짧게: 기절 · 1초 길게: 살해');
 }
 // 누른 채로 있으면 기절 → 처치로 바뀐다
 function updateKoHold() {
@@ -30,7 +29,7 @@ function updateKoHold() {
   if (S.t - h.t0 < KO_HOLD) return;
   S.koHold = null;
   for (const { c, g } of h.bodies) finishKo(c, g);
-  S.shakeT = .12; toast('처치했다', 1.8); checkObjective();
+  S.shakeT = .12; checkObjective();
 }
 // 기절한 사람이 발견되면 깨어나 함께 수색한다
 function wakeKO(c, by) {
@@ -54,8 +53,8 @@ function strikeKill(list, two) {
   P.strikeT = 0.32;
   // 혼자인 사람: 두 사람 동작으로 처치 — 칼(다가섬 → 입 막고 찌름 → 무릎 꺾임 → 내려놓음) / 목 조르기(번갈아, 주민은 늘 조르기로 기절)
   const g0 = list[0], pairK = !two && PAIR() && PR.anims.stab && !g0.dog && usePR(charOf(g0)) && usePR('ninja');
-  const kind = pairK ? simpleTarget(g0)&&g0.takedownIntent?.lethal?'stab':'choke' : null;
-  if (pairK && !simpleTarget(g0)) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
+  const kind = pairK ? g0.takedownIntent?.lethal?'stab':'choke' : null;
+  if (pairK) hint('killKind', '짧게 누르면 기절, 같은 버튼을 계속 누르면 처치. 붙잡기는 별도 버튼');
   if (pairK) P.a = g0.a;
   list.forEach(g => {
     g.doomed = false; if (koFirst(g)) S.koNext = true;  // 조직원은 먼저 기절 (계속 누르면 updateKoHold 가 숨을 끊는다)

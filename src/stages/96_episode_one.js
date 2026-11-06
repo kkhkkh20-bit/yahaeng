@@ -47,7 +47,7 @@ if(window.__EPISODE_ONE__)STAGES.push({
   items:[[13,8,1]],lamps:[[3,8,130,0],[7,13,170,1],[13,14,160,1],[13,6,135,0],[16,9,180,1,1]],
   lampControls:[[3,12.25,5.125],[4,19.875,9.5]],
   cams:[[19,14,180,20]],camRoom:{pos:[12,6],fl:0},buildingFuses:[{b:0,at:[8,13,7,13]}],
-  props:[{id:'apron',name:'직원 앞치마',outfit:'waiter',at:[3,6],surface:{b:1,t:'shelf',u:.45}},{id:'laxative',name:'설사약',at:[3,6],surface:{b:1,t:'shelf',u:.8}}],
+  props:[{id:'laxative',name:'설사약',at:[3,6],surface:{b:1,t:'shelf',u:.8}}],
   uses:[{need:'laxative',at:[3,9],surface:{b:1,t:'table',u:.5},label:'식사에 설사약 넣기',permit:'waiter',done:'식사에 설사약을 넣었다',act:S=>{S.mealDosed=true;}}],
   dining:{guest:'mealGuest',first:75,every:75,stay:4,toilet:[3,4],queue:[3,6],toiletA:-Math.PI/2,toiletStay:20},
   traps:[{k:'drop',at:[17,11],fl:1,mount:[17.5,13.1],hit:[16,13,18,14],text:'백야',noOpp:true}],

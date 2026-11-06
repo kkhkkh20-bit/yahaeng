@@ -1,3 +1,14 @@
+
+function disguiseAcquisitionGoal(outfit='crew'){
+ const P=S.player;if(P.outfit===outfit)return null;
+ const bodies=S.corpses.filter(c=>!c.stripped&&c.outfit===outfit&&!c.carried).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y));
+ const c=bodies[0];
+ if(P.carrying?.outfit===outfit)return{...P,text:'몸을 내려놓고 옷 훔쳐 입기',where:tutText('{행동} 내려놓기'),starter:true};
+ if(c)return{x:c.x,y:c.y,fl:flOf(c),text:c.stashed?'몸을 꺼내 옷 훔쳐 입기':(c.ko?'기절한':'사망한')+' 경비의 옷 훔쳐 입기',where:tutText('{행동} 옷 훔쳐 입기 · 3초 · 다른 사람의 시야 밖에서'),starter:true};
+ const g=S.guards.filter(g=>!g.target&&!g.stripped&&g.state!=='DEAD'&&outfitOf(g)===outfit).sort((a,b)=>(a.tag==='uniformDonor'?-10000:0)+dist(P.x,P.y,a.x,a.y)-((b.tag==='uniformDonor'?-10000:0)+dist(P.x,P.y,b.x,b.y)))[0];
+ if(!g)return null;
+ return{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40,fl:flOf(g),g,text:'혼자 있는 경비를 기절시켜 옷 얻기',where:tutText('등 뒤로 접근 · {공격} 짧게 기절 · 쓰러진 몸에서 옷 훔쳐 입기'),starter:true};
+}
 // Only advertise the action key when it will operate on this exact object.
 function learningObjectGoal(o,k,text,advice,at=o){
   const a=envAction(),busy=actionBusy(),ready=!busy&&!a.skillLocked&&a.k===k&&(a.it===o||a.p===o||a.targetObject===o);
@@ -9,8 +20,7 @@ function starterGoal(){
   const P=S.player,it=S.items.find(i=>!i.got);
   if(!it)return null;
   if(STAGE.starterContract==='disguise'){
-    const coat=S.props.find(p=>p.id==='starterUniform'&&!p.taken);
-    if(P.outfit!=='crew'&&coat)return learningObjectGoal(coat,'pickup','예비 경비 재킷 입기','갈아입기 3초');
+    const disguise=disguiseAcquisitionGoal();if(disguise)return disguise;
     if(P.outfit==='crew'&&!S.starterPass){const at=STAGE.starterPass;return{x:at[0]*TILE+TILE/2,y:at[1]*TILE+TILE/2,fl:0,text:'재킷을 입고 물류실 입구로 걷기',where:'지금 복장은 통행 허용 · 경비를 공격할 필요 없다',starter:true};}
     return learningObjectGoal(it,'loot','경비 등 뒤에서 출고 서류 챙기기','작업 중에는 시선 밖에서');
   }
@@ -33,11 +43,10 @@ function apprenticeGoal(){
   const P=S.player;
   if(STAGE.id==='e1'){
     const g=npc('contact');if(!g||targetEliminated(g))return null;
-    const at=targetKnowledge(g),a=attackAction(),ready=a.k!=='none'&&!a.busy&&combatVictims(a).includes(g);return{...at,g,text:at.area?'동쪽 적치장에서 연락책 찾기':'연락책 뒤에서 암살',where:tutText(ready?'{공격} 한 번 · 표적 암살':g.unconscious?'기절은 미완료 · 쓰러진 몸 가까이 접근':'{살금} 등 뒤로 접근 · 사람을 누르면 시야 확인')};
+    const at=targetKnowledge(g),a=attackAction(),ready=a.k!=='none'&&!a.busy&&combatVictims(a).includes(g);return{...at,g,text:at.area?'동쪽 적치장에서 연락책 찾기':'연락책 뒤에서 암살',where:tutText(ready?'{공격} 1초 길게 · 살해 (짧게는 기절)':g.unconscious?'기절은 미완료 · 쓰러진 몸 가까이 접근':'{살금} 등 뒤로 접근 · 사람을 누르면 시야 확인')};
   }
   const it=S.items.find(i=>!i.got);if(!it)return null;
-  const coat=S.props.find(p=>p.outfit==='crew'&&!p.taken);
-  if(P.outfit!=='crew'&&coat)return learningObjectGoal(coat,'pickup','예비 경비 재킷 입기','갈아입은 뒤 평범한 통행 허용');
+  const disguise=disguiseAcquisitionGoal();if(disguise)return disguise;
   if(STAGE.id==='e2'){
     const c=S.cams.find(c=>camOn(c));
     if(c)return learningObjectGoal(c,'camCable','경비 시선 밖에서 CCTV 전선 분리','2초 조작 · 카메라 뒤쪽으로',{x:c.x-Math.cos(c.base)*32,y:c.y-Math.sin(c.base)*32});

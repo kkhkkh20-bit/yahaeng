@@ -6,7 +6,7 @@ import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import standalone_stage, continue_episode, spend_episode_points, acquire_uniform
 from action_flow_live import Controls
 
 async def main(args):
@@ -27,10 +27,10 @@ async def main(args):
    try:
     await standalone_stage(q,'p0');await q.click('#btnBrGo');await wait('__game.cpReady()')
     await c.press('Control','#btnCrouch');await c.move(360,504);await c.move(y=408);await c.move(x=660)
-    await q.screenshot(path=str(out/(name+'-rear-contact.png')));await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&& !__game.actionBusy()')
-    await c.record('one-tap-assassination');await c.move(360,648);await c.move(168,744);await next_contract('p0')
+    await q.screenshot(path=str(out/(name+'-rear-contact.png')));await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&& !__game.actionBusy()')
+    await c.record('held-assassination');await c.move(360,648);await c.move(168,744);await next_contract('p0')
     assert await q.evaluate('__game.STAGE.id')=='p1'
-    await c.move(648,696);await c.press('x','#btnCarry');await wait('__game.S.player.outfit==="crew"')
+    await acquire_uniform(q,c)
     await c.move(840,552);await wait('__game.S.starterPass');await c.record('ordinary-disguised-passage');await q.screenshot(path=str(out/(name+'-disguised-passage.png')))
     await c.move(y=312);await c.press('x','#btnCarry');await wait('__game.S.items.every(i=>i.got)')
     await c.move(y=696);await c.move(168,744);await next_contract('p1')
@@ -49,7 +49,7 @@ async def main(args):
     await c.move(y=648);await c.move(168,744);await next_contract('p2')
     assert await q.evaluate('__game.STAGE.id')=='e1'
     result=await q.evaluate('({budget:__game.skillBudget(),learned:__game.loadSkillTree().learned,records:JSON.parse(localStorage.getItem("yahaeng.ch"))})')
-    assert result['budget']==6 and result['learned'] and not (await q.evaluate('__game.campaignSkillState()'))['canLearn'],result
+    assert result['budget']==4 and result['learned'] and not (await q.evaluate('__game.campaignSkillState()'))['canLearn'],result
     assert all(result['records'][id]['_clear']for id in ['p0','p1','p2']),result
     assert not errors,errors;reports.append({'device':name,'result':result,'events':c.events,'errors':errors,'method':__doc__});print('PASS NATIVE FIRST NIGHT',name,json.dumps(result,ensure_ascii=False),flush=True)
    except Exception:

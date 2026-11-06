@@ -21,7 +21,9 @@ async def main():
   for touch in ([os.environ['YH_DEVICE']=='mobile'] if os.environ.get('YH_DEVICE') else [False,True]):
    name=LABEL+('-mobile'if touch else'-pc');video_options={'record_video_dir':str(O/'video')}if os.environ.get('YH_RECORD_VIDEO')=='1'else{};video_started=time.monotonic();milestones=[];q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch,**video_options);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('localStorage.clear();'+(''if REALTIME else'window.requestAnimationFrame=()=>0;let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}'))
-   await open_game(q,BASE+'?review=v175&nostats');await standalone_stage(q,'m2')
+   await open_game(q,BASE+'?review=v175&nostats');
+   if PREP:await q.evaluate('localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true},p0:{_clear:true}}))')
+   await standalone_stage(q,'m2')
    if PREP:
     await q.locator('#brSkills button').click();await q.locator('[data-select="silentHands"]').click();await q.locator('[data-learn="silentHands"]').click();await q.locator('.skill-detail-close').click();await q.locator('[data-select="ambush"]').click();await q.locator('[data-learn="ambush"]').click()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
@@ -37,7 +39,10 @@ async def main():
     if touch:
      r=await q.locator(button).bounding_box();assert r,(name,button)
      await cdp.send('Input.dispatchTouchEvent',{'type':'touchStart','touchPoints':[{'x':r['x']+r['width']/2,'y':r['y']+r['height']/2,'id':2}]});await tick(seconds);await cdp.send('Input.dispatchTouchEvent',{'type':'touchEnd','touchPoints':[]})
-    else:await q.keyboard.down(key);await tick(seconds);await q.keyboard.up(key)
+    else:
+     await q.keyboard.down(key);await tick(seconds)
+     if REALTIME and key=='z' and seconds>=1:await q.wait_for_function('__game.targetEliminated(__game.S.guards[0])',timeout=10000,polling=50)
+     await q.keyboard.up(key)
    async def move(x,y):
     for target,axis,lo,hi in [(x,'x','ArrowLeft','ArrowRight'),(y,'y','ArrowUp','ArrowDown')]:
      previous=None;still=0
@@ -77,7 +82,7 @@ async def main():
     for at in [(1272,1032),(1272,840)]:await move(*at)
     await action('Control','#btnCrouch');await move(1272,744);await move(1292,744)
     assert await q.evaluate('__game.attackAction().k!=="none"'),'rear attack not available'
-    await action('z','#btnAct',.04);await tick(1.3)
+    await action('z','#btnAct',1.45);await tick(1.3)
     assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])'),'smoking target not killed'
     await draw();await q.screenshot(path=str(O/(name+'-target.png')))
     drop=await q.evaluate('({x:__game.S.keyDrop?.x,y:__game.S.keyDrop?.y,code:!!__game.S.player.keys.code})')
@@ -87,7 +92,11 @@ async def main():
     for at in [(1272,744),(1272,1032),(648,1032),(648,936),(456,936),(456,816)]:await move(*at)
    else:
     for at in [(888,936),(648,936),(456,936),(456,816)]:await move(*at)
-   await env('pickup');assert await q.evaluate('__game.S.player.outfit==="crew"'),'spare office coat not equipped'
+   await move(416,816);await move(416,792)
+   if await q.evaluate('__game.S.player.mode')!='sneak':await action('Control','#btnCrouch')
+   await action('z','#btnAct');await tick(1.4);assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious')
+   await env('dress');assert await q.evaluate('__game.S.player.outfit==="crew"'),'guard uniform not stolen'
+   await move(456,792);await move(456,816)
    if APPROACH!='smoke':
     for at in [(648,816),(648,504)]:await move(*at)
     for _ in range(600):

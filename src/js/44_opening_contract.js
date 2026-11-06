@@ -29,9 +29,9 @@ function openingGoal(){
   const P=S.player,at=targetKnowledge(g),body=S.corpses.find(c=>c.g===g&&c.ko);
   const attack=isTouch?'공격':KK('atk');
   let hint='빨간 표적의 등 뒤로 이동 · 사람을 누르면 시야 확인';
-  if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격}':body.stashed?'은닉처에서 꺼낸 뒤 {공격}':'기절은 미완료 · 몸 가까이에서 {공격} 처치';
+  if(body)hint=P.carrying===body?'{행동} 내려놓은 뒤 {공격} 1초 길게':body.stashed?'은닉처에서 꺼낸 뒤 {공격} 1초 길게':'기절: 살아 있음 · 몸 가까이에서 {공격} 1초 길게 · 살해';
   else if(P.hidden||P.cover)hint='서쪽 적치장 옆으로 돌아 등 뒤에 접근 · 공격 전 은신에서 나오기';
-  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction(),risk=workRiskReadout(action),ready=action.k!=='none'&&!action.busy&&combatVictims(action).includes(g);hint=ready?(risk?.kind==='witness'?'경비가 보고 있다 · 시선이 돌아갈 때까지 대기':attack+' 한 번 · 표적 암살'):isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
+  else if(dist(P.x,P.y,g.x,g.y)<110){const action=attackAction(),risk=workRiskReadout(action),ready=action.k!=='none'&&!action.busy&&combatVictims(action).includes(g);hint=ready?(risk?.kind==='witness'?'경비가 보고 있다 · 시선이 돌아갈 때까지 대기':attack+' 짧게: 기절 · 1초 길게: 살해'):isTouch?'등 뒤로 더 가까이 · 닿으면 공격 버튼 활성화':'등 뒤로 더 가까이 · 공격 가능할 때 키 안내가 뜬다';}
   else if(S.guards.some(g=>!g.target&&g.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(g.state)))hint='경비가 소리를 확인 중 · 표적의 등 뒤로';
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};

@@ -208,7 +208,7 @@ function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // �
 // ---- 현장 물건 (히트맨식): 들고 있는 물건 한 칸. 물건이 허가처럼 작동하기도 하고(택배 상자 → 창고), 정해진 곳에서 쓴다(배탈약 → 술)
 // STAGE.props = [{ id, name, at: [x, y], fl, permit: 'courier', outfit: 'staff' (놓인 옷), consume }]
 // STAGE.uses = [{ need: 'emetic', at: [x, y], fl, label: '술에 배탈약 타기', act: S => {...}, keep }]
-function propsInit() { S.props = (STAGE.props || []).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
+function propsInit() { S.props = (STAGE.props || []).filter(d=>!d.outfit).map(d => Object.assign({}, d, { x: tc(d.at[0]), y: tc(d.at[1]), fl: d.fl || 0, taken: false })); S.usesDone = {}; }
 function nearProp() {
   const P = S.player; if (!S.props || P.z || P.wire || P.carrying || P.captive || P.hide) return null; let best = null, bd = 58;
   for (const p of S.props) { if (ACT_SKIP.has(p)) continue; if (p.taken || p.fl !== flOf(P)) continue; const d = p.surface ? hideDistance(surfaceFixture(p),P) : dist(P.x, P.y, p.x, p.y); if (d < bd && objectReachable(p, 58)) { bd = d; best = p; } }
@@ -245,9 +245,27 @@ function drawProps(fl=0) {
   const v=surfacePoint(p),key=p.outfit?(p.outfit==='waiter'?'apron':'coat'):/서류|문서|장부|명세|암호|보고서|서신/.test(p.name||'')?'folder':null;
   ctx.save();ctx.translate(v.x,v.y);
   if(['emetic','laxative'].includes(p.id))drawMedicineArt(ctx,p);
+  else if(p.id==='box'){
+   ctx.fillStyle='#090e1255';ctx.beginPath();ctx.ellipse(1,5,14,5,0,0,TAU);ctx.fill();
+   ctx.fillStyle='#876546';ctx.fillRect(-11,-7,22,14);ctx.fillStyle='#bc956b';ctx.fillRect(-11,-10,22,5);
+   ctx.fillStyle='#d2b889';ctx.fillRect(-2,-10,4,17);ctx.fillStyle='#eadcc2';ctx.fillRect(3,-4,6,5);
+   ctx.fillStyle='#786f5c';ctx.fillRect(4,-3,4,1);ctx.fillRect(4,-1,3,1);
+  }
   else if(!key||!drawFieldItem(ctx,key,0,0)){
    ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(-11,-4,24,12);ctx.fillStyle=p.outfit?'#536147':p.id==='box'?'#b78a52':'#d9d2c2';ctx.strokeStyle='rgba(7,10,18,.9)';ctx.lineWidth=1.5;ctx.fillRect(-10,-9,20,15);ctx.strokeRect(-10,-9,20,15);
   }
-  ctx.restore();if(dist(p.x,p.y,S.player.x,S.player.y)<260)tag(v.x,v.y-24,p.name||'물품','#f4e3c2',.85);
+  ctx.restore();if(input.scan||dist(p.x,p.y,S.player.x,S.player.y)<76)tag(v.x,v.y-24,p.name||'물품','#f4e3c2',.85);
+ }
+}
+
+// Save upgrades keep existing actors and their stripped/dead state; add only a new authored donor.
+let UNIFORM_DONORS=[];
+function captureUniformDonors(){UNIFORM_DONORS=S.guards.filter(g=>g.tag==='uniformDonor').map(g=>cloneDeep(g));}
+function restoreUniformDonors(){
+ for(const fresh of UNIFORM_DONORS){
+  if(S.guards.some(g=>g.tag===fresh.tag))continue;
+  const old=S.guards.find(g=>g.id===fresh.id);
+  if(old)old.tag=fresh.tag;
+  else S.guards.push(cloneDeep(fresh));
  }
 }

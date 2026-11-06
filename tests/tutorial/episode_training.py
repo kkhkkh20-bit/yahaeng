@@ -26,3 +26,17 @@ async def continue_episode(page):
 async def standalone_stage(page,id,brief=True):
     """Explicit fixture setup, bypassing only linear episode order, never actors/rules."""
     await page.evaluate('({id,brief})=>__game.start(__game.STAGES.findIndex(s=>s.id===id),brief)',{'id':id,'brief':brief})
+
+async def acquire_uniform(page,controls,tag='uniformDonor'):
+    g=await page.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);if(!g)throw Error("No authored uniform donor "+tag);return{x:g.x,y:g.y,a:g.a}}',tag)
+    import math
+    await controls.move(g['x']-math.cos(g['a'])*40,g['y']-math.sin(g['a'])*40)
+    await controls.press('z','#btnAct')
+    await page.wait_for_function('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);return g.unconscious&&!__game.actionBusy()}',arg=tag,timeout=7000)
+    if await page.evaluate('__game.envAction().k')!='dress':
+        if controls.mobile:await page.tap('#btnCycle')
+        else:await page.keyboard.press('Shift+Tab')
+        await page.locator('[data-env-token^="dress:"]').first.click()
+    await controls.press('x','#btnCarry')
+    await page.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000)
+    assert await page.evaluate('tag=>__game.S.guards.find(g=>g.tag===tag).stripped',tag)

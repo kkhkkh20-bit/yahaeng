@@ -65,13 +65,13 @@ async def main():
      await move(6.5*48,8.5*48)
      await move(14.5*48-28,8.5*48);await snap('contact')
      assert await q.evaluate('__game.attackAction().k!=="none"'),'no actual rear attack'
-     await action('z','#btnAct',.04);await tick(1.25)
+     await action('z','#btnAct',1.45);await tick(1.25)
      assert await q.evaluate('__game.targetEliminated(__game.S.guards[0])&&__game.S.exitOpen'),'actual lethal action did not open exit'
      await snap('target-down')
      await move(6.5*48,8.5*48);await move(6.5*48,13.5*48);await move(3.5*48,15.5*48)
      await tick(.4);await q.locator('#end').wait_for(state='visible');await snap('clear')
      data=await q.evaluate('({stage:__game.STAGE.id,hp:__game.S.player.hp,stats:__game.S.stats,time:__game.S.t,approach:__game.S.missionApproach,skills:__game.loadSkillTree().learned,budget:__game.skillBudget(),next:document.querySelector("#btnNext").textContent})')
-     assert await q.locator('#end').get_attribute('data-win')=='1';assert data['hp']>0 and not data['skills'] and data['budget']==4,data
+     assert await q.locator('#end').get_attribute('data-win')=='1';assert data['hp']>0 and not data['skills'] and data['budget']==2,data
      assert data['stats']['extraKills']==0 and data['stats'].get('crewKills',0)==0,data
      assert data['approach']=='표적 등 뒤로 접근',data
      await continue_episode(q);assert await q.evaluate('__game.STAGE.id')=='p1';assert await q.locator('#brief').is_visible()

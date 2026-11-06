@@ -1,6 +1,6 @@
 // Shared physical rules for the current 2D streets. Training rigs and archived
 // episodes keep their authored traversal; utility fixtures are not access routes.
-const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (/^m[1-9]\d*$/.test(st.id) || st.city);
+const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (st.physicalWorld || /^m[1-9]\d*$/.test(st.id) || st.city);
 function physicalAccess(l) {
   if (!groundedWorld()) return true;
   if ((STAGE.retiredClimbs || []).some(([x,y])=>l.tx===x&&l.ty===y)) return false;

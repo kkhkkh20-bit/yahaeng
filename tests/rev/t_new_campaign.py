@@ -50,7 +50,7 @@ async def main():
    await q.wait_for_function('__game.STAGE.id==="tB" && !document.querySelector("#hud").hidden')
    assert await q.locator('#newCampaignDialog').is_hidden()
    state=await q.evaluate("""()=>({stage:__game.STAGE.id,skills:__game.loadSkillTree(),budget:__game.skillBudget(),record:JSON.parse(localStorage.getItem('yahaeng.ch')||'{}'),field:__game.loadFieldLearning(),cp:localStorage.getItem('yahaeng.cp'),best:localStorage.getItem('yahaeng.best'),city:localStorage.getItem('yahaeng.cityDone'),mod:localStorage.getItem('yahaeng.mod'),prefs:['yahaeng.vol','yahaeng.bri','yh_walkLock2','unrelated.save'].map(k=>localStorage.getItem(k))})""")
-   assert state['skills']['learned']==[] and state['budget']==4 and state['record']=={},state
+   assert state['skills']['learned']==[] and state['budget']==1 and state['record']=={},state
    assert state['field']=={'active':None,'used':{}} and all(state[k] is None for k in ['cp','best','city','mod']),state
    assert state['prefs']==['42','115','1','keep'],state
    # Native input after the confirmed restart (no state teleport or clock replacement).

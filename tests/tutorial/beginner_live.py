@@ -26,7 +26,7 @@ async def main(args):
     assert await q.evaluate('__game.attackAction().k')=='none';assert '더 가까이'in await q.locator('#btnAct').get_attribute('aria-label');await c.press('z','#btnAct');await wait('__game.S.toasts.some(t=>t.text.includes("아직 손이 닿지"))');await shot('honest-approach')
     await c.move(x=660);await wait('__game.attackAction().k!=="none"');
     # First real assassination has one target and no overlapping patrol.
-    await shot('real-contact');await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+    await shot('real-contact');await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
     assert await q.evaluate('["dress","carry","quickStash"].includes(__game.envAction().k)');await shot('body-handoff')
     # A useful uniform may come first. Choose carrying explicitly through the
     # existing target selector, then use the real lift/storage animations.

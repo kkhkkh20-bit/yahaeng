@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------- 버튼 네 개 (히트맨·메탈기어식으로 공격과 환경 행동을 나눈다)
-// [공격] 큰 버튼 — 지정 표적은 한 번에 암살, 나머지는 톡 = 기절, 계속 누르면 처치. 공격할 사람이 닿을 때만 켜진다
+// [공격] 큰 버튼 — 모든 사람은 톡 = 기절, 1초 길게 누르면 살해. 공격할 사람이 닿을 때만 켜진다
 // [행동] 두 번째 — 문·창문·락픽·숨기·계단·줍기·시체 메기·옷 갈아입기. 절대 공격으로 바뀌지 않는다
 // [붙잡기] 작은 버튼 — 등 뒤에서 잡기. 먼저 바깥에서 기절시키고 별도로 운반·은닉한다.
 // [다트] 작은 버튼 — 톡 = 앞쪽 표시된 대상에 자동 조준, 끌기 = 직접 조준 (도구 바꾸기는 위 칩)
@@ -28,6 +28,7 @@ function koLabel(a) {  // 조직원·주민은 먼저 기절 (계속 누르면 �
 }
 function attackAction() {
   const P = S.player; if (actionBusy(P)) {const next=followupCandidate(P);if(next)return{k:'kill',list:[next],label:P.followupAttack?'다음 기절 대기':'다음 기절',hold:'처치',busy:true};return canQueueGrabAttack(P) ? {k:'cap',g:P.grabIn.g,label:'기절',hold:'처치',queued:!!P.attackQueue} : { k: 'none', busy: true, label: P.skillHold ? ASSASSIN_SKILLS[P.skillHold.key].name+' 준비' : P.lethalHold ? '길게 누르는 중' : '공격' };}
+  const down=nearFinish();if(down)return combatLabel({k:'finish',c:down,g:down.g});
   if(!concealedMeleeAllowed(P)){const near=concealedAttackCandidate(P);return near?{k:'none',label:'은신 기습 필요',skillLocked:'ambush'}:{k:'none',label:P.cover?'엄폐 중':'공격'};}
   if (P.car) return { k: 'none', label: '경적', honk: true };
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
@@ -94,6 +95,7 @@ function envChoices() {
     const body=list.find(a=>['dress','carry','quickStash'].includes(a.k)&&a.c?.playerHandled&&S.t-a.c.t0<12);
     if(body){body.missionPriority=true;list.splice(list.indexOf(body),1);list.unshift(body);}
   }
+  if(!P.carrying&&P.outfit!=='crew'&&(STAGE.id==='tB'&&S.tutI===4||STAGE.starterContract==='disguise'||STAGE.apprenticeContract&&STAGE.id!=='e1'||STAGE.lessonIdentity)){const dress=list.find(a=>a.k==='dress'&&a.c.outfit==='crew');if(dress){list.splice(list.indexOf(dress),1);list.unshift(dress);}}
   // A wall switch beside a coded door must not replace opening that door.
   if(list[0]?.k==='lamp'){const keypad=list.find(a=>a.k==='keypad'&&!a.skillLocked);if(keypad){list.splice(list.indexOf(keypad),1);list.unshift(keypad);}}
   // Locked skill previews stay discoverable without hiding a usable door or object.

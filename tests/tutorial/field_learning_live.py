@@ -1,5 +1,5 @@
 """Standalone selected-stage fixtures, fresh saves, native UI purchases and input, normal RAF and unseeded active AI.
-Known-map execution checks, not a new-player usability study. No gameplay overrides.
+Known-map execution checks, not a new-player usability study. Preparation fixture seeds two earlier clear receipts; gameplay actors, health and rules are unchanged.
 """
 import argparse,asyncio,json
 from pathlib import Path
@@ -17,7 +17,7 @@ async def main(args):
     errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url+'?nostats&review=field-learning');c=Controls(q,await q.context.new_cdp_session(q),mobile)
     async def wait(expr,timeout=7000):await q.wait_for_function(expr,timeout=timeout,polling=50)
     try:
-     await standalone_stage(q,'e1');await q.click('#brSkills button')
+     await q.evaluate('localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true},p0:{_clear:true},p1:{_clear:true}}))');await standalone_stage(q,'e1');await q.click('#brSkills button')
      for id in (['kit','dart']if skill=='dart'else['silentHands',skill]):
       await q.click(f'[data-select="{id}"]');await q.click(f'[data-learn="{id}"]');await q.click('.skill-detail-close')
      await q.click('#btnSkillsBack');assert (await q.locator('#brSkills').inner_text()).startswith('익힌 기술');await q.screenshot(path=str(out/(name+'-chosen.png')))
@@ -34,7 +34,7 @@ async def main(args):
       await c.move(y=696);await c.move(x=960)
      else:await c.move(960,696)
      await c.move(y=408);await wait('__game.S.guards[0].x>1305&&Math.cos(__game.S.guards[0].a)>.9&&__game.S.guards[0].wait>10',90000)
-     await c.move(x=1216 if skill=='reach' else 1292);await c.record('target-rear-approach');await c.press('z','#btnAct');await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
+     await c.move(x=1216 if skill=='reach' else 1292);await c.record('target-rear-approach');await c.press('z','#btnAct',lethal=True);await wait('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
      assert await q.evaluate('id=>!!__game.S.fieldSkillUses?.[id]',skill);await c.move(960,696);await c.move(600,888);await c.move(168,888);await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
      receipt=await q.locator('#endSkills').inner_text();assert await q.evaluate('id=>document.getElementById("endSkills").textContent.includes(__game.SKILL_BY_ID[id].name)',skill),receipt
      result=await c.record('cleared-with-skill-receipt');assert result['hp']==3 and not result['stats']['detected'],result

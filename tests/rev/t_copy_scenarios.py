@@ -20,12 +20,12 @@ async def main():
     S.vehicles=null;S.camRoom=null;S.facOn=false;S.keys={};S.t=10;S.koHold=null;G.input.pressIds={};
     Object.assign(P,{x:33*48,y:21*48,fl:0,z:0,a:0,captive:null,carrying:null,hide:null,cover:null,snap:null,strikeT:0});
     const g={...base,id:111,x:P.x+30,y:P.y,fl:0,z:0,a:0,want:0,target:true,civ:false,dog:false,child:false,elite:false,hasKey:'red',state:'PATROL',route:[{x:P.x+30,y:P.y,pause:999}]};S.guards=[g];
-    G.updateHUD(true);check(document.querySelector('#btnAct').textContent.includes('기절')&&document.querySelector('#btnAct').textContent.includes('길게 처치'),'live target tap/hold help is misleading');
+    G.updateHUD(true);check(document.querySelector('#btnAct').textContent.includes('기절')&&document.querySelector('#btnAct').textContent.includes('길게 살해'),'live target tap/hold help is misleading');
     S.keys.KeyZ=true;G.combatPress('KeyZ');G.actAttack();for(let n=0;n<8;n++){S.t+=.01;G.updatePlayer(.01)}S.keys.KeyZ=false;G.combatRelease('KeyZ');
     for(let n=0;n<160;n++){S.t+=.01;G.updatePlayer(.01);G.updateKoHold()}
     check(S.corpses[0]?.ko,'tap must create a real unconscious target');G.updateHUD(true);
     const a=G.attackAction();check(a.k==='finish'&&a.holdOnly,'wrong unconscious-target action');
-    const caption=G.actionCaption(a);check((caption.match(/처치/g)||[]).length===1&&caption.includes('길게 누르기'),'finishing caption repeats lethal verb');
+    const caption=G.actionCaption(a);check((caption.match(/살해/g)||[]).length===1&&caption.includes('길게 누르기'),'finishing caption repeats lethal verb');
     check(document.querySelector('#btnAct').textContent==='처치길게 누르기','button disagrees with required hold');
     check(document.querySelector('#btnAct').getAttribute('aria-label')===caption,'accessible label disagrees with target caption');
     check(S.toasts.some(t=>t.text.includes('빨간 카드키를')),'real key pickup has wrong name or particle');

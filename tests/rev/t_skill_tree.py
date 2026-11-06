@@ -10,7 +10,7 @@ async def main():
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    ok(G.SKILL_TREE.length===27&&['body','assassin','tools'].every((k,i)=>G.SKILL_TREE.filter(s=>s.branch===k).length===[8,9,10][i]),'Revised 27-node trees missing');
-   localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true}}));document.querySelector('#btnSkillsIntro').click();
+   localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true},p0:{_clear:true},p1:{_clear:true},p2:{_clear:true}}));document.querySelector('#btnSkillsIntro').click();
    ok(G.skillBudget()===4&&!G.loadSkillTree().learned.length,'Starting points are wrong');ok(!G.learnTreeSkill('chain'),'Skipped dependencies');
    for(const id of ['kit','smoke','kunai'])ok(G.learnTreeSkill(id),'Cannot learn '+id);
    ok(G.skillSpent(G.loadSkillTree())===3&&!G.learnTreeSkill('kunai'),'Duplicate purchase');ok(!G.learnTreeSkill('radio'),'Overspent points');
@@ -19,7 +19,7 @@ async def main():
    ok(G.loadSkillTree().learned.join(',')==='quietStep','Corrupt/duplicate/orphan save accepted');
    G.closeAssassinMenu();localStorage.clear();
    const mission=G.STAGES.find(s=>s.id==='m1'),legacy={_clear:true};mission.challenges.slice(0,5).forEach(id=>legacy[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:legacy}));
-   const migrated=G.loadSkillTree();ok(migrated.learned.includes('dual')&&migrated.learned.includes('chain')&&migrated.learned.includes('precision'),'Legacy skills/gear lost');ok(G.skillSpent(migrated)<=G.skillBudget(),'Migration exceeds available budget');
+   const migrated=G.loadSkillTree();ok(!migrated.learned.length,'Achievement flags automatically grant skills');ok(G.skillSpent(migrated)<=G.skillBudget(),'Migration exceeds available budget');
    localStorage.clear();passed.push('27 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
    G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();let S=G.S,P=S.player;
    const base={kunai:P.kunai,stones:P.stones,picks:P.picks};
@@ -80,7 +80,7 @@ async def main():
   }''')
   result+=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.slice(0,5).forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.t=12;delete S.skills;delete S.skillGrants;delete P.blades;S.perks={pick:true,can:false,dart:true};const before={picks:P.picks,kunai:P.kunai,stones:P.stones};G.saveCheckpoint();ok(G.loadCheckpoint(),'Old checkpoint rejected');const after=G.S.player;ok(after.picks===before.picks&&after.kunai===before.kunai&&after.stones===before.stones,'v147 checkpoint receives duplicate gear');
-   G.syncRuntimeSkills();ok(after.blades===2,'New equipment was not granted exactly once');return ['v147 checkpoint migration preserves consumed gear without duplication'];
+   G.syncRuntimeSkills();ok(!after.blades,'old achievement flags grant unlearned equipment');return ['v147 checkpoint migration preserves consumed gear without duplication'];
   }''')
   result+=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.storeSkillTree({schema:1,learned:['kit','kunai','smoke','radio','hack']});const i=G.STAGES.findIndex(s=>s.id==='m6');G.start(i);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;ok(G.STAGE.bare&&!P.blades&&!P.smokes&&!P.hackDevice&&G.toolCount('hack')===0&&!G.actHack(),'Bare start materializes learned gadgets');G.giveKey('gear');ok(P.blades===2&&P.smokes===1&&P.hackDevice===1,'Recovered kit lacks learned gadgets');P.smokes=0;G.syncRuntimeSkills();ok(!P.smokes,'Recovering kit enables repeated refill');for(const k of ['stonesUsed','kunaiUsed','coins','bladesUsed','smokesUsed']){S.stats.stonesUsed=S.stats.kunaiUsed=S.stats.coins=S.stats.bladesUsed=S.stats.smokesUsed=0;S.stats[k]=1;ok(!G.challengeStatus('nolure'),'Throwing challenge ignores '+k);}return ['bare start requires physical equipment; recovering confiscated kit grants owned tools once; new thrown tools affect challenge evaluation'];

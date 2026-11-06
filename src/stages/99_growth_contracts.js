@@ -24,7 +24,7 @@ STAGES.push({
  kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,wires:[],roofs:[],bricks:[],challenges:[],
  build(m){m.fill(0,0,33,22,',');m.rect(0,0,33,22);m.fill(1,16,32,20,'.');m.fill(14,3,31,14,'h');m.fill(14,3,31,3,'#');m.fill(14,3,14,14,'#');m.fill(31,3,31,14,'#');m.fill(14,14,31,14,'#');m.fill(18,14,19,14,'h');m.fill(14,10,14,11,'h');m.many('C',[[15,4],[16,4],[30,4],[30,5]]);m.many('B',[[8,17],[12,14],[12,13]]);m.many('T',[[4,5],[7,9],[31,20]]);},
  zones:[[0,0,33,22,'pub',null,'골목',[]],[14,3,31,14,'res',null,'거래 창고',['crew']]],
- props:[{id:'warehouseCoat',name:'예비 경비 재킷',outfit:'crew',at:[10,18]}],
+ props:[],
  guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false},{kind:'g1',tag:'warehousePatrol',route:[[16,9,8],[21,9,8],[19,11,0],[19,12,6]],radio:false}],
  fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
@@ -41,7 +41,7 @@ STAGES.push({
   endText:'장부는 클럽 실장을 가리킨다. 암살, 복장, CCTV와 층 이동을 익혔다. 이제 VIP에서 배운 방법을 조합해 보자.',
   rivals:0,ownedLoadout:true,securityResponse:false,radioCheck:0,
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'연락 거점',['crew']]],
-  props:[{id:'officeCoat',name:'예비 경비 재킷',outfit:'crew',at:[8,18]}],
+  props:[],
   guards:[{kind:'g1',tag:'officeKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false}],
   itemName:'연락 장부',itemNames:['연락 장부'],itemPlaces:['연락 거점 2층 · 책상'],challenges:[],
  });

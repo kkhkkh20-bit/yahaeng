@@ -35,15 +35,19 @@ class Controls:
     self.keys=(['Shift']if run else[])+[('ArrowRight'if sign>0 else'ArrowLeft')if axis=='x'else('ArrowDown'if sign>0 else'ArrowUp')]
     for key in self.keys:await self.q.keyboard.down(key)
   self.axis=wanted
- async def press(self,key,selector):
+ async def press(self,key,selector,lethal=False):
   await self.record('press-'+key)
+  victims=await self.q.evaluate('()=>{const a=__game.attackAction();return (a.list||[a.g||a.c?.g]).filter(Boolean).map(g=>g.id)}') if lethal else []
   if self.mobile:
    r=await self.q.locator(selector).bounding_box();assert r,selector
    await self.touch('touchStart',2,r['x']+r['width']/2,r['y']+r['height']/2)
    state=await self.q.evaluate('({approach:!!__game.S.player.approachAttack,recovery:!!__game.S.player.recoveryQueue})')
+   if lethal:await self.q.wait_for_function('ids=>ids.length&&ids.every(id=>__game.targetEliminated(__game.S.guards.find(g=>g.id===id)))',arg=victims,timeout=10000,polling=50)
    await self.touch('touchEnd',2)
   else:
-   await self.q.keyboard.down(key);state=await self.q.evaluate('({approach:!!__game.S.player.approachAttack,recovery:!!__game.S.player.recoveryQueue})');await self.q.keyboard.up(key)
+   await self.q.keyboard.down(key);state=await self.q.evaluate('({approach:!!__game.S.player.approachAttack,recovery:!!__game.S.player.recoveryQueue})')
+   if lethal:await self.q.wait_for_function('ids=>ids.length&&ids.every(id=>__game.targetEliminated(__game.S.guards.find(g=>g.id===id)))',arg=victims,timeout=10000,polling=50)
+   await self.q.keyboard.up(key)
   return state
  async def move(self,x=None,y=None,run=False):
   for axis,target in [('x',x),('y',y)]:

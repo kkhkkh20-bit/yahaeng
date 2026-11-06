@@ -34,7 +34,7 @@
     [1,13,8,20,'pub']],zoneAllow:['courier','crew'],
   locks:[{at:[23,9],key:'blue'},{at:[16,7],key:'blue'}],closedDoors:[[23,9],[16,7]],keyPurposes:{blue:'분류창고 서쪽 기록보관실'},
   vents:[[[15,2,'s',[0,-1]],[18,10],[28,10]]],
-  props:[{id:'depotVest',name:'예비 택배 조끼',outfit:'courier',at:[6,17],surface:{b:2,t:'locker',u:.5}}],
+  props:[],
   guards:[
     {kind:'t',target:true,tag:'broker',at:[32,7],startPause:55,still:true,briefWhere:'분류창고 동쪽 · 검수대',post:0,key:'blue',schedKey:'dispatch',sched:[
       {at:[32,7],stay:28,name:'동쪽 검수대',act:'운송 번호 대조'},
@@ -52,8 +52,8 @@
   itemLayoutVersion:1,itemActions:[null,{label:'새벽배송 중단',verb:'중단',progress:'배차 취소',complete:'새벽배송 중단 완료',requires:0,requiresText:'운송명세서를 먼저 확보해야 한다',duration:3.5,short:'배차 취소',loud:18,inspectTag:'camop'}],
   lamps:[[6,22,180,1],[13,19,150,1],[20,16,190,1],[36,13,150,1]],
   cams:[[28,6,90,55]],camRoom:{b:1,fl:1,at:'S'},
-  intel:[{g:[6,8],key:0,gives:'depot',learn:'기사 식당에 예비 택배 조끼가 있다. 입고 걸으면 작업장을 통과한다.',every:18,first:3,
-    lines:[[0,'오늘 조끼 안 가져왔는데.'],[1,'식당에 예비 조끼 있어. 그거 입고 들어가.']] }],
+  intel:[{g:[6,8],key:0,gives:'depot',learn:'식당 밖에서 쉬는 기사의 택배 조끼로 작업장을 통과할 수 있다. 기절한 사람에게서 옷을 얻는다.',every:18,first:3,
+    lines:[[0,'오늘 조끼 안 가져왔는데.'],[1,'식당 밖 기사한테 조끼 빌려 봐. 그 옷이면 들어가.']] }],
   notes:[{pos:[5,18],title:'출고 안내',lines:['기록보관실은 분류창고 서쪽. 파란 카드는 운송책 오태식이 관리한다.','북쪽 거리 환풍구는 창고 바닥 덕트와 이어진다.'],gives:'dispatch',learn:'북쪽 환풍구로 기록보관실에 우회할 수 있다.'}],
   stories:[{id:'rear-duct',name:'북쪽 점검 덕트',reveal:(S,h)=>h.knows('환풍구'),steps:[
     {text:'북쪽 거리의 환풍구로 이동',at:[15,2,0],done:S=>!!S.player.vent||S.items[0].got},

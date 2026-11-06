@@ -22,7 +22,7 @@ async def main():
         d = await setup(); print('문', d)
         await pg.wait_for_timeout(100)
         r = await pg.evaluate('() => { const g = window.__game, a = g.attackAction(), e = g.envAction(), q = g.grabAction(); return [a.k, a.label, a.hold, e.k, e.label, q.k, g.input.tool]; }'); print('버튼 셋', r)
-        if r[0] not in ('kill', 'kill2') or '기절' not in (r[1] or '') or r[2] != '처치': bad.append('[공격]이 기절/길게 처치가 아니다 %s' % r)
+        if r[0] not in ('kill', 'kill2') or '기절' not in (r[1] or '') or r[2] != '살해': bad.append('[공격]이 기절/길게 처치가 아니다 %s' % r)
         if r[3] != 'door': bad.append('사람이 가까워도 [행동]은 문이어야 한다 %s' % r)
         if r[5] != 'grab': bad.append('[붙잡기]가 잡을 수 없다 %s' % r)
         if r[6] != 'stone' or not await pg.evaluate("__game.S.player.kunai===0&&!__game.availableTools().includes('kunai')"): bad.append('배우지 않은 다트가 기본 지급·선택된다 %s' % r)

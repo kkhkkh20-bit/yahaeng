@@ -1,9 +1,9 @@
 // Short rehearsals introduce the next episode's new problem, without granting skills.
 STAGES.push({...FIRST_STEPS,
   id:'tL',name:'의뢰 02 준비 · 빛과 그림자',sub:'상가 후문 · 조명과 시야',start:[6,10],nextTutorial:null,
-  build(m){FIRST_STEPS.build(m);m.fill(6,9,8,9,'.');},
+  W:26,H:18,exit:[20,10],zones:undefined,buildingNames:undefined,build(m){m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,8,24,12,'.');m.fill(1,7,24,7,'=');m.fill(1,13,24,13,'=');m.many('B',[[7,10]]);m.many('T',[[3,5],[9,5],[17,5],[23,5],[3,15],[19,15],[24,15]]);},
   guards:[{kind:'g1',tag:'practice',at:[10,6],post:90,still:true,radio:false}],items:[],itemActions:[],fixedFurn:[],lessonLoot:false,
-  lamps:FIRST_STEPS.lamps.map((l,i)=>i===1?[l[0],l[1],130,l[3]]:[...l]),
+  lamps:[[3,7,130,1],[10,9,130,1],[22,7,160,1],[6,7,400,1]],
   mission:'후문 보안등을 끄고 짧아진 시야 밖으로 돌아 골목을 빠져나간다.',
   brief:'이번에는 밝은 길을 건너야 한다. 안전한 곳에서 시야를 확인하고 보안등을 꺼 보자.',
   endText:'조명을 끄면 적의 시야가 짧아진다. 스위치는 처음부터 쓸 수 있다. 불이 꺼진 곳의 사람은 확인하러 올 수 있다.',

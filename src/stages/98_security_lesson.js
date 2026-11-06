@@ -12,14 +12,14 @@ STAGES.push({
     m.many('C',[[28,5],[29,5],[28,8]]);m.many('B',[[4,13],[8,13]]);m.many('T',[[5,5],[8,6],[32,5]]);
   },
   zones:[[16,3,24,11,'res',null,'직원 구역',['crew']],[12,3,15,8,'res',null,'신원 확인 구역',['crew']],[25,3,30,11,'res',null,'기록 구역 · 복장 통행 불가',[]]],
-  props:[{id:'lessonUniform',name:'연습용 자경대원 옷',outfit:'crew',at:[24,12]}],
+  props:[],
   fixedFurn:[{x:20,y:10,w:1,h:1,t:'desk'}],lootFurniture:['desk'],items:[[20,11]],itemName:'연습 서류',itemNames:['연습 서류'],
   cams:[[20,7,90,0]],lamps:[[20,9,420,0],[15,5,240,0],[27,10,200,0]],
-  guards:[{kind:'g1',tag:'identityCoach',at:[15,5],post:90,still:true,enforcer:true,radio:false}],challenges:[],
+  guards:[{kind:'g1',tag:'identityCoach',at:[15,5],post:90,still:true,enforcer:true,radio:false},{kind:'g1',tag:'uniformDonor',at:[28,13],post:0,still:true,radio:false}],challenges:[],
   endText:'복장은 해당 구역의 통행 권한이다. 가까운 신원 확인과 훔치기는 별도 판정이다. 감시 시야를 피하거나 카메라 뒤에서 전선을 분리한 뒤 작업하자.',
   steps:[
     ['공개 구역의 CCTV 앞을 걸어 지나가기',(S,P,I,h)=>!h.cameraOn(S.cams[0])||P.mode==='walk'&&Math.hypot(P.x-20.5*48,P.y-12.5*48)<23&&h.camera(S.cams[0]).visible>0&&!h.camera(S.cams[0]).detectable,()=>({x:20.5*48,y:12.5*48}),'부채꼴은 감시 범위다. 공개 구역의 평범한 통행은 녹화 게이지를 채우지 않는다.','move',1],
-    ['오른쪽에 놓인 옷으로 갈아입기',(S,P)=>P.outfit==='crew',()=>({x:24.5*48,y:12.5*48}),'이 옷은 직원 구역의 통행을 허용한다. 훔치기까지 허용하는 옷은 아니다.','env',0,['pickup']],
+    ['골목 경비를 기절시키고 옷 훔쳐 입기',(S,P)=>P.outfit==='crew',S=>S.corpses.find(c=>c.outfit==='crew'&&!c.stripped)||S.guards.find(g=>g.tag==='uniformDonor'),'등 뒤에서 짧게 공격해 기절시킨다. 몸 옆에서 행동으로 옷을 훔쳐 입는다.',S=>S.corpses.some(c=>c.outfit==='crew')?'env':'attack',0,['dress','carry','drop']],
     ['직원 구역에 들어가 통행 허용 확인',(S,P,I,h)=>Math.hypot(P.x-20.5*48,P.y-11.5*48)<23&&h.access(P).allowed&&(!h.cameraOn(S.cams[0])||!h.camera(S.cams[0]).detectable),()=>({x:20.5*48,y:11.5*48}),'카메라 앞이어도 허용 복장으로 지나다닐 수 있다. 서류는 아직 꺼내지 않는다.','move',1],
     ['눈 표시 경비 앞에서 멈춰 신원 확인 관찰',S=>['DEAD','CAPTIVE'].includes(npcT(S,'identityCoach').state)||(npcT(S,'identityCoach').eyeT||0)>.4,()=>({x:15.5*48,y:7.5*48}),'표시까지 걸어간 뒤 멈춘다. 눈 표시가 있는 담당자와 멈춰 마주 보면 얼굴을 확인한다.','move'],
     ['아래 공개 구역으로 걸어 나가기',(S,P)=>Math.hypot(P.x-15.5*48,P.y-10.5*48)<23&&(['DEAD','CAPTIVE'].includes(npcT(S,'identityCoach').state)||!npcT(S,'identityCoach').eyeWatching)&&!P.disguiseBlown,()=>({x:15.5*48,y:10.5*48}),'걸어서 지나가거나 얼굴을 돌리면 신원 확인이 멈춘다. 일반 경비는 정상 복장으로 걷는 사람을 검문하지 않는다.','move'],

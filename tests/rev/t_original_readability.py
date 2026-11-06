@@ -41,10 +41,10 @@ async def main():
                 ok(lines.some(alpha=>alpha>=.4),'real renderer still uses the faded old outline');
                 out.push('actual original-map canvas draws a visible nearby guard boundary');
 
-                S=fresh('m2');P=S.player;const coat=S.props.find(p=>p.outfit==='crew');ok(coat,'original spare uniform missing');
+                S=fresh('m2');P=S.player;const donor=S.guards.find(g=>g.tag==='uniformDonor');ok(donor&&!S.props.some(p=>p.outfit),'real uniform donor missing');S.koNext=true;G.killGuard(donor);const coat=S.corpses.at(-1);
                 Object.assign(P,{x:coat.x,y:coat.y,fl:coat.fl||0,z:0,mode:'sneak'});G.input.sneakToggle=true;G.setLayer(P.fl);S.cams=[];
                 const base=S.guards.find(v=>!v.civ&&!v.dog&&!v.target),enemy={...base,x:P.x+28,y:P.y,fl:P.fl,z:0,a:0,state:'PATROL',meter:0,seen:false,eyeWatching:false,eyeT:0,climb:null,doomed:false};S.guards=[enemy];
-                const clothing=G.envChoices().find(a=>a.k==='pickup'&&a.p===coat);ok(clothing,'original outfit interaction unreachable');
+                const clothing=G.envChoices().find(a=>a.k==='dress'&&a.c===coat);ok(clothing,'original outfit interaction unreachable');
                 G.selectEnvTarget(G.envToken(clothing));ok(G.attackAction().k!=='none','fixture needs a competing rear attack');G.updateHUD(true);
                 ok(document.querySelector('#actionRiskLbl').textContent.startsWith('갈아입기'),'possible attack replaces selected clothing risk');
                 out.push('selected clothing action keeps its own risk explanation beside an attack target');
