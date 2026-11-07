@@ -25,12 +25,13 @@ async def main():
    assert await q.evaluate('__game.goalMarkerCaption(__game.nextGoal(),25).includes("흡연 구역 입구")'),'world marker does not identify the clue'
    assert await q.locator('#missionIdentity .mission-id').count()==3
    assert await q.locator('#missionIdentity button').count()==0,'new action buttons added'
-   assert await q.locator('#missionIdentity .mission-id:visible').count()==1,'folded HUD must show only the current task'
+   assert await q.locator('#missionIdentity .mission-id:visible').count()==(0 if touch else 1),'folded touch HUD must leave identities in the inspector'
    await q.click('#hud .obj');assert await q.evaluate('__game.hudInspecting()');assert await q.locator('#missionIdentity .mission-id:visible').count()==3
    layout=await q.evaluate('''()=>{const list=[...document.querySelectorAll('#missionIdentity .mission-id')].map(e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,right:r.right,bottom:r.bottom,width:r.width,height:r.height,scroll:e.scrollWidth}});return{list,overlap:list[0].right>list[1].x,overflow:list.some(r=>r.scroll>r.width+1||r.right>innerWidth),goal:__game.nextGoal().text}}''');assert not layout['overlap']and not layout['overflow'],layout
    await q.screenshot(path=str(O/f'opening-{width}.png'))
-   await q.click('#hud .obj');assert not await q.evaluate('__game.hudInspecting()');assert await q.locator('#missionIdentity .mission-id:visible').count()==1
-   await q.evaluate('__game.selectMissionGoal("item:1");__game.updateHUD(true)');assert '암호표'in await q.locator('#missionIdentity .mission-id:visible').inner_text(),'manual tracking leaves the wrong identity visible'
+   await q.click('#hud .obj');assert not await q.evaluate('__game.hudInspecting()');assert await q.locator('#missionIdentity .mission-id:visible').count()==(0 if touch else 1)
+   await q.evaluate('__game.selectMissionGoal("item:1");__game.updateHUD(true)');assert '암호표'in await q.locator('#missionIdentity .mission-id[data-current="true"]').inner_text(),'manual tracking leaves the wrong identity selected'
+   assert '암호표' in await q.locator('#objectiveSummary').inner_text(),'compact goal loses manual tracking'
    await q.evaluate('__game.selectAutoGoal();__game.updateHUD(true)')
    # Controlled state fixtures: KO is incomplete, actual elimination/item pickup
    # update only their own identity; checkpoint rebuilding keeps both statuses.

@@ -214,3 +214,24 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
  #skillBranches button span { margin-left:0; }
  #btnSkillRewards { padding-inline:8px; white-space:nowrap; }
 }
+
+/* Play space first: touch instructions are read by opening the mission header. */
+body.touch #hud .obj:not(.open){min-height:0;padding:8px 24px 8px 12px;gap:2px}
+body.touch #hud .obj:not(.open) .hud-portrait,
+body.touch #hud .obj:not(.open) #missionIdentity{display:none}
+body.touch #hud .obj:not(.open)::after{top:18px;right:10px}
+body.touch #hud #objectiveSummary{font-size:13px;line-height:1.4}
+body.touch #hud #objTitle{font-size:10px}
+body.touch #hud .top{gap:5px}
+body.touch #hud #stealth{padding:4px 8px;top:calc(var(--topb,80px) + 4px)}
+body.touch:not(.inspecting) #hud #stealth #actionRiskLbl:not([data-risk=witness]):not([data-risk=camera]),
+body.touch:not(.inspecting) #hud #stealth #accessLbl:not([data-access=denied]){display:none}
+body.touch #hud #stealth.quiet .sth-wing{display:none}
+@media(max-width:480px){
+ body.touch #hud .obj.open{max-height:55dvh;padding:12px 22px 12px 12px}
+ body.touch #hud .obj.open .hud-portrait{display:none}
+}
+@media(min-width:701px) and (max-height:480px){
+ body.touch #hud .obj{width:340px}
+ body.touch:not(.inspecting) #hud .status{position:absolute;left:230px;top:56px}
+}

@@ -4,7 +4,7 @@ function hudInspecting(){return !!(S&&running&&!S.over&&!paused&&!tactical&&!DLG
 function setObjectiveOpen(open){
   const o=document.querySelector('#hud .obj');if(!o)return;
   if(open){clearPlayerInput();closeEnvPicker();closeLoadout();}
-  o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표 접기':'전체 목표 펼치기');
+  o.classList.toggle('open',open);o.setAttribute('aria-expanded',String(open));o.setAttribute('aria-label',open?'목표·무전 접기':'목표·무전 펼치기');
   o.setAttribute('role',open?'group':'button');
   document.body.classList.toggle('inspecting',hudInspecting());
 }
