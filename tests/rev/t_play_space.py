@@ -51,13 +51,13 @@ async def main():
    await q.click('#hud .obj');assert '몸을 낮추면' in await q.inner_text('#episodeRadioText')
    await q.click('#hud .obj')
    # Separate stage-entry fixture for the previously reproduced wrong CCTV radio.
-   await q.evaluate("()=>{__game.start(__game.STAGES.findIndex(s=>s.id==='p2'));while(__game.DLG.modal)__game.advanceDialog()}")
+   await q.evaluate("()=>{__game.start(__game.STAGES.findIndex(s=>s.id==='e1'));while(__game.DLG.modal)__game.advanceDialog();Object.assign(__game.S.player,{x:1296,y:360,fl:1,outfit:'crew'});__game.S.compoundDarkUsed=true;__game.setLayer(1);__game.syncEpisodeRadio()}")
    await q.wait_for_timeout(300)
    assert (await q.locator('#episodeRadio').is_visible())==(height>480),'entry message crowds short viewport'
    await q.wait_for_timeout(4700)
    assert not await q.locator('#episodeRadio').is_visible(),'entry message has no timeout'
    await q.click('#hud .obj')
-   assert '전선을 분리' in await q.inner_text('#episodeRadioText')
+   assert '카메라 뒤에서 전선을 끊으세요' in await q.inner_text('#episodeRadioText')
    assert '기절시킨 다음' not in await q.inner_text('#episodeRadioText')
    await q.screenshot(path=str(O/f'{width}-{height}-camera-instructions.png'))
    await q.click('#hud .obj')

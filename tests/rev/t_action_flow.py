@@ -69,7 +69,7 @@ async def main():
    passed.append('held approach direction flows into carrying; a new retreat direction cancels it')
    await scene(28);await tap('z','#btnAct');await q.evaluate('tick(.76);__game.S.player.outfit=null;__game.S.player.disguise=null');await tap('x','#btnCarry');assert await q.evaluate('__game.S.player.recoveryQueue?.kind==="dress"');await q.evaluate('tick(.55)');assert await q.evaluate('__game.S.player.interact?.a.k==="dress"&&!__game.S.player.carrying')
    passed.append('useful clothing keeps its separate full action')
-   geometry=await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'));while(G.DLG.modal)G.advanceDialog();const path=G.astar(7,8,3,8);return{wall:!G.los(168,408,280,408),pocket:G.tileAt(168,408)==='B',entry:!G.solidAt(6,8),path:path.length};}''')
+   geometry=await q.evaluate('''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'));while(G.DLG.modal)G.advanceDialog();const path=G.astar(7,8,2,8);return{wall:!G.los(168,408,280,408),pocket:G.tileAt(120,408)==='B',entry:!G.solidAt(6,8),path:path.length};}''')
    assert geometry['wall'] and geometry['pocket'] and geometry['entry'] and geometry['path'],geometry
    assert not errors,errors;rows.append({'mobile':mobile,'checks':passed,'escapeGeometry':geometry});print('PASS action flow',mobile,json.dumps(rows[-1]),flush=True);await q.close()
   await b.close()

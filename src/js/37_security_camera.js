@@ -16,7 +16,7 @@ function mountIndoorCamera(c, mounted) {
   const L0 = CUR_F; setLayer(f); let best = null;
   for (const [tx, ty] of room) for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
     if (!wall(tx + sx, ty) || !wall(tx, ty + sy)) continue;
-    const x = tc(tx) + sx * (TILE / 2 - 9), y = tc(ty) + sy * (TILE / 2 - 9), base = Math.atan2(-sy, -sx), sweep = Math.min(c.sweep, Math.PI / 6);
+    const x = tc(tx) + sx * (TILE / 2 - 9), y = tc(ty) + sy * (TILE / 2 - 9), focus=STAGE.cameraFocus,base = focus?Math.atan2(tc(focus[1])-y,tc(focus[0])-x):Math.atan2(-sy, -sx), sweep = Math.min(c.sweep, Math.PI / 6);
     let seen = 0;
     for (const [rx, ry] of room) {
       const px = tc(rx), py = tc(ry), d = dist(x, y, px, py), a = Math.atan2(py - y, px - x);
@@ -25,7 +25,7 @@ function mountIndoorCamera(c, mounted) {
     const post = Math.min(180, ...S.guards.filter(g => flOf(g) === f && !g.civ && !g.dog).map(g => dist(x, y, g.x, g.y)));
     const separation = (mounted || []).some(o => o.fl === f && dist(o.x, o.y, x, y) < 80) ? 8 : 0;
     // A compact authored job can name the work surface this camera protects.
-    const focus=STAGE.cameraFocus,fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
+    const fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
     const protects=focus&&fd<=300&&Math.abs(angDiff(base,Math.atan2(tc(focus[1])-y,tc(focus[0])-x)))<=camFov(c)&&castRay(x,y,Math.atan2(tc(focus[1])-y,tc(focus[0])-x),fd)>=fd-6;
     const score = seen / room.length * 20 + post / 90 - separation + (protects?30:0);
     if (!best || score > best.score) best = { x, y, tx, ty, base, sweep, score, sx, sy };

@@ -11,7 +11,7 @@ from episode_training import standalone_stage, continue_episode, spend_episode_p
 class Controls:
  def __init__(self,page,cdp,mobile):self.q=page;self.cdp=cdp;self.mobile=mobile;self.points={};self.keys=[];self.axis=None;self.events=[]
  async def record(self,label):
-  s=await self.q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{version:__BUILD_VERSION__,t:S.t,x:P.x,y:P.y,hp:P.hp,mode:P.mode,hidden:P.hidden,moving:P.moving,carry:!!P.carrying,body:P.bodyAnim?.k,approach:!!P.approachAttack,recovery:!!P.recoveryQueue,kill:!!P.killAnim,stats:{...S.stats},guards:S.guards.map(g=>({id:g.id,state:g.state,seen:g.seen,x:g.x,y:g.y})),over:S.over};}''')
+  s=await self.q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{version:__BUILD_VERSION__,t:S.t,x:P.x,y:P.y,fl:P.fl||0,z:P.z||0,hp:P.hp,mode:P.mode,hidden:P.hidden,moving:P.moving,carry:!!P.carrying,body:P.bodyAnim?.k,approach:!!P.approachAttack,recovery:!!P.recoveryQueue,kill:!!P.killAnim,stats:{...S.stats},guards:S.guards.map(g=>({id:g.id,state:g.state,seen:g.seen,x:g.x,y:g.y})),over:S.over};}''')
   self.events.append({'label':label,**s});print(label,json.dumps(s,ensure_ascii=False),flush=True);return s
  async def touch(self,kind,id,x=0,y=0):
   if kind=='touchEnd':
@@ -92,11 +92,11 @@ async def main(args):
       await c.move(360,504);await c.press('x','#btnCarry');await q.wait_for_function('__game.S.stats.stashed===1',timeout=4000);result=await c.record('hidden');assert result['hp']==3 and result['stats'].get('ko')==1 and not result['stats']['kills'] and not result['stats']['detected'],result
       result['takedownToStride']=round(stride['t']-attack['t'],3);result['liftToStride']=round(stride['t']-lift['t'],3);result['earlyInputAccepted']=queued['recovery']
      else:
-      await standalone_stage(q,'p0');await q.click('#btnBrGo');await c.move(984,432,True);await c.move(760,408,True)
+      await standalone_stage(q,'p0');await q.click('#btnBrGo');await c.move(x=648);await c.move(y=552);await c.move(776,456,True)
       await q.wait_for_function('__game.S.guards.some(g=>g.state==="ALERT"&&g.seen)',timeout=45000,polling=30);await c.record('actually-seen');assert await q.evaluate('__game.searchCauseReadout().kind')=='player'
-      # Run around both corners before crouching behind the screen. Crouching
-      # out in the open lets the pursuer catch up; column 2 avoids the tree.
-      await c.move(y=400,run=True);await c.move(x=360,run=True);await c.move(y=576,run=True);await c.move(x=120,run=True);await c.move(y=408,run=True);await c.press('Control','#btnCrouch');await q.wait_for_function('__game.S.player.hidden',timeout=2000,polling=20);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
+      # Escape through the actual gate, then around the compound wall to the
+      # outer bush. Keep active pursuit and all collision/perception rules.
+      await c.move(y=600,run=True);await c.move(x=672,run=True);await c.move(y=840,run=True);await c.move(x=120,run=True);await c.move(y=408,run=True);await c.press('Control','#btnCrouch');await q.wait_for_function('__game.S.player.hidden',timeout=2000,polling=20);pocket=await c.record('second-corner-pocket');assert pocket['hidden'] and pocket['stats']['detected']>0 and pocket['hp']>0,pocket
       assert '내 모습 목격'in await q.locator('#lightLbl').inner_text();await q.screenshot(path=str(out/(name+'-pocket.png')))
       for delay,label in [(3000,'search-after-3s'),(7000,'search-after-10s')]:await q.wait_for_timeout(delay);await c.record(label)
       result=c.events[-1];assert result['hp']==pocket['hp'] and result['hidden'] and not any(g['seen']and g['state']=='ALERT'for g in result['guards']),result

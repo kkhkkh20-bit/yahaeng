@@ -25,7 +25,7 @@ async def main():
    assert c['x']>=0 and c['x']+c['w']<=w+1 and c['y']>=0 and c['y']+c['h']<=h+1 and c['hit'],c
    assert not await q.evaluate('document.documentElement.scrollWidth>innerWidth')
    await q.screenshot(path=str(O/f'training-{w}.png'));await q.click('#btnSkillsBack')
-   assert await q.evaluate('__game.STAGE.id==="p0"&&__game.S.guards.length===1&&!__game.S.cams.length')
+   assert await q.evaluate('__game.STAGE.id==="p0"&&__game.S.guards.length===3&&!__game.S.cams.length')
    # Every subsequent canonical result opens training, even with a used budget.
    await q.evaluate('''()=>{const G=__game;G.S.over=true;G.showEnd(true);}''')
    assert await q.locator('#skillScreen').is_visible()

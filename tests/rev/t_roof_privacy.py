@@ -11,8 +11,8 @@ async def main():
    for(const id of ['tB','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7','m5','n1']){
     G.start(G.STAGES.findIndex(s=>s.id===id),true);const S=G.S;
     for(const b of G.BLD){if(b.vacant)continue;const c=b.roofC,d=c.getContext('2d').getImageData(0,0,c.width,c.rh).data;for(let n=3;n<d.length;n+=4)if(d[n]!==255)throw Error(id+' transparent roof '+n);}
-    if(S.camRoom){const c=S.camRoom,grid=G.GF[c.fl]||G.GF[0],tile=G.tileG(c.tx,c.ty);if(['e2','e4','e5','p2'].includes(id)){if(!G.STAGE.camRoom||G.zoneInfo(c.x,c.y,0,c.fl).name==='골목'||!(G.bldAt(c.tx,c.ty)>=0||['h','w','v'].includes(tile)))throw Error(id+' outdoor security '+tile);}}
-    if(id==='p2'){const c=S.cams[0],it=S.items[0],at=G.cameraServicePoint(c);if(it.furn!=='desk'||G.cameraSees(c,it.x,it.y,1)<=0)throw Error('camera does not protect the actual document desk');Object.assign(S.player,at);if(!G.cameraCableReachable(c)||G.cameraSees(c,at.x,at.y,1)>0)throw Error('no safe reachable wall service point');}
+    if(S.camRoom){const c=S.camRoom,grid=G.GF[c.fl]||G.GF[0],tile=G.tileG(c.tx,c.ty);if(['e1','e2','e4','e5'].includes(id)){if(!G.STAGE.camRoom||G.zoneInfo(c.x,c.y,0,c.fl).name==='골목'||!(G.bldAt(c.tx,c.ty)>=0||['h','w','v'].includes(tile)))throw Error(id+' outdoor security '+tile);}}
+    if(id==='e1'){const c=S.cams[0],it=S.items[0],at=G.cameraServicePoint(c);if(it.furn!=='desk'||G.cameraSees(c,it.x,it.y,1)<=0)throw Error('camera does not protect the actual document desk');Object.assign(S.player,at,{fl:c.fl});G.setLayer(c.fl);if(!G.cameraCableReachable(c)||G.cameraSees(c,at.x,at.y,1)>0)throw Error('no safe reachable wall service point');}
     out.push({id,roofs:G.BLD.filter(b=>!b.vacant).length,terminal:S.camRoom&&[S.camRoom.tx,S.camRoom.ty,S.camRoom.fl]});
    }
    document.getElementById('brief').hidden=true;G.start(G.STAGES.findIndex(s=>s.id==='tB'));const S=G.S,b=G.BLD[1];S.fade=0;Object.assign(S.player,{x:(b.x0+b.x1+1)*24,y:(b.y0+b.y1+1)*24,z:b.h,fl:0});S.peek=null;G.moveCamera(1);G.benchDraw(2);if(S.openB!==-1||b.ra!==1)throw Error('roof deck opens the room');

@@ -147,29 +147,8 @@ async def main(args):
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
                 await continue_episode(page)
                 await page.wait_for_function('__game.STAGE.id==="p0"')
-                await page.click('#btnBrGo')
-                await page.wait_for_function('__game.cpReady()')
-                await press('Control','#btnCrouch')
-                await move(x=360,y=504);await move(y=408);await move(x=618)
-                await snapshot('first-real-approach')
-                await move(x=660)
-                await press('z','#btnAct');await page.wait_for_function('__game.S.guards[0].unconscious&&!__game.actionBusy()');assert await page.evaluate('!__game.S.exitOpen&&__game.S.stats.kills===0');await snapshot('target-tap-only-unconscious');await press('z','#btnAct',True)
-                await page.wait_for_function('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()')
-                await move(x=360,y=648);await move(x=168,y=744)
-                await page.locator('#end[data-win="1"]').wait_for(state='visible')
-                s=await snapshot('first-real-clear')
-                assert s['hp']==3 and s['stats']['detected']==0,s
-                await continue_episode(page)
-                assert await page.evaluate('__game.STAGE.id==="p1"')
-                # The same purchased build must work inside an optional tutorial.
-                await standalone_stage(page,'t0');await page.click('#btnBrGo')
-                assert await page.evaluate('__game.skillOn("dart")&&__game.S.player.kunai===2&&!__game.input.padWhistle')
-                await press('Control','#btnCrouch');await move(x=432 if mobile else 360,y=504)
-                if mobile:
-                    target=await page.evaluate('()=>{const G=__game,g=G.S.guards[0];return{x:(g.x-G.cam.x)*G.SCALE+innerWidth/2,y:(g.y-20-G.cam.y)*G.SCALE+innerHeight/2}}');await page.touchscreen.tap(target['x'],target['y'])
-                await press('v','#btnTool');await page.wait_for_function('__game.S.guards[0].state==="DEAD"&&__game.S.stats.kunaiUsed===1',timeout=6000)
-                s=await snapshot('earned-dart-in-tutorial');assert s['hp']==3 and s['stats']['detected']==0
-                assert await page.evaluate('__game.S.player.kunai===1')
+                # The five cumulative jobs have their own ordinary-RAF PC/touch journey.
+                assert await page.locator('#btnBrGo').is_visible()
                 assert not errors,errors
                 passed=True
             finally:
