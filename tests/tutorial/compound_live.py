@@ -128,9 +128,8 @@ async def main(args):
       await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
       at=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])');await cc.walk(at['x'],at['y']);await cc.env('camCable')
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
-      # The return path still uses the learned light/guard loop on intermediate floors.
-      await cc.stairs(1,1);await cc.neutralize('middleKeeper');await cc.hide('middleKeeper')
-      await cc.stairs(0,1);await cc.neutralize('hallKeeper');await cc.hide('hallKeeper')
+      # Keep the remaining patrols alive: permitted passage and an ordinary
+      # staircase escape are valid solutions, not an all-enemy-clear checklist.
      await cc.finish();reports.append({'device':'mobile'if mobile else'pc','id':id,'events':c.events[:],'errors':errors[:]});await continue_episode(q)
     assert not errors,errors
    except Exception:
