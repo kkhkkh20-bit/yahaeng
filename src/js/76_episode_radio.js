@@ -63,7 +63,7 @@ function syncEpisodeRadio(){
  if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=now+4500;}
  const moving=S.player.moving||(input.joy?.mag||0)>.05||Object.values(S.keys||{}).some(Boolean)||actionBusy(S.player)||input.aiming;
  if(moving||open)episodeRadioUntil=0;
- const peek=!!message&&!open&&now<episodeRadioUntil;
+ const peek=!!message&&!open&&H>480&&now<episodeRadioUntil;
  document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
  if(message){
   const token=message.text+'|'+message.action;

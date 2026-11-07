@@ -14304,7 +14304,7 @@ function drawActLabels(pa, P, ka, ga) {
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
     if (n) lab += ` · 이 위치를 보는 경비 ${n}명`;
   }
-  const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);
+  if(!isTouch){const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);}
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && !BLD[b].vacant && b !== openB; };
 
@@ -15086,7 +15086,7 @@ function syncEpisodeRadio(){
  if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=now+4500;}
  const moving=S.player.moving||(input.joy?.mag||0)>.05||Object.values(S.keys||{}).some(Boolean)||actionBusy(S.player)||input.aiming;
  if(moving||open)episodeRadioUntil=0;
- const peek=!!message&&!open&&now<episodeRadioUntil;
+ const peek=!!message&&!open&&H>480&&now<episodeRadioUntil;
  document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
  if(message){
   const token=message.text+'|'+message.action;

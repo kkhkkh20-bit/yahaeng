@@ -50,7 +50,7 @@ async def main():
    # Separate stage-entry fixture for the previously reproduced wrong CCTV radio.
    await q.evaluate("()=>{__game.start(__game.STAGES.findIndex(s=>s.id==='p2'));while(__game.DLG.modal)__game.advanceDialog()}")
    await q.wait_for_timeout(300)
-   assert await q.locator('#episodeRadio').is_visible(),'entry message missing'
+   assert (await q.locator('#episodeRadio').is_visible())==(height>480),'entry message crowds short viewport'
    await q.wait_for_timeout(4700)
    assert not await q.locator('#episodeRadio').is_visible(),'entry message has no timeout'
    await q.click('#hud .obj')
