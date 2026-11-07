@@ -1,9 +1,9 @@
 {
   "edition": "2d-campaign",
   "version": "v211",
-  "source_sha256": "8de0fbf197b6e0ff99cf85fec89be69ff3830c91cbd9549189eeb3c78f5697e0",
-  "html_bytes": 247579,
-  "source_bytes": 17007919,
+  "source_sha256": "82e59f745f0419f9377caa07d3e7764f18eeaf7b6c779d53f5576e081e0edf77",
+  "html_bytes": 248100,
+  "source_bytes": 17008440,
   "scripts": 7,
   "assets": 281,
   "asset_bytes": 12512131,

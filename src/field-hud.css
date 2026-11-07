@@ -243,3 +243,7 @@ body.touch #hud .pad #btnCarry b,body.touch #hud .pad #btnCarry small{line-heigh
  #hud #loadout #btnWhistle{min-height:44px;margin-top:8px;padding:6px 10px}
  #hud #loadout footer{margin-top:8px;padding-top:8px}
 }
+/* Press feedback must outrank the ID-specific idle and ready surfaces. */
+body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,
+body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active{background:var(--art-field-selected) center/100% 100% no-repeat;color:var(--hud-ink)}
+body.touch #hud .pad #btnAct.kill.down,body.touch #hud .pad #btnAct.kill:active{background:var(--art-field-danger) center/100% 100% no-repeat;color:#f7e4dc}

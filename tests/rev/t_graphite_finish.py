@@ -23,9 +23,12 @@ async def main():
      for c in controls[i+1:]:assert not(a['x']<c['x']+c['w'] and a['x']+a['w']>c['x'] and a['y']<c['y']+c['h'] and a['y']+a['h']>c['y']),(a,c)
     carry=q.locator('#btnCarry');idle=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}')
     await q.evaluate('''()=>{const S=__game.S,P=S.player;S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,hidden:false,stashed:false,g:{id:901,x:P.x,y:P.y,fl:0,z:0,state:'DEAD',child:false}}];S.t+=.1;__game.updateHUD(true)}''')
+    await q.wait_for_timeout(160)  # Settle the authored .12s state-color feedback.
     ready=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}');assert ready!=idle,'Ready control frame did not change'
     rect=await carry.bounding_box();await carry.dispatch_event('pointerdown',{'button':0,'pointerId':31})
+    await q.wait_for_timeout(160)
     pressed=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}');assert pressed!=ready,'Pressed control frame did not change';assert await carry.bounding_box()==rect,'Pressed finish shifted the hit box'
+    await q.screenshot(path=str(O/f'pressed-{name}.png'))
     await carry.dispatch_event('pointercancel',{'button':0,'pointerId':31})
     await q.evaluate(SETUP)
     attack=q.locator('#btnAct');normal=await attack.evaluate('(e)=>getComputedStyle(e).backgroundImage')
