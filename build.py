@@ -56,7 +56,7 @@ def build():
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
     menu_art = base64.b64encode(open(P('src', 'art', 'title', 'alley-wide.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
-    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css')))
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','field-hud.css')))
     for variant in ['wide','portrait']:
         data='data:image/webp;base64,'+base64.b64encode(open(P('src','art','title','alley-'+variant+'.webp'),'rb').read()).decode()
         html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
@@ -106,6 +106,7 @@ def build():
     tbg = read(P('build', 'title_bg.json')) if os.path.exists(P('build', 'title_bg.json')) else 'null'  # 첫 화면 배경 (tools/titlebg.py)
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
+    hud_art.update({'field:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','field','*.svg')))})
     html=html.replace('<script>window.__BUILD_VERSION__','<script>window.__HUD_ART__='+json.dumps(hud_art)+';window.__BUILD_VERSION__',1)
     html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))

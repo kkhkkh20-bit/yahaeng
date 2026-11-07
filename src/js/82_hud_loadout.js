@@ -7,12 +7,16 @@ function closeLoadout(focus=false){
   document.body.classList.toggle('inspecting',hudInspecting());
   if(focus)(isTouch?$('btnToolNext'):canvas).focus({preventScroll:true});
 }
+function syncLoadoutOverflow(){
+ if(!loadoutOpen)return;const body=$('loadoutBody');if(body)body.dataset.scrollable=String(body.scrollHeight>body.clientHeight+1);
+}
+window.addEventListener('resize',syncLoadoutOverflow);
 function toggleLoadout(){
   if(loadoutOpen){closeLoadout(true);return;}
   if(!S||!running||paused||S.over||tactical||DLG.modal||S.keypad||actionBusy())return;
   clearPlayerInput();closeEnvPicker();setObjectiveOpen(false);syncTools();
   loadoutOpen=true;$('loadout').hidden=false;$('loadoutShade').hidden=false;
-  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');
+  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');syncLoadoutOverflow();
   const selected=$('tools').querySelector('.tool.on:not([hidden])');
   (input.padWhistle?$('btnWhistle'):selected||$('btnLoadoutClose')).focus({preventScroll:true});
 }

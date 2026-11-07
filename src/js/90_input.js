@@ -196,7 +196,7 @@ function cyclePadTool() {
 function syncSneakBtn() {
   const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
   const constrained=!!(STAGE?.artSlice&&S&&(S.player.under||S.player.vent)),s = document.getElementById('btnSneak'), m = constrained?'walk':moveMode(); if (s) { s.disabled=constrained;s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = constrained&&S.player.vent?'낮게 이동':{ walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 속도: ' + l.textContent); }
-  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = hudArt('crouch')+(input.sneakToggle ? '<b>웅크림</b>' : '<b>웅크리기</b>'); c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
+  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = hudArt('crouch')+'<b>웅크림</b>'; c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
   const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
 }
 // 웅크리기(살금): 이동 빠르기와 따로 켜고 끈다. 켜 두면 판이 바뀌어도 유지 (Ctrl 키 또는 [웅크리기] 버튼)

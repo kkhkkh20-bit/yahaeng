@@ -46,7 +46,10 @@ async def main():
    await equipment();await q.evaluate('window.dispatchEvent(new Event("blur"));window.dispatchEvent(new Event("focus"))');assert await q.locator('#loadout').is_hidden()
    # Context-only controls keep their direct actions; no stale button occupies the third slot.
    await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];S.t+=1;G.updateHUD(true)}''')
-   assert (await q.locator('#btnDress').is_visible())==touch;assert await q.locator('#btnGrab').is_hidden()
+   assert await q.locator('#btnGrab').is_hidden()
+   selected=await q.evaluate('__game.envAction().k')
+   if touch and selected=='dress':assert await q.locator('#btnDress').is_hidden() and '옷 입기' in await q.locator('#btnCarry').inner_text()
+   else:assert (await q.locator('#btnDress').is_visible())==touch
    # All seven learned tools remain reachable in a short panel, including scroll and keyboard.
    await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tE'));while(G.DLG.modal)G.advanceDialog();G.updateHUD(true)}")
    await equipment();assert await q.locator('#tools .tool:visible').count()==7

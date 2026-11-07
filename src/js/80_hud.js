@@ -292,7 +292,7 @@ function updateHUD(force) {
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = hudArt('grab')+`<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
     const dress=(!STAGE.tutorial||STAGE.storyEpisode)&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
-    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
+    db.hidden=!dress||ea.k==='dress';db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -515,7 +515,7 @@ function tutorialCue(){
 function syncTutorialCue(){
   const key=tutorialCue();
   document.body.classList.toggle('entry-learning',!!beginnerEntryGoal());
-  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽을 끌어 걷기\n웅크림: 조용히 · 달리기: 장비에서 설정':'왼쪽 조금 끌기: 걷기\n끝까지: 달리기 · 웅크림: 조용히';if(joyHint.textContent!==text)joyHint.textContent=text;}
+  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽 드래그 · 걷기\n달리기는 장비에서 설정':'왼쪽 드래그 · 이동\n멀리 끌면 달리기';if(joyHint.textContent!==text)joyHint.textContent=text;}
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'body',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;

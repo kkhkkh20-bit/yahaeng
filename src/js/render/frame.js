@@ -328,8 +328,10 @@ function draw() {
       const pos = a => { if(a.c&&a.k!=='retrieve'){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = uiFont(11); const tw = ctx.measureText(lab).width + 12;
-        ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
+      const p = pos(pa);
+      // The touch selector already owns this information. Keyboard captions
+      // join the common placement queue so they cannot overprint combat hints.
+      if(p&&!isTouch)tag(p.x,p.y+34,`${pa.choiceI+1}/${pa.choices} · Tab 바꾸기`,'#e6d9ae',1,null,2.2);
     }
     const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
