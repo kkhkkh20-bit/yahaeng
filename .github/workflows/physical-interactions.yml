@@ -62,6 +62,7 @@ jobs:
           python tests/tutorial/room_finish_live.py --url http://127.0.0.1:8001/public/
           python tests/tutorial/officer_hunt_live.py --url http://127.0.0.1:8001/public/
           python tools/capture_ink_interface.py after --out build/ink-v199
+          python tools/capture_art_finish.py
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html
       - name: Save review evidence and packaged assets on this PR
@@ -127,6 +128,7 @@ jobs:
             build/beginner-v197/
             build/linear-v198/
             build/targets-v207/
+            build/art-v208/
             build/ink-v199/
             build/newgame-v200/
             public/version.json

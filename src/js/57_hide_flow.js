@@ -26,8 +26,8 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
   c.save();
   if(part!=='front'){
     c.fillStyle='#070b0d66';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
-    c.fillStyle=steel?'#626b70':'#6e6558';c.fillRect(g.left,g.top,w,H-3);
-    c.fillStyle=steel?'#858d8d':'#8c8271';c.fillRect(g.left,g.top,w,4);
+    c.fillStyle=steel?'#5c6870':'#57463b';c.fillRect(g.left,g.top,w,H-3);
+    c.fillStyle=steel?'#91a0a5':'#907763';c.fillRect(g.left,g.top,w,4);
     c.fillStyle='#0d1416';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
     c.fillStyle=steel?'#2b3335':'#332f29';c.fillRect(g.doorLeft+3,g.doorTop+4,g.doorRight-g.doorLeft-6,3);
     c.strokeStyle=steel?'#7f8786':'#8b8272';c.lineWidth=1;c.strokeRect(g.left+.5,g.top+.5,w-1,H-4);
@@ -37,10 +37,15 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
     const count=steel?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
     for(let i=0;i<count;i++){
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
-      c.fillStyle=steel?'#737c80':i?'#827666':'#897c69';c.strokeStyle=steel?'#4b5457':'#514b41';c.lineWidth=1;
+      c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
       c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
       const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=g.doorTop+(g.doorBottom-g.doorTop)*.78+depth;
-      c.strokeStyle=steel?'#303839':'#4b443a';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
+      if(wide>9){
+        const a=.12,b=.86,xa=hinge+side*projection*a,xb=hinge+side*projection*b;
+        c.strokeStyle=steel?'#a0b1b24d':'#bd9e7d52';c.lineWidth=1;c.beginPath();c.moveTo(xa,g.doorTop+6+depth*a);c.lineTo(xb,g.doorTop+6+depth*b);c.lineTo(xb,g.doorBottom-6+depth*b);c.lineTo(xa,g.doorBottom-6+depth*a);c.closePath();c.stroke();
+        c.fillStyle=steel?'#a2adb0':'#a79577';for(const y of[g.doorTop+9,g.doorBottom-12])c.fillRect(hinge-1,y,2,4);
+      }
+      c.strokeStyle=steel?'#bcc8ca':'#c5ad83';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
       if(steel&&wide>8){c.strokeStyle='#4a5558';c.lineWidth=1;for(let k=0;k<3;k++){c.beginPath();c.moveTo(hinge+side*wide*.2,g.doorTop+12+k*4+depth*.2);c.lineTo(hinge+side*wide*.75,g.doorTop+12+k*4+depth*.75);c.stroke();}}
     }
     c.fillStyle=steel?'#465153':'#595143';c.fillRect(g.left+1,g.bottom-9,w-2,3);

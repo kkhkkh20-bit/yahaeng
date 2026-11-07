@@ -17,11 +17,11 @@ const CASE_SOURCES=[
  {id:'dispatch',stage:'tB',items:[0],title:'제비의 연락 서류',text:'금성회 운반책 박인호가 증인의 은신처를 넘기려 한다. 거래 전에 막아야 한다.',grants:{runner:3}},
  {id:'runner-down',stage:'p0',targets:['runner'],title:'끊어진 운반 연락',text:'운반책의 연락이 끊기자 조직이 골목 연락책을 움직였다. 출고 서류가 다음 연결고리다.',grants:{contact:1}},
  {id:'release',stage:'p1',items:[0],title:'출고 차량 번호',text:'운반책이 쓰던 차량은 옆 창고를 거쳤다. 수신인 기록을 대조할 수 있다.',grants:{contact:1}},
- {id:'delivery',stage:'p2',items:[0],title:'배송 명세서의 수신인',text:'수신인은 정필수. 동쪽 적치장에서 증인 명단을 넘길 예정이다.',grants:{contact:3}},
+ {id:'delivery',stage:'p2',items:[0],title:'배송 명세서의 수신인',text:'수신인은 정하린. 동쪽 적치장에서 증인 명단을 넘길 예정이다.',grants:{contact:3}},
  {id:'contact-down',stage:'e1',targets:['contact'],title:'회계 보고선',text:'연락책을 잃은 조직이 거래 창고의 명세서를 찾고 있다. 위에는 회계 중개인이 있다.',grants:{broker:1}},
  {id:'trade',stage:'e2',items:[0],title:'중개인의 정산 거점',text:'거래 대금은 2층 연락 거점에서 정산한다. 장부에 결재자가 남아 있다.',grants:{broker:1}},
- {id:'ledger',stage:'e3',items:[0],title:'두 명의 결재자',text:'문기석은 회계 중개인, 그 위 결재자는 클럽 실장이다. 교환실의 인계서를 추적한다.',grants:{broker:2,club:1}},
- {id:'handover',stage:'e4',items:[0],title:'문기석의 보고 대상',text:'문기석의 사무실과 보고 대상 강도윤을 확인했다. 중개인을 먼저 막으면 클럽에 경고가 가지 않는다.',grants:{broker:3,club:2}},
+ {id:'ledger',stage:'e3',items:[0],title:'두 명의 결재자',text:'문서윤은 회계 중개인, 그 위 결재자는 클럽 실장이다. 교환실의 인계서를 추적한다.',grants:{broker:2,club:1}},
+ {id:'handover',stage:'e4',items:[0],title:'문서윤의 보고 대상',text:'문서윤의 사무실과 보고 대상 강도윤을 확인했다. 중개인을 먼저 막으면 클럽에 경고가 가지 않는다.',grants:{broker:3,club:2}},
  {id:'broker-down',stage:'e5',targets:['broker'],title:'비어 버린 중간 연락선',text:'중개인이 사라져 강도윤이 직접 연락을 받는다. 흡연 동선과 장부 내선이 접근 기회다.',grants:{club:3}},
  {id:'club-down',stage:'m2',targets:['vip'],title:'금고 밖으로 움직이는 자금',text:'실장의 보고가 끊기자 수금반장과 상권 지부장이 정산을 서두른다. 장부의 가명을 풀어야 실명을 안다.',grants:{collector:1,district:1}},
  {id:'cipher',stage:'m2',items:[0,1],title:'장부와 거래 암호표 대조',text:'가명은 장무혁과 백철민이었다. 돈을 걷는 자와 계약을 승인하는 자다.',grants:{collector:3,district:3}},
@@ -47,13 +47,13 @@ STAGES.push({...chairBase,id:'n1',no:'15',name:'마지막 이름',sub:'마지막
  targetCast:{boss:TARGET_CAST.chair},targetNames:{boss:TARGET_CAST.chair.name},
  purpose:'금성회 의장 윤서경을 처치하고 지휘망의 명령 원장을 확보한다.',mission:'의장 처치 · 본채 2층 명령 원장 회수 후 탈출',
  itemName:'명령 원장',itemNames:['명령 원장'],buildingNames:{0:'백림재단 사저'},
- brief:'은빛 머리와 아이보리 정장의 윤서경이 의장이다. 단상에서 연못가와 잔칫상으로 이동한다. 뷔페 조끼는 마당 통행에 쓰지만 본채는 조직원 복장이 필요하다. 정문 밖 경비의 초록 카드키로 본채에 들어갈 수 있다. 본채 2층 명령 원장까지 확보해야 지휘망을 끊을 수 있다. 다른 손님은 표적이 아니다. 현장의 대화에서 연못·단상·발전기 접근 기회를 찾을 수 있다.',
+ brief:'연금색 머리와 아이보리 정장의 윤서경이 의장이다. 단상에서 연못가와 잔칫상으로 이동한다. 뷔페 조끼는 마당 통행에 쓰지만 본채는 조직원 복장이 필요하다. 정문 밖 경비의 초록 카드키로 본채에 들어갈 수 있다. 본채 2층 명령 원장까지 확보해야 지휘망을 끊을 수 있다. 다른 손님은 표적이 아니다. 현장의 대화에서 연못·단상·발전기 접근 기회를 찾을 수 있다.',
  endText:chairStory.after});
 DIALOGUE.n1=[['hero','까마귀가 숨긴 마지막 이름, 윤서경. 의장을 잃으면 금성회도 끝이다.'],['hero','표적은 의장 한 명. 2층 명령 원장까지 챙겨 지휘망을 남기지 않는다.']];
 DIALOGUE.m5=[['hero','까마귀의 은신처다. 하지만 그 위에는 아직 이름 없는 의장이 있다.'],['hero','까마귀와 원본 장부. 이 둘로 마지막 보고선을 밝힌다.']];
 // An organization hunt is the purpose from the first night; mechanics stay gradual.
 campaignStage('tB').story.before='금성회가 증인들을 사고팔고 있다. 조직을 뿌리째 없애려면 숨어 있는 간부와 명령선을 찾아야 한다. 실종된 제비가 대성 물류에 첫 단서를 남겼다.';
 
-campaignStage('e3').story.after='결재자는 회계 중개인 문기석. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
+campaignStage('e3').story.after='결재자는 회계 중개인 문서윤. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
 campaignStage('e3').endText=campaignStage('e3').story.after;
-campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문기석의 보고가 넘어가기 전에 빼낸다.';
+campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문서윤의 보고가 넘어가기 전에 빼낸다.';

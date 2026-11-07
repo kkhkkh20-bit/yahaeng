@@ -1,5 +1,12 @@
 // Visual performances and local speech never change a route, sight direction,
 // suspicion meter, movement speed, attack opening or skill/progression reward.
+function restoreTargetWardrobes(){
+ for(const g of S.guards){const p=targetProfile(g);if(p&&g.stripped)g.strippedLook=strippedKey({ch:p.key});}
+ for(const c of S.corpses){
+  const p=targetProfile(c.g)||STAGE.targetCast?.[c.tag];
+  if(p&&prSplit(c.ch||'strip')[0]===prSplit(p.key)[0]){c.ch=p.key;if(c.stripped&&c.g)c.g.strippedLook=strippedKey(c);}
+ }
+}
 function targetPersonaKey(g){
  const profile=targetProfile(g);if(!profile?.personality||g.stripped)return null;
  const [pal,body]=prSplit(profile.key),source=body+'PersonaMotion';

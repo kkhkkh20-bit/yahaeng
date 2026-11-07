@@ -21,7 +21,7 @@ async def main(args):
    try:
     await standalone_stage(q,'p0');await q.click('#caseBrief [data-case-open]');await q.wait_for_timeout(100)
     assert '박인호' in await q.locator('#caseBoard').inner_text()
-    text=await q.locator('#caseBoard').inner_text();assert all(n not in text for n in ['정필수','강도윤','윤서경'])
+    text=await q.locator('#caseBoard').inner_text();assert all(n not in text for n in ['정하린','강도윤','윤서경'])
     await q.click('#btnCaseClose');await q.click('#btnBrGo');await q.wait_for_function('__game.cpReady()')
     await c.press('Control','#btnCrouch');await c.move(360,504);await c.move(y=408);await c.move(x=600)
     await q.wait_for_function('__game.targetGesturePose(__game.S.guards[0])!==null&&__game.S.guards[0].sayT>1.2&&__game.SPEECH_R.some(s=>s.speaker===__game.S.guards[0])',timeout=26000,polling=50)
@@ -34,7 +34,7 @@ async def main(args):
     await c.press('z','#btnAct',lethal=True)
     await q.wait_for_function('__game.targetEliminated(__game.S.guards[0])&&!__game.actionBusy()&&__game.loadCaseFile().sources.includes("runner-down")',timeout=7000)
     await c.record('officer-killed-lead-earned');await q.click('#btnPause');await q.locator('#pause [data-case-open]').click()
-    text=await q.locator('#caseBoard').inner_text();assert '처치 확인' in text and '골목 연락책' in text and '정필수' not in text,text
+    text=await q.locator('#caseBoard').inner_text();assert '처치 확인' in text and '골목 연락책' in text and '정하린' not in text,text
     t=await q.evaluate('__game.S.t');await q.keyboard.press('ArrowRight');await q.keyboard.press('z');await q.wait_for_timeout(300)
     assert await q.evaluate('__game.S.t')==t,'case board does not pause gameplay'
     await q.screenshot(path=str(out/(name+'-first-lead.png')));await q.click('#btnCaseClose')

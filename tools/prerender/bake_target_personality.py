@@ -14,7 +14,7 @@ from run import outline
 R=Path(__file__).resolve().parents[2];H=R/'tools/prerender';O=R/'build/pr';FR=64
 GESTURES=['phone','ledger','point','drink','smoke'];N=14
 async def main():
- selected=next((a.split('=',1)[1].split(',')for a in sys.argv if a.startswith('--only=')),['pack','worker','suit','bossBig','old','helmet','femaleSuit'])
+ selected=next((a.split('=',1)[1].split(',')for a in sys.argv if a.startswith('--only=')),['pack','worker','suit','bossBig','old','helmet','femaleSuit','femaleBoss','femaleWorker'])
  meta=json.loads((O/'pr_meta.json').read_text())
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(H)));threading.Thread(target=server.serve_forever,daemon=True).start()
  try:

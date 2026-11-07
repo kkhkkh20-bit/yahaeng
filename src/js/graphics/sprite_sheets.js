@@ -4,10 +4,10 @@ const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1
 const PR_PAL = {
   ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#313b46', '#34404e', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
-  old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#6a4020', '#b84a3a', '#3a4a6a', '#d8d8d4'],
-  civ1: ['#c48961', '#1a1a1a', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#2a2a2a', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#7a2a2a', '#d27a9e', '#20222a', '#202020'],
-  civ4: ['#e8b890', '#3a2a20', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#121212', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#8a5a2a', '#7a3a8a', '#2a2a30', '#1a1a1a'],
-  civ7: ['#c99068', '#1a1a1a', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#5a3a1a', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#202020', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
+  old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
+  civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
+  civ4: ['#e8b890', '#222a31', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#929593', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#a66339', '#7a3a8a', '#2a2a30', '#1a1a1a'],
+  civ7: ['#c99068', '#252426', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#9d9483', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#423d38', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
   ...OUTFIT_PAL,
   ...Object.fromEntries(Object.values(TARGET_CAST).map(p=>[p.key.split('@')[0],p.palette])),
 };

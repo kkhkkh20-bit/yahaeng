@@ -39,7 +39,8 @@ const kitOk = im => im && im.complete && im.naturalWidth > 0;
 const kitTex = {}, kitFurn = {};
 if (KIT) {
   for (const [k, src] of Object.entries(KIT.tex || {})) kitTex[k] = Object.assign(new Image(), { src });
-  for (const [k, v] of Object.entries(KIT.furn || {})) kitFurn[k] = { img: Object.assign(new Image(), { src: v.src }), ox: v.ox, oy: v.oy };
+  const sharedKinds=new Set(Object.values(window.__PROP_ART__?.frames||{}).map(a=>a.kind));
+  for (const [k, v] of Object.entries(KIT.furn || {})) if(!sharedKinds.has(k.split('_')[0]))kitFurn[k] = { img: Object.assign(new Image(), { src: v.src }), ox: v.ox, oy: v.oy };
 }
 // 실내 바닥 재질 (64px 텍스처를 한 칸으로): 나무 마루 · 짙은 마루(가로결) · 타일 · 콘크리트
 const kitFloorC = {};

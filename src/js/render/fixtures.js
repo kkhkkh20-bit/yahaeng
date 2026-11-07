@@ -32,24 +32,24 @@ const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[
 function paintWindow(w,lit,L=44,T=20) {
   const state=winSt(w),open=state==='open',left=-L/2,top=-T/2;
   ctx.fillStyle='#080e12';ctx.fillRect(left-2,top-1,L+4,T+4);
-  ctx.fillStyle='#3d4948';ctx.fillRect(left,top,L,T);
-  ctx.fillStyle='#a8b3a4';ctx.fillRect(left,top,L,2);ctx.fillRect(left,top,2,T);
+  ctx.fillStyle='#3b454d';ctx.fillRect(left,top,L,T);
+  ctx.fillStyle='#a4adb1';ctx.fillRect(left,top,L,2);ctx.fillRect(left,top,2,T);
   ctx.fillStyle='#101b20';ctx.fillRect(left+3,top+3,L-6,T-6);
   const glass=ctx.createLinearGradient(left,top,L/2,T/2);
-  glass.addColorStop(0,lit?'#c9ba89':'#65848b');glass.addColorStop(1,lit?'#716747':'#243e49');
+  glass.addColorStop(0,lit?'#c4b085':'#607c90');glass.addColorStop(1,lit?'#716653':'#243a4a');
   const pane=open?L*.32:(L-8)/2;
   ctx.fillStyle=glass;ctx.fillRect(left+3,top+3,pane,T-6);
   if(!open)ctx.fillRect(1,top+3,L/2-4,T-6);
-  ctx.strokeStyle='#c8d3c26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
+  ctx.strokeStyle='#c3d9e26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
   const join=open?left+pane+3:0;
-  ctx.fillStyle='#84958b';ctx.fillRect(join-1,top+2,2,T-4);
-  if(!open){ctx.fillStyle='#727f78';ctx.fillRect(-2,-1,4,2);if(state==='lock'){ctx.fillStyle='#b0a078';ctx.fillRect(-1,-2,2,3);}}
+  ctx.fillStyle='#7e909a';ctx.fillRect(join-1,top+2,2,T-4);
+  if(!open){ctx.fillStyle='#75818a';ctx.fillRect(-2,-1,4,2);if(state==='lock'){ctx.fillStyle='#b79b63';ctx.fillRect(-1,-2,2,3);}}
   if(state==='bar'){
     ctx.strokeStyle='#081014';ctx.lineWidth=3;ctx.beginPath();
     for(let x=left+7;x<L/2-2;x+=8){ctx.moveTo(x,top+1);ctx.lineTo(x,T/2+1);}ctx.stroke();
-    ctx.strokeStyle='#98a397';ctx.lineWidth=1;ctx.stroke();
+    ctx.strokeStyle='#9aa5ac';ctx.lineWidth=1;ctx.stroke();
   }
-  ctx.fillStyle='#899084';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c6c6ae';ctx.fillRect(left-2,T/2,L+4,1);
+  ctx.fillStyle='#79858e';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c0c7c8';ctx.fillRect(left-2,T/2,L+4,1);
 }
 function drawWindow(w, alpha) {
   if(drawRoomFinishWindow(w,alpha))return;
@@ -63,16 +63,16 @@ function paintSideWindow(w,lit,side){
   const st=winSt(w),open=st==='open',outer=side*9,inner=-side*4;
   const quad=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.lineTo(...d);ctx.closePath();};
   ctx.fillStyle='#080e12a8';quad([outer+side*2,-16],[inner,-19],[inner,18],[outer+side*2,21]);ctx.fill();
-  ctx.fillStyle='#53605a';quad([outer,-17],[inner,-20],[inner,17],[outer,20]);ctx.fill();
+  ctx.fillStyle='#4a5862';quad([outer,-17],[inner,-20],[inner,17],[outer,20]);ctx.fill();
   ctx.fillStyle='#111d21';quad([outer-side*1.5,-14],[inner+side*1.5,-17],[inner+side*1.5,14],[outer-side*1.5,17]);ctx.fill();
-  const glass=ctx.createLinearGradient(inner,-15,outer,16);glass.addColorStop(0,lit?'#a89e7b':'#3c5962');glass.addColorStop(1,lit?'#635d47':'#192f37');
+  const glass=ctx.createLinearGradient(inner,-15,outer,16);glass.addColorStop(0,lit?'#b2a17e':'#3b556a');glass.addColorStop(1,lit?'#675d4c':'#1a2e3c');
   ctx.fillStyle=glass;
   if(!open){quad([outer-side*2,-13],[inner+side*2,-15],[inner+side*2,-1],[outer-side*2,1]);ctx.fill();}
   quad([outer-side*2,3],[inner+side*2,1],[inner+side*2,13],[outer-side*2,15]);ctx.fill();
-  ctx.strokeStyle='#88958a99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(outer,-17);ctx.lineTo(inner,-20);ctx.lineTo(inner,17);ctx.moveTo(outer,2);ctx.lineTo(inner,-1);ctx.stroke();
+  ctx.strokeStyle='#98a8b299';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(outer,-17);ctx.lineTo(inner,-20);ctx.lineTo(inner,17);ctx.moveTo(outer,2);ctx.lineTo(inner,-1);ctx.stroke();
   if(st==='bar'){ctx.strokeStyle='#0a1115';ctx.lineWidth=2;ctx.beginPath();for(const y of [-9,0,9]){ctx.moveTo(outer-side,y+2);ctx.lineTo(inner+side,y-1);}ctx.stroke();}
   if(st==='lock'){ctx.fillStyle='#a59874';ctx.fillRect(Math.min(outer,inner)+3,-1,2,2);}
-  ctx.fillStyle='#858b7b';quad([outer,18],[inner,15],[inner+side*2,18],[outer+side*2,22]);ctx.fill();ctx.restore();
+  ctx.fillStyle='#84919b';quad([outer,18],[inner,15],[inner+side*2,18],[outer+side*2,22]);ctx.fill();ctx.restore();
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {

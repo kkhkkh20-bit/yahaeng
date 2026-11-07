@@ -16,7 +16,7 @@ async def main():
   assert await q.locator('#caseBoard').is_visible()
   assert await q.locator('#caseHierarchy canvas').count()==0
   text=await q.locator('#caseBoard').inner_text()
-  assert all(name not in text for name in ['윤서경','까마귀','강도윤','문기석','의장']),text
+  assert all(name not in text for name in ['윤서경','까마귀','강도윤','문서윤','의장']),text
   assert await q.evaluate('localStorage.getItem("yahaeng.case.v1")===null'),'viewing creates a campaign save'
   await q.keyboard.press('Escape');await q.wait_for_function('!document.getElementById("caseBoard").open')
   assert await q.locator('#intro [data-case-open]').evaluate('e=>e===document.activeElement')

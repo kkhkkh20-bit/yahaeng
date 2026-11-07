@@ -6,6 +6,7 @@ function surfaceFixture(o){
 }
 function surfacePoint(o){
   const f=o?.surface;if(!f)return{x:o?.dx??o?.x,y:o?.dy??o?.y};
+  const finished=propSurfacePoint(o);if(finished)return finished;
   const k=kitFurn[furnKey(f)],baked=KIT&&k&&kitOk(k.img),u=o.surfaceU??.5;
   let x=(f.x+f.w*u)*TILE,y=(f.y+f.h*.5)*TILE;
   if(baked){y=f.y*TILE+(f.t==='shelf'?24:-2);if(f.t==='desk'||f.t==='desk2'){x=f.x*TILE+24;y=f.y*TILE-2;}}

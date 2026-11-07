@@ -1444,8 +1444,8 @@ STAGES.find(s=>s.id==='m4').guards.push({kind:'g1',tag:'uniformDonor',at:[2,10],
 // All shapes and portraits use the existing eight-direction character assets.
 const TARGET_CAST = {
  runner:{name:'박인호 · 운반책',role:'금성회 하청 운반책',appearance:'갈색 후드 · 검은 머리',key:'castRunner@pack',palette:['#d9a47e','#171a20','#986d45','#30343b','#202127']},
- contact:{name:'정필수 · 연락책',role:'금성회 연락책',appearance:'회청색 작업복 · 검은 머리',key:'castContact@worker',palette:['#d8aa86','#1b2027','#607d91','#303a47','#24262b']},
- broker:{name:'문기석 · 중개인',role:'금성회 회계 중개인',appearance:'청록 정장 · 갈색 머리',key:'castBroker@suit',palette:['#e6b994','#5a392b','#346a70','#293f49','#20252c']},
+ contact:{name:'정하린 · 연락책',role:'금성회 연락책',appearance:'회청색 작업복 · 검은 머리',key:'castContact@worker',palette:['#d8aa86','#1b2027','#607d91','#303a47','#24262b']},
+ broker:{name:'문서윤 · 중개인',role:'금성회 회계 중개인',appearance:'청록 정장 · 갈색 머리',key:'castBroker@suit',palette:['#e6b994','#5a392b','#346a70','#293f49','#20252c']},
  club:{name:'강도윤 · 클럽 실장',role:'금성회 유흥가 책임자',appearance:'자주색 정장 · 검은 머리',key:'castClub@suit',palette:['#e3b08c','#17171c','#80445f','#292832','#191b22']},
  collector:{name:'장무혁 · 수금반장',role:'금성회 자금책',appearance:'큰 체격 · 황토색 재킷',key:'castCollector@big',palette:['#c89471','#24211e','#ad7e3b','#34342e','#24201c']},
  district:{name:'백철민 · 상권 보스',role:'금성회 상권 지부장',appearance:'흰머리 · 밝은 회색 정장',key:'castDistrict@old',palette:['#ddb391','#d9d4ca','#b4ac99','#40444d','#25272b']},
@@ -1456,13 +1456,13 @@ const CAMPAIGN_STORY = {
  tB:{before:'증인들을 빼돌리던 제비가 사라졌다. 의뢰인 까마귀가 마지막 연락 장소인 대성 물류로 올빼미를 보냈다.',after:'서류에는 제비가 남긴 경고가 있었다. “금성회가 증인을 거래한다. 폐차장의 박인호가 은신처를 알고 있어.” 다음 밤, 운반책을 막는다.'},
  p0:{before:'제비의 서류가 가리킨 운반책 박인호가 오늘 밤 증인 은신처를 팔아넘긴다. 거래를 막아 제비를 찾을 시간을 번다.',after:'박인호의 연락은 끊겼다. 서류에 적힌 다음 출고 장소는 물류실이다. 그곳의 출고 서류로 증인이 어디로 옮겨졌는지 찾는다.',cast:{runner:'runner'}},
  p1:{before:'운반책이 쓰던 물류실이다. 제비가 쫓던 차량의 출고 서류가 남아 있다. 사람을 더 죽일 필요는 없다.',after:'출고 서류의 차량 번호가 옆 창고의 배송 명세서와 연결된다. 다음에는 사람 대신 카메라 한 대를 피하면 된다.'},
- p2:{before:'출고 서류에 나온 차량이 이 창고를 거쳤다. CCTV가 지키는 명세서에서 물건을 받은 사람을 확인한다.',after:'수신인은 금성회 연락책 정필수. 증인 명단을 동쪽 적치장에서 넘길 예정이다. 거래 전에 그를 막는다.'},
- e1:{before:'배송 명세서가 가리킨 정필수다. 증인 명단이 조직에 넘어가면 은신처가 모두 드러난다.',after:'명단 인계를 막았다. 정필수가 쓰던 거래 창고를 확인하면 누가 돈을 댔는지 알 수 있다.',cast:{contact:'contact'}},
+ p2:{before:'출고 서류에 나온 차량이 이 창고를 거쳤다. CCTV가 지키는 명세서에서 물건을 받은 사람을 확인한다.',after:'수신인은 금성회 연락책 정하린. 증인 명단을 동쪽 적치장에서 넘길 예정이다. 거래 전에 그를 막는다.'},
+ e1:{before:'배송 명세서가 가리킨 정하린다. 증인 명단이 조직에 넘어가면 은신처가 모두 드러난다.',after:'명단 인계를 막았다. 정하린가 쓰던 거래 창고를 확인하면 누가 돈을 댔는지 알 수 있다.',cast:{contact:'contact'}},
  e2:{before:'연락책의 거래 창고다. 증인 거래 대금을 보낸 사람의 흔적을 찾는다.',after:'거래 명세서의 정산 장소는 골목 연락 거점이다. 2층 장부에 최종 결재자가 적혀 있다.'},
- e3:{before:'거래 명세서의 정산 거점이다. 2층 연락 장부를 확보해 증인 거래의 결재자를 확인한다.',after:'결재자는 클럽 실장 강도윤. 회계 중개인 문기석이 교환실을 통해 인계서를 보내고 있다. 연락부터 끊는다.'},
- e4:{before:'장부에 나온 교환실이다. 강도윤에게 보낼 인계서가 2층에 있다. 문기석의 보고가 넘어가기 전에 빼낸다.',after:'인계서에는 문기석의 사무실 주소가 있었다. 그는 거래가 끊긴 것을 알아차렸다. 강도윤에게 잠입을 알리기 전에 막는다.'},
- e5:{before:'교환실 인계서로 찾은 회계 중개인 문기석. 보고가 올라가면 클럽의 증거가 사라진다.',after:'문기석의 보고를 막았다. 인계서에 적힌 클럽 실장 강도윤이 다음 표적이다. 그가 가진 장부와 암호표로 자금줄을 밝힌다.',cast:{broker:'broker'}},
- m2:{before:'문기석이 보고하던 클럽 실장 강도윤. 금성회의 유흥가를 맡으며 증인 거래를 중개한다. 장부의 가명을 암호표와 맞춰 배후를 찾는다.',after:'강도윤의 장부를 거래 암호표와 대조했다. 자금책 장무혁과 상권 보스 백철민의 실명이 드러났다. 다음에는 돈줄과 계약서를 함께 끊는다.',cast:{vip:'club'}},
+ e3:{before:'거래 명세서의 정산 거점이다. 2층 연락 장부를 확보해 증인 거래의 결재자를 확인한다.',after:'결재자는 클럽 실장 강도윤. 회계 중개인 문서윤이 교환실을 통해 인계서를 보내고 있다. 연락부터 끊는다.'},
+ e4:{before:'장부에 나온 교환실이다. 강도윤에게 보낼 인계서가 2층에 있다. 문서윤의 보고가 넘어가기 전에 빼낸다.',after:'인계서에는 문서윤의 사무실 주소가 있었다. 중개인은 거래가 끊긴 것을 알아차렸다. 강도윤에게 잠입을 알리기 전에 막는다.'},
+ e5:{before:'교환실 인계서로 찾은 회계 중개인 문서윤. 보고가 올라가면 클럽의 증거가 사라진다.',after:'문서윤의 보고를 막았다. 인계서에 적힌 클럽 실장 강도윤이 다음 표적이다. 그가 가진 장부와 암호표로 자금줄을 밝힌다.',cast:{broker:'broker'}},
+ m2:{before:'문서윤이 보고하던 클럽 실장 강도윤. 금성회의 유흥가를 맡으며 증인 거래를 중개한다. 장부의 가명을 암호표와 맞춰 배후를 찾는다.',after:'강도윤의 장부를 거래 암호표와 대조했다. 자금책 장무혁과 상권 보스 백철민의 실명이 드러났다. 다음에는 돈줄과 계약서를 함께 끊는다.',cast:{vip:'club'}},
  m4:{before:'클럽 장부가 드러낸 두 사람이다. 장무혁은 돈을 걷고, 백철민은 증인 거래 계약을 승인한다. 클럽의 거래가 이곳에서 결재되고 돈이 된다.',after:'두 사람의 자금과 계약서를 확보했다. 그러나 철수 장소에서 금성회에 붙잡혔다. 그들이 알고 있던 것은 까마귀에게만 보낸 귀환 경로였다.',cast:{collector:'collector',vip:'district'}},
  m6:{solo:true,before:'까마귀에게만 보낸 귀환 경로가 새어 나갔다. 감방에서 깨어난 올빼미는 제비의 무전기와 인계서로 누가 넘겼는지 확인해야 한다.',after:'제비는 이미 죽었다. 까마귀가 서명한 인계서는 금성회 운송 보스 오태식에게 보내졌다. 무전기에 남은 집하장 주파수로 마지막 이송을 추적한다.'},
  m7:{solo:true,before:'까마귀의 인계서를 받은 운송 보스 오태식. 제비가 남긴 주파수로 집하장을 찾았다. 그를 처치하고 출고를 끊어 남은 증인들을 지킨다.',after:'새벽배송을 멈췄다. 운송명세서의 최종 수취인은 까마귀였다. 금성회 본부가 그의 은신처다. 처음부터 의뢰로 하부 조직을 정리하고 증인을 독점하려던 것이다.',cast:{broker:'freight'}},
@@ -1477,12 +1477,12 @@ const campaignStage=id=>STAGES.find(s=>s.id===id);
 campaignStage('tB').brief=campaignStage('tB').brief.replace('연락책이 사라졌다.','제비가 사라졌다.');
 campaignStage('m6').brief=campaignStage('m6').brief.replace('까마귀가 우리를 넘겼다.','까마귀가 준 철수 장소에서 붙잡혔다.');
 campaignStage('p0').brief='갈색 후드의 운반책 박인호가 표적이다. '+campaignStage('p0').brief;
-campaignStage('e1').brief='회청색 작업복의 연락책 정필수가 표적이다. '+campaignStage('e1').brief;
-campaignStage('e5').brief='청록 정장의 중개인 문기석이 표적이다. '+campaignStage('e5').brief;
+campaignStage('e1').brief='회청색 작업복의 연락책 정하린가 표적이다. '+campaignStage('e1').brief;
+campaignStage('e5').brief='청록 정장의 중개인 문서윤이 표적이다. '+campaignStage('e5').brief;
 Object.assign(campaignStage('m2'),{purpose:'강도윤을 처치하고, 장부와 거래 암호표로 자금책의 실명을 밝힌다.'});
 campaignStage('m2').brief='자주색 정장의 강도윤이 클럽 실장이다. '+campaignStage('m2').brief;
 Object.assign(campaignStage('m4'),{name:'돈줄',purpose:'자금책 장무혁과 상권 보스 백철민을 처치하고, 현금 가방과 계약서를 확보한다.',mission:'장무혁·백철민 처치 · 현금 가방과 계약서 회수 후 탈출'});
-campaignStage('m4').brief='황토색 재킷에 체격이 큰 장무혁은 수금반장, 흰머리에 밝은 정장을 입은 백철민은 클럽 VIP룸의 상권 보스다. '+campaignStage('m4').brief;
+campaignStage('m4').brief='황토색 재킷에 체격이 큰 장무혁은 수금반장, 회색 머리에 밝은 정장을 입은 백철민은 클럽 VIP룸의 상권 보스다. '+campaignStage('m4').brief;
 campaignStage('m4').brief=campaignStage('m4').brief.replaceAll('수금원','수금반장');
 campaignStage('m4').notes?.forEach(n=>{if(n.lines)n.lines=n.lines.map(l=>l.replaceAll('클럽 실장','상권 보스 백철민'));});
 Object.assign(campaignStage('m7'),{purpose:'운송 보스 오태식을 처치하고 배송망을 끊어 남은 증인들의 이송을 막는다.'});
@@ -1525,11 +1525,11 @@ const CASE_SOURCES=[
  {id:'dispatch',stage:'tB',items:[0],title:'제비의 연락 서류',text:'금성회 운반책 박인호가 증인의 은신처를 넘기려 한다. 거래 전에 막아야 한다.',grants:{runner:3}},
  {id:'runner-down',stage:'p0',targets:['runner'],title:'끊어진 운반 연락',text:'운반책의 연락이 끊기자 조직이 골목 연락책을 움직였다. 출고 서류가 다음 연결고리다.',grants:{contact:1}},
  {id:'release',stage:'p1',items:[0],title:'출고 차량 번호',text:'운반책이 쓰던 차량은 옆 창고를 거쳤다. 수신인 기록을 대조할 수 있다.',grants:{contact:1}},
- {id:'delivery',stage:'p2',items:[0],title:'배송 명세서의 수신인',text:'수신인은 정필수. 동쪽 적치장에서 증인 명단을 넘길 예정이다.',grants:{contact:3}},
+ {id:'delivery',stage:'p2',items:[0],title:'배송 명세서의 수신인',text:'수신인은 정하린. 동쪽 적치장에서 증인 명단을 넘길 예정이다.',grants:{contact:3}},
  {id:'contact-down',stage:'e1',targets:['contact'],title:'회계 보고선',text:'연락책을 잃은 조직이 거래 창고의 명세서를 찾고 있다. 위에는 회계 중개인이 있다.',grants:{broker:1}},
  {id:'trade',stage:'e2',items:[0],title:'중개인의 정산 거점',text:'거래 대금은 2층 연락 거점에서 정산한다. 장부에 결재자가 남아 있다.',grants:{broker:1}},
- {id:'ledger',stage:'e3',items:[0],title:'두 명의 결재자',text:'문기석은 회계 중개인, 그 위 결재자는 클럽 실장이다. 교환실의 인계서를 추적한다.',grants:{broker:2,club:1}},
- {id:'handover',stage:'e4',items:[0],title:'문기석의 보고 대상',text:'문기석의 사무실과 보고 대상 강도윤을 확인했다. 중개인을 먼저 막으면 클럽에 경고가 가지 않는다.',grants:{broker:3,club:2}},
+ {id:'ledger',stage:'e3',items:[0],title:'두 명의 결재자',text:'문서윤은 회계 중개인, 그 위 결재자는 클럽 실장이다. 교환실의 인계서를 추적한다.',grants:{broker:2,club:1}},
+ {id:'handover',stage:'e4',items:[0],title:'문서윤의 보고 대상',text:'문서윤의 사무실과 보고 대상 강도윤을 확인했다. 중개인을 먼저 막으면 클럽에 경고가 가지 않는다.',grants:{broker:3,club:2}},
  {id:'broker-down',stage:'e5',targets:['broker'],title:'비어 버린 중간 연락선',text:'중개인이 사라져 강도윤이 직접 연락을 받는다. 흡연 동선과 장부 내선이 접근 기회다.',grants:{club:3}},
  {id:'club-down',stage:'m2',targets:['vip'],title:'금고 밖으로 움직이는 자금',text:'실장의 보고가 끊기자 수금반장과 상권 지부장이 정산을 서두른다. 장부의 가명을 풀어야 실명을 안다.',grants:{collector:1,district:1}},
  {id:'cipher',stage:'m2',items:[0,1],title:'장부와 거래 암호표 대조',text:'가명은 장무혁과 백철민이었다. 돈을 걷는 자와 계약을 승인하는 자다.',grants:{collector:3,district:3}},
@@ -1555,38 +1555,41 @@ STAGES.push({...chairBase,id:'n1',no:'15',name:'마지막 이름',sub:'마지막
  targetCast:{boss:TARGET_CAST.chair},targetNames:{boss:TARGET_CAST.chair.name},
  purpose:'금성회 의장 윤서경을 처치하고 지휘망의 명령 원장을 확보한다.',mission:'의장 처치 · 본채 2층 명령 원장 회수 후 탈출',
  itemName:'명령 원장',itemNames:['명령 원장'],buildingNames:{0:'백림재단 사저'},
- brief:'은빛 머리와 아이보리 정장의 윤서경이 의장이다. 단상에서 연못가와 잔칫상으로 이동한다. 뷔페 조끼는 마당 통행에 쓰지만 본채는 조직원 복장이 필요하다. 정문 밖 경비의 초록 카드키로 본채에 들어갈 수 있다. 본채 2층 명령 원장까지 확보해야 지휘망을 끊을 수 있다. 다른 손님은 표적이 아니다. 현장의 대화에서 연못·단상·발전기 접근 기회를 찾을 수 있다.',
+ brief:'연금색 머리와 아이보리 정장의 윤서경이 의장이다. 단상에서 연못가와 잔칫상으로 이동한다. 뷔페 조끼는 마당 통행에 쓰지만 본채는 조직원 복장이 필요하다. 정문 밖 경비의 초록 카드키로 본채에 들어갈 수 있다. 본채 2층 명령 원장까지 확보해야 지휘망을 끊을 수 있다. 다른 손님은 표적이 아니다. 현장의 대화에서 연못·단상·발전기 접근 기회를 찾을 수 있다.',
  endText:chairStory.after});
 DIALOGUE.n1=[['hero','까마귀가 숨긴 마지막 이름, 윤서경. 의장을 잃으면 금성회도 끝이다.'],['hero','표적은 의장 한 명. 2층 명령 원장까지 챙겨 지휘망을 남기지 않는다.']];
 DIALOGUE.m5=[['hero','까마귀의 은신처다. 하지만 그 위에는 아직 이름 없는 의장이 있다.'],['hero','까마귀와 원본 장부. 이 둘로 마지막 보고선을 밝힌다.']];
 // An organization hunt is the purpose from the first night; mechanics stay gradual.
 campaignStage('tB').story.before='금성회가 증인들을 사고팔고 있다. 조직을 뿌리째 없애려면 숨어 있는 간부와 명령선을 찾아야 한다. 실종된 제비가 대성 물류에 첫 단서를 남겼다.';
 
-campaignStage('e3').story.after='결재자는 회계 중개인 문기석. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
+campaignStage('e3').story.after='결재자는 회계 중개인 문서윤. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
 campaignStage('e3').endText=campaignStage('e3').story.after;
-campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문기석의 보고가 넘어가기 전에 빼낸다.';
+campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문서윤의 보고가 넘어가기 전에 빼낸다.';
 // Identities keep their existing bodies, access rules and paths. The coat colour
 // carries rank; authored performances happen at the actual stops on those paths.
 const OFFICER_STYLE={
  runner:{appearance:'주황색 후드 · 검은 배낭',coat:'#ce7c27',pants:'#252d39',habit:'혼자 담배를 피우며 거래 상대를 기다린다.',temperament:'성급한 하청 운반책',cues:[['smoke','거래까지 담배 한 대. 그놈만 오면 바로 뜬다.'],['phone','아직도 출발 안 했어? 오래 기다릴 생각 없어.']],alert:'거래는 취소야! 나부터 빠져야겠어!'},
- contact:{appearance:'선명한 청색 작업복 · 검은 작업모',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[['phone','신호 오기 전엔 움직이지 마. 명단은 내가 넘긴다.'],['point','여기선 이름 부르지 마. 연락 끝나면 바로 흩어져.']],alert:'연락선을 끊어! 여긴 들켰다!'},
- broker:{appearance:'옥색 정장 · 갈색 머리',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[['ledger','숫자가 안 맞잖아. 사본 말고 원본으로 가져와.'],['phone','교환실 연락이 왜 없어? 실장께 보고하기 전에 확인해.']],alert:'장부부터 지켜! 저 사람 들여보낸 게 누구야!'},
- club:{appearance:'붉은 정장 · 흰 셔츠 · 검은 머리',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[['smoke','담배 피울 때는 붙지 마. 입구에서 기다려.'],['drink','잔은 비워 두지 마. 얘기는 VIP룸에서 하지.'],['phone','장부 건이면 내선으로 돌려. 내가 직접 간다.']],reply:'알겠습니다. 입구에서 기다리겠습니다.',alert:'내 클럽에서 감히! 문 막아, 당장!'},
+ contact:{appearance:'선명한 청색 작업복 · 구리빛 머리',hair:'#9b5c3b',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[['phone','신호 오기 전엔 움직이지 마. 명단은 내가 넘긴다.'],['point','여기선 이름 부르지 마. 연락 끝나면 바로 흩어져.']],alert:'연락선을 끊어! 여긴 들켰다!'},
+ broker:{appearance:'옥색 정장 · 버건디 단발',hair:'#763f54',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[['ledger','숫자가 안 맞잖아. 사본 말고 원본으로 가져와.'],['phone','교환실 연락이 왜 없어? 실장께 보고하기 전에 확인해.']],alert:'장부부터 지켜! 저 사람 들여보낸 게 누구야!'},
+ club:{appearance:'붉은 정장 · 애쉬브라운 머리',hair:'#817368',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[['smoke','담배 피울 때는 붙지 마. 입구에서 기다려.'],['drink','잔은 비워 두지 마. 얘기는 VIP룸에서 하지.'],['phone','장부 건이면 내선으로 돌려. 내가 직접 간다.']],reply:'알겠습니다. 입구에서 기다리겠습니다.',alert:'내 클럽에서 감히! 문 막아, 당장!'},
  collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[['ledger','한 푼이라도 비면 네가 메워. 오늘 합계는 다시 맞춰.'],['point','떨어지지 마. 현금 금고는 내 빨간 카드로만 연다.'],['phone','수금 끝나면 운송 쪽으로 넘긴다. 결재부터 받아.']],reply:'예, 반장님. 경호 붙어 있습니다.',alert:'돈에는 손대지 마! 저놈부터 잡아!'},
- district:{appearance:'보라색 정장 · 은빛 머리',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[['ledger','수금은 장무혁에게. 계약 결재는 내가 한다.'],['point','손님이라고 다 들이지 마. 허락받은 사람만 받아.']],reply:'예. VIP룸 입구를 지키겠습니다.',alert:'결재도 없이 누가 들여보냈나! 경호는 뭐 하는 거야!'},
+ district:{appearance:'보라색 정장 · 회색 머리',hair:'#929d9f',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[['ledger','수금은 장무혁에게. 계약 결재는 내가 한다.'],['point','손님이라고 다 들이지 마. 허락받은 사람만 받아.']],reply:'예. VIP룸 입구를 지키겠습니다.',alert:'결재도 없이 누가 들여보냈나! 경호는 뭐 하는 거야!'},
  freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[['ledger','봉인 번호부터 맞춰. 명세서랑 다르면 차를 세워.'],['phone','새벽배송 시간 맞춰. 승인 전에는 출발하지 마.'],['point','저 화물 다시 확인해. 빈 차로 돌려보낼 생각 없어.']],alert:'차량 세워! 출고 기록부터 잠가!'},
- crow:{appearance:'진홍색 정장 · 백발',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[['phone','보고는 나한테만. 위에서 묻기 전엔 입 열지 마.'],['ledger','장부는 여기 남긴다. 원본 없이 거래를 넘길 순 없어.'],['point','얼굴까지 확인해. 위층에 아무나 들여보내지 마.']],alert:'올빼미… 여기까지 왔군. 경호, 막아!'},
- chair:{appearance:'아이보리 재킷 · 자주색 바지 · 은발',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[['drink','잔은 높이. 오늘 일은 오늘 밤에 끝냅시다.'],['point','연못 쪽은 비워 두세요. 조용히 걸을 곳은 필요하니까.'],['drink','명령은 원장에 남깁니다. 내 서명만 확인하세요.']],reply:'네, 의장님.',alert:'당황하지 마세요. 문을 닫고 경비를 부르세요.'}
+ crow:{appearance:'진홍색 정장 · 백발',hair:'#d9d2c4',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[['phone','보고는 나한테만. 위에서 묻기 전엔 입 열지 마.'],['ledger','장부는 여기 남긴다. 원본 없이 거래를 넘길 순 없어.'],['point','얼굴까지 확인해. 위층에 아무나 들여보내지 마.']],alert:'올빼미… 여기까지 왔군. 경호, 막아!'},
+ chair:{appearance:'아이보리 재킷 · 자주색 바지 · 연금색 머리',hair:'#c9b58d',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[['drink','잔은 높이. 오늘 일은 오늘 밤에 끝냅시다.'],['point','연못 쪽은 비워 두세요. 조용히 걸을 곳은 필요하니까.'],['drink','명령은 원장에 남깁니다. 내 서명만 확인하세요.']],reply:'네, 의장님.',alert:'당황하지 마세요. 문을 닫고 경비를 부르세요.'}
 };
 const wardrobeWords=[['갈색 후드','주황색 후드'],['회청색 작업복','선명한 청색 작업복'],['청록 정장','옥색 정장'],['청록색 정장','옥색 정장'],['자주색 정장','붉은 정장'],['황토색 재킷','황금색 재킷'],['밝은 회색 정장','보라색 정장'],['밝은 정장','보라색 정장'],['적갈색 정장','진홍색 정장'],['아이보리 정장','아이보리 재킷과 자주색 바지']];
 const wardrobeText=text=>wardrobeWords.reduce((s,[from,to])=>s.replaceAll(from,to),text);
 for(const [id,style]of Object.entries(OFFICER_STYLE)){
  const p=TARGET_CAST[id];p.appearance=style.appearance;p.temperament=style.temperament;p.habit=style.habit;
- p.palette=[...p.palette.slice(0,2),style.coat,style.pants,style.shoes||p.palette[4]];p.personality=style;
+ p.palette=[p.palette[0],style.hair||p.palette[1],style.coat,style.pants,style.shoes||p.palette[4]];p.personality=style;
 }
 for(const st of STAGES){if(st.brief)st.brief=wardrobeText(st.brief);if(DIALOGUE[st.id])DIALOGUE[st.id]=DIALOGUE[st.id].map(([who,text])=>[who,wardrobeText(text)]);}
 
 TARGET_CAST.collector.key='castCollector@bossBig';
+
+TARGET_CAST.contact.key='castContact@femaleWorker';
+TARGET_CAST.broker.key='castBroker@femaleBoss';
 
 'use strict';
 (function () {
@@ -2102,6 +2105,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
 // 가구: 막힌 칸은 어두운 판(그림자) 위에 그린다. 막힘·엄폐 구분 테두리는 살피기(Alt) 때만
 function drawFurn(x, it) {
+  if(drawPropFurn(x,it,true))return;
   if(drawRoomFinishFurn(x,it))return;
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
   if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
@@ -2109,6 +2113,7 @@ function drawFurn(x, it) {
 }  // 칸 테두리(파랑·주황)는 평소엔 그리지 않는다 — 살피기(Alt)·전술 지도에서만 보인다
 const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '');  // 구운 가구 그림 열쇠: 종류_가로x세로(_r방향)
 function drawFurnArt(x, it) {
+  if(drawPropFurn(x,it))return;
   if(quarterFurn(x,it))return;
   if(it.t==='locker'||it.t==='wardrobe'){drawCabinet({type:it.t,tx:it.x,ty:it.y,w:it.w,h:it.h,furn:true,fl:it.fl||0},'all',x,0);return;}
   if(INK_STUDY&&STAGE.id==='m2'&&it.t==='dance'){drawInkDance(x,it);return;}
@@ -2446,7 +2451,8 @@ const kitOk = im => im && im.complete && im.naturalWidth > 0;
 const kitTex = {}, kitFurn = {};
 if (KIT) {
   for (const [k, src] of Object.entries(KIT.tex || {})) kitTex[k] = Object.assign(new Image(), { src });
-  for (const [k, v] of Object.entries(KIT.furn || {})) kitFurn[k] = { img: Object.assign(new Image(), { src: v.src }), ox: v.ox, oy: v.oy };
+  const sharedKinds=new Set(Object.values(window.__PROP_ART__?.frames||{}).map(a=>a.kind));
+  for (const [k, v] of Object.entries(KIT.furn || {})) if(!sharedKinds.has(k.split('_')[0]))kitFurn[k] = { img: Object.assign(new Image(), { src: v.src }), ox: v.ox, oy: v.oy };
 }
 // 실내 바닥 재질 (64px 텍스처를 한 칸으로): 나무 마루 · 짙은 마루(가로결) · 타일 · 콘크리트
 const kitFloorC = {};
@@ -2616,10 +2622,10 @@ const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1
 const PR_PAL = {
   ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#313b46', '#34404e', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
-  old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#6a4020', '#b84a3a', '#3a4a6a', '#d8d8d4'],
-  civ1: ['#c48961', '#1a1a1a', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#2a2a2a', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#7a2a2a', '#d27a9e', '#20222a', '#202020'],
-  civ4: ['#e8b890', '#3a2a20', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#121212', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#8a5a2a', '#7a3a8a', '#2a2a30', '#1a1a1a'],
-  civ7: ['#c99068', '#1a1a1a', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#5a3a1a', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#202020', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
+  old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
+  civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
+  civ4: ['#e8b890', '#222a31', '#2f5a8a', '#2a2a2e', '#e0e0dc'], civ5: ['#d9a47e', '#929593', '#ececec', '#3c4c6c', '#2a2a2a'], civ6: ['#f0c8a4', '#a66339', '#7a3a8a', '#2a2a30', '#1a1a1a'],
+  civ7: ['#c99068', '#252426', '#2a2a2a', '#2a2a2a', '#d0d0c8'], strip: ['#ddaa80', '#2a2a2a', '#d8d4c8', '#4a4a52', '#2a2a2a'], civ8: ['#eabd96', '#9d9483', '#c8b48a', '#5a4a3a', '#3a2a1a'], civ9: ['#e2b088', '#423d38', '#4a7a4a', '#c8c0b0', '#2a2a2a'],
   ...OUTFIT_PAL,
   ...Object.fromEntries(Object.values(TARGET_CAST).map(p=>[p.key.split('@')[0],p.palette])),
 };
@@ -4883,7 +4889,7 @@ function drawOutdoorLampFixtures() {
     const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
@@ -5062,11 +5068,14 @@ function drawIndoorLampFixtures(fl,building=-1) {
     if(l.roomFinish)continue;
     const f=l.fixture,fk=f&&f.x+','+f.y;
     if(f&&!fixtures.has(fk)&&inView(f.x,f.y,70)){
-      fixtures.add(fk);drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
-      if(lampOn(l)){const glow=ctx.createRadialGradient(f.x,f.y-16,0,f.x,f.y-16,12);glow.addColorStop(0,'rgba('+(l.col||'255,222,170')+',.3)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(f.x-12,f.y-28,24,24);}
-      if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,f.y-19);ctx.lineTo(f.x+3,f.y-13);ctx.stroke();}
+      fixtures.add(fk);const modern=roomArtDraw(ctx,'lamp-'+Number(lampOn(l))+'-'+roomArtRotation(f.nx,f.ny),f.x,f.y);
+      if(!modern)drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
+      const bulb=f.y-(modern?35:16);
+      if(lampOn(l)){const glow=ctx.createRadialGradient(f.x,bulb,0,f.x,bulb,10);glow.addColorStop(0,'rgba('+(l.col||'255,222,170')+',.25)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(f.x-10,bulb-10,20,20);}
+      if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,bulb-3);ctx.lineTo(f.x+3,bulb+3);ctx.stroke();}
     }
     const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
+    const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
     // A small wall plate, separate from fixtures and their ground light pools.
     ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);
     ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
@@ -5158,6 +5167,50 @@ function drawRoomFinishGlow(l,color){
  if(!l.roomFinish)return false;
  ctx.save();ctx.beginPath();for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
  const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.65);g.addColorStop(0,`rgba(${color},.075)`);g.addColorStop(1,`rgba(${color},0)`);ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();return true;
+}
+
+// Shared, grounded 2D furniture. One atlas avoids a request and GPU texture per prop.
+const propArt=window.__PROP_ART__||{frames:{}},propAtlas=new Image();
+let propArtDirty=false;
+propAtlas.onload=()=>{propArtDirty=true;if(S)S.floorC={};};
+if(propArt.src)propAtlas.src=propArt.src;
+const propClothKinds=new Set(['bed','bedD','cbed','sofa','sofaV','rug','chair','chairD']);
+function propArtFrame(it){
+ const r=((it.r||0)%4+4)%4,v=propClothKinds.has(it.t)?Math.abs(Math.floor(it.seed||0))%3:0;
+ return propArt.frames[it.t+'-'+r+'-'+v]||null;
+}
+function propSurfacePoint(o){
+ const f=o?.surface,a=f&&propArtFrame(f);if(a?.surfaceHeight==null)return null;
+ const u=o.surfaceU??.5,x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
+ return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
+}
+function drawPropFurn(x,it,shadow=false){
+ const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
+ const px=it.x*TILE,py=it.y*TILE,w=it.w*TILE,h=it.h*TILE,sx=it.w/a.footprint[0],sy=it.h/a.footprint[1];
+ x.save();x.imageSmoothingEnabled=false;
+ if(shadow&&!FURN_FLAT.has(it.t)){
+  x.fillStyle='rgba(4,9,14,.23)';x.beginPath();x.ellipse(px+w/2+2,py+h*.63+2,w*.43,h*.29,0,0,TAU);x.fill();
+ }
+ x.drawImage(propAtlas,a.sx,a.sy,a.w,a.h,px+a.ox*sx,py+a.oy*sy,a.w*sx,a.h*sy);
+ if(it.t==='shelf'&&BLD[bldAt(it.x,it.y)]?.name==='약국')drawPharmacyStock(x,it);
+ x.restore();return true;
+}
+function refreshPropArt(){
+ if(!propArtDirty||!S||!mapC)return;
+ // An atlas arriving after departure replaces both floor caches in one repaint.
+ // No world update, randomness, collision or lighting computation is involved.
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;propArtDirty=false;}finally{setLayer(layer);}
+}
+function switchArtNormal(l){
+ const p=l.control;
+ if(Number.isFinite(p?.nx)&&Number.isFinite(p?.ny)&&(p.nx||p.ny))return[-p.nx,-p.ny];
+ const grid=GF[flOf(l)]||G0,tx=Math.floor(p.x/TILE),ty=Math.floor(p.y/TILE);let best=null;
+ for(let y=ty-1;y<=ty+1;y++)for(let x=tx-1;x<=tx+1;x++){
+  if(!'#NV'.includes(grid[y]?.[x]||' '))continue;
+  const dx=p.x-tc(x),dy=p.y-tc(y),d=Math.hypot(dx,dy);
+  if(!best||d<best.d)best={d,n:Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)]};
+ }
+ return best?.n.some(Boolean)?best.n:[l.fixture?.nx||0,l.fixture?.ny||1];
 }
 
 // Offline-authored cloth and stationery, shared by loose props and desk loot.
@@ -7435,6 +7488,7 @@ function surfaceFixture(o){
 }
 function surfacePoint(o){
   const f=o?.surface;if(!f)return{x:o?.dx??o?.x,y:o?.dy??o?.y};
+  const finished=propSurfacePoint(o);if(finished)return finished;
   const k=kitFurn[furnKey(f)],baked=KIT&&k&&kitOk(k.img),u=o.surfaceU??.5;
   let x=(f.x+f.w*u)*TILE,y=(f.y+f.h*.5)*TILE;
   if(baked){y=f.y*TILE+(f.t==='shelf'?24:-2);if(f.t==='desk'||f.t==='desk2'){x=f.x*TILE+24;y=f.y*TILE-2;}}
@@ -7911,6 +7965,13 @@ function updateVipPlan(dt) {
 
 // Visual performances and local speech never change a route, sight direction,
 // suspicion meter, movement speed, attack opening or skill/progression reward.
+function restoreTargetWardrobes(){
+ for(const g of S.guards){const p=targetProfile(g);if(p&&g.stripped)g.strippedLook=strippedKey({ch:p.key});}
+ for(const c of S.corpses){
+  const p=targetProfile(c.g)||STAGE.targetCast?.[c.tag];
+  if(p&&prSplit(c.ch||'strip')[0]===prSplit(p.key)[0]){c.ch=p.key;if(c.stripped&&c.g)c.g.strippedLook=strippedKey(c);}
+ }
+}
 function targetPersonaKey(g){
  const profile=targetProfile(g);if(!profile?.personality||g.stripped)return null;
  const [pal,body]=prSplit(profile.key),source=body+'PersonaMotion';
@@ -9910,6 +9971,7 @@ function loadCheckpoint() {
   if (!cpReady()) return false;
   initAudio();
   CP.used++; S = cloneDeep(CP.S); S.stats.cpUsed = CP.used; S.timers = []; S.vfx=[]; S.amb = null; S.killWait = null; S.guards.forEach(g => { g.yank = false; g.eyeWatching=false; g.sightAt=-9; g.sightFl=g.sightZ=null; g.doomed = false; g.guardExit = false; g.aim = 0; });  // 예약 동작·끌어들이는 중은 이어 가지 않는다 (함수가 옛 상태를 붙잡고 있다)
+  restoreTargetWardrobes();
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   S.props=(S.props||[]).filter(p=>!p.outfit);restoreUniformDonors();moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
   robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
@@ -10076,8 +10138,8 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
   c.save();
   if(part!=='front'){
     c.fillStyle='#070b0d66';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
-    c.fillStyle=steel?'#626b70':'#6e6558';c.fillRect(g.left,g.top,w,H-3);
-    c.fillStyle=steel?'#858d8d':'#8c8271';c.fillRect(g.left,g.top,w,4);
+    c.fillStyle=steel?'#5c6870':'#57463b';c.fillRect(g.left,g.top,w,H-3);
+    c.fillStyle=steel?'#91a0a5':'#907763';c.fillRect(g.left,g.top,w,4);
     c.fillStyle='#0d1416';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
     c.fillStyle=steel?'#2b3335':'#332f29';c.fillRect(g.doorLeft+3,g.doorTop+4,g.doorRight-g.doorLeft-6,3);
     c.strokeStyle=steel?'#7f8786':'#8b8272';c.lineWidth=1;c.strokeRect(g.left+.5,g.top+.5,w-1,H-4);
@@ -10087,10 +10149,15 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
     const count=steel?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
     for(let i=0;i<count;i++){
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
-      c.fillStyle=steel?'#737c80':i?'#827666':'#897c69';c.strokeStyle=steel?'#4b5457':'#514b41';c.lineWidth=1;
+      c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
       c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
       const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=g.doorTop+(g.doorBottom-g.doorTop)*.78+depth;
-      c.strokeStyle=steel?'#303839':'#4b443a';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
+      if(wide>9){
+        const a=.12,b=.86,xa=hinge+side*projection*a,xb=hinge+side*projection*b;
+        c.strokeStyle=steel?'#a0b1b24d':'#bd9e7d52';c.lineWidth=1;c.beginPath();c.moveTo(xa,g.doorTop+6+depth*a);c.lineTo(xb,g.doorTop+6+depth*b);c.lineTo(xb,g.doorBottom-6+depth*b);c.lineTo(xa,g.doorBottom-6+depth*a);c.closePath();c.stroke();
+        c.fillStyle=steel?'#a2adb0':'#a79577';for(const y of[g.doorTop+9,g.doorBottom-12])c.fillRect(hinge-1,y,2,4);
+      }
+      c.strokeStyle=steel?'#bcc8ca':'#c5ad83';c.lineWidth=2;c.beginPath();c.moveTo(hx,hy-4);c.lineTo(hx,hy+4);c.stroke();
       if(steel&&wide>8){c.strokeStyle='#4a5558';c.lineWidth=1;for(let k=0;k<3;k++){c.beginPath();c.moveTo(hinge+side*wide*.2,g.doorTop+12+k*4+depth*.2);c.lineTo(hinge+side*wide*.75,g.doorTop+12+k*4+depth*.75);c.stroke();}}
     }
     c.fillStyle=steel?'#465153':'#595143';c.fillRect(g.left+1,g.bottom-9,w-2,3);
@@ -13936,24 +14003,24 @@ const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[
 function paintWindow(w,lit,L=44,T=20) {
   const state=winSt(w),open=state==='open',left=-L/2,top=-T/2;
   ctx.fillStyle='#080e12';ctx.fillRect(left-2,top-1,L+4,T+4);
-  ctx.fillStyle='#3d4948';ctx.fillRect(left,top,L,T);
-  ctx.fillStyle='#a8b3a4';ctx.fillRect(left,top,L,2);ctx.fillRect(left,top,2,T);
+  ctx.fillStyle='#3b454d';ctx.fillRect(left,top,L,T);
+  ctx.fillStyle='#a4adb1';ctx.fillRect(left,top,L,2);ctx.fillRect(left,top,2,T);
   ctx.fillStyle='#101b20';ctx.fillRect(left+3,top+3,L-6,T-6);
   const glass=ctx.createLinearGradient(left,top,L/2,T/2);
-  glass.addColorStop(0,lit?'#c9ba89':'#65848b');glass.addColorStop(1,lit?'#716747':'#243e49');
+  glass.addColorStop(0,lit?'#c4b085':'#607c90');glass.addColorStop(1,lit?'#716653':'#243a4a');
   const pane=open?L*.32:(L-8)/2;
   ctx.fillStyle=glass;ctx.fillRect(left+3,top+3,pane,T-6);
   if(!open)ctx.fillRect(1,top+3,L/2-4,T-6);
-  ctx.strokeStyle='#c8d3c26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
+  ctx.strokeStyle='#c3d9e26b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left+6,top+5);ctx.lineTo(left+pane-1,T/2-4);ctx.stroke();
   const join=open?left+pane+3:0;
-  ctx.fillStyle='#84958b';ctx.fillRect(join-1,top+2,2,T-4);
-  if(!open){ctx.fillStyle='#727f78';ctx.fillRect(-2,-1,4,2);if(state==='lock'){ctx.fillStyle='#b0a078';ctx.fillRect(-1,-2,2,3);}}
+  ctx.fillStyle='#7e909a';ctx.fillRect(join-1,top+2,2,T-4);
+  if(!open){ctx.fillStyle='#75818a';ctx.fillRect(-2,-1,4,2);if(state==='lock'){ctx.fillStyle='#b79b63';ctx.fillRect(-1,-2,2,3);}}
   if(state==='bar'){
     ctx.strokeStyle='#081014';ctx.lineWidth=3;ctx.beginPath();
     for(let x=left+7;x<L/2-2;x+=8){ctx.moveTo(x,top+1);ctx.lineTo(x,T/2+1);}ctx.stroke();
-    ctx.strokeStyle='#98a397';ctx.lineWidth=1;ctx.stroke();
+    ctx.strokeStyle='#9aa5ac';ctx.lineWidth=1;ctx.stroke();
   }
-  ctx.fillStyle='#899084';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c6c6ae';ctx.fillRect(left-2,T/2,L+4,1);
+  ctx.fillStyle='#79858e';ctx.fillRect(left-2,T/2,L+4,3);ctx.fillStyle='#c0c7c8';ctx.fillRect(left-2,T/2,L+4,1);
 }
 function drawWindow(w, alpha) {
   if(drawRoomFinishWindow(w,alpha))return;
@@ -13967,16 +14034,16 @@ function paintSideWindow(w,lit,side){
   const st=winSt(w),open=st==='open',outer=side*9,inner=-side*4;
   const quad=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.lineTo(...d);ctx.closePath();};
   ctx.fillStyle='#080e12a8';quad([outer+side*2,-16],[inner,-19],[inner,18],[outer+side*2,21]);ctx.fill();
-  ctx.fillStyle='#53605a';quad([outer,-17],[inner,-20],[inner,17],[outer,20]);ctx.fill();
+  ctx.fillStyle='#4a5862';quad([outer,-17],[inner,-20],[inner,17],[outer,20]);ctx.fill();
   ctx.fillStyle='#111d21';quad([outer-side*1.5,-14],[inner+side*1.5,-17],[inner+side*1.5,14],[outer-side*1.5,17]);ctx.fill();
-  const glass=ctx.createLinearGradient(inner,-15,outer,16);glass.addColorStop(0,lit?'#a89e7b':'#3c5962');glass.addColorStop(1,lit?'#635d47':'#192f37');
+  const glass=ctx.createLinearGradient(inner,-15,outer,16);glass.addColorStop(0,lit?'#b2a17e':'#3b556a');glass.addColorStop(1,lit?'#675d4c':'#1a2e3c');
   ctx.fillStyle=glass;
   if(!open){quad([outer-side*2,-13],[inner+side*2,-15],[inner+side*2,-1],[outer-side*2,1]);ctx.fill();}
   quad([outer-side*2,3],[inner+side*2,1],[inner+side*2,13],[outer-side*2,15]);ctx.fill();
-  ctx.strokeStyle='#88958a99';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(outer,-17);ctx.lineTo(inner,-20);ctx.lineTo(inner,17);ctx.moveTo(outer,2);ctx.lineTo(inner,-1);ctx.stroke();
+  ctx.strokeStyle='#98a8b299';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(outer,-17);ctx.lineTo(inner,-20);ctx.lineTo(inner,17);ctx.moveTo(outer,2);ctx.lineTo(inner,-1);ctx.stroke();
   if(st==='bar'){ctx.strokeStyle='#0a1115';ctx.lineWidth=2;ctx.beginPath();for(const y of [-9,0,9]){ctx.moveTo(outer-side,y+2);ctx.lineTo(inner+side,y-1);}ctx.stroke();}
   if(st==='lock'){ctx.fillStyle='#a59874';ctx.fillRect(Math.min(outer,inner)+3,-1,2,2);}
-  ctx.fillStyle='#858b7b';quad([outer,18],[inner,15],[inner+side*2,18],[outer+side*2,22]);ctx.fill();ctx.restore();
+  ctx.fillStyle='#84919b';quad([outer,18],[inner,15],[inner+side*2,18],[outer+side*2,22]);ctx.fill();ctx.restore();
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
@@ -14434,6 +14501,7 @@ function drawTownExterior(){
 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
+  refreshPropArt();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
@@ -16565,6 +16633,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,

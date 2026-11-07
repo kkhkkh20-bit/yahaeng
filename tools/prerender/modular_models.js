@@ -10,6 +10,7 @@ export const LOOKS = {
   heroSuit: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Worker'],
   heroWorker: ['Female-Casual', 'Female-Worker', 'Female-Worker', 'Female-Worker'],
   heroCrew: ['Female-Casual', 'Male-Swat', 'Female-Casual', 'Female-Worker'],
+  bossWoman: ['Female-Suit', 'Female-Suit', 'Female-Suit', 'Female-Worker'],
   guard: ['Male-Swat'], male: ['Male-Casual_2'], suit: ['Male-Suit'],
   worker: ['Male-Worker'], woman: ['Female-Casual'], formal: ['Female-Formal'],
   hoodie: ['Male-Casual_Hoodie'],

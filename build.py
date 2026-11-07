@@ -83,6 +83,9 @@ def build():
     for key,item in room_art.items():
         item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','room-finish',key+'.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__ROOM_ART__ = '+json.dumps(room_art)+';</script>\n<script>window.__ASSETS__')
+    prop_art=json.load(open(P('src','art','prop-finish','meta.json')))
+    prop_art['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','prop-finish','atlas.webp'),'rb').read()).decode()
+    html=html.replace('<script>window.__ASSETS__','<script>window.__PROP_ART__ = '+json.dumps(prop_art)+';</script>\n<script>window.__ASSETS__')
     field_art=json.load(open(P('src','art','field-items','meta.json')))
     for key,item in field_art.items():
         item['src']='data:image/webp;base64,'+base64.b64encode(open(P('src','art','field-items',key+'.webp'),'rb').read()).decode()

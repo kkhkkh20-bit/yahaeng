@@ -27,6 +27,7 @@ RECIPES = {
  'male': ('male', None, CIV_ANIMS), 'suit': ('suit', None, CIV_ANIMS),
  'worker': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'femaleSuit': ('heroSuit', None, CIV_ANIMS),
+ 'femaleBoss': ('bossWoman', None, CIV_ANIMS),
  'femaleWorker': ('heroWorker', None, CIV_ANIMS + ['hold', 'holdI']),
  'big': ('male', BODIES['big'], CIV_ANIMS),
  'bossBig': ('suit', BODIES['big'], CIV_ANIMS),

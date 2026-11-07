@@ -256,6 +256,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
 // 가구 그리기 (위에서 본 단순한 픽셀 모양)
 // 가구: 막힌 칸은 어두운 판(그림자) 위에 그린다. 막힘·엄폐 구분 테두리는 살피기(Alt) 때만
 function drawFurn(x, it) {
+  if(drawPropFurn(x,it,true))return;
   if(drawRoomFinishFurn(x,it))return;
   const flat = FURN_FLAT.has(it.t), T = TILE, px = it.x * T, py = it.y * T, w = it.w * T, h = it.h * T, tall = FURN_TALL.has(it.t);
   if (!flat) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect(px + 1, py + 1, w - 2, h - 2); }
@@ -263,6 +264,7 @@ function drawFurn(x, it) {
 }  // 칸 테두리(파랑·주황)는 평소엔 그리지 않는다 — 살피기(Alt)·전술 지도에서만 보인다
 const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '');  // 구운 가구 그림 열쇠: 종류_가로x세로(_r방향)
 function drawFurnArt(x, it) {
+  if(drawPropFurn(x,it))return;
   if(quarterFurn(x,it))return;
   if(it.t==='locker'||it.t==='wardrobe'){drawCabinet({type:it.t,tx:it.x,ty:it.y,w:it.w,h:it.h,furn:true,fl:it.fl||0},'all',x,0);return;}
   if(INK_STUDY&&STAGE.id==='m2'&&it.t==='dance'){drawInkDance(x,it);return;}

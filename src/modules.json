@@ -138,6 +138,10 @@
       "group": "light_fixtures"
     },
     {
+      "path": "36_prop_finish.js",
+      "group": "light_fixtures"
+    },
+    {
       "path": "36_field_items.js",
       "group": "light_fixtures"
     },
