@@ -1,0 +1,118 @@
+{
+  "roofs": [
+    {
+      "id": "tB",
+      "roofs": 3,
+      "terminal": null
+    },
+    {
+      "id": "p1",
+      "roofs": 1,
+      "terminal": null
+    },
+    {
+      "id": "p2",
+      "roofs": 1,
+      "terminal": [
+        23,
+        8,
+        0
+      ]
+    },
+    {
+      "id": "e1",
+      "roofs": 0,
+      "terminal": null
+    },
+    {
+      "id": "e2",
+      "roofs": 0,
+      "terminal": [
+        16,
+        6,
+        0
+      ]
+    },
+    {
+      "id": "e3",
+      "roofs": 1,
+      "terminal": null
+    },
+    {
+      "id": "e4",
+      "roofs": 1,
+      "terminal": [
+        7,
+        8,
+        0
+      ]
+    },
+    {
+      "id": "e5",
+      "roofs": 1,
+      "terminal": [
+        7,
+        8,
+        0
+      ]
+    },
+    {
+      "id": "m2",
+      "roofs": 8,
+      "terminal": [
+        5,
+        8,
+        1
+      ]
+    },
+    {
+      "id": "m4",
+      "roofs": 6,
+      "terminal": [
+        25,
+        6,
+        1
+      ]
+    },
+    {
+      "id": "m6",
+      "roofs": 4,
+      "terminal": [
+        27,
+        4,
+        0
+      ]
+    },
+    {
+      "id": "m7",
+      "roofs": 3,
+      "terminal": [
+        27,
+        16,
+        1
+      ]
+    },
+    {
+      "id": "m5",
+      "roofs": 5,
+      "terminal": [
+        15,
+        3,
+        1
+      ]
+    },
+    {
+      "id": "n1",
+      "roofs": 8,
+      "terminal": null
+    }
+  ],
+  "migration": {
+    "x": 360,
+    "y": 408,
+    "tx": 7,
+    "ty": 8,
+    "fl": 0
+  },
+  "errors": []
+}

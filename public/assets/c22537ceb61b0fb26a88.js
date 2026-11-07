@@ -1324,7 +1324,7 @@ STAGES.push({
  id:'e2',no:'입문 2',name:'창고의 거래',sub:'입문 2 · 복장과 CCTV',apprenticeContract:true,
  fee:'40만',purpose:'연락책의 거래 명세서를 회수해 증인 거래의 배후를 확인한다.',
  mission:'거래 명세서 회수 후 골목으로 탈출',
- brief:'연락책이 쓰던 창고에 거래 명세서가 있다. 실내 경비 한 명과 CCTV 한 대가 지킨다. 골목의 예비 재킷으로 평범하게 걸어 들어갈 수 있다. 카메라 뒤에서 전선을 분리하면 책상 작업이 안전해진다. 만약 신원이 녹화되면 골목의 관리 단말에서 기록을 지운 뒤 나가자.',
+ brief:'연락책이 쓰던 창고에 거래 명세서가 있다. 실내 경비 한 명과 CCTV 한 대가 지킨다. 골목의 예비 재킷으로 평범하게 걸어 들어갈 수 있다. 카메라 뒤에서 전선을 분리하면 책상 작업이 안전해진다. 만약 신원이 녹화되면 창고 안 보안 데스크에서 기록을 지운 뒤 나가자.',
  endText:'명세서에서 연락 거점의 주소를 찾았다. 그곳 2층의 장부로 배후를 확인하자.',
  W:34,H:23,start:[5,19],exit:[3,19],exitName:'서쪽 골목',startA:0,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
@@ -1333,9 +1333,9 @@ STAGES.push({
  zones:[[0,0,33,22,'pub',null,'골목',[]],[14,3,31,14,'res',null,'거래 창고',['crew']]],
  props:[],
  guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false}],
- fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
+ fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:15,y:4,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
- cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0,name:'골목 관리 단말'},
+ cams:[[23,5,0,12]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[16,6],fl:0,name:'창고 안 보안 데스크'},
  lamps:[[30,10,380,0],[8,20,200,1]],
 });
 {
@@ -1359,7 +1359,7 @@ STAGES.push({
   id:'p1',no:'00',name:'빌린 제복',sub:'첫 밤 2 · 복장으로 통과',starterContract:'disguise',
   fee:'25만',purpose:'경비 재킷을 입고 물류실의 출고 서류를 회수한다.',
   mission:'골목 경비를 기절시켜 옷을 훔쳐 입고 물류실의 출고 서류를 가져온다.',
-  brief:'혼자 있는 골목 경비를 기절시킨 뒤 옷을 훔쳐 입는다. 이 재킷으로 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 서류는 경비의 등 뒤에 있다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
+  brief:'혼자 있는 골목 경비를 기절시킨 뒤 옷을 훔쳐 입는다. 이 재킷으로 물류실을 걸어서 통과할 수 있다. 입구 경비는 동료의 평범한 통행을 막지 않는다. 출고 담당자가 선반을 확인하러 돌아설 때 책상의 서류를 챙긴다. 서류를 챙긴 뒤 들어온 골목으로 돌아온다.',
   endText:'출고 기록을 확보했다. 이 화물을 지켜보던 카메라에 배송 명세서의 행방도 남아 있다. 까마귀가 다음 창고의 위치를 보냈다.',
   W:26,H:18,start:[6,14],exit:[3,15],exitName:'들어온 골목',startA:0,
   bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
@@ -1367,34 +1367,34 @@ STAGES.push({
   wires:[],roofs:[],bricks:[],challenges:[],
   build(m){
     m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
-    m.fill(10,3,23,11,'h');m.fill(10,3,23,3,'#');m.fill(10,3,10,11,'#');m.fill(23,3,23,11,'#');m.fill(10,11,23,11,'#');m.fill(16,11,17,11,'h');
+    m.bld(10,3,23,11,1,[[16,11],[17,11]],'h');
     m.many('C',[[11,4],[12,4],[21,4],[22,4]]);m.many('B',[[5,13],[7,13]]);m.many('T',[[4,4],[7,6],[24,14]]);
   },
   zones:[[0,0,25,17,'pub',null,'골목',[]],[10,3,23,11,'res',null,'물류실',['crew']]],
   props:[],
-  guards:[{kind:'g1',tag:'doorkeeper',at:[16,9],post:90,still:true,radio:false}],
-  fixedFurn:[{x:17,y:5,t:'desk',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
+  guards:[{kind:'g1',tag:'doorkeeper',route:[[18,7,5],[21,9,7]],startPause:7,radio:false}],
+  fixedFurn:[{x:17,y:5,t:'desk',w:2},{x:11,y:5,t:'shelf',w:3},{x:11,y:8,t:'shelf',w:3},{x:20,y:8,t:'shelf',w:2},{x:21,y:4,t:'locker',w:1}],itemActions:[{kind:'recovery',duration:1.2}],
   items:[[17,6]],itemName:'출고 서류',itemNames:['출고 서류'],itemPlaces:['물류실 · 책상'],
   lamps:[[22,7,420,0],[13,14,220,1]],starterPass:[16.5,11],
 });
 STAGES.push({
   id:'p2',no:'00',name:'꺼진 눈',sub:'첫 밤 3 · CCTV 한 대',starterContract:'camera',
   fee:'30만',purpose:'CCTV 뒤에서 전선을 분리하고 배송 명세서를 회수한다.',
-  mission:'비어 있는 창고에서 CCTV를 끄고 배송 명세서를 가져온다.',
-  brief:'경비가 비운 작은 창고다. 카메라 뒤쪽에는 시야가 닿지 않는다. 뒤로 접근해 행동으로 전선을 분리한다. 조작은 2초가 걸린다. CCTV가 꺼지면 명세서를 챙겨 골목으로 나온다.',
+  mission:'창고 CCTV를 끄고, 야간 경비의 눈을 피해 배송 명세서를 가져온다.',
+  brief:'야간 경비 한 명이 순찰하는 배송 창고다. 카메라 뒤쪽에는 시야가 닿지 않는다. 뒤로 접근해 행동으로 전선을 분리한다. 조작은 2초가 걸린다. CCTV가 꺼지면 경비가 등을 보일 때 명세서를 챙겨 나온다. 녹화됐다면 창고 안쪽 보안 데스크에서 기록을 지울 수 있다.',
   endText:'배송 명세서의 수신인은 동쪽 적치장의 연락책이다. 증인 명단이 넘어가기 전에 그를 찾아야 한다.',
   W:26,H:18,start:[6,13],exit:[3,15],exitName:'들어온 골목',startA:0,
   bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
   kunai:0,coins:0,pspd:1.3,gspd:.8,securityResponse:false,radioCheck:0,
-  wires:[],roofs:[],bricks:[],guards:[],challenges:[],
+  wires:[],roofs:[],bricks:[],guards:[{kind:'g1',tag:'warehouseKeeper',route:[[21,10,6],[18,10,6]],post:90,startPause:6,radio:false}],challenges:[],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[23,8],fl:0,name:'창고 보안실'},
   build(m){
     m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
-    m.fill(12,5,24,12,'h');m.fill(12,4,24,4,'#');m.fill(12,4,12,9,'#');m.fill(24,4,24,12,'#');
-    m.many('C',[[21,5],[22,5],[23,5],[23,10]]);m.many('B',[[6,12],[8,12]]);m.many('T',[[4,5],[8,4],[23,15]]);
+    m.bld(12,4,24,12,1,[[12,10],[12,11],[14,12],[15,12]],'h');
+    m.many('C',[[21,8],[22,8],[23,10]]);m.many('B',[[6,12],[8,12]]);m.many('T',[[4,5],[8,4],[23,15]]);
   },
   zones:[[0,0,25,17,'pub',null,'빈 창고',[]]],
-  fixedFurn:[{x:20,y:5,t:'desk',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
-  cams:[[16,5,0,10]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
+  fixedFurn:[{x:20,y:5,t:'desk',w:2},{x:22,y:7,t:'pc'},{x:13,y:7,t:'shelf',w:2},{x:16,y:9,t:'shelf',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
+  itemFurniture:[['desk']],cameraFocus:[20,6],cams:[[16,5,0,10]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
   lamps:[[23,7,420,0],[16,10,300,0]],
 });
 // Small complete jobs connect the freight alley to the larger club contract.
@@ -1403,7 +1403,7 @@ STAGES.push({
  const common={...base,storyEpisode:true,physicalWorld:true,episodeLesson:true,props:[],guards:[],items:[],cams:[],roofs:[],bricks:[],buildingNames:{0:'동네 교환실'},
   build(m,office=false){m.fill(0,0,24,22,',');m.rect(0,0,24,22);m.fill(1,17,23,20,'.');m.fill(1,16,23,16,'=');m.villa(6,3,18,14,2,{kind:'shop',use:['store','office'],signs:office?['새벽 부동산','협의실']:['통신 관리','교환실'],name:office?'새벽 부동산':'교환실'});m.many('T',[[3,5],[21,5],[3,13],[21,13]]);m.many('B',[[4,16],[20,16],[6,18]]);},
   zones:[[0,0,24,22,'pub',null,'골목',[]],[6,3,18,14,'res',null,'직원 구역',['crew']]],
-  cams:[[12,5,0,12]],securityEvidence:true,camRoom:{pos:[4,17],fl:0,name:'골목 관리 단말'},
+  cams:[[12,5,0,12]],securityEvidence:true,securityTerminalVersion:1,camRoom:{b:0,fl:0,at:'L',name:'1층 보안 데스크'},
   guards:[{kind:'g1',tag:'uniformDonor',at:[8,18],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',b:0,fl:0,at:'S',post:180,still:true,radio:false},{kind:'g1',tag:'upperKeeper',b:0,fl:1,at:'S',post:180,still:true,radio:false}],
  };
  STAGES.push({...common,id:'e4',no:'08',name:'끊어진 회선',sub:'여덟 번째 밤 · 동네 교환실',fee:'50만',
@@ -1430,7 +1430,7 @@ for(const stage of STAGES)if(stage.props)stage.props=stage.props.filter(p=>!p.ou
 const firstWardrobe=STAGES.find(s=>s.id==='p1');
 firstWardrobe.guards.push({kind:'g1',tag:'uniformDonor',at:[13,14],post:0,still:true,radio:false});
 firstWardrobe.mission='골목 경비를 기절시키고 옷을 훔쳐 입은 뒤 출고 서류를 회수한다.';
-firstWardrobe.brief='골목에서 혼자 쉬는 경비가 있다. 등 뒤에서 짧게 공격해 기절시키고, 몸 옆에서 행동 대상을 옷 훔쳐 입기로 고른다. 변장한 뒤 물류실 경비 앞을 평범하게 걸어 지나가 서류를 회수한다.';
+firstWardrobe.brief='골목에서 혼자 쉬는 경비가 있다. 등 뒤에서 짧게 공격해 기절시키고, 몸 옆에서 행동 대상을 옷 훔쳐 입기로 고른다. 변장한 뒤 물류실 경비 앞을 평범하게 걸어 들어간다. 출고 담당자가 선반 쪽으로 돌아서면 책상에서 서류를 챙긴다.';
 for(const[id,at]of[['e2',[10,18]],['e3',[8,18]]]){
  const stage=STAGES.find(s=>s.id===id);
  stage.guards.push({kind:'g1',tag:'uniformDonor',at,post:0,still:true,radio:false});
@@ -3036,6 +3036,8 @@ function buildRoofCanvas(b, i) {
   const w = (b.x1 - b.x0 + 1) * TILE, h = (b.y1 - b.y0 + 1 - (b.fh || 0)) * TILE, hang = 22;
   const c = document.createElement('canvas'); c.width = w; c.height = h + hang;
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  // A missing or partially transparent texture must never expose the room below.
+  x.fillStyle = '#46514f'; x.fillRect(0, 0, w, h);
   const key = roofOf(i);
   if (F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
@@ -3114,7 +3116,7 @@ function buildRoofCanvas(b, i) {
   c.rh = h;
   return c;
 }
-const roofOf = i => STAGE.roofs ? STAGE.roofs[i % STAGE.roofs.length] : (STAGE.roofTex || 'roofRed');
+const roofOf = i => STAGE.roofs?.length ? STAGE.roofs[i % STAGE.roofs.length] : (STAGE.roofTex || 'cRoofG');
 
 
 // ---------------------------------------------------------------- 사운드
@@ -3794,8 +3796,9 @@ for(const type of ['keydown','keyup'])window.addEventListener(type,e=>{
 }
 
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
-let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null;
+let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null, SECURITY_TERMINAL_LAYOUT=null;
 function captureContractLayout() {
+  SECURITY_TERMINAL_LAYOUT=STAGE.securityTerminalVersion?{id:STAGE.id,version:STAGE.securityTerminalVersion,room:cloneDeep(S.camRoom)}:null;
   S.itemLayoutVersion=STAGE.itemLayoutVersion||0;
   MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items),patrols:(STAGE.itemPatrols||[]).map(p=>({legacy:p.legacy,g:cloneDeep(S.guards.find(g=>g.tag===p.tag))}))}:null;
   S.layoutVersion = STAGE.layoutVersion || 0;
@@ -3806,6 +3809,8 @@ function captureContractLayout() {
   };
 }
 function restoreContractLayout() {
+  const C=SECURITY_TERMINAL_LAYOUT;
+  if(C&&C.id===STAGE.id&&(S.securityTerminalVersion||0)<C.version){S.camRoom=cloneDeep(C.room);S.securityTerminalVersion=C.version;}
   const I=MISSION_ITEM_LAYOUT;
   if(I&&I.id===STAGE.id&&(S.itemLayoutVersion||0)<I.version){
     for(let i=S.items.length;i<I.items.length;i++)S.items.push(cloneDeep(I.items[i]));
@@ -4078,6 +4083,7 @@ function newGame(si) {
   // 서치라이트: [x, y, 방향°, 좌우°] — 옥상·망루에서 멀리 비춘다 (다트로 깨거나 두꺼비집으로 끈다)
   (STAGE.searchlights || []).forEach(([x, y, base, sweep]) => { const a = base * Math.PI / 180; S.cams.push({ x: tc(x), y: tc(y), tx: x, ty: y, fl: 0, base: a, sweep: sweep * Math.PI / 180, period: 11 + (x % 4), ph: y % 5, a, meter: 0, broken: false, cool: 0, b: -1, outdoor: true, search: true }); });
   // CCTV 관리실: { b, fl, at } — 화면 보는 사람(tag 'camop')이 있어야 CCTV가 경보로 이어진다
+  S.securityTerminalVersion=STAGE.securityTerminalVersion||0;
   S.camRoom = null; if (STAGE.camRoom) { const q = STAGE.camRoom.pos || planPt(STAGE.camRoom.b, STAGE.camRoom.fl || 0, STAGE.camRoom.at || 'L'); if (q) S.camRoom = { x: tc(q[0]), y: tc(q[1]), tx: q[0], ty: q[1], fl: STAGE.camRoom.fl || 0 }; }
   if (FRM) {
     // 정면 벽 가스관(노란 배관): 땅 → 옥상. 2층 베란다: 땅에서 난간을 타고 2층으로
@@ -5247,7 +5253,10 @@ function mountIndoorCamera(c, mounted) {
     }
     const post = Math.min(180, ...S.guards.filter(g => flOf(g) === f && !g.civ && !g.dog).map(g => dist(x, y, g.x, g.y)));
     const separation = (mounted || []).some(o => o.fl === f && dist(o.x, o.y, x, y) < 80) ? 8 : 0;
-    const score = seen / room.length * 20 + post / 90 - separation;
+    // A compact authored job can name the work surface this camera protects.
+    const focus=STAGE.cameraFocus,fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
+    const protects=focus&&fd<=300&&Math.abs(angDiff(base,Math.atan2(tc(focus[1])-y,tc(focus[0])-x)))<=camFov(c)&&castRay(x,y,Math.atan2(tc(focus[1])-y,tc(focus[0])-x),fd)>=fd-6;
+    const score = seen / room.length * 20 + post / 90 - separation + (protects?30:0);
     if (!best || score > best.score) best = { x, y, tx, ty, base, sweep, score, sx, sy };
   }
   setLayer(L0);
@@ -6182,8 +6191,9 @@ function updateCams(dt) {
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
-    ctx.fillStyle = '#1a1d24'; ctx.fillRect(cr.x - 26, cr.y - 30, 52, 16);
-    for (let i = 0; i < 3; i++) { const on = !S.camsOff; ctx.fillStyle = on ? `rgba(120,190,255,${0.55 + 0.25 * Math.sin(S.t * 7 + i * 2)})` : '#2a2d34'; ctx.fillRect(cr.x - 24 + i * 17, cr.y - 28, 14, 11); } }
+    const painted=drawPropFurn(ctx,{t:'pc',x:cr.x/TILE-.5,y:cr.y/TILE-.5,w:1,h:1});
+    if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(cr.x-22,cr.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(cr.x-22,cr.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(cr.x-18,cr.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(cr.x-3,cr.y-7,6,9);ctx.fillRect(cr.x-12,cr.y+2,24,3);}
+    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(cr.x+15,cr.y-9,3,2); }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {
@@ -8158,12 +8168,12 @@ function starterGoal(){
     return learningObjectGoal(it,'loot','경비 등 뒤에서 출고 서류 챙기기','작업 중에는 시선 밖에서');
   }
   const c=S.cams.find(c=>camOn(c));
-  if(c)return learningObjectGoal(c,'camCable','CCTV 시야 밖에서 전선 분리','2초 조작 · 뒤쪽은 시야 밖',cameraServicePoint(c));
+  if(c)return learningObjectGoal(c,'camCable','CCTV 시야 밖에서 전선 분리','벽을 따라 시야 밖에서 · 2초 조작',cameraServicePoint(c));
   return learningObjectGoal(it,'loot','감시가 꺼진 뒤 배송 명세서 챙기기','서류 앞에서 작업');
 }
 function updateStarterContract(){
   if(!STAGE.starterContract)return;
-  if(STAGE.starterContract==='disguise'&&!S.starterPass&&S.player.outfit==='crew'&&S.guards.some(g=>g.rawSeen&&!g.seen)){
+  if(STAGE.starterContract==='disguise'&&!S.starterPass&&S.player.outfit==='crew'&&(S.guards.some(g=>g.rawSeen&&!g.seen)||bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))>=0)){
     S.starterPass=true;S.cpWant=true;toast('자경대원 옷 · 평범한 통행 허용',2.2,'good');
   }
   if(STAGE.starterContract==='camera'&&!S.starterCameraSaved&&S.cams.every(c=>!camOn(c))){S.starterCameraSaved=true;S.cpWant=true;}
@@ -13645,6 +13655,9 @@ function drawRoof1(b, i, roof) {
       return;
     }
     const x = b.x0 * TILE, y = b.y0 * TILE, w = (b.x1 - b.x0 + 1) * TILE, h = b.roofC.rh;
+    // Baked facades have transparent gutters and cutouts. A roof is a solid
+    // surface beneath that artwork, even when its source image has alpha.
+    if(b.kit){ctx.fillStyle='#3b4646';ctx.fillRect(x,y,w,h);}
     if (b.kit && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
@@ -14807,6 +14820,7 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   PM('misc');
+  if(DBG.ui){drawNeonSigns();ctx.setTransform(1,0,0,1,0,0);return;}
   drawGhosts();
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }
@@ -15023,16 +15037,16 @@ function startAmb() {
 
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '제비가 사라졌습니다, 올빼미. 마지막 단서는 배차실 2층의 서류입니다.',
- '상자 옆 풀숲이 보이죠? 몸을 낮추면 경비 눈을 피할 수 있습니다.',
- '좋습니다. 풀숲에서 나와 저 경비의 등 뒤까지 조용히 접근하세요.',
- '살려 두고 옷만 빌립시다. 공격을 짧게 누르고 떼세요. 길게 누르면 죽습니다.',
- '이제 경비의 옷을 입으세요. 갈아입는 동안에는 움직이지 마십시오.',
- '제법 어울리는군요. 경비는 왼쪽 풀숲에 숨겨 두고 갑시다.',
- '배차실 문으로 들어가세요. 서류는 계단을 올라간 2층 책상에 있습니다.',
- '저 책상입니다. 가까이서 서류를 챙기세요. 작업이 끝날 때까지 기다립니다.',
- '서류 확보했군요. 들어왔던 계단으로 내려와 동쪽 골목으로 빠집시다.',
- '동쪽 골목에 차를 대 놨습니다. 잘했습니다, 올빼미. 이제 나옵시다.'
+ '제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
+ '몸을 낮추면 덜 보인다. 양복은 나중에 털지.',
+ '경비도 앞만 봅니다. 조용히 등 뒤로 붙으세요.',
+ '살려 두자. 공격은 짧게, 길게 누르면 죽는다.',
+ '옷 좀 빌리자. 갈아입는 동안엔 가만히.',
+ '경비는 왼쪽 풀숲에. 퇴근한 줄 알겠죠.',
+ '배차실 문으로 들어가서 계단. 서류는 2층이다.',
+ '이 책상이군. 챙기는 동안 손은 가만히.',
+ '좋습니다. 같은 계단으로 1층에 내려오세요.',
+ '서류도 챙겼고… 동쪽 골목의 차로 가자.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
@@ -15044,7 +15058,7 @@ function episodeRadioMessage(){
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
   const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  return{text,speaker:[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying),action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';
@@ -15067,14 +15081,14 @@ function compactObjectiveText(){
  const goal=nextGoal();if(!goal)return '';
  if(STAGE.firstSteps&&STAGE.storyEpisode&&!goal.interrupt){
   if(S.player.hide)return tutText('{행동} · 밖으로 나오기');
-  return ['오른쪽 표시로 이동','웅크려 풀숲으로','경비의 등 뒤로 접근',
+  return ['오른쪽 표시로 이동',isTouch?'웅크리기 · 풀숲으로':'Ctrl · 풀숲으로','경비의 등 뒤로 접근',
    isTouch?'공격 짧게 · 기절':'Z 짧게 · 기절','경비 옷 훔쳐 입기','경비를 풀숲에 숨기기',
    '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
  }
  return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
 }
-let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceReady=false;
-let episodeRadioScene=null,episodeRadioUntil=0;
+let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceKey='';
+let episodeRadioScene=null,episodeRadioUntil=0,episodeRadioCue='',episodeRadioSeen=new Map();
 function syncEpisodeRadio(){
  const el=$('episodeRadio');if(!el)return;
  const now=performance.now(),box=document.querySelector('#hud .obj'),open=!!box?.classList.contains('open');
@@ -15083,16 +15097,26 @@ function syncEpisodeRadio(){
  if(now<episodeRadioTick)return;episodeRadioTick=now+80;
  const message=episodeRadioMessage();
  document.body.classList.toggle('episode-coached',!!message);
- if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=now+4500;}
- const moving=S.player.moving||(input.joy?.mag||0)>.05||Object.values(S.keys||{}).some(Boolean)||actionBusy(S.player)||input.aiming;
- if(moving||open)episodeRadioUntil=0;
- const peek=!!message&&!open&&H>480&&now<episodeRadioUntil;
- document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
+ if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=0;episodeRadioCue='';episodeRadioSeen=new Map();}
  if(message){
-  const token=message.text+'|'+message.action;
-  if(token!==episodeRadioToken){$('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;episodeRadioToken=token;}
-  if(open&&!episodeRadioFaceReady)episodeRadioFaceReady=drawFace($('episodeRadioFace'),speakerOf('master'));
+  const cue=message.cue||message.text;
+  if(cue!==episodeRadioCue&&(!episodeRadioSeen.has(cue)||now-episodeRadioSeen.get(cue)>18000)){
+   episodeRadioUntil=now+4600;episodeRadioSeen.set(cue,now);
+  }
+  episodeRadioCue=cue;
+  const speaker=message.speaker||'master',token=speaker+'|'+message.text+'|'+message.action;
+  if(token!==episodeRadioToken){
+   $('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;
+   $('episodeRadioSpeaker').textContent=speakerOf(speaker).name;
+   $('episodeRadioChannel').textContent=speaker==='hero'?'· 혼잣말':'· 무전';
+   el.setAttribute('aria-label',speakerOf(speaker).name+(speaker==='hero'?'의 혼잣말':'의 무전'));episodeRadioToken=token;
+  }
+  if(open&&episodeRadioFaceKey!==speaker&&drawFace($('episodeRadioFace'),speakerOf(speaker)))episodeRadioFaceKey=speaker;
  }
+ if(open)episodeRadioUntil=0;
+ // Every new beat speaks once, in the header; walking never summons a world panel.
+ const peek=!!message&&!open&&H>480&&now<episodeRadioUntil&&!actionBusy(S.player)&&!input.aiming;
+ document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
  const top=document.querySelector('#hud .top')?.getBoundingClientRect();
  if(top)document.documentElement.style.setProperty('--topb',Math.round(top.bottom)+'px');
 }
@@ -15769,6 +15793,7 @@ function floorBanner(P, ptx, pty) {
 }
 function updateHUD(force) {
   if (force) hudCache = {};
+  document.body.classList.toggle('first-episode',!!STAGE.firstSteps&&!!STAGE.storyEpisode);
   updateSkillPrompt(force);
   syncAssassinHUD();
   const P = S.player;

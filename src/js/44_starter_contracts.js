@@ -25,12 +25,12 @@ function starterGoal(){
     return learningObjectGoal(it,'loot','경비 등 뒤에서 출고 서류 챙기기','작업 중에는 시선 밖에서');
   }
   const c=S.cams.find(c=>camOn(c));
-  if(c)return learningObjectGoal(c,'camCable','CCTV 시야 밖에서 전선 분리','2초 조작 · 뒤쪽은 시야 밖',cameraServicePoint(c));
+  if(c)return learningObjectGoal(c,'camCable','CCTV 시야 밖에서 전선 분리','벽을 따라 시야 밖에서 · 2초 조작',cameraServicePoint(c));
   return learningObjectGoal(it,'loot','감시가 꺼진 뒤 배송 명세서 챙기기','서류 앞에서 작업');
 }
 function updateStarterContract(){
   if(!STAGE.starterContract)return;
-  if(STAGE.starterContract==='disguise'&&!S.starterPass&&S.player.outfit==='crew'&&S.guards.some(g=>g.rawSeen&&!g.seen)){
+  if(STAGE.starterContract==='disguise'&&!S.starterPass&&S.player.outfit==='crew'&&(S.guards.some(g=>g.rawSeen&&!g.seen)||bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))>=0)){
     S.starterPass=true;S.cpWant=true;toast('자경대원 옷 · 평범한 통행 허용',2.2,'good');
   }
   if(STAGE.starterContract==='camera'&&!S.starterCameraSaved&&S.cams.every(c=>!camOn(c))){S.starterCameraSaved=true;S.cpWant=true;}

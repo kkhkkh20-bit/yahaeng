@@ -1,6 +1,7 @@
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
-let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null;
+let CONTRACT_LAYOUT = null, MISSION_ITEM_LAYOUT = null, SECURITY_TERMINAL_LAYOUT=null;
 function captureContractLayout() {
+  SECURITY_TERMINAL_LAYOUT=STAGE.securityTerminalVersion?{id:STAGE.id,version:STAGE.securityTerminalVersion,room:cloneDeep(S.camRoom)}:null;
   S.itemLayoutVersion=STAGE.itemLayoutVersion||0;
   MISSION_ITEM_LAYOUT=STAGE.itemLayoutVersion?{id:STAGE.id,version:STAGE.itemLayoutVersion,items:cloneDeep(S.items),patrols:(STAGE.itemPatrols||[]).map(p=>({legacy:p.legacy,g:cloneDeep(S.guards.find(g=>g.tag===p.tag))}))}:null;
   S.layoutVersion = STAGE.layoutVersion || 0;
@@ -11,6 +12,8 @@ function captureContractLayout() {
   };
 }
 function restoreContractLayout() {
+  const C=SECURITY_TERMINAL_LAYOUT;
+  if(C&&C.id===STAGE.id&&(S.securityTerminalVersion||0)<C.version){S.camRoom=cloneDeep(C.room);S.securityTerminalVersion=C.version;}
   const I=MISSION_ITEM_LAYOUT;
   if(I&&I.id===STAGE.id&&(S.itemLayoutVersion||0)<I.version){
     for(let i=S.items.length;i<I.items.length;i++)S.items.push(cloneDeep(I.items[i]));

@@ -3,7 +3,7 @@ for(const stage of STAGES)if(stage.props)stage.props=stage.props.filter(p=>!p.ou
 const firstWardrobe=STAGES.find(s=>s.id==='p1');
 firstWardrobe.guards.push({kind:'g1',tag:'uniformDonor',at:[13,14],post:0,still:true,radio:false});
 firstWardrobe.mission='골목 경비를 기절시키고 옷을 훔쳐 입은 뒤 출고 서류를 회수한다.';
-firstWardrobe.brief='골목에서 혼자 쉬는 경비가 있다. 등 뒤에서 짧게 공격해 기절시키고, 몸 옆에서 행동 대상을 옷 훔쳐 입기로 고른다. 변장한 뒤 물류실 경비 앞을 평범하게 걸어 지나가 서류를 회수한다.';
+firstWardrobe.brief='골목에서 혼자 쉬는 경비가 있다. 등 뒤에서 짧게 공격해 기절시키고, 몸 옆에서 행동 대상을 옷 훔쳐 입기로 고른다. 변장한 뒤 물류실 경비 앞을 평범하게 걸어 들어간다. 출고 담당자가 선반 쪽으로 돌아서면 책상에서 서류를 챙긴다.';
 for(const[id,at]of[['e2',[10,18]],['e3',[8,18]]]){
  const stage=STAGES.find(s=>s.id===id);
  stage.guards.push({kind:'g1',tag:'uniformDonor',at,post:0,still:true,radio:false});

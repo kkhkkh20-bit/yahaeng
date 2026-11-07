@@ -32,7 +32,7 @@ async def main():
     await q.evaluate('n=>{__game.S.tutI=n;__game.updateHUD(true)}',step);await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
     frame=await q.evaluate(probe);assert frame['inside'] and not frame['avatar'] and not frame['buttons'],(w,step,frame)
    await q.keyboard.press('Escape');await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_hidden()
-   await q.keyboard.press('Escape');await q.click('#hud .obj');await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_visible();assert '까마귀' in await q.locator('#episodeRadio').inner_text()
+   await q.keyboard.press('Escape');await q.click('#hud .obj');await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_visible();assert '올빼미' in await q.locator('#episodeRadio').inner_text() and '혼잣말' in await q.locator('#episodeRadio').inner_text()
    assert not errors,errors;reports.append({'viewport':[w,h],'checks':checks,'layout':layout,'errors':errors});await q.close();print('PASS story episodes',w,flush=True)
   await b.close()
  out=R/'build/story-v204';out.mkdir(exist_ok=True);(out/'rules.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2))

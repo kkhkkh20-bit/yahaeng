@@ -35,16 +35,19 @@ async def main():
    after=await q.evaluate('({x:__game.S.player.x,y:__game.S.player.y,step:__game.S.tutI})')
    assert after['x']>before['x']+40,(before,after)
    assert after['step']>=1,after
-   assert not await q.locator('#episodeRadio').is_visible(),'radio returns over movement'
+   assert (await q.locator('#episodeRadio').is_visible())==(height>480),'new action beat is missing or crowds a short viewport'
+   if height>480:
+    assert await q.locator('#episodeRadio').evaluate('e=>e.closest(".obj").contains(e)'), 'radio floats over the world'
+    assert '올빼미' in await q.locator('#episodeRadio').inner_text(), 'self-talk has wrong speaker'
    layout=await q.evaluate('''()=>{const b=document.querySelector('#hud .obj').getBoundingClientRect(),s=document.getElementById('stealth').getBoundingClientRect();return{header:[b.x,b.y,b.width,b.height],statusBottom:s.bottom,summary:document.getElementById('objectiveSummary').textContent}}''')
    if touch:
-    assert layout['header'][3]<72,layout
+    assert layout['header'][3]<112,layout
     assert layout['statusBottom']<height*.30,layout
     assert not await q.locator('.hud-portrait').is_visible()
    assert '풀숲' in layout['summary'],layout
    await q.screenshot(path=str(O/f'{width}-{height}-moving.png'))
-   # Idle does not bring the large message back. It remains readable on demand.
-   await q.wait_for_timeout(400);assert not await q.locator('#episodeRadio').is_visible()
+   # The short beat expires while idle, and remains readable on demand.
+   await q.wait_for_timeout(4800);assert not await q.locator('#episodeRadio').is_visible()
    await q.click('#hud .obj');assert '몸을 낮추면' in await q.inner_text('#episodeRadioText')
    await q.click('#hud .obj')
    # Separate stage-entry fixture for the previously reproduced wrong CCTV radio.

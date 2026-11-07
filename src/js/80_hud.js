@@ -235,6 +235,7 @@ function floorBanner(P, ptx, pty) {
 }
 function updateHUD(force) {
   if (force) hudCache = {};
+  document.body.classList.toggle('first-episode',!!STAGE.firstSteps&&!!STAGE.storyEpisode);
   updateSkillPrompt(force);
   syncAssassinHUD();
   const P = S.player;

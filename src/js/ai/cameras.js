@@ -62,8 +62,9 @@ function updateCams(dt) {
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
-    ctx.fillStyle = '#1a1d24'; ctx.fillRect(cr.x - 26, cr.y - 30, 52, 16);
-    for (let i = 0; i < 3; i++) { const on = !S.camsOff; ctx.fillStyle = on ? `rgba(120,190,255,${0.55 + 0.25 * Math.sin(S.t * 7 + i * 2)})` : '#2a2d34'; ctx.fillRect(cr.x - 24 + i * 17, cr.y - 28, 14, 11); } }
+    const painted=drawPropFurn(ctx,{t:'pc',x:cr.x/TILE-.5,y:cr.y/TILE-.5,w:1,h:1});
+    if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(cr.x-22,cr.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(cr.x-22,cr.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(cr.x-18,cr.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(cr.x-3,cr.y-7,6,9);ctx.fillRect(cr.x-12,cr.y+2,24,3);}
+    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(cr.x+15,cr.y-9,3,2); }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {

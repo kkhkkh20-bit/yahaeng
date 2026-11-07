@@ -1,15 +1,15 @@
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '제비가 사라졌습니다, 올빼미. 마지막 단서는 배차실 2층의 서류입니다.',
- '상자 옆 풀숲이 보이죠? 몸을 낮추면 경비 눈을 피할 수 있습니다.',
- '좋습니다. 풀숲에서 나와 저 경비의 등 뒤까지 조용히 접근하세요.',
- '살려 두고 옷만 빌립시다. 공격을 짧게 누르고 떼세요. 길게 누르면 죽습니다.',
- '이제 경비의 옷을 입으세요. 갈아입는 동안에는 움직이지 마십시오.',
- '제법 어울리는군요. 경비는 왼쪽 풀숲에 숨겨 두고 갑시다.',
- '배차실 문으로 들어가세요. 서류는 계단을 올라간 2층 책상에 있습니다.',
- '저 책상입니다. 가까이서 서류를 챙기세요. 작업이 끝날 때까지 기다립니다.',
- '서류 확보했군요. 들어왔던 계단으로 내려와 동쪽 골목으로 빠집시다.',
- '동쪽 골목에 차를 대 놨습니다. 잘했습니다, 올빼미. 이제 나옵시다.'
+ '제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
+ '몸을 낮추면 덜 보인다. 양복은 나중에 털지.',
+ '경비도 앞만 봅니다. 조용히 등 뒤로 붙으세요.',
+ '살려 두자. 공격은 짧게, 길게 누르면 죽는다.',
+ '옷 좀 빌리자. 갈아입는 동안엔 가만히.',
+ '경비는 왼쪽 풀숲에. 퇴근한 줄 알겠죠.',
+ '배차실 문으로 들어가서 계단. 서류는 2층이다.',
+ '이 책상이군. 챙기는 동안 손은 가만히.',
+ '좋습니다. 같은 계단으로 1층에 내려오세요.',
+ '서류도 챙겼고… 동쪽 골목의 차로 가자.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
@@ -21,7 +21,7 @@ function episodeRadioMessage(){
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
   const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  return{text,speaker:[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying),action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';
@@ -44,14 +44,14 @@ function compactObjectiveText(){
  const goal=nextGoal();if(!goal)return '';
  if(STAGE.firstSteps&&STAGE.storyEpisode&&!goal.interrupt){
   if(S.player.hide)return tutText('{행동} · 밖으로 나오기');
-  return ['오른쪽 표시로 이동','웅크려 풀숲으로','경비의 등 뒤로 접근',
+  return ['오른쪽 표시로 이동',isTouch?'웅크리기 · 풀숲으로':'Ctrl · 풀숲으로','경비의 등 뒤로 접근',
    isTouch?'공격 짧게 · 기절':'Z 짧게 · 기절','경비 옷 훔쳐 입기','경비를 풀숲에 숨기기',
    '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
  }
  return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
 }
-let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceReady=false;
-let episodeRadioScene=null,episodeRadioUntil=0;
+let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceKey='';
+let episodeRadioScene=null,episodeRadioUntil=0,episodeRadioCue='',episodeRadioSeen=new Map();
 function syncEpisodeRadio(){
  const el=$('episodeRadio');if(!el)return;
  const now=performance.now(),box=document.querySelector('#hud .obj'),open=!!box?.classList.contains('open');
@@ -60,16 +60,26 @@ function syncEpisodeRadio(){
  if(now<episodeRadioTick)return;episodeRadioTick=now+80;
  const message=episodeRadioMessage();
  document.body.classList.toggle('episode-coached',!!message);
- if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=now+4500;}
- const moving=S.player.moving||(input.joy?.mag||0)>.05||Object.values(S.keys||{}).some(Boolean)||actionBusy(S.player)||input.aiming;
- if(moving||open)episodeRadioUntil=0;
- const peek=!!message&&!open&&H>480&&now<episodeRadioUntil;
- document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
+ if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=0;episodeRadioCue='';episodeRadioSeen=new Map();}
  if(message){
-  const token=message.text+'|'+message.action;
-  if(token!==episodeRadioToken){$('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;episodeRadioToken=token;}
-  if(open&&!episodeRadioFaceReady)episodeRadioFaceReady=drawFace($('episodeRadioFace'),speakerOf('master'));
+  const cue=message.cue||message.text;
+  if(cue!==episodeRadioCue&&(!episodeRadioSeen.has(cue)||now-episodeRadioSeen.get(cue)>18000)){
+   episodeRadioUntil=now+4600;episodeRadioSeen.set(cue,now);
+  }
+  episodeRadioCue=cue;
+  const speaker=message.speaker||'master',token=speaker+'|'+message.text+'|'+message.action;
+  if(token!==episodeRadioToken){
+   $('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;
+   $('episodeRadioSpeaker').textContent=speakerOf(speaker).name;
+   $('episodeRadioChannel').textContent=speaker==='hero'?'· 혼잣말':'· 무전';
+   el.setAttribute('aria-label',speakerOf(speaker).name+(speaker==='hero'?'의 혼잣말':'의 무전'));episodeRadioToken=token;
+  }
+  if(open&&episodeRadioFaceKey!==speaker&&drawFace($('episodeRadioFace'),speakerOf(speaker)))episodeRadioFaceKey=speaker;
  }
+ if(open)episodeRadioUntil=0;
+ // Every new beat speaks once, in the header; walking never summons a world panel.
+ const peek=!!message&&!open&&H>480&&now<episodeRadioUntil&&!actionBusy(S.player)&&!input.aiming;
+ document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
  const top=document.querySelector('#hud .top')?.getBoundingClientRect();
  if(top)document.documentElement.style.setProperty('--topb',Math.round(top.bottom)+'px');
 }

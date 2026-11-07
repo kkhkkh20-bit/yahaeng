@@ -24,7 +24,10 @@ function mountIndoorCamera(c, mounted) {
     }
     const post = Math.min(180, ...S.guards.filter(g => flOf(g) === f && !g.civ && !g.dog).map(g => dist(x, y, g.x, g.y)));
     const separation = (mounted || []).some(o => o.fl === f && dist(o.x, o.y, x, y) < 80) ? 8 : 0;
-    const score = seen / room.length * 20 + post / 90 - separation;
+    // A compact authored job can name the work surface this camera protects.
+    const focus=STAGE.cameraFocus,fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
+    const protects=focus&&fd<=300&&Math.abs(angDiff(base,Math.atan2(tc(focus[1])-y,tc(focus[0])-x)))<=camFov(c)&&castRay(x,y,Math.atan2(tc(focus[1])-y,tc(focus[0])-x),fd)>=fd-6;
+    const score = seen / room.length * 20 + post / 90 - separation + (protects?30:0);
     if (!best || score > best.score) best = { x, y, tx, ty, base, sweep, score, sx, sy };
   }
   setLayer(L0);
