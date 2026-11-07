@@ -75,6 +75,9 @@ function hudArt(key){const svg=(['action','crouch','grab','dress','whistle','equ
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');
   el.dataset.ready=String(a.k!=='none'&&!a.busy&&!a.skillLocked);
+  // Busy actions still accept buffered input; only genuine unavailable actions
+  // announce disabled, and remain clickable to explain their requirement.
+  el.setAttribute('aria-disabled',String(!a.busy&&(a.k==='none'||!!a.skillLocked)));
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
   const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;

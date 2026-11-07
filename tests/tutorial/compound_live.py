@@ -38,16 +38,20 @@ class CompoundControls:
   else:await self.c.press('x','#btnCarry')
   await self.q.wait_for_function('!__game.actionBusy()&&!__game.S.player.pick&&!__game.S.player.trav&&!__game.S.player.jump',timeout=12000)
  async def neutralize(self,tag,lethal=False):
-  ready=False
+  # Moving repair/return patrols can leave the edge of melee reach between the
+  # read-only ready check and native input. Re-approach visibly; never freeze AI.
   for distance in [40,30,24]:
    g=await self.q.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);return{x:g.x,y:g.y,a:g.a,state:g.state}}',tag)
    if g['state']=='DEAD':return
    await self.walk(g['x']-math.cos(g['a'])*distance,g['y']-math.sin(g['a'])*distance)
    ready=await self.q.evaluate('tag=>{const G=__game,a=G.attackAction();return (a.list||[a.g]).some(g=>g?.tag===tag)&&a.k!=="none"}',tag)
-   if ready:break
-  assert ready,(tag,g,await self.q.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,fl:__game.S.player.fl,cover:!!__game.S.player.cover,hidden:__game.S.player.hidden,carrying:!!__game.S.player.carrying},attack:__game.attackAction().k})'))
-  await self.c.press('z','#btnAct',lethal=lethal)
-  await self.q.wait_for_function('tag=>__game.S.guards.find(g=>g.tag===tag).state==="DEAD"&&!__game.actionBusy()',arg=tag,timeout=8000)
+   if not ready:continue
+   await self.c.press('z','#btnAct',lethal=lethal)
+   await self.q.wait_for_timeout(180)
+   if await self.q.evaluate('tag=>__game.S.guards.find(g=>g.tag===tag).state!=="DEAD"&&!__game.actionBusy()&&!__game.S.player.approachAttack',tag):continue
+   await self.q.wait_for_function('tag=>__game.S.guards.find(g=>g.tag===tag).state==="DEAD"&&!__game.actionBusy()',arg=tag,timeout=8000)
+   return
+  raise AssertionError((tag,g,await self.q.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,fl:__game.S.player.fl,cover:!!__game.S.player.cover,hidden:__game.S.player.hidden,carrying:!!__game.S.player.carrying},attack:__game.attackAction().k})')))
  async def dress(self,tag='uniformDonor'):await self.env('dress',tag);assert await self.q.evaluate('__game.S.player.outfit==="crew"')
  async def hide(self,tag):
   await self.env('carry',tag)
@@ -74,6 +78,15 @@ class CompoundControls:
   await self.walk(at['x']+24,at['y']);await self.env('lamp')
   assert await self.q.evaluate('__game.S.lamps.some(l=>!l.outdoor&&l.off)')
   await self.shot('lights-out')
+ async def camera_cable(self):
+  # Thumb movement eases to a stop. Correct residual drift with native input
+  # before requiring the strict physical 46px wall-cable reach.
+  at=await self.q.evaluate('__game.cameraServicePoint(__game.S.cams[0])')
+  await self.walk(at['x'],at['y'])
+  for _ in range(3):
+   if await self.q.evaluate('__game.cameraCableReachable(__game.S.cams[0])'):break
+   await self.c.move(at['x'],at['y']);await self.q.wait_for_timeout(120)
+  await self.env('camCable')
  async def finish(self):
   await self.stairs(0,1 if await self.q.evaluate('!!__game.STAGE.compoundVertical')else 0)
   at=await self.q.evaluate('__game.S.exit');await self.walk(at['x'],at['y'])
@@ -108,7 +121,7 @@ async def main(args):
       if id=='e1':
        assert await q.evaluate('__game.evidencePending()&&__game.S.stats.camRec>0'),'actual visible work was not recorded'
        await cc.shot('recorded-work')
-       at=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])');await cc.walk(at['x'],at['y']);await cc.env('camCable')
+       await cc.camera_cable()
        assert await q.evaluate('__game.evidencePending()'),'wire erased past evidence'
        at=await q.evaluate('__game.S.camRoom');await cc.walk(at['x'],at['y']);await cc.env('camroom')
        assert await q.evaluate('!__game.evidencePending()&&__game.S.camsOff');await cc.shot('security-recovered')
@@ -126,7 +139,7 @@ async def main(args):
       at=await q.evaluate("(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===1);return {x:l.rx??l.ux,y:l.ry??l.uy}})()")
       await cc.walk(at['x'],at['y']);await cc.env('down');assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
       await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
-      at=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])');await cc.walk(at['x'],at['y']);await cc.env('camCable')
+      await cc.camera_cable()
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
       # Keep the remaining patrols alive: permitted passage and an ordinary
       # staircase escape are valid solutions, not an all-enemy-clear checklist.

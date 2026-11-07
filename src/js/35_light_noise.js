@@ -105,7 +105,7 @@ function respondToLampOff(l,watchers){
   const at=lampControl(l),g=watchers.sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
   if(S.guards.some(o=>o!==g&&o.state==='PATROL'&&!o.doomed&&sameLampCircuit(o.relight?.l,l)))return;
   releaseSearchJob(g);endChat(g);g.state='PATROL';g.path=null;g.act=null;g.bubble=null;g.soundWatchUntil=0;g.sense=null;g.hearT=0;g.poi=null;
-  g.relight={l,t:.65,witnessed:true};g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
+  g.relight={l,t:.65,witnessed:true};g.lightNoticeUntil=S.t+2.4;g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
 }
 function noise(x, y, r, src, fl, z) {
   r=skillNoise(src,r);

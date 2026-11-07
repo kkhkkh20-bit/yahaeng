@@ -20,7 +20,7 @@ FAST.append('t_caseboard')
 FAST.extend(['t_target_personality','t_art_finish'])
 FAST.extend(['t_play_space','t_roof_privacy'])
 FAST.append('t_room_switches')
-FAST.append('t_room_finish')
+FAST.extend(['t_room_finish','t_event_feedback'])
 FAST.append('t_ledge_facing')
 FAST.extend(['t_field_learning','t_beginner_clarity'])
 FAST.extend(['t_field_hud','t_quick_items'])
@@ -51,6 +51,7 @@ def main():
     subprocess.run([sys.executable, os.path.join(ROOT, 'tests/integration/test_build_pipeline.py')], cwd=ROOT, check=True)
     if shutil.which('node'):
         subprocess.run(['node', os.path.join(ROOT, 'tests/integration/sprite_sources.cjs')], cwd=ROOT, check=True)
+        subprocess.run(['node', os.path.join(ROOT, 'tests/integration/physical_interactions.cjs')], cwd=ROOT, check=True)
     if '--no-build' not in sys.argv: subprocess.run([sys.executable, os.path.join(ROOT, 'build.py')], check=True)
     v, errs = asyncio.run(validate()); print('도달 검사:', '통과' if not v and not errs else ('문제 ' + str(v) + str(errs)))
     fails = [] if not v and not errs else ['validate']

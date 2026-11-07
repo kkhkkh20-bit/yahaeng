@@ -9,7 +9,7 @@ function koPerson(g, mode, where, intent, quiet) {
   g.state = 'DEAD'; g.icon = null; g.path = null; g.doomed = false; g.say = null; if(!g.pairDown)play('thud', 0.45); play('cloth', 0.4);
   facWitness(g); cityVictim(g);
   const c = { assailantLook, guardId:g.id, fl: flOf(g), z: g.z || 0, ch: charOf(g), stripped:!!g.stripped, ko: true, target: !!g.target, playerHandled:mode==='stash'||!!intent?.source, g, container: mode === 'stash' ? where : null, fac: g.fac, tag: g.tag, outfit: outfitOf(g), x: g.x, y: g.y, a: g.a, kind: g.kind, hidden: tileAt(g.x, g.y) === 'B', discovered: false, carried: false, stashed: false, light: lightAt(g.x, g.y), t0: S.t };
-  spawnEffect('dust',{x:g.x,y:g.y-12,fl:flOf(g),z:g.z||0},{scale:.55});
+  if(!g.pairDown)feedbackEvent('ko',g,{effect:'dust',scale:.32,lift:12});
   c.vipApproach=vipApproach;S.corpses.push(c);fieldTakedownSkills(intent,true); S.stats.ko = (S.stats.ko || 0) + 1;
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; }
@@ -17,7 +17,7 @@ function koPerson(g, mode, where, intent, quiet) {
   if (S.fuseGuard === g) S.fuseGuard = null;
   if (g.hasKey) { const k = g.hasKey; g.hasKey = null; giveKey(k, '기절한 ' + (g.civ ? '사람' : '자경대원') + '에게서 ' + withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')); }
   armKoHold(c, g, intent);
-  toast(g.civ ? '주민을 기절시켰다 · 다른 사람이 발견하면 신고할 수 있다' : '기절 · 살아 있으며 다시 깨어날 수 있다', 2.4);
+  if(feedbackOnce(g.civ?'civilianKO':'ko'))feedbackToast('takedown',g.civ?'주민 기절 · 발견되면 신고 위험':'기절 · 살아 있으며 다시 깨어날 수 있다',2);
   hint('ko', g.civ ? '주민을 기절시키면 살상 감점은 없다. 길게 눌러 처치하면 수고비가 줄어든다' : '[공격] 짧게: 기절 · 1초 길게: 살해');
 }
 // 누른 채로 있으면 기절 → 처치로 바뀐다
@@ -29,7 +29,7 @@ function updateKoHold() {
   if (S.t - h.t0 < KO_HOLD) return;
   S.koHold = null;
   for (const { c, g } of h.bodies) finishKo(c, g);
-  S.shakeT = .12; checkObjective();
+  checkObjective();
 }
 // 기절한 사람이 발견되면 깨어나 함께 수색한다
 function wakeKO(c, by) {
@@ -114,7 +114,7 @@ function updatePairCombat(P,dt) {
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)spawnEffect('dust',{x:A.c.x,y:A.c.y,fl:A.fl,z:A.z},{scale:.32,alpha:.45});S.shakeT=Math.max(S.shakeT||0,.06);}
+  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
     releasePairCombat(P);return false;
@@ -142,11 +142,11 @@ function killGuard(g, mode, where, quiet) {
   S.lethalNext = false;
   logEv(g.target ? 'target' : 'kill', g.x, g.y);
   g.state = 'DEAD'; g.icon = null;
-  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); if(!g.pairDown)after(.18,()=>{if(!S.over)play('thud',.45);}); S.shakeT = quiet ? 0.12 : 0.18;
+  play(Math.random() < 0.5 ? 'kill' : 'kill2', quiet ? 0.45 : 0.7); if(!g.pairDown)after(.18,()=>{if(!S.over)play('thud',.4);});
   S.stats.kills++; if (!g.target && g.civ) S.stats.extraKills++; if (!g.target && !g.civ && !g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
   if (g.target) bossRadio('target', true); else if (g.civ) bossRadio('civ', true);
-  if(intent?.visual!=='assassin'){
-    if(pixelFxEnabled())spawnEffect(quiet?'dust':'strike',{x:g.x,y:g.y-18,fl:flOf(g),z:g.z||0},{angle:quiet?0:S.player.a,scale:quiet?.5:.8});
+  if(intent?.visual!=='assassin'&&!g.pairDown){
+    if(pixelFxEnabled())feedbackEvent('kill',g,{effect:quiet?'dust':'strike',lift:18,scale:quiet?.32:.5});
     else S.fx.push({ k: 'slash', x: g.x, y: g.y, t: 0 });
   }
   facWitness(g); cityVictim(g);
@@ -157,7 +157,6 @@ function killGuard(g, mode, where, quiet) {
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (g.z) noise(g.x, g.y, 60, 'kill', flOf(g));  // 옥상: 핏자국을 남기지 않는다 (아래층에서 보이거나 닦을 수 없는 피가 생기지 않게)
   else { c.bleed = ++S.trailN || (S.trailN = 1); S.decals.push({ x: g.x + rnd(-6, 6), y: g.y + rnd(-6, 6), r: rnd(14, 19), rot: rnd(0, TAU), fl: flOf(g), trail: c.bleed, k: 0 }); noise(g.x, g.y, 60, 'kill', flOf(g)); }  // 처치한 자리에 핏자국. 이 시체를 옮기면 같은 번호로 핏방울이 이어진다
-  S.flash = 0.25;
   if (g.target) {
     if (S.player.disguise && !S.player.disguiseBlown) S.stats.disguiseKill = true;
     const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;

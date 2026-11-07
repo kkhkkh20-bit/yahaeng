@@ -20,6 +20,7 @@ async def main():
     S.cams=[];Object.assign(g,{x:1320,y:744});Object.assign(P,{x:1292,y:744});S.lethalNext=true;G.killGuard(g);ok(S.keyDrop?.key==='code'&&!P.keys.code,'target memo granted remotely or missing');ok(G.nextGoal().text.includes('메모'),'target-first route loses physical memo');Object.assign(P,{x:S.keyDrop.x,y:S.keyDrop.y});G.update(.02);ok(P.keys.code&&G.nextGoal().text.includes('장부'),'actual memo pickup does not lead to ledger');ok(S.missionApproach==='흡연 동선 매복','actual smoking contact not attributed');S.items.forEach(it=>it.got=true);G.checkObjective();S.over=true;G.showEnd(true);let record=JSON.parse(localStorage.getItem('yahaeng.ch')),budget=G.skillBudget();ok(record.m2._approaches.smoke.clears===1&&Object.keys(record.m2._approaches).length===1,'wrong special approach receipt');S.over=true;G.showEnd(true);ok(JSON.parse(localStorage.getItem('yahaeng.ch')).m2._approaches.smoke.clears===1&&G.skillBudget()===budget,'same result counts twice or mints points');out.push('real physical memo, completed-run receipt and idempotent replay currency');
     return out;
    }''')
+   await q.locator('#skillScreen').wait_for(state='visible')
    await q.screenshot(path=str(O/f'result-{w}.png'));assert await q.locator('.vip-passport').is_visible();assert await q.locator('#btnRetry').is_hidden() and await q.locator('#skillScreen').is_visible()
    await continue_episode(q);assert await q.evaluate('__game.STAGE.id==="m4"'), 'VIP must continue linearly after training'
    checks+=await q.evaluate('''()=>{

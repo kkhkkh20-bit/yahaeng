@@ -50,7 +50,7 @@ function updateCams(dt) {
     const assessment=cameraAssessment(c),v=assessment.detectable?assessment.visible:0;
     c.seen = v > 0;
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (!STAGE.zones && S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
-      c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1; recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
+      c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1;cameraRecordedFeedback(c,assessment.reason); recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
       const at = pSpot(); rememberSuspect(null); startBuildingSearch(at, 'A', 'camera'); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
@@ -82,6 +82,7 @@ function drawCams(fl) {
     ctx.fillStyle = c.broken||c.unplugged ? '#666' : on && Math.floor(S.t * 2) % 2 ? '#ff3b3b' : '#601818'; ctx.beginPath(); ctx.arc(-4, 0, 2.2, 0, TAU); ctx.fill();
     if(c.unplugged){ctx.strokeStyle='#777e89';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,0);ctx.lineTo(-17,3);ctx.lineTo(-17,10);ctx.stroke();}
     ctx.restore();
+    if(c.recordUntil>S.t){const k=Math.max(1,.9/SCALE);ctx.save();ctx.fillStyle='#191c22e8';ctx.fillRect(c.x-17*k,c.y-30*k,34*k,14*k);ctx.fillStyle='#f29c8c';ctx.font=uiFont(10*k);ctx.textAlign='center';ctx.fillText('REC',c.x,c.y-19*k);ctx.restore();}
     if(S.visionCamera===c){ctx.strokeStyle='#c5d7e8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,15,0,TAU);ctx.stroke();}
     if (c.broken && Math.random() < 0.05) S.fx.push({ k: 'smoke', x: c.x, y: c.y, t: 0 });
     if (c.meter > 0.02 && on) { ctx.strokeStyle = 'rgba(255,90,90,.95)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * c.meter); ctx.stroke(); }

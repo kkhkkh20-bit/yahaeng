@@ -270,3 +270,28 @@ body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 66p
 
 /* NPC dialogue takes precedence over transient save confirmation. */
 body.npc-speaking #hud #saveState{visibility:hidden}
+
+/* One field skin owns input, receipt and damage states. Hit areas never move. */
+#hud button{transition:color .12s ease,background-color .12s ease,opacity .12s ease}
+#hud button[aria-disabled=true]{opacity:.56}
+#hud button[aria-busy=true]{opacity:1}
+body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCrouch:is(.down,:active)>:is(svg,b){transform:translateY(1px)}
+#hud :is(.hud-menu,#btnCycle,#btnLoadoutClose,#btnSneak,#btnWhistle,.tool):active{background-color:#34444b;color:#fff4df}
+#hud #hpPips i.lost{background:#ed9b8b;box-shadow:0 0 0 1px #e9c5b070;animation:lost-pip .45s ease-out both}
+@keyframes lost-pip{from{opacity:1}to{opacity:.15}}
+#hud .feedback-pulse:not(button){animation:field-receipt .32s ease-out}
+#hud button.feedback-pulse{animation:field-input .16s ease-out}
+#skillScreen .feedback-pulse{animation:field-receipt .35s ease-out}
+@keyframes field-receipt{from{filter:brightness(1.35)}to{filter:brightness(1)}}
+@keyframes field-input{from{filter:brightness(1.22)}to{filter:brightness(1)}}
+#end[data-phase=complete] #endTitle{animation:completion-settle .25s ease-out both}
+#end[data-phase=complete] .completion-receipt{margin:0;color:#edcf9d;font-size:14px;line-height:1.6}
+#end[data-phase=complete] #btnNext{min-height:44px}
+@keyframes completion-settle{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(hover:hover) and (pointer:fine){#hud button:not([aria-disabled=true]):hover{color:#fff3dc;background-color:#34444b}}
+@media(prefers-reduced-motion:reduce){
+ #hud button{transition:none}
+ #hud .feedback-pulse,#skillScreen .feedback-pulse,#hud #hpPips i.lost,#end[data-phase=complete] #endTitle{animation:none}
+ #hud #hpPips i.lost{background:#b98f86}
+ body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCrouch:is(.down,:active)>:is(svg,b){transform:none}
+}

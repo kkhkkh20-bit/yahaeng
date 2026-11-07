@@ -82,7 +82,7 @@ body.touch #hud .pad :is(#btnCarry,#btnTool,#btnGrab,#btnDress).ready { color:va
 body.touch #hud .pad #btnAct { color:#d1d2ce; }
 body.touch #hud .pad #btnAct.ready,body.touch #hud .pad #btnAct.ko { color:#f5f0e6; }
 body.touch #hud .pad #btnAct.kill { color:#f3aaa0; }
-body.touch #hud .pad #btnAct.down,body.touch #hud .pad #btnAct:active { color:#fff5e9; }
+
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after { background:#ef8277; }
 body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #missionIdentity { border-color:#92948e38; }

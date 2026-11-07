@@ -9,6 +9,7 @@ const looks=slice(kit,'const charOf =','// ---- 프리렌더 배경');
 const sprite=read('src/js/graphics/sprite_sheets.js');
 const stripped=slice(sprite,'const strippedKey =','const pairCarry =');
 const gait=slice(read('src/js/45_player.js'),'function advancePlayerGait(','// 바닥 재질:');
+const workFeedback=slice(read('src/js/77_event_feedback.js'),'function cancelWork(','function drawCorpseStatus(');
 const factionDown=slice(read('src/js/46_factions.js'),'function npcDown(','// 내가 쓰러뜨린 조직원:');
 function scene(){
  const P={x:0,y:0,a:0,fl:0,z:0,mode:'walk',hurtT:0,stepT:0,strikeT:0,moving:false};
@@ -18,7 +19,7 @@ function scene(){
   SPD:{walk:100,sneak:65,run:140},MAT:{},OUTFIT_PAL:{crew:true},BLD:[],PLANS:[],
   PR:{style:'modular',looks:{crew:'maleWorker'},bodies:{male:true,fBob:true},bodyGender:{fBob:'female',male:'male'}},
   window:{__PR:true},input:{joy:null},hudCache:{},ACT_SKIP:new Set(),running:true,paused:false,tactical:false,RC:null,
-  effects:[],sounds:[],toasts:[],collision:()=>{},ray:d=>d,
+  effects:[],sounds:[],toasts:[],feedback:[],collision:()=>{},ray:d=>d,
   dist:(x,y,a,b)=>Math.hypot(x-a,y-b),clamp:(v,a,b)=>Math.max(a,Math.min(b,v)),angDiff:(a,b)=>Math.atan2(Math.sin(b-a),Math.cos(b-a)),flOf:o=>o.fl||0,
   setLayer:()=>{},solidFor:()=>()=>false,solidAt:()=>false,bldAt:()=>-1,groundedWorld:()=>true,
   surfacePoint:o=>({x:o.x,y:o.y}),surfaceFixture:o=>o,
@@ -27,14 +28,16 @@ function scene(){
   nearHide:()=>null,nearBushSpot:()=>null,nearCorpse:()=>null,beginHideFlow:()=>{P.trav={hideFlow:{}};return true;},hideSpace:()=>true,hideApproach:()=>({length:24}),hideDistance:()=>24,
   electricalActionAllowed:()=>true,actObj:a=>a.p||a.d||a.l||a.targetObject||a.c,
   closeEnvPicker:()=>{},finishEnvSelection:()=>{},contactFeedback:()=>{},
+  $:()=>null,feedbackOnce:()=>false,feedbackPulse:()=>{},
   fieldTakedownSkills:()=>{},logEv:()=>{},vipHitContext:()=>null,witnessedAssailant:()=>null,facWitness:()=>{},cityVictim:()=>{},spawnEffect:()=>{},armKoHold:()=>{},
   setIcon:()=>{},rememberSuspect:()=>{},startReport:()=>false,civScream:()=>{},goAlert:g=>g.state='ALERT'
  };
  q.collide=P=>q.collision(P);q.castRay=(x,y,a,d)=>q.ray(d);q.noise=(...a)=>q.sounds.push(a);q.toast=t=>q.toasts.push(t);
+ q.feedbackEvent=(kind,at,options={})=>{q.feedback.push(kind);if(options.text)q.toast(options.text);};q.feedbackToast=(channel,text)=>q.toast(text);
  q.actPrimary=a=>{q.effects.push(a.k);if(a.p)a.p.taken=true;if(a.d)a.d.locked=!a.d.locked;};
  q.takeProp=p=>{p.taken=true;P.item=p;};
  vm.createContext(q);
- vm.runInContext([looks,stripped,gait,read('src/js/38_zones.js'),read('src/js/59_interaction_flow.js'),read('src/js/interaction/carry.js'),read('src/js/interaction/takedown.js'),factionDown,
+ vm.runInContext([looks,stripped,gait,workFeedback,read('src/js/38_zones.js'),read('src/js/59_interaction_flow.js'),read('src/js/interaction/carry.js'),read('src/js/interaction/takedown.js'),factionDown,
   'globalThis.api={charOf,outfitOf,stripBodyClothing,bodyName,actCarry,secondaryAction,beginQuickStash,updateQuickStash,actionBusy,wakeKO,koPerson,npcDown,objectApproachPoint,beginObjectAction,updateObjectAction,updateSharpEye};'].join('\n'),q);
  q.P=P;q.tick=(s,dt=.01)=>{for(let t=0;t<s-1e-8;t+=dt){q.S.t+=dt;if(P.interact)q.api.updateObjectAction(P,dt);}};
  return q;

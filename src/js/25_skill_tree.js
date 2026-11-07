@@ -74,6 +74,7 @@ function learnTreeSkill(id){
  const r=loadSkillTree();if(r.learned.includes(id)||!s.req.every(k=>r.learned.includes(k))||skillBudget()-skillSpent(r)<s.cost)return false;
  r.learned.push(id);const stored=storeSkillTree(r);choseFieldSkill(id);if(S&&running)syncRuntimeSkills();
  if(ASSASSIN_SKILLS[id])chooseAssassinSkill(id);else renderAssassinMenu();if(S){hudCache.skillScan=null;syncTools();}
+ if(S){feedbackEvent('skill',S.player,{key:id,sound:'terminal'});feedbackPulse(document.querySelector('[data-node="'+id+'"]'),'skill');feedbackPulse($('skillSummary'),'skill');}
  if(!stored&&S)toast('기기 저장 불가 · 이번 실행에 배운 기술을 유지한다',2.4);return true;
 }
 function resetTreeSkills(){

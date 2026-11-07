@@ -33,7 +33,7 @@ function campaignSkillState(){
 }
 function openEpisodeTraining(next=learningNext()){
   if(!S||!S.over||$('end').dataset.win!=='1'||!LEARNING_ROUTE.includes(STAGE.id))return false;
-  openAssassinMenu();if(!assassinMenu)return false;
+  clearResultTransition();$('btnNext').hidden=true;$('end').dataset.phase='skills';openAssassinMenu();if(!assassinMenu)return false;
   assassinMenu.training=true;assassinMenu.practice=false;assassinMenu.advanceTo=next;
   renderAssassinMenu();return true;
 }

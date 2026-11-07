@@ -47,7 +47,7 @@ async def main():
      ok(before===JSON.stringify([G.GF,G.FURN,S.stats,S.guards.map(g=>[g.x,g.y,g.state,g.route,g.meter])]),'art changes collision, actor or objective state '+id);
      for(const g of S.guards.filter(g=>g.target)){
       const key=G.characterLook(g),body=key.split('@')[1],profile=G.STAGE.targetCast[g.tag],pal=G.characterPalette(g);hair.add(pal[1]);faces.push(profile.name);
-      if(['e1','e5','n1'].includes(id)){
+      if(profile.name.startsWith('차유진')||profile.name.startsWith('정하린')||profile.name.startsWith('문서윤')||id==='n1'){
        ok(G.PR.bodyGender[body]==='female','female officer uses male silhouette '+id);ok(G.targetPersonaKey(g).includes(body+'PersonaMotion'),'gesture changes the officer body '+id);
        await G.spriteSources.load(body);G.npcDown(g,null,false);const c=S.corpses.at(-1);ok(c?.ch===key&&c.ko,'KO changes the officer body '+id);
        // An older checkpoint can still carry the former male mesh key.
@@ -56,7 +56,7 @@ async def main():
       }
      }
     }
-    ok(female.length===3&&hair.size>=7,'cast is not visually varied');
+    ok(female.length>=5&&new Set(female).size>=4&&hair.size>=7,'cast is not visually varied');
     ok(!JSON.stringify([G.STAGES.map(s=>[s.brief,s.story]),G.CASE_SOURCES]).includes('정필수')&&!JSON.stringify([G.STAGES.map(s=>[s.brief,s.story]),G.CASE_SOURCES]).includes('문기석'),'old identity remains in clues');
     return{families:[...seen].sort(),renderedProps:props,femaleOfficers:female,hairColours:hair.size,lateAtlasRepaint:true,worldUnchanged:true,koAndCheckpoint:true};
    }''')

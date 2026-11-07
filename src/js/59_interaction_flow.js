@@ -59,7 +59,7 @@ function objectApproachPoint(a,at){
 }
 function updateObjectApproach(P,I,dt){
  const at=I.approach;at.t+=dt;
- if(at.t>.85||!objectActionValid(I.a,I.item)){P.interact=null;P.moving=false;return;}
+ if(at.t>.85||!objectActionValid(I.a,I.item)){cancelWork(P,'대상에 손이 닿지 않아 작업 중단');return;}
  const layer=CUR_F;setLayer(flOf(P));
  const ox=P.x,oy=P.y,mode=P.mode==='sneak'?'sneak':'walk',spd=mode==='sneak'?65:100;
  P.mode=mode;P.a+=clamp(angDiff(P.a,I.face),-dt*18,dt*18);
@@ -73,7 +73,7 @@ function updateObjectApproach(P,I,dt){
  const moved=dist(ox,oy,P.x,P.y);P.moving=moved>.01;P.vx=P.vy=0;
  advancePlayerGait(P,ox,oy,dt,SPD[mode]*(STAGE.pspd||1));playerFootsteps(P,mode,ox,oy);
  I.x=P.x;I.y=P.y;P.light=lightAt(P.x,P.y,!!P.z);setLayer(layer);
- if(blocked){P.interact=null;P.moving=false;toast('조작할 공간이 없다 · 옆으로 이동해 다시 시도',1.8);return;}
+ if(blocked){cancelWork(P,'조작할 공간이 없다 · 옆으로 이동해 다시 시도');return;}
  if(dist(P.x,P.y,at.x,at.y)<.5){I.approach=null;P.moving=false;}
 }
 function beginObjectAction(a) {
@@ -92,15 +92,16 @@ function beginObjectAction(a) {
 }
 function updateObjectAction(P, dt) {
   const I = P.interact;
+  if(I.dur>=.65&&workMovementRequested()){cancelWork(P,'이동해서 작업 중단');return;}
   P.vx = P.vy = 0; P.moving = false; P.hidden = false; P.light = lightAt(P.x, P.y, !!P.z);
-  if ((P.hurtT||0)>(I.hurtT||0)+.001||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) { P.interact = null; return; }
+  if ((P.hurtT||0)>(I.hurtT||0)+.001||flOf(P) !== I.fl || (P.z || 0) !== I.z || dist(P.x, P.y, I.x, I.y) > 20) {cancelWork(P,(P.hurtT||0)>(I.hurtT||0)+.001?'피격으로 작업 중단':flOf(P)!==I.fl||(P.z||0)!==I.z?'층이 달라져 작업 중단':'이동해서 작업 중단');return;}
   I.hurtT=P.hurtT||0;
   if(I.approach){updateObjectApproach(P,I,dt);return;}
   I.t = Math.min(I.dur, I.t + dt);
   if(I.pose==='dress'&&!I.clothHandled&&I.t>=.25){I.clothHandled=true;play('cloth',.2);}
   P.a += clamp(angDiff(P.a, I.face), -dt * 18, dt * 18);
-  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
-    if (!objectActionValid(I.a, I.item)) { P.interact = null; return; }
+  if (!I.committed && I.t >= I.dur * (I.a.k==='read'||I.a.k==='camCable'||I.a.k==='camroom'||I.pose==='dress'?1:I.a.k==='door'?.76:.6)) {
+    if (!objectActionValid(I.a, I.item)) {cancelWork(P,'대상 상태가 바뀌어 작업 중단');return;}
     I.committed = true; I.committing = true;
     try {
       // 다른 인물이 이미 열거나 껐다면 반대로 토글하지 않는다.

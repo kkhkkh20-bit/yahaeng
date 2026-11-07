@@ -1,4 +1,4 @@
-function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; } c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
+function worldTransform(c, scale) { let sx = 0, sy = 0; if (S && S.shakeT > 0 && !reducedFxMotion.matches) { const a = S.shakeT * 22 * DPR; sx = Math.sin(S.t * 91) * a; sy = Math.cos(S.t * 73) * a * 0.7; } c.setTransform(scale, 0, 0, scale, W / 2 * DPR - cam.x * scale + sx, H / 2 * DPR - cam.y * scale + sy); }
 // Actual small objects rest on their surface. Highlights appear only within reach
 // or while inspecting; the mission HUD and existing pickup rules remain unchanged.
 function drawPickupHint(x,y,col='#d4c59f') {
