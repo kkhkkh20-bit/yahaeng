@@ -1,0 +1,103 @@
+{
+  "build": {
+    "edition": "2d-campaign",
+    "version": "v213",
+    "source_sha256": "c4f8598948f66b0c139507eaf2788fdc3b8aa15b6dc4009242cae65d5717c2f9",
+    "html_bytes": 253377,
+    "source_bytes": 17058381,
+    "scripts": 7,
+    "assets": 281,
+    "asset_bytes": 12556795,
+    "deployed_assets": 281,
+    "deployed_asset_bytes": 12556795
+  },
+  "fastBrowserCases": 109,
+  "physicalUnitGroups": 20,
+  "nativeCompletions": [
+    {
+      "device": "pc",
+      "stage": "p0",
+      "hp": 3,
+      "detected": 0
+    },
+    {
+      "device": "mobile",
+      "stage": "p0",
+      "hp": 3,
+      "detected": 0
+    },
+    {
+      "device": "pc",
+      "stage": "p1",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    },
+    {
+      "device": "pc",
+      "stage": "p2",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    },
+    {
+      "device": "pc",
+      "stage": "e1",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 1,
+      "cameraPending": 0
+    },
+    {
+      "device": "pc",
+      "stage": "e2",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    },
+    {
+      "device": "mobile",
+      "stage": "p1",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    },
+    {
+      "device": "mobile",
+      "stage": "p2",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    },
+    {
+      "device": "mobile",
+      "stage": "e1",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 1,
+      "cameraPending": 0
+    },
+    {
+      "device": "mobile",
+      "stage": "e2",
+      "hp": 3,
+      "detected": 0,
+      "cameraEver": 0,
+      "cameraPending": 0
+    }
+  ],
+  "method": "Standalone stage fixtures and known-map native keyboard/CDP touch; normal RAF/AI, no actor/clock/health overrides. Not a first-time-user study or physical-device audio/haptic certification.",
+  "feedbackJourneys": [
+    "PC and touch: KO, cancelled finishing hold, explicit kill, disguise, stash",
+    "PC foreground marker follow-up after final layering change"
+  ],
+  "lastFollowups": [
+    "event feedback PC/touch: actual recording cause, cancellation, work commit, health, result timing, haptic opt-in",
+    "roof opacity and indoor terminal privacy"
+  ]
+}
