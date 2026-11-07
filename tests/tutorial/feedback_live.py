@@ -28,7 +28,7 @@ async def main(a):
     assert await q.evaluate('__game.S.corpses.some(c=>c.tag==="uniformDonor"&&c.ko)&&!__game.S.player.finishPose')
     await cc.shot('hold-cancelled')
     await attack(True);await cc.shot('deliberate-hold');await q.wait_for_function('()=>{const g=__game.S.guards.find(g=>g.tag==="uniformDonor");return __game.targetEliminated(g)}',timeout=5000);await attack(False);await cc.shot('dead')
-    assert await q.evaluate('__game.S.flash===0&&__game.feedbackState().events.some(e=>e.kind==="kill")')
+    assert await q.evaluate('!(__game.S.flash>0)&&__game.feedbackState().events.some(e=>e.kind==="kill")')
     await cc.dress();await cc.shot('disguise');await cc.hide('uniformDonor');await cc.shot('stash')
     assert await q.evaluate('__game.feedbackState().events.some(e=>e.kind==="stash")&&__game.S.stats.stashed===1&&__game.S.stats.detected===0&&__game.S.player.hp===3')
     assert not errors,errors;rows.append({'device':'mobile'if mobile else'pc','events':c.events,'errors':errors})

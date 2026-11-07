@@ -78,6 +78,15 @@ class CompoundControls:
   await self.walk(at['x']+24,at['y']);await self.env('lamp')
   assert await self.q.evaluate('__game.S.lamps.some(l=>!l.outdoor&&l.off)')
   await self.shot('lights-out')
+ async def camera_cable(self):
+  # Thumb movement eases to a stop. Correct residual drift with native input
+  # before requiring the strict physical 46px wall-cable reach.
+  at=await self.q.evaluate('__game.cameraServicePoint(__game.S.cams[0])')
+  await self.walk(at['x'],at['y'])
+  for _ in range(3):
+   if await self.q.evaluate('__game.cameraCableReachable(__game.S.cams[0])'):break
+   await self.c.move(at['x'],at['y']);await self.q.wait_for_timeout(120)
+  await self.env('camCable')
  async def finish(self):
   await self.stairs(0,1 if await self.q.evaluate('!!__game.STAGE.compoundVertical')else 0)
   at=await self.q.evaluate('__game.S.exit');await self.walk(at['x'],at['y'])
@@ -112,7 +121,7 @@ async def main(args):
       if id=='e1':
        assert await q.evaluate('__game.evidencePending()&&__game.S.stats.camRec>0'),'actual visible work was not recorded'
        await cc.shot('recorded-work')
-       at=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])');await cc.walk(at['x'],at['y']);await cc.env('camCable')
+       await cc.camera_cable()
        assert await q.evaluate('__game.evidencePending()'),'wire erased past evidence'
        at=await q.evaluate('__game.S.camRoom');await cc.walk(at['x'],at['y']);await cc.env('camroom')
        assert await q.evaluate('!__game.evidencePending()&&__game.S.camsOff');await cc.shot('security-recovered')
@@ -130,7 +139,7 @@ async def main(args):
       at=await q.evaluate("(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===1);return {x:l.rx??l.ux,y:l.ry??l.uy}})()")
       await cc.walk(at['x'],at['y']);await cc.env('down');assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
       await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
-      at=await q.evaluate('__game.cameraServicePoint(__game.S.cams[0])');await cc.walk(at['x'],at['y']);await cc.env('camCable')
+      await cc.camera_cable()
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
       # Keep the remaining patrols alive: permitted passage and an ordinary
       # staircase escape are valid solutions, not an all-enemy-clear checklist.
