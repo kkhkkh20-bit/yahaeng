@@ -26,9 +26,9 @@ function episodeRadioMessage(){
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';
  else if(evidencePending())text='신원이 녹화됐습니다. 관리 단말에서 감시망을 정지하고 기록도 지울 수 있습니다. 아직 수습할 수 있습니다.';
- else if(goal.starter&&P.outfit!=='crew')text='골목에 혼자 있는 경비가 있습니다. 기절시킨 다음 몸 옆에서 행동으로 옷을 얻으세요.';
+ else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 혼자 있는 경비가 있습니다. 기절시킨 다음 몸 옆에서 행동으로 옷을 얻으세요.';
  else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'운반책은 아직 살아 있습니다. 이번 의뢰는 처치입니다. 몸 가까이서 공격을 1초 길게 누르세요.':'서류에서 찾은 운반책입니다. 적재장 옆으로 돌아 등 뒤를 잡으세요. 이번에는 공격을 길게 눌러 처리합니다.';
- else if(goal.actionReady||actionBusy())text=actionBusy()?'좋습니다. 작업이 끝날 때까지 움직이지 마세요. 주변의 시선도 살피고요.':'지금입니다. 가까이서 행동하세요. 옷은 통행을 돕지만, 훔치는 모습까지 가려 주지는 않습니다.';
+ else if(goal.actionReady||actionBusy())text=actionBusy()?'좋습니다. 작업이 끝날 때까지 움직이지 마세요. 주변의 시선도 살피고요.':(P.disguise?'지금입니다. 옷은 통행을 돕지만, 훔치는 모습까지 가려 주지는 않습니다.':'지금입니다. 가까이서 행동하고, 작업이 끝날 때까지 움직이지 마세요.');
  else if(STAGE.id==='p1')text='그 옷이면 물류실 경비 앞을 걸어가도 됩니다. 서류 작업은 경비가 등을 보일 때 하세요.';
  else if(/계단|2층으로/.test(goal.text))text='서두를 필요 없습니다. 표시된 계단으로 올라가세요. 같은 층에 도착한 뒤 다음 일을 봅시다.';
  else if(['p2','e2','e4','e5'].includes(STAGE.id)&&S.cams.some(camOn))text='카메라가 비추지 않는 벽 쪽으로 돌아가세요. 가까이서 전선을 분리하면 됩니다. 기술은 필요 없습니다.';
@@ -37,28 +37,39 @@ function episodeRadioMessage(){
  else if(STAGE.id==='m2')text='클럽은 넓지만 한 가지씩 합시다. 먼저 표시된 곳을 확인하세요. 통행과 작업은 별개입니다.';
  return{text,action:tutText(goal.text)+(goal.where?' · '+tutText(goal.where):'')};
 }
+// The live HUD carries one short action. Full instructions stay in the existing
+// objective inspector, which already stops simulation while the player reads.
+function compactObjectiveText(){
+ if(!S)return '';
+ const goal=nextGoal();if(!goal)return '';
+ if(STAGE.firstSteps&&STAGE.storyEpisode&&!goal.interrupt){
+  if(S.player.hide)return tutText('{행동} · 밖으로 나오기');
+  return ['오른쪽 표시로 이동','웅크려 풀숲으로','경비의 등 뒤로 접근',
+   isTouch?'공격 짧게 · 기절':'Z 짧게 · 기절','경비 옷 훔쳐 입기','경비를 풀숲에 숨기기',
+   '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
+ }
+ return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
+}
 let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceReady=false;
+let episodeRadioScene=null,episodeRadioUntil=0;
 function syncEpisodeRadio(){
  const el=$('episodeRadio');if(!el)return;
- const now=performance.now();
- const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!hudInspecting()&&!S?.keypad&&!targetDialogueVisible();
- if(!active){el.hidden=true;document.body.classList.remove('episode-coached');return;}
- if(now<episodeRadioTick)return;episodeRadioTick=now+100;
- const message=episodeRadioMessage();el.hidden=!message;document.body.classList.toggle('episode-coached',!!message);if(!message)return;
- const token=message.text+'|'+message.action;
- if(token!==episodeRadioToken){$('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;episodeRadioToken=token;}
- if(!episodeRadioFaceReady)episodeRadioFaceReady=drawFace($('episodeRadioFace'),speakerOf('master'));
- // Keep the avatar, mission HUD and touch controls clear, including landscape.
- const width=Math.min(H<480?340:480,W-24);el.style.width=width+'px';
- const top=document.querySelector('#hud .top')?.getBoundingClientRect();if(top)document.documentElement.style.setProperty('--topb',Math.round(top.bottom)+'px');
- const h=el.offsetHeight,P=S.player,px=(P.x-cam.x)*SCALE+W/2,py=(P.y-cam.y)*SCALE+H/2;
- const cr=canvas.getBoundingClientRect(),rects=[...document.querySelectorAll('#hud .top,#mini,#stealth,#btnPause,.pad > button:not([hidden]),.sysbtns button')].filter(e=>!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden').map(e=>{const r=e.getBoundingClientRect();return[r.left-cr.left-6,r.top-cr.top-6,r.right-cr.left+6,r.bottom-cr.top+6];});
- rects.push([px-40,py-52,px+40,py+24]);
- const area=(a,b)=>Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1]));
- const candidates=[];
- for(const y of[py-66-h,py+32,H-h-82,12,...rects.flatMap(r=>[r[3]+3,r[1]-h-3])])for(const x of[px-width/2,12,W-width-12]){
-  const left=clamp(x,12,W-width-12),top=clamp(y,12,Math.max(12,H-h-12)),box=[left,top,left+width,top+h];
-  candidates.push({left,top,cost:rects.reduce((n,r)=>n+area(box,r),0)*100+Math.abs(top-(py-100-h))+Math.abs(left-(px-width/2))*.2});
+ const now=performance.now(),box=document.querySelector('#hud .obj'),open=!!box?.classList.contains('open');
+ const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!S?.keypad&&!targetDialogueVisible()&&!loadoutOpen&&!envPicker;
+ if(!active){el.hidden=true;document.body.classList.remove('episode-coached','radio-peek');return;}
+ if(now<episodeRadioTick)return;episodeRadioTick=now+80;
+ const message=episodeRadioMessage();
+ document.body.classList.toggle('episode-coached',!!message);
+ if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=now+4500;}
+ const moving=S.player.moving||(input.joy?.mag||0)>.05||Object.values(S.keys||{}).some(Boolean)||actionBusy(S.player)||input.aiming;
+ if(moving||open)episodeRadioUntil=0;
+ const peek=!!message&&!open&&H>480&&now<episodeRadioUntil;
+ document.body.classList.toggle('radio-peek',peek);el.hidden=!message||(!open&&!peek);
+ if(message){
+  const token=message.text+'|'+message.action;
+  if(token!==episodeRadioToken){$('episodeRadioText').textContent=message.text;$('episodeRadioAction').textContent=message.action;episodeRadioToken=token;}
+  if(open&&!episodeRadioFaceReady)episodeRadioFaceReady=drawFace($('episodeRadioFace'),speakerOf('master'));
  }
- candidates.sort((a,b)=>a.cost-b.cost);el.style.left=Math.round(candidates[0].left)+'px';el.style.top=Math.round(candidates[0].top)+'px';
+ const top=document.querySelector('#hud .top')?.getBoundingClientRect();
+ if(top)document.documentElement.style.setProperty('--topb',Math.round(top.bottom)+'px');
 }

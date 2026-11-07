@@ -24,15 +24,15 @@ async def main():
     localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='tB'));G.moveCamera(1);G.updateHUD(true);G.syncEpisodeRadio();return out;
    }''')
    await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
-   probe='''()=>{const G=__game,P=G.S.player,e=document.getElementById('episodeRadio'),r=e.getBoundingClientRect(),px=(P.x-G.cam.x)*G.SCALE+innerWidth/2,py=(P.y-G.cam.y)*G.SCALE+innerHeight/2,over=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;const avatar={left:px-22,right:px+22,top:py-48,bottom:py+10};return{visible:!e.hidden,w:r.width,h:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,avatar:over(r,avatar),buttons:[...document.querySelectorAll('.pad>button:not([hidden]),.sysbtns button')].filter(b=>getComputedStyle(b).display!=='none').filter(b=>over(r,b.getBoundingClientRect())).map(b=>b.id),text:e.innerText,detail:getComputedStyle(document.querySelector('.tut-detail')).display}}'''
+   probe='''()=>{const G=__game,P=G.S.player,e=document.getElementById('episodeRadio'),r=e.getBoundingClientRect(),px=(P.x-G.cam.x)*G.SCALE+innerWidth/2,py=(P.y-G.cam.y)*G.SCALE+innerHeight/2,over=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;const avatar={left:px-22,right:px+22,top:py-48,bottom:py+10};return{visible:!e.hidden,w:r.width,h:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,avatar:over(r,avatar),buttons:[...document.querySelectorAll('.pad>button:not([hidden]),.sysbtns button')].filter(b=>getComputedStyle(b).display!=='none').filter(b=>over(r,b.getBoundingClientRect())).map(b=>b.id),text:e.innerText,detail:document.getElementById('objective').getBoundingClientRect().height}}'''
    layout=await q.evaluate(probe)
-   assert layout['visible'] and layout['inside'] and not layout['avatar'] and not layout['buttons'],(w,layout)
-   assert layout['detail']=='none' and '까마귀' in layout['text'],layout
+   assert layout['visible']==(h>480) and layout['inside'] and not layout['avatar'] and not layout['buttons'],(w,layout)
+   assert layout['detail']==0 and '제비가 사라졌습니다' in layout['text'],layout
    for step in range(10):
     await q.evaluate('n=>{__game.S.tutI=n;__game.updateHUD(true)}',step);await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
     frame=await q.evaluate(probe);assert frame['inside'] and not frame['avatar'] and not frame['buttons'],(w,step,frame)
    await q.keyboard.press('Escape');await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_hidden()
-   await q.keyboard.press('Escape');await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_visible()
+   await q.keyboard.press('Escape');await q.click('#hud .obj');await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()');assert await q.locator('#episodeRadio').is_visible();assert '까마귀' in await q.locator('#episodeRadio').inner_text()
    assert not errors,errors;reports.append({'viewport':[w,h],'checks':checks,'layout':layout,'errors':errors});await q.close();print('PASS story episodes',w,flush=True)
   await b.close()
  out=R/'build/story-v204';out.mkdir(exist_ok=True);(out/'rules.json').write_text(json.dumps(reports,ensure_ascii=False,indent=2))

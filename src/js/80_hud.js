@@ -247,6 +247,7 @@ function updateHUD(force) {
   const missionSuffix=mainContract(STAGE)&&total?' · '+(S.exitOpen?'탈출 가능':`목표 ${done}/${total}`)+(evidencePending()?' · CCTV 기록 남음':''):'';
   setText(hud.objT, 'objT', (episodeNumber()?'에피소드 '+episodeNumber()+' · ':mainContract(STAGE)?STAGE.sub+' · ':'')+STAGE.name+missionSuffix);
   { const html = objectiveLines().map(([c, t, story]) => `<span class="ol ${c}">${story?`<button type="button" data-story-route="${story}">${t} · 추적</button>`:c.includes('goal') ? t.replace(/^의뢰: /,'') : t}</span>`).join(''); if (hudCache.objH !== html) { hudCache.objH = html; hud.obj.innerHTML = html; } }
+  setText($('objectiveSummary'), 'objSummary', compactObjectiveText());
   hud.obj.classList.toggle('urgent', !!S.timeLeft && S.timeLeft < 60);
   const lv = P.hidden ? 0 : P.light;
   hud.light.style.width = Math.round(lv * 100) + '%';
