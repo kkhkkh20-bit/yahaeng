@@ -1506,6 +1506,65 @@ DIALOGUE.m2=[['master','자주색 정장의 강도윤. 클럽 실장입니다. �
 DIALOGUE.m4=[['master','장부에 나온 장무혁과 백철민입니다. 큰 체격에 황토색 재킷이 장무혁, 흰머리에 밝은 정장이 백철민입니다.'],['hero','돈을 걷는 자와 계약을 승인한 자. 현금과 계약서도 챙긴다.']];
 DIALOGUE.m7=[['hero','까마귀의 인계서를 받은 오태식. 안전모와 주황색 작업복이다.'],['hero','명세서를 챙기고 2층 단말에서 배송을 멈춘다. 제비가 지키려던 사람들은 아직 여기 있어.']];
 DIALOGUE.m5=[['hero','길을 봐 주던 목소리가 저 위에 있다. 이제 누구 지시도 필요 없어.'],['hero','까마귀, 그리고 원본 장부. 이 거래를 끝낸다.']];
+// A kill opens a lead; recovered records establish names and reporting lines.
+TARGET_CAST.crow.role='금성회 연락 총책 · 전 의뢰인';
+TARGET_CAST.chair={name:'윤서경 · 의장',role:'백림재단 이사장 · 금성회 의장',appearance:'은빛 머리 · 아이보리 정장',key:'castChair@femaleSuit',palette:['#e5ba97','#b9b8b4','#e3ddc8','#292e38','#171a20']};
+const CASE_NODES=[
+ {id:'runner',stage:'p0',tag:'runner',tier:0,alias:'하청 운반책',area:'폐차장',routine:'혼자 담배를 피운다. 서쪽 적치장 뒤로 접근할 수 있다.'},
+ {id:'contact',stage:'e1',tag:'contact',tier:0,alias:'골목 연락책',area:'동쪽 적치장',routine:'적치장 사이를 왕복하며 멈춘다. 경비는 한 명이다.'},
+ {id:'broker',stage:'e5',tag:'broker',tier:1,alias:'회계 중개인',area:'새벽 부동산 2층',routine:'창가와 책상을 오간다. 카메라를 끄고 등을 노릴 수 있다.'},
+ {id:'club',stage:'m2',tag:'vip',tier:1,alias:'클럽 실장',area:'클럽 1층',routine:'흡연·술자리·VIP룸을 돈다. 장부 내선으로 따로 부를 수 있다.'},
+ {id:'collector',stage:'m4',tag:'collector',tier:2,alias:'수금반장',area:'상가 큰길 · 남쪽 정산 동선',routine:'경호원과 순찰한다. 빨간 카드키를 지니며 헐거운 간판 밑을 지난다.'},
+ {id:'district',stage:'m4',tag:'vip',tier:2,alias:'상권 지부장',area:'상가 클럽 VIP룸',routine:'경호가 입구를 지킨다. 파란 카드키로 뒷문을 열 수 있다.'},
+ {id:'freight',stage:'m7',tag:'broker',tier:2,alias:'운송 지부장',area:'집하장 동쪽 검수대',routine:'검수대·상차 대기장·창고를 돈다. 기록보관실 카드를 지닌다.'},
+ {id:'crow',stage:'m5',tag:'boss',tier:3,alias:'연락 총책',area:'금성회 본부 2층',routine:'상층에서 경호원과 움직인다. 보안구역은 복장으로 통과할 수 없다.'},
+ {id:'chair',stage:'n1',tag:'boss',tier:4,alias:'의장',area:'백림재단 사저 · 연회장',routine:'단상·연못가·잔칫상을 돈다. 정전 때 복구하러 가는 경비를 피해 본채로 들어갈 수 있다.'}
+];
+const CASE_LINKS=[['runner','contact'],['contact','broker'],['broker','club'],['club','district'],['collector','district'],['district','crow'],['freight','crow'],['crow','chair']];
+const CASE_SOURCES=[
+ {id:'dispatch',stage:'tB',items:[0],title:'제비의 연락 서류',text:'금성회 운반책 박인호가 증인의 은신처를 넘기려 한다. 거래 전에 막아야 한다.',grants:{runner:3}},
+ {id:'runner-down',stage:'p0',targets:['runner'],title:'끊어진 운반 연락',text:'운반책의 연락이 끊기자 조직이 골목 연락책을 움직였다. 출고 서류가 다음 연결고리다.',grants:{contact:1}},
+ {id:'release',stage:'p1',items:[0],title:'출고 차량 번호',text:'운반책이 쓰던 차량은 옆 창고를 거쳤다. 수신인 기록을 대조할 수 있다.',grants:{contact:1}},
+ {id:'delivery',stage:'p2',items:[0],title:'배송 명세서의 수신인',text:'수신인은 정필수. 동쪽 적치장에서 증인 명단을 넘길 예정이다.',grants:{contact:3}},
+ {id:'contact-down',stage:'e1',targets:['contact'],title:'회계 보고선',text:'연락책을 잃은 조직이 거래 창고의 명세서를 찾고 있다. 위에는 회계 중개인이 있다.',grants:{broker:1}},
+ {id:'trade',stage:'e2',items:[0],title:'중개인의 정산 거점',text:'거래 대금은 2층 연락 거점에서 정산한다. 장부에 결재자가 남아 있다.',grants:{broker:1}},
+ {id:'ledger',stage:'e3',items:[0],title:'두 명의 결재자',text:'문기석은 회계 중개인, 그 위 결재자는 클럽 실장이다. 교환실의 인계서를 추적한다.',grants:{broker:2,club:1}},
+ {id:'handover',stage:'e4',items:[0],title:'문기석의 보고 대상',text:'문기석의 사무실과 보고 대상 강도윤을 확인했다. 중개인을 먼저 막으면 클럽에 경고가 가지 않는다.',grants:{broker:3,club:2}},
+ {id:'broker-down',stage:'e5',targets:['broker'],title:'비어 버린 중간 연락선',text:'중개인이 사라져 강도윤이 직접 연락을 받는다. 흡연 동선과 장부 내선이 접근 기회다.',grants:{club:3}},
+ {id:'club-down',stage:'m2',targets:['vip'],title:'금고 밖으로 움직이는 자금',text:'실장의 보고가 끊기자 수금반장과 상권 지부장이 정산을 서두른다. 장부의 가명을 풀어야 실명을 안다.',grants:{collector:1,district:1}},
+ {id:'cipher',stage:'m2',items:[0,1],title:'장부와 거래 암호표 대조',text:'가명은 장무혁과 백철민이었다. 돈을 걷는 자와 계약을 승인하는 자다.',grants:{collector:3,district:3}},
+ {id:'collector-down',stage:'m4',targets:['collector'],title:'수금이 끊긴 뒤의 운송선',text:'수금반장을 잃은 조직이 운송 지부로 돈을 빼돌린다. 계약서에서 수취인을 추적할 수 있다.',grants:{freight:1}},
+ {id:'district-down',stage:'m4',targets:['vip'],title:'삭제되지 않은 호칭',text:'상권 보스도 최종 결재자가 아니었다. 계약에는 이름 대신 ‘의장’이라는 호칭이 남아 있다.',grants:{chair:1}},
+ {id:'betrayal',stage:'m6',items:[0,1],title:'제비의 무전기와 서명된 인계서',text:'까마귀가 우리를 넘겼다. 수령자는 운송 지부장 오태식. 까마귀는 조직의 연락 총책이었다.',grants:{crow:2,freight:3}},
+ {id:'freight-down',stage:'m7',targets:['broker'],title:'본부로 돌아간 보고선',text:'운송 보스가 쓰러지자 남은 보고가 본부 한 곳으로 모였다. 까마귀의 은신처를 찾았다.',grants:{crow:3}},
+ {id:'dispatch-stopped',stage:'m7',items:[0,1],title:'취소된 새벽배송',text:'운송명세서의 최종 수취인은 까마귀였다. 그러나 의장에게 보내는 별도 결재란이 있다.',grants:{crow:3,chair:1}},
+ {id:'crow-down',stage:'m5',targets:['boss'],title:'총책 위의 명령',text:'까마귀도 누군가의 대리인이었다. 원본 장부와 그의 연락 암호를 맞추면 마지막 이름을 찾을 수 있다.',grants:{chair:1}},
+ {id:'last-name',stage:'m5',items:[0],targets:['boss'],title:'원본 장부의 실소유주',text:'의장의 실명은 윤서경. 백림재단 사저의 연회에서 증인 거래망을 정리하려 한다. 마지막 명령선이다.',grants:{chair:3}},
+ {id:'root-cut',stage:'n1',items:[0],targets:['boss'],title:'의장 처치와 명령 원장',text:'간부들에게 내려간 명령과 돈의 출처를 확보했다. 금성회에 남은 지휘선은 없다.',grants:{chair:3}}
+];
+const crowJob=campaignStage('m5');
+crowJob.name='검은 연락선';crowJob.sub='열네 번째 밤 · 금성회 본부';
+crowJob.story.before='운송명세서가 가리킨 까마귀의 은신처. 금성회의 연락 총책이지만, 계약에는 그 위의 ‘의장’이 남아 있다. 까마귀를 처치하고 원본 장부로 마지막 보고선을 밝힌다.';
+crowJob.story.after='까마귀의 연락 암호와 원본 장부를 대조했다. 의장의 실명은 윤서경. 백림재단 사저에서 마지막 연회가 열린다. 금성회를 끝내려면 그 명령선까지 끊어야 한다.';
+crowJob.endText=crowJob.story.after;crowJob.purpose='까마귀를 처치하고 원본 장부로 의장의 실명을 밝힌다.';
+const chairStory={solo:true,before:'까마귀의 원본 장부가 가리킨 마지막 이름, 윤서경. 백림재단의 이사장 뒤에 숨은 금성회 의장이다. 간부들을 정리한 뒤 남은 증거와 돈을 지우려 한다. 오늘 이 지휘선을 끊는다.',after:'의장 윤서경을 처치하고 명령 원장을 확보했다. 연락책부터 자금·운송·본부까지, 금성회의 지휘망이 무너졌다. 올빼미는 제비가 지키려던 증인들과 증거를 조직 밖으로 보냈다. 더는 명령을 내릴 간부가 없다.'};
+const chairBase=campaignStage('m3');
+const chairWords=v=>typeof v==='string'?v.replaceAll('회장','의장'):Array.isArray(v)?v.map(chairWords):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).map(([k,x])=>[k,chairWords(x)])):v;
+STAGES.push({...chairBase,id:'n1',no:'15',name:'마지막 이름',sub:'마지막 밤 · 백림재단 사저',kitId:'m3',storyEpisode:true,story:chairStory,noSupport:true,rivals:0,
+ intel:chairWords(chairBase.intel),interrogate:chairWords(chairBase.interrogate),stories:chairWords(chairBase.stories),zones:chairWords(chairBase.zones),challenges:chairBase.challenges.filter(id=>id!=='purge'),
+ targetCast:{boss:TARGET_CAST.chair},targetNames:{boss:TARGET_CAST.chair.name},
+ purpose:'금성회 의장 윤서경을 처치하고 지휘망의 명령 원장을 확보한다.',mission:'의장 처치 · 본채 2층 명령 원장 회수 후 탈출',
+ itemName:'명령 원장',itemNames:['명령 원장'],buildingNames:{0:'백림재단 사저'},
+ brief:'은빛 머리와 아이보리 정장의 윤서경이 의장이다. 단상에서 연못가와 잔칫상으로 이동한다. 뷔페 조끼는 마당 통행에 쓰지만 본채는 조직원 복장이 필요하다. 정문 밖 경비의 초록 카드키로 본채에 들어갈 수 있다. 본채 2층 명령 원장까지 확보해야 지휘망을 끊을 수 있다. 다른 손님은 표적이 아니다. 현장의 대화에서 연못·단상·발전기 접근 기회를 찾을 수 있다.',
+ endText:chairStory.after});
+DIALOGUE.n1=[['hero','까마귀가 숨긴 마지막 이름, 윤서경. 의장을 잃으면 금성회도 끝이다.'],['hero','표적은 의장 한 명. 2층 명령 원장까지 챙겨 지휘망을 남기지 않는다.']];
+DIALOGUE.m5=[['hero','까마귀의 은신처다. 하지만 그 위에는 아직 이름 없는 의장이 있다.'],['hero','까마귀와 원본 장부. 이 둘로 마지막 보고선을 밝힌다.']];
+// An organization hunt is the purpose from the first night; mechanics stay gradual.
+campaignStage('tB').story.before='금성회가 증인들을 사고팔고 있다. 조직을 뿌리째 없애려면 숨어 있는 간부와 명령선을 찾아야 한다. 실종된 제비가 대성 물류에 첫 단서를 남겼다.';
+
+campaignStage('e3').story.after='결재자는 회계 중개인 문기석. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
+campaignStage('e3').endText=campaignStage('e3').story.after;
+campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문기석의 보고가 넘어가기 전에 빼낸다.';
 
 'use strict';
 (function () {
@@ -3536,7 +3595,7 @@ function assassinPreview(){
 
 // The campaign continues after the prison escape. Existing contract IDs keep
 // their records, saves and displayed numbers.
-const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7', 'm5'];
+const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7', 'm5', 'n1'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
 const introductoryContract = s => !!(s.openingContract || s.starterContract || s.apprenticeContract);
@@ -3551,7 +3610,7 @@ function recordCameraEvidence(c) {
 }
 
 // One story route. The player continues the next unfinished episode.
-const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7','m5'];
+const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7','m5','n1'];
 const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||['e4','e5'].includes(st.id)&&mainContracts().some(s=>stageCleared(s)||storedCP(s.id)?.g?.nodes?.length)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
 function episodeNumber(st=STAGE){const i=LEARNING_ROUTE.indexOf(st.id);return i<0?'':String(i+1).padStart(2,'0');}
@@ -3595,6 +3654,113 @@ function beginCampaign(){
     openAssassinMenu();assassinMenu.training=true;assassinMenu.practice=false;assassinMenu.advanceTo=next;renderAssassinMenu();return;
   }
   start(next);
+}
+
+// Case knowledge survives a retry; an officer's death never outruns the world save.
+const CASE_STORE='yahaeng.case.v1';
+let volatileCaseFile=null,caseModalState=null,caseSelected=null;
+const casePoll=new WeakMap();
+function loadCaseFile(){
+ let raw=volatileCaseFile;if(!raw)try{raw=JSON.parse(localStorage.getItem(CASE_STORE));}catch(e){}
+ const valid=new Set(CASE_SOURCES.map(s=>s.id));
+ return{schema:1,sources:[...new Set(Array.isArray(raw?.sources)?raw.sources.filter(id=>valid.has(id)):[])]};
+}
+function caseAllSources(){
+ const ids=new Set(loadCaseFile().sources),cleared=loadCh();
+ for(const s of CASE_SOURCES)if(cleared[s.stage]?._clear)ids.add(s.id);
+ return CASE_SOURCES.filter(s=>ids.has(s.id));
+}
+function syncCaseProgress(force=false){
+ if(!S||!running||!force&&(paused||S.over)||!LEARNING_ROUTE.includes(STAGE.id))return;
+ const last=casePoll.get(S);if(!force&&last!==undefined&&S.t>=last&&S.t-last<.25)return;casePoll.set(S,S.t);
+ const record=loadCaseFile(),known=new Set(caseAllSources().map(s=>s.id)),fresh=CASE_SOURCES.filter(s=>s.stage===STAGE.id&&!known.has(s.id)&&
+  (!s.targets||s.targets.every(tag=>S.guards.some(g=>g.target&&g.tag===tag&&targetEliminated(g))))&&
+  (!s.items||s.items.every(i=>S.items[i]?.got)));
+ if(!fresh.length)return;
+ record.sources=[...new Set([...record.sources,...fresh.map(s=>s.id)])];volatileCaseFile=record;
+ try{localStorage.setItem(CASE_STORE,JSON.stringify(record));}catch(e){}
+ S.caseDiscoveries=[...new Set([...(S.caseDiscoveries||[]),...fresh.map(s=>s.id)])];
+ toast('새 단서 · '+fresh.map(s=>s.title).join(' / ')+' — 조직도에 기록했다',4);
+}
+function caseView(){
+ const sources=caseAllSources(),cleared=loadCh();
+ return CASE_NODES.map(n=>{
+  let level=0;for(const s of sources)level=Math.max(level,s.grants[n.id]||0);
+  const active=running&&S&&STAGE.id===n.stage,st=STAGES.find(s=>s.id===n.stage),profile=st?.targetCast?.[n.tag];
+  if(active)level=3; // A current briefing already identifies its actual target.
+  const eliminated=!!cleared[n.stage]?._clear||!!(active&&S.guards.some(g=>g.target&&g.tag===n.tag&&targetEliminated(g)));
+  // Legacy campaigns can skip the new introductory jobs. Never invent their kills.
+  const severed=!eliminated&&['runner','contact','broker'].includes(n.id)&&['m2','m4','m7','m5','n1'].some(id=>cleared[id]?._clear);
+  return{...n,level:eliminated?Math.max(level,2):level,eliminated,severed,profile};
+ });
+}
+function caseElement(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function caseStatus(n){return n.eliminated?'처치 확인':n.severed?'보고선 차단':n.level>=3?'동선 확보':n.level>=2?'신원 확인':n.level?'가명 확인':'신원 미상';}
+function renderCaseEntry(id,allowed=true){
+ const el=$(id);if(!el)return;el.hidden=!allowed||!LEARNING_ROUTE.includes(STAGE.id);if(el.hidden)return;
+ const receipt=(S?.caseDiscoveries||[]).map(id=>CASE_SOURCES.find(s=>s.id===id)).filter(Boolean),all=caseView();
+ el.replaceChildren(caseElement('span','case-entry-copy',receipt.length?'새 단서 · '+receipt.at(-1).title:'금성회 추적 · '+all.filter(n=>n.eliminated).length+'명 처치 확인'));
+ const b=caseElement('button','ghost','조직도 보기');b.type='button';b.dataset.caseOpen='';el.append(b);
+}
+function renderCaseDetail(id){
+ const nodes=caseView(),n=nodes.find(n=>n.id===id);if(!n)return;caseSelected=id;
+ for(const b of $('caseHierarchy').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.caseNode===id));
+ const panel=$('caseDetail');panel.replaceChildren();
+ panel.append(caseElement('small','case-kicker',caseStatus(n)),caseElement('h3','',n.level>=2?n.profile.name:n.level?n.alias:'아직 밝혀지지 않은 인물'));
+ if(n.level>=2)panel.append(caseElement('p','',n.profile.appearance));
+ panel.append(caseElement('p','case-area',n.level>=2?n.area:n.level?'정확한 신원과 거점은 다음 단서로 확인한다.':'하부 간부의 연락과 회수한 문서에서 보고선을 찾는다.'));
+ if(n.level>=3)panel.append(caseElement('p','case-routine',n.routine));
+ if(n.severed)panel.append(caseElement('p','','하부 연락선은 끊겼다. 직접 처치가 확인된 인물은 아니다.'));
+ const links=CASE_LINKS.filter(([a,b])=>[a,b].includes(id)&&nodes.find(n=>n.id===a).level&&nodes.find(n=>n.id===b).level);
+ if(links.length){panel.append(caseElement('h4','','확인된 보고선'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
+ const evidence=caseAllSources().filter(s=>s.grants[id]||s.stage===n.stage&&s.targets?.includes(n.tag));
+ panel.append(caseElement('h4','','수집한 단서'));
+ if(!evidence.length)panel.append(caseElement('p','case-empty',n.level?'이번 의뢰에서 현장 증거를 확보한다.':'아직 연결된 증거가 없다.'));
+ for(const s of evidence){const e=caseElement('article','case-evidence');e.append(caseElement('strong','',s.title),caseElement('p','',s.text));panel.append(e);}
+}
+function renderCaseBoard(){
+ const nodes=caseView(),hierarchy=$('caseHierarchy');hierarchy.replaceChildren();
+ const eliminated=nodes.filter(n=>n.eliminated).length,severed=nodes.filter(n=>n.severed).length;
+ $('casePressure').textContent=nodes.find(n=>n.id==='chair').eliminated?'마지막 명령선까지 끊었다. 금성회의 지휘망이 무너졌다.':'간부를 처치하고 증거를 대조해, 그 위에서 명령하는 자를 찾는다.';
+ $('caseProgress').textContent='처치 확인 '+eliminated+' / '+nodes.length+(severed?' · 보고선 차단 '+severed:'');
+ const tiers=['운반·연락','중개·유흥','자금·운송','총책','최종 명령선'];
+ for(let tier=4;tier>=0;tier--){
+  const members=nodes.filter(n=>n.tier===tier&&(tier<4||n.level));if(!members.length)continue;
+  const group=caseElement('section','case-tier');group.append(caseElement('h3','',tiers[tier]));const row=caseElement('div','case-tier-row');
+  for(const n of members){
+   const b=caseElement('button','case-node'+(n.eliminated?' eliminated':'')+(!n.level?' unknown':''));b.type='button';b.dataset.caseNode=n.id;
+   const face=caseElement('span','case-face');
+   if(n.level>=2){const cv=caseElement('canvas');cv.width=cv.height=76;cv.setAttribute('aria-hidden','true');face.append(cv);drawFace(cv,{key:n.profile.key,col:'#c2cbd2'});}else face.append(caseElement('span','','?'));
+   const copy=caseElement('span','case-node-copy');copy.append(caseElement('strong','',n.level>=2?n.profile.name:n.level?n.alias:'신원 미상'),caseElement('small','',caseStatus(n)));b.append(face,copy);row.append(b);
+  }group.append(row);hierarchy.append(group);
+ }
+ const selected=nodes.find(n=>n.id===caseSelected&&(n.tier<4||n.level))||nodes.find(n=>n.stage===STAGE.id&&running)||nodes.filter(n=>n.level&&!n.eliminated).at(-1)||nodes[0];
+ renderCaseDetail(selected.id);
+}
+function openCaseBoard(){
+ const d=$('caseBoard');if(d.open)return;
+ caseModalState={paused,focus:document.activeElement};if(running){clearPlayerInput();paused=true;}
+ renderCaseBoard();d.showModal();$('btnCaseClose').focus({preventScroll:true});
+}
+function closeCaseBoard(){if($('caseBoard').open)$('caseBoard').close();}
+function resetCaseBoard(){caseModalState=null;caseSelected=null;closeCaseBoard();}
+function installCaseBoard(){
+$('caseBoard').addEventListener('close',()=>{
+ const state=caseModalState;caseModalState=null;if(!state)return;
+ paused=state.paused;if(state.focus?.isConnected)state.focus.focus({preventScroll:true});
+});
+$('btnCaseClose').addEventListener('click',closeCaseBoard);
+$('caseHierarchy').addEventListener('click',e=>{const b=e.target.closest('[data-case-node]');if(b){renderCaseDetail(b.dataset.caseNode);if(innerWidth<=650)$('caseDetail').scrollIntoView({block:'start',behavior:'smooth'});}});
+document.addEventListener('click',e=>{if(e.target.closest('[data-case-open]'))openCaseBoard();});
+for(const type of ['keydown','keyup'])window.addEventListener(type,e=>{
+ if(!$('caseBoard').open)return;e.stopImmediatePropagation();
+ if(e.code==='Tab'&&type==='keydown'){
+  e.preventDefault();const buttons=[...$('caseBoard').querySelectorAll('button:not(:disabled),[tabindex="0"]')].filter(b=>b.getClientRects().length),i=buttons.indexOf(document.activeElement);
+  if(buttons.length)buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();
+ }
+ if(e.code==='Escape'){e.preventDefault();if(type==='keydown')closeCaseBoard();}
+},{capture:true});
+
 }
 
 // 지도 개편 전 저장도 물건·시체·신분·진행을 버리지 않고 새 통행 구조에 맞춘다.
@@ -9680,7 +9846,7 @@ function checkObjective() {
   const trainingReady = !!STAGE.storyEpisode || !STAGE.steps || (S.tutI||0)>=STAGE.steps.length-1;
   const ready = trainingReady && !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
   S.exitOpen = ready;
-  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else if(!S.items.length&&S.guards.some(g=>g.target))say([['master','표적 제거 확인. 출구로 이동하세요.']],false);else bark('master', 'done'); }
+  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.noSupport||STAGE.story?.solo)return; if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else if(!S.items.length&&S.guards.some(g=>g.target))say([['master','표적 제거 확인. 출구로 이동하세요.']],false);else bark('master', 'done'); }
 }
 
 
@@ -12507,6 +12673,7 @@ function wallUpSpot() {
 const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 수색으로 내려간다
 // ---------------------------------------------------------------- 갱신
 function update(dt, present=true) {
+  syncCaseProgress();
   if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
@@ -15342,6 +15509,7 @@ function syncMissionIdentity(){
 function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
+  renderCaseEntry('caseBrief');
   $('brStory').hidden=!STAGE.story; $('brStory').textContent=STAGE.story?.before||'';
   for(const cv of el.querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
@@ -15591,6 +15759,7 @@ function drawEndMap() {
 }
 const END_MAIN = ['접근 방식','수고비','소요 시간','발각 횟수'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
+  if(win)syncCaseProgress(true);
   closeKeypad();clearPlayerInput();closeEnvPicker();
   running = false;
   const st = S.stats, t = Math.floor(S.t);
@@ -16076,6 +16245,7 @@ function handleSkillDetailKey(e){
  if(e.code==='Tab'&&innerWidth<1000){const buttons=[...$('skillDetail').querySelectorAll('button:not(:disabled)')],i=buttons.indexOf(document.activeElement);if(i<0||e.shiftKey&&i===0||!e.shiftKey&&i===buttons.length-1){e.preventDefault();buttons[e.shiftKey?buttons.length-1:0]?.focus();return true;}}return false;
 }
 function renderAssassinMenu(){
+ renderCaseEntry('caseTraining',!!assassinMenu?.training);
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
  $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 1P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
  $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?'플레이 중에는 기술을 배우지 않습니다. 현재 임무를 마친 뒤 출발 준비에서 습득하세요.':practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
@@ -16303,6 +16473,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
@@ -16362,6 +16533,7 @@ function installGameApi() {
 }
 
 // ---------------------------------------------------------------- 입력
+installCaseBoard();
 // Touch-capable PCs still use the keyboard HUD when their primary pointer is a mouse.
 const isTouch = matchMedia('(pointer: coarse)').matches;
 document.body.classList.toggle('touch', isTouch);
@@ -16633,8 +16805,9 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
-const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod'];
+const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE];
 function hasCampaignSave(){
+  if(loadCaseFile().sources.length)return true;
   if(campaignHasProgress()||Object.keys(loadBest()).length||Object.keys(cityDone()||{}).length)return true;
   const skills=loadSkillTree();if(skills.learned.length||skills.legacyPoints||loadFieldLearning().active||Object.keys(loadFieldLearning().used).length||CP)return true;
   try{return !!localStorage.getItem(CP_KEY);}catch(e){return false;}
@@ -16651,7 +16824,7 @@ function restartCampaign(){
     $('newCampaignError').textContent='저장 기록을 초기화하지 못했습니다. 브라우저의 저장 공간 설정을 확인하고 다시 시도하세요.';
     $('newCampaignError').hidden=false;return false;
   }
-  CP=null;volatileSkillTree=null;volatileFieldLearning=null;MOD='';
+  CP=null;volatileSkillTree=null;volatileFieldLearning=null;volatileCaseFile=null;MOD='';
   $('newCampaignDialog').close('start');syncQuick();initAudio();beginCampaign();return true;
 }
 $('btnNewCampaign').addEventListener('click',()=>{if(running||$('intro').hidden)return;$('newCampaignError').hidden=true;$('newCampaignDialog').showModal();});
@@ -16702,6 +16875,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);

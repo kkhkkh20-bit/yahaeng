@@ -32,9 +32,9 @@ async def main():
    assert len({tuple(r['palette'][2:]) for r in portraits})==len(portraits),'major targets share clothing colours'
    checks=await q.evaluate('''()=>{
     const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};
-    const ids=G.LEARNING_ROUTE;ok(ids.at(-1)==='m5'&&new Set(ids).size===ids.length,'finale route');
-    ok(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05','legacy contract numbers changed');
-    localStorage.setItem('yahaeng.ch',JSON.stringify(Object.fromEntries(ids.filter(id=>id!=='m5').map(id=>[id,{_clear:true}]))));
+    const ids=G.LEARNING_ROUTE;ok(ids.at(-1)==='n1'&&new Set(ids).size===ids.length,'finale route');
+    ok(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05,06','legacy contract numbers changed');
+    localStorage.setItem('yahaeng.ch',JSON.stringify(Object.fromEntries(ids.filter(id=>id!=='m5'&&id!=='n1').map(id=>[id,{_clear:true}]))));
     const budget=G.skillBudget();ok(G.STAGES[G.recommendedStage()].id==='m5','finished old campaign cannot continue to finale');ok(!JSON.parse(localStorage.getItem('yahaeng.ch')).m5&&G.skillBudget()===budget,'route mints a clear or points');
     const indoor=G.S.cams.filter(c=>c.b===0);ok(indoor.length===2,'headquarters camera fixtures disappeared');for(const c of indoor){const p=G.cameraServicePoint(c);G.setLayer(c.fl);ok([-13,13].every(dx=>[-13,13].every(dy=>!G.solidAt(Math.floor((p.x+dx)/48),Math.floor((p.y+dy)/48)))),'camera rear is inside a wall or furniture');}G.setLayer(0);
     const g=G.S.guards.find(g=>g.target),before=JSON.stringify([g.x,g.y,g.state,g.meter,G.S.player.hp,G.S.stats.detected,G.S.stats.kills]);

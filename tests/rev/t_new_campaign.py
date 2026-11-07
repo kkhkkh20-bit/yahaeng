@@ -10,7 +10,7 @@ SEED="""()=>{
  'yahaeng.cityDone':JSON.stringify({old:true}),
  'yahaeng.skillTree.v1':JSON.stringify({schema:1,rewardVersion:152,legacyPoints:0,learned:['quietStep']}),
  'yahaeng.fieldLearning.v1':JSON.stringify({active:'quietStep',used:{quietStep:{stage:'p0'}}}),
- 'yahaeng.assassinSkill':'ambush','yahaeng.cp':JSON.stringify({id:'p0',diff:'normal'}),'yahaeng.mod':'bright',
+ 'yahaeng.case.v1':JSON.stringify({schema:1,sources:['dispatch','runner-down']}),'yahaeng.assassinSkill':'ambush','yahaeng.cp':JSON.stringify({id:'p0',diff:'normal'}),'yahaeng.mod':'bright',
  'yahaeng.vol':'42','yahaeng.bri':'115','yh_walkLock2':'1','unrelated.save':'keep'
  };for(const[k,v]of Object.entries(values))localStorage.setItem(k,v);
 }"""
@@ -49,9 +49,9 @@ async def main():
    await q.evaluate('()=>{Storage.prototype.removeItem=window.savedRemove;}');await press('#btnNewCampaignConfirm')
    await q.wait_for_function('__game.STAGE.id==="tB" && !document.querySelector("#hud").hidden')
    assert await q.locator('#newCampaignDialog').is_hidden()
-   state=await q.evaluate("""()=>({stage:__game.STAGE.id,skills:__game.loadSkillTree(),budget:__game.skillBudget(),record:JSON.parse(localStorage.getItem('yahaeng.ch')||'{}'),field:__game.loadFieldLearning(),cp:localStorage.getItem('yahaeng.cp'),best:localStorage.getItem('yahaeng.best'),city:localStorage.getItem('yahaeng.cityDone'),mod:localStorage.getItem('yahaeng.mod'),prefs:['yahaeng.vol','yahaeng.bri','yh_walkLock2','unrelated.save'].map(k=>localStorage.getItem(k))})""")
+   state=await q.evaluate("""()=>({stage:__game.STAGE.id,skills:__game.loadSkillTree(),budget:__game.skillBudget(),record:JSON.parse(localStorage.getItem('yahaeng.ch')||'{}'),field:__game.loadFieldLearning(),cp:localStorage.getItem('yahaeng.cp'),caseFile:localStorage.getItem('yahaeng.case.v1'),best:localStorage.getItem('yahaeng.best'),city:localStorage.getItem('yahaeng.cityDone'),mod:localStorage.getItem('yahaeng.mod'),prefs:['yahaeng.vol','yahaeng.bri','yh_walkLock2','unrelated.save'].map(k=>localStorage.getItem(k))})""")
    assert state['skills']['learned']==[] and state['budget']==1 and state['record']=={},state
-   assert state['field']=={'active':None,'used':{}} and all(state[k] is None for k in ['cp','best','city','mod']),state
+   assert state['field']=={'active':None,'used':{}} and all(state[k] is None for k in ['cp','best','city','mod','caseFile']),state
    assert state['prefs']==['42','115','1','keep'],state
    # Native input after the confirmed restart (no state teleport or clock replacement).
    if await q.locator('#btnBrGo').is_visible():await press('#btnBrGo')

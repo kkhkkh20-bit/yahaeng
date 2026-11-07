@@ -102,6 +102,10 @@
       "group": "contracts"
     },
     {
+      "path": "26_caseboard.js",
+      "group": "contracts"
+    },
+    {
       "path": "27_layout_restore.js",
       "group": "layout_restore"
     },

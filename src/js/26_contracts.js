@@ -1,6 +1,6 @@
 // The campaign continues after the prison escape. Existing contract IDs keep
 // their records, saves and displayed numbers.
-const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7', 'm5'];
+const MAIN_CONTRACTS = ['m2', 'm4', 'm6', 'm7', 'm5', 'n1'];
 const mainContracts = () => MAIN_CONTRACTS.map(id => STAGES.find(s => s.id === id)).filter(Boolean);
 const mainContract = s => MAIN_CONTRACTS.includes(s.id);
 const introductoryContract = s => !!(s.openingContract || s.starterContract || s.apprenticeContract);

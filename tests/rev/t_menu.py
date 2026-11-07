@@ -10,8 +10,8 @@ async def main():
   assert await q.evaluate('document.fonts.check(\'100px "Yahaeng Title"\')')
   assert await q.locator('#intro .brief,#intro .title-kicker,#intro .title-en').count()==0
   assert await q.locator('#btnLedger').is_hidden()
-  for id in ['btnQuick','btnSkillsIntro','btnHelp','btnQuick','btnSkillsIntro']:
-   await q.keyboard.press('ArrowDown');assert await q.locator('#'+id).evaluate('e=>e===document.activeElement'),id
+  for selector in ['#btnQuick','#intro [data-case-open]','#btnSkillsIntro','#btnHelp','#btnQuick','#intro [data-case-open]','#btnSkillsIntro']:
+   await q.keyboard.press('ArrowDown');assert await q.locator(selector).evaluate('e=>e===document.activeElement'),selector
   await q.keyboard.press('Enter');assert await q.locator('#skillScreen').is_visible()
   await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible() and await q.locator('#ledger').is_hidden()
   assert not errors,errors;await b.close();print('PASS linear title keyboard, skills and font')

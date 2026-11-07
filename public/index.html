@@ -1451,6 +1451,29 @@ body:has(#pause:not([hidden])) #hud { visibility:hidden; }
 #brief .mission-id > div { min-width:0; }
 #brief .mission-id b { overflow-wrap:anywhere; }
 #endSub { white-space:pre-line; }
+/* A field dossier: restrained paper lines, charcoal metal and cold ink. */
+.case-title-goal{max-width:32em;margin:8px auto 14px;color:#b9c3c9;font-size:12px;line-height:1.6;letter-spacing:.04em}
+.case-entry{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:9px 0;margin:6px 0 12px;border-block:1px solid #58616b55;color:#c5cdd4;font-size:12px;line-height:1.5}
+.case-entry[hidden]{display:none}.case-entry-copy{min-width:0}.case-entry button{flex-shrink:0;padding:7px 12px;font-size:12px}
+#caseTraining{margin:0 0 8px;padding:6px 0}#caseTraining .case-entry-copy{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#caseBoard{box-sizing:border-box;width:min(1080px,calc(100vw - 32px));height:min(790px,calc(100dvh - 32px));max-width:none;max-height:none;padding:0;border:1px solid #7a8590;border-radius:4px;background:linear-gradient(130deg,#202a32,#111a22 60%);color:#e0e5e8;box-shadow:0 24px 90px #000c;overflow:hidden;font-family:inherit}
+#caseBoard::backdrop{background:#060b12d9;backdrop-filter:blur(4px)}
+.case-board-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 26px 16px;border-bottom:1px solid #7a859044;background:#e8edf004}
+.case-board-head small,.case-kicker{color:#9db4c5;letter-spacing:.08em;font-size:11px}.case-board-head h2{margin:5px 0 7px;font-size:25px;letter-spacing:.05em;font-weight:500}.case-board-head p{margin:0;max-width:42em;font-size:12px;color:#bbc7ce;line-height:1.6}
+#btnCaseClose{flex-shrink:0;border:1px solid #71808d88;background:#121c26;color:#e1e8ed;padding:10px 15px;border-radius:2px;font:inherit;font-size:12px}
+.case-board-body{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(240px,1fr);height:calc(100% - 175px);min-height:0}
+#caseHierarchy,#caseDetail{box-sizing:border-box;padding:18px 24px;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}#caseDetail{border-left:1px solid #7a859044;background:#0a101766}
+.case-tier{position:relative;padding-bottom:18px}.case-tier:not(:last-child):after{content:'';display:block;position:absolute;left:50%;bottom:1px;height:14px;border-left:1px dashed #8797a366}
+.case-tier h3{margin:0 0 8px;color:#9faeb9;font-size:10px;font-weight:400;letter-spacing:.14em}.case-tier-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.case-node{display:flex;align-items:center;gap:10px;flex:1 1 140px;max-width:250px;min-width:0;text-align:left;border:1px solid #5b6b784d;border-radius:2px;padding:9px;background:linear-gradient(#29353d66,#141f28);color:#dee6ec;cursor:pointer;font:inherit;box-shadow:inset 0 1px #cbd6e008}
+.case-node:hover,.case-node[aria-pressed=true]{border-color:#b5c9d8;background:#34445088}.case-node:focus-visible,#caseBoard button:focus-visible{outline:2px solid #d8e8f3;outline-offset:2px}.case-node.eliminated{border-left:3px solid #9a6969}.case-node.unknown{border-style:dashed;color:#7f909e}
+.case-face{display:grid;place-items:center;flex:0 0 42px;height:48px;overflow:hidden;background:#0d141b;font-size:24px;color:#677986}.case-face canvas{width:48px;height:48px}.case-node.eliminated .case-face{filter:grayscale(1);opacity:.65}.case-node-copy{min-width:0}.case-node strong{display:block;font-size:12px;font-weight:500;line-height:1.5;overflow-wrap:anywhere}.case-node small{display:block;color:#a5b1bb;font-size:10px;margin-top:3px}.case-node.eliminated small{color:#c89b9b}
+#caseDetail h3{font-size:22px;line-height:1.4;margin:8px 0 12px;font-weight:500}#caseDetail h4{margin:24px 0 10px;font-size:11px;letter-spacing:.09em;color:#a7bac9}#caseDetail p{font-size:12px;line-height:1.75;color:#bdc9d2;margin:7px 0}.case-routine{border-left:2px solid #71879a;padding-left:12px}.case-evidence{padding:12px 0;border-top:1px solid #62717d44}.case-evidence strong{font-size:12px;color:#d9e2e8}.case-empty{color:#8394a3!important}
+#caseBoard footer{position:absolute;bottom:0;left:0;right:0;box-sizing:border-box;padding:12px 24px;background:#121c25;border-top:1px solid #7a859044;display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#c8d3db}#caseBoard footer small{font-size:10px;color:#94a7b7}
+@media(max-width:650px){#caseBoard{width:calc(100vw - 16px);height:calc(100dvh - 16px)}.case-board-head{padding:14px 16px 12px;gap:10px}.case-board-head h2{font-size:21px}.case-board-head p{font-size:11px}.case-board-body{display:block;overflow-y:auto;height:calc(100% - 186px);overscroll-behavior:contain;touch-action:pan-y}#caseHierarchy,#caseDetail{overflow:visible;padding:14px 16px}#caseDetail{border-left:0;border-top:1px solid #7a859044}.case-node{flex-basis:110px;padding:7px;gap:7px}.case-face{flex-basis:32px;height:40px}.case-face canvas{width:40px;height:40px}.case-node strong{font-size:11px}.case-tier{padding-bottom:16px}#caseBoard footer{padding:10px 16px;flex-wrap:wrap}#caseBoard footer small{width:100%}}
+@media(max-height:450px) and (min-width:651px){.case-board-head{padding:10px 18px}.case-board-head h2{font-size:20px;margin:2px 0}.case-board-body{height:calc(100% - 122px)}#caseHierarchy,#caseDetail{padding:12px 16px}#caseBoard footer{padding:9px 18px}}
+
+#caseBoard[open]{display:flex;flex-direction:column}.case-board-head{flex-shrink:0}.case-board-body{flex:1;min-height:0;height:auto}#caseBoard footer{position:static;flex-shrink:0}
 
 /* Copyright (c) YoonDesign Inc. All Rights Reserved.
 
@@ -1840,20 +1863,23 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
   <div class="title-bg" aria-hidden="true"></div>
   <div class="panel title-panel">
     <h1>야행</h1>
+    <p class="case-title-goal">금성회를 무너뜨려라 · 간부를 쫓아 마지막 명령선까지</p>
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
       <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
+      <button class="ghost" data-case-open type="button">금성회 조직도</button>
       <button class="ghost" id="btnSkillsIntro" type="button">기술</button>
       <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v205 · 2026-11-06</footer>
+  <footer class="title-footer">v206 · 2026-11-07</footer>
 </div>
 
+<dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
 <dialog id="newCampaignDialog" aria-labelledby="newCampaignTitle" aria-describedby="newCampaignNote">
   <h2 id="newCampaignTitle">처음부터 시작할까요?</h2>
-  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 체크포인트가 초기화되고 첫 에피소드부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
+  <p id="newCampaignNote">완료한 에피소드, 배운 기술, 수집한 단서와 체크포인트가 초기화되고 첫 에피소드부터 시작합니다. 음량과 화면 설정은 유지됩니다.</p>
   <p id="newCampaignError" role="alert" hidden></p>
   <div class="new-campaign-actions">
     <button id="btnNewCampaignCancel" class="ghost" type="button" autofocus>취소</button>
@@ -1883,6 +1909,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       <div class="sub-head"><button class="back" id="btnSkillsBack" type="button" aria-label="기술 트리 닫기">돌아가기</button><h2>기술 트리</h2></div>
       <p id="skillSummary" aria-live="polite"></p>
     </header>
+    <section id="caseTraining" class="case-entry" hidden></section>
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button" aria-label="미션 업적과 기술 포인트 보상 보기">업적 · 보상</button></div>
     <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
     <div class="skill-layout">
@@ -1949,12 +1976,13 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
     <div class="pz-menu">
       <span class="fx-sub" id="pzSub"></span>
       <button class="pz-big" id="btnResume" type="button">계속하기</button>
+      <button class="pz-big" data-case-open type="button">금성회 조직도</button>
       <button class="pz-big" id="btnSkillsPause" type="button">기술 트리</button>
       <button class="pz-big" id="btnCheckpointPause" type="button" hidden>체크포인트부터</button>
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v205 · 2026-11-06</small>
+      <small class="fx-sub" id="pauseVersion">v206 · 2026-11-07</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -1974,6 +2002,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       </div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <p id="brStory" class="br-story" hidden></p>
+      <section id="caseBrief" class="case-entry" hidden></section>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
       <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
@@ -2029,8 +2058,8 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/60f8d45143e7518b5b6c.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/79a1338880fc460d00a0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/82bf216a548368f4a3a3.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/5cf7e3caac799146b857.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

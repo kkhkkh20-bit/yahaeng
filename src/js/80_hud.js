@@ -146,6 +146,7 @@ function syncMissionIdentity(){
 function showBrief(go) {
   const el = $('brief'); if (!el || STAGE.tutorial) { go(); return; }
   paused = true; el.hidden = false;
+  renderCaseEntry('caseBrief');
   $('brStory').hidden=!STAGE.story; $('brStory').textContent=STAGE.story?.before||'';
   for(const cv of el.querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
@@ -395,6 +396,7 @@ function drawEndMap() {
 }
 const END_MAIN = ['접근 방식','수고비','소요 시간','발각 횟수'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
+  if(win)syncCaseProgress(true);
   closeKeypad();clearPlayerInput();closeEnvPicker();
   running = false;
   const st = S.stats, t = Math.floor(S.t);

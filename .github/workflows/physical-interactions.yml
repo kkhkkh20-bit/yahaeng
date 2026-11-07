@@ -60,6 +60,7 @@ jobs:
           PY
           python tools/run_tests.py --fast --quick --no-build
           python tests/tutorial/room_finish_live.py --url http://127.0.0.1:8001/public/
+          python tests/tutorial/officer_hunt_live.py --url http://127.0.0.1:8001/public/
           python tools/capture_ink_interface.py after --out build/ink-v199
       - name: Package the exact tested build
         run: python tools/package_cloudflare_2d.py build/yahaeng_city.html

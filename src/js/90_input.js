@@ -1,4 +1,5 @@
 // ---------------------------------------------------------------- 입력
+installCaseBoard();
 // Touch-capable PCs still use the keyboard HUD when their primary pointer is a mouse.
 const isTouch = matchMedia('(pointer: coarse)').matches;
 document.body.classList.toggle('touch', isTouch);
@@ -270,8 +271,9 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
-const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod'];
+const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE];
 function hasCampaignSave(){
+  if(loadCaseFile().sources.length)return true;
   if(campaignHasProgress()||Object.keys(loadBest()).length||Object.keys(cityDone()||{}).length)return true;
   const skills=loadSkillTree();if(skills.learned.length||skills.legacyPoints||loadFieldLearning().active||Object.keys(loadFieldLearning().used).length||CP)return true;
   try{return !!localStorage.getItem(CP_KEY);}catch(e){return false;}
@@ -288,7 +290,7 @@ function restartCampaign(){
     $('newCampaignError').textContent='저장 기록을 초기화하지 못했습니다. 브라우저의 저장 공간 설정을 확인하고 다시 시도하세요.';
     $('newCampaignError').hidden=false;return false;
   }
-  CP=null;volatileSkillTree=null;volatileFieldLearning=null;MOD='';
+  CP=null;volatileSkillTree=null;volatileFieldLearning=null;volatileCaseFile=null;MOD='';
   $('newCampaignDialog').close('start');syncQuick();initAudio();beginCampaign();return true;
 }
 $('btnNewCampaign').addEventListener('click',()=>{if(running||$('intro').hidden)return;$('newCampaignError').hidden=true;$('newCampaignDialog').showModal();});
@@ -339,6 +341,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);

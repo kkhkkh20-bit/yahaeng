@@ -1,4 +1,4 @@
-"""Six mission routes: walk, open doors, take objectives, hold to kill and escape.
+"""Seven mission routes: walk, open doors, take objectives, hold to kill and escape.
 
 NPC simulation is frozen to isolate progression from stealth difficulty. Live AI,
 disguises and opportunity schedules have separate regression tests.
@@ -22,7 +22,7 @@ async def main():
         runs = 0
         for mobile in [False, True]:
             for alt in range(3):
-                for sid in ['m1', 'm2', 'm3', 'm4', 'm5', 'm6']:
+                for sid in ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'n1']:
                     try:
                         result = await pg.evaluate(FLOW, {'sid':sid, 'alt':alt, 'mobile':mobile})
                         await pg.wait_for_function("!document.getElementById('end').hidden && document.getElementById('end').dataset.win==='1'", polling=100)

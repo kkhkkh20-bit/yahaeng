@@ -175,6 +175,6 @@ function checkObjective() {
   const trainingReady = !!STAGE.storyEpisode || !STAGE.steps || (S.tutI||0)>=STAGE.steps.length-1;
   const ready = trainingReady && !targetsLeft && !itemsLeft && !evidencePending(), wasOpen = S.exitOpen;
   S.exitOpen = ready;
-  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else if(!S.items.length&&S.guards.some(g=>g.target))say([['master','표적 제거 확인. 출구로 이동하세요.']],false);else bark('master', 'done'); }
+  if (ready && !wasOpen && !STAGE.tutorial) { if (S.guards.some(g => g.target)) toast('목표 완료. 탈출 지점으로', 3.5, 'good'); if(STAGE.noSupport||STAGE.story?.solo)return; if(STAGE.openingContract)say([['master','운반책 제거 확인. 들어온 골목으로 빠져나오세요.']],false);else if(!S.items.length&&S.guards.some(g=>g.target))say([['master','표적 제거 확인. 출구로 이동하세요.']],false);else bark('master', 'done'); }
 }
 

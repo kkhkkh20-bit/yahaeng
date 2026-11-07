@@ -7,10 +7,10 @@ async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();pg=await b.new_page();errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
   await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!__game')
-  assert await pg.locator('#btnLedger').is_hidden();assert await pg.evaluate('__game.mainContracts().length===5')
+  assert await pg.locator('#btnLedger').is_hidden();assert await pg.evaluate('__game.mainContracts().length===6')
   result=await pg.evaluate('''()=>{
    const G=__game,check=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();G.setLayer(0);G.S.player.x=G.S.player.y=-9999;return G.S},tick=n=>{for(let i=0;i<n;i++){G.S.t+=1/60;G.updatePlayer(1/60)}};
-   check(G.mainContracts().map(s=>s.id).join()==='m2,m4,m6,m7,m5','main contract selection');check(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05','main contract numbering');
+   check(G.mainContracts().map(s=>s.id).join()==='m2,m4,m6,m7,m5,n1','main contract selection');check(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05,06','main contract numbering');
    let rooms=0;
    for(const id of ['m2','m4','m6','m7']){
     const S=fresh(id),P=S.player,cr=S.camRoom;check(cr&&G.STAGE.securityEvidence,'missing evidence terminal '+id);G.setLayer(cr.fl);check(!G.solidAt(cr.tx,cr.ty),'terminal inside wall '+id);G.setLayer(0);
