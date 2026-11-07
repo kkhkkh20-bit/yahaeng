@@ -12,7 +12,7 @@ STAGES.push({
   wires:[],roofs:[],bricks:[],challenges:[],
   build(m){
     m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
-    m.bld(10,3,23,11,1,[[16,11],[17,11]],'h');
+    m.bld(10,3,23,11,1,[[16,11],[17,11]],'h');m.pipe(10,6);
     m.many('C',[[11,4],[12,4],[21,4],[22,4]]);m.many('B',[[5,13],[7,13]]);m.many('T',[[4,4],[7,6],[24,14]]);
   },
   zones:[[0,0,25,17,'pub',null,'골목',[]],[10,3,23,11,'res',null,'물류실',['crew']]],
@@ -34,7 +34,7 @@ STAGES.push({
   wires:[],roofs:[],bricks:[],guards:[{kind:'g1',tag:'warehouseKeeper',route:[[21,10,6],[18,10,6]],post:90,startPause:6,radio:false}],challenges:[],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[23,8],fl:0,name:'창고 보안실'},
   build(m){
     m.fill(0,0,25,17,',');m.rect(0,0,25,17);m.fill(1,12,24,16,'.');
-    m.bld(12,4,24,12,1,[[12,10],[12,11],[14,12],[15,12]],'h');
+    m.bld(12,4,24,12,1,[[12,10],[12,11],[14,12],[15,12]],'h');m.pipe(12,6);
     m.many('C',[[21,8],[22,8],[23,10]]);m.many('B',[[6,12],[8,12]]);m.many('T',[[4,5],[8,4],[23,15]]);
   },
   zones:[[0,0,25,17,'pub',null,'빈 창고',[]]],
