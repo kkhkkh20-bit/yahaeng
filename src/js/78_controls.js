@@ -79,7 +79,9 @@ function padButton(el, key, a, idle) {
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
   const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
   const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
-  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', actionCaption(a, a.label || v)); }
+  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
+  // A shortened visible verb can stay identical while distance/availability changes.
+  el.setAttribute('aria-label', actionCaption(a, a.label || v));
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {

@@ -22,6 +22,8 @@ async def main():
    await q.click('#hud .obj');assert await q.evaluate('__game.hudInspecting()')
    assert await q.locator('#objective').is_visible(),'full mission is lost in compact mode'
    await q.click('#hud .obj');assert not await q.evaluate('__game.hudInspecting()')
+   await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:619,y:408,mode:'sneak'});G.updateHUD(true)}")
+   assert '더 가까이' in await q.locator('#btnAct').get_attribute('aria-label'),'idle compact caption left a stale approach action label'
    overlay=await q.evaluate("""()=>{const G=__game,hit=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
     G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:660,y:408,mode:'sneak'});G.S.fade=0;G.update(.02);G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
     const speeches=G.SPEECH_R.map(r=>({left:(r.x-G.cam.x)*G.SCALE+innerWidth/2,top:(r.y-G.cam.y)*G.SCALE+innerHeight/2,right:(r.x+r.w-G.cam.x)*G.SCALE+innerWidth/2,bottom:(r.y+r.h-G.cam.y)*G.SCALE+innerHeight/2}));
