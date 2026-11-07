@@ -44,10 +44,15 @@ function cancelWork(P,reason='이동해서 작업 중단'){
 function workMovementRequested(){return (input.joy?.mag||0)>.25||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].some(k=>S.keys[k]);}
 function drawCorpseStatus(c){
  const P=S.player;if(c.carried||c.stashed||c.hideT>S.t||!c.playerHandled||flOf(c)!==flOf(P)||(c.z||0)!==(P.z||0)||dist(P.x,P.y,c.x,c.y)>104)return;
- const nearest=S.corpses.reduce((best,b)=>b.playerHandled&&!b.stashed&&!b.carried&&flOf(b)===flOf(P)&&(b.z||0)===(P.z||0)&&(!best||dist(P.x,P.y,b.x,b.y)<dist(P.x,P.y,best.x,best.y))?b:best,null);if(nearest!==c)return;
+
  const k=1/SCALE,x=c.x+18*k,y=c.y-8*k;ctx.save();ctx.globalAlpha=1;ctx.fillStyle='#101820eb';ctx.beginPath();ctx.arc(x,y,9*k,0,TAU);ctx.fill();ctx.strokeStyle=c.ko?'#a9d2de':'#df9488';ctx.lineWidth=1.5*k;
  if(c.ko){ctx.font=uiFont(10*k);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#b8dbe4';ctx.fillText('Zz',x,y);}
  else{ctx.beginPath();ctx.moveTo(x-3*k,y-3*k);ctx.lineTo(x+3*k,y+3*k);ctx.moveTo(x+3*k,y-3*k);ctx.lineTo(x-3*k,y+3*k);ctx.stroke();}ctx.restore();
+}
+function drawNearbyBodyStatus(P,openB){
+ let closest=null,best=104;
+ for(const c of S.corpses){if(!c.playerHandled||c.carried||c.stashed||c.skillAnimating||c.hideT>S.t||flOf(c)!==flOf(P)||(c.z||0)!==(P.z||0)||roofOccludes(c,openB))continue;const d=dist(P.x,P.y,c.x,c.y);if(d<best){best=d;closest=c;}}
+ if(closest)drawCorpseStatus(closest);
 }
 function guardTaskCue(g){
  if(g.state==='ALERT'||g.seen||knownFace(g))return null;

@@ -3038,9 +3038,9 @@ function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   const fr = corpseFrame(c);  // 쓰러지는 동작
-  if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); drawCorpseStatus(c); return; }
-  if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); drawCorpseStatus(c); return; }
-  blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48); drawCorpseStatus(c);
+  if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
+  if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
+  blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
 }
 // 들고 있는 상자 (택배): 두 팔을 모은 자세 위에 상자를 그린다. 북쪽(화면 위)을 보면 몸 뒤에 가려진다
 const holdingNow = g => g.carryTo != null && g.ri === g.carryTo && ['PATROL', 'RETURN'].includes(g.state);
@@ -15030,7 +15030,7 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
-  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player);drawDamageDirection(S.player); }
+  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player);drawDamageDirection(S.player);drawNearbyBodyStatus(P,openB); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawDiningFixtures(); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over) drawGoal(P);
@@ -15517,10 +15517,15 @@ function cancelWork(P,reason='이동해서 작업 중단'){
 function workMovementRequested(){return (input.joy?.mag||0)>.25||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].some(k=>S.keys[k]);}
 function drawCorpseStatus(c){
  const P=S.player;if(c.carried||c.stashed||c.hideT>S.t||!c.playerHandled||flOf(c)!==flOf(P)||(c.z||0)!==(P.z||0)||dist(P.x,P.y,c.x,c.y)>104)return;
- const nearest=S.corpses.reduce((best,b)=>b.playerHandled&&!b.stashed&&!b.carried&&flOf(b)===flOf(P)&&(b.z||0)===(P.z||0)&&(!best||dist(P.x,P.y,b.x,b.y)<dist(P.x,P.y,best.x,best.y))?b:best,null);if(nearest!==c)return;
+
  const k=1/SCALE,x=c.x+18*k,y=c.y-8*k;ctx.save();ctx.globalAlpha=1;ctx.fillStyle='#101820eb';ctx.beginPath();ctx.arc(x,y,9*k,0,TAU);ctx.fill();ctx.strokeStyle=c.ko?'#a9d2de':'#df9488';ctx.lineWidth=1.5*k;
  if(c.ko){ctx.font=uiFont(10*k);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#b8dbe4';ctx.fillText('Zz',x,y);}
  else{ctx.beginPath();ctx.moveTo(x-3*k,y-3*k);ctx.lineTo(x+3*k,y+3*k);ctx.moveTo(x+3*k,y-3*k);ctx.lineTo(x-3*k,y+3*k);ctx.stroke();}ctx.restore();
+}
+function drawNearbyBodyStatus(P,openB){
+ let closest=null,best=104;
+ for(const c of S.corpses){if(!c.playerHandled||c.carried||c.stashed||c.skillAnimating||c.hideT>S.t||flOf(c)!==flOf(P)||(c.z||0)!==(P.z||0)||roofOccludes(c,openB))continue;const d=dist(P.x,P.y,c.x,c.y);if(d<best){best=d;closest=c;}}
+ if(closest)drawCorpseStatus(closest);
 }
 function guardTaskCue(g){
  if(g.state==='ALERT'||g.seen||knownFace(g))return null;
