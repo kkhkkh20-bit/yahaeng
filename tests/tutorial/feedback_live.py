@@ -24,10 +24,10 @@ async def main(a):
     else:await q.keyboard.up('z')
    try:
     await standalone_stage(q,'p0');await q.click('#btnBrGo');await c.press('Control','#btnCrouch');await cc.neutralize('uniformDonor');await cc.shot('ko')
-    await attack(True);await q.wait_for_function('__game.S.player.finishPose?.wind',timeout=3000);await cc.shot('finishing-preparation');await attack(False);await q.wait_for_timeout(1150)
+    await attack(True);await q.wait_for_timeout(120);await attack(False);await q.wait_for_timeout(1150)
     assert await q.evaluate('__game.S.corpses.some(c=>c.tag==="uniformDonor"&&c.ko)&&!__game.S.player.finishPose')
     await cc.shot('hold-cancelled')
-    await attack(True);await q.wait_for_function('()=>{const g=__game.S.guards.find(g=>g.tag==="uniformDonor");return __game.targetEliminated(g)}',timeout=5000);await attack(False);await cc.shot('dead')
+    await attack(True);await cc.shot('deliberate-hold');await q.wait_for_function('()=>{const g=__game.S.guards.find(g=>g.tag==="uniformDonor");return __game.targetEliminated(g)}',timeout=5000);await attack(False);await cc.shot('dead')
     assert await q.evaluate('__game.S.flash===0&&__game.feedbackState().events.some(e=>e.kind==="kill")')
     await cc.dress();await cc.shot('disguise');await cc.hide('uniformDonor');await cc.shot('stash')
     assert await q.evaluate('__game.feedbackState().events.some(e=>e.kind==="stash")&&__game.S.stats.stashed===1&&__game.S.stats.detected===0&&__game.S.player.hp===3')

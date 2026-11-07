@@ -40,7 +40,7 @@ class CompoundControls:
  async def neutralize(self,tag,lethal=False):
   # Moving repair/return patrols can leave the edge of melee reach between the
   # read-only ready check and native input. Re-approach visibly; never freeze AI.
-  for distance in [30,24,20]:
+  for distance in [40,30,24]:
    g=await self.q.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);return{x:g.x,y:g.y,a:g.a,state:g.state}}',tag)
    if g['state']=='DEAD':return
    await self.walk(g['x']-math.cos(g['a'])*distance,g['y']-math.sin(g['a'])*distance)
