@@ -2028,5 +2028,95 @@
         }
       ]
     }
-  ]
+  ],
+  "additional_native_checks": {
+    "officer_performance_and_lead": [
+      {
+        "device": "pc",
+        "hp": 3,
+        "last_event": "next-job-with-lead",
+        "detected": 0,
+        "hidden": false,
+        "page_errors": [],
+        "events": [
+          "press-Control",
+          "press-z",
+          "press-x",
+          "press-x",
+          "press-x",
+          "press-z",
+          "press-x",
+          "press-x",
+          "press-x",
+          "authored-target-performance",
+          "press-z",
+          "officer-killed-lead-earned",
+          "press-x",
+          "press-x",
+          "press-x",
+          "complete",
+          "next-job-with-lead"
+        ]
+      },
+      {
+        "device": "mobile",
+        "hp": 3,
+        "last_event": "next-job-with-lead",
+        "detected": 0,
+        "hidden": false,
+        "page_errors": [],
+        "events": [
+          "press-Control",
+          "press-z",
+          "press-x",
+          "press-x",
+          "press-x",
+          "press-z",
+          "press-x",
+          "press-x",
+          "press-x",
+          "authored-target-performance",
+          "press-z",
+          "officer-killed-lead-earned",
+          "press-x",
+          "press-x",
+          "press-x",
+          "complete",
+          "next-job-with-lead"
+        ]
+      }
+    ],
+    "real_pursuit_and_hiding": [
+      {
+        "device": "pc-escape",
+        "hp": 3,
+        "last_event": "search-after-10s",
+        "detected": 1,
+        "hidden": true,
+        "page_errors": [],
+        "events": [
+          "actually-seen",
+          "press-Control",
+          "second-corner-pocket",
+          "search-after-3s",
+          "search-after-10s"
+        ]
+      },
+      {
+        "device": "mobile-escape",
+        "hp": 3,
+        "last_event": "search-after-10s",
+        "detected": 1,
+        "hidden": true,
+        "page_errors": [],
+        "events": [
+          "actually-seen",
+          "press-Control",
+          "second-corner-pocket",
+          "search-after-3s",
+          "search-after-10s"
+        ]
+      }
+    ]
+  }
 }
