@@ -11,8 +11,8 @@ async def main():
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate(SETUP)
    # Decode every embedded frame; do not ship broken image placeholders.
-   frames=await q.evaluate('''async()=>{const s=getComputedStyle(document.documentElement),names=[...s].filter(k=>k.startsWith('--art-frame-'));return await Promise.all(names.map(async k=>{const i=new Image();i.src=s.getPropertyValue(k).trim().slice(4,-1).replace(/^['"]|['"]$/g,'');await i.decode();return[k,i.naturalWidth,i.naturalHeight]}))}''')
-   assert len(frames)==12 and all(r[1]>0 and r[2]>0 for r in frames),frames
+   frames=await q.evaluate('''async()=>{const s=getComputedStyle(document.documentElement),names=[...s].filter(k=>k.startsWith('--art-frame-')||k.startsWith('--art-field-'));return await Promise.all(names.map(async k=>{const i=new Image();i.src=s.getPropertyValue(k).trim().slice(4,-1).replace(/^['"]|['"]$/g,'');await i.decode();return[k,i.naturalWidth,i.naturalHeight]}))}''')
+   assert len(frames)==16 and all(r[1]>0 and r[2]>0 for r in frames),frames
    if touch:
     for id in ['btnAct','btnCarry','btnToolNext','btnTool','btnCrouch']:
      assert await q.locator('#'+id+' > svg.hud-art').evaluate('e=>e.getBoundingClientRect().width>=22&&e.getBBox().width>0&&getComputedStyle(e).display!=="none"'),id
@@ -21,11 +21,14 @@ async def main():
    if touch:
     for i,a in enumerate(controls):
      for c in controls[i+1:]:assert not(a['x']<c['x']+c['w'] and a['x']+a['w']>c['x'] and a['y']<c['y']+c['h'] and a['y']+a['h']>c['y']),(a,c)
-    carry=q.locator('#btnCarry');idle=await carry.evaluate('(e)=>getComputedStyle(e).borderImageSource')
+    carry=q.locator('#btnCarry');idle=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}')
     await q.evaluate('''()=>{const S=__game.S,P=S.player;S.corpses=[{x:P.x,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,hidden:false,stashed:false,g:{id:901,x:P.x,y:P.y,fl:0,z:0,state:'DEAD',child:false}}];S.t+=.1;__game.updateHUD(true)}''')
-    ready=await carry.evaluate('(e)=>getComputedStyle(e).borderImageSource');assert ready!=idle,'Ready control frame did not change'
+    await q.wait_for_timeout(160)  # Settle the authored .12s state-color feedback.
+    ready=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}');assert ready!=idle,'Ready control frame did not change'
     rect=await carry.bounding_box();await carry.dispatch_event('pointerdown',{'button':0,'pointerId':31})
-    pressed=await carry.evaluate('(e)=>getComputedStyle(e).borderImageSource');assert pressed!=ready,'Pressed control frame did not change';assert await carry.bounding_box()==rect,'Pressed finish shifted the hit box'
+    await q.wait_for_timeout(160)
+    pressed=await carry.evaluate('(e)=>{const s=getComputedStyle(e);return[s.backgroundImage,s.color]}');assert pressed!=ready,'Pressed control frame did not change';assert await carry.bounding_box()==rect,'Pressed finish shifted the hit box'
+    await q.screenshot(path=str(O/f'pressed-{name}.png'))
     await carry.dispatch_event('pointercancel',{'button':0,'pointerId':31})
     await q.evaluate(SETUP)
     attack=q.locator('#btnAct');normal=await attack.evaluate('(e)=>getComputedStyle(e).backgroundImage')

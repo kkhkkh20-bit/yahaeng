@@ -328,8 +328,10 @@ function draw() {
       const pos = a => { if(a.c&&a.k!=='retrieve'){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = uiFont(11); const tw = ctx.measureText(lab).width + 12;
-        ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
+      const p = pos(pa);
+      // The touch selector already owns this information. Keyboard captions
+      // join the common placement queue so they cannot overprint combat hints.
+      if(p&&!isTouch)tag(p.x,p.y+34,`${pa.choiceI+1}/${pa.choices} · Tab 바꾸기`,'#e6d9ae',1,null,2.2);
     }
     const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
@@ -385,7 +387,7 @@ function draw() {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '끌어 조준 · 놓아 사용 · 원위치로 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }

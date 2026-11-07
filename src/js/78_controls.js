@@ -70,15 +70,18 @@ function actVerb(a, ic) {
   return two.length <= 6 ? two : ws[ws.length - 1].length <= 6 ? ws[ws.length - 1] : VERB[ic] || lb.slice(0, 5);
 }
 // Inline silhouettes avoid CSS-mask/filter compositing failures during continuous canvas rendering.
-function hudArt(key){const svg=window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
+function hudArt(key){const svg=(['action','crouch','grab','dress','whistle','equipment'].includes(key)?window.__HUD_ART__?.[key]:null)||window.__HUD_ART__?.['field:'+key]||window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');
   el.dataset.ready=String(a.k!=='none'&&!a.busy&&!a.skillLocked);
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
-  const html = hudArt(key==='actH'?'attack':key==='dressH'?'dress':'action')+`<b>${v}</b>` + hold;
-  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', actionCaption(a, a.label || v)); }
+  const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
+  const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
+  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
+  // A shortened visible verb can stay identical while distance/availability changes.
+  el.setAttribute('aria-label', actionCaption(a, a.label || v));
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {

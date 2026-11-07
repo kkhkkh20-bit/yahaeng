@@ -42,11 +42,16 @@ function episodeRadioMessage(){
 function compactObjectiveText(){
  if(!S)return '';
  const goal=nextGoal();if(!goal)return '';
+ if(S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(S.player)))return '시야를 끊고 숨기';
  if(STAGE.firstSteps&&STAGE.storyEpisode&&!goal.interrupt){
   if(S.player.hide)return tutText('{행동} · 밖으로 나오기');
   return ['오른쪽 표시로 이동',isTouch?'웅크리기 · 풀숲으로':'Ctrl · 풀숲으로','경비의 등 뒤로 접근',
    isTouch?'공격 짧게 · 기절':'Z 짧게 · 기절','경비 옷 훔쳐 입기','경비를 풀숲에 숨기기',
    '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
+ }
+ if(!goal.interrupt&&!goal.exit&&!evidencePending()){
+  if(STAGE.id==='p1'&&S.player.outfit==='crew'&&S.starterPass)return '출고 서류 챙기기';
+  if(STAGE.id==='p2')return S.cams.some(camOn)?'CCTV 전선 분리':'배송 명세서 챙기기';
  }
  return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
 }

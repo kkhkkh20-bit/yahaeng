@@ -54,10 +54,12 @@ function updateTalks(dt) {
 // 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
 function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
-  if(DLG.modal||S.keypad)return;
+  if(DLG.modal||S.keypad){document.body.classList.remove('npc-speaking');return;}
   const P=S.player,ch=chaseNow(),focus=playerActionFocus();
   const who=visibleSpeechCandidates(P,ch,focus);
   if(P.say&&!P.hide)who.unshift(P);
+  const speechVisible=who.length>0,changed=document.body.classList.contains('npc-speaking')!==speechVisible;
+  document.body.classList.toggle('npc-speaking',speechVisible);if(changed)hudBlockFrame=null;
   if(!who.length)return;
   who.sort((a,b)=>speechPriority(b,P)-speechPriority(a,P)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;

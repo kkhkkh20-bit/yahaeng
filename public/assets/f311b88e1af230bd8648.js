@@ -6648,10 +6648,12 @@ function updateTalks(dt) {
 // 추격 중(누가 나를 보며 쫓는 중): 화면을 정리한다 — 주변 잡담·지난 알림·구역 이름·마지막 위치 표시를 줄이고 나를 쫓는 적만 남긴다
 function chaseNow() { if (S._chaseAt === S.t) return S._chase; S._chaseAt = S.t; return (S._chase = S.guards.some(g => !g.civ && !g.dog && g.state === 'ALERT' && g.seen && flOf(g) === flOf(S.player))); }
 function drawSpeech() {
-  if(DLG.modal||S.keypad)return;
+  if(DLG.modal||S.keypad){document.body.classList.remove('npc-speaking');return;}
   const P=S.player,ch=chaseNow(),focus=playerActionFocus();
   const who=visibleSpeechCandidates(P,ch,focus);
   if(P.say&&!P.hide)who.unshift(P);
+  const speechVisible=who.length>0,changed=document.body.classList.contains('npc-speaking')!==speechVisible;
+  document.body.classList.toggle('npc-speaking',speechVisible);if(changed)hudBlockFrame=null;
   if(!who.length)return;
   who.sort((a,b)=>speechPriority(b,P)-speechPriority(a,P)||dist(a.x,a.y,P.x,P.y)-dist(b.x,b.y,P.x,P.y));
   const placed=ACTION_R.concat(MARK_R,actorTextBlocks(),hudTextBlocks()),k=Math.max(1,.95/SCALE),gap=6*k;
@@ -8505,7 +8507,7 @@ const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { at
 const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
 const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
-function selectTool(t) { if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
+function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
 function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
@@ -8531,7 +8533,7 @@ function runQueued(it) {
 }
 function aimPoint() {
   const P = S.player, a = input.aiming; if (!a) return null;
-  const charge = input.joy && input.joy.mag > 0.15 ? clamp((input.joy.mag - 0.15) / 0.8, 0, 1) : clamp((performance.now() - a.t0) / 900, 0, 1);
+  const charge = a.dragCharge != null ? a.dragCharge : input.joy && input.joy.mag > 0.15 ? clamp((input.joy.mag - 0.15) / 0.8, 0, 1) : clamp((performance.now() - a.t0) / 900, 0, 1);
   const [lo, hi] = input.tool === 'coin' ? [50, 160] : [90, 330];
   let d = lo + (hi - lo) * charge;
   d = Math.max(16, Math.min(d, castRay(P.x, P.y, P.a, d, input.tool === 'stone' && P.z > 0) - 8));
@@ -8961,7 +8963,7 @@ function updatePlayer(dt) {
   P.mode = mode;
   if (input.aiming) {
     if (!canAim()) input.aiming = null;
-    else { if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
+    else { if (input.aiming.dragAngle != null) P.a = input.aiming.dragAngle; else if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
   }
   releaseCarryStride(P,mag);
   if (P.strikeT > 0) { P.strikeT = Math.max(0, P.strikeT - dt); mag = 0; }  // 0 아래로 내려가면 '공격 중'으로 남아 벽 기대기가 막혔다
@@ -12949,9 +12951,10 @@ function updateAlert(dt) {
 }
 let touchFrameCache=null;
 function touchPlayFrame(){
-  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden+'|'+($('stealth')?.offsetHeight||0);
-  if(touchFrameCache?.key===key)return touchFrameCache;
   const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
+  // Context controls can appear while approaching a guard. Reframe their contact area too.
+  const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
+  if(touchFrameCache?.key===key)return touchFrameCache;
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
   const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
@@ -14844,8 +14847,10 @@ function draw() {
       const pos = a => { if(a.c&&a.k!=='retrieve'){const m=actorMarker(a.c,a.c);return{x:m.x,y:m.y};}const o = actObj(a); if (a.k === 'fdown') return downMark(a.l); if (a.wv) return { x: a.wv.w.x, y: a.wv.w.y }; if (a.n && a.n.u) return surfacePoint(usePoint(a.n.u));if(objectActionPoint(a)?.surface)return surfacePoint(objectActionPoint(a)); if (a.k === 'down' && o) return o.roofDoor || { x: o.rx != null ? o.rx : o.ux, y: o.ry != null ? o.ry : o.uy }; return a.at || (o && o.x != null ? { x: o.x, y: o.y } : null); };
       ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(242,196,107,.55)';
       ctx.setLineDash([]);
-      const p = pos(pa); if (p) { const lab = `${pa.choiceI + 1}/${pa.choices} · ${document.body.classList.contains('touch') ? '[대상]' : 'Tab'} 바꾸기`; ctx.font = uiFont(11); const tw = ctx.measureText(lab).width + 12;
-        ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(p.x - tw / 2, p.y + 26, tw, 17); ctx.fillStyle = '#f2c46b'; ctx.textAlign = 'center'; ctx.fillText(lab, p.x, p.y + 38); }
+      const p = pos(pa);
+      // The touch selector already owns this information. Keyboard captions
+      // join the common placement queue so they cannot overprint combat hints.
+      if(p&&!isTouch)tag(p.x,p.y+34,`${pa.choiceI+1}/${pa.choices} · Tab 바꾸기`,'#e6d9ae',1,null,2.2);
     }
     const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
@@ -14901,7 +14906,7 @@ function draw() {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '끌어 조준 · 놓아 사용 · 원위치로 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
@@ -15081,11 +15086,16 @@ function episodeRadioMessage(){
 function compactObjectiveText(){
  if(!S)return '';
  const goal=nextGoal();if(!goal)return '';
+ if(S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(S.player)))return '시야를 끊고 숨기';
  if(STAGE.firstSteps&&STAGE.storyEpisode&&!goal.interrupt){
   if(S.player.hide)return tutText('{행동} · 밖으로 나오기');
   return ['오른쪽 표시로 이동',isTouch?'웅크리기 · 풀숲으로':'Ctrl · 풀숲으로','경비의 등 뒤로 접근',
    isTouch?'공격 짧게 · 기절':'Z 짧게 · 기절','경비 옷 훔쳐 입기','경비를 풀숲에 숨기기',
    '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
+ }
+ if(!goal.interrupt&&!goal.exit&&!evidencePending()){
+  if(STAGE.id==='p1'&&S.player.outfit==='crew'&&S.starterPass)return '출고 서류 챙기기';
+  if(STAGE.id==='p2')return S.cams.some(camOn)?'CCTV 전선 분리':'배송 명세서 챙기기';
  }
  return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
 }
@@ -15136,7 +15146,7 @@ let hudBlockFrame=null;
 function hudTextBlocks() {
   if(hudBlockFrame)return hudBlockFrame;
   const cr=canvas.getBoundingClientRect();
-  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#episodeRadio:not([hidden]),#toasts .toast')]
+  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#saveState:not([hidden]),#hud .joyhint,#quickItems>button:not([hidden]),#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#episodeRadio:not([hidden]),#toasts .toast')]
     .filter(e=>getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden]'))
     .map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
     .map(r=>[cam.x+(r.left-cr.left-W/2-5)/SCALE,cam.y+(r.top-cr.top-H/2-5)/SCALE,cam.x+(r.right-cr.left-W/2+5)/SCALE,cam.y+(r.bottom-cr.top-H/2+5)/SCALE]);
@@ -15337,15 +15347,18 @@ function actVerb(a, ic) {
   return two.length <= 6 ? two : ws[ws.length - 1].length <= 6 ? ws[ws.length - 1] : VERB[ic] || lb.slice(0, 5);
 }
 // Inline silhouettes avoid CSS-mask/filter compositing failures during continuous canvas rendering.
-function hudArt(key){const svg=window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
+function hudArt(key){const svg=(['action','crouch','grab','dress','whistle','equipment'].includes(key)?window.__HUD_ART__?.[key]:null)||window.__HUD_ART__?.['field:'+key]||window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');
   el.dataset.ready=String(a.k!=='none'&&!a.busy&&!a.skillLocked);
   const ic = a.k === 'cap' ? (a.hold ? 'ko' : 'kill') : a.k === 'none' && a.stalk ? (koTap(a.stalk) ? 'ko' : 'kill') : actIcon(a), v = actVerb(a, ic) || idle, hold = a.skillLocked ? '<small>배워야 사용</small>' : a.hold ? `<small>${holdHint(a)}</small>` : '';
   // Share the authored action symbols with world prompts; keep the verb and accessible label.
-  const html = hudArt(key==='actH'?'attack':key==='dressH'?'dress':'action')+`<b>${v}</b>` + hold;
-  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; el.setAttribute('aria-label', actionCaption(a, a.label || v)); }
+  const shortV=key==='actH'&&a.k==='none'?'제압':a.k==='dress'?'옷 입기':a.k==='camroom'?(S.camsOff?'기록 삭제':'감시 정지'):v;
+  const html = hudArt(key==='actH'?(ic==='kill'?'blade':'attack'):key==='dressH'?'dress':'action')+`<b>${shortV}</b>` + hold;
+  if (hudCache[key] !== html) { hudCache[key] = html; el.innerHTML = html; }
+  // A shortened visible verb can stay identical while distance/availability changes.
+  el.setAttribute('aria-label', actionCaption(a, a.label || v));
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {
@@ -15852,7 +15865,7 @@ function updateHUD(force) {
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = hudArt('grab')+`<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
     const dress=(!STAGE.tutorial||STAGE.storyEpisode)&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
-    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
+    db.hidden=!dress||ea.k==='dress';db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -15913,6 +15926,22 @@ function updateStealth(lv) {
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
   const ico = observer?.camera?'camera':P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
 }
+let quickItemsState=null;
+function quickItemReady(t){return !!S&&running&&!paused&&!S.over&&!tactical&&!hudInspecting()&&availableTools().includes(t)&&toolCount(t)>0&&(t!=='radio'||S.player.hasRadio)&&deviceReady(t)&&canAim()&&(t!=='coin'||!S.player.z)&&(t!=='smoke'||!S.player.z&&(S.smokeThrows||[]).length<3);}
+function syncQuickItems(){
+  const bar=$('quickItems');if(!bar)return;
+  const reset=quickItemsState!==S;quickItemsState=S;let visible=0;
+  bar.querySelectorAll('[data-quick-tool]').forEach(b=>{
+    const t=b.dataset.quickTool,n=toolCount(t),owned=availableTools().includes(t)&&(t!=='radio'||S.player.hasRadio);
+    if(reset)delete b.dataset.carried;
+    if(owned&&n>0)b.dataset.carried='true';
+    b.hidden=!owned||!b.dataset.carried;if(b.hidden)return;visible++;
+    const ready=quickItemReady(t);b.classList.toggle('empty',n<=0);b.classList.toggle('ready',ready);b.setAttribute('aria-disabled',String(!ready));
+    b.setAttribute('aria-label',TOOL_NAME[t]+' '+n+'개 · 누르면 바로 사용, 끌어서 조준, 원위치로 돌아오면 취소');
+    b.querySelector('output').textContent=n;b.querySelector('.quick-wait').textContent=t==='radio'&&!deviceReady(t)?Math.ceil(S.radioReadyAt-S.t)+'초':'';
+  });
+  bar.hidden=!visible;document.body.classList.toggle('has-quick-items',visible>0);
+}
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
   if (!S) return; const P = S.player;
@@ -15928,6 +15957,7 @@ function syncTools() {
   hud.tool.hidden=!!(STAGE.starterContract||STAGE.apprenticeContract)&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
+  syncQuickItems();
 }
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
@@ -16075,7 +16105,7 @@ function tutorialCue(){
 function syncTutorialCue(){
   const key=tutorialCue();
   document.body.classList.toggle('entry-learning',!!beginnerEntryGoal());
-  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽을 끌어 걷기\n웅크림: 조용히 · 달리기: 장비에서 설정':'왼쪽 조금 끌기: 걷기\n끝까지: 달리기 · 웅크림: 조용히';if(joyHint.textContent!==text)joyHint.textContent=text;}
+  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽 드래그 · 걷기\n달리기는 장비에서 설정':'왼쪽 드래그 · 이동\n멀리 끌면 달리기';if(joyHint.textContent!==text)joyHint.textContent=text;}
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'body',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
@@ -16180,12 +16210,16 @@ function closeLoadout(focus=false){
   document.body.classList.toggle('inspecting',hudInspecting());
   if(focus)(isTouch?$('btnToolNext'):canvas).focus({preventScroll:true});
 }
+function syncLoadoutOverflow(){
+ if(!loadoutOpen)return;const body=$('loadoutBody');if(body)body.dataset.scrollable=String(body.scrollHeight>body.clientHeight+1);
+}
+window.addEventListener('resize',syncLoadoutOverflow);
 function toggleLoadout(){
   if(loadoutOpen){closeLoadout(true);return;}
   if(!S||!running||paused||S.over||tactical||DLG.modal||S.keypad||actionBusy())return;
   clearPlayerInput();closeEnvPicker();setObjectiveOpen(false);syncTools();
   loadoutOpen=true;$('loadout').hidden=false;$('loadoutShade').hidden=false;
-  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');
+  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');syncLoadoutOverflow();
   const selected=$('tools').querySelector('.tool.on:not([hidden])');
   (input.padWhistle?$('btnWhistle'):selected||$('btnLoadoutClose')).focus({preventScroll:true});
 }
@@ -16200,10 +16234,11 @@ function handleLoadoutKey(e){
   if(!['Enter','Space'].includes(e.code))e.preventDefault();
 }
 function initLoadout(){
-  $('loadout').querySelector('p').textContent=isTouch?'도구를 고른 뒤 화면의 도구 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
+  $('loadout').querySelector('p').textContent=isTouch?'하단 보조 아이템은 바로 사용합니다. 누른 채 끌면 조준하고, 원위치로 돌아오면 취소합니다. 다른 도구는 선택한 뒤 오른쪽 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
   $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
   $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
   $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});
+  $('quickItems').querySelectorAll('[data-quick-tool]').forEach(b=>{b.innerHTML=hudArt('item:'+b.dataset.quickTool)+'<output>0</output><small>'+TOOL_NAME[b.dataset.quickTool]+'</small><span class="quick-wait"></span>';});
   $('btnToolNext').innerHTML=hudArt('equipment')+'<b>장비</b>';
   $('btnWhistle').insertAdjacentHTML('afterbegin',hudArt('whistle'));
   $('tools').querySelectorAll('.tool').forEach(b=>b.insertAdjacentHTML('afterbegin',hudArt(b.dataset.t==='kunai'?'dart':b.dataset.t)));
@@ -16810,7 +16845,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
-  if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { cancelAim(); toast('조준 취소', 1.2); return; }
+  if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { if(activeToolPress)finishToolPress(true);else cancelAim(); toast('조준 취소', 1.2); return; }
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
 window.addEventListener('keyup', e => { if (S) { S.keys[keyCode(e)] = false; combatRelease(e.code); } if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyF' || e.code === 'KeyV') && input.aiming && input.aiming.src === 'key') releaseAim(); });
@@ -16822,6 +16857,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
+  finishToolPress(true);
   closeLoadout();
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
@@ -16915,13 +16951,47 @@ $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);
 $('btnSkillsBack').addEventListener('click',closeAssassinMenu);
 $('btnSkillReset').addEventListener('click',resetTreeSkills);
-{
-  const b = $('btnTool');
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람
-  b.addEventListener('pointerup', e => { b.classList.remove('down'); if (input.padWhistle) return; const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
-  b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
-  b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
+// A pointer owns one tool use. Quick slots borrow the tool without changing the loadout.
+let activeToolPress=null;
+function finishToolPress(cancel=false){
+  const p=activeToolPress;if(!p)return;activeToolPress=null;
+  p.button.classList.remove('down','cancel');
+  try{if(p.button.hasPointerCapture(p.id))p.button.releasePointerCapture(p.id);}catch(e){}
+  if(p.state===S){
+    if(cancel||p.cancel||!input.aiming||input.aiming.src!==p.source)cancelAim();else releaseAim();
+    if(p.quick){input.tool=p.previousTool;input.padWhistle=p.previousWhistle;}
+    syncTools();
+  }
 }
+function bindToolPointer(b,quick=false){
+  b.addEventListener('pointerdown',e=>{
+    e.preventDefault();e.stopPropagation();if(e.button!==0||activeToolPress||input.aiming)return;
+    closeHudInspection();initAudio();
+    if(!quick&&input.padWhistle){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
+    const tool=quick?b.dataset.quickTool:input.tool;
+    if(quick&&!quickItemReady(tool))return;
+    const previousTool=input.tool,previousWhistle=input.padWhistle;
+    if(quick){input.tool=tool;input.padWhistle=false;}
+    const source=quick?'quick:'+tool:'btn';startAim(source);
+    if(!input.aiming||input.aiming.src!==source){if(quick){input.tool=previousTool;input.padWhistle=previousWhistle;}return;}
+    activeToolPress={button:b,id:e.pointerId,state:S,source,quick,previousTool,previousWhistle,x:e.clientX,y:e.clientY,dragged:false,cancel:false};
+    b.classList.add('down');try{b.setPointerCapture(e.pointerId);}catch(er){}syncTools();
+  });
+  b.addEventListener('pointermove',e=>{
+    const p=activeToolPress;if(!p||p.button!==b||p.id!==e.pointerId||!input.aiming)return;
+    const dx=e.clientX-p.x,dy=e.clientY-p.y,d=Math.hypot(dx,dy);
+    if(d>16)p.dragged=true;
+    p.cancel=p.dragged&&d<12;b.classList.toggle('cancel',p.cancel);
+    if(p.dragged){input.aiming.dragAngle=Math.atan2(dy,dx);input.aiming.dragCharge=clamp((d-16)/110,0,1);S.player.a=input.aiming.dragAngle;}
+    input.aiming.off=p.cancel;
+  });
+  b.addEventListener('pointerup',e=>{if(activeToolPress?.button===b&&activeToolPress.id===e.pointerId)finishToolPress();b.classList.remove('cancel');});
+  for(const event of ['pointercancel','lostpointercapture'])b.addEventListener(event,e=>{if(activeToolPress?.button===b&&activeToolPress.id===e.pointerId)finishToolPress(true);b.classList.remove('cancel');});
+  // Native keyboard activation is useful for accessibility; pointer clicks already used on release.
+  if(quick)b.addEventListener('click',e=>{if(e.detail!==0||activeToolPress||input.aiming||!quickItemReady(b.dataset.quickTool))return;const tool=input.tool,whistle=input.padWhistle;input.tool=b.dataset.quickTool;input.padWhistle=false;startAim('quick-key');releaseAim();input.tool=tool;input.padWhistle=whistle;syncTools();});
+}
+bindToolPointer($('btnTool'));
+document.querySelectorAll('[data-quick-tool]').forEach(b=>bindToolPointer(b,true));
 document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('click', e => { e.preventDefault(); selectTool(b.dataset.t);closeLoadout(true); }));
 // 도구 순환 보조 함수. 실제 HUD는 장비 패널에서 명시적으로 고른다.
 function cyclePadTool() {
@@ -16931,7 +17001,7 @@ function cyclePadTool() {
 function syncSneakBtn() {
   const el = document.getElementById('modeLbl'); if (el) el.classList.toggle('lock', !!(input.sneakToggle || input.walkLock));
   const constrained=!!(STAGE?.artSlice&&S&&(S.player.under||S.player.vent)),s = document.getElementById('btnSneak'), m = constrained?'walk':moveMode(); if (s) { s.disabled=constrained;s.dataset.m = m; const l = document.getElementById('moveLbl'); if (l) l.textContent = constrained&&S.player.vent?'낮게 이동':{ walk: '걷기', run: '달리기' }[m]; s.setAttribute('aria-label', '이동 속도: ' + l.textContent); }
-  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = hudArt('crouch')+(input.sneakToggle ? '<b>웅크림</b>' : '<b>웅크리기</b>'); c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
+  const c = document.getElementById('btnCrouch'); if (c) { c.classList.toggle('on', !!input.sneakToggle); c.innerHTML = hudArt('crouch')+'<b>웅크림</b>'; c.setAttribute('aria-pressed', input.sneakToggle ? 'true' : 'false'); }
   const je = document.getElementById('joy'); if (je) je.dataset.mode = input.sneakToggle ? 'sneak' : 'walk';
 }
 // 웅크리기(살금): 이동 빠르기와 따로 켜고 끈다. 켜 두면 판이 바뀌어도 유지 (Ctrl 키 또는 [웅크리기] 버튼)

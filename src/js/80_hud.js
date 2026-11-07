@@ -292,7 +292,7 @@ function updateHUD(force) {
   { const gb = $('btnGrab'); if (gb) { const label = P.ledge || P.wire ? '떨어지기' : P.captive ? (canInterrogate() ? '심문' : '붙잡음') : '붙잡기', html = hudArt('grab')+`<b>${label}</b>${ga.reason ? `<small>${ga.reason}</small>` : ''}`; if (hudCache.grabH !== html) { hudCache.grabH = html; gb.innerHTML = html; } gb.classList.toggle('ready', ga.k !== 'none' || canInterrogate()); gb.classList.toggle('hinting', !!ga.near); gb.setAttribute('aria-label', ga.blocked ? '떨어지기 불가 — 착지할 곳 없음' : label + (ga.reason ? ' · ' + ga.reason : '')); } }
   { const db=$('btnDress'),gb=$('btnGrab'),changing=P.interact?.pose==='dress';
     const dress=(!STAGE.tutorial||STAGE.storyEpisode)&&!P.captive&&!P.ledge&&!P.wire&&(changing?{k:'dress',busy:true,label:'갈아입는 중'}:ga.k==='none'?clothingAction():null);
-    db.hidden=!dress;db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
+    db.hidden=!dress||ea.k==='dress';db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
@@ -353,6 +353,22 @@ function updateStealth(lv) {
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
   const ico = observer?.camera?'camera':P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
 }
+let quickItemsState=null;
+function quickItemReady(t){return !!S&&running&&!paused&&!S.over&&!tactical&&!hudInspecting()&&availableTools().includes(t)&&toolCount(t)>0&&(t!=='radio'||S.player.hasRadio)&&deviceReady(t)&&canAim()&&(t!=='coin'||!S.player.z)&&(t!=='smoke'||!S.player.z&&(S.smokeThrows||[]).length<3);}
+function syncQuickItems(){
+  const bar=$('quickItems');if(!bar)return;
+  const reset=quickItemsState!==S;quickItemsState=S;let visible=0;
+  bar.querySelectorAll('[data-quick-tool]').forEach(b=>{
+    const t=b.dataset.quickTool,n=toolCount(t),owned=availableTools().includes(t)&&(t!=='radio'||S.player.hasRadio);
+    if(reset)delete b.dataset.carried;
+    if(owned&&n>0)b.dataset.carried='true';
+    b.hidden=!owned||!b.dataset.carried;if(b.hidden)return;visible++;
+    const ready=quickItemReady(t);b.classList.toggle('empty',n<=0);b.classList.toggle('ready',ready);b.setAttribute('aria-disabled',String(!ready));
+    b.setAttribute('aria-label',TOOL_NAME[t]+' '+n+'개 · 누르면 바로 사용, 끌어서 조준, 원위치로 돌아오면 취소');
+    b.querySelector('output').textContent=n;b.querySelector('.quick-wait').textContent=t==='radio'&&!deviceReady(t)?Math.ceil(S.radioReadyAt-S.t)+'초':'';
+  });
+  bar.hidden=!visible;document.body.classList.toggle('has-quick-items',visible>0);
+}
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
   if (!S) return; const P = S.player;
@@ -368,6 +384,7 @@ function syncTools() {
   hud.tool.hidden=!!(STAGE.starterContract||STAGE.apprenticeContract)&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
+  syncQuickItems();
 }
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
@@ -515,7 +532,7 @@ function tutorialCue(){
 function syncTutorialCue(){
   const key=tutorialCue();
   document.body.classList.toggle('entry-learning',!!beginnerEntryGoal());
-  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽을 끌어 걷기\n웅크림: 조용히 · 달리기: 장비에서 설정':'왼쪽 조금 끌기: 걷기\n끝까지: 달리기 · 웅크림: 조용히';if(joyHint.textContent!==text)joyHint.textContent=text;}
+  const joyHint=document.querySelector('#hud .joyhint');if(joyHint){const text=input.walkLock?'왼쪽 드래그 · 걷기\n달리기는 장비에서 설정':'왼쪽 드래그 · 이동\n멀리 끌면 달리기';if(joyHint.textContent!==text)joyHint.textContent=text;}
   const token=STAGE.id+'|'+(S.tutI||0)+'|'+key;
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'body',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;

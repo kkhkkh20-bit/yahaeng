@@ -7,12 +7,16 @@ function closeLoadout(focus=false){
   document.body.classList.toggle('inspecting',hudInspecting());
   if(focus)(isTouch?$('btnToolNext'):canvas).focus({preventScroll:true});
 }
+function syncLoadoutOverflow(){
+ if(!loadoutOpen)return;const body=$('loadoutBody');if(body)body.dataset.scrollable=String(body.scrollHeight>body.clientHeight+1);
+}
+window.addEventListener('resize',syncLoadoutOverflow);
 function toggleLoadout(){
   if(loadoutOpen){closeLoadout(true);return;}
   if(!S||!running||paused||S.over||tactical||DLG.modal||S.keypad||actionBusy())return;
   clearPlayerInput();closeEnvPicker();setObjectiveOpen(false);syncTools();
   loadoutOpen=true;$('loadout').hidden=false;$('loadoutShade').hidden=false;
-  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');
+  document.body.classList.add('loadout-open','inspecting');$('btnToolNext').setAttribute('aria-expanded','true');syncLoadoutOverflow();
   const selected=$('tools').querySelector('.tool.on:not([hidden])');
   (input.padWhistle?$('btnWhistle'):selected||$('btnLoadoutClose')).focus({preventScroll:true});
 }
@@ -27,10 +31,11 @@ function handleLoadoutKey(e){
   if(!['Enter','Space'].includes(e.code))e.preventDefault();
 }
 function initLoadout(){
-  $('loadout').querySelector('p').textContent=isTouch?'도구를 고른 뒤 화면의 도구 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
+  $('loadout').querySelector('p').textContent=isTouch?'하단 보조 아이템은 바로 사용합니다. 누른 채 끌면 조준하고, 원위치로 돌아오면 취소합니다. 다른 도구는 선택한 뒤 오른쪽 버튼으로 사용합니다.':'도구를 고른 뒤 F / V로 사용합니다. I로 장비 선택을 열고 닫습니다.';
   $('loadoutShade').addEventListener('click',()=>closeLoadout(true));
   $('btnLoadoutClose').addEventListener('click',()=>closeLoadout(true));
   $('btnWhistle').addEventListener('click',()=>{input.padWhistle=true;syncTools();closeLoadout(true);});
+  $('quickItems').querySelectorAll('[data-quick-tool]').forEach(b=>{b.innerHTML=hudArt('item:'+b.dataset.quickTool)+'<output>0</output><small>'+TOOL_NAME[b.dataset.quickTool]+'</small><span class="quick-wait"></span>';});
   $('btnToolNext').innerHTML=hudArt('equipment')+'<b>장비</b>';
   $('btnWhistle').insertAdjacentHTML('afterbegin',hudArt('whistle'));
   $('tools').querySelectorAll('.tool').forEach(b=>b.insertAdjacentHTML('afterbegin',hudArt(b.dataset.t==='kunai'?'dart':b.dataset.t)));

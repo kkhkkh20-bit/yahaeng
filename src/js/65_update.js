@@ -107,9 +107,10 @@ function updateAlert(dt) {
 }
 let touchFrameCache=null;
 function touchPlayFrame(){
-  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden+'|'+($('stealth')?.offsetHeight||0);
-  if(touchFrameCache?.key===key)return touchFrameCache;
   const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
+  // Context controls can appear while approaching a guard. Reframe their contact area too.
+  const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
+  if(touchFrameCache?.key===key)return touchFrameCache;
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
   const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));

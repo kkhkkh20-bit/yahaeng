@@ -15,7 +15,7 @@ async def main():
     if touch:await q.click('#btnToolNext')
     else:await q.keyboard.press('i')
    visible=await q.locator('#hud button').evaluate_all('''es=>es.filter(e=>{const r=e.getBoundingClientRect();return !e.hidden&&r.width&&getComputedStyle(e).visibility==='visible'}).map(e=>({id:e.id,x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))''')
-   if touch:assert len(visible)==6,visible
+   if touch:assert len([a for a in visible if not a['id'].startswith('quick')])==6,visible
    assert all(e['w']>=44 and e['h']>=44 and e['x']>=0 and e['y']>=0 and e['x']+e['w']<=w+.5 and e['y']+e['h']<=h+.5 for e in visible),visible
    assert await q.evaluate("document.documentElement.scrollWidth<=innerWidth")
    await equipment();assert await q.locator('#loadout').is_visible()
@@ -46,7 +46,10 @@ async def main():
    await equipment();await q.evaluate('window.dispatchEvent(new Event("blur"));window.dispatchEvent(new Event("focus"))');assert await q.locator('#loadout').is_hidden()
    # Context-only controls keep their direct actions; no stale button occupies the third slot.
    await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];S.t+=1;G.updateHUD(true)}''')
-   assert (await q.locator('#btnDress').is_visible())==touch;assert await q.locator('#btnGrab').is_hidden()
+   assert await q.locator('#btnGrab').is_hidden()
+   selected=await q.evaluate('__game.envAction().k')
+   if touch and selected=='dress':assert await q.locator('#btnDress').is_hidden() and '옷 입기' in await q.locator('#btnCarry').inner_text()
+   else:assert (await q.locator('#btnDress').is_visible())==touch
    # All seven learned tools remain reachable in a short panel, including scroll and keyboard.
    await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tE'));while(G.DLG.modal)G.advanceDialog();G.updateHUD(true)}")
    await equipment();assert await q.locator('#tools .tool:visible').count()==7

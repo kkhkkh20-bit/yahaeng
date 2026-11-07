@@ -37,7 +37,8 @@ async def main():
     check(speech.length===1&&speech[0]>lastRoof,'speech is obscured by buildings or rendered twice');
     for(const r of G.SPEECH_R){const sy=(r.y-G.cam.y)*G.SCALE+innerHeight/2;check(sy>=0&&sy+r.h*G.SCALE<innerHeight,'speech clipped vertically')}
     // A speaker close to the upper edge moves its bubble into the visible viewport.
-    g.y=G.cam.y-innerHeight/G.SCALE/2+8/G.SCALE;P.y=g.y+24;G.benchDraw(1);check(G.SPEECH_R.length===1,'upper-edge speaker disappeared');for(const r of G.SPEECH_R){const y=(r.y-G.cam.y)*G.SCALE+innerHeight/2;check(y>=8&&y+r.h*G.SCALE<=innerHeight-8,'upper-edge bubble is clipped')}
+    // World-to-screen roundoff can put the exact8px inset at7.99999999999994.
+    g.y=G.cam.y-innerHeight/G.SCALE/2+8/G.SCALE;P.y=g.y+24;G.benchDraw(1);check(G.SPEECH_R.length===1,'upper-edge speaker disappeared');for(const r of G.SPEECH_R){const y=(r.y-G.cam.y)*G.SCALE+innerHeight/2;check(y>=8-.01&&y+r.h*G.SCALE<=innerHeight-8+.01,'upper-edge bubble is clipped')}
     return {cases,speechAboveBuildings:true};
    }''',{'touch':touch})
    assert not errors,errors;total+=result['cases'];print('PASS',width,height,result,flush=True);await pg.close()

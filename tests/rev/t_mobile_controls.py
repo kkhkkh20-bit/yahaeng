@@ -20,7 +20,11 @@ async def main():
     for i,a in enumerate(controls):
      for c in controls[i+1:]:assert not(a['x']<c['x']+c['w']+6 and a['x']+a['w']+6>c['x'] and a['y']<c['y']+c['h']+6 and a['y']+a['h']+6>c['y']),(w,h,scene,a,c)
     if touch:
-     if scene=='clothes':assert {'btnDress','btnCycle'}<=set(a['id']for a in controls),controls
+     if scene=='clothes':
+      assert 'btnCycle' in [a['id']for a in controls],controls
+      primary=await q.evaluate('__game.envAction().k')=='dress'
+      assert ('btnCarry' if primary else 'btnDress') in [a['id']for a in controls],controls
+      if primary:assert await q.locator('#btnDress').is_hidden() and '옷 입기' in await q.locator('#btnCarry').inner_text()
      if scene=='grab':assert 'btnGrab'in [a['id']for a in controls],controls
     else:assert all(a['id']in ['btnPause','mini']for a in controls),controls
    await q.screenshot(path=str(O/(f'controls-{w}x{h}-'+('mobile'if touch else'pc')+'.png')))
