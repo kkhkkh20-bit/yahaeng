@@ -209,7 +209,7 @@ body.touch #hud .pad #btnToolNext{flex-direction:column;right:12px;bottom:186px;
 body.touch #hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
 body.touch #hud .pad #btnToolNext b{font-size:10px}
 body.touch #hud .pad :is(#btnGrab,#btnDress){right:96px;bottom:216px;width:52px;height:52px}
-body.touch #hud .pad #btnCycle{right:96px;bottom:284px;width:52px;height:44px;min-height:44px;border-radius:6px;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
+body.touch #hud .pad #btnCycle{right:12px;bottom:250px;width:52px;height:44px;min-height:44px;border-radius:6px;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
 body.touch #hud .pad #btnCycle small{font-size:10px}
 body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 102px);bottom:calc(var(--field-bottom) + 148px);display:block;width:52px;height:52px;pointer-events:none}
 body.touch #hud #btnCrouch{position:relative;width:52px;height:52px;min-height:44px}
@@ -247,7 +247,6 @@ body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 66p
  body.touch #hud .pad #btnTool{width:56px;height:56px}
  body.touch #hud .pad #btnToolNext{width:44px;height:44px}
  body.touch #hud .pad :is(#btnGrab,#btnDress){right:88px;width:48px;height:48px}
- body.touch #hud .pad #btnCycle{right:84px}
  body.touch #hud .sysbtns{right:calc(var(--field-edge) + 92px);width:48px;height:48px}
  body.touch #hud #btnCrouch{width:48px;height:48px}
  body.touch #hud #quickItems{left:max(12px,env(safe-area-inset-left))}

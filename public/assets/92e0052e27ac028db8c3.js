@@ -12949,9 +12949,10 @@ function updateAlert(dt) {
 }
 let touchFrameCache=null;
 function touchPlayFrame(){
-  const key=W+'|'+H+'|'+STAGE_I+'|'+!!$('btnSkill')?.hidden+'|'+($('stealth')?.offsetHeight||0);
-  if(touchFrameCache?.key===key)return touchFrameCache;
   const controls=[...document.querySelectorAll('#hud .pad > button,#hud .sysbtns button,#btnSkill')].filter(e=>!e.hidden);
+  // Context controls can appear while approaching a guard. Reframe their contact area too.
+  const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
+  if(touchFrameCache?.key===key)return touchFrameCache;
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
   const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
@@ -15143,7 +15144,7 @@ let hudBlockFrame=null;
 function hudTextBlocks() {
   if(hudBlockFrame)return hudBlockFrame;
   const cr=canvas.getBoundingClientRect();
-  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#episodeRadio:not([hidden]),#toasts .toast')]
+  return hudBlockFrame=[...document.querySelectorAll('#mini,#stealth,#hud .top,#btnPause,#saveState:not([hidden]),#hud .joyhint,#quickItems>button:not([hidden]),#envPicker:not([hidden]),.pad > button:not([hidden]),.sysbtns button,#dlg:not([hidden]),#episodeRadio:not([hidden]),#toasts .toast')]
     .filter(e=>getComputedStyle(e).visibility!=='hidden'&&!e.closest('[hidden]'))
     .map(e=>e.getBoundingClientRect()).filter(r=>r.width>0&&r.height>0)
     .map(r=>[cam.x+(r.left-cr.left-W/2-5)/SCALE,cam.y+(r.top-cr.top-H/2-5)/SCALE,cam.x+(r.right-cr.left-W/2+5)/SCALE,cam.y+(r.bottom-cr.top-H/2+5)/SCALE]);
