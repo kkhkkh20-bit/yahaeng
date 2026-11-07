@@ -23,10 +23,10 @@ async def main():
    assert await q.locator('#objective').is_visible(),'full mission is lost in compact mode'
    await q.click('#hud .obj');assert not await q.evaluate('__game.hudInspecting()')
    overlay=await q.evaluate("""()=>{const G=__game,hit=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
-    G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:660,y:408,mode:'sneak'});const speaker=G.S.guards.find(g=>g.target);speaker.say='거래까지 담배 한 대. 그놈만 오면 바로 뜬다.';G.S.intel={presentation:{cur:{sp:speaker}}};G.S.fade=0;G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
+    G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:660,y:408,mode:'sneak'});G.S.fade=0;G.update(.02);G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
     const speeches=G.SPEECH_R.map(r=>({left:(r.x-G.cam.x)*G.SCALE+innerWidth/2,top:(r.y-G.cam.y)*G.SCALE+innerHeight/2,right:(r.x+r.w-G.cam.x)*G.SCALE+innerWidth/2,bottom:(r.y+r.h-G.cam.y)*G.SCALE+innerHeight/2}));
     if(!speeches.length)throw Error('NPC dialogue was hidden instead of relocated');
-    const fixed=[...document.querySelectorAll('#saveState,#hud .joyhint,#quickItems>button')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&e.getBoundingClientRect().width).map(e=>e.getBoundingClientRect());
+    const fixed=[...document.querySelectorAll('#saveState,#hud .joyhint,#quickItems>button')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden'&&e.getBoundingClientRect().width).map(e=>e.getBoundingClientRect());
     if(speeches.some(s=>fixed.some(r=>hit(s,r))))throw Error('NPC dialogue is obscured by fixed HUD feedback');
     G.start(G.STAGES.findIndex(s=>s.id==='p1'),false);while(G.DLG.modal)G.advanceDialog();const S=G.S,g=S.guards.find(g=>g.tag==='uniformDonor');S.koNext=true;G.killGuard(g,null,null,true);Object.assign(S.player,{x:617,y:696,mode:'sneak'});S.fade=0;G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
     const c=S.corpses[0],sx=(c.x-G.cam.x)*G.SCALE+innerWidth/2,sy=(c.y-G.cam.y)*G.SCALE+innerHeight/2,r=document.getElementById('btnCycle').getBoundingClientRect();

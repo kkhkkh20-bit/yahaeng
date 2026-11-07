@@ -33,8 +33,8 @@ async def main(args):
     await acquire_uniform(q,c)
     await c.move(840,552);await wait('__game.S.starterPass');await c.record('ordinary-disguised-passage');await q.screenshot(path=str(out/(name+'-disguised-passage.png')))
     await c.move(y=312)
-    # The actual patrol now inspects the desk; wait for its safe departure window.
-    await q.wait_for_function('()=>{const G=__game,g=G.S.guards.find(g=>g.tag==="doorkeeper");return g.wait>2&&g.y>430&&g.x>970&&G.canSee(g,G.S.player.x,G.S.player.y,G.lightAt(G.S.player.x,G.S.player.y),false,false,0)<=0}',timeout=25000)
+    # Allow a complete patrol circuit if the approach just missed the safe departure window.
+    await q.wait_for_function('()=>{const G=__game,g=G.S.guards.find(g=>g.tag==="doorkeeper");return g.wait>2&&g.y>430&&g.x>970&&G.canSee(g,G.S.player.x,G.S.player.y,G.lightAt(G.S.player.x,G.S.player.y),false,false,0)<=0}',timeout=45000)
     await c.press('x','#btnCarry');await wait('__game.S.items.every(i=>i.got)')
     await c.move(y=696);await c.move(168,744);await next_contract('p1')
     assert await q.evaluate('__game.STAGE.id')=='p2'
