@@ -69,7 +69,7 @@ async def main():
    await q.locator('#btnCaseClose').click();await q.wait_for_timeout(30)
    assert await q.locator('#brief').is_visible() and await q.locator('#caseBrief [data-case-open]').evaluate('e=>e===document.activeElement')
    await q.evaluate('''()=>{__game.start(__game.STAGES.findIndex(s=>s.id==='n1'));for(let i=0;i<60&&__game.DLG.modal;i++)__game.advanceDialog();__game.S.over=true;__game.showEnd(true)}''')
-   assert await q.locator('#skillScreen').is_visible()
+   await q.locator('#skillScreen').wait_for(state='visible')
    assert await q.locator('#btnSkillsBack').evaluate('e=>{const r=e.getBoundingClientRect();return r.bottom<=innerHeight+1&&r.y>=0&&e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}'),(w,h,'training CTA obscured')
    await q.locator('#caseTraining [data-case-open]').click();await q.keyboard.press('Escape');await q.wait_for_timeout(30);assert await q.locator('#skillScreen').is_visible()
    await q.close()

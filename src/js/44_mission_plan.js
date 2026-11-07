@@ -64,6 +64,7 @@ function updateTargetIntel() {
   initMissionPlan();
   const L0 = CUR_F; setLayer(flOf(S.player));
   for (const g of S.guards) if (g.target && !targetEliminated(g) && canObserveTarget(g)) {
+    if(!S.targetIntel[g.id]&&feedbackOnce('target:'+STAGE.id+':'+g.tag)){g.introUntil=S.t+1.5;feedbackEvent('target',g,{label:targetName(g)});}
     S.targetIntel[g.id] = { ...gSpot(targetPosition(g)), t: S.t, unconscious:!!S.corpses.find(c=>c.g===g&&c.ko) };
   }
   setLayer(L0);

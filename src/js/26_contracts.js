@@ -11,5 +11,5 @@ function recordCameraEvidence(c) {
   if (!STAGE.securityEvidence || !S.camRoom || c.search || S.camsOff) return;
   const fresh = !S.cameraEvidence;
   S.cameraEvidence = true; checkObjective();
-  if (fresh) toast('신원이 녹화됐다 — 보안실에서 기록을 지워야 탈출할 수 있다', 3, 'warn');
+  if (fresh) feedbackToast('record','신원이 녹화됐다 — 보안실에서 기록을 지워야 탈출할 수 있다',2.4,'warn');
 }

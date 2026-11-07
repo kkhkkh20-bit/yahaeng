@@ -6,6 +6,7 @@ const pixelFxEnabled=()=>!!FX_META&&!STAGE?.artSlice;
 const reducedFxMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function spawnEffect(kind,at,opts={}) {
   if(!S||!at||!pixelFxEnabled()||!FX_META.effects[kind]||!Number.isFinite(at.x)||!Number.isFinite(at.y))return false;
+  if(reducedFxMotion.matches&&kind==='leaf')return false;
   const fl=at.fl??flOf(S.player),z=at.z??S.player.z??0;
   if(fl!==flOf(S.player)||Math.abs(at.x-S.player.x)>900||Math.abs(at.y-S.player.y)>900)return false;
   const list=S.vfx||(S.vfx=[]),m=FX_META.effects[kind],offset=clamp(opts.startAt??0,0,Math.max(0,m.duration-1/m.fps)),duration=m.duration-offset;
@@ -22,7 +23,7 @@ function drawEffects(P,openB) {
     const b=bldAt(Math.floor(f.x/TILE),Math.floor(f.y/TILE));
     if(!tactical&&!f.z&&b>=0&&b!==openB)continue;
     const m=FX_META.effects[f.kind],t=S.t-f.t0;if(t<0||t>=f.duration)continue;
-    const rect=m.frames[Math.min(m.frames.length-1,Math.floor((t+(f.offset||0))*m.fps))];
+    const rect=m.frames[Math.min(m.frames.length-1,reducedFxMotion.matches?2:Math.floor((t+(f.offset||0))*m.fps))];
     const fade=clamp((f.duration-t)/.12,0,1),physical=['leaf','dust','strike','impact'].includes(f.kind);
     ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);ctx.scale(f.scale,f.scale);ctx.imageSmoothingEnabled=false;
     ctx.globalAlpha=f.alpha*fade*(physical?(.3+.7*ambientLightAt(f.x,f.y,!!f.z)):1);

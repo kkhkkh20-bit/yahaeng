@@ -128,12 +128,14 @@ jobs:
             build/field-v196/
             build/beginner-v197/
             build/compound-v212/
+            build/polish-v213/
             build/linear-v198/
             build/targets-v207/
             build/art-v208/
             build/ink-v199/
             build/newgame-v200/
             build/compound-v212/
+            build/polish-v213/
             build/field-hud-v211/
             public/version.json
           retention-days: 7
@@ -174,6 +176,7 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
           python tests/tutorial/first_steps_live.py --device "$REVIEW_DEVICE" --out build/linear-v198/first-live
+          python tests/tutorial/feedback_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/polish-v213/feedback-live
           python tests/tutorial/compound_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/compound-v212/live
           python tests/tutorial/action_flow_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/action
           if [ "$REVIEW_DEVICE" = pc ]; then
@@ -188,6 +191,7 @@ jobs:
           name: native-${{ matrix.device }}-${{ github.run_id }}
           path: |
             build/compound-v212/
+            build/polish-v213/
             build/linear-v198/
             public/version.json
           retention-days: 7

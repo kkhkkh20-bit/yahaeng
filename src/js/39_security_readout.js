@@ -35,6 +35,7 @@ function syncSecurityReadout(){
   const access=accessReadout();el.textContent=access.text;el.dataset.access=access.allowed?'allowed':'denied';el.title=access.need?'필요한 복장: '+access.need:access.allowed?'통행 권한이다. 훔치기와 신원 확인은 별도 판정한다.':'이 구역의 출입 권한이 없다.';
   // Match the selected X/touch action first. A nearby possible attack must not
   // replace a clothing/theft warning or the destination floor's access preview.
+  const cut=feedbackReceipt('camCut'),clear=feedbackReceipt('camClear');if(clear||cut){risk.hidden=false;risk.textContent=clear?clear.label:cameraRecordingExists()?'CCTV 차단 · 이전 녹화는 관리 단말에서 제거':'CCTV 차단 · 이후 녹화 중지';risk.dataset.risk=clear?'resolved':'record';return;}
   const action=envAction(),attack=attackAction(),work=workRiskReadout(action);
   if(work){risk.hidden=false;risk.textContent=work.text;risk.dataset.risk=work.kind;}
   else if(['up','fdown'].includes(action.k)&&action.l?.kind==='fstair'){

@@ -221,13 +221,6 @@ body.touch #hud .pad #btnAct.kill{background-image:var(--art-frame-primary-dange
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{border-radius:0;bottom:11px;background:#d8a0a7}
 body.touch #hud #btnCrouch{box-sizing:border-box;width:58px;height:58px;min-height:58px;border:0;border-image:none;border-radius:50%;background:var(--art-frame-crouch-idle) center/100% 100% no-repeat;box-shadow:none;padding:3px;gap:3px;color:#bdc7d5;filter:drop-shadow(0 2px 3px #0006)}
 body.touch #hud #btnCrouch.on{border-image:none;background-image:var(--art-frame-crouch-ready);color:#eff4fb}
-/* Pressed assets retain the same hit box and content geometry. */
-body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active,
-#hud .hud-menu:active,#hud .pad #btnToolNext:active,#hud .pad #btnCycle:active,#hud .pad #btnDress:active,
-#hud #loadout #tools .tool:active,#hud #loadout #btnWhistle:active,#hud #loadout #btnSneak:active,#hud #loadout #btnLoadoutClose:active{border-image-source:var(--art-frame-control-pressed);color:#b9c4d6}
-body.touch #hud .pad #btnAct.down,body.touch #hud .pad #btnAct:active{border-image:none;background-image:var(--art-frame-primary-pressed);color:#c8d3e5}
-body.touch #hud .pad>button.down::before,body.touch #hud .pad>button.down>b,body.touch #hud .pad>button:active::before,body.touch #hud .pad>button:active>b{transform:translateY(1px)}
-#hud button:focus-visible,#hud [role=button]:focus-visible{outline:2px solid #d9e5f8;outline-offset:3px}
 @media(max-width:700px){
  #hud .obj{border-width:6px;padding:2px 18px 3px 28px}
  #hud .obj::before{left:3px;top:8px;font-size:17px}#hud .obj::after{right:5px;top:10px}
@@ -250,11 +243,11 @@ body.touch #hud #btnCrouch::before,#hud #btnWhistle::before,#hud #tools .tool::b
 #hud #btnCrouch>svg.hud-art{width:24px;height:24px}
 #hud #tools .tool>svg.hud-art{width:32px;height:32px}
 #hud #btnWhistle>svg.hud-art{grid-row:span 2;width:28px;height:28px;color:var(--hud-metal)}
-body.touch #hud .pad>button.down>svg.hud-art,body.touch #hud .pad>button:active>svg.hud-art{transform:translateY(1px)}
+
 
 /* Keep the left thumb free for movement; the crouch control has no rectangular frame. */
-body.touch #hud #btnCrouch.down,body.touch #hud #btnCrouch:active{border:0;border-image:none;border-radius:50%;background-image:var(--art-frame-crouch-pressed);color:#c9d5e7}
-body.touch #hud #btnCrouch.down>.hud-art,body.touch #hud #btnCrouch:active>.hud-art{transform:translateY(1px)}
+
+
 @media(orientation:landscape) and (max-height:360px) and (min-width:500px){
  body.touch #hud .sysbtns{left:auto;right:calc(max(16px,env(safe-area-inset-right)) + 101px)}
  body.touch #hud .top{right:210px}

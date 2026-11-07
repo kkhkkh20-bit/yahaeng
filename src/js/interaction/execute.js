@@ -190,13 +190,13 @@ function actPrimary(force) {
       break;
     }
     case 'callMeet': {callRendezvous();break;}
-    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · '+(S.cameraEvidence||S.stats.camRec>0?'남은 녹화는 관리실에서 삭제':'현재 남은 녹화 없음'),2.5,'good');break;}
-    case 'camroom': { const wasStopped=S.camsOff,hadRecording=cameraRecordingExists();S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0; play('switch', 0.5); noise(P.x, P.y, 50, 'switch'); toast((wasStopped?'관리실: ':'관리실: CCTV 감시망 정지 · ') + (n ? `녹화 기록 ${n}건 삭제` : hadRecording?'저장된 녹화 기록 삭제':'삭제할 녹화 기록 없음') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
+    case 'camCable': {const c=a.targetObject;if(!cameraCableReachable(c))break;c.unplugged=true;c.meter=0;S.stats.camUnplugged=(S.stats.camUnplugged||0)+1;feedbackEvent('camCut',c,{label:'이후 녹화 중지'});play('switch',.4);noise(P.x,P.y,25,'switch');toast('CCTV 전선 분리 · '+(S.cameraEvidence||S.stats.camRec>0?'남은 녹화는 관리실에서 삭제':'현재 남은 녹화 없음'),2.5,'good');break;}
+    case 'camroom': { const wasStopped=S.camsOff,hadRecording=cameraRecordingExists();S.camsOff = true; S.cameraEvidence = false; const n = S.stats.camRec || 0; if(n || S.stats.camEver!=null) S.stats.camEver = Math.max(S.stats.camEver || 0, n); S.stats.camRec = 0;S.toasts=S.toasts.filter(t=>t.channel!=='record');feedbackEvent('camClear',S.camRoom,{sound:'terminal',label:n?'녹화 기록 제거':'감시망 정지'}); noise(P.x, P.y, 50, 'switch'); toast((wasStopped?'관리실: ':'관리실: CCTV 감시망 정지 · ') + (n ? `녹화 기록 ${n}건 삭제` : hadRecording?'저장된 녹화 기록 삭제':'삭제할 녹화 기록 없음') + ' · 서치라이트는 별도 전원', 2.8, 'good'); S.stats.camKill = 1; checkObjective(); break; }
     case 'fuse': cutLights(); break;
     case 'trap': fireTrap(a.tp); break;
     case 'bfuse': { bldPower(a.fb, false);recordFieldSkill('electric','건물 배전반의 전원을 차단했다'); play('fuse', 0.5); noise(a.fb.x, a.fb.y, 60, 'switch'); const B = BLD[a.fb.b]; toast(`${B.plate || B.name || '건물'} 전등이 모두 꺼졌다 — 곧 누가 두꺼비집을 올리러 온다`, 3); hint('bfuse', '두꺼비집: 건물 전등을 모두 끈다. 누군가 직접 와서 올려야 켜진다'); break; }
     case 'lamp': {
-      const l = a.l,off=!lampCircuitOff(l),watchers=off?lampSwitchWitnesses(l):[];setLampCircuit(l,off); play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
+      const l = a.l,off=!lampCircuitOff(l),watchers=off?lampSwitchWitnesses(l):[];setLampCircuit(l,off);feedbackEvent('light',lampControl(l),{label:off?'조명 꺼짐':'조명 켜짐'}); play('switch', 0.45); noise(lampControl(l).x, lampControl(l).y, 25, 'switch',flOf(l),l.z||0);
       if(l.off){if(l.roomSwitch)reactToRoomDarkness(l,watchers);else respondToLampOff(l,watchers);}
       refreshBodyLighting();
       if (l.off) hint('lampHand', '손으로 끈 조명은 지나가던 자경대원이 다시 켠다. 전원을 차단하면 복구하러 오는 경비를 유인할 수 있다');

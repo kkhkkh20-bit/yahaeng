@@ -13,6 +13,8 @@ function drawPlayer(P) {
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {
+  if(drawDefeatFeedback(P))return;
+  if(drawFinishFeedback(P))return;
   if(P.trav?.hideFlow||P.trav?.accessFlow||P.trav?.signFlow)return;
   const playerLook = playerKey(P), playerOutline = playerLook + '_ol';
   if (usePR(playerLook)) prSheet(playerLook);
@@ -21,7 +23,7 @@ function drawPlayerBody(P) {
   if (P.wire) {
     // 전깃줄에 두 손으로 매달린 모습 (땅에는 그림자)
     const h = wirePt(P.wire.w, P.wire.s), sw = P.moving ? Math.sin(S.t * 9) * 2 : 0, dim = P.light < 0.3;
-    const blinkW = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
+    const blinkW = !reducedFxMotion.matches && P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
     { const gp = wireGround(P.wire.w, P.wire.s), sx = gp.x + (P.z || 1) * SHD.x, sy = gp.y + (P.z || 1) * SHD.y;  // 땅에 떨어진 내 그림자: 높이만큼 떨어져 있다
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.beginPath(); ctx.ellipse(sx, sy, 13, 6.5, 0, 0, TAU); ctx.fill(); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(sx, sy, 19, 9.5, 0, 0, TAU); ctx.fill();
       ctx.strokeStyle = 'rgba(160,230,255,.3)'; ctx.lineWidth = 1; ctx.setLineDash([3, 5]); ctx.beginPath(); ctx.moveTo(h.x, h.y + 46); ctx.lineTo(sx, sy); ctx.stroke(); ctx.setLineDash([]); }
@@ -46,7 +48,7 @@ function drawPlayerBody(P) {
     ctx.strokeStyle = red ? `rgba(240,80,60,${pu})` : `rgba(242,196,107,${pu})`; ctx.lineWidth = red ? 3 : 2;
     ctx.beginPath(); ctx.ellipse(P.x, P.y + 10, 21, 10, 0, 0, TAU); ctx.stroke();
   }
-  const blink = P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
+  const blink = !reducedFxMotion.matches && P.hurtT > 0 && Math.floor(P.hurtT * 12) % 2;
   const sc = 3 * lift, mv = !!heroVisualStates.get(P)?.moving || !!P.jump;
   // 자세: 살금살금은 몸을 낮추고, 달리기는 발 접촉의 작은 먼지로 표현한다
   const crouch = P.mode === 'sneak' && !P.jump && !P.carrying && !P.captive, runP = P.mode === 'run' && P.moving && !P.jump;

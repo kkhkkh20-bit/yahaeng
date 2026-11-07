@@ -147,7 +147,11 @@ function sfx(kind) {
     g.gain.setValueAtTime(0.0001, t + at); g.gain.exponentialRampToValueAtTime(vol, t + at + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + at + dur); o.connect(g); g.connect(master); o.start(t + at); o.stop(t + at + dur + 0.02); };
   const hiss = (dur, vol, freq, q = 1, at = 0) => { const n = Math.floor(AC.sampleRate * dur), b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
     const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; g.gain.value = vol; s.connect(f); f.connect(g); g.connect(master); s.start(t + at); };
-  if (kind === 'click') { osc('triangle', 2300, 1800, 0.035, 0.06); hiss(0.02, 0.05, 4000, 2); }
+  if(kind==='paper'){hiss(.09,.045,2200,1.1);hiss(.07,.025,3800,1,.075);osc('triangle',780,1050,.055,.025,.09);}
+  else if(kind==='terminal'){osc('sine',540,540,.065,.04);osc('sine',810,810,.09,.045,.09);}
+  else if(kind==='actionTap')osc('triangle',950,760,.025,.018);
+  else if(kind==='denied')osc('sine',260,210,.055,.025);
+  else if (kind === 'click') { osc('triangle', 2300, 1800, 0.035, 0.06); hiss(0.02, 0.05, 4000, 2); }
   else if (kind === 'stinger') { osc('sine', 72, 42, 0.55, 0.38); hiss(0.28, 0.14, 900, 0.7); osc('sine', 1318, 1318, 0.7, 0.035, 0.03); osc('sine', 1975, 1975, 0.5, 0.02, 0.06); }
   else if (kind === 'stingerKO') { osc('sine', 150, 100, 0.3, 0.2); osc('sine', 988, 988, 0.45, 0.025, 0.02); }
   else if (kind === 'toHide') osc('sine', 540, 330, 0.16, 0.06);

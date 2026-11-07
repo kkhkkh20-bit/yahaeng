@@ -115,13 +115,12 @@ function contactFeedback(at,kind) {
   if(pixelFxEnabled()){
     const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
     if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
-    else if(kind==='grab'||kind==='takedown')spawnEffect('dust',touch,{scale:.3,alpha:.65});
-    else if(['door','pick','lamp','bfuse','fuse'].includes(kind))spawnEffect('dart',touch,{scale:.45,alpha:.6});
+    else if(kind==='grab')spawnEffect('dust',touch,{scale:.24,alpha:.45});
   }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
 }
 function drawContactFeedback() {
-  if(pixelFxEnabled())return;
+  if(pixelFxEnabled()&&fxAtlas?.complete&&fxAtlas.naturalWidth)return;
   const f=S.contact,P=S.player;if(!f||S.t-f.t>.24||flOf(f)!==flOf(P)||(f.z||0)!==(P.z||0))return;
   const t=clamp((S.t-f.t)/.24,0,1);ctx.save();ctx.globalAlpha=(1-t)*.8;ctx.strokeStyle='#d8e2c7';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(f.x,f.y,f.surface?6+6*t:10+12*t,0,TAU);ctx.stroke();ctx.restore();

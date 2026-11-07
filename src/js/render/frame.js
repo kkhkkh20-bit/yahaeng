@@ -72,7 +72,7 @@ function draw() {
     if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
-    if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
+    if(c.ko&&!c.playerHandled&&!c.carried)drawEmote('zz',c.x+16,c.y-6);
     if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
   }
   PM('cars+corpses');
@@ -88,7 +88,7 @@ function draw() {
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
     if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
     if (g.state === 'CAPTIVE') { ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(g.x, g.y, 20, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - g.captT / 9)); ctx.stroke(); }
-    if (g.target) {drawTargetRing(g,'rgba(194,54,43,.85)');if(targetKnowledge(g).live)tag(g.x,g.y-62,'● '+targetName(g)+' · 처치 대상','#f0a39b',1,null,2.4);}
+    if (g.target) drawTargetRing(g,'rgba(194,54,43,.85)');
   }
   PM('guards');
   drawTagged();
@@ -202,6 +202,7 @@ function draw() {
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
     if(g.doomed||g.ledgeFalling||g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
+    if(g.targetIntroUntil>S.t&&targetKnowledge(g).live&&!g.seen)tag(g.x,g.y-62,targetName(g)+' · 처치 대상','#e5c4ab',.9,null,2);
     drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -237,6 +238,7 @@ function draw() {
       tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
+    if(drawGuardTaskCue(g))return;
     const mk = !g.civ && !g.dog && (g.state === 'ALERT' || g.meter > 0.02 || g.icon === '?' || g.icon === '!');
     if (mk) {if(!g.eyeWatching)drawAwareMark(g);} else if (g.icon) drawEmote(g.icon, g.x, g.y - 30);
     if (mk && g.icon && g.icon !== '?' && g.icon !== '!') drawEmote(g.icon, g.x + 26, g.y - 30);
@@ -259,7 +261,7 @@ function draw() {
     PM('roofs');
     for (const c of S.corpses) if (!(c.hideT>S.t) && c.z && !c.stashed && !flOf(c) && inView(c.x, c.y, 120)) {
       ctx.globalAlpha = c.hidden ? .5 : 1; drawBody(c); ctx.globalAlpha = 1;
-      if (c.ko && !c.carried) drawEmote('zz', c.x + 16, c.y - 6);
+      if(c.ko&&!c.playerHandled&&!c.carried)drawEmote('zz',c.x+16,c.y-6);
     }
     if (!flOf(P) && !P.z) drawWinWatch();  // 위층 창가에서 내려다보는 사람: 창문 밖으로 옅은 시선
     drawHeardSteps(P, openB, gVis);
@@ -315,7 +317,7 @@ function draw() {
   if (running && !tactical) drawStairGlow(P, openB);
   if (running && STAGE.zones) drawZones(P);
   if(isTouch&&running&&!tactical&&!P.vent&&!P.under&&(P.hide||P.car)){const at=P.hide||P.car;drawPlayerLocator({...P,x:at.x,y:at.y-10});}
-  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player); }
+  if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player);drawDamageDirection(S.player); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawDiningFixtures(); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
   if (running && !tactical && !S.over) drawGoal(P);

@@ -462,6 +462,10 @@
       "group": "play_clarity"
     },
     {
+      "path": "77_event_feedback.js",
+      "group": "play_clarity"
+    },
+    {
       "path": "78_controls.js",
       "group": "controls"
     },

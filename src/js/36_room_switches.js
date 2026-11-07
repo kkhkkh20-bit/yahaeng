@@ -69,7 +69,7 @@ function roomLightOccupants(l) {
 function reactToRoomDarkness(l,watchers) {
   const people=roomLightOccupants(l),at=lampControl(l);
   for(const g of people){
-    endChat(g);g.path=null;g.act=null;g.glanceA=Math.atan2(at.y-g.y,at.x-g.x);g.want=g.glanceA;g.soundWatchUntil=S.t+1.5;setIcon(g,'?');
+    endChat(g);g.path=null;g.act=null;g.glanceA=Math.atan2(at.y-g.y,at.x-g.x);g.want=g.glanceA;g.soundWatchUntil=S.t+1.5;g.lightNoticeUntil=S.t+2.4;setIcon(g,'?');
     gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 스위치 확인해.',2.4);
   }
   const repair=people.filter(g=>!g.target).sort((a,b)=>(a.civ?1:0)-(b.civ?1:0)||dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];

@@ -47,7 +47,7 @@ function fireTrap(a) {
     const z = t.zone, cx = (z[0] + z[2] + 1) / 2 * TILE, cy = (z[1] + z[3] + 1) / 2 * TILE; let n = 0;
     for (const g of S.guards) if (!g.child && !flOf(g) && g.state !== 'DEAD' && inZone(g, z)) { accidentKill(g, 'shock'); n++; }
     spawnEffect('shock',{x:cx,y:cy-8,fl:0,z:0});
-    t.fx = 1.6; play('fuse', 0.7); noise(cx, cy, 150, 'switch'); S.flash = 0.2;
+    t.fx = 1.6; play('fuse', 0.7); noise(cx, cy, 150, 'switch');
     toast(n ? `감전 — ${n}명 쓰러졌다 (사고로 보인다)` : '물웅덩이에 전기가 흘렀지만 아무도 없었다', 2.6, n ? 'good' : '');
 
   }

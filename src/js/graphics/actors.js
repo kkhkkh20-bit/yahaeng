@@ -15,9 +15,9 @@ function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   const fr = corpseFrame(c);  // 쓰러지는 동작
-  if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
-  if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
-  blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48);
+  if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); drawCorpseStatus(c); return; }
+  if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); drawCorpseStatus(c); return; }
+  blit(ctx, 'dead_' + c.ch, c.x - 24, c.y - 26 - lift, 48, 48); drawCorpseStatus(c);
 }
 // 들고 있는 상자 (택배): 두 팔을 모은 자세 위에 상자를 그린다. 북쪽(화면 위)을 보면 몸 뒤에 가려진다
 const holdingNow = g => g.carryTo != null && g.ri === g.carryTo && ['PATROL', 'RETURN'].includes(g.state);

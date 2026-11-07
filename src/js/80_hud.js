@@ -231,7 +231,7 @@ function floorBanner(P, ptx, pty) {
   const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층${secure?' · 보안구역 · 복장 통행 불가':' 실내'}` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
   if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
   if (S._flk == null) { S._flk = k; return; }
-  if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');feedbackEvent('arrival',P,{label:k});
 }
 function updateHUD(force) {
   if (force) hudCache = {};
@@ -277,6 +277,7 @@ function updateHUD(force) {
   const hpKey = P.hp + '/' + P.hpMax; if (hudCache.hp !== hpKey) { hudCache.hp = hpKey; hud.hp.setAttribute('role','img'); hud.hp.setAttribute('aria-label', '체력 '+hpKey); hud.hp.innerHTML = Array.from({ length: P.hpMax }, (_, i) => `<i aria-hidden="true" class="${i < P.hp ? 'on' : ''}"></i>`).join(''); }
   updateHelpTip();
   { const pl = $('pickLbl'); if (pl) { pl.hidden = false; setText(pl, 'picks', '락픽 ' + (P.picks || 0)); } }
+  syncDamagePips(P);
   // 버튼 넷: [공격] 사람에게만 · [행동] 시설·시체 · [붙잡기] 등 뒤에서 · [다트](도구)
   const ka = attackAction(), ea = envAction(), ga = grabAction();
   padButton(hud.act, 'actH', ka, '공격');
@@ -389,8 +390,8 @@ function syncTools() {
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
   if (S.over) return;
-  S.over = true;
-  if (!win && (STAGE.tutorial||introductoryContract(STAGE)) && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson||introductoryContract(STAGE))?reason:'들켰다')+' · 이 단계부터 다시',2); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
+  clearResultTransition();S.resultFresh=win?!stageCleared(STAGE):false;S.over = true;S.overWin=win;S.player.moving=false;S.player.vx=S.player.vy=0;if(!win&&S.player.hp<=0)beginDefeatFeedback(S.player);
+  if (!win && (STAGE.tutorial||introductoryContract(STAGE)) && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson||introductoryContract(STAGE))?reason:'들켰다')+' · 체크포인트에서 다시',1.6); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
   const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
 }
@@ -415,6 +416,7 @@ function drawEndMap() {
 }
 const END_MAIN = ['접근 방식','수고비','소요 시간','발각 횟수'];  // 결과 화면에 바로 보이는 줄 (나머지는 '자세히'에)
 function showEnd(win, reason) {
+  clearResultTransition();if(win&&S.resultFresh==null)S.resultFresh=!stageCleared(STAGE);
   if(win)syncCaseProgress(true);
   closeKeypad();clearPlayerInput();closeEnvPicker();
   running = false;
@@ -462,7 +464,8 @@ function showEnd(win, reason) {
   renderSkillPreparation('endSkills',true);$('endSkills').hidden||=!win&&!Object.keys(S.fieldSkillUses||{}).length;
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'')+(STAGE.story?'\n'+STAGE.endText:'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
-  if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML=(STAGE.starterContract||STAGE.apprenticeContract)?'<div class="ent">기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P · 다음 의뢰로 이어가세요.</div>':'';}
+  if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML='<div class="ent skill-receipt"><b>기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P</b> · 다음 출발 준비에서 사용</div>';}
+  if(win&&LEARNING_ROUTE.includes(STAGE.id)){const points=(S.skillRewards||[]).reduce((n,r)=>n+r.points,0);$('endSkills').innerHTML='<p class="completion-receipt">'+(points?'기술 포인트 +'+points+'P · 다음 출발 전에 사용':'완료한 의뢰 · 기술 포인트 중복 지급 없음')+'</p>';$('endSkills').hidden=false;}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = true;
@@ -472,7 +475,7 @@ function showEnd(win, reason) {
   $('btnRetry').hidden=win;$('btnMenu').textContent='처음 화면';
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
-  if(win)openEpisodeTraining();
+  if(win)queueResultTraining();
 }
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());

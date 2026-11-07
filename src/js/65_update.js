@@ -137,7 +137,7 @@ function moveCamera(dt) {
   } else {
     // 앞보기: 보는 방향(조준 중이면 겨누는 곳)으로 화면을 조금 앞세운다
     const P = S.player, ap = input.aiming && aimPoint();
-    const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (P.moving ? 55 : 24);
+    const cv = P.car, lx = cv ? Math.cos(cv.a) * cv.v * 0.5 : ap ? (ap.x - P.x) * 0.35 : Math.cos(P.a) * (S.over?0:P.moving ? 70 : 30), ly = cv ? Math.sin(cv.a) * cv.v * 0.5 : ap ? (ap.y - P.y) * 0.35 : Math.sin(P.a) * (S.over?0:P.moving ? 55 : 24);
     S.lead = S.lead || { x: 0, y: 0 }; const lk = 1 - Math.exp(-dt * 2.5); S.lead.x += (lx - S.lead.x) * lk; S.lead.y += (ly - S.lead.y) * lk;
     // 가장자리: 캐릭터가 화면 구석의 HUD(도움말·조작 안내) 밑에 깔리지 않도록 맵 밖으로 조금 더 따라간다
     const ox = vw * .16, bounds = cameraYBounds(vh);

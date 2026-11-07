@@ -38,16 +38,20 @@ class CompoundControls:
   else:await self.c.press('x','#btnCarry')
   await self.q.wait_for_function('!__game.actionBusy()&&!__game.S.player.pick&&!__game.S.player.trav&&!__game.S.player.jump',timeout=12000)
  async def neutralize(self,tag,lethal=False):
-  ready=False
-  for distance in [40,30,24]:
+  # Moving repair/return patrols can leave the edge of melee reach between the
+  # read-only ready check and native input. Re-approach visibly; never freeze AI.
+  for distance in [30,24,20]:
    g=await self.q.evaluate('tag=>{const g=__game.S.guards.find(g=>g.tag===tag);return{x:g.x,y:g.y,a:g.a,state:g.state}}',tag)
    if g['state']=='DEAD':return
    await self.walk(g['x']-math.cos(g['a'])*distance,g['y']-math.sin(g['a'])*distance)
    ready=await self.q.evaluate('tag=>{const G=__game,a=G.attackAction();return (a.list||[a.g]).some(g=>g?.tag===tag)&&a.k!=="none"}',tag)
-   if ready:break
-  assert ready,(tag,g,await self.q.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,fl:__game.S.player.fl,cover:!!__game.S.player.cover,hidden:__game.S.player.hidden,carrying:!!__game.S.player.carrying},attack:__game.attackAction().k})'))
-  await self.c.press('z','#btnAct',lethal=lethal)
-  await self.q.wait_for_function('tag=>__game.S.guards.find(g=>g.tag===tag).state==="DEAD"&&!__game.actionBusy()',arg=tag,timeout=8000)
+   if not ready:continue
+   await self.c.press('z','#btnAct',lethal=lethal)
+   await self.q.wait_for_timeout(180)
+   if await self.q.evaluate('tag=>__game.S.guards.find(g=>g.tag===tag).state!=="DEAD"&&!__game.actionBusy()&&!__game.S.player.approachAttack',tag):continue
+   await self.q.wait_for_function('tag=>__game.S.guards.find(g=>g.tag===tag).state==="DEAD"&&!__game.actionBusy()',arg=tag,timeout=8000)
+   return
+  raise AssertionError((tag,g,await self.q.evaluate('({p:{x:__game.S.player.x,y:__game.S.player.y,fl:__game.S.player.fl,cover:!!__game.S.player.cover,hidden:__game.S.player.hidden,carrying:!!__game.S.player.carrying},attack:__game.attackAction().k})')))
  async def dress(self,tag='uniformDonor'):await self.env('dress',tag);assert await self.q.evaluate('__game.S.player.outfit==="crew"')
  async def hide(self,tag):
   await self.env('carry',tag)

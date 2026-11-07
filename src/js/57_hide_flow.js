@@ -150,6 +150,7 @@ function updateHideFlow(P,dt) {
   if(flOf(h)!==F.fl||(h.z||0)!==F.z||h.x!==F.hx||h.y!==F.hy){cancelHideFlow(P,T);return;}
   if(flOf(P)!==F.fl||(P.z||0)!==F.z||F.g&&!F.committed&&(P.captive!==F.g||F.g.state!=='CAPTIVE')||F.c&&!F.committed&&(!S.corpses.includes(F.c)||(F.kind==='retrieve'?P.carrying||!F.c.stashed||F.c.container!==h:P.carrying!==F.c))){cancelHideFlow(P,T);return;}
   if(F.quick&&!F.committed&&(P.hurtT>0||h.type==='bush'&&tileAt(h.x,h.y)!=='B'||!hideMotionClear(P,F,T.t<F.walk?hideRoutePoint(F.route.points,T.t*130):F.route.stand))){cancelHideFlow(P,T);return;}
+  if(T.t>=T.dur)settleHideFeedback(F);
   if(F.intent){if(F.holding&&combatHeld(F.intent.source))F.held+=dt;else F.holding=false;}
   F.witnessed=F.witnessed||S.guards.some(g=>g.seen&&flOf(g)===F.fl&&(g.z||0)===F.z&&!['DEAD','CAPTIVE'].includes(g.state));
   const f=hideFlowProgress(T),walking=T.t<F.walk;

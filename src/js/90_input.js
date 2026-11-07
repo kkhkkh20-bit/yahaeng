@@ -306,7 +306,7 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
-const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE];
+const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){
   if(loadCaseFile().sources.length)return true;
   if(campaignHasProgress()||Object.keys(loadBest()).length||Object.keys(cityDone()||{}).length)return true;
@@ -342,7 +342,7 @@ $('btnMute').addEventListener('click', toggleMute);
   window.addEventListener('pointermove', e => { if (!drag || !tactical || !S || !S.tacCam) return; S.tacCam.x -= (e.clientX - drag.x) / SCALE; S.tacCam.y -= (e.clientY - drag.y) / SCALE; drag = { x: e.clientX, y: e.clientY }; });
   window.addEventListener('pointerup', () => { drag = null; }); }
 try { if (localStorage.getItem('yahaeng.joyseen')) document.body.classList.add('joyseen'); } catch (e) {}
-$('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);
+$('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);initHapticPreference();
 $('btnPause').addEventListener('click', togglePause);
 for(const id of ['btnPause','btnCrouch','btnSneak','btnToolNext','btnCycle'])$(id).addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code))e.stopPropagation();});
 $('btnMap').addEventListener('click', toggleTactical);
@@ -371,11 +371,12 @@ $('btnCity').addEventListener('click', () => { const ci = STAGES.findIndex(s => 
 $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
-$('btnNext').addEventListener('click',()=>{if(S?.over)openEpisodeTraining();});
+$('btnNext').addEventListener('click',()=>{if(S?.over)continueResultTraining();});
 document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  clearResultTransition();
   resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();

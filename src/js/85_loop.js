@@ -41,7 +41,7 @@ function frame(t) {
   else if(hudInspecting()){moveCamera(dt);updateHUD();}
   else if (running && DLG.modal && !S.over) { moveCamera(dt); updateHUD(); }
   else if (tactical) { moveCamera(dt); updateHUD(); }
-  else if (S.over) { for (const n of S.noises) n.t += dt; }
+  else if (S.over) { for (const n of S.noises) n.t += dt;if(running)moveCamera(dt);S.flash=Math.max(0,S.flash-dt);S.shakeT=Math.max(0,(S.shakeT||0)-dt); }
 
   const t1 = pf ? performance.now() : 0;
   syncEpisodeRadio();

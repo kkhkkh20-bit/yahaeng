@@ -846,13 +846,6 @@ body.touch #hud .pad #btnAct.kill{background-image:var(--art-frame-primary-dange
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{border-radius:0;bottom:11px;background:#d8a0a7}
 body.touch #hud #btnCrouch{box-sizing:border-box;width:58px;height:58px;min-height:58px;border:0;border-image:none;border-radius:50%;background:var(--art-frame-crouch-idle) center/100% 100% no-repeat;box-shadow:none;padding:3px;gap:3px;color:#bdc7d5;filter:drop-shadow(0 2px 3px #0006)}
 body.touch #hud #btnCrouch.on{border-image:none;background-image:var(--art-frame-crouch-ready);color:#eff4fb}
-/* Pressed assets retain the same hit box and content geometry. */
-body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active,
-#hud .hud-menu:active,#hud .pad #btnToolNext:active,#hud .pad #btnCycle:active,#hud .pad #btnDress:active,
-#hud #loadout #tools .tool:active,#hud #loadout #btnWhistle:active,#hud #loadout #btnSneak:active,#hud #loadout #btnLoadoutClose:active{border-image-source:var(--art-frame-control-pressed);color:#b9c4d6}
-body.touch #hud .pad #btnAct.down,body.touch #hud .pad #btnAct:active{border-image:none;background-image:var(--art-frame-primary-pressed);color:#c8d3e5}
-body.touch #hud .pad>button.down::before,body.touch #hud .pad>button.down>b,body.touch #hud .pad>button:active::before,body.touch #hud .pad>button:active>b{transform:translateY(1px)}
-#hud button:focus-visible,#hud [role=button]:focus-visible{outline:2px solid #d9e5f8;outline-offset:3px}
 @media(max-width:700px){
  #hud .obj{border-width:6px;padding:2px 18px 3px 28px}
  #hud .obj::before{left:3px;top:8px;font-size:17px}#hud .obj::after{right:5px;top:10px}
@@ -875,11 +868,11 @@ body.touch #hud #btnCrouch::before,#hud #btnWhistle::before,#hud #tools .tool::b
 #hud #btnCrouch>svg.hud-art{width:24px;height:24px}
 #hud #tools .tool>svg.hud-art{width:32px;height:32px}
 #hud #btnWhistle>svg.hud-art{grid-row:span 2;width:28px;height:28px;color:var(--hud-metal)}
-body.touch #hud .pad>button.down>svg.hud-art,body.touch #hud .pad>button:active>svg.hud-art{transform:translateY(1px)}
+
 
 /* Keep the left thumb free for movement; the crouch control has no rectangular frame. */
-body.touch #hud #btnCrouch.down,body.touch #hud #btnCrouch:active{border:0;border-image:none;border-radius:50%;background-image:var(--art-frame-crouch-pressed);color:#c9d5e7}
-body.touch #hud #btnCrouch.down>.hud-art,body.touch #hud #btnCrouch:active>.hud-art{transform:translateY(1px)}
+
+
 @media(orientation:landscape) and (max-height:360px) and (min-width:500px){
  body.touch #hud .sysbtns{left:auto;right:calc(max(16px,env(safe-area-inset-right)) + 101px)}
  body.touch #hud .top{right:210px}
@@ -1659,7 +1652,7 @@ body.touch #hud .pad :is(#btnCarry,#btnTool,#btnGrab,#btnDress).ready { color:va
 body.touch #hud .pad #btnAct { color:#d1d2ce; }
 body.touch #hud .pad #btnAct.ready,body.touch #hud .pad #btnAct.ko { color:#f5f0e6; }
 body.touch #hud .pad #btnAct.kill { color:#f3aaa0; }
-body.touch #hud .pad #btnAct.down,body.touch #hud .pad #btnAct:active { color:#fff5e9; }
+
 body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after { background:#ef8277; }
 body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #missionIdentity { border-color:#92948e38; }
@@ -2148,6 +2141,31 @@ body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 66p
 /* NPC dialogue takes precedence over transient save confirmation. */
 body.npc-speaking #hud #saveState{visibility:hidden}
 
+/* One field skin owns input, receipt and damage states. Hit areas never move. */
+#hud button{transition:color .12s ease,background-color .12s ease,opacity .12s ease}
+#hud button[aria-disabled=true]{opacity:.56}
+#hud button[aria-busy=true]{opacity:1}
+body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCrouch:is(.down,:active)>:is(svg,b){transform:translateY(1px)}
+#hud :is(.hud-menu,#btnCycle,#btnLoadoutClose,#btnSneak,#btnWhistle,.tool):active{background-color:#34444b;color:#fff4df}
+#hud #hpPips i.lost{background:#ed9b8b;box-shadow:0 0 0 1px #e9c5b070;animation:lost-pip .45s ease-out both}
+@keyframes lost-pip{from{opacity:1}to{opacity:.15}}
+#hud .feedback-pulse:not(button){animation:field-receipt .32s ease-out}
+#hud button.feedback-pulse{animation:field-input .16s ease-out}
+#skillScreen .feedback-pulse{animation:field-receipt .35s ease-out}
+@keyframes field-receipt{from{filter:brightness(1.35)}to{filter:brightness(1)}}
+@keyframes field-input{from{filter:brightness(1.22)}to{filter:brightness(1)}}
+#end[data-phase=complete] #endTitle{animation:completion-settle .25s ease-out both}
+#end[data-phase=complete] .completion-receipt{margin:0;color:#edcf9d;font-size:14px;line-height:1.6}
+#end[data-phase=complete] #btnNext{min-height:44px}
+@keyframes completion-settle{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(hover:hover) and (pointer:fine){#hud button:not([aria-disabled=true]):hover{color:#fff3dc;background-color:#34444b}}
+@media(prefers-reduced-motion:reduce){
+ #hud button{transition:none}
+ #hud .feedback-pulse,#skillScreen .feedback-pulse,#hud #hpPips i.lost,#end[data-phase=complete] #endTitle{animation:none}
+ #hud #hpPips i.lost{background:#b98f86}
+ body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCrouch:is(.down,:active)>:is(svg,b){transform:none}
+}
+
 </style>
 </head>
 <body>
@@ -2240,7 +2258,7 @@ body.npc-speaking #hud #saveState{visibility:hidden}
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v212 · 2026-11-07</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v213 · 2026-11-07</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2305,6 +2323,7 @@ body.npc-speaking #hud #saveState{visibility:hidden}
       <div class="advanced-rows">
         <div><b>화면 배율</b><span><button class="ghost" id="btnZoomOut" type="button" aria-label="화면 축소">−</button><button class="ghost" id="btnZoomIn" type="button" aria-label="화면 확대">+</button></span></div>
         <div><b>프레임</b><button class="ghost" id="btnFps" type="button">60 fps</button></div>
+        <div id="hapticSetting" hidden><b>진동</b><button class="ghost" id="btnHaptic" type="button" aria-pressed="false">꺼짐</button></div>
         <div><b>소리</b><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
         <div><b>안내</b><span><button class="ghost" id="btnRoutes" type="button">순찰 동선</button><button class="ghost" id="btnOpps" type="button">단서: 최소</button></span></div>
       </div>
@@ -2349,7 +2368,7 @@ body.npc-speaking #hud #saveState{visibility:hidden}
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v212 · 2026-11-07</small>
+      <small class="fx-sub" id="pauseVersion">v213 · 2026-11-07</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2426,8 +2445,8 @@ body.npc-speaking #hud #saveState{visibility:hidden}
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/1c6563f9f54dc6757ac1.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/af01a176c38b4e4ed14f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/41d21fee21a9a9ed77d2.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/c84f0b210da7a60b8a89.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
