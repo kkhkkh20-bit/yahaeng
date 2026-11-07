@@ -1873,7 +1873,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer">v207 · 2026-11-07</footer>
+  <footer class="title-footer">v208 · 2026-11-07</footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -1982,7 +1982,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v207 · 2026-11-07</small>
+      <small class="fx-sub" id="pauseVersion">v208 · 2026-11-07</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2048,7 +2048,7 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
  function fail(message){if(ready)return;failed=true;box.textContent='게임을 불러오지 못했습니다. ';var retry=document.createElement('a');retry.textContent='다시 연결';retry.style.color='inherit';retry.href=location.pathname+'?retry='+Date.now();box.appendChild(retry);var detail=document.createElement('small');detail.style.cssText='display:block;overflow-wrap:anywhere;opacity:.7';detail.textContent=String(message||'다운로드 연결 확인').slice(0,180);box.appendChild(detail);document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.removeAttribute('aria-busy');});}
  function menu(id){['intro','help','ledger'].forEach(function(k){document.getElementById(k).hidden=k!==id;});}
  document.addEventListener('click',function(e){if(ready)return;var b=e.target.closest('button');if(!b)return;if(b.id==='btnHelp'){e.preventDefault();e.stopImmediatePropagation();menu('help');return;}if(b.id==='btnHelpBack'){e.preventDefault();e.stopImmediatePropagation();menu('intro');return;}if(b.id==='btnQuick'||b.id==='btnSkillsIntro'){e.preventDefault();e.stopImmediatePropagation();queued=b.id;menu('intro');if(!failed)text('게임 불러오는 중 · 준비되면 열립니다');}},true);
- window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/6');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
+ window.__boot={loaded:function(){done++;if(!failed)text('게임 불러오는 중 · '+done+'/7');},fail:fail,ready:function(){ready=true;box.remove();document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.removeAttribute('aria-busy');});if(queued){var id=queued;queued=null;document.getElementById(id).click();}},get state(){return{ready:ready,loaded:done,failed:failed,queued:queued};}};
  document.querySelectorAll('#btnQuick,#btnSkillsIntro').forEach(function(b){b.setAttribute('aria-busy','true');});text('게임 불러오는 중');
  window.addEventListener('error',function(e){if(!ready&&e.message)fail(e.message);});window.addEventListener('unhandledrejection',function(e){if(!ready)fail(e.reason&&e.reason.message||e.reason);});
  setTimeout(function(){if(!ready&&!failed)fail('30초 동안 준비되지 않았습니다. 다시 연결해 주세요.');},30000);
@@ -2057,9 +2057,10 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 <script defer src="./assets/db3336a7657060e0da2f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/29532ab01280cb2abd25.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/893f762338463cabdaad.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/7e2865191d53536f8f3e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/fee38bf62436e2af0d1d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/aa0781cd86f6228bb63d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/1af22a215033ef210809.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
