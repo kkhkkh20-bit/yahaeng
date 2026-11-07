@@ -17,7 +17,7 @@ STAGES.push({
  id:'e2',no:'입문 2',name:'창고의 거래',sub:'입문 2 · 복장과 CCTV',apprenticeContract:true,
  fee:'40만',purpose:'연락책의 거래 명세서를 회수해 증인 거래의 배후를 확인한다.',
  mission:'거래 명세서 회수 후 골목으로 탈출',
- brief:'연락책이 쓰던 창고에 거래 명세서가 있다. 실내 경비 한 명과 CCTV 한 대가 지킨다. 골목의 예비 재킷으로 평범하게 걸어 들어갈 수 있다. 카메라 뒤에서 전선을 분리하면 책상 작업이 안전해진다. 만약 신원이 녹화되면 골목의 관리 단말에서 기록을 지운 뒤 나가자.',
+ brief:'연락책이 쓰던 창고에 거래 명세서가 있다. 실내 경비 한 명과 CCTV 한 대가 지킨다. 골목의 예비 재킷으로 평범하게 걸어 들어갈 수 있다. 카메라 뒤에서 전선을 분리하면 책상 작업이 안전해진다. 만약 신원이 녹화되면 창고 안 보안 데스크에서 기록을 지운 뒤 나가자.',
  endText:'명세서에서 연락 거점의 주소를 찾았다. 그곳 2층의 장부로 배후를 확인하자.',
  W:34,H:23,start:[5,19],exit:[3,19],exitName:'서쪽 골목',startA:0,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:false,residents:0,rivals:0,
@@ -26,9 +26,9 @@ STAGES.push({
  zones:[[0,0,33,22,'pub',null,'골목',[]],[14,3,31,14,'res',null,'거래 창고',['crew']]],
  props:[],
  guards:[{kind:'g1',tag:'doorkeeper',at:[18,12],post:90,still:true,radio:false}],
- fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:9,y:16,t:'pc'}],
+ fixedFurn:[{x:27,y:5,t:'desk',w:2},{x:15,y:4,t:'pc'}],
  items:[[27,6]],itemName:'거래 명세서',itemNames:['거래 명세서'],itemPlaces:['거래 창고 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
- cams:[[23,5,0,12]],securityEvidence:true,camRoom:{pos:[9,17],fl:0,name:'골목 관리 단말'},
+ cams:[[23,5,0,12]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[16,6],fl:0,name:'창고 안 보안 데스크'},
  lamps:[[30,10,380,0],[8,20,200,1]],
 });
 {

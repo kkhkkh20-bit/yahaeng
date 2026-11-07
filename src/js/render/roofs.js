@@ -120,6 +120,9 @@ function drawRoof1(b, i, roof) {
       return;
     }
     const x = b.x0 * TILE, y = b.y0 * TILE, w = (b.x1 - b.x0 + 1) * TILE, h = b.roofC.rh;
+    // Baked facades have transparent gutters and cutouts. A roof is a solid
+    // surface beneath that artwork, even when its source image has alpha.
+    if(b.kit){ctx.fillStyle='#3b4646';ctx.fillRect(x,y,w,h);}
     if (b.kit && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);

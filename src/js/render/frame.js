@@ -306,6 +306,7 @@ function draw() {
     } }
   if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   PM('misc');
+  if(DBG.ui){drawNeonSigns();ctx.setTransform(1,0,0,1,0,0);return;}
   drawGhosts();
   if ((input.scan || tactical) && running) drawScan(openB);
   else if (running && !tactical) { drawNearMarks(P, openB); drawPushHint(); }

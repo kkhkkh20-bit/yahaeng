@@ -54,8 +54,13 @@ def build():
     title_font = base64.b64encode(open(P('src', 'fonts', 'title-blackhansans.ttf'), 'rb').read()).decode()
     html = html.replace('__TITLE_FONT__', title_font)
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
-    menu_art = base64.b64encode(open(P('src', 'art', 'title-poster.webp'), 'rb').read()).decode()
+    menu_art = base64.b64encode(open(P('src', 'art', 'title', 'alley-wide.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css')))
+    for variant in ['wide','portrait']:
+        data='data:image/webp;base64,'+base64.b64encode(open(P('src','art','title','alley-'+variant+'.webp'),'rb').read()).decode()
+        html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
+    html=html.replace('--menu-art:', '--title-alley-wide:url(data:image/webp;base64,'+menu_art+');--menu-art:',1)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
     icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','**','*.svg'),recursive=True)))+'}'
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))

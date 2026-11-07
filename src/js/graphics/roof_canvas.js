@@ -9,6 +9,8 @@ function buildRoofCanvas(b, i) {
   const w = (b.x1 - b.x0 + 1) * TILE, h = (b.y1 - b.y0 + 1 - (b.fh || 0)) * TILE, hang = 22;
   const c = document.createElement('canvas'); c.width = w; c.height = h + hang;
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
+  // A missing or partially transparent texture must never expose the room below.
+  x.fillStyle = '#46514f'; x.fillRect(0, 0, w, h);
   const key = roofOf(i);
   if (F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
@@ -87,5 +89,5 @@ function buildRoofCanvas(b, i) {
   c.rh = h;
   return c;
 }
-const roofOf = i => STAGE.roofs ? STAGE.roofs[i % STAGE.roofs.length] : (STAGE.roofTex || 'roofRed');
+const roofOf = i => STAGE.roofs?.length ? STAGE.roofs[i % STAGE.roofs.length] : (STAGE.roofTex || 'cRoofG');
 
