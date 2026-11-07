@@ -1394,7 +1394,7 @@ STAGES.push({
   },
   zones:[[0,0,25,17,'pub',null,'빈 창고',[]]],
   fixedFurn:[{x:20,y:5,t:'desk',w:2},{x:22,y:7,t:'pc'},{x:13,y:7,t:'shelf',w:2},{x:16,y:9,t:'shelf',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
-  itemFurniture:[['desk']],cameraFocus:[20,6],cams:[[16,5,0,10]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
+  itemFurniture:[['desk']],cameraFocus:[20,6],cams:[[16,5,0,0]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
   lamps:[[23,7,420,0],[16,10,300,0]],
 });
 // Small complete jobs connect the freight alley to the larger club contract.
@@ -9965,6 +9965,8 @@ function updateCheckpoint(dt) {
   const pr = cpProgress(); if (pr > (S.cpProg || 0)) { S.cpProg = pr; S.cpWant = true; }
   const P=S.player,sheltered=S.alevel===2&&!S.radioCall&&(P.hide&&!P.hide.spotted||P.hidden)&&!(S.expo>0)&&!actionBusy(P)&&!S.guards.some(g=>!g.civ&&!['DEAD','CAPTIVE'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(g.x,g.y,P.x,P.y)<200);
   S.cpShelterT=sheltered?(S.cpShelterT||0)+dt:0;
+  // An unreported recording is still a mistake: keep the last safe retry point.
+  if(evidencePending())return;
   if (!S.cpWant || (S.cpT = (S.cpT || 0) - dt) > 0) return; S.cpT = 0.5;
   if (S.alevel >= 2 && !(S.alevel===2&&S.cpShelterT>=3) || S.radioCall || P.techWork || P.skillHold || P.assassinAnim || P.lethalHold || S.koHold || P.interact || P.pick || P.trav || P.jump || P.lunge || P.grabIn || P.captive || P.wire || P.ledge || P.strikeT > 0 || S.keypad) return;
   if (S.guards.some(g => !g.civ && (['ALERT', 'NOTICE', 'BODY', 'WARN'].includes(g.state) || (g.eyeT || 0) > .05))) return;

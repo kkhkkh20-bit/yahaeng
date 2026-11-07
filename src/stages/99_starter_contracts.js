@@ -39,6 +39,6 @@ STAGES.push({
   },
   zones:[[0,0,25,17,'pub',null,'빈 창고',[]]],
   fixedFurn:[{x:20,y:5,t:'desk',w:2},{x:22,y:7,t:'pc'},{x:13,y:7,t:'shelf',w:2},{x:16,y:9,t:'shelf',w:2}],itemActions:[{kind:'recovery',duration:1.2}],
-  itemFurniture:[['desk']],cameraFocus:[20,6],cams:[[16,5,0,10]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
+  itemFurniture:[['desk']],cameraFocus:[20,6],cams:[[16,5,0,0]],items:[[20,6]],itemName:'배송 명세서',itemNames:['배송 명세서'],itemPlaces:['창고 · 책상'],
   lamps:[[23,7,420,0],[16,10,300,0]],
 });
