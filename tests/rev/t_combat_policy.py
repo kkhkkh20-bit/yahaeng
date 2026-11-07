@@ -71,7 +71,9 @@ async def main():
     else:await ui.keyboard.up(key)
    for atk,grab in [('KeyZ','KeyC')] if mobile else [('KeyZ','KeyC'),('Space','KeyQ')]:
     await ui.evaluate('__fresh()');await ui.evaluate('(mode)=>{window.__game.input.kset=mode;window.__texts=[];window.__step(2)}','arrow' if atk=='KeyZ' else 'wasd')
-    assert await ui.evaluate("window.__game.grabAction().k==='grab'&&window.__texts.some(t=>t.includes('붙잡기'))"),'Missing visible grab prompt beside key-carrying target'
+    assert await ui.evaluate("window.__game.grabAction().k==='grab'"),'Missing grab action beside key-carrying target'
+    if mobile:assert await ui.locator('#btnGrab').is_visible() and '붙잡기' in await ui.locator('#btnGrab').inner_text(),'Missing mobile grab control'
+    else:assert await ui.evaluate("window.__texts.some(t=>t.includes('붙잡기'))"),'Missing PC grab prompt'
     if not mobile:assert await ui.evaluate('(key)=>window.__texts.includes(key)','C' if grab=='KeyC' else 'Q'),'Missing grab key on target'
     await down(atk,'#btnAct');await up(atk);await ui.evaluate('__step(90)')
     assert await ui.evaluate('window.__game.S.stats.kills===0&&window.__game.S.corpses[0].ko'),'Real tap kills target'
