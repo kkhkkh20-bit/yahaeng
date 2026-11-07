@@ -11,7 +11,7 @@ function cameraServicePoint(c){
  const {sx,sy}=c.wallMount,points=[{x:c.x-sx*5,y:c.y-sy*36,fl:c.fl},{x:c.x-sx*36,y:c.y-sy*5,fl:c.fl}],previous=CUR_F;
  setLayer(c.fl);
  try{
-  const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34);
+  const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34&&cameraSees(c,p.x,p.y,1)<=0);
   return valid.sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||{x:tc(c.tx),y:tc(c.ty),fl:c.fl};
  }finally{setLayer(previous);}
 }

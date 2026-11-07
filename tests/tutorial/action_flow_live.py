@@ -11,7 +11,7 @@ from episode_training import standalone_stage, continue_episode, spend_episode_p
 class Controls:
  def __init__(self,page,cdp,mobile):self.q=page;self.cdp=cdp;self.mobile=mobile;self.points={};self.keys=[];self.axis=None;self.events=[]
  async def record(self,label):
-  s=await self.q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{version:__BUILD_VERSION__,t:S.t,x:P.x,y:P.y,hp:P.hp,mode:P.mode,hidden:P.hidden,moving:P.moving,carry:!!P.carrying,body:P.bodyAnim?.k,approach:!!P.approachAttack,recovery:!!P.recoveryQueue,kill:!!P.killAnim,stats:{...S.stats},guards:S.guards.map(g=>({id:g.id,state:g.state,seen:g.seen,x:g.x,y:g.y})),over:S.over};}''')
+  s=await self.q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{version:__BUILD_VERSION__,t:S.t,x:P.x,y:P.y,fl:P.fl||0,z:P.z||0,hp:P.hp,mode:P.mode,hidden:P.hidden,moving:P.moving,carry:!!P.carrying,body:P.bodyAnim?.k,approach:!!P.approachAttack,recovery:!!P.recoveryQueue,kill:!!P.killAnim,stats:{...S.stats},guards:S.guards.map(g=>({id:g.id,state:g.state,seen:g.seen,x:g.x,y:g.y})),over:S.over};}''')
   self.events.append({'label':label,**s});print(label,json.dumps(s,ensure_ascii=False),flush=True);return s
  async def touch(self,kind,id,x=0,y=0):
   if kind=='touchEnd':

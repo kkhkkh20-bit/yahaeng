@@ -1590,6 +1590,119 @@ TARGET_CAST.collector.key='castCollector@bossBig';
 
 TARGET_CAST.contact.key='castContact@femaleWorker';
 TARGET_CAST.broker.key='castBroker@femaleBoss';
+// Five real jobs: repeat the core stealth loop, then add one new spatial problem.
+// Existing IDs/clear records remain; the former single-rule errands are optional archives.
+const COMPOUND_COMMON={layoutRevision:212,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
+ W:34,H:24,start:[6,18],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
+ bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,residents:0,rivals:0,
+ kunai:0,coins:0,pspd:1.3,gspd:.8,radioCheck:0,securityResponse:false,
+ floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
+ zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,15,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
+ buildingNames:{0:'금성 운송 · 야간 사무동',1:'봉인된 적재 창고'},industrialBuildings:[0,1],
+ build(m){
+  m.fill(0,0,33,23,',');m.rect(0,0,33,23);m.fill(1,16,32,21,'.');m.fill(1,15,17,15,'=');
+  m.fill(5,3,17,14,'=');m.fill(3,2,32,2,'#');m.fill(3,2,3,16,'#');m.fill(32,2,32,16,'#');m.fill(3,16,12,16,'#');m.fill(15,16,32,16,'#');m.fill(9,9,10,10,'C');m.fill(4,8,4,10,'C');
+  m.bld(18,3,30,15,2,[[18,12],[24,15]],'h');m.set(28,12,'Y');
+  m.many('B',[[7,11],[7,10],[2,8],[2,9],[12,13],[14,17],[31,17]]);
+  m.bld(5,3,11,5,1,[],'h');
+  m.many('T',[[2,4],[3,9],[32,4],[32,13],[2,22],[30,22]]);m.car(26,19,1);
+ },
+ lamps:[[14,6,170,1],[5,17,160,1],[24,9,350,0,0],[25,8,330,0,1]],
+ lampControls:[[2,19.5,12.5],[3,19.5,12.5]],
+ fixedFurn:[{x:20,y:5,t:'shelf',w:3},{x:22,y:10,t:'boxes',w:2},{x:19,y:13,t:'locker'},{x:26,y:13,t:'locker'},
+  {x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:25,y:5,t:'desk',w:2,fl:1},{x:27,y:10,t:'shelf',w:2,fl:1}],
+};
+const yardGuard=()=>({kind:'g1',tag:'uniformDonor',at:[14,8],post:0,still:true,radio:false});
+const hallGuard=()=>({kind:'g1',tag:'hallKeeper',at:[26,11],post:0,still:true,radio:false});
+const lightGuard=()=>({kind:'g1',tag:'lightKeeper',at:[22,7],post:90,still:true,radio:false});
+const newCast=(name,role,appearance,key,palette)=>({name,role,appearance,key,palette,habit:role+'로서 보고를 확인한다.'});
+TARGET_CAST.foreman=newCast('한재문 · 작업반장','금성회 야간 출고 책임자','붉은 작업 코트 · 회색 머리','castForeman@coat',['#d5ab88','#a8a6a0','#a33e3b','#2d3440','#181f28']);
+TARGET_CAST.records=newCast('차유진 · 기록책','금성회 증인 이송 기록책','금발 · 자주색 정장','castRecords@femaleBoss',['#e4b79a','#c7a263','#884c70','#2b3543','#20242d']);
+TARGET_CAST.inspector=newCast('서명석 · 감시반장','금성회 현장 감시 책임자','검은 머리 · 붉은 조끼','castInspector@worker',['#d3a282','#20232b','#973f40','#35404c','#202932']);
+TARGET_CAST.watchCaptain={...TARGET_CAST.inspector,name:'박태준 · 출고 감시담당',key:'castWatchCaptain@worker',palette:['#d3a282','#74766b','#925348','#35404c','#202932']};
+TARGET_CAST.cameraLead={...TARGET_CAST.inspector,name:'류건호 · 감시팀장',key:'castCameraLead@worker',appearance:'짧은 검은 머리 · 보라색 경비 조끼',palette:['#d3a282','#303446','#593e77','#2e3e48','#202932']};
+TARGET_CAST.handover={...TARGET_CAST.foreman,name:'윤태오 · 인계책',key:'castHandover@helmet',appearance:'안전모 · 황토색 작업복',palette:['#cca07d','#37332b','#b3833e','#35414c','#c6b18b']};
+TARGET_CAST.foreman.personality={cues:[['phone','마당은 보고 있나? 불 끄고 퇴근할 생각은 하지 마.'],['point','차는 내가 확인하고 보낸다. 서류는 기록실로 넘겨.']],alert:'출고 멈춰! 누가 들어왔어!'};
+TARGET_CAST.records.personality={cues:[['ledger','사람은 바꿔도 숫자는 남아. 명세서는 내가 챙긴다.'],['phone','인계서는 정하린에게. 여기 이름은 남기지 말고.']],alert:'명세서 건드리지 마! 경비, 기록실로!'};
+TARGET_CAST.inspector.personality={cues:[['point','한 사람씩 확인해. 이송 명단은 위층에서 받는다.'],['phone','마당 순찰 확인. 기록책은 아직 안 나왔다.']],alert:'기록실 막아! 계단부터 지켜!'};
+TARGET_CAST.cameraLead.personality={cues:[['phone','사람 눈은 쉬어도 카메라는 안 쉰다.'],['point','그 렌즈 가리지 마. 녹화 빠지면 네 책임이야.']],alert:'녹화 확인해! 관리 단말부터 지켜!'};
+function compoundJob(id,data){const s=campaignStage(id);Object.assign(s,COMPOUND_COMMON,data);delete s._base;s.targetNames=Object.fromEntries(Object.entries(s.targetCast||{}).map(([k,v])=>[k,v.name]));s.endText=s.story.after;for(const profile of Object.values(s.targetCast||{})){if(profile.appearance&&!s.brief.includes(profile.appearance.split(' · ')[0]))s.brief+=' '+profile.name+': '+profile.appearance+'.';}}
+compoundJob('p0',{
+ name:'닫힌 철문',sub:'첫 의뢰 · 잠입과 은폐',fee:'30만',openingContract:true,starterContract:undefined,apprenticeContract:undefined,
+ purpose:'운반책 박인호를 처치하고 금성 운송의 철문 밖으로 탈출한다.',mission:'2층 운반책 처치 후 서쪽 철문 밖으로 탈출',
+ brief:'박인호는 2층에서 거래 전화를 기다린다. 마당 경비 한 명, 1층 경비 한 명, 2층 표적 한 명이다. 마당 경비를 등 뒤에서 기절시키고 옷을 얻는다. 몸은 왼쪽 화단, 1층은 사물함에 숨길 수 있다. 계단으로 올라가 검은 머리 · 주황색 후드의 박인호를 찾아 처치하고 철문 밖으로 빠져나오자. 짧게 누르면 기절, 길게 누르면 살해한다.',
+ story:{before:'제비의 서류가 가리킨 박인호는 금성 운송 2층에 숨어 증인을 팔아넘길 전화를 기다린다. 경비의 옷과 빈 사물함을 이용해 거점을 뚫는다.',after:'박인호의 전화를 끊었다. 그가 부르던 작업반장 한재문은 옆 출고동에 있다. 이번에는 경비 둘이 서로를 보고 있다.',cast:{runner:'runner'}},
+ targetCast:{runner:TARGET_CAST.runner},guards:[yardGuard(),hallGuard(),{kind:'t',tag:'runner',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+});
+compoundJob('p1',{
+ name:'불 꺼진 출고동',sub:'두 번째 의뢰 · 어둠으로 분리',fee:'40만',openingContract:false,starterContract:'darkness',apprenticeContract:undefined,compoundLight:true,
+ purpose:'겹친 경비 시야를 조명으로 나누고 작업반장 한재문을 처치한다.',mission:'출고 감시담당·작업반장 처치 후 철문 밖으로 탈출',
+ brief:'기절·변장·몸 숨기기는 그대로 활용한다. 이번에는 1층 경비 두 명의 시선이 겹친다. 서쪽 문 안 벽 스위치를 끄면 방이 어두워지고 경비 한 명이 다시 켜러 온다. 그를 따로 처리하고 사물함에 숨기면 계단이 열린다. 붉은 조끼의 출고 감시담당과 2층 붉은 코트의 한재문이 표적이다. 일반 조명 스위치는 기술 없이 사용한다.',
+ story:{before:'한재문이 박인호의 연락을 기다린다. 출고동에는 경비 둘이 서로를 지킨다. 까마귀: 불을 한번 꺼 보죠. 누군가는 켜러 와야 하니까.',after:'작업반장의 보고를 막았다. 증인 이송 명세서는 기록책 차유진이 따로 보관한다. 다음 거점에서는 사람과 서류를 함께 처리한다.'},
+ targetCast:{foreman:TARGET_CAST.foreman,watchCaptain:TARGET_CAST.watchCaptain},guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'watchCaptain',target:true},lightGuard(),{kind:'t',tag:'foreman',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+});
+compoundJob('p2',{
+ name:'야간 기록실',sub:'세 번째 의뢰 · 처치와 회수',fee:'50만',openingContract:false,starterContract:'records',apprenticeContract:undefined,compoundLight:true,
+ purpose:'감시반장과 기록책을 처치하고 증인 이송 명세서를 확보한다.',mission:'감시반장·기록책 처치 · 이송 명세서 회수 후 탈출',
+ brief:'마당 경비의 옷으로 들어가고, 몸은 화단과 사물함에 숨긴다. 1층 감시반장과 2층 기록책이 필수 표적이다. 경비들은 조명이 꺼지면 스위치를 확인한다. 한 명씩 분리한 뒤 명세서를 챙겨 나온다. 서류는 2층 책상에 있고, 두 표적 처치와 회수를 모두 마쳐야 탈출할 수 있다.',
+ story:{before:'기록책 차유진이 명세서를 정리하고 감시반장 서명석이 인계를 지킨다. 지금까지 익힌 암살·변장·조명·은폐로 두 사람의 보고와 서류를 함께 끊는다.',after:'명세서에 정하린의 감시 거점이 적혀 있다. 정하린은 사람만 믿지 않는다. 기록실 앞 CCTV까지 확인해야 한다.'},
+ targetCast:{recordsLead:TARGET_CAST.records,inspector:TARGET_CAST.inspector},
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'recordsLead',target:true,at:[26,7],fl:1,post:0,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ items:[[25,6,1]],itemName:'이송 명세서',itemNames:['이송 명세서'],itemPlaces:['야간 기록실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
+});
+compoundJob('e1',{
+ name:'녹화된 얼굴',sub:'네 번째 의뢰 · 감시망',fee:'60만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,
+ purpose:'감시망을 끊고 연락책 정하린과 감시반장을 처치한 뒤 인계서를 회수한다.',mission:'정하린·감시반장 처치 · 인계서 회수 후 탈출',
+ brief:'암살·변장·조명·은폐는 이전과 같다. 이번에는 2층 작업 구역을 CCTV가 비춘다. 허용 복장으로 지나가는 것과 살해·서류 작업은 다르다. 카메라 뒤 벽의 전선을 분리하면 녹화를 막는다. 이미 찍혔다면 같은 층 보안 단말에서 감시망을 정지하고 기록을 지운다. 실수해도 의뢰가 바로 끝나지 않는다.',
+ story:{before:'정하린의 거점에는 증인 인계서를 지키는 CCTV가 있다. 까마귀: 경비 옷은 사람 눈을 속이죠. 저 렌즈 앞에서까지 손을 놀리지는 마세요.',after:'정하린의 연락망과 인계서를 확보했다. 중개인 문서윤의 원본 장부는 옆 건물 3층에 있다. 정문 대신 지붕과 창문으로 길을 만들자.'},
+ targetCast:{contact:TARGET_CAST.contact,inspector:TARGET_CAST.cameraLead},
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'contact',target:true,at:[26,7],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ items:[[25,6,1]],itemName:'증인 인계서',itemNames:['증인 인계서'],itemPlaces:['감시 거점 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
+ cams:[[27,6,180,0,1]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:1,name:'2층 감시 관리 단말'},cameraFocus:[25,6],
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1}),
+});
+compoundJob('e2',{
+ name:'지붕 위의 장부',sub:'다섯 번째 의뢰 · 수직 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,compoundVertical:true,
+ floorTiles:[[2,29,8,'#'],[2,30,8,'#']],W:38,H:26,start:[2,19],exit:[3,22],buildingNames:{0:'폐쇄된 정비동',1:'금성 거래소'},
+ purpose:'창문·3층·지붕 사이 이동으로 거래소에 침입해 중개인과 인계책을 처치하고 원본 장부를 가져온다.',
+ mission:'중개인·인계책 처치 · 3층 원본 장부 회수 후 탈출',
+ brief:'정비동 옆 작업대의 가는 철사는 창문 락픽으로 한 번 쓸 수 있다. 서쪽 창문을 따고 계단으로 3층과 옥상에 오른다. 한 칸 골목 건너 거래소 옥상으로 뛸 수 있다. 인계책이 아래 간판 밑을 지날 때 행동을 1초 길게 눌러 고정을 풀면 사고로 처리할 수 있다. 중개인과 장부는 거래소 3층이다. 조명·복장·몸 숨기기·CCTV 차단도 계속 활용한다. 정면 계단은 우회 경로로 남아 있다.',
+ story:{before:'문서윤이 거래소 3층에서 원본 장부를 숨긴다. 인계책은 간판 아래서 배송을 기다린다. 올빼미: 문이 잠겼으면 옆 건물부터 올라가면 되겠군.',after:'원본 장부와 중개인의 보고선을 끊었다. 결재자는 클럽 실장 강도윤. 이제 작은 거점을 벗어나 그의 클럽 전체를 공략한다.'},
+ build(m){
+  m.fill(0,0,37,25,',');m.rect(0,0,37,25);m.fill(1,17,36,23,'.');m.fill(1,16,36,16,'=');
+  m.bld(5,4,16,15,3,[[10,15]],'h');m.set(5,12,'N');m.set(14,12,'Y');
+  m.bld(18,4,31,15,3,[[18,12],[28,15]],'h');m.set(29,12,'Y');
+  m.many('B',[[3,14],[3,15],[12,18],[32,17]]);m.fill(10,18,11,19,'C');m.car(33,20,1);m.many('T',[[2,4],[35,4],[35,13],[2,24]]);
+ },
+ zones:[[0,0,37,25,'pub',null,'거래 골목',[]],[5,4,16,15,'res',null,'폐쇄된 정비동',['crew']],[18,4,31,15,'res',null,'금성 거래소',['crew']]],
+ targetCast:{broker:TARGET_CAST.broker,handover:TARGET_CAST.handover},
+ guards:[{kind:'g1',tag:'uniformDonor',at:[8,20],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',at:[26,12],post:0,still:true,radio:false},
+  {kind:'g1',tag:'middleKeeper',at:[27,11],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:2,post:180,still:true,radio:false},
+  {kind:'t',tag:'broker',target:true,at:[27,7],fl:2,post:90,still:true,radio:false},{kind:'t',tag:'handover',target:true,route:[[25,17,16],[29,17,8]],startPause:16,radio:false}],
+ items:[[25,6,2]],itemName:'거래 원본 장부',itemNames:['거래 원본 장부'],itemPlaces:['금성 거래소 3층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
+ keyItems:[{key:'pin',pos:[4,18]}],keyNames:{pin:'작업대의 가는 철사'},windowStates:[[5,12,0,'lock']],
+ cams:[[27,6,180,0,2]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:2,name:'3층 감시 관리 단말'},cameraFocus:[25,6],
+ lamps:[[8,17,180,1],[25,17,160,1],[24,9,330,0,0],[25,9,300,0,1],[25,8,330,0,2]],
+ lampControls:[[2,19.5,12.5],[3,19.5,12.5],[4,19.5,12.5]],
+ fixedFurn:[{x:4,y:17,t:'desk'},{x:6,y:5,t:'locker'},{x:20,y:5,t:'locker'},{x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:20,y:5,t:'locker',fl:2},
+  {x:25,y:5,t:'desk',w:2,fl:2},{x:29,y:9,t:'pc',fl:2},{x:22,y:10,t:'boxes',w:2}],
+ traps:[{k:'drop',at:[25,12],hit:[24,16,26,18],text:'금성 거래소'}],
+});
+TARGET_CAST.broker.habit='3층에서 원본 장부를 확인하고 통화로 보고를 재촉한다.';
+// Fold the old three single-rule errands into these jobs; keep their saves/rewards intact.
+for(const id of ['e3','e4','e5']){const s=campaignStage(id);s.retiredCampaign=true;s.storyEpisode=false;}
+const source=(id,change)=>Object.assign(CASE_SOURCES.find(s=>s.id===id),change);
+source('runner-down',{text:'운반책이 부르던 작업반장은 한재문이다. 출고동의 겹친 경비 시야를 먼저 풀어야 한다.',grants:{foreman:3,contact:1}});
+source('release',{items:undefined,targets:['foreman'],title:'작업반장의 마지막 보고',text:'이송 명세서는 차유진이 야간 기록실에서 보관한다.',grants:{records:3,contact:1}});
+source('delivery',{targets:['recordsLead','inspector'],title:'기록책의 이송 명세서',text:'감시반장과 기록책의 보고를 끊었다. 수신인은 정하린이며, 그의 인계서 보관실에는 CCTV가 있다.',grants:{contact:3}});
+source('contact-down',{text:'정하린의 감시 거점에서 문서윤의 거래소 주소를 찾았다. 원본 장부는 3층에 있다.',grants:{broker:3}});
+source('trade',{title:'중개인의 원본 장부',text:'원본 장부에 최종 결재자 강도윤의 이름이 남아 있다.',grants:{broker:3,club:3}});
+source('broker-down',{stage:'e2',text:'문서윤의 연락을 끊었다. 클럽 실장 강도윤이 직접 결재를 받는다.',grants:{club:3}});
+Object.assign(CASE_NODES.find(n=>n.id==='runner'),{area:'금성 운송 2층',routine:'마당·1층 경비를 지나 2층 사무실에서 거래 전화를 기다린다.'});
+Object.assign(CASE_NODES.find(n=>n.id==='contact'),{area:'감시 거점 2층',routine:'CCTV와 감시반장이 인계서를 지킨다. 뒤쪽 전선을 끊으면 작업 기회가 난다.'});
+Object.assign(CASE_NODES.find(n=>n.id==='broker'),{stage:'e2',area:'금성 거래소 3층',routine:'정비동 창문과 옥상 사이를 이용해 접근할 수 있다. 간판 아래에는 인계책이 있다.'});
+CASE_NODES.splice(1,0,{id:'foreman',stage:'p1',tag:'foreman',tier:0,alias:'야간 작업반장',area:'출고동 2층',routine:'경비 두 명이 1층을 지킨다. 불이 꺼지면 한 명이 스위치를 확인한다.'},{id:'records',stage:'p2',tag:'recordsLead',tier:0,alias:'이송 기록책',area:'야간 기록실 2층',routine:'감시반장과 이송 명세서를 지킨다. 각 층 사물함으로 흔적을 숨길 수 있다.'});
+CASE_LINKS.push(['runner','foreman'],['foreman','records'],['records','contact']);
 
 'use strict';
 (function () {
@@ -3642,7 +3755,7 @@ function recordCameraEvidence(c) {
 }
 
 // One story route. The player continues the next unfinished episode.
-const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7','m5','n1'];
+const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','m2','m4','m6','m7','m5','n1'];
 const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||['e4','e5'].includes(st.id)&&mainContracts().some(s=>stageCleared(s)||storedCP(s.id)?.g?.nodes?.length)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
 function episodeNumber(st=STAGE){const i=LEARNING_ROUTE.indexOf(st.id);return i<0?'':String(i+1).padStart(2,'0');}
@@ -4011,6 +4124,7 @@ function newGame(si) {
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
   if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach((it,i) => lootPlace(it,STAGE.itemFurniture?.[i]||STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
+  S.layoutRevision=STAGE.layoutRevision||0;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
   // 전봇대와 전깃줄: 줄 끝은 전봇대 꼭대기 또는 옥상 가장자리
@@ -5245,7 +5359,7 @@ function mountIndoorCamera(c, mounted) {
   const L0 = CUR_F; setLayer(f); let best = null;
   for (const [tx, ty] of room) for (const sx of [-1, 1]) for (const sy of [-1, 1]) {
     if (!wall(tx + sx, ty) || !wall(tx, ty + sy)) continue;
-    const x = tc(tx) + sx * (TILE / 2 - 9), y = tc(ty) + sy * (TILE / 2 - 9), base = Math.atan2(-sy, -sx), sweep = Math.min(c.sweep, Math.PI / 6);
+    const x = tc(tx) + sx * (TILE / 2 - 9), y = tc(ty) + sy * (TILE / 2 - 9), focus=STAGE.cameraFocus,base = focus?Math.atan2(tc(focus[1])-y,tc(focus[0])-x):Math.atan2(-sy, -sx), sweep = Math.min(c.sweep, Math.PI / 6);
     let seen = 0;
     for (const [rx, ry] of room) {
       const px = tc(rx), py = tc(ry), d = dist(x, y, px, py), a = Math.atan2(py - y, px - x);
@@ -5254,7 +5368,7 @@ function mountIndoorCamera(c, mounted) {
     const post = Math.min(180, ...S.guards.filter(g => flOf(g) === f && !g.civ && !g.dog).map(g => dist(x, y, g.x, g.y)));
     const separation = (mounted || []).some(o => o.fl === f && dist(o.x, o.y, x, y) < 80) ? 8 : 0;
     // A compact authored job can name the work surface this camera protects.
-    const focus=STAGE.cameraFocus,fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
+    const fd=focus?dist(x,y,tc(focus[0]),tc(focus[1])):0;
     const protects=focus&&fd<=300&&Math.abs(angDiff(base,Math.atan2(tc(focus[1])-y,tc(focus[0])-x)))<=camFov(c)&&castRay(x,y,Math.atan2(tc(focus[1])-y,tc(focus[0])-x),fd)>=fd-6;
     const score = seen / room.length * 20 + post / 90 - separation + (protects?30:0);
     if (!best || score > best.score) best = { x, y, tx, ty, base, sweep, score, sx, sy };
@@ -5461,7 +5575,7 @@ function accessReadout(at=S.player){
   const zi=zoneInfo(at.x,at.y,at.z||0,flOf(at)),P=S.player,uniform=P.outfit?outfitName(P.outfit):'평상복';
   if(!STAGE.zones)return{zi,allowed:false,text:uniform+' · 잠입 구역'};
   if(zi.k===Z_PUB)return{zi,allowed:true,text:uniform+' · 공개 구역'};
-  if(STAGE.openingContract)return{zi,allowed:false,text:'폐차장 · 들키지 않고 잠입'};
+  if(STAGE.openingContract&&!STAGE.compound)return{zi,allowed:false,text:'폐차장 · 들키지 않고 잠입'};
   if(permitted(zi))return{zi,allowed:true,text:permitName(zi.allow)+' · 통행 허용'};
   return{zi,allowed:false,text:zi.secure||!zi.allow.length?'보안구역 · 복장으로 통행 불가':uniform+' · 통행 불가',need:zi.allow.map(outfitName).join(' / ')};
 }
@@ -6140,7 +6254,7 @@ function cameraServicePoint(c){
  const {sx,sy}=c.wallMount,points=[{x:c.x-sx*5,y:c.y-sy*36,fl:c.fl},{x:c.x-sx*36,y:c.y-sy*5,fl:c.fl}],previous=CUR_F;
  setLayer(c.fl);
  try{
-  const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34);
+  const valid=points.filter(p=>[-13,13].every(dx=>[-13,13].every(dy=>!groundSolidP(Math.floor((p.x+dx)/TILE),Math.floor((p.y+dy)/TILE))))&&castRay(c.x,c.y,Math.atan2(p.y-c.y,p.x-c.x),40)>=34&&cameraSees(c,p.x,p.y,1)<=0);
   return valid.sort((a,b)=>dist(S.player.x,S.player.y,a.x,a.y)-dist(S.player.x,S.player.y,b.x,b.y))[0]||{x:tc(c.tx),y:tc(c.ty),fl:c.fl};
  }finally{setLayer(previous);}
 }
@@ -8108,14 +8222,14 @@ function initBeginnerEntry(){
 }
 function updateBeginnerEntry(){
   const b=S.beginnerEntry;if(!b||b.step>=2)return;
-  const P=S.player,g=npc('runner');
+  const P=S.player,g=npc('uniformDonor')||npc('runner');
   if(g&&(targetEliminated(g)||g.unconscious)){b.step=2;S.cpWant=true;return;}
   if(b.step===0&&P.moving&&dist(P.x,P.y,b.x,b.y)>=40)b.step=1;
   if(b.step===1&&P.mode==='sneak'){b.step=2;S.cpWant=true;}
 }
 function beginnerEntryGoal(){
   const b=S.beginnerEntry;if(!b||b.step>=2||!beginnerEntryNeeded())return null;
-  const g=npc('runner');if(g&&(targetEliminated(g)||g.unconscious))return null;
+  const g=npc('uniformDonor')||npc('runner');if(g&&(targetEliminated(g)||g.unconscious))return null;
   return b.step===0?{x:b.x+64,y:b.y,fl:0,text:'먼저, 골목에서 움직여 보기',where:isTouch?(input.walkLock?'걷기 고정 중 · 달리기는 장비에서':'왼쪽 조금: 걷기 · 끝까지: 달리기'):tutText('{이동} 오른쪽 표시까지 걷기'),moveCue:true}:
     {text:'몸을 낮춰 조용히 접근하기',where:tutText('{살금} 몸을 낮추기 · 발소리가 작아진다')};
 }
@@ -8207,6 +8321,72 @@ function apprenticeGoal(){
     const l=lessonStair(S);if(l){const a=envAction(),ready=a.k==='up'&&a.l===l;return{...stairLower(l).up.entry,fl:0,text:'계단으로 2층에 올라가기',where:ready?tutText('{행동} 올라가기 · 기술 없이 이용 가능'):'계단 입구 표시로 이동 · 기술 없이 이용 가능'};}
   }
   return learningObjectGoal(it,'loot',(STAGE.itemNames?.[0]||STAGE.itemName)+' 챙기기','작업 모습은 시야 밖에서');
+}
+
+// A cumulative mission gives the next useful move without requiring a fixed solution.
+function updateCompoundProgress(){
+ if(!STAGE.compound)return;
+ const P=S.player;
+ if(S.lamps.some(l=>!l.outdoor&&l.off))S.compoundDarkUsed=true;
+ if(flOf(P)>=2)S.compoundThirdFloor=true;
+ if(P.jump&&P.jump.z1>=2)S.compoundJumpUsed=true;
+ if(P.outfit==='crew'&&!S.compoundUniform){S.compoundUniform=true;S.cpWant=true;}
+ const hidden=S.corpses.filter(c=>c.hidden||c.stashed).length;
+ if(hidden>(S.compoundHidden||0)){S.compoundHidden=hidden;S.cpWant=true;if(hidden===1)toast('흔적을 숨겼다 · 다음 경비에게 접근할 틈이 생겼다',2,'good');}
+}
+function compoundBodyGoal(){
+ const P=S.player,c=P.carrying||S.corpses.find(c=>!c.hidden&&!c.stashed&&!c.carried&&!(c.ko&&c.target)&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<150);
+ if(!c)return null;
+ if(!P.carrying)return{x:c.x,y:c.y,fl:flOf(c),text:'쓰러진 몸을 운반해 숨기기',where:tutText('{행동} 운반 · 화단이나 사물함 이용'),compoundCue:'hide'};
+ const h=S.hides.filter(h=>flOf(h)===flOf(P)&&!h.z&&(h.type==='box'||FURN_HIDE[h.type])&&(h.bodies||0)<(h.cap||1)).concat(S.bushes.filter(h=>!flOf(P)&&(h.bodies||0)<(h.cap||1))).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];
+ return h?{x:h.x,y:h.y,fl:flOf(h),text:'가까운 은닉처에 몸 숨기기',where:tutText('{행동} 숨기기 · 한 곳에 한 명'),compoundCue:'hide'}:null;
+}
+function compoundStairGoal(floor,b=0){
+ const P=S.player,from=flOf(P),up=from<floor,l=S.ladders.find(l=>l.kind==='fstair'&&bldAt(l.tx,l.ty)===b&&(up?l.bfl===from:l.tfl===from));
+ if(!l)return null;
+ const at=up?stairLower(l).up.entry:stairUpper(l).down.entry;
+ return{...at,fl:from,text:'계단으로 '+(up?from+2:from)+'층에 '+(up?'올라가기':'내려오기'),where:'기술 없이 이용 · 같은 층에 도착한 뒤 다음 행동',compoundCue:'stairs'};
+}
+function compoundGoal(){
+ if(!STAGE.compound||S.goalManual||S.storyTrackManual)return null;
+ const P=S.player,pending=S.guards.filter(g=>g.target&&!targetEliminated(g));
+ const ko=pending.find(g=>g.unconscious&&flOf(g)===flOf(P));if(ko){const c=S.corpses.find(c=>c.g===ko);if(c&&dist(P.x,P.y,c.x,c.y)<150)return{x:c.x,y:c.y,fl:flOf(c),g:ko,text:'기절한 '+targetName(ko)+' 마무리',where:c.stashed?'은닉처에서 꺼낸 뒤 공격 1초 길게':P.carrying===c?'몸을 내려놓고 공격 1초 길게':'기절: 살아 있음 · 공격 1초 길게 살해',compoundCue:'target'};}
+ const disguise=disguiseAcquisitionGoal();if(disguise&&pending.length)return{...disguise,compoundCue:'dress'};
+ const body=compoundBodyGoal();if(body&&pending.length)return body;
+ if(STAGE.compoundVertical&&pending.length){
+  const bi=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE));
+  if(!P.got?.pin&&!(P.picks>0)&&!S.compoundJumpUsed){const k=S.keyItems.find(k=>k.key==='pin'&&!k.got);if(k)return{...k,text:'작업대에서 잠금 해제용 철사 챙기기',where:tutText('작업대 가까이에서 확보 · 창문 락픽 1회'),compoundCue:'window'};}
+  const w=S.windows.find(w=>w.tx===5&&w.ty===12);
+  if(!S.compoundThirdFloor&&!P.z&&bi!==1){
+   if(bi!==0&&w&&winSt(w)!=='open'&&P.picks>0)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'정비동 서쪽 창문을 락픽으로 열기',where:tutText('{행동} 잠금 해제 · 움직이지 않기'),compoundCue:'window'};
+   if(!flOf(P)&&bi!==0&&w)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'열린 창문으로 정비동에 들어가기',where:tutText('{행동} 창문 넘기'),compoundCue:'window'};
+   const stair=compoundStairGoal(2,0);if(stair)return stair;
+  }
+  if(!S.compoundJumpUsed&&bi===0){
+   if(P.z===3)return{x:16.5*TILE,y:8.5*TILE,fl:0,z:3,text:'동쪽 거래소 옥상으로 건너뛰기',where:tutText('오른쪽을 향한 뒤 {행동} 건너뛰기'),compoundCue:'jump'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===0);if(l)return{...stairLower(l).up.entry,fl:l.bfl||0,text:'3층에서 옥상으로 올라가기',where:tutText('{행동} 올라가기'),compoundCue:'jump'};
+  }
+  if(P.z===3&&bi===1){const sign=S.traps.find(t=>t.k==='drop'&&t.text==='금성 거래소');if(sign&&!sign.used&&pending.some(g=>g.tag==='handover'))return{x:tc(sign.at[0]),y:tc(sign.at[1]),fl:0,z:3,text:'간판 아래 인계책을 보고 고정 풀기',where:tutText('아래 표적이 간판 밑에 왔을 때 {행동} 1초 길게'),compoundCue:'sign'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l)return{x:l.ux,y:l.uy,fl:0,z:3,text:'옥상에서 거래소 3층으로 내려가기',where:tutText('{행동} 내려가기'),compoundCue:'stairs'};
+  }
+ }
+ const keeper=npc('hallKeeper');
+ if(STAGE.id==='p0'&&keeper&&!['DEAD','CAPTIVE'].includes(keeper.state)&&!flOf(P))return{...keeper,marker:'1층 경비',text:'1층 경비를 뒤에서 제압하기',where:'변장으로 접근 · 몸은 사물함에 숨길 수 있다',compoundCue:'guard'};
+ if(STAGE.compoundLight&&!S.compoundDarkUsed&&pending.length&&bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))>=0){
+  const l=S.lamps.find(l=>!l.outdoor&&!l.off&&flOf(l)===flOf(P)&&l.control);
+  if(l)return{...lampControl(l),fl:flOf(l),text:'벽 스위치로 조명 끄고 경비 분리',where:tutText('{행동} 불 끄기 · 켜러 오는 경비의 등 뒤를 노리기'),compoundCue:'light'};
+ }
+ const camera=S.cams.find(c=>camOn(c)&&flOf(c)===flOf(P));
+ if(STAGE.compoundCamera&&camera)return{...cameraServicePoint(camera),fl:flOf(camera),text:'CCTV 뒤에서 전선 분리',where:'복장은 통행만 허용 · 살해와 서류 작업은 녹화된다 · 2초',compoundCue:'camera'};
+ const target=pending.find(g=>flOf(g)===flOf(P))||pending[0];
+ if(target){
+  if(!P.z&&flOf(P)!==flOf(target)){const s=compoundStairGoal(flOf(target),STAGE.compoundVertical?1:0);if(s)return s;}
+  const body=S.corpses.find(c=>c.g===target&&c.ko);
+  return{...targetKnowledge(target),g:target,marker:targetName(target),text:body?'기절한 '+targetName(target)+' 마무리':targetName(target)+'의 등 뒤에서 처치',where:body?'기절은 살아 있음 · 몸을 내려놓고 공격 1초 길게':'짧게: 기절 · 1초 길게: 살해 · 다른 경비의 시선 밖에서',compoundCue:'target'};
+ }
+ const it=S.items.find(i=>!i.got);
+ if(it)return{...learningObjectGoal(it,'loot',(it.name||STAGE.itemName)+' 챙기기','작업이 끝날 때까지 움직이지 않기'),compoundCue:'document'};
+ return null;
 }
 
 // Automatic guidance uses the route disclosed in the briefing. Manual objectives,
@@ -9920,6 +10100,7 @@ function clearStoredCP(id) { try { const r = storedCP(id); if (r || !id) localSt
 function resumeStoredCP(si) {
   const r = storedCP(STAGES[si].id); if (!r) return false;
   let st; try { st = unpackGraph(r.g); } catch (e) { clearStoredCP(); return false; }
+  if(STAGE.layoutRevision&&st.layoutRevision!==STAGE.layoutRevision){clearStoredCP(STAGE.id);return false;}
   (st.stories || []).forEach((o, i) => { if (STAGE.stories && STAGE.stories[i]) o.d = STAGE.stories[i]; });  // 함수가 든 기회 정의는 판 자료에서 다시 잇는다
   CP = { si, diff: r.diff, S: st, grids: r.grids, used: r.used || 0 };
   return loadCheckpoint();
@@ -10682,7 +10863,7 @@ function needsLethalHold(a) {
 }
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
-  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '살해' });
+  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: a.k==='trap'?'고정 풀기':'살해' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
     const label = a.k === 'drag' ? '먼저 기절시키기' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? (a.label||'기절') : (a.label || '기절').replace(/암살|처치/g, '기절');
     return Object.assign({}, a, { label:combatVictims(a).some(g=>g.target)?'표적 기절':label, hold: '살해' });
@@ -10705,7 +10886,7 @@ function updateLethalHold(P, dt) {
   const a = h.a, gs = combatVictims(a);
   const invalid = gs.some(g => g.child || (a.k !== 'finish' && g.state === 'DEAD') || (a.k === 'pushOff' && !g.climb) || (a.k==='ledgeKill'&&!ledgeTargetValid(g)) || (a.k === 'finish' ? !a.c.container && dist(P.x, P.y, a.c.x, a.c.y) > 60 : dist(P.x, P.y, g.x, g.y) > 180));
   const obscured = gs.some(g => a.k === 'finish' ? !a.c.container && !objectReachable(a.c, 60) : !los(P.x, P.y, g.x, g.y, Math.max(P.z || 0, g.z || 0)));
-  if (a.k!=='finish'&&!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
+  if (a.k!=='finish'&&gs.length&&!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
   if ((a.k === 'finish' && (!a.c || !a.c.ko)) || (a.k === 'trap' && (!a.tp.t || a.tp.t.used))) { P.lethalHold = null; return false; }
   P.vx = P.vy = 0; P.moving = false; h.t += dt;
   if (h.t >= LETHAL_HOLD) { P.lethalHold = null; actPrimary(Object.assign({}, a, { viaZ: true, confirmedHold: true, combatSource: h.source })); }
@@ -10993,13 +11174,13 @@ function drawHandling(P,A,alpha=1,scale=1){
 const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', okt: '옥탑방' };
 // 열쇠·카드키: 색마다 맞는 문만 연다 (gold = 예전 판의 그냥 열쇠)
 const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨간 카드키', '#ff5a5a'], blue: ['파란 카드키', '#5aa8ff'], green: ['초록 카드키', '#5ad88a'], code: ['비밀번호', '#c8ccd2'], pin: ['머리핀', '#d6d9e0'], gear: ['압수품 가방', '#c9a2ff'], truth: ['진실', '#c9a2ff'], supplies: ['예비 도구', '#c9c2ad'] };
-const keyName = k => k === 'code' ? (hasK('code') ? '비밀번호 ' + (STAGE.code || '') : '비밀번호') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
+const keyName = k => STAGE.keyNames?.[k] || (k === 'code' ? (hasK('code') ? '비밀번호 ' + (STAGE.code || '') : '비밀번호') : (KEYS[k] || KEYS.gold)[0]), keyCol = k => (KEYS[k] || KEYS.gold)[1];
 const hasK = k => !!(S.player.keys && S.player.keys[k]);
 function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4,fl:flOf(P),z:P.z||0},{scale:.75}); play('click', 0.5);
   if (k === 'supplies' && P.got && P.got.supplies) return;
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
-  if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
+  if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast((STAGE.keyNames?.pin||'머리핀')+' 확보 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
   if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔'+(abilityOn('dart')?'·다트':''), 2.6, 'good'); return; }
   toast((msg || withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')) + (keyPurpose(k) ? ' · '+keyPurpose(k) : ''), 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '대형 수거함');
@@ -11113,7 +11294,7 @@ function jumpTarget() {
   for (let n = 1; n <= 12; n++) {
     const lx = tx + dx * n, ly = ty + dy * n; if (!inMap(lx, ly)) return null;
     const lv = rLv(lx, ly);
-    if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) return { tx: lx, ty: ly, z: lv };
+    if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) {const key=lx+','+ly+','+lv;S.jumpLandings ||= {};return S.jumpLandings[key] ||= {tx:lx,ty:ly,z:lv};}
     if (lv >= P.z) return null;
     if (!facadeRow(lx, ly)) real++;
     if (real > 1) return null;  // 사람 한 칸 정도 틈만 건너뛴다
@@ -12851,7 +13032,7 @@ function update(dt, present=true) {
   S.t += dt;
   updateSkillDevices();
   updateNpcDoors(dt);
-  updatePlayer(dt); updateBeginnerEntry(); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();
+  updatePlayer(dt); updateBeginnerEntry(); updateFieldLearning(dt); updateActionFlow(); updateOpeningContract();updateCompoundProgress();
   { const P = S.player; S.trail = S.trail || []; S.trailT = (S.trailT || 0) - dt;  // 임무 경로 기록
     if (S.trailT <= 0) { S.trailT = 0.35; const l = S.trail[S.trail.length - 1]; if (!l || dist(l.x, l.y, P.x, P.y) > 20) S.trail.push({ x: P.x, y: P.y, z: P.z || 0, fl: flOf(P) }); } }
   if (S.qRun && S.qRun.length && (S.qRunT -= dt) <= 0) { runQueued(S.qRun.shift()); S.qRunT = 0.1; syncTools(); }
@@ -15070,6 +15251,7 @@ function episodeRadioMessage(){
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';
  else if(evidencePending())text='신원이 녹화됐습니다. 관리 단말에서 감시망을 정지하고 기록도 지울 수 있습니다. 아직 수습할 수 있습니다.';
+ else if(STAGE.compound&&goal.compoundCue){text=({dress:'경비 옷부터 빌립시다. 이번에도 주머니 주인은 잠깐 재워 두고요.',hide:'옷만 빌렸다고 퇴근 처리가 되진 않습니다. 몸도 안 보이게 옮깁시다.',guard:'1층 경비도 같은 방법입니다. 조용히 뒤에서 제압하고 사물함을 이용하세요.',light:'이번엔 불을 꺼 보죠. 누군가는 다시 켜러 와야 하니까. 어둠도 시간 제한이 있습니다.',stairs:'아래층에서 한 일은 위층에서도 통합니다. 계단 너머부터 살펴보세요.',camera:'경비 옷으로 걸어가는 것과 저 렌즈 앞에서 손을 쓰는 건 다릅니다. 카메라 뒤에서 전선을 끊으세요.',window:'작업대의 철사를 챙기면 창문 잠금을 풀 수 있습니다. 특별한 기술은 필요 없습니다.',jump:'세 층을 올라왔으니 길도 넓어졌군요. 한 칸 골목 건너 지붕으로 갑시다.',sign:'인계책이 간판 밑에 섰을 때 행동을 1초 길게 눌러 고정을 풀면 됩니다. 떨어진 뒤에는 다시 달 수 없고요.',target:'표적은 눈에 띄는 옷을 입었습니다. 다른 경비가 등을 돌렸을 때 길게 공격하세요.',document:'사람만 처리하면 반쪽입니다. 장부를 가져가야 다음 배후를 찾을 수 있죠.'})[goal.compoundCue]||text;}
  else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 혼자 있는 경비가 있습니다. 기절시킨 다음 몸 옆에서 행동으로 옷을 얻으세요.';
  else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'운반책은 아직 살아 있습니다. 이번 의뢰는 처치입니다. 몸 가까이서 공격을 1초 길게 누르세요.':'서류에서 찾은 운반책입니다. 적재장 옆으로 돌아 등 뒤를 잡으세요. 이번에는 공격을 길게 눌러 처리합니다.';
  else if(goal.actionReady||actionBusy())text=actionBusy()?'좋습니다. 작업이 끝날 때까지 움직이지 마세요. 주변의 시선도 살피고요.':(P.disguise?'지금입니다. 옷은 통행을 돕지만, 훔치는 모습까지 가려 주지는 않습니다.':'지금입니다. 가까이서 행동하고, 작업이 끝날 때까지 움직이지 마세요.');
@@ -15094,8 +15276,8 @@ function compactObjectiveText(){
    '배차실 2층으로','연락 서류 챙기기','계단으로 1층에 내려오기','동쪽 골목으로 탈출'][S.tutI||0]||'동쪽 골목으로 탈출';
  }
  if(!goal.interrupt&&!goal.exit&&!evidencePending()){
-  if(STAGE.id==='p1'&&S.player.outfit==='crew'&&S.starterPass)return '출고 서류 챙기기';
-  if(STAGE.id==='p2')return S.cams.some(camOn)?'CCTV 전선 분리':'배송 명세서 챙기기';
+  if(!STAGE.compound&&STAGE.id==='p1'&&S.player.outfit==='crew'&&S.starterPass)return '출고 서류 챙기기';
+  if(!STAGE.compound&&STAGE.id==='p2')return S.cams.some(camOn)?'CCTV 전선 분리':'배송 명세서 챙기기';
  }
  return tutText(goal.text).split(' · ')[0].replace('탈출 지점으로 빠져나가기','탈출 지점으로 이동');
 }
@@ -15767,7 +15949,7 @@ function nextGoal() {
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: STAGE.camRoom?.name || placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
   if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
-  { const entry=beginnerEntryGoal();if(entry)return entry;const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
+  { const entry=beginnerEntryGoal();if(entry)return entry;const compound=compoundGoal();if(compound)return compound;const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
   if (oppMode) { const st = trackedStory(), step = st && storyStep(st); if (step) { const at = step.at,roof=st.d.id==='sign'&&st.step===0&&S.traps.find(t=>t.k==='drop'&&t.text==='CLUB'&&!t.used); return { text: '단서: ' + step.text, where: at ? placeName(tc(at[0]), tc(at[1]), at[2]) : '', x: at ? tc(at[0]) : null, y: at ? tc(at[1]) : null, fl: at ? at[2] || 0 : 0, z:roof?signGeometry(roof).z:0, story: st.d.id, storyName: st.d.name }; } }
@@ -16714,7 +16896,7 @@ function installGameApi() {
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
-    beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
+    compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,

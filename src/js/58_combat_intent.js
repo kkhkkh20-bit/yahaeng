@@ -32,7 +32,7 @@ function needsLethalHold(a) {
 }
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
-  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: '살해' });
+  if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: a.k==='trap'?'고정 풀기':'살해' });
   if (['kill', 'kill2', 'drop', 'ambush', 'pull', 'ventKill', 'execute', 'cap', 'drag'].includes(a.k) || a.kill) {
     const label = a.k === 'drag' ? '먼저 기절시키기' : a.k === 'kill2' ? '동시 기절' : a.k === 'cap' || a.k === 'execute' ? (a.label||'기절') : (a.label || '기절').replace(/암살|처치/g, '기절');
     return Object.assign({}, a, { label:combatVictims(a).some(g=>g.target)?'표적 기절':label, hold: '살해' });
@@ -55,7 +55,7 @@ function updateLethalHold(P, dt) {
   const a = h.a, gs = combatVictims(a);
   const invalid = gs.some(g => g.child || (a.k !== 'finish' && g.state === 'DEAD') || (a.k === 'pushOff' && !g.climb) || (a.k==='ledgeKill'&&!ledgeTargetValid(g)) || (a.k === 'finish' ? !a.c.container && dist(P.x, P.y, a.c.x, a.c.y) > 60 : dist(P.x, P.y, g.x, g.y) > 180));
   const obscured = gs.some(g => a.k === 'finish' ? !a.c.container && !objectReachable(a.c, 60) : !los(P.x, P.y, g.x, g.y, Math.max(P.z || 0, g.z || 0)));
-  if (a.k!=='finish'&&!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
+  if (a.k!=='finish'&&gs.length&&!concealedMeleeAllowed(P) || !combatHeld(h.source) || obscured || h.targets.some(v => flOf(v.g) !== v.fl || (v.g.z || 0) !== v.z) || invalid || flOf(P) !== h.fl || (P.z || 0) !== h.z || dist(P.x, P.y, h.x, h.y) > 10 || S.over) { P.lethalHold = null; return false; }
   if ((a.k === 'finish' && (!a.c || !a.c.ko)) || (a.k === 'trap' && (!a.tp.t || a.tp.t.used))) { P.lethalHold = null; return false; }
   P.vx = P.vy = 0; P.moving = false; h.t += dt;
   if (h.t >= LETHAL_HOLD) { P.lethalHold = null; actPrimary(Object.assign({}, a, { viaZ: true, confirmedHold: true, combatSource: h.source })); }

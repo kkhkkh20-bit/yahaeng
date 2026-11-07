@@ -127,11 +127,13 @@ jobs:
             build/growth-v195/
             build/field-v196/
             build/beginner-v197/
+            build/compound-v212/
             build/linear-v198/
             build/targets-v207/
             build/art-v208/
             build/ink-v199/
             build/newgame-v200/
+            build/compound-v212/
             build/field-hud-v211/
             public/version.json
           retention-days: 7
@@ -172,10 +174,7 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT
           python tests/tutorial/first_steps_live.py --device "$REVIEW_DEVICE" --out build/linear-v198/first-live
-          python tests/tutorial/beginner_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/beginner
-          python tests/tutorial/first_night_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/first-night
-          python tests/tutorial/field_learning_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/field
-          python tests/tutorial/growth_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/growth
+          python tests/tutorial/compound_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/compound-v212/live
           python tests/tutorial/action_flow_live.py --device "$REVIEW_DEVICE" --url http://127.0.0.1:8001/public/ --out build/linear-v198/action
           if [ "$REVIEW_DEVICE" = pc ]; then
             YH_REALTIME=1 YH_DEVICE=pc YH_PREP_SKILLS=1 YH_VIP_DIR=build/linear-v198/vip python tests/tutorial/vip_choices_walk.py http://127.0.0.1:8001/public/ v198 smoke
@@ -188,6 +187,7 @@ jobs:
         with:
           name: native-${{ matrix.device }}-${{ github.run_id }}
           path: |
+            build/compound-v212/
             build/linear-v198/
             public/version.json
           retention-days: 7

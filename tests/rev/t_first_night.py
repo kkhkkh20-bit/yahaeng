@@ -21,13 +21,12 @@ async def main():
     S.spare=true;ok(!g.takedownIntent.lethal,'spare target forced lethal '+id);S.spare=false;
    }
    out.push('tap is nonlethal for all human targets; deliberate hold required; spare mode preserved');
-   let S=fresh('p1'),P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor'),g=S.guards[0];ok(S.guards.length===2&&!S.cams.length&&S.items[0].furn,'disguise contract overload/automatic pickup');
-   S.koNext=true;G.killGuard(donor);Object.assign(P,{x:donor.x-32,y:donor.y});G.actEnv();tick(3.3);ok(P.outfit==='crew'&&donor.stripped,'uniform was not obtained from a subdued guard');
-   Object.assign(P,{x:g.x+48,y:g.y+92});tick(.5);ok(g.rawSeen&&!g.seen&&g.state==='PATROL'&&S.starterPass&&!S.stats.detected,'legal ordinary walking causes suspicion');
-   const it=S.items[0];Object.assign(P,{x:it.x,y:it.y,vx:0,vy:0});tick(.1);ok(!it.got,'paper automatically collected');G.actEnv();tick(.7);ok(!it.got&&P.pick,'theft finishes too early');tick(.7);ok(it.got&&S.exitOpen&&!S.stats.detected,'behind-guard theft');
+   let S=fresh('p1'),P=S.player,donor=S.guards.find(g=>g.tag==='uniformDonor'),g=S.guards.find(g=>g.tag==='lightKeeper');ok(S.guards.length===4&&!S.cams.length&&!S.items.length,'second contract should add overlapping guards, not cameras');
+   S.koNext=true;G.killGuard(donor);Object.assign(P,{x:donor.x-32,y:donor.y});G.actCarry(G.envChoices().find(a=>a.k==='dress'));tick(3.3);ok(P.outfit==='crew'&&S.corpses.find(c=>c.g===donor)?.stripped,'uniform was not obtained from subdued guard');
+   S=fresh('p1');P=S.player;g=S.guards.find(g=>g.tag==='lightKeeper');Object.assign(P,{outfit:'crew',disguise:'sam'});S.guards=[g];Object.assign(g,{x:696,y:408,a:0,want:0});Object.assign(P,{x:776,y:408,mode:'walk'});tick(.5);ok(G.zoneInfo(P.x,P.y,0,0).allow.includes('crew')&&!g.seen&&g.state==='PATROL'&&!S.stats.detected,'legal ordinary walking causes suspicion');
+   S=fresh('p2');P=S.player;const it=S.items[0];S.guards=[];Object.assign(P,{x:it.x,y:it.y,fl:it.fl,outfit:'crew',vx:0,vy:0});G.setLayer(P.fl);tick(.1);ok(!it.got,'paper automatically collected');G.actEnv();tick(.7);ok(!it.got&&P.pick,'theft finishes too early');tick(.7);ok(it.got&&S.exitOpen&&!S.stats.detected,'behind-guard theft');
    G.showEnd(true);const points=G.skillBudget();ok(points===2,'first earned point');G.showEnd(true);ok(G.skillBudget()===points,'duplicate reward');out.push('real wardrobe, legal guard sight, interruptible paper theft and single earned reward');
-   localStorage.clear();S=fresh('p2');P=S.player;ok(S.guards.length===1&&S.cams.length===1&&S.items[0].furn,'camera contract overload/automatic pickup');
-   Object.assign(P,{x:S.items[0].x,y:S.items[0].y});G.actEnv();tick(2);ok(!S.over&&S.items[0].got&&(S.stats.camRec||0)>0,'camera mistake forced a story restart or ignored recording');
+   localStorage.clear();S=fresh('e1');P=S.player;S.guards=[];Object.assign(P,{x:S.items[0].x,y:S.items[0].y,fl:S.items[0].fl,outfit:'crew'});G.setLayer(P.fl);G.actEnv();tick(2.5);ok(!S.over&&S.items[0].got&&(S.stats.camRec||0)>0,'camera mistake forced restart or ignored recording');
    return out;
   }''')
   assert await q.evaluate('!__game.S.over&&__game.S.items[0].got&&__game.S.stats.camRec>0'),'camera recording immediately fails the story'
@@ -35,7 +34,7 @@ async def main():
   assert await q.evaluate('!__game.S.over&&!__game.S.items[0].got&&__game.camOn(__game.S.cams[0])&&!__game.S.stats.camRec&&__game.S.player.hp===3'),'recorded theft did not restore safe checkpoint'
   checks.append('CCTV mistakes continue the story; explicit retry restores the safe checkpoint')
   await q.evaluate('''()=>{
-   const G=__game,S=G.S,P=S.player,c=S.cams[0];Object.assign(P,{...G.cameraServicePoint(c),cover:null,vx:0,vy:0});G.actEnv();
+   const G=__game,S=G.S,P=S.player,c=S.cams[0];Object.assign(P,{...G.cameraServicePoint(c),cover:null,vx:0,vy:0,fl:c.fl,outfit:'crew'});G.setLayer(c.fl);G.actEnv();
    for(let n=0;n<190;n++)G.update(.01);if(!G.camOn(c))throw Error('Cable disabled before2s');for(let n=0;n<80;n++)G.update(.01);
    if(G.camOn(c)||!G.CP.S.cams[0].unplugged)throw Error('Cable checkpoint missing');G.endGame(false,'fixture: post-cable death');
   }''')

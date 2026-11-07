@@ -138,6 +138,7 @@ function newGame(si) {
   if (STAGE.tutorial && !STAGE.steps && !S.items.length) S.exitOpen = true;
   if (!STAGE.tutorial||STAGE.lessonLoot) S.items.forEach((it,i) => lootPlace(it,STAGE.itemFurniture?.[i]||STAGE.lootFurniture));  // 훔칠 물건은 바닥 대신 책상·컴퓨터·서류장·금고 위에 둔다
   if (S.mod === 'timer') S.timeLeft = 360 * D().time;
+  S.layoutRevision=STAGE.layoutRevision||0;
   if (S.mod === 'bare' || STAGE.bare) { S.player.picks = 0; S.player.stones = 0; S.player.kunai = 0; if (STAGE.bare) S.player.coins = 0; }  // 맨손 시작 (변형 '맨손' · 붙잡혀 온 판)
   trapsInit(); propsInit(); storiesInit(); S.intel = []; S.learned = []; S.shiftI = 0; S.shiftT = STAGE.shift ? STAGE.shift.first || STAGE.shift.every : 0;
   // 전봇대와 전깃줄: 줄 끝은 전봇대 꼭대기 또는 옥상 가장자리

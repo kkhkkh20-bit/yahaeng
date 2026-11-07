@@ -15,9 +15,9 @@ async def main(args):
    for scene in ['walk','approach','wardrobe','danger','items']:
     await q.evaluate('''scene=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id===(scene==='items'?'tE':scene==='approach'?'p0':scene==='danger'?'p2':'p1')),false);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.fade=0;
      if(scene==='items'){Object.assign(P,{x:768,y:744,stones:3,coins:2,smokes:2,hasRadio:true,radioCharges:2});G.input.tool='kunai';G.input.padWhistle=false;}
-     if(scene==='walk'){Object.assign(P,{x:840,y:552,outfit:'crew',disguise:'sam',mode:'walk'});S.starterPass=true;}
-     if(scene==='approach')Object.assign(P,{x:660,y:408,mode:'sneak'});
-     if(scene==='wardrobe'){const g=S.guards.find(g=>g.tag==='uniformDonor');S.koNext=true;G.killGuard(g,null,null,true);Object.assign(P,{x:617,y:696,mode:'sneak'});}
+     if(scene==='walk'){Object.assign(P,{x:960,y:552,outfit:'crew',disguise:'sam',mode:'walk'});S.starterPass=true;}
+     if(scene==='approach'){Object.assign(P,{x:1236,y:360,fl:1,mode:'sneak'});G.setLayer(1);}
+     if(scene==='wardrobe'){const g=S.guards.find(g=>g.tag==='uniformDonor');S.koNext=true;G.killGuard(g,null,null,true);Object.assign(P,{x:660,y:408,mode:'sneak'});}
      if(scene==='danger'){Object.assign(P,{x:744,y:360});const g=S.guards[0];Object.assign(g,{x:790,y:360,a:Math.PI,state:'ALERT',seen:true,rawSeen:true,eyeT:1,meter:.65,lastSeen:{x:P.x,y:P.y,fl:0,z:0}});}
      if(scene==='danger')S.expo=2;P.light=G.lightAt(P.x,P.y);G.moveCamera(1);G.updateHUD(true);if(scene!=='danger')window.__step(3);G.syncEpisodeRadio();G.benchDraw(2);
     }''',scene)

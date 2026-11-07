@@ -3,13 +3,13 @@
 const FURN_HIDE = { wardrobe: '옷장', bed: '침대 밑', locker: '사물함', okt: '옥탑방' };
 // 열쇠·카드키: 색마다 맞는 문만 연다 (gold = 예전 판의 그냥 열쇠)
 const KEYS = { gold: ['열쇠', '#f2c46b'], red: ['빨간 카드키', '#ff5a5a'], blue: ['파란 카드키', '#5aa8ff'], green: ['초록 카드키', '#5ad88a'], code: ['비밀번호', '#c8ccd2'], pin: ['머리핀', '#d6d9e0'], gear: ['압수품 가방', '#c9a2ff'], truth: ['진실', '#c9a2ff'], supplies: ['예비 도구', '#c9c2ad'] };
-const keyName = k => k === 'code' ? (hasK('code') ? '비밀번호 ' + (STAGE.code || '') : '비밀번호') : (KEYS[k] || KEYS.gold)[0], keyCol = k => (KEYS[k] || KEYS.gold)[1];
+const keyName = k => STAGE.keyNames?.[k] || (k === 'code' ? (hasK('code') ? '비밀번호 ' + (STAGE.code || '') : '비밀번호') : (KEYS[k] || KEYS.gold)[0]), keyCol = k => (KEYS[k] || KEYS.gold)[1];
 const hasK = k => !!(S.player.keys && S.player.keys[k]);
 function giveKey(k, msg) { const P = S.player; spawnEffect('loot',{x:P.x,y:P.y-4,fl:flOf(P),z:P.z||0},{scale:.75}); play('click', 0.5);
   if (k === 'supplies' && P.got && P.got.supplies) return;
   if (k === 'pin' || k === 'gear' || k === 'supplies') (P.got || (P.got = {}))[k] = true; else { P.keys[k] = true; P.hasKey = true; }  // 도구는 열쇠 목록에 남기지 않는다
   if (k === 'supplies') { P.picks++; P.kunai++; syncTools(); toast('은닉한 도구 — 락픽 +1 · 다트 +1', 2.6, 'good'); return; }
-  if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast('머리핀을 찾았다 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
+  if (k === 'pin') { P.picks = (P.picks || 0) + 1; toast((STAGE.keyNames?.pin||'머리핀')+' 확보 — 락픽 대신 한 번 쓸 수 있다', 2.6, 'good'); return; }
   if (k === 'gear') { S.gearRecovered=true;P.picks = Math.max(P.picks || 0, 2); P.stones = Math.max(P.stones || 0, 3); P.kunai = Math.max(P.kunai || 0, 3); syncRuntimeSkills();syncTools(); toast('압수품을 되찾았다 — 락픽·빈 캔'+(abilityOn('dart')?'·다트':''), 2.6, 'good'); return; }
   toast((msg || withJosa(keyName(k), '을/를') + (k === 'code' ? ' 알아냈다' : ' 챙겼다')) + (keyPurpose(k) ? ' · '+keyPurpose(k) : ''), 2.2, 'good'); }
 const hideName = h => FURN_HIDE[h.type] || (h.type === 'well' ? (STAGE.well === 'manhole' ? '맨홀' : '맨홀') : h.type === 'bush' ? '화단' : '대형 수거함');
@@ -123,7 +123,7 @@ function jumpTarget() {
   for (let n = 1; n <= 12; n++) {
     const lx = tx + dx * n, ly = ty + dy * n; if (!inMap(lx, ly)) return null;
     const lv = rLv(lx, ly);
-    if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) return { tx: lx, ty: ly, z: lv };
+    if (n > 1 && lv > 0 && !robAt(lx,ly) && (lv === P.z || lv === P.z - 1) && real >= 1) {const key=lx+','+ly+','+lv;S.jumpLandings ||= {};return S.jumpLandings[key] ||= {tx:lx,ty:ly,z:lv};}
     if (lv >= P.z) return null;
     if (!facadeRow(lx, ly)) real++;
     if (real > 1) return null;  // 사람 한 칸 정도 틈만 건너뛴다

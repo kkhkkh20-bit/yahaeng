@@ -21,7 +21,7 @@ async def main():
      seen.push({id,name:G.targetName(g),key,appearance:profile.appearance});
     }
    }
-   ok(new Set(coats).size===9,'officers share a coat colour');
+   ok(new Set(coats).size===seen.length,'officers share a coat colour');
    let S=fresh('m2'),g=S.guards.find(g=>g.target),P=S.player;await G.spriteSources.load('suitPersonaMotion');
    Object.assign(P,{x:g.x-90,y:g.y+45,fl:g.fl,z:0});Object.assign(g,{state:'PATROL',moving:false,path:null,wait:12});
    const before=JSON.stringify([g.x,g.y,g.a,g.route,g.wait,g.meter,S.stats,S.items.map(i=>i.got)]),fov=G.guardFov(g),budget=G.skillBudget();

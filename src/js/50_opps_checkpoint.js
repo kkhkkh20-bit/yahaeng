@@ -85,6 +85,7 @@ function clearStoredCP(id) { try { const r = storedCP(id); if (r || !id) localSt
 function resumeStoredCP(si) {
   const r = storedCP(STAGES[si].id); if (!r) return false;
   let st; try { st = unpackGraph(r.g); } catch (e) { clearStoredCP(); return false; }
+  if(STAGE.layoutRevision&&st.layoutRevision!==STAGE.layoutRevision){clearStoredCP(STAGE.id);return false;}
   (st.stories || []).forEach((o, i) => { if (STAGE.stories && STAGE.stories[i]) o.d = STAGE.stories[i]; });  // 함수가 든 기회 정의는 판 자료에서 다시 잇는다
   CP = { si, diff: r.diff, S: st, grids: r.grids, used: r.used || 0 };
   return loadCheckpoint();

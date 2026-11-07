@@ -13,7 +13,7 @@ function accessReadout(at=S.player){
   const zi=zoneInfo(at.x,at.y,at.z||0,flOf(at)),P=S.player,uniform=P.outfit?outfitName(P.outfit):'평상복';
   if(!STAGE.zones)return{zi,allowed:false,text:uniform+' · 잠입 구역'};
   if(zi.k===Z_PUB)return{zi,allowed:true,text:uniform+' · 공개 구역'};
-  if(STAGE.openingContract)return{zi,allowed:false,text:'폐차장 · 들키지 않고 잠입'};
+  if(STAGE.openingContract&&!STAGE.compound)return{zi,allowed:false,text:'폐차장 · 들키지 않고 잠입'};
   if(permitted(zi))return{zi,allowed:true,text:permitName(zi.allow)+' · 통행 허용'};
   return{zi,allowed:false,text:zi.secure||!zi.allow.length?'보안구역 · 복장으로 통행 불가':uniform+' · 통행 불가',need:zi.allow.map(outfitName).join(' / ')};
 }
