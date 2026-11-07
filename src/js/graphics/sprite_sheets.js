@@ -148,7 +148,8 @@ function prWarm(keys, first) {
   const add = (k, ci, front) => { const id = k + '#' + ci; const i = prWarmQ.indexOf(id); if (i >= 0) prWarmQ.splice(i, 1); if (front) prWarmQ.unshift(id); else prWarmQ.push(id); };
   const ks = keys.filter(k => k && PR_PAL[prSplit(k)[0]]);
   const l1 = [], l2 = [];
-  for (const k of ks) { for (const ci of prWarmParts(k, PR_WARM1)) l1.push([k, ci]); if (k !== 'ninja' && (first === 2)) for (const ci of prWarmParts(k, PR_WARM2)) l2.push([k, ci]); }
+  const personaAnims=k=>prSplit(k)[1]?.endsWith('PersonaMotion')?Object.keys(PR.bodies[prSplit(k)[1]].anims):PR_WARM1;
+  for (const k of ks) { for (const ci of prWarmParts(k, personaAnims(k))) l1.push([k, ci]); if (k !== 'ninja' && (first === 2)) for (const ci of prWarmParts(k, PR_WARM2)) l2.push([k, ci]); }
   if (first) { for (const [k, ci] of l2.reverse()) add(k, ci, true); for (const [k, ci] of l1.reverse()) add(k, ci, true); }
   else { for (const [k, ci] of l1) add(k, ci); for (const [k, ci] of l2) add(k, ci); }
   if (prWarm.on || !prWarmQ.length) return; prWarm.on = true;
@@ -172,12 +173,13 @@ function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
   prNear.clear();const fluidKeys=[...keys,'ninja'].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
-  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  const persona=keys.filter(k=>Object.values(TARGET_CAST).some(p=>p.key===k)).map(k=>{const[p,b]=prSplit(k);return p+'@'+b+'PersonaMotion';}).filter(k=>PR.bodies?.[prSplit(k)[1]]);
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...persona,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
   // Preload only the normal silhouettes used by people in this mission.
-  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion')prLoadBody(bn);
+  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion'||bn.endsWith('PersonaMotion'))prLoadBody(bn);
 }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)

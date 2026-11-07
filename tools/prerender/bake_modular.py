@@ -29,6 +29,7 @@ RECIPES = {
  'femaleSuit': ('heroSuit', None, CIV_ANIMS),
  'femaleWorker': ('heroWorker', None, CIV_ANIMS + ['hold', 'holdI']),
  'big': ('male', BODIES['big'], CIV_ANIMS),
+ 'bossBig': ('suit', BODIES['big'], CIV_ANIMS),
  'fBob': ('woman', None, CIV_ANIMS), 'fLong': ('formal', None, CIV_ANIMS),
  'fTail': ('woman', {'parts': [BODIES['fTail']['parts'][0]]}, CIV_ANIMS),
  'coat': ('suit', None, CIV_ANIMS), 'old': ('suit', BODIES['old'], CIV_ANIMS),
@@ -45,7 +46,7 @@ LOOK_MAP = {'ninja': 'hero', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
 LOOK_MAP.update({f'civ{i}': ['male', 'fBob', 'male', 'fLong', 'male', 'coat', 'fTail', 'pack', 'old', 'male'][i] for i in range(10)})
 # Widen crowded civilian frames; exported scale/ground anchors retain world size.
-FRAME_PADDING = {name:1.4 for name in ['big','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
+FRAME_PADDING = {name:1.4 for name in ['big','bossBig','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
 FRAME_PADDING.update({'oldMotion':1.5,'packMotion':1.2})
 PLAYER_MAP = {'crew': 'heroCrew', 'staff': 'heroWorker', 'courier': 'heroWorker',
               'waiter': 'heroSuit', 'cater': 'heroWorker'}
@@ -179,10 +180,11 @@ async def main():
     face_im.save(OUT/f'face_{bn}.webp','WEBP',lossless=True,method=6)
     print(bn,col,(OUT/filename).stat().st_size,flush=True)
     (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
-   for bn in RECIPES:
+   face_recipes=[bn for bn in RECIPES if not bn.endswith(('Motion','Lid'))]
+   for bn in face_recipes:
     face=OUT/f'face_{bn}.webp'
     if face.exists():faces.append((bn,Image.open(face).convert('RGBA')))
-   if len(faces)==len(RECIPES) and not requested_patch:
+   if len(faces)==len(face_recipes) and not requested_patch:
     image=Image.new('RGBA',(256*len(faces),256))
     for i,(_,face) in enumerate(faces):image.paste(face,(i*256,0))
     image.save(OUT/'face.webp','WEBP',lossless=True,method=6)

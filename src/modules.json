@@ -226,6 +226,10 @@
       "group": "mission_plan"
     },
     {
+      "path": "44_target_personality.js",
+      "group": "mission_plan"
+    },
+    {
       "path": "44_vip_contract.js",
       "group": "vip_contract"
     },

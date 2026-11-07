@@ -35,6 +35,7 @@ async def main():
     else:await q.evaluate('s=>tick(s)',s)
    async def draw():await q.evaluate('__game.updateHUD(true);__game.moveCamera(1);__game.benchDraw(1)')
    async def action(key,button,seconds=.02):
+    if REALTIME:seconds=max(seconds,.08)
     await draw()
     if touch:
      r=await q.locator(button).bounding_box();assert r,(name,button)
@@ -106,8 +107,12 @@ async def main():
     await tick(.1)
    else:raise AssertionError(('no safe uniform window',watch))
    print('UNIFORM GAP',json.dumps(watch),flush=True)
-   await action('z','#btnAct');await tick(1.4);assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious')
-   await env('dress');assert await q.evaluate('__game.S.player.outfit==="crew"'),'guard uniform not stolen';print('UNIFORM ACQUIRED',await q.evaluate('({outfit:__game.S.player.outfit,hp:__game.S.player.hp,t:__game.S.t})'),flush=True)
+   await action('z','#btnAct');await tick(1.4)
+   if REALTIME:await q.wait_for_function('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious&&!__game.actionBusy()',timeout=7000)
+   assert await q.evaluate('__game.S.guards.find(g=>g.tag==="uniformDonor").unconscious')
+   await env('dress')
+   if REALTIME:await q.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000)
+   assert await q.evaluate('__game.S.player.outfit==="crew"'),'guard uniform not stolen';print('UNIFORM ACQUIRED',await q.evaluate('({outfit:__game.S.player.outfit,hp:__game.S.player.hp,t:__game.S.t})'),flush=True)
    await move(456,792);await move(456,816)
    if APPROACH!='smoke':
     for at in [(648,816),(648,504)]:await move(*at)
@@ -149,13 +154,18 @@ async def main():
    # Subdue the ordinary hallway patrol from its observed rear. Keeping it
    # active through a safe's keypad, door and theft depends on a single short
    # pause; a real nonlethal takedown gives the player a repeatable opening.
-   await move(264,552)
+   await move(360,552)
+   if await q.evaluate('__game.S.player.mode')=='sneak':await action('Control','#btnCrouch')
    for _ in range(1500):
-    if await q.evaluate('(()=>{const g=__game.S.guards[6];return g.state==="PATROL"&&g.x<=270&&g.y<465&&g.wait>4.5&&Math.sin(g.a)<-.6})()'):break
+    if await q.evaluate('(()=>{const g=__game.S.guards[6];return g.state==="PATROL"&&g.x<=270&&g.y<465&&g.wait>5&&Math.cos(g.a)<-.85})()'):break
     await tick(.1)
    else:raise AssertionError('hallway patrol never exposes its rear')
+   # Walk around the actual desk on the east, then approach the observed rear.
+   await move(360,456);await move(304,456)
    if await q.evaluate('__game.S.player.mode')!='sneak':await action('Control','#btnCrouch')
-   await move(264,490);await action('z','#btnAct');await tick(1.5)
+   assert await q.evaluate('(()=>{const G=__game,a=G.attackAction();return (a.list||[a.g]).some(g=>g===G.S.guards[6])})()'),'hallway rear contact unavailable'
+   await action('z','#btnAct');await tick(1.5)
+   if REALTIME:await q.wait_for_function('__game.S.guards[6].unconscious&&!__game.actionBusy()',timeout=7000)
    assert await q.evaluate('__game.S.guards[6].unconscious'),'hallway rear takedown failed'
    if await q.evaluate('__game.S.player.mode')=='sneak':await action('Control','#btnCrouch')
    gate=await q.evaluate('(()=>{const d=__game.S.doors.find(d=>d.keyLock==="code"&&!(d.fl||0));return{x:d.x,y:d.y}})()')
@@ -213,6 +223,7 @@ async def main():
    # followed by walking back past an awakened patrol is not a safe escape.
    rear=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.tag==="cipherKeeper");return{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40}})()')
    await route_local(rear['x'],rear['y']);await action('z','#btnAct');await tick(1.4)
+   if REALTIME:await q.wait_for_function('__game.S.guards.find(g=>g.tag==="cipherKeeper").unconscious&&!__game.actionBusy()',timeout=7000)
    assert await q.evaluate('__game.S.guards.find(g=>g.tag==="cipherKeeper").unconscious'),'cipher keeper was not knocked out'
    paper=await q.evaluate('({x:__game.S.items[1].x,y:__game.S.items[1].y})');await route_local(paper['x'],paper['y']);await env('loot')
    if not await q.evaluate('__game.S.items[1].got&&__game.S.exitOpen'):

@@ -1565,6 +1565,28 @@ campaignStage('tB').story.before='금성회가 증인들을 사고팔고 있다.
 campaignStage('e3').story.after='결재자는 회계 중개인 문기석. 그 위에는 이름 없는 클럽 실장이 있다. 교환실의 인계서를 확보하면 다음 보고 대상을 알 수 있다.';
 campaignStage('e3').endText=campaignStage('e3').story.after;
 campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실장에게 보낼 인계서가 2층에 있다. 문기석의 보고가 넘어가기 전에 빼낸다.';
+// Identities keep their existing bodies, access rules and paths. The coat colour
+// carries rank; authored performances happen at the actual stops on those paths.
+const OFFICER_STYLE={
+ runner:{appearance:'주황색 후드 · 검은 배낭',coat:'#ce7c27',pants:'#252d39',habit:'혼자 담배를 피우며 거래 상대를 기다린다.',temperament:'성급한 하청 운반책',cues:[['smoke','거래까지 담배 한 대. 그놈만 오면 바로 뜬다.'],['phone','아직도 출발 안 했어? 오래 기다릴 생각 없어.']],alert:'거래는 취소야! 나부터 빠져야겠어!'},
+ contact:{appearance:'선명한 청색 작업복 · 검은 작업모',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[['phone','신호 오기 전엔 움직이지 마. 명단은 내가 넘긴다.'],['point','여기선 이름 부르지 마. 연락 끝나면 바로 흩어져.']],alert:'연락선을 끊어! 여긴 들켰다!'},
+ broker:{appearance:'옥색 정장 · 갈색 머리',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[['ledger','숫자가 안 맞잖아. 사본 말고 원본으로 가져와.'],['phone','교환실 연락이 왜 없어? 실장께 보고하기 전에 확인해.']],alert:'장부부터 지켜! 저 사람 들여보낸 게 누구야!'},
+ club:{appearance:'붉은 정장 · 흰 셔츠 · 검은 머리',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[['smoke','담배 피울 때는 붙지 마. 입구에서 기다려.'],['drink','잔은 비워 두지 마. 얘기는 VIP룸에서 하지.'],['phone','장부 건이면 내선으로 돌려. 내가 직접 간다.']],reply:'알겠습니다. 입구에서 기다리겠습니다.',alert:'내 클럽에서 감히! 문 막아, 당장!'},
+ collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[['ledger','한 푼이라도 비면 네가 메워. 오늘 합계는 다시 맞춰.'],['point','떨어지지 마. 현금 금고는 내 빨간 카드로만 연다.'],['phone','수금 끝나면 운송 쪽으로 넘긴다. 결재부터 받아.']],reply:'예, 반장님. 경호 붙어 있습니다.',alert:'돈에는 손대지 마! 저놈부터 잡아!'},
+ district:{appearance:'보라색 정장 · 은빛 머리',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[['ledger','수금은 장무혁에게. 계약 결재는 내가 한다.'],['point','손님이라고 다 들이지 마. 허락받은 사람만 받아.']],reply:'예. VIP룸 입구를 지키겠습니다.',alert:'결재도 없이 누가 들여보냈나! 경호는 뭐 하는 거야!'},
+ freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[['ledger','봉인 번호부터 맞춰. 명세서랑 다르면 차를 세워.'],['phone','새벽배송 시간 맞춰. 승인 전에는 출발하지 마.'],['point','저 화물 다시 확인해. 빈 차로 돌려보낼 생각 없어.']],alert:'차량 세워! 출고 기록부터 잠가!'},
+ crow:{appearance:'진홍색 정장 · 백발',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[['phone','보고는 나한테만. 위에서 묻기 전엔 입 열지 마.'],['ledger','장부는 여기 남긴다. 원본 없이 거래를 넘길 순 없어.'],['point','얼굴까지 확인해. 위층에 아무나 들여보내지 마.']],alert:'올빼미… 여기까지 왔군. 경호, 막아!'},
+ chair:{appearance:'아이보리 재킷 · 자주색 바지 · 은발',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[['drink','잔은 높이. 오늘 일은 오늘 밤에 끝냅시다.'],['point','연못 쪽은 비워 두세요. 조용히 걸을 곳은 필요하니까.'],['drink','명령은 원장에 남깁니다. 내 서명만 확인하세요.']],reply:'네, 의장님.',alert:'당황하지 마세요. 문을 닫고 경비를 부르세요.'}
+};
+const wardrobeWords=[['갈색 후드','주황색 후드'],['회청색 작업복','선명한 청색 작업복'],['청록 정장','옥색 정장'],['청록색 정장','옥색 정장'],['자주색 정장','붉은 정장'],['황토색 재킷','황금색 재킷'],['밝은 회색 정장','보라색 정장'],['밝은 정장','보라색 정장'],['적갈색 정장','진홍색 정장'],['아이보리 정장','아이보리 재킷과 자주색 바지']];
+const wardrobeText=text=>wardrobeWords.reduce((s,[from,to])=>s.replaceAll(from,to),text);
+for(const [id,style]of Object.entries(OFFICER_STYLE)){
+ const p=TARGET_CAST[id];p.appearance=style.appearance;p.temperament=style.temperament;p.habit=style.habit;
+ p.palette=[...p.palette.slice(0,2),style.coat,style.pants,style.shoes||p.palette[4]];p.personality=style;
+}
+for(const st of STAGES){if(st.brief)st.brief=wardrobeText(st.brief);if(DIALOGUE[st.id])DIALOGUE[st.id]=DIALOGUE[st.id].map(([who,text])=>[who,wardrobeText(text)]);}
+
+TARGET_CAST.collector.key='castCollector@bossBig';
 
 'use strict';
 (function () {
@@ -2738,7 +2760,8 @@ function prWarm(keys, first) {
   const add = (k, ci, front) => { const id = k + '#' + ci; const i = prWarmQ.indexOf(id); if (i >= 0) prWarmQ.splice(i, 1); if (front) prWarmQ.unshift(id); else prWarmQ.push(id); };
   const ks = keys.filter(k => k && PR_PAL[prSplit(k)[0]]);
   const l1 = [], l2 = [];
-  for (const k of ks) { for (const ci of prWarmParts(k, PR_WARM1)) l1.push([k, ci]); if (k !== 'ninja' && (first === 2)) for (const ci of prWarmParts(k, PR_WARM2)) l2.push([k, ci]); }
+  const personaAnims=k=>prSplit(k)[1]?.endsWith('PersonaMotion')?Object.keys(PR.bodies[prSplit(k)[1]].anims):PR_WARM1;
+  for (const k of ks) { for (const ci of prWarmParts(k, personaAnims(k))) l1.push([k, ci]); if (k !== 'ninja' && (first === 2)) for (const ci of prWarmParts(k, PR_WARM2)) l2.push([k, ci]); }
   if (first) { for (const [k, ci] of l2.reverse()) add(k, ci, true); for (const [k, ci] of l1.reverse()) add(k, ci, true); }
   else { for (const [k, ci] of l1) add(k, ci); for (const [k, ci] of l2) add(k, ci); }
   if (prWarm.on || !prWarmQ.length) return; prWarm.on = true;
@@ -2762,12 +2785,13 @@ function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
   prNear.clear();const fluidKeys=[...keys,'ninja'].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
-  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  const persona=keys.filter(k=>Object.values(TARGET_CAST).some(p=>p.key===k)).map(k=>{const[p,b]=prSplit(k);return p+'@'+b+'PersonaMotion';}).filter(k=>PR.bodies?.[prSplit(k)[1]]);
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...persona,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
   // Preload only the normal silhouettes used by people in this mission.
-  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion')prLoadBody(bn);
+  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion'||bn.endsWith('PersonaMotion'))prLoadBody(bn);
 }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)
@@ -2981,7 +3005,7 @@ function drawGuard(g) {
     drawPR(k, g.x, g.y, -Math.PI / 2, 'climb', 0, 1, 1, 14, ((Math.floor(c.t * 7) * (c.up ? 1 : -1)) % 4 + 4) % 4); return;
   }
   if (g.z) { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(g.x + 4 + g.z * 2, g.y + 6 + g.z * 3, 15, 11, 0, 0, TAU); ctx.fill(); }
-  if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); drawPR(k, g.x, g.y, g.a, guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
+  if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); const pose=targetGesturePose(g);drawPR(pose?.key||k, g.x, g.y, g.a, pose?.anim||guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05, 0, pose?.frame??-1); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
   drawChar(k, g.x, g.y, g.a, g.moving || g.state === 'CAPTIVE', 1, 3, g.swingT > 0); drawActorGear(g);
 }
 function drawDog(x, y, a, moving, alpha = 1, dead = false) {
@@ -3707,9 +3731,9 @@ function renderCaseDetail(id){
  for(const b of $('caseHierarchy').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.caseNode===id));
  const panel=$('caseDetail');panel.replaceChildren();
  panel.append(caseElement('small','case-kicker',caseStatus(n)),caseElement('h3','',n.level>=2?n.profile.name:n.level?n.alias:'아직 밝혀지지 않은 인물'));
- if(n.level>=2)panel.append(caseElement('p','',n.profile.appearance));
+ if(n.level>=2){panel.append(caseElement('p','',n.profile.appearance));if(n.profile.temperament)panel.append(caseElement('p','',n.profile.temperament));}
  panel.append(caseElement('p','case-area',n.level>=2?n.area:n.level?'정확한 신원과 거점은 다음 단서로 확인한다.':'하부 간부의 연락과 회수한 문서에서 보고선을 찾는다.'));
- if(n.level>=3)panel.append(caseElement('p','case-routine',n.routine));
+ if(n.level>=3){panel.append(caseElement('p','case-routine',n.routine));if(n.profile.habit)panel.append(caseElement('p','',n.profile.habit));}
  if(n.severed)panel.append(caseElement('p','','하부 연락선은 끊겼다. 직접 처치가 확인된 인물은 아니다.'));
  const links=CASE_LINKS.filter(([a,b])=>[a,b].includes(id)&&nodes.find(n=>n.id===a).level&&nodes.find(n=>n.id===b).level);
  if(links.length){panel.append(caseElement('h4','','확인된 보고선'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
@@ -6581,7 +6605,8 @@ function drawSpeech() {
       for(const c of word){if(ctx.measureText(lines[i]+c).width>maxText&&lines[i]){lines.push('');i++;}lines[i]+=c;}
       lines[i]+=' ';
     }
-    const w=Math.max(...lines.map(l=>ctx.measureText(l.trim()).width))+20*k,h=(12+lines.length*17)*k;
+    const identity=g.target&&g.say===g.persona?.said?targetName(g):g.say===g.officerReply?.text&&g.officerReply.until>S.t?'경호원':null,headH=identity?14*k:0;
+    const w=Math.max(...lines.map(l=>ctx.measureText(l.trim()).width),identity?ctx.measureText(identity).width:0)+20*k,h=(12+lines.length*17)*k+headH;
     if(w>vx1-vx0||h>vy1-vy0)continue;
     const cx=clamp(g.x-w/2,vx0,vx1-w),above=g.y-58-h;
     let at=null;
@@ -6605,7 +6630,7 @@ function drawSpeech() {
     else if(head.y<=y){const tx=clamp(head.x,x+12*k,x+w-12*k);a=[tx-5*k,y+k];b=[tx+5*k,y+k];tip=[clamp(head.x,tx-tail,tx+tail),Math.max(head.y,y-tail)];}
     else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
     ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
-    ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
+    ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';if(identity){ctx.font=uiFont(9*k);ctx.fillStyle='#626a70';ctx.fillText(identity,x+w/2,y+12*k);ctx.font=uiFont(12*k);ctx.fillStyle='#202521';}lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k+headH));
   }
   ctx.restore();
 }
@@ -7884,6 +7909,72 @@ function updateVipPlan(dt) {
   if (canObserveTarget(g)) toast('실장이 술을 마셨다 — 화장실로 향한다',2.6,'good');
 }
 
+// Visual performances and local speech never change a route, sight direction,
+// suspicion meter, movement speed, attack opening or skill/progression reward.
+function targetPersonaKey(g){
+ const profile=targetProfile(g);if(!profile?.personality||g.stripped)return null;
+ const [pal,body]=prSplit(profile.key),source=body+'PersonaMotion';
+ return PR?.bodies?.[source]?pal+'@'+source:null;
+}
+function targetIsPerforming(g){
+ return !!targetProfile(g)?.personality&&g.state==='PATROL'&&!g.stripped&&!g.unconscious&&!g.moving&&!g.path?.length&&g.wait>.1&&!g.climb&&!g.doomed&&!g.yank&&!g.containerMoving&&!g.ledgeFalling&&!g.chat&&!g.drinkT&&!g.mealT&&!g.swingT&&!S.alevel&&!S.player.killAnim&&!S.player.assassinAnim&&!(STAGE.id==='m2'&&g.tag==='vip'&&S.vipPlan?.phase==='sick');
+}
+function targetCue(g){
+ const d=targetProfile(g)?.personality;if(!d)return null;
+ const s=schedNow(g),cur=s?.cur,routeIndex=(g.ri-1+g.route.length)%g.route.length;
+ if(STAGE.id==='m2'&&g.tag==='vip'&&cur?.once)return ['ledger','장부는 원본으로 가져와. 경호는 밖에서 기다려.'];
+ if(vipRoutine(g)==='smoke')return d.cues.find(c=>c[0]==='smoke')||d.cues[0];
+ if(STAGE.id==='m2'&&g.tag==='vip'&&cur?.name==='VIP룸')return ['drink','여기서 한 잔 더 하지. 장부 연락 오면 바로 알려.'];
+ if(cur?.act==='양주')return d.cues.find(c=>c[0]==='drink')||d.cues[0];
+ if(cur?.act==='통화')return d.cues.find(c=>c[0]==='phone')||d.cues[0];
+ if(cur&&g.tag==='boss'&&STAGE.id==='n1')return d.cues[(g.sched.indexOf(cur)+d.cues.length)%d.cues.length];
+ return d.cues[(g.route.length>1?routeIndex:g.persona?.sequence||0)%d.cues.length];
+}
+function targetGesturePose(g){
+ const p=g.persona,key=targetPersonaKey(g);if(!key||!p?.pose||S.t>=p.pose.end||!targetIsPerforming(g))return null;
+ const body=prSplit(key)[1];if(!prBodies[body]){prLoadBody(body);return null;}
+ const m=PR.bodies[body],anim=p.pose.kind,n=m.anims[anim]?.[1];if(!n)return null;
+ return{key,anim,frame:clamp((S.t-p.pose.start)/(p.pose.end-p.pose.start),0,1)*(n-1)};
+}
+function targetSpeechNear(g){return flOf(g)===flOf(S.player)&&(g.z||0)===(S.player.z||0)&&dist(g.x,g.y,S.player.x,S.player.y)<330&&canObserveTarget(g);}
+// Let a visible officer finish a local line before the optional radio card
+// returns. The underlying goal/message is never dismissed or advanced.
+function targetDialogueVisible(){
+ if(!S||S.alevel||S.player.captive||actionBusy()||input.aiming)return false;
+ return S.guards.some(g=>{
+  const own=g.say&&(g.say===g.persona?.said||g.say===g.officerReply?.text&&g.officerReply.until>S.t),pending=S.personaReply?.owner===g.id&&S.personaReply.at-S.t<1;
+  if(g.state!=='PATROL'||(!own&&!pending)||!targetSpeechNear(g))return false;
+  const x=(g.x-cam.x)*SCALE+W/2,y=(g.y-cam.y)*SCALE+H/2;
+  return x>20&&x<W-20&&y>65&&y<H-50;
+ });
+}
+function updateTargetPersonalities(){
+ if(!S||S.over||DLG.modal)return;
+ if(S.personaReply&&S.t>=S.personaReply.at){
+  const reply=S.personaReply;S.personaReply=null;const g=S.guards.find(g=>g.id===reply.id),leader=S.guards.find(g=>g.id===reply.owner);
+  if(g&&leader&&targetIsPerforming(leader)&&g.state==='PATROL'&&!g.say&&!g.chat&&flOf(g)===flOf(leader)&&dist(g.x,g.y,leader.x,leader.y)<150&&targetSpeechNear(leader)&&los(g.x,g.y,leader.x,leader.y)){gsay(g,reply.text,2.7);g.actionSpeechUntil=S.t+2.7;g.officerReply={text:reply.text,until:S.t+2.7};}
+ }
+ for(const g of S.guards){
+  const d=targetProfile(g)?.personality;if(!d)continue;
+  const p=g.persona||(g.persona={sequence:0,next:0,lastState:'PATROL'});
+  if(g.state!==p.lastState){if(g.say===p.said){g.say=null;g.sayT=0;}if(['ALERT','FLEE','SEARCH','SUSPICIOUS'].includes(g.state)&&!g.unconscious)p.reaction={at:S.t,until:S.t+7};p.lastState=g.state;}
+  if(g.state==='DEAD'||g.unconscious||g.doomed||g.climb){p.pose=null;p.reaction=null;continue;}
+  if(p.reaction){
+   if(S.t>p.reaction.until)p.reaction=null;
+   else if(!g.say&&!g.chat&&targetSpeechNear(g)){gsay(g,d.alert,3);p.reaction=null;}
+  }
+  if(!targetIsPerforming(g)){if(p.pose&&g.say===p.said){g.say=null;g.sayT=0;}p.pose=null;continue;}
+  if(p.pose&&S.t<p.pose.end)continue;
+  p.pose=null;if(S.t<p.next||S.t<(S.personaNext||0)||g.say||!targetSpeechNear(g))continue;
+  const cue=targetCue(g);if(!cue)continue;
+  const duration=Math.min(4.4,Math.max(2.8,g.wait-.12));if(duration<2.8||g.wait<3)continue;
+  p.pose={kind:cue[0],start:S.t,end:S.t+duration};p.next=S.t+20+(g.id%3)*3;p.sequence++;S.personaNext=S.t+8;
+  const key=targetPersonaKey(g);if(key){const body=prSplit(key)[1];prLoadBody(body);prWarm([key],true);}
+  gsay(g,cue[1],3.6);p.said=cue[1];
+  if(d.reply){const guard=S.guards.filter(o=>o!==g&&!o.civ&&!o.dog&&!o.target&&o.state==='PATROL'&&!o.say&&!o.chat&&flOf(o)===flOf(g)&&dist(o.x,o.y,g.x,g.y)<130&&los(o.x,o.y,g.x,g.y)).sort((a,b)=>dist(a.x,a.y,g.x,g.y)-dist(b.x,b.y,g.x,g.y))[0];if(guard)S.personaReply={id:guard.id,owner:g.id,text:d.reply,at:S.t+3.8};}
+ }
+}
+
 // The public club is the first observation point. Actual actions, rather than a
 // forced checklist, decide whether the player pursues the target or ledger first.
 function vipContractGoal(){
@@ -8176,7 +8267,7 @@ function visibleSpeechCandidates(P,chase=false,focus=false) {
   const L0=CUR_F;setLayer(flOf(P));
   const intel=new Set(Object.values(S.intel||{}).map(it=>it.cur?.sp).filter(Boolean));
   try{return S.guards.filter(g=>{
-    const reply=g===P.captive||g.replyUntil>S.t,action=g.actionSpeechUntil>S.t;
+    const reply=g===P.captive||g.replyUntil>S.t,action=g.actionSpeechUntil>S.t||g.target&&g.say===g.persona?.said&&!actionBusy(P)&&!input.aiming;
     return g.say&&g.say!=='(소곤소곤…)'&&(!focus||reply||action||g.state==='ALERT'||intel.has(g))&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&
       dist(g.x,g.y,P.x,P.y)<=(chase?300:360)&&(!chase||reply||g.state==='ALERT'&&!g.civ)&&
       (reply||g.chat||intel.has(g)||los(P.x,P.y,g.x,g.y,P.z||0));
@@ -8200,7 +8291,7 @@ function missionApproachGoal() {
   return{x:tc(at[0]),y:tc(at[1]),fl:at[2]||0,z:trap?signGeometry(trap).z:0,text:step.text,story:st.d.id,storyName:st.d.name,where:''};
 }
 function speechPriority(g,P) {
-  return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.actionSpeechUntil>S.t?60:g.chat?30:10;
+  return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.actionSpeechUntil>S.t?60:g.target&&g.say===g.persona?.said?60:g.chat?30:10;
 }
 
 // Security learns about incidents through a report, never through the kill count.
@@ -12692,6 +12783,7 @@ function update(dt, present=true) {
   updateSecurityResponse(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   if(STAGE.firstSteps&&!STAGE.storyEpisode&&S.guards.some(g=>g.state==='ALERT')&&cpReady()){endGame(false,'적의 시야에 드러났다 — 시야 밖이나 풀숲으로 이동하자');return;}
+  updateTargetPersonalities();
   updateVipPlan(dt);updateVipContract();
   updateDining(dt);
   updateRendezvous(dt);
@@ -14904,7 +14996,7 @@ let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceReady=false;
 function syncEpisodeRadio(){
  const el=$('episodeRadio');if(!el)return;
  const now=performance.now();
- const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!hudInspecting()&&!S?.keypad;
+ const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!hudInspecting()&&!S?.keypad&&!targetDialogueVisible();
  if(!active){el.hidden=true;document.body.classList.remove('episode-coached');return;}
  if(now<episodeRadioTick)return;episodeRadioTick=now+100;
  const message=episodeRadioMessage();el.hidden=!message;document.body.classList.toggle('episode-coached',!!message);if(!message)return;
@@ -16473,6 +16565,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},

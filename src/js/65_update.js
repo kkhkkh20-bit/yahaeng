@@ -20,6 +20,7 @@ function update(dt, present=true) {
   updateSecurityResponse(dt);
   for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
   if(STAGE.firstSteps&&!STAGE.storyEpisode&&S.guards.some(g=>g.state==='ALERT')&&cpReady()){endGame(false,'적의 시야에 드러났다 — 시야 밖이나 풀숲으로 이동하자');return;}
+  updateTargetPersonalities();
   updateVipPlan(dt);updateVipContract();
   updateDining(dt);
   updateRendezvous(dt);

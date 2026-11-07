@@ -517,4 +517,49 @@ window.renderFluidPose=(name,t,dirA)=>{
  throw Error('Unknown fluid pose '+name);
 };
 
+
+// Build-time officer performances. Props follow the posed wrist in 3D and are
+// occluded by the body before export, rather than floating beside the sprite.
+const bossGear=new THREE.Group();scene.add(bossGear);
+const bossMat=c=>new THREE.MeshPhongMaterial({color:c,shininess:12});
+const bossBlack=bossMat('#202127'),bossPaper=bossMat('#d1d1d1'),bossInk=bossMat('#3b3b3b');
+const bossProps={};
+const boxProp=(w,h,d,mat)=>new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+bossProps.phone=boxProp(17,34,6,bossBlack);
+const screen=boxProp(11,22,1,bossPaper);screen.position.set(0,1,3.6);bossProps.phone.add(screen);
+bossProps.ledger=new THREE.Group();bossProps.ledger.add(boxProp(48,60,4,bossInk));
+const page=boxProp(42,54,1,bossPaper);page.position.z=2.6;bossProps.ledger.add(page);
+for(let i=0;i<4;i++){const line=boxProp(i===3?17:30,2,1,bossInk);line.position.set(0,16-i*9,3.5);bossProps.ledger.add(line);}
+bossProps.drink=new THREE.Group();const glass=new THREE.Mesh(new THREE.CylinderGeometry(12,8,24,10),bossMat('#a8a8a8'));glass.position.y=9;bossProps.drink.add(glass);
+const stem=new THREE.Mesh(new THREE.CylinderGeometry(2,2,15,6),bossMat('#d1d1d1'));stem.position.y=-10;bossProps.drink.add(stem);
+bossProps.smoke=new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,26,6),bossPaper);bossProps.smoke.rotation.x=Math.PI/2;
+for(const prop of Object.values(bossProps)){bossGear.add(prop);prop.visible=false;}
+window.renderBossGesture=(kind,t,dirA)=>{
+ for(const prop of Object.values(bossProps))prop.visible=false;
+ renderFrame('Walk',.25,0,0,undefined,false,{sway:0});
+ scene.add(model);model2.visible=false;model.rotation.set(0,0,0);model.updateMatrixWorld(true);
+ const smooth=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);},e=smooth(Math.min(t/.23,(1-t)/.22)),beat=Math.sin(t*Math.PI*6)*.07;
+ const aim=(sd,upper,lower)=>{
+  const side=sd==='Left'?1:-1;
+  aimB(bones[sd+'Arm'],bones[sd+'ForeArm'],V3(.24*side,-1,.02).lerp(V3(...upper),e));
+  aimB(bones[sd+'ForeArm'],bones[sd+'Hand'],V3(.08*side,-1,.08).lerp(V3(...lower),e));
+ };
+ const lead=window.bossLeftHand?'Left':'Right',leadAim=(u,l)=>{if(lead==='Left'){u=[-u[0],u[1],u[2]];l=[-l[0],l[1],l[2]];}aim(lead,u,l);};
+ if(kind==='phone'){leadAim([-.38,-.55,.35],[.18,.95,-.12]);aimB(bones.Neck,bones.Head,V3(-.08*e,1,.02));}
+ else if(kind==='smoke'||kind==='drink'){leadAim([-.28,-.6,.4],[.30,.91,.30]);aimB(bones.Neck,bones.Head,V3(0,1,-.07*e));}
+ else if(kind==='ledger'){
+  aim('Left',[.3,-.8,.42],[-.35,.25,1]);if(!window.bossLeftHand)aim('Right',[-.25,-.7,.5],[.20,.22+beat,1]);
+  aimB(bones.Neck,bones.Head,V3(0,1,.30*e));
+ }else if(kind==='point')leadAim([-.28,-.6,.6],[.14,.12+beat,1]);
+ else throw Error('Unknown officer gesture '+kind);
+ model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+ const prop=bossProps[kind];if(prop&&e>.12){
+  const hand=kind==='ledger'?bones.LeftHand:bones[lead+'Hand'];hand.getWorldPosition(bossGear.position);bossGear.rotation.set(kind==='ledger'?-.55:0,model.rotation.y,0);
+  prop.visible=true;prop.scale.setScalar(Math.min(1,e*3));
+ }
+ shadow.visible=true;renderSprite(0,window.spritePadding||1);
+ for(const prop of Object.values(bossProps))prop.visible=false;
+ return renderer.domElement.toDataURL('image/png');
+};
+
 </script></body></html>

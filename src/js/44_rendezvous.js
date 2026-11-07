@@ -84,7 +84,7 @@ function visibleSpeechCandidates(P,chase=false,focus=false) {
   const L0=CUR_F;setLayer(flOf(P));
   const intel=new Set(Object.values(S.intel||{}).map(it=>it.cur?.sp).filter(Boolean));
   try{return S.guards.filter(g=>{
-    const reply=g===P.captive||g.replyUntil>S.t,action=g.actionSpeechUntil>S.t;
+    const reply=g===P.captive||g.replyUntil>S.t,action=g.actionSpeechUntil>S.t||g.target&&g.say===g.persona?.said&&!actionBusy(P)&&!input.aiming;
     return g.say&&g.say!=='(소곤소곤…)'&&(!focus||reply||action||g.state==='ALERT'||intel.has(g))&&!['DEAD','SLEEP'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&
       dist(g.x,g.y,P.x,P.y)<=(chase?300:360)&&(!chase||reply||g.state==='ALERT'&&!g.civ)&&
       (reply||g.chat||intel.has(g)||los(P.x,P.y,g.x,g.y,P.z||0));
@@ -108,5 +108,5 @@ function missionApproachGoal() {
   return{x:tc(at[0]),y:tc(at[1]),fl:at[2]||0,z:trap?signGeometry(trap).z:0,text:step.text,story:st.d.id,storyName:st.d.name,where:''};
 }
 function speechPriority(g,P) {
-  return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.actionSpeechUntil>S.t?60:g.chat?30:10;
+  return g===P.captive||g.replyUntil>S.t?120:g===P?100:g.state==='ALERT'?80:Object.values(S.intel||{}).some(it=>it.cur?.sp===g)?70:g.actionSpeechUntil>S.t?60:g.target&&g.say===g.persona?.said?60:g.chat?30:10;
 }

@@ -126,6 +126,7 @@ jobs:
             build/field-v196/
             build/beginner-v197/
             build/linear-v198/
+            build/targets-v207/
             build/ink-v199/
             build/newgame-v200/
             public/version.json

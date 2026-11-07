@@ -41,7 +41,7 @@ let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceReady=false;
 function syncEpisodeRadio(){
  const el=$('episodeRadio');if(!el)return;
  const now=performance.now();
- const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!hudInspecting()&&!S?.keypad;
+ const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!hudInspecting()&&!S?.keypad&&!targetDialogueVisible();
  if(!active){el.hidden=true;document.body.classList.remove('episode-coached');return;}
  if(now<episodeRadioTick)return;episodeRadioTick=now+100;
  const message=episodeRadioMessage();el.hidden=!message;document.body.classList.toggle('episode-coached',!!message);if(!message)return;

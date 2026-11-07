@@ -74,7 +74,8 @@ function drawSpeech() {
       for(const c of word){if(ctx.measureText(lines[i]+c).width>maxText&&lines[i]){lines.push('');i++;}lines[i]+=c;}
       lines[i]+=' ';
     }
-    const w=Math.max(...lines.map(l=>ctx.measureText(l.trim()).width))+20*k,h=(12+lines.length*17)*k;
+    const identity=g.target&&g.say===g.persona?.said?targetName(g):g.say===g.officerReply?.text&&g.officerReply.until>S.t?'경호원':null,headH=identity?14*k:0;
+    const w=Math.max(...lines.map(l=>ctx.measureText(l.trim()).width),identity?ctx.measureText(identity).width:0)+20*k,h=(12+lines.length*17)*k+headH;
     if(w>vx1-vx0||h>vy1-vy0)continue;
     const cx=clamp(g.x-w/2,vx0,vx1-w),above=g.y-58-h;
     let at=null;
@@ -98,7 +99,7 @@ function drawSpeech() {
     else if(head.y<=y){const tx=clamp(head.x,x+12*k,x+w-12*k);a=[tx-5*k,y+k];b=[tx+5*k,y+k];tip=[clamp(head.x,tx-tail,tx+tail),Math.max(head.y,y-tail)];}
     else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
     ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
-    ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k));
+    ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';if(identity){ctx.font=uiFont(9*k);ctx.fillStyle='#626a70';ctx.fillText(identity,x+w/2,y+12*k);ctx.font=uiFont(12*k);ctx.fillStyle='#202521';}lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k+headH));
   }
   ctx.restore();
 }
