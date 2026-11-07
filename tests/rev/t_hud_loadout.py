@@ -15,7 +15,7 @@ async def main():
     if touch:await q.click('#btnToolNext')
     else:await q.keyboard.press('i')
    visible=await q.locator('#hud button').evaluate_all('''es=>es.filter(e=>{const r=e.getBoundingClientRect();return !e.hidden&&r.width&&getComputedStyle(e).visibility==='visible'}).map(e=>({id:e.id,x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,w:e.getBoundingClientRect().width,h:e.getBoundingClientRect().height}))''')
-   if touch:assert len(visible)==6,visible
+   if touch:assert len([a for a in visible if not a['id'].startswith('quick')])==6,visible
    assert all(e['w']>=44 and e['h']>=44 and e['x']>=0 and e['y']>=0 and e['x']+e['w']<=w+.5 and e['y']+e['h']<=h+.5 for e in visible),visible
    assert await q.evaluate("document.documentElement.scrollWidth<=innerWidth")
    await equipment();assert await q.locator('#loadout').is_visible()

@@ -75,7 +75,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'KeyT') trackNextStory();
   if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(userZoom - 0.1);
   if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(userZoom + 0.1);
-  if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { cancelAim(); toast('조준 취소', 1.2); return; }
+  if ((e.code === 'Escape' || e.code === 'KeyP') && input.aiming) { if(activeToolPress)finishToolPress(true);else cancelAim(); toast('조준 취소', 1.2); return; }
   if (e.code === 'Escape' || e.code === 'KeyP') togglePause();
 });
 window.addEventListener('keyup', e => { if (S) { S.keys[keyCode(e)] = false; combatRelease(e.code); } if (e.code === 'AltLeft' || e.code === 'AltRight') e.preventDefault(); if ((e.code === 'KeyF' || e.code === 'KeyV') && input.aiming && input.aiming.src === 'key') releaseAim(); });
@@ -87,6 +87,7 @@ function softPause(v) {
 }
 // 화면을 연 입력을 재개 후로 넘기지 않는다. 이미 시작한 동작의 애니메이션은 이어 간다.
 function clearPlayerInput() {
+  finishToolPress(true);
   closeLoadout();
   for(const id of ['btnAct','btnCarry','btnGrab','btnDress','btnTool','btnSkill']){const b=document.getElementById(id);if(b){b.classList.remove('down');delete b.dataset.pressPointer;}}
   input.pressIds={};input.joy=null;cancelAim();joyId=null;viewPinch=null;for(const id in touchT)delete touchT[id];
@@ -180,13 +181,47 @@ $('btnSkillsLedger').addEventListener('click',openAssassinMenu);
 $('btnSkillsPause').addEventListener('click',openAssassinMenu);
 $('btnSkillsBack').addEventListener('click',closeAssassinMenu);
 $('btnSkillReset').addEventListener('click',resetTreeSkills);
-{
-  const b = $('btnTool');
-  b.addEventListener('pointerdown', e => { e.preventDefault(); initAudio(); b.classList.add('down'); if (input.padWhistle) { whistle(); return; } try { b.setPointerCapture(e.pointerId); } catch (er) {} startAim('btn'); });  // 휘파람을 고른 동안은 누르면 바로 휘파람
-  b.addEventListener('pointerup', e => { b.classList.remove('down'); if (input.padWhistle) return; const r = b.getBoundingClientRect(), d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); if (input.aiming && d > r.width * 0.9) { cancelAim(); toast('조준 취소', 1.2); } else releaseAim(); });  // 버튼 밖으로 끌어서 떼면 취소
-  b.addEventListener('pointermove', e => { if (!input.aiming) return; const r = b.getBoundingClientRect(); input.aiming.off = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)) > r.width * 0.9; });
-  b.addEventListener('pointercancel', () => { b.classList.remove('down'); cancelAim(); });
+// A pointer owns one tool use. Quick slots borrow the tool without changing the loadout.
+let activeToolPress=null;
+function finishToolPress(cancel=false){
+  const p=activeToolPress;if(!p)return;activeToolPress=null;
+  p.button.classList.remove('down','cancel');
+  try{if(p.button.hasPointerCapture(p.id))p.button.releasePointerCapture(p.id);}catch(e){}
+  if(p.state===S){
+    if(cancel||p.cancel||!input.aiming||input.aiming.src!==p.source)cancelAim();else releaseAim();
+    if(p.quick){input.tool=p.previousTool;input.padWhistle=p.previousWhistle;}
+    syncTools();
+  }
 }
+function bindToolPointer(b,quick=false){
+  b.addEventListener('pointerdown',e=>{
+    e.preventDefault();e.stopPropagation();if(e.button!==0||activeToolPress||input.aiming)return;
+    closeHudInspection();initAudio();
+    if(!quick&&input.padWhistle){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
+    const tool=quick?b.dataset.quickTool:input.tool;
+    if(quick&&!quickItemReady(tool))return;
+    const previousTool=input.tool,previousWhistle=input.padWhistle;
+    if(quick){input.tool=tool;input.padWhistle=false;}
+    const source=quick?'quick:'+tool:'btn';startAim(source);
+    if(!input.aiming||input.aiming.src!==source){if(quick){input.tool=previousTool;input.padWhistle=previousWhistle;}return;}
+    activeToolPress={button:b,id:e.pointerId,state:S,source,quick,previousTool,previousWhistle,x:e.clientX,y:e.clientY,dragged:false,cancel:false};
+    b.classList.add('down');try{b.setPointerCapture(e.pointerId);}catch(er){}syncTools();
+  });
+  b.addEventListener('pointermove',e=>{
+    const p=activeToolPress;if(!p||p.button!==b||p.id!==e.pointerId||!input.aiming)return;
+    const dx=e.clientX-p.x,dy=e.clientY-p.y,d=Math.hypot(dx,dy);
+    if(d>16)p.dragged=true;
+    p.cancel=p.dragged&&d<12;b.classList.toggle('cancel',p.cancel);
+    if(p.dragged){input.aiming.dragAngle=Math.atan2(dy,dx);input.aiming.dragCharge=clamp((d-16)/110,0,1);S.player.a=input.aiming.dragAngle;}
+    input.aiming.off=p.cancel;
+  });
+  b.addEventListener('pointerup',e=>{if(activeToolPress?.button===b&&activeToolPress.id===e.pointerId)finishToolPress();b.classList.remove('cancel');});
+  for(const event of ['pointercancel','lostpointercapture'])b.addEventListener(event,e=>{if(activeToolPress?.button===b&&activeToolPress.id===e.pointerId)finishToolPress(true);b.classList.remove('cancel');});
+  // Native keyboard activation is useful for accessibility; pointer clicks already used on release.
+  if(quick)b.addEventListener('click',e=>{if(e.detail!==0||activeToolPress||input.aiming||!quickItemReady(b.dataset.quickTool))return;const tool=input.tool,whistle=input.padWhistle;input.tool=b.dataset.quickTool;input.padWhistle=false;startAim('quick-key');releaseAim();input.tool=tool;input.padWhistle=whistle;syncTools();});
+}
+bindToolPointer($('btnTool'));
+document.querySelectorAll('[data-quick-tool]').forEach(b=>bindToolPointer(b,true));
 document.querySelectorAll('#tools .tool').forEach(b => b.addEventListener('click', e => { e.preventDefault(); selectTool(b.dataset.t);closeLoadout(true); }));
 // 도구 순환 보조 함수. 실제 HUD는 장비 패널에서 명시적으로 고른다.
 function cyclePadTool() {

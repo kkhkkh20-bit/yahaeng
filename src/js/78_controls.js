@@ -70,7 +70,7 @@ function actVerb(a, ic) {
   return two.length <= 6 ? two : ws[ws.length - 1].length <= 6 ? ws[ws.length - 1] : VERB[ic] || lb.slice(0, 5);
 }
 // Inline silhouettes avoid CSS-mask/filter compositing failures during continuous canvas rendering.
-function hudArt(key){const svg=window.__HUD_ART__?.['field:'+key]||window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
+function hudArt(key){const svg=(['action','crouch','grab','dress','whistle','equipment'].includes(key)?window.__HUD_ART__?.[key]:null)||window.__HUD_ART__?.['field:'+key]||window.__HUD_ART__?.[key];return svg?svg.replace('<svg ','<svg class="hud-art" aria-hidden="true" focusable="false" ').replace(/fill="#fff"/g,'fill="currentColor"'):'';}
 // 모바일 버튼: 아이콘 + 짧은 동사 (+ 길게 누르기 안내)
 function padButton(el, key, a, idle) {
   el.setAttribute('aria-busy', a.busy ? 'true' : 'false');

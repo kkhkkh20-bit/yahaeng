@@ -40,7 +40,7 @@ const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { at
 const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
 const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
-function selectTool(t) { if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
+function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
 function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
@@ -66,7 +66,7 @@ function runQueued(it) {
 }
 function aimPoint() {
   const P = S.player, a = input.aiming; if (!a) return null;
-  const charge = input.joy && input.joy.mag > 0.15 ? clamp((input.joy.mag - 0.15) / 0.8, 0, 1) : clamp((performance.now() - a.t0) / 900, 0, 1);
+  const charge = a.dragCharge != null ? a.dragCharge : input.joy && input.joy.mag > 0.15 ? clamp((input.joy.mag - 0.15) / 0.8, 0, 1) : clamp((performance.now() - a.t0) / 900, 0, 1);
   const [lo, hi] = input.tool === 'coin' ? [50, 160] : [90, 330];
   let d = lo + (hi - lo) * charge;
   d = Math.max(16, Math.min(d, castRay(P.x, P.y, P.a, d, input.tool === 'stone' && P.z > 0) - 8));
@@ -496,7 +496,7 @@ function updatePlayer(dt) {
   P.mode = mode;
   if (input.aiming) {
     if (!canAim()) input.aiming = null;
-    else { if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
+    else { if (input.aiming.dragAngle != null) P.a = input.aiming.dragAngle; else if (mag > 0.05) P.a += clamp(angDiff(P.a, Math.atan2(my, mx)), -9 * dt, 9 * dt); mag = 0; hint('aim', '집중: 조준하는 동안 시간이 멈춘다. 방향을 잡고, 오래 누를수록 멀리 던진다. 떼면 사용'); }
   }
   releaseCarryStride(P,mag);
   if (P.strikeT > 0) { P.strikeT = Math.max(0, P.strikeT - dt); mag = 0; }  // 0 아래로 내려가면 '공격 중'으로 남아 벽 기대기가 막혔다

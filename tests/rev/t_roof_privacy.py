@@ -2,7 +2,7 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[2];O=R/'build/front-end-v210/physical';O.mkdir(exist_ok=True)
+R=Path(__file__).resolve().parents[2];O=R/'build/front-end-v210/physical';O.mkdir(parents=True,exist_ok=True)
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page(viewport={'width':1000,'height':850});errors=[];q.on('pageerror',lambda e:errors.append(str(e)))

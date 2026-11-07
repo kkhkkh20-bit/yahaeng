@@ -353,6 +353,22 @@ function updateStealth(lv) {
   box.dataset.s = s; const el = $('expoLbl'); el.textContent = word; el.dataset.e = s==='seen'?2:e; $('lightLbl').textContent = why;
   const ico = observer?.camera?'camera':P.cover ? 'wall' : s; if (hudCache.sthI !== ico) { hudCache.sthI = ico; $('sthIco').innerHTML = STH_ICO[ico]; }
 }
+let quickItemsState=null;
+function quickItemReady(t){return !!S&&running&&!paused&&!S.over&&!tactical&&!hudInspecting()&&availableTools().includes(t)&&toolCount(t)>0&&(t!=='radio'||S.player.hasRadio)&&deviceReady(t)&&canAim()&&(t!=='coin'||!S.player.z)&&(t!=='smoke'||!S.player.z&&(S.smokeThrows||[]).length<3);}
+function syncQuickItems(){
+  const bar=$('quickItems');if(!bar)return;
+  const reset=quickItemsState!==S;quickItemsState=S;let visible=0;
+  bar.querySelectorAll('[data-quick-tool]').forEach(b=>{
+    const t=b.dataset.quickTool,n=toolCount(t),owned=availableTools().includes(t)&&(t!=='radio'||S.player.hasRadio);
+    if(reset)delete b.dataset.carried;
+    if(owned&&n>0)b.dataset.carried='true';
+    b.hidden=!owned||!b.dataset.carried;if(b.hidden)return;visible++;
+    const ready=quickItemReady(t);b.classList.toggle('empty',n<=0);b.classList.toggle('ready',ready);b.setAttribute('aria-disabled',String(!ready));
+    b.setAttribute('aria-label',TOOL_NAME[t]+' '+n+'개 · 누르면 바로 사용, 끌어서 조준, 원위치로 돌아오면 취소');
+    b.querySelector('output').textContent=n;b.querySelector('.quick-wait').textContent=t==='radio'&&!deviceReady(t)?Math.ceil(S.radioReadyAt-S.t)+'초':'';
+  });
+  bar.hidden=!visible;document.body.classList.toggle('has-quick-items',visible>0);
+}
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
   if (!S) return; const P = S.player;
@@ -368,6 +384,7 @@ function syncTools() {
   hud.tool.hidden=!!(STAGE.starterContract||STAGE.apprenticeContract)&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
+  syncQuickItems();
 }
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();

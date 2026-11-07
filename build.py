@@ -107,6 +107,7 @@ def build():
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
     hud_art.update({'field:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','field','*.svg')))})
+    hud_art.update({'item:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','items','*.svg')))})
     html=html.replace('<script>window.__BUILD_VERSION__','<script>window.__HUD_ART__='+json.dumps(hud_art)+';window.__BUILD_VERSION__',1)
     html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))

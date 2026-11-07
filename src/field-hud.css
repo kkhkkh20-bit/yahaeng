@@ -18,7 +18,7 @@
 #hud .hud-menu{top:max(16px,env(safe-area-inset-top));right:var(--field-edge);width:44px;height:44px;min-height:44px;padding:0;gap:0;border:0;border-image:none;border-radius:50%;background:var(--art-field-control) center/100% 100% no-repeat;filter:none;font-size:0;color:var(--hud-ink)}
 #hud .hud-menu::before{width:6px;height:12px;border-inline:2px solid currentColor}
 #hud #btnPause[data-points]::after{display:none}
-#hud #mini{top:76px;right:var(--field-edge);width:132px;min-height:0;padding:4px;border:1px solid #677479;border-image:none;border-radius:0;background:#10171d;outline:none;opacity:.94;box-shadow:none}
+#hud #mini{top:76px;right:var(--field-edge);width:132px;min-height:44px;padding:4px;border:1px solid #677479;border-image:none;border-radius:0;background:#10171d;outline:none;opacity:.94;box-shadow:none}
 #hud #stealth{left:max(20px,env(safe-area-inset-left));top:calc(var(--topb,100px) + 7px);gap:7px;max-width:min(380px,calc(100vw - 160px));padding:5px 8px;background:#0e151be8;border:0;border-image:none;filter:none;text-shadow:none;--sc:var(--hud-ink)}
 #hud .sth-eye{gap:3px}
 #hud .sth-ico{width:20px;height:20px}
@@ -56,38 +56,7 @@
 #hud .obj.open #missionIdentity span{font-size:11px}
 #hud .lesson-cue{outline:1px solid var(--hud-warn);outline-offset:4px}
 /* All touch hit boxes are fixed, with a shared machined circular rim. */
-body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:168px;height:218px}
-body.touch #hud .pad>button,body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle),body.touch #hud #btnCrouch{box-sizing:border-box;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px;min-width:44px;min-height:44px;border:0;border-image:none;border-radius:50%;clip-path:none;background:var(--art-field-control) center/100% 100% no-repeat;color:var(--hud-muted);box-shadow:none;filter:none;transition:color .12s,background-color .12s;touch-action:none}
-body.touch #hud .pad>button[hidden],body.touch #hud .pad :is(#btnGrab,#btnDress,#btnCycle)[hidden]{display:none}
-body.touch #hud .pad>button::before,body.touch #hud .pad :is(#btnCarry,#btnTool,#btnGrab,#btnDress)::before{display:none;content:none}
-body.touch #hud .pad>button b,body.touch #hud #btnCrouch b{font-size:11px;line-height:1.3;font-weight:400;white-space:nowrap;max-width:100%;text-overflow:ellipsis;overflow:hidden}
-body.touch #hud .pad>button small{font-size:10px;line-height:1.3;color:inherit;max-width:100%;white-space:nowrap}
-body.touch #hud .pad #btnAct{right:0;bottom:0;width:76px;height:76px;padding:8px;color:#d1d5d2}
-body.touch #hud .pad #btnAct b{font-size:12px}
-body.touch #hud .pad #btnAct.ready,body.touch #hud .pad #btnAct.ko{background:var(--art-field-primary) center/100% 100% no-repeat;color:#121b21}
-body.touch #hud .pad #btnAct.kill{background:var(--art-field-danger) center/100% 100% no-repeat;color:#f7e4dc}
-body.touch #hud .pad #btnAct small{font-size:10px}
-body.touch #hud .pad #btnCarry{right:92px;bottom:4px;width:64px;height:64px}
-body.touch #hud .pad #btnTool{right:96px;bottom:88px;width:56px;height:56px}
-body.touch #hud .pad #btnToolNext{right:96px;bottom:162px;width:56px;height:56px;min-height:44px;flex-direction:column;gap:3px;padding:5px}
-body.touch #hud .pad :is(#btnGrab,#btnDress){right:12px;bottom:162px;width:52px;height:52px;min-width:44px;min-height:44px;padding:5px}
-body.touch #hud .pad #btnCycle{right:92px;bottom:234px;width:64px;height:44px;min-height:44px;border-radius:3px;background:#10171df5;border:1px solid #68777b}
-body.touch #hud .pad #btnCycle small{font-size:10px}
-body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 12px);bottom:calc(var(--field-bottom) + 92px);display:block;width:52px;height:52px;pointer-events:none}
-body.touch #hud #btnCrouch{position:relative;width:52px;height:52px;min-height:52px;pointer-events:auto}
-body.touch #hud #btnCrouch.on{background:var(--art-field-selected) center/100% 100% no-repeat;color:var(--hud-ink)}
-body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).ready,body.touch #hud .pad #btnTool.aiming{color:var(--hud-ink)}
-body.touch #hud .pad>button.ready:not(#btnAct)::after,body.touch #hud #btnCrouch.on::after{content:'';position:absolute;inset:4px;border:1px solid #c9cfcb;border-radius:inherit;pointer-events:none;opacity:.7;width:auto;height:auto;background:none}
-body.touch #hud .pad :is(#btnAct,#btnCarry)::after{content:'';position:absolute;left:22%;bottom:9px;width:calc(var(--hold,0) * 56%);height:2px;background:currentColor;border:0;border-radius:0;opacity:1;inset:auto}
-body.touch #hud .pad #btnCarry.ready::after{left:22%;bottom:9px;width:calc(var(--hold,0) * 56%);height:2px;background:var(--hud-danger);border:0;border-radius:0;inset:auto}
-body.touch #hud .pad>button.down,body.touch #hud .pad>button:active,body.touch #hud #btnCrouch.down,body.touch #hud #btnCrouch:active{background:var(--art-field-selected) center/100% 100% no-repeat;color:var(--hud-ink);filter:none}
-body.touch #hud .pad>button.down svg,body.touch #hud .pad>button.down b{transform:translateY(1px)}
 #hud .hud-art[data-field-icon]{fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
-body.touch #hud .pad>button>svg.hud-art{width:24px;height:24px}
-body.touch #hud .pad #btnAct>svg.hud-art{width:28px;height:28px}
-body.touch #hud .pad #btnCarry>svg.hud-art{width:25px;height:25px}
-body.touch #hud .pad #btnToolNext>svg.hud-art,#hud #btnCrouch>svg.hud-art{width:22px;height:22px}
-#hud #btnCrouch b{font-size:11px}
 #hud button:focus-visible,#hud [role=button]:focus-visible{outline:2px solid #efc798;outline-offset:3px}
 #hud .joyhint{font-size:11px;color:var(--hud-ink);background:#10171de8;padding:5px 8px}
 body.touch #hud .joyhint{left:20px;bottom:108px;max-width:calc(100vw - 210px)}
@@ -144,11 +113,6 @@ body.touch #hud #saveState{left:20px;bottom:48px;max-width:calc(100vw - 200px);f
  #hud{--field-edge:max(12px,env(safe-area-inset-right));--field-bottom:max(16px,env(safe-area-inset-bottom))}
  #hud #mini{width:64px}
  #hud .top{right:90px}
- body.touch #hud .pad{width:156px}
- body.touch #hud .pad #btnAct{width:72px;height:72px}
- body.touch #hud .pad #btnCarry{right:84px;width:60px;height:60px}
- body.touch #hud .pad #btnTool,body.touch #hud .pad #btnToolNext{right:88px;width:52px;height:52px}
- body.touch #hud .pad #btnCycle{right:80px}
 }
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){
  #hud{--field-edge:max(16px,env(safe-area-inset-right));--field-bottom:max(12px,env(safe-area-inset-bottom))}
@@ -159,15 +123,6 @@ body.touch #hud #saveState{left:20px;bottom:48px;max-width:calc(100vw - 200px);f
  #hud .hud-menu{top:max(12px,env(safe-area-inset-top))}
  #hud #mini{top:max(12px,env(safe-area-inset-top));right:calc(var(--field-edge) + 58px);width:78px}
  #hud #stealth{left:20px;top:calc(var(--topb,88px) + 4px);max-width:330px}
- body.touch #hud .pad{width:240px;height:150px}
- body.touch #hud .pad #btnAct{width:70px;height:70px}
- body.touch #hud .pad #btnCarry{right:86px;width:62px;height:62px}
- body.touch #hud .pad #btnTool{right:88px;bottom:88px;width:54px;height:54px}
- body.touch #hud .pad #btnToolNext{right:174px;bottom:88px;width:54px;height:54px}
- body.touch #hud .pad :is(#btnGrab,#btnDress){right:10px;bottom:88px;width:50px;height:50px}
- body.touch #hud .pad #btnCycle{right:174px;bottom:150px;width:54px;height:44px}
- body.touch #hud .sysbtns{right:calc(var(--field-edge) + 176px);bottom:var(--field-bottom);width:52px;height:52px}
- body.touch #hud #btnCrouch{width:52px;height:52px}
  #hud .obj.open{width:min(430px,calc(100vw - 32px));max-height:75dvh}
  #hud #loadout{width:400px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 24px);padding:14px 18px}
  #hud #tools{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -186,13 +141,8 @@ body.touch #hud #objectiveSummary{font-size:13px;line-height:1.5}
 body.touch:not(.inspecting) #hud #stealth #accessLbl:not([data-access=denied]):not([hidden]){display:block}
 body.touch:not(.inspecting) #hud #stealth.quiet[data-s=hide] #accessLbl{display:none}
 body.touch #hud #stealth.quiet[data-s=blend]:has(#accessLbl:not([hidden])) #expoLbl{display:none}
-body.touch #hud .pad #btnGrab b{font-size:10px}
-body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after,body.touch #hud .pad #btnCarry.ready::after{inset:auto;left:22%;bottom:9px;width:calc(var(--hold,0) * 56%);height:2px;border:0;border-radius:0;background:currentColor}
-body.touch #hud .pad:has(#btnTool[hidden]) #btnToolNext{bottom:88px}
-body.touch #hud .pad:has(#btnTool[hidden]) #btnCycle{right:96px;bottom:162px;width:56px}
 body.touch #hud #saveState{padding:3px 6px;background:#10171de8}
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){
- body.touch #hud .pad:has(#btnTool[hidden]) #btnCycle{right:174px;bottom:150px;width:54px}
  body.touch #hud .obj:not(.open){padding:3px 20px 4px 7px;gap:2px}
 }
 
@@ -211,13 +161,6 @@ body:not(.touch) #hud .obj:not(.open) #missionIdentity{display:flex;gap:8px;bord
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch #hud #stealth{top:var(--topb,88px);padding:2px 6px}}
 
 /* Finish review: reserve space for meaning, not only the circular hit box. */
-body.touch #hud .pad #btnAct{padding:4px;gap:2px}
-body.touch #hud .pad #btnAct>svg.hud-art{width:24px;height:24px}
-body.touch #hud .pad #btnAct b{line-height:1.2}
-body.touch #hud .pad #btnAct small{line-height:1.2}
-body.touch #hud .pad #btnCarry{padding:4px;gap:2px}
-body.touch #hud .pad #btnCarry>svg.hud-art{width:22px;height:22px}
-body.touch #hud .pad #btnCarry b,body.touch #hud .pad #btnCarry small{line-height:1.2}
 #hud .objective-content{display:flex;flex-direction:column;gap:3px;min-width:0}
 #hud .obj.open{overflow:hidden}
 #hud .obj.open .objective-content{overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#889590 #17242c;overscroll-behavior:contain;padding-right:4px}
@@ -243,7 +186,85 @@ body.touch #hud .pad #btnCarry b,body.touch #hud .pad #btnCarry small{line-heigh
  #hud #loadout #btnWhistle{min-height:44px;margin-top:8px;padding:6px 10px}
  #hud #loadout footer{margin-top:8px;padding-top:8px}
 }
-/* Press feedback must outrank the ID-specific idle and ready surfaces. */
-body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle).down,
-body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):active{background:var(--art-field-selected) center/100% 100% no-repeat;color:var(--hud-ink)}
-body.touch #hud .pad #btnAct.kill.down,body.touch #hud .pad #btnAct.kill:active{background:var(--art-field-danger) center/100% 100% no-repeat;color:#f7e4dc}
+/* Mobile action controls: a dominant thumb button and a restrained radial arc. */
+#hud #quickItems{display:none}
+body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:164px;height:328px;pointer-events:none}
+body.touch #hud .pad>button,body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle),body.touch #hud #btnCrouch{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:5px;border:0;border-image:none;border-radius:50%;clip-path:none;background:var(--art-field-control) center/100% 100% no-repeat;color:#b9c5c7;box-shadow:none;filter:none;pointer-events:auto;touch-action:none;transition:color .12s}
+body.touch #hud .pad>button[hidden]{display:none}
+body.touch #hud .pad>button::before{display:none;content:none}
+body.touch #hud .pad>button b,body.touch #hud #btnCrouch b{font-size:11px;font-weight:700;line-height:1.15;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #061017}
+body.touch #hud .pad>button small{font-size:10px;line-height:1.15;white-space:nowrap;max-width:100%;color:inherit}
+body.touch #hud .pad>button>svg.hud-art{width:28px;height:28px;flex-shrink:0;filter:drop-shadow(0 1px 1px #050a10)}
+body.touch #hud .pad #btnAct{right:0;bottom:0;width:88px;height:88px;gap:2px;padding:6px;color:#bac7c7}
+body.touch #hud .pad #btnAct>svg.hud-art{width:36px;height:36px}
+#hud .hud-art[data-field-icon=attack]{fill:currentColor;stroke:#122129;stroke-width:.8}
+body.touch #hud .pad #btnAct b{font-size:14px}
+body.touch #hud .pad #btnAct:is(.ready,.ko){background-image:var(--art-field-primary);color:#f1f0e1}
+body.touch #hud .pad #btnAct.kill{background-image:var(--art-field-danger);color:#ffe3d5}
+body.touch #hud .pad #btnCarry{right:94px;bottom:68px;width:64px;height:64px}
+body.touch #hud .pad #btnTool{right:6px;bottom:108px;width:60px;height:60px}
+body.touch #hud .pad #btnTool>svg.hud-art{width:28px;height:28px}
+body.touch #hud .pad #btnTool small{display:none}
+body.touch #hud .pad #btnToolNext{flex-direction:column;right:12px;bottom:186px;width:48px;height:48px}
+body.touch #hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
+body.touch #hud .pad #btnToolNext b{font-size:10px}
+body.touch #hud .pad :is(#btnGrab,#btnDress){right:96px;bottom:216px;width:52px;height:52px}
+body.touch #hud .pad #btnCycle{right:96px;bottom:284px;width:52px;height:44px;min-height:44px;border-radius:6px;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
+body.touch #hud .pad #btnCycle small{font-size:10px}
+body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 102px);bottom:calc(var(--field-bottom) + 148px);display:block;width:52px;height:52px;pointer-events:none}
+body.touch #hud #btnCrouch{position:relative;width:52px;height:52px;min-height:44px}
+body.touch #hud #btnCrouch>svg.hud-art{width:25px;height:25px}
+body.touch #hud #btnCrouch b{font-size:10px}
+body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress).ready,body.touch #hud .pad #btnTool.aiming,body.touch #hud #btnCrouch.on{background-image:var(--art-field-primary);color:#f1f0e1}
+body.touch #hud .pad>button::after{display:none;content:none}
+body.touch #hud .pad #btnAct::after,body.touch #hud .pad #btnCarry::after{display:block;content:'';position:absolute;inset:auto;left:22%;bottom:9px;width:calc(var(--hold,0) * 56%);height:2px;border:0;border-radius:0;background:currentColor}
+body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle):is(.down,:active),body.touch #hud #btnCrouch:is(.down,:active){background-image:var(--art-field-selected);color:#fff8e5}
+body.touch #hud .pad #btnAct.kill:is(.down,:active){background-image:var(--art-field-danger);color:#ffe3d5}
+body.touch #hud .pad>button.down>svg{transform:translateY(1px)}
+/* Consumables sit at the bottom like an action game's bottle slots. */
+body.touch #hud #quickItems{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:var(--field-bottom);display:flex;align-items:flex-end;gap:6px;max-width:calc(100vw - 132px);pointer-events:none}
+body.touch #hud #quickItems[hidden]{display:none}
+body.touch #hud #quickItems>button{position:relative;box-sizing:border-box;width:48px;height:56px;min-width:44px;min-height:44px;flex-shrink:0;padding:0 3px 12px;border:0;border-bottom:2px solid #687e86;border-image:none;border-radius:5px 5px 2px 2px;background:#101a2299;color:#e2e7df;box-shadow:none;filter:none;pointer-events:auto;touch-action:none}
+body.touch #hud #quickItems>button[hidden]{display:none}
+body.touch #hud #quickItems .hud-art{width:36px;height:36px;display:block;margin:auto;filter:drop-shadow(0 1px 1px #080f15)}
+body.touch #hud #quickItems output{position:absolute;right:1px;bottom:13px;min-width:14px;padding:1px 2px;color:#fff6df;background:#101a22;font-size:11px;font-weight:700;line-height:1.15;border-radius:3px}
+body.touch #hud #quickItems small{position:absolute;left:0;bottom:1px;width:100%;font-size:10px;line-height:1.2;white-space:nowrap;text-align:center}
+body.touch #hud #quickItems>button.ready{border-bottom-color:#e3e9da}
+body.touch #hud #quickItems>button.empty .hud-art{opacity:.35}
+body.touch #hud #quickItems>button.empty{color:#9ca9ac;border-bottom-color:#51626a}
+body.touch #hud #quickItems>button:is(.down,:active){background:#344954e8;border-bottom-color:#e6e9db}
+body.touch #hud #quickItems>button.cancel{border-bottom-color:#f29b8b}
+body.touch #hud #quickItems .quick-wait{position:absolute;left:0;right:0;top:9px;font-size:12px;font-weight:700;color:#ffe3b7;background:#101a22e8;line-height:1.6}
+body.touch #hud #quickItems .quick-wait:empty{display:none}
+body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 66px)}
+@media(max-width:360px){
+ body.touch #hud .pad{width:148px}
+ body.touch #hud .pad #btnAct{width:80px;height:80px}
+ body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
+ body.touch #hud .pad #btnAct b{font-size:12px}
+ body.touch #hud .pad #btnCarry{right:88px;width:56px;height:56px;bottom:80px}
+ body.touch #hud .pad #btnCarry>svg.hud-art{width:24px;height:24px}
+ body.touch #hud .pad #btnTool{width:56px;height:56px}
+ body.touch #hud .pad #btnToolNext{width:44px;height:44px}
+ body.touch #hud .pad :is(#btnGrab,#btnDress){right:88px;width:48px;height:48px}
+ body.touch #hud .pad #btnCycle{right:84px}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 92px);width:48px;height:48px}
+ body.touch #hud #btnCrouch{width:48px;height:48px}
+ body.touch #hud #quickItems{left:max(12px,env(safe-area-inset-left))}
+ body.touch #hud #quickItems>button{width:44px;height:52px}
+ body.touch #hud #quickItems .hud-art{width:32px;height:32px}
+}
+@media(orientation:landscape) and (max-height:500px) and (min-width:500px){
+ body.touch #hud .pad{width:234px;height:188px}
+ body.touch #hud .pad #btnAct{width:80px;height:80px}
+ body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
+ body.touch #hud .pad #btnCarry{right:94px;bottom:0;width:56px;height:56px}
+ body.touch #hud .pad #btnCarry>svg.hud-art{width:24px;height:24px}
+ body.touch #hud .pad #btnTool{right:86px;bottom:80px;width:56px;height:56px}
+ body.touch #hud .pad #btnToolNext{right:164px;bottom:80px;width:48px;height:48px}
+ body.touch #hud .pad :is(#btnGrab,#btnDress){right:8px;bottom:100px;width:48px;height:48px}
+ body.touch #hud .pad #btnCycle{right:164px;bottom:144px;width:52px;height:44px}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 166px);bottom:var(--field-bottom);width:50px;height:50px}
+ body.touch #hud #btnCrouch{width:50px;height:50px}
+ body.touch #hud #quickItems>button{width:44px;height:52px}
+}

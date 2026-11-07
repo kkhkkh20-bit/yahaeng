@@ -387,7 +387,7 @@ function draw() {
     ctx.fillStyle = 'rgba(30,60,110,.22)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
     const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * 0.3, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) * 0.7);
     vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,10,30,.55)'); ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '시간 멈춤 — 조이스틱으로 방향·거리, 떼면 던진다 · 버튼 밖으로 끌어 떼면 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
+    ctx.save(); ctx.scale(DPR, DPR); ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(190,220,255,.9)'; ctx.fillText(input.aiming && input.aiming.off ? '여기서 놓으면 취소' : isTouch ? '끌어 조준 · 놓아 사용 · 원위치로 취소' : `시간 멈춤 — 방향키로 겨누고 ${KK('tool')}를 떼면 사용 · Esc 취소`, W / 2, H - (isTouch ? 230 : 70)); ctx.restore();
   }
   if (S.flash > 0) { ctx.fillStyle = `rgba(140,10,16,${S.flash * 1.2})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }
   if (S.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${S.fade * 1.6})`; ctx.fillRect(0, 0, canvas.width, canvas.height); }

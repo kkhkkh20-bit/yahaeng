@@ -30,8 +30,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 678,
+          "x": 220,
+          "y": 622,
           "w": 52,
           "h": 52,
           "visible": true
@@ -45,6 +45,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -54,10 +86,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 678,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 588,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -78,18 +110,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 754,
+          "x": 216,
+          "y": 690,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 746,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 734,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -136,8 +168,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 678,
+          "x": 220,
+          "y": 622,
           "w": 52,
           "h": 52,
           "visible": true
@@ -151,25 +183,57 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
-          "x": 222,
-          "y": 678,
-          "w": 56,
-          "h": 56,
+          "x": 308,
+          "y": 654,
+          "w": 60,
+          "h": 60,
           "visible": true
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 604,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 588,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 310,
-          "y": 608,
+          "x": 226,
+          "y": 554,
           "w": 52,
           "h": 52,
           "visible": true
@@ -184,18 +248,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 754,
+          "x": 216,
+          "y": 690,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 746,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 734,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -242,8 +306,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 678,
+          "x": 220,
+          "y": 622,
           "w": 52,
           "h": 52,
           "visible": true
@@ -257,6 +321,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -266,10 +362,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 678,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 588,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -290,25 +386,25 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 754,
+          "x": 216,
+          "y": 690,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 746,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 734,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
           "id": "btnCycle",
-          "x": 222,
-          "y": 616,
-          "w": 56,
+          "x": 226,
+          "y": 494,
+          "w": 52,
           "h": 44,
           "visible": true
         }
@@ -348,8 +444,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 678,
+          "x": 220,
+          "y": 622,
           "w": 52,
           "h": 52,
           "visible": true
@@ -363,6 +459,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -372,16 +500,16 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 678,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 588,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 310,
-          "y": 608,
+          "x": 226,
+          "y": 554,
           "w": 52,
           "h": 52,
           "visible": true
@@ -396,18 +524,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 754,
+          "x": 216,
+          "y": 690,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 746,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 734,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -420,6 +548,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "portrait",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj",
+        "x": 12,
+        "y": 12,
+        "w": 280,
+        "h": 59.4375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 16,
+        "y": 96,
+        "w": 61.421875,
+        "h": 26,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 334,
+          "y": 12,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 220,
+          "y": 622,
+          "w": 52,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "mini",
+          "x": 300,
+          "y": 68,
+          "w": 78,
+          "h": 51.390625,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 16,
+          "y": 766,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickCoin",
+          "x": 70,
+          "y": 766,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickSmoke",
+          "x": 124,
+          "y": 766,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickRadio",
+          "x": 178,
+          "y": 766,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnTool",
+          "x": 308,
+          "y": 654,
+          "w": 60,
+          "h": 60,
+          "visible": true
+        },
+        {
+          "id": "btnToolNext",
+          "x": 314,
+          "y": 588,
+          "w": 48,
+          "h": 48,
+          "visible": true
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 216,
+          "y": 690,
+          "w": 64,
+          "h": 64,
+          "visible": true
+        },
+        {
+          "id": "btnAct",
+          "x": 286,
+          "y": 734,
+          "w": 88,
+          "h": 88,
+          "visible": true
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   },
@@ -454,8 +720,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 474,
+          "x": 220,
+          "y": 418,
           "w": 52,
           "h": 52,
           "visible": true
@@ -469,6 +735,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -478,10 +776,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 474,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 384,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -502,18 +800,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 550,
+          "x": 216,
+          "y": 486,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 542,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 530,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -560,8 +858,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 474,
+          "x": 220,
+          "y": 418,
           "w": 52,
           "h": 52,
           "visible": true
@@ -575,25 +873,57 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
-          "x": 222,
-          "y": 474,
-          "w": 56,
-          "h": 56,
+          "x": 308,
+          "y": 450,
+          "w": 60,
+          "h": 60,
           "visible": true
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 400,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 384,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 310,
-          "y": 404,
+          "x": 226,
+          "y": 350,
           "w": 52,
           "h": 52,
           "visible": true
@@ -608,18 +938,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 550,
+          "x": 216,
+          "y": 486,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 542,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 530,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -666,8 +996,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 474,
+          "x": 220,
+          "y": 418,
           "w": 52,
           "h": 52,
           "visible": true
@@ -681,6 +1011,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -690,10 +1052,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 474,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 384,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -714,25 +1076,25 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 550,
+          "x": 216,
+          "y": 486,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 542,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 530,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
           "id": "btnCycle",
-          "x": 222,
-          "y": 412,
-          "w": 56,
+          "x": 226,
+          "y": 290,
+          "w": 52,
           "h": 44,
           "visible": true
         }
@@ -772,8 +1134,8 @@
         },
         {
           "id": "btnCrouch",
-          "x": 310,
-          "y": 474,
+          "x": 220,
+          "y": 418,
           "w": 52,
           "h": 52,
           "visible": true
@@ -787,6 +1149,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -796,16 +1190,16 @@
         },
         {
           "id": "btnToolNext",
-          "x": 222,
-          "y": 474,
-          "w": 56,
-          "h": 56,
+          "x": 314,
+          "y": 384,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 310,
-          "y": 404,
+          "x": 226,
+          "y": 350,
           "w": 52,
           "h": 52,
           "visible": true
@@ -820,18 +1214,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 218,
-          "y": 550,
+          "x": 216,
+          "y": 486,
           "w": 64,
           "h": 64,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 298,
-          "y": 542,
-          "w": 76,
-          "h": 76,
+          "x": 286,
+          "y": 530,
+          "w": 88,
+          "h": 88,
           "visible": true
         },
         {
@@ -844,6 +1238,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "short",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj",
+        "x": 12,
+        "y": 12,
+        "w": 280,
+        "h": 59.4375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 16,
+        "y": 96,
+        "w": 61.421875,
+        "h": 26,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 334,
+          "y": 12,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 220,
+          "y": 418,
+          "w": 52,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "mini",
+          "x": 300,
+          "y": 68,
+          "w": 78,
+          "h": 51.390625,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 16,
+          "y": 562,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickCoin",
+          "x": 70,
+          "y": 562,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickSmoke",
+          "x": 124,
+          "y": 562,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "quickRadio",
+          "x": 178,
+          "y": 562,
+          "w": 48,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnTool",
+          "x": 308,
+          "y": 450,
+          "w": 60,
+          "h": 60,
+          "visible": true
+        },
+        {
+          "id": "btnToolNext",
+          "x": 314,
+          "y": 384,
+          "w": 48,
+          "h": 48,
+          "visible": true
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 216,
+          "y": 486,
+          "w": 64,
+          "h": 64,
+          "visible": true
+        },
+        {
+          "id": "btnAct",
+          "x": 286,
+          "y": 530,
+          "w": 88,
+          "h": 88,
+          "visible": true
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   },
@@ -878,10 +1410,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 244,
-          "y": 408,
-          "w": 52,
-          "h": 52,
+          "x": 168,
+          "y": 356,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -893,6 +1425,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -902,10 +1466,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 168,
-          "y": 412,
-          "w": 52,
-          "h": 52,
+          "x": 252,
+          "y": 322,
+          "w": 44,
+          "h": 44,
           "visible": true
         },
         {
@@ -927,17 +1491,17 @@
         {
           "id": "btnCarry",
           "x": 164,
-          "y": 488,
-          "w": 60,
-          "h": 60,
+          "y": 416,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 236,
-          "y": 480,
-          "w": 72,
-          "h": 72,
+          "x": 228,
+          "y": 472,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -984,10 +1548,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 244,
-          "y": 408,
-          "w": 52,
-          "h": 52,
+          "x": 168,
+          "y": 356,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -999,27 +1563,59 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
-          "x": 168,
-          "y": 412,
-          "w": 52,
-          "h": 52,
+          "x": 246,
+          "y": 388,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnToolNext",
-          "x": 168,
-          "y": 338,
-          "w": 52,
-          "h": 52,
+          "x": 252,
+          "y": 322,
+          "w": 44,
+          "h": 44,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 244,
-          "y": 338,
-          "w": 52,
-          "h": 52,
+          "x": 172,
+          "y": 288,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1033,17 +1629,17 @@
         {
           "id": "btnCarry",
           "x": 164,
-          "y": 488,
-          "w": 60,
-          "h": 60,
+          "y": 416,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 236,
-          "y": 480,
-          "w": 72,
-          "h": 72,
+          "x": 228,
+          "y": 472,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1090,10 +1686,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 244,
-          "y": 408,
-          "w": 52,
-          "h": 52,
+          "x": 168,
+          "y": 356,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1105,6 +1701,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1114,10 +1742,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 168,
-          "y": 412,
-          "w": 52,
-          "h": 52,
+          "x": 252,
+          "y": 322,
+          "w": 44,
+          "h": 44,
           "visible": true
         },
         {
@@ -1139,24 +1767,24 @@
         {
           "id": "btnCarry",
           "x": 164,
-          "y": 488,
-          "w": 60,
-          "h": 60,
+          "y": 416,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 236,
-          "y": 480,
-          "w": 72,
-          "h": 72,
+          "x": 228,
+          "y": 472,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
           "id": "btnCycle",
-          "x": 156,
-          "y": 346,
-          "w": 56,
+          "x": 172,
+          "y": 224,
+          "w": 52,
           "h": 44,
           "visible": true
         }
@@ -1196,10 +1824,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 244,
-          "y": 408,
-          "w": 52,
-          "h": 52,
+          "x": 168,
+          "y": 356,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1211,6 +1839,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1220,18 +1880,18 @@
         },
         {
           "id": "btnToolNext",
-          "x": 168,
-          "y": 412,
-          "w": 52,
-          "h": 52,
+          "x": 252,
+          "y": 322,
+          "w": 44,
+          "h": 44,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 244,
-          "y": 338,
-          "w": 52,
-          "h": 52,
+          "x": 172,
+          "y": 288,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1245,17 +1905,17 @@
         {
           "id": "btnCarry",
           "x": 164,
-          "y": 488,
-          "w": 60,
-          "h": 60,
+          "y": 416,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 236,
-          "y": 480,
-          "w": 72,
-          "h": 72,
+          "x": 228,
+          "y": 472,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1268,6 +1928,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "small",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj",
+        "x": 12,
+        "y": 12,
+        "w": 218,
+        "h": 59.4375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 16,
+        "y": 96,
+        "w": 61.421875,
+        "h": 26,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 264,
+          "y": 12,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 168,
+          "y": 356,
+          "w": 48,
+          "h": 48,
+          "visible": true
+        },
+        {
+          "id": "mini",
+          "x": 244,
+          "y": 68,
+          "w": 64,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 12,
+          "y": 500,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickCoin",
+          "x": 62,
+          "y": 500,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickSmoke",
+          "x": 112,
+          "y": 500,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickRadio",
+          "x": 162,
+          "y": 500,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "btnTool",
+          "x": 246,
+          "y": 388,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnToolNext",
+          "x": 252,
+          "y": 322,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 164,
+          "y": 416,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnAct",
+          "x": 228,
+          "y": 472,
+          "w": 80,
+          "h": 80,
+          "visible": true
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   },
@@ -1302,10 +2100,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 600,
-          "y": 326,
-          "w": 52,
-          "h": 52,
+          "x": 612,
+          "y": 328,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1317,6 +2115,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1326,10 +2156,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 600,
-          "y": 236,
-          "w": 54,
-          "h": 54,
+          "x": 616,
+          "y": 250,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1350,18 +2180,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 680,
-          "y": 312,
-          "w": 62,
-          "h": 62,
+          "x": 678,
+          "y": 322,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 758,
-          "y": 308,
-          "w": 70,
-          "h": 70,
+          "x": 748,
+          "y": 298,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1408,10 +2238,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 600,
-          "y": 326,
-          "w": 52,
-          "h": 52,
+          "x": 612,
+          "y": 328,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1423,27 +2253,59 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 686,
-          "y": 236,
-          "w": 54,
-          "h": 54,
+          "y": 242,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnToolNext",
-          "x": 600,
-          "y": 236,
-          "w": 54,
-          "h": 54,
+          "x": 616,
+          "y": 250,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 768,
-          "y": 240,
-          "w": 50,
-          "h": 50,
+          "x": 772,
+          "y": 230,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1456,18 +2318,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 680,
-          "y": 312,
-          "w": 62,
-          "h": 62,
+          "x": 678,
+          "y": 322,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 758,
-          "y": 308,
-          "w": 70,
-          "h": 70,
+          "x": 748,
+          "y": 298,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1514,10 +2376,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 600,
-          "y": 326,
-          "w": 52,
-          "h": 52,
+          "x": 612,
+          "y": 328,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1529,6 +2391,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1538,10 +2432,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 600,
-          "y": 236,
-          "w": 54,
-          "h": 54,
+          "x": 616,
+          "y": 250,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1562,25 +2456,25 @@
         },
         {
           "id": "btnCarry",
-          "x": 680,
-          "y": 312,
-          "w": 62,
-          "h": 62,
+          "x": 678,
+          "y": 322,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 758,
-          "y": 308,
-          "w": 70,
-          "h": 70,
+          "x": 748,
+          "y": 298,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
           "id": "btnCycle",
-          "x": 600,
-          "y": 184,
-          "w": 54,
+          "x": 612,
+          "y": 190,
+          "w": 52,
           "h": 44,
           "visible": true
         }
@@ -1620,10 +2514,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 600,
-          "y": 326,
-          "w": 52,
-          "h": 52,
+          "x": 612,
+          "y": 328,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1635,6 +2529,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1644,18 +2570,18 @@
         },
         {
           "id": "btnToolNext",
-          "x": 600,
-          "y": 236,
-          "w": 54,
-          "h": 54,
+          "x": 616,
+          "y": 250,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 768,
-          "y": 240,
-          "w": 50,
-          "h": 50,
+          "x": 772,
+          "y": 230,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1668,18 +2594,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 680,
-          "y": 312,
-          "w": 62,
-          "h": 62,
+          "x": 678,
+          "y": 322,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 758,
-          "y": 308,
-          "w": 70,
-          "h": 70,
+          "x": 748,
+          "y": 298,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1692,6 +2618,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "landscape",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj",
+        "x": 16,
+        "y": 12,
+        "w": 340,
+        "h": 56.4375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 20,
+        "y": 89,
+        "w": 60.421875,
+        "h": 24,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 784,
+          "y": 12,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 612,
+          "y": 328,
+          "w": 50,
+          "h": 50,
+          "visible": true
+        },
+        {
+          "id": "mini",
+          "x": 682,
+          "y": 12,
+          "w": 70,
+          "h": 47.1875,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 16,
+          "y": 326,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickCoin",
+          "x": 66,
+          "y": 326,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickSmoke",
+          "x": 116,
+          "y": 326,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickRadio",
+          "x": 166,
+          "y": 326,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "btnTool",
+          "x": 686,
+          "y": 242,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnToolNext",
+          "x": 616,
+          "y": 250,
+          "w": 48,
+          "h": 48,
+          "visible": true
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 678,
+          "y": 322,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnAct",
+          "x": 748,
+          "y": 298,
+          "w": 80,
+          "h": 80,
+          "visible": true
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   },
@@ -1726,10 +2790,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 324,
-          "y": 256,
-          "w": 52,
-          "h": 52,
+          "x": 336,
+          "y": 258,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1741,6 +2805,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1750,10 +2846,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 324,
-          "y": 166,
-          "w": 54,
-          "h": 54,
+          "x": 340,
+          "y": 180,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1774,18 +2870,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 404,
-          "y": 242,
-          "w": 62,
-          "h": 62,
+          "x": 402,
+          "y": 252,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 482,
-          "y": 238,
-          "w": 70,
-          "h": 70,
+          "x": 472,
+          "y": 228,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1832,10 +2928,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 324,
-          "y": 256,
-          "w": 52,
-          "h": 52,
+          "x": 336,
+          "y": 258,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1847,27 +2943,59 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 410,
-          "y": 166,
-          "w": 54,
-          "h": 54,
+          "y": 172,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnToolNext",
-          "x": 324,
-          "y": 166,
-          "w": 54,
-          "h": 54,
+          "x": 340,
+          "y": 180,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 492,
-          "y": 170,
-          "w": 50,
-          "h": 50,
+          "x": 496,
+          "y": 160,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1880,18 +3008,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 404,
-          "y": 242,
-          "w": 62,
-          "h": 62,
+          "x": 402,
+          "y": 252,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 482,
-          "y": 238,
-          "w": 70,
-          "h": 70,
+          "x": 472,
+          "y": 228,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -1938,10 +3066,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 324,
-          "y": 256,
-          "w": 52,
-          "h": 52,
+          "x": 336,
+          "y": 258,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -1953,6 +3081,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -1962,10 +3122,10 @@
         },
         {
           "id": "btnToolNext",
-          "x": 324,
-          "y": 166,
-          "w": 54,
-          "h": 54,
+          "x": 340,
+          "y": 180,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -1986,25 +3146,25 @@
         },
         {
           "id": "btnCarry",
-          "x": 404,
-          "y": 242,
-          "w": 62,
-          "h": 62,
+          "x": 402,
+          "y": 252,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 482,
-          "y": 238,
-          "w": 70,
-          "h": 70,
+          "x": 472,
+          "y": 228,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
           "id": "btnCycle",
-          "x": 324,
-          "y": 114,
-          "w": 54,
+          "x": 336,
+          "y": 120,
+          "w": 52,
           "h": 44,
           "visible": true
         }
@@ -2044,10 +3204,10 @@
         },
         {
           "id": "btnCrouch",
-          "x": 324,
-          "y": 256,
-          "w": 52,
-          "h": 52,
+          "x": 336,
+          "y": 258,
+          "w": 50,
+          "h": 50,
           "visible": true
         },
         {
@@ -2059,6 +3219,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -2068,18 +3260,18 @@
         },
         {
           "id": "btnToolNext",
-          "x": 324,
-          "y": 166,
-          "w": 54,
-          "h": 54,
+          "x": 340,
+          "y": 180,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
           "id": "btnGrab",
-          "x": 492,
-          "y": 170,
-          "w": 50,
-          "h": 50,
+          "x": 496,
+          "y": 160,
+          "w": 48,
+          "h": 48,
           "visible": true
         },
         {
@@ -2092,18 +3284,18 @@
         },
         {
           "id": "btnCarry",
-          "x": 404,
-          "y": 242,
-          "w": 62,
-          "h": 62,
+          "x": 402,
+          "y": 252,
+          "w": 56,
+          "h": 56,
           "visible": true
         },
         {
           "id": "btnAct",
-          "x": 482,
-          "y": 238,
-          "w": 70,
-          "h": 70,
+          "x": 472,
+          "y": 228,
+          "w": 80,
+          "h": 80,
           "visible": true
         },
         {
@@ -2116,6 +3308,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "compact",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj hudfade",
+        "x": 16,
+        "y": 12,
+        "w": 342,
+        "h": 56.4375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 20,
+        "y": 89,
+        "w": 57.421875,
+        "h": 22,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 512,
+          "y": 12,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 336,
+          "y": 258,
+          "w": 50,
+          "h": 50,
+          "visible": true
+        },
+        {
+          "id": "mini",
+          "x": 406,
+          "y": 12,
+          "w": 70,
+          "h": 46.4375,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 16,
+          "y": 256,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickCoin",
+          "x": 66,
+          "y": 256,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickSmoke",
+          "x": 116,
+          "y": 256,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "quickRadio",
+          "x": 166,
+          "y": 256,
+          "w": 44,
+          "h": 52,
+          "visible": true
+        },
+        {
+          "id": "btnTool",
+          "x": 410,
+          "y": 172,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnToolNext",
+          "x": 340,
+          "y": 180,
+          "w": 48,
+          "h": 48,
+          "visible": true
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 402,
+          "y": 252,
+          "w": 56,
+          "h": 56,
+          "visible": true
+        },
+        {
+          "id": "btnAct",
+          "x": 472,
+          "y": 228,
+          "w": 80,
+          "h": 80,
+          "visible": true
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   },
@@ -2163,6 +3493,38 @@
           "w": 132,
           "h": 94.78125,
           "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
         },
         {
           "id": "btnTool",
@@ -2271,6 +3633,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -2375,6 +3769,38 @@
           "w": 132,
           "h": 94.78125,
           "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
         },
         {
           "id": "btnTool",
@@ -2483,6 +3909,38 @@
           "visible": true
         },
         {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
           "id": "btnTool",
           "x": 0,
           "y": 0,
@@ -2540,6 +3998,144 @@
         }
       ],
       "summary": "시야를 끊고 숨기"
+    },
+    "errors": []
+  },
+  {
+    "device": "desktop",
+    "scene": "items",
+    "geometry": {
+      "header": {
+        "id": "obj",
+        "x": 16,
+        "y": 16,
+        "w": 420,
+        "h": 68.9375,
+        "visible": true
+      },
+      "status": {
+        "id": "stealth",
+        "x": 20,
+        "y": 116,
+        "w": 64.421875,
+        "h": 30,
+        "visible": true
+      },
+      "buttons": [
+        {
+          "id": "btnPause",
+          "x": 1220,
+          "y": 16,
+          "w": 44,
+          "h": 44,
+          "visible": true
+        },
+        {
+          "id": "btnCrouch",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "mini",
+          "x": 1132,
+          "y": 76,
+          "w": 132,
+          "h": 85.625,
+          "visible": true
+        },
+        {
+          "id": "quickStone",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickCoin",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickSmoke",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "quickRadio",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnTool",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnToolNext",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnGrab",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnDress",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCarry",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnAct",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        },
+        {
+          "id": "btnCycle",
+          "x": 0,
+          "y": 0,
+          "w": 0,
+          "h": 0,
+          "visible": false
+        }
+      ],
+      "summary": "다트는 이 연습에서만 임시 지급"
     },
     "errors": []
   }

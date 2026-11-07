@@ -12,8 +12,9 @@ async def main(args):
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('''localStorage.clear();(()=>{let q=[],t=1000;requestAnimationFrame=f=>q.push(f);window.__step=n=>{for(let i=0;i<n;i++){t+=16.7;const a=q;q=[];a.forEach(f=>f(t))}}})()''')
    await q.goto(args.url or (R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate('document.fonts.ready')
-   for scene in ['walk','approach','wardrobe','danger']:
-    await q.evaluate('''scene=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id===(scene==='approach'?'p0':scene==='danger'?'p2':'p1')),false);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.fade=0;
+   for scene in ['walk','approach','wardrobe','danger','items']:
+    await q.evaluate('''scene=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id===(scene==='items'?'tE':scene==='approach'?'p0':scene==='danger'?'p2':'p1')),false);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.fade=0;
+     if(scene==='items'){Object.assign(P,{x:768,y:744,stones:3,coins:2,smokes:2,hasRadio:true,radioCharges:2});G.input.tool='kunai';G.input.padWhistle=false;}
      if(scene==='walk'){Object.assign(P,{x:840,y:552,outfit:'crew',disguise:'sam',mode:'walk'});S.starterPass=true;}
      if(scene==='approach')Object.assign(P,{x:660,y:408,mode:'sneak'});
      if(scene==='wardrobe'){const g=S.guards.find(g=>g.tag==='uniformDonor');S.koNext=true;G.killGuard(g,null,null,true);Object.assign(P,{x:617,y:696,mode:'sneak'});}
@@ -22,7 +23,7 @@ async def main(args):
     }''',scene)
     for _ in range(7):await q.evaluate('__game.benchDraw(1)');await q.wait_for_timeout(80)
     await q.screenshot(path=str(out/f'{name}-{scene}.png'))
-    geometry=await q.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return{id:e.id||e.className,x:r.x,y:r.y,w:r.width,h:r.height,visible:!e.hidden&&getComputedStyle(e).visibility!=='hidden'&&r.width>0&&r.height>0}};return{header:box(document.querySelector('#hud .obj')),status:box(document.querySelector('#stealth')),buttons:[...document.querySelectorAll('#hud .pad>button,#btnCrouch,#btnPause,#mini')].map(box),summary:document.getElementById('objectiveSummary').textContent}}''')
+    geometry=await q.evaluate('''()=>{const box=e=>{const r=e.getBoundingClientRect();return{id:e.id||e.className,x:r.x,y:r.y,w:r.width,h:r.height,visible:!e.hidden&&getComputedStyle(e).visibility!=='hidden'&&r.width>0&&r.height>0}};return{header:box(document.querySelector('#hud .obj')),status:box(document.querySelector('#stealth')),buttons:[...document.querySelectorAll('#hud .pad>button,#quickItems>button,#btnCrouch,#btnPause,#mini')].map(box),summary:document.getElementById('objectiveSummary').textContent}}''')
     rows.append({'device':name,'scene':scene,'geometry':geometry,'errors':errors[:]})
     if scene=='walk':
      await q.click('#hud .obj');await q.screenshot(path=str(out/f'{name}-reading.png'));await q.click('#hud .obj')
