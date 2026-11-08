@@ -67,7 +67,7 @@ function drawRoofs(openB) {
     drawRoof1(b, i, roof); ctx.globalAlpha = 1;
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
-  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
+  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
   for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
   for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
@@ -87,7 +87,7 @@ function drawRoof1(b, i, roof) {
     // Baked facades have transparent gutters and cutouts. A roof is a solid
     // surface beneath that artwork, even when its source image has alpha.
     if(b.kit){ctx.fillStyle='#3b4646';ctx.fillRect(x,y,w,h);}
-    if (b.kit && drawKitBuilding(b)) {
+    if (b.kit && !freeCityBuilding(b) && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
       ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left'; ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
@@ -97,6 +97,7 @@ function drawRoof1(b, i, roof) {
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + sh, y + sh, w, h);
     if (b.facade) { drawFacade(b); drawFacadeExtras(b); }
     ctx.drawImage(b.roofC, x, y);
+    drawCityRoofProps(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
     ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }

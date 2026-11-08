@@ -76,7 +76,8 @@ function paintSideWindow(w,lit,side){
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
-  if(drawRoomFinishWindow(w,.9))return;
+  const city=freeCityBuilding(b)&&freeCityReady()&&freeCityArt===A.dotonbori;
+  if(!city&&drawRoomFinishWindow(w,.9))return;
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
@@ -87,6 +88,7 @@ function drawWindowEdge(w, b) {
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
+  if(city){if(vert)ctx.rotate(Math.PI/2);freeCityDraw(ctx,'window',-13,-8,1);paintWindow(w,lit,22,8);ctx.restore();return;}
   if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,12);
   ctx.restore();
 }

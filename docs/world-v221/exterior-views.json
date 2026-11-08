@@ -1,0 +1,212 @@
+[
+  {
+    "version": "v220",
+    "id": "m2",
+    "name": "VIP",
+    "buildings": 8,
+    "props": 2
+  },
+  {
+    "version": "v220",
+    "id": "m3",
+    "name": "잔칫날",
+    "buildings": 8,
+    "props": 1
+  },
+  {
+    "version": "v220",
+    "id": "city",
+    "name": "밤의 도시",
+    "buildings": 27,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "m1",
+    "name": "장부 털기",
+    "buildings": 13,
+    "props": 2
+  },
+  {
+    "version": "v221",
+    "id": "m2",
+    "name": "VIP",
+    "buildings": 8,
+    "props": 2
+  },
+  {
+    "version": "v221",
+    "id": "m3",
+    "name": "잔칫날",
+    "buildings": 8,
+    "props": 1
+  },
+  {
+    "version": "v221",
+    "id": "m4",
+    "name": "돈줄",
+    "buildings": 8,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "m5",
+    "name": "검은 연락선",
+    "buildings": 5,
+    "props": 1
+  },
+  {
+    "version": "v221",
+    "id": "m6",
+    "name": "배신",
+    "buildings": 4,
+    "props": 1
+  },
+  {
+    "version": "v221",
+    "id": "m7",
+    "name": "새벽배송",
+    "buildings": 3,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "city",
+    "name": "밤의 도시",
+    "buildings": 27,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "t0",
+    "name": "연습 2 · 제압과 몸 숨기기",
+    "buildings": 1,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "t1",
+    "name": "연습 4 · 고급",
+    "buildings": 3,
+    "props": 1
+  },
+  {
+    "version": "v221",
+    "id": "tI",
+    "name": "연습 3 · 신분",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tB",
+    "name": "닫힌 배차실",
+    "buildings": 3,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tS",
+    "name": "연습 5 · 암살 기술",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tE",
+    "name": "연습 6 · 현장 도구",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tA",
+    "name": "연습 7 · 은신 기습",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tL",
+    "name": "의뢰 02 준비 · 빛과 그림자",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tR",
+    "name": "의뢰 02 준비 · 실내와 계단",
+    "buildings": 1,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "tC",
+    "name": "의뢰 01 준비 · 복장과 CCTV",
+    "buildings": 0,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "p0",
+    "name": "닫힌 철문",
+    "buildings": 2,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "e1",
+    "name": "녹화된 얼굴",
+    "buildings": 2,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "e2",
+    "name": "지붕 위의 장부",
+    "buildings": 2,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "e3",
+    "name": "윗층의 장부",
+    "buildings": 1,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "p1",
+    "name": "불 꺼진 출고동",
+    "buildings": 2,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "p2",
+    "name": "야간 기록실",
+    "buildings": 2,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "e4",
+    "name": "끊어진 회선",
+    "buildings": 1,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "e5",
+    "name": "창가의 중개인",
+    "buildings": 1,
+    "props": 0
+  },
+  {
+    "version": "v221",
+    "id": "n1",
+    "name": "마지막 이름",
+    "buildings": 8,
+    "props": 1
+  }
+]

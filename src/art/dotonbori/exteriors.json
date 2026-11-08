@@ -3,6 +3,18 @@
   "pack": "Dotonbori City v3",
   "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
   "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+  "supplementSources": {
+    "https://kenney.nl/assets/rpg-urban-pack": {
+      "tile_0441.png": "7c8ae80d1af665f5dc568080edbe2d2e14e38853b313b12bb4c196c1e61512c5",
+      "tile_0232.png": "f8316adfaf4e164f1aa4b8c886f62af12b9d5f720d8b8f98f4628b46627b110b",
+      "tile_0259.png": "f9cab101d51a4168749fa04a7e84444140d596fed4e0c1d48f8000279df28d15",
+      "tile_0233.png": "098f69fa26f84cfb5653c05ccf251b36493fb62d0503c4b87bc60ad690019698",
+      "tile_0260.png": "a4139d30bfa448556006bc329d6bb0dce903cc9160ad41b577124b7b12f08db2",
+      "tile_0286.png": "feee5314e376f3d45b019c28f8a1b2c11eaa39ca05be1214e6de618056fbca08",
+      "tile_0291.png": "c825ac8cfd03caee5bbdff939ae09f25aea69abdc82d8a0f21fd24268f064933",
+      "tile_0032.png": "c7c4a728116c5fd7b127ae627b224d3b9da4427fc1dcb4c13b19f480c798df91"
+    }
+  },
   "roofSlice": 16,
   "frames": {
     "roofTile": {
@@ -33,9 +45,79 @@
         314
       ]
     },
-    "cornice": {
+    "roofTerrace": {
       "rect": [
         124,
+        0,
+        96,
+        96
+      ],
+      "sourceRect": [
+        1984,
+        0,
+        2080,
+        96
+      ]
+    },
+    "roofWave": {
+      "rect": [
+        222,
+        0,
+        96,
+        96
+      ],
+      "sourceRect": [
+        2592,
+        0,
+        2688,
+        96
+      ]
+    },
+    "wallBrick": {
+      "rect": [
+        320,
+        0,
+        12,
+        8
+      ],
+      "sourceRect": [
+        292,
+        328,
+        304,
+        336
+      ]
+    },
+    "wallGreen": {
+      "rect": [
+        334,
+        0,
+        24,
+        8
+      ],
+      "sourceRect": [
+        420,
+        310,
+        444,
+        318
+      ]
+    },
+    "wallMetal": {
+      "rect": [
+        360,
+        0,
+        24,
+        16
+      ],
+      "sourceRect": [
+        292,
+        4,
+        316,
+        20
+      ]
+    },
+    "cornice": {
+      "rect": [
+        386,
         0,
         96,
         10
@@ -49,7 +131,7 @@
     },
     "pilaster": {
       "rect": [
-        222,
+        484,
         0,
         4,
         22
@@ -63,8 +145,8 @@
     },
     "pavers": {
       "rect": [
-        228,
         0,
+        98,
         32,
         32
       ],
@@ -77,8 +159,8 @@
     },
     "awning": {
       "rect": [
-        262,
-        0,
+        34,
+        98,
         32,
         6
       ],
@@ -89,10 +171,24 @@
         134
       ]
     },
+    "roofUnit": {
+      "rect": [
+        68,
+        98,
+        32,
+        32
+      ],
+      "sourceRect": [
+        960,
+        64,
+        992,
+        96
+      ]
+    },
     "lampOff": {
       "rect": [
-        296,
-        0,
+        102,
+        98,
         24,
         16
       ],
@@ -105,8 +201,8 @@
     },
     "lampOn": {
       "rect": [
-        322,
-        0,
+        128,
+        98,
         24,
         16
       ],
@@ -119,8 +215,8 @@
     },
     "upperWindow": {
       "rect": [
-        348,
-        0,
+        154,
+        98,
         26,
         12
       ],
@@ -134,7 +230,7 @@
     },
     "window": {
       "rect": [
-        0,
+        182,
         98,
         26,
         16
@@ -147,9 +243,39 @@
       ],
       "assembly": "transparent 26x16 surround; stateful glass rendered by game"
     },
+    "doorClosed": {
+      "rect": [
+        210,
+        98,
+        24,
+        24
+      ],
+      "sourceRect": [
+        704,
+        448,
+        736,
+        480
+      ],
+      "assembly": "24x24 jamb and panel; native 2x entrance"
+    },
+    "doorOpen": {
+      "rect": [
+        236,
+        98,
+        24,
+        24
+      ],
+      "sourceRect": [
+        704,
+        448,
+        736,
+        480
+      ],
+      "assembly": "same jamb with open dark aperture"
+    },
     "vending": {
       "rect": [
-        28,
+        262,
         98,
         22,
         32
@@ -160,6 +286,161 @@
         70,
         443,
         102
+      ]
+    },
+    "asphalt": {
+      "rect": [
+        286,
+        98,
+        16,
+        16
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "seamless unmarked road, campaign palette",
+      "tiles": [
+        441
+      ]
+    },
+    "treeOval": {
+      "rect": [
+        304,
+        98,
+        16,
+        32
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "original pixels, campaign palette",
+      "tiles": [
+        232,
+        259
+      ]
+    },
+    "treeRound": {
+      "rect": [
+        322,
+        98,
+        16,
+        32
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "original pixels, campaign palette",
+      "tiles": [
+        233,
+        260
+      ]
+    },
+    "treePlanter": {
+      "rect": [
+        340,
+        98,
+        16,
+        32
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "original pixels, campaign palette",
+      "tiles": [
+        232,
+        286
+      ]
+    },
+    "roofPlanter": {
+      "rect": [
+        358,
+        98,
+        16,
+        16
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "original pixels, campaign palette",
+      "tiles": [
+        291
+      ]
+    },
+    "bush0": {
+      "rect": [
+        376,
+        98,
+        40,
+        28
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "overlapping leaf-only crowns, no trunk",
+      "tiles": [
+        232,
+        259
+      ]
+    },
+    "bush1": {
+      "rect": [
+        418,
+        98,
+        40,
+        28
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "overlapping leaf-only crowns, no trunk",
+      "tiles": [
+        232,
+        259
+      ]
+    },
+    "grass": {
+      "rect": [
+        460,
+        98,
+        16,
+        16
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "seamless ground, edge stones removed; campaign palette",
+      "tiles": [
+        32
+      ]
+    },
+    "grassAlt": {
+      "rect": [
+        478,
+        98,
+        16,
+        16
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "seamless ground, edge stones removed; campaign palette",
+      "tiles": [
+        32
+      ]
+    },
+    "soil": {
+      "rect": [
+        496,
+        98,
+        16,
+        16
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "pack": "RPG Urban Pack 1.0",
+      "license": "CC0-1.0",
+      "assembly": "seamless ground, edge stones removed; campaign palette",
+      "tiles": [
+        32
       ]
     }
   }

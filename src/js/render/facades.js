@@ -1,7 +1,8 @@
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
-  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||freeCityBuilding(b))return drawDepotFacade(b);
+  if(freeCityBuilding(b)&&freeCityReady())return drawCityFacade(b);
+  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return drawDepotFacade(b);
   if (b.kind === 'shop') return drawShopFacade(b);
   const wn = n => (b.alt ? n + 'B' : n);
   const glow = (x, yy, tx, r) => {  // 도시: 불 켜진 창 몇 개 (촛불·등잔빛)
@@ -131,6 +132,20 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 
 // Authored steel shutters and painted Korean signs for the opening freight yard.
 // Cosmetic texture uses coordinate hashes, never the AI random stream.
+function drawCityFacade(b){
+ const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
+ ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
+ for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#172330';ctx.fillRect(x,yy-3,w,5);ctx.fillStyle='#778693';ctx.fillRect(x,yy-3,w,1);}
+ drawFreeDepotDetails(ctx,b,x,y,w,h);
+ if(b.kind==='shop'&&b.signs?.length)drawShopSigns(b);
+ else{
+  const text=b.plate||b.name||'야간 사무동',sw=Math.min(w-32,Math.max(80,text.length*10+20));
+  ctx.fillStyle='#1c2834';ctx.fillRect(x+16,y+5,sw,18);ctx.strokeStyle='#8a98a3';ctx.lineWidth=1;ctx.strokeRect(x+16.5,y+5.5,sw-1,17);
+  ctx.fillStyle='#dddcd1';ctx.font=uiFont(11,700);ctx.textAlign='left';ctx.fillText(text,x+24,y+18,sw-16);
+ }
+ for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.5*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
+ ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-4,w,4);ctx.restore();
+}
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.fillStyle='#39494f';ctx.fillRect(x,y,w,h);

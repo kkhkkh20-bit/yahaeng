@@ -1727,8 +1727,8 @@ CASE_LINKS.push(['runner','foreman'],['foreman','records'],['records','contact']
 // Apply the free art pilot after derived lessons have copied their stage data.
 campaignStage('tB').freeCityPilot=true;
 
-// Freight buildings share the same exterior materials beyond the opening pilot.
-for(const s of STAGES)if(s.id==='tB'||s.compound&&s.industrialBuildings?.length)s.freeCityExteriors=true;
+// Every playable map shares the pixel city exterior kit, including legacy maps.
+for(const s of STAGES)s.freeCityExteriors=true;
 
 'use strict';
 (function () {
@@ -2676,7 +2676,7 @@ function drawKitBuilding(b) {
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
 
 // Purchased Dotonbori exteriors, with the official free-city set as a load fallback.
-// Structure uses native 2x pixels, paving/lamp heads native 1x. Physics stays on 48px cells.
+// Shared across every stage; 2D pixels and the existing 48px collision grid.
 let freeCityArt=A.dotonbori||A.freeCity||null;
 const freeCityAtlas=new Image(),freeCityPatterns={};
 let freeCityDirty=false;
@@ -2688,14 +2688,22 @@ function freeCityDraw(c,name,x,y,scale=2){
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return false;
  c.drawImage(freeCityAtlas,...f,Math.round(x),Math.round(y),f[2]*scale,f[3]*scale);return true;
 }
-function freeCityBuilding(b){return !!b&&!!STAGE.freeCityExteriors&&(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||STAGE.freeCityPilot&&freeCityArt===A.dotonbori);}
+function freeCityBuilding(b){return !!b&&!b.vacant&&!!STAGE.freeCityExteriors;}
+function cityBuildingStyle(b){
+ if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return 'metal';
+ if(b.glass||b.kind==='shop')return 'green';
+ return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
+}
 function freeCityPattern(name){
  let tile=freeCityPatterns[name];if(tile)return tile;
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
- tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(100,106,105,.62)';c.fillRect(0,0,tile.width,tile.height);}return freeCityPatterns[name]=tile;
+ tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);
+ if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(92,100,104,.35)';c.fillRect(0,0,tile.width,tile.height);}
+ if(name==='asphalt'){c.fillStyle='rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
+ return freeCityPatterns[name]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
- if(!freeCityBuilding(b))return false;const tile=freeCityPattern('wallPanel');if(!tile)return false;
+ if(!freeCityBuilding(b))return false;const style=cityBuildingStyle(b),name={metal:'wallMetal',brick:'wallBrick',green:'wallGreen',stone:'wallPanel'}[style],tile=freeCityPattern(freeCityArt?.frames[name]?name:'wallPanel');if(!tile)return false;
  c.save();c.translate(x,y);c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
  if(freeCityArt===A.dotonbori){
   // Continuous cornice and pilasters: no repeated fake doors or lit panes.
@@ -2708,7 +2716,8 @@ function paintFreeCityWall(c,b,x,y,w,h){
 function paintFreeCityRoof(c,b,w,h){
  if(!freeCityBuilding(b)||!freeCityReady())return false;
  if(freeCityArt===A.dotonbori){
-  const f=freeCityArt.frames.roofTile.rect,e=freeCityArt.roofSlice,border=e*2;
+  const style=cityBuildingStyle(b),name=style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
+  const f=(freeCityArt.frames[name]||freeCityArt.frames.roofTile).rect,e=freeCityArt.roofSlice,border=e*2;
   const spans=[[0,e,0,border],[e,f[2]-e*2,border,w-border*2],[f[2]-e,e,w-border,border]];
   const rows=[[0,e,0,border],[e,f[3]-e*2,border,h-border*2],[f[3]-e,e,h-border,border]];
   // Tile each nine-slice region at native 2x, clipping the last tile, never stretching.
@@ -2730,15 +2739,54 @@ function paintFreeCityRoof(c,b,w,h){
  return true;
 }
 function freeCityGround(c,ch,tx,ty){
- if(!STAGE.freeCityPilot||CUR_F||tx<1||tx>32||bldAt(tx,ty)>=0||!'.=,'.includes(ch)||!freeCityReady())return false;
- const paid=freeCityArt===A.dotonbori;
- if(paid?!(ty>=7&&ty<=12||[13,17].includes(ty)):tx>13||![7,13,17].includes(ty))return false;
- const tile=freeCityPattern(paid||ch==='='?'pavers':'asphalt');if(!tile)return false;
+ if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
+ if(ch==='B')ch='d';
+ if(ch==='T'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
+ const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
+ const tile=name&&freeCityPattern(name);if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
+}
+function drawCityPlant(ch,tx,ty,near){
+ if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
+ const x=tc(tx),y=tc(ty),h=((tx*92821)^(ty*68917))>>>0;
+ ctx.save();
+ if(ch==='B'){
+  const bs=S.bushShake,u=bs?(S.t-bs.t)/.5:1,shake=u>=0&&u<1&&Math.abs(bs.x-x)<30&&Math.abs(bs.y-y)<30?Math.sin(u*22.5)*3*(1-u):0;
+  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-16+shake,ty*TILE-18,2);
+ }else{
+  ctx.fillStyle='rgba(6,13,20,.27)';ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,TAU);ctx.fill();
+  const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(ctx,name,x-24,y-78,3);
+ }
+ ctx.restore();return true;
+}
+function cityBoundaryWall(c,tx,ty){
+ if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0)return false;
+ const tile=freeCityPattern('wallPanel');if(!tile)return false;
+ const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(x,y,TILE,TILE);c.fillStyle='#202b36';c.fillRect(x,y,TILE,8);c.fillStyle='#8d99a1';c.fillRect(x,y+2,TILE,3);c.fillStyle='#101a2788';c.fillRect(x,y+TILE-5,TILE,5);c.restore();return true;
 }
 function refreshFreeCity(){
  if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot&&!STAGE.freeCityExteriors)return;
- const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b))b.roofC=buildRoofCanvas(b,i);});}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b)){b.roofC=buildRoofCanvas(b,i);b.cityPropsC=null;}});}finally{setLayer(layer);}
+}
+function drawCityRoofProps(b){
+ if(!freeCityBuilding(b)||!freeCityReady()||!b.kitProps?.length)return;
+ if(!b.cityPropsC){
+  const c=b.cityPropsC=document.createElement('canvas');c.width=(b.x1-b.x0+1)*TILE;c.height=b.roofC.rh;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.translate(-b.x0*TILE,-b.y0*TILE);
+  for(const p of b.kitProps){
+   const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
+   if(p.t==='sh'){
+    const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
+    const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);
+    const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
+    if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
+   }else if(p.t==='tank'){
+    q.fillStyle='#101b29aa';q.fillRect(x+4,y+8,44,42);q.fillStyle='#72808b';q.fillRect(x+2,y-7,42,48);q.fillStyle='#3d515f';q.fillRect(x+5,y-4,36,38);freeCityDraw(q,'roofUnit',x+7,y,1);q.fillStyle='#a2aaa7';q.fillRect(x+2,y-7,42,3);
+   }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,'roofUnit',x+8,y+4,1);}
+   else if(p.t==='plant'){for(let k=0;k<4;k++)freeCityDraw(q,'roofPlanter',x+k*TILE+8,y+8,2);}
+   else if(p.t==='solar'){q.fillStyle='#213243';q.fillRect(x,y,3*TILE,2*TILE);q.strokeStyle='#5b7481';q.lineWidth=2;for(let k=0;k<=3;k++)q.strokeRect(x+k*TILE,y,TILE,2*TILE);q.beginPath();q.moveTo(x,y+TILE);q.lineTo(x+3*TILE,y+TILE);q.stroke();}
+  }
+ }
+ ctx.drawImage(b.cityPropsC,b.x0*TILE,b.y0*TILE);
 }
 function freeCityFront(b){
  return{windows:S.windows.filter(w=>!flOf(w)&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1),doors:S.doors.filter(d=>!flOf(d)&&d.ty===b.y1&&d.tx>=b.x0&&d.tx<=b.x1)};
@@ -2748,9 +2796,13 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
  const front=freeCityFront(b),openings=front.windows.concat(front.doors),gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62);
  c.save();c.imageSmoothingEnabled=false;
  for(const a of front.windows){
-  freeCityDraw(c,'window',a.x-26,a.y-16);drawWindow(a,c.globalAlpha);
+  freeCityDraw(c,'window',a.x-26,a.y-16);
+  c.save();c.translate(a.x,a.y);paintWindow(a,lightAt(a.x,a.y)>.45,44,20);c.restore();
  }
- for(const d of front.doors){blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}}
+ for(const d of front.doors){
+  if(!freeCityDraw(c,doorVisualOpen(d)>.5?'doorOpen':'doorClosed',d.tx*TILE,d.ty*TILE,2))blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);
+  if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}
+ }
  for(const a of S.windows)if(!flOf(a)&&(a.tx===b.x0||a.tx===b.x1)&&a.ty>=b.y1-b.fh+1&&a.ty<b.y1)drawWindowEdge(a,b);
  // Upper storeys follow the actual floor-window list and their own circuit.
  if(freeCityArt===A.dotonbori){
@@ -3291,7 +3343,7 @@ function buildRoofCanvas(b, i) {
   // A missing or partially transparent texture must never expose the room below.
   x.fillStyle = '#46514f'; x.fillRect(0, 0, w, h);
   const key = roofOf(i);
-  if (F[key] && key.startsWith('cRoof')) {
+  if (freeCityBuilding(b)&&freeCityReady() || F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
     const f = F[key], pc = (sx, sy, dx, dy) => x.drawImage(atlas, f[0] + sx, f[1] + sy, 16, 16, dx, dy, 48, 48);
     if(!paintFreeCityRoof(x,b,w,h)){
@@ -3300,6 +3352,9 @@ function buildRoofCanvas(b, i) {
     for (let yy = 48; yy < h - 48; yy += 48) { pc(0, 16, 0, yy); pc(32, 16, w - 48, yy); }
     pc(0, 0, 0, 0); pc(32, 0, w - 48, 0); pc(0, 32, 0, h - 48); pc(32, 32, w - 48, h - 48);
     }
+    // Purchased roofs use the actual kitProps below. Do not duplicate them
+    // with decorative tanks, huts or machinery at unrelated coordinates.
+    if(freeCityBuilding(b)&&freeCityReady()){c.flat=true;c.rh=h;return c;}
     const hs = (((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0);
     // 계단실(옥탑): 건물 안 계단 'Y' 칸 위
     let stair = null;
@@ -4786,7 +4841,7 @@ function renderMap(R) {
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';
       else if (e && n && !so && !w) piece = 'wallBL'; else if (w && n && !so && !e) piece = 'wallBR';
       else if ((n || so) && !e && !w) piece = 'wallV';
-      if (kitOk(kitTex.wall)) {
+      if(cityBoundaryWall(x,tx,ty)){}else if (kitOk(kitTex.wall)) {
         x.fillStyle = '#2a2622'; x.fillRect(px, py, TILE, TILE); x.fillStyle = '#3e3832'; x.fillRect(px + 2, py + 2, TILE - 4, TILE - 4); x.fillStyle = '#2a2622'; x.fillRect(px + 6, py + 6, TILE - 12, TILE - 12);
         if (!so) {  // 앞(남쪽)이 열려 있으면 벽 앞면
           x.drawImage(kitTex.wall, 0, 16, 64, 48, px, py + 20, TILE, 28);
@@ -13443,7 +13498,7 @@ function quarterFurn(x,it){
   }return true;
 }
 function quarterRoof(b){
-  if(!quarterClub(b))return false;
+  if(!quarterClub(b)||freeCityBuilding(b)&&freeCityReady())return false;
   const px=b.x0*TILE,py=b.y0*TILE,w=(b.x1-b.x0+1)*TILE,h=b.roofC.rh;
   let c=b.quarterRoof;
   if(!c){c=b.quarterRoof=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
@@ -14006,7 +14061,7 @@ function drawRoofs(openB) {
     drawRoof1(b, i, roof); ctx.globalAlpha = 1;
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
-  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
+  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
   for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
   for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
@@ -14026,7 +14081,7 @@ function drawRoof1(b, i, roof) {
     // Baked facades have transparent gutters and cutouts. A roof is a solid
     // surface beneath that artwork, even when its source image has alpha.
     if(b.kit){ctx.fillStyle='#3b4646';ctx.fillRect(x,y,w,h);}
-    if (b.kit && drawKitBuilding(b)) {
+    if (b.kit && !freeCityBuilding(b) && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
       ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left'; ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
@@ -14036,6 +14091,7 @@ function drawRoof1(b, i, roof) {
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + sh, y + sh, w, h);
     if (b.facade) { drawFacade(b); drawFacadeExtras(b); }
     ctx.drawImage(b.roofC, x, y);
+    drawCityRoofProps(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
     ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
@@ -14204,7 +14260,8 @@ function kitSpec() {
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
-  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||freeCityBuilding(b))return drawDepotFacade(b);
+  if(freeCityBuilding(b)&&freeCityReady())return drawCityFacade(b);
+  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return drawDepotFacade(b);
   if (b.kind === 'shop') return drawShopFacade(b);
   const wn = n => (b.alt ? n + 'B' : n);
   const glow = (x, yy, tx, r) => {  // 도시: 불 켜진 창 몇 개 (촛불·등잔빛)
@@ -14334,6 +14391,20 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 
 // Authored steel shutters and painted Korean signs for the opening freight yard.
 // Cosmetic texture uses coordinate hashes, never the AI random stream.
+function drawCityFacade(b){
+ const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
+ ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
+ for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#172330';ctx.fillRect(x,yy-3,w,5);ctx.fillStyle='#778693';ctx.fillRect(x,yy-3,w,1);}
+ drawFreeDepotDetails(ctx,b,x,y,w,h);
+ if(b.kind==='shop'&&b.signs?.length)drawShopSigns(b);
+ else{
+  const text=b.plate||b.name||'야간 사무동',sw=Math.min(w-32,Math.max(80,text.length*10+20));
+  ctx.fillStyle='#1c2834';ctx.fillRect(x+16,y+5,sw,18);ctx.strokeStyle='#8a98a3';ctx.lineWidth=1;ctx.strokeRect(x+16.5,y+5.5,sw-1,17);
+  ctx.fillStyle='#dddcd1';ctx.font=uiFont(11,700);ctx.textAlign='left';ctx.fillText(text,x+24,y+18,sw-16);
+ }
+ for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.5*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
+ ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-4,w,4);ctx.restore();
+}
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.fillStyle='#39494f';ctx.fillRect(x,y,w,h);
@@ -14439,7 +14510,8 @@ function paintSideWindow(w,lit,side){
 }
 // 옥상이 덮인 건물의 옆·뒷벽 창문: 위에서는 벽 끝의 좁은 창틀과 바깥으로 새는 불빛만 보인다
 function drawWindowEdge(w, b) {
-  if(drawRoomFinishWindow(w,.9))return;
+  const city=freeCityBuilding(b)&&freeCityReady()&&freeCityArt===A.dotonbori;
+  if(!city&&drawRoomFinishWindow(w,.9))return;
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
@@ -14450,6 +14522,7 @@ function drawWindowEdge(w, b) {
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
+  if(city){if(vert)ctx.rotate(Math.PI/2);freeCityDraw(ctx,'window',-13,-8,1);paintWindow(w,lit,22,8);ctx.restore();return;}
   if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,12);
   ctx.restore();
 }
@@ -14825,14 +14898,16 @@ let PM_T = 0; function PM(k) { const pf = window.__pf; if (!pf) return; const t 
 // are scenery, drawn only for the current viewport with a small shared cache.
 const exteriorArt={signature:'',blocks:new Map(),wall:null,ground:null,pattern:null};
 function exteriorAssets(){
-  const signature=[kitOk(kitG.asph0),kitOk(kitTex.wall),kitOk(kitTex.concrete)].join(':');
+  const signature=[freeCityReady(),kitOk(kitG.asph0),kitOk(kitTex.wall),kitOk(kitTex.concrete)].join(':');
   if(exteriorArt.signature!==signature){exteriorArt.signature=signature;exteriorArt.blocks.clear();exteriorArt.wall=exteriorArt.ground=exteriorArt.pattern=null;}
   return exteriorArt;
 }
 function exteriorGround(){
   const cache=exteriorAssets();if(cache.ground)return cache.ground;
   const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');x.imageSmoothingEnabled=false;x.fillStyle='#303a34';x.fillRect(0,0,96,96);
-  if(kitOk(kitG.asph0)){x.drawImage(kitG.asph0,0,0,96,96);x.fillStyle='#233127cc';x.fillRect(0,0,96,96);}
+  const city=freeCityPattern('asphalt');
+  if(city){x.fillStyle=x.createPattern(city,'repeat');x.fillRect(0,0,96,96);}
+  else if(kitOk(kitG.asph0)){x.drawImage(kitG.asph0,0,0,96,96);x.fillStyle='#233127cc';x.fillRect(0,0,96,96);}
   return cache.ground=c;
 }
 function exteriorBlock(variant){
@@ -14851,14 +14926,21 @@ function exteriorBlock(variant){
   x.fillStyle='#747b68';x.fillRect(bx+26,by+26,32,24);x.fillStyle='#38473c';x.fillRect(bx+30,by+30,24,16);x.strokeStyle='#7e8570';x.lineWidth=1;for(let k=0;k<4;k++){x.beginPath();x.moveTo(bx+32,by+32+k*4);x.lineTo(bx+52,by+32+k*4);x.stroke();}
   x.fillStyle='#727762';x.fillRect(bx+bw-51,by+bh-44,28,20);x.fillStyle='#303c32';x.fillRect(bx+bw-48,by+bh-41,22,14);
   x.strokeStyle='#68715f';x.lineWidth=2;x.beginPath();x.moveTo(bx+44,by+50);x.lineTo(bx+44,by+bh-18);x.lineTo(bx+bw-28,by+bh-18);x.stroke();
+  if(freeCityReady()){
+    x.save();x.translate(bx,by);paintFreeCityRoof(x,{x0:variant,y0:variant+1,kind:'shop'},bw,bh);x.restore();
+    const tile=freeCityPattern(variant%2?'wallGreen':'wallBrick');if(tile){x.fillStyle=x.createPattern(tile,'repeat');x.fillRect(bx,by+bh,bw,27);}
+    for(let k=0;k<4;k++)freeCityDraw(x,'upperWindow',bx+12+k*46,by+bh+5,1);
+    x.fillStyle='#08122166';x.fillRect(bx,by,bw,bh+27);
+  }
   cache.blocks.set(variant,c);return c;
 }
 function exteriorWall(){
   const cache=exteriorAssets();if(cache.wall)return cache.wall;
   const c=document.createElement('canvas');c.width=192;c.height=32;const x=c.getContext('2d');x.fillStyle='#475044';x.fillRect(0,0,192,32);
   if(kitOk(kitTex.wall)){x.globalAlpha=.38;x.drawImage(kitTex.wall,0,0,192,32);x.globalAlpha=1;}
-  x.fillStyle='#222f27';x.fillRect(0,26,192,6);x.fillStyle='#8a8d75';x.fillRect(0,0,192,5);x.fillStyle='#64705b';x.fillRect(0,5,192,3);
-  x.fillStyle='#333f33';x.fillRect(0,3,13,26);x.fillStyle='#96967d';x.fillRect(0,0,15,6);
+  const tile=freeCityPattern('wallPanel');if(tile){x.fillStyle=x.createPattern(tile,'repeat');x.fillRect(0,0,192,32);}
+  x.fillStyle='#1a2736';x.fillRect(0,26,192,6);x.fillStyle='#8996a1';x.fillRect(0,0,192,5);x.fillStyle='#536474';x.fillRect(0,5,192,3);
+  x.fillStyle='#354453';x.fillRect(0,3,13,26);x.fillStyle='#a4adb4';x.fillRect(0,0,15,6);
   return cache.wall=c;
 }
 function exteriorGates(){
@@ -14883,16 +14965,16 @@ function drawTownExterior(){
     for(let x=-88-288-Math.max(0,Math.floor((-vx-vw-88)/288))*288;x+288>vx;x-=288)if(x<vx+vw)block(x,y);
   }
   // Pavement and curbs continue around the inaccessible neighboring blocks.
-  ctx.fillStyle='#515b4b';ctx.fillRect(-48,-48,width+96,20);ctx.fillRect(-48,height+28,width+96,20);ctx.fillRect(-48,-28,20,height+56);ctx.fillRect(width+28,-28,20,height+56);
-  ctx.strokeStyle='#7b806d';ctx.lineWidth=2;ctx.strokeRect(-48,-48,width+96,height+96);
+  ctx.fillStyle='#4e5967';ctx.fillRect(-48,-48,width+96,20);ctx.fillRect(-48,height+28,width+96,20);ctx.fillRect(-48,-28,20,height+56);ctx.fillRect(width+28,-28,20,height+56);
+  ctx.strokeStyle='#8997a2';ctx.lineWidth=2;ctx.strokeRect(-48,-48,width+96,height+96);
   const wall=exteriorWall();
   for(let x=Math.floor(vx/192)*192;x<Math.min(width,vx+vw);x+=192)if(x+192>0){ctx.drawImage(wall,x,-32);ctx.drawImage(wall,x,height);}
   for(let y=Math.floor(vy/192)*192;y<Math.min(height,vy+vh);y+=192)if(y+192>0){for(const x of [0,width+32]){ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI/2);ctx.drawImage(wall,0,0);ctx.restore();}}
   for(const g of exteriorGates()){
     ctx.save();if(g.side==='south')ctx.translate(g.at,height);else if(g.side==='north')ctx.translate(g.at,-32);else{ctx.translate(g.side==='west'?0:width+32,g.at);ctx.rotate(Math.PI/2);}
-    ctx.fillStyle='#28392f';ctx.fillRect(-42,0,84,32);ctx.fillStyle='#596b58';ctx.fillRect(-42,2,84,5);ctx.fillRect(-42,27,84,4);
-    if(!g.exit||!S.exitOpen){ctx.fillStyle='#6d7c63';for(let x=-38;x<42;x+=9)ctx.fillRect(x,7,3,20);ctx.fillStyle='#a89b64';ctx.fillRect(-3,17,7,5);}
-    ctx.fillStyle='#7d8570';ctx.fillRect(-46,0,7,34);ctx.fillRect(39,0,7,34);ctx.restore();
+    ctx.fillStyle='#263341';ctx.fillRect(-42,0,84,32);ctx.fillStyle='#617184';ctx.fillRect(-42,2,84,5);ctx.fillRect(-42,27,84,4);
+    if(!g.exit||!S.exitOpen){ctx.fillStyle='#81909d';for(let x=-38;x<42;x+=9)ctx.fillRect(x,7,3,20);ctx.fillStyle='#b2a680';ctx.fillRect(-3,17,7,5);}
+    ctx.fillStyle='#8b99a6';ctx.fillRect(-46,0,7,34);ctx.fillRect(39,0,7,34);ctx.restore();
   }
   ctx.restore();
 }
@@ -14998,8 +15080,9 @@ function draw() {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   for (let ty = vy0; ty <= vy1; ty++) for (let tx = vx0; tx <= vx1; tx++) {
     const ch = G[ty][tx];
-    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
+    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if(drawCityPlant(ch,tx,ty,near))continue; if (kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
     if (ch === 'T') {
+      if(drawCityPlant(ch,tx,ty,false))continue;
       if (kitT.length) {  // 키트 나무: 숲은 침엽수가 많고, 시내는 활엽수
         const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0;
         const im = kitT[pine ? 2 : hh % 3 === 0 ? 3 : 0];
@@ -17249,6 +17332,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,

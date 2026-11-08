@@ -8,6 +8,8 @@ No permission is granted to extract or reuse them outside this game.
 The original ZIP, complete tilemap, individual tile collection and demo are private.
 The vending frame retains the prior official Free City licence:
 https://guttykreum.itch.io/free-japanese-city-game-assets
+Road and botanical supplements are Kenney's CC0 RPG Urban Pack, with a separate
+LICENSE-Kenney.txt. Their per-frame provenance and source hashes are in exteriors.json.
 
 LICENCE (official page):
 You can use the Licensed Asset to create Derivative Works; and

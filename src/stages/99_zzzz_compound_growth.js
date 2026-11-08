@@ -130,5 +130,5 @@ CASE_LINKS.push(['runner','foreman'],['foreman','records'],['records','contact']
 // Apply the free art pilot after derived lessons have copied their stage data.
 campaignStage('tB').freeCityPilot=true;
 
-// Freight buildings share the same exterior materials beyond the opening pilot.
-for(const s of STAGES)if(s.id==='tB'||s.compound&&s.industrialBuildings?.length)s.freeCityExteriors=true;
+// Every playable map shares the pixel city exterior kit, including legacy maps.
+for(const s of STAGES)s.freeCityExteriors=true;
