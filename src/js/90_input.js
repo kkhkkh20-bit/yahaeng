@@ -97,7 +97,7 @@ function clearPlayerInput() {
 window.addEventListener('blur',()=>{clearPlayerInput();softPause(true);});
 window.addEventListener('focus', () => softPause(false));
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadoutShade,#btnToolNext,#envPicker,#btnCycle,#hud .obj'))closeHudInspection();});
+window.addEventListener('pointerdown',e=>{if(!e.target.closest('#loadout,#loadoutShade,#btnToolNext,#envPicker,#btnCycle,#hud .obj,#btnRadio'))closeHudInspection();});
 $('envPicker').addEventListener('keydown',e=>{
   if(['Enter','Space','Escape'].includes(e.code))e.stopPropagation();
   if(['ArrowUp','ArrowDown','Home','End','Tab'].includes(e.code)){e.preventDefault();e.stopPropagation();const a=[...$('envPicker').querySelectorAll('button:not(:disabled)')],i=a.indexOf(document.activeElement),j=e.code==='Home'?0:e.code==='End'?a.length-1:(i+(e.code==='ArrowUp'||e.code==='Tab'&&e.shiftKey?-1:1)+a.length)%a.length;a[j]?.focus();}
@@ -444,3 +444,5 @@ atlas.onerror=()=>window.__boot?.fail('필수 이미지 다운로드 실패');
 atlas.src = A.atlas;
 // 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
 if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
+
+$('btnRadio').addEventListener('click',e=>{e.stopPropagation();replayEpisodeRadio();});

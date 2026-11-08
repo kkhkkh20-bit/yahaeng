@@ -149,6 +149,7 @@ function sfx(kind) {
     const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g = AC.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q; g.gain.value = vol; s.connect(f); f.connect(g); g.connect(master); s.start(t + at); };
   if(kind==='paper'){hiss(.09,.045,2200,1.1);hiss(.07,.025,3800,1,.075);osc('triangle',780,1050,.055,.025,.09);}
   else if(kind==='terminal'){osc('sine',540,540,.065,.04);osc('sine',810,810,.09,.045,.09);}
+  else if(kind==='radio'){hiss(.075,.018,1800,1.6);osc('sine',720,720,.045,.018,.035);}
   else if(kind==='actionTap')osc('triangle',950,760,.025,.018);
   else if(kind==='denied')osc('sine',260,210,.055,.025);
   else if (kind === 'click') { osc('triangle', 2300, 1800, 0.035, 0.06); hiss(0.02, 0.05, 4000, 2); }
