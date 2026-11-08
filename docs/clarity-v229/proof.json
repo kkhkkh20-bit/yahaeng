@@ -1,0 +1,42 @@
+[
+  {
+    "mobile": false,
+    "radioPhases": 8,
+    "marker": {
+      "movement": true,
+      "during": false,
+      "settling": false,
+      "after": true,
+      "ready": false
+    },
+    "finish": {
+      "action": "finish",
+      "quiet": true,
+      "rows": [],
+      "red": false,
+      "intentional": false,
+      "ko": true
+    },
+    "errors": []
+  },
+  {
+    "mobile": true,
+    "radioPhases": 8,
+    "marker": {
+      "movement": true,
+      "during": false,
+      "settling": false,
+      "after": true,
+      "ready": false
+    },
+    "finish": {
+      "action": "finish",
+      "quiet": true,
+      "rows": [],
+      "red": false,
+      "intentional": false,
+      "ko": true
+    },
+    "errors": []
+  }
+]

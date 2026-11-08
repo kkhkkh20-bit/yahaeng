@@ -1,0 +1,66 @@
+[
+  {
+    "check": "t_skill_diagram",
+    "pass": true
+  },
+  {
+    "check": "t_skill_preparation",
+    "pass": true
+  },
+  {
+    "check": "t_skill_tree",
+    "pass": true
+  },
+  {
+    "check": "t_play_clarity",
+    "pass": true
+  },
+  {
+    "check": "t_tutorial_resilience",
+    "pass": true
+  },
+  {
+    "check": "t_compound_progression",
+    "pass": true
+  },
+  {
+    "check": "t_campaign_variety",
+    "pass": true
+  },
+  {
+    "check": "t_campaign_depth",
+    "pass": true
+  },
+  {
+    "check": "t_building_finish",
+    "pass": true
+  },
+  {
+    "check": "t_interface",
+    "pass": true
+  },
+  {
+    "check": "t_mission_progress",
+    "pass": true
+  },
+  {
+    "check": "t_combat_policy",
+    "pass": true
+  },
+  {
+    "check": "t_mobile_flow",
+    "pass": true
+  },
+  {
+    "check": "polish",
+    "pass": true
+  },
+  {
+    "check": "office",
+    "pass": true
+  },
+  {
+    "check": "local-deployment",
+    "pass": true
+  }
+]

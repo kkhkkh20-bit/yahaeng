@@ -308,3 +308,15 @@ body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
 @media(max-width:360px){#hud #episodeRadio{padding:5px 10px;gap:8px}#hud #episodeRadioFace{width:26px;height:34px;flex-basis:26px}#hud #episodeRadio p{font-size:12px;line-height:1.4;margin-top:3px}#hud #episodeRadioAction{display:none}}
 @media(max-height:440px) and (orientation:landscape){#hud #episodeRadio{padding:7px 9px;gap:7px}#hud #episodeRadioFace{width:26px;height:34px;flex-basis:26px}#hud #episodeRadio p{font-size:12px;line-height:1.4}#hud #episodeRadioAction{font-size:9px;margin-top:3px}}
 @media(prefers-reduced-motion:reduce){#hud #episodeRadio{animation:none}}
+/* Read the transmission, then return the field to movement. Full text is
+   available again through the existing radio button / mission inspection. */
+body.touch #hud #episodeRadio[data-compact=true]{padding:7px 10px;gap:8px}
+body.touch #hud #episodeRadio[data-compact=true] #episodeRadioFace{width:26px;height:34px;flex-basis:26px}
+body.touch #hud #episodeRadio[data-compact=true] p{margin-top:4px;font-size:13px;line-height:1.45}
+body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:none}
+@media(max-height:740px) and (orientation:portrait){
+ body.touch #hud .top{gap:4px}
+ body.touch #hud .obj:not(.open){padding:4px 20px 4px 8px;border-width:5px}
+ body.touch #hud #objectiveSummary{font-size:13px}
+ body.touch #hud #stealth{padding:3px 6px}
+}

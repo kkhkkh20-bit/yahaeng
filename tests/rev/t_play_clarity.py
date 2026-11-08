@@ -11,28 +11,28 @@ async def main():
    errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
    await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats');await pg.wait_for_function('!!__game')
    await pg.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='m2'));for(let i=0;i<60&&__game.DLG.modal;i++)__game.advanceDialog();__game.updateHUD(true)")
-   assert await pg.locator('#objective .ol:visible').count()==1,'default objective repeats full checklist'
+   assert await pg.locator('#objectiveSummary').is_visible() and await pg.locator('#objective .ol:visible').count()==0,'collapsed mission repeats full checklist'
    await pg.locator('#hud .obj').click()
    assert await pg.locator('#objective .ol:visible').count()>1,'full objective list lost'
    await pg.locator('#hud .obj').focus();await pg.keyboard.press('Enter')
-   assert await pg.locator('#objective .ol:visible').count()==1
+   assert await pg.locator('#objectiveSummary').is_visible() and await pg.locator('#objective .ol:visible').count()==0
    result=await pg.evaluate('''()=>{
     const G=__game,check=(v,m)=>{if(!v)throw Error(m)},S=G.S,P=S.player;
     S.toasts=[];S.alevel=0;S.expo=0;S.t=10;
     Object.assign(P,{x:28.5*48,y:21.5*48,fl:0,z:0,a:0,hide:null,hidden:false,carrying:null,captive:null,cover:null,snap:null,strikeT:0,mode:'walk',moving:false});G.setLayer(0);
-    const base=S.guards.find(g=>!g.civ&&!g.dog&&!g.elite&&!g.target),g={...base,id:777,x:P.x+60,y:P.y,fl:0,z:0,a:0,elite:false,civ:false,dog:false,target:false,state:'PATROL',seen:true,meter:.1,eyeT:0,path:null};S.guards=[g];
+    const base=S.guards.find(g=>!g.civ&&!g.dog&&!g.elite&&!g.target),g={...base,id:777,x:P.x+36,y:P.y,fl:0,z:0,a:0,elite:false,civ:false,dog:false,target:false,state:'PATROL',seen:true,meter:.1,eyeT:0,path:null};S.guards=[g];
     check(G.guardAwareness(g).phase==='check','low attention classified as suspicion');g.meter=.8;check(G.guardAwareness(g).phase==='suspect','suspicion absent');g.eyeT=.3;check(G.guardAwareness(g).phase==='check','face check not distinct');g.eyeT=0;g.state='ALERT';check(G.guardAwareness(g).phase==='seen','confirmed sight not red');
     g.seen=false;check(G.guardAwareness(g).phase==='search'&&G.guardAwareness(g).color!=='#ff4a3c'&&!G.activeObserver(),'lost observer still claims to see player');G.updateStealth(1);check(document.querySelector('#sthWL').style.width==='0%','lost observer maintains danger meter');
     g.state='PATROL';g.civ=true;g.eyeWatching=true;g.eyeT=.4;check(G.activeObserver()?.phase==='check','civilian enforcer face warning absent');g.civ=false;g.eyeWatching=false;g.eyeT=0;g.state='ALERT';g.seen=true;g.fl=1;check(!G.activeObserver(),'other-floor observer affects current risk');g.fl=0;g.z=1;check(!G.activeObserver(),'roof observer affects interior risk');g.z=1;g.state='ALERT';g.suspectLook='crew';g.seen=false;P.outfit='crew';P.disguise='sam';P.disguiseBlown=true;S.knownLooks={crew:true};g.a=Math.PI;P.light=1;G.updateGuard(g,.05);check(g.seen&&G.activeObserver(),'actual cross-height sight warning absent');g.state='ALERT';G.updateStealth(1);check(document.querySelector('#expoLbl').textContent==='발각','actual cross-height confirmed sight not displayed');g.sightAt=-9;g.sightFl=g.sightZ=null;P.disguise=P.outfit=null;P.disguiseBlown=false;g.z=0;g.state='DEAD';check(!G.activeObserver(),'dead observer affects risk');
     for(const k of ['props','hides','notes','lamps','doors','ladders','wires','poles','corpses','items','windows','fwindows','bfuses','traps','bushes'])S[k]=[];
-    S.vehicles=null;S.camRoom=null;S.facOn=false;S.cams=[];g.a=0;g.state='PATROL';g.seen=false;g.meter=0;g.hasKey=null;g.route=[{x:g.x,y:g.y,pause:999}];g.wait=999;
+    S.vehicles=null;S.camRoom=null;S.facOn=false;S.cams=[];g.a=0;g.state='PATROL';g.seen=false;g.meter=0;g.hasKey=null;g.route=[{x:g.x,y:g.y,pause:999}];g.wait=999;S.t+=.01; // Recompute cached action choices after the fixture changes the actor.
     const ka=G.attackAction(),ga=G.grabAction(),pa=G.envAction();const rows=G.encounterRows(P,ka,ga,pa);
-    check(rows.some(r=>r.text.includes('기절'))&&rows.some(r=>r.text==='붙잡기'&&r.ready),'attack/grab choices not together');
-    G.grab(g);for(let i=0;i<90;i++){S.t+=1/60;G.updatePlayer(1/60)}check(P.captive===g,'actual grab failed');
-    const before=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(before.length===2&&before[0].text==='심문'&&before[1].text==='기절','captive choices not grouped');
+    check(rows.some(r=>r.text.includes('기절'))&&rows.some(r=>r.text==='붙잡기'&&r.ready),'attack/grab choices not together '+JSON.stringify({ka:[ka.k,ka.label],ga:[ga.k,ga.reason],rows,busy:G.actionBusy(),z:P.z,fl:P.fl,hidden:P.hidden,los:G.los(P.x,P.y,g.x,g.y,0),cells:[G.G0[Math.floor(P.y/48)][Math.floor(P.x/48)],G.G0[Math.floor(g.y/48)][Math.floor(g.x/48)]]}));
+    G.grab(g);for(let i=0;i<30;i++){S.t+=1/60;P.strikeT=Math.max(0,P.strikeT-1/60);G.updatePlayer(1/60)}check(P.captive===g,'actual grab failed');
+    const before=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(before.length===2&&before[0].text==='심문'&&before[1].text==='기절','captive choices not grouped '+JSON.stringify({before,busy:G.actionBusy(),strike:P.strikeT,grab:!!P.grabIn,body:!!P.bodyAnim,questioned:g.questioned,civ:g.civ,target:g.target,dog:g.dog,over:S.over}));
     const h={type:'bush',x:P.x+26,y:P.y,fl:0,z:0,tx:Math.floor((P.x+26)/48),ty:Math.floor(P.y/48),bodies:0,cap:2};S.bushes=[h];S.t+=.01;
     const env=G.envAction(),drag=G.encounterRows(P,G.attackAction(),G.grabAction(),env);check(env.k==='execute'&&drag.some(r=>r.text==='기절'&&r.ready&&r.detail.includes('운반'))&&!drag.some(r=>r.text.includes('끌고')),'captive instructions skip outside incapacitation');
-    G.actGrab();for(let i=0;i<20;i++){S.t+=1/60;G.updatePlayer(1/60)}const asked=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(g.questioned&&!asked.some(r=>r.text.includes('심문'))&&asked.some(r=>r.text==='기절'),'interrogation stays ready after use');const notices=S.toasts.length;G.startAim();check(S.toasts.length===notices,'repeated interrogation shows filler notice');
+    G.actGrab();for(let i=0;i<20;i++){S.t+=1/60;P.strikeT=Math.max(0,P.strikeT-1/60);G.updatePlayer(1/60)}const asked=G.encounterRows(P,G.attackAction(),G.grabAction(),G.envAction());check(g.questioned&&!asked.some(r=>r.text.includes('심문'))&&asked.some(r=>r.text==='기절'),'interrogation stays ready after use');const notices=S.toasts.length;G.startAim();check(S.toasts.length===notices,'repeated interrogation shows filler notice');
     // No map text repeats the full selected objective; preserve navigation and destination floor.
     check(G.goalMarkerCaption({text:'의뢰: 장부 훔치기',via:true,fl:1},25)==='2층 입구 · 25m','entrance/floor navigation lost');
     check(G.goalMarkerCaption({shelter:true},12)==='은신처 · 12m','urgent hiding arrow confused with mission goal');
@@ -42,7 +42,7 @@ async def main():
     check(!document.querySelector('#hintCard')&&!G.showHint('자동 안내',4),'automatic coaching returns');
     G.toast('urgent',3,'warn');G.toast('ordinary',3);check(document.querySelector('#toasts').children.length===1&&document.querySelector('#toasts').textContent==='urgent','ordinary notice hides urgent warning');S.toasts=[];G.renderToasts();
     // Actual switch commit, cancellation and restore use the same contact instant.
-    const l={x:P.x+20,y:P.y,fl:0,z:0,outdoor:false,off:false,broken:false,r:100};S.lamps=[l];G.contactFeedback(null,'none');delete S.contact;
+    P.captive=null;S.guards=[];S.t+=.01;const l={x:P.x+20,y:P.y,fl:0,z:0,outdoor:false,off:false,broken:false,r:100,control:{x:P.x+20,y:P.y,fl:0,z:0}};S.lamps=[l];G.contactFeedback(null,'none');delete S.contact;
     G.actEnv();check(P.interact&&!S.contact&&!l.off,'feedback or switch occurs on input instead of contact');
     S.t+=.1;G.updatePlayer(.1);check(!S.contact&&!l.off,'feedback before contact');S.t+=.13;G.updatePlayer(.13);check(l.off&&S.contact?.kind==='lamp','switch contact has no feedback');
     for(let i=0;i<20;i++){S.t+=.02;G.updatePlayer(.02)}

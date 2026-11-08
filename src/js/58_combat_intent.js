@@ -32,6 +32,9 @@ function combatVictims(a) {
 function needsLethalHold(a) {
   return ['ledgeKill', 'pushOff', 'finish'].includes(a.k) || (a.k === 'trap' && a.tp && !!a.tp.t) || combatVictims(a).some(g => g.dog);
 }
+// A subdued bystander is an environment interaction, not a fresh combat threat.
+// The deliberate lethal hold stays available and becomes explicit on input.
+function subduedAction(a){return a?.k==='finish'&&!a.g?.target&&!S.player.lethalHold&&!S.koHold&&!combatSource('atk');}
 function combatLabel(a) {
   if (!a || a.k === 'none' || a.busy) return a;
   if (needsLethalHold(a)) return Object.assign({}, a, { label: a.k === 'finish' ? '기절한 대상 살해' : a.k === 'ledgeKill' ? '끌어내려 처치' : a.k === 'pushOff' ? '밀어 처치' : a.label, holdOnly: true, hold: a.k==='trap'?'고정 풀기':'살해' });

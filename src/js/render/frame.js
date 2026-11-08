@@ -324,7 +324,7 @@ function draw() {
     const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
-    if (ka.k !== 'none' && ka.k !== 'counter' && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
+    if (ka.k !== 'none' && ka.k !== 'counter' && !subduedAction(ka) && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
     if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
     if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
@@ -337,7 +337,7 @@ function draw() {
     if (pa.k === 'wireOn') { ctx.strokeStyle = 'rgba(224,176,112,.95)'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(pa.at.x, pa.at.y, 16 + Math.sin(S.t * 8) * 2, 0, TAU); ctx.stroke(); }
     S.paNow = pa; drawActLabels(pa, P, ka, ga);
     const nc = !P.carrying && nearCorpse();
-    if(nc&&nc!==ka.c){ctx.setLineDash([5,5]);drawTargetRing(nc,'rgba(232,227,214,.8)',nc);ctx.setLineDash([]);}
+    if(nc&&nc!==ka.c&&!nc.hidden&&!nc.stashed){ctx.setLineDash([5,5]);drawTargetRing(nc,'rgba(232,227,214,.8)',nc);ctx.setLineDash([]);}
     if (input.aiming && !['kunai','blade','hack'].includes(input.tool)) {
       const ap = aimPoint();
       if (ap) {

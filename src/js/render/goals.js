@@ -3,8 +3,16 @@ function chaseHide(P) {
   for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
   return best ? { x: best.x, y: best.y, fl: best.fl || 0, shelter:true, text: '숨을 곳 — ' + hideName(best) } : null;
 }
+function goalMarkerVisible(P,gl){
+ if(!gl||actionBusy(P)||P.killAnim||P.approachAttack||S.koHold)return false;
+ const last=feedbackState().events.findLast(e=>['ko','kill','stash','dress','loot'].includes(e.kind));
+ if(last&&S.t-last.t>=0&&S.t-last.t<.55)return false;
+ // Real movement lessons retain their destination even within one metre.
+ return !(gl.tut&&dist(P.x,P.y,gl.x,gl.y)<80&&!gl.moveCue);
+}
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
+  if(!goalMarkerVisible(P,gl))return;
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.

@@ -281,7 +281,7 @@ function updateHUD(force) {
   const ka = attackAction(), ea = envAction(), ga = grabAction();
   padButton(hud.act, 'actH', ka, '공격');
   hud.act.classList.toggle('ready', ka.k !== 'none'&&!ka.busy&&!ka.skillLocked);
-  const ki = ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
+  const ki = subduedAction(ka)?'':ka.k === 'cap' ? (ka.hold ? 'ko' : 'kill') : ka.k !== 'none' ? actIcon(ka) : ka.stalk ? (koTap(ka.stalk) ? 'ko' : 'kill') : '';
   hud.act.classList.toggle('kill', ki === 'kill'); hud.act.classList.toggle('ko', ki === 'ko');
   const flow=P.trav?.hideFlow||P.trav?.ventPull||S.amb,held=P.skillHold||S.koHold||P.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?flow.intent:null), source = held && held.source && held.source.id, progress = holdFrac().toFixed(3);
   hud.act.style.setProperty('--hold', COMBAT_INPUTS.atk.includes(source) ? progress : '0');

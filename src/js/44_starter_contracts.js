@@ -86,7 +86,7 @@ function compoundStairGoal(floor,b=0){
  const P=S.player,from=flOf(P),up=from<floor,l=S.ladders.find(l=>l.kind==='fstair'&&bldAt(l.tx,l.ty)===b&&(up?l.bfl===from:l.tfl===from));
  if(!l)return null;
  const at=up?stairLower(l).up.entry:stairUpper(l).down.entry;
- return{...at,fl:from,text:'계단으로 '+(up?from+2:from)+'층에 '+(up?'올라가기':'내려오기'),where:'기술 없이 이용 · 같은 층에 도착한 뒤 다음 행동',compoundCue:'stairs'};
+ return{...at,fl:from,text:'계단으로 '+(up?from+2:from)+'층에 '+(up?'올라가기':'내려오기'),where:'기술 없이 이용 · 같은 층에 도착한 뒤 다음 행동',compoundCue:'stairs',routeStep:(up?'up:':'down:')+from+':'+floor};
 }
 function compoundGoal(){
  if(!STAGE.compound||S.goalManual||S.storyTrackManual)return null;
@@ -96,19 +96,19 @@ function compoundGoal(){
  const body=compoundBodyGoal();if(body&&pending.length)return body;
  if(STAGE.compoundVertical&&pending.length){
   const bi=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE));
-  if(!P.got?.pin&&!(P.picks>0)&&!S.compoundJumpUsed){const k=S.keyItems.find(k=>k.key==='pin'&&!k.got);if(k)return{...k,text:'작업대에서 잠금 해제용 철사 챙기기',where:tutText('작업대 가까이에서 확보 · 창문 락픽 1회'),compoundCue:'window'};}
+  if(!P.got?.pin&&!(P.picks>0)&&!S.compoundJumpUsed){const k=S.keyItems.find(k=>k.key==='pin'&&!k.got);if(k)return{...k,text:'작업대에서 잠금 해제용 철사 챙기기',where:tutText('작업대 가까이에서 확보 · 창문 락픽 1회'),compoundCue:'window',routeStep:'wire'};}
   const w=S.windows.find(w=>w.tx===5&&w.ty===12);
   if(!S.compoundThirdFloor&&!P.z&&bi!==1){
-   if(bi!==0&&w&&winSt(w)!=='open'&&P.picks>0)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'정비동 서쪽 창문을 락픽으로 열기',where:tutText('{행동} 잠금 해제 · 움직이지 않기'),compoundCue:'window'};
-   if(!flOf(P)&&bi!==0&&w)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'열린 창문으로 정비동에 들어가기',where:tutText('{행동} 창문 넘기'),compoundCue:'window'};
+   if(bi!==0&&w&&winSt(w)!=='open'&&P.picks>0)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'정비동 서쪽 창문을 락픽으로 열기',where:tutText('{행동} 잠금 해제 · 움직이지 않기'),compoundCue:'window',routeStep:'pick'};
+   if(!flOf(P)&&bi!==0&&w)return{x:4.5*TILE,y:12.5*TILE,fl:0,text:'열린 창문으로 정비동에 들어가기',where:tutText('{행동} 창문 넘기'),compoundCue:'window',routeStep:'enter'};
    const stair=compoundStairGoal(2,0);if(stair)return stair;
   }
   if(!S.compoundJumpUsed&&bi===0){
-   if(P.z===3)return{x:16.5*TILE,y:8.5*TILE,fl:0,z:3,text:'동쪽 거래소 옥상으로 건너뛰기',where:tutText('오른쪽을 향한 뒤 {행동} 건너뛰기'),compoundCue:'jump'};
-   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===0);if(l)return{...stairLower(l).up.entry,fl:l.bfl||0,text:'3층에서 옥상으로 올라가기',where:tutText('{행동} 올라가기'),compoundCue:'jump'};
+   if(P.z===3)return{x:16.5*TILE,y:8.5*TILE,fl:0,z:3,text:'동쪽 거래소 옥상으로 건너뛰기',where:tutText('오른쪽을 향한 뒤 {행동} 건너뛰기'),compoundCue:'jump',routeStep:'gap'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===0);if(l)return{...stairLower(l).up.entry,fl:l.bfl||0,text:'3층에서 옥상으로 올라가기',where:tutText('{행동} 올라가기'),compoundCue:'jump',routeStep:'roofUp'};
   }
   if(P.z===3&&bi===1){const sign=S.traps.find(t=>t.k==='drop'&&t.text==='금성 거래소');if(sign&&!sign.used&&pending.some(g=>g.tag==='handover'))return{x:tc(sign.at[0]),y:tc(sign.at[1]),fl:0,z:3,text:'간판 아래 인계책을 보고 고정 풀기',where:tutText('아래 표적이 간판 밑에 왔을 때 {행동} 1초 길게'),compoundCue:'sign'};
-   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l)return{x:l.ux,y:l.uy,fl:0,z:3,text:'옥상에서 거래소 3층으로 내려가기',where:tutText('{행동} 내려가기'),compoundCue:'stairs'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l)return{x:l.rx??l.ux,y:l.ry??l.uy,fl:0,z:3,text:'옥상문으로 거래소 3층에 내려가기',where:tutText('{행동} 내려가기'),compoundCue:'stairs',routeStep:'roofDown'};
   }
  }
  const keeper=npc('hallKeeper');

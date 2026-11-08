@@ -1,0 +1,70 @@
+[
+  {
+    "episode": "tB",
+    "device": "mobile",
+    "complete": true,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 1,
+      "special": 0,
+      "ko": 2,
+      "dressed": 1,
+      "gotAs": "crew"
+    },
+    "method": "Native keyboard/touch, ordinary RAF and AI; known-map journey. Episodes 2/3 use selected-stage fixtures."
+  },
+  {
+    "episode": "p0",
+    "device": "pc",
+    "complete": true,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 3,
+      "special": 0,
+      "ko": 2,
+      "dressed": 1,
+      "disguiseKill": true
+    },
+    "method": "Native keyboard/touch, ordinary RAF and AI; known-map journey. Episodes 2/3 use selected-stage fixtures."
+  },
+  {
+    "episode": "e2",
+    "device": "mobile",
+    "complete": true,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 1,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0,
+      "picks": 1,
+      "roofStair": 1,
+      "camUnplugged": 1,
+      "ko": 0,
+      "gotAs": "self"
+    },
+    "method": "Native keyboard/touch, ordinary RAF and AI; known-map journey. Episodes 2/3 use selected-stage fixtures."
+  }
+]

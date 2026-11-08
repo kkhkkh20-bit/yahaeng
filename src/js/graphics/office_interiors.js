@@ -45,6 +45,8 @@ function officeWall(c,tx,ty){
 }
 function officeFurnKey(f){
  if(!STAGE.officeArt)return null;
+ const authored=STAGE.officeArt.furniture?.find(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t);
+ if(authored&&officeFrame(authored.art))return authored.art;
  const bi=bldAt(f.x,f.y);if(bi<0)return null;
  const style=officeStyle(bi,f.fl||0),r=((f.r||0)%4+4)%4;
  if(f.t==='shelf'&&f.skin==='freight')return null;
