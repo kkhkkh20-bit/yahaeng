@@ -27,6 +27,12 @@ function chooseAssassinSkill(key){
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
 let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;
+function syncSkillBranches(reset=false){
+ for(const s of $('skillCards').querySelectorAll('.skill-tree'))s.classList.toggle('branch-active',s.dataset.branch===skillBranch);
+ for(const b of $('skillBranches').children)b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
+ if(innerWidth<1000){$('skillBoard').scrollLeft=0;if(reset)$('skillBoard').scrollTop=0;}
+ drawSkillLinks();
+}
 function skillViewState(d){
  const practice=!!assassinMenu?.practice,r=loadSkillTree(),owned=new Set(r.learned),known=practice?skillOn(d.id):owned.has(d.id),parents=d.req.every(id=>practice?skillOn(id):owned.has(id));
  let active=S?.selectedSkill||'dual';if(!S||assassinMenu?.from==='ledger')try{active=localStorage.getItem('yahaeng.assassinSkill')||active;}catch(e){}
@@ -41,7 +47,7 @@ function syncSkillDetail(){
 }
 function detailCloseButton(){const b=document.createElement('button');b.type='button';b.className='skill-detail-close';b.setAttribute('aria-label','기술 설명 닫기');b.textContent='닫기';b.onclick=closeSkillDetail;return b;}
 function selectSkillNode(id,focus=false){
- const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;skillDetailMode='skill';renderSkillDetail();syncSkillDetail();
+ const d=SKILL_BY_ID[id];if(!d)return;skillFocused=id;skillBranch=d.branch;skillDetailMode='skill';syncSkillBranches();renderSkillDetail();syncSkillDetail();
  for(const b of $('skillBranches').querySelectorAll('button'))b.setAttribute('aria-pressed',String(b.dataset.branch===skillBranch));
  const button=$('skillCards').querySelector('[data-select="'+id+'"]');if(focus)button?.focus({preventScroll:true});button?.scrollIntoView({block:'nearest',inline:'nearest'});
  if(innerWidth<1000&&!focus)$('skillDetail').querySelector('.skill-detail-close').focus({preventScroll:true});
@@ -77,14 +83,14 @@ function renderAssassinMenu(){
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
  $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 1P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
  $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?'플레이 중에는 기술을 배우지 않습니다. 현재 임무를 마친 뒤 출발 준비에서 습득하세요.':practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
- $('skillTrainingNote').textContent='전체 기술이 펼쳐져 있다. 위에서 아래로 연결선을 따라 배우고, 선택하면 오른쪽에서 효과와 습득 순서를 확인한다.';
+ $('skillTrainingNote').textContent='분야를 고르고 연결선을 따라 기술을 확인하세요. 기술을 선택하면 효과와 습득 순서가 나옵니다.';
  const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
  $('btnSkillReset').hidden=!skillLearningAllowed();$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
  const list=$('skillCards'),tabs=$('skillBranches');list.replaceChildren();tabs.replaceChildren();
  for(const[branch,meta]of Object.entries(SKILL_BRANCHES)){
   const defs=SKILL_TREE.filter(d=>d.branch===branch),layout=skillTreeLayout(branch),count=defs.filter(d=>skillViewState(d).known).length;
-  const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{skillBranch=branch;if(skillDetailMode)closeSkillDetail();for(const b of tabs.children)b.setAttribute('aria-pressed',String(b===tab));section.scrollIntoView({block:'nearest',inline:'center'});};tabs.append(tab);
-  const section=document.createElement('section');section.className='skill-tree';section.dataset.branch=branch;section.style.setProperty('--leaves',layout.leaves);section.setAttribute('aria-label',meta.name+' 기술 트리');
+  const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{skillBranch=branch;if(skillDetailMode)closeSkillDetail();syncSkillBranches(true);if(innerWidth>=1000)section.scrollIntoView({block:'nearest',inline:'center'});};tabs.append(tab);
+  const section=document.createElement('section');section.className='skill-tree'+(skillBranch===branch?' branch-active':'');section.dataset.branch=branch;section.style.setProperty('--leaves',layout.leaves);section.setAttribute('aria-label',meta.name+' 기술 트리');
   const heading=document.createElement('h3');heading.innerHTML=skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
   const graph=document.createElement('div');graph.className='skill-graph';section.append(graph);list.append(section);
   for(const d of defs){
@@ -96,7 +102,7 @@ function renderAssassinMenu(){
  }
  const slots=$('skillLoadout');slots.innerHTML='<span>암살 기술 · 공격 길게 / B</span>';for(const id of ['dual','chain']){const d=SKILL_BY_ID[id],v=skillViewState(d),b=document.createElement('button');b.type='button';b.dataset.skill=id;b.disabled=!v.known;b.setAttribute('aria-pressed',String(v.known&&v.active===id));b.innerHTML=skillSigil(id)+'<span>'+d.name+'</span>';b.setAttribute('aria-label',d.name+' '+(!v.known?'미해금':v.active===id?'장착 중':'장착'));b.onclick=()=>chooseAssassinSkill(id);slots.append(b);}
  $('btnSkillRewards').onclick=()=>{skillDetailMode='rewards';renderSkillRewards();syncSkillDetail();if(innerWidth<1000)$('skillDetail').querySelector('button').focus();};$('skillDetailShade').onclick=closeSkillDetail;
- renderSkillDetail();syncSkillDetail();board.scrollTop=scroll.top;board.scrollLeft=scroll.left;
+ renderSkillDetail();syncSkillDetail();board.scrollTop=scroll.top;board.scrollLeft=scroll.left;syncSkillBranches();
  syncEpisodeTraining();
  if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
@@ -112,7 +118,7 @@ function drawSkillLinks(){
   }graph.prepend(svg);
  }
 }
-window.addEventListener('resize',()=>{if(!$('skillScreen').hidden)drawSkillLinks();});
+window.addEventListener('resize',()=>{if(!$('skillScreen').hidden)syncSkillBranches();});
 function syncAssassinHUD(){
   const b=$('btnSkill');if(!b||!S)return;
   b.hidden=!assassinSupported()||S.over||!STAGE.skillPractice&&(isTouch||!assassinUnlocked());

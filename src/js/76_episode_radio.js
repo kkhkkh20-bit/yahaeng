@@ -13,7 +13,8 @@ const OPENING_RADIO=[
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
- const P=S.player,goal=nextGoal();if(!goal)return null;
+ const P=S.player;if(P.jump||P.trav)return null;
+ const goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
  if(chase)return{text:'들켰다. 모퉁이를 돌아서 시야에서 벗어나! 숨을 만한 곳부터 찾아.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
  if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 안 보이는 모양이야. 움직이지 말고 잠깐 기다려. 경비가 돌아가면 나오자.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
@@ -22,7 +23,7 @@ function episodeRadioMessage(){
   const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
   const archiveVia=!!archive&&!!openingArchiveApproach().via;
-  let text=OPENING_RADIO[i]||OPENING_RADIO[9];
+  let text=isTouch&&i===0?'올빼미, 제비 서류부터 찾자. 화면 왼쪽을 끌어 오른쪽 표시로 가 봐.':isTouch&&i===1?'웅크림을 누르고 상자 옆 풀숲으로 가 봐. 거기선 안 보일 거야.':OPENING_RADIO[i]||OPENING_RADIO[9];
   if(P.hide)text='지금은 괜찮아. 이제 나와도 돼. 서류부터 찾자.';
   else if(i===7&&P.carrying)text='서류 챙기려면 손부터 비워야 해. 몸은 사물함에 숨기거나 내려놔.';
   else if(archiveVia)text='복도 끝 왼쪽에 문이 있어. 그 문으로 들어가면 경비 뒤쪽으로 갈 수 있어.';
@@ -41,10 +42,10 @@ function episodeRadioMessage(){
    hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람을 그대로 두면 발견할 거야. 먼저 들어서 숨길 곳으로 옮기자.',
    guard:'1층에도 경비가 한 명 있어. 뒤에서 기절시키고, 근처 사물함에 숨기면 돼.',
    light:'벽 스위치를 꺼 봐. 경비가 켜러 오면 다른 사람들한테서 떨어질 거야.',
-   stairs:/내려/.test(goal.text)?'계단으로 내려가면 돼. 들어왔던 문으로 나올 수 있어.':'계단으로 올라가 봐. 위층에 누가 있는지는 올라가서 확인하자.',
-   camera:STAGE.cameraApproach?'오른쪽 벽을 따라 위로 돌아가 봐. 카메라 위쪽에서는 전선을 끊을 수 있어.':'카메라 앞을 걷는 건 괜찮아. 하지만 누굴 때리거나 서류를 훔치면 찍혀. 뒤쪽 전선부터 끊자.',
-   window:'작업대에 철사가 있어. 그걸 챙겨서 서쪽 창문 잠금을 풀어 봐.',
-   jump:'옆 건물 지붕까지는 뛸 수 있겠네. 오른쪽을 보고 건너뛰면 돼.',
+   stairs:goal.routeStep==='roofDown'?'건넜네. 오른쪽 옥상문으로 가서 거래소 3층에 내려가.':/내려/.test(goal.text)?'이 계단으로 한 층 내려가면 돼.':'계단으로 한 층 올라가. 도착하면 다음 길을 보자.',
+   camera:STAGE.cameraApproach?(/전선 분리/.test(goal.text)?'지금은 카메라 뒤야. 벽에 붙은 전선을 분리해.':'오른쪽 벽을 따라 위로 돌아가. 카메라 앞은 지나가지 말고.'): '카메라는 때리거나 훔치는 걸 찍어. 뒤쪽 전선부터 끊자.',
+   window:({wire:'정비동 옆 작업대에 철사가 있어. 먼저 챙겨.',pick:'철사 챙겼지? 정비동 왼쪽 창문으로 가서 잠금을 풀어.',enter:'열렸네. 이제 그 창문으로 넘어가면 돼.'})[goal.routeStep]||'작업대의 철사를 챙겨서 서쪽 창문 잠금을 풀어 봐.',
+   jump:goal.routeStep==='roofUp'?'옥상으로 올라가는 문이 있어. 그쪽으로 나가.':'오른쪽 지붕까지 뛸 수 있겠네. 가장자리에서 건너뛰어.',
    sign:'저 사람이 간판 아래에 올 때까지 기다려. 행동을 1초 누르면 간판 고정이 풀려.',
    target:goal.g?.unconscious?'아직 기절한 상태야. 이번 목표는 살해야. 몸 가까이에서 공격을 1초 동안 눌러.':goal.g?.moving?withJosa(who,'이/가')+' 움직이고 있어. 멈추면 뒤로 가서 가까이 붙어.':'찾던 사람은 '+withJosa(who,'이야/야')+'. 다른 경비가 안 볼 때 뒤에서 공격을 1초 동안 눌러.',
    document:'장부도 챙겨야 해. 누가 돈을 냈는지 거기 적혀 있을 거야. 가져가는 동안 누가 보는지 확인하고.'})[goal.compoundCue]||text;
@@ -58,7 +59,7 @@ function episodeRadioMessage(){
  else if(['e3','e4'].includes(STAGE.id))text=flOf(P)?'서류는 지금 있는 층에 있어. 경비가 다른 데 볼 때 책상을 확인해 봐.':'직원 옷으로 들어가서 계단으로 올라가면 돼. 다른 경비까지 건드릴 필요는 없어.';
  else if(['e1','e5'].includes(STAGE.id))text='저 사람이 멈추면 뒤로 가 봐. 가까이에서 공격을 1초 동안 누르면 돼.';
  else if(STAGE.id==='m2')text='한 번에 다 하려면 복잡해. 일단 지금 표시된 곳부터 가 보자.';
- return{text,action:tutText(goal.text),cue:evidencePending()?'camera:recorded':goal.exit||S.exitOpen?'mission:escape':goal.compoundCue?'compound:'+goal.compoundCue+':'+(goal.g?.tag||'')+':'+(goal.compoundCue==='hide'?!!P.carrying:goal.compoundCue==='target'?!!goal.g?.moving:''):goal.text,priority:evidencePending()?1:0};
+ return{text,action:tutText(goal.text),cue:evidencePending()?'camera:recorded':goal.exit||S.exitOpen?'mission:escape':goal.compoundCue?'compound:'+goal.compoundCue+':'+(goal.routeStep||goal.text)+':'+(goal.g?.tag||'')+':'+(goal.compoundCue==='hide'?!!P.carrying:goal.compoundCue==='target'?!!goal.g?.moving:''):goal.text,priority:evidencePending()?1:0};
 }
 // The mission stays stable. Immediate instructions belong to the radio.
 function compactObjectiveText(){
@@ -78,7 +79,7 @@ function compactObjectiveText(){
  return STAGE.mission||STAGE.purpose||nextGoal()?.text||'의뢰 목표 확인';
 }
 let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceKey='';
-let episodeRadioScene=null,episodeRadioUntil=0,episodeRadioCue='',episodeRadioSeen=new Map(),episodeRadioLastAt=-999,episodeRadioLayoutAt=0,episodeRadioPriority=0;
+let episodeRadioScene=null,episodeRadioUntil=0,episodeRadioCue='',episodeRadioSeen=new Map(),episodeRadioLastAt=-999,episodeRadioLayoutAt=0,episodeRadioPriority=0,episodeRadioReadAt=0;
 function replayEpisodeRadio(){
  if(!S||S.over||paused||tactical||DLG.modal)return;
  const m=episodeRadioMessage();if(!m)return;
@@ -126,16 +127,17 @@ function positionEpisodeRadio(now){
 function syncEpisodeRadio(){
  const el=$('episodeRadio'),button=$('btnRadio');if(!el||!button)return;
  const now=performance.now(),open=hudInspecting();
- const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!S?.keypad&&!targetDialogueVisible()&&!loadoutOpen&&!envPicker;
+ const active=running&&!paused&&!S?.over&&!tactical&&!DLG.modal&&!S?.keypad&&!targetDialogueVisible()&&!loadoutOpen&&!envPicker&&!actionBusy()&&!S.player.killAnim&&!S.player.approachAttack&&!S.koHold;
  if(!active){el.hidden=true;button.hidden=true;button.setAttribute('aria-expanded','false');document.body.classList.remove('episode-coached','radio-peek');return;}
  if(now<episodeRadioTick)return;episodeRadioTick=now+80;
- if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=0;episodeRadioCue='';episodeRadioSeen=new Map();episodeRadioToken='';episodeRadioFaceKey='';episodeRadioLastAt=-999;episodeRadioLayoutAt=0;}
+ if(episodeRadioScene!==S){episodeRadioScene=S;episodeRadioUntil=0;episodeRadioCue='';episodeRadioSeen=new Map();episodeRadioToken='';episodeRadioFaceKey='';episodeRadioLastAt=-999;episodeRadioLayoutAt=0;episodeRadioReadAt=0;}
  const message=episodeRadioMessage();button.hidden=!message;document.body.classList.toggle('episode-coached',!!message);
  if(message){
   const cue=message.cue||message.text,priority=message.priority||0;
-  const fresh=cue!==episodeRadioCue&&(!episodeRadioSeen.has(cue)||priority>0&&now-episodeRadioSeen.get(cue)>4500)&&(priority>=episodeRadioPriority||now>=episodeRadioUntil||cue==='danger:hidden'&&episodeRadioCue==='danger:chase')&&(priority>=2||now-episodeRadioLastAt>750);
+  const fresh=cue!==episodeRadioCue&&(!episodeRadioSeen.has(cue)||priority>0&&now-episodeRadioSeen.get(cue)>4500)&&(priority>=episodeRadioPriority||now>=episodeRadioUntil||episodeRadioCue.startsWith('danger:'))&&(priority>=2||now-episodeRadioLastAt>750);
   if(fresh){
    episodeRadioUntil=now+clamp(3000+message.text.length*55,4700,7000);episodeRadioSeen.set(cue,now);episodeRadioCue=cue;episodeRadioLastAt=now;episodeRadioPriority=priority;episodeRadioLayoutAt=0;
+   episodeRadioReadAt=now+clamp(1300+message.text.length*32,2800,4200);
    if(!open)sfx('radio');
   }
   // A lower priority line cannot replace an urgent instruction mid-transmission.
@@ -146,7 +148,9 @@ function syncEpisodeRadio(){
   }
  }
  if(open)episodeRadioUntil=0;
- const show=!!message&&(open||now<episodeRadioUntil);
+ if(isTouch&&!open&&S.player.moving&&episodeRadioPriority<2&&now>=episodeRadioReadAt)episodeRadioUntil=0;
+ const show=!!message&&(open||now<episodeRadioUntil&&(message.cue||message.text)===episodeRadioCue);
+ el.dataset.compact=String(isTouch&&!open);
  el.hidden=!show;el.dataset.priority=String(episodeRadioPriority);button.setAttribute('aria-expanded',String(show));document.body.classList.toggle('radio-peek',show);
  const top=document.querySelector('#hud .top')?.getBoundingClientRect();if(top)document.documentElement.style.setProperty('--topb',Math.round(top.bottom)+'px');
  if(show)positionEpisodeRadio(now);else if(message)positionRadioReplay(now);

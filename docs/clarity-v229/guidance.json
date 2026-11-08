@@ -1,0 +1,54 @@
+[
+  {
+    "label": "start",
+    "goal": "작업대에서 잠금 해제용 철사 챙기기",
+    "cue": "wire",
+    "message": {
+      "text": "정비동 옆 작업대에 철사가 있어. 먼저 챙겨.",
+      "action": "작업대에서 잠금 해제용 철사 챙기기",
+      "cue": "compound:window:wire::",
+      "priority": 0
+    },
+    "shown": "정비동 옆 작업대에 철사가 있어. 먼저 챙겨.",
+    "visible": true
+  },
+  {
+    "label": "window-entry",
+    "goal": "계단으로 2층에 올라가기",
+    "cue": "up:0:2",
+    "message": {
+      "text": "계단으로 한 층 올라가. 도착하면 다음 길을 보자.",
+      "action": "계단으로 2층에 올라가기",
+      "cue": "compound:stairs:up:0:2::",
+      "priority": 0
+    },
+    "shown": "계단으로 한 층 올라가. 도착하면 다음 길을 보자.",
+    "visible": true
+  },
+  {
+    "label": "rooftop-jump",
+    "goal": "옥상문으로 거래소 3층에 내려가기",
+    "cue": "roofDown",
+    "message": {
+      "text": "건넜네. 오른쪽 옥상문으로 가서 거래소 3층에 내려가.",
+      "action": "옥상문으로 거래소 3층에 내려가기",
+      "cue": "compound:stairs:roofDown::",
+      "priority": 0
+    },
+    "shown": "건넜네. 오른쪽 옥상문으로 가서 거래소 3층에 내려가.",
+    "visible": true
+  },
+  {
+    "label": "complete",
+    "goal": "탈출 지점으로 빠져나가기",
+    "cue": null,
+    "message": {
+      "text": "할 일은 끝났어. 노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.",
+      "action": "탈출 지점으로 빠져나가기",
+      "cue": "mission:escape",
+      "priority": 0
+    },
+    "shown": "할 일은 끝났어. 노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.",
+    "visible": false
+  }
+]

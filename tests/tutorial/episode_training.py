@@ -1,4 +1,11 @@
 """Native purchases for episode-end tests; this order is test data, not UI advice."""
+async def select_skill_node(page,skill):
+    node=page.locator(f'[data-select="{skill}"]')
+    if not await node.is_visible():
+        branch=await node.evaluate('e=>e.closest(".skill-tree").dataset.branch')
+        await page.click(f'#skillBranches [data-branch="{branch}"]')
+    await node.click()
+
 async def spend_episode_points(page):
     await page.locator('#skillScreen').wait_for(state='visible')
     # Avoid changing movement speed before the subsequent native route checks.
@@ -9,7 +16,7 @@ async def spend_episode_points(page):
         if not state['canLearn']:break
         skill=next((id for id in plan if id in state['choices']),state['choices'][0])
         if await page.locator('.skill-detail-close').is_visible():await page.click('.skill-detail-close')
-        await page.click(f'[data-select="{skill}"]')
+        await select_skill_node(page,skill)
         await page.click(f'[data-learn="{skill}"]')
         assert await page.evaluate('id=>__game.loadSkillTree().learned.includes(id)',skill),skill
         bought.append(skill)

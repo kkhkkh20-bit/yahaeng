@@ -286,6 +286,14 @@ body.touch #hud .pad #btnCycle{right:94px;bottom:230px;width:72px;height:48px}
 #skillBranches button { transition:none; min-height:48px; padding:10px 4px; margin:0; border:0; border-bottom:2px solid transparent; border-radius:0; background:none; color:var(--sk-muted); font-size:14px; }
 #skillBranches button[aria-pressed="true"] { color:var(--sk-gold); border-bottom-color:var(--sk-gold); }
 #skillBranches button span { margin-left:8px; color:var(--sk-muted); font-size:11px; font-variant-numeric:tabular-nums; }
+@media(max-width:999px){
+ #skillScreen #skillCards{min-width:0;gap:0}
+ #skillScreen .skill-tree{min-width:0;width:100%;flex:1;padding:0;border:0}
+ #skillScreen .skill-tree:not(.branch-active){display:none}
+ #skillScreen .skill-board{overflow-x:hidden;touch-action:pan-y}
+ #skillScreen .skill-node button{width:48px;height:48px}
+ #skillScreen .skill-node .skill-label{font-size:11px}
+}
 #btnSkillRewards { min-height:44px; margin:0; padding:8px 12px; border:1px solid var(--sk-line); border-radius:0; background:none; color:var(--sk-gold); font-size:12px; }
 .skill-instructions { margin:14px 0 0; color:var(--sk-muted); font-size:12px; line-height:1.7; flex-shrink:0; }
 .skill-preparation { display:flex; align-items:center; gap:14px; padding:12px 14px; border:1px solid #39454b; border-radius:6px; background:#151d23; text-align:left; }
