@@ -51,33 +51,6 @@ function drawTag(x, y, text, col, alpha = 1, key) {
   ctx.globalAlpha = 1;
 }
 // 살피기(Tab / 살피기 버튼): 쓸 수 있는 물체를 모두 색 테두리와 이름으로 보여준다
-// 지나갈 수 없는 경계: 걸을 수 있는 칸과 막힌 칸 사이에 선을 긋는다 (평소엔 내 주변만 옅게, 살피기 중엔 화면 전체 + 막힌 칸 빗금)
-function drawBlockEdges(P, all) {
-  const sol = P.z ? (tx, ty) => rLv(tx, ty) !== P.z : groundSolidP, ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), R = 6;
-  const hx = W / SCALE / 2 / TILE + 1, hy = H / SCALE / 2 / TILE + 1;
-  const x0 = all ? Math.floor(cam.x / TILE - hx) : ptx - R, x1 = all ? Math.ceil(cam.x / TILE + hx) : ptx + R;
-  const y0 = all ? Math.floor(cam.y / TILE - hy) : pty - R, y1 = all ? Math.ceil(cam.y / TILE + hy) : pty + R;
-  ctx.lineWidth = 2; ctx.lineCap = 'round';
-  for (let ty = Math.max(0, y0); ty <= Math.min(MH - 1, y1); ty++) for (let tx = Math.max(0, x0); tx <= Math.min(MW - 1, x1); tx++) {
-    if (sol(tx, ty)) {
-      if (all && !(P.z === 0 && roofAt(tx, ty) && bldAt(tx, ty) !== S.openB)) {  // 막힌 칸 빗금
-        ctx.strokeStyle = 'rgba(255,96,72,.28)'; ctx.lineWidth = 1.5; ctx.beginPath();
-        for (let k = -TILE; k < TILE; k += 12) { ctx.moveTo(tx * TILE + Math.max(0, k), ty * TILE + Math.max(0, -k)); ctx.lineTo(tx * TILE + Math.min(TILE, TILE + k), ty * TILE + Math.min(TILE, TILE - k)); }
-        ctx.stroke(); ctx.lineWidth = 2;
-      }
-      continue;
-    }
-    const dd = Math.hypot(tx - ptx, ty - pty), a = all ? 0.7 : Math.max(0, 1 - dd / R) * 0.75; if (a < 0.03) continue;
-    ctx.strokeStyle = `rgba(255,150,110,${a})`; ctx.beginPath();
-    const X = tx * TILE, Y = ty * TILE;
-    if (sol(tx, ty - 1)) { ctx.moveTo(X + 2, Y + 1); ctx.lineTo(X + TILE - 2, Y + 1); }
-    if (sol(tx, ty + 1)) { ctx.moveTo(X + 2, Y + TILE - 1); ctx.lineTo(X + TILE - 2, Y + TILE - 1); }
-    if (sol(tx - 1, ty)) { ctx.moveTo(X + 1, Y + 2); ctx.lineTo(X + 1, Y + TILE - 2); }
-    if (sol(tx + 1, ty)) { ctx.moveTo(X + TILE - 1, Y + 2); ctx.lineTo(X + TILE - 1, Y + TILE - 2); }
-    ctx.stroke();
-  }
-  ctx.lineCap = 'butt';
-}
 // 가까운 상호작용 지점을 작은 표식으로 늘 보여 준다 (숨을 곳 · 오르는 곳 · 창문 · 환풍구 · 잠긴 문)
 const _nearPaths = {}; const nearPath = k => _nearPaths[k] || (_nearPaths[k] = new Path2D(ICON_P[k]));  // 근처 표시용 아이콘 (버튼 아이콘과 같은 그림)
 function drawNearMarks(P, openB) { if (P.trav || (window.__skip && window.__skip.ui)) return;  // 첫 화면 배경 찍기: 글자·표시 없이
@@ -162,12 +135,6 @@ function drawScan(openB) {
   if (!fP) for (const o of S.poles) if (wireUsable() && o.wires.length) box(o.x, o.y, SCAN.ladder, STAGE.tutorial ? '훈련 지주 ↑' : '전봇대 ↑', 36);
   if (!fP) for (const w of S.wires) for (const n of [w.a, w.b]) if (wireUsable() && n.roof) box(n.dx, n.dy, SCAN.ladder, STAGE.tutorial ? '훈련 로프' : '전깃줄', 26);
   for (const g of S.guards) if (flOf(g) === fP && g.lookout && g.state !== 'DEAD') labs.push({ x: g.x, y: g.y + 34, text: '망꾼: 옥상을 본다', col: '#f2c46b', d: 0 });
-  if (!S.player.z) for (const it of FURN) {  // 가구: 파랑 = 높은 가구(막힘·시선 가림), 노랑 점선 = 낮은 가구(막힘·웅크리면 엄폐)
-    if ((it.fl || 0) !== fP || FURN_FLAT.has(it.t)) continue; const bi = bldAt(it.x, it.y); if (bi >= 0 && bi !== openB && !tactical) continue;
-    const x = it.x * TILE, y = it.y * TILE, w = it.w * TILE, h = it.h * TILE; if (!on(x + w / 2, y + h / 2)) continue;
-    if (FURN_TALL.has(it.t)) { ctx.fillStyle = 'rgba(110,150,220,.22)'; ctx.fillRect(x + 3, y + 3, w - 6, h - 6); ctx.strokeStyle = 'rgba(140,180,240,.85)'; ctx.lineWidth = 2; ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); }
-    else { ctx.strokeStyle = 'rgba(242,196,107,.8)'; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.strokeRect(x + 3, y + 3, w - 6, h - 6); ctx.setLineDash([]); }
-  }
   labs.sort((a, b) => a.d - b.d); const placed = []; ctx.font = uiFont(13 * kS);
   for (const L of labs) { const w = ctx.measureText(L.text).width + 14 * kS, h = 19 * kS, r = [L.x - w / 2, L.y - h / 2, L.x + w / 2, L.y + h / 2];
     if (placed.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue; placed.push(r); tag(L.x, L.y, L.text, L.col); if (placed.length >= 18) break; }

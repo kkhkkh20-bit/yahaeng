@@ -1,0 +1,74 @@
+[
+  {
+    "mobile": false,
+    "fl": 0,
+    "scan": false,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 0
+  },
+  {
+    "mobile": false,
+    "fl": 0,
+    "scan": true,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 18
+  },
+  {
+    "mobile": false,
+    "fl": 1,
+    "scan": false,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 0
+  },
+  {
+    "mobile": false,
+    "fl": 1,
+    "scan": true,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 4
+  },
+  {
+    "mobile": true,
+    "fl": 0,
+    "scan": false,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 0
+  },
+  {
+    "mobile": true,
+    "fl": 0,
+    "scan": true,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 13
+  },
+  {
+    "mobile": true,
+    "fl": 1,
+    "scan": false,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 0
+  },
+  {
+    "mobile": true,
+    "fl": 1,
+    "scan": true,
+    "collisionOverlay": 0,
+    "lowFurnitureBoxes": 0,
+    "tallFurnitureBoxes": 0,
+    "scanInteractionMarks": 4
+  }
+]
