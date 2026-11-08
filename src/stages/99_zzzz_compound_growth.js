@@ -1,10 +1,10 @@
 // Five real jobs: repeat the core stealth loop, then add one new spatial problem.
 // Existing IDs/clear records remain; the former single-rule errands are optional archives.
-const COMPOUND_COMMON={layoutRevision:212,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
+const COMPOUND_COMMON={layoutRevision:214,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
  W:34,H:24,start:[6,18],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.8,radioCheck:0,securityResponse:false,
- floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
+ floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],lootFurniture:['desk'],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
  zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,15,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
  buildingNames:{0:'금성 운송 · 야간 사무동',1:'봉인된 적재 창고'},industrialBuildings:[0,1],
  build(m){
@@ -17,12 +17,16 @@ const COMPOUND_COMMON={layoutRevision:212,compound:true,physicalWorld:true,story
  },
  lamps:[[14,6,170,1],[5,17,160,1],[24,9,350,0,0],[25,8,330,0,1]],
  lampControls:[[2,19.5,12.5],[3,19.5,12.5]],
- fixedFurn:[{x:20,y:5,t:'shelf',w:3},{x:22,y:10,t:'boxes',w:2},{x:19,y:13,t:'locker'},{x:26,y:13,t:'locker'},
+ fixedFurn:[{x:20,y:5,t:'shelf',w:3,skin:'freight'},{x:22,y:10,t:'boxes',w:2},{x:19,y:13,t:'locker'},{x:26,y:13,t:'locker'},
   {x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:25,y:5,t:'desk',w:2,fl:1},{x:27,y:10,t:'shelf',w:2,fl:1}],
 };
 const yardGuard=()=>({kind:'g1',tag:'uniformDonor',at:[14,8],post:0,still:true,radio:false});
 const hallGuard=()=>({kind:'g1',tag:'hallKeeper',at:[26,11],post:0,still:true,radio:false});
 const lightGuard=()=>({kind:'g1',tag:'lightKeeper',at:[22,7],post:90,still:true,radio:false});
+// Long, legible work pauses create repeatable approach windows. The actors
+// really walk between their stations; they keep the same outfit/AI rules.
+const officeTarget=(tag,second=[28,7],act='phone')=>({kind:'t',tag,target:true,fl:1,post:0,still:true,radio:false,startPause:18,
+ sched:[{at:[26,7],stay:18,name:'업무 책상',act},{at:second,stay:10,name:'보고 자리',act:'ledger'}]});
 const newCast=(name,role,appearance,key,palette)=>({name,role,appearance,key,palette,habit:role+'로서 보고를 확인한다.'});
 TARGET_CAST.foreman=newCast('한재문 · 작업반장','금성회 야간 출고 책임자','붉은 작업 코트 · 회색 머리','castForeman@coat',['#d5ab88','#a8a6a0','#a33e3b','#2d3440','#181f28']);
 TARGET_CAST.records=newCast('차유진 · 기록책','금성회 증인 이송 기록책','금발 · 자주색 정장','castRecords@femaleBoss',['#e4b79a','#c7a263','#884c70','#2b3543','#20242d']);
@@ -40,14 +44,20 @@ compoundJob('p0',{
  purpose:'운반책 박인호를 처치하고 금성 운송의 철문 밖으로 탈출한다.',mission:'2층 운반책 처치 후 서쪽 철문 밖으로 탈출',
  brief:'박인호는 2층에서 거래 전화를 기다린다. 마당 경비 한 명, 1층 경비 한 명, 2층 표적 한 명이다. 마당 경비를 등 뒤에서 기절시키고 옷을 얻는다. 몸은 왼쪽 화단, 1층은 사물함에 숨길 수 있다. 계단으로 올라가 검은 머리 · 주황색 후드의 박인호를 찾아 처치하고 철문 밖으로 빠져나오자. 짧게 누르면 기절, 길게 누르면 살해한다.',
  story:{before:'제비의 서류가 가리킨 박인호는 금성 운송 2층에 숨어 증인을 팔아넘길 전화를 기다린다. 경비의 옷과 빈 사물함을 이용해 거점을 뚫는다.',after:'박인호의 전화를 끊었다. 그가 부르던 작업반장 한재문은 옆 출고동에 있다. 이번에는 경비 둘이 서로를 보고 있다.',cast:{runner:'runner'}},
- targetCast:{runner:TARGET_CAST.runner},guards:[yardGuard(),hallGuard(),{kind:'t',tag:'runner',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 배차 사무동',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:20,y:8,t:'sofa',w:2,fl:1}),
+ dressing:[{kind:'bay',x:8.7,y:8.7,w:2.6,h:2.6,text:'01'},{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'운송 배차'}],
+ targetCast:{runner:TARGET_CAST.runner},guards:[yardGuard(),hallGuard(),officeTarget('runner')],
 });
 compoundJob('p1',{
  name:'불 꺼진 출고동',sub:'두 번째 의뢰 · 어둠으로 분리',fee:'40만',openingContract:false,starterContract:'darkness',apprenticeContract:undefined,compoundLight:true,
  purpose:'겹친 경비 시야를 조명으로 나누고 작업반장 한재문을 처치한다.',mission:'출고 감시담당·작업반장 처치 후 철문 밖으로 탈출',
  brief:'기절·변장·몸 숨기기는 그대로 활용한다. 이번에는 1층 경비 두 명의 시선이 겹친다. 서쪽 문 안 벽 스위치를 끄면 방이 어두워지고 경비 한 명이 다시 켜러 온다. 그를 따로 처리하고 사물함에 숨기면 계단이 열린다. 붉은 조끼의 출고 감시담당과 2층 붉은 코트의 한재문이 표적이다. 일반 조명 스위치는 기술 없이 사용한다.',
  story:{before:'한재문이 박인호의 연락을 기다린다. 출고동에는 경비 둘이 서로를 지킨다. 까마귀: 불을 한번 꺼 보죠. 누군가는 켜러 와야 하니까.',after:'작업반장의 보고를 막았다. 증인 이송 명세서는 기록책 차유진이 따로 보관한다. 다음 거점에서는 사람과 서류를 함께 처리한다.'},
- targetCast:{foreman:TARGET_CAST.foreman,watchCaptain:TARGET_CAST.watchCaptain},guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'watchCaptain',target:true},lightGuard(),{kind:'t',tag:'foreman',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 야간 출고동',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:25,y:5,t:'boxes',w:2},{x:20,y:9,t:'boxes',w:2,fl:1}),
+ dressing:[{kind:'bay',x:24.7,y:4.7,w:2.6,h:1.6,text:'출고'},{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'야간 출고'}],
+ targetCast:{foreman:TARGET_CAST.foreman,watchCaptain:TARGET_CAST.watchCaptain},guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'watchCaptain',target:true},lightGuard(),officeTarget('foreman')],
 });
 compoundJob('p2',{
  name:'야간 기록실',sub:'세 번째 의뢰 · 처치와 회수',fee:'50만',openingContract:false,starterContract:'records',apprenticeContract:undefined,compoundLight:true,
@@ -55,7 +65,10 @@ compoundJob('p2',{
  brief:'마당 경비의 옷으로 들어가고, 몸은 화단과 사물함에 숨긴다. 1층 감시반장과 2층 기록책이 필수 표적이다. 경비들은 조명이 꺼지면 스위치를 확인한다. 한 명씩 분리한 뒤 명세서를 챙겨 나온다. 서류는 2층 책상에 있고, 두 표적 처치와 회수를 모두 마쳐야 탈출할 수 있다.',
  story:{before:'기록책 차유진이 명세서를 정리하고 감시반장 서명석이 인계를 지킨다. 지금까지 익힌 암살·변장·조명·은폐로 두 사람의 보고와 서류를 함께 끊는다.',after:'명세서에 정하린의 감시 거점이 적혀 있다. 정하린은 사람만 믿지 않는다. 기록실 앞 CCTV까지 확인해야 한다.'},
  targetCast:{recordsLead:TARGET_CAST.records,inspector:TARGET_CAST.inspector},
- guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'recordsLead',target:true,at:[26,7],fl:1,post:0,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 야간 기록실',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:25,y:10,t:'cab',w:2,fl:1},{x:20,y:7,t:'shelf',fl:1}),
+ dressing:[{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'이송 기록'}],
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),officeTarget('recordsLead',[28,7],'ledger'),{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
  items:[[25,6,1]],itemName:'이송 명세서',itemNames:['이송 명세서'],itemPlaces:['야간 기록실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
 });
 compoundJob('e1',{
@@ -64,10 +77,12 @@ compoundJob('e1',{
  brief:'암살·변장·조명·은폐는 이전과 같다. 이번에는 2층 작업 구역을 CCTV가 비춘다. 허용 복장으로 지나가는 것과 살해·서류 작업은 다르다. 카메라 뒤 벽의 전선을 분리하면 녹화를 막는다. 이미 찍혔다면 같은 층 보안 단말에서 감시망을 정지하고 기록을 지운다. 실수해도 의뢰가 바로 끝나지 않는다.',
  story:{before:'정하린의 거점에는 증인 인계서를 지키는 CCTV가 있다. 까마귀: 경비 옷은 사람 눈을 속이죠. 저 렌즈 앞에서까지 손을 놀리지는 마세요.',after:'정하린의 연락망과 인계서를 확보했다. 중개인 문서윤의 원본 장부는 옆 건물 3층에 있다. 정문 대신 지붕과 창문으로 길을 만들자.'},
  targetCast:{contact:TARGET_CAST.contact,inspector:TARGET_CAST.cameraLead},
- guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'contact',target:true,at:[26,7],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 감시 관리동',1:'봉인된 적재 창고'},
+ dressing:[{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'야간 감시'}],
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{...officeTarget('contact',[27,7]),post:90},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
  items:[[25,6,1]],itemName:'증인 인계서',itemNames:['증인 인계서'],itemPlaces:['감시 거점 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
  cams:[[27,6,180,0,1]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:1,name:'2층 감시 관리 단말'},cameraFocus:[25,6],
- fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1}),
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1},{x:22,y:5,t:'pc',fl:1},{x:20,y:7,t:'pc',fl:1},{x:22,y:10,t:'cab',w:2,fl:1}),
 });
 compoundJob('e2',{
  name:'지붕 위의 장부',sub:'다섯 번째 의뢰 · 수직 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,compoundVertical:true,

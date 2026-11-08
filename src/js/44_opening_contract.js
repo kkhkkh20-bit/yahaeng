@@ -37,6 +37,15 @@ function openingGoal(){
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};
 }
 function updateOpeningContract(){
+  if(STAGE.firstSteps&&STAGE.storyEpisode){
+    const P=S.player,g=npc('dispatchClerk');
+    // A real observer accepts ordinary permitted passage. Never manufacture a
+    // successful disguise while he is investigating crime or sees illegal work.
+    if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
+      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가.',2.8);
+    }
+    return;
+  }
   if(!STAGE.openingContract)return;
   const guard=npc('patrol');
   if(guard?.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(guard.state))S.openingLured=true;

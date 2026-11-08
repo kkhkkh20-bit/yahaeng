@@ -13,6 +13,8 @@ async def main():
    for(const[id,count,targets,docs,cams]of [['p0',3,1,0,0],['p1',4,2,0,0],['p2',5,2,1,0],['e1',5,2,1,1],['e2',6,2,1,1]]){
     const S=fresh(id);ok(S.guards.length===count&&S.guards.filter(g=>g.target).length===targets&&S.items.length===docs&&S.cams.length===cams,'authored density '+id);
     for(const c of S.cams){const at=G.cameraServicePoint(c),it=S.items[0];G.setLayer(c.fl);ok(G.cameraSees(c,it.x,it.y,1)>0&&G.cameraSees(c,at.x,at.y,1)<=0,'camera must protect actual document and leave a safe service point '+id);ok(!S.ladders.some(l=>l.kind==='fstair'&&l.tfl===c.fl&&Math.hypot(at.x-G.stairUpper(l).down.entry.x,at.y-G.stairUpper(l).down.entry.y)<60),'camera service point triggers staircase '+id);G.setLayer(0);}
+    for(const g of S.guards.filter(g=>g.sched)){G.setLayer(g.fl);ok(g.route.length===2&&g.route.every(p=>!G.solidAt(Math.floor(p.x/48),Math.floor(p.y/48))), 'work routine ends inside a wall or furniture '+id);G.setLayer(0);}
+    if(id!=='e2'){const g=S.guards.find(g=>g.target&&g.sched),x=g.x;tick(30);ok(Math.abs(g.x-x)>24&&Math.hypot(g.x-g.route[1].x,g.y-g.route[1].y)<24&&g.wait>0,'target never walks to a second usable work station '+id);}
     ok(!G.STAGE.tutorial&&!G.STAGE.steps&&G.STAGE.floors,'a real job became a gated drill '+id);
     ok(S.guards.some(g=>!g.target&&!g.fl)&&S.guards.some(g=>g.fl>0),'missing layered encounters '+id);
     ok(!G.loadSkillTree().learned.length&&!S.player.kunai,'free purchased skills '+id);G.checkObjective();ok(!S.exitOpen,'skip required work '+id);
@@ -21,6 +23,9 @@ async def main():
     for(const it of S.items)it.got=true;G.checkObjective();ok(S.exitOpen,'authored objectives cannot complete '+id);
    }
    out.push('three-to-six hostiles, repeated core actions, upper floors, two required targets and documents; KO never completes an assassination');
+   let opening=fresh('tB');Object.assign(opening.player,{x:936,y:600});tick(.3);ok(!opening.openingPass,'unpermitted visitor receives a successful-disguise response');
+   opening=fresh('tB');Object.assign(opening.player,{x:936,y:600,outfit:'crew',mode:'walk'});tick(.3);ok(opening.openingPass&&opening.stats.detected===0&&opening.guards[1].state==='PATROL','a real clerk does not accept permitted ordinary passage');
+   out.push('first episode demonstrates actual uniform permission without adding another victory gate; four officers walk between usable work stations');
    let S=fresh('p1'),P=S.player,l=S.lamps.find(l=>!l.outdoor&&!l.fl),at=l.control;Object.assign(P,{x:at.x+24,y:at.y,outfit:'crew',mode:'sneak'});G.setLayer(0);
    const before=G.lightAt(1272,552);G.doAct(G.envChoices().find(a=>a.k==='lamp'));tick(.8);ok(l.off&&S.compoundDarkUsed,'basic light switch requires a purchased ability');
    ok(S.guards.some(g=>g.relight&&g.relight.l===l),'nobody reacts to a room going dark');const after=G.lightAt(1272,552);ok(after<before,'switch does not lower real illumination');tick(12);ok(!l.off,'repair guard never restores light');
@@ -40,7 +45,7 @@ async def main():
    return out;
   }''')
   await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'));G.S.layoutRevision=211;G.S.player.hp=2;G.saveCheckpoint();window.clearBefore=localStorage.getItem('yahaeng.ch');G.start(G.STAGES.findIndex(s=>s.id==='p0'),true)}")
-  await q.click('#btnBrCP');assert await q.evaluate("__game.S.layoutRevision===212&&__game.S.player.hp===3&&__game.S.guards.length===3&&localStorage.getItem('yahaeng.ch')===clearBefore"),'old layout checkpoint overrides new map or erases earned progress'
+  await q.click('#btnBrCP');assert await q.evaluate("__game.S.layoutRevision===214&&__game.S.player.hp===3&&__game.S.guards.length===3&&localStorage.getItem('yahaeng.ch')===clearBefore"),'old layout checkpoint overrides new map or erases earned progress'
   checks.append('old-layout Continue rebuilds the mission while preserving existing clear rewards')
   assert not errors,errors;await b.close();(O/'rules.json').write_text(json.dumps({'checks':checks,'errors':errors},ensure_ascii=False,indent=2));print('PASS compound progression',checks,flush=True)
 asyncio.run(main())

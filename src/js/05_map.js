@@ -90,6 +90,7 @@ function installStageFurniture(st, saved = false) {
   for(const d of st.fixedFurn||[]){
     let f=FURN.find(f=>f.x===d.x&&f.y===d.y&&(f.fl||0)===(d.fl||0)&&f.t===d.t);
     if(!f){f={w:1,h:1,r:0,fl:0,seed:114,...d};FURN.push(f);}
+    if(d.skin)f.skin=d.skin;
     const grid=f.fl?GF[f.fl]:G0;if(!grid)continue;
     for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
     if(saved)for(const o of [S.player,...S.guards,...S.corpses]){

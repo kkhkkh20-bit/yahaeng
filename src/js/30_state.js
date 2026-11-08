@@ -705,6 +705,7 @@ function renderMap(R) {
   if (R && CUR_F > 0) { const bi = BLD.findIndex(b => b.x0 === rx0 && b.y0 === ry0 && b.x1 === rx1 && b.y1 === ry1); if (hasHeightCues(bi)) paintInteriorCuts(x, BLD[bi], CUR_F); }
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
+  drawEpisodeDressing(x, CUR_F, rx0, ry0, rx1, ry1);
   quarterCuts(x,rx0,ry0,rx1,ry1);
   // 가구 (이 층 것만)
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);

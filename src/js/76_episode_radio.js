@@ -2,14 +2,14 @@
 const OPENING_RADIO=[
  '제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
  '몸을 낮추면 덜 보인다. 양복은 나중에 털지.',
- '경비도 앞만 봅니다. 조용히 등 뒤로 붙으세요.',
+ '저 친구는 출입문만 보는군요. 등 뒤 자리, 비었습니다.',
  '살려 두자. 공격은 짧게, 길게 누르면 죽는다.',
  '옷 좀 빌리자. 갈아입는 동안엔 가만히.',
  '경비는 왼쪽 풀숲에. 퇴근한 줄 알겠죠.',
- '배차실 문으로 들어가서 계단. 서류는 2층이다.',
- '이 책상이군. 챙기는 동안 손은 가만히.',
- '좋습니다. 같은 계단으로 1층에 내려오세요.',
- '서류도 챙겼고… 동쪽 골목의 차로 가자.'
+ '옷도 빌렸고 흔적도 지웠다. 배차실 문으로 들어가서 2층으로.',
+ '제비 필체다. 서류부터 챙기자. 빈손으로 야근할 순 없지.',
+ '박인호… 금성 운송 2층. 좋아요. 우선 계단으로 내려오세요.',
+ '첫 야근 끝. 동쪽 골목으로 나가자.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
@@ -20,8 +20,9 @@ function episodeRadioMessage(){
  if(P.captive)return P.captive.target?{text:'표적을 붙잡았군요. 이번 의뢰는 처치입니다. 공격을 1초 길게 누르세요. 짧게 누르면 기절합니다.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'붙잡았군요. 짧게 공격하면 기절시킬 수 있습니다. 그 뒤 옷을 얻으세요.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
-  const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,speaker:[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying),action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  const passed=i===6&&S.openingPass;
+  const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':passed?'통했군요. 평범하게 지나가면 됩니다. 서류 작업은 위층에서 조용히.':OPENING_RADIO[i]||OPENING_RADIO[9];
+  return{text,speaker:passed?'master':[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';
