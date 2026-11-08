@@ -1,0 +1,74 @@
+[
+  {
+    "stage": "tB",
+    "size": [
+      1280,
+      800
+    ],
+    "version": "v217",
+    "errors": []
+  },
+  {
+    "stage": "tB",
+    "size": [
+      1280,
+      800
+    ],
+    "version": "v218",
+    "errors": []
+  },
+  {
+    "stage": "tB",
+    "size": [
+      390,
+      844
+    ],
+    "version": "v217",
+    "errors": []
+  },
+  {
+    "stage": "tB",
+    "size": [
+      390,
+      844
+    ],
+    "version": "v218",
+    "errors": []
+  },
+  {
+    "stage": "p0",
+    "size": [
+      1280,
+      800
+    ],
+    "version": "v217",
+    "errors": []
+  },
+  {
+    "stage": "p0",
+    "size": [
+      1280,
+      800
+    ],
+    "version": "v218",
+    "errors": []
+  },
+  {
+    "stage": "p0",
+    "size": [
+      390,
+      844
+    ],
+    "version": "v217",
+    "errors": []
+  },
+  {
+    "stage": "p0",
+    "size": [
+      390,
+      844
+    ],
+    "version": "v218",
+    "errors": []
+  }
+]

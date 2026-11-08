@@ -19,4 +19,8 @@ def campaign_assets(root):
     if (city/'pilot.json').exists():
         assets['freeCity']=json.loads((city/'pilot.json').read_text())
         assets['freeCity']['src']='data:image/webp;base64,'+base64.b64encode((city/'pilot.webp').read_bytes()).decode()
+    paid=Path(root)/'src/art/dotonbori'
+    if (paid/'exteriors.json').exists():
+        assets['dotonbori']=json.loads((paid/'exteriors.json').read_text())
+        assets['dotonbori']['src']='data:image/webp;base64,'+base64.b64encode((paid/'exteriors.webp').read_bytes()).decode()
     return json.dumps(assets, ensure_ascii=False, separators=(',', ':'))

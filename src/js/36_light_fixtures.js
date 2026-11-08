@@ -89,7 +89,7 @@ function drawOutdoorLampFixtures() {
     const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();

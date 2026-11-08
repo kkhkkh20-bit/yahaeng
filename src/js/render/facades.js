@@ -1,7 +1,7 @@
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
-  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return drawDepotFacade(b);
+  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||freeCityBuilding(b))return drawDepotFacade(b);
   if (b.kind === 'shop') return drawShopFacade(b);
   const wn = n => (b.alt ? n + 'B' : n);
   const glow = (x, yy, tx, r) => {  // 도시: 불 켜진 창 몇 개 (촛불·등잔빛)
