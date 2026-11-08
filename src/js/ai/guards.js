@@ -263,7 +263,7 @@ function updateGuard(g, dt) {
         const listeners = shareGuardReport(g, reportAt, reportedLook,'body');
         startBuildingSearch(reportAt, g.fac || 'A', 'body', g);
         queueGuardRadio([g, ...lookouts, ...listeners], reportAt, reportedLook, true);
-        g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'사망자 발견. 출입구 막고 주변 수색해.',2.8);
+        g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'이 사람 죽었어! 출입구 막고 누가 있었는지 찾아봐.',2.8);
       }
       break;
     }

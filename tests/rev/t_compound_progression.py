@@ -10,7 +10,7 @@ async def main():
   await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
   checks=await q.evaluate('''()=>{
    const G=__game,out=[],ok=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id),false);while(G.DLG.modal)G.advanceDialog();G.update(.02);return G.S},tick=t=>{for(let n=0;n<t;n+=.01)G.update(.01)};
-   for(const[id,count,targets,docs,cams]of [['p0',3,1,0,0],['p1',4,2,0,0],['p2',5,2,1,0],['e1',5,2,1,1],['e2',6,2,1,1]]){
+   for(const[id,count,targets,docs,cams]of [['p0',3,1,0,0],['p1',4,2,0,0],['p2',5,2,1,0],['e1',5,2,1,1],['e2',4,1,1,1]]){
     const S=fresh(id);ok(S.guards.length===count&&S.guards.filter(g=>g.target).length===targets&&S.items.length===docs&&S.cams.length===cams,'authored density '+id);
     for(const c of S.cams){const at=G.cameraServicePoint(c),it=S.items[0];G.setLayer(c.fl);ok(G.cameraSees(c,it.x,it.y,1)>0&&G.cameraSees(c,at.x,at.y,1)<=0,'camera must protect actual document and leave a safe service point '+id);ok(!S.ladders.some(l=>l.kind==='fstair'&&l.tfl===c.fl&&Math.hypot(at.x-G.stairUpper(l).down.entry.x,at.y-G.stairUpper(l).down.entry.y)<60),'camera service point triggers staircase '+id);G.setLayer(0);}
     for(const g of S.guards.filter(g=>g.sched)){G.setLayer(g.fl);ok(g.route.length===2&&g.route.every(p=>!G.solidAt(Math.floor(p.x/48),Math.floor(p.y/48))), 'work routine ends inside a wall or furniture '+id);G.setLayer(0);}
@@ -38,7 +38,7 @@ async def main():
    S=fresh('e2');P=S.player;ok(G.BLD.filter(b=>b.h===3).length===2,'no two three-storey buildings');Object.assign(P,{x:792,y:408,z:3,fl:0,a:0});G.setLayer(0);const jump=G.jumpTarget();ok(jump===G.jumpTarget(),'rooftop selection identity changes each frame');ok(jump&&jump.tx===18&&jump.z===3,'one-cell rooftop gap cannot be crossed');
    ok(S.keyItems.some(k=>k.key==='pin')&&S.windows.some(w=>w.tx===5&&w.ty===12&&w.st==='lock'),'window/lockpick route missing');
    ok(S.traps.some(t=>t.k==='drop'&&t.text==='금성 거래소'&&!t.used),'no physical sign opportunity');
-   ok(G.LEARNING_ROUTE.slice(0,7).join(',')==='tB,p0,p1,p2,e1,e2,m2','obsolete one-rule errands still interrupt the cumulative route');
+   ok(G.LEARNING_ROUTE.join(',')==='tB,p0,e2,m2,m4,m6,m7,m5,n1','obsolete one-rule errands still interrupt the cumulative route');
    Object.assign(P,{x:1224,y:576,z:3,fl:0});const handover=S.guards.find(g=>g.tag==='handover');Object.assign(handover,{x:1224,y:840,wait:99});G.combatPress('KeyX');S.keys.KeyX=true;G.actEnv();tick(.4);S.keys.KeyX=false;G.combatRelease('KeyX');ok(!S.traps[0].used,'tap drops a lethal sign');G.combatPress('KeyX');S.keys.KeyX=true;G.actEnv();tick(1.2);S.keys.KeyX=false;G.combatRelease('KeyX');tick(1.5);ok(S.traps[0].used&&handover.state==='DEAD'&&S.stats.accidents===1&&!G.abilityOn('ambush'),'roof sign incorrectly requires a purchased ambush skill');out.push('native hold intent: short sign input cancels; deliberate hold drops a real sign and kills the target without purchased skills');
    const old={e3:{_clear:true},e4:{_clear:true},e5:{_clear:true}};localStorage.setItem('yahaeng.ch',JSON.stringify(old));ok(G.missionSkillPoints()===3,'retiring errands erased existing earned points');
    out.push('third-floor/roof/window/sign alternatives and direct club continuation; old skill rewards remain');

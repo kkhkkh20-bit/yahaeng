@@ -143,7 +143,8 @@ async def main(args):
    try:
     for id in (args.stage.split(',') if args.stage else ['p0','p1','p2','e1','e2']):
      await standalone_stage(q,id);await q.click('#btnBrGo');cc=CompoundControls(q,c,out,('mobile'if mobile else'pc')+'-'+id);await cc.shot('start');await c.press('Control','#btnCrouch')
-     await cc.neutralize('uniformDonor');await cc.dress();await cc.hide('uniformDonor');await cc.shot('uniform-and-hidden')
+     if not(args.direct_infiltration and id=='e2'):
+      await cc.neutralize('uniformDonor');await cc.dress();await cc.hide('uniformDonor');await cc.shot('uniform-and-hidden')
      if id=='p0':
       await cc.walk(1176,816);await cc.shot('front-courtyard');await cc.walk(1176,744);await cc.shot('front-entry')
       await cc.neutralize('hallKeeper');await cc.hide('hallKeeper');await cc.stairs(1);await cc.neutralize('runner',True);await cc.hide('runner')
@@ -175,13 +176,18 @@ async def main(args):
       await cc.walk(at['x'],at['y']);await cc.env('up');assert await q.evaluate('__game.S.player.z===3')
       await cc.walk(792,408);await c.steer('x',1);await q.wait_for_timeout(90);await c.steer();await cc.env('leap');await cc.shot('rooftop-jump')
       assert await q.evaluate('__game.S.player.z===3&&__game.bldAt(Math.floor(__game.S.player.x/48),Math.floor(__game.S.player.y/48))===1')
-      await cc.walk(1224,576)
-      await q.wait_for_function("()=>{const g=__game.S.guards.find(g=>g.tag==='handover');return g.x>24*48&&g.x<27*48&&g.y>16*48&&g.y<19*48&&g.wait>2}",timeout=45000)
-      await cc.env('trap');await q.wait_for_function("__game.S.guards.find(g=>g.tag==='handover').state==='DEAD'",timeout=5000);await cc.shot('sign-assassination')
+      if not args.direct_infiltration:
+       await cc.walk(1224,576)
+       await q.wait_for_function("()=>{const g=__game.S.guards.find(g=>g.tag==='handover');return g.x>24*48&&g.x<27*48&&g.y>16*48&&g.y<19*48&&g.wait>2}",timeout=45000)
+       await cc.env('trap');await q.wait_for_function("__game.S.guards.find(g=>g.tag==='handover').state==='DEAD'",timeout=5000);await cc.shot('sign-assassination')
       at=await q.evaluate("(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===1);return {x:l.rx??l.ux,y:l.ry??l.uy}})()")
       await cc.walk(at['x'],at['y']);await cc.env('down');assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
-      await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
+      if await q.evaluate("__game.S.guards.some(g=>g.tag==='upperKeeper')"):
+       await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
+      if args.direct_infiltration:
+       await cc.walk(1416,504);await cc.walk(1464,504);await cc.walk(1464,360)  # Authored right-wall approach, outside the camera cone.
       await cc.camera_cable()
+      if args.direct_infiltration:await cc.walk(1378,312)  # Stay north of the downward-facing broker.
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
       # Keep the remaining patrols alive: permitted passage and an ordinary
       # staircase escape are valid solutions, not an all-enemy-clear checklist.
@@ -194,4 +200,4 @@ async def main(args):
   await b.close()
  print('PASS cumulative missions',[(r['device'],r['id'])for r in reports],flush=True)
 if __name__=='__main__':
- a=argparse.ArgumentParser();a.add_argument('--url',default='http://127.0.0.1:8005/build/preview_city.html');a.add_argument('--out',default='build/compound-v212/live');a.add_argument('--device',choices=['pc','mobile']);a.add_argument('--stage');asyncio.run(main(a.parse_args()))
+ a=argparse.ArgumentParser();a.add_argument('--direct-infiltration',action='store_true');a.add_argument('--url',default='http://127.0.0.1:8005/build/preview_city.html');a.add_argument('--out',default='build/compound-v212/live');a.add_argument('--device',choices=['pc','mobile']);a.add_argument('--stage');asyncio.run(main(a.parse_args()))

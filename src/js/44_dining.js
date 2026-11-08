@@ -73,7 +73,7 @@ function updateDining(dt){
     }
     if(m.eaten&&m.sick){
       m.toilet=d.toilet.slice();m.queue=(d.queue||[d.toilet[0],d.toilet[1]+3]).slice();
-      gsay(g,'잠깐, 화장실 좀.',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:tc(m.queue[0]),y:tc(m.queue[1])},3,'화장실 앞');return;
+      gsay(g,'나 화장실 좀 다녀올게.',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:tc(m.queue[0]),y:tc(m.queue[1])},3,'화장실 앞');return;
     }
     if(m.eaten&&(!g.route.includes(m.waypoint)||g.wait<=0)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;}
   }else if(m.phase==='queue'){

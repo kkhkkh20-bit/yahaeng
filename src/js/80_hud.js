@@ -76,7 +76,7 @@ function briefTodo() {
   S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', itemObjectiveText(it), placeName(it.x, it.y, it.fl, it.b)]); });
   for (const g of S.guards) if (g.target && !targetEliminated(g)) out.push(['dot', '#e8473c', targetName(g) + ' 처치', targetKnowledge(g).where]);
   if (STAGE.securityEvidence && S.camRoom) out.push(['ring', '#8ca5ba', '신원 기록', '녹화됐을 때만 보안실에서 삭제']);
-  out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
+  out.push(['ring', '#f2c46b', '탈출', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
   return out;
 }
 // The briefing, permanent HUD and visible-world labels use the same identities.
@@ -158,8 +158,8 @@ function showBrief(go) {
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
   $('brPurpose').hidden=!STAGE.purpose&&STAGE.id!=='m2'&&!introductoryContract(STAGE);$('brPurpose').textContent=STAGE.purpose|| (STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.');
-  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
-  $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
+  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표를 완료한 뒤 표시된 출구로 탈출';
+  $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='탈출')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
   renderSkillPreparation('brSkills');
   $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
@@ -479,14 +479,13 @@ function showEnd(win, reason) {
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());
 // 데모(itch) 빌드: 'all' 이면 도시 시제품만 빼고 전부, 목록이면 그 판만 (나머지는 잠긴 카드 하나로 알린다)
-const demoOk = s => !window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id));
+const demoOk = s => !s.retiredCampaign&&(!window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id)));
 // 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
 function showMenu(which) { { const h = $('help'); if (h) h.classList.remove('over'); } ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
 const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();
   const best = loadBest(), next = quickTarget();
-  const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
     const stars = !introductoryContract(s) && s.challenges && st ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">★ ${st}</span>` : '';
@@ -503,10 +502,8 @@ function renderStageList() {
       <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk&&!introductoryContract(s) ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
-  const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial&&!s.storyEpisode).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = LEARNING_ROUTE.map(id=>list.find(([s])=>s.id===id)).filter(Boolean), archive = list.filter(([s]) => !s.tutorial && !s.city && !introductoryContract(s) && !mainContract(s)), city = list.filter(([s]) => s.city);
-  $('stageList').innerHTML = `<div class="lg-sec chapter">밤의 의뢰</div>` + miss.map(row).join('') + `<details class="lg-archive"><summary>현장 기록</summary><div class="archive-stages">`+tuts.map(row).join('')+`</div></details>` + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
-    + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
+  const miss=LEARNING_ROUTE.map(id=>STAGES.map((s,i)=>[s,i]).find(([s])=>s.id===id&&demoOk(s))).filter(Boolean);
+  $('stageList').innerHTML = `<div class="lg-sec chapter">밤의 의뢰</div>` + miss.map(row).join('');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const record=loadSkillTree();$('perkBox').hidden=true;$('btnSkillsLedger').textContent='기술 트리 · '+(skillBudget()-skillSpent(record))+'P'; }
   { const mb=$('modBox');mb.hidden=$('stageList').dataset.filter!=='missions'||!mainContracts().some(stageCleared);

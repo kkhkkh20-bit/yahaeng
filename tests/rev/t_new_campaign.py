@@ -27,7 +27,7 @@ async def main():
    await q.goto((R/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!window.__game')
    assert await q.locator('#btnNewCampaign').is_hidden()
    await q.evaluate(SEED);await q.reload();await q.wait_for_function('!!window.__game');await q.evaluate('document.fonts.ready')
-   assert await q.evaluate('__game.STAGES[__game.recommendedStage()].id')=='p1'
+   assert await q.evaluate('__game.STAGES[__game.recommendedStage()].id')=='e2'
    before=await q.evaluate(SNAPSHOT)
    await q.screenshot(path=str(O/(name+'-title.png')))
    await press('#btnNewCampaign');assert await q.locator('#newCampaignDialog').is_visible()
@@ -45,7 +45,7 @@ async def main():
    await press('#btnNewCampaign')
    await q.evaluate("""()=>{window.savedRemove=Storage.prototype.removeItem;let n=0;Storage.prototype.removeItem=function(k){if(++n===3)throw Error('storage unavailable');return window.savedRemove.call(this,k);}}""")
    await press('#btnNewCampaignConfirm');assert await q.locator('#newCampaignError').is_visible();assert await q.evaluate(SNAPSHOT)==before
-   assert await q.locator('#intro').is_visible();assert await q.evaluate('__game.STAGES[__game.recommendedStage()].id')=='p1'
+   assert await q.locator('#intro').is_visible();assert await q.evaluate('__game.STAGES[__game.recommendedStage()].id')=='e2'
    await q.evaluate('()=>{Storage.prototype.removeItem=window.savedRemove;}');await press('#btnNewCampaignConfirm')
    await q.wait_for_function('__game.STAGE.id==="tB" && !document.querySelector("#hud").hidden')
    assert await q.locator('#newCampaignDialog').is_hidden()

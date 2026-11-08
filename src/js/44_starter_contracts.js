@@ -92,7 +92,7 @@ function compoundGoal(){
  if(!STAGE.compound||S.goalManual||S.storyTrackManual)return null;
  const P=S.player,pending=S.guards.filter(g=>g.target&&!targetEliminated(g));
  const ko=pending.find(g=>g.unconscious&&flOf(g)===flOf(P));if(ko){const c=S.corpses.find(c=>c.g===ko);if(c&&dist(P.x,P.y,c.x,c.y)<150)return{x:c.x,y:c.y,fl:flOf(c),g:ko,text:'기절한 '+targetName(ko)+' 마무리',where:c.stashed?'은닉처에서 꺼낸 뒤 공격 1초 길게':P.carrying===c?'몸을 내려놓고 공격 1초 길게':'기절: 살아 있음 · 공격 1초 길게 살해',compoundCue:'target'};}
- const disguise=disguiseAcquisitionGoal();if(disguise&&pending.length)return{...disguise,compoundCue:'dress'};
+ const disguise=disguiseAcquisitionGoal();if(disguise&&pending.length&&!STAGE.compoundVertical)return{...disguise,compoundCue:'dress'};
  const body=compoundBodyGoal();if(body&&pending.length)return body;
  if(STAGE.compoundVertical&&pending.length){
   const bi=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE));
@@ -118,7 +118,14 @@ function compoundGoal(){
   if(l)return{...lampControl(l),fl:flOf(l),text:'벽 스위치로 조명 끄고 경비 분리',where:tutText('{행동} 불 끄기 · 켜러 오는 경비의 등 뒤를 노리기'),compoundCue:'light'};
  }
  const camera=S.cams.find(c=>camOn(c)&&flOf(c)===flOf(P));
- if(STAGE.compoundCamera&&camera)return{...cameraServicePoint(camera),fl:flOf(camera),text:'CCTV 뒤에서 전선 분리',where:'복장은 통행만 허용 · 살해와 서류 작업은 녹화된다 · 2초',compoundCue:'camera'};
+ if(STAGE.compoundCamera&&camera){
+  const route=STAGE.cameraApproach;
+  if(route&&!cameraCableReachable(camera)&&P.y>=(route.top[1]+1)*TILE){
+   const at=P.y>11*TILE?route.landing:P.x<route.side[0]*TILE?route.side:route.top;
+   return{x:tc(at[0]),y:tc(at[1]),fl:flOf(camera),text:'오른쪽 벽을 따라 카메라 뒤로 이동',where:'카메라 위쪽으로 돌아 전선에 접근',compoundCue:'camera'};
+  }
+  return{...cameraServicePoint(camera),fl:flOf(camera),text:'CCTV 뒤에서 전선 분리',where:'복장은 통행만 허용 · 살해와 서류 작업은 녹화된다 · 2초',compoundCue:'camera'};
+ }
  const target=pending.find(g=>flOf(g)===flOf(P))||pending[0];
  if(target){
   if(!P.z&&flOf(P)!==flOf(target)){const s=compoundStairGoal(flOf(target),STAGE.compoundVertical?1:0);if(s)return s;}

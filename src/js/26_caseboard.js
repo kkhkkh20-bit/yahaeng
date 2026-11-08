@@ -52,9 +52,9 @@ function renderCaseDetail(id){
  if(n.level>=2){panel.append(caseElement('p','',n.profile.appearance));if(n.profile.temperament)panel.append(caseElement('p','',n.profile.temperament));}
  panel.append(caseElement('p','case-area',n.level>=2?n.area:n.level?'정확한 신원과 거점은 다음 단서로 확인한다.':'하부 간부의 연락과 회수한 문서에서 보고선을 찾는다.'));
  if(n.level>=3){panel.append(caseElement('p','case-routine',n.routine));if(n.profile.habit)panel.append(caseElement('p','',n.profile.habit));}
- if(n.severed)panel.append(caseElement('p','','하부 연락선은 끊겼다. 직접 처치가 확인된 인물은 아니다.'));
+ if(n.severed)panel.append(caseElement('p','','관련 단서는 확보했지만, 이 인물을 직접 처치한 기록은 없다.'));
  const links=CASE_LINKS.filter(([a,b])=>[a,b].includes(id)&&nodes.find(n=>n.id===a).level&&nodes.find(n=>n.id===b).level);
- if(links.length){panel.append(caseElement('h4','','확인된 보고선'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
+ if(links.length){panel.append(caseElement('h4','','확인된 관계'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
  const evidence=caseAllSources().filter(s=>s.grants[id]||s.stage===n.stage&&s.targets?.includes(n.tag));
  panel.append(caseElement('h4','','수집한 단서'));
  if(!evidence.length)panel.append(caseElement('p','case-empty',n.level?'이번 의뢰에서 현장 증거를 확보한다.':'아직 연결된 증거가 없다.'));
@@ -63,9 +63,9 @@ function renderCaseDetail(id){
 function renderCaseBoard(){
  const nodes=caseView(),hierarchy=$('caseHierarchy');hierarchy.replaceChildren();
  const eliminated=nodes.filter(n=>n.eliminated).length,severed=nodes.filter(n=>n.severed).length;
- $('casePressure').textContent=nodes.find(n=>n.id==='chair').eliminated?'마지막 명령선까지 끊었다. 금성회의 지휘망이 무너졌다.':'간부를 처치하고 증거를 대조해, 그 위에서 명령하는 자를 찾는다.';
+ $('casePressure').textContent=nodes.find(n=>n.id==='chair').eliminated?'윤서경의 명령 원장까지 확보했다. 증인 거래의 증거가 모두 모였다.':'간부들의 기록을 대조해서, 누구 지시를 받았는지 찾는다.';
  $('caseProgress').textContent='처치 확인 '+eliminated+' / '+nodes.length+(severed?' · 보고선 차단 '+severed:'');
- const tiers=['운반·연락','중개·유흥','자금·운송','총책','최종 명령선'];
+ const tiers=['운반·연락','중개·유흥','자금·운송','총책','최종 책임자'];
  for(let tier=4;tier>=0;tier--){
   const members=nodes.filter(n=>n.tier===tier&&(tier<4||n.level));if(!members.length)continue;
   const group=caseElement('section','case-tier');group.append(caseElement('h3','',tiers[tier]));const row=caseElement('div','case-tier-row');

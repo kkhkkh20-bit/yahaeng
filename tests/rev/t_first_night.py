@@ -41,7 +41,7 @@ async def main():
   await q.wait_for_timeout(1450)
   assert await q.evaluate('!__game.S.over&&!__game.camOn(__game.S.cams[0])&&__game.S.stats.camUnplugged===1&&!__game.S.items[0].got'),'retry lost completed camera action'
   checks.append('2s cable work and completed camera progress survive a later retry')
-  await q.evaluate('''()=>{const G=__game;localStorage.setItem('yahaeng.ch',JSON.stringify({m2:{_clear:true}}));if(G.STAGES[G.recommendedStage()].id!=='m4')throw Error('Returning player forced through starters');localStorage.setItem('yahaeng.ch',JSON.stringify({p0:{_clear:true},p1:{_clear:true},p2:{_clear:true}}));if(G.STAGES[G.recommendedStage()].id!=='e1')throw Error('Starters do not lead to beginner episode');}''')
+  await q.evaluate('''()=>{const G=__game;localStorage.setItem('yahaeng.ch',JSON.stringify({m2:{_clear:true}}));if(G.STAGES[G.recommendedStage()].id!=='m4')throw Error('Returning player forced through starters');localStorage.setItem('yahaeng.ch',JSON.stringify({p0:{_clear:true},p1:{_clear:true},p2:{_clear:true}}));if(G.STAGES[G.recommendedStage()].id!=='e2')throw Error('Starters do not lead to beginner episode');}''')
   for width,height in [(1280,800),(390,844),(844,390),(320,568)]:
    z=await b.new_page(viewport={'width':width,'height':height},has_touch=width!=1280,is_mobile=width!=1280)
    z.on('pageerror',lambda e:errors.append(str(e)));await z.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0')

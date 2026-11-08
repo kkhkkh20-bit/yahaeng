@@ -26,9 +26,9 @@ async def main():
    G.saveCheckpoint();const budget=G.skillBudget();S.koNext=true;G.killGuard(g);G.syncCaseProgress(true);
    ok(!G.loadCaseFile().sources.includes('runner-down')&&!v('runner').eliminated,'KO granted a kill or lead');
    g.unconscious=false;S.corpses.find(c=>c.g===g).ko=false;G.syncCaseProgress(true);
-   ok(v('runner').eliminated&&v('contact').level===1,'kill did not reveal next contact');
+   ok(v('runner').eliminated&&v('broker').level===3,'kill did not reveal next contact');
    ok(G.skillBudget()===budget,'intel grants points');const stored=JSON.stringify(G.loadCaseFile());G.syncCaseProgress(true);ok(JSON.stringify(G.loadCaseFile())===stored,'duplicate clue');
-   ok(G.loadCheckpoint()&&!v('runner').eliminated&&!G.S.exitOpen,'retry resurrected a confirmed death flag or unlocked escape');ok(v('contact').level===1,'retry forgot player knowledge');
+   ok(G.loadCheckpoint()&&!v('runner').eliminated&&!G.S.exitOpen,'retry resurrected a confirmed death flag or unlocked escape');ok(v('broker').level===3,'retry forgot player knowledge');
    S=fresh('m2');S.items[0].got=true;G.syncCaseProgress(true);ok(v('collector').level===0,'one undeciphered ledger reveals a name');
    g=S.guards.find(g=>g.tag==='vip');G.killGuard(g);G.syncCaseProgress(true);ok(v('collector').level===1,'club kill did not reveal money branch');
    S.items[1].got=true;G.syncCaseProgress(true);ok(v('collector').level===3&&v('district').level===3,'cipher pair did not identify money bosses');
@@ -45,7 +45,7 @@ async def main():
    ok(!S.props.some(p=>p.k==='outfit')&&!S.guards.some(g=>g.fac==='B'),'finale has loose clothing or rival helpers');
    S.items[0].got=true;S.koNext=true;G.killGuard(g);G.checkObjective();G.syncCaseProgress(true);ok(!S.exitOpen&&!v('chair').eliminated,'unconscious mastermind completes game');
    g.unconscious=false;S.corpses.find(c=>c.g===g).ko=false;G.checkObjective();G.syncCaseProgress(true);ok(S.exitOpen&&v('chair').eliminated&&G.loadCaseFile().sources.includes('root-cut'),'final kill and original command ledger do not complete hunt');ok(!G.DLG.cur||G.DLG.cur.speaker.name!=='까마귀','dead handler speaks after final objective');
-   G.showEnd(true);ok(document.getElementById('endSub').textContent.includes('지휘망'),'final ending lacks payoff');
+   G.showEnd(true);ok(document.getElementById('endSub').textContent.includes('증인'),'final ending lacks payoff');
    ok(G.mainContracts().map(G.contractNumber).join()==='01,02,03,04,05,06','legacy numbers changed');
    return ['KO vs kill intel','cipher-gated identities','mastermind gated by kill plus ledger','checkpoint knowledge without phantom deaths','old clears continue at new finale without rewards','legacy skipped officers not marked dead','new finale upper-floor evidence and nonlethal distinction'];
   }''')
