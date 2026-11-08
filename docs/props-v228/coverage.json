@@ -1,0 +1,162 @@
+{
+  "episodes": [
+    {
+      "id": "tB",
+      "name": "닫힌 배차실",
+      "covered": 6,
+      "furniture": 12,
+      "styles": [
+        "floorSlate",
+        "floorCarpet",
+        "floorTile"
+      ],
+      "floors": 2,
+      "physicalSha256": "dd21a3831e2e72b3e5f7b2608c1a877faec8807a62f2548e9089823de8bdf1c1",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "p0",
+      "name": "닫힌 철문",
+      "covered": 3,
+      "furniture": 10,
+      "styles": [
+        "floorCarpet",
+        "floorIvory",
+        "floorSlate"
+      ],
+      "floors": 2,
+      "physicalSha256": "b648de5f2bf2f799992c7386463fafba7620f2d4b9c2c7ab74b8ce158e0a8f19",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "e2",
+      "name": "지붕 위의 장부",
+      "covered": 2,
+      "furniture": 16,
+      "styles": [
+        "floorSlate",
+        "floorCarpet",
+        "floorIvory"
+      ],
+      "floors": 3,
+      "physicalSha256": "d058a76466af4a186269ecb6abba06d736159dca4bd7826246909577dfe40fca",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "m2",
+      "name": "VIP",
+      "covered": 49,
+      "furniture": 126,
+      "styles": [
+        "floorCarpet",
+        "floorTile",
+        "floorWine",
+        "floorIvory",
+        "floorOak"
+      ],
+      "floors": 3,
+      "physicalSha256": "731de308c5d2c12304fdaba6f038f51042dc1402600dc1df6906596663f6e91e",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "m4",
+      "name": "돈줄",
+      "covered": 28,
+      "furniture": 67,
+      "styles": [
+        "floorSlate",
+        "floorCarpet",
+        "floorIvory",
+        "floorWine",
+        "floorOak",
+        "floorTile"
+      ],
+      "floors": 3,
+      "physicalSha256": "db56ffbea853744a1237c288093a4f04c93b86741bf7ab9a348e6a7296dc16a0",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "m6",
+      "name": "배신",
+      "covered": 31,
+      "furniture": 58,
+      "styles": [
+        "floorTile",
+        "floorSlate",
+        "floorOak"
+      ],
+      "floors": 2,
+      "physicalSha256": "266dfe35623f6b574dd28ac7d7d1c7bca258e06af824d95e827de0d3dd990f4f",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "m7",
+      "name": "새벽배송",
+      "covered": 18,
+      "furniture": 24,
+      "styles": [
+        "floorSlate",
+        "floorCarpet",
+        "floorIvory",
+        "floorOak"
+      ],
+      "floors": 2,
+      "physicalSha256": "355a9d66516cb17e8b9fbaa157a44e41c288da5fa17a501600a22ae2510541b1",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "m5",
+      "name": "검은 연락선",
+      "covered": 21,
+      "furniture": 71,
+      "styles": [
+        "floorSlate",
+        "floorIvory",
+        "floorTile",
+        "floorOak",
+        "floorCarpet"
+      ],
+      "floors": 2,
+      "physicalSha256": "38d514860510f7028d3022a428ffe3a33b7a12b3da03c8f2fd52f7980635ab98",
+      "physicsUnchanged": true
+    },
+    {
+      "id": "n1",
+      "name": "마지막 이름",
+      "covered": 9,
+      "furniture": 70,
+      "styles": [
+        "floorParquet",
+        "floorIvory",
+        "floorOak",
+        "floorSlate",
+        "floorTile"
+      ],
+      "floors": 2,
+      "physicalSha256": "e6f92a0a888ac777b34d7ae1e9ba2010087b80b33596783bb3d99b79503528b4",
+      "physicsUnchanged": true
+    }
+  ],
+  "atlasFrames": 60,
+  "switch": {
+    "trained": false,
+    "count": 9,
+    "off": true,
+    "before": [
+      null,
+      null,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "cabinet": {
+    "changes": true,
+    "aperture": 29.99070337506197
+  },
+  "errors": []
+}

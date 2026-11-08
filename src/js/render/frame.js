@@ -59,7 +59,6 @@ function draw() {
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
   drawHideFixtures();
-  if (!tactical && !P.z && !flOf(P) && !input.scan) drawBlockEdges(P, false);
   const lastStep=S.noises.filter(n=>n.src==='step'&&flOf(n)===flOf(P)).at(-1);
   for (const n of S.noises) {
     if(flOf(n)!==flOf(P)||(n.src==='step'&&n!==lastStep))continue;
@@ -165,7 +164,6 @@ function draw() {
     drawProps(VF);
     for (const c of S.corpses) if (!c.stashed && onFloor(c)) { ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c); ctx.globalAlpha = 1; }
     drawLoud(VF); drawCams(VF);
-    if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
     for(const l of S.lamps)if(flOf(l)===VF)drawLampTint(l);
@@ -272,7 +270,6 @@ function draw() {
   }
   drawOutdoorLampFixtures();
   if (exteriorClip) ctx.restore();
-  if (P.z && !P.wire && !P.jump && !P.trav && !tactical && !input.scan) drawBlockEdges(P, false);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
   drawHideFlowVisual();
   if(!P.vent)drawAccessFlow();
@@ -296,7 +293,6 @@ function draw() {
       if (!inWell && ventC) { ctx.globalAlpha = 0.42; drawBig(ctx, ventC, ...viewRect(60)); } ctx.globalAlpha = 1;
       if (inWell) for (const h of S.hides) if (h.type === 'well' && h !== P.hide && ugAt(h.tx, h.ty)) { ctx.strokeStyle = 'rgba(150,200,255,.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.arc(h.x, h.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
     } }
-  if (input.scan && running && !tactical && !flOf(P)) drawBlockEdges(P, true);
   PM('misc');
   if(DBG.ui){drawNeonSigns();ctx.setTransform(1,0,0,1,0,0);return;}
   drawGhosts();
