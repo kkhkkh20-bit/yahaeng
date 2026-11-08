@@ -15718,7 +15718,7 @@ function episodeRadioMessage(){
  }
  let text='화면에 나온 목표부터 확인해 봐. 가까이 가면 어떻게 할 수 있는지 보일 거야.';
  if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 이미 찍힌 건 남아. 관리 단말에서 기록을 지워야 해.';
- else if(goal.exit||S.exitOpen)text='할 일은 끝났어. 들어왔던 길로 내려가서 노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.';
+ else if(goal.exit||S.exitOpen)text='할 일은 끝났어. '+(flOf(P)?'계단으로 내려가서 ':'')+'노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.';
  else if(STAGE.compound&&goal.compoundCue){
   const who=goal.g?targetName(goal.g).split(' · ')[0]:'표적';
   text=({dress:'혼자 있는 경비가 보이지? 기절시킨 다음 그 옷으로 갈아입으면 들어가기 편할 거야.',

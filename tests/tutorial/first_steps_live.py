@@ -163,7 +163,7 @@ async def main(args):
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
                 await continue_episode(page)
                 await page.wait_for_function('__game.STAGE.id==="p0"')
-                # The five cumulative jobs have their own ordinary-RAF PC/touch journey.
+                # The public compound jobs have their own ordinary-RAF PC/touch journey.
                 assert await page.locator('#btnBrGo').is_visible()
                 assert not errors,errors
                 passed=True
