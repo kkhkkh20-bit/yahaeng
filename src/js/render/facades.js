@@ -134,15 +134,19 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.fillStyle='#39494f';ctx.fillRect(x,y,w,h);
- for(let px=0;px<w;px+=8){ctx.fillStyle=px%24===0?'#657078':'#46575c';ctx.fillRect(x+px,y,2,h);}
+ if(!paintFreeCityWall(ctx,b,x,y,w,h))for(let px=0;px<w;px+=8){ctx.fillStyle=px%24===0?'#657078':'#46575c';ctx.fillRect(x+px,y,2,h);}
+ const cityOpen=freeCityBuilding(b)&&freeCityReady()&&(freeCityFront(b).windows.length||freeCityFront(b).doors.length);
+ if(!cityOpen){
  const gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62),gateH=y+h-gateY;
  ctx.fillStyle='#17232b';ctx.fillRect(gateX-5,gateY-5,gateW+10,gateH+5);ctx.fillStyle='#4b585f';ctx.fillRect(gateX,gateY,gateW,gateH);
  for(let py=2;py<gateH;py+=6){ctx.fillStyle='#293940';ctx.fillRect(gateX,gateY+py,gateW,2);ctx.fillStyle='#647078';ctx.fillRect(gateX,gateY+py+2,gateW,1);}
  ctx.fillStyle='#8c8b78';ctx.fillRect(gateX+gateW/2-11,y+h-13,22,3);
+ }
  for(let i=0;i<10;i++){const px=(i*97+b.x0*31)%(w-12);ctx.fillStyle='rgba(112,83,61,.3)';ctx.fillRect(x+px,y+h-9-(i%3)*4,4,5+(i%4)*2);}
- ctx.fillStyle='#192930';ctx.fillRect(x+18,y+9,132,27);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+9.5,132,27);
- ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(15,700);ctx.fillText(b.name||'물류 창고',x+27,y+28,114);
- ctx.fillStyle='#a1b4b2';ctx.fillRect(x+w-55,y+14,27,16);ctx.fillStyle='#243b46';ctx.fillRect(x+w-52,y+17,21,10);ctx.fillStyle='#8b9b98';ctx.fillRect(x+w-43,y+15,2,14);
+ ctx.fillStyle='#192930';ctx.fillRect(x+18,y+3,132,23);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+3.5,132,23);
+ ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(15,700);ctx.fillText(b.name||'물류 창고',x+27,y+21,114);
+ if(!freeCityBuilding(b)){ctx.fillStyle='#a1b4b2';ctx.fillRect(x+w-55,y+14,27,16);ctx.fillStyle='#243b46';ctx.fillRect(x+w-52,y+17,21,10);ctx.fillStyle='#8b9b98';ctx.fillRect(x+w-43,y+15,2,14);}
+
  drawFreeDepotDetails(ctx,b,x,y,w,h);
  for(let tx=b.x0;tx<=b.x1;tx++){const light=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.62*(1-clamp(light,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
  ctx.fillStyle='#18272f';ctx.fillRect(x,y,w,5);ctx.fillRect(x,y+h-4,w,4);ctx.restore();

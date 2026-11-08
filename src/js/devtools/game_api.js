@@ -2,6 +2,7 @@
 function installGameApi() {
   window.__game = {
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
+    drawWindowSight,drawPlansFaint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,

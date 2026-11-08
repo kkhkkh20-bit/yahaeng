@@ -15,13 +15,9 @@ function drawWindowSight(P, openB) {
     if (!inside) return;
     b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
     // Window sight reveals the actual visible room; it does not overlay an entire floor plan.
-    if(!quarterClub(b)){
-    // 도면: 건물 평면을 흐리게 (사람은 안 보임)
-    ctx.save(); ctx.globalAlpha = 0.5; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
-    ctx.strokeStyle = 'rgba(160,200,235,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]); ctx.restore();
-    }
+    // Keep the exterior intact; only the actual sight polygon below reveals a room.
     // 시선이 닿는 곳: 또렷하게 + 사람까지
-    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, bh - 2 * TILE); ctx.clip(); path(); ctx.clip();
+    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, Math.max(0,Math.min(bh-2*TILE,(b.roofC?.rh??bh)-TILE))); ctx.clip(); path(); ctx.clip();
     drawBig(ctx, mapC, bx, by, bw, bh);
     for (const c of S.corpses) if (!c.stashed && !c.z && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }

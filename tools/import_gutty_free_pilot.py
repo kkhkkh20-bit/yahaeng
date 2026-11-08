@@ -10,8 +10,8 @@ source=Path(sys.argv[1]);digest=hashlib.sha256(source.read_bytes()).hexdigest()
 if digest!='2b57f857269a1270884b702ba3fbf15a2105994587222953f6bd93bc09a889b6':raise SystemExit('Unverified source: obtain the official Free v1 tilemap')
 sheet=Image.open(source).convert('RGBA')
 if sheet.size!=(1920,768):raise SystemExit('Expected the official Japanese City Free v1 tilemap')
-frames={'asphalt':(992,128,1024,160),'pavers':(992,352,1016,376),'awning':(480,448,512,466),'window':(611,167,637,183),'vending':(421,70,443,102)}
-atlas=Image.new('RGBA',(256,64));meta={}
+frames={'asphalt':(992,128,1024,160),'pavers':(992,352,1016,376),'awning':(480,448,512,466),'window':(611,167,637,183),'vending':(421,70,443,102),'roofTile':(40,208,72,240),'wallPanel':(34,292,58,312)}
+atlas=Image.new('RGBA',(320,64));meta={}
 for i,(name,rect) in enumerate(frames.items()):
  tile=sheet.crop(rect)
  if not tile.getbbox():raise SystemExit('Empty selection: '+name)
