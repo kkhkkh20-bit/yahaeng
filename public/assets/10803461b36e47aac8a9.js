@@ -1835,6 +1835,20 @@ OFFICE_CAMPAIGN.m5.furniture=[
  {fl:1,t:'desk2',x:20,y:5,art:'deskGlass'}
 ];
 for(const[id,art]of Object.entries(OFFICE_CAMPAIGN))campaignStage(id).officeArt=art;
+// Reference compositions: an operations board, a recording bank and a display
+// shelf identify each workplace. They occupy existing solid wall spans only.
+const OFFICE_WALL_GROUPS={
+ tB:[{b:1,fl:0,u:.64,art:'monitorRack',w:88},{b:1,fl:1,u:.5,art:'board',w:84}],
+ p0:[{b:0,fl:0,u:.7,art:'monitorRack',w:88},{b:0,fl:1,u:.3,art:'displayWood',w:42},{b:0,fl:1,u:.5,art:'board',w:78}],
+ e2:[{b:1,fl:0,u:.55,art:'board',w:84},{b:1,fl:1,u:.66,art:'monitorRackBlue',w:88},{b:1,fl:2,u:.68,art:'displayGlass',w:42}],
+ m2:[{b:0,fl:1,u:.35,art:'board',w:84},{b:1,fl:1,u:.65,art:'displayWood',w:42}],
+ m4:[{b:2,fl:0,u:.65,art:'monitorRack',w:80},{b:3,fl:1,u:.3,art:'displayWood',w:42}],
+ m6:[{b:0,fl:1,u:.4,art:'board',w:84},{b:1,fl:0,u:.7,art:'monitorRackBlue',w:88}],
+ m7:[{b:1,fl:1,u:.3,art:'board',w:78},{b:0,fl:0,u:.3,art:'board',w:84}],
+ m5:[{b:0,fl:0,u:.65,art:'monitorRackBlue',w:88},{b:0,fl:1,u:.38,art:'displayWood',w:42}],
+ n1:[{b:0,fl:1,u:.3,art:'displayWood',w:42},{b:4,fl:0,u:.5,art:'board',w:70}]
+};
+for(const[id,decor]of Object.entries(OFFICE_WALL_GROUPS))OFFICE_CAMPAIGN[id].decor.push(...decor);
 // Ground paint gives the first depot a readable loading area without adding
 // decorative crates or chairs that the player could incorrectly walk through.
 campaignStage('tB').dressing.push(
@@ -2911,7 +2925,7 @@ function drawCityRoofProps(b){
     if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
    }else if(p.t==='tank'){
     q.fillStyle='#101b29aa';q.fillRect(x+4,y+8,44,42);q.fillStyle='#72808b';q.fillRect(x+2,y-7,42,48);q.fillStyle='#3d515f';q.fillRect(x+5,y-4,36,38);freeCityDraw(q,'roofUnit',x+7,y,1);q.fillStyle='#a2aaa7';q.fillRect(x+2,y-7,42,3);
-   }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,'roofUnit',x+8,y+4,1);}
+   }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,p.t==='vent'&&freeCityArt.frames.roofVent?'roofVent':'roofUnit',x,y-8,1.5);}
    else if(p.t==='plant'){for(let k=0;k<4;k++)freeCityDraw(q,'roofPlanter',x+k*TILE+8,y+8,2);}
    else if(p.t==='solar'){q.fillStyle='#213243';q.fillRect(x,y,3*TILE,2*TILE);q.strokeStyle='#5b7481';q.lineWidth=2;for(let k=0;k<=3;k++)q.strokeRect(x+k*TILE,y,TILE,2*TILE);q.beginPath();q.moveTo(x,y+TILE);q.lineTo(x+3*TILE,y+TILE);q.stroke();}
   }
@@ -3073,7 +3087,11 @@ function officeWall(c,tx,ty){
  const bi=bldAt(tx,ty);if(bi<0||BLD[bi].vacant)return false;
  const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,south=!['#','N','V'].includes(G[ty+1]?.[tx]||'V');
  c.fillStyle=p.ink;c.fillRect(x,y,TILE,TILE);
- if(south){officeBlit(c,p.wall,x,y+12,TILE,TILE-12);c.fillStyle='#abb2b0';c.fillRect(x,y+10,TILE,2);c.fillStyle=p.accent;c.fillRect(x,y+TILE-5,TILE,3);}
+ if(south){
+  // Clip a square source module; stretching 32px to 48x36 distorts its pixels.
+  c.save();c.beginPath();c.rect(x,y+12,TILE,TILE-12);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
+  c.fillStyle='#849097';c.fillRect(x,y+10,TILE,2);c.fillStyle='#35444e';c.fillRect(x,y+TILE-4,TILE,3);
+ }
  else{c.fillStyle='#536068';c.fillRect(x+3,y,2,TILE);c.fillStyle='#73818a';c.fillRect(x+5,y,1,TILE);c.fillStyle='#10191fa0';c.fillRect(x+TILE-5,y,5,TILE);}
  return true;
 }
@@ -3091,13 +3109,19 @@ function officeFurnKey(f){
   return f.t==='desk'?'deskComputer':((f.x+f.y)%3===0?'deskFiles':'deskGlass');
  }
  if(f.t==='table')return f.w>1?'tableGlass':'tableRound';
- if(f.t==='chair'||f.t==='chairD')return([OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?['chairRed','chairRedE','chairRedBack','chairRedW']:['chairBlue','chairBlueE','chairBlueBack','chairBlueW'])[r];
- if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairRed':'chairBlue';
+ if(f.t==='chair'||f.t==='chairD'){
+  const executive=style===OFFICE_STYLES.executive&&FURN.some(a=>flOf(a)===flOf(f)&&(a.t==='desk'||a.t==='desk2')&&a.x===f.x&&Math.abs(a.y-f.y)===1&&officeFurnKey(a)==='deskExecutive');
+  const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
+  return prefix+['','E','Back','W'][r];
+ }
+ if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
  return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue',pot:'tableRound'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
- const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18),scale=Math.min(maxW/r[2],maxH/r[3]);
+ const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18);
+ const chair=f.t==='chair'||f.t==='chairD'||f.t==='sofa'||f.t==='sofaV';
+ const scale=Math.min(chair?(key.startsWith('chairRed')?1:1.5):1.5,maxW/r[2],maxH/r[3]);
  const w=Math.round(r[2]*scale),h=Math.round(r[3]*scale);
  return{key,x:f.x*TILE+(f.w*TILE-w)/2,y:(f.y+f.h)*TILE-h-3,w,h};
 }
@@ -3106,7 +3130,8 @@ function drawOfficeFurn(c,f,shadow){
  const b=officeFurnBounds(f);if(!b)return false;
  c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+3,(f.y+f.h)*TILE-5,f.w*TILE*.42,7,0,0,TAU);c.fill();}
  if(f.t==='sofa'||f.t==='sofaV'){
-  const count=Math.max(f.w,f.h);for(let i=0;i<count;i++)officeBlit(c,b.key,f.x*TILE+4+(f.w>1?i*TILE:0),f.y*TILE-10+(f.h>1?i*TILE:0),TILE-8,TILE+6);
+  const count=Math.max(f.w,f.h),r=officeFrame(b.key),s=Math.min(b.key.startsWith('chairRed')?1:1.5,(TILE-8)/r[2],(TILE+6)/r[3]);
+  for(let i=0;i<count;i++){const w=r[2]*s,h=r[3]*s;officeBlit(c,b.key,f.x*TILE+(TILE-w)/2+(f.w>1?i*TILE:0),(f.y+1)*TILE-h-3+(f.h>1?i*TILE:0),w,h);}
  }else officeBlit(c,b.key,b.x,b.y,b.w,b.h);
  c.restore();return true;
 }
@@ -3119,17 +3144,31 @@ function officeSurfacePoint(o){
  const x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
  return{x,y:b.y+b.h*.42};
 }
-function officeWallDecor(c,fl,x0,y0,x1,y1){
- if(!officeReady())return;
+function officeDecorLayout(fl){
+ if(!officeReady())return [];
+ const placed=[];
  for(const d of STAGE.officeArt.decor||[]){
   if(d.fl!==fl)continue;
-  const b=BLD[d.b];if(!b||b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
-  const tx=Math.round(b.x0+1+(b.x1-b.x0-2)*d.u),ty=b.y0;
-  // A board belongs on a real wall, never across a window, door or staircase.
-  if(G[ty]?.[tx]!=='#'||G[ty+1]?.[tx]==='#')continue;
-  const r=officeFrame(d.art);if(!r)continue;
-  const w=Math.min(d.w||64,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2];
-  officeBlit(c,d.art,tc(tx)-w/2,ty*TILE+TILE-h-3,w,h);
+  const b=BLD[d.b],r=officeFrame(d.art);if(!b||!r)continue;
+  const w=Math.min(d.w||64,r[2]*1.5,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2],y=b.y0*TILE+TILE-h-3;
+  const target=Math.round(b.x0+1+(b.x1-b.x0-2)*d.u),candidates=[];
+  for(let tx=b.x0+1;tx<b.x1;tx++)candidates.push(tx);
+  candidates.sort((a,b)=>Math.abs(a-target)-Math.abs(b-target));
+  for(const tx of candidates){
+   const x=tc(tx)-w/2,right=x+w;let clear=x>=(b.x0+1)*TILE&&right<=b.x1*TILE;
+   for(let xx=Math.floor(x/TILE);xx<=Math.floor((right-1)/TILE);xx++)if(G[b.y0]?.[xx]!=='#'||G[b.y0+1]?.[xx]==='#')clear=false;
+   if(!clear||placed.some(a=>a.b===d.b&&a.x<right+8&&a.x+a.w>x-8))continue;
+   if(S.lamps.some(l=>flOf(l)===fl&&l.control&&l.control.ty===b.y0&&tc(l.control.tx)>x-12&&tc(l.control.tx)<right+12))continue;
+   if(FURN.some(f=>{if(flOf(f)!==fl||f.y>b.y0+1)return false;const a=officeFurnBounds(f);return a&&a.x<right&&a.x+a.w>x&&a.y<y+h&&a.y+a.h>y;}))continue;
+   placed.push({...d,x,y,w,h});break;
+  }
+ }
+ return placed;
+}
+function officeWallDecor(c,fl,x0,y0,x1,y1){
+ for(const d of officeDecorLayout(fl)){
+  const b=BLD[d.b];if(b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
+  officeBlit(c,d.art,d.x,d.y,d.w,d.h);
  }
 }
 function drawOfficeLamp(l,c=ctx){
@@ -3246,9 +3285,9 @@ function drawAwareness(P) {
 
 const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
-const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
+const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#54846f', '#343b49', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
-  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#313b46', '#34404e', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
+  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#495663', '#394356', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
   old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
   civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
@@ -3264,6 +3303,9 @@ const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
 const PR_CH = 16;
+// Cloth uses a handful of flat value steps like the purchased city sprites.
+// Alpha, silhouette, skin and every baked hand/foot contact remain untouched.
+const prClothShade=(s,cls)=>cls<2?s:Math.max(.2,Math.min(1.2,Math.round(s*5)/5));
 let prBase = null;  // { img, w, h, parts: [조각별 분류 캐시] }
 if (PR) { prImg.onload = () => { prBase = { img: prImg, w: prImg.width, h: prImg.height, parts: [] }; }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
@@ -3321,7 +3363,7 @@ function prPaint(base, pal) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   const id = x.createImageData(w, h), out = id.data;
   for (let i = 0; i < pixels.length; i++) {
-    const j = pixels[i] * 4, k = i * 4, wt = wgt[i], p = P4[cls[i]], s = shd[i];
+    const j = pixels[i] * 4, k = i * 4, wt = wgt[i], p = P4[cls[i]], s = prClothShade(shd[i],cls[i]);
     for (let ch = 0; ch < 3; ch++) out[j + ch] = wt ? p[ch] * s * wt + src[k + ch] * (1 - wt) : src[k + ch];
     out[j + 3] = src[k + 3];
   }
@@ -3368,7 +3410,7 @@ function prPart(sh, ci) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   const id = x.createImageData(w, h), o = id.data; o.set(src);
   for (let i = 0, n = w * h; i < n; i++) {
-    const w8 = wgt[i]; if (!w8) continue; const wt = w8 / 255, p = P4[cls[i]], s = shd[i] / 180 * wt, j = i * 4, r = 1 - wt;
+    const w8 = wgt[i]; if (!w8) continue; const wt = w8 / 255, p = P4[cls[i]], s = prClothShade(shd[i]/180,cls[i])*wt, j = i * 4, r = 1 - wt;
     o[j] = p[0] * s + src[j] * r; o[j + 1] = p[1] * s + src[j + 1] * r; o[j + 2] = p[2] * s + src[j + 2] * r;
   }
   x.putImageData(id, 0, 0);
@@ -5926,7 +5968,9 @@ function drawEpisodeDressing(c,fl,x0,y0,x1,y1){
    for(const [a,b]of [[px,py],[px+w-14,py],[px,py+h-4],[px+w-14,py+h-4]]){c.fillStyle='rgba(190,165,105,.48)';c.fillRect(a,b,14,4);}
    c.fillStyle='rgba(210,197,157,.32)';c.font=uiFont(14);c.textAlign='center';c.fillText(d.text||'',px+w/2,py+h-9);
   }else if(d.kind==='board'){
-   if(officeReady()){officeBlit(c,'board',px,py,w,h);c.restore();continue;}
+   // Purchased rooms place these through the wall composition pass. Keeping
+   // this older stretched board as well creates two overlapping boards.
+   if(officeReady()){c.restore();continue;}
    c.fillStyle='#111b23';c.fillRect(px+2,py+3,w,h);c.fillStyle='#59656a';c.fillRect(px,py,w,h);c.fillStyle='#23323a';c.fillRect(px+3,py+3,w-6,h-6);
    c.fillStyle='#bcbaad';c.font=uiFont(10);c.textAlign='left';c.fillText(d.text||'배차 현황',px+7,py+13);
    for(let r=0;r<2;r++)for(let k=0;k<5;k++){c.fillStyle=k===0?'#ad8e61':'#738382';c.fillRect(px+8+k*(w-16)/5,py+19+r*7,(w-26)/5,3);}
@@ -17690,7 +17734,7 @@ function installGameApi() {
     drawPlansFaint,drawLampTint,goalMarkerVisible,subduedAction,feedbackEvent,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
-    officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,get officeMeta(){return officeArt;},
+    officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},

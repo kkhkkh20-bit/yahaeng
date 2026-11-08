@@ -157,82 +157,109 @@
       "rect": [
         220,
         0,
-        29,
+        32,
         48
       ],
-      "sourceRect": [
-        1504,
-        11,
-        1533,
-        59
-      ]
+      "sourceRects": [
+        [
+          1520,
+          192,
+          1552,
+          224
+        ],
+        [
+          1504,
+          160,
+          1568,
+          192
+        ]
+      ],
+      "assembly": "actual laptop desktop and glass table; no embedded chair"
     },
     "deskGlass": {
       "rect": [
-        253,
+        256,
         0,
         64,
-        44
+        48
       ],
       "sourceRects": [
         [
-          1600,
-          8,
-          1629,
-          34
+          1504,
+          192,
+          1568,
+          224
+        ],
+        [
+          1504,
+          160,
+          1568,
+          192
+        ],
+        [
+          1472,
+          32,
+          1504,
+          64
         ]
       ],
-      "assembly": "source glass table and monitor; separate chair excluded"
+      "assembly": "actual laptop desktop and glass table; no embedded chair"
     },
     "deskFiles": {
       "rect": [
-        321,
+        324,
         0,
         64,
-        44
+        48
       ],
       "sourceRects": [
         [
-          1600,
-          8,
-          1629,
-          34
+          1504,
+          192,
+          1568,
+          224
         ],
         [
-          1632,
-          16,
-          1661,
-          32
+          1504,
+          160,
+          1568,
+          192
+        ],
+        [
+          1568,
+          64,
+          1592,
+          86
         ]
       ],
-      "assembly": "source glass table and monitor; separate chair excluded"
+      "assembly": "actual laptop desktop and glass table; no embedded chair"
     },
     "deskLaptop": {
       "rect": [
-        389,
+        392,
         0,
         64,
-        44
+        48
       ],
       "sourceRects": [
         [
-          1600,
-          8,
-          1629,
-          34
+          1504,
+          192,
+          1568,
+          224
         ],
         [
-          1632,
-          16,
-          1661,
-          32
+          1504,
+          160,
+          1568,
+          192
         ]
       ],
-      "assembly": "source glass table and monitor; separate chair excluded"
+      "assembly": "actual laptop desktop and glass table; no embedded chair"
     },
     "deskWood": {
       "rect": [
-        457,
+        460,
         0,
         43,
         31
@@ -246,7 +273,7 @@
     },
     "deskExecutive": {
       "rect": [
-        504,
+        507,
         0,
         43,
         44
@@ -260,7 +287,7 @@
     },
     "deskSideE": {
       "rect": [
-        551,
+        554,
         0,
         29,
         48
@@ -274,7 +301,7 @@
     },
     "deskSideW": {
       "rect": [
-        584,
+        587,
         0,
         29,
         48
@@ -288,7 +315,7 @@
     },
     "tableGlass": {
       "rect": [
-        617,
+        620,
         0,
         64,
         24
@@ -302,7 +329,7 @@
     },
     "tableRound": {
       "rect": [
-        685,
+        688,
         0,
         23,
         19
@@ -316,7 +343,7 @@
     },
     "chairRed": {
       "rect": [
-        712,
+        715,
         0,
         32,
         51
@@ -330,7 +357,7 @@
     },
     "chairRedE": {
       "rect": [
-        748,
+        751,
         0,
         30,
         47
@@ -344,7 +371,7 @@
     },
     "chairRedW": {
       "rect": [
-        782,
+        785,
         0,
         30,
         47
@@ -358,7 +385,7 @@
     },
     "chairRedBack": {
       "rect": [
-        816,
+        819,
         0,
         32,
         40
@@ -372,7 +399,7 @@
     },
     "chairBlue": {
       "rect": [
-        852,
+        855,
         0,
         17,
         27
@@ -386,7 +413,7 @@
     },
     "chairBlueE": {
       "rect": [
-        873,
+        876,
         0,
         16,
         26
@@ -400,7 +427,7 @@
     },
     "chairBlueW": {
       "rect": [
-        893,
+        896,
         0,
         16,
         26
@@ -414,7 +441,7 @@
     },
     "chairBlueBack": {
       "rect": [
-        913,
+        916,
         0,
         17,
         23
@@ -428,7 +455,7 @@
     },
     "cabinetBlue": {
       "rect": [
-        934,
+        937,
         0,
         19,
         49
@@ -442,7 +469,7 @@
     },
     "cabinetWood": {
       "rect": [
-        957,
+        960,
         0,
         19,
         49
@@ -456,7 +483,7 @@
     },
     "cabinetRed": {
       "rect": [
-        980,
+        983,
         0,
         19,
         49
@@ -860,10 +887,50 @@
         359
       ]
     },
-    "floorSlate": {
+    "chairLounge": {
       "rect": [
         998,
         55,
+        17,
+        27
+      ],
+      "derivedFrom": "chairBlue",
+      "assembly": "original compact chair, muted burgundy fabric ramp"
+    },
+    "chairLoungeE": {
+      "rect": [
+        0,
+        111,
+        16,
+        26
+      ],
+      "derivedFrom": "chairBlueE",
+      "assembly": "original compact chair, muted burgundy fabric ramp"
+    },
+    "chairLoungeW": {
+      "rect": [
+        20,
+        111,
+        16,
+        26
+      ],
+      "derivedFrom": "chairBlueW",
+      "assembly": "original compact chair, muted burgundy fabric ramp"
+    },
+    "chairLoungeBack": {
+      "rect": [
+        40,
+        111,
+        17,
+        23
+      ],
+      "derivedFrom": "chairBlueBack",
+      "assembly": "original compact chair, muted burgundy fabric ramp"
+    },
+    "floorSlate": {
+      "rect": [
+        61,
+        111,
         16,
         16
       ],
@@ -876,7 +943,7 @@
     },
     "floorWine": {
       "rect": [
-        0,
+        81,
         111,
         32,
         32
@@ -890,7 +957,7 @@
     },
     "floorIvory": {
       "rect": [
-        36,
+        117,
         111,
         16,
         16
@@ -904,7 +971,7 @@
     },
     "windowFrame": {
       "rect": [
-        56,
+        137,
         111,
         32,
         16

@@ -65,7 +65,9 @@ function drawEpisodeDressing(c,fl,x0,y0,x1,y1){
    for(const [a,b]of [[px,py],[px+w-14,py],[px,py+h-4],[px+w-14,py+h-4]]){c.fillStyle='rgba(190,165,105,.48)';c.fillRect(a,b,14,4);}
    c.fillStyle='rgba(210,197,157,.32)';c.font=uiFont(14);c.textAlign='center';c.fillText(d.text||'',px+w/2,py+h-9);
   }else if(d.kind==='board'){
-   if(officeReady()){officeBlit(c,'board',px,py,w,h);c.restore();continue;}
+   // Purchased rooms place these through the wall composition pass. Keeping
+   // this older stretched board as well creates two overlapping boards.
+   if(officeReady()){c.restore();continue;}
    c.fillStyle='#111b23';c.fillRect(px+2,py+3,w,h);c.fillStyle='#59656a';c.fillRect(px,py,w,h);c.fillStyle='#23323a';c.fillRect(px+3,py+3,w-6,h-6);
    c.fillStyle='#bcbaad';c.font=uiFont(10);c.textAlign='left';c.fillText(d.text||'배차 현황',px+7,py+13);
    for(let r=0;r<2;r++)for(let k=0;k<5;k++){c.fillStyle=k===0?'#ad8e61':'#738382';c.fillRect(px+8+k*(w-16)/5,py+19+r*7,(w-26)/5,3);}

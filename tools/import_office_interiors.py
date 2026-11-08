@@ -88,15 +88,35 @@ for name,art,meta in parts:
     finished.append((name,art,meta))
 parts=finished
 
-# Office desks in the source include a chair. Compose the clear glass table
-# with its original monitor/phone so the game's separate, solid chair is unique.
-for name,with_phone in [('deskGlass',False),('deskFiles',True),('deskLaptop',True)]:
-    table=next(a for k,a,_ in parts if k=='tableGlass')
-    desk=Image.new('RGBA',(64,44));desk.alpha_composite(table,(0,44-table.height))
-    monitor=(1600,8,1629,34);desk.alpha_composite(sheet.crop(monitor),(32,0))
-    phone=(1632,16,1661,32)
-    if with_phone:desk.alpha_composite(sheet.crop(phone),(2,10))
-    parts=[(k,desk,{'sourceRects':[monitor,phone]if with_phone else[monitor],'assembly':'source glass table and monitor; separate chair excluded'})if k==name else(k,a,m)for k,a,m in parts]
+# The original deskComputer crop was a tall instrument cabinet. Use the actual
+# laptop workstation's upper half, excluding its built-in chair. Source pixels
+# stay at one density: narrow desks splice table ends rather than squash them.
+table=next(a for k,a,_ in parts if k=='tableGlass')
+for name in ['deskComputer','deskGlass','deskFiles','deskLaptop']:
+    narrow=name=='deskComputer';w=32 if narrow else 64
+    base=table.copy()
+    if narrow:
+        base=Image.new('RGBA',(32,table.height))
+        base.alpha_composite(table.crop((0,0,16,table.height)),(0,0))
+        base.alpha_composite(table.crop((48,0,64,table.height)),(16,0))
+    desk=Image.new('RGBA',(w,48));desk.alpha_composite(base,(0,48-base.height))
+    top=(1520,192,1552,224)if narrow else(1504,192,1568,224)
+    desk.alpha_composite(sheet.crop(top),(0,0));rects=[top,[1504,160,1568,192]]
+    if name=='deskFiles':
+        papers=(1568,64,1592,86);desk.alpha_composite(sheet.crop(papers),(1,12));rects.append(papers)
+    if name=='deskGlass':
+        phone=next(a for k,a,_ in parts if k=='phone')
+        desk.alpha_composite(phone,(34,9));rects.append([1472,32,1504,64])
+    parts=[(k,desk,{'sourceRects':rects,'assembly':'actual laptop desktop and glass table; no embedded chair'})if k==name else(k,a,m)for k,a,m in parts]
+
+# Reception seats share the original compact office chair silhouette. Burgundy
+# upholstery replaces the blue fabric only; frame, wheels and pixel size survive.
+for suffix in ['', 'E', 'W', 'Back']:
+    source='chairBlue'+suffix
+    seat=next(a for k,a,_ in parts if k==source).copy()
+    ramp=[(47,43,56),(68,52,63),(96,64,73),(126,86,90),(165,122,117)]
+    seat.putdata([(*ramp[min(4,int((p[0]+p[1]+p[2])/3)//40)],p[3])if p[2]>p[0]*1.15 else p for p in seat.get_flattened_data()])
+    parts.append(('chairLounge'+suffix,seat,{'derivedFrom':source,'assembly':'original compact chair, muted burgundy fabric ramp'}))
 
 # Industrial slate shares the matte tile, never the striped grille. The night
 # overlay remains dynamic, never baked into each room.
