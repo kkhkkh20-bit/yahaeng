@@ -1,35 +1,3 @@
-function drawWindowSight(P, openB) {
-  if (P.z || P.wire || P.jump || P.trav || P.hide || P.vent || P.under || flOf(P)) return;
-  const R = 430, WC = drawWindowSight.c || (drawWindowSight.c = {});
-  if (!(WC.S === S && Math.abs(WC.x - P.x) < 3 && Math.abs(WC.y - P.y) < 3 && S.t - WC.t < 0.3 && S.t >= WC.t)) {  // 시선 다각형은 제자리면 다시 쏘지 않는다
-    const poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU, d = castRay(P.x, P.y, a, R); poly.push(P.x + Math.cos(a) * d, P.y + Math.sin(a) * d); }
-    Object.assign(WC, { S, x: P.x, y: P.y, t: S.t, poly }); }
-  const poly = WC.poly;
-  const path = () => { ctx.beginPath(); for (let i = 0; i < poly.length; i += 2) i ? ctx.lineTo(poly[i], poly[i + 1]) : ctx.moveTo(poly[i], poly[i + 1]); ctx.closePath(); };
-  BLD.forEach((b, bi) => {
-    if (bi === openB || b.piloti || b.vacant || !quarterWindowView(P,b)) return;
-    const bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
-    if (P.x < bx - R || P.x > bx + bw + R || P.y < by - R || P.y > by + bh + R) return;
-    // 바깥벽 안쪽으로 시선이 들어가는지 (안쪽 칸 하나라도)
-    let inside = false; for (let i = 0; i < poly.length && !inside; i += 2) { const tx = Math.floor((poly[i] - Math.cos(i / poly.length * TAU) * 2) / TILE), ty = Math.floor((poly[i + 1] - Math.sin(i / poly.length * TAU) * 2) / TILE); if (tx > b.x0 && tx < b.x1 && ty > b.y0 && ty < b.y1) inside = true; }
-    if (!inside) return;
-    b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
-    // Window sight reveals the actual visible room; it does not overlay an entire floor plan.
-    // Keep the exterior intact; only the actual sight polygon below reveals a room.
-    // 시선이 닿는 곳: 또렷하게 + 사람까지
-    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, Math.max(0,Math.min(bh-2*TILE,(b.roofC?.rh??bh)-TILE))); ctx.clip(); path(); ctx.clip();
-    drawBig(ctx, mapC, bx, by, bw, bh);
-    for (const c of S.corpses) if (!c.stashed && !c.z && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
-    for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawLootItem(it);
-    ctx.fillStyle = 'rgba(255,230,170,.06)'; ctx.fillRect(bx, by, bw, bh);
-    // 시선 경계는 선 대신 부드러운 그늘: 안쪽으로 번지는 흐린 띠 + 멀어질수록 서서히 어둡게 (도면 바탕과 자연스럽게 이어진다)
-    path(); ctx.strokeStyle = 'rgba(16,28,44,.22)'; for (const lw of [36, 24, 12]) { ctx.lineWidth = lw; ctx.stroke(); }  // 흐림 필터(휴대폰에서 매우 무겁다) 대신 겹친 띠
-    const rg = ctx.createRadialGradient(P.x, P.y, R * 0.3, P.x, P.y, R); rg.addColorStop(0, 'rgba(16,28,44,0)'); rg.addColorStop(1, 'rgba(16,28,44,.65)'); ctx.fillStyle = rg; ctx.fillRect(bx, by, bw, bh);
-    ctx.restore();
-    hint('winsight', '창문과 열린 문으로 시선이 닿는 방 안은 바깥에서도 보인다. 들어가기 전에 창가를 돌며 살펴라');
-  });
-}
 // 살피기(Tab): 가까운 건물의 1층 평면(방 이름)을 흐리게 겹쳐 보인다
 function drawPlansFaint(P, openB) {
   BLD.forEach((b, bi) => {

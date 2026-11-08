@@ -2,7 +2,7 @@
 function installGameApi() {
   window.__game = {
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
-    drawWindowSight,drawPlansFaint,
+    drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
@@ -17,7 +17,7 @@ function installGameApi() {
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
-    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
+    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,

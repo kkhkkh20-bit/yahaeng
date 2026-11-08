@@ -39,7 +39,11 @@ function paintFreeCityRoof(c,b,w,h){
    if(dw<=0||dh<=0)continue;c.save();c.beginPath();c.rect(dx,dy,dw,dh);c.clip();
    for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
    c.restore();
-  }return true;
+  }
+  // Shallow panel joints and a recessed deck avoid a stretched striped slab.
+  c.save();c.fillStyle='rgba(38,50,57,.2)';c.fillRect(border,border,w-border*2,h-border*2);
+  for(let yy=border+96;yy<h-border;yy+=96){c.fillStyle='#202c3544';c.fillRect(border,yy,w-border*2,2);}
+  c.restore();return true;
  }
  const tile=freeCityPattern('roofTile');if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
@@ -71,12 +75,25 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
  }
  for(const d of front.doors){blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}}
  for(const a of S.windows)if(!flOf(a)&&(a.tx===b.x0||a.tx===b.x1)&&a.ty>=b.y1-b.fh+1&&a.ty<b.y1)drawWindowEdge(a,b);
- // The canopy follows real openings; it never invents a new usable doorway.
+ // Upper storeys follow the actual floor-window list and their own circuit.
+ if(freeCityArt===A.dotonbori){
+  const layer=CUR_F;
+  try{
+   for(const a of S.fwindows||[]){
+    if(a.fl<1||a.fl>=b.fh||a.ty!==b.y1||a.tx<b.x0||a.tx>b.x1)continue;
+    setLayer(a.fl);const lit=lightAt(a.x,a.y-16)>.45,cy=(b.y1-a.fl)*TILE+28;
+    freeCityDraw(c,'upperWindow',a.x-26,cy-12);
+    c.save();c.translate(a.x,cy);paintWindow(a,lit,44,12);c.restore();
+   }
+  }finally{setLayer(layer);}
+ }
+ // A shallow drip cap fits above real ground-floor openings, not across a storey.
+ const top=openings.length?(freeCityArt===A.dotonbori?b.y1*TILE-8:y+28):gateY-20;
  const left=openings.length?Math.min(...openings.map(a=>a.tx))*TILE-8:gateX;
  const right=openings.length?Math.max(...openings.map(a=>a.tx))*TILE+TILE+8:gateX+gateW;
- const top=openings.length?y+h-66:gateY-20;
- c.save();c.beginPath();c.rect(left,top,right-left,36);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
- c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+36,right-left,4);
+ const capH=freeCityArt===A.dotonbori?12:36;
+ c.save();c.beginPath();c.rect(left,top,right-left,capH);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
+ c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+capH,right-left,3);
  if(STAGE.freeCityPilot&&BLD.indexOf(b)===0)freeCityDraw(c,'vending',x+w-188,y+h-64);
  c.restore();
 }

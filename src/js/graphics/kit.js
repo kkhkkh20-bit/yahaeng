@@ -101,7 +101,7 @@ function drawKitBuilding(b) {
   const c = kitCanvas(b); if (!c) return false;
   const k = b.kit; ctx.drawImage(c, k.ox, k.oy);
   const gw = kitGlow(k);
-  if (gw && !(b.wsT > S.t - 0.2)) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.8 + 0.2 * Math.sin(S.t * 2.3 + b.x0); ctx.drawImage(gw, k.ox, k.oy); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
+  if (gw) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.8 + 0.2 * Math.sin(S.t * 2.3 + b.x0); ctx.drawImage(gw, k.ox, k.oy); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
   for (let r = 0; r < b.fh; r++) {

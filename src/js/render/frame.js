@@ -23,7 +23,7 @@ function draw() {
   const windowMotion=!!P.trav?.room;
   const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && !P.trav.local && !room && P.trav.phases.some(ph => ph.pose !== 'walk'));
   let openB = room?.b??(lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1);
-  if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
+  S.openB = openB;
   const VF = room?.fl??((!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0);
   const VB = VF ? (room?.b??(lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)))) : -1;
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
@@ -134,16 +134,7 @@ function draw() {
   drawTownExterior();
   PM('dark');
   worldTransform(ctx, sc);
-  ctx.globalCompositeOperation = 'lighter';
-  for (const l of S.lamps) {
-    if (!lampOn(l) || flOf(l) || DBG.glow) continue;
-    if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;  // 화면 밖
-    const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7);
-    const nn = NEONY() || !!l.col, lc = inkLampColor(l) || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
-    gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
-    if(l.hearth) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
-  }
+  for(const l of S.lamps)if(!flOf(l))drawLampTint(l);
   ctx.globalCompositeOperation = 'source-over';
   drawIndoorLampFixtures(0);
   // The flashlight contributes to the same visibility field; its bulb is not a second cone.
@@ -176,9 +167,7 @@ function draw() {
     if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
-    ctx.globalCompositeOperation = 'lighter';
-    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { if(drawRoomFinishGlow(l,inkLampColor(l)||'235,218,183'))continue;const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
-    ctx.globalCompositeOperation = 'source-over';
+    for(const l of S.lamps)if(flOf(l)===VF)drawLampTint(l);
     drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = uiFont(17); const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
@@ -269,7 +258,6 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && inView(g.x, g.y, 120) && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    drawWindowSight(P, openB);
     if(!DBG.roofs)drawRoomFinishExterior(openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && !windowMotion && front(P.x, P.y)) drawPlayer(P);

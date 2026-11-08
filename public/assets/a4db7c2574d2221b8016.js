@@ -2653,7 +2653,7 @@ function drawKitBuilding(b) {
   const c = kitCanvas(b); if (!c) return false;
   const k = b.kit; ctx.drawImage(c, k.ox, k.oy);
   const gw = kitGlow(k);
-  if (gw && !(b.wsT > S.t - 0.2)) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.8 + 0.2 * Math.sin(S.t * 2.3 + b.x0); ctx.drawImage(gw, k.ox, k.oy); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
+  if (gw) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.8 + 0.2 * Math.sin(S.t * 2.3 + b.x0); ctx.drawImage(gw, k.ox, k.oy); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; }
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
   for (let r = 0; r < b.fh; r++) {
@@ -2716,7 +2716,11 @@ function paintFreeCityRoof(c,b,w,h){
    if(dw<=0||dh<=0)continue;c.save();c.beginPath();c.rect(dx,dy,dw,dh);c.clip();
    for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
    c.restore();
-  }return true;
+  }
+  // Shallow panel joints and a recessed deck avoid a stretched striped slab.
+  c.save();c.fillStyle='rgba(38,50,57,.2)';c.fillRect(border,border,w-border*2,h-border*2);
+  for(let yy=border+96;yy<h-border;yy+=96){c.fillStyle='#202c3544';c.fillRect(border,yy,w-border*2,2);}
+  c.restore();return true;
  }
  const tile=freeCityPattern('roofTile');if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
@@ -2748,12 +2752,25 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
  }
  for(const d of front.doors){blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}}
  for(const a of S.windows)if(!flOf(a)&&(a.tx===b.x0||a.tx===b.x1)&&a.ty>=b.y1-b.fh+1&&a.ty<b.y1)drawWindowEdge(a,b);
- // The canopy follows real openings; it never invents a new usable doorway.
+ // Upper storeys follow the actual floor-window list and their own circuit.
+ if(freeCityArt===A.dotonbori){
+  const layer=CUR_F;
+  try{
+   for(const a of S.fwindows||[]){
+    if(a.fl<1||a.fl>=b.fh||a.ty!==b.y1||a.tx<b.x0||a.tx>b.x1)continue;
+    setLayer(a.fl);const lit=lightAt(a.x,a.y-16)>.45,cy=(b.y1-a.fl)*TILE+28;
+    freeCityDraw(c,'upperWindow',a.x-26,cy-12);
+    c.save();c.translate(a.x,cy);paintWindow(a,lit,44,12);c.restore();
+   }
+  }finally{setLayer(layer);}
+ }
+ // A shallow drip cap fits above real ground-floor openings, not across a storey.
+ const top=openings.length?(freeCityArt===A.dotonbori?b.y1*TILE-8:y+28):gateY-20;
  const left=openings.length?Math.min(...openings.map(a=>a.tx))*TILE-8:gateX;
  const right=openings.length?Math.max(...openings.map(a=>a.tx))*TILE+TILE+8:gateX+gateW;
- const top=openings.length?y+h-66:gateY-20;
- c.save();c.beginPath();c.rect(left,top,right-left,36);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
- c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+36,right-left,4);
+ const capH=freeCityArt===A.dotonbori?12:36;
+ c.save();c.beginPath();c.rect(left,top,right-left,capH);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
+ c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+capH,right-left,3);
  if(STAGE.freeCityPilot&&BLD.indexOf(b)===0)freeCityDraw(c,'vending',x+w-188,y+h-64);
  c.restore();
 }
@@ -4175,7 +4192,7 @@ function newGame(si) {
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'Q' || G[ty][tx] === 'q') lamps.push({ x: tc(tx), y: tc(ty), r: 135, outdoor: false, poly: null, broken: false, hearth: true, cold: G[ty][tx] === 'q', off: G[ty][tx] === 'q', tx, ty });
   mountOutdoorLamps(lamps);
   (STAGE.lampControls||[]).forEach(([i,x,y])=>{const l=lamps[i];if(l){l.control={x:x*TILE,y:y*TILE,fl:l.fl||0,z:0};l.authoredControl=true;}});
-  lamps.forEach(l => { setLayer(l.fl); l.poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU; const d = Math.min(l.r, castRay(l.x, l.y, a, l.r) + 20); l.poly.push(l.x + Math.cos(a) * d, l.y + Math.sin(a) * d); } }); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
+  lamps.forEach(rebuildLampPolygon); setLayer(0); for (const k in lightCache) delete lightCache[k];  // 새 판: 미리 그린 빛 지도 버림
   // 군중: 클럽 안(층마다)과 지정한 바깥 자리. 사람들이 돌아다니고, 그 사이에 섞이면 잘 안 보이고 소리도 묻힌다
   CROWD = [];
   PLANS.forEach((fls, bi) => (fls || []).forEach((p, f) => { if (p && p.store && (p.store.use === 'club' || p.store.use === 'vip')) CROWD.push({ x0: p.store.x0, y0: p.store.y0 + 1, x1: p.store.x1, y1: p.store.y1, fl: f, n: p.store.use === 'vip' ? 5 : 7, club: true, b: bi }); }));
@@ -4844,6 +4861,16 @@ function renderMap(R) {
 const TORCH_R = 210, TORCH_FOV = .32;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
 const lampOn = l => !l.broken && !l.off && !(l.outdoor && mainPowerOff(l)) && !flickOff(l);
+// Rendering mask only: stop exactly at the first occluder. Detection uses lightAt/los.
+function rebuildLampPolygon(l){
+ const layer=CUR_F;try{setLayer(flOf(l));l.poly=[];
+  for(let i=0;i<180;i++){const a=i/180*TAU,d=castRay(l.x,l.y,a,l.r);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+ }finally{setLayer(layer);}
+}
+function refreshLightMasks(){
+ for(const l of S.lamps)rebuildLampPolygon(l);
+ for(const key in lightCache)delete lightCache[key];
+}
 // 빛의 중심과 손으로 누르는 스위치는 별개다. 구버전 저장도 기둥 밑 상자에 연결한다.
 function lampControl(l) {
   if (l.control) return l.control;
@@ -5114,7 +5141,7 @@ function syncOutdoorLamps() {
   const L0=CUR_F;setLayer(0);const n=mountOutdoorLamps(S.lamps);
   if(n) {
     for(const l of S.lamps)if(l.outdoor&&!flOf(l)) {
-      l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+      rebuildLampPolygon(l);
     }
     LG=null;for(const k in lightCache)delete lightCache[k];
   }setLayer(L0);return n;
@@ -5199,7 +5226,7 @@ function syncWorkLights() {
         const lamp = {x:at.x,y:at.y,r:240,fl,outdoor:false,broken:false,off:false,workLight:true,col:'236,221,189',control:{...control,fl,z:0},poly:[]};
         const fuse = (S.bfuses || []).find(f => f.b === bi && f.cut);
         if (fuse) { lamp.cut=bi; lamp.cutWas=false; lamp.off=true; }
-        for (let i=0;i<180;i++) { const a=i/180*TAU,d=Math.min(lamp.r,castRay(lamp.x,lamp.y,a,lamp.r)+20);lamp.poly.push(lamp.x+Math.cos(a)*d,lamp.y+Math.sin(a)*d); }
+        rebuildLampPolygon(lamp);
         local.push(lamp); S.lamps.push(lamp);
       }
     });
@@ -5364,7 +5391,7 @@ function initRoomFinish(){
   l.finishOrigin={x:l.x,y:l.y,r:l.r,col:l.col};l.roomFinish=true;
   // Put the emitter just inside the mounted fixture, never in the old room centre.
   l.x=l.fixture.x+l.fixture.nx*8;l.y=l.fixture.y+l.fixture.ny*8;l.r=300;l.col='235,218,183';
-  l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r));l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+  rebuildLampPolygon(l);
  }
  for(const w of S.fwindows||[]){
   if(w.fl!==fl||bldAt(w.tx,w.ty)!==b)continue;
@@ -5413,11 +5440,6 @@ function drawRoomFinishFixtures(fl,building){
   if(!l.control||controls.has(l.circuit))continue;controls.add(l.circuit);
   const p=l.control;roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(-p.nx,-p.ny),p.x+p.nx*5,p.y+p.ny*5);
  }
-}
-function drawRoomFinishGlow(l,color){
- if(!l.roomFinish)return false;
- ctx.save();ctx.beginPath();for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
- const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.65);g.addColorStop(0,`rgba(${color},.075)`);g.addColorStop(1,`rgba(${color},0)`);ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();return true;
 }
 
 // Shared, grounded 2D furniture. One atlas avoids a request and GPU texture per prop.
@@ -9405,30 +9427,13 @@ function updatePlayer(dt) {
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
     if (N8.some(o => inMap(tx + o[0], ty + o[1]) && G[ty + o[1]][tx + o[0]] === 'S')) hint('secret', '벽에 금이 간 곳은 숨겨진 통로다. 그대로 걸어 들어가면 지나갈 수 있다 (자경대원은 모른다)');
-    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어가야 보인다. 밖에선 창문·열린 문 너머만 보인다');
+    if (bldAt(tx, ty) >= 0) hint('inside', '건물에 들어가면 현재 층이 열린다. 살피기로 주변 구조를 확인한다');
   }
-  updateWindowView(P);
   checkObjective();
   if (STAGE.zones) { const zi = pZoneInfo(); if (zi.k !== Z_PUB && zi.allow) for (const o of myPermits()) if (zi.allow.includes(o)) (S.usedPermit || (S.usedPermit = {}))[o] = true; }  // 신분이 금지 구역을 통과시켜 준 기록 (도전 과제 판정)
   if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = S.exits.reduce((a, b) => dist(P.x, P.y, a.x, a.y) <= dist(P.x, P.y, b.x, b.y) ? a : b);  // 안내는 가장 가까운 탈출구로
   if (S.exitOpen && P.z === 0 && !flOf(P) && !S.over && (S.exits || [S.exit]).some(e => dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
 }
-// 창문 앞에서 창문 쪽을 바라보고 있으면 그 건물 안이 보인다
-function updateWindowView(P) {
-  const was = S.peek; S.peek = null;
-  if (P.z || P.fl || P.hide || P.vent || P.under || P.jump) return;
-  if (bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) >= 0) return;
-  let best = null, bd = 76;
-  for (const w of S.windows) {
-    const b = bldAt(w.tx, w.ty); if (b < 0) continue;
-    const d = dist(P.x, P.y, w.x, w.y); if (d >= bd) continue;
-    if (Math.abs(angDiff(P.a, Math.atan2(w.y - P.y, w.x - P.x))) > 0.9) continue;
-    bd = d; best = { w, b };
-  }
-  S.peek = best;
-  if (best && !was) { play('cloth', 0.12); hint('peek', '창문 쪽을 바라보면 안이 보인다. 고개를 돌리면 다시 가려진다'); }
-}
-
 // 밀어서 넘기 예고: 차오르는 고리 + 이름
 function drawPushHint() {
   const k = S.pk; if (!k || !k.at || !(k.f > 0.08)) return; const sc = Math.max(1, 0.9 / SCALE);
@@ -10352,7 +10357,7 @@ function loadCheckpoint() {
   restoreTargetWardrobes();
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   S.props=(S.props||[]).filter(p=>!p.outfit);restoreUniformDonors();moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); refreshLightMasks(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
@@ -13432,7 +13437,7 @@ function quarterFacade(b){
     ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font=uiFont(9);ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
     drawFacadeDoorWork(d);
     ctx.fillStyle='#8b917e';ctx.fillRect(cx-35,bot-3,70,5);ctx.fillStyle='#26392e';ctx.fillRect(cx-33,bot+2,66,6);ctx.fillStyle='#b5a57d';ctx.fillRect(cx-26,bot+3,52,1);
-    const g=ctx.createLinearGradient(0,bot,0,bot+58);g.addColorStop(0,'rgba(192,169,112,.22)');g.addColorStop(1,'rgba(192,169,112,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-23,bot+6);ctx.lineTo(cx+23,bot+6);ctx.lineTo(cx+49,bot+58);ctx.lineTo(cx-49,bot+58);ctx.fill();
+
   }
   // Real windows retain their physical opening coordinates; new art never adds a passage.
   for(const win of S.windows.filter(o=>o.ty===b.y1&&o.tx>b.x0&&o.tx<b.x1)){
@@ -13448,10 +13453,6 @@ function quarterWallEdges(){
   ctx.fillStyle='#8e9985';ctx.fillRect(b.x0*TILE,(b.y1+1)*TILE-7,(b.x1-b.x0+1)*TILE,2);
   for(const d of S.doors.filter(d=>d.ty===b.y1&&d.tx>b.x0&&d.tx<b.x1)){ctx.fillStyle='#847e67';ctx.fillRect(d.x-23,(b.y1+1)*TILE-8,46,8);}
   ctx.restore();
-}
-function quarterWindowView(P,b){
-  if(!quarterClub(b))return true;
-  return [...S.windows,...S.doors].some(o=>o.tx>=b.x0&&o.tx<=b.x1&&o.ty>=b.y0&&o.ty<=b.y1&&dist(P.x,P.y,o.x,o.y)<72&&Math.abs(angDiff(P.a,Math.atan2(o.y-P.y,o.x-P.x)))<Math.PI*.4);
 }
 function quarterCuts(x,rx0,ry0,rx1,ry1){
   if(STAGE.id!=='m2')return;
@@ -13906,38 +13907,6 @@ function drawPlayerBody(P) {
 }
 // 도면 시야 (Monaco): 바깥 땅에 서 있으면, 창문·열린 문으로 시선이 닿는 방 안만 보인다
 
-function drawWindowSight(P, openB) {
-  if (P.z || P.wire || P.jump || P.trav || P.hide || P.vent || P.under || flOf(P)) return;
-  const R = 430, WC = drawWindowSight.c || (drawWindowSight.c = {});
-  if (!(WC.S === S && Math.abs(WC.x - P.x) < 3 && Math.abs(WC.y - P.y) < 3 && S.t - WC.t < 0.3 && S.t >= WC.t)) {  // 시선 다각형은 제자리면 다시 쏘지 않는다
-    const poly = []; for (let i = 0; i < 180; i++) { const a = i / 180 * TAU, d = castRay(P.x, P.y, a, R); poly.push(P.x + Math.cos(a) * d, P.y + Math.sin(a) * d); }
-    Object.assign(WC, { S, x: P.x, y: P.y, t: S.t, poly }); }
-  const poly = WC.poly;
-  const path = () => { ctx.beginPath(); for (let i = 0; i < poly.length; i += 2) i ? ctx.lineTo(poly[i], poly[i + 1]) : ctx.moveTo(poly[i], poly[i + 1]); ctx.closePath(); };
-  BLD.forEach((b, bi) => {
-    if (bi === openB || b.piloti || b.vacant || !quarterWindowView(P,b)) return;
-    const bx = b.x0 * TILE, by = b.y0 * TILE, bw = (b.x1 - b.x0 + 1) * TILE, bh = (b.y1 - b.y0 + 1) * TILE;
-    if (P.x < bx - R || P.x > bx + bw + R || P.y < by - R || P.y > by + bh + R) return;
-    // 바깥벽 안쪽으로 시선이 들어가는지 (안쪽 칸 하나라도)
-    let inside = false; for (let i = 0; i < poly.length && !inside; i += 2) { const tx = Math.floor((poly[i] - Math.cos(i / poly.length * TAU) * 2) / TILE), ty = Math.floor((poly[i + 1] - Math.sin(i / poly.length * TAU) * 2) / TILE); if (tx > b.x0 && tx < b.x1 && ty > b.y0 && ty < b.y1) inside = true; }
-    if (!inside) return;
-    b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
-    // Window sight reveals the actual visible room; it does not overlay an entire floor plan.
-    // Keep the exterior intact; only the actual sight polygon below reveals a room.
-    // 시선이 닿는 곳: 또렷하게 + 사람까지
-    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, Math.max(0,Math.min(bh-2*TILE,(b.roofC?.rh??bh)-TILE))); ctx.clip(); path(); ctx.clip();
-    drawBig(ctx, mapC, bx, by, bw, bh);
-    for (const c of S.corpses) if (!c.stashed && !c.z && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
-    for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    for (const it of S.items) if (!it.got && !flOf(it) && bldAt(Math.floor(it.x / TILE), Math.floor(it.y / TILE)) === bi) drawLootItem(it);
-    ctx.fillStyle = 'rgba(255,230,170,.06)'; ctx.fillRect(bx, by, bw, bh);
-    // 시선 경계는 선 대신 부드러운 그늘: 안쪽으로 번지는 흐린 띠 + 멀어질수록 서서히 어둡게 (도면 바탕과 자연스럽게 이어진다)
-    path(); ctx.strokeStyle = 'rgba(16,28,44,.22)'; for (const lw of [36, 24, 12]) { ctx.lineWidth = lw; ctx.stroke(); }  // 흐림 필터(휴대폰에서 매우 무겁다) 대신 겹친 띠
-    const rg = ctx.createRadialGradient(P.x, P.y, R * 0.3, P.x, P.y, R); rg.addColorStop(0, 'rgba(16,28,44,0)'); rg.addColorStop(1, 'rgba(16,28,44,.65)'); ctx.fillStyle = rg; ctx.fillRect(bx, by, bw, bh);
-    ctx.restore();
-    hint('winsight', '창문과 열린 문으로 시선이 닿는 방 안은 바깥에서도 보인다. 들어가기 전에 창가를 돌며 살펴라');
-  });
-}
 // 살피기(Tab): 가까운 건물의 1층 평면(방 이름)을 흐리게 겹쳐 보인다
 function drawPlansFaint(P, openB) {
   BLD.forEach((b, bi) => {
@@ -14347,8 +14316,14 @@ function drawDepotFacade(b){
  ctx.fillStyle='#8c8b78';ctx.fillRect(gateX+gateW/2-11,y+h-13,22,3);
  }
  for(let i=0;i<10;i++){const px=(i*97+b.x0*31)%(w-12);ctx.fillStyle='rgba(112,83,61,.3)';ctx.fillRect(x+px,y+h-9-(i%3)*4,4,5+(i%4)*2);}
- ctx.fillStyle='#192930';ctx.fillRect(x+18,y+3,132,23);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+3.5,132,23);
- ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(15,700);ctx.fillText(b.name||'물류 창고',x+27,y+21,114);
+ const paid=freeCityBuilding(b)&&freeCityReady()&&freeCityArt===A.dotonbori;
+ if(paid){
+  for(let f=1;f<b.fh;f++){const by=y+h-f*TILE;ctx.fillStyle='#15232b';ctx.fillRect(x,by-2,w,5);ctx.fillStyle='#84929b';ctx.fillRect(x,by-2,w,1);ctx.fillStyle='#080f1644';ctx.fillRect(x,by+3,w,3);}
+  ctx.fillStyle='#16232b';ctx.fillRect(x,y+h-7,w,7);ctx.fillStyle='#5d6a70';ctx.fillRect(x,y+h-7,w,1);
+ }
+ const signH=paid?14:23,front=paid&&b.fh===1?freeCityFront(b):null,signW=front?Math.max(44,Math.min(132,...front.windows.concat(front.doors).map(o=>o.x-x-44))):132;
+ ctx.fillStyle='#192930';ctx.fillRect(x+18,y+3,signW,signH);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+3.5,signW,signH);
+ ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(paid?11:15,700);ctx.fillText(b.name||'물류 창고',x+25,y+(paid?14:21),signW-14);
  if(!freeCityBuilding(b)){ctx.fillStyle='#a1b4b2';ctx.fillRect(x+w-55,y+14,27,16);ctx.fillStyle='#243b46';ctx.fillRect(x+w-52,y+17,21,10);ctx.fillStyle='#8b9b98';ctx.fillRect(x+w-43,y+15,2,14);}
 
  drawFreeDepotDetails(ctx,b,x,y,w,h);
@@ -14358,7 +14333,7 @@ function drawDepotFacade(b){
 
 function drawRoutes(P) {
   const openB = (P.z === 0 && !P.jump) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;
-  const hiddenPt = p => { const b = bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)); return b >= 0 && b !== openB && !(S.peek && S.peek.b === b) && !tactical; };
+  const hiddenPt = p => { const b = bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)); return b >= 0 && b !== openB && !tactical; };
   const vf = (!P.z && !P.wire && !P.jump) ? flOf(P) : 0;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.civ || flOf(g) !== vf) continue;
@@ -14744,14 +14719,13 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
 }
 function darkPass(sc, lamps, clip, key) {
-  const P = S.player;
   // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.
   const ds = 0.5 / DPR;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.72)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
@@ -14763,17 +14737,24 @@ function darkPass(sc, lamps, clip, key) {
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;
     lampLight(dctx, l, flick);
   }
-  const pg = dctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, 120);
-  pg.addColorStop(0, 'rgba(0,0,0,.42)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
-  dctx.fillStyle = pg; dctx.fillRect(P.x - 120, P.y - 120, 240, 240);
   if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2], clip[3]); ctx.clip(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!DBG.dk1) { ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false; }
   worldTransform(ctx, sc);
   if (clip) ctx.restore();
 }
-// 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
-// 쫓기는 중에는 할 일 대신 가장 가까운 숨을 곳(수거함·맨홀·옷장 등)을 가리킨다 — 발각을 끊는 게 먼저
+
+// Light reach comes from the shared occluded mask. Tint is subtle room colour,
+// never a second circular reflection across dry pavement or a wall.
+function drawLampTint(l){
+ if(l.outdoor||!lampOn(l)||DBG.glow||!l.poly?.length||!inView(l.x,l.y,l.r))return;
+ const color=inkLampColor(l)||l.col||(l.hearth?'255,186,105':'235,218,183');
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.beginPath();
+ for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
+ const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
+ g.addColorStop(0,`rgba(${color},${l.hearth ? .055 : .035})`);g.addColorStop(1,`rgba(${color},0)`);
+ ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();
+}
 
 function chaseHide(P) {
   let best = null, bd = 700;
@@ -14911,7 +14892,7 @@ function draw() {
   const windowMotion=!!P.trav?.room;
   const travUp = !!(P.trav && !P.trav.hideB && !P.trav.stairs && !P.trav.local && !room && P.trav.phases.some(ph => ph.pose !== 'walk'));
   let openB = room?.b??(lowJ ? jumpB : (P.z === 0 && !P.jump && !travUp) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1);
-  if (openB < 0 && S.peek && !travUp) openB = S.peek.b; S.openB = openB;
+  S.openB = openB;
   const VF = room?.fl??((!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0);
   const VB = VF ? (room?.b??(lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)))) : -1;
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
@@ -15022,16 +15003,7 @@ function draw() {
   drawTownExterior();
   PM('dark');
   worldTransform(ctx, sc);
-  ctx.globalCompositeOperation = 'lighter';
-  for (const l of S.lamps) {
-    if (!lampOn(l) || flOf(l) || DBG.glow) continue;
-    if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;  // 화면 밖
-    const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7);
-    const nn = NEONY() || !!l.col, lc = inkLampColor(l) || (NEONY() ? (Math.round(l.x + l.y) % 2 ? '255,60,170' : '60,236,255') : '255,186,105');
-    gr.addColorStop(0, `rgba(${lc},${nn ? 0.14 : 0.07})`); gr.addColorStop(1, `rgba(${lc},0)`);
-    ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill();
-    if(l.hearth) {ctx.fillStyle = nn ? `rgba(${lc},.95)` : 'rgba(255,214,150,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y, nn ? 4.5 : 3.5, 0, TAU); ctx.fill();}
-  }
+  for(const l of S.lamps)if(!flOf(l))drawLampTint(l);
   ctx.globalCompositeOperation = 'source-over';
   drawIndoorLampFixtures(0);
   // The flashlight contributes to the same visibility field; its bulb is not a second cone.
@@ -15064,9 +15036,7 @@ function draw() {
     if (!tactical && flOf(P) === VF) drawBlockEdges(P, input.scan);
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
     darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
-    ctx.globalCompositeOperation = 'lighter';
-    for (const l of S.lamps) if (flOf(l) === VF && lampOn(l)) { if(drawRoomFinishGlow(l,inkLampColor(l)||'235,218,183'))continue;const gr = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * 0.7), lc = inkLampColor(l) || '255,186,105'; gr.addColorStop(0, `rgba(${lc},${l.col ? 0.2 : 0.08})`); gr.addColorStop(1, `rgba(${lc},0)`); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(l.x, l.y, l.r * 0.7, 0, TAU); ctx.fill(); }
-    ctx.globalCompositeOperation = 'source-over';
+    for(const l of S.lamps)if(flOf(l)===VF)drawLampTint(l);
     drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
     { const lab = `${VF + 1}층` + (BLD[VB].plate ? ' · ' + BLD[VB].plate : ''); ctx.font = uiFont(17); const tw = ctx.measureText(lab).width; ctx.fillStyle = 'rgba(7,10,18,.85)'; ctx.fillRect(bx, by - 30, tw + 18, 26); ctx.fillStyle = '#f2c46b'; ctx.fillRect(bx, by - 30, 4, 26); ctx.textAlign = 'left'; ctx.fillText(lab, bx + 10, by - 11); }
@@ -15157,7 +15127,6 @@ function draw() {
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && inView(g.x, g.y, 120) && !coveredG(g, openB) && front(g.x, g.y)) drawGuard(g);
     // 옥상 위·벽을 타는 자경대원
     for (const g of S.guards) if (g.state !== 'DEAD' && (g.z || g.climb) && inView(g.x,g.y,guardRanges(g).lit*(g.elite?1.1:1)+40) && (g.climb && g.climb.stairs ? flOf(g) === flOf(P) && (g.z || 0) === (P.z || 0) : (!flOf(g) || (g.climb && !(g.climb.to.fl && g.climb.from.fl))))) { drawGuard(g); if (!g.climb && g.state !== 'CAPTIVE') guardOverlay(g); else if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
-    drawWindowSight(P, openB);
     if(!DBG.roofs)drawRoomFinishExterior(openB);
     if (input.scan) drawPlansFaint(P, openB);
     if (!P.z && (!P.jump || lowJ) && !P.hide && !P.vent && !travUp && !windowMotion && front(P.x, P.y)) drawPlayer(P);
@@ -17251,7 +17220,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
-    drawWindowSight,drawPlansFaint,
+    drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
@@ -17266,7 +17235,7 @@ function installGameApi() {
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,
-    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterWindowView, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
+    buildRouteLine, TORCH_R, TORCH_FOV, objectActionPoint, surfacePoint, usePoint, camOn, camFov, camRange, cameraSees, signFixture, advanceGameFrame, aimPoint, get tactical(){return tactical;}, doorVisualOpen, advancePlayerGait, quarterClub, quarterRoof, quarterNear, quarterFloor, quarterSprite, get quarterImages(){return quarterImages;}, updateRadioCheck, securityLevel, updateSecurityResponse, securityRadioReports, securityBodyFound, securityPatrolPause, selectStory, trackNextStory, diningGoal, fixtureVisible, surfacePoint, surfaceFixture, usePoint, nearNote, updateDining, mealAvailable, dropItem, readNote, objectActionPoint,
     electricalAction,electricalActionAllowed,electricalChoice,cutLights,bldPower,objectActionValid,updateObjectAction,beginObjectAction,
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,

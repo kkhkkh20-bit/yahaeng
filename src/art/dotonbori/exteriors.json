@@ -80,13 +80,13 @@
         262,
         0,
         32,
-        16
+        6
       ],
       "sourceRect": [
         416,
         128,
         448,
-        144
+        134
       ]
     },
     "lampOff": {
@@ -117,10 +117,25 @@
         80
       ]
     },
-    "window": {
+    "upperWindow": {
       "rect": [
         348,
         0,
+        26,
+        12
+      ],
+      "sourceRect": [
+        512,
+        96,
+        544,
+        128
+      ],
+      "assembly": "transparent 26x12 upper-floor surround"
+    },
+    "window": {
+      "rect": [
+        0,
+        98,
         26,
         16
       ],
@@ -134,7 +149,7 @@
     },
     "vending": {
       "rect": [
-        0,
+        28,
         98,
         22,
         32

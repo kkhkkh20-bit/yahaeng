@@ -8,8 +8,8 @@ async def main():
   b=await p.chromium.launch()
   for w,h,touch in [(1280,800,False),(390,844,True),(844,390,True)]:
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch,is_mobile=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('''localStorage.clear();requestAnimationFrame=()=>0;window.__gkDraws=[];const derived=new WeakMap(),patterns=new WeakMap(),proto=CanvasRenderingContext2D.prototype,draw=proto.drawImage,pattern=proto.createPattern,fill=proto.fillRect;
-    proto.drawImage=function(im,...a){const key=im?.src&&im.src===(window.__ASSETS__?.dotonbori||window.__ASSETS__?.freeCity)?.src?a.slice(0,4):derived.get(im);if(key){window.__gkDraws.push(key);derived.set(this.canvas,key);}return draw.call(this,im,...a)};
+   await q.add_init_script('''localStorage.clear();requestAnimationFrame=()=>0;window.__gkDraws=[];window.__upperFrames=[];const derived=new WeakMap(),patterns=new WeakMap(),proto=CanvasRenderingContext2D.prototype,draw=proto.drawImage,pattern=proto.createPattern,fill=proto.fillRect;
+    proto.drawImage=function(im,...a){const key=im?.src&&im.src===(window.__ASSETS__?.dotonbori||window.__ASSETS__?.freeCity)?.src?a.slice(0,4):derived.get(im);if(key){window.__gkDraws.push(key);derived.set(this.canvas,key);const u=window.__ASSETS__?.dotonbori?.frames.upperWindow.rect;if(u&&im.src&&a.slice(0,4).join(',')===u.join(','))window.__upperFrames.push([a[4]+a[6]/2,a[5]+a[7]/2]);}return draw.call(this,im,...a)};
     proto.createPattern=function(im,...a){const p=pattern.call(this,im,...a),key=derived.get(im);if(p&&key)patterns.set(p,key);return p};
     proto.fillRect=function(...a){const key=patterns.get(this.fillStyle);if(key)window.__gkDraws.push(key);return fill.apply(this,a)};''')
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game');await q.click('#btnQuick');await q.wait_for_timeout(500)
@@ -19,7 +19,9 @@ async def main():
     const before=logical();S.fade=0;G.moveCamera(1);G.updateHUD(true);G.benchDraw(3);ok(before===logical(),'drawing changes collision, actors, light switches or progress');
     const used=new Set(window.__gkDraws.map(a=>a.join(','))),wasUsed=(f,list=window.__gkDraws)=>{const [x,y,w,h]=f.rect;return list.some(([sx,sy,sw,sh])=>sx>=x&&sy>=y&&sx+sw<=x+w&&sy+sh<=y+h)};
     for(const [name,f] of Object.entries(art.frames))if(name!=='lampOff')ok(wasUsed(f),'selected sprite never reaches canvas '+name);
-    ok(Object.values(art.frames).length===10&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
+    ok(Object.values(art.frames).length===11&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
+    const upper=new Set(window.__upperFrames.map(a=>a.join(','))),expected=S.fwindows.filter(w=>G.BLD.some(b=>w.fl>=1&&w.fl<b.fh&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1));
+    ok(upper.size===expected.length,'missing or invented upper-floor window');for(const w of expected)ok(upper.has([w.x,(w.ty-w.fl)*48+28].join(',')),'upper window on wrong facade row');
     // The new canopy is ordinary lit world art, not a permanently bright overlay.
     G.cam.x=336;G.cam.y=360;G.benchDraw(1);
     const sample=()=>{const c=G.ctx.canvas,k=c.width/innerWidth,x=Math.round(((304-G.cam.x)*G.SCALE+innerWidth/2)*k),y=Math.round(((280-G.cam.y)*G.SCALE+innerHeight/2)*k),d=G.ctx.getImageData(x,y,4,4).data;return [...d].reduce((n,v,i)=>n+(i%4<3?v:0),0)/48;};

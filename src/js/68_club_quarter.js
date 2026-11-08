@@ -66,7 +66,7 @@ function quarterFacade(b){
     ctx.fillStyle='#3c5345';ctx.fillRect(cx-28,yy-13,56,13);ctx.fillStyle='#dfd5b5';ctx.font=uiFont(9);ctx.textAlign='center';ctx.fillText('CLUB',cx,yy-3);
     drawFacadeDoorWork(d);
     ctx.fillStyle='#8b917e';ctx.fillRect(cx-35,bot-3,70,5);ctx.fillStyle='#26392e';ctx.fillRect(cx-33,bot+2,66,6);ctx.fillStyle='#b5a57d';ctx.fillRect(cx-26,bot+3,52,1);
-    const g=ctx.createLinearGradient(0,bot,0,bot+58);g.addColorStop(0,'rgba(192,169,112,.22)');g.addColorStop(1,'rgba(192,169,112,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-23,bot+6);ctx.lineTo(cx+23,bot+6);ctx.lineTo(cx+49,bot+58);ctx.lineTo(cx-49,bot+58);ctx.fill();
+
   }
   // Real windows retain their physical opening coordinates; new art never adds a passage.
   for(const win of S.windows.filter(o=>o.ty===b.y1&&o.tx>b.x0&&o.tx<b.x1)){
@@ -82,10 +82,6 @@ function quarterWallEdges(){
   ctx.fillStyle='#8e9985';ctx.fillRect(b.x0*TILE,(b.y1+1)*TILE-7,(b.x1-b.x0+1)*TILE,2);
   for(const d of S.doors.filter(d=>d.ty===b.y1&&d.tx>b.x0&&d.tx<b.x1)){ctx.fillStyle='#847e67';ctx.fillRect(d.x-23,(b.y1+1)*TILE-8,46,8);}
   ctx.restore();
-}
-function quarterWindowView(P,b){
-  if(!quarterClub(b))return true;
-  return [...S.windows,...S.doors].some(o=>o.tx>=b.x0&&o.tx<=b.x1&&o.ty>=b.y0&&o.ty<=b.y1&&dist(P.x,P.y,o.x,o.y)<72&&Math.abs(angDiff(P.a,Math.atan2(o.y-P.y,o.x-P.x)))<Math.PI*.4);
 }
 function quarterCuts(x,rx0,ry0,rx1,ry1){
   if(STAGE.id!=='m2')return;

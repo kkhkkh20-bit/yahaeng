@@ -14,7 +14,7 @@ if sheet.size!=(3008,672):raise SystemExit('Unexpected source dimensions')
 # The roof centre contains no decorative hatches that could suggest an interaction.
 selections={'roofTile':(2592,160,2688,256),'wallPanel':(772,298,796,314),
  'cornice':(768,288,864,298),'pilaster':(768,298,772,320),
- 'pavers':(1992,168,2024,200),'awning':(416,128,448,144),
+ 'pavers':(1992,168,2024,200),'awning':(416,128,448,134),
  'lampOff':(1032,0,1056,16),'lampOn':(1032,64,1056,80)}
 parts=[(name,sheet.crop(rect),{'sourceRect':list(rect)})for name,rect in selections.items()]
 # Transparent surround: functional glass/lock/open states remain the game's job.
@@ -24,6 +24,8 @@ for x in range(3,23):
  win.alpha_composite(s.crop((4,0,5,3)),(x,0));win.alpha_composite(s.crop((4,29,5,32)),(x,13))
 for y in range(3,13):
  win.alpha_composite(s.crop((0,4,3,5)),(0,y));win.alpha_composite(s.crop((29,4,32,5)),(23,y))
+upper=Image.new('RGBA',(26,12));upper.alpha_composite(win.crop((0,0,26,6)),(0,0));upper.alpha_composite(win.crop((0,10,26,16)),(0,6))
+parts.append(('upperWindow',upper,{'sourceRect':[512,96,544,128],'assembly':'transparent 26x12 upper-floor surround'}))
 parts.append(('window',win,{'sourceRect':[512,96,544,128],'assembly':'transparent 26x16 surround; stateful glass rendered by game'}))
 # Retain the previously shipped Free City vending machine with separate provenance.
 free=ROOT/'src/art/gutty-city';old=json.loads((free/'pilot.json').read_text());im=Image.open(free/'pilot.webp').convert('RGBA')
