@@ -41,12 +41,12 @@ function darkPass(sc, lamps, clip, key) {
 
 // Light reach comes from the shared occluded mask. Tint is subtle room colour,
 // never a second circular reflection across dry pavement or a wall.
-function drawLampTint(l){
+function drawLampTint(l,target=ctx){
  if(l.outdoor||!lampOn(l)||DBG.glow||!l.poly?.length||!inView(l.x,l.y,l.r))return;
  const color=inkLampColor(l)||l.col||(l.hearth?'255,186,105':'235,218,183');
- ctx.save();ctx.globalCompositeOperation='lighter';ctx.beginPath();
- for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
- const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
+ target.save();target.globalCompositeOperation='lighter';target.beginPath();
+ for(let i=0;i<l.poly.length;i+=2)i?target.lineTo(l.poly[i],l.poly[i+1]):target.moveTo(l.poly[i],l.poly[i+1]);target.closePath();target.clip();
+ const g=target.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
  g.addColorStop(0,`rgba(${color},${l.hearth ? .055 : .035})`);g.addColorStop(1,`rgba(${color},0)`);
- ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();
+ target.fillStyle=g;target.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);target.restore();
 }

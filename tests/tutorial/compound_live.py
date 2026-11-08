@@ -40,7 +40,12 @@ class CompoundControls:
   turns=[]
   for i,p in enumerate(path):
    if i==0 or i==len(path)-1 or (path[i+1]['x']-p['x'],path[i+1]['y']-p['y'])!=(p['x']-path[i-1]['x'],p['y']-path[i-1]['y']):turns.append(p)
-  for p in turns:await self.c.move(p['x'],p['y'])
+  # The upper landing is deliberately offset from the hole. Moving back to
+  # the start cell centre can command a real descent before leaving the stair.
+  landing=await self.q.evaluate('''()=>{const G=__game,P=G.S.player;return G.S.ladders.some(l=>l.kind==='fstair'&&l.tfl===(P.fl||0)&&Math.hypot(P.x-G.stairUpper(l).down.entry.x,P.y-G.stairUpper(l).down.entry.y)<100)}''')
+  for p in turns:
+   if landing and p is path[0]:continue
+   await self.c.move(p['x'],p['y'])
   await self.c.move(x,y)
   assert not await self.q.evaluate('__game.S.over&&!__game.S.exitOpen'),'mission failed while moving'
  async def env(self,kind,tag=None):

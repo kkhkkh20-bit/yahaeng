@@ -1,0 +1,15 @@
+Office Interior v3 — selected, game-specific interior artwork
+Copyright GuttyKreum. All rights reserved.
+Official source: https://guttykreum.itch.io/japanese-office-interior-game-assets
+Purchased by the project owner; supplied on 2026-11-09 (Asia/Seoul).
+
+These graphics form part of Yahaeng, not an open-source or reusable asset pack.
+No permission is granted to extract or reuse them outside this game.
+The purchaser's original ZIP, complete tilemap, Unity package and individual
+source collection remain private and are not included in this repository.
+interiors.json records original coordinates and the purchased source SHA-256.
+
+The official licence permits personal and commercial media products and derivative
+works. It prohibits separate asset redistribution, sublicensing and extraction
+for use outside the relevant media product, and use as a logo or trademark.
+Consult the linked author's licence for its complete terms.

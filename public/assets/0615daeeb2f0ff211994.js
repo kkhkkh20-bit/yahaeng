@@ -1799,6 +1799,35 @@ const evidenceCopy={
  'root-cut':['윤서경의 명령 원장','증인 거래를 지시한 기록과 돈의 출처를 확보했다. 남은 증인들을 밖으로 데려갈 수 있다.']
 };
 for(const[id,[title,text]]of Object.entries(evidenceCopy))Object.assign(CASE_SOURCES.find(s=>s.id===id),{title,text});
+// Nine distinct locations share the purchased pixels, not the same decoration.
+// Existing missions, geometry, patrols and skill progression are retained.
+const OFFICE_CAMPAIGN={
+ tB:{default:'freight',buildings:{0:'freight',1:['dispatch','archive'],2:'freight'},decor:[
+  {b:1,fl:0,u:.27,art:'board',w:78},{b:0,fl:0,u:.7,art:'aircon',w:48}]},
+ p0:{default:'freight',buildings:{0:['dispatch','executive'],1:'freight'},decor:[
+  {b:0,fl:0,u:.32,art:'board',w:72},{b:0,fl:1,u:.72,art:'coatRack',w:74}]},
+ e2:{default:'freight',buildings:{0:'freight',1:['exchange','security','executive']},decor:[
+  {b:0,fl:0,u:.25,art:'aircon',w:48},{b:1,fl:1,u:.27,art:'monitorRackBlue',w:80},{b:1,fl:2,u:.3,art:'graph',w:44}]},
+ m2:{default:'residence',buildings:{0:['dispatch','archive'],1:['club','executive'],2:'detention',3:'residence',4:'residence',5:'archive',6:'residence',7:['residence','archive']},decor:[
+  {b:0,fl:0,u:.4,art:'board',w:74},{b:0,fl:1,u:.7,art:'graph',w:44},{b:1,fl:0,u:.3,art:'coatRack',w:76}]},
+ m4:{default:'residence',buildings:{0:'freight',1:'freight',2:['dispatch','executive'],3:['club','executive'],4:'residence',6:'archive',7:'security'},decor:[
+  {b:2,fl:1,u:.65,art:'graph',w:44},{b:1,fl:0,u:.35,art:'board',w:68},{b:3,fl:1,u:.7,art:'coatRack',w:70}]},
+ m6:{default:'detention',buildings:{0:['detention','detention'],1:['security','archive'],2:'freight',3:'residence'},decor:[
+  {b:0,fl:0,u:.6,art:'aircon',w:48},{b:1,fl:0,u:.3,art:'monitorRackBlue',w:72},{b:3,fl:1,u:.3,art:'board',w:74}]},
+ m7:{default:'freight',buildings:{0:'freight',1:['dispatch','executive'],2:'residence'},decor:[
+  {b:0,fl:0,u:.65,art:'monitorRack',w:70},{b:1,fl:0,u:.6,art:'board',w:80},{b:1,fl:1,u:.6,art:'graph',w:44}]},
+ m5:{default:'security',buildings:{0:['security','executive'],1:'archive',2:'residence',3:'dispatch'},decor:[
+  {b:0,fl:0,u:.3,art:'monitorRackBlue',w:74},{b:0,fl:1,u:.65,art:'coatRack',w:76},{b:3,fl:0,u:.4,art:'board',w:68}]},
+ n1:{default:'estate',buildings:{0:['estate','executive'],1:'residence',2:'residence',3:'security',4:'archive',5:'residence',6:'residence',7:'estate'},decor:[
+  {b:0,fl:0,u:.7,art:'coatRack',w:80},{b:0,fl:1,u:.6,art:'graph',w:44},{b:3,fl:0,u:.3,art:'monitorRack',w:64}]}
+};
+for(const[id,art]of Object.entries(OFFICE_CAMPAIGN))campaignStage(id).officeArt=art;
+// Ground paint gives the first depot a readable loading area without adding
+// decorative crates or chairs that the player could incorrectly walk through.
+campaignStage('tB').dressing.push(
+ {kind:'bay',x:25.4,y:8.4,w:4,h:3.3,fl:0,text:'하역'},
+ {kind:'bay',x:4.2,y:14.2,w:3,h:2.4,fl:0,text:'대기'}
+);
 
 'use strict';
 (function () {
@@ -2988,6 +3017,134 @@ function drawCityWallLamp(l,m,on){
  freeCityDraw(ctx,on?'lampOn':'lampOff',x-16,y-9,1);
  if(l.broken){ctx.strokeStyle='#a69a8a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x+3,y+3);ctx.stroke();}
  return true;
+}
+
+// Purchased 2D pixels. Render choices never mutate the collision grid or AI.
+const officeArt=A.office||null,officeAtlas=new Image();
+let officeArtDirty=false;
+officeAtlas.onload=()=>{officeArtDirty=true;};
+if(officeArt?.src)officeAtlas.src=officeArt.src;
+const OFFICE_STYLES={
+ dispatch:{floor:'floorCarpet',wall:'wallPanel',accent:'#bc9862',ink:'#172630',warm:false},
+ freight:{floor:'floorSlate',wall:'wallPanel',accent:'#ba915e',ink:'#19262c',warm:false},
+ archive:{floor:'floorParquet',wall:'wallPale',accent:'#b19773',ink:'#252c30',warm:true},
+ exchange:{floor:'floorCarpet',wall:'wallPanel',accent:'#658b9b',ink:'#17232f',warm:false},
+ executive:{floor:'floorParquet',wall:'wallWood',accent:'#b49a69',ink:'#2c2628',warm:true},
+ club:{floor:'floorWine',wall:'wallWood',accent:'#9c687d',ink:'#2b2029',warm:true},
+ security:{floor:'floorSlate',wall:'wallPanel',accent:'#779197',ink:'#17262b',warm:false},
+ detention:{floor:'floorTile',wall:'wallPanel',accent:'#838d8c',ink:'#20292c',warm:false},
+ residence:{floor:'floorOak',wall:'wallPale',accent:'#ac9b83',ink:'#2d2b2a',warm:true},
+ estate:{floor:'floorParquet',wall:'wallPale',accent:'#b49b6a',ink:'#2e2d2b',warm:true}
+};
+function officeReady(){return !window.__OFFICE_ART_BASELINE__&&!!STAGE.officeArt&&!!officeArt&&officeAtlas.complete&&officeAtlas.naturalWidth>0;}
+function officeFrame(name){return officeArt?.frames[name]?.rect;}
+function officeBlit(c,name,x,y,w,h){
+ const r=officeFrame(name);if(!r||!officeReady())return false;
+ c.imageSmoothingEnabled=false;c.drawImage(officeAtlas,...r,Math.round(x),Math.round(y),Math.round(w??r[2]),Math.round(h??r[3]));return true;
+}
+function officeStyle(bi,fl=CUR_F){
+ const spec=STAGE.officeArt;if(!spec)return null;
+ const levels=spec.buildings?.[bi],key=(Array.isArray(levels)?levels[Math.min(fl,levels.length-1)]:levels)||spec.default||'residence';
+ return OFFICE_STYLES[key]||OFFICE_STYLES.residence;
+}
+function officeGround(c,ch,tx,ty){
+ if(!officeReady())return false;
+ const bi=bldAt(tx,ty),b=BLD[bi];if(!b||b.vacant||tx<=b.x0||tx>=b.x1||ty<=b.y0||ty>=b.y1)return false;
+ if(!'wvthKEY'.includes(ch))return false;
+ const bath=PLANS[bi]?.[CUR_F]?.units?.some(u=>u.bath&&tx>=u.bath.x0&&tx<=u.bath.x1&&ty>=u.bath.y0&&ty<=u.bath.y1);
+ const style=officeStyle(bi),name=bath?'floorTile':ch==='h'?'floorSlate':style.floor;
+ return officeBlit(c,name,tx*TILE,ty*TILE,TILE,TILE);
+}
+function officeWall(c,tx,ty){
+ if(!officeReady()||G[ty]?.[tx]!=='#')return false;
+ const bi=bldAt(tx,ty);if(bi<0||BLD[bi].vacant)return false;
+ const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,south=!['#','N','V'].includes(G[ty+1]?.[tx]||'V');
+ c.fillStyle=p.ink;c.fillRect(x,y,TILE,TILE);
+ if(south){officeBlit(c,p.wall,x,y+12,TILE,TILE-12);c.fillStyle='#abb2b0';c.fillRect(x,y+10,TILE,2);c.fillStyle=p.accent;c.fillRect(x,y+TILE-5,TILE,3);}
+ else{c.fillStyle='#536068';c.fillRect(x+3,y,2,TILE);c.fillStyle='#73818a';c.fillRect(x+5,y,1,TILE);c.fillStyle='#10191fa0';c.fillRect(x+TILE-5,y,5,TILE);}
+ return true;
+}
+function officeFurnKey(f){
+ if(!STAGE.officeArt)return null;
+ const bi=bldAt(f.x,f.y);if(bi<0)return null;
+ const style=officeStyle(bi,f.fl||0),r=((f.r||0)%4+4)%4;
+ if(f.t==='shelf'&&f.skin==='freight')return null;
+ if(f.t==='locker'||f.t==='wardrobe'||f.t==='bed'||f.t==='cbed'||f.t==='bedD'||f.t==='dance'||f.t==='rug'||f.t==='boxes'||f.t==='sink'||f.t==='stove'||f.t==='toilet'||f.t==='tub')return null;
+ if(f.t==='desk'||f.t==='desk2'){
+  if(r===1)return 'deskSideE';if(r===3)return 'deskSideW';
+  if(style===OFFICE_STYLES.executive||style===OFFICE_STYLES.estate)return 'deskExecutive';
+  return f.t==='desk'?'deskComputer':((f.x+f.y)%3===0?'deskFiles':'deskGlass');
+ }
+ if(f.t==='table')return f.w>1?'tableGlass':'tableRound';
+ if(f.t==='chair'||f.t==='chairD')return([OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?['chairRed','chairRedE','chairRedBack','chairRedW']:['chairBlue','chairBlueE','chairBlueBack','chairBlueW'])[r];
+ if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairRed':'chairBlue';
+ return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue',pot:'tableRound'}[f.t]||null;
+}
+function officeFurnBounds(f){
+ const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
+ const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18),scale=Math.min(maxW/r[2],maxH/r[3]);
+ const w=Math.round(r[2]*scale),h=Math.round(r[3]*scale);
+ return{key,x:f.x*TILE+(f.w*TILE-w)/2,y:(f.y+f.h)*TILE-h-3,w,h};
+}
+function drawOfficeFurn(c,f,shadow){
+ if(!officeReady())return false;
+ const b=officeFurnBounds(f);if(!b)return false;
+ c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+3,(f.y+f.h)*TILE-5,f.w*TILE*.42,7,0,0,TAU);c.fill();}
+ if(f.t==='sofa'||f.t==='sofaV'){
+  const count=Math.max(f.w,f.h);for(let i=0;i<count;i++)officeBlit(c,b.key,f.x*TILE+4+(f.w>1?i*TILE:0),f.y*TILE-10+(f.h>1?i*TILE:0),TILE-8,TILE+6);
+ }else officeBlit(c,b.key,b.x,b.y,b.w,b.h);
+ c.restore();return true;
+}
+function officeSurfacePoint(o){
+ const f=o?.surface;if(!f||!officeReady())return null;
+ const b=officeFurnBounds(f);if(!b)return null;
+ // The reach point remains the existing furniture footprint. Only the visible
+ // paper/receiver moves onto its purchased tabletop, using the same draw bounds.
+ const u=o.surfaceU??.5;
+ const x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
+ return{x,y:b.y+b.h*.42};
+}
+function officeWallDecor(c,fl,x0,y0,x1,y1){
+ if(!officeReady())return;
+ for(const d of STAGE.officeArt.decor||[]){
+  if(d.fl!==fl)continue;
+  const b=BLD[d.b];if(!b||b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
+  const tx=Math.round(b.x0+1+(b.x1-b.x0-2)*d.u),ty=b.y0;
+  // A board belongs on a real wall, never across a window, door or staircase.
+  if(G[ty]?.[tx]!=='#'||G[ty+1]?.[tx]==='#')continue;
+  const r=officeFrame(d.art);if(!r)continue;
+  const w=Math.min(d.w||64,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2];
+  officeBlit(c,d.art,tc(tx)-w/2,ty*TILE+TILE-h-3,w,h);
+ }
+}
+function drawOfficeLamp(l,c=ctx){
+ if(!officeReady()||!l.fixture)return false;
+ const f=l.fixture,on=lampOn(l),horizontal=!!f.ny,style=officeStyle(bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),flOf(l)),warm=[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style);
+ c.save();c.translate(f.x,f.y);if(!horizontal)c.rotate(Math.PI/2);
+ officeBlit(c,warm?'warmLamp':'fluorescent',-22,-6,44,16);
+ // Only the tube changes; the lamp's real polygon, circuit and switch remain.
+ c.fillStyle=on?(warm?'#e4c493':'#e1e9da'):'#43535a';c.fillRect(-13,1,26,2);c.fillStyle=on?'#f6f2d8':'#354149';c.fillRect(-12,1,24,1);
+ c.restore();return true;
+}
+function officeCabinetLeaf(c,g,hinge,side,projection,depth){
+ if(!officeReady()||projection<1)return;
+ const key=g.locker?'lockerSteel':'wardrobeWood',r=officeFrame(key);if(!r)return;
+ c.save();c.transform(side*projection/r[2],depth/r[2],0,(g.doorBottom-g.doorTop)/r[3],hinge,g.doorTop);
+ c.drawImage(officeAtlas,...r,0,0,r[2],r[3]);c.restore();
+}
+function paintOfficeWindow(w,lit,L,T){
+ if(!officeReady())return false;
+ const st=winSt(w),open=st==='open';ctx.fillStyle='#101c29';ctx.fillRect(-L/2,-T/2,L,T);
+ ctx.fillStyle=lit?'#b5a783':'#496a85';ctx.fillRect(-L/2+4,-T/2+3,open?L*.31:L-8,T-6);
+ officeBlit(ctx,'windowFrame',-L/2-2,-T/2-2,L+4,T+4);
+ ctx.fillStyle='#889fa8';ctx.fillRect(open?-L*.18:-1,-T/2+2,2,T-4);
+ if(st==='lock'){ctx.fillStyle='#d1ae65';ctx.fillRect(-3,-2,5,5);}
+ if(st==='bar'){ctx.fillStyle='#101922';for(let x=-L/2+6;x<L/2-3;x+=8)ctx.fillRect(x,-T/2,2,T);}
+ return true;
+}
+function refreshOfficeArt(){
+ if(!officeArtDirty||!S||!mapC)return;
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;officeArtDirty=false;}finally{setLayer(layer);}
 }
 
 // Pre-rendered PixelFX. No live particle simulation, per-frame image decoding,
@@ -4951,7 +5108,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
@@ -5000,6 +5157,7 @@ function renderMap(R) {
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx], px = tx * TILE, py = ty * TILE;
     if (wallish(ch)) {
+      if(officeWall(x,tx,ty))continue;
       const n = wallish((G[ty - 1] || [])[tx]), so = wallish((G[ty + 1] || [])[tx]), e = wallish(G[ty][tx + 1]), w = wallish(G[ty][tx - 1]);
       let piece = 'wallH';
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';
@@ -5058,6 +5216,7 @@ function renderMap(R) {
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
   drawEpisodeDressing(x, CUR_F, rx0, ry0, rx1, ry1);
+  officeWallDecor(x,CUR_F,rx0,ry0,rx1,ry1);
   quarterCuts(x,rx0,ry0,rx1,ry1);
   // 가구 (이 층 것만)
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
@@ -5071,7 +5230,7 @@ function renderMap(R) {
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || STAGE.officeArt&&!l.outdoor&&l.fixture) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 
@@ -5584,14 +5743,15 @@ function drawIndoorLampFixtures(fl,building=-1) {
   const controls=new Set(),fixtures=new Set();
   for(const l of S.lamps){
     if(l.outdoor||l.hearth||flOf(l)!==fl||building>=0&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))!==building)continue;
-    if(l.roomFinish)continue;
+    if(l.roomFinish&&!officeReady())continue;
     const f=l.fixture,fk=f&&f.x+','+f.y;
     if(f&&!fixtures.has(fk)&&inView(f.x,f.y,70)){
-      fixtures.add(fk);const modern=roomArtDraw(ctx,'lamp-'+Number(lampOn(l))+'-'+roomArtRotation(f.nx,f.ny),f.x,f.y);
+      fixtures.add(fk);if(!drawOfficeLamp(l)){const modern=roomArtDraw(ctx,'lamp-'+Number(lampOn(l))+'-'+roomArtRotation(f.nx,f.ny),f.x,f.y);
       if(!modern)drawLightArt('wall-'+((lightArtRotation(f.nx,f.ny)+2)%4),f.x,f.y-16,lampOn(l)?1:.6,.65);
       const bulb=f.y-(modern?35:16);
       if(lampOn(l)){const glow=ctx.createRadialGradient(f.x,bulb,0,f.x,bulb,10);glow.addColorStop(0,'rgba('+(l.col||'255,222,170')+',.25)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(f.x-10,bulb-10,20,20);}
       if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,bulb-3);ctx.lineTo(f.x+3,bulb+3);ctx.stroke();}
+      }
     }
     const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
     const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
@@ -5653,13 +5813,13 @@ function drawRoomFinishFurn(x,it){
 function roomFinishLamps(){const f=S?.roomFinish;return f?S.lamps.filter(l=>l.roomFinish&&flOf(l)===f.fl):[];}
 function roomFinishWindowLit(w){return !!w.roomFinish&&roomFinishLamps().some(l=>lampOn(l));}
 function drawRoomFinishWindow(w,alpha=1,ex=w.x,ey=w.y){
- if(!w.roomFinish||!S.roomFinish)return false;
+ if(officeReady()||!w.roomFinish||!S.roomFinish)return false;
  const b=BLD[S.roomFinish.b],nx=w.tx===b.x0?1:w.tx===b.x1?-1:0,ny=w.ty===b.y0?1:w.ty===b.y1?-1:0;
  const lit=roomFinishWindowLit(w),opened=winSt(w)==='open',r=roomArtRotation(nx,ny);
  return roomArtDraw(ctx,'window-'+Number(lit)+'-'+Number(opened)+'-'+r,ex,ey,alpha);
 }
 function drawRoomFinishFacadeWindow(w,x,y){
- if(!w.roomFinish||!S.roomFinish)return false;
+ if(officeReady()||!w.roomFinish||!S.roomFinish)return false;
  return roomArtDraw(ctx,'window-'+Number(roomFinishWindowLit(w))+'-'+Number(winSt(w)==='open')+'-0',x,y+10,1,.68);
 }
 function drawRoomFinishExterior(openB){
@@ -5671,6 +5831,7 @@ function drawRoomFinishExterior(openB){
   drawRoomFinishFacadeWindow(w,w.tx*TILE+24,(b.y1-f.fl)*TILE+24);
 }
 function drawRoomFinishFixtures(fl,building){
+ if(officeReady())return;
  const f=S.roomFinish;if(!f||f.fl!==fl||building>=0&&building!==f.b)return;
  const controls=new Set();
  for(const l of roomFinishLamps()){
@@ -5694,11 +5855,13 @@ function propArtFrame(it){
  return propArt.frames[it.t+'-'+r+'-'+v]||null;
 }
 function propSurfacePoint(o){
+ const paid=officeSurfacePoint(o);if(paid)return paid;
  const f=o?.surface,a=f&&propArtFrame(f);if(a?.surfaceHeight==null)return null;
  const u=o.surfaceU??.5,x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(drawOfficeFurn(x,it,shadow))return true;
  if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
  const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
@@ -5748,6 +5911,7 @@ function drawEpisodeDressing(c,fl,x0,y0,x1,y1){
    for(const [a,b]of [[px,py],[px+w-14,py],[px,py+h-4],[px+w-14,py+h-4]]){c.fillStyle='rgba(190,165,105,.48)';c.fillRect(a,b,14,4);}
    c.fillStyle='rgba(210,197,157,.32)';c.font=uiFont(14);c.textAlign='center';c.fillText(d.text||'',px+w/2,py+h-9);
   }else if(d.kind==='board'){
+   if(officeReady()){officeBlit(c,'board',px,py,w,h);c.restore();continue;}
    c.fillStyle='#111b23';c.fillRect(px+2,py+3,w,h);c.fillStyle='#59656a';c.fillRect(px,py,w,h);c.fillStyle='#23323a';c.fillRect(px+3,py+3,w-6,h-6);
    c.fillStyle='#bcbaad';c.font=uiFont(10);c.textAlign='left';c.fillText(d.text||'배차 현황',px+7,py+13);
    for(let r=0;r<2;r++)for(let k=0;k<5;k++){c.fillStyle=k===0?'#ad8e61':'#738382';c.fillRect(px+8+k*(w-16)/5,py+19+r*7,(w-26)/5,3);}
@@ -8107,7 +8271,7 @@ function syncServiceRoomLight(){
     l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,r=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*r,l.y+Math.sin(a)*r);}added=true;
   }
   for(const site of [d.toilet,STAGE.vipDrink?.to].filter(Boolean)){
-    const def=STAGE.lamps.find(l=>l[0]===site[0]&&l[1]===site[1]&&!l[3]);if(!def)continue;
+    const bi=bldAt(site[0],site[1]),def=STAGE.lamps.filter(l=>!l[3]&&!(l[4]||0)&&bldAt(l[0],l[1])===bi).sort((a,b)=>Math.hypot(a[0]-site[0],a[1]-site[1])-Math.hypot(b[0]-site[0],b[1]-site[1]))[0];if(bi<0||!def)continue;
     const x=tc(def[0]),y=tc(def[1]),control=def[6]?{x:def[6][0]*TILE,y:def[6][1]*TILE,fl:0,z:0}:null;
     const existing=S.lamps.find(l=>!flOf(l)&&l.x===x&&l.y===y);if(existing){if(control)existing.control=control;continue;}
     const l={x,y,r:def[2],fl:0,outdoor:false,broken:false,poly:[],control};
@@ -9375,7 +9539,7 @@ function enterCover(n, quiet) {
   P.cover = { x: n.x, y: n.y, kind: n.kind }; P.coverPush = 0; P.idleWall = 0; P.vx = 0; P.vy = 0;
   P.snap = { t: 0, dur: quiet ? 0.16 : 0.22, x0: P.x, y0: P.y, x1: P.x - n.x * pull, y1: P.y - n.y * pull, a0: P.a, a1 };
   P.a = a1; P.coverSide = 0; play('cloth', quiet ? 0.16 : 0.26); S.coverFx = { t: S.t, x: P.x - n.x * 14, y: P.y - n.y * 14, nx: n.x, ny: n.y };  // 붙는 순간 벽에 퍼지는 빛 (붙었다는 느낌)
-  hint('cover', abilityOn('ambush')?'벽에 붙음 · 공격은 톡 눌러 기절, 계속 눌러 처치. 행동을 누르거나 반대로 밀면 나온다.':'벽에 붙음 · 공격은 제압 숙련(1P) → 은신 기습(1P)을 배워야 한다. 처음부터 K / 메뉴 > 기술 트리에서 배울 수 있다. 행동이나 반대 방향으로 해제.');
+  hint('cover', abilityOn('ambush')?'벽에 붙음 · 공격은 톡 눌러 기절, 계속 눌러 처치. 행동을 누르거나 반대로 밀면 나온다.':'벽에 붙음 · 공격은 제압 숙련(1P) → 은신 기습(1P)을 배워야 한다. 다음 출발 전 기술 트리에서 배울 수 있다. 행동이나 반대 방향으로 해제.');
 }
 function updateSnap(P, dt) {
   const s = P.snap; if (!P.cover) { P.snap = null; return; } s.t += dt; const f = Math.min(1, s.t / s.dur), e = 1 - (1 - f) * (1 - f);
@@ -10806,6 +10970,7 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
       c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
       c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
+      officeCabinetLeaf(c,g,hinge,side,projection,depth);
       const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=g.doorTop+(g.doorBottom-g.doorTop)*.78+depth;
       if(wide>9){
         const a=.12,b=.86,xa=hinge+side*projection*a,xb=hinge+side*projection*b;
@@ -11046,13 +11211,7 @@ function drawLitContainer(h,part='all') {
   }
   // Add the same lamp colour as the surrounding floor, then restore the fixture alpha.
   l.setTransform(1,0,0,1,-b.x,-b.y);l.globalCompositeOperation='lighter';
-  for(const lamp of S.lamps){
-    if(flOf(lamp)!==fl||!lampOn(lamp)||(!fl&&DBG.glow))continue;
-    const radius=lamp.r*.7;if(lamp.x+radius<b.x||lamp.x-radius>b.x+w||lamp.y+radius<b.y||lamp.y-radius>b.y+v)continue;
-    const neon=NEONY()||!!lamp.col,col=inkLampColor(lamp)||(fl?'255,186,105':NEONY()?(Math.round(lamp.x+lamp.y)%2?'255,60,170':'60,236,255'):'255,186,105');
-    const strength=fl?(lamp.col?.2:.08):(neon?.14:.07),gr=l.createRadialGradient(lamp.x,lamp.y,0,lamp.x,lamp.y,radius);
-    gr.addColorStop(0,`rgba(${col},${strength})`);gr.addColorStop(1,`rgba(${col},0)`);l.fillStyle=gr;l.beginPath();l.arc(lamp.x,lamp.y,radius,0,TAU);l.fill();
-  }
+  for(const lamp of S.lamps)if(flOf(lamp)===fl)drawLampTint(lamp,l);
   l.resetTransform();l.globalCompositeOperation='destination-in';l.drawImage(B.raw,0,0,w,v,0,0,w,v);
   if(S.hazeK>.01){l.globalCompositeOperation='source-atop';l.fillStyle=`rgba(4,8,20,${S.hazeK})`;l.fillRect(0,0,w,v);}
   l.globalCompositeOperation='source-over';ctx.drawImage(B.lit,0,0,w,v,b.x,b.y,w,v);
@@ -14650,6 +14809,7 @@ const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
 // 실제 창짝·걸쇠·창살로 상태를 읽는다. 평면과 외벽은 같은 창문을 그린다.
 function paintWindow(w,lit,L=44,T=20) {
+  if(paintOfficeWindow(w,lit,L,T))return;
   const state=winSt(w),open=state==='open',left=-L/2,top=-T/2;
   ctx.fillStyle='#080e12';ctx.fillRect(left-2,top-1,L+4,T+4);
   ctx.fillStyle='#3b454d';ctx.fillRect(left,top,L,T);
@@ -15035,14 +15195,14 @@ function darkPass(sc, lamps, clip, key) {
 
 // Light reach comes from the shared occluded mask. Tint is subtle room colour,
 // never a second circular reflection across dry pavement or a wall.
-function drawLampTint(l){
+function drawLampTint(l,target=ctx){
  if(l.outdoor||!lampOn(l)||DBG.glow||!l.poly?.length||!inView(l.x,l.y,l.r))return;
  const color=inkLampColor(l)||l.col||(l.hearth?'255,186,105':'235,218,183');
- ctx.save();ctx.globalCompositeOperation='lighter';ctx.beginPath();
- for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
- const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
+ target.save();target.globalCompositeOperation='lighter';target.beginPath();
+ for(let i=0;i<l.poly.length;i+=2)i?target.lineTo(l.poly[i],l.poly[i+1]):target.moveTo(l.poly[i],l.poly[i+1]);target.closePath();target.clip();
+ const g=target.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
  g.addColorStop(0,`rgba(${color},${l.hearth ? .055 : .035})`);g.addColorStop(1,`rgba(${color},0)`);
- ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();
+ target.fillStyle=g;target.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);target.restore();
 }
 
 function chaseHide(P) {
@@ -15167,7 +15327,7 @@ function drawTownExterior(){
 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPropArt();refreshFreeCity();
+  refreshPropArt();refreshOfficeArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
@@ -17530,6 +17690,7 @@ function installGameApi() {
     drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
+    officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},

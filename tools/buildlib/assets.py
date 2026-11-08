@@ -23,4 +23,8 @@ def campaign_assets(root):
     if (paid/'exteriors.json').exists():
         assets['dotonbori']=json.loads((paid/'exteriors.json').read_text())
         assets['dotonbori']['src']='data:image/webp;base64,'+base64.b64encode((paid/'exteriors.webp').read_bytes()).decode()
+    office=Path(root)/'src/art/office'
+    if (office/'interiors.json').exists():
+        assets['office']=json.loads((office/'interiors.json').read_text())
+        assets['office']['src']='data:image/webp;base64,'+base64.b64encode((office/'interiors.webp').read_bytes()).decode()
     return json.dumps(assets, ensure_ascii=False, separators=(',', ':'))

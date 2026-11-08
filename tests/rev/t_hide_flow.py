@@ -31,7 +31,7 @@ async def main():
      }
     }
     for(const type of ['box','well']){
-     const S=fresh('m2'),P=S.player,h=S.hides.find(h=>h.type===type&&!G.solidAt(h.tx,h.ty+1));place(P,h.x,h.y+48);h.bodies=0;
+     const S=fresh('m2'),P=S.player,h=S.hides.find(h=>h.type===type&&!G.solidAt(h.tx,h.ty+1));place(P,h.x,h.y+48);h.bodies=0;h.cap=2;  // Explicit two-person fixture for the shared-storage case.
      const c={x:P.x+12,y:P.y,fl:0,z:0,ch:'sam',ko:true,carried:true,stashed:false};S.corpses=[c];P.carrying=c;
      G.actCarry({k:'carry',c,h});const T=P.trav;check(T?.hideFlow?.kind==='stash'&&P.carrying===c&&!c.stashed&&h.bodies===0,'body storage commits on input');
      for(let i=0;i<20;i++)step(.01);G.actEnv();G.actAttack();check(P.trav===T&&!c.stashed,'body storage skips contact');finish();
@@ -55,8 +55,10 @@ async def main():
      G.actCarry({k:'carry',c,h});finish();check(c.stashed&&c.container===h&&h.bodies===1&&!P.hide,'separate body storage failed');drags++;
 
     }
+    // This animation fixture owns the required ability within an earned 2P budget.
+    localStorage.setItem('yahaeng.ch',JSON.stringify({tB:{_clear:true},p0:{_clear:true}}));localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,rewardVersion:203,legacyPoints:0,learned:['silentHands','ambush']}));
     for(const type of ['box','well'])for(const held of [false,true]){
-     const S=fresh('m2'),P=S.player,h=S.hides.find(h=>h.type===type&&!G.solidAt(h.tx,h.ty+1));place(P,h.x,h.y+48);G.doAct({k:'hide',h});finish();
+     const S=fresh('m2'),P=S.player,h=S.hides.find(h=>h.type===type&&!G.solidAt(h.tx,h.ty+1));place(P,h.x,h.y+48);h.cap=2;G.doAct({k:'hide',h});finish();
      const g={...template,x:h.x,y:h.y+40,a:-Math.PI/2,fl:0,z:0,state:'PATROL',seen:false,target:true,hasKey:null};S.guards=[g];S.keys.KeyZ=true;G.combatPress('KeyZ');G.doAct({k:'ambush',g});check(S.amb&&g.yank&&S.corpses.length===0,'ambush skips pull');
      for(let i=0;i<8;i++)G.update(.01);if(!held){S.keys.KeyZ=false;G.combatRelease('KeyZ');}
      const ctx=G.ctx,scale=ctx.scale;let shrinking=0;ctx.scale=(...a)=>{shrinking++;return scale.apply(ctx,a);};try{G.drawHideFlowVisual();}finally{ctx.scale=scale;}check(shrinking===0,'victim shrinks into container');
