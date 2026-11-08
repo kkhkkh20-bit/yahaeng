@@ -18,7 +18,12 @@ selections={'roofTile':(2592,160,2688,256),'wallPanel':(772,298,796,314),
  'wallBrick':(292,328,304,336),'wallGreen':(420,310,444,318),'wallMetal':(292,4,316,20),
  'cornice':(768,288,864,298),'pilaster':(768,298,772,320),
  'pavers':(1992,168,2024,200),'awning':(416,128,448,134),'roofUnit':(960,64,992,96),
- 'lampOff':(1032,0,1056,16),'lampOn':(1032,64,1056,80)}
+ 'lampOff':(1032,0,1056,16),'lampOn':(1032,64,1056,80),
+ 'metalStorey':(288,0,384,32),'metalWindow':(288,32,320,64),
+ 'officeWindow':(512,96,544,128),'brickWindow':(288,352,320,384),
+ 'greenWindow':(416,320,448,352),'shopWindow':(416,384,448,416),
+ 'brickStorey':(288,320,384,352),'slateStorey':(544,416,608,448),
+ 'masonryPier':(256,320,264,480),'awningGreen':(608,256,640,272),'awningBlue':(640,256,672,272)}
 parts=[(name,sheet.crop(rect),{'sourceRect':list(rect)})for name,rect in selections.items()]
 # Transparent surround: functional glass/lock/open states remain the game's job.
 s=sheet.crop((512,96,544,128));win=Image.new('RGBA',(26,16))
@@ -89,7 +94,7 @@ for y in range(16):
   r,g,b,a=ground.getpixel((x,y))
   if g<=r*1.13:ground.putpixel((x,y),(56,203,171,255))
 for name,soil,light in [('grass',False,0),('grassAlt',False,-1),('soil',True,0)]:parts.append((name,grade(ground,soil,light),{**urban_meta,'tiles':[32],'assembly':'seamless ground, edge stones removed; campaign palette'}))
-atlas=Image.new('RGBA',(512,320));frames={};x=y=row=0
+atlas=Image.new('RGBA',(512,512));frames={};x=y=row=0
 for name,tile,meta in parts:
  if x+tile.width>atlas.width:x=0;y+=row+2;row=0
  if y+tile.height>atlas.height:raise SystemExit('Atlas overflow')

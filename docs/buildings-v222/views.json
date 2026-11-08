@@ -1,0 +1,58 @@
+[
+  {
+    "version": "v221",
+    "view": "warehouse",
+    "id": "p0",
+    "doorCount": 7,
+    "warehouseInterior": 5
+  },
+  {
+    "version": "v221",
+    "view": "entry",
+    "id": "p0",
+    "doorCount": 7,
+    "warehouseInterior": 5
+  },
+  {
+    "version": "v221",
+    "view": "club",
+    "id": "m2",
+    "doorCount": 27,
+    "warehouseInterior": 3
+  },
+  {
+    "version": "v221",
+    "view": "mixed",
+    "id": "city",
+    "doorCount": 73,
+    "warehouseInterior": 0
+  },
+  {
+    "version": "v222",
+    "view": "warehouse",
+    "id": "p0",
+    "doorCount": 2,
+    "warehouseInterior": 0
+  },
+  {
+    "version": "v222",
+    "view": "entry",
+    "id": "p0",
+    "doorCount": 2,
+    "warehouseInterior": 0
+  },
+  {
+    "version": "v222",
+    "view": "club",
+    "id": "m2",
+    "doorCount": 27,
+    "warehouseInterior": 3
+  },
+  {
+    "version": "v222",
+    "view": "mixed",
+    "id": "city",
+    "doorCount": 56,
+    "warehouseInterior": 0
+  }
+]

@@ -59,7 +59,7 @@ function drawRoomFinishFacadeWindow(w,x,y){
 }
 function drawRoomFinishExterior(openB){
  const f=S.roomFinish;if(!f||openB===f.b)return;const b=BLD[f.b];
- if(!b?.facade||f.fl>=b.fh)return;
+ if(!b?.facade||f.fl>=b.fh||freeCityBuilding(b)&&freeCityReady())return;
  // Window-sight overlays contain the ground-floor plan. Upper-floor panes
  // stay on their facade row and retain their own room's electrical state.
  for(const w of S.fwindows||[])if(w.roomFinish&&w.ty===b.y1)

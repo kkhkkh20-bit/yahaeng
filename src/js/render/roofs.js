@@ -68,7 +68,7 @@ function drawRoofs(openB) {
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
   for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
-  for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
+  for (const d of S.doors) { const b = bldAt(d.tx, d.ty),v=BLD[b]; if (v && b !== openB && !onFacade(d.tx, d.ty) && !v.plan && !freeCityBuilding(v) && (d.tx===v.x0||d.tx===v.x1||d.ty===v.y0||d.ty===v.y1)) drawDoor(d, true); }
   for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
   for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
@@ -105,6 +105,7 @@ function drawRoof1(b, i, roof) {
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
     ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
+    drawCityEntrances(b);
   }
 }
 // 가스관과 2층 베란다 (정면 벽 위에 그린다)
@@ -125,8 +126,8 @@ function drawFacadeExtras(b, flat, kit) {
     return;
   }
   const top = (b.y1 - b.fh + 1) * TILE - 4, bot = (b.y1 + 1) * TILE + 6;
-  if (b.tint) { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgb(${b.tint})`; ctx.fillRect(b.x0 * TILE, top + 4, (b.x1 - b.x0 + 1) * TILE, bot - top - 10); ctx.globalCompositeOperation = 'source-over'; }
-  if (b.plate && b.kind !== 'shop' && b.fh >= 2) {  // 건물 이름판 (꼭대기 층 벽)
+  if (b.tint&&!freeCityBuilding(b)) { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgb(${b.tint})`; ctx.fillRect(b.x0 * TILE, top + 4, (b.x1 - b.x0 + 1) * TILE, bot - top - 10); ctx.globalCompositeOperation = 'source-over'; }
+  if (b.plate && b.kind !== 'shop' && b.fh >= 2 && !freeCityBuilding(b)) {  // 건물 이름판 (꼭대기 층 벽)
     ctx.font = uiFont(15); const tw = ctx.measureText(b.plate).width + 18, cx = (b.x0 + b.x1 + 1) * TILE / 2, py = top + 8;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - tw / 2 + 3, py + 3, tw, 22);
     ctx.fillStyle = b.church ? '#5a1418' : '#23303a'; ctx.fillRect(cx - tw / 2, py, tw, 22);

@@ -169,13 +169,22 @@ function newGame(si) {
   // 문: 건물 테두리의 바닥 칸, 또는 양옆이 벽인 건물 안 바닥 칸
   S.doors = [];
   const wallish = v => v === '#' || v === 'N' || v === 'S';
-  BLD.forEach(b => {
+  BLD.forEach((b,bi) => {
     if (b.piloti || b.vacant) return;  // 주차장·공터·폐허 가장자리는 문이 아니다
+    const authored=new Set(),collect=(v,k='')=>{if(!v||typeof v!=='object')return;if(Array.isArray(v)&&/door|back|entry/i.test(k)&&v.length>=2&&Number.isFinite(v[0])&&Number.isFinite(v[1]))authored.add(v[0]+','+v[1]);else for(const [key,value]of Object.entries(v))collect(value,key);};
+    collect(PLANS[bi]?.[0]);for(const p of [...(STAGE.closedDoors||[]),...(STAGE.keyDoors||[]),...(STAGE.locks||[]).map(l=>l.at).filter(Boolean)])authored.add(p[0]+','+p[1]);
     for (let ty = b.y0; ty <= b.y1; ty++) for (let tx = b.x0; tx <= b.x1; tx++) {
       const ch = G[ty][tx]; if (SOLID.has(ch)) continue;
       const border = tx === b.x0 || tx === b.x1 || ty === b.y0 || ty === b.y1;
       const lr = wallish(G[ty][tx - 1]) && wallish(G[ty][tx + 1]), ud = wallish((G[ty - 1] || [])[tx]) && wallish((G[ty + 1] || [])[tx]);
       if (!border && !lr && !ud) continue;
+      if(!border&&!authored.has(tx+','+ty)){
+        // A one-cell-wide corridor is floor, not a row of swinging doors.
+        const [dx,dy]=lr?[0,1]:[1,0],walk=(x,y)=>inMap(x,y)&&!SOLID.has(G[y][x]);
+        if(!walk(tx+dx,ty+dy)||!walk(tx-dx,ty-dy))continue;
+        const narrow=(x,y)=>lr?wallish(G[y][x-1])&&wallish(G[y][x+1]):wallish((G[y-1]||[])[x])&&wallish((G[y+1]||[])[x]);
+        if(narrow(tx+dx,ty+dy)&&narrow(tx-dx,ty-dy))continue;
+      }
       if (S.doors.some(d => d.tx === tx && d.ty === ty)) continue;
       const horiz = (border && (ty === b.y0 || ty === b.y1)) || (!border && lr);
       S.doors.push({ tx, ty, x: tc(tx), y: tc(ty), orig: ch, locked: false, horiz });

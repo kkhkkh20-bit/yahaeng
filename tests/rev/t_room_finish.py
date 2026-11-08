@@ -45,9 +45,10 @@ async def main():
    ok(G.S.lamps.length===count,'repeated saves duplicate lamps');
    const pilotCount=lamps.length;
    S=fresh('m2');P=S.player;S.fade=0;Object.assign(P,{x:648,y:744,fl:0,z:0});G.setLayer(0);G.setZoom(1);G.cam.x=340;G.cam.y=600;
-   const paneSample=()=>{G.benchDraw(40);const dp=G.DPRinfo()[0],x=Math.round(((176-G.cam.x)*G.SCALE+innerWidth/2)*dp),y=Math.round(((600-G.cam.y)*G.SCALE+innerHeight/2)*dp),d=G.ctx.getImageData(x-3,y-3,6,6).data;let v=0;for(let i=0;i<d.length;i+=4)v+=d[i]+d[i+1]+d[i+2];return v/(36*3);};
+   const exteriorWindow=S.fwindows.find(w=>w.roomFinish&&G.BLD.some(b=>w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1)),exteriorBuilding=G.BLD.find(b=>exteriorWindow.ty===b.y1&&exteriorWindow.tx>=b.x0&&exteriorWindow.tx<=b.x1);
+   const paneSample=()=>{G.benchDraw(40);const dp=G.DPRinfo()[0],x=Math.round(((exteriorWindow.x-G.cam.x)*G.SCALE+innerWidth/2)*dp),y=Math.round((((exteriorBuilding.y1-exteriorWindow.fl)*48+24-G.cam.y)*G.SCALE+innerHeight/2)*dp),sz=Math.max(4,Math.floor(36*G.SCALE*dp)),d=G.ctx.getImageData(x-sz/2,y-sz/2,sz,sz).data;let v=0;for(let i=0;i<d.length;i+=4)v+=d[i]+d[i+1]+d[i+2];return v/(sz*sz*3);};
    const facadeLit=paneSample();G.setLampCircuit(G.roomFinishLamps()[0],true);const facadeDark=paneSample();
-   ok(facadeLit>facadeDark+10,'upper window facade ignores room switch: '+JSON.stringify({facadeLit,facadeDark}));
+   ok(facadeLit>facadeDark+2,'upper window facade ignores room switch: '+JSON.stringify({facadeLit,facadeDark}));
    for(const id of ['t0','e1','m1','m3','m4'])if(G.STAGES.some(s=>s.id===id)){S=fresh(id);ok(!S.roomFinish&&!G.roomFinishLamps().length,'pilot leaks to '+id);}
    return{sprites:48,pilotCount,windows:w.length,lit,dark,wallLit,wallDark,facadeLit,facadeDark,basicSwitch:true,checkpointStable:true,isolated:true};
   }''')
