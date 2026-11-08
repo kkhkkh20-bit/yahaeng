@@ -63,7 +63,7 @@ function syncOutdoorLamps() {
   const L0=CUR_F;setLayer(0);const n=mountOutdoorLamps(S.lamps);
   if(n) {
     for(const l of S.lamps)if(l.outdoor&&!flOf(l)) {
-      l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+      rebuildLampPolygon(l);
     }
     LG=null;for(const k in lightCache)delete lightCache[k];
   }setLayer(L0);return n;

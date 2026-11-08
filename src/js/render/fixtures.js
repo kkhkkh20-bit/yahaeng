@@ -1,6 +1,6 @@
 function drawRoutes(P) {
   const openB = (P.z === 0 && !P.jump) ? bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) : -1;
-  const hiddenPt = p => { const b = bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)); return b >= 0 && b !== openB && !(S.peek && S.peek.b === b) && !tactical; };
+  const hiddenPt = p => { const b = bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)); return b >= 0 && b !== openB && !tactical; };
   const vf = (!P.z && !P.wire && !P.jump) ? flOf(P) : 0;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.civ || flOf(g) !== vf) continue;

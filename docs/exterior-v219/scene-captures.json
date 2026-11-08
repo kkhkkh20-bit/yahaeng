@@ -1,0 +1,112 @@
+[
+  {
+    "version": "v218",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "entry",
+    "x": 120,
+    "y": 504,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v218",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "window",
+    "x": 168,
+    "y": 366,
+    "openB": 0,
+    "roofAlpha": 0,
+    "errors": []
+  },
+  {
+    "version": "v218",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "workshop",
+    "x": 696,
+    "y": 1128,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v218",
+    "width": 390,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "entry",
+    "x": 120,
+    "y": 504,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v218",
+    "width": 390,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "window",
+    "x": 168,
+    "y": 366,
+    "openB": 0,
+    "roofAlpha": 0,
+    "errors": []
+  },
+  {
+    "version": "v219",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "entry",
+    "x": 120,
+    "y": 504,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v219",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "window",
+    "x": 168,
+    "y": 366,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v219",
+    "width": 1280,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "workshop",
+    "x": 696,
+    "y": 1128,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v219",
+    "width": 390,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "entry",
+    "x": 120,
+    "y": 504,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  },
+  {
+    "version": "v219",
+    "width": 390,
+    "method": "same-seed controlled placement; not native playback",
+    "scene": "window",
+    "x": 168,
+    "y": 366,
+    "openB": -1,
+    "roofAlpha": 1,
+    "errors": []
+  }
+]

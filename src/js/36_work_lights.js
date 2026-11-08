@@ -32,7 +32,7 @@ function syncWorkLights() {
         const lamp = {x:at.x,y:at.y,r:240,fl,outdoor:false,broken:false,off:false,workLight:true,col:'236,221,189',control:{...control,fl,z:0},poly:[]};
         const fuse = (S.bfuses || []).find(f => f.b === bi && f.cut);
         if (fuse) { lamp.cut=bi; lamp.cutWas=false; lamp.off=true; }
-        for (let i=0;i<180;i++) { const a=i/180*TAU,d=Math.min(lamp.r,castRay(lamp.x,lamp.y,a,lamp.r)+20);lamp.poly.push(lamp.x+Math.cos(a)*d,lamp.y+Math.sin(a)*d); }
+        rebuildLampPolygon(lamp);
         local.push(lamp); S.lamps.push(lamp);
       }
     });

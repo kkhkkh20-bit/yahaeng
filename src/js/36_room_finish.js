@@ -27,7 +27,7 @@ function initRoomFinish(){
   l.finishOrigin={x:l.x,y:l.y,r:l.r,col:l.col};l.roomFinish=true;
   // Put the emitter just inside the mounted fixture, never in the old room centre.
   l.x=l.fixture.x+l.fixture.nx*8;l.y=l.fixture.y+l.fixture.ny*8;l.r=300;l.col='235,218,183';
-  l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,d=Math.min(l.r,castRay(l.x,l.y,a,l.r));l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+  rebuildLampPolygon(l);
  }
  for(const w of S.fwindows||[]){
   if(w.fl!==fl||bldAt(w.tx,w.ty)!==b)continue;
@@ -76,9 +76,4 @@ function drawRoomFinishFixtures(fl,building){
   if(!l.control||controls.has(l.circuit))continue;controls.add(l.circuit);
   const p=l.control;roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(-p.nx,-p.ny),p.x+p.nx*5,p.y+p.ny*5);
  }
-}
-function drawRoomFinishGlow(l,color){
- if(!l.roomFinish)return false;
- ctx.save();ctx.beginPath();for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
- const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.65);g.addColorStop(0,`rgba(${color},.075)`);g.addColorStop(1,`rgba(${color},0)`);ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();return true;
 }

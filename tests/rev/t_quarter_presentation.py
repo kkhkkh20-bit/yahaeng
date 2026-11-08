@@ -20,9 +20,9 @@ async def main():
     const G=__game,check=(v,m)=>{if(!v)throw Error(m)};G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,b=G.BLD[1];G.setLayer(0);
     check(Object.values(G.quarterImages).every(a=>a.img.complete&&a.img.naturalWidth>0),'floor cache starts before art decode');
     const before=JSON.stringify({grid:G.G0,doors:S.doors.map(d=>[d.tx,d.ty,d.locked]),ladders:S.ladders.map(l=>[l.bx,l.by,l.rx,l.ry])});
-    Object.assign(P,{x:25.5*48,y:16.5*48,a:-Math.PI/2,fl:0,z:0});check(!G.quarterWindowView(P,b),'street reveals whole floor');G.benchDraw(1);check(b.quarterRoof?.width>0,'opaque roof missing');
+    Object.assign(P,{x:25.5*48,y:16.5*48,a:-Math.PI/2,fl:0,z:0});G.benchDraw(1);check(S.openB===-1,'street reveals whole floor');check(b.quarterRoof?.width>0,'opaque roof missing');
     const pixel=b.quarterRoof.getContext('2d').getImageData(100,100,1,1).data;check(pixel[3]===255,'roof is transparent');
-    const win=S.windows.find(w=>w.ty===b.y1&&w.tx>b.x0&&w.tx<b.x1);check(win,'actual front window missing');Object.assign(P,{x:win.x,y:win.y+48,a:-Math.PI/2});check(G.quarterWindowView(P,b),'near window not visible');P.a=Math.PI/2;check(!G.quarterWindowView(P,b),'looking away reveals room');
+    const win=S.windows.find(w=>w.ty===b.y1&&w.tx>b.x0&&w.tx<b.x1);check(win,'actual front window missing');Object.assign(P,{x:win.x,y:win.y+48,a:-Math.PI/2});G.benchDraw(1);check(S.openB===-1,'window proximity removes roof');P.a=Math.PI/2;G.benchDraw(1);check(S.openB===-1,'looking away reveals room');
     Object.assign(P,{x:28.5*48,y:12.5*48,a:0});for(let n=0;n<20;n++)G.benchDraw(1);check(S.openB===1,'interior fails to open');
     check(before===JSON.stringify({grid:G.G0,doors:S.doors.map(d=>[d.tx,d.ty,d.locked]),ladders:S.ladders.map(l=>[l.bx,l.by,l.rx,l.ry])}),'art modifies collision/openings');
     G.saveCheckpoint();check(G.loadCheckpoint(),'sample save cannot restore');

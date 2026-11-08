@@ -2,6 +2,16 @@
 const TORCH_R = 210, TORCH_FOV = .32;
 const flickOff = l => !!l.flk && ((Math.sin(S.t * l.flk.f + l.flk.p) > 0.62) || ((S.t * 6.3 + l.flk.p) % 7 < 0.35));  // 깜빡이는 보안등·간판: 잠깐씩 꺼진다
 const lampOn = l => !l.broken && !l.off && !(l.outdoor && mainPowerOff(l)) && !flickOff(l);
+// Rendering mask only: stop exactly at the first occluder. Detection uses lightAt/los.
+function rebuildLampPolygon(l){
+ const layer=CUR_F;try{setLayer(flOf(l));l.poly=[];
+  for(let i=0;i<180;i++){const a=i/180*TAU,d=castRay(l.x,l.y,a,l.r);l.poly.push(l.x+Math.cos(a)*d,l.y+Math.sin(a)*d);}
+ }finally{setLayer(layer);}
+}
+function refreshLightMasks(){
+ for(const l of S.lamps)rebuildLampPolygon(l);
+ for(const key in lightCache)delete lightCache[key];
+}
 // 빛의 중심과 손으로 누르는 스위치는 별개다. 구버전 저장도 기둥 밑 상자에 연결한다.
 function lampControl(l) {
   if (l.control) return l.control;

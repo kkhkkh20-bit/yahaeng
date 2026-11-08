@@ -575,30 +575,13 @@ function updatePlayer(dt) {
     const cl = nearClimb(); if (cl) hint(cl.gas ? 'gas' : cl.kind, cl.kind === 'balc' ? '베란다: 난간을 붙잡고 2층으로 오른다. 안에서는 같은 창 앞에서 [베란다로 나가 내려가기]' : cl.gas ? '가스관: 정면 벽 노란 배관을 타고 옥상까지 오른다' : cl.kind === 'pipe' ? '배관: [오르기]로 건물 옥상까지 타고 오른다' : '사다리: [오르기]로 옥상에 올라간다');
     const tx = Math.floor(P.x / TILE), ty = Math.floor(P.y / TILE);
     if (N8.some(o => inMap(tx + o[0], ty + o[1]) && G[ty + o[1]][tx + o[0]] === 'S')) hint('secret', '벽에 금이 간 곳은 숨겨진 통로다. 그대로 걸어 들어가면 지나갈 수 있다 (자경대원은 모른다)');
-    if (bldAt(tx, ty) >= 0) hint('inside', '건물 안은 들어가야 보인다. 밖에선 창문·열린 문 너머만 보인다');
+    if (bldAt(tx, ty) >= 0) hint('inside', '건물에 들어가면 현재 층이 열린다. 살피기로 주변 구조를 확인한다');
   }
-  updateWindowView(P);
   checkObjective();
   if (STAGE.zones) { const zi = pZoneInfo(); if (zi.k !== Z_PUB && zi.allow) for (const o of myPermits()) if (zi.allow.includes(o)) (S.usedPermit || (S.usedPermit = {}))[o] = true; }  // 신분이 금지 구역을 통과시켜 준 기록 (도전 과제 판정)
   if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = S.exits.reduce((a, b) => dist(P.x, P.y, a.x, a.y) <= dist(P.x, P.y, b.x, b.y) ? a : b);  // 안내는 가장 가까운 탈출구로
   if (S.exitOpen && P.z === 0 && !flOf(P) && !S.over && (S.exits || [S.exit]).some(e => dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
 }
-// 창문 앞에서 창문 쪽을 바라보고 있으면 그 건물 안이 보인다
-function updateWindowView(P) {
-  const was = S.peek; S.peek = null;
-  if (P.z || P.fl || P.hide || P.vent || P.under || P.jump) return;
-  if (bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)) >= 0) return;
-  let best = null, bd = 76;
-  for (const w of S.windows) {
-    const b = bldAt(w.tx, w.ty); if (b < 0) continue;
-    const d = dist(P.x, P.y, w.x, w.y); if (d >= bd) continue;
-    if (Math.abs(angDiff(P.a, Math.atan2(w.y - P.y, w.x - P.x))) > 0.9) continue;
-    bd = d; best = { w, b };
-  }
-  S.peek = best;
-  if (best && !was) { play('cloth', 0.12); hint('peek', '창문 쪽을 바라보면 안이 보인다. 고개를 돌리면 다시 가려진다'); }
-}
-
 // 밀어서 넘기 예고: 차오르는 고리 + 이름
 function drawPushHint() {
   const k = S.pk; if (!k || !k.at || !(k.f > 0.08)) return; const sc = Math.max(1, 0.9 / SCALE);

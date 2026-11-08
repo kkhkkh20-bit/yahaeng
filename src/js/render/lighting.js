@@ -14,14 +14,13 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
 }
 function darkPass(sc, lamps, clip, key) {
-  const P = S.player;
   // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.
   const ds = 0.5 / DPR;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.76)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.72)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
@@ -33,14 +32,21 @@ function darkPass(sc, lamps, clip, key) {
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;
     lampLight(dctx, l, flick);
   }
-  const pg = dctx.createRadialGradient(P.x, P.y, 0, P.x, P.y, 120);
-  pg.addColorStop(0, 'rgba(0,0,0,.42)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
-  dctx.fillStyle = pg; dctx.fillRect(P.x - 120, P.y - 120, 240, 240);
   if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2], clip[3]); ctx.clip(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!DBG.dk1) { ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false; }
   worldTransform(ctx, sc);
   if (clip) ctx.restore();
 }
-// 지금 할 일 표시: 목표가 화면 안이면 그 위에 금색 표(▼ 할 일), 밖이면 화면 가장자리에 방향 화살표 + 할 일 + 거리
-// 쫓기는 중에는 할 일 대신 가장 가까운 숨을 곳(수거함·맨홀·옷장 등)을 가리킨다 — 발각을 끊는 게 먼저
+
+// Light reach comes from the shared occluded mask. Tint is subtle room colour,
+// never a second circular reflection across dry pavement or a wall.
+function drawLampTint(l){
+ if(l.outdoor||!lampOn(l)||DBG.glow||!l.poly?.length||!inView(l.x,l.y,l.r))return;
+ const color=inkLampColor(l)||l.col||(l.hearth?'255,186,105':'235,218,183');
+ ctx.save();ctx.globalCompositeOperation='lighter';ctx.beginPath();
+ for(let i=0;i<l.poly.length;i+=2)i?ctx.lineTo(l.poly[i],l.poly[i+1]):ctx.moveTo(l.poly[i],l.poly[i+1]);ctx.closePath();ctx.clip();
+ const g=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,l.r*.7);
+ g.addColorStop(0,`rgba(${color},${l.hearth ? .055 : .035})`);g.addColorStop(1,`rgba(${color},0)`);
+ ctx.fillStyle=g;ctx.fillRect(l.x-l.r,l.y-l.r,l.r*2,l.r*2);ctx.restore();
+}
