@@ -36,19 +36,10 @@
 #hud #stealth[data-s=seen]{color:var(--hud-danger);--sc:var(--hud-danger)}
 #hud #stealth #accessLbl[data-access=denied],#hud #stealth #actionRiskLbl{color:var(--hud-warn)}
 #hud #stealth #actionRiskLbl[data-risk=camera],#hud #stealth #actionRiskLbl[data-risk=witness]{color:var(--hud-danger)}
-/* Speech is a brief part of the objective, with a full paused reading state. */
-#hud #episodeRadio{border-top:1px solid #4c585c;padding:8px 0 0;margin:4px 0 0;gap:10px}
-#hud .obj:not(.open) #episodeRadio{padding-top:7px;margin-top:3px}
-#hud .obj:not(.open) #episodeRadio .episode-radio-copy{font-size:12px;line-height:1.5}
-#hud .obj:not(.open) #episodeRadioSpeaker{color:var(--hud-warn);font-size:11px}
-#hud .obj:not(.open) #episodeRadio p{color:#dce0dc;font-size:12px;line-height:1.5}
 #hud .obj.open{max-width:500px;max-height:min(65dvh,480px);padding:12px 18px;overflow:auto;background:#10171d;scrollbar-color:#677479 #10171d}
 #hud .obj.open #objTitle{font-size:13px;color:var(--hud-ink)}
 #hud .obj.open #objective .ol{font-size:13px;line-height:1.6;border-bottom-color:#4c585c;padding-block:10px}
-#hud .obj.open #episodeRadioFace{width:40px;height:46px;flex-basis:40px}
-#hud .obj.open #episodeRadioSpeaker{color:var(--hud-warn);font-size:12px}
-#hud .obj.open #episodeRadio p{font-size:14px;color:var(--hud-ink)}
-#hud .obj.open #episodeRadioAction,#hud .objective-read-hint{font-size:11px;color:var(--hud-muted)}
+#hud .objective-read-hint{font-size:11px;color:var(--hud-muted)}
 #hud .obj.open #missionIdentity{display:grid;padding:8px 0;gap:10px}
 #hud .obj.open #missionIdentity canvas{width:36px;height:36px}
 #hud .obj.open #missionIdentity small{font-size:10px}
@@ -107,7 +98,6 @@ body.touch #hud #saveState{left:20px;bottom:48px;max-width:calc(100vw - 200px);f
  #hud .obj.open{position:relative;width:calc(100vw - 24px);max-height:62dvh;padding:10px 14px;z-index:10}
  #hud #loadout{width:calc(100vw - 24px);max-width:340px;padding:18px;right:max(12px,env(safe-area-inset-right))}
  #hud #envPicker{padding:12px;max-width:calc(100vw - 120px)}
- #hud .obj:not(.open) #episodeRadio .episode-radio-copy{font-size:12px}
 }
 @media(max-width:360px){
  #hud{--field-edge:max(12px,env(safe-area-inset-right));--field-bottom:max(16px,env(safe-area-inset-bottom))}
@@ -157,7 +147,6 @@ body.touch #hud #saveState{padding:3px 6px;background:#10171de8}
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch:not(.inspecting) #hud .status{position:static;left:auto;top:auto}}
 
 body.touch:not(.inspecting) #hud #stealth:not(.quiet) #accessLbl:not([hidden]){display:none}
-body:not(.touch) #hud .obj:not(.open) #missionIdentity{display:flex;gap:8px;border:0;padding:3px 0;margin:0}
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch #hud #stealth{top:var(--topb,88px);padding:2px 6px}}
 
 /* Finish review: reserve space for meaning, not only the circular hit box. */
@@ -166,7 +155,6 @@ body:not(.touch) #hud .obj:not(.open) #missionIdentity{display:flex;gap:8px;bord
 #hud .obj.open .objective-content{overflow-y:auto;min-height:0;scrollbar-width:thin;scrollbar-color:#889590 #17242c;overscroll-behavior:contain;padding-right:4px}
 #hud .obj.open .objective-read-hint{display:block;flex-shrink:0;order:-1;padding:5px 0 9px;border-bottom:1px solid #4c585c;color:#efc798;font-size:11px;line-height:1.5}
 #hud .obj.open #objTitle{flex-shrink:0;order:-2}
-#hud .obj.open #episodeRadioAction{display:none}
 #hud #loadout{display:flex;flex-direction:column;overflow:hidden}
 #hud #loadout[hidden]{display:none}
 #hud #loadout header{flex-shrink:0;padding-bottom:12px}
@@ -295,3 +283,27 @@ body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCro
  #hud #hpPips i.lost{background:#b98f86}
  body.touch #hud .pad>button:is(.down,:active)>:is(svg,b),body.touch #hud #btnCrouch:is(.down,:active)>:is(svg,b){transform:none}
 }
+/* Mission = destination; radio = immediate order. A separate, transient transmission. */
+#hud .obj:not(.open) #missionIdentity{display:none}
+#hud #episodeRadio{position:fixed;z-index:24;left:12px;top:150px;display:flex;align-items:flex-start;gap:11px;margin:0;padding:10px 13px;border:1px solid #7c898e;border-left:3px solid #c5baa0;border-radius:3px;background:linear-gradient(115deg,#17232cf5,#0e171ff5);box-shadow:0 3px 14px #0006;pointer-events:none;animation:radio-arrive .16s ease-out;color:#efeee6;font-family:var(--f-body)}
+#hud #episodeRadio[hidden]{display:none}
+#hud #episodeRadioFace{display:block;width:34px;height:42px;flex:0 0 34px;image-rendering:pixelated;object-fit:contain;border-bottom:1px solid #67777d}
+#hud #episodeRadio .episode-radio-copy{min-width:0;flex:1;display:block;font-size:13px;line-height:1.5}
+#hud #episodeRadio b{display:flex;gap:7px;align-items:center;margin:0;font-size:11px;line-height:1.2;font-weight:500}
+#hud #episodeRadioSpeaker{color:#f0dec1;font-size:11px}
+#hud #episodeRadioChannel{color:#94a8b6;font-size:10px}
+#hud #episodeRadioChannel::after{content:' ▂▅▃';color:#9cacae;font-size:10px;letter-spacing:2px}
+#hud #episodeRadio p{display:block;color:#efeee6;font-size:14px;line-height:1.5;margin:5px 0 0;word-break:keep-all;overflow-wrap:anywhere}
+#hud #episodeRadioAction{display:block;margin-top:5px;font-size:10px;line-height:1.4;color:#aabac4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hud #episodeRadio[data-priority='2']{border-left-color:#e7a59a}
+#hud #episodeRadio[data-priority='2'] #episodeRadioSpeaker{color:#efbbb0}
+#hud #btnRadio{position:fixed;z-index:18;right:var(--field-edge);width:44px;height:44px;min-height:44px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid #6d7d83;border-radius:50%;background:#14222deb;color:#e5e6df;font-size:11px;line-height:1;pointer-events:auto}
+#hud #btnRadio[hidden]{display:none}
+body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
+@media(hover:hover){#hud #btnRadio:hover{background:#2a3b48}}
+#hud #btnRadio:active{background:#3c4d57;transform:translateY(1px)}
+@keyframes radio-arrive{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){#hud #episodeRadio{padding:9px 11px;gap:9px}#hud #episodeRadioFace{width:30px;height:38px;flex-basis:30px}#hud #episodeRadio p{font-size:13px;line-height:1.5}}
+@media(max-width:360px){#hud #episodeRadio{padding:5px 10px;gap:8px}#hud #episodeRadioFace{width:26px;height:34px;flex-basis:26px}#hud #episodeRadio p{font-size:12px;line-height:1.4;margin-top:3px}#hud #episodeRadioAction{display:none}}
+@media(max-height:440px) and (orientation:landscape){#hud #episodeRadio{padding:7px 9px;gap:7px}#hud #episodeRadioFace{width:26px;height:34px;flex-basis:26px}#hud #episodeRadio p{font-size:12px;line-height:1.4}#hud #episodeRadioAction{font-size:9px;margin-top:3px}}
+@media(prefers-reduced-motion:reduce){#hud #episodeRadio{animation:none}}

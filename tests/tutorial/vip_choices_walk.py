@@ -241,7 +241,10 @@ async def main():
    await q.screenshot(path=str(O/(name+'-clear.png')))
    print('VIP EXIT',json.dumps(result,ensure_ascii=False),flush=True)
    if PREP:
-    before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert await q.locator('#skillScreen').is_visible()
+    # Completion settles before the automatic preparation screen opens. Observe
+    # that real transition instead of asserting in the same result-frame tick.
+    await q.locator('#skillScreen').wait_for(state='visible',timeout=7000)
+    before=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())')
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     assert before==1,('first VIP clear should add exactly 1P',before)
     for skill in ['quietStep']:

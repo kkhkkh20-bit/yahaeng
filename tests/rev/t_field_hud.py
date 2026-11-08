@@ -13,12 +13,19 @@ async def main():
    assert await q.locator('#accessLbl').is_visible(),'innocent disguise has no visible permission'
    assert '통행 허용' in await q.locator('#accessLbl').inner_text()
    assert await q.locator('#expoLbl').is_hidden(),'duplicate quiet-state text'
-   assert '스위치' in await q.locator('#objectiveSummary').inner_text()
+   mission=await q.locator('#objectiveSummary').inner_text();assert '처치' in mission and '탈출' in mission
    assert await q.locator('#btnAct [data-field-icon]').count()==1,'new control has no actual SVG icon'
    await q.evaluate('''()=>{const G=__game,S=G.S,g=S.guards[0];S.expo=2;Object.assign(g,{state:'ALERT',seen:true,sightAt:S.t,sightFl:0,sightZ:0});G.updateHUD(true)}''')
-   assert '시야를 끊고 숨기' in await q.locator('#objectiveSummary').inner_text(),'chase leaves mission work as the primary instruction'
+   await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
+   assert await q.locator('#objectiveSummary').inner_text()==mission,'chase replaced the overall mission'
+   assert '시야 끊고 숨어' in await q.locator('#episodeRadioText').inner_text(),'radio leaves work as the instruction during chase'
    assert await q.locator('#expoLbl').is_visible() and '발각' in await q.locator('#expoLbl').inner_text()
    assert await q.locator('#accessLbl').is_hidden(),'permission competes with an actual detection'
+   await q.evaluate("()=>{const G=__game,S=G.S;for(const g of S.guards){g.state='SEARCH';g.seen=false;}S.player.hidden=true;S.alevel=2;S.searchCause={kind:'player',t:S.t};}")
+   await q.wait_for_timeout(800);await q.evaluate('__game.syncEpisodeRadio()')
+   assert '지금은 움직이지 마' in await q.inner_text('#episodeRadioText'),'resolved chase keeps shouting to run'
+   assert await q.locator('#episodeRadio').get_attribute('data-priority')=='1'
+
    await q.click('#hud .obj');assert await q.evaluate('__game.hudInspecting()')
    assert await q.locator('#objective').is_visible(),'full mission is lost in compact mode'
    await q.click('#hud .obj');assert not await q.evaluate('__game.hudInspecting()')
@@ -35,6 +42,11 @@ async def main():
     if(hit({left:sx-24,top:sy-20,right:sx+24,bottom:sy+15},r))throw Error('Target cycle covers the selected guard');
     return{speechVisible:true,feedbackSeparated:true,selectedGuardVisible:true};
    }""")
+   # After dismissing the reading view, the replay control also avoids contextual buttons.
+   await q.click('#hud .obj');await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
+   await q.click('#hud .obj');await q.wait_for_timeout(250);await q.evaluate('__game.syncEpisodeRadio()')
+   assert await q.locator('#btnRadio').is_visible()
+   assert await q.locator('#btnRadio').evaluate('''e=>{const a=e.getBoundingClientRect(),hit=b=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;return ![...document.querySelectorAll('.pad>button,.sysbtns>button,#btnPause,#mini')].filter(b=>!b.closest('[hidden]')&&getComputedStyle(b).visibility!=='hidden'&&b.getBoundingClientRect().width).some(b=>hit(b.getBoundingClientRect()))}'''),'radio replay overlaps a game control'
    assert not errors,errors;print('PASS field HUD quiet/danger/reading and overlay collisions' ,w,h,flush=True);await q.close()
   await b.close()
 asyncio.run(main())
