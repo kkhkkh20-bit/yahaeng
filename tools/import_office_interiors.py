@@ -55,6 +55,10 @@ for name, box in selection.items():
     rect = tuple(n * 32 for n in box)
     if name=='printer':rect=(1504,64,1556,116)
     if name=='copier':rect=(1568,64,1600,106)
+    # Isolate the actual wall luminaire, not the neighbouring wall panel / grille.
+    if name in ('fluorescent','warmLamp'):rect=(2081,369,2111,376)
+    # A complete casement without the neighbouring shutter or painted wall.
+    if name=='windowSource':rect=(2308,36,2332,59)
     art = sheet.crop(rect)
     if not name.startswith(('floor', 'wall')):
         bounds = art.getbbox()
@@ -85,6 +89,13 @@ for name,art,meta in parts:
         pixels=list(art.get_flattened_data());mean=[sum(p[c]for p in pixels)/len(pixels)for c in range(3)]
         art.putdata([(*(round(mean[c]+(p[c]-mean[c])*.55)for c in range(3)),p[3])for p in pixels])
         meta={**meta,'contrast':.55}
+    elif name=='warmLamp':
+        art.putdata([(min(185,p[0]),min(158,p[1]),min(115,p[2]),p[3])if min(p[:3])>145 else p for p in art.get_flattened_data()])
+        meta={**meta,'assembly':'same purchased luminaire, warm diffuser palette'}
+    elif name=='windowSource':
+        # Neutral metal highlights stay below the luminous lamp diffuser.
+        art.putdata([(*(round(v*.62)for v in p[:3]),p[3])if min(p[:3])>140 else p for p in art.get_flattened_data()])
+        meta={**meta,'assembly':'complete casement; restrained metal highlights'}
     finished.append((name,art,meta))
 parts=finished
 
@@ -133,13 +144,8 @@ for name, source, mul in [('floorSlate','floorTile',(.67,.72,.77)),
 
 # Stateful windows use the purchased jamb pixels with a transparent aperture.
 a=next(a for k,a,_ in parts if k=='windowSource')
-border=Image.new('RGBA',(32,16))
-border.alpha_composite(a.crop((0,0,32,5)),(0,0))
-border.alpha_composite(a.crop((0,a.height-5,32,a.height)),(0,11))
-for y in range(5,11):
-    border.alpha_composite(a.crop((0,7,4,8)),(0,y))
-    border.alpha_composite(a.crop((28,7,32,8)),(28,y))
-parts.append(('windowFrame',border,{'derivedFrom':'windowSource','assembly':'jambs with transparent stateful aperture'}))
+border=a.copy();ImageDraw.Draw(border).rectangle((3,3,a.width-4,a.height-5),fill=(0,0,0,0))
+parts.append(('windowFrame',border,{'derivedFrom':'windowSource','assembly':'complete original casement border; transparent aperture, nine-slice at runtime'}))
 
 # Pack a modest, game-specific atlas. No complete source tilemap is distributed.
 atlas=Image.new('RGBA',(1024,512));frames={};x=y=row=0

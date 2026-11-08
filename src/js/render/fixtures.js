@@ -27,6 +27,27 @@ function drawRoutes(P) {
 }
 // 창문: 하늘색 유리 + 흰 십자 창살
 const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[w.ty+1]?.[w.tx]==='#';};
+const windowRoomCache=new WeakMap();
+function windowRoomLit(w){
+ if(w.roomFinish)return roomFinishWindowLit(w);
+ let entry=windowRoomCache.get(w);
+ if(!entry||entry.rooms!==S.lightRooms){
+  const bi=bldAt(w.tx,w.ty),b=BLD[bi],fl=flOf(w),cells=[];
+  for(const[dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const x=w.tx+dx,y=w.ty+dy;
+   if(b&&x>b.x0&&x<b.x1&&y>b.y0&&y<b.y1)cells.push(y*MW+x);
+  }
+  const circuits=Object.entries(S.lightRooms||{}).filter(([,r])=>r.fl===fl&&cells.some(k=>r.cells.includes(k))).map(([key])=>key);
+  entry={rooms:S.lightRooms,lamps:S.lamps.filter(l=>!l.outdoor&&flOf(l)===fl&&circuits.includes(l.circuit)),cells};windowRoomCache.set(w,entry);
+ }
+ if(entry.lamps.length)return entry.lamps.some(lampOn);
+ const layer=CUR_F;try{
+  setLayer(flOf(w));return entry.cells.some(k=>{
+   const x=tc(k%MW),y=tc(Math.floor(k/MW));
+   return lampsNear(x,y,CUR_F).some(l=>!l.outdoor&&lampOn(l)&&dist(l.x,l.y,x,y)<l.r*.75&&los(l.x,l.y,x,y));
+  });
+ }finally{setLayer(layer);}
+}
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
 // 실제 창짝·걸쇠·창살로 상태를 읽는다. 평면과 외벽은 같은 창문을 그린다.
 function paintWindow(w,lit,L=44,T=20) {
@@ -54,12 +75,18 @@ function paintWindow(w,lit,L=44,T=20) {
 }
 function drawWindow(w, alpha) {
   if(drawRoomFinishWindow(w,alpha))return;
+  if(officeReady()){
+   const b=BLD[bldAt(w.tx,w.ty)],side=b?(w.tx<=(b.x0+b.x1)/2?1:-1):1;
+   ctx.save();ctx.globalAlpha*=alpha;ctx.translate(w.x,w.y);
+   if(winVert(w))paintOfficeSideWindow(w,windowRoomLit(w),side);else paintOfficeWindow(w,windowRoomLit(w));ctx.restore();return;
+  }
   if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
   paintWindow(w,w._lit,winVert(w)?36:44,winVert(w)?14:20);ctx.restore();
 }
 // A side facade shows the recessed glass face and a shallow sill, not a rotated door.
 function paintSideWindow(w,lit,side){
+  if(paintOfficeSideWindow(w,lit,side))return;
   ctx.save();ctx.scale(1,.72);
   const st=winSt(w),open=st==='open',outer=side*9,inner=-side*4;
   const quad=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.lineTo(...d);ctx.closePath();};
@@ -82,15 +109,14 @@ function drawWindowEdge(w, b) {
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
-  const lit = lightAt(w.x - ox * 30, w.y - oy * 30) > 0.45, ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
-  if (lit) {  // 바닥에 떨어지는 창 불빛
+  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
+  if (lit&&!city&&!officeReady()) {  // Legacy fallback; purchased windows use the real room-light mask.
     const gx = ex + ox * 26, gy = ey + oy * 26, gr = ctx.createRadialGradient(gx, gy, 2, gx, gy, 44);
     gr.addColorStop(0, 'rgba(255,206,130,.32)'); gr.addColorStop(1, 'rgba(255,206,130,0)');
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
-  if(city){if(vert)ctx.rotate(Math.PI/2);freeCityDraw(ctx,'window',-13,-8,1);paintWindow(w,lit,22,8);ctx.restore();return;}
-  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,12);
+  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,22);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)

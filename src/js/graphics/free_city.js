@@ -144,7 +144,7 @@ function cityWindowImage(name,w,lit){
 }
 function drawCityWindow(c,b,w,fl){
  const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
- const im=cityWindowImage(name,w,w.roomFinish?roomFinishWindowLit(w):lightAt(w.x,w.y-12)>.45);if(!im)return false;
+ const im=cityWindowImage(name,w,windowRoomLit(w));if(!im)return false;
  c.drawImage(im,w.tx*TILE,(b.y1-fl)*TILE,TILE,TILE);return true;
 }
 function cityExteriorEntries(b){

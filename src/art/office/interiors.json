@@ -821,47 +821,49 @@
       "rect": [
         836,
         55,
-        32,
-        24
+        30,
+        7
       ],
       "sourceRect": [
-        2112,
-        360,
-        2144,
-        384
+        2081,
+        369,
+        2111,
+        376
       ]
     },
     "warmLamp": {
       "rect": [
-        872,
+        870,
         55,
-        32,
-        24
+        30,
+        7
       ],
       "sourceRect": [
-        2112,
-        328,
-        2144,
-        352
-      ]
+        2081,
+        369,
+        2111,
+        376
+      ],
+      "assembly": "same purchased luminaire, warm diffuser palette"
     },
     "windowSource": {
       "rect": [
-        908,
+        904,
         55,
-        32,
-        32
+        24,
+        23
       ],
       "sourceRect": [
-        2272,
-        128,
-        2304,
-        160
-      ]
+        2308,
+        36,
+        2332,
+        59
+      ],
+      "assembly": "complete casement; restrained metal highlights"
     },
     "lockerSteel": {
       "rect": [
-        944,
+        932,
         55,
         23,
         33
@@ -875,7 +877,7 @@
     },
     "wardrobeWood": {
       "rect": [
-        971,
+        959,
         55,
         23,
         31
@@ -889,7 +891,7 @@
     },
     "chairLounge": {
       "rect": [
-        998,
+        986,
         55,
         17,
         27
@@ -973,11 +975,11 @@
       "rect": [
         137,
         111,
-        32,
-        16
+        24,
+        23
       ],
       "derivedFrom": "windowSource",
-      "assembly": "jambs with transparent stateful aperture"
+      "assembly": "complete original casement border; transparent aperture, nine-slice at runtime"
     }
   },
   "size": [

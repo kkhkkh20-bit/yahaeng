@@ -2947,7 +2947,7 @@ function cityWindowImage(name,w,lit){
 }
 function drawCityWindow(c,b,w,fl){
  const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
- const im=cityWindowImage(name,w,w.roomFinish?roomFinishWindowLit(w):lightAt(w.x,w.y-12)>.45);if(!im)return false;
+ const im=cityWindowImage(name,w,windowRoomLit(w));if(!im)return false;
  c.drawImage(im,w.tx*TILE,(b.y1-fl)*TILE,TILE,TILE);return true;
 }
 function cityExteriorEntries(b){
@@ -3173,11 +3173,15 @@ function officeWallDecor(c,fl,x0,y0,x1,y1){
 }
 function drawOfficeLamp(l,c=ctx){
  if(!officeReady()||!l.fixture)return false;
- const f=l.fixture,on=lampOn(l),horizontal=!!f.ny,style=officeStyle(bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),flOf(l)),warm=[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style);
- c.save();c.translate(f.x,f.y);if(!horizontal)c.rotate(Math.PI/2);
- officeBlit(c,warm?'warmLamp':'fluorescent',-22,-6,44,16);
- // Only the tube changes; the lamp's real polygon, circuit and switch remain.
- c.fillStyle=on?(warm?'#e4c493':'#e1e9da'):'#43535a';c.fillRect(-13,1,26,2);c.fillStyle=on?'#f6f2d8':'#354149';c.fillRect(-12,1,24,1);
+ const f=l.fixture,on=lampOn(l),style=officeStyle(bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),flOf(l));
+ const warm=[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style);
+ c.save();c.translate(f.x,f.y);if(!f.ny)c.rotate(Math.PI/2);
+ c.fillStyle='#111c27';c.fillRect(-16,-4,32,9);
+ c.save();if(!on)c.globalAlpha*=.5;officeBlit(c,warm?'warmLamp':'fluorescent',-15,-4,30,7);c.restore();
+ // A small diffuser within a real mounting bracket. No luminous window frame.
+ c.fillStyle=on?(warm?'#d0b98a':'#b9d2d0'):'#46555f';c.fillRect(-5,-2,10,3);
+ if(on){c.fillStyle=warm?'#e1d0a7':'#d4e6dc';c.fillRect(-4,-2,8,1);}
+ if(l.broken){c.fillStyle='#18232d';c.fillRect(-2,-3,2,5);}
  c.restore();return true;
 }
 function officeCabinetLeaf(c,g,hinge,side,projection,depth){
@@ -3186,15 +3190,49 @@ function officeCabinetLeaf(c,g,hinge,side,projection,depth){
  c.save();c.transform(side*projection/r[2],depth/r[2],0,(g.doorBottom-g.doorTop)/r[3],hinge,g.doorTop);
  c.drawImage(officeAtlas,...r,0,0,r[2],r[3]);c.restore();
 }
-function paintOfficeWindow(w,lit,L,T){
- if(!officeReady())return false;
- const st=winSt(w),open=st==='open';ctx.fillStyle='#101c29';ctx.fillRect(-L/2,-T/2,L,T);
- ctx.fillStyle=lit?'#b5a783':'#496a85';ctx.fillRect(-L/2+4,-T/2+3,open?L*.31:L-8,T-6);
- officeBlit(ctx,'windowFrame',-L/2-2,-T/2-2,L+4,T+4);
- ctx.fillStyle='#889fa8';ctx.fillRect(open?-L*.18:-1,-T/2+2,2,T-4);
- if(st==='lock'){ctx.fillStyle='#d1ae65';ctx.fillRect(-3,-2,5,5);}
- if(st==='bar'){ctx.fillStyle='#101922';for(let x=-L/2+6;x<L/2-3;x+=8)ctx.fillRect(x,-T/2,2,T);}
- return true;
+const officeWindowImages=new Map();
+function officeWindowImage(w,lit,L=40,T=26){
+ if(!officeReady())return null;
+ L=Math.max(16,Math.round(L));T=Math.max(12,Math.round(T));
+ const state=winSt(w),key=state+'|'+Number(lit)+'|'+L+'|'+T;
+ if(officeWindowImages.has(key))return officeWindowImages.get(key);
+ const r=officeFrame('windowFrame'),c=document.createElement('canvas');c.width=L;c.height=T;
+ const q=c.getContext('2d');q.imageSmoothingEnabled=false;
+ q.fillStyle='#101b26';q.fillRect(0,0,L,T);
+ q.fillStyle=lit?'#857b64':'#354f63';q.fillRect(4,4,L-8,T-8);
+ q.fillStyle=lit?'#6d6b61':'#2b4056';q.fillRect(4,Math.floor(T*.55),L-8,T-4-Math.floor(T*.55));
+ q.fillStyle=lit?'#a39a7e':'#587087';q.fillRect(5,5,Math.floor((L-10)*.4),1);
+ const open=state==='open',join=open?Math.floor(L*.42):Math.floor(L/2);
+ if(open){q.fillStyle='#101a24';q.fillRect(join+2,4,L-join-6,T-8);}
+ q.fillStyle='#56616e';q.fillRect(join,3,2,T-6);
+ // Keep source corner and jamb thickness instead of stretching the whole frame.
+ const xs=[[0,3,0,3],[3,r[2]-6,3,L-6],[r[2]-3,3,L-3,3]];
+ const ys=[[0,3,0,3],[3,r[3]-6,3,T-6],[r[3]-3,3,T-3,3]];
+ for(let xi=0;xi<3;xi++)for(let yi=0;yi<3;yi++){
+  if(xi===1&&yi===1)continue;const[sx,sw,dx,dw]=xs[xi],[sy,sh,dy,dh]=ys[yi];
+  q.drawImage(officeAtlas,r[0]+sx,r[1]+sy,sw,sh,dx,dy,dw,dh);
+ }
+ q.fillStyle=state==='lock'?'#b59b6d':'#75818b';q.fillRect(join-2,Math.floor(T*.6),3,2);
+ if(state==='bar'){q.fillStyle='#17232f';for(let x=8;x<L-5;x+=8){q.fillRect(x,3,2,T-6);q.fillStyle='#53606a';q.fillRect(x,3,1,T-6);q.fillStyle='#17232f';}}
+ officeWindowImages.set(key,c);return c;
+}
+function paintOfficeWindow(w,lit,L=40,T=26){
+ const im=officeWindowImage(w,lit,L,T);if(!im)return false;
+ ctx.fillStyle='#0d1822';ctx.fillRect(-im.width/2-2,-im.height/2-2,im.width+4,im.height+5);
+ ctx.drawImage(im,-im.width/2,-im.height/2);
+ ctx.fillStyle='#465460';ctx.fillRect(-im.width/2-2,im.height/2,im.width+4,4);
+ ctx.fillStyle='#687580';ctx.fillRect(-im.width/2-1,im.height/2,im.width+2,1);return true;
+}
+function paintOfficeSideWindow(w,lit,side){
+ const im=officeWindowImage(w,lit);if(!im)return false;
+ side=side<0?-1:1;
+ ctx.save();ctx.fillStyle='#0d1722';ctx.beginPath();
+ ctx.moveTo(-side*11,-18);ctx.lineTo(side*10,-24);ctx.lineTo(side*10,14);ctx.lineTo(-side*11,23);ctx.closePath();ctx.fill();
+ // A vertical wall plane has upright jambs and a recessed sill. The front
+ // casement is projected onto that face; it is never rotated through 90 degrees.
+ ctx.transform(side*.43,-.16,0,1.38,-side*8,-17);ctx.drawImage(im,0,0);ctx.restore();
+ ctx.fillStyle='#465460';ctx.beginPath();ctx.moveTo(-side*9,19);ctx.lineTo(side*10,13);ctx.lineTo(side*13,17);ctx.lineTo(-side*6,23);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#697680';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-side*8,19);ctx.lineTo(side*10,13);ctx.stroke();return true;
 }
 function refreshOfficeArt(){
  if(!officeArtDirty||!S||!mapC)return;
@@ -14868,6 +14906,27 @@ function drawRoutes(P) {
 }
 // 창문: 하늘색 유리 + 흰 십자 창살
 const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[w.ty+1]?.[w.tx]==='#';};
+const windowRoomCache=new WeakMap();
+function windowRoomLit(w){
+ if(w.roomFinish)return roomFinishWindowLit(w);
+ let entry=windowRoomCache.get(w);
+ if(!entry||entry.rooms!==S.lightRooms){
+  const bi=bldAt(w.tx,w.ty),b=BLD[bi],fl=flOf(w),cells=[];
+  for(const[dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){
+   const x=w.tx+dx,y=w.ty+dy;
+   if(b&&x>b.x0&&x<b.x1&&y>b.y0&&y<b.y1)cells.push(y*MW+x);
+  }
+  const circuits=Object.entries(S.lightRooms||{}).filter(([,r])=>r.fl===fl&&cells.some(k=>r.cells.includes(k))).map(([key])=>key);
+  entry={rooms:S.lightRooms,lamps:S.lamps.filter(l=>!l.outdoor&&flOf(l)===fl&&circuits.includes(l.circuit)),cells};windowRoomCache.set(w,entry);
+ }
+ if(entry.lamps.length)return entry.lamps.some(lampOn);
+ const layer=CUR_F;try{
+  setLayer(flOf(w));return entry.cells.some(k=>{
+   const x=tc(k%MW),y=tc(Math.floor(k/MW));
+   return lampsNear(x,y,CUR_F).some(l=>!l.outdoor&&lampOn(l)&&dist(l.x,l.y,x,y)<l.r*.75&&los(l.x,l.y,x,y));
+  });
+ }finally{setLayer(layer);}
+}
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
 // 실제 창짝·걸쇠·창살로 상태를 읽는다. 평면과 외벽은 같은 창문을 그린다.
 function paintWindow(w,lit,L=44,T=20) {
@@ -14895,12 +14954,18 @@ function paintWindow(w,lit,L=44,T=20) {
 }
 function drawWindow(w, alpha) {
   if(drawRoomFinishWindow(w,alpha))return;
+  if(officeReady()){
+   const b=BLD[bldAt(w.tx,w.ty)],side=b?(w.tx<=(b.x0+b.x1)/2?1:-1):1;
+   ctx.save();ctx.globalAlpha*=alpha;ctx.translate(w.x,w.y);
+   if(winVert(w))paintOfficeSideWindow(w,windowRoomLit(w),side);else paintOfficeWindow(w,windowRoomLit(w));ctx.restore();return;
+  }
   if (!(S.t - (w._lt || -9) < 0.25 && S.t >= w._lt)) { w._lt = S.t; w._lit = lightAt(w.x, w.y) > 0.45; }
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(w.x,w.y);if(winVert(w))ctx.rotate(Math.PI/2);
   paintWindow(w,w._lit,winVert(w)?36:44,winVert(w)?14:20);ctx.restore();
 }
 // A side facade shows the recessed glass face and a shallow sill, not a rotated door.
 function paintSideWindow(w,lit,side){
+  if(paintOfficeSideWindow(w,lit,side))return;
   ctx.save();ctx.scale(1,.72);
   const st=winSt(w),open=st==='open',outer=side*9,inner=-side*4;
   const quad=(a,b,c,d)=>{ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.lineTo(...c);ctx.lineTo(...d);ctx.closePath();};
@@ -14923,15 +14988,14 @@ function drawWindowEdge(w, b) {
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
-  const lit = lightAt(w.x - ox * 30, w.y - oy * 30) > 0.45, ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
-  if (lit) {  // 바닥에 떨어지는 창 불빛
+  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
+  if (lit&&!city&&!officeReady()) {  // Legacy fallback; purchased windows use the real room-light mask.
     const gx = ex + ox * 26, gy = ey + oy * 26, gr = ctx.createRadialGradient(gx, gy, 2, gx, gy, 44);
     gr.addColorStop(0, 'rgba(255,206,130,.32)'); gr.addColorStop(1, 'rgba(255,206,130,0)');
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
-  if(city){if(vert)ctx.rotate(Math.PI/2);freeCityDraw(ctx,'window',-13,-8,1);paintWindow(w,lit,22,8);ctx.restore();return;}
-  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,12);
+  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,22);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
@@ -17731,7 +17795,7 @@ function installGameApi() {
   window.__game = {
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
-    drawPlansFaint,drawLampTint,goalMarkerVisible,subduedAction,feedbackEvent,
+    drawPlansFaint,drawLampTint,windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},
