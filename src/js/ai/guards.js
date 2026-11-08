@@ -41,6 +41,7 @@ function updateGuard(g, dt) {
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
+  if(g.rawSeen)resolveVisibleFootstep(g,g.seen);
   if(g.seen){g.sightAt=S.t;g.sightFl=flOf(P);g.sightZ=P.z||0;}
   if (radioBusy(g)) {
     if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
@@ -70,8 +71,8 @@ function updateGuard(g, dt) {
   } else if (g.state !== 'ALERT') { if (g.holdT > 0) g.holdT -= dt; else g.meter = Math.max(0, g.meter - dt * 0.3); }  // 시야에서 벗어나도 잠깐은 게이지가 남는다
   const sx0 = g.x, sy0 = g.y;
   if (g.hearT > 0) {
-    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { g.hearT = 0; g.hearP=null; g.hearKind=null; }
-    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; g.hearKind=null; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
+    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { clearFootstepReaction(g); }
+    else { g.hearT -= dt; if (g.hearT > 0) return; const at={...g.hearP};clearFootstepReaction(g);goSuspicious(g,at.x+rnd(-20,20),at.y+rnd(-20,20),3.5,'heard');g.poi.clue='step'; }
   }
 
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다

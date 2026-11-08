@@ -69,7 +69,11 @@ function drawSpeech() {
   for(const g of who) {
     if(SPEECH_R.length>=1)break;
     // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.
-    const lines=[''],maxText=Math.min(210*k,(W-32)/SCALE-20*k);
+    const widths=[Math.min(210*k,(W-32)/SCALE-20*k)];
+    if(isTouch&&speechPriority(g,P)>=60)widths.push(Math.max(90*k,Math.min(150*k,W*.44/SCALE-20*k)));
+    // A narrow fallback preserves useful speech beside the right-hand controls.
+    for(const maxText of widths){
+    const lines=[''];
     for(const word of g.say.split(' ')) {
       let i=lines.length-1,t=lines[i]?(lines[i]+' '+word):word;
       if(ctx.measureText(t).width>maxText&&lines[i]){lines.push('');i++;}
@@ -102,6 +106,8 @@ function drawSpeech() {
     else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
     ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
     ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';if(identity){ctx.font=uiFont(9*k);ctx.fillStyle='#626a70';ctx.fillText(identity,x+w/2,y+12*k);ctx.font=uiFont(12*k);ctx.fillStyle='#202521';}lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k+headH));
+    break;
+    }
   }
   ctx.restore();
 }

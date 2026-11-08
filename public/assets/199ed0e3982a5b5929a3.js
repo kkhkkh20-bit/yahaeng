@@ -4976,6 +4976,26 @@ function respondToLampOff(l,watchers){
   releaseSearchJob(g);endChat(g);g.state='PATROL';g.path=null;g.act=null;g.bubble=null;g.soundWatchUntil=0;g.sense=null;g.hearT=0;g.poi=null;
   g.relight={l,t:.65,witnessed:true};g.lightNoticeUntil=S.t+2.4;g.want=Math.atan2(at.y-g.y,at.x-g.x);setIcon(g,'!');g.actionSpeechUntil=S.t+2.4;gsay(g,'여긴 불 켜 둬야 해요. 다시 켤게요.',2.4);
 }
+// A footstep is an unresolved cue, not a destination that outlives seeing its source.
+function clearFootstepReaction(g){
+ g.hearT=0;g.hearP=null;g.hearKind=null;
+}
+function resolveVisibleFootstep(g,hostile){
+ const pending=!!g.hearP;
+ clearFootstepReaction(g);
+ if(pending&&['PATROL','RETURN'].includes(g.state)&&g.icon==='?'){g.icon=null;g.iconT=0;}if(g.startle?.src==='step')g.startle=null;
+ if(!hostile && S.player.moving && S.player.mode!=='sneak'){
+  // Correlate subsequent nearby footsteps with a colleague actually seen,
+  // rather than recognizing an unseen uniform from the sound itself.
+  g.friendlyStep={x:S.player.x,y:S.player.y,fl:flOf(S.player),z:S.player.z||0,at:S.t};
+  if(pending&&['PATROL','RETURN','SUSPICIOUS'].includes(g.state)){g.glance=.45;g.glanceA=Math.atan2(S.player.y-g.y,S.player.x-g.x);}
+ }
+ if(g.state==='SUSPICIOUS'&&g.why==='heard'&&g.poi?.clue==='step'){
+  releaseSearchJob(g);g.path=null;g.reached=false;g.wait=0;g.soundApproach=null;
+  if(hostile){g.state='NOTICE';g.poi=pSpot();g.why='saw';g.noticeT=0;setIcon(g,'?');}
+  else{g.state='RETURN';g.poi=null;g.why=null;g.icon=null;g.iconT=0;}
+ }
+}
 function noise(x, y, r, src, fl, z) {
   r=skillNoise(src,r);
   if(src==='step'&&S.player.moving){if(S.player.mode==='walk')recordFieldSkill('quietStep','걷기 발소리 범위 25% 감소');else if(S.player.mode==='sneak')recordFieldSkill('quietCrouch','웅크린 발소리 범위 35% 감소');}
@@ -5002,23 +5022,25 @@ function noise(x, y, r, src, fl, z) {
     const rr = d > r ? 0 : r * soundThrough(x, y, g.x, g.y);
     let audible=d<rr;
     if(src==='whistle'&&!audible&&d<r){field=field||soundField(x,y,r);audible=(field.get(Math.floor(g.y/TILE)*MW+Math.floor(g.x/TILE))??Infinity)<r;}
-    if (src === 'step' && STAGE.zones && !g.dog && !knownFace(g) && permitted(zoneInfo(x, y, zs), g) && publicSuspicion(g) === 0) continue;  // 허가된 직원의 발소리 때문에 일을 멈추고 따라오지 않는다
+    if(src==='step'&&!g.dog&&audible&&runStep&&!knownFace(g)&&suspAct(g)<1&&g.friendlyStep&&S.t-g.friendlyStep.at<1.2&&g.friendlyStep.fl===fl&&g.friendlyStep.z===zs&&dist(x,y,g.friendlyStep.x,g.friendlyStep.y)<240)continue; // 방금 본 동료가 지나간 발소리에 다시 추적을 시작하지 않는다
     if (src === 'step' && STAGE.zones && zoneAt(x, y, S.player.z) === Z_PUB && !(runStep && d < rr * 0.7)) continue;  // 거리·가게의 걷는 발소리는 아무도 신경 쓰지 않는다 (가까이서 뛰어오는 소리는 돌아본다)
     if (g.civ) { if (audible && src !== 'scream') { if (g.state === 'SLEEP') { if (d < rr * 0.6) civWake(g, x, y); } else if (g.state === 'PATROL') { g.meter = Math.min(0.9, g.meter + 0.25); g.want = Math.atan2(y - g.y, x - g.x); setIcon(g, '?'); } } continue; }
     if (audible) {
       if (g.state === 'FUSE' && src !== 'stone') continue;
       if (g.state === 'BODY' || g.state === 'LURE') continue;
       if(g.seen||g.state==='NOTICE'&&g.why==='saw')continue;
+      // Never replace a visual/body search or check with a lower-priority footstep.
+      if(src==='step'&&(['SEARCH','CHECK','WARN'].includes(g.state)||g.state==='SUSPICIOUS'&&g.why!=='heard'))continue;
       nz.heard=true;
       if(!STAGE.tutorial&&!g.dog&&!g.target&&!g.elite&&(src==='whistle'||src==='stone')){nz.heard=true;if(['SEARCH','CHECK'].includes(g.state)||g.state==='SUSPICIOUS'&&(g.why!=='heard'||!g.reached&&g.poi&&dist(g.poi.x,g.poi.y,x,y)>96)){rememberSound(g,nz);continue;}decoys.push({g,d});continue;}
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
       if (src === 'step' || src === 'whistle') nz.heard = true;
       if (src === 'whistle' && !g.dog) { g.startle={a:Math.atan2(y-g.y,x-g.x)};gsay(g, ['누구야?', '지금 누가 불렀어?', '저쪽에서 났지?'][(g.id + (S.stats.whistles || 0)) % 3]); }
-      if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x) };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
+      if (runStep && !g.dog && d < 200 && !g.startle) g.startle = { a: Math.atan2(y - g.y, x - g.x), src:'step' };  // 등 뒤로 뛰어오는 발소리: 화들짝 돌아본다
       const fz = ['whistle', 'stone', 'coin', 'beep', 'door', 'switch', 'car'].includes(src) ? 20 : 20 + d * 0.3;  // 멀리서 들은 소리일수록 위치를 대충만 안다 (일부러 낸 소리는 정확히)
       if (src === 'step' && !g.dog && (g.state === 'PATROL' || g.state === 'RETURN')) { if (!(g.hearT > 0)) { g.hearT = runStep ? 0.12 : 0.6; setIcon(g, '?'); play('question', 0.3 * proxVol(g)); } g.hearKind=stepKind; g.hearP = { x: x + rnd(-fz, fz), y: y + rnd(-fz, fz) }; continue; }
-      goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';
+      goSuspicious(g, src==='whistle'?x:x+rnd(-fz,fz), src==='whistle'?y:y+rnd(-fz,fz), src === 'stone' ? 3 : 3.5); g.why = 'heard';if(src==='step')g.poi.clue='step';
       if((src==='whistle'||src==='stone')&&g.state==='SUSPICIOUS')(nz.otherInvestigators||(nz.otherInvestigators=[])).push(g.id);
     }
   }
@@ -5028,7 +5050,7 @@ function noise(x, y, r, src, fl, z) {
 }
 function goSuspicious(g, x, y, look, reason='inspect') {
   if (g.state === 'WARN') return;  // 나가라고 경고하는 중엔 다른 데 정신 팔지 않는다
-  releaseSearchJob(g);
+  clearFootstepReaction(g);releaseSearchJob(g);
   endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'SUSPICIOUS') { setIcon(g, '?'); play('question', 0.35 * proxVol(g)); }
@@ -5626,11 +5648,11 @@ function updateSharpEye(g, dt, rawVis) {
   if (!sharpEye(g)) { g.eyeT = 0; return; }
   const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI / 3;
-  const passing=P.mode==='walk'&&P.moving;
+  const passing=(P.mode==='walk'||P.mode==='run')&&P.moving;
   const visible=rawVis>0&&d<R&&faceVisible;
   g.eyeWatching=visible&&!passing;
   if(!visible){g.eyeT=0;return;}
-  // Walking is innocent. A check already begun fades rather than forgetting
+  // Passing colleagues may walk or run. A check already begun fades rather than forgetting
   // the face instantly, and never advances while the player walks away.
   if(passing){g.eyeT=Math.max(0,(g.eyeT||0)-dt*.5);return;}
   if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
@@ -5659,8 +5681,8 @@ const knownFace = (g, look = suspectLook()) =>
   !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
-// 허가 복장은 정상 보행을 허용한다. 제한구역의 수상한 이동과 불법 행동은 별도로 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length && (!groundedWorld() || pZoneInfo().k === Z_PUB) ? 0 : k; };
+// 허가된 동료는 뛰어도 침입자가 아니다. 웅크리기·범행과 별도 보안구역은 기존 규칙을 따른다.
+const publicSuspicion = g => { const k = suspAct(g), zi = pZoneInfo(); return k < 1 && myPermits(g).length && (!groundedWorld() || zi.k === Z_PUB || permitted(zi,g) && S.player.mode !== 'sneak') ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));
@@ -6644,6 +6666,7 @@ function updateGuard(g, dt) {
   if (STAGE.zones) updateSharpEye(g, dt, vis);  // 눈썰미: 변장을 가까이서 오래 보면 알아챈다
   if (vis > 0 && pz === Z_PUB && !g.dog && !knownFace(g)) { zk = publicSuspicion(g); if (!zk) { if (!g.civ) permitNod(g); vis = 0; } }  // 허가 신분으로 금지 구역을 지나가면 한마디 하고 들여보내 준다 · 공개 구역(또는 허가 옷을 입은 금지 구역): 행인으로 보인다
   g.seen = vis > 0; g.sense = null;
+  if(g.rawSeen)resolveVisibleFootstep(g,g.seen);
   if(g.seen){g.sightAt=S.t;g.sightFl=flOf(P);g.sightZ=P.z||0;}
   if (radioBusy(g)) {
     if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
@@ -6673,8 +6696,8 @@ function updateGuard(g, dt) {
   } else if (g.state !== 'ALERT') { if (g.holdT > 0) g.holdT -= dt; else g.meter = Math.max(0, g.meter - dt * 0.3); }  // 시야에서 벗어나도 잠깐은 게이지가 남는다
   const sx0 = g.x, sy0 = g.y;
   if (g.hearT > 0) {
-    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { g.hearT = 0; g.hearP=null; g.hearKind=null; }
-    else { g.hearT -= dt; if (g.hearT > 0) return; g.hearT = 0; g.hearKind=null; goSuspicious(g, g.hearP.x + rnd(-20, 20), g.hearP.y + rnd(-20, 20), 3.5); g.why = 'heard'; }
+    if (!['run','surface','drag'].includes(g.hearKind) || !g.hearP || g.state !== 'PATROL' && g.state !== 'RETURN') { clearFootstepReaction(g); }
+    else { g.hearT -= dt; if (g.hearT > 0) return; const at={...g.hearP};clearFootstepReaction(g);goSuspicious(g,at.x+rnd(-20,20),at.y+rnd(-20,20),3.5,'heard');g.poi.clue='step'; }
   }
 
   if ((g.state === 'PATROL' || g.state === 'RETURN') && !g.dog && S.decals.length && (g.bloodT = (g.bloodT || 0) - dt) <= 0) {  // 핏자국을 보면 다가가 살핀다
@@ -6972,7 +6995,11 @@ function drawSpeech() {
   for(const g of who) {
     if(SPEECH_R.length>=1)break;
     // 단서나 비밀번호는 자르지 않고 줄을 바꾼다.
-    const lines=[''],maxText=Math.min(210*k,(W-32)/SCALE-20*k);
+    const widths=[Math.min(210*k,(W-32)/SCALE-20*k)];
+    if(isTouch&&speechPriority(g,P)>=60)widths.push(Math.max(90*k,Math.min(150*k,W*.44/SCALE-20*k)));
+    // A narrow fallback preserves useful speech beside the right-hand controls.
+    for(const maxText of widths){
+    const lines=[''];
     for(const word of g.say.split(' ')) {
       let i=lines.length-1,t=lines[i]?(lines[i]+' '+word):word;
       if(ctx.measureText(t).width>maxText&&lines[i]){lines.push('');i++;}
@@ -7005,6 +7032,8 @@ function drawSpeech() {
     else {const right=head.x>x+w/2,ty=clamp(head.y,y+10*k,y+h-10*k),tx=right?x+w-k:x+k;a=[tx,ty-4*k];b=[tx,ty+4*k];tip=[right?Math.min(head.x,x+w+tail):Math.max(head.x,x-tail),ty];}
     ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...tip);ctx.lineTo(...b);ctx.stroke();
     ctx.fillStyle='#202521';ctx.textAlign='center';ctx.textBaseline='middle';if(identity){ctx.font=uiFont(9*k);ctx.fillStyle='#626a70';ctx.fillText(identity,x+w/2,y+12*k);ctx.font=uiFont(12*k);ctx.fillStyle='#202521';}lines.forEach((l,i)=>ctx.fillText(l.trim(),x+w/2,y+(14+17*i)*k+headH));
+    break;
+    }
   }
   ctx.restore();
 }
@@ -7122,6 +7151,7 @@ function terrorAt(x, y) {
 }
 
 function goAlert(g) {
+  clearFootstepReaction(g);g.friendlyStep=null;if(g.startle?.src==='step')g.startle=null;
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
   recordSearchCause('player');
   const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
@@ -13326,7 +13356,7 @@ function touchPlayFrame(){
   // Context controls can appear while approaching a guard. Reframe their contact area too.
   const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
   if(touchFrameCache?.key===key)return touchFrameCache;
-  const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25).map(r=>r.top);
+  const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25&&r.left<W/2+26&&r.right>W/2-26).map(r=>r.top);
   const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
   return touchFrameCache={key,y:clamp(preferred,Math.min(upper,lower-8),Math.max(80,lower-8)),bottom:Math.min(...tops,H-24)};
@@ -16622,7 +16652,7 @@ function syncTutorialCue(){
   if(hudCache.lesson===token)return;hudCache.lesson=token;
   const lesson={tB:'body',t0:'body',tL:'lighting',tR:'indoor'}[STAGE.id];if(lesson)document.body.dataset.lesson=lesson;else delete document.body.dataset.lesson;
   document.body.classList.toggle('perception-lesson',!!STAGE.firstSteps);document.body.classList.toggle('tutorial-lesson',!!STAGE.steps);
-  const active={crouch:'btnCrouch',run:isTouch?'btnToolNext':'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnAct',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
+  const active={crouch:'btnCrouch',run:isTouch?null:'btnSneak',grab:'btnGrab',attack:'btnAct',env:'btnCarry',whistle:isTouch?'btnTool':'btnWhistle',cycle:'btnCycle',skill:'btnAct',skills:'btnPause',tool:'btnTool',toolcycle:'btnToolNext'}[key];
   $('btnSkillsPause').classList.toggle('lesson-cue',key==='skills');
   for(const id of ['btnCrouch','btnSneak','btnGrab','btnAct','btnCarry','btnWhistle','btnTool','btnToolNext','btnCycle','btnSkill','btnPause'])$(id)?.classList.toggle('lesson-cue',id===active);
 }

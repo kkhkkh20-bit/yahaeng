@@ -1,0 +1,1538 @@
+{
+  "device": "pc",
+  "samples": 89,
+  "visibleSamples": 30,
+  "staleReactions": [],
+  "errors": [],
+  "rows": [
+    {
+      "t": 0.6368000000000001,
+      "p": [
+        120,
+        504
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.6700999999999998,
+      "p": [
+        122.97,
+        506.9281243044698
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.72,
+      "p": [
+        122.97,
+        514.7795893092003
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.77,
+      "p": [
+        122.97,
+        524.1366681700155
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.8200999999999999,
+      "p": [
+        122.97,
+        533.9628763225782
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.8534000000000002,
+      "p": [
+        122.97,
+        540.5770330797159
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.9034000000000002,
+      "p": [
+        122.97,
+        550.5508646108523
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.9367000000000004,
+      "p": [
+        122.97,
+        557.2046554372425
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 0.9867000000000005,
+      "p": [
+        122.97,
+        567.2011110857496
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.02,
+      "p": [
+        122.97,
+        573.8602700929553
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.0700999999999998,
+      "p": [
+        122.97,
+        583.879789829435
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.1200999999999997,
+      "p": [
+        122.97,
+        593.8796455561624
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.1533999999999998,
+      "p": [
+        124.07292142515689,
+        597.2569009316003
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.2032999999999998,
+      "p": [
+        130.88322742301096,
+        599.1832487352289
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.2367,
+      "p": [
+        136.8078478524523,
+        599.6423226318468
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.2867,
+      "p": [
+        146.37820460488174,
+        599.9034337440681
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.3367,
+      "p": [
+        156.24877282462398,
+        599.98209453134
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.3699999999999997,
+      "p": [
+        162.87807550082977,
+        600.0007505032502
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.4199999999999997,
+      "p": [
+        172.8605482789641,
+        600.0114024858459
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.4533999999999998,
+      "p": [
+        179.53638451124795,
+        600.0139329713721
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.5033,
+      "p": [
+        189.51401759197103,
+        600.0153714413782
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.5533000000000001,
+      "p": [
+        199.51330266717943,
+        600.0158059293134
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.5867000000000002,
+      "p": [
+        206.1931328069967,
+        600.0159091600322
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.6367000000000003,
+      "p": [
+        216.19303619426927,
+        600.0159678753893
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.67,
+      "p": [
+        222.85301327029913,
+        600.0159818071883
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.72,
+      "p": [
+        232.853000184724,
+        600.0159897598073
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.7534,
+      "p": [
+        239.5329970753487,
+        600.0159916494971
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.8033000000000003,
+      "p": [
+        249.51299530800443,
+        600.0159927235817
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.8367000000000004,
+      "p": [
+        256.19299488707264,
+        600.0159929793986
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.8867000000000005,
+      "p": [
+        266.1929946475461,
+        600.0159931249683
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.9200000000000002,
+      "p": [
+        272.85299459073747,
+        600.0159931594931
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 1.9700000000000002,
+      "p": [
+        282.8529945583016,
+        600.0159931792057
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.0033000000000003,
+      "p": [
+        289.5129945506073,
+        600.0159931838818
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.0533,
+      "p": [
+        299.51299454621466,
+        600.0159931865514
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.0867,
+      "p": [
+        306.192994545171,
+        600.0159931871857
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.1367,
+      "p": [
+        316.1929945445773,
+        600.0159931875465
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.1866999999999996,
+      "p": [
+        326.1929945443984,
+        600.0159931876552
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.2199999999999993,
+      "p": [
+        332.8529945443559,
+        600.0159931876809
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.269999999999999,
+      "p": [
+        342.8529945443317,
+        600.0159931876956
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.3032999999999992,
+      "p": [
+        349.512994544326,
+        600.015993187699
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.3532999999999995,
+      "p": [
+        359.51299454432274,
+        600.015993187701
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0.10340000000000009,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.3866999999999994,
+      "p": [
+        366.192994544322,
+        600.0159931877015
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0.07,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.436599999999999,
+      "p": [
+        376.17299454432145,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0.02010000000000037,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 2.486699999999999,
+      "p": [
+        386.1929945443214,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        386.1929945443214,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.5365999999999986,
+      "p": [
+        396.1729945443213,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        396.1729945443213,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.5865999999999985,
+      "p": [
+        406.1729945443213,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        406.1729945443213,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.6199999999999983,
+      "p": [
+        412.8529945443213,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        412.8529945443213,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.6699999999999986,
+      "p": [
+        422.8529945443214,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        422.8529945443214,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.719899999999998,
+      "p": [
+        432.8329945443213,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        432.8329945443213,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.7699999999999987,
+      "p": [
+        442.85299454432135,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        442.85299454432135,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.803299999999998,
+      "p": [
+        449.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        449.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.8532999999999977,
+      "p": [
+        459.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        459.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.9032999999999975,
+      "p": [
+        469.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        469.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 2.9532999999999974,
+      "p": [
+        479.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        479.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.003299999999997,
+      "p": [
+        489.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        489.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.053299999999997,
+      "p": [
+        499.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        499.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.103299999999997,
+      "p": [
+        509.5129945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        509.5129945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.136599999999997,
+      "p": [
+        516.1729945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        516.1729945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.1865999999999968,
+      "p": [
+        526.1729945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        526.1729945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.236599999999997,
+      "p": [
+        536.1729945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        536.1729945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.2866999999999975,
+      "p": [
+        546.1929945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        546.1929945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.336599999999997,
+      "p": [
+        556.1729945443211,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        556.1729945443211,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.386699999999997,
+      "p": [
+        566.1929945443211,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        566.1929945443211,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.436699999999997,
+      "p": [
+        576.1929945443211,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        576.1929945443211,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.469999999999997,
+      "p": [
+        582.8529945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        582.8529945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.519999999999997,
+      "p": [
+        592.8529945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        592.8529945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.5698999999999965,
+      "p": [
+        602.8329945443211,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        602.8329945443211,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.619999999999997,
+      "p": [
+        612.8529945443212,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        612.8529945443212,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.6698999999999966,
+      "p": [
+        622.8329945443211,
+        600.0159931877018
+      ],
+      "mode": "run",
+      "moving": true,
+      "raw": true,
+      "seen": true,
+      "state": "NOTICE",
+      "why": "saw",
+      "hearT": 0,
+      "poi": [
+        622.8329945443211,
+        600.0159931877018,
+        null
+      ],
+      "over": false
+    },
+    {
+      "t": 3.7031999999999967,
+      "p": [
+        627.3282214641504,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": true,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 3.753299999999996,
+      "p": [
+        629.3643288473334,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": true,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 3.8032999999999957,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": true,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 3.8865999999999956,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": true,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 3.9365999999999954,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 3.9865999999999953,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.0365999999999955,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.086599999999996,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.119899999999997,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.169999999999998,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.203199999999998,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.2532999999999985,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.3031999999999995,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.3533,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.403200000000001,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.453200000000002,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.486600000000002,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.536500000000003,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.586500000000004,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    },
+    {
+      "t": 4.636600000000004,
+      "p": [
+        629.8171206251657,
+        600.0159931877018
+      ],
+      "mode": "walk",
+      "moving": false,
+      "raw": false,
+      "seen": false,
+      "state": "PATROL",
+      "why": null,
+      "hearT": 0,
+      "poi": null,
+      "over": false
+    }
+  ],
+  "method": "normal RAF and authored actors, native keys/CDP touches; read-only state probes"
+}

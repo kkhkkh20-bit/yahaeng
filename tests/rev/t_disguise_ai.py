@@ -37,7 +37,9 @@ async def main():
           const y=q.y; tick(3); check(q.state==='PATROL'&&q.meter===0&&q.y>y+20,'Authorized guard must continue patrol'); results.push('authorized patrol');
           fixture(); P.mode='run';P.moving=true;
           for(let i=0;i<50;i++){G.noise(P.x,P.y,180,'step');tick(.1)}
-          check(q.meter>0||q.eyeT>0,'Running in a restricted area must draw attention despite a uniform'); results.push('uniform running attention');
+          check(!q.meter&&!q.eyeT&&!q.hearT&&['PATROL','RETURN'].includes(q.state),'An authorized running colleague must not be pursued'); results.push('authorized uniform running');
+          fixture('waiter');P.mode='run';P.moving=true;tick(2);
+          check(q.seen&&q.meter>0,'Running in the wrong uniform must not bypass restricted access');results.push('unauthorized running');
           fixture(); q.state='NOTICE';q.why='saw';q.meter=.8;q.poi={x:P.x,y:P.y};q.noticeT=0;
           tick(3);check(q.state==='PATROL'&&q.meter===0,'Innocent visual notice must return to routine');results.push('notice resolves');
           fixture(null);tick(2);check(q.state==='WARN','Unpermitted entry still warns');results.push('trespass warning');

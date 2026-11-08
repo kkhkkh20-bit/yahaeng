@@ -1,0 +1,482 @@
+[
+  {
+    "viewport": [
+      320,
+      480
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 228,
+      "y": 384,
+      "w": 80,
+      "h": 80,
+      "right": 308,
+      "bottom": 464
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 164,
+      "y": 384,
+      "w": 56,
+      "h": 56,
+      "right": 220,
+      "bottom": 440
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 166,
+      "y": 320,
+      "w": 48,
+      "h": 48,
+      "right": 214,
+      "bottom": 368
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 12,
+      "y": 412,
+      "w": 44,
+      "h": 52,
+      "right": 56,
+      "bottom": 464
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 64,
+        "y": 354,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 406
+      },
+      {
+        "id": "quickCoin",
+        "x": 114,
+        "y": 354,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 406
+      },
+      {
+        "id": "quickSmoke",
+        "x": 64,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 464
+      },
+      {
+        "id": "quickRadio",
+        "x": 114,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 464
+      }
+    ]
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 228,
+      "y": 472,
+      "w": 80,
+      "h": 80,
+      "right": 308,
+      "bottom": 552
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 164,
+      "y": 472,
+      "w": 56,
+      "h": 56,
+      "right": 220,
+      "bottom": 528
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 166,
+      "y": 408,
+      "w": 48,
+      "h": 48,
+      "right": 214,
+      "bottom": 456
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 12,
+      "y": 500,
+      "w": 44,
+      "h": 52,
+      "right": 56,
+      "bottom": 552
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 64,
+        "y": 442,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 494
+      },
+      {
+        "id": "quickCoin",
+        "x": 114,
+        "y": 442,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 494
+      },
+      {
+        "id": "quickSmoke",
+        "x": 64,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 552
+      },
+      {
+        "id": "quickRadio",
+        "x": 114,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 552
+      }
+    ]
+  },
+  {
+    "viewport": [
+      390,
+      640
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 286,
+      "y": 530,
+      "w": 88,
+      "h": 88,
+      "right": 374,
+      "bottom": 618
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 222,
+      "y": 562,
+      "w": 56,
+      "h": 56,
+      "right": 278,
+      "bottom": 618
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 206,
+      "y": 466,
+      "w": 56,
+      "h": 56,
+      "right": 262,
+      "bottom": 522
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 566,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 618
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 508,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 560
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 508,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 560
+      },
+      {
+        "id": "quickSmoke",
+        "x": 68,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 618
+      },
+      {
+        "id": "quickRadio",
+        "x": 118,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 618
+      }
+    ]
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 286,
+      "y": 734,
+      "w": 88,
+      "h": 88,
+      "right": 374,
+      "bottom": 822
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 222,
+      "y": 766,
+      "w": 56,
+      "h": 56,
+      "right": 278,
+      "bottom": 822
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 206,
+      "y": 670,
+      "w": 56,
+      "h": 56,
+      "right": 262,
+      "bottom": 726
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 770,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 822
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 712,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 764
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 712,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 764
+      },
+      {
+        "id": "quickSmoke",
+        "x": 68,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 822
+      },
+      {
+        "id": "quickRadio",
+        "x": 118,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 822
+      }
+    ]
+  },
+  {
+    "viewport": [
+      568,
+      320
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 464,
+      "y": 220,
+      "w": 88,
+      "h": 88,
+      "right": 552,
+      "bottom": 308
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 392,
+      "y": 252,
+      "w": 56,
+      "h": 56,
+      "right": 448,
+      "bottom": 308
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 372,
+      "y": 100,
+      "w": 56,
+      "h": 56,
+      "right": 428,
+      "bottom": 156
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 256,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 308
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 308
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 308
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 308
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 308
+      }
+    ]
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 740,
+      "y": 290,
+      "w": 88,
+      "h": 88,
+      "right": 828,
+      "bottom": 378
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 668,
+      "y": 322,
+      "w": 56,
+      "h": 56,
+      "right": 724,
+      "bottom": 378
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 648,
+      "y": 170,
+      "w": 56,
+      "h": 56,
+      "right": 704,
+      "bottom": 226
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 326,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 378
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 378
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 378
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 378
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 378
+      }
+    ]
+  }
+]

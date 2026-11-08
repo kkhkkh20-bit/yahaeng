@@ -22,13 +22,13 @@ async def main():
     ok(!f.g.eyeT&&!f.P.disguiseBlown&&f.g.state==='PATROL'&&!f.S.stats.detected,'ordinary guard invents identity '+JSON.stringify({lv,moving,state:f.g.state}));
    }results.push('ordinary guards accept an unreported uniform for 12 seconds at all alert levels');
    for(const role of ['enforcer','elite','target']){
-    let f=fresh(2,role);f.P.moving=true;f.tick(12);ok(!f.g.eyeT&&!f.g.eyeWatching&&!f.P.disguiseBlown&&!f.S.stats.detected,'walking passer is auto-identified '+role);
-    f=fresh(0,role);f.P.a=0;f.tick(12);ok(!f.g.eyeT&&!f.P.disguiseBlown,'back of head reveals identity '+role);
+    for(const mode of ['walk','run']){const f=fresh(2,role);f.P.mode=mode;f.P.moving=true;f.tick(12);ok(!f.g.eyeT&&!f.g.eyeWatching&&!f.P.disguiseBlown&&!f.S.stats.detected,'passing colleague is auto-identified '+role+' '+mode);}
+    let f=fresh(0,role);f.P.a=0;f.tick(12);ok(!f.g.eyeT&&!f.P.disguiseBlown,'back of head reveals identity '+role);
     f=fresh(0,role);f.tick(1);ok(f.g.eyeT>0&&!f.P.disguiseBlown,'marked face check has no warning '+role);
     const remembered=f.g.eyeT;f.P.moving=true;f.tick(.1);ok(f.g.eyeT>0&&f.g.eyeT<remembered&&!f.g.eyeWatching&&!f.P.disguiseBlown,'walking must fade an existing check without building suspicion');
     f.P.moving=false;f.P.a=0;f.tick(4);ok(!f.P.disguiseBlown,'paused with back turned still identified');
     f.P.a=Math.PI;f.tick(3.2);ok(f.P.disguiseBlown&&f.g.state==='ALERT','real stationary face check no longer works '+role);
-   }results.push('marked roles ignore walking and back-facing passers; uninterrupted stationary face checks remain real');
+   }results.push('marked roles ignore walking/running and back-facing passers; uninterrupted stationary face checks remain real');
    let f=fresh(2);G.rememberSuspect(f.g,'crew');f.tick(3);ok(f.g.state==='ALERT','an actual witness forgets the reported appearance');
    f=fresh();f.P.strikeT=.2;f.tick(.05);ok(f.g.state==='ALERT','uniform protects a witnessed attack');results.push('real suspect memories and witnessed crimes still detect');
    G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();const P=G.S.player;
