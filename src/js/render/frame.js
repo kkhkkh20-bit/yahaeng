@@ -1,6 +1,6 @@
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPropArt();
+  refreshPropArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}

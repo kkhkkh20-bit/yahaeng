@@ -599,7 +599,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);

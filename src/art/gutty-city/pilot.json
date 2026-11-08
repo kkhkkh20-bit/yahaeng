@@ -1,0 +1,78 @@
+{
+  "source": "https://guttykreum.itch.io/free-japanese-city-game-assets",
+  "artist": "GuttyKreum",
+  "pack": "Japanese City Free v1",
+  "sourceSha256": "2b57f857269a1270884b702ba3fbf15a2105994587222953f6bd93bc09a889b6",
+  "frames": {
+    "asphalt": {
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        992,
+        128,
+        1024,
+        160
+      ]
+    },
+    "pavers": {
+      "rect": [
+        40,
+        0,
+        24,
+        24
+      ],
+      "sourceRect": [
+        992,
+        352,
+        1016,
+        376
+      ]
+    },
+    "awning": {
+      "rect": [
+        80,
+        0,
+        32,
+        18
+      ],
+      "sourceRect": [
+        480,
+        448,
+        512,
+        466
+      ]
+    },
+    "window": {
+      "rect": [
+        120,
+        0,
+        26,
+        16
+      ],
+      "sourceRect": [
+        611,
+        167,
+        637,
+        183
+      ]
+    },
+    "vending": {
+      "rect": [
+        160,
+        0,
+        22,
+        32
+      ],
+      "sourceRect": [
+        421,
+        70,
+        443,
+        102
+      ]
+    }
+  }
+}
