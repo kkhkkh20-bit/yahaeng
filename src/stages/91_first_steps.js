@@ -1,13 +1,13 @@
 // A small Korean freight depot: every lesson action advances the same infiltration.
 const FIRST_STEPS = {
- id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:214,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
+ id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:224,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
  noSupport:true,noAmbientChats:true,noRefine:true,floors:true,pspd:1.25,gspd:.8,residents:0,
  mission:'야간 배차실 2층에서 연락 서류를 회수하고 동쪽 골목으로 빠져나온다.',
- brief:'연락책 제비가 마지막으로 남긴 말은 “야간 배차실”. 경비를 조용히 재우고, 옷을 빌리고, 흔적을 숨긴다. 직원처럼 문을 통과해 2층 책상의 연락 서류를 가져오자. 까마귀가 골목을 봐 준다.',
+ brief:'연락책 제비가 사라졌다. 마지막 연락 장소는 대성 물류의 야간 배차실. 밖의 경비에게서 직원 옷을 얻고, 2층에서 제비가 남긴 서류를 빼내 동쪽 골목으로 빠져나온다. 까마귀가 골목을 봐 준다.',
  endText:'까마귀: 첫 야근 치고 깔끔하군요. 제비가 남긴 이름은 박인호. 금성 운송 2층에서 증인을 넘길 전화를 기다린답니다. 이번에는 그 전화를 끊으러 갑시다. 다음 출발 전에 1P를 배우거나 모아 둘 수 있습니다.',
  W:34,H:23,start:[2,10],exit:[29,15],exitName:'동쪽 골목',startA:0,well:'manhole',bare:true,ownedLoadout:true,
  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
- industrialBuildings:[0,2],
+ industrialBuildings:[0,2],archiveEntry:{outer:[22,12],inner:[20,12]},
  buildingNames:{0:'대성 물류 · 창고',1:'야간 배차실',2:'수리 작업장'},
  build(m){
   m.fill(0,0,33,22,',');m.rect(0,0,33,22);
@@ -20,14 +20,15 @@ const FIRST_STEPS = {
  },
  lamps:[[3,7,130,1],[10,9,240,1],[30,13,230,1],[6,7,300,1],[19,9,210,0]],
  guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false},
-  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false}],
+  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false},
+  {kind:'g1',tag:'archiveKeeper',at:[19,9],fl:1,post:180,still:true,radio:false}],
  zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,3,24,14,'res',null,'배차실 · 직원만',['crew']]],zoneAllow:['crew'],
  // A dispatch depot stores parcels, not the grocery fridges of the base shop.
  roomPatches:[{fl:0,bounds:[15,4,20,12],furniture:[{t:'fridge',from:[15,4],remove:true},{t:'fridge',from:[16,4],remove:true}],tiles:[[15,4,'t'],[16,4,'t']]}],
  fixedFurn:[{x:15,y:4,t:'boxes',w:2},{x:19,y:4,t:'locker'},
   ...[6,8,10].map(y=>({x:16,y,t:'shelf',w:3,skin:'freight'}))],
- dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'야간 배차',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
- items:[{b:1,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
+ dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'증인 이송 · 02:10',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
+ items:[{b:1,fl:1,at:'R'}],itemName:'제비의 연락 서류',itemNames:['제비의 연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
  steps:[
   ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'까마귀가 길을 보고 있다. 서류는 배차실 2층에 있다.','move'],
   [(S,P)=>P.mode==='sneak'?'웅크린 채 상자 옆 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&!P.hide&&!P.trav||!S.guards[0]||S.guards[0].state==='DEAD',S=>S.bushes.find(b=>Math.abs(b.x-360)<2&&Math.abs(b.y-504)<2),'상자와 풀숲이 경비의 시야를 가린다. 풀숲 밖에서 제압한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
@@ -36,7 +37,7 @@ const FIRST_STEPS = {
   [(S,P)=>P.carrying?'{행동} 몸을 내려놓고 옷 훔쳐 입기':'몸 옆에서 {행동} · 옷 훔쳐 입기',(S,P)=>P.outfit==='crew',S=>S.corpses[0]||S.guards[0],'옷은 사람에게서 얻는다. 갈아입는 3초 동안 움직이지 않는다. 이 복장으로 배차실을 통과할 수 있다.','env',0,['dress','carry','drop','retrieve','leave']],
   [(S,P)=>P.carrying?'상자 옆 풀숲에서 {행동} · 몸 숨기기':'몸 옆에서 {행동} · 운반',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?{x:360,y:504}:S.corpses[0],'옷을 입은 뒤 경비가 발견되지 않게 풀숲에 숨긴다.',(S,P)=>P.carrying&&Math.hypot(P.x-360,P.y-504)>48?'move':'env',0,['carry','quickStash','stash']],
   ['배차실에 들어가 계단으로 2층에 올라가기',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'직원 옷은 통행을 돕는다. 계단은 기술 없이 이용한다.','env',0,['up','door']],
-  ['2층 책상에서 연락 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'서류 앞에서 행동한다. 작업이 끝나면 들고 나간다.','env',0,['loot']],
+  [(S,P)=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.ready()?'{공격} 짧게 눌러 2층 경비 기절시키기':FIRST_STEPS.archiveGuide.approach().via?'복도 끝 문으로 사무실 진입':'2층 경비의 등 뒤로 접근':'2층 책상에서 제비의 연락 서류 챙기기',S=>S.items[0].got,S=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.approach():S.items[0],'서류를 지키는 경비 한 명. 등 뒤에서 재우거나, 시야를 피해 챙긴다. 기절·조명·우회 중 방법을 고를 수 있다.',()=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.ready()?'attack':'move':'env',0,['loot','lamp']],
   ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'동쪽 골목은 1층 밖이다. 계단을 내려간다.','env',0,['fdown']],
   ['배차실을 나와 동쪽 골목으로 빠져나오기',()=>false,S=>S.exit,'다음 출발 전에 기술 포인트 1P를 사용할 수 있다.','move']
  ]

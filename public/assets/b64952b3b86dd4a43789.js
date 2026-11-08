@@ -966,14 +966,14 @@ STAGES.push({
 });
 // A small Korean freight depot: every lesson action advances the same infiltration.
 const FIRST_STEPS = {
- id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:214,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
+ id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:224,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
  noSupport:true,noAmbientChats:true,noRefine:true,floors:true,pspd:1.25,gspd:.8,residents:0,
  mission:'야간 배차실 2층에서 연락 서류를 회수하고 동쪽 골목으로 빠져나온다.',
- brief:'연락책 제비가 마지막으로 남긴 말은 “야간 배차실”. 경비를 조용히 재우고, 옷을 빌리고, 흔적을 숨긴다. 직원처럼 문을 통과해 2층 책상의 연락 서류를 가져오자. 까마귀가 골목을 봐 준다.',
+ brief:'연락책 제비가 사라졌다. 마지막 연락 장소는 대성 물류의 야간 배차실. 밖의 경비에게서 직원 옷을 얻고, 2층에서 제비가 남긴 서류를 빼내 동쪽 골목으로 빠져나온다. 까마귀가 골목을 봐 준다.',
  endText:'까마귀: 첫 야근 치고 깔끔하군요. 제비가 남긴 이름은 박인호. 금성 운송 2층에서 증인을 넘길 전화를 기다린답니다. 이번에는 그 전화를 끊으러 갑시다. 다음 출발 전에 1P를 배우거나 모아 둘 수 있습니다.',
  W:34,H:23,start:[2,10],exit:[29,15],exitName:'동쪽 골목',startA:0,well:'manhole',bare:true,ownedLoadout:true,
  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
- industrialBuildings:[0,2],
+ industrialBuildings:[0,2],archiveEntry:{outer:[22,12],inner:[20,12]},
  buildingNames:{0:'대성 물류 · 창고',1:'야간 배차실',2:'수리 작업장'},
  build(m){
   m.fill(0,0,33,22,',');m.rect(0,0,33,22);
@@ -986,14 +986,15 @@ const FIRST_STEPS = {
  },
  lamps:[[3,7,130,1],[10,9,240,1],[30,13,230,1],[6,7,300,1],[19,9,210,0]],
  guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false},
-  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false}],
+  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false},
+  {kind:'g1',tag:'archiveKeeper',at:[19,9],fl:1,post:180,still:true,radio:false}],
  zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,3,24,14,'res',null,'배차실 · 직원만',['crew']]],zoneAllow:['crew'],
  // A dispatch depot stores parcels, not the grocery fridges of the base shop.
  roomPatches:[{fl:0,bounds:[15,4,20,12],furniture:[{t:'fridge',from:[15,4],remove:true},{t:'fridge',from:[16,4],remove:true}],tiles:[[15,4,'t'],[16,4,'t']]}],
  fixedFurn:[{x:15,y:4,t:'boxes',w:2},{x:19,y:4,t:'locker'},
   ...[6,8,10].map(y=>({x:16,y,t:'shelf',w:3,skin:'freight'}))],
- dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'야간 배차',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
- items:[{b:1,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
+ dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'증인 이송 · 02:10',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
+ items:[{b:1,fl:1,at:'R'}],itemName:'제비의 연락 서류',itemNames:['제비의 연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
  steps:[
   ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'까마귀가 길을 보고 있다. 서류는 배차실 2층에 있다.','move'],
   [(S,P)=>P.mode==='sneak'?'웅크린 채 상자 옆 풀숲으로 이동':'{살금} 몸을 낮추고 풀숲으로 이동',(S,P)=>P.hidden&&!P.hide&&!P.trav||!S.guards[0]||S.guards[0].state==='DEAD',S=>S.bushes.find(b=>Math.abs(b.x-360)<2&&Math.abs(b.y-504)<2),'상자와 풀숲이 경비의 시야를 가린다. 풀숲 밖에서 제압한다.',(S,P)=>P.mode==='sneak'?'move':'crouch'],
@@ -1002,7 +1003,7 @@ const FIRST_STEPS = {
   [(S,P)=>P.carrying?'{행동} 몸을 내려놓고 옷 훔쳐 입기':'몸 옆에서 {행동} · 옷 훔쳐 입기',(S,P)=>P.outfit==='crew',S=>S.corpses[0]||S.guards[0],'옷은 사람에게서 얻는다. 갈아입는 3초 동안 움직이지 않는다. 이 복장으로 배차실을 통과할 수 있다.','env',0,['dress','carry','drop','retrieve','leave']],
   [(S,P)=>P.carrying?'상자 옆 풀숲에서 {행동} · 몸 숨기기':'몸 옆에서 {행동} · 운반',S=>!S.guards[0]&&!S.corpses.length||S.corpses.some(c=>c.hidden||c.stashed),S=>S.player.carrying?{x:360,y:504}:S.corpses[0],'옷을 입은 뒤 경비가 발견되지 않게 풀숲에 숨긴다.',(S,P)=>P.carrying&&Math.hypot(P.x-360,P.y-504)>48?'move':'env',0,['carry','quickStash','stash']],
   ['배차실에 들어가 계단으로 2층에 올라가기',(S,P)=>P.fl===1&&!P.trav,S=>S.lessonLayout?.up,'직원 옷은 통행을 돕는다. 계단은 기술 없이 이용한다.','env',0,['up','door']],
-  ['2층 책상에서 연락 서류 챙기기',S=>S.items[0].got,S=>S.items[0],'서류 앞에서 행동한다. 작업이 끝나면 들고 나간다.','env',0,['loot']],
+  [(S,P)=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.ready()?'{공격} 짧게 눌러 2층 경비 기절시키기':FIRST_STEPS.archiveGuide.approach().via?'복도 끝 문으로 사무실 진입':'2층 경비의 등 뒤로 접근':'2층 책상에서 제비의 연락 서류 챙기기',S=>S.items[0].got,S=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.approach():S.items[0],'서류를 지키는 경비 한 명. 등 뒤에서 재우거나, 시야를 피해 챙긴다. 기절·조명·우회 중 방법을 고를 수 있다.',()=>FIRST_STEPS.archiveGuide.guard()?FIRST_STEPS.archiveGuide.ready()?'attack':'move':'env',0,['loot','lamp']],
   ['계단으로 다시 1층에 내려오기',(S,P)=>!P.fl&&!P.trav,S=>S.lessonLayout?.down,'동쪽 골목은 1층 밖이다. 계단을 내려간다.','env',0,['fdown']],
   ['배차실을 나와 동쪽 골목으로 빠져나오기',()=>false,S=>S.exit,'다음 출발 전에 기술 포인트 1P를 사용할 수 있다.','move']
  ]
@@ -4061,6 +4062,8 @@ function learningNextLabel(){
 
 function initLessonLayout(){
   if(!STAGE.episodeLesson)return;
+  // Stage data has its own scope; bind runtime guidance explicitly.
+  if(STAGE.firstSteps)STAGE.archiveGuide={guard:openingArchiveGuard,ready:openingArchiveReady,rear:openingArchiveRear,approach:openingArchiveApproach};
   const l=S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
   if(l)S.lessonLayout={up:{...stairLower(l).up.entry,fl:0},down:{...stairUpper(l).down.entry,fl:1}};
 }
@@ -8621,13 +8624,28 @@ function openingGoal(){
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};
 }
+// The upstairs contact is the same rear approach the player just used outside.
+// This is a real witness, not a kill requirement or an artificial failure trigger.
+function openingArchiveGuard(){
+ if(!STAGE.firstSteps||!STAGE.storyEpisode||S.items[0]?.got)return null;
+ const g=npc('archiveKeeper');if(!g||g.state==='DEAD'||g.state==='CAPTIVE'||g.unconscious)return null;
+ if(flOf(S.player)===flOf(g)&&g.rawSeen===false&&nearLoot()===S.items[0])return null;
+ return g;
+}
+function openingArchiveReady(){const g=openingArchiveGuard();return !!g&&flOf(S.player)===flOf(g)&&combatVictims(attackAction()).includes(g);}
+function openingArchiveApproach(){
+ const a=STAGE.archiveEntry,P=S.player;
+ if(a&&flOf(P)===1&&P.x>=(a.inner[0]+1)*TILE){const at=P.y<a.outer[1]*TILE+12?a.outer:a.inner;return{x:tc(at[0]),y:tc(at[1]),fl:1,via:true};}
+ return openingArchiveRear();
+}
+function openingArchiveRear(){const g=openingArchiveGuard();return g?{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40,fl:flOf(g)}:S.items[0];}
 function updateOpeningContract(){
   if(STAGE.firstSteps&&STAGE.storyEpisode){
     const P=S.player,g=npc('dispatchClerk');
     // A real observer accepts ordinary permitted passage. Never manufacture a
     // successful disguise while he is investigating crime or sees illegal work.
     if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
-      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가.',2.8);
+      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가. 난 퇴근이다.',2.8);
     }
     return;
   }
@@ -11843,7 +11861,7 @@ function updateTutorial(dt = 1/60) {
   if(S.t-(S.tutStepAt??-1)<.35)return;
   if(S.tutI<st.length&&st[S.tutI][1](S,S.player,input,SH)){
     const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)return;}
-    S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;play('switch',.45,1.5);
+    S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;if(!STAGE.storyEpisode)play('switch',.45,1.5);
   }
 }
 
@@ -15589,15 +15607,15 @@ function startAmb() {
 
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '오른쪽 골목으로 가. 연락책 제비가 남긴 서류부터 찾자.',
+ '올빼미, 제비 연락이 끊겼어. 오른쪽 배차실 2층. 남긴 서류부터 찾자.',
  '몸 낮춰. 상자 옆 풀숲으로 들어가면 안 보일 거야.',
- '문만 보고 있네. 풀숲에서 나와 조용히 등 뒤로 붙어.',
+ '문만 보고 있네. 우리도 출근해 볼까. 풀숲 나와 등 뒤로 붙어.',
  '살려 둬. 공격을 짧게 누르고 떼. 1초 누르면 죽는다.',
- '그 친구 옷을 빌려 입어. 갈아입을 동안은 가만히.',
+ '옷을 빌리자. 신입인 척하면 돼. 갈아입을 동안은 가만히.',
  '흔적도 지워야지. 몸을 들고 왼쪽 풀숲에 숨겨.',
  '좋아. 배차실로 들어가. 서류는 계단 위, 2층 책상에 있어.',
- '제비가 남긴 서류야. 책상에서 챙겨. 손 쓰는 동안 조심하고.',
- '박인호… 금성 운송 2층. 우선 같은 계단으로 내려와.',
+ '좋아. 저 친구 야근은 끝냈네. 책상에서 제비의 서류를 챙겨.',
+ '박인호… 제비가 남긴 이름이야. 금성 운송 2층. 우선 내려와. 다음은 저놈이다.',
  '첫 야근 끝이야. 동쪽 골목으로 빠져. 나머지는 밖에서 얘기하지.'
 ];
 function episodeRadioMessage(){
@@ -15610,8 +15628,10 @@ function episodeRadioMessage(){
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
   const passed=i===6&&S.openingPass;
-  const text=P.hide?'잘 숨었어. 이제 나와. 서류는 아직 배차실에 있어.':i===4&&P.carrying?'몸부터 내려놔. 그래야 그 옷을 입을 수 있어.':passed?'통했어. 그냥 걸어가. 계단으로 2층에 올라가면 돼.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
+  const archiveVia=!!archive&&!!openingArchiveApproach().via;
+  const text=P.hide?'잘 숨었어. 이제 나와. 서류는 아직 배차실에 있어.':i===7&&P.carrying?'서류 챙기려면 손부터 비워. 몸은 사물함에 숨기거나 내려놔.':archiveVia?'복도 끝에 왼쪽 문이 있어. 그쪽으로 들어가면 경비 등 뒤야.':archive?(archiveReady?'등을 잡았어. 짧게 누르고 떼. 야근은 여기까지 시켜 주자.':'서류 앞에 한 명 더 있네. 아래서 한 것처럼 등 뒤로. 그 옷으로 지나가도, 훔치는 건 보이면 들켜.'):quietDesk?'지금은 안 보고 있어. 서류만 챙겨. 조용히 왔으니 조용히 나가자.':i===4&&P.carrying?'몸부터 내려놔. 그래야 그 옷을 입을 수 있어.':passed?'통했어. 그냥 걸어가. 계단으로 2층에 올라가면 돼.':OPENING_RADIO[i]||OPENING_RADIO[9];
+  return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed+':'+!!archive+':'+archiveReady+':'+!!(i===7&&P.carrying)+':'+quietDesk+':'+archiveVia,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 가자. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터.';
  if(evidencePending())text='녹화됐어. 전선만 끊어선 기록이 남아. 관리 단말에서 지워.';
@@ -16474,6 +16494,7 @@ function nextGoal() {
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {
     if(STAGE.id==='tB'&&P.captive)return{text:tutText('{공격} 짧게 눌러 붙잡은 경비 기절시키기'),where:'이 동작이 끝나면 원래 안내가 이어진다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'attack'};
     if(STAGE.id==='tB'&&S.tutI===4&&P.carrying)return{text:tutText('{행동} 몸 내려놓기 · 그다음 옷 훔쳐 입기'),where:'몸을 들고서는 옷을 갈아입을 수 없다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
+    if(STAGE.id==='tB'&&S.tutI===7&&P.carrying)return{text:tutText('{행동} 몸 숨기기 또는 내려놓기'),where:'손을 비운 뒤 서류를 챙긴다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     if(STAGE.id==='tB'&&P.hide)return{text:tutText('{행동} 은신처에서 나오기'),where:'나온 뒤 원래 안내를 계속한다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
     return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
@@ -16752,7 +16773,7 @@ function showEnd(win, reason) {
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'')+(STAGE.story?'\n'+STAGE.endText:'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML='<div class="ent skill-receipt"><b>기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P</b> · 다음 출발 준비에서 사용</div>';}
-  if(win&&LEARNING_ROUTE.includes(STAGE.id)){const points=(S.skillRewards||[]).reduce((n,r)=>n+r.points,0);$('endSkills').innerHTML='<p class="completion-receipt">'+(points?'기술 포인트 +'+points+'P · 다음 출발 전에 사용':'완료한 의뢰 · 기술 포인트 중복 지급 없음')+'</p>';$('endSkills').hidden=false;}
+  if(win&&LEARNING_ROUTE.includes(STAGE.id)){const points=(S.skillRewards||[]).reduce((n,r)=>n+r.points,0);$('endSkills').innerHTML='<p class="completion-receipt">'+(points?'기술 포인트 +'+points+'P · 다음 출발 전에 사용':STAGE.firstSteps&&S.resultFresh?'첫 에피소드 완료 · 기술 포인트 '+Math.max(0,skillBudget()-skillSpent(loadSkillTree()))+'P 사용 가능':'완료한 의뢰 · 기술 포인트 중복 지급 없음')+'</p>';$('endSkills').hidden=false;}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = true;
@@ -17433,7 +17454,7 @@ function installGameApi() {
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
-    compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
+    compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,openingArchiveGuard,openingArchiveReady,openingArchiveRear,openingArchiveApproach,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,

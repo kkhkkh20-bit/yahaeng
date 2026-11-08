@@ -1,0 +1,20 @@
+[
+  {
+    "device": "pc",
+    "complete": true,
+    "hp": 3,
+    "detected": 0,
+    "ko": 2,
+    "skillsPurchased": 0,
+    "freshCompletionReceipt": "첫 에피소드 완료 · 기술 포인트 1P 사용 가능"
+  },
+  {
+    "device": "mobile",
+    "complete": true,
+    "hp": 3,
+    "detected": 0,
+    "ko": 2,
+    "skillsPurchased": 0,
+    "freshCompletionReceipt": "첫 에피소드 완료 · 기술 포인트 1P 사용 가능"
+  }
+]

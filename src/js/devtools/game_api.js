@@ -10,7 +10,7 @@ function installGameApi() {
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
-    compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
+    compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,openingArchiveGuard,openingArchiveReady,openingArchiveRear,openingArchiveApproach,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,
     loadFieldLearning,recordFieldSkill,pendingFieldSkill,fieldSkillPreparation,updateFieldLearning,
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,

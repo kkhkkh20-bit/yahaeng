@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "three physical contacts; actual rear attack and interruption recovery without skills",
+    "uniform permits passage; visible document work attracts real suspicion",
+    "physical darkness permits quiet theft and escape with every guard alive; checkpoint and clue persist",
+    "first completion presents available 1P; replay does not grant another point"
+  ],
+  "guards": 3,
+  "killRequired": false,
+  "quietRoute": true
+}
