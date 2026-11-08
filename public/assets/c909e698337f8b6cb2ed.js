@@ -15367,7 +15367,7 @@ function episodeRadioMessage(){
 // The mission stays stable. Immediate instructions belong to the radio.
 function compactObjectiveText(){
  if(!S)return '';
- if(S.exitOpen)return (STAGE.exitName||'출구')+'로 탈출';
+ if(S.exitOpen)return evidencePending()?'CCTV 기록 삭제 후 탈출':(STAGE.exitName||'출구')+'로 탈출';
  if(STAGE.firstSteps&&STAGE.storyEpisode)return '연락 서류 회수 · 동쪽 골목 탈출';
  const targets=S.spare?[]:S.guards.filter(g=>g.target),parts=[];
  if(targets.length===1)parts.push(targetName(targets[0]).split(' · ')[0]+' 처치 '+targets.filter(targetEliminated).length+'/1');
@@ -15378,7 +15378,7 @@ function compactObjectiveText(){
   const label=work?'업무':S.items.length===1?names[0]:names.every(n=>/서류|장부|암호표|계약서|인계서|명세서|원장/.test(n))?'서류':'물품';
   parts.push(label+' '+S.items.filter(i=>i.got).length+'/'+S.items.length+' '+(work?'완료':'회수'));
  }
- if(parts.length)return parts.concat('탈출').join(' · ');
+ if(parts.length)return parts.concat(evidencePending()?'CCTV 기록 삭제 후 탈출':'탈출').join(' · ');
  return STAGE.mission||STAGE.purpose||nextGoal()?.text||'의뢰 목표 확인';
 }
 let episodeRadioTick=0,episodeRadioToken='',episodeRadioFaceKey='';
