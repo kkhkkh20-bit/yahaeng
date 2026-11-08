@@ -39,7 +39,11 @@ function officeWall(c,tx,ty){
  const bi=bldAt(tx,ty);if(bi<0||BLD[bi].vacant)return false;
  const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,south=!['#','N','V'].includes(G[ty+1]?.[tx]||'V');
  c.fillStyle=p.ink;c.fillRect(x,y,TILE,TILE);
- if(south){officeBlit(c,p.wall,x,y+12,TILE,TILE-12);c.fillStyle='#abb2b0';c.fillRect(x,y+10,TILE,2);c.fillStyle=p.accent;c.fillRect(x,y+TILE-5,TILE,3);}
+ if(south){
+  // Clip a square source module; stretching 32px to 48x36 distorts its pixels.
+  c.save();c.beginPath();c.rect(x,y+12,TILE,TILE-12);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
+  c.fillStyle='#849097';c.fillRect(x,y+10,TILE,2);c.fillStyle='#35444e';c.fillRect(x,y+TILE-4,TILE,3);
+ }
  else{c.fillStyle='#536068';c.fillRect(x+3,y,2,TILE);c.fillStyle='#73818a';c.fillRect(x+5,y,1,TILE);c.fillStyle='#10191fa0';c.fillRect(x+TILE-5,y,5,TILE);}
  return true;
 }
@@ -57,13 +61,19 @@ function officeFurnKey(f){
   return f.t==='desk'?'deskComputer':((f.x+f.y)%3===0?'deskFiles':'deskGlass');
  }
  if(f.t==='table')return f.w>1?'tableGlass':'tableRound';
- if(f.t==='chair'||f.t==='chairD')return([OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?['chairRed','chairRedE','chairRedBack','chairRedW']:['chairBlue','chairBlueE','chairBlueBack','chairBlueW'])[r];
- if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairRed':'chairBlue';
+ if(f.t==='chair'||f.t==='chairD'){
+  const executive=style===OFFICE_STYLES.executive&&FURN.some(a=>flOf(a)===flOf(f)&&(a.t==='desk'||a.t==='desk2')&&a.x===f.x&&Math.abs(a.y-f.y)===1&&officeFurnKey(a)==='deskExecutive');
+  const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
+  return prefix+['','E','Back','W'][r];
+ }
+ if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
  return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue',pot:'tableRound'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
- const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18),scale=Math.min(maxW/r[2],maxH/r[3]);
+ const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18);
+ const chair=f.t==='chair'||f.t==='chairD'||f.t==='sofa'||f.t==='sofaV';
+ const scale=Math.min(chair?(key.startsWith('chairRed')?1:1.5):1.5,maxW/r[2],maxH/r[3]);
  const w=Math.round(r[2]*scale),h=Math.round(r[3]*scale);
  return{key,x:f.x*TILE+(f.w*TILE-w)/2,y:(f.y+f.h)*TILE-h-3,w,h};
 }
@@ -72,7 +82,8 @@ function drawOfficeFurn(c,f,shadow){
  const b=officeFurnBounds(f);if(!b)return false;
  c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+3,(f.y+f.h)*TILE-5,f.w*TILE*.42,7,0,0,TAU);c.fill();}
  if(f.t==='sofa'||f.t==='sofaV'){
-  const count=Math.max(f.w,f.h);for(let i=0;i<count;i++)officeBlit(c,b.key,f.x*TILE+4+(f.w>1?i*TILE:0),f.y*TILE-10+(f.h>1?i*TILE:0),TILE-8,TILE+6);
+  const count=Math.max(f.w,f.h),r=officeFrame(b.key),s=Math.min(b.key.startsWith('chairRed')?1:1.5,(TILE-8)/r[2],(TILE+6)/r[3]);
+  for(let i=0;i<count;i++){const w=r[2]*s,h=r[3]*s;officeBlit(c,b.key,f.x*TILE+(TILE-w)/2+(f.w>1?i*TILE:0),(f.y+1)*TILE-h-3+(f.h>1?i*TILE:0),w,h);}
  }else officeBlit(c,b.key,b.x,b.y,b.w,b.h);
  c.restore();return true;
 }
@@ -85,17 +96,31 @@ function officeSurfacePoint(o){
  const x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
  return{x,y:b.y+b.h*.42};
 }
-function officeWallDecor(c,fl,x0,y0,x1,y1){
- if(!officeReady())return;
+function officeDecorLayout(fl){
+ if(!officeReady())return [];
+ const placed=[];
  for(const d of STAGE.officeArt.decor||[]){
   if(d.fl!==fl)continue;
-  const b=BLD[d.b];if(!b||b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
-  const tx=Math.round(b.x0+1+(b.x1-b.x0-2)*d.u),ty=b.y0;
-  // A board belongs on a real wall, never across a window, door or staircase.
-  if(G[ty]?.[tx]!=='#'||G[ty+1]?.[tx]==='#')continue;
-  const r=officeFrame(d.art);if(!r)continue;
-  const w=Math.min(d.w||64,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2];
-  officeBlit(c,d.art,tc(tx)-w/2,ty*TILE+TILE-h-3,w,h);
+  const b=BLD[d.b],r=officeFrame(d.art);if(!b||!r)continue;
+  const w=Math.min(d.w||64,r[2]*1.5,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2],y=b.y0*TILE+TILE-h-3;
+  const target=Math.round(b.x0+1+(b.x1-b.x0-2)*d.u),candidates=[];
+  for(let tx=b.x0+1;tx<b.x1;tx++)candidates.push(tx);
+  candidates.sort((a,b)=>Math.abs(a-target)-Math.abs(b-target));
+  for(const tx of candidates){
+   const x=tc(tx)-w/2,right=x+w;let clear=x>=(b.x0+1)*TILE&&right<=b.x1*TILE;
+   for(let xx=Math.floor(x/TILE);xx<=Math.floor((right-1)/TILE);xx++)if(G[b.y0]?.[xx]!=='#'||G[b.y0+1]?.[xx]==='#')clear=false;
+   if(!clear||placed.some(a=>a.b===d.b&&a.x<right+8&&a.x+a.w>x-8))continue;
+   if(S.lamps.some(l=>flOf(l)===fl&&l.control&&l.control.ty===b.y0&&tc(l.control.tx)>x-12&&tc(l.control.tx)<right+12))continue;
+   if(FURN.some(f=>{if(flOf(f)!==fl||f.y>b.y0+1)return false;const a=officeFurnBounds(f);return a&&a.x<right&&a.x+a.w>x&&a.y<y+h&&a.y+a.h>y;}))continue;
+   placed.push({...d,x,y,w,h});break;
+  }
+ }
+ return placed;
+}
+function officeWallDecor(c,fl,x0,y0,x1,y1){
+ for(const d of officeDecorLayout(fl)){
+  const b=BLD[d.b];if(b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
+  officeBlit(c,d.art,d.x,d.y,d.w,d.h);
  }
 }
 function drawOfficeLamp(l,c=ctx){

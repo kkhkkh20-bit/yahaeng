@@ -34,6 +34,20 @@ OFFICE_CAMPAIGN.m5.furniture=[
  {fl:1,t:'desk2',x:20,y:5,art:'deskGlass'}
 ];
 for(const[id,art]of Object.entries(OFFICE_CAMPAIGN))campaignStage(id).officeArt=art;
+// Reference compositions: an operations board, a recording bank and a display
+// shelf identify each workplace. They occupy existing solid wall spans only.
+const OFFICE_WALL_GROUPS={
+ tB:[{b:1,fl:0,u:.64,art:'monitorRack',w:88},{b:1,fl:1,u:.5,art:'board',w:84}],
+ p0:[{b:0,fl:0,u:.7,art:'monitorRack',w:88},{b:0,fl:1,u:.3,art:'displayWood',w:42},{b:0,fl:1,u:.5,art:'board',w:78}],
+ e2:[{b:1,fl:0,u:.55,art:'board',w:84},{b:1,fl:1,u:.66,art:'monitorRackBlue',w:88},{b:1,fl:2,u:.68,art:'displayGlass',w:42}],
+ m2:[{b:0,fl:1,u:.35,art:'board',w:84},{b:1,fl:1,u:.65,art:'displayWood',w:42}],
+ m4:[{b:2,fl:0,u:.65,art:'monitorRack',w:80},{b:3,fl:1,u:.3,art:'displayWood',w:42}],
+ m6:[{b:0,fl:1,u:.4,art:'board',w:84},{b:1,fl:0,u:.7,art:'monitorRackBlue',w:88}],
+ m7:[{b:1,fl:1,u:.3,art:'board',w:78},{b:0,fl:0,u:.3,art:'board',w:84}],
+ m5:[{b:0,fl:0,u:.65,art:'monitorRackBlue',w:88},{b:0,fl:1,u:.38,art:'displayWood',w:42}],
+ n1:[{b:0,fl:1,u:.3,art:'displayWood',w:42},{b:4,fl:0,u:.5,art:'board',w:70}]
+};
+for(const[id,decor]of Object.entries(OFFICE_WALL_GROUPS))OFFICE_CAMPAIGN[id].decor.push(...decor);
 // Ground paint gives the first depot a readable loading area without adding
 // decorative crates or chairs that the player could incorrectly walk through.
 campaignStage('tB').dressing.push(

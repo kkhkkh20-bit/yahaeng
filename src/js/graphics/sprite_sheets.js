@@ -1,8 +1,8 @@
 const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
-const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#3f9a5e', '#2f3440', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
+const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#54846f', '#343b49', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
-  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#313b46', '#34404e', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#56603c', '#3e3a2c', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
+  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#495663', '#394356', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
   old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
   civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
@@ -18,6 +18,9 @@ const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
 const PR_CH = 16;
+// Cloth uses a handful of flat value steps like the purchased city sprites.
+// Alpha, silhouette, skin and every baked hand/foot contact remain untouched.
+const prClothShade=(s,cls)=>cls<2?s:Math.max(.2,Math.min(1.2,Math.round(s*5)/5));
 let prBase = null;  // { img, w, h, parts: [조각별 분류 캐시] }
 if (PR) { prImg.onload = () => { prBase = { img: prImg, w: prImg.width, h: prImg.height, parts: [] }; }; prImg.src = PR.src; }
 // 주민 체형 변형 시트 (치마·긴 머리·코트·가방·헬멧·덩치·노인): 'civ3@fLong' = 팔레트 civ3 + 체형 fLong
@@ -75,7 +78,7 @@ function prPaint(base, pal) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   const id = x.createImageData(w, h), out = id.data;
   for (let i = 0; i < pixels.length; i++) {
-    const j = pixels[i] * 4, k = i * 4, wt = wgt[i], p = P4[cls[i]], s = shd[i];
+    const j = pixels[i] * 4, k = i * 4, wt = wgt[i], p = P4[cls[i]], s = prClothShade(shd[i],cls[i]);
     for (let ch = 0; ch < 3; ch++) out[j + ch] = wt ? p[ch] * s * wt + src[k + ch] * (1 - wt) : src[k + ch];
     out[j + 3] = src[k + 3];
   }
@@ -122,7 +125,7 @@ function prPart(sh, ci) {
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
   const id = x.createImageData(w, h), o = id.data; o.set(src);
   for (let i = 0, n = w * h; i < n; i++) {
-    const w8 = wgt[i]; if (!w8) continue; const wt = w8 / 255, p = P4[cls[i]], s = shd[i] / 180 * wt, j = i * 4, r = 1 - wt;
+    const w8 = wgt[i]; if (!w8) continue; const wt = w8 / 255, p = P4[cls[i]], s = prClothShade(shd[i]/180,cls[i])*wt, j = i * 4, r = 1 - wt;
     o[j] = p[0] * s + src[j] * r; o[j + 1] = p[1] * s + src[j + 1] * r; o[j + 2] = p[2] * s + src[j + 2] * r;
   }
   x.putImageData(id, 0, 0);

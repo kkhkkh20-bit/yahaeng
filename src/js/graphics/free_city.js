@@ -122,7 +122,7 @@ function drawCityRoofProps(b){
     if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
    }else if(p.t==='tank'){
     q.fillStyle='#101b29aa';q.fillRect(x+4,y+8,44,42);q.fillStyle='#72808b';q.fillRect(x+2,y-7,42,48);q.fillStyle='#3d515f';q.fillRect(x+5,y-4,36,38);freeCityDraw(q,'roofUnit',x+7,y,1);q.fillStyle='#a2aaa7';q.fillRect(x+2,y-7,42,3);
-   }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,'roofUnit',x+8,y+4,1);}
+   }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,p.t==='vent'&&freeCityArt.frames.roofVent?'roofVent':'roofUnit',x,y-8,1.5);}
    else if(p.t==='plant'){for(let k=0;k<4;k++)freeCityDraw(q,'roofPlanter',x+k*TILE+8,y+8,2);}
    else if(p.t==='solar'){q.fillStyle='#213243';q.fillRect(x,y,3*TILE,2*TILE);q.strokeStyle='#5b7481';q.lineWidth=2;for(let k=0;k<=3;k++)q.strokeRect(x+k*TILE,y,TILE,2*TILE);q.beginPath();q.moveTo(x,y+TILE);q.lineTo(x+3*TILE,y+TILE);q.stroke();}
   }
