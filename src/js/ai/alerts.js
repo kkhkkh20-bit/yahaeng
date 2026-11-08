@@ -1,4 +1,5 @@
 function goAlert(g) {
+  clearFootstepReaction(g);g.friendlyStep=null;if(g.startle?.src==='step')g.startle=null;
   if (g.dog && g.state !== 'ALERT') { play('bark', 0.7); noise(g.x, g.y, 320, 'bark', flOf(g)); }
   recordSearchCause('player');
   const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;

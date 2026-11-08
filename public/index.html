@@ -2035,7 +2035,7 @@ body.touch:not(.inspecting) #hud #stealth:not(.quiet) #accessLbl:not([hidden]){d
 }
 /* Mobile action controls: a dominant thumb button and a restrained radial arc. */
 #hud #quickItems{display:none}
-body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:164px;height:328px;pointer-events:none}
+body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:224px;height:240px;pointer-events:none}
 body.touch #hud .pad>button,body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle),body.touch #hud #btnCrouch{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:5px;border:0;border-image:none;border-radius:50%;clip-path:none;background:var(--art-field-control) center/100% 100% no-repeat;color:#b9c5c7;box-shadow:none;filter:none;pointer-events:auto;touch-action:none;transition:color .12s}
 body.touch #hud .pad>button[hidden]{display:none}
 body.touch #hud .pad>button::before{display:none;content:none}
@@ -2048,18 +2048,18 @@ body.touch #hud .pad #btnAct>svg.hud-art{width:36px;height:36px}
 body.touch #hud .pad #btnAct b{font-size:14px}
 body.touch #hud .pad #btnAct:is(.ready,.ko){background-image:var(--art-field-primary);color:#f1f0e1}
 body.touch #hud .pad #btnAct.kill{background-image:var(--art-field-danger);color:#ffe3d5}
-body.touch #hud .pad #btnCarry{right:94px;bottom:68px;width:64px;height:64px}
-body.touch #hud .pad #btnTool{right:6px;bottom:108px;width:60px;height:60px}
+body.touch #hud .pad #btnCarry{right:96px;bottom:0;width:56px;height:56px}
+body.touch #hud .pad #btnTool{right:32px;bottom:112px;width:60px;height:60px}
 body.touch #hud .pad #btnTool>svg.hud-art{width:28px;height:28px}
 body.touch #hud .pad #btnTool small{display:none}
-body.touch #hud .pad #btnToolNext{flex-direction:column;right:12px;bottom:186px;width:48px;height:48px}
+body.touch #hud .pad #btnToolNext{position:fixed;flex-direction:column;left:max(16px,env(safe-area-inset-left));right:auto;bottom:var(--field-bottom);width:44px;height:52px}
 body.touch #hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
 body.touch #hud .pad #btnToolNext b{font-size:10px}
-body.touch #hud .pad :is(#btnGrab,#btnDress){right:96px;bottom:216px;width:52px;height:52px}
-body.touch #hud .pad #btnCycle{right:12px;bottom:250px;width:52px;height:44px;min-height:44px;border-radius:6px;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
+body.touch #hud .pad :is(#btnGrab,#btnDress){right:0;bottom:192px;width:48px;height:48px}
+body.touch #hud .pad #btnCycle{right:60px;bottom:184px;width:44px;height:44px;min-height:44px;border-radius:50%;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
 body.touch #hud .pad #btnCycle small{font-size:10px}
-body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 102px);bottom:calc(var(--field-bottom) + 148px);display:block;width:52px;height:52px;pointer-events:none}
-body.touch #hud #btnCrouch{position:relative;width:52px;height:52px;min-height:44px}
+body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 112px);bottom:calc(var(--field-bottom) + 96px);display:block;width:56px;height:56px;pointer-events:none}
+body.touch #hud #btnCrouch{position:relative;width:56px;height:56px;min-height:44px}
 body.touch #hud #btnCrouch>svg.hud-art{width:25px;height:25px}
 body.touch #hud #btnCrouch b{font-size:10px}
 body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress).ready,body.touch #hud .pad #btnTool.aiming,body.touch #hud #btnCrouch.on{background-image:var(--art-field-primary);color:#f1f0e1}
@@ -2069,9 +2069,10 @@ body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDr
 body.touch #hud .pad #btnAct.kill:is(.down,:active){background-image:var(--art-field-danger);color:#ffe3d5}
 body.touch #hud .pad>button.down>svg{transform:translateY(1px)}
 /* Consumables sit at the bottom like an action game's bottle slots. */
-body.touch #hud #quickItems{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:var(--field-bottom);display:flex;align-items:flex-end;gap:6px;max-width:calc(100vw - 132px);pointer-events:none}
+body.touch #hud #quickItems{position:fixed;left:calc(max(16px,env(safe-area-inset-left)) + 52px);bottom:var(--field-bottom);display:grid;grid-template-columns:repeat(3,44px);align-items:end;gap:6px;max-width:none;pointer-events:none}
 body.touch #hud #quickItems[hidden]{display:none}
-body.touch #hud #quickItems>button{position:relative;box-sizing:border-box;width:48px;height:56px;min-width:44px;min-height:44px;flex-shrink:0;padding:0 3px 12px;border:0;border-bottom:2px solid #687e86;border-image:none;border-radius:5px 5px 2px 2px;background:#101a2299;color:#e2e7df;box-shadow:none;filter:none;pointer-events:auto;touch-action:none}
+body.touch #hud #quickItems:has(#quickRadio:not([hidden])){grid-template-columns:repeat(2,44px)}
+body.touch #hud #quickItems>button{position:relative;box-sizing:border-box;width:44px;height:52px;min-width:44px;min-height:44px;flex-shrink:0;padding:0 3px 12px;border:0;border-bottom:2px solid #687e86;border-image:none;border-radius:5px 5px 2px 2px;background:#101a2299;color:#e2e7df;box-shadow:none;filter:none;pointer-events:auto;touch-action:none}
 body.touch #hud #quickItems>button[hidden]{display:none}
 body.touch #hud #quickItems .hud-art{width:36px;height:36px;display:block;margin:auto;filter:drop-shadow(0 1px 1px #080f15)}
 body.touch #hud #quickItems output{position:absolute;right:1px;bottom:13px;min-width:14px;padding:1px 2px;color:#fff6df;background:#101a22;font-size:11px;font-weight:700;line-height:1.15;border-radius:3px}
@@ -2083,38 +2084,38 @@ body.touch #hud #quickItems>button:is(.down,:active){background:#344954e8;border
 body.touch #hud #quickItems>button.cancel{border-bottom-color:#f29b8b}
 body.touch #hud #quickItems .quick-wait{position:absolute;left:0;right:0;top:9px;font-size:12px;font-weight:700;color:#ffe3b7;background:#101a22e8;line-height:1.6}
 body.touch #hud #quickItems .quick-wait:empty{display:none}
-body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 66px)}
-@media(max-width:360px){
- body.touch #hud .pad{width:148px}
+body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud .joyhint{bottom:calc(var(--field-bottom) + 148px)}
+body.touch #hud #saveState{bottom:calc(var(--field-bottom) + 62px);max-width:calc(100vw - 230px)}
+body.touch #hud .joyhint{bottom:calc(var(--field-bottom) + 92px);max-width:calc(100vw - 230px)}
+body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud #saveState{bottom:calc(var(--field-bottom) + 118px)}
+@media(max-width:374px){
+ body.touch #hud .pad{width:200px;height:232px}
  body.touch #hud .pad #btnAct{width:80px;height:80px}
  body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
  body.touch #hud .pad #btnAct b{font-size:12px}
- body.touch #hud .pad #btnCarry{right:88px;width:56px;height:56px;bottom:80px}
+ body.touch #hud .pad #btnCarry{right:88px;bottom:24px;width:56px;height:56px}
  body.touch #hud .pad #btnCarry>svg.hud-art{width:24px;height:24px}
- body.touch #hud .pad #btnTool{width:56px;height:56px}
- body.touch #hud .pad #btnToolNext{width:44px;height:44px}
- body.touch #hud .pad :is(#btnGrab,#btnDress){right:88px;width:48px;height:48px}
- body.touch #hud .sysbtns{right:calc(var(--field-edge) + 92px);width:48px;height:48px}
+ body.touch #hud .pad #btnTool{right:24px;bottom:112px;width:52px;height:52px}
+ body.touch #hud .pad #btnToolNext{left:max(12px,env(safe-area-inset-left));width:44px;height:52px}
+ body.touch #hud .pad :is(#btnGrab,#btnDress){right:0;bottom:184px;width:48px;height:48px}
+ body.touch #hud .pad #btnCycle{right:0;bottom:244px;width:44px;height:44px}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 94px);bottom:calc(var(--field-bottom) + 96px);width:48px;height:48px}
  body.touch #hud #btnCrouch{width:48px;height:48px}
- body.touch #hud #quickItems{left:max(12px,env(safe-area-inset-left))}
- body.touch #hud #quickItems>button{width:44px;height:52px}
+ body.touch #hud #quickItems{left:calc(max(12px,env(safe-area-inset-left)) + 52px);grid-template-columns:repeat(2,44px)}
  body.touch #hud #quickItems .hud-art{width:32px;height:32px}
-}
-@media(orientation:landscape) and (max-height:500px) and (min-width:500px){
- body.touch #hud .pad{width:234px;height:188px}
- body.touch #hud .pad #btnAct{width:80px;height:80px}
- body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
- body.touch #hud .pad #btnCarry{right:94px;bottom:0;width:56px;height:56px}
- body.touch #hud .pad #btnCarry>svg.hud-art{width:24px;height:24px}
- body.touch #hud .pad #btnTool{right:86px;bottom:80px;width:56px;height:56px}
- body.touch #hud .pad #btnToolNext{right:164px;bottom:80px;width:48px;height:48px}
- body.touch #hud .pad :is(#btnGrab,#btnDress){right:8px;bottom:100px;width:48px;height:48px}
- body.touch #hud .pad #btnCycle{right:164px;bottom:144px;width:52px;height:44px}
- body.touch #hud .sysbtns{right:calc(var(--field-edge) + 166px);bottom:var(--field-bottom);width:50px;height:50px}
- body.touch #hud #btnCrouch{width:50px;height:50px}
- body.touch #hud #quickItems>button{width:44px;height:52px}
+ body.touch.has-quick-items #hud #saveState{bottom:calc(var(--field-bottom) + 118px)}
+ body.touch.has-quick-items #hud .joyhint{bottom:calc(var(--field-bottom) + 148px)}
 }
 
+
+@media(orientation:landscape) and (max-height:440px) and (min-width:500px){
+ body.touch #hud .pad #btnCarry{right:104px;bottom:0;width:56px;height:56px}
+ body.touch #hud .pad #btnCycle{right:116px;bottom:80px}
+ body.touch #hud #quickItems:has(#quickRadio:not([hidden])){grid-template-columns:repeat(4,44px)}
+ body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud #saveState{bottom:calc(var(--field-bottom) + 62px)}
+ body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud .joyhint{bottom:calc(var(--field-bottom) + 92px)}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 124px);bottom:calc(var(--field-bottom) + 152px)}
+}
 /* NPC dialogue takes precedence over transient save confirmation. */
 body.npc-speaking #hud #saveState{visibility:hidden}
 
@@ -2230,7 +2231,7 @@ body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
   </div>
   <div class="pad">
     <button id="btnTool" type="button"><b>다트 3</b></button>
-    <button id="btnToolNext" type="button" aria-label="다음 도구로 바꾸기"><b>도구 바꾸기</b></button>
+    <button id="btnToolNext" type="button" aria-label="장비와 도구 열기"><b>도구 바꾸기</b></button>
 
     <button id="btnGrab" type="button" title="붙잡기 (C · Q)"><b>붙잡기</b></button>
     <button id="btnDress" type="button" hidden aria-label="옷 갈아입기 · Y"><b>옷 갈아입기</b></button>
@@ -2261,7 +2262,7 @@ body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v219 · 2026-11-08</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v220 · 2026-11-08</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2371,7 +2372,7 @@ body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v219 · 2026-11-08</small>
+      <small class="fx-sub" id="pauseVersion">v220 · 2026-11-08</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2448,8 +2449,8 @@ body.radio-peek #hud #btnRadio,body.radio-peek #hud .joyhint{visibility:hidden}
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/704ffc478850218588df.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/092190e8da6cd098f5a5.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/08fc250566270f96c6f6.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/a4db7c2574d2221b8016.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/199ed0e3982a5b5929a3.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

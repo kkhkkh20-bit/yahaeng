@@ -48,11 +48,11 @@ function updateSharpEye(g, dt, rawVis) {
   if (!sharpEye(g)) { g.eyeT = 0; return; }
   const P = S.player, d = dist(g.x, g.y, P.x, P.y), R = g.target ? 90 : EYE_R;
   const faceVisible = Math.abs(angDiff(P.a, Math.atan2(g.y - P.y, g.x - P.x))) < Math.PI / 3;
-  const passing=P.mode==='walk'&&P.moving;
+  const passing=(P.mode==='walk'||P.mode==='run')&&P.moving;
   const visible=rawVis>0&&d<R&&faceVisible;
   g.eyeWatching=visible&&!passing;
   if(!visible){g.eyeT=0;return;}
-  // Walking is innocent. A check already begun fades rather than forgetting
+  // Passing colleagues may walk or run. A check already begun fades rather than forgetting
   // the face instantly, and never advances while the player walks away.
   if(passing){g.eyeT=Math.max(0,(g.eyeT||0)-dt*.5);return;}
   if (g.eyeWatching) { if (!g.eyeT && !(S.eyeWarned = S.eyeWarned || {})[g.id]) { S.eyeWarned[g.id] = true; bossRadio('eye', true); } g.eyeT = (g.eyeT || 0) + dt; g.want = Math.atan2(P.y - g.y, P.x - g.x);
@@ -81,8 +81,8 @@ const knownFace = (g, look = suspectLook()) =>
   !!g.suspectMemory?.[look] ||
   (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
   !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
-// 허가 복장은 정상 보행을 허용한다. 제한구역의 수상한 이동과 불법 행동은 별도로 판정한다.
-const publicSuspicion = g => { const k = suspAct(g); return k < 1 && myPermits(g).length && (!groundedWorld() || pZoneInfo().k === Z_PUB) ? 0 : k; };
+// 허가된 동료는 뛰어도 침입자가 아니다. 웅크리기·범행과 별도 보안구역은 기존 규칙을 따른다.
+const publicSuspicion = g => { const k = suspAct(g), zi = pZoneInfo(); return k < 1 && myPermits(g).length && (!groundedWorld() || zi.k === Z_PUB || permitted(zi,g) && S.player.mode !== 'sneak') ? 0 : k; };
 function onDisguiseChanged(previousLook) {
   const P = S.player; if (previousLook === suspectLook() || P.hide || P.under || P.vent) return;
   const L0 = CUR_F; setLayer(flOf(P));

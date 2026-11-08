@@ -1,0 +1,55 @@
+[
+  {
+    "version": "v219",
+    "method": "controlled placement/time fixture, separate from native playback",
+    "queued": {
+      "hearT": 0.12,
+      "source": {
+        "x": 390.6523042554036,
+        "y": 454.3475229255855
+      }
+    },
+    "seen": {
+      "raw": true,
+      "seen": true,
+      "state": "PATROL",
+      "hearT": 0.09999999999999999,
+      "poi": null
+    },
+    "after": {
+      "state": "SUSPICIOUS",
+      "why": "heard",
+      "poi": {
+        "x": 404.33410725649446,
+        "y": 446.9306326434016,
+        "fl": 0,
+        "z": 0
+      },
+      "hearT": 0
+    }
+  },
+  {
+    "version": "v220",
+    "method": "controlled placement/time fixture, separate from native playback",
+    "queued": {
+      "hearT": 0.12,
+      "source": {
+        "x": 390.6523042554036,
+        "y": 454.3475229255855
+      }
+    },
+    "seen": {
+      "raw": true,
+      "seen": true,
+      "state": "PATROL",
+      "hearT": 0,
+      "poi": null
+    },
+    "after": {
+      "state": "PATROL",
+      "why": null,
+      "poi": null,
+      "hearT": 0
+    }
+  }
+]
