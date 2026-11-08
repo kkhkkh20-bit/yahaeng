@@ -1,0 +1,614 @@
+{
+  "maps": [
+    {
+      "id": "m1",
+      "name": "장부 털기",
+      "terrain": 3918,
+      "types": {
+        "=": 663,
+        ".": 1106,
+        ",": 2019,
+        "B": 25,
+        "T": 6,
+        "g": 99
+      },
+      "plants": 31,
+      "opaque": 13,
+      "solidProps": 17,
+      "styles": [
+        "stone",
+        "green",
+        "brick",
+        "green",
+        "stone",
+        "brick",
+        "green",
+        "stone",
+        "green",
+        "green",
+        "green",
+        "brick",
+        "stone"
+      ],
+      "atlasDraws": 1915,
+      "geometrySha256": "21909ab5c6589061350dec533daa4679057c04928e6914b873ab9facbad954f6"
+    },
+    {
+      "id": "m2",
+      "name": "VIP",
+      "terrain": 1184,
+      "types": {
+        ",": 723,
+        "B": 20,
+        "=": 218,
+        "T": 2,
+        ".": 221
+      },
+      "plants": 22,
+      "opaque": 8,
+      "solidProps": 10,
+      "styles": [
+        "green",
+        "green",
+        "stone",
+        "stone",
+        "green",
+        "green",
+        "stone",
+        "stone"
+      ],
+      "atlasDraws": 2731,
+      "geometrySha256": "23f760ac57513142f366e47d7f44eddd6d1866a86a12b862ee738b1e8c5d3e6b"
+    },
+    {
+      "id": "m3",
+      "name": "잔칫날",
+      "terrain": 750,
+      "types": {
+        ".": 379,
+        ",": 221,
+        "B": 16,
+        "T": 4,
+        "=": 130
+      },
+      "plants": 20,
+      "opaque": 8,
+      "solidProps": 8,
+      "styles": [
+        "brick",
+        "brick",
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "green"
+      ],
+      "atlasDraws": 3393,
+      "geometrySha256": "77374a37e07119395ce67bbbbb1d6c38b09bfba75be7bf9aa378c491b7b42837"
+    },
+    {
+      "id": "m4",
+      "name": "돈줄",
+      "terrain": 561,
+      "types": {
+        ".": 294,
+        "=": 238,
+        ",": 25,
+        "B": 2,
+        "T": 2
+      },
+      "plants": 8,
+      "opaque": 6,
+      "solidProps": 7,
+      "styles": [
+        "green",
+        "green",
+        "green",
+        "stone",
+        "green",
+        "stone"
+      ],
+      "atlasDraws": 3980,
+      "geometrySha256": "7c0d2850b5f65f527285dae267192976ed61195950f141147c001c06f7f77785"
+    },
+    {
+      "id": "m5",
+      "name": "검은 연락선",
+      "terrain": 469,
+      "types": {
+        ".": 211,
+        ",": 94,
+        "=": 159,
+        "B": 3,
+        "T": 2
+      },
+      "plants": 5,
+      "opaque": 5,
+      "solidProps": 5,
+      "styles": [
+        "green",
+        "stone",
+        "stone",
+        "brick",
+        "green"
+      ],
+      "atlasDraws": 4455,
+      "geometrySha256": "6fe749ee6a7c41dfd1cfc9dc3b78dc825cd3523ae4b72aed855dc45472204179"
+    },
+    {
+      "id": "m6",
+      "name": "배신",
+      "terrain": 581,
+      "types": {
+        ",": 549,
+        "B": 2,
+        ".": 30
+      },
+      "plants": 2,
+      "opaque": 4,
+      "solidProps": 4,
+      "styles": [
+        "green",
+        "green",
+        "green",
+        "brick"
+      ],
+      "atlasDraws": 4788,
+      "geometrySha256": "64dcb6da321d6d666f7c5ed64521913f86d81d71db370b40e99ae802e1ca5388"
+    },
+    {
+      "id": "m7",
+      "name": "새벽배송",
+      "terrain": 423,
+      "types": {
+        ",": 228,
+        "T": 3,
+        "B": 6,
+        "=": 77,
+        ".": 109
+      },
+      "plants": 9,
+      "opaque": 3,
+      "solidProps": 0,
+      "styles": [
+        "stone",
+        "green",
+        "green"
+      ],
+      "atlasDraws": 5029,
+      "geometrySha256": "dd204b4100c3637cb91712899458dcc720ccc61c7f9ce975d527cea9880e2f44"
+    },
+    {
+      "id": "city",
+      "name": "밤의 도시",
+      "terrain": 4075,
+      "types": {
+        ".": 2542,
+        "=": 768,
+        ",": 587,
+        "g": 164,
+        "T": 8,
+        "B": 6
+      },
+      "plants": 14,
+      "opaque": 27,
+      "solidProps": 0,
+      "styles": [
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "green",
+        "green",
+        "green",
+        "green",
+        "green",
+        "green",
+        "green",
+        "stone",
+        "green",
+        "brick",
+        "green",
+        "brick",
+        "green",
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "green",
+        "stone",
+        "green",
+        "green",
+        "green",
+        "green"
+      ],
+      "atlasDraws": 6499,
+      "geometrySha256": "6dcf02d485f0d33a832cac603aaf2fab595ae0f00eb4c74a6d371b54d9d0b5b4"
+    },
+    {
+      "id": "t0",
+      "name": "연습 2 · 제압과 몸 숨기기",
+      "terrain": 247,
+      "types": {
+        ",": 96,
+        "T": 4,
+        "=": 42,
+        ".": 103,
+        "B": 2
+      },
+      "plants": 6,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 6575,
+      "geometrySha256": "8ad013e9241e94c3e938148ad9e0a1dc13f154615603d8d58a8531f088f0eae6"
+    },
+    {
+      "id": "t1",
+      "name": "연습 4 · 고급",
+      "terrain": 440,
+      "types": {
+        ",": 231,
+        "T": 3,
+        "=": 79,
+        ".": 124,
+        "B": 3
+      },
+      "plants": 6,
+      "opaque": 3,
+      "solidProps": 2,
+      "styles": [
+        "stone",
+        "green",
+        "stone"
+      ],
+      "atlasDraws": 6713,
+      "geometrySha256": "280b0e13f85c401e1283f5d48146bef3c0f5ceb143dd142e987183b1f8872f08"
+    },
+    {
+      "id": "tI",
+      "name": "연습 3 · 신분",
+      "terrain": 570,
+      "types": {
+        ",": 261,
+        "T": 5,
+        ".": 220,
+        "=": 80,
+        "B": 4
+      },
+      "plants": 9,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 6748,
+      "geometrySha256": "034e91d5626e87a42cb3a0abeb55359df712cd6f022b245628217014733add34"
+    },
+    {
+      "id": "tB",
+      "name": "닫힌 배차실",
+      "terrain": 426,
+      "types": {
+        ",": 183,
+        "T": 5,
+        "=": 151,
+        "B": 4,
+        ".": 83
+      },
+      "plants": 10,
+      "opaque": 3,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "green",
+        "metal"
+      ],
+      "atlasDraws": 6981,
+      "geometrySha256": "822300542c136b759790353a43bf2dce876c6e66a1d1b3f6a86ce196180a4da9"
+    },
+    {
+      "id": "tS",
+      "name": "연습 5 · 암살 기술",
+      "terrain": 480,
+      "types": {
+        ",": 264,
+        "T": 6,
+        "=": 60,
+        ".": 150
+      },
+      "plants": 6,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 7021,
+      "geometrySha256": "f36454651a82685ecf126fb989b732d2744c1f615bcb2378b201d6a4d1eaefae"
+    },
+    {
+      "id": "tE",
+      "name": "연습 6 · 현장 도구",
+      "terrain": 608,
+      "types": {
+        ",": 250,
+        "T": 6,
+        "=": 64,
+        ".": 288
+      },
+      "plants": 6,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 7047,
+      "geometrySha256": "50b5e63f1e26a237f2ec6b0b64fefd97b8775258a21eaa15e31d2ecc041cc864"
+    },
+    {
+      "id": "tA",
+      "name": "연습 7 · 은신 기습",
+      "terrain": 345,
+      "types": {
+        ",": 157,
+        "T": 4,
+        "=": 46,
+        ".": 135,
+        "B": 3
+      },
+      "plants": 7,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 7078,
+      "geometrySha256": "1b9ea233e1bbf7cc62e7714bf8da4fad2d50dbe14fb5fd35ab80e8ffc1a50723"
+    },
+    {
+      "id": "tL",
+      "name": "의뢰 02 준비 · 빛과 그림자",
+      "terrain": 382,
+      "types": {
+        ",": 207,
+        "T": 7,
+        "=": 48,
+        ".": 119,
+        "B": 1
+      },
+      "plants": 8,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 7112,
+      "geometrySha256": "abae380bbeb5bbf6934f2f18319c0716d9eeac536c2d716db97bced74ded8431"
+    },
+    {
+      "id": "tR",
+      "name": "의뢰 02 준비 · 실내와 계단",
+      "terrain": 327,
+      "types": {
+        ",": 208,
+        "T": 4,
+        "=": 21,
+        "B": 2,
+        ".": 92
+      },
+      "plants": 6,
+      "opaque": 1,
+      "solidProps": 0,
+      "styles": [
+        "green"
+      ],
+      "atlasDraws": 7246,
+      "geometrySha256": "74f8bf6213e1f6060e9054ee3ec3452ef7a5480e5270531bf539282659b8678b"
+    },
+    {
+      "id": "tC",
+      "name": "의뢰 01 준비 · 복장과 CCTV",
+      "terrain": 302,
+      "types": {
+        ",": 203,
+        "T": 3,
+        ".": 94,
+        "B": 2
+      },
+      "plants": 5,
+      "opaque": 0,
+      "solidProps": 0,
+      "styles": [],
+      "atlasDraws": 7271,
+      "geometrySha256": "12177aec17dc02aa7a4ab2b4ef4f94c9581854b38fff890c3fa41e1fadbe794c"
+    },
+    {
+      "id": "p0",
+      "name": "닫힌 철문",
+      "terrain": 431,
+      "types": {
+        ",": 107,
+        "=": 151,
+        "T": 6,
+        "B": 7,
+        ".": 160
+      },
+      "plants": 13,
+      "opaque": 2,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "metal"
+      ],
+      "atlasDraws": 7429,
+      "geometrySha256": "d7677196eb84e5839efd53397fbb62c02623dba4dc763c187b6c61659b34acce"
+    },
+    {
+      "id": "e1",
+      "name": "녹화된 얼굴",
+      "terrain": 431,
+      "types": {
+        ",": 107,
+        "=": 151,
+        "T": 6,
+        "B": 7,
+        ".": 160
+      },
+      "plants": 13,
+      "opaque": 2,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "metal"
+      ],
+      "atlasDraws": 7605,
+      "geometrySha256": "82bc8982d253484d45db1ac78aea9ce5f1e04ced1f11c75c0766a75c5464f72c"
+    },
+    {
+      "id": "e2",
+      "name": "지붕 위의 장부",
+      "terrain": 549,
+      "types": {
+        ",": 258,
+        "T": 4,
+        "B": 4,
+        "=": 36,
+        ".": 247
+      },
+      "plants": 8,
+      "opaque": 2,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "metal"
+      ],
+      "atlasDraws": 7880,
+      "geometrySha256": "8f8c3b336c332523c6cffd0286717690ac0220bd476f1ab1879185698660c9c0"
+    },
+    {
+      "id": "e3",
+      "name": "윗층의 장부",
+      "terrain": 327,
+      "types": {
+        ",": 208,
+        "T": 4,
+        "=": 21,
+        "B": 2,
+        ".": 92
+      },
+      "plants": 6,
+      "opaque": 1,
+      "solidProps": 0,
+      "styles": [
+        "green"
+      ],
+      "atlasDraws": 8018,
+      "geometrySha256": "f8c8cf0a38233634a4d7dd7073cec6da82d9c0f3e157fa1a60a1c47d002ccbe4"
+    },
+    {
+      "id": "p1",
+      "name": "불 꺼진 출고동",
+      "terrain": 431,
+      "types": {
+        ",": 107,
+        "=": 151,
+        "T": 6,
+        "B": 7,
+        ".": 160
+      },
+      "plants": 13,
+      "opaque": 2,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "metal"
+      ],
+      "atlasDraws": 8180,
+      "geometrySha256": "79c905ad4489021f66c323cd1ddbc2a773066521c8a47c289350c3d895fa640c"
+    },
+    {
+      "id": "p2",
+      "name": "야간 기록실",
+      "terrain": 431,
+      "types": {
+        ",": 107,
+        "=": 151,
+        "T": 6,
+        "B": 7,
+        ".": 160
+      },
+      "plants": 13,
+      "opaque": 2,
+      "solidProps": 0,
+      "styles": [
+        "metal",
+        "metal"
+      ],
+      "atlasDraws": 8356,
+      "geometrySha256": "b1bd74e9384173a6d37dce2cb4b6098a33d38b3ba29abaa646f07887971ca88d"
+    },
+    {
+      "id": "e4",
+      "name": "끊어진 회선",
+      "terrain": 327,
+      "types": {
+        ",": 208,
+        "T": 4,
+        "=": 21,
+        "B": 3,
+        ".": 91
+      },
+      "plants": 7,
+      "opaque": 1,
+      "solidProps": 0,
+      "styles": [
+        "green"
+      ],
+      "atlasDraws": 8505,
+      "geometrySha256": "b7efdc83a33d32f7f4d2bc88a6825a258428f6faaa07d0008b75fa201baff9e9"
+    },
+    {
+      "id": "e5",
+      "name": "창가의 중개인",
+      "terrain": 325,
+      "types": {
+        ",": 207,
+        "T": 4,
+        "B": 5,
+        "=": 20,
+        ".": 89
+      },
+      "plants": 9,
+      "opaque": 1,
+      "solidProps": 0,
+      "styles": [
+        "green"
+      ],
+      "atlasDraws": 8648,
+      "geometrySha256": "1adc2e73bb394f9bead16fc827266484153a02aeb91265b31b0ea1ef0ad3a638"
+    },
+    {
+      "id": "n1",
+      "name": "마지막 이름",
+      "terrain": 750,
+      "types": {
+        ".": 379,
+        ",": 221,
+        "B": 16,
+        "T": 4,
+        "=": 130
+      },
+      "plants": 20,
+      "opaque": 8,
+      "solidProps": 8,
+      "styles": [
+        "brick",
+        "brick",
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "stone",
+        "green"
+      ],
+      "atlasDraws": 9272,
+      "geometrySha256": "9878fd06273c5243d92aa1c383cb236a00f8835e2530bd7ae5355c0960f0912f"
+    }
+  ],
+  "cover": {
+    "hidden": true,
+    "leaf": true
+  },
+  "errors": []
+}

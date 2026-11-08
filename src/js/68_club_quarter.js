@@ -42,7 +42,7 @@ function quarterFurn(x,it){
   }return true;
 }
 function quarterRoof(b){
-  if(!quarterClub(b))return false;
+  if(!quarterClub(b)||freeCityBuilding(b)&&freeCityReady())return false;
   const px=b.x0*TILE,py=b.y0*TILE,w=(b.x1-b.x0+1)*TILE,h=b.roofC.rh;
   let c=b.quarterRoof;
   if(!c){c=b.quarterRoof=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');

@@ -99,8 +99,9 @@ function draw() {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   for (let ty = vy0; ty <= vy1; ty++) for (let tx = vx0; tx <= vx1; tx++) {
     const ch = G[ty][tx];
-    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if (kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
+    if (ch === 'B') { const near = Math.abs(tx - ptx) <= 1 && Math.abs(ty - pty) <= 1 && P.hidden; if(drawCityPlant(ch,tx,ty,near))continue; if (kitOk(kitBush)) { const bs = S.bushShake, sh = bs && S.t - bs.t < 0.5 && Math.abs(bs.x - tc(tx)) < 30 && Math.abs(bs.y - tc(ty)) < 30 ? Math.sin((S.t - bs.t) * 45) * 3 * (1 - (S.t - bs.t) / 0.5) : 0; ctx.globalAlpha = near ? 0.5 : 0.96; ctx.drawImage(kitBush, tx * TILE - TILE / 2 + sh, (ty - 0.9) * TILE); ctx.globalAlpha = 1; continue; } const v = (tx * 7 + ty * 3) % 3; ctx.globalAlpha = near ? 0.5 : 0.96; blit(ctx, 'bush' + v, tx * TILE - 6, ty * TILE - 10, 60, 60); ctx.globalAlpha = 1; }
     if (ch === 'T') {
+      if(drawCityPlant(ch,tx,ty,false))continue;
       if (kitT.length) {  // 키트 나무: 숲은 침엽수가 많고, 시내는 활엽수
         const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0;
         const im = kitT[pine ? 2 : hh % 3 === 0 ? 3 : 0];

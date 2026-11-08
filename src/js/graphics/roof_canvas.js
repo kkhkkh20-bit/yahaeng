@@ -12,7 +12,7 @@ function buildRoofCanvas(b, i) {
   // A missing or partially transparent texture must never expose the room below.
   x.fillStyle = '#46514f'; x.fillRect(0, 0, w, h);
   const key = roofOf(i);
-  if (F[key] && key.startsWith('cRoof')) {
+  if (freeCityBuilding(b)&&freeCityReady() || F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
     const f = F[key], pc = (sx, sy, dx, dy) => x.drawImage(atlas, f[0] + sx, f[1] + sy, 16, 16, dx, dy, 48, 48);
     if(!paintFreeCityRoof(x,b,w,h)){
@@ -21,6 +21,9 @@ function buildRoofCanvas(b, i) {
     for (let yy = 48; yy < h - 48; yy += 48) { pc(0, 16, 0, yy); pc(32, 16, w - 48, yy); }
     pc(0, 0, 0, 0); pc(32, 0, w - 48, 0); pc(0, 32, 0, h - 48); pc(32, 32, w - 48, h - 48);
     }
+    // Purchased roofs use the actual kitProps below. Do not duplicate them
+    // with decorative tanks, huts or machinery at unrelated coordinates.
+    if(freeCityBuilding(b)&&freeCityReady()){c.flat=true;c.rh=h;return c;}
     const hs = (((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0);
     // 계단실(옥탑): 건물 안 계단 'Y' 칸 위
     let stair = null;

@@ -653,7 +653,7 @@ function renderMap(R) {
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';
       else if (e && n && !so && !w) piece = 'wallBL'; else if (w && n && !so && !e) piece = 'wallBR';
       else if ((n || so) && !e && !w) piece = 'wallV';
-      if (kitOk(kitTex.wall)) {
+      if(cityBoundaryWall(x,tx,ty)){}else if (kitOk(kitTex.wall)) {
         x.fillStyle = '#2a2622'; x.fillRect(px, py, TILE, TILE); x.fillStyle = '#3e3832'; x.fillRect(px + 2, py + 2, TILE - 4, TILE - 4); x.fillStyle = '#2a2622'; x.fillRect(px + 6, py + 6, TILE - 12, TILE - 12);
         if (!so) {  // 앞(남쪽)이 열려 있으면 벽 앞면
           x.drawImage(kitTex.wall, 0, 16, 64, 48, px, py + 20, TILE, 28);
