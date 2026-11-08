@@ -1,0 +1,20 @@
+Dotonbori City v3 — selected, game-specific exterior artwork
+Copyright GuttyKreum. All rights reserved.
+Official source: https://guttykreum.itch.io/dotonbori-city-game-assets
+Purchased by the project owner; supplied on 2026-11-08.
+
+These graphics are part of Yahaeng, not open-source art or a reusable asset pack.
+No permission is granted to extract or reuse them outside this game.
+The original ZIP, complete tilemap, individual tile collection and demo are private.
+The vending frame retains the prior official Free City licence:
+https://guttykreum.itch.io/free-japanese-city-game-assets
+
+LICENCE (official page):
+You can use the Licensed Asset to create Derivative Works; and
+(a) use the Licensed Asset and any Derivative Works as part of both Non-Monetized Media Products and Monetized Media Products, with no restriction on the number of projects the Licensed Asset may be used in. In either case, the Licensed Assets can be used in Media Products that are either:
+(b) used for the Purchaser’s own personal use; and/or
+(c) used for the Purchaser’s commercial use in which case it may be distributed, sold and supplied by the Purchaser for any fee that the Purchaser may determine.
+A Licence does not allow the Purchaser to:
+(a1) Use the Licensed Asset or Derivative Works in a logo, trademark or service mark;
+(b1) Use, sell, share, transfer, give away, sublicense or redistribute the Licensed Asset or Derivate Works other than as part of the relevant Media Product; or
+(c1) Allow the user of the Media Product to extract the Licensed Asset or Derivative Works and use them outside of the relevant Media Product.

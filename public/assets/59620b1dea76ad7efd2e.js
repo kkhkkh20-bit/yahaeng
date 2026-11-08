@@ -2675,29 +2675,50 @@ function drawKitBuilding(b) {
 // 내 둘레 가구의 막힌 칸: 어두운 방에서도 어디로 지나갈 수 있는지 보이게 (가까울수록 진하게)
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
 
-// Official 2D City materials for freight exteriors; courtyard paving stays local.
-// Source pixels are drawn at 2x; the physical 48px grid and all actions stay intact.
-const freeCityArt=A.freeCity||null,freeCityAtlas=new Image(),freeCityPatterns={};
+// Purchased Dotonbori exteriors, with the official free-city set as a load fallback.
+// Structure uses native 2x pixels, paving/lamp heads native 1x. Physics stays on 48px cells.
+let freeCityArt=A.dotonbori||A.freeCity||null;
+const freeCityAtlas=new Image(),freeCityPatterns={};
 let freeCityDirty=false;
 freeCityAtlas.onload=()=>{freeCityDirty=true;};
+freeCityAtlas.onerror=()=>{if(freeCityArt===A.dotonbori&&A.freeCity){freeCityArt=A.freeCity;for(const k in freeCityPatterns)delete freeCityPatterns[k];freeCityAtlas.src=freeCityArt.src;}};
 if(freeCityArt?.src)freeCityAtlas.src=freeCityArt.src;
 function freeCityReady(){return !!freeCityArt&&freeCityAtlas.complete&&freeCityAtlas.naturalWidth>0;}
-function freeCityDraw(c,name,x,y){
+function freeCityDraw(c,name,x,y,scale=2){
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return false;
- c.drawImage(freeCityAtlas,...f,Math.round(x),Math.round(y),f[2]*2,f[3]*2);return true;
+ c.drawImage(freeCityAtlas,...f,Math.round(x),Math.round(y),f[2]*scale,f[3]*scale);return true;
 }
-function freeCityBuilding(b){return !!b&&!!STAGE.freeCityExteriors&&STAGE.industrialBuildings?.includes(BLD.indexOf(b));}
+function freeCityBuilding(b){return !!b&&!!STAGE.freeCityExteriors&&(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||STAGE.freeCityPilot&&freeCityArt===A.dotonbori);}
 function freeCityPattern(name){
  let tile=freeCityPatterns[name];if(tile)return tile;
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
- tile=document.createElement('canvas');tile.width=f[2]*2;tile.height=f[3]*2;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);return freeCityPatterns[name]=tile;
+ tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(100,106,105,.62)';c.fillRect(0,0,tile.width,tile.height);}return freeCityPatterns[name]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;const tile=freeCityPattern('wallPanel');if(!tile)return false;
- c.save();c.translate(x,y);c.globalAlpha*=.78;c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);c.restore();return true;
+ c.save();c.translate(x,y);c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
+ if(freeCityArt===A.dotonbori){
+  // Continuous cornice and pilasters: no repeated fake doors or lit panes.
+  c.save();c.beginPath();c.rect(0,0,w,h);c.clip();
+  for(let dx=0;dx<w;dx+=192)freeCityDraw(c,'cornice',dx,0);
+  for(const dx of [0,w-8])for(let dy=20;dy<h;dy+=44)freeCityDraw(c,'pilaster',dx,dy);
+  c.restore();
+ }c.restore();return true;
 }
 function paintFreeCityRoof(c,b,w,h){
- if(!freeCityBuilding(b))return false;const tile=freeCityPattern('roofTile');if(!tile)return false;
+ if(!freeCityBuilding(b)||!freeCityReady())return false;
+ if(freeCityArt===A.dotonbori){
+  const f=freeCityArt.frames.roofTile.rect,e=freeCityArt.roofSlice,border=e*2;
+  const spans=[[0,e,0,border],[e,f[2]-e*2,border,w-border*2],[f[2]-e,e,w-border,border]];
+  const rows=[[0,e,0,border],[e,f[3]-e*2,border,h-border*2],[f[3]-e,e,h-border,border]];
+  // Tile each nine-slice region at native 2x, clipping the last tile, never stretching.
+  for(const [sx,sw,dx,dw]of spans)for(const [sy,sh,dy,dh]of rows){
+   if(dw<=0||dh<=0)continue;c.save();c.beginPath();c.rect(dx,dy,dw,dh);c.clip();
+   for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
+   c.restore();
+  }return true;
+ }
+ const tile=freeCityPattern('roofTile');if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
  c.fillStyle='#27353c';c.fillRect(0,0,w,10);c.fillRect(0,h-10,w,10);c.fillRect(0,0,10,h);c.fillRect(w-10,0,10,h);
  c.fillStyle='#84918c';c.fillRect(2,2,w-4,2);c.fillRect(2,2,2,h-4);c.fillStyle='#4b5d61';c.fillRect(2,h-6,w-4,2);c.fillRect(w-6,2,2,h-4);
@@ -2705,8 +2726,10 @@ function paintFreeCityRoof(c,b,w,h){
  return true;
 }
 function freeCityGround(c,ch,tx,ty){
- if(!STAGE.freeCityPilot||CUR_F||tx<1||tx>13||![7,13,17].includes(ty)||bldAt(tx,ty)>=0||!'.=,'.includes(ch)||!freeCityReady())return false;
- const tile=freeCityPattern(ch==='='?'pavers':'asphalt');if(!tile)return false;
+ if(!STAGE.freeCityPilot||CUR_F||tx<1||tx>32||bldAt(tx,ty)>=0||!'.=,'.includes(ch)||!freeCityReady())return false;
+ const paid=freeCityArt===A.dotonbori;
+ if(paid?!(ty>=7&&ty<=12||[13,17].includes(ty)):tx>13||![7,13,17].includes(ty))return false;
+ const tile=freeCityPattern(paid||ch==='='?'pavers':'asphalt');if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
 }
 function refreshFreeCity(){
@@ -2728,11 +2751,22 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
  // The canopy follows real openings; it never invents a new usable doorway.
  const left=openings.length?Math.min(...openings.map(a=>a.tx))*TILE-8:gateX;
  const right=openings.length?Math.max(...openings.map(a=>a.tx))*TILE+TILE+8:gateX+gateW;
- const top=openings.length?y+28:gateY-20;
+ const top=openings.length?y+h-66:gateY-20;
  c.save();c.beginPath();c.rect(left,top,right-left,36);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
  c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+36,right-left,4);
  if(STAGE.freeCityPilot&&BLD.indexOf(b)===0)freeCityDraw(c,'vending',x+w-188,y+h-64);
  c.restore();
+}
+
+// Only the wall-mounted lamp artwork changes. The emitter, switch and circuit stay put.
+function drawCityWallLamp(l,m,on){
+ if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady()||m.kind!=='wall')return false;
+ const x=l.x,y=l.y-m.height,ay=m.ay-m.height;
+ ctx.fillStyle='#46545f';ctx.fillRect(m.ax-3,ay-6,6,12);
+ ctx.strokeStyle='#84939e';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(m.ax,ay);ctx.lineTo(x,y);ctx.stroke();
+ freeCityDraw(ctx,on?'lampOn':'lampOff',x-16,y-9,1);
+ if(l.broken){ctx.strokeStyle='#a69a8a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x+3,y+3);ctx.stroke();}
+ return true;
 }
 
 // Pre-rendered PixelFX. No live particle simulation, per-frame image decoding,
@@ -5106,7 +5140,7 @@ function drawOutdoorLampFixtures() {
     const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
@@ -14171,7 +14205,7 @@ function kitSpec() {
 function drawFacade(b) {
   const y = b.y1 * TILE;
   if (!b.fl || S.t - b.flT > 0.3) { b.flT = S.t; b.fl = []; for (let tx = b.x0; tx <= b.x1; tx++) b.fl.push(lightAt(tc(tx), y + TILE + 14)); }
-  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return drawDepotFacade(b);
+  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b))||freeCityBuilding(b))return drawDepotFacade(b);
   if (b.kind === 'shop') return drawShopFacade(b);
   const wn = n => (b.alt ? n + 'B' : n);
   const glow = (x, yy, tx, r) => {  // 도시: 불 켜진 창 몇 개 (촛불·등잔빛)

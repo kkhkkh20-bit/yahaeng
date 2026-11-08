@@ -1,0 +1,151 @@
+{
+  "artist": "GuttyKreum",
+  "pack": "Dotonbori City v3",
+  "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+  "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+  "roofSlice": 16,
+  "frames": {
+    "roofTile": {
+      "rect": [
+        0,
+        0,
+        96,
+        96
+      ],
+      "sourceRect": [
+        2592,
+        160,
+        2688,
+        256
+      ]
+    },
+    "wallPanel": {
+      "rect": [
+        98,
+        0,
+        24,
+        16
+      ],
+      "sourceRect": [
+        772,
+        298,
+        796,
+        314
+      ]
+    },
+    "cornice": {
+      "rect": [
+        124,
+        0,
+        96,
+        10
+      ],
+      "sourceRect": [
+        768,
+        288,
+        864,
+        298
+      ]
+    },
+    "pilaster": {
+      "rect": [
+        222,
+        0,
+        4,
+        22
+      ],
+      "sourceRect": [
+        768,
+        298,
+        772,
+        320
+      ]
+    },
+    "pavers": {
+      "rect": [
+        228,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        1992,
+        168,
+        2024,
+        200
+      ]
+    },
+    "awning": {
+      "rect": [
+        262,
+        0,
+        32,
+        16
+      ],
+      "sourceRect": [
+        416,
+        128,
+        448,
+        144
+      ]
+    },
+    "lampOff": {
+      "rect": [
+        296,
+        0,
+        24,
+        16
+      ],
+      "sourceRect": [
+        1032,
+        0,
+        1056,
+        16
+      ]
+    },
+    "lampOn": {
+      "rect": [
+        322,
+        0,
+        24,
+        16
+      ],
+      "sourceRect": [
+        1032,
+        64,
+        1056,
+        80
+      ]
+    },
+    "window": {
+      "rect": [
+        348,
+        0,
+        26,
+        16
+      ],
+      "sourceRect": [
+        512,
+        96,
+        544,
+        128
+      ],
+      "assembly": "transparent 26x16 surround; stateful glass rendered by game"
+    },
+    "vending": {
+      "rect": [
+        0,
+        98,
+        22,
+        32
+      ],
+      "source": "https://guttykreum.itch.io/free-japanese-city-game-assets",
+      "sourceRect": [
+        421,
+        70,
+        443,
+        102
+      ]
+    }
+  }
+}
