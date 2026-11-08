@@ -1,6 +1,6 @@
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
+ '연락책 제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
  '몸을 낮추면 덜 보인다. 양복은 나중에 털지.',
  '저 친구는 출입문만 보는군요. 등 뒤 자리, 비었습니다.',
  '살려 두자. 공격은 짧게, 길게 누르면 죽는다.',
