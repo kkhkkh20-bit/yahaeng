@@ -126,3 +126,6 @@ Object.assign(CASE_NODES.find(n=>n.id==='contact'),{area:'감시 거점 2층',ro
 Object.assign(CASE_NODES.find(n=>n.id==='broker'),{stage:'e2',area:'금성 거래소 3층',routine:'정비동 창문과 옥상 사이를 이용해 접근할 수 있다. 간판 아래에는 인계책이 있다.'});
 CASE_NODES.splice(1,0,{id:'foreman',stage:'p1',tag:'foreman',tier:0,alias:'야간 작업반장',area:'출고동 2층',routine:'경비 두 명이 1층을 지킨다. 불이 꺼지면 한 명이 스위치를 확인한다.'},{id:'records',stage:'p2',tag:'recordsLead',tier:0,alias:'이송 기록책',area:'야간 기록실 2층',routine:'감시반장과 이송 명세서를 지킨다. 각 층 사물함으로 흔적을 숨길 수 있다.'});
 CASE_LINKS.push(['runner','foreman'],['foreman','records'],['records','contact']);
+
+// Apply the free art pilot after derived lessons have copied their stage data.
+campaignStage('tB').freeCityPilot=true;

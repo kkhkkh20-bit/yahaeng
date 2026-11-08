@@ -42,6 +42,10 @@
       "group": "graphics"
     },
     {
+      "path": "graphics/free_city.js",
+      "group": "graphics"
+    },
+    {
       "path": "graphics/effects.js",
       "group": "graphics"
     },
