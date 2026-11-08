@@ -13,7 +13,7 @@ SUITE = sorted(glob.glob(os.path.join(ROOT, 'tests', 'rev', 't_*.py')) + glob.gl
 FAST = ['t_menu', 't_new_campaign', 't_linear_campaign', 't_review_clarity', 't_vip_choice_loop', 't_first_contract', 't_first_night', 't_growth', 't_security_readout', 't_mission_identity', 't_review_gameflow', 't_dart_intent', 't_replay_loop', 't_camera_cable', 't_stair_witness', 't_stair_traffic', 't_effects_motion', 't_mobile_controls', 't_crouch_layout', 't_graphite_finish', 't_hud_loadout', 't_hud_systems', 't_input_boundaries', 't_contract_guidance','t_learning_route', 't_world_boundary', 't_recovery_buffer', 't_continuity_review', 't_review_fixes', 't_mobile_flow', 't_interface', 't_skill_rewards_range', 't_skill_diagram', 't_electric_skill', 't_ability_locks', 't_skill_tree', 't_assassin_skills', 't_pixelfx_bush', 't_disguise_lighting', 't_world_realism', 't_multilevel_pursuit', 't_sprite_ownership', 't_ai_evidence', 't_copy_scenarios', 't_building_search', 't_contract_density', 't_access_evidence', 't_scene_layers', 't_camera_presentation', 't_patrol_motion', 't_target_body', 't_mission_flow', 't_mission_progress', 't_roof_routes', 't_height_cues', 't_combat_policy', 't_environment_targets', 't_stair_geometry', 't_world_alignment', 't_interaction_flow', 't_disguise_ai', 't_btn4', 't_hanging_controls', 't_ko', 't_cqc', 't_fac', 't_instig', 't_rel', 't_city', 't_m1x', 't_choice', 't_change', 't_v33', 't_tut', 't_ui2', 't_zone', 'r3', 'tm1']
 FAST.extend(['t_original_readability','t_cast_vision'])
 FAST.append('t_tutorial_markers')
-FAST.append('t_tutorial_resilience')
+FAST.extend(['t_tutorial_resilience','t_opening_episode'])
 FAST.append('t_progression_v203')
 FAST.extend(['t_story_episodes','t_boss_story'])
 FAST.append('t_caseboard')

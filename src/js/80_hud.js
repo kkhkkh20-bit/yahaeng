@@ -185,6 +185,7 @@ function nextGoal() {
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {
     if(STAGE.id==='tB'&&P.captive)return{text:tutText('{공격} 짧게 눌러 붙잡은 경비 기절시키기'),where:'이 동작이 끝나면 원래 안내가 이어진다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'attack'};
     if(STAGE.id==='tB'&&S.tutI===4&&P.carrying)return{text:tutText('{행동} 몸 내려놓기 · 그다음 옷 훔쳐 입기'),where:'몸을 들고서는 옷을 갈아입을 수 없다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
+    if(STAGE.id==='tB'&&S.tutI===7&&P.carrying)return{text:tutText('{행동} 몸 숨기기 또는 내려놓기'),where:'손을 비운 뒤 서류를 챙긴다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     if(STAGE.id==='tB'&&P.hide)return{text:tutText('{행동} 은신처에서 나오기'),where:'나온 뒤 원래 안내를 계속한다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
     return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
@@ -463,7 +464,7 @@ function showEnd(win, reason) {
   {const passport=$('vipPassport');passport.innerHTML=win?vipPassportHTML():'';passport.hidden=!passport.innerHTML;}
   if(win&&S.vipReceipt){const next=nextVipApproach();$('endSub').textContent=(S.vipReceipt.id?(S.vipReceipt.fresh?'새 공략 완료 · ':'공략 완료 · '):'임무 완료 · ')+S.vipReceipt.name+(S.vipReceipt.id?' · '+S.vipReceipt.count+'/'+VIP_APPROACHES.length+'가지 방법':'')+(STAGE.story?'\n'+STAGE.endText:'');$('btnRetry').textContent=next?'다른 방법으로':'다시 하기';$('btnRetry').title=next?next.name+' · '+next.hint:'';}else{$('btnRetry').textContent='다시 하기';$('btnRetry').title='';}
   if(win&&introductoryContract(STAGE)){$('endRank').hidden=true;$('endRankNote').innerHTML='<div class="ent skill-receipt"><b>기술 포인트 +'+(S.skillRewards||[]).reduce((n,r)=>n+r.points,0)+'P</b> · 다음 출발 준비에서 사용</div>';}
-  if(win&&LEARNING_ROUTE.includes(STAGE.id)){const points=(S.skillRewards||[]).reduce((n,r)=>n+r.points,0);$('endSkills').innerHTML='<p class="completion-receipt">'+(points?'기술 포인트 +'+points+'P · 다음 출발 전에 사용':'완료한 의뢰 · 기술 포인트 중복 지급 없음')+'</p>';$('endSkills').hidden=false;}
+  if(win&&LEARNING_ROUTE.includes(STAGE.id)){const points=(S.skillRewards||[]).reduce((n,r)=>n+r.points,0);$('endSkills').innerHTML='<p class="completion-receipt">'+(points?'기술 포인트 +'+points+'P · 다음 출발 전에 사용':STAGE.firstSteps&&S.resultFresh?'첫 에피소드 완료 · 기술 포인트 '+Math.max(0,skillBudget()-skillSpent(loadSkillTree()))+'P 사용 가능':'완료한 의뢰 · 기술 포인트 중복 지급 없음')+'</p>';$('endSkills').hidden=false;}
   drawEndMap();
   $('btnNext').textContent=learningNextLabel();
   $('btnNext').hidden = true;

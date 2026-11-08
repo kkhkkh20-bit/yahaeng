@@ -48,6 +48,6 @@ function updateTutorial(dt = 1/60) {
   if(S.t-(S.tutStepAt??-1)<.35)return;
   if(S.tutI<st.length&&st[S.tutI][1](S,S.player,input,SH)){
     const hold=st[S.tutI][5]||0;if(hold){S.tutHold=(S.tutHold||0)+dt;if(S.tutHold<hold)return;}
-    S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;play('switch',.45,1.5);
+    S.tutHold=0;S.tutI++;S.tutStepAt=S.t;S.cpWant=true;hudCache.objH=null;if(!STAGE.storyEpisode)play('switch',.45,1.5);
   }
 }

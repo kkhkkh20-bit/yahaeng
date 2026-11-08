@@ -138,6 +138,19 @@ async def main(args):
                 await route(stairs['up']['x'],stairs['up']['y'])
                 if not await page.evaluate('__game.S.player.fl||0'):await press('x','#btnCarry')
                 await page.wait_for_function('__game.S.player.fl===1&&!__game.actionBusy()',timeout=6000);await wait_step(7);await snapshot('dispatch-upstairs')
+                if await page.evaluate('!!__game.openingArchiveGuard?.()'):
+                    await snapshot('archive-observer')  # Off-screen goals correctly use an edge arrow on portrait screens.
+                    await press('Control','#btnCrouch')
+                    for _ in range(3):
+                        approach=await page.evaluate('__game.openingArchiveApproach()')
+                        if not approach.get('via'):break
+                        await route(approach['x'],approach['y'])
+                    rear=await page.evaluate('__game.openingArchiveRear()');await route(rear['x'],rear['y'])
+                    await page.wait_for_function('__game.openingArchiveReady()',timeout=6000)
+                    await snapshot('archive-rear')
+                    await press('z','#btnAct');await page.wait_for_function('!__game.openingArchiveGuard()&&!__game.actionBusy()',timeout=6000)
+                    await snapshot('archive-cleared');assert (await state())['stats']['ko']==2
+                    await press('Control','#btnCrouch')
                 at=await page.evaluate('__game.S.items[0]');await route(at['x'],at['y']);await press('x','#btnCarry')
                 await page.wait_for_function('__game.S.items[0].got&&!__game.actionBusy()',timeout=6000);await wait_step(8)
                 await snapshot('dossier-recovered');await route(stairs['down']['x'],stairs['down']['y'])
@@ -145,6 +158,7 @@ async def main(args):
                 await page.wait_for_function('!__game.S.player.fl&&!__game.actionBusy()',timeout=6000);await wait_step(9)
                 await route(1416,744)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
+                assert '첫 에피소드 완료' in await page.locator('#endSkills').inner_text() and '1P' in await page.locator('#endSkills').inner_text()
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0 and s['uniformPass'],s
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
                 await continue_episode(page)

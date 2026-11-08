@@ -21,6 +21,8 @@ function learningNextLabel(){
 
 function initLessonLayout(){
   if(!STAGE.episodeLesson)return;
+  // Stage data has its own scope; bind runtime guidance explicitly.
+  if(STAGE.firstSteps)STAGE.archiveGuide={guard:openingArchiveGuard,ready:openingArchiveReady,rear:openingArchiveRear,approach:openingArchiveApproach};
   const l=S.ladders.find(l=>l.kind==='fstair'&&l.tfl===1);
   if(l)S.lessonLayout={up:{...stairLower(l).up.entry,fl:0},down:{...stairUpper(l).down.entry,fl:1}};
 }

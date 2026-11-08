@@ -1,14 +1,14 @@
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '오른쪽 골목으로 가. 연락책 제비가 남긴 서류부터 찾자.',
+ '올빼미, 제비 연락이 끊겼어. 오른쪽 배차실 2층. 남긴 서류부터 찾자.',
  '몸 낮춰. 상자 옆 풀숲으로 들어가면 안 보일 거야.',
- '문만 보고 있네. 풀숲에서 나와 조용히 등 뒤로 붙어.',
+ '문만 보고 있네. 우리도 출근해 볼까. 풀숲 나와 등 뒤로 붙어.',
  '살려 둬. 공격을 짧게 누르고 떼. 1초 누르면 죽는다.',
- '그 친구 옷을 빌려 입어. 갈아입을 동안은 가만히.',
+ '옷을 빌리자. 신입인 척하면 돼. 갈아입을 동안은 가만히.',
  '흔적도 지워야지. 몸을 들고 왼쪽 풀숲에 숨겨.',
  '좋아. 배차실로 들어가. 서류는 계단 위, 2층 책상에 있어.',
- '제비가 남긴 서류야. 책상에서 챙겨. 손 쓰는 동안 조심하고.',
- '박인호… 금성 운송 2층. 우선 같은 계단으로 내려와.',
+ '좋아. 저 친구 야근은 끝냈네. 책상에서 제비의 서류를 챙겨.',
+ '박인호… 제비가 남긴 이름이야. 금성 운송 2층. 우선 내려와. 다음은 저놈이다.',
  '첫 야근 끝이야. 동쪽 골목으로 빠져. 나머지는 밖에서 얘기하지.'
 ];
 function episodeRadioMessage(){
@@ -21,8 +21,10 @@ function episodeRadioMessage(){
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
   const passed=i===6&&S.openingPass;
-  const text=P.hide?'잘 숨었어. 이제 나와. 서류는 아직 배차실에 있어.':i===4&&P.carrying?'몸부터 내려놔. 그래야 그 옷을 입을 수 있어.':passed?'통했어. 그냥 걸어가. 계단으로 2층에 올라가면 돼.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
+  const archiveVia=!!archive&&!!openingArchiveApproach().via;
+  const text=P.hide?'잘 숨었어. 이제 나와. 서류는 아직 배차실에 있어.':i===7&&P.carrying?'서류 챙기려면 손부터 비워. 몸은 사물함에 숨기거나 내려놔.':archiveVia?'복도 끝에 왼쪽 문이 있어. 그쪽으로 들어가면 경비 등 뒤야.':archive?(archiveReady?'등을 잡았어. 짧게 누르고 떼. 야근은 여기까지 시켜 주자.':'서류 앞에 한 명 더 있네. 아래서 한 것처럼 등 뒤로. 그 옷으로 지나가도, 훔치는 건 보이면 들켜.'):quietDesk?'지금은 안 보고 있어. 서류만 챙겨. 조용히 왔으니 조용히 나가자.':i===4&&P.carrying?'몸부터 내려놔. 그래야 그 옷을 입을 수 있어.':passed?'통했어. 그냥 걸어가. 계단으로 2층에 올라가면 돼.':OPENING_RADIO[i]||OPENING_RADIO[9];
+  return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed+':'+!!archive+':'+archiveReady+':'+!!(i===7&&P.carrying)+':'+quietDesk+':'+archiveVia,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 가자. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터.';
  if(evidencePending())text='녹화됐어. 전선만 끊어선 기록이 남아. 관리 단말에서 지워.';

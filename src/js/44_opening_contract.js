@@ -36,13 +36,28 @@ function openingGoal(){
   else if(P.mode!=='sneak'&&dist(P.x,P.y,g.x,g.y)<260)hint='{살금} 조용히 등 뒤로 접근';
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};
 }
+// The upstairs contact is the same rear approach the player just used outside.
+// This is a real witness, not a kill requirement or an artificial failure trigger.
+function openingArchiveGuard(){
+ if(!STAGE.firstSteps||!STAGE.storyEpisode||S.items[0]?.got)return null;
+ const g=npc('archiveKeeper');if(!g||g.state==='DEAD'||g.state==='CAPTIVE'||g.unconscious)return null;
+ if(flOf(S.player)===flOf(g)&&g.rawSeen===false&&nearLoot()===S.items[0])return null;
+ return g;
+}
+function openingArchiveReady(){const g=openingArchiveGuard();return !!g&&flOf(S.player)===flOf(g)&&combatVictims(attackAction()).includes(g);}
+function openingArchiveApproach(){
+ const a=STAGE.archiveEntry,P=S.player;
+ if(a&&flOf(P)===1&&P.x>=(a.inner[0]+1)*TILE){const at=P.y<a.outer[1]*TILE+12?a.outer:a.inner;return{x:tc(at[0]),y:tc(at[1]),fl:1,via:true};}
+ return openingArchiveRear();
+}
+function openingArchiveRear(){const g=openingArchiveGuard();return g?{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40,fl:flOf(g)}:S.items[0];}
 function updateOpeningContract(){
   if(STAGE.firstSteps&&STAGE.storyEpisode){
     const P=S.player,g=npc('dispatchClerk');
     // A real observer accepts ordinary permitted passage. Never manufacture a
     // successful disguise while he is investigating crime or sees illegal work.
     if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
-      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가.',2.8);
+      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가. 난 퇴근이다.',2.8);
     }
     return;
   }
