@@ -30,11 +30,11 @@ async def main():
    # Every subsequent canonical result opens training, even with a used budget.
    await q.evaluate('''()=>{const G=__game;G.S.over=true;G.showEnd(true);}''')
    await q.locator('#skillScreen').wait_for(state='visible')
-   await spend_episode_points(q);await q.click('#btnSkillsBack');assert await q.evaluate('__game.STAGE.id==="p1"')
+   await spend_episode_points(q);await q.click('#btnSkillsBack');assert await q.evaluate('__game.STAGE.id==="e2"')
    assert await q.locator('#ledger').is_hidden()
    # Real saved progress survives return to title and resumes the first unfinished stage.
    await q.click('#btnBrBack');assert await q.locator('#intro').is_visible()
-   await q.click('#btnQuick');assert await q.evaluate('__game.STAGE.id==="p1"')
+   await q.click('#btnQuick');assert await q.evaluate('__game.STAGE.id==="e2"')
    # An affordable unspent point is also permitted to carry over.
    await q.evaluate('''()=>{const G=__game;localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='tB'));G.S.over=true;G.showEnd(true);if(G.campaignSkillState().points!==1)throw Error('first reward');G.continueResultTraining();G.closeAssassinMenu();if(!document.querySelector('#skillScreen').hidden||G.loadSkillTree().learned.length)throw Error('banking forces a purchase');}''')
    await q.evaluate('''()=>{const G=__game;localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m7'));G.S.over=true;G.showEnd(false);if(!document.querySelector('#skillScreen').hidden)throw Error('failure opened training');if(document.querySelector('#btnRetry').hidden)throw Error('retry missing');localStorage.setItem('yahaeng.ch',JSON.stringify(Object.fromEntries(['tB','p0','p1','p2','e1','e2','e3','e4','e5','m2','m4','m6','m7','m5','n1'].map(id=>[id,{_clear:true}]))));if(G.recommendedStage()!==-1)throw Error('finished story restarts');}''')

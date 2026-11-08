@@ -1574,15 +1574,15 @@ campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실�
 // Identities keep their existing bodies, access rules and paths. The coat colour
 // carries rank; authored performances happen at the actual stops on those paths.
 const OFFICER_STYLE={
- runner:{appearance:'주황색 후드 · 검은 배낭',coat:'#ce7c27',pants:'#252d39',habit:'혼자 담배를 피우며 거래 상대를 기다린다.',temperament:'성급한 하청 운반책',cues:[['smoke','거래까지 담배 한 대. 그놈만 오면 바로 뜬다.'],['phone','아직도 출발 안 했어? 오래 기다릴 생각 없어.']],alert:'거래는 취소야! 나부터 빠져야겠어!'},
- contact:{appearance:'선명한 청색 작업복 · 구리빛 머리',hair:'#9b5c3b',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[['phone','신호 오기 전엔 움직이지 마. 명단은 내가 넘긴다.'],['point','여기선 이름 부르지 마. 연락 끝나면 바로 흩어져.']],alert:'연락선을 끊어! 여긴 들켰다!'},
- broker:{appearance:'옥색 정장 · 버건디 단발',hair:'#763f54',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[['ledger','숫자가 안 맞잖아. 사본 말고 원본으로 가져와.'],['phone','교환실 연락이 왜 없어? 실장께 보고하기 전에 확인해.']],alert:'장부부터 지켜! 저 사람 들여보낸 게 누구야!'},
- club:{appearance:'붉은 정장 · 애쉬브라운 머리',hair:'#817368',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[['smoke','담배 피울 때는 붙지 마. 입구에서 기다려.'],['drink','잔은 비워 두지 마. 얘기는 VIP룸에서 하지.'],['phone','장부 건이면 내선으로 돌려. 내가 직접 간다.']],reply:'알겠습니다. 입구에서 기다리겠습니다.',alert:'내 클럽에서 감히! 문 막아, 당장!'},
- collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[['ledger','한 푼이라도 비면 네가 메워. 오늘 합계는 다시 맞춰.'],['point','떨어지지 마. 현금 금고는 내 빨간 카드로만 연다.'],['phone','수금 끝나면 운송 쪽으로 넘긴다. 결재부터 받아.']],reply:'예, 반장님. 경호 붙어 있습니다.',alert:'돈에는 손대지 마! 저놈부터 잡아!'},
- district:{appearance:'보라색 정장 · 회색 머리',hair:'#929d9f',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[['ledger','수금은 장무혁에게. 계약 결재는 내가 한다.'],['point','손님이라고 다 들이지 마. 허락받은 사람만 받아.']],reply:'예. VIP룸 입구를 지키겠습니다.',alert:'결재도 없이 누가 들여보냈나! 경호는 뭐 하는 거야!'},
- freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[['ledger','봉인 번호부터 맞춰. 명세서랑 다르면 차를 세워.'],['phone','새벽배송 시간 맞춰. 승인 전에는 출발하지 마.'],['point','저 화물 다시 확인해. 빈 차로 돌려보낼 생각 없어.']],alert:'차량 세워! 출고 기록부터 잠가!'},
- crow:{appearance:'진홍색 정장 · 백발',hair:'#d9d2c4',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[['phone','보고는 나한테만. 위에서 묻기 전엔 입 열지 마.'],['ledger','장부는 여기 남긴다. 원본 없이 거래를 넘길 순 없어.'],['point','얼굴까지 확인해. 위층에 아무나 들여보내지 마.']],alert:'올빼미… 여기까지 왔군. 경호, 막아!'},
- chair:{appearance:'아이보리 재킷 · 자주색 바지 · 연금색 머리',hair:'#c9b58d',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[['drink','잔은 높이. 오늘 일은 오늘 밤에 끝냅시다.'],['point','연못 쪽은 비워 두세요. 조용히 걸을 곳은 필요하니까.'],['drink','명령은 원장에 남깁니다. 내 서명만 확인하세요.']],reply:'네, 의장님.',alert:'당황하지 마세요. 문을 닫고 경비를 부르세요.'}
+ runner:{appearance:'주황색 후드 · 검은 배낭',coat:'#ce7c27',pants:'#252d39',habit:'혼자 담배를 피우며 거래 상대를 기다린다.',temperament:'성급한 하청 운반책',cues:[["smoke", "한 대만 더 피우고 갈게. 차 안에서는 못 피우잖아."], ["phone", "문서윤 씨, 나 벌써 도착했어요. 몇 분이나 더 기다려야 돼요?"]],alert:"누구야! 경비 좀 불러 줘!"},
+ contact:{appearance:'선명한 청색 작업복 · 구리빛 머리',hair:'#9b5c3b',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[["phone", "도착하면 전화해. 여기서 계속 기다리기도 좀 그래."], ["point", "아, 이름은 좀 작게 불러. 여기 사람들 다 듣겠다."]],alert:"여기 누가 들어왔어! 일단 나오지 마!"},
+ broker:{appearance:'옥색 정장 · 버건디 단발',hair:'#763f54',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[["ledger", "사진 말고 원본을 달라니까. 사진은 나도 있어요."], ["phone", "박인호 씨는요? 왔다면서 왜 안 올라와요?"]],alert:"거기 누구예요? 그 서류 내려놔요!"},
+ club:{appearance:'붉은 정장 · 애쉬브라운 머리',hair:'#817368',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[["smoke", "여기까지 따라오지 마. 담배 피울 동안 문 앞에서 기다려."], ["drink", "얼음 좀 더 넣어 줘. 아까 건 거의 맹물이던데."], ["phone", "장부 찾는 전화야? 사무실로 돌려. 내가 올라갈게."]],reply:"네, 실장님. 문 앞에 있겠습니다.",alert:"뭐야? 저 사람 누가 들여보냈어!"},
+ collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[["ledger", "십만 원이 비는데? 다시 세어 봐. 내 돈으로 채우긴 싫다."], ["point", "금고 열려면 내 빨간 카드가 필요해. 나 없을 때 건드리지 말고."], ["phone", "다 걷었어. 백철민한테 확인받으면 차 보낼게."]],reply:"네, 반장님. 다 세고 바로 말씀드릴게요.",alert:"야, 가방 내려놔! 그건 내 돈이야!"},
+ district:{appearance:'보라색 정장 · 회색 머리',hair:'#929d9f',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[["ledger", "장무혁한테 돈부터 보내라고 해. 계약서만 쌓이면 뭐 해."], ["point", "손님 왔어? 약속했는지부터 물어봐. 오늘은 아무나 못 만나."]],reply:"네. 먼저 확인하겠습니다.",alert:"누가 들어왔잖아! 문 앞에서 뭘 한 거야!"},
+ freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[["ledger", "봉인 번호가 또 달라. 명세서랑 맞을 때까지 차 세워 둬."], ["phone", "아직 출발시키지 마. 서류가 안 맞는데 나보고 어쩌라고."], ["point", "저 차 뒤쪽도 봐 줘. 문 덜 닫히면 또 내 책임이야."]],alert:"차부터 세워! 누가 안으로 들어왔어!"},
+ crow:{appearance:'진홍색 정장 · 백발',hair:'#d9d2c4',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[["phone", "그 얘기는 나한테만 해. 사람 많을 때 떠들지 말고."], ["ledger", "원본은 여기 둬. 가져갔다가 잃어버리면 누가 책임질 건데."], ["point", "위층에 사람 올라오면 나부터 불러. 혼자 들여보내지 마."]],alert:"올빼미? 네가 왜 여기 있어? 경비!"},
+ chair:{appearance:'아이보리 재킷 · 자주색 바지 · 연금색 머리',hair:'#c9b58d',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[["drink", "다들 한 잔씩 하세요. 잔 들고 있는데 얘기 길게는 안 할게요."], ["point", "연못 쪽에는 사람 좀 빼 주세요. 잠깐 걸으려고요."], ["drink", "원장은 제 방에 두세요. 제가 읽어 보고 서명할게요."]],reply:"네, 이사장님. 바로 가져다 놓겠습니다.",alert:"저 사람 누구예요? 경비 좀 불러 주세요!"}
 };
 const wardrobeWords=[['갈색 후드','주황색 후드'],['회청색 작업복','선명한 청색 작업복'],['청록 정장','옥색 정장'],['청록색 정장','옥색 정장'],['자주색 정장','붉은 정장'],['황토색 재킷','황금색 재킷'],['밝은 회색 정장','보라색 정장'],['밝은 정장','보라색 정장'],['적갈색 정장','진홍색 정장'],['아이보리 정장','아이보리 재킷과 자주색 바지']];
 const wardrobeText=text=>wardrobeWords.reduce((s,[from,to])=>s.replaceAll(from,to),text);
@@ -1683,10 +1683,10 @@ compoundJob('e1',{
  fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1},{x:22,y:5,t:'pc',fl:1},{x:20,y:7,t:'pc',fl:1},{x:22,y:10,t:'cab',w:2,fl:1}),
 });
 compoundJob('e2',{
- name:'지붕 위의 장부',sub:'다섯 번째 의뢰 · 수직 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,compoundVertical:true,
- floorTiles:[[2,29,8,'#'],[2,30,8,'#']],W:38,H:26,start:[2,19],exit:[3,22],buildingNames:{0:'폐쇄된 정비동',1:'금성 거래소'},
- purpose:'창문·3층·지붕 사이 이동으로 거래소에 침입해 중개인과 인계책을 처치하고 원본 장부를 가져온다.',
- mission:'중개인·인계책 처치 · 3층 원본 장부 회수 후 탈출',
+ name:'지붕 위의 장부',sub:'거래소 · 옥상으로 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundCamera:true,compoundVertical:true,compoundLight:false,layoutRevision:225,
+ floorTiles:[[2,29,8,'#'],[2,28,9,'#']],W:38,H:26,start:[2,19],exit:[3,22],buildingNames:{0:'폐쇄된 정비동',1:'금성 거래소'},
+ purpose:'창문·3층·지붕 사이 이동으로 거래소에 침입해 중개인을 처치하고 원본 장부를 가져온다.',
+ mission:'문서윤 처치 · 3층 원본 장부 회수 후 탈출',
  brief:'정비동 옆 작업대의 가는 철사는 창문 락픽으로 한 번 쓸 수 있다. 서쪽 창문을 따고 계단으로 3층과 옥상에 오른다. 한 칸 골목 건너 거래소 옥상으로 뛸 수 있다. 인계책이 아래 간판 밑을 지날 때 행동을 1초 길게 눌러 고정을 풀면 사고로 처리할 수 있다. 중개인과 장부는 거래소 3층이다. 조명·복장·몸 숨기기·CCTV 차단도 계속 활용한다. 정면 계단은 우회 경로로 남아 있다.',
  story:{before:'문서윤이 거래소 3층에서 원본 장부를 숨긴다. 인계책은 간판 아래서 배송을 기다린다. 올빼미: 문이 잠겼으면 옆 건물부터 올라가면 되겠군.',after:'원본 장부와 중개인의 보고선을 끊었다. 결재자는 클럽 실장 강도윤. 이제 작은 거점을 벗어나 그의 클럽 전체를 공략한다.'},
  build(m){
@@ -1698,11 +1698,10 @@ compoundJob('e2',{
  zones:[[0,0,37,25,'pub',null,'거래 골목',[]],[5,4,16,15,'res',null,'폐쇄된 정비동',['crew']],[18,4,31,15,'res',null,'금성 거래소',['crew']]],
  targetCast:{broker:TARGET_CAST.broker,handover:TARGET_CAST.handover},
  guards:[{kind:'g1',tag:'uniformDonor',at:[8,20],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',at:[26,12],post:0,still:true,radio:false},
-  {kind:'g1',tag:'middleKeeper',at:[27,11],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:2,post:180,still:true,radio:false},
-  {kind:'t',tag:'broker',target:true,at:[27,7],fl:2,post:90,still:true,radio:false},{kind:'t',tag:'handover',target:true,route:[[25,17,16],[29,17,8]],startPause:16,radio:false}],
+  {kind:'t',tag:'broker',target:true,at:[27,7],fl:2,post:90,still:true,radio:false},{kind:'g1',tag:'handover',route:[[25,17,16],[29,17,8]],startPause:16,radio:false}],
  items:[[25,6,2]],itemName:'거래 원본 장부',itemNames:['거래 원본 장부'],itemPlaces:['금성 거래소 3층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
  keyItems:[{key:'pin',pos:[4,18]}],keyNames:{pin:'작업대의 가는 철사'},windowStates:[[5,12,0,'lock']],
- cams:[[27,6,180,0,2]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:2,name:'3층 감시 관리 단말'},cameraFocus:[25,6],
+ cams:[[27,6,180,0,2]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:2,name:'3층 감시 관리 단말'},cameraFocus:[25,7],cameraApproach:{landing:[29,10],side:[30,10],top:[30,7]},
  lamps:[[8,17,180,1],[25,17,160,1],[24,9,330,0,0],[25,9,300,0,1],[25,8,330,0,2]],
  lampControls:[[2,19.5,12.5],[3,19.5,12.5],[4,19.5,12.5]],
  fixedFurn:[{x:4,y:17,t:'desk'},{x:6,y:5,t:'locker'},{x:20,y:5,t:'locker'},{x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:20,y:5,t:'locker',fl:2},
@@ -1730,6 +1729,76 @@ campaignStage('tB').freeCityPilot=true;
 
 // Every playable map shares the pixel city exterior kit, including legacy maps.
 for(const s of STAGES)s.freeCityExteriors=true;
+// Public campaign: each episode uses a different location. Retired definitions
+// remain only for earned-record compatibility and internal regression fixtures.
+for(const id of ['p1','p2','e1','e3','e4','e5']){
+ const s=campaignStage(id);s.retiredCampaign=true;s.storyEpisode=false;
+}
+const currentStories={
+ tB:{before:'제비가 연락을 끊었다. 마지막으로 간 곳은 대성 물류 배차실이다. 올빼미는 2층에 남은 서류부터 찾기로 한다.',after:'서류에 박인호의 이름과 금성 운송 주소가 있었다. 제비가 어디로 갔는지 아는 사람이다. 다음에는 그를 찾아간다.'},
+ p0:{before:'박인호가 제비의 은신처를 금성회에 넘겼다. 지금은 금성 운송 2층에서 거래 상대를 기다리고 있다.',after:'박인호가 기다리던 사람은 문서윤이었다. 통화 기록에 거래소 주소가 남아 있다. 3층의 문서윤과 거래 장부를 확인한다.'},
+ e2:{before:'문서윤은 거래소 3층에 있다. 옆 정비동을 통해 지붕으로 넘어갈 수 있다. 표적과 장부를 확보하면 이곳에서 할 일은 끝난다.',after:'장부에 클럽 실장 강도윤의 이름이 있었다. 그가 가진 장부와 암호표를 대조하면 돈을 댄 사람을 찾을 수 있다.'},
+ m2:{before:'강도윤은 클럽에서 증인 거래를 중개한다. 그의 장부에 쓰인 가명을 회계 숙소의 암호표와 맞춰 봐야 한다.',after:'돈을 댄 사람은 장무혁과 백철민이었다. 둘이 만나는 구역에서 현금과 계약서를 찾는다.'},
+ m4:{before:'장무혁이 돈을 모으고 백철민이 계약을 승인했다. 두 사람과 현금 가방, 계약서를 함께 확보한다.',after:'현금과 계약서를 챙겼지만 철수 장소에서 붙잡혔다. 그 위치는 까마귀에게만 알려 줬다.'},
+ m6:{before:'까마귀에게 알려 준 철수 장소에서 붙잡혔다. 감방을 빠져나가 제비의 무전기와 인계 기록을 찾아야 한다.',after:'제비는 살아 나오지 못했다. 인계서에는 까마귀의 서명이 있었다. 수령인 오태식은 새벽배송 집하장에 있다.'},
+ m7:{before:'오태식이 증인들의 이송을 맡고 있다. 그를 막고 명세서를 찾은 뒤 배차 단말에서 배송을 멈춘다.',after:'배차를 멈췄다. 명세서의 최종 수령인은 까마귀였다. 처음부터 우리를 이용해서 경쟁자들을 없애고 있었다.'},
+ m5:{before:'까마귀가 숨어 있는 금성회 본부다. 그를 막고 원본 장부에서 마지막 결재자가 누구인지 확인한다.',after:'원본 장부와 까마귀의 연락 기록을 대조했다. 돈과 명령을 내린 사람은 백림재단 이사장 윤서경이었다.'},
+ n1:{before:'윤서경은 사저에서 연회를 열고 있다. 그를 막고 2층의 명령 원장을 가져오면 증인 거래의 증거가 모두 모인다.',after:'윤서경을 처치하고 명령 원장을 가져왔다. 올빼미는 증거와 남은 증인들을 조직 밖으로 보냈다. 제비가 남긴 연락처로 마지막 확인 전화를 건다.'}
+};
+for(const[id,text]of Object.entries(currentStories)){
+ const s=campaignStage(id);Object.assign(s.story,text);s.endText=text.after;
+}
+Object.assign(campaignStage('p0'),{sub:'금성 운송 · 첫 암살 의뢰'});
+Object.assign(campaignStage('e2'),{
+ purpose:'문서윤을 처치하고 거래소 3층의 원본 장부를 가져온다.',
+ brief:'문서윤과 장부는 거래소 3층에 있다. 옆 정비동 작업대의 철사로 서쪽 창문을 열고, 계단을 올라 지붕으로 건너갈 수 있다. 거래소 정문으로 들어가는 길도 있다. 3층 카메라 뒤의 전선을 끊으면 작업이 찍히지 않는다. 마당 경비의 옷과 조명 스위치는 그대로 사용할 수 있다. 간판은 주변 경비를 처리하는 선택지다.'
+});
+const currentDialogue={
+ tB:[],
+ p0:[],e2:[], // These jobs use live radio; do not add a blocking introduction.
+ m2:[['master','클럽 안에 강도윤이 있어. 붉은 정장이니까 찾기는 쉬울 거야. 장부하고 암호표도 챙겨야 해.'],['hero','찾는 건 쉽고, 나오는 게 문제겠네. 밖에서 한 바퀴 돌아볼게.']],
+ m4:[['master','장무혁은 황금색 재킷, 백철민은 보라색 정장이야. 현금 가방하고 계약서도 가져와.'],['hero','둘이 옷 취향은 안 겹치네. 사람부터 찾아볼게.']],
+ m6:[['hero','아, 머리야. 장비도 다 가져갔네.'],['hero','제비도 여기로 끌려왔다고 했지. 일단 나가는 길부터 찾아보자.']],
+ m7:[['hero','오태식은 창고 동쪽에 있겠지. 안전모 쓴 사람부터 찾아보자.'],['hero','명세서 가져오고, 2층 배차 단말에서 배송을 멈춰야 해. 아직 출발한 건 아니겠지.']],
+ m5:[['hero','여기가 까마귀가 숨은 곳이네. 남한테 길은 그렇게 잘 알려 주더니.'],['hero','까마귀는 2층, 원본 장부는 1층 금고. 뒷문부터 한번 보자.']],
+ n1:[['hero','윤서경. 재단 이사장이라더니 여기서 다 시켰구나.'],['hero','2층 명령 원장도 챙겨야겠다. 그거 없으면 또 아무것도 모른다고 하겠지.']]
+};
+for(const[id,lines]of Object.entries(currentDialogue))DIALOGUE[id]=lines;
+Object.assign(BARKS,{
+ alert:['누구야? 거기 멈춰!','이쪽으로 좀 와! 누가 들어왔어!','야, 저 사람 잡아!'],
+ lost:['어디 갔어? 아까 이쪽으로 왔는데.','난 안쪽 볼게. 넌 출입구 좀 봐.'],
+ calm:['이쪽은 아무도 없어. 돌아갈게.','별거 없네. 나 다시 순찰 돈다.'],
+ calmLost:['못 찾았어. 나가는 사람 잘 봐.','이쪽은 다 봤어. 다시 순찰 돌게.'],
+ calmBody:['아직 누가 그랬는지는 몰라. 혼자 다니지는 마.','쓰러진 사람은 확인했어. 주변에 누가 있었는지 물어봐.'],
+ giveup:['이쪽엔 없어. 다른 데도 좀 봐 줘.','놓쳤네. 출입구부터 다시 확인하자.'],
+ roll:['다들 무전 좀 받아 봐. 대답 없는 데부터 확인하자.'],
+ hurt:['아, 맞았어! 일단 여기서 나가자.','괜찮아, 아직 걸을 수 있어.'],
+ done:['챙겼어? 그럼 이제 나와.'],
+ terror:['사람 떨어졌어! 다들 비켜요!','여기 사람 쓰러졌어요! 좀 도와주세요!']
+});
+TARGET_CAST.runner.habit='사무실에서 전화를 하다가 다른 책상으로 자리를 옮긴다.';
+TARGET_CAST.runner.temperament='기다리는 걸 싫어하는 운반책';
+TARGET_CAST.crow.temperament='친근하게 말하며 일을 떠넘기는 연락책';
+// No dead-end bosses or clues for the removed copies of the depot mission.
+const removedOfficers=new Set(['foreman','records','contact']);
+for(let i=CASE_NODES.length-1;i>=0;i--)if(removedOfficers.has(CASE_NODES[i].id))CASE_NODES.splice(i,1);
+for(let i=CASE_LINKS.length-1;i>=0;i--)if(CASE_LINKS[i].some(id=>removedOfficers.has(id)))CASE_LINKS.splice(i,1);
+CASE_LINKS.push(['runner','broker']);
+Object.assign(CASE_SOURCES.find(s=>s.id==='runner-down'),{title:'박인호의 통화 기록',text:'박인호가 기다리던 상대는 문서윤이었다. 통화 기록에 금성 거래소 주소가 남아 있다.',grants:{broker:3}});
+Object.assign(CASE_SOURCES.find(s=>s.id==='trade'),{text:'문서윤의 원본 장부에 클럽 실장 강도윤의 이름이 적혀 있다.',grants:{broker:3,club:3}});
+const evidenceCopy={
+ 'club-down':['클럽의 정산 연락','강도윤에게 돈을 받던 두 사람이 정산을 서두른다. 장부의 가명을 암호표와 맞추면 이름을 알 수 있다.'],
+ 'cipher':['장부와 암호표 대조','가명으로 적힌 사람은 장무혁과 백철민이었다. 장무혁은 돈을 모았고, 백철민은 계약을 승인했다.'],
+ 'collector-down':['수금반장의 운송 기록','장무혁이 모은 돈은 운송 지부로 보내졌다. 계약서를 보면 받는 사람이 적혀 있다.'],
+ 'district-down':['계약서에 적힌 의장','백철민 위에도 결재자가 있었다. 계약서에는 이름 대신 의장이라고 적혀 있다.'],
+ 'betrayal':['제비의 무전기와 인계서','인계서에 까마귀가 서명했다. 올빼미와 제비를 넘겨받은 사람은 운송 지부장 오태식이다.'],
+ 'freight-down':['오태식의 본부 연락처','오태식의 연락 기록에 까마귀가 쓰는 본부 주소가 남아 있다.'],
+ 'dispatch-stopped':['멈춘 새벽배송','명세서의 최종 수령인은 까마귀였다. 그 위에 의장에게 결재받는 칸이 따로 있다.'],
+ 'crow-down':['까마귀의 연락 기록','까마귀도 다른 사람의 지시를 받았다. 원본 장부와 연락 암호를 대조하면 그 이름을 찾을 수 있다.'],
+ 'last-name':['원본 장부의 소유주','의장의 이름은 윤서경이다. 백림재단 사저에서 연회를 열고 있다.'],
+ 'root-cut':['윤서경의 명령 원장','증인 거래를 지시한 기록과 돈의 출처를 확보했다. 남은 증인들을 밖으로 데려갈 수 있다.']
+};
+for(const[id,[title,text]]of Object.entries(evidenceCopy))Object.assign(CASE_SOURCES.find(s=>s.id===id),{title,text});
 
 'use strict';
 (function () {
@@ -4040,8 +4109,8 @@ function recordCameraEvidence(c) {
 }
 
 // One story route. The player continues the next unfinished episode.
-const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','m2','m4','m6','m7','m5','n1'];
-const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
+const LEARNING_ROUTE=['tB','p0','e2','m2','m4','m6','m7','m5','n1'];
+const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e2',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||['e4','e5'].includes(st.id)&&mainContracts().some(s=>stageCleared(s)||storedCP(s.id)?.g?.nodes?.length)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
 function episodeNumber(st=STAGE){const i=LEARNING_ROUTE.indexOf(st.id);return i<0?'':String(i+1).padStart(2,'0');}
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
@@ -4050,6 +4119,7 @@ function recommendedStage(){
   return -1;
 }
 function learningNext(){
+  if(STAGE.retiredCampaign)return learningStageIndex(['p1','p2','e1'].includes(STAGE.id)?'e2':'m2');
   if(OPTIONAL_LESSON_NEXT[STAGE.id]){const i=learningStageIndex(OPTIONAL_LESSON_NEXT[STAGE.id]);return STAGE.id==='tC'&&i>=0&&learningComplete(STAGES[i])?recommendedStage():i;}
   const at=LEARNING_ROUTE.indexOf(STAGE.id);
   if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(learningComplete(STAGES[i]))continue;return i;}return -1;}
@@ -4142,9 +4212,9 @@ function renderCaseDetail(id){
  if(n.level>=2){panel.append(caseElement('p','',n.profile.appearance));if(n.profile.temperament)panel.append(caseElement('p','',n.profile.temperament));}
  panel.append(caseElement('p','case-area',n.level>=2?n.area:n.level?'정확한 신원과 거점은 다음 단서로 확인한다.':'하부 간부의 연락과 회수한 문서에서 보고선을 찾는다.'));
  if(n.level>=3){panel.append(caseElement('p','case-routine',n.routine));if(n.profile.habit)panel.append(caseElement('p','',n.profile.habit));}
- if(n.severed)panel.append(caseElement('p','','하부 연락선은 끊겼다. 직접 처치가 확인된 인물은 아니다.'));
+ if(n.severed)panel.append(caseElement('p','','관련 단서는 확보했지만, 이 인물을 직접 처치한 기록은 없다.'));
  const links=CASE_LINKS.filter(([a,b])=>[a,b].includes(id)&&nodes.find(n=>n.id===a).level&&nodes.find(n=>n.id===b).level);
- if(links.length){panel.append(caseElement('h4','','확인된 보고선'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
+ if(links.length){panel.append(caseElement('h4','','확인된 관계'));for(const[a,b]of links){const label=id=>{const v=nodes.find(n=>n.id===id);return v.level>=2?v.profile.name:v.alias;};panel.append(caseElement('p','case-link',label(a)+' → '+label(b)));}}
  const evidence=caseAllSources().filter(s=>s.grants[id]||s.stage===n.stage&&s.targets?.includes(n.tag));
  panel.append(caseElement('h4','','수집한 단서'));
  if(!evidence.length)panel.append(caseElement('p','case-empty',n.level?'이번 의뢰에서 현장 증거를 확보한다.':'아직 연결된 증거가 없다.'));
@@ -4153,9 +4223,9 @@ function renderCaseDetail(id){
 function renderCaseBoard(){
  const nodes=caseView(),hierarchy=$('caseHierarchy');hierarchy.replaceChildren();
  const eliminated=nodes.filter(n=>n.eliminated).length,severed=nodes.filter(n=>n.severed).length;
- $('casePressure').textContent=nodes.find(n=>n.id==='chair').eliminated?'마지막 명령선까지 끊었다. 금성회의 지휘망이 무너졌다.':'간부를 처치하고 증거를 대조해, 그 위에서 명령하는 자를 찾는다.';
+ $('casePressure').textContent=nodes.find(n=>n.id==='chair').eliminated?'윤서경의 명령 원장까지 확보했다. 증인 거래의 증거가 모두 모였다.':'간부들의 기록을 대조해서, 누구 지시를 받았는지 찾는다.';
  $('caseProgress').textContent='처치 확인 '+eliminated+' / '+nodes.length+(severed?' · 보고선 차단 '+severed:'');
- const tiers=['운반·연락','중개·유흥','자금·운송','총책','최종 명령선'];
+ const tiers=['운반·연락','중개·유흥','자금·운송','총책','최종 책임자'];
  for(let tier=4;tier>=0;tier--){
   const members=nodes.filter(n=>n.tier===tier&&(tier<4||n.level));if(!members.length)continue;
   const group=caseElement('section','case-tier');group.append(caseElement('h3','',tiers[tier]));const row=caseElement('div','case-tier-row');
@@ -7038,7 +7108,7 @@ function updateGuard(g, dt) {
         const listeners = shareGuardReport(g, reportAt, reportedLook,'body');
         startBuildingSearch(reportAt, g.fac || 'A', 'body', g);
         queueGuardRadio([g, ...lookouts, ...listeners], reportAt, reportedLook, true);
-        g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'사망자 발견. 출입구 막고 주변 수색해.',2.8);
+        g.actionSpeechUntil=S.t+2.8;gsay(g,c.ko?'여기 사람 쓰러졌어. 주변 좀 봐 줘.':'이 사람 죽었어! 출입구 막고 누가 있었는지 찾아봐.',2.8);
       }
       break;
     }
@@ -7930,7 +8000,7 @@ function drawTagged() {
 }
 
 // ---- 까마귀(의뢰인) 무전 (메탈기어의 무전 동료식): 일이 생기면 짧게 한마디. 연습판에서는 하지 않는다
-const FIELD_RADIO={body:['제비','시체가 발견됐어.'],blood:['제비','핏자국을 따라오고 있어.'],civ:['까마귀','민간인 피해 확인.']};
+const FIELD_RADIO={body:['까마귀','경비가 쓰러진 사람을 봤어. 그쪽으로 가지 마.'],blood:['까마귀','핏자국을 보고 따라오네. 다른 길로 가야겠어.'],civ:['까마귀','잠깐, 저 사람은 민간인이야. 주변 좀 보고 움직여.']};
 function bossRadio(ev, force) {
   if(!S||S.over||!STAGE||STAGE.tutorial||STAGE.noSupport||!FIELD_RADIO[ev])return;
   if(!force&&S.t<(S.radioNext||0))return;
@@ -8122,7 +8192,7 @@ function updateDining(dt){
     }
     if(m.eaten&&m.sick){
       m.toilet=d.toilet.slice();m.queue=(d.queue||[d.toilet[0],d.toilet[1]+3]).slice();
-      gsay(g,'잠깐, 화장실 좀.',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:tc(m.queue[0]),y:tc(m.queue[1])},3,'화장실 앞');return;
+      gsay(g,'나 화장실 좀 다녀올게.',2);m.phase='queue';m.elapsed=0;m.waypoint=mealTrip(g,{x:tc(m.queue[0]),y:tc(m.queue[1])},3,'화장실 앞');return;
     }
     if(m.eaten&&(!g.route.includes(m.waypoint)||g.wait<=0)){m.phase='returning';m.elapsed=0;m.next=S.t+d.every;}
   }else if(m.phase==='queue'){
@@ -8645,7 +8715,7 @@ function updateOpeningContract(){
     // A real observer accepts ordinary permitted passage. Never manufacture a
     // successful disguise while he is investigating crime or sees illegal work.
     if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
-      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가. 난 퇴근이다.',2.8);
+      S.openingPass=true;S.cpWant=true;gsay(g,'어, 아직 안 갔어? 서류는 위에 있어. 난 이제 퇴근하려고.',2.8);
     }
     return;
   }
@@ -8751,7 +8821,7 @@ function compoundGoal(){
  if(!STAGE.compound||S.goalManual||S.storyTrackManual)return null;
  const P=S.player,pending=S.guards.filter(g=>g.target&&!targetEliminated(g));
  const ko=pending.find(g=>g.unconscious&&flOf(g)===flOf(P));if(ko){const c=S.corpses.find(c=>c.g===ko);if(c&&dist(P.x,P.y,c.x,c.y)<150)return{x:c.x,y:c.y,fl:flOf(c),g:ko,text:'기절한 '+targetName(ko)+' 마무리',where:c.stashed?'은닉처에서 꺼낸 뒤 공격 1초 길게':P.carrying===c?'몸을 내려놓고 공격 1초 길게':'기절: 살아 있음 · 공격 1초 길게 살해',compoundCue:'target'};}
- const disguise=disguiseAcquisitionGoal();if(disguise&&pending.length)return{...disguise,compoundCue:'dress'};
+ const disguise=disguiseAcquisitionGoal();if(disguise&&pending.length&&!STAGE.compoundVertical)return{...disguise,compoundCue:'dress'};
  const body=compoundBodyGoal();if(body&&pending.length)return body;
  if(STAGE.compoundVertical&&pending.length){
   const bi=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE));
@@ -8777,7 +8847,14 @@ function compoundGoal(){
   if(l)return{...lampControl(l),fl:flOf(l),text:'벽 스위치로 조명 끄고 경비 분리',where:tutText('{행동} 불 끄기 · 켜러 오는 경비의 등 뒤를 노리기'),compoundCue:'light'};
  }
  const camera=S.cams.find(c=>camOn(c)&&flOf(c)===flOf(P));
- if(STAGE.compoundCamera&&camera)return{...cameraServicePoint(camera),fl:flOf(camera),text:'CCTV 뒤에서 전선 분리',where:'복장은 통행만 허용 · 살해와 서류 작업은 녹화된다 · 2초',compoundCue:'camera'};
+ if(STAGE.compoundCamera&&camera){
+  const route=STAGE.cameraApproach;
+  if(route&&!cameraCableReachable(camera)&&P.y>=(route.top[1]+1)*TILE){
+   const at=P.y>11*TILE?route.landing:P.x<route.side[0]*TILE?route.side:route.top;
+   return{x:tc(at[0]),y:tc(at[1]),fl:flOf(camera),text:'오른쪽 벽을 따라 카메라 뒤로 이동',where:'카메라 위쪽으로 돌아 전선에 접근',compoundCue:'camera'};
+  }
+  return{...cameraServicePoint(camera),fl:flOf(camera),text:'CCTV 뒤에서 전선 분리',where:'복장은 통행만 허용 · 살해와 서류 작업은 녹화된다 · 2초',compoundCue:'camera'};
+ }
  const target=pending.find(g=>flOf(g)===flOf(P))||pending[0];
  if(target){
   if(!P.z&&flOf(P)!==flOf(target)){const s=compoundStairGoal(flOf(target),STAGE.compoundVertical?1:0);if(s)return s;}
@@ -8887,7 +8964,7 @@ function updateRendezvous(dt) {
   if(g.state!=='PATROL'||S.alevel>=2||S.vipPlan?.phase==='sick'){finishRendezvous('interrupted');return;}
   r.elapsed+=dt;
   const here=flOf(g)===r.room.fl&&!g.z&&dist(g.x,g.y,r.room.x,r.room.y)<32;
-  if(r.phase==='travelling'&&here&&!g.moving){r.phase='waiting';gsay(g,'장부 가져왔나? 여기서 얘기하지.',2.5);}
+  if(r.phase==='travelling'&&here&&!g.moving){r.phase='waiting';gsay(g,'장부 가져왔어? 어디 좀 보자. 문은 닫고.',2.5);}
   // Patrol marks a one-shot waypoint spent on arrival; keep its full waiting window.
   if(r.phase==='waiting'){
     if(here)r.waiting+=dt;
@@ -15605,60 +15682,66 @@ function startAmb() {
   if (MB.crickets) go(MB.crickets); else if (A.music && A.music.crickets) AC.decodeAudioData(b64ToBuf(A.music.crickets), b => { MB.crickets = b; go(b); }, () => {});
 }
 
-// An in-world voice gives one useful next action. It never pauses or gates play.
+// One clear instruction at a time, spoken by a familiar partner on the radio.
 const OPENING_RADIO=[
- '올빼미, 제비 연락이 끊겼어. 오른쪽 배차실 2층. 남긴 서류부터 찾자.',
- '몸 낮춰. 상자 옆 풀숲으로 들어가면 안 보일 거야.',
- '문만 보고 있네. 우리도 출근해 볼까. 풀숲 나와 등 뒤로 붙어.',
- '살려 둬. 공격을 짧게 누르고 떼. 1초 누르면 죽는다.',
- '옷을 빌리자. 신입인 척하면 돼. 갈아입을 동안은 가만히.',
- '흔적도 지워야지. 몸을 들고 왼쪽 풀숲에 숨겨.',
- '좋아. 배차실로 들어가. 서류는 계단 위, 2층 책상에 있어.',
- '좋아. 저 친구 야근은 끝냈네. 책상에서 제비의 서류를 챙겨.',
- '박인호… 제비가 남긴 이름이야. 금성 운송 2층. 우선 내려와. 다음은 저놈이다.',
- '첫 야근 끝이야. 동쪽 골목으로 빠져. 나머지는 밖에서 얘기하지.'
+ '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 서류를 남겼대. 확인해 보자.',
+ '몸을 좀 낮춰. 상자 옆 풀숲으로 가면 경비한테 안 보일 거야.',
+ '저 사람은 문 쪽을 보고 있어. 풀숲에서 나와서 뒤로 가 봐.',
+ '짧게 눌렀다 떼면 기절해. 길게 누르면 죽으니까, 이번에는 짧게.',
+ '이제 경비 옷으로 갈아입자. 갈아입는 동안은 움직이지 말고.',
+ '그대로 두면 다른 경비가 보겠네. 왼쪽 풀숲으로 옮겨서 숨겨.',
+ '배차실 안으로 들어가면 돼. 계단으로 올라가서 2층 책상을 확인해 봐.',
+ '됐어. 서류는 왼쪽 책상에 있어. 챙겨서 내려가자.',
+ '서류에 박인호라고 적혀 있지? 금성 운송 2층에 있대. 일단 갖고 내려와.',
+ '동쪽 골목으로 나오면 돼. 서류는 꼭 갖고 오고.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
  const P=S.player,goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
- if(chase)return{text:'들켰어. 모퉁이 돌아! 시야 끊고 숨어. 아직 빠져나갈 수 있어.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
- if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'시야는 끊었어. 지금은 움직이지 마. 수색이 잦아들면 다시 가자.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
- if(P.captive)return P.captive.target?{text:'잡았군. 이번엔 처치야. 공격을 1초 눌러. 짧게 치면 기절만 해.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'잡았군. 공격을 짧게 치고 옷을 챙겨. 길게 누르면 죽으니 조심하고.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ if(chase)return{text:'들켰다. 모퉁이를 돌아서 시야에서 벗어나! 숨을 만한 곳부터 찾아.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 안 보이는 모양이야. 움직이지 말고 잠깐 기다려. 경비가 돌아가면 나오자.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
+ if(P.captive)return P.captive.target?{text:'잡았네. 이번 목표는 기절시키는 걸로는 안 돼. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'짧게 누르고 떼면 기절해. 길게 누르면 죽으니까 누르고 있지는 마.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
-  const i=S.tutI||0;
-  const passed=i===6&&S.openingPass;
+  const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
   const archiveVia=!!archive&&!!openingArchiveApproach().via;
-  const text=P.hide?'잘 숨었어. 이제 나와. 서류는 아직 배차실에 있어.':i===7&&P.carrying?'서류 챙기려면 손부터 비워. 몸은 사물함에 숨기거나 내려놔.':archiveVia?'복도 끝에 왼쪽 문이 있어. 그쪽으로 들어가면 경비 등 뒤야.':archive?(archiveReady?'등을 잡았어. 짧게 누르고 떼. 야근은 여기까지 시켜 주자.':'서류 앞에 한 명 더 있네. 아래서 한 것처럼 등 뒤로. 그 옷으로 지나가도, 훔치는 건 보이면 들켜.'):quietDesk?'지금은 안 보고 있어. 서류만 챙겨. 조용히 왔으니 조용히 나가자.':i===4&&P.carrying?'몸부터 내려놔. 그래야 그 옷을 입을 수 있어.':passed?'통했어. 그냥 걸어가. 계단으로 2층에 올라가면 돼.':OPENING_RADIO[i]||OPENING_RADIO[9];
+  let text=OPENING_RADIO[i]||OPENING_RADIO[9];
+  if(P.hide)text='지금은 괜찮아. 이제 나와도 돼. 서류부터 찾자.';
+  else if(i===7&&P.carrying)text='서류 챙기려면 손부터 비워야 해. 몸은 사물함에 숨기거나 내려놔.';
+  else if(archiveVia)text='복도 끝 왼쪽에 문이 있어. 그 문으로 들어가면 경비 뒤쪽으로 갈 수 있어.';
+  else if(archive)text=archiveReady?'지금 가까워. 아래에서 했던 것처럼 짧게 누르고 떼.':'서류 앞에도 한 명 있네. 그 옷으로 지나가도 괜찮지만, 훔치는 건 안 보이게 해야 해.';
+  else if(quietDesk)text='지금은 안 보고 있어. 서류를 챙기려면 지금이 좋겠어.';
+  else if(i===4&&P.carrying)text='몸을 먼저 내려놔야 옷을 갈아입을 수 있어.';
+  else if(passed)text='저 사람은 눈치 못 챘네. 천천히 걸어서 2층으로 올라가.';
   return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed+':'+!!archive+':'+archiveReady+':'+!!(i===7&&P.carrying)+':'+quietDesk+':'+archiveVia,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
- let text='한 가지씩 가자. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터.';
- if(evidencePending())text='녹화됐어. 전선만 끊어선 기록이 남아. 관리 단말에서 지워.';
- else if(goal.exit||S.exitOpen)text='일은 끝났어. 더 건드리지 말고 표시된 출구로 빠져.';
+ let text='화면에 나온 목표부터 확인해 봐. 가까이 가면 어떻게 할 수 있는지 보일 거야.';
+ if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 이미 찍힌 건 남아. 관리 단말에서 기록을 지워야 해.';
+ else if(goal.exit||S.exitOpen)text='할 일은 끝났어. 들어왔던 길로 내려가서 노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.';
  else if(STAGE.compound&&goal.compoundCue){
   const who=goal.g?targetName(goal.g).split(' · ')[0]:'표적';
-  text=({dress:'혼자 있는 경비부터 재워. 쓰러뜨린 뒤 그 옷을 챙겨 입어.',
-   hide:P.carrying?'좋아. 표시된 은닉처로 가. 화단이나 사물함에 몸을 넣어.':'옷만 챙기면 꼬리가 남아. 쓰러진 몸부터 들어.',
-   guard:'1층에도 한 명 있네. 뒤에서 재우고 사물함에 넣어.',
-   light:'스위치를 내려. 불 켜러 오는 놈을 따로 잡자.',
-   stairs:/내려/.test(goal.text)?'계단으로 내려가. 입구로 나오면 돼.':'계단으로 올라가. 위층에서도 등 뒤를 잡는 건 같아.',
-   camera:'걸어갈 땐 괜찮아. 손쓰는 건 찍힌다. 카메라 뒤에서 전선을 끊어.',
-   window:'작업대 철사를 챙겨. 그걸로 서쪽 창문 잠금을 풀 수 있어.',
-   jump:'동쪽 지붕이 가까워. 오른쪽을 보고, 한 칸 골목을 건너뛰어.',
-   sign:'인계책이 간판 밑에 설 때를 기다려. 그때 행동을 1초 눌러 고정을 풀어.',
-   target:goal.g?.unconscious?'아직 살아 있어. 몸 옆에서 공격을 1초 눌러.':goal.g?.moving?who+' 움직인다. 멈추면 등 뒤로 붙어.':'표적은 '+who+'. 다른 시선 피해. 뒤에서 공격을 1초 눌러.',
-   document:'장부도 챙겨. 저 안에 다음 배후가 있어. 손쓰는 동안 시선 조심하고.'})[goal.compoundCue]||text;
+  text=({dress:'혼자 있는 경비가 보이지? 기절시킨 다음 그 옷으로 갈아입으면 들어가기 편할 거야.',
+   hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람을 그대로 두면 발견할 거야. 먼저 들어서 숨길 곳으로 옮기자.',
+   guard:'1층에도 경비가 한 명 있어. 뒤에서 기절시키고, 근처 사물함에 숨기면 돼.',
+   light:'벽 스위치를 꺼 봐. 경비가 켜러 오면 다른 사람들한테서 떨어질 거야.',
+   stairs:/내려/.test(goal.text)?'계단으로 내려가면 돼. 들어왔던 문으로 나올 수 있어.':'계단으로 올라가 봐. 위층에 누가 있는지는 올라가서 확인하자.',
+   camera:STAGE.cameraApproach?'오른쪽 벽을 따라 위로 돌아가 봐. 카메라 위쪽에서는 전선을 끊을 수 있어.':'카메라 앞을 걷는 건 괜찮아. 하지만 누굴 때리거나 서류를 훔치면 찍혀. 뒤쪽 전선부터 끊자.',
+   window:'작업대에 철사가 있어. 그걸 챙겨서 서쪽 창문 잠금을 풀어 봐.',
+   jump:'옆 건물 지붕까지는 뛸 수 있겠네. 오른쪽을 보고 건너뛰면 돼.',
+   sign:'저 사람이 간판 아래에 올 때까지 기다려. 행동을 1초 누르면 간판 고정이 풀려.',
+   target:goal.g?.unconscious?'아직 기절한 상태야. 이번 목표는 살해야. 몸 가까이에서 공격을 1초 동안 눌러.':goal.g?.moving?withJosa(who,'이/가')+' 움직이고 있어. 멈추면 뒤로 가서 가까이 붙어.':'찾던 사람은 '+withJosa(who,'이야/야')+'. 다른 경비가 안 볼 때 뒤에서 공격을 1초 동안 눌러.',
+   document:'장부도 챙겨야 해. 누가 돈을 냈는지 거기 적혀 있을 거야. 가져가는 동안 누가 보는지 확인하고.'})[goal.compoundCue]||text;
  }
- else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 혼자 있는 경비가 있습니다. 기절시킨 다음 몸 옆에서 행동으로 옷을 얻으세요.';
- else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'운반책은 아직 살아 있습니다. 이번 의뢰는 처치입니다. 몸 가까이서 공격을 1초 길게 누르세요.':'서류에서 찾은 운반책입니다. 적재장 옆으로 돌아 등 뒤를 잡으세요. 이번에는 공격을 길게 눌러 처리합니다.';
- else if(goal.actionReady||actionBusy())text=actionBusy()?'좋아. 끝날 때까지 가만히. 누가 보는지도 살피고.':(P.disguise?'지금이야. 그 옷이면 걸어가도 돼. 훔치는 모습은 들키니 조심하고.':'지금이야. 가까이 붙어서 행동해. 끝날 때까진 가만히.');
- else if(STAGE.id==='p1')text='그 옷이면 물류실 경비 앞을 걸어가도 됩니다. 서류 작업은 경비가 등을 보일 때 하세요.';
- else if(/계단|2층으로/.test(goal.text))text='계단으로 올라가. 먼저 위층을 살피자. 서두를 필요 없어.';
- else if(['p2','e2','e4','e5'].includes(STAGE.id)&&S.cams.some(camOn))text='카메라가 비추지 않는 벽 쪽으로 돌아가세요. 가까이서 전선을 분리하면 됩니다. 기술은 필요 없습니다.';
- else if(['e3','e4'].includes(STAGE.id))text=flOf(P)?'서류는 이 층에 있습니다. 경비가 보고 있지 않을 때 책상을 확인하세요.':'다시 2층 일입니다. 직원 옷으로 들어가 계단을 이용하세요. 다른 경비는 건드릴 필요 없습니다.';
- else if(['e1','e5'].includes(STAGE.id))text='멈춰서 등을 보일 때가 기회야. 뒤로 붙어서 공격을 1초 눌러.';
- else if(STAGE.id==='m2')text='클럽은 넓지만 한 가지씩 합시다. 먼저 표시된 곳을 확인하세요. 통행과 작업은 별개입니다.';
+ else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 경비가 혼자 있어. 기절시킨 다음 옷을 가져오면 되겠어.';
+ else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'박인호는 아직 살아 있어. 이번 의뢰는 살해야. 가까이에서 공격을 1초 동안 눌러.':'박인호는 적재장 쪽으로 돌아가면 뒤로 접근할 수 있어. 이번에는 공격을 길게 눌러야 해.';
+ else if(goal.actionReady||actionBusy())text=actionBusy()?'움직이면 작업이 끊겨. 잠깐만 그대로 있어. 누가 오는지도 보고.':P.disguise?'그 옷이면 지나가도 괜찮아. 물건을 가져갈 때는 안 보이게 해야 하고.':'가까이에서 행동하면 돼. 작업이 끝날 때까지는 움직이지 마.';
+ else if(STAGE.id==='p1')text='그 옷이면 경비 앞을 걸어가도 괜찮아. 서류는 경비가 다른 데 볼 때 챙기고.';
+ else if(/계단|2층으로/.test(goal.text))text='계단으로 올라가 봐. 누가 있는지 먼저 확인하고 움직이자.';
+ else if(['p2','e2','e4','e5'].includes(STAGE.id)&&S.cams.some(camOn))text='카메라 뒤쪽 벽으로 돌아가면 전선이 있어. 가까이에서 분리하면 돼. 기술은 필요 없어.';
+ else if(['e3','e4'].includes(STAGE.id))text=flOf(P)?'서류는 지금 있는 층에 있어. 경비가 다른 데 볼 때 책상을 확인해 봐.':'직원 옷으로 들어가서 계단으로 올라가면 돼. 다른 경비까지 건드릴 필요는 없어.';
+ else if(['e1','e5'].includes(STAGE.id))text='저 사람이 멈추면 뒤로 가 봐. 가까이에서 공격을 1초 동안 누르면 돼.';
+ else if(STAGE.id==='m2')text='한 번에 다 하려면 복잡해. 일단 지금 표시된 곳부터 가 보자.';
  return{text,action:tutText(goal.text),cue:evidencePending()?'camera:recorded':goal.exit||S.exitOpen?'mission:escape':goal.compoundCue?'compound:'+goal.compoundCue+':'+(goal.g?.tag||'')+':'+(goal.compoundCue==='hide'?!!P.carrying:goal.compoundCue==='target'?!!goal.g?.moving:''):goal.text,priority:evidencePending()?1:0};
 }
 // The mission stays stable. Immediate instructions belong to the radio.
@@ -16385,7 +16468,7 @@ function briefTodo() {
   S.items.forEach((it, i) => { if (!it.got) out.push(['dia', '#f2c46b', itemObjectiveText(it), placeName(it.x, it.y, it.fl, it.b)]); });
   for (const g of S.guards) if (g.target && !targetEliminated(g)) out.push(['dot', '#e8473c', targetName(g) + ' 처치', targetKnowledge(g).where]);
   if (STAGE.securityEvidence && S.camRoom) out.push(['ring', '#8ca5ba', '신원 기록', '녹화됐을 때만 보안실에서 삭제']);
-  out.push(['ring', '#f2c46b', '이탈', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
+  out.push(['ring', '#f2c46b', '탈출', S.exitOpen ? '노란 원으로' : '목표 완료 후 탈출 지점으로 이동']);
   return out;
 }
 // The briefing, permanent HUD and visible-world labels use the same identities.
@@ -16467,8 +16550,8 @@ function showBrief(go) {
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
   const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
   $('brPurpose').hidden=!STAGE.purpose&&STAGE.id!=='m2'&&!introductoryContract(STAGE);$('brPurpose').textContent=STAGE.purpose|| (STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.');
-  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='두 목표 완료 → 출구로 이탈';if(identities.length!==2)$('brOutcome').textContent='필수 목표 완료 → 출구로 이탈';
-  $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='이탈')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
+  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표를 완료한 뒤 표시된 출구로 탈출';
+  $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='탈출')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
   renderSkillPreparation('brSkills');
   $('brCh').innerHTML = skillRewardRows(STAGE).filter(r=>!r.retired).map(r=>'<li>'+r.name+' · '+r.points+'P'+(r.earned?' (획득 완료)':' · 첫 달성 보상')+'</li>').join('');
@@ -16788,14 +16871,13 @@ function showEnd(win, reason) {
 
 document.querySelectorAll('.nocity').forEach(e => e.remove());
 // 데모(itch) 빌드: 'all' 이면 도시 시제품만 빼고 전부, 목록이면 그 판만 (나머지는 잠긴 카드 하나로 알린다)
-const demoOk = s => !window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id));
+const demoOk = s => !s.retiredCampaign&&(!window.__DEMO || (window.__DEMO === 'all' ? !s.city : window.__DEMO.includes(s.id)));
 // 첫 화면·의뢰 장부·도움말: 셋 중 하나만 보인다
 function showMenu(which) { { const h = $('help'); if (h) h.classList.remove('over'); } ['intro', 'ledger', 'help'].forEach(id => { const el = $(id); if (el) el.hidden = id !== which; }); const el = $(which); if (el) el.scrollTop = 0; }
 const RANK_TXT = r => r ? '최고 ' + r : '';
 function renderStageList() {
   syncQuick();
   const best = loadBest(), next = quickTarget();
-  const locked = STAGES.filter(s => !demoOk(s) && !s.city);
   const row = ([s, i]) => {
     const st = starsOf(s), all = s.challenges ? 1 + s.challenges.length : 0, rk = best[s.id + '_' + DKEY] || best[s.id];
     const stars = !introductoryContract(s) && s.challenges && st ? `<span class="st-stars ${st ? 'has' : ''}" aria-label="별 ${st}개 / ${all}개">★ ${st}</span>` : '';
@@ -16812,10 +16894,8 @@ function renderStageList() {
       <span class="st-foot">${i === next ? '<span class="st-next">다음 차례</span>' : ''}${stars}${!s.tutorial&&!s.city?'<span class="st-rank">기술 '+skillRewardRows(s).filter(r=>r.earned).reduce((n,r)=>n+r.points,0)+' / '+skillRewardRows(s).filter(r=>!r.retired||r.earned).reduce((n,r)=>n+r.points,0)+'P</span>':''}${rk&&!introductoryContract(s) ? `<span class="st-rank">${RANK_TXT(rk)}</span>` : ''}${mods}${passport}${fee}</span>
     </button>`;
   };
-  const list = STAGES.map((s, i) => [s, i]).filter(([s]) => demoOk(s));
-  const tuts = list.filter(([s]) => s.tutorial&&!s.storyEpisode).sort((a,b)=>['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(a[0].id)-['tB','t0','tC','tL','tR','t1','tI','tS','tE','tA'].indexOf(b[0].id)), miss = LEARNING_ROUTE.map(id=>list.find(([s])=>s.id===id)).filter(Boolean), archive = list.filter(([s]) => !s.tutorial && !s.city && !introductoryContract(s) && !mainContract(s)), city = list.filter(([s]) => s.city);
-  $('stageList').innerHTML = `<div class="lg-sec chapter">밤의 의뢰</div>` + miss.map(row).join('') + `<details class="lg-archive"><summary>현장 기록</summary><div class="archive-stages">`+tuts.map(row).join('')+`</div></details>` + (archive.length ? `<details class="lg-archive"><summary>이전 의뢰 · ${archive.length}개</summary><div class="archive-stages">${archive.map(row).join('')}</div></details>` : '') + (city.length ? `<details class="lg-archive"><summary>도시 시제품</summary><div class="archive-stages">${city.map(row).join('')}</div></details>` : '')
-    + (locked.length ? `<div class="stage locked"><span class="st-no">${locked[0].no}</span><span class="st-name">의뢰 ${locked.length}개 더</span><span class="st-stamp">정식판</span><span class="st-mis">${locked.map(s => s.name).join(', ')}</span></div>` : '');
+  const miss=LEARNING_ROUTE.map(id=>STAGES.map((s,i)=>[s,i]).find(([s])=>s.id===id&&demoOk(s))).filter(Boolean);
+  $('stageList').innerHTML = `<div class="lg-sec chapter">밤의 의뢰</div>` + miss.map(row).join('');
   $('stageList').querySelectorAll('.stage[data-i]').forEach(b => b.addEventListener('click', () => { CITY_RET = null; start(+b.dataset.i); }));
   { const record=loadSkillTree();$('perkBox').hidden=true;$('btnSkillsLedger').textContent='기술 트리 · '+(skillBudget()-skillSpent(record))+'P'; }
   { const mb=$('modBox');mb.hidden=$('stageList').dataset.filter!=='missions'||!mainContracts().some(stageCleared);
@@ -17459,6 +17539,7 @@ function installGameApi() {
     syncRoomSwitches,lampCircuit,lampCircuitOff,setLampCircuit,roomLightOccupants,reactToRoomDarkness,updateRoomRelight,drawLightArt,drawIndoorLampFixtures,
     doorBlocker,doorBlocked,doorBlockMessage,investigationReadout,drawCorpseRisk,syncSneakBtn,softPause,guardConeInk,selectVisionFocus,showVisionField,speakerOf,
     contractRouteGoal,cameraServicePoint,cameraCableReachable,cameraAssessment,accessReadout,workRiskReadout,nearCameraCable,updateStoryNotices,updateStories,recoveryInputAction,corpseClothingAction,clothingPose,projectileShot,
+    get dialogueLines(){return DIALOGUE;},get openingRadioLines(){return OPENING_RADIO;},get barkLines(){return BARKS;},
     LEARNING_ROUTE, recommendedStage, learningNext, learningNextLabel, lessonStair, stairLower, stairUpper,
     drawTownExterior, exteriorGates, exteriorArt, recoveryInputCandidate, queueRecoveryInput, updateRecoveryInput, queueApproachAttack, updateApproachAttack, releaseCarryStride, pairRecoveryReady,
     goalViewport, drawGoal, syncMissionTracking, selectAutoGoal, updateCheckpoint, renderMissionGoals,

@@ -1,6 +1,6 @@
 // One story route. The player continues the next unfinished episode.
-const LEARNING_ROUTE=['tB','p0','p1','p2','e1','e2','m2','m4','m6','m7','m5','n1'];
-const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e1',tL:'tR',tR:'m4'};
+const LEARNING_ROUTE=['tB','p0','e2','m2','m4','m6','m7','m5','n1'];
+const OPTIONAL_LESSON_NEXT={t0:'p0',tC:'e2',tL:'tR',tR:'m4'};
 const learningComplete=st=>stageCleared(st)||['e4','e5'].includes(st.id)&&mainContracts().some(s=>stageCleared(s)||storedCP(s.id)?.g?.nodes?.length)||st.id==='tB'&&STAGES.some(s=>s.id!=='tB'&&(introductoryContract(s)||mainContract(s)||s.tutorial)&&stageCleared(s))||introductoryContract(st)&&mainContracts().some(stageCleared);
 function episodeNumber(st=STAGE){const i=LEARNING_ROUTE.indexOf(st.id);return i<0?'':String(i+1).padStart(2,'0');}
 function learningStageIndex(id){return STAGES.findIndex(s=>s.id===id&&demoOk(s));}
@@ -9,6 +9,7 @@ function recommendedStage(){
   return -1;
 }
 function learningNext(){
+  if(STAGE.retiredCampaign)return learningStageIndex(['p1','p2','e1'].includes(STAGE.id)?'e2':'m2');
   if(OPTIONAL_LESSON_NEXT[STAGE.id]){const i=learningStageIndex(OPTIONAL_LESSON_NEXT[STAGE.id]);return STAGE.id==='tC'&&i>=0&&learningComplete(STAGES[i])?recommendedStage():i;}
   const at=LEARNING_ROUTE.indexOf(STAGE.id);
   if(at>=0){for(const id of LEARNING_ROUTE.slice(at+1)){const i=learningStageIndex(id);if(i<0)continue;if(learningComplete(STAGES[i]))continue;return i;}return -1;}

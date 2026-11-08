@@ -34,7 +34,7 @@ function drawTagged() {
 }
 
 // ---- 까마귀(의뢰인) 무전 (메탈기어의 무전 동료식): 일이 생기면 짧게 한마디. 연습판에서는 하지 않는다
-const FIELD_RADIO={body:['제비','시체가 발견됐어.'],blood:['제비','핏자국을 따라오고 있어.'],civ:['까마귀','민간인 피해 확인.']};
+const FIELD_RADIO={body:['까마귀','경비가 쓰러진 사람을 봤어. 그쪽으로 가지 마.'],blood:['까마귀','핏자국을 보고 따라오네. 다른 길로 가야겠어.'],civ:['까마귀','잠깐, 저 사람은 민간인이야. 주변 좀 보고 움직여.']};
 function bossRadio(ev, force) {
   if(!S||S.over||!STAGE||STAGE.tutorial||STAGE.noSupport||!FIELD_RADIO[ev])return;
   if(!force&&S.t<(S.radioNext||0))return;

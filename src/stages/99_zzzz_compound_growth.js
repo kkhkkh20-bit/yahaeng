@@ -85,10 +85,10 @@ compoundJob('e1',{
  fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1},{x:22,y:5,t:'pc',fl:1},{x:20,y:7,t:'pc',fl:1},{x:22,y:10,t:'cab',w:2,fl:1}),
 });
 compoundJob('e2',{
- name:'지붕 위의 장부',sub:'다섯 번째 의뢰 · 수직 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,compoundVertical:true,
- floorTiles:[[2,29,8,'#'],[2,30,8,'#']],W:38,H:26,start:[2,19],exit:[3,22],buildingNames:{0:'폐쇄된 정비동',1:'금성 거래소'},
- purpose:'창문·3층·지붕 사이 이동으로 거래소에 침입해 중개인과 인계책을 처치하고 원본 장부를 가져온다.',
- mission:'중개인·인계책 처치 · 3층 원본 장부 회수 후 탈출',
+ name:'지붕 위의 장부',sub:'거래소 · 옥상으로 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundCamera:true,compoundVertical:true,compoundLight:false,layoutRevision:225,
+ floorTiles:[[2,29,8,'#'],[2,28,9,'#']],W:38,H:26,start:[2,19],exit:[3,22],buildingNames:{0:'폐쇄된 정비동',1:'금성 거래소'},
+ purpose:'창문·3층·지붕 사이 이동으로 거래소에 침입해 중개인을 처치하고 원본 장부를 가져온다.',
+ mission:'문서윤 처치 · 3층 원본 장부 회수 후 탈출',
  brief:'정비동 옆 작업대의 가는 철사는 창문 락픽으로 한 번 쓸 수 있다. 서쪽 창문을 따고 계단으로 3층과 옥상에 오른다. 한 칸 골목 건너 거래소 옥상으로 뛸 수 있다. 인계책이 아래 간판 밑을 지날 때 행동을 1초 길게 눌러 고정을 풀면 사고로 처리할 수 있다. 중개인과 장부는 거래소 3층이다. 조명·복장·몸 숨기기·CCTV 차단도 계속 활용한다. 정면 계단은 우회 경로로 남아 있다.',
  story:{before:'문서윤이 거래소 3층에서 원본 장부를 숨긴다. 인계책은 간판 아래서 배송을 기다린다. 올빼미: 문이 잠겼으면 옆 건물부터 올라가면 되겠군.',after:'원본 장부와 중개인의 보고선을 끊었다. 결재자는 클럽 실장 강도윤. 이제 작은 거점을 벗어나 그의 클럽 전체를 공략한다.'},
  build(m){
@@ -100,11 +100,10 @@ compoundJob('e2',{
  zones:[[0,0,37,25,'pub',null,'거래 골목',[]],[5,4,16,15,'res',null,'폐쇄된 정비동',['crew']],[18,4,31,15,'res',null,'금성 거래소',['crew']]],
  targetCast:{broker:TARGET_CAST.broker,handover:TARGET_CAST.handover},
  guards:[{kind:'g1',tag:'uniformDonor',at:[8,20],post:0,still:true,radio:false},{kind:'g1',tag:'hallKeeper',at:[26,12],post:0,still:true,radio:false},
-  {kind:'g1',tag:'middleKeeper',at:[27,11],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:2,post:180,still:true,radio:false},
-  {kind:'t',tag:'broker',target:true,at:[27,7],fl:2,post:90,still:true,radio:false},{kind:'t',tag:'handover',target:true,route:[[25,17,16],[29,17,8]],startPause:16,radio:false}],
+  {kind:'t',tag:'broker',target:true,at:[27,7],fl:2,post:90,still:true,radio:false},{kind:'g1',tag:'handover',route:[[25,17,16],[29,17,8]],startPause:16,radio:false}],
  items:[[25,6,2]],itemName:'거래 원본 장부',itemNames:['거래 원본 장부'],itemPlaces:['금성 거래소 3층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
  keyItems:[{key:'pin',pos:[4,18]}],keyNames:{pin:'작업대의 가는 철사'},windowStates:[[5,12,0,'lock']],
- cams:[[27,6,180,0,2]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:2,name:'3층 감시 관리 단말'},cameraFocus:[25,6],
+ cams:[[27,6,180,0,2]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:2,name:'3층 감시 관리 단말'},cameraFocus:[25,7],cameraApproach:{landing:[29,10],side:[30,10],top:[30,7]},
  lamps:[[8,17,180,1],[25,17,160,1],[24,9,330,0,0],[25,9,300,0,1],[25,8,330,0,2]],
  lampControls:[[2,19.5,12.5],[3,19.5,12.5],[4,19.5,12.5]],
  fixedFurn:[{x:4,y:17,t:'desk'},{x:6,y:5,t:'locker'},{x:20,y:5,t:'locker'},{x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:20,y:5,t:'locker',fl:2},

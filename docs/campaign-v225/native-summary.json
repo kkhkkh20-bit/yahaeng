@@ -1,0 +1,141 @@
+{
+  "method": "Normal RAF/AI, native keyboard and CDP touch, read-only known-map path planning; no actor, health, AI or game-clock overrides. Not a novice study or physical iPhone test.",
+  "results": [
+    {
+      "device": "pc",
+      "stage": "tB",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      },
+      "seconds": 87.14972366666862
+    },
+    {
+      "device": "pc",
+      "stage": "p0",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 3,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "disguiseKill": true
+      },
+      "seconds": 109.38384700001052
+    },
+    {
+      "device": "pc",
+      "stage": "e2",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "seconds": 104.75755100000715
+    },
+    {
+      "device": "mobile",
+      "stage": "tB",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      },
+      "seconds": 114.86860800001092
+    },
+    {
+      "device": "mobile",
+      "stage": "p0",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 3,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "disguiseKill": true
+      },
+      "seconds": 112.83035300001208
+    },
+    {
+      "device": "mobile",
+      "stage": "e2",
+      "passed": true,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "seconds": 108.53733533334267
+    }
+  ]
+}

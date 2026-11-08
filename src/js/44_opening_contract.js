@@ -57,7 +57,7 @@ function updateOpeningContract(){
     // A real observer accepts ordinary permitted passage. Never manufacture a
     // successful disguise while he is investigating crime or sees illegal work.
     if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
-      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가. 난 퇴근이다.',2.8);
+      S.openingPass=true;S.cpWant=true;gsay(g,'어, 아직 안 갔어? 서류는 위에 있어. 난 이제 퇴근하려고.',2.8);
     }
     return;
   }

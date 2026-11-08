@@ -1,0 +1,92 @@
+[
+  {
+    "id": "tB",
+    "name": "닫힌 배차실",
+    "width": 34,
+    "height": 23,
+    "guards": 3,
+    "targets": 0,
+    "items": 1,
+    "layoutSha256": "1f20e7cdeba0ae7bfa290011084aec46e8443df4ab6ad234e51a64aa31d37171"
+  },
+  {
+    "id": "p0",
+    "name": "닫힌 철문",
+    "width": 34,
+    "height": 24,
+    "guards": 3,
+    "targets": 1,
+    "items": 0,
+    "layoutSha256": "23fa3e0f32fb5465ed5bee3287f7c023cef5e96653024383c9911af5989813eb"
+  },
+  {
+    "id": "e2",
+    "name": "지붕 위의 장부",
+    "width": 38,
+    "height": 26,
+    "guards": 4,
+    "targets": 1,
+    "items": 1,
+    "layoutSha256": "ce5f513f37067ae1b96bc63b80f96de26ab9c6b50c3636cf78071ae219397c49"
+  },
+  {
+    "id": "m2",
+    "name": "VIP",
+    "width": 56,
+    "height": 36,
+    "guards": 41,
+    "targets": 1,
+    "items": 2,
+    "layoutSha256": "32f7dde611898833501165fba043db87a037f4359c51af94c2af2883e224621d"
+  },
+  {
+    "id": "m4",
+    "name": "돈줄",
+    "width": 48,
+    "height": 28,
+    "guards": 31,
+    "targets": 2,
+    "items": 2,
+    "layoutSha256": "18eb449e26ee97e143793a4ba82e284e7daabf374a4697769443fb1090760efd"
+  },
+  {
+    "id": "m6",
+    "name": "배신",
+    "width": 44,
+    "height": 28,
+    "guards": 12,
+    "targets": 0,
+    "items": 2,
+    "layoutSha256": "7a4544e88d48142cc7fd938f16232460b1dffff8360a7d59ba633fcd99915574"
+  },
+  {
+    "id": "m7",
+    "name": "새벽배송",
+    "width": 40,
+    "height": 28,
+    "guards": 9,
+    "targets": 1,
+    "items": 2,
+    "layoutSha256": "eccd13e0631af5716eb9ea0d4cd1d4f32bfaebcdc4d1a0ef81e7c5f5917d4f42"
+  },
+  {
+    "id": "m5",
+    "name": "검은 연락선",
+    "width": 40,
+    "height": 26,
+    "guards": 20,
+    "targets": 1,
+    "items": 1,
+    "layoutSha256": "c2b403f4a87d8bd53a5cd6cdb71dfdfa6ed6cf3d11d46d72ceaae4b7e75da7e6"
+  },
+  {
+    "id": "n1",
+    "name": "마지막 이름",
+    "width": 44,
+    "height": 32,
+    "guards": 29,
+    "targets": 1,
+    "items": 1,
+    "layoutSha256": "4ab15abc556d241ca479b366617acc4795e6b11016a2dace20b372789051abbf"
+  }
+]
