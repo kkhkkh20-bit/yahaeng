@@ -14,6 +14,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
  const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
  const px=it.x*TILE,py=it.y*TILE,w=it.w*TILE,h=it.h*TILE,sx=it.w/a.footprint[0],sy=it.h/a.footprint[1];

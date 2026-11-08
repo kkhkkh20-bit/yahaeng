@@ -1597,16 +1597,16 @@ TARGET_CAST.contact.key='castContact@femaleWorker';
 TARGET_CAST.broker.key='castBroker@femaleBoss';
 // Five real jobs: repeat the core stealth loop, then add one new spatial problem.
 // Existing IDs/clear records remain; the former single-rule errands are optional archives.
-const COMPOUND_COMMON={layoutRevision:214,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
- W:34,H:24,start:[6,18],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
+const COMPOUND_COMMON={layoutRevision:223,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
+ W:34,H:24,start:[6,20],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.8,radioCheck:0,securityResponse:false,
  floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],lootFurniture:['desk'],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
- zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,15,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
+ zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,17,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
  buildingNames:{0:'금성 운송 · 야간 사무동',1:'봉인된 적재 창고'},industrialBuildings:[0,1],
  build(m){
   m.fill(0,0,33,23,',');m.rect(0,0,33,23);m.fill(1,16,32,21,'.');m.fill(1,15,17,15,'=');
-  m.fill(5,3,17,14,'=');m.fill(3,2,32,2,'#');m.fill(3,2,3,16,'#');m.fill(32,2,32,16,'#');m.fill(3,16,12,16,'#');m.fill(15,16,32,16,'#');m.fill(9,9,10,10,'C');m.fill(4,8,4,10,'C');
+  m.fill(5,3,17,14,'=');m.fill(3,2,32,2,'#');m.fill(3,2,3,18,'#');m.fill(32,2,32,18,'#');m.fill(4,16,31,17,'=');m.fill(3,18,12,18,'#');m.fill(15,18,32,18,'#');m.fill(4,19,31,19,'=');m.fill(13,18,14,19,'=');m.fill(9,9,10,10,'C');m.fill(4,8,4,10,'C');
   m.bld(18,3,30,15,2,[[18,12],[24,15]],'h');m.set(28,12,'Y');
   m.many('B',[[7,11],[7,10],[2,8],[2,9],[12,13],[14,17],[31,17]]);
   m.bld(5,3,11,5,1,[],'h');
@@ -2743,8 +2743,7 @@ function paintFreeCityRoof(c,b,w,h){
 }
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
- if(ch==='B')ch='d';
- if(ch==='T'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
+ if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
@@ -2755,12 +2754,17 @@ function drawCityPlant(ch,tx,ty,near){
  ctx.save();
  if(ch==='B'){
   const bs=S.bushShake,u=bs?(S.t-bs.t)/.5:1,shake=u>=0&&u<1&&Math.abs(bs.x-x)<30&&Math.abs(bs.y-y)<30?Math.sin(u*22.5)*3*(1-u):0;
-  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-16+shake,ty*TILE-18,2);
+  ctx.fillStyle='rgba(13,25,21,.32)';ctx.beginPath();ctx.ellipse(x,y+9,24,12,0,0,TAU);ctx.fill();
+  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
  }else{
   ctx.fillStyle='rgba(6,13,20,.27)';ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,TAU);ctx.fill();
   const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(ctx,name,x-24,y-78,3);
  }
  ctx.restore();return true;
+}
+function drawCityCargo(c,tx,ty){
+ if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
+ const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle='rgba(5,12,22,.28)';c.fillRect(x+4,y+5,44,43);const painted=freeCityDraw(c,'cargoCrate'+((tx+ty)%2),x,y,2);c.restore();return painted;
 }
 function cityWallEdges(tx,ty){
  const wall=(x,y)=>!!G0[y]&&'#NS'.includes(G0[y][x]||' ');
@@ -4944,7 +4948,7 @@ function renderMap(R) {
       x.fillStyle = '#141014'; x.beginPath(); x.moveTo(px + 11, py + 40); x.lineTo(px + 11, py + 24); x.arc(px + 24, py + 24, 13, Math.PI, 0); x.lineTo(px + 37, py + 40); x.closePath(); x.fill();
       x.strokeStyle = '#2a2a30'; x.lineWidth = 2; x.strokeRect(px + 3, py + 5, 42, 38);
     }
-    if (ch === 'C') draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
+    if (ch === 'C'&&!drawCityCargo(x,tx,ty)) draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
     if (ch === 'O') drawStreetPlanter(x,tx,ty);
     if (ch === 'R') draw('rock', px, py);
     if(ch==='H'){x.fillStyle='rgba(0,0,0,.2)';x.fillRect(px+4,py+8,TILE-8,TILE-12);}
@@ -5622,6 +5626,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
  const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
  const px=it.x*TILE,py=it.y*TILE,w=it.w*TILE,h=it.h*TILE,sx=it.w/a.footprint[0],sy=it.h/a.footprint[1];
@@ -15251,8 +15256,9 @@ function draw() {
     const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
     for (let ty = pty; ty <= pty + 3; ty++) for (let tx = ptx - 1; tx <= ptx + 1; tx++) {
       const ch = G[ty] && G[ty][tx];
+      if(ch==='T'&&ty>pty){ctx.globalAlpha=.55;const painted=drawCityPlant(ch,tx,ty,false);ctx.globalAlpha=1;if(painted)continue;}
       if (ch === 'T' && ty > pty && kitT.length) { const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0, im = kitT[pine ? 2 : hh % 3 === 0 ? 3 : 0]; if (kitOk(im)) { ctx.globalAlpha = 0.55; ctx.drawImage(im, tx * TILE - TILE, (ty + 0.5 - 3.6) * TILE); ctx.globalAlpha = 1; } }
-      if (ch === 'B' && P.hidden && tx === ptx && ty === pty && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
+      if (ch === 'B' && P.hidden && tx === ptx && ty === pty && !drawCityPlant(ch,tx,ty,true) && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
     }
   }
   PM('player');

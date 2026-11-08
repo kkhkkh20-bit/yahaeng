@@ -1,0 +1,68 @@
+[
+  {
+    "mobile": false,
+    "maps": [
+      {
+        "id": "p0",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "p1",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "p2",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "e1",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      }
+    ],
+    "hidden": true,
+    "consistentCoverPasses": 2,
+    "renderKeepsPhysics": true,
+    "cargo": true
+  },
+  {
+    "mobile": true,
+    "maps": [
+      {
+        "id": "p0",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "p1",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "p2",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      },
+      {
+        "id": "e1",
+        "approachDepth": 2,
+        "streetToGateToDoor": true,
+        "pathLength": 24
+      }
+    ],
+    "hidden": true,
+    "consistentCoverPasses": 2,
+    "renderKeepsPhysics": true,
+    "cargo": true
+  }
+]

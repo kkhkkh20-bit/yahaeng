@@ -1,0 +1,110 @@
+[
+  {
+    "id": "m1",
+    "same": true
+  },
+  {
+    "id": "m2",
+    "same": true
+  },
+  {
+    "id": "m3",
+    "same": true
+  },
+  {
+    "id": "m4",
+    "same": true
+  },
+  {
+    "id": "m5",
+    "same": true
+  },
+  {
+    "id": "m6",
+    "same": true
+  },
+  {
+    "id": "m7",
+    "same": true
+  },
+  {
+    "id": "city",
+    "same": true
+  },
+  {
+    "id": "t0",
+    "same": true
+  },
+  {
+    "id": "t1",
+    "same": true
+  },
+  {
+    "id": "tI",
+    "same": true
+  },
+  {
+    "id": "tB",
+    "same": true
+  },
+  {
+    "id": "tS",
+    "same": true
+  },
+  {
+    "id": "tE",
+    "same": true
+  },
+  {
+    "id": "tA",
+    "same": true
+  },
+  {
+    "id": "tL",
+    "same": true
+  },
+  {
+    "id": "tR",
+    "same": true
+  },
+  {
+    "id": "tC",
+    "same": true
+  },
+  {
+    "id": "p0",
+    "same": false
+  },
+  {
+    "id": "e1",
+    "same": false
+  },
+  {
+    "id": "e2",
+    "same": true
+  },
+  {
+    "id": "e3",
+    "same": true
+  },
+  {
+    "id": "p1",
+    "same": false
+  },
+  {
+    "id": "p2",
+    "same": false
+  },
+  {
+    "id": "e4",
+    "same": true
+  },
+  {
+    "id": "e5",
+    "same": true
+  },
+  {
+    "id": "n1",
+    "same": true
+  }
+]

@@ -678,7 +678,7 @@ function renderMap(R) {
       x.fillStyle = '#141014'; x.beginPath(); x.moveTo(px + 11, py + 40); x.lineTo(px + 11, py + 24); x.arc(px + 24, py + 24, 13, Math.PI, 0); x.lineTo(px + 37, py + 40); x.closePath(); x.fill();
       x.strokeStyle = '#2a2a30'; x.lineWidth = 2; x.strokeRect(px + 3, py + 5, 42, 38);
     }
-    if (ch === 'C') draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
+    if (ch === 'C'&&!drawCityCargo(x,tx,ty)) draw(hs(tx, ty) % 3 ? 'crate' : 'crate2', px, py);
     if (ch === 'O') drawStreetPlanter(x,tx,ty);
     if (ch === 'R') draw('rock', px, py);
     if(ch==='H'){x.fillStyle='rgba(0,0,0,.2)';x.fillRect(px+4,py+8,TILE-8,TILE-12);}

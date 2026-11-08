@@ -184,8 +184,9 @@ function draw() {
     const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
     for (let ty = pty; ty <= pty + 3; ty++) for (let tx = ptx - 1; tx <= ptx + 1; tx++) {
       const ch = G[ty] && G[ty][tx];
+      if(ch==='T'&&ty>pty){ctx.globalAlpha=.55;const painted=drawCityPlant(ch,tx,ty,false);ctx.globalAlpha=1;if(painted)continue;}
       if (ch === 'T' && ty > pty && kitT.length) { const hh = ((tx * 92821) ^ (ty * 68917)) >>> 0, pine = hh % 4 === 0, im = kitT[pine ? 2 : hh % 3 === 0 ? 3 : 0]; if (kitOk(im)) { ctx.globalAlpha = 0.55; ctx.drawImage(im, tx * TILE - TILE, (ty + 0.5 - 3.6) * TILE); ctx.globalAlpha = 1; } }
-      if (ch === 'B' && P.hidden && tx === ptx && ty === pty && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
+      if (ch === 'B' && P.hidden && tx === ptx && ty === pty && !drawCityPlant(ch,tx,ty,true) && kitOk(kitBush)) { ctx.globalAlpha = 0.6; ctx.drawImage(kitBush, tx * TILE - TILE / 2, (ty - 0.9) * TILE); ctx.globalAlpha = 1; }
     }
   }
   PM('player');

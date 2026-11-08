@@ -2,7 +2,7 @@
 normal RAF/AI, earned inventory and native keyboard/CDP touch. No actor/clock/health overrides."""
 import argparse,asyncio,json,math,time
 from pathlib import Path
-from playwright.async_api import async_playwright
+from playwright.async_api import async_playwright,TimeoutError as BrowserTimeout
 from browser_support import open_game
 from action_flow_live import Controls
 from episode_training import standalone_stage,continue_episode
@@ -78,7 +78,15 @@ class CompoundControls:
    await self.walk(g['x']-math.cos(g['a'])*distance,g['y']-math.sin(g['a'])*distance)
    ready=await self.q.evaluate('tag=>{const G=__game,a=G.attackAction();return (a.list||[a.g]).some(g=>g?.tag===tag)&&a.k!=="none"}',tag)
    if not ready:continue
-   await self.c.press('z','#btnAct',lethal=lethal)
+   try:await self.c.press('z','#btnAct',lethal=lethal)
+   except BrowserTimeout:
+    # The patrol can leave reach between the read-only check and the gesture.
+    # Release the real input and approach again; never move/freeze the actor.
+    if self.c.mobile:await self.c.touch('touchEnd',2)
+    else:await self.q.keyboard.up('z')
+    failed=await self.c.record('missed-moving-contact')
+    if failed['hp']<3 or failed['over'] or any(g['state']=='ALERT'for g in failed['guards']):raise
+    continue
    await self.q.wait_for_timeout(180)
    if await self.q.evaluate('tag=>__game.S.guards.find(g=>g.tag===tag).state!=="DEAD"&&!__game.actionBusy()&&!__game.S.player.approachAttack',tag):continue
    await self.q.wait_for_function('tag=>__game.S.guards.find(g=>g.tag===tag).state==="DEAD"&&!__game.actionBusy()',arg=tag,timeout=8000)
@@ -136,7 +144,9 @@ async def main(args):
     for id in (args.stage.split(',') if args.stage else ['p0','p1','p2','e1','e2']):
      await standalone_stage(q,id);await q.click('#btnBrGo');cc=CompoundControls(q,c,out,('mobile'if mobile else'pc')+'-'+id);await cc.shot('start');await c.press('Control','#btnCrouch')
      await cc.neutralize('uniformDonor');await cc.dress();await cc.hide('uniformDonor');await cc.shot('uniform-and-hidden')
-     if id=='p0':await cc.neutralize('hallKeeper');await cc.hide('hallKeeper');await cc.stairs(1);await cc.neutralize('runner',True);await cc.hide('runner')
+     if id=='p0':
+      await cc.walk(1176,816);await cc.shot('front-courtyard');await cc.walk(1176,744);await cc.shot('front-entry')
+      await cc.neutralize('hallKeeper');await cc.hide('hallKeeper');await cc.stairs(1);await cc.neutralize('runner',True);await cc.hide('runner')
      elif id in ['p1','p2','e1']:
       await cc.walk(960,600);await cc.light()
       # Read-only observation of the real repair response, then use its rear contact.

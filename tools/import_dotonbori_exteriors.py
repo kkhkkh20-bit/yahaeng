@@ -4,7 +4,7 @@ The full source, ZIP, demo map and Unity package must never be copied into the r
 """
 import argparse,hashlib,json
 from pathlib import Path
-from PIL import Image
+from PIL import Image,ImageDraw
 ROOT=Path(__file__).resolve().parents[1]
 args=argparse.ArgumentParser();args.add_argument('source',type=Path);args.add_argument('--urban',type=Path,required=True);args=args.parse_args()
 source=args.source;digest=hashlib.sha256(source.read_bytes()).hexdigest()
@@ -77,17 +77,31 @@ parts.append(('asphalt',grade(urban(441)),{**urban_meta,'tiles':[441],'assembly'
 for name,n,bottom in [('treeOval',232,259),('treeRound',233,260),('treePlanter',232,286)]:
  a=Image.new('RGBA',(16,32));a.alpha_composite(urban(n),(0,0));a.alpha_composite(urban(bottom),(0,16));parts.append((name,grade(a),{**urban_meta,'tiles':[n,bottom]}))
 parts.append(('roofPlanter',grade(urban(291)),{**urban_meta,'tiles':[291]}))
-leaf=Image.new('RGBA',(16,32));leaf.alpha_composite(urban(232),(0,0));leaf.alpha_composite(urban(259),(0,16))
-# Leaf-only clusters form dense low cover; tree trunks never become fake cover.
-for y in range(leaf.height):
- for x in range(leaf.width):
-  r,g,b,a=leaf.getpixel((x,y))
-  if g<=r*1.13:leaf.putpixel((x,y),(0,0,0,0))
+# Low, broad leaf cover uses the paid pack's ivy, never overlapping tree crowns.
+# Preserve the small leaf silhouettes; a horizontal ground patch has no trunk/pot.
+leaves=sheet.crop((712,24,752,64))
+for y in range(leaves.height):
+ for x in range(leaves.width):
+  r,g,b,a=leaves.getpixel((x,y))
+  if not a:continue
+  if r>g*1.15:leaves.putpixel((x,y),(0,0,0,0));continue
+  v=(r+g+b)/3;colors=[(27,45,36),(38,64,43),(53,82,50),(72,104,62),(96,127,78),(124,147,93)]
+  leaves.putpixel((x,y),(*colors[min(5,int(v//25))],a))
+leaves=leaves.crop(leaves.getbbox()).resize((26,23),Image.Resampling.NEAREST)
 for i in range(2):
- bush=Image.new('RGBA',(40,28))
- for at in [(0,5),(12,0),(24,5),(7,9),(21,9)]:bush.alpha_composite(leaf.crop((0,0,16,24)),at)
+ bush=Image.new('RGBA',(32,24))
+ for at,flip in [((-5,3),False),((11,2),True),((2,-2),False)]:bush.alpha_composite(leaves.transpose(Image.Transpose.FLIP_LEFT_RIGHT)if flip else leaves,at)
  if i:bush=bush.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
- parts.append(('bush'+str(i),grade(bush,light=i),{**urban_meta,'tiles':[232,259],'assembly':'overlapping leaf-only crowns, no trunk'}))
+ parts.append(('bush'+str(i),bush,{'sourceRect':[712,24,752,64],'assembly':'low broad ivy-leaf ground cover, green leaf palette; no tree crown, trunk or pot'}))
+# The exterior pack has no ready-made freight crate. Assemble its original
+# wood-board pixels into sealed cargo, with subdued corner iron and a paper label.
+for i in range(2):
+ crate=Image.new('RGBA',(24,24));crate.alpha_composite(sheet.crop((160,32,184,52)),(0,4));crate.alpha_composite(sheet.crop((160,0,184,4)),(0,0));d=ImageDraw.Draw(crate)
+ d.rectangle((0,0,23,23),outline='#343c48');d.line((1,4,22,4),fill='#d0b69d');d.line((1,22,22,22),fill='#66594f');
+ for x in ([1,21]if not i else[4,18]):
+  d.rectangle((x,1,x+1,21),fill='#6e7882');d.point((x,2),fill='#c1beb1');d.point((x,20),fill='#c1beb1')
+ d.rectangle((8,11,14,15),fill='#c1b7a0');d.line((9,12,13,12),fill='#6a6860');d.line((9,14,11,14),fill='#6a6860')
+ parts.append(('cargoCrate'+str(i),crate,{'sourceRect':[160,0,192,64],'assembly':'24x24 sealed cargo assembled from original wood slats; iron straps and label added'}))
 ground=urban(32)
 for y in range(16):
  for x in range(16):
