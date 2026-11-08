@@ -1727,6 +1727,9 @@ CASE_LINKS.push(['runner','foreman'],['foreman','records'],['records','contact']
 // Apply the free art pilot after derived lessons have copied their stage data.
 campaignStage('tB').freeCityPilot=true;
 
+// Freight buildings share the same exterior materials beyond the opening pilot.
+for(const s of STAGES)if(s.id==='tB'||s.compound&&s.industrialBuildings?.length)s.freeCityExteriors=true;
+
 'use strict';
 (function () {
 const A = window.__ASSETS__;
@@ -2672,7 +2675,7 @@ function drawKitBuilding(b) {
 // 내 둘레 가구의 막힌 칸: 어두운 방에서도 어디로 지나갈 수 있는지 보이게 (가까울수록 진하게)
 // 가까운 자경대원을 덮칠 수 없을 때 그 이유 (행동 버튼이 아무것도 안 할 때 자경대원 위에 작게 보인다)
 
-// A small official 2D City subset, used only in the first freight courtyard.
+// Official 2D City materials for freight exteriors; courtyard paving stays local.
 // Source pixels are drawn at 2x; the physical 48px grid and all actions stay intact.
 const freeCityArt=A.freeCity||null,freeCityAtlas=new Image(),freeCityPatterns={};
 let freeCityDirty=false;
@@ -2683,24 +2686,52 @@ function freeCityDraw(c,name,x,y){
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return false;
  c.drawImage(freeCityAtlas,...f,Math.round(x),Math.round(y),f[2]*2,f[3]*2);return true;
 }
+function freeCityBuilding(b){return !!b&&!!STAGE.freeCityExteriors&&STAGE.industrialBuildings?.includes(BLD.indexOf(b));}
+function freeCityPattern(name){
+ let tile=freeCityPatterns[name];if(tile)return tile;
+ const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
+ tile=document.createElement('canvas');tile.width=f[2]*2;tile.height=f[3]*2;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);return freeCityPatterns[name]=tile;
+}
+function paintFreeCityWall(c,b,x,y,w,h){
+ if(!freeCityBuilding(b))return false;const tile=freeCityPattern('wallPanel');if(!tile)return false;
+ c.save();c.translate(x,y);c.globalAlpha*=.78;c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);c.restore();return true;
+}
+function paintFreeCityRoof(c,b,w,h){
+ if(!freeCityBuilding(b))return false;const tile=freeCityPattern('roofTile');if(!tile)return false;
+ c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
+ c.fillStyle='#27353c';c.fillRect(0,0,w,10);c.fillRect(0,h-10,w,10);c.fillRect(0,0,10,h);c.fillRect(w-10,0,10,h);
+ c.fillStyle='#84918c';c.fillRect(2,2,w-4,2);c.fillRect(2,2,2,h-4);c.fillStyle='#4b5d61';c.fillRect(2,h-6,w-4,2);c.fillRect(w-6,2,2,h-4);
+ c.fillStyle='rgba(14,24,32,.28)';for(let y=128;y<h-10;y+=128)c.fillRect(10,y,w-20,2);
+ return true;
+}
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityPilot||CUR_F||tx<1||tx>13||![7,13,17].includes(ty)||bldAt(tx,ty)>=0||!'.=,'.includes(ch)||!freeCityReady())return false;
- const name=ch==='='?'pavers':'asphalt';let tile=freeCityPatterns[name];
- if(!tile){const f=freeCityArt.frames[name].rect;tile=document.createElement('canvas');tile.width=f[2]*2;tile.height=f[3]*2;const t=tile.getContext('2d');t.imageSmoothingEnabled=false;t.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);freeCityPatterns[name]=tile;}
+ const tile=freeCityPattern(ch==='='?'pavers':'asphalt');if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
 }
 function refreshFreeCity(){
- if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot)return;
- const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;}finally{setLayer(layer);}
+ if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot&&!STAGE.freeCityExteriors)return;
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;BLD.forEach((b,i)=>{if(freeCityBuilding(b))b.roofC=buildRoofCanvas(b,i);});}finally{setLayer(layer);}
+}
+function freeCityFront(b){
+ return{windows:S.windows.filter(w=>!flOf(w)&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1),doors:S.doors.filter(d=>!flOf(d)&&d.ty===b.y1&&d.tx>=b.x0&&d.tx<=b.x1)};
 }
 function drawFreeDepotDetails(c,b,x,y,w,h){
- if(!STAGE.freeCityPilot||BLD.indexOf(b)!==0||!freeCityReady())return;
+ if(!freeCityBuilding(b)||!freeCityReady())return;
+ const front=freeCityFront(b),openings=front.windows.concat(front.doors),gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62);
  c.save();c.imageSmoothingEnabled=false;
- const gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62);
- for(let dx=0;dx<gateW;dx+=64)freeCityDraw(c,'awning',gateX+dx,gateY-20);
- c.fillStyle='rgba(7,16,25,.24)';c.fillRect(gateX,gateY+16,gateW,5);
- freeCityDraw(c,'window',x+w-70,y+10);
- freeCityDraw(c,'vending',x+w-188,y+h-64);
+ for(const a of front.windows){
+  freeCityDraw(c,'window',a.x-26,a.y-16);drawWindow(a,c.globalAlpha);
+ }
+ for(const d of front.doors){blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}}
+ for(const a of S.windows)if(!flOf(a)&&(a.tx===b.x0||a.tx===b.x1)&&a.ty>=b.y1-b.fh+1&&a.ty<b.y1)drawWindowEdge(a,b);
+ // The canopy follows real openings; it never invents a new usable doorway.
+ const left=openings.length?Math.min(...openings.map(a=>a.tx))*TILE-8:gateX;
+ const right=openings.length?Math.max(...openings.map(a=>a.tx))*TILE+TILE+8:gateX+gateW;
+ const top=openings.length?y+28:gateY-20;
+ c.save();c.beginPath();c.rect(left,top,right-left,36);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
+ c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+36,right-left,4);
+ if(STAGE.freeCityPilot&&BLD.indexOf(b)===0)freeCityDraw(c,'vending',x+w-188,y+h-64);
  c.restore();
 }
 
@@ -3212,10 +3243,12 @@ function buildRoofCanvas(b, i) {
   if (F[key] && key.startsWith('cRoof')) {
     // 평옥상 옥상: 난간 9칸 조각 + 물탱크·실외기·빨랫줄·계단실(옥탑)
     const f = F[key], pc = (sx, sy, dx, dy) => x.drawImage(atlas, f[0] + sx, f[1] + sy, 16, 16, dx, dy, 48, 48);
+    if(!paintFreeCityRoof(x,b,w,h)){
     for (let yy = 48; yy < h - 48; yy += 48) for (let xx = 48; xx < w - 48; xx += 48) pc(16, 16, xx, yy);
     for (let xx = 48; xx < w - 48; xx += 48) { pc(16, 0, xx, 0); pc(16, 32, xx, h - 48); }
     for (let yy = 48; yy < h - 48; yy += 48) { pc(0, 16, 0, yy); pc(32, 16, w - 48, yy); }
     pc(0, 0, 0, 0); pc(32, 0, w - 48, 0); pc(0, 32, 0, h - 48); pc(32, 32, w - 48, h - 48);
+    }
     const hs = (((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0);
     // 계단실(옥탑): 건물 안 계단 'Y' 칸 위
     let stair = null;
@@ -13856,13 +13889,9 @@ function drawWindowSight(P, openB) {
     if (!inside) return;
     b.wsT = S.t;  // 이번 프레임 창문 시선으로 들여다보는 중 (옥상 발광은 쉰다)
     // Window sight reveals the actual visible room; it does not overlay an entire floor plan.
-    if(!quarterClub(b)){
-    // 도면: 건물 평면을 흐리게 (사람은 안 보임)
-    ctx.save(); ctx.globalAlpha = 0.5; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(20,34,52,.45)'; ctx.fillRect(bx, by, bw, bh);
-    ctx.strokeStyle = 'rgba(160,200,235,.55)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]); ctx.restore();
-    }
+    // Keep the exterior intact; only the actual sight polygon below reveals a room.
     // 시선이 닿는 곳: 또렷하게 + 사람까지
-    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, bh - 2 * TILE); ctx.clip(); path(); ctx.clip();
+    ctx.save(); ctx.beginPath(); ctx.rect(bx + TILE, by + TILE, bw - 2 * TILE, Math.max(0,Math.min(bh-2*TILE,(b.roofC?.rh??bh)-TILE))); ctx.clip(); path(); ctx.clip();
     drawBig(ctx, mapC, bx, by, bw, bh);
     for (const c of S.corpses) if (!c.stashed && !c.z && !flOf(c) && bldAt(Math.floor(c.x / TILE), Math.floor(c.y / TILE)) === bi) drawBody(c);
     for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && !g.climb && bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)) === bi) { drawGuard(g); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); }
@@ -14275,15 +14304,19 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.fillStyle='#39494f';ctx.fillRect(x,y,w,h);
- for(let px=0;px<w;px+=8){ctx.fillStyle=px%24===0?'#657078':'#46575c';ctx.fillRect(x+px,y,2,h);}
+ if(!paintFreeCityWall(ctx,b,x,y,w,h))for(let px=0;px<w;px+=8){ctx.fillStyle=px%24===0?'#657078':'#46575c';ctx.fillRect(x+px,y,2,h);}
+ const cityOpen=freeCityBuilding(b)&&freeCityReady()&&(freeCityFront(b).windows.length||freeCityFront(b).doors.length);
+ if(!cityOpen){
  const gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62),gateH=y+h-gateY;
  ctx.fillStyle='#17232b';ctx.fillRect(gateX-5,gateY-5,gateW+10,gateH+5);ctx.fillStyle='#4b585f';ctx.fillRect(gateX,gateY,gateW,gateH);
  for(let py=2;py<gateH;py+=6){ctx.fillStyle='#293940';ctx.fillRect(gateX,gateY+py,gateW,2);ctx.fillStyle='#647078';ctx.fillRect(gateX,gateY+py+2,gateW,1);}
  ctx.fillStyle='#8c8b78';ctx.fillRect(gateX+gateW/2-11,y+h-13,22,3);
+ }
  for(let i=0;i<10;i++){const px=(i*97+b.x0*31)%(w-12);ctx.fillStyle='rgba(112,83,61,.3)';ctx.fillRect(x+px,y+h-9-(i%3)*4,4,5+(i%4)*2);}
- ctx.fillStyle='#192930';ctx.fillRect(x+18,y+9,132,27);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+9.5,132,27);
- ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(15,700);ctx.fillText(b.name||'물류 창고',x+27,y+28,114);
- ctx.fillStyle='#a1b4b2';ctx.fillRect(x+w-55,y+14,27,16);ctx.fillStyle='#243b46';ctx.fillRect(x+w-52,y+17,21,10);ctx.fillStyle='#8b9b98';ctx.fillRect(x+w-43,y+15,2,14);
+ ctx.fillStyle='#192930';ctx.fillRect(x+18,y+3,132,23);ctx.strokeStyle='#78898b';ctx.lineWidth=1;ctx.strokeRect(x+18.5,y+3.5,132,23);
+ ctx.fillStyle='#d9dccf';ctx.textAlign='left';ctx.font=uiFont(15,700);ctx.fillText(b.name||'물류 창고',x+27,y+21,114);
+ if(!freeCityBuilding(b)){ctx.fillStyle='#a1b4b2';ctx.fillRect(x+w-55,y+14,27,16);ctx.fillStyle='#243b46';ctx.fillRect(x+w-52,y+17,21,10);ctx.fillStyle='#8b9b98';ctx.fillRect(x+w-43,y+15,2,14);}
+
  drawFreeDepotDetails(ctx,b,x,y,w,h);
  for(let tx=b.x0;tx<=b.x1;tx++){const light=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.62*(1-clamp(light,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
  ctx.fillStyle='#18272f';ctx.fillRect(x,y,w,5);ctx.fillRect(x,y+h-4,w,4);ctx.restore();
@@ -17184,6 +17217,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
+    drawWindowSight,drawPlansFaint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
