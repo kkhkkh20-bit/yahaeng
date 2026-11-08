@@ -25,7 +25,7 @@ async def main():
    await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:619,y:408,mode:'sneak'});G.updateHUD(true)}")
    assert '더 가까이' in await q.locator('#btnAct').get_attribute('aria-label'),'idle compact caption left a stale approach action label'
    overlay=await q.evaluate("""()=>{const G=__game,hit=(a,b)=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top;
-    G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:1236,y:360,fl:1,mode:'sneak'});G.S.fade=0;G.update(.02);G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
+    G.start(G.STAGES.findIndex(s=>s.id==='p0'),false);while(G.DLG.modal)G.advanceDialog();Object.assign(G.S.player,{x:1236,y:360,fl:1,mode:'sneak'});G.S.fade=0;G.update(.02);const speaker=G.S.guards.find(g=>g.target);Object.assign(speaker,{say:'연락은 아직인가? 다음 차가 곧 도착한다.',sayT:4,actionSpeechUntil:G.S.t+4});G.moveCamera(1);G.updateHUD(true);G.benchDraw(2);
     const speeches=G.SPEECH_R.map(r=>({left:(r.x-G.cam.x)*G.SCALE+innerWidth/2,top:(r.y-G.cam.y)*G.SCALE+innerHeight/2,right:(r.x+r.w-G.cam.x)*G.SCALE+innerWidth/2,bottom:(r.y+r.h-G.cam.y)*G.SCALE+innerHeight/2}));
     if(!speeches.length)throw Error('NPC dialogue was hidden instead of relocated');
     const fixed=[...document.querySelectorAll('#saveState,#hud .joyhint,#quickItems>button')].filter(e=>!e.hidden&&!e.closest('[hidden]')&&getComputedStyle(e).visibility!=='hidden'&&e.getBoundingClientRect().width).map(e=>e.getBoundingClientRect());

@@ -966,11 +966,11 @@ STAGES.push({
 });
 // A small Korean freight depot: every lesson action advances the same infiltration.
 const FIRST_STEPS = {
- id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
+ id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:214,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
  noSupport:true,noAmbientChats:true,noRefine:true,floors:true,pspd:1.25,gspd:.8,residents:0,
  mission:'야간 배차실 2층에서 연락 서류를 회수하고 동쪽 골목으로 빠져나온다.',
- brief:'연락책이 사라졌다. 마지막으로 남긴 서류는 대성 물류 배차실 2층에 있다. 까마귀가 무전으로 길을 봐 준다. 상자 뒤를 지키는 경비의 옷을 이용하면 직원처럼 들어갈 수 있다. 서류를 확보하면 동쪽 골목으로 빠져나온다.',
- endText:'까마귀: 서류 확인했습니다. 사라진 연락책이 운반책 한 명을 지목했군요. 다음 밤에는 그를 찾아갑시다. 기술 포인트 1P는 다음 출발 전에 사용하거나 모아 둘 수 있습니다.',
+ brief:'연락책 제비가 마지막으로 남긴 말은 “야간 배차실”. 경비를 조용히 재우고, 옷을 빌리고, 흔적을 숨긴다. 직원처럼 문을 통과해 2층 책상의 연락 서류를 가져오자. 까마귀가 골목을 봐 준다.',
+ endText:'까마귀: 첫 야근 치고 깔끔하군요. 제비가 남긴 이름은 박인호. 금성 운송 2층에서 증인을 넘길 전화를 기다린답니다. 이번에는 그 전화를 끊으러 갑시다. 다음 출발 전에 1P를 배우거나 모아 둘 수 있습니다.',
  W:34,H:23,start:[2,10],exit:[29,15],exitName:'동쪽 골목',startA:0,well:'manhole',bare:true,ownedLoadout:true,
  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
  industrialBuildings:[0,2],
@@ -985,9 +985,14 @@ const FIRST_STEPS = {
   m.many('T',[[4,7],[12,3],[30,3],[31,12],[2,18],[28,20]]);m.many('H',[[22,11]]);
  },
  lamps:[[3,7,130,1],[10,9,240,1],[30,13,230,1],[6,7,300,1],[19,9,210,0]],
- guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
+ guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false},
+  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false}],
  zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,3,24,14,'res',null,'배차실 · 직원만',['crew']]],zoneAllow:['crew'],
- fixedFurn:[],
+ // A dispatch depot stores parcels, not the grocery fridges of the base shop.
+ roomPatches:[{fl:0,bounds:[15,4,20,12],furniture:[{t:'fridge',from:[15,4],remove:true},{t:'fridge',from:[16,4],remove:true}],tiles:[[15,4,'t'],[16,4,'t']]}],
+ fixedFurn:[{x:15,y:4,t:'boxes',w:2},{x:19,y:4,t:'locker'},
+  ...[6,8,10].map(y=>({x:16,y,t:'shelf',w:3,skin:'freight'}))],
+ dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'야간 배차',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
  items:[{b:1,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
  steps:[
   ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'까마귀가 길을 보고 있다. 서류는 배차실 2층에 있다.','move'],
@@ -1592,11 +1597,11 @@ TARGET_CAST.contact.key='castContact@femaleWorker';
 TARGET_CAST.broker.key='castBroker@femaleBoss';
 // Five real jobs: repeat the core stealth loop, then add one new spatial problem.
 // Existing IDs/clear records remain; the former single-rule errands are optional archives.
-const COMPOUND_COMMON={layoutRevision:212,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
+const COMPOUND_COMMON={layoutRevision:214,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
  W:34,H:24,start:[6,18],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.8,radioCheck:0,securityResponse:false,
- floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
+ floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],lootFurniture:['desk'],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
  zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,15,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
  buildingNames:{0:'금성 운송 · 야간 사무동',1:'봉인된 적재 창고'},industrialBuildings:[0,1],
  build(m){
@@ -1609,12 +1614,16 @@ const COMPOUND_COMMON={layoutRevision:212,compound:true,physicalWorld:true,story
  },
  lamps:[[14,6,170,1],[5,17,160,1],[24,9,350,0,0],[25,8,330,0,1]],
  lampControls:[[2,19.5,12.5],[3,19.5,12.5]],
- fixedFurn:[{x:20,y:5,t:'shelf',w:3},{x:22,y:10,t:'boxes',w:2},{x:19,y:13,t:'locker'},{x:26,y:13,t:'locker'},
+ fixedFurn:[{x:20,y:5,t:'shelf',w:3,skin:'freight'},{x:22,y:10,t:'boxes',w:2},{x:19,y:13,t:'locker'},{x:26,y:13,t:'locker'},
   {x:20,y:5,t:'locker',fl:1},{x:28,y:8,t:'locker',fl:1},{x:25,y:5,t:'desk',w:2,fl:1},{x:27,y:10,t:'shelf',w:2,fl:1}],
 };
 const yardGuard=()=>({kind:'g1',tag:'uniformDonor',at:[14,8],post:0,still:true,radio:false});
 const hallGuard=()=>({kind:'g1',tag:'hallKeeper',at:[26,11],post:0,still:true,radio:false});
 const lightGuard=()=>({kind:'g1',tag:'lightKeeper',at:[22,7],post:90,still:true,radio:false});
+// Long, legible work pauses create repeatable approach windows. The actors
+// really walk between their stations; they keep the same outfit/AI rules.
+const officeTarget=(tag,second=[28,7],act='phone')=>({kind:'t',tag,target:true,fl:1,post:0,still:true,radio:false,startPause:18,
+ sched:[{at:[26,7],stay:18,name:'업무 책상',act},{at:second,stay:10,name:'보고 자리',act:'ledger'}]});
 const newCast=(name,role,appearance,key,palette)=>({name,role,appearance,key,palette,habit:role+'로서 보고를 확인한다.'});
 TARGET_CAST.foreman=newCast('한재문 · 작업반장','금성회 야간 출고 책임자','붉은 작업 코트 · 회색 머리','castForeman@coat',['#d5ab88','#a8a6a0','#a33e3b','#2d3440','#181f28']);
 TARGET_CAST.records=newCast('차유진 · 기록책','금성회 증인 이송 기록책','금발 · 자주색 정장','castRecords@femaleBoss',['#e4b79a','#c7a263','#884c70','#2b3543','#20242d']);
@@ -1632,14 +1641,20 @@ compoundJob('p0',{
  purpose:'운반책 박인호를 처치하고 금성 운송의 철문 밖으로 탈출한다.',mission:'2층 운반책 처치 후 서쪽 철문 밖으로 탈출',
  brief:'박인호는 2층에서 거래 전화를 기다린다. 마당 경비 한 명, 1층 경비 한 명, 2층 표적 한 명이다. 마당 경비를 등 뒤에서 기절시키고 옷을 얻는다. 몸은 왼쪽 화단, 1층은 사물함에 숨길 수 있다. 계단으로 올라가 검은 머리 · 주황색 후드의 박인호를 찾아 처치하고 철문 밖으로 빠져나오자. 짧게 누르면 기절, 길게 누르면 살해한다.',
  story:{before:'제비의 서류가 가리킨 박인호는 금성 운송 2층에 숨어 증인을 팔아넘길 전화를 기다린다. 경비의 옷과 빈 사물함을 이용해 거점을 뚫는다.',after:'박인호의 전화를 끊었다. 그가 부르던 작업반장 한재문은 옆 출고동에 있다. 이번에는 경비 둘이 서로를 보고 있다.',cast:{runner:'runner'}},
- targetCast:{runner:TARGET_CAST.runner},guards:[yardGuard(),hallGuard(),{kind:'t',tag:'runner',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 배차 사무동',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:20,y:8,t:'sofa',w:2,fl:1}),
+ dressing:[{kind:'bay',x:8.7,y:8.7,w:2.6,h:2.6,text:'01'},{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'운송 배차'}],
+ targetCast:{runner:TARGET_CAST.runner},guards:[yardGuard(),hallGuard(),officeTarget('runner')],
 });
 compoundJob('p1',{
  name:'불 꺼진 출고동',sub:'두 번째 의뢰 · 어둠으로 분리',fee:'40만',openingContract:false,starterContract:'darkness',apprenticeContract:undefined,compoundLight:true,
  purpose:'겹친 경비 시야를 조명으로 나누고 작업반장 한재문을 처치한다.',mission:'출고 감시담당·작업반장 처치 후 철문 밖으로 탈출',
  brief:'기절·변장·몸 숨기기는 그대로 활용한다. 이번에는 1층 경비 두 명의 시선이 겹친다. 서쪽 문 안 벽 스위치를 끄면 방이 어두워지고 경비 한 명이 다시 켜러 온다. 그를 따로 처리하고 사물함에 숨기면 계단이 열린다. 붉은 조끼의 출고 감시담당과 2층 붉은 코트의 한재문이 표적이다. 일반 조명 스위치는 기술 없이 사용한다.',
  story:{before:'한재문이 박인호의 연락을 기다린다. 출고동에는 경비 둘이 서로를 지킨다. 까마귀: 불을 한번 꺼 보죠. 누군가는 켜러 와야 하니까.',after:'작업반장의 보고를 막았다. 증인 이송 명세서는 기록책 차유진이 따로 보관한다. 다음 거점에서는 사람과 서류를 함께 처리한다.'},
- targetCast:{foreman:TARGET_CAST.foreman,watchCaptain:TARGET_CAST.watchCaptain},guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'watchCaptain',target:true},lightGuard(),{kind:'t',tag:'foreman',target:true,at:[26,7],fl:1,post:0,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 야간 출고동',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:25,y:5,t:'boxes',w:2},{x:20,y:9,t:'boxes',w:2,fl:1}),
+ dressing:[{kind:'bay',x:24.7,y:4.7,w:2.6,h:1.6,text:'출고'},{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'야간 출고'}],
+ targetCast:{foreman:TARGET_CAST.foreman,watchCaptain:TARGET_CAST.watchCaptain},guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'watchCaptain',target:true},lightGuard(),officeTarget('foreman')],
 });
 compoundJob('p2',{
  name:'야간 기록실',sub:'세 번째 의뢰 · 처치와 회수',fee:'50만',openingContract:false,starterContract:'records',apprenticeContract:undefined,compoundLight:true,
@@ -1647,7 +1662,10 @@ compoundJob('p2',{
  brief:'마당 경비의 옷으로 들어가고, 몸은 화단과 사물함에 숨긴다. 1층 감시반장과 2층 기록책이 필수 표적이다. 경비들은 조명이 꺼지면 스위치를 확인한다. 한 명씩 분리한 뒤 명세서를 챙겨 나온다. 서류는 2층 책상에 있고, 두 표적 처치와 회수를 모두 마쳐야 탈출할 수 있다.',
  story:{before:'기록책 차유진이 명세서를 정리하고 감시반장 서명석이 인계를 지킨다. 지금까지 익힌 암살·변장·조명·은폐로 두 사람의 보고와 서류를 함께 끊는다.',after:'명세서에 정하린의 감시 거점이 적혀 있다. 정하린은 사람만 믿지 않는다. 기록실 앞 CCTV까지 확인해야 한다.'},
  targetCast:{recordsLead:TARGET_CAST.records,inspector:TARGET_CAST.inspector},
- guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'recordsLead',target:true,at:[26,7],fl:1,post:0,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 야간 기록실',1:'봉인된 적재 창고'},
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:25,y:10,t:'cab',w:2,fl:1},{x:20,y:7,t:'shelf',fl:1}),
+ dressing:[{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'이송 기록'}],
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),officeTarget('recordsLead',[28,7],'ledger'),{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
  items:[[25,6,1]],itemName:'이송 명세서',itemNames:['이송 명세서'],itemPlaces:['야간 기록실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
 });
 compoundJob('e1',{
@@ -1656,10 +1674,12 @@ compoundJob('e1',{
  brief:'암살·변장·조명·은폐는 이전과 같다. 이번에는 2층 작업 구역을 CCTV가 비춘다. 허용 복장으로 지나가는 것과 살해·서류 작업은 다르다. 카메라 뒤 벽의 전선을 분리하면 녹화를 막는다. 이미 찍혔다면 같은 층 보안 단말에서 감시망을 정지하고 기록을 지운다. 실수해도 의뢰가 바로 끝나지 않는다.',
  story:{before:'정하린의 거점에는 증인 인계서를 지키는 CCTV가 있다. 까마귀: 경비 옷은 사람 눈을 속이죠. 저 렌즈 앞에서까지 손을 놀리지는 마세요.',after:'정하린의 연락망과 인계서를 확보했다. 중개인 문서윤의 원본 장부는 옆 건물 3층에 있다. 정문 대신 지붕과 창문으로 길을 만들자.'},
  targetCast:{contact:TARGET_CAST.contact,inspector:TARGET_CAST.cameraLead},
- guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{kind:'t',tag:'contact',target:true,at:[26,7],fl:1,post:90,still:true,radio:false},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
+ buildingNames:{0:'금성 운송 · 감시 관리동',1:'봉인된 적재 창고'},
+ dressing:[{kind:'board',x:25,y:3.15,w:3,h:.8,fl:1,text:'야간 감시'}],
+ guards:[yardGuard(),{...hallGuard(),kind:'t',tag:'inspector',target:true},lightGuard(),{...officeTarget('contact',[27,7]),post:90},{kind:'g1',tag:'upperKeeper',at:[21,9],fl:1,post:180,still:true,radio:false}],
  items:[[25,6,1]],itemName:'증인 인계서',itemNames:['증인 인계서'],itemPlaces:['감시 거점 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],
  cams:[[27,6,180,0,1]],securityEvidence:true,securityTerminalVersion:1,camRoom:{pos:[29,10],fl:1,name:'2층 감시 관리 단말'},cameraFocus:[25,6],
- fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1}),
+ fixedFurn:COMPOUND_COMMON.fixedFurn.concat({x:29,y:9,t:'pc',fl:1},{x:22,y:5,t:'pc',fl:1},{x:20,y:7,t:'pc',fl:1},{x:22,y:10,t:'cab',w:2,fl:1}),
 });
 compoundJob('e2',{
  name:'지붕 위의 장부',sub:'다섯 번째 의뢰 · 수직 잠입',fee:'80만',openingContract:false,starterContract:undefined,apprenticeContract:true,compoundLight:true,compoundCamera:true,compoundVertical:true,
@@ -1887,6 +1907,7 @@ function installStageFurniture(st, saved = false) {
   for(const d of st.fixedFurn||[]){
     let f=FURN.find(f=>f.x===d.x&&f.y===d.y&&(f.fl||0)===(d.fl||0)&&f.t===d.t);
     if(!f){f={w:1,h:1,r:0,fl:0,seed:114,...d};FURN.push(f);}
+    if(d.skin)f.skin=d.skin;
     const grid=f.fl?GF[f.fl]:G0;if(!grid)continue;
     for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)grid[y][x]=FURN_TALL.has(f.t)?'E':'K';
     if(saved)for(const o of [S.player,...S.guards,...S.corpses]){
@@ -4697,6 +4718,7 @@ function renderMap(R) {
   if (R && CUR_F > 0) { const bi = BLD.findIndex(b => b.x0 === rx0 && b.y0 === ry0 && b.x1 === rx1 && b.y1 === ry1); if (hasHeightCues(bi)) paintInteriorCuts(x, BLD[bi], CUR_F); }
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
+  drawEpisodeDressing(x, CUR_F, rx0, ry0, rx1, ry1);
   quarterCuts(x,rx0,ry0,rx1,ry1);
   // 가구 (이 층 것만)
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
@@ -5311,6 +5333,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
  const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
  const px=it.x*TILE,py=it.y*TILE,w=it.w*TILE,h=it.h*TILE,sx=it.w/a.footprint[0],sy=it.h/a.footprint[1];
  x.save();x.imageSmoothingEnabled=false;
@@ -5321,11 +5344,50 @@ function drawPropFurn(x,it,shadow=false){
  if(it.t==='shelf'&&BLD[bldAt(it.x,it.y)]?.name==='약국')drawPharmacyStock(x,it);
  x.restore();return true;
 }
+// Original pixel parcel rack: the shelf footprint and cover stay unchanged.
+// Storage no longer borrows the shop's colourful book/grocery display.
+function drawFreightShelf(c,f,shadow){
+ const px=f.x*TILE,py=f.y*TILE,w=f.w*TILE,h=f.h*TILE;
+ c.save();c.translate(px,py);c.imageSmoothingEnabled=false;
+ if(shadow){c.fillStyle='rgba(4,9,14,.23)';c.fillRect(5,h-5,w-5,10);}
+ c.fillStyle='#26343a';c.fillRect(1,-17,w-2,h+16);c.fillStyle='#17262c';c.fillRect(5,-13,w-10,h+8);
+ const cols=Math.max(1,Math.round(f.w)),cw=(w-12)/cols;
+ for(let row=0;row<2;row++)for(let col=0;col<cols;col++){
+  const bx=Math.round(7+col*cw),by=-11+row*27,bw=Math.floor(cw-5),bh=21;
+  c.fillStyle=(col+row)%2?'#876c50':'#a18460';c.fillRect(bx,by,bw,bh);
+  c.fillStyle='#b49870';c.fillRect(bx,by,bw,3);c.fillStyle='#604e3c';c.fillRect(bx+bw-3,by+3,3,bh-3);
+  c.fillStyle='#c4b48b';c.fillRect(bx+Math.floor(bw*.48),by+1,4,bh-2);
+  c.fillStyle='#d1c7ac';c.fillRect(bx+4,by+9,8,5);c.fillStyle='#736955';c.fillRect(bx+5,by+11,5,1);
+ }
+ for(const y of [-17,13,h-6]){c.fillStyle='#536064';c.fillRect(0,y,w,4);c.fillStyle='#78817d';c.fillRect(0,y,w,1);}
+ for(const bx of [0,w-4]){c.fillStyle='#536064';c.fillRect(bx,-17,4,h+17);c.fillStyle='#8a938b';c.fillRect(bx,-13,2,2);c.fillRect(bx,17,2,2);}
+ c.restore();return true;
+}
 function refreshPropArt(){
  if(!propArtDirty||!S||!mapC)return;
  // An atlas arriving after departure replaces both floor caches in one repaint.
  // No world update, randomness, collision or lighting computation is involved.
  const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;propArtDirty=false;}finally{setLayer(layer);}
+}
+// Quiet, authored environmental art baked with each floor. These marks never
+// act as UI, colliders or additional interaction targets.
+function drawEpisodeDressing(c,fl,x0,y0,x1,y1){
+ for(const d of STAGE.dressing||[]){
+  if((d.fl||0)!==fl||d.x+d.w<x0||d.x>x1+1||d.y+d.h<y0||d.y>y1+1)continue;
+  const px=Math.round(d.x*TILE),py=Math.round(d.y*TILE),w=Math.round(d.w*TILE),h=Math.round(d.h*TILE);
+  c.save();c.imageSmoothingEnabled=false;
+  if(d.kind==='bay'){
+   c.strokeStyle='rgba(190,165,105,.36)';c.lineWidth=2;c.strokeRect(px,py,w,h);
+   for(const [a,b]of [[px,py],[px+w-14,py],[px,py+h-4],[px+w-14,py+h-4]]){c.fillStyle='rgba(190,165,105,.48)';c.fillRect(a,b,14,4);}
+   c.fillStyle='rgba(210,197,157,.32)';c.font=uiFont(14);c.textAlign='center';c.fillText(d.text||'',px+w/2,py+h-9);
+  }else if(d.kind==='board'){
+   c.fillStyle='#111b23';c.fillRect(px+2,py+3,w,h);c.fillStyle='#59656a';c.fillRect(px,py,w,h);c.fillStyle='#23323a';c.fillRect(px+3,py+3,w-6,h-6);
+   c.fillStyle='#bcbaad';c.font=uiFont(10);c.textAlign='left';c.fillText(d.text||'배차 현황',px+7,py+13);
+   for(let r=0;r<2;r++)for(let k=0;k<5;k++){c.fillStyle=k===0?'#ad8e61':'#738382';c.fillRect(px+8+k*(w-16)/5,py+19+r*7,(w-26)/5,3);}
+   c.fillStyle='#87908a';c.fillRect(px+2,py+2,2,2);c.fillRect(px+w-4,py+2,2,2);
+  }
+  c.restore();
+ }
 }
 function switchArtNormal(l){
  const p=l.control;
@@ -8258,6 +8320,15 @@ function openingGoal(){
   return{...at,g,marker:'운반책',text:'운반책 처치',where:tutText(hint)};
 }
 function updateOpeningContract(){
+  if(STAGE.firstSteps&&STAGE.storyEpisode){
+    const P=S.player,g=npc('dispatchClerk');
+    // A real observer accepts ordinary permitted passage. Never manufacture a
+    // successful disguise while he is investigating crime or sees illegal work.
+    if(!S.openingPass&&g?.rawSeen&&!g.seen&&g.state==='PATROL'&&flOf(P)===flOf(g)&&P.outfit==='crew'&&!P.disguiseBlown&&!actionBusy()&&!P.carrying&&!P.captive){
+      S.openingPass=true;S.cpWant=true;gsay(g,'또 야근이야? 위층 서류만 가져가.',2.8);
+    }
+    return;
+  }
   if(!STAGE.openingContract)return;
   const guard=npc('patrol');
   if(guard?.why==='heard'&&['SUSPICIOUS','NOTICE','CHECK','LURE'].includes(guard.state))S.openingLured=true;
@@ -15240,16 +15311,16 @@ function startAmb() {
 
 // An in-world voice gives one useful next action. It never pauses or gates play.
 const OPENING_RADIO=[
- '제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
+ '연락책 제비가 사라졌습니다. 오른쪽 골목부터 살펴보세요.',
  '몸을 낮추면 덜 보인다. 양복은 나중에 털지.',
- '경비도 앞만 봅니다. 조용히 등 뒤로 붙으세요.',
+ '저 친구는 출입문만 보는군요. 등 뒤 자리, 비었습니다.',
  '살려 두자. 공격은 짧게, 길게 누르면 죽는다.',
  '옷 좀 빌리자. 갈아입는 동안엔 가만히.',
  '경비는 왼쪽 풀숲에. 퇴근한 줄 알겠죠.',
- '배차실 문으로 들어가서 계단. 서류는 2층이다.',
- '이 책상이군. 챙기는 동안 손은 가만히.',
- '좋습니다. 같은 계단으로 1층에 내려오세요.',
- '서류도 챙겼고… 동쪽 골목의 차로 가자.'
+ '옷도 빌렸고 흔적도 지웠다. 배차실 문으로 들어가서 2층으로.',
+ '제비 필체다. 서류부터 챙기자. 빈손으로 야근할 순 없지.',
+ '박인호… 금성 운송 2층. 좋아요. 우선 계단으로 내려오세요.',
+ '첫 야근 끝. 동쪽 골목으로 나가자.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
@@ -15260,8 +15331,9 @@ function episodeRadioMessage(){
  if(P.captive)return P.captive.target?{text:'표적을 붙잡았군요. 이번 의뢰는 처치입니다. 공격을 1초 길게 누르세요. 짧게 누르면 기절합니다.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'붙잡았군요. 짧게 공격하면 기절시킬 수 있습니다. 그 뒤 옷을 얻으세요.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0;
-  const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  return{text,speaker:[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying),action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
+  const passed=i===6&&S.openingPass;
+  const text=P.hide?'잘 숨었습니다. 다시 나와 서류를 찾읍시다.':i===4&&P.carrying?'몸을 내려놓아야 옷을 입을 수 있습니다. 먼저 행동으로 내려놓으세요.':passed?'통했군요. 평범하게 지나가면 됩니다. 서류 작업은 위층에서 조용히.':OPENING_RADIO[i]||OPENING_RADIO[9];
+  return{text,speaker:passed?'master':[1,3,4,6,7,9].includes(i)?'hero':'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
  let text='한 가지씩 처리합시다. 지금은 '+goal.text.replace(/\{[^}]*\}/g,'')+'부터입니다.';
  if(goal.exit||S.exitOpen)text='할 일은 끝났습니다. 더 싸울 필요 없습니다. 표시된 골목으로 빠져나오세요.';

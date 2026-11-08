@@ -12,7 +12,30 @@ class CompoundControls:
  async def shot(self,label):await self.c.record(label);await self.q.screenshot(path=str(self.out/f'{self.name}-{label}.png'))
  async def walk(self,x,y):
   # A four-neighbour path avoids the controller cutting across a diagonal furniture corner.
-  path=await self.q.evaluate('''({x,y})=>{const G=__game,P=G.S.player,sol=G.solidFor(P.z),start=[Math.floor(P.x/48),Math.floor(P.y/48)],end=[Math.floor(x/48),Math.floor(y/48)],q=[start],prev=new Map([[start.join(','),null]]);for(let i=0;i<q.length;i++){const p=q[i];if(p[0]===end[0]&&p[1]===end[1])break;for(const [dx,dy] of [[1,0],[0,1],[-1,0],[0,-1]]){const a=[p[0]+dx,p[1]+dy],k=a.join(',');if(a[0]<0||a[1]<0||a[0]>=G.MW||a[1]>=G.MH||prev.has(k)||sol(...a))continue;prev.set(k,p);q.push(a)}}let p=end,out=[];if(!prev.has(p.join(',')))throw Error('No walking route '+start+' -> '+end+' floor '+P.fl+' z'+P.z);while(p){out.push({x:p[0]*48+24,y:p[1]*48+24});p=prev.get(p.join(','))}return out.reverse()}''',{'x':x,'y':y})
+  path=await self.q.evaluate('''({x,y})=>{
+   const G=__game,P=G.S.player,base=G.solidFor(P.z),blocked=new Set(),key=(x,y)=>y*G.MW+x;
+   // Stair flights are directed level transitions, not ordinary corridor cells.
+   // Approach their landings normally and use the actual action to change floor.
+   if(!P.z)for(const l of G.S.ladders){
+    if(!['fstair','stair'].includes(l.kind))continue;
+    if((l.bfl||0)===(P.fl||0))blocked.add(key(l.tx,l.ty));
+    if(l.kind==='fstair'&&l.tfl===(P.fl||0)){
+     const w=G.stairUpper(l).well;
+     if(w)for(const p of [w.c1,w.c2])blocked.add(key(Math.floor(p.x/48),Math.floor(p.y/48)));
+    }
+   }
+   const start=[Math.floor(P.x/48),Math.floor(P.y/48)],end=[Math.floor(x/48),Math.floor(y/48)],q=[start],prev=new Map([[start.join(','),null]]);
+   for(let i=0;i<q.length;i++){
+    const p=q[i];if(p[0]===end[0]&&p[1]===end[1])break;
+    for(const [dx,dy]of [[1,0],[0,1],[-1,0],[0,-1]]){
+     const a=[p[0]+dx,p[1]+dy],k=a.join(',');
+     if(a[0]<0||a[1]<0||a[0]>=G.MW||a[1]>=G.MH||prev.has(k)||base(...a)||blocked.has(key(...a))&&key(...a)!==key(...end))continue;
+     prev.set(k,p);q.push(a);
+    }
+   }
+   let p=end,out=[];if(!prev.has(p.join(',')))throw Error('No walking route '+start+' -> '+end+' floor '+P.fl+' z'+P.z);
+   while(p){out.push({x:p[0]*48+24,y:p[1]*48+24});p=prev.get(p.join(','))}return out.reverse();
+  }''',{'x':x,'y':y})
   # Straight portions can be walked in one gesture; stop at every turn.
   turns=[]
   for i,p in enumerate(path):

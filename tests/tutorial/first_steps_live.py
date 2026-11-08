@@ -40,7 +40,7 @@ async def main(args):
                 };
             }''')
             async def state():
-                return await page.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI||0,x:P.x,y:P.y,goal:(()=>{const g=G.nextGoal();return g&&Object.fromEntries(['text','where','x','y','fl','tut','moveCue'].map(k=>[k,g[k]]))})(),radio:document.getElementById('episodeRadio').innerText,mode:P.mode,hidden:P.hidden,over:S.over,t:S.t,hp:P.hp,whistle:S.lessonWhistle,stats:S.stats}}''')
+                return await page.evaluate('''()=>{const G=__game,S=G.S,P=S.player;return{stage:G.STAGE.id,step:S.tutI||0,x:P.x,y:P.y,goal:(()=>{const g=G.nextGoal();return g&&Object.fromEntries(['text','where','x','y','fl','tut','moveCue'].map(k=>[k,g[k]]))})(),radio:document.getElementById('episodeRadio').innerText,mode:P.mode,hidden:P.hidden,over:S.over,t:S.t,hp:P.hp,whistle:S.lessonWhistle,uniformPass:!!S.openingPass,stats:S.stats}}''')
             async def snapshot(label,marker=False):
                 s=await state()
                 if marker:
@@ -104,6 +104,7 @@ async def main(args):
                 for point in points:
                     if await page.evaluate('(()=>{const a=__game.envAction();return a.k==="door"&&a.d.locked})()'):await press('x','#btnCarry');await page.wait_for_function('!__game.actionBusy()')
                     await move(x=point['x'],y=point['y'])
+                    if await page.evaluate('!!__game.S.openingPass') and not any(r['label']=='uniform-accepted' for r in rows):await snapshot('uniform-accepted')
                     if await page.evaluate('__game.S.player.fl||0')!=floor:break
             async def wait_step(target):
                 await page.wait_for_function('n=>__game.S.tutI>=n',arg=target,timeout=6000,polling=50)
@@ -132,6 +133,7 @@ async def main(args):
                 await wait_step(4);await press('x','#btnCarry');await page.wait_for_function('__game.S.player.outfit==="crew"&&!__game.actionBusy()',timeout=7000);await snapshot('stolen-uniform');await wait_step(5);await press('x','#btnCarry');await page.wait_for_function('!!__game.S.player.carrying&&!__game.actionBusy()',timeout=6000)
                 await move(x=360,y=504);await press('x','#btnCarry');await page.wait_for_function('__game.S.corpses[0].hidden&&!__game.actionBusy()',timeout=6000)
                 await wait_step(6);await snapshot('body-hidden')
+                await press('Control','#btnCrouch')  # Ordinary permitted walking must work in front of the clerk.
                 stairs=await page.evaluate('__game.S.lessonLayout')
                 await route(stairs['up']['x'],stairs['up']['y'])
                 if not await page.evaluate('__game.S.player.fl||0'):await press('x','#btnCarry')
@@ -143,7 +145,7 @@ async def main(args):
                 await page.wait_for_function('!__game.S.player.fl&&!__game.actionBusy()',timeout=6000);await wait_step(9)
                 await route(1416,744)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
-                s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0,s
+                s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0 and s['uniformPass'],s
                 assert await page.evaluate('__game.skillSpent(__game.loadSkillTree())===0'),'first stage forces a purchase'
                 await continue_episode(page)
                 await page.wait_for_function('__game.STAGE.id==="p0"')

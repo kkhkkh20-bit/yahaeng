@@ -1,10 +1,10 @@
 // A small Korean freight depot: every lesson action advances the same infiltration.
 const FIRST_STEPS = {
- id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
+ id:'tB',no:'00',name:'닫힌 배차실',sub:'첫 번째 밤 · 대성 물류',layoutRevision:214,storyEpisode:true,episodeLesson:true,tutorial:true,firstSteps:true,lessonLoot:true,physicalWorld:true,
  noSupport:true,noAmbientChats:true,noRefine:true,floors:true,pspd:1.25,gspd:.8,residents:0,
  mission:'야간 배차실 2층에서 연락 서류를 회수하고 동쪽 골목으로 빠져나온다.',
- brief:'연락책이 사라졌다. 마지막으로 남긴 서류는 대성 물류 배차실 2층에 있다. 까마귀가 무전으로 길을 봐 준다. 상자 뒤를 지키는 경비의 옷을 이용하면 직원처럼 들어갈 수 있다. 서류를 확보하면 동쪽 골목으로 빠져나온다.',
- endText:'까마귀: 서류 확인했습니다. 사라진 연락책이 운반책 한 명을 지목했군요. 다음 밤에는 그를 찾아갑시다. 기술 포인트 1P는 다음 출발 전에 사용하거나 모아 둘 수 있습니다.',
+ brief:'연락책 제비가 마지막으로 남긴 말은 “야간 배차실”. 경비를 조용히 재우고, 옷을 빌리고, 흔적을 숨긴다. 직원처럼 문을 통과해 2층 책상의 연락 서류를 가져오자. 까마귀가 골목을 봐 준다.',
+ endText:'까마귀: 첫 야근 치고 깔끔하군요. 제비가 남긴 이름은 박인호. 금성 운송 2층에서 증인을 넘길 전화를 기다린답니다. 이번에는 그 전화를 끊으러 갑시다. 다음 출발 전에 1P를 배우거나 모아 둘 수 있습니다.',
  W:34,H:23,start:[2,10],exit:[29,15],exitName:'동쪽 골목',startA:0,well:'manhole',bare:true,ownedLoadout:true,
  kunai:0,coins:0,wires:[],roofs:[],bricks:[],challenges:[],
  industrialBuildings:[0,2],
@@ -19,9 +19,14 @@ const FIRST_STEPS = {
   m.many('T',[[4,7],[12,3],[30,3],[31,12],[2,18],[28,20]]);m.many('H',[[22,11]]);
  },
  lamps:[[3,7,130,1],[10,9,240,1],[30,13,230,1],[6,7,300,1],[19,9,210,0]],
- guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false}],
+ guards:[{kind:'g1',tag:'practice',at:[10,10],post:0,still:true,radio:false},
+  {kind:'g1',tag:'dispatchClerk',at:[16,12],post:0,still:true,radio:false}],
  zones:[[0,0,33,22,'pub',null,'물류 골목',[]],[14,3,24,14,'res',null,'배차실 · 직원만',['crew']]],zoneAllow:['crew'],
- fixedFurn:[],
+ // A dispatch depot stores parcels, not the grocery fridges of the base shop.
+ roomPatches:[{fl:0,bounds:[15,4,20,12],furniture:[{t:'fridge',from:[15,4],remove:true},{t:'fridge',from:[16,4],remove:true}],tiles:[[15,4,'t'],[16,4,'t']]}],
+ fixedFurn:[{x:15,y:4,t:'boxes',w:2},{x:19,y:4,t:'locker'},
+  ...[6,8,10].map(y=>({x:16,y,t:'shelf',w:3,skin:'freight'}))],
+ dressing:[{kind:'board',x:17.2,y:3.15,w:2.8,h:.8,text:'야간 배차',fl:1},{kind:'bay',x:5.7,y:8.7,w:3.6,h:1.6,text:'적재'},{kind:'bay',x:26.5,y:2.7,w:4.5,h:3.6,text:'02'}],
  items:[{b:1,fl:1,at:'R'}],itemName:'연락 서류',itemNames:['연락 서류'],itemPlaces:['배차실 2층 · 책상'],itemActions:[{kind:'recovery',duration:1.2}],nextTutorial:null,
  steps:[
   ['{이동} 오른쪽 표시로 접근',(S,P)=>Math.hypot(P.x-216,P.y-504)<24,()=>({x:216,y:504}),'까마귀가 길을 보고 있다. 서류는 배차실 2층에 있다.','move'],

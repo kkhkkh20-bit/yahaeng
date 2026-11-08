@@ -14,6 +14,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
  const a=propArtFrame(it);if(!a||!propAtlas.complete||!propAtlas.naturalWidth)return false;
  const px=it.x*TILE,py=it.y*TILE,w=it.w*TILE,h=it.h*TILE,sx=it.w/a.footprint[0],sy=it.h/a.footprint[1];
  x.save();x.imageSmoothingEnabled=false;
@@ -24,11 +25,50 @@ function drawPropFurn(x,it,shadow=false){
  if(it.t==='shelf'&&BLD[bldAt(it.x,it.y)]?.name==='약국')drawPharmacyStock(x,it);
  x.restore();return true;
 }
+// Original pixel parcel rack: the shelf footprint and cover stay unchanged.
+// Storage no longer borrows the shop's colourful book/grocery display.
+function drawFreightShelf(c,f,shadow){
+ const px=f.x*TILE,py=f.y*TILE,w=f.w*TILE,h=f.h*TILE;
+ c.save();c.translate(px,py);c.imageSmoothingEnabled=false;
+ if(shadow){c.fillStyle='rgba(4,9,14,.23)';c.fillRect(5,h-5,w-5,10);}
+ c.fillStyle='#26343a';c.fillRect(1,-17,w-2,h+16);c.fillStyle='#17262c';c.fillRect(5,-13,w-10,h+8);
+ const cols=Math.max(1,Math.round(f.w)),cw=(w-12)/cols;
+ for(let row=0;row<2;row++)for(let col=0;col<cols;col++){
+  const bx=Math.round(7+col*cw),by=-11+row*27,bw=Math.floor(cw-5),bh=21;
+  c.fillStyle=(col+row)%2?'#876c50':'#a18460';c.fillRect(bx,by,bw,bh);
+  c.fillStyle='#b49870';c.fillRect(bx,by,bw,3);c.fillStyle='#604e3c';c.fillRect(bx+bw-3,by+3,3,bh-3);
+  c.fillStyle='#c4b48b';c.fillRect(bx+Math.floor(bw*.48),by+1,4,bh-2);
+  c.fillStyle='#d1c7ac';c.fillRect(bx+4,by+9,8,5);c.fillStyle='#736955';c.fillRect(bx+5,by+11,5,1);
+ }
+ for(const y of [-17,13,h-6]){c.fillStyle='#536064';c.fillRect(0,y,w,4);c.fillStyle='#78817d';c.fillRect(0,y,w,1);}
+ for(const bx of [0,w-4]){c.fillStyle='#536064';c.fillRect(bx,-17,4,h+17);c.fillStyle='#8a938b';c.fillRect(bx,-13,2,2);c.fillRect(bx,17,2,2);}
+ c.restore();return true;
+}
 function refreshPropArt(){
  if(!propArtDirty||!S||!mapC)return;
  // An atlas arriving after departure replaces both floor caches in one repaint.
  // No world update, randomness, collision or lighting computation is involved.
  const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;propArtDirty=false;}finally{setLayer(layer);}
+}
+// Quiet, authored environmental art baked with each floor. These marks never
+// act as UI, colliders or additional interaction targets.
+function drawEpisodeDressing(c,fl,x0,y0,x1,y1){
+ for(const d of STAGE.dressing||[]){
+  if((d.fl||0)!==fl||d.x+d.w<x0||d.x>x1+1||d.y+d.h<y0||d.y>y1+1)continue;
+  const px=Math.round(d.x*TILE),py=Math.round(d.y*TILE),w=Math.round(d.w*TILE),h=Math.round(d.h*TILE);
+  c.save();c.imageSmoothingEnabled=false;
+  if(d.kind==='bay'){
+   c.strokeStyle='rgba(190,165,105,.36)';c.lineWidth=2;c.strokeRect(px,py,w,h);
+   for(const [a,b]of [[px,py],[px+w-14,py],[px,py+h-4],[px+w-14,py+h-4]]){c.fillStyle='rgba(190,165,105,.48)';c.fillRect(a,b,14,4);}
+   c.fillStyle='rgba(210,197,157,.32)';c.font=uiFont(14);c.textAlign='center';c.fillText(d.text||'',px+w/2,py+h-9);
+  }else if(d.kind==='board'){
+   c.fillStyle='#111b23';c.fillRect(px+2,py+3,w,h);c.fillStyle='#59656a';c.fillRect(px,py,w,h);c.fillStyle='#23323a';c.fillRect(px+3,py+3,w-6,h-6);
+   c.fillStyle='#bcbaad';c.font=uiFont(10);c.textAlign='left';c.fillText(d.text||'배차 현황',px+7,py+13);
+   for(let r=0;r<2;r++)for(let k=0;k<5;k++){c.fillStyle=k===0?'#ad8e61':'#738382';c.fillRect(px+8+k*(w-16)/5,py+19+r*7,(w-26)/5,3);}
+   c.fillStyle='#87908a';c.fillRect(px+2,py+2,2,2);c.fillRect(px+w-4,py+2,2,2);
+  }
+  c.restore();
+ }
 }
 function switchArtNormal(l){
  const p=l.control;
