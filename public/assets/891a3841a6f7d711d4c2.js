@@ -2690,8 +2690,9 @@ function freeCityDraw(c,name,x,y,scale=2){
 }
 function freeCityBuilding(b){return !!b&&!b.vacant&&!!STAGE.freeCityExteriors;}
 function cityBuildingStyle(b){
- if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return 'metal';
- if(b.glass||b.kind==='shop')return 'green';
+ if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return b.h>1?'office':'metal';
+ if(b.glass)return 'office';
+ if(b.kind==='shop')return (b.x0+b.y0)%2?'brick':'green';
  return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
 }
 function freeCityPattern(name){
@@ -2703,15 +2704,18 @@ function freeCityPattern(name){
  return freeCityPatterns[name]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
- if(!freeCityBuilding(b))return false;const style=cityBuildingStyle(b),name={metal:'wallMetal',brick:'wallBrick',green:'wallGreen',stone:'wallPanel'}[style],tile=freeCityPattern(freeCityArt?.frames[name]?name:'wallPanel');if(!tile)return false;
- c.save();c.translate(x,y);c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
- if(freeCityArt===A.dotonbori){
-  // Continuous cornice and pilasters: no repeated fake doors or lit panes.
-  c.save();c.beginPath();c.rect(0,0,w,h);c.clip();
-  for(let dx=0;dx<w;dx+=192)freeCityDraw(c,'cornice',dx,0);
-  for(const dx of [0,w-8])for(let dy=20;dy<h;dy+=44)freeCityDraw(c,'pilaster',dx,dy);
-  c.restore();
- }c.restore();return true;
+ if(!freeCityBuilding(b))return false;
+ const style=cityBuildingStyle(b),name={metal:'metalStorey',office:'slateStorey',brick:'brickStorey',green:'brickStorey',stone:'slateStorey'}[style];
+ const f=freeCityArt?.frames[name]?.rect;
+ if(f&&freeCityReady()){
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.imageSmoothingEnabled=false;
+  for(let yy=y;yy<y+h;yy+=TILE)for(let xx=x;xx<x+w;xx+=f[2]*1.5)c.drawImage(freeCityAtlas,...f,xx,yy,f[2]*1.5,TILE);
+  // Use the original continuous pier, rather than capping each floor tile.
+  const p=freeCityArt.frames.masonryPier?.rect;
+  if(p)for(const xx of [x,x+w-6])c.drawImage(freeCityAtlas,...p,xx,y,6,h);
+  c.restore();return true;
+ }
+ const tile=freeCityPattern('wallPanel');if(!tile)return false;c.save();c.translate(x,y);c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);c.restore();return true;
 }
 function paintFreeCityRoof(c,b,w,h){
  if(!freeCityBuilding(b)||!freeCityReady())return false;
@@ -2726,9 +2730,8 @@ function paintFreeCityRoof(c,b,w,h){
    for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
    c.restore();
   }
-  // Shallow panel joints and a recessed deck avoid a stretched striped slab.
+  // Keep the source roof surface continuous; no extra repeated cross-bands.
   c.save();c.fillStyle='rgba(38,50,57,.2)';c.fillRect(border,border,w-border*2,h-border*2);
-  for(let yy=border+96;yy<h-border;yy+=96){c.fillStyle='#202c3544';c.fillRect(border,yy,w-border*2,2);}
   c.restore();return true;
  }
  const tile=freeCityPattern('roofTile');if(!tile)return false;
@@ -2759,10 +2762,21 @@ function drawCityPlant(ch,tx,ty,near){
  }
  ctx.restore();return true;
 }
+function cityWallEdges(tx,ty){
+ const wall=(x,y)=>!!G0[y]&&'#NS'.includes(G0[y][x]||' ');
+ return{n:wall(tx,ty-1),s:wall(tx,ty+1),e:wall(tx+1,ty),w:wall(tx-1,ty)};
+}
 function cityBoundaryWall(c,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0)return false;
  const tile=freeCityPattern('wallPanel');if(!tile)return false;
- const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(x,y,TILE,TILE);c.fillStyle='#202b36';c.fillRect(x,y,TILE,8);c.fillStyle='#8d99a1';c.fillRect(x,y+2,TILE,3);c.fillStyle='#101a2788';c.fillRect(x,y+TILE-5,TILE,5);c.restore();return true;
+ const x=tx*TILE,y=ty*TILE,a=cityWallEdges(tx,ty);c.save();c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(x,y,TILE,TILE);
+ if(!a.n){c.fillStyle='#202b36';c.fillRect(x,y,TILE,8);c.fillStyle='#8d99a1';c.fillRect(x,y+2,TILE,3);}
+ if(!a.w&&(a.n||a.s)){c.fillStyle='#202b36';c.fillRect(x,y,7,TILE);c.fillStyle='#8d99a1';c.fillRect(x+2,y,3,TILE);}
+ if(!a.e&&(a.n||a.s)){c.fillStyle='#1d2b38';c.fillRect(x+TILE-6,y,6,TILE);c.fillStyle='#6f808e';c.fillRect(x+TILE-5,y,2,TILE);}
+ if(!a.s){c.fillStyle='#101a2788';c.fillRect(x,y+TILE-5,TILE,5);}
+ if(!a.e&&!a.n&&!a.s){c.fillStyle='#6f808e';c.fillRect(x+TILE-4,y+2,3,TILE-2);}
+ if(!a.w&&!a.n&&!a.s){c.fillStyle='#8d99a1';c.fillRect(x+1,y+2,3,TILE-2);}
+ c.restore();return true;
 }
 function refreshFreeCity(){
  if(!freeCityDirty||!S||!mapC)return;freeCityDirty=false;if(!STAGE.freeCityPilot&&!STAGE.freeCityExteriors)return;
@@ -2788,6 +2802,68 @@ function drawCityRoofProps(b){
  }
  ctx.drawImage(b.cityPropsC,b.x0*TILE,b.y0*TILE);
 }
+const cityWindowImages={};
+function cityWindowImage(name,w,lit){
+ const state=winSt(w),key=name+'|'+state+'|'+Number(lit);if(cityWindowImages[key])return cityWindowImages[key];
+ const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
+ const c=document.createElement('canvas');c.width=c.height=32;c.cityWindowFrame=name;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(freeCityAtlas,...f,0,0,32,32);
+ const box=name==='metalWindow'?[3,19,29,29]:name==='greenWindow'?[2,2,30,13]:[3,3,29,29],a=q.getImageData(0,0,32,32),p=a.data;
+ for(let y=box[1];y<box[3];y++)for(let x=box[0];x<box[2];x++){const i=(y*32+x)*4,r=p[i],g=p[i+1],b=p[i+2];if(b>r*1.2&&b>g*1.05){const v=(r+g+b)/3;if(lit){p[i]=Math.min(210,v*1.15);p[i+1]=Math.min(180,v);p[i+2]=Math.min(140,v*.72);}else{p[i]*=.7;p[i+1]*=.78;p[i+2]*=.86;}}}
+ q.putImageData(a,0,0);
+ if(state==='open'){const mid=Math.floor((box[0]+box[2])/2);q.fillStyle='#0c1722';q.fillRect(mid,box[1],box[2]-mid,box[3]-box[1]);q.fillStyle='#a1afb5';q.fillRect(mid-1,box[1],2,box[3]-box[1]);}
+ if(state==='bar'){q.strokeStyle='#182431';q.lineWidth=2;for(let x=box[0]+4;x<box[2]-1;x+=6){q.beginPath();q.moveTo(x,box[1]);q.lineTo(x,box[3]);q.stroke();}}
+ if(state==='lock'){q.fillStyle='#d0ad72';q.fillRect(15,Math.min(25,box[3]-4),3,3);}
+ return cityWindowImages[key]=c;
+}
+function drawCityWindow(c,b,w,fl){
+ const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
+ const im=cityWindowImage(name,w,w.roomFinish?roomFinishWindowLit(w):lightAt(w.x,w.y-12)>.45);if(!im)return false;
+ c.drawImage(im,w.tx*TILE,(b.y1-fl)*TILE,TILE,TILE);return true;
+}
+function cityExteriorEntries(b){
+ if(b.cityEntrySource===S.doors)return b.cityEntries;
+ const all=[];
+ for(const d of S.doors){
+  if(flOf(d)||d.gate||d.tx<b.x0||d.tx>b.x1||d.ty<b.y0||d.ty>b.y1)continue;
+  const nx=d.tx===b.x0?-1:d.tx===b.x1?1:0,ny=nx?0:d.ty===b.y0?-1:d.ty===b.y1?1:0;if(!nx&&!ny)continue;
+  all.push({d,nx,ny,along:nx?d.ty:d.tx});
+ }
+ const entries=[];
+ for(const a of all.sort((a,b)=>a.nx-b.nx||a.ny-b.ny||a.along-b.along)){
+  const old=entries.at(-1);if(old&&old.nx===a.nx&&old.ny===a.ny&&a.along===old.last+1){old.doors.push(a.d);old.last=a.along;}else entries.push({nx:a.nx,ny:a.ny,doors:[a.d],last:a.along});
+ }
+ for(const e of entries){e.x=e.doors.reduce((n,d)=>n+d.x,0)/e.doors.length;e.y=e.doors.reduce((n,d)=>n+d.y,0)/e.doors.length;e.wallX=e.nx<0?b.x0*TILE:e.nx>0?(b.x1+1)*TILE:e.x;e.wallY=e.ny<0?b.y0*TILE:e.ny>0?(b.y1+1)*TILE:e.y;}
+ b.cityEntrySource=S.doors;return b.cityEntries=entries;
+}
+function drawCityEntrances(b){
+ if(!freeCityBuilding(b)||!freeCityReady())return;
+ for(const e of cityExteriorEntries(b)){
+  if(!inView(e.x,e.y,140))continue;
+  const d=e.doors[0],open=doorVisualOpen(d),name=open>.5?'doorOpen':'doorClosed',side=!!e.nx;
+  if((side||e.ny<0)&&(S.player.z||flOf(S.player)))continue;
+  const count=e.doors.length,span=Math.max(TILE,count*TILE),x=side?e.wallX+(e.nx<0?-5:-29):e.x-span/2,y=side?e.y-34:e.ny<0?e.wallY-14:e.wallY-TILE;
+  const width=side?34:span,height=side?48:48;
+  ctx.save();ctx.imageSmoothingEnabled=false;
+  // A real aperture interrupts the opaque roof/side wall at the actual door cell.
+  if(side){ctx.fillStyle='#0c1621';ctx.fillRect(e.wallX+(e.nx<0?0:-26),e.y-span/2,26,span);}
+  ctx.fillStyle='#111c27';ctx.fillRect(x-3,y-3,width+6,height+4);const f=freeCityArt.frames[name]?.rect;
+  if(f)ctx.drawImage(freeCityAtlas,...f,x,y,width,height);
+  else{ctx.fillStyle=d.locked?'#65554b':'#111d28';ctx.fillRect(x+2,y+2,width-4,height-4);}
+  ctx.strokeStyle='#9da9ae';ctx.lineWidth=2;ctx.strokeRect(x-1,y-1,width+2,height+1);
+  if(d.locked){ctx.fillStyle='#d2ad70';ctx.fillRect(x+width-9,y+height*.58,5,7);}
+  const light=lightAt(e.x+e.nx*32,e.y+e.ny*32);ctx.fillStyle=`rgba(5,12,24,${.34*(1-clamp(light,0,1))})`;ctx.fillRect(x-3,y-3,width+6,height+4);
+  if(e.ny>0&&cityBuildingStyle(b)!=='metal'){const a=freeCityArt.frames[cityBuildingStyle(b)==='brick'?'awningGreen':'awningBlue']?.rect;if(a)ctx.drawImage(freeCityAtlas,...a,x-3,y-14,width+6,18);}
+  ctx.restore();
+ }
+}
+function drawCityEntryThresholds(){
+ if(tactical||S.player.z||flOf(S.player)||!freeCityReady())return;
+ for(const b of BLD){if(!freeCityBuilding(b))continue;for(const e of cityExteriorEntries(b)){
+  if(!inView(e.x,e.y,100))continue;const side=!!e.nx,span=e.doors.length*TILE;
+  const x=side?e.wallX+(e.nx<0?-24:1):e.x-span/2,y=side?e.y-span/2:e.wallY+(e.ny<0?-24:0),w=side?23:span,h=side?span:20;
+  ctx.fillStyle='#4c5965';ctx.fillRect(x,y,w,h);ctx.fillStyle='#9aa7ae';if(side)ctx.fillRect(x+(e.nx<0?3:w-5),y,2,h);else ctx.fillRect(x,y+h-4,w,2);
+ }}
+}
 function freeCityFront(b){
  return{windows:S.windows.filter(w=>!flOf(w)&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1),doors:S.doors.filter(d=>!flOf(d)&&d.ty===b.y1&&d.tx>=b.x0&&d.tx<=b.x1)};
 }
@@ -2796,10 +2872,11 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
  const front=freeCityFront(b),openings=front.windows.concat(front.doors),gateW=Math.min(w-88,192),gateX=x+Math.floor((w-gateW)/2),gateY=y+Math.max(18,h-62);
  c.save();c.imageSmoothingEnabled=false;
  for(const a of front.windows){
+  if(freeCityArt===A.dotonbori&&drawCityWindow(c,b,a,0))continue;
   freeCityDraw(c,'window',a.x-26,a.y-16);
   c.save();c.translate(a.x,a.y);paintWindow(a,lightAt(a.x,a.y)>.45,44,20);c.restore();
  }
- for(const d of front.doors){
+ if(freeCityArt!==A.dotonbori)for(const d of front.doors){
   if(!freeCityDraw(c,doorVisualOpen(d)>.5?'doorOpen':'doorClosed',d.tx*TILE,d.ty*TILE,2))blit(c,doorVisualOpen(d)>.5?'fDoorOpen':'fDoor',d.tx*TILE,d.ty*TILE,TILE,TILE);
   if(d.locked&&d.keyLock){c.fillStyle=keyCol(d.keyLock);c.fillRect(d.tx*TILE+19,d.ty*TILE+22,10,10);}
  }
@@ -2811,18 +2888,19 @@ function drawFreeDepotDetails(c,b,x,y,w,h){
    for(const a of S.fwindows||[]){
     if(a.fl<1||a.fl>=b.fh||a.ty!==b.y1||a.tx<b.x0||a.tx>b.x1)continue;
     setLayer(a.fl);const lit=lightAt(a.x,a.y-16)>.45,cy=(b.y1-a.fl)*TILE+28;
-    freeCityDraw(c,'upperWindow',a.x-26,cy-12);
-    c.save();c.translate(a.x,cy);paintWindow(a,lit,44,12);c.restore();
+    if(!drawCityWindow(c,b,a,a.fl)){freeCityDraw(c,'upperWindow',a.x-26,cy-12);c.save();c.translate(a.x,cy);paintWindow(a,lit,44,12);c.restore();}
    }
   }finally{setLayer(layer);}
  }
  // A shallow drip cap fits above real ground-floor openings, not across a storey.
- const top=openings.length?(freeCityArt===A.dotonbori?b.y1*TILE-8:y+28):gateY-20;
+ if(freeCityArt!==A.dotonbori){
+ const top=openings.length?b.y1*TILE-8:gateY-20;
  const left=openings.length?Math.min(...openings.map(a=>a.tx))*TILE-8:gateX;
  const right=openings.length?Math.max(...openings.map(a=>a.tx))*TILE+TILE+8:gateX+gateW;
  const capH=freeCityArt===A.dotonbori?12:36;
  c.save();c.beginPath();c.rect(left,top,right-left,capH);c.clip();for(let dx=left;dx<right;dx+=64)freeCityDraw(c,'awning',dx,top);c.restore();
  c.fillStyle='rgba(7,16,25,.24)';c.fillRect(left,top+capH,right-left,3);
+ }
  if(STAGE.freeCityPilot&&BLD.indexOf(b)===0)freeCityDraw(c,'vending',x+w-188,y+h-64);
  c.restore();
 }
@@ -4357,13 +4435,22 @@ function newGame(si) {
   // 문: 건물 테두리의 바닥 칸, 또는 양옆이 벽인 건물 안 바닥 칸
   S.doors = [];
   const wallish = v => v === '#' || v === 'N' || v === 'S';
-  BLD.forEach(b => {
+  BLD.forEach((b,bi) => {
     if (b.piloti || b.vacant) return;  // 주차장·공터·폐허 가장자리는 문이 아니다
+    const authored=new Set(),collect=(v,k='')=>{if(!v||typeof v!=='object')return;if(Array.isArray(v)&&/door|back|entry/i.test(k)&&v.length>=2&&Number.isFinite(v[0])&&Number.isFinite(v[1]))authored.add(v[0]+','+v[1]);else for(const [key,value]of Object.entries(v))collect(value,key);};
+    collect(PLANS[bi]?.[0]);for(const p of [...(STAGE.closedDoors||[]),...(STAGE.keyDoors||[]),...(STAGE.locks||[]).map(l=>l.at).filter(Boolean)])authored.add(p[0]+','+p[1]);
     for (let ty = b.y0; ty <= b.y1; ty++) for (let tx = b.x0; tx <= b.x1; tx++) {
       const ch = G[ty][tx]; if (SOLID.has(ch)) continue;
       const border = tx === b.x0 || tx === b.x1 || ty === b.y0 || ty === b.y1;
       const lr = wallish(G[ty][tx - 1]) && wallish(G[ty][tx + 1]), ud = wallish((G[ty - 1] || [])[tx]) && wallish((G[ty + 1] || [])[tx]);
       if (!border && !lr && !ud) continue;
+      if(!border&&!authored.has(tx+','+ty)){
+        // A one-cell-wide corridor is floor, not a row of swinging doors.
+        const [dx,dy]=lr?[0,1]:[1,0],walk=(x,y)=>inMap(x,y)&&!SOLID.has(G[y][x]);
+        if(!walk(tx+dx,ty+dy)||!walk(tx-dx,ty-dy))continue;
+        const narrow=(x,y)=>lr?wallish(G[y][x-1])&&wallish(G[y][x+1]):wallish((G[y-1]||[])[x])&&wallish((G[y+1]||[])[x]);
+        if(narrow(tx+dx,ty+dy)&&narrow(tx-dx,ty-dy))continue;
+      }
       if (S.doors.some(d => d.tx === tx && d.ty === ty)) continue;
       const horiz = (border && (ty === b.y0 || ty === b.y1)) || (!border && lr);
       S.doors.push({ tx, ty, x: tc(tx), y: tc(ty), orig: ch, locked: false, horiz });
@@ -5500,7 +5587,7 @@ function drawRoomFinishFacadeWindow(w,x,y){
 }
 function drawRoomFinishExterior(openB){
  const f=S.roomFinish;if(!f||openB===f.b)return;const b=BLD[f.b];
- if(!b?.facade||f.fl>=b.fh)return;
+ if(!b?.facade||f.fl>=b.fh||freeCityBuilding(b)&&freeCityReady())return;
  // Window-sight overlays contain the ground-floor plan. Upper-floor panes
  // stay on their facade row and retain their own room's electrical state.
  for(const w of S.fwindows||[])if(w.roomFinish&&w.ty===b.y1)
@@ -14062,7 +14149,7 @@ function drawRoofs(openB) {
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
   for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
-  for (const d of S.doors) { const b = bldAt(d.tx, d.ty); if (b >= 0 && b !== openB && !onFacade(d.tx, d.ty) && !BLD[b].plan) drawDoor(d, true); }
+  for (const d of S.doors) { const b = bldAt(d.tx, d.ty),v=BLD[b]; if (v && b !== openB && !onFacade(d.tx, d.ty) && !v.plan && !freeCityBuilding(v) && (d.tx===v.x0||d.tx===v.x1||d.ty===v.y0||d.ty===v.y1)) drawDoor(d, true); }
   for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
   for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
   for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
@@ -14099,6 +14186,7 @@ function drawRoof1(b, i, roof) {
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
     ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
+    drawCityEntrances(b);
   }
 }
 // 가스관과 2층 베란다 (정면 벽 위에 그린다)
@@ -14119,8 +14207,8 @@ function drawFacadeExtras(b, flat, kit) {
     return;
   }
   const top = (b.y1 - b.fh + 1) * TILE - 4, bot = (b.y1 + 1) * TILE + 6;
-  if (b.tint) { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgb(${b.tint})`; ctx.fillRect(b.x0 * TILE, top + 4, (b.x1 - b.x0 + 1) * TILE, bot - top - 10); ctx.globalCompositeOperation = 'source-over'; }
-  if (b.plate && b.kind !== 'shop' && b.fh >= 2) {  // 건물 이름판 (꼭대기 층 벽)
+  if (b.tint&&!freeCityBuilding(b)) { ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgb(${b.tint})`; ctx.fillRect(b.x0 * TILE, top + 4, (b.x1 - b.x0 + 1) * TILE, bot - top - 10); ctx.globalCompositeOperation = 'source-over'; }
+  if (b.plate && b.kind !== 'shop' && b.fh >= 2 && !freeCityBuilding(b)) {  // 건물 이름판 (꼭대기 층 벽)
     ctx.font = uiFont(15); const tw = ctx.measureText(b.plate).width + 18, cx = (b.x0 + b.x1 + 1) * TILE / 2, py = top + 8;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - tw / 2 + 3, py + 3, tw, 22);
     ctx.fillStyle = b.church ? '#5a1418' : '#23303a'; ctx.fillRect(cx - tw / 2, py, tw, 22);
@@ -14394,16 +14482,14 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 function drawCityFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
- for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#172330';ctx.fillRect(x,yy-3,w,5);ctx.fillStyle='#778693';ctx.fillRect(x,yy-3,w,1);}
  drawFreeDepotDetails(ctx,b,x,y,w,h);
- if(b.kind==='shop'&&b.signs?.length)drawShopSigns(b);
- else{
-  const text=b.plate||b.name||'야간 사무동',sw=Math.min(w-32,Math.max(80,text.length*10+20));
-  ctx.fillStyle='#1c2834';ctx.fillRect(x+16,y+5,sw,18);ctx.strokeStyle='#8a98a3';ctx.lineWidth=1;ctx.strokeRect(x+16.5,y+5.5,sw-1,17);
-  ctx.fillStyle='#dddcd1';ctx.font=uiFont(11,700);ctx.textAlign='left';ctx.fillText(text,x+24,y+18,sw-16);
- }
- for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.5*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
- ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-4,w,4);ctx.restore();
+ const text=(b.plate||b.name||'야간 사무동'),sw=Math.min(w-24,Math.max(84,text.length*9+18)),sy=y+2;
+ b.signRects=[];
+ ctx.fillStyle=cityBuildingStyle(b)==='brick'?'#633e31':'#253b4b';ctx.fillRect(x+10,sy,sw,14);ctx.strokeStyle='#a3aaa5';ctx.lineWidth=1;ctx.strokeRect(x+10.5,sy+.5,sw-1,13);
+ ctx.fillStyle='#e0dfd2';ctx.font=uiFont(10,700);ctx.textAlign='left';ctx.fillText(text,x+18,sy+11,sw-16);
+ for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#14233099';ctx.fillRect(x,yy-1,w,2);}
+ for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.45*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
+ ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-3,w,3);ctx.restore();
 }
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
@@ -15019,7 +15105,7 @@ function draw() {
   PM('map');
   // 화면 밖 것은 그리지 않는다 (큰 판은 창문·문만 수백 개)
   for (const w of S.windows) if (inView(w.x, w.y, 60)) drawWindow(w, 1);
-  for (const d of S.doors) if (inView(d.x, d.y, 60)) drawDoor(d, false);
+  for (const d of S.doors) if (inView(d.x,d.y,60)) {const b=bldAt(d.tx,d.ty);if(d.gate||b<0||b===openB||!freeCityBuilding(BLD[b])||!freeCityReady())drawDoor(d,false);}
   for (const l of S.ladders) if (l.kind === 'pipe' && l.bz === 0 && inView(l.x, l.y, 120)) drawPipeBase(l);
   for (const v of S.vents) if (!v.roof && inView(v.x, v.y, 40)) drawGrate(v, 0.85);
   for (const l of S.lamps) if (l.hearth && lampOn(l)) { const fl = 0.75 + 0.25 * Math.sin(S.t * 17 + l.x); ctx.fillStyle = `rgba(255,140,50,${0.85 * fl})`; ctx.beginPath(); ctx.moveTo(l.x - 9, l.y + 14); ctx.quadraticCurveTo(l.x - 6, l.y - 2 * fl, l.x, l.y - 8 * fl); ctx.quadraticCurveTo(l.x + 6, l.y - 2 * fl, l.x + 9, l.y + 14); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,220,120,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y + 9, 4 * fl, 0, TAU); ctx.fill(); }
@@ -15034,7 +15120,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawTrapsGround(); drawProps();
+  drawCityEntryThresholds();drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
@@ -17332,7 +17418,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
-    freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,
+    freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,

@@ -1,0 +1,44 @@
+[
+  {
+    "mobile": false,
+    "corridorDoors": 0,
+    "entries": [
+      {
+        "x": 888,
+        "y": 600,
+        "nx": -1,
+        "ny": 0
+      },
+      {
+        "x": 1176,
+        "y": 744,
+        "nx": 0,
+        "ny": 1
+      }
+    ],
+    "verticalCaps": 0,
+    "openClosed": true,
+    "thresholdBehindPlayer": true
+  },
+  {
+    "mobile": true,
+    "corridorDoors": 0,
+    "entries": [
+      {
+        "x": 888,
+        "y": 600,
+        "nx": -1,
+        "ny": 0
+      },
+      {
+        "x": 1176,
+        "y": 744,
+        "nx": 0,
+        "ny": 1
+      }
+    ],
+    "verticalCaps": 0,
+    "openClosed": true,
+    "thresholdBehindPlayer": true
+  }
+]

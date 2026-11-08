@@ -38,7 +38,7 @@ function draw() {
   PM('map');
   // 화면 밖 것은 그리지 않는다 (큰 판은 창문·문만 수백 개)
   for (const w of S.windows) if (inView(w.x, w.y, 60)) drawWindow(w, 1);
-  for (const d of S.doors) if (inView(d.x, d.y, 60)) drawDoor(d, false);
+  for (const d of S.doors) if (inView(d.x,d.y,60)) {const b=bldAt(d.tx,d.ty);if(d.gate||b<0||b===openB||!freeCityBuilding(BLD[b])||!freeCityReady())drawDoor(d,false);}
   for (const l of S.ladders) if (l.kind === 'pipe' && l.bz === 0 && inView(l.x, l.y, 120)) drawPipeBase(l);
   for (const v of S.vents) if (!v.roof && inView(v.x, v.y, 40)) drawGrate(v, 0.85);
   for (const l of S.lamps) if (l.hearth && lampOn(l)) { const fl = 0.75 + 0.25 * Math.sin(S.t * 17 + l.x); ctx.fillStyle = `rgba(255,140,50,${0.85 * fl})`; ctx.beginPath(); ctx.moveTo(l.x - 9, l.y + 14); ctx.quadraticCurveTo(l.x - 6, l.y - 2 * fl, l.x, l.y - 8 * fl); ctx.quadraticCurveTo(l.x + 6, l.y - 2 * fl, l.x + 9, l.y + 14); ctx.closePath(); ctx.fill(); ctx.fillStyle = 'rgba(255,220,120,.9)'; ctx.beginPath(); ctx.arc(l.x, l.y + 9, 4 * fl, 0, TAU); ctx.fill(); }
@@ -53,7 +53,7 @@ function draw() {
     ctx.strokeStyle = 'rgba(232,71,60,.7)'; ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(fx, fy, 40, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (showRoutes || tactical) drawRoutes(P);
-  drawTrapsGround(); drawProps();
+  drawCityEntryThresholds();drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);

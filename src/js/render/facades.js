@@ -135,16 +135,14 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 function drawCityFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
- for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#172330';ctx.fillRect(x,yy-3,w,5);ctx.fillStyle='#778693';ctx.fillRect(x,yy-3,w,1);}
  drawFreeDepotDetails(ctx,b,x,y,w,h);
- if(b.kind==='shop'&&b.signs?.length)drawShopSigns(b);
- else{
-  const text=b.plate||b.name||'야간 사무동',sw=Math.min(w-32,Math.max(80,text.length*10+20));
-  ctx.fillStyle='#1c2834';ctx.fillRect(x+16,y+5,sw,18);ctx.strokeStyle='#8a98a3';ctx.lineWidth=1;ctx.strokeRect(x+16.5,y+5.5,sw-1,17);
-  ctx.fillStyle='#dddcd1';ctx.font=uiFont(11,700);ctx.textAlign='left';ctx.fillText(text,x+24,y+18,sw-16);
- }
- for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.5*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
- ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-4,w,4);ctx.restore();
+ const text=(b.plate||b.name||'야간 사무동'),sw=Math.min(w-24,Math.max(84,text.length*9+18)),sy=y+2;
+ b.signRects=[];
+ ctx.fillStyle=cityBuildingStyle(b)==='brick'?'#633e31':'#253b4b';ctx.fillRect(x+10,sy,sw,14);ctx.strokeStyle='#a3aaa5';ctx.lineWidth=1;ctx.strokeRect(x+10.5,sy+.5,sw-1,13);
+ ctx.fillStyle='#e0dfd2';ctx.font=uiFont(10,700);ctx.textAlign='left';ctx.fillText(text,x+18,sy+11,sw-16);
+ for(let f=1;f<b.fh;f++){const yy=(b.y1-f+1)*TILE;ctx.fillStyle='#14233099';ctx.fillRect(x,yy-1,w,2);}
+ for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.45*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
+ ctx.fillStyle='#16212c';ctx.fillRect(x,y+h-3,w,3);ctx.restore();
 }
 function drawDepotFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
