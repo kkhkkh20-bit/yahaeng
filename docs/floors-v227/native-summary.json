@@ -1,0 +1,44 @@
+[
+  {
+    "device": "pc",
+    "passed": true,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 1,
+      "special": 0,
+      "ko": 2,
+      "dressed": 1,
+      "gotAs": "crew"
+    },
+    "method": "Native keyboard / touch, ordinary animation frame; known-map developer playback"
+  },
+  {
+    "device": "mobile",
+    "passed": true,
+    "hp": 3,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 1,
+      "special": 0,
+      "ko": 2,
+      "dressed": 1,
+      "gotAs": "crew"
+    },
+    "method": "Native keyboard / touch, ordinary animation frame; known-map developer playback"
+  }
+]
