@@ -524,37 +524,65 @@
       "rect": [
         464,
         132,
-        40,
-        28
+        32,
+        24
       ],
-      "source": "https://kenney.nl/assets/rpg-urban-pack",
-      "pack": "RPG Urban Pack 1.0",
-      "license": "CC0-1.0",
-      "assembly": "overlapping leaf-only crowns, no trunk",
-      "tiles": [
-        232,
-        259
-      ]
+      "sourceRect": [
+        712,
+        24,
+        752,
+        64
+      ],
+      "assembly": "low broad ivy-leaf ground cover, green leaf palette; no tree crown, trunk or pot"
     },
     "bush1": {
       "rect": [
         0,
         294,
-        40,
-        28
+        32,
+        24
       ],
-      "source": "https://kenney.nl/assets/rpg-urban-pack",
-      "pack": "RPG Urban Pack 1.0",
-      "license": "CC0-1.0",
-      "assembly": "overlapping leaf-only crowns, no trunk",
-      "tiles": [
-        232,
-        259
-      ]
+      "sourceRect": [
+        712,
+        24,
+        752,
+        64
+      ],
+      "assembly": "low broad ivy-leaf ground cover, green leaf palette; no tree crown, trunk or pot"
+    },
+    "cargoCrate0": {
+      "rect": [
+        34,
+        294,
+        24,
+        24
+      ],
+      "sourceRect": [
+        160,
+        0,
+        192,
+        64
+      ],
+      "assembly": "24x24 sealed cargo assembled from original wood slats; iron straps and label added"
+    },
+    "cargoCrate1": {
+      "rect": [
+        60,
+        294,
+        24,
+        24
+      ],
+      "sourceRect": [
+        160,
+        0,
+        192,
+        64
+      ],
+      "assembly": "24x24 sealed cargo assembled from original wood slats; iron straps and label added"
     },
     "grass": {
       "rect": [
-        42,
+        86,
         294,
         16,
         16
@@ -569,7 +597,7 @@
     },
     "grassAlt": {
       "rect": [
-        60,
+        104,
         294,
         16,
         16
@@ -584,7 +612,7 @@
     },
     "soil": {
       "rect": [
-        78,
+        122,
         294,
         16,
         16

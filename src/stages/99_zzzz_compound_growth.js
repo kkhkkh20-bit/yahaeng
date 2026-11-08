@@ -1,15 +1,15 @@
 // Five real jobs: repeat the core stealth loop, then add one new spatial problem.
 // Existing IDs/clear records remain; the former single-rule errands are optional archives.
-const COMPOUND_COMMON={layoutRevision:214,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
- W:34,H:24,start:[6,18],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
+const COMPOUND_COMMON={layoutRevision:223,compound:true,physicalWorld:true,storyEpisode:true,episodeLesson:false,tutorial:false,steps:undefined,
+ W:34,H:24,start:[6,20],exit:[3,19],exitName:'골목 철문 밖',startA:0,floors:true,
  bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,residents:0,rivals:0,
  kunai:0,coins:0,pspd:1.3,gspd:.8,radioCheck:0,securityResponse:false,
  floorTiles:[],camRoom:null,securityEvidence:false,cameraFocus:undefined,windowStates:[],wires:[],roofs:[],bricks:[],challenges:[],props:[],items:[],lootFurniture:['desk'],cams:[],keyItems:[],traps:[],fixedFurn:[],lampControls:[],
- zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,15,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
+ zones:[[0,0,33,23,'pub',null,'물류 골목',[]],[4,3,31,17,'res',null,'금성 운송 · 출입 통제',['crew']],[18,3,30,15,'res',null,'물류 거점 · 직원 구역',['crew']]],
  buildingNames:{0:'금성 운송 · 야간 사무동',1:'봉인된 적재 창고'},industrialBuildings:[0,1],
  build(m){
   m.fill(0,0,33,23,',');m.rect(0,0,33,23);m.fill(1,16,32,21,'.');m.fill(1,15,17,15,'=');
-  m.fill(5,3,17,14,'=');m.fill(3,2,32,2,'#');m.fill(3,2,3,16,'#');m.fill(32,2,32,16,'#');m.fill(3,16,12,16,'#');m.fill(15,16,32,16,'#');m.fill(9,9,10,10,'C');m.fill(4,8,4,10,'C');
+  m.fill(5,3,17,14,'=');m.fill(3,2,32,2,'#');m.fill(3,2,3,18,'#');m.fill(32,2,32,18,'#');m.fill(4,16,31,17,'=');m.fill(3,18,12,18,'#');m.fill(15,18,32,18,'#');m.fill(4,19,31,19,'=');m.fill(13,18,14,19,'=');m.fill(9,9,10,10,'C');m.fill(4,8,4,10,'C');
   m.bld(18,3,30,15,2,[[18,12],[24,15]],'h');m.set(28,12,'Y');
   m.many('B',[[7,11],[7,10],[2,8],[2,9],[12,13],[14,17],[31,17]]);
   m.bld(5,3,11,5,1,[],'h');

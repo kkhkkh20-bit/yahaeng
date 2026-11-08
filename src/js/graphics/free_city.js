@@ -66,8 +66,7 @@ function paintFreeCityRoof(c,b,w,h){
 }
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
- if(ch==='B')ch='d';
- if(ch==='T'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
+ if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
@@ -78,12 +77,17 @@ function drawCityPlant(ch,tx,ty,near){
  ctx.save();
  if(ch==='B'){
   const bs=S.bushShake,u=bs?(S.t-bs.t)/.5:1,shake=u>=0&&u<1&&Math.abs(bs.x-x)<30&&Math.abs(bs.y-y)<30?Math.sin(u*22.5)*3*(1-u):0;
-  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-16+shake,ty*TILE-18,2);
+  ctx.fillStyle='rgba(13,25,21,.32)';ctx.beginPath();ctx.ellipse(x,y+9,24,12,0,0,TAU);ctx.fill();
+  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
  }else{
   ctx.fillStyle='rgba(6,13,20,.27)';ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,TAU);ctx.fill();
   const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(ctx,name,x-24,y-78,3);
  }
  ctx.restore();return true;
+}
+function drawCityCargo(c,tx,ty){
+ if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
+ const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle='rgba(5,12,22,.28)';c.fillRect(x+4,y+5,44,43);const painted=freeCityDraw(c,'cargoCrate'+((tx+ty)%2),x,y,2);c.restore();return painted;
 }
 function cityWallEdges(tx,ty){
  const wall=(x,y)=>!!G0[y]&&'#NS'.includes(G0[y][x]||' ');

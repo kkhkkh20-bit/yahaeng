@@ -1,0 +1,44 @@
+[
+  {
+    "device": "pc",
+    "id": "tB",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  },
+  {
+    "device": "pc",
+    "id": "p0",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  },
+  {
+    "device": "pc",
+    "id": "p1",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  },
+  {
+    "device": "mobile",
+    "id": "tB",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  },
+  {
+    "device": "mobile",
+    "id": "p0",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  },
+  {
+    "device": "mobile",
+    "id": "p1",
+    "complete": true,
+    "hp": 3,
+    "detected": 0
+  }
+]

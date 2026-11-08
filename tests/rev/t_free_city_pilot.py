@@ -19,7 +19,7 @@ async def main():
     const before=logical();S.fade=0;G.moveCamera(1);G.updateHUD(true);G.benchDraw(3);ok(before===logical(),'drawing changes collision, actors, light switches or progress');
     const used=new Set(window.__gkDraws.map(a=>a.join(','))),wasUsed=(f,list=window.__gkDraws)=>{const [x,y,w,h]=f.rect;return list.some(([sx,sy,sw,sh])=>sx>=x&&sy>=y&&sx+sw<=x+w&&sy+sh<=y+h)};
     for(const name of ['roofTile','metalStorey','pavers','lampOn','vending','asphalt'])ok(wasUsed(art.frames[name]),'required exterior sprite never reaches canvas '+name);ok(wasUsed(art.frames.bush0)||wasUsed(art.frames.bush1),'new cover is never painted');
-    ok(Object.values(art.frames).length===40&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
+    ok(Object.values(art.frames).length===42&&art.source.includes('dotonbori-city-game-assets')&&art.sourceSha256==='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235','unexpected purchased source/unused subset');ok(!/undefined/.test(document.getElementById('episodeRadioText').textContent),'art boot broke guidance');
     // Scenery beyond the playable boundary has decorative windows. Within
     // the map, every storey window still corresponds to a physical opening.
     const upper=new Set(window.__upperFrames.filter(([x,y])=>x>=0&&y>=0&&x<G.MW*48&&y<G.MH*48).map(a=>a.join(','))),expected=[...S.windows,...S.fwindows].filter(w=>G.BLD.some(b=>(w.fl||0)<b.fh&&w.ty===b.y1&&w.tx>=b.x0&&w.tx<=b.x1));

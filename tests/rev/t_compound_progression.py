@@ -45,7 +45,7 @@ async def main():
    return out;
   }''')
   await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='p0'));G.S.layoutRevision=211;G.S.player.hp=2;G.saveCheckpoint();window.clearBefore=localStorage.getItem('yahaeng.ch');G.start(G.STAGES.findIndex(s=>s.id==='p0'),true)}")
-  await q.click('#btnBrCP');assert await q.evaluate("__game.S.layoutRevision===214&&__game.S.player.hp===3&&__game.S.guards.length===3&&localStorage.getItem('yahaeng.ch')===clearBefore"),'old layout checkpoint overrides new map or erases earned progress'
+  await q.click('#btnBrCP');assert await q.evaluate("__game.S.layoutRevision===223&&__game.S.player.hp===3&&__game.S.guards.length===3&&localStorage.getItem('yahaeng.ch')===clearBefore"),'old layout checkpoint overrides new map or erases earned progress'
   checks.append('old-layout Continue rebuilds the mission while preserving existing clear rewards')
   assert not errors,errors;await b.close();(O/'rules.json').write_text(json.dumps({'checks':checks,'errors':errors},ensure_ascii=False,indent=2));print('PASS compound progression',checks,flush=True)
 asyncio.run(main())
