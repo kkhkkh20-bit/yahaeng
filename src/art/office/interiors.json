@@ -1,0 +1,873 @@
+{
+  "pack": "GuttyKreum Office Interior v3",
+  "source": "https://guttykreum.itch.io/japanese-office-interior-game-assets",
+  "sourceSha256": "cb793dd0023f6450d85474988a3d058c30d7a9b06d6dc872244885e07126324c",
+  "sourceSize": [
+    2496,
+    928
+  ],
+  "frames": {
+    "floorOak": {
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        864,
+        96,
+        896,
+        128
+      ]
+    },
+    "floorCarpet": {
+      "rect": [
+        36,
+        0,
+        26,
+        26
+      ],
+      "sourceRect": [
+        864,
+        224,
+        896,
+        256
+      ],
+      "assembly": "continuous carpet centre, border excluded"
+    },
+    "floorParquet": {
+      "rect": [
+        66,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        864,
+        352,
+        896,
+        384
+      ]
+    },
+    "floorTile": {
+      "rect": [
+        102,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        864,
+        608,
+        896,
+        640
+      ]
+    },
+    "wallPanel": {
+      "rect": [
+        138,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        2144,
+        32,
+        2176,
+        64
+      ]
+    },
+    "wallWood": {
+      "rect": [
+        174,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        2112,
+        96,
+        2144,
+        128
+      ]
+    },
+    "wallPale": {
+      "rect": [
+        210,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        2176,
+        416,
+        2208,
+        448
+      ]
+    },
+    "deskComputer": {
+      "rect": [
+        246,
+        0,
+        29,
+        48
+      ],
+      "sourceRect": [
+        1504,
+        11,
+        1533,
+        59
+      ]
+    },
+    "deskGlass": {
+      "rect": [
+        279,
+        0,
+        64,
+        44
+      ],
+      "sourceRects": [
+        [
+          1600,
+          8,
+          1629,
+          34
+        ]
+      ],
+      "assembly": "source glass table and monitor; separate chair excluded"
+    },
+    "deskFiles": {
+      "rect": [
+        347,
+        0,
+        64,
+        44
+      ],
+      "sourceRects": [
+        [
+          1600,
+          8,
+          1629,
+          34
+        ],
+        [
+          1632,
+          16,
+          1661,
+          32
+        ]
+      ],
+      "assembly": "source glass table and monitor; separate chair excluded"
+    },
+    "deskLaptop": {
+      "rect": [
+        415,
+        0,
+        64,
+        44
+      ],
+      "sourceRects": [
+        [
+          1600,
+          8,
+          1629,
+          34
+        ],
+        [
+          1632,
+          16,
+          1661,
+          32
+        ]
+      ],
+      "assembly": "source glass table and monitor; separate chair excluded"
+    },
+    "deskWood": {
+      "rect": [
+        483,
+        0,
+        43,
+        31
+      ],
+      "sourceRect": [
+        1909,
+        65,
+        1952,
+        96
+      ]
+    },
+    "deskExecutive": {
+      "rect": [
+        530,
+        0,
+        43,
+        44
+      ],
+      "sourceRect": [
+        1909,
+        116,
+        1952,
+        160
+      ]
+    },
+    "deskSideE": {
+      "rect": [
+        577,
+        0,
+        29,
+        48
+      ],
+      "sourceRect": [
+        1824,
+        203,
+        1853,
+        251
+      ]
+    },
+    "deskSideW": {
+      "rect": [
+        610,
+        0,
+        29,
+        48
+      ],
+      "sourceRect": [
+        1859,
+        203,
+        1888,
+        251
+      ]
+    },
+    "tableGlass": {
+      "rect": [
+        643,
+        0,
+        64,
+        24
+      ],
+      "sourceRect": [
+        1504,
+        162,
+        1568,
+        186
+      ]
+    },
+    "tableRound": {
+      "rect": [
+        711,
+        0,
+        23,
+        19
+      ],
+      "sourceRect": [
+        1700,
+        205,
+        1723,
+        224
+      ]
+    },
+    "chairRed": {
+      "rect": [
+        738,
+        0,
+        32,
+        51
+      ],
+      "sourceRect": [
+        1760,
+        0,
+        1792,
+        51
+      ]
+    },
+    "chairRedE": {
+      "rect": [
+        774,
+        0,
+        30,
+        47
+      ],
+      "sourceRect": [
+        1794,
+        38,
+        1824,
+        85
+      ]
+    },
+    "chairRedW": {
+      "rect": [
+        808,
+        0,
+        30,
+        47
+      ],
+      "sourceRect": [
+        1728,
+        38,
+        1758,
+        85
+      ]
+    },
+    "chairRedBack": {
+      "rect": [
+        842,
+        0,
+        32,
+        40
+      ],
+      "sourceRect": [
+        1760,
+        77,
+        1792,
+        117
+      ]
+    },
+    "chairBlue": {
+      "rect": [
+        878,
+        0,
+        17,
+        27
+      ],
+      "sourceRect": [
+        1831,
+        449,
+        1848,
+        476
+      ]
+    },
+    "chairBlueE": {
+      "rect": [
+        899,
+        0,
+        16,
+        26
+      ],
+      "sourceRect": [
+        1865,
+        482,
+        1881,
+        508
+      ]
+    },
+    "chairBlueW": {
+      "rect": [
+        919,
+        0,
+        16,
+        26
+      ],
+      "sourceRect": [
+        1831,
+        482,
+        1847,
+        508
+      ]
+    },
+    "chairBlueBack": {
+      "rect": [
+        939,
+        0,
+        17,
+        23
+      ],
+      "sourceRect": [
+        1863,
+        452,
+        1880,
+        475
+      ]
+    },
+    "cabinetBlue": {
+      "rect": [
+        960,
+        0,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1734,
+        137,
+        1753,
+        186
+      ]
+    },
+    "cabinetWood": {
+      "rect": [
+        983,
+        0,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1766,
+        137,
+        1785,
+        186
+      ]
+    },
+    "cabinetRed": {
+      "rect": [
+        0,
+        55,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1798,
+        137,
+        1817,
+        186
+      ]
+    },
+    "filesBlue": {
+      "rect": [
+        23,
+        55,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1734,
+        201,
+        1753,
+        250
+      ]
+    },
+    "filesGold": {
+      "rect": [
+        46,
+        55,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1766,
+        201,
+        1785,
+        250
+      ]
+    },
+    "filesRed": {
+      "rect": [
+        69,
+        55,
+        19,
+        49
+      ],
+      "sourceRect": [
+        1798,
+        201,
+        1817,
+        250
+      ]
+    },
+    "monitorRack": {
+      "rect": [
+        92,
+        55,
+        64,
+        41
+      ],
+      "sourceRect": [
+        1824,
+        0,
+        1888,
+        41
+      ]
+    },
+    "monitorRackBlue": {
+      "rect": [
+        160,
+        55,
+        64,
+        41
+      ],
+      "sourceRect": [
+        1888,
+        0,
+        1952,
+        41
+      ]
+    },
+    "displayWood": {
+      "rect": [
+        228,
+        55,
+        32,
+        36
+      ],
+      "sourceRect": [
+        1728,
+        284,
+        1760,
+        320
+      ]
+    },
+    "displayGlass": {
+      "rect": [
+        264,
+        55,
+        32,
+        52
+      ],
+      "sourceRect": [
+        1760,
+        268,
+        1792,
+        320
+      ]
+    },
+    "counterWood": {
+      "rect": [
+        300,
+        55,
+        64,
+        36
+      ],
+      "sourceRect": [
+        1792,
+        284,
+        1856,
+        320
+      ]
+    },
+    "counterGlass": {
+      "rect": [
+        368,
+        55,
+        64,
+        52
+      ],
+      "sourceRect": [
+        1856,
+        268,
+        1920,
+        320
+      ]
+    },
+    "plant": {
+      "rect": [
+        436,
+        55,
+        24,
+        41
+      ],
+      "sourceRect": [
+        1827,
+        128,
+        1851,
+        169
+      ]
+    },
+    "plantBlue": {
+      "rect": [
+        464,
+        55,
+        24,
+        41
+      ],
+      "sourceRect": [
+        1860,
+        128,
+        1884,
+        169
+      ]
+    },
+    "printer": {
+      "rect": [
+        492,
+        55,
+        22,
+        30
+      ],
+      "sourceRect": [
+        1504,
+        84,
+        1526,
+        114
+      ]
+    },
+    "copier": {
+      "rect": [
+        518,
+        55,
+        31,
+        29
+      ],
+      "sourceRect": [
+        1569,
+        67,
+        1600,
+        96
+      ]
+    },
+    "waterCooler": {
+      "rect": [
+        553,
+        55,
+        15,
+        38
+      ],
+      "sourceRect": [
+        1961,
+        326,
+        1976,
+        364
+      ]
+    },
+    "coffee": {
+      "rect": [
+        572,
+        55,
+        15,
+        27
+      ],
+      "sourceRect": [
+        1481,
+        357,
+        1496,
+        384
+      ]
+    },
+    "phone": {
+      "rect": [
+        591,
+        55,
+        18,
+        17
+      ],
+      "sourceRect": [
+        1477,
+        32,
+        1495,
+        49
+      ]
+    },
+    "fax": {
+      "rect": [
+        613,
+        55,
+        23,
+        49
+      ],
+      "sourceRect": [
+        1504,
+        458,
+        1527,
+        507
+      ]
+    },
+    "board": {
+      "rect": [
+        640,
+        55,
+        44,
+        26
+      ],
+      "sourceRect": [
+        1930,
+        288,
+        1974,
+        314
+      ]
+    },
+    "graph": {
+      "rect": [
+        688,
+        55,
+        32,
+        34
+      ],
+      "sourceRect": [
+        1856,
+        331,
+        1888,
+        365
+      ]
+    },
+    "aircon": {
+      "rect": [
+        724,
+        55,
+        32,
+        34
+      ],
+      "sourceRect": [
+        1824,
+        331,
+        1856,
+        365
+      ]
+    },
+    "coatRack": {
+      "rect": [
+        760,
+        55,
+        56,
+        40
+      ],
+      "sourceRect": [
+        1892,
+        320,
+        1948,
+        360
+      ]
+    },
+    "parcel": {
+      "rect": [
+        820,
+        55,
+        21,
+        16
+      ],
+      "sourceRect": [
+        1959,
+        395,
+        1980,
+        411
+      ]
+    },
+    "briefcase": {
+      "rect": [
+        845,
+        55,
+        10,
+        6
+      ],
+      "sourceRect": [
+        1483,
+        480,
+        1493,
+        486
+      ]
+    },
+    "fluorescent": {
+      "rect": [
+        859,
+        55,
+        32,
+        24
+      ],
+      "sourceRect": [
+        2112,
+        360,
+        2144,
+        384
+      ]
+    },
+    "warmLamp": {
+      "rect": [
+        895,
+        55,
+        32,
+        24
+      ],
+      "sourceRect": [
+        2112,
+        328,
+        2144,
+        352
+      ]
+    },
+    "windowSource": {
+      "rect": [
+        931,
+        55,
+        32,
+        32
+      ],
+      "sourceRect": [
+        2272,
+        128,
+        2304,
+        160
+      ]
+    },
+    "lockerSteel": {
+      "rect": [
+        967,
+        55,
+        23,
+        33
+      ],
+      "sourceRect": [
+        1733,
+        326,
+        1756,
+        359
+      ]
+    },
+    "wardrobeWood": {
+      "rect": [
+        994,
+        55,
+        23,
+        31
+      ],
+      "sourceRect": [
+        1765,
+        328,
+        1788,
+        359
+      ]
+    },
+    "floorSlate": {
+      "rect": [
+        0,
+        111,
+        26,
+        26
+      ],
+      "derivedFrom": "floorCarpet",
+      "paletteMultiplier": [
+        0.65,
+        0.7,
+        0.78
+      ]
+    },
+    "floorWine": {
+      "rect": [
+        30,
+        111,
+        32,
+        32
+      ],
+      "derivedFrom": "floorParquet",
+      "paletteMultiplier": [
+        0.7,
+        0.58,
+        0.65
+      ]
+    },
+    "floorIvory": {
+      "rect": [
+        66,
+        111,
+        32,
+        32
+      ],
+      "derivedFrom": "floorTile",
+      "paletteMultiplier": [
+        1.12,
+        1.09,
+        1.02
+      ]
+    },
+    "windowFrame": {
+      "rect": [
+        102,
+        111,
+        32,
+        16
+      ],
+      "derivedFrom": "windowSource",
+      "assembly": "jambs with transparent stateful aperture"
+    }
+  },
+  "size": [
+    1024,
+    147
+  ]
+}

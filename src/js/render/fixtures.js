@@ -30,6 +30,7 @@ const winVert = w => {const g=GF[w.fl||0]||G0;return g[w.ty-1]?.[w.tx]==='#'||g[
 // 창문 (평면도): 벽에 난 창틀 + 미닫이 유리 두 짝 + 창턱. 방 불이 켜져 있으면 유리가 따뜻하게 빛난다
 // 실제 창짝·걸쇠·창살로 상태를 읽는다. 평면과 외벽은 같은 창문을 그린다.
 function paintWindow(w,lit,L=44,T=20) {
+  if(paintOfficeWindow(w,lit,L,T))return;
   const state=winSt(w),open=state==='open',left=-L/2,top=-T/2;
   ctx.fillStyle='#080e12';ctx.fillRect(left-2,top-1,L+4,T+4);
   ctx.fillStyle='#3b454d';ctx.fillRect(left,top,L,T);

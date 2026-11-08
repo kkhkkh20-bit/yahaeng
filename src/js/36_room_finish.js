@@ -48,13 +48,13 @@ function drawRoomFinishFurn(x,it){
 function roomFinishLamps(){const f=S?.roomFinish;return f?S.lamps.filter(l=>l.roomFinish&&flOf(l)===f.fl):[];}
 function roomFinishWindowLit(w){return !!w.roomFinish&&roomFinishLamps().some(l=>lampOn(l));}
 function drawRoomFinishWindow(w,alpha=1,ex=w.x,ey=w.y){
- if(!w.roomFinish||!S.roomFinish)return false;
+ if(officeReady()||!w.roomFinish||!S.roomFinish)return false;
  const b=BLD[S.roomFinish.b],nx=w.tx===b.x0?1:w.tx===b.x1?-1:0,ny=w.ty===b.y0?1:w.ty===b.y1?-1:0;
  const lit=roomFinishWindowLit(w),opened=winSt(w)==='open',r=roomArtRotation(nx,ny);
  return roomArtDraw(ctx,'window-'+Number(lit)+'-'+Number(opened)+'-'+r,ex,ey,alpha);
 }
 function drawRoomFinishFacadeWindow(w,x,y){
- if(!w.roomFinish||!S.roomFinish)return false;
+ if(officeReady()||!w.roomFinish||!S.roomFinish)return false;
  return roomArtDraw(ctx,'window-'+Number(roomFinishWindowLit(w))+'-'+Number(winSt(w)==='open')+'-0',x,y+10,1,.68);
 }
 function drawRoomFinishExterior(openB){
@@ -66,6 +66,7 @@ function drawRoomFinishExterior(openB){
   drawRoomFinishFacadeWindow(w,w.tx*TILE+24,(b.y1-f.fl)*TILE+24);
 }
 function drawRoomFinishFixtures(fl,building){
+ if(officeReady())return;
  const f=S.roomFinish;if(!f||f.fl!==fl||building>=0&&building!==f.b)return;
  const controls=new Set();
  for(const l of roomFinishLamps()){

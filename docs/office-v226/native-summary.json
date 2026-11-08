@@ -1,0 +1,141 @@
+{
+  "results": [
+    {
+      "stage": "tB",
+      "device": "pc",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      },
+      "seconds": 99.33550051428229,
+      "method": "Native keyboard/CDP touch, normal RAF/AI, no actor/health/clock overrides"
+    },
+    {
+      "stage": "p0",
+      "device": "pc",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 3,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "disguiseKill": true
+      },
+      "seconds": 117.44743499999726,
+      "method": "Native known-map replay, selected stage fixture, normal RAF/AI"
+    },
+    {
+      "stage": "e2",
+      "device": "pc",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "seconds": 108.63396066667615,
+      "method": "Native known-map replay, selected stage fixture, normal RAF/AI"
+    },
+    {
+      "stage": "tB",
+      "device": "mobile",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      },
+      "seconds": 131.8412646666683,
+      "method": "Native keyboard/CDP touch, normal RAF/AI, no actor/health/clock overrides"
+    },
+    {
+      "stage": "p0",
+      "device": "mobile",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 3,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "disguiseKill": true
+      },
+      "seconds": 109.96050600001172,
+      "method": "Native known-map replay, selected stage fixture, normal RAF/AI"
+    },
+    {
+      "stage": "e2",
+      "device": "mobile",
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "seconds": 104.53429200001123,
+      "method": "Native known-map replay, selected stage fixture, normal RAF/AI"
+    }
+  ],
+  "mobile": "Browser touch emulation, not a physical iPhone test"
+}

@@ -21,7 +21,8 @@ def game_js():
 def stages_js():
     return ''.join(read(m) for m in sorted(glob.glob(P('src', 'stages', '*.js'))))
 
-CREDIT = ("물류 지구 픽셀 외관: <a href=\"https://guttykreum.itch.io/dotonbori-city-game-assets\" target=\"_blank\" rel=\"noopener\">GuttyKreum · Dotonbori City</a> (정식 구매 · 게임 내 사용 · 별도 추출/재배포 금지) · "
+CREDIT = ("실내 픽셀 가구: <a href=\"https://guttykreum.itch.io/japanese-office-interior-game-assets\" target=\"_blank\" rel=\"noopener\">GuttyKreum · Office Interior</a> (정식 구매 · 게임 내 사용) · "
+"물류 지구 픽셀 외관: <a href=\"https://guttykreum.itch.io/dotonbori-city-game-assets\" target=\"_blank\" rel=\"noopener\">GuttyKreum · Dotonbori City</a> (정식 구매 · 게임 내 사용 · 별도 추출/재배포 금지) · "
 "첫 골목 픽셀 소재: <a href=\"https://guttykreum.itch.io/free-japanese-city-game-assets\" target=\"_blank\" rel=\"noopener\">GuttyKreum · Japanese City (Free Version)</a> (게임 내 사용 허가 · 별도 추출/재배포 금지) · "
 "시범 실내 모델: <a href=\"https://quaternius.com/packs/ultimatehomeinterior.html\" target=\"_blank\" rel=\"noopener\">Quaternius House Interior</a> · <a href=\"https://polyhaven.com/a/industrial_wall_lamp\" target=\"_blank\" rel=\"noopener\">Industrial Wall Lamp / Kuutti Siitonen, Poly Haven</a> (CC0) · "
 "HUD 아이콘: <a href=\"https://game-icons.net/\" target=\"_blank\" rel=\"noopener\">Lorc · Delapouite / Game-icons.net</a> (CC BY 3.0, 단색 적용) · "

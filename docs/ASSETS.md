@@ -20,3 +20,5 @@
 ## v202 접힌 복장과 서류
 
 `src/art/field-items/`의 재킷·앞치마·폴더·종이는 프로젝트에서 직접 만든 기하·재질을 구운 원본 에셋이다. 제작 소스는 `tools/prerender/field_items_scene.py`, 재생성은 Blender 4.3.2와 Pillow로 `python tools/prerender/bake_field_items.py` 실행. 2D WebP 4장 총 6,036바이트, 배포 시 Blender나 3D 실행 코드는 필요 없다. 외부 원본·유료 에셋·추가 라이선스 의무는 없다. 기존 캐릭터와 동일한 48px/m 투영 및 게임 조명을 따른다.
+
+- v226 공개 9개 의뢰의 실내 마감: 구매자가 제공한 [GuttyKreum Office Interior v3](https://guttykreum.itch.io/japanese-office-interior-game-assets)의 게임용 선택 아틀라스. 바닥·벽·창틀·업무 가구·수납장 문·조명 프레임을 2D로 사용한다. 원본 ZIP/전체 타일맵/Unity 패키지는 비공개이며 `tools/import_office_interiors.py`와 `src/art/office/interiors.json`에 출처 좌표와 해시를 기록했다. 전용 침대·주방·욕실·금고 및 야외 소재는 기존 팩을 함께 사용한다. 검수와 사용 조건은 `docs/office-v226/README.md`, `src/art/office/LICENSE.txt` 참고.

@@ -46,6 +46,10 @@
       "group": "graphics"
     },
     {
+      "path": "graphics/office_interiors.js",
+      "group": "graphics"
+    },
+    {
       "path": "graphics/effects.js",
       "group": "graphics"
     },

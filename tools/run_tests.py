@@ -30,7 +30,7 @@ FAST.append('t_disguise_passers')
 FAST.append('t_dawn_dispatch')
 FAST.extend(['t_free_city_pilot','t_world_art','t_building_finish','t_entry_courtyard'])
 FAST.extend(['t_window_peek_surface','t_light_presentation'])
-FAST.extend(['t_campaign_depth','t_campaign_variety'])
+FAST.extend(['t_campaign_depth','t_campaign_variety','t_office_campaign'])
 FAST.extend(['t_skill_preparation','t_assassination_rhythm','t_physical_interactions','t_hero_fluid_motion','t_action_flow'])
 if '--fast' in sys.argv: SUITE = [f for f in SUITE if os.path.basename(f)[:-3] in FAST]
 

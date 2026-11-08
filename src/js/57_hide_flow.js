@@ -39,6 +39,7 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
       c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
       c.beginPath();c.moveTo(hinge,g.doorTop);c.lineTo(edge,g.doorTop+depth);c.lineTo(edge,g.doorBottom+depth);c.lineTo(hinge,g.doorBottom);c.closePath();c.fill();c.stroke();
+      officeCabinetLeaf(c,g,hinge,side,projection,depth);
       const wide=Math.abs(projection),hx=edge-side*Math.min(5,wide*.25),hy=g.doorTop+(g.doorBottom-g.doorTop)*.78+depth;
       if(wide>9){
         const a=.12,b=.86,xa=hinge+side*projection*a,xb=hinge+side*projection*b;
@@ -279,13 +280,7 @@ function drawLitContainer(h,part='all') {
   }
   // Add the same lamp colour as the surrounding floor, then restore the fixture alpha.
   l.setTransform(1,0,0,1,-b.x,-b.y);l.globalCompositeOperation='lighter';
-  for(const lamp of S.lamps){
-    if(flOf(lamp)!==fl||!lampOn(lamp)||(!fl&&DBG.glow))continue;
-    const radius=lamp.r*.7;if(lamp.x+radius<b.x||lamp.x-radius>b.x+w||lamp.y+radius<b.y||lamp.y-radius>b.y+v)continue;
-    const neon=NEONY()||!!lamp.col,col=inkLampColor(lamp)||(fl?'255,186,105':NEONY()?(Math.round(lamp.x+lamp.y)%2?'255,60,170':'60,236,255'):'255,186,105');
-    const strength=fl?(lamp.col?.2:.08):(neon?.14:.07),gr=l.createRadialGradient(lamp.x,lamp.y,0,lamp.x,lamp.y,radius);
-    gr.addColorStop(0,`rgba(${col},${strength})`);gr.addColorStop(1,`rgba(${col},0)`);l.fillStyle=gr;l.beginPath();l.arc(lamp.x,lamp.y,radius,0,TAU);l.fill();
-  }
+  for(const lamp of S.lamps)if(flOf(lamp)===fl)drawLampTint(lamp,l);
   l.resetTransform();l.globalCompositeOperation='destination-in';l.drawImage(B.raw,0,0,w,v,0,0,w,v);
   if(S.hazeK>.01){l.globalCompositeOperation='source-atop';l.fillStyle=`rgba(4,8,20,${S.hazeK})`;l.fillRect(0,0,w,v);}
   l.globalCompositeOperation='source-over';ctx.drawImage(B.lit,0,0,w,v,b.x,b.y,w,v);

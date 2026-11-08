@@ -10,13 +10,13 @@ async def main():
    pg=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch);errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
    await pg.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats&tone=ink');await pg.wait_for_function('!!__game',polling=100)
    r=await pg.evaluate('''()=>{
-    const G=__game,check=(v,m)=>{if(!v)throw Error(m)};let vents=0,sewers=0,signs=0,contacts=0,maxStep=0;const kinds=new Set();
+    const G=__game,check=(v,m)=>{if(!v)throw Error(m)};let vents=0,sewers=0,signs=0,contacts=0,maxStep=0;const kinds=new Set(),expected={vents:0,sewers:0,signs:0};
     const fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));for(let i=0;i<60&&G.DLG.modal;i++)G.advanceDialog();const S=G.S;window.base=S.guards.find(g=>!g.civ&&!g.child&&!g.dog&&!g.target);S.guards=[];S.cams=[];S.facOn=false;G.update(.001);S.fade=0;G.setLayer(0);return S;};
     const reset=(P,x,y,z=0)=>{Object.assign(P,{x,y,z,fl:0,trav:null,hide:null,under:false,vent:false,wire:null,ledge:null,jump:null,cover:null,snap:null,captive:null,carrying:null,pick:null,interact:null,bodyAnim:null,strikeT:0,lethalHold:null,grabIn:null,lunge:null,moving:false,a:-Math.PI/2});G.S.keys={};G.setLayer(0);};
     const step=dt=>{G.S.t+=dt;G.updatePlayer(dt);G.updateFallingSigns(dt);G.runTimers();};
     const finish=()=>{const P=G.S.player;let n=0,previous=null;while(P.trav&&n++<1200){const F=P.trav.accessFlow,s=F?G.accessActorSample(F):null;if(s&&previous){const d=Math.hypot(s.x-previous.x,s.y-previous.y);maxStep=Math.max(maxStep,d);check(d<8,'access root jumps '+F.kind+' '+d);}previous=s;step(.005);}check(n<1200,'access never finishes');};
     for(const id of ['m1','m2','m3','m4','m5','m6']){
-     const S=fresh(id),P=S.player;
+     const S=fresh(id),P=S.player;expected.vents+=S.vents.length;expected.sewers+=S.hides.filter(h=>h.type==='well'&&G.ugAt(h.tx,h.ty)).length;expected.signs+=S.traps.filter(t=>t.k==='drop').length;
      for(const v of S.vents){reset(P,v.x,v.y,v.z||0);const before=S.stats.vents||0;kinds.add(G.ventKind(v));
       check(G.beginAccessFlow('ventIn',v),id+' missing entry');const T=P.trav,F=T.accessFlow;check(!P.vent&&!v.open,'vent enters or opens before reaching cover');
       step(.05);G.actEnv();G.actAttack();G.actGrab();check(P.trav===T,'repeat input replaces access');check(!P.vent,'early vent mode flip');
@@ -49,7 +49,7 @@ async def main():
      P.outfit=P.disguise=outfit;const h={type:'well',x:0,y:0},stand={x:Math.cos(d*Math.PI/4)*30,y:Math.sin(d*Math.PI/4)*30},s=G.accessHandSample(h,stand,.5,closing,high),key=G.characterLook(P),body=key.split('@')[1]||G.PR.looks[key],m=G.PR.bodies[body]||G.PR,row=((Math.round(s.a/(Math.PI/4))%8)+8)%8,hh=m[s.anim+'Hands'][row][s.frame],sc=m.scales[s.anim],gy=m.grounds[s.anim],x=s.x+((hh[0][0]+hh[1][0])/2-32)*sc,y=s.y+13+((hh[0][1]+hh[1][1])/2-gy)*sc;
      check(Math.hypot(s.x-stand.x,s.y-stand.y)<.01,'hand contact moves planted feet');check(Math.abs(Math.atan2(Math.sin(s.a-Math.atan2(-stand.y,-stand.x)),Math.cos(s.a-Math.atan2(-stand.y,-stand.x))))<.01,'closing turns back to fixture');check(Number.isFinite(x)&&Number.isFinite(y)&&Math.hypot(x-s.x,y-s.y)<75,'invalid baked reach');contacts++;
     }
-    check(vents>=15&&sewers>=15&&signs>=20&&kinds.size===2,'incomplete map fixture coverage');return{vents,sewers,signs,contacts,maxStep:+maxStep.toFixed(2),kinds:[...kinds]};
+    check(vents===expected.vents&&sewers===expected.sewers&&signs===expected.signs&&vents>0&&sewers>0&&signs>0&&kinds.size===2,'incomplete map fixture coverage');return{vents,sewers,signs,contacts,maxStep:+maxStep.toFixed(2),kinds:[...kinds]};
    }''')
    assert not errors,errors;print('PASS','touch'if touch else'PC',json.dumps(r),flush=True);await pg.close()
   await b.close()

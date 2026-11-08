@@ -14,7 +14,7 @@ async def main():
   assert all(math.isfinite(a[k]) for k in ['ox','oy','w','h']),key
  async with async_playwright() as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-  await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()')
+  await q.add_init_script('window.__OFFICE_ART_BASELINE__=true;window.requestAnimationFrame=()=>0;localStorage.clear()')
   await q.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!window.__game',polling=100)
   await q.wait_for_function('__game.roomFinishArtReady',polling=100)
   report=await q.evaluate('''()=>{

@@ -6,6 +6,7 @@ function installGameApi() {
     drawPlansFaint,drawLampTint,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
+    officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
     skillLearningAllowed,drawFieldItem,get fieldArtReady(){return Object.values(fieldArt).length===4&&Object.values(fieldArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},

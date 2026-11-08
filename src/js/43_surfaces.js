@@ -54,7 +54,7 @@ function syncServiceRoomLight(){
     l.poly=[];for(let i=0;i<180;i++){const a=i/180*TAU,r=Math.min(l.r,castRay(l.x,l.y,a,l.r)+20);l.poly.push(l.x+Math.cos(a)*r,l.y+Math.sin(a)*r);}added=true;
   }
   for(const site of [d.toilet,STAGE.vipDrink?.to].filter(Boolean)){
-    const def=STAGE.lamps.find(l=>l[0]===site[0]&&l[1]===site[1]&&!l[3]);if(!def)continue;
+    const bi=bldAt(site[0],site[1]),def=STAGE.lamps.filter(l=>!l[3]&&!(l[4]||0)&&bldAt(l[0],l[1])===bi).sort((a,b)=>Math.hypot(a[0]-site[0],a[1]-site[1])-Math.hypot(b[0]-site[0],b[1]-site[1]))[0];if(bi<0||!def)continue;
     const x=tc(def[0]),y=tc(def[1]),control=def[6]?{x:def[6][0]*TILE,y:def[6][1]*TILE,fl:0,z:0}:null;
     const existing=S.lamps.find(l=>!flOf(l)&&l.x===x&&l.y===y);if(existing){if(control)existing.control=control;continue;}
     const l={x,y,r:def[2],fl:0,outdoor:false,broken:false,poly:[],control};

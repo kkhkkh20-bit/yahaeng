@@ -608,7 +608,7 @@ function renderMap(R) {
   const draw = (name, dx, dy, dw = TILE, dh = TILE) => blit(x, name, dx, dy, dw, dh);
   const wallish = v => v === '#' || v === 'S' || v === 'N';
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
-    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
+    const ch = G[ty][tx],floorCh=propGround(ch,tx,ty); if(officeGround(x,floorCh,tx,ty)||freeCityGround(x,floorCh,tx,ty)||quarterFloor(x,floorCh,tx,ty))continue; let b = base(floorCh, tx, ty);
     if (!b) { const n = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(o => G[ty + o[1]] && G[ty + o[1]][tx + o[0]]).find(v => v && !wallish(v) && v !== '~' && base(v, tx, ty)); b = base(n || '=', tx, ty) || 'stone0'; }
     const kg = KIT ? kitGround(floorCh, tx, ty) : null;
     if (kg) x.drawImage(kg, tx * TILE, ty * TILE, TILE, TILE); else draw(b, tx * TILE, ty * TILE);
@@ -657,6 +657,7 @@ function renderMap(R) {
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
     const ch = G[ty][tx], px = tx * TILE, py = ty * TILE;
     if (wallish(ch)) {
+      if(officeWall(x,tx,ty))continue;
       const n = wallish((G[ty - 1] || [])[tx]), so = wallish((G[ty + 1] || [])[tx]), e = wallish(G[ty][tx + 1]), w = wallish(G[ty][tx - 1]);
       let piece = 'wallH';
       if (e && so && !n && !w) piece = 'wallTL'; else if (w && so && !n && !e) piece = 'wallTR';
@@ -715,6 +716,7 @@ function renderMap(R) {
   // 방 이름 (Monaco처럼 바닥에 흐리게)
   drawRoomLabels(x, CUR_F, rx0, ry0, rx1, ry1);
   drawEpisodeDressing(x, CUR_F, rx0, ry0, rx1, ry1);
+  officeWallDecor(x,CUR_F,rx0,ry0,rx1,ry1);
   quarterCuts(x,rx0,ry0,rx1,ry1);
   // 가구 (이 층 것만)
   for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'Y') drawStairs(x, tx, ty);
@@ -728,7 +730,7 @@ function renderMap(R) {
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || STAGE.officeArt&&!l.outdoor&&l.fixture) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 
