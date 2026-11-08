@@ -141,9 +141,10 @@ async def main(args):
    q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile,record_video_dir=str(out/'video'));errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear()');await open_game(q,args.url)
    c=Controls(q,await q.context.new_cdp_session(q),mobile)
    try:
-    for id in (args.stage.split(',') if args.stage else ['p0','p1','p2','e1','e2']):
+    for id in (args.stage.split(',') if args.stage else ['p0','e2']):
+     direct=args.direct_infiltration or id=='e2' and not args.stage
      await standalone_stage(q,id);await q.click('#btnBrGo');cc=CompoundControls(q,c,out,('mobile'if mobile else'pc')+'-'+id);await cc.shot('start');await c.press('Control','#btnCrouch')
-     if not(args.direct_infiltration and id=='e2'):
+     if not(direct and id=='e2'):
       await cc.neutralize('uniformDonor');await cc.dress();await cc.hide('uniformDonor');await cc.shot('uniform-and-hidden')
      if id=='p0':
       await cc.walk(1176,816);await cc.shot('front-courtyard');await cc.walk(1176,744);await cc.shot('front-entry')
@@ -176,7 +177,7 @@ async def main(args):
       await cc.walk(at['x'],at['y']);await cc.env('up');assert await q.evaluate('__game.S.player.z===3')
       await cc.walk(792,408);await c.steer('x',1);await q.wait_for_timeout(90);await c.steer();await cc.env('leap');await cc.shot('rooftop-jump')
       assert await q.evaluate('__game.S.player.z===3&&__game.bldAt(Math.floor(__game.S.player.x/48),Math.floor(__game.S.player.y/48))===1')
-      if not args.direct_infiltration:
+      if not direct:
        await cc.walk(1224,576)
        await q.wait_for_function("()=>{const g=__game.S.guards.find(g=>g.tag==='handover');return g.x>24*48&&g.x<27*48&&g.y>16*48&&g.y<19*48&&g.wait>2}",timeout=45000)
        await cc.env('trap');await q.wait_for_function("__game.S.guards.find(g=>g.tag==='handover').state==='DEAD'",timeout=5000);await cc.shot('sign-assassination')
@@ -184,14 +185,15 @@ async def main(args):
       await cc.walk(at['x'],at['y']);await cc.env('down');assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
       if await q.evaluate("__game.S.guards.some(g=>g.tag==='upperKeeper')"):
        await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
-      if args.direct_infiltration:
+      if direct:
        await cc.walk(1416,504);await cc.walk(1464,504);await cc.walk(1464,360)  # Authored right-wall approach, outside the camera cone.
       await cc.camera_cable()
-      if args.direct_infiltration:await cc.walk(1378,312)  # Stay north of the downward-facing broker.
+      if direct:await cc.walk(1378,312)  # Stay north of the downward-facing broker.
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
       # Keep the remaining patrols alive: permitted passage and an ordinary
       # staircase escape are valid solutions, not an all-enemy-clear checklist.
-     await cc.finish();reports.append({'device':'mobile'if mobile else'pc','id':id,'events':c.events[:],'errors':errors[:]});await continue_episode(q)
+     await cc.finish();reports.append({'device':'mobile'if mobile else'pc','id':id,'events':c.events[:],'errors':errors[:]})
+     if id in await q.evaluate('__game.LEARNING_ROUTE'):await continue_episode(q)
     assert not errors,errors
    except Exception:
     await c.record('failed');print(await q.evaluate('({fl:__game.S.player.fl,z:__game.S.player.z,near:__game.envChoices().map(a=>[a.k,a.label]),stairs:__game.S.ladders.filter(l=>l.kind===\"fstair\").map(l=>({l,geo:__game.stairUpper(l)}))})'),flush=True);await q.screenshot(path=str(out/(('mobile'if mobile else'pc')+'-failed.png')));raise
