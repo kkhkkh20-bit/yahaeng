@@ -20,7 +20,7 @@ if sheet.size != (2496, 928):
 
 # Coordinates are original 32px cells. Props retain their proportions and alpha.
 selection = {
-    'floorOak': (27, 3, 28, 4), 'floorCarpet': (27, 7, 28, 8),
+    'floorOak': (27, 3, 28, 4), 'floorCarpet': (27, 19, 28, 20),
     'floorParquet': (27, 11, 28, 12), 'floorTile': (27, 19, 28, 20),
     'wallPanel': (67, 1, 68, 2), 'wallWood': (66, 3, 67, 4),
     'wallPale': (68, 13, 69, 14),
@@ -63,9 +63,30 @@ for name, box in selection.items():
             rect = (rect[0]+bounds[0], rect[1]+bounds[1], rect[0]+bounds[2], rect[1]+bounds[3])
     parts.append((name, art, {'sourceRect': list(rect)}))
 
-# The original carpet edge is intended for an autotile border. A repeatable
-# centre sample avoids outlining every walkable cell like a ventilation grille.
-parts=[(k,a.crop((3,3,a.width-3,a.height-3)),{**m,'assembly':'continuous carpet centre, border excluded'})if k=='floorCarpet'else(k,a,m)for k,a,m in parts]
+# One purchased tile per world cell, rather than four tiny alternating panels.
+# The former striped "carpet" was a grille-like source module. Use the actual
+# floor tile instead, with matte ceramic / soft carpet palettes and quiet joints.
+floor_palettes = {
+    'floorTile': [(116,122,124), (108,114,116), (123,129,131), (102,108,110)],
+    'floorCarpet': [(82,95,103), (80,93,101), (84,97,105), (79,92,100)],
+}
+source_colors = [(120,118,138), (71,72,93), (162,163,189), (47,53,81)]
+finished=[]
+for name,art,meta in parts:
+    if name in floor_palettes:
+        art=art.crop((0,0,16,16))
+        palette=dict(zip(source_colors,floor_palettes[name]))
+        art.putdata([(*palette[p[:3]],p[3]) for p in art.get_flattened_data()])
+        meta={**meta,'sourceRect':[864,608,880,624],
+              'assembly':'single source floor tile; restrained matte palette',
+              'palette':{','.join(map(str,k)):list(v) for k,v in palette.items()}}
+    elif name in ('floorOak','floorParquet'):
+        # Residential wood remains wood, with less grain contrast at phone scale.
+        pixels=list(art.get_flattened_data());mean=[sum(p[c]for p in pixels)/len(pixels)for c in range(3)]
+        art.putdata([(*(round(mean[c]+(p[c]-mean[c])*.55)for c in range(3)),p[3])for p in pixels])
+        meta={**meta,'contrast':.55}
+    finished.append((name,art,meta))
+parts=finished
 
 # Office desks in the source include a chair. Compose the clear glass table
 # with its original monitor/phone so the game's separate, solid chair is unique.
@@ -77,9 +98,9 @@ for name,with_phone in [('deskGlass',False),('deskFiles',True),('deskLaptop',Tru
     if with_phone:desk.alpha_composite(sheet.crop(phone),(2,10))
     parts=[(k,desk,{'sourceRects':[monitor,phone]if with_phone else[monitor],'assembly':'source glass table and monitor; separate chair excluded'})if k==name else(k,a,m)for k,a,m in parts]
 
-# Seamless dark slate uses the source carpet's actual weave, with a restrained
-# cool ramp. The night overlay remains dynamic, never baked into each room.
-for name, source, mul in [('floorSlate','floorCarpet',(.65,.70,.78)),
+# Industrial slate shares the matte tile, never the striped grille. The night
+# overlay remains dynamic, never baked into each room.
+for name, source, mul in [('floorSlate','floorTile',(.67,.72,.77)),
                           ('floorWine','floorParquet',(.70,.58,.65)),
                           ('floorIvory','floorTile',(1.12,1.09,1.02))]:
     a = next(a for k,a,_ in parts if k==source).copy()

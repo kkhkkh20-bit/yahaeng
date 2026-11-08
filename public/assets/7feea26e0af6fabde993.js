@@ -3027,9 +3027,9 @@ if(officeArt?.src)officeAtlas.src=officeArt.src;
 const OFFICE_STYLES={
  dispatch:{floor:'floorCarpet',wall:'wallPanel',accent:'#bc9862',ink:'#172630',warm:false},
  freight:{floor:'floorSlate',wall:'wallPanel',accent:'#ba915e',ink:'#19262c',warm:false},
- archive:{floor:'floorParquet',wall:'wallPale',accent:'#b19773',ink:'#252c30',warm:true},
+ archive:{floor:'floorTile',wall:'wallPale',accent:'#b19773',ink:'#252c30',warm:true},
  exchange:{floor:'floorCarpet',wall:'wallPanel',accent:'#658b9b',ink:'#17232f',warm:false},
- executive:{floor:'floorParquet',wall:'wallWood',accent:'#b49a69',ink:'#2c2628',warm:true},
+ executive:{floor:'floorIvory',wall:'wallWood',accent:'#b49a69',ink:'#2c2628',warm:true},
  club:{floor:'floorWine',wall:'wallWood',accent:'#9c687d',ink:'#2b2029',warm:true},
  security:{floor:'floorSlate',wall:'wallPanel',accent:'#779197',ink:'#17262b',warm:false},
  detention:{floor:'floorTile',wall:'wallPanel',accent:'#838d8c',ink:'#20292c',warm:false},
