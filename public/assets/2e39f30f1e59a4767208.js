@@ -1928,6 +1928,46 @@ if(window.__AGENT_CITY_STUDY__)DIALOGUE.agentCity=[
 ];
 
 if(window.__AGENT_CITY_STUDY__){const s=STAGES.find(s=>s.agentStudy);s.floorTiles=[];for(let i=0;i<s.referenceBuildings.length;i++){const b=s.referenceBuildings[i],[x0,,x1,y1]=b.box;for(let fl=1;fl<b.h;fl++)for(let x=x0+1;x<x1;x++)s.floorTiles.push([fl,x,y1,s.referenceWindow(i,x,fl)?'N':'#']);}}
+// The public route follows one lead per place. Runtime story delivery is kept
+// separate from objectives: a line never grants evidence, opens an exit or fails a job.
+const EPISODE_VOICE={
+ tB:{before:'제비가 마지막으로 연락한 곳은 대성 물류 배차실이다. 까마귀와 함께 2층에 남은 서류를 찾는다.',after:'제비의 서류에서 운반책 박인호와 금성 운송 주소를 찾았다.',
+  coda:{context:'배차실을 빠져나온 뒤',lines:[['hero','제비 글씨 맞아. 박인호, 금성 운송 2층.'],['master','아는 이름이네. 그 사람이 누구한테 제비를 넘겼는지 알아보자.']]},
+  beat:{id:'swallow-note',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'제비가 주소를 남겼어. 나한테 직접 말할 수는 없었던 모양이네.'}},
+ p0:{before:'제비가 남긴 이름, 박인호. 금성 운송 2층에서 은신처를 팔아넘긴 대금을 기다린다. 거래를 막고 다음 연락처를 찾는다.',after:'박인호의 통화 기록에서 금성 거래소의 문서윤을 찾았다.',
+  coda:{context:'금성 운송 · 통화 기록',lines:[['hero','박인호가 계속 걸던 번호, 문서윤이 받았어.'],['master','금성 거래소 3층이야. 이번에는 장부도 같이 가져와.']]},
+  beat:{id:'runner-waiting',when:S=>S.t>=1&&S.t<18,speaker:'master',text:'제비가 남긴 이름이 박인호야. 2층에서 거래 대금을 기다리고 있어. 그 거래부터 막자.'}},
+ e2:{before:'박인호의 거래 상대는 회계 중개인 문서윤이었다. 거래소 3층의 문서윤과 원본 장부를 찾아 돈의 흐름을 확인한다.',after:'거래소 장부는 클럽 실장 강도윤에게 이어졌다. 가명을 풀 암호표도 필요하다.',
+  coda:{context:'거래소를 빠져나온 뒤',lines:[['hero','장부에 강도윤 이름이 계속 나와. 나머지는 전부 별명이고.'],['master','클럽 실장이야. 회계 숙소의 암호표랑 맞춰 보면 누가 돈을 댔는지 나올 거야.']]},
+  beat:{id:'trade-ledger',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'장부 찾았어. 강도윤은 실명으로 적어 놓고, 돈 보낸 사람들은 별명으로 숨겼네.'}},
+ m2:{before:'문서윤의 장부는 클럽 실장 강도윤을 가리켰다. 그의 장부와 회계 숙소의 암호표를 맞춰 증인 거래의 자금책을 찾는다.',after:'장부의 가명은 장무혁과 백철민이었다. 다음 정산 장소에서 둘을 막는다.',
+  intro:[['master','문서윤 장부에 나오던 강도윤이 여기 있어. 클럽 장부하고 회계 숙소의 암호표를 같이 봐야 해.'],['hero','장부만 두 개면 회계라도 봐야겠네. 알았어, 둘 다 챙길게.']],
+  coda:{context:'클럽 장부와 암호표 대조',lines:[['hero','찾았다. 돈 걷는 쪽은 장무혁, 계약에 서명한 쪽은 백철민이야.'],['master','둘이 정산하러 만나. 이번에는 현금하고 계약서까지 확보하자.']]},
+  beat:{id:'half-code',when:S=>S.items.some(i=>i.got)&&S.items.some(i=>!i.got),speaker:'hero',text:'하나는 챙겼어. 장부의 별명이랑 암호표의 실명을 맞춰 봐야겠네.'}},
+ m4:{before:'장무혁은 증인 거래 대금을 모으고, 백철민은 계약을 승인한다. 둘이 만나는 정산 구역에서 표적과 현금·계약서를 확보한다. 철수 차량은 까마귀가 맡았다.',after:'증거 확보에는 성공했다. 그러나 까마귀가 보낸 철수 차량은 금성회의 인계 차량이었다.',
+  intro:[['master','황금색 재킷이 장무혁, 보라색 정장이 백철민이야. 현금하고 계약서 챙기면 철수 차량은 내가 보낼게.'],['hero','주소는 너한테만 보낼게. 이번에는 차 번호도 같이 알려 줘.']],
+  coda:{context:'임무 완료 뒤 · 까마귀가 보낸 철수 차량',lines:[['master','골목 끝 검은 승합차야. 증거 챙겼지? 일단 타.'],['hero','잠깐. 이 사람들 금성회잖아. 까마귀, 차를 잘못 보낸—'],[{note:'철수 차량 안'},'문이 잠긴다. “인계 대상 확보.” 차량 무전이 울리고, 까마귀와의 통신이 끊긴다.']]},
+  beat:{id:'exfil-arranged',when:S=>S.exitOpen,speaker:'master',text:'할 일은 끝났네. 출구로 나오면 철수 차량 위치를 보낼게. 현금하고 계약서, 빠뜨리지 말고.'}},
+ m6:{before:'철수 차량의 문이 잠긴 뒤 기억이 끊겼다. 눈을 뜬 곳은 금성회 구금동. 제비도 이곳을 거쳤다. 무전기와 인계 기록을 찾아 빠져나간다.',after:'제비의 무전기와 인계서를 찾았다. 서명은 까마귀, 인계 담당자는 운송 지부장 오태식이었다.',
+  intro:[['hero','그 차, 까마귀가 보낸 게 맞았어. 날 빼낸 게 아니라 넘긴 거네.'],['hero','장비는 없어졌고… 제비도 여기로 왔다고 했지. 우선 이 문부터 열자.']],
+  coda:{context:'구금동 탈출 뒤 · 무전기와 인계서',lines:[['hero','인계서에 까마귀 서명이 있어. 제비 이름도… 제비는 못 나왔구나.'],['hero','받은 사람은 오태식. 무전기에 집하장 주파수가 남아 있어. 이걸 따라가 보자.']]},
+  beat:{id:'swallow-radio',when:S=>S.items[0]?.got,speaker:'hero',text:'제비 무전기야. 배터리도 남아 있어. 인계서까지 찾으면 누가 데려왔는지 알 수 있겠어.'}},
+ m7:{before:'제비의 무전기에 남은 주파수는 새벽배송 집하장의 것이었다. 운송 지부장 오태식을 막고, 남은 증인들이 출발하기 전에 배차를 멈춘다.',after:'새벽배송을 멈췄다. 오태식의 명세서에 적힌 최종 수령인은 까마귀였다.',
+  intro:[['hero','제비가 쓰던 주파수로 여기까지 왔어. 오태식이 이송을 맡고 있네.'],['hero','사람들이 나가기 전에 명세서를 챙기고 2층 배차 단말을 멈춰야 해.']],
+  coda:{context:'집하장 · 출고 중단 확인',lines:[['hero','차량 멈췄어. 명세서의 수령인은… 까마귀네.'],['hero','본부 주소까지 친절하게 써 놨네. 이제 네 쪽으로 갈게.']]},
+  beat:{id:'dispatch-names',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'명세서에 아직 출발 안 한 이름들이 있어. 배차부터 멈추면 이 사람들은 살릴 수 있겠어.'}},
+ m5:{before:'오태식의 명세서가 가리킨 곳은 까마귀의 본부다. 그가 증인 거래를 직접 받고 있었다. 까마귀와 원본 장부를 찾아 마지막 결재선을 확인한다.',after:'까마귀 위에도 결재자가 있었다. 원본 장부와 연락 기록은 백림재단 이사장 윤서경을 가리켰다.',
+  intro:[['hero','까마귀, 남의 주소는 잘 알려 주더니 네 주소는 숨겼네.'],['hero','너는 2층, 원본 장부는 1층 금고. 이번에는 네 설명 없이 확인할게.']],
+  coda:{context:'금성회 본부 · 원본 장부 대조',lines:[['hero','까마귀 결재 위에 한 칸이 더 있어. 백림재단… 윤서경.'],['hero','오늘 사저에서 연회까지 연다고? 그래, 마지막으로 그쪽도 들러야겠네.']]},
+  beat:{id:'another-signature',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'원본 장부 챙겼어. 까마귀가 받은 돈이랑, 위로 보낸 돈을 따로 적어 놨네.'}},
+ n1:{before:'원본 장부의 마지막 결재자는 백림재단 이사장 윤서경이었다. 사저의 연회에 들어가 그를 막고, 2층 명령 원장으로 증인 거래의 증거를 완성한다.',after:'윤서경의 명령 원장을 확보했다. 거래 기록과 남은 증인들을 조직 밖으로 보냈다.',
+  intro:[['hero','장부에는 증인 값이 적혀 있는데, 여기서는 건배를 하고 있네.'],['hero','윤서경하고 2층 명령 원장. 둘 다 확인하고 나가자.']],
+  coda:{context:'새벽 · 제비의 무전기에 남은 녹음',lines:[[{recorded:'aide'},'나한테 무슨 일 생기면, 사람들 먼저 부탁해. 연락처는 무전기에 넣어 뒀어.'],['hero','연락했어. 다들 나왔대. 너도 같이 들었으면 좋았을 텐데.']]},
+  beat:{id:'last-record',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'명령 원장 찾았어. 이름이랑 돈 보낸 날짜까지 다 있네. 이제 밖으로 가져가자.'}}
+};
+for(const[id,voice]of Object.entries(EPISODE_VOICE)){
+ const s=campaignStage(id);s.story={...s.story,before:voice.before,after:voice.after};s.endText=voice.after;s.storyCoda=voice.coda;s.storyBeat=voice.beat;if(voice.intro)DIALOGUE[id]=voice.intro;
+}
 
 'use strict';
 (function () {
@@ -5412,7 +5452,7 @@ function newGame(si) {
   }
   BLD.forEach((b, i) => { b.alt = (STAGE.bricks ? STAGE.bricks[i % STAGE.bricks.length] : i % 2); b.roofC = b.vacant ? null : buildRoofCanvas(b, i); });
   kitAttach();
-  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); syncOutdoorLamps(); capturePhysicalLayout();
+  initAssassinSkills(); applyWorldPolicy(); syncWorkLights(); syncOccupiedLights(); syncRoomSwitches(); initRoomFinish(); syncOutdoorLamps(); capturePhysicalLayout();
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
@@ -6294,6 +6334,44 @@ function syncWorkLights() {
   setLayer(L0); LG=null; refreshBodyLighting();
   for (const k in lightCache) delete lightCache[k];
   S.floorC={};
+}
+
+// Awake people use lit homes and staff quarters. Sleeping/empty rooms keep their
+// night state, and revisiting a checkpoint never silently undoes a blackout.
+function syncOccupiedLights(restoring=false){
+ if(STAGE.artSlice||S.occupiedLightVersion>=249)return;
+ const previous=CUR_F,rooms=new Map();
+ try{
+  for(const g of S.guards){
+   if(g.dog||g.z||g.doomed||['DEAD','CAPTIVE','SLEEP'].includes(g.state))continue;
+   const fl=flOf(g);
+   for(const at of [{x:g.x,y:g.y},...(g.route||[])]){
+    const tx=Math.floor(at.x/TILE),ty=Math.floor(at.y/TILE),bi=bldAt(tx,ty),b=BLD[bi],p=PLANS[bi]?.[fl];
+    if(!b||b.vacant||(p&&groundedWorld()&&(b.kind==='shop'||STAGE.workBuildings?.includes(bi))))continue;
+    // Hand-authored warehouse/estate floors have no apartment plan. Their
+    // actual walls still bound light and switch circuits in syncRoomSwitches.
+    const candidates=p?[p.store,...p.units.flatMap(u=>[u.living,...u.rooms,u.bath])].filter(Boolean):[b],room=candidates.filter(r=>tx>=r.x0&&tx<=r.x1&&ty>=r.y0&&ty<=r.y1).sort((a,b)=>(a.x1-a.x0+1)*(a.y1-a.y0+1)-(b.x1-b.x0+1)*(b.y1-b.y0+1))[0];if(!room)continue;
+    const key=[bi,fl,room.x0,room.y0,room.x1,room.y1].join(':');
+    if(!rooms.has(key))rooms.set(key,{key,bi,fl,room,points:[]});rooms.get(key).points.push(at);
+   }
+  }
+  for(const spec of rooms.values()){
+   const{bi,fl,room,key,points}=spec;setLayer(fl);
+   const inside=l=>flOf(l)===fl&&!l.outdoor&&!l.hearth&&Math.floor(l.x/TILE)>=room.x0&&Math.floor(l.x/TILE)<=room.x1&&Math.floor(l.y/TILE)>=room.y0&&Math.floor(l.y/TILE)<=room.y1;
+   const local=S.lamps.filter(inside),cut=(S.bfuses||[]).some(f=>f.b===bi&&f.cut);
+   if(cut||local.some(l=>l.off||l.broken||l.cut!=null))continue;
+   if(restoring&&S.lamps.some(l=>!l.outdoor&&!l.hearth&&flOf(l)===fl&&bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE))===bi&&(l.off||l.broken||l.cut!=null)))continue;
+   const sites=[];
+   for(let y=room.y0;y<=room.y1;y++)for(let x=room.x0;x<=room.x1;x++)if(!SOLID.has(G[y]?.[x]))for(const[dx,dy]of N8.slice(0,4))if(G[y+dy]?.[x+dx]==='#')sites.push({x:tc(x)+dx*16,y:tc(y)+dy*16});
+   for(const point of points){
+    if(local.some(l=>lampOn(l)&&dist(l.x,l.y,point.x,point.y)<l.r*.7&&los(l.x,l.y,point.x,point.y)))continue;
+    const at=sites.filter(p=>dist(p.x,p.y,point.x,point.y)<210&&los(p.x,p.y,point.x,point.y)).sort((a,b)=>dist(a.x,a.y,point.x,point.y)-dist(b.x,b.y,point.x,point.y))[0];if(!at)continue;
+    const lamp={...at,r:240,fl,outdoor:false,off:false,broken:false,poly:[],col:'246,220,177',occupiedRoom:key,occupiedLight:true};
+    rebuildLampPolygon(lamp);S.lamps.push(lamp);local.push(lamp);
+   }
+  }
+  S.occupiedLightVersion=249;LG=null;S.floorC={};for(const key in lightCache)delete lightCache[key];refreshBodyLighting();
+ }finally{setLayer(previous);}
 }
 
 // A room has one wall control. Lights remain at their authored positions so
@@ -11577,7 +11655,7 @@ function loadCheckpoint() {
   restoreTargetWardrobes();
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   S.props=(S.props||[]).filter(p=>!p.outfit);restoreUniformDonors();moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); repairRoofLanding(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); refreshLightMasks(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); repairRoofLanding(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncOccupiedLights(true); syncRoomSwitches(); initRoomFinish(); refreshLightMasks(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
@@ -16842,6 +16920,7 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // Named people share one authored portrait in dialogue, radio, HUD and briefing.
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
+  if(w?.recorded){const sp=speakerOf(w.recorded);return{...sp,name:sp.name+' · 녹음',role:'무전기에 남은 음성'};}
   if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
@@ -16951,7 +17030,7 @@ function nextLine() {
 function advanceDialog() { if (paused) return;  // 일시정지·브리핑 화면 중에는 대사가 넘어가지 않는다
   const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
 function skipDialog() { DLG.q = []; nextLine(); }
-function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
+function resetDialog() { document.body.classList.remove('episode-coda');delete $('dlg').dataset.sequence;DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
 function updateDialog(dt) {
   updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
   const c = DLG.cur; if (!c) return;
@@ -16975,6 +17054,31 @@ function startAmb() {
   if (MB.crickets) go(MB.crickets); else if (A.music && A.music.crickets) AC.decodeAudioData(b64ToBuf(A.music.crickets), b => { MB.crickets = b; go(b); }, () => {});
 }
 
+// Optional in-field story lines yield to danger and never change mission logic.
+function episodeStoryMessage(){
+ const beat=STAGE.storyBeat;if(!beat||!S)return null;
+ const state=S.episodeStory||(S.episodeStory={seen:{},active:null});
+ if(state.active){if(state.active.until>S.t)return state.active.message;state.active=null;}
+ if(state.seen[beat.id]||!beat.when(S))return null;
+ return{text:beat.text,speaker:beat.speaker,action:tutText(nextGoal()?.text||''),cue:'story:'+beat.id,storyBeat:beat.id,priority:1};
+}
+function acknowledgeEpisodeStory(message){
+ if(!message?.storyBeat||!S)return;
+ const state=S.episodeStory||(S.episodeStory={seen:{},active:null});
+ state.seen[message.storyBeat]=true;state.active={message,until:S.t+7};
+}
+// Completion has already saved rewards before the short coda. Replays keep the
+// existing fast result flow; skipping a scene still proceeds to earned skills.
+function playEpisodeCoda(){
+ const scene=STAGE.storyCoda;if(!scene||!S?.over||!S.overWin||!S.resultFresh)return false;
+ const run=S;clearResultTransition();$('end').hidden=true;running=true;document.body.classList.add('episode-coda');
+ say(scene.lines,true,()=>{
+  document.body.classList.remove('episode-coda');if(S!==run||!run.over)return;
+  running=false;$('end').hidden=false;queueResultTraining();
+ });
+ $('dlgContext').textContent=scene.context;$('dlg').dataset.sequence='episode-coda';return true;
+}
+
 // One clear instruction at a time, spoken by a familiar partner on the radio.
 const OPENING_RADIO=[
  '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 남긴 서류부터 찾아보자.',
@@ -16989,13 +17093,16 @@ const OPENING_RADIO=[
  '동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.'
 ];
 function episodeRadioMessage(){
- if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
+ if(!S||(!STAGE.storyBeat&&(STAGE.story?.solo||(!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE))))))return null;
  const P=S.player;if(P.jump||P.trav)return null;
  const goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
- if(chase)return{text:'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
- if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
- if(P.captive)return P.captive.target?{text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ const speaker=STAGE.story?.solo?'hero':'master';
+ if(chase)return{speaker,text:speaker==='hero'?'들켰어. 모퉁이를 돌아서 숨을 곳부터 찾아야겠네.':'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{speaker,text:speaker==='hero'?'여기는 안 보이나 봐. 경비가 돌아갈 때까지 기다리자.':'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
+ if(P.captive)return P.captive.target?{speaker,text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{speaker,text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ const story=episodeStoryMessage();if(story)return story;
+ if(STAGE.story?.solo)return null;
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
@@ -17116,7 +17223,7 @@ function syncEpisodeRadio(){
   if(fresh){
    episodeRadioUntil=now+clamp(3000+message.text.length*55,4700,7000);episodeRadioSeen.set(cue,now);episodeRadioCue=cue;episodeRadioLastAt=now;episodeRadioPriority=priority;episodeRadioLayoutAt=0;
    episodeRadioReadAt=now+clamp(1300+message.text.length*32,2800,4200);
-   if(!open)sfx('radio');
+   acknowledgeEpisodeStory(message);if(!open)sfx('radio');
   }
   // A lower priority line cannot replace an urgent instruction mid-transmission.
   if(fresh||open||now>=episodeRadioUntil){
@@ -18097,7 +18204,7 @@ function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker(
   clearResultTransition();S.resultFresh=win?!stageCleared(STAGE):false;S.over = true;S.overWin=win;S.player.moving=false;S.player.vx=S.player.vy=0;if(!win&&S.player.hp<=0)beginDefeatFeedback(S.player);
   if (!win && (STAGE.tutorial||introductoryContract(STAGE)) && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson||introductoryContract(STAGE))?reason:'들켰다')+' · 체크포인트에서 다시',1.6); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
-  const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
+  const run = S; setTimeout(() => { if (S === run) {showEnd(win, reason);if(win)playEpisodeCoda();} }, win ? 500 : 800);
 }
 // 임무 경로 지도 (Hitman식): 지나간 길·처치·발각·시체 발견 위치
 function drawEndMap() {
@@ -18871,7 +18978,7 @@ function installGameApi() {
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
     cabinetMaxAngle, cabinetFrontStand, purchasedPropsReady, purchasedPropCargoBounds, purchasedPropFurnBounds, purchasedPropFurnKey, purchasedPropWallLayout, get purchasedPropsAtlas(){return purchasedPropsAtlas;}, purchasedPropFrame, purchasedBridgeBounds, purchasedCabinetLeaves, purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
-    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncOccupiedLights, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeStoryMessage, acknowledgeEpisodeStory, playEpisodeCoda, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {

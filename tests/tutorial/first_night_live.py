@@ -6,7 +6,7 @@ import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points, acquire_uniform
+from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points, acquire_uniform
 from action_flow_live import Controls
 
 async def main(args):
@@ -20,7 +20,7 @@ async def main(args):
    await open_game(q,args.url+'?nostats&review=first-night');c=Controls(q,await q.context.new_cdp_session(q),mobile)
    async def wait(expr):await q.wait_for_function(expr,timeout=6000,polling=50)
    async def next_contract(stage):
-    await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
+    await finish_episode_scene(q,mobile);await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
     result=await c.record('cleared-'+stage);assert result['hp']==3 and not result['stats']['detected'] and not result['stats'].get('camRec',0),result
     await q.screenshot(path=str(out/(name+'-'+stage+'-clear.png')))
     await continue_episode(q);await q.click('#btnBrGo')

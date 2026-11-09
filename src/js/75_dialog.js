@@ -3,6 +3,7 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // Named people share one authored portrait in dialogue, radio, HUD and briefing.
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
+  if(w?.recorded){const sp=speakerOf(w.recorded);return{...sp,name:sp.name+' · 녹음',role:'무전기에 남은 음성'};}
   if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
@@ -112,7 +113,7 @@ function nextLine() {
 function advanceDialog() { if (paused) return;  // 일시정지·브리핑 화면 중에는 대사가 넘어가지 않는다
   const c = DLG.cur; if (!c) return; if (c.shown < c.text.length) { c.shown = c.text.length; $('dlgText').textContent = c.text; $('dlg').classList.remove('talking'); } else nextLine(); }
 function skipDialog() { DLG.q = []; nextLine(); }
-function resetDialog() { DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
+function resetDialog() { document.body.classList.remove('episode-coda');delete $('dlg').dataset.sequence;DLG.q = []; DLG.cur = null; DLG.modal = false; DLG.onEnd = null; $('dlg').hidden = true; document.body.classList.remove('dlgmodal'); }
 function updateDialog(dt) {
   updateSayQ(); const P = S && S.player; if (P && P.sayT > 0 && (P.sayT -= dt) <= 0) P.say = null;
   const c = DLG.cur; if (!c) return;

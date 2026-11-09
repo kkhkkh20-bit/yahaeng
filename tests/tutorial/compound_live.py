@@ -5,7 +5,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright,TimeoutError as BrowserTimeout
 from browser_support import open_game
 from action_flow_live import Controls
-from episode_training import standalone_stage,continue_episode
+from episode_training import finish_episode_scene, standalone_stage,continue_episode
 
 class CompoundControls:
  def __init__(self,q,c,out,name):self.q=q;self.c=c;self.out=out;self.name=name
@@ -135,6 +135,7 @@ class CompoundControls:
  async def finish(self):
   await self.stairs(0,1 if await self.q.evaluate('!!__game.STAGE.compoundVertical')else 0)
   at=await self.q.evaluate('__game.S.exit');await self.walk(at['x'],at['y'])
+  await finish_episode_scene(self.q,self.c.mobile)
   await self.q.locator('#end').wait_for(state='visible');assert await self.q.locator('#end').get_attribute('data-win')=='1'
   await self.shot('complete')
 

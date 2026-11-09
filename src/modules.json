@@ -146,6 +146,10 @@
       "group": "light_fixtures"
     },
     {
+      "path": "36_occupied_lights.js",
+      "group": "lighting"
+    },
+    {
       "path": "36_room_switches.js",
       "group": "light_fixtures"
     },
@@ -484,6 +488,10 @@
     {
       "path": "75_dialog.js",
       "group": "dialog"
+    },
+    {
+      "path": "76_episode_story.js",
+      "group": "story"
     },
     {
       "path": "76_episode_radio.js",
