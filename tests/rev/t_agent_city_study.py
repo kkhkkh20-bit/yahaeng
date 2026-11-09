@@ -19,6 +19,7 @@ async def main():
      assert im.crop((i*fr,d*fr,(i+1)*fr,(d+1)*fr)).getbbox(),(name,pose,d,i)
      frames+=1
  art=json.loads((ROOT/'src/art/city-study/details.json').read_text());assert art['sourceSha256']=='a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235'
+ assert not {'gateSign','billboardBeer','billboardCrab','billboardOctopus','billboardRunner'}.intersection(art['frames']),'foreign advertisements still shipped'
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(ROOT)));threading.Thread(target=server.serve_forever,daemon=True).start()
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page(viewport={'width':1280,'height':800});errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
@@ -65,5 +66,5 @@ async def main():
   await q.goto(url);await q.wait_for_function('!!window.__game');await q.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='tB'))");assert await q.evaluate('__game.characterLook(__game.S.player)')=='ninja','normal heroine changed'
   await b.close()
  server.shutdown();server.server_close()
- out=ROOT/'build/agent-city-v237';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
+ out=ROOT/'build/agent-city-v238';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
 if __name__=='__main__':asyncio.run(main())

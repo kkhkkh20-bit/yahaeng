@@ -1867,14 +1867,14 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
  freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
  studyStyles:['stone','brick','office','green','brick','green','stone','office'],
  referenceBuildings:[
-  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:3,w:2,h:2}},
-  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{art:'billboardCrab',x:1,fl:2,w:4,h:1}},
-  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardBeer',x:1,fl:6,w:5,h:3}},
-  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{art:'billboardOctopus',x:1,fl:4,w:1,h:2}},
-  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:5,w:2,h:2}},
-  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{art:'billboardBeer',x:1,fl:4,w:5,h:3}},
-  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{art:'gateSign',x:1,fl:3,w:2,h:1}},
-  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardOctopus',x:1,fl:6,w:1,h:2}}
+  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['백송','상사'],x:1,fl:3,w:2,h:2}},
+  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{lines:['밤샘식당'],x:1,fl:2,w:4,h:1}},
+  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['청솔약국'],sub:'조제 · 상담',x:1,fl:6,w:5,h:3}},
+  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{lines:['음','악','실'],x:1,fl:4,w:1,h:2}},
+  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['선일','전기'],x:1,fl:5,w:2,h:2}},
+  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{lines:['동진인쇄'],sub:'인쇄 · 제본',x:1,fl:4,w:5,h:3}},
+  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{lines:['종로서점'],x:1,fl:3,w:2,h:1}},
+  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['백','야','다','방'],x:1,fl:6,w:1,h:2}}
  ],
  referenceRow(i,fl){const s=this.referenceBuildings[i],n=s.windows.length;return fl===s.h-1?0:fl<n-1?n-1-fl:1;},
  referenceWindow(i,tx,fl){const s=this.referenceBuildings[i],a=s.ad;if(a&&tx>=s.box[0]+a.x&&tx<s.box[0]+a.x+a.w&&fl<=a.fl&&fl>a.fl-a.h)return false;const row=s.windows[this.referenceRow(i,fl)];return Array.isArray(row)?!!row[(tx-s.box[0]-1)%3]:!!row;},
@@ -3216,6 +3216,21 @@ function studyCellImage(b,tx,fl,w){
  }
  studyWindowTiles.set(key,c);return c;
 }
+function drawStudySign(b,a){
+ const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
+ const f=studyArt.frames.signBoard.rect,e=6,edge=9;
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#17252c';ctx.fillRect(x,y,w,h);
+ // The purchased empty board supplies its original corners and steel rim.
+ // No lettering or pictures from the Japanese advertisements are imported.
+ const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
+ for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
+ const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
+ const step=size*1.25,total=step*lines.length+sub;
+ ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
+ lines.forEach((line,i)=>ctx.fillText(line,x+w/2,y+(h-total)/2+step*(i+.5),w-24));
+ if(a.sub){ctx.font=uiFont(12);ctx.fillStyle='#a5b9bb';ctx.fillText(a.sub,x+w/2,y+(h+total)/2-8,w-24);}
+ ctx.restore();
+}
 function drawStudyFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE,bi=BLD.indexOf(b),spec=STAGE.referenceBuildings[bi];
  if(!spec)return;
@@ -3231,7 +3246,7 @@ function drawStudyFacade(b){
  for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.22*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
  for(let fl=1;fl<b.fh;fl+=3)studyDraw(ctx,'aircon',x+8,(b.y1-fl)*TILE+10,32,32);
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
- const a=spec.ad;if(a)studyDraw(ctx,a.art,(b.x0+a.x)*TILE,(b.y1-a.fl)*TILE,a.w*TILE,a.h*TILE);
+ if(spec.ad)drawStudySign(b,spec.ad);
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){
@@ -17422,7 +17437,7 @@ function syncTools() {
   hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
   if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
   hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
-  hud.tool.hidden=!!(STAGE.starterContract||STAGE.apprenticeContract)&&!P.captive&&!input.padWhistle&&toolCount(input.tool)<=0;
+  hud.tool.hidden=!P.captive&&!input.padWhistle&&!input.aiming&&toolCount(input.tool)<=0&&(isTouch||!!(STAGE.starterContract||STAGE.apprenticeContract));
   const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
   syncQuickItems();

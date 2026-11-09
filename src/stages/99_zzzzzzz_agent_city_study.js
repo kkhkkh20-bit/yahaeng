@@ -10,14 +10,14 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
  freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
  studyStyles:['stone','brick','office','green','brick','green','stone','office'],
  referenceBuildings:[
-  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:3,w:2,h:2}},
-  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{art:'billboardCrab',x:1,fl:2,w:4,h:1}},
-  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardBeer',x:1,fl:6,w:5,h:3}},
-  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{art:'billboardOctopus',x:1,fl:4,w:1,h:2}},
-  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:5,w:2,h:2}},
-  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{art:'billboardBeer',x:1,fl:4,w:5,h:3}},
-  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{art:'gateSign',x:1,fl:3,w:2,h:1}},
-  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardOctopus',x:1,fl:6,w:1,h:2}}
+  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['백송','상사'],x:1,fl:3,w:2,h:2}},
+  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{lines:['밤샘식당'],x:1,fl:2,w:4,h:1}},
+  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['청솔약국'],sub:'조제 · 상담',x:1,fl:6,w:5,h:3}},
+  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{lines:['음','악','실'],x:1,fl:4,w:1,h:2}},
+  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['선일','전기'],x:1,fl:5,w:2,h:2}},
+  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{lines:['동진인쇄'],sub:'인쇄 · 제본',x:1,fl:4,w:5,h:3}},
+  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{lines:['종로서점'],x:1,fl:3,w:2,h:1}},
+  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['백','야','다','방'],x:1,fl:6,w:1,h:2}}
  ],
  referenceRow(i,fl){const s=this.referenceBuildings[i],n=s.windows.length;return fl===s.h-1?0:fl<n-1?n-1-fl:1;},
  referenceWindow(i,tx,fl){const s=this.referenceBuildings[i],a=s.ad;if(a&&tx>=s.box[0]+a.x&&tx<s.box[0]+a.x+a.w&&fl<=a.fl&&fl>a.fl-a.h)return false;const row=s.windows[this.referenceRow(i,fl)];return Array.isArray(row)?!!row[(tx-s.box[0]-1)%3]:!!row;},

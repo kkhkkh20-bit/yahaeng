@@ -19,10 +19,19 @@ async def main():
     ok(gear.x+gear.w/2<innerWidth*.25&&Math.abs(gear.bottom-atk.bottom)<12,'equipment is not part of the bottom strip');
     ok(items.every(r=>r.x>=gear.right+6&&r.y>innerHeight*.7&&r.right<=atk.x-6),'consumables are not below the play area beside equipment');
     const radius=getComputedStyle(document.getElementById('btnCrouch')).borderRadius;ok(radius.includes('%')||parseFloat(radius)>=crouch.h/2,'crouch is not circular');
-    return{viewport:[innerWidth,innerHeight],attack:atk,action:env,crouch,gear,items};}''')
+    const cases=[];const spacing=label=>{const ids=['btnAct','btnCarry','btnCrouch','btnTool','btnToolNext','btnGrab','btnDress','btnCycle','quickStone','quickCoin','quickSmoke','quickRadio'],rs=ids.map(box).filter(Boolean);
+     for(const r of rs)ok(r.w>=44&&r.h>=44&&r.x>=0&&r.y>=0&&r.right<=innerWidth+.5&&r.bottom<=innerHeight+.5,label+' clipped or undersized '+r.id);
+     for(let i=0;i<rs.length;i++)for(let j=i+1;j<rs.length;j++){const a=rs[i],b=rs[j];ok(a.right<=b.x||b.right<=a.x||a.bottom<=b.y||b.bottom<=a.y,label+' controls overlap: '+a.id+' / '+b.id);}
+     cases.push({label,controls:rs});};
+    spacing('all consumables');G.input.tool='kunai';S.player.kunai=0;G.updateHUD(true);ok(document.getElementById('btnTool').hidden,'empty weapon crowds the thumb arc');spacing('empty tool');
+    S.player.kunai=2;G.updateHUD(true);ok(!document.getElementById('btnTool').hidden,'loaded weapon is unreachable');spacing('loaded weapon');
+    const P=S.player,g=S.guards.find(g=>!g.civ&&!g.child&&!g.dog);S.guards.forEach(o=>{if(o!==g){o.x+=1500;o.y+=1500;}});g.x=P.x+32;g.y=P.y;G.npcDown(g,null,false);G.updateHUD(true);
+    const carry=G.envChoices().find(a=>a.k==='carry');if(carry)G.selectEnvTarget(G.envToken(carry));G.updateHUD(true);spacing('body and clothing');
+    G.input.padWhistle=true;G.updateHUD(true);ok(!document.getElementById('btnTool').hidden,'whistle lost its direct control');spacing('whistle and context');
+    return{viewport:[innerWidth,innerHeight],attack:atk,action:env,crouch,gear,items,cases};}''')
    assert not errors,errors;rows.append(result);print('PASS reference thumb layout',w,h,flush=True);await q.close()
   q=await b.new_page(viewport={'width':1280,'height':800});await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.click('#btnQuick')
   for sel in ['#hud .pad','#hud .sysbtns','#quickItems']:assert await q.locator(sel).is_hidden(),('desktop touch controls visible',sel)
   print('PASS keyboard HUD has no touch controls',flush=True);await b.close()
- out=R/'build/controls-v220';out.mkdir(exist_ok=True);(out/'layout.json').write_text(json.dumps(rows,indent=2))
+ out=R/'build/controls-v238';out.mkdir(exist_ok=True);(out/'layout.json').write_text(json.dumps(rows,indent=2))
 asyncio.run(main())
