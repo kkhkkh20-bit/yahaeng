@@ -15,14 +15,14 @@ const OFFICE_STYLES={
  residence:{floor:'floorOak',wall:'wallPale',accent:'#ac9b83',ink:'#2d2b2a',warm:true},
  estate:{floor:'floorParquet',wall:'wallPale',accent:'#b49b6a',ink:'#2e2d2b',warm:true}
 };
-function officeReady(){return !window.__OFFICE_ART_BASELINE__&&!!STAGE.officeArt&&!!officeArt&&officeAtlas.complete&&officeAtlas.naturalWidth>0;}
+function officeReady(){return !window.__OFFICE_ART_BASELINE__&&!!officeArt&&officeAtlas.complete&&officeAtlas.naturalWidth>0;}
 function officeFrame(name){return officeArt?.frames[name]?.rect;}
 function officeBlit(c,name,x,y,w,h){
  const r=officeFrame(name);if(!r||!officeReady())return false;
  c.imageSmoothingEnabled=false;c.drawImage(officeAtlas,...r,Math.round(x),Math.round(y),Math.round(w??r[2]),Math.round(h??r[3]));return true;
 }
 function officeStyle(bi,fl=CUR_F){
- const spec=STAGE.officeArt;if(!spec)return null;
+ const spec=STAGE.officeArt;if(!spec){const b=BLD[bi],use=b?.floorsUse?.[fl]||b?.floorsUse?.at(-1);return STAGE.industrialBuildings?.includes(bi)?OFFICE_STYLES.freight:['office','pc','academy'].includes(use)?OFFICE_STYLES.dispatch:use==='vault'?OFFICE_STYLES.security:use==='club'?OFFICE_STYLES.club:use==='vip'?OFFICE_STYLES.executive:b?.kind==='house'?OFFICE_STYLES.residence:OFFICE_STYLES.archive;}
  const levels=spec.buildings?.[bi],key=(Array.isArray(levels)?levels[Math.min(fl,levels.length-1)]:levels)||spec.default||'residence';
  return OFFICE_STYLES[key]||OFFICE_STYLES.residence;
 }
@@ -55,8 +55,7 @@ function officeWall(c,tx,ty){
  return true;
 }
 function officeFurnKey(f){
- if(!STAGE.officeArt)return null;
- const authored=STAGE.officeArt.furniture?.find(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t);
+ const authored=STAGE.officeArt?.furniture?.find(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t);
  if(authored&&officeFrame(authored.art))return authored.art;
  const bi=bldAt(f.x,f.y);if(bi<0)return null;
  const style=officeStyle(bi,f.fl||0),r=((f.r||0)%4+4)%4;
@@ -73,8 +72,8 @@ function officeFurnKey(f){
   const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
   return prefix+['','E','Back','W'][r];
  }
- if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
- return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue',pot:'tableRound'}[f.t]||null;
+ if(f.t==='sofa'||f.t==='sofaV')return null;
+ return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
@@ -106,7 +105,7 @@ function officeSurfacePoint(o){
 function officeDecorLayout(fl){
  if(!officeReady())return [];
  const placed=[];
- for(const d of STAGE.officeArt.decor||[]){
+ for(const d of STAGE.officeArt?.decor||[]){
   if(d.fl!==fl)continue;
   const b=BLD[d.b],r=officeFrame(d.art);if(!b||!r)continue;
   const w=Math.min(d.w||64,r[2]*1.5,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2],y=b.y0*TILE+TILE-h-3;
@@ -188,7 +187,7 @@ function paintOfficeSideWindow(w,lit,side){
  // A cut in the wall seen from above, with jambs seated in the masonry.
  // No freestanding front-facing card or protruding sill in the alley.
  ctx.fillStyle='#0d1721';ctx.fillRect(-6,-18,12,36);
- ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);
+ if(purchasedReady()){const r=purchasedFrame('windowFrame');ctx.imageSmoothingEnabled=false;ctx.drawImage(purchasedAtlas,r[0],r[1],r[2],3,-5,-17,10,2);ctx.drawImage(purchasedAtlas,r[0],r[1]+r[3]-3,r[2],3,-5,15,10,2);ctx.drawImage(purchasedAtlas,r[0],r[1]+3,2,r[3]-6,-5,-15,2,30);ctx.drawImage(purchasedAtlas,r[0]+r[2]-2,r[1]+3,2,r[3]-6,3,-15,2,30);}else{ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);}
  ctx.fillStyle='#253441';ctx.fillRect(-4,-15,8,30);
  ctx.fillStyle=lit?'#827860':'#354c60';ctx.fillRect(-3,-14,6,open?12:28);
  ctx.fillStyle='#5b6874';ctx.fillRect(-4,open?-1:0,8,2);

@@ -15,6 +15,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='boxes'&&purchasedReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawPurchasedCargo(x,it.x+k,it.y+y);return true;}
  if(drawOfficeFurn(x,it,shadow))return true;
  if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
@@ -31,6 +32,7 @@ function drawPropFurn(x,it,shadow=false){
 // Original pixel parcel rack: the shelf footprint and cover stay unchanged.
 // Storage no longer borrows the shop's colourful book/grocery display.
 function drawFreightShelf(c,f,shadow){
+ if(drawPurchasedFreight(c,f,shadow))return true;
  const px=f.x*TILE,py=f.y*TILE,w=f.w*TILE,h=f.h*TILE;
  c.save();c.translate(px,py);c.imageSmoothingEnabled=false;
  if(shadow){c.fillStyle='rgba(4,9,14,.23)';c.fillRect(5,h-5,w-5,10);}

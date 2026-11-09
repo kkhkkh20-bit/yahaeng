@@ -245,6 +245,7 @@ function drawProps(fl=0) {
   const v=surfacePoint(p),key=p.outfit?(p.outfit==='waiter'?'apron':'coat'):/서류|문서|장부|명세|암호|보고서|서신/.test(p.name||'')?'folder':null;
   ctx.save();ctx.translate(v.x,v.y);
   if(['emetic','laxative'].includes(p.id))drawMedicineArt(ctx,p);
+  else if(p.id==='box'&&drawPurchasedPaper(ctx,'parcel',0,0)){}
   else if(p.id==='box'){
    ctx.fillStyle='#090e1255';ctx.beginPath();ctx.ellipse(1,5,14,5,0,0,TAU);ctx.fill();
    ctx.fillStyle='#876546';ctx.fillRect(-11,-7,22,14);ctx.fillStyle='#bc956b';ctx.fillRect(-11,-10,22,5);

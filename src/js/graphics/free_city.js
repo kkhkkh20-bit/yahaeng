@@ -106,6 +106,7 @@ function drawCityPlant(ch,tx,ty,near){
  ctx.restore();return true;
 }
 function drawCityCargo(c,tx,ty){
+ if(drawPurchasedCargo(c,tx,ty))return true;
  if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
  const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle='rgba(5,12,22,.28)';c.fillRect(x+4,y+5,44,43);const painted=freeCityDraw(c,'cargoCrate'+((tx+ty)%2),x,y,2);c.restore();return painted;
 }
@@ -136,6 +137,7 @@ function drawCityRoofProps(b){
   for(const p of b.kitProps){
    const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
    if(p.t==='sh'){
+    if(drawPurchasedRoofHouse(q,p))continue;
     const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
     if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py,w,h);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
     const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;

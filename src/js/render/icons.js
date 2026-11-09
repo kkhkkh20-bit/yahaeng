@@ -23,6 +23,7 @@ function drawItemIcon(name,x,y,t,ring) {
 }
 function drawNote(n) {
   const {x,y}=surfacePoint(n);
+  if(drawPurchasedPaper(ctx,'paper',x,y))return;
   ctx.save();ctx.translate(x,y);ctx.rotate(-.12);
   ctx.fillStyle='#11171366';ctx.fillRect(-9,-5,20,14);
   ctx.fillStyle=n.read?'#b4ad98':'#d5cbb2';ctx.fillRect(-10,-7,18,13);
