@@ -2045,31 +2045,32 @@ body.touch:not(.inspecting) #hud #stealth:not(.quiet) #accessLbl:not([hidden]){d
 }
 /* Mobile action controls: a dominant thumb button and a restrained radial arc. */
 #hud #quickItems{display:none}
-body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:224px;height:240px;pointer-events:none}
+body.touch #hud .pad{right:var(--field-edge);bottom:var(--field-bottom);width:176px;height:204px;pointer-events:none}
 body.touch #hud .pad>button,body.touch #hud .pad :is(#btnAct,#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress,#btnCycle),body.touch #hud #btnCrouch{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:44px;min-height:44px;padding:5px;border:0;border-image:none;border-radius:50%;clip-path:none;background:var(--art-field-control) center/100% 100% no-repeat;color:#b9c5c7;box-shadow:none;filter:none;pointer-events:auto;touch-action:none;transition:color .12s}
 body.touch #hud .pad>button[hidden]{display:none}
 body.touch #hud .pad>button::before{display:none;content:none}
 body.touch #hud .pad>button b,body.touch #hud #btnCrouch b{font-size:11px;font-weight:700;line-height:1.15;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #061017}
 body.touch #hud .pad>button small{font-size:10px;line-height:1.15;white-space:nowrap;max-width:100%;color:inherit}
 body.touch #hud .pad>button>svg.hud-art{width:28px;height:28px;flex-shrink:0;filter:drop-shadow(0 1px 1px #050a10)}
-body.touch #hud .pad #btnAct{right:0;bottom:0;width:88px;height:88px;gap:2px;padding:6px;color:#bac7c7}
+body.touch #hud .pad #btnAct{right:0;bottom:0;width:84px;height:84px;gap:2px;padding:6px;color:#bac7c7}
 body.touch #hud .pad #btnAct>svg.hud-art{width:36px;height:36px}
 #hud .hud-art[data-field-icon=attack]{fill:currentColor;stroke:#122129;stroke-width:.8}
-body.touch #hud .pad #btnAct b{font-size:14px}
+body.touch #hud .pad #btnAct b{font-size:13px}
 body.touch #hud .pad #btnAct:is(.ready,.ko){background-image:var(--art-field-primary);color:#f1f0e1}
 body.touch #hud .pad #btnAct.kill{background-image:var(--art-field-danger);color:#ffe3d5}
-body.touch #hud .pad #btnCarry{right:96px;bottom:0;width:56px;height:56px}
-body.touch #hud .pad #btnTool{right:32px;bottom:112px;width:60px;height:60px}
+body.touch #hud .pad #btnCarry{right:94px;bottom:4px;width:60px;height:60px}
+body.touch #hud .pad #btnTool{right:16px;bottom:104px;width:52px;height:52px}
 body.touch #hud .pad #btnTool>svg.hud-art{width:28px;height:28px}
 body.touch #hud .pad #btnTool small{display:none}
 body.touch #hud .pad #btnToolNext{position:fixed;flex-direction:column;left:max(16px,env(safe-area-inset-left));right:auto;bottom:var(--field-bottom);width:44px;height:52px}
 body.touch #hud .pad #btnToolNext>svg.hud-art{width:22px;height:22px}
 body.touch #hud .pad #btnToolNext b{font-size:10px}
-body.touch #hud .pad :is(#btnGrab,#btnDress){right:0;bottom:192px;width:48px;height:48px}
-body.touch #hud .pad #btnCycle{right:60px;bottom:184px;width:44px;height:44px;min-height:44px;border-radius:50%;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
+body.touch #hud .pad :is(#btnGrab,#btnDress){right:88px;bottom:148px;width:52px;height:52px}
+body.touch #hud .pad :is(#btnGrab,#btnDress) b{font-size:10px}
+body.touch #hud .pad #btnCycle{right:0;bottom:168px;width:44px;height:44px;min-height:44px;border-radius:50%;background:#101b22e8;border:1px solid #8b9c9e;padding:4px}
 body.touch #hud .pad #btnCycle small{font-size:10px}
-body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 112px);bottom:calc(var(--field-bottom) + 96px);display:block;width:56px;height:56px;pointer-events:none}
-body.touch #hud #btnCrouch{position:relative;width:56px;height:56px;min-height:44px}
+body.touch #hud .sysbtns{position:fixed;left:auto;right:calc(var(--field-edge) + 104px);bottom:calc(var(--field-bottom) + 80px);display:block;width:52px;height:52px;pointer-events:none}
+body.touch #hud #btnCrouch{position:relative;width:52px;height:52px;min-height:44px}
 body.touch #hud #btnCrouch>svg.hud-art{width:25px;height:25px}
 body.touch #hud #btnCrouch b{font-size:10px}
 body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress).ready,body.touch #hud .pad #btnTool.aiming,body.touch #hud #btnCrouch.on{background-image:var(--art-field-primary);color:#f1f0e1}
@@ -2099,17 +2100,17 @@ body.touch #hud #saveState{bottom:calc(var(--field-bottom) + 62px);max-width:cal
 body.touch #hud .joyhint{bottom:calc(var(--field-bottom) + 92px);max-width:calc(100vw - 230px)}
 body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud #saveState{bottom:calc(var(--field-bottom) + 118px)}
 @media(max-width:374px){
- body.touch #hud .pad{width:200px;height:232px}
+ body.touch #hud .pad{width:160px;height:196px}
  body.touch #hud .pad #btnAct{width:80px;height:80px}
  body.touch #hud .pad #btnAct>svg.hud-art{width:30px;height:30px}
  body.touch #hud .pad #btnAct b{font-size:12px}
- body.touch #hud .pad #btnCarry{right:88px;bottom:24px;width:56px;height:56px}
+ body.touch #hud .pad #btnCarry{right:88px;bottom:4px;width:52px;height:52px}
  body.touch #hud .pad #btnCarry>svg.hud-art{width:24px;height:24px}
- body.touch #hud .pad #btnTool{right:24px;bottom:112px;width:52px;height:52px}
+ body.touch #hud .pad #btnTool{right:12px;bottom:96px;width:48px;height:48px}
  body.touch #hud .pad #btnToolNext{left:max(12px,env(safe-area-inset-left));width:44px;height:52px}
- body.touch #hud .pad :is(#btnGrab,#btnDress){right:0;bottom:184px;width:48px;height:48px}
- body.touch #hud .pad #btnCycle{right:0;bottom:244px;width:44px;height:44px}
- body.touch #hud .sysbtns{right:calc(var(--field-edge) + 94px);bottom:calc(var(--field-bottom) + 96px);width:48px;height:48px}
+ body.touch #hud .pad :is(#btnGrab,#btnDress){right:76px;bottom:140px;width:52px;height:52px}
+ body.touch #hud .pad #btnCycle{right:0;bottom:156px;width:44px;height:44px}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 88px);bottom:calc(var(--field-bottom) + 72px);width:48px;height:48px}
  body.touch #hud #btnCrouch{width:48px;height:48px}
  body.touch #hud #quickItems{left:calc(max(12px,env(safe-area-inset-left)) + 52px);grid-template-columns:repeat(2,44px)}
  body.touch #hud #quickItems .hud-art{width:32px;height:32px}
@@ -2119,12 +2120,12 @@ body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud #saveState{bottom
 
 
 @media(orientation:landscape) and (max-height:440px) and (min-width:500px){
- body.touch #hud .pad #btnCarry{right:104px;bottom:0;width:56px;height:56px}
- body.touch #hud .pad #btnCycle{right:116px;bottom:80px}
+ body.touch #hud .pad #btnCarry{right:94px;bottom:4px;width:60px;height:60px}
+ body.touch #hud .pad #btnCycle{right:0;bottom:168px}
  body.touch #hud #quickItems:has(#quickRadio:not([hidden])){grid-template-columns:repeat(4,44px)}
  body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud #saveState{bottom:calc(var(--field-bottom) + 62px)}
  body.touch.has-quick-items:has(#quickRadio:not([hidden])) #hud .joyhint{bottom:calc(var(--field-bottom) + 92px)}
- body.touch #hud .sysbtns{right:calc(var(--field-edge) + 124px);bottom:calc(var(--field-bottom) + 152px)}
+ body.touch #hud .sysbtns{right:calc(var(--field-edge) + 104px);bottom:calc(var(--field-bottom) + 80px)}
 }
 /* NPC dialogue takes precedence over transient save confirmation. */
 body.npc-speaking #hud #saveState{visibility:hidden}
@@ -2284,7 +2285,7 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v237 · 2026-11-09</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v238 · 2026-11-09</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2394,7 +2395,7 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v237 · 2026-11-09</small>
+      <small class="fx-sub" id="pauseVersion">v238 · 2026-11-09</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2471,8 +2472,8 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script>window.__FIELD_ART__ = {"coat": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/dd9cb6b5e70c0e0fb130.webp"}, "apron": {"ox": -19.5, "oy": -23.293, "w": 39, "h": 36, "src": "./assets/023e4a4c9d737dbd75f4.webp"}, "folder": {"ox": -18.5, "oy": -17.054, "w": 37, "h": 29, "src": "./assets/0853cc09f003af480ca5.webp"}, "paper": {"ox": -17.046, "oy": -14.876, "w": 32, "h": 24, "src": "./assets/a64976fd293adf9bf060.webp"}};</script>
-<script defer src="./assets/201fc6d4c32c110e42cb.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/d669e15ffa975bba7b38.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/b49fecd72116873ad8ec.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/aca2bbcecc3a479748f1.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/d624078f8a5a6503ad94.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/e2bca343f56dfed3e77f.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
