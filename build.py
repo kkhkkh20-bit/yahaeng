@@ -59,13 +59,14 @@ def build():
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
     menu_art = base64.b64encode(open(P('src', 'art', 'title', 'alley-wide.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
-    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','field-hud.css')))
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css')).replace('__DISPLAY_FONT__',base64.b64encode(open(P('src','fonts','display-blackhansans.woff'),'rb').read()).decode())+'\n'+read(P('src','field-hud.css')))
     for variant in ['wide','portrait']:
         data='data:image/webp;base64,'+base64.b64encode(open(P('src','art','title','alley-'+variant+'.webp'),'rb').read()).decode()
         html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
     html=html.replace('--menu-art:', '--title-alley-wide:url(data:image/webp;base64,'+menu_art+');--menu-art:',1)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
-    icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(glob.glob(P('src','art','hud','**','*.svg'),recursive=True)))+'}'
+    icon_files=glob.glob(P('src','art','hud','*.svg'))+glob.glob(P('src','art','hud','frames','*.svg'))
+    icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(icon_files))+'}'
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
     ink_ui=read(P('src','ink-interface.css'))
@@ -110,9 +111,8 @@ def build():
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
     hud_art.update({'field:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','field','*.svg')))})
-    hud_art.update({'item:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','items','*.svg')))})
     # The quick slots and world use the same pixel objects, rather than different icons.
-    for tool, key in [('coin','cigarettes'),('radio','radio')]:
+    for tool, key in [('stone','can'),('coin','cigarettes'),('smoke','smoke'),('radio','radio')]:
         a=field_art[key];w=round(a['w']*32/a['h'],2)
         hud_art['item:'+tool]=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" data-item-icon="{tool}"><image href="{a["src"]}" x="{(40-w)/2}" y="4" width="{w}" height="32" style="image-rendering:pixelated"/></svg>'
     html=html.replace('<script>window.__BUILD_VERSION__','<script>window.__HUD_ART__='+json.dumps(hud_art)+';window.__BUILD_VERSION__',1)

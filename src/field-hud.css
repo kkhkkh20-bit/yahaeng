@@ -6,7 +6,7 @@
 #hud .obj::after{top:17px;right:8px;width:5px;height:5px;border-color:var(--hud-muted)}
 #hud .hud-portrait{display:none}
 #hud #objTitle{font-size:11px;line-height:1.45;letter-spacing:0;color:var(--hud-muted)}
-#hud #objectiveSummary{font-size:14px;line-height:1.5;letter-spacing:-.015em;color:var(--hud-ink)}
+#hud #objectiveSummary{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;font-size:14px;line-height:1.5;letter-spacing:-.015em;color:var(--hud-ink);word-break:keep-all;overflow-wrap:anywhere}
 #hud .obj:not(.open) #missionIdentity{display:none}
 #hud .status{gap:7px 12px;padding:0 4px;min-height:16px;text-shadow:0 2px 4px #000}
 #hud .chip{font-size:11px;line-height:1.4;color:var(--hud-muted)}

@@ -1,0 +1,1034 @@
+{
+  "stages": [
+    {
+      "id": "m1",
+      "name": "장부 털기",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "창고 상회",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 6,
+          "name": "지구대",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": null,
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 8,
+          "name": "당구장",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 9,
+          "name": "조직 사무동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 10,
+          "name": "포차",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 11,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 12,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 150,
+      "objects": 296,
+      "start": {
+        "x": 3048,
+        "y": 1320
+      },
+      "W": 92,
+      "H": 60
+    },
+    {
+      "id": "m2",
+      "name": "VIP",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "사무동",
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "클럽",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "공중화장실",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": "포차",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": "약국",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 6,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": "회계 숙소",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 99,
+      "objects": 126,
+      "start": {
+        "x": 888,
+        "y": 1032
+      },
+      "W": 56,
+      "H": 36
+    },
+    {
+      "id": "m3",
+      "name": "잔칫날",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "본채",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "창고 부엌",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "숙소",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 6,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 68,
+      "objects": 70,
+      "start": {
+        "x": 2088,
+        "y": 1464
+      },
+      "W": 44,
+      "H": 32
+    },
+    {
+      "id": "m4",
+      "name": "돈줄",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "폐사무소",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "창고",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "사무동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": "클럽",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": "빌라",
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": "공터 적치장",
+          "h": 0,
+          "vacant": "lot"
+        },
+        {
+          "i": 6,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": "건달파 보급처",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 74,
+      "objects": 67,
+      "start": {
+        "x": 1512,
+        "y": 792
+      },
+      "W": 48,
+      "H": 28
+    },
+    {
+      "id": "m5",
+      "name": "검은 연락선",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "금성회 본부",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 53,
+      "objects": 71,
+      "start": {
+        "x": 24,
+        "y": 1176
+      },
+      "W": 40,
+      "H": 26
+    },
+    {
+      "id": "m6",
+      "name": "배신",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "감금동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "경비실",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "자재 창고",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": "숙소",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 67,
+      "objects": 58,
+      "start": {
+        "x": 216,
+        "y": 264
+      },
+      "W": 44,
+      "H": 28
+    },
+    {
+      "id": "m7",
+      "name": "새벽배송",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "분류창고",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "배송 사무실",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "기사 식당",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 36,
+      "objects": 24,
+      "start": {
+        "x": 264,
+        "y": 1128
+      },
+      "W": 40,
+      "H": 28
+    },
+    {
+      "id": "city",
+      "name": "밤의 도시",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": null,
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": "상가",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 6,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": "창고 상회",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 8,
+          "name": "사무동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 9,
+          "name": "클럽",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 10,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 11,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 12,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 13,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 14,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 15,
+          "name": null,
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 16,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 17,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 18,
+          "name": null,
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 19,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 20,
+          "name": null,
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 21,
+          "name": "병원",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 22,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 23,
+          "name": "지구대",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 24,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 25,
+          "name": "조직 본부",
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 26,
+          "name": "차고",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 169,
+      "objects": 131,
+      "start": {
+        "x": 504,
+        "y": 936
+      },
+      "W": 84,
+      "H": 64
+    },
+    {
+      "id": "t0",
+      "name": "연습 2 · 제압과 몸 숨기기",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "물류 적치장",
+          "h": 0,
+          "vacant": "lot"
+        }
+      ],
+      "lamps": 2,
+      "objects": 0,
+      "start": {
+        "x": 120,
+        "y": 504
+      },
+      "W": 23,
+      "H": 17
+    },
+    {
+      "id": "t1",
+      "name": "연습 4 · 고급",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "연습 벽집",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "연습 창고",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 5,
+      "objects": 6,
+      "start": {
+        "x": 984,
+        "y": 456
+      },
+      "W": 41,
+      "H": 15
+    },
+    {
+      "id": "tI",
+      "name": "연습 3 · 신분",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 6,
+      "objects": 0,
+      "start": {
+        "x": 72,
+        "y": 504
+      },
+      "W": 44,
+      "H": 16
+    },
+    {
+      "id": "tB",
+      "name": "닫힌 배차실",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "대성 물류 · 창고",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "야간 배차실",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "수리 작업장",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 35,
+      "objects": 12,
+      "start": {
+        "x": 120,
+        "y": 504
+      },
+      "W": 34,
+      "H": 23
+    },
+    {
+      "id": "tS",
+      "name": "연습 5 · 암살 기술",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 2,
+      "objects": 0,
+      "start": {
+        "x": 168,
+        "y": 456
+      },
+      "W": 32,
+      "H": 18
+    },
+    {
+      "id": "tE",
+      "name": "연습 6 · 현장 도구",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 2,
+      "objects": 0,
+      "start": {
+        "x": 168,
+        "y": 456
+      },
+      "W": 34,
+      "H": 21
+    },
+    {
+      "id": "tA",
+      "name": "연습 7 · 은신 기습",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 0,
+      "objects": 0,
+      "start": {
+        "x": 168,
+        "y": 408
+      },
+      "W": 25,
+      "H": 17
+    },
+    {
+      "id": "tL",
+      "name": "의뢰 02 준비 · 빛과 그림자",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 4,
+      "objects": 0,
+      "start": {
+        "x": 312,
+        "y": 504
+      },
+      "W": 26,
+      "H": 18
+    },
+    {
+      "id": "tR",
+      "name": "의뢰 02 준비 · 실내와 계단",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "연락 거점",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 2,
+      "objects": 16,
+      "start": {
+        "x": 600,
+        "y": 936
+      },
+      "W": 25,
+      "H": 23
+    },
+    {
+      "id": "tC",
+      "name": "의뢰 01 준비 · 복장과 CCTV",
+      "currentRoute": false,
+      "buildings": [],
+      "lamps": 3,
+      "objects": 1,
+      "start": {
+        "x": 888,
+        "y": 600
+      },
+      "W": 34,
+      "H": 18
+    },
+    {
+      "id": "p0",
+      "name": "닫힌 철문",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "금성 운송 · 배차 사무동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "봉인된 적재 창고",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 12,
+      "objects": 10,
+      "start": {
+        "x": 312,
+        "y": 984
+      },
+      "W": 34,
+      "H": 24
+    },
+    {
+      "id": "e1",
+      "name": "녹화된 얼굴",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "금성 운송 · 감시 관리동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "봉인된 적재 창고",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 12,
+      "objects": 13,
+      "start": {
+        "x": 312,
+        "y": 984
+      },
+      "W": 34,
+      "H": 24
+    },
+    {
+      "id": "e2",
+      "name": "지붕 위의 장부",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "폐쇄된 정비동",
+          "h": 3,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "금성 거래소",
+          "h": 3,
+          "vacant": null
+        }
+      ],
+      "lamps": 17,
+      "objects": 16,
+      "start": {
+        "x": 120,
+        "y": 936
+      },
+      "W": 38,
+      "H": 26
+    },
+    {
+      "id": "e3",
+      "name": "윗층의 장부",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "연락 거점",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 2,
+      "objects": 16,
+      "start": {
+        "x": 600,
+        "y": 936
+      },
+      "W": 25,
+      "H": 23
+    },
+    {
+      "id": "p1",
+      "name": "불 꺼진 출고동",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "금성 운송 · 야간 출고동",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "봉인된 적재 창고",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 12,
+      "objects": 11,
+      "start": {
+        "x": 312,
+        "y": 984
+      },
+      "W": 34,
+      "H": 24
+    },
+    {
+      "id": "p2",
+      "name": "야간 기록실",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "금성 운송 · 야간 기록실",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "봉인된 적재 창고",
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 12,
+      "objects": 11,
+      "start": {
+        "x": 312,
+        "y": 984
+      },
+      "W": 34,
+      "H": 24
+    },
+    {
+      "id": "e4",
+      "name": "끊어진 회선",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "동네 교환실",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 26,
+      "objects": 16,
+      "start": {
+        "x": 600,
+        "y": 936
+      },
+      "W": 25,
+      "H": 23
+    },
+    {
+      "id": "e5",
+      "name": "창가의 중개인",
+      "currentRoute": false,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "새벽 부동산",
+          "h": 2,
+          "vacant": null
+        }
+      ],
+      "lamps": 26,
+      "objects": 16,
+      "start": {
+        "x": 600,
+        "y": 936
+      },
+      "W": 25,
+      "H": 23
+    },
+    {
+      "id": "n1",
+      "name": "마지막 이름",
+      "currentRoute": true,
+      "buildings": [
+        {
+          "i": 0,
+          "name": "백림재단 사저",
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 1,
+          "name": "창고 부엌",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 2,
+          "name": "숙소",
+          "h": 1,
+          "vacant": null
+        },
+        {
+          "i": 3,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 4,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 5,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 6,
+          "name": null,
+          "h": 2,
+          "vacant": null
+        },
+        {
+          "i": 7,
+          "name": null,
+          "h": 1,
+          "vacant": null
+        }
+      ],
+      "lamps": 12,
+      "objects": 70,
+      "start": {
+        "x": 2088,
+        "y": 1464
+      },
+      "W": 44,
+      "H": 32
+    }
+  ],
+  "errors": []
+}

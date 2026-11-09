@@ -70,7 +70,7 @@ function compactObjectiveText(){
  const targets=S.spare?[]:S.guards.filter(g=>g.target),parts=[];
  if(targets.length===1)parts.push(targetName(targets[0]).split(' · ')[0]+' 처치 '+targets.filter(targetEliminated).length+'/1');
  else if(targets.length)parts.push('표적 '+targets.filter(targetEliminated).length+'/'+targets.length+' 처치');
- if(STAGE.firstGoal)return STAGE.mission||STAGE.purpose||pendingFirstGoal()?.text||'출구로 탈출';
+ if(STAGE.firstGoal&&pendingFirstGoal())return pendingFirstGoal().text;
  if(S.items.length){
   const names=S.items.map((it,i)=>STAGE.itemNames?.[i]||STAGE.itemName||'서류'),work=S.items.some(it=>{const a=itemObjectiveAction(it);return a&&a.kind!=='recovery';});
   const label=work?'업무':S.items.length===1?names[0]:names.every(n=>/서류|장부|암호표|계약서|인계서|명세서|원장/.test(n))?'서류':'물품';
