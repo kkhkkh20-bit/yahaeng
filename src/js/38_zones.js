@@ -24,11 +24,11 @@ function zoneInfo(x, y, z, floor = CUR_F) {
 const zoneAt = (x, y, z) => zoneInfo(x, y, z).k;
 const pZoneInfo = () => { const P = S.player, pv = (P.trav && P.trav.base) || P; return zoneInfo(pv.x, pv.y, P.wire ? 1 : P.jump ? Math.max(P.z || 0, P.jump.z1 || 0) : P.trav ? (P.trav.elev || 0) : P.z, flOf(P)); };
 const pZone = () => pZoneInfo().k;
-const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !P.disguiseBlown)); };
+const disguised = g => { const P = S.player; return !!(P.outfit && (g ? !knownFace(g) : !reportedLook())); };
 // 지금 통하는 신분: 입은 옷 + 들고 있는 물건(택배 상자 → 택배 기사처럼)
 const myPermits = g => { const P = S.player, a = []; if (disguised(g)) a.push(P.outfit); if (P.item && P.item.permit) a.push(P.item.permit); return a; };
 const allowedBy = (allow, g) => !!allow && myPermits(g).some(o => allow.includes(o));
-const permitName = allow => { const o = myPermits().find(o => allow && allow.includes(o)); return o === S.player.outfit ? outfitName(o) : (S.player.item && S.player.item.name) || outfitName(o); };
+const permitName = (allow,g) => { const o = myPermits(g).find(o => allow && allow.includes(o)); return o === S.player.outfit ? outfitName(o) : (S.player.item && S.player.item.name) || outfitName(o); };
 const permitted = (zi, g) => zi.k !== Z_PUB && allowedBy(zi.allow, g);
 // 실제로 적용되는 구역: 허가된 옷을 입고 있으면 공개 구역처럼
 const pZoneEff = g => { const zi = pZoneInfo(); return permitted(zi, g) ? Z_PUB : zi.k; };
@@ -38,10 +38,10 @@ const sharpEye = g => !g.dog && disguised(g) && (g.civ ? g.enforcer && outfitOf(
 const identityTime = () => EYE_T;
 const EYE_R = 120, EYE_T = 3;
 function blowDisguise(g, why) {
-  const P = S.player; if (!P.outfit || P.disguiseBlown) return;
-  (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; S.stats.blown = (S.stats.blown || 0) + 1;
-  toast(why || `변장을 알아본 목격자가 있다 · 시야 밖에서 옷을 갈아입어라`, 3, 'warn');
-  if (g) { gsay(g, ['잠깐. 소속이 어디야?', '어느 팀이지? 처음 보는데.', '직원 확인 좀 하자.'][g.id % 3]); g.eyeT = 0; }
+  const P = S.player; if (!P.outfit || !g || g.dog || reportedLook() || g.suspectMemory?.[P.outfit]) return;
+  rememberSuspect(g); S.stats.blown = (S.stats.blown || 0) + 1;
+  toast(why || '목격자가 이 복장을 알아봤다 · 아직 전체 보고 전', 3, 'warn');
+  gsay(g, ['잠깐. 소속이 어디야?', '어느 팀이지? 처음 보는데.', '직원 확인 좀 하자.'][g.id % 3]); g.eyeT = 0;
 }
 function updateSharpEye(g, dt, rawVis) {
   g.eyeWatching=false;
@@ -71,16 +71,32 @@ function suspAct(g) {
 }
 // 목격한 옷차림만 기억한다. 시야 밖에서 얻은 새 신분을 경보만으로 알아보지는 않는다.
 const suspectLook = () => S.player.outfit || 'face';
-function rememberSuspect(g, look = suspectLook()) {
+// A report, not a local sighting, makes an appearance known to uninformed guards.
+const reportedLook = (look = suspectLook()) => !!S.knownLooks?.[look];
+function syncDisguiseKnowledge() {
+  const P=S.player;
+  P.blown=Object.fromEntries(Object.entries(S.knownLooks||{}).filter(([look,known])=>look!=='face'&&known));
+  P.disguiseBlown=!!((P.disguise||P.outfit)&&reportedLook());
+}
+function rememberSuspect(g, look = suspectLook(), source = 'radio') {
   if (!look) return;
   S.chaseSeen = true;
   if (g) { g.suspectLook = look; (g.suspectMemory = g.suspectMemory || {})[look] = true; }
-  else (S.knownLooks = S.knownLooks || {})[look] = true; // Completed central report only.
+  else {
+    (S.knownLooks = S.knownLooks || {})[look] = true;
+    (S.lookReports = S.lookReports || {})[look] = {source,t:S.t};
+    syncDisguiseKnowledge();
+  }
 }
 const knownFace = (g, look = suspectLook()) =>
   !!g.suspectMemory?.[look] ||
-  (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) ||
-  !!(S.alevel >= 2 && S.chaseSeen && (S.knownLooks ? S.knownLooks[look] : look === 'face'));
+  (g.state === 'ALERT' && (g.dog || (g.police && S.wanted > 0) || (g.suspectLook || 'face') === look)) || reportedLook(look);
+function disguiseKnowledge(look = suspectLook()) {
+  const witnesses=S.guards.filter(g=>!g.dog&&!g.off&&!g.doomed&&!['DEAD','CAPTIVE','TERROR'].includes(g.state)&&
+    (g.suspectMemory?.[look]||g.state==='ALERT'&&g.suspectLook===look));
+  const R=S.radioCall,reporting=!!(R&&R.look===look&&!R.g.doomed&&!['DEAD','CAPTIVE','TERROR'].includes(R.g.state));
+  return {shared:reportedLook(look),witnesses,reporting,source:S.lookReports?.[look]?.source};
+}
 // 허가된 동료는 뛰어도 침입자가 아니다. 웅크리기·범행과 별도 보안구역은 기존 규칙을 따른다.
 const publicSuspicion = g => { const k = suspAct(g), zi = pZoneInfo(); return k < 1 && myPermits(g).length && (!groundedWorld() || zi.k === Z_PUB || permitted(zi,g) && S.player.mode !== 'sneak') ? 0 : k; };
 function onDisguiseChanged(previousLook) {

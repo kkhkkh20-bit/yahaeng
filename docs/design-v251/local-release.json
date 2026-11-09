@@ -1,0 +1,74 @@
+{
+  "base": "http://127.0.0.1:8052/public/",
+  "files": {
+    "index.html": "c176922816e1bb5c8c958650a51eeee0d7068c8f39462ac47cd74164d9edf1ec",
+    "version.json": "d932d96b425ed45b2e6d53bd9e5f9cd9d5cdb3107a251cdd7540435485dacc16",
+    "assets/db3336a7657060e0da2f.js": "db3336a7657060e0da2f2bffd4d05783b2f3dc5dc9b50d5c940cd04682bca5ed",
+    "assets/29532ab01280cb2abd25.js": "29532ab01280cb2abd253cf180104356f10beaa7157b3f6a4d810d03af5a10ee",
+    "assets/036013c8b6159cbcc672.js": "036013c8b6159cbcc672a1f809e6e8d2bef5d691ab31f70f63569641a7bf369f",
+    "assets/508c79b336731eab1cb0.js": "508c79b336731eab1cb078200cfbab1c7ffd14a472547dcc70369c10a3315084",
+    "assets/a337b747256c483a23b9.js": "a337b747256c483a23b9dfcd9b9d98398680836204d6172ab5818f0f6783130e",
+    "assets/58e99c9acf0837983cac.js": "58e99c9acf0837983cace080c5ad58e18f7ca0e62fa5315a71ff8fd32282213f",
+    "assets/1fce0a241f87b2439051.js": "1fce0a241f87b24390519ee4df2da89031748c7c4f114425f75b4f14056a85ef",
+    "assets/a6afe29db370a7e87f05.js": "a6afe29db370a7e87f05451edd3a490ec6093877c3bf4869aca6539e1b3a2fe4",
+    "assets/47e6c36ca46b507fe30c.ttf": "47e6c36ca46b507fe30c2227e62386d567404fe1095f2e224af1e6f226b5b9f7",
+    "assets/15a13a3d5355b9f8e4a6.woff2": "15a13a3d5355b9f8e4a6e9850cfc8e4b0fe290d526ca7a30e33ca6f7596fa615",
+    "assets/7f549c64432e5b0a3af8.woff2": "7f549c64432e5b0a3af8370aacfd269416b499c2443bf18bc8cb2d41ee7644f5",
+    "assets/de6389db85e15eb3aa0d.woff": "de6389db85e15eb3aa0d5b46927d4646edd3cec6bc4a8f0d51147d326fabe459"
+  },
+  "browsers": [
+    {
+      "mobile": false,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        184.85256958385162,
+        505.53135
+      ],
+      "version": "v251",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    },
+    {
+      "mobile": true,
+      "before": [
+        120,
+        504
+      ],
+      "after": [
+        188.27819379692366,
+        505.5498
+      ],
+      "version": "v251",
+      "stage": "tB",
+      "errors": [],
+      "threeDRequests": false,
+      "objectivePauseAndResume": true,
+      "customUIFont": {
+        "fonts": [
+          {
+            "familyName": "IBM Plex Sans KR",
+            "postScriptName": "IBMPlexSansKR-Regular",
+            "isCustomFont": true,
+            "glyphCount": 5
+          }
+        ]
+      }
+    }
+  ],
+  "hashMethod": "Same-origin browser fetch and WebCrypto SHA256; identical expected local bytes"
+}

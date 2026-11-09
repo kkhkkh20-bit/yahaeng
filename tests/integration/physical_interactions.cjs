@@ -137,6 +137,6 @@ check('marked colleagues allow passers and gradually forget an existing check',(
  q.P.moving=false;q.api.updateSharpEye(g,.8,1);const seen=g.eyeT;q.P.moving=true;q.api.updateSharpEye(g,.1,1);
  assert(g.eyeT>0&&g.eyeT<seen);assert.equal(g.eyeWatching,false);assert(!q.P.disguiseBlown);
  for(let n=0;n<40;n++)q.api.updateSharpEye(g,.05,1);assert.equal(g.eyeT,0);
- q.P.moving=false;for(let n=0;n<64;n++)q.api.updateSharpEye(g,.05,1);assert.equal(q.P.disguiseBlown,true);assert.equal(g.state,'ALERT');
+ q.P.moving=false;for(let n=0;n<64;n++)q.api.updateSharpEye(g,.05,1);assert(!q.P.disguiseBlown);assert.equal(g.suspectMemory.crew,true);assert(!q.S.knownLooks.crew);assert.equal(g.state,'ALERT');
 });
 console.log('PASS physical interaction logic:',passed,'groups');

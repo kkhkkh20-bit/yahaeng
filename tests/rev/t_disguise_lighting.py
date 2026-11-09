@@ -35,7 +35,7 @@ async def main():
    S.alevel=2;tick(7);check(!P.disguiseBlown&&!g.eyeT&&g.state==='PATROL','Alarm invents an unreported uniform identity');
    g.enforcer=true;tick(1);check(!P.disguiseBlown&&g.eyeT>0,'Marked face check should give time to move away');
    P.x=g.x+180;tick(2);check(!P.disguiseBlown&&g.eyeT===0,'Distance must interrupt identity check');
-   P.x=g.x+90;tick(6);check(P.disguiseBlown&&G.knownFace(g),'Ordinary close guard never verifies identity');
+   P.x=g.x+90;tick(6);check(!P.disguiseBlown&&G.knownFace(g)&&!S.knownLooks.crew,'Marked close guard never verifies identity');
    // A wall and a different floor block identity checks as well as attacks.
    g.eyeT=0;P.disguiseBlown=false;P.outfit='staff';g.suspectMemory={};g.state='PATROL';g.seen=false;P.fl=1;tick(6);check(!P.disguiseBlown&&!g.eyeT,'Identity checks cross floors');
    S=fresh('m2');P=S.player;S.guards=[];S.cams=[];const l=S.lamps.find(l=>l.workLight&&l.fl===1),bi=G.bldAt(Math.floor(l.x/48),Math.floor(l.y/48));G.setLayer(1);

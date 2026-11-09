@@ -52,7 +52,7 @@ function recordSearchCause(kind){
 function searchCauseReadout(){
   if(S.alevel<2)return null;
   const kind=S.searchCause?.kind||'trace';
-  const known=!!S.knownLooks?.[suspectLook()]||!!S.player.disguiseBlown||S.guards.some(g=>!['DEAD','CAPTIVE'].includes(g.state)&&knownFace(g));
+  const k=disguiseKnowledge();
   const reason=kind==='body'?'쓰러진 사람 발견':kind==='player'?'내 모습 목격':kind==='camera'?'CCTV 목격':kind==='sound'?'소리 신고':kind==='blood'?'핏자국 발견':'이상 흔적 신고';
-  return{kind,text:reason+' · '+(known?'내 인상착의 알려짐':kind==='player'?'마지막 목격 지점 수색 중':'내 신원 미확인')};
+  return{kind,text:reason+' · '+(k.shared?'인상착의 전체 공유':k.reporting?'인상착의 보고 중':k.witnesses.length?'목격자만 알아봄':kind==='player'?'내 인상착의 미전달':'내 신원 미확인')};
 }

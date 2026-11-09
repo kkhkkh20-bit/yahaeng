@@ -27,7 +27,7 @@ async def main():
     f=fresh(0,role);f.tick(1);ok(f.g.eyeT>0&&!f.P.disguiseBlown,'marked face check has no warning '+role);
     const remembered=f.g.eyeT;f.P.moving=true;f.tick(.1);ok(f.g.eyeT>0&&f.g.eyeT<remembered&&!f.g.eyeWatching&&!f.P.disguiseBlown,'walking must fade an existing check without building suspicion');
     f.P.moving=false;f.P.a=0;f.tick(4);ok(!f.P.disguiseBlown,'paused with back turned still identified');
-    f.P.a=Math.PI;f.tick(3.2);ok(f.P.disguiseBlown&&f.g.state==='ALERT','real stationary face check no longer works '+role);
+    f.P.a=Math.PI;f.tick(3.2);ok(!f.P.disguiseBlown&&G.knownFace(f.g)&&!f.S.knownLooks.crew&&f.g.state==='ALERT','real stationary face check no longer works '+role);
    }results.push('marked roles ignore walking/running and back-facing passers; uninterrupted stationary face checks remain real');
    let f=fresh(2);G.rememberSuspect(f.g,'crew');f.tick(3);ok(f.g.state==='ALERT','an actual witness forgets the reported appearance');
    f=fresh();f.P.strikeT=.2;f.tick(.05);ok(f.g.state==='ALERT','uniform protects a witnessed attack');results.push('real suspect memories and witnessed crimes still detect');

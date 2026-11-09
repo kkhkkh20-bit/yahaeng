@@ -52,7 +52,7 @@ function updateCams(dt) {
     if (v > 0) { c.meter = Math.min(1, c.meter + dt * (0.9 + v * 1.8) * (!STAGE.zones && S.player.disguise && !S.player.disguiseBlown && S.player.mode !== 'run' && suspAct(null) < 1 ? 0.12 : 1)); if (c.meter >= 1) {
       c.meter = 0; c.cool = 6; if (!c.search) { S.stats.camEver = Math.max(S.stats.camEver||0,S.stats.camRec||0)+1; S.stats.camRec = (S.stats.camRec || 0) + 1;cameraRecordedFeedback(c,assessment.reason); recordCameraEvidence(c); }  // 서치라이트는 녹화가 아니다
       if (camReport(c)) { play('alarm', 0.4); setAlert(2, 40, c.search ? '서치라이트에 비쳤다 — 조직원이 몰려온다' : 'CCTV에 찍혔다 — 자경대원이 몰려온다');
-      const at = pSpot(); rememberSuspect(null); startBuildingSearch(at, 'A', 'camera'); }
+      const at = pSpot(); rememberSuspect(null,suspectLook(),'camera'); startBuildingSearch(at, 'A', 'camera'); }
     } } else c.meter = Math.max(0, c.meter - dt * 0.4);
     for (const k of S.corpses) { if (k.hideT>S.t || k.stashed || k.carried || k.discovered || k.camSeen || flOf(k) !== c.fl || (k.z || 0) !== (c.z || 0)) continue; if (k.accident && sees(k.x, k.y, Math.max(0.5, k.light || 0))) { if(camWatcher()){k.camSeen=true;securityBodyFound(k,null);}continue; }  // 관리자가 확인한 사고는 연락 두절에서 제외한다
       if (!k.byNpc && sees(k.x, k.y, Math.max(0.5, k.light || 0)) && camReport(c)) { securityBodyFound(k,null); k.camSeen = true; k.discovered = true; S.stats.bodies++; bossRadio('body'); S.stats.camRec = (S.stats.camRec || 0) + 1; setAlert(2, 40, 'CCTV에 쓰러진 사람이 찍혔다 — 수색 시작'); startBuildingSearch({ x: k.x, y: k.y, fl: flOf(k), z: k.z || 0 }, 'A', 'body'); } }

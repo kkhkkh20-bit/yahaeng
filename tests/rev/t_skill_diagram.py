@@ -1,4 +1,4 @@
-"""Card selection inspects without spending; details and prerequisites drive learning."""
+"""Circle selection inspects without spending; details and prerequisites drive learning."""
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -10,10 +10,10 @@ async def main():
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true},p0:{_clear:true},p1:{_clear:true},p2:{_clear:true}}));localStorage.setItem("yahaeng.skillTree.v1",JSON.stringify({schema:1,rewardVersion:152,legacyPoints:0,learned:[]}))');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game');await q.click('#btnSkillsIntro')
   assert await q.locator('#skillDetail').is_hidden()
   assert await q.locator('[data-node]').count()==27
-  assert await q.locator('.skill-tree:visible').count()==1
+  assert await q.locator('.skill-tree:visible').count()==3
   assert await q.locator('#skillLoadout [aria-pressed="true"]').count()==0,'Unlearned skill looks equipped'
   assert await q.locator('[data-node] > button > svg').count()==27,'Rendering links removes the skill symbols'
-  assert await q.evaluate('__game.SKILL_TREE.reduce((n,d)=>n+d.req.length,0)===24')
+  assert await q.locator('.skill-links path').count()==24,'Actual prerequisite routes are missing'
   assert await q.locator('.skill-node .skill-label').count()==27,'Missing prerequisite labels'
   for branch in ['tools','body','assassin','tools']:
    await q.locator('button[data-branch="'+branch+'"]').click()
@@ -38,5 +38,5 @@ async def main():
   await q.click('#btnSkillRewards');assert await q.locator('.skill-reward-mission').count()==6
   await q.keyboard.press('Escape');await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible()
   assert not errors,errors
-  (O/'diagram-checks.json').write_text(json.dumps({'nodes':27,'actualPrerequisiteEdges':24,'iconsSurviveBranchChanges':True,'inspectDoesNotPurchase':True,'prerequisiteNavigation':True,'realPointPurchases':True,'insufficientPointsBlocked':True,'arrowNavigation':True,'refundAndEscape':True,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS card inspection, 27 icons, 24 actual prerequisites, prerequisite focus, learning, insufficient points, keyboard, refund and return');await b.close()
+  (O/'diagram-checks.json').write_text(json.dumps({'nodes':27,'actualPrerequisiteEdges':24,'iconsSurviveBranchChanges':True,'inspectDoesNotPurchase':True,'prerequisiteNavigation':True,'realPointPurchases':True,'insufficientPointsBlocked':True,'arrowNavigation':True,'refundAndEscape':True,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS circle inspection, 27 icons, 24 actual prerequisites, prerequisite focus, learning, insufficient points, keyboard, refund and return');await b.close()
 asyncio.run(main())

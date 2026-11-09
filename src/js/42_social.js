@@ -77,7 +77,7 @@ function deliverReport(g) {
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
   setAlert(2, 30, '주민이 근처 자경대원에게 신고했다 — 현장 확인');
   if (r.saw) { rememberSuspect(o, r.saw); queueGuardRadio([o], {x:r.x,y:r.y,fl:flOf(g),z:g.z||0}, r.saw, true); }
-  if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, '현재 복장이 신고됐다 — 다른 옷이 필요하다');
+  // The recipient knows the reported look; others learn it only after their radio completes.
   else if (r.saw === 'face') { toast('목격자가 근처 경비에게 인상착의를 전했다', 2.8, 'warn'); }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
 }
@@ -223,7 +223,7 @@ function nearUse() {
 function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
-    const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); syncDisguiseKnowledge(); onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();
