@@ -99,8 +99,9 @@
   },
   "origin": "Original generated cast busts; heroine derived from the approved female agent reference",
   "sourceSha256": {
-    "hero": "d30a0fdc28ee3edc86f7a2caca2bb129091e74fd7ab1339fac08f1c2b533d7da",
+    "hero": "ddea00fc727dbf4a70db9cede8c16c06826dfe02fcdbcd3c9c414ed3a0fdd33f",
     "cast": "6b275f728686e4461f3c07a9daab98b3e4d6d5fe285dd48936da3db82ba06852"
   },
-  "dogPortrait": false
+  "dogPortrait": false,
+  "heroDesign": "v245 female ninja: tied-back black hair, navy wrap top, burgundy sash"
 }

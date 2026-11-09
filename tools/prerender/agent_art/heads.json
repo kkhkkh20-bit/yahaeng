@@ -1,7 +1,6 @@
 {
-  "origin": "Original generated pixel head sheet derived from the user-approved female agent turnaround",
-  "approvedReference": "docs/world-polish-v240/hero-turnaround.webp",
-  "sourceSha256": "573026519fae301a845970fd4388cd99fde87ec42c16432423c183d0ea1e1646",
+  "origin": "Original generated female ninja head sheet, redesigned for the existing animation rig",
+  "sourceSha256": "938139c7cafa0bece4f1f82f55c1f4abcec21e04aebf2a4a1daf8725bd06414f",
   "directions": [
     "E",
     "SE",
@@ -24,7 +23,7 @@
         2,
         2,
         20,
-        20
+        19
       ]
     },
     {
@@ -49,10 +48,10 @@
         24
       ],
       "visible": [
+        3,
         2,
-        2,
-        20,
-        19
+        17,
+        20
       ]
     },
     {
@@ -66,7 +65,7 @@
         2,
         2,
         20,
-        19
+        20
       ]
     },
     {
@@ -80,7 +79,7 @@
         2,
         2,
         20,
-        20
+        19
       ]
     },
     {
@@ -105,9 +104,9 @@
         24
       ],
       "visible": [
+        3,
         2,
-        2,
-        20,
+        17,
         20
       ]
     },
@@ -121,9 +120,10 @@
       "visible": [
         2,
         2,
-        20,
+        19,
         20
       ]
     }
-  ]
+  ],
+  "design": "Adult female, swept fringe, compact tied-back ponytail, copper clasp"
 }

@@ -18,7 +18,7 @@ def sheets():
     for i in range(n):
      box=im.crop(((col+i)*64,d*64,(col+i+1)*64,(d+1)*64)).getchannel('A').point(lambda v:255 if v>128 else 0).getbbox()
      assert box and min(box[:2])>0 and max(box[2:])<64,(name,pose,d,i,box);count+=1
- assert count==16632,count
+ assert count==22176,count
  return count
 async def main():
  O.mkdir(exist_ok=True);count=sheets();server=ThreadingHTTPServer(('127.0.0.1',0),partial(SimpleHTTPRequestHandler,directory=str(R)));threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -37,12 +37,12 @@ async def main():
    P.outfit=P.disguise=null;ok(G.characterPalette(P)[2]==='#2e425f','default jacket is not navy');
    const npc=G.characterLook({outfit:'staff',civ:true,body:'fBob',look:0,id:1});ok(!npc.includes('heroAgent'),'NPC identity was replaced');
    return{looks,npc,navy:true,identity:true,allActions:true,containerOpening:true};}''')
-  data=await q.evaluate('''()=>{const G=__game,c=G.ctx;c.save();c.setTransform(1,0,0,1,0,0);c.fillStyle='#202630';c.fillRect(0,0,1280,720);c.textAlign='center';c.font='15px "IBM Plex Sans KR"';c.fillStyle='#e4e3dc';c.fillText('여성 요원 · 실제 게임 렌더러 / 8방향',640,30);
+  data=await q.evaluate('''()=>{const G=__game,c=G.ctx;c.save();c.setTransform(1,0,0,1,0,0);c.fillStyle='#202630';c.fillRect(0,0,1280,720);c.textAlign='center';c.font='15px "IBM Plex Sans KR"';c.fillStyle='#e4e3dc';c.fillText('여성 닌자 · 실제 게임 렌더러 / 8방향',640,30);
    const dirs=['E','SE','S','SW','W','NW','N','NE'];for(let d=0;d<8;d++){const x=90+d*155;G.drawPR('ninja',x,150,d*Math.PI/4,'idle',0,1,2);c.fillStyle='#c9c8c1';c.fillText(dirs[d],x,185);}
    const pixels=c.getImageData(0,55,1280,110).data;let green=0;for(let i=0;i<pixels.length;i+=4)if(pixels[i+1]>45&&pixels[i+1]>pixels[i]*1.5&&pixels[i+1]>pixels[i+2]*1.5)green++;if(green)throw Error('unpainted head palette pixels: '+green);
    const poses=['walk','run','sneak','stab','choke','carry','climb','dress'],labels=['걷기','달리기','웅크림','암살','기절','운반','등반','변장'];
    for(let i=0;i<8;i++){const pose=poses[i],loop=['walk','run','sneak','carry','climb'].includes(pose),n=G.PR.bodies.heroAgent.anims[pose]?.[1]||1;G.drawPR('ninja',90+i*155,350,0,pose,.35,1,2,0,loop?-1:Math.floor((n-1)*.55));c.fillStyle='#c9c8c1';c.fillText(labels[i],90+i*155,390);}
-   const keys=['ninja','sam@heroAgentCrew','staff@heroAgentWorker','courier@heroAgentWorker','waiter@heroAgent','cater@heroAgentWorker','ninja','ninja@heroAgentLid'],names=['기본','경비 복장','직원 복장','운반책 복장','정장 복장','작업복','쓰러짐','뚜껑 열기'];
+   const keys=['ninja','sam@heroAgentCrew','staff@heroAgentWorker','courier@heroAgentWorker','waiter@heroAgentFormal','cater@heroAgentWorker','ninja','ninja@heroAgentLid'],names=['기본','경비 복장','직원 복장','운반책 복장','정장 복장','작업복','쓰러짐','뚜껑 열기'];
    for(let i=0;i<8;i++){const anim=i===6?'death':i===7?'openBin':'idle',n=G.PR.bodies[i===7?'heroAgentLid':'heroAgent'].anims[anim][1];G.drawPR(keys[i],90+i*155,560,i===6?Math.PI/4:Math.PI/2,anim,0,1,2,0,i>=6?Math.floor((n-1)*.8):0);c.fillStyle='#c9c8c1';c.fillText(names[i],90+i*155,610);}
    c.restore();return c.canvas.toDataURL();}''')
   (O/'appearance-gallery.png').write_bytes(base64.b64decode(data.split(',')[1]));assert not errors,errors;await q.close();await b.close()

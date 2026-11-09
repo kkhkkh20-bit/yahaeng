@@ -2,7 +2,7 @@ const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
 const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#54846f', '#343b49', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
-  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a','#31333d','#2e425f','#30343f','#171c25'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
+  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e','#9b4754']:['#e6b38a','#252b39','#2e425f','#252c3b','#171c25','#a1495c'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
   old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
   civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
@@ -14,7 +14,7 @@ const PR_PAL = {
 // Rank changes the model and behaviour, not the faction's uniform. Keep the
 // legacy keys: corpses, old saves and the player's stolen clothes use them too.
 for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
-PR_PAL.agent=['#e6b38a','#31333d','#2e425f','#30343f','#171c25'];
+PR_PAL.agent=['#e6b38a','#252b39','#2e425f','#252c3b','#171c25','#a1495c'];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
@@ -48,6 +48,9 @@ function prPrepPart(base, ci) {
   for (let i = 0; i < n; i++) {
     const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2]; if (!d[i * 4 + 3]) continue;
     const mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn; if (ch < 20 || !mx) continue;
+    // Saturated bright yellow is the authored sixth channel. Its high R/G
+    // threshold excludes antialiased red-skin/green-hair boundary mixtures.
+    if(r>215&&g>215&&b<60&&Math.abs(r-g)<35){cls[i]=5;wgt[i]=255;shd[i]=180;continue;}
     const nr = r / mx, ng = g / mx, nb = b / mx; let best = 0, bd = 9;
     for (let k = 0; k < 5; k++) { const q = (nr - K[k][0]) ** 2 + (ng - K[k][1]) ** 2 + (nb - K[k][2]) ** 2; if (q < bd) { bd = q; best = k; } }
     cls[i] = best; wgt[i] = Math.max(1, Math.round(Math.min(1, (ch - 20) / 60) * 255)); shd[i] = Math.round(Math.min(1.35, mx / 255 * 1.25) * 180);
@@ -68,6 +71,7 @@ function prPrep(img) {
     const j = pixels[i] * 4, k = i * 4; src.set(d.subarray(j, j + 4), k);
     const r = d[j], g = d[j + 1], b = d[j + 2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), ch = mx - mn;
     if (ch < 20 || !mx) continue;
+    if(r>215&&g>215&&b<60&&Math.abs(r-g)<35){cls[i]=5;wgt[i]=1;shd[i]=1;continue;}
     const nr = r / mx, ng = g / mx, nb = b / mx; let best = 0, bd = 9;
     for (let k = 0; k < 5; k++) { const q = (nr - K[k][0]) ** 2 + (ng - K[k][1]) ** 2 + (nb - K[k][2]) ** 2; if (q < bd) { bd = q; best = k; } }
     cls[i] = best; wgt[i] = Math.min(1, (ch - 20) / 60); shd[i] = Math.min(1.35, mx / 255 * 1.25);
@@ -91,7 +95,7 @@ const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, (PR &&
 function playerKey(P) {
   const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : STAGE?.agentStudy ? 'agent' : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
-  const studyBody=STAGE?.agentStudy?({crew:'heroAgentCrew',staff:'heroAgentWorker',courier:'heroAgentWorker',waiter:'heroAgent',cater:'heroAgent'}[P.outfit]||'heroAgent'):null;
+  const studyBody=STAGE?.agentStudy?({crew:'heroAgentCrew',staff:'heroAgentWorker',courier:'heroAgentWorker',waiter:'heroAgentFormal',cater:'heroAgentWorker'}[P.outfit]||'heroAgent'):null;
   const body = pal==='agent' ? 'heroAgent' : studyBody || pal !== 'ninja' && PR.playerLooks[P.outfit] || PR.looks.ninja || 'hero';
   if(!prBodies[body])prLoadBody(body);
   if(PR.bodies?.[body+'Lid']&&!prBodies[body+'Lid'])prLoadBody(body+'Lid');
@@ -102,8 +106,10 @@ function playerKey(P) {
 }
 function prPalette(pk, body) {
   const pal = PR_PAL[pk];
-  return pal && PR && PR.style === 'modular' && body && body.startsWith('hero') ?
-    [PR_PAL.ninja[0], body.startsWith('heroAgent')?PR_PAL.agent[1]:PR_PAL.ninja[1], ...pal.slice(2)] : pal;
+  if(!pal)return null;
+  const colors=PR?.style==='modular'&&body?.startsWith('hero')?
+    [PR_PAL.ninja[0],body.startsWith('heroAgent')?PR_PAL.agent[1]:PR_PAL.ninja[1],...pal.slice(2,5)]:pal.slice(0,5);
+  return [...colors,pal[5]||'#9c8c78'];
 }
 
 // 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로

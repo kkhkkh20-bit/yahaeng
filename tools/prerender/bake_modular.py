@@ -17,7 +17,7 @@ from frame_bounds import frame_bounds
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / 'build' / 'pr'
 FR = 64
-KEY = dict(skin='#ff0000', hair='#00ff00', shirt='#0000ff', pants='#ff00ff', shoes='#00ffff', eyes='#000000')
+KEY = dict(skin='#ff0000', hair='#00ff00', shirt='#0000ff', pants='#ff00ff', shoes='#00ffff', accent='#ffff00',eyes='#000000')
 # Shape is separate from palette. Full hero sheets retain every traversal,
 # two-person and combat frame; civilians use their existing smaller contract.
 RECIPES = {
@@ -33,13 +33,18 @@ RECIPES = {
  'bossBig': ('suit', BODIES['big'], CIV_ANIMS),
  'fBob': ('woman', None, CIV_ANIMS), 'fLong': ('formal', None, CIV_ANIMS),
  'fTail': ('woman', {'parts': [BODIES['fTail']['parts'][0]]}, CIV_ANIMS),
- 'coat': ('suit', None, CIV_ANIMS), 'old': ('suit', BODIES['old'], CIV_ANIMS),
+ 'coat': ('trench', None, CIV_ANIMS), 'old': ('suit', BODIES['old'], CIV_ANIMS),
+ 'vest': ('vest',None,CIV_ANIMS+['hold','holdI']),
+ 'jacket': ('jacket',None,CIV_ANIMS),
+ 'guardPatrol':('guardPatrol',None,CIV_ANIMS+['punch','climb','hold','holdI','hug','hugStep']),
  'pack': ('hoodie', {'parts': BODIES['pack']['parts']}, CIV_ANIMS),
  'helmet': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
  'heroAgent': ('heroAgent', None, None),
+ 'heroAgentFormal': ('heroAgentFormal',None,None),
  'heroAgentCrew': ('heroAgentCrew', None, None), 'heroAgentWorker': ('heroAgentWorker', None, None),
  'heroAgentLid': ('heroAgent', None, ['openBin']),
+ 'heroAgentFormalLid': ('heroAgentFormal',None,['openBin']),
  'heroAgentCrewLid': ('heroAgentCrew', None, ['openBin']),
  'heroAgentWorkerLid': ('heroAgentWorker', None, ['openBin']),
  'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
@@ -51,11 +56,13 @@ for bn,(look,body,_) in list(RECIPES.items()):
 LOOK_MAP = {'ninja': 'heroAgent', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
 LOOK_MAP.update({f'civ{i}': ['male', 'fBob', 'male', 'fLong', 'male', 'coat', 'fTail', 'pack', 'old', 'male'][i] for i in range(10)})
+LOOK_MAP['sam']='guardPatrol'
 # Widen crowded civilian frames; exported scale/ground anchors retain world size.
 FRAME_PADDING = {name:1.4 for name in ['big','bossBig','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
 FRAME_PADDING.update({'oldMotion':1.5,'packMotion':1.2})
+FRAME_PADDING.update({'vest':1.4,'jacket':1.2,'guardPatrol':1.4})
 PLAYER_MAP = {'crew': 'heroAgentCrew', 'staff': 'heroAgentWorker', 'courier': 'heroAgentWorker',
-              'waiter': 'heroAgent', 'cater': 'heroAgentWorker'}
+              'waiter': 'heroAgentFormal', 'cater': 'heroAgentWorker'}
 class QuietHandler(SimpleHTTPRequestHandler):
  def log_message(self, *args): pass
 
@@ -200,7 +207,7 @@ async def main():
     image.save(OUT/'face.webp','WEBP',lossless=True,method=6)
     meta['faces']={'fr':256,'cols':{('' if bn=='key' else bn):i for i,(bn,_) in enumerate(faces)}}
     meta.update(style='modular',looks=LOOK_MAP,playerLooks=PLAYER_MAP,
-      bodyGender={bn:('female' if bn.startswith(('hero','female')) or bn.removesuffix('Motion') in ['fBob','fLong','fTail'] else 'male') for bn in RECIPES})
+      bodyGender={bn:('female' if bn.startswith(('hero','female','jacket')) or bn.removesuffix('Motion') in ['fBob','fLong','fTail'] else 'male') for bn in RECIPES})
    (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
    if errors:raise RuntimeError(errors)
    await browser.close()

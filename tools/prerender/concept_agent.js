@@ -26,7 +26,7 @@ export async function attachConceptHead(model,bones,mats){
  // neck, with the fuller bob silhouette from the approved four-head-tall design.
  model.updateMatrixWorld(true);
  const center=bones.Head.getWorldPosition(new THREE.Vector3()),neck=bones.Neck.getWorldPosition(new THREE.Vector3());
- const span=center.distanceTo(neck),height=span*4.8;center.y+=span*2;
+ const span=center.distanceTo(neck),height=span*5.2;center.y+=span*2.2;
  const anchor=bones.Head.worldToLocal(center.clone());
  const up=bones.Head.worldToLocal(center.clone().add(new THREE.Vector3(0,height,0))).sub(anchor);
  model.traverse(o=>{if(o.name.endsWith('_Head'))o.visible=false;});

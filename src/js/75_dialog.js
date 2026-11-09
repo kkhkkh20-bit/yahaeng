@@ -35,7 +35,7 @@ function portraitFor(sp){
   if(sp.key==='old'||sp.key==='old@old')return 'crow';
   if(palette==='doc')return 'doc';
   if(body==='old'||body==='kid')return null; // Keep age-specific legacy faces.
-  const female=/^(female|fBob|fLong|fTail|fPony|girl)/.test(body||'');
+  const female=/^(female|fBob|fLong|fTail|fPony|girl|jacket)/.test(body||'');
   return (/^(sam|hunter|guard)/.test(palette)?'guard':'civil')+(female?'Female':'Male');
 }
 castPortraitImage.onload=()=>{
