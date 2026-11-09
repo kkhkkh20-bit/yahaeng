@@ -32,7 +32,7 @@ async def main():
    menu=await q.evaluate('__game.spriteSources.snapshot()');assert set(menu['loaded'])=={'heroAgent','heroAgentMotion'},menu
    await q.evaluate('''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tB'));while(G.DLG.modal)G.advanceDialog();G.S.fade=0;await G.prLoadBody('heroCrew');window.coldCalls=[];const C=G.ctx,draw=C.drawImage;C.drawImage=(...a)=>{coldCalls.push(a);return draw.apply(C,a)};try{window.coldVisible=G.drawPR('sam@heroCrew',100,100,0,'walk',.3);}finally{C.drawImage=draw;}}''')
    assert await q.evaluate('coldVisible&&coldCalls.length===1'),'cold motion source removes or ghosts the heroine'
-   await q.evaluate('async()=>{const G=__game;await Promise.all([...Object.values(G.PR.fluidBodies.heroAgent),...Object.values(G.PR.fluidBodies.key)].map(n=>G.prLoadBody(n)));}')
+   await q.evaluate('async()=>{const G=__game;await Promise.all([...Object.values(G.PR.fluidBodies.heroAgent),...Object.values(G.PR.fluidBodies[G.PR.looks.sam||"key"])].map(n=>G.prLoadBody(n)));}')
    result=await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player,check=(v,m)=>{if(!v)throw Error(m)};
     Object.assign(P,{moving:true,mode:'walk',travelSpeed:82,gaitTime:0,strikeT:0});G.updateHeroVisual(P);S.t+=.1;P.gaitTime=.24;G.updateHeroVisual(P);const before=G.heroMotionClock(P,'walk');check(before>0,'walking clock frozen');
     P.mode='run';G.updateHeroVisual(P);const run=G.heroMotionClock(P,'run');check(Math.abs(before-run/.64)<1e-8,'run resets the planted-foot phase');

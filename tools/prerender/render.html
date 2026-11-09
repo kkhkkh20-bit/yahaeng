@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { loadModular, colorModular } from './modular_models.js';
 import { updateConceptHead } from './concept_agent.js';
+import { updateWardrobe } from './wardrobe.js';
 const modular = new URLSearchParams(location.search).has('modular');
 const RS = 128;  // 렌더 크기 (나중에 64로 줄인다)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -22,7 +23,7 @@ function renderSprite(cameraDrop = 0, frameScale = 1) {
   // Flat corpses and lowered climbing poses extend below a standing frame.
   // Move the bake camera, then export its ground anchor for runtime placement.
   cam.position.y -= cameraDrop; cam.lookAt(0, CY - cameraDrop, 0); cam.updateMatrixWorld(true);
-  updateConceptHead(model,cam);updateConceptHead(model2,cam);
+  updateWardrobe(model);updateWardrobe(model2);updateConceptHead(model,cam);updateConceptHead(model2,cam);
   renderer.render(scene, cam);
   const ground = new THREE.Vector3().project(cam);
   window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;

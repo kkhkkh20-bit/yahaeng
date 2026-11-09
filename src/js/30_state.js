@@ -338,7 +338,7 @@ function floorCanvas(bi, f) {
   return (S.floorC[k] = c);
 }
 // 주민 체형 자동 배정 (어른만): 남자 기본 3 · 여자 셋 6 · 덩치·노인·코트·백팩 각 1
-const BODY_MIX = [null, null, null, 'fLong', 'fLong', 'fBob', 'fBob', 'fTail', 'fTail', 'big', 'old', 'coat', 'pack'];
+const BODY_MIX = [null, 'vest', 'jacket', 'fLong', 'fLong', 'fBob', 'fBob', 'fTail', 'jacket', 'big', 'old', 'coat', 'pack'];
 const autoBody = i => BODY_MIX[((i * 7919 + 13) >>> 0) % BODY_MIX.length];
 function makeGuard(d, i) {
   let sx, sy;

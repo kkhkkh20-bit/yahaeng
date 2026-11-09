@@ -12,7 +12,7 @@ const charOf = g => {
   const base = charBase(g);
   // An explicit civilian shape wins; role-specific outfits keep their own
   // workwear silhouette (for example the courier's helmet).
-  const female = g.body && ['fBob', 'fLong', 'fTail'].includes(g.body);
+  const female = g.body && ['fBob', 'fLong', 'fTail','jacket'].includes(g.body);
   const job = PR && PR.style === 'modular' && g.outfit && PR.looks[g.outfit];
   const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body;
   return base + (body && PR && PR.bodies && PR.bodies[body] ? '@' + body : '');

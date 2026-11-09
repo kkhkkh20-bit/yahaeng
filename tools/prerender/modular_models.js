@@ -3,12 +3,14 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { attachConceptHead } from './concept_agent.js';
+import { attachWardrobe } from './wardrobe.js';
 
 const loader = new GLTFLoader();
 const loaded = new Map();
 export const LOOKS = {
-  heroAgent: ['Female-Suit', 'Female-Suit', 'Female-Suit', 'Female-Suit'],
-  heroAgentCrew: ['Female-Suit', 'Male-Swat', 'Female-Suit', 'Female-Suit'],
+  heroAgent: ['Female-Suit', 'Female-Punk', 'Female-Suit', 'Female-Worker'],
+  heroAgentFormal: ['Female-Suit', 'Female-Suit', 'Female-Suit', 'Female-Suit'],
+  heroAgentCrew: ['Female-Suit', 'Female-Worker', 'Female-Suit', 'Female-Worker'],
   heroAgentWorker: ['Female-Suit', 'Female-Worker', 'Female-Worker', 'Female-Suit'],
   hero: ['Female-Casual', 'Female-Suit', 'Female-Casual', 'Female-Worker'],
   heroSuit: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Worker'],
@@ -18,6 +20,10 @@ export const LOOKS = {
   guard: ['Male-Swat'], male: ['Male-Casual_2'], suit: ['Male-Suit'],
   worker: ['Male-Worker'], woman: ['Female-Casual'], formal: ['Female-Formal'],
   hoodie: ['Male-Casual_Hoodie'],
+  trench: ['Male-Suit'],
+  vest: ['Male-Casual_2', 'Male-Worker', 'Male-Casual_2', 'Male-Worker'],
+  jacket: ['Female-Casual', 'Female-Punk', 'Female-Casual', 'Female-Worker'],
+  guardPatrol:['Male-Casual_2','Male-Worker','Male-Suit','Male-Worker'],
 };
 const aliases = { Spine: 'Abdomen', Spine1: 'Torso', Spine2: 'Chest' };
 for (const [side, suffix] of [['Left', '.L'], ['Right', '.R']]) {
@@ -29,7 +35,7 @@ for (const [side, suffix] of [['Left', '.L'], ['Right', '.R']]) {
     [side + 'ToeBase']: 'PT' + suffix,
   });
 }
-const keys = { skin: 0xff0000, hair: 0x00ff00, shirt: 0x0000ff, pants: 0xff00ff, shoes: 0x00ffff };
+const keys = { skin: 0xff0000, hair: 0x00ff00, shirt: 0x0000ff, pants: 0xff00ff, shoes: 0x00ffff, accent:0xffff00 };
 function partOf(node) {
   for (let o = node; o; o = o.parent) {
     const m = /_(Head|Body|Legs|Feet)$/.exec(o.name);
@@ -91,11 +97,10 @@ export async function loadModular(name) {
     if(name.startsWith('heroAgent')){
       const materials=Array.isArray(o.material)?o.material:[o.material];
       for(const m of materials){m.shininess=0;m.flatShading=true;}
-      // Broader suit cloth, with the original female skeleton and bare hands.
-      // Bone positions and paired contact targets remain in the same rig space.
+      // Tailor the cloth while preserving the original skeleton/contact space.
       if(partOf(o)==='Body'&&materials.every(m=>m.userData.role==='shirt')){
         o.geometry=o.geometry.clone();const pos=o.geometry.attributes.position;
-        for(let i=0;i<pos.count;i++)pos.setX(i,pos.getX(i)*1.1);
+        for(let i=0;i<pos.count;i++)pos.setX(i,pos.getX(i)*(name==='heroAgent'?.94:1));
         pos.needsUpdate=true;o.geometry.computeVertexNormals();
       }
     }
@@ -125,6 +130,7 @@ export async function loadModular(name) {
     return [a.name, a];
   }));
   if(name.startsWith('heroAgent'))await attachConceptHead(model,bones,mats);
+  if(['heroAgent','trench','vest'].includes(name))attachWardrobe(name,model,bones,mats);
   clips.Punch = clips.Punch_Right;
   return { model, bones, mats, clips, mixer: new THREE.AnimationMixer(model) };
 }
