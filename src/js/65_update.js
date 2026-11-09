@@ -98,6 +98,7 @@ function updateAlert(dt) {
     }
   } else if (S.alevel > 0) {
     S.alevelT -= dt;
+    if(S.alevel===2&&S.guards.some(g=>g.state==='SEARCH'&&g.searchJob&&(S.searchIncidents||[]).some(i=>i.id===g.searchJob.incident&&i.until>S.t)))S.alevelT=Math.max(2,S.alevelT);
     if (S.alevelT <= 0) {
       const was = S.alevel; S.alevel--; S.alevelT = S.alevel === 1 ? 45 : 0;
       if (was === 2) for (const g of S.guards) if (['SEARCH', 'CHECK', 'SUSPICIOUS', 'ALERT'].includes(g.state) && !g.target) { g.state = 'RETURN'; g.path = null; g.checks = []; g.inspect = null; g.icon = null; }

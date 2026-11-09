@@ -226,9 +226,12 @@ const pSpot = () => { const P = S.player; return { x: P.x, y: P.y, fl: flOf(P), 
 // later position. Without this, losing sight on the flight leaves pursuit below.
 function observedPlayerSpot(g){
   const P=S.player,T=P.trav;
-  if(!g.seen||!T?.stairs)return pSpot();
-  const end=T.pts[T.pts.length-1],dest=T.stairs.dest;
-  return {x:end.x,y:end.y,fl:dest.fl,z:dest.z,viaStair:T.stairs.key};
+  const spot=g.seen&&T?.stairs?{x:T.pts.at(-1).x,y:T.pts.at(-1).y,fl:T.stairs.dest.fl,z:T.stairs.dest.z,viaStair:T.stairs.key}:pSpot();
+  if(g.seen){const old=g.observedSample;
+    if(old&&flOf(old)===flOf(spot)&&(old.z||0)===(spot.z||0)&&S.t-old.t<1.5&&dist(old.x,old.y,spot.x,spot.y)>8){spot.heading=Math.atan2(spot.y-old.y,spot.x-old.x);g.observedHeadingAt=S.t;}
+    else if(old&&S.t-(g.observedHeadingAt??-9)<1.5&&Number.isFinite(g.lastSeen?.heading))spot.heading=g.lastSeen.heading;
+    if(!old||S.t-old.t>=.15)g.observedSample={...spot,t:S.t};spot.observedAt=S.t;
+  }return spot;
 }
 // Cached connected walking regions distinguish a room from the street below
 // the same XY. The old level-only BFS chose a nearby pipe behind an indoor wall

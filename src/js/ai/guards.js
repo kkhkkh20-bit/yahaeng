@@ -227,7 +227,7 @@ function updateGuard(g, dt) {
       if (g.seen) { g.lastSeen = observedPlayerSpot(g); g.lostT = 0; } else g.lostT += dt;
       g.chased = true;
       if (g.target) { if (STAGE.flee) { goFlee(g); break; } if (g.seen) g.want = Math.atan2(P.y - g.y, P.x - g.x); if (g.lostT > 5) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0.4; } break; }
-      if (!g.seen && g.lostT > 1.2 && !g.dog && startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting', g)) break;
+      if (!g.seen && g.lostT > 1.2 && (dist(g.x,g.y,g.lastSeen.x,g.lastSeen.y)<72||g.lostT>4.5) && !g.dog && startBuildingSearch(g.lastSeen, g.fac || 'A', 'sighting', g)) break;
       g.repath -= dt;
       if (updateGun(g, dt, sameF)) break;  // 권총을 겨누는 동안은 멈춰 선다
       if (g.repath <= 0 || !g.path) { routeTo(g, g.lastSeen); g.repath = 0.4; }

@@ -1,0 +1,366 @@
+[
+  {
+    "device": "pc",
+    "method": "Selected p0 fixture, fresh save, ordinary RAF, active AI and native keyboard/touch.\nNo actor, health, skill, clock or RNG changes. Checks the kill -> lead -> next-job loop.\nBrowser touch emulation does not certify physical iOS.\n",
+    "errors": [],
+    "milestones": [
+      {
+        "label": "officer-killed-lead-earned",
+        "version": "v253",
+        "t": 83.92839400000577,
+        "x": 1318.1913585421992,
+        "y": 364.7981289487638,
+        "fl": 1,
+        "z": 0,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 2,
+          "special": 0,
+          "ko": 2,
+          "dressed": 1,
+          "disguiseKill": true
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1272,
+            "y": 552
+          },
+          {
+            "id": 2,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1356.476160000002,
+            "y": 360
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "complete",
+        "version": "v253",
+        "t": 119.04369400001316,
+        "x": 131.7602849960002,
+        "y": 602.9736299232223,
+        "fl": 0,
+        "z": 0,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 3,
+          "special": 0,
+          "ko": 2,
+          "dressed": 1,
+          "disguiseKill": true
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1272,
+            "y": 552
+          },
+          {
+            "id": 2,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1356.476160000002,
+            "y": 360
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "next-job-with-lead",
+        "version": "v253",
+        "t": 0,
+        "x": 120,
+        "y": 936,
+        "fl": 0,
+        "z": 0,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 408,
+            "y": 984
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1272,
+            "y": 600
+          },
+          {
+            "id": 2,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1320,
+            "y": 360
+          },
+          {
+            "id": 3,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1224,
+            "y": 840
+          }
+        ],
+        "over": false
+      }
+    ]
+  },
+  {
+    "device": "mobile",
+    "method": "Selected p0 fixture, fresh save, ordinary RAF, active AI and native keyboard/touch.\nNo actor, health, skill, clock or RNG changes. Checks the kill -> lead -> next-job loop.\nBrowser touch emulation does not certify physical iOS.\n",
+    "errors": [],
+    "milestones": [
+      {
+        "label": "officer-killed-lead-earned",
+        "version": "v253",
+        "t": 85.69499400000633,
+        "x": 1320.5734817844716,
+        "y": 362.61308943585107,
+        "fl": 1,
+        "z": 0,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 2,
+          "special": 0,
+          "ko": 2,
+          "dressed": 1,
+          "disguiseKill": true
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1272,
+            "y": 552
+          },
+          {
+            "id": 2,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1356.332217600001,
+            "y": 360
+          }
+        ],
+        "over": false
+      },
+      {
+        "label": "complete",
+        "version": "v253",
+        "t": 123.72689400001471,
+        "x": 237.11030024856078,
+        "y": 937.386320897788,
+        "fl": 0,
+        "z": 0,
+        "hp": 3,
+        "mode": "sneak",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 1,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 3,
+          "special": 0,
+          "ko": 2,
+          "dressed": 1,
+          "disguiseKill": true
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "DEAD",
+            "seen": false,
+            "x": 696,
+            "y": 408
+          },
+          {
+            "id": 1,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1272,
+            "y": 552
+          },
+          {
+            "id": 2,
+            "state": "DEAD",
+            "seen": false,
+            "x": 1356.332217600001,
+            "y": 360
+          }
+        ],
+        "over": true
+      },
+      {
+        "label": "next-job-with-lead",
+        "version": "v253",
+        "t": 0,
+        "x": 120,
+        "y": 936,
+        "fl": 0,
+        "z": 0,
+        "hp": 3,
+        "mode": "walk",
+        "hidden": false,
+        "moving": false,
+        "carry": false,
+        "body": null,
+        "approach": false,
+        "recovery": false,
+        "kill": false,
+        "stats": {
+          "camEver": 0,
+          "kills": 0,
+          "extraKills": 0,
+          "bodies": 0,
+          "detected": 0,
+          "stonesUsed": 0,
+          "kunaiUsed": 0,
+          "alarms": 0,
+          "stashed": 0,
+          "special": 0
+        },
+        "guards": [
+          {
+            "id": 0,
+            "state": "PATROL",
+            "seen": false,
+            "x": 408,
+            "y": 984
+          },
+          {
+            "id": 1,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1272,
+            "y": 600
+          },
+          {
+            "id": 2,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1320,
+            "y": 360
+          },
+          {
+            "id": 3,
+            "state": "PATROL",
+            "seen": false,
+            "x": 1224,
+            "y": 840
+          }
+        ],
+        "over": false
+      }
+    ]
+  }
+]

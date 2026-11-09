@@ -44,6 +44,8 @@ function buildingSearchJobs(at, bi) {
     if (p && !jobs.some(j => (j.kind === kind || (kind !== 'hide' && j.kind !== 'hide')) && flOf(j.at) === flOf(p) && (j.at.z || 0) === (p.z || 0) && dist(j.at.x, j.at.y, p.x, p.y) < 55)) jobs.push(Object.assign({ id: jobs.length, at: p, kind, priority, claim: null, done: false }, extra));
   };
   add(searchStandNear(at), 'scene', 0);
+  if(Number.isFinite(at.heading))for(const d of [100,200])add(searchStandNear({...at,x:at.x+Math.cos(at.heading)*d,y:at.y+Math.sin(at.heading)*d}),'trail',.7+d/1000);
+
   if (bi >= 0) {
     const B = BLD[bi];
     const doors = S.doors.filter(d => bldAt(d.tx, d.ty) === bi).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
@@ -54,7 +56,9 @@ function buildingSearchJobs(at, bi) {
     }
     for (const e of S.lvl.ends) for (const p of [e.A, e.B]) if (p.z && bldAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) === bi) add(searchStandNear(p), 'roof', 3);
   } else {
-    for (const [dx, dy] of [[120, 0], [-120, 0], [0, 120], [0, -120]]) add(searchStandNear({ ...at, x: at.x + dx, y: at.y + dy }), 'perimeter', 2);
+    for (const [dx, dy] of [[120,0],[-120,0],[0,120],[0,-120],[240,0],[-240,0],[0,240],[0,-240]]) add(searchStandNear({...at,x:at.x+dx,y:at.y+dy}),'perimeter',Math.hypot(dx,dy)<180?2:3);
+    for(const e of S.exits||[])if(dist(at.x,at.y,e.x,e.y)<620)add(searchStandNear({...e,fl:0,z:0}),'escape',1.8);
+    for(const l of S.ladders||[])if(!at.z&&!at.fl&&dist(at.x,at.y,l.x,l.y)<300)add(searchStandNear({x:l.x,y:l.y,fl:0,z:0}),'junction',1.5);
   }
   (S.hides || []).forEach((h, i) => { if (bi >= 0 ? bldAt(h.tx, h.ty) === bi : flOf(h)===flOf(at)&&(h.z||0)===(at.z||0)&&dist(h.x, h.y, at.x, at.y) < 240) add(searchStandNear(h), 'hide', 1.6, { hideIndex: i }); });
   (S.bushes || []).forEach((h, i) => { if (!at.z && !at.fl && dist(h.x, h.y, at.x, at.y) < 180) add(searchStandNear(h), 'hide', 1.7, { bushIndex: i }); });
@@ -103,11 +107,13 @@ function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   if (!at || !Number.isFinite(at.x) || !Number.isFinite(at.y) || STAGE.tutorial || STAGE.city) return false;
   if(['body','sighting','camera'].includes(source))recordSearchCause(source==='sighting'?'player':source);
   if (!S.lvl) lvlInit();
-  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0,...(at.clue?{clue:at.clue}:{}) }, bi = searchBuildingAt(pos);
+  const pos = { x: at.x, y: at.y, fl: flOf(at), z: at.z || 0,...(at.clue?{clue:at.clue}:{}),...(Number.isFinite(at.heading)?{heading:at.heading}:{}),...(Number.isFinite(at.observedAt)?{observedAt:at.observedAt}:{}) }, bi = searchBuildingAt(pos);
+  if(source==='camera'&&!Number.isFinite(pos.observedAt))pos.observedAt=S.t;
   S.searchIncidents = (S.searchIncidents || []).filter(i => i.until > S.t);
   let inc = S.searchIncidents.find(i => i.fac === fac && i.b === bi && flOf(i.at) === pos.fl && i.at.z === pos.z && dist(i.at.x, i.at.y, pos.x, pos.y) < 100);
+  if(inc&&source!=='body'&&Number.isFinite(pos.observedAt)&&pos.observedAt>(inc.at.observedAt||-1)&&(dist(inc.at.x,inc.at.y,pos.x,pos.y)>32||inc.jobs.every(j=>j.done)))inc=null;
   if (!inc) {
-    inc = { id: (S.searchSerial = (S.searchSerial || 0) + 1), at: pos, b: bi, fac, source, until: S.t + 80, jobs: buildingSearchJobs(pos, bi) };
+    inc = { id: (S.searchSerial = (S.searchSerial || 0) + 1), at: pos, b: bi, fac, source, until: S.t + (STAGE.flowDesign?.search||80), jobs: buildingSearchJobs(pos, bi) };
     S.searchIncidents.push(inc); if (S.searchIncidents.length > 4) S.searchIncidents.shift();
   }
   // 같은 현장에서 범인을 실제로 새로 본 경우에만 현장 표식을 목격 정보로 갱신한다.
@@ -120,7 +126,7 @@ function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
   const cand = S.guards.filter(g => eligible(g) && informed(g) && (g === seed || dist(g.x, g.y, pos.x, pos.y) < 900)).sort((a, b) => (a === seed ? -1 : b === seed ? 1 : dist(a.x, a.y, pos.x, pos.y) - dist(b.x, b.y, pos.x, pos.y)));
   let count = S.guards.filter(g => g.state === 'SEARCH' && g.searchJob?.incident === inc.id).length;
   for (const g of cand) {
-    if (count >= 6) break;
+    if (count >= (STAGE.flowDesign?.guards||6)) break;
     if (g.searchJob?.incident === inc.id) continue;
     if (takeSearchJob(g, inc)) count++;
   }

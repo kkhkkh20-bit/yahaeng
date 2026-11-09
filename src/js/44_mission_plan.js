@@ -22,7 +22,31 @@ function recordMissionOutcome() {
 function serviceCell(tx,ty,fl) {
   return STAGE.id==='m2' && STAGE.guards.some(g=>g.target && (g.fl||0)===fl && (g.sched||[]).some(s=>Math.hypot(tx-s.at[0],ty-s.at[1])<1.25));
 }
+function syncFlowRoutes(){
+ const flow=STAGE.flowDesign;if(!flow)return;
+ if(S.flowVersion===1)return;
+ for(const e of STAGE.exits||[]){const x=tc(e.at[0]),y=tc(e.at[1]);if(!S.exits.some(o=>dist(o.x,o.y,x,y)<1))S.exits.push({x,y,r:e.r||60,name:e.name||''});}
+ if(S.exits[0]&&flow.name)S.exits[0].name=flow.name;
+ for(const[x,y,c]of flow.gaps||[])if(G0[y]?.[x]==='#')G0[y][x]=c||'=';
+ S.flowVersion=1;S.escapeChoice=null;S.floorC={};S.zEdges=null;
+}
+// Compare reachable walking paths, rather than pointing through a block to the
+// nearest exit in XY. No enemy positions or hidden knowledge affect this choice.
+function chooseEscape(){
+ const P=S.player,exits=S.exits||[S.exit];if(exits.length<2||P.fl||P.z)return S.exit;
+ const key=[Math.floor(P.x/TILE),Math.floor(P.y/TILE),exits.length,S.doors.map(d=>d.locked?1:0).join('')].join('|'),cache=S.escapeChoice;
+ if(cache&&cache.key===key&&S.t-cache.t<.75)return exits[cache.index]||S.exit;
+ const L0=CUR_F;setLayer(0);const doors=new Set(S.doors.filter(d=>!flOf(d)&&d.locked&&(!d.keyLock||P.keys?.[d.keyLock]||P.hasKey||P.picks>0)).map(d=>d.ty*MW+d.tx)),sol=(x,y)=>groundSolidP(x,y)&&!doors.has(y*MW+x),sx=Math.floor(P.x/TILE),sy=Math.floor(P.y/TILE);
+ let best=null;
+ exits.forEach((e,index)=>{let score=Infinity;const tx=Math.floor(e.x/TILE),ty=Math.floor(e.y/TILE);
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){const x=tx+dx,y=ty+dy;if(!inMap(x,y)||sol(x,y)||dist(tc(x),tc(y),e.x,e.y)>=e.r-4)continue;
+   const path=astar(sx,sy,x,y,sol);if((sx!==x||sy!==y)&&(!path.length||Math.floor(path.at(-1).x/TILE)!==x||Math.floor(path.at(-1).y/TILE)!==y))continue;
+   let length=0,prev=P;for(const at of path){length+=dist(prev.x,prev.y,at.x,at.y);prev=at;}score=Math.min(score,length);
+  }if(Number.isFinite(score)&&(!best||score<best.score))best={index,score};
+ });setLayer(L0);const index=best?.index??exits.indexOf(S.exit);S.escapeChoice={key,t:S.t,index};return exits[index]||S.exit;
+}
 function initMissionPlan() {
+  syncFlowRoutes();
   if(STAGE.id==='m2'&&S.vipContractVersion!==2){
     const escort=npc('vipEscort'),d=STAGE.guards.find(g=>g.tag==='vipEscort');if(escort&&d)escort.escortWait=cloneDeep(d.escortWait);
     // Saved staff walk to their new posts; bodies and active encounters stay intact.
