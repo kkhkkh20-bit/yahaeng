@@ -68,9 +68,10 @@ function drawCams(fl) {
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {
-      setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(flOf(S.player));
+      const previous=CUR_F;setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(previous);
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
-      if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기
+      // The beam itself belongs to the shared occluded lighting field.
+      if(c.search){ctx.strokeStyle=`rgba(255,240,180,${.12+c.meter*.3})`;ctx.lineWidth=1;path(R);ctx.stroke();}
       else {
       const recording=c.seen&&c.meter>0,col=recording?'255,115,90':'157,182,210';
       ctx.fillStyle = `rgba(${col},${0.09 + c.meter * 0.22})`; path(R); ctx.fill();

@@ -37,21 +37,23 @@ function officeGround(c,ch,tx,ty){
 function officeWall(c,tx,ty){
  if(!officeReady()||G[ty]?.[tx]!=='#')return false;
  const bi=bldAt(tx,ty);if(bi<0||BLD[bi].vacant)return false;
- const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,south=!['#','N','V'].includes(G[ty+1]?.[tx]||'V');
+ const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,joined=(dx,dy)=>'#NSXV'.includes(G[ty+dy]?.[tx+dx]||'V'),south=!joined(0,1);
  c.fillStyle=p.ink;c.fillRect(x,y,TILE,TILE);
  if(south){
   // Clip a square source module; stretching 32px to 48x36 distorts its pixels.
   c.save();c.beginPath();c.rect(x,y+12,TILE,TILE-12);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
   c.fillStyle='#849097';c.fillRect(x,y+10,TILE,2);c.fillStyle='#35444e';c.fillRect(x,y+TILE-4,TILE,3);
  }
- else{
-  // Visible side faces use the same purchased wall material as the front face.
-  for(const [dx,left]of [[-1,true],[1,false]])if(!['#','N','V'].includes(G[ty]?.[tx+dx]||'V')){
-   c.save();c.beginPath();c.rect(left?x:x+TILE-18,y,18,TILE);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
-   c.fillStyle='#849097';c.fillRect(left?x+17:x+TILE-18,y,1,TILE);
-  }
-  c.fillStyle='#536068';c.fillRect(x+22,y,4,TILE);
+ // Turn only the flat panel material along a side wall. Repeating the entire
+ // front module also repeated its bright crown/base moulding every floor tile.
+ const r=officeFrame(p.wall);
+ for(const [dx,left]of [[-1,true],[1,false]])if(!joined(dx,0)){
+  const edge=left?x:x+TILE-18;
+  c.save();c.translate(edge+18,y);c.rotate(Math.PI/2);
+  c.drawImage(officeAtlas,r[0],r[1]+20,r[2],12,0,0,TILE,18);c.restore();
+  c.fillStyle='#65747d';c.fillRect(left?edge+16.5:edge,y,1.5,TILE);
  }
+ if(!joined(0,-1)){c.fillStyle='#536068';c.fillRect(x,y+2,TILE,3);}
  return true;
 }
 function officeFurnKey(f){

@@ -454,6 +454,10 @@
       "group": "render"
     },
     {
+      "path": "render/light_surfaces.js",
+      "group": "render"
+    },
+    {
       "path": "render/lighting.js",
       "group": "render"
     },

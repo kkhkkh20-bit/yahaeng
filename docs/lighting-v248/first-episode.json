@@ -1,0 +1,92 @@
+[
+  {
+    "device": "pc",
+    "passed": true,
+    "errors": [],
+    "last": {
+      "label": "clear",
+      "videoSeconds": 85.6416541619983,
+      "stage": "tB",
+      "step": 9,
+      "x": 1346.5697347942987,
+      "y": 746.5596661758178,
+      "goal": {
+        "text": "배차실을 나와 동쪽 골목으로 빠져나오기",
+        "where": "",
+        "x": 1416,
+        "y": 744,
+        "fl": 0,
+        "tut": true,
+        "moveCue": true
+      },
+      "radio": "까마귀 · 무전동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.배차실을 나와 동쪽 골목으로 빠져나오기",
+      "mode": "walk",
+      "hidden": false,
+      "over": true,
+      "t": 78.89669833333612,
+      "hp": 3,
+      "whistle": null,
+      "uniformPass": true,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      }
+    }
+  },
+  {
+    "device": "mobile",
+    "passed": true,
+    "errors": [],
+    "last": {
+      "label": "clear",
+      "videoSeconds": 109.85412585700396,
+      "stage": "tB",
+      "step": 9,
+      "x": 1347.1181731557042,
+      "y": 746.8787306931561,
+      "goal": {
+        "text": "배차실을 나와 동쪽 골목으로 빠져나오기",
+        "where": "",
+        "x": 1416,
+        "y": 744,
+        "fl": 0,
+        "tut": true,
+        "moveCue": true
+      },
+      "radio": "까마귀 · 무전동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.배차실을 나와 동쪽 골목으로 빠져나오기",
+      "mode": "walk",
+      "hidden": false,
+      "over": true,
+      "t": 107.57589000001137,
+      "hp": 3,
+      "whistle": null,
+      "uniformPass": true,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      }
+    }
+  }
+]

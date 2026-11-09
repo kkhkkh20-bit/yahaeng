@@ -1,0 +1,40 @@
+[
+  {
+    "device": "pc",
+    "control": {
+      "x": 427,
+      "y": 360,
+      "fl": 1,
+      "z": 0,
+      "nx": 1,
+      "ny": 0,
+      "tx": 8,
+      "ty": 7,
+      "score": 1
+    },
+    "before": 1,
+    "dark": 0.04,
+    "lit": 1,
+    "errors": [],
+    "method": "Native keyboard/touch switch test in a positioned, actor-free office fixture.\nNormal RAF and interaction animation. This isolates input/art/perception, not mission difficulty.\n"
+  },
+  {
+    "device": "mobile",
+    "control": {
+      "x": 427,
+      "y": 360,
+      "fl": 1,
+      "z": 0,
+      "nx": 1,
+      "ny": 0,
+      "tx": 8,
+      "ty": 7,
+      "score": 1
+    },
+    "before": 1,
+    "dark": 0.04,
+    "lit": 1,
+    "errors": [],
+    "method": "Native keyboard/touch switch test in a positioned, actor-free office fixture.\nNormal RAF and interaction animation. This isolates input/art/perception, not mission difficulty.\n"
+  }
+]

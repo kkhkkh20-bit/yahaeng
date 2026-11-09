@@ -1,11 +1,22 @@
 const LIGHTQ = 4, lightCache = {};
+const lampFieldCache=new WeakMap();
+function lightArtSignature(){return[officeReady(),purchasedPropsReady(),purchasedReady(),freeCityReady(),!!propAtlas.naturalWidth].map(Number).join('');}
+function cachedLampField(l){
+ const art=lightArtSignature(),old=lampFieldCache.get(l);
+ if(old&&old.poly===l.poly&&old.art===art&&old.x===l.x&&old.y===l.y&&old.r===l.r)return old;
+ // Only this lamp's local field is rebuilt when a nearby door moves. The
+ // whole-floor composite then needs cheap image copies, not every ray/prop.
+ const x=Math.floor((l.x-l.r-64)/LIGHTQ)*LIGHTQ,y=Math.floor((l.y-l.r-144)/LIGHTQ)*LIGHTQ,w=Math.ceil((l.r*2+128)/LIGHTQ),h=Math.ceil((l.r*2+208)/LIGHTQ),c=document.createElement('canvas');c.width=w;c.height=h;
+ const q=c.getContext('2d');q.setTransform(1/LIGHTQ,0,0,1/LIGHTQ,-x/LIGHTQ,-y/LIGHTQ);lampLight(q,l,1);
+ const field={c,poly:l.poly,art,x:l.x,y:l.y,r:l.r,bounds:{x,y,w:w*LIGHTQ,h:h*LIGHTQ}};lampFieldCache.set(l,field);return field;
+}
 function lightMap(key, lamps) {
-  const sig = (officeReady()?'o':'') + (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
+  const sig = lightArtSignature() + (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
   let lc = lightCache[key];
   if (lc && lc.sig === sig) return lc.c;
   if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
-  lc.sig = sig; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
-  for (const l of lamps) { if (l.flk || !lampOn(l)) continue; lampLight(x, l, 1); }
+  lc.sig = sig;lc.floor=CUR_F; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
+  for (const l of lamps) { if (l.flk || !lampOn(l)) continue; const f=cachedLampField(l),b=f.bounds;x.drawImage(f.c,b.x,b.y,b.w,b.h); }
   return lc.c;
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
@@ -14,36 +25,10 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
   lightReceivingSurfaces(x,l,flick);
 }
-// Ground rays stop at the wall. Its near face, and an opaque cabinet's own
-// pixels, still receive light. These masks never reveal the floor behind them.
-function lightReceivingSurfaces(c,l,flick){
- if(l.outdoor||!officeReady())return;
- const reach=l.r*flick,bi=bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),b=BLD[bi];if(!b)return;
- const visible=(x,y)=>dist(l.x,l.y,x,y)<reach&&los(l.x,l.y,x,y);
- const strength=(x,y)=>{const d=dist(l.x,l.y,x,y)/reach;return d<.55?.9-d/.55*.14:Math.max(0,.76*(1-d)/.45);};
- c.save();
- for(let ty=b.y0;ty<=b.y1;ty++)for(let tx=b.x0;tx<=b.x1;tx++){
-  if(G[ty]?.[tx]!=='#')continue;
-  const x=tx*TILE,y=ty*TILE;
-  for(const [nx,ny]of [[-1,0],[1,0],[0,-1],[0,1]]){
-   const px=x+TILE/2+nx*(TILE/2+2),py=y+TILE/2+ny*(TILE/2+2);
-   if(opaqueAt(tx+nx,ty+ny)||!visible(px,py))continue;
-   c.fillStyle=`rgba(0,0,0,${strength(px,py)})`;
-   if(ny===1)c.fillRect(x,y+12,TILE,TILE-12);
-   else if(ny===-1)c.fillRect(x,y,TILE,12);
-   else c.fillRect(nx<0?x:x+TILE-18,y,18,TILE);
-  }
- }
- for(const f of FURN){
-  if(flOf(f)!==flOf(l)||!FURN_TALL.has(f.t)||bldAt(f.x,f.y)!==bi)continue;
-  let amount=0;
-  for(const [px,py]of [[f.x*TILE-2,(f.y+f.h/2)*TILE],[(f.x+f.w)*TILE+2,(f.y+f.h/2)*TILE],[(f.x+f.w/2)*TILE,f.y*TILE-2],[(f.x+f.w/2)*TILE,(f.y+f.h)*TILE+2]])if(visible(px,py))amount=Math.max(amount,strength(px,py));
-  if(!amount)continue;
-  c.globalAlpha=amount;drawFurnArt(c,f);c.globalAlpha=1;
- }
- c.restore();
+function darkPass(sc,lamps,clip,key,floor=0){
+ const previous=CUR_F;try{setLayer(floor);darkPassLayer(sc,lamps,clip,key);}finally{setLayer(previous);}
 }
-function darkPass(sc, lamps, clip, key) {
+function darkPassLayer(sc, lamps, clip, key) {
   // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.
   const ds = 0.5 / DPR;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
@@ -68,6 +53,7 @@ function darkPass(sc, lamps, clip, key) {
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;
     lampLight(dctx, l, flick);
   }
+  drawDynamicLightFields(dctx,CUR_F);
   if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2], clip[3]); ctx.clip(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!DBG.dk1) { ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false; }

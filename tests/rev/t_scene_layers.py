@@ -28,7 +28,7 @@ async def main():
     const S=fresh(id),P=S.player;for(const l of S.ladders.filter(l=>l.roofDoor)){
      Object.assign(P,{x:l.rx,y:l.ry,fl:0,z:l.tz});G.setLayer(0);const signature=JSON.stringify([l.rx,l.ry,l.roofDoor,l.tx,l.ty]),grid=G.GF.map(g=>g&&g.map(r=>r.join('')).join('')).join('|');
      const create=document.createElement;let canvases=0;document.createElement=function(tag,...a){if(tag==='canvas')canvases++;return create.call(this,tag,...a)};
-     let labels=0;const fill=ctx.fillText;ctx.fillText=function(t,...a){if(t==='계단')labels++;return fill.call(this,t,...a)};
+     let labels=0;const fill=ctx.fillText;ctx.fillText=function(t,...a){if(t==='↓ '+((l.bfl||0)+1)+'층')labels++;return fill.call(this,t,...a)};
      const state=JSON.stringify([ctx.globalAlpha,ctx.getTransform(),ctx.lineWidth]);
      try{G.drawRoofEntrances(P)}finally{document.createElement=create;ctx.fillText=fill}
      check(labels>=1&&canvases===0,id+' door cue absent or allocates bitmap');check(JSON.stringify([ctx.globalAlpha,ctx.getTransform(),ctx.lineWidth])===state,id+' entrance cue leaks drawing state');
