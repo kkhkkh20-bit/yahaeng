@@ -12,6 +12,7 @@ function switchVisualPoint(l){
  return{x:p.x+nx*5,y:p.y+ny*5,nx,ny};
 }
 function drawOfficeSwitch(l){
+ if(drawPurchasedSwitch(l))return true;
  if(!officeReady())return false;
  const p=switchVisualPoint(l);if(!p)return false;
  const off=lampCircuitOff(l),side=!!p.nx;

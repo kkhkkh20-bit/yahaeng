@@ -1,0 +1,226 @@
+{
+  "maps": [
+    {
+      "id": "m1",
+      "floors": 3,
+      "atlasCalls": 366,
+      "stairs": 24,
+      "parcels": 16,
+      "cabinets": 19
+    },
+    {
+      "id": "m2",
+      "floors": 3,
+      "atlasCalls": 221,
+      "stairs": 13,
+      "parcels": 2,
+      "cabinets": 12
+    },
+    {
+      "id": "m3",
+      "floors": 2,
+      "atlasCalls": 153,
+      "stairs": 13,
+      "parcels": 0,
+      "cabinets": 2
+    },
+    {
+      "id": "m4",
+      "floors": 3,
+      "atlasCalls": 169,
+      "stairs": 11,
+      "parcels": 4,
+      "cabinets": 9
+    },
+    {
+      "id": "m5",
+      "floors": 2,
+      "atlasCalls": 123,
+      "stairs": 9,
+      "parcels": 2,
+      "cabinets": 6
+    },
+    {
+      "id": "m6",
+      "floors": 2,
+      "atlasCalls": 93,
+      "stairs": 6,
+      "parcels": 2,
+      "cabinets": 6
+    },
+    {
+      "id": "m7",
+      "floors": 2,
+      "atlasCalls": 51,
+      "stairs": 3,
+      "parcels": 0,
+      "cabinets": 5
+    },
+    {
+      "id": "city",
+      "floors": 3,
+      "atlasCalls": 719,
+      "stairs": 53,
+      "parcels": 0,
+      "cabinets": 27
+    },
+    {
+      "id": "t0",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "t1",
+      "floors": 1,
+      "atlasCalls": 17,
+      "stairs": 2,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tI",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tB",
+      "floors": 2,
+      "atlasCalls": 71,
+      "stairs": 2,
+      "parcels": 1,
+      "cabinets": 2
+    },
+    {
+      "id": "tS",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tE",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tA",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tL",
+      "floors": 1,
+      "atlasCalls": 0,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "tR",
+      "floors": 2,
+      "atlasCalls": 27,
+      "stairs": 2,
+      "parcels": 0,
+      "cabinets": 1
+    },
+    {
+      "id": "tC",
+      "floors": 1,
+      "atlasCalls": 6,
+      "stairs": 0,
+      "parcels": 0,
+      "cabinets": 0
+    },
+    {
+      "id": "p0",
+      "floors": 2,
+      "atlasCalls": 59,
+      "stairs": 2,
+      "parcels": 2,
+      "cabinets": 4
+    },
+    {
+      "id": "e1",
+      "floors": 2,
+      "atlasCalls": 59,
+      "stairs": 2,
+      "parcels": 2,
+      "cabinets": 4
+    },
+    {
+      "id": "e2",
+      "floors": 3,
+      "atlasCalls": 121,
+      "stairs": 6,
+      "parcels": 8,
+      "cabinets": 5
+    },
+    {
+      "id": "e3",
+      "floors": 2,
+      "atlasCalls": 27,
+      "stairs": 2,
+      "parcels": 0,
+      "cabinets": 1
+    },
+    {
+      "id": "p1",
+      "floors": 2,
+      "atlasCalls": 67,
+      "stairs": 2,
+      "parcels": 4,
+      "cabinets": 4
+    },
+    {
+      "id": "p2",
+      "floors": 2,
+      "atlasCalls": 59,
+      "stairs": 2,
+      "parcels": 2,
+      "cabinets": 4
+    },
+    {
+      "id": "e4",
+      "floors": 2,
+      "atlasCalls": 27,
+      "stairs": 2,
+      "parcels": 0,
+      "cabinets": 1
+    },
+    {
+      "id": "e5",
+      "floors": 2,
+      "atlasCalls": 33,
+      "stairs": 2,
+      "parcels": 0,
+      "cabinets": 1
+    },
+    {
+      "id": "n1",
+      "floors": 2,
+      "atlasCalls": 153,
+      "stairs": 13,
+      "parcels": 0,
+      "cabinets": 2
+    }
+  ],
+  "physicalWorldsUnchanged": true,
+  "animatedFixtures": {
+    "cabinet": true,
+    "vent": true
+  },
+  "errors": []
+}

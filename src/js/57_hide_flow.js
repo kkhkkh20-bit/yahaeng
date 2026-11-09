@@ -22,6 +22,7 @@ function cabinetAperture(h,open) {
   return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*(g.locker?1:2)),h:g.doorBottom-g.doorTop};
 }
 function drawCabinet(h,part='all',target=ctx,open=0) {
+  if(drawPurchasedCabinet(h,part,target,open))return;
   const c=target,g=cabinetGeometry(h),w=g.right-g.left,H=g.bottom-g.top,steel=g.locker;
   c.save();
   if(part!=='front'){
@@ -210,6 +211,7 @@ function containerOpen(h) {
   return inspectionOpen(h);
 }
 function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
+  if(drawPurchasedManhole(h,part,target,open))return;
   const ctx=target,x=h.x,y=h.y;ctx.save();ctx.translate(x,y);
   if(h.type==='surface'){ctx.restore();drawSurfaceArt(h,target);return;
   }else if(h.type==='phone'){ctx.restore();drawRendezvousPhoneArt(h,target);return;

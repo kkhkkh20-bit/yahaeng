@@ -39,6 +39,7 @@ function drawPlanks() {
     const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
     const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
+    if(drawPurchasedBridge(p,px,py,w,h))continue;
     if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {

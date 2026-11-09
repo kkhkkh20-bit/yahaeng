@@ -121,6 +121,7 @@ function drawWindowEdge(w, b) {
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
 function drawDoor(d, onRoof) {
+  if(drawPurchasedDoor(d))return;
   const x = d.x, y = d.y;
   const office=officeReady(),style=office&&officeStyle(bldAt(d.tx,d.ty),flOf(d));
   const wood=office&&[OFFICE_STYLES.residence,OFFICE_STYLES.estate].includes(style);
@@ -138,6 +139,7 @@ function drawDoor(d, onRoof) {
 }
 // 배관: 회색 관(벽에 붙음) + 바닥 쪽 오르기 표시
 function drawPipe(l) {
+  if(drawPurchasedPipe(l))return;
   const g=pipeGeometry(l),x=g.top.x,top=g.top.y,bottom=g.base.y;
   ctx.save();ctx.lineCap='round';
   ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x+2,top+3);ctx.lineTo(x+2,bottom+3);ctx.stroke();

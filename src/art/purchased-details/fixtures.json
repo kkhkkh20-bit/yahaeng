@@ -1,0 +1,332 @@
+{
+  "artist": "GuttyKreum",
+  "packs": [
+    "Dotonbori City v3",
+    "Office Interior v3"
+  ],
+  "sources": {
+    "city": {
+      "sha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235"
+    },
+    "office": {
+      "sha256": "cb793dd0023f6450d85474988a3d058c30d7a9b06d6dc872244885e07126324c"
+    }
+  },
+  "frames": {
+    "stairTreads": {
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "source": "city",
+      "sourceRect": [
+        1152,
+        448,
+        1184,
+        480
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "ladder": {
+      "rect": [
+        34,
+        0,
+        18,
+        64
+      ],
+      "source": "city",
+      "sourceRect": [
+        777,
+        64,
+        795,
+        128
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "rail": {
+      "rect": [
+        54,
+        0,
+        96,
+        16
+      ],
+      "source": "city",
+      "sourceRect": [
+        1024,
+        304,
+        1120,
+        320
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "bridgeDeck": {
+      "rect": [
+        152,
+        0,
+        32,
+        32
+      ],
+      "source": "city",
+      "sourceRect": [
+        192,
+        0,
+        224,
+        32
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "manhole": {
+      "rect": [
+        186,
+        0,
+        23,
+        18
+      ],
+      "source": "city",
+      "sourceRect": [
+        1121,
+        262,
+        1144,
+        280
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "pipe": {
+      "rect": [
+        211,
+        0,
+        7,
+        24
+      ],
+      "source": "city",
+      "sourceRect": [
+        973,
+        32,
+        980,
+        56
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "aircon": {
+      "rect": [
+        220,
+        0,
+        32,
+        32
+      ],
+      "source": "city",
+      "sourceRect": [
+        768,
+        256,
+        800,
+        288
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "roofUnit": {
+      "rect": [
+        254,
+        0,
+        32,
+        32
+      ],
+      "source": "city",
+      "sourceRect": [
+        960,
+        64,
+        992,
+        96
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "doorExterior": {
+      "rect": [
+        288,
+        0,
+        32,
+        32
+      ],
+      "source": "city",
+      "sourceRect": [
+        704,
+        448,
+        736,
+        480
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "parcel": {
+      "rect": [
+        322,
+        0,
+        21,
+        16
+      ],
+      "source": "office",
+      "sourceRect": [
+        1959,
+        395,
+        1980,
+        411
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "paper": {
+      "rect": [
+        345,
+        0,
+        15,
+        15
+      ],
+      "source": "office",
+      "sourceRect": [
+        1581,
+        67,
+        1596,
+        82
+      ],
+      "assembly": "isolate one original loose-paper component; no added drawing or recolour"
+    },
+    "doorOffice": {
+      "rect": [
+        362,
+        0,
+        24,
+        25
+      ],
+      "source": "city",
+      "sourceRect": [
+        708,
+        452,
+        732,
+        477
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "doorWood": {
+      "rect": [
+        388,
+        0,
+        26,
+        27
+      ],
+      "source": "office",
+      "sourceRect": [
+        1251,
+        258,
+        1277,
+        285
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "switchPlate": {
+      "rect": [
+        416,
+        0,
+        12,
+        22
+      ],
+      "source": "city",
+      "sourceRect": [
+        900,
+        38,
+        912,
+        60
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "ventGrille": {
+      "rect": [
+        430,
+        0,
+        20,
+        12
+      ],
+      "source": "office",
+      "sourceRect": [
+        1258,
+        164,
+        1270,
+        184
+      ],
+      "assembly": "original grille isolated from surrounding wall; quarter turn for floor projection"
+    },
+    "cabinetBlue": {
+      "rect": [
+        452,
+        0,
+        19,
+        49
+      ],
+      "source": "office",
+      "sourceRect": [
+        1734,
+        137,
+        1753,
+        186
+      ],
+      "assembly": "existing verified office crop"
+    },
+    "lockerSteel": {
+      "rect": [
+        473,
+        0,
+        23,
+        33
+      ],
+      "source": "office",
+      "sourceRect": [
+        1733,
+        326,
+        1756,
+        359
+      ],
+      "assembly": "existing verified office crop"
+    },
+    "wardrobeWood": {
+      "rect": [
+        0,
+        66,
+        23,
+        31
+      ],
+      "source": "office",
+      "sourceRect": [
+        1765,
+        328,
+        1788,
+        359
+      ],
+      "assembly": "existing verified office crop"
+    },
+    "wallPanel": {
+      "rect": [
+        25,
+        66,
+        32,
+        32
+      ],
+      "source": "office",
+      "sourceRect": [
+        2144,
+        32,
+        2176,
+        64
+      ],
+      "assembly": "existing verified office crop"
+    },
+    "windowFrame": {
+      "rect": [
+        59,
+        66,
+        24,
+        23
+      ],
+      "source": "office",
+      "sourceRect": null,
+      "assembly": "existing verified office crop"
+    }
+  }
+}

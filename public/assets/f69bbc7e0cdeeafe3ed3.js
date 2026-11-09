@@ -2973,6 +2973,7 @@ function drawCityPlant(ch,tx,ty,near){
  ctx.restore();return true;
 }
 function drawCityCargo(c,tx,ty){
+ if(drawPurchasedCargo(c,tx,ty))return true;
  if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
  const x=tx*TILE,y=ty*TILE;c.save();c.fillStyle='rgba(5,12,22,.28)';c.fillRect(x+4,y+5,44,43);const painted=freeCityDraw(c,'cargoCrate'+((tx+ty)%2),x,y,2);c.restore();return painted;
 }
@@ -3003,6 +3004,7 @@ function drawCityRoofProps(b){
   for(const p of b.kitProps){
    const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
    if(p.t==='sh'){
+    if(drawPurchasedRoofHouse(q,p))continue;
     const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
     if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py,w,h);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
     const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
@@ -3315,14 +3317,14 @@ const OFFICE_STYLES={
  residence:{floor:'floorOak',wall:'wallPale',accent:'#ac9b83',ink:'#2d2b2a',warm:true},
  estate:{floor:'floorParquet',wall:'wallPale',accent:'#b49b6a',ink:'#2e2d2b',warm:true}
 };
-function officeReady(){return !window.__OFFICE_ART_BASELINE__&&!!STAGE.officeArt&&!!officeArt&&officeAtlas.complete&&officeAtlas.naturalWidth>0;}
+function officeReady(){return !window.__OFFICE_ART_BASELINE__&&!!officeArt&&officeAtlas.complete&&officeAtlas.naturalWidth>0;}
 function officeFrame(name){return officeArt?.frames[name]?.rect;}
 function officeBlit(c,name,x,y,w,h){
  const r=officeFrame(name);if(!r||!officeReady())return false;
  c.imageSmoothingEnabled=false;c.drawImage(officeAtlas,...r,Math.round(x),Math.round(y),Math.round(w??r[2]),Math.round(h??r[3]));return true;
 }
 function officeStyle(bi,fl=CUR_F){
- const spec=STAGE.officeArt;if(!spec)return null;
+ const spec=STAGE.officeArt;if(!spec){const b=BLD[bi],use=b?.floorsUse?.[fl]||b?.floorsUse?.at(-1);return STAGE.industrialBuildings?.includes(bi)?OFFICE_STYLES.freight:['office','pc','academy'].includes(use)?OFFICE_STYLES.dispatch:use==='vault'?OFFICE_STYLES.security:use==='club'?OFFICE_STYLES.club:use==='vip'?OFFICE_STYLES.executive:b?.kind==='house'?OFFICE_STYLES.residence:OFFICE_STYLES.archive;}
  const levels=spec.buildings?.[bi],key=(Array.isArray(levels)?levels[Math.min(fl,levels.length-1)]:levels)||spec.default||'residence';
  return OFFICE_STYLES[key]||OFFICE_STYLES.residence;
 }
@@ -3355,8 +3357,7 @@ function officeWall(c,tx,ty){
  return true;
 }
 function officeFurnKey(f){
- if(!STAGE.officeArt)return null;
- const authored=STAGE.officeArt.furniture?.find(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t);
+ const authored=STAGE.officeArt?.furniture?.find(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t);
  if(authored&&officeFrame(authored.art))return authored.art;
  const bi=bldAt(f.x,f.y);if(bi<0)return null;
  const style=officeStyle(bi,f.fl||0),r=((f.r||0)%4+4)%4;
@@ -3373,8 +3374,8 @@ function officeFurnKey(f){
   const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
   return prefix+['','E','Back','W'][r];
  }
- if(f.t==='sofa'||f.t==='sofaV')return [OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
- return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue',pot:'tableRound'}[f.t]||null;
+ if(f.t==='sofa'||f.t==='sofaV')return null;
+ return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
@@ -3406,7 +3407,7 @@ function officeSurfacePoint(o){
 function officeDecorLayout(fl){
  if(!officeReady())return [];
  const placed=[];
- for(const d of STAGE.officeArt.decor||[]){
+ for(const d of STAGE.officeArt?.decor||[]){
   if(d.fl!==fl)continue;
   const b=BLD[d.b],r=officeFrame(d.art);if(!b||!r)continue;
   const w=Math.min(d.w||64,r[2]*1.5,TILE*(b.x1-b.x0-1)),h=w*r[3]/r[2],y=b.y0*TILE+TILE-h-3;
@@ -3488,7 +3489,7 @@ function paintOfficeSideWindow(w,lit,side){
  // A cut in the wall seen from above, with jambs seated in the masonry.
  // No freestanding front-facing card or protruding sill in the alley.
  ctx.fillStyle='#0d1721';ctx.fillRect(-6,-18,12,36);
- ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);
+ if(purchasedReady()){const r=purchasedFrame('windowFrame');ctx.imageSmoothingEnabled=false;ctx.drawImage(purchasedAtlas,r[0],r[1],r[2],3,-5,-17,10,2);ctx.drawImage(purchasedAtlas,r[0],r[1]+r[3]-3,r[2],3,-5,15,10,2);ctx.drawImage(purchasedAtlas,r[0],r[1]+3,2,r[3]-6,-5,-15,2,30);ctx.drawImage(purchasedAtlas,r[0]+r[2]-2,r[1]+3,2,r[3]-6,3,-15,2,30);}else{ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);}
  ctx.fillStyle='#253441';ctx.fillRect(-4,-15,8,30);
  ctx.fillStyle=lit?'#827860':'#354c60';ctx.fillRect(-3,-14,6,open?12:28);
  ctx.fillStyle='#5b6874';ctx.fillRect(-4,open?-1:0,8,2);
@@ -3499,6 +3500,109 @@ function paintOfficeSideWindow(w,lit,side){
 function refreshOfficeArt(){
  if(!officeArtDirty||!S||!mapC)return;
  const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;for(const k in lightCache)delete lightCache[k];officeArtDirty=false;}finally{setLayer(layer);}
+}
+
+// Functional fixtures use selected owned pixels; gameplay geometry stays authoritative.
+const purchasedArt=A.purchasedDetails||null,purchasedAtlas=new Image();let purchasedDirty=false;
+purchasedAtlas.onload=()=>{purchasedDirty=true;};if(purchasedArt)purchasedAtlas.src=purchasedArt.src;
+function purchasedReady(){return !window.__PURCHASED_BASELINE__&&!!purchasedArt&&purchasedAtlas.complete&&purchasedAtlas.naturalWidth>0;}
+function purchasedFrame(name){return purchasedArt?.frames[name]?.rect;}
+function purchasedBlit(c,name,x,y,w,h){const r=purchasedFrame(name);if(!r||!purchasedReady())return false;c.imageSmoothingEnabled=false;c.drawImage(purchasedAtlas,...r,Math.round(x),Math.round(y),Math.round(w??r[2]*1.5),Math.round(h??r[3]*1.5));return true;}
+function purchasedRepeat(c,name,x,y,w,h,scale=1.5){const r=purchasedFrame(name);if(!r||!purchasedReady())return false;c.save();c.beginPath();c.rect(x,y,w,h);c.clip();for(let yy=y;yy<y+h;yy+=r[3]*scale)for(let xx=x;xx<x+w;xx+=r[2]*scale)purchasedBlit(c,name,xx,yy,r[2]*scale,r[3]*scale);c.restore();return true;}
+function refreshPurchasedArt(){
+ if(!purchasedDirty||!S||!mapC)return;purchasedDirty=false;const layer=CUR_F;
+ try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;for(const k in hideFixtureCache)delete hideFixtureCache[k];for(const b of BLD)b.cityPropsC=null;}finally{setLayer(layer);}
+}
+function drawPurchasedStairs(c,tx,ty){
+ if(!purchasedReady())return false;
+ const g=stairFloor(tx,ty,CUR_F),[dx,dy]=g.d,cx=(tx+.5+dx/2)*TILE,cy=(ty+.5+dy/2)*TILE,rot=Math.atan2(-dy,-dx)+Math.PI/2;
+ const flight=(x,y,down)=>{c.save();c.translate(x,y);c.rotate(rot);c.fillStyle='#111923';c.fillRect(-24,-48,48,96);purchasedRepeat(c,'stairTreads',-21,-48,42,96);if(down){const shade=c.createLinearGradient(0,-48,0,48);shade.addColorStop(0,'#080e19e8');shade.addColorStop(1,'#080e1922');c.fillStyle=shade;c.fillRect(-21,-48,42,96);}purchasedRepeat(c,'pipe',-24,-48,3,96);purchasedRepeat(c,'pipe',21,-48,3,96);c.restore();};
+ flight(cx,cy,false);if(CUR_F>0&&g.well)flight(cx+g.well.s[0]*TILE,cy+g.well.s[1]*TILE,true);return true;
+}
+function drawPurchasedLadder(c,x,y,h=42){
+ if(!purchasedReady())return false;const r=purchasedFrame('ladder');c.save();c.beginPath();c.rect(x-15,y,30,h);c.clip();for(let yy=y;yy<y+h;yy+=r[3]*1.5)purchasedBlit(c,'ladder',x-r[2]*.75,yy);c.restore();return true;
+}
+function drawPurchasedBridge(p,x,y,w,h){
+ if(!purchasedReady())return false;
+ ctx.save();ctx.translate(x+w/2,y+h/2);if(!p.ew)ctx.rotate(Math.PI/2);const length=p.ew?w:h,depth=p.ew?h:w;
+ ctx.fillStyle='#080f1b55';ctx.fillRect(-length/2+5,-depth/2+10,length,depth);
+ purchasedRepeat(ctx,'bridgeDeck',-length/2,-depth/2,length,depth);
+ purchasedRepeat(ctx,'rail',-length/2,-depth/2-10,length,24);
+ purchasedRepeat(ctx,'rail',-length/2,depth/2-14,length,24);ctx.restore();return true;
+}
+function drawPurchasedCargo(c,tx,ty){
+ if(!purchasedReady())return false;const r=purchasedFrame('parcel'),w=Math.min(42,r[2]*1.5),h=r[3]*w/r[2];c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-7,20,6,0,0,TAU);c.fill();purchasedBlit(c,'parcel',tc(tx)-w/2,(ty+1)*TILE-h-5,w,h);purchasedBlit(c,'parcel',tc(tx)-w/2-2,(ty+1)*TILE-h*1.85-5,w,h);c.restore();return true;
+}
+function drawPurchasedFreight(c,f,shadow){
+ if(!purchasedReady())return false;
+ if(shadow){c.save();c.fillStyle='#09121b44';c.fillRect(f.x*TILE+4,(f.y+f.h)*TILE-8,f.w*TILE-8,12);c.restore();}
+ // Real storage cabinets keep their source aspect; no hand-painted carton grid.
+ const count=Math.max(1,f.w),r=purchasedFrame('cabinetBlue'),scale=Math.min(1.5,(TILE-6)/r[2],(f.h*TILE+40)/r[3]);
+ for(let i=0;i<count;i++)purchasedBlit(c,'cabinetBlue',(f.x+i)*TILE+(TILE-r[2]*scale)/2,(f.y+f.h)*TILE-r[3]*scale-3,r[2]*scale,r[3]*scale);return true;
+}
+function drawPurchasedDoor(d){
+ if(!purchasedReady())return false;const bi=bldAt(d.tx,d.ty),style=officeStyle(bi,flOf(d)),wood=style===OFFICE_STYLES.residence||style===OFFICE_STYLES.estate,key=wood?'doorWood':'doorOffice',r=purchasedFrame(key),a=doorVisualOpen(d)*Math.PI/2;
+ ctx.save();ctx.translate(d.x,d.y);if(!d.horiz)ctx.rotate(Math.PI/2);
+ ctx.fillStyle='#0a1520';ctx.fillRect(-24,-7,48,14);
+ // Project the purchased jamb and leaf into the existing top-down hinge plane.
+ purchasedBlit(ctx,key,-24,-7,5,14);purchasedBlit(ctx,key,19,-7,5,14);
+ ctx.save();ctx.transform(Math.cos(a),Math.sin(a),-Math.sin(a)*.22,Math.cos(a),-19,-6);ctx.drawImage(purchasedAtlas,...r,0,0,38,10);ctx.restore();
+ if(d.locked&&doorVisualOpen(d)<.2&&d.keyLock){ctx.fillStyle='#b59d69';ctx.fillRect(-3,-2,6,4);}ctx.restore();return true;
+}
+function drawPurchasedCabinet(h,part,c,open){
+ if(!purchasedReady()||!officeReady())return false;
+ const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',r=purchasedFrame(key),w=g.right-g.left,H=g.bottom-g.top;
+ c.save();
+ if(part!=='front'){
+  c.fillStyle='#08111c55';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
+  purchasedBlit(c,key,g.left,g.top,w,H);c.fillStyle='#0c1420';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
+ }
+ if(part!=='back'){
+  const count=g.locker?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
+  for(let i=0;i<count;i++){
+   const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft;
+   c.save();c.transform(side*projection/(r[2]/count),depth/(r[2]/count),0,(g.doorBottom-g.doorTop)/r[3],hinge,g.doorTop);
+   c.drawImage(purchasedAtlas,r[0]+(i===1?r[2]/2:0),r[1],r[2]/count,r[3],0,0,r[2]/count,r[3]);c.restore();
+  }
+  // The original bottom plinth is the front occluder throughout hiding.
+  c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-4,r[2],4,g.left,g.bottom-9,w,8);
+ }
+ c.restore();return true;
+}
+function drawPurchasedManhole(h,part,c,open){
+ if(!purchasedReady()||h.type!=='well')return false;
+ c.save();if(part!=='front'){c.fillStyle='#060c15';c.beginPath();c.ellipse(h.x,h.y,22,14,0,0,TAU);c.fill();purchasedBlit(c,'manhole',h.x-22+open*29,h.y-14-open*15,44,28);}
+ if(part!=='back'){const r=purchasedFrame('manhole');c.drawImage(purchasedAtlas,r[0],r[1]+Math.floor(r[3]*.7),r[2],Math.ceil(r[3]*.3),h.x-22,h.y+5,44,9);}c.restore();return true;
+}
+function drawPurchasedVent(v,part,c,open){
+ if(!purchasedReady())return false;const g=ventGeometry(v),x=g.x,y=g.y,r=purchasedFrame('ventGrille');c.save();
+ if(part!=='front'){
+  c.fillStyle='#080f1b44';c.fillRect(x-21,y+5,44,v.y-y+10);
+  if(g.kind!=='floor')purchasedBlit(c,g.kind==='roof'?'roofUnit':'aircon',x-24,y-4,48,v.y-y+18);
+  c.fillStyle='#080f1b';c.fillRect(x-18,y-12,36,24);
+  c.save();c.translate(x+open*10,y-12-open*14);c.drawImage(purchasedAtlas,...r,-18,0,36,24*(1-open*.7));c.restore();
+ }
+ if(part!=='back')c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-2,r[2],2,x-20,y+12,40,3);
+ c.restore();return true;
+}
+function drawPurchasedPipe(l){
+ if(!purchasedReady())return false;const g=pipeGeometry(l),h=g.base.y-g.top.y;ctx.save();if(l.gas)ctx.filter='sepia(.7) saturate(1.3)';purchasedRepeat(ctx,'pipe',g.top.x-4,g.top.y,8,h);ctx.restore();return true;
+}
+function drawPurchasedSwitch(l,outdoor=false){
+ if(!purchasedReady())return false;const p=outdoor?lampControl(l):switchVisualPoint(l);if(!p)return false;
+ ctx.save();ctx.translate(p.x,p.y);const side=outdoor?false:!!p.nx;if(!side)ctx.rotate(Math.PI/2);
+ purchasedBlit(ctx,'switchPlate',-4,-7,8,14);ctx.fillStyle=lampCircuitOff(l)?'#293a48':'#c4cfb1';ctx.fillRect(-1,-2,2,4);ctx.restore();return true;
+}
+function drawPurchasedPaper(c,key,x,y,scale=1){
+ if(!purchasedReady()||!['folder','paper','parcel'].includes(key))return false;
+ const name=key==='parcel'?'parcel':'paper',r=purchasedFrame(name),s=key==='parcel'?Math.min(1,25/r[2]):Math.min(1.3,20/r[2]);return purchasedBlit(c,name,x-r[2]*s*scale/2,y-r[3]*s*scale/2,r[2]*s*scale,r[3]*s*scale);
+}
+function drawPurchasedRoofHouse(c,p){
+ if(!purchasedReady())return false;
+ const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),x=Math.min(...xs)*TILE,y=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
+ purchasedRepeat(c,'wallPanel',x,y-16,w,h+16);purchasedRepeat(c,'bridgeDeck',x,y-16,w,12);
+ const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
+ if(d&&!STAGE.agentStudy){c.save();c.beginPath();c.rect(x,y-16,w,h+16);c.clip();purchasedBlit(c,'doorExterior',d.x-14,d.y-32,28,33);c.restore();}return true;
 }
 
 // Pre-rendered PixelFX. No live particle simulation, per-frame image decoding,
@@ -5378,6 +5482,7 @@ function stairDir(tx, ty) {
   return [0, 1];
 }
 function drawStairs(x, tx, ty) {
+  if(drawPurchasedStairs(x,tx,ty))return;
   // 오르는 계단: 계단 칸과 들어서는 칸, 폭 한 칸 × 길이 두 칸. 위층에선 옆 줄(역시 한 칸 × 두 칸)이 아래층에서 올라오는 계단 구멍 — 꺾인 계단실
   // 옆 줄을 못 만드는 좁은 계단실은 한 칸 폭을 유지한다
   const geometry = stairFloor(tx, ty, CUR_F), [dx, dy] = geometry.d, cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0, wb = geometry.well;
@@ -5510,7 +5615,7 @@ function renderMap(R) {
     if (ch === 'm') { x.fillStyle = '#5d636e'; x.fillRect(px + 1, py + 1, TILE - 2, TILE - 2); x.fillStyle = '#7a818e'; for (let a = 0; a < 6; a++) for (let b2 = 0; b2 < 6; b2++) if ((a + b2) % 2 === 0) x.fillRect(px + 4 + a * 7, py + 4 + b2 * 7, 4, 2); x.strokeStyle = '#3a3f48'; x.lineWidth = 2; x.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2); }
   }
   // 돌계단('J'): 계단 줄무늬
-  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'J') { const px = tx * TILE, py = ty * TILE; for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(0,0,0,.32)'; x.fillRect(px, py + k * 12 + 9, TILE, 3); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(px, py + k * 12, TILE, 2); } }
+  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'J') { const px = tx * TILE, py = ty * TILE;if(purchasedRepeat(x,'stairTreads',px,py,TILE,TILE))continue; for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(0,0,0,.32)'; x.fillRect(px, py + k * 12 + 9, TILE, 3); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(px, py + k * 12, TILE, 2); } }
   // 보도 경계석: 보도블록('=')이 아스팔트('.')와 맞닿는 곳
     for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
       if (G[ty][tx] !== '=') continue; const px = tx * TILE, py = ty * TILE;
@@ -5581,12 +5686,12 @@ function renderMap(R) {
       if (!roofAt(tx - 1, ty)) x.fillRect(px, py, 3, TILE);
       if (!roofAt(tx + 1, ty)) x.fillRect(px + TILE - 3, py, 3, TILE);
     }
-    if (ch === 'L') {
+    if (ch === 'L'&&!drawPurchasedLadder(x,px+24,py+3)) {
       x.strokeStyle = '#9aa1aa'; x.lineWidth = 5; x.beginPath(); x.moveTo(px + 14, py + 3); x.lineTo(px + 14, py + 45); x.moveTo(px + 34, py + 3); x.lineTo(px + 34, py + 45); x.stroke();
       x.lineWidth = 4; x.beginPath(); for (let i = 0; i < 5; i++) { x.moveTo(px + 14, py + 7 + i * 9); x.lineTo(px + 34, py + 7 + i * 9); } x.stroke();
     }
     if(ch==='W'){x.fillStyle='rgba(0,0,0,.2)';x.beginPath();x.ellipse(px+25,py+27,23,15,0,0,TAU);x.fill();}
-    if (ch === 'F') {
+    if (ch === 'F'&&!purchasedBlit(x,'switchPlate',px+12,py+6,24,36)) {
       x.fillStyle = '#3e3a36'; x.fillRect(px + 10, py + 8, 28, 32); x.strokeStyle = '#1c1a18'; x.lineWidth = 3; x.strokeRect(px + 10, py + 8, 28, 32);
       x.fillStyle = '#f2c46b'; x.beginPath(); x.moveTo(px + 26, py + 12); x.lineTo(px + 18, py + 26); x.lineTo(px + 24, py + 26); x.lineTo(px + 21, py + 36); x.lineTo(px + 30, py + 21); x.lineTo(px + 24, py + 21); x.closePath(); x.fill();
     }
@@ -5609,7 +5714,7 @@ function renderMap(R) {
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || STAGE.officeArt&&!l.outdoor&&l.fixture) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || officeReady()&&!l.outdoor&&l.fixture||purchasedReady()&&l.outdoor&&l.mount) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 
@@ -5962,10 +6067,10 @@ function collideLightPosts(o,r,solid) {
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
     const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
-    const on=lampOn(l),pixelPost=STAGE.agentStudy&&studyReady()&&m.kind==='street',x=pixelPost?m.ax+12:l.x,y=pixelPost?m.ay-79:l.y-(m.kind==='street'?82:m.height);
+    const on=lampOn(l),pixelPost=studyReady()&&m.kind==='street',x=pixelPost?m.ax+12:l.x,y=pixelPost?m.ay-79:l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=STAGE.agentStudy&&drawStudyStreetLamp(l,m,on)||drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=drawStudyStreetLamp(l,m,on)||drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
@@ -5981,7 +6086,7 @@ function drawOutdoorLampFixtures() {
     ctx.fillStyle=l.broken?'#403d3a':on?'#efe0ad':'#66716d';ctx.fillRect(x-6,y-1,12,3);
     if(l.broken){ctx.strokeStyle='#b0aaa0';ctx.beginPath();ctx.moveTo(x-5,y-3);ctx.lineTo(x+4,y+3);ctx.stroke();}
     }
-    if(m.kind!=='pole') {
+    if(m.kind!=='pole'&&!drawPurchasedSwitch(l,true)) {
       const p=lampControl(l);ctx.strokeStyle='#586970';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.ax,m.ay-10);ctx.lineTo(p.x,p.y-3);ctx.stroke();ctx.fillStyle='#26333a';ctx.fillRect(p.x-4,p.y-8,8,12);ctx.strokeStyle='#808b88';ctx.strokeRect(p.x-4,p.y-8,8,12);
       ctx.fillStyle=on?'#c3cba1':'#525e61';ctx.fillRect(p.x-1,p.y-5,2,5);
     }
@@ -6149,6 +6254,7 @@ function switchVisualPoint(l){
  return{x:p.x+nx*5,y:p.y+ny*5,nx,ny};
 }
 function drawOfficeSwitch(l){
+ if(drawPurchasedSwitch(l))return true;
  if(!officeReady())return false;
  const p=switchVisualPoint(l);if(!p)return false;
  const off=lampCircuitOff(l),side=!!p.nx;
@@ -6281,6 +6387,7 @@ function propSurfacePoint(o){
  return{x,y:(f.y+f.h*.5-a.surfaceHeight*f.h/a.footprint[1])*TILE};
 }
 function drawPropFurn(x,it,shadow=false){
+ if(it.t==='boxes'&&purchasedReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawPurchasedCargo(x,it.x+k,it.y+y);return true;}
  if(drawOfficeFurn(x,it,shadow))return true;
  if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
@@ -6297,6 +6404,7 @@ function drawPropFurn(x,it,shadow=false){
 // Original pixel parcel rack: the shelf footprint and cover stay unchanged.
 // Storage no longer borrows the shop's colourful book/grocery display.
 function drawFreightShelf(c,f,shadow){
+ if(drawPurchasedFreight(c,f,shadow))return true;
  const px=f.x*TILE,py=f.y*TILE,w=f.w*TILE,h=f.h*TILE;
  c.save();c.translate(px,py);c.imageSmoothingEnabled=false;
  if(shadow){c.fillStyle='rgba(4,9,14,.23)';c.fillRect(5,h-5,w-5,10);}
@@ -6358,6 +6466,7 @@ function switchArtNormal(l){
 const fieldArt={};
 for(const[key,a]of Object.entries(window.__FIELD_ART__||{}))fieldArt[key]={...a,img:Object.assign(new Image(),{src:a.src})};
 function drawFieldItem(x,key,px,py,scale=1){
+ if(drawPurchasedPaper(x,key,px,py,scale))return true;
  const a=fieldArt[key];if(!a?.img.complete||!a.img.naturalWidth)return false;
  x.save();x.imageSmoothingEnabled=false;x.fillStyle='rgba(8,12,17,.3)';x.beginPath();x.ellipse(px,py+4,16*scale,9*scale,0,0,Math.PI*2);x.fill();x.drawImage(a.img,px+a.ox*scale,py+a.oy*scale,a.w*scale,a.h*scale);x.restore();return true;
 }
@@ -8549,6 +8658,7 @@ function drawProps(fl=0) {
   const v=surfacePoint(p),key=p.outfit?(p.outfit==='waiter'?'apron':'coat'):/서류|문서|장부|명세|암호|보고서|서신/.test(p.name||'')?'folder':null;
   ctx.save();ctx.translate(v.x,v.y);
   if(['emetic','laxative'].includes(p.id))drawMedicineArt(ctx,p);
+  else if(p.id==='box'&&drawPurchasedPaper(ctx,'parcel',0,0)){}
   else if(p.id==='box'){
    ctx.fillStyle='#090e1255';ctx.beginPath();ctx.ellipse(1,5,14,5,0,0,TAU);ctx.fill();
    ctx.fillStyle='#876546';ctx.fillRect(-11,-7,22,14);ctx.fillStyle='#bc956b';ctx.fillRect(-11,-10,22,5);
@@ -11468,6 +11578,7 @@ function cabinetAperture(h,open) {
   return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*(g.locker?1:2)),h:g.doorBottom-g.doorTop};
 }
 function drawCabinet(h,part='all',target=ctx,open=0) {
+  if(drawPurchasedCabinet(h,part,target,open))return;
   const c=target,g=cabinetGeometry(h),w=g.right-g.left,H=g.bottom-g.top,steel=g.locker;
   c.save();
   if(part!=='front'){
@@ -11656,6 +11767,7 @@ function containerOpen(h) {
   return inspectionOpen(h);
 }
 function drawContainer(h,part='all',target=ctx,open=containerOpen(h)) {
+  if(drawPurchasedManhole(h,part,target,open))return;
   const ctx=target,x=h.x,y=h.y;ctx.save();ctx.translate(x,y);
   if(h.type==='surface'){ctx.restore();drawSurfaceArt(h,target);return;
   }else if(h.type==='phone'){ctx.restore();drawRendezvousPhoneArt(h,target);return;
@@ -11869,6 +11981,7 @@ function ventName(v){return({roof:'옥상 환기함',wall:'외벽 환기구',flo
 function ventGeometry(v){const kind=ventKind(v);return{x:v.x,y:v.y-(kind==='roof'?22:kind==='wall'?24:0),rim:v.y+(kind==='floor'?10:-3),kind};}
 function ventFixture(v){return{type:'vent',source:v,x:v.x,y:v.y,tx:v.tx,ty:v.ty,z:v.z||0,fl:0};}
 function drawVent(v,part='all',c=ctx,open=v.open?1:0) {
+  if(drawPurchasedVent(v,part,c,open))return;
   const g=ventGeometry(v),x=g.x,y=g.y;c.save();
   if(part!=='front'){
     c.fillStyle='#080d0f66';c.beginPath();c.ellipse(x+3,v.y+14,25,9,0,0,TAU);c.fill();
@@ -14634,6 +14747,7 @@ function drawItemIcon(name,x,y,t,ring) {
 }
 function drawNote(n) {
   const {x,y}=surfacePoint(n);
+  if(drawPurchasedPaper(ctx,'paper',x,y))return;
   ctx.save();ctx.translate(x,y);ctx.rotate(-.12);
   ctx.fillStyle='#11171366';ctx.fillRect(-9,-5,20,14);
   ctx.fillStyle=n.read?'#b4ad98':'#d5cbb2';ctx.fillRect(-10,-7,18,13);
@@ -14895,6 +15009,7 @@ function drawPlanks() {
     const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
     const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
+    if(drawPurchasedBridge(p,px,py,w,h))continue;
     if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {
@@ -15425,6 +15540,7 @@ function drawWindowEdge(w, b) {
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
 function drawDoor(d, onRoof) {
+  if(drawPurchasedDoor(d))return;
   const x = d.x, y = d.y;
   const office=officeReady(),style=office&&officeStyle(bldAt(d.tx,d.ty),flOf(d));
   const wood=office&&[OFFICE_STYLES.residence,OFFICE_STYLES.estate].includes(style);
@@ -15442,6 +15558,7 @@ function drawDoor(d, onRoof) {
 }
 // 배관: 회색 관(벽에 붙음) + 바닥 쪽 오르기 표시
 function drawPipe(l) {
+  if(drawPurchasedPipe(l))return;
   const g=pipeGeometry(l),x=g.top.x,top=g.top.y,bottom=g.base.y;
   ctx.save();ctx.lineCap='round';
   ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x+2,top+3);ctx.lineTo(x+2,bottom+3);ctx.stroke();
@@ -15996,7 +16113,7 @@ function drawAperturePeek(){
 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPropArt();refreshOfficeArt();refreshFreeCity();
+  refreshPurchasedArt();refreshPropArt();refreshOfficeArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
@@ -18426,6 +18543,7 @@ function installGameApi() {
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
+    purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
     ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },

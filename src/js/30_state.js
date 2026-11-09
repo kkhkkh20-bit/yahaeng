@@ -499,6 +499,7 @@ function stairDir(tx, ty) {
   return [0, 1];
 }
 function drawStairs(x, tx, ty) {
+  if(drawPurchasedStairs(x,tx,ty))return;
   // 오르는 계단: 계단 칸과 들어서는 칸, 폭 한 칸 × 길이 두 칸. 위층에선 옆 줄(역시 한 칸 × 두 칸)이 아래층에서 올라오는 계단 구멍 — 꺾인 계단실
   // 옆 줄을 못 만드는 좁은 계단실은 한 칸 폭을 유지한다
   const geometry = stairFloor(tx, ty, CUR_F), [dx, dy] = geometry.d, cx = (tx + 0.5 + dx / 2) * TILE, cy = (ty + 0.5 + dy / 2) * TILE, down = CUR_F > 0, wb = geometry.well;
@@ -631,7 +632,7 @@ function renderMap(R) {
     if (ch === 'm') { x.fillStyle = '#5d636e'; x.fillRect(px + 1, py + 1, TILE - 2, TILE - 2); x.fillStyle = '#7a818e'; for (let a = 0; a < 6; a++) for (let b2 = 0; b2 < 6; b2++) if ((a + b2) % 2 === 0) x.fillRect(px + 4 + a * 7, py + 4 + b2 * 7, 4, 2); x.strokeStyle = '#3a3f48'; x.lineWidth = 2; x.strokeRect(px + 1, py + 1, TILE - 2, TILE - 2); }
   }
   // 돌계단('J'): 계단 줄무늬
-  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'J') { const px = tx * TILE, py = ty * TILE; for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(0,0,0,.32)'; x.fillRect(px, py + k * 12 + 9, TILE, 3); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(px, py + k * 12, TILE, 2); } }
+  for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) if (G[ty][tx] === 'J') { const px = tx * TILE, py = ty * TILE;if(purchasedRepeat(x,'stairTreads',px,py,TILE,TILE))continue; for (let k = 0; k < 4; k++) { x.fillStyle = 'rgba(0,0,0,.32)'; x.fillRect(px, py + k * 12 + 9, TILE, 3); x.fillStyle = 'rgba(255,255,255,.10)'; x.fillRect(px, py + k * 12, TILE, 2); } }
   // 보도 경계석: 보도블록('=')이 아스팔트('.')와 맞닿는 곳
     for (let ty = ry0; ty <= ry1; ty++) for (let tx = rx0; tx <= rx1; tx++) {
       if (G[ty][tx] !== '=') continue; const px = tx * TILE, py = ty * TILE;
@@ -702,12 +703,12 @@ function renderMap(R) {
       if (!roofAt(tx - 1, ty)) x.fillRect(px, py, 3, TILE);
       if (!roofAt(tx + 1, ty)) x.fillRect(px + TILE - 3, py, 3, TILE);
     }
-    if (ch === 'L') {
+    if (ch === 'L'&&!drawPurchasedLadder(x,px+24,py+3)) {
       x.strokeStyle = '#9aa1aa'; x.lineWidth = 5; x.beginPath(); x.moveTo(px + 14, py + 3); x.lineTo(px + 14, py + 45); x.moveTo(px + 34, py + 3); x.lineTo(px + 34, py + 45); x.stroke();
       x.lineWidth = 4; x.beginPath(); for (let i = 0; i < 5; i++) { x.moveTo(px + 14, py + 7 + i * 9); x.lineTo(px + 34, py + 7 + i * 9); } x.stroke();
     }
     if(ch==='W'){x.fillStyle='rgba(0,0,0,.2)';x.beginPath();x.ellipse(px+25,py+27,23,15,0,0,TAU);x.fill();}
-    if (ch === 'F') {
+    if (ch === 'F'&&!purchasedBlit(x,'switchPlate',px+12,py+6,24,36)) {
       x.fillStyle = '#3e3a36'; x.fillRect(px + 10, py + 8, 28, 32); x.strokeStyle = '#1c1a18'; x.lineWidth = 3; x.strokeRect(px + 10, py + 8, 28, 32);
       x.fillStyle = '#f2c46b'; x.beginPath(); x.moveTo(px + 26, py + 12); x.lineTo(px + 18, py + 26); x.lineTo(px + 24, py + 26); x.lineTo(px + 21, py + 36); x.lineTo(px + 30, py + 21); x.lineTo(px + 24, py + 21); x.closePath(); x.fill();
     }
@@ -730,7 +731,7 @@ function renderMap(R) {
   // 정면벽 아래 땅 그림자
   if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || STAGE.officeArt&&!l.outdoor&&l.fixture) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); return; x.fillStyle = '#4a4640'; x.fillRect(l.x - 7, l.y - 7, 14, 14); x.fillStyle = '#7a746a'; x.fillRect(l.x - 5, l.y - 5, 10, 10); x.fillStyle = '#2a2622'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || officeReady()&&!l.outdoor&&l.fixture||purchasedReady()&&l.outdoor&&l.mount) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 

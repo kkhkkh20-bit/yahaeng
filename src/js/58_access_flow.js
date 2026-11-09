@@ -37,6 +37,7 @@ function ventName(v){return({roof:'옥상 환기함',wall:'외벽 환기구',flo
 function ventGeometry(v){const kind=ventKind(v);return{x:v.x,y:v.y-(kind==='roof'?22:kind==='wall'?24:0),rim:v.y+(kind==='floor'?10:-3),kind};}
 function ventFixture(v){return{type:'vent',source:v,x:v.x,y:v.y,tx:v.tx,ty:v.ty,z:v.z||0,fl:0};}
 function drawVent(v,part='all',c=ctx,open=v.open?1:0) {
+  if(drawPurchasedVent(v,part,c,open))return;
   const g=ventGeometry(v),x=g.x,y=g.y;c.save();
   if(part!=='front'){
     c.fillStyle='#080d0f66';c.beginPath();c.ellipse(x+3,v.y+14,25,9,0,0,TAU);c.fill();
