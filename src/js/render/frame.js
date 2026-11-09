@@ -203,7 +203,7 @@ function draw() {
       if (g.bubble && !g.icon) drawEmote(g.bubble, g.x, g.y - 30); if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return;
     }
     // Interpolate the boundary itself: one enemy, one filled field and one outline.
-    if(showField){
+    if(showField&&!heightSightEligible(g,P)){
     conePaths(g,guardCone(g,fov,rg),1,S.coneK||0);
     const ink=guardConeInk(g,P,awareness,{tactical,scan:input.scan,selected:visionFrame?.actor===g&&visionFrame.reason==='selected',chase:chs,scale:SCALE});
     if(ink.fill>0){ctx.fillStyle=`rgba(${col},${ink.fill.toFixed(3)})`;ctx.fill();}
@@ -268,6 +268,7 @@ function draw() {
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
+  if(!tactical&&!DBG.cone)drawHeightVision(P);
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
   if(!tactical){const clip=clipExteriorFromInterior(VB,VF);drawPlanks('front',p=>!aboveBridge(p));if(clip)ctx.restore();}
   drawHideFlowVisual();

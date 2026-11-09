@@ -171,11 +171,11 @@ function actPrimary(force) {
       break;
     }
     case 'pull': {
-      const g = a.g, n = P.cover || { x: 0, y: 0 };
-      g.doomed = true; g.moving = false; g.path = null;
-      const pd = dist(P.x, P.y, g.x, g.y), k = Math.min(0.35, 30 / Math.max(1, pd)); S.pull = { g, x0: g.x, y0: g.y, x1: P.x + (g.x - P.x) * k + n.x * 4, y1: P.y + (g.y - P.y) * k + n.y * 4, t: 0, dur: 0.16 + pd / 900 };
-      P.a = Math.atan2(g.y - P.y, g.x - P.x); P.strikeT = 0.34; play('cloth', 0.55);
-      break;
+      const g=a.g,route=coverPullRoute(g);if(!route)break;
+      g.doomed=true;g.moving=false;g.path=null;
+      const first=route.points[0],last=route.points.at(-1);
+      S.pull={g,points:route.points,length:route.length,x0:first.x,y0:first.y,x1:last.x,y1:last.y,t:0,dur:.24+route.length/350};
+      P.a=Math.atan2(g.y-P.y,g.x-P.x);P.strikeT=S.pull.dur;play('cloth',.55);break;
     }
     case 'kill': case 'kill2': {
       const g0 = a.list[0], d0 = dist(P.x, P.y, g0.x, g0.y);

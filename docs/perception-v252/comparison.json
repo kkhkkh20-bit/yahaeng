@@ -1,0 +1,36 @@
+[
+  {
+    "case": "corner",
+    "version": "v251",
+    "action": "none",
+    "straightSight": false,
+    "learned": [
+      "silentHands",
+      "ambush"
+    ]
+  },
+  {
+    "case": "roof",
+    "version": "v251",
+    "physicallyVisible": true,
+    "focus": false,
+    "projectedCells": 0
+  },
+  {
+    "case": "corner",
+    "version": "v252",
+    "action": "pull",
+    "straightSight": false,
+    "learned": [
+      "silentHands",
+      "ambush"
+    ]
+  },
+  {
+    "case": "roof",
+    "version": "v252",
+    "physicallyVisible": true,
+    "focus": true,
+    "projectedCells": 4
+  }
+]

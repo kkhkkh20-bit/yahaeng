@@ -151,11 +151,12 @@ function whistle() {
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
   const x = P.hide ? P.hide.x : P.x, y = P.hide ? P.hide.y : P.y;
-  noise(x, y, STAGE.whistleRange||230, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
+  noise(x, y, STAGE.whistleRange||360, 'whistle',flOf(P),P.z||0); S.stats.whistles = (S.stats.whistles || 0) + 1;
   const cue=S.noises.at(-1);
-  if(cue?.investigators?.length===1&&!cue.otherInvestigators?.length&&!S.splitLureNoticed){S.splitLureNoticed=true;toast('한 명이 확인 중 · 웅크려 자리를 옮겨 뒤를 노리기',3,'info');}
-  if(STAGE.openingContract&&!S.noises.at(-1)?.heard)toast('반응 없음 · 경비가 가까워질 때 다시 불기',2,'info');
-  else if(!cue?.heard)toast('반응 없음 · 더 가까운 엄폐물에서 다시 불기',2,'info');
+  const responders=(cue?.investigators?.length||0)+(cue?.otherInvestigators?.length||0);
+  if(responders)toast(P.cover?(abilityOn('ambush')?'경비가 확인하러 온다 · 모서리에 닿으면 공격해 끌어오기':'경비가 확인하러 온다 · 벽 끌어오기는 은신 기습 필요'):responders===1?'한 명이 확인하러 온다 · 숨어서 기다리기':'여러 명이 들었다 · 접근 방향 주의',2.5,'info');
+  else if(cue?.busyListeners?.length)toast('소리는 들었다 · 지금은 다른 현장을 조사 중',2.4,'info');
+  else if(!cue?.heard)toast('반응 없음 · 경비와 같은 층의 가까운 엄폐물에서 다시 불기',2.4,'info');
   hint('whistle', '휘파람: 들은 자경대원이 확인하러 온다. 숨어서 불고 기다려라');
 }
 // ---- 옥상 가장자리에 매달리기 · 끌어내리기 · 배관에서 밀어 떨어뜨리기
@@ -269,23 +270,42 @@ function updateSnap(P, dt) {
   if (f >= 1) { P.snap = null; play('thud', 0.08); }
 }
 // 기댄 자리 옆을 지나는, 나를 보지 못한 사람
+// The arm may reach around one nearby wall end, never through the wall itself.
+function coverPullRoute(g, P=S.player) {
+  if(!P.cover||flOf(g)!==flOf(P)||(g.z||0)!==(P.z||0))return null;
+  const limit=perkOn('reach')?120:100;
+  if(dist(P.x,P.y,g.x,g.y)>limit)return null;
+  const L0=CUR_F;setLayer(flOf(P));const solid=P.z?solidFor(P.z):solidAt;
+  const clear=(a,b)=>{
+    const d=dist(a.x,a.y,b.x,b.y),steps=Math.max(1,Math.ceil(d/6));
+    for(let i=0;i<=steps;i++){const x=a.x+(b.x-a.x)*i/steps,y=a.y+(b.y-a.y)*i/steps;
+      for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]])if(solid(Math.floor((x+dx)/TILE),Math.floor((y+dy)/TILE)))return false;}
+    return true;
+  };
+  const end={x:P.x+P.cover.x*18,y:P.y+P.cover.y*18},candidates=[[{x:g.x,y:g.y},end]],tx=Math.floor(P.x/TILE),ty=Math.floor(P.y/TILE);
+  for(const sign of [-1,1]){
+    const bend=P.cover.x?{x:P.x,y:(ty+(sign>0?1:0))*TILE+sign*12}:{x:(tx+(sign>0?1:0))*TILE+sign*12,y:P.y};
+    candidates.push([{x:g.x,y:g.y},bend,end]);
+  }
+  let best=null;
+  for(const points of candidates){let length=0,valid=true;for(let i=1;i<points.length;i++){length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);if(!clear(points[i-1],points[i])){valid=false;break;}}
+    if(valid&&length<=limit&&(!best||length<best.length))best={points,length};}
+  setLayer(L0);return best;
+}
 function coverTarget() {
   const P = S.player; if (!abilityOn('ambush') || !P.cover || P.strikeT > 0 || S.pull) return null;
-  let best = null, bd = perkOn('reach') ? 120 : 100;
-  for (const g of S.guards) { if (g.child) continue;  // 아이는 손댈 수 없다
-
-    if (['DEAD', 'CAPTIVE', 'ALERT', 'FLEE', 'TERROR'].includes(g.state) || g.dog || (g.z || 0) !== (P.z || 0) || g.climb || g.doomed || (g.seen && g.meter > 0.6) || flOf(g) !== flOf(P)) continue;
-    const d = dist(P.x, P.y, g.x, g.y); if (d < bd && los(P.x, P.y, g.x, g.y, P.z || 0)) { bd = d; best = g; }
-  }
-  return best;
+  let best=null,bd=Infinity;
+  for(const g of S.guards){
+    if(g.child||g.dog||g.climb||g.doomed||g.yank||['DEAD','CAPTIVE','ALERT','FLEE','TERROR'].includes(g.state)||(g.seen&&g.meter>.6))continue;
+    const route=coverPullRoute(g,P);if(route&&route.length<bd){best=g;bd=route.length;}
+  }return best;
 }
 function updatePull(dt) {
-  const L = S.pull;if(!abilityOn('ambush')){L.g.doomed=false;S.pull=null;return;} L.t += dt; const f = Math.min(1, L.t / L.dur), e = f * f, g = L.g;
-  g.x = L.x0 + (L.x1 - L.x0) * e; g.y = L.y0 + (L.y1 - L.y0) * e;
-  if (f >= 1) {
-    S.pull = null; g.doomed = false;
-    if (g.state !== 'DEAD') { killGuard(g, null, null, true); S.hitStop = 0.08; if (!g.civ) { S.stats.special++; toast(lastKO() ? '벽 뒤로 끌어당겨 기절' : '벽 뒤로 끌어당겨 암살', 1.6, 'good'); } }
-  }
+  const L=S.pull;if(!abilityOn('ambush')){L.g.doomed=false;S.pull=null;return;}L.t+=dt;
+  const f=Math.min(1,L.t/L.dur),g=L.g,points=L.points||[{x:L.x0,y:L.y0},{x:L.x1,y:L.y1}],length=L.length||dist(L.x0,L.y0,L.x1,L.y1);
+  let remaining=length*f*f;
+  for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],d=dist(a.x,a.y,b.x,b.y);if(remaining<=d||i===points.length-1){const k=d?Math.min(1,remaining/d):1;g.x=a.x+(b.x-a.x)*k;g.y=a.y+(b.y-a.y)*k;break;}remaining-=d;}
+  if(f>=1){S.pull=null;g.doomed=false;if(g.state!=='DEAD'){killGuard(g,null,null,true);S.hitStop=.08;if(!g.civ){S.stats.special++;toast(lastKO()?'벽 뒤로 끌어당겨 기절':'벽 뒤로 끌어당겨 암살',1.6,'good');}}}
 }
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
