@@ -20,8 +20,14 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = STAGE.agentStudy&&!clip&&!tactical?'rgba(7,12,24,.77)': INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
+  // The street has a readable night floor. Interior darkness keeps the normal
+  // opacity, including ground-floor rooms rendered without a separate clip.
+  if(STAGE.agentStudy&&!clip&&!tactical){
+    dctx.fillStyle='rgba(3,6,11,.52)';
+    for(const b of BLD)if(!b.vacant)dctx.fillRect(b.x0*TILE,b.y0*TILE,(b.x1-b.x0+1)*TILE,(b.y1-b.y0+1)*TILE);
+  }
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
     const x0 = Math.max(0, Math.floor(rx / LIGHTQ)), y0 = Math.max(0, Math.floor(ry / LIGHTQ)), x1 = Math.min(lm.width, Math.ceil((rx + rw) / LIGHTQ)), y1 = Math.min(lm.height, Math.ceil((ry + rh) / LIGHTQ));

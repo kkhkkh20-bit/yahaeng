@@ -201,7 +201,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const fi=frame>=0?clamp(Math.round(frame),0,nf-1):Math.floor(t*fps)%nf;
   scale*=((bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1);
   const dw=PR.fr*scale,anchor=bm?.anims[anim]&&bm.grounds?.[anim],gy=(anchor!=null?anchor:PR.grounds?.[anim]??PR.groundY)*scale;
-  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:.28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
+  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:STAGE.agentStudy ? .17 : .28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
   ctx.globalAlpha=alpha;prBlit(sh,c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);ctx.globalAlpha=1;return true;
 }
 // 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.

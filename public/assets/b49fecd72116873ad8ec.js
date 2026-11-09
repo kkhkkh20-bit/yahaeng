@@ -1857,7 +1857,7 @@ campaignStage('tB').dressing.push(
 );
 // A playable art study, deliberately outside the linear campaign and its saves.
 if(window.__AGENT_CITY_STUDY__)STAGES.push({
- id:'agentCity',layoutRevision:'reference-city-v236',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
+ id:'agentCity',layoutRevision:'city-design-v237',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
  mission:'이도현 처치 · 거래 기록 회수 · 서쪽 골목으로 탈출',
  brief:'백송상사 2층에서 이도현과 거래 기록을 찾는다. 경비 옷으로 건물 안을 통과하거나, 옥상 연결교로 돌아 들어갈 수 있다. 서쪽 골목으로 빠져나오면 끝이다.',
  endText:'거래 기록을 챙겼다. 서쪽 골목으로 무사히 빠져나왔다.',
@@ -1867,14 +1867,14 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
  freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
  studyStyles:['stone','brick','office','green','brick','green','stone','office'],
  referenceBuildings:[
-  {box:[8,7,16,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{art:'billboardRunner',x:1,fl:3,w:2,h:2}},
-  {box:[23,7,31,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardCrab',x:1,fl:2,w:4,h:1}},
-  {box:[0,7,6,17],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardBeer',x:1,fl:6,w:5,h:3}},
-  {box:[33,7,40,17],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],[0,1,1]],roof:'roofMetal',ad:{art:'billboardOctopus',x:1,fl:4,w:1,h:2}},
-  {box:[1,30,8,41],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:5,w:2,h:2}},
-  {box:[10,30,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{art:'billboardBeer',x:1,fl:4,w:5,h:3}},
-  {box:[23,30,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{art:'gateSign',x:1,fl:3,w:2,h:1}},
-  {box:[32,30,40,41],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardOctopus',x:1,fl:6,w:1,h:2}}
+  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:3,w:2,h:2}},
+  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{art:'billboardCrab',x:1,fl:2,w:4,h:1}},
+  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardBeer',x:1,fl:6,w:5,h:3}},
+  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{art:'billboardOctopus',x:1,fl:4,w:1,h:2}},
+  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{art:'billboardRunner',x:1,fl:5,w:2,h:2}},
+  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{art:'billboardBeer',x:1,fl:4,w:5,h:3}},
+  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{art:'gateSign',x:1,fl:3,w:2,h:1}},
+  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{art:'billboardOctopus',x:1,fl:6,w:1,h:2}}
  ],
  referenceRow(i,fl){const s=this.referenceBuildings[i],n=s.windows.length;return fl===s.h-1?0:fl<n-1?n-1-fl:1;},
  referenceWindow(i,tx,fl){const s=this.referenceBuildings[i],a=s.ad;if(a&&tx>=s.box[0]+a.x&&tx<s.box[0]+a.x+a.w&&fl<=a.fl&&fl>a.fl-a.h)return false;const row=s.windows[this.referenceRow(i,fl)];return Array.isArray(row)?!!row[(tx-s.box[0]-1)%3]:!!row;},
@@ -1885,17 +1885,19 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
   m.fill(17,0,17,43,'=');m.fill(22,0,22,43,'=');m.fill(0,20,41,20,'=');m.fill(0,25,41,25,'=');
   const names=['백송상사','성일빌딩','청솔빌딩','가온빌딩','선일상회','동진빌딩','종로서점','백야회관'],ground=['office','food','store','food','store','food','store','food'];
   this.referenceBuildings.forEach((b,i)=>m.villa(...b.box,b.h,{kind:'shop',use:Array.from({length:b.h},(_,fl)=>fl?'office':ground[i]),signs:[names[i]],name:names[i],back:i<2}));
-  for(let i=0;i<this.referenceBuildings.length;i++){const b=this.referenceBuildings[i],[x0,,x1,y1]=b.box;for(let x=x0+1;x<x1;x++)if(['#','N'].includes(m.get(x,y1)))m.set(x,y1,this.referenceWindow(i,x,0)?'N':'#');}
+  for(let i=0;i<this.referenceBuildings.length;i++){const b=this.referenceBuildings[i],[x0,,x1,y1]=b.box;for(let x=x0+1;x<x1;x++)if(x!==x1-2)m.set(x,y1,this.referenceWindow(i,x,0)?'N':'#');}
+  // The front apron stays connected around each real doorway and corner shop.
+  m.fill(1,18,16,20,'=');m.fill(23,18,40,20,'=');m.fill(1,26,16,28,'=');m.fill(23,26,40,28,'=');
   m.many('B',[[3,19],[4,19],[25,19],[26,19],[39,26],[40,26],[3,26]]);
   m.many('T',[[7,18],[32,18],[9,42],[31,42]]);
  },
- roomPatches:[{fl:1,bounds:[8,7,16,17],furniture:[
+ roomPatches:[{fl:1,bounds:[8,9,16,17],furniture:[
   {t:'desk2',from:[10,13],remove:true},{t:'chairD',from:[10,14],remove:true}],
   tiles:[[10,13,'w'],[11,13,'w'],[10,14,'w']]}],
  fixedFurn:[{x:9,y:14,t:'sofa',w:2,fl:1}],
- closedDoors:[[11,17],[14,17],[26,17],[29,17],[3,17],[4,17],[36,17],[38,17],[4,41],[6,41],[13,41],[14,41],[26,41],[28,41],[35,41],[38,41]],
+ closedDoors:[[14,17],[29,17],[4,16],[38,16],[6,40],[14,41],[28,41],[38,40]],
  planks:[[16,9,23,10,5]],wires:[],roofs:['cRoofB','cRoofA','cRoofA','cRoofB'],
- zones:[[0,0,41,43,'pub',null,'거리',[]],[8,7,16,17,'res',null,'백송상사 · 직원 구역',['crew','guard','worker']]],
+ zones:[[0,0,41,43,'pub',null,'거리',[]],[8,9,16,17,'res',null,'백송상사 · 직원 구역',['crew','guard','worker']]],
  guards:[
   {kind:'g1',tag:'alleyGuard',at:[14,19],post:0,still:true,radio:false},
   {kind:'g1',tag:'receptionGuard',route:[[9,15,6],[11,15,6]],radio:false,startPause:8},
@@ -1905,7 +1907,7 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
   {kind:'civ',tag:'officeWorker',at:[24,16],still:true,post:90,radio:false}
  ],targetNames:{accountant:'이도현'},
  items:[[10,10,1]],itemName:'거래 기록',itemNames:['거래 기록'],itemPlaces:['백송상사 · 2층'],itemFurniture:[['desk','desk2','shelf']],
- lamps:[[7,19,230,1],[26,19,200,1],[17,8,210,1],[22,13,170,1],[6,26,210,1],[26,26,220,1],[13,13,260,0],[10,10,260,0,1]],
+ lamps:[[7,19,230,1],[14,18,135,1],[26,19,200,1],[17,8,210,1],[22,13,170,1],[6,26,210,1],[26,26,220,1],[13,13,260,0],[10,10,260,0,1]],
  challenges:[],fastT:420
 });
 if(window.__AGENT_CITY_STUDY__)DIALOGUE.agentCity=[
@@ -2885,12 +2887,13 @@ function cityBuildingStyle(b){
  return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
 }
 function freeCityPattern(name){
- let tile=freeCityPatterns[name];if(tile)return tile;
+ const key=name==='asphalt'&&STAGE.agentStudy?'asphalt:study':name;
+ let tile=freeCityPatterns[key];if(tile)return tile;
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
  tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);
  if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(92,100,104,.35)';c.fillRect(0,0,tile.width,tile.height);}
- if(name==='asphalt'){c.fillStyle='rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
- return freeCityPatterns[name]=tile;
+ if(name==='asphalt'){c.fillStyle=STAGE.agentStudy?'rgba(24,32,48,.16)':'rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
+ return freeCityPatterns[key]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;
@@ -3199,11 +3202,14 @@ function studyCellImage(b,tx,fl,w){
  const{ s,row }=studySourceRow(b,fl),col=((tx-b.x0-1)%3+3)%3,f=studyArt.frames[s.front].rect;
  const state=w?winSt(w):'closed',lit=w&&windowRoomLit(w),key=s.front+':'+row+':'+col+':'+state+':'+!!lit;
  if(studyWindowTiles.has(key))return studyWindowTiles.get(key);
- const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(studyAtlas,f[0]+col*32,f[1]+row*32,32,32,0,0,32,32);
+ const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.imageSmoothingEnabled=false;
+ // Ground-storey wooden doors in the source are scenery, not extra entrances.
+ const shutter=s.front==='frontWood'&&!fl?studyArt.frames.shopShutter.rect:null;
+ q.drawImage(studyAtlas,shutter?shutter[0]+col*32:f[0]+col*32,shutter?shutter[1]:f[1]+row*32,32,32,0,0,32,32);
  if(w){
   const im=q.getImageData(0,0,32,32),d=im.data;
   // Tint only source glass. Original mullions, transoms, posters and sills stay.
-  for(let y=3;y<30;y++)for(let x=2;x<30;x++){const p=(y*32+x)*4,r=d[p],g=d[p+1],bl=d[p+2];if(bl>r*1.18&&bl>g*1.07){if(state==='open'&&x>16){d[p]=14;d[p+1]=23;d[p+2]=35;}else if(lit){const v=(r+g+bl)/3;d[p]=Math.min(225,v*1.22);d[p+1]=Math.min(209,v*1.12);d[p+2]=Math.min(171,v*.88);}}}
+  for(let y=3;y<30;y++)for(let x=2;x<30;x++){const p=(y*32+x)*4,r=d[p],g=d[p+1],bl=d[p+2];if(bl>r*1.18&&bl>g*1.07){if(state==='open'&&x>16){d[p]=14;d[p+1]=23;d[p+2]=35;}else if(lit){const v=(r+g+bl)/3;d[p]=Math.min(205,v*1.08);d[p+1]=Math.min(202,v*1.06);d[p+2]=Math.min(184,v*.98);}else{d[p]*=.66;d[p+1]*=.76;d[p+2]*=.88;}}}
   q.putImageData(im,0,0);
   if(state==='bar'){q.strokeStyle='#15202b';q.lineWidth=2;for(let x=6;x<29;x+=7){q.beginPath();q.moveTo(x,4);q.lineTo(x,30);q.stroke();}}
   if(state==='lock'){q.fillStyle='#d1ae6b';q.fillRect(26,23,3,4);}
@@ -3232,7 +3238,12 @@ function studyGround(c,ch,tx,ty){
  if(!studyReady())return false;
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
  if(!'=,F'.includes(ch))return false;
- studyDraw(c,ch==='='?'pavement':'alleyBrick',tx*TILE,ty*TILE,TILE,TILE);return true;
+ let name=ch==='='?'pavement':'alleyBrick';
+ if(ch==='='){
+  const road=(x,y)=>G0[y]?.[x]==='.',n=road(tx,ty-1),s=road(tx,ty+1),w=road(tx-1,ty),e=road(tx+1,ty);
+  name=n?(w?'curbNW':e?'curbNE':'curbN'):s?(w?'curbSW':e?'curbSE':'curbS'):w?'curbW':e?'curbE':name;
+ }
+ studyDraw(c,name,tx*TILE,ty*TILE,TILE,TILE);return true;
 }
 function paintStudyRoof(c,b,w,h){
  const spec=STAGE.referenceBuildings[BLD.indexOf(b)];if(!spec)return false;
@@ -3249,8 +3260,20 @@ function drawStudyEntrance(b,e){
  for(const d of e.doors){const open=doorVisualOpen(d),x=d.tx*TILE,y=e.wallY-TILE,f=studyArt.frames.doorPanel.rect;
   studyDraw(ctx,'doorPanel',x,y,TILE,TILE);
   if(open>.02){ctx.fillStyle='#0b1420';ctx.fillRect(x+6,y+9,36,36);const leaf=Math.max(0,36*(1-open));if(leaf>0)ctx.drawImage(studyAtlas,f[0]+4,f[1]+6,24,24,x+6,y+9,leaf,36);}
+  const awning=freeCityArt.frames.awningGreen?.rect;
+  if(awning)ctx.drawImage(freeCityAtlas,...awning,x-6,y-15,60,20);
  }
  ctx.restore();return true;
+}
+
+function drawStudyStreetLamp(l,m,on){
+ if(!studyReady()||m.kind!=='street')return false;
+ // One source post per real lamp, at the physical mount, never scenery poles
+ // with no switch or light. The bulb swaps with the existing circuit state.
+ const x=m.ax-24,y=m.ay-91;
+ studyDraw(ctx,'streetPost',x,y,48,96);
+ if(on&&!l.broken)studyDraw(ctx,'streetBulb',x,y,48,24);
+ return true;
 }
 
 // Purchased 2D pixels. Render choices never mutate the collision grid or AI.
@@ -3734,7 +3757,7 @@ function drawPR(key, x, y, a, anim, t, alpha = 1, scale = 1, lift = 0, frame = -
   const fi=frame>=0?clamp(Math.round(frame),0,nf-1):Math.floor(t*fps)%nf;
   scale*=((bm&&bm.anims[anim]?bm.scales?.[anim]:PR.scales?.[anim])||1);
   const dw=PR.fr*scale,anchor=bm?.anims[anim]&&bm.grounds?.[anim],gy=(anchor!=null?anchor:PR.grounds?.[anim]??PR.groundY)*scale;
-  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:.28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
+  if(original===playerInkKey&&prVar[key+'_ol']){const paired=S.player.grabIn||S.player.captive||(S.player.killAnim&&S.player.strikeT>0);ctx.globalAlpha=(paired?.16:STAGE.agentStudy ? .17 : .28)*alpha;prBlit(prVar[key+'_ol'],c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);}
   ctx.globalAlpha=alpha;prBlit(sh,c0+fi,prDir(a),x-dw/2,y+13-gy-lift,dw,dw);ctx.globalAlpha=1;return true;
 }
 // 매달림도 복장·방향·프레임별 두 손의 중점을 실제 창틀/줄에 맞춘다.
@@ -4841,7 +4864,7 @@ const inView = (x, y, m = 60) => Math.abs(x - cam.x) < W / SCALE / 2 + m && Math
 let W = 0, H = 0, DPR = 1, SCALE = 1, BASE_SCALE = 1;
 let userZoom = 1, showRoutes = false, tactical = false, showOpps = true, oppMode = 1;  // 기회 안내: 2 전체 · 1 최소(기본 — 스스로 찾게) · 0 끔
 try { const o = localStorage.getItem('yahaeng.opps'); if (o === '0') { showOpps = false; oppMode = 0; } else if (o === '2') oppMode = 2; } catch (e) {}
-try { const z = parseFloat(localStorage.getItem(window.__CLUB_STUDY__?'yahaeng.tacticalZoom':'yahaeng.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 사선 화면은 기존 2D 확대 값을 물려받지 않는다
+try { const z = parseFloat(localStorage.getItem(window.__AGENT_CITY_STUDY__?'yahaeng.study.zoom':window.__CLUB_STUDY__?'yahaeng.tacticalZoom':'yahaeng.zoom3')); if (z >= 0.75 && z <= 1.6) userZoom = z;  // 사선 화면은 기존 2D 확대 값을 물려받지 않는다
   const r = localStorage.getItem('yahaeng.routes2'); if (r === '1') showRoutes = true; } catch (e) {}
 let cam = { x: 0, y: 0 };
 let S = null;
@@ -5874,10 +5897,10 @@ function collideLightPosts(o,r,solid) {
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
     const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
-    const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
+    const on=lampOn(l),pixelPost=STAGE.agentStudy&&studyReady()&&m.kind==='street',x=pixelPost?m.ax+12:l.x,y=pixelPost?m.ay-79:l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=STAGE.agentStudy&&drawStudyStreetLamp(l,m,on)||drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();
@@ -14137,7 +14160,7 @@ function touchPlayFrame(){
   const key=W+'|'+H+'|'+STAGE_I+'|'+controls.map(e=>e.id).join(',')+'|'+($('stealth')?.offsetHeight||0);
   if(touchFrameCache?.key===key)return touchFrameCache;
   const tops=controls.map(e=>e.getBoundingClientRect()).filter(r=>r.width&&r.height&&r.top>H*.25&&r.left<W/2+26&&r.right>W/2-26).map(r=>r.top);
-  const lower=Math.min(H-24,...tops)-64,preferred=H*(H>W*1.3?.60:.56);
+  const lower=Math.min(H-24,...tops)-64,preferred=H*(STAGE.agentStudy&&H>W*1.3?.46:H>W*1.3?.60:.56);
   const upper=Math.min(H*.44,Math.max(110,($('stealth')?.getBoundingClientRect().bottom||120)+44));
   return touchFrameCache={key,y:clamp(preferred,Math.min(upper,lower-8),Math.max(80,lower-8)),bottom:Math.min(...tops,H-24)};
 }
@@ -15552,8 +15575,14 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = STAGE.agentStudy&&!clip&&!tactical?'rgba(7,12,24,.77)': INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
+  // The street has a readable night floor. Interior darkness keeps the normal
+  // opacity, including ground-floor rooms rendered without a separate clip.
+  if(STAGE.agentStudy&&!clip&&!tactical){
+    dctx.fillStyle='rgba(3,6,11,.52)';
+    for(const b of BLD)if(!b.vacant)dctx.fillRect(b.x0*TILE,b.y0*TILE,(b.x1-b.x0+1)*TILE,(b.y1-b.y0+1)*TILE);
+  }
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
     const x0 = Math.max(0, Math.floor(rx / LIGHTQ)), y0 = Math.max(0, Math.floor(ry / LIGHTQ)), x1 = Math.min(lm.width, Math.ceil((rx + rw) / LIGHTQ)), y1 = Math.min(lm.height, Math.ceil((ry + rh) / LIGHTQ));
@@ -16018,7 +16047,7 @@ function draw() {
   };
   // 높이감: 옥상·전깃줄 위에 있으면 아래 거리가 한층 어둡고 푸르게 가라앉는다 (옥상은 그 위에 밝게 그려진다). 오르내릴 때는 서서히
   if (!tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
-    const tgt = el > 0 ? Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
+    const tgt = el > 0 ? STAGE.agentStudy ? .16 : Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   PM('haze');
   for (const g of S.guards) {
@@ -18077,9 +18106,10 @@ function targetScale() {
   if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
   if (P && P.car) return BASE_SCALE * userZoom * (0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더)
-  return BASE_SCALE * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
+  const districtView=STAGE.agentStudy&&isTouch&&H>W*1.3?.80:1;
+  return BASE_SCALE * districtView * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
-function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.artSlice?'yahaeng.tacticalZoom':'yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
+function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.agentStudy?'yahaeng.study.zoom':STAGE?.artSlice?'yahaeng.tacticalZoom':'yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
 function toggleTactical() {
   if (!running || !S || S.over || S.entrySel || paused || DLG.modal || S.keypad) return;
   clearPlayerInput();closeEnvPicker();
