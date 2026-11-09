@@ -54,7 +54,7 @@ let visionFrame = null;
 function selectVisionFocus() {
   const P=S.player, same=o=>flOf(o)===flOf(P)&&(o.z||0)===(P.z||0);
   const openB=bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)), exposed=o=>o.z||!coveredG(o,openB);
-  const eligible=g=>same(g)&&exposed(g)&&!g.climb&&!g.doomed&&!g.ledgeFalling&&!g.containerMoving&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state);
+  const eligible=g=>(same(g)||heightSightEligible(g,P))&&exposed(g)&&!g.climb&&!g.doomed&&!g.ledgeFalling&&!g.containerMoving&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state);
   let danger=null;
   const consider=(actor,camera,progress,identified=false)=>{
     if(progress<=.02)return;
@@ -85,3 +85,47 @@ function drawFacingCue(g) {
   ctx.beginPath();ctx.arc(g.x,g.y,r,a-.24,a+.24);ctx.stroke();ctx.restore();
 }
 // ---------------------------------------------------------------- 그리기
+
+// Project lower observers onto the surface the player is standing on. Samples
+// use the actual detector, including roof slabs, parapets, stance and light.
+const heightSightCache=new WeakMap();
+function heightSightEligible(g,P=S.player){
+  return !P.jump&&!P.trav&&!P.wire&&!P.ledge&&!flOf(P)&&P.z>0&&flOf(g)===0&&(g.z||0)<P.z&&!g.civ&&!g.dog&&((g.z||0)>0||!roofAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE)));
+}
+function heightSightField(g,P=S.player){
+  if(!heightSightEligible(g,P))return {cells:[],edges:[],step:12};
+  lightC(g.x,g.y);
+  const key=[g.z||0,P.z,P.mode,!!P.cover,!!P.hidden,g.state,S.alevel,S.smokeSerial||0,GLC.sig].join('|'),old=heightSightCache.get(g);
+  if(old&&old.S===S&&old.key===key&&S.t>=old.t&&S.t-old.t<.14&&dist(g.x,g.y,old.x,old.y)<2&&Math.abs(angDiff(g.a,old.a))<.025)return old.field;
+  const L0=CUR_F;setLayer(0);const sneak=P.cover?2:P.mode==='sneak',radius=Math.ceil(guardSightRange(g,1,P.hidden,sneak,P.z-(g.z||0))),step=12,cells=[],keys=new Set(),stride=MW*TILE/step,solid=solidFor(P.z);
+  const x0=Math.max(0,Math.floor((g.x-radius)/step)),x1=Math.min(stride-1,Math.ceil((g.x+radius)/step)),y0=Math.max(0,Math.floor((g.y-radius)/step)),y1=Math.min(MH*TILE/step-1,Math.ceil((g.y+radius)/step));
+  for(let iy=y0;iy<=y1;iy++)for(let ix=x0;ix<=x1;ix++){
+    const x=(ix+.5)*step,y=(iy+.5)*step,tx=Math.floor(x/TILE),ty=Math.floor(y/TILE);
+    if(rLv(tx,ty)!==P.z||solid(tx,ty)||!sightLine(g,x,y,P.z,sneak,0))continue;
+    const light=lightAt(x,y,true);
+    if(canSee(g,x,y,light,P.hidden,sneak,P.z,0)<=0)continue;
+    cells.push({x:ix*step,y:iy*step,ix,iy});keys.add(iy*stride+ix);
+  }
+  const edges=[];
+  for(const c of cells){const {x,y,ix,iy}=c;
+    if(!keys.has((iy-1)*stride+ix))edges.push([x,y,x+step,y]);
+    if(!keys.has((iy+1)*stride+ix))edges.push([x,y+step,x+step,y+step]);
+    if(!keys.has(iy*stride+ix-1))edges.push([x,y,x,y+step]);
+    if(!keys.has(iy*stride+ix+1))edges.push([x+step,y,x+step,y+step]);
+  }
+  setLayer(L0);const field={cells,edges,step};heightSightCache.set(g,{S,key,t:S.t,x:g.x,y:g.y,a:g.a,field});return field;
+}
+function drawHeightVision(P){
+  if(flOf(P)||!P.z||window.__skip?.ui)return;
+  const candidates=S.guards.filter(g=>heightSightEligible(g,P)&&!g.doomed&&!g.climb&&!['DEAD','CAPTIVE','SLEEP','TERROR'].includes(g.state)&&dist(P.x,P.y,g.x,g.y)<700);
+  let count=0;
+  for(const g of candidates){
+    if(visionFrame?.actor!==g&&(!input.scan||count>=3))continue;
+    const field=heightSightField(g,P);if(!field.cells.length)continue;count++;
+    const a=guardAwareness(g),color=a.phase==='seen'?'238,79,62':a.phase==='suspect'?'242,196,107':'176,201,216';
+    ctx.save();ctx.fillStyle=`rgba(${color},${a.direct ? .18 : .10})`;ctx.beginPath();for(const c of field.cells)ctx.rect(c.x,c.y,field.step,field.step);ctx.fill();
+    ctx.strokeStyle=`rgba(${color},.72)`;ctx.lineWidth=1.25/clamp(SCALE,.65,1.4);ctx.beginPath();for(const e of field.edges){ctx.moveTo(e[0],e[1]);ctx.lineTo(e[2],e[3]);}ctx.stroke();ctx.restore();
+    const at=field.cells.reduce((best,c)=>dist(c.x,c.y,P.x,P.y)<dist(best.x,best.y,P.x,P.y)?c:best,field.cells[0]);
+    tag(at.x+field.step/2,at.y-12,`${g.z?g.z+'층 옥상':'지상'} 경비 → ${P.z}층 옥상`,a.phase==='seen'?'#ff8f78':'#b8cdd9',.9,null,2.1);
+  }
+}

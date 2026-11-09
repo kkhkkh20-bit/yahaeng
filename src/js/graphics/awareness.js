@@ -8,7 +8,9 @@ function killBlockReason() {
   return { g, why };
 }
 function drawKillBlock() {
-  const r = killBlockReason(); if (!r || grabAction().near) return; const ka = attackAction(); if (ka.k !== 'none') return;  // [공격]이 할 수 있는 게 있으면 이유는 보이지 않는다
+  const r = killBlockReason(); if (!r || grabAction().near) return;
+  if((r.g.z||0)!==(S.player.z||0)&&!combatSource('atk')&&!S.qBuf)return; // The height sight label already explains the lower observer.
+  const ka = attackAction(); if (ka.k !== 'none') return;  // [공격]이 할 수 있는 게 있으면 이유는 보이지 않는다
   const k = Math.max(1, 0.9 / SCALE); tag(r.g.x, r.g.y + 40 * k, '× ' + r.why, '#ff9a86', 0.95, null, 2);
 }
 // 어쌔신 크리드식 머리 위 발견 표시: 아래를 향한 삼각형이 밑에서부터 찬다. 흰색 = 눈치, 노랑 = 의심, 빨강 = 발각

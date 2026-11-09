@@ -143,7 +143,7 @@ function noise(x, y, r, src, fl, z) {
   if(src==='land')recordFieldSkill('landing','일반 착지 소음 40% 감소');
   if (fl == null) fl = flOf(S.player);
   const zs = z || 0, srcIn = !zs && !fl && !!roofAt(Math.floor(x / TILE), Math.floor(y / TILE));  // 소리 난 높이: 옥상 위 / 지붕 아래(실내) / 바깥  // 층을 안 적으면 내 층 (예전엔 '지금 계산 중인 층'이라, 그리기가 1층으로 돌려놓은 사이 위층 발소리가 1층에 들렸다)
-  if (src !== 'scream') r = Math.max(src==='whistle'?180:0,r*loudMul(x,y,fl));  // 클럽 음악에 묻힌다
+  if (src !== 'scream') r = Math.max(src==='whistle'?260:0,r*loudMul(x,y,fl));  // 클럽 음악에 묻힌다
   if(src==='land')spawnEffect('dust',{x,y,fl,z:zs},{scale:.8});
   else if(src==='step'&&S.player.mode==='run'&&!S.player.vent&&!S.player.under)spawnEffect('dust',{x,y,fl,z:zs},{scale:.35,alpha:.65});
   const nz = { x, y, r, t: 0, src, fl, z:zs }; S.noises.push(nz); if(src==='step')nz.mode=S.player.mode;
@@ -173,7 +173,7 @@ function noise(x, y, r, src, fl, z) {
       // Never replace a visual/body search or check with a lower-priority footstep.
       if(src==='step'&&(['SEARCH','CHECK','WARN'].includes(g.state)||g.state==='SUSPICIOUS'&&g.why!=='heard'))continue;
       nz.heard=true;
-      if(!STAGE.tutorial&&!g.dog&&!g.target&&!g.elite&&(src==='whistle'||src==='stone')){nz.heard=true;if(['SEARCH','CHECK'].includes(g.state)||g.state==='SUSPICIOUS'&&(g.why!=='heard'||!g.reached&&g.poi&&dist(g.poi.x,g.poi.y,x,y)>96)){rememberSound(g,nz);continue;}decoys.push({g,d});continue;}
+      if(!STAGE.tutorial&&!g.dog&&!g.target&&!g.elite&&(src==='whistle'||src==='stone')){nz.heard=true;if(['SEARCH','CHECK'].includes(g.state)||g.state==='SUSPICIOUS'&&(g.why!=='heard'||src!=='whistle'&&!g.reached&&g.poi&&dist(g.poi.x,g.poi.y,x,y)>96)){rememberSound(g,nz);(nz.busyListeners||(nz.busyListeners=[])).push(g.id);continue;}decoys.push({g,d});continue;}
       if (g.elite && src === 'stone') { g.glance = 1.6; g.glanceA = Math.atan2(y - g.y, x - g.x); setIcon(g, '흥'); continue; }
       // 발소리: 바로 돌아보지 않고 잠깐 멈칫한다 (그 사이 등 뒤에서 덮칠 수 있다)
       if (src === 'step' || src === 'whistle') nz.heard = true;
@@ -213,6 +213,17 @@ function cautiousSoundPoint(g,n){
     if(Math.floor(g.x/TILE)===tx&&Math.floor(g.y/TILE)===ty||astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,solid).length)return p;
   }return{x:g.x,y:g.y,fl:flOf(g),z:g.z||0};
 }
+function coverSoundPoint(g,n){
+  const P=S.player,candidates=[];const solid=g.z?solidFor(g.z):solidAt;
+  // Use reachable stand positions around the actual wall end, within pulling contact.
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
+    const tx=Math.floor(n.x/TILE)+dx,ty=Math.floor(n.y/TILE)+dy;if(!inMap(tx,ty)||solid(tx,ty))continue;
+    const at={x:tc(tx),y:tc(ty),fl:flOf(g),z:g.z||0},route=coverPullRoute(at,P);if(!route)continue;
+    const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,solid);if(!path.length&&(Math.floor(g.x/TILE)!==tx||Math.floor(g.y/TILE)!==ty))continue;
+    candidates.push({...at,score:path.length*TILE+dist(g.x,g.y,at.x,at.y)*.1+Math.abs(route.length-52)});
+  }
+  candidates.sort((a,b)=>a.score-b.score);return candidates[0]||cautiousSoundPoint(g,n);
+}
 function respondToDecoy(heard,n){
   const active=g=>g.state==='SUSPICIOUS'&&g.why==='heard'&&g.poi&&dist(g.poi.x,g.poi.y,n.x,n.y)<80;
   let pending=heard.slice().sort((a,b)=>(active(b.g)?1:0)-(active(a.g)?1:0)||a.d-b.d);
@@ -225,6 +236,7 @@ function respondToDecoy(heard,n){
       if(o===first){
         const repeat=h.hits>1;goSuspicious(g,n.x,n.y,Math.max(repeat?5:3.5,STAGE.decoySearchTime||0));g.why='heard';n.investigators.push(g.id);
         if(repeat)g.soundApproach=cautiousSoundPoint(g,n);
+        else if(n.src==='whistle'&&S.player.cover&&flOf(S.player)===flOf(g)&&(S.player.z||0)===(g.z||0)&&dist(S.player.x,S.player.y,n.x,n.y)<8)g.soundApproach=coverSoundPoint(g,n);
         g.startle={a};if(repeat)gsay(g,'또 같은 곳이야. 조심해.');else gsay(g,group.length>1?'내가 확인할게. 넌 여기 지켜.':'누구야?');
       }else{
         // The lookout covers the original post instead of tracking the same

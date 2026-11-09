@@ -199,5 +199,5 @@ const AMB_DUR = 1.2;
 
 function concealedAttackCandidate(P=S.player){
   const radius=P.hide?80:P.vent?80:P.cover?60:P.hidden?60:meleeReach(P);
-  return S.guards.find(g=>!g.child&&!g.climb&&!g.yank&&!['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&dist(P.x,P.y,g.x,g.y)<=radius&&sightLine(P,g.x,g.y,g.z||0,false,flOf(g)))||null;
+  return S.guards.find(g=>!g.child&&!g.climb&&!g.yank&&!['DEAD','CAPTIVE','FLEE','TERROR'].includes(g.state)&&flOf(g)===flOf(P)&&(g.z||0)===(P.z||0)&&(P.cover?!!coverPullRoute(g,P):dist(P.x,P.y,g.x,g.y)<=radius&&sightLine(P,g.x,g.y,g.z||0,false,flOf(g))))||null;
 }

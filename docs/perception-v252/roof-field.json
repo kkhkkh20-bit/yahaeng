@@ -1,0 +1,32 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "standing": 4,
+    "crouched": 0,
+    "edges": 10,
+    "coldMs": 12.5,
+    "samplesMatchAI": true,
+    "turnAndStanceRefresh": true,
+    "ceilingsOpaque": true,
+    "noSerializedCache": true,
+    "errors": []
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "standing": 4,
+    "crouched": 0,
+    "edges": 10,
+    "coldMs": 4.5,
+    "samplesMatchAI": true,
+    "turnAndStanceRefresh": true,
+    "ceilingsOpaque": true,
+    "noSerializedCache": true,
+    "errors": []
+  }
+]

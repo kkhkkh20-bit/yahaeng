@@ -1,0 +1,82 @@
+{
+  "corners": [
+    {
+      "fl": 0,
+      "normal": [
+        -1,
+        0
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 0,
+      "normal": [
+        1,
+        0
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 0,
+      "normal": [
+        0,
+        -1
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 0,
+      "normal": [
+        0,
+        1
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 1,
+      "normal": [
+        -1,
+        0
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 1,
+      "normal": [
+        1,
+        0
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 1,
+      "normal": [
+        0,
+        -1
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    },
+    {
+      "fl": 1,
+      "normal": [
+        0,
+        1
+      ],
+      "length": 89.21135439392573,
+      "frames": 50
+    }
+  ],
+  "defaultRange": 360,
+  "sixTileHearing": true,
+  "newSoundRetargets": true,
+  "realSearchPreserved": true,
+  "floorsSeparate": true,
+  "skillLockPreserved": true
+}

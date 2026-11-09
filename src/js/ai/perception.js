@@ -98,6 +98,17 @@ function sightLine(g, x, y, elev, sneak, targetFloor = flOf(g)) {
   const L0 = CUR_F; setLayer(flOf(g));
   const visible = los(g.x, g.y, x, y); setLayer(L0); return visible;
 }
+// Shared reach formula for the detector and its height projection.
+function guardSightRange(g,light,hidden,sneak,elev){
+  const r = guardRanges(g);
+  const watch = g.lookout && elev;
+  let eff = r.dark + (r.lit - r.dark) * (watch ? Math.max(light, 0.6) : light);
+  if (hidden) eff = Math.min(eff, skillOn('foliage')?28:36);
+  if (elev) eff *= g.lookout ? (elev >= 3 ? 0.8 : 1.05) : elev >= 3 ? 0.35 : elev >= 2 ? 0.45 : 0.55;  // 망꾼은 옥상을 본다
+  if (g.elite) eff *= 1.1;
+  if (sneak === 2) eff *= COVER_HIDE;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
+  return eff;
+}
 function canSee(g, x, y, light, hidden, sneak, elev, targetFloor = flOf(g)) {
   if (targetFloor !== flOf(g)) return 0;
   // 높이: 옥상 밑(건물 안)에서는 옥상 위를 못 보고, 옥상 위에서는 옥상 밑을 못 본다
@@ -106,13 +117,7 @@ function canSee(g, x, y, light, hidden, sneak, elev, targetFloor = flOf(g)) {
   if (gz && elev < gz && !elev && roofAt(Math.floor(x / TILE), Math.floor(y / TILE))) return 0;
   const targetZ = elev; elev = elev > gz ? elev - gz : 0;
   const d = dist(g.x, g.y, x, y);
-  const r = guardRanges(g);
-  const watch = g.lookout && elev;  // 망꾼: 옥상 위 사람은 하늘을 배경으로 실루엣이 드러난다
-  let eff = r.dark + (r.lit - r.dark) * (watch ? Math.max(light, 0.6) : light);
-  if (hidden) eff = Math.min(eff, skillOn('foliage')?28:36);
-  if (elev) eff *= g.lookout ? (elev >= 3 ? 0.8 : 1.05) : elev >= 3 ? 0.35 : elev >= 2 ? 0.45 : 0.55;  // 망꾼은 옥상을 본다
-  if (g.elite) eff *= 1.1;
-  if (sneak === 2) eff *= COVER_HIDE;  // 벽에 기댐: 몸을 붙여 훨씬 덜 보인다
+  const watch = g.lookout && elev, eff = guardSightRange(g,light,hidden,sneak,elev);
   if (d > eff) return 0;
   if(d>=24&&smokeRayRange(g,x,y,d)<d-4)return 0;
   const near = !elev && (d < 24 || (!sneak && !hidden && d < 34) || (!sneak && !hidden && S.player.mode === 'run' && S.player.moving && d < 72 && Math.abs(x - S.player.x) + Math.abs(y - S.player.y) < 2));
