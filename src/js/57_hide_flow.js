@@ -14,12 +14,14 @@ function hideDistance(h,P=S.player) {
 }
 function cabinetGeometry(h) {
   const b=hideFootprint(h),locker=h.type==='locker',inset=locker?5:4;
-  const left=b.x0+inset,right=b.x1-inset,top=b.y0-(locker?58:63),bottom=b.y1-5;
-  return {left,right,top,bottom,doorLeft:left+3,doorRight:right-3,doorTop:top+5,doorBottom:bottom-8,locker};
+  const left=b.x0+inset,right=b.x1-inset,bottom=b.y1-5,top=bottom-(locker?60:62);
+  const key=locker?'lockerSteel':'wardrobeWood',doors=purchasedArt?.frames[key]?.leafCount||(locker?1:2);
+  return {left,right,top,bottom,doorLeft:left+3,doorRight:right-3,doorTop:top+5,doorBottom:bottom-8,locker,doors};
 }
+function cabinetMaxAngle(h){return hideFootprint(h).w>1?Math.PI/4:Math.PI*.42;}
 function cabinetAperture(h,open) {
-  const g=cabinetGeometry(h),w=g.doorRight-g.doorLeft,leaf=w/(g.locker?1:2),panel=leaf*Math.cos(clamp(open,0,1)*Math.PI*.48);
-  return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*(g.locker?1:2)),h:g.doorBottom-g.doorTop};
+  const g=cabinetGeometry(h),w=g.doorRight-g.doorLeft,leaf=w/g.doors,panel=leaf*Math.cos(clamp(open,0,1)*cabinetMaxAngle(h));
+  return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*g.doors),h:g.doorBottom-g.doorTop};
 }
 function drawCabinet(h,part='all',target=ctx,open=0) {
   if(drawPurchasedCabinet(h,part,target,open))return;
@@ -35,7 +37,7 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
     c.fillStyle='#172023';c.fillRect(g.left+1,g.bottom-3,3,5);c.fillRect(g.right-4,g.bottom-3,3,5);
   }
   if(part!=='back'){
-    const count=steel?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
+    const count=g.doors,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*cabinetMaxAngle(h),projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
     for(let i=0;i<count;i++){
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
       c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
@@ -68,6 +70,18 @@ function hideApproach(h) {
   const P=S.player,L0=CUR_F;setLayer(flOf(P));
   if(h.type==='bush'){setLayer(L0);return{points:[{x:P.x,y:P.y}],stand:{x:P.x,y:P.y},length:0};}
   let best=null;
+  if(h.furn&&h.type!=='bed'){
+    const front=cabinetFrontStand(h);
+    if(front)for(const entry of front.entries){
+      const sx=Math.floor(P.x/TILE),sy=Math.floor(P.y/TILE),same=sx===entry.tx&&sy===entry.ty,path=same?[]:astar(sx,sy,entry.tx,entry.ty);
+      if(!same&&!path.length)continue;
+      const points=[{x:P.x,y:P.y}];
+      for(const at of [...path,entry,{x:front.x,y:front.y},front.workStand])if(dist(points.at(-1).x,points.at(-1).y,at.x,at.y)>1)points.push({x:at.x,y:at.y});
+      let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);
+      if(!best||length<best.length)best={points,stand:{...front.workStand},length,recovery:{x:entry.x,y:entry.y}};
+    }
+    setLayer(L0);return best;
+  }
   for(const {tx,ty,nx,ny}of hidePerimeter(h)){
     if(h.furn&&h.type!=='bed'&&ny!==1)continue;
     if(!inMap(tx,ty)||solidFor(P.z||0)(tx,ty))continue;
@@ -110,8 +124,10 @@ function beginHideFlow(kind,h,subject=null,dir=null) {
   if(g&&P.captive!==g||kind==='stash'&&P.carrying!==c)return false;
   const exitTo=kind==='exit'&&(['box','well'].includes(h.type)||h.furn&&h.type!=='bed')?{...route.stand}:null;
   if(exitTo){const work=hideClosingStand(h,exitTo);if(work)route.stand=work;}
-  const departure=exitTo?hideDeparture(h,route.stand,exitTo):null;
+  const recovery=exitTo||(['stash','retrieve'].includes(kind)&&route.recovery);
+  const departure=recovery?hideDeparture(h,route.stand,recovery):null;
   const walk=route.length/130,duration=kind==='drag'?1.3:kind==='stash'?.85:h.type==='box'?.78:.72;
+  if(h.furn&&h.type!=='bed')warmFluidPose(playerKey(P),'cabinetOpen');
   const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&['enter','retrieve','stash','drag'].includes(kind)?ACCESS_WORK:0,handPost=handled&&['exit','retrieve','stash'].includes(kind)?ACCESS_WORK:0;
   const F={kind,h,g,c,route,walk,duration,handPre,handPost,departure,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
@@ -159,8 +175,8 @@ function updateHideFlow(P,dt) {
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
   const at=F.route.stand,W=hideWork(T),leaveAt=F.walk+(F.handPre||0)+F.duration+(F.handPost||0);
-  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
-  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>.7&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;finishEnvSelection();P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>=.84&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;finishEnvSelection();P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
   if(F.kind==='retrieve'){
     P.x=at.x;P.y=at.y;P.a=Math.atan2(h.y-at.y,h.x-at.x);
     if(!F.committed&&f>=.78){
@@ -371,6 +387,7 @@ function drawContainerAmbush(A) {
 // then walk to the requested safe exit. Do not reach the lid from a tile away.
 function hideClosingStand(h,exit){
   const L0=CUR_F;setLayer(flOf(h));let best=null;
+  if(h.furn&&h.type!=='bed'){const front=cabinetFrontStand(h);setLayer(L0);return front?.workStand||null;}
   for(const p of hidePerimeter(h)){
     if(!inMap(p.tx,p.ty)||solidFor(h.z||0)(p.tx,p.ty))continue;
     const ex=Math.floor(exit.x/TILE),ey=Math.floor(exit.y/TILE),path=astar(p.tx,p.ty,ex,ey,solidFor(h.z||0));if((p.tx!==ex||p.ty!==ey)&&!path.length)continue;
@@ -380,7 +397,12 @@ function hideClosingStand(h,exit){
   }setLayer(L0);return best;
 }
 function hideDeparture(h,stand,exit){
-  const L0=CUR_F;setLayer(flOf(h));const path=astar(Math.floor(stand.x/TILE),Math.floor(stand.y/TILE),Math.floor(exit.x/TILE),Math.floor(exit.y/TILE),solidFor(h.z||0)),points=[{x:stand.x,y:stand.y}];
+  const L0=CUR_F;setLayer(flOf(h));const points=[{x:stand.x,y:stand.y}],front=h.furn&&h.type!=='bed'?cabinetFrontStand(h):null;
+  if(front){
+    const entry=front.entries.find(e=>Math.floor(exit.x/TILE)===e.tx&&Math.floor(exit.y/TILE)===e.ty)||front.entries[0];
+    points.push({x:front.x,y:front.y},{x:entry.x,y:entry.y});
+  }
+  const from=points.at(-1),path=astar(Math.floor(from.x/TILE),Math.floor(from.y/TILE),Math.floor(exit.x/TILE),Math.floor(exit.y/TILE),solidFor(h.z||0));
   for(const p of path)if(dist(points.at(-1).x,points.at(-1).y,p.x,p.y)>1)points.push({x:p.x,y:p.y});
   if(dist(points.at(-1).x,points.at(-1).y,exit.x,exit.y)>1)points.push(exit);setLayer(L0);
   let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);return{points,length};

@@ -1,0 +1,19 @@
+{
+  "cargo": 3,
+  "variants": [
+    "filesBlue",
+    "filesGold",
+    "filesRed",
+    "bookcaseBlue",
+    "bookcaseWood",
+    "bookcaseRed",
+    "plantWide",
+    "plantLean",
+    "noticeBoard",
+    "graphBoard"
+  ],
+  "wallMounts": 1,
+  "keepsSourceScale": true,
+  "worldUnchanged": true,
+  "lateLoadRebuildsOnce": true
+}

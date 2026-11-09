@@ -37,6 +37,10 @@ RECIPES = {
  'vest': ('vest',None,CIV_ANIMS+['hold','holdI']),
  'jacket': ('jacket',None,CIV_ANIMS),
  'guardPatrol':('guardPatrol',None,CIV_ANIMS+['punch','climb','hold','holdI','hug','hugStep']),
+ 'hoodieCasual':('hoodieCasual',None,CIV_ANIMS),
+ 'workApron':('workApron',None,CIV_ANIMS+['hold','holdI']),
+ 'femaleCoat':('femaleCoat',None,CIV_ANIMS),
+ 'femaleBlazer':('femaleBlazer',None,CIV_ANIMS),
  'pack': ('hoodie', {'parts': BODIES['pack']['parts']}, CIV_ANIMS),
  'helmet': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
@@ -60,7 +64,7 @@ LOOK_MAP['sam']='guardPatrol'
 # Widen crowded civilian frames; exported scale/ground anchors retain world size.
 FRAME_PADDING = {name:1.4 for name in ['big','bossBig','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
 FRAME_PADDING.update({'oldMotion':1.5,'packMotion':1.2})
-FRAME_PADDING.update({'vest':1.4,'jacket':1.2,'guardPatrol':1.4})
+FRAME_PADDING.update({'vest':1.4,'jacket':1.2,'guardPatrol':1.4,'hoodieCasual':1.4,'workApron':1.4,'femaleCoat':1.4,'femaleBlazer':1.2})
 PLAYER_MAP = {'crew': 'heroAgentCrew', 'staff': 'heroAgentWorker', 'courier': 'heroAgentWorker',
               'waiter': 'heroAgentFormal', 'cater': 'heroAgentWorker'}
 class QuietHandler(SimpleHTTPRequestHandler):
@@ -198,9 +202,14 @@ async def main():
     print(bn,col,(OUT/filename).stat().st_size,flush=True)
     (OUT/'pr_meta.json').write_text(json.dumps(meta,separators=(',',':')))
    face_recipes=[bn for bn in RECIPES if not bn.endswith(('Motion','Lid'))]
+   old_faces=meta.get('faces',{});old_cols=old_faces.get('cols',{});old_atlas=Image.open(OUT/'face.webp').convert('RGBA') if (OUT/'face.webp').exists() else None
    for bn in face_recipes:
-    face=OUT/f'face_{bn}.webp'
-    if face.exists():faces.append((bn,Image.open(face).convert('RGBA')))
+    face=OUT/f'face_{bn}.webp';legacy_key=''if bn=='key'else bn
+    # An incremental wardrobe bake must not silently refresh unrelated faces
+    # from stale individual face files. Preserve their shipped atlas pixels.
+    if bn not in selected and old_atlas is not None and legacy_key in old_cols:
+     col=old_cols[legacy_key];faces.append((bn,old_atlas.crop((col*256,0,(col+1)*256,256))))
+    elif face.exists():faces.append((bn,Image.open(face).convert('RGBA')))
    if len(faces)==len(face_recipes) and not requested_patch:
     image=Image.new('RGBA',(256*len(faces),256))
     for i,(_,face) in enumerate(faces):image.paste(face,(i*256,0))

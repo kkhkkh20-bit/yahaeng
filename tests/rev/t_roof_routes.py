@@ -13,7 +13,7 @@ async def main():
         pg.on('pageerror', lambda e: errors.append(str(e)))
         await pg.add_init_script('window.requestAnimationFrame=()=>0')
         await pg.goto((ROOT / 'build/preview_city.html').as_uri())
-        await pg.wait_for_function('!!window.__game')
+        await pg.wait_for_function('!!window.__game&&__game.purchasedReady()')
         result = await pg.evaluate('''() => {
           const G=window.__game,dt=1/120,check=(v,m)=>{if(!v)throw Error(m)};
           let joins=0,crossings=0,doors=0;
@@ -42,7 +42,7 @@ async def main():
               // Drawing spans the facade and overlaps both roofs, rather than stopping at the building footprint.
               const c=G.ctx,fill=c.fillRect,rects=[];c.fillRect=function(...a){rects.push(a);return fill.apply(this,a)};
               try{G.drawPlanks()}finally{c.fillRect=fill}
-              for(const p of G.PLANKS){check(rects.some(([x,y,w,h])=>x===p.x0*48+4&&y<p.y0*48&&y+h>(p.y1+1)*48),'painted bridge missing roof overlap')}
+              for(const p of G.PLANKS){const b=G.purchasedBridgeBounds(p);check(b.y<p.y0*48&&b.y+b.h>(p.y1+1)*48&&rects.some(([x,y,w,h])=>x===b.x&&y===b.y&&w===b.w&&h===b.h),'painted bridge missing roof overlap')}
             }
           }
           for(const id of ['m1','m2','m3','m4','m5','m6','city']) {

@@ -1,0 +1,28 @@
+{
+  "result": [
+    {
+      "body": "heroAgent",
+      "coldFallback": "openHigh",
+      "poses": 136,
+      "maxWorldHandleError": 1.8287198875392932
+    },
+    {
+      "body": "heroAgentCrew",
+      "coldFallback": "openHigh",
+      "poses": 136,
+      "maxWorldHandleError": 1.8287198875392932
+    },
+    {
+      "body": "heroAgentWorker",
+      "coldFallback": "openHigh",
+      "poses": 136,
+      "maxWorldHandleError": 1.8287198875392932
+    },
+    {
+      "body": "heroAgentFormal",
+      "coldFallback": "openHigh",
+      "poses": 136,
+      "maxWorldHandleError": 1.8287198875392932
+    }
+  ]
+}

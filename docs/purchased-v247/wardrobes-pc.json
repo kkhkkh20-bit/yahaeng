@@ -1,0 +1,57 @@
+{
+  "roles": {
+    "maps": 27,
+    "mainWardrobes": [
+      "femaleCoat",
+      "femaleBlazer",
+      "workApron",
+      "hoodieCasual"
+    ],
+    "locations": {
+      "femaleCoat": {
+        "id": "m2",
+        "guard": 35
+      },
+      "femaleBlazer": {
+        "id": "m4",
+        "guard": 13
+      },
+      "workApron": {
+        "id": "m4",
+        "guard": 15
+      },
+      "hoodieCasual": {
+        "id": "m5",
+        "guard": 14
+      }
+    },
+    "explicit": 33,
+    "children": 2,
+    "bosses": 15,
+    "heroPreserved": true
+  },
+  "render": [
+    {
+      "body": "hoodieCasual",
+      "minHeight": 45,
+      "maxHeight": 48
+    },
+    {
+      "body": "workApron",
+      "minHeight": 45,
+      "maxHeight": 48
+    },
+    {
+      "body": "femaleCoat",
+      "minHeight": 44,
+      "maxHeight": 47
+    },
+    {
+      "body": "femaleBlazer",
+      "minHeight": 43,
+      "maxHeight": 46
+    }
+  ],
+  "frames": 5192,
+  "errors": []
+}

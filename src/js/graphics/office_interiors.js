@@ -95,7 +95,7 @@ function drawOfficeFurn(c,f,shadow){
 }
 function officeSurfacePoint(o){
  const f=o?.surface;if(!f||!officeReady())return null;
- const b=officeFurnBounds(f);if(!b)return null;
+ const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b)return null;
  // The reach point remains the existing furniture footprint. Only the visible
  // paper/receiver moves onto its purchased tabletop, using the same draw bounds.
  const u=o.surfaceU??.5;
@@ -128,6 +128,7 @@ function officeWallDecor(c,fl,x0,y0,x1,y1){
   const b=BLD[d.b];if(b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
   officeBlit(c,d.art,d.x,d.y,d.w,d.h);
  }
+ drawPurchasedPropWallDetails(c,fl,x0,y0,x1,y1);
 }
 function drawOfficeLamp(l,c=ctx){
  if(!officeReady()||!l.fixture)return false;

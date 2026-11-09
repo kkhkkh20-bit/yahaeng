@@ -335,6 +335,9 @@ function stairWells(g, f) {
       for (const [sx, sy] of sides) {
         const c1 = [tx + sx, ty + sy], c2 = [tx + sx + d[0], ty + sy + d[1]], floorC = c => walk(c[0], c[1]) && g[c[1]][c[0]] !== 'Y' && !FURN.some(it => (it.fl || 0) === f && c[0] >= it.x && c[0] < it.x + it.w && c[1] >= it.y && c[1] < it.y + it.h);
         const tp = [tx + sx + 2 * d[0], ty + sy + 2 * d[1]];
+        // A cabinet's doors need the reserved floor in front. Stair openings
+        // must not turn that service space into an impassable low railing.
+        if ([c1,c2].some(([x,y])=>FURN.some(it=>(it.fl||0)===f&&FURN_HIDE[it.t]&&it.t!=='bed'&&y===it.y+it.h&&x>=it.x&&x<it.x+it.w))) continue;
         if (!floorC(c1) || !floorC(c2) || !floorC(tp)) continue;  // 내려가는 자리(구멍 바닥 쪽 끝 앞 칸)가 벽·가구면 이 방향은 쓰지 않는다 (구석 계단에서 내려가지 못하던 문제)
         const before = reach(), o1 = g[c1[1]][c1[0]], o2 = g[c2[1]][c2[0]]; g[c1[1]][c1[0]] = 'K'; g[c2[1]][c2[0]] = 'K';
         const after = reach(), lost = [...before].filter(k => !after.has(k) && k !== c1.join(',') && k !== c2.join(','));

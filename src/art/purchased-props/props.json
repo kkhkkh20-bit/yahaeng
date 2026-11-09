@@ -1,0 +1,330 @@
+{
+  "artist": "GuttyKreum",
+  "pack": "Office Interior v3",
+  "source": "https://guttykreum.itch.io/japanese-office-interior-game-assets",
+  "sourceSha256": "cb793dd0023f6450d85474988a3d058c30d7a9b06d6dc872244885e07126324c",
+  "nativeScale": 1.5,
+  "frames": {
+    "cargoStable0": {
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ],
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "base": {
+        "x": 2,
+        "y": 13,
+        "w": 28,
+        "h": 18
+      },
+      "upper": {
+        "x": 7,
+        "y": 1,
+        "w": 18,
+        "h": 13
+      },
+      "sourceBorder": 1,
+      "shippingLabel": [
+        2,
+        2
+      ],
+      "worldScale": 1.5,
+      "visibleHeight": 30,
+      "footprint": [
+        1,
+        1
+      ]
+    },
+    "cargoStable1": {
+      "rect": [
+        34,
+        0,
+        32,
+        32
+      ],
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "base": {
+        "x": 1,
+        "y": 13,
+        "w": 30,
+        "h": 18
+      },
+      "upper": {
+        "x": 8,
+        "y": 1,
+        "w": 16,
+        "h": 13
+      },
+      "sourceBorder": 1,
+      "shippingLabel": [
+        2,
+        2
+      ],
+      "worldScale": 1.5,
+      "visibleHeight": 30,
+      "footprint": [
+        1,
+        1
+      ]
+    },
+    "cargoStable2": {
+      "rect": [
+        68,
+        0,
+        32,
+        32
+      ],
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "base": {
+        "x": 2,
+        "y": 13,
+        "w": 28,
+        "h": 18
+      },
+      "upper": {
+        "x": 6,
+        "y": 1,
+        "w": 20,
+        "h": 13
+      },
+      "sourceBorder": 1,
+      "shippingLabel": [
+        2,
+        2
+      ],
+      "worldScale": 1.5,
+      "visibleHeight": 30,
+      "footprint": [
+        1,
+        1
+      ]
+    },
+    "bookcaseBlue": {
+      "rect": [
+        102,
+        0,
+        19,
+        49
+      ],
+      "role": "storage-shelf",
+      "sourceRect": [
+        1734,
+        137,
+        1753,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "bookcaseWood": {
+      "rect": [
+        123,
+        0,
+        19,
+        49
+      ],
+      "role": "storage-shelf",
+      "sourceRect": [
+        1766,
+        137,
+        1785,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "bookcaseRed": {
+      "rect": [
+        144,
+        0,
+        19,
+        49
+      ],
+      "role": "storage-shelf",
+      "sourceRect": [
+        1798,
+        137,
+        1817,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "filesBlue": {
+      "rect": [
+        165,
+        0,
+        19,
+        49
+      ],
+      "role": "document-cabinet",
+      "sourceRect": [
+        1734,
+        201,
+        1753,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "filesGold": {
+      "rect": [
+        186,
+        0,
+        19,
+        49
+      ],
+      "role": "document-cabinet",
+      "sourceRect": [
+        1766,
+        201,
+        1785,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "filesRed": {
+      "rect": [
+        207,
+        0,
+        19,
+        49
+      ],
+      "role": "document-cabinet",
+      "sourceRect": [
+        1798,
+        201,
+        1817,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "plantWide": {
+      "rect": [
+        228,
+        0,
+        24,
+        41
+      ],
+      "role": "potted-plant",
+      "sourceRect": [
+        1827,
+        128,
+        1851,
+        169
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "plantLean": {
+      "rect": [
+        0,
+        51,
+        24,
+        41
+      ],
+      "role": "potted-plant",
+      "sourceRect": [
+        1860,
+        128,
+        1884,
+        169
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "noticeBoard": {
+      "rect": [
+        26,
+        51,
+        44,
+        26
+      ],
+      "role": "notice-board",
+      "sourceRect": [
+        1930,
+        288,
+        1974,
+        314
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "graphBoard": {
+      "rect": [
+        72,
+        51,
+        32,
+        34
+      ],
+      "role": "chart-board",
+      "sourceRect": [
+        1856,
+        331,
+        1888,
+        365
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "printerService": {
+      "rect": [
+        106,
+        51,
+        42,
+        30
+      ],
+      "role": "printer",
+      "sourceRect": [
+        1484,
+        416,
+        1526,
+        446
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    },
+    "extinguisher": {
+      "rect": [
+        150,
+        51,
+        10,
+        18
+      ],
+      "role": "wall-extinguisher",
+      "sourceRect": [
+        1514,
+        388,
+        1524,
+        406
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "worldScale": 1.5
+    }
+  }
+}

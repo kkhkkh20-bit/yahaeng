@@ -24,6 +24,10 @@ export const LOOKS = {
   vest: ['Male-Casual_2', 'Male-Worker', 'Male-Casual_2', 'Male-Worker'],
   jacket: ['Female-Casual', 'Female-Punk', 'Female-Casual', 'Female-Worker'],
   guardPatrol:['Male-Casual_2','Male-Worker','Male-Suit','Male-Worker'],
+  hoodieCasual:['Male-Casual_Hoodie','Male-Casual_Hoodie','Male-Casual_2','Male-Worker'],
+  workApron:['Male-Casual_2','Male-Worker','Male-Worker','Male-Worker'],
+  femaleCoat:['Female-Suit','Female-Suit','Female-Suit','Female-Worker'],
+  femaleBlazer:['Female-Formal','Female-Suit','Female-Suit','Female-Worker'],
 };
 const aliases = { Spine: 'Abdomen', Spine1: 'Torso', Spine2: 'Chest' };
 for (const [side, suffix] of [['Left', '.L'], ['Right', '.R']]) {
@@ -130,7 +134,7 @@ export async function loadModular(name) {
     return [a.name, a];
   }));
   if(name.startsWith('heroAgent'))await attachConceptHead(model,bones,mats);
-  if(['heroAgent','trench','vest'].includes(name))attachWardrobe(name,model,bones,mats);
+  if(['heroAgent','trench','vest','workApron','femaleCoat','femaleBlazer'].includes(name))attachWardrobe(name,model,bones,mats);
   clips.Punch = clips.Punch_Right;
   return { model, bones, mats, clips, mixer: new THREE.AnimationMixer(model) };
 }

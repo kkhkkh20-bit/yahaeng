@@ -1,6 +1,6 @@
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPurchasedArt();refreshPropArt();refreshOfficeArt();refreshFreeCity();
+  refreshPurchasedArt();refreshPurchasedProps();refreshPropArt();refreshOfficeArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
@@ -240,7 +240,7 @@ function draw() {
   captureAperturePeek(sc);
   const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
-    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks(); if (S.facOn) drawGangFlags(P);
+    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks('back'); if (S.facOn) drawGangFlags(P);
     quarterWallEdges();
     drawRoofEntrances(P);
     PM('roofs');
@@ -265,8 +265,11 @@ function draw() {
     drawWires();
   }
   drawOutdoorLampFixtures();
+  const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
+  if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
+  if(!tactical){const clip=clipExteriorFromInterior(VB,VF);drawPlanks('front',p=>!aboveBridge(p));if(clip)ctx.restore();}
   drawHideFlowVisual();
   if(!P.vent)drawAccessFlow();
   drawSignWork();
