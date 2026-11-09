@@ -295,6 +295,8 @@ function updateHUD(force) {
     db.hidden=!dress||ea.k==='dress';db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
+  $('btnGrab').dataset.radialCandidate=String(!$('btnGrab').hidden);$('btnDress').dataset.radialCandidate=String(!$('btnDress').hidden);
+  $('btnGrab').dataset.radialHint=String(ga.k==='none'&&!!ga.near);syncRadialSatellite();
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.
@@ -369,6 +371,13 @@ function syncQuickItems(){
   });
   bar.hidden=!visible;document.body.classList.toggle('has-quick-items',visible>0);
 }
+// One adaptive satellite owns the third position; aiming never loses its button.
+function syncRadialSatellite(){
+ if(!isTouch||!S)return;
+ const P=S.player,g=$('btnGrab'),d=$('btnDress'),keepTool=!!input.aiming||!!P.captive||!!(input.padWhistle&&!P.ledge&&!P.wire);
+ const grab=!keepTool&&g.dataset.radialCandidate==='true'&&!(g.dataset.radialHint==='true'&&toolCount(input.tool)>0),dress=!keepTool&&d.dataset.radialCandidate==='true';
+ g.hidden=!grab;d.hidden=!dress;hud.tool.hidden=grab||dress;
+}
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
   if (!S) return; const P = S.player;
@@ -377,14 +386,15 @@ function syncTools() {
     const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool&&!input.padWhistle);b.setAttribute('aria-pressed',String(t===input.tool&&!input.padWhistle)); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, t==='radio'&&!P.hasRadio?'미확보':t==='hack'?'':String(toolCount(t)));
   });
-  { const art=P.captive?'grab':input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;const html=hudArt(art)+(P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`); if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
-  if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
-  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
+  const whistling=padToolWhistle();
+  { const art=P.captive?'grab':whistling?'whistle':input.tool==='kunai'?'dart':input.tool;const html=hudArt(art)+(P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : whistling ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`); if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':whistling?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
+  if(!whistling&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
+  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=whistling?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
   hud.tool.hidden=!P.captive&&!input.padWhistle&&!input.aiming&&toolCount(input.tool)<=0&&(isTouch||!!(STAGE.starterContract||STAGE.apprenticeContract));
-  const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
+  const ready=(whistling||deviceReady(input.tool))&&!actionBusy(P)&&(P.captive?canInterrogate():whistling?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
-  syncQuickItems();
+  syncQuickItems();syncRadialSatellite();
 }
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();

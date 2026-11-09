@@ -45,7 +45,7 @@ async def main():
    await q.evaluate('step(5)');assert await q.evaluate('__game.S.t')>time
    await equipment();await q.evaluate('window.dispatchEvent(new Event("blur"));window.dispatchEvent(new Event("focus"))');assert await q.locator('#loadout').is_hidden()
    # Context-only controls keep their direct actions; no stale button occupies the third slot.
-   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];S.t+=1;G.updateHUD(true)}''')
+   await q.evaluate('''()=>{const G=__game,S=G.S,P=S.player;G.input.padWhistle=false;S.corpses=[{x:P.x+24,y:P.y,fl:0,z:0,ch:'sam',outfit:'crew',ko:true,carried:false,stashed:false,hidden:false}];S.t+=1;G.updateHUD(true)}''')
    assert await q.locator('#btnGrab').is_hidden()
    selected=await q.evaluate('__game.envAction().k')
    if touch and selected=='dress':assert await q.locator('#btnDress').is_hidden() and '옷 입기' in await q.locator('#btnCarry').inner_text()

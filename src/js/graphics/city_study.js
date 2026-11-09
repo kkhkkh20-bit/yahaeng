@@ -71,12 +71,19 @@ function studyCellImage(b,tx,fl,w){
 }
 function drawStudySign(b,a){
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
- const f=studyArt.frames.signBoard.rect,e=6,edge=9;
- ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#17252c';ctx.fillRect(x,y,w,h);
+ const f=studyArt.frames.signBoard.rect,e=6,edge=a.brand?5:9;
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle=a.brand?'#233a35':'#17252c';ctx.fillRect(x,y,w,h);
  // The purchased empty board supplies its original corners and steel rim.
  // No lettering or pictures from the Japanese advertisements are imported.
  const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
  for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
+ if(a.brand){
+  // A shop fascia spans the actual entrance, with a single horizontal name.
+  ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#efe7d3';ctx.font=uiFont(25,700);
+  ctx.fillText(a.lines[0],x+19,y+h/2+1,w-130);
+  ctx.textAlign='right';ctx.fillStyle='#acbdb0';ctx.font=uiFont(12,500);ctx.fillText(a.sub,x+w-18,y+h/2+2,94);
+  ctx.restore();return;
+ }
  const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
  const step=size*1.25,total=step*lines.length+sub;
  ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
