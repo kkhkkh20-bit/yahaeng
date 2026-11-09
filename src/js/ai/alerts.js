@@ -5,7 +5,7 @@ function goAlert(g) {
   const P = S.player, observed = g.seen ? observedPlayerSpot(g) : g.lastSeen || g.poi || gSpot(g); releaseSearchJob(g); endChat(g); g.act = null; g.bubble = null;
   if (g.lure) { g.lure.claim = null; g.lure = null; }
   if (g.state !== 'ALERT') { S.stats.detected++; logEv('seen', observed.x, observed.y); play('alert', 0.65); if (S.alevel < 3) { if (g.dog) say([[g, '멍! 멍멍!']]); else bark(g, 'alert'); } }
-  if (g.seen && (P.outfit || P.disguise) && !P.disguiseBlown) { if (P.outfit) (P.blown = P.blown || {})[P.outfit] = true; P.disguiseBlown = true; toast(P.outfit && STAGE.zones ? `목격자가 ${outfitName(P.outfit)}을 기억했다 · 무전 전에는 근처만 안다` : '변장이 들통났다', 2.4, 'warn'); }
+  if (g.seen && P.outfit) blowDisguise(g);
   g.suspectLook = g.seen ? suspectLook() : g.suspectLook || 'face'; if (g.seen) rememberSuspect(g);  // 실제 목격한 신분만 공유한다
   g.state = 'ALERT'; g.icon = '!'; g.iconT = 99; g.lastSeen = { ...observed }; g.lostT = 0; g.path = null; g.repath = 0; g.meter = 1; g.shootT = 0; g.aim = 0;
   if (S.fuseGuard === g) { S.fuseGuard = null; g.atFuse = false; }
@@ -39,7 +39,7 @@ const radioBusy = g => !!(S.radioCall && S.radioCall.g === g);
 function updateRadioCall(dt) {
   const R = S.radioCall; if (!R) return;
   const g = R.g;
-  if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.doomed) { S.radioCall = null; S.stats.radioCut = (S.stats.radioCut || 0) + 1; toast(R.shout ? '소리치기 전에 막았다 — 경보가 퍼지지 않았다' : '무전을 끊었다 — 경보가 퍼지지 않았다', 2.4, 'good'); logEv && logEv('radioCut', g.x, g.y); return; }
+  if (g.state === 'DEAD' || g.state === 'CAPTIVE' || g.state === 'TERROR' || g.doomed) { S.radioCall = null; S.stats.radioCut = (S.stats.radioCut || 0) + 1; const k=disguiseKnowledge(R.look); toast(k.shared?'추가 보고를 막았다 · 이전 인상착의 보고는 남아 있다':k.witnesses.length?'보고 중단 · 근처에서 전해 들은 목격자가 남아 있다':R.look?'보고 전에 제압 · 인상착의가 전달되지 않았다':'무전 중단 · 쓰러진 동료 신고가 전달되지 않았다', 2.8, k.shared||k.witnesses.length?'warn':'good'); logEv && logEv('radioCut', g.x, g.y); return; }
   if (g.state !== 'ALERT' && !(R.relay && ['SEARCH','SUSPICIOUS','CHECK'].includes(g.state))) { S.radioCall = null; return; }
   if ((R.t -= dt) <= 0) { S.radioCall = null; radioSpread(R.at, R.look); }
 }

@@ -45,7 +45,7 @@ async def main():
           fixture(null);tick(2);check(q.state==='WARN','Unpermitted entry still warns');results.push('trespass warning');
           fixture('waiter');tick(2);check(q.state==='WARN','Wrong uniform cannot grant crew access');results.push('wrong uniform');
           fixture();P.disguiseBlown=true;tick(2);check(q.state==='PATROL','Uninformed guard must still accept uniform');fixture();q.wait=999;q.post=0;q.still=true;q.idleT=999;G.rememberSuspect(q,'crew');tick(3);check(q.state==='ALERT','Actual witness must recognize compromised uniform '+JSON.stringify({state:q.state,meter:q.meter,seen:q.seen}));results.push('observer-specific uniform');
-          fixture();P.captive={};tick(.1);check(q.state==='ALERT'&&P.disguiseBlown,'Witnessed crime overrides permit');results.push('crime detection');
+          fixture();P.captive={};tick(.1);check(q.state==='ALERT'&&G.knownFace(q)&&!P.disguiseBlown,'Witnessed crime overrides permit');results.push('crime detection');
           fixture(null);q.seen=true;G.goAlert(q); const last={...q.lastSeen};
           P.x=q.x+200; P.y=q.y+30; q.a=q.want=Math.PI;
           G.takeProp({outfit:'crew'});
@@ -53,17 +53,17 @@ async def main():
           q.a=q.want=0;tick(1);check(!q.seen&&q.lastSeen.x===last.x&&q.lastSeen.y===last.y,'Pursuer must retain old sighting');
           tick(5);check(q.state!=='ALERT','Pursuit must become last-position search');results.push('unseen change');
           fixture(null);q.seen=true;G.goAlert(q);G.takeProp({outfit:'crew'});
-          check(P.disguiseBlown&&G.knownFace(q),'Visible clothing change must be recognized '+JSON.stringify({blown:P.disguiseBlown,known:G.knownFace(q),outfit:P.outfit,disguise:P.disguise,look:q.suspectLook,seen:q.seen,vis:G.canSee(q,P.x,P.y,1,false,false,0)}));results.push('watched change');
+          check(!P.disguiseBlown&&G.knownFace(q),'Visible clothing change must be recognized '+JSON.stringify({blown:P.disguiseBlown,known:G.knownFace(q),outfit:P.outfit,disguise:P.disguise,look:q.suspectLook,seen:q.seen,vis:G.canSee(q,P.x,P.y,1,false,false,0)}));results.push('watched change');
           fixture(null);q.seen=true;G.goAlert(q);q.a=q.want=Math.PI;
           const body={outfit:'crew',ch:'sam',stripped:false,x:P.x,y:P.y,fl:0};G.actCarry({k:'dress',c:body});finishHands();
           check(body.stripped&&P.outfit==='crew'&&!P.disguiseBlown&&!G.knownFace(q),'Body clothing must use unseen-change rules');
           fixture(null);q.seen=true;G.goAlert(q);G.actCarry({k:'dress',c:{outfit:'crew',ch:'sam',x:P.x,y:P.y,fl:0}});finishHands();
-          check(P.disguiseBlown&&G.knownFace(q),'Body clothing must also be recognized when watched');results.push('body clothing');
+          check(!P.disguiseBlown&&G.knownFace(q),'Body clothing must also be recognized when watched');results.push('body clothing');
           fixture(null);q.radio=true;q.seen=true;G.goAlert(q);const at={...q.lastSeen};
           P.x=q.x+150;P.y=q.y+40;q.a=q.want=Math.PI;G.takeProp({outfit:'crew'});tick(1);
           check(!q.seen&&q.lastSeen.x===at.x&&q.lastSeen.y===at.y,'Radio must not track unseen coordinates');
           G.updateRadioCall(5);check(G.S.alevel===3&&!G.knownFace(q),'Delayed radio must describe old appearance');results.push('radio memory');
-          fixture();q.enforcer=true;q.wait=999;q.post=0;q.still=true;q.idleT=999;P.a=Math.PI;tick(3.3);check(P.disguiseBlown&&q.state==='ALERT','Enforcer must still detect close disguise '+JSON.stringify({eye:q.eyeT,state:q.state,blown:P.disguiseBlown,pa:P.a,qa:q.a,d:Math.hypot(q.x-P.x,q.y-P.y)}));results.push('enforcer');
+          fixture();q.enforcer=true;q.wait=999;q.post=0;q.still=true;q.idleT=999;P.a=Math.PI;tick(3.3);check(!P.disguiseBlown&&G.knownFace(q)&&q.state==='ALERT','Enforcer must still detect close disguise '+JSON.stringify({eye:q.eyeT,state:q.state,blown:P.disguiseBlown,pa:P.a,qa:q.a,d:Math.hypot(q.x-P.x,q.y-P.y)}));results.push('enforcer');
           fixture();P.fl=1;P.captive={};tick(2);check(q.state==='PATROL'&&!q.seen,'Different floor must not witness crime');results.push('floor separation');
           fixture();let wall=false;
           for(let y=1;y<G.MH-1&&!wall;y++)for(let x=2;x<G.MW-2;x++)if(G.tileCh(x,y)==='#'&&!G.solidAt(x-1,y)&&!G.solidAt(x+1,y)){

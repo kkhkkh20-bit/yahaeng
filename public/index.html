@@ -106,7 +106,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 /* 레이아웃: 화면 전체를 쓰는 캔버스 + 가장자리에 붙는 작은 HUD 조각들. 밤 장면 하나로 고정된 단일 테마 */
 :root {
-  --title-alley-wide:url(./assets/c545273fd845cb119018.webp);--menu-art: url("./assets/c545273fd845cb119018.webp");
+  --title-alley-wide:url(./assets/5b623bec0eacecb8b781.webp);--menu-art: url("./assets/5b623bec0eacecb8b781.webp");
   --night: #070a12;
   --night-2: #0f1522;
   --ink-line: #253049;
@@ -1805,32 +1805,33 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  body.touch:not(.inspecting) #hud .status{position:absolute;left:230px;top:56px}
 }
 
-/* The title belongs to the playable pixel alley, with the menu in its shadow. */
-#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:52px clamp(30px,6vw,100px) 24px;background:#080e16;color:#f2f0e6;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
+/* A quiet title over the game's own Korean night street. */
+#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:46px clamp(32px,7vw,112px) 22px;background:#0b1016;color:#ece5d5;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
 #intro[hidden]{display:none}
 #intro .title-bg{position:absolute;inset:0;min-height:100%;background:none;pointer-events:none}
-#intro .title-bg img{display:block;width:100%;height:100%;object-fit:cover;object-position:65% 50%;image-rendering:pixelated}
-#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080e16fa 0%,#080e16e8 26%,#080e1670 52%,#080e1618 80%),linear-gradient(0deg,#080e16e8,transparent 24%);pointer-events:none}
+#intro .title-bg img{display:block;width:100%;height:100%;object-fit:cover;object-position:66% 46%;image-rendering:pixelated}
+#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080d13e8 0%,#080d13c2 22%,#080d1350 44%,#080d1300 70%),linear-gradient(0deg,#080d1380,transparent 27%);pointer-events:none}
 #intro .title-bg::after{display:none}
-#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:34px;width:min(390px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
-#intro .title-brand{display:flex;flex-direction:column;gap:12px}
-#intro h1{margin:0;width:auto;max-width:100%;font:400 clamp(74px,7.5vw,96px)/1.1 "Yahaeng Title",var(--f-body);letter-spacing:-.035em;color:#f2f0e6;transform:none;text-shadow:0 4px 16px #0008}
-#intro .case-title-goal{margin:0;max-width:100%;font-size:13px;line-height:1.5;color:#c6c6bc;letter-spacing:.02em}
-#intro .title-acts{display:flex;flex-direction:column;gap:3px;width:100%}
-#intro .title-acts button{display:flex;align-items:center;position:relative;box-sizing:border-box;min-height:48px;width:100%;margin:0;padding:10px 18px;border:0;border-radius:0;background:none;box-shadow:none;color:#c6cbd0;font-size:17px;font-weight:400;letter-spacing:0;line-height:1.5;text-align:left;transition:background-color .16s,color .16s,padding-left .16s}
+#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:44px;width:min(370px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
+#intro .title-brand{display:block;margin:0 0 4px}
+#intro h1{margin:0;width:max-content;max-width:100%;font:400 clamp(122px,12vw,172px)/1.06 "Yahaeng Title",var(--f-body);letter-spacing:-.04em;color:#eee7d6;transform:none;text-shadow:0 3px 0 #12171b60}
+#intro .title-acts{display:flex;flex-direction:column;gap:6px;width:100%;padding-left:7px;border-left:1px solid #a2997947}
+#intro .title-acts button{display:block;position:relative;box-sizing:border-box;min-height:48px;width:100%;margin:0;padding:10px 22px;border:0;border-radius:0;background:none;box-shadow:none;color:#b7b9b2;font-family:var(--f-body);font-size:16px;font-weight:400;letter-spacing:.015em;line-height:1.6;text-align:left;transition:color .12s,background-color .12s}
 #intro .title-acts button[hidden]{display:none}
-#intro .title-acts button::before{display:none}
-#intro .title-acts button::after{content:'';position:absolute;right:17px;width:6px;height:6px;border:solid currentColor;border-width:1px 1px 0 0;transform:rotate(45deg);opacity:0;transition:opacity .16s,right .16s}
-#intro .title-acts button.cta{min-height:60px;margin-bottom:16px;padding:14px 44px 14px 18px;color:#101820;background:#e6e3d6;font-size:19px;border:1px solid #faf4dc}
-#intro .title-acts button.cta::after{opacity:1;right:20px}
-#intro .title-acts button:hover,#intro .title-acts button:focus-visible{background:#d4deea12;color:#f6f0df;padding-left:24px}
-#intro .title-acts button:hover::after,#intro .title-acts button:focus-visible::after{opacity:1;right:20px}
-#intro .title-acts button.cta:hover,#intro .title-acts button.cta:focus-visible{background:#f3d5a3;color:#101820}
-#intro .title-acts button:focus-visible{outline:2px solid #ecb66e;outline-offset:3px}
-#intro .title-acts button:active{background:#bccaD41f}
-#intro .title-acts button.cta:disabled{background:#687178;border-color:#899095;color:#121b23;opacity:1;cursor:default}
-#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:24px;width:100%;margin:22px 0 0;font-size:10px;line-height:1.5;color:#b7c0c8}
-#intro .title-footer span:first-child{color:#bac3cb}
+#intro .title-acts button::before{content:'';display:block;position:absolute;top:50%;left:-10px;width:5px;height:5px;background:transparent;transform:translateY(-50%)}
+#intro .title-acts button::after{display:none}
+#intro .title-acts button.cta{min-height:58px;margin-bottom:10px;padding:12px 22px;color:#f1dcb4;background:none;border:0;font-size:21px;font-weight:500}
+#intro .title-acts button.cta::before{background:#c56a50;width:5px;height:23px}
+#intro .title-acts button.cta::after{content:'';display:block;position:absolute;bottom:4px;left:22px;right:25px;height:1px;background:#c6af7d6b}
+#intro .title-acts button:hover,#intro .title-acts button:focus-visible{background:#e7ddbd0b;color:#fff1cb}
+#intro .title-acts button:hover::before,#intro .title-acts button:focus-visible::before{background:#c56a50}
+#intro .title-acts:has(button:hover) .cta:not(:hover),#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible){color:#bbbbae}
+#intro .title-acts:has(button:hover) .cta:not(:hover)::before,#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible)::before{background:#a99d7a}
+#intro .title-acts button:focus-visible{outline:1px solid #d4bc85;outline-offset:2px}
+#intro .title-acts button:active{background:#c8aa7430;color:#fff3d0}
+#intro .title-acts button.cta:disabled{background:transparent;color:#9da39b;opacity:1;cursor:default}
+#intro .title-acts button.cta:disabled::before{background:#6e7b72}
+#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.08em}
 #help .panel,#newCampaignDialog{padding:24px 30px;border:12px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;background:#10171d;box-shadow:0 18px 48px #0008}
 #help.screen{background:linear-gradient(#080e16e8,#080e16f5),var(--title-alley-wide) center/cover fixed}
 #help .sub-head{background:none;border-bottom-color:#485760}
@@ -1838,34 +1839,34 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
 #help .back,#newCampaignDialog .ghost{background:#17212a;border-color:#52636e;color:#e1e3dd}
 #newCampaignDialog .cta{background:#d0bb93;border-color:#e7d8b6;color:#111820}
 @media(max-width:700px){
- #intro{grid-template-rows:1fr auto;padding:32px max(28px,env(safe-area-inset-right)) max(18px,env(safe-area-inset-bottom)) max(28px,env(safe-area-inset-left));align-items:end}
- #intro::before{background:linear-gradient(0deg,#080e16 0%,#080e16f5 30%,#080e1690 56%,#080e1620 84%)}
- #intro .title-bg img{object-position:50% 20%}
- #intro .title-panel{width:100%;margin:180px 0 0;gap:24px;align-self:end}
- #intro h1{font-size:76px}
- #intro .title-brand{gap:8px}
- #intro .case-title-goal{font-size:12px}
- #intro .title-acts{gap:1px}
- #intro .title-acts button{min-height:46px;font-size:16px;padding-block:9px}
- #intro .title-acts button.cta{min-height:56px;margin-bottom:10px;font-size:18px}
- #intro .title-footer{margin-top:22px;font-size:10px}
+ #intro{padding:26px max(24px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(26px,env(safe-area-inset-left,0px));align-items:end}
+ #intro .title-bg img{object-position:54% 44%}
+ #intro::before{background:linear-gradient(90deg,#090e1566,transparent 90%),linear-gradient(0deg,#080d13e6 0%,#080d139c 34%,transparent 70%)}
+ #intro .title-panel{width:min(300px,88%);margin:110px 0 0;gap:28px;align-self:end}
+ #intro h1{font-size:119px}
+ #intro .title-acts{gap:3px;padding-left:6px}
+ #intro .title-acts button{min-height:44px;font-size:14px;padding:9px 17px}
+ #intro .title-acts button.cta{min-height:54px;margin-bottom:7px;padding:11px 17px;font-size:18px}
+ #intro .title-acts button.cta::after{left:17px;right:15px}
+ #intro .title-footer{margin-top:22px;padding-top:11px;font-size:9px}
  #help .panel{padding:22px 24px;width:100%}
 }
 @media(max-height:680px) and (max-width:700px){
- #intro{padding-top:22px}
- #intro .title-panel{margin-top:56px;gap:18px}
- #intro h1{font-size:64px}
- #intro .title-footer{margin-top:15px}
+ #intro{padding-top:20px}
+ #intro .title-panel{margin-top:36px;gap:19px}
+ #intro h1{font-size:96px}
+ #intro .title-acts button{min-height:44px;padding-block:8px}
+ #intro .title-footer{margin-top:16px}
 }
 @media(min-width:701px) and (max-height:500px){
- #intro{padding:24px 36px 14px}
- #intro .title-panel{width:min(740px,100%);display:grid;grid-template-columns:230px minmax(250px,340px);gap:48px;margin:0}
- #intro h1{font-size:78px}
- #intro .title-acts button{min-height:42px;font-size:15px;padding-block:7px}
- #intro .title-acts button.cta{min-height:50px;margin-bottom:7px;font-size:17px}
- #intro .title-footer{margin-top:12px}
+ #intro{padding:20px 34px 12px}
+ #intro .title-panel{display:grid;grid-template-columns:210px minmax(250px,340px);gap:38px;width:min(720px,100%);margin:0;align-items:start}
+ #intro h1{font-size:112px}
+ #intro .title-acts button{min-height:44px;padding-block:7px;font-size:14px}
+ #intro .title-acts button.cta{min-height:49px;margin-bottom:5px;font-size:17px}
+ #intro .title-footer{margin-top:12px;padding-top:9px}
 }
-@media(prefers-reduced-motion:reduce){#intro .title-acts button,#intro .title-acts button::after{transition:none}}
+@media(prefers-reduced-motion:reduce){#intro .title-acts button{transition:none}}
 /* A complete Korean face; the two-glyph logo subset cannot render headings. */
 @font-face{font-family:"Yahaeng Display";src:url(./assets/de6389db85e15eb3aa0d.woff) format("woff");font-style:normal;font-weight:400;font-display:swap}
 /* A single display face connects title, preparation and mission results. */
@@ -2222,152 +2223,142 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
  body.episode-coda #dlg{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 }
 
-/* Mission preparation: readable skills, explicit costs and a deliberate purchase. */
-#skillScreen{--sk-ground:#0d141b;--sk-panel:#17212a;--sk-line:#34434c;--sk-ink:#f0eee5;--sk-muted:#aebbc2;--sk-gold:#e1bf7d;background:radial-gradient(ellipse at 90% 0,#21303a55,transparent 60%),var(--sk-ground)}
-#skillScreen .skill-panel{max-width:1480px;padding:24px 32px 16px;gap:0}
-#skillScreen .skill-toolbar{border:0;gap:20px}
-#skillScreen .sub-head h2{font-family:var(--f-body);font-weight:600;font-size:26px;letter-spacing:-.04em}
-#skillScreen .skill-toolbar .sub-head{padding-bottom:18px;gap:20px}
-#skillScreen #skillSummary{padding:10px 15px;margin:0 0 16px;border:1px solid #52616b;border-radius:5px;background:#1d2a33;font-size:11px;min-width:120px}
-#skillScreen #skillSummary strong{font-size:28px;color:var(--sk-gold);font-weight:600}
-#skillScreen .back{background:#dfd9c9;color:#15202a;border:1px solid #dfd9c9;border-radius:4px;font-size:12px;font-weight:500}
-#skillScreen .skill-navigation{gap:16px;padding:0 0 12px;border-color:#34434c}
-#skillScreen #skillBranches{gap:8px;flex:1}
-#skillScreen #skillBranches button{display:flex;align-items:center;justify-content:center;min-height:48px;min-width:134px;padding:11px 18px;border:1px solid #34434c;border-radius:5px;background:#142029;color:#afbdc5;font-size:14px;gap:12px;transition:background .12s,border-color .12s}
-#skillScreen #skillBranches button span{margin:0;font-size:11px;color:inherit;opacity:.8}
-#skillScreen #skillBranches button[aria-pressed=true]{color:#f0d59c;border-color:#c5a66e;background:#302c24;box-shadow:inset 0 -2px #c5a66e}
-#skillScreen #btnSkillRewards{border-radius:4px;color:#bdc9ce;font-size:11px;min-height:44px}
-#skillScreen .skill-instructions{font-size:12px;color:#aebbc2;line-height:1.6;margin:12px 0 0}
-#skillScreen .skill-layout{padding:18px 0;gap:24px}
-#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 360px}
-#skillScreen .skill-board{padding:0 5px 16px 0;overflow-x:hidden;touch-action:pan-y}
-#skillScreen #skillCards{min-width:0;display:block;min-height:0}
-#skillScreen .skill-tree{width:100%;min-width:0;padding:0;border:0}
-#skillScreen .skill-tree:not(.branch-active){display:none}
-#skillScreen .skill-tree h3{font-size:18px;font-weight:500;gap:9px}
-#skillScreen .skill-tree>p{margin:6px 0 18px;font-size:12px;color:#93a6b2}
-#skillScreen .skill-graph{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-auto-rows:auto;gap:14px;align-items:stretch}
-#skillScreen .skill-links{display:none}
-#skillScreen .skill-node{display:flex;align-items:stretch;position:relative;border:1px solid #35434e;border-radius:6px;background:#14202a;overflow:hidden}
-#skillScreen .skill-node button{display:flex;align-items:flex-start;position:relative;gap:12px;width:100%;height:auto;min-height:114px;border:0;border-radius:0;background:transparent;margin:0;padding:18px 14px 13px;text-align:left;box-sizing:border-box;color:#8297a5;transition:background .12s,transform .12s}
-#skillScreen .skill-node button::before{display:none}
-#skillScreen .skill-node button>svg{width:32px;height:32px;flex:0 0 32px;margin-top:2px;color:inherit}
-#skillScreen .skill-card-copy{display:flex;flex-direction:column;gap:7px;min-width:0;flex:1}
-#skillScreen .skill-card-copy strong{font-size:15px;line-height:1.4;letter-spacing:-.03em;color:#e0e6e6;font-weight:500;padding-right:27px;word-break:keep-all}
-#skillScreen .skill-card-benefit{color:#b6c4cd;font-size:12px;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere}
-#skillScreen .skill-card-state{font-size:10px;line-height:1.5;color:#9badb9}
-#skillScreen .skill-node .skill-cost{top:12px;right:11px;bottom:auto;min-width:24px;padding:4px 5px;border:1px solid #455864;border-radius:3px;background:#101c25;color:#b4c5cc;font-size:11px;font-weight:500}
-#skillScreen .skill-node .skill-label{display:block;margin:0;padding:8px 14px;min-height:32px;box-sizing:border-box;border-top:1px solid #2c3a45;background:#101a22;color:#899eac;font-size:10px;text-align:left;line-height:1.5;word-break:keep-all}
-#skillScreen .skill-node.available{border-color:#b99a60;background:#232822}
-#skillScreen .skill-node.available button{color:#e1bf7d}
-#skillScreen .skill-node.available .skill-card-state{color:#eed096}
-#skillScreen .skill-node.available .skill-cost{border-color:#ae8d52;color:#efd39b;background:#332d20}
-#skillScreen .skill-node.learned{border-color:#5f9a8b;background:#152a2b}
-#skillScreen .skill-node.learned button{color:#87cab3;background:transparent}
-#skillScreen .skill-node.learned .skill-card-state,#skillScreen .skill-node.learned .skill-cost{color:#9bdbc4}
-#skillScreen .skill-node.selected{border-color:#f1d79d;box-shadow:0 0 0 1px #f1d79d}
-#skillScreen .skill-node.selected button{outline:0;background:#fff1c008}
-#skillScreen .skill-node.in-path:not(.selected){border-color:#7c8b86}
-#skillScreen .skill-node button:active{background:#e9e2c518;transform:translateY(1px)}
-#skillScreen .skill-node button:focus-visible{outline:2px solid #f1d79d;outline-offset:-4px;border-radius:5px}
-#skillScreen .skill-detail{background:#17232c;border:1px solid #53626b;border-radius:6px;box-shadow:0 8px 28px #0003}
-#skillScreen .skill-detail-close{margin:4px 8px 0;color:#c4ced3;font-size:12px}
+/* Original three-branch tree. Finish: ink, brass and clear dependency routes. */
+#skillScreen{--sk-ground:#121619;--sk-panel:#1c2022;--sk-line:#414441;--sk-ink:#eee8d7;--sk-muted:#afb1aa;--sk-gold:#ccb482;background:#121619;color:var(--sk-ink)}
+#skillScreen .skill-panel{padding:22px 32px 16px;max-width:1560px}
+#skillScreen .skill-toolbar{border-bottom:1px solid #55564e;gap:20px}
+#skillScreen .skill-toolbar .sub-head{padding-bottom:18px;gap:22px}
+#skillScreen .sub-head h2{font-family:var(--f-body);font-size:25px;font-weight:500;letter-spacing:-.04em}
+#skillScreen #skillSummary{margin-bottom:18px;color:#b6b5a9;font-size:11px;line-height:1.65}
+#skillScreen #skillSummary strong{font-size:30px;color:#f1dbac;font-weight:400}
+#skillScreen .back{border-color:#727367;background:transparent;color:#ddd8c8;border-radius:0;font-size:12px}
+#skillScreen .back:hover{background:#ded4b515;color:#fff2cd}
+#skillScreen .back:active{background:#ded4b52b}
+#skillScreen .skill-navigation{border-color:#393d3d;padding-top:4px;gap:16px}
+#skillScreen #skillBranches{gap:30px}
+#skillScreen #skillBranches button{position:relative;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;min-height:50px;font-size:14px;padding:12px 8px;color:#adaea6}
+#skillScreen #skillBranches button[aria-pressed=true]{color:#f3deaf;border-bottom-color:#c8ac75}
+#skillScreen #skillBranches button span{font-size:10px;margin-left:10px;color:#acac9f}
+#skillScreen #btnSkillRewards{background:transparent;border-color:#565b57;border-radius:0;color:#d2c6a8;font-size:11px}
+#skillScreen .skill-instructions{color:#abaea8;font-size:11px;line-height:1.65;margin-top:12px}
+#skillScreen .skill-layout{padding:22px 0 18px;gap:24px}
+#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 340px}
+#skillScreen #skillCards{display:flex;gap:24px;min-width:864px;min-height:100%}
+#skillScreen .skill-tree{min-width:calc(var(--leaves)*60px);padding-right:4px}
+#skillScreen .skill-tree+.skill-tree{padding-left:22px;border-left:1px solid #353b3b}
+#skillScreen .skill-tree h3{font-size:18px;letter-spacing:.02em;color:#e4ddc9;font-weight:500;gap:10px}
+#skillScreen .skill-tree h3 svg{color:#c6b58f;width:22px;height:22px}
+#skillScreen .skill-tree>p{color:#999e99;font-size:11px;margin:7px 0 24px}
+#skillScreen .skill-graph{grid-auto-rows:126px}
+#skillScreen .skill-links path{stroke:#68706b;stroke-width:1.35;stroke-linejoin:miter;stroke-linecap:square;fill:none}
+#skillScreen .skill-links path.learned{stroke:#c8bb98;stroke-width:1.8}
+#skillScreen .skill-links path.in-path{stroke:#e9cc8e;stroke-width:2}
+#skillScreen .skill-node button{width:58px;height:58px;min-height:44px;margin:4px 0 17px;border:1px solid #6a716b;background:#191f21;color:#909e99;border-radius:50%;transition:background .12s,border-color .12s,color .12s}
+#skillScreen .skill-node button::before{inset:4px;border:1px solid #3d4844;border-radius:50%}
+#skillScreen .skill-node button svg{width:31px;height:31px;stroke-width:1.45}
+#skillScreen .skill-node .skill-cost{left:50%;right:auto;bottom:-10px;transform:translateX(-50%);min-width:29px;box-sizing:border-box;padding:3px 5px;border:1px solid #60685d;background:#171c1e;color:#c9cbbd;font-size:10px;line-height:1.2;border-radius:0;font-weight:400}
+#skillScreen .skill-node .skill-label{font-size:12px;line-height:1.5;padding:0 3px;color:#b6bab0;background:#121619;max-width:100%;word-break:keep-all}
+#skillScreen .skill-node.available button{border-color:#d3b77d;color:#edd6a2;background:#292b25;box-shadow:inset 0 0 0 1px #d6ba7a1c}
+#skillScreen .skill-node.available button::before{border-color:#8b7856}
+#skillScreen .skill-node.available .skill-cost{color:#f1dcae;border-color:#a58e62;background:#262920}
+#skillScreen .skill-node.learned button{background:#d6ccad;border-color:#eee0b8;color:#202b2b;box-shadow:none}
+#skillScreen .skill-node.learned button::before{border-color:#7d806f}
+#skillScreen .skill-node.learned .skill-cost{border-color:#b9b18d;color:#e8dfc6;background:#39423b}
+#skillScreen .skill-node.learned .skill-label{color:#e5ddc3}
+#skillScreen .skill-node.in-path button{border-color:#d4bd88}
+#skillScreen .skill-node.selected button{outline:2px solid #c45f4e;outline-offset:4px}
+#skillScreen .skill-node.selected .skill-label{color:#f4dfb4}
+#skillScreen .skill-node button:active{background:#8c70533d}
+#skillScreen .skill-node button:focus-visible{outline:2px solid #d9c394;outline-offset:4px}
+#skillScreen .skill-detail{border:1px solid #a29a80;background:#d9d2bd;color:#222d2c;border-radius:0;box-shadow:0 8px 22px #0003}
+#skillScreen .skill-detail-close{color:#4f5951;min-height:44px;margin:3px 7px 0;padding:8px 10px;font-size:11px;background:transparent}
 #skillScreen .skill-detail-head{padding:0 18px 14px}
-#skillScreen .skill-detail-head h3{font-size:23px;font-weight:500}
-#skillScreen .skill-detail-state{font-size:11px;line-height:1.5;flex-wrap:wrap;gap:5px}
+#skillScreen .skill-detail-head h3{font-family:var(--f-body);font-size:23px;font-weight:500;color:#202c2c}
+#skillScreen .skill-detail-emblem{color:#5a5842}
+#skillScreen .skill-detail-state{margin-top:12px;color:#50594f;font-size:10px;line-height:1.6;gap:6px;flex-wrap:wrap}
+#skillScreen .skill-detail-state .known{color:#2e5746}
 #skillScreen .skill-description{padding:0 18px 16px}
-#skillScreen .skill-benefit{margin:0 0 12px;font-size:12px}
-#skillScreen .skill-benefit>div{grid-template-columns:52px 1fr;padding:9px 0}
-#skillScreen .skill-benefit>div:last-child{border:0;background:#e1bf7d0b;padding:9px 8px;margin-inline:-8px;border-radius:4px}
-#skillScreen .skill-description p{font-size:12px;line-height:1.7;margin:0 0 10px}
-#skillScreen .skill-rules{margin:0 0 12px;color:#aebdc8;font-size:11px;line-height:1.7}
-#skillScreen .skill-rules summary{min-height:28px;cursor:pointer;color:#bdcbd2}
+#skillScreen .skill-benefit{margin:0 0 12px;font-size:12px;color:#233432}
+#skillScreen .skill-benefit>div{padding:8px 0;border-color:#a9aa95;grid-template-columns:50px 1fr}
+#skillScreen .skill-benefit dt{color:#636a58}
+#skillScreen .skill-benefit dd{color:#273b35}
+#skillScreen .skill-benefit>div:last-child dd{color:#803e32;font-weight:500}
+#skillScreen .skill-description p{font-size:12px;line-height:1.8;color:#3c4a40;margin:0 0 12px}
+#skillScreen .skill-description .skill-purpose{color:#303e36}
+#skillScreen .skill-rules{font-size:11px;line-height:1.7;color:#465346;margin-bottom:12px}
+#skillScreen .skill-rules summary{min-height:28px;color:#485646;cursor:pointer}
 #skillScreen .skill-rules p{padding-top:8px}
-#skillScreen .skill-use{font-size:11px}
-#skillScreen .skill-preview{border-block-color:#34444f}
-#skillScreen .skill-preview canvas{max-height:150px;object-fit:contain;background:#101a23}
-#skillScreen .skill-preview figcaption{font-size:10px;bottom:7px}
-#skillScreen .skill-prereqs{padding:14px 18px;display:flex;flex-wrap:wrap;gap:6px}
-#skillScreen .skill-prereqs p{width:100%;font-size:10px;margin:0 0 3px}
-#skillScreen .skill-prereqs button{display:block;width:auto;min-height:44px;padding:9px;border:1px solid #40545f;border-radius:4px;background:#101c25;font-size:11px}
-#skillScreen .skill-prereqs button[aria-current=true]{border-color:#a98b59;color:#edcc91}
-#skillScreen .skill-detail-actions{padding:12px 16px;background:#17232cf7;backdrop-filter:blur(8px);gap:8px}
-#skillScreen .skill-detail-actions button{min-height:48px;border-radius:4px;font-weight:500;background:#e1bf7d;border-color:#e1bf7d;color:#18212a}
-#skillScreen .skill-detail-actions button:disabled{background:#23333f;color:#9fadb5;border-color:#4a5c69}
-#skillScreen .skill-footer{gap:18px;padding-top:12px;border-color:#34434c}
-#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:4px}
-#skillScreen .skill-loadout>span{font-size:10px}
-#skillScreen #skillResetNote{font-size:10px}
-#skillScreen #btnSkillReset{border-color:#53636c;font-size:11px}
-@media(hover:hover){
- #skillScreen .skill-node button:hover{background:#f8eac409}
- #skillScreen .skill-node:hover{border-color:#96a4aa}
- #skillScreen .skill-node.available:hover{border-color:#edcc91}
- #skillScreen #skillBranches button:hover{background:#263440}
- #skillScreen .skill-detail-actions button:not(:disabled):hover{background:#efd49b}
-}
-@media(max-width:1199px){#skillScreen .skill-graph{grid-template-columns:repeat(2,minmax(0,1fr))}}
+#skillScreen .skill-use{font-size:11px;color:#685334}
+#skillScreen .skill-preview{border-color:#a5a48e;margin-inline:18px}
+#skillScreen .skill-preview canvas{max-height:150px;object-fit:contain;background:#1c2829}
+#skillScreen .skill-preview figcaption{font-size:10px;background:#111e22df;color:#e4dfcc;bottom:8px}
+#skillScreen .skill-prereqs{padding:14px 18px;display:flex;flex-wrap:wrap;gap:5px;color:#53604f}
+#skillScreen .skill-prereqs p{width:100%;font-size:10px;line-height:1.6;margin:0 0 4px}
+#skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#e4ddc8;border:1px solid #a7aa94;border-radius:0;color:#344a3e;font-size:10px}
+#skillScreen .skill-prereqs button[aria-current=true]{color:#743f32;border-color:#9c6753}
+#skillScreen .skill-detail-actions{background:#d9d2bd;border-color:#a8aa93;padding:12px 17px;gap:8px}
+#skillScreen .skill-detail-actions button:not(:disabled){background:#773e32;border:1px solid #934f3d;color:#fff0d1;border-radius:0;min-height:48px;font-size:13px;font-weight:500}
+#skillScreen .skill-detail-actions button:not(:disabled):hover{background:#8e4a39}
+#skillScreen .skill-detail-actions button:disabled{background:#c2c3ae;border:1px solid #aaae98;color:#606e60;border-radius:0;min-height:48px}
+#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#754233}
+#skillScreen .skill-reward-note{color:#53604f;font-size:12px}
+#skillScreen .skill-reward-mission{border-color:#acaf97}
+#skillScreen .skill-reward-mission h4{color:#24392e}
+#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:#764c32}
+#skillScreen .skill-reward-mission li.earned{color:#57664f}
+#skillScreen .skill-footer{border-top:1px solid #464c47;padding-top:12px}
+#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:0;border-color:#60685e;background:transparent;color:#c7c7b3}
+#skillScreen .skill-loadout button[aria-pressed=true]{border-color:#d1b77d;color:#efdab0}
+#skillScreen #skillResetNote{font-size:10px;color:#a3a99d}
+@media(hover:hover){#skillScreen .skill-node button:hover{border-color:#e6d5af;color:#f4e1b8}#skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}}
 @media(max-width:999px){
  #skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr)}
- #skillScreen .skill-detail{position:fixed;top:auto;bottom:max(8px,env(safe-area-inset-bottom,0px));right:50%;transform:translateX(50%);width:min(600px,calc(100vw - 20px));height:min(76dvh,690px);z-index:5;box-shadow:0 -10px 45px #0007}
- #skillScreen #skillDetailShade:not([hidden]){background:#060d14bb;backdrop-filter:blur(2px)}
- #skillScreen .skill-detail-head h3{font-size:22px}
+ #skillScreen #skillCards{min-width:0;gap:0}
+ #skillScreen .skill-tree{min-width:0;flex:1;width:100%;padding:0;border:0}
+ #skillScreen .skill-tree:not(.branch-active){display:none}
+ #skillScreen .skill-board{overflow-x:hidden}
+ #skillScreen .skill-detail{position:fixed;top:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));width:min(374px,calc(100vw - 32px));height:auto;z-index:5}
+ #skillScreen #skillDetailShade:not([hidden]){background:#080e12bd;backdrop-filter:none}
 }
 @media(max-width:699px){
- #skillScreen .skill-panel{padding:14px 14px max(10px,env(safe-area-inset-bottom,0px))}
- #skillScreen .skill-toolbar .sub-head{gap:12px;padding-bottom:12px;flex-wrap:nowrap}
- #skillScreen .sub-head h2,#skillScreen.episode-training .sub-head h2{font-size:20px;width:auto;order:0;white-space:nowrap}
- #skillScreen .back{padding:8px 10px;max-width:170px;white-space:normal;font-size:11px}
- #skillScreen #skillSummary{padding:7px 9px;min-width:65px;font-size:10px;margin:0 0 12px;max-width:102px}
- #skillScreen #skillSummary strong{font-size:23px;margin:0}
- #skillScreen .skill-navigation{gap:7px;flex-wrap:nowrap;padding-bottom:10px}
- #skillScreen #skillBranches{gap:5px;min-width:0;justify-content:stretch}
- #skillScreen #skillBranches button{min-width:0;flex:1;padding:9px 5px;font-size:12px;gap:5px;min-height:44px}
- #skillScreen #skillBranches button span{font-size:9px}
- #skillScreen #btnSkillRewards{font-size:10px;padding:7px;min-width:44px;margin:0}
- #skillScreen .skill-instructions{font-size:11px;line-height:1.55;margin-top:10px}
- #skillScreen .skill-layout{padding:14px 0;gap:0}
+ #skillScreen .skill-panel{padding:12px 16px max(10px,env(safe-area-inset-bottom,0px))}
+ #skillScreen .skill-toolbar .sub-head{gap:12px;padding-bottom:12px}
+ #skillScreen .sub-head h2{font-size:21px}
+ #skillScreen #skillSummary{font-size:10px;margin-bottom:12px;max-width:112px}
+ #skillScreen #skillSummary strong{font-size:25px}
+ #skillScreen .back{font-size:11px;padding:8px 10px}
+ #skillScreen .skill-navigation{gap:6px;flex-wrap:nowrap;padding-top:0}
+ #skillScreen #skillBranches{gap:10px;justify-content:space-between;flex:1;min-width:0}
+ #skillScreen #skillBranches button{padding:9px 1px;min-height:46px;white-space:nowrap;font-size:13px}
+ #skillScreen #skillBranches button span{font-size:10px;margin-left:5px}
+ #skillScreen #btnSkillRewards{font-size:10px;padding:7px;min-height:44px;margin:0}
+ #skillScreen .skill-instructions{font-size:10px;margin-top:10px}
+ #skillScreen .skill-layout{padding-top:16px;padding-bottom:12px}
  #skillScreen .skill-tree h3{font-size:16px}
- #skillScreen .skill-tree>p{margin-bottom:12px;font-size:11px}
- #skillScreen .skill-graph{gap:9px;grid-auto-rows:auto}
- #skillScreen .skill-node button{gap:7px;padding:14px 9px 10px;min-height:108px}
- #skillScreen .skill-node button>svg{width:24px;height:24px;flex-basis:24px;margin-top:3px}
- #skillScreen .skill-card-copy strong{font-size:13px;padding:0 17px 0 0;line-height:1.55}
- #skillScreen .skill-card-benefit{font-size:11px;line-height:1.5}
- #skillScreen .skill-card-state{font-size:9px}
- #skillScreen .skill-node .skill-cost{font-size:10px;top:8px;right:6px;padding:3px;min-width:18px}
- #skillScreen .skill-node .skill-label{padding:7px 9px;font-size:9px;min-height:30px}
- #skillScreen .skill-footer{flex-wrap:wrap;gap:8px;padding-top:10px}
- #skillScreen .skill-loadout{gap:5px;flex:1}
+ #skillScreen .skill-tree>p{font-size:10px;margin-bottom:20px}
+ #skillScreen .skill-node button{width:54px;height:54px}
+ #skillScreen .skill-node .skill-label{font-size:11px}
+ #skillScreen .skill-footer{gap:8px;padding-top:9px}
  #skillScreen .skill-loadout>span{display:none}
- #skillScreen .skill-loadout button{font-size:10px;padding:5px 8px;min-height:44px;gap:5px}
- #skillScreen .skill-loadout button svg{width:19px;height:19px}
- #skillScreen .skill-reset{gap:0}
+ #skillScreen .skill-loadout{gap:5px}
+ #skillScreen .skill-loadout button{padding:6px 7px;font-size:10px;gap:5px;min-height:44px}
+ #skillScreen .skill-loadout button svg{width:20px;height:20px}
+ #skillScreen #btnSkillReset{font-size:10px;padding:7px}
  #skillScreen #skillResetNote{display:none}
- #skillScreen #btnSkillReset{padding:7px;font-size:10px;min-height:44px}
- #skillScreen.episode-training .skill-toolbar{align-items:center;gap:8px}
 }
+@media(max-width:350px){#skillScreen #skillBranches{gap:5px}#skillScreen #skillBranches button{font-size:12px}#skillScreen .skill-node button{width:49px;height:49px}#skillScreen .skill-node button svg{width:27px;height:27px}}
 @media(max-height:480px) and (orientation:landscape){
  #skillScreen .skill-panel{padding:8px 16px}
- #skillScreen .skill-toolbar .sub-head{padding-bottom:6px}
+ #skillScreen .skill-toolbar .sub-head{padding-bottom:8px}
  #skillScreen .sub-head h2{font-size:20px}
- #skillScreen #skillSummary{padding:3px 9px;margin-bottom:6px}
- #skillScreen #skillSummary strong{font-size:20px}
- #skillScreen .skill-navigation{padding-bottom:6px}
- #skillScreen #skillBranches button{min-height:40px;padding:7px 15px}
+ #skillScreen #skillSummary{margin-bottom:8px}
  #skillScreen .skill-instructions{display:none}
  #skillScreen .skill-layout{padding:10px 0}
- #skillScreen .skill-tree h3,#skillScreen .skill-tree>p{display:none}
- #skillScreen .skill-graph{grid-template-columns:repeat(3,minmax(0,1fr))}
- #skillScreen .skill-footer{padding-top:6px}
- #skillScreen .skill-detail{height:calc(100dvh - 16px);width:min(580px,calc(100vw - 32px))}
+ #skillScreen .skill-tree>p{margin-bottom:15px}
+ #skillScreen .skill-graph{grid-auto-rows:116px}
+ #skillScreen .skill-footer{padding-top:7px}
 }
-@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button,#skillScreen #skillBranches button{transition:none}}
-
-#skillScreen .skill-detail-actions button:not(:disabled){background:#e1bf7d;border-color:#e1bf7d;color:#18212a}
-
-#skillScreen .skill-footer:has(.skill-loadout[hidden]):has(#btnSkillReset[hidden]){display:none}
-#skillScreen .skill-footer:has(.skill-loadout[hidden]){justify-content:flex-end}
+@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button{transition:none}}
 
 </style>
 </head>
@@ -2451,9 +2442,9 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 <div id="joy" hidden><div id="joyKnob"></div></div>
 
 <div class="screen" id="intro">
-  <picture class="title-bg" aria-hidden="true"><source media="(max-width:700px)" srcset="./assets/f0d78f31d534f4d2b333.webp"><img src="./assets/c545273fd845cb119018.webp" alt="" decoding="async" fetchpriority="high"></picture>
+  <picture class="title-bg" aria-hidden="true"><source media="(max-width:700px)" srcset="./assets/1285b650d43ce89fb87f.webp"><img src="./assets/5b623bec0eacecb8b781.webp" alt="" decoding="async" fetchpriority="high"></picture>
   <div class="panel title-panel">
-    <div class="title-brand"><h1>야행</h1><p class="case-title-goal">금성회를 무너뜨려라.</p></div>
+    <div class="title-brand"><h1>야행</h1></div>
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
       <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
@@ -2463,7 +2454,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v250 · 2026-11-09</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v251 · 2026-11-09</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2503,7 +2494,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button" aria-label="미션 업적과 기술 포인트 보상 보기">업적 · 보상</button></div>
     <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
     <div class="skill-layout">
-      <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 목록">
+      <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
         <div id="skillCards" aria-label="신체·암살·도구 기술"></div>
       </div>
       <button id="skillDetailShade" type="button" aria-label="기술 설명 닫기" hidden></button>
@@ -2574,7 +2565,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v250 · 2026-11-09</small>
+      <small class="fx-sub" id="pauseVersion">v251 · 2026-11-09</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2651,8 +2642,8 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/a337b747256c483a23b9.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/ae0a0dbd41837bc6c6ba.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/58e99c9acf0837983cac.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/1fce0a241f87b2439051.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/602c551dfaf2e0d2b68a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/30de1555f24556e555b1.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

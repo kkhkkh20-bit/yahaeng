@@ -1,9 +1,8 @@
 {
-  "origin": "Yahaeng game-engine render; staged for title art, not gameplay evidence.",
-  "generator": "tools/capture_noir_title.py",
+  "origin": "Yahaeng engine, existing playable city art study staged for menu composition.",
+  "generator": "tools/capture_title_v251.py",
   "illustration_generation": false,
-  "assets": "Existing Kenney and Quaternius game art under their shipped CC0 notices; existing Korean UI font; custom lighting/camera pose.",
-  "runtime_capture_flag": "window.__skip.ui, no effect during ordinary gameplay",
+  "assets": "Owned GuttyKreum Dotonbori City and Japanese Office Interior, existing licensed vehicle/sprite sources and current Yahaeng female agent. No reference-game artwork is shipped.",
   "variants": [
     "alley-wide.webp",
     "alley-portrait.webp"

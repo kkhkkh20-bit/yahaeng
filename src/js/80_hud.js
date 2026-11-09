@@ -215,7 +215,7 @@ function objectiveLines() {
   if ((STAGE.keyBld || STAGE.keyDoors) && !STAGE.tutorial) { if (S.doors.some(d => d.keyLock)) L.push([P.hasKey || !S.doors.some(d => d.keyLock && d.locked) ? 'done' : '', P.hasKey ? '열쇠 있음' : '열쇠 확보 (또는 창문·옥상으로)']); }
   else { const ks = Object.keys(P.keys || {}); if (ks.length) L.push(['info', '가진 것: ' + ks.map(keyName).join(', ')]); }
   (S.learned || []).forEach(t => L.push(['info', '알아낸 것: ' + t]));
-  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 발각 · 다른 옷 필요` : `${outfitName(P.outfit)} · 허용 구역만 통과 · 가까운 신원 확인 주의`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
+  if (P.disguise) L.push([P.disguiseBlown ? 'go' : 'info', STAGE.zones ? (P.disguiseBlown ? `${outfitName(P.outfit)} 인상착의 공유 · 다른 옷 필요` : `${outfitName(P.outfit)} · ${disguiseKnowledge().witnesses.length?'목격자만 알아봄 · 전체 미전달':'허용 구역만 통과 · 가까운 신원 확인 주의'}`) : P.disguiseBlown ? '변장 발각 · 다른 옷 필요' : '변장 중 · 허용된 구역에서는 통과 가능']);
   if (STAGE.shift && S.shiftI < STAGE.shift.add.length) L.push(['', `다음 교대까지 ${Math.max(0, Math.ceil(S.shiftT))}초 — 순찰이 늘어난다`]);
   for (const g of S.guards) if (g.target) { const sc = schedText(g),down=targetEliminated(g); L.push([down||S.spare ? 'done' : '', targetName(g) + (down?' — 처치 완료':S.spare ? ' — 살려 둘 수 있다' : ' — ' + (sc || targetKnowledge(g).where))]); }
   S.items.forEach((it, i) => L.push([it.got ? 'done' : '', ((STAGE.itemNames || [])[i] || STAGE.itemName || '서류') + ' — ' + place(it.x, it.y, it.fl, it.b)]));
@@ -314,7 +314,7 @@ const STH_ICO = {
   seen: '<svg viewBox="0 0 24 24"><path d="M2.5 12c2.6-4 5.8-6 9.5-6s6.9 2 9.5 6c-2.6 4-5.8 6-9.5 6s-6.9-2-9.5-6z"/><circle class="f" cx="12" cy="12" r="3.6"/></svg>'
 };
 function updateStealth(lv) {
-  const box = $('stealth'); if (!box || !S) return; const P = S.player;
+  const box = $('stealth'); if (!box || !S) return; const P = S.player, identity=disguiseKnowledge();
   syncSecurityReadout();
   { const r = box.getBoundingClientRect(), sx = (P.x - cam.x) * SCALE + W / 2, sy = (P.y - cam.y) * SCALE + H / 2, u = sx > r.left - 24 && sx < r.right + 24 && sy > r.top - 30 && sy < r.bottom + 60;  // 주인공과 겹치면 흐리게
     if (hudCache.sthU !== u) { hudCache.sthU = u; box.classList.toggle('under', u); } }
@@ -331,8 +331,8 @@ function updateStealth(lv) {
   else if(observer?.g.state==='WARN'){s='risk';word='퇴거 경고 · '+Math.max(0,Math.ceil(observer.g.warnEnd-S.t))+'초';why=(zi?.secure?'보안구역':'출입 권한 없음')+' · 허용 구역으로 나가세요';}
   else if (eyeG && !P.hide && !P.hidden) { s = 'risk'; word = '신원 확인 중'; why = '마주 보는 중 · 걸어서 벗어나기'; }
   else if (observer?.phase==='suspect'&&!P.hide&&!P.hidden) { s='risk';word='의심받는 중';why='신원 미확인'; }
-  else if (P.disguiseBlown && !P.hide && !P.hidden && !P.under && !P.vent) { s = 'risk'; word = '변장 노출'; why = S.knownLooks?.[suspectLook()] ? '인상착의 무전됨' : '목격자가 기억함'; }
-  else if(S.alevel>=2&&S.knownLooks?.[suspectLook()]&&!P.hide&&!P.hidden){s='risk';word='인상착의 공유됨';why='같은 차림을 알아보면 추격 · 시야 밖에서 변장';}
+  else if(identity.shared&&!P.hide&&!P.hidden&&!P.under&&!P.vent){s='risk';word='인상착의 공유됨';why=identity.source==='camera'?'CCTV 관제 보고 완료':'보고 완료 · 시야 밖에서 변장';}
+  else if(P.outfit&&identity.witnesses.length&&!P.hide&&!P.hidden&&!P.under&&!P.vent){s='risk';word=identity.reporting?'인상착의 보고 중':'목격자가 기억함';why=identity.reporting?'보고 전에 제압하면 전체 공유 차단':'목격자만 알아봄 · 다른 경비는 아직 모름';}
   else if (runNear && !P.hide && !P.hidden && (pub || STAGE.zones)) { s = 'risk'; word = '수상함'; why = '달리기'; }
   else if (sus && !P.hide && !P.hidden) { s = 'risk'; word = '수상함'; why = P.carrying ? (P.carrying.ko ? '기절자 운반' : '시체 운반') : P.captive ? '사람을 붙잡고 있다' : '수상한 행동 중'; }
   else if (P.cover && e < 2) { s = e === 1 ? 'risk' : 'hide'; word = '벽에 붙음'; why = e === 1 ? '빛에 노출' : `엄폐`; }  // 벽에 붙으면 공개 구역이어도 '섞임' 대신 붙은 상태를 보여 준다

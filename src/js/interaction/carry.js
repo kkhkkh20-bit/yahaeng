@@ -32,8 +32,8 @@ function actCarry(force) {  // force: [행동] 버튼이 고른 보조 행동을
   if (sa.k === 'pickup') { takeProp(sa.p); return; }
   if (sa.k === 'dropItem') { dropItem(); toast('내려놓았다', 1.2); return; }
   if (sa.k === 'dress') {  // 변장: 조직원 옷을 입으면 멀리서는 같은 편으로 보인다. 정예·표적은 얼굴을 알아보고, 뛰거나 가까이 붙으면 들킨다
-    const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); stripBodyClothing(c); after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; P.disguiseBlown = !!(P.blown || {})[of]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
-    feedbackEvent('dress',P,{text:P.disguiseBlown?withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 목격자가 기억하는 복장':withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 허용 구역만 통행',warning:!!P.disguiseBlown,seconds:1.8});feedbackPulse($('accessLbl'),'dress');
+    const c = sa.c, of = c.outfit || 'crew', previousLook = suspectLook(); stripBodyClothing(c); after(0.9, () => bossRadio('disguise', true)); P.disguise = (c.ch || '').split('@')[0]; /* 주인공은 기본 체형 (모든 동작이 있다) */ P.outfit = of; syncDisguiseKnowledge(); onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    feedbackEvent('dress',P,{text:P.disguiseBlown?withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 이미 보고된 복장':withJosa(outfitName(of),'으로/로')+' 갈아입었다 · 허용 구역만 통행',warning:!!P.disguiseBlown,seconds:1.8});feedbackPulse($('accessLbl'),'dress');
     return;
   }
   if (sa.k === 'throwBody') return;  // Reject old queued projectile actions without dropping the carried person.

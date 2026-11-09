@@ -1,0 +1,40 @@
+[
+  {
+    "viewport": [
+      1280,
+      800
+    ],
+    "scenarios": [
+      "KO interruption; waking victim retains only local memory",
+      "lethal interruption retains uninformed guard permission",
+      "nearby shout recipient knows; silencing all local witnesses leaves far guard uninformed",
+      "completed report survives reporter death; changing/reusing clothing uses exact reported look",
+      "delayed report describes old look only",
+      "independent completed CCTV report remains valid",
+      "civilian report informs its actual recipient; interrupted relay stays local",
+      "legacy false flag repaired; actual reports and health preserved",
+      "search expiry clears shared flags without retaining legacy outfit invalidation"
+    ],
+    "pageErrors": [],
+    "method": "Controlled live-rule scenarios, not complete missions: appearance knowledge, interruption and HUD."
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "scenarios": [
+      "KO interruption; waking victim retains only local memory",
+      "lethal interruption retains uninformed guard permission",
+      "nearby shout recipient knows; silencing all local witnesses leaves far guard uninformed",
+      "completed report survives reporter death; changing/reusing clothing uses exact reported look",
+      "delayed report describes old look only",
+      "independent completed CCTV report remains valid",
+      "civilian report informs its actual recipient; interrupted relay stays local",
+      "legacy false flag repaired; actual reports and health preserved",
+      "search expiry clears shared flags without retaining legacy outfit invalidation"
+    ],
+    "pageErrors": [],
+    "method": "Controlled live-rule scenarios, not complete missions: appearance knowledge, interruption and HUD."
+  }
+]

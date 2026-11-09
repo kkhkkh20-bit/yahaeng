@@ -49,10 +49,10 @@ const PERMIT_NOD = { parcel: ['택배요? 창고 안쪽에 두고 가요.', '상
   waiter: ['얼른 홀로 가. 손님 기다린다.', '바쁘다 바빠.'], crew: ['어, 수고.', '별일 없지?'], cater: ['음식은 부엌으로.', '잔치 상 늦으면 혼난다.'] };
 function permitNod(g) {
   if (g.nodded || g.say || ['ALERT', 'SEARCH', 'CHECK', 'BODY'].includes(g.state) || dist(g.x, g.y, S.player.x, S.player.y) > 230) return;
-  const zi = pZoneInfo(); if (zi.k === Z_PUB || !permitted(zi)) return;
-  const by = myPermits().find(o => zi.allow && zi.allow.includes(o)), L = PERMIT_NOD[by]; if (!L) return;
+  const zi = pZoneInfo(); if (zi.k === Z_PUB || !permitted(zi,g)) return;
+  const by = myPermits(g).find(o => zi.allow && zi.allow.includes(o)), L = PERMIT_NOD[by]; if (!L) return;
   g.nodded = true; gsay(g, L[g.id % L.length], 2.6); g.want = Math.atan2(S.player.y - g.y, S.player.x - g.x);
-  if (!S.nodToast) { S.nodToast = true; toast(permitName(zi.allow) + ' · 출입 허용', 2.4, 'good'); }
+  if (!S.nodToast) { S.nodToast = true; toast(permitName(zi.allow,g) + ' · 출입 허용', 2.4, 'good'); }
 }
 // 위층 사람이 창문 너머로 바깥 땅(1층 높이)을 본다: 창가(160px 안)에서 창문 쪽을 보고 있고, 창문 바깥에서 나까지 시야가 트였을 때. 조금 덜 보인다(0.8배)
 function winSee(g, pv) {

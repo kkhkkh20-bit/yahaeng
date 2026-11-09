@@ -58,7 +58,7 @@ function updateReport(g, dt) {
   if (dist(g.x, g.y, r.to.x, r.to.y) < 58) deliverReport(g);
 }
 function deliverReport(g) {
-  const r = g.rep, o = r.to, P = S.player; g.rep = null;
+  const r = g.rep, o = r.to; g.rep = null;
   if (g.child) {  // 아이 → 어른: 어른이 이어서 신고하러 간다 (한 단계 느리다)
     gsay(g, r.c ? '엄마, 저기 사람이 쓰러졌어.' : '엄마, 저 사람 무서워.', 2.4); gsay(o, '뭐? 어디?', 2);
     if (!startReport(o, r.x, r.y, r.c, r.saw, r.kind)) civScream(o, r.x, r.y, r.c, r.saw, r.kind);
@@ -76,9 +76,11 @@ function deliverReport(g) {
   else { goSuspicious(o, r.x, r.y, 6); o.why = 'heard'; }
   after(0.9, () => { if (o.state !== 'DEAD') gsay(o, ['어디? 같이 가 봅시다.', '알겠어요, 확인할게요.', '뭐? 어느 쪽이요?'][o.id % 3]); });
   setAlert(2, 30, '주민이 근처 자경대원에게 신고했다 — 현장 확인');
-  if (r.saw) { rememberSuspect(o, r.saw); queueGuardRadio([o], {x:r.x,y:r.y,fl:flOf(g),z:g.z||0}, r.saw, true); }
-  if (r.saw && r.saw !== 'face' && P.outfit === r.saw && disguised()) blowDisguise(null, '현재 복장이 신고됐다 — 다른 옷이 필요하다');
-  else if (r.saw === 'face') { toast('목격자가 근처 경비에게 인상착의를 전했다', 2.8, 'warn'); }
+  // The recipient knows the description; everyone else waits for a completed report.
+  if (r.saw) {
+    rememberSuspect(o, r.saw);
+    if (!queueGuardRadio([o], {x:r.x,y:r.y,fl:flOf(g),z:g.z||0}, r.saw, true)) toast('목격자가 근처 경비에게 인상착의를 전했다', 2.8, 'warn');
+  }
   g.state = 'PANIC'; g.panicT = 4; g.fear = { x: r.x, y: r.y }; g.path = null; g.cowered = false;
 }
 // 출구 지키기: 시체가 발견되거나 신고가 들어오면 가까운 조직원이 탈출구로 가서 한동안 지킨다 (다른 출구·다른 때를 고르게 만든다)
@@ -223,7 +225,7 @@ function nearUse() {
 function takeProp(p) {
   const P = S.player;
   if (p.outfit) {  // 놓인 옷: 그 자리에서 갈아입는다
-    const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); P.disguiseBlown = !!(P.blown || {})[p.outfit]; onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
+    const previousLook = suspectLook(); p.taken = true; P.disguise = PR_PAL[p.outfit] ? p.outfit : p.outfit === 'crew' ? 'sam' : P.disguise; P.outfit = p.outfit; after(0.9, () => bossRadio('disguise', true)); syncDisguiseKnowledge(); onDisguiseChanged(previousLook); play('cloth', 0.6); noise(P.x, P.y, 30, 'cloth'); S.fade = 0.25; S.stats.dressed = (S.stats.dressed || 0) + 1;
     toast(P.disguiseBlown ? `${outfitName(p.outfit)} · 이미 알려진 복장` : `${withJosa(outfitName(p.outfit), '으로/로')} 갈아입었다 — 허용 구역만 통과 · 보안구역 제외`, 3, P.disguiseBlown ? 'warn' : 'good'); return;
   }
   if (P.item) dropItem();
