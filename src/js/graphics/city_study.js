@@ -38,16 +38,19 @@ function studyWall(c,b,x,y,w,h){
  if(pier)for(const px of [x,x+w-8])c.drawImage(freeCityAtlas,...pier,px,y,8,h);
  return true;
 }
-function drawStudyCar(v){
- if(!studyReady())return false;
- const name='car'+(v.c%3);
- ctx.save();ctx.rotate(Math.PI);ctx.imageSmoothingEnabled=false;
- // A licensed pixel car replaces the rounded procedural body. Keep the same
- // physics centre and lamp direction; the front of these sprites points down.
- studyDraw(ctx,name,-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);
- if(v.dead){ctx.fillStyle='rgba(9,14,23,.7)';ctx.fillRect(-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);}
+const cityVehicleArt=A.cityVehicles,cityVehicleAtlas=new Image();
+if(cityVehicleArt)cityVehicleAtlas.src=cityVehicleArt.src;
+function drawAssetCar(v){
+ if(!cityVehicleArt||!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth)return false;
+ const model=v.police?'police':['sedan','civic','hatch','wagon','luxury'][((v.c%5)+5)%5],f=cityVehicleArt.frames[model];
+ const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale;
+ ctx.save();ctx.rotate(-v.a-Math.PI/2);ctx.imageSmoothingEnabled=false;
+ if(v.dead)ctx.filter='brightness(.28) saturate(.2)';
+ ctx.drawImage(cityVehicleAtlas,...f.rects[i],-f.anchor[0]*scale,-f.anchor[1]*scale,100*scale,100*scale);
  ctx.restore();return true;
 }
+const citySignArt=A.citySigns,citySignAtlas=new Image();
+if(citySignArt)citySignAtlas.src=citySignArt.src;
 
 const studyWindowTiles=new Map();
 function studySourceRow(b,fl){const i=BLD.indexOf(b),s=STAGE.referenceBuildings[i];return{s,row:STAGE.referenceRow(i,fl)};}
@@ -70,27 +73,15 @@ function studyCellImage(b,tx,fl,w){
  studyWindowTiles.set(key,c);return c;
 }
 function drawStudySign(b,a){
+ const f=citySignArt?.frames[a.image]?.rect;
+ if(!f||!citySignAtlas.complete||!citySignAtlas.naturalWidth)return;
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
- const f=studyArt.frames.signBoard.rect,e=6,edge=a.brand?5:9;
- ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle=a.brand?'#233a35':'#17252c';ctx.fillRect(x,y,w,h);
- // The purchased empty board supplies its original corners and steel rim.
- // No lettering or pictures from the Japanese advertisements are imported.
- const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
- for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
- if(a.brand){
-  // A shop fascia spans the actual entrance, with a single horizontal name.
-  ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#efe7d3';ctx.font=uiFont(25,700);
-  ctx.fillText(a.lines[0],x+19,y+h/2+1,w-130);
-  ctx.textAlign='right';ctx.fillStyle='#acbdb0';ctx.font=uiFont(12,500);ctx.fillText(a.sub,x+w-18,y+h/2+2,94);
-  ctx.restore();return;
- }
- const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
- const step=size*1.25,total=step*lines.length+sub;
- ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
- lines.forEach((line,i)=>ctx.fillText(line,x+w/2,y+(h-total)/2+step*(i+.5),w-24));
- if(a.sub){ctx.font=uiFont(12);ctx.fillStyle='#a5b9bb';ctx.fillText(a.sub,x+w/2,y+(h+total)/2-8,w-24);}
+ const scale=Math.min(w/f[2],h/f[3]),dw=Math.round(f[2]*scale),dh=Math.round(f[3]*scale);
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(citySignAtlas,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
  ctx.restore();
 }
+
 function drawStudyFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE,bi=BLD.indexOf(b),spec=STAGE.referenceBuildings[bi];
  if(!spec)return;
@@ -112,6 +103,7 @@ function drawStudyFacade(b){
 function studyGround(c,ch,tx,ty){
  if(!studyReady())return false;
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
+ if('.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
  if(!'=,F'.includes(ch))return false;
  let name=ch==='='?'pavement':'alleyBrick';
  if(ch==='='){

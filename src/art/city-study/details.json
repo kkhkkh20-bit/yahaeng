@@ -4,14 +4,7 @@
   "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
   "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
   "supplementSources": {
-    "https://kenney.nl/assets/rpg-urban-pack": {
-      "tile_0395.png": "16919c11841837e3e878bef63629deadb338cd69bea84e7ef57f6b5e0f5467af",
-      "tile_0422.png": "d72326f25ab50ae4a1abe35aa5dd49e22038ff297e3ce93bc117db12b228d7e4",
-      "tile_0399.png": "fbe4feb43183430818b48438177fb4504f331a7c1d0851ffc7a52850b5bfda73",
-      "tile_0426.png": "36b059d19004ccc67ec5e5ae3b6c64d459d4b8dbfcd3d622cfb6801841b9fe45",
-      "tile_0449.png": "2792f041b6a32f296190b97f03c142d3f7cc319660af9bfe4111c8fc348a8e7a",
-      "tile_0476.png": "5e902ed3b564975b4e2e5a9dfa6773241adee3f3a34f7e5b22ae4a41960361d4"
-    }
+    "https://kenney.nl/assets/rpg-urban-pack": {}
   },
   "frames": {
     "rail": {
@@ -488,48 +481,6 @@
         192,
         2048,
         224
-      ]
-    },
-    "car0": {
-      "rect": [
-        740,
-        194,
-        16,
-        21
-      ],
-      "source": "https://kenney.nl/assets/rpg-urban-pack",
-      "license": "CC0-1.0",
-      "tiles": [
-        395,
-        422
-      ]
-    },
-    "car1": {
-      "rect": [
-        758,
-        194,
-        16,
-        20
-      ],
-      "source": "https://kenney.nl/assets/rpg-urban-pack",
-      "license": "CC0-1.0",
-      "tiles": [
-        399,
-        426
-      ]
-    },
-    "car2": {
-      "rect": [
-        776,
-        194,
-        16,
-        21
-      ],
-      "source": "https://kenney.nl/assets/rpg-urban-pack",
-      "license": "CC0-1.0",
-      "tiles": [
-        449,
-        476
       ]
     }
   }

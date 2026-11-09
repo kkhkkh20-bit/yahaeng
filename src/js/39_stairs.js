@@ -42,6 +42,7 @@ const stairUpper = l => stairFloor(l.tx, l.ty, l.tfl);
 function roofStairAccess(l, P = S.player) {
   const d = l.roofDoor;
   if (l.kind !== 'stair' || !d || P.z !== l.tz || flOf(P)) return false;
+  if(l.roofHatch)return dist(P.x,P.y,l.roofHatch.x,l.roofHatch.y)<=45;
   const x = P.x - d.x, y = P.y - d.y, depth = x * d.dx + y * d.dy;
   return depth >= -4 && depth <= 24 && Math.abs(x * -d.dy + y * d.dx) <= 18 && objectReachable(d, 34);
 }
@@ -61,7 +62,7 @@ function stairAccess(l, up, P = S.player) {
 function stairTravel(l, actor, up) {
   const lower = stairLower(l), roof = l.kind === 'stair', upper = !roof && stairUpper(l), start = { x: actor.x, y: actor.y };
   const pad = roof ? { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy } : upper.down.entry;
-  const door = roof ? l.roofDoor || { x: l.ux, y: l.uy } : null;
+  const door = roof ? l.roofHatch || l.roofDoor || { x: l.ux, y: l.uy } : null;
   let nodes, cross;
   if (roof) {
     nodes = up ? [[start, 'walk'], [lower.shaft, 'walk'], [door, 'stairHidden'], [pad, 'walk']]
@@ -97,6 +98,8 @@ function beginStairTravel(l, up) {
   const mag = Math.hypot(mx, my); S.stairArm = mag <= .1; S.stairDir = mag > .1 ? [mx / mag, my / mag] : [0, 0];
   startTrav(Object.assign(plan, { end: () => {
     P.fl = plan.stairs.dest.fl; P.z = plan.stairs.dest.z; P.x = end.x; P.y = end.y; P.vx = P.vy = 0; setLayer(flOf(P));
+    // Do not descend again until the player has deliberately left this hatch.
+    if(up&&l.roofHatch)S.roofHatchExit={x:l.roofHatch.x,y:l.roofHatch.y,z:l.tz};
     play(up ? 'step_w1' : 'step_w0', .3);
     if (up && l.kind === 'fstair') hint('floors', '계단 입구로 들어가면 아래층으로 내려간다');
   } }));

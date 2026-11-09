@@ -12,7 +12,7 @@ function drawRoofEntrances(P) {
   if (!P.z || flOf(P) || tactical) return;
   for (const l of S.ladders) {
     const d = l.roofDoor;
-    if (!d || l.tz !== P.z || dist(P.x, P.y, d.x, d.y) > 300) continue;
+    if (l.roofHatch || !d || l.tz !== P.z || dist(P.x, P.y, d.x, d.y) > 300) continue;
     const nx = d.dx, ny = d.dy, tx = -ny, ty = nx;
     ctx.save(); ctx.translate(d.x, d.y); ctx.transform(nx, ny, tx, ty, 0, 0);
     ctx.fillStyle = '#686d68'; ctx.fillRect(3, -15, 29, 30);
@@ -20,7 +20,7 @@ function drawRoofEntrances(P) {
     ctx.strokeStyle = '#d1d4bc'; ctx.lineWidth = 2;
     ctx.beginPath(); for (const u of [7, 13, 19]) { ctx.moveTo(u, -8); ctx.lineTo(u, 8); } ctx.stroke();
     ctx.fillStyle = '#e1e6d2'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
+    ctx.save();const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('↓ '+((l.bfl||0)+1)+'층', x, y); ctx.restore();

@@ -83,6 +83,7 @@ function robBuild() {
       const l = S && S.ladders && S.ladders.find(q => q.kind === 'stair' && q.tx === p.sx && q.ty === p.sy);
       if (l) {
         l.rx = tc(p.door[0]); l.ry = tc(p.door[1]); l.shDir = p.dir;
+        l.roofHatch=STAGE.agentStudy?{x:tc(p.sx),y:tc(p.sy),z:l.tz}:null;
         const [dx, dy] = { S: [0, 1], W: [-1, 0], E: [1, 0], N: [0, -1] }[p.dir];
         const xs = p.cells.map(c => c[0]), ys = p.cells.map(c => c[1]);
         // bake_mk의 실제 문 벽면(.08~.92) 바닥점. 앞 타일 중심은 서는 자리일 뿐 안내 위치가 아니다.
