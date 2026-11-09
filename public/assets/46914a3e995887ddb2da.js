@@ -1857,7 +1857,7 @@ campaignStage('tB').dressing.push(
 );
 // A playable art study, deliberately outside the linear campaign and its saves.
 if(window.__AGENT_CITY_STUDY__)STAGES.push({
- id:'agentCity',layoutRevision:'radial-sign-v239',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
+ id:'agentCity',layoutRevision:'world-polish-v240',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
  mission:'이도현 처치 · 거래 기록 회수 · 서쪽 골목으로 탈출',
  brief:'백송상사 2층에서 이도현과 거래 기록을 찾는다. 경비 옷으로 건물 안을 통과하거나, 옥상 연결교로 돌아 들어갈 수 있다. 서쪽 골목으로 빠져나오면 끝이다.',
  endText:'거래 기록을 챙겼다. 서쪽 골목으로 무사히 빠져나왔다.',
@@ -1867,14 +1867,14 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
  freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
  studyStyles:['stone','brick','office','green','brick','green','stone','office'],
  referenceBuildings:[
-  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{brand:true,lines:['백송상사'],sub:'수출입 · 물류',x:1,fl:1,w:6,h:1}},
-  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{lines:['밤샘식당'],x:1,fl:2,w:4,h:1}},
-  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['청솔약국'],sub:'조제 · 상담',x:1,fl:6,w:5,h:3}},
-  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{lines:['음','악','실'],x:1,fl:4,w:1,h:2}},
-  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['선일','전기'],x:1,fl:5,w:2,h:2}},
-  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{lines:['동진인쇄'],sub:'인쇄 · 제본',x:1,fl:4,w:5,h:3}},
-  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{lines:['종로서점'],x:1,fl:3,w:2,h:1}},
-  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['백','야','다','방'],x:1,fl:6,w:1,h:2}}
+  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{image:'baeksong',x:1,fl:1,w:6,h:1}},
+  {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{image:'diner',x:1,fl:2,w:4,h:1}},
+  {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{image:'pharmacy',x:1,fl:6,w:5,h:2}},
+  {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{image:'music',x:1,fl:4,w:3,h:1}},
+  {box:[1,30,8,40],h:7,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{image:'electric',x:1,fl:5,w:3,h:1}},
+  {box:[10,31,16,41],h:6,front:'frontGreen',windows:[1,0,0,0,0,0],roof:'roofMetal',ad:{image:'print',x:1,fl:4,w:5,h:2}},
+  {box:[23,31,30,41],h:6,front:'frontRetail',windows:[1,0,0],roof:'roofStone',ad:{image:'books',x:1,fl:3,w:3,h:1}},
+  {box:[32,30,40,40],h:8,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{image:'cafe',x:1,fl:6,w:3,h:1}}
  ],
  referenceRow(i,fl){const s=this.referenceBuildings[i],n=s.windows.length;return fl===s.h-1?0:fl<n-1?n-1-fl:1;},
  referenceWindow(i,tx,fl){const s=this.referenceBuildings[i],a=s.ad;if(a&&tx>=s.box[0]+a.x&&tx<s.box[0]+a.x+a.w&&fl<=a.fl&&fl>a.fl-a.h)return false;const row=s.windows[this.referenceRow(i,fl)];return Array.isArray(row)?!!row[(tx-s.box[0]-1)%3]:!!row;},
@@ -2945,6 +2945,7 @@ function paintFreeCityRoof(c,b,w,h){
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
  if(STAGE.agentStudy&&studyGround(c,ch,tx,ty))return true;
+ if(freeCityArt===A.dotonbori&&studyReady()&&'.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
  if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;
@@ -3185,16 +3186,19 @@ function studyWall(c,b,x,y,w,h){
  if(pier)for(const px of [x,x+w-8])c.drawImage(freeCityAtlas,...pier,px,y,8,h);
  return true;
 }
-function drawStudyCar(v){
- if(!studyReady())return false;
- const name='car'+(v.c%3);
- ctx.save();ctx.rotate(Math.PI);ctx.imageSmoothingEnabled=false;
- // A licensed pixel car replaces the rounded procedural body. Keep the same
- // physics centre and lamp direction; the front of these sprites points down.
- studyDraw(ctx,name,-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);
- if(v.dead){ctx.fillStyle='rgba(9,14,23,.7)';ctx.fillRect(-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);}
+const cityVehicleArt=A.cityVehicles,cityVehicleAtlas=new Image();
+if(cityVehicleArt)cityVehicleAtlas.src=cityVehicleArt.src;
+function drawAssetCar(v){
+ if(!cityVehicleArt||!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth)return false;
+ const model=v.police?'police':['sedan','civic','hatch','wagon','luxury'][((v.c%5)+5)%5],f=cityVehicleArt.frames[model];
+ const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale;
+ ctx.save();ctx.rotate(-v.a-Math.PI/2);ctx.imageSmoothingEnabled=false;
+ if(v.dead)ctx.filter='brightness(.28) saturate(.2)';
+ ctx.drawImage(cityVehicleAtlas,...f.rects[i],-f.anchor[0]*scale,-f.anchor[1]*scale,100*scale,100*scale);
  ctx.restore();return true;
 }
+const citySignArt=A.citySigns,citySignAtlas=new Image();
+if(citySignArt)citySignAtlas.src=citySignArt.src;
 
 const studyWindowTiles=new Map();
 function studySourceRow(b,fl){const i=BLD.indexOf(b),s=STAGE.referenceBuildings[i];return{s,row:STAGE.referenceRow(i,fl)};}
@@ -3217,27 +3221,15 @@ function studyCellImage(b,tx,fl,w){
  studyWindowTiles.set(key,c);return c;
 }
 function drawStudySign(b,a){
+ const f=citySignArt?.frames[a.image]?.rect;
+ if(!f||!citySignAtlas.complete||!citySignAtlas.naturalWidth)return;
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
- const f=studyArt.frames.signBoard.rect,e=6,edge=a.brand?5:9;
- ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle=a.brand?'#233a35':'#17252c';ctx.fillRect(x,y,w,h);
- // The purchased empty board supplies its original corners and steel rim.
- // No lettering or pictures from the Japanese advertisements are imported.
- const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
- for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
- if(a.brand){
-  // A shop fascia spans the actual entrance, with a single horizontal name.
-  ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#efe7d3';ctx.font=uiFont(25,700);
-  ctx.fillText(a.lines[0],x+19,y+h/2+1,w-130);
-  ctx.textAlign='right';ctx.fillStyle='#acbdb0';ctx.font=uiFont(12,500);ctx.fillText(a.sub,x+w-18,y+h/2+2,94);
-  ctx.restore();return;
- }
- const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
- const step=size*1.25,total=step*lines.length+sub;
- ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
- lines.forEach((line,i)=>ctx.fillText(line,x+w/2,y+(h-total)/2+step*(i+.5),w-24));
- if(a.sub){ctx.font=uiFont(12);ctx.fillStyle='#a5b9bb';ctx.fillText(a.sub,x+w/2,y+(h+total)/2-8,w-24);}
+ const scale=Math.min(w/f[2],h/f[3]),dw=Math.round(f[2]*scale),dh=Math.round(f[3]*scale);
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(citySignAtlas,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
  ctx.restore();
 }
+
 function drawStudyFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE,bi=BLD.indexOf(b),spec=STAGE.referenceBuildings[bi];
  if(!spec)return;
@@ -3259,6 +3251,7 @@ function drawStudyFacade(b){
 function studyGround(c,ch,tx,ty){
  if(!studyReady())return false;
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
+ if('.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
  if(!'=,F'.includes(ch))return false;
  let name=ch==='='?'pavement':'alleyBrick';
  if(ch==='='){
@@ -6641,6 +6634,7 @@ const stairUpper = l => stairFloor(l.tx, l.ty, l.tfl);
 function roofStairAccess(l, P = S.player) {
   const d = l.roofDoor;
   if (l.kind !== 'stair' || !d || P.z !== l.tz || flOf(P)) return false;
+  if(l.roofHatch)return dist(P.x,P.y,l.roofHatch.x,l.roofHatch.y)<=45;
   const x = P.x - d.x, y = P.y - d.y, depth = x * d.dx + y * d.dy;
   return depth >= -4 && depth <= 24 && Math.abs(x * -d.dy + y * d.dx) <= 18 && objectReachable(d, 34);
 }
@@ -6660,7 +6654,7 @@ function stairAccess(l, up, P = S.player) {
 function stairTravel(l, actor, up) {
   const lower = stairLower(l), roof = l.kind === 'stair', upper = !roof && stairUpper(l), start = { x: actor.x, y: actor.y };
   const pad = roof ? { x: l.rx != null ? l.rx : l.ux, y: l.ry != null ? l.ry : l.uy } : upper.down.entry;
-  const door = roof ? l.roofDoor || { x: l.ux, y: l.uy } : null;
+  const door = roof ? l.roofHatch || l.roofDoor || { x: l.ux, y: l.uy } : null;
   let nodes, cross;
   if (roof) {
     nodes = up ? [[start, 'walk'], [lower.shaft, 'walk'], [door, 'stairHidden'], [pad, 'walk']]
@@ -6696,6 +6690,8 @@ function beginStairTravel(l, up) {
   const mag = Math.hypot(mx, my); S.stairArm = mag <= .1; S.stairDir = mag > .1 ? [mx / mag, my / mag] : [0, 0];
   startTrav(Object.assign(plan, { end: () => {
     P.fl = plan.stairs.dest.fl; P.z = plan.stairs.dest.z; P.x = end.x; P.y = end.y; P.vx = P.vy = 0; setLayer(flOf(P));
+    // Do not descend again until the player has deliberately left this hatch.
+    if(up&&l.roofHatch)S.roofHatchExit={x:l.roofHatch.x,y:l.roofHatch.y,z:l.tz};
     play(up ? 'step_w1' : 'step_w0', .3);
     if (up && l.kind === 'fstair') hint('floors', '계단 입구로 들어가면 아래층으로 내려간다');
   } }));
@@ -9043,7 +9039,7 @@ function goalNavigation(goal) {
   for (const c of options) { const route=astar(Math.floor(P.x/TILE),Math.floor(P.y/TILE),Math.floor(c.from.x/TILE),Math.floor(c.from.y/TILE),sol);
     if(dist(P.x,P.y,c.from.x,c.from.y)<60 || route.length) { chosen=c;path=route;break; } }
   setLayer(L0); if (!chosen) return goal;
-  const nav={x:chosen.from.x,y:chosen.from.y,fl:flOf(P),z:P.z||0,text:'이동: '+(chosen.to.z?chosen.to.z+'층 옥상':((chosen.to.fl||0)+1)+'층')+' 연결 입구',where:'',storyName:null,via:true,viaTo:{fl:chosen.to.fl||0,z:chosen.to.z||0}};
+  const nav={destinationFloor:{fl:goal.fl||0,z:goal.z||0},x:chosen.from.x,y:chosen.from.y,fl:flOf(P),z:P.z||0,text:'이동: '+(chosen.to.z?chosen.to.z+'층 옥상':((chosen.to.fl||0)+1)+'층')+' 연결 입구',where:'',storyName:null,via:true,viaTo:{fl:chosen.to.fl||0,z:chosen.to.z||0}};
   const locked=path.map(p=>doors.get(Math.floor(p.y/TILE)*MW+Math.floor(p.x/TILE))).find(Boolean);
   if(locked) {nav.x=locked.x;nav.y=locked.y;nav.text='이동: 연결 입구 · 잠긴 문';nav.locked=true;}
   S.goalNavCache={key,t:S.t,nav}; return {...goal,...nav};
@@ -9959,13 +9955,20 @@ function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_
 const COVER_PUSH = 0.5;
 const COVER_SPD = 0.55;  // 벽에 붙어 옆걸음: 살금살금의 55% (메탈기어처럼 벽을 더듬듯 천천히)  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다
 function autoStairs(P, mx, my, mag) {
+  const hatchLock=S.roofHatchExit;
+  if(hatchLock&&(P.z!==hatchLock.z||dist(P.x,P.y,hatchLock.x,hatchLock.y)>72))S.roofHatchExit=null;
+  if(P.z&&!P.captive&&!P.ledge&&!actionBusy(P)&&!P.hide&&!P.wire&&!P.under&&!P.vent&&P.moving&&mag>.1){
+    for(const l of S.ladders)if(l.roofHatch&&roofStairAccess(l,P)&&!S.roofHatchExit&&((l.roofHatch.x-P.x)*mx+(l.roofHatch.y-P.y)*my)>dist(P.x,P.y,l.roofHatch.x,l.roofHatch.y)*mag*.2){
+      S.stats.roofStair=(S.stats.roofStair||0)+1;beginStairTravel(l,false);return;
+    }
+  }
   if (mag <= .1) { S.stairArm = true; return; }
   const vx = mx / mag, vy = my / mag, old = S.stairDir || [0, 0];
   if (S.stairArm === false) { if (vx * old[0] + vy * old[1] > .5) return; S.stairArm = true; }
   if (actionBusy(P) || P.hide || P.wire || P.under || P.vent || !P.moving) return;
   if (P.z) {
     if (P.captive || P.ledge) return;
-    for (const l of S.ladders) if (roofStairAccess(l, P) && -(vx * l.roofDoor.dx + vy * l.roofDoor.dy) > .7) {
+    for (const l of S.ladders) if (!l.roofHatch && roofStairAccess(l, P) && -(vx * l.roofDoor.dx + vy * l.roofDoor.dy) > .7) {
       S.stats.roofStair = (S.stats.roofStair || 0) + 1; beginStairTravel(l, false); return;
     }
     return;
@@ -10210,6 +10213,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
+    if(mag>.1&&!P.z&&!flOf(P)&&((P.x<TILE+14&&nx<-.5)||(P.x>MW*TILE-TILE-14&&nx>.5)||(P.y<TILE+14&&ny<-.5)||(P.y>MH*TILE-TILE-14&&ny>.5)))missionBoundaryHint();
     playerFootsteps(P,mode,ox,oy);
   }
   autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);
@@ -10894,10 +10898,19 @@ function carOverlap(v) {
   return false;
 }
 // 움직이고, 벽·건물·다른 차에 부딪히면 튕겨 선다. 부딪힌 세기를 돌려준다
+function missionBoundaryHint(){
+ if((S.boundaryHintAfter??-1)>S.t)return;
+ S.boundaryHintAfter=S.t+6;
+ toast(S.exitOpen?'탈출구는 이쪽이 아니야. 표시된 출구로 가자.':'아직 할 일이 남았어. 임무부터 마무리하자.',2.8);
+}
 function carMove(v, dt, turn=0) {
   const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
   for(let i=0;i<steps;i++){
    const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;v.x+=Math.cos(v.a)*v.v*dt/steps;v.y+=Math.sin(v.a)*v.v*dt/steps;
+   // The edge of the mission is a travel restriction, never a damaging wall.
+   if(!v.ai&&carPts(v).some(([x,y])=>x<CAR_R||y<CAR_R||x>MW*TILE-CAR_R||y>MH*TILE-CAR_R)){
+    v.x=ox;v.y=oy;v.a=oa;v.v=0;if(S.player.car===v)missionBoundaryHint();return 0;
+   }
    const o=carOverlap(v);if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;
@@ -10939,10 +10952,13 @@ function updateDriving(P, mx, my, mag, dt) {
   let thr = 0; if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   if (mag > 0.15) {
     const ta = Math.atan2(my, mx), dA = angDiff(v.a, ta);
-    // 거의 반대쪽: 달리는 중이면 브레이크. 서 있으면 앞이 트였으면 크게 돌아 나가고(유턴), 막혔으면 후진
-    const fx = v.x + Math.cos(v.a) * 75, fy = v.y + Math.sin(v.a) * 75, frontOpen = !carBlocked(Math.floor(fx / TILE), Math.floor(fy / TILE));
-    if (Math.abs(dA) < 2.3 || (Math.abs(v.v) < 40 && v.v >= -5 && frontOpen && !v.revT)) { thr = Math.min(1, mag); const a0 = v.a, steer = clamp(dA * 3, -1, 1) * CAR_TURN * Math.max(0.35, Math.min(1, Math.abs(v.v) / 90)) * (v.v < -5 ? -1 : 1); v.a += steer * dt; if (carOverlap(v)) v.a = a0; }  // 서 있어도 조금은 돈다 (벽에 끼면 안 돈다)
-    else { thr = v.v > 30 ? -2 : -0.55 * Math.min(1, mag); if (v.v <= 30) v.revT = 0.6; }  // 반대쪽: 브레이크, 서면 후진 (한 번 후진하면 잠깐은 계속)
+    // Opposite input always brakes, then reverses; road clearance never changes gear.
+    if(Math.abs(dA)>2.3){
+      thr=v.v>0?-2:-.55*Math.min(1,mag);
+      if(v.v<=0){const err=angDiff(v.a,ta+Math.PI),a0=v.a;v.a+=clamp(err*3,-1,1)*CAR_TURN*Math.min(1,Math.abs(v.v)/90)*dt;if(carOverlap(v))v.a=a0;}
+    }else{
+      thr=Math.min(1,mag);const a0=v.a;v.a+=clamp(dA*3,-1,1)*CAR_TURN*Math.max(.15,Math.min(1,Math.abs(v.v)/90))*dt;if(carOverlap(v))v.a=a0;
+    }
   }
   if (thr > 0) v.v = Math.min(CAR_MAX, v.v + CAR_ACC * thr * dt);
   else if (thr < -1) v.v = Math.max(0, v.v - CAR_BRAKE * dt);
@@ -11007,7 +11023,7 @@ function drawVehicles() {
     drawCarBody(v);
     // 전조등 (밤): 달리는 차는 앞을 비춘다
     if (!v.dead && (v.ai || S.player.car === v)) { const g = ctx.createLinearGradient(0, -46, 0, -150); g.addColorStop(0, 'rgba(255,240,200,.32)'); g.addColorStop(1, 'rgba(255,240,200,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-16, -46); ctx.lineTo(-40, -150); ctx.lineTo(40, -150); ctx.lineTo(16, -46); ctx.fill();
-      ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3); }
+      if(!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth){ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3);} }
     if (S.player.car === v) { ctx.strokeStyle = 'rgba(120,210,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(-25, -49, 50, 98); }
     ctx.restore();
     if (v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
@@ -11032,7 +11048,7 @@ function drawRoadMarks(x) {
 const CAR_COL = ['#d8d6d0', '#8e939c', '#3a404c', '#b8322c', '#2e4f86', '#d9a43a', '#3d6b4a'];
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function drawCarBody(v) {
-  if(STAGE.agentStudy&&drawStudyCar(v))return;
+  if(drawAssetCar(v))return;
   const c = ctx, col = v.dead ? '#26262a' : v.police ? '#e6e8ee' : CAR_COL[v.c % CAR_COL.length], hw = CAR_W / 2, hl = CAR_LEN / 2;
   c.fillStyle = 'rgba(0,0,0,.45)'; rrect(c, -hw + 5, -hl + 7, CAR_W, CAR_LEN, 10); c.fill();
   c.fillStyle = col; rrect(c, -hw, -hl, CAR_W, CAR_LEN, 10); c.fill();
@@ -14353,7 +14369,7 @@ function drawRoofEntrances(P) {
   if (!P.z || flOf(P) || tactical) return;
   for (const l of S.ladders) {
     const d = l.roofDoor;
-    if (!d || l.tz !== P.z || dist(P.x, P.y, d.x, d.y) > 300) continue;
+    if (l.roofHatch || !d || l.tz !== P.z || dist(P.x, P.y, d.x, d.y) > 300) continue;
     const nx = d.dx, ny = d.dy, tx = -ny, ty = nx;
     ctx.save(); ctx.translate(d.x, d.y); ctx.transform(nx, ny, tx, ty, 0, 0);
     ctx.fillStyle = '#686d68'; ctx.fillRect(3, -15, 29, 30);
@@ -14361,7 +14377,7 @@ function drawRoofEntrances(P) {
     ctx.strokeStyle = '#d1d4bc'; ctx.lineWidth = 2;
     ctx.beginPath(); for (const u of [7, 13, 19]) { ctx.moveTo(u, -8); ctx.lineTo(u, 8); } ctx.stroke();
     ctx.fillStyle = '#e1e6d2'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
+    ctx.save();const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('↓ '+((l.bfl||0)+1)+'층', x, y); ctx.restore();
@@ -15006,6 +15022,7 @@ function robBuild() {
       const l = S && S.ladders && S.ladders.find(q => q.kind === 'stair' && q.tx === p.sx && q.ty === p.sy);
       if (l) {
         l.rx = tc(p.door[0]); l.ry = tc(p.door[1]); l.shDir = p.dir;
+        l.roofHatch=STAGE.agentStudy?{x:tc(p.sx),y:tc(p.sy),z:l.tz}:null;
         const [dx, dy] = { S: [0, 1], W: [-1, 0], E: [1, 0], N: [0, -1] }[p.dir];
         const xs = p.cells.map(c => c[0]), ys = p.cells.map(c => c[1]);
         // bake_mk의 실제 문 벽면(.08~.92) 바닥점. 앞 타일 중심은 서는 자리일 뿐 안내 위치가 아니다.
@@ -15641,12 +15658,13 @@ function chaseHide(P) {
   for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
   return best ? { x: best.x, y: best.y, fl: best.fl || 0, shelter:true, text: '숨을 곳 — ' + hideName(best) } : null;
 }
+function sameGoalLevel(P,g){const d=g.destinationFloor||g;return(d.fl||0)===flOf(P)&&(d.z||0)===(P.z||0);}
 function goalMarkerVisible(P,gl){
  if(!gl||actionBusy(P)||P.killAnim||P.approachAttack||S.koHold)return false;
  const last=feedbackState().events.findLast(e=>['ko','kill','stash','dress','loot'].includes(e.kind));
  if(last&&S.t-last.t>=0&&S.t-last.t<.55)return false;
  // Real movement lessons retain their destination even within one metre.
- return !(gl.tut&&dist(P.x,P.y,gl.x,gl.y)<80&&!gl.moveCue);
+ return !(gl.tut&&sameGoalLevel(P,gl)&&dist(P.x,P.y,gl.x,gl.y)<80&&!gl.moveCue);
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
@@ -15654,14 +15672,14 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.
-  if(gl.tut&&m<3&&!gl.moveCue)return;
+  if(gl.tut&&m<3&&!gl.moveCue&&sameGoalLevel(P,gl))return;
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const frame=goalViewport();
   const sy0=cam.y-hh+frame.top/SCALE,sy1=cam.y-hh+frame.bottom/SCALE,sx0=cam.x-hw+frame.left/SCALE,sx1=cam.x-hw+frame.right/SCALE;
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 은백색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
-    if (m < 3 && !gl.tut) { ctx.textBaseline = 'alphabetic'; return; }
+    if (m < 3 && !gl.tut && sameGoalLevel(P,gl)) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
     ctx.strokeStyle = `rgba(223,230,240,${pulse})`; ctx.lineWidth = 2 * k; ctx.setLineDash(gl.area?[9*k,7*k]:gl.lastSeen?[3*k,4*k]:[]); ctx.beginPath(); ctx.arc(gl.x, gl.y, (gl.area?32:20) * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#dfe6f0'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
@@ -16533,9 +16551,13 @@ function actorTextBlocks() {
 }
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
-  const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?(g.viaTo?.z?`${g.viaTo.z}층 옥상 입구`:`${(g.viaTo?.fl??g.fl??0)+1}층 입구`):g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
+  const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
   const identity=!g.via&&!g.exit&&!g.shelter&&(g.marker||(g.g?.target?targetName(g.g)+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):''));
-  return [identity||place, meters+'m'].filter(Boolean).join(' · ');
+  const d=g.destinationFloor||g,level=d.z?`${d.z}층 옥상`:d.fl?`${d.fl+1}층`:bldAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE))>=0?'1층':'지상';
+  const height=d.z||(d.fl||0),current=S.player.z||flOf(S.player);
+  const floor=(identity||g.area||g.lastSeen||g.via||d.fl||d.z)?(height>current?'↑ ':height<current?'↓ ':'')+level:'';
+  const label=identity||place;
+  return [floor,label===level?'':label,meters+'m'].filter(Boolean).join(' · ');
 }
 function goalViewport(){
   const bottom=Math.max(80,isTouch?Math.min(H-24,touchPlayFrame().bottom-32):H-70);

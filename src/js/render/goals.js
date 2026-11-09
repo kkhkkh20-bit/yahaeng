@@ -3,12 +3,13 @@ function chaseHide(P) {
   for (const h of S.hides || []) { if ((h.fl || 0) !== flOf(P) || (h.cap && h.bodies >= h.cap) || h.spotted) continue; const d = dist(P.x, P.y, h.x, h.y); if (d < bd && d > 30) { bd = d; best = h; } }
   return best ? { x: best.x, y: best.y, fl: best.fl || 0, shelter:true, text: '숨을 곳 — ' + hideName(best) } : null;
 }
+function sameGoalLevel(P,g){const d=g.destinationFloor||g;return(d.fl||0)===flOf(P)&&(d.z||0)===(P.z||0);}
 function goalMarkerVisible(P,gl){
  if(!gl||actionBusy(P)||P.killAnim||P.approachAttack||S.koHold)return false;
  const last=feedbackState().events.findLast(e=>['ko','kill','stash','dress','loot'].includes(e.kind));
  if(last&&S.t-last.t>=0&&S.t-last.t<.55)return false;
  // Real movement lessons retain their destination even within one metre.
- return !(gl.tut&&dist(P.x,P.y,gl.x,gl.y)<80&&!gl.moveCue);
+ return !(gl.tut&&sameGoalLevel(P,gl)&&dist(P.x,P.y,gl.x,gl.y)<80&&!gl.moveCue);
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
@@ -16,14 +17,14 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.
-  if(gl.tut&&m<3&&!gl.moveCue)return;
+  if(gl.tut&&m<3&&!gl.moveCue&&sameGoalLevel(P,gl))return;
   const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const frame=goalViewport();
   const sy0=cam.y-hh+frame.top/SCALE,sy1=cam.y-hh+frame.bottom/SCALE,sx0=cam.x-hw+frame.left/SCALE,sx1=cam.x-hw+frame.right/SCALE;
   if (gl.x > sx0 && gl.x < sx1 && gl.y > sy0 && gl.y < sy1) {  // 화면 안: 목표 위 은백색 표 (가까우면 생략 — 행동 버튼이 대신 알려 준다)
-    if (m < 3 && !gl.tut) { ctx.textBaseline = 'alphabetic'; return; }
+    if (m < 3 && !gl.tut && sameGoalLevel(P,gl)) { ctx.textBaseline = 'alphabetic'; return; }
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
     ctx.strokeStyle = `rgba(223,230,240,${pulse})`; ctx.lineWidth = 2 * k; ctx.setLineDash(gl.area?[9*k,7*k]:gl.lastSeen?[3*k,4*k]:[]); ctx.beginPath(); ctx.arc(gl.x, gl.y, (gl.area?32:20) * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#dfe6f0'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();

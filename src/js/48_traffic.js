@@ -143,10 +143,19 @@ function carOverlap(v) {
   return false;
 }
 // 움직이고, 벽·건물·다른 차에 부딪히면 튕겨 선다. 부딪힌 세기를 돌려준다
+function missionBoundaryHint(){
+ if((S.boundaryHintAfter??-1)>S.t)return;
+ S.boundaryHintAfter=S.t+6;
+ toast(S.exitOpen?'탈출구는 이쪽이 아니야. 표시된 출구로 가자.':'아직 할 일이 남았어. 임무부터 마무리하자.',2.8);
+}
 function carMove(v, dt, turn=0) {
   const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
   for(let i=0;i<steps;i++){
    const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;v.x+=Math.cos(v.a)*v.v*dt/steps;v.y+=Math.sin(v.a)*v.v*dt/steps;
+   // The edge of the mission is a travel restriction, never a damaging wall.
+   if(!v.ai&&carPts(v).some(([x,y])=>x<CAR_R||y<CAR_R||x>MW*TILE-CAR_R||y>MH*TILE-CAR_R)){
+    v.x=ox;v.y=oy;v.a=oa;v.v=0;if(S.player.car===v)missionBoundaryHint();return 0;
+   }
    const o=carOverlap(v);if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
    v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;
@@ -188,10 +197,13 @@ function updateDriving(P, mx, my, mag, dt) {
   let thr = 0; if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   if (mag > 0.15) {
     const ta = Math.atan2(my, mx), dA = angDiff(v.a, ta);
-    // 거의 반대쪽: 달리는 중이면 브레이크. 서 있으면 앞이 트였으면 크게 돌아 나가고(유턴), 막혔으면 후진
-    const fx = v.x + Math.cos(v.a) * 75, fy = v.y + Math.sin(v.a) * 75, frontOpen = !carBlocked(Math.floor(fx / TILE), Math.floor(fy / TILE));
-    if (Math.abs(dA) < 2.3 || (Math.abs(v.v) < 40 && v.v >= -5 && frontOpen && !v.revT)) { thr = Math.min(1, mag); const a0 = v.a, steer = clamp(dA * 3, -1, 1) * CAR_TURN * Math.max(0.35, Math.min(1, Math.abs(v.v) / 90)) * (v.v < -5 ? -1 : 1); v.a += steer * dt; if (carOverlap(v)) v.a = a0; }  // 서 있어도 조금은 돈다 (벽에 끼면 안 돈다)
-    else { thr = v.v > 30 ? -2 : -0.55 * Math.min(1, mag); if (v.v <= 30) v.revT = 0.6; }  // 반대쪽: 브레이크, 서면 후진 (한 번 후진하면 잠깐은 계속)
+    // Opposite input always brakes, then reverses; road clearance never changes gear.
+    if(Math.abs(dA)>2.3){
+      thr=v.v>0?-2:-.55*Math.min(1,mag);
+      if(v.v<=0){const err=angDiff(v.a,ta+Math.PI),a0=v.a;v.a+=clamp(err*3,-1,1)*CAR_TURN*Math.min(1,Math.abs(v.v)/90)*dt;if(carOverlap(v))v.a=a0;}
+    }else{
+      thr=Math.min(1,mag);const a0=v.a;v.a+=clamp(dA*3,-1,1)*CAR_TURN*Math.max(.15,Math.min(1,Math.abs(v.v)/90))*dt;if(carOverlap(v))v.a=a0;
+    }
   }
   if (thr > 0) v.v = Math.min(CAR_MAX, v.v + CAR_ACC * thr * dt);
   else if (thr < -1) v.v = Math.max(0, v.v - CAR_BRAKE * dt);
@@ -256,7 +268,7 @@ function drawVehicles() {
     drawCarBody(v);
     // 전조등 (밤): 달리는 차는 앞을 비춘다
     if (!v.dead && (v.ai || S.player.car === v)) { const g = ctx.createLinearGradient(0, -46, 0, -150); g.addColorStop(0, 'rgba(255,240,200,.32)'); g.addColorStop(1, 'rgba(255,240,200,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-16, -46); ctx.lineTo(-40, -150); ctx.lineTo(40, -150); ctx.lineTo(16, -46); ctx.fill();
-      ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3); }
+      if(!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth){ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3);} }
     if (S.player.car === v) { ctx.strokeStyle = 'rgba(120,210,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(-25, -49, 50, 98); }
     ctx.restore();
     if (v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
@@ -281,7 +293,7 @@ function drawRoadMarks(x) {
 const CAR_COL = ['#d8d6d0', '#8e939c', '#3a404c', '#b8322c', '#2e4f86', '#d9a43a', '#3d6b4a'];
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function drawCarBody(v) {
-  if(STAGE.agentStudy&&drawStudyCar(v))return;
+  if(drawAssetCar(v))return;
   const c = ctx, col = v.dead ? '#26262a' : v.police ? '#e6e8ee' : CAR_COL[v.c % CAR_COL.length], hw = CAR_W / 2, hl = CAR_LEN / 2;
   c.fillStyle = 'rgba(0,0,0,.45)'; rrect(c, -hw + 5, -hl + 7, CAR_W, CAR_LEN, 10); c.fill();
   c.fillStyle = col; rrect(c, -hw, -hl, CAR_W, CAR_LEN, 10); c.fill();

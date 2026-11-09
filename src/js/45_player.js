@@ -292,13 +292,20 @@ function drawCoverPush(P) { drawCoverFx(); const f = (P.coverPush || 0) / COVER_
 const COVER_PUSH = 0.5;
 const COVER_SPD = 0.55;  // 벽에 붙어 옆걸음: 살금살금의 55% (메탈기어처럼 벽을 더듬듯 천천히)  // 벽 쪽으로 이만큼(초) 계속 밀어야 등을 붙인다
 function autoStairs(P, mx, my, mag) {
+  const hatchLock=S.roofHatchExit;
+  if(hatchLock&&(P.z!==hatchLock.z||dist(P.x,P.y,hatchLock.x,hatchLock.y)>72))S.roofHatchExit=null;
+  if(P.z&&!P.captive&&!P.ledge&&!actionBusy(P)&&!P.hide&&!P.wire&&!P.under&&!P.vent&&P.moving&&mag>.1){
+    for(const l of S.ladders)if(l.roofHatch&&roofStairAccess(l,P)&&!S.roofHatchExit&&((l.roofHatch.x-P.x)*mx+(l.roofHatch.y-P.y)*my)>dist(P.x,P.y,l.roofHatch.x,l.roofHatch.y)*mag*.2){
+      S.stats.roofStair=(S.stats.roofStair||0)+1;beginStairTravel(l,false);return;
+    }
+  }
   if (mag <= .1) { S.stairArm = true; return; }
   const vx = mx / mag, vy = my / mag, old = S.stairDir || [0, 0];
   if (S.stairArm === false) { if (vx * old[0] + vy * old[1] > .5) return; S.stairArm = true; }
   if (actionBusy(P) || P.hide || P.wire || P.under || P.vent || !P.moving) return;
   if (P.z) {
     if (P.captive || P.ledge) return;
-    for (const l of S.ladders) if (roofStairAccess(l, P) && -(vx * l.roofDoor.dx + vy * l.roofDoor.dy) > .7) {
+    for (const l of S.ladders) if (!l.roofHatch && roofStairAccess(l, P) && -(vx * l.roofDoor.dx + vy * l.roofDoor.dy) > .7) {
       S.stats.roofStair = (S.stats.roofStair || 0) + 1; beginStairTravel(l, false); return;
     }
     return;
@@ -543,6 +550,7 @@ function updatePlayer(dt) {
     if (!P.moving) { P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14); }
     P.x = clamp(P.x, 14, MW * TILE - 14); P.y = clamp(P.y, 14, MH * TILE - 14);
     if (P.moving) P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -14 * dt, 14 * dt);
+    if(mag>.1&&!P.z&&!flOf(P)&&((P.x<TILE+14&&nx<-.5)||(P.x>MW*TILE-TILE-14&&nx>.5)||(P.y<TILE+14&&ny<-.5)||(P.y>MH*TILE-TILE-14&&ny>.5)))missionBoundaryHint();
     playerFootsteps(P,mode,ox,oy);
   }
   autoStairs(P, mx, my, mag); autoTraverse(P, mx, my, mag, mode, dt);

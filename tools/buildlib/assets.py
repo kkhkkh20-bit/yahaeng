@@ -31,4 +31,12 @@ def campaign_assets(root):
     if (study/'details.json').exists():
         assets['cityStudy']=json.loads((study/'details.json').read_text())
         assets['cityStudy']['src']='data:image/webp;base64,'+base64.b64encode((study/'details.webp').read_bytes()).decode()
+    signs=study/'korean-signs.json'
+    if signs.exists():
+        assets['citySigns']=json.loads(signs.read_text())
+        assets['citySigns']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs.webp').read_bytes()).decode()
+    vehicles=Path(root)/'src/art/vehicles'
+    if (vehicles/'traffic.json').exists():
+        assets['cityVehicles']=json.loads((vehicles/'traffic.json').read_text())
+        assets['cityVehicles']['src']='data:image/webp;base64,'+base64.b64encode((vehicles/'traffic.webp').read_bytes()).decode()
     return json.dumps(assets, ensure_ascii=False, separators=(',', ':'))

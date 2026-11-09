@@ -1,0 +1,27 @@
+{
+  "reverse": {
+    "x": 632.1199999999994,
+    "v": -140,
+    "a": 0
+  },
+  "boundary": {
+    "x": 46.14285714285714,
+    "hp": 6,
+    "impact": false
+  },
+  "accesses": 8,
+  "descents": [
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown"
+  ],
+  "latch": true,
+  "passBy": true,
+  "captions": [
+    "↓ 2층 · 이도현 활동 구역 · 5m",
+    "↓ 2층 · 연결 입구 · 5m",
+    "↓ 2층 · 이도현 · 1m",
+    "↓ 5층 · 문서 · 5m"
+  ]
+}
