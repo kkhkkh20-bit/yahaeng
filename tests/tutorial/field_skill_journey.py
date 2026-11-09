@@ -1,6 +1,7 @@
 """Earn a skill through the actual tree, walk the live campaign and use the authored encounter."""
 import asyncio,json,sys,os
 from pathlib import Path
+from episode_training import select_skill_node
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/flow-v156';O.mkdir(exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else 'http://127.0.0.1:8001/public/';NAME=sys.argv[2]if len(sys.argv)>2 else 'field-journey'
@@ -11,7 +12,7 @@ async def main():
   for mobile in [False,True]:
    q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();let seed=42;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');await q.goto(BASE,timeout=120000);await q.wait_for_function('!!__game',timeout=120000);await q.click('#btnLedger');await q.click('#btnSkillsLedger')
    for skill in ['silentHands','dual']:
-    await q.click('[data-select="'+skill+'"]');await q.click('[data-learn="'+skill+'"]')
+    await select_skill_node(q,skill);await q.click('[data-learn="'+skill+'"]')
     if mobile:await q.click('.skill-detail-close')
    await q.click('#btnSkillsBack');i=await q.evaluate('__game.STAGES.findIndex(s=>s.id==="m2")');await q.click(f'[data-i="{i}"]');await q.click('#btnBrGo');await q.evaluate('''()=>{while(__game.DLG.modal)__game.advanceDialog();window.tick=s=>{for(let t=0;t<s-1e-6;t+=.01)if(!__game.S.over)__game.update(.01)};tick(.7)}''');cdp=await q.context.new_cdp_session(q)
    async def move(x,y):

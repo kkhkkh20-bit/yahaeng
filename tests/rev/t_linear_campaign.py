@@ -2,7 +2,7 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-from episode_training import spend_episode_points
+from episode_training import select_skill_node, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=R/'build/linear-v198';O.mkdir(exist_ok=True)
 async def main():
  async with async_playwright()as p:
@@ -19,7 +19,7 @@ async def main():
    assert await q.locator('#btnSkillsBack').get_attribute('aria-disabled')=='false'
    assert not await q.evaluate('__game.resetTreeSkills()')
    # Choosing a nonrecommended root is real user input; every choice stays free.
-   await q.click('[data-select="silentHands"]');await q.click('[data-learn="silentHands"]');await q.click('.skill-detail-close')
+   await select_skill_node(q,'silentHands');await q.click('[data-learn="silentHands"]');await q.click('.skill-detail-close')
    assert await q.evaluate('__game.loadSkillTree().learned.join()=== "silentHands"')
    await spend_episode_points(q)
    c=await q.locator('#btnSkillsBack').evaluate('e=>{const r=e.getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height,hit:e.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2))}}')

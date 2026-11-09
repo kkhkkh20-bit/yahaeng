@@ -14,7 +14,7 @@ async def main():
         await pg.add_init_script('window.requestAnimationFrame=()=>0')
         await pg.goto((ROOT / 'build/preview_city.html').as_uri())
         await pg.wait_for_function('!!window.__game')
-        await pg.wait_for_function('window.__game.prBench().n > 0')
+        await pg.wait_for_function('window.__game.prBench().n > 0',polling=100)
         result = await pg.evaluate('''() => {
           const G=window.__game,passed=[];
           const check=(ok,msg)=>{if(!ok)throw Error(msg)};

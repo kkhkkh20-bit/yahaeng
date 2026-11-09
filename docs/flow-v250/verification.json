@@ -1,0 +1,72 @@
+{
+  "cards": [
+    "PASS skill cards 320 568 all branches, effect/cost/state, locked path, focus, real purchase/refund",
+    "PASS skill cards 390 844 all branches, effect/cost/state, locked path, focus, real purchase/refund",
+    "PASS skill cards 844 390 all branches, effect/cost/state, locked path, focus, real purchase/refund",
+    "PASS skill cards 1024 768 all branches, effect/cost/state, locked path, focus, real purchase/refund",
+    "PASS skill cards 1440 900 all branches, effect/cost/state, locked path, focus, real purchase/refund"
+  ],
+  "walkways": [
+    "PASS walkway clearance {\"worlds\": 27, \"moves\": 17, \"cabinets\": 115, \"usableMovedContainers\": 11, \"rows\": [{\"id\": \"m1\", \"moves\": 0, \"floors\": 3}, {\"id\": \"m2\", \"moves\": 9, \"floors\": 3}, {\"id\": \"m3\", \"moves\": 0, \"floors\": 2}, {\"id\": \"m4\", \"moves\": 0, \"floors\": 3}, {\"id\": \"m5\", \"moves\": 0, \"floors\": 2}, {\"id\": \"m6\", \"moves\": 5, \"floors\": 2}, {\"id\": \"m7\", \"moves\": 2, \"floors\": 2}, {\"id\": \"city\", \"moves\": 0, \"floors\": 3}, {\"id\": \"t0\", \"moves\": 0, \"floors\": 1}, {\"id\": \"t1\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tI\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tB\", \"moves\": 0, \"floors\": 2}, {\"id\": \"tS\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tE\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tA\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tL\", \"moves\": 0, \"floors\": 1}, {\"id\": \"tR\", \"moves\": 0, \"floors\": 2}, {\"id\": \"tC\", \"moves\": 0, \"floors\": 1}, {\"id\": \"p0\", \"moves\": 0, \"floors\": 2}, {\"id\": \"e1\", \"moves\": 0, \"floors\": 2}, {\"id\": \"e2\", \"moves\": 0, \"floors\": 3}, {\"id\": \"e3\", \"moves\": 0, \"floors\": 2}, {\"id\": \"p1\", \"moves\": 0, \"floors\": 2}, {\"id\": \"p2\", \"moves\": 0, \"floors\": 2}, {\"id\": \"e4\", \"moves\": 0, \"floors\": 2}, {\"id\": \"e5\", \"moves\": 0, \"floors\": 2}, {\"id\": \"n1\", \"moves\": 1, \"floors\": 2}], \"oldSaveBodyAndProgress\": true}"
+  ],
+  "preparation": [
+    "PASS preparation-only learning 1280 first clear, native purchases, field authority, owned tutorial gear",
+    "PASS preparation-only learning 390 first clear, native purchases, field authority, owned tutorial gear",
+    "PASS preparation-only learning 844 first clear, native purchases, field authority, owned tutorial gear"
+  ],
+  "skill-diagram": [
+    "PASS circle inspection, 27 icons, 24 real edges, prerequisite focus, learning, insufficient points, keyboard, refund and return"
+  ],
+  "interface": [
+    "PASS pc",
+    "PASS mobile",
+    "PASS landscape",
+    "PASS small",
+    "PASS font failure fallback"
+  ],
+  "design": [
+    "PASS design PC {\"maps\": 27, \"items\": 4, \"headingGlyphs\": true, \"objectivesNotClipped\": true, \"upperFloorCanVisible\": true}",
+    "PASS design mobile {\"maps\": 27, \"items\": 4, \"headingGlyphs\": true, \"objectivesNotClipped\": true, \"upperFloorCanVisible\": true}"
+  ],
+  "linear": [
+    "PASS linear training 1440 free choices, gated escape, real purchases, progression, carryover, retry, completion",
+    "PASS linear training 390 free choices, gated escape, real purchases, progression, carryover, retry, completion",
+    "PASS linear training 844 free choices, gated escape, real purchases, progression, carryover, retry, completion",
+    "PASS linear training 320 free choices, gated escape, real purchases, progression, carryover, retry, completion"
+  ],
+  "t_world_alignment": [
+    "PASS territories and rival routes across six missions, three starts each; no duplicate corpse on ground, second and third floors; drop restores rendering; 43 rooftop doors: labels, approach sides and actual descent; legacy checkpoint repair without losing progress"
+  ],
+  "t_stair_geometry": [
+    "PASS {'flights': 59, 'roofs': 70, 'compact': 8, 'automatic': 118, 'npcs': 258, 'legacySave': True}"
+  ],
+  "t_contract_density": [
+    "PASS {'mainContracts': 4, 'securityRooms': 4, 'physicalCode': True, 'crossDistrictCardChain': True, 'privacySeparation': True, 'oldSaveRecovery': True}"
+  ],
+  "t_physical_interactions": [
+    "PASS physical engine False native clothing, wake and second KO, weighted lift/drop, no body projectiles, physical pickup approach",
+    "PASS physical engine True native clothing, wake and second KO, weighted lift/drop, no body projectiles, physical pickup approach"
+  ],
+  "t_office_campaign": [
+    "PASS paid office campaign 9 episodes; unchanged physical worlds; switches/cabinets"
+  ],
+  "t_light_fixtures": [
+    "PASS {'stages': 27, 'counts': {'wall': 358, 'street': 54, 'pole': 13}, 'reachable': 425, 'legacyState': True}"
+  ],
+  "t_skill_tree": [
+    "PASS 27 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration; owned loadout grants once, field learning and reset blocked and checkpoint does not refill; blade deliberate hold, projectile impact, physical radio acquisition and one receiver/cooldown; CCTV channel interruption, temporary disable, expiry, recordings and floor/wall limits; walking/crouch noise, sprint, view, landing/KO sounds and conditional dark detection; smoke throw, upgrades, ray/CCTV occlusion, floor isolation, expiry and solid walls; actual displacement: crouch, sprint and body carry; actual AI hearing/detection/foliage; constrained flank attack; learned drop from a real roof: locked before purchase, physical descent and held lethal outcome; v147 checkpoint migration preserves consumed gear without duplication; bare start requires physical equipment; recovering confiscated kit grants owned tools once; new thrown tools affect challenge evaluation"
+  ],
+  "surfaces": [
+    "PASS surface lighting False {\"wallMask\": {\"face\": 221, \"back\": 0}, \"torch\": {\"face\": 223, \"back\": 0}, \"turned\": {\"face\": 0, \"back\": 0}, \"search\": {\"face\": 227, \"back\": 0}, \"door\": {\"closed\": 0, \"opened\": 203, \"shut\": 0}, \"furniture\": [{\"type\": \"locker\", \"pixels\": 540, \"brightnessGain\": 119.84999999999965, \"raisedPixels\": 144, \"raisedGain\": 121.91666666666657}, {\"type\": \"sofa\", \"pixels\": 1255, \"brightnessGain\": 121.44223107569714, \"raisedPixels\": 451, \"raisedGain\": 117.35254988913522}, {\"type\": \"desk2\", \"pixels\": 701, \"brightnessGain\": 109.0223490252022, \"raisedPixels\": 72, \"raisedGain\": 91.70833333333339}, {\"type\": \"chairD\", \"pixels\": 146, \"brightnessGain\": 71.04794520547941, \"raisedPixels\": 0, \"raisedGain\": 0}], \"outdoorParcel\": {\"pixels\": 429, \"brightnessGain\": 75.27117327117327, \"raisedPixels\": 15, \"raisedGain\": 3.688888888888889}}",
+    "PASS surface lighting True {\"wallMask\": {\"face\": 221, \"back\": 0}, \"torch\": {\"face\": 223, \"back\": 0}, \"turned\": {\"face\": 0, \"back\": 0}, \"search\": {\"face\": 227, \"back\": 0}, \"door\": {\"closed\": 0, \"opened\": 203, \"shut\": 0}, \"furniture\": [{\"type\": \"locker\", \"pixels\": 540, \"brightnessGain\": 119.46296296296256, \"raisedPixels\": 144, \"raisedGain\": 120.50925925925915}, {\"type\": \"sofa\", \"pixels\": 1255, \"brightnessGain\": 121.32722443559096, \"raisedPixels\": 451, \"raisedGain\": 117.3178122690318}, {\"type\": \"desk2\", \"pixels\": 701, \"brightnessGain\": 108.75796481217337, \"raisedPixels\": 72, \"raisedGain\": 91.63425925925927}, {\"type\": \"chairD\", \"pixels\": 146, \"brightnessGain\": 71.00228310502288, \"raisedPixels\": 0, \"raisedGain\": 0}], \"outdoorParcel\": {\"pixels\": 429, \"brightnessGain\": 75.77000777000775, \"raisedPixels\": 15, \"raisedGain\": 3.5333333333333328}}"
+  ],
+  "lights": [
+    "PASS occupied lighting {\"rows\": [{\"id\": \"tB\", \"awake\": 2, \"added\": 0}, {\"id\": \"p0\", \"awake\": 2, \"added\": 0}, {\"id\": \"e2\", \"awake\": 2, \"added\": 0}, {\"id\": \"m2\", \"awake\": 19, \"added\": 2}, {\"id\": \"m4\", \"awake\": 20, \"added\": 8}, {\"id\": \"m6\", \"awake\": 7, \"added\": 1}, {\"id\": \"m7\", \"awake\": 5, \"added\": 4}, {\"id\": \"m5\", \"awake\": 8, \"added\": 0}, {\"id\": \"n1\", \"awake\": 5, \"added\": 5}], \"fixtureCount\": 20, \"savedBlackouts\": true, \"legacyProgress\": true}"
+  ],
+  "passages": [
+    "PASS native passage False m2 [72, 696] [73.59740099999999, 840.6569112367856]",
+    "PASS native passage False m6 [1368, 1080] [1369.592604, 864.360523863314]",
+    "PASS native passage True m2 [72, 696] [73.60219800000003, 838.8120104863922]",
+    "PASS native passage True m6 [1368, 1080] [1369.602198, 862.5789954454681]"
+  ]
+}

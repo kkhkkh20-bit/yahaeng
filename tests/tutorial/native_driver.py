@@ -2,7 +2,7 @@
 No scene, actor, health, inventory, skill, objective or alert overrides.
 """
 import asyncio,json,math
-from episode_training import finish_episode_scene
+from episode_training import select_skill_node, finish_episode_scene
 from pathlib import Path
 class NativeDriver:
  def __init__(self,page,mobile,out,label):self.q=page;self.mobile=mobile;self.out=Path(out);self.out.mkdir(parents=True,exist_ok=True);self.label=label;self.cdp=None
@@ -92,7 +92,7 @@ class NativeDriver:
  async def learn(self,names):
   await self.q.click('#btnPause');await self.q.click('#btnSkillsPause')
   for name in names:
-   await self.q.locator(f'[data-select="{name}"]').click();await self.q.locator(f'[data-learn="{name}"]').click()
+   await select_skill_node(self.q,name);await self.q.locator(f'[data-learn="{name}"]').click()
    if self.mobile and await self.q.locator('.skill-detail-close').is_visible():await self.q.locator('.skill-detail-close').click()
   await self.q.click('#btnSkillsBack')
   if await self.q.locator('#pause').is_visible():await self.q.click('#btnResume')

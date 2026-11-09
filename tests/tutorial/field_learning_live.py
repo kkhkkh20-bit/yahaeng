@@ -5,7 +5,7 @@ import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import select_skill_node, standalone_stage, continue_episode, spend_episode_points
 from action_flow_live import Controls
 async def main(args):
  out=Path(args.out);out.mkdir(parents=True,exist_ok=True);reports=[]
@@ -19,7 +19,7 @@ async def main(args):
     try:
      await q.evaluate('localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true},p0:{_clear:true},p1:{_clear:true}}))');await standalone_stage(q,'e1');await q.click('#brSkills button')
      for id in (['kit','dart']if skill=='dart'else['silentHands',skill]):
-      await q.click(f'[data-select="{id}"]');await q.click(f'[data-learn="{id}"]');await q.click('.skill-detail-close')
+      await select_skill_node(q,id);await q.click(f'[data-learn="{id}"]');await q.click('.skill-detail-close')
      await q.click('#btnSkillsBack');assert (await q.locator('#brSkills').inner_text()).startswith('익힌 기술');await q.screenshot(path=str(out/(name+'-chosen.png')))
      await q.click('#btnBrGo');await c.press('Control','#btnCrouch');await c.move(600,888)
      if skill in ['ambush','dart']:

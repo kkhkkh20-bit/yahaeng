@@ -1,6 +1,7 @@
 """Actual browser captures of all branches and sticky navigation at small sizes."""
 import asyncio,json
 from pathlib import Path
+from episode_training import select_skill_node
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/skills-v151';O.mkdir(exist_ok=True)
 async def main():
@@ -11,7 +12,7 @@ async def main():
    label='pc'if not mobile else'touch-'+str(width)
    for branch in ['body','assassin','tools']:
     if width<=900:await q.locator('button[data-branch="'+branch+'"]').click()
-    await q.evaluate('__game.drawSkillLinks()');name=f'tree-{branch}-{label}.png';await q.screenshot(path=str(O/name));records.append({'file':name,'branch':branch,'width':width,'height':height})
+    name=f'tree-{branch}-{label}.png';await q.screenshot(path=str(O/name));records.append({'file':name,'branch':branch,'width':width,'height':height})
     assert await q.evaluate('''()=>{const e=document.querySelector('#skillScreen');return e.scrollWidth<=innerWidth+1}'''),'Tree causes horizontal overflow'
     assert await q.evaluate('''()=>[...document.querySelectorAll('#skillCards button')].filter(b=>b.offsetWidth&&!b.disabled).every(b=>b.getBoundingClientRect().height>=44)'''),'Tree touch targets are too small'
     if not mobile:break
@@ -19,7 +20,7 @@ async def main():
     await q.evaluate('''()=>{const G=__game,st=G.STAGES.find(s=>s.id==='m1'),record={_clear:true};st.challenges.slice(0,5).forEach(k=>record[k]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:record}));G.storeSkillTree({schema:1,learned:[]});}''')
     await q.locator('button[data-branch="tools"]').click()
     for skill in ['kit','radio','hack','signal']:
-     await q.locator('[data-select="'+skill+'"]').click();await q.locator('[data-learn="'+skill+'"]').click(timeout=5000)
+     await select_skill_node(q,skill);await q.locator('[data-learn="'+skill+'"]').click(timeout=5000)
     assert await q.evaluate('__game.loadSkillTree().learned.includes("signal")'),'Cannot learn deep tool nodes in small viewport'
    await q.evaluate('''()=>{const e=document.querySelector('#skillScreen');e.scrollTop=e.scrollHeight}''');await q.wait_for_timeout(50);r=await q.locator('#btnSkillsBack').bounding_box();assert r and r['y']>=0 and r['y']+r['height']<=height,'Back button disappears when scrolling';await q.click('#btnSkillsBack');assert await q.locator('#ledger').is_visible()
    # Preview the real skill button in the landscape action layout as well.

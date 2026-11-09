@@ -1,0 +1,54 @@
+[
+  {
+    "touch": false,
+    "id": "m2",
+    "before": [
+      72,
+      696
+    ],
+    "after": [
+      73.59740099999999,
+      840.6569112367856
+    ],
+    "method": "Positioned navigation fixtures; ordinary RAF and native inputs. Not full mission runs."
+  },
+  {
+    "touch": false,
+    "id": "m6",
+    "before": [
+      1368,
+      1080
+    ],
+    "after": [
+      1369.592604,
+      864.360523863314
+    ],
+    "method": "Positioned navigation fixtures; ordinary RAF and native inputs. Not full mission runs."
+  },
+  {
+    "touch": true,
+    "id": "m2",
+    "before": [
+      72,
+      696
+    ],
+    "after": [
+      73.60219800000003,
+      838.8120104863922
+    ],
+    "method": "Positioned navigation fixtures; ordinary RAF and native inputs. Not full mission runs."
+  },
+  {
+    "touch": true,
+    "id": "m6",
+    "before": [
+      1368,
+      1080
+    ],
+    "after": [
+      1369.602198,
+      862.5789954454681
+    ],
+    "method": "Positioned navigation fixtures; ordinary RAF and native inputs. Not full mission runs."
+  }
+]
