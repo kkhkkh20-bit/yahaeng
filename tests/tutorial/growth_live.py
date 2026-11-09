@@ -6,7 +6,7 @@ import argparse,asyncio,json,math
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points, acquire_uniform
+from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points, acquire_uniform
 from action_flow_live import Controls
 
 async def main(args):
@@ -32,7 +32,7 @@ async def main(args):
      await c.move(point['x'],point['y'])
      if await q.evaluate('__game.S.player.fl||0')!=floor:break
    async def finish(id,budget):
-    await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
+    await finish_episode_scene(q,mobile);await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
     s=await c.record('cleared-'+id);assert s['hp']==3 and not s['stats']['detected'] and not s['stats'].get('camRec',0) and not s['stats'].get('cpUsed',0),s
     assert await q.evaluate('__game.skillBudget()')==budget
     if s['stats']['bodies'] and await q.evaluate('__game.S.alevel>=2'):

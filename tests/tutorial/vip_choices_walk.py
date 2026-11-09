@@ -7,7 +7,7 @@ import asyncio,json,os,sys,time
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=Path(os.environ.get('YH_VIP_DIR','/workspace/work/vip-v175/native'));O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else'http://127.0.0.1:8001/public/'
 LABEL=sys.argv[2]if len(sys.argv)>2 else'local'
@@ -234,6 +234,7 @@ async def main():
    await route_local(2376,1224);await route_local(2664,1056)
    assert await q.evaluate('__game.S.exitOpen'),'ledger/target did not complete contract'
    # The east exit closes the club/office/southeast apartment circuit.
+   await finish_episode_scene(q,touch)
    await q.wait_for_function('document.querySelector("#end").dataset.win==="1"&&!document.querySelector("#end").hidden',timeout=4000,polling=100)
    result=await q.evaluate('''()=>{const G=__game,S=G.S;return{version:__BUILD_VERSION__,seconds:S.t,hp:S.player.hp,stats:S.stats,skills:G.loadSkillTree().learned,approach:S.missionApproach,receipt:S.vipReceipt,records:JSON.parse(localStorage.getItem('yahaeng.ch')).m2._approaches,next:document.querySelector('#btnRetry').textContent}}''')
    assert result['hp']>0 and (set(result['skills'])=={'silentHands','ambush'}if PREP else not result['skills']) and not errors,(result,errors)

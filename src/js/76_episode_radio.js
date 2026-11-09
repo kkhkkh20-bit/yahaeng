@@ -12,13 +12,16 @@ const OPENING_RADIO=[
  '동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.'
 ];
 function episodeRadioMessage(){
- if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
+ if(!S||(!STAGE.storyBeat&&(STAGE.story?.solo||(!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE))))))return null;
  const P=S.player;if(P.jump||P.trav)return null;
  const goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
- if(chase)return{text:'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
- if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
- if(P.captive)return P.captive.target?{text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ const speaker=STAGE.story?.solo?'hero':'master';
+ if(chase)return{speaker,text:speaker==='hero'?'들켰어. 모퉁이를 돌아서 숨을 곳부터 찾아야겠네.':'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{speaker,text:speaker==='hero'?'여기는 안 보이나 봐. 경비가 돌아갈 때까지 기다리자.':'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
+ if(P.captive)return P.captive.target?{speaker,text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{speaker,text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ const story=episodeStoryMessage();if(story)return story;
+ if(STAGE.story?.solo)return null;
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
@@ -139,7 +142,7 @@ function syncEpisodeRadio(){
   if(fresh){
    episodeRadioUntil=now+clamp(3000+message.text.length*55,4700,7000);episodeRadioSeen.set(cue,now);episodeRadioCue=cue;episodeRadioLastAt=now;episodeRadioPriority=priority;episodeRadioLayoutAt=0;
    episodeRadioReadAt=now+clamp(1300+message.text.length*32,2800,4200);
-   if(!open)sfx('radio');
+   acknowledgeEpisodeStory(message);if(!open)sfx('radio');
   }
   // A lower priority line cannot replace an urgent instruction mid-transmission.
   if(fresh||open||now>=episodeRadioUntil){

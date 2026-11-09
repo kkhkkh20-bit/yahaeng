@@ -6,6 +6,7 @@ import asyncio,json,os,sys
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
+from episode_training import finish_episode_scene
 R=Path(__file__).resolve().parents[2];O=R/'build/level-v168';O.mkdir(exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else'http://127.0.0.1:8001/public/'
 LABEL=sys.argv[2]if len(sys.argv)>2 else'local'
@@ -80,6 +81,7 @@ async def main():
    else:raise AssertionError('target failed to reach the appointment')
    await action('z','#btnAct',2.2);assert await q.evaluate('__game.S.exitOpen')
    for at in [(264,696),(72,696),(36,816)]:await move(*at)
+   await finish_episode_scene(q,touch)
    await q.wait_for_function('document.querySelector("#end").dataset.win==="1"&&!document.querySelector("#end").hidden',timeout=4000,polling=100)
    result=await q.evaluate('''()=>{const G=__game,S=G.S;return{version:__BUILD_VERSION__,seconds:S.t,hp:S.player.hp,stats:S.stats,learned:G.loadSkillTree().learned,cleared:JSON.parse(localStorage.getItem('yahaeng.ch')).m2._clear,rank:document.querySelector('#endRank').innerText}}''');assert result['cleared']and result['hp']>0 and result['learned']==[]and result['stats']['kunaiUsed']==0 and result['stats']['camUnplugged']==2 and not errors,(result,errors)
    await q.screenshot(path=str(O/(name+'-clear.png')));rows.append({'touch':touch,**result,'pageErrors':errors,'method':'Fresh save; real mission selection; native keyboard or CDP joystick/actions; all campaign actors and security active; stepped clock; no actor/health/inventory/skills/progress overrides.'});print('PASS full native contract',name,json.dumps(result,ensure_ascii=False),flush=True);await q.close()

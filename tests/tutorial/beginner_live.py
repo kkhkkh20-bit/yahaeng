@@ -6,7 +6,7 @@ import argparse,asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points
 from action_flow_live import Controls
 async def main(args):
  out=Path(args.out);out.mkdir(parents=True,exist_ok=True);reports=[]
@@ -39,7 +39,7 @@ async def main(args):
        await q.keyboard.press('Tab')
     assert await q.evaluate('__game.envAction().k')=='carry';await c.press('x','#btnCarry');await wait('!!__game.S.player.carrying');await shot('body-lift')
     await c.move(360,408);await c.move(y=504);await c.press('x','#btnCarry');await wait('__game.S.stats.stashed===1');await shot('body-hidden')
-    await c.move(y=648);await c.move(168,744);await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
+    await c.move(y=648);await c.move(168,744);await finish_episode_scene(q,mobile);await q.locator('#end').wait_for(state='visible');assert await q.locator('#end').get_attribute('data-win')=='1'
     result=await c.record('first-clear');assert result['hp']==3 and not result['stats']['detected'] and result['stats']['stashed']==1,result
     assert '기술'in await q.locator('#endSkills').inner_text();assert not await q.evaluate('__game.loadSkillTree().learned.length');await shot('neutral-skill-invitation')
     assert not errors,errors;reports.append({'device':name,'result':result,'events':c.events,'errors':errors,'method':__doc__});print('PASS BEGINNER LIVE',name,flush=True)

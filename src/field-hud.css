@@ -311,3 +311,36 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
  body.touch #hud #objectiveSummary{font-size:13px}
  body.touch #hud #stealth{padding:3px 6px}
 }
+
+/* One portrait square, shared by radio and dialogue; never crop a larger
+   fixed canvas inside a narrow, independently sized frame. */
+#dlg{--dialog-face:80px;width:min(720px,calc(100vw - 24px));gap:16px;padding:12px 18px;align-items:flex-start}
+#dlg #dlgFaceBox{flex:0 0 var(--dialog-face);width:var(--dialog-face);height:var(--dialog-face);min-height:0;aspect-ratio:1;align-self:flex-start;overflow:hidden}
+#dlg #dlgFace{position:static;display:block;width:100%;height:100%;max-width:none;transform:none;object-fit:contain;image-rendering:pixelated}
+#dlg .dlg-box{gap:5px}
+#dlg .dlg-context{font-size:10px;line-height:1.4;padding-bottom:5px}
+#dlg.noface .dlg-context{display:none}
+#dlg .dlg-head{gap:3px 9px;align-items:baseline}
+#dlg .dlg-box b{font-size:16px;line-height:1.4}
+#dlg .dlg-box i{font-size:11px;line-height:1.4}
+#dlg .dlg-copy p{font-size:15px;line-height:1.55;margin:0}
+#dlg .dlg-box small{font-size:10px;padding-top:3px}
+#hud #episodeRadio #episodeRadioFace{width:40px;height:40px;flex:0 0 40px;object-fit:contain;aspect-ratio:1}
+body.dlgmodal #hud .pad,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud #quickItems{visibility:hidden;pointer-events:none}
+body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+@media(max-width:640px){
+ #dlg{--dialog-face:60px;width:calc(100vw - 20px);padding:10px 12px;gap:12px}
+ #dlg .dlg-box b{font-size:15px}
+ #dlg .dlg-box i{font-size:10px}
+ #dlg .dlg-copy p{font-size:14px;line-height:1.5}
+ #dlg #dlgMeasure{max-height:clamp(72px,28dvh,180px)}
+ #hud #episodeRadio #episodeRadioFace{width:34px;height:34px;flex-basis:34px}
+ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioFace{width:30px;height:30px;flex-basis:30px}
+}
+@media(max-height:440px) and (orientation:landscape){
+ #dlg{--dialog-face:48px;width:min(660px,calc(100vw - 32px));padding:10px 14px;gap:12px}
+ #dlg .dlg-box b{font-size:14px}
+ #dlg .dlg-copy p{font-size:13px;line-height:1.45}
+ #dlg .dlg-context{font-size:9px;padding-bottom:3px}
+ body.episode-coda #dlg{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+}

@@ -1,3 +1,14 @@
+async def finish_episode_scene(page,mobile=False):
+    """Read/skip the completion scene using ordinary controls, without altering state."""
+    await page.wait_for_function('__game.S.over',timeout=6000,polling=50)
+    await page.wait_for_function("__game.DLG.modal||!document.getElementById('end').hidden",timeout=6000,polling=50)
+    for _ in range(16):
+        if not await page.evaluate('__game.DLG.modal'):break
+        if mobile:await page.tap('#dlg')
+        else:await page.keyboard.press('Space')
+        await page.wait_for_timeout(100)
+    assert not await page.evaluate('__game.DLG.modal'),'completion scene did not end'
+
 """Native purchases for episode-end tests; this order is test data, not UI advice."""
 async def select_skill_node(page,skill):
     node=page.locator(f'[data-select="{skill}"]')

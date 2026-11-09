@@ -7,7 +7,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import standalone_stage, continue_episode, spend_episode_points
+from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points
 
 async def main(args):
     out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
@@ -157,6 +157,7 @@ async def main(args):
                 if await page.evaluate('__game.S.player.fl||0'):await press('x','#btnCarry')
                 await page.wait_for_function('!__game.S.player.fl&&!__game.actionBusy()',timeout=6000);await wait_step(9)
                 await route(1416,744)
+                await finish_episode_scene(page, mobile)
                 await page.locator('#end[data-win="1"]').wait_for(state='visible',timeout=6000)
                 assert '첫 에피소드 완료' in await page.locator('#endSkills').inner_text() and '1P' in await page.locator('#endSkills').inner_text()
                 s=await snapshot('clear');assert s['hp']==3 and s['stats']['detected']==0 and s['uniformPass'],s

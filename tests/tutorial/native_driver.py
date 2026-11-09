@@ -2,6 +2,7 @@
 No scene, actor, health, inventory, skill, objective or alert overrides.
 """
 import asyncio,json,math
+from episode_training import finish_episode_scene
 from pathlib import Path
 class NativeDriver:
  def __init__(self,page,mobile,out,label):self.q=page;self.mobile=mobile;self.out=Path(out);self.out.mkdir(parents=True,exist_ok=True);self.label=label;self.cdp=None
@@ -105,5 +106,6 @@ class NativeDriver:
   else:await self.q.mouse.click(at['x'],at['y'])
   await self.press('v','#btnTool',1.15 if lethal else .08);await self.q.wait_for_timeout(700)
  async def finish(self):
+  await finish_episode_scene(self.q,self.mobile)
   await self.q.wait_for_function('!document.querySelector("#end").hidden&&document.querySelector("#end").dataset.win==="1"',timeout=7000);s=await self.snap('clear');assert s['over']and s['p']['hp']>0 and all(s['items']),s
   trail=await self.q.evaluate('__game.S.trail');(self.out/f'{self.label}-trail.json').write_text(json.dumps(trail));return s

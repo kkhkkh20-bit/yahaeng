@@ -402,7 +402,7 @@ function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker(
   clearResultTransition();S.resultFresh=win?!stageCleared(STAGE):false;S.over = true;S.overWin=win;S.player.moving=false;S.player.vx=S.player.vy=0;if(!win&&S.player.hp<=0)beginDefeatFeedback(S.player);
   if (!win && (STAGE.tutorial||introductoryContract(STAGE)) && cpReady()) { play('lose', 0.5); toast(((STAGE.firstSteps||STAGE.skillPractice||STAGE.securityLesson||introductoryContract(STAGE))?reason:'들켰다')+' · 체크포인트에서 다시',1.6); const run = S; setTimeout(() => { if (S === run && S.over) loadCheckpoint(); }, 1300); return; }  // 연습: 죽어도 그 자리에서 다시
   play(win ? 'win' : 'lose', 0.7); resetDialog();
-  const run = S; setTimeout(() => { if (S === run) showEnd(win, reason); }, win ? 500 : 800);
+  const run = S; setTimeout(() => { if (S === run) {showEnd(win, reason);if(win)playEpisodeCoda();} }, win ? 500 : 800);
 }
 // 임무 경로 지도 (Hitman식): 지나간 길·처치·발각·시체 발견 위치
 function drawEndMap() {
