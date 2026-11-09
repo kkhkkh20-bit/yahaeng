@@ -1857,7 +1857,7 @@ campaignStage('tB').dressing.push(
 );
 // A playable art study, deliberately outside the linear campaign and its saves.
 if(window.__AGENT_CITY_STUDY__)STAGES.push({
- id:'agentCity',layoutRevision:'city-design-v237',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
+ id:'agentCity',layoutRevision:'radial-sign-v239',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
  mission:'이도현 처치 · 거래 기록 회수 · 서쪽 골목으로 탈출',
  brief:'백송상사 2층에서 이도현과 거래 기록을 찾는다. 경비 옷으로 건물 안을 통과하거나, 옥상 연결교로 돌아 들어갈 수 있다. 서쪽 골목으로 빠져나오면 끝이다.',
  endText:'거래 기록을 챙겼다. 서쪽 골목으로 무사히 빠져나왔다.',
@@ -1867,7 +1867,7 @@ if(window.__AGENT_CITY_STUDY__)STAGES.push({
  freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
  studyStyles:['stone','brick','office','green','brick','green','stone','office'],
  referenceBuildings:[
-  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{lines:['백송','상사'],x:1,fl:3,w:2,h:2}},
+  {box:[8,9,16,17],h:5,front:'frontBrick',windows:[0,1,1,1,1],roof:'roofMetal',ad:{brand:true,lines:['백송상사'],sub:'수출입 · 물류',x:1,fl:1,w:6,h:1}},
   {box:[23,8,31,17],h:5,front:'frontGlass',windows:[1,1,1,1],roof:'roofStone',ad:{lines:['밤샘식당'],x:1,fl:2,w:4,h:1}},
   {box:[0,4,6,16],h:7,front:'frontSilver',windows:[1,1,1],roof:'roofStone',ad:{lines:['청솔약국'],sub:'조제 · 상담',x:1,fl:6,w:5,h:3}},
   {box:[33,8,40,16],h:6,front:'frontWood',windows:[1,[0,1,0],[0,1,0],0],roof:'roofMetal',ad:{lines:['음','악','실'],x:1,fl:4,w:1,h:2}},
@@ -3218,12 +3218,19 @@ function studyCellImage(b,tx,fl,w){
 }
 function drawStudySign(b,a){
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
- const f=studyArt.frames.signBoard.rect,e=6,edge=9;
- ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#17252c';ctx.fillRect(x,y,w,h);
+ const f=studyArt.frames.signBoard.rect,e=6,edge=a.brand?5:9;
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle=a.brand?'#233a35':'#17252c';ctx.fillRect(x,y,w,h);
  // The purchased empty board supplies its original corners and steel rim.
  // No lettering or pictures from the Japanese advertisements are imported.
  const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
  for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
+ if(a.brand){
+  // A shop fascia spans the actual entrance, with a single horizontal name.
+  ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillStyle='#efe7d3';ctx.font=uiFont(25,700);
+  ctx.fillText(a.lines[0],x+19,y+h/2+1,w-130);
+  ctx.textAlign='right';ctx.fillStyle='#acbdb0';ctx.font=uiFont(12,500);ctx.fillText(a.sub,x+w-18,y+h/2+2,94);
+  ctx.restore();return;
+ }
  const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
  const step=size*1.25,total=step*lines.length+sub;
  ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -9700,6 +9707,8 @@ const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { at
 const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
 const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
+// Empty mobile equipment leaves this slot useful without changing the loadout.
+function padToolWhistle(){return !!(S&&!S.player.captive&&(input.padWhistle||isTouch&&!input.aiming&&toolCount(input.tool)<=0));}
 function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
@@ -17351,6 +17360,8 @@ function updateHUD(force) {
     db.hidden=!dress||ea.k==='dress';db.disabled=!!changing;gb.hidden=!!dress||!(ga.k!=='none'||P.captive||ga.near);
     if(dress){padButton(db,'dressH',dress,'옷 갈아입기');db.classList.toggle('ready',!changing);}
   }
+  $('btnGrab').dataset.radialCandidate=String(!$('btnGrab').hidden);$('btnDress').dataset.radialCandidate=String(!$('btnDress').hidden);
+  $('btnGrab').dataset.radialHint=String(ga.k==='none'&&!!ga.near);syncRadialSatellite();
   document.body.classList.toggle('actionfocus',playerActionFocus(ka,ga));
   keyMap(ka, ea, ga);
   // Measure after the header contents settle, even while the world is paused.
@@ -17425,6 +17436,13 @@ function syncQuickItems(){
   });
   bar.hidden=!visible;document.body.classList.toggle('has-quick-items',visible>0);
 }
+// One adaptive satellite owns the third position; aiming never loses its button.
+function syncRadialSatellite(){
+ if(!isTouch||!S)return;
+ const P=S.player,g=$('btnGrab'),d=$('btnDress'),keepTool=!!input.aiming||!!P.captive||!!(input.padWhistle&&!P.ledge&&!P.wire);
+ const grab=!keepTool&&g.dataset.radialCandidate==='true'&&!(g.dataset.radialHint==='true'&&toolCount(input.tool)>0),dress=!keepTool&&d.dataset.radialCandidate==='true';
+ g.hidden=!grab;d.hidden=!dress;hud.tool.hidden=grab||dress;
+}
 // 도구 선택 표시 (아래 오른쪽 작은 칸 + 도구 버튼 글자)
 function syncTools() {
   if (!S) return; const P = S.player;
@@ -17433,14 +17451,15 @@ function syncTools() {
     const t = b.dataset.t;b.hidden=!availableTools().includes(t); b.classList.toggle('on', t === input.tool&&!input.padWhistle);b.setAttribute('aria-pressed',String(t===input.tool&&!input.padWhistle)); b.classList.toggle('empty', toolCount(t) <= 0);
     setText(b.querySelector('span'), 'tc_' + t, t==='radio'&&!P.hasRadio?'미확보':t==='hack'?'':String(toolCount(t)));
   });
-  { const art=P.captive?'grab':input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;const html=hudArt(art)+(P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : input.padWhistle ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`); if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
-  hud.tool.setAttribute('aria-label',P.captive?'심문':input.padWhistle?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
-  if(!input.padWhistle&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
-  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=input.padWhistle?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
+  const whistling=padToolWhistle();
+  { const art=P.captive?'grab':whistling?'whistle':input.tool==='kunai'?'dart':input.tool;const html=hudArt(art)+(P.captive ? `<b>${canInterrogate() ? '심문' : '—'}</b>` : whistling ? `<b>휘파람</b><small>${S.whistleT > 0 ? '잠시 뒤' : '부르기'}</small>` : `<b>${TOOL_NAME[input.tool]} ${['radio','hack'].includes(input.tool)?'':toolCount(input.tool)}</b>${toolCount(input.tool)<=0?'<small>장비에서 선택</small>':toolDetail(input.tool)?'<small>'+toolDetail(input.tool)+'</small>':''}`); if (hudCache.toolH !== html) { hudCache.toolH = html; hud.tool.innerHTML = html; } }
+  hud.tool.setAttribute('aria-label',P.captive?'심문':whistling?'휘파람으로 유인':toolCount(input.tool)<=0?TOOL_NAME[input.tool]+' 없음 · 장비에서 다른 도구 선택':input.tool==='kunai'?'다트: 짧게 눌렀다 떼면 기절, 1초 이상 눌렀다 떼면 처치':TOOL_NAME[input.tool]+' · '+toolDetail(input.tool));
+  if(!whistling&&['kunai','blade'].includes(input.tool))hud.tool.setAttribute('aria-label',hud.tool.getAttribute('aria-label')+' · '+toolDetail(input.tool));
+  hud.tool.classList.toggle('aiming', !!input.aiming);hud.tool.dataset.art=whistling?'whistle':input.tool==='kunai'?'dart':input.tool;$('btnWhistle').setAttribute('aria-pressed',String(!!input.padWhistle));
   hud.tool.hidden=!P.captive&&!input.padWhistle&&!input.aiming&&toolCount(input.tool)<=0&&(isTouch||!!(STAGE.starterContract||STAGE.apprenticeContract));
-  const ready=deviceReady(input.tool)&&!actionBusy(P)&&(P.captive?canInterrogate():input.padWhistle?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
+  const ready=(whistling||deviceReady(input.tool))&&!actionBusy(P)&&(P.captive?canInterrogate():whistling?!(S.whistleT>0)&&!P.under&&!P.vent&&!P.wire:canAim()&&toolCount(input.tool)>0&&(!['kunai','blade'].includes(input.tool)||!!kunaiTarget())&&(input.tool!=='hack'||!!hackTarget()));
   hud.tool.classList.toggle('ready',ready);hud.tool.setAttribute('aria-disabled',String(!ready));
-  syncQuickItems();
+  syncQuickItems();syncRadialSatellite();
 }
 
 function endGame(win, reason) { closeKeypad();clearPlayerInput();closeEnvPicker();
@@ -18467,7 +18486,7 @@ function bindToolPointer(b,quick=false){
   b.addEventListener('pointerdown',e=>{
     e.preventDefault();e.stopPropagation();if(e.button!==0||activeToolPress||input.aiming)return;
     closeHudInspection();initAudio();
-    if(!quick&&input.padWhistle){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
+    if(!quick&&padToolWhistle()){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
     const tool=quick?b.dataset.quickTool:input.tool;
     if(quick&&!quickItemReady(tool))return;
     const previousTool=input.tool,previousWhistle=input.padWhistle;

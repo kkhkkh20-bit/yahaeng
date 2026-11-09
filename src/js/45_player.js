@@ -40,6 +40,8 @@ const KEYSET = { arrow: { atk: 'Z', env: 'X', grab: 'C', tool: 'V' }, wasd: { at
 const KK = k => KEYSET[input.kset || 'arrow'][k];
 const TOOLS = ['kunai','stone','coin','blade','smoke','radio','hack'], TOOL_NAME = {stone:'빈 캔',coin:'담배',kunai:'다트',blade:'쿠나이',smoke:'연막탄',radio:'무전기',hack:'해킹기'};
 const toolCount=t=>{const P=S.player;return t==='stone'?P.stones:t==='coin'?P.coins:t==='blade'?P.blades||0:t==='smoke'?P.smokes||0:t==='radio'?(P.hasRadio?P.radioCharges||0:1):t==='hack'?(P.hackDevice?1:0):P.kunai;};
+// Empty mobile equipment leaves this slot useful without changing the loadout.
+function padToolWhistle(){return !!(S&&!S.player.captive&&(input.padWhistle||isTouch&&!input.aiming&&toolCount(input.tool)<=0));}
 function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용

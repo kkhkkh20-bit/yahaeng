@@ -202,7 +202,7 @@ function bindToolPointer(b,quick=false){
   b.addEventListener('pointerdown',e=>{
     e.preventDefault();e.stopPropagation();if(e.button!==0||activeToolPress||input.aiming)return;
     closeHudInspection();initAudio();
-    if(!quick&&input.padWhistle){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
+    if(!quick&&padToolWhistle()){whistle();b.classList.add('down');setTimeout(()=>b.classList.remove('down'),140);return;}
     const tool=quick?b.dataset.quickTool:input.tool;
     if(quick&&!quickItemReady(tool))return;
     const previousTool=input.tool,previousWhistle=input.padWhistle;

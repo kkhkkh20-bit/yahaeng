@@ -1,0 +1,3374 @@
+[
+  {
+    "viewport": [
+      320,
+      480
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 228,
+      "y": 320,
+      "w": 80,
+      "h": 80,
+      "right": 308,
+      "bottom": 400
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 150,
+      "y": 336,
+      "w": 48,
+      "h": 48,
+      "right": 198,
+      "bottom": 384
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 177.546875,
+      "y": 269.546875,
+      "w": 48,
+      "h": 48,
+      "right": 225.546875,
+      "bottom": 317.546875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 12,
+      "y": 412,
+      "w": 44,
+      "h": 52,
+      "right": 56,
+      "bottom": 464
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 64,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 464
+      },
+      {
+        "id": "quickCoin",
+        "x": 114,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 464
+      },
+      {
+        "id": "quickSmoke",
+        "x": 164,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 208,
+        "bottom": 464
+      },
+      {
+        "id": "quickRadio",
+        "x": 214,
+        "y": 412,
+        "w": 44,
+        "h": 52,
+        "right": 258,
+        "bottom": 464
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 320,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 400
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 336,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 384
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 269.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 317.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 242,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 290
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 464
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 464
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 464
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 464
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 464
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 320,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 400
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 336,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 384
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 269.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 317.546875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 464
+          },
+          {
+            "id": "btnGrab",
+            "x": 244,
+            "y": 242,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 290
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 464
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 464
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 464
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 464
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 320,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 400
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 336,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 384
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 269.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 317.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 242,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 290
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 464
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 464
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 464
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 464
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 464
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 320,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 400
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 336,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 384
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 269.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 317.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 242,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 290
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 464
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 464
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 464
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 464
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 464
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 320,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 400
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 336,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 384
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 269.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 317.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 242,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 290
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 464
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 464
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 464
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 464
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 412,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 464
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  },
+  {
+    "viewport": [
+      320,
+      568
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 228,
+      "y": 408,
+      "w": 80,
+      "h": 80,
+      "right": 308,
+      "bottom": 488
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 150,
+      "y": 424,
+      "w": 48,
+      "h": 48,
+      "right": 198,
+      "bottom": 472
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 177.546875,
+      "y": 357.546875,
+      "w": 48,
+      "h": 48,
+      "right": 225.546875,
+      "bottom": 405.546875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 12,
+      "y": 500,
+      "w": 44,
+      "h": 52,
+      "right": 56,
+      "bottom": 552
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 64,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 108,
+        "bottom": 552
+      },
+      {
+        "id": "quickCoin",
+        "x": 114,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 158,
+        "bottom": 552
+      },
+      {
+        "id": "quickSmoke",
+        "x": 164,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 208,
+        "bottom": 552
+      },
+      {
+        "id": "quickRadio",
+        "x": 214,
+        "y": 500,
+        "w": 44,
+        "h": 52,
+        "right": 258,
+        "bottom": 552
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 408,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 488
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 424,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 472
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 357.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 405.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 330,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 378
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 552
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 552
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 552
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 552
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 552
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 408,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 488
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 424,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 472
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 357.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 405.546875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 552
+          },
+          {
+            "id": "btnGrab",
+            "x": 244,
+            "y": 330,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 378
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 552
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 552
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 552
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 552
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 408,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 488
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 424,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 472
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 357.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 405.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 330,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 378
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 552
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 552
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 552
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 552
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 552
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 408,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 488
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 424,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 472
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 357.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 405.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 330,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 378
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 552
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 552
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 552
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 552
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 552
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 228,
+            "y": 408,
+            "w": 80,
+            "h": 80,
+            "right": 308,
+            "bottom": 488
+          },
+          {
+            "id": "btnCarry",
+            "x": 150,
+            "y": 424,
+            "w": 48,
+            "h": 48,
+            "right": 198,
+            "bottom": 472
+          },
+          {
+            "id": "btnCrouch",
+            "x": 177.546875,
+            "y": 357.546875,
+            "w": 48,
+            "h": 48,
+            "right": 225.546875,
+            "bottom": 405.546875
+          },
+          {
+            "id": "btnTool",
+            "x": 244,
+            "y": 330,
+            "w": 48,
+            "h": 48,
+            "right": 292,
+            "bottom": 378
+          },
+          {
+            "id": "btnToolNext",
+            "x": 12,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 56,
+            "bottom": 552
+          },
+          {
+            "id": "quickStone",
+            "x": 64,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 108,
+            "bottom": 552
+          },
+          {
+            "id": "quickCoin",
+            "x": 114,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 158,
+            "bottom": 552
+          },
+          {
+            "id": "quickSmoke",
+            "x": 164,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 208,
+            "bottom": 552
+          },
+          {
+            "id": "quickRadio",
+            "x": 214,
+            "y": 500,
+            "w": 44,
+            "h": 52,
+            "right": 258,
+            "bottom": 552
+          }
+        ],
+        "radii": [
+          94,
+          93.97891063707459,
+          94
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  },
+  {
+    "viewport": [
+      390,
+      640
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 290,
+      "y": 470,
+      "w": 84,
+      "h": 84,
+      "right": 374,
+      "bottom": 554
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 198,
+      "y": 484,
+      "w": 56,
+      "h": 56,
+      "right": 254,
+      "bottom": 540
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 229.046875,
+      "y": 409.046875,
+      "w": 56,
+      "h": 56,
+      "right": 285.046875,
+      "bottom": 465.046875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 566,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 618
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 618
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 618
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 618
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 566,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 618
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 470,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 554
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 484,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 540
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 409.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 465.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 378,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 434
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 618
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 618
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 618
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 618
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 618
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 470,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 554
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 484,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 540
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 409.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 465.046875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 618
+          },
+          {
+            "id": "btnGrab",
+            "x": 304,
+            "y": 378,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 434
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 618
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 618
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 618
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 618
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 470,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 554
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 484,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 540
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 409.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 465.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 378,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 434
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 618
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 618
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 618
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 618
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 618
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 470,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 554
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 484,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 540
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 409.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 465.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 378,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 434
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 618
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 618
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 618
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 618
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 618
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 470,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 554
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 484,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 540
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 409.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 465.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 378,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 434
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 618
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 618
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 618
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 618
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 566,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 618
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  },
+  {
+    "viewport": [
+      390,
+      844
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 290,
+      "y": 674,
+      "w": 84,
+      "h": 84,
+      "right": 374,
+      "bottom": 758
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 198,
+      "y": 688,
+      "w": 56,
+      "h": 56,
+      "right": 254,
+      "bottom": 744
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 229.046875,
+      "y": 613.046875,
+      "w": 56,
+      "h": 56,
+      "right": 285.046875,
+      "bottom": 669.046875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 770,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 822
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 822
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 822
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 822
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 770,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 822
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 674,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 758
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 688,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 744
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 613.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 669.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 582,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 638
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 822
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 822
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 822
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 822
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 822
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 674,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 758
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 688,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 744
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 613.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 669.046875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 822
+          },
+          {
+            "id": "btnGrab",
+            "x": 304,
+            "y": 582,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 638
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 822
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 822
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 822
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 822
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 674,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 758
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 688,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 744
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 613.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 669.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 582,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 638
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 822
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 822
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 822
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 822
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 822
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 674,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 758
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 688,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 744
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 613.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 669.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 582,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 638
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 822
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 822
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 822
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 822
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 822
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 290,
+            "y": 674,
+            "w": 84,
+            "h": 84,
+            "right": 374,
+            "bottom": 758
+          },
+          {
+            "id": "btnCarry",
+            "x": 198,
+            "y": 688,
+            "w": 56,
+            "h": 56,
+            "right": 254,
+            "bottom": 744
+          },
+          {
+            "id": "btnCrouch",
+            "x": 229.046875,
+            "y": 613.046875,
+            "w": 56,
+            "h": 56,
+            "right": 285.046875,
+            "bottom": 669.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 304,
+            "y": 582,
+            "w": 56,
+            "h": 56,
+            "right": 360,
+            "bottom": 638
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 822
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 822
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 822
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 822
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 770,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 822
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  },
+  {
+    "viewport": [
+      568,
+      320
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 468,
+      "y": 224,
+      "w": 84,
+      "h": 84,
+      "right": 552,
+      "bottom": 308
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 376,
+      "y": 238,
+      "w": 56,
+      "h": 56,
+      "right": 432,
+      "bottom": 294
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 407.046875,
+      "y": 163.046875,
+      "w": 56,
+      "h": 56,
+      "right": 463.046875,
+      "bottom": 219.046875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 256,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 308
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 308
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 308
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 308
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 256,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 308
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 468,
+            "y": 224,
+            "w": 84,
+            "h": 84,
+            "right": 552,
+            "bottom": 308
+          },
+          {
+            "id": "btnCarry",
+            "x": 376,
+            "y": 238,
+            "w": 56,
+            "h": 56,
+            "right": 432,
+            "bottom": 294
+          },
+          {
+            "id": "btnCrouch",
+            "x": 407.046875,
+            "y": 163.046875,
+            "w": 56,
+            "h": 56,
+            "right": 463.046875,
+            "bottom": 219.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 482,
+            "y": 132,
+            "w": 56,
+            "h": 56,
+            "right": 538,
+            "bottom": 188
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 308
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 308
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 308
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 308
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 308
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 468,
+            "y": 224,
+            "w": 84,
+            "h": 84,
+            "right": 552,
+            "bottom": 308
+          },
+          {
+            "id": "btnCarry",
+            "x": 376,
+            "y": 238,
+            "w": 56,
+            "h": 56,
+            "right": 432,
+            "bottom": 294
+          },
+          {
+            "id": "btnCrouch",
+            "x": 407.046875,
+            "y": 163.046875,
+            "w": 56,
+            "h": 56,
+            "right": 463.046875,
+            "bottom": 219.046875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 308
+          },
+          {
+            "id": "btnGrab",
+            "x": 482,
+            "y": 132,
+            "w": 56,
+            "h": 56,
+            "right": 538,
+            "bottom": 188
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 308
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 308
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 308
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 308
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 468,
+            "y": 224,
+            "w": 84,
+            "h": 84,
+            "right": 552,
+            "bottom": 308
+          },
+          {
+            "id": "btnCarry",
+            "x": 376,
+            "y": 238,
+            "w": 56,
+            "h": 56,
+            "right": 432,
+            "bottom": 294
+          },
+          {
+            "id": "btnCrouch",
+            "x": 407.046875,
+            "y": 163.046875,
+            "w": 56,
+            "h": 56,
+            "right": 463.046875,
+            "bottom": 219.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 482,
+            "y": 132,
+            "w": 56,
+            "h": 56,
+            "right": 538,
+            "bottom": 188
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 308
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 308
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 308
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 308
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 308
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 468,
+            "y": 224,
+            "w": 84,
+            "h": 84,
+            "right": 552,
+            "bottom": 308
+          },
+          {
+            "id": "btnCarry",
+            "x": 376,
+            "y": 238,
+            "w": 56,
+            "h": 56,
+            "right": 432,
+            "bottom": 294
+          },
+          {
+            "id": "btnCrouch",
+            "x": 407.046875,
+            "y": 163.046875,
+            "w": 56,
+            "h": 56,
+            "right": 463.046875,
+            "bottom": 219.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 482,
+            "y": 132,
+            "w": 56,
+            "h": 56,
+            "right": 538,
+            "bottom": 188
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 308
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 308
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 308
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 308
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 308
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 468,
+            "y": 224,
+            "w": 84,
+            "h": 84,
+            "right": 552,
+            "bottom": 308
+          },
+          {
+            "id": "btnCarry",
+            "x": 376,
+            "y": 238,
+            "w": 56,
+            "h": 56,
+            "right": 432,
+            "bottom": 294
+          },
+          {
+            "id": "btnCrouch",
+            "x": 407.046875,
+            "y": 163.046875,
+            "w": 56,
+            "h": 56,
+            "right": 463.046875,
+            "bottom": 219.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 482,
+            "y": 132,
+            "w": 56,
+            "h": 56,
+            "right": 538,
+            "bottom": 188
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 308
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 308
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 308
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 308
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 256,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 308
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  },
+  {
+    "viewport": [
+      844,
+      390
+    ],
+    "attack": {
+      "id": "btnAct",
+      "x": 744,
+      "y": 294,
+      "w": 84,
+      "h": 84,
+      "right": 828,
+      "bottom": 378
+    },
+    "action": {
+      "id": "btnCarry",
+      "x": 652,
+      "y": 308,
+      "w": 56,
+      "h": 56,
+      "right": 708,
+      "bottom": 364
+    },
+    "crouch": {
+      "id": "btnCrouch",
+      "x": 683.046875,
+      "y": 233.046875,
+      "w": 56,
+      "h": 56,
+      "right": 739.046875,
+      "bottom": 289.046875
+    },
+    "gear": {
+      "id": "btnToolNext",
+      "x": 16,
+      "y": 326,
+      "w": 44,
+      "h": 52,
+      "right": 60,
+      "bottom": 378
+    },
+    "items": [
+      {
+        "id": "quickStone",
+        "x": 68,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 112,
+        "bottom": 378
+      },
+      {
+        "id": "quickCoin",
+        "x": 118,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 162,
+        "bottom": 378
+      },
+      {
+        "id": "quickSmoke",
+        "x": 168,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 212,
+        "bottom": 378
+      },
+      {
+        "id": "quickRadio",
+        "x": 218,
+        "y": 326,
+        "w": 44,
+        "h": 52,
+        "right": 262,
+        "bottom": 378
+      }
+    ],
+    "cases": [
+      {
+        "label": "all consumables",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 744,
+            "y": 294,
+            "w": 84,
+            "h": 84,
+            "right": 828,
+            "bottom": 378
+          },
+          {
+            "id": "btnCarry",
+            "x": 652,
+            "y": 308,
+            "w": 56,
+            "h": 56,
+            "right": 708,
+            "bottom": 364
+          },
+          {
+            "id": "btnCrouch",
+            "x": 683.046875,
+            "y": 233.046875,
+            "w": 56,
+            "h": 56,
+            "right": 739.046875,
+            "bottom": 289.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 758,
+            "y": 202,
+            "w": 56,
+            "h": 56,
+            "right": 814,
+            "bottom": 258
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 378
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 378
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 378
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 378
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 378
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "empty tool",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 744,
+            "y": 294,
+            "w": 84,
+            "h": 84,
+            "right": 828,
+            "bottom": 378
+          },
+          {
+            "id": "btnCarry",
+            "x": 652,
+            "y": 308,
+            "w": 56,
+            "h": 56,
+            "right": 708,
+            "bottom": 364
+          },
+          {
+            "id": "btnCrouch",
+            "x": 683.046875,
+            "y": 233.046875,
+            "w": 56,
+            "h": 56,
+            "right": 739.046875,
+            "bottom": 289.046875
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 378
+          },
+          {
+            "id": "btnGrab",
+            "x": 758,
+            "y": 202,
+            "w": 56,
+            "h": 56,
+            "right": 814,
+            "bottom": 258
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 378
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 378
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 378
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 378
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "loaded weapon",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 744,
+            "y": 294,
+            "w": 84,
+            "h": 84,
+            "right": 828,
+            "bottom": 378
+          },
+          {
+            "id": "btnCarry",
+            "x": 652,
+            "y": 308,
+            "w": 56,
+            "h": 56,
+            "right": 708,
+            "bottom": 364
+          },
+          {
+            "id": "btnCrouch",
+            "x": 683.046875,
+            "y": 233.046875,
+            "w": 56,
+            "h": 56,
+            "right": 739.046875,
+            "bottom": 289.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 758,
+            "y": 202,
+            "w": 56,
+            "h": 56,
+            "right": 814,
+            "bottom": 258
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 378
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 378
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 378
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 378
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 378
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "body and clothing",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 744,
+            "y": 294,
+            "w": 84,
+            "h": 84,
+            "right": 828,
+            "bottom": 378
+          },
+          {
+            "id": "btnCarry",
+            "x": 652,
+            "y": 308,
+            "w": 56,
+            "h": 56,
+            "right": 708,
+            "bottom": 364
+          },
+          {
+            "id": "btnCrouch",
+            "x": 683.046875,
+            "y": 233.046875,
+            "w": 56,
+            "h": 56,
+            "right": 739.046875,
+            "bottom": 289.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 758,
+            "y": 202,
+            "w": 56,
+            "h": 56,
+            "right": 814,
+            "bottom": 258
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 378
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 378
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 378
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 378
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 378
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      },
+      {
+        "label": "whistle and context",
+        "controls": [
+          {
+            "id": "btnAct",
+            "x": 744,
+            "y": 294,
+            "w": 84,
+            "h": 84,
+            "right": 828,
+            "bottom": 378
+          },
+          {
+            "id": "btnCarry",
+            "x": 652,
+            "y": 308,
+            "w": 56,
+            "h": 56,
+            "right": 708,
+            "bottom": 364
+          },
+          {
+            "id": "btnCrouch",
+            "x": 683.046875,
+            "y": 233.046875,
+            "w": 56,
+            "h": 56,
+            "right": 739.046875,
+            "bottom": 289.046875
+          },
+          {
+            "id": "btnTool",
+            "x": 758,
+            "y": 202,
+            "w": 56,
+            "h": 56,
+            "right": 814,
+            "bottom": 258
+          },
+          {
+            "id": "btnToolNext",
+            "x": 16,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 60,
+            "bottom": 378
+          },
+          {
+            "id": "quickStone",
+            "x": 68,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 112,
+            "bottom": 378
+          },
+          {
+            "id": "quickCoin",
+            "x": 118,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 162,
+            "bottom": 378
+          },
+          {
+            "id": "quickSmoke",
+            "x": 168,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 212,
+            "bottom": 378
+          },
+          {
+            "id": "quickRadio",
+            "x": 218,
+            "y": 326,
+            "w": 44,
+            "h": 52,
+            "right": 262,
+            "bottom": 378
+          }
+        ],
+        "radii": [
+          106,
+          105.9997259172459,
+          106
+        ],
+        "angles": [
+          0,
+          45,
+          90
+        ]
+      }
+    ]
+  }
+]
