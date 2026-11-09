@@ -486,7 +486,7 @@ const STAGES = [
   layoutVersion: 3, rebuiltSites: [0, 5], rivalBuilding: 7,
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,
-  fixedFurn:[{x:6,y:5,t:'desk'},{x:8,y:19,fl:1,t:'safe'}],keyPurposes:{green:'남서쪽 조직 숙소 2층 계약서 금고'},
+  fixedFurn:[{x:6,y:5,t:'desk'},{x:6,y:19,fl:1,t:'safe'}],keyPurposes:{green:'남서쪽 조직 숙소 2층 계약서 금고'},
   notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 남서쪽 숙소 2층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 남서쪽 숙소 2층 계약서 금고를 연다' },
           { b:1,fl:0,at:'L',title:'창고 정산 쪽지',lines:['사무동 출입번호 7316.','숙소 2층 계약서 금고의 초록 카드키는 사무동 2층 보안실에 있다.'],gives:'code',learn:'창고 정산 쪽지: 사무동 출입번호 7316 · 초록 카드키는 2층 보안실' }],
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 2, fl: 1, at: 'S' }, { key: 'supplies', b: 7, fl: 0, at: 'R' }],
@@ -715,6 +715,10 @@ const STAGES = [
   brief: '도시는 열려 있다. 보도는 행인의 길, 차도는 차의 길이다. 차를 세우고 운전자를 끌어내 몰 수 있다 — 사람들이 보면 수배가 붙는다. 수배 별이 붙으면 경찰이 쫓아온다. 시야에서 벗어나 버티면 별이 내려간다. 빨간 표시가 의뢰 장소다.',
   W: 84, H: 64, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 3,
   roadsX: [0, 20, 40, 60, 80], roadsY: [0, 20, 40, 60], traffic: 16,
+  // Older saves put a stairwell railing directly across these wardrobe doors.
+  // The current planner keeps the basic stair tile and reserves this floor.
+  roomPatches: [[8,6],[16,14],[36,26],[68,26]].map(([x,y])=>({fl:1,
+    bounds:[x,y,x+1,y+1],tiles:[[x,y+1,'w'],[x+1,y+1,'w']]})),
   build(m) {
     m.fill(0, 0, 83, 63, '.');
     const B = (bx, by) => [4 + bx * 20, 4 + by * 20];
@@ -1502,7 +1506,15 @@ const finaleBuild=campaignStage('m5').build;
 campaignStage('m5').build=m=>{finaleBuild(m);m.many('B',[[11,18]]);};
 // Leave real service space behind the ground-floor camera. The generated
 // locker previously filled that space; keep it against the office wall.
-campaignStage('m5').roomPatches=[{bounds:[12,2,27,10],furniture:[{t:'locker',from:[23,7],to:[13,9]}],tiles:[[23,7,'w']]}];
+campaignStage('m5').roomPatches=[{bounds:[12,2,27,10],furniture:[
+ {t:'locker',from:[23,7],to:[13,8]},
+ {t:'locker',from:[13,9],to:[13,8]} // Also migrate the previous checkpoint position.
+],tiles:[[23,7,'w'],[13,9,'w']]}];
+// Both wardrobe doors open into this bedroom. Keep the contract safe against
+// the left wall so it leaves both front tiles and the southern doorway clear.
+campaignStage('m4').roomPatches=(campaignStage('m4').roomPatches||[]).concat({fl:1,bounds:[2,18,11,23],
+ furniture:[{t:'safe',from:[8,19],to:[6,19]}],tiles:[[8,19,'v']]});
+campaignStage('m4').itemLayoutVersion=2; // Move only the uncollected contract with its safe in older saves.
 // The final job rewards the same assassination/stealth rules as earlier jobs.
 campaignStage('m5').stories=campaignStage('m5').stories.filter(s=>s.id!=='purge');
 delete campaignStage('m5').purgeBonus;
@@ -2511,6 +2523,9 @@ function stairWells(g, f) {
       for (const [sx, sy] of sides) {
         const c1 = [tx + sx, ty + sy], c2 = [tx + sx + d[0], ty + sy + d[1]], floorC = c => walk(c[0], c[1]) && g[c[1]][c[0]] !== 'Y' && !FURN.some(it => (it.fl || 0) === f && c[0] >= it.x && c[0] < it.x + it.w && c[1] >= it.y && c[1] < it.y + it.h);
         const tp = [tx + sx + 2 * d[0], ty + sy + 2 * d[1]];
+        // A cabinet's doors need the reserved floor in front. Stair openings
+        // must not turn that service space into an impassable low railing.
+        if ([c1,c2].some(([x,y])=>FURN.some(it=>(it.fl||0)===f&&FURN_HIDE[it.t]&&it.t!=='bed'&&y===it.y+it.h&&x>=it.x&&x<it.x+it.w))) continue;
         if (!floorC(c1) || !floorC(c2) || !floorC(tp)) continue;  // 내려가는 자리(구멍 바닥 쪽 끝 앞 칸)가 벽·가구면 이 방향은 쓰지 않는다 (구석 계단에서 내려가지 못하던 문제)
         const before = reach(), o1 = g[c1[1]][c1[0]], o2 = g[c2[1]][c2[0]]; g[c1[1]][c1[0]] = 'K'; g[c2[1]][c2[0]] = 'K';
         const after = reach(), lost = [...before].filter(k => !after.has(k) && k !== c1.join(',') && k !== c2.join(','));
@@ -2751,7 +2766,7 @@ const charOf = g => {
   const base = charBase(g);
   // An explicit civilian shape wins; role-specific outfits keep their own
   // workwear silhouette (for example the courier's helmet).
-  const female = g.body && ['fBob', 'fLong', 'fTail','jacket'].includes(g.body);
+  const female = g.body && ['fBob', 'fLong', 'fTail','jacket','femaleCoat','femaleBlazer'].includes(g.body);
   const job = PR && PR.style === 'modular' && g.outfit && PR.looks[g.outfit];
   const body = job ? female ? (g.outfit === 'waiter' ? 'femaleSuit' : 'femaleWorker') : job : g.body;
   return base + (body && PR && PR.bodies && PR.bodies[body] ? '@' + body : '');
@@ -3397,7 +3412,7 @@ function drawOfficeFurn(c,f,shadow){
 }
 function officeSurfacePoint(o){
  const f=o?.surface;if(!f||!officeReady())return null;
- const b=officeFurnBounds(f);if(!b)return null;
+ const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b)return null;
  // The reach point remains the existing furniture footprint. Only the visible
  // paper/receiver moves onto its purchased tabletop, using the same draw bounds.
  const u=o.surfaceU??.5;
@@ -3430,6 +3445,7 @@ function officeWallDecor(c,fl,x0,y0,x1,y1){
   const b=BLD[d.b];if(b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;
   officeBlit(c,d.art,d.x,d.y,d.w,d.h);
  }
+ drawPurchasedPropWallDetails(c,fl,x0,y0,x1,y1);
 }
 function drawOfficeLamp(l,c=ctx){
  if(!officeReady()||!l.fixture)return false;
@@ -3502,6 +3518,99 @@ function refreshOfficeArt(){
  const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;for(const k in lightCache)delete lightCache[k];officeArtDirty=false;}finally{setLayer(layer);}
 }
 
+// Owned Office Interior variants at one native pixel scale. This module dresses
+// existing furniture/wall cells only; it creates no objects, colliders or goals.
+const purchasedPropsArt=A.purchasedProps||null,purchasedPropsAtlas=new Image();
+let purchasedPropsDirty=false;
+purchasedPropsAtlas.onload=()=>{purchasedPropsDirty=true;};
+if(purchasedPropsArt?.src)purchasedPropsAtlas.src=purchasedPropsArt.src;
+function purchasedPropsReady(){return !window.__PURCHASED_PROPS_BASELINE__&&!!purchasedPropsArt&&purchasedPropsAtlas.complete&&purchasedPropsAtlas.naturalWidth>0;}
+function purchasedPropFrame(name){return purchasedPropsArt?.frames[name]?.rect;}
+function purchasedPropBlit(c,name,x,y,scale=1.5){
+ const r=purchasedPropFrame(name);if(!r||!purchasedPropsReady())return false;
+ c.imageSmoothingEnabled=false;c.drawImage(purchasedPropsAtlas,...r,Math.round(x),Math.round(y),r[2]*scale,r[3]*scale);return true;
+}
+function refreshPurchasedProps(){
+ if(!purchasedPropsDirty||!S||!mapC)return;
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;purchasedPropsDirty=false;}finally{setLayer(layer);}
+}
+function purchasedPropCargoBounds(tx,ty){
+ const key='cargoStable'+(((tx*7+ty*13)%3+3)%3),r=purchasedPropFrame(key);if(!r)return null;
+ return{key,x:tx*TILE,y:ty*TILE-3,w:r[2]*1.5,h:r[3]*1.5,visibleHeight:purchasedPropsArt.frames[key].visibleHeight*1.5};
+}
+function drawPurchasedPropCargo(c,tx,ty){
+ if(!purchasedPropsReady())return false;const b=purchasedPropCargoBounds(tx,ty);if(!b)return false;
+ c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-5,21,5,0,0,TAU);c.fill();purchasedPropBlit(c,b.key,b.x,b.y);c.restore();return true;
+}
+function purchasedPropFurnKey(f){
+ if(!purchasedPropsReady()||!officeReady())return null;
+ // Authored furniture has a specific narrative/composition role. Do not replace
+ // those, the physical hiding cabinets, or the root-owned freight assembly.
+ if(STAGE.officeArt?.furniture?.some(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0)&&a.t===f.t))return null;
+ const bi=bldAt(f.x,f.y);if(bi<0||BLD[bi]?.vacant)return null;
+ const style=officeStyle(bi,f.fl||0),seed=((f.seed??(f.x*31+f.y*17+(f.fl||0)*7))>>>0),v=seed%3;
+ if(f.t==='cab'&&f.h===1)return ['filesBlue','filesGold','filesRed'][v];
+ if((f.t==='shelf'||f.t==='shelfS')&&f.h===1){
+  if(f.skin==='freight'||style===OFFICE_STYLES.security)return null;
+  return ['bookcaseBlue','bookcaseWood','bookcaseRed'][v];
+ }
+ if(f.t==='plant'&&f.w===1&&f.h===1)return seed%2?'plantLean':'plantWide';
+ if(f.t==='board'&&f.h===1)return f.w>1&&seed%2?'noticeBoard':'graphBoard';
+ // A printer may be explicitly assigned to an existing service counter. Never
+ // put one on a food bar, loose floor, or a surface holding mission loot.
+ if(f.t==='counter'&&f.w>=2&&f.h===1&&STAGE.purchasedProps?.counterPrinters?.some(a=>a.x===f.x&&a.y===f.y&&(a.fl||0)===(f.fl||0))){
+  if((S.items||[]).some(a=>!a.got&&a.surface===f)||(S.props||[]).some(a=>!a.taken&&a.surface===f))return null;
+  return 'serviceCounter';
+ }
+ return null;
+}
+function purchasedPropFurnBounds(f){
+ const key=purchasedPropFurnKey(f);if(!key||key==='serviceCounter')return null;const r=purchasedPropFrame(key);if(!r)return null;
+ const count=['cab','shelf','shelfS'].includes(f.t)?Math.max(1,Math.floor(f.w)):1,w=r[2]*1.5,h=r[3]*1.5;
+ // All source pixels stay exactly 1.5x. Skip a variant that cannot fit instead
+ // of shrinking or anisotropically stretching the artwork into a small cell.
+ if(w>(count>1?TILE:f.w*TILE)||h>f.h*TILE+40)return null;
+ return{key,count,x:f.x*TILE+(TILE-w)/2,y:(f.y+f.h)*TILE-h-3,w,h};
+}
+function drawPurchasedPropFurn(c,f,shadow=false){
+ const key=purchasedPropFurnKey(f);if(!key)return false;
+ if(key==='serviceCounter'){
+  const b=officeFurnBounds(f);if(!b)return false;
+  c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+2,(f.y+f.h)*TILE-5,f.w*TILE*.4,6,0,0,TAU);c.fill();}
+  officeBlit(c,b.key,b.x,b.y,b.w,b.h);
+  const r=purchasedPropFrame('printerService'),x=(f.x+f.w/2)*TILE-r[2]*.75,y=b.y+b.h*.42-r[3]*1.5;
+  purchasedPropBlit(c,'printerService',x,y);c.restore();return true;
+ }
+ const b=purchasedPropFurnBounds(f);if(!b)return false;
+ c.save();if(shadow){c.fillStyle='#09121a33';c.beginPath();c.ellipse((f.x+f.w/2)*TILE+2,(f.y+f.h)*TILE-5,f.w*TILE*.4,6,0,0,TAU);c.fill();}
+ for(let i=0;i<b.count;i++)purchasedPropBlit(c,b.key,b.x+i*TILE,b.y);c.restore();return true;
+}
+function purchasedPropWallLayout(fl){
+ if(!purchasedPropsReady()||!officeReady())return[];
+ const old=officeDecorLayout(fl),out=[];
+ for(let bi=0;bi<BLD.length;bi++){
+  const b=BLD[bi];if(b.vacant)continue;
+  // One correctly wall-mounted extinguisher per existing workplace floor.
+  // Houses/estates retain their authored walls and belongings.
+  const style=officeStyle(bi,fl);if([OFFICE_STYLES.residence,OFFICE_STYLES.estate].includes(style))continue;
+  for(let tx=b.x0+1;tx<b.x1;tx++){
+   const ty=b.y0,x=tc(tx)-7.5,y=ty*TILE+16,w=15,h=27;
+   if(G[ty]?.[tx]!=='#'||['#','N','V'].includes(G[ty+1]?.[tx]||'V'))continue;
+   if(old.some(a=>a.b===bi&&a.x<x+w+5&&a.x+a.w>x-5&&a.y<y+h&&a.y+a.h>y))continue;
+   if((S.lamps||[]).some(l=>flOf(l)===fl&&[l.fixture,l.control].some(a=>a&&Math.abs(a.x-tc(tx))<25&&Math.abs(a.y-(ty*TILE+24))<55)))continue;
+   if((S.ladders||[]).some(l=>l.tx===tx&&Math.abs(l.ty-ty)<=2))continue;
+   if(FURN.some(f=>flOf(f)===fl&&f.y<=ty+1&&f.x<=tx&&f.x+f.w>tx))continue;
+   out.push({key:'extinguisher',x,y,w,h,bi,fl,tx,ty});break;
+  }
+ }
+ return out;
+}
+function drawPurchasedPropWallDetails(c,fl,x0,y0,x1,y1){
+ if(!purchasedPropsReady())return false;
+ for(const d of purchasedPropWallLayout(fl)){const b=BLD[d.bi];if(b.x1<x0||b.x0>x1||b.y1<y0||b.y0>y1)continue;purchasedPropBlit(c,d.key,d.x,d.y);}
+ return true;
+}
+
 // Functional fixtures use selected owned pixels; gameplay geometry stays authoritative.
 const purchasedArt=A.purchasedDetails||null,purchasedAtlas=new Image();let purchasedDirty=false;
 purchasedAtlas.onload=()=>{purchasedDirty=true;};if(purchasedArt)purchasedAtlas.src=purchasedArt.src;
@@ -3522,16 +3631,34 @@ function drawPurchasedStairs(c,tx,ty){
 function drawPurchasedLadder(c,x,y,h=42){
  if(!purchasedReady())return false;const r=purchasedFrame('ladder');c.save();c.beginPath();c.rect(x-15,y,30,h);c.clip();for(let yy=y;yy<y+h;yy+=r[3]*1.5)purchasedBlit(c,'ladder',x-r[2]*.75,yy);c.restore();return true;
 }
-function drawPurchasedBridge(p,x,y,w,h){
+function purchasedBridgeBounds(p){
+ const x=p.x0*TILE-(p.ew&&p.a?8:0),y=p.y0*TILE-(!p.ew&&p.a?8:0),w=(p.x1-p.x0+1)*TILE+(p.ew?((p.a?8:0)+(p.b?8:0)):0),h=(p.y1-p.y0+1)*TILE+(!p.ew?((p.a?8:0)+(p.b?8:0)):0);return{x,y,w,h};
+}
+function drawPurchasedBridge(p,x,y,w,h,part='all'){
  if(!purchasedReady())return false;
- ctx.save();ctx.translate(x+w/2,y+h/2);if(!p.ew)ctx.rotate(Math.PI/2);const length=p.ew?w:h,depth=p.ew?h:w;
- ctx.fillStyle='#080f1b55';ctx.fillRect(-length/2+5,-depth/2+10,length,depth);
- purchasedRepeat(ctx,'bridgeDeck',-length/2,-depth/2,length,depth);
- purchasedRepeat(ctx,'rail',-length/2,-depth/2-10,length,24);
- purchasedRepeat(ctx,'rail',-length/2,depth/2-14,length,24);ctx.restore();return true;
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ if(part!=='front'){
+  ctx.fillStyle='#080f1b55';ctx.fillRect(x+5,y+10,w,h);
+  // Rotate just the floor when the route runs north/south. A front-facing
+  // railing cannot be rotated sideways and still read as an upright rail.
+  if(p.ew)purchasedRepeat(ctx,'bridgeDeck',x,y,w,h);
+  else{ctx.save();ctx.translate(x,y+h);ctx.rotate(-Math.PI/2);purchasedRepeat(ctx,'bridgeDeck',0,0,h,w);ctx.restore();}
+  ctx.fillStyle='#0e1a2530';ctx.fillRect(x,y,w,h);
+  if(p.ew){purchasedRepeat(ctx,'rail',x,y-15,w,15);purchasedBlit(ctx,'bridgePost',x+w-4.5,y-15,4.5,15);}
+ }
+ if(part!=='back'){
+  if(p.ew){purchasedRepeat(ctx,'rail',x,y+h-15,w,15);purchasedBlit(ctx,'bridgePost',x+w-4.5,y+h-15,4.5,15);}
+  else{purchasedBlit(ctx,'bridgeSideRail',x-1,y,4.5,h);purchasedBlit(ctx,'bridgeSideRail',x+w-3.5,y,4.5,h);}
+ }
+ ctx.restore();return true;
 }
 function drawPurchasedCargo(c,tx,ty){
- if(!purchasedReady())return false;const r=purchasedFrame('parcel'),w=Math.min(42,r[2]*1.5),h=r[3]*w/r[2];c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-7,20,6,0,0,TAU);c.fill();purchasedBlit(c,'parcel',tc(tx)-w/2,(ty+1)*TILE-h-5,w,h);purchasedBlit(c,'parcel',tc(tx)-w/2-2,(ty+1)*TILE-h*1.85-5,w,h);c.restore();return true;
+ if(drawPurchasedPropCargo(c,tx,ty))return true;
+ if(!purchasedReady())return false;const r=purchasedFrame('parcel'),scale=Math.min(2,42/r[2]),w=r[2]*scale,h=r[3]*scale;
+ c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-5,w*.45,5,0,0,TAU);c.fill();
+ // The source already contains two grounded cartons supporting a third. Draw
+ // this arrangement once; duplicating the whole pile creates floating cartons.
+ purchasedBlit(c,'parcel',tc(tx)-w/2,(ty+1)*TILE-h-5,w,h);c.restore();return true;
 }
 function drawPurchasedFreight(c,f,shadow){
  if(!purchasedReady())return false;
@@ -3549,23 +3676,46 @@ function drawPurchasedDoor(d){
  ctx.save();ctx.transform(Math.cos(a),Math.sin(a),-Math.sin(a)*.22,Math.cos(a),-19,-6);ctx.drawImage(purchasedAtlas,...r,0,0,38,10);ctx.restore();
  if(d.locked&&doorVisualOpen(d)<.2&&d.keyLock){ctx.fillStyle='#b59d69';ctx.fillRect(-3,-2,6,4);}ctx.restore();return true;
 }
+function purchasedCabinetLeaves(h,open){
+ const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',spec=purchasedArt?.frames[key],leafW=(g.doorRight-g.doorLeft)/g.doors,H=g.doorBottom-g.doorTop,angle=clamp(open,0,1)*cabinetMaxAngle(h),projection=leafW*Math.cos(angle),depth=Math.sin(angle)*9;
+ return Array.from({length:g.doors},(_,i)=>{const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,rect=spec.leafRects[i],handleInset=i===1?3.75:5.25,u=1-handleInset/leafW;return{i,side,hinge,leafW,projection,depth,rect,key,handleInset,handle:{x:hinge+side*projection*u,y:g.doorTop+H*.78+depth*u}};});
+}
+function drawPurchasedCabinetLeaf(c,spec,leaf,H){
+ const r=spec.rect,[sx,sy,sw,sh]=leaf.rect,W=leaf.leafW,x=leaf.side===1?0:-W,native=1.5,edge=native,[bandY,bandH]=spec.handleBand;
+ const blit=(px,py,pw,ph,dx,dy,dw,dh)=>c.drawImage(purchasedAtlas,r[0]+sx+px,r[1]+sy+py,pw,ph,dx,dy,dw,dh);
+ // Expand only the flat panel. Its original corners and border thickness keep
+ // the same 1.5x pixels in both one-cell lockers and wide wardrobes.
+ for(const [py,ph,dy,dh]of [[0,1,0,edge],[2,1,edge,H-2*edge],[sh-1,1,H-edge,edge]]){
+  blit(0,py,1,ph,x,dy,edge,dh);
+  blit(2,py,1,ph,x+edge,dy,W-2*edge,dh);
+  blit(sw-1,py,1,ph,x+W-edge,dy,edge,dh);
+ }
+ // The complete knob and its adjacent flat pixels stay native-sized, anchored
+ // to the meeting edge. A wide leaf must not produce a giant door handle.
+ const knobX=leaf.i===1?1:4,knobW=5,knobDx=leaf.i===1?x+native:x+W-(sw-knobX)*native;
+ blit(knobX,bandY,knobW,bandH,knobDx,H*.78-bandH*native/2,knobW*native,bandH*native);
+}
 function drawPurchasedCabinet(h,part,c,open){
  if(!purchasedReady()||!officeReady())return false;
- const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',r=purchasedFrame(key),w=g.right-g.left,H=g.bottom-g.top;
- c.save();
+ const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',spec=purchasedArt.frames[key],r=spec.rect,w=g.right-g.left,H=g.bottom-g.top,doorH=g.doorBottom-g.doorTop;
+ c.save();c.imageSmoothingEnabled=false;
  if(part!=='front'){
   c.fillStyle='#08111c55';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
-  purchasedBlit(c,key,g.left,g.top,w,H);c.fillStyle='#0c1420';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
+  // Only the two leaves move. Header, posts and plinth remain fixed.
+  c.drawImage(purchasedAtlas,r[0],r[1],r[2],7,g.left,g.top,w,5);
+  c.drawImage(purchasedAtlas,r[0],r[1]+7,2,r[3]-10,g.left,g.top+5,3,H-13);
+  c.drawImage(purchasedAtlas,r[0]+r[2]-2,r[1]+7,2,r[3]-10,g.right-3,g.top+5,3,H-13);
+  c.fillStyle='#0c1420';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,doorH);
  }
  if(part!=='back'){
-  const count=g.locker?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
-  for(let i=0;i<count;i++){
-   const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft;
-   c.save();c.transform(side*projection/(r[2]/count),depth/(r[2]/count),0,(g.doorBottom-g.doorTop)/r[3],hinge,g.doorTop);
-   c.drawImage(purchasedAtlas,r[0]+(i===1?r[2]/2:0),r[1],r[2]/count,r[3],0,0,r[2]/count,r[3]);c.restore();
+  for(const leaf of purchasedCabinetLeaves(h,open)){
+   c.save();c.transform(leaf.projection/leaf.leafW,leaf.side*leaf.depth/leaf.leafW,0,1,leaf.hinge,g.doorTop);
+   // Keep each source leaf's orientation: the right leaf is hinged at its
+   // RIGHT edge, rather than mirroring its handle onto the outside frame.
+   drawPurchasedCabinetLeaf(c,spec,leaf,doorH);
+   c.restore();
   }
-  // The original bottom plinth is the front occluder throughout hiding.
-  c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-4,r[2],4,g.left,g.bottom-9,w,8);
+  c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-3,r[2],3,g.left,g.bottom-8,w,8);
  }
  c.restore();return true;
 }
@@ -5321,7 +5471,7 @@ function floorCanvas(bi, f) {
   return (S.floorC[k] = c);
 }
 // 주민 체형 자동 배정 (어른만): 남자 기본 3 · 여자 셋 6 · 덩치·노인·코트·백팩 각 1
-const BODY_MIX = [null, 'vest', 'jacket', 'fLong', 'fLong', 'fBob', 'fBob', 'fTail', 'jacket', 'big', 'old', 'coat', 'pack'];
+const BODY_MIX = [null, 'vest', 'jacket', 'fLong', 'femaleBlazer', 'fBob', 'femaleCoat', 'fTail', 'workApron', 'big', 'old', 'coat', 'pack', 'hoodieCasual'];
 const autoBody = i => BODY_MIX[((i * 7919 + 13) >>> 0) % BODY_MIX.length];
 function makeGuard(d, i) {
   let sx, sy;
@@ -6388,6 +6538,7 @@ function propSurfacePoint(o){
 }
 function drawPropFurn(x,it,shadow=false){
  if(it.t==='boxes'&&purchasedReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawPurchasedCargo(x,it.x+k,it.y+y);return true;}
+ if(drawPurchasedPropFurn(x,it,shadow))return true;
  if(drawOfficeFurn(x,it,shadow))return true;
  if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);
@@ -11554,6 +11705,43 @@ function updateWire(P, mx, my, mag, mode, dt) {
 }
 
 
+// Central door contact for existing cabinets. Call on the cabinet's active floor.
+// This helper reads geometry only; it never moves an actor or changes map layers.
+// An optional world adapter lets inspection tools use the exact production maps.
+function cabinetFrontStand(h,world={}){
+ if(!h?.furn||h.type==='bed')return null;
+ const tile=world.tile??TILE,foot=(world.footprint??hideFootprint)(h),solid=world.solid??solidFor(h.z||0),radius=14;
+ const stand={x:h.x,y:foot.y1+12},workStand={x:h.x,y:foot.y1-6};
+ // The two pixel overlap with this cabinet is the existing hand lean. Every
+ // other solid tile, including neighbouring furniture and walls, stays solid.
+ if(!cabinetFrontClear(stand,stand,foot,solid,tile,radius))return null;
+ // The visible feet are drawn 13 pixels below the actor pivot. Walk the pivot
+ // in to the handles while keeping that grounded six-pixel foot disc outside.
+ if(!cabinetFrontClear(stand,workStand,foot,solid,tile,10)||!cabinetFrontClear({x:stand.x,y:stand.y+13},{x:workStand.x,y:workStand.y+13},foot,solid,tile,6,false))return null;
+ const ty=Math.floor(foot.y1/tile),entries=[];
+ for(let tx=Math.floor(foot.x0/tile);tx<foot.x1/tile;tx++){
+  if(solid(tx,ty))continue;
+  const entry={tx,ty,x:(tx+.5)*tile,y:(ty+.5)*tile};
+  if(cabinetFrontClear(entry,stand,foot,solid,tile,radius))entries.push(entry);
+ }
+ entries.sort((a,b)=>Math.abs(a.x-stand.x)-Math.abs(b.x-stand.x)||a.tx-b.tx);
+ return entries.length?{...stand,workStand,entries,radius}:null;
+}
+function cabinetFrontClear(from,to,foot,solid,tile=48,radius=14,allowTarget=true){
+ const n=Math.max(1,Math.ceil(Math.hypot(to.x-from.x,to.y-from.y)/4));
+ for(let i=0;i<=n;i++){
+  const x=from.x+(to.x-from.x)*i/n,y=from.y+(to.y-from.y)*i/n;
+  for(let ty=Math.floor((y-radius)/tile);ty<=Math.floor((y+radius)/tile);ty++)for(let tx=Math.floor((x-radius)/tile);tx<=Math.floor((x+radius)/tile);tx++){
+   if(!solid(tx,ty))continue;
+   const x0=tx*tile,y0=ty*tile,x1=x0+tile,y1=y0+tile;
+   if(allowTarget&&x0>=foot.x0&&x1<=foot.x1&&y0>=foot.y0&&y1<=foot.y1)continue;
+   const dx=x-Math.max(x0,Math.min(x1,x)),dy=y-Math.max(y0,Math.min(y1,y));
+   if(dx*dx+dy*dy<radius*radius-.001)return false;
+  }
+ }
+ return true;
+}
+
 // 수거함은 뚜껑·입구·앞판을 같은 좌표로 그린다. 결과는 몸이 들어간 뒤 한 번만 적용한다.
 function hideSpace(h, bodies=0, self=false) {
   const occupied=['box','locker','wardrobe','cab','bed'].includes(h.type)?((S.player.hide===h?1:0)+(self&&S.player.hide!==h?1:0)):0;
@@ -11570,12 +11758,14 @@ function hideDistance(h,P=S.player) {
 }
 function cabinetGeometry(h) {
   const b=hideFootprint(h),locker=h.type==='locker',inset=locker?5:4;
-  const left=b.x0+inset,right=b.x1-inset,top=b.y0-(locker?58:63),bottom=b.y1-5;
-  return {left,right,top,bottom,doorLeft:left+3,doorRight:right-3,doorTop:top+5,doorBottom:bottom-8,locker};
+  const left=b.x0+inset,right=b.x1-inset,bottom=b.y1-5,top=bottom-(locker?60:62);
+  const key=locker?'lockerSteel':'wardrobeWood',doors=purchasedArt?.frames[key]?.leafCount||(locker?1:2);
+  return {left,right,top,bottom,doorLeft:left+3,doorRight:right-3,doorTop:top+5,doorBottom:bottom-8,locker,doors};
 }
+function cabinetMaxAngle(h){return hideFootprint(h).w>1?Math.PI/4:Math.PI*.42;}
 function cabinetAperture(h,open) {
-  const g=cabinetGeometry(h),w=g.doorRight-g.doorLeft,leaf=w/(g.locker?1:2),panel=leaf*Math.cos(clamp(open,0,1)*Math.PI*.48);
-  return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*(g.locker?1:2)),h:g.doorBottom-g.doorTop};
+  const g=cabinetGeometry(h),w=g.doorRight-g.doorLeft,leaf=w/g.doors,panel=leaf*Math.cos(clamp(open,0,1)*cabinetMaxAngle(h));
+  return {...g,x:g.doorLeft+panel,y:g.doorTop,w:Math.max(0,w-panel*g.doors),h:g.doorBottom-g.doorTop};
 }
 function drawCabinet(h,part='all',target=ctx,open=0) {
   if(drawPurchasedCabinet(h,part,target,open))return;
@@ -11591,7 +11781,7 @@ function drawCabinet(h,part='all',target=ctx,open=0) {
     c.fillStyle='#172023';c.fillRect(g.left+1,g.bottom-3,3,5);c.fillRect(g.right-4,g.bottom-3,3,5);
   }
   if(part!=='back'){
-    const count=steel?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
+    const count=g.doors,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*cabinetMaxAngle(h),projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
     for(let i=0;i<count;i++){
       const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,edge=hinge+side*projection;
       c.fillStyle=steel?'#6c7a82':i?'#695043':'#725749';c.strokeStyle=steel?'#3a474f':'#40332c';c.lineWidth=1;
@@ -11624,6 +11814,18 @@ function hideApproach(h) {
   const P=S.player,L0=CUR_F;setLayer(flOf(P));
   if(h.type==='bush'){setLayer(L0);return{points:[{x:P.x,y:P.y}],stand:{x:P.x,y:P.y},length:0};}
   let best=null;
+  if(h.furn&&h.type!=='bed'){
+    const front=cabinetFrontStand(h);
+    if(front)for(const entry of front.entries){
+      const sx=Math.floor(P.x/TILE),sy=Math.floor(P.y/TILE),same=sx===entry.tx&&sy===entry.ty,path=same?[]:astar(sx,sy,entry.tx,entry.ty);
+      if(!same&&!path.length)continue;
+      const points=[{x:P.x,y:P.y}];
+      for(const at of [...path,entry,{x:front.x,y:front.y},front.workStand])if(dist(points.at(-1).x,points.at(-1).y,at.x,at.y)>1)points.push({x:at.x,y:at.y});
+      let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);
+      if(!best||length<best.length)best={points,stand:{...front.workStand},length,recovery:{x:entry.x,y:entry.y}};
+    }
+    setLayer(L0);return best;
+  }
   for(const {tx,ty,nx,ny}of hidePerimeter(h)){
     if(h.furn&&h.type!=='bed'&&ny!==1)continue;
     if(!inMap(tx,ty)||solidFor(P.z||0)(tx,ty))continue;
@@ -11666,8 +11868,10 @@ function beginHideFlow(kind,h,subject=null,dir=null) {
   if(g&&P.captive!==g||kind==='stash'&&P.carrying!==c)return false;
   const exitTo=kind==='exit'&&(['box','well'].includes(h.type)||h.furn&&h.type!=='bed')?{...route.stand}:null;
   if(exitTo){const work=hideClosingStand(h,exitTo);if(work)route.stand=work;}
-  const departure=exitTo?hideDeparture(h,route.stand,exitTo):null;
+  const recovery=exitTo||(['stash','retrieve'].includes(kind)&&route.recovery);
+  const departure=recovery?hideDeparture(h,route.stand,recovery):null;
   const walk=route.length/130,duration=kind==='drag'?1.3:kind==='stash'?.85:h.type==='box'?.78:.72;
+  if(h.furn&&h.type!=='bed')warmFluidPose(playerKey(P),'cabinetOpen');
   const handled=['box','well'].includes(h.type)||h.furn&&h.type!=='bed',handPre=handled&&['enter','retrieve','stash','drag'].includes(kind)?ACCESS_WORK:0,handPost=handled&&['exit','retrieve','stash'].includes(kind)?ACCESS_WORK:0;
   const F={kind,h,g,c,route,walk,duration,handPre,handPost,departure,geo:hideGeometry(h),from:{x:P.x,y:P.y},hx:h.x,hy:h.y,fl:flOf(P),z:P.z||0,committed:false,held:0,holding:true,intent:g?{...(g.takedownIntent||{lethal:false})}:null};
   if(g){g.containerMoving=true;g.doomed=true;}
@@ -11715,8 +11919,8 @@ function updateHideFlow(P,dt) {
   P.vx=P.vy=0;P.moving=walking;P.hidden=!!P.hide;P.light=P.hide?0:lightAt(P.x,P.y,!!P.z);
   if(walking){const at=hideRoutePoint(F.route.points,T.t*130);P.a=Math.atan2(at.y-P.y,at.x-P.x);P.x=at.x;P.y=at.y;return;}
   const at=F.route.stand,W=hideWork(T),leaveAt=F.walk+(F.handPre||0)+F.duration+(F.handPost||0);
-  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;RC=null;}return;}
-  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>.7&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;finishEnvSelection();P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(F.departure&&T.t>=leaveAt){const from={x:P.x,y:P.y},p=hideRoutePoint(F.departure.points,(T.t-leaveAt)*130);P.x=p.x;P.y=p.y;P.moving=T.t<T.dur;if(dist(from.x,from.y,P.x,P.y)>.01)P.a+=clamp(angDiff(P.a,Math.atan2(P.y-from.y,P.x-from.x)),-dt*18,dt*18);if(T.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.departure.points.at(-1).x;P.y=F.departure.points.at(-1).y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
+  if(W){if(!F.opened&&!W.closing&&W.p>.24){F.opened=true;play(h.furn?'cloth':'metal',.25);}if(!F.closed&&W.closing&&W.p>.75){F.closed=true;play(h.furn?'cloth':'metal',.2);}const q=accessHandSample(h,at,W.p,W.closing),out=W.closing&&W.p>=.84&&F.departure?.points[1],face=out?Math.atan2(out.y-at.y,out.x-at.x):q.a;P.x=q.x;P.y=q.y;P.a+=clamp(angDiff(P.a,face),-dt*(out?30:12),dt*(out?30:12));if(T.t>=T.dur){P.trav=null;finishEnvSelection();P.x=at.x;P.y=at.y;h.spotted=false;finishBodyRetrieval(P,F);RC=null;}return;}
   if(F.kind==='retrieve'){
     P.x=at.x;P.y=at.y;P.a=Math.atan2(h.y-at.y,h.x-at.x);
     if(!F.committed&&f>=.78){
@@ -11927,6 +12131,7 @@ function drawContainerAmbush(A) {
 // then walk to the requested safe exit. Do not reach the lid from a tile away.
 function hideClosingStand(h,exit){
   const L0=CUR_F;setLayer(flOf(h));let best=null;
+  if(h.furn&&h.type!=='bed'){const front=cabinetFrontStand(h);setLayer(L0);return front?.workStand||null;}
   for(const p of hidePerimeter(h)){
     if(!inMap(p.tx,p.ty)||solidFor(h.z||0)(p.tx,p.ty))continue;
     const ex=Math.floor(exit.x/TILE),ey=Math.floor(exit.y/TILE),path=astar(p.tx,p.ty,ex,ey,solidFor(h.z||0));if((p.tx!==ex||p.ty!==ey)&&!path.length)continue;
@@ -11936,7 +12141,12 @@ function hideClosingStand(h,exit){
   }setLayer(L0);return best;
 }
 function hideDeparture(h,stand,exit){
-  const L0=CUR_F;setLayer(flOf(h));const path=astar(Math.floor(stand.x/TILE),Math.floor(stand.y/TILE),Math.floor(exit.x/TILE),Math.floor(exit.y/TILE),solidFor(h.z||0)),points=[{x:stand.x,y:stand.y}];
+  const L0=CUR_F;setLayer(flOf(h));const points=[{x:stand.x,y:stand.y}],front=h.furn&&h.type!=='bed'?cabinetFrontStand(h):null;
+  if(front){
+    const entry=front.entries.find(e=>Math.floor(exit.x/TILE)===e.tx&&Math.floor(exit.y/TILE)===e.ty)||front.entries[0];
+    points.push({x:front.x,y:front.y},{x:entry.x,y:entry.y});
+  }
+  const from=points.at(-1),path=astar(Math.floor(from.x/TILE),Math.floor(from.y/TILE),Math.floor(exit.x/TILE),Math.floor(exit.y/TILE),solidFor(h.z||0));
   for(const p of path)if(dist(points.at(-1).x,points.at(-1).y,p.x,p.y)>1)points.push({x:p.x,y:p.y});
   if(dist(points.at(-1).x,points.at(-1).y,exit.x,exit.y)>1)points.push(exit);setLayer(L0);
   let length=0;for(let i=1;i<points.length;i++)length+=dist(points[i-1].x,points[i-1].y,points[i].x,points[i].y);return{points,length};
@@ -11948,15 +12158,26 @@ function fixtureGrip(h,open=0) {
   if(h.type==='sign')return{x:h.x-24,y:h.y-12};
   if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:g.x+open*10,y:g.y-4-open*12};}
   if(h.furn&&h.type!=='bed'){
-    const g=cabinetGeometry(h),leaf=(g.doorRight-g.doorLeft)/(g.locker?1:2),p=leaf*Math.cos(open*Math.PI*.48);
-    return{x:g.doorLeft+p-Math.min(5,p*.25),y:g.doorTop+(g.doorBottom-g.doorTop)*.78+Math.sin(open*Math.PI*.48)*9};
+    if(purchasedReady())return purchasedCabinetLeaves(h,open)[0].handle;
+    const g=cabinetGeometry(h),leaf=(g.doorRight-g.doorLeft)/g.doors,p=leaf*Math.cos(open*cabinetMaxAngle(h));
+    return{x:g.doorLeft+p-Math.min(5,p*.25),y:g.doorTop+(g.doorBottom-g.doorTop)*.78+Math.sin(open*cabinetMaxAngle(h))*9};
   }
   if(h.type==='box')return{x:h.x,y:h.y-16+18*Math.cos(open*1.35)-14*Math.sin(open*1.35)};
   return{x:h.x+open*29,y:h.y-open*15};
 }
 function workOpen(p,closing=false){const f=hideEase((p-.24)/.42);return closing?1-f:f;}
 function accessHandSample(h,stand,p,closing=false,high=false) {
-  p=clamp(p,0,1);let key=playerKey(S.player);const [pal,bn]=prSplit(key),lid=h.type==='box'&&PR.bodies?.[bn+'Lid'];if(lid)key=pal+'@'+bn+'Lid';const anim=lid?'openBin':high||h.furn||h.type==='panel'?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,[,n]=m.anims[anim]||PR.anims[anim],frame=Math.round((closing?1-p:p)*(n-1));
+  p=clamp(p,0,1);let key=playerKey(S.player);const [pal,bn]=prSplit(key),lid=h.type==='box'&&PR.bodies?.[bn+'Lid'];if(lid)key=pal+'@'+bn+'Lid';let anim=lid?'openBin':high||h.furn||h.type==='panel'?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,n=(m.anims[anim]||PR.anims[anim])[1],frame=Math.round((closing?1-p:p)*(n-1));
+  if(h.furn&&h.type!=='bed'&&purchasedReady()){
+    const g=cabinetGeometry(h),wide=(g.doorRight-g.doorLeft)/g.doors>24,clip='cabinet'+(closing?'Close':'Open')+(wide?'Wide':''),source=fluidSource(key,clip),native=PR.bodies?.[source];
+    if(native){
+      if(!prBodies[source])prLoadBody(source);
+      // Cold/missing art keeps the existing complete pose. Authored closing
+      // is its own forward timeline, rather than playing opening backwards.
+      // Nearest-frame rounding must not select a release pose during contact.
+      else{key=pal+'@'+source;anim=clip;m=native;n=m.anims[anim][1];frame=Math.round(p*(n-1));if(p>=.24&&p<=.72)frame=clamp(frame,Math.ceil(.24*(n-1)),Math.floor(.72*(n-1)));}
+    }
+  }
   const a=Math.atan2(h.y-stand.y,h.x-stand.x),at=fixtureGrip(h,workOpen(p,closing)),weight=hideEase((p-.14)/.1)*hideEase((.84-p)/.12);
   // Keep both feet at the approach point. Hand contact must never be obtained
   // by translating the entire actor into the air or turning their back.
@@ -15003,13 +15224,15 @@ function drawWires() {
 }
 // 건물 옥상 덮개 (안에 들어가 있는 건물만 열어 보인다)
 // 판자 다리: 옥상과 옥상 사이에 걸친 널빤지 (위를 걸을 수 있고, 아래 골목은 그대로 지나다닌다)
-function drawPlanks() {
+function drawPlanks(part='all',accept=null) {
   for (const p of PLANKS) {
+    if(accept&&!accept(p))continue;
     const { x0, y0, x1, y1, ew } = p;
     const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
     const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
-    if(drawPurchasedBridge(p,px,py,w,h))continue;
+    if(drawPurchasedBridge(p,px,py,w,h,part))continue;
+    if(part==='front')continue;
     if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {
@@ -16113,7 +16336,7 @@ function drawAperturePeek(){
 
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
-  refreshPurchasedArt();refreshPropArt();refreshOfficeArt();refreshFreeCity();
+  refreshPurchasedArt();refreshPurchasedProps();refreshPropArt();refreshOfficeArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
   if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
@@ -16353,7 +16576,7 @@ function draw() {
   captureAperturePeek(sc);
   const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
-    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks(); if (S.facOn) drawGangFlags(P);
+    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks('back'); if (S.facOn) drawGangFlags(P);
     quarterWallEdges();
     drawRoofEntrances(P);
     PM('roofs');
@@ -16378,8 +16601,11 @@ function draw() {
     drawWires();
   }
   drawOutdoorLampFixtures();
+  const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
+  if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
   if ((P.z || (P.jump && !lowJ) || P.wire || travUp || windowMotion) && !P.hide) drawPlayer(P);
+  if(!tactical){const clip=clipExteriorFromInterior(VB,VF);drawPlanks('front',p=>!aboveBridge(p));if(clip)ctx.restore();}
   drawHideFlowVisual();
   if(!P.vent)drawAccessFlow();
   drawSignWork();
@@ -18543,7 +18769,7 @@ function installGameApi() {
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
-    purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
+    cabinetMaxAngle, cabinetFrontStand, purchasedPropsReady, purchasedPropCargoBounds, purchasedPropFurnBounds, purchasedPropFurnKey, purchasedPropWallLayout, get purchasedPropsAtlas(){return purchasedPropsAtlas;}, purchasedPropFrame, purchasedBridgeBounds, purchasedCabinetLeaves, purchasedReady, purchasedFrame, drawPurchasedStairs, drawPurchasedBridge, drawPurchasedVent, drawPurchasedCargo, drawPurchasedLadder, drawPurchasedPipe, drawPurchasedSwitch, drawPurchasedDoor, drawPurchasedManhole, drawPurchasedPaper, drawPurchasedFreight, get purchasedAtlas(){return purchasedAtlas;},
     ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },

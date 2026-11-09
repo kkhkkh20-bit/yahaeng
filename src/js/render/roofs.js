@@ -33,13 +33,15 @@ function drawWires() {
 }
 // 건물 옥상 덮개 (안에 들어가 있는 건물만 열어 보인다)
 // 판자 다리: 옥상과 옥상 사이에 걸친 널빤지 (위를 걸을 수 있고, 아래 골목은 그대로 지나다닌다)
-function drawPlanks() {
+function drawPlanks(part='all',accept=null) {
   for (const p of PLANKS) {
+    if(accept&&!accept(p))continue;
     const { x0, y0, x1, y1, ew } = p;
     const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
     const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
-    if(drawPurchasedBridge(p,px,py,w,h))continue;
+    if(drawPurchasedBridge(p,px,py,w,h,part))continue;
+    if(part==='front')continue;
     if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {

@@ -50,14 +50,14 @@
         54,
         0,
         96,
-        16
+        10
       ],
       "source": "city",
       "sourceRect": [
         1024,
         304,
         1120,
-        320
+        314
       ],
       "assembly": "original pixels; crop only"
     },
@@ -77,9 +77,41 @@
       ],
       "assembly": "original pixels; crop only"
     },
-    "manhole": {
+    "bridgeSideRail": {
       "rect": [
         186,
+        0,
+        3,
+        1
+      ],
+      "source": "city",
+      "sourceRect": [
+        1024,
+        309,
+        1027,
+        310
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "bridgePost": {
+      "rect": [
+        191,
+        0,
+        3,
+        10
+      ],
+      "source": "city",
+      "sourceRect": [
+        1024,
+        304,
+        1027,
+        314
+      ],
+      "assembly": "original pixels; crop only"
+    },
+    "manhole": {
+      "rect": [
+        196,
         0,
         23,
         18
@@ -95,7 +127,7 @@
     },
     "pipe": {
       "rect": [
-        211,
+        221,
         0,
         7,
         24
@@ -111,7 +143,7 @@
     },
     "aircon": {
       "rect": [
-        220,
+        230,
         0,
         32,
         32
@@ -127,7 +159,7 @@
     },
     "roofUnit": {
       "rect": [
-        254,
+        264,
         0,
         32,
         32
@@ -143,7 +175,7 @@
     },
     "doorExterior": {
       "rect": [
-        288,
+        298,
         0,
         32,
         32
@@ -159,7 +191,7 @@
     },
     "parcel": {
       "rect": [
-        322,
+        332,
         0,
         21,
         16
@@ -175,7 +207,7 @@
     },
     "paper": {
       "rect": [
-        345,
+        355,
         0,
         15,
         15
@@ -191,7 +223,7 @@
     },
     "doorOffice": {
       "rect": [
-        362,
+        372,
         0,
         24,
         25
@@ -207,7 +239,7 @@
     },
     "doorWood": {
       "rect": [
-        388,
+        398,
         0,
         26,
         27
@@ -223,7 +255,7 @@
     },
     "switchPlate": {
       "rect": [
-        416,
+        426,
         0,
         12,
         22
@@ -239,7 +271,7 @@
     },
     "ventGrille": {
       "rect": [
-        430,
+        440,
         0,
         20,
         12
@@ -255,7 +287,7 @@
     },
     "cabinetBlue": {
       "rect": [
-        452,
+        462,
         0,
         19,
         49
@@ -271,7 +303,7 @@
     },
     "lockerSteel": {
       "rect": [
-        473,
+        483,
         0,
         23,
         33
@@ -283,7 +315,30 @@
         1756,
         359
       ],
-      "assembly": "existing verified office crop"
+      "assembly": "existing verified office crop",
+      "leafCount": 2,
+      "leafRects": [
+        [
+          2,
+          7,
+          10,
+          24
+        ],
+        [
+          11,
+          7,
+          10,
+          24
+        ]
+      ],
+      "handleBand": [
+        5,
+        5
+      ],
+      "handleXs": [
+        6.5,
+        2.5
+      ]
     },
     "wardrobeWood": {
       "rect": [
@@ -299,7 +354,30 @@
         1788,
         359
       ],
-      "assembly": "existing verified office crop"
+      "assembly": "existing verified office crop",
+      "leafCount": 2,
+      "leafRects": [
+        [
+          2,
+          7,
+          10,
+          19
+        ],
+        [
+          11,
+          7,
+          10,
+          19
+        ]
+      ],
+      "handleBand": [
+        5,
+        5
+      ],
+      "handleXs": [
+        6.5,
+        2.5
+      ]
     },
     "wallPanel": {
       "rect": [

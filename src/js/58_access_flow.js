@@ -4,15 +4,26 @@ function fixtureGrip(h,open=0) {
   if(h.type==='sign')return{x:h.x-24,y:h.y-12};
   if(h.type==='vent'){const g=ventGeometry(h.source||h);return{x:g.x+open*10,y:g.y-4-open*12};}
   if(h.furn&&h.type!=='bed'){
-    const g=cabinetGeometry(h),leaf=(g.doorRight-g.doorLeft)/(g.locker?1:2),p=leaf*Math.cos(open*Math.PI*.48);
-    return{x:g.doorLeft+p-Math.min(5,p*.25),y:g.doorTop+(g.doorBottom-g.doorTop)*.78+Math.sin(open*Math.PI*.48)*9};
+    if(purchasedReady())return purchasedCabinetLeaves(h,open)[0].handle;
+    const g=cabinetGeometry(h),leaf=(g.doorRight-g.doorLeft)/g.doors,p=leaf*Math.cos(open*cabinetMaxAngle(h));
+    return{x:g.doorLeft+p-Math.min(5,p*.25),y:g.doorTop+(g.doorBottom-g.doorTop)*.78+Math.sin(open*cabinetMaxAngle(h))*9};
   }
   if(h.type==='box')return{x:h.x,y:h.y-16+18*Math.cos(open*1.35)-14*Math.sin(open*1.35)};
   return{x:h.x+open*29,y:h.y-open*15};
 }
 function workOpen(p,closing=false){const f=hideEase((p-.24)/.42);return closing?1-f:f;}
 function accessHandSample(h,stand,p,closing=false,high=false) {
-  p=clamp(p,0,1);let key=playerKey(S.player);const [pal,bn]=prSplit(key),lid=h.type==='box'&&PR.bodies?.[bn+'Lid'];if(lid)key=pal+'@'+bn+'Lid';const anim=lid?'openBin':high||h.furn||h.type==='panel'?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,[,n]=m.anims[anim]||PR.anims[anim],frame=Math.round((closing?1-p:p)*(n-1));
+  p=clamp(p,0,1);let key=playerKey(S.player);const [pal,bn]=prSplit(key),lid=h.type==='box'&&PR.bodies?.[bn+'Lid'];if(lid)key=pal+'@'+bn+'Lid';let anim=lid?'openBin':high||h.furn||h.type==='panel'?'openHigh':'openLow',m=PR.bodies?.[prSplit(key)[1]]||PR,n=(m.anims[anim]||PR.anims[anim])[1],frame=Math.round((closing?1-p:p)*(n-1));
+  if(h.furn&&h.type!=='bed'&&purchasedReady()){
+    const g=cabinetGeometry(h),wide=(g.doorRight-g.doorLeft)/g.doors>24,clip='cabinet'+(closing?'Close':'Open')+(wide?'Wide':''),source=fluidSource(key,clip),native=PR.bodies?.[source];
+    if(native){
+      if(!prBodies[source])prLoadBody(source);
+      // Cold/missing art keeps the existing complete pose. Authored closing
+      // is its own forward timeline, rather than playing opening backwards.
+      // Nearest-frame rounding must not select a release pose during contact.
+      else{key=pal+'@'+source;anim=clip;m=native;n=m.anims[anim][1];frame=Math.round(p*(n-1));if(p>=.24&&p<=.72)frame=clamp(frame,Math.ceil(.24*(n-1)),Math.floor(.72*(n-1)));}
+    }
+  }
   const a=Math.atan2(h.y-stand.y,h.x-stand.x),at=fixtureGrip(h,workOpen(p,closing)),weight=hideEase((p-.14)/.1)*hideEase((.84-p)/.12);
   // Keep both feet at the approach point. Hand contact must never be obtained
   // by translating the entire actor into the air or turning their back.

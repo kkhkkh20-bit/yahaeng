@@ -54,7 +54,15 @@ const finaleBuild=campaignStage('m5').build;
 campaignStage('m5').build=m=>{finaleBuild(m);m.many('B',[[11,18]]);};
 // Leave real service space behind the ground-floor camera. The generated
 // locker previously filled that space; keep it against the office wall.
-campaignStage('m5').roomPatches=[{bounds:[12,2,27,10],furniture:[{t:'locker',from:[23,7],to:[13,9]}],tiles:[[23,7,'w']]}];
+campaignStage('m5').roomPatches=[{bounds:[12,2,27,10],furniture:[
+ {t:'locker',from:[23,7],to:[13,8]},
+ {t:'locker',from:[13,9],to:[13,8]} // Also migrate the previous checkpoint position.
+],tiles:[[23,7,'w'],[13,9,'w']]}];
+// Both wardrobe doors open into this bedroom. Keep the contract safe against
+// the left wall so it leaves both front tiles and the southern doorway clear.
+campaignStage('m4').roomPatches=(campaignStage('m4').roomPatches||[]).concat({fl:1,bounds:[2,18,11,23],
+ furniture:[{t:'safe',from:[8,19],to:[6,19]}],tiles:[[8,19,'v']]});
+campaignStage('m4').itemLayoutVersion=2; // Move only the uncollected contract with its safe in older saves.
 // The final job rewards the same assassination/stealth rules as earlier jobs.
 campaignStage('m5').stories=campaignStage('m5').stories.filter(s=>s.id!=='purge');
 delete campaignStage('m5').purgeBonus;

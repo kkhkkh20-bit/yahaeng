@@ -14,8 +14,10 @@ for key,path,want in [('city',args.city,'a82beeeff1f3d77e24cf26e80a8dd221061aae4
 rects={
  'stairTreads':('city',(1152,448,1184,480)),
  'ladder':('city',(768,64,800,128)),
- 'rail':('city',(1024,304,1120,320)),
+ 'rail':('city',(1024,304,1120,314)),
  'bridgeDeck':('city',(192,0,224,32)),
+ 'bridgeSideRail':('city',(1024,309,1027,310)),
+ 'bridgePost':('city',(1024,304,1027,314)),
  'manhole':('city',(1120,256,1152,288)),
  'pipe':('city',(972,32,981,56)),
  'aircon':('city',(768,256,800,288)),
@@ -54,7 +56,10 @@ for name,(source,rect)in rects.items():
 # Reuse the already verified office cuts, not a second guessed crop of the sheet.
 om=json.loads((ROOT/'src/art/office/interiors.json').read_text());oi=Image.open(ROOT/'src/art/office/interiors.webp').convert('RGBA')
 for name in ['cabinetBlue','lockerSteel','wardrobeWood','wallPanel','windowFrame']:
- f=om['frames'][name];x,y,w,h=f['rect'];parts.append((name,oi.crop((x,y,x+w,y+h)),{'source':'office','sourceRect':f.get('sourceRect'),'assembly':'existing verified office crop'}))
+ f=om['frames'][name];x,y,w,h=f['rect'];detail={'source':'office','sourceRect':f.get('sourceRect'),'assembly':'existing verified office crop'}
+ if name in ['lockerSteel','wardrobeWood']:
+  detail.update(leafCount=2,leafRects=[[2,7,10,24 if name=='lockerSteel'else 19],[11,7,10,24 if name=='lockerSteel'else 19]],handleBand=[5,5],handleXs=[6.5,2.5])
+ parts.append((name,oi.crop((x,y,x+w,y+h)),detail))
 atlas=Image.new('RGBA',(512,512));frames={};x=y=row=0
 for name,im,meta in parts:
  if x+im.width>512:x=0;y+=row+2;row=0

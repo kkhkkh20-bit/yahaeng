@@ -421,6 +421,43 @@ window.renderAccessPose=(kind,t,dirA)=>{
   model.updateMatrixWorld(true);model.position.y-=feetY(bones);model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
   shadow.visible=false;renderSprite(0,1.8);shadow.visible=true;return renderer.domElement.toDataURL('image/png');
 };
+// Cabinet leaves use real upper/lower arm rotations.  The planted openHigh
+// body is retained; only the two arm chains are solved, offline, in the same
+// orthographic projection and world scale used by drawPR.
+window.renderCabinetPose=(kind,t,dirA,options={})=>{
+  const north=Math.PI*1.5,ease=v=>{v=Math.max(0,Math.min(1,v));return v*v*(3-2*v);};
+  t=Math.max(0,Math.min(1,t));
+  renderAccessPose('high',kind==='close'?1-t:t,north);
+  const fixed=poseMetrics(),scale=window.frameScale,ground=window.frameGroundY;
+  const open=kind==='close'?1-ease((t-.24)/.42):ease((t-.24)/.42);
+  const width=options.width||16,angle=options.angle||Math.PI*.42,standShift=options.standShift??-18,baseY=options.baseY??-35.34;
+  const weight=ease((t-.14)/.1)*ease((.84-t)/.12),theta=open*angle;
+  const targets=[[-width+(width-5.25)*Math.cos(theta),baseY-standShift+9*Math.sin(theta)*(1-5.25/width)],[width-(width-3.75)*Math.cos(theta),baseY-standShift+9*Math.sin(theta)*(1-3.75/width)]];
+  cam.left=cam.bottom=-VIEW*scale/2;cam.right=cam.top=VIEW*scale/2;cam.updateProjectionMatrix();cam.updateMatrixWorld(true);
+  const actual=[],q=new THREE.Quaternion(),parentQ=new THREE.Quaternion();
+  for(const [index,side]of ['Left','Right'].entries()){
+    const hand=bones[side+'Hand'],before=new THREE.Vector3();hand.getWorldPosition(before);before.project(cam);
+    const at=targets[index],nx=(at[0]/scale+32)/32-1,ny=1-(ground+(at[1]-13)/scale)/32;
+    const desired=V3(before.x+(nx-before.x)*weight,before.y+(ny-before.y)*weight,0);
+    // Re-unproject at the current wrist depth each iteration.  Depth is free;
+    // this minimizes screen error without stretching either limb segment.
+    for(let k=0;k<24;k++)for(const joint of [bones[side+'ForeArm'],bones[side+'Arm']]){
+      const hp=new THREE.Vector3(),jp=new THREE.Vector3();hand.getWorldPosition(hp);joint.getWorldPosition(jp);
+      const depth=hp.clone().project(cam).z,target=V3(desired.x,desired.y,depth).unproject(cam);
+      const from=hp.sub(jp),to=target.sub(jp);if(from.lengthSq()<1e-9||to.lengthSq()<1e-9)continue;
+      q.setFromUnitVectors(from.normalize(),to.normalize());joint.parent.getWorldQuaternion(parentQ);
+      joint.quaternion.premultiply(parentQ.clone().invert().multiply(q).multiply(parentQ)).normalize();joint.updateMatrixWorld(true);
+    }
+    const hp=new THREE.Vector3();hand.getWorldPosition(hp);hp.project(cam);actual.push([(hp.x+1)*32,(1-hp.y)*32]);
+  }
+  const solved=poseMetrics(),invariants={fixed:0,length:0};
+  for(const n of ['Hips','Spine','Spine1','Spine2','Neck','Head','LeftUpLeg','RightUpLeg','LeftLeg','RightLeg','LeftFoot','RightFoot'])invariants.fixed=Math.max(invariants.fixed,V3(...fixed[n]).distanceTo(V3(...solved[n])));
+  for(const side of ['Left','Right'])for(const pair of [['Arm','ForeArm'],['ForeArm','Hand']])invariants.length=Math.max(invariants.length,Math.abs(V3(...fixed[side+pair[0]]).distanceTo(V3(...fixed[side+pair[1]]))-V3(...solved[side+pair[0]]).distanceTo(V3(...solved[side+pair[1]]))));
+  model.rotation.y=Math.atan2(Math.cos(dirA),Math.sin(dirA));model.updateMatrixWorld(true);
+  shadow.visible=false;renderSprite(0,1.8);shadow.visible=true;
+  window.frameCabinet={targets,weight,open,invariants,northHands:actual,rigBefore:fixed,rigAfter:solved};
+  return renderer.domElement.toDataURL('image/png');
+};
 // Foot-normalized, bone-interpolated entry poses; reverse the same frames on exit.
 window.renderHidePose = (kind, t, dirA) => {
   if(kind==='ledgePull'){

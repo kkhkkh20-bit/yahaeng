@@ -8,6 +8,10 @@
   brief: '도시는 열려 있다. 보도는 행인의 길, 차도는 차의 길이다. 차를 세우고 운전자를 끌어내 몰 수 있다 — 사람들이 보면 수배가 붙는다. 수배 별이 붙으면 경찰이 쫓아온다. 시야에서 벗어나 버티면 별이 내려간다. 빨간 표시가 의뢰 장소다.',
   W: 84, H: 64, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 3,
   roadsX: [0, 20, 40, 60, 80], roadsY: [0, 20, 40, 60], traffic: 16,
+  // Older saves put a stairwell railing directly across these wardrobe doors.
+  // The current planner keeps the basic stair tile and reserves this floor.
+  roomPatches: [[8,6],[16,14],[36,26],[68,26]].map(([x,y])=>({fl:1,
+    bounds:[x,y,x+1,y+1],tiles:[[x,y+1,'w'],[x+1,y+1,'w']]})),
   build(m) {
     m.fill(0, 0, 83, 63, '.');
     const B = (bx, by) => [4 + bx * 20, 4 + by * 20];

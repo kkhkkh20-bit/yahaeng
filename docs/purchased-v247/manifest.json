@@ -1,0 +1,255 @@
+{
+  "version": 247,
+  "purchasedNewPacks": false,
+  "fullSourceRedistributed": false,
+  "nativePixelRule": {
+    "sourceCell": 32,
+    "worldCell": 48,
+    "scale": 1.5,
+    "sampling": "nearest",
+    "atlasPaletteModified": false,
+    "runtimeLightingPreserved": true
+  },
+  "sources": {
+    "city": {
+      "sha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235"
+    },
+    "office": {
+      "sha256": "cb793dd0023f6450d85474988a3d058c30d7a9b06d6dc872244885e07126324c"
+    }
+  },
+  "atlases": {
+    "fixtures": {
+      "metadata": "src/art/purchased-details/fixtures.json",
+      "image": "src/art/purchased-details/fixtures.webp",
+      "frames": 22
+    },
+    "props": {
+      "metadata": "src/art/purchased-props/props.json",
+      "image": "src/art/purchased-props/props.webp",
+      "frames": 15,
+      "sourceSha256": "cb793dd0023f6450d85474988a3d058c30d7a9b06d6dc872244885e07126324c"
+    }
+  },
+  "propRoles": {
+    "cargoStable0": {
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "runtime": "existing matching object only"
+    },
+    "cargoStable1": {
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "runtime": "existing matching object only"
+    },
+    "cargoStable2": {
+      "role": "tall-cargo-cover",
+      "sourceRect": [
+        1964,
+        395,
+        1975,
+        404
+      ],
+      "assembly": "one complete original carton; extend flat cardboard only; broad lower carton fully supports narrower upper carton; 1px contact overlap",
+      "runtime": "existing matching object only"
+    },
+    "bookcaseBlue": {
+      "role": "storage-shelf",
+      "sourceRect": [
+        1734,
+        137,
+        1753,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "bookcaseWood": {
+      "role": "storage-shelf",
+      "sourceRect": [
+        1766,
+        137,
+        1785,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "bookcaseRed": {
+      "role": "storage-shelf",
+      "sourceRect": [
+        1798,
+        137,
+        1817,
+        186
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "filesBlue": {
+      "role": "document-cabinet",
+      "sourceRect": [
+        1734,
+        201,
+        1753,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "filesGold": {
+      "role": "document-cabinet",
+      "sourceRect": [
+        1766,
+        201,
+        1785,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "filesRed": {
+      "role": "document-cabinet",
+      "sourceRect": [
+        1798,
+        201,
+        1817,
+        250
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "plantWide": {
+      "role": "potted-plant",
+      "sourceRect": [
+        1827,
+        128,
+        1851,
+        169
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "plantLean": {
+      "role": "potted-plant",
+      "sourceRect": [
+        1860,
+        128,
+        1884,
+        169
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "noticeBoard": {
+      "role": "notice-board",
+      "sourceRect": [
+        1930,
+        288,
+        1974,
+        314
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "graphBoard": {
+      "role": "chart-board",
+      "sourceRect": [
+        1856,
+        331,
+        1888,
+        365
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing matching object only"
+    },
+    "printerService": {
+      "role": "printer",
+      "sourceRect": [
+        1484,
+        416,
+        1526,
+        446
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "explicit service counter opt-in only"
+    },
+    "extinguisher": {
+      "role": "wall-extinguisher",
+      "sourceRect": [
+        1514,
+        388,
+        1524,
+        406
+      ],
+      "assembly": "original source pixels; exact crop only",
+      "runtime": "existing solid workplace wall only"
+    }
+  },
+  "skipRules": [
+    "authored furniture",
+    "physical hiding cabinet",
+    "freight shelf",
+    "security monitor shelf",
+    "sprite cannot fit at native density",
+    "missing role-equivalent purchased art",
+    "printer would cover mission loot",
+    "printer without explicit counter assignment",
+    "wall mount overlaps window, door, light, stair or furniture"
+  ],
+  "characterProvenance": {
+    "purchasedGuttyKreumCharacter": false,
+    "runtime": "2D eight-direction sprites",
+    "offlineSource": "existing Quaternius-based 3D rig and wardrobe prerender",
+    "sourceCell": 64,
+    "samePixelQualityAsBackgroundClaim": false,
+    "runtimeScale": 1.8,
+    "pixelScaleRatioToEnvironment": 1.2,
+    "pixelScaleDifferencePercent": 20,
+    "purchaseComparisonCriteria": [
+      "opaque painted sprite height rather than transparent canvas size",
+      "world height beside owned props",
+      "top-down viewing angle",
+      "eight-direction idle/walk/work/combat coverage",
+      "pixel border weight and lighting direction"
+    ],
+    "runtimeScaleNote": "Some action/gait clips use 1.8; legacy/base clips use their own per-animation scales. This is not a universal 1.5x conversion."
+  },
+  "cabinetAudit": {
+    "maps": 27,
+    "fixtures": 115,
+    "validCentralApproach": 115,
+    "horizontalOffsetPixels": 0,
+    "bodySafeRadius": 14,
+    "bodyWorkProxyRadius": 10,
+    "visibleFootOffset": 13,
+    "visibleFootRadius": 6
+  },
+  "verification": {
+    "props": "tests/rev/t_purchased_props.py",
+    "centralApproach": "tests/rev/t_cabinet_approach.py --require-clear",
+    "legacyCheckpoint": "tests/rev/t_cabinet_checkpoint.py"
+  },
+  "cabinetAssembly": {
+    "heightWorld": {
+      "locker": 60,
+      "wardrobe": 62
+    },
+    "outfits": 4,
+    "frames": 2176,
+    "runtimePoses": 544,
+    "maxFullContactErrorWorld": 1.829
+  }
+}

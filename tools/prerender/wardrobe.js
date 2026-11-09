@@ -42,6 +42,28 @@ export function attachWardrobe(name,model,bones,mats){
   add('Spine2',[w*.13,h*.15,h*.015],[-w*.13,-h*.01,h*.075],dark,-.35);
   add('Spine2',[w*.13,h*.15,h*.015],[w*.13,-h*.01,h*.075],dark,.35);
  }
+ if(name==='femaleCoat'){
+  // A knee-length tailored coat, split below the waist so walking legs and
+  // reaction/contact poses remain readable from all eight directions.
+  add('Hips',[w*.76,h*.30,h*.025],[0,-h*.10,-h*.065],cloth);
+  for(const side of [-1,1])add('Hips',[w*.31,h*.28,h*.025],[side*w*.24,-h*.09,h*.052],cloth,side*.035);
+  add('Spine2',[w*.12,h*.14,h*.018],[-w*.12,-h*.01,h*.076],dark,-.33);
+  add('Spine2',[w*.12,h*.14,h*.018],[w*.12,-h*.01,h*.076],dark,.33);
+ }
+ if(name==='femaleBlazer'){
+  // Short blazer hem and contrasting lapels distinguish trousers from the
+  // existing dresses, cropped jackets and long coats without a new rig.
+  add('Hips',[w*.78,h*.10,h*.13],[0,h*.005,0],cloth);
+  for(const side of [-1,1])add('Spine2',[w*.10,h*.13,h*.02],[side*w*.14,-h*.01,h*.078],dark,side*.33);
+ }
+ if(name==='workApron'){
+  // An apron is a front garment, not a backpack or a full cylindrical skirt.
+  const apron=material('accent',0xffff00,true);
+  add('Spine2',[w*.49,h*.19,h*.022],[0,-h*.035,h*.075],apron);
+  add('Hips',[w*.70,h*.27,h*.025],[0,-h*.055,h*.082],apron);
+  add('Hips',[w*.28,h*.065,h*.018],[0,h*.01,h*.101],dark);
+  add('Hips',[w*.78,h*.025,h*.13],[0,h*.075,0],apron);
+ }
  if(name==='vest'){
   for(const side of [-1,1])add('Spine2',[w*.24,h*.10,h*.027],[side*w*.23,-h*.025,h*.078],dark);
  }

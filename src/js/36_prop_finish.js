@@ -16,6 +16,7 @@ function propSurfacePoint(o){
 }
 function drawPropFurn(x,it,shadow=false){
  if(it.t==='boxes'&&purchasedReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawPurchasedCargo(x,it.x+k,it.y+y);return true;}
+ if(drawPurchasedPropFurn(x,it,shadow))return true;
  if(drawOfficeFurn(x,it,shadow))return true;
  if(it.t==='boxes'&&STAGE.freeCityExteriors&&freeCityArt===A.dotonbori&&freeCityReady()){for(let y=0;y<it.h;y++)for(let k=0;k<it.w;k++)drawCityCargo(x,it.x+k,it.y+y);return true;}
  if(it.t==='shelf'&&it.skin==='freight')return drawFreightShelf(x,it,shadow);

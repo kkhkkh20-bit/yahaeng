@@ -1,0 +1,33 @@
+[
+  {
+    "id": "m4",
+    "got": false,
+    "contractPreserved": true,
+    "safeMoved": true
+  },
+  {
+    "id": "m4",
+    "got": true,
+    "contractPreserved": true,
+    "safeMoved": true
+  },
+  {
+    "id": "m5",
+    "hidden": false,
+    "hiddenActorPreserved": true,
+    "storedBodyPreserved": true,
+    "inventoryPreserved": true
+  },
+  {
+    "id": "m5",
+    "hidden": true,
+    "hiddenActorPreserved": true,
+    "storedBodyPreserved": true,
+    "inventoryPreserved": true
+  },
+  {
+    "id": "city",
+    "legacyRailingCellsCleared": 8,
+    "inventoryPreserved": true
+  }
+]

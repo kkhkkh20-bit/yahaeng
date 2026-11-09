@@ -54,7 +54,7 @@
   layoutVersion: 3, rebuiltSites: [0, 5], rivalBuilding: 7,
   locks: [{ b: 1, door: 'vault', key: 'red' }, { b: 3, door: 'vipBack', key: 'blue' }, { b: 2, door: 'front', key: 'code' }, { b: 2, door: 'back', key: 'code' }],
   code: '7316', codeOpp: false,
-  fixedFurn:[{x:6,y:5,t:'desk'},{x:8,y:19,fl:1,t:'safe'}],keyPurposes:{green:'남서쪽 조직 숙소 2층 계약서 금고'},
+  fixedFurn:[{x:6,y:5,t:'desk'},{x:6,y:19,fl:1,t:'safe'}],keyPurposes:{green:'남서쪽 조직 숙소 2층 계약서 금고'},
   notes: [{ pos: [6, 6], surface:{b:0,t:'desk'}, title: '연락책의 출입 메모', lines: ['사무동 앞문·뒷문 7316.', '2층 보안실에 초록 카드키. 계약서 금고는 남서쪽 숙소 2층.', '이번 정산 끝나면 이 메모는 태워.'], gives: 'code', learn: '사무동 출입 비밀번호 7316 — 2층 보안실의 초록 카드키로 남서쪽 숙소 2층 계약서 금고를 연다' },
           { b:1,fl:0,at:'L',title:'창고 정산 쪽지',lines:['사무동 출입번호 7316.','숙소 2층 계약서 금고의 초록 카드키는 사무동 2층 보안실에 있다.'],gives:'code',learn:'창고 정산 쪽지: 사무동 출입번호 7316 · 초록 카드키는 2층 보안실' }],
   keyItems: [{ key: 'blue', pos: [12, 5], fl: 0 }, { key: 'green', b: 2, fl: 1, at: 'S' }, { key: 'supplies', b: 7, fl: 0, at: 'R' }],

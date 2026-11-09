@@ -18,16 +18,34 @@ function drawPurchasedStairs(c,tx,ty){
 function drawPurchasedLadder(c,x,y,h=42){
  if(!purchasedReady())return false;const r=purchasedFrame('ladder');c.save();c.beginPath();c.rect(x-15,y,30,h);c.clip();for(let yy=y;yy<y+h;yy+=r[3]*1.5)purchasedBlit(c,'ladder',x-r[2]*.75,yy);c.restore();return true;
 }
-function drawPurchasedBridge(p,x,y,w,h){
+function purchasedBridgeBounds(p){
+ const x=p.x0*TILE-(p.ew&&p.a?8:0),y=p.y0*TILE-(!p.ew&&p.a?8:0),w=(p.x1-p.x0+1)*TILE+(p.ew?((p.a?8:0)+(p.b?8:0)):0),h=(p.y1-p.y0+1)*TILE+(!p.ew?((p.a?8:0)+(p.b?8:0)):0);return{x,y,w,h};
+}
+function drawPurchasedBridge(p,x,y,w,h,part='all'){
  if(!purchasedReady())return false;
- ctx.save();ctx.translate(x+w/2,y+h/2);if(!p.ew)ctx.rotate(Math.PI/2);const length=p.ew?w:h,depth=p.ew?h:w;
- ctx.fillStyle='#080f1b55';ctx.fillRect(-length/2+5,-depth/2+10,length,depth);
- purchasedRepeat(ctx,'bridgeDeck',-length/2,-depth/2,length,depth);
- purchasedRepeat(ctx,'rail',-length/2,-depth/2-10,length,24);
- purchasedRepeat(ctx,'rail',-length/2,depth/2-14,length,24);ctx.restore();return true;
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ if(part!=='front'){
+  ctx.fillStyle='#080f1b55';ctx.fillRect(x+5,y+10,w,h);
+  // Rotate just the floor when the route runs north/south. A front-facing
+  // railing cannot be rotated sideways and still read as an upright rail.
+  if(p.ew)purchasedRepeat(ctx,'bridgeDeck',x,y,w,h);
+  else{ctx.save();ctx.translate(x,y+h);ctx.rotate(-Math.PI/2);purchasedRepeat(ctx,'bridgeDeck',0,0,h,w);ctx.restore();}
+  ctx.fillStyle='#0e1a2530';ctx.fillRect(x,y,w,h);
+  if(p.ew){purchasedRepeat(ctx,'rail',x,y-15,w,15);purchasedBlit(ctx,'bridgePost',x+w-4.5,y-15,4.5,15);}
+ }
+ if(part!=='back'){
+  if(p.ew){purchasedRepeat(ctx,'rail',x,y+h-15,w,15);purchasedBlit(ctx,'bridgePost',x+w-4.5,y+h-15,4.5,15);}
+  else{purchasedBlit(ctx,'bridgeSideRail',x-1,y,4.5,h);purchasedBlit(ctx,'bridgeSideRail',x+w-3.5,y,4.5,h);}
+ }
+ ctx.restore();return true;
 }
 function drawPurchasedCargo(c,tx,ty){
- if(!purchasedReady())return false;const r=purchasedFrame('parcel'),w=Math.min(42,r[2]*1.5),h=r[3]*w/r[2];c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-7,20,6,0,0,TAU);c.fill();purchasedBlit(c,'parcel',tc(tx)-w/2,(ty+1)*TILE-h-5,w,h);purchasedBlit(c,'parcel',tc(tx)-w/2-2,(ty+1)*TILE-h*1.85-5,w,h);c.restore();return true;
+ if(drawPurchasedPropCargo(c,tx,ty))return true;
+ if(!purchasedReady())return false;const r=purchasedFrame('parcel'),scale=Math.min(2,42/r[2]),w=r[2]*scale,h=r[3]*scale;
+ c.save();c.fillStyle='#08121a44';c.beginPath();c.ellipse(tc(tx)+2,(ty+1)*TILE-5,w*.45,5,0,0,TAU);c.fill();
+ // The source already contains two grounded cartons supporting a third. Draw
+ // this arrangement once; duplicating the whole pile creates floating cartons.
+ purchasedBlit(c,'parcel',tc(tx)-w/2,(ty+1)*TILE-h-5,w,h);c.restore();return true;
 }
 function drawPurchasedFreight(c,f,shadow){
  if(!purchasedReady())return false;
@@ -45,23 +63,46 @@ function drawPurchasedDoor(d){
  ctx.save();ctx.transform(Math.cos(a),Math.sin(a),-Math.sin(a)*.22,Math.cos(a),-19,-6);ctx.drawImage(purchasedAtlas,...r,0,0,38,10);ctx.restore();
  if(d.locked&&doorVisualOpen(d)<.2&&d.keyLock){ctx.fillStyle='#b59d69';ctx.fillRect(-3,-2,6,4);}ctx.restore();return true;
 }
+function purchasedCabinetLeaves(h,open){
+ const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',spec=purchasedArt?.frames[key],leafW=(g.doorRight-g.doorLeft)/g.doors,H=g.doorBottom-g.doorTop,angle=clamp(open,0,1)*cabinetMaxAngle(h),projection=leafW*Math.cos(angle),depth=Math.sin(angle)*9;
+ return Array.from({length:g.doors},(_,i)=>{const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft,rect=spec.leafRects[i],handleInset=i===1?3.75:5.25,u=1-handleInset/leafW;return{i,side,hinge,leafW,projection,depth,rect,key,handleInset,handle:{x:hinge+side*projection*u,y:g.doorTop+H*.78+depth*u}};});
+}
+function drawPurchasedCabinetLeaf(c,spec,leaf,H){
+ const r=spec.rect,[sx,sy,sw,sh]=leaf.rect,W=leaf.leafW,x=leaf.side===1?0:-W,native=1.5,edge=native,[bandY,bandH]=spec.handleBand;
+ const blit=(px,py,pw,ph,dx,dy,dw,dh)=>c.drawImage(purchasedAtlas,r[0]+sx+px,r[1]+sy+py,pw,ph,dx,dy,dw,dh);
+ // Expand only the flat panel. Its original corners and border thickness keep
+ // the same 1.5x pixels in both one-cell lockers and wide wardrobes.
+ for(const [py,ph,dy,dh]of [[0,1,0,edge],[2,1,edge,H-2*edge],[sh-1,1,H-edge,edge]]){
+  blit(0,py,1,ph,x,dy,edge,dh);
+  blit(2,py,1,ph,x+edge,dy,W-2*edge,dh);
+  blit(sw-1,py,1,ph,x+W-edge,dy,edge,dh);
+ }
+ // The complete knob and its adjacent flat pixels stay native-sized, anchored
+ // to the meeting edge. A wide leaf must not produce a giant door handle.
+ const knobX=leaf.i===1?1:4,knobW=5,knobDx=leaf.i===1?x+native:x+W-(sw-knobX)*native;
+ blit(knobX,bandY,knobW,bandH,knobDx,H*.78-bandH*native/2,knobW*native,bandH*native);
+}
 function drawPurchasedCabinet(h,part,c,open){
  if(!purchasedReady()||!officeReady())return false;
- const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',r=purchasedFrame(key),w=g.right-g.left,H=g.bottom-g.top;
- c.save();
+ const g=cabinetGeometry(h),key=g.locker?'lockerSteel':'wardrobeWood',spec=purchasedArt.frames[key],r=spec.rect,w=g.right-g.left,H=g.bottom-g.top,doorH=g.doorBottom-g.doorTop;
+ c.save();c.imageSmoothingEnabled=false;
  if(part!=='front'){
   c.fillStyle='#08111c55';c.fillRect(g.left+3,h.ty*TILE+7,w+3,(h.h||1)*TILE-9);
-  purchasedBlit(c,key,g.left,g.top,w,H);c.fillStyle='#0c1420';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,g.doorBottom-g.doorTop);
+  // Only the two leaves move. Header, posts and plinth remain fixed.
+  c.drawImage(purchasedAtlas,r[0],r[1],r[2],7,g.left,g.top,w,5);
+  c.drawImage(purchasedAtlas,r[0],r[1]+7,2,r[3]-10,g.left,g.top+5,3,H-13);
+  c.drawImage(purchasedAtlas,r[0]+r[2]-2,r[1]+7,2,r[3]-10,g.right-3,g.top+5,3,H-13);
+  c.fillStyle='#0c1420';c.fillRect(g.doorLeft,g.doorTop,g.doorRight-g.doorLeft,doorH);
  }
  if(part!=='back'){
-  const count=g.locker?1:2,leaf=(g.doorRight-g.doorLeft)/count,angle=clamp(open,0,1)*Math.PI*.48,projection=leaf*Math.cos(angle),depth=Math.sin(angle)*9;
-  for(let i=0;i<count;i++){
-   const side=i===1?-1:1,hinge=i===1?g.doorRight:g.doorLeft;
-   c.save();c.transform(side*projection/(r[2]/count),depth/(r[2]/count),0,(g.doorBottom-g.doorTop)/r[3],hinge,g.doorTop);
-   c.drawImage(purchasedAtlas,r[0]+(i===1?r[2]/2:0),r[1],r[2]/count,r[3],0,0,r[2]/count,r[3]);c.restore();
+  for(const leaf of purchasedCabinetLeaves(h,open)){
+   c.save();c.transform(leaf.projection/leaf.leafW,leaf.side*leaf.depth/leaf.leafW,0,1,leaf.hinge,g.doorTop);
+   // Keep each source leaf's orientation: the right leaf is hinged at its
+   // RIGHT edge, rather than mirroring its handle onto the outside frame.
+   drawPurchasedCabinetLeaf(c,spec,leaf,doorH);
+   c.restore();
   }
-  // The original bottom plinth is the front occluder throughout hiding.
-  c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-4,r[2],4,g.left,g.bottom-9,w,8);
+  c.drawImage(purchasedAtlas,r[0],r[1]+r[3]-3,r[2],3,g.left,g.bottom-8,w,8);
  }
  c.restore();return true;
 }
