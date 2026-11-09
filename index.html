@@ -2189,6 +2189,39 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
  body.touch #hud #stealth{padding:3px 6px}
 }
 
+/* One portrait square, shared by radio and dialogue; never crop a larger
+   fixed canvas inside a narrow, independently sized frame. */
+#dlg{--dialog-face:80px;width:min(720px,calc(100vw - 24px));gap:16px;padding:12px 18px;align-items:flex-start}
+#dlg #dlgFaceBox{flex:0 0 var(--dialog-face);width:var(--dialog-face);height:var(--dialog-face);min-height:0;aspect-ratio:1;align-self:flex-start;overflow:hidden}
+#dlg #dlgFace{position:static;display:block;width:100%;height:100%;max-width:none;transform:none;object-fit:contain;image-rendering:pixelated}
+#dlg .dlg-box{gap:5px}
+#dlg .dlg-context{font-size:10px;line-height:1.4;padding-bottom:5px}
+#dlg.noface .dlg-context{display:none}
+#dlg .dlg-head{gap:3px 9px;align-items:baseline}
+#dlg .dlg-box b{font-size:16px;line-height:1.4}
+#dlg .dlg-box i{font-size:11px;line-height:1.4}
+#dlg .dlg-copy p{font-size:15px;line-height:1.55;margin:0}
+#dlg .dlg-box small{font-size:10px;padding-top:3px}
+#hud #episodeRadio #episodeRadioFace{width:40px;height:40px;flex:0 0 40px;object-fit:contain;aspect-ratio:1}
+body.dlgmodal #hud .pad,body.dlgmodal #hud .sysbtns,body.dlgmodal #hud #quickItems{visibility:hidden;pointer-events:none}
+body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+@media(max-width:640px){
+ #dlg{--dialog-face:60px;width:calc(100vw - 20px);padding:10px 12px;gap:12px}
+ #dlg .dlg-box b{font-size:15px}
+ #dlg .dlg-box i{font-size:10px}
+ #dlg .dlg-copy p{font-size:14px;line-height:1.5}
+ #dlg #dlgMeasure{max-height:clamp(72px,28dvh,180px)}
+ #hud #episodeRadio #episodeRadioFace{width:34px;height:34px;flex-basis:34px}
+ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioFace{width:30px;height:30px;flex-basis:30px}
+}
+@media(max-height:440px) and (orientation:landscape){
+ #dlg{--dialog-face:48px;width:min(660px,calc(100vw - 32px));padding:10px 14px;gap:12px}
+ #dlg .dlg-box b{font-size:14px}
+ #dlg .dlg-copy p{font-size:13px;line-height:1.45}
+ #dlg .dlg-context{font-size:9px;padding-bottom:3px}
+ body.episode-coda #dlg{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+}
+
 </style>
 </head>
 <body>
@@ -2283,7 +2316,7 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
       <button class="ghost" id="btnHelp" type="button">설정</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v248 · 2026-11-09</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v249 · 2026-11-09</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2394,7 +2427,7 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v248 · 2026-11-09</small>
+      <small class="fx-sub" id="pauseVersion">v249 · 2026-11-09</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2471,8 +2504,8 @@ body.touch #hud #episodeRadio[data-compact=true] #episodeRadioAction{display:non
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/a337b747256c483a23b9.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/33afbe7f7091fedf1b04.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/d766f05463fe8d381c8a.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/1fce0a241f87b2439051.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/23dfca73281875e7fc19.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/2e39f30f1e59a4767208.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>
