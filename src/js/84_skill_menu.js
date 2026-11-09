@@ -23,7 +23,7 @@ function chooseAssassinSkill(key){
   const d=ASSASSIN_SKILLS[key],practice=assassinMenu?.practice;if(!d)return;
   if(!practice&&!loadSkillTree().learned.includes(key))return;
   if(practice){S.practiceSkill=key;S.selectedSkill=key;S.skillReadyAt=S.t;}
-  else{try{localStorage.setItem('yahaeng.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
+  else{try{localStorage.setItem(progressKey('yahaeng.assassinSkill'),key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
 let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;

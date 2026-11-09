@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const loader = new GLTFLoader();
 const loaded = new Map();
 export const LOOKS = {
+  heroAgent: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Suit'],
   hero: ['Female-Casual', 'Female-Suit', 'Female-Casual', 'Female-Worker'],
   heroSuit: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Worker'],
   heroWorker: ['Female-Casual', 'Female-Worker', 'Female-Worker', 'Female-Worker'],
@@ -83,6 +84,17 @@ export async function loadModular(name) {
     if (!partOf(o)) { o.visible = false; return; }
     o.frustumCulled = false;
     o.material = Array.isArray(o.material) ? o.material.map(m => materialFor(o, m)) : materialFor(o, o.material);
+    if(name==='heroAgent'){
+      const materials=Array.isArray(o.material)?o.material:[o.material];
+      for(const m of materials){m.shininess=0;m.flatShading=true;}
+      // Broader suit cloth, with the original female skeleton and bare hands.
+      // Bone positions and paired contact targets remain in the same rig space.
+      if(partOf(o)==='Body'&&materials.every(m=>m.userData.role==='shirt')){
+        o.geometry=o.geometry.clone();const pos=o.geometry.attributes.position;
+        for(let i=0;i<pos.count;i++)pos.setX(i,pos.getX(i)*1.1);
+        pos.needsUpdate=true;o.geometry.computeVertexNormals();
+      }
+    }
     mats.push(...(Array.isArray(o.material) ? o.material : [o.material]));
   });
   // All looks use one rig scale. Normalising each costume's bounding box

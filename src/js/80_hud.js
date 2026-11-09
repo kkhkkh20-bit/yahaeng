@@ -472,6 +472,7 @@ function showEnd(win, reason) {
   $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   $('btnRetry').hidden=win;$('btnMenu').textContent='처음 화면';
+  if(STAGE.agentStudy){$('endSkills').hidden=true;$('endRankNote').querySelectorAll('.skill-receipt').forEach(e=>e.remove());$('btnRetry').hidden=false;}
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
   if(win)queueResultTraining();

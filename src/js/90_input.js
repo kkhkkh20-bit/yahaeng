@@ -290,6 +290,7 @@ document.addEventListener('fullscreenchange', () => { $('btnFull').textContent =
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
+  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;$('btnQuick').textContent='여성 요원 · 도시 테스트';$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
   $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
@@ -309,7 +310,7 @@ $('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.cl
 $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0;h.querySelectorAll('details').forEach(d=>d.open=false); });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
-$('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
+$('btnQuick').addEventListener('click', () => { initAudio(); if(window.__AGENT_CITY_STUDY__)start(STAGES.findIndex(s=>s.agentStudy));else beginCampaign(); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
 const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){
@@ -392,7 +393,7 @@ function start(i, noBrief) {
   newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -448,6 +449,6 @@ atlas.onload = async () => {
 atlas.onerror=()=>window.__boot?.fail('필수 이미지 다운로드 실패');
 atlas.src = A.atlas;
 // 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
-if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
+if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm([window.__AGENT_CITY_STUDY__?'agent@heroAgent':'ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
 
 $('btnRadio').addEventListener('click',e=>{e.stopPropagation();replayEpisodeRadio();});

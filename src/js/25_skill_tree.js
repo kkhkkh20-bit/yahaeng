@@ -30,7 +30,7 @@ const SKILL_TREE=[
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
 ];
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
-const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=1;
+const SKILL_STORE=progressKey('yahaeng.skillTree.v1'),SKILL_START_POINTS=1;
 let volatileSkillTree=null;
 function skillBudget(){const r=loadSkillTree();return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);

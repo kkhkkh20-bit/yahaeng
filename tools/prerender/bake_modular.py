@@ -37,6 +37,7 @@ RECIPES = {
  'pack': ('hoodie', {'parts': BODIES['pack']['parts']}, CIV_ANIMS),
  'helmet': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
+ 'heroAgent': ('heroAgent', None, None),
  'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
  'heroWorkerLid': ('heroWorker', None, ['openBin']), 'heroCrewLid': ('heroCrew', None, ['openBin']),
 }
@@ -130,7 +131,7 @@ async def main():
      for c in patch_cols:
       box=(c*FR,direction*FR,(c+1)*FR,(direction+1)*FR)
       outlined.paste(outline(image.crop(box)),box[:2])
-    image=outlined.quantize(colors=192,method=Image.FASTOCTREE).convert('RGBA')
+    image=outlined.quantize(colors=64 if bn.startswith('heroAgent') else 192,method=Image.FASTOCTREE).convert('RGBA')
     filename='key.webp' if bn=='key' else f'body_{bn}.webp'
     if patch:
      original=Image.open(OUT/filename).convert('RGBA')

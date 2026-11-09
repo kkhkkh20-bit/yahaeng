@@ -27,4 +27,8 @@ def campaign_assets(root):
     if (office/'interiors.json').exists():
         assets['office']=json.loads((office/'interiors.json').read_text())
         assets['office']['src']='data:image/webp;base64,'+base64.b64encode((office/'interiors.webp').read_bytes()).decode()
+    study=Path(root)/'src/art/city-study'
+    if (study/'details.json').exists():
+        assets['cityStudy']=json.loads((study/'details.json').read_text())
+        assets['cityStudy']['src']='data:image/webp;base64,'+base64.b64encode((study/'details.webp').read_bytes()).decode()
     return json.dumps(assets, ensure_ascii=False, separators=(',', ':'))
