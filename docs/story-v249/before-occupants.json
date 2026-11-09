@@ -1,0 +1,347 @@
+[
+  {
+    "id": "tB",
+    "darkAwake": [],
+    "lamps": 35
+  },
+  {
+    "id": "p0",
+    "darkAwake": [],
+    "lamps": 12
+  },
+  {
+    "id": "e2",
+    "darkAwake": [],
+    "lamps": 17
+  },
+  {
+    "id": "m2",
+    "darkAwake": [
+      {
+        "id": 32,
+        "kind": "g1",
+        "civ": false,
+        "target": false,
+        "torch": true,
+        "tag": "cipherKeeper",
+        "body": null,
+        "x": 2088,
+        "y": 1368,
+        "fl": 1,
+        "home": null,
+        "b": 7,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 2088,
+            "y": 1368,
+            "pause": 9
+          },
+          {
+            "x": 2328,
+            "y": 1368,
+            "pause": 9
+          }
+        ]
+      }
+    ],
+    "lamps": 99
+  },
+  {
+    "id": "m4",
+    "darkAwake": [
+      {
+        "id": 8,
+        "kind": "g2",
+        "civ": false,
+        "target": false,
+        "torch": true,
+        "tag": null,
+        "body": null,
+        "x": 312,
+        "y": 1080,
+        "fl": 2,
+        "home": null,
+        "b": 4,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 312,
+            "y": 1080,
+            "pause": 999
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "kind": "g1",
+        "civ": false,
+        "target": false,
+        "torch": null,
+        "tag": null,
+        "body": null,
+        "x": 312,
+        "y": 1080,
+        "fl": 0,
+        "home": null,
+        "b": 4,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 312,
+            "y": 1080,
+            "pause": 2
+          },
+          {
+            "x": 312,
+            "y": 1080,
+            "pause": 2
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "kind": "g2",
+        "civ": false,
+        "target": false,
+        "torch": true,
+        "tag": "contractKeeper",
+        "body": null,
+        "x": 168,
+        "y": 1128,
+        "fl": 1,
+        "home": null,
+        "b": 4,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 168,
+            "y": 1128,
+            "pause": 8
+          },
+          {
+            "x": 408,
+            "y": 1032,
+            "pause": 8
+          }
+        ]
+      }
+    ],
+    "lamps": 74
+  },
+  {
+    "id": "m6",
+    "darkAwake": [
+      {
+        "id": 9,
+        "kind": "g1",
+        "civ": false,
+        "target": false,
+        "torch": null,
+        "tag": null,
+        "body": null,
+        "x": 360,
+        "y": 888,
+        "fl": 1,
+        "home": null,
+        "b": 3,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 360,
+            "y": 888,
+            "pause": 999
+          }
+        ]
+      }
+    ],
+    "lamps": 67
+  },
+  {
+    "id": "m7",
+    "darkAwake": [
+      {
+        "id": 0,
+        "kind": "t",
+        "civ": false,
+        "target": true,
+        "torch": null,
+        "tag": "broker",
+        "body": null,
+        "x": 1560,
+        "y": 360,
+        "fl": 0,
+        "home": null,
+        "b": 0,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 1560,
+            "y": 360,
+            "pause": 28
+          },
+          {
+            "x": 1176,
+            "y": 792,
+            "pause": 12
+          },
+          {
+            "x": 1368,
+            "y": 504,
+            "pause": 10
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "kind": "g1",
+        "civ": false,
+        "target": false,
+        "torch": null,
+        "tag": "archiveGuard",
+        "body": null,
+        "x": 1032,
+        "y": 504,
+        "fl": 0,
+        "home": null,
+        "b": 0,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 1032,
+            "y": 504,
+            "pause": 5
+          },
+          {
+            "x": 1032,
+            "y": 312,
+            "pause": 4
+          }
+        ]
+      }
+    ],
+    "lamps": 36
+  },
+  {
+    "id": "m5",
+    "darkAwake": [],
+    "lamps": 53
+  },
+  {
+    "id": "n1",
+    "darkAwake": [
+      {
+        "id": 6,
+        "kind": "g1",
+        "civ": false,
+        "target": false,
+        "torch": true,
+        "tag": null,
+        "body": null,
+        "x": 1176,
+        "y": 504,
+        "fl": 1,
+        "home": null,
+        "b": 0,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 1176,
+            "y": 504,
+            "pause": 2
+          },
+          {
+            "x": 1176,
+            "y": 504,
+            "pause": 2
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "kind": "g2",
+        "civ": false,
+        "target": false,
+        "torch": null,
+        "tag": null,
+        "body": null,
+        "x": 1176,
+        "y": 504,
+        "fl": 0,
+        "home": null,
+        "b": 0,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 1176,
+            "y": 504,
+            "pause": 999
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "kind": "civ",
+        "civ": true,
+        "target": false,
+        "torch": null,
+        "tag": "cook",
+        "body": "fBob",
+        "x": 552,
+        "y": 936,
+        "fl": 0,
+        "home": {
+          "b": 1,
+          "fl": 0,
+          "x0": 10,
+          "y0": 17,
+          "x1": 13,
+          "y1": 21
+        },
+        "b": 1,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 552,
+            "y": 936,
+            "pause": 999
+          }
+        ]
+      },
+      {
+        "id": 22,
+        "kind": "g2",
+        "civ": false,
+        "target": false,
+        "torch": true,
+        "tag": null,
+        "body": null,
+        "x": 1512,
+        "y": 936,
+        "fl": 0,
+        "home": null,
+        "b": 2,
+        "state": "PATROL",
+        "light": 0.04,
+        "route": [
+          {
+            "x": 1512,
+            "y": 936,
+            "pause": 999
+          }
+        ]
+      }
+    ],
+    "lamps": 12
+  }
+]
