@@ -57,14 +57,17 @@ function kitFloor(k) {
 function kitAttach() {
   ROB = null; BLD.forEach(b => { b.kitProps = null; });
   const kid = STAGE.kitId || STAGE.id;  // 같은 지도를 쓰는 판은 구운 그림을 나눠 쓴다
-  if (!KIT || !KIT.bld || !KIT.bld[kid]) return;
+  const entries=KIT?.bld?.[kid]||[];
   const cache = kitB[STAGE.id] || (kitB[STAGE.id] = {});
-  for (const e of KIT.bld[kid]) {
+  for (const e of entries) {
     const b = BLD[e.i]; if (!b || [b.x0, b.y0, b.x1, b.y1, b.h].join() !== e.key.join()) continue;
     let k = cache[e.i];
     if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null, gl: e.gl || [], g: null }; k.img.src = e.src; }
     b.kit = k; b.kitProps = e.props || null;
   }
+  // New/revised layouts can have no legacy baked kit. Roof stair gameplay
+  // still needs a visible, solid stair house and a door on the same landing.
+  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>p.t==='sh');b.cityPropsC=null;});
   robBuild();
 }
 // 옥상 부분만 밤빛으로 한 번 어둡게 칠한 사본 (정면 벽은 매 프레임 조명에 따라 칠한다)

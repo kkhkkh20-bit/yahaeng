@@ -46,10 +46,16 @@ function syncRoomSwitches() {
     let part=region.seen.get(tx+','+ty);
     if(!part){let best=Infinity;for(const candidate of region.parts)for(const [x,y]of candidate.cells){const d=Math.hypot(x-tx,y-ty);if(d<best){best=d;part=candidate;}}}
     const authored=l.authoredControl&&l.control;
-    const at=authored||part?.sites[0];
+    let at=authored||part?.sites[0];
+    if(authored&&part?.sites.length){
+      // Authored hints used a floor-cell centre. Mount the real control on the
+      // nearest reachable wall of its own room, retaining the circuit identity.
+      l.authoredControlId ||= 'authored:'+fl+':'+authored.x+','+authored.y;
+      at=part.sites.reduce((best,s)=>!best||dist(s.x,s.y,authored.x,authored.y)<dist(best.x,best.y,authored.x,authored.y)?s:best,null);
+    }
     // An inaccessible fixture is never a magical switch in the room centre.
     l.control=at?{...at}:null;
-    l.circuit=at?(authored?'authored:'+fl+':'+at.x+','+at.y:'room:'+key+':'+part.id):null;
+    l.circuit=at?(authored?l.authoredControlId||'authored:'+fl+':'+at.x+','+at.y:'room:'+key+':'+part.id):null;
     l.roomSwitch=!!at;
     if(part?.sites.length){
       const used=part.fixtureSites||(part.fixtureSites=[]);

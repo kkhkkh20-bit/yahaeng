@@ -1576,13 +1576,13 @@ campaignStage('e4').story.before='장부에 나온 교환실이다. 클럽 실�
 const OFFICER_STYLE={
  runner:{appearance:'주황색 후드 · 검은 배낭',coat:'#ce7c27',pants:'#252d39',habit:'혼자 담배를 피우며 거래 상대를 기다린다.',temperament:'성급한 하청 운반책',cues:[["smoke", "한 대만 더 피우고 갈게. 차 안에서는 못 피우잖아."], ["phone", "문서윤 씨, 나 벌써 도착했어요. 몇 분이나 더 기다려야 돼요?"]],alert:"누구야! 경비 좀 불러 줘!"},
  contact:{appearance:'선명한 청색 작업복 · 구리빛 머리',hair:'#9b5c3b',coat:'#398dd5',pants:'#263b57',habit:'걸음을 멈추면 통화를 확인하고 다음 연락을 재촉한다.',temperament:'주변을 살피는 연락책',cues:[["phone", "도착하면 전화해. 여기서 계속 기다리기도 좀 그래."], ["point", "아, 이름은 좀 작게 불러. 여기 사람들 다 듣겠다."]],alert:"여기 누가 들어왔어! 일단 나오지 마!"},
- broker:{appearance:'옥색 정장 · 버건디 단발',hair:'#763f54',coat:'#35a59c',pants:'#263d48',habit:'2층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[["ledger", "사진 말고 원본을 달라니까. 사진은 나도 있어요."], ["phone", "박인호 씨는요? 왔다면서 왜 안 올라와요?"]],alert:"거기 누구예요? 그 서류 내려놔요!"},
+ broker:{appearance:'옥색 정장 · 버건디 단발',hair:'#763f54',coat:'#35a59c',pants:'#263d48',habit:'3층에서 장부를 확인하고 통화로 보고를 재촉한다.',temperament:'숫자에 집착하는 중개인',cues:[["ledger", "사진 말고 원본을 달라니까. 사진은 나도 있어요."], ["phone", "박인호 씨는요? 왔다면서 왜 안 올라와요?"]],alert:"거기 누구예요? 그 서류 내려놔요!"},
  club:{appearance:'붉은 정장 · 애쉬브라운 머리',hair:'#817368',coat:'#de394d',pants:'#27232e',habit:'흡연할 땐 혼자, 홀과 VIP룸에서는 술잔을 든다.',temperament:'과시적인 클럽 실장',cues:[["smoke", "여기까지 따라오지 마. 담배 피울 동안 문 앞에서 기다려."], ["drink", "얼음 좀 더 넣어 줘. 아까 건 거의 맹물이던데."], ["phone", "장부 찾는 전화야? 사무실로 돌려. 내가 올라갈게."]],reply:"네, 실장님. 문 앞에 있겠습니다.",alert:"뭐야? 저 사람 누가 들여보냈어!"},
- collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[["ledger", "십만 원이 비는데? 다시 세어 봐. 내 돈으로 채우긴 싫다."], ["point", "금고 열려면 내 빨간 카드가 필요해. 나 없을 때 건드리지 말고."], ["phone", "다 걷었어. 백철민한테 확인받으면 차 보낼게."]],reply:"네, 반장님. 다 세고 바로 말씀드릴게요.",alert:"야, 가방 내려놔! 그건 내 돈이야!"},
+ collector:{appearance:'황금색 재킷 · 큰 체격',coat:'#e4b439',pants:'#33313a',habit:'수금 동선에서 멈춰 금액을 대조하고 경호를 재촉한다.',temperament:'정산을 직접 하는 수금반장',cues:[["ledger", "십만 원이 비는데? 다시 세어 봐. 아까는 맞았잖아."], ["point", "금고 열려면 내 빨간 카드가 필요해. 나 없을 때 건드리지 말고."], ["phone", "다 걷었어. 백철민한테 확인받으면 차 보낼게."]],reply:"네, 반장님. 다 세고 바로 말씀드릴게요.",alert:"야, 가방 내려놔! 그건 내 돈이야!"},
  district:{appearance:'보라색 정장 · 회색 머리',hair:'#929d9f',coat:'#9953cc',pants:'#2a263b',habit:'VIP룸에서 계약서를 읽고 경호원에게 지시한다.',temperament:'체면을 중시하는 상권 지부장',cues:[["ledger", "장무혁한테 돈부터 보내라고 해. 계약서만 쌓이면 뭐 해."], ["point", "손님 왔어? 약속했는지부터 물어봐. 오늘은 아무나 못 만나."]],reply:"네. 먼저 확인하겠습니다.",alert:"누가 들어왔잖아! 문 앞에서 뭘 한 거야!"},
- freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[["ledger", "봉인 번호가 또 달라. 명세서랑 맞을 때까지 차 세워 둬."], ["phone", "아직 출발시키지 마. 서류가 안 맞는데 나보고 어쩌라고."], ["point", "저 차 뒤쪽도 봐 줘. 문 덜 닫히면 또 내 책임이야."]],alert:"차부터 세워! 누가 안으로 들어왔어!"},
- crow:{appearance:'진홍색 정장 · 백발',hair:'#d9d2c4',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[["phone", "그 얘기는 나한테만 해. 사람 많을 때 떠들지 말고."], ["ledger", "원본은 여기 둬. 가져갔다가 잃어버리면 누가 책임질 건데."], ["point", "위층에 사람 올라오면 나부터 불러. 혼자 들여보내지 마."]],alert:"올빼미? 네가 왜 여기 있어? 경비!"},
- chair:{appearance:'아이보리 재킷 · 자주색 바지 · 연금색 머리',hair:'#c9b58d',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[["drink", "다들 한 잔씩 하세요. 잔 들고 있는데 얘기 길게는 안 할게요."], ["point", "연못 쪽에는 사람 좀 빼 주세요. 잠깐 걸으려고요."], ["drink", "원장은 제 방에 두세요. 제가 읽어 보고 서명할게요."]],reply:"네, 이사장님. 바로 가져다 놓겠습니다.",alert:"저 사람 누구예요? 경비 좀 불러 주세요!"}
+ freight:{appearance:'주황색 작업복 · 밝은 안전모',coat:'#ef8932',pants:'#293d50',shoes:'#dfd8c4',habit:'검수대에서 서류를 대조하고 상차 대기장에서는 통화한다.',temperament:'현장을 직접 챙기는 운송 지부장',cues:[["ledger", "봉인 번호가 또 달라. 명세서랑 맞을 때까지 차 세워 둬."], ["phone", "출발시키지 마. 서류부터 다시 확인해."], ["point", "저 차 뒷문도 확인해. 아까 덜 닫혔더라."]],alert:"차부터 세워! 누가 안으로 들어왔어!"},
+ crow:{appearance:'진홍색 정장 · 백발',hair:'#d9d2c4',coat:'#ae304c',pants:'#302837',habit:'본부 2층을 돌며 통화하고 하부 보고를 확인한다.',temperament:'말을 아끼는 연락 총책',cues:[["phone", "그건 이따 나한테 따로 얘기해. 여기서 말고."], ["ledger", "원본은 여기 두고 사본을 가져가. 그건 내가 볼 거야."], ["point", "위층에 사람 올라오면 나부터 불러. 혼자 들여보내지 마."]],alert:"올빼미? 네가 왜 여기 있어? 경비!"},
+ chair:{appearance:'아이보리 재킷 · 자주색 바지 · 연금색 머리',hair:'#c9b58d',coat:'#f2e8d4',pants:'#652d51',habit:'단상에서 건배하고 연못가를 둘러본 뒤 연회석으로 간다.',temperament:'우아하게 명령하는 의장',cues:[["drink", "잔 좀 채워 주시겠어요? 오늘 와 주셔서 고마워요."], ["point", "연못 쪽에는 사람 좀 빼 주세요. 잠깐 걸으려고요."], ["drink", "원장은 제 방에 두세요. 제가 읽어 보고 서명할게요."]],reply:"네, 이사장님. 바로 가져다 놓겠습니다.",alert:"저 사람 누구예요? 경비 좀 불러 주세요!"}
 };
 const wardrobeWords=[['갈색 후드','주황색 후드'],['회청색 작업복','선명한 청색 작업복'],['청록 정장','옥색 정장'],['청록색 정장','옥색 정장'],['자주색 정장','붉은 정장'],['황토색 재킷','황금색 재킷'],['밝은 회색 정장','보라색 정장'],['밝은 정장','보라색 정장'],['적갈색 정장','진홍색 정장'],['아이보리 정장','아이보리 재킷과 자주색 바지']];
 const wardrobeText=text=>wardrobeWords.reduce((s,[from,to])=>s.replaceAll(from,to),text);
@@ -1756,12 +1756,12 @@ Object.assign(campaignStage('e2'),{
 const currentDialogue={
  tB:[],
  p0:[],e2:[], // These jobs use live radio; do not add a blocking introduction.
- m2:[['master','클럽 안에 강도윤이 있어. 붉은 정장이니까 찾기는 쉬울 거야. 장부하고 암호표도 챙겨야 해.'],['hero','찾는 건 쉽고, 나오는 게 문제겠네. 밖에서 한 바퀴 돌아볼게.']],
- m4:[['master','장무혁은 황금색 재킷, 백철민은 보라색 정장이야. 현금 가방하고 계약서도 가져와.'],['hero','둘이 옷 취향은 안 겹치네. 사람부터 찾아볼게.']],
- m6:[['hero','아, 머리야. 장비도 다 가져갔네.'],['hero','제비도 여기로 끌려왔다고 했지. 일단 나가는 길부터 찾아보자.']],
- m7:[['hero','오태식은 창고 동쪽에 있겠지. 안전모 쓴 사람부터 찾아보자.'],['hero','명세서 가져오고, 2층 배차 단말에서 배송을 멈춰야 해. 아직 출발한 건 아니겠지.']],
- m5:[['hero','여기가 까마귀가 숨은 곳이네. 남한테 길은 그렇게 잘 알려 주더니.'],['hero','까마귀는 2층, 원본 장부는 1층 금고. 뒷문부터 한번 보자.']],
- n1:[['hero','윤서경. 재단 이사장이라더니 여기서 다 시켰구나.'],['hero','2층 명령 원장도 챙겨야겠다. 그거 없으면 또 아무것도 모른다고 하겠지.']]
+ m2:[['master','클럽 실장 강도윤, 붉은 정장이야. 그를 처리하고 장부와 거래 암호표도 가져와.'],['hero','입구부터 볼게. 장부는 사무동, 암호표는 회계 숙소였지?']],
+ m4:[['master','장무혁은 황금색 재킷, 백철민은 보라색 정장이야. 현금 가방하고 계약서도 가져와.'],['hero','알았어. 두 사람이 어디 있는지부터 볼게.']],
+ m6:[['hero','아, 머리야. 주머니까지 싹 털었네.'],['hero','제비도 여기로 끌려왔다고 했지. 감방부터 나가자.']],
+ m7:[['hero','창고 동쪽, 주황색 작업복에 안전모. 오태식부터 찾자.'],['hero','명세서를 챙기고 2층 배차 단말에서 출고를 멈추자. 차가 나가기 전에.']],
+ m5:[['hero','까마귀, 여기 숨어 있었네. 내 무전은 안 받더니.'],['hero','까마귀는 2층에 있고 원본 장부는 1층 금고에 있어. 뒷문부터 보자.']],
+ n1:[['hero','윤서경. 연회까지 열었네. 오늘은 기분이 좋은가 봐.'],['hero','윤서경을 처리하고 2층 명령 원장을 가져오자. 누구한테 뭘 시켰는지 다 적혀 있을 테니.']]
 };
 for(const[id,lines]of Object.entries(currentDialogue))DIALOGUE[id]=lines;
 Object.assign(BARKS,{
@@ -1769,10 +1769,10 @@ Object.assign(BARKS,{
  lost:['어디 갔어? 아까 이쪽으로 왔는데.','난 안쪽 볼게. 넌 출입구 좀 봐.'],
  calm:['이쪽은 아무도 없어. 돌아갈게.','별거 없네. 나 다시 순찰 돈다.'],
  calmLost:['못 찾았어. 나가는 사람 잘 봐.','이쪽은 다 봤어. 다시 순찰 돌게.'],
- calmBody:['아직 누가 그랬는지는 몰라. 혼자 다니지는 마.','쓰러진 사람은 확인했어. 주변에 누가 있었는지 물어봐.'],
+ calmBody:['아직 누가 그랬는지는 몰라. 혼자 다니지는 마.','여기 한 명 쓰러졌어. 근처에 수상한 사람 못 봤어?'],
  giveup:['이쪽엔 없어. 다른 데도 좀 봐 줘.','놓쳤네. 출입구부터 다시 확인하자.'],
- roll:['다들 무전 좀 받아 봐. 대답 없는 데부터 확인하자.'],
- hurt:['아, 맞았어! 일단 여기서 나가자.','괜찮아, 아직 걸을 수 있어.'],
+ roll:['다들 응답해. 대답 없는 쪽부터 확인하자.'],
+ hurt:['아, 맞았어! 일단 여기서 나가자.','아직 움직일 수 있어. 빨리 나가자.'],
  done:['챙겼어? 그럼 이제 나와.'],
  terror:['사람 떨어졌어! 다들 비켜요!','여기 사람 쓰러졌어요! 좀 도와주세요!']
 });
@@ -2735,14 +2735,17 @@ function kitFloor(k) {
 function kitAttach() {
   ROB = null; BLD.forEach(b => { b.kitProps = null; });
   const kid = STAGE.kitId || STAGE.id;  // 같은 지도를 쓰는 판은 구운 그림을 나눠 쓴다
-  if (!KIT || !KIT.bld || !KIT.bld[kid]) return;
+  const entries=KIT?.bld?.[kid]||[];
   const cache = kitB[STAGE.id] || (kitB[STAGE.id] = {});
-  for (const e of KIT.bld[kid]) {
+  for (const e of entries) {
     const b = BLD[e.i]; if (!b || [b.x0, b.y0, b.x1, b.y1, b.h].join() !== e.key.join()) continue;
     let k = cache[e.i];
     if (!k) { k = cache[e.i] = { img: new Image(), ox: e.ox, oy: e.oy, w: e.w, h: e.h, c: null, gl: e.gl || [], g: null }; k.img.src = e.src; }
     b.kit = k; b.kitProps = e.props || null;
   }
+  // New/revised layouts can have no legacy baked kit. Roof stair gameplay
+  // still needs a visible, solid stair house and a door on the same landing.
+  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>p.t==='sh');b.cityPropsC=null;});
   robBuild();
 }
 // 옥상 부분만 밤빛으로 한 번 어둡게 칠한 사본 (정면 벽은 매 프레임 조명에 따라 칠한다)
@@ -2971,11 +2974,29 @@ function drawCityEntrances(b){
   if(!inView(e.x,e.y,140))continue;
   const d=e.doors[0],open=doorVisualOpen(d),name=open>.5?'doorOpen':'doorClosed',side=!!e.nx;
   if((side||e.ny<0)&&(S.player.z||flOf(S.player)))continue;
-  const count=e.doors.length,span=Math.max(TILE,count*TILE),x=side?e.wallX+(e.nx<0?-5:-29):e.x-span/2,y=side?e.y-34:e.ny<0?e.wallY-14:e.wallY-TILE;
-  const width=side?34:span,height=side?48:48;
+  if(side){
+   const span=e.doors.length*TILE,x=e.wallX+(e.nx<0?0:-22),y=e.y-span/2;
+   ctx.save();ctx.imageSmoothingEnabled=false;
+   ctx.fillStyle='#111d27';ctx.fillRect(x,y,22,span);
+   ctx.fillStyle='#53616b';ctx.fillRect(x,y,22,3);ctx.fillRect(x,y+span-3,22,3);
+   const leaf=Math.round(16*(1-open));
+   ctx.fillStyle=d.locked?'#655f51':'#43545f';ctx.fillRect(x+3,y+4,leaf,span-8);
+   if(leaf>3){ctx.fillStyle='#82908e';ctx.fillRect(x+4,y+5,1,span-10);ctx.fillStyle=d.locked?'#bea16b':'#a3aaa1';ctx.fillRect(x+Math.max(5,leaf-2),y+span*.55,2,4);}
+   ctx.fillStyle='#74817f';ctx.fillRect(e.nx<0?x:x+19,y+3,3,span-6);
+   ctx.restore();continue;
+  }
+  if(e.ny<0){
+   const span=e.doors.length*TILE,x=e.x-span/2,y=e.wallY;
+   ctx.save();ctx.fillStyle='#111d27';ctx.fillRect(x,y,span,18);
+   ctx.fillStyle='#53616b';ctx.fillRect(x,y,3,18);ctx.fillRect(x+span-3,y,3,18);
+   const leaf=Math.round(12*(1-open));ctx.fillStyle=d.locked?'#655f51':'#43545f';ctx.fillRect(x+3,y+3,span-6,leaf);
+   if(leaf>3){ctx.fillStyle=d.locked?'#bea16b':'#a3aaa1';ctx.fillRect(x+span*.6,y+Math.max(4,leaf-1),4,2);}
+   ctx.restore();continue;
+  }
+  const count=e.doors.length,span=Math.max(TILE,count*TILE),x=e.x-span/2,y=e.wallY-TILE;
+  const width=span,height=48;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // A real aperture interrupts the opaque roof/side wall at the actual door cell.
-  if(side){ctx.fillStyle='#0c1621';ctx.fillRect(e.wallX+(e.nx<0?0:-26),e.y-span/2,26,span);}
   ctx.fillStyle='#111c27';ctx.fillRect(x-3,y-3,width+6,height+4);const f=freeCityArt.frames[name]?.rect;
   if(f)ctx.drawImage(freeCityAtlas,...f,x,y,width,height);
   else{ctx.fillStyle=d.locked?'#65554b':'#111d28';ctx.fillRect(x+2,y+2,width-4,height-4);}
@@ -3224,15 +3245,18 @@ function paintOfficeWindow(w,lit,L=40,T=26){
  ctx.fillStyle='#687580';ctx.fillRect(-im.width/2-1,im.height/2,im.width+2,1);return true;
 }
 function paintOfficeSideWindow(w,lit,side){
- const im=officeWindowImage(w,lit);if(!im)return false;
- side=side<0?-1:1;
- ctx.save();ctx.fillStyle='#0d1722';ctx.beginPath();
- ctx.moveTo(-side*11,-18);ctx.lineTo(side*10,-24);ctx.lineTo(side*10,14);ctx.lineTo(-side*11,23);ctx.closePath();ctx.fill();
- // A vertical wall plane has upright jambs and a recessed sill. The front
- // casement is projected onto that face; it is never rotated through 90 degrees.
- ctx.transform(side*.43,-.16,0,1.38,-side*8,-17);ctx.drawImage(im,0,0);ctx.restore();
- ctx.fillStyle='#465460';ctx.beginPath();ctx.moveTo(-side*9,19);ctx.lineTo(side*10,13);ctx.lineTo(side*13,17);ctx.lineTo(-side*6,23);ctx.closePath();ctx.fill();
- ctx.strokeStyle='#697680';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-side*8,19);ctx.lineTo(side*10,13);ctx.stroke();return true;
+ if(!officeReady())return false;
+ const st=winSt(w),open=st==='open';
+ // A cut in the wall seen from above, with jambs seated in the masonry.
+ // No freestanding front-facing card or protruding sill in the alley.
+ ctx.fillStyle='#0d1721';ctx.fillRect(-6,-18,12,36);
+ ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);
+ ctx.fillStyle='#253441';ctx.fillRect(-4,-15,8,30);
+ ctx.fillStyle=lit?'#827860':'#354c60';ctx.fillRect(-3,-14,6,open?12:28);
+ ctx.fillStyle='#5b6874';ctx.fillRect(-4,open?-1:0,8,2);
+ if(st==='bar'){ctx.fillStyle='#192632';for(let y=-10;y<14;y+=7)ctx.fillRect(-4,y,8,2);}
+ if(st==='lock'){ctx.fillStyle='#ad9469';ctx.fillRect(side<0?-4:2,1,2,3);}
+ return true;
 }
 function refreshOfficeArt(){
  if(!officeArtDirty||!S||!mapC)return;
@@ -5779,10 +5803,16 @@ function syncRoomSwitches() {
     let part=region.seen.get(tx+','+ty);
     if(!part){let best=Infinity;for(const candidate of region.parts)for(const [x,y]of candidate.cells){const d=Math.hypot(x-tx,y-ty);if(d<best){best=d;part=candidate;}}}
     const authored=l.authoredControl&&l.control;
-    const at=authored||part?.sites[0];
+    let at=authored||part?.sites[0];
+    if(authored&&part?.sites.length){
+      // Authored hints used a floor-cell centre. Mount the real control on the
+      // nearest reachable wall of its own room, retaining the circuit identity.
+      l.authoredControlId ||= 'authored:'+fl+':'+authored.x+','+authored.y;
+      at=part.sites.reduce((best,s)=>!best||dist(s.x,s.y,authored.x,authored.y)<dist(best.x,best.y,authored.x,authored.y)?s:best,null);
+    }
     // An inaccessible fixture is never a magical switch in the room centre.
     l.control=at?{...at}:null;
-    l.circuit=at?(authored?'authored:'+fl+':'+at.x+','+at.y:'room:'+key+':'+part.id):null;
+    l.circuit=at?(authored?l.authoredControlId||'authored:'+fl+':'+at.x+','+at.y:'room:'+key+':'+part.id):null;
     l.roomSwitch=!!at;
     if(part?.sites.length){
       const used=part.fixtureSites||(part.fixtureSites=[]);
@@ -5834,6 +5864,21 @@ function drawLightArt(name,x,y,alpha=1,scale=1) {
   ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha*=alpha;ctx.drawImage(a.img,x+a.ox*scale,y+a.oy*scale,a.w*scale,a.h*scale);ctx.restore();return true;
 }
 const lightArtRotation=(nx,ny)=>Math.abs(nx)>Math.abs(ny)?nx>0?3:1:ny>0?2:0;
+function switchVisualPoint(l){
+ const p=l.control;if(!p)return null;
+ const n=switchArtNormal(l),nx=p.nx??-n[0],ny=p.ny??-n[1];
+ return{x:p.x+nx*5,y:p.y+ny*5,nx,ny};
+}
+function drawOfficeSwitch(l){
+ if(!officeReady())return false;
+ const p=switchVisualPoint(l);if(!p)return false;
+ const off=lampCircuitOff(l),side=!!p.nx;
+ ctx.save();ctx.translate(p.x,p.y);
+ ctx.fillStyle='#16232d';ctx.fillRect(side?-3:-5,side?-6:-3,side?6:10,side?12:7);
+ ctx.fillStyle='#67757b';ctx.fillRect(side?-2:-4,side?-5:-2,side?4:8,side?10:5);
+ ctx.fillStyle=off?'#35444e':'#9eac9f';ctx.fillRect(side?-1:-2,side?-2:-1,side?2:4,side?4:2);
+ ctx.restore();return true;
+}
 function drawIndoorLampFixtures(fl,building=-1) {
   const controls=new Set(),fixtures=new Set();
   for(const l of S.lamps){
@@ -5849,6 +5894,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
       }
     }
     const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
+    if(drawOfficeSwitch(l))continue;
     const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
     // A small wall plate, separate from fixtures and their ground light pools.
     ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);
@@ -9098,7 +9144,7 @@ function compoundGoal(){
    const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===0);if(l)return{...stairLower(l).up.entry,fl:l.bfl||0,text:'3층에서 옥상으로 올라가기',where:tutText('{행동} 올라가기'),compoundCue:'jump',routeStep:'roofUp'};
   }
   if(P.z===3&&bi===1){const sign=S.traps.find(t=>t.k==='drop'&&t.text==='금성 거래소');if(sign&&!sign.used&&pending.some(g=>g.tag==='handover'))return{x:tc(sign.at[0]),y:tc(sign.at[1]),fl:0,z:3,text:'간판 아래 인계책을 보고 고정 풀기',where:tutText('아래 표적이 간판 밑에 왔을 때 {행동} 1초 길게'),compoundCue:'sign'};
-   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l)return{x:l.rx??l.ux,y:l.ry??l.uy,fl:0,z:3,text:'옥상문으로 거래소 3층에 내려가기',where:tutText('{행동} 내려가기'),compoundCue:'stairs',routeStep:'roofDown'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l){const d=l.roofDoor;return{x:d?d.x+d.dx*16:l.rx??l.ux,y:d?d.y+d.dy*16:l.ry??l.uy,fl:0,z:3,text:'옥상문으로 거래소 3층에 내려가기',where:d?'계단실 문 안으로 걸어 들어가기':tutText('{행동} 내려가기'),compoundCue:'stairs',routeStep:'roofDown'};}
   }
  }
  const keeper=npc('hallKeeper');
@@ -10890,7 +10936,7 @@ function loadCheckpoint() {
   restoreTargetWardrobes();
   CP.grids.forEach((g, f) => { const dst = f ? GF[f] : G0; if (!g || !dst) return; for (let y = 0; y < g.length; y++) for (let x = 0; x < g[y].length; x++) dst[y][x] = g[y][x]; });
   S.props=(S.props||[]).filter(p=>!p.outfit);restoreUniformDonors();moveStageFixtures(STAGE, G0, true); restoreContractLayout(); restorePhysicalLayout(); installRoomPatches(STAGE,true);installStageFurniture(STAGE,true);syncSurfaceObjects();syncDiningLayout();syncServiceRoomLight();S.floorC={};
-  robBuild(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); refreshLightMasks(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
+  robBuild(); repairRoofLanding(); syncDynamicTurf(); stairsInit(); initAssassinSkills(); applyWorldPolicy(); lvlInit(); syncCameraLayout(); syncOutdoorLamps(); restoreRoomFinishOrigins(); syncWorkLights(); syncRoomSwitches(); initRoomFinish(); refreshLightMasks(); syncMissionProgress(); checkObjective();  // 구버전 위치·경계·표적 완료 판정을 현재 기준과 맞춘다
   if(!abilityOn('ambush')&&concealedAttackSource()){const P=S.player;if(P.grabIn?.g.state==='CAPTIVE')P.grabIn.g.state='RETURN';P.grabIn=null;P.lunge=null;P.attackQueue=null;}
   if(!abilityOn('reach')){S.player.lunge=null;if(S.player.grabIn&&dist(S.player.x,S.player.y,S.player.grabIn.g.x,S.player.grabIn.g.y)>MELEE_CONTACT){S.player.grabIn=null;S.player.attackQueue=null;}}
   delete S.contact; delete S.zEdges; // Derived permission boundaries must match the current rules, including older saves.
@@ -12340,6 +12386,7 @@ function drawPickProgress(P) {
 const onFacadeW = w => { const b = w.b != null ? w.b : bldAt(w.tx, w.ty); return b >= 0 && BLD[b].facade && w.ty >= BLD[b].y1 - BLD[b].fh + 1; };
 // 방범창: 창살
 
+const openingTargetScore=(P,o)=>dist(P.x,P.y,o.x,o.y)+32*(1-Math.cos(angDiff(P.a,Math.atan2(o.y-P.y,o.x-P.x))));
 function windowPassage(w,P=S.player) {
   if(w.sealed||flOf(P)||P.z||flOf(w))return null;
   const vert=winVert(w),nx=vert?1:0,ny=vert?0:1,along=(P.x-w.x)*-ny+(P.y-w.y)*nx,side=Math.sign((P.x-w.x)*nx+(P.y-w.y)*ny);
@@ -12352,7 +12399,7 @@ function nearWindow() {
   const P = S.player; if (P.z || P.fl || P.jump || P.carrying || P.captive || P.hide) return null;
   let best=null,bd=Infinity;
   for (const w of S.windows) { if (ACT_SKIP.has(w)) continue;
-    const v=windowPassage(w,P),d=dist(P.x,P.y,w.x,w.y);
+    const v=windowPassage(w,P),d=openingTargetScore(P,w);
     if(v&&d<bd){best=v;bd=d;}
   }
   return best;
@@ -12398,7 +12445,8 @@ function nearLamp() {
 }
 function nearDoor() {
   const P = S.player; if (P.z || P.fl || P.jump || P.hide) return null; let best = null, bd = 58;
-  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd && objectReachable(d, 58)) { bd = dd; best = d; } }
+  let score=Infinity;
+  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y),rank=openingTargetScore(P,d); if (dd < bd&&rank<score&&objectReachable(d, 58)) { score=rank;best=d; } }
   if (!best) return null;
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;
@@ -14035,15 +14083,10 @@ function drawRoofEntrances(P) {
     ctx.strokeStyle = '#d1d4bc'; ctx.lineWidth = 2;
     ctx.beginPath(); for (const u of [7, 13, 19]) { ctx.moveTo(u, -8); ctx.lineTo(u, 8); } ctx.stroke();
     ctx.fillStyle = '#e1e6d2'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    // 경첩에서 옥상 쪽으로 열린 철문. 기존 옆벽은 시점 때문에 폭이 거의 보이지 않았다.
-    const hx = d.x + tx * 13, hy = d.y + ty * 13, ex = hx + nx * 19 + tx * 9, ey = hy + ny * 19 + ty * 9;
-    ctx.save(); ctx.fillStyle = '#566671'; ctx.strokeStyle = '#a4b4b8'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.lineTo(ex, ey - 34); ctx.lineTo(hx, hy - 34); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#d2d6bd'; ctx.fillRect(ex - 2, ey - 15, 3, 3);
     const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('계단', x, y); ctx.restore();
+    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('↓ '+((l.bfl||0)+1)+'층', x, y); ctx.restore();
   }
 }
 
@@ -14253,7 +14296,7 @@ function drawPlayerLocator(P) {
 }
 function drawPlayer(P) {
   updateHeroVisual(P);
-  const previous=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
+  const previous=playerInkKey;playerInkKey=isTouch||P.light<.3?playerKey(P):null;
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {
@@ -14539,7 +14582,7 @@ function drawRoof1(b, i, roof) {
     ctx.drawImage(b.roofC, x, y);
     drawCityRoofProps(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
-    ctx.fillStyle = NEONY() ? 'rgba(26,8,56,.4)' : 'rgba(4,8,22,.5)'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = NEONY() ? 'rgba(14,6,29,.6)' : 'rgba(3,6,11,.68)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     if (hasHeightCues(i)) drawRoofCoping(b);
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
@@ -14698,6 +14741,11 @@ function robBuild() {
   if (S && S.hides) S.hides = S.hides.filter(h => h.type !== 'okt');
 }
 const ROB_SOLID_DIM = { tank: [1, 1] };
+function repairRoofLanding(){
+ const P=S.player;if(!P.z||flOf(P)||!robAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)))return;
+ const l=S.ladders.filter(l=>l.kind==='stair'&&l.tz===P.z&&l.roofDoor).sort((a,b)=>dist(P.x,P.y,a.rx,a.ry)-dist(P.x,P.y,b.rx,b.ry))[0];
+ if(l&&bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))===bldAt(l.tx,l.ty)){P.x=l.rx;P.y=l.ry;P.vx=P.vy=0;}
+}
 function kitSpec() {
   return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(furnKey))], b: BLD.map((b, i) => ({ i, style: STAGE.kitStyle || '', props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };
@@ -14988,25 +15036,28 @@ function drawWindowEdge(w, b) {
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
-  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
+  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 6), ey = w.y + oy * (TILE / 2 - 6);
   if (lit&&!city&&!officeReady()) {  // Legacy fallback; purchased windows use the real room-light mask.
     const gx = ex + ox * 26, gy = ey + oy * 26, gr = ctx.createRadialGradient(gx, gy, 2, gx, gy, 44);
     gr.addColorStop(0, 'rgba(255,206,130,.32)'); gr.addColorStop(1, 'rgba(255,206,130,0)');
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
-  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,22);
+  if(vert)paintSideWindow(w,lit,ox);else if(officeReady()){ctx.rotate(Math.PI/2);paintOfficeSideWindow(w,lit,oy);}else paintWindow(w,lit,38,22);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
 function drawDoor(d, onRoof) {
   const x = d.x, y = d.y;
+  const office=officeReady(),style=office&&officeStyle(bldAt(d.tx,d.ty),flOf(d));
+  const wood=office&&[OFFICE_STYLES.residence,OFFICE_STYLES.estate].includes(style);
+  const jamb=office?'#394953':'#3a2618',panel=office?(wood?'#716052':'#53636c'):'#8a5a34';
   ctx.save(); ctx.translate(x, y); if (!d.horiz) ctx.rotate(Math.PI / 2);
   ctx.fillStyle='#69716b';ctx.fillRect(-19,-9,38,3);ctx.fillStyle='#b8bca6';ctx.fillRect(-19,-9,38,1);
-  ctx.fillStyle = '#3a2618'; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
+  ctx.fillStyle = jamb; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
   const open=doorVisualOpen(d),a=open*Math.PI/2,ex=-19+38*Math.cos(a),ey=-6+38*Math.sin(a);
   ctx.fillStyle='#16241e';ctx.fillRect(-19,-6,38,12);
-  ctx.fillStyle='#8a5a34';ctx.strokeStyle='#3a2618';ctx.lineWidth=1.2;
+  ctx.fillStyle=panel;ctx.strokeStyle=jamb;ctx.lineWidth=1.2;
   ctx.beginPath();ctx.moveTo(-19,-6);ctx.lineTo(ex,ey);ctx.lineTo(ex-3*Math.sin(a),ey+3*Math.cos(a));ctx.lineTo(-19,0);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.fillStyle='#d3c18d';ctx.beginPath();ctx.arc(ex-6*Math.cos(a),ey-6*Math.sin(a)+2,2,0,TAU);ctx.fill();
   if(d.locked&&open<.2&&d.keyLock){ctx.fillStyle='#b39c59';ctx.fillRect(-4,-3,8,7);}
@@ -15257,7 +15308,7 @@ function lightMap(key, lamps) {
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
   x.save(); x.beginPath(); for (let i = 0; i < l.poly.length; i += 2) i ? x.lineTo(l.poly[i], l.poly[i + 1]) : x.moveTo(l.poly[i], l.poly[i + 1]); x.closePath(); x.clip();
-  const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.8)'); gr.addColorStop(0.55, 'rgba(0,0,0,.66)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.9)'); gr.addColorStop(0.55, 'rgba(0,0,0,.76)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
 }
 function darkPass(sc, lamps, clip, key) {
@@ -15267,7 +15318,7 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.72)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다
@@ -15426,6 +15477,76 @@ function drawTownExterior(){
   ctx.restore();
 }
 
+// Close, same-floor sight through a real window or an open door. The roof stays
+// opaque everywhere else; the revealed pixels are the lit, live world beneath it.
+let aperturePeekState={owner:null,opening:null,alpha:0,t:0},aperturePeekFrame=null;
+const apertureScene=document.createElement('canvas'),apertureMask=document.createElement('canvas');
+function aperturePeekCandidate(P=S.player,openB=S.openB){
+ if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump)return null;
+ let best=null,nearest=Infinity;
+ const candidates=S.windows.map(o=>({o,door:false})).concat(S.doors.filter(d=>!d.gate&&doorVisualOpen(d)>.8).map(o=>({o,door:true})));
+ for(const{ o,door }of candidates){
+  if(flOf(o))continue;
+  const bi=bldAt(o.tx,o.ty),b=BLD[bi];if(!b||b.vacant||bi===openB)continue;
+  const nx=o.tx===b.x0?-1:o.tx===b.x1?1:0,ny=nx?0:o.ty===b.y0?-1:o.ty===b.y1?1:0;if(!nx&&!ny)continue;
+  const dx=P.x-o.x,dy=P.y-o.y,depth=dx*nx+dy*ny,along=dx*-ny+dy*nx;
+  const d=Math.hypot(dx,dy),score=openingTargetScore(P,o);
+  if(depth<24||depth>87||Math.abs(along)>30||d>95||score>=nearest)continue;
+  if(!los(P.x,P.y,o.x+nx*25,o.y+ny*25))continue;
+  const x=o.x-nx*26,y=o.y-ny*26;if(opaqueAt(Math.floor(x/TILE),Math.floor(y/TILE)))continue;
+  nearest=score;best={opening:o,door,b:bi,nx,ny,x,y,depth,d};
+ }
+ return best;
+}
+function updateAperturePeek(P,openB){
+ let state=aperturePeekState;
+ if(state.owner!==S)state=aperturePeekState={owner:S,opening:null,alpha:0,t:S.t};
+ const dt=clamp(S.t-state.t,0,.06);state.t=S.t;
+ const c=aperturePeekCandidate(P,openB);
+ if(!c){state.alpha=0;state.opening=null;return aperturePeekFrame=null;}
+ if(state.opening!==c.opening){state.opening=c.opening;state.alpha=0;}
+ const goal=clamp((88-c.d)/32,0,1);state.alpha+=(goal-state.alpha)*(reducedFxMotion.matches?1:1-Math.exp(-dt*13));
+ if(state.alpha<.015)return aperturePeekFrame=null;
+ const span=c.door?18:14,tx=-c.ny,ty=c.nx,pts=[{x:c.x-tx*span,y:c.y-ty*span}],range=TILE*3.5;
+ for(let i=0;i<=28;i++){
+  const u=-span+2*span*i/28,x=c.x+tx*u,y=c.y+ty*u,a=Math.atan2(y-P.y,x-P.x),r=Math.max(0,castRay(x,y,a,range)-1);
+  pts.push({x:x+Math.cos(a)*r,y:y+Math.sin(a)*r});
+ }
+ pts.push({x:c.x+tx*span,y:c.y+ty*span});
+ return aperturePeekFrame={...c,alpha:state.alpha,pts,range};
+}
+function aperturePeekContains(o,f=aperturePeekFrame){
+ if(!f||flOf(o)||(o.z||0)||bldAt(Math.floor(o.x/TILE),Math.floor(o.y/TILE))!==f.b)return false;
+ let inside=false;const p=f.pts;
+ for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i].y>o.y)!==(p[j].y>o.y)&&o.x<(p[j].x-p[i].x)*(o.y-p[i].y)/(p[j].y-p[i].y)+p[i].x)inside=!inside;
+ return inside;
+}
+function aperturePeekPath(c,f){
+ c.beginPath();f.pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();
+}
+function captureAperturePeek(sc){
+ const f=aperturePeekFrame;if(!f)return;
+ const xs=f.pts.map(p=>p.x),ys=f.pts.map(p=>p.y),ox=W/2*DPR-cam.x*sc,oy=H/2*DPR-cam.y*sc;
+ const x=Math.max(0,Math.floor(Math.min(...xs)*sc+ox)-2),y=Math.max(0,Math.floor(Math.min(...ys)*sc+oy)-2);
+ const w=Math.min(canvas.width,Math.ceil(Math.max(...xs)*sc+ox)+2)-x,h=Math.min(canvas.height,Math.ceil(Math.max(...ys)*sc+oy)+2)-y;
+ if(w<2||h<2)return;
+ // Small reusable region buffers, not a second full-screen mobile scene.
+ const aw=Math.ceil(w/64)*64,ah=Math.ceil(h/64)*64;
+ if(apertureScene.width!==aw||apertureScene.height!==ah){apertureScene.width=apertureMask.width=aw;apertureScene.height=apertureMask.height=ah;}
+ const q=apertureScene.getContext('2d'),m=apertureMask.getContext('2d');q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation='source-over';q.clearRect(0,0,aw,ah);q.drawImage(canvas,x,y,w,h,0,0,w,h);
+ m.setTransform(1,0,0,1,0,0);m.clearRect(0,0,aw,ah);m.setTransform(sc,0,0,sc,ox-x,oy-y);
+ const cx=f.x-f.nx*48,cy=f.y-f.ny*48,g=m.createRadialGradient(cx,cy,12,cx,cy,f.range);
+ g.addColorStop(0,'#fff');g.addColorStop(.55,'rgba(255,255,255,.94)');g.addColorStop(1,'rgba(255,255,255,0)');m.fillStyle=g;aperturePeekPath(m,f);m.fill();
+ q.globalCompositeOperation='destination-in';q.filter='blur('+Math.max(2,sc*3)+'px)';q.drawImage(apertureMask,0,0);q.filter='none';q.globalCompositeOperation='source-over';
+ f.capture={x,y,w,h};
+}
+function drawAperturePeek(){
+ const f=aperturePeekFrame,p=f?.capture;if(!p)return;
+ const b=BLD[f.b];ctx.save();aperturePeekPath(ctx,f);ctx.clip();
+ ctx.beginPath();ctx.rect((b.x0+1)*TILE,(b.y0+1)*TILE,(b.x1-b.x0-1)*TILE,(b.y1-b.y0-1)*TILE);ctx.clip();
+ ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=f.alpha;ctx.drawImage(apertureScene,0,0,p.w,p.h,p.x,p.y,p.w,p.h);ctx.restore();
+}
+
 const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리기 단계를 하나씩 끄고 비교
 function draw() {
   refreshPropArt();refreshOfficeArt();refreshFreeCity();
@@ -15454,6 +15575,7 @@ function draw() {
   S.openB = openB;
   const VF = room?.fl??((!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0);
   const VB = VF ? (room?.b??(lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)))) : -1;
+  updateAperturePeek(P,openB);
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
@@ -15496,7 +15618,7 @@ function draw() {
   PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
-    if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
+    if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || (roofOccludes(c,openB)&&!aperturePeekContains(c))) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if(c.ko&&!c.playerHandled&&!c.carried)drawEmote('zz',c.x+16,c.y-6);
@@ -15504,7 +15626,7 @@ function draw() {
   }
   PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
-    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120) || roofOccludes(g,openB)) continue;
+    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120) || (roofOccludes(g,openB)&&!aperturePeekContains(g))) continue;
     if (g.yank) drawYanked(g); else drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
     if (STAGE.zones) drawSharpEye(g);
@@ -15670,9 +15792,10 @@ function draw() {
     guardOverlay(g);
   }
   PM('cones');
+  captureAperturePeek(sc);
   const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
-    if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
+    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks(); if (S.facOn) drawGangFlags(P);
     quarterWallEdges();
     drawRoofEntrances(P);
     PM('roofs');
@@ -15941,65 +16064,66 @@ function startAmb() {
 
 // One clear instruction at a time, spoken by a familiar partner on the radio.
 const OPENING_RADIO=[
- '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 서류를 남겼대. 확인해 보자.',
- '몸을 좀 낮춰. 상자 옆 풀숲으로 가면 경비한테 안 보일 거야.',
- '저 사람은 문 쪽을 보고 있어. 풀숲에서 나와서 뒤로 가 봐.',
- '짧게 눌렀다 떼면 기절해. 길게 누르면 죽으니까, 이번에는 짧게.',
- '이제 경비 옷으로 갈아입자. 갈아입는 동안은 움직이지 말고.',
- '그대로 두면 다른 경비가 보겠네. 왼쪽 풀숲으로 옮겨서 숨겨.',
- '배차실 안으로 들어가면 돼. 계단으로 올라가서 2층 책상을 확인해 봐.',
- '됐어. 서류는 왼쪽 책상에 있어. 챙겨서 내려가자.',
- '서류에 박인호라고 적혀 있지? 금성 운송 2층에 있대. 일단 갖고 내려와.',
- '동쪽 골목으로 나오면 돼. 서류는 꼭 갖고 오고.'
+ '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 남긴 서류부터 찾아보자.',
+ '웅크리고 상자 옆 풀숲으로 가. 경비 눈을 피할 수 있어.',
+ '경비가 문 쪽을 보고 있네. 풀숲에서 나와 등 뒤로 붙어.',
+ '공격을 짧게 눌렀다 떼. 기절만 시킬 거야. 1초 동안 누르면 죽으니 조심하고.',
+ '경비 옷으로 갈아입어. 끝날 때까지 움직이지 말고.',
+ '쓰러진 경비를 왼쪽 풀숲에 숨겨. 다른 경비가 보기 전에.',
+ '배차실로 들어가. 계단을 올라가면 2층에 서류가 있어.',
+ '왼쪽 책상에 서류가 있어. 챙겨서 내려가자.',
+ '박인호, 금성 운송 2층. 서류에 적힌 주소야. 일단 계단으로 내려와.',
+ '동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
  const P=S.player;if(P.jump||P.trav)return null;
  const goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
- if(chase)return{text:'들켰다. 모퉁이를 돌아서 시야에서 벗어나! 숨을 만한 곳부터 찾아.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
- if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 안 보이는 모양이야. 움직이지 말고 잠깐 기다려. 경비가 돌아가면 나오자.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
- if(P.captive)return P.captive.target?{text:'잡았네. 이번 목표는 기절시키는 걸로는 안 돼. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'짧게 누르고 떼면 기절해. 길게 누르면 죽으니까 누르고 있지는 마.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ if(chase)return{text:'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
+ if(P.captive)return P.captive.target?{text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
   const archiveVia=!!archive&&!!openingArchiveApproach().via;
   let text=isTouch&&i===0?'올빼미, 제비 서류부터 찾자. 화면 왼쪽을 끌어 오른쪽 표시로 가 봐.':isTouch&&i===1?'웅크림을 누르고 상자 옆 풀숲으로 가 봐. 거기선 안 보일 거야.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  if(P.hide)text='지금은 괜찮아. 이제 나와도 돼. 서류부터 찾자.';
-  else if(i===7&&P.carrying)text='서류 챙기려면 손부터 비워야 해. 몸은 사물함에 숨기거나 내려놔.';
+  if(P.hide)text='이제 나와서 서류를 찾자. 나오기 전에 경비 위치부터 보고.';
+  else if(i===7&&P.carrying)text='몸을 사물함에 숨기거나 내려놔. 들고 있으면 서류를 못 챙겨.';
   else if(archiveVia)text='복도 끝 왼쪽에 문이 있어. 그 문으로 들어가면 경비 뒤쪽으로 갈 수 있어.';
-  else if(archive)text=archiveReady?'지금 가까워. 아래에서 했던 것처럼 짧게 누르고 떼.':'서류 앞에도 한 명 있네. 그 옷으로 지나가도 괜찮지만, 훔치는 건 안 보이게 해야 해.';
-  else if(quietDesk)text='지금은 안 보고 있어. 서류를 챙기려면 지금이 좋겠어.';
+  else if(archive)text=archiveReady?'등 뒤에 붙었네. 아까처럼 공격을 짧게 눌렀다 떼.':'서류 앞에도 경비가 있네. 그 옷으로 지나갈 수는 있어. 서류 챙기는 건 들키면 안 돼.';
+  else if(quietDesk)text='경비가 다른 데 보네. 지금 서류를 챙겨.';
   else if(i===4&&P.carrying)text='몸을 먼저 내려놔야 옷을 갈아입을 수 있어.';
-  else if(passed)text='저 사람은 눈치 못 챘네. 천천히 걸어서 2층으로 올라가.';
+  else if(passed)text='직원인 줄 아네. 걸어서 2층으로 올라가.';
   return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed+':'+!!archive+':'+archiveReady+':'+!!(i===7&&P.carrying)+':'+quietDesk+':'+archiveVia,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
- let text='화면에 나온 목표부터 확인해 봐. 가까이 가면 어떻게 할 수 있는지 보일 거야.';
- if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 이미 찍힌 건 남아. 관리 단말에서 기록을 지워야 해.';
+ let text='표시된 목표로 가 봐. 가까이 가면 할 수 있는 행동이 보여.';
+ if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 녹화된 건 남아. 보안 단말에서 기록을 지워.';
  else if(goal.exit||S.exitOpen)text='할 일은 끝났어. '+(flOf(P)?'계단으로 내려가서 ':'')+'노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.';
  else if(STAGE.compound&&goal.compoundCue){
   const who=goal.g?targetName(goal.g).split(' · ')[0]:'표적';
-  text=({dress:'혼자 있는 경비가 보이지? 기절시킨 다음 그 옷으로 갈아입으면 들어가기 편할 거야.',
-   hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람을 그대로 두면 발견할 거야. 먼저 들어서 숨길 곳으로 옮기자.',
+  const item=S.items.find(it=>!it.got),itemName=item?.name||STAGE.itemNames?.[S.items.indexOf(item)]||STAGE.itemName||'서류';
+  text=({dress:'혼자 있는 경비를 기절시키고 옷을 가져와. 그 옷이면 안으로 들어갈 수 있어.',
+   hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람이 발견되면 경비가 몰려와. 들어서 숨길 곳으로 옮겨.',
    guard:'1층에도 경비가 한 명 있어. 뒤에서 기절시키고, 근처 사물함에 숨기면 돼.',
-   light:'벽 스위치를 꺼 봐. 경비가 켜러 오면 다른 사람들한테서 떨어질 거야.',
-   stairs:goal.routeStep==='roofDown'?'건넜네. 오른쪽 옥상문으로 가서 거래소 3층에 내려가.':/내려/.test(goal.text)?'이 계단으로 한 층 내려가면 돼.':'계단으로 한 층 올라가. 도착하면 다음 길을 보자.',
-   camera:STAGE.cameraApproach?(/전선 분리/.test(goal.text)?'지금은 카메라 뒤야. 벽에 붙은 전선을 분리해.':'오른쪽 벽을 따라 위로 돌아가. 카메라 앞은 지나가지 말고.'): '카메라는 때리거나 훔치는 걸 찍어. 뒤쪽 전선부터 끊자.',
+   light:'벽 스위치를 꺼. 불을 켜러 오는 경비를 혼자 있을 때 노려.',
+   stairs:goal.routeStep==='roofDown'?'건넜어. 오른쪽 계단실 문으로 들어가면 거래소 3층이야.':/내려/.test(goal.text)?'이 계단으로 한 층 내려가면 돼.':'계단으로 한 층 올라가. 도착하면 다음 길을 보자.',
+   camera:STAGE.cameraApproach?(/전선 분리/.test(goal.text)?'지금은 카메라 뒤야. 벽에 붙은 전선을 분리해.':'오른쪽 벽을 따라 위로 돌아가. 카메라 앞은 지나가지 말고.'): '카메라는 공격하거나 물건을 가져가는 걸 찍어. 뒤쪽 전선부터 끊자.',
    window:({wire:'정비동 옆 작업대에 철사가 있어. 먼저 챙겨.',pick:'철사 챙겼지? 정비동 왼쪽 창문으로 가서 잠금을 풀어.',enter:'열렸네. 이제 그 창문으로 넘어가면 돼.'})[goal.routeStep]||'작업대의 철사를 챙겨서 서쪽 창문 잠금을 풀어 봐.',
    jump:goal.routeStep==='roofUp'?'옥상으로 올라가는 문이 있어. 그쪽으로 나가.':'오른쪽 지붕까지 뛸 수 있겠네. 가장자리에서 건너뛰어.',
    sign:'저 사람이 간판 아래에 올 때까지 기다려. 행동을 1초 누르면 간판 고정이 풀려.',
    target:goal.g?.unconscious?'아직 기절한 상태야. 이번 목표는 살해야. 몸 가까이에서 공격을 1초 동안 눌러.':goal.g?.moving?withJosa(who,'이/가')+' 움직이고 있어. 멈추면 뒤로 가서 가까이 붙어.':'찾던 사람은 '+withJosa(who,'이야/야')+'. 다른 경비가 안 볼 때 뒤에서 공격을 1초 동안 눌러.',
-   document:'장부도 챙겨야 해. 누가 돈을 냈는지 거기 적혀 있을 거야. 가져가는 동안 누가 보는지 확인하고.'})[goal.compoundCue]||text;
+   document:itemName+'도 챙겨. 작업하는 동안 경비가 보는지 확인하고.'})[goal.compoundCue]||text;
  }
  else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 경비가 혼자 있어. 기절시킨 다음 옷을 가져오면 되겠어.';
  else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'박인호는 아직 살아 있어. 이번 의뢰는 살해야. 가까이에서 공격을 1초 동안 눌러.':'박인호는 적재장 쪽으로 돌아가면 뒤로 접근할 수 있어. 이번에는 공격을 길게 눌러야 해.';
- else if(goal.actionReady||actionBusy())text=actionBusy()?'움직이면 작업이 끊겨. 잠깐만 그대로 있어. 누가 오는지도 보고.':P.disguise?'그 옷이면 지나가도 괜찮아. 물건을 가져갈 때는 안 보이게 해야 하고.':'가까이에서 행동하면 돼. 작업이 끝날 때까지는 움직이지 마.';
+ else if(goal.actionReady||actionBusy())text=actionBusy()?'움직이면 작업이 끊겨. 끝날 때까지 기다려. 경비가 오는지도 보고.':P.disguise?'그 옷이면 지나가도 괜찮아. 물건을 가져갈 때는 안 보이게 해야 하고.':'가까이에서 행동하면 돼. 작업이 끝날 때까지는 움직이지 마.';
  else if(STAGE.id==='p1')text='그 옷이면 경비 앞을 걸어가도 괜찮아. 서류는 경비가 다른 데 볼 때 챙기고.';
  else if(/계단|2층으로/.test(goal.text))text='계단으로 올라가 봐. 누가 있는지 먼저 확인하고 움직이자.';
  else if(['p2','e2','e4','e5'].includes(STAGE.id)&&S.cams.some(camOn))text='카메라 뒤쪽 벽으로 돌아가면 전선이 있어. 가까이에서 분리하면 돼. 기술은 필요 없어.';
  else if(['e3','e4'].includes(STAGE.id))text=flOf(P)?'서류는 지금 있는 층에 있어. 경비가 다른 데 볼 때 책상을 확인해 봐.':'직원 옷으로 들어가서 계단으로 올라가면 돼. 다른 경비까지 건드릴 필요는 없어.';
  else if(['e1','e5'].includes(STAGE.id))text='저 사람이 멈추면 뒤로 가 봐. 가까이에서 공격을 1초 동안 누르면 돼.';
- else if(STAGE.id==='m2')text='한 번에 다 하려면 복잡해. 일단 지금 표시된 곳부터 가 보자.';
+ else if(STAGE.id==='m2')text='일단 표시된 곳부터 살펴보자.';
  return{text,action:tutText(goal.text),cue:evidencePending()?'camera:recorded':goal.exit||S.exitOpen?'mission:escape':goal.compoundCue?'compound:'+goal.compoundCue+':'+(goal.routeStep||goal.text)+':'+(goal.g?.tag||'')+':'+(goal.compoundCue==='hide'?!!P.carrying:goal.compoundCue==='target'?!!goal.g?.moving:''):goal.text,priority:evidencePending()?1:0};
 }
 // The mission stays stable. Immediate instructions belong to the radio.
@@ -17795,7 +17919,7 @@ function installGameApi() {
   window.__game = {
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
-    drawPlansFaint,drawLampTint,windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,
+    drawPlansFaint,drawLampTint,aperturePeekCandidate,updateAperturePeek,aperturePeekContains,switchVisualPoint,repairRoofLanding,get aperturePeekFrame(){return aperturePeekFrame;},windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},

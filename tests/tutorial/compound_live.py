@@ -186,8 +186,18 @@ async def main(args):
        await cc.walk(1224,576)
        await q.wait_for_function("()=>{const g=__game.S.guards.find(g=>g.tag==='handover');return g.x>24*48&&g.x<27*48&&g.y>16*48&&g.y<19*48&&g.wait>2}",timeout=45000)
        await cc.env('trap');await q.wait_for_function("__game.S.guards.find(g=>g.tag==='handover').state==='DEAD'",timeout=5000);await cc.shot('sign-assassination')
-      at=await q.evaluate("(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===1);return {x:l.rx??l.ux,y:l.ry??l.uy}})()")
-      await cc.walk(at['x'],at['y']);await cc.env('down');assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
+      at=await q.evaluate("(()=>{const G=__game,l=G.S.ladders.find(l=>l.kind==='stair'&&G.bldAt(l.tx,l.ty)===1);return {x:l.rx??l.ux,y:l.ry??l.uy,door:l.roofDoor}})()")
+      await cc.walk(at['x'],at['y'])
+      if at.get('door'):
+       d=at['door'];axis='x'if d['dx']else'y';direction=-d['dx']if d['dx']else-d['dy']
+       try:
+        await c.steer(axis,direction)
+        await q.wait_for_function('__game.S.player.trav?.stairs?.roof&&!__game.S.player.trav.stairs.up',timeout=6000)
+       finally:await c.steer()
+       await q.wait_for_function('!__game.S.player.trav',timeout=10000)
+       await cc.shot('roof-stair-descent')
+      else:await cc.env('down')
+      assert await q.evaluate('__game.S.player.fl===2&&!__game.S.player.z')
       if await q.evaluate("__game.S.guards.some(g=>g.tag==='upperKeeper')"):
        await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
       if direct:

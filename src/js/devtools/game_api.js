@@ -3,7 +3,7 @@ function installGameApi() {
   window.__game = {
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
-    drawPlansFaint,drawLampTint,windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,
+    drawPlansFaint,drawLampTint,aperturePeekCandidate,updateAperturePeek,aperturePeekContains,switchVisualPoint,repairRoofLanding,get aperturePeekFrame(){return aperturePeekFrame;},windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,
     targetDialogueVisible,targetPersonaKey,targetIsPerforming,targetCue,targetGesturePose,targetSpeechNear,updateTargetPersonalities,
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},

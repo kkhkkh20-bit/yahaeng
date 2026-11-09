@@ -23,9 +23,12 @@ async def main():
     proto.fillRect=function(...a){if(this.canvas.id==='game'&&this.fillStyle==='#4c5965')order.push('threshold');return fill.apply(this,a)};
     try{
      Object.assign(S.player,{x:840,y:600});S.fade=0;G.moveCamera(1);G.benchDraw(2);const side=entries.find(e=>e.nx===-1),d=side.doors[0];
-     ok(painted.some(r=>r.w>=28&&r.h>=44&&d.x>=r.x&&d.x<=r.x+r.w&&d.y>=r.y&&d.y<=r.y+r.h),'side door has no visible full-height portal at its actual cell');
-     G.setDoor(d,true);painted.length=0;G.benchDraw(1);ok(painted.some(r=>r.state==='closed'&&r.x<d.x&&r.x+r.w>d.x),'locked entrance still looks open');
-     G.setDoor(d,false);painted.length=0;G.benchDraw(1);ok(painted.some(r=>r.state==='open'&&r.x<d.x&&r.x+r.w>d.x),'open entrance has no visible aperture');
+     // Side doors now sit inside the wall profile, rather than displaying a
+     // full frontal sprite outside it. Inspect actual pixels at that opening.
+     const crop=()=>{const dp=G.DPRinfo()[0],sc=G.SCALE*dp,x=Math.round((side.wallX+10-G.cam.x)*sc+innerWidth*dp/2),y=Math.round((side.y-G.cam.y)*sc+innerHeight*dp/2),w=Math.max(2,Math.round(14*sc)),h=Math.max(2,Math.round(30*sc));return Array.from(G.ctx.getImageData(x-w/2,y-h/2,w,h).data).join(',');};
+     G.setDoor(d,true);G.benchDraw(30);const shut=crop();
+     G.setDoor(d,false);G.benchDraw(30);const opened=crop();ok(shut!==opened,'side wall portal ignores open / closed state');
+     ok(G.doorVisualOpen(d)>.9,'side entrance has no open aperture');
      window.__heroParts=new Set(G.prVar[G.characterLook(S.player)]?.parts.filter(Boolean));order.length=0;G.benchDraw(1);ok(order.includes('hero')&&order.includes('threshold')&&order.lastIndexOf('threshold')<order.indexOf('hero'),'doorstep paints over the player');
     }finally{proto.drawImage=draw;proto.fillRect=fill;}
     return{mobile:document.body.classList.contains('touch'),corridorDoors:0,entries:entries.map(e=>({x:e.x,y:e.y,nx:e.nx,ny:e.ny})),verticalCaps:caps,openClosed:true,thresholdBehindPlayer:true};}''')

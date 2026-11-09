@@ -6,6 +6,21 @@ function drawLightArt(name,x,y,alpha=1,scale=1) {
   ctx.save();ctx.imageSmoothingEnabled=false;ctx.globalAlpha*=alpha;ctx.drawImage(a.img,x+a.ox*scale,y+a.oy*scale,a.w*scale,a.h*scale);ctx.restore();return true;
 }
 const lightArtRotation=(nx,ny)=>Math.abs(nx)>Math.abs(ny)?nx>0?3:1:ny>0?2:0;
+function switchVisualPoint(l){
+ const p=l.control;if(!p)return null;
+ const n=switchArtNormal(l),nx=p.nx??-n[0],ny=p.ny??-n[1];
+ return{x:p.x+nx*5,y:p.y+ny*5,nx,ny};
+}
+function drawOfficeSwitch(l){
+ if(!officeReady())return false;
+ const p=switchVisualPoint(l);if(!p)return false;
+ const off=lampCircuitOff(l),side=!!p.nx;
+ ctx.save();ctx.translate(p.x,p.y);
+ ctx.fillStyle='#16232d';ctx.fillRect(side?-3:-5,side?-6:-3,side?6:10,side?12:7);
+ ctx.fillStyle='#67757b';ctx.fillRect(side?-2:-4,side?-5:-2,side?4:8,side?10:5);
+ ctx.fillStyle=off?'#35444e':'#9eac9f';ctx.fillRect(side?-1:-2,side?-2:-1,side?2:4,side?4:2);
+ ctx.restore();return true;
+}
 function drawIndoorLampFixtures(fl,building=-1) {
   const controls=new Set(),fixtures=new Set();
   for(const l of S.lamps){
@@ -21,6 +36,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
       }
     }
     const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
+    if(drawOfficeSwitch(l))continue;
     const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
     // A small wall plate, separate from fixtures and their ground light pools.
     ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);

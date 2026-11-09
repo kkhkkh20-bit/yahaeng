@@ -1,3 +1,4 @@
+const openingTargetScore=(P,o)=>dist(P.x,P.y,o.x,o.y)+32*(1-Math.cos(angDiff(P.a,Math.atan2(o.y-P.y,o.x-P.x))));
 function windowPassage(w,P=S.player) {
   if(w.sealed||flOf(P)||P.z||flOf(w))return null;
   const vert=winVert(w),nx=vert?1:0,ny=vert?0:1,along=(P.x-w.x)*-ny+(P.y-w.y)*nx,side=Math.sign((P.x-w.x)*nx+(P.y-w.y)*ny);
@@ -10,7 +11,7 @@ function nearWindow() {
   const P = S.player; if (P.z || P.fl || P.jump || P.carrying || P.captive || P.hide) return null;
   let best=null,bd=Infinity;
   for (const w of S.windows) { if (ACT_SKIP.has(w)) continue;
-    const v=windowPassage(w,P),d=dist(P.x,P.y,w.x,w.y);
+    const v=windowPassage(w,P),d=openingTargetScore(P,w);
     if(v&&d<bd){best=v;bd=d;}
   }
   return best;
@@ -56,7 +57,8 @@ function nearLamp() {
 }
 function nearDoor() {
   const P = S.player; if (P.z || P.fl || P.jump || P.hide) return null; let best = null, bd = 58;
-  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y); if (dd < bd && objectReachable(d, 58)) { bd = dd; best = d; } }
+  let score=Infinity;
+  for (const d of S.doors) { if (ACT_SKIP.has(d)) continue; const dd = dist(P.x, P.y, d.x, d.y),rank=openingTargetScore(P,d); if (dd < bd&&rank<score&&objectReachable(d, 58)) { score=rank;best=d; } }
   if (!best) return null;
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE);
   if (best.group.some(d => d.tx === ptx && d.ty === pty)) return null;

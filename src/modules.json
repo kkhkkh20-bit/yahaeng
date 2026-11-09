@@ -450,6 +450,10 @@
       "group": "graphics"
     },
     {
+      "path": "render/aperture_peek.js",
+      "group": "render"
+    },
+    {
       "path": "render/frame.js",
       "group": "render"
     },

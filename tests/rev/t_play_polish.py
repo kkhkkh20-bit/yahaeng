@@ -37,7 +37,7 @@ async def main():
     assert m['visible']and m['shown']==m['message']['text'],(phase,m)
     cues.append(m['message']['cue'])
    assert len(set(cues))==len(cues),cues
-   assert '옥상문' in m['shown']and '공격'not in m['shown'],m
+   assert '계단실' in m['shown']and '공격'not in m['shown'],m
    await q.evaluate('__game.benchDraw(2)');await q.screenshot(path=str(O/('mobile-roof.png'if mobile else'pc-roof.png')))
    transient=await q.evaluate("""()=>{const G=__game;G.S.player.jump={};const m=G.episodeRadioMessage();G.syncEpisodeRadio();G.S.player.jump=null;return{message:m,visible:!document.getElementById('episodeRadio').hidden}}""");assert transient=={'message':None,'visible':False},transient
    await q.evaluate(FRESH,'tB');marker=await q.evaluate("""()=>{const G=__game,S=G.S,P=S.player,g={x:P.x+30,y:P.y,fl:0,tut:true,moveCue:true};const movement=G.goalMarkerVisible(P,g);P.bodyAnim={t0:S.t,dur:1};const during=G.goalMarkerVisible(P,g);P.bodyAnim=null;G.feedbackEvent('ko',P);G.feedbackEvent('arrival',P);const settling=G.goalMarkerVisible(P,g);S.t+=.6;const after=G.goalMarkerVisible(P,g),ready=G.goalMarkerVisible(P,{...g,moveCue:false});return{movement,during,settling,after,ready}}""");assert marker=={'movement':True,'during':False,'settling':False,'after':True,'ready':False},marker
