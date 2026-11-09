@@ -3,8 +3,8 @@ const FEEDBACK_LEVEL={ko:1,kill:2,hurt:2,death:3,stash:1,dress:1,loot:2,pickup:1
 const feedbackMemo=new WeakMap();
 function feedbackState(){let f=feedbackMemo.get(S);if(!f){f={recent:new Map(),events:[],receipts:new Map()};feedbackMemo.set(S,f);}return f;}
 function feedbackOnce(key){
- let seen;try{seen=JSON.parse(localStorage.getItem('yahaeng.feedbackSeen')||'{}');}catch(e){seen={};}
- if(seen[key])return false;seen[key]=true;try{localStorage.setItem('yahaeng.feedbackSeen',JSON.stringify(seen));}catch(e){}return true;
+ let seen;try{seen=JSON.parse(localStorage.getItem(progressKey('yahaeng.feedbackSeen'))||'{}');}catch(e){seen={};}
+ if(seen[key])return false;seen[key]=true;try{localStorage.setItem(progressKey('yahaeng.feedbackSeen'),JSON.stringify(seen));}catch(e){}return true;
 }
 function feedbackToast(channel,text,seconds=1.5,kind='good'){
  S.toasts=S.toasts.filter(t=>t.channel!==channel);toast(text,seconds,kind);if(S.toasts.length)S.toasts.at(-1).channel=channel;

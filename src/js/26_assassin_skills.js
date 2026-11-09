@@ -5,7 +5,7 @@ const ASSASSIN_SKILLS={
 };
 function initAssassinSkills(){
   syncRuntimeSkills();S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
-  let key='dual';try{key=localStorage.getItem('yahaeng.assassinSkill')||key;}catch(e){}
+  let key='dual';try{key=localStorage.getItem(progressKey('yahaeng.assassinSkill'))||key;}catch(e){}
   S.selectedSkill=ASSASSIN_SKILLS[key]?key:'dual';
   if(!STAGE.skillPractice&&!skillOn(S.selectedSkill))S.selectedSkill='dual';
   if(STAGE.skillPractice)S.selectedSkill=S.practiceSkill||'dual';

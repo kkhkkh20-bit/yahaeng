@@ -53,7 +53,7 @@ function cloneDeep(o, memo = new Map()) {
   return c;
 }
 // 체크포인트를 기기에 남긴다 (새로고침·앱을 다시 열어도 이어 하기). 같은 객체를 여러 곳에서 가리키는 관계를 살려 JSON으로 바꾼다
-const CP_KEY = 'yahaeng.cp';
+const CP_KEY = progressKey('yahaeng.cp');
 function packGraph(root) {
   const ids = new Map(), nodes = [];
   const enc = v => {

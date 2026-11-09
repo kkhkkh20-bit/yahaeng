@@ -1,3 +1,5 @@
+// The optional art study has its own progress; entering it cannot replace the campaign.
+const progressKey=key=>window.__AGENT_CITY_STUDY__?'yahaeng.study.'+key:key;
 // ---------------------------------------------------------------- 기록
 const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 // 임무별 도전과제 (Hitman식): 깨면 별 하나 + 과제마다 별 하나. 모은 별로 다른 진입로가 열린다
@@ -25,17 +27,17 @@ const CH = {
 };
 const mmss = t => { const m = Math.floor(t / 60), s = Math.round(t % 60); return m + '분' + (s ? ' ' + s + '초' : ''); };
 const chName = id => id === 'fast' ? `${mmss(STAGE.fastT || 330)} 안에 완료하기` : (CH[id] || ['?'])[0];
-function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
-function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
+function loadCh() { try { return JSON.parse(localStorage.getItem(progressKey('yahaeng.ch')) || '{}') || {}; } catch (e) { return {}; } }
+function saveCh(o) { try { localStorage.setItem(progressKey('yahaeng.ch'), JSON.stringify(o)); } catch (e) {} }
 const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
 function applyPerks() { loadSkillTree();S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
 function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
-function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.best') || '{}') || {}; } catch (e) { return {}; } }
+function loadBest() { try { return JSON.parse(localStorage.getItem(progressKey('yahaeng.best')) || '{}') || {}; } catch (e) { return {}; } }
 function saveBest(id, rank) {
   const b = loadBest(); if (b[id] && RANKS.indexOf(b[id]) >= RANKS.indexOf(rank)) return;
-  b[id] = rank; try { localStorage.setItem('yahaeng.best', JSON.stringify(b)); } catch (e) {}
+  b[id] = rank; try { localStorage.setItem(progressKey('yahaeng.best'), JSON.stringify(b)); } catch (e) {}
 }
 

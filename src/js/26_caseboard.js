@@ -1,5 +1,5 @@
 // Case knowledge survives a retry; an officer's death never outruns the world save.
-const CASE_STORE='yahaeng.case.v1';
+const CASE_STORE=progressKey('yahaeng.case.v1');
 let volatileCaseFile=null,caseModalState=null,caseSelected=null;
 const casePoll=new WeakMap();
 function loadCaseFile(){

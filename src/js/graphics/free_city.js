@@ -13,6 +13,7 @@ function freeCityDraw(c,name,x,y,scale=2){
 }
 function freeCityBuilding(b){return !!b&&!b.vacant&&!!STAGE.freeCityExteriors;}
 function cityBuildingStyle(b){
+ if(STAGE.agentStudy)return STAGE.studyStyles[BLD.indexOf(b)]||'stone';
  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return b.h>1?'office':'metal';
  if(b.glass)return 'office';
  if(b.kind==='shop')return (b.x0+b.y0)%2?'brick':'green';
@@ -28,6 +29,7 @@ function freeCityPattern(name){
 }
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;
+ if(STAGE.agentStudy&&studyReady())return studyWall(c,b,x,y,w,h);
  const style=cityBuildingStyle(b),name={metal:'metalStorey',office:'slateStorey',brick:'brickStorey',green:'brickStorey',stone:'slateStorey'}[style];
  if(style==='green'&&freeCityArt===A.dotonbori){
   const tile=freeCityPattern('wallGreen');if(!tile)return false;
@@ -50,7 +52,7 @@ function paintFreeCityWall(c,b,x,y,w,h){
 function paintFreeCityRoof(c,b,w,h){
  if(!freeCityBuilding(b)||!freeCityReady())return false;
  if(freeCityArt===A.dotonbori){
-  const style=cityBuildingStyle(b),name=style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
+  const style=cityBuildingStyle(b),name=STAGE.agentStudy?'roofTile':style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
   const f=(freeCityArt.frames[name]||freeCityArt.frames.roofTile).rect,e=freeCityArt.roofSlice,border=e*2;
   const spans=[[0,e,0,border],[e,f[2]-e*2,border,w-border*2],[f[2]-e,e,w-border,border]];
   const rows=[[0,e,0,border],[e,f[3]-e*2,border,h-border*2],[f[3]-e,e,h-border,border]];
@@ -124,7 +126,7 @@ function drawCityRoofProps(b){
    const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
    if(p.t==='sh'){
     const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
-    const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);
+    if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py-48,w,96);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
     const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
     if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
    }else if(p.t==='tank'){
@@ -150,7 +152,7 @@ function cityWindowImage(name,w,lit){
  return cityWindowImages[key]=c;
 }
 function drawCityWindow(c,b,w,fl){
- const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
+ const style=cityBuildingStyle(b),name=STAGE.agentStudy&&['stone','office'].includes(style)?'officeWindow':{metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
  const im=cityWindowImage(name,w,windowRoomLit(w));if(!im)return false;
  if(style==='green'){
   // The lower half of the source tile is wall, not part of the window.

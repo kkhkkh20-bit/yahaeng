@@ -1,0 +1,270 @@
+{
+  "artist": "GuttyKreum",
+  "pack": "Dotonbori City v3",
+  "source": "https://guttykreum.itch.io/dotonbori-city-game-assets",
+  "sourceSha256": "a82beeeff1f3d77e24cf26e80a8dd221061aae4179c9cb3ec92c569bfd0d8235",
+  "supplementSources": {
+    "https://kenney.nl/assets/rpg-urban-pack": {
+      "tile_0395.png": "16919c11841837e3e878bef63629deadb338cd69bea84e7ef57f6b5e0f5467af",
+      "tile_0422.png": "d72326f25ab50ae4a1abe35aa5dd49e22038ff297e3ce93bc117db12b228d7e4",
+      "tile_0399.png": "fbe4feb43183430818b48438177fb4504f331a7c1d0851ffc7a52850b5bfda73",
+      "tile_0426.png": "36b059d19004ccc67ec5e5ae3b6c64d459d4b8dbfcd3d622cfb6801841b9fe45",
+      "tile_0449.png": "2792f041b6a32f296190b97f03c142d3f7cc319660af9bfe4111c8fc348a8e7a",
+      "tile_0476.png": "5e902ed3b564975b4e2e5a9dfa6773241adee3f3a34f7e5b22ae4a41960361d4"
+    }
+  },
+  "frames": {
+    "rail": {
+      "rect": [
+        0,
+        0,
+        96,
+        16
+      ],
+      "sourceRect": [
+        1024,
+        304,
+        1120,
+        320
+      ]
+    },
+    "ivy": {
+      "rect": [
+        98,
+        0,
+        64,
+        128
+      ],
+      "sourceRect": [
+        704,
+        0,
+        768,
+        128
+      ]
+    },
+    "aircon": {
+      "rect": [
+        164,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        768,
+        256,
+        800,
+        288
+      ]
+    },
+    "antenna": {
+      "rect": [
+        198,
+        0,
+        32,
+        64
+      ],
+      "sourceRect": [
+        960,
+        0,
+        992,
+        64
+      ]
+    },
+    "cafeSign": {
+      "rect": [
+        232,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        832,
+        224,
+        864,
+        256
+      ]
+    },
+    "foodSign": {
+      "rect": [
+        266,
+        0,
+        32,
+        32
+      ],
+      "sourceRect": [
+        832,
+        384,
+        864,
+        416
+      ]
+    },
+    "gallerySign": {
+      "rect": [
+        300,
+        0,
+        64,
+        32
+      ],
+      "sourceRect": [
+        864,
+        288,
+        928,
+        320
+      ]
+    },
+    "gateSign": {
+      "rect": [
+        366,
+        0,
+        64,
+        32
+      ],
+      "sourceRect": [
+        864,
+        512,
+        928,
+        544
+      ]
+    },
+    "shopCornice": {
+      "rect": [
+        0,
+        130,
+        96,
+        32
+      ],
+      "sourceRect": [
+        608,
+        224,
+        704,
+        256
+      ]
+    },
+    "tileFloor": {
+      "rect": [
+        98,
+        130,
+        32,
+        32
+      ],
+      "sourceRect": [
+        1992,
+        168,
+        2024,
+        200
+      ]
+    },
+    "stairHouse": {
+      "rect": [
+        132,
+        130,
+        64,
+        64
+      ],
+      "sourceRect": [
+        800,
+        32,
+        864,
+        96
+      ]
+    },
+    "wallBlue": {
+      "rect": [
+        198,
+        130,
+        20,
+        16
+      ],
+      "sourceRect": [
+        548,
+        424,
+        568,
+        440
+      ]
+    },
+    "wallTan": {
+      "rect": [
+        220,
+        130,
+        12,
+        8
+      ],
+      "sourceRect": [
+        292,
+        328,
+        304,
+        336
+      ]
+    },
+    "wallGreen": {
+      "rect": [
+        234,
+        130,
+        24,
+        8
+      ],
+      "sourceRect": [
+        420,
+        310,
+        444,
+        318
+      ]
+    },
+    "wallSlate": {
+      "rect": [
+        260,
+        130,
+        24,
+        16
+      ],
+      "sourceRect": [
+        772,
+        298,
+        796,
+        314
+      ]
+    },
+    "car0": {
+      "rect": [
+        286,
+        130,
+        16,
+        21
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "license": "CC0-1.0",
+      "tiles": [
+        395,
+        422
+      ]
+    },
+    "car1": {
+      "rect": [
+        304,
+        130,
+        16,
+        20
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "license": "CC0-1.0",
+      "tiles": [
+        399,
+        426
+      ]
+    },
+    "car2": {
+      "rect": [
+        322,
+        130,
+        16,
+        21
+      ],
+      "source": "https://kenney.nl/assets/rpg-urban-pack",
+      "license": "CC0-1.0",
+      "tiles": [
+        449,
+        476
+      ]
+    }
+  }
+}

@@ -1855,6 +1855,58 @@ campaignStage('tB').dressing.push(
  {kind:'bay',x:25.4,y:8.4,w:4,h:3.3,fl:0,text:'하역'},
  {kind:'bay',x:4.2,y:14.2,w:3,h:2.4,fl:0,text:'대기'}
 );
+// A playable art study, deliberately outside the linear campaign and its saves.
+if(window.__AGENT_CITY_STUDY__)STAGES.push({
+ id:'agentCity',agentStudy:true,retiredCampaign:true,no:'TEST',name:'야간 인계',sub:'여성 요원 · 도시 테스트',fee:'',
+ mission:'이도현 처치 · 거래 기록 회수 · 서쪽 골목으로 탈출',
+ brief:'백송상사 2층에서 이도현과 거래 기록을 찾는다. 경비 옷으로 건물 안을 통과하거나, 옥상 연결교로 돌아 들어갈 수 있다. 서쪽 골목으로 빠져나오면 끝이다.',
+ endText:'거래 기록을 챙겼다. 서쪽 골목으로 무사히 빠져나왔다.',
+ W:42,H:44,start:[12,19],exit:[2,20],exitName:'서쪽 골목',startA:0,
+ bare:true,ownedLoadout:true,noRefine:true,noSupport:true,noAmbientChats:true,floors:true,residents:0,rivals:0,
+ pspd:1.3,gspd:.8,kunai:0,coins:2,radioCheck:0,securityResponse:false,
+ freeCityExteriors:true,roadsX:[18],roadsY:[21],traffic:8,
+ studyStyles:['stone','brick','office','green','brick','green','stone','office'],
+ officeArt:{default:'dispatch',buildings:{0:['dispatch','executive','archive'],1:['club','dispatch','security'],2:'exchange',3:'residence',4:'freight',5:'dispatch',6:'archive',7:'executive'},decor:[{b:0,fl:1,u:.55,art:'board',w:84},{b:0,fl:0,u:.6,art:'monitorRack',w:80}]},
+ build(m){
+  m.fill(0,0,41,43,',');m.rect(0,0,41,43);
+  m.fill(18,0,21,43,'.');m.fill(0,21,41,24,'.');
+  m.fill(17,0,17,43,'=');m.fill(22,0,22,43,'=');m.fill(0,20,41,20,'=');m.fill(0,25,41,25,'=');
+  m.villa(8,3,16,17,5,{kind:'shop',use:['office','office','office','office','office'],signs:['백송상사','야간 업무','기록실','서고','관리실'],name:'백송상사',back:true});
+  m.villa(23,3,31,17,5,{kind:'shop',use:['food','office','office','office','office'],signs:['밤샘식당','성일기획','영진상사','건축사무소','관리실'],name:'성일빌딩',back:true});
+  m.villa(1,5,6,17,7,{kind:'shop',use:['store','office','office','office','office','office','office'],signs:['청솔약국','미래여행'],name:'청솔빌딩'});
+  m.villa(33,6,40,17,6,{kind:'shop',use:['food','office','office','office','office','office'],signs:['은행나무','가온스튜디오'],name:'가온빌딩'});
+  m.villa(1,28,8,41,7,{kind:'shop',use:['store','office','office','office','office','office','office'],signs:['선일상회','삼일기획'],name:'선일상회'});
+  m.villa(10,27,16,41,6,{kind:'shop',use:['food','office','office','office','office','office'],signs:['야시장','여행사'],name:'동진빌딩'});
+  m.villa(23,28,30,41,6,{kind:'shop',use:['store','office','office','office','office','office'],signs:['종로서점','전당포'],name:'종로서점'});
+  m.villa(32,27,40,41,8,{kind:'shop',use:['food','office','office','office','office','office','office','office'],signs:['백야회관','다온기획'],name:'백야회관'});
+  // Original pictorial shop signs occupy a solid bay, not a usable window.
+  for(const [x,y]of [[1,17],[8,17],[23,17],[33,17],[1,41],[10,41],[23,41],[32,41]]){m.set(x+1,y,'#');m.set(x+2,y,'#');}
+  m.many('B',[[3,19],[4,19],[25,19],[26,19],[39,34],[39,35],[3,26]]);
+  m.many('T',[[1,8],[40,10],[1,31],[40,30]]);
+ },
+ roomPatches:[{fl:1,bounds:[8,3,16,17],furniture:[
+  {t:'desk2',from:[10,9],remove:true},{t:'chairD',from:[10,10],remove:true},
+  {t:'desk2',from:[10,12],remove:true},{t:'chairD',from:[10,13],remove:true}],
+  tiles:[[10,9,'w'],[11,9,'w'],[10,10,'w'],[10,12,'w'],[11,12,'w'],[10,13,'w']]}],
+ fixedFurn:[{x:9,y:14,t:'sofa',w:2,fl:1},{x:12,y:16,t:'plant',fl:1}],
+ planks:[[16,9,23,10,5]],wires:[],roofs:['cRoofB','cRoofA','cRoofA','cRoofB'],
+ zones:[[0,0,41,43,'pub',null,'거리',[]],[8,3,16,17,'res',null,'백송상사 · 직원 구역',['crew','guard','worker']]],
+ guards:[
+  {kind:'g1',tag:'alleyGuard',at:[14,19],post:0,still:true,radio:false},
+  {kind:'g1',tag:'receptionGuard',route:[[9,15,6],[11,15,6]],radio:false,startPause:8},
+  {kind:'t',tag:'accountant',target:true,fl:1,at:[12,11],post:270,still:true,radio:false,model:'suit',outfit:'suit'},
+  {kind:'civ',tag:'commuter',route:[[24,19,4],[35,19,4]],model:'coat',radio:false},
+  {kind:'civ',tag:'customer',route:[[6,26,5],[14,26,5]],radio:false},
+  {kind:'civ',tag:'officeWorker',at:[25,15],still:true,post:90,radio:false}
+ ],targetNames:{accountant:'이도현'},
+ items:[[10,7,1]],itemName:'거래 기록',itemNames:['거래 기록'],itemPlaces:['백송상사 · 2층'],itemFurniture:[['desk','desk2','shelf']],
+ lamps:[[7,19,230,1],[26,19,200,1],[17,8,210,1],[22,13,170,1],[6,26,210,1],[26,26,220,1],[13,13,260,0],[10,10,260,0,1]],
+ challenges:[],fastT:420
+});
+if(window.__AGENT_CITY_STUDY__)DIALOGUE.agentCity=[
+ ['master','백송상사 2층이야. 이도현하고 거래 기록. 둘 다 확인하고 나와.'],
+ ['hero','알았어. 퇴근길에 길 좀 돌아가면 되겠네.']
+];
 
 'use strict';
 (function () {
@@ -2745,7 +2797,7 @@ function kitAttach() {
   }
   // New/revised layouts can have no legacy baked kit. Roof stair gameplay
   // still needs a visible, solid stair house and a door on the same landing.
-  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>p.t==='sh');b.cityPropsC=null;});
+  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>STAGE.agentStudy?['sh','tank','ac','vent','plant'].includes(p.t):p.t==='sh');b.cityPropsC=null;});
   robBuild();
 }
 // 옥상 부분만 밤빛으로 한 번 어둡게 칠한 사본 (정면 벽은 매 프레임 조명에 따라 칠한다)
@@ -2819,6 +2871,7 @@ function freeCityDraw(c,name,x,y,scale=2){
 }
 function freeCityBuilding(b){return !!b&&!b.vacant&&!!STAGE.freeCityExteriors;}
 function cityBuildingStyle(b){
+ if(STAGE.agentStudy)return STAGE.studyStyles[BLD.indexOf(b)]||'stone';
  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return b.h>1?'office':'metal';
  if(b.glass)return 'office';
  if(b.kind==='shop')return (b.x0+b.y0)%2?'brick':'green';
@@ -2834,6 +2887,7 @@ function freeCityPattern(name){
 }
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;
+ if(STAGE.agentStudy&&studyReady())return studyWall(c,b,x,y,w,h);
  const style=cityBuildingStyle(b),name={metal:'metalStorey',office:'slateStorey',brick:'brickStorey',green:'brickStorey',stone:'slateStorey'}[style];
  if(style==='green'&&freeCityArt===A.dotonbori){
   const tile=freeCityPattern('wallGreen');if(!tile)return false;
@@ -2856,7 +2910,7 @@ function paintFreeCityWall(c,b,x,y,w,h){
 function paintFreeCityRoof(c,b,w,h){
  if(!freeCityBuilding(b)||!freeCityReady())return false;
  if(freeCityArt===A.dotonbori){
-  const style=cityBuildingStyle(b),name=style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
+  const style=cityBuildingStyle(b),name=STAGE.agentStudy?'roofTile':style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
   const f=(freeCityArt.frames[name]||freeCityArt.frames.roofTile).rect,e=freeCityArt.roofSlice,border=e*2;
   const spans=[[0,e,0,border],[e,f[2]-e*2,border,w-border*2],[f[2]-e,e,w-border,border]];
   const rows=[[0,e,0,border],[e,f[3]-e*2,border,h-border*2],[f[3]-e,e,h-border,border]];
@@ -2930,7 +2984,7 @@ function drawCityRoofProps(b){
    const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
    if(p.t==='sh'){
     const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
-    const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);
+    if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py-48,w,96);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
     const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
     if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
    }else if(p.t==='tank'){
@@ -2956,7 +3010,7 @@ function cityWindowImage(name,w,lit){
  return cityWindowImages[key]=c;
 }
 function drawCityWindow(c,b,w,fl){
- const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
+ const style=cityBuildingStyle(b),name=STAGE.agentStudy&&['stone','office'].includes(style)?'officeWindow':{metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
  const im=cityWindowImage(name,w,windowRoomLit(w));if(!im)return false;
  if(style==='green'){
   // The lower half of the source tile is wall, not part of the window.
@@ -3076,6 +3130,83 @@ function drawCityWallLamp(l,m,on){
  freeCityDraw(ctx,on?'lampOn':'lampOff',x-16,y-9,1);
  if(l.broken){ctx.strokeStyle='#a69a8a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x-3,y-4);ctx.lineTo(x+3,y+3);ctx.stroke();}
  return true;
+}
+
+// Paid, original pixel details. This module only dresses the optional playable study.
+const studyArt=A.cityStudy,studyAtlas=new Image();
+if(studyArt)studyAtlas.src=studyArt.src;
+function studyReady(){return !!studyArt&&studyAtlas.complete&&studyAtlas.naturalWidth>0;}
+function studyDraw(c,name,x,y,w,h){
+ const f=studyArt?.frames[name]?.rect;if(!f||!studyReady())return false;
+ c.drawImage(studyAtlas,...f,Math.round(x),Math.round(y),w??f[2]*2,h??f[3]*2);return true;
+}
+function studyRepeat(c,name,x,y,w,h,scale=2){
+ const f=studyArt?.frames[name]?.rect;if(!f||!studyReady())return;
+ c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
+ for(let yy=y;yy<y+h;yy+=f[3]*scale)for(let xx=x;xx<x+w;xx+=f[2]*scale)studyDraw(c,name,xx,yy,f[2]*scale,f[3]*scale);
+ c.restore();
+}
+function drawStudyBridge(p,x,y,w,h){
+ if(!studyReady()||!p.ew)return false;
+ ctx.save();ctx.imageSmoothingEnabled=false;
+ // Same physical PLANKS bounds and roof level. Cars continue underneath.
+ ctx.fillStyle='rgba(3,8,18,.38)';ctx.fillRect(x+10,y+22,w,h);
+ studyRepeat(ctx,'tileFloor',x,y,w,h,1.5);
+ studyRepeat(ctx,'rail',x,y-12,w,24,1.5);
+ studyRepeat(ctx,'rail',x,y+h-16,w,24,1.5);
+ ctx.restore();return true;
+}
+function drawStudyRoof(b){
+ if(!studyReady())return;
+ // Antennae are attached to the existing solid stair house, never a new
+ // obstacle on an otherwise empty route. Small mechanical props use kit cells.
+ for(const p of b.kitProps||[]){
+  if(p.t==='sh'){
+   const x=Math.min(...p.cells.map(c=>c[0]))*TILE,y=Math.min(...p.cells.map(c=>c[1]))*TILE;
+   studyDraw(ctx,'antenna',x+5,y-55,32,64);
+  }
+ }
+}
+function studyFacadeDetails(c,b,x,y,w,h){
+ if(!studyReady())return;
+ const bi=BLD.indexOf(b),upper=S.fwindows||[],all=S.windows.concat(upper,S.doors);
+ const opening=(tx,fl)=>all.some(a=>(flOf(a)===fl)&&a.ty===b.y1&&Math.abs(a.tx-tx)<1);
+ // Source cornices sit between actual storeys; never over an aperture.
+ for(let fl=1;fl<b.fh;fl++){
+  const yy=(b.y1-fl+1)*TILE;
+  const f=studyArt.frames.shopCornice.rect;
+  c.save();c.beginPath();c.rect(x,yy-5,w,9);c.clip();
+  for(let xx=x;xx<x+w;xx+=144)c.drawImage(studyAtlas,f[0],f[1]+22,f[2],6,xx,yy-5,144,9);
+  c.restore();
+ }
+ // Keep wall details at source aspect and clear of every functional window.
+ for(let fl=0;fl<b.fh;fl++)for(let tx=b.x0+1;tx<b.x1-1;tx++){
+  if(opening(tx,fl)||opening(tx+1,fl))continue;
+  const yy=(b.y1-fl)*TILE;
+  if((tx+fl+bi)%5===0)studyDraw(c,'aircon',tx*TILE+7,yy+12,32,32);
+ }
+ const sx=x+TILE,sy=y+h-TILE;
+ studyDraw(c,['cafeSign','foodSign','gallerySign','gateSign'][bi%4],sx,sy,bi%4>=2?96:48,48);
+ // Original ivy is fixed to masonry; it cannot be mistaken for ground cover.
+ if(bi%3===1)studyDraw(c,'ivy',x+w-45,y,48,96);
+}
+
+function studyWall(c,b,x,y,w,h){
+ const style=cityBuildingStyle(b),tile={green:'wallGreen',brick:'wallTan',office:'wallBlue',stone:'wallSlate'}[style]||'wallSlate';
+ studyRepeat(c,tile,x,y,w,h,2);
+ const pier=freeCityArt?.frames.masonryPier?.rect;
+ if(pier)for(const px of [x,x+w-8])c.drawImage(freeCityAtlas,...pier,px,y,8,h);
+ return true;
+}
+function drawStudyCar(v){
+ if(!studyReady())return false;
+ const name='car'+(v.c%3);
+ ctx.save();ctx.rotate(Math.PI);ctx.imageSmoothingEnabled=false;
+ // A licensed pixel car replaces the rounded procedural body. Keep the same
+ // physics centre and lamp direction; the front of these sprites points down.
+ studyDraw(ctx,name,-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);
+ if(v.dead){ctx.fillStyle='rgba(9,14,23,.7)';ctx.fillRect(-CAR_W/2,-CAR_LEN/2,CAR_W,CAR_LEN);}
+ ctx.restore();return true;
 }
 
 // Purchased 2D pixels. Render choices never mutate the collision grid or AI.
@@ -3372,6 +3503,7 @@ const PR_PAL = {
 // Rank changes the model and behaviour, not the faction's uniform. Keep the
 // legacy keys: corpses, old saves and the player's stolen clothes use them too.
 for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
+PR_PAL.agent=['#e6b38a','#141414','#414e60','#343d51','#171b25'];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
@@ -3387,7 +3519,7 @@ const prBodies = spriteSources.loaded, prBodyLoads = spriteSources.pending;
 const prLoadBody = bn => spriteSources.load(bn);
 // The heroine is needed for the first lesson. NPC sources belong to the active
 // mission; rare disguise and paired-motion sources load when actually requested.
-if (PR) { prLoadBody('hero'); prLoadBody('heroMotion'); }
+if (PR) { const body=window.__AGENT_CITY_STUDY__?'heroAgent':'hero';prLoadBody(body);prLoadBody(body+'Motion'); }
 // 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
 let prScr = null;
 function prRead(base, ci) {
@@ -3446,12 +3578,13 @@ const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, (PR &&
 // Keep the heroine's head and body when wearing a guard's or worker's clothes.
 // NPC palette keys remain unchanged, so old saves and disguise permissions work.
 function playerKey(P) {
-  const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : 'ninja';
+  const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : STAGE?.agentStudy ? 'agent' : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
-  const body = pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  const body = pal==='agent' ? 'heroAgent' : pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
   if(!prBodies[body])prLoadBody(body);
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
   const gait=PR.fluidBodies?.[body]?.gait;if(gait&&!prBodies[gait])prLoadBody(gait);
+  if(pal==='agent')return pal+'@'+body;
   return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:'hero');
 }
 function prPalette(pk, body) {
@@ -3533,9 +3666,9 @@ const prNear = new Set();
 function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
-  prNear.clear();const fluidKeys=[...keys,'ninja'].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
+  prNear.clear();const defaults=STAGE?.agentStudy?[]:['ninja'];const fluidKeys=[...keys,...defaults].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
   const persona=keys.filter(k=>Object.values(TARGET_CAST).some(p=>p.key===k)).map(k=>{const[p,b]=prSplit(k);return p+'@'+b+'PersonaMotion';}).filter(k=>PR.bodies?.[prSplit(k)[1]]);
-  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set(['ninja','ninja_ol','ninja@heroMotion',...keys,...persona,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set([...defaults.flatMap(k=>[k,k+'_ol',k+'@heroMotion']),...keys,...persona,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
@@ -4044,6 +4177,8 @@ function typeTick(seed) {
 // 메뉴·화면 버튼 딸깍 (게임 안 행동 버튼은 각자 소리가 있어 제외)
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (!b || b.closest('.pad') || b.closest('#keypad')) return; if (!b.closest('.screen, .sysbtns, #tacBanner')) return; try { initAudio(); } catch (er) {} sfx('click'); }, true);
 
+// The optional art study has its own progress; entering it cannot replace the campaign.
+const progressKey=key=>window.__AGENT_CITY_STUDY__?'yahaeng.study.'+key:key;
 // ---------------------------------------------------------------- 기록
 const RANKS = ['소란꾼', '침입자', '암살자', '그림자'];
 // 임무별 도전과제 (Hitman식): 깨면 별 하나 + 과제마다 별 하나. 모은 별로 다른 진입로가 열린다
@@ -4071,18 +4206,18 @@ const CH = {
 };
 const mmss = t => { const m = Math.floor(t / 60), s = Math.round(t % 60); return m + '분' + (s ? ' ' + s + '초' : ''); };
 const chName = id => id === 'fast' ? `${mmss(STAGE.fastT || 330)} 안에 완료하기` : (CH[id] || ['?'])[0];
-function loadCh() { try { return JSON.parse(localStorage.getItem('yahaeng.ch') || '{}') || {}; } catch (e) { return {}; } }
-function saveCh(o) { try { localStorage.setItem('yahaeng.ch', JSON.stringify(o)); } catch (e) {} }
+function loadCh() { try { return JSON.parse(localStorage.getItem(progressKey('yahaeng.ch')) || '{}') || {}; } catch (e) { return {}; } }
+function saveCh(o) { try { localStorage.setItem(progressKey('yahaeng.ch'), JSON.stringify(o)); } catch (e) {} }
 const totalStars=()=>{const record=loadCh();return STAGES.reduce((n,s)=>n+(s.challenges?earnedChallengeStars(s,record):0),0);};
 const perkOn = k => !!(S && S.perks && S.perks[k]);
 function applyPerks() { loadSkillTree();S.perks={}; S.stars0=totalStars(); }
 // Retired goals keep their earned credit and previously unlocked starting points.
 function earnedChallengeStars(st,record=loadCh()){const c=record[st.id]||{},ids=[...new Set([...(st.challenges||[]),...(st.legacyChallenges||[])])];return(c._clear?1:0)+ids.filter(id=>c[id]).length;}
 function starsOf(st){return Math.min(1+(st.challenges||[]).length,earnedChallengeStars(st));}
-function loadBest() { try { return JSON.parse(localStorage.getItem('yahaeng.best') || '{}') || {}; } catch (e) { return {}; } }
+function loadBest() { try { return JSON.parse(localStorage.getItem(progressKey('yahaeng.best')) || '{}') || {}; } catch (e) { return {}; } }
 function saveBest(id, rank) {
   const b = loadBest(); if (b[id] && RANKS.indexOf(b[id]) >= RANKS.indexOf(rank)) return;
-  b[id] = rank; try { localStorage.setItem('yahaeng.best', JSON.stringify(b)); } catch (e) {}
+  b[id] = rank; try { localStorage.setItem(progressKey('yahaeng.best'), JSON.stringify(b)); } catch (e) {}
 }
 
 
@@ -4160,7 +4295,7 @@ const SKILL_TREE=[
  {id:'signal',branch:'tools',name:'회로 분석',cost:2,req:['hack'],row:6,col:2,description:'CCTV 해킹 거리 약 5.5m·정지 15초. 중간 벽과 다른 층 제한은 유지한다.'}
 ];
 const SKILL_BY_ID=Object.fromEntries(SKILL_TREE.map(s=>[s.id,s]));
-const SKILL_STORE='yahaeng.skillTree.v1',SKILL_START_POINTS=1;
+const SKILL_STORE=progressKey('yahaeng.skillTree.v1'),SKILL_START_POINTS=1;
 let volatileSkillTree=null;
 function skillBudget(){const r=loadSkillTree();return SKILL_START_POINTS+missionSkillPoints()+skillLegacyPoints(r);}
 const skillSpent=r=>r.learned.reduce((n,id)=>n+SKILL_BY_ID[id].cost,0);
@@ -4255,7 +4390,7 @@ function electricalChoice(a){
 }
 
 // A chosen skill follows the player into a real contract. Practice loans never count.
-const FIELD_LEARNING_STORE='yahaeng.fieldLearning.v1';
+const FIELD_LEARNING_STORE=progressKey('yahaeng.fieldLearning.v1');
 let volatileFieldLearning=null;
 function loadFieldLearning(){
  let r=volatileFieldLearning;try{r=JSON.parse(localStorage.getItem(FIELD_LEARNING_STORE))||r;}catch(e){}
@@ -4323,7 +4458,7 @@ const ASSASSIN_SKILLS={
 };
 function initAssassinSkills(){
   syncRuntimeSkills();S.skillStars=totalStars();S.skillReadyAt=Number.isFinite(S.skillReadyAt)?S.skillReadyAt:0;
-  let key='dual';try{key=localStorage.getItem('yahaeng.assassinSkill')||key;}catch(e){}
+  let key='dual';try{key=localStorage.getItem(progressKey('yahaeng.assassinSkill'))||key;}catch(e){}
   S.selectedSkill=ASSASSIN_SKILLS[key]?key:'dual';
   if(!STAGE.skillPractice&&!skillOn(S.selectedSkill))S.selectedSkill='dual';
   if(STAGE.skillPractice)S.selectedSkill=S.practiceSkill||'dual';
@@ -4446,7 +4581,7 @@ function beginCampaign(){
 }
 
 // Case knowledge survives a retry; an officer's death never outruns the world save.
-const CASE_STORE='yahaeng.case.v1';
+const CASE_STORE=progressKey('yahaeng.case.v1');
 let volatileCaseFile=null,caseModalState=null,caseSelected=null;
 const casePoll=new WeakMap();
 function loadCaseFile(){
@@ -10767,6 +10902,7 @@ function drawRoadMarks(x) {
 const CAR_COL = ['#d8d6d0', '#8e939c', '#3a404c', '#b8322c', '#2e4f86', '#d9a43a', '#3d6b4a'];
 function rrect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 function drawCarBody(v) {
+  if(STAGE.agentStudy&&drawStudyCar(v))return;
   const c = ctx, col = v.dead ? '#26262a' : v.police ? '#e6e8ee' : CAR_COL[v.c % CAR_COL.length], hw = CAR_W / 2, hl = CAR_LEN / 2;
   c.fillStyle = 'rgba(0,0,0,.45)'; rrect(c, -hw + 5, -hl + 7, CAR_W, CAR_LEN, 10); c.fill();
   c.fillStyle = col; rrect(c, -hw, -hl, CAR_W, CAR_LEN, 10); c.fill();
@@ -10846,7 +10982,7 @@ function cloneDeep(o, memo = new Map()) {
   return c;
 }
 // 체크포인트를 기기에 남긴다 (새로고침·앱을 다시 열어도 이어 하기). 같은 객체를 여러 곳에서 가리키는 관계를 살려 JSON으로 바꾼다
-const CP_KEY = 'yahaeng.cp';
+const CP_KEY = progressKey('yahaeng.cp');
 function packGraph(root) {
   const ids = new Map(), nodes = [];
   const enc = v => {
@@ -14533,6 +14669,7 @@ function drawPlanks() {
     const px = x0 * TILE - (ew && p.a ? 8 : 0), py = y0 * TILE - (!ew && p.a ? 8 : 0);
     const w = (x1 - x0 + 1) * TILE + (ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
     const h = (y1 - y0 + 1) * TILE + (!ew ? (p.a ? 8 : 0) + (p.b ? 8 : 0) : 0);
+    if(STAGE.agentStudy&&drawStudyBridge(p,px,py,w,h))continue;
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(px + 6, py + 14, w, h - 6);
     for (let k = 0; k < (ew ? w : h); k += 8) {
       ctx.fillStyle = k % 16 ? '#7a5a3a' : '#8a6744';
@@ -14592,6 +14729,7 @@ function drawRoof1(b, i, roof) {
     if (b.facade) { drawFacade(b); drawFacadeExtras(b); }
     ctx.drawImage(b.roofC, x, y);
     drawCityRoofProps(b);
+    if(STAGE.agentStudy)drawStudyRoof(b);
     if (b.h >= 2 && !b.roofC.flat) { ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(x, y, w, h); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = 4; ctx.strokeRect(x + 2, y + 2, w - 4, h - 4); }
     ctx.fillStyle = NEONY() ? 'rgba(14,6,29,.6)' : 'rgba(3,6,11,.68)'; ctx.fillRect(x, y, w, h);
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
@@ -14901,6 +15039,7 @@ function drawCityFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
  drawFreeDepotDetails(ctx,b,x,y,w,h);
+ if(STAGE.agentStudy)studyFacadeDetails(ctx,b,x,y,w,h);
  const text=(b.plate||b.name||'야간 사무동'),sw=Math.min(w-24,Math.max(84,text.length*9+18)),sy=y+2;
  b.signRects=[];
  ctx.fillStyle=cityBuildingStyle(b)==='brick'?'#633e31':'#253b4b';ctx.fillRect(x+10,sy,sw,14);ctx.strokeStyle='#a3aaa5';ctx.lineWidth=1;ctx.strokeRect(x+10.5,sy+.5,sw-1,13);
@@ -15968,7 +16107,7 @@ const DLG = { q: [], cur: null, modal: false, onEnd: null };
 // 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: 'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
   if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
   if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', role: '의뢰인', face: 'fc_master' };
@@ -16378,8 +16517,8 @@ const FEEDBACK_LEVEL={ko:1,kill:2,hurt:2,death:3,stash:1,dress:1,loot:2,pickup:1
 const feedbackMemo=new WeakMap();
 function feedbackState(){let f=feedbackMemo.get(S);if(!f){f={recent:new Map(),events:[],receipts:new Map()};feedbackMemo.set(S,f);}return f;}
 function feedbackOnce(key){
- let seen;try{seen=JSON.parse(localStorage.getItem('yahaeng.feedbackSeen')||'{}');}catch(e){seen={};}
- if(seen[key])return false;seen[key]=true;try{localStorage.setItem('yahaeng.feedbackSeen',JSON.stringify(seen));}catch(e){}return true;
+ let seen;try{seen=JSON.parse(localStorage.getItem(progressKey('yahaeng.feedbackSeen'))||'{}');}catch(e){seen={};}
+ if(seen[key])return false;seen[key]=true;try{localStorage.setItem(progressKey('yahaeng.feedbackSeen'),JSON.stringify(seen));}catch(e){}return true;
 }
 function feedbackToast(channel,text,seconds=1.5,kind='good'){
  S.toasts=S.toasts.filter(t=>t.channel!==channel);toast(text,seconds,kind);if(S.toasts.length)S.toasts.at(-1).channel=channel;
@@ -17261,6 +17400,7 @@ function showEnd(win, reason) {
   $('btnCity').hidden = !(CITY_RET && !STAGE.city); if (win && CITY_RET && !STAGE.city) markCityDone(CITY_RET.id);  // 도시에서 받은 의뢰: 끝나면 도시로
   $('hud').hidden = true; $('joy').hidden = true; $('end').hidden = false; $('end').dataset.win = win ? '1' : '0';
   $('btnRetry').hidden=win;$('btnMenu').textContent='처음 화면';
+  if(STAGE.agentStudy){$('endSkills').hidden=true;$('endRankNote').querySelectorAll('.skill-receipt').forEach(e=>e.remove());$('btnRetry').hidden=false;}
   renderStageList();
   statsEnd(win ? 'clear' : 'fail', reason);  // 플레이 기록: 판 끝
   if(win)queueResultTraining();
@@ -17644,7 +17784,7 @@ function chooseAssassinSkill(key){
   const d=ASSASSIN_SKILLS[key],practice=assassinMenu?.practice;if(!d)return;
   if(!practice&&!loadSkillTree().learned.includes(key))return;
   if(practice){S.practiceSkill=key;S.selectedSkill=key;S.skillReadyAt=S.t;}
-  else{try{localStorage.setItem('yahaeng.assassinSkill',key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
+  else{try{localStorage.setItem(progressKey('yahaeng.assassinSkill'),key);}catch(e){}if(S){S.selectedSkill=key;S.skillStars=totalStars();}}
   renderAssassinMenu();hudCache.skill=null;hudCache.skillScan=null;
 }
 let skillBranch='body',skillFocused='quietStep',skillDetailMode=null;
@@ -18286,6 +18426,7 @@ document.addEventListener('fullscreenchange', () => { $('btnFull').textContent =
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
 function syncQuick(){
+  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;$('btnQuick').textContent='여성 요원 · 도시 테스트';$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
   $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
@@ -18305,7 +18446,7 @@ $('btnHelpBack').addEventListener('click', () => { const h = $('help'); if (h.cl
 $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.add('over'); h.hidden = false; h.scrollTop = 0;h.querySelectorAll('details').forEach(d=>d.open=false); });
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
-$('btnQuick').addEventListener('click', () => { initAudio(); beginCampaign(); });
+$('btnQuick').addEventListener('click', () => { initAudio(); if(window.__AGENT_CITY_STUDY__)start(STAGES.findIndex(s=>s.agentStudy));else beginCampaign(); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
 const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){
@@ -18388,7 +18529,7 @@ function start(i, noBrief) {
   newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = ['ninja', ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;
@@ -18444,7 +18585,7 @@ atlas.onload = async () => {
 atlas.onerror=()=>window.__boot?.fail('필수 이미지 다운로드 실패');
 atlas.src = A.atlas;
 // 시작 화면에서 쉬는 동안 주인공 시트를 미리 칠해 둔다 (첫 판 시작 때 끊김 줄이기)
-if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm(['ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
+if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm([window.__AGENT_CITY_STUDY__?'agent@heroAgent':'ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
 
 $('btnRadio').addEventListener('click',e=>{e.stopPropagation();replayEpisodeRadio();});
 

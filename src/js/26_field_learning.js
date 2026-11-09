@@ -1,5 +1,5 @@
 // A chosen skill follows the player into a real contract. Practice loans never count.
-const FIELD_LEARNING_STORE='yahaeng.fieldLearning.v1';
+const FIELD_LEARNING_STORE=progressKey('yahaeng.fieldLearning.v1');
 let volatileFieldLearning=null;
 function loadFieldLearning(){
  let r=volatileFieldLearning;try{r=JSON.parse(localStorage.getItem(FIELD_LEARNING_STORE))||r;}catch(e){}

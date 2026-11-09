@@ -11,7 +11,7 @@ from playwright.async_api import async_playwright
 from bake_modular import RECIPES,KEY,QuietHandler,FRAME_PADDING
 from run import outline
 R=Path(__file__).resolve().parents[2];H=R/'tools/prerender';O=R/'build/pr';FR=64
-HERO=['hero','heroSuit','heroWorker','heroCrew']
+HERO=['hero','heroSuit','heroWorker','heroCrew','heroAgent']
 # Seconds per loop keep physical footsteps and paired actors on their own clocks.
 PERIODS={'walk':1,'run':.64,'sneak':1.24,'idleC':3.2,'crouch':3.2,'carry':8/7,'grab':.55/.4,'hold':8/9,'hugStep':4/4.5,'hang':4/6,'climb':4/7,'workHigh':.7,'workLow':.7}
 def flow(name,t,a):return f"renderFluidPose('{name}',{t},{a})"
@@ -66,7 +66,7 @@ async def main():
     image=Image.open(io.BytesIO(base64.b64decode(data.pop('png').split(',')[1]))).convert('RGBA');out=Image.new('RGBA',image.size)
     for row in range(8):
      for i in range(col):out.paste(outline(image.crop((i*FR,row*FR,(i+1)*FR,(row+1)*FR))),(i*FR,row*FR))
-    out=out.quantize(colors=192,method=Image.FASTOCTREE).convert('RGBA');name=body+group+'Motion';path=O/f'body_{name}.webp';out.save(path,'WEBP',lossless=True,method=6)
+    out=out.quantize(colors=64 if body=='heroAgent' else 192,method=Image.FASTOCTREE).convert('RGBA');name=body+group+'Motion';path=O/f'body_{name}.webp';out.save(path,'WEBP',lossless=True,method=6)
     meta={'cols':col,'anims':anims,'grounds':data['grounds'],'scales':data['scales'],'fluid':True,'loops':{n:PERIODS[n] for n,_,loop,_ in defs if loop},'baseBody':body}
     for n,points in data['hands'].items():meta[n+'Hands']=points;meta[n+'Feet']=data['feet'][n]
     m['bodies'][name]=meta;m['fluidBodies'].setdefault(body,{})[group.lower()]=name

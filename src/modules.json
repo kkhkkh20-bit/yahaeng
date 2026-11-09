@@ -46,6 +46,10 @@
       "group": "graphics"
     },
     {
+      "path": "graphics/city_study.js",
+      "group": "graphics"
+    },
+    {
       "path": "graphics/office_interiors.js",
       "group": "graphics"
     },

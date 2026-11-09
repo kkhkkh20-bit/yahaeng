@@ -67,7 +67,7 @@ function kitAttach() {
   }
   // New/revised layouts can have no legacy baked kit. Roof stair gameplay
   // still needs a visible, solid stair house and a door on the same landing.
-  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>p.t==='sh');b.cityPropsC=null;});
+  BLD.forEach((b,i)=>{if(freeCityBuilding(b)&&!b.kitProps)b.kitProps=roofProps(b,i).filter(p=>STAGE.agentStudy?['sh','tank','ac','vent','plant'].includes(p.t):p.t==='sh');b.cityPropsC=null;});
   robBuild();
 }
 // 옥상 부분만 밤빛으로 한 번 어둡게 칠한 사본 (정면 벽은 매 프레임 조명에 따라 칠한다)

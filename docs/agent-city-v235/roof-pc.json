@@ -1,0 +1,303 @@
+[
+  {
+    "label": "west-roof",
+    "version": "v235",
+    "t": 0.11670000000000028,
+    "x": 744,
+    "y": 456,
+    "fl": 0,
+    "z": 5,
+    "hp": 3,
+    "mode": "walk",
+    "hidden": false,
+    "moving": false,
+    "carry": false,
+    "body": null,
+    "approach": false,
+    "recovery": false,
+    "kill": false,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0
+    },
+    "guards": [
+      {
+        "id": 0,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 936
+      },
+      {
+        "id": 1,
+        "state": "PATROL",
+        "seen": false,
+        "x": 456,
+        "y": 744
+      },
+      {
+        "id": 2,
+        "state": "PATROL",
+        "seen": false,
+        "x": 600,
+        "y": 552
+      },
+      {
+        "id": 3,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1180.4812800000004,
+        "y": 936
+      },
+      {
+        "id": 4,
+        "state": "PATROL",
+        "seen": false,
+        "x": 316.48128,
+        "y": 1272
+      },
+      {
+        "id": 5,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1224,
+        "y": 744
+      }
+    ],
+    "over": false
+  },
+  {
+    "label": "east-roof",
+    "version": "v235",
+    "t": 5.516500000000015,
+    "x": 1178.0703455640912,
+    "y": 504.54010937064487,
+    "fl": 0,
+    "z": 5,
+    "hp": 3,
+    "mode": "walk",
+    "hidden": false,
+    "moving": false,
+    "carry": false,
+    "body": null,
+    "approach": false,
+    "recovery": false,
+    "kill": false,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0
+    },
+    "guards": [
+      {
+        "id": 0,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 936
+      },
+      {
+        "id": 1,
+        "state": "PATROL",
+        "seen": false,
+        "x": 456,
+        "y": 744
+      },
+      {
+        "id": 2,
+        "state": "PATROL",
+        "seen": false,
+        "x": 600,
+        "y": 552
+      },
+      {
+        "id": 3,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1387.8336000000045,
+        "y": 936
+      },
+      {
+        "id": 4,
+        "state": "PATROL",
+        "seen": false,
+        "x": 523.8335999999998,
+        "y": 1272
+      },
+      {
+        "id": 5,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1224,
+        "y": 744
+      }
+    ],
+    "over": false
+  },
+  {
+    "label": "west-return",
+    "version": "v235",
+    "t": 10.766200000000001,
+    "x": 745.4128762655316,
+    "y": 457.40152415971386,
+    "fl": 0,
+    "z": 5,
+    "hp": 3,
+    "mode": "walk",
+    "hidden": false,
+    "moving": false,
+    "carry": false,
+    "body": null,
+    "approach": false,
+    "recovery": false,
+    "kill": false,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0
+    },
+    "guards": [
+      {
+        "id": 0,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 936
+      },
+      {
+        "id": 1,
+        "state": "PATROL",
+        "seen": false,
+        "x": 545.7567360000011,
+        "y": 744
+      },
+      {
+        "id": 2,
+        "state": "PATROL",
+        "seen": false,
+        "x": 600,
+        "y": 552
+      },
+      {
+        "id": 3,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1589.4220800000094,
+        "y": 936
+      },
+      {
+        "id": 4,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 1272
+      },
+      {
+        "id": 5,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1224,
+        "y": 744
+      }
+    ],
+    "over": false
+  },
+  {
+    "label": "roof-descent",
+    "version": "v235",
+    "t": 13.966099999999955,
+    "x": 744,
+    "y": 264,
+    "fl": 4,
+    "z": 0,
+    "hp": 3,
+    "mode": "walk",
+    "hidden": false,
+    "moving": false,
+    "carry": false,
+    "body": null,
+    "approach": false,
+    "recovery": false,
+    "kill": false,
+    "stats": {
+      "camEver": 0,
+      "kills": 0,
+      "extraKills": 0,
+      "bodies": 0,
+      "detected": 0,
+      "stonesUsed": 0,
+      "kunaiUsed": 0,
+      "alarms": 0,
+      "stashed": 0,
+      "special": 0,
+      "roofStair": 1
+    },
+    "guards": [
+      {
+        "id": 0,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 936
+      },
+      {
+        "id": 1,
+        "state": "PATROL",
+        "seen": false,
+        "x": 552,
+        "y": 744
+      },
+      {
+        "id": 2,
+        "state": "PATROL",
+        "seen": false,
+        "x": 600,
+        "y": 552
+      },
+      {
+        "id": 3,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1704,
+        "y": 936
+      },
+      {
+        "id": 4,
+        "state": "PATROL",
+        "seen": false,
+        "x": 696,
+        "y": 1272
+      },
+      {
+        "id": 5,
+        "state": "PATROL",
+        "seen": false,
+        "x": 1224,
+        "y": 744
+      }
+    ],
+    "over": false
+  }
+]
