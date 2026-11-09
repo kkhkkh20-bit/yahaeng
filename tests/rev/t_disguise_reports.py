@@ -45,13 +45,15 @@ async def main():
     check(S.knownLooks.crew&&!S.knownLooks.staff&&!P.disguiseBlown&&!G.knownFace(far),'late report publishes current rather than observed clothing');out.push('delayed report describes old look only');
     reset();a=guard(950);far=guard(951,450);a.radio=true;S.guards=[a,far];a.seen=true;G.goAlert(a);silence(a);G.rememberSuspect(null,'crew','camera');
     check(P.disguiseBlown&&G.knownFace(far)&&G.disguiseKnowledge().source==='camera','independent CCTV report is erased by human interruption');out.push('independent completed CCTV report remains valid');
+    reset();a=guard(955);a.civ=true;const recipient=guard(956,40);recipient.radio=true;far=guard(957,450);S.guards=[a,recipient,far];G.rememberSuspect(a,'crew');a.rep={to:recipient,x:P.x,y:P.y,saw:'crew',kind:'disguise'};G.deliverReport(a);
+    check(S.radioCall?.g===recipient&&G.knownFace(recipient)&&!G.knownFace(far)&&!P.disguiseBlown,'civilian report prematurely invalidates current clothing for uninformed guards');silence(recipient);silence(a);check(!S.knownLooks.crew&&!P.disguiseBlown&&!G.knownFace(far)&&!G.disguiseKnowledge().witnesses.length,'silenced civilian/recipient retain global exposure');out.push('civilian report informs its actual recipient; interrupted relay stays local');
     reset();a=guard(960);far=guard(961,450);a.radio=true;S.guards=[a,far];a.seen=true;G.goAlert(a);silence(a);P.disguiseBlown=true;P.blown={crew:true};P.hp=2;G.saveCheckpoint();check(G.loadCheckpoint(),'legacy checkpoint restore failed');
     check(!G.S.player.disguiseBlown&&!G.S.player.blown.crew&&!G.knownFace(G.S.guards[1])&&G.S.player.hp===2,'legacy local flag survives migration or health changes');
     G.rememberSuspect(null,'crew');G.saveCheckpoint();G.loadCheckpoint();check(G.S.player.disguiseBlown&&G.knownFace(G.S.guards[1]),'checkpoint migration erases legitimate report');out.push('legacy false flag repaired; actual reports and health preserved');
     G.updateAlert(100);G.updateAlert(31);check(!G.S.player.disguiseBlown&&!G.S.player.blown.crew&&!G.knownFace(G.S.guards[1]),'expired shared report leaves stale permission/HUD flags');out.push('search expiry clears shared flags without retaining legacy outfit invalidation');
     G.updateHUD(true);G.moveCamera(1);G.benchDraw(1);return out;
    }''')
-   await q.screenshot(path=str(O/f'disguise-shared-{w}.png'));assert not errors,errors;rows.append({'viewport':[w,h],'scenarios':result,'pageErrors':errors,'method':__doc__});print('PASS disguise reports',w,len(result),'scenarios',flush=True);await q.close()
+   await q.screenshot(path=str(O/f'disguise-search-ended-{w}.png'));assert not errors,errors;rows.append({'viewport':[w,h],'scenarios':result,'pageErrors':errors,'method':__doc__});print('PASS disguise reports',w,len(result),'scenarios',flush=True);await q.close()
   await b.close()
  (O/'disguise-reports.json').write_text(json.dumps(rows,ensure_ascii=False,indent=2))
 asyncio.run(main())

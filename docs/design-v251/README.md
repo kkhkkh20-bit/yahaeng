@@ -42,7 +42,7 @@ HUD는 목격자만 알아봄 / 인상착의 보고 중 / 인상착의 전체 �
 
 - `t_skill_tree_finish`: 320×568, 390×844, 844×390, 1024×768, 1440×900. 실제 27개 노드·24개 선행 연결, 모바일 1계열/PC 3계열, 비용·잠금·습득·재분배, 설명창 위치·포커스·리사이즈, 첫 완료 1P를 확인했다.
 - `t_skill_diagram`, `t_interface`, `t_menu`, `t_new_campaign`: 실제 클릭·키보드·터치 흐름, 선행 노드 탐색, 복귀, 폰트 및 폰트 다운로드 실패 시 시작까지 확인했다.
-- `t_disguise_reports`: PC/모바일 크기의 **통제된 실제 게임 함수 검사** 8종. KO/살해 중단, 청취한 목격자/원격 경비 분리, 보고 후 사망, 옛 복장 지연 보고, CCTV 독립 보고, 구버전 저장 복구, 수색 종료를 확인했다. 전체 미션 플레이를 대신하는 검사는 아니다. [결과](disguise-reports.json).
+- `t_disguise_reports`: PC/모바일 크기의 **통제된 실제 게임 함수 검사** 9종. KO/살해 중단, 청취한 목격자/원격 경비 분리, 보고 후 사망, 옛 복장 지연 보고, CCTV 독립 보고, 주민 신고의 실제 수신자와 전달 차단, 구버전 저장 복구, 수색 종료를 확인했다. 전체 미션 플레이를 대신하는 검사는 아니다. [결과](disguise-reports.json).
 - `t_disguise_ai`, `t_disguise_passers`, `t_disguise_lighting`, `t_ai_evidence`, `t_security_readout`, `t_multilevel_pursuit`: 기존 권한·통과·신원 확인·목격·청취·카메라·층간 추격 회귀 검사를 통과했다. 신원 확인 회귀 검사는 새 규칙에 맞게 ‘목격자 기억 있음 / 전체 보고 전’으로 명시했다.
 - `node tests/integration/physical_interactions.cjs`: 실제 소스 함수 기반 20개 묶음을 통과했다. `t_walkway_clearance`의 27개 맵·115개 수납장·기존 17개 이동과 예전 저장 복구도 유지된다.
 - `first_steps_live`: 일반 RAF·실제 키보드/CDP 터치·전체 작성된 AI를 유지한 첫 에피소드 완주. PC/터치 모두 체력 3, 발견 0, 기절 2, 운반 숨기기 1. 결과 후 실제 1P 습득과 다음 에피소드 준비 진입도 확인했다. [PC](native-first-pc.json) · [터치](native-first-mobile.json). 알려진 경로의 개발자 재생이며 초보자 사용성 연구나 실제 iPhone Safari 검사는 아니다.

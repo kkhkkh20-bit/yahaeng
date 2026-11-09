@@ -11,6 +11,7 @@
       "completed report survives reporter death; changing/reusing clothing uses exact reported look",
       "delayed report describes old look only",
       "independent completed CCTV report remains valid",
+      "civilian report informs its actual recipient; interrupted relay stays local",
       "legacy false flag repaired; actual reports and health preserved",
       "search expiry clears shared flags without retaining legacy outfit invalidation"
     ],
@@ -29,6 +30,7 @@
       "completed report survives reporter death; changing/reusing clothing uses exact reported look",
       "delayed report describes old look only",
       "independent completed CCTV report remains valid",
+      "civilian report informs its actual recipient; interrupted relay stays local",
       "legacy false flag repaired; actual reports and health preserved",
       "search expiry clears shared flags without retaining legacy outfit invalidation"
     ],
