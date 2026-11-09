@@ -66,5 +66,5 @@ async def main():
   await q.goto(url);await q.wait_for_function('!!window.__game');await q.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='tB'))");assert await q.evaluate('__game.characterLook(__game.S.player)')=='ninja','normal heroine changed'
   await b.close()
  server.shutdown();server.server_close()
- out=ROOT/'build/agent-city-v240';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
+ out=ROOT/'build/agent-city-v241';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
 if __name__=='__main__':asyncio.run(main())

@@ -2,7 +2,7 @@ const PR = window.__PR || null;
 // 신분 옷 색 (피부 · 머리 · 윗옷 · 바지 · 신발): 옷마다 확실히 다른 색 (히트맨 GO식 — 2D에서 한눈에 구분)
 const OUTFIT_PAL = { staff: ['#e6b690', '#2a2a2a', '#54846f', '#343b49', '#1c1c1c'], courier: ['#d9a47e', '#1e1e1e', '#d2862a', '#3a3a3a', '#222222'], waiter: ['#efc49e', '#151515', '#f2f0ea', '#141414', '#0e0e0e'], cater: ['#e8b892', '#1e1e1e', '#c8463c', '#18181c', '#101010'] };
 const PR_PAL = {
-  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a', '#141414', '#495663', '#394356', '#161a1e'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
+  ninja: INK_STUDY?['#e6b38a','#141414','#363731','#31352e','#161a1e']:['#e6b38a','#31333d','#2e425f','#30343f','#171c25'], sam: ['#ddaa80', '#3a2a1c', '#626c48', '#434337', '#2a241c'], samB: ['#c79470', '#1d1d1d', '#2a3654', '#1d1f26', '#141416'],
   samR: ['#e4b28a', '#0f0f0f', '#121317', '#121317', '#0c0c0c'], hunter: ['#d4a078', '#2b1d12', '#3d4a2e', '#5a4630', '#3a2a1a'], noble: ['#efc49e', '#2b2b2b', '#343b46', '#252b33', '#17191d'],
   old: ['#e6bd9a', '#c4c4c4', '#6a2a2a', '#2e2e36', '#3a2e24'], doc: ['#edc6a2', '#4a3a2a', '#f0f0ea', '#8a7f6a', '#4a3a2a'], civ0: ['#efbf98', '#342720', '#b84a3a', '#3a4a6a', '#d8d8d4'],
   civ1: ['#c48961', '#85543b', '#d6ae48', '#5a5040', '#3a2a1a'], civ2: ['#e6b68e', '#756c63', '#3a8a8a', '#6a6a72', '#c8c8c0'], civ3: ['#f2caa6', '#783e4e', '#d27a9e', '#20222a', '#202020'],
@@ -14,7 +14,7 @@ const PR_PAL = {
 // Rank changes the model and behaviour, not the faction's uniform. Keep the
 // legacy keys: corpses, old saves and the player's stolen clothes use them too.
 for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
-PR_PAL.agent=['#e6b38a','#30262b','#beb5a5','#303747','#171b25'];
+PR_PAL.agent=['#e6b38a','#31333d','#2e425f','#30343f','#171c25'];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
@@ -30,7 +30,7 @@ const prBodies = spriteSources.loaded, prBodyLoads = spriteSources.pending;
 const prLoadBody = bn => spriteSources.load(bn);
 // The heroine is needed for the first lesson. NPC sources belong to the active
 // mission; rare disguise and paired-motion sources load when actually requested.
-if (PR) { const body=window.__AGENT_CITY_STUDY__?'heroAgent':'hero';prLoadBody(body);prLoadBody(body+'Motion'); }
+if (PR) { const body=PR.looks?.ninja||'hero';prLoadBody(body);prLoadBody(body+'Motion'); }
 // 조각 하나의 색 분류 (피부·머리·윗옷·바지·신발): 처음 쓸 때 한 번만. 원본 색은 붙잡아 두지 않고 칠할 때마다 그림에서 다시 읽는다 (메모리)
 let prScr = null;
 function prRead(base, ci) {
@@ -92,12 +92,13 @@ function playerKey(P) {
   const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : STAGE?.agentStudy ? 'agent' : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
   const studyBody=STAGE?.agentStudy?({crew:'heroAgentCrew',staff:'heroAgentWorker',courier:'heroAgentWorker',waiter:'heroAgent',cater:'heroAgent'}[P.outfit]||'heroAgent'):null;
-  const body = pal==='agent' ? 'heroAgent' : studyBody || pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  const body = pal==='agent' ? 'heroAgent' : studyBody || pal !== 'ninja' && PR.playerLooks[P.outfit] || PR.looks.ninja || 'hero';
   if(!prBodies[body])prLoadBody(body);
+  if(PR.bodies?.[body+'Lid']&&!prBodies[body+'Lid'])prLoadBody(body+'Lid');
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
   const gait=PR.fluidBodies?.[body]?.gait;if(gait&&!prBodies[gait])prLoadBody(gait);
   if(pal==='agent'||studyBody)return pal+'@'+body;
-  return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:'hero');
+  return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:PR.looks.ninja||'hero');
 }
 function prPalette(pk, body) {
   const pal = PR_PAL[pk];
@@ -180,12 +181,13 @@ function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if
 function prKeep(keys){
   prNear.clear();const defaults=STAGE?.agentStudy?[]:['ninja'];const fluidKeys=[...keys,...defaults].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
   const persona=keys.filter(k=>Object.values(TARGET_CAST).some(p=>p.key===k)).map(k=>{const[p,b]=prSplit(k);return p+'@'+b+'PersonaMotion';}).filter(k=>PR.bodies?.[prSplit(k)[1]]);
-  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set([...defaults.flatMap(k=>[k,k+'_ol',k+'@heroMotion']),...keys,...persona,...motion,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
+  const access=keys.map(k=>{const[p,b]=prSplit(k);return PR.bodies?.[b+'Lid']?p+'@'+b+'Lid':null;}).filter(Boolean);
+  const motion=keys.map(k=>{const[p,b]=prSplit(k);return p+'@'+(b||'key')+'Motion';}),keep=new Set([...defaults.flatMap(k=>[k,k+'_ol',k+'@'+(PR.looks?.ninja||'hero')+'Motion']),...keys,...persona,...motion,...access,...fluidKeys,...fluidKeys.map(k=>k+'_ol'),...keys.map(k=>k+'_ol'),...motion.map(k=>k+'_ol')]);
   for(const k of Object.keys(prVar))if(!keep.has(k))delete prVar[k];for(let i=prWarmQ.length-1;i>=0;i--)if(!keep.has(prWarmQ[i].split('#')[0]))prWarmQ.splice(i,1);
   const bodies=new Set([...keep].map(k=>prSplit(k.replace(/_ol$/,''))[1]).filter(b=>PR.bodies?.[b]));
   spriteSources.retain(bodies);
   // Preload only the normal silhouettes used by people in this mission.
-  for(const bn of bodies)if(!bn.endsWith('Motion')||bn==='heroMotion'||bn.endsWith('PersonaMotion'))prLoadBody(bn);
+  for(const bn of bodies)if(!bn.endsWith('Motion')||bn===(PR.looks?.ninja||'hero')+'Motion'||bn.endsWith('PersonaMotion'))prLoadBody(bn);
 }
 const prDir = a => ((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8;
 // anim: idle walk run sneak crouch death punch / t: 경과 시간(초)

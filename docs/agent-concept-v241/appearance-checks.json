@@ -1,0 +1,65 @@
+{
+  "uncroppedFrames": 16632,
+  "looks": [
+    {
+      "outfit": null,
+      "key": "ninja",
+      "body": "heroAgent",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    },
+    {
+      "outfit": "crew",
+      "key": "sam@heroAgentCrew",
+      "body": "heroAgentCrew",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    },
+    {
+      "outfit": "staff",
+      "key": "staff@heroAgentWorker",
+      "body": "heroAgentWorker",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    },
+    {
+      "outfit": "courier",
+      "key": "courier@heroAgentWorker",
+      "body": "heroAgentWorker",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    },
+    {
+      "outfit": "waiter",
+      "key": "waiter@heroAgent",
+      "body": "heroAgent",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    },
+    {
+      "outfit": "cater",
+      "key": "cater@heroAgentWorker",
+      "body": "heroAgentWorker",
+      "skinHair": [
+        "#e6b38a",
+        "#31333d"
+      ]
+    }
+  ],
+  "npc": "staff@femaleWorker",
+  "navy": true,
+  "identity": true,
+  "allActions": true,
+  "containerOpening": true,
+  "errors": []
+}
