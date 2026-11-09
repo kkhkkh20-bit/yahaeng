@@ -2883,6 +2883,11 @@ function cityBuildingStyle(b){
  if(STAGE.agentStudy)return STAGE.studyStyles[BLD.indexOf(b)]||'stone';
  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return b.h>1?'office':'metal';
  if(b.glass)return 'office';
+ const uses=b.floorsUse||[];
+ if(uses.includes('office')||uses.includes('pc'))return 'office';
+ if(uses.includes('vault'))return 'metal';
+ if(uses.includes('vip')||uses.includes('club'))return 'brick';
+ if(uses.includes('food'))return 'green';
  if(b.kind==='shop')return (b.x0+b.y0)%2?'brick':'green';
  return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
 }
@@ -2892,7 +2897,7 @@ function freeCityPattern(name){
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
  tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);
  if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(92,100,104,.35)';c.fillRect(0,0,tile.width,tile.height);}
- if(name==='asphalt'){c.fillStyle=STAGE.agentStudy?'rgba(24,32,48,.16)':'rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
+ if(name==='asphalt'){c.fillStyle='rgba(24,32,48,.20)';c.fillRect(0,0,tile.width,tile.height);}
  return freeCityPatterns[key]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
@@ -2931,6 +2936,8 @@ function paintFreeCityRoof(c,b,w,h){
    for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
    c.restore();
   }
+  // Quiet concrete on flat roofs; preserve the purchased coping and collision.
+  if(name==='roofTerrace'&&studyReady())studyRepeat(c,'roofStone',border,border,w-border*2,h-border*2,1.5);
   // Keep the source roof surface continuous; no extra repeated cross-bands.
   c.save();c.fillStyle='rgba(38,50,57,.2)';c.fillRect(border,border,w-border*2,h-border*2);
   c.restore();return true;
@@ -2945,7 +2952,7 @@ function paintFreeCityRoof(c,b,w,h){
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
  if(STAGE.agentStudy&&studyGround(c,ch,tx,ty))return true;
- if(freeCityArt===A.dotonbori&&studyReady()&&'.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
+ if(freeCityArt===A.dotonbori&&studyReady()&&'=,F'.includes(ch))return studyGround(c,ch,tx,ty);
  if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;
@@ -6354,6 +6361,13 @@ function drawLures(visible){
   if(l.landed&&age<.35){ctx.save();ctx.strokeStyle=`rgba(214,203,164,${(1-age/.35)*.45})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y+5,5+age*16,3+age*6,0,0,TAU);ctx.stroke();ctx.restore();}
  }
 }
+function drawThrownCans(visible){
+ for(const s of S.stones){
+  const f=Math.min(1,s.t/s.dur),x=s.x0+(s.x1-s.x0)*f,y=s.y0+(s.y1-s.y0)*f-Math.sin(f*Math.PI)*30;
+  if(!visible({fl:flOf(s),x,y:y+Math.sin(f*Math.PI)*30}))continue;
+  drawFieldTool(ctx,'can',x,y,12,f*4);
+ }
+}
 
 // 실내 CCTV는 담당 경비의 작업점이 아닌, 같은 방의 벽 모서리에 설치한다.
 // 문을 경계로 방을 나누고 실제 벽 시야로 후보를 평가한다. 외부 카메라·서치라이트는 유지한다.
@@ -6533,7 +6547,7 @@ function zoneEdges() {
 const zoneCol = (k, allow) => allowedBy(allow) ? '110,205,135' : k === Z_HOS ? '232,80,60' : '242,170,70';
 function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   if (!tactical && ((P.z || 0) > 0 || flOf(P) > 0 || P.wire)) return;  // 옥상·위층·전깃줄 위: 땅의 구역 선·이름표는 안 보인다
-  const far = tactical ? 1e9 : 520;
+  const far = tactical || input.scan ? 1e9 : 240;
   for (const e of zoneEdges()) {
     const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d > far) continue;
     const to=dist(P.x,P.y,e.ax,e.ay)<=dist(P.x,P.y,e.bx,e.by)?e.b:e.a;
@@ -6548,7 +6562,7 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > far) continue;
     ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
     const lo = Math.max(x + 60, cam.x - W / SCALE / 2 + 110 / SCALE), hi = Math.min(x + w - 60, cam.x + W / SCALE / 2 - 110 / SCALE), lx = lo <= hi ? clamp(x + w / 2, lo, hi) : x + w / 2;  // 구역이 화면에 걸쳐 있으면 이름표를 보이는 쪽으로
-    if ((!INK_STUDY||STAGE.id!=='m2'||input.scan||tactical)&&((d<320&&!chaseNow())||tactical)) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통행 허용' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
+    if (input.scan||tactical) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통행 허용' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
   }
   // 가까운 문턱에 '출입 금지' 표지 (가장 가까운 하나만). 허가 옷을 입었으면 '통과'
   if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && sightLine(P,mx,my,0,P.mode==='sneak',0)) { bd = d; best = e; } }
@@ -13702,7 +13716,7 @@ function drawSkillDevices(P,openB){
   if(smokeContains(s,P.x,P.y))drawPlayerLocator(P);
 
  }
- for(const s of S.smokeThrows||[])if(flOf(s.at)===flOf(P)){const f=clamp((S.t-s.t0)/s.dur,0,1),x=s.x+(s.at.x-s.x)*f,y=s.y+(s.at.y-s.y)*f-Math.sin(f*Math.PI)*30;ctx.fillStyle='#a5ada2';ctx.fillRect(x-3,y-5,6,10);}
+ for(const s of S.smokeThrows||[])if(flOf(s.at)===flOf(P)){const f=clamp((S.t-s.t0)/s.dur,0,1),x=s.x+(s.at.x-s.x)*f,y=s.y+(s.at.y-s.y)*f-Math.sin(f*Math.PI)*30;drawFieldTool(ctx,'smoke',x,y,14,f*3);}
  if(input.aiming&&input.tool==='hack'){const c=hackTarget();if(c){ctx.strokeStyle='#bdc9ae';ctx.lineWidth=1.5;ctx.strokeRect(c.x-13,c.y-17,26,26);}}
  for(const c of S.cams||[])if(c.hackedUntil>S.t&&flOf(c)===flOf(P)&&dist(P.x,P.y,c.x,c.y)<220&&inView(c.x,c.y)){ctx.fillStyle='#c8d5bd';ctx.font=uiFont(11);ctx.textAlign='center';ctx.fillText('정지 '+Math.ceil(c.hackedUntil-S.t)+'초',c.x,c.y-24);}
 }
@@ -16058,10 +16072,7 @@ function draw() {
   drawGunAim();
   if (S.keyDrop && (S.keyDrop.fl || 0) === flOf(S.player)) drawKeyIcon(S.keyDrop.key, S.keyDrop.x, S.keyDrop.y, true);
   for (const it of S.keyItems || []) if (!it.got && it.fl === flOf(S.player)) drawKeyIcon(it.key, it.x, it.y, true);
-  for (const s of S.stones) {
-    const k = Math.min(1, s.t / s.dur); const x = s.x0 + (s.x1 - s.x0) * k, y = s.y0 + (s.y1 - s.y0) * k - Math.sin(k * Math.PI) * 30;
-    ctx.fillStyle = '#c9ccd3'; ctx.beginPath(); ctx.arc(x, y, 4, 0, TAU); ctx.fill();
-  }
+  drawThrownCans(onGround);
   for (const k of S.kunais) {
     const f = Math.min(1, k.t / k.dur); const x = k.x0 + (k.tgt.x - k.x0) * f, y = k.y0 + (k.tgt.y - k.y0) * f;
     const a = Math.atan2(k.tgt.y - k.y0, k.tgt.x - k.x0);
@@ -16100,7 +16111,7 @@ function draw() {
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
     for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
-    drawLures(onFloor);
+    drawLures(onFloor);drawThrownCans(onFloor);
     for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
     drawProps(VF);
@@ -16526,7 +16537,7 @@ function compactObjectiveText(){
  const targets=S.spare?[]:S.guards.filter(g=>g.target),parts=[];
  if(targets.length===1)parts.push(targetName(targets[0]).split(' · ')[0]+' 처치 '+targets.filter(targetEliminated).length+'/1');
  else if(targets.length)parts.push('표적 '+targets.filter(targetEliminated).length+'/'+targets.length+' 처치');
- if(STAGE.firstGoal)return STAGE.mission||STAGE.purpose||pendingFirstGoal()?.text||'출구로 탈출';
+ if(STAGE.firstGoal&&pendingFirstGoal())return pendingFirstGoal().text;
  if(S.items.length){
   const names=S.items.map((it,i)=>STAGE.itemNames?.[i]||STAGE.itemName||'서류'),work=S.items.some(it=>{const a=itemObjectiveAction(it);return a&&a.kind!=='recovery';});
   const label=work?'업무':S.items.length===1?names[0]:names.every(n=>/서류|장부|암호표|계약서|인계서|명세서|원장/.test(n))?'서류':'물품';
@@ -16639,7 +16650,7 @@ function actorTextBlocks() {
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
   const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
-  const identity=!g.via&&!g.exit&&!g.shelter&&(g.marker||(g.g?.target?targetName(g.g)+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):''));
+  const identity=!g.via&&!g.exit&&!g.shelter&&(g.g?.target?targetName(g.g).split(' · ')[0]+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):g.marker||'');
   const d=g.destinationFloor||g,level=d.z?`${d.z}층 옥상`:d.fl?`${d.fl+1}층`:bldAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE))>=0?'1층':'지상';
   const height=d.z||(d.fl||0),current=S.player.z||flOf(S.player);
   const floor=(identity||g.area||g.lastSeen||g.via||d.fl||d.z)?(height>current?'↑ ':height<current?'↓ ':'')+level:'';
@@ -18332,7 +18343,7 @@ function installGameApi() {
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
-    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
+    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio','can','smoke'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,openingArchiveGuard,openingArchiveReady,openingArchiveRear,openingArchiveApproach,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,

@@ -114,10 +114,7 @@ function draw() {
   drawGunAim();
   if (S.keyDrop && (S.keyDrop.fl || 0) === flOf(S.player)) drawKeyIcon(S.keyDrop.key, S.keyDrop.x, S.keyDrop.y, true);
   for (const it of S.keyItems || []) if (!it.got && it.fl === flOf(S.player)) drawKeyIcon(it.key, it.x, it.y, true);
-  for (const s of S.stones) {
-    const k = Math.min(1, s.t / s.dur); const x = s.x0 + (s.x1 - s.x0) * k, y = s.y0 + (s.y1 - s.y0) * k - Math.sin(k * Math.PI) * 30;
-    ctx.fillStyle = '#c9ccd3'; ctx.beginPath(); ctx.arc(x, y, 4, 0, TAU); ctx.fill();
-  }
+  drawThrownCans(onGround);
   for (const k of S.kunais) {
     const f = Math.min(1, k.t / k.dur); const x = k.x0 + (k.tgt.x - k.x0) * f, y = k.y0 + (k.tgt.y - k.y0) * f;
     const a = Math.atan2(k.tgt.y - k.y0, k.tgt.x - k.x0);
@@ -156,7 +153,7 @@ function draw() {
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
     for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
-    drawLures(onFloor);
+    drawLures(onFloor);drawThrownCans(onFloor);
     for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
     drawProps(VF);

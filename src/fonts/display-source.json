@@ -1,0 +1,8 @@
+{
+  "family": "Black Han Sans",
+  "license": "OFL-1.1",
+  "source": "https://raw.githubusercontent.com/google/fonts/main/ofl/blackhansans/BlackHanSans-Regular.ttf",
+  "source_sha256": "31960809284026681774a8e52dc19ebcad26cf69b0ad9d560f288296fbb52739",
+  "glyphs": 2733,
+  "coverage": "Full upstream font; Korean headings never fall back to the regular UI face."
+}

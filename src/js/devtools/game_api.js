@@ -8,7 +8,7 @@ function installGameApi() {
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
-    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
+    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio','can','smoke'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,openingArchiveGuard,openingArchiveReady,openingArchiveRear,openingArchiveApproach,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,

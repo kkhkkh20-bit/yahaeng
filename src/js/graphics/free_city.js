@@ -16,6 +16,11 @@ function cityBuildingStyle(b){
  if(STAGE.agentStudy)return STAGE.studyStyles[BLD.indexOf(b)]||'stone';
  if(STAGE.industrialBuildings?.includes(BLD.indexOf(b)))return b.h>1?'office':'metal';
  if(b.glass)return 'office';
+ const uses=b.floorsUse||[];
+ if(uses.includes('office')||uses.includes('pc'))return 'office';
+ if(uses.includes('vault'))return 'metal';
+ if(uses.includes('vip')||uses.includes('club'))return 'brick';
+ if(uses.includes('food'))return 'green';
  if(b.kind==='shop')return (b.x0+b.y0)%2?'brick':'green';
  return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
 }
@@ -25,7 +30,7 @@ function freeCityPattern(name){
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
  tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);
  if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(92,100,104,.35)';c.fillRect(0,0,tile.width,tile.height);}
- if(name==='asphalt'){c.fillStyle=STAGE.agentStudy?'rgba(24,32,48,.16)':'rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
+ if(name==='asphalt'){c.fillStyle='rgba(24,32,48,.20)';c.fillRect(0,0,tile.width,tile.height);}
  return freeCityPatterns[key]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
@@ -64,6 +69,8 @@ function paintFreeCityRoof(c,b,w,h){
    for(let yy=dy;yy<dy+dh;yy+=sh*2)for(let xx=dx;xx<dx+dw;xx+=sw*2)c.drawImage(freeCityAtlas,f[0]+sx,f[1]+sy,sw,sh,xx,yy,sw*2,sh*2);
    c.restore();
   }
+  // Quiet concrete on flat roofs; preserve the purchased coping and collision.
+  if(name==='roofTerrace'&&studyReady())studyRepeat(c,'roofStone',border,border,w-border*2,h-border*2,1.5);
   // Keep the source roof surface continuous; no extra repeated cross-bands.
   c.save();c.fillStyle='rgba(38,50,57,.2)';c.fillRect(border,border,w-border*2,h-border*2);
   c.restore();return true;
@@ -78,7 +85,7 @@ function paintFreeCityRoof(c,b,w,h){
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
  if(STAGE.agentStudy&&studyGround(c,ch,tx,ty))return true;
- if(freeCityArt===A.dotonbori&&studyReady()&&'.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
+ if(freeCityArt===A.dotonbori&&studyReady()&&'=,F'.includes(ch))return studyGround(c,ch,tx,ty);
  if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;

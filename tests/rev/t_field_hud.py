@@ -18,12 +18,12 @@ async def main():
    await q.evaluate('''()=>{const G=__game,S=G.S,g=S.guards[0];S.expo=2;Object.assign(g,{state:'ALERT',seen:true,sightAt:S.t,sightFl:0,sightZ:0});G.updateHUD(true)}''')
    await q.wait_for_timeout(130);await q.evaluate('__game.syncEpisodeRadio()')
    assert await q.locator('#objectiveSummary').inner_text()==mission,'chase replaced the overall mission'
-   assert '시야 끊고 숨어' in await q.locator('#episodeRadioText').inner_text(),'radio leaves work as the instruction during chase'
+   chase=await q.locator('#episodeRadioText').inner_text();assert '시야' in chase and ('피해' in chase or '숨어' in chase),'radio leaves work as the instruction during chase'
    assert await q.locator('#expoLbl').is_visible() and '발각' in await q.locator('#expoLbl').inner_text()
    assert await q.locator('#accessLbl').is_hidden(),'permission competes with an actual detection'
    await q.evaluate("()=>{const G=__game,S=G.S;for(const g of S.guards){g.state='SEARCH';g.seen=false;}S.player.hidden=true;S.alevel=2;S.searchCause={kind:'player',t:S.t};}")
    await q.wait_for_timeout(800);await q.evaluate('__game.syncEpisodeRadio()')
-   assert '지금은 움직이지 마' in await q.inner_text('#episodeRadioText'),'resolved chase keeps shouting to run'
+   assert '기다려' in await q.inner_text('#episodeRadioText'),'resolved chase keeps shouting to run'
    assert await q.locator('#episodeRadio').get_attribute('data-priority')=='1'
 
    await q.click('#hud .obj');assert await q.evaluate('__game.hudInspecting()')

@@ -18,3 +18,10 @@ function drawLures(visible){
   if(l.landed&&age<.35){ctx.save();ctx.strokeStyle=`rgba(214,203,164,${(1-age/.35)*.45})`;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y+5,5+age*16,3+age*6,0,0,TAU);ctx.stroke();ctx.restore();}
  }
 }
+function drawThrownCans(visible){
+ for(const s of S.stones){
+  const f=Math.min(1,s.t/s.dur),x=s.x0+(s.x1-s.x0)*f,y=s.y0+(s.y1-s.y0)*f-Math.sin(f*Math.PI)*30;
+  if(!visible({fl:flOf(s),x,y:y+Math.sin(f*Math.PI)*30}))continue;
+  drawFieldTool(ctx,'can',x,y,12,f*4);
+ }
+}

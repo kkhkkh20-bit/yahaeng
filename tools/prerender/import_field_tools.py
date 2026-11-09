@@ -4,10 +4,10 @@ from pathlib import Path
 from PIL import Image
 R=Path(__file__).resolve().parents[2]
 def main():
- a=argparse.ArgumentParser();a.add_argument('source',type=Path);args=a.parse_args()
+ a=argparse.ArgumentParser();a.add_argument('source',type=Path);a.add_argument('--keys',nargs=2,default=['cigarettes','radio']);args=a.parse_args()
  src=Image.open(args.source).convert('RGBA');out=R/'src/art/field-items'
  meta=json.loads((out/'meta.json').read_text())
- for i,key in enumerate(['cigarettes','radio']):
+ for i,key in enumerate(args.keys):
   im=src.crop((i*src.width//2,0,(i+1)*src.width//2,src.height))
   im.putalpha(im.getchannel('A').point(lambda a:255 if a>=230 else 0))
   box=im.getbbox()
