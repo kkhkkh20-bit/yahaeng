@@ -34,7 +34,7 @@ async def main():
     if(f.nx)for(let y=bld.y0+1;y<bld.y1;y++){saved.push([wx,y,G.G0[y][wx]]);G.G0[y][wx]='#';}
     else for(let x=bld.x0+1;x<bld.x1;x++){saved.push([x,wy,G.G0[wy][x]]);G.G0[wy][x]='#';}
     try{G.benchDraw(1);ok(!G.aperturePeekContains({...point,x:f.x-f.nx*120,y:f.y-f.ny*120}),'peek crosses a room partition');}finally{for(const[x,y,ch]of saved)G.G0[y][x]=ch;}
-    Object.assign(P,{x:w.x-150,y:w.y});G.benchDraw(1);ok(!G.aperturePeekFrame,'distant window exposes room');
+    Object.assign(P,{x:w.x-150,y:w.y});G.benchDraw(1);ok(G.aperturePeekFrame?.alpha<f.alpha,'leaving sill does not start a fade');G.benchDraw(40);ok(!G.aperturePeekFrame,'distant window exposes room after fade');
     Object.assign(P,{x:w.x-48,y:w.y,fl:1});ok(!G.aperturePeekCandidate(P,-1),'ground window exposes upper floor');P.fl=0;P.z=3;ok(!G.aperturePeekCandidate(P,-1),'roof x-ray');P.z=0;
     const door=S.doors.find(d=>d.tx===18&&d.ty===12);ok(door,'door fixture');Object.assign(P,{x:door.x-48,y:door.y,fl:0,z:0,a:0});G.setDoor(door,true);G.benchDraw(40);ok(G.aperturePeekFrame?.opening!==door,'closed door reveals interior');G.setDoor(door,false);G.benchDraw(40);ok(G.aperturePeekFrame?.opening===door,'open doorway cannot be inspected');G.setDoor(door,true);G.benchDraw(40);ok(G.aperturePeekFrame?.opening!==door,'closing door retains live cutaway');
     // A checkpoint made at the formerly invisible stair cell moves onto its
