@@ -617,7 +617,7 @@ function updatePlayer(dt) {
   }
   checkObjective();
   if (STAGE.zones) { const zi = pZoneInfo(); if (zi.k !== Z_PUB && zi.allow) for (const o of myPermits()) if (zi.allow.includes(o)) (S.usedPermit || (S.usedPermit = {}))[o] = true; }  // 신분이 금지 구역을 통과시켜 준 기록 (도전 과제 판정)
-  if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = S.exits.reduce((a, b) => dist(P.x, P.y, a.x, a.y) <= dist(P.x, P.y, b.x, b.y) ? a : b);  // 안내는 가장 가까운 탈출구로
+  if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = chooseEscape();  // 걸어서 닿는 경로가 짧은 탈출구로 안내
   if (S.exitOpen && P.z === 0 && !flOf(P) && !S.over && (S.exits || [S.exit]).some(e => dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
 }
 // 밀어서 넘기 예고: 차오르는 고리 + 이름

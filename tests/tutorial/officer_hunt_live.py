@@ -34,16 +34,16 @@ async def main(args):
     await c.record('authored-target-performance');await cc.neutralize('runner',True)
     await q.wait_for_function('__game.targetEliminated(__game.S.guards.find(g=>g.tag==="runner"))&&!__game.actionBusy()&&__game.loadCaseFile().sources.includes("runner-down")',timeout=7000)
     await c.record('officer-killed-lead-earned');await q.click('#btnPause');await q.locator('#pause [data-case-open]').click()
-    text=await q.locator('#caseBoard').inner_text();assert '처치 확인' in text and '작업반장' in text and '한재문' in text and '정하린' not in text,text
+    text=await q.locator('#caseBoard').inner_text();assert '처치 확인' in text and '중개인' in text and '문서윤' in text and '정하린' not in text,text
     t=await q.evaluate('__game.S.t');await q.keyboard.press('ArrowRight');await q.keyboard.press('z');await q.wait_for_timeout(300)
     assert await q.evaluate('__game.S.t')==t,'case board does not pause gameplay'
     await q.screenshot(path=str(out/(name+'-first-lead.png')));await q.click('#btnCaseClose')
     assert await q.locator('#pause').is_visible();await q.wait_for_timeout(150);assert await q.evaluate('__game.S.t')==t,'closing board resumed paused game'
     await q.click('#btnResume');await cc.hide('runner');await cc.finish()
     await q.locator('#skillScreen').wait_for(state='visible',timeout=6000)
-    assert '끊어진 운반 연락' in await q.locator('#caseTraining').inner_text()
+    assert '박인호의 통화 기록' in await q.locator('#caseTraining').inner_text()
     await q.locator('#caseTraining [data-case-open]').click();await q.click('#btnCaseClose');assert await q.locator('#skillScreen').is_visible()
-    await continue_episode(q);assert await q.evaluate('__game.STAGE.id')=='p1';assert await q.locator('#brief').is_visible()
+    await continue_episode(q);assert await q.evaluate('__game.STAGE.id')=='e2';assert await q.locator('#brief').is_visible()
     assert await q.evaluate('__game.loadCaseFile().sources.includes("runner-down")'),'lead forgotten on next episode'
     result=await c.record('next-job-with-lead');assert result['hp']==3 and not result['stats']['detected'],result
     assert not errors,errors

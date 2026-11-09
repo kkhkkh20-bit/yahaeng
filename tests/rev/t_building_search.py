@@ -90,7 +90,7 @@ async def main():
     check(!P.disguiseBlown&&g.state==='PATROL'&&G.exposure()===0,'valid uniform turns red when watched');
     P.x=g.x+96;g.enforcer=true;for(let n=0;n<30;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&!g.eyeT,'Back of head reveals identity');
     P.a=Math.PI;for(let n=0;n<30;n++)G.updateGuard(g,.05);G.updateStealth(1);check(g.eyeT>0&&!P.disguiseBlown&&document.querySelector('#expoLbl').textContent==='신원 확인 중','missing fair identity warning');
-    for(let n=0;n<40;n++)G.updateGuard(g,.05);check(P.disguiseBlown&&g.state==='ALERT'&&G.exposure()===2,'confirmed face check does not become real detection');
+    for(let n=0;n<40;n++)G.updateGuard(g,.05);check(!P.disguiseBlown&&G.knownFace(g)&&g.state==='ALERT'&&G.exposure()===2,'confirmed face check does not become real detection');
     P.hide={};check(G.exposure()===0,'stale sight remains red after hiding');
    }
    {

@@ -1,0 +1,92 @@
+{
+  "maps": [
+    {
+      "id": "tB",
+      "exits": [
+        "동쪽 골목"
+      ],
+      "guards": 3,
+      "searchSeconds": 40
+    },
+    {
+      "id": "p0",
+      "exits": [
+        "남쪽 철문",
+        "서쪽 작업 골목"
+      ],
+      "guards": 3,
+      "searchSeconds": 45
+    },
+    {
+      "id": "e2",
+      "exits": [
+        "서쪽 정비 골목",
+        "동쪽 하역 골목"
+      ],
+      "guards": 4,
+      "searchSeconds": 55
+    },
+    {
+      "id": "m2",
+      "exits": [
+        "동쪽 큰길",
+        "서쪽 골목"
+      ],
+      "guards": 22,
+      "searchSeconds": 65
+    },
+    {
+      "id": "m4",
+      "exits": [
+        "서쪽 큰길",
+        "공터 하수구"
+      ],
+      "guards": 19,
+      "searchSeconds": 70
+    },
+    {
+      "id": "m6",
+      "exits": [
+        "동쪽 정문 밖",
+        "남쪽 담 개구멍"
+      ],
+      "guards": 11,
+      "searchSeconds": 70
+    },
+    {
+      "id": "m7",
+      "exits": [
+        "서쪽 시장 골목",
+        "동쪽 큰길"
+      ],
+      "guards": 6,
+      "searchSeconds": 65
+    },
+    {
+      "id": "m5",
+      "exits": [
+        "동쪽 본부 출구",
+        "서쪽 뒷골목"
+      ],
+      "guards": 14,
+      "searchSeconds": 75
+    },
+    {
+      "id": "n1",
+      "exits": [
+        "남서쪽 골목",
+        "북동쪽 관리 골목"
+      ],
+      "guards": 14,
+      "searchSeconds": 80
+    }
+  ],
+  "legacyGateAndHealth": true,
+  "realRouteChoice": true,
+  "navMs": 0.5,
+  "observedHeading": true,
+  "streetSweep": true,
+  "refreshedSight": true,
+  "noHiddenTracking": true,
+  "activeSearchClock": true
+}
