@@ -10,7 +10,7 @@ function lightMap(key, lamps) {
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
   x.save(); x.beginPath(); for (let i = 0; i < l.poly.length; i += 2) i ? x.lineTo(l.poly[i], l.poly[i + 1]) : x.moveTo(l.poly[i], l.poly[i + 1]); x.closePath(); x.clip();
-  const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.8)'); gr.addColorStop(0.55, 'rgba(0,0,0,.66)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.9)'); gr.addColorStop(0.55, 'rgba(0,0,0,.76)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
 }
 function darkPass(sc, lamps, clip, key) {
@@ -20,7 +20,7 @@ function darkPass(sc, lamps, clip, key) {
   if (darkC.width !== dw || darkC.height !== dh) { darkC.width = dw; darkC.height = dh; }
   dctx.setTransform(1, 0, 0, 1, 0, 0); dctx.globalCompositeOperation = 'source-over';
   dctx.clearRect(0, 0, dw, dh);
-  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(18,18,15,0.8)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(16,6,40,0.8)' : 'rgba(4,8,22,0.72)'; dctx.fillRect(0, 0, dw, dh);
+  dctx.fillStyle = INK_STUDY&&STAGE.id==='m2'? (tactical?'rgba(18,18,15,0.5)':'rgba(4,7,10,0.89)') : tactical ? 'rgba(4,8,22,0.5)' : NEONY() ? 'rgba(9,4,22,0.9)' : 'rgba(3,6,11,0.89)'; dctx.fillRect(0, 0, dw, dh);
   dctx.setTransform(sc * ds, 0, 0, sc * ds, (W / 2 * DPR - cam.x * sc) * ds, (H / 2 * DPR - cam.y * sc) * ds);
   dctx.globalCompositeOperation = 'destination-out';
   if (!DBG.dk2) { dctx.imageSmoothingEnabled = true; const lm = lightMap(key || 'g', lamps), [rx, ry, rw, rh] = viewRect(40);  // 화면에 걸친 부분만 옮긴다

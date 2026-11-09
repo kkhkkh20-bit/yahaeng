@@ -9,7 +9,7 @@ function drawPlayerLocator(P) {
 }
 function drawPlayer(P) {
   updateHeroVisual(P);
-  const previous=playerInkKey;playerInkKey=isTouch?playerKey(P):null;
+  const previous=playerInkKey;playerInkKey=isTouch||P.light<.3?playerKey(P):null;
   try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {

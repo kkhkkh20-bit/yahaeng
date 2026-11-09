@@ -109,25 +109,28 @@ function drawWindowEdge(w, b) {
   const vert = winVert(w); let ox = 0, oy = 0;
   if (vert) ox = w.tx <= b.x0 ? -1 : w.tx >= b.x1 ? 1 : 0; else oy = w.ty <= b.y0 ? -1 : 0;
   if (!ox && !oy) return;
-  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 3), ey = w.y + oy * (TILE / 2 - 3);
+  const lit = windowRoomLit(w), ex = w.x + ox * (TILE / 2 - 6), ey = w.y + oy * (TILE / 2 - 6);
   if (lit&&!city&&!officeReady()) {  // Legacy fallback; purchased windows use the real room-light mask.
     const gx = ex + ox * 26, gy = ey + oy * 26, gr = ctx.createRadialGradient(gx, gy, 2, gx, gy, 44);
     gr.addColorStop(0, 'rgba(255,206,130,.32)'); gr.addColorStop(1, 'rgba(255,206,130,0)');
     ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(gx, gy, vert ? 34 : 44, vert ? 44 : 30, 0, 0, TAU); ctx.fill();
   }
   ctx.save(); ctx.translate(ex, ey);
-  if(vert)paintSideWindow(w,lit,ox);else paintWindow(w,lit,38,22);
+  if(vert)paintSideWindow(w,lit,ox);else if(officeReady()){ctx.rotate(Math.PI/2);paintOfficeSideWindow(w,lit,oy);}else paintWindow(w,lit,38,22);
   ctx.restore();
 }
 // 문: 갈색 문짝 (열림 = 한쪽으로 젖혀짐, 잠김 = 막힘 + 자물쇠)
 function drawDoor(d, onRoof) {
   const x = d.x, y = d.y;
+  const office=officeReady(),style=office&&officeStyle(bldAt(d.tx,d.ty),flOf(d));
+  const wood=office&&[OFFICE_STYLES.residence,OFFICE_STYLES.estate].includes(style);
+  const jamb=office?'#394953':'#3a2618',panel=office?(wood?'#716052':'#53636c'):'#8a5a34';
   ctx.save(); ctx.translate(x, y); if (!d.horiz) ctx.rotate(Math.PI / 2);
   ctx.fillStyle='#69716b';ctx.fillRect(-19,-9,38,3);ctx.fillStyle='#b8bca6';ctx.fillRect(-19,-9,38,1);
-  ctx.fillStyle = '#3a2618'; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
+  ctx.fillStyle = jamb; ctx.fillRect(-24, -7, 5, 14); ctx.fillRect(19, -7, 5, 14);
   const open=doorVisualOpen(d),a=open*Math.PI/2,ex=-19+38*Math.cos(a),ey=-6+38*Math.sin(a);
   ctx.fillStyle='#16241e';ctx.fillRect(-19,-6,38,12);
-  ctx.fillStyle='#8a5a34';ctx.strokeStyle='#3a2618';ctx.lineWidth=1.2;
+  ctx.fillStyle=panel;ctx.strokeStyle=jamb;ctx.lineWidth=1.2;
   ctx.beginPath();ctx.moveTo(-19,-6);ctx.lineTo(ex,ey);ctx.lineTo(ex-3*Math.sin(a),ey+3*Math.cos(a));ctx.lineTo(-19,0);ctx.closePath();ctx.fill();ctx.stroke();
   ctx.fillStyle='#d3c18d';ctx.beginPath();ctx.arc(ex-6*Math.cos(a),ey-6*Math.sin(a)+2,2,0,TAU);ctx.fill();
   if(d.locked&&open<.2&&d.keyLock){ctx.fillStyle='#b39c59';ctx.fillRect(-4,-3,8,7);}

@@ -108,7 +108,7 @@ function compoundGoal(){
    const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===0);if(l)return{...stairLower(l).up.entry,fl:l.bfl||0,text:'3층에서 옥상으로 올라가기',where:tutText('{행동} 올라가기'),compoundCue:'jump',routeStep:'roofUp'};
   }
   if(P.z===3&&bi===1){const sign=S.traps.find(t=>t.k==='drop'&&t.text==='금성 거래소');if(sign&&!sign.used&&pending.some(g=>g.tag==='handover'))return{x:tc(sign.at[0]),y:tc(sign.at[1]),fl:0,z:3,text:'간판 아래 인계책을 보고 고정 풀기',where:tutText('아래 표적이 간판 밑에 왔을 때 {행동} 1초 길게'),compoundCue:'sign'};
-   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l)return{x:l.rx??l.ux,y:l.ry??l.uy,fl:0,z:3,text:'옥상문으로 거래소 3층에 내려가기',where:tutText('{행동} 내려가기'),compoundCue:'stairs',routeStep:'roofDown'};
+   const l=S.ladders.find(l=>l.kind==='stair'&&bldAt(l.tx,l.ty)===1);if(l){const d=l.roofDoor;return{x:d?d.x+d.dx*16:l.rx??l.ux,y:d?d.y+d.dy*16:l.ry??l.uy,fl:0,z:3,text:'옥상문으로 거래소 3층에 내려가기',where:d?'계단실 문 안으로 걸어 들어가기':tutText('{행동} 내려가기'),compoundCue:'stairs',routeStep:'roofDown'};}
   }
  }
  const keeper=npc('hallKeeper');

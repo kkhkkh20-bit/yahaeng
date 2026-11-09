@@ -168,11 +168,29 @@ function drawCityEntrances(b){
   if(!inView(e.x,e.y,140))continue;
   const d=e.doors[0],open=doorVisualOpen(d),name=open>.5?'doorOpen':'doorClosed',side=!!e.nx;
   if((side||e.ny<0)&&(S.player.z||flOf(S.player)))continue;
-  const count=e.doors.length,span=Math.max(TILE,count*TILE),x=side?e.wallX+(e.nx<0?-5:-29):e.x-span/2,y=side?e.y-34:e.ny<0?e.wallY-14:e.wallY-TILE;
-  const width=side?34:span,height=side?48:48;
+  if(side){
+   const span=e.doors.length*TILE,x=e.wallX+(e.nx<0?0:-22),y=e.y-span/2;
+   ctx.save();ctx.imageSmoothingEnabled=false;
+   ctx.fillStyle='#111d27';ctx.fillRect(x,y,22,span);
+   ctx.fillStyle='#53616b';ctx.fillRect(x,y,22,3);ctx.fillRect(x,y+span-3,22,3);
+   const leaf=Math.round(16*(1-open));
+   ctx.fillStyle=d.locked?'#655f51':'#43545f';ctx.fillRect(x+3,y+4,leaf,span-8);
+   if(leaf>3){ctx.fillStyle='#82908e';ctx.fillRect(x+4,y+5,1,span-10);ctx.fillStyle=d.locked?'#bea16b':'#a3aaa1';ctx.fillRect(x+Math.max(5,leaf-2),y+span*.55,2,4);}
+   ctx.fillStyle='#74817f';ctx.fillRect(e.nx<0?x:x+19,y+3,3,span-6);
+   ctx.restore();continue;
+  }
+  if(e.ny<0){
+   const span=e.doors.length*TILE,x=e.x-span/2,y=e.wallY;
+   ctx.save();ctx.fillStyle='#111d27';ctx.fillRect(x,y,span,18);
+   ctx.fillStyle='#53616b';ctx.fillRect(x,y,3,18);ctx.fillRect(x+span-3,y,3,18);
+   const leaf=Math.round(12*(1-open));ctx.fillStyle=d.locked?'#655f51':'#43545f';ctx.fillRect(x+3,y+3,span-6,leaf);
+   if(leaf>3){ctx.fillStyle=d.locked?'#bea16b':'#a3aaa1';ctx.fillRect(x+span*.6,y+Math.max(4,leaf-1),4,2);}
+   ctx.restore();continue;
+  }
+  const count=e.doors.length,span=Math.max(TILE,count*TILE),x=e.x-span/2,y=e.wallY-TILE;
+  const width=span,height=48;
   ctx.save();ctx.imageSmoothingEnabled=false;
   // A real aperture interrupts the opaque roof/side wall at the actual door cell.
-  if(side){ctx.fillStyle='#0c1621';ctx.fillRect(e.wallX+(e.nx<0?0:-26),e.y-span/2,26,span);}
   ctx.fillStyle='#111c27';ctx.fillRect(x-3,y-3,width+6,height+4);const f=freeCityArt.frames[name]?.rect;
   if(f)ctx.drawImage(freeCityAtlas,...f,x,y,width,height);
   else{ctx.fillStyle=d.locked?'#65554b':'#111d28';ctx.fillRect(x+2,y+2,width-4,height-4);}

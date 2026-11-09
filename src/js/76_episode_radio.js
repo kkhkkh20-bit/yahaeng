@@ -1,64 +1,65 @@
 // One clear instruction at a time, spoken by a familiar partner on the radio.
 const OPENING_RADIO=[
- '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 서류를 남겼대. 확인해 보자.',
- '몸을 좀 낮춰. 상자 옆 풀숲으로 가면 경비한테 안 보일 거야.',
- '저 사람은 문 쪽을 보고 있어. 풀숲에서 나와서 뒤로 가 봐.',
- '짧게 눌렀다 떼면 기절해. 길게 누르면 죽으니까, 이번에는 짧게.',
- '이제 경비 옷으로 갈아입자. 갈아입는 동안은 움직이지 말고.',
- '그대로 두면 다른 경비가 보겠네. 왼쪽 풀숲으로 옮겨서 숨겨.',
- '배차실 안으로 들어가면 돼. 계단으로 올라가서 2층 책상을 확인해 봐.',
- '됐어. 서류는 왼쪽 책상에 있어. 챙겨서 내려가자.',
- '서류에 박인호라고 적혀 있지? 금성 운송 2층에 있대. 일단 갖고 내려와.',
- '동쪽 골목으로 나오면 돼. 서류는 꼭 갖고 오고.'
+ '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 남긴 서류부터 찾아보자.',
+ '웅크리고 상자 옆 풀숲으로 가. 경비 눈을 피할 수 있어.',
+ '경비가 문 쪽을 보고 있네. 풀숲에서 나와 등 뒤로 붙어.',
+ '공격을 짧게 눌렀다 떼. 기절만 시킬 거야. 1초 동안 누르면 죽으니 조심하고.',
+ '경비 옷으로 갈아입어. 끝날 때까지 움직이지 말고.',
+ '쓰러진 경비를 왼쪽 풀숲에 숨겨. 다른 경비가 보기 전에.',
+ '배차실로 들어가. 계단을 올라가면 2층에 서류가 있어.',
+ '왼쪽 책상에 서류가 있어. 챙겨서 내려가자.',
+ '박인호, 금성 운송 2층. 서류에 적힌 주소야. 일단 계단으로 내려와.',
+ '동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.'
 ];
 function episodeRadioMessage(){
  if(!S||STAGE.story?.solo||!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE)))return null;
  const P=S.player;if(P.jump||P.trav)return null;
  const goal=nextGoal();if(!goal)return null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
- if(chase)return{text:'들켰다. 모퉁이를 돌아서 시야에서 벗어나! 숨을 만한 곳부터 찾아.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
- if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 안 보이는 모양이야. 움직이지 말고 잠깐 기다려. 경비가 돌아가면 나오자.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
- if(P.captive)return P.captive.target?{text:'잡았네. 이번 목표는 기절시키는 걸로는 안 돼. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'짧게 누르고 떼면 기절해. 길게 누르면 죽으니까 누르고 있지는 마.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
+ if(chase)return{text:'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{text:'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
+ if(P.captive)return P.captive.target?{text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  if(STAGE.firstSteps&&STAGE.storyEpisode){
   const i=S.tutI||0,passed=i===6&&S.openingPass;
   const archive=i===7&&openingArchiveGuard(),archiveReady=!!archive&&openingArchiveReady(),quietDesk=i===7&&!archive&&npc('archiveKeeper')?.state!=='DEAD';
   const archiveVia=!!archive&&!!openingArchiveApproach().via;
   let text=isTouch&&i===0?'올빼미, 제비 서류부터 찾자. 화면 왼쪽을 끌어 오른쪽 표시로 가 봐.':isTouch&&i===1?'웅크림을 누르고 상자 옆 풀숲으로 가 봐. 거기선 안 보일 거야.':OPENING_RADIO[i]||OPENING_RADIO[9];
-  if(P.hide)text='지금은 괜찮아. 이제 나와도 돼. 서류부터 찾자.';
-  else if(i===7&&P.carrying)text='서류 챙기려면 손부터 비워야 해. 몸은 사물함에 숨기거나 내려놔.';
+  if(P.hide)text='이제 나와서 서류를 찾자. 나오기 전에 경비 위치부터 보고.';
+  else if(i===7&&P.carrying)text='몸을 사물함에 숨기거나 내려놔. 들고 있으면 서류를 못 챙겨.';
   else if(archiveVia)text='복도 끝 왼쪽에 문이 있어. 그 문으로 들어가면 경비 뒤쪽으로 갈 수 있어.';
-  else if(archive)text=archiveReady?'지금 가까워. 아래에서 했던 것처럼 짧게 누르고 떼.':'서류 앞에도 한 명 있네. 그 옷으로 지나가도 괜찮지만, 훔치는 건 안 보이게 해야 해.';
-  else if(quietDesk)text='지금은 안 보고 있어. 서류를 챙기려면 지금이 좋겠어.';
+  else if(archive)text=archiveReady?'등 뒤에 붙었네. 아까처럼 공격을 짧게 눌렀다 떼.':'서류 앞에도 경비가 있네. 그 옷으로 지나갈 수는 있어. 서류 챙기는 건 들키면 안 돼.';
+  else if(quietDesk)text='경비가 다른 데 보네. 지금 서류를 챙겨.';
   else if(i===4&&P.carrying)text='몸을 먼저 내려놔야 옷을 갈아입을 수 있어.';
-  else if(passed)text='저 사람은 눈치 못 챘네. 천천히 걸어서 2층으로 올라가.';
+  else if(passed)text='직원인 줄 아네. 걸어서 2층으로 올라가.';
   return{text,speaker:'master',cue:'opening:'+i+':'+!!P.hide+':'+!!(i===4&&P.carrying)+':'+!!passed+':'+!!archive+':'+archiveReady+':'+!!(i===7&&P.carrying)+':'+quietDesk+':'+archiveVia,action:tutText(P.hide?'{행동} 밖으로 나오기':goal.text)};
  }
- let text='화면에 나온 목표부터 확인해 봐. 가까이 가면 어떻게 할 수 있는지 보일 거야.';
- if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 이미 찍힌 건 남아. 관리 단말에서 기록을 지워야 해.';
+ let text='표시된 목표로 가 봐. 가까이 가면 할 수 있는 행동이 보여.';
+ if(evidencePending())text='카메라에 찍혔어. 전선을 끊어도 녹화된 건 남아. 보안 단말에서 기록을 지워.';
  else if(goal.exit||S.exitOpen)text='할 일은 끝났어. '+(flOf(P)?'계단으로 내려가서 ':'')+'노란 원으로 표시된 출구로 나와. 경비는 아직 있으니까 조심하고.';
  else if(STAGE.compound&&goal.compoundCue){
   const who=goal.g?targetName(goal.g).split(' · ')[0]:'표적';
-  text=({dress:'혼자 있는 경비가 보이지? 기절시킨 다음 그 옷으로 갈아입으면 들어가기 편할 거야.',
-   hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람을 그대로 두면 발견할 거야. 먼저 들어서 숨길 곳으로 옮기자.',
+  const item=S.items.find(it=>!it.got),itemName=item?.name||STAGE.itemNames?.[S.items.indexOf(item)]||STAGE.itemName||'서류';
+  text=({dress:'혼자 있는 경비를 기절시키고 옷을 가져와. 그 옷이면 안으로 들어갈 수 있어.',
+   hide:P.carrying?'가까운 풀숲이나 사물함에 숨기면 돼. 사람들이 보는지는 확인하고.':'쓰러진 사람이 발견되면 경비가 몰려와. 들어서 숨길 곳으로 옮겨.',
    guard:'1층에도 경비가 한 명 있어. 뒤에서 기절시키고, 근처 사물함에 숨기면 돼.',
-   light:'벽 스위치를 꺼 봐. 경비가 켜러 오면 다른 사람들한테서 떨어질 거야.',
-   stairs:goal.routeStep==='roofDown'?'건넜네. 오른쪽 옥상문으로 가서 거래소 3층에 내려가.':/내려/.test(goal.text)?'이 계단으로 한 층 내려가면 돼.':'계단으로 한 층 올라가. 도착하면 다음 길을 보자.',
-   camera:STAGE.cameraApproach?(/전선 분리/.test(goal.text)?'지금은 카메라 뒤야. 벽에 붙은 전선을 분리해.':'오른쪽 벽을 따라 위로 돌아가. 카메라 앞은 지나가지 말고.'): '카메라는 때리거나 훔치는 걸 찍어. 뒤쪽 전선부터 끊자.',
+   light:'벽 스위치를 꺼. 불을 켜러 오는 경비를 혼자 있을 때 노려.',
+   stairs:goal.routeStep==='roofDown'?'건넜어. 오른쪽 계단실 문으로 들어가면 거래소 3층이야.':/내려/.test(goal.text)?'이 계단으로 한 층 내려가면 돼.':'계단으로 한 층 올라가. 도착하면 다음 길을 보자.',
+   camera:STAGE.cameraApproach?(/전선 분리/.test(goal.text)?'지금은 카메라 뒤야. 벽에 붙은 전선을 분리해.':'오른쪽 벽을 따라 위로 돌아가. 카메라 앞은 지나가지 말고.'): '카메라는 공격하거나 물건을 가져가는 걸 찍어. 뒤쪽 전선부터 끊자.',
    window:({wire:'정비동 옆 작업대에 철사가 있어. 먼저 챙겨.',pick:'철사 챙겼지? 정비동 왼쪽 창문으로 가서 잠금을 풀어.',enter:'열렸네. 이제 그 창문으로 넘어가면 돼.'})[goal.routeStep]||'작업대의 철사를 챙겨서 서쪽 창문 잠금을 풀어 봐.',
    jump:goal.routeStep==='roofUp'?'옥상으로 올라가는 문이 있어. 그쪽으로 나가.':'오른쪽 지붕까지 뛸 수 있겠네. 가장자리에서 건너뛰어.',
    sign:'저 사람이 간판 아래에 올 때까지 기다려. 행동을 1초 누르면 간판 고정이 풀려.',
    target:goal.g?.unconscious?'아직 기절한 상태야. 이번 목표는 살해야. 몸 가까이에서 공격을 1초 동안 눌러.':goal.g?.moving?withJosa(who,'이/가')+' 움직이고 있어. 멈추면 뒤로 가서 가까이 붙어.':'찾던 사람은 '+withJosa(who,'이야/야')+'. 다른 경비가 안 볼 때 뒤에서 공격을 1초 동안 눌러.',
-   document:'장부도 챙겨야 해. 누가 돈을 냈는지 거기 적혀 있을 거야. 가져가는 동안 누가 보는지 확인하고.'})[goal.compoundCue]||text;
+   document:itemName+'도 챙겨. 작업하는 동안 경비가 보는지 확인하고.'})[goal.compoundCue]||text;
  }
  else if(STAGE.starterContract==='disguise'&&goal.starter&&P.outfit!=='crew')text='골목에 경비가 혼자 있어. 기절시킨 다음 옷을 가져오면 되겠어.';
  else if(STAGE.id==='p0')text=npc('runner')?.unconscious?'박인호는 아직 살아 있어. 이번 의뢰는 살해야. 가까이에서 공격을 1초 동안 눌러.':'박인호는 적재장 쪽으로 돌아가면 뒤로 접근할 수 있어. 이번에는 공격을 길게 눌러야 해.';
- else if(goal.actionReady||actionBusy())text=actionBusy()?'움직이면 작업이 끊겨. 잠깐만 그대로 있어. 누가 오는지도 보고.':P.disguise?'그 옷이면 지나가도 괜찮아. 물건을 가져갈 때는 안 보이게 해야 하고.':'가까이에서 행동하면 돼. 작업이 끝날 때까지는 움직이지 마.';
+ else if(goal.actionReady||actionBusy())text=actionBusy()?'움직이면 작업이 끊겨. 끝날 때까지 기다려. 경비가 오는지도 보고.':P.disguise?'그 옷이면 지나가도 괜찮아. 물건을 가져갈 때는 안 보이게 해야 하고.':'가까이에서 행동하면 돼. 작업이 끝날 때까지는 움직이지 마.';
  else if(STAGE.id==='p1')text='그 옷이면 경비 앞을 걸어가도 괜찮아. 서류는 경비가 다른 데 볼 때 챙기고.';
  else if(/계단|2층으로/.test(goal.text))text='계단으로 올라가 봐. 누가 있는지 먼저 확인하고 움직이자.';
  else if(['p2','e2','e4','e5'].includes(STAGE.id)&&S.cams.some(camOn))text='카메라 뒤쪽 벽으로 돌아가면 전선이 있어. 가까이에서 분리하면 돼. 기술은 필요 없어.';
  else if(['e3','e4'].includes(STAGE.id))text=flOf(P)?'서류는 지금 있는 층에 있어. 경비가 다른 데 볼 때 책상을 확인해 봐.':'직원 옷으로 들어가서 계단으로 올라가면 돼. 다른 경비까지 건드릴 필요는 없어.';
  else if(['e1','e5'].includes(STAGE.id))text='저 사람이 멈추면 뒤로 가 봐. 가까이에서 공격을 1초 동안 누르면 돼.';
- else if(STAGE.id==='m2')text='한 번에 다 하려면 복잡해. 일단 지금 표시된 곳부터 가 보자.';
+ else if(STAGE.id==='m2')text='일단 표시된 곳부터 살펴보자.';
  return{text,action:tutText(goal.text),cue:evidencePending()?'camera:recorded':goal.exit||S.exitOpen?'mission:escape':goal.compoundCue?'compound:'+goal.compoundCue+':'+(goal.routeStep||goal.text)+':'+(goal.g?.tag||'')+':'+(goal.compoundCue==='hide'?!!P.carrying:goal.compoundCue==='target'?!!goal.g?.moving:''):goal.text,priority:evidencePending()?1:0};
 }
 // The mission stays stable. Immediate instructions belong to the radio.

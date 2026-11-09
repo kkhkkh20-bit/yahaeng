@@ -176,15 +176,18 @@ function paintOfficeWindow(w,lit,L=40,T=26){
  ctx.fillStyle='#687580';ctx.fillRect(-im.width/2-1,im.height/2,im.width+2,1);return true;
 }
 function paintOfficeSideWindow(w,lit,side){
- const im=officeWindowImage(w,lit);if(!im)return false;
- side=side<0?-1:1;
- ctx.save();ctx.fillStyle='#0d1722';ctx.beginPath();
- ctx.moveTo(-side*11,-18);ctx.lineTo(side*10,-24);ctx.lineTo(side*10,14);ctx.lineTo(-side*11,23);ctx.closePath();ctx.fill();
- // A vertical wall plane has upright jambs and a recessed sill. The front
- // casement is projected onto that face; it is never rotated through 90 degrees.
- ctx.transform(side*.43,-.16,0,1.38,-side*8,-17);ctx.drawImage(im,0,0);ctx.restore();
- ctx.fillStyle='#465460';ctx.beginPath();ctx.moveTo(-side*9,19);ctx.lineTo(side*10,13);ctx.lineTo(side*13,17);ctx.lineTo(-side*6,23);ctx.closePath();ctx.fill();
- ctx.strokeStyle='#697680';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-side*8,19);ctx.lineTo(side*10,13);ctx.stroke();return true;
+ if(!officeReady())return false;
+ const st=winSt(w),open=st==='open';
+ // A cut in the wall seen from above, with jambs seated in the masonry.
+ // No freestanding front-facing card or protruding sill in the alley.
+ ctx.fillStyle='#0d1721';ctx.fillRect(-6,-18,12,36);
+ ctx.fillStyle='#485663';ctx.fillRect(-5,-17,10,2);ctx.fillRect(-5,15,10,2);
+ ctx.fillStyle='#253441';ctx.fillRect(-4,-15,8,30);
+ ctx.fillStyle=lit?'#827860':'#354c60';ctx.fillRect(-3,-14,6,open?12:28);
+ ctx.fillStyle='#5b6874';ctx.fillRect(-4,open?-1:0,8,2);
+ if(st==='bar'){ctx.fillStyle='#192632';for(let y=-10;y<14;y+=7)ctx.fillRect(-4,y,8,2);}
+ if(st==='lock'){ctx.fillStyle='#ad9469';ctx.fillRect(side<0?-4:2,1,2,3);}
+ return true;
 }
 function refreshOfficeArt(){
  if(!officeArtDirty||!S||!mapC)return;

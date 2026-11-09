@@ -20,14 +20,9 @@ function drawRoofEntrances(P) {
     ctx.strokeStyle = '#d1d4bc'; ctx.lineWidth = 2;
     ctx.beginPath(); for (const u of [7, 13, 19]) { ctx.moveTo(u, -8); ctx.lineTo(u, 8); } ctx.stroke();
     ctx.fillStyle = '#e1e6d2'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    // 경첩에서 옥상 쪽으로 열린 철문. 기존 옆벽은 시점 때문에 폭이 거의 보이지 않았다.
-    const hx = d.x + tx * 13, hy = d.y + ty * 13, ex = hx + nx * 19 + tx * 9, ey = hy + ny * 19 + ty * 9;
-    ctx.save(); ctx.fillStyle = '#566671'; ctx.strokeStyle = '#a4b4b8'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(ex, ey); ctx.lineTo(ex, ey - 34); ctx.lineTo(hx, hy - 34); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = '#d2d6bd'; ctx.fillRect(ex - 2, ey - 15, 3, 3);
     const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
     ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
     ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('계단', x, y); ctx.restore();
+    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('↓ '+((l.bfl||0)+1)+'층', x, y); ctx.restore();
   }
 }

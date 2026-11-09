@@ -98,6 +98,11 @@ function robBuild() {
   if (S && S.hides) S.hides = S.hides.filter(h => h.type !== 'okt');
 }
 const ROB_SOLID_DIM = { tank: [1, 1] };
+function repairRoofLanding(){
+ const P=S.player;if(!P.z||flOf(P)||!robAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE)))return;
+ const l=S.ladders.filter(l=>l.kind==='stair'&&l.tz===P.z&&l.roofDoor).sort((a,b)=>dist(P.x,P.y,a.rx,a.ry)-dist(P.x,P.y,b.rx,b.ry))[0];
+ if(l&&bldAt(Math.floor(P.x/TILE),Math.floor(P.y/TILE))===bldAt(l.tx,l.ty)){P.x=l.rx;P.y=l.ry;P.vx=P.vy=0;}
+}
 function kitSpec() {
   return { id: STAGE.id, W: MW, H: MH, furn: [...new Set(FURN.map(furnKey))], b: BLD.map((b, i) => ({ i, style: STAGE.kitStyle || '', props: roofProps(b, i), x0: b.x0, y0: b.y0, x1: b.x1, y1: b.y1, h: b.h, fh: b.fh || 0, facade: !!b.facade, kind: b.kind || '', glass: !!b.glass, piloti: !!b.piloti, alt: b.alt || 0, balc: b.balc || [], gas: b.gas || [], name: b.name || '',
     front: Array.from({ length: b.fh || 0 }, (_, f) => { const g = f ? GF[f] : G0, row = []; for (let x = b.x0; x <= b.x1; x++) { const ch = g && g[b.y1] ? g[b.y1][x] : null; row.push(!f && S.doors.some(d => d.tx === x && d.ty === b.y1) ? 'D' : ch || '?'); } return row; }) })) };

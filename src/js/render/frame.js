@@ -26,6 +26,7 @@ function draw() {
   S.openB = openB;
   const VF = room?.fl??((!P.z && !P.wire && (!P.jump || lowJ) && !P.vent && !P.under) ? flOf(P) : 0);
   const VB = VF ? (room?.b??(lowJ ? jumpB : bldAt(Math.floor(P.x / TILE), Math.floor(P.y / TILE)))) : -1;
+  updateAperturePeek(P,openB);
   const inVB = o => VB >= 0 && bldAt(Math.floor(o.x / TILE), Math.floor(o.y / TILE)) === VB;
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
@@ -68,7 +69,7 @@ function draw() {
   PM('objs');
   if (S.vehicles && !flOf(P)) drawVehicles(); if (STAGE.city) drawContracts();
   for (const c of S.corpses) {
-    if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || roofOccludes(c,openB)) continue;
+    if (c.hideT>S.t || c.stashed || !onGround(c) || (c.z && !tactical) || !inView(c.x,c.y,100) || (roofOccludes(c,openB)&&!aperturePeekContains(c))) continue;
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if(c.ko&&!c.playerHandled&&!c.carried)drawEmote('zz',c.x+16,c.y-6);
@@ -76,7 +77,7 @@ function draw() {
   }
   PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
-    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120) || roofOccludes(g,openB)) continue;
+    if (g.state === 'DEAD' || !onGround(g) || g.z || g.climb || !inView(g.x, g.y, 120) || (roofOccludes(g,openB)&&!aperturePeekContains(g))) continue;
     if (g.yank) drawYanked(g); else drawGuard(g);
     if (g.atkT > 0) { const k = 1 - g.atkT / (g.dog ? 0.35 : 0.55); ctx.strokeStyle = `rgba(232,71,60,${0.4 + 0.5 * k})`; ctx.lineWidth = 3 + 3 * k; ctx.beginPath(); ctx.arc(g.x, g.y, 30 + 16 * k, g.a - 0.8, g.a + 0.8); ctx.stroke(); }
     if (STAGE.zones) drawSharpEye(g);
@@ -242,9 +243,10 @@ function draw() {
     guardOverlay(g);
   }
   PM('cones');
+  captureAperturePeek(sc);
   const exteriorClip = clipExteriorFromInterior(VB, VF);
   if (!tactical) {
-    if (!DBG.roofs) drawRoofs(openB); drawPlanks(); if (S.facOn) drawGangFlags(P);
+    if (!DBG.roofs) {drawRoofs(openB);drawAperturePeek();} drawPlanks(); if (S.facOn) drawGangFlags(P);
     quarterWallEdges();
     drawRoofEntrances(P);
     PM('roofs');
