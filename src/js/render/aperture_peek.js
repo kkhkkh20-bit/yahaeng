@@ -1,7 +1,7 @@
 // Close, same-floor sight through a real window or an open door. The roof stays
 // opaque everywhere else; the revealed pixels are the lit, live world beneath it.
 let aperturePeekState={owner:null,opening:null,alpha:0,t:0},aperturePeekFrame=null;
-const apertureScene=document.createElement('canvas'),apertureMask=document.createElement('canvas');
+const apertureScene=document.createElement('canvas');
 function aperturePeekCandidate(P=S.player,openB=S.openB){
  if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump)return null;
  let best=null,nearest=Infinity;
@@ -28,23 +28,35 @@ function updateAperturePeek(P,openB){
  if(state.opening!==c.opening){state.opening=c.opening;state.alpha=0;}
  const goal=clamp((88-c.d)/32,0,1);state.alpha+=(goal-state.alpha)*(reducedFxMotion.matches?1:1-Math.exp(-dt*13));
  if(state.alpha<.015)return aperturePeekFrame=null;
- const span=c.door?18:14,tx=-c.ny,ty=c.nx,pts=[{x:c.x-tx*span,y:c.y-ty*span}],range=TILE*3.5;
- for(let i=0;i<=28;i++){
-  const u=-span+2*span*i/28,x=c.x+tx*u,y=c.y+ty*u,a=Math.atan2(y-P.y,x-P.x),r=Math.max(0,castRay(x,y,a,range)-1);
-  pts.push({x:x+Math.cos(a)*r,y:y+Math.sin(a)*r});
+ // The entire connected room fades in continuously as the player approaches.
+ // No distance threshold swaps a thin cone for a room in a single frame.
+ const room=apertureRoom(c);if(!room)return aperturePeekFrame=null;
+ return aperturePeekFrame={...c,alpha:state.alpha,pts:room.bounds,cells:room.cells,surfaces:room.surfaces};
+}
+function apertureRoom(c){
+ const b=BLD[c.b],doors=new Set(S.doors.filter(d=>!flOf(d)).map(d=>d.ty*MW+d.tx));
+ const cells=new Set(),queue=[[Math.floor(c.x/TILE),Math.floor(c.y/TILE)]],surfaces=[];
+ for(let i=0;i<queue.length;i++){
+  const [tx,ty]=queue[i],key=ty*MW+tx;
+  if(cells.has(key)||tx<=b.x0||tx>=b.x1||ty<=b.y0||ty>=b.y1||'#NVX'.includes(G0[ty]?.[tx]||'#')||doors.has(key))continue;
+  cells.add(key);for(const [dx,dy]of [[-1,0],[1,0],[0,-1],[0,1]]){
+   const x=tx+dx,y=ty+dy;
+   if(G0[y]?.[x]==='#')surfaces.push([x*TILE+(dx<0?30:0),y*TILE+(dy<0?12:0),dx?18:TILE,dy?36:TILE]);
+   else if(!cells.has(y*MW+x))queue.push([x,y]);
+  }
  }
- pts.push({x:c.x+tx*span,y:c.y+ty*span});
- return aperturePeekFrame={...c,alpha:state.alpha,pts,range};
+ if(!cells.size)return null;
+ const xs=[...cells].map(k=>k%MW),ys=[...cells].map(k=>Math.floor(k/MW));
+ return{cells,surfaces,bounds:[{x:Math.min(...xs)*TILE-18,y:Math.min(...ys)*TILE-36},{x:(Math.max(...xs)+1)*TILE+18,y:(Math.max(...ys)+1)*TILE+12}]};
 }
 function aperturePeekContains(o,f=aperturePeekFrame){
  if(!f||flOf(o)||(o.z||0)||bldAt(Math.floor(o.x/TILE),Math.floor(o.y/TILE))!==f.b)return false;
- let inside=false;const p=f.pts;
- for(let i=0,j=p.length-1;i<p.length;j=i++)if((p[i].y>o.y)!==(p[j].y>o.y)&&o.x<(p[j].x-p[i].x)*(o.y-p[i].y)/(p[j].y-p[i].y)+p[i].x)inside=!inside;
- return inside;
+ return f.cells.has(Math.floor(o.y/TILE)*MW+Math.floor(o.x/TILE));
 }
 function aperturePeekPath(c,f){
- c.beginPath();f.pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();
+ c.beginPath();for(const k of f.cells)c.rect(k%MW*TILE,Math.floor(k/MW)*TILE,TILE,TILE);for(const r of f.surfaces)c.rect(...r);
 }
+
 function captureAperturePeek(sc){
  const f=aperturePeekFrame;if(!f)return;
  const xs=f.pts.map(p=>p.x),ys=f.pts.map(p=>p.y),ox=W/2*DPR-cam.x*sc,oy=H/2*DPR-cam.y*sc;
@@ -53,12 +65,8 @@ function captureAperturePeek(sc){
  if(w<2||h<2)return;
  // Small reusable region buffers, not a second full-screen mobile scene.
  const aw=Math.ceil(w/64)*64,ah=Math.ceil(h/64)*64;
- if(apertureScene.width!==aw||apertureScene.height!==ah){apertureScene.width=apertureMask.width=aw;apertureScene.height=apertureMask.height=ah;}
- const q=apertureScene.getContext('2d'),m=apertureMask.getContext('2d');q.setTransform(1,0,0,1,0,0);q.globalCompositeOperation='source-over';q.clearRect(0,0,aw,ah);q.drawImage(canvas,x,y,w,h,0,0,w,h);
- m.setTransform(1,0,0,1,0,0);m.clearRect(0,0,aw,ah);m.setTransform(sc,0,0,sc,ox-x,oy-y);
- const cx=f.x-f.nx*48,cy=f.y-f.ny*48,g=m.createRadialGradient(cx,cy,12,cx,cy,f.range);
- g.addColorStop(0,'#fff');g.addColorStop(.55,'rgba(255,255,255,.94)');g.addColorStop(1,'rgba(255,255,255,0)');m.fillStyle=g;aperturePeekPath(m,f);m.fill();
- q.globalCompositeOperation='destination-in';q.filter='blur('+Math.max(2,sc*3)+'px)';q.drawImage(apertureMask,0,0);q.filter='none';q.globalCompositeOperation='source-over';
+ if(apertureScene.width!==aw||apertureScene.height!==ah){apertureScene.width=aw;apertureScene.height=ah;}
+ const q=apertureScene.getContext('2d');q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,aw,ah);q.drawImage(canvas,x,y,w,h,0,0,w,h);
  f.capture={x,y,w,h};
 }
 function drawAperturePeek(){

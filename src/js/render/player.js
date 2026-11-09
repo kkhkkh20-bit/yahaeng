@@ -10,7 +10,7 @@ function drawPlayerLocator(P) {
 function drawPlayer(P) {
   updateHeroVisual(P);
   const previous=playerInkKey;playerInkKey=isTouch||P.light<.3?playerKey(P):null;
-  try{return drawPlayerBody(P)}finally{playerInkKey=previous;}
+  try{drawPlayerBody(P);if(P.radioCall&&S.t-P.radioCall.t<.65&&!P.hide&&!P.car&&!P.trav&&!P.hurtT){const side=Math.cos(P.a)<0?-1:1;drawFieldTool(ctx,'radio',P.x+side*7,P.y-32,12);}}finally{playerInkKey=previous;}
 }
 function drawPlayerBody(P) {
   if(drawDefeatFeedback(P))return;
@@ -163,7 +163,7 @@ function drawPlayerBody(P) {
     }
     const hold = P.item && P.item.id === 'box' && !pc && !pg && PR.anims.hold;  // 택배 상자를 두 손으로 든다
     const rising = !mv && P.riseT && S.t < P.riseT && !pc && !pg;
-    const anim = P.techWork ? (P.techWork.kind==='radio'?'workLow':'workHigh') : pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'duck' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
+    const anim = P.radioCall&&S.t-P.radioCall.t<.65&&!mv&&!pc&&!pg ? 'workHigh' : P.techWork ? (P.techWork.kind==='radio'?'workLow':'workHigh') : pc ? (mv ? 'carry' : 'carryI') : pg ? (mv ? 'grab' : 'grabI') : P.strikeT > 0 ? 'punch' : rising ? 'duck' : hold ? (mv ? 'hold' : 'holdI') : crouch ? (mv ? 'sneak' : 'crouch') : !mv ? (PR.anims.idleC ? 'idleC' : 'idle') : (runP || P.jump) ? 'run' : 'walk';
     const transition=heroTransitionPose(P,mv),visualAnim=transition?.anim||anim;
     const t=mv&&!P.jump?heroMotionClock(P,anim):S.t,s=sc/3,PK=playerLook,rf=transition?.frame??(P.strikeT>0?heroStrikeFrame(P):rising?clamp((P.riseT-S.t)/.22,0,1)*8:-1);
     // 메고 있는 시체·붙잡은 사람: 같은 프레임으로 겹쳐 그린다 (서로 가린 채 렌더링돼 있다)

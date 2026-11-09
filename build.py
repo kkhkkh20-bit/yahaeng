@@ -111,6 +111,10 @@ def build():
     hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
     hud_art.update({'field:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','field','*.svg')))})
     hud_art.update({'item:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','items','*.svg')))})
+    # The quick slots and world use the same pixel objects, rather than different icons.
+    for tool, key in [('coin','cigarettes'),('radio','radio')]:
+        a=field_art[key];w=round(a['w']*32/a['h'],2)
+        hud_art['item:'+tool]=f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" data-item-icon="{tool}"><image href="{a["src"]}" x="{(40-w)/2}" y="4" width="{w}" height="32" style="image-rendering:pixelated"/></svg>'
     html=html.replace('<script>window.__BUILD_VERSION__','<script>window.__HUD_ART__='+json.dumps(hud_art)+';window.__BUILD_VERSION__',1)
     html = html.replace('__ASSETS_JSON__', campaign_assets(ROOT)).replace('__STAGES_JS__', stages_js()).replace('__GAME_JS__', script)
     html = html.replace('__VERSION__', v + (' · ' + h if h else ''))

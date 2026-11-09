@@ -31,11 +31,7 @@ function draw() {
   const onGround = o => !flOf(o) && !(VF && inVB(o));
   const onFloor = o => !!VF && flOf(o) === VF && inVB(o);
   const gVis = o => (onGround(o) || onFloor(o)) && (!tactical || !o.target || oppMode===2 || targetKnowledge(o).live);
-  for (const l of S.lures) {
-    const f = l.landed ? 1 : l.t / 0.35, x = l.x0 + (l.x - l.x0) * f, y = l.y0 + (l.y - l.y0) * f - Math.sin(f * Math.PI) * 14;
-    blit(ctx, 'it_coin', x - 10, y - 10, 20, 20);
-    if (l.landed) { ctx.strokeStyle = `rgba(242,196,107,${0.4 + 0.3 * Math.sin(S.t * 6)})`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 11, 0, TAU); ctx.stroke(); }
-  }
+  drawLures(onGround);
   PM('map');
   // 화면 밖 것은 그리지 않는다 (큰 판은 창문·문만 수백 개)
   for (const w of S.windows) if (inView(w.x, w.y, 60)) drawWindow(w, 1);
@@ -160,6 +156,7 @@ function draw() {
     { const tint = ['', '255,196,130', '140,196,255', '160,230,170', '226,170,255', '255,150,150'][VF] || '200,200,200'; ctx.fillStyle = `rgba(${tint},.09)`; ctx.fillRect(bx, by, bw, bh); }
     for (const w of S.fwindows) if (w.fl === VF && bldAt(w.tx, w.ty) === VB) drawWindow(w, 1);
     for (const d of S.decals) if (onFloor(d)) { ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    drawLures(onFloor);
     for (const it of S.items) if (!it.got && onFloor(it)) drawLootItem(it);
     for (const n of S.notes || []) if (onFloor(n)) drawNote(n);
     drawProps(VF);

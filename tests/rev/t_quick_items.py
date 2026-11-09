@@ -36,10 +36,17 @@ async def main():
    await q.evaluate('__game.S.player.under=true;__game.updateHUD(true)');await q.tap('#quickSmoke',force=True);assert await q.evaluate('__game.S.player.smokes===1');await q.evaluate('__game.S.player.under=false;__game.S.player.hasRadio=true;__game.updateHUD(true)')
    assert await q.locator('#quickRadio').is_visible()
    # All four loaded slots and action buttons remain separate, including short landscape.
-   controls=await q.locator('#hud button,#mini').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height}})''')
+   controls=await q.locator('#hud button,#mini').evaluate_all('''es=>es.filter(e=>!e.hidden&&e.getBoundingClientRect().width&&getComputedStyle(e).visibility==='visible').map(e=>{const r=e.getBoundingClientRect();return{id:e.id,x:r.x,y:r.y,w:r.width,h:r.height,round:getComputedStyle(e).borderRadius.includes('50%')}})''')
    for a in controls:assert a['w']>=44 and a['h']>=44 and a['x']>=0 and a['y']>=0 and a['x']+a['w']<=w+.5 and a['y']+a['h']<=h+.5,(name,a)
    for i,a in enumerate(controls):
-    for bb in controls[i+1:]:assert not(a['x']<bb['x']+bb['w']+6 and a['x']+a['w']+6>bb['x'] and a['y']<bb['y']+bb['h']+6 and a['y']+a['h']+6>bb['y']),(name,a,bb)
+    for bb in controls[i+1:]:
+     if a['round'] and bb['round']:
+      assert math.hypot(a['x']+a['w']/2-bb['x']-bb['w']/2,a['y']+a['h']/2-bb['y']-bb['h']/2)>=(a['w']+bb['w'])/2+6,(name,a,bb)
+     elif a['round'] or bb['round']:
+      circle,rect=(a,bb) if a['round'] else (bb,a);cx=circle['x']+circle['w']/2;cy=circle['y']+circle['h']/2
+      dx=cx-max(rect['x'],min(cx,rect['x']+rect['w']));dy=cy-max(rect['y'],min(cy,rect['y']+rect['h']))
+      assert math.hypot(dx,dy)>=circle['w']/2+6,(name,a,bb)
+     else:assert not(a['x']<bb['x']+bb['w']+6 and a['x']+a['w']+6>bb['x'] and a['y']<bb['y']+bb['h']+6 and a['y']+a['h']+6>bb['y']),(name,a,bb)
    await q.screenshot(path=str(O/f'{name}-loaded.png'));assert not errors,errors
    rows.append({'device':name,'nativeTouch':True,'singleUse':True,'dragAimAndCancel':True,'equipmentRestored':True,'unownedRadioHidden':True,'loadedGeometry':controls,'errors':errors});print('PASS quick items',name,flush=True);await c.close()
   q=await b.new_page(viewport={'width':1280,'height':800});await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate(SETUP);assert await q.locator('#quickItems').is_hidden();await b.close()

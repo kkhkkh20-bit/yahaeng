@@ -88,6 +88,7 @@ const JOY_WALK = 0.38, JOY_RUN = 0.86;
 
 // Worn equipment stays inside the actor silhouette; inspection supplies its meaning.
 function drawRadio(x,y) {
+  if(drawFieldTool(ctx,'radio',x,y,12))return;
   ctx.fillStyle='#10171c';ctx.fillRect(x-2,y-4,5,8);
   ctx.fillStyle='#46535a';ctx.fillRect(x-1,y-3,3,5);
   ctx.fillStyle='#afb6ad';ctx.fillRect(x+1,y-7,1,4);
@@ -98,6 +99,13 @@ function drawActorGear(g) {
   if(g.dog||g.civ&&g.state==='SLEEP'||g.climb||g.yank||g.containerMoving||g.ledgeFalling)return;
   const side=Math.cos(g.a)<0?-1:1,bob=g.moving?Math.sin(S.t*10+g.id*.37)*.5:0;
   ctx.save();
+  if(g.act==='smoke'){
+    const x=g.x+side*7,y=g.y-32;
+    ctx.strokeStyle='#ded6bf';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+side*5,y-1);ctx.stroke();
+    ctx.fillStyle='#d2814e';ctx.fillRect(x+side*5,y-2,1.5,1.5);
+    const f=((S.t+g.id*.37)%1.8)/1.8;ctx.strokeStyle=`rgba(185,191,184,${(1-f)*.22})`;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,y-3-f*6);ctx.quadraticCurveTo(x+Math.sin(f*5)*3,y-7-f*10,x+Math.sin(f*7)*4,y-12-f*12);ctx.stroke();
+  }
   if(g.radio)drawRadio(g.x+side*5,g.y-19+bob);
   if(g.hasKey&&g.hasKey!=='gold'&&g.hasKey!=='code') {
     ctx.strokeStyle='#9c9e94';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(g.x-2,g.y-34+bob);ctx.lineTo(g.x+1,g.y-27+bob);ctx.lineTo(g.x+3,g.y-34+bob);ctx.stroke();

@@ -44,7 +44,14 @@ function officeWall(c,tx,ty){
   c.save();c.beginPath();c.rect(x,y+12,TILE,TILE-12);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
   c.fillStyle='#849097';c.fillRect(x,y+10,TILE,2);c.fillStyle='#35444e';c.fillRect(x,y+TILE-4,TILE,3);
  }
- else{c.fillStyle='#536068';c.fillRect(x+3,y,2,TILE);c.fillStyle='#73818a';c.fillRect(x+5,y,1,TILE);c.fillStyle='#10191fa0';c.fillRect(x+TILE-5,y,5,TILE);}
+ else{
+  // Visible side faces use the same purchased wall material as the front face.
+  for(const [dx,left]of [[-1,true],[1,false]])if(!['#','N','V'].includes(G[ty]?.[tx+dx]||'V')){
+   c.save();c.beginPath();c.rect(left?x:x+TILE-18,y,18,TILE);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
+   c.fillStyle='#849097';c.fillRect(left?x+17:x+TILE-18,y,1,TILE);
+  }
+  c.fillStyle='#536068';c.fillRect(x+22,y,4,TILE);
+ }
  return true;
 }
 function officeFurnKey(f){
@@ -191,5 +198,5 @@ function paintOfficeSideWindow(w,lit,side){
 }
 function refreshOfficeArt(){
  if(!officeArtDirty||!S||!mapC)return;
- const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;officeArtDirty=false;}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;for(const k in lightCache)delete lightCache[k];officeArtDirty=false;}finally{setLayer(layer);}
 }

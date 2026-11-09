@@ -28,8 +28,12 @@ async def main():
     G.setLayer(0);G.moveCamera(2);G.benchDraw(40);let f=G.aperturePeekFrame;ok(f?.b===1&&f.alpha>.9&&f.capture,'looks through wrong alley wall');ok(G.nearWindow()?.w===f.opening,'action targets the opposite window');
     ok(f.capture.w<innerWidth*G.DPRinfo()[0]&&f.capture.h<innerHeight*G.DPRinfo()[0],'peek duplicates the whole viewport');
     const point={x:f.x-f.nx*12,y:f.y-f.ny*12,fl:0,z:0};ok(G.aperturePeekContains(point),'near interior missing');ok(!G.aperturePeekContains({...point,fl:1}),'peek reveals another floor');ok(!G.aperturePeekContains({...point,x:P.x,y:P.y}),'peek paints over alley');
-    const wx=Math.floor((f.x-f.nx*48)/48),wy=Math.floor((f.y-f.ny*48)/48),old=G.G0[wy][wx];
-    try{G.G0[wy][wx]='#';G.benchDraw(1);ok(!G.aperturePeekContains({...point,x:f.x-f.nx*120,y:f.y-f.ny*120}),'peek crosses an interior wall');}finally{G.G0[wy][wx]=old;}
+    ok(f.cells?.size>4,'sill should reveal a connected room, not a thin wedge');
+    const wx=Math.floor((f.x-f.nx*48)/48),wy=Math.floor((f.y-f.ny*48)/48),bld=G.BLD[f.b],saved=[];
+    // A partition divides rooms. A single pillar does not divide an open office.
+    if(f.nx)for(let y=bld.y0+1;y<bld.y1;y++){saved.push([wx,y,G.G0[y][wx]]);G.G0[y][wx]='#';}
+    else for(let x=bld.x0+1;x<bld.x1;x++){saved.push([x,wy,G.G0[wy][x]]);G.G0[wy][x]='#';}
+    try{G.benchDraw(1);ok(!G.aperturePeekContains({...point,x:f.x-f.nx*120,y:f.y-f.ny*120}),'peek crosses a room partition');}finally{for(const[x,y,ch]of saved)G.G0[y][x]=ch;}
     Object.assign(P,{x:w.x-150,y:w.y});G.benchDraw(1);ok(!G.aperturePeekFrame,'distant window exposes room');
     Object.assign(P,{x:w.x-48,y:w.y,fl:1});ok(!G.aperturePeekCandidate(P,-1),'ground window exposes upper floor');P.fl=0;P.z=3;ok(!G.aperturePeekCandidate(P,-1),'roof x-ray');P.z=0;
     const door=S.doors.find(d=>d.tx===18&&d.ty===12);ok(door,'door fixture');Object.assign(P,{x:door.x-48,y:door.y,fl:0,z:0,a:0});G.setDoor(door,true);G.benchDraw(40);ok(G.aperturePeekFrame?.opening!==door,'closed door reveals interior');G.setDoor(door,false);G.benchDraw(40);ok(G.aperturePeekFrame?.opening===door,'open doorway cannot be inspected');G.setDoor(door,true);G.benchDraw(40);ok(G.aperturePeekFrame?.opening!==door,'closing door retains live cutaway');
