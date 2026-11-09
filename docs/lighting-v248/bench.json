@@ -1,0 +1,16 @@
+[
+  {
+    "touch": false,
+    "version": "v248",
+    "baselineMs": 10.041666666666666,
+    "torchMs": 10.02500000099341,
+    "visibleBeams": 1
+  },
+  {
+    "touch": true,
+    "version": "v248",
+    "baselineMs": 4.391666666915019,
+    "torchMs": 5.133333334078391,
+    "visibleBeams": 1
+  }
+]

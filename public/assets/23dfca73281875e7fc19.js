@@ -2973,19 +2973,19 @@ function freeCityGround(c,ch,tx,ty){
  const tile=name&&freeCityPattern(name);if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
 }
-function drawCityPlant(ch,tx,ty,near){
+function drawCityPlant(ch,tx,ty,near,c=ctx){
  if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
  const x=tc(tx),y=tc(ty),h=((tx*92821)^(ty*68917))>>>0;
- ctx.save();
+ c.save();
  if(ch==='B'){
   const bs=S.bushShake,u=bs?(S.t-bs.t)/.5:1,shake=u>=0&&u<1&&Math.abs(bs.x-x)<30&&Math.abs(bs.y-y)<30?Math.sin(u*22.5)*3*(1-u):0;
-  ctx.fillStyle='rgba(13,25,21,.32)';ctx.beginPath();ctx.ellipse(x,y+9,24,12,0,0,TAU);ctx.fill();
-  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
+  c.fillStyle='rgba(13,25,21,.32)';c.beginPath();c.ellipse(x,y+9,24,12,0,0,TAU);c.fill();
+  c.globalAlpha=near?.48:1;freeCityDraw(c,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
  }else{
-  ctx.fillStyle='rgba(6,13,20,.27)';ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,TAU);ctx.fill();
-  const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(ctx,name,x-24,y-78,3);
+  c.fillStyle='rgba(6,13,20,.27)';c.beginPath();c.ellipse(x,y+13,20,8,0,0,TAU);c.fill();
+  const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(c,name,x-24,y-78,3);
  }
- ctx.restore();return true;
+ c.restore();return true;
 }
 function drawCityCargo(c,tx,ty){
  if(drawPurchasedCargo(c,tx,ty))return true;
@@ -3277,12 +3277,17 @@ function studyGround(c,ch,tx,ty){
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
  if('.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
  if(!'=,F'.includes(ch))return false;
- let name=ch==='='?'pavement':'alleyBrick';
+ studyDraw(c,ch==='='?'pavement':'alleyBrick',tx*TILE,ty*TILE,TILE,TILE);
  if(ch==='='){
-  const road=(x,y)=>G0[y]?.[x]==='.',n=road(tx,ty-1),s=road(tx,ty+1),w=road(tx-1,ty),e=road(tx+1,ty);
-  name=n?(w?'curbNW':e?'curbNE':'curbN'):s?(w?'curbSW':e?'curbSE':'curbS'):w?'curbW':e?'curbE':name;
+  // A complete curb module includes paving and a broad curved border. Using
+  // it as a 48px ground cell made walkable pavement look like a second wall.
+  // Keep the purchased two-pixel edge at native scale on the road side only.
+  const r=studyArt.frames.curbS.rect,road=(x,y)=>G0[y]?.[x]==='.';
+  for(const [dx,dy,a]of [[0,-1,0],[1,0,Math.PI/2],[0,1,Math.PI],[-1,0,-Math.PI/2]])if(road(tx+dx,ty+dy)){
+   c.save();c.translate(tc(tx),tc(ty));c.rotate(a);c.drawImage(studyAtlas,r[0],r[1],r[2],2,-TILE/2,-TILE/2,TILE,3);c.restore();
+  }
  }
- studyDraw(c,name,tx*TILE,ty*TILE,TILE,TILE);return true;
+ return true;
 }
 function paintStudyRoof(c,b,w,h){
  const spec=STAGE.referenceBuildings[BLD.indexOf(b)];if(!spec)return false;
@@ -3354,21 +3359,23 @@ function officeGround(c,ch,tx,ty){
 function officeWall(c,tx,ty){
  if(!officeReady()||G[ty]?.[tx]!=='#')return false;
  const bi=bldAt(tx,ty);if(bi<0||BLD[bi].vacant)return false;
- const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,south=!['#','N','V'].includes(G[ty+1]?.[tx]||'V');
+ const p=officeStyle(bi),x=tx*TILE,y=ty*TILE,joined=(dx,dy)=>'#NSXV'.includes(G[ty+dy]?.[tx+dx]||'V'),south=!joined(0,1);
  c.fillStyle=p.ink;c.fillRect(x,y,TILE,TILE);
  if(south){
   // Clip a square source module; stretching 32px to 48x36 distorts its pixels.
   c.save();c.beginPath();c.rect(x,y+12,TILE,TILE-12);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
   c.fillStyle='#849097';c.fillRect(x,y+10,TILE,2);c.fillStyle='#35444e';c.fillRect(x,y+TILE-4,TILE,3);
  }
- else{
-  // Visible side faces use the same purchased wall material as the front face.
-  for(const [dx,left]of [[-1,true],[1,false]])if(!['#','N','V'].includes(G[ty]?.[tx+dx]||'V')){
-   c.save();c.beginPath();c.rect(left?x:x+TILE-18,y,18,TILE);c.clip();officeBlit(c,p.wall,x,y,TILE,TILE);c.restore();
-   c.fillStyle='#849097';c.fillRect(left?x+17:x+TILE-18,y,1,TILE);
-  }
-  c.fillStyle='#536068';c.fillRect(x+22,y,4,TILE);
+ // Turn only the flat panel material along a side wall. Repeating the entire
+ // front module also repeated its bright crown/base moulding every floor tile.
+ const r=officeFrame(p.wall);
+ for(const [dx,left]of [[-1,true],[1,false]])if(!joined(dx,0)){
+  const edge=left?x:x+TILE-18;
+  c.save();c.translate(edge+18,y);c.rotate(Math.PI/2);
+  c.drawImage(officeAtlas,r[0],r[1]+20,r[2],12,0,0,TILE,18);c.restore();
+  c.fillStyle='#65747d';c.fillRect(left?edge+16.5:edge,y,1.5,TILE);
  }
+ if(!joined(0,-1)){c.fillStyle='#536068';c.fillRect(x,y+2,TILE,3);}
  return true;
 }
 function officeFurnKey(f){
@@ -7616,9 +7623,10 @@ function drawCams(fl) {
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {
-      setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(flOf(S.player));
+      const previous=CUR_F;setLayer(fl); const pts = []; const R = camRange(c, 1), FV = camFov(c); for (let i = 0; i <= 14; i++) { const a = c.a - FV + 2 * FV * i / 14; pts.push([a, Math.min(castRay(c.x,c.y,a,R),smokeRayRange(c,c.x+Math.cos(a)*R,c.y+Math.sin(a)*R,R))]); } setLayer(previous);
       const path = r => { ctx.beginPath(); ctx.moveTo(c.x, c.y); for (const [a, d] of pts) { const dd = Math.min(d, r); ctx.lineTo(c.x + Math.cos(a) * dd, c.y + Math.sin(a) * dd); } ctx.closePath(); };
-      if (c.search) { const gr = ctx.createRadialGradient(c.x, c.y, 10, c.x, c.y, R); gr.addColorStop(0, 'rgba(255,248,210,.55)'); gr.addColorStop(1, 'rgba(255,248,210,.06)'); ctx.fillStyle = gr; path(R); ctx.fill(); ctx.strokeStyle = `rgba(255,240,180,${0.5 + c.meter * 0.5})`; ctx.lineWidth = 2; path(R); ctx.stroke(); }  // 서치라이트 빛줄기
+      // The beam itself belongs to the shared occluded lighting field.
+      if(c.search){ctx.strokeStyle=`rgba(255,240,180,${.12+c.meter*.3})`;ctx.lineWidth=1;path(R);ctx.stroke();}
       else {
       const recording=c.seen&&c.meter>0,col=recording?'255,115,90':'157,182,210';
       ctx.fillStyle = `rgba(${col},${0.09 + c.meter * 0.22})`; path(R); ctx.fill();
@@ -13172,7 +13180,7 @@ function doorBlockMessage(blocker) {
   const o=blocker.entity;
   return blocker.body?(o.ko?'기절자가':'시체가')+' 문을 막고 있다 · 옮긴 뒤 닫기':(o.dog?'들개가':o.civ?'사람이':'경비가')+' 문을 지나가는 중 · 비킨 뒤 닫기';
 }
-function setDoor(d, lock) { d.group.forEach(t => { t.locked = lock; const grid=flOf(t)?GF[flOf(t)]:G0; grid[t.ty][t.tx] = lock ? 'X' : t.orig; }); }
+function setDoor(d, lock) { const changed=d.group.some(t=>t.locked!==lock);d.group.forEach(t => { t.locked = lock; const grid=flOf(t)?GF[flOf(t)]:G0; grid[t.ty][t.tx] = lock ? 'X' : t.orig; });if(changed)invalidateLightRegion(flOf(d),d.tx,d.ty); }
 function nearBushSpot() {
   const P = S.player; if (P.fl) return null; let best = null, bd = 64;
   for (const b of S.bushes) { if (ACT_SKIP.has(b)) continue; const d = dist(P.x, P.y, b.x, b.y); if (d < bd && objectReachable(b, 64)) { bd = d; best = b; } }
@@ -16013,14 +16021,132 @@ function drawUnderground() {
 // 고정 조명(깜빡이지 않는 등)의 빛은 맵 전체를 1/4 해상도로 한 번만 그려 두고(켜짐·꺼짐이 바뀔 때만 다시), 매 프레임은 그 그림을 가져다 쓴다
 // — 프레임마다 등 하나하나 가림막 다각형+그라데이션을 그리던 것이 그리기 시간의 절반이었다
 
+// A receiving surface is separate from the ground visibility polygon. It can
+// receive light at its near face without opening a path through the obstacle.
+const LIGHT_SURFACE_Q=2,LIGHT_SURFACE_STEP=8;
+let lightReceiverIndex=null,lightSurfaceScratch=null;
+function lightFalloff(l,x,y,flick=1){
+ const d=dist(l.x,l.y,x,y)/(l.r*flick);
+ return d>=1?0:d<.55?.9-d/.55*.14:.76*(1-d)/.45;
+}
+function lightSurfaceAmount(l,x,y,flick=1){
+ if(l.angle!=null&&Math.abs(angDiff(l.angle,Math.atan2(y-l.y,x-l.x)))>l.fov)return 0;
+ const amount=lightFalloff(l,x,y,flick);
+ return amount>0&&los(l.x,l.y,x,y)?amount:0;
+}
+function lightReceiverBounds(o){
+ const f=o.furn;
+ if(f){
+  if(f.t==='locker'||f.t==='wardrobe'){const g=cabinetGeometry({type:f.t,tx:f.x,ty:f.y,w:f.w,h:f.h,furn:true,fl:f.fl||0});return{x:g.left,y:g.top,w:g.right-g.left,h:g.bottom-g.top+5};}
+  const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);
+  if(b)return{x:b.x,y:b.y,w:b.w+(b.count>1?(b.count-1)*TILE:0),h:b.h};
+  return{x:f.x*TILE-24,y:f.y*TILE-80,w:f.w*TILE+48,h:f.h*TILE+104};
+ }
+ if(o.ch==='C')return{x:o.x0,y:o.y0-8,w:TILE,h:TILE+8};
+ return{x:o.x0-48,y:o.y0-112,w:TILE+96,h:TILE+144};
+}
+function lightReceiversNear(l){
+ if(!lightReceiverIndex||lightReceiverIndex.state!==S)lightReceiverIndex={state:S,layers:new Map()};
+ let index=lightReceiverIndex.layers.get(CUR_F);
+ if(!index||index.furniture!==FURN||index.count!==FURN.length){
+  index={furniture:FURN,count:FURN.length,cells:new Map()};
+  const add=o=>{for(let y=Math.floor(o.y0/LG_C);y<=Math.floor(o.y1/LG_C);y++)for(let x=Math.floor(o.x0/LG_C);x<=Math.floor(o.x1/LG_C);x++){const key=x+':'+y;let list=index.cells.get(key);if(!list)index.cells.set(key,list=[]);list.push(o);}};
+  for(const f of FURN)if(flOf(f)===CUR_F&&!FURN_FLAT.has(f.t))add({furn:f,x0:f.x*TILE,y0:f.y*TILE,x1:(f.x+f.w)*TILE,y1:(f.y+f.h)*TILE});
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if('CTBO'.includes(G[y][x]))add({ch:G[y][x],tx:x,ty:y,x0:x*TILE,y0:y*TILE,x1:(x+1)*TILE,y1:(y+1)*TILE});
+  lightReceiverIndex.layers.set(CUR_F,index);
+ }
+ const found=new Set();
+ for(let y=Math.floor((l.y-l.r)/LG_C);y<=Math.floor((l.y+l.r)/LG_C);y++)for(let x=Math.floor((l.x-l.r)/LG_C);x<=Math.floor((l.x+l.r)/LG_C);x++)for(const o of index.cells.get(x+':'+y)||[])found.add(o);
+ return found;
+}
+function lightReceiverProbe(o,l,x){
+ // Project a sprite column onto the first face of its physical footprint.
+ const cx=clamp(x,o.x0+1,o.x1-1),cy=(o.y0+o.y1)/2,dx=l.x-cx,dy=l.y-cy;
+ const kx=Math.abs(dx)<.001?Infinity:(dx<0?cx-o.x0:o.x1-cx)/Math.abs(dx),ky=Math.abs(dy)<.001?Infinity:(dy<0?cy-o.y0:o.y1-cy)/Math.abs(dy),k=Math.min(kx,ky);
+ if(!Number.isFinite(k)||k>=1)return null;
+ const length=Math.hypot(dx,dy);
+ return{x:cx+dx*k+dx/length*2,y:cy+dy*k+dy/length*2};
+}
+function drawLightReceiver(c,o,l,flick){
+ const b=lightReceiverBounds(o),strips=[];
+ for(let x=b.x;x<b.x+b.w;x+=LIGHT_SURFACE_STEP){const w=Math.min(LIGHT_SURFACE_STEP,b.x+b.w-x),p=lightReceiverProbe(o,l,x+w/2),a=p?lightSurfaceAmount(l,p.x,p.y,flick):0;strips.push({x,w,a});}
+ if(!strips.some(s=>s.a>0))return;
+ if(!lightSurfaceScratch){const canvas=document.createElement('canvas');lightSurfaceScratch={canvas,ctx:canvas.getContext('2d')};}
+ const B=lightSurfaceScratch,w=Math.ceil(b.w/LIGHT_SURFACE_Q),h=Math.ceil(b.h/LIGHT_SURFACE_Q);
+ if(B.canvas.width<w||B.canvas.height<h){B.canvas.width=Math.max(w,B.canvas.width);B.canvas.height=Math.max(h,B.canvas.height);}
+ const q=B.ctx;q.resetTransform();q.clearRect(0,0,B.canvas.width,B.canvas.height);q.globalCompositeOperation='source-over';q.globalAlpha=1;q.imageSmoothingEnabled=false;
+ q.setTransform(1/LIGHT_SURFACE_Q,0,0,1/LIGHT_SURFACE_Q,-b.x/LIGHT_SURFACE_Q,-b.y/LIGHT_SURFACE_Q);
+ if(o.furn)drawFurnArt(q,o.furn);
+ else if(o.ch==='C')drawCityCargo(q,o.tx,o.ty);
+ else if(o.ch==='O')drawStreetPlanter(q,o.tx,o.ty);
+ else drawCityPlant(o.ch,o.tx,o.ty,false,q);
+ // Erase only each strip's unused opacity. Alpha remains confined to the
+ // actual source sprite, including raised pixels above its ground footprint.
+ q.globalCompositeOperation='destination-out';
+ for(const s of strips){q.fillStyle=`rgba(0,0,0,${1-s.a})`;q.fillRect(s.x,b.y,s.w,b.h);}
+ q.globalCompositeOperation='source-over';q.resetTransform();
+ c.drawImage(B.canvas,0,0,b.w/LIGHT_SURFACE_Q,b.h/LIGHT_SURFACE_Q,b.x,b.y,b.w,b.h);
+}
+function lightReceivingSurfaces(c,l,flick){
+ c.save();
+ const radius=l.r*flick,x0=Math.max(0,Math.floor((l.x-radius)/TILE)),x1=Math.min(MW-1,Math.floor((l.x+radius)/TILE)),y0=Math.max(0,Math.floor((l.y-radius)/TILE)),y1=Math.min(MH-1,Math.floor((l.y+radius)/TILE));
+ for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){
+  if(!'#SX'.includes(G[ty][tx]))continue;
+  const x=tx*TILE,y=ty*TILE;
+  for(const [nx,ny]of [[-1,0],[1,0],[0,-1],[0,1]]){
+   if(opaqueAt(tx+nx,ty+ny))continue;
+   for(let at=0;at<TILE;at+=LIGHT_SURFACE_STEP){
+    const px=nx?x+TILE/2+nx*(TILE/2+2):x+at+LIGHT_SURFACE_STEP/2,py=ny?y+TILE/2+ny*(TILE/2+2):y+at+LIGHT_SURFACE_STEP/2,amount=lightSurfaceAmount(l,px,py,flick);if(!amount)continue;
+    c.fillStyle=`rgba(0,0,0,${amount})`;
+    if(ny)c.fillRect(x+at,ny<0?y:y+8,LIGHT_SURFACE_STEP,ny<0?12:TILE-8);
+    else c.fillRect(nx<0?x:x+TILE-18,y+at,18,LIGHT_SURFACE_STEP);
+   }
+  }
+ }
+ for(const o of lightReceiversNear(l))drawLightReceiver(c,o,l,flick);
+ c.restore();
+}
+// Moving beams already affect detection. Render the same radius, cone and
+// first-hit occlusion, without caching a moving actor into a static lightmap.
+function dynamicLightSources(fl){
+ const sources=[];
+ for(const g of S.guards||[])if(g.torch&&flOf(g)===fl&&!g.z&&!['DEAD','CAPTIVE'].includes(g.state)&&inView(g.x,g.y,TORCH_R))sources.push({x:g.x,y:g.y,r:TORCH_R,angle:g.a,fov:TORCH_FOV,fl,outdoor:bldAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE))<0,owner:g});
+ for(const c of S.cams||[])if(c.search&&flOf(c)===fl&&camOn(c)&&inView(c.x,c.y,SL_R))sources.push({x:c.x,y:c.y,r:SL_R,angle:c.a,fov:SL_FOV,fl,owner:c});
+ return sources;
+}
+function drawDynamicLightFields(c,fl){
+ for(const l of dynamicLightSources(fl)){
+  l.poly=[l.x,l.y];
+  for(let i=0;i<=32;i++){const a=l.angle-l.fov+2*l.fov*i/32,r=castRay(l.x,l.y,a,l.r);l.poly.push(l.x+Math.cos(a)*r,l.y+Math.sin(a)*r);}
+  lampLight(c,l,1);
+ }
+}
+function invalidateLightRegion(fl,tx,ty){
+ const previous=CUR_F;try{setLayer(fl);
+  for(const l of S.lamps)if(flOf(l)===fl&&dist(l.x,l.y,tc(tx),tc(ty))<l.r+TILE)rebuildLampPolygon(l);
+  for(const key in lightCache)if(lightCache[key].floor===fl)delete lightCache[key];
+ }finally{setLayer(previous);}
+}
+
 const LIGHTQ = 4, lightCache = {};
+const lampFieldCache=new WeakMap();
+function lightArtSignature(){return[officeReady(),purchasedPropsReady(),purchasedReady(),freeCityReady(),!!propAtlas.naturalWidth].map(Number).join('');}
+function cachedLampField(l){
+ const art=lightArtSignature(),old=lampFieldCache.get(l);
+ if(old&&old.poly===l.poly&&old.art===art&&old.x===l.x&&old.y===l.y&&old.r===l.r)return old;
+ // Only this lamp's local field is rebuilt when a nearby door moves. The
+ // whole-floor composite then needs cheap image copies, not every ray/prop.
+ const x=Math.floor((l.x-l.r-64)/LIGHTQ)*LIGHTQ,y=Math.floor((l.y-l.r-144)/LIGHTQ)*LIGHTQ,w=Math.ceil((l.r*2+128)/LIGHTQ),h=Math.ceil((l.r*2+208)/LIGHTQ),c=document.createElement('canvas');c.width=w;c.height=h;
+ const q=c.getContext('2d');q.setTransform(1/LIGHTQ,0,0,1/LIGHTQ,-x/LIGHTQ,-y/LIGHTQ);lampLight(q,l,1);
+ const field={c,poly:l.poly,art,x:l.x,y:l.y,r:l.r,bounds:{x,y,w:w*LIGHTQ,h:h*LIGHTQ}};lampFieldCache.set(l,field);return field;
+}
 function lightMap(key, lamps) {
-  const sig = (officeReady()?'o':'') + (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
+  const sig = lightArtSignature() + (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
   let lc = lightCache[key];
   if (lc && lc.sig === sig) return lc.c;
   if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
-  lc.sig = sig; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
-  for (const l of lamps) { if (l.flk || !lampOn(l)) continue; lampLight(x, l, 1); }
+  lc.sig = sig;lc.floor=CUR_F; const x = lc.c.getContext('2d'); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, lc.c.width, lc.c.height); x.setTransform(1 / LIGHTQ, 0, 0, 1 / LIGHTQ, 0, 0);
+  for (const l of lamps) { if (l.flk || !lampOn(l)) continue; const f=cachedLampField(l),b=f.bounds;x.drawImage(f.c,b.x,b.y,b.w,b.h); }
   return lc.c;
 }
 function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근 그라데이션으로
@@ -16029,36 +16155,10 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
   lightReceivingSurfaces(x,l,flick);
 }
-// Ground rays stop at the wall. Its near face, and an opaque cabinet's own
-// pixels, still receive light. These masks never reveal the floor behind them.
-function lightReceivingSurfaces(c,l,flick){
- if(l.outdoor||!officeReady())return;
- const reach=l.r*flick,bi=bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),b=BLD[bi];if(!b)return;
- const visible=(x,y)=>dist(l.x,l.y,x,y)<reach&&los(l.x,l.y,x,y);
- const strength=(x,y)=>{const d=dist(l.x,l.y,x,y)/reach;return d<.55?.9-d/.55*.14:Math.max(0,.76*(1-d)/.45);};
- c.save();
- for(let ty=b.y0;ty<=b.y1;ty++)for(let tx=b.x0;tx<=b.x1;tx++){
-  if(G[ty]?.[tx]!=='#')continue;
-  const x=tx*TILE,y=ty*TILE;
-  for(const [nx,ny]of [[-1,0],[1,0],[0,-1],[0,1]]){
-   const px=x+TILE/2+nx*(TILE/2+2),py=y+TILE/2+ny*(TILE/2+2);
-   if(opaqueAt(tx+nx,ty+ny)||!visible(px,py))continue;
-   c.fillStyle=`rgba(0,0,0,${strength(px,py)})`;
-   if(ny===1)c.fillRect(x,y+12,TILE,TILE-12);
-   else if(ny===-1)c.fillRect(x,y,TILE,12);
-   else c.fillRect(nx<0?x:x+TILE-18,y,18,TILE);
-  }
- }
- for(const f of FURN){
-  if(flOf(f)!==flOf(l)||!FURN_TALL.has(f.t)||bldAt(f.x,f.y)!==bi)continue;
-  let amount=0;
-  for(const [px,py]of [[f.x*TILE-2,(f.y+f.h/2)*TILE],[(f.x+f.w)*TILE+2,(f.y+f.h/2)*TILE],[(f.x+f.w/2)*TILE,f.y*TILE-2],[(f.x+f.w/2)*TILE,(f.y+f.h)*TILE+2]])if(visible(px,py))amount=Math.max(amount,strength(px,py));
-  if(!amount)continue;
-  c.globalAlpha=amount;drawFurnArt(c,f);c.globalAlpha=1;
- }
- c.restore();
+function darkPass(sc,lamps,clip,key,floor=0){
+ const previous=CUR_F;try{setLayer(floor);darkPassLayer(sc,lamps,clip,key);}finally{setLayer(previous);}
 }
-function darkPass(sc, lamps, clip, key) {
+function darkPassLayer(sc, lamps, clip, key) {
   // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.
   const ds = 0.5 / DPR;
   const dw = Math.ceil(canvas.width * ds), dh = Math.ceil(canvas.height * ds);
@@ -16083,6 +16183,7 @@ function darkPass(sc, lamps, clip, key) {
     if (Math.abs(l.x - cam.x) > W / SCALE / 2 + l.r || Math.abs(l.y - cam.y) > H / SCALE / 2 + l.r) continue;
     lampLight(dctx, l, flick);
   }
+  drawDynamicLightFields(dctx,CUR_F);
   if (clip) { ctx.save(); ctx.beginPath(); ctx.rect(clip[0], clip[1], clip[2], clip[3]); ctx.clip(); }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   if (!DBG.dk1) { ctx.imageSmoothingEnabled = true; ctx.drawImage(darkC, 0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false; }
@@ -16496,7 +16597,7 @@ function draw() {
     for (const c of S.corpses) if (!c.stashed && onFloor(c)) { ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c); ctx.globalAlpha = 1; }
     drawLoud(VF); drawCams(VF);
     for (const g of S.guards) if (g.state !== 'DEAD' && onFloor(g) && !g.climb) { if (g.yank) drawYanked(g); else drawGuard(g); }
-    darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF);
+    darkPass(sc, S.lamps.filter(l => flOf(l) === VF), [bx, by, bw, bh], 'f' + VF,VF);
     for(const l of S.lamps)if(flOf(l)===VF)drawLampTint(l);
     drawIndoorLampFixtures(VF,VB);
     ctx.strokeStyle = hasHeightCues(VB) ? 'rgba(157,166,153,.65)' : 'rgba(242,196,107,.55)'; ctx.lineWidth = hasHeightCues(VB) ? 1.5 : 3; ctx.strokeRect(bx + 1.5, by + 1.5, bw - 3, bh - 3);
@@ -18752,7 +18853,7 @@ function installGameApi() {
     loadCaseFile,caseAllSources,caseView,syncCaseProgress,openCaseBoard,closeCaseBoard,renderCaseBoard,CASE_SOURCES,CASE_NODES,CASE_LINKS,
     officeReady,officeStyle,officeFurnKey,officeFurnBounds,officeSurfacePoint,officeGround,officeWallDecor,officeDecorLayout,get officeMeta(){return officeArt;},
     initRoomFinish,roomFinishWindowLit,roomFinishLamps,roomFinishFurnKey,
-    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio','can','smoke'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
+    skillLearningAllowed,drawFieldItem,drawFieldTool,drawLures,lightReceivingSurfaces,lightSurfaceAmount,lightReceiverBounds,lightReceiverProbe,lightReceiversNear,drawDynamicLightFields,dynamicLightSources,invalidateLightRegion,officeWall,lightMap,refreshLightMasks,get fieldArtReady(){return ['coat','apron','folder','paper','cigarettes','radio','can','smoke'].every(k=>fieldArt[k]?.img.complete&&fieldArt[k].img.naturalWidth);},
     get roomFinishArtReady(){return Object.values(roomArt).length===48&&Object.values(roomArt).every(a=>a.img.complete&&a.img.naturalWidth);},
     campaignHasProgress,campaignSkillState,openEpisodeTraining,beginCampaign,
     compoundGoal,compoundStairGoal,updateCompoundProgress,beginnerEntryNeeded,openingArchiveGuard,openingArchiveReady,openingArchiveRear,openingArchiveApproach,initBeginnerEntry,updateBeginnerEntry,beginnerEntryGoal,learningObjectGoal,recordSearchCause,searchCauseReadout,actVerb,

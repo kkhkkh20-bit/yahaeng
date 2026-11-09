@@ -105,12 +105,17 @@ function studyGround(c,ch,tx,ty){
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
  if('.Rpxrm'.includes(ch)){studyDraw(c,'pavement',tx*TILE,ty*TILE,TILE,TILE);return true;}
  if(!'=,F'.includes(ch))return false;
- let name=ch==='='?'pavement':'alleyBrick';
+ studyDraw(c,ch==='='?'pavement':'alleyBrick',tx*TILE,ty*TILE,TILE,TILE);
  if(ch==='='){
-  const road=(x,y)=>G0[y]?.[x]==='.',n=road(tx,ty-1),s=road(tx,ty+1),w=road(tx-1,ty),e=road(tx+1,ty);
-  name=n?(w?'curbNW':e?'curbNE':'curbN'):s?(w?'curbSW':e?'curbSE':'curbS'):w?'curbW':e?'curbE':name;
+  // A complete curb module includes paving and a broad curved border. Using
+  // it as a 48px ground cell made walkable pavement look like a second wall.
+  // Keep the purchased two-pixel edge at native scale on the road side only.
+  const r=studyArt.frames.curbS.rect,road=(x,y)=>G0[y]?.[x]==='.';
+  for(const [dx,dy,a]of [[0,-1,0],[1,0,Math.PI/2],[0,1,Math.PI],[-1,0,-Math.PI/2]])if(road(tx+dx,ty+dy)){
+   c.save();c.translate(tc(tx),tc(ty));c.rotate(a);c.drawImage(studyAtlas,r[0],r[1],r[2],2,-TILE/2,-TILE/2,TILE,3);c.restore();
+  }
  }
- studyDraw(c,name,tx*TILE,ty*TILE,TILE,TILE);return true;
+ return true;
 }
 function paintStudyRoof(c,b,w,h){
  const spec=STAGE.referenceBuildings[BLD.indexOf(b)];if(!spec)return false;

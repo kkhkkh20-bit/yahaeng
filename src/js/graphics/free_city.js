@@ -91,19 +91,19 @@ function freeCityGround(c,ch,tx,ty){
  const tile=name&&freeCityPattern(name);if(!tile)return false;
  c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(tx*TILE,ty*TILE,TILE,TILE);return true;
 }
-function drawCityPlant(ch,tx,ty,near){
+function drawCityPlant(ch,tx,ty,near,c=ctx){
  if(!STAGE.freeCityExteriors||freeCityArt!==A.dotonbori||!freeCityReady())return false;
  const x=tc(tx),y=tc(ty),h=((tx*92821)^(ty*68917))>>>0;
- ctx.save();
+ c.save();
  if(ch==='B'){
   const bs=S.bushShake,u=bs?(S.t-bs.t)/.5:1,shake=u>=0&&u<1&&Math.abs(bs.x-x)<30&&Math.abs(bs.y-y)<30?Math.sin(u*22.5)*3*(1-u):0;
-  ctx.fillStyle='rgba(13,25,21,.32)';ctx.beginPath();ctx.ellipse(x,y+9,24,12,0,0,TAU);ctx.fill();
-  ctx.globalAlpha=near?.48:1;freeCityDraw(ctx,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
+  c.fillStyle='rgba(13,25,21,.32)';c.beginPath();c.ellipse(x,y+9,24,12,0,0,TAU);c.fill();
+  c.globalAlpha=near?.48:1;freeCityDraw(c,'bush'+(h%2),tx*TILE-8+shake,ty*TILE-12,2);
  }else{
-  ctx.fillStyle='rgba(6,13,20,.27)';ctx.beginPath();ctx.ellipse(x,y+13,20,8,0,0,TAU);ctx.fill();
-  const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(ctx,name,x-24,y-78,3);
+  c.fillStyle='rgba(6,13,20,.27)';c.beginPath();c.ellipse(x,y+13,20,8,0,0,TAU);c.fill();
+  const name=h%5===0?'treePlanter':h%3?'treeOval':'treeRound';freeCityDraw(c,name,x-24,y-78,3);
  }
- ctx.restore();return true;
+ c.restore();return true;
 }
 function drawCityCargo(c,tx,ty){
  if(drawPurchasedCargo(c,tx,ty))return true;

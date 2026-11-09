@@ -1,0 +1,59 @@
+{
+  "wallMask": {
+    "face": 221,
+    "back": 0
+  },
+  "torch": {
+    "face": 223,
+    "back": 0
+  },
+  "turned": {
+    "face": 0,
+    "back": 0
+  },
+  "search": {
+    "face": 227,
+    "back": 0
+  },
+  "door": {
+    "closed": 0,
+    "opened": 203,
+    "shut": 0
+  },
+  "furniture": [
+    {
+      "type": "locker",
+      "pixels": 540,
+      "brightnessGain": 119.84999999999965,
+      "raisedPixels": 144,
+      "raisedGain": 121.91666666666657
+    },
+    {
+      "type": "sofa",
+      "pixels": 1255,
+      "brightnessGain": 121.44223107569714,
+      "raisedPixels": 451,
+      "raisedGain": 117.35254988913522
+    },
+    {
+      "type": "desk2",
+      "pixels": 701,
+      "brightnessGain": 109.0223490252022,
+      "raisedPixels": 72,
+      "raisedGain": 91.70833333333339
+    },
+    {
+      "type": "chairD",
+      "pixels": 146,
+      "brightnessGain": 71.04794520547941,
+      "raisedPixels": 0,
+      "raisedGain": 0
+    }
+  ],
+  "outdoorParcel": {
+    "pixels": 429,
+    "brightnessGain": 75.27117327117327,
+    "raisedPixels": 15,
+    "raisedGain": 3.688888888888889
+  }
+}
