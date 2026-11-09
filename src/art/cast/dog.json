@@ -1,0 +1,23 @@
+{
+  "frame": 32,
+  "directions": [
+    "E",
+    "SE",
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE"
+  ],
+  "rows": [
+    "idle",
+    "walkA",
+    "walkB",
+    "down"
+  ],
+  "ground": 29,
+  "scale": 1.5,
+  "origin": "Original generated in-game stray dog; not part of the purchased GuttyKreum packs",
+  "sourceSha256": "0b3b8cd46fbf75bb34caca6858e5766263271fe39d90815579070e8f726ab6df"
+}

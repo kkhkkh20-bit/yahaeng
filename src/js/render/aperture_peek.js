@@ -1,6 +1,6 @@
 // Close, same-floor sight through a real window or an open door. The roof stays
 // opaque everywhere else; the revealed pixels are the lit, live world beneath it.
-let aperturePeekState={owner:null,opening:null,alpha:0,t:0},aperturePeekFrame=null;
+let aperturePeekState={owner:null,candidate:null,alpha:0,dwell:0,t:0},aperturePeekFrame=null;
 const apertureScene=document.createElement('canvas');
 function aperturePeekCandidate(P=S.player,openB=S.openB){
  if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump)return null;
@@ -13,6 +13,8 @@ function aperturePeekCandidate(P=S.player,openB=S.openB){
   const dx=P.x-o.x,dy=P.y-o.y,depth=dx*nx+dy*ny,along=dx*-ny+dy*nx;
   const d=Math.hypot(dx,dy),score=openingTargetScore(P,o);
   if(depth<24||depth>87||Math.abs(along)>30||d>95||score>=nearest)continue;
+  // Passing along a wall should not suddenly open the room beside the player.
+  if(-Math.cos(P.a)*nx-Math.sin(P.a)*ny<.35)continue;
   if(!los(P.x,P.y,o.x+nx*25,o.y+ny*25))continue;
   const x=o.x-nx*26,y=o.y-ny*26;if(opaqueAt(Math.floor(x/TILE),Math.floor(y/TILE)))continue;
   nearest=score;best={opening:o,door,b:bi,nx,ny,x,y,depth,d};
@@ -21,17 +23,31 @@ function aperturePeekCandidate(P=S.player,openB=S.openB){
 }
 function updateAperturePeek(P,openB){
  let state=aperturePeekState;
- if(state.owner!==S)state=aperturePeekState={owner:S,opening:null,alpha:0,t:S.t};
+ if(state.owner!==S)state=aperturePeekState={owner:S,candidate:null,alpha:0,dwell:0,t:S.t};
  const dt=clamp(S.t-state.t,0,.06);state.t=S.t;
  const c=aperturePeekCandidate(P,openB);
- if(!c){state.alpha=0;state.opening=null;return aperturePeekFrame=null;}
- if(state.opening!==c.opening){state.opening=c.opening;state.alpha=0;}
- const goal=clamp((88-c.d)/32,0,1);state.alpha+=(goal-state.alpha)*(reducedFxMotion.matches?1:1-Math.exp(-dt*13));
- if(state.alpha<.015)return aperturePeekFrame=null;
- // The entire connected room fades in continuously as the player approaches.
- // No distance threshold swaps a thin cone for a room in a single frame.
- const room=apertureRoom(c);if(!room)return aperturePeekFrame=null;
- return aperturePeekFrame={...c,alpha:state.alpha,pts:room.bounds,cells:room.cells,surfaces:room.surfaces};
+ // Floor changes, entering and closing a door clear the old cutaway immediately.
+ // Ordinary stepping/turning away lets it settle over a short fade instead.
+ const old=state.candidate;
+ if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump||old&&(openB===old.b||old.door&&doorVisualOpen(old.opening)<.8)){
+  state.candidate=null;state.alpha=state.dwell=0;return aperturePeekFrame=null;
+ }
+ let room=old&&apertureRoom(old),accept=!!c;
+ if(c&&old&&old.opening!==c.opening){
+  const same=old.b===c.b&&room?.cells.has(Math.floor(c.y/TILE)*MW+Math.floor(c.x/TILE));
+  // Adjacent windows of the same room share the fade. A different room waits
+  // for the previous room to disappear, rather than replacing its rectangle.
+  if(!same&&state.alpha>.02)accept=false;
+ }
+ if(accept){
+  if(!old||old.b!==c.b||!room?.cells.has(Math.floor(c.y/TILE)*MW+Math.floor(c.x/TILE)))state.dwell=0;
+  state.candidate=c;state.dwell+=dt;room=apertureRoom(c);
+ }else state.dwell=0;
+ const goal=accept&&state.dwell>=.12?clamp((88-c.d)/32,0,1):0;
+ state.alpha+=(goal-state.alpha)*(1-Math.exp(-dt*(goal>state.alpha?6.5:9)));
+ if(state.alpha<.015){if(!accept)state.candidate=null;return aperturePeekFrame=null;}
+ if(!room)return aperturePeekFrame=null;
+ return aperturePeekFrame={...state.candidate,alpha:state.alpha,pts:room.bounds,cells:room.cells,surfaces:room.surfaces};
 }
 function apertureRoom(c){
  const b=BLD[c.b],doors=new Set(S.doors.filter(d=>!flOf(d)).map(d=>d.ty*MW+d.tx));
@@ -67,6 +83,15 @@ function captureAperturePeek(sc){
  const aw=Math.ceil(w/64)*64,ah=Math.ceil(h/64)*64;
  if(apertureScene.width!==aw||apertureScene.height!==ah){apertureScene.width=aw;apertureScene.height=ah;}
  const q=apertureScene.getContext('2d');q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,aw,ah);q.drawImage(canvas,x,y,w,h,0,0,w,h);
+ if(!reducedFxMotion.matches){
+  // Reveal from the real opening into the room, with a soft moving edge. This
+  // uses the existing capture buffer; there is no extra full-screen canvas.
+  const [a,b]=f.pts,max=Math.max(...[a.x,b.x].flatMap(px=>[a.y,b.y].map(py=>Math.hypot(px-f.x,py-f.y))));
+  const t=f.alpha*f.alpha*(3-2*f.alpha),radius=(40+(max+100)*t)*sc;
+  const gradient=q.createRadialGradient(f.x*sc+ox-x,f.y*sc+oy-y,Math.max(0,radius-60*sc),f.x*sc+ox-x,f.y*sc+oy-y,radius+60*sc);
+  gradient.addColorStop(0,'#fff');gradient.addColorStop(1,'transparent');
+  q.globalCompositeOperation='destination-in';q.fillStyle=gradient;q.fillRect(0,0,aw,ah);q.globalCompositeOperation='source-over';
+ }
  f.capture={x,y,w,h};
 }
 function drawAperturePeek(){

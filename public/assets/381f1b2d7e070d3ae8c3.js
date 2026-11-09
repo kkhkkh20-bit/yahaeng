@@ -3898,6 +3898,7 @@ function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ct
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
+  if(c.dog||c.ch==='dog'){drawDog(c.x,c.y-lift,c.a||0,false,ctx.globalAlpha,true);return;}
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
@@ -3991,7 +3992,13 @@ function drawGuard(g) {
   if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); const pose=targetGesturePose(g);drawPR(pose?.key||k, g.x, g.y, g.a, pose?.anim||guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05, 0, pose?.frame??-1); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
   drawChar(k, g.x, g.y, g.a, g.moving || g.state === 'CAPTIVE', 1, 3, g.swingT > 0); drawActorGear(g);
 }
+const strayDogImage=new Image();if(A.strayDog?.src)strayDogImage.src=A.strayDog.src;
 function drawDog(x, y, a, moving, alpha = 1, dead = false) {
+  if(strayDogImage.complete&&strayDogImage.naturalWidth){
+    const m=A.strayDog,row=dead?3:moving?1+Math.floor(S.t*7)%2:0,fr=m.frame,s=m.scale;
+    ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(strayDogImage,prDir(a)*fr,row*fr,fr,fr,x-fr*s/2,y-m.ground*s,fr*s,fr*s);ctx.restore();return;
+  }
   const fr = moving ? Math.floor(S.t * 9) % 2 : 0;
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y);
   if (dead) ctx.rotate(Math.PI / 2);
@@ -15880,7 +15887,7 @@ function drawTownExterior(){
 
 // Close, same-floor sight through a real window or an open door. The roof stays
 // opaque everywhere else; the revealed pixels are the lit, live world beneath it.
-let aperturePeekState={owner:null,opening:null,alpha:0,t:0},aperturePeekFrame=null;
+let aperturePeekState={owner:null,candidate:null,alpha:0,dwell:0,t:0},aperturePeekFrame=null;
 const apertureScene=document.createElement('canvas');
 function aperturePeekCandidate(P=S.player,openB=S.openB){
  if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump)return null;
@@ -15893,6 +15900,8 @@ function aperturePeekCandidate(P=S.player,openB=S.openB){
   const dx=P.x-o.x,dy=P.y-o.y,depth=dx*nx+dy*ny,along=dx*-ny+dy*nx;
   const d=Math.hypot(dx,dy),score=openingTargetScore(P,o);
   if(depth<24||depth>87||Math.abs(along)>30||d>95||score>=nearest)continue;
+  // Passing along a wall should not suddenly open the room beside the player.
+  if(-Math.cos(P.a)*nx-Math.sin(P.a)*ny<.35)continue;
   if(!los(P.x,P.y,o.x+nx*25,o.y+ny*25))continue;
   const x=o.x-nx*26,y=o.y-ny*26;if(opaqueAt(Math.floor(x/TILE),Math.floor(y/TILE)))continue;
   nearest=score;best={opening:o,door,b:bi,nx,ny,x,y,depth,d};
@@ -15901,17 +15910,31 @@ function aperturePeekCandidate(P=S.player,openB=S.openB){
 }
 function updateAperturePeek(P,openB){
  let state=aperturePeekState;
- if(state.owner!==S)state=aperturePeekState={owner:S,opening:null,alpha:0,t:S.t};
+ if(state.owner!==S)state=aperturePeekState={owner:S,candidate:null,alpha:0,dwell:0,t:S.t};
  const dt=clamp(S.t-state.t,0,.06);state.t=S.t;
  const c=aperturePeekCandidate(P,openB);
- if(!c){state.alpha=0;state.opening=null;return aperturePeekFrame=null;}
- if(state.opening!==c.opening){state.opening=c.opening;state.alpha=0;}
- const goal=clamp((88-c.d)/32,0,1);state.alpha+=(goal-state.alpha)*(reducedFxMotion.matches?1:1-Math.exp(-dt*13));
- if(state.alpha<.015)return aperturePeekFrame=null;
- // The entire connected room fades in continuously as the player approaches.
- // No distance threshold swaps a thin cone for a room in a single frame.
- const room=apertureRoom(c);if(!room)return aperturePeekFrame=null;
- return aperturePeekFrame={...c,alpha:state.alpha,pts:room.bounds,cells:room.cells,surfaces:room.surfaces};
+ // Floor changes, entering and closing a door clear the old cutaway immediately.
+ // Ordinary stepping/turning away lets it settle over a short fade instead.
+ const old=state.candidate;
+ if(tactical||P.z||flOf(P)||P.hide||P.vent||P.under||P.trav||P.jump||old&&(openB===old.b||old.door&&doorVisualOpen(old.opening)<.8)){
+  state.candidate=null;state.alpha=state.dwell=0;return aperturePeekFrame=null;
+ }
+ let room=old&&apertureRoom(old),accept=!!c;
+ if(c&&old&&old.opening!==c.opening){
+  const same=old.b===c.b&&room?.cells.has(Math.floor(c.y/TILE)*MW+Math.floor(c.x/TILE));
+  // Adjacent windows of the same room share the fade. A different room waits
+  // for the previous room to disappear, rather than replacing its rectangle.
+  if(!same&&state.alpha>.02)accept=false;
+ }
+ if(accept){
+  if(!old||old.b!==c.b||!room?.cells.has(Math.floor(c.y/TILE)*MW+Math.floor(c.x/TILE)))state.dwell=0;
+  state.candidate=c;state.dwell+=dt;room=apertureRoom(c);
+ }else state.dwell=0;
+ const goal=accept&&state.dwell>=.12?clamp((88-c.d)/32,0,1):0;
+ state.alpha+=(goal-state.alpha)*(1-Math.exp(-dt*(goal>state.alpha?6.5:9)));
+ if(state.alpha<.015){if(!accept)state.candidate=null;return aperturePeekFrame=null;}
+ if(!room)return aperturePeekFrame=null;
+ return aperturePeekFrame={...state.candidate,alpha:state.alpha,pts:room.bounds,cells:room.cells,surfaces:room.surfaces};
 }
 function apertureRoom(c){
  const b=BLD[c.b],doors=new Set(S.doors.filter(d=>!flOf(d)).map(d=>d.ty*MW+d.tx));
@@ -15947,6 +15970,15 @@ function captureAperturePeek(sc){
  const aw=Math.ceil(w/64)*64,ah=Math.ceil(h/64)*64;
  if(apertureScene.width!==aw||apertureScene.height!==ah){apertureScene.width=aw;apertureScene.height=ah;}
  const q=apertureScene.getContext('2d');q.setTransform(1,0,0,1,0,0);q.clearRect(0,0,aw,ah);q.drawImage(canvas,x,y,w,h,0,0,w,h);
+ if(!reducedFxMotion.matches){
+  // Reveal from the real opening into the room, with a soft moving edge. This
+  // uses the existing capture buffer; there is no extra full-screen canvas.
+  const [a,b]=f.pts,max=Math.max(...[a.x,b.x].flatMap(px=>[a.y,b.y].map(py=>Math.hypot(px-f.x,py-f.y))));
+  const t=f.alpha*f.alpha*(3-2*f.alpha),radius=(40+(max+100)*t)*sc;
+  const gradient=q.createRadialGradient(f.x*sc+ox-x,f.y*sc+oy-y,Math.max(0,radius-60*sc),f.x*sc+ox-x,f.y*sc+oy-y,radius+60*sc);
+  gradient.addColorStop(0,'#fff');gradient.addColorStop(1,'transparent');
+  q.globalCompositeOperation='destination-in';q.fillStyle=gradient;q.fillRect(0,0,aw,ah);q.globalCompositeOperation='source-over';
+ }
  f.capture={x,y,w,h};
 }
 function drawAperturePeek(){
@@ -16357,15 +16389,15 @@ function drawWinWatch() {
 
 // ---------------------------------------------------------------- 대사
 const DLG = { q: [], cur: null, modal: false, onEnd: null };
-// 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
+// Named people share one authored portrait in dialogue, radio, HUD and briefing.
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
-  if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', role: '의뢰인', face: 'fc_master' };
-  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '의사', face: 'fc_doc' };
-  if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
+  if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
+  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: '의뢰인', face: 'fc_master' };
+  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), portrait:'doc', role: '의사', face: 'fc_doc' };
+  if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), portrait:w.child?'legacyChild':null, role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
     return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: targetProfile(w)?.role || (w.enforcer ? '반장' : ''), face: w.dog ? null : 'fc_' + charOf(w) }; }
   return { name: '', col: '#9fb6d8', key: null, role: '', face: null };
@@ -16378,11 +16410,39 @@ function faceSheet(pk, body) {
   if (FACE.pal[key]) return FACE.pal[key]; const B = FACE.base, pal = prPalette(pk, body); if (!B || !pal) return null;
   return (FACE.pal[key] = prPaint(B, pal));
 }
-// 대사창 얼굴: 실루엣 초상 — 상반신을 어두운 그림자로 칠하고 가장자리만 말하는 사람 역할 색으로 빛나게 (윤곽으로 머리 모양·헬멧·덩치를 구분)
-// 저폴리곤 얼굴을 크게 보이면 어색해서, 얼굴 생김새 대신 윤곽과 옷 색 기운만 남긴다
+// Dedicated bust art supplies named identities. The old sheet remains a fallback
+// for unknown legacy speaker keys, rather than determining the heroine's face.
 const _fcTmp = document.createElement('canvas');
+const castPortraitImage=new Image();
+function portraitFor(sp){
+  if(!sp?.key)return null; // Notes and dogs do not have radio portraits.
+  if(sp.portrait)return sp.portrait;
+  const [palette,body]=prSplit(sp.key);
+  if(sp.key==='ninja'||body?.startsWith('hero'))return 'hero';
+  const target=Object.entries(TARGET_CAST).find(([,p])=>p.key===sp.key);
+  if(target)return target[0];
+  if(sp.key==='old'||sp.key==='old@old')return 'crow';
+  if(palette==='doc')return 'doc';
+  if(body==='old'||body==='kid')return null; // Keep age-specific legacy faces.
+  const female=/^(female|fBob|fLong|fTail|fPony|girl)/.test(body||'');
+  return (/^(sam|hunter|guard)/.test(palette)?'guard':'civil')+(female?'Female':'Male');
+}
+castPortraitImage.onload=()=>{
+  // Decode may finish after a modal/briefing was opened. Replace that frame too.
+  for(const cv of document.querySelectorAll('#hudFace,.br-cast canvas,canvas[data-mission-art="target"]'))delete cv.dataset.ready;
+  if(DLG.cur){const has=drawFace($('dlgFace'),DLG.cur.speaker);$('dlgFaceBox').hidden=!has;$('dlg').classList.toggle('noface',!has);}
+  if(typeof refreshMissionIdentityArt==='function')refreshMissionIdentityArt();
+};
+if(A.castPortraits?.src)castPortraitImage.src=A.castPortraits.src;
 function drawFace(cv, sp) {
   const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
+  const portrait=portraitFor(sp),rect=A.castPortraits?.rects[portrait];
+  if(rect){
+    if(!castPortraitImage.complete||!castPortraitImage.naturalWidth)return false;
+    fc.fillStyle='#11171c';fc.fillRect(0,0,W,H);fc.imageSmoothingEnabled=false;
+    const size=Math.min(W,H);fc.drawImage(castPortraitImage,...rect,(W-size)/2,H-size,size,size);
+    return true;
+  }
   if (!(sp.key && FACE.base)) return false;
   const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk, bn), fr = PR.faces.fr; if (!sh) return false;
   if (PR.style === 'modular') {
@@ -18360,7 +18420,7 @@ function installGameApi() {
     abilityOn,concealedAttackSource,concealedMeleeAllowed,abilityLockText,ambushTarget,ventAmbushTarget,startAmbush,
     touchPlayFrame,initActionFlow,actionFlowGoal,updateActionFlow,bodyRecoveryGoal,ambientEntryGrace,guideCivilianOut,facScan,zoneAt,concealedAttackCandidate,skillRewardRows,missionSkillPoints,skillPath,skillTreeLayout,meleeReach,MELEE_CONTACT,challengeStatus:id=>!!CH[id]?.[1](),canKill,dropTarget,wireDropTarget,deviceReady,SKILL_TREE,SKILL_BRANCHES,SKILL_BY_ID,loadSkillTree,storeSkillTree,skillBudget,skillSpent,learnTreeSkill,resetTreeSkills,skillOn,syncRuntimeSkills,skillNoise,skillMoveMul,skillViewMul,skillDetection,projectileRange,availableTools,selectTool,toolCount,toolDetail,actBlade,actSmoke,actRadio,actHack,updateTechWork,updateSkillDevices,smokeCells,smokeContains,smokeRayRange,hackTarget,radioAcquireTarget,drawSkillLinks,drawSkillDevices,
     feedbackEvent, feedbackState, feedbackReceipt, feedbackOnce, guardTaskCue, cancelWork, drawFinishFeedback, drawDefeatFeedback, hapticFeedback, continueResultTraining,
-    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
+    ASSASSIN_SKILLS, ASSASSIN_BEATS, assassinAttackFrame, initAssassinSkills, assassinOpportunity, assassinPath, assassinVictim, beginAssassinSkill, updateAssassinSkill, cancelAssassinSkill, openAssassinMenu, closeAssassinMenu, chooseAssassinSkill, spawnEffect, drawEffects, updateEffects, get effectAtlas(){return{ready:!!fxAtlas?.complete&&!!fxAtlas?.naturalWidth,limit:FX_LIMIT,meta:FX_META};}, refreshBodyLighting, syncWorkLights, get PLANS(){return PLANS;}, publicSuspicion, updateSharpEye, identityTime, groundedWorld, physicalAccess, mainPowerOff, applyWorldPolicy, wireUsable, sightLine, nextGuardHop, npcRegions, updateNpcDoors, baseWindowSealed, setDoor, spriteSources, prLoadBody, get motionBodies(){return Object.keys(prBodies).filter(k=>k.endsWith('Motion'));}, motionKey, actionHandPose, handlingSample, drawHandling, drawVaultPR, starsOf, totalStars, dragOut, missionApproachGoal, speechPriority, rendezvousState, rendezvousReady, nearRendezvous, callRendezvous, updateRendezvous, rendezvousGoal, rendezvousPrivacy, visibleSpeechCandidates, get S() { return S; }, get G0(){return G0;},get warmStatus(){return{pending:prWarmQ.length,cost:prWarm.cost||0,deferred:prWarm.deferred||0};}, get inkStudy(){return INK_STUDY;}, drawFace, portraitFor, get castArtReady(){return !!castPortraitImage.naturalWidth&&!!strayDogImage.naturalWidth;}, drawDog, speakerOf, bossRadio, episodeRadioMessage, syncEpisodeRadio, episodeNumber, playerActionFocus, actorTextBlocks, hudTextBlocks, updateDialog, get ACTION_R(){return ACTION_R;}, inkLampColor, drawInkDance, toast, renderToasts, goalMarkerCaption, guardAwareness, activeObserver, encounterRows, encounterRect, drawEncounter, roofOccludes,corpseBounds,actorMarker,drawTargetRing,perfWatch,guardHearsReport,shareGuardReport,queueGuardRadio,claimBodyExam,bodyExamValid,witnessedAssailant,wakeKO,rememberSuspect,guardRanges,guardFov,guardCone,hudInspecting,closeHudInspection,advanceGameFrame,propGround,searchStandNear,startCheck,inspectionOpen,lightC,ambientLightAt,dynamicLightAt,soundThrough,soundField,pipeGeometry, pipeTravel, pipeGripAt, climbContact, travPose, contactFeedback, drawContactFeedback, drawAccessCues, hint, showHint, resetHelpTip, updateHelpTip, syncOutdoorLamps, lampName, updateVipPlan, targetName, targetKnowledge, updateTargetIntel, missionGoalCandidates, selectMissionGoal, goalNavigation, updatePreparationProgress, toggleEnvPicker, closeEnvPicker, miniGuardVisible, clearPlayerInput, openKeypad, closeKeypad, kpPress, selectEnvTarget, envToken, trapPreview, giveKey, useItem, get oppMode() { return oppMode; }, setOppMode(v) { oppMode=v; showOpps=v>0; }, withJosa, actionCaption, knows, takeItem, syncTools, updateHUD, padButton, combatLabel, camWatcher, startBuildingSearch, buildingSearchJobs, searchBuildingAt, syncCameraLayout, updateStealth, drawGoal, objectiveLines, routeTo, gSpot, lvlKey, updateSharpEye, drawBody, drawPlayer, drawPlayerLocator, drawLastSeen, drawHangPR, dropSpot, ledgeTarget, ledgeTargetValid, ledgeGrip, ledgeRoot, beginLedgePull, ledgeVictimPoint, updateLedgePull, dropLedge, landBelow, drawLedgePull, signGeometry, signPosition, canReleaseSign, beginSignRelease, updateFallingSigns, signWorkSample, drawHangingSign, beginAccessFlow, accessActorSample, accessProgress, accessOpen, accessHandSample, fixtureGrip, ventKind, ventGeometry, drawVent, hideWork, drawAccessFlow, drawLitContainer, hideFixtureBounds, drawFurnArt, drawHideFlowHero, drawCabinet, cabinetGeometry, cabinetAperture, hideSpace, hideGeometry, hideFootprint, hidePerimeter, hideApproach, hideExitPoint, hideHeroSample, beginHideFlow, hideFlowProgress, hideFlowOpen, drawContainer, drawHideFixtures, drawHideFlowVisual, leaveHide, windowPassage, winVert, drawWindow, paintWindow, traversalRoom, guardAnim, updateIntel, mainContracts, contractNumber, evidencePending, coveredG, followLeader, checkObjective, hasHeightCues, floorCanvas, paintInteriorCuts, drawFloorThickness, drawRoofCoping, clipExteriorFromInterior, drawRoofEntrances, drawWires, drawTrapsRoof, startAim, releaseAim, kunaiHit, prepareCombat, grabTarget, combatPress, combatRelease, updateKoHold, updateLethalHold, targetEliminated, targetPosition, lampControl, lampOn, lvlInit, hopClimb, updateClimbG, stairFloor, stairAccess, roofStairAccess, stairTravel, beginStairTravel, update, moveCamera, cameraYBounds, drawSpeech, get SPEECH_R() { return SPEECH_R; }, moveAlong, pathTo, updateStories, runTimers, cpProgress, updateCheckpoint, updatePlayer, updateTrav, startTrav, actionBusy, objectReachable, nearProp, nearUse, nearHide, nearCorpse, updateGuard, updateCams, updateRadioCall, goAlert, goSuspicious, knownFace, publicSuspicion, onDisguiseChanged, takeProp, deliverReport, exposure, nextGoal, briefTodo, characterLook: o => o === S.player ? playerKey(o) : charOf(o), characterPalette: o => prPalette(...prSplit(o === S.player ? playerKey(o) : charOf(o))), civScream, spreadRumor, rumorTarget: () => rumorTarget(), pZone: () => pZone(), dartBlame, facBody, inTurf, killGuard, get PR() { return PR; }, get prVar() { return prVar; }, get ctx() { return ctx; }, get cam() { return cam; }, prBench() { const r = {}; for (const k of ["sam", "civ3@fBob", "staff@big"]) { delete prVar[k]; const t0 = performance.now(); const sh = prSheet(k); if (sh) prPart(sh, 0); r[k] = Math.round(performance.now() - t0); } r.q = prWarmQ.length; r.n = Object.keys(prVar).length; return r; }, actionChoices, cycleAction, los, attackAction, envAction, grabAction, envChoices, actAttack, actEnv, actGrab, cycleEnv, zoneInfo, lightAtG: (x, y, f) => { const L0 = CUR_F; setLayer(f || 0); const v = lightAt(x, y); setLayer(L0); return v; }, get layer(){return CUR_F;}, get viewZoom(){return userZoom;}, get FPS_CAP() { return FPS_CAP; }, stairHole, downPt, stairDir, solidAt: (x, y) => solidAt(x, y), nearClimbDown, get LADDERS() { return S.ladders; }, coneBench() { const t0 = performance.now(); let n = 0; for (let k = 0; k < 20; k++) for (const g of S.guards) { if (g.state === 'DEAD' || g.x < 0) continue; GLC.t = -9; g._cone = null; guardCone(g, guardFov(g), guardRanges(g)); n++; } return [(performance.now() - t0) / 20, n / 20]; }, DPRinfo() { return [DPR, dprCap]; }, benchDraw(n) { const t0 = performance.now(); for (let i = 0; i < n; i++) { S.t += 1 / 60; draw(); ctx.getImageData(0, 0, 1, 1); } return (performance.now() - t0) / n; }, drawPR, fluidSource, fluidSprite, updateHeroVisual, heroMotionClock, heroTransitionPose, heroStrikeFrame, killKT, ktFrame, KILL_DUR, get STAGE() { return STAGE; }, get STAGES() { return STAGES; }, schedText, storyLines, trackNextStory, get DLG() { return DLG; }, get STAIRW() { return STAIRW; }, get GF() { return GF; }, canSee, wirePt, kitSpec, killBlockReason, robAt, solidFor, roofProps, get BLD() { return BLD; }, traffic:{makeVehicle,carMove,carOverlap,carPts,updateVehicles,trafficStopDistance}, get PLANKS() { return PLANKS; }, plankAt, drawPlanks, lightAt, loudMul, noise, musicKey: () => musicKey, tileAt, saveCheckpoint, loadCheckpoint, cpReady, endGame, get CP() { return CP; }, neonTest: k => { initAudio(); const t0 = performance.now(); const b = makeNeonLoop(k); const d = b.getChannelData(0); let nan = 0, rms = 0; for (let i = 0; i < d.length; i++) { if (!isFinite(d[i])) nan++; rms += d[i] * d[i]; } return [Math.round(performance.now() - t0), b.duration.toFixed(1), nan, Math.sqrt(rms / d.length).toFixed(3)]; }, neonWav: k => { initAudio(); const b = makeNeonLoop(k), n = b.length, sr = b.sampleRate, L = b.getChannelData(0), R = b.getChannelData(1), out = new Int16Array(n * 2); for (let i = 0; i < n; i++) { out[2 * i] = Math.max(-1, Math.min(1, L[i])) * 32767; out[2 * i + 1] = Math.max(-1, Math.min(1, R[i])) * 32767; } let s = ''; const u = new Uint8Array(out.buffer); for (let i = 0; i < u.length; i += 32768) s += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return [sr, btoa(s)]; }, clubInfo: () => club ? { vol: club.g.gain.value, lp: club.lp.frequency.value, ctx: AC.state } : null, rLv, facadeRow, jumpTarget, lvAt, bldAt, primaryAction, actPrimary, showEnd, whistle, fallKill, planPt, astar, canSee, advanceDialog, say, nearVent, ventAmbushTarget, ventAt, drawScan, input, setDiff(k) { DKEY = k; }, actCoin, ugAt, spawnReinforcements, get SCALE() { return SCALE; }, setZoom, toggleTactical, updateChats, setAlert, lockExits, chaseNow, secondaryAction, grab, nearDoor, nearLamp, nearWindow, ambushTarget,   nearClimb, start: (i, b) => start(i, !b), stageMap, actPrimary, actCarry, quickStashChoice, beginQuickStash, updateQuickStash, actThrow, actKunai, primaryAction, kunaiTarget, newGame, castRay, tileG(x, y) { return G[y][x]; },  setLayer, nearFloorDown, nearWinWire, nearPole, nearWireMount, wireDropTarget, wirePt,
     mapImage() { const c = document.createElement('canvas'); c.width = mapC.width; c.height = mapC.height; drawBig(c.getContext('2d'), mapC); return c.toDataURL(); },
     npcDown, startBrawl, declareWar, facWitness, zoneAt, Z_PUB, Z_RES, Z_HOS, stairDir, setLayer, wallUpSpot, landBelow, nearWinClimb, nearWinDrop, doAct: a => actPrimary(Object.assign({}, a, { viaZ: true })), get MW() { return MW; }, get FURN() { return FURN; }, hurt: (why, origin) => hurtPlayer(null, why, origin), tileCh: (x, y) => G[y] && G[y][x], get MH() { return MH; },
     validate() {

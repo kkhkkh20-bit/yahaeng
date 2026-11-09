@@ -1,14 +1,14 @@
 // ---------------------------------------------------------------- 대사
 const DLG = { q: [], cur: null, modal: false, onEnd: null };
-// 말하는 사람: 이름 · 역할 색 · 얼굴(팔레트@체형 — 3D 인물을 가까이 찍은 초상에 옷 색을 칠해 쓴다)
+// Named people share one authored portrait in dialogue, radio, HUD and briefing.
 const DLG_COL = { aide: '#8fe3c9', hero: '#7fd6ff', guard: '#ff7a66', elite: '#ff9a3c', target: '#f2c46b', civ: '#9fd8a8', master: '#c9a2ff', note: '#e8e3d6', dog: '#c8a27a' };
 function speakerOf(w) {
-  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
+  if (w === 'hero') return { name: '올빼미', col: DLG_COL.hero, key: STAGE?.agentStudy?'agent@heroAgent':'ninja', portrait:'hero', role: '당신 · 잠입 암살자', face: 'fc_ninja' };
   if (w && w.note) return { name: w.note, col: DLG_COL.note, key: null, role: '', face: null };
-  if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', role: '현장 지원', face: 'fc_aide' };
-  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', role: '의뢰인', face: 'fc_master' };
-  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), role: '의사', face: 'fc_doc' };
-  if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
+  if (w === 'aide') return { name: '제비', col: DLG_COL.aide, key: 'civ3@fBob', portrait:'aide', role: '현장 지원', face: 'fc_aide' };
+  if (w === 'master') return { name: '까마귀', col: DLG_COL.master, key: 'old', portrait:'crow', role: '의뢰인', face: 'fc_master' };
+  if (w && w.doc) return { name: '한 선생', col: DLG_COL.civ, key: charOf(w), portrait:'doc', role: '의사', face: 'fc_doc' };
+  if (w && w.civ) return { name: w.child ? '아이' : '주민', col: DLG_COL.civ, key: charOf(w), portrait:w.child?'legacyChild':null, role: w.outfit && w.outfit !== 'crew' ? outfitName(w.outfit) : '', face: 'fc_civ' + (w.look || 0) };
   if (w && w.kind) { const k = w.dog ? 'dog' : w.target ? 'target' : w.elite ? 'elite' : 'guard';
     return { name: w.dog ? '들개' : w.target ? targetName(w) : w.lookout ? '망꾼' : w.elite ? '정예' : '자경대원', col: DLG_COL[k], key: w.dog ? null : charOf(w), role: targetProfile(w)?.role || (w.enforcer ? '반장' : ''), face: w.dog ? null : 'fc_' + charOf(w) }; }
   return { name: '', col: '#9fb6d8', key: null, role: '', face: null };
@@ -21,11 +21,39 @@ function faceSheet(pk, body) {
   if (FACE.pal[key]) return FACE.pal[key]; const B = FACE.base, pal = prPalette(pk, body); if (!B || !pal) return null;
   return (FACE.pal[key] = prPaint(B, pal));
 }
-// 대사창 얼굴: 실루엣 초상 — 상반신을 어두운 그림자로 칠하고 가장자리만 말하는 사람 역할 색으로 빛나게 (윤곽으로 머리 모양·헬멧·덩치를 구분)
-// 저폴리곤 얼굴을 크게 보이면 어색해서, 얼굴 생김새 대신 윤곽과 옷 색 기운만 남긴다
+// Dedicated bust art supplies named identities. The old sheet remains a fallback
+// for unknown legacy speaker keys, rather than determining the heroine's face.
 const _fcTmp = document.createElement('canvas');
+const castPortraitImage=new Image();
+function portraitFor(sp){
+  if(!sp?.key)return null; // Notes and dogs do not have radio portraits.
+  if(sp.portrait)return sp.portrait;
+  const [palette,body]=prSplit(sp.key);
+  if(sp.key==='ninja'||body?.startsWith('hero'))return 'hero';
+  const target=Object.entries(TARGET_CAST).find(([,p])=>p.key===sp.key);
+  if(target)return target[0];
+  if(sp.key==='old'||sp.key==='old@old')return 'crow';
+  if(palette==='doc')return 'doc';
+  if(body==='old'||body==='kid')return null; // Keep age-specific legacy faces.
+  const female=/^(female|fBob|fLong|fTail|fPony|girl)/.test(body||'');
+  return (/^(sam|hunter|guard)/.test(palette)?'guard':'civil')+(female?'Female':'Male');
+}
+castPortraitImage.onload=()=>{
+  // Decode may finish after a modal/briefing was opened. Replace that frame too.
+  for(const cv of document.querySelectorAll('#hudFace,.br-cast canvas,canvas[data-mission-art="target"]'))delete cv.dataset.ready;
+  if(DLG.cur){const has=drawFace($('dlgFace'),DLG.cur.speaker);$('dlgFaceBox').hidden=!has;$('dlg').classList.toggle('noface',!has);}
+  if(typeof refreshMissionIdentityArt==='function')refreshMissionIdentityArt();
+};
+if(A.castPortraits?.src)castPortraitImage.src=A.castPortraits.src;
 function drawFace(cv, sp) {
   const fc = cv.getContext('2d'), W = cv.width, H = cv.height; fc.clearRect(0, 0, W, H);
+  const portrait=portraitFor(sp),rect=A.castPortraits?.rects[portrait];
+  if(rect){
+    if(!castPortraitImage.complete||!castPortraitImage.naturalWidth)return false;
+    fc.fillStyle='#11171c';fc.fillRect(0,0,W,H);fc.imageSmoothingEnabled=false;
+    const size=Math.min(W,H);fc.drawImage(castPortraitImage,...rect,(W-size)/2,H-size,size,size);
+    return true;
+  }
   if (!(sp.key && FACE.base)) return false;
   const [pk, bn] = prSplit(sp.key), col = PR.faces.cols[bn || ''] != null ? PR.faces.cols[bn || ''] : 0, sh = faceSheet(pk, bn), fr = PR.faces.fr; if (!sh) return false;
   if (PR.style === 'modular') {

@@ -14,6 +14,7 @@ function drawTargetRing(g,col,c){const p=actorMarker(g,c);ctx.strokeStyle=col;ct
 function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
+  if(c.dog||c.ch==='dog'){drawDog(c.x,c.y-lift,c.a||0,false,ctx.globalAlpha,true);return;}
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
@@ -107,7 +108,13 @@ function drawGuard(g) {
   if (usePR(k)) { const hb = holdingNow(g); if (hb) drawHeldBox(g.x, g.y, g.a, 1, false); const pose=targetGesturePose(g);drawPR(pose?.key||k, g.x, g.y, g.a, pose?.anim||guardAnim(g), S.t + g.id * 0.37, 1, 1 + (g.z || 0) * 0.05, 0, pose?.frame??-1); if (hb) drawHeldBox(g.x, g.y, g.a, 1, true); drawActorGear(g); return; }
   drawChar(k, g.x, g.y, g.a, g.moving || g.state === 'CAPTIVE', 1, 3, g.swingT > 0); drawActorGear(g);
 }
+const strayDogImage=new Image();if(A.strayDog?.src)strayDogImage.src=A.strayDog.src;
 function drawDog(x, y, a, moving, alpha = 1, dead = false) {
+  if(strayDogImage.complete&&strayDogImage.naturalWidth){
+    const m=A.strayDog,row=dead?3:moving?1+Math.floor(S.t*7)%2:0,fr=m.frame,s=m.scale;
+    ctx.save();ctx.globalAlpha=alpha;ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(strayDogImage,prDir(a)*fr,row*fr,fr,fr,x-fr*s/2,y-m.ground*s,fr*s,fr*s);ctx.restore();return;
+  }
   const fr = moving ? Math.floor(S.t * 9) % 2 : 0;
   ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, y);
   if (dead) ctx.rotate(Math.PI / 2);

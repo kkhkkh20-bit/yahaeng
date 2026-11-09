@@ -39,4 +39,9 @@ def campaign_assets(root):
     if (vehicles/'traffic.json').exists():
         assets['cityVehicles']=json.loads((vehicles/'traffic.json').read_text())
         assets['cityVehicles']['src']='data:image/webp;base64,'+base64.b64encode((vehicles/'traffic.webp').read_bytes()).decode()
+    cast=Path(root)/'src/art/cast'
+    for name,key in [('portraits','castPortraits'),('dog','strayDog')]:
+        if (cast/(name+'.json')).exists():
+            assets[key]=json.loads((cast/(name+'.json')).read_text())
+            assets[key]['src']='data:image/webp;base64,'+base64.b64encode((cast/(name+'.webp')).read_bytes()).decode()
     return json.dumps(assets, ensure_ascii=False, separators=(',', ':'))

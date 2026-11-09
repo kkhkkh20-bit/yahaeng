@@ -1,0 +1,106 @@
+{
+  "rects": {
+    "crow": [
+      0,
+      0,
+      128,
+      128
+    ],
+    "aide": [
+      128,
+      0,
+      128,
+      128
+    ],
+    "doc": [
+      256,
+      0,
+      128,
+      128
+    ],
+    "hero": [
+      384,
+      0,
+      128,
+      128
+    ],
+    "runner": [
+      0,
+      128,
+      128,
+      128
+    ],
+    "contact": [
+      128,
+      128,
+      128,
+      128
+    ],
+    "broker": [
+      256,
+      128,
+      128,
+      128
+    ],
+    "club": [
+      384,
+      128,
+      128,
+      128
+    ],
+    "collector": [
+      0,
+      256,
+      128,
+      128
+    ],
+    "district": [
+      128,
+      256,
+      128,
+      128
+    ],
+    "freight": [
+      256,
+      256,
+      128,
+      128
+    ],
+    "chair": [
+      384,
+      256,
+      128,
+      128
+    ],
+    "guardMale": [
+      0,
+      384,
+      128,
+      128
+    ],
+    "guardFemale": [
+      128,
+      384,
+      128,
+      128
+    ],
+    "civilMale": [
+      256,
+      384,
+      128,
+      128
+    ],
+    "civilFemale": [
+      384,
+      384,
+      128,
+      128
+    ]
+  },
+  "origin": "Original generated cast busts; heroine derived from the approved female agent reference",
+  "sourceSha256": {
+    "hero": "d30a0fdc28ee3edc86f7a2caca2bb129091e74fd7ab1339fac08f1c2b533d7da",
+    "cast": "6b275f728686e4461f3c07a9daab98b3e4d6d5fe285dd48936da3db82ba06852"
+  },
+  "dogPortrait": false
+}
