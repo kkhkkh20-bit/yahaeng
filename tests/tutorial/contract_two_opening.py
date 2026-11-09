@@ -4,6 +4,7 @@ health, progress, alert or objective overrides. This is not a human real-time ru
 """
 import asyncio,json,os,sys
 from pathlib import Path
+from episode_training import select_skill_node
 from playwright.async_api import async_playwright
 from browser_support import open_game
 R=Path(__file__).resolve().parents[2];O=R/'build/review-v171';O.mkdir(exist_ok=True)
@@ -45,7 +46,7 @@ async def main():
    for x,y in [(1080,792),(1080,744),(888,744),(888,792)]:await move(x,y)
    await q.keyboard.press('k')
    for skill in ['kit','dart']:
-    await q.click('[data-select="'+skill+'"]');await q.click('[data-learn="'+skill+'"]')
+    await select_skill_node(q,skill);await q.click('[data-learn="'+skill+'"]')
     if touch:await q.click('.skill-detail-close')
    await q.click('#btnSkillsBack')
    if touch:

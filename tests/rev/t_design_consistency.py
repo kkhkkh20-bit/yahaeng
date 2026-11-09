@@ -10,7 +10,7 @@ async def main():
    q=await b.new_page(viewport={'width':390 if mobile else 1280,'height':844 if mobile else 800},has_touch=mobile,is_mobile=mobile);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
    await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game&&__game.fieldArtReady');await q.evaluate('document.fonts.ready')
    await q.click('#btnSkillsIntro');await q.evaluate('document.fonts.ready')
-   cdp=await q.context.new_cdp_session(q);await cdp.send('DOM.enable');await cdp.send('CSS.enable');root=await cdp.send('DOM.getDocument');node=await cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#skillScreen .sub-head h2'});fonts=await cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert any(f['familyName']=='Black Han Sans'and f['glyphCount']>=4 for f in fonts['fonts']),fonts
+   cdp=await q.context.new_cdp_session(q);await cdp.send('DOM.enable');await cdp.send('CSS.enable');root=await cdp.send('DOM.getDocument');node=await cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#skillScreen .sub-head h2'});fonts=await cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert any(f['familyName']=='IBM Plex Sans KR'and f['isCustomFont']and f['glyphCount']>=4 for f in fonts['fonts']),fonts
    await q.click('#btnSkillsBack')
    result=await q.evaluate('''()=>{const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},rows=[];
     for(const tool of ['stone','coin','smoke','radio']){const svg=window.__HUD_ART__['item:'+tool];ok(svg.includes('<image ')&&!svg.includes('<path '),'quick item uses a mismatched vector '+tool);}

@@ -7,7 +7,7 @@ import asyncio,json,os,sys,time
 from pathlib import Path
 from playwright.async_api import async_playwright
 from browser_support import open_game
-from episode_training import finish_episode_scene, standalone_stage, continue_episode, spend_episode_points
+from episode_training import select_skill_node, finish_episode_scene, standalone_stage, continue_episode, spend_episode_points
 R=Path(__file__).resolve().parents[2];O=Path(os.environ.get('YH_VIP_DIR','/workspace/work/vip-v175/native'));O.mkdir(parents=True,exist_ok=True)
 BASE=sys.argv[1]if len(sys.argv)>1 else'http://127.0.0.1:8001/public/'
 LABEL=sys.argv[2]if len(sys.argv)>2 else'local'
@@ -25,7 +25,7 @@ async def main():
    if PREP:await q.evaluate('localStorage.setItem("yahaeng.ch",JSON.stringify({tB:{_clear:true},p0:{_clear:true}}))')
    await standalone_stage(q,'m2')
    if PREP:
-    await q.locator('#brSkills button').click();await q.locator('[data-select="silentHands"]').click();await q.locator('[data-learn="silentHands"]').click();await q.locator('.skill-detail-close').click();await q.locator('[data-select="ambush"]').click();await q.locator('[data-learn="ambush"]').click()
+    await q.locator('#brSkills button').click();await select_skill_node(q,'silentHands');await q.locator('[data-learn="silentHands"]').click();await q.locator('.skill-detail-close').click();await select_skill_node(q,'ambush');await q.locator('[data-learn="ambush"]').click()
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     await q.click('#btnSkillsBack');assert await q.locator('#brief').is_visible();await q.screenshot(path=str(O/(name+'-prepared.png')))
    await q.click('#btnBrGo')
@@ -249,7 +249,7 @@ async def main():
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()
     assert before==1,('first VIP clear should add exactly 1P',before)
     for skill in ['quietStep']:
-     await q.locator('[data-select="'+skill+'"]').click()
+     await select_skill_node(q,skill)
      await q.locator('[data-learn="'+skill+'"]').click();await q.locator('.skill-detail-close').click()
     after=await q.evaluate('__game.skillBudget()-__game.skillSpent(__game.loadSkillTree())');assert before-after==1
     if await q.locator('.skill-detail-close').is_visible():await q.locator('.skill-detail-close').click()

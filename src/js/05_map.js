@@ -62,7 +62,7 @@ function installRoomPatches(st,saved=false){
     for(const m of p.furniture||[]){
       const f=FURN.find(f=>f.t===m.t&&(f.fl||0)===fl&&((f.x===m.from[0]&&f.y===m.from[1])||(m.to&&f.x===m.to[0]&&f.y===m.to[1])));if(!f)continue;
       if(m.remove){FURN.splice(FURN.indexOf(f),1);continue;}
-      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;
+      f.x=m.to[0];f.y=m.to[1];if(m.r!=null)f.r=m.r;if(m.w!=null)f.w=m.w;if(m.h!=null)f.h=m.h;
       if(saved&&FURN_HIDE[f.t]){
         const h=S.hides.find(h=>h.furn&&h.type===f.t&&flOf(h)===fl&&((h.tx===m.from[0]&&h.ty===m.from[1])||(h.tx===f.x&&h.ty===f.y)));
         if(h){Object.assign(h,{tx:f.x,ty:f.y,x:(f.x+f.w/2)*TILE,y:(f.y+f.h/2)*TILE,r:f.r});for(const o of [S.player,...S.corpses])if(o.hide===h||o.stashed&&o.container===h){o.x=h.x;o.y=h.y;}}
@@ -108,7 +108,11 @@ function moveStageFixtures(st, grid, saved = false) {
     grid[y][x] = m.floor; grid[ny][nx] = m.tile;
     if (!saved) continue;
     const P = S.player, h = S.hides.find(h => !h.furn && h.tx === x && h.ty === y);
-    if (h) { h.tx = nx; h.ty = ny; h.x = tc(nx); h.y = tc(ny); if (P.hide === h) { P.x = h.x; P.y = h.y; } }
-    if (!P.hide && !flOf(P) && !P.z && Math.floor(P.x / TILE) === nx && Math.floor(P.y / TILE) === ny) { P.x = tc(x); P.y = tc(y); }
+    if (h) { h.tx = nx; h.ty = ny; h.x = tc(nx); h.y = tc(ny); for(const o of [P,...S.corpses])if(o.hide===h||o.stashed&&o.container===h){o.x=h.x;o.y=h.y;} }
+    for(const o of [P,...S.guards,...S.corpses,...S.props]){
+      if(o.hide||o.stashed||o.carried||flOf(o)||o.z||Math.floor(o.x/TILE)!==nx||Math.floor(o.y/TILE)!==ny)continue;
+      const at=N8.slice(0,4).map(([dx,dy])=>[nx+dx,ny+dy]).find(([ax,ay])=>grid[ay]?.[ax]!=null&&!SOLID.has(grid[ay][ax]));
+      if(at){o.x=tc(at[0]);o.y=tc(at[1]);o.path=null;if(o===P)o.trav=o.jump=o.cover=null;}
+    }
   }
 }

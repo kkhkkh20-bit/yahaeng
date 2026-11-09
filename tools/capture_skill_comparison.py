@@ -25,13 +25,13 @@ async def capture(args):
      await page.goto(base+folder.relative_to(R).as_posix()+'/',timeout=120000);await page.wait_for_function('!!window.__game',timeout=120000)
      await page.click('#btnLedger');await page.click('#btnSkillsLedger')
      if mobile:await page.locator('button[data-branch="assassin"]').click()
-     await page.evaluate('()=>{__game.drawSkillLinks();return document.fonts.ready}');await page.wait_for_timeout(250)
+     await page.evaluate('()=>{return document.fonts.ready}');await page.wait_for_timeout(250)
      state=await page.evaluate('({version:window.__BUILD_VERSION__,points:__game.skillBudget()-__game.skillSpent(__game.loadSkillTree()),learned:__game.loadSkillTree().learned,nodes:document.querySelectorAll("[data-node]").length,inkTheme:document.documentElement.classList.contains("ink-study")})')
      assert state['version']==package['version']and state['points']==4 and not state['learned']and state['nodes']==27,state
      assert not errors,errors
      name=f'{label}-{mode}.png';await page.screenshot(path=str(output/name))
      records.append({'image':name,'viewport':[width,height],'branch':'assassin'if mobile else'all','state':state,'sourcePackageSha256':package['source_sha256'],'imageSha256':hashlib.sha256((output/name).read_bytes()).hexdigest(),'pageErrors':errors});print('CAPTURED',name,state['version'],flush=True)
-     await page.locator('[data-select="reach"]').click();await page.evaluate('__game.drawSkillLinks()');await page.wait_for_timeout(100)
+     await page.click('[data-branch="assassin"]');await page.locator('[data-select="reach"]').click();await page.wait_for_timeout(100)
      name=f'{label}-detail-{mode}.png';await page.screenshot(path=str(output/name));records.append({'image':name,'viewport':[width,height],'selectedSkill':'reach','state':state,'sourcePackageSha256':package['source_sha256'],'imageSha256':hashlib.sha256((output/name).read_bytes()).hexdigest(),'pageErrors':errors});await page.close()
    await browser.close()
  finally:server.shutdown();server.server_close()
