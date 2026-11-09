@@ -11,7 +11,7 @@ from playwright.async_api import async_playwright
 from bake_modular import RECIPES,KEY,QuietHandler,FRAME_PADDING
 from run import outline
 R=Path(__file__).resolve().parents[2];H=R/'tools/prerender';O=R/'build/pr';FR=64
-HERO=['hero','heroSuit','heroWorker','heroCrew','heroAgent']
+HERO=['hero','heroSuit','heroWorker','heroCrew','heroAgent','heroAgentCrew','heroAgentWorker']
 # Seconds per loop keep physical footsteps and paired actors on their own clocks.
 PERIODS={'walk':1,'run':.64,'sneak':1.24,'idleC':3.2,'crouch':3.2,'carry':8/7,'grab':.55/.4,'hold':8/9,'hugStep':4/4.5,'hang':4/6,'climb':4/7,'workHigh':.7,'workLow':.7}
 def flow(name,t,a):return f"renderFluidPose('{name}',{t},{a})"

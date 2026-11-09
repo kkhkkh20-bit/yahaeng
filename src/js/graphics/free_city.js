@@ -51,6 +51,7 @@ function paintFreeCityWall(c,b,x,y,w,h){
 }
 function paintFreeCityRoof(c,b,w,h){
  if(!freeCityBuilding(b)||!freeCityReady())return false;
+ if(STAGE.agentStudy&&studyReady())return paintStudyRoof(c,b,w,h);
  if(freeCityArt===A.dotonbori){
   const style=cityBuildingStyle(b),name=STAGE.agentStudy?'roofTile':style==='metal'?'roofTile':style==='brick'?'roofWave':'roofTerrace';
   const f=(freeCityArt.frames[name]||freeCityArt.frames.roofTile).rect,e=freeCityArt.roofSlice,border=e*2;
@@ -75,6 +76,7 @@ function paintFreeCityRoof(c,b,w,h){
 }
 function freeCityGround(c,ch,tx,ty){
  if(!STAGE.freeCityExteriors||CUR_F||bldAt(tx,ty)>=0||!freeCityReady())return false;
+ if(STAGE.agentStudy&&studyGround(c,ch,tx,ty))return true;
  if(ch==='T'||ch==='B'){const n=[[0,1],[0,-1],[1,0],[-1,0]].map(([dx,dy])=>G[ty+dy]?.[tx+dx]);ch=n.includes('g')?'g':n.includes('d')?'d':n.includes('=')?'=':'.';}
  const name=ch==='g'?((tx*7+ty*3)%5?'grass':'grassAlt'):ch==='d'?'soil':'=,F'.includes(ch)?'pavers':'.Rpxrm'.includes(ch)?'asphalt':null;
  const tile=name&&freeCityPattern(name);if(!tile)return false;
@@ -126,9 +128,9 @@ function drawCityRoofProps(b){
    const x=(p.x||0)*TILE,y=(p.y||0)*TILE;
    if(p.t==='sh'){
     const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),px=Math.min(...xs)*TILE,py=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
-    if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py-48,w,96);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
+    if(STAGE.agentStudy&&studyReady()){studyDraw(q,'stairHouse',px,py,w,h);}else{const tile=freeCityPattern('wallPanel');q.fillStyle='#13202b';q.fillRect(px+4,py+6,w,h);q.fillStyle=q.createPattern(tile,'repeat');q.fillRect(px,py-16,w,h+16);q.fillStyle='#87939b';q.fillRect(px,py-16,w,4);q.fillStyle='#34434e';q.fillRect(px+3,py-12,w-6,h-10);}
     const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
-    if(d){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
+    if(d&&!STAGE.agentStudy){q.fillStyle='#111d28';q.fillRect(d.x-10,d.y-23,20,24);q.strokeStyle='#84939e';q.lineWidth=2;q.strokeRect(d.x-10,d.y-23,20,24);q.fillStyle='#bfc7bd';q.fillRect(d.x+5,d.y-10,2,5);}
    }else if(p.t==='tank'){
     q.fillStyle='#101b29aa';q.fillRect(x+4,y+8,44,42);q.fillStyle='#72808b';q.fillRect(x+2,y-7,42,48);q.fillStyle='#3d515f';q.fillRect(x+5,y-4,36,38);freeCityDraw(q,'roofUnit',x+7,y,1);q.fillStyle='#a2aaa7';q.fillRect(x+2,y-7,42,3);
    }else if(p.t==='ac'||p.t==='vent'){freeCityDraw(q,p.t==='vent'&&freeCityArt.frames.roofVent?'roofVent':'roofUnit',x,y-8,1.5);}
@@ -200,6 +202,7 @@ function drawCityEntrances(b){
    if(leaf>3){ctx.fillStyle=d.locked?'#bea16b':'#a3aaa1';ctx.fillRect(x+span*.6,y+Math.max(4,leaf-1),4,2);}
    ctx.restore();continue;
   }
+  if(STAGE.agentStudy&&drawStudyEntrance(b,e))continue;
   const count=e.doors.length,span=Math.max(TILE,count*TILE),x=e.x-span/2,y=e.wallY-TILE;
   const width=span,height=48;
   ctx.save();ctx.imageSmoothingEnabled=false;

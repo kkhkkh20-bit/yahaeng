@@ -43,5 +43,10 @@
     "file": "Male-Worker.glb",
     "sha256": "8d0f454336c2effc5c08f63a177af3a82d1a7af025ca9588b40e4c90c4703534",
     "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Male/Worker.glb"
+  },
+  {
+    "file": "Female-Punk.glb",
+    "sha256": "76180f07babc0a948d21620b732bb9860aae6722d4922ea7b58030fafc0ce900",
+    "url": "https://raw.githubusercontent.com/LuanDucate/Ducz.CharacterCreator/main/public/models/Female/Punk.glb"
   }
 ]

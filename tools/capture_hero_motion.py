@@ -14,7 +14,7 @@ async def main(args):
  async with async_playwright()as p:
   b=await p.chromium.launch(executable_path='/usr/bin/chromium');q=await b.new_page(viewport={'width':920,'height':620},device_scale_factor=1);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
   await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto(f'http://127.0.0.1:{server.server_port}/'+str(Path(args.html).resolve().relative_to(R))+('?study=agent-city&nostats'if args.agent_study else'?nostats'));await q.wait_for_function('!!window.__game',polling=100)
-  await q.evaluate('''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id===(window.__AGENT_CITY_STUDY__?'agentCity':'m2')));while(G.DLG.modal)G.advanceDialog();const names=['heroAgent','heroAgentMotion',...Object.values(G.PR.fluidBodies?.heroAgent||{}),'hero','heroCrew','heroMotion','keyMotion',...Object.values(G.PR.fluidBodies?.hero||{}),...Object.values(G.PR.fluidBodies?.heroCrew||{}),...Object.values(G.PR.fluidBodies?.key||{})];await Promise.all(names.filter(n=>G.PR.bodies[n]).map(n=>G.prLoadBody(n)));G.S.fade=0;}''')
+  await q.evaluate('''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id===(window.__AGENT_CITY_STUDY__?'agentCity':'m2')));while(G.DLG.modal)G.advanceDialog();const names=['heroAgentCrew','heroAgentCrewMotion',...Object.values(G.PR.fluidBodies?.heroAgentCrew||{}),'heroAgent','heroAgentMotion',...Object.values(G.PR.fluidBodies?.heroAgent||{}),'hero','heroCrew','heroMotion','keyMotion',...Object.values(G.PR.fluidBodies?.hero||{}),...Object.values(G.PR.fluidBodies?.heroCrew||{}),...Object.values(G.PR.fluidBodies?.key||{})];await Promise.all(names.filter(n=>G.PR.bodies[n]).map(n=>G.prLoadBody(n)));G.S.fade=0;}''')
   report={'method':__doc__,'html':str(args.html),'round':args.round,'groups':{}}
   for group in ['locomotion','takedowns','interaction']:
    frames=[]
@@ -22,7 +22,7 @@ async def main(args):
     encoded=await q.evaluate('''({group,i,study})=>{const G=__game,C=G.ctx,T=i/20,heroKey=study?'agent@heroAgent':'ninja';C.setTransform(1,0,0,1,0,0);C.globalAlpha=1;C.fillStyle='#151d26';C.fillRect(0,0,C.canvas.width,C.canvas.height);C.imageSmoothingEnabled=false;
      const tile=(col,row,label,draw)=>{const x=col*220,y=row*210;C.save();C.translate(x,y);C.fillStyle='#c6d3df';C.font='13px sans-serif';C.fillText(label,16,24);C.strokeStyle='#394856';C.beginPath();C.moveTo(12,178);C.lineTo(210,178);C.stroke();C.translate(96,145);C.scale(2.7,2.7);draw();C.restore();};
      if(group==='locomotion'){
-      const a=['walk','run','sneak','idleC'],period={walk:1,run:.64,sneak:1.24,idleC:3.2};for(let row=0;row<2;row++)for(let col=0;col<4;col++)tile(col,row,(row?'GUARD COAT / ':study?'AGENT / ':'HERO / ')+a[col],()=>G.drawPR(row?'sam@heroCrew':heroKey,0,0,row?Math.PI/4:0,a[col],T));
+      const a=['walk','run','sneak','idleC'],period={walk:1,run:.64,sneak:1.24,idleC:3.2};for(let row=0;row<2;row++)for(let col=0;col<4;col++)tile(col,row,(row?'GUARD COAT / ':study?'AGENT / ':'HERO / ')+a[col],()=>G.drawPR(row?(study?'sam@heroAgentCrew':'sam@heroCrew'):heroKey,0,0,row?Math.PI/4:0,a[col],T));
      }else if(group==='takedowns'){
       for(let col=0;col<4;col++){const kind=col<2?'choke':'stab',a=col%2?Math.PI/2:0,dur=kind==='choke'?1.15:.95,f=Math.min(1,(T%(dur+.45))/dur),kt=G.killKT(kind,f,0),fr=G.ktFrame(kind,kt);tile(col,0,kind.toUpperCase()+' / '+(a?'SOUTH':'EAST'),()=>{G.drawPR(heroKey,0,0,a,kind,0,1,1,0,fr);G.drawPR('sam',0,0,a,kind==='choke'?'choked':'stabbed',0,1,1,0,fr);});}
      }else{

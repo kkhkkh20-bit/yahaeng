@@ -1,0 +1,32 @@
+{
+  "impact": {
+    "x": 543.1888203999999,
+    "y": 1152,
+    "t": 1.6165999999999991,
+    "hit": 336.0000000000001
+  },
+  "cars": [
+    {
+      "id": 9,
+      "x": 493.506352,
+      "y": 1152,
+      "hp": 5,
+      "v": -53.872,
+      "overlap": false
+    },
+    {
+      "id": 10,
+      "x": 590,
+      "y": 1152,
+      "hp": 5,
+      "v": 0,
+      "overlap": false
+    }
+  ],
+  "effects": [
+    "impact"
+  ],
+  "time": 1.666599999999999,
+  "drive_at": 3.9801430060033454,
+  "video": "/workspace/work/reference-city-v236/collision-visible/video/page@1b9b0e550730c92c2b2f6853e90c68ba.webm"
+}
