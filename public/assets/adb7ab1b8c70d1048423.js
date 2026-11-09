@@ -2835,6 +2835,13 @@ function freeCityPattern(name){
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;
  const style=cityBuildingStyle(b),name={metal:'metalStorey',office:'slateStorey',brick:'brickStorey',green:'brickStorey',stone:'slateStorey'}[style];
+ if(style==='green'&&freeCityArt===A.dotonbori){
+  const tile=freeCityPattern('wallGreen');if(!tile)return false;
+  // The green casement belongs to this masonry, not the brown brick storey.
+  // Paint one continuous surface; the window contributes only its own frame.
+  c.save();c.translate(x,y);c.fillStyle=c.createPattern(tile,'repeat');c.fillRect(0,0,w,h);
+  c.fillStyle='#27333d';c.fillRect(0,0,3,h);c.fillRect(w-3,0,3,h);c.restore();return true;
+ }
  const f=freeCityArt?.frames[name]?.rect;
  if(f&&freeCityReady()){
   c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.imageSmoothingEnabled=false;
@@ -2951,6 +2958,10 @@ function cityWindowImage(name,w,lit){
 function drawCityWindow(c,b,w,fl){
  const style=cityBuildingStyle(b),name={metal:'metalWindow',office:'officeWindow',brick:'brickWindow',green:'greenWindow',stone:'shopWindow'}[style];
  const im=cityWindowImage(name,w,windowRoomLit(w));if(!im)return false;
+ if(style==='green'){
+  // The lower half of the source tile is wall, not part of the window.
+  c.drawImage(im,0,0,32,16,w.tx*TILE,(b.y1-fl)*TILE+8,TILE,TILE/2);return true;
+ }
  c.drawImage(im,w.tx*TILE,(b.y1-fl)*TILE,TILE,TILE);return true;
 }
 function cityExteriorEntries(b){
