@@ -38,6 +38,7 @@ RECIPES = {
  'helmet': ('worker', None, CIV_ANIMS + ['hold', 'holdI']),
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
  'heroAgent': ('heroAgent', None, None),
+ 'heroAgentCrew': ('heroAgentCrew', None, None), 'heroAgentWorker': ('heroAgentWorker', None, None),
  'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
  'heroWorkerLid': ('heroWorker', None, ['openBin']), 'heroCrewLid': ('heroCrew', None, ['openBin']),
 }

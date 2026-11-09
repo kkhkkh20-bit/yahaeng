@@ -14,7 +14,7 @@ const PR_PAL = {
 // Rank changes the model and behaviour, not the faction's uniform. Keep the
 // legacy keys: corpses, old saves and the player's stolen clothes use them too.
 for (const key of ['samB','samR','hunter']) PR_PAL[key] = [...PR_PAL[key].slice(0,2), ...PR_PAL.sam.slice(2)];
-PR_PAL.agent=['#e6b38a','#141414','#414e60','#343d51','#171b25'];
+PR_PAL.agent=['#e6b38a','#30262b','#beb5a5','#303747','#171b25'];
 const prImg = PR ? new Image() : null, prVar = {};
 // 시트는 한 장이 가로 9536px(149칸)이라 옷마다 통째로 칠해 두면 한 장에 20MB, 판 하나에 수백 MB가 된다 (휴대폰이 버벅이고 해상도가 떨어지던 원인).
 // 16칸(1024px)짜리 조각으로 나눠, 실제로 그리는 동작이 든 조각만 칠한다. 조각은 휴대폰 그래픽 칩이 다루기 쉬운 크기이기도 하다
@@ -91,17 +91,18 @@ const prSplit = key => { const i = key.indexOf('@'); return i < 0 ? [key, (PR &&
 function playerKey(P) {
   const pal = P.disguise && PR_PAL[P.disguise] ? P.disguise : STAGE?.agentStudy ? 'agent' : 'ninja';
   if (!(PR && PR.style === 'modular')) return pal;
-  const body = pal==='agent' ? 'heroAgent' : pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
+  const studyBody=STAGE?.agentStudy?({crew:'heroAgentCrew',staff:'heroAgentWorker',courier:'heroAgentWorker',waiter:'heroAgent',cater:'heroAgent'}[P.outfit]||'heroAgent'):null;
+  const body = pal==='agent' ? 'heroAgent' : studyBody || pal !== 'ninja' && PR.playerLooks[P.outfit] || 'hero';
   if(!prBodies[body])prLoadBody(body);
   if(!prBodies[body+'Motion']&&PR.bodies?.[body+'Motion'])prLoadBody(body+'Motion');
   const gait=PR.fluidBodies?.[body]?.gait;if(gait&&!prBodies[gait])prLoadBody(gait);
-  if(pal==='agent')return pal+'@'+body;
+  if(pal==='agent'||studyBody)return pal+'@'+body;
   return pal === 'ninja' ? pal : pal + '@' + (prBodies[body]?body:'hero');
 }
 function prPalette(pk, body) {
   const pal = PR_PAL[pk];
   return pal && PR && PR.style === 'modular' && body && body.startsWith('hero') ?
-    [PR_PAL.ninja[0], PR_PAL.ninja[1], ...pal.slice(2)] : pal;
+    [PR_PAL.ninja[0], body.startsWith('heroAgent')?PR_PAL.agent[1]:PR_PAL.ninja[1], ...pal.slice(2)] : pal;
 }
 
 // 시트 = 조각 묶음(칠하지 않은 채 만들어 둔다). 실제 칠하기는 prPart 가 조각 단위로

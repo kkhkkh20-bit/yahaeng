@@ -26,7 +26,7 @@ function trafficInit() {
     const hor = k % 2 === 0, d = hor ? (k % 4 === 0 ? 0 : 2) : (k % 4 === 1 ? 1 : 3);
     const road = hor ? RY[(k * 7) % RY.length] : RX[(k * 5) % RX.length], along = ((k * 977) % ((hor ? MW : MH) - 4)) + 2;
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
-    if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160)) continue;
+    if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
     const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true });
     planTurn(v); S.vehicles.push(v); i++;
   }
@@ -79,8 +79,9 @@ function aiDrive(v, dt) {
   const blk = aheadBlocked(v); let want = v.chase ? AI_SPD * 2 : AI_SPD;
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
-    if (blk === 'car' && v.stopT > 5) want = AI_SPD * 0.5;  // 오래 막히면(교차로 꼬임) 천천히 비집고 간다
   } else v.stopT = 0;
+  if((v.crashUntil||0)>S.t)want=0;
+  const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)));
   if (v.chase && copCarArrive(v, dt)) return;
   // 교차로: 꺾을 차로가 가까워지면 미리 새 차로로 갈아탄다 (오른쪽은 짧게, 왼쪽은 크게 돈다)
   if (v.turn) { const pos = hor ? v.x : v.y, left = (v.turn.at - pos) * sgn, right = v.turn.nd === (v.d + 1) % 4;
@@ -94,36 +95,74 @@ function aiDrive(v, dt) {
   // 가속·브레이크 (내 차와 같은 수치를 조금 순하게)
   if (v.v < want) v.v = Math.min(want, v.v + CAR_ACC * (v.chase ? 1.2 : 0.7) * dt); else v.v = Math.max(want, v.v - CAR_BRAKE * dt);
   // 핸들: 내 차와 같은 식 — 빠를수록 잘 돌고, 서 있으면 거의 안 돈다
-  v.a += clamp(err * 3, -1, 1) * CAR_TURN * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
-  v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt;
+  const turn=clamp(err * 3, -1, 1) * CAR_TURN * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
+  carMove(v,dt,turn);
   // 지도 끝: 반대 방향 차로로 돌아 들어온다
   if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) {
     v.d = (v.d + 2) % 4; v.a = Math.atan2(DV[v.d][1], DV[v.d][0]); v.x = clamp(v.x, 30, MW * TILE - 30); v.y = clamp(v.y, 30, MH * TILE - 30);
     const road = hor ? STAGE.roadsY.find(r => Math.abs(r * TILE + 96 - v.y) < 120) : STAGE.roadsX.find(r => Math.abs(r * TILE + 96 - v.x) < 120);
     v.lane = laneOf(road || 0, v.d); if (hor) v.y = v.lane; else v.x = v.lane; planTurn(v); }
 }
-// 차의 앞뒤 원 둘
-const carPts = v => { const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25; return [[v.x + ca, v.y + sa], [v.x - ca, v.y - sa]]; };
+// One junction reservation, released after the rear bumper clears it. Waiting
+// never authorizes driving through another car after an arbitrary timeout.
+function trafficStopDistance(v){
+ if(v.chase)return null;
+ const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
+ for(const rx of STAGE.roadsX||[])for(const ry of STAGE.roadsY||[]){
+  const x0=rx*TILE,y0=ry*TILE,x1=x0+4*TILE,y1=y0+4*TILE,key=rx+','+ry;
+  const inside=o=>o.x>x0-55&&o.x<x1+55&&o.y>y0-55&&o.y<y1+55;
+  const aligned=hor?v.y>y0&&v.y<y1:v.x>x0&&v.x<x1;
+  const entry=hor?(sgn>0?x0-58:x1+58):(sgn>0?y0-58:y1+58),left=(entry-(hor?v.x:v.y))*sgn;
+  if(!aligned||left>230||left< -4*TILE-116){if(left< -4*TILE-116&&v.junctionWait)delete v.junctionWait[key];continue;}
+  const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-58:x1+58):(s>0?y0-58:y1+58))-(h?o.x:o.y))*s;};
+  const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
+  for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
+  incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);
+  let owner=S.vehicles.find(o=>o.id===locks[key]);
+  if(owner&&!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300){delete locks[key];owner=null;}
+  // A car behind the queue cannot reserve the junction ahead of its own lead.
+  if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
+  if(!owner)owner=S.vehicles.find(o=>o!==v&&!o.parked&&inside(o))||incoming[0]||v;
+  locks[key]=owner.id;
+  if(locks[key]===v.id||inside(v))return null;
+  return Math.max(0,left);
+ }
+ return null;
+}
+// Three overlapping circles cover the complete chassis, including its middle.
+const carPts = v => { const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25; return [[v.x + ca, v.y + sa], [v.x,v.y], [v.x - ca, v.y - sa]]; };
 // 차가 벽·건물·다른 차와 겹치나 (겹친 상대 차를 돌려준다: 없으면 true/false)
 function carOverlap(v) {
   for (const [px, py] of carPts(v)) {
     const tx0 = Math.floor((px - CAR_R) / TILE), tx1 = Math.floor((px + CAR_R) / TILE), ty0 = Math.floor((py - CAR_R) / TILE), ty1 = Math.floor((py + CAR_R) / TILE);
-    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (!carBlocked(tx, ty)) continue;
+    for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (v.ai&&!inMap(tx,ty)||!carBlocked(tx, ty)) continue;
       const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < CAR_R) return true; }
   }
-  for (const o of S.vehicles) { if (o === v || o.dead && !o.burn && false) continue; if (o === v || dist(o.x, o.y, v.x, v.y) > 110) continue;
+  for (const o of S.vehicles) { if (o === v || dist(o.x, o.y, v.x, v.y) > 110) continue;
     for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < CAR_R * 2) return o; }
   return false;
 }
 // 움직이고, 벽·건물·다른 차에 부딪히면 튕겨 선다. 부딪힌 세기를 돌려준다
-function carMove(v, dt) {
-  const ox = v.x, oy = v.y; v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt;
-  const o = carOverlap(v); if (!o) return 0;
-  const hit = Math.abs(v.v);
-  if (o !== true && (o.ai || o.parked)) { o.v = 0; o.stopT = 0; if (hit > 200) o.smoke = 1.5; if (hit > 260 && --o.hp <= 0) carWreck(o); }
-  v.x = ox; v.y = oy; v.v = -v.v * 0.25;
-  if (carOverlap(v)) { v.x += Math.cos(v.a) * (v.v >= 0 ? -2 : 2); v.y += Math.sin(v.a) * (v.v >= 0 ? -2 : 2); }  // 이미 끼어 있으면 조금씩 빠져나온다
-  return hit;
+function carMove(v, dt, turn=0) {
+  const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
+  for(let i=0;i<steps;i++){
+   const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;v.x+=Math.cos(v.a)*v.v*dt/steps;v.y+=Math.sin(v.a)*v.v*dt/steps;
+   const o=carOverlap(v);if(!o)continue;
+   const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
+   v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;
+   if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;}
+   if(hit>60&&(v.impactAfter||0)<=S.t){
+    v.impactAfter=S.t+.65;if(o!==true)o.impactAfter=S.t+.65;
+    const x=o===true?v.x+Math.cos(v.a)*40:(v.x+o.x)/2,y=o===true?v.y+Math.sin(v.a)*40:(v.y+o.y)/2;
+    S.carImpact={x,y,t:S.t,hit};
+    spawnEffect('impact',{x,y,fl:0,z:0},{scale:.55,alpha:.8});
+    const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
+    if(near){play('metal',Math.min(.7,hit/400)*near,.8);play('thud',.4*near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
+    if(hit>175){v.hp--;v.smoke=1.5;if(o!==true){o.hp--;o.smoke=1.5;}if(v.hp<=0)carWreck(v);if(o!==true&&o.hp<=0)carWreck(o);}
+   }
+   return speed;
+  }
+  return 0;
 }
 // 차가 사람을 친다: 빠르면 처치, 느리면 넘어뜨린다 (기절). 내가 몰면 내 짓이다
 function hitPeople(v, dt) {
@@ -151,15 +190,14 @@ function updateDriving(P, mx, my, mag, dt) {
     const ta = Math.atan2(my, mx), dA = angDiff(v.a, ta);
     // 거의 반대쪽: 달리는 중이면 브레이크. 서 있으면 앞이 트였으면 크게 돌아 나가고(유턴), 막혔으면 후진
     const fx = v.x + Math.cos(v.a) * 75, fy = v.y + Math.sin(v.a) * 75, frontOpen = !carBlocked(Math.floor(fx / TILE), Math.floor(fy / TILE));
-    if (Math.abs(dA) < 2.3 || (Math.abs(v.v) < 40 && v.v >= -5 && frontOpen && !v.revT)) { thr = Math.min(1, mag); const a0 = v.a, steer = clamp(dA * 3, -1, 1) * CAR_TURN * Math.max(0.35, Math.min(1, Math.abs(v.v) / 90)) * (v.v < -5 ? -1 : 1); v.a += steer * dt; if (carOverlap(v) === true) v.a = a0; }  // 서 있어도 조금은 돈다 (벽에 끼면 안 돈다)
+    if (Math.abs(dA) < 2.3 || (Math.abs(v.v) < 40 && v.v >= -5 && frontOpen && !v.revT)) { thr = Math.min(1, mag); const a0 = v.a, steer = clamp(dA * 3, -1, 1) * CAR_TURN * Math.max(0.35, Math.min(1, Math.abs(v.v) / 90)) * (v.v < -5 ? -1 : 1); v.a += steer * dt; if (carOverlap(v)) v.a = a0; }  // 서 있어도 조금은 돈다 (벽에 끼면 안 돈다)
     else { thr = v.v > 30 ? -2 : -0.55 * Math.min(1, mag); if (v.v <= 30) v.revT = 0.6; }  // 반대쪽: 브레이크, 서면 후진 (한 번 후진하면 잠깐은 계속)
   }
   if (thr > 0) v.v = Math.min(CAR_MAX, v.v + CAR_ACC * thr * dt);
   else if (thr < -1) v.v = Math.max(0, v.v - CAR_BRAKE * dt);
   else if (thr < 0) v.v = Math.max(-140, v.v - CAR_ACC * 0.8 * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
-  const hit = carMove(v, dt);
-  if (hit > 150) { play('thud', clamp(hit / 400, 0.3, 0.9)); play('metal', 0.4, 0.7); S.shakeT = Math.min(0.35, hit / 900); if (hit > 240) { v.hp -= 1; v.smoke = 2; } if (v.hp <= 0) carWreck(v); }
+  carMove(v, dt);
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
   if (Math.abs(v.v) > 60 && (v.engT = (v.engT || 0) - dt) <= 0) { v.engT = 0.5; noise(v.x, v.y, 160, 'car', 0); }

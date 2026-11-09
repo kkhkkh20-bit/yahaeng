@@ -11,15 +11,25 @@ im = Image.open(args.source).convert('RGBA')
 rects = {
     'rail': (1024,304,1120,320), 'ivy': (704,0,768,128),
     'aircon': (768,256,800,288), 'antenna': (960,0,992,64),
-    'cafeSign': (832,224,864,256), 'foodSign': (832,384,864,416),
-    'gallerySign': (864,288,928,320), 'gateSign': (864,512,928,544),
-    'shopCornice': (608,224,704,256), 'tileFloor': (1992,168,2024,200),
-    'stairHouse': (800,32,864,96), 'wallBlue': (548,424,568,440),
+'gateSign': (864,512,928,544),
+    'bridgeDeck': (192,0,224,32),
+    'stairHouse': (800,32,832,64), 'wallBlue': (548,424,568,440),
     'wallTan': (292,328,304,336), 'wallGreen': (420,310,444,318),
-    'wallSlate': (772,298,796,314)
+    'wallSlate': (772,298,796,314),
+    # Preserve complete authored storeys: transoms, piers, glass and sill belong
+    # together. Thin wall samples cannot reproduce the reference architecture.
+    'frontBrick': (288,320,384,480), 'frontGreen': (416,288,512,480),
+    'frontGlass': (512,96,608,224), 'frontWood': (608,96,704,224),
+    'frontSilver': (608,384,704,480), 'frontRetail': (512,288,608,384),
+    'billboardBeer': (256,224,416,320), 'billboardCrab': (768,320,896,352),
+    'billboardOctopus': (928,320,960,384), 'billboardRunner': (864,224,928,288),
+    'pavement': (64,64,96,96), 'alleyBrick': (0,64,32,96),
+    'doorPanel': (704,448,736,480), 'serviceFan': (864,0,896,64),
+    'roofMetal': (2624,192,2656,224), 'roofStone': (2016,32,2048,64)
+
 }
 out = ROOT/'src/art/city-study'; out.mkdir(exist_ok=True)
-atlas = Image.new('RGBA',(512,512)); frames={}; x=y=row=0
+atlas = Image.new('RGBA',(1024,512)); frames={}; x=y=row=0
 parts=[(name,im.crop(box),{'sourceRect':list(box)}) for name,box in rects.items()]
 supplement={}
 for i,n in enumerate([395,399,449]):

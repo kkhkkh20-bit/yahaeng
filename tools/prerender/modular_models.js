@@ -6,7 +6,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 const loader = new GLTFLoader();
 const loaded = new Map();
 export const LOOKS = {
-  heroAgent: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Suit'],
+  heroAgent: ['Female-Punk', 'Female-Suit', 'Female-Suit', 'Female-Suit'],
+  heroAgentCrew: ['Female-Punk', 'Male-Swat', 'Female-Suit', 'Female-Suit'],
+  heroAgentWorker: ['Female-Punk', 'Female-Worker', 'Female-Worker', 'Female-Suit'],
   hero: ['Female-Casual', 'Female-Suit', 'Female-Casual', 'Female-Worker'],
   heroSuit: ['Female-Casual', 'Female-Suit', 'Female-Suit', 'Female-Worker'],
   heroWorker: ['Female-Casual', 'Female-Worker', 'Female-Worker', 'Female-Worker'],
@@ -41,6 +43,7 @@ function materialFor(mesh, source) {
   if (part === 'Body' && mesh.parent.name === 'Suit_Body' && name === 'white') role = null;
   // The helmet belongs to the role's equipment; eyes stay dark rather than
   // being painted like skin. Each mesh gets separate material instances.
+  if(part==='Head'&&name==='pink')role='hair'; // Original Punk hairstyle, recoloured to the agent palette.
   if (part === 'Head' && !role && /worker|swat|visor/.test(name)) role = 'shoes';
   const m = new THREE.MeshPhongMaterial({ color: role ? keys[role] : source.color, shininess: 4 });
   m.userData.role = role;
@@ -84,7 +87,7 @@ export async function loadModular(name) {
     if (!partOf(o)) { o.visible = false; return; }
     o.frustumCulled = false;
     o.material = Array.isArray(o.material) ? o.material.map(m => materialFor(o, m)) : materialFor(o, o.material);
-    if(name==='heroAgent'){
+    if(name.startsWith('heroAgent')){
       const materials=Array.isArray(o.material)?o.material:[o.material];
       for(const m of materials){m.shininess=0;m.flatShading=true;}
       // Broader suit cloth, with the original female skeleton and bare hands.

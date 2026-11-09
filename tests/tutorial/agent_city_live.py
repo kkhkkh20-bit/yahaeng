@@ -20,7 +20,7 @@ async def main(mobile,url,out):
    await cc.env('dress','alleyGuard');await cc.shot('disguise');await cc.hide('alleyGuard');await cc.shot('hidden-body')
    await c.press('Control','#btnCrouch')
    # Use the actual south stair entrance and ordinary internal staircase.
-   await cc.walk(14.5*48,18.5*48);await cc.walk(14.5*48,16.5*48);await cc.stairs(1,0);await cc.shot('second-floor')
+   await cc.walk(14.5*48,18.5*48);await cc.env('door');await cc.walk(14.5*48,16.5*48);await cc.stairs(1,0);await cc.shot('second-floor')
    target=await q.evaluate('(()=>{const g=__game.S.guards.find(g=>g.target);return{x:g.x,y:g.y,a:g.a}})()')
    import math
    await cc.walk(target['x']-math.cos(target['a'])*40,target['y']-math.sin(target['a'])*40);await c.press('z','#btnAct',lethal=True);await q.wait_for_function('__game.S.guards.find(g=>g.target).state==="DEAD"&&!__game.actionBusy()',timeout=10000);await cc.shot('target-down')
