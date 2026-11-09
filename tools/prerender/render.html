@@ -4,6 +4,7 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { loadModular, colorModular } from './modular_models.js';
+import { updateConceptHead } from './concept_agent.js';
 const modular = new URLSearchParams(location.search).has('modular');
 const RS = 128;  // 렌더 크기 (나중에 64로 줄인다)
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -21,6 +22,7 @@ function renderSprite(cameraDrop = 0, frameScale = 1) {
   // Flat corpses and lowered climbing poses extend below a standing frame.
   // Move the bake camera, then export its ground anchor for runtime placement.
   cam.position.y -= cameraDrop; cam.lookAt(0, CY - cameraDrop, 0); cam.updateMatrixWorld(true);
+  updateConceptHead(model,cam);updateConceptHead(model2,cam);
   renderer.render(scene, cam);
   const ground = new THREE.Vector3().project(cam);
   window.frameGroundY = (1 - (ground.y + 1) / 2) * RS / 2;
@@ -56,6 +58,7 @@ window.__ready = modular ? Promise.resolve().then(() => loadModularLook('hero'))
   });
 }));
 window.boneInfo = () => { renderFrame('Idle', 0, Math.PI / 2, 0); const out = {}; const v = new THREE.Vector3(); for (const n in bones) { bones[n].getWorldPosition(v); out[n] = v.toArray().map(x => Math.round(x)); } return out; };
+window.conceptHeadInfo=()=>{const h=model.userData.conceptHead;return h&&{height:h.height,anchor:h.anchor.toArray(),scale:h.plane.getWorldScale(new THREE.Vector3()).toArray(),position:h.plane.getWorldPosition(new THREE.Vector3()).toArray()}};
 window.poseMetrics = () => {
   const out = {}, v = new THREE.Vector3(); model.updateMatrixWorld(true);
   for (const n of ['Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head', 'LeftArm', 'RightArm', 'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot']) { bones[n].getWorldPosition(v); out[n] = v.toArray(); }
@@ -180,7 +183,7 @@ window.renderFrame = (clip, t, dirA, crouch, hang, hold, relax) => {
   if (hold) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHold = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }  // 두 손 가운데 (상자 자리)
   if (hang != null) { const a = new THREE.Vector3(), b = new THREE.Vector3(); bones.LeftHand.getWorldPosition(a); bones.RightHand.getWorldPosition(b); a.add(b).multiplyScalar(0.5).project(cam); window.lastHand = [(a.x + 1) / 2 * RS, (1 - (a.y + 1) / 2) * RS]; }
   if (clip === 'Death') { bones.Hips.getWorldPosition(hp); bones.Head.getWorldPosition(hd); model.position.set(-(hp.x + hd.x) / 2, 0, -(hp.z + hd.z) / 2); shadow.position.set(0, 1, 0); }
-  renderSprite(modular && clip === 'Death' ? CY : 0, modular ? (clip === 'Death' || clip === 'Punch' || hang != null ? 1.6 : window.spritePadding || 1) : 1);
+  renderSprite(modular && clip === 'Death' ? CY : 0, modular ? (clip === 'Death' || clip === 'Punch' || hang != null ? 1.6 : (window.spritePadding || 1)*(model.userData.conceptHead&&crouch?1.2:1)) : 1);
   return renderer.domElement.toDataURL('image/png');
 };
 
@@ -320,8 +323,9 @@ window.renderFace = (side, size) => {
   aimB(bones.Spine, bones.Spine1, V3(0, 1, 0.02)); aimB(bones.Neck, bones.Head, V3(0, 1, 0.04));
   const h = new THREE.Vector3(); bones.Head.getWorldPosition(h); const top = new THREE.Vector3(); (bones.HeadTop_End || bones.Head).getWorldPosition(top);
   const hh = Math.max(20, top.y - h.y), c = h.clone().add(V3(0, hh * 0.15, 0)), d = hh * 6.4, sd = side || 0.42;
+  if(model.userData.conceptHead){const h=model.userData.conceptHead;c.copy(h.bones.Head.localToWorld(h.anchor.clone()));}
   fcam.position.set(c.x + Math.sin(sd) * d, c.y + hh * 0.6, c.z + Math.cos(sd) * d); fcam.lookAt(c.x, c.y - hh * 0.2, c.z); fcam.updateProjectionMatrix();
-  shadow.visible = false; renderer.render(scene, fcam); shadow.visible = true;
+  shadow.visible = false;updateConceptHead(model,fcam);updateConceptHead(model2,fcam); renderer.render(scene, fcam); shadow.visible = true;
   const url = renderer.domElement.toDataURL('image/png'); renderer.setSize(RS, RS); return url;
 };
 window.boneNames = () => Object.keys(bones);

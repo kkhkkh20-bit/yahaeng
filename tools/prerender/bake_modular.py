@@ -39,20 +39,23 @@ RECIPES = {
  'kid': ('male', BODIES['kid'], ['idle', 'walk', 'run', 'crouch', 'idleC', 'talk']),
  'heroAgent': ('heroAgent', None, None),
  'heroAgentCrew': ('heroAgentCrew', None, None), 'heroAgentWorker': ('heroAgentWorker', None, None),
+ 'heroAgentLid': ('heroAgent', None, ['openBin']),
+ 'heroAgentCrewLid': ('heroAgentCrew', None, ['openBin']),
+ 'heroAgentWorkerLid': ('heroAgentWorker', None, ['openBin']),
  'heroLid': ('hero', None, ['openBin']), 'heroSuitLid': ('heroSuit', None, ['openBin']),
  'heroWorkerLid': ('heroWorker', None, ['openBin']), 'heroCrewLid': ('heroCrew', None, ['openBin']),
 }
 for bn,(look,body,_) in list(RECIPES.items()):
  if bn!='kid' and not bn.endswith('Lid'):
   RECIPES[bn+'Motion']=(look,body,['vaultPass','handleLift','handledLift'] if bn.startswith('hero') else ['handledLift'])
-LOOK_MAP = {'ninja': 'hero', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
+LOOK_MAP = {'ninja': 'heroAgent', 'noble': 'suit', 'old': 'old', 'doc': 'suit',
             'staff': 'worker', 'courier': 'helmet', 'waiter': 'suit', 'cater': 'worker', 'strip': 'male'}
 LOOK_MAP.update({f'civ{i}': ['male', 'fBob', 'male', 'fLong', 'male', 'coat', 'fTail', 'pack', 'old', 'male'][i] for i in range(10)})
 # Widen crowded civilian frames; exported scale/ground anchors retain world size.
 FRAME_PADDING = {name:1.4 for name in ['big','bossBig','coat','pack','helmet','male','suit','worker']} | {'old':1.6}
 FRAME_PADDING.update({'oldMotion':1.5,'packMotion':1.2})
-PLAYER_MAP = {'crew': 'heroCrew', 'staff': 'heroWorker', 'courier': 'heroWorker',
-              'waiter': 'heroSuit', 'cater': 'heroWorker'}
+PLAYER_MAP = {'crew': 'heroAgentCrew', 'staff': 'heroAgentWorker', 'courier': 'heroAgentWorker',
+              'waiter': 'heroAgent', 'cater': 'heroAgentWorker'}
 class QuietHandler(SimpleHTTPRequestHandler):
  def log_message(self, *args): pass
 
@@ -79,6 +82,10 @@ async def main():
     await page.evaluate('(b)=>setBody(b)',body)
     await page.evaluate('(n)=>window.spritePadding=n',FRAME_PADDING.get(bn,1))
     await page.evaluate('(c)=>setTex(c)',KEY)
+    if '--faces-only' in sys.argv:
+     face=await page.evaluate('renderFace(0.42,256)')
+     Image.open(io.BytesIO(base64.b64decode(face.split(',')[1]))).convert('RGBA').save(OUT/f'face_{bn}.webp','WEBP',lossless=True,method=6)
+     print(bn,'portrait rebuilt',flush=True);continue
     anims=[a for a in ANIMS if (names is None or a[0] in names) and (a[0]!='openBin' or bn.endswith('Lid')) and (a[0] not in ['vaultPass','handleLift','handledLift'] or bn.endswith('Motion'))]
     cmap={};col=0
     for a in anims:cmap[a[0]]=[col,len(a[2])];col+=len(a[2])

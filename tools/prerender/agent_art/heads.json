@@ -1,0 +1,129 @@
+{
+  "origin": "Original generated pixel head sheet derived from the user-approved female agent turnaround",
+  "approvedReference": "docs/world-polish-v240/hero-turnaround.webp",
+  "sourceSha256": "573026519fae301a845970fd4388cd99fde87ec42c16432423c183d0ea1e1646",
+  "directions": [
+    "E",
+    "SE",
+    "S",
+    "SW",
+    "W",
+    "NW",
+    "N",
+    "NE"
+  ],
+  "frames": [
+    {
+      "rect": [
+        0,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        20
+      ]
+    },
+    {
+      "rect": [
+        24,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        20
+      ]
+    },
+    {
+      "rect": [
+        48,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        19
+      ]
+    },
+    {
+      "rect": [
+        72,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        19
+      ]
+    },
+    {
+      "rect": [
+        96,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        20
+      ]
+    },
+    {
+      "rect": [
+        120,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        19
+      ]
+    },
+    {
+      "rect": [
+        144,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        20
+      ]
+    },
+    {
+      "rect": [
+        168,
+        0,
+        24,
+        24
+      ],
+      "visible": [
+        2,
+        2,
+        20,
+        20
+      ]
+    }
+  ]
+}

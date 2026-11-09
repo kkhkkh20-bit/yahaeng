@@ -31,9 +31,11 @@ def reaction():return [('stabbed',25,False,lambda t,a:pair('stab',t*3,a,'b')),('
 async def main():
  selected=next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--only=')),HERO+['key']+[k for k in RECIPES if not k.startswith('hero') and not k.endswith(('Motion','Lid')) and k not in ['kid','key']])
  m=json.loads((O/'pr_meta.json').read_text());m.setdefault('fluidBodies',{});jobs=[]
+ groups=next((x.split('=',1)[1].split(',') for x in sys.argv if x.startswith('--groups=')),['Gait','Action','Combat'])
+ if set(groups)-{'Gait','Action','Combat'}:raise ValueError('Unknown motion group')
  for body in selected:
   look,shape,_=RECIPES[body]
-  for group in (['Gait','Action','Combat'] if body in HERO else ['React']):jobs.append((body,group,look,shape))
+  for group in (groups if body in HERO else ['React']):jobs.append((body,group,look,shape))
  server=ThreadingHTTPServer(('127.0.0.1',0),partial(QuietHandler,directory=str(H)));threading.Thread(target=server.serve_forever,daemon=True).start()
  try:
   async with async_playwright()as p:
@@ -66,7 +68,7 @@ async def main():
     image=Image.open(io.BytesIO(base64.b64decode(data.pop('png').split(',')[1]))).convert('RGBA');out=Image.new('RGBA',image.size)
     for row in range(8):
      for i in range(col):out.paste(outline(image.crop((i*FR,row*FR,(i+1)*FR,(row+1)*FR))),(i*FR,row*FR))
-    out=out.quantize(colors=64 if body=='heroAgent' else 192,method=Image.FASTOCTREE).convert('RGBA');name=body+group+'Motion';path=O/f'body_{name}.webp';out.save(path,'WEBP',lossless=True,method=6)
+    out=out.quantize(colors=64 if body.startswith('heroAgent') else 192,method=Image.FASTOCTREE).convert('RGBA');name=body+group+'Motion';path=O/f'body_{name}.webp';out.save(path,'WEBP',lossless=True,method=6)
     meta={'cols':col,'anims':anims,'grounds':data['grounds'],'scales':data['scales'],'fluid':True,'loops':{n:PERIODS[n] for n,_,loop,_ in defs if loop},'baseBody':body}
     for n,points in data['hands'].items():meta[n+'Hands']=points;meta[n+'Feet']=data['feet'][n]
     m['bodies'][name]=meta;m['fluidBodies'].setdefault(body,{})[group.lower()]=name

@@ -32,7 +32,7 @@ function drawFace(cv, sp) {
     // The same authored model supplies the portrait and every in-game pose.
     // Keep the existing dialogue box/portrait position; retain face detail.
     fc.fillStyle = '#11171c'; fc.fillRect(0, 0, W, H);
-    fc.imageSmoothingEnabled = true;
+    fc.imageSmoothingEnabled = !bn?.startsWith('heroAgent');
     fc.drawImage(sh, col * fr, 0, fr, fr, 0, 0, W, H);
     return true;
   }

@@ -9,7 +9,7 @@ async def main():
  meta=json.loads((ROOT/'build/pr/pr_meta.json').read_text())
  assert meta['style']=='modular'
  required={'idle','walk','run','sneak','crouch','hang','carry','carried','grab','held','climb','vault','lift','lifted','stab','stabbed','choke','choked','hold','hug','hugStep'}
- for body in ['hero','heroSuit','heroWorker','heroCrew']:
+ for body in ['hero','heroSuit','heroWorker','heroCrew','heroAgent','heroAgentCrew','heroAgentWorker']:
   bm=meta['bodies'][body];assert required<=bm['anims'].keys(),body
   im=Image.open(ROOT/f'build/pr/body_{body}.webp').convert('RGBA');fr=meta['fr']
   assert im.size==(bm['cols']*fr,8*fr)
@@ -40,9 +40,9 @@ async def main():
   chunks=await pg.evaluate("""()=>Object.values(window.__game.prVar).flatMap(sh=>(sh.parts||[]).filter(Boolean)).map(c=>c.width)""")
   assert chunks and max(chunks)<=1024,chunks
   # Palette compaction must preserve neutral pixels, semi-transparent edges,
-  # all five key colors, and the previous Float32 rounding behaviour.
-  source=(ROOT/'src/js/15_graphics.js').read_text()
-  functions=source[source.index('function prPrep(img) {'):source.index('const prSplit =')]
+  # all five key colors, Float32 skin/hair values and stepped cloth shading.
+  source=(ROOT/'src/js/graphics/sprite_sheets.js').read_text()
+  functions=source[source.index('const prClothShade='):source.index('let prBase =')]+'\n'+source[source.index('function prPrep(img) {'):source.index('const prSplit =')]
   parity=await pg.evaluate('''(functions)=>{
    const hexRgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)).join(',');
    return new Function('hexRgb',functions+`
@@ -54,7 +54,7 @@ async def main():
     const expected=cx.getImageData(0,0,32,16).data,P=pal.map(h=>hexRgb(h).split(',').map(Number)),K=[[1,0,0],[0,1,0],[0,0,1],[1,0,1],[0,1,1]];
     for(let j=0;j<expected.length;j+=4){const rgb=Array.from(expected.slice(j,j+3)),mx=Math.max(...rgb),ch=mx-Math.min(...rgb);if(!expected[j+3]||ch<20||!mx)continue;
      let k=0,bd=9;K.forEach((v,i)=>{const q=v.reduce((q,x,c)=>q+(rgb[c]/mx-x)**2,0);if(q<bd){bd=q;k=i}});
-     const wt=Math.fround(Math.min(1,(ch-20)/60)),s=Math.fround(Math.min(1.35,mx/255*1.25));for(let c=0;c<3;c++)expected[j+c]=P[k][c]*s*wt+rgb[c]*(1-wt);
+     const wt=Math.fround(Math.min(1,(ch-20)/60)),s=Math.fround(Math.min(1.35,mx/255*1.25));for(let c=0;c<3;c++)expected[j+c]=P[k][c]*(k<2?s:Math.max(.2,Math.min(1.2,Math.round(s*5)/5)))*wt+rgb[c]*(1-wt);
     }
     // Canvas stores premultiplied alpha; read both paths through a canvas.
     const ref=cx.createImageData(32,16);ref.data.set(expected);cx.putImageData(ref,0,0);const roundtrip=cx.getImageData(0,0,32,16).data;
