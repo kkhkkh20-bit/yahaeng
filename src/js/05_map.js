@@ -36,7 +36,7 @@ function buildMap(st) {
     // 평면이 자동으로 짜이는 건물: kind 'villa'(빌라) · 'house'(단독) · 'shop'(상가, use = 층별 용도, signs = 간판)
     villa: (x0, y0, x1, y1, h, o = {}) => { const b = { x0, y0, x1, y1, h, plan: true, kind: o.kind || 'villa', piloti: !!o.piloti, floorsUse: o.use, signs: o.signs, story: o.story, name: o.name, glass: !!o.glass, plateName: o.plate, backDoor: !!o.back }; const bi = BLD.length; BLD.push(b); PLANS[bi] = [planInterior(G, b, bi, 0)]; return bi; },
     car: (x, y, c) => { m.set(x, y, 'A'); m.set(x, y + 1, 'A'); CARS.push([x, y, c || 0]); },
-    roof: (x0, y0, x1, y1, h) => BLD.push({ x0, y0, x1, y1, h }),
+    roof: (x0, y0, x1, y1, h, o={}) => BLD.push({ x0, y0, x1, y1, h, ...o }),
     vacant: (x0, y0, x1, y1, kind, name) => { m.fill(x0, y0, x1, y1, kind === 'ruin' ? 'r' : ','); BLD.push({ x0, y0, x1, y1, h: 0, vacant: kind, name, plate: name }); },
     pipe: (x, y) => PIPES.push([x, y]),
     pole: (x, y, h) => { m.set(x, y, 'P'); POLES.push([x, y, h || 2]); },

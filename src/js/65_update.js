@@ -68,7 +68,7 @@ function update(dt, present=true) {
   S.stones = S.stones.filter(s => s.t < s.dur + 0.6);
   updateAssassinPractice(); updateEffects();
   for (const f of S.fx) f.t += dt; S.fx = S.fx.filter(f => f.t < 0.45);
-  for (const l of S.lures) if (!l.landed) { l.t += dt; if (l.t > 0.35) { l.landed = true; play('click', 0.2); } }
+  for (const l of S.lures) if (!l.landed) { l.t += dt; if (l.t > 0.35) { l.landed = true;l.landedAt=S.t; play('click', 0.12); } }
   for (const k of S.kunais) { k.t += dt; if (k.t >= k.dur && !k.done) { k.done = true; kunaiHit(k); } }
   S.kunais = S.kunais.filter(k => !k.done);
   for (const n of S.noises) n.t += dt;

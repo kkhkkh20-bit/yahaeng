@@ -31,6 +31,8 @@ function drawHeldBox(x, y, a, s, front) {
   ctx.fillStyle = '#e8d9b8'; ctx.fillRect(-1.2 * s, -h / 2, 2.4 * s, h); ctx.restore();
 }
 function guardAnim(g) {
+  if(g.act==='pickup')return 'workLow';
+  if(g.act==='smoke')return 'workHigh';
   if (g.state === 'BODY' && g.bodyWork) return 'crouch';
   if (g.swingT > 0) return 'punch';
   if ((g.drinkT > 0 || g.mealT > 0 || vipRoutine(g)) && PR && PR.anims.talk) return 'talk';

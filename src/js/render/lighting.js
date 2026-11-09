@@ -1,6 +1,6 @@
 const LIGHTQ = 4, lightCache = {};
 function lightMap(key, lamps) {
-  const sig = (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
+  const sig = (officeReady()?'o':'') + (tactical ? 't' : '') + lamps.map(l => l.flk ? '' : lampOn(l) ? '1' : '0').join('');
   let lc = lightCache[key];
   if (lc && lc.sig === sig) return lc.c;
   if (!lc) { lc = lightCache[key] = { c: document.createElement('canvas') }; lc.c.width = Math.ceil(MW * TILE / LIGHTQ); lc.c.height = Math.ceil(MH * TILE / LIGHTQ); }
@@ -12,6 +12,36 @@ function lampLight(x, l, flick) {  // 벽에 가린 빛(다각형) 안을 둥근
   x.save(); x.beginPath(); for (let i = 0; i < l.poly.length; i += 2) i ? x.lineTo(l.poly[i], l.poly[i + 1]) : x.moveTo(l.poly[i], l.poly[i + 1]); x.closePath(); x.clip();
   const gr = x.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r * flick); gr.addColorStop(0, 'rgba(0,0,0,.9)'); gr.addColorStop(0.55, 'rgba(0,0,0,.76)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
   x.fillStyle = gr; x.fillRect(l.x - l.r, l.y - l.r, l.r * 2, l.r * 2); x.restore();
+  lightReceivingSurfaces(x,l,flick);
+}
+// Ground rays stop at the wall. Its near face, and an opaque cabinet's own
+// pixels, still receive light. These masks never reveal the floor behind them.
+function lightReceivingSurfaces(c,l,flick){
+ if(l.outdoor||!officeReady())return;
+ const reach=l.r*flick,bi=bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),b=BLD[bi];if(!b)return;
+ const visible=(x,y)=>dist(l.x,l.y,x,y)<reach&&los(l.x,l.y,x,y);
+ const strength=(x,y)=>{const d=dist(l.x,l.y,x,y)/reach;return d<.55?.9-d/.55*.14:Math.max(0,.76*(1-d)/.45);};
+ c.save();
+ for(let ty=b.y0;ty<=b.y1;ty++)for(let tx=b.x0;tx<=b.x1;tx++){
+  if(G[ty]?.[tx]!=='#')continue;
+  const x=tx*TILE,y=ty*TILE;
+  for(const [nx,ny]of [[-1,0],[1,0],[0,-1],[0,1]]){
+   const px=x+TILE/2+nx*(TILE/2+2),py=y+TILE/2+ny*(TILE/2+2);
+   if(opaqueAt(tx+nx,ty+ny)||!visible(px,py))continue;
+   c.fillStyle=`rgba(0,0,0,${strength(px,py)})`;
+   if(ny===1)c.fillRect(x,y+12,TILE,TILE-12);
+   else if(ny===-1)c.fillRect(x,y,TILE,12);
+   else c.fillRect(nx<0?x:x+TILE-18,y,18,TILE);
+  }
+ }
+ for(const f of FURN){
+  if(flOf(f)!==flOf(l)||!FURN_TALL.has(f.t)||bldAt(f.x,f.y)!==bi)continue;
+  let amount=0;
+  for(const [px,py]of [[f.x*TILE-2,(f.y+f.h/2)*TILE],[(f.x+f.w)*TILE+2,(f.y+f.h/2)*TILE],[(f.x+f.w/2)*TILE,f.y*TILE-2],[(f.x+f.w/2)*TILE,(f.y+f.h)*TILE+2]])if(visible(px,py))amount=Math.max(amount,strength(px,py));
+  if(!amount)continue;
+  c.globalAlpha=amount;drawFurnArt(c,f);c.globalAlpha=1;
+ }
+ c.restore();
 }
 function darkPass(sc, lamps, clip, key) {
   // Lighting is a soft mask: half CSS resolution, independent of Retina DPR.

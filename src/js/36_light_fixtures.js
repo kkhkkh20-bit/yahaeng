@@ -36,12 +36,31 @@ function roadsideLampSite(l,used) {
   // 작은 지도에 보도 재질이 없어도 지지대는 실제 가로등으로 표현한다.
   return sites[0] || {kind:'street',ax:l.x,ay:l.y,nx:0,ny:1,x:l.x,y:l.y,height:46};
 }
-function mountOutdoorLamps(lamps) {
+// Fill long unlit approaches with real, individually switchable wall lights.
+// Stable site IDs make this safe on checkpoint restore, including lights left off.
+function completeStreetLighting(lamps,sites) {
+  if(!groundedWorld()||STAGE.agentStudy)return;
+  const ids=new Set(lamps.map(l=>l.streetSite).filter(Boolean));
+  let added=0;const limit=Math.min(36,Math.ceil(MW*MH/50));
+  for(const p of sites) {
+    if((p.nx?p.ty:p.tx)%3!==1)continue;
+    const id=[p.b,p.tx,p.ty,p.nx,p.ny].join(':');if(ids.has(id))continue;
+    if(lamps.some(l=>l.outdoor&&!flOf(l)&&dist(l.x,l.y,p.x,p.y)<190&&los(l.x,l.y,p.x,p.y)))continue;
+    lamps.push({x:p.x,y:p.y,r:240,outdoor:true,fl:0,poly:null,broken:false,
+      col:'255,227,179',streetSite:id,origin:{x:p.x,y:p.y,fl:0},mountVersion:1,mount:{...p},
+      control:{x:p.x,y:p.y,fl:0,z:0}});
+    ids.add(id);if(++added>=limit)break;
+  }
+}
+function mountOutdoorLamps(lamps,fill=false) {
   const sites=wallLampSites(),used=POLES.map(([x,y])=>({x:tc(x),y:tc(y)}));let changed=0;
+  const before=lamps.length;if(fill)completeStreetLighting(lamps,sites);changed+=lamps.length-before;
   for(const l of lamps) {
     if(!l.outdoor || l.hearth || flOf(l))continue;
     if(l.mountVersion===1&&l.mount){used.push({x:l.mount.ax,y:l.mount.ay});continue;}
     l.origin=l.origin||{x:l.x,y:l.y,fl:l.fl||0};
+    const authored=l.streetSite&&sites.find(p=>[p.b,p.tx,p.ty,p.nx,p.ny].join(':')===l.streetSite);
+    if(authored){l.mount={...authored};l.x=authored.x;l.y=authored.y;l.control={x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:authored.ax,y:authored.ay});continue;}
     if(l.pole) {
       const p=POLES.find(([x,y])=>Math.abs(tc(x)-l.x)<1&&Math.abs(tc(y)-l.y)<TILE);
       if(!p)continue;
@@ -60,7 +79,7 @@ function mountOutdoorLamps(lamps) {
   }return changed;
 }
 function syncOutdoorLamps() {
-  const L0=CUR_F;setLayer(0);const n=mountOutdoorLamps(S.lamps);
+  const L0=CUR_F;setLayer(0);const n=mountOutdoorLamps(S.lamps,!S.streetLightVersion);S.streetLightVersion=1;
   if(n) {
     for(const l of S.lamps)if(l.outdoor&&!flOf(l)) {
       rebuildLampPolygon(l);

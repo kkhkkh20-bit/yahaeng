@@ -138,7 +138,7 @@ function updateGuard(g, dt) {
           if (g.actT <= 0) { g.act = null; g.bubble = null; g.idleT = rnd(10, 22); }
         } else if (!S.alevel && !g.target && !g.elite && !g.dog && !g.still) {
           g.idleT = (g.idleT == null ? rnd(4, 14) : g.idleT) - dt;
-          if (g.idleT <= 0) { g.act = Math.random() < 0.6 ? 'smoke' : 'yawn'; g.actT = g.act === 'smoke' ? rnd(5, 8) : rnd(1.6, 2.4); }
+          if (g.idleT <= 0) { g.act = g.smoker&&Math.random() < 0.6 ? 'smoke' : 'yawn'; g.actT = g.act === 'smoke' ? rnd(5, 8) : rnd(1.6, 2.4); }
         }
         if (g.post != null) {
           g.want = g.act === 'smoke' ? g.post + 0.5 : g.post;
@@ -163,9 +163,10 @@ function updateGuard(g, dt) {
       if (!l) { g.state = 'RETURN'; break; }
       if (g.lureT == null) {
         if (!g.path) pathTo(g, l.x, l.y);
-        if (moveAlong(g, SPD.gSusp, dt) || dist(g.x, g.y, l.x, l.y) < 30) { g.lureT = 3.4; g.act = 'pickup'; g.path = null; }
+        if (moveAlong(g, SPD.gSusp, dt) || dist(g.x, g.y, l.x, l.y) < 30) { g.lureT = 4.2; g.act = 'pickup'; g.path = null;g.moving=false; }
       } else {
-        g.want = Math.atan2(l.y - g.y, l.x - g.x); g.bubble = '담배?'; g.lureT -= dt;
+        g.want = Math.atan2(l.y - g.y, l.x - g.x); g.bubble = null; g.lureT -= dt;
+        if(g.lureT<3.5)g.act='smoke';
         if (g.lureT <= 0) { S.lures = S.lures.filter(o => o !== l); g.lure = null; g.act = null; g.bubble = null; g.state = 'RETURN'; g.path = null; }
       }
       break;

@@ -64,7 +64,7 @@ function actRadio(pt){
  if(!groundSolidP(Math.floor(at.x/TILE),Math.floor(at.y/TILE)))for(const g of S.guards.filter(g=>g.radio&&!g.civ&&!g.dog&&!g.target&&!g.elite&&!g.doomed&&!g.climb&&flOf(g)===flOf(P)&&!(g.z||0)&&['PATROL','RETURN'].includes(g.state)&&dist(g.x,g.y,at.x,at.y)<420).sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))){
   const route=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(at.x/TILE),Math.floor(at.y/TILE),npcRouteSolid(g));if(route.length||dist(g.x,g.y,at.x,at.y)<TILE){chosen=g;break;}
  }
- if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';gsay(chosen,'통로 점검 지시 확인. 이동한다.',2.4);P.radioCharges--;S.radioReadyAt=S.t+30;S.throwT=S.t+.7;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
+ if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';P.radioCall={t:S.t,target:chosen.id};after(.22,()=>{if(!['DEAD','KO'].includes(chosen.state)){gsay(chosen,'확인. 그쪽으로 갈게.',2);play('call',.16);}});P.radioCharges--;S.radioReadyAt=S.t+30;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
  setLayer(f0);return !!chosen;
 }
 function actHack(){
