@@ -69,6 +69,21 @@ function studyCellImage(b,tx,fl,w){
  }
  studyWindowTiles.set(key,c);return c;
 }
+function drawStudySign(b,a){
+ const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
+ const f=studyArt.frames.signBoard.rect,e=6,edge=9;
+ ctx.save();ctx.imageSmoothingEnabled=false;ctx.fillStyle='#17252c';ctx.fillRect(x,y,w,h);
+ // The purchased empty board supplies its original corners and steel rim.
+ // No lettering or pictures from the Japanese advertisements are imported.
+ const xs=[[0,e,0,edge],[e,f[2]-e*2,edge,w-edge*2],[f[2]-e,e,w-edge,edge]],ys=[[0,e,0,edge],[e,f[3]-e*2,edge,h-edge*2],[f[3]-e,e,h-edge,edge]];
+ for(const [sx,sw,dx,dw]of xs)for(const [sy,sh,dy,dh]of ys)ctx.drawImage(studyAtlas,f[0]+sx,f[1]+sy,sw,sh,x+dx,y+dy,dw,dh);
+ const lines=a.lines||[],sub=a.sub?18:0,size=Math.min(30,(h-24-sub)/(lines.length*1.25),(w-24)/Math.max(...lines.map(s=>s.length)));
+ const step=size*1.25,total=step*lines.length+sub;
+ ctx.font=uiFont(size,700);ctx.fillStyle='#e8e3cf';ctx.textAlign='center';ctx.textBaseline='middle';
+ lines.forEach((line,i)=>ctx.fillText(line,x+w/2,y+(h-total)/2+step*(i+.5),w-24));
+ if(a.sub){ctx.font=uiFont(12);ctx.fillStyle='#a5b9bb';ctx.fillText(a.sub,x+w/2,y+(h+total)/2-8,w-24);}
+ ctx.restore();
+}
 function drawStudyFacade(b){
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE,bi=BLD.indexOf(b),spec=STAGE.referenceBuildings[bi];
  if(!spec)return;
@@ -84,7 +99,7 @@ function drawStudyFacade(b){
  for(let tx=b.x0;tx<=b.x1;tx++){const l=b.fl?.[tx-b.x0]??.2;ctx.fillStyle=`rgba(4,8,22,${.22*(1-clamp(l,0,1))})`;ctx.fillRect(tx*TILE,y,TILE,h);}
  for(let fl=1;fl<b.fh;fl+=3)studyDraw(ctx,'aircon',x+8,(b.y1-fl)*TILE+10,32,32);
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
- const a=spec.ad;if(a)studyDraw(ctx,a.art,(b.x0+a.x)*TILE,(b.y1-a.fl)*TILE,a.w*TILE,a.h*TILE);
+ if(spec.ad)drawStudySign(b,spec.ad);
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){

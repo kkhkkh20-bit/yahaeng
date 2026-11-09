@@ -11,7 +11,7 @@ im = Image.open(args.source).convert('RGBA')
 rects = {
     'rail': (1024,304,1120,320), 'ivy': (704,0,768,128),
     'aircon': (768,256,800,288), 'antenna': (960,0,992,64),
-'gateSign': (864,512,928,544),
+    'signBoard': (512,0,608,96),
     'bridgeDeck': (192,0,224,32),
     'stairHouse': (800,32,832,64), 'wallBlue': (548,424,568,440),
     'wallTan': (292,328,304,336), 'wallGreen': (420,310,444,318),
@@ -21,8 +21,6 @@ rects = {
     'frontBrick': (288,320,384,480), 'frontGreen': (416,288,512,480),
     'frontGlass': (512,96,608,224), 'frontWood': (608,96,704,224),
     'frontSilver': (608,384,704,480), 'frontRetail': (512,288,608,384),
-    'billboardBeer': (256,224,416,320), 'billboardCrab': (768,320,896,352),
-    'billboardOctopus': (928,320,960,384), 'billboardRunner': (864,224,928,288),
     'pavement': (64,64,96,96), 'alleyBrick': (0,64,32,96),
     'doorPanel': (704,448,736,480), 'serviceFan': (864,0,896,64),
     'curbN':(0,32,32,64), 'curbS':(0,128,32,160),
