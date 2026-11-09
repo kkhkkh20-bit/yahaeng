@@ -18010,6 +18010,11 @@ window.addEventListener('keydown', e => {
   const overlay = document.querySelector('.screen:not([hidden])');
   if(e.code==='F9'&&!e.repeat&&S&&running&&cpReady()&&(!overlay||['pause','end'].includes(overlay.id))&&!S.keypad){e.preventDefault();loadCheckpoint();return;}
   if (overlay) {
+    if(overlay.id==='brief'&&e.code==='Space'){
+      e.preventDefault();
+      const go=$('btnBrGo');if(!e.repeat&&!go.disabled&&!go.hidden)go.click();
+      return;
+    }
     if(overlay.id==='skillScreen'&&handleSkillDetailKey(e))return;
     if (e.code === 'Escape') {
       const back = { pause: 'btnResume', brief: STAGE?.episode ? null : 'btnBrBack', end: 'btnMenu', skillScreen:'btnSkillsBack' }[overlay.id];
