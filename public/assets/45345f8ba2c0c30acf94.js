@@ -6381,7 +6381,7 @@ function cautiousSoundPoint(g,n){
   }return{x:g.x,y:g.y,fl:flOf(g),z:g.z||0};
 }
 function coverSoundPoint(g,n){
-  const P=S.player,candidates=[];const solid=g.z?solidFor(g.z):solidAt;
+  const P=S.player,candidates=[],solid=npcRouteSolid(g);
   // Use reachable stand positions around the actual wall end, within pulling contact.
   for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){
     const tx=Math.floor(n.x/TILE)+dx,ty=Math.floor(n.y/TILE)+dy;if(!inMap(tx,ty)||solid(tx,ty))continue;
@@ -6389,7 +6389,8 @@ function coverSoundPoint(g,n){
     const path=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),tx,ty,solid);if(!path.length&&(Math.floor(g.x/TILE)!==tx||Math.floor(g.y/TILE)!==ty))continue;
     candidates.push({...at,score:path.length*TILE+dist(g.x,g.y,at.x,at.y)*.1+Math.abs(route.length-52)});
   }
-  candidates.sort((a,b)=>a.score-b.score);return candidates[0]||cautiousSoundPoint(g,n);
+  // If no contact point is reachable, keep investigating the original sound.
+  candidates.sort((a,b)=>a.score-b.score);return candidates[0]||null;
 }
 function respondToDecoy(heard,n){
   const active=g=>g.state==='SUSPICIOUS'&&g.why==='heard'&&g.poi&&dist(g.poi.x,g.poi.y,n.x,n.y)<80;
