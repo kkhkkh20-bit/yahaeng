@@ -235,7 +235,7 @@ function draw() {
   };
   // 높이감: 옥상·전깃줄 위에 있으면 아래 거리가 한층 어둡고 푸르게 가라앉는다 (옥상은 그 위에 밝게 그려진다). 오르내릴 때는 서서히
   if (!tactical) { const el = P.wire ? Math.max(1, P.z) : P.jump ? Math.max(P.jump.z1 || 0, P.z || 0) : P.trav ? (P.trav.elev || (P.z || 0)) : (P.z || 0);
-    const tgt = el > 0 ? Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
+    const tgt = el > 0 ? STAGE.agentStudy ? .16 : Math.min(0.42, 0.22 + el * 0.08) : 0; S.hazeK = (S.hazeK || 0) + (tgt - (S.hazeK || 0)) * 0.12;
     if (S.hazeK > 0.01) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = `rgba(4,8,20,${S.hazeK})`; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.restore(); } }
   PM('haze');
   for (const g of S.guards) {

@@ -86,10 +86,10 @@ function collideLightPosts(o,r,solid) {
 function drawOutdoorLampFixtures() {
   for(const l of S.lamps) {
     const m=l.mount;if(!l.outdoor||flOf(l)||!m||!inView(m.ax,m.ay,150))continue;
-    const on=lampOn(l),x=l.x,y=l.y-(m.kind==='street'?82:m.height);
+    const on=lampOn(l),pixelPost=STAGE.agentStudy&&studyReady()&&m.kind==='street',x=pixelPost?m.ax+12:l.x,y=pixelPost?m.ay-79:l.y-(m.kind==='street'?82:m.height);
     ctx.save();
     const art=m.kind==='street'?'street-'+lightArtRotation(m.nx,m.ny):m.kind==='wall'?'wall-'+((lightArtRotation(m.nx,m.ny)+2)%4):null;
-    const baked=drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
+    const baked=STAGE.agentStudy&&drawStudyStreetLamp(l,m,on)||drawCityWallLamp(l,m,on)||m.kind==='wall'&&roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.ax,m.ay,on?1:.75,.8)||art&&drawLightArt(art,m.ax,m.ay-(m.kind==='wall'?m.height:0),on?1:.65);
     if(!baked){
     if(m.kind==='street') {
       ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(m.ax+4,m.ay+4,10,5,0,0,TAU);ctx.fill();

@@ -25,7 +25,13 @@ rects = {
     'billboardOctopus': (928,320,960,384), 'billboardRunner': (864,224,928,288),
     'pavement': (64,64,96,96), 'alleyBrick': (0,64,32,96),
     'doorPanel': (704,448,736,480), 'serviceFan': (864,0,896,64),
-    'roofMetal': (2624,192,2656,224), 'roofStone': (2016,32,2048,64)
+    'curbN':(0,32,32,64), 'curbS':(0,128,32,160),
+    'curbW':(32,64,64,96), 'curbE':(96,64,128,96),
+    'curbNW':(32,32,64,64), 'curbNE':(96,32,128,64),
+    'curbSW':(32,128,64,160), 'curbSE':(96,128,128,160),
+    'streetPost':(1024,0,1056,64), 'streetBulb':(1024,64,1056,80),
+    'shopShutter':(512,224,608,256),
+    'roofMetal': (2624,192,2656,224), 'roofStone': (2016,192,2048,224)
 
 }
 out = ROOT/'src/art/city-study'; out.mkdir(exist_ok=True)

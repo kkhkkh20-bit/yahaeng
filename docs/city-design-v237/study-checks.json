@@ -1,0 +1,24 @@
+{
+  "frames": 16224,
+  "artFrames": 41,
+  "isolation": true,
+  "stage": "agentCity",
+  "route": [
+    "tB",
+    "p0",
+    "e2",
+    "m2",
+    "m4",
+    "m6",
+    "m7",
+    "m5",
+    "n1"
+  ],
+  "buildings": 8,
+  "flights": 42,
+  "apertures": 181,
+  "bridge": 9,
+  "contacts": 408,
+  "cars": 8,
+  "key": "agent@heroAgent"
+}

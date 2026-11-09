@@ -55,11 +55,14 @@ function studyCellImage(b,tx,fl,w){
  const{ s,row }=studySourceRow(b,fl),col=((tx-b.x0-1)%3+3)%3,f=studyArt.frames[s.front].rect;
  const state=w?winSt(w):'closed',lit=w&&windowRoomLit(w),key=s.front+':'+row+':'+col+':'+state+':'+!!lit;
  if(studyWindowTiles.has(key))return studyWindowTiles.get(key);
- const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(studyAtlas,f[0]+col*32,f[1]+row*32,32,32,0,0,32,32);
+ const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d');q.imageSmoothingEnabled=false;
+ // Ground-storey wooden doors in the source are scenery, not extra entrances.
+ const shutter=s.front==='frontWood'&&!fl?studyArt.frames.shopShutter.rect:null;
+ q.drawImage(studyAtlas,shutter?shutter[0]+col*32:f[0]+col*32,shutter?shutter[1]:f[1]+row*32,32,32,0,0,32,32);
  if(w){
   const im=q.getImageData(0,0,32,32),d=im.data;
   // Tint only source glass. Original mullions, transoms, posters and sills stay.
-  for(let y=3;y<30;y++)for(let x=2;x<30;x++){const p=(y*32+x)*4,r=d[p],g=d[p+1],bl=d[p+2];if(bl>r*1.18&&bl>g*1.07){if(state==='open'&&x>16){d[p]=14;d[p+1]=23;d[p+2]=35;}else if(lit){const v=(r+g+bl)/3;d[p]=Math.min(225,v*1.22);d[p+1]=Math.min(209,v*1.12);d[p+2]=Math.min(171,v*.88);}}}
+  for(let y=3;y<30;y++)for(let x=2;x<30;x++){const p=(y*32+x)*4,r=d[p],g=d[p+1],bl=d[p+2];if(bl>r*1.18&&bl>g*1.07){if(state==='open'&&x>16){d[p]=14;d[p+1]=23;d[p+2]=35;}else if(lit){const v=(r+g+bl)/3;d[p]=Math.min(205,v*1.08);d[p+1]=Math.min(202,v*1.06);d[p+2]=Math.min(184,v*.98);}else{d[p]*=.66;d[p+1]*=.76;d[p+2]*=.88;}}}
   q.putImageData(im,0,0);
   if(state==='bar'){q.strokeStyle='#15202b';q.lineWidth=2;for(let x=6;x<29;x+=7){q.beginPath();q.moveTo(x,4);q.lineTo(x,30);q.stroke();}}
   if(state==='lock'){q.fillStyle='#d1ae6b';q.fillRect(26,23,3,4);}
@@ -88,7 +91,12 @@ function studyGround(c,ch,tx,ty){
  if(!studyReady())return false;
  if(ch==='B'||ch==='T'){const adjacent=[[1,0],[-1,0],[0,1],[0,-1]].map(([x,y])=>G[ty+y]?.[tx+x]);ch=adjacent.includes('=')?'=':',';}
  if(!'=,F'.includes(ch))return false;
- studyDraw(c,ch==='='?'pavement':'alleyBrick',tx*TILE,ty*TILE,TILE,TILE);return true;
+ let name=ch==='='?'pavement':'alleyBrick';
+ if(ch==='='){
+  const road=(x,y)=>G0[y]?.[x]==='.',n=road(tx,ty-1),s=road(tx,ty+1),w=road(tx-1,ty),e=road(tx+1,ty);
+  name=n?(w?'curbNW':e?'curbNE':'curbN'):s?(w?'curbSW':e?'curbSE':'curbS'):w?'curbW':e?'curbE':name;
+ }
+ studyDraw(c,name,tx*TILE,ty*TILE,TILE,TILE);return true;
 }
 function paintStudyRoof(c,b,w,h){
  const spec=STAGE.referenceBuildings[BLD.indexOf(b)];if(!spec)return false;
@@ -105,6 +113,18 @@ function drawStudyEntrance(b,e){
  for(const d of e.doors){const open=doorVisualOpen(d),x=d.tx*TILE,y=e.wallY-TILE,f=studyArt.frames.doorPanel.rect;
   studyDraw(ctx,'doorPanel',x,y,TILE,TILE);
   if(open>.02){ctx.fillStyle='#0b1420';ctx.fillRect(x+6,y+9,36,36);const leaf=Math.max(0,36*(1-open));if(leaf>0)ctx.drawImage(studyAtlas,f[0]+4,f[1]+6,24,24,x+6,y+9,leaf,36);}
+  const awning=freeCityArt.frames.awningGreen?.rect;
+  if(awning)ctx.drawImage(freeCityAtlas,...awning,x-6,y-15,60,20);
  }
  ctx.restore();return true;
+}
+
+function drawStudyStreetLamp(l,m,on){
+ if(!studyReady()||m.kind!=='street')return false;
+ // One source post per real lamp, at the physical mount, never scenery poles
+ // with no switch or light. The bulb swaps with the existing circuit state.
+ const x=m.ax-24,y=m.ay-91;
+ studyDraw(ctx,'streetPost',x,y,48,96);
+ if(on&&!l.broken)studyDraw(ctx,'streetBulb',x,y,48,24);
+ return true;
 }

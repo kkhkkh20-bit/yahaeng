@@ -53,6 +53,10 @@ async def main():
     const found=(fl?S.fwindows:S.windows).some(w=>(w.fl||0)===fl&&w.tx===x&&w.ty===b.y1);
     check(found===G.STAGE.referenceWindow(bi,x,fl),'facade has a fake/hidden aperture '+bi+':'+fl+':'+x);if(found)apertures++;
    }}
+   for(const b of G.BLD){const entries=S.doors.filter(d=>!d.fl&&d.ty===b.y1&&d.tx>b.x0&&d.tx<b.x1);
+    check(entries.length===1,'ambiguous repeated front entrances');const d=entries[0];
+    check(!G.solidFor(0)(d.tx,d.ty+1),'entrance opens into an obstacle');
+   }
    for(const b of G.BLD)for(let y=b.y0;y<=b.y1;y++)for(let x=b.x0;x<=b.x1;x++)check(!['B','T'].includes(G.tileG(x,y)),'street vegetation inside building');
    for(const outfit of ['crew','staff','suit']){P.disguise='sam';P.outfit=outfit;check(G.characterLook(P).includes('heroAgent'),'disguise loses new identity');}P.disguise=null;P.outfit=null;
    const cars=S.vehicles.map(v=>[v.x,v.y]);for(let i=0;i<120;i++)G.update(1/60);check(S.vehicles.some((v,i)=>Math.hypot(v.x-cars[i][0],v.y-cars[i][1])>50),'traffic frozen');
@@ -61,5 +65,5 @@ async def main():
   await q.goto(url);await q.wait_for_function('!!window.__game');await q.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='tB'))");assert await q.evaluate('__game.characterLook(__game.S.player)')=='ninja','normal heroine changed'
   await b.close()
  server.shutdown();server.server_close()
- out=ROOT/'build/agent-city-v236';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
+ out=ROOT/'build/agent-city-v237';out.mkdir(exist_ok=True);(out/'checks.json').write_text(json.dumps({'frames':frames,'artFrames':len(art['frames']),'isolation':True,**data},indent=2));print('PASS agent study',frames,'nonempty frames;',json.dumps(data))
 if __name__=='__main__':asyncio.run(main())

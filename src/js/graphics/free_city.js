@@ -20,12 +20,13 @@ function cityBuildingStyle(b){
  return (b.x0*7+b.y0*3)%3===0?'brick':'stone';
 }
 function freeCityPattern(name){
- let tile=freeCityPatterns[name];if(tile)return tile;
+ const key=name==='asphalt'&&STAGE.agentStudy?'asphalt:study':name;
+ let tile=freeCityPatterns[key];if(tile)return tile;
  const f=freeCityArt?.frames[name]?.rect;if(!f||!freeCityReady())return null;
  tile=document.createElement('canvas');const scale=name==='pavers'&&freeCityArt===A.dotonbori?1:2;tile.width=f[2]*scale;tile.height=f[3]*scale;const c=tile.getContext('2d');c.imageSmoothingEnabled=false;c.drawImage(freeCityAtlas,...f,0,0,tile.width,tile.height);
  if(name==='pavers'&&freeCityArt===A.dotonbori){c.fillStyle='rgba(92,100,104,.35)';c.fillRect(0,0,tile.width,tile.height);}
- if(name==='asphalt'){c.fillStyle='rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
- return freeCityPatterns[name]=tile;
+ if(name==='asphalt'){c.fillStyle=STAGE.agentStudy?'rgba(24,32,48,.16)':'rgba(19,27,40,.6)';c.fillRect(0,0,tile.width,tile.height);}
+ return freeCityPatterns[key]=tile;
 }
 function paintFreeCityWall(c,b,x,y,w,h){
  if(!freeCityBuilding(b))return false;
