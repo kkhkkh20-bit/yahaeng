@@ -1,0 +1,19 @@
+{
+  "version": 263,
+  "authoring": "Original Yahaeng SVG frame and six solid interface emblems, consistent with the ivory/ink title kit.",
+  "frame": "dialog-frame.svg",
+  "sharedFrames": [
+    "brand-panel.svg",
+    "brand-inset.svg"
+  ],
+  "interfaceIcons": [
+    "document",
+    "map",
+    "brief-target",
+    "exit",
+    "conversation",
+    "cash"
+  ],
+  "portrait": "Existing original cast portraits are preserved at a square aspect ratio.",
+  "coverage": "Mission briefings, optional intel, modal/nonmodal dialogue, radio conversations and notes."
+}

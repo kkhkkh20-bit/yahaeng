@@ -23,7 +23,8 @@ async def main():
      assert after['x']>=0 and after['y']>=0 and after['x']+after['width']<=w and after['y']+after['height']<=h,after
      if text==SHORT:
       short_height=after['height']
-      assert after['height']<=116 if w<640 or h<480 else after['height']<=124,after
+      # Framed channel/name/continuation rows reserve a little more room.
+      assert after['height']<=(128 if h<480 else 140 if w<640 else 160),after
      assert await pg.locator('#dlgMeasure').get_attribute('aria-hidden')=='true'
      assert await pg.evaluate('''()=>{const d=document.querySelector('#dlg').getBoundingClientRect(),f=document.querySelector('#dlgFaceBox').getBoundingClientRect(),t=document.querySelector('#dlgText').getBoundingClientRect(),n=document.querySelector('#dlgHint').getBoundingClientRect();return f.top>=d.top&&f.bottom<=d.bottom&&f.right<t.left&&t.bottom<=n.top&&n.bottom<=d.bottom}'''),'portrait, text or footer overlap'
      assert await pg.locator('#dlgText').inner_text()==text,'dialogue content truncated'

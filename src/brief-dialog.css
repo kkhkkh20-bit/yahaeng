@@ -1,0 +1,168 @@
+/* The departure sheet and dialogue use the same ivory/ink material as the title. */
+#brief .br-wrap{border-width:8px;gap:24px}
+#brief .br-info{gap:12px}
+#brief .br-head{align-items:center;border-bottom:2px solid #60747d;padding-bottom:16px}
+#brief .br-kicker{margin:0 0 9px;color:#b7c7ce;font:600 11px/1.4 var(--f-body);letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+#brief .br-kicker::before{content:'';width:20px;height:3px;background:#eee7d6}
+#brief .br-name{font-family:"Yahaeng Title",var(--f-body);font-size:36px;line-height:1.2;letter-spacing:0;color:#eee7d6;margin-bottom:7px}
+#brief .fx-sub{font-size:12px;line-height:1.55;color:#bccbd1}
+#brief .br-fee small{font-size:11px;color:#c4ced0;margin-bottom:5px}
+#brief .br-fee b{font:600 23px/1.2 var(--f-body);color:#eee7d6;white-space:nowrap}
+#brief .br-purpose{font-size:14px;line-height:1.75;color:#e2e4dc}
+#brief .br-identities,#brief .br-identities[data-count="4"]{gap:8px}
+#brief .br-identities .mission-id{grid-template-columns:72px minmax(0,1fr);padding:9px;gap:12px;border:6px solid transparent;border-image:var(--art-brand-inset) 12 fill stretch;background:#0c1621;min-height:74px}
+#brief .br-identities canvas{width:72px;height:48px;image-rendering:pixelated;object-fit:contain;align-self:center}
+#brief .mission-emblem{display:flex;align-items:center;justify-content:center;color:#eee7d6;width:72px;height:48px}
+#brief .mission-emblem svg{width:37px;height:37px;stroke:none}
+#brief .br-identities .mission-id small{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;line-height:1.5;color:#d4cdbb}
+#brief .br-identities .mission-id small svg{width:14px;height:14px;flex-shrink:0}
+#brief .br-identities .target small{color:#ecab9b}
+#brief .br-identities .mission-id b{font-size:17px;font-weight:600;line-height:1.5;color:#eee7d6}
+#brief .br-identities .mission-id span,#brief .target-profile{font-size:12px;font-style:normal;line-height:1.65;color:#c5d3d8;margin-top:3px}
+#brief .br-identities .target-profile{color:#d4cbb8}
+#brief .br-exit{font-size:12px;line-height:1.6;color:#c8d5da;padding-left:10px;border-left:3px solid #d4cbb8}
+#brief .br-todo li{font-size:13px;border-color:#60747d;padding:8px 0}
+#brief .br-todo li b{font-weight:600}
+#brief .br-tools{gap:8px;padding-top:3px}
+#brief .br-tools button{min-height:46px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px}
+#brief .br-tools button::before{content:'';width:20px;height:20px;flex-shrink:0;background:currentColor;mask:var(--art-ui-document) center/contain no-repeat;-webkit-mask:var(--art-ui-document) center/contain no-repeat}
+#brief #caseBrief button::before{mask-image:var(--art-ui-organization);-webkit-mask-image:var(--art-ui-organization)}
+#brief #brSkills button::before{mask-image:var(--art-ui-skills);-webkit-mask-image:var(--art-ui-skills)}
+#brief .br-mapcol{gap:10px}
+#brief #brMapTitle{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;line-height:1.5;color:#eee7d6;min-height:24px}
+#brief #brMapTitle svg{width:23px;height:23px;flex-shrink:0}
+#brief .br-frame{border:6px solid transparent;border-image:var(--art-brand-inset) 12 fill stretch;padding:4px;border-radius:0;background:#0c1621}
+#brief .br-map{background:#0c1621}
+#brief .br-legend{font-size:12px;font-weight:600;line-height:1.6;color:#cbd8dc;gap:12px;padding:2px 0}
+#brief .br-legend span{gap:6px}
+#brief .br-legend .mk{flex-shrink:0;width:10px;height:10px}
+#brief .br-legend .mk.ring{width:12px;height:12px;border-width:3px}
+#brief .br-acts{border-top-width:2px}
+#brief #btnBrGo{font-size:17px;min-height:52px;gap:14px}
+#brief #btnBrGo .br-start-key{font:400 11px/1.4 var(--f-body);color:#38454a}
+#brief #btnBrBack::before{content:'';display:inline-block;width:15px;height:15px;background:currentColor;mask:var(--art-ui-back) center/contain no-repeat;-webkit-mask:var(--art-ui-back) center/contain no-repeat;margin-right:6px;vertical-align:-2px}
+#briefInfo h2{font-family:"Yahaeng Title",var(--f-body);font-size:26px;font-weight:400;color:#eee7d6}
+#briefInfo header{padding-bottom:14px;border-bottom:2px solid #60747d}
+#briefInfo p{font-size:14px;color:#d6dfdd}
+#briefInfo .br-cast b{font-size:14px;font-weight:600;color:#eee7d6}
+#briefInfo .br-cast small{font-size:11px;color:#c7d2d5}
+#briefInfo .br-radio b{font-size:13px;font-weight:600;color:#eee7d6}
+#briefInfo .br-chl{font-size:12px;font-weight:600;color:#d8d4c6}
+#briefInfo .br-chips li{font-size:13px;color:#d6dfdd;background:#0c1621;border:1px solid #71858f}
+/* One portrait square, a steady text column, and a distinct continuation line. */
+#dlg{--dialog-face:88px;box-sizing:border-box;width:min(760px,calc(100vw - 32px));padding:10px 14px;gap:16px;border:8px solid transparent;border-image:var(--art-dialog-frame) 12 fill stretch;border-radius:0;background:#111b27;box-shadow:0 8px 28px #0006;filter:none;align-items:flex-start}
+#dlg #dlgFaceBox{box-sizing:border-box;flex:0 0 var(--dialog-face);width:var(--dialog-face);height:var(--dialog-face);border:5px solid transparent;border-image:var(--art-brand-inset) 12 fill stretch;background:#0c1621;aspect-ratio:1}
+#dlg #dlgFace{width:100%;height:100%;position:static;transform:none;image-rendering:pixelated;object-fit:contain}
+#dlg .dlg-box{gap:6px;color:#eee7d6}
+#dlg .dlg-channel{display:flex;align-items:center;gap:6px;min-width:0;padding-bottom:5px;border-bottom:1px solid #60747d}
+#dlg #dlgChannelIcon{display:flex;align-items:center;flex-shrink:0;color:#d8d0ba}
+#dlg #dlgChannelIcon svg{width:16px;height:16px;stroke:none}
+#dlg .dlg-context{font-size:11px;line-height:1.4;color:#c6d4d8;padding:0;overflow-wrap:anywhere}
+#dlg .dlg-head{gap:3px 10px;align-items:baseline}
+#dlg .dlg-box b{font-size:18px;font-weight:600;line-height:1.4;color:#eee7d6;letter-spacing:0}
+#dlg .dlg-box i{font-size:12px;line-height:1.4;color:#beced3}
+#dlg .dlg-copy p{font-size:16px;line-height:1.65;margin:0;color:#eee7d6}
+#dlg #dlgMeasure{max-height:min(200px,28dvh,calc(100dvh - 175px))}
+#dlg .dlg-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:17px;padding-top:4px}
+#dlg #dlgProgress{font:600 11px/1.4 var(--f-body);font-variant-numeric:tabular-nums;color:#a5bac4;white-space:nowrap}
+#dlg #dlgProgress:empty{visibility:hidden}
+#dlg .dlg-box #dlgHint{font:600 11px/1.4 var(--f-body);margin:0;color:#d8d0ba;padding:0;align-self:auto;display:flex;align-items:center;gap:8px}
+#dlg #dlgHint:not(:empty)::after{content:'';display:block;width:17px;height:17px;background:currentColor;mask:var(--art-ui-arrow) center/contain no-repeat;-webkit-mask:var(--art-ui-arrow) center/contain no-repeat}
+#dlg.noface .dlg-channel{display:none}
+#dlg.noface{width:min(620px,calc(100vw - 32px))}
+#dlg:not(.modal) .dlg-footer:has(#dlgHint:empty){display:none}
+@media(max-width:700px){
+ #brief .br-wrap{padding:10px;gap:9px;border-width:6px}
+ #brief .br-info{gap:7px}
+ #brief .br-head{padding-bottom:8px;gap:8px}
+ #brief .br-kicker{font-size:10px;margin-bottom:5px;letter-spacing:0}
+ #brief .br-kicker::before{width:14px;height:2px}
+ #brief .br-name{font-size:26px;margin-bottom:3px}
+ #brief .fx-sub{font-size:10px}
+ #brief .br-fee b{font-size:19px}
+ #brief .br-fee small{font-size:10px}
+ #brief .br-identities,#brief .br-identities[data-count="4"]{gap:5px}
+ #brief .br-identities .mission-id{grid-template-columns:48px minmax(0,1fr);padding:4px;gap:7px;min-height:52px;border-width:4px}
+ #brief .br-identities canvas{width:48px;height:32px}
+ #brief .mission-emblem{width:48px;height:32px}
+ #brief .mission-emblem svg{width:29px;height:29px}
+ #brief .br-identities .mission-id b{font-size:13px;line-height:1.45}
+ #brief .br-identities .mission-id small{font-size:9px;line-height:1.4;gap:4px}
+ #brief .br-identities .mission-id small svg{width:11px;height:11px}
+ #brief .br-identities .mission-id span,#brief .br-identities .target-profile{font-size:10px;line-height:1.45;margin-top:1px}
+ #brief .br-identities[data-count="4"] .mission-id{grid-template-columns:30px minmax(0,1fr);gap:5px}
+ #brief .br-identities[data-count="4"] canvas{width:30px;height:20px}
+ #brief .br-identities[data-count="4"] .mission-emblem{width:30px;height:30px}
+ #brief .br-exit{font-size:10px;line-height:1.45;padding-left:6px;border-left-width:2px}
+ #brief .br-tools{padding:0;gap:6px}
+ #brief .br-tools button{font-size:11px;min-height:42px;gap:3px;padding-inline:2px}
+ #brief .br-tools button::before{width:14px;height:14px}
+ #brief #brMapTitle{font-size:12px;min-height:18px;gap:6px}
+ #brief #brMapTitle svg{width:18px;height:18px}
+ #brief .br-mapcol{gap:5px}
+ #brief .br-frame{border-width:4px;padding:2px}
+ #brief .br-legend{font-size:10px;gap:8px;padding:0}
+ #brief #btnBrGo{font-size:14px;min-height:46px;gap:8px}
+ #briefInfo h2{font-size:23px}
+ #briefInfo p{font-size:13px}
+}
+@media(max-height:780px){
+ #brief .br-head{padding-bottom:5px}
+ #brief .br-name{font-size:27px}
+ #brief .br-kicker{margin-bottom:3px;font-size:10px}
+ #brief .br-info{gap:5px}
+ #brief .br-identities .mission-id{padding:4px;min-height:45px}
+ #brief .br-identities .target-profile{display:none}
+ #brief .br-identities .mission-id b{font-size:13px}
+ #brief .br-identities .mission-id span{font-size:10px;line-height:1.4;margin-top:1px}
+ #brief .br-identities canvas{width:48px;height:32px}
+ #brief .br-identities .mission-id{grid-template-columns:48px minmax(0,1fr);gap:7px}
+ #brief .mission-emblem{width:48px;height:32px}
+ #brief .br-identities .mission-id small{font-size:9px;line-height:1.4}
+ #brief .br-identities .mission-id small svg{width:11px;height:11px}
+ #brief .br-legend{font-size:10px}
+}
+@media(max-height:480px) and (min-width:701px){
+ #brief .br-wrap{padding:6px 10px;gap:16px}
+ #brief .br-kicker{display:none}
+ #brief .br-name{font-size:25px}
+ #brief .br-head{padding-bottom:5px}
+ #brief .fx-sub{font-size:10px}
+ #brief .br-identities{gap:4px}
+ #brief .br-identities .mission-id{grid-template-columns:26px minmax(0,1fr);gap:5px;padding:3px;border-width:4px;min-height:45px}
+ #brief .br-identities canvas{width:26px;height:18px}
+ #brief .mission-emblem{width:26px;height:26px}
+ #brief .mission-emblem svg{width:24px;height:24px}
+ #brief .br-identities .mission-id b{font-size:12px}
+ #brief .br-tools button{min-height:36px;font-size:11px;padding:3px 4px;gap:4px}
+ #brief .br-tools button::before{width:15px;height:15px}
+ #brief #brMapTitle{font-size:12px;min-height:20px}
+ #brief .br-mapcol{gap:5px}
+ #brief .br-exit{font-size:10px}
+ #brief #btnBrGo{min-height:44px;font-size:14px}
+}
+@media(max-width:640px){
+ #dlg,body.touch #dlg{--dialog-face:66px;width:calc(100vw - 20px);padding:8px;gap:10px;border-width:6px}
+ #dlg #dlgFaceBox{border-width:4px}
+ #dlg .dlg-box{gap:5px}
+ #dlg .dlg-context{font-size:10px}
+ #dlg .dlg-channel{gap:4px;padding-bottom:3px}
+ #dlg #dlgChannelIcon svg{width:13px;height:13px}
+ #dlg .dlg-box b{font-size:16px}
+ #dlg .dlg-box i{font-size:11px}
+ #dlg .dlg-copy p{font-size:14px;line-height:1.6}
+ #dlg .dlg-footer{gap:6px;padding-top:2px;min-height:15px}
+ #dlg .dlg-box #dlgHint,#dlg #dlgProgress{font-size:10px}
+ #dlg #dlgHint:not(:empty)::after{width:14px;height:14px}
+ #dlg.noface{width:calc(100vw - 24px)}
+}
+@media(max-height:440px) and (orientation:landscape){
+ #dlg,body.touch #dlg{--dialog-face:58px;width:min(680px,calc(100vw - 32px));padding:7px 10px;gap:10px;border-width:6px}
+ #dlg .dlg-box{gap:4px}
+ #dlg .dlg-channel{padding-bottom:2px}
+ #dlg .dlg-context{font-size:10px}
+ #dlg .dlg-box b{font-size:15px}
+ #dlg .dlg-copy p{font-size:13px;line-height:1.5}
+ #dlg #dlgMeasure{max-height:min(120px,calc(100dvh - 160px))}
+ #dlg .dlg-box #dlgHint,#dlg #dlgProgress{font-size:10px}
+}

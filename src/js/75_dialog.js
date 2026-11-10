@@ -90,7 +90,9 @@ function say(lines, modal, onEnd) {
   }
   const speakers=[...new Set(lines.map(l=>l[0]))];
   $('dlgContext').textContent=speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
-  DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();
+  $('dlg').dataset.channel=speakers.some(w=>w==='master'||w==='aide')?'radio':speakers.every(w=>w&&w.note)?'note':'conversation';
+  $('dlgChannelIcon').innerHTML=($('dlg').dataset.channel==='radio'?skillSigil('radio'):uiSigil($('dlg').dataset.channel==='note'?'document':'conversation'));
+  DLG.total=lines.length;DLG.index=0;DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();
 }
 function updateSayQ() {
   if (!S || !S.sayQ || !S.sayQ.length) return;
@@ -103,6 +105,7 @@ function nextLine() {
   const l = DLG.q.shift(), el = $('dlg');
   if (!l) { DLG.cur = null; DLG.modal = false; el.hidden = true; document.body.classList.remove('dlgmodal'); const cb = DLG.onEnd; DLG.onEnd = null; if (cb) cb(); return; }
   if(DLG.modal&&!document.body.classList.contains('dlgmodal')){clearPlayerInput();closeEnvPicker();}
+  DLG.index++;$('dlgProgress').textContent=DLG.modal&&DLG.total>1?String(DLG.index).padStart(2,'0')+' / '+String(DLG.total).padStart(2,'0'):'';
   const sp = speakerOf(l[0]); DLG.cur = { speaker:sp, text: l[1], shown: 0, t: 0, seed: [...(sp.name || '')].reduce((h, ch) => h + ch.charCodeAt(0), 0) };
   $('dlgName').textContent = sp.name; $('dlgName').hidden = !sp.name; $('dlgRole').textContent = sp.role || '';
   const hasF = drawFace($('dlgFace'), sp); $('dlgFaceBox').hidden = !hasF; el.classList.toggle('noface', !hasF); el.style.setProperty('--rc', sp.col);
