@@ -1,0 +1,132 @@
+/* Ivory/ink brand surfaces. Layout, graph structure and gameplay controls stay authoritative. */
+:root{--brand-paper:#eee7d6;--brand-ink:#111b27;--brand-muted:#acb7b9;--brand-line:#465762;--brand-accent:#c77e62;--control-ink:var(--brand-paper);--control-focus:var(--brand-accent);--control-slate:var(--art-menu-secondary-normal);--control-brass:var(--art-menu-primary-normal);--control-red:var(--art-menu-danger-normal)}
+:is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:not(:where(.case-node,[data-select],#skillDetailShade)){--brand-button:var(--art-menu-secondary-normal);box-sizing:border-box;border:6px solid transparent;border-image:var(--brand-button) 12 fill stretch;border-radius:0;background:none;box-shadow:none;color:var(--brand-paper);padding:5px 10px;font-family:var(--f-body);font-weight:400;line-height:1.45;filter:none;transition:color .1s ease;touch-action:manipulation}
+#skillScreen .back,#skillScreen .skill-detail .skill-detail-close,#skillScreen #skillBranches button,#skillScreen #btnSkillRewards,#skillScreen #btnSkillReset,#skillScreen .skill-loadout button,#skillScreen .skill-prereqs button,#skillScreen .skill-detail-actions button,#help .panel button,#brief .br-tools button,#brief #btnBrGo,#pause .pz-big,#pause #missionGoals button,#end .endacts button,#keypad .kpg button{border:6px solid transparent;border-image:var(--brand-button) 12 fill stretch;border-radius:0;background:none;box-shadow:none}
+:is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:not(:where(.case-node,[data-select],#skillDetailShade)):not(:disabled):active{--brand-button:var(--art-menu-secondary-pressed);background:none;box-shadow:none;filter:none;transform:none}
+:is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:not(:where(.case-node,[data-select],#skillDetailShade)):disabled{--brand-button:var(--art-menu-secondary-disabled);color:#91a0a5;background:none;filter:none;opacity:1;cursor:default}
+:is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:focus-visible{outline:2px solid var(--brand-accent);outline-offset:3px}
+#brief #btnBrGo,#pause #btnResume,#end .endacts .cta,#skillScreen .skill-detail-actions button:not(.skill-equip):not(:disabled),#keypad .kpg .ok{--brand-button:var(--art-menu-primary-normal);border:6px solid transparent;border-image:var(--brand-button) 12 fill stretch;color:var(--brand-ink);background:none}
+#brief #btnBrGo:not(:disabled):active,#pause #btnResume:not(:disabled):active,#end .endacts .cta:not(:disabled):active,#skillScreen .skill-detail-actions button:not(.skill-equip):not(:disabled):active,#keypad .kpg .ok:active{--brand-button:var(--art-menu-primary-pressed);color:var(--brand-ink)}
+#pause #btnResume::after{color:var(--brand-ink)}
+#brief #btnBrGo:disabled,#pause #btnResume:disabled,#end .endacts .cta:disabled{--brand-button:var(--art-menu-primary-disabled);color:#9ba7aa}
+#newCampaignDialog #btnNewCampaignConfirm,#pause #btnRestart2{--brand-button:var(--art-menu-danger-normal);border-image:var(--brand-button) 12 fill stretch;color:#f0d5c8}
+#newCampaignDialog #btnNewCampaignConfirm:not(:disabled):active,#pause #btnRestart2:not(:disabled):active{--brand-button:var(--art-menu-danger-pressed)}
+#help button[aria-pressed=true],#help button.on,#skillScreen .skill-loadout button[aria-pressed=true],#skillScreen #skillBranches button[aria-pressed=true],#skillScreen .skill-prereqs button[aria-current=true],#skillScreen .skill-detail-actions .skill-equip:not(:disabled){--brand-button:var(--art-menu-primary-normal);color:var(--brand-ink);background:none;box-shadow:none}
+#help button[aria-pressed=true]:active,#help button.on:active,#skillScreen .skill-loadout button[aria-pressed=true]:active,#skillScreen #skillBranches button[aria-pressed=true]:active{--brand-button:var(--art-menu-primary-pressed);color:var(--brand-ink)}
+/* Main screens share the wordmark face; descriptions and small headings retain the UI face. */
+#skillScreen .sub-head h2,#help .sub-head h2,#caseBoard .case-board-head h2{font-family:"Yahaeng Title",var(--f-body);font-weight:400;letter-spacing:0;color:var(--brand-paper)}
+#skillScreen,#help.screen{background:#0c1520;color:var(--brand-paper)}
+#help .panel,#caseBoard,#briefInfo,#newCampaignDialog,#skillScreen .skill-detail{box-sizing:border-box;border:8px solid transparent;border-image:var(--art-brand-panel) 12 fill stretch;border-radius:0;background:#111b27;box-shadow:0 10px 30px #050b1255}
+#help .sub-head,#caseBoard .case-board-head{background:#111b27;border-bottom-color:var(--brand-line)}
+#help .sub-head h2,#skillScreen .sub-head h2{font-size:26px}
+#help .settings-group,#help details.rulesbox{border:6px solid transparent;border-image:var(--art-brand-inset) 12 fill stretch;border-radius:0;background:#0c1621;box-shadow:none}
+#help .settings-group h3,#help .settings-group h3::before,#help .settings-group output{color:var(--brand-paper)}
+#help .settings-group h3::before{background:var(--brand-paper)}
+#help .settings-group input[type=range]{color:var(--brand-paper);accent-color:var(--brand-paper)}
+#help input[type=range]::-webkit-slider-runnable-track{border-color:#60717a;background:linear-gradient(to right,#eee7d6 0 var(--setting-fill,0%),#080f17 var(--setting-fill,0%) 100%);box-shadow:none;border-radius:0}
+#help input[type=range]::-webkit-slider-thumb{background:var(--art-menu-primary-normal) center/100% 100% no-repeat;box-shadow:none}
+#help input[type=range]::-moz-range-progress{background:var(--brand-paper)}
+#help input[type=range]::-moz-range-thumb{background:var(--art-menu-primary-normal) center/100% 100% no-repeat;box-shadow:none}
+#help details[open].rulesbox>summary{color:var(--brand-paper);background:#172432;border-color:var(--brand-line)}
+#help details.rulesbox>summary::before{border-color:var(--brand-paper)}
+#help .control-note{border-left-color:var(--brand-paper);background:#172432;color:var(--brand-paper)}
+#help .rules li strong,#help .credit a{color:var(--brand-paper)}
+#caseBoard .case-board-head h2{font-size:27px}
+#caseBoard .case-board-head small,#caseBoard .case-kicker{color:#cec8b9;letter-spacing:.03em}
+#caseBoard #caseDetail{background:#0c1621;border-left-color:var(--brand-line)}
+#caseBoard .case-node{--case-frame:var(--art-menu-secondary-normal);border:6px solid transparent;border-image:var(--case-frame) 12 fill stretch;border-radius:0;background:none;box-shadow:none;color:var(--brand-paper);padding:6px 8px}
+#caseBoard .case-node.unknown{--case-frame:var(--art-menu-secondary-disabled);color:#aab7bb}
+#caseBoard .case-node[aria-pressed=true]{--case-frame:var(--art-menu-primary-normal);color:var(--brand-ink);background:none;box-shadow:none}
+#caseBoard .case-node[aria-pressed=true] :is(strong,small){color:var(--brand-ink)}
+#caseBoard .case-node.eliminated:not([aria-pressed=true]){--case-frame:var(--art-menu-danger-normal)}
+#caseBoard .case-face{background:#0c1520;color:#a6b5bd;border-radius:0}
+#caseBoard .case-node[aria-pressed=true] .case-face{background:#cfc8b4;color:#111b27}
+#caseBoard .case-tier h3{color:#bbc5c7;letter-spacing:.04em}
+#caseBoard .case-tier:not(:last-child)::after{border-color:#7f8c8c}
+#caseBoard footer{background:#111b27;border-color:var(--brand-line);color:#c5cfcc}
+#caseBoard .case-link,#caseBoard .case-evidence strong{color:var(--brand-paper)}
+/* The same 27 circular nodes and prerequisite rails, with quiet asset-based states. */
+#skillScreen{--sk-ground:#0c1520;--sk-panel:#111b27;--sk-ink:#eee7d6;--sk-gold:#eee7d6;--sk-muted:#acb7b9}
+#skillScreen .skill-toolbar,#skillScreen .skill-footer{border-color:var(--brand-line)}
+#skillScreen #skillSummary strong{color:var(--brand-paper)}
+#skillScreen #skillBranches{border:0;background:none;padding:0;gap:6px}
+#skillScreen #skillBranches button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;min-width:0}
+#skillScreen #skillBranches button span{margin-left:0}
+#skillScreen #skillBranches button span{color:#b2bec1}
+#skillScreen #skillBranches button[aria-pressed=true] span{color:#30404a}
+#skillScreen .skill-tree{border:4px solid transparent;border-image:var(--art-brand-panel) 12 fill stretch;border-radius:0;background:#111b27}
+#skillScreen .skill-tree+.skill-tree{border-left:4px solid transparent}
+#skillScreen .skill-tree h3,#skillScreen .skill-tree h3 svg{color:var(--brand-paper)}
+#skillScreen .skill-tree>p{border-color:var(--brand-line);color:#a6b5bb}
+#skillScreen .skill-node button{border:0;border-radius:50%;background:var(--art-brand-node-locked) center/100% 100% no-repeat;color:#93a5ad;box-shadow:none;transform:none}
+#skillScreen .skill-node button::before{display:none}
+#skillScreen .skill-node.available button{background:var(--art-brand-node-available) center/100% 100% no-repeat;color:var(--brand-paper);box-shadow:none}
+#skillScreen .skill-node.learned button{background:var(--art-brand-node-learned) center/100% 100% no-repeat;color:var(--brand-ink);box-shadow:none}
+#skillScreen .skill-node:not(.learned) button:active{background-image:var(--art-brand-node-pressed);transform:none}
+#skillScreen .skill-node.learned button:active{filter:brightness(.9);transform:none}
+#skillScreen .skill-node .skill-label{background:#111b27;color:#aab9bf}
+#skillScreen .skill-node.available .skill-label,#skillScreen .skill-node.learned .skill-label{color:var(--brand-paper)}
+#skillScreen .skill-node.selected button,#skillScreen .skill-node button:focus-visible{outline:2px solid var(--brand-accent);outline-offset:4px}
+#skillScreen .skill-node.selected .skill-label{color:var(--brand-paper)}
+#skillScreen .skill-node .skill-cost{background:#111b27;border-color:#5d707a;color:#b2bfc4;border-radius:0}
+#skillScreen .skill-node.available .skill-cost{background:#111b27;border-color:#b9b7aa;color:var(--brand-paper)}
+#skillScreen .skill-node.learned .skill-cost{background:#263b3d;border-color:#7f9a92;color:#e0e9d8}
+#skillScreen .skill-node .skill-state-mark{background:#111b27;border-color:#667a84}
+#skillScreen .skill-node.learned .skill-state-mark{background:#35514b;border-color:#a6bab0;color:#f2ebd7}
+#skillScreen .skill-links path{stroke:#768993;stroke-width:1.4}
+#skillScreen .skill-links path.locked{stroke:#40515e}
+#skillScreen .skill-links path.learned{stroke:var(--brand-paper)}
+#skillScreen .skill-links path.in-path{stroke:var(--brand-accent)}
+#skillScreen .skill-legend .available::before{border-color:var(--brand-paper);background:#172432}
+#skillScreen .skill-legend .learned::before{border-color:var(--brand-paper);background:var(--brand-paper)}
+#skillScreen .skill-detail{background:#111b27}
+#skillScreen .skill-detail-head h3,#skillScreen .skill-detail-emblem,#skillScreen .skill-benefit>div:last-child dd,#skillScreen .skill-reward-mission h4{color:var(--brand-paper)}
+#skillScreen .skill-detail-state>span:first-child{background:#172432;border-color:#607079;color:#e0dfcf;border-radius:0}
+#skillScreen .skill-benefit>div,#skillScreen .skill-detail-actions{border-color:var(--brand-line)}
+#skillScreen .skill-description :is(p,dd){color:#c4cece}
+#skillScreen .skill-prereqs,#skillScreen .skill-detail-actions{background:#111b27}
+#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:var(--brand-paper)}
+/* Preparation, pause and results use the same material and readable emphasis. */
+#brief .br-wrap{border:6px solid transparent;border-image:var(--art-brand-panel) 12 fill stretch;background:#111b27}
+#brief .br-frame{border-color:#718088;background:#0c1520}
+#brief .br-acts,#end .endacts{background:#111b27;border-color:var(--brand-line)}
+#pause .pz-wrap,#end .panel{border:8px solid transparent;border-image:var(--art-brand-panel) 12 fill stretch;background:#111b27}
+#pause #missionGoals button[aria-pressed=true]{--brand-button:var(--art-menu-primary-normal);color:var(--brand-ink);background:none}
+#end #endRank b,#end .completion-receipt{color:var(--brand-paper)}
+#keypad .kp{border:8px solid transparent;border-image:var(--art-brand-panel) 12 fill stretch;background:#111b27}
+#keypad #kpDisp{border-color:#7d8d94;background:#0c1520;color:var(--brand-paper)}
+#briefInfo header{border-color:var(--brand-line)}
+@media(hover:hover) and (pointer:fine){
+ :is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:not(:where(.case-node,[data-select],#skillDetailShade)):not(:disabled):hover{--brand-button:var(--art-menu-secondary-hover);background:none;filter:none}
+ #brief #btnBrGo:not(:disabled):hover,#pause #btnResume:not(:disabled):hover,#end .endacts .cta:not(:disabled):hover,#skillScreen .skill-detail-actions button:not(.skill-equip):not(:disabled):hover,#keypad .kpg .ok:hover{--brand-button:var(--art-menu-primary-hover);color:var(--brand-ink)}
+ #help button[aria-pressed=true]:hover,#help button.on:hover,#skillScreen #skillBranches button[aria-pressed=true]:hover,#skillScreen .skill-loadout button[aria-pressed=true]:hover{--brand-button:var(--art-menu-primary-hover);color:var(--brand-ink)}
+ #newCampaignDialog #btnNewCampaignConfirm:not(:disabled):hover,#pause #btnRestart2:not(:disabled):hover{--brand-button:var(--art-menu-danger-hover)}
+ #caseBoard .case-node:not([aria-pressed=true]):hover{--case-frame:var(--art-menu-secondary-hover);background:none}
+ #skillScreen .skill-node:not(.learned) button:hover{background-image:var(--art-brand-node-hover);color:var(--brand-paper)}
+ #skillScreen .skill-node.learned button:hover{background:var(--art-brand-node-learned) center/100% 100% no-repeat;color:var(--brand-ink)}
+ :is(#skillScreen,#help,#brief,#pause,#end,#briefInfo,#newCampaignDialog,#caseBoard,#keypad) button:not(:where(.case-node,[data-select],#skillDetailShade)):not(:disabled):active{--brand-button:var(--art-menu-secondary-pressed)}
+ #brief #btnBrGo:not(:disabled):active,#pause #btnResume:not(:disabled):active,#end .endacts .cta:not(:disabled):active,#skillScreen .skill-detail-actions button:not(.skill-equip):not(:disabled):active{--brand-button:var(--art-menu-primary-pressed)}
+}
+/* Press must win over hover on a selected tab, toggle or destructive action. */
+#help button[aria-pressed=true]:active,#help button.on:active,#skillScreen #skillBranches button[aria-pressed=true]:active,#skillScreen .skill-loadout button[aria-pressed=true]:active{--brand-button:var(--art-menu-primary-pressed)}
+#newCampaignDialog #btnNewCampaignConfirm:not(:disabled):active,#pause #btnRestart2:not(:disabled):active{--brand-button:var(--art-menu-danger-pressed)}
+#skillScreen .skill-node:not(.learned) button:active{background-image:var(--art-brand-node-pressed)}
+#caseBoard .case-node:not([aria-pressed=true]):active{--case-frame:var(--art-menu-secondary-pressed)}
+#caseBoard .case-node[aria-pressed=true]:active{--case-frame:var(--art-menu-primary-pressed)}
+#skillScreen .skill-loadout button:disabled,#help .panel button:disabled{--brand-button:var(--art-menu-secondary-disabled);color:#91a0a5;filter:none;opacity:1;background:none}
+@media(max-width:699px){
+ #skillScreen .sub-head h2,#help .sub-head h2,#caseBoard .case-board-head h2{font-size:22px}
+ #skillScreen #skillBranches{gap:4px}
+ #skillScreen #skillBranches button{padding:4px 6px}
+ #skillScreen .back,#skillScreen #btnSkillRewards,#skillScreen #btnSkillReset{padding:4px 7px}
+ #help .panel{border-width:8px}
+}
+@media(max-width:350px){#skillScreen #skillBranches button{padding-inline:4px}#skillScreen #skillBranches button span{margin-left:3px}}
+@media(prefers-reduced-motion:reduce){:is(#skillScreen,#help,#brief,#pause,#end,#caseBoard) button{transition:none}}
+
+/* The current prerequisite is navigation; learning retains the only filled CTA. */
+#skillScreen .skill-prereqs button[aria-current=true]{--brand-button:var(--art-menu-secondary-normal);color:var(--brand-paper);outline:1px solid var(--brand-accent);outline-offset:-2px}
+#skillScreen .skill-prereqs button[aria-current=true]:active{--brand-button:var(--art-menu-secondary-pressed)}
+
+#pause #missionGoals button[aria-pressed=true]:active{--brand-button:var(--art-menu-primary-pressed)}
+#newCampaignDialog #btnNewCampaignConfirm:disabled,#pause #btnRestart2:disabled{--brand-button:var(--art-menu-danger-disabled);color:#91a0a5}

@@ -1,0 +1,28 @@
+{
+  "version": 261,
+  "source": "Original SVG assets matching the approved ivory/ink menu family.",
+  "panels": {
+    "sourceSize": [
+      96,
+      64
+    ],
+    "slice": 12,
+    "border": 8
+  },
+  "nodes": {
+    "sourceSize": [
+      60,
+      60
+    ],
+    "shape": "Original circle skill nodes retained",
+    "textBakedIn": false
+  },
+  "danger": {
+    "sourceSize": [
+      64,
+      48
+    ],
+    "slice": 12,
+    "border": 6
+  }
+}

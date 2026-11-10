@@ -8,8 +8,11 @@
     "이어서 하기",
     "다시 플레이",
     "이야기 완료",
-    "도시 테스트"
+    "도시 테스트",
+    "기술 트리",
+    "설정",
+    "끊어진 보고선"
   ],
   "wordmarkOutlinesUnchanged": true,
-  "role": "Wordmark and primary title-menu action; other UI uses IBM Plex Sans KR."
+  "role": "Wordmark, primary title-menu action and three main screen headings; other UI uses IBM Plex Sans KR."
 }
