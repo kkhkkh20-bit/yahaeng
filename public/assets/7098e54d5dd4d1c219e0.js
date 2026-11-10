@@ -1941,7 +1941,7 @@ if(window.__AGENT_CITY_STUDY__){const s=STAGES.find(s=>s.agentStudy);s.floorTile
 const EPISODE_VOICE={
  tB:{before:'올빼미와 제비는 까마귀의 의뢰로 증인들을 안전가옥에 옮겼다. 그런데 도착 확인은 없고, 제비마저 연락을 끊었다. 마지막 메시지는 “우리 배차표부터 봐.” 올빼미는 자신이 누구에게 사람들을 넘겼는지 확인하러 간다.',after:'제비가 남긴 배차표에 올빼미가 맡았던 호송 번호가 있다. 인수자는 박인호. 안전가옥까지 갔다는 까마귀의 설명과 다르다.',
   coda:{context:'배차표에 남은 제비의 메모',lines:[[{recorded:'aide'},'도착 확인, 네가 직접 받았어? 나도 못 받았어. 박인호한테 물어봐.'],['hero','내가 태워 보낸 사람들인데, 어디 내렸는지도 모르네.'],['master','박인호가 중간에서 바꿔치기한 모양이야. 금성 운송부터 확인하자.']]},
-  beats:[{id:'missing-arrival',when:S=>S.t>=2,speaker:'hero',text:'내가 태워 보낸 두 사람도, 제비도 연락이 없어. 배차표부터 직접 확인하자.'},{id:'our-dispatch',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'내 호송 번호가 있어. 목적지는 안전가옥이 아니라 금성 운송이네. 까마귀한테 확인해야겠어.'}]},
+  beats:[{id:'missing-arrival',when:S=>S.t>=2&&(S.tutI||0)>=6,speaker:'hero',text:'내가 태워 보낸 두 사람도, 제비도 연락이 없어. 배차표부터 직접 확인하자.'},{id:'our-dispatch',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'내 호송 번호가 있어. 목적지는 안전가옥이 아니라 금성 운송이네. 까마귀한테 확인해야겠어.'}]},
  p0:{before:'박인호는 증인의 은신처를 팔아넘기고 금성 운송 2층에서 대금을 기다린다. 이 거래가 끝나면 다른 은신처까지 드러난다. 올빼미는 거래를 끊고 자신이 맡았던 사람들의 행방을 찾는다.',after:'박인호의 통화 기록에는 제비를 찾는 연락 대신 인원과 가격을 흥정한 흔적이 있다. 대금은 금성 거래소의 문서윤이 정산한다.',
   coda:{context:'박인호의 마지막 통화',lines:[['hero','두 명이 아니래. “다음 차에도 자리 있냐”고 물었어.'],['master','문서윤이 정산했을 거야. 거래소 3층 장부를 가져와.'],['hero','알았어. 이번엔 사람들 어디로 보냈는지부터 볼게.']]},
   beats:[{id:'sale-in-progress',when:S=>S.t>=3,speaker:'master',text:'박인호가 은신처 명단을 넘기기 전에 막아야 해. 2층에서 돈을 기다리고 있어.'}]},

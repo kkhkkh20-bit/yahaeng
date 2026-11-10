@@ -10,22 +10,23 @@ async def main():
   b=await p.chromium.launch()
   for touch in [False,True]:
    q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},is_mobile=touch,has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('__game?.castArtReady')
+   await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('__game?.castArtReady',polling=100)
    route=await q.evaluate('''()=>{const G=__game;return G.STAGES.filter(s=>s.storyCoda).map(s=>({id:s.id,before:s.story.before,after:s.story.after,context:s.storyCoda.context,lines:s.storyCoda.lines}));}''');assert len(route)==9
-   assert all(x['before']and x['after']and 2<=len(x['lines'])<=3 for x in route)
-   # Betrayal is specifically after success, not a player-failure condition.
+   assert all(x['before']and x['after']and 2<=len(x['lines'])<=5 for x in route)
+   # The successful operation reveals a deliberate infiltration plan, preserving earned rewards.
    await q.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='m4'));while(__game.DLG.modal)__game.advanceDialog();__game.endGame(true,'검증용 완료')")
    await q.wait_for_selector('#dlg[data-sequence="episode-coda"]',state='visible');assert await q.locator('#end').is_hidden()
    assert await q.evaluate("JSON.parse(localStorage.getItem('yahaeng.ch')).m4._clear&&__game.S.overWin&&__game.S.resultFresh")
    budget=await q.evaluate('__game.skillBudget()');assert budget>0
-   assert '임무 완료 뒤' in await q.locator('#dlgContext').inner_text()
+   assert '계약서' in await q.locator('#dlgContext').inner_text()
    lines=[]
    for _ in range(10):
     if not await q.evaluate('__game.DLG.modal'):break
     text=await q.evaluate('__game.DLG.cur.text');lines.append(text)
     if touch:await q.tap('#dlg')
     else:await q.keyboard.press('Space')
-   assert any('문이 잠긴다' in s for s in lines),lines
+   assert any('장부부터' in s for s in lines)and any('머리핀' in s for s in lines),lines
+   assert not any('기억이 끊' in s or '문이 잠긴다' in s for s in lines),lines
    await q.wait_for_selector('#skillScreen',state='visible');assert await q.evaluate('__game.skillBudget()')==budget
    assert not await q.evaluate("document.body.classList.contains('episode-coda')")
    # A replay completes directly; a stale callback cannot reopen the scene.
@@ -38,8 +39,8 @@ async def main():
    assert '녹음' in radio['recorded']['name']
    # Skipping the final scene still opens training, with exactly one reward.
    await q.evaluate("localStorage.clear();__game.start(__game.STAGES.findIndex(s=>s.id==='n1'));while(__game.DLG.modal)__game.advanceDialog();__game.endGame(true,'검증용 완료')")
-   await q.wait_for_selector('#dlg[data-sequence="episode-coda"]',state='visible');assert '녹음' in await q.locator('#dlgName').inner_text()
+   await q.wait_for_selector('#dlg[data-sequence="episode-coda"]',state='visible');assert '도착 확인' in await q.locator('#dlgContext').inner_text()
    earned=await q.evaluate('__game.skillBudget()');await q.keyboard.press('Escape');await q.wait_for_selector('#skillScreen',state='visible');assert await q.evaluate('__game.skillBudget()')==earned
-   assert not errors,errors;print('PASS continuity',touch,'nine leads; saved reward before car trap; recorded voice; danger priority; replay; skip → training',flush=True);await q.close()
+   assert not errors,errors;print('PASS continuity',touch,'nine leads; saved reward before planned infiltration; recorded voice; danger priority; replay; skip → training',flush=True);await q.close()
   await b.close()
 asyncio.run(main())
