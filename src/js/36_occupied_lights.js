@@ -1,7 +1,7 @@
 // Awake people use lit homes and staff quarters. Sleeping/empty rooms keep their
 // night state, and revisiting a checkpoint never silently undoes a blackout.
 function syncOccupiedLights(restoring=false){
- if(STAGE.artSlice||S.occupiedLightVersion>=249)return;
+ if(STAGE.artSlice||S.occupiedLightVersion>=259)return;
  const previous=CUR_F,rooms=new Map();
  try{
   for(const g of S.guards){
@@ -9,7 +9,10 @@ function syncOccupiedLights(restoring=false){
    const fl=flOf(g);
    for(const at of [{x:g.x,y:g.y},...(g.route||[])]){
     const tx=Math.floor(at.x/TILE),ty=Math.floor(at.y/TILE),bi=bldAt(tx,ty),b=BLD[bi],p=PLANS[bi]?.[fl];
-    if(!b||b.vacant||(p&&groundedWorld()&&(b.kind==='shop'||STAGE.workBuildings?.includes(bi))))continue;
+    // Work lighting deliberately leaves some club/corner cells dark. Removing
+    // a sofa can make one of those cells a valid civilian spawn: check actual
+    // occupants here too, rather than assuming every workplace is already lit.
+    if(!b||b.vacant)continue;
     // Hand-authored warehouse/estate floors have no apartment plan. Their
     // actual walls still bound light and switch circuits in syncRoomSwitches.
     const candidates=p?[p.store,...p.units.flatMap(u=>[u.living,...u.rooms,u.bath])].filter(Boolean):[b],room=candidates.filter(r=>tx>=r.x0&&tx<=r.x1&&ty>=r.y0&&ty<=r.y1).sort((a,b)=>(a.x1-a.x0+1)*(a.y1-a.y0+1)-(b.x1-b.x0+1)*(b.y1-b.y0+1))[0];if(!room)continue;
@@ -32,6 +35,6 @@ function syncOccupiedLights(restoring=false){
     rebuildLampPolygon(lamp);S.lamps.push(lamp);local.push(lamp);
    }
   }
-  S.occupiedLightVersion=249;LG=null;S.floorC={};for(const key in lightCache)delete lightCache[key];refreshBodyLighting();
+  S.occupiedLightVersion=259;LG=null;S.floorC={};for(const key in lightCache)delete lightCache[key];refreshBodyLighting();
  }finally{setLayer(previous);}
 }

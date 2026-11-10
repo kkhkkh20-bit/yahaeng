@@ -74,7 +74,7 @@ function updateSecurityBuddy(g,dt,speed){
   const known=g.securityLast;
   if(!known)return false;
   if(S.t-known.at>7){
-    delete g.securityBuddy;delete g.securityLast;endChat(g);goSuspicious(g,known.x,known.y,5);g.why='radio';return true;
+    delete g.securityBuddy;delete g.securityLast;endChat(g);goSuspicious(g,known.x,known.y,5);g.why='colleague';gsay(g,'같이 돌던 사람 어디 갔지? 마지막으로 본 데부터 봐야겠네.',2.5);return true;
   }
   if(leader.state!=='PATROL'||!same)return false;
   const seen=S.t-known.at<.1,point=seen?securityEscortPoint(leader,leader.x-Math.cos(leader.a)*52,leader.y-Math.sin(leader.a)*52):known,x=point.x,y=point.y;

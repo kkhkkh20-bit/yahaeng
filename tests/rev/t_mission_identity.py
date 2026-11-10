@@ -15,8 +15,8 @@ async def main():
    await q.wait_for_function('!!__game.warmStatus&&!__game.warmStatus.pending',polling=100)
    await q.evaluate('__game.updateHUD(true)')
    assert await q.locator('#brIdentity .mission-id').count()==3
-   assert '클럽 실장'in await q.locator('#brIdentity .target').inner_text() and '제거할 사람'in await q.locator('#brIdentity .target').inner_text()
-   assert '장부'in await q.locator('#brIdentity .item').first.inner_text() and '가져올 물건'in await q.locator('#brIdentity .item').first.inner_text()
+   assert '클럽 실장'in await q.locator('#brIdentity .target').inner_text() and '처치'in await q.locator('#brIdentity .target').inner_text()
+   assert '장부'in await q.locator('#brIdentity .item').first.inner_text() and '회수'in await q.locator('#brIdentity .item').first.inner_text()
    assert await q.locator('#brTodo').is_hidden(),'optional guard appears as required task'
    assert await q.locator('#brIdentity canvas[data-ready]').count()==3,'actual actor/object art not ready'
    await q.screenshot(path=str(O/f'brief-{width}.png'),full_page=True)

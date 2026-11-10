@@ -64,6 +64,7 @@ function officeFurnKey(f){
  if(f.t==='shelf'&&f.skin==='freight')return null;
  if(f.t==='locker'||f.t==='wardrobe'||f.t==='bed'||f.t==='cbed'||f.t==='bedD'||f.t==='dance'||f.t==='rug'||f.t==='boxes'||f.t==='sink'||f.t==='stove'||f.t==='toilet'||f.t==='tub')return null;
  if(f.t==='desk'||f.t==='desk2'){
+  if(f.w===1&&f.h===1&&r%2===0)return 'deskComputer';
   if(r===1)return 'deskSideE';if(r===3)return 'deskSideW';
   if(style===OFFICE_STYLES.executive||style===OFFICE_STYLES.estate)return 'deskExecutive';
   return f.t==='desk'?'deskComputer':((f.x+f.y)%3===0?'deskFiles':'deskGlass');
@@ -72,14 +73,19 @@ function officeFurnKey(f){
  if(f.t==='chair'||f.t==='chairD'){
   const executive=style===OFFICE_STYLES.executive&&FURN.some(a=>flOf(a)===flOf(f)&&(a.t==='desk'||a.t==='desk2')&&a.x===f.x&&Math.abs(a.y-f.y)===1&&officeFurnKey(a)==='deskExecutive');
   const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
-  return prefix+['','E','Back','W'][r];
+  // Face a nearby work/dining surface, rather than every chair facing south.
+  const tables=FURN.filter(a=>flOf(a)===flOf(f)&&['desk','desk2','pc','table','tableS'].includes(a.t)&&bldAt(a.x,a.y)===bi)
+   .map(a=>({dx:(a.x+a.w/2-f.x-f.w/2)*TILE,dy:(a.y+a.h/2-f.y-f.h/2)*TILE}))
+   .filter(a=>Math.hypot(a.dx,a.dy)<=110).sort((a,b)=>Math.hypot(a.dx,a.dy)-Math.hypot(b.dx,b.dy));
+  const a=tables[0],facing=a?(Math.abs(a.dx)>Math.abs(a.dy)?a.dx>0?1:3:a.dy>0?0:2):r;
+  return prefix+['','E','Back','W'][facing];
  }
  if(f.t==='sofa'||f.t==='sofaV')return null;
  return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
- const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18);
+ const maxW=f.w*TILE,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:24);
  const chair=f.t==='chair'||f.t==='chairD'||f.t==='sofa'||f.t==='sofaV';
  const scale=Math.min(chair?(key.startsWith('chairRed')?1:1.5):1.5,maxW/r[2],maxH/r[3]);
  const w=Math.round(r[2]*scale),h=Math.round(r[3]*scale);
@@ -134,16 +140,13 @@ function officeWallDecor(c,fl,x0,y0,x1,y1){
 }
 function drawOfficeLamp(l,c=ctx){
  if(!officeReady()||!l.fixture)return false;
- const f=l.fixture,on=lampOn(l),style=officeStyle(bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),flOf(l));
- const warm=[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style);
- c.save();c.translate(f.x,f.y);if(!f.ny)c.rotate(Math.PI/2);
- c.fillStyle='#111c27';c.fillRect(-16,-4,32,9);
- c.save();if(!on)c.globalAlpha*=.5;officeBlit(c,warm?'warmLamp':'fluorescent',-15,-4,30,7);c.restore();
- // A small diffuser within a real mounting bracket. No luminous window frame.
- c.fillStyle=on?(warm?'#d0b98a':'#b9d2d0'):'#46555f';c.fillRect(-5,-2,10,3);
- if(on){c.fillStyle=warm?'#e1d0a7':'#d4e6dc';c.fillRect(-4,-2,8,1);}
- if(l.broken){c.fillStyle='#18232d';c.fillRect(-2,-3,2,5);}
- c.restore();return true;
+ const f=l.fixture,on=lampOn(l);
+ // The old blue strips were ceiling fluorescent sprites rotated onto walls.
+ // Use the purchased street pack's actual wall luminaire instead.
+ if(freeCityReady()&&freeCityArt===A.dotonbori){
+  c.save();if(!on)c.globalAlpha*=.5;freeCityDraw(c,on?'lampOn':'lampOff',f.x-12,f.y-20,.75);c.restore();return true;
+ }
+ return true;
 }
 function officeCabinetLeaf(c,g,hinge,side,projection,depth){
  if(!officeReady()||projection<1)return;

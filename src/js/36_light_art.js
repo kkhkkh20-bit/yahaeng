@@ -36,13 +36,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
       if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,bulb-3);ctx.lineTo(f.x+3,bulb+3);ctx.stroke();}
       }
     }
-    const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
-    if(drawOfficeSwitch(l))continue;
-    const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
-    // A small wall plate, separate from fixtures and their ground light pools.
-    ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);
-    ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
-    ctx.fillStyle=lampCircuitOff(l)?'#20282e':'#59656e';ctx.fillRect(p.x-2,p.y+(lampCircuitOff(l)?-1:-6),4,2);
+
   }
   drawRoomFinishFixtures(fl,building);
 }

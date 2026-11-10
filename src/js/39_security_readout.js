@@ -1,13 +1,13 @@
 // Permission, observation and illegal work are separate facts. These readouts
 // query the same rules as perception; they never grant clearance or suppress AI.
-const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['제보 조사','제보된 조사 지점'],trace:['이상 흔적 조사','흔적 조사 지점']};
+const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['목격 전달받음','전달받은 마지막 목격 위치'],colleague:['동료 확인','동료를 마지막으로 본 곳'],radioOrder:['무전 지시 확인','점검 지시를 받은 곳'],rollCall:['무전 응답 확인','응답하지 않은 동료의 담당 구역'],trace:['이상 흔적 조사','흔적 조사 지점']};
 function investigationReadout(g){
   if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS')return{kind:'dispatch',tag:'배차 확인 중',site:'배차 단말'};
   const searching=g.state==='SEARCH'&&g.searchJob;
   const inc=searching&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident);
   const at=searching?g.searchOrigin:g.poi;
-  const kind=g.state==='ALERT'?'player':inc?.source==='sighting'?'player':inc?.source==='camera'?'camera':inc?.source==='body'||inc?.at?.clue==='body'||at?.clue==='body'?'body':at?.clue==='player'?'player':g.why==='saw'?'person':g.why==='heard'?'sound':g.why==='blood'?'blood':g.why==='exit'?'exit':['radio','report'].includes(g.why)||inc?.source==='radio'?'report':'trace';
-  return{kind,tag:searching?'수색 중인 지점':INVESTIGATION_LABELS[kind][0],site:INVESTIGATION_LABELS[kind][1]};
+  const kind=g.state==='ALERT'?'player':inc?.source==='sighting'?'player':inc?.source==='camera'?'camera':inc?.source==='body'||inc?.at?.clue==='body'||at?.clue==='body'?'body':g.why==='report'||inc?.source==='radio'?'report':at?.clue==='player'?'player':g.why==='saw'?'person':g.why==='heard'?'sound':g.why==='blood'?'blood':g.why==='exit'?'exit':g.why==='colleague'?'colleague':g.why==='radioOrder'?'radioOrder':['radio','rollCall'].includes(g.why)?'rollCall':'trace';
+  return{kind,tag:INVESTIGATION_LABELS[kind][0]+(searching?' · 수색 중':''),site:INVESTIGATION_LABELS[kind][1]};
 }
 const bodyRiskText=c=>c.ko?'눈에 띄는 기절자':'눈에 띄는 시체';
 function accessReadout(at=S.player){

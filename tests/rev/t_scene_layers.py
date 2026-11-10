@@ -31,7 +31,7 @@ async def main():
      let labels=0;const fill=ctx.fillText;ctx.fillText=function(t,...a){if(t==='↓ '+((l.bfl||0)+1)+'층')labels++;return fill.call(this,t,...a)};
      const state=JSON.stringify([ctx.globalAlpha,ctx.getTransform(),ctx.lineWidth]);
      try{G.drawRoofEntrances(P)}finally{document.createElement=create;ctx.fillText=fill}
-     check(labels>=1&&canvases===0,id+' door cue absent or allocates bitmap');check(JSON.stringify([ctx.globalAlpha,ctx.getTransform(),ctx.lineWidth])===state,id+' entrance cue leaks drawing state');
+     check(labels===0&&canvases===0,id+' redundant entrance plaque remains or allocates bitmap');check(JSON.stringify([ctx.globalAlpha,ctx.getTransform(),ctx.lineWidth])===state,id+' entrance cue leaks drawing state');
      check(JSON.stringify([l.rx,l.ry,l.roofDoor,l.tx,l.ty])===signature&&G.GF.map(g=>g&&g.map(r=>r.join('')).join('')).join('|')===grid,id+' door cue moves entrance or geometry');
      check(G.nearClimbDown()===l,id+' physical door approach changed');doors++;
     }

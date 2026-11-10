@@ -1,0 +1,21 @@
+PASS stripped uniform stays removed after wake and a second knockout
+PASS old checkpoints repair stripped clothing and preserve body shape
+PASS unstripped colleague keeps their own uniform after wake
+PASS faction knockouts also retain stripped clothing
+PASS carry lift and grounded drop retain nonlethal identity
+PASS body projectiles are unavailable and old queued throws are harmless
+PASS quick storage waits for the full lift
+PASS quick storage keeps waiting through the last busy lift frame
+PASS distant pickup approaches physically before its single contact effect
+PASS near pickup uses the existing contact beat without extra movement
+PASS a wall surface sets the approach stop before the wall
+PASS surface work approaches the furniture edge, never its centre
+PASS approach collision cancels without teleport or remote acquisition
+PASS low frame rates still collide in short substeps
+PASS moved targets cannot finish a queued hand action
+PASS external displacement, damage and floor changes cancel contact
+PASS an existing injury does not block a fresh action, but a new hit interrupts it
+PASS door handle and clothing actions keep their existing authored position
+PASS ordinary guards never identify an innocent uniform by walking or standing
+PASS marked colleagues allow passers and gradually forget an existing check
+PASS physical interaction logic: 20 groups

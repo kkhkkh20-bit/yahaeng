@@ -2214,6 +2214,20 @@ campaignStage('m2').roomPatches=(campaignStage('m2').roomPatches||[]).concat({fl
 campaignStage('m6').roomPatches=(campaignStage('m6').roomPatches||[]).concat({fl:0,bounds:[24,16,32,24],furniture:[{t:'shelf',from:[26,19],to:[25,19]},{t:'shelf',from:[26,21],to:[25,21]}],tiles:[[28,19,'t'],[28,21,'t']]});
 // Seat the chair at its table, rather than in the shared centre aisle.
 campaignStage('m4').roomPatches=(campaignStage('m4').roomPatches||[]).concat({fl:0,bounds:[22,17,32,24],furniture:[{t:'chair',from:[26,20],to:[25,19],r:0}],tiles:[[26,20,'t']]});
+
+// Keep door turning space and the dispatch corridor clear. Containers retain
+// their hiding function and migrate together with saved occupants and bodies.
+const DOOR_CLEARANCE={
+ tB:[{tile:'H',from:[22,11],to:[25,6],floor:'h',targetFloor:','}],
+ m4:[{tile:'H',from:[9,1],to:[5,1],floor:'.',targetFloor:'.'},
+     {tile:'H',from:[2,7],to:[2,3],floor:'r',targetFloor:'r'},
+     {tile:'H',from:[19,19],to:[14,23],floor:',',targetFloor:','}],
+ m7:[{tile:'H',from:[24,13],to:[11,16],floor:'h',targetFloor:'h'}],
+ n1:[{tile:'H',from:[9,23],to:[9,24],floor:',',targetFloor:','}]
+};
+for(const[id,moves]of Object.entries(DOOR_CLEARANCE)){
+ const s=campaignStage(id);s.doorClearance=moves;s.fixtureMoves=(s.fixtureMoves||[]).concat(moves);
+}
 // Escape routes use existing streets; service gaps open the depot and HQ detours.
 const CAMPAIGN_FLOW={
  tB:{search:40,guards:2},p0:{search:45,guards:2,name:'남쪽 철문',extra:[{at:[1.3,12],name:'서쪽 작업 골목',r:46}],gaps:[[3,12],[3,13]],hint:' 서쪽 담의 작업 통로로 돌아 들어갈 수도 있다. 남쪽 철문과 서쪽 골목 중 상황에 맞는 길로 빠져나온다.'},
@@ -2340,7 +2354,7 @@ function refreshItemNames() {
 
 // ---------------------------------------------------------------- 지도
 let G, STAGE, STAGE_I = 0;
-let POLES = [], CARS = [], CROWD = [];
+let POLES = [], CARS = [], CROWD = [], removedSofaLayout = [];
 // 시끄러운 곳: 클럽 안(음악) → 내 소리 35%만 퍼진다. 클럽 건물 다른 층·바로 바깥(새어 나오는 베이스) → 60%
 function loudMul(x, y, fl) {
   let m = 1; const tx = x / TILE, ty = y / TILE;
@@ -2439,6 +2453,8 @@ function installStageFurniture(st, saved = false) {
       cells.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y));if(cells[0]){o.x=cells[0].x;o.y=cells[0].y;o.path=null;}
     }
   }
+  removeOversizedSofas(saved);
+
 }
 // 시설물 이동은 새 판과 구버전 체크포인트에 같은 규칙으로 적용한다.
 function moveStageFixtures(st, grid, saved = false) {
@@ -2455,6 +2471,18 @@ function moveStageFixtures(st, grid, saved = false) {
       if(at){o.x=tc(at[0]);o.y=tc(at[1]);o.path=null;if(o===P)o.trav=o.jump=o.cover=null;}
     }
   }
+}
+
+function removeOversizedSofas(saved=false){
+ const fresh=FURN.filter(f=>f.t==='sofa'||f.t==='sofaV');
+ if(!saved)removedSofaLayout=fresh.map(f=>({...f}));
+ // Furniture geometry is generated before a saved grid is restored. Remember
+ // removed footprints so an older checkpoint cannot restore invisible colliders.
+ const removed=saved?removedSofaLayout:fresh;if(!removed.length)return;
+ FURN=FURN.filter(f=>f.t!=='sofa'&&f.t!=='sofaV');
+ for(const f of removed){const grid=flOf(f)?GF[flOf(f)]:G0;if(!grid)continue;let floor='w';for(const[dx,dy]of[[0,1],[1,0],[-1,0],[0,-1]]){const c=grid[f.y+dy]?.[f.x+dx];if(c&&'wvt,h'.includes(c)){floor=c;break;}}
+  for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if('KE'.includes(grid[y]?.[x]||' ')&&!FURN.some(o=>flOf(o)===flOf(f)&&x>=o.x&&x<o.x+o.w&&y>=o.y&&y<o.y+o.h))grid[y][x]=floor;
+ }
 }
 
 // Shared physical rules for the current 2D streets. Training rigs and archived
@@ -3708,6 +3736,7 @@ function officeFurnKey(f){
  if(f.t==='shelf'&&f.skin==='freight')return null;
  if(f.t==='locker'||f.t==='wardrobe'||f.t==='bed'||f.t==='cbed'||f.t==='bedD'||f.t==='dance'||f.t==='rug'||f.t==='boxes'||f.t==='sink'||f.t==='stove'||f.t==='toilet'||f.t==='tub')return null;
  if(f.t==='desk'||f.t==='desk2'){
+  if(f.w===1&&f.h===1&&r%2===0)return 'deskComputer';
   if(r===1)return 'deskSideE';if(r===3)return 'deskSideW';
   if(style===OFFICE_STYLES.executive||style===OFFICE_STYLES.estate)return 'deskExecutive';
   return f.t==='desk'?'deskComputer':((f.x+f.y)%3===0?'deskFiles':'deskGlass');
@@ -3716,14 +3745,19 @@ function officeFurnKey(f){
  if(f.t==='chair'||f.t==='chairD'){
   const executive=style===OFFICE_STYLES.executive&&FURN.some(a=>flOf(a)===flOf(f)&&(a.t==='desk'||a.t==='desk2')&&a.x===f.x&&Math.abs(a.y-f.y)===1&&officeFurnKey(a)==='deskExecutive');
   const prefix=executive?'chairRed':[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style)?'chairLounge':'chairBlue';
-  return prefix+['','E','Back','W'][r];
+  // Face a nearby work/dining surface, rather than every chair facing south.
+  const tables=FURN.filter(a=>flOf(a)===flOf(f)&&['desk','desk2','pc','table','tableS'].includes(a.t)&&bldAt(a.x,a.y)===bi)
+   .map(a=>({dx:(a.x+a.w/2-f.x-f.w/2)*TILE,dy:(a.y+a.h/2-f.y-f.h/2)*TILE}))
+   .filter(a=>Math.hypot(a.dx,a.dy)<=110).sort((a,b)=>Math.hypot(a.dx,a.dy)-Math.hypot(b.dx,b.dy));
+  const a=tables[0],facing=a?(Math.abs(a.dx)>Math.abs(a.dy)?a.dx>0?1:3:a.dy>0?0:2):r;
+  return prefix+['','E','Back','W'][facing];
  }
  if(f.t==='sofa'||f.t==='sofaV')return null;
  return{cab:style.warm?'filesGold':'filesBlue',safe:null,shelf:f.skin==='freight'?'counterWood':style===OFFICE_STYLES.security?'monitorRackBlue':style.warm?'cabinetWood':'cabinetBlue',pc:'deskLaptop',counter:style.warm?'counterWood':'counterGlass',bar:'counterWood',fridge:null,plant:style.warm?'plant':'plantBlue',board:'board',medcab:'filesBlue'}[f.t]||null;
 }
 function officeFurnBounds(f){
  const key=officeFurnKey(f),r=officeFrame(key);if(!r)return null;
- const maxW=f.w*TILE-6,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:18);
+ const maxW=f.w*TILE,maxH=f.h*TILE+(['shelf','cab','medcab','fridge'].includes(f.t)?30:24);
  const chair=f.t==='chair'||f.t==='chairD'||f.t==='sofa'||f.t==='sofaV';
  const scale=Math.min(chair?(key.startsWith('chairRed')?1:1.5):1.5,maxW/r[2],maxH/r[3]);
  const w=Math.round(r[2]*scale),h=Math.round(r[3]*scale);
@@ -3778,16 +3812,13 @@ function officeWallDecor(c,fl,x0,y0,x1,y1){
 }
 function drawOfficeLamp(l,c=ctx){
  if(!officeReady()||!l.fixture)return false;
- const f=l.fixture,on=lampOn(l),style=officeStyle(bldAt(Math.floor(l.x/TILE),Math.floor(l.y/TILE)),flOf(l));
- const warm=[OFFICE_STYLES.executive,OFFICE_STYLES.estate,OFFICE_STYLES.club].includes(style);
- c.save();c.translate(f.x,f.y);if(!f.ny)c.rotate(Math.PI/2);
- c.fillStyle='#111c27';c.fillRect(-16,-4,32,9);
- c.save();if(!on)c.globalAlpha*=.5;officeBlit(c,warm?'warmLamp':'fluorescent',-15,-4,30,7);c.restore();
- // A small diffuser within a real mounting bracket. No luminous window frame.
- c.fillStyle=on?(warm?'#d0b98a':'#b9d2d0'):'#46555f';c.fillRect(-5,-2,10,3);
- if(on){c.fillStyle=warm?'#e1d0a7':'#d4e6dc';c.fillRect(-4,-2,8,1);}
- if(l.broken){c.fillStyle='#18232d';c.fillRect(-2,-3,2,5);}
- c.restore();return true;
+ const f=l.fixture,on=lampOn(l);
+ // The old blue strips were ceiling fluorescent sprites rotated onto walls.
+ // Use the purchased street pack's actual wall luminaire instead.
+ if(freeCityReady()&&freeCityArt===A.dotonbori){
+  c.save();if(!on)c.globalAlpha*=.5;freeCityDraw(c,on?'lampOn':'lampOff',f.x-12,f.y-20,.75);c.restore();return true;
+ }
+ return true;
 }
 function officeCabinetLeaf(c,g,hinge,side,projection,depth){
  if(!officeReady()||projection<1)return;
@@ -4560,7 +4591,8 @@ function drawLastSeen() {
     ctx.fillStyle = q.hot ? 'rgba(232,90,70,.9)' : 'rgba(242,196,107,.9)'; ctx.font = uiFont(14); ctx.textAlign = 'center'; ctx.fillText(q.hot ? '!' : '?', q.x, q.y - 40);
   }
 }
-function drawGuard(g) {
+function drawGuard(g) {return withFurnitureOcclusion(g,()=>drawGuardSprite(g));}
+function drawGuardSprite(g) {
   if(assassinOwnsActor(g))return;
   if(S.player.killAnim?.g===g)return; // the paired pose draws this victim once
   if(g.containerMoving||g.ledgeFalling)return;
@@ -5060,7 +5092,7 @@ function renderSkillPreparation(id,after=false){
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=field?.head||(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
  note.textContent=field?field.note+(points>0?' · 남은 '+points+'P는 기술 트리에서 사용 가능.':''):'기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
- copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
+ copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent=id==='brSkills'?'기술 '+points+'P':'기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;
@@ -6215,14 +6247,15 @@ function refreshLightMasks(){
  for(const l of S.lamps)rebuildLampPolygon(l);
  for(const key in lightCache)delete lightCache[key];
 }
-// 빛의 중심과 손으로 누르는 스위치는 별개다. 구버전 저장도 기둥 밑 상자에 연결한다.
+// 광원 위치는 유지하고, 손이 닿는 조명 본체 앞을 상호작용 지점으로 쓴다.
 function lampControl(l) {
+  if(l.fixture&&!l.outdoor)return{x:l.fixture.x+(l.fixture.nx||0)*14,y:l.fixture.y+(l.fixture.ny||0)*14,fl:flOf(l),z:0};
   if (l.control) return l.control;
   if (!l.pole) return l;
   const o = (S.poles || []).find(o => Math.abs(o.x - l.x) < 1 && Math.abs(o.y - l.y) < TILE);
   return o ? { x: o.x + 12, y: o.y + 6, fl: 0, z: 0 } : l;
 }
-const lampName = l => l.roomSwitch?(l.roomName||'실내')+' 조명 스위치':l.mount?.kind==='wall'?'벽부등':l.mount?.kind==='street'?'가로등':l.pole?'전신주 보안등':'조명';
+const lampName = l => l.roomSwitch?(l.roomName||'실내')+' 조명':l.mount?.kind==='wall'?'벽부등':l.mount?.kind==='street'?'가로등':l.pole?'전신주 보안등':'조명';
 // 등 격자: 밝기를 물을 때마다 판의 등 전부(도시는 수백 개)를 훑지 않게, 160px 칸마다 빛이 닿을 수 있는 등만 모아 둔다
 const LG_C = 160, LG_NONE = [];
 let LG = null;
@@ -6581,10 +6614,7 @@ function drawOutdoorLampFixtures() {
     ctx.fillStyle=l.broken?'#403d3a':on?'#efe0ad':'#66716d';ctx.fillRect(x-6,y-1,12,3);
     if(l.broken){ctx.strokeStyle='#b0aaa0';ctx.beginPath();ctx.moveTo(x-5,y-3);ctx.lineTo(x+4,y+3);ctx.stroke();}
     }
-    if(m.kind!=='pole'&&!drawPurchasedSwitch(l,true)) {
-      const p=lampControl(l);ctx.strokeStyle='#586970';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.ax,m.ay-10);ctx.lineTo(p.x,p.y-3);ctx.stroke();ctx.fillStyle='#26333a';ctx.fillRect(p.x-4,p.y-8,8,12);ctx.strokeStyle='#808b88';ctx.strokeRect(p.x-4,p.y-8,8,12);
-      ctx.fillStyle=on?'#c3cba1':'#525e61';ctx.fillRect(p.x-1,p.y-5,2,5);
-    }
+
     if(on) {const gr=ctx.createRadialGradient(x,y,0,x,y,15);gr.addColorStop(0,'rgba('+(l.col||'255,217,155')+',.35)');gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(x-15,y-15,30,30);}
     ctx.restore();
   }
@@ -6637,7 +6667,7 @@ function syncWorkLights() {
 // Awake people use lit homes and staff quarters. Sleeping/empty rooms keep their
 // night state, and revisiting a checkpoint never silently undoes a blackout.
 function syncOccupiedLights(restoring=false){
- if(STAGE.artSlice||S.occupiedLightVersion>=249)return;
+ if(STAGE.artSlice||S.occupiedLightVersion>=259)return;
  const previous=CUR_F,rooms=new Map();
  try{
   for(const g of S.guards){
@@ -6645,7 +6675,10 @@ function syncOccupiedLights(restoring=false){
    const fl=flOf(g);
    for(const at of [{x:g.x,y:g.y},...(g.route||[])]){
     const tx=Math.floor(at.x/TILE),ty=Math.floor(at.y/TILE),bi=bldAt(tx,ty),b=BLD[bi],p=PLANS[bi]?.[fl];
-    if(!b||b.vacant||(p&&groundedWorld()&&(b.kind==='shop'||STAGE.workBuildings?.includes(bi))))continue;
+    // Work lighting deliberately leaves some club/corner cells dark. Removing
+    // a sofa can make one of those cells a valid civilian spawn: check actual
+    // occupants here too, rather than assuming every workplace is already lit.
+    if(!b||b.vacant)continue;
     // Hand-authored warehouse/estate floors have no apartment plan. Their
     // actual walls still bound light and switch circuits in syncRoomSwitches.
     const candidates=p?[p.store,...p.units.flatMap(u=>[u.living,...u.rooms,u.bath])].filter(Boolean):[b],room=candidates.filter(r=>tx>=r.x0&&tx<=r.x1&&ty>=r.y0&&ty<=r.y1).sort((a,b)=>(a.x1-a.x0+1)*(a.y1-a.y0+1)-(b.x1-b.x0+1)*(b.y1-b.y0+1))[0];if(!room)continue;
@@ -6668,11 +6701,11 @@ function syncOccupiedLights(restoring=false){
     rebuildLampPolygon(lamp);S.lamps.push(lamp);local.push(lamp);
    }
   }
-  S.occupiedLightVersion=249;LG=null;S.floorC={};for(const key in lightCache)delete lightCache[key];refreshBodyLighting();
+  S.occupiedLightVersion=259;LG=null;S.floorC={};for(const key in lightCache)delete lightCache[key];refreshBodyLighting();
  }finally{setLayer(previous);}
 }
 
-// A room has one wall control. Lights remain at their authored positions so
+// A room has one circuit, operated at its fixtures. Lights keep their positions so
 // changing the fixture/control does not silently change stealth illumination.
 const lampCircuit = l => l.circuit ? S.lamps.filter(o=>o.circuit===l.circuit) : [l];
 const sameLampCircuit = (a,b) => !!a&&!!b&&(a===b||!!a.circuit&&a.circuit===b.circuit);
@@ -6750,7 +6783,7 @@ function reactToRoomDarkness(l,watchers) {
   const people=roomLightOccupants(l),at=lampControl(l);
   for(const g of people){
     endChat(g);g.path=null;g.act=null;g.glanceA=Math.atan2(at.y-g.y,at.x-g.x);g.want=g.glanceA;g.soundWatchUntil=S.t+1.5;g.lightNoticeUntil=S.t+2.4;setIcon(g,'?');
-    gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 스위치 확인해.',2.4);
+    gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 조명 확인해.',2.4);
   }
   const repair=people.filter(g=>!g.target).sort((a,b)=>(a.civ?1:0)-(b.civ?1:0)||dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
   if(repair&&!S.guards.some(g=>g.relight&&sameLampCircuit(g.relight.l,l))){
@@ -6769,7 +6802,7 @@ function updateRoomRelight(g,dt,spd) {
     if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);return true;
   }
   g.path=null;g.moving=false;work.t-=dt;
-  if(work.t<=0){setLampCircuit(l,false);g.relight=null;g.icon=null;play('switch',.4*proxVol(g));gsay(g,'불은 켜 둬야지.',1.8);if(dist(g.x,g.y,S.player.x,S.player.y)<700)toast((g.civ?'주민':'경비')+'이 스위치로 조명을 다시 켰다',2);if(!g.civ)setAlert(1,20);}
+  if(work.t<=0){setLampCircuit(l,false);g.relight=null;g.icon=null;play('switch',.4*proxVol(g));gsay(g,'불은 켜 둬야지.',1.8);if(dist(g.x,g.y,S.player.x,S.player.y)<700)toast((g.civ?'주민':'경비')+'이 조명을 다시 켰다',2);if(!g.civ)setAlert(1,20);}
   return true;
 }
 
@@ -6811,13 +6844,7 @@ function drawIndoorLampFixtures(fl,building=-1) {
       if(l.broken){ctx.strokeStyle='#b1a49a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(f.x-3,bulb-3);ctx.lineTo(f.x+3,bulb+3);ctx.stroke();}
       }
     }
-    const p=l.control;if(!p||controls.has(l.circuit)||!inView(p.x,p.y,50))continue;controls.add(l.circuit);
-    if(drawOfficeSwitch(l))continue;
-    const normal=switchArtNormal(l);if(roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(...normal),p.x,p.y))continue;
-    // A small wall plate, separate from fixtures and their ground light pools.
-    ctx.fillStyle='#10171f';ctx.fillRect(p.x-6,p.y-10,12,17);ctx.fillStyle='#a6adb1';ctx.fillRect(p.x-5,p.y-9,10,15);
-    ctx.fillStyle=lampCircuitOff(l)?'#59656e':'#e0e3de';ctx.fillRect(p.x-3,p.y-7,6,10);
-    ctx.fillStyle=lampCircuitOff(l)?'#20282e':'#59656e';ctx.fillRect(p.x-2,p.y+(lampCircuitOff(l)?-1:-6),4,2);
+
   }
   drawRoomFinishFixtures(fl,building);
 }
@@ -6892,14 +6919,11 @@ function drawRoomFinishExterior(openB){
 function drawRoomFinishFixtures(fl,building){
  if(officeReady())return;
  const f=S.roomFinish;if(!f||f.fl!==fl||building>=0&&building!==f.b)return;
- const controls=new Set();
  for(const l of roomFinishLamps()){
   const m=l.fixture,on=lampOn(l);if(!m)continue;
   roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.x,m.y);
   if(on){const y=m.y-35;ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(m.x,y,0,m.x,y,10);g.addColorStop(0,'rgba(255,212,142,.28)');g.addColorStop(1,'rgba(255,212,142,0)');ctx.fillStyle=g;ctx.fillRect(m.x-10,y-10,20,20);ctx.restore();}
   if(l.broken){ctx.strokeStyle='#89867c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(m.x-3,m.y-38);ctx.lineTo(m.x+3,m.y-29);ctx.stroke();}
-  if(!l.control||controls.has(l.circuit))continue;controls.add(l.circuit);
-  const p=l.control;roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(-p.nx,-p.ny),p.x+p.nx*5,p.y+p.ny*5);
  }
 }
 
@@ -6994,6 +7018,19 @@ function switchArtNormal(l){
   if(!best||d<best.d)best={d,n:Math.abs(dx)>Math.abs(dy)?[Math.sign(dx),0]:[0,Math.sign(dy)]};
  }
  return best?.n.some(Boolean)?best.n:[l.fixture?.nx||0,l.fixture?.ny||1];
+}
+// Furniture remains in the lit floor cache. Mask only the part of an actor
+// behind its opaque pixels, so a head cannot paint over a nearer tabletop.
+const furnitureMasks=new WeakMap();
+function furnitureOcclusionMask(f,b){
+ const old=furnitureMasks.get(f),key=[b.x,b.y,b.w,b.h,b.key,officeReady(),purchasedPropsReady()].join(':');if(old?.key===key)return old.path;
+ const x=Math.floor(b.x),y=Math.floor(b.y),w=Math.ceil(b.w)+2,h=Math.ceil(b.h)+2,c=document.createElement('canvas');c.width=w;c.height=h;const q=c.getContext('2d',{willReadFrequently:true});q.translate(-x,-y);drawFurnArt(q,f);const data=q.getImageData(0,0,w,h).data,path=new Path2D();path.rect(-192,-192,(MW+8)*TILE,(MH+8)*TILE);
+ for(let yy=0;yy<h;yy++){let start=-1;for(let xx=0;xx<=w;xx++){const opaque=xx<w&&data[(yy*w+xx)*4+3]>=160;if(opaque&&start<0)start=xx;if(!opaque&&start>=0){path.rect(x+start,y+yy,xx-start,1);start=-1;}}}
+ furnitureMasks.set(f,{key,path});return path;
+}
+function withFurnitureOcclusion(actor,paint){
+ if(!S||actor.z||actor.under||actor.vent||actor.wire||actor.climb||actor.trav||actor.jump)return paint();
+ ctx.save();try{for(const f of FURN){if(flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
 }
 
 // Offline-authored cloth and stationery, shared by loose props and desk loot.
@@ -7262,14 +7299,14 @@ function drawWarnRing(g) {
 
 // Permission, observation and illegal work are separate facts. These readouts
 // query the same rules as perception; they never grant clearance or suppress AI.
-const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['제보 조사','제보된 조사 지점'],trace:['이상 흔적 조사','흔적 조사 지점']};
+const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['목격 전달받음','전달받은 마지막 목격 위치'],colleague:['동료 확인','동료를 마지막으로 본 곳'],radioOrder:['무전 지시 확인','점검 지시를 받은 곳'],rollCall:['무전 응답 확인','응답하지 않은 동료의 담당 구역'],trace:['이상 흔적 조사','흔적 조사 지점']};
 function investigationReadout(g){
   if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS')return{kind:'dispatch',tag:'배차 확인 중',site:'배차 단말'};
   const searching=g.state==='SEARCH'&&g.searchJob;
   const inc=searching&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident);
   const at=searching?g.searchOrigin:g.poi;
-  const kind=g.state==='ALERT'?'player':inc?.source==='sighting'?'player':inc?.source==='camera'?'camera':inc?.source==='body'||inc?.at?.clue==='body'||at?.clue==='body'?'body':at?.clue==='player'?'player':g.why==='saw'?'person':g.why==='heard'?'sound':g.why==='blood'?'blood':g.why==='exit'?'exit':['radio','report'].includes(g.why)||inc?.source==='radio'?'report':'trace';
-  return{kind,tag:searching?'수색 중인 지점':INVESTIGATION_LABELS[kind][0],site:INVESTIGATION_LABELS[kind][1]};
+  const kind=g.state==='ALERT'?'player':inc?.source==='sighting'?'player':inc?.source==='camera'?'camera':inc?.source==='body'||inc?.at?.clue==='body'||at?.clue==='body'?'body':g.why==='report'||inc?.source==='radio'?'report':at?.clue==='player'?'player':g.why==='saw'?'person':g.why==='heard'?'sound':g.why==='blood'?'blood':g.why==='exit'?'exit':g.why==='colleague'?'colleague':g.why==='radioOrder'?'radioOrder':['radio','rollCall'].includes(g.why)?'rollCall':'trace';
+  return{kind,tag:INVESTIGATION_LABELS[kind][0]+(searching?' · 수색 중':''),site:INVESTIGATION_LABELS[kind][1]};
 }
 const bodyRiskText=c=>c.ko?'눈에 띄는 기절자':'눈에 띄는 시체';
 function accessReadout(at=S.player){
@@ -9320,7 +9357,7 @@ function updateRadioCheck(dt) {
   for (const m of missing.slice(0, 3)) {
     const home = m.route && m.route[0] ? m.route[0] : { x: m.x, y: m.y }; let best = null, bd = 1e9;
     for (const g of S.guards) { if (!isCrew(g) || sent.has(g) || g.elite || ['DEAD', 'CAPTIVE', 'ALERT', 'FUSE'].includes(g.state) || flOf(g) !== flOf(m)) continue; const d = dist(g.x, g.y, home.x, home.y); if (d < bd) { bd = d; best = g; } }
-    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'radio'; gsay(best, ['응답이 없어. 내가 가 볼게.', '무전 안 받네. 확인하고 올게.', '계속 응답이 없네. 확인할게.'][best.id % 3], 2.4); }
+    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'rollCall'; gsay(best, ['응답이 없어. 내가 가 볼게.', '무전 안 받네. 확인하고 올게.', '계속 응답이 없네. 확인할게.'][best.id % 3], 2.4); }
   }
   setAlert(1, 30, `무전 점검 — ${missing.length}명이 대답하지 않는다. 확인하러 간다`);
 }
@@ -10471,7 +10508,7 @@ function updateSecurityBuddy(g,dt,speed){
   const known=g.securityLast;
   if(!known)return false;
   if(S.t-known.at>7){
-    delete g.securityBuddy;delete g.securityLast;endChat(g);goSuspicious(g,known.x,known.y,5);g.why='radio';return true;
+    delete g.securityBuddy;delete g.securityLast;endChat(g);goSuspicious(g,known.x,known.y,5);g.why='colleague';gsay(g,'같이 돌던 사람 어디 갔지? 마지막으로 본 데부터 봐야겠네.',2.5);return true;
   }
   if(leader.state!=='PATROL'||!same)return false;
   const seen=S.t-known.at<.1,point=seen?securityEscortPoint(leader,leader.x-Math.cos(leader.a)*52,leader.y-Math.sin(leader.a)*52):known,x=point.x,y=point.y;
@@ -14566,7 +14603,7 @@ function actRadio(pt){
  if(!groundSolidP(Math.floor(at.x/TILE),Math.floor(at.y/TILE)))for(const g of S.guards.filter(g=>g.radio&&!g.civ&&!g.dog&&!g.target&&!g.elite&&!g.doomed&&!g.climb&&flOf(g)===flOf(P)&&!(g.z||0)&&['PATROL','RETURN'].includes(g.state)&&dist(g.x,g.y,at.x,at.y)<420).sort((a,b)=>dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))){
   const route=astar(Math.floor(g.x/TILE),Math.floor(g.y/TILE),Math.floor(at.x/TILE),Math.floor(at.y/TILE),npcRouteSolid(g));if(route.length||dist(g.x,g.y,at.x,at.y)<TILE){chosen=g;break;}
  }
- if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radio';P.radioCall={t:S.t,target:chosen.id};after(.22,()=>{if(!['DEAD','KO'].includes(chosen.state)){gsay(chosen,'확인. 그쪽으로 갈게.',2);play('call',.16);}});P.radioCharges--;S.radioReadyAt=S.t+30;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
+ if(chosen){endChat(chosen);goSuspicious(chosen,at.x,at.y,6);chosen.why='radioOrder';P.radioCall={t:S.t,target:chosen.id};after(.22,()=>{if(!['DEAD','KO'].includes(chosen.state)){gsay(chosen,'확인. 그쪽으로 갈게.',2);play('call',.16);}});P.radioCharges--;S.radioReadyAt=S.t+30;S.stats.radioDecoys=(S.stats.radioDecoys||0)+1;recordFieldSkill('radio','경비 한 명이 점검 지시를 받고 이동한다');play('call',.3);toast('경비 한 명이 점검 지시를 받았다',2);}else toast('같은 층에 점검 지시를 받을 경비나 연결된 경로가 없다',2.2);
  setLayer(f0);return !!chosen;
 }
 function actHack(){
@@ -15312,25 +15349,9 @@ function clipExteriorFromInterior(bi, fl) {
   ctx.rect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE);
   ctx.clip('evenodd'); return true;
 }
-// 옆면 문도 입구로 읽히게 한다. 실제 문턱과 진입 방향을 그대로 사용한다.
-function drawRoofEntrances(P) {
-  if (!P.z || flOf(P) || tactical) return;
-  for (const l of S.ladders) {
-    const d = l.roofDoor;
-    if (l.roofHatch || !d || l.tz !== P.z || dist(P.x, P.y, d.x, d.y) > 300) continue;
-    const nx = d.dx, ny = d.dy, tx = -ny, ty = nx;
-    ctx.save(); ctx.translate(d.x, d.y); ctx.transform(nx, ny, tx, ty, 0, 0);
-    ctx.fillStyle = '#686d68'; ctx.fillRect(3, -15, 29, 30);
-    ctx.strokeStyle = '#a8b2a4'; ctx.lineWidth = 1; ctx.strokeRect(3.5, -14.5, 28, 29);
-    ctx.strokeStyle = '#d1d4bc'; ctx.lineWidth = 2;
-    ctx.beginPath(); for (const u of [7, 13, 19]) { ctx.moveTo(u, -8); ctx.lineTo(u, 8); } ctx.stroke();
-    ctx.fillStyle = '#e1e6d2'; ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(10, -4); ctx.lineTo(10, 4); ctx.closePath(); ctx.fill(); ctx.restore();
-    ctx.save();const k = Math.max(1, .9 / SCALE), x = d.x, y = d.y - 48;
-    ctx.fillStyle = '#202c2c'; ctx.fillRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.strokeStyle = '#a5b3a1'; ctx.lineWidth = 1; ctx.strokeRect(x - 20 * k, y - 8 * k, 40 * k, 16 * k);
-    ctx.fillStyle = '#dce4d5'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = uiFont(11 * k); ctx.fillText('↓ '+((l.bfl||0)+1)+'층', x, y); ctx.restore();
-  }
-}
+// The purchased stair hut already contains the door. Extra floor rectangles
+// and floating entrance plaques duplicated it and covered its lower pixels.
+function drawRoofEntrances(P) {}
 
 // 대청소 빌라 한 채에서만 시험한다. 기존 평면·좌표·그림 캐시를 그대로 쓴다.
 function hasHeightCues(bi) {
@@ -15581,7 +15602,8 @@ function drawPlayerLocator(P) {
   const dx=Math.cos(a),dy=Math.sin(a),px=x+dx*15*k,py=y+dy*9*k;
   ctx.fillStyle='#7fe3ff';ctx.strokeStyle='#081015';ctx.lineWidth=1.5*k;ctx.beginPath();ctx.moveTo(px+dx*3*k,py+dy*3*k);ctx.lineTo(px-dx*3*k-dy*3*k,py-dy*3*k+dx*3*k);ctx.lineTo(px-dx*3*k+dy*3*k,py-dy*3*k-dx*3*k);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
 }
-function drawPlayer(P) {
+function drawPlayer(P) {return withFurnitureOcclusion(P,()=>drawPlayerSprite(P));}
+function drawPlayerSprite(P) {
   updateHeroVisual(P);
   const previous=playerInkKey;playerInkKey=isTouch||P.light<.3?playerKey(P):null;
   try{drawPlayerBody(P);if(P.radioCall&&S.t-P.radioCall.t<.65&&!P.hide&&!P.car&&!P.trav&&!P.hurtT){const side=Math.cos(P.a)<0?-1:1;drawFieldTool(ctx,'radio',P.x+side*7,P.y-32,12);}}finally{playerInkKey=previous;}
@@ -16789,7 +16811,7 @@ function goalMarkerVisible(P,gl){
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
-  if(!goalMarkerVisible(P,gl))return;
+  if(!goalMarkerVisible(P,gl)||gl.via)return;
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.
@@ -17868,19 +17890,7 @@ function drawContactFeedback() {
   const t=clamp((S.t-f.t)/.24,0,1);ctx.save();ctx.globalAlpha=(1-t)*.8;ctx.strokeStyle='#d8e2c7';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(f.x,f.y,f.surface?6+6*t:10+12*t,0,TAU);ctx.stroke();ctx.restore();
 }
-function drawAccessCues(P) {
-  if(!mainContract(STAGE)||P.z||P.under||P.vent||tactical)return;
-  const seen=new Set();ctx.save();
-  for(const l of S.ladders) {
-    if(l.kind!=='fstair')continue;
-    const up=flOf(P)===(l.bfl||0),down=flOf(P)===l.tfl;if(!up&&!down)continue;
-    const g=stairFloor(l.tx,l.ty,flOf(P)),m=up?g.up.marker:g.down.marker,token=`${m.x},${m.y},${up}`;
-    if(seen.has(token)||!fixtureVisible({...m,fl:flOf(P)},220))continue;seen.add(token);
-    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(Math.atan2(g.d[1],g.d[0]));ctx.fillStyle='#222d32cc';ctx.fillRect(-12,-15,24,30);
-    ctx.strokeStyle='#b8c4b6';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,-11);ctx.lineTo(-8,11);ctx.moveTo(8,-11);ctx.lineTo(8,11);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#d4dccd';ctx.font=uiFont(10);ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
-  }ctx.restore();
-}
+function drawAccessCues(P) { /* Physical doors and stairs identify their entrances. */ }
 
 // Presentation consumes committed events; it never emits gameplay noise or grants access.
 const FEEDBACK_LEVEL={ko:1,kill:2,hurt:2,death:3,stash:1,dress:1,loot:2,pickup:1,light:1,record:2,camCut:1,camClear:2,arrival:1,skill:1};
@@ -18403,8 +18413,8 @@ function makeMissionIdentity(row,brief){
   const el=document.createElement('div');el.className='mission-id '+row.kind+(row.complete?' complete':'');el.dataset.missionId=row.id;
   const cv=document.createElement('canvas');cv.width=brief?192:72;cv.height=brief?128:72;cv.dataset.missionArt=row.kind;cv.dataset.key=row.key||row.art||'';cv.setAttribute('aria-hidden','true');el.appendChild(cv);
   const text=document.createElement('div'),type=document.createElement('small'),name=document.createElement('b'),status=document.createElement('span');
-  type.textContent=brief?(row.kind==='target'?'제거할 사람':row.art==='terminal'?'현장에서 할 일':'가져올 물건'):row.status;name.textContent=row.name;status.textContent=brief?row.verb+' · '+row.where:row.complete?'✓ 완료':row.status;
-  text.append(type,name);if(brief&&row.role){const role=document.createElement('em');role.className='target-profile';role.textContent=row.role+' · '+row.appearance;text.appendChild(role);}if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
+  type.textContent=brief?row.verb:row.status;name.textContent=row.name;status.textContent=brief?row.where:row.complete?'✓ 완료':row.status;
+  text.append(type,name);if(brief&&row.role){const role=document.createElement('em');role.className='target-profile';role.textContent=row.appearance||row.role;text.appendChild(role);}if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
   const hero=$('hudFace');if(hero&&!hero.dataset.ready&&drawFace(hero,speakerOf('hero')))hero.dataset.ready='1';
@@ -18456,17 +18466,18 @@ function showBrief(go) {
   paused = true; el.hidden = false;
   renderCaseEntry('caseBrief');
   $('brStory').hidden=!STAGE.story; $('brStory').textContent=STAGE.story?.before||'';
-  for(const cv of el.querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
+  for(const cv of $('briefInfo').querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   el.querySelector('.br-scroll').scrollTop = 0;
-  $('brMapDetails').open = !isTouch || innerWidth >= 900;
+  if($('briefInfo').open)$('briefInfo').close();
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
-  $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
-  const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
+  $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief;
+  const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.dataset.count=String(identities.length);cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
   $('brPurpose').hidden=!STAGE.purpose&&STAGE.id!=='m2'&&!introductoryContract(STAGE);$('brPurpose').textContent=STAGE.purpose|| (STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.');
-  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표를 완료한 뒤 표시된 출구로 탈출';
+  $('brInfoPurpose').textContent=$('brPurpose').textContent;
+  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표 완료 후 지도에 표시된 출구로 탈출';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='탈출')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
   renderSkillPreparation('brSkills');
@@ -19544,6 +19555,7 @@ window.addEventListener('keydown', e => {
     if(e.code==='Tab'){e.preventDefault();const buttons=[...$('newCampaignDialog').querySelectorAll('button')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
     return;
   }
+  if($('briefInfo').open)return;
   if(loadoutOpen){handleLoadoutKey(e);return;}
   if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
@@ -19921,6 +19933,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  if($('briefInfo').open)$('briefInfo').close();
   clearResultTransition();
   resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
@@ -19965,6 +19978,7 @@ function chooseEntry(i) {
 }
 function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); return { x: o.x, y: o.y - o.top }; } return { x: tc(e.at[0]), y: tc(e.at[1]) }; }
 function toMenu() {
+  if($('briefInfo').open)$('briefInfo').close();
   if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
@@ -19991,6 +20005,11 @@ atlas.src = A.atlas;
 if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm([window.__AGENT_CITY_STUDY__?'agent@heroAgent':'ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
 
 $('btnRadio').addEventListener('click',e=>{e.stopPropagation();replayEpisodeRadio();});
+
+$('btnBriefInfo').onclick=()=>$('briefInfo').showModal();
+$('btnBriefInfoClose').onclick=()=>$('briefInfo').close();
+$('briefInfo').addEventListener('keydown',e=>{if(e.code==='Tab'){e.preventDefault();$('btnBriefInfoClose').focus();}});
+$('briefInfo').addEventListener('close',()=>{if(!$('brief').hidden)$('btnBriefInfo').focus({preventScroll:true});});
 
 })();
 

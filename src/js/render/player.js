@@ -7,7 +7,8 @@ function drawPlayerLocator(P) {
   const dx=Math.cos(a),dy=Math.sin(a),px=x+dx*15*k,py=y+dy*9*k;
   ctx.fillStyle='#7fe3ff';ctx.strokeStyle='#081015';ctx.lineWidth=1.5*k;ctx.beginPath();ctx.moveTo(px+dx*3*k,py+dy*3*k);ctx.lineTo(px-dx*3*k-dy*3*k,py-dy*3*k+dx*3*k);ctx.lineTo(px-dx*3*k+dy*3*k,py-dy*3*k-dx*3*k);ctx.closePath();ctx.stroke();ctx.fill();ctx.restore();
 }
-function drawPlayer(P) {
+function drawPlayer(P) {return withFurnitureOcclusion(P,()=>drawPlayerSprite(P));}
+function drawPlayerSprite(P) {
   updateHeroVisual(P);
   const previous=playerInkKey;playerInkKey=isTouch||P.light<.3?playerKey(P):null;
   try{drawPlayerBody(P);if(P.radioCall&&S.t-P.radioCall.t<.65&&!P.hide&&!P.car&&!P.trav&&!P.hurtT){const side=Math.cos(P.a)<0?-1:1;drawFieldTool(ctx,'radio',P.x+side*7,P.y-32,12);}}finally{playerInkKey=previous;}

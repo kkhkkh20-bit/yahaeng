@@ -44,9 +44,10 @@ async def main(args):
                     return state
                 await departure_visible() # No auto-scroll may rescue the primary action.
                 await page.screenshot(path=str(out/f'{engine}-{width}x{height}-brief.png'))
-                await page.tap('#brDetails>summary')
+                await page.tap('#btnBriefInfo')
+                assert await page.locator('#brRadio').is_visible()
+                await page.tap('#btnBriefInfoClose')
                 await departure_visible()
-                await page.tap('#brMapDetails>summary')
                 await page.locator('#brief .br-scroll').evaluate('e=>e.scrollTop=e.scrollHeight')
                 await departure_visible()
                 # Layout fixture: an existing checkpoint adds a third footer action.

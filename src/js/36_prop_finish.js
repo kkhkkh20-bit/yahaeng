@@ -90,3 +90,16 @@ function switchArtNormal(l){
  }
  return best?.n.some(Boolean)?best.n:[l.fixture?.nx||0,l.fixture?.ny||1];
 }
+// Furniture remains in the lit floor cache. Mask only the part of an actor
+// behind its opaque pixels, so a head cannot paint over a nearer tabletop.
+const furnitureMasks=new WeakMap();
+function furnitureOcclusionMask(f,b){
+ const old=furnitureMasks.get(f),key=[b.x,b.y,b.w,b.h,b.key,officeReady(),purchasedPropsReady()].join(':');if(old?.key===key)return old.path;
+ const x=Math.floor(b.x),y=Math.floor(b.y),w=Math.ceil(b.w)+2,h=Math.ceil(b.h)+2,c=document.createElement('canvas');c.width=w;c.height=h;const q=c.getContext('2d',{willReadFrequently:true});q.translate(-x,-y);drawFurnArt(q,f);const data=q.getImageData(0,0,w,h).data,path=new Path2D();path.rect(-192,-192,(MW+8)*TILE,(MH+8)*TILE);
+ for(let yy=0;yy<h;yy++){let start=-1;for(let xx=0;xx<=w;xx++){const opaque=xx<w&&data[(yy*w+xx)*4+3]>=160;if(opaque&&start<0)start=xx;if(!opaque&&start>=0){path.rect(x+start,y+yy,xx-start,1);start=-1;}}}
+ furnitureMasks.set(f,{key,path});return path;
+}
+function withFurnitureOcclusion(actor,paint){
+ if(!S||actor.z||actor.under||actor.vent||actor.wire||actor.climb||actor.trav||actor.jump)return paint();
+ ctx.save();try{for(const f of FURN){if(flOf(f)!==flOf(actor)||!['desk','desk2','pc','table','tableS','counter','chair','chairD'].includes(f.t)||actor.y>=(f.y+f.h)*TILE-5||actor.x+25<f.x*TILE||actor.x-25>(f.x+f.w)*TILE||actor.y+12<f.y*TILE-40)continue;const b=purchasedPropFurnBounds(f)||officeFurnBounds(f);if(!b||actor.x+25<b.x||actor.x-25>b.x+b.w||actor.y+12<b.y||actor.y-75>b.y+b.h)continue;ctx.clip(furnitureOcclusionMask(f,b),'evenodd');}return paint();}finally{ctx.restore();}
+}

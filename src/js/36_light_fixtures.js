@@ -124,10 +124,7 @@ function drawOutdoorLampFixtures() {
     ctx.fillStyle=l.broken?'#403d3a':on?'#efe0ad':'#66716d';ctx.fillRect(x-6,y-1,12,3);
     if(l.broken){ctx.strokeStyle='#b0aaa0';ctx.beginPath();ctx.moveTo(x-5,y-3);ctx.lineTo(x+4,y+3);ctx.stroke();}
     }
-    if(m.kind!=='pole'&&!drawPurchasedSwitch(l,true)) {
-      const p=lampControl(l);ctx.strokeStyle='#586970';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(m.ax,m.ay-10);ctx.lineTo(p.x,p.y-3);ctx.stroke();ctx.fillStyle='#26333a';ctx.fillRect(p.x-4,p.y-8,8,12);ctx.strokeStyle='#808b88';ctx.strokeRect(p.x-4,p.y-8,8,12);
-      ctx.fillStyle=on?'#c3cba1':'#525e61';ctx.fillRect(p.x-1,p.y-5,2,5);
-    }
+
     if(on) {const gr=ctx.createRadialGradient(x,y,0,x,y,15);gr.addColorStop(0,'rgba('+(l.col||'255,217,155')+',.35)');gr.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=gr;ctx.fillRect(x-15,y-15,30,30);}
     ctx.restore();
   }

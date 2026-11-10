@@ -68,13 +68,10 @@ function drawRoomFinishExterior(openB){
 function drawRoomFinishFixtures(fl,building){
  if(officeReady())return;
  const f=S.roomFinish;if(!f||f.fl!==fl||building>=0&&building!==f.b)return;
- const controls=new Set();
  for(const l of roomFinishLamps()){
   const m=l.fixture,on=lampOn(l);if(!m)continue;
   roomArtDraw(ctx,'lamp-'+Number(on)+'-'+roomArtRotation(m.nx,m.ny),m.x,m.y);
   if(on){const y=m.y-35;ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(m.x,y,0,m.x,y,10);g.addColorStop(0,'rgba(255,212,142,.28)');g.addColorStop(1,'rgba(255,212,142,0)');ctx.fillStyle=g;ctx.fillRect(m.x-10,y-10,20,20);ctx.restore();}
   if(l.broken){ctx.strokeStyle='#89867c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(m.x-3,m.y-38);ctx.lineTo(m.x+3,m.y-29);ctx.stroke();}
-  if(!l.control||controls.has(l.circuit))continue;controls.add(l.circuit);
-  const p=l.control;roomArtDraw(ctx,'switch-'+Number(!lampCircuitOff(l))+'-'+roomArtRotation(-p.nx,-p.ny),p.x+p.nx*5,p.y+p.ny*5);
  }
 }

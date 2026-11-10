@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------- 지도
 let G, STAGE, STAGE_I = 0;
-let POLES = [], CARS = [], CROWD = [];
+let POLES = [], CARS = [], CROWD = [], removedSofaLayout = [];
 // 시끄러운 곳: 클럽 안(음악) → 내 소리 35%만 퍼진다. 클럽 건물 다른 층·바로 바깥(새어 나오는 베이스) → 60%
 function loudMul(x, y, fl) {
   let m = 1; const tx = x / TILE, ty = y / TILE;
@@ -99,6 +99,8 @@ function installStageFurniture(st, saved = false) {
       cells.sort((a,b)=>dist(o.x,o.y,a.x,a.y)-dist(o.x,o.y,b.x,b.y));if(cells[0]){o.x=cells[0].x;o.y=cells[0].y;o.path=null;}
     }
   }
+  removeOversizedSofas(saved);
+
 }
 // 시설물 이동은 새 판과 구버전 체크포인트에 같은 규칙으로 적용한다.
 function moveStageFixtures(st, grid, saved = false) {
@@ -115,4 +117,16 @@ function moveStageFixtures(st, grid, saved = false) {
       if(at){o.x=tc(at[0]);o.y=tc(at[1]);o.path=null;if(o===P)o.trav=o.jump=o.cover=null;}
     }
   }
+}
+
+function removeOversizedSofas(saved=false){
+ const fresh=FURN.filter(f=>f.t==='sofa'||f.t==='sofaV');
+ if(!saved)removedSofaLayout=fresh.map(f=>({...f}));
+ // Furniture geometry is generated before a saved grid is restored. Remember
+ // removed footprints so an older checkpoint cannot restore invisible colliders.
+ const removed=saved?removedSofaLayout:fresh;if(!removed.length)return;
+ FURN=FURN.filter(f=>f.t!=='sofa'&&f.t!=='sofaV');
+ for(const f of removed){const grid=flOf(f)?GF[flOf(f)]:G0;if(!grid)continue;let floor='w';for(const[dx,dy]of[[0,1],[1,0],[-1,0],[0,-1]]){const c=grid[f.y+dy]?.[f.x+dx];if(c&&'wvt,h'.includes(c)){floor=c;break;}}
+  for(let y=f.y;y<f.y+f.h;y++)for(let x=f.x;x<f.x+f.w;x++)if('KE'.includes(grid[y]?.[x]||' ')&&!FURN.some(o=>flOf(o)===flOf(f)&&x>=o.x&&x<o.x+o.w&&y>=o.y&&y<o.y+o.h))grid[y][x]=floor;
+ }
 }

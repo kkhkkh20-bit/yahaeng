@@ -96,7 +96,7 @@ function renderSkillPreparation(id,after=false){
  const copy=document.createElement('div'),head=document.createElement('b'),note=document.createElement('p'),button=document.createElement('button');
  head.textContent=field?.head||(after?'다음 의뢰 전':'출발 전')+' · 기술 '+points+'P 사용 가능';
  note.textContent=field?field.note+(points>0?' · 남은 '+points+'P는 기술 트리에서 사용 가능.':''):'기술 트리에서 포인트를 사용해 원하는 기술을 배우세요.';
- copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent='기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
+ copy.append(head,note);el.append(copy);if(points>0){button.type='button';button.textContent=id==='brSkills'?'기술 '+points+'P':'기술 배우기';button.onclick=openAssassinMenu;el.append(button);}
 }
 function updateSkillPrompt(force=false){
  if(!force&&hudCache.skillPromptAt!=null&&S.t-hudCache.skillPromptAt>=0&&S.t-hudCache.skillPromptAt<.5)return;

@@ -102,8 +102,8 @@ function makeMissionIdentity(row,brief){
   const el=document.createElement('div');el.className='mission-id '+row.kind+(row.complete?' complete':'');el.dataset.missionId=row.id;
   const cv=document.createElement('canvas');cv.width=brief?192:72;cv.height=brief?128:72;cv.dataset.missionArt=row.kind;cv.dataset.key=row.key||row.art||'';cv.setAttribute('aria-hidden','true');el.appendChild(cv);
   const text=document.createElement('div'),type=document.createElement('small'),name=document.createElement('b'),status=document.createElement('span');
-  type.textContent=brief?(row.kind==='target'?'제거할 사람':row.art==='terminal'?'현장에서 할 일':'가져올 물건'):row.status;name.textContent=row.name;status.textContent=brief?row.verb+' · '+row.where:row.complete?'✓ 완료':row.status;
-  text.append(type,name);if(brief&&row.role){const role=document.createElement('em');role.className='target-profile';role.textContent=row.role+' · '+row.appearance;text.appendChild(role);}if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
+  type.textContent=brief?row.verb:row.status;name.textContent=row.name;status.textContent=brief?row.where:row.complete?'✓ 완료':row.status;
+  text.append(type,name);if(brief&&row.role){const role=document.createElement('em');role.className='target-profile';role.textContent=row.appearance||row.role;text.appendChild(role);}if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
   const hero=$('hudFace');if(hero&&!hero.dataset.ready&&drawFace(hero,speakerOf('hero')))hero.dataset.ready='1';
@@ -155,17 +155,18 @@ function showBrief(go) {
   paused = true; el.hidden = false;
   renderCaseEntry('caseBrief');
   $('brStory').hidden=!STAGE.story; $('brStory').textContent=STAGE.story?.before||'';
-  for(const cv of el.querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
+  for(const cv of $('briefInfo').querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   el.querySelector('.br-scroll').scrollTop = 0;
-  $('brMapDetails').open = !isTouch || innerWidth >= 900;
+  if($('briefInfo').open)$('briefInfo').close();
   const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
-  $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief; $('brDetails').open = false;
-  const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
+  $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief;
+  const identities=mainContract(STAGE)||introductoryContract(STAGE)?missionIdentities():[],cards=$('brIdentity');cards.hidden=!identities.length;cards.dataset.count=String(identities.length);cards.replaceChildren(...identities.map(r=>makeMissionIdentity(r,true)));
   $('brPurpose').hidden=!STAGE.purpose&&STAGE.id!=='m2'&&!introductoryContract(STAGE);$('brPurpose').textContent=STAGE.purpose|| (STAGE.openingContract?'증인의 은신처를 넘기기 전에 운반책을 제거한다.':'실장을 제거하고, 장부와 거래 암호표를 회수한다.');
-  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표를 완료한 뒤 표시된 출구로 탈출';
+  $('brInfoPurpose').textContent=$('brPurpose').textContent;
+  $('brOutcome').hidden=!identities.length;$('brOutcome').textContent='표적과 회수 물품을 확인하고, 표시된 출구로 탈출';if(identities.length!==2)$('brOutcome').textContent='목표 완료 후 지도에 표시된 출구로 탈출';
   $('brTodo').innerHTML = (identities.length?briefTodo().slice(0,pendingFirstGoal()?1:0):briefTodo().filter(r=>r[2]!=='신원 기록'&&r[2]!=='탈출')).map(([mk,c,t,w])=>`<li><i class="mk ${mk}" style="--c:${c}"></i><b>${t}<span>${w}</span></b></li>`).join('');
   $('brTodo').hidden=!$('brTodo').children.length;refreshMissionIdentityArt();
   renderSkillPreparation('brSkills');
