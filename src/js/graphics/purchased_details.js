@@ -135,9 +135,29 @@ function drawPurchasedPaper(c,key,x,y,scale=1){
  const name=key==='parcel'?'parcel':'paper',r=purchasedFrame(name),s=key==='parcel'?Math.min(1,25/r[2]):Math.min(1.3,20/r[2]);return purchasedBlit(c,name,x-r[2]*s*scale/2,y-r[3]*s*scale/2,r[2]*s*scale,r[3]*s*scale);
 }
 function drawPurchasedRoofHouse(c,p){
- if(!purchasedReady())return false;
+ if(!purchasedReady()||!freeCityReady())return false;
  const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),x=Math.min(...xs)*TILE,y=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
- purchasedRepeat(c,'wallPanel',x,y-16,w,h+16);purchasedRepeat(c,'bridgeDeck',x,y-16,w,12);
  const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
- if(d&&!STAGE.agentStudy){c.save();c.beginPath();c.rect(x,y-16,w,h+16);c.clip();purchasedBlit(c,'doorExterior',d.x-14,d.y-32,28,33);c.restore();}return true;
+ // The old interior skirting repeated across the entire hut, with a clipped
+ // wooden bridge above it. Use the same purchased masonry/roof as the building.
+ const wall=freeCityPattern('wallPanel'),f=freeCityArt.frames.roofTile?.rect;if(!wall||!f)return false;
+ // Roof sheets include their outer coping. Repeat only the interior field;
+ // otherwise a tiny hut acquires random bands from the large roof's borders.
+ let roof=freeCityPatterns.roofHouseField;
+ if(!roof){const e=freeCityArt.roofSlice||4;roof=document.createElement('canvas');roof.width=(f[2]-2*e)*1.5;roof.height=(f[3]-2*e)*1.5;const q=roof.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(freeCityAtlas,f[0]+e,f[1]+e,f[2]-2*e,f[3]-2*e,0,0,roof.width,roof.height);freeCityPatterns.roofHouseField=roof;}
+ c.save();c.imageSmoothingEnabled=false;
+ c.fillStyle='#08111a66';c.fillRect(x+4,y+4,w,h);
+ c.fillStyle=c.createPattern(wall,'repeat');c.fillRect(x,y-16,w,h+16);
+ const side=p.dir==='W'||p.dir==='E',rx=x+(p.dir==='W'?12:0),rw=w-(side?12:0),ry=y-16+(p.dir==='N'?12:0),rh=h-12-(p.dir==='N'?12:0);
+ c.fillStyle=c.createPattern(roof,'repeat');c.fillRect(rx,ry,rw,rh);
+ c.fillStyle='#85909a';c.fillRect(rx,ry,rw,2);c.fillRect(rx,ry,2,rh);
+ c.fillStyle='#1a2633';c.fillRect(rx,ry+rh-3,rw,3);c.fillRect(rx+rw-3,ry,3,rh);
+ // Draw the complete source image on its wall plane. Side doors use a narrow
+ // projection, rather than hiding half a front door behind a rectangular clip.
+ if(d&&!STAGE.agentStudy){
+  if(side)purchasedBlit(c,'doorExterior',p.dir==='W'?x-1:x+w-13,d.y-28,14,30);
+  else if(p.dir==='N')purchasedBlit(c,'doorExterior',d.x-14,y-16,28,13);
+  else purchasedBlit(c,'doorExterior',d.x-14,d.y-31,28,32);
+ }
+ c.restore();return true;
 }

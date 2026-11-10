@@ -182,7 +182,7 @@ function prWarm(keys, first) {
 }
 // 처치·운반 동작 조각은 그 사람에게 다가갔을 때 미리 칠한다 (판 시작에 모두 칠하면 옷마다 14MB)
 const prNear = new Set();
-function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
+function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k);warmFluidPose(k,'choked');prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
   prNear.clear();const defaults=STAGE?.agentStudy?[]:['ninja'];const fluidKeys=[...keys,...defaults].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
@@ -245,15 +245,23 @@ const strippedKey = c => {
 };
 const carryKey = c => c && !c.dog && (c.stripped ? strippedKey(c) : c.ch);
 const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && usePR('ninja');
-// 처치 진행(0~1) → 핵심 자세 시간(0~3). 다가섬(0→1) → 버둥거림(1 근처를 오가며 힘이 빠짐) → 무릎 꺾임(1→2) → 주저앉음(2→3)
-// from = 1: 이미 목을 감은 상태(붙잡은 사람)에서 시작
+// Pose and gameplay share these beats. The grip tightens once, weight drops,
+// then hands release; repeatedly scrubbing the grip backwards looked like shaking.
+const TAKEDOWN_BEATS={
+ choke:{dur:1.08,contact:.10,commit:.42,knee:.61,land:.79,recover:.84},
+ stab:{dur:.90,contact:.09,commit:.22,knee:.43,land:.66,recover:.72}
+};
+function takedownBeats(kind,from=0){
+ const b=TAKEDOWN_BEATS[kind]||TAKEDOWN_BEATS.choke;
+ return from?{dur:b.dur*.8,contact:.04,commit:kind==='choke'?.30:.15,knee:b.knee*.8,land:b.land*.8,recover:b.recover*.8}:b;
+}
 const easeIO = u => u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u);
 function killKT(kind, f, from) {
-  const A = from ? [0, 0.4, 0.72] : kind === 'choke' ? [0.13, 0.52, 0.8] : [0.15, 0.4, 0.72], n = kind === 'choke' ? 3 : 2;
-  if (f < A[0]) return easeIO(f / A[0]);
-  if (f < A[1]) { const u = (f - A[0]) / (A[1] - A[0]); return 1 + 0.34 * Math.abs(Math.sin(u * Math.PI * n)) * (1 - u * 0.4); }
-  if (f < A[2]) return 1 + easeIO((f - A[1]) / (A[2] - A[1]));
-  return 2 + easeIO(Math.min(1, (f - A[2]) / (1 - A[2])));
+  const b=takedownBeats(kind,from),t=clamp(f,0,1)*b.dur;
+  if(!from&&t<b.contact)return easeIO(t/b.contact);
+  if(t<b.commit)return 1+.22*easeIO(clamp((t-(from?0:b.contact))/(b.commit-(from?0:b.contact)),0,1));
+  if(t<b.knee)return 1.22+.78*easeIO((t-b.commit)/(b.knee-b.commit));
+  return 2+easeIO(clamp((t-b.knee)/(b.land-b.knee),0,1));
 }
 const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, kt / 3 * (nf - 1))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');

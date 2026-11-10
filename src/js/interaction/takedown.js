@@ -65,15 +65,15 @@ function strikeKill(list, two) {
 }
 // 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
-const KILL_DUR = { stab: 0.95, choke: 1.15 };
+const KILL_DUR = { stab: TAKEDOWN_BEATS.stab.dur, choke: TAKEDOWN_BEATS.choke.dur };
 function pairRecoveryReady(P){
   const A=P.killAnim,h=S.koHold;
-  return !!(A?.landed&&S.t-A.t0>=A.dur*.88&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
+  return !!(A?.landed&&S.t-A.t0>=takedownBeats(A.kind,A.from).recover&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
 }
 function releasePairCombat(P){
   const A=P.killAnim;if(!A)return;
   if(A.c){A.c.hideT=S.t;A.c.t0=null;}
-  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;
+  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.16;P.pairRise={t0:S.t};
 }
 function pairKill(g, kind, from, quiet) {
   const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
@@ -89,19 +89,20 @@ function pairKill(g, kind, from, quiet) {
 // Contact, incapacitation and lowering all advance on the same clock as the pose.
 function updatePairCombat(P,dt) {
   const A=P.killAnim;if(!A?.g)return false;
-  const g=A.g,t=S.t-A.t0;
+  const g=A.g,t=S.t-A.t0,beats=takedownBeats(A.kind,A.from);
   if(!A.committed&&(!concealedMeleeAllowed(P)||!A.from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
     g.doomed=false;if(g.state==='CAPTIVE')g.state='RETURN';P.killAnim=null;P.strikeT=0;return false;
   }
-  P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,A.dur-t);
+  P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(.001,A.dur-t);
+  if(A.c)A.c.hideT=Math.max(A.c.hideT,S.t+.05);
   P.hidden=!P.z&&tileAt(P.x,P.y)==='B'&&P.mode==='sneak';P.light=lightAt(P.x,P.y,!!P.z);
   if(t<A.dur&&P.hurtT>0)P.hurtT=Math.max(0,P.hurtT-dt);
   if(!A.committed)g.doomed=true;
-  if(!A.contact&&t>=(A.from ? .04 : .14)){
+  if(!A.contact&&t>=beats.contact){
     A.contact=true;play('cloth',.35);contactFeedback({x:P.x+Math.cos(P.a)*14,y:P.y+Math.sin(P.a)*14,fl:A.fl,z:A.z},'takedown');
     S.hitStop=Math.max(S.hitStop||0,.025);
   }
-  const at=A.kind==='choke'?(A.from ? .38 : .54):.24;
+  const at=beats.commit;
   if(!A.committed&&t>=at){
     A.committed=true;g.takedownIntent=A.intent;g.pairDown=true;S.koNext=A.ko;
     const nd=S.decals.length,nf=S.fx.length,nc=S.corpses.length;
@@ -114,12 +115,14 @@ function updatePairCombat(P,dt) {
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
+  if(!A.landed&&t>=beats.land){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
     releasePairCombat(P);return false;
   }
-  if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
+  // Captive executions can finish their pose before the deliberate one-second
+  // hold. Keep its final grounded pose until that exact press ends or commits.
+  if(t>=A.dur&&pairRecoveryReady(P)){releasePairCombat(P);return false;}
   return true;
 }
 // 붙잡은 사람 처치: 목을 감은 자세에서 그대로 조여(또는 찔러) 내려놓는다

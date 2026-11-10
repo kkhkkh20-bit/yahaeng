@@ -59,8 +59,8 @@ async def main():
     await scene();await direction();await q.keyboard.down('z');await q.evaluate('tick(.25)');await direction(False);await q.evaluate('tick(2)');await q.keyboard.up('z');assert await q.evaluate('__game.S.stats.kills===1&&!__game.S.stats.ko')
    passed.append('short expiry, limited anticipation range and released press cannot borrow another held attack')
    await scene(28);await tap('z','#btnAct');await q.evaluate('tick(.76)');await tap('x','#btnCarry');assert await q.evaluate('!!__game.S.player.recoveryQueue&&!__game.S.player.carrying')
-   await q.evaluate('tick(.24)');assert await q.evaluate('!__game.S.player.carrying'),'body lifted before the grounded recovery beat'
-   await q.evaluate('tick(.05)');assert await q.evaluate('__game.S.player.carrying===__game.S.corpses[0]&&!__game.S.player.killAnim&&__game.S.corpses[0].hideT<=__game.S.t')
+   await q.evaluate('tick(.07)');assert await q.evaluate('!__game.S.player.carrying'),'body lifted before the grounded recovery beat'
+   await q.evaluate('tick(.04)');assert await q.evaluate('__game.S.player.carrying===__game.S.corpses[0]&&!__game.S.player.killAnim&&__game.S.corpses[0].hideT<=__game.S.t')
    before=await q.evaluate('__game.S.player.x');await direction(True,True);await q.evaluate('tick(.20)');assert await q.evaluate('x=>Math.abs(__game.S.player.x-x)<.01',before)
    await q.evaluate('tick(.27)');assert await q.evaluate('x=>__game.S.player.x<x&&!__game.S.player.bodyAnim&&!!__game.S.player.carrying',before);await direction(False)
    passed.append('early recovery tap connects only after landing; movement begins after the load is secured')

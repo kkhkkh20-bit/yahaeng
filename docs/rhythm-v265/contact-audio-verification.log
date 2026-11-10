@@ -1,0 +1,2 @@
+PASS combat feel keyboard {"mobile": false, "events": [{"name": "cloth", "t": 10.109999999999998}, {"name": "cloth", "t": 10.42999999999999}, {"name": "thud", "t": 10.799999999999983}]}
+PASS combat feel mobile touch {"mobile": true, "events": [{"name": "cloth", "t": 10.109999999999998}, {"name": "cloth", "t": 10.42999999999999}, {"name": "thud", "t": 10.799999999999983}]}

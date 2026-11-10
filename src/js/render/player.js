@@ -119,9 +119,9 @@ function drawPlayerBody(P) {
     }
     if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = playerLook, s1 = sc / 3;
-      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt), j = !reducedFxMotion.matches&&kt > 0.9 && kt < 1.5 ? Math.sin((S.t-KA.t0)*18)*.55*(1-(kt-1)/.5) : 0,
-          approach=1-hideEase(clamp((S.t-KA.t0)/.14,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
-        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx + j, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
+      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt),
+          approach=1-hideEase(clamp((S.t-KA.t0)/takedownBeats(KA.kind,KA.from).contact,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
+        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
       const j = Math.sin(S.t * 40) * 1.5; drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(KA.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
     }
     const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)

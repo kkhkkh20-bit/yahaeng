@@ -1,0 +1,24 @@
+[
+  {
+    "mobile": false,
+    "earlierStride": 3.3971518624812234,
+    "monotoneTracks": 4,
+    "completeRoofDoors": 35,
+    "directions": [
+      "S",
+      "W"
+    ],
+    "errors": []
+  },
+  {
+    "mobile": true,
+    "earlierStride": 3.3971518624812234,
+    "monotoneTracks": 4,
+    "completeRoofDoors": 35,
+    "directions": [
+      "S",
+      "W"
+    ],
+    "errors": []
+  }
+]

@@ -21,7 +21,7 @@ function queueRecoveryInput(kind){
 // borrow a different held key, or convert a released tap into a lethal hold.
 function followupWindow(P=S.player){
  const A=P.killAnim;
- if(A?.committed&&A.dur-(S.t-A.t0)<=.22)return true;
+ if(A?.committed&&A.landed)return true;
  const B=P.assassinAnim;
  if(!B||B.hits.some(t=>t==null))return false;
  const end=B.key==='dual'?B.t0+ASSASSIN_BEATS.firstEnd:B.phase==='second'?B.secondAt+ASSASSIN_BEATS.secondEnd:Infinity;
@@ -52,7 +52,7 @@ function updateRecoveryInput(P){
   const q=P.recoveryQueue;if(!q)return;
   const movement=playerMoveIntent(),moving=!!(movement.x||movement.y),changed=moving&&(!q.movement||movement.x*q.movement.x+movement.y*q.movement.y<.5);
   if(S.t>q.until||changed||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.corpses.includes(q.c)||q.c.carried||q.c.stashed||q.c.hidden){P.recoveryQueue=null;return;}
-  if(q.kind==='cleanup'&&P.killAnim?.c===q.c&&pairRecoveryReady(P))releasePairCombat(P);
+  if(P.killAnim?.c===q.c&&pairRecoveryReady(P))releasePairCombat(P);
   if(actionBusy(P))return;
   P.recoveryQueue=null;
   if(!objectReachable(q.c,46))return;
