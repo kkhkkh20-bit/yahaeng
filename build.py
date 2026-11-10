@@ -59,7 +59,7 @@ def build():
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
     menu_art = base64.b64encode(open(P('src', 'art', 'title', 'rooftop-night.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
-    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','settings.css'))+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css'))+'\n'+read(P('src','ui-controls.css'))+'\n'+read(P('src','brief-layout.css')))
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','settings.css'))+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css'))+'\n'+read(P('src','ui-controls.css'))+'\n'+read(P('src','brief-layout.css'))+'\n'+read(P('src','brand-ui.css')))
     for variant in ['wide','portrait']:
         data='data:image/webp;base64,'+menu_art
         html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
