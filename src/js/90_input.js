@@ -289,13 +289,18 @@ $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElemen
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
+function setQuickLabel(label,detail=''){
+ const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
+ if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
+ b.replaceChildren(copy);b.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7"/></svg>');b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
+}
 function syncQuick(){
-  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;$('btnQuick').textContent='여성 요원 · 도시 테스트';$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
+  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
-  $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
+  $('btnQuick').disabled=!st;if(!st){setQuickLabel('이야기 완료');return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':(st.storyEpisode||st.openingContract||st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  setQuickLabel(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기',st.name);
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {

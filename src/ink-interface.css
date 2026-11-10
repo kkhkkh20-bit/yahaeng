@@ -127,14 +127,6 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #pause #btnResume,#pause .pz-big:hover,#pause .pz-big:focus-visible { background:var(--ink-wash) center/100% 100% no-repeat; }
 #pause .pz-sets { padding-top:16px; }
 #pause .pz-side { border-color:#5e6469; }
-#skillScreen { --sk-ground:#0d1117; --sk-panel:#171c22; --sk-line:#4e5359; --sk-ink:#f0eee5; --sk-muted:#babdc0; --sk-gold:#e6e2d7; }
-#skillScreen .skill-toolbar { padding-top:4px; }
-#skillScreen .skill-instructions { color:#c5c5bf; }
-#skillScreen .back:not([aria-disabled="true"]) { background:#e8e3d7; color:#10151c; border-color:#e8e3d7; }
-#skillScreen .back:hover:not([aria-disabled="true"]) { background:#fff8e9; }
-#skillScreen .skill-detail { border-color:#5b6064; background:#131820; }
-#skillScreen .skill-detail-actions button:not(:disabled) { background:#e6e2d7; color:#11151c; }
-#skillScreen .skill-links path { stroke:#666c70; }
 #end { background:#0c1117f2; }
 #end .endacts { background:#0d1117f7; }
 #endRank b { color:#eee8d9; }
@@ -175,13 +167,6 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #hud #loadout,#hud #envPicker { border:1px solid #787d80; border-image:none; border-radius:2px; background:#12171ef7; }
 #hud #loadout header { padding:8px 6px 14px; background:var(--ink-wash) center/100% 100% no-repeat; }
 #dlg .dlg-face { align-self:flex-start; height:96px; min-height:0; }
-#skillScreen .skill-node.available button { border-color:#c9c9c0; color:#e7e4da; }
-#skillScreen .skill-node.learned button { color:#171b21; background:#e7e3d7; border-color:#f3eee3; }
-#skillScreen .skill-node.learned button::before { border-color:#8e908a; }
-#skillScreen .skill-node.in-path button,#skillScreen .skill-node.selected button { border-color:#eee8dc; outline-color:#eee8dc; }
-#skillScreen .skill-links path.in-path { stroke:#eee8dc; }
-#skillScreen ::selection { background:#e7e3d7; color:#11161c; }
-#skillScreen .back[aria-disabled="true"] { background:transparent; color:#c4c5c2; border-color:#5c6266; }
 #hud #btnPause[data-points]::after { color:#d5d3ca; font-size:11px; }
 @media(max-width:700px) {
  #hud .obj.with-identities { padding:12px 24px 14px 64px; }
@@ -194,14 +179,12 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 /* Brush lettering is reserved for titles; controls and sentences stay easy to read. */
 #brief .br-name { font-family:"Yahaeng Ink",var(--f-body); font-size:clamp(44px,4.5vw,64px); line-height:1; letter-spacing:0; }
 #hud #loadout h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:38px; line-height:1.1; letter-spacing:0; }
-#skillScreen .sub-head h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:38px; line-height:1.1; letter-spacing:0; }
 #end h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:54px; line-height:1.1; letter-spacing:0; }
 #hud #hpPips { gap:6px; padding:2px; }
 #hud #hpPips i { width:8px; height:8px; transform:rotate(45deg); }
 @media(max-width:700px) {
  #brief .br-name { font-size:50px; }
  #hud #loadout h2 { font-size:34px; }
- #skillScreen .sub-head h2,#skillScreen.episode-training .sub-head h2 { font-size:30px; }
  #end h2 { font-size:44px; }
 }
 
