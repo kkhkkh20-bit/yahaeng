@@ -1,0 +1,162 @@
+{
+  "devices": [
+    {
+      "mobile": false,
+      "audio": {
+        "key": "n_fight",
+        "wanted": "n_fight",
+        "recorded": true,
+        "effects": 38,
+        "loaded": [
+          "n_calm",
+          "n_fight",
+          "n_tense"
+        ],
+        "pending": [],
+        "failed": [],
+        "volume": 0,
+        "duck": 1,
+        "bus": 0.006723575294017792,
+        "master": 0.8999999761581421,
+        "muted": false,
+        "context": "running",
+        "duration": 29.09092970521542
+      },
+      "story": [
+        {
+          "id": "tB",
+          "beats": 2,
+          "lines": 4
+        },
+        {
+          "id": "p0",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "e2",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "m2",
+          "beats": 2,
+          "lines": 2
+        },
+        {
+          "id": "m4",
+          "beats": 2,
+          "lines": 5
+        },
+        {
+          "id": "m6",
+          "beats": 2,
+          "lines": 3
+        },
+        {
+          "id": "m7",
+          "beats": 2,
+          "lines": 3
+        },
+        {
+          "id": "m5",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "n1",
+          "beats": 1,
+          "lines": 4
+        }
+      ]
+    },
+    {
+      "mobile": true,
+      "audio": {
+        "key": "n_fight",
+        "wanted": "n_fight",
+        "recorded": true,
+        "effects": 38,
+        "loaded": [
+          "n_calm",
+          "n_fight",
+          "n_tense"
+        ],
+        "pending": [],
+        "failed": [],
+        "volume": 0,
+        "duck": 1,
+        "bus": 0.005895591340959072,
+        "master": 0.8999999761581421,
+        "muted": false,
+        "context": "running",
+        "duration": 29.09092970521542
+      },
+      "story": [
+        {
+          "id": "tB",
+          "beats": 2,
+          "lines": 4
+        },
+        {
+          "id": "p0",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "e2",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "m2",
+          "beats": 2,
+          "lines": 2
+        },
+        {
+          "id": "m4",
+          "beats": 2,
+          "lines": 5
+        },
+        {
+          "id": "m6",
+          "beats": 2,
+          "lines": 3
+        },
+        {
+          "id": "m7",
+          "beats": 2,
+          "lines": 3
+        },
+        {
+          "id": "m5",
+          "beats": 1,
+          "lines": 3
+        },
+        {
+          "id": "n1",
+          "beats": 1,
+          "lines": 4
+        }
+      ]
+    }
+  ],
+  "fallback": {
+    "key": "n_calm",
+    "wanted": "n_calm",
+    "recorded": false,
+    "effects": 38,
+    "loaded": [],
+    "pending": [],
+    "failed": [
+      "n_calm"
+    ],
+    "volume": 0.7,
+    "duck": 1,
+    "bus": 0.04982607811689377,
+    "master": 0.8999999761581421,
+    "muted": false,
+    "context": "running",
+    "duration": 26.666666666666668
+  }
+}

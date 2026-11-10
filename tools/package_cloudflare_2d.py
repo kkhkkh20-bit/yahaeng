@@ -18,6 +18,7 @@ def package(source,destination):
  html=re.sub(r'data:image/(png|webp|jpeg);base64,([A-Za-z0-9+/=]+)',image,html)
  # Fonts are immutable resources too; keep their base64 payload out of the boot HTML.
  html=re.sub(r'data:font/(woff2|woff|ttf);base64,([A-Za-z0-9+/=]+)',image,html)
+ html=re.sub(r'("n_(?:calm|tense|fight)":")data:audio/mpeg;base64,([A-Za-z0-9+/=]+)',lambda m:m[1]+save(base64.b64decode(m[2]),'mp3'),html)
  count=0
  def script(match):
   nonlocal count

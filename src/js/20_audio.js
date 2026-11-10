@@ -5,8 +5,9 @@ function initAudio() {
   if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
-    master = AC.createGain(); master.gain.value = typeof VOL === 'number' ? VOL : 0.9; master.connect(AC.destination);
-    setTimeout(() => prepNeonMusic(), 50);  // 처음 누른 순간부터 음악을 작업자에서 미리 합성
+    master = AC.createGain(); master.gain.value = muted ? 0 : (typeof VOL === 'number' ? VOL : 0.9); master.connect(AC.destination);
+    setTimeout(() => setMusic('n_calm'), 50);
+    setInterval(updateMusicMix, 120);
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
     let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
@@ -15,17 +16,56 @@ function initAudio() {
     const g = AC.createGain(); g.gain.value = 0.05; src.connect(lp); lp.connect(g); g.connect(master); src.start();
   } catch (e) { AC = null; }
 }
-const MB = {}; let musicGain = null, musicSrc = null, musicKey = null;
-function setMusic(k) {
-  if (!AC || musicKey === k || !['n_calm','n_tense','n_fight'].includes(k)) return;
-  if (k.startsWith('n_') && !MB[k]) { if (neonPending[k]) { musicKey = '__want_' + k; return; } MB[k] = makeNeonLoop(k); }
-  if (!MB[k]) { musicKey = '__want_' + k; return; }
-  if (!musicGain) { musicGain = AC.createGain(); musicGain.connect(master); }
+// Recorded score is lazy-decoded. Procedural loops remain an offline fallback.
+const MB = {}, SCORE = {}, scorePending = {}, scoreBytes = {}, scoreFailed = new Set();
+let musicGain = null, musicSrc = null, musicKey = null, wantedMusic = 'n_calm';
+let musicVolume = .7, musicDuck = 1, musicMixTarget = -1;
+function fetchScoreBytes(k) {
+  if(!scoreBytes[k]) {const uri=A.score[k];scoreBytes[k]=uri.startsWith('data:')?Promise.resolve(b64ToBuf(uri)):fetch(uri).then(r=>{if(!r.ok)throw Error('score '+r.status);return r.arrayBuffer();});}
+  return scoreBytes[k];
+}
+function loadScore(k) {
+  if (!AC || SCORE[k] || scorePending[k] || scoreFailed.has(k)) return;
+  const uri = A.score?.[k]; if (!uri) { scoreFailed.add(k); prepNeonMusic(); return; }
+  scorePending[k] = true;
+  const bytes = fetchScoreBytes(k);
+  bytes.then(b => AC.decodeAudioData(b)).then(b => {
+    SCORE[k] = b; delete scorePending[k];
+    // Cache compressed chase/search files; decode only when that mood is needed.
+    if(k==='n_calm')setTimeout(()=>{for(const key of ['n_tense','n_fight'])if(A.score?.[key])fetchScoreBytes(key).catch(()=>{});},1200);
+    if (wantedMusic === k) setMusic(k, true);
+  }).catch(() => { delete scorePending[k]; scoreFailed.add(k); prepNeonMusic(); if(wantedMusic===k)setMusic(k,true); });
+}
+function updateMusicMix() {
+  if (!AC || !musicGain) return;
+  const dialogue = typeof DLG !== 'undefined' && !!DLG.cur;
+  const radio = document.getElementById('episodeRadio')?.hidden === false;
+  musicDuck = document.hidden ? 0 : dialogue || radio ? .38 : 1;
+  // The club's physical sound still masks footsteps. Leave it room in the mix.
+  if (club && club.g.gain.value > .06) musicDuck *= Math.max(.16, 1-club.g.gain.value*2);
+  const target = musicVolume * musicDuck;
+  if (Math.abs(target-musicMixTarget) > .002) {
+    musicGain.gain.setTargetAtTime(target, AC.currentTime, target < musicMixTarget ? .12 : .55);musicMixTarget=target;
+  }
+}
+function setMusic(k, force=false) {
+  if (!AC || !['n_calm','n_tense','n_fight'].includes(k)) return;
+  wantedMusic = k;
+  if (!SCORE[k] && !scoreFailed.has(k)) loadScore(k);
+  if (!force && musicKey === k) return;
+  const recorded = !!SCORE[k], buffer = SCORE[k] || MB[k];
+  if (!buffer) {
+    if (scoreFailed.has(k) && !neonPending[k]) {MB[k]=makeNeonLoop(k);setMusic(k,true);}
+    return;
+  }
+  if (!musicGain) { musicGain = AC.createGain();musicGain.gain.value=0;musicGain.connect(master); }
   const now = AC.currentTime;
-  if (musicSrc) { const old = musicSrc; const og = old._g; og.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { old.stop(); } catch (e) {} }, 2000); }
-  const src = AC.createBufferSource(); src.buffer = MB[k]; src.loop = true;
-  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
-  src.connect(g); g.connect(musicGain); src._g = g; src.start(); musicSrc = src; musicKey = k;
+  if (musicSrc) { const old = musicSrc;old._g.gain.cancelScheduledValues(now);old._g.gain.setTargetAtTime(0,now,.28);setTimeout(()=>{try{old.stop();old.disconnect();old._g.disconnect();}catch(e){}},2200); }
+  const src = AC.createBufferSource();src.buffer=buffer;src.loop=true;
+  const g=AC.createGain();g.gain.value=0;
+  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:.2);
+  g.gain.setTargetAtTime(level,now,k==='n_fight'?.22:.65);
+  src.connect(g);g.connect(musicGain);src._g=g;src._recorded=recorded;src.start();musicSrc=src;musicKey=k;updateMusicMix();
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
 // 합성 본체: 순수 함수라 작업자(Web Worker)에서도 돈다 — 판 시작 때 0.6초 넘게 화면이 멈추던 원인
@@ -91,9 +131,9 @@ function prepNeonMusic() {
   const ks = ['n_calm', 'n_tense', 'n_fight'].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
   try {
     if (!neonW) { neonW = new Worker(URL.createObjectURL(new Blob([neonSynth.toString() + '\nonmessage = e => { const r = neonSynth(e.data.k, e.data.sr); postMessage({ k: e.data.k, L: r.L, R: r.R }, [r.L.buffer, r.R.buffer]); };'], { type: 'text/javascript' })));
-      neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (musicKey === '__want_' + k) { musicKey = null; setMusic(k); } }; }
+      neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (wantedMusic === k && !SCORE[k]) setMusic(k, true); }; }
     ks.forEach(k => { neonPending[k] = 1; neonW.postMessage({ k, sr: AC.sampleRate }); });
-  } catch (e) { ks.forEach((k, i) => setTimeout(() => { if (!MB[k]) MB[k] = makeNeonLoop(k); }, 60 + i * 400)); }
+  } catch (e) { ks.forEach((k, i) => setTimeout(() => { if (!MB[k]) MB[k] = makeNeonLoop(k);if(wantedMusic===k&&!SCORE[k])setMusic(k,true); }, 60 + i * 400)); }
 }
 // 클럽 음악: 124BPM 4박 킥 + 오프비트 하이햇 + 베이스 + 화음 (직접 합성, 2마디 반복)
 const CLUB_BPM = 124; let club = null;

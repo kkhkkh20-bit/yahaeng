@@ -279,9 +279,11 @@ initLoadout();
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let VOL = +lsGet('yahaeng.vol', 90) / 100, BRI = +lsGet('yahaeng.bri', 100) / 100;
-function applyVol() { if (master) master.gain.value = VOL; }
-function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';$('btnMute').setAttribute('aria-pressed',String(muted));for(const [id,out]of [['volR','volValue'],['briR','briValue']]){const el=$(id),v=el.value+'%';$(out).value=v;el.setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);el.style.setProperty('--setting-fill',((+el.value-+el.min)/(+el.max-+el.min)*100)+'%');}}
+function applyVol() { if (master) master.gain.setTargetAtTime(muted?0:VOL,AC.currentTime,.04); }
+function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';$('btnMute').setAttribute('aria-pressed',String(muted));for(const [id,out]of [['volR','volValue'],['musicR','musicValue'],['briR','briValue']]){const el=$(id),v=el.value+'%';$(out).value=v;el.setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);el.style.setProperty('--setting-fill',((+el.value-+el.min)/(+el.max-+el.min)*100)+'%');}}
 function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
+musicVolume=clamp(+lsGet('yahaeng.music',70)/100,0,1);$('musicR').value=Math.round(musicVolume*100);
+$('musicR').addEventListener('input',e=>{musicVolume=+e.target.value/100;lsSet('yahaeng.music',e.target.value);updateMusicMix();syncSettingValues();});
 $('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri(); syncSettingValues();
 $('volR').addEventListener('input', e => { VOL = +e.target.value / 100;if(VOL>0&&muted)toggleMute(); lsSet('yahaeng.vol', e.target.value); applyVol(); syncSettingValues(); });
 $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.bri', e.target.value); applyBri(); syncSettingValues(); });
@@ -344,7 +346,7 @@ $('btnNewCampaign').addEventListener('click',()=>{if(running||$('intro').hidden)
 $('btnNewCampaignCancel').addEventListener('click',()=>$('newCampaignDialog').close('cancel'));
 $('btnNewCampaignConfirm').addEventListener('click',restartCampaign);
 $('newCampaignDialog').addEventListener('close',()=>{if(!running&&!$('intro').hidden)$('btnNewCampaign').focus({preventScroll:true});});
-function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
+function toggleMute() { muted = !muted; applyVol(); $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 정보 보기'; $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
@@ -384,7 +386,7 @@ $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
 $('btnNext').addEventListener('click',()=>{if(S?.over)continueResultTraining();});
-document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false);updateMusicMix(); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
@@ -393,7 +395,7 @@ function start(i, noBrief) {
   resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
-  initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
+  initAudio(); play('knife', 0.5); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
@@ -437,6 +439,7 @@ function toMenu() {
   if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
+  setMusic('n_calm');
   running = false; paused = false;  resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();

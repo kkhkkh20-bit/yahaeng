@@ -1,0 +1,19 @@
+Music by Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+https://creativecommons.org/licenses/by/4.0/
+
+night.mp3 — Covert Affair, ISRC USUAN1100795
+search.mp3 — On the Ground, ISRC USUAN1400030
+chase.mp3 — Private Eye, ISRC USUAN1100767
+
+Source catalogue / attribution notice, retrieved 2026-11-10:
+https://incompetech.com/music/royalty-free/index.html
+https://incompetech.com/music/royalty-free/pieces.json
+Original downloads:
+https://incompetech.com/music/royalty-free/mp3-royaltyfree/Covert%20Affair.mp3
+https://incompetech.com/music/royalty-free/mp3-royaltyfree/On%20the%20Ground.mp3
+https://incompetech.com/music/royalty-free/mp3-royaltyfree/Private%20Eye.mp3
+
+Modifications for Yahaeng: excerpted to 16-bar phrases, 0.4-second
+wrap crossfade, loudness normalized to -21 LUFS, resampled and MP3 encoded.
+In-game music credits link to the composer and CC BY 4.0 license.
