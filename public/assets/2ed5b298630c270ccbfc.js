@@ -1936,45 +1936,45 @@ if(window.__AGENT_CITY_STUDY__)DIALOGUE.agentCity=[
 ];
 
 if(window.__AGENT_CITY_STUDY__){const s=STAGES.find(s=>s.agentStudy);s.floorTiles=[];for(let i=0;i<s.referenceBuildings.length;i++){const b=s.referenceBuildings[i],[x0,,x1,y1]=b.box;for(let fl=1;fl<b.h;fl++)for(let x=x0+1;x<x1;x++)s.floorTiles.push([fl,x,y1,s.referenceWindow(i,x,fl)?'N':'#']);}}
-// The public route follows one lead per place. Runtime story delivery is kept
-// separate from objectives: a line never grants evidence, opens an exit or fails a job.
+// One overnight operation. Each recovered record changes what Owl believes she
+// is doing; the second half is her rescue plan, not another handler's job list.
 const EPISODE_VOICE={
- tB:{before:'제비가 마지막으로 연락한 곳은 대성 물류 배차실이다. 까마귀와 함께 2층에 남은 서류를 찾는다.',after:'제비의 서류에서 운반책 박인호와 금성 운송 주소를 찾았다.',
-  coda:{context:'배차실을 빠져나온 뒤',lines:[['hero','제비 글씨 맞아. 박인호, 금성 운송 2층.'],['master','아는 이름이네. 그 사람이 누구한테 제비를 넘겼는지 알아보자.']]},
-  beat:{id:'swallow-note',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'제비가 주소를 남겼어. 나한테 직접 말할 수는 없었던 모양이네.'}},
- p0:{before:'제비가 남긴 이름, 박인호. 금성 운송 2층에서 은신처를 팔아넘긴 대금을 기다린다. 거래를 막고 다음 연락처를 찾는다.',after:'박인호의 통화 기록에서 금성 거래소의 문서윤을 찾았다.',
-  coda:{context:'금성 운송 · 통화 기록',lines:[['hero','박인호가 계속 걸던 번호, 문서윤이 받았어.'],['master','금성 거래소 3층이야. 이번에는 장부도 같이 가져와.']]},
-  beat:{id:'runner-waiting',when:S=>S.t>=1&&S.t<18,speaker:'master',text:'제비가 남긴 이름이 박인호야. 2층에서 거래 대금을 기다리고 있어. 그 거래부터 막자.'}},
- e2:{before:'박인호의 거래 상대는 회계 중개인 문서윤이었다. 거래소 3층의 문서윤과 원본 장부를 찾아 돈의 흐름을 확인한다.',after:'거래소 장부는 클럽 실장 강도윤에게 이어졌다. 가명을 풀 암호표도 필요하다.',
-  coda:{context:'거래소를 빠져나온 뒤',lines:[['hero','장부에 강도윤 이름이 계속 나와. 나머지는 전부 별명이고.'],['master','클럽 실장이야. 회계 숙소의 암호표랑 맞춰 보면 누가 돈을 댔는지 나올 거야.']]},
-  beat:{id:'trade-ledger',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'장부 찾았어. 강도윤은 실명으로 적어 놓고, 돈 보낸 사람들은 별명으로 숨겼네.'}},
- m2:{before:'문서윤의 장부는 클럽 실장 강도윤을 가리켰다. 그의 장부와 회계 숙소의 암호표를 맞춰 증인 거래의 자금책을 찾는다.',after:'장부의 가명은 장무혁과 백철민이었다. 다음 정산 장소에서 둘을 막는다.',
-  intro:[['master','문서윤 장부에 나오던 강도윤이 여기 있어. 클럽 장부하고 회계 숙소의 암호표를 같이 봐야 해.'],['hero','장부만 두 개면 회계라도 봐야겠네. 알았어, 둘 다 챙길게.']],
-  coda:{context:'클럽 장부와 암호표 대조',lines:[['hero','찾았다. 돈 걷는 쪽은 장무혁, 계약에 서명한 쪽은 백철민이야.'],['master','둘이 정산하러 만나. 이번에는 현금하고 계약서까지 확보하자.']]},
-  beat:{id:'half-code',when:S=>S.items.some(i=>i.got)&&S.items.some(i=>!i.got),speaker:'hero',text:'하나는 챙겼어. 장부의 별명이랑 암호표의 실명을 맞춰 봐야겠네.'}},
- m4:{before:'장무혁은 증인 거래 대금을 모으고, 백철민은 계약을 승인한다. 둘이 만나는 정산 구역에서 표적과 현금·계약서를 확보한다. 철수 차량은 까마귀가 맡았다.',after:'증거 확보에는 성공했다. 그러나 까마귀가 보낸 철수 차량은 금성회의 인계 차량이었다.',
-  intro:[['master','황금색 재킷이 장무혁, 보라색 정장이 백철민이야. 현금하고 계약서 챙기면 철수 차량은 내가 보낼게.'],['hero','주소는 너한테만 보낼게. 이번에는 차 번호도 같이 알려 줘.']],
-  coda:{context:'임무 완료 뒤 · 까마귀가 보낸 철수 차량',lines:[['master','골목 끝 검은 승합차야. 증거 챙겼지? 일단 타.'],['hero','잠깐. 이 사람들 금성회잖아. 까마귀, 차를 잘못 보낸—'],[{note:'철수 차량 안'},'문이 잠긴다. “인계 대상 확보.” 차량 무전이 울리고, 까마귀와의 통신이 끊긴다.']]},
-  beat:{id:'exfil-arranged',when:S=>S.exitOpen,speaker:'master',text:'할 일은 끝났네. 출구로 나오면 철수 차량 위치를 보낼게. 현금하고 계약서, 빠뜨리지 말고.'}},
- m6:{before:'철수 차량의 문이 잠긴 뒤 기억이 끊겼다. 눈을 뜬 곳은 금성회 구금동. 제비도 이곳을 거쳤다. 무전기와 인계 기록을 찾아 빠져나간다.',after:'제비의 무전기와 인계서를 찾았다. 서명은 까마귀, 인계 담당자는 운송 지부장 오태식이었다.',
-  intro:[['hero','그 차, 까마귀가 보낸 게 맞았어. 날 빼낸 게 아니라 넘긴 거네.'],['hero','장비는 없어졌고… 제비도 여기로 왔다고 했지. 우선 이 문부터 열자.']],
-  coda:{context:'구금동 탈출 뒤 · 무전기와 인계서',lines:[['hero','인계서에 까마귀 서명이 있어. 제비 이름도… 제비는 못 나왔구나.'],['hero','받은 사람은 오태식. 무전기에 집하장 주파수가 남아 있어. 이걸 따라가 보자.']]},
-  beat:{id:'swallow-radio',when:S=>S.items[0]?.got,speaker:'hero',text:'제비 무전기야. 배터리도 남아 있어. 인계서까지 찾으면 누가 데려왔는지 알 수 있겠어.'}},
- m7:{before:'제비의 무전기에 남은 주파수는 새벽배송 집하장의 것이었다. 운송 지부장 오태식을 막고, 남은 증인들이 출발하기 전에 배차를 멈춘다.',after:'새벽배송을 멈췄다. 오태식의 명세서에 적힌 최종 수령인은 까마귀였다.',
-  intro:[['hero','제비가 쓰던 주파수로 여기까지 왔어. 오태식이 이송을 맡고 있네.'],['hero','사람들이 나가기 전에 명세서를 챙기고 2층 배차 단말을 멈춰야 해.']],
-  coda:{context:'집하장 · 출고 중단 확인',lines:[['hero','차량 멈췄어. 명세서의 수령인은… 까마귀네.'],['hero','본부 주소까지 친절하게 써 놨네. 이제 네 쪽으로 갈게.']]},
-  beat:{id:'dispatch-names',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'명세서에 아직 출발 안 한 이름들이 있어. 배차부터 멈추면 이 사람들은 살릴 수 있겠어.'}},
- m5:{before:'오태식의 명세서가 가리킨 곳은 까마귀의 본부다. 그가 증인 거래를 직접 받고 있었다. 까마귀와 원본 장부를 찾아 마지막 결재선을 확인한다.',after:'까마귀 위에도 결재자가 있었다. 원본 장부와 연락 기록은 백림재단 이사장 윤서경을 가리켰다.',
-  intro:[['hero','까마귀, 남의 주소는 잘 알려 주더니 네 주소는 숨겼네.'],['hero','너는 2층, 원본 장부는 1층 금고. 이번에는 네 설명 없이 확인할게.']],
-  coda:{context:'금성회 본부 · 원본 장부 대조',lines:[['hero','까마귀 결재 위에 한 칸이 더 있어. 백림재단… 윤서경.'],['hero','오늘 사저에서 연회까지 연다고? 그래, 마지막으로 그쪽도 들러야겠네.']]},
-  beat:{id:'another-signature',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'원본 장부 챙겼어. 까마귀가 받은 돈이랑, 위로 보낸 돈을 따로 적어 놨네.'}},
- n1:{before:'원본 장부의 마지막 결재자는 백림재단 이사장 윤서경이었다. 사저의 연회에 들어가 그를 막고, 2층 명령 원장으로 증인 거래의 증거를 완성한다.',after:'윤서경의 명령 원장을 확보했다. 거래 기록과 남은 증인들을 조직 밖으로 보냈다.',
-  intro:[['hero','장부에는 증인 값이 적혀 있는데, 여기서는 건배를 하고 있네.'],['hero','윤서경하고 2층 명령 원장. 둘 다 확인하고 나가자.']],
-  coda:{context:'새벽 · 제비의 무전기에 남은 녹음',lines:[[{recorded:'aide'},'나한테 무슨 일 생기면, 사람들 먼저 부탁해. 연락처는 무전기에 넣어 뒀어.'],['hero','연락했어. 다들 나왔대. 너도 같이 들었으면 좋았을 텐데.']]},
-  beat:{id:'last-record',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'명령 원장 찾았어. 이름이랑 돈 보낸 날짜까지 다 있네. 이제 밖으로 가져가자.'}}
+ tB:{before:'올빼미와 제비는 까마귀의 의뢰로 증인들을 안전가옥에 옮겼다. 그런데 도착 확인은 없고, 제비마저 연락을 끊었다. 마지막 메시지는 “우리 배차표부터 봐.” 올빼미는 자신이 누구에게 사람들을 넘겼는지 확인하러 간다.',after:'제비가 남긴 배차표에 올빼미가 맡았던 호송 번호가 있다. 인수자는 박인호. 안전가옥까지 갔다는 까마귀의 설명과 다르다.',
+  coda:{context:'배차표에 남은 제비의 메모',lines:[[{recorded:'aide'},'도착 확인, 네가 직접 받았어? 나도 못 받았어. 박인호한테 물어봐.'],['hero','내가 태워 보낸 사람들인데, 어디 내렸는지도 모르네.'],['master','박인호가 중간에서 바꿔치기한 모양이야. 금성 운송부터 확인하자.']]},
+  beats:[{id:'missing-arrival',when:S=>S.t>=2,speaker:'hero',text:'내가 태워 보낸 두 사람도, 제비도 연락이 없어. 배차표부터 직접 확인하자.'},{id:'our-dispatch',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'내 호송 번호가 있어. 목적지는 안전가옥이 아니라 금성 운송이네. 까마귀한테 확인해야겠어.'}]},
+ p0:{before:'박인호는 증인의 은신처를 팔아넘기고 금성 운송 2층에서 대금을 기다린다. 이 거래가 끝나면 다른 은신처까지 드러난다. 올빼미는 거래를 끊고 자신이 맡았던 사람들의 행방을 찾는다.',after:'박인호의 통화 기록에는 제비를 찾는 연락 대신 인원과 가격을 흥정한 흔적이 있다. 대금은 금성 거래소의 문서윤이 정산한다.',
+  coda:{context:'박인호의 마지막 통화',lines:[['hero','두 명이 아니래. “다음 차에도 자리 있냐”고 물었어.'],['master','문서윤이 정산했을 거야. 거래소 3층 장부를 가져와.'],['hero','알았어. 이번엔 사람들 어디로 보냈는지부터 볼게.']]},
+  beats:[{id:'sale-in-progress',when:S=>S.t>=3,speaker:'master',text:'박인호가 은신처 명단을 넘기기 전에 막아야 해. 2층에서 돈을 기다리고 있어.'}]},
+ e2:{before:'금성 거래소는 사람을 화물 번호로 적는다. 올빼미가 옮긴 두 증인도 장부에 있다. 회계 중개인 문서윤을 막고 3층 원본 장부를 확보한다. 장부의 백림재단 계좌는 지난 호송비를 보낸 계좌와 같다.',after:'호송비와 증인 판매 대금이 같은 계좌에서 나왔다. 클럽 실장 강도윤이 구매자를 모으고 있다. 까마귀는 그 계좌를 설명하지 못했다.',
+  coda:{context:'거래소 장부 · 백림재단 계좌',lines:[['hero','이 계좌, 우리 수고비 보낸 데잖아.'],['master','중개인이 같은 통장을 썼겠지. 강도윤 쪽 암호표로 확인해 보자.'],['hero','응. 장부는 내가 가지고 있을게. 사진만 보내 줄게.']]},
+  beats:[{id:'familiar-account',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'백림재단. 호송비 입금자랑 같아. 장부 원본은 넘기지 말아야겠어.'}]},
+ m2:{before:'클럽 VIP룸은 증인 거래의 상담실이다. 강도윤의 장부와 회계 숙소의 암호표를 맞추면 누가 누구를 사 갔는지 알 수 있다. 까마귀는 구매자 명단을 먼저 보내 달라고 재촉한다.',after:'장무혁과 백철민이 오늘 마지막 대금을 정산한다. 구매자 명단에 까마귀의 무전 호출부호가 있다. 올빼미는 그 사실을 까마귀에게 알리지 않았다.',
+  intro:[['master','강도윤은 자주색 정장이야. 장부와 회계 숙소 암호표를 챙겨. 구매자 명단은 바로 보내 주고.'],['hero','사람들 내린 곳도 확인할게. 명단 사진은 그다음에.']],
+  coda:{context:'장부의 가명을 푼 뒤 · 송신하지 않은 메모',lines:[['hero','구매자 칸에 네 호출부호가 있네, 까마귀.'],['hero','장무혁하고 백철민이 마지막 정산을 한대. 계약서부터 직접 봐야겠어.']]},
+  beats:[{id:'one-half',when:S=>S.items.some(i=>i.got)&&S.items.some(i=>!i.got),speaker:'hero',text:'한쪽만 봐서는 구매자가 안 나와. 남은 자료까지 챙기자.'},{id:'crow-code',when:S=>S.items.length>0&&S.items.every(i=>i.got),speaker:'hero',text:'까마귀 호출부호가 구매자 칸에 있어. 아직 눈치챈 티 내지 말자.'}]},
+ m4:{before:'정산이 끝나면 증인들이 새벽 차에 실린다. 장무혁과 백철민을 막고 계약서와 현금을 확보한다. 올빼미는 계약서의 인계 장소로 제비를 찾고, 현금은 남은 사람들의 도피 비용으로 쓸 생각이다. 까마귀가 철수 차량을 제안했다.',after:'계약서에 까마귀의 서명과 제비의 구금동 번호가 있었다. 철수 차량의 목적지도 그 구금동이다. 올빼미는 배신을 확인하고, 장부를 따로 숨긴 채 인계 차량을 역이용하기로 했다.',
+  intro:[['master','장무혁은 큰 체격에 황토색 재킷, 백철민은 흰머리에 밝은 정장이야. 끝나면 내가 차를 보낼게.'],['hero','차 번호하고 목적지 먼저 보내 줘. 지난번처럼 “안전한 곳”이라고만 하지 말고.']],
+  coda:{context:'큰길 밖 · 계약서와 철수 차량 안내 대조',lines:[['hero','계약서 인수자도 너고, 철수 차량 목적지도 구금동이네.'],['hero','제비가 거기 있어. 장부부터 다른 데 숨기고 타자.'],[{note:'올빼미가 남긴 예약 송신'},'내일 아침까지 연락 없으면 이 장부를 공개해 주세요. 까마귀에게는 보내지 말고요.'],['hero','그쪽은 날 잡았다고 생각하게 두고. 안에서 제비를 찾는다.']]},
+  beats:[{id:'escape-fund',when:S=>!!S.items[0]?.got,speaker:'hero',text:'현금 확보. 이건 사람들 빼낼 때 쓸 거야. 까마귀 몫은 없어.'},{id:'handover-signature',when:S=>!!S.items[1]?.got,speaker:'hero',text:'계약서에 까마귀 서명, 제비의 수용 번호. 철수 차량 목적지하고도 같아.'}]},
+ m6:{before:'올빼미는 장부를 숨기고 인계 차량에 올랐다. 구금동에 들어오는 대신 장비를 빼앗겼다. 제비가 남긴 메모에는 감방 침대 밑 머리핀과 2층 압수품 목록이 적혀 있다. 약속대로 문을 열고, 제비와 남은 증인들의 행방을 확인한다.',after:'제비는 살아 나오지 못했다. 하지만 무전기에 증인들의 연락처와 출발 전 차량 번호를 남겼다. 인계서의 운송 책임자는 오태식. 올빼미는 복수보다 배차를 막는 일을 먼저 하기로 한다.',
+  intro:[['hero','들어오긴 했네. 장비 검사도 아주 꼼꼼하고.'],['hero','제비 메모대로면 침대 밑에 머리핀이 있어. 문부터 열고 2층을 확인하자.']],
+  coda:{context:'구금동 밖 · 제비가 남긴 녹음',lines:[[{recorded:'aide'},'아직 여기 있는 사람들, 새벽 차로 옮긴대. 차 번호랑 연락처 남겨 둘게.'],['hero','네가 문 따는 법까지 적어 놨는데… 같이 나왔어야지.'],['hero','오태식이 배차 담당이네. 까마귀는 기다리라고 해. 우선 차부터 멈춘다.']]},
+  beats:[{id:'cell-plan',when:S=>!!(S.player.got||{}).pin||S.player.picks>0,speaker:'hero',text:'있다, 머리핀. 제비는 이런 걸 꼭 남겨 놨지. 간수 돌아서면 문을 따자.'},{id:'swallow-radio',when:S=>!!S.items[0]?.got,speaker:'hero',text:'제비 무전기야. 연락처가 아직 남아 있어. 인계서에서 차량 번호만 맞추면 돼.'}]},
+ m7:{before:'새벽배송 집하장에 남은 증인들이 모여 있다. 오태식은 그들을 나눠 실어 보낼 준비를 한다. 올빼미는 운송명세서로 출고 번호를 확인한 뒤 2층 배차 단말에서 운행을 취소한다. 제비가 부탁한 사람들을 이번에는 직접 내보낸다.',after:'출고를 취소해 증인들의 이송을 막았다. 명세서와 제비의 연락처를 맞춰 피신 경로를 보냈다. 까마귀 본부에 남은 연락망은 아직 이들을 추적할 수 있다.',
+  intro:[['hero','제비가 적어 둔 차량들 맞아. 아직 출발 전이네.'],['hero','오태식을 막고, 명세서의 번호로 2층 배차를 취소한다. 이번 차에는 아무도 안 태워.']],
+  coda:{context:'집하장 밖 · 증인에게 보낸 연락',lines:[['hero','출고 취소됐어요. 정문으로 나오지 말고, 보낸 경로로 이동해요.'],[{note:'회신'},'확인했습니다. 다른 분들한테도 전할게요.'],['hero','좋아. 이제 쫓아올 연락망을 끊으러 가자.']]},
+  beats:[{id:'dispatch-names',when:S=>!!S.items[0]?.got,speaker:'hero',text:'제비 명단하고 차량 번호가 맞아. 명세서만 들고 나가면 차는 출발해. 배차까지 취소해야 해.'},{id:'dispatch-held',when:S=>!!S.items[1]?.got,speaker:'hero',text:'배차 취소 확인. 이제 연락을 돌릴 수 있어. 단말 확인하러 오는 경비부터 피하자.'}]},
+ m5:{before:'까마귀는 올빼미에게 경쟁자들을 지우게 하고, 남은 증인 거래를 독점하려 했다. 본부의 원본 장부에는 제비의 연락처와 새 은신처를 추적할 정보가 남아 있다. 까마귀를 막고 원본을 회수해 도망친 사람들이 다시 잡히지 않게 한다.',after:'까마귀를 막고 추적에 쓰일 원본 장부를 회수했다. 처음 호송비를 보냈던 백림재단 이사장 윤서경이 공개적으로 증인 보호 사업을 발표한다. 거래를 다시 시작할 명령과 돈은 사저의 원장에 남아 있다.',
+  intro:[['hero','까마귀, 내 장부 사본은 받았어? 원본은 네가 못 찾는 데 뒀어.'],['hero','너는 2층, 추적 명단은 1층 금고. 사람들 뒤를 더 못 밟게 해야겠네.']],
+  coda:{context:'본부 · 원본 장부와 재단 행사 안내',lines:[['hero','백림재단, 증인 보호 사업 발표. 우리가 받은 호송비도 이 이름이었지.'],['hero','윤서경은 거래가 끝난 줄 아나 봐. 사저에서 건배할 준비까지 했네.'],['hero','원장 챙겨서 공개하자. 사람들 이름은 빼고, 돈 보낸 쪽 이름만.']]},
+  beats:[{id:'tracking-list',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'새 은신처를 찾을 연락망까지 적혀 있네. 원본은 내가 가져간다.'}]},
+ n1:{before:'백림재단 사저에서는 증인 보호 사업을 축하하는 연회가 열린다. 윤서경은 같은 이름으로 증인을 팔았다. 올빼미는 그를 막고 2층 명령 원장을 공개해 거래를 끝낸다. 연회 손님들은 표적이 아니다.',after:'윤서경을 막고 명령 원장을 확보했다. 거래를 지시한 기록은 공개하고 증인 연락처는 지웠다. 마지막 피신 확인은 올빼미가 직접 받았다.',
+  intro:[['hero','사람들 파는 돈으로 보호 사업이라. 현수막 새로 뽑았네.'],['hero','손님들은 건드리지 말고. 윤서경, 그리고 2층 원장만 챙기자.']],
+  coda:{context:'해 뜨기 전 · 마지막 도착 확인',lines:[[{note:'증인들의 회신'},'마지막 두 사람도 도착했습니다. 이번에는 다 같이 있어요.'],['hero','확인했어요. 직접 연락 줘서 고마워요.'],[{recorded:'aide'},'끝나면 밥이나 먹자. 너 이번에도 계산 안 하면 진짜 연락 끊는다.'],['hero','응. 오늘은 내가 살게.']]},
+  beats:[{id:'last-record',when:S=>S.items.some(i=>i.got),speaker:'hero',text:'명령 원장 확보. 공개할 건 명령하고 돈 거래야. 증인 연락처는 지우고 보낸다.'}]}
 };
 for(const[id,voice]of Object.entries(EPISODE_VOICE)){
- const s=campaignStage(id);s.story={...s.story,before:voice.before,after:voice.after};s.endText=voice.after;s.storyCoda=voice.coda;s.storyBeat=voice.beat;if(voice.intro)DIALOGUE[id]=voice.intro;
+ const s=campaignStage(id);s.story={...s.story,before:voice.before,after:voice.after};s.endText=voice.after;s.storyCoda=voice.coda;s.storyBeats=voice.beats;s.storyBeat=voice.beats[0];if(voice.intro)DIALOGUE[id]=voice.intro;
 }
 // Keep useful cover and body containers; move loose props out of junction centres.
 // Authored positions are stable, so old checkpoints migrate through the same data.
@@ -2342,6 +2342,47 @@ campaignStage('m7').brief+=' 관리자가 단말 이상을 무전으로 알리�
  s.officeArt.floorZones=[...(s.officeArt.floorZones||[]),{b:0,fl:0,x0:4,y0:10,x1:8,y1:10,art:'floorIvory'}];
  s.officeArt.decor.push({b:0,fl:0,art:'board',u:.24,w:72});
 }
+// Final copy pass after wardrobe, navigation and room patches. Save IDs, access
+// checks and objective slots remain stable; acquired records retain their rules.
+Object.assign(campaignStage('m6'),{name:'인계 대상',
+ brief:'올빼미는 제비를 찾으려고 인계 차량을 타고 구금동에 들어왔다. 장비는 동쪽 경비실에 압수됐다. 감방 바닥의 머리핀으로 간수가 등을 돌릴 때 문을 딸 수 있다. 장비 회수는 선택이다. 제비의 무전기는 감금동 동쪽 계단으로 올라가는 2층 사무실에, 까마귀 인계서는 남동쪽 자재 창고 보관함에 있다. 조직원 옷으로 마당과 자재 창고를 통행할 수 있지만 감금동 2층과 정문 정예는 피해야 한다. CCTV에 녹화되면 경비실에서 기록을 지우고 탈출한다.',
+ purpose:'제비의 무전기와 인계 기록으로 남은 증인들의 이송 차량을 찾는다.'});
+Object.assign(campaignStage('m4'),{purpose:'장무혁과 백철민을 처치하고 증인 거래 계약서와 도피에 쓸 현금을 확보한다.'});
+Object.assign(campaignStage('m7'),{purpose:'오태식을 처치하고 출고를 취소해 남은 증인들의 이송을 막는다.'});
+Object.assign(campaignStage('m5'),{purpose:'까마귀를 처치하고 증인들을 추적할 원본 장부를 회수한다.'});
+Object.assign(campaignStage('n1'),{purpose:'윤서경을 처치하고 명령 원장을 확보해 증인 거래를 공개한다.'});
+campaignStage('m4').brief=campaignStage('m4').brief.replace('황토색 재킷','황금색 재킷').replace('밝은 정장','보라색 정장');
+DIALOGUE.m4[0][1]='황금색 재킷에 덩치 큰 쪽이 장무혁, 보라색 정장에 회색 머리가 백철민이야. 끝나면 내가 차를 보낼게.';
+DIALOGUE.m2[0][1]='붉은 정장의 강도윤이야. 장부와 회계 숙소 암호표를 챙겨. 구매자 명단은 바로 보내 주고.';
+campaignStage('e2').brief=campaignStage('e2').brief.replace('조명 스위치','조명');
+const swallowMemo='제비가 압수품 목록 뒷면에 남긴 메모: “감방 침대 밑 머리핀. 무전기는 2층. 나 못 만나면 녹음부터 들어.”';
+campaignStage('m4').storyCoda.lines.splice(1,0,[{note:'계약서에 끼워진 메모'},swallowMemo]);
+campaignStage('tB').storyCoda.lines.splice(1,0,[{recorded:'aide'},'끝나면 밥이나 먹자. 이번엔 네가 계산해.']);
+// The old overheard conversation said Owl was ambushed and both arrived together.
+const detention=campaignStage('m6');
+Object.assign(detention.intel[0],{learn:'제비는 살아 나오지 못했다. 무전기는 2층에 있다. 올빼미는 오늘 들어왔다.',lines:[[0,'오늘 들어온 사람이 올빼미래.'],[1,'까마귀가 직접 차 보냈대. 내일 같이 이송하라고.'],[0,'제비도 아직 여기 있어?'],[1,'어제 죽었어. 무전기만 위층에 남았고.']]});
+Object.assign(detention.interrogate[0],{learn:'제비는 살아 나오지 못했다. 무전기는 2층에 있다.',say:'제비는 어제 죽었어. 무전기는 2층에 뒀어. 오늘 차 보낸 사람은 까마귀야.'});
+const newEvidence={
+ dispatch:['확인되지 않은 도착','제비가 남긴 배차표에 올빼미의 호송 번호와 박인호의 인수 기록이 있다. 안전가옥의 도착 확인은 없다.'],
+ 'runner-down':['박인호의 인원 거래','통화 기록은 은신처와 다음 차량의 인원을 흥정한 내용이다. 정산 담당자는 금성 거래소의 문서윤이다.'],
+ trade:['같은 입금 계좌','거래소 원본 장부의 백림재단 계좌는 올빼미의 호송비 입금 계좌와 같다. 강도윤이 구매자를 모았다.'],
+ cipher:['구매자 명단의 호출부호','암호표로 장무혁과 백철민의 실명을 확인했다. 구매자 칸에는 까마귀의 호출부호도 있다. 이 사실은 송신하지 않았다.'],
+ 'district-down':['계약서의 인계 장소','까마귀의 서명 아래 제비의 수용 번호가 있다. 철수 차량 목적지도 같은 구금동이다.'],
+ betrayal:['제비가 남긴 차량 번호','제비의 마지막 무전과 인계서에서 아직 출발하지 않은 증인들의 차량을 확인했다. 운송 책임자는 오태식이다.'],
+ 'dispatch-stopped':['멈춘 이송과 피신 연락','차량 출고를 취소했다. 제비가 남긴 연락처로 피신 경로를 전했다. 까마귀 본부에는 추적에 쓸 연락망이 남아 있다.'],
+ 'crow-down':['추적을 지시한 연락 총책','까마귀는 올빼미에게 경쟁자를 제거하게 하고 증인 거래를 독점하려 했다. 그 연락망으로는 더 이상 피신한 사람들을 쫓을 수 없다.'],
+ 'last-name':['처음 호송비를 보낸 재단','원본 장부의 명령과 자금은 백림재단 이사장 윤서경에게 이어진다. 재단 사저에서는 증인 보호 사업 발표를 준비한다.'],
+ 'root-cut':['직접 받은 도착 확인','명령 원장은 공개하고 증인 연락처는 지웠다. 마지막 두 사람까지 피신했다는 회신을 올빼미가 직접 받았다.']
+};
+for(const[id,[title,text]]of Object.entries(newEvidence))Object.assign(CASE_SOURCES.find(s=>s.id===id),{title,text});
+// Local speech lets players overhear the scheme while watching existing routines.
+TARGET_CAST.runner.personality.cues[1]=['phone','문서윤 씨, 오늘 인원까지 넣어서 계산해 주세요. 은신처 주소는 입금 보고 보낼게요.'];
+TARGET_CAST.broker.personality.cues[1]=['phone','호송비도 백림재단 계좌로 보내세요. 지난번하고 같은 데예요.'];
+TARGET_CAST.collector.personality.cues[2]=['phone','백철민 서명 받으면 차 보내. 사람들은 새벽 출발이야.'];
+TARGET_CAST.district.personality.cues[0]=['ledger','인계 차량 목적지는 구금동으로. 까마귀 서명은 받았어?'];
+TARGET_CAST.crow.personality.cues[0]=['phone','새벽 차 도착하면 명단부터 보내. 나머지 정산은 내가 맡을게.'];
+TARGET_CAST.chair.personality.cues[0]=['drink','증인 보호 사업에 함께해 주셔서 고마워요. 다들 한 잔 하시죠.'];
+
 
 'use strict';
 (function () {
@@ -4884,8 +4925,9 @@ function initAudio() {
   if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
-    master = AC.createGain(); master.gain.value = typeof VOL === 'number' ? VOL : 0.9; master.connect(AC.destination);
-    setTimeout(() => prepNeonMusic(), 50);  // 처음 누른 순간부터 음악을 작업자에서 미리 합성
+    master = AC.createGain(); master.gain.value = muted ? 0 : (typeof VOL === 'number' ? VOL : 0.9); master.connect(AC.destination);
+    setTimeout(() => setMusic('n_calm'), 50);
+    setInterval(updateMusicMix, 120);
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
     let last = 0; for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3; }
@@ -4894,17 +4936,56 @@ function initAudio() {
     const g = AC.createGain(); g.gain.value = 0.05; src.connect(lp); lp.connect(g); g.connect(master); src.start();
   } catch (e) { AC = null; }
 }
-const MB = {}; let musicGain = null, musicSrc = null, musicKey = null;
-function setMusic(k) {
-  if (!AC || musicKey === k || !['n_calm','n_tense','n_fight'].includes(k)) return;
-  if (k.startsWith('n_') && !MB[k]) { if (neonPending[k]) { musicKey = '__want_' + k; return; } MB[k] = makeNeonLoop(k); }
-  if (!MB[k]) { musicKey = '__want_' + k; return; }
-  if (!musicGain) { musicGain = AC.createGain(); musicGain.connect(master); }
+// Recorded score is lazy-decoded. Procedural loops remain an offline fallback.
+const MB = {}, SCORE = {}, scorePending = {}, scoreBytes = {}, scoreFailed = new Set();
+let musicGain = null, musicSrc = null, musicKey = null, wantedMusic = 'n_calm';
+let musicVolume = .7, musicDuck = 1, musicMixTarget = -1;
+function fetchScoreBytes(k) {
+  if(!scoreBytes[k]) {const uri=A.score[k];scoreBytes[k]=uri.startsWith('data:')?Promise.resolve(b64ToBuf(uri)):fetch(uri).then(r=>{if(!r.ok)throw Error('score '+r.status);return r.arrayBuffer();});}
+  return scoreBytes[k];
+}
+function loadScore(k) {
+  if (!AC || SCORE[k] || scorePending[k] || scoreFailed.has(k)) return;
+  const uri = A.score?.[k]; if (!uri) { scoreFailed.add(k); prepNeonMusic(); return; }
+  scorePending[k] = true;
+  const bytes = fetchScoreBytes(k);
+  bytes.then(b => AC.decodeAudioData(b)).then(b => {
+    SCORE[k] = b; delete scorePending[k];
+    // Cache compressed chase/search files; decode only when that mood is needed.
+    if(k==='n_calm')setTimeout(()=>{for(const key of ['n_tense','n_fight'])if(A.score?.[key])fetchScoreBytes(key).catch(()=>{});},1200);
+    if (wantedMusic === k) setMusic(k, true);
+  }).catch(() => { delete scorePending[k]; scoreFailed.add(k); prepNeonMusic(); if(wantedMusic===k)setMusic(k,true); });
+}
+function updateMusicMix() {
+  if (!AC || !musicGain) return;
+  const dialogue = typeof DLG !== 'undefined' && !!DLG.cur;
+  const radio = document.getElementById('episodeRadio')?.hidden === false;
+  musicDuck = document.hidden ? 0 : dialogue || radio ? .38 : 1;
+  // The club's physical sound still masks footsteps. Leave it room in the mix.
+  if (club && club.g.gain.value > .06) musicDuck *= Math.max(.16, 1-club.g.gain.value*2);
+  const target = musicVolume * musicDuck;
+  if (Math.abs(target-musicMixTarget) > .002) {
+    musicGain.gain.setTargetAtTime(target, AC.currentTime, target < musicMixTarget ? .12 : .55);musicMixTarget=target;
+  }
+}
+function setMusic(k, force=false) {
+  if (!AC || !['n_calm','n_tense','n_fight'].includes(k)) return;
+  wantedMusic = k;
+  if (!SCORE[k] && !scoreFailed.has(k)) loadScore(k);
+  if (!force && musicKey === k) return;
+  const recorded = !!SCORE[k], buffer = SCORE[k] || MB[k];
+  if (!buffer) {
+    if (scoreFailed.has(k) && !neonPending[k]) {MB[k]=makeNeonLoop(k);setMusic(k,true);}
+    return;
+  }
+  if (!musicGain) { musicGain = AC.createGain();musicGain.gain.value=0;musicGain.connect(master); }
   const now = AC.currentTime;
-  if (musicSrc) { const old = musicSrc; const og = old._g; og.gain.setTargetAtTime(0, now, 0.4); setTimeout(() => { try { old.stop(); } catch (e) {} }, 2000); }
-  const src = AC.createBufferSource(); src.buffer = MB[k]; src.loop = true;
-  const g = AC.createGain(); g.gain.value = 0; g.gain.setTargetAtTime(muted ? 0 : (k === 'n_calm' ? 0.08 : k === 'n_tense' ? 0.17 : 0.2), now, k === 'n_fight' ? 0.15 : 0.5);
-  src.connect(g); g.connect(musicGain); src._g = g; src.start(); musicSrc = src; musicKey = k;
+  if (musicSrc) { const old = musicSrc;old._g.gain.cancelScheduledValues(now);old._g.gain.setTargetAtTime(0,now,.28);setTimeout(()=>{try{old.stop();old.disconnect();old._g.disconnect();}catch(e){}},2200); }
+  const src = AC.createBufferSource();src.buffer=buffer;src.loop=true;
+  const g=AC.createGain();g.gain.value=0;
+  const level=recorded ? (k==='n_fight'?.6:.65) : (k==='n_calm'?.08:k==='n_tense'?.17:.2);
+  g.gain.setTargetAtTime(level,now,k==='n_fight'?.22:.65);
+  src.connect(g);g.connect(musicGain);src._g=g;src._recorded=recorded;src.start();musicSrc=src;musicKey=k;updateMusicMix();
 }
 // 도시 음악: 네온 신스 3단계 (평상시 · 의심 · 발각) — 직접 합성, 루프
 // 합성 본체: 순수 함수라 작업자(Web Worker)에서도 돈다 — 판 시작 때 0.6초 넘게 화면이 멈추던 원인
@@ -4970,9 +5051,9 @@ function prepNeonMusic() {
   const ks = ['n_calm', 'n_tense', 'n_fight'].filter(k => !MB[k] && !neonPending[k]); if (!ks.length) return;
   try {
     if (!neonW) { neonW = new Worker(URL.createObjectURL(new Blob([neonSynth.toString() + '\nonmessage = e => { const r = neonSynth(e.data.k, e.data.sr); postMessage({ k: e.data.k, L: r.L, R: r.R }, [r.L.buffer, r.R.buffer]); };'], { type: 'text/javascript' })));
-      neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (musicKey === '__want_' + k) { musicKey = null; setMusic(k); } }; }
+      neonW.onmessage = e => { const { k, L, R } = e.data; delete neonPending[k]; if (!MB[k]) MB[k] = toBuf({ L, R }); if (wantedMusic === k && !SCORE[k]) setMusic(k, true); }; }
     ks.forEach(k => { neonPending[k] = 1; neonW.postMessage({ k, sr: AC.sampleRate }); });
-  } catch (e) { ks.forEach((k, i) => setTimeout(() => { if (!MB[k]) MB[k] = makeNeonLoop(k); }, 60 + i * 400)); }
+  } catch (e) { ks.forEach((k, i) => setTimeout(() => { if (!MB[k]) MB[k] = makeNeonLoop(k);if(wantedMusic===k&&!SCORE[k])setMusic(k,true); }, 60 + i * 400)); }
 }
 // 클럽 음악: 124BPM 4박 킥 + 오프비트 하이햇 + 베이스 + 화음 (직접 합성, 2마디 반복)
 const CLUB_BPM = 124; let club = null;
@@ -17749,21 +17830,23 @@ function updateDialog(dt) {
 let ambSrc = null;
 function startAmb() {
   if (!AC || ambSrc) return;
-  const go = buf => { if (ambSrc) return; const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; const g = AC.createGain(); g.gain.value = muted ? 0 : 0.1; s.connect(g); g.connect(master); s.start(); s._g = g; ambSrc = s; };
+  const go = buf => { if (ambSrc) return; const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; const g = AC.createGain(); g.gain.value = 0.1; s.connect(g); g.connect(master); s.start(); s._g = g; ambSrc = s; };
   if (MB.crickets) go(MB.crickets); else if (A.music && A.music.crickets) AC.decodeAudioData(b64ToBuf(A.music.crickets), b => { MB.crickets = b; go(b); }, () => {});
 }
 
 // Optional in-field story lines yield to danger and never change mission logic.
 function episodeStoryMessage(){
- const beat=STAGE.storyBeat;if(!beat||!S)return null;
+ const beats=STAGE.storyBeats||(STAGE.storyBeat?[STAGE.storyBeat]:[]);if(!beats.length||!S)return null;
  const state=S.episodeStory||(S.episodeStory={seen:{},active:null});
- if(state.active){if(state.active.until>S.t)return state.active.message;state.active=null;}
- if(state.seen[beat.id]||!beat.when(S))return null;
+ if(state.active){if(state.active.until>S.t)return state.active.message;state.active=null;state.nextAt=S.t+2;}
+ if(S.t<(state.nextAt||0))return null;
+ const beat=beats.find(b=>!state.seen[b.id]&&b.when(S));if(!beat)return null;
  return{text:beat.text,speaker:beat.speaker,action:tutText(nextGoal()?.text||''),cue:'story:'+beat.id,storyBeat:beat.id,priority:1};
 }
 function acknowledgeEpisodeStory(message){
  if(!message?.storyBeat||!S)return;
  const state=S.episodeStory||(S.episodeStory={seen:{},active:null});
+ if(state.seen[message.storyBeat])return;
  state.seen[message.storyBeat]=true;state.active={message,until:S.t+7};
 }
 // Completion has already saved rewards before the short coda. Replays keep the
@@ -17780,7 +17863,7 @@ function playEpisodeCoda(){
 
 // One clear instruction at a time, spoken by a familiar partner on the radio.
 const OPENING_RADIO=[
- '올빼미, 제비가 연락을 안 받아. 오른쪽 배차실 2층에 남긴 서류부터 찾아보자.',
+ '올빼미, 제비가 마지막으로 간 배차실이야. 오른쪽 건물 2층에서 우리 호송 서류부터 찾아보자.',
  '웅크리고 상자 옆 풀숲으로 가. 경비 눈을 피할 수 있어.',
  '경비가 문 쪽을 보고 있네. 풀숲에서 나와 등 뒤로 붙어.',
  '공격을 짧게 눌렀다 떼. 기절만 시킬 거야. 1초 동안 누르면 죽으니 조심하고.',
@@ -19661,6 +19744,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    setMusic,updateMusicMix,audioInfo:()=>({key:musicKey,wanted:wantedMusic,recorded:!!musicSrc?._recorded,effects:Object.keys(SB).length,loaded:Object.keys(SCORE),pending:Object.keys(scorePending),failed:[...scoreFailed],volume:musicVolume,duck:musicDuck,bus:musicGain?.gain.value,master:master?.gain.value,muted,context:AC?.state,duration:musicSrc?.buffer.duration}),
     startLoot,updatePick,nearLoot,lootLockpickPlan,itemObjectiveBlock,updateDispatchFault,startDispatchFault,
     corpseRestPose,pairedRestShift,drawOfficeSurfaceDress,fitSkillBoard,TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
@@ -20011,9 +20095,11 @@ initLoadout();
 const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let VOL = +lsGet('yahaeng.vol', 90) / 100, BRI = +lsGet('yahaeng.bri', 100) / 100;
-function applyVol() { if (master) master.gain.value = VOL; }
-function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';$('btnMute').setAttribute('aria-pressed',String(muted));for(const [id,out]of [['volR','volValue'],['briR','briValue']]){const el=$(id),v=el.value+'%';$(out).value=v;el.setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);el.style.setProperty('--setting-fill',((+el.value-+el.min)/(+el.max-+el.min)*100)+'%');}}
+function applyVol() { if (master) master.gain.setTargetAtTime(muted?0:VOL,AC.currentTime,.04); }
+function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';$('btnMute').setAttribute('aria-pressed',String(muted));for(const [id,out]of [['volR','volValue'],['musicR','musicValue'],['briR','briValue']]){const el=$(id),v=el.value+'%';$(out).value=v;el.setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);el.style.setProperty('--setting-fill',((+el.value-+el.min)/(+el.max-+el.min)*100)+'%');}}
 function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
+musicVolume=clamp(+lsGet('yahaeng.music',70)/100,0,1);$('musicR').value=Math.round(musicVolume*100);
+$('musicR').addEventListener('input',e=>{musicVolume=+e.target.value/100;lsSet('yahaeng.music',e.target.value);updateMusicMix();syncSettingValues();});
 $('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri(); syncSettingValues();
 $('volR').addEventListener('input', e => { VOL = +e.target.value / 100;if(VOL>0&&muted)toggleMute(); lsSet('yahaeng.vol', e.target.value); applyVol(); syncSettingValues(); });
 $('briR').addEventListener('input', e => { BRI = +e.target.value / 100; lsSet('yahaeng.bri', e.target.value); applyBri(); syncSettingValues(); });
@@ -20076,7 +20162,7 @@ $('btnNewCampaign').addEventListener('click',()=>{if(running||$('intro').hidden)
 $('btnNewCampaignCancel').addEventListener('click',()=>$('newCampaignDialog').close('cancel'));
 $('btnNewCampaignConfirm').addEventListener('click',restartCampaign);
 $('newCampaignDialog').addEventListener('close',()=>{if(!running&&!$('intro').hidden)$('btnNewCampaign').focus({preventScroll:true});});
-function toggleMute() { muted = !muted; if (musicSrc) musicSrc._g.gain.value = muted ? 0 : 0.16; if (ambSrc) ambSrc._g.gain.value = muted ? 0 : 0.1; $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
+function toggleMute() { muted = !muted; applyVol(); $('btnMute').textContent = muted ? '소리 켜기' : '소리 끄기';syncSettingValues(); }
 function setPause(v) { if (!running || !$('brief').hidden || !$('end').hidden) return; if(v){clearPlayerInput();closeEnvPicker();} paused = v; $('pause').hidden = !paused; if (!paused) { const h = $('help'); if (h.classList.contains('over')) { h.hidden = true; h.classList.remove('over'); } }
   if (paused && S) { closeEnvPicker();const r=loadSkillTree(),points=skillBudget()-skillSpent(r);$('btnSkillsPause').textContent='기술 정보 보기'; $('pzSub').textContent = (STAGE.sub || '') + (STAGE.tutorial ? '' : ' · ' + STAGE.name);const retry=$('btnCheckpointPause');retry.hidden=!cpReady();if(!retry.hidden)retry.textContent='체크포인트부터 · '+mmss(CP.S.t)+(isTouch?'':' · F9');renderMissionGoals(); $('btnResume').focus({preventScroll:true}); } }
 function togglePause() { setPause(!paused); }
@@ -20116,7 +20202,7 @@ $('btnCP').addEventListener('click', () => loadCheckpoint());
 // 다음 의뢰: 배열의 바로 다음이 아니라 '다음으로 할 수 있는 의뢰' (데모에서 잠긴 의뢰는 건너뛴다)
 function nextPlayable() { for (let i = STAGE_I + 1; i < STAGES.length; i++) if (mainContract(STAGES[i]) && demoOk(STAGES[i])) return i; return -1; }
 $('btnNext').addEventListener('click',()=>{if(S?.over)continueResultTraining();});
-document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) softPause(true); else softPause(false);updateMusicMix(); });
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
@@ -20125,7 +20211,7 @@ function start(i, noBrief) {
   resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
-  initAudio(); play('knife', 0.5); prepNeonMusic(); setTimeout(() => setMusic('n_calm'), 300);
+  initAudio(); play('knife', 0.5); setTimeout(() => setMusic('n_calm'), 300);
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
@@ -20169,6 +20255,7 @@ function toMenu() {
   if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
+  setMusic('n_calm');
   running = false; paused = false;  resetDialog(); if ($('entryBox')) $('entryBox').hidden = true;
   $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = true; syncQuick();showMenu('intro');
   renderStageList();

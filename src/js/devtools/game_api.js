@@ -1,6 +1,7 @@
 // Optional inspection and regression-test bridge. Installed after boot.
 function installGameApi() {
   window.__game = {
+    setMusic,updateMusicMix,audioInfo:()=>({key:musicKey,wanted:wantedMusic,recorded:!!musicSrc?._recorded,effects:Object.keys(SB).length,loaded:Object.keys(SCORE),pending:Object.keys(scorePending),failed:[...scoreFailed],volume:musicVolume,duck:musicDuck,bus:musicGain?.gain.value,master:master?.gain.value,muted,context:AC?.state,duration:musicSrc?.buffer.duration}),
     startLoot,updatePick,nearLoot,lootLockpickPlan,itemObjectiveBlock,updateDispatchFault,startDispatchFault,
     corpseRestPose,pairedRestShift,drawOfficeSurfaceDress,fitSkillBoard,TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
