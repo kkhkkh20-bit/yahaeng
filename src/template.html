@@ -610,7 +610,7 @@ __FRONT_END_CSS__
   <button type="button" data-k="x" class="kpx">닫기 (Esc)</button></div></div>
 <div id="dlg" hidden>
   <div class="dlg-face" id="dlgFaceBox"><canvas id="dlgFace" width="256" height="256"></canvas></div>
-  <div class="dlg-box"><div id="dlgContext" class="dlg-context"></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><small id="dlgHint"></small></div>
+  <div class="dlg-box"><div class="dlg-channel"><span id="dlgChannelIcon" aria-hidden="true"></span><div id="dlgContext" class="dlg-context"></div></div><div class="dlg-head"><b id="dlgName"></b><i id="dlgRole"></i></div><div class="dlg-copy"><p id="dlgMeasure" aria-hidden="true"></p><p id="dlgText"></p></div><div class="dlg-footer"><span id="dlgProgress" aria-label="대화 진행"></span><small id="dlgHint"></small></div></div>
 </div>
 <div id="joy" hidden><div id="joyKnob"></div></div>
 
@@ -755,7 +755,7 @@ __FRONT_END_CSS__
   <div class="br-scroll">
   <div class="br-wrap">
     <div class="br-info">
-      <div class="br-head"><div><h2 class="br-name" id="brName"></h2><span class="fx-sub" id="brSub"></span></div><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
+      <div class="br-head"><div><p class="br-kicker">의뢰 브리핑</p><h2 class="br-name" id="brName"></h2><span class="fx-sub" id="brSub"></span></div><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
       <p id="brPurpose" class="br-purpose" hidden></p>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>

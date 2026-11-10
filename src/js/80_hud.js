@@ -68,7 +68,7 @@ function stageMap(w, labels) {
   const R = Math.max(3, w / 90), pt = (px, py, col, sh, lab) => { const X = px * s, Y = py * s; x.fillStyle = col; x.strokeStyle = 'rgba(7,10,18,.9)'; x.lineWidth = Math.max(1.5, R / 3); x.beginPath();
     if (sh === 'd') { x.moveTo(X, Y - R * 1.4); x.lineTo(X + R * 1.1, Y); x.lineTo(X, Y + R * 1.4); x.lineTo(X - R * 1.1, Y); x.closePath(); } else x.arc(X, Y, sh === 'r' ? R * 1.6 : R, 0, TAU);
     if (sh === 'r') { x.lineWidth = R * 0.7; x.strokeStyle = col; x.stroke(); } else { x.stroke(); x.fill(); }
-    if (labels && lab) { const brief=labels==='brief'; x.font = uiFont(Math.round(R*(brief?2:3.2))); x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 5, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);
+    if (labels && lab) { const brief=labels==='brief'; x.font = uiFont(Math.round(R*(brief?2.2:3.2))).replace('400 ',brief?'600 ':'400 '); x.textAlign = 'center'; const hw = x.measureText(lab).width / 2 + 5, LX = clamp(X, hw, w - hw), LY = Math.max(R * 3.4, Y - R * 2.2);
       if(brief) { x.fillStyle='#0d151de8'; x.fillRect(LX-hw,LY-R*1.75,hw*2,R*2.5); x.fillStyle='#e4e5df'; }
       else { x.lineWidth=3; x.strokeStyle='rgba(7,10,18,.95)'; x.strokeText(lab,LX,LY); x.fillStyle=col; }
       x.fillText(lab,LX,LY); } };
@@ -100,9 +100,9 @@ function missionIdentities(){
 }
 function makeMissionIdentity(row,brief){
   const el=document.createElement('div');el.className='mission-id '+row.kind+(row.complete?' complete':'');el.dataset.missionId=row.id;
-  const cv=document.createElement('canvas');cv.width=brief?192:72;cv.height=brief?128:72;cv.dataset.missionArt=row.kind;cv.dataset.key=row.key||row.art||'';cv.setAttribute('aria-hidden','true');el.appendChild(cv);
+  const cv=document.createElement('canvas');cv.width=brief?192:72;cv.height=brief?128:72;cv.dataset.missionArt=row.kind;cv.dataset.key=row.key||row.art||'';cv.setAttribute('aria-hidden','true');if(brief&&row.kind==='item'){const icon=document.createElement('span');icon.className='mission-emblem';icon.setAttribute('aria-hidden','true');icon.innerHTML=row.art==='radio'?skillSigil('radio'):row.art==='terminal'?skillSigil('hack'):uiSigil(row.art==='cash'?'cash':'document');el.appendChild(icon);}else el.appendChild(cv);
   const text=document.createElement('div'),type=document.createElement('small'),name=document.createElement('b'),status=document.createElement('span');
-  type.textContent=brief?row.verb:row.status;name.textContent=row.name;status.textContent=brief?row.where:row.complete?'✓ 완료':row.status;
+  if(brief){type.innerHTML=uiSigil(row.kind==='target'?'brief-target':row.art==='terminal'?'settings':'document');}type.append(document.createTextNode(brief?row.verb:row.status));name.textContent=row.name;status.textContent=brief?row.where:row.complete?'✓ 완료':row.status;
   text.append(type,name);if(brief&&row.role){const role=document.createElement('em');role.className='target-profile';role.textContent=row.appearance||row.role;text.appendChild(role);}if(brief||row.complete||row.status.includes('기절'))text.appendChild(status);el.appendChild(text);return el;
 }
 function refreshMissionIdentityArt(){
@@ -156,6 +156,7 @@ function showBrief(go) {
   renderCaseEntry('caseBrief');
   $('brStory').hidden=!STAGE.story; $('brStory').textContent=STAGE.story?.before||'';
   for(const cv of $('briefInfo').querySelectorAll('.br-cast canvas'))cv.parentElement.hidden=!!(STAGE.story?.solo&&cv.dataset.speaker!=='hero');
+  $('brMapTitle').innerHTML=uiSigil('map')+'<span>현장 지도</span>';
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   el.querySelector('.br-scroll').scrollTop = 0;
   if($('briefInfo').open)$('briefInfo').close();

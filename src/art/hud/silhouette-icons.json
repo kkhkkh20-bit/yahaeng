@@ -1,5 +1,5 @@
 {
-  "version": 262,
+  "version": 263,
   "authoring": "Original SVG artwork designed for Yahaeng; no stock stick figures.",
   "style": "Solid currentColor silhouettes with transparent cuts; identical shape on light and dark states.",
   "skills": [
@@ -42,7 +42,13 @@
     "unknown",
     "arrow",
     "back",
-    "chevron"
+    "chevron",
+    "document",
+    "map",
+    "brief-target",
+    "exit",
+    "conversation",
+    "cash"
   ],
   "field": [
     "action",

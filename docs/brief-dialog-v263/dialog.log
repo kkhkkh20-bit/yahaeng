@@ -1,0 +1,12 @@
+PASS 320 568 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 320 568 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 360 740 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 360 740 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 390 844 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 390 844 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 568 320 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 568 320 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 844 390 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 844 390 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 1280 800 normal stable content height, portrait alignment, long text scroll, touch/keyboard, note
+PASS 1280 800 ink stable content height, portrait alignment, long text scroll, touch/keyboard, note
