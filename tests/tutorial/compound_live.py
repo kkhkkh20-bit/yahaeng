@@ -202,9 +202,16 @@ async def main(args):
       if await q.evaluate("__game.S.guards.some(g=>g.tag==='upperKeeper')"):
        await cc.neutralize('upperKeeper');await cc.hide('upperKeeper')
       if direct:
+       # The broker now moves between work stations. Use the existing room
+       # switch before crossing the office, then observe a real rear opening.
+       if await q.evaluate('__game.S.guards.find(g=>g.tag==="broker").sched?.length>1'):
+        await cc.light()
        await cc.walk(1416,504);await cc.walk(1464,504);await cc.walk(1464,360)  # Authored right-wall approach, outside the camera cone.
       await cc.camera_cable()
-      if direct:await cc.walk(1378,312)  # Stay north of the downward-facing broker.
+      if direct:
+       if await q.evaluate('__game.S.guards.find(g=>g.tag==="broker").sched?.length>1'):
+        await q.wait_for_function('(()=>{const g=__game.S.guards.find(g=>g.tag==="broker");return !g.moving&&g.wait>5&&Math.hypot(g.x-1320,g.y-360)<26&&Math.sin(g.a)>.7})()',timeout=65000)
+       await cc.walk(1378,312)  # Stay north of the downward-facing broker.
       await cc.neutralize('broker',True);at=await q.evaluate('__game.S.items[0]');await cc.walk(at['x'],at['y']);await cc.env('loot')
       # Keep the remaining patrols alive: permitted passage and an ordinary
       # staircase escape are valid solutions, not an all-enemy-clear checklist.

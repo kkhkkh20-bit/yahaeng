@@ -42,6 +42,7 @@ function guardAwareness(g) {
   const witnessed=g.seen&&g.sightFl===flOf(P)&&g.sightZ===(P.z||0)&&S.t-g.sightAt>=0&&S.t-g.sightAt<=.12;
   const direct=!(P.hide||P.under||P.vent||P.ledge)&&!!((g.seen||g.eyeWatching)&&same||witnessed);
   const eye=direct?(g.eyeT||0)/identityTime(g):0, meter=clamp(g.meter||0,0,1);
+  if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS'&&!direct&&meter<NOTICE_AT)return{phase:'quiet',color:'#aab8bf',progress:0,direct:false,label:'배차 확인'};
   if(g.state==='ALERT'&&direct) return {phase:'seen',color:'#ff4a3c',progress:1,direct:true,label:'발각'};
   if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))) return {phase:'search',color:'#d7b879',progress:.45,direct:false,label:'수색 중'};
   if(eye>0) return {phase:'check',color:'#ddd9c8',progress:clamp(eye,0,1),direct:true,label:'신원 확인'};

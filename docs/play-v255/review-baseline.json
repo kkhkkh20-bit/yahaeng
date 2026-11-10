@@ -1,0 +1,131 @@
+{
+  "opening": {
+    "version": "v254",
+    "method": "Fresh opening episode only; native keyboard, normal RAF; no gameplay overrides.",
+    "result": {
+      "label": "clear",
+      "videoSeconds": 80.2802830390001,
+      "stage": "tB",
+      "step": 9,
+      "x": 1346.9751162158302,
+      "y": 747.7243489124212,
+      "goal": {
+        "text": "배차실을 나와 동쪽 골목으로 빠져나오기",
+        "where": "",
+        "x": 1416,
+        "y": 744,
+        "fl": 0,
+        "tut": true,
+        "moveCue": true
+      },
+      "radio": "까마귀 · 무전동쪽 골목으로 나와. 서류 잃어버리면 다시 가야 한다.배차실을 나와 동쪽 골목으로 빠져나오기",
+      "mode": "walk",
+      "hidden": false,
+      "over": true,
+      "t": 76.99356466666934,
+      "hp": 3,
+      "whistle": null,
+      "uniformPass": true,
+      "stats": {
+        "camEver": 0,
+        "kills": 0,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 1,
+        "special": 0,
+        "ko": 2,
+        "dressed": 1,
+        "gotAs": "crew"
+      }
+    },
+    "errors": []
+  },
+  "vip": [
+    {
+      "version": "v254",
+      "seconds": 268.69604726671173,
+      "hp": 3,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 3,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 2,
+        "stashed": 0,
+        "special": 0,
+        "ko": 3,
+        "stories": 1,
+        "dressed": 1,
+        "camUnplugged": 2,
+        "keyDoors": 1,
+        "gotAs": "crew",
+        "screams": 1,
+        "witness": 1
+      },
+      "skills": [],
+      "approach": "흡연 동선 매복",
+      "receipt": {
+        "id": "smoke",
+        "name": "흡연 동선 매복",
+        "fresh": true,
+        "count": 1
+      },
+      "records": {
+        "smoke": {
+          "clears": 1,
+          "best": 268,
+          "clean": false
+        }
+      },
+      "next": "다른 방법으로",
+      "touch": false,
+      "method": "Standalone selected-stage fixture; fresh save; native keyboard or CDP touch; all actors and security active; normal RAF and unseeded randomness; no actor, health, inventory, skills, alert or objective overrides",
+      "errors": [],
+      "milestones": [
+        {
+          "kind": "dress",
+          "at": 37.91476567300015
+        },
+        {
+          "kind": "camCable",
+          "at": 45.22982490600043
+        },
+        {
+          "kind": "keypad",
+          "at": 159.12517956600004
+        },
+        {
+          "kind": "door",
+          "at": 161.60861580599976
+        },
+        {
+          "kind": "loot",
+          "at": 162.9420536939997
+        },
+        {
+          "kind": "door",
+          "at": 166.2766993920004
+        },
+        {
+          "kind": "up",
+          "at": 217.23605556199982
+        },
+        {
+          "kind": "loot",
+          "at": 242.805564409
+        },
+        {
+          "kind": "fdown",
+          "at": 256.5041578930004
+        }
+      ]
+    }
+  ]
+}

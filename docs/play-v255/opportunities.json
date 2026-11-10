@@ -1,0 +1,16 @@
+{
+  "brokerStations": [
+    0,
+    1
+  ],
+  "legacyRoutinePreserved": true,
+  "safePickCost": 2,
+  "safePickSeconds": 5.5,
+  "cardSeconds": 2.2,
+  "cancelPreservesTools": true,
+  "manifestRequired": true,
+  "operatorInterruption": true,
+  "physicalBossArrival": true,
+  "callDeliveredAt": 6.359999999999952,
+  "arrivedAt": 28.739999999999476
+}

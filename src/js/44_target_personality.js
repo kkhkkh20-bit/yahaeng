@@ -22,7 +22,8 @@ function targetCue(g){
  if(vipRoutine(g)==='smoke')return d.cues.find(c=>c[0]==='smoke')||d.cues[0];
  if(STAGE.id==='m2'&&g.tag==='vip'&&cur?.name==='VIP룸')return ['drink','여기서 한 잔 더 하지. 장부 연락 오면 바로 알려.'];
  if(cur?.act==='양주')return d.cues.find(c=>c[0]==='drink')||d.cues[0];
- if(cur?.act==='통화')return d.cues.find(c=>c[0]==='phone')||d.cues[0];
+ if(cur?.act==='통화'||cur?.act==='phone')return d.cues.find(c=>c[0]==='phone')||d.cues[0];
+ if(cur?.act==='ledger')return d.cues.find(c=>c[0]==='ledger')||d.cues[0];
  if(cur&&g.tag==='boss'&&STAGE.id==='n1')return d.cues[(g.sched.indexOf(cur)+d.cues.length)%d.cues.length];
  return d.cues[(g.route.length>1?routeIndex:g.persona?.sequence||0)%d.cues.length];
 }

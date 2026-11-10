@@ -24,6 +24,7 @@ function update(dt, present=true) {
   updateVipPlan(dt);updateVipContract();
   updateDining(dt);
   updateRendezvous(dt);
+  updateDispatchFault(dt);
   if ((S.targetIntelT = (S.targetIntelT || 0) - dt) <= 0) { S.targetIntelT = .15; updateTargetIntel(); }
   if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
   engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)

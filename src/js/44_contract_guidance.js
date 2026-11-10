@@ -35,6 +35,7 @@ function contractRouteGoal(){
     return target(vip,'파란 카드키 · VIP룸 뒷문');
   }
   if(!S.items[1]?.got){
+    if(lootLockpickPlan(S.items[1]))return object(S.items[1],'숙소 2층 계약서 금고 열기','초록 카드키로 조용히 · 락픽 2개로 직접 따기');
     const officeDoors=S.doors.filter(d=>d.keyLock==='code');
     if(!keys.code&&!keys.green&&officeDoors.length&&officeDoors.every(d=>d.locked)){const note=S.notes.filter(n=>n.gives==='code'&&!n.read).sort((a,b)=>dist(P.x,P.y,a.x,a.y)-dist(P.x,P.y,b.x,b.y))[0];if(note)return object(note,note.title+' 확인','사무동 비밀번호');}
     if(!keys.green){const card=S.keyItems.find(k=>k.key==='green'&&!k.got);if(card)return object(card,'사무동 2층에서 초록 카드키 챙기기','보안실 · 남서쪽 숙소 금고용');}

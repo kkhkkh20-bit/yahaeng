@@ -184,7 +184,9 @@ function updateGuard(g, dt) {
         if (hopClimb(g, arr)) break;
         if (arr) { g.reached = true; g.wait = g.waitBase; g.waitBase2 = g.a; g.waitT = 0; g.path = null; g.lookT = null; }
       } else {
-        g.waitT += dt; lookAround(g, dt, g.waitBase2, 1.4, [0.9, 1.5]);
+        g.waitT += dt;
+        if(g.dispatchVisit&&g.why==='dispatch'&&S.dispatchFault?.face){const f=S.dispatchFault.face;g.want=Math.atan2(f.y-g.y,f.x-g.x);}
+        else lookAround(g, dt, g.waitBase2, 1.4, [0.9, 1.5]);
         g.wait -= dt;
         if (g.wait <= 0) {
           if(g.why==='heard'&&g.soundApproach&&startCheck(g,g.poi,1,96)){gsay(g,'안쪽도 봐야겠어.');break;}

@@ -1,0 +1,142 @@
+{
+  "pc": {
+    "method": "Selected episode; native keyboard/CDP touch, normal RAF, all original AI and cameras active, no player/actor/inventory/health/skills/clock/objective overrides. Known-map developer navigation, not novice usability.",
+    "result": {
+      "label": "complete",
+      "version": "v255",
+      "t": 117.86707920001277,
+      "x": 1750.4913183295448,
+      "y": 848.1015486508488,
+      "fl": 0,
+      "z": 0,
+      "hp": 3,
+      "mode": "sneak",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 408,
+          "y": 984
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 600
+        },
+        {
+          "id": 2,
+          "state": "DEAD",
+          "seen": false,
+          "x": 1311.5768614204462,
+          "y": 351.57686142044673
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1224,
+          "y": 840
+        }
+      ],
+      "over": true
+    },
+    "errors": []
+  },
+  "touch": {
+    "method": "Selected episode; native keyboard/CDP touch, normal RAF, all original AI and cameras active, no player/actor/inventory/health/skills/clock/objective overrides. Known-map developer navigation, not novice usability.",
+    "result": {
+      "label": "complete",
+      "version": "v255",
+      "t": 132.74969800001634,
+      "x": 236.8338819428304,
+      "y": 1081.2221582130378,
+      "fl": 0,
+      "z": 0,
+      "hp": 3,
+      "mode": "sneak",
+      "hidden": false,
+      "moving": false,
+      "carry": false,
+      "body": null,
+      "approach": false,
+      "recovery": false,
+      "kill": false,
+      "stats": {
+        "camEver": 0,
+        "kills": 1,
+        "extraKills": 0,
+        "bodies": 0,
+        "detected": 0,
+        "stonesUsed": 0,
+        "kunaiUsed": 0,
+        "alarms": 0,
+        "stashed": 0,
+        "special": 0,
+        "picks": 1,
+        "roofStair": 1,
+        "camUnplugged": 1,
+        "ko": 0,
+        "gotAs": "self"
+      },
+      "guards": [
+        {
+          "id": 0,
+          "state": "PATROL",
+          "seen": false,
+          "x": 408,
+          "y": 984
+        },
+        {
+          "id": 1,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1272,
+          "y": 600
+        },
+        {
+          "id": 2,
+          "state": "DEAD",
+          "seen": false,
+          "x": 1311.5783033952155,
+          "y": 351.5783033952158
+        },
+        {
+          "id": 3,
+          "state": "PATROL",
+          "seen": false,
+          "x": 1346.3934719999877,
+          "y": 840
+        }
+      ],
+      "over": true
+    },
+    "errors": []
+  }
+}
