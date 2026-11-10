@@ -1,7 +1,7 @@
 /* The title's charcoal/ivory material, carried through the playable interface. */
 :root {
  --ui-ground:#0d1117; --ui-panel:#171c22; --ui-line:#4e5359;
- --ui-ink:#f0eee5; --ui-muted:#babdc0; --ui-accent:#e6e2d7;
+ --ui-ink:#f0eee5; --ui-muted:#babdc0; --ui-accent:#d1b57e;
  --ui-red:#de655d; --ui-red-ground:#8f302b;
  --ink-wash:url(data:image/webp;base64,__INK_WASH__);
 }
@@ -116,19 +116,15 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #brief .br-cast>div:first-child b { color:#e8e3d6; }
 #brief .br-radio { padding:16px 0 16px 12px; border-left:1px solid var(--ui-line); }
 #brief .br-acts { background:#10151af7; border-color:#676c6b66; box-shadow:none; }
-#brief .br-acts .cta { background:#8f302b; border:1px solid #c77166; border-radius:0; box-shadow:none; color:#fff1e4; }
-#brief .br-acts .cta:hover,#brief .br-acts .cta:focus-visible { background:#a03b34; border-color:#eaa18e; }
 #brief .br-legend { font-size:11px; color:#c2c2bc; }
 /* Quiet intermissions and a shared light-on-ink focus treatment. */
 #pause.screen.fx { background:#080d15e8; }
 #pause .pz-big { padding-left:14px; }
-#pause #btnResume,#pause .pz-big:hover,#pause .pz-big:focus-visible { background:var(--ink-wash) center/100% 100% no-repeat; }
 #pause .pz-sets { padding-top:16px; }
 #pause .pz-side { border-color:#5e6469; }
 #end { background:#0c1117f2; }
 #end .endacts { background:#0d1117f7; }
 #endRank b { color:#eee8d9; }
-#end .endacts .cta { color:var(--ui-ink); }
 @media(max-width:700px) {
  #hud .obj { padding:12px 24px 14px 64px; min-height:72px; }
  #hud .obj::after { right:12px; top:19px; }

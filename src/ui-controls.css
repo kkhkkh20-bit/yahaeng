@@ -1,0 +1,70 @@
+/* Shared controls: slate secondary, brass primary, brick destructive. */
+:root{--control-ink:#e7e7d8;--control-focus:#ecd0a0;--control-slate:var(--art-control-slate);--control-brass:var(--art-control-brass);--control-red:var(--art-control-red)}
+#brief .br-acts button,#end .endacts button,#pause .pz-big,#newCampaignDialog button,#btnCaseClose,#keypad .kpg button,#keypad .kpx,#brief .case-entry button,#skillScreen .case-entry button,#skillScreen .skill-loadout button,#skillScreen .skill-detail-actions button,#hud #loadout #btnLoadoutClose,#hud #loadout #btnWhistle,#hud #loadout #btnSneak{
+ --control-face:var(--control-slate);box-sizing:border-box;min-height:44px;border:5px solid transparent;border-image:var(--control-face) 6 fill stretch;border-radius:0;background:none;box-shadow:none;padding:6px 12px;color:var(--control-ink);font-family:var(--f-body);font-size:12px;line-height:1.5;letter-spacing:0;transition:filter .12s,color .12s;touch-action:manipulation
+}
+#brief #btnBrGo,#end .endacts .cta,#pause #btnResume,#skillScreen .skill-detail-actions button:not(:disabled):not(.skill-equip){--control-face:var(--control-brass);border:5px solid transparent;border-image:var(--control-face) 6 fill stretch;background:none;color:#192a32;font-weight:400}
+#brief #btnBrGo{min-height:50px;padding-inline:22px;font-size:15px;gap:12px}
+#brief #btnBrGo .br-start-key{color:#3f514e;font-size:10px;display:inline;margin:0 0 0 8px}
+body.touch #brief #btnBrGo .br-start-key{display:none}
+#end .endacts button{min-height:48px;padding-inline:17px;font-size:13px}
+#newCampaignDialog #btnNewCampaignConfirm,#pause #btnRestart2{--control-face:var(--control-red);border:5px solid transparent;border-image:var(--control-face) 6 fill stretch;background:none;color:#f5ddd2}
+#brief #btnBrGo:disabled,#end .endacts button:disabled,#pause #btnResume:disabled,#newCampaignDialog #btnNewCampaignConfirm:disabled,#keypad .kpg button:disabled{--control-face:var(--control-slate);color:#98abae;filter:saturate(.25);opacity:.65;cursor:default;background:none}
+#pause .pz-big{min-height:48px;font-size:16px;text-align:left;padding:7px 14px;gap:12px}
+#pause .pz-big::before{display:none}
+#pause .pz-menu{gap:7px}
+#pause #btnResume{min-height:54px;margin-bottom:7px;font-size:18px}
+#pause #btnResume::after{content:'→';margin-left:auto;color:#3f514e}
+#pause .pz-side{border-left-color:#64736a}
+#pause #missionGoals button{border-color:#495e66;border-radius:2px;background:#14242d;color:#bbc8c6}
+#pause #missionGoals button[aria-pressed=true]{border-color:#ad9567;color:#f0d6a2;background:#2d362f}
+#brief .br-wrap{border-color:#536a72;background:#111c24}
+#brief .br-head,#brief .br-cast{border-color:#41575e}
+#brief .br-acts{border-top-color:#62736d;background:#101b24f7;gap:9px}
+#brief .br-frame{border-color:#7e8e86}
+#end .endacts{border-top-color:#566e72;background:#101b24}
+#end #endRank b,#end .completion-receipt{color:#e1c38d}
+#skillScreen .skill-detail-actions button{min-height:48px;font-size:13px}
+#skillScreen .skill-detail-actions .skill-equip:not(:disabled){--control-face:var(--control-slate);color:#e3cd9f;background:none}
+#skillScreen .skill-detail-actions button:disabled,#skillScreen .skill-loadout button:disabled{--control-face:var(--control-slate);color:#98abae;filter:saturate(.25);opacity:.65;cursor:default}
+#skillScreen .skill-loadout button[aria-pressed=true]{--control-face:var(--control-brass);color:#192a32;background:none}
+#hud #loadout #tools .tool{border-color:#506a74;background:#1a2b35;color:#b6c6c6;box-shadow:inset 0 1px #a9b6a013}
+#hud #loadout #tools .tool.on{border-color:#d5b77d;border-bottom:3px solid #ad9260;background:#30392f;color:#f4dcab;box-shadow:inset 0 1px #e9d0a01a}
+#hud #loadout #tools .tool.on span{color:#f4dcab}
+#hud #loadout #btnWhistle[aria-pressed=true],#hud #loadout #btnSneak[aria-pressed=true]{--control-face:var(--control-brass);color:#192a32}
+#hud #loadout header{border-bottom-color:#61766e}
+#hud #envPicker button[aria-pressed=true]{border-color:#bda06d;color:#f5dbab;background:#303a32}
+#caseBoard{border-color:#728679;border-radius:2px;background:#15232d;color:#e8e4d4}
+#caseBoard .case-board-head{background:#192b35;border-bottom-color:#526960}
+#caseBoard .case-board-head h2{letter-spacing:-.02em;color:#f0e4c9}
+#caseBoard .case-board-head small,#caseBoard .case-kicker{color:#cbb78b;letter-spacing:.03em}
+#caseBoard #caseDetail{background:#101d26;border-left-color:#475d64}
+#caseBoard .case-node{border-color:#4e656e;background:#1b2e39;box-shadow:inset 0 1px #a8bbb318;color:#e2e4d8}
+#caseBoard .case-node[aria-pressed=true]{border-color:#d0b47e;background:#333a30;box-shadow:inset 2px 0 #d0b47e}
+#caseBoard .case-node.unknown{border-style:dashed;color:#a3b5bb;background:#14232d}
+#caseBoard .case-node.eliminated{border-left-color:#b87768}
+#caseBoard footer{border-top-color:#485e65}
+#keypad .kp{border-color:#6e8179;background:#14232d}
+#keypad #kpDisp{border-color:#63776e;background:#0c1921;color:#f0d6a5}
+#keypad .kpg button{font-size:19px;min-height:48px;padding:6px}
+#keypad .kpg button.fn{font-size:12px}
+#keypad .kpg button.ok{--control-face:var(--control-brass);color:#192a32}
+#brief button:focus-visible,#end button:focus-visible,#pause button:focus-visible,#caseBoard button:focus-visible,#newCampaignDialog button:focus-visible,#keypad button:focus-visible{outline:2px solid var(--control-focus);outline-offset:3px}
+#brief .br-acts button:active,#end .endacts button:active,#pause .pz-big:active,#newCampaignDialog button:active,#btnCaseClose:active,#keypad .kpg button:active,#keypad .kpg button.down,#keypad .kpx:active,#skillScreen .skill-detail-actions button:not(:disabled):active,#hud #loadout button:active{filter:brightness(.86);box-shadow:inset 0 2px #06121c55}
+body.touch #hud .pad #btnAct:is(.ready,.ko),body.touch #hud .pad :is(#btnCarry,#btnTool,#btnToolNext,#btnGrab,#btnDress).ready,body.touch #hud .pad #btnTool.aiming,body.touch #hud #btnCrouch.on{color:#f4dfb5}
+body.touch #hud .pad #btnAct.kill{color:#ffe0cf}
+body.touch #hud #quickItems>button.ready{border-bottom-color:#d6b77d}
+body.touch #hud #quickItems>button:is(.down,:active){border-bottom-color:#eed4a4;background:#34433ee8}
+body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#152731}
+@media(hover:hover) and (pointer:fine){
+ #brief .br-acts button:not(:disabled):hover,#end .endacts button:not(:disabled):hover,#pause .pz-big:hover,#newCampaignDialog button:hover,#btnCaseClose:hover,#keypad .kpg button:hover,#skillScreen .skill-detail-actions button:not(:disabled):hover,#hud #loadout #btnLoadoutClose:hover,#hud #loadout #btnWhistle:hover,#hud #loadout #btnSneak:hover{background:none;filter:brightness(1.12)}
+ #caseBoard .case-node:hover{border-color:#b8a77e;background:#2e3c3c}
+}
+@media(max-width:699px){
+ #pause .pz-big{font-size:14px;padding:6px 10px;min-height:44px}
+ #pause #btnResume{min-height:48px;font-size:16px}
+ #skillScreen .skill-loadout button{padding:5px 6px;font-size:10px}
+ #brief #btnBrGo{min-height:48px;padding-inline:16px;font-size:14px}
+ #end .endacts button{min-height:44px;font-size:12px;padding-inline:12px}
+}
+@media(prefers-reduced-motion:reduce){#brief .br-acts button,#end .endacts button,#pause .pz-big,#keypad button{transition:none}}

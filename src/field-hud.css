@@ -139,9 +139,7 @@ body.touch #hud #saveState{padding:3px 6px;background:#10171de8}
 #pause .pz-wrap{background:#10171df5;border:8px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;box-shadow:none}
 #pause .pz-menu,#pause .pz-side{background:none}
 #pause .pz-big{font-family:var(--f-body);font-size:19px;letter-spacing:-.015em;min-height:48px;border:0;border-radius:0;background:none;color:#f2f0e6;padding:12px 14px}
-#pause #btnResume{background:#e6e3d6;color:#101820;margin-bottom:12px}
 #pause .pz-big:hover,#pause .pz-big:focus-visible{background:#29383e;color:#f2f0e6}
-#pause #btnResume:hover,#pause #btnResume:focus-visible{background:#f3d5a3;color:#101820}
 #pause .pz-todo{border:0;background:none;color:#bcc3c6}
 #pause .fx-sub{font-size:11px;color:#bcc3c6}
 @media(orientation:landscape) and (max-height:500px) and (min-width:500px){body.touch:not(.inspecting) #hud .status{position:static;left:auto;top:auto}}
