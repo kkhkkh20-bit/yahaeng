@@ -1,0 +1,3 @@
+{'font': '27px / 35.1px "Yahaeng Title", "Yahaeng UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif', 'fontFamily': '"Yahaeng Title", "Yahaeng UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif', 'css': True}
+{"#intro h1": {"fonts": [{"familyName": "Black Han Sans", "postScriptName": "BlackHanSans-Regular", "isCustomFont": true, "glyphCount": 2}]}, "#btnQuick b": {"fonts": [{"familyName": "Black Han Sans", "postScriptName": "BlackHanSans-Regular", "isCustomFont": true, "glyphCount": 5}]}, "#btnSkillsIntro span": {"fonts": [{"familyName": "IBM Plex Sans KR", "postScriptName": "IBMPlexSansKR-Regular", "isCustomFont": true, "glyphCount": 5}]}}
+PASS real SVG state changes, pointer release/cancel, keyboard organization entry, native font faces

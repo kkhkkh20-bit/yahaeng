@@ -1,0 +1,15 @@
+{
+  "source": "display-blackhansans.woff",
+  "sourceSha256": "de6389db85e15eb3aa0d5b46927d4646edd3cec6bc4a8f0d51147d326fabe459",
+  "license": "OFL-BlackHanSans.txt",
+  "labels": [
+    "야행",
+    "처음 시작",
+    "이어서 하기",
+    "다시 플레이",
+    "이야기 완료",
+    "도시 테스트"
+  ],
+  "wordmarkOutlinesUnchanged": true,
+  "role": "Wordmark and primary title-menu action; other UI uses IBM Plex Sans KR."
+}
