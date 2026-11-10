@@ -19235,8 +19235,8 @@ function handleSkillDetailKey(e){
 function renderAssassinMenu(){
  renderCaseEntry('caseTraining',!!assassinMenu?.training);
  const r=loadSkillTree(),practice=!!assassinMenu?.practice,points=skillBudget()-skillSpent(r),focus=document.activeElement?.dataset.select||document.activeElement?.dataset.learn,board=$('skillBoard'),scroll={top:board.scrollTop,left:board.scrollLeft};
- $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>습득은 다음 출발 준비에서 가능':'첫 스테이지 완료 후<br>출발 준비에서 1P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
- $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?'플레이 중에는 기술을 배우지 않습니다. 현재 임무를 마친 뒤 출발 준비에서 습득하세요.':practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'출발 전·의뢰 완료 후 포인트를 사용해 원하는 기술을 배우세요.';
+ $('skillSummary').innerHTML=!skillLearningAllowed()?(campaignHasProgress()?'기술 정보 보기<br>다음 출발 준비에서 습득 가능':'첫 에피소드 완료 후<br>출발 준비에서 1P 사용 가능'):practice?'연습용 기술<br>본편 기록에 저장되지 않음':'<strong>'+points+'P</strong> 사용 가능<br>사용 '+skillSpent(r)+' / 총 '+skillBudget()+'P';
+ $('skillScreen').querySelector('.skill-instructions').textContent=!skillLearningAllowed()?(assassinMenu.from==='intro'?'첫 에피소드를 마치면 1P를 얻습니다. 기술을 눌러 효과와 습득 순서를 살펴보세요.':'임무를 마친 뒤 출발 준비에서 기술을 배울 수 있습니다.'):practice?'연습용 기술입니다. 실제 의뢰 포인트를 사용하지 않습니다.':'기술을 눌러 효과를 확인하세요. 연결된 선행 기술부터 배울 수 있습니다.';
  $('skillTrainingNote').textContent='분야를 고르고 연결선을 따라 기술을 확인하세요. 기술을 선택하면 효과와 습득 순서가 나옵니다.';
  const preparing=['intro','ledger','brief','end'].includes(assassinMenu.from);
  $('btnSkillReset').hidden=!skillLearningAllowed();$('skillResetNote').textContent=preparing?'출발 전 재배분하면 포인트를 모두 돌려받는다.':practice?'이 연습에서만 적용된다.':'재배분은 출발 전이나 의뢰 완료 후에 가능하다.';
@@ -19245,11 +19245,13 @@ function renderAssassinMenu(){
   const defs=SKILL_TREE.filter(d=>d.branch===branch),layout=skillTreeLayout(branch),count=defs.filter(d=>skillViewState(d).known).length;
   const tab=document.createElement('button');tab.type='button';tab.innerHTML=meta.name+'<span>'+count+' / '+defs.length+'</span>';tab.dataset.branch=branch;tab.setAttribute('aria-pressed',String(skillBranch===branch));tab.onclick=()=>{skillBranch=branch;if(skillDetailMode)closeSkillDetail();syncSkillBranches(true);if(innerWidth>=1000)section.scrollIntoView({block:'nearest',inline:'center'});};tabs.append(tab);
   const section=document.createElement('section');section.className='skill-tree'+(skillBranch===branch?' branch-active':'');section.dataset.branch=branch;section.style.setProperty('--leaves',layout.leaves);section.setAttribute('aria-label',meta.name+' 기술 트리');
-  const heading=document.createElement('h3');heading.innerHTML=skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
+  const heading=document.createElement('h3');heading.innerHTML='<span class="skill-branch-index" aria-hidden="true">0'+(Object.keys(SKILL_BRANCHES).indexOf(branch)+1)+'</span>'+skillSigil(defs[0].id)+meta.name;const note=document.createElement('p');note.textContent=meta.note;section.append(heading,note);
   const graph=document.createElement('div');graph.className='skill-graph';section.append(graph);list.append(section);
   for(const d of defs){
    const at=layout.positions[d.id],v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.canLearn&&v.parents&&(v.practice||v.points>=d.cost)?' available':'');article.dataset.node=d.id;article.dataset.state=v.known?'learned':v.canLearn&&v.parents&&(v.practice||v.points>=d.cost)?'available':!v.parents?'locked':'unavailable';article.style.gridRow=String(at.row);article.style.gridColumn=at.col+' / span 2';
-   const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed','false');b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':d.cost+'P'+(!v.parents?' · 선행 기술 필요':'')));b.title=d.name;b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':d.cost+'P')+'</span>';b.onclick=()=>selectSkillNode(d.id);
+   const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed','false');b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':d.cost+'P'+(!v.parents?' · 선행 기술 필요':!v.canLearn?' · 출발 준비에서 습득':'')));b.title=d.name;
+   const mark=v.known?'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="m3 8 3 3 7-7"/></svg>':!v.parents||!v.canLearn?skillLock:'';
+   b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':d.cost+'P')+'</span>'+(mark?'<span class="skill-state-mark" aria-hidden="true">'+mark+'</span>':'');b.onclick=()=>selectSkillNode(d.id);
    b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:layout.positions[x.id].col-at.col,dy:layout.positions[x.id].row-at.row})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
    const label=document.createElement('span');label.className='skill-label';label.textContent=d.name;article.append(b,label);graph.append(article);
   }
@@ -19268,7 +19270,7 @@ function drawSkillLinks(){
   for(const node of graph.querySelectorAll('[data-node]'))for(const id of SKILL_BY_ID[node.dataset.node].req){
    const parent=graph.querySelector('[data-node="'+id+'"]');if(!parent)continue;
    const a=parent.querySelector('button').getBoundingClientRect(),label=parent.querySelector('.skill-label').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=label.bottom-bounds.top+5,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-9,mid=(y0+y1)/2;
-   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${mid} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
+   const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${mid} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('locked',node.dataset.state==='locked');path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
  }
 }
@@ -19821,13 +19823,18 @@ $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElemen
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
+function setQuickLabel(label,detail=''){
+ const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
+ if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
+ b.replaceChildren(copy);b.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7"/></svg>');b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
+}
 function syncQuick(){
-  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;$('btnQuick').textContent='여성 요원 · 도시 테스트';$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
+  if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
-  $('btnQuick').disabled=!st;if(!st){$('btnQuick').textContent='이야기 완료';return;}
+  $('btnQuick').disabled=!st;if(!st){setQuickLabel('이야기 완료');return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  $('btnQuick').textContent=st.firstSteps&&!campaignHasProgress()?'처음 시작':(st.storyEpisode||st.openingContract||st.starterContract||st.apprenticeContract)?'이어서 · '+st.name:st.tutorial?st.name.replace(/^연습 \d · /,'이어서 · '):done?'다시 하기: '+st.name:'이어서: 의뢰 '+contractNumber(st)+' '+st.name;
+  setQuickLabel(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기',st.name);
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {

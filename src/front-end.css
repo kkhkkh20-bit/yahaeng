@@ -1,62 +1,72 @@
-/* A quiet title over the game's own Korean night street. */
-#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:46px clamp(32px,7vw,112px) 22px;background:#0b1016;color:#ece5d5;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
+/* Existing purchased city art, with one clear departure action. */
+#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:48px clamp(32px,7vw,112px) 22px;background:#0b1016;color:#ece5d5;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
 #intro[hidden]{display:none}
 #intro .title-bg{position:absolute;inset:0;min-height:100%;background:none;pointer-events:none}
 #intro .title-bg img{display:block;width:100%;height:100%;object-fit:cover;object-position:66% 46%;image-rendering:pixelated}
-#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080d13e8 0%,#080d13c2 22%,#080d1350 44%,#080d1300 70%),linear-gradient(0deg,#080d1380,transparent 27%);pointer-events:none}
+#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080e15ef,#080e15b0 30%,#080e1500 72%),linear-gradient(0deg,#080e15ac,transparent 30%);pointer-events:none}
 #intro .title-bg::after{display:none}
-#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:44px;width:min(370px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
-#intro .title-brand{display:block;margin:0 0 4px}
-#intro h1{margin:0;width:max-content;max-width:100%;font:400 clamp(122px,12vw,172px)/1.06 "Yahaeng Title",var(--f-body);letter-spacing:-.04em;color:#eee7d6;transform:none;text-shadow:0 3px 0 #12171b60}
-#intro .title-acts{display:flex;flex-direction:column;gap:6px;width:100%;padding-left:7px;border-left:1px solid #a2997947}
-#intro .title-acts button{display:block;position:relative;box-sizing:border-box;min-height:48px;width:100%;margin:0;padding:10px 22px;border:0;border-radius:0;background:none;box-shadow:none;color:#b7b9b2;font-family:var(--f-body);font-size:16px;font-weight:400;letter-spacing:.015em;line-height:1.6;text-align:left;transition:color .12s,background-color .12s}
+#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:38px;width:min(370px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
+#intro .title-brand{display:block;margin:0}
+#intro .title-kicker{display:flex;align-items:center;gap:10px;margin:0 0 13px 7px;font-size:11px;letter-spacing:.2em;color:#c7c4b6}
+#intro .title-kicker::before{content:'';width:19px;height:2px;background:#c16f54}
+#intro h1{margin:0;width:max-content;max-width:100%;font:400 clamp(130px,12vw,180px)/1.06 "Yahaeng Title",var(--f-body);letter-spacing:-.04em;color:#eee7d6;transform:none;text-shadow:0 3px 0 #12171b60}
+#intro .title-acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;padding:0;border:0}
+#intro .title-acts button{display:flex;align-items:center;justify-content:center;gap:9px;position:relative;box-sizing:border-box;min-width:0;min-height:66px;width:100%;margin:0;padding:10px 5px;border:1px solid #63707766;border-radius:2px;background:#0f1822c9;box-shadow:none;color:#c4c9c7;font-family:var(--f-body);font-size:12px;font-weight:400;letter-spacing:0;line-height:1.6;text-align:center;transition:color .12s,background-color .12s,border-color .12s,transform .1s}
 #intro .title-acts button[hidden]{display:none}
-#intro .title-acts button::before{content:'';display:block;position:absolute;top:50%;left:-10px;width:5px;height:5px;background:transparent;transform:translateY(-50%)}
-#intro .title-acts button::after{display:none}
-#intro .title-acts button.cta{min-height:58px;margin-bottom:10px;padding:12px 22px;color:#f1dcb4;background:none;border:0;font-size:21px;font-weight:500}
-#intro .title-acts button.cta::before{background:#c56a50;width:5px;height:23px}
-#intro .title-acts button.cta::after{content:'';display:block;position:absolute;bottom:4px;left:22px;right:25px;height:1px;background:#c6af7d6b}
-#intro .title-acts button:hover,#intro .title-acts button:focus-visible{background:#e7ddbd0b;color:#fff1cb}
-#intro .title-acts button:hover::before,#intro .title-acts button:focus-visible::before{background:#c56a50}
-#intro .title-acts:has(button:hover) .cta:not(:hover),#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible){color:#bbbbae}
-#intro .title-acts:has(button:hover) .cta:not(:hover)::before,#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible)::before{background:#a99d7a}
-#intro .title-acts button:focus-visible{outline:1px solid #d4bc85;outline-offset:2px}
-#intro .title-acts button:active{background:#c8aa7430;color:#fff3d0}
-#intro .title-acts button.cta:disabled{background:transparent;color:#9da39b;opacity:1;cursor:default}
-#intro .title-acts button.cta:disabled::before{background:#6e7b72}
-#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.08em}
+#intro .title-acts button>svg{width:20px;height:20px;flex:none;color:#a6b2b3}
+#intro .title-acts button::before,#intro .title-acts button::after{display:none}
+#intro .title-acts #btnQuick{grid-column:1/-1;justify-content:space-between;min-height:94px;margin:0 0 4px;padding:17px 21px;border:1px solid #b7a57d;border-left:3px solid #d1b57e;background:#18212aee;color:#f3e5c6;text-align:left}
+#intro .title-start-copy{display:flex;flex-direction:column;gap:6px;min-width:0}
+#intro .title-start-copy b{font-size:22px;font-weight:500;line-height:1.4}
+#intro .title-start-copy small{font-size:11px;line-height:1.6;color:#b2b9b7;word-break:keep-all}
+#intro #btnQuick>svg{width:23px;height:23px;margin-left:12px;color:#dec493}
+#intro .title-acts #btnNewCampaign{grid-column:1/-1;min-height:44px;margin-top:3px;border:0;background:transparent;color:#a0aaa9;font-size:11px;text-decoration:underline;text-underline-offset:5px}
+#intro .title-acts button:focus-visible{outline:2px solid #dfc99e;outline-offset:3px}
+#intro .title-acts button:active{transform:translateY(1px);background:#344049;color:#fff1d3}
+#intro .title-acts #btnQuick:active{background:#41443d}
+#intro .title-acts #btnQuick:disabled{border-color:#66716f;color:#9aa6a3;background:#172126;cursor:default;transform:none}
+#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.04em}
 #help .panel,#newCampaignDialog{padding:24px 30px;border:12px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;background:#10171d;box-shadow:0 18px 48px #0008}
 #help.screen{background:linear-gradient(#080e16e8,#080e16f5),var(--title-alley-wide) center/cover fixed}
 #help .sub-head{background:none;border-bottom-color:#485760}
 #help .sub-head h2,#newCampaignDialog h2{font-family:"Yahaeng Display",var(--f-body);font-size:30px;letter-spacing:-.02em}
 #help .back,#newCampaignDialog .ghost{background:#17212a;border-color:#52636e;color:#e1e3dd}
 #newCampaignDialog .cta{background:#d0bb93;border-color:#e7d8b6;color:#111820}
+@media(hover:hover){
+ #intro .title-acts button:not(:disabled):hover{background:#25313b;border-color:#acb6af;color:#fff0cf}
+ #intro .title-acts #btnQuick:not(:disabled):hover{border-color:#edd6a5;background:#2c353b}
+ #intro .title-acts button:hover>svg{color:#e3cba0}
+}
 @media(max-width:700px){
  #intro{padding:26px max(24px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(26px,env(safe-area-inset-left,0px));align-items:end}
  #intro .title-bg img{object-position:54% 44%}
- #intro::before{background:linear-gradient(90deg,#090e1566,transparent 90%),linear-gradient(0deg,#080d13e6 0%,#080d139c 34%,transparent 70%)}
- #intro .title-panel{width:min(300px,88%);margin:110px 0 0;gap:28px;align-self:end}
+ #intro::before{background:linear-gradient(0deg,#080e15fa 0%,#080e15a8 38%,transparent 74%)}
+ #intro .title-panel{width:min(370px,100%);margin:150px 0 0;gap:28px;align-self:end}
+ #intro .title-kicker{font-size:10px;margin:0 0 10px 3px}
  #intro h1{font-size:119px}
- #intro .title-acts{gap:3px;padding-left:6px}
- #intro .title-acts button{min-height:44px;font-size:14px;padding:9px 17px}
- #intro .title-acts button.cta{min-height:54px;margin-bottom:7px;padding:11px 17px;font-size:18px}
- #intro .title-acts button.cta::after{left:17px;right:15px}
- #intro .title-footer{margin-top:22px;padding-top:11px;font-size:9px}
+ #intro .title-acts{gap:7px}
+ #intro .title-acts button{flex-direction:column;gap:5px;min-height:68px;font-size:11px;padding:9px 4px}
+ #intro .title-acts #btnQuick{flex-direction:row;min-height:89px;padding:15px 17px;margin-bottom:3px}
+ #intro .title-start-copy b{font-size:21px}
+ #intro .title-start-copy small{font-size:11px}
+ #intro .title-footer{margin-top:24px;padding-top:11px;font-size:9px}
  #help .panel{padding:22px 24px;width:100%}
 }
 @media(max-height:680px) and (max-width:700px){
  #intro{padding-top:20px}
- #intro .title-panel{margin-top:36px;gap:19px}
- #intro h1{font-size:96px}
- #intro .title-acts button{min-height:44px;padding-block:8px}
- #intro .title-footer{margin-top:16px}
+ #intro .title-panel{margin-top:70px;gap:22px}
+ #intro h1{font-size:100px}
+ #intro .title-acts #btnQuick{min-height:81px;padding-block:12px}
+ #intro .title-acts button{min-height:61px}
+ #intro .title-footer{margin-top:18px}
 }
 @media(min-width:701px) and (max-height:500px){
  #intro{padding:20px 34px 12px}
- #intro .title-panel{display:grid;grid-template-columns:210px minmax(250px,340px);gap:38px;width:min(720px,100%);margin:0;align-items:start}
+ #intro .title-panel{display:grid;grid-template-columns:210px minmax(270px,370px);align-items:center;gap:38px;width:min(760px,100%);margin:0}
  #intro h1{font-size:112px}
- #intro .title-acts button{min-height:44px;padding-block:7px;font-size:14px}
- #intro .title-acts button.cta{min-height:49px;margin-bottom:5px;font-size:17px}
+ #intro .title-acts button{min-height:56px}
+ #intro .title-acts #btnQuick{min-height:82px}
+ #intro .title-start-copy b{font-size:19px}
  #intro .title-footer{margin-top:12px;padding-top:9px}
 }
 @media(prefers-reduced-motion:reduce){#intro .title-acts button{transition:none}}

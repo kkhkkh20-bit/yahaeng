@@ -617,14 +617,14 @@ __FRONT_END_CSS__
 <div class="screen" id="intro">
   <picture class="title-bg" aria-hidden="true"><source media="(max-width:700px)" srcset="__TITLE_ALLEY_PORTRAIT__"><img src="__TITLE_ALLEY_WIDE__" alt="" decoding="async" fetchpriority="high"></picture>
   <div class="panel title-panel">
-    <div class="title-brand"><h1>야행</h1></div>
+    <div class="title-brand"><span class="title-kicker">잠입 액션</span><h1>야행</h1></div>
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
-      <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
-      <button class="ghost" data-case-open type="button">금성회 조직도</button>
-      <button class="ghost" id="btnSkillsIntro" type="button">기술</button>
+      <button class="ghost" data-case-open type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M9 3h6v5H9zM2 16h6v5H2zM16 16h6v5h-6zM12 8v4M5 16v-4h14v4"/></svg><span>조직도</span></button>
+      <button class="ghost" id="btnSkillsIntro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 3 6 10-3 3-3-7zM19 3l-6 10 3 3 3-7zM3 17l7 4M6 19l-2 3M21 17l-7 4M18 19l2 3"/></svg><span>기술 습득</span></button>
       <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
-      <button class="ghost" id="btnHelp" type="button">설정</button>
+      <button class="ghost" id="btnHelp" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 4v16M12 4v16M20 4v16M1 9h6M9 15h6M17 8h6"/></svg><span>설정</span></button>
+      <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
     </nav>
   </div>
   <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>__VERSION__</span></footer>
@@ -665,7 +665,7 @@ __FRONT_END_CSS__
     </header>
     <section id="caseTraining" class="case-entry" hidden></section>
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button" aria-label="미션 업적과 기술 포인트 보상 보기">업적 · 보상</button></div>
-    <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
+    <div class="skill-help"><p class="skill-instructions">기술을 선택하면 효과와 습득 순서를 확인할 수 있습니다.</p><div class="skill-legend" aria-label="기술 상태"><span class="available">습득 가능</span><span class="learned">습득 완료</span><span class="locked">잠김</span></div></div>
     <div class="skill-layout">
       <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
         <div id="skillCards" aria-label="신체·암살·도구 기술"></div>

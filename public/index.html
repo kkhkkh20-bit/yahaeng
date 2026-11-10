@@ -1696,14 +1696,6 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #pause #btnResume,#pause .pz-big:hover,#pause .pz-big:focus-visible { background:var(--ink-wash) center/100% 100% no-repeat; }
 #pause .pz-sets { padding-top:16px; }
 #pause .pz-side { border-color:#5e6469; }
-#skillScreen { --sk-ground:#0d1117; --sk-panel:#171c22; --sk-line:#4e5359; --sk-ink:#f0eee5; --sk-muted:#babdc0; --sk-gold:#e6e2d7; }
-#skillScreen .skill-toolbar { padding-top:4px; }
-#skillScreen .skill-instructions { color:#c5c5bf; }
-#skillScreen .back:not([aria-disabled="true"]) { background:#e8e3d7; color:#10151c; border-color:#e8e3d7; }
-#skillScreen .back:hover:not([aria-disabled="true"]) { background:#fff8e9; }
-#skillScreen .skill-detail { border-color:#5b6064; background:#131820; }
-#skillScreen .skill-detail-actions button:not(:disabled) { background:#e6e2d7; color:#11151c; }
-#skillScreen .skill-links path { stroke:#666c70; }
 #end { background:#0c1117f2; }
 #end .endacts { background:#0d1117f7; }
 #endRank b { color:#eee8d9; }
@@ -1744,13 +1736,6 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 #hud #loadout,#hud #envPicker { border:1px solid #787d80; border-image:none; border-radius:2px; background:#12171ef7; }
 #hud #loadout header { padding:8px 6px 14px; background:var(--ink-wash) center/100% 100% no-repeat; }
 #dlg .dlg-face { align-self:flex-start; height:96px; min-height:0; }
-#skillScreen .skill-node.available button { border-color:#c9c9c0; color:#e7e4da; }
-#skillScreen .skill-node.learned button { color:#171b21; background:#e7e3d7; border-color:#f3eee3; }
-#skillScreen .skill-node.learned button::before { border-color:#8e908a; }
-#skillScreen .skill-node.in-path button,#skillScreen .skill-node.selected button { border-color:#eee8dc; outline-color:#eee8dc; }
-#skillScreen .skill-links path.in-path { stroke:#eee8dc; }
-#skillScreen ::selection { background:#e7e3d7; color:#11161c; }
-#skillScreen .back[aria-disabled="true"] { background:transparent; color:#c4c5c2; border-color:#5c6266; }
 #hud #btnPause[data-points]::after { color:#d5d3ca; font-size:11px; }
 @media(max-width:700px) {
  #hud .obj.with-identities { padding:12px 24px 14px 64px; }
@@ -1763,14 +1748,12 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
 /* Brush lettering is reserved for titles; controls and sentences stay easy to read. */
 #brief .br-name { font-family:"Yahaeng Ink",var(--f-body); font-size:clamp(44px,4.5vw,64px); line-height:1; letter-spacing:0; }
 #hud #loadout h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:38px; line-height:1.1; letter-spacing:0; }
-#skillScreen .sub-head h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:38px; line-height:1.1; letter-spacing:0; }
 #end h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:54px; line-height:1.1; letter-spacing:0; }
 #hud #hpPips { gap:6px; padding:2px; }
 #hud #hpPips i { width:8px; height:8px; transform:rotate(45deg); }
 @media(max-width:700px) {
  #brief .br-name { font-size:50px; }
  #hud #loadout h2 { font-size:34px; }
- #skillScreen .sub-head h2,#skillScreen.episode-training .sub-head h2 { font-size:30px; }
  #end h2 { font-size:44px; }
 }
 
@@ -1805,65 +1788,75 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  body.touch:not(.inspecting) #hud .status{position:absolute;left:230px;top:56px}
 }
 
-/* A quiet title over the game's own Korean night street. */
-#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:46px clamp(32px,7vw,112px) 22px;background:#0b1016;color:#ece5d5;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
+/* Existing purchased city art, with one clear departure action. */
+#intro{display:grid;grid-template-rows:1fr auto;align-items:center;justify-items:start;min-height:100dvh;box-sizing:border-box;padding:48px clamp(32px,7vw,112px) 22px;background:#0b1016;color:#ece5d5;color-scheme:dark;overflow-x:hidden;overflow-y:auto}
 #intro[hidden]{display:none}
 #intro .title-bg{position:absolute;inset:0;min-height:100%;background:none;pointer-events:none}
 #intro .title-bg img{display:block;width:100%;height:100%;object-fit:cover;object-position:66% 46%;image-rendering:pixelated}
-#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080d13e8 0%,#080d13c2 22%,#080d1350 44%,#080d1300 70%),linear-gradient(0deg,#080d1380,transparent 27%);pointer-events:none}
+#intro::before{display:block;position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,#080e15ef,#080e15b0 30%,#080e1500 72%),linear-gradient(0deg,#080e15ac,transparent 30%);pointer-events:none}
 #intro .title-bg::after{display:none}
-#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:44px;width:min(370px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
-#intro .title-brand{display:block;margin:0 0 4px}
-#intro h1{margin:0;width:max-content;max-width:100%;font:400 clamp(122px,12vw,172px)/1.06 "Yahaeng Title",var(--f-body);letter-spacing:-.04em;color:#eee7d6;transform:none;text-shadow:0 3px 0 #12171b60}
-#intro .title-acts{display:flex;flex-direction:column;gap:6px;width:100%;padding-left:7px;border-left:1px solid #a2997947}
-#intro .title-acts button{display:block;position:relative;box-sizing:border-box;min-height:48px;width:100%;margin:0;padding:10px 22px;border:0;border-radius:0;background:none;box-shadow:none;color:#b7b9b2;font-family:var(--f-body);font-size:16px;font-weight:400;letter-spacing:.015em;line-height:1.6;text-align:left;transition:color .12s,background-color .12s}
+#intro .title-panel{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:38px;width:min(370px,100%);margin:0;padding:0;background:none;border:0;box-shadow:none;align-self:center}
+#intro .title-brand{display:block;margin:0}
+#intro .title-kicker{display:flex;align-items:center;gap:10px;margin:0 0 13px 7px;font-size:11px;letter-spacing:.2em;color:#c7c4b6}
+#intro .title-kicker::before{content:'';width:19px;height:2px;background:#c16f54}
+#intro h1{margin:0;width:max-content;max-width:100%;font:400 clamp(130px,12vw,180px)/1.06 "Yahaeng Title",var(--f-body);letter-spacing:-.04em;color:#eee7d6;transform:none;text-shadow:0 3px 0 #12171b60}
+#intro .title-acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%;padding:0;border:0}
+#intro .title-acts button{display:flex;align-items:center;justify-content:center;gap:9px;position:relative;box-sizing:border-box;min-width:0;min-height:66px;width:100%;margin:0;padding:10px 5px;border:1px solid #63707766;border-radius:2px;background:#0f1822c9;box-shadow:none;color:#c4c9c7;font-family:var(--f-body);font-size:12px;font-weight:400;letter-spacing:0;line-height:1.6;text-align:center;transition:color .12s,background-color .12s,border-color .12s,transform .1s}
 #intro .title-acts button[hidden]{display:none}
-#intro .title-acts button::before{content:'';display:block;position:absolute;top:50%;left:-10px;width:5px;height:5px;background:transparent;transform:translateY(-50%)}
-#intro .title-acts button::after{display:none}
-#intro .title-acts button.cta{min-height:58px;margin-bottom:10px;padding:12px 22px;color:#f1dcb4;background:none;border:0;font-size:21px;font-weight:500}
-#intro .title-acts button.cta::before{background:#c56a50;width:5px;height:23px}
-#intro .title-acts button.cta::after{content:'';display:block;position:absolute;bottom:4px;left:22px;right:25px;height:1px;background:#c6af7d6b}
-#intro .title-acts button:hover,#intro .title-acts button:focus-visible{background:#e7ddbd0b;color:#fff1cb}
-#intro .title-acts button:hover::before,#intro .title-acts button:focus-visible::before{background:#c56a50}
-#intro .title-acts:has(button:hover) .cta:not(:hover),#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible){color:#bbbbae}
-#intro .title-acts:has(button:hover) .cta:not(:hover)::before,#intro .title-acts:has(button:focus-visible) .cta:not(:focus-visible)::before{background:#a99d7a}
-#intro .title-acts button:focus-visible{outline:1px solid #d4bc85;outline-offset:2px}
-#intro .title-acts button:active{background:#c8aa7430;color:#fff3d0}
-#intro .title-acts button.cta:disabled{background:transparent;color:#9da39b;opacity:1;cursor:default}
-#intro .title-acts button.cta:disabled::before{background:#6e7b72}
-#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.08em}
+#intro .title-acts button>svg{width:20px;height:20px;flex:none;color:#a6b2b3}
+#intro .title-acts button::before,#intro .title-acts button::after{display:none}
+#intro .title-acts #btnQuick{grid-column:1/-1;justify-content:space-between;min-height:94px;margin:0 0 4px;padding:17px 21px;border:1px solid #b7a57d;border-left:3px solid #d1b57e;background:#18212aee;color:#f3e5c6;text-align:left}
+#intro .title-start-copy{display:flex;flex-direction:column;gap:6px;min-width:0}
+#intro .title-start-copy b{font-size:22px;font-weight:500;line-height:1.4}
+#intro .title-start-copy small{font-size:11px;line-height:1.6;color:#b2b9b7;word-break:keep-all}
+#intro #btnQuick>svg{width:23px;height:23px;margin-left:12px;color:#dec493}
+#intro .title-acts #btnNewCampaign{grid-column:1/-1;min-height:44px;margin-top:3px;border:0;background:transparent;color:#a0aaa9;font-size:11px;text-decoration:underline;text-underline-offset:5px}
+#intro .title-acts button:focus-visible{outline:2px solid #dfc99e;outline-offset:3px}
+#intro .title-acts button:active{transform:translateY(1px);background:#344049;color:#fff1d3}
+#intro .title-acts #btnQuick:active{background:#41443d}
+#intro .title-acts #btnQuick:disabled{border-color:#66716f;color:#9aa6a3;background:#172126;cursor:default;transform:none}
+#intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.04em}
 #help .panel,#newCampaignDialog{padding:24px 30px;border:12px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;background:#10171d;box-shadow:0 18px 48px #0008}
 #help.screen{background:linear-gradient(#080e16e8,#080e16f5),var(--title-alley-wide) center/cover fixed}
 #help .sub-head{background:none;border-bottom-color:#485760}
 #help .sub-head h2,#newCampaignDialog h2{font-family:"Yahaeng Display",var(--f-body);font-size:30px;letter-spacing:-.02em}
 #help .back,#newCampaignDialog .ghost{background:#17212a;border-color:#52636e;color:#e1e3dd}
 #newCampaignDialog .cta{background:#d0bb93;border-color:#e7d8b6;color:#111820}
+@media(hover:hover){
+ #intro .title-acts button:not(:disabled):hover{background:#25313b;border-color:#acb6af;color:#fff0cf}
+ #intro .title-acts #btnQuick:not(:disabled):hover{border-color:#edd6a5;background:#2c353b}
+ #intro .title-acts button:hover>svg{color:#e3cba0}
+}
 @media(max-width:700px){
  #intro{padding:26px max(24px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(26px,env(safe-area-inset-left,0px));align-items:end}
  #intro .title-bg img{object-position:54% 44%}
- #intro::before{background:linear-gradient(90deg,#090e1566,transparent 90%),linear-gradient(0deg,#080d13e6 0%,#080d139c 34%,transparent 70%)}
- #intro .title-panel{width:min(300px,88%);margin:110px 0 0;gap:28px;align-self:end}
+ #intro::before{background:linear-gradient(0deg,#080e15fa 0%,#080e15a8 38%,transparent 74%)}
+ #intro .title-panel{width:min(370px,100%);margin:150px 0 0;gap:28px;align-self:end}
+ #intro .title-kicker{font-size:10px;margin:0 0 10px 3px}
  #intro h1{font-size:119px}
- #intro .title-acts{gap:3px;padding-left:6px}
- #intro .title-acts button{min-height:44px;font-size:14px;padding:9px 17px}
- #intro .title-acts button.cta{min-height:54px;margin-bottom:7px;padding:11px 17px;font-size:18px}
- #intro .title-acts button.cta::after{left:17px;right:15px}
- #intro .title-footer{margin-top:22px;padding-top:11px;font-size:9px}
+ #intro .title-acts{gap:7px}
+ #intro .title-acts button{flex-direction:column;gap:5px;min-height:68px;font-size:11px;padding:9px 4px}
+ #intro .title-acts #btnQuick{flex-direction:row;min-height:89px;padding:15px 17px;margin-bottom:3px}
+ #intro .title-start-copy b{font-size:21px}
+ #intro .title-start-copy small{font-size:11px}
+ #intro .title-footer{margin-top:24px;padding-top:11px;font-size:9px}
  #help .panel{padding:22px 24px;width:100%}
 }
 @media(max-height:680px) and (max-width:700px){
  #intro{padding-top:20px}
- #intro .title-panel{margin-top:36px;gap:19px}
- #intro h1{font-size:96px}
- #intro .title-acts button{min-height:44px;padding-block:8px}
- #intro .title-footer{margin-top:16px}
+ #intro .title-panel{margin-top:70px;gap:22px}
+ #intro h1{font-size:100px}
+ #intro .title-acts #btnQuick{min-height:81px;padding-block:12px}
+ #intro .title-acts button{min-height:61px}
+ #intro .title-footer{margin-top:18px}
 }
 @media(min-width:701px) and (max-height:500px){
  #intro{padding:20px 34px 12px}
- #intro .title-panel{display:grid;grid-template-columns:210px minmax(250px,340px);gap:38px;width:min(720px,100%);margin:0;align-items:start}
+ #intro .title-panel{display:grid;grid-template-columns:210px minmax(270px,370px);align-items:center;gap:38px;width:min(760px,100%);margin:0}
  #intro h1{font-size:112px}
- #intro .title-acts button{min-height:44px;padding-block:7px;font-size:14px}
- #intro .title-acts button.cta{min-height:49px;margin-bottom:5px;font-size:17px}
+ #intro .title-acts button{min-height:56px}
+ #intro .title-acts #btnQuick{min-height:82px}
+ #intro .title-start-copy b{font-size:19px}
  #intro .title-footer{margin-top:12px;padding-top:9px}
 }
 @media(prefers-reduced-motion:reduce){#intro .title-acts button{transition:none}}
@@ -2223,119 +2216,143 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
  body.episode-coda #dlg{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 }
 
-/* Original three-branch tree. Finish: ink, brass and clear dependency routes. */
-#skillScreen{--sk-ground:#121619;--sk-panel:#1c2022;--sk-line:#414441;--sk-ink:#eee8d7;--sk-muted:#afb1aa;--sk-gold:#ccb482;background:#121619;color:var(--sk-ink)}
-#skillScreen .skill-panel{padding:22px 32px 16px;max-width:1560px}
-#skillScreen .skill-toolbar{border-bottom:1px solid #55564e;gap:20px}
-#skillScreen .skill-toolbar .sub-head{padding-bottom:18px;gap:22px}
+/* Keep the original prerequisite tree. Brass is learnable, ivory is learned. */
+#skillScreen{--sk-ground:#10171d;--sk-panel:#19232c;--sk-line:#39464d;--sk-ink:#eee8d9;--sk-muted:#a7b2b4;--sk-gold:#d1b57e;background:var(--sk-ground);color:var(--sk-ink);color-scheme:dark}
+#skillScreen .skill-panel{padding:24px 32px 16px;max-width:1560px}
+#skillScreen .skill-toolbar{border-bottom:1px solid #48555a;gap:20px}
+#skillScreen .skill-toolbar .sub-head{padding-bottom:20px;gap:22px;min-width:0}
 #skillScreen .sub-head h2{font-family:var(--f-body);font-size:25px;font-weight:500;letter-spacing:-.04em}
-#skillScreen #skillSummary{margin-bottom:18px;color:#b6b5a9;font-size:11px;line-height:1.65}
-#skillScreen #skillSummary strong{font-size:30px;color:#f1dbac;font-weight:400}
-#skillScreen .back{border-color:#727367;background:transparent;color:#ddd8c8;border-radius:0;font-size:12px}
-#skillScreen .back:hover{background:#ded4b515;color:#fff2cd}
-#skillScreen .back:active{background:#ded4b52b}
-#skillScreen .skill-navigation{border-color:#393d3d;padding-top:4px;gap:16px}
-#skillScreen #skillBranches{gap:30px}
-#skillScreen #skillBranches button{position:relative;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;min-height:50px;font-size:14px;padding:12px 8px;color:#adaea6}
-#skillScreen #skillBranches button[aria-pressed=true]{color:#f3deaf;border-bottom-color:#c8ac75}
-#skillScreen #skillBranches button span{font-size:10px;margin-left:10px;color:#acac9f}
-#skillScreen #btnSkillRewards{background:transparent;border-color:#565b57;border-radius:0;color:#d2c6a8;font-size:11px}
-#skillScreen .skill-instructions{color:#abaea8;font-size:11px;line-height:1.65;margin-top:12px}
-#skillScreen .skill-layout{padding:22px 0 18px;gap:24px}
-#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 340px}
-#skillScreen #skillCards{display:flex;gap:24px;min-width:864px;min-height:100%}
-#skillScreen .skill-tree{min-width:calc(var(--leaves)*60px);padding-right:4px}
-#skillScreen .skill-tree+.skill-tree{padding-left:22px;border-left:1px solid #353b3b}
-#skillScreen .skill-tree h3{font-size:18px;letter-spacing:.02em;color:#e4ddc9;font-weight:500;gap:10px}
-#skillScreen .skill-tree h3 svg{color:#c6b58f;width:22px;height:22px}
-#skillScreen .skill-tree>p{color:#999e99;font-size:11px;margin:7px 0 24px}
-#skillScreen .skill-graph{grid-auto-rows:126px}
-#skillScreen .skill-links path{stroke:#68706b;stroke-width:1.35;stroke-linejoin:miter;stroke-linecap:square;fill:none}
-#skillScreen .skill-links path.learned{stroke:#c8bb98;stroke-width:1.8}
-#skillScreen .skill-links path.in-path{stroke:#e9cc8e;stroke-width:2}
-#skillScreen .skill-node button{width:58px;height:58px;min-height:44px;margin:4px 0 17px;border:1px solid #6a716b;background:#191f21;color:#909e99;border-radius:50%;transition:background .12s,border-color .12s,color .12s}
-#skillScreen .skill-node button::before{inset:4px;border:1px solid #3d4844;border-radius:50%}
-#skillScreen .skill-node button svg{width:31px;height:31px;stroke-width:1.45}
-#skillScreen .skill-node .skill-cost{left:50%;right:auto;bottom:-10px;transform:translateX(-50%);min-width:29px;box-sizing:border-box;padding:3px 5px;border:1px solid #60685d;background:#171c1e;color:#c9cbbd;font-size:10px;line-height:1.2;border-radius:0;font-weight:400}
-#skillScreen .skill-node .skill-label{font-size:12px;line-height:1.5;padding:0 3px;color:#b6bab0;background:#121619;max-width:100%;word-break:keep-all}
-#skillScreen .skill-node.available button{border-color:#d3b77d;color:#edd6a2;background:#292b25;box-shadow:inset 0 0 0 1px #d6ba7a1c}
-#skillScreen .skill-node.available button::before{border-color:#8b7856}
-#skillScreen .skill-node.available .skill-cost{color:#f1dcae;border-color:#a58e62;background:#262920}
-#skillScreen .skill-node.learned button{background:#d6ccad;border-color:#eee0b8;color:#202b2b;box-shadow:none}
-#skillScreen .skill-node.learned button::before{border-color:#7d806f}
-#skillScreen .skill-node.learned .skill-cost{border-color:#b9b18d;color:#e8dfc6;background:#39423b}
-#skillScreen .skill-node.learned .skill-label{color:#e5ddc3}
-#skillScreen .skill-node.in-path button{border-color:#d4bd88}
-#skillScreen .skill-node.selected button{outline:2px solid #c45f4e;outline-offset:4px}
-#skillScreen .skill-node.selected .skill-label{color:#f4dfb4}
-#skillScreen .skill-node button:active{background:#8c70533d}
-#skillScreen .skill-node button:focus-visible{outline:2px solid #d9c394;outline-offset:4px}
-#skillScreen .skill-detail{border:1px solid #a29a80;background:#d9d2bd;color:#222d2c;border-radius:0;box-shadow:0 8px 22px #0003}
-#skillScreen .skill-detail-close{color:#4f5951;min-height:44px;margin:3px 7px 0;padding:8px 10px;font-size:11px;background:transparent}
-#skillScreen .skill-detail-head{padding:0 18px 14px}
-#skillScreen .skill-detail-head h3{font-family:var(--f-body);font-size:23px;font-weight:500;color:#202c2c}
-#skillScreen .skill-detail-emblem{color:#5a5842}
-#skillScreen .skill-detail-state{margin-top:12px;color:#50594f;font-size:10px;line-height:1.6;gap:6px;flex-wrap:wrap}
-#skillScreen .skill-detail-state .known{color:#2e5746}
-#skillScreen .skill-description{padding:0 18px 16px}
-#skillScreen .skill-benefit{margin:0 0 12px;font-size:12px;color:#233432}
-#skillScreen .skill-benefit>div{padding:8px 0;border-color:#a9aa95;grid-template-columns:50px 1fr}
-#skillScreen .skill-benefit dt{color:#636a58}
-#skillScreen .skill-benefit dd{color:#273b35}
-#skillScreen .skill-benefit>div:last-child dd{color:#803e32;font-weight:500}
-#skillScreen .skill-description p{font-size:12px;line-height:1.8;color:#3c4a40;margin:0 0 12px}
-#skillScreen .skill-description .skill-purpose{color:#303e36}
-#skillScreen .skill-rules{font-size:11px;line-height:1.7;color:#465346;margin-bottom:12px}
-#skillScreen .skill-rules summary{min-height:28px;color:#485646;cursor:pointer}
+#skillScreen #skillSummary{margin-bottom:20px;color:#b5bdbb;font-size:11px;line-height:1.65;flex-shrink:0}
+#skillScreen #skillSummary strong{font-size:30px;color:#ecd5a7;font-weight:500}
+#skillScreen .back{border:1px solid #56646b;background:#1c2730;color:#e0e1d7;border-radius:2px;font-size:12px}
+#skillScreen .back:active{background:#3c4648}
+#skillScreen .skill-navigation{border:0;padding-top:12px;gap:16px}
+#skillScreen #skillBranches{gap:6px;padding:3px;border:1px solid #35434c;background:#0d141a;border-radius:3px}
+#skillScreen #skillBranches button{position:relative;background:transparent;border:1px solid transparent;border-radius:2px;min-height:44px;font-size:13px;padding:9px 18px;color:#a5b1b5;transition:background .12s,color .12s}
+#skillScreen #skillBranches button[aria-pressed=true]{color:#f1dfb9;background:#273139;border-color:#7b725c}
+#skillScreen #skillBranches button span{font-size:10px;margin-left:10px;color:#9aa7ab}
+#skillScreen #skillBranches button[aria-pressed=true] span{color:#d0c4a9}
+#skillScreen #btnSkillRewards{background:transparent;border-color:#495961;border-radius:2px;color:#c5d0cf;font-size:11px}
+#skillScreen .skill-help{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:13px 0 0;flex-shrink:0}
+#skillScreen .skill-instructions{color:#a7b4b6;font-size:11px;line-height:1.65;margin:0;max-width:700px}
+#skillScreen .skill-legend{display:flex;gap:16px;flex-shrink:0;color:#b1bdbd;font-size:10px;line-height:1.8}
+#skillScreen .skill-legend span{display:flex;align-items:center;gap:6px}
+#skillScreen .skill-legend span::before{content:'';width:8px;height:8px;box-sizing:border-box;border:1px solid #607078;border-radius:50%;background:#162129}
+#skillScreen .skill-legend .available::before{border-color:#d1b57e;background:#62533b}
+#skillScreen .skill-legend .learned::before{border-color:#ded7bf;background:#ded7bf}
+#skillScreen .skill-layout{padding:18px 0 16px;gap:18px}
+#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 350px}
+#skillScreen .skill-board{padding:0 0 10px;scrollbar-gutter:stable}
+#skillScreen #skillCards{display:flex;gap:14px;min-width:864px;min-height:100%;align-items:stretch}
+#skillScreen .skill-tree{min-width:calc(var(--leaves)*60px);padding:18px 10px 16px;box-sizing:border-box;border:1px solid #34434b;border-radius:3px;background:#151e25}
+#skillScreen .skill-tree+.skill-tree{padding-left:10px;border-left:1px solid #34434b}
+#skillScreen .skill-tree h3{font-size:17px;letter-spacing:0;color:#e8e1cd;font-weight:500;gap:9px}
+#skillScreen .skill-tree h3 svg{color:#cbb585;width:21px;height:21px}
+#skillScreen .skill-branch-index{font-size:10px;letter-spacing:.08em;color:#91a0a6;padding-right:3px;font-variant-numeric:tabular-nums}
+#skillScreen .skill-tree>p{color:#a1adb0;font-size:11px;margin:8px 0 24px;padding:0 0 14px;border-bottom:1px solid #304049}
+#skillScreen .skill-graph{grid-auto-rows:120px}
+#skillScreen .skill-links path{stroke:#687b84;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;fill:none}
+#skillScreen .skill-links path.locked{stroke:#46575f;stroke-dasharray:3 4}
+#skillScreen .skill-links path.learned{stroke:#d6c6a0;stroke-width:1.8}
+#skillScreen .skill-links path.in-path{stroke:#e3be7d;stroke-width:2;stroke-dasharray:none}
+#skillScreen .skill-node button{width:60px;height:60px;min-height:44px;margin:4px 0 18px;border:1px solid #52656f;background:#1a2730;color:#93a5ac;border-radius:50%;box-shadow:0 3px 0 #0a1117;transition:background .12s,border-color .12s,color .12s,transform .1s}
+#skillScreen .skill-node button::before{inset:4px;border:1px solid #354a55;border-radius:50%}
+#skillScreen .skill-node button svg{width:31px;height:31px;stroke-width:1.6}
+#skillScreen .skill-node .skill-cost{left:50%;right:auto;bottom:-11px;transform:translateX(-50%);min-width:30px;box-sizing:border-box;padding:3px 5px;border:1px solid #50626a;background:#142029;color:#aebec1;font-size:10px;line-height:1.2;border-radius:2px;font-weight:400}
+#skillScreen .skill-node .skill-state-mark{position:absolute;top:-2px;right:-2px;display:grid;place-items:center;width:18px;height:18px;box-sizing:border-box;background:#142029;border:1px solid #52646c;border-radius:50%;color:#9babb1}
+#skillScreen .skill-node .skill-state-mark svg{width:10px;height:10px;stroke-width:1.7}
+#skillScreen .skill-node .skill-label{font-size:12px;line-height:1.55;padding:0 3px;color:#b5c1c2;background:#151e25;max-width:100%;word-break:keep-all}
+#skillScreen .skill-node.available button{border-color:#d5b77b;color:#f0d9a6;background:#34332a;box-shadow:0 3px 0 #0a1117,inset 0 0 0 1px #d6ba7a20}
+#skillScreen .skill-node.available button::before{border-color:#8e7851}
+#skillScreen .skill-node.available .skill-cost{color:#f5deab;border-color:#b39966;background:#302f26}
+#skillScreen .skill-node.available .skill-label{color:#e9d4aa}
+#skillScreen .skill-node.learned button{background:#d8d1bb;border-color:#eee2bf;color:#24373d;box-shadow:0 3px 0 #0a1117}
+#skillScreen .skill-node.learned button::before{border-color:#8e998e}
+#skillScreen .skill-node.learned .skill-cost{border-color:#b8b89f;color:#e8e0c8;background:#334741}
+#skillScreen .skill-node.learned .skill-state-mark{background:#40594b;border-color:#a6baa8;color:#fff0d0}
+#skillScreen .skill-node.learned .skill-label{color:#ebe4d0}
+#skillScreen .skill-node.in-path button{border-color:#bda46f}
+#skillScreen .skill-node.selected button{outline:2px solid #e2c186;outline-offset:5px}
+#skillScreen .skill-node.selected .skill-label{color:#ffdf9d}
+#skillScreen .skill-node button:active{transform:scale(.95);background:#3d4849}
+#skillScreen .skill-node button:focus-visible{outline:2px solid #e2c186;outline-offset:5px}
+#skillScreen .skill-detail{border:1px solid #657478;border-top:2px solid #d2b782;background:#19232c;color:#e5e4d8;border-radius:3px;box-shadow:0 12px 36px #0005}
+#skillScreen .skill-detail-close{color:#b8c2c0;min-height:44px;margin:3px 7px 0;padding:8px 10px;font-size:11px;background:transparent}
+#skillScreen .skill-detail-head{padding:0 20px 17px}
+#skillScreen .skill-detail-head h3{font-family:var(--f-body);font-size:24px;font-weight:500;color:#f3e7cd}
+#skillScreen .skill-detail-emblem{color:#d2b782;width:32px;height:32px}
+#skillScreen .skill-detail-state{margin-top:14px;color:#c1c7bb;font-size:11px;line-height:1.6;gap:8px;flex-wrap:wrap}
+#skillScreen .skill-detail-state>span:first-child{padding:3px 7px;border:1px solid #52646a;background:#202e36;border-radius:2px}
+#skillScreen .skill-detail-state>span:last-child{padding-block:3px;color:#b8c3c0}
+#skillScreen .skill-detail-state .known{color:#d8e1c4;border-color:#607664}
+#skillScreen .skill-description{padding:0 20px 18px}
+#skillScreen .skill-benefit{margin:0 0 15px;font-size:12px;line-height:1.7}
+#skillScreen .skill-benefit>div{padding:10px 0;border-color:#3e4f57;grid-template-columns:50px 1fr}
+#skillScreen .skill-benefit dt{color:#a4b4b9}
+#skillScreen .skill-benefit dd{color:#c9d1cd}
+#skillScreen .skill-benefit>div:last-child dd{color:#f0d8a5;font-weight:500}
+#skillScreen .skill-description p{font-size:12px;line-height:1.8;color:#c3ccc7;margin:0 0 12px}
+#skillScreen .skill-description .skill-purpose{color:#e5e4d5}
+#skillScreen .skill-rules{font-size:11px;line-height:1.7;color:#bbc8c9;margin-bottom:14px}
+#skillScreen .skill-rules summary{min-height:30px;color:#b3c0c2;cursor:pointer}
 #skillScreen .skill-rules p{padding-top:8px}
-#skillScreen .skill-use{font-size:11px;color:#685334}
-#skillScreen .skill-preview{border-color:#a5a48e;margin-inline:18px}
+#skillScreen .skill-use{font-size:11px;line-height:1.7;color:#cfbd94;padding:10px 11px;border-left:2px solid #82775d;background:#121d25}
+#skillScreen .skill-preview{border:1px solid #42565f;margin-inline:20px;border-radius:2px;overflow:hidden}
 #skillScreen .skill-preview canvas{max-height:150px;object-fit:contain;background:#1c2829}
 #skillScreen .skill-preview figcaption{font-size:10px;background:#111e22df;color:#e4dfcc;bottom:8px}
-#skillScreen .skill-prereqs{padding:14px 18px;display:flex;flex-wrap:wrap;gap:5px;color:#53604f}
-#skillScreen .skill-prereqs p{width:100%;font-size:10px;line-height:1.6;margin:0 0 4px}
-#skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#e4ddc8;border:1px solid #a7aa94;border-radius:0;color:#344a3e;font-size:10px}
-#skillScreen .skill-prereqs button[aria-current=true]{color:#743f32;border-color:#9c6753}
-#skillScreen .skill-detail-actions{background:#d9d2bd;border-color:#a8aa93;padding:12px 17px;gap:8px}
-#skillScreen .skill-detail-actions button:not(:disabled){background:#773e32;border:1px solid #934f3d;color:#fff0d1;border-radius:0;min-height:48px;font-size:13px;font-weight:500}
-#skillScreen .skill-detail-actions button:not(:disabled):hover{background:#8e4a39}
-#skillScreen .skill-detail-actions button:disabled{background:#c2c3ae;border:1px solid #aaae98;color:#606e60;border-radius:0;min-height:48px}
-#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#754233}
-#skillScreen .skill-reward-note{color:#53604f;font-size:12px}
-#skillScreen .skill-reward-mission{border-color:#acaf97}
-#skillScreen .skill-reward-mission h4{color:#24392e}
-#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:#764c32}
-#skillScreen .skill-reward-mission li.earned{color:#57664f}
-#skillScreen .skill-footer{border-top:1px solid #464c47;padding-top:12px}
-#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:0;border-color:#60685e;background:transparent;color:#c7c7b3}
-#skillScreen .skill-loadout button[aria-pressed=true]{border-color:#d1b77d;color:#efdab0}
-#skillScreen #skillResetNote{font-size:10px;color:#a3a99d}
-@media(hover:hover){#skillScreen .skill-node button:hover{border-color:#e6d5af;color:#f4e1b8}#skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}}
+#skillScreen .skill-prereqs{padding:17px 20px;display:flex;flex-wrap:wrap;gap:6px;color:#a9b9b9}
+#skillScreen .skill-prereqs p{width:100%;font-size:10px;line-height:1.6;margin:0 0 5px}
+#skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#1b2b35;border:1px solid #4f636b;border-radius:2px;color:#c7d3ce;font-size:10px}
+#skillScreen .skill-prereqs button[aria-current=true]{color:#f2d6a0;border-color:#ad9462;background:#34352b}
+#skillScreen .skill-detail-actions{background:#19232c;border-color:#45565e;padding:14px 19px;gap:8px}
+#skillScreen .skill-detail-actions button:not(:disabled){background:#dcc392;border:1px solid #eddbb7;color:#19252b;border-radius:2px;min-height:48px;font-size:13px;font-weight:500}
+#skillScreen .skill-detail-actions button:disabled{background:#202f37;border:1px solid #485d65;color:#a7b7b9;border-radius:2px;min-height:48px;opacity:1}
+#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#e7cf9f}
+#skillScreen .skill-reward-note{color:#b9c6c3;font-size:12px}
+#skillScreen .skill-reward-mission{border-color:#3d5159}
+#skillScreen .skill-reward-mission h4{color:#eee5ce}
+#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:#d7bd8d}
+#skillScreen .skill-reward-mission li.earned{color:#a8bcac}
+#skillScreen .skill-footer{border-top:1px solid #40535c;padding-top:12px}
+#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:2px;border-color:#50666f;background:#182730;color:#c0ceca}
+#skillScreen .skill-loadout button[aria-pressed=true]{border-color:#d1b77d;color:#efdab0;background:#30352d}
+#skillScreen #skillResetNote{font-size:10px;color:#a3b4b8}
+@media(hover:hover){
+ #skillScreen .back:hover,#skillScreen #skillBranches button:hover{background:#35434a;color:#f2e4c5}
+ #skillScreen .skill-node button:hover{border-color:#c0cccb;color:#dbe5e0}
+ #skillScreen .skill-node.available button:hover{border-color:#e6d5af;color:#f4e1b8}
+ #skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}
+ #skillScreen .skill-detail-actions button:not(:disabled):hover{background:#eed7aa}
+ #skillScreen .skill-detail-actions .skill-equip:not(:disabled):hover{background:#2e3a3c}
+}
 @media(max-width:999px){
  #skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr)}
  #skillScreen #skillCards{min-width:0;gap:0}
- #skillScreen .skill-tree{min-width:0;flex:1;width:100%;padding:0;border:0}
+ #skillScreen .skill-tree{min-width:0;flex:1;width:100%;padding:17px 12px 20px}
  #skillScreen .skill-tree:not(.branch-active){display:none}
- #skillScreen .skill-board{overflow-x:hidden}
- #skillScreen .skill-detail{position:fixed;top:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));width:min(374px,calc(100vw - 32px));height:auto;z-index:5}
- #skillScreen #skillDetailShade:not([hidden]){background:#080e12bd;backdrop-filter:none}
+ #skillScreen .skill-board{overflow-x:hidden;scrollbar-gutter:auto}
+ #skillScreen .skill-help{align-items:flex-start;flex-direction:column;gap:7px}
+ #skillScreen .skill-detail{position:fixed;top:auto;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));width:min(390px,calc(100vw - 24px));height:min(740px,calc(100dvh - 24px));z-index:5;box-sizing:border-box}
+ #skillScreen #skillDetailShade:not([hidden]){background:#080e12cf;backdrop-filter:none}
 }
 @media(max-width:699px){
- #skillScreen .skill-panel{padding:12px 16px max(10px,env(safe-area-inset-bottom,0px))}
- #skillScreen .skill-toolbar .sub-head{gap:12px;padding-bottom:12px}
- #skillScreen .sub-head h2{font-size:21px}
+ #skillScreen .skill-panel{padding:12px 14px max(10px,env(safe-area-inset-bottom,0px))}
+ #skillScreen .skill-toolbar .sub-head{gap:10px;padding-bottom:12px}
+ #skillScreen .sub-head h2{font-size:21px;white-space:nowrap}
  #skillScreen #skillSummary{font-size:10px;margin-bottom:12px;max-width:112px}
  #skillScreen #skillSummary strong{font-size:25px}
  #skillScreen .back{font-size:11px;padding:8px 10px}
- #skillScreen .skill-navigation{gap:6px;flex-wrap:nowrap;padding-top:0}
- #skillScreen #skillBranches{gap:10px;justify-content:space-between;flex:1;min-width:0}
- #skillScreen #skillBranches button{padding:9px 1px;min-height:46px;white-space:nowrap;font-size:13px}
- #skillScreen #skillBranches button span{font-size:10px;margin-left:5px}
+ #skillScreen .skill-navigation{gap:7px;padding-top:11px}
+ #skillScreen #skillBranches{gap:2px;justify-content:space-between;flex:1;min-width:0;padding:2px}
+ #skillScreen #skillBranches button{padding:8px 7px;min-height:44px;white-space:nowrap;font-size:12px}
+ #skillScreen #skillBranches button span{font-size:9px;margin-left:5px}
  #skillScreen #btnSkillRewards{font-size:10px;padding:7px;min-height:44px;margin:0}
- #skillScreen .skill-instructions{font-size:10px;margin-top:10px}
- #skillScreen .skill-layout{padding-top:16px;padding-bottom:12px}
+ #skillScreen .skill-instructions{font-size:10px;line-height:1.7}
+ #skillScreen .skill-help{margin-top:11px}
+ #skillScreen .skill-legend{font-size:9px;gap:15px}
+ #skillScreen .skill-layout{padding-top:12px;padding-bottom:10px}
  #skillScreen .skill-tree h3{font-size:16px}
- #skillScreen .skill-tree>p{font-size:10px;margin-bottom:20px}
+ #skillScreen .skill-tree>p{font-size:10px;margin-bottom:19px;padding-bottom:12px}
  #skillScreen .skill-node button{width:54px;height:54px}
  #skillScreen .skill-node .skill-label{font-size:11px}
  #skillScreen .skill-footer{gap:8px;padding-top:9px}
@@ -2346,19 +2363,27 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
  #skillScreen #btnSkillReset{font-size:10px;padding:7px}
  #skillScreen #skillResetNote{display:none}
 }
-@media(max-width:350px){#skillScreen #skillBranches{gap:5px}#skillScreen #skillBranches button{font-size:12px}#skillScreen .skill-node button{width:49px;height:49px}#skillScreen .skill-node button svg{width:27px;height:27px}}
+@media(max-width:350px){
+ #skillScreen #skillBranches button{font-size:11px;padding-inline:5px}
+ #skillScreen #skillBranches button span{margin-left:3px}
+ #skillScreen .skill-tree{padding-inline:7px}
+ #skillScreen .skill-node button{width:46px;height:46px}
+ #skillScreen .skill-node button svg{width:26px;height:26px}
+ #skillScreen .skill-node .skill-label{font-size:10px}
+}
 @media(max-height:480px) and (orientation:landscape){
  #skillScreen .skill-panel{padding:8px 16px}
  #skillScreen .skill-toolbar .sub-head{padding-bottom:8px}
  #skillScreen .sub-head h2{font-size:20px}
  #skillScreen #skillSummary{margin-bottom:8px}
- #skillScreen .skill-instructions{display:none}
+ #skillScreen .skill-help{display:none}
+ #skillScreen .skill-navigation{padding-top:7px}
  #skillScreen .skill-layout{padding:10px 0}
  #skillScreen .skill-tree>p{margin-bottom:15px}
  #skillScreen .skill-graph{grid-auto-rows:116px}
  #skillScreen .skill-footer{padding-top:7px}
 }
-@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button{transition:none}}
+@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button,#skillScreen #skillBranches button{transition:none}}
 
 </style>
 </head>
@@ -2444,17 +2469,17 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 <div class="screen" id="intro">
   <picture class="title-bg" aria-hidden="true"><source media="(max-width:700px)" srcset="./assets/1285b650d43ce89fb87f.webp"><img src="./assets/5b623bec0eacecb8b781.webp" alt="" decoding="async" fetchpriority="high"></picture>
   <div class="panel title-panel">
-    <div class="title-brand"><h1>야행</h1></div>
+    <div class="title-brand"><span class="title-kicker">잠입 액션</span><h1>야행</h1></div>
     <nav class="title-acts" aria-label="주 메뉴">
       <button class="cta" id="btnQuick" type="button">시작하기</button>
-      <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
-      <button class="ghost" data-case-open type="button">금성회 조직도</button>
-      <button class="ghost" id="btnSkillsIntro" type="button">기술</button>
+      <button class="ghost" data-case-open type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M9 3h6v5H9zM2 16h6v5H2zM16 16h6v5h-6zM12 8v4M5 16v-4h14v4"/></svg><span>조직도</span></button>
+      <button class="ghost" id="btnSkillsIntro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 3 6 10-3 3-3-7zM19 3l-6 10 3 3 3-7zM3 17l7 4M6 19l-2 3M21 17l-7 4M18 19l2 3"/></svg><span>기술 습득</span></button>
       <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
-      <button class="ghost" id="btnHelp" type="button">설정</button>
+      <button class="ghost" id="btnHelp" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 4v16M12 4v16M20 4v16M1 9h6M9 15h6M17 8h6"/></svg><span>설정</span></button>
+      <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v255 · 2026-11-10</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v256 · 2026-11-10</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -2492,7 +2517,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
     </header>
     <section id="caseTraining" class="case-entry" hidden></section>
     <div class="skill-navigation"><nav id="skillBranches" aria-label="기술 계열로 이동"></nav><button id="btnSkillRewards" type="button" aria-label="미션 업적과 기술 포인트 보상 보기">업적 · 보상</button></div>
-    <p class="skill-instructions">위에서 아래로 연결선을 따라 배우기 · 기술을 선택하면 오른쪽에 효과와 필요한 순서가 열린다.</p>
+    <div class="skill-help"><p class="skill-instructions">기술을 선택하면 효과와 습득 순서를 확인할 수 있습니다.</p><div class="skill-legend" aria-label="기술 상태"><span class="available">습득 가능</span><span class="learned">습득 완료</span><span class="locked">잠김</span></div></div>
     <div class="skill-layout">
       <div class="skill-board" id="skillBoard" tabindex="-1" aria-label="기술 연결도">
         <div id="skillCards" aria-label="신체·암살·도구 기술"></div>
@@ -2565,7 +2590,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v255 · 2026-11-10</small>
+      <small class="fx-sub" id="pauseVersion">v256 · 2026-11-10</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -2642,8 +2667,8 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/a337b747256c483a23b9.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/085c95d161ad7783595e.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/0cae81dc8cc5203a17c8.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/1fce0a241f87b2439051.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/e2abc9bb792018e42393.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/79fa2e56cd0d0b3dd72d.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

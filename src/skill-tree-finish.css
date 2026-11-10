@@ -1,116 +1,140 @@
-/* Original three-branch tree. Finish: ink, brass and clear dependency routes. */
-#skillScreen{--sk-ground:#121619;--sk-panel:#1c2022;--sk-line:#414441;--sk-ink:#eee8d7;--sk-muted:#afb1aa;--sk-gold:#ccb482;background:#121619;color:var(--sk-ink)}
-#skillScreen .skill-panel{padding:22px 32px 16px;max-width:1560px}
-#skillScreen .skill-toolbar{border-bottom:1px solid #55564e;gap:20px}
-#skillScreen .skill-toolbar .sub-head{padding-bottom:18px;gap:22px}
+/* Keep the original prerequisite tree. Brass is learnable, ivory is learned. */
+#skillScreen{--sk-ground:#10171d;--sk-panel:#19232c;--sk-line:#39464d;--sk-ink:#eee8d9;--sk-muted:#a7b2b4;--sk-gold:#d1b57e;background:var(--sk-ground);color:var(--sk-ink);color-scheme:dark}
+#skillScreen .skill-panel{padding:24px 32px 16px;max-width:1560px}
+#skillScreen .skill-toolbar{border-bottom:1px solid #48555a;gap:20px}
+#skillScreen .skill-toolbar .sub-head{padding-bottom:20px;gap:22px;min-width:0}
 #skillScreen .sub-head h2{font-family:var(--f-body);font-size:25px;font-weight:500;letter-spacing:-.04em}
-#skillScreen #skillSummary{margin-bottom:18px;color:#b6b5a9;font-size:11px;line-height:1.65}
-#skillScreen #skillSummary strong{font-size:30px;color:#f1dbac;font-weight:400}
-#skillScreen .back{border-color:#727367;background:transparent;color:#ddd8c8;border-radius:0;font-size:12px}
-#skillScreen .back:hover{background:#ded4b515;color:#fff2cd}
-#skillScreen .back:active{background:#ded4b52b}
-#skillScreen .skill-navigation{border-color:#393d3d;padding-top:4px;gap:16px}
-#skillScreen #skillBranches{gap:30px}
-#skillScreen #skillBranches button{position:relative;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;min-height:50px;font-size:14px;padding:12px 8px;color:#adaea6}
-#skillScreen #skillBranches button[aria-pressed=true]{color:#f3deaf;border-bottom-color:#c8ac75}
-#skillScreen #skillBranches button span{font-size:10px;margin-left:10px;color:#acac9f}
-#skillScreen #btnSkillRewards{background:transparent;border-color:#565b57;border-radius:0;color:#d2c6a8;font-size:11px}
-#skillScreen .skill-instructions{color:#abaea8;font-size:11px;line-height:1.65;margin-top:12px}
-#skillScreen .skill-layout{padding:22px 0 18px;gap:24px}
-#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 340px}
-#skillScreen #skillCards{display:flex;gap:24px;min-width:864px;min-height:100%}
-#skillScreen .skill-tree{min-width:calc(var(--leaves)*60px);padding-right:4px}
-#skillScreen .skill-tree+.skill-tree{padding-left:22px;border-left:1px solid #353b3b}
-#skillScreen .skill-tree h3{font-size:18px;letter-spacing:.02em;color:#e4ddc9;font-weight:500;gap:10px}
-#skillScreen .skill-tree h3 svg{color:#c6b58f;width:22px;height:22px}
-#skillScreen .skill-tree>p{color:#999e99;font-size:11px;margin:7px 0 24px}
-#skillScreen .skill-graph{grid-auto-rows:126px}
-#skillScreen .skill-links path{stroke:#68706b;stroke-width:1.35;stroke-linejoin:miter;stroke-linecap:square;fill:none}
-#skillScreen .skill-links path.learned{stroke:#c8bb98;stroke-width:1.8}
-#skillScreen .skill-links path.in-path{stroke:#e9cc8e;stroke-width:2}
-#skillScreen .skill-node button{width:58px;height:58px;min-height:44px;margin:4px 0 17px;border:1px solid #6a716b;background:#191f21;color:#909e99;border-radius:50%;transition:background .12s,border-color .12s,color .12s}
-#skillScreen .skill-node button::before{inset:4px;border:1px solid #3d4844;border-radius:50%}
-#skillScreen .skill-node button svg{width:31px;height:31px;stroke-width:1.45}
-#skillScreen .skill-node .skill-cost{left:50%;right:auto;bottom:-10px;transform:translateX(-50%);min-width:29px;box-sizing:border-box;padding:3px 5px;border:1px solid #60685d;background:#171c1e;color:#c9cbbd;font-size:10px;line-height:1.2;border-radius:0;font-weight:400}
-#skillScreen .skill-node .skill-label{font-size:12px;line-height:1.5;padding:0 3px;color:#b6bab0;background:#121619;max-width:100%;word-break:keep-all}
-#skillScreen .skill-node.available button{border-color:#d3b77d;color:#edd6a2;background:#292b25;box-shadow:inset 0 0 0 1px #d6ba7a1c}
-#skillScreen .skill-node.available button::before{border-color:#8b7856}
-#skillScreen .skill-node.available .skill-cost{color:#f1dcae;border-color:#a58e62;background:#262920}
-#skillScreen .skill-node.learned button{background:#d6ccad;border-color:#eee0b8;color:#202b2b;box-shadow:none}
-#skillScreen .skill-node.learned button::before{border-color:#7d806f}
-#skillScreen .skill-node.learned .skill-cost{border-color:#b9b18d;color:#e8dfc6;background:#39423b}
-#skillScreen .skill-node.learned .skill-label{color:#e5ddc3}
-#skillScreen .skill-node.in-path button{border-color:#d4bd88}
-#skillScreen .skill-node.selected button{outline:2px solid #c45f4e;outline-offset:4px}
-#skillScreen .skill-node.selected .skill-label{color:#f4dfb4}
-#skillScreen .skill-node button:active{background:#8c70533d}
-#skillScreen .skill-node button:focus-visible{outline:2px solid #d9c394;outline-offset:4px}
-#skillScreen .skill-detail{border:1px solid #a29a80;background:#d9d2bd;color:#222d2c;border-radius:0;box-shadow:0 8px 22px #0003}
-#skillScreen .skill-detail-close{color:#4f5951;min-height:44px;margin:3px 7px 0;padding:8px 10px;font-size:11px;background:transparent}
-#skillScreen .skill-detail-head{padding:0 18px 14px}
-#skillScreen .skill-detail-head h3{font-family:var(--f-body);font-size:23px;font-weight:500;color:#202c2c}
-#skillScreen .skill-detail-emblem{color:#5a5842}
-#skillScreen .skill-detail-state{margin-top:12px;color:#50594f;font-size:10px;line-height:1.6;gap:6px;flex-wrap:wrap}
-#skillScreen .skill-detail-state .known{color:#2e5746}
-#skillScreen .skill-description{padding:0 18px 16px}
-#skillScreen .skill-benefit{margin:0 0 12px;font-size:12px;color:#233432}
-#skillScreen .skill-benefit>div{padding:8px 0;border-color:#a9aa95;grid-template-columns:50px 1fr}
-#skillScreen .skill-benefit dt{color:#636a58}
-#skillScreen .skill-benefit dd{color:#273b35}
-#skillScreen .skill-benefit>div:last-child dd{color:#803e32;font-weight:500}
-#skillScreen .skill-description p{font-size:12px;line-height:1.8;color:#3c4a40;margin:0 0 12px}
-#skillScreen .skill-description .skill-purpose{color:#303e36}
-#skillScreen .skill-rules{font-size:11px;line-height:1.7;color:#465346;margin-bottom:12px}
-#skillScreen .skill-rules summary{min-height:28px;color:#485646;cursor:pointer}
+#skillScreen #skillSummary{margin-bottom:20px;color:#b5bdbb;font-size:11px;line-height:1.65;flex-shrink:0}
+#skillScreen #skillSummary strong{font-size:30px;color:#ecd5a7;font-weight:500}
+#skillScreen .back{border:1px solid #56646b;background:#1c2730;color:#e0e1d7;border-radius:2px;font-size:12px}
+#skillScreen .back:active{background:#3c4648}
+#skillScreen .skill-navigation{border:0;padding-top:12px;gap:16px}
+#skillScreen #skillBranches{gap:6px;padding:3px;border:1px solid #35434c;background:#0d141a;border-radius:3px}
+#skillScreen #skillBranches button{position:relative;background:transparent;border:1px solid transparent;border-radius:2px;min-height:44px;font-size:13px;padding:9px 18px;color:#a5b1b5;transition:background .12s,color .12s}
+#skillScreen #skillBranches button[aria-pressed=true]{color:#f1dfb9;background:#273139;border-color:#7b725c}
+#skillScreen #skillBranches button span{font-size:10px;margin-left:10px;color:#9aa7ab}
+#skillScreen #skillBranches button[aria-pressed=true] span{color:#d0c4a9}
+#skillScreen #btnSkillRewards{background:transparent;border-color:#495961;border-radius:2px;color:#c5d0cf;font-size:11px}
+#skillScreen .skill-help{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:13px 0 0;flex-shrink:0}
+#skillScreen .skill-instructions{color:#a7b4b6;font-size:11px;line-height:1.65;margin:0;max-width:700px}
+#skillScreen .skill-legend{display:flex;gap:16px;flex-shrink:0;color:#b1bdbd;font-size:10px;line-height:1.8}
+#skillScreen .skill-legend span{display:flex;align-items:center;gap:6px}
+#skillScreen .skill-legend span::before{content:'';width:8px;height:8px;box-sizing:border-box;border:1px solid #607078;border-radius:50%;background:#162129}
+#skillScreen .skill-legend .available::before{border-color:#d1b57e;background:#62533b}
+#skillScreen .skill-legend .learned::before{border-color:#ded7bf;background:#ded7bf}
+#skillScreen .skill-layout{padding:18px 0 16px;gap:18px}
+#skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr) 350px}
+#skillScreen .skill-board{padding:0 0 10px;scrollbar-gutter:stable}
+#skillScreen #skillCards{display:flex;gap:14px;min-width:864px;min-height:100%;align-items:stretch}
+#skillScreen .skill-tree{min-width:calc(var(--leaves)*60px);padding:18px 10px 16px;box-sizing:border-box;border:1px solid #34434b;border-radius:3px;background:#151e25}
+#skillScreen .skill-tree+.skill-tree{padding-left:10px;border-left:1px solid #34434b}
+#skillScreen .skill-tree h3{font-size:17px;letter-spacing:0;color:#e8e1cd;font-weight:500;gap:9px}
+#skillScreen .skill-tree h3 svg{color:#cbb585;width:21px;height:21px}
+#skillScreen .skill-branch-index{font-size:10px;letter-spacing:.08em;color:#91a0a6;padding-right:3px;font-variant-numeric:tabular-nums}
+#skillScreen .skill-tree>p{color:#a1adb0;font-size:11px;margin:8px 0 24px;padding:0 0 14px;border-bottom:1px solid #304049}
+#skillScreen .skill-graph{grid-auto-rows:120px}
+#skillScreen .skill-links path{stroke:#687b84;stroke-width:1.3;stroke-linejoin:round;stroke-linecap:round;fill:none}
+#skillScreen .skill-links path.locked{stroke:#46575f;stroke-dasharray:3 4}
+#skillScreen .skill-links path.learned{stroke:#d6c6a0;stroke-width:1.8}
+#skillScreen .skill-links path.in-path{stroke:#e3be7d;stroke-width:2;stroke-dasharray:none}
+#skillScreen .skill-node button{width:60px;height:60px;min-height:44px;margin:4px 0 18px;border:1px solid #52656f;background:#1a2730;color:#93a5ac;border-radius:50%;box-shadow:0 3px 0 #0a1117;transition:background .12s,border-color .12s,color .12s,transform .1s}
+#skillScreen .skill-node button::before{inset:4px;border:1px solid #354a55;border-radius:50%}
+#skillScreen .skill-node button svg{width:31px;height:31px;stroke-width:1.6}
+#skillScreen .skill-node .skill-cost{left:50%;right:auto;bottom:-11px;transform:translateX(-50%);min-width:30px;box-sizing:border-box;padding:3px 5px;border:1px solid #50626a;background:#142029;color:#aebec1;font-size:10px;line-height:1.2;border-radius:2px;font-weight:400}
+#skillScreen .skill-node .skill-state-mark{position:absolute;top:-2px;right:-2px;display:grid;place-items:center;width:18px;height:18px;box-sizing:border-box;background:#142029;border:1px solid #52646c;border-radius:50%;color:#9babb1}
+#skillScreen .skill-node .skill-state-mark svg{width:10px;height:10px;stroke-width:1.7}
+#skillScreen .skill-node .skill-label{font-size:12px;line-height:1.55;padding:0 3px;color:#b5c1c2;background:#151e25;max-width:100%;word-break:keep-all}
+#skillScreen .skill-node.available button{border-color:#d5b77b;color:#f0d9a6;background:#34332a;box-shadow:0 3px 0 #0a1117,inset 0 0 0 1px #d6ba7a20}
+#skillScreen .skill-node.available button::before{border-color:#8e7851}
+#skillScreen .skill-node.available .skill-cost{color:#f5deab;border-color:#b39966;background:#302f26}
+#skillScreen .skill-node.available .skill-label{color:#e9d4aa}
+#skillScreen .skill-node.learned button{background:#d8d1bb;border-color:#eee2bf;color:#24373d;box-shadow:0 3px 0 #0a1117}
+#skillScreen .skill-node.learned button::before{border-color:#8e998e}
+#skillScreen .skill-node.learned .skill-cost{border-color:#b8b89f;color:#e8e0c8;background:#334741}
+#skillScreen .skill-node.learned .skill-state-mark{background:#40594b;border-color:#a6baa8;color:#fff0d0}
+#skillScreen .skill-node.learned .skill-label{color:#ebe4d0}
+#skillScreen .skill-node.in-path button{border-color:#bda46f}
+#skillScreen .skill-node.selected button{outline:2px solid #e2c186;outline-offset:5px}
+#skillScreen .skill-node.selected .skill-label{color:#ffdf9d}
+#skillScreen .skill-node button:active{transform:scale(.95);background:#3d4849}
+#skillScreen .skill-node button:focus-visible{outline:2px solid #e2c186;outline-offset:5px}
+#skillScreen .skill-detail{border:1px solid #657478;border-top:2px solid #d2b782;background:#19232c;color:#e5e4d8;border-radius:3px;box-shadow:0 12px 36px #0005}
+#skillScreen .skill-detail-close{color:#b8c2c0;min-height:44px;margin:3px 7px 0;padding:8px 10px;font-size:11px;background:transparent}
+#skillScreen .skill-detail-head{padding:0 20px 17px}
+#skillScreen .skill-detail-head h3{font-family:var(--f-body);font-size:24px;font-weight:500;color:#f3e7cd}
+#skillScreen .skill-detail-emblem{color:#d2b782;width:32px;height:32px}
+#skillScreen .skill-detail-state{margin-top:14px;color:#c1c7bb;font-size:11px;line-height:1.6;gap:8px;flex-wrap:wrap}
+#skillScreen .skill-detail-state>span:first-child{padding:3px 7px;border:1px solid #52646a;background:#202e36;border-radius:2px}
+#skillScreen .skill-detail-state>span:last-child{padding-block:3px;color:#b8c3c0}
+#skillScreen .skill-detail-state .known{color:#d8e1c4;border-color:#607664}
+#skillScreen .skill-description{padding:0 20px 18px}
+#skillScreen .skill-benefit{margin:0 0 15px;font-size:12px;line-height:1.7}
+#skillScreen .skill-benefit>div{padding:10px 0;border-color:#3e4f57;grid-template-columns:50px 1fr}
+#skillScreen .skill-benefit dt{color:#a4b4b9}
+#skillScreen .skill-benefit dd{color:#c9d1cd}
+#skillScreen .skill-benefit>div:last-child dd{color:#f0d8a5;font-weight:500}
+#skillScreen .skill-description p{font-size:12px;line-height:1.8;color:#c3ccc7;margin:0 0 12px}
+#skillScreen .skill-description .skill-purpose{color:#e5e4d5}
+#skillScreen .skill-rules{font-size:11px;line-height:1.7;color:#bbc8c9;margin-bottom:14px}
+#skillScreen .skill-rules summary{min-height:30px;color:#b3c0c2;cursor:pointer}
 #skillScreen .skill-rules p{padding-top:8px}
-#skillScreen .skill-use{font-size:11px;color:#685334}
-#skillScreen .skill-preview{border-color:#a5a48e;margin-inline:18px}
+#skillScreen .skill-use{font-size:11px;line-height:1.7;color:#cfbd94;padding:10px 11px;border-left:2px solid #82775d;background:#121d25}
+#skillScreen .skill-preview{border:1px solid #42565f;margin-inline:20px;border-radius:2px;overflow:hidden}
 #skillScreen .skill-preview canvas{max-height:150px;object-fit:contain;background:#1c2829}
 #skillScreen .skill-preview figcaption{font-size:10px;background:#111e22df;color:#e4dfcc;bottom:8px}
-#skillScreen .skill-prereqs{padding:14px 18px;display:flex;flex-wrap:wrap;gap:5px;color:#53604f}
-#skillScreen .skill-prereqs p{width:100%;font-size:10px;line-height:1.6;margin:0 0 4px}
-#skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#e4ddc8;border:1px solid #a7aa94;border-radius:0;color:#344a3e;font-size:10px}
-#skillScreen .skill-prereqs button[aria-current=true]{color:#743f32;border-color:#9c6753}
-#skillScreen .skill-detail-actions{background:#d9d2bd;border-color:#a8aa93;padding:12px 17px;gap:8px}
-#skillScreen .skill-detail-actions button:not(:disabled){background:#773e32;border:1px solid #934f3d;color:#fff0d1;border-radius:0;min-height:48px;font-size:13px;font-weight:500}
-#skillScreen .skill-detail-actions button:not(:disabled):hover{background:#8e4a39}
-#skillScreen .skill-detail-actions button:disabled{background:#c2c3ae;border:1px solid #aaae98;color:#606e60;border-radius:0;min-height:48px}
-#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#754233}
-#skillScreen .skill-reward-note{color:#53604f;font-size:12px}
-#skillScreen .skill-reward-mission{border-color:#acaf97}
-#skillScreen .skill-reward-mission h4{color:#24392e}
-#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:#764c32}
-#skillScreen .skill-reward-mission li.earned{color:#57664f}
-#skillScreen .skill-footer{border-top:1px solid #464c47;padding-top:12px}
-#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:0;border-color:#60685e;background:transparent;color:#c7c7b3}
-#skillScreen .skill-loadout button[aria-pressed=true]{border-color:#d1b77d;color:#efdab0}
-#skillScreen #skillResetNote{font-size:10px;color:#a3a99d}
-@media(hover:hover){#skillScreen .skill-node button:hover{border-color:#e6d5af;color:#f4e1b8}#skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}}
+#skillScreen .skill-prereqs{padding:17px 20px;display:flex;flex-wrap:wrap;gap:6px;color:#a9b9b9}
+#skillScreen .skill-prereqs p{width:100%;font-size:10px;line-height:1.6;margin:0 0 5px}
+#skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#1b2b35;border:1px solid #4f636b;border-radius:2px;color:#c7d3ce;font-size:10px}
+#skillScreen .skill-prereqs button[aria-current=true]{color:#f2d6a0;border-color:#ad9462;background:#34352b}
+#skillScreen .skill-detail-actions{background:#19232c;border-color:#45565e;padding:14px 19px;gap:8px}
+#skillScreen .skill-detail-actions button:not(:disabled){background:#dcc392;border:1px solid #eddbb7;color:#19252b;border-radius:2px;min-height:48px;font-size:13px;font-weight:500}
+#skillScreen .skill-detail-actions button:disabled{background:#202f37;border:1px solid #485d65;color:#a7b7b9;border-radius:2px;min-height:48px;opacity:1}
+#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#e7cf9f}
+#skillScreen .skill-reward-note{color:#b9c6c3;font-size:12px}
+#skillScreen .skill-reward-mission{border-color:#3d5159}
+#skillScreen .skill-reward-mission h4{color:#eee5ce}
+#skillScreen .skill-reward-mission>p,#skillScreen .skill-reward-mission li b{color:#d7bd8d}
+#skillScreen .skill-reward-mission li.earned{color:#a8bcac}
+#skillScreen .skill-footer{border-top:1px solid #40535c;padding-top:12px}
+#skillScreen .skill-loadout button,#skillScreen #btnSkillReset{border-radius:2px;border-color:#50666f;background:#182730;color:#c0ceca}
+#skillScreen .skill-loadout button[aria-pressed=true]{border-color:#d1b77d;color:#efdab0;background:#30352d}
+#skillScreen #skillResetNote{font-size:10px;color:#a3b4b8}
+@media(hover:hover){
+ #skillScreen .back:hover,#skillScreen #skillBranches button:hover{background:#35434a;color:#f2e4c5}
+ #skillScreen .skill-node button:hover{border-color:#c0cccb;color:#dbe5e0}
+ #skillScreen .skill-node.available button:hover{border-color:#e6d5af;color:#f4e1b8}
+ #skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}
+ #skillScreen .skill-detail-actions button:not(:disabled):hover{background:#eed7aa}
+ #skillScreen .skill-detail-actions .skill-equip:not(:disabled):hover{background:#2e3a3c}
+}
 @media(max-width:999px){
  #skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr)}
  #skillScreen #skillCards{min-width:0;gap:0}
- #skillScreen .skill-tree{min-width:0;flex:1;width:100%;padding:0;border:0}
+ #skillScreen .skill-tree{min-width:0;flex:1;width:100%;padding:17px 12px 20px}
  #skillScreen .skill-tree:not(.branch-active){display:none}
- #skillScreen .skill-board{overflow-x:hidden}
- #skillScreen .skill-detail{position:fixed;top:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));width:min(374px,calc(100vw - 32px));height:auto;z-index:5}
- #skillScreen #skillDetailShade:not([hidden]){background:#080e12bd;backdrop-filter:none}
+ #skillScreen .skill-board{overflow-x:hidden;scrollbar-gutter:auto}
+ #skillScreen .skill-help{align-items:flex-start;flex-direction:column;gap:7px}
+ #skillScreen .skill-detail{position:fixed;top:auto;right:12px;bottom:max(12px,env(safe-area-inset-bottom,0px));width:min(390px,calc(100vw - 24px));height:min(740px,calc(100dvh - 24px));z-index:5;box-sizing:border-box}
+ #skillScreen #skillDetailShade:not([hidden]){background:#080e12cf;backdrop-filter:none}
 }
 @media(max-width:699px){
- #skillScreen .skill-panel{padding:12px 16px max(10px,env(safe-area-inset-bottom,0px))}
- #skillScreen .skill-toolbar .sub-head{gap:12px;padding-bottom:12px}
- #skillScreen .sub-head h2{font-size:21px}
+ #skillScreen .skill-panel{padding:12px 14px max(10px,env(safe-area-inset-bottom,0px))}
+ #skillScreen .skill-toolbar .sub-head{gap:10px;padding-bottom:12px}
+ #skillScreen .sub-head h2{font-size:21px;white-space:nowrap}
  #skillScreen #skillSummary{font-size:10px;margin-bottom:12px;max-width:112px}
  #skillScreen #skillSummary strong{font-size:25px}
  #skillScreen .back{font-size:11px;padding:8px 10px}
- #skillScreen .skill-navigation{gap:6px;flex-wrap:nowrap;padding-top:0}
- #skillScreen #skillBranches{gap:10px;justify-content:space-between;flex:1;min-width:0}
- #skillScreen #skillBranches button{padding:9px 1px;min-height:46px;white-space:nowrap;font-size:13px}
- #skillScreen #skillBranches button span{font-size:10px;margin-left:5px}
+ #skillScreen .skill-navigation{gap:7px;padding-top:11px}
+ #skillScreen #skillBranches{gap:2px;justify-content:space-between;flex:1;min-width:0;padding:2px}
+ #skillScreen #skillBranches button{padding:8px 7px;min-height:44px;white-space:nowrap;font-size:12px}
+ #skillScreen #skillBranches button span{font-size:9px;margin-left:5px}
  #skillScreen #btnSkillRewards{font-size:10px;padding:7px;min-height:44px;margin:0}
- #skillScreen .skill-instructions{font-size:10px;margin-top:10px}
- #skillScreen .skill-layout{padding-top:16px;padding-bottom:12px}
+ #skillScreen .skill-instructions{font-size:10px;line-height:1.7}
+ #skillScreen .skill-help{margin-top:11px}
+ #skillScreen .skill-legend{font-size:9px;gap:15px}
+ #skillScreen .skill-layout{padding-top:12px;padding-bottom:10px}
  #skillScreen .skill-tree h3{font-size:16px}
- #skillScreen .skill-tree>p{font-size:10px;margin-bottom:20px}
+ #skillScreen .skill-tree>p{font-size:10px;margin-bottom:19px;padding-bottom:12px}
  #skillScreen .skill-node button{width:54px;height:54px}
  #skillScreen .skill-node .skill-label{font-size:11px}
  #skillScreen .skill-footer{gap:8px;padding-top:9px}
@@ -121,16 +145,24 @@
  #skillScreen #btnSkillReset{font-size:10px;padding:7px}
  #skillScreen #skillResetNote{display:none}
 }
-@media(max-width:350px){#skillScreen #skillBranches{gap:5px}#skillScreen #skillBranches button{font-size:12px}#skillScreen .skill-node button{width:49px;height:49px}#skillScreen .skill-node button svg{width:27px;height:27px}}
+@media(max-width:350px){
+ #skillScreen #skillBranches button{font-size:11px;padding-inline:5px}
+ #skillScreen #skillBranches button span{margin-left:3px}
+ #skillScreen .skill-tree{padding-inline:7px}
+ #skillScreen .skill-node button{width:46px;height:46px}
+ #skillScreen .skill-node button svg{width:26px;height:26px}
+ #skillScreen .skill-node .skill-label{font-size:10px}
+}
 @media(max-height:480px) and (orientation:landscape){
  #skillScreen .skill-panel{padding:8px 16px}
  #skillScreen .skill-toolbar .sub-head{padding-bottom:8px}
  #skillScreen .sub-head h2{font-size:20px}
  #skillScreen #skillSummary{margin-bottom:8px}
- #skillScreen .skill-instructions{display:none}
+ #skillScreen .skill-help{display:none}
+ #skillScreen .skill-navigation{padding-top:7px}
  #skillScreen .skill-layout{padding:10px 0}
  #skillScreen .skill-tree>p{margin-bottom:15px}
  #skillScreen .skill-graph{grid-auto-rows:116px}
  #skillScreen .skill-footer{padding-top:7px}
 }
-@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button{transition:none}}
+@media(prefers-reduced-motion:reduce){#skillScreen .skill-node button,#skillScreen #skillBranches button{transition:none}}
