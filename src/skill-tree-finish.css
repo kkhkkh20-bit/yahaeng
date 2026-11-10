@@ -87,9 +87,6 @@
 #skillScreen .skill-prereqs button{width:auto;min-height:44px;padding:8px 9px;background:#1b2b35;border:1px solid #4f636b;border-radius:2px;color:#c7d3ce;font-size:10px}
 #skillScreen .skill-prereqs button[aria-current=true]{color:#f2d6a0;border-color:#ad9462;background:#34352b}
 #skillScreen .skill-detail-actions{background:#19232c;border-color:#45565e;padding:14px 19px;gap:8px}
-#skillScreen .skill-detail-actions button:not(:disabled){background:#dcc392;border:1px solid #eddbb7;color:#19252b;border-radius:2px;min-height:48px;font-size:13px;font-weight:500}
-#skillScreen .skill-detail-actions button:disabled{background:#202f37;border:1px solid #485d65;color:#a7b7b9;border-radius:2px;min-height:48px;opacity:1}
-#skillScreen .skill-detail-actions .skill-equip:not(:disabled){background:transparent;color:#e7cf9f}
 #skillScreen .skill-reward-note{color:#b9c6c3;font-size:12px}
 #skillScreen .skill-reward-mission{border-color:#3d5159}
 #skillScreen .skill-reward-mission h4{color:#eee5ce}
@@ -104,8 +101,6 @@
  #skillScreen .skill-node button:hover{border-color:#c0cccb;color:#dbe5e0}
  #skillScreen .skill-node.available button:hover{border-color:#e6d5af;color:#f4e1b8}
  #skillScreen .skill-node.learned button:hover{color:#202b2b;background:#e6dab5}
- #skillScreen .skill-detail-actions button:not(:disabled):hover{background:#eed7aa}
- #skillScreen .skill-detail-actions .skill-equip:not(:disabled):hover{background:#2e3a3c}
 }
 @media(max-width:999px){
  #skillScreen.detail-open .skill-layout{grid-template-columns:minmax(0,1fr)}
