@@ -1,6 +1,7 @@
-# Field HUD glyphs
+# Solid field controls · v262
 
-Project-authored geometric SVG controls, 24×24 viewBox, currentColor stroke1.65.
-Used only through hudArt, retaining the original fallback icons for other keys.
-No generated raster artwork or third-party icon package was added.
-The concentric control rims live in ../frames/field-*.svg.
+Original 48×48 filled SVG emblems shared with the menu skill vocabulary.
+All shapes use currentColor and transparent cuts; no wire people or stock glyphs.
+Root and field versions have the same geometry, so hudArt cannot select a visually
+inconsistent fallback. Owned item:* pixel-art thumbnails keep their actual objects.
+See ../silhouette-icons.json for the catalog and provenance.

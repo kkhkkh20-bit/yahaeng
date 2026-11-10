@@ -2,6 +2,7 @@
 __UI_FONT_LICENSE__
 */
 @font-face { font-family:"Yahaeng UI"; src:url("data:font/woff2;base64,__UI_FONT__") format("woff2"); font-style:normal; font-weight:400; font-display:swap; }
+@font-face { font-family:"Yahaeng UI"; src:url("data:font/woff2;base64,__UI_SEMIBOLD_FONT__") format("woff2"); font-style:normal; font-weight:600; font-display:swap; }
 :root {
  --ui-ground:#10141b; --ui-panel:#1b222c; --ui-line:#485362;
  --ui-ink:#ece9e1; --ui-muted:#b0b8c2; --ui-accent:#d7c2a3;

@@ -1,0 +1,111 @@
+/* Readable captions, actual 600-weight Korean type, and original solid emblems. */
+#skillScreen .skill-tree{border-width:6px}
+#skillScreen .skill-tree+.skill-tree{border-left-width:6px}
+#skillScreen .skill-tree h3{font-size:19px;font-weight:600;gap:10px}
+#skillScreen .skill-tree h3 svg{width:27px;height:27px;stroke:none}
+#skillScreen .skill-tree>p{font-size:13px;line-height:1.65;color:#c2cdd1;border-bottom-width:2px;padding-bottom:14px}
+#skillScreen .skill-branch-index{font-size:12px;color:#b2c1c9}
+#skillScreen .skill-node button svg[data-skill-icon]{width:35px;height:35px;fill:currentColor;stroke:none}
+#skillScreen .skill-node button{color:#b8c9d2}
+#skillScreen .skill-node.available button{color:#f5edda}
+#skillScreen .skill-node.learned button{color:#15212c}
+#skillScreen .skill-node .skill-label{font-size:14px;font-weight:600;line-height:1.5;color:#c9d4da;padding-inline:2px;overflow-wrap:anywhere}
+#skillScreen .skill-node.available .skill-label,#skillScreen .skill-node.learned .skill-label,#skillScreen .skill-node.selected .skill-label{color:#f5edda}
+#skillScreen .skill-node .skill-cost{font-size:11px;font-weight:600;line-height:1.3;border-width:2px;color:#d6e1e5;background:#132330;padding:2px 5px;min-width:32px;bottom:-12px}
+#skillScreen .skill-node .skill-state-mark{width:20px;height:20px;border-width:2px;background:#14232e;color:#d0dce2}
+#skillScreen .skill-node .skill-state-mark svg{width:12px;height:12px;stroke:none}
+#skillScreen .skill-node.selected button,#skillScreen .skill-node button:focus-visible{outline-width:3px;outline-offset:4px}
+#skillScreen .skill-links path{stroke:#a5b7c1;stroke-width:2}
+#skillScreen .skill-links path.locked{stroke:#718794;stroke-width:1.8;stroke-dasharray:4 4}
+#skillScreen .skill-links path.learned{stroke:#eee7d6;stroke-width:2.5}
+#skillScreen .skill-links path.in-path{stroke:#d79b7e;stroke-width:3}
+#skillScreen .skill-toolbar{border-bottom-width:2px}
+#skillScreen .skill-toolbar .sub-head h2{font-size:30px}
+#skillScreen #skillBranches button{font-size:14px;font-weight:600;min-height:46px}
+#skillScreen #skillBranches button span{font-size:11px;font-weight:400;color:#d0dadd}
+#skillScreen #skillBranches button[aria-pressed=true] span{color:#30404a}
+#skillScreen #skillSummary{font-size:12px;line-height:1.55;color:#d0dadd}
+#skillScreen #skillSummary strong{font-size:34px}
+#skillScreen .skill-instructions{font-size:13px;color:#c7d3da;line-height:1.6}
+#skillScreen .skill-legend{font-size:12px;color:#d1dcde;gap:18px}
+#skillScreen .skill-legend span::before{width:10px;height:10px;border-width:2px}
+#skillScreen .skill-detail-head h3{font-size:25px;font-weight:600;line-height:1.4}
+#skillScreen .skill-detail-emblem{width:40px;height:40px;stroke:none}
+#skillScreen .skill-detail-state{font-size:13px;line-height:1.55}
+#skillScreen .skill-description p,#skillScreen .skill-benefit{font-size:14px;line-height:1.75}
+#skillScreen .skill-benefit dd{color:#e5e9e4}
+#skillScreen .skill-benefit dt{color:#c3d1d7}
+#skillScreen .skill-benefit>div{border-bottom-width:2px;grid-template-columns:60px minmax(0,1fr)}
+#skillScreen .skill-benefit>div:last-child dd{font-weight:600}
+#skillScreen .skill-description .skill-rules summary{font-size:13px;color:#d5e0e4}
+#skillScreen .skill-use{font-size:13px;color:#e0d5bd;border-left-width:3px}
+#skillScreen .skill-use svg{width:24px;height:24px;stroke:none;flex-shrink:0}
+#skillScreen .skill-prereqs p{font-size:12px;color:#c4d1d6;line-height:1.6}
+#skillScreen .skill-prereqs button{font-size:12px;font-weight:600}
+#skillScreen .skill-detail-actions button{font-size:14px;font-weight:600}
+#skillScreen .skill-loadout button{font-size:12px;font-weight:600}
+#skillScreen .skill-loadout button svg{width:25px;height:25px;stroke:none}
+#skillScreen .skill-footer{border-top-width:2px}
+#skillScreen #skillResetNote,#skillScreen .skill-loadout>span{font-size:12px;color:#c1cfd5}
+:is(#help,#caseBoard,#brief,#pause,#end,#briefInfo,#newCampaignDialog) button{font-weight:600}
+#help .settings-group h3{font-size:17px;font-weight:600}
+#help .settings-group .pz-sets label{font-size:14px;color:#d9e1e0}
+#help .settings-group output{font-size:15px;font-weight:600}
+#help .settings-group h3::before{width:27px;height:27px}
+#help details.rulesbox>summary{font-size:14px;font-weight:600}
+#help .advanced-rows b{font-size:14px;color:#d9e2e2}
+#help .control-grid{font-size:13px}
+#help .rules li{font-size:12px;color:#cad6da}
+#caseBoard .case-node strong{font-size:14px;font-weight:600;line-height:1.5}
+#caseBoard .case-node small{font-size:12px;color:#c2d1d7}
+#caseBoard .case-node[aria-pressed=true] small{color:#30404a}
+#caseBoard .case-tier h3{font-size:12px;font-weight:600;color:#d0dbde}
+#caseBoard .case-face svg{width:34px;height:34px;color:#b5c8d1}
+#caseBoard #caseDetail h3{font-size:24px;font-weight:600}
+#caseBoard #caseDetail p,#caseBoard .case-board-head p{font-size:14px;line-height:1.7;color:#d0dbdd}
+#caseBoard .case-evidence strong{font-size:13px;font-weight:600}
+#caseBoard .case-board-head,#help .sub-head{border-bottom-width:2px}
+#caseBoard .case-kicker{font-size:12px}
+#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){font-weight:600}
+#intro .title-acts button>svg{width:23px;height:23px;stroke:none}
+#intro .title-acts #btnQuick>svg{stroke:none}
+#hud .pad b,#hud .sysbtns b,#hud #quickItems output{font-weight:600}
+@media(max-width:999px){
+ #skillScreen .skill-detail-head h3{font-size:23px}
+ #skillScreen .skill-instructions{font-size:12px}
+ #skillScreen .skill-legend{font-size:11px;gap:16px}
+ #skillScreen .skill-node .skill-label{font-size:13px}
+}
+@media(max-width:699px){
+ #skillScreen .skill-tree h3{font-size:18px}
+ #skillScreen .skill-tree>p{font-size:12px}
+ #skillScreen .skill-node button svg[data-skill-icon]{width:33px;height:33px}
+ #skillScreen .skill-toolbar .sub-head h2{font-size:25px}
+ #skillScreen #skillSummary{font-size:11px}
+ #skillScreen #skillSummary strong{font-size:28px}
+ #skillScreen #skillBranches button{font-size:12px;padding:3px 4px;gap:3px}
+ #skillScreen #skillBranches button span{font-size:10px}
+ #skillScreen #skillResetNote,#skillScreen .skill-loadout>span{font-size:11px}
+ #skillScreen .skill-loadout button{font-size:11px}
+ #skillScreen #btnSkillRewards,#skillScreen #btnSkillReset{font-size:11px}
+ #caseBoard .case-node strong{font-size:13px}
+ #caseBoard .case-node small{font-size:11px}
+ #caseBoard #caseDetail p,#caseBoard .case-board-head p{font-size:13px}
+ #help .settings-group h3{font-size:16px}
+}
+@media(max-width:350px){
+ #skillScreen .skill-node button svg[data-skill-icon]{width:29px;height:29px}
+ #skillScreen .skill-node .skill-label{font-size:12px}
+ #skillScreen .skill-toolbar .sub-head h2{font-size:22px}
+ #skillScreen #skillBranches button{font-size:11px;padding-inline:3px;gap:2px}
+ #skillScreen #skillBranches button span{font-size:9px}
+ #skillScreen .skill-detail-head h3{font-size:21px}
+ #skillScreen .skill-description p,#skillScreen .skill-benefit{font-size:13px}
+}
+#hud .hud-art[data-icon-family=ivory-silhouette]{fill:currentColor;stroke:none}
+
+:is(#skillScreen,#help,#brief,#pause,#end) .back::before{content:'';display:inline-block;width:16px;height:16px;flex-shrink:0;background:currentColor;mask:var(--art-ui-back) center/contain no-repeat;-webkit-mask:var(--art-ui-back) center/contain no-repeat}
+#help details.rulesbox>summary::before{width:12px;height:12px;border:0;background:currentColor;mask:var(--art-ui-chevron) center/contain no-repeat;-webkit-mask:var(--art-ui-chevron) center/contain no-repeat;transform:none}
+#help details[open].rulesbox>summary::before{transform:rotate(90deg)}
+/* Match the actual action typography where older component rules set a weight. */
+#skillScreen .back,#skillScreen #btnSkillRewards,#skillScreen #btnSkillReset,#skillScreen .skill-detail-actions button:not(:disabled):not(.skill-equip),#help .panel button,#brief .br-tools button,#brief #btnBrGo,#pause .pz-big,#end .endacts button,#caseBoard .case-board-head button{font-weight:600}

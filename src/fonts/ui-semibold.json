@@ -1,0 +1,13 @@
+{
+  "family": "IBM Plex Sans KR",
+  "cssFamily": "Yahaeng UI",
+  "weight": 600,
+  "format": "woff2",
+  "source": "https://github.com/google/fonts/blob/main/ofl/ibmplexsanskr/IBMPlexSansKR-SemiBold.ttf",
+  "sourceTtfSha256": "823c1956adf56c27c06b062725dfce23f266e4fd1366290f2957c8407482a817",
+  "woff2Sha256": "916795a33a33051cbce16fde7938af0a698eb0cb7041faee31e06f06940a5240",
+  "bytes": 601072,
+  "license": "OFL-IBMPlexSansKR.txt",
+  "coverage": 12224,
+  "conversion": "FontTools WOFF2 transform and installed Node Brotli codec; original outlines/naming retained"
+}
