@@ -30,7 +30,7 @@ async def main():
      assert digest==hashlib.sha256((R/'public'/name).read_bytes()).hexdigest(),name;result['files'][name]=digest
 
    assert await page.evaluate('document.fonts.check(\'400 14px "Yahaeng UI"\')'), 'Shared UI face not ready'
-   font_cdp=await page.context.new_cdp_session(page);await font_cdp.send('DOM.enable');await font_cdp.send('CSS.enable');root=await font_cdp.send('DOM.getDocument');node=await font_cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#btnQuick .title-start-copy b'});face=await font_cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert face['fonts']and all(f['isCustomFont']and f['familyName']=='IBM Plex Sans KR'for f in face['fonts']),face
+   font_cdp=await page.context.new_cdp_session(page);await font_cdp.send('DOM.enable');await font_cdp.send('CSS.enable');root=await font_cdp.send('DOM.getDocument');node=await font_cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#btnSkillsIntro span'});face=await font_cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']});assert face['fonts']and all(f['isCustomFont']and f['familyName']=='IBM Plex Sans KR'for f in face['fonts']),face
    assert not await page.evaluate('!!window.__CLUB_STUDY__||!!window.__EPISODE_ONE__||!!window.__clubView');assert not any('.glb' in q or '/three.'in q or '/view.js'in q for q in requests)
    await page.click('#btnSkillsIntro');assert await page.locator('#skillScreen').is_visible();await page.click('#btnSkillsBack')
    if mobile:await page.tap('#btnQuick')

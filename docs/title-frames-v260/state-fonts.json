@@ -1,0 +1,32 @@
+{
+  "#intro h1": {
+    "fonts": [
+      {
+        "familyName": "Black Han Sans",
+        "postScriptName": "BlackHanSans-Regular",
+        "isCustomFont": true,
+        "glyphCount": 2
+      }
+    ]
+  },
+  "#btnQuick b": {
+    "fonts": [
+      {
+        "familyName": "Black Han Sans",
+        "postScriptName": "BlackHanSans-Regular",
+        "isCustomFont": true,
+        "glyphCount": 5
+      }
+    ]
+  },
+  "#btnSkillsIntro span": {
+    "fonts": [
+      {
+        "familyName": "IBM Plex Sans KR",
+        "postScriptName": "IBMPlexSansKR-Regular",
+        "isCustomFont": true,
+        "glyphCount": 5
+      }
+    ]
+  }
+}
