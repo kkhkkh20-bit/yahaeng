@@ -2,6 +2,7 @@ const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
+  warmFluidPose(charOf(g),'rest');
   const vipApproach=vipHitContext(g);
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   const assailantLook = intent?.assailantLook !== undefined ? intent.assailantLook : witnessedAssailant(g);
@@ -68,6 +69,7 @@ function strikeKill(list, two) {
 const KILL_DUR = { stab: TAKEDOWN_BEATS.stab.dur, choke: TAKEDOWN_BEATS.choke.dur };
 function pairRecoveryReady(P){
   const A=P.killAnim,h=S.koHold;
+  if(A?.finishAt!=null&&S.t-A.finishAt<.16)return false;
   return !!(A?.landed&&S.t-A.t0>=takedownBeats(A.kind,A.from).recover&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
 }
 function releasePairCombat(P){
@@ -76,7 +78,7 @@ function releasePairCombat(P){
   P.killAnim=null;P.strikeT=0;P.riseT=S.t+.16;P.pairRise={t0:S.t};
 }
 function pairKill(g, kind, from, quiet) {
-  const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(playerKey(P),'lower');warmFluidPose(playerKey(P),'finish');warmFluidPose(charOf(g),'lowered');warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
   if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
   delete g.takedownIntent;
@@ -109,13 +111,14 @@ function updatePairCombat(P,dt) {
     try{killGuard(g,null,null,A.quiet||A.kind==='choke');}finally{delete g.pairDown;}
     S.fx.length=nf;if(A.kind==='choke')S.decals.length=nd;
     A.c=S.corpses.length>nc?S.corpses.at(-1):null;
-    if(A.c){const x=P.x+Math.cos(P.a)*24,y=P.y+Math.sin(P.a)*24,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
+    if(A.c){const [dx,dy]=pairedRestShift(A),x=P.x+dx,y=P.y+dy,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
       Object.assign(A.c,{x:ok?x:P.x,y:ok?y:P.y,a:P.a,hideT:A.t0+A.dur,t0:A.t0+A.dur,f0:4});A.c.light=lightAt(A.c.x,A.c.y);
+      A.restCorrection={x:A.c.x-x,y:A.c.y-y};
       if(A.kind==='choke')A.c.bleed=0;
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=beats.land){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
+  if(!A.landed&&t>=beats.land){A.landed=true;if(A.c)A.c.settled=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
     releasePairCombat(P);return false;
@@ -136,6 +139,7 @@ function execCaptive(ko) {
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
+  warmFluidPose(charOf(g),'rest');
   const vipApproach=vipHitContext(g);
   if (g.child) return;
   const intent = g.takedownIntent; delete g.takedownIntent;

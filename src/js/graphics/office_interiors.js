@@ -111,6 +111,16 @@ function officeSurfacePoint(o){
  const x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
  return{x,y:b.y+b.h*.42};
 }
+// Small, owned objects sit on the existing furniture plane. They introduce no
+// floor collision, interaction target, or inaccessible objective.
+function drawOfficeSurfaceDress(c,f){
+ const rows=STAGE.officeArt?.surfaceDecor?.filter(d=>d.x===f.x&&d.y===f.y&&(d.fl||0)===flOf(f)&&d.t===f.t);
+ if(!rows?.length||!officeReady())return;
+ const b=officeFurnBounds(f);if(!b)return;
+ for(const d of rows){const r=officeFrame(d.art);if(!r)continue;const s=d.scale||1.5,w=r[2]*s,h=r[3]*s,x=b.x+b.w*(d.u??.5)-w/2,y=b.y+b.h*(d.v??.4)-h/2;
+  officeBlit(c,d.art,x,y,w,h);
+ }
+}
 function officeDecorLayout(fl){
  if(!officeReady())return [];
  const placed=[];
@@ -145,7 +155,12 @@ function drawOfficeLamp(l,c=ctx){
  // The old blue strips were ceiling fluorescent sprites rotated onto walls.
  // Use the purchased street pack's actual wall luminaire instead.
  if(freeCityReady()&&freeCityArt===A.dotonbori){
-  c.save();if(!on)c.globalAlpha*=.5;freeCityDraw(c,on?'lampOn':'lampOff',f.x-12,f.y-20,.75);c.restore();return true;
+  const r=freeCityArt.frames[on?'lampOn':'lampOff'].rect,side=Math.abs(f.nx)>Math.abs(f.ny);
+  c.save();c.imageSmoothingEnabled=false;if(!on)c.globalAlpha*=.5;
+  c.translate(f.x,f.y-(side?16:f.ny<0?10:18));
+  if(side)c.transform(f.nx>0?.52:-.52,f.nx>0?.16:-.16,0,1,0,0);
+  else if(f.ny<0)c.scale(1,.65);
+  c.drawImage(freeCityAtlas,...r,-9,-6,18,12);c.restore();return true;
  }
  return true;
 }

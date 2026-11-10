@@ -2315,6 +2315,33 @@ campaignStage('m7').brief+=' 관리자가 단말 이상을 무전으로 알리�
   {x:12,y:9,t:'cab',fl:0,art:'filesBlue'},{x:13,y:9,t:'cab',fl:0,art:'filesRed'}]);
  st.roomNames={'0:0':'접견 기록 · 압수품 보관'};
 }
+// Work surfaces and a wall-side utility corner give each room a purpose.
+// Keep lower windows, door/stair landings and the right-hand terminal approach free.
+{
+ const s=campaignStage('m4');
+ s.officeArt.surfaceDecor=[
+  {x:38,y:7,t:'table',fl:1,art:'briefcase',u:.25,v:.35},
+  {x:38,y:7,t:'table',fl:1,art:'phone',u:.74,v:.42,scale:1},
+ ];
+ s.officeArt.decor.push({b:3,fl:1,art:'board',u:.4,w:72});
+ s.fixedFurn.push({x:35,y:8,t:'plant',fl:1});
+ s.officeArt.furniture.push({x:35,y:8,t:'plant',fl:1,art:'plantBlue'});
+}
+{
+ const s=campaignStage('m7');
+ s.officeArt.surfaceDecor=[
+  {x:27,y:16,t:'counter',fl:0,art:'briefcase',u:.30,v:.35},
+  {x:27,y:16,t:'counter',fl:0,art:'parcel',u:.71,v:.30,scale:1},
+ ];
+ s.fixedFurn.push({x:26,y:19,t:'cab',fl:1});
+ s.officeArt.furniture.push({x:26,y:19,t:'cab',fl:1,art:'waterCooler'});
+ s.officeArt.decor.push({b:1,fl:0,art:'board',u:.5,w:72});
+}
+{
+ const s=campaignStage('m6');
+ s.officeArt.floorZones=[...(s.officeArt.floorZones||[]),{b:0,fl:0,x0:4,y0:10,x1:8,y1:10,art:'floorIvory'}];
+ s.officeArt.decor.push({b:0,fl:0,art:'board',u:.24,w:72});
+}
 
 'use strict';
 (function () {
@@ -2857,6 +2884,9 @@ function drawFurn(x, it) {
 }
 const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '');  // 구운 가구 그림 열쇠: 종류_가로x세로(_r방향)
 function drawFurnArt(x, it) {
+  drawFurnBase(x,it);drawOfficeSurfaceDress(x,it);
+}
+function drawFurnBase(x, it) {
   if(drawPropFurn(x,it))return;
   if(quarterFurn(x,it))return;
   if(it.t==='locker'||it.t==='wardrobe'){drawCabinet({type:it.t,tx:it.x,ty:it.y,w:it.w,h:it.h,furn:true,fl:it.fl||0},'all',x,0);return;}
@@ -3838,6 +3868,16 @@ function officeSurfacePoint(o){
  const x=f.t==='desk'||f.t==='desk2'?f.x*TILE+24:(f.x+f.w*u)*TILE;
  return{x,y:b.y+b.h*.42};
 }
+// Small, owned objects sit on the existing furniture plane. They introduce no
+// floor collision, interaction target, or inaccessible objective.
+function drawOfficeSurfaceDress(c,f){
+ const rows=STAGE.officeArt?.surfaceDecor?.filter(d=>d.x===f.x&&d.y===f.y&&(d.fl||0)===flOf(f)&&d.t===f.t);
+ if(!rows?.length||!officeReady())return;
+ const b=officeFurnBounds(f);if(!b)return;
+ for(const d of rows){const r=officeFrame(d.art);if(!r)continue;const s=d.scale||1.5,w=r[2]*s,h=r[3]*s,x=b.x+b.w*(d.u??.5)-w/2,y=b.y+b.h*(d.v??.4)-h/2;
+  officeBlit(c,d.art,x,y,w,h);
+ }
+}
 function officeDecorLayout(fl){
  if(!officeReady())return [];
  const placed=[];
@@ -3872,7 +3912,12 @@ function drawOfficeLamp(l,c=ctx){
  // The old blue strips were ceiling fluorescent sprites rotated onto walls.
  // Use the purchased street pack's actual wall luminaire instead.
  if(freeCityReady()&&freeCityArt===A.dotonbori){
-  c.save();if(!on)c.globalAlpha*=.5;freeCityDraw(c,on?'lampOn':'lampOff',f.x-12,f.y-20,.75);c.restore();return true;
+  const r=freeCityArt.frames[on?'lampOn':'lampOff'].rect,side=Math.abs(f.nx)>Math.abs(f.ny);
+  c.save();c.imageSmoothingEnabled=false;if(!on)c.globalAlpha*=.5;
+  c.translate(f.x,f.y-(side?16:f.ny<0?10:18));
+  if(side)c.transform(f.nx>0?.52:-.52,f.nx>0?.16:-.16,0,1,0,0);
+  else if(f.ny<0)c.scale(1,.65);
+  c.drawImage(freeCityAtlas,...r,-9,-6,18,12);c.restore();return true;
  }
  return true;
 }
@@ -4554,6 +4599,18 @@ function fluidSource(key,anim){
  return null;
 }
 function warmFluidPose(key,anim){const name=fluidSource(key,anim);if(name)prLoadBody(name);}
+function corpseRestPose(c){
+ if(c.dog)return null;
+ const key=c.stripped?strippedKey(c):c.ch,elapsed=c.t0==null?2:S.t-c.t0;
+ if(!key||!c.settled&&elapsed<.75)return null;
+ const anim=c.settled||elapsed>=1?'rest':'restIn',name=fluidSource(key,anim);
+ if(!name)return null;if(!prBodies[name]){prLoadBody(name);return null;}
+ return{key,anim,frame:anim==='rest'?0:clamp((elapsed-.75)/.25,0,1)*8,meta:PR.bodies[name]};
+}
+function pairedRestShift(A){
+ const m=PR?.bodies?.[fluidSource(A.ch,'lowered')];
+ return m?.restShift?.[prDir(S.player.a)]||[Math.cos(S.player.a)*24,Math.sin(S.player.a)*24];
+}
 function fluidSprite(key,anim,t,frame=-1){
  const name=fluidSource(key,anim);if(!name)return null;
  if(!prBodies[name]){prLoadBody(name);return null;}
@@ -4577,7 +4634,7 @@ function updateHeroVisual(P){
  v.strikeRemaining=P.strikeT||0;v.gait=P.gaitTime||0;v.time=S.t;v.moving=moving;v.anim=anim;
  // Decode action poses during actual play, rather than blocking first input.
  const look=playerKey(P);
- if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');}
+ if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');warmFluidPose(look,'lower');}
  return v;
 }
 function heroMotionClock(P,anim,fallback=P.gaitTime??S.t){const v=heroVisualStates.get(P);return v&&HERO_LOOP[anim]?v.phase*HERO_LOOP[anim]:fallback;}
@@ -4592,6 +4649,8 @@ function heroStrikeFrame(P){const v=heroVisualStates.get(P);return v?.strikeDura
 
 function corpseBounds(c){
   if(c.dog)return[c.x-24,c.y-26,c.x+24,c.y+22];
+  const rest=corpseRestPose(c);
+  if(rest){const m=rest.meta,frame=Math.round(rest.frame),box=m.bounds?.[rest.anim]?.[prDir(c.a||0)]?.[frame],s=m.scales[rest.anim],x=c.x-PR.fr*s/2,y=c.y+7-m.grounds[rest.anim]*s;if(box)return[x+box[0]*s,y+box[1]*s,x+box[2]*s,y+box[3]*s];}
   const key=c.stripped?strippedKey(c):c.ch,bm=PR?.bodies?.[prSplit(key||'ninja')[1]],m=bm||PR;
   const frame=Math.min((m?.anims?.death?.[1]||10)-1,corpseFrame(c)),box=m?.bounds?.death?.[prDir(c.a||0)]?.[frame];
   if(!box)return[c.x-20,c.y-24,c.x+20,c.y+10];
@@ -4607,6 +4666,7 @@ function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   if(c.dog||c.ch==='dog'){drawDog(c.x,c.y-lift,c.a||0,false,ctx.globalAlpha,true);return;}
+  const rest=corpseRestPose(c);if(rest){drawPR(rest.key,c.x,c.y-6,c.a||0,rest.anim,0,ctx.globalAlpha,1,lift,rest.frame);return;}
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }
@@ -8911,7 +8971,11 @@ function buildingSearchJobs(at, bi) {
   if (bi >= 0) {
     const B = BLD[bi];
     const doors = S.doors.filter(d => bldAt(d.tx, d.ty) === bi).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
-    if (doors.length) add(searchStandNear(doors[0]), 'entrance', 1);
+    for(const d of doors.slice(0,3))add(searchStandNear(d),'entrance',1+dist(d.x,d.y,at.x,at.y)/1800);
+    for(const l of S.ladders||[])if((l.kind==='stair'||l.kind==='fstair')&&bldAt(l.tx,l.ty)===bi){
+      const lo=stairLower(l);add(searchStandNear({...lo.up.entry,fl:l.bfl||0,z:0}),'junction',1.45);
+      if(l.kind==='fstair'){const hi=stairUpper(l);add(searchStandNear({...hi.down.entry,fl:l.tfl,z:0}),'junction',1.6);}
+    }
     for (let f = 0; f < B.h; f++) {
       const pts = searchFloorPoints(bi, f).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
       pts.forEach((p, i) => add(p, 'room', i === 0 ? 2 + f * .05 : 4 + i * .1));
@@ -8953,7 +9017,8 @@ function takeSearchJob(g, inc) {
   const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at), j.at)));
   // A real sighting is checked first, even upstairs; then sweep nearby rooms and hiding places.
   // Only incident jobs and the guard's own floor contribute; the hidden player is never queried.
-  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0);
+  const claimed=inc.jobs.filter(j=>j.claim!=null&&j.claim!==g.id),covered=new Set(claimed.map(j=>j.kind));
+  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0)-(claimed.length&&!covered.has(j.kind)&&['entrance','escape','junction'].includes(j.kind)?1.5:0);
   jobs.sort((a,b)=>cost(a)-cost(b));
   let job, leg;
   for (const j of jobs) { const p = searchLeg(g, j.at); if (p) { job = j; leg = p; break; } }
@@ -8962,7 +9027,7 @@ function takeSearchJob(g, inc) {
   g.searchJob = { incident: inc.id, job: job.id, elapsed: 0, repath: 0, inspect: null };
   endChat(g); g.act = null; g.bubble = null; g.state = 'SEARCH'; g.poi = { ...job.at }; g.searchOrigin = { ...inc.at }; g.why = 'building';
   g.path = leg.path; g.hop = leg.hop; g.reached = false; g.meter = Math.min(g.meter || 0, .5); g.atkT = 0; g.shootT = 0; g.aim = 0; setIcon(g, '?');
-  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 볼게.' : job.at.z ? '옥상 확인하러 간다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽은 내가 볼게.', 2.2); }
+  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 볼게.' : job.kind==='junction'?'계단 쪽 확인할게.':job.kind==='escape'?'바깥길은 내가 볼게.':job.kind==='trail'?'이쪽으로 갔어. 확인할게.':job.at.z ? '옥상 확인하러 간다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽은 내가 볼게.', 2.2); }
   return true;
 }
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {
@@ -13070,7 +13135,9 @@ function finishKo(c, g) {
     const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;
     feedbackToast('takedown',left ? `표적 제거 · 남은 표적 ${left}` : '표적 제거 · 남은 목표 확인',1.8);
   } else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
-  beginFinishFeedback(c,null);feedbackEvent('kill',c,{effect:'strike',scale:.32,lift:10});
+  if(S.player.killAnim?.c===c)S.player.killAnim.finishAt=S.t;
+  else beginFinishFeedback(c,null);
+  feedbackEvent('kill',c,{effect:'strike',scale:.32,lift:10});
   if(!g.target&&feedbackOnce('kill'))feedbackToast('takedown','살해 · 다시 깨어나지 않는다',1.7);
   logEv(g.target ? 'target' : 'kill', c.x, c.y); play('kill', .45); noise(c.x, c.y, 40, 'kill', c.fl);
 }
@@ -14345,6 +14412,7 @@ const koFirst = g => !!g && !g.dog && !g.civ;
 const koTap = g => koDefault(g) || koFirst(g);
 const KO_HOLD = 1.0;  // 주민 기절 뒤 이만큼 더 누르고 있어야 숨을 끊는다 (휴대폰에서 실수로 감점되지 않게)
 function koPerson(g, mode, where, intent, quiet) {
+  warmFluidPose(charOf(g),'rest');
   const vipApproach=vipHitContext(g);
   if (g.child) return;  // 안전장치: 아이는 어떤 경로로도 다치지 않는다
   const assailantLook = intent?.assailantLook !== undefined ? intent.assailantLook : witnessedAssailant(g);
@@ -14411,6 +14479,7 @@ function strikeKill(list, two) {
 const KILL_DUR = { stab: TAKEDOWN_BEATS.stab.dur, choke: TAKEDOWN_BEATS.choke.dur };
 function pairRecoveryReady(P){
   const A=P.killAnim,h=S.koHold;
+  if(A?.finishAt!=null&&S.t-A.finishAt<.16)return false;
   return !!(A?.landed&&S.t-A.t0>=takedownBeats(A.kind,A.from).recover&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
 }
 function releasePairCombat(P){
@@ -14419,7 +14488,7 @@ function releasePairCombat(P){
   P.killAnim=null;P.strikeT=0;P.riseT=S.t+.16;P.pairRise={t0:S.t};
 }
 function pairKill(g, kind, from, quiet) {
-  const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
+  const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(playerKey(P),'lower');warmFluidPose(playerKey(P),'finish');warmFluidPose(charOf(g),'lowered');warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
   const intent=g.takedownIntent||{source:combatSource('atk'),lethal:false};
   if(intent.assailantLook===undefined)intent.assailantLook=from?(g.capturedLook||null):witnessedAssailant(g);
   delete g.takedownIntent;
@@ -14452,13 +14521,14 @@ function updatePairCombat(P,dt) {
     try{killGuard(g,null,null,A.quiet||A.kind==='choke');}finally{delete g.pairDown;}
     S.fx.length=nf;if(A.kind==='choke')S.decals.length=nd;
     A.c=S.corpses.length>nc?S.corpses.at(-1):null;
-    if(A.c){const x=P.x+Math.cos(P.a)*24,y=P.y+Math.sin(P.a)*24,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
+    if(A.c){const [dx,dy]=pairedRestShift(A),x=P.x+dx,y=P.y+dy,ok=!solidAt(Math.floor(x/TILE),Math.floor(y/TILE));
       Object.assign(A.c,{x:ok?x:P.x,y:ok?y:P.y,a:P.a,hideT:A.t0+A.dur,t0:A.t0+A.dur,f0:4});A.c.light=lightAt(A.c.x,A.c.y);
+      A.restCorrection={x:A.c.x-x,y:A.c.y-y};
       if(A.kind==='choke')A.c.bleed=0;
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=beats.land){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
+  if(!A.landed&&t>=beats.land){A.landed=true;if(A.c)A.c.settled=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
     releasePairCombat(P);return false;
@@ -14479,6 +14549,7 @@ function execCaptive(ko) {
 }
 const logEv = (k, x, y) => { (S.events = S.events || []).push({ k, x, y, t: S.t }); };
 function killGuard(g, mode, where, quiet) {
+  warmFluidPose(charOf(g),'rest');
   const vipApproach=vipHitContext(g);
   if (g.child) return;
   const intent = g.takedownIntent; delete g.takedownIntent;
@@ -15813,6 +15884,16 @@ function drawPlayerBody(P) {
     }
     if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = playerLook, s1 = sc / 3;
+      const beat=takedownBeats(KA.kind,KA.from),elapsed=S.t-KA.t0;
+      if(elapsed>=beat.knee&&fluidSource(PK1,'lower')&&fluidSource(KA.ch,'lowered')){
+        const u=clamp((elapsed-beat.knee)/(beat.land-beat.knee),0,1),finish=KA.finishAt!=null,fi=finish?clamp((S.t-KA.finishAt)/.16,0,1)*8:u*12;
+        const actor=fluidSource(PK1,finish?'finish':'lower'),victim=fluidSource(KA.ch,'lowered');
+        if(prBodies[actor]&&prBodies[victim]){
+          if(u>=1&&KA.c){const body=corpseRestPose(KA.c);if(body)drawPR(body.key,KA.c.x,KA.c.y-6,P.a,body.anim,0,1,s1,-yo,body.frame);else drawPR(KA.ch,P.x,P.y,P.a,'lowered',0,1,s1,-yo,12);}
+          else{const shift=pairedRestShift(KA);drawPR(KA.ch,P.x+shift[0]+(KA.restCorrection?.x||0)*u,P.y+shift[1]-6+(KA.restCorrection?.y||0)*u,P.a,'lowered',0,1,s1,-yo,u*12);}
+          drawPR(PK1,P.x,P.y,P.a,finish?'finish':'lower',0,1,s1,-yo,fi);return;
+        }
+      }
       if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt),
           approach=1-hideEase(clamp((S.t-KA.t0)/takedownBeats(KA.kind,KA.from).contact,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
         drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
@@ -17908,7 +17989,10 @@ function guardAwareness(g) {
   const eye=direct?(g.eyeT||0)/identityTime(g):0, meter=clamp(g.meter||0,0,1);
   if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS'&&!direct&&meter<NOTICE_AT)return{phase:'quiet',color:'#aab8bf',progress:0,direct:false,label:'배차 확인'};
   if(g.state==='ALERT'&&direct) return {phase:'seen',color:'#ff4a3c',progress:1,direct:true,label:'발각'};
-  if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))) return {phase:'search',color:'#d7b879',progress:.45,direct:false,label:'수색 중'};
+  if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))){
+    const inc=g.searchJob&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident),job=inc?.jobs[g.searchJob.job],label=job?({entrance:'출입구 확인',junction:'계단 확인',escape:'바깥길 확인',hide:'은신처 확인',trail:'이동 흔적 확인',room:'방 수색',roof:'옥상 수색'}[job.kind]||'현장 확인'):'수색 중';
+    return {phase:'search',color:'#d7b879',progress:.45,direct:false,label};
+  }
   if(eye>0) return {phase:'check',color:'#ddd9c8',progress:clamp(eye,0,1),direct:true,label:'신원 확인'};
   if(direct&&meter>=NOTICE_AT) return {phase:'suspect',color:'#f2c46b',progress:meter,direct:true,label:'의심'};
   return {phase:meter>.02?'check':'quiet',color:'#ddd9c8',progress:direct?meter:0,direct,label:'주시'};
@@ -18064,12 +18148,13 @@ function drawGuardTaskCue(g){
  else{ctx.beginPath();ctx.moveTo(x-4*k,y+2*k);ctx.lineTo(x-4*k,y-2*k);ctx.moveTo(x,y-5*k);ctx.quadraticCurveTo(x+7*k,y,x,y+5*k);ctx.moveTo(x+3*k,y-7*k);ctx.quadraticCurveTo(x+12*k,y,x+3*k,y+7*k);ctx.stroke();}ctx.restore();return true;
 }
 function beginFinishFeedback(c,source,wind=false){
- const P=S.player;if(P.killAnim)return;P.finishPose={c,source,wind,t0:S.t,dur:wind?1:.24,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.a=Math.atan2(c.y-P.y,c.x-P.x);warmFluidPose(playerKey(P),'workLow');
+ const P=S.player;if(P.killAnim)return;P.finishPose={c,source,wind,t0:S.t,dur:wind?1:.24,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.a=Math.atan2(c.y-P.y,c.x-P.x);warmFluidPose(playerKey(P),'workLow');warmFluidPose(playerKey(P),'finish');
 }
 function drawFinishFeedback(P){
  const f=P.finishPose;if(!f)return false;
  if(f.fl!==flOf(P)||f.z!==(P.z||0)||P.carrying||P.hide||P.trav||P.pick||P.interact||P.moving||dist(P.x,P.y,f.x,f.y)>8||f.wind&&!combatHeld(f.source)||!f.wind&&S.t-f.t0>f.dur){P.finishPose=null;return false;}
  if(P.killAnim)return false;const t=clamp((S.t-f.t0)/f.dur,0,1),key=playerKey(P),meta=PR.bodies[prSplit(key)[1]]||PR,n=meta.anims.openLow?.[1]||17,frame=f.wind?Math.min(.55,t)*Math.max(1,n-1):(1-t)*.55*Math.max(1,n-1);
+ if(!f.wind&&prBodies[fluidSource(key,'finish')]){drawPR(key,P.x,P.y,P.a,'finish',0,1,1,0,t*8);return true;}
  drawPR(key,P.x,P.y,P.a,'openLow',0,1,1,0,frame);return true;
 }
 function beginDefeatFeedback(P){
@@ -18576,7 +18661,7 @@ function showBrief(go) {
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   el.querySelector('.br-scroll').scrollTop = 0;
   if($('briefInfo').open)$('briefInfo').close();
-  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
+  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%';mp.closest('.br-mapcol').style.setProperty('--brief-map-ratio',cv.width+'/'+cv.height);mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief;
@@ -19364,6 +19449,7 @@ function renderAssassinMenu(){
  if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
+ fitSkillBoard();
  const ns='http://www.w3.org/2000/svg',route=new Set(skillDetailMode==='skill'?skillPath(skillFocused):[]);
  for(const graph of $('skillCards').querySelectorAll('.skill-graph')){
   graph.querySelector('.skill-links')?.remove();if(!graph.clientWidth)continue;
@@ -19373,6 +19459,16 @@ function drawSkillLinks(){
    const a=parent.querySelector('button').getBoundingClientRect(),label=parent.querySelector('.skill-label').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=label.bottom-bounds.top+5,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-9,mid=(y0+y1)/2;
    const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${mid} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('locked',node.dataset.state==='locked');path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
+ }
+}
+function fitSkillBoard(){
+ const board=$('skillBoard');if(!board?.clientHeight)return;
+ for(const tree of $('skillCards').querySelectorAll('.skill-tree')){
+  if(!tree.clientWidth)continue;const graph=tree.querySelector('.skill-graph'),rows=Math.max(...[...graph.querySelectorAll('[data-node]')].map(n=>+n.style.gridRow));
+  tree.classList.remove('fit-compact');
+  const available=()=>board.clientHeight-(graph.getBoundingClientRect().top-tree.getBoundingClientRect().top)-parseFloat(getComputedStyle(tree).paddingBottom)-8;
+  if(available()/rows<112)tree.classList.add('fit-compact');
+  graph.style.setProperty('--skill-row',Math.max(96,Math.min(116,Math.floor(available()/rows)))+'px');
  }
 }
 window.addEventListener('resize',()=>{if(!$('skillScreen').hidden){syncSkillBranches();syncSkillDetail();}});
@@ -19566,7 +19662,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     startLoot,updatePick,nearLoot,lootLockpickPlan,itemObjectiveBlock,updateDispatchFault,startDispatchFault,
-    TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
+    corpseRestPose,pairedRestShift,drawOfficeSurfaceDress,fitSkillBoard,TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     drawPlansFaint,drawLampTint,aperturePeekCandidate,updateAperturePeek,aperturePeekContains,switchVisualPoint,repairRoofLanding,get aperturePeekFrame(){return aperturePeekFrame;},windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,

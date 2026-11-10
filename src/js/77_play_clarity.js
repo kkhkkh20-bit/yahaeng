@@ -46,7 +46,10 @@ function guardAwareness(g) {
   const eye=direct?(g.eyeT||0)/identityTime(g):0, meter=clamp(g.meter||0,0,1);
   if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS'&&!direct&&meter<NOTICE_AT)return{phase:'quiet',color:'#aab8bf',progress:0,direct:false,label:'배차 확인'};
   if(g.state==='ALERT'&&direct) return {phase:'seen',color:'#ff4a3c',progress:1,direct:true,label:'발각'};
-  if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))) return {phase:'search',color:'#d7b879',progress:.45,direct:false,label:'수색 중'};
+  if(!direct&&(g.state==='ALERT'||['SEARCH','CHECK','BODY','NOTICE','SUSPICIOUS'].includes(g.state))){
+    const inc=g.searchJob&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident),job=inc?.jobs[g.searchJob.job],label=job?({entrance:'출입구 확인',junction:'계단 확인',escape:'바깥길 확인',hide:'은신처 확인',trail:'이동 흔적 확인',room:'방 수색',roof:'옥상 수색'}[job.kind]||'현장 확인'):'수색 중';
+    return {phase:'search',color:'#d7b879',progress:.45,direct:false,label};
+  }
   if(eye>0) return {phase:'check',color:'#ddd9c8',progress:clamp(eye,0,1),direct:true,label:'신원 확인'};
   if(direct&&meter>=NOTICE_AT) return {phase:'suspect',color:'#f2c46b',progress:meter,direct:true,label:'의심'};
   return {phase:meter>.02?'check':'quiet',color:'#ddd9c8',progress:direct?meter:0,direct,label:'주시'};

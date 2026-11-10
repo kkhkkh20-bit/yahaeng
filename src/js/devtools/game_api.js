@@ -2,7 +2,7 @@
 function installGameApi() {
   window.__game = {
     startLoot,updatePick,nearLoot,lootLockpickPlan,itemObjectiveBlock,updateDispatchFault,startDispatchFault,
-    TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
+    corpseRestPose,pairedRestShift,drawOfficeSurfaceDress,fitSkillBoard,TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     drawPlansFaint,drawLampTint,aperturePeekCandidate,updateAperturePeek,aperturePeekContains,switchVisualPoint,repairRoofLanding,get aperturePeekFrame(){return aperturePeekFrame;},windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,

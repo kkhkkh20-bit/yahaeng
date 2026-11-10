@@ -111,6 +111,7 @@ function renderAssassinMenu(){
  if(focus&&innerWidth>=1000)$('skillCards').querySelector('[data-select="'+focus+'"]')?.focus({preventScroll:true});
 }
 function drawSkillLinks(){
+ fitSkillBoard();
  const ns='http://www.w3.org/2000/svg',route=new Set(skillDetailMode==='skill'?skillPath(skillFocused):[]);
  for(const graph of $('skillCards').querySelectorAll('.skill-graph')){
   graph.querySelector('.skill-links')?.remove();if(!graph.clientWidth)continue;
@@ -120,6 +121,16 @@ function drawSkillLinks(){
    const a=parent.querySelector('button').getBoundingClientRect(),label=parent.querySelector('.skill-label').getBoundingClientRect(),b=node.querySelector('button').getBoundingClientRect(),x0=a.left+a.width/2-bounds.left,y0=label.bottom-bounds.top+5,x1=b.left+b.width/2-bounds.left,y1=b.top-bounds.top-9,mid=(y0+y1)/2;
    const path=document.createElementNS(ns,'path');path.dataset.from=id;path.dataset.to=node.dataset.node;path.setAttribute('d',`M${x0} ${y0} V${mid} H${x1} V${y1} M${x1-3} ${y1-4} L${x1} ${y1} L${x1+3} ${y1-4}`);path.classList.toggle('locked',node.dataset.state==='locked');path.classList.toggle('learned',node.classList.contains('learned'));path.classList.toggle('in-path',route.has(id)&&route.has(node.dataset.node));svg.append(path);
   }graph.prepend(svg);
+ }
+}
+function fitSkillBoard(){
+ const board=$('skillBoard');if(!board?.clientHeight)return;
+ for(const tree of $('skillCards').querySelectorAll('.skill-tree')){
+  if(!tree.clientWidth)continue;const graph=tree.querySelector('.skill-graph'),rows=Math.max(...[...graph.querySelectorAll('[data-node]')].map(n=>+n.style.gridRow));
+  tree.classList.remove('fit-compact');
+  const available=()=>board.clientHeight-(graph.getBoundingClientRect().top-tree.getBoundingClientRect().top)-parseFloat(getComputedStyle(tree).paddingBottom)-8;
+  if(available()/rows<112)tree.classList.add('fit-compact');
+  graph.style.setProperty('--skill-row',Math.max(96,Math.min(116,Math.floor(available()/rows)))+'px');
  }
 }
 window.addEventListener('resize',()=>{if(!$('skillScreen').hidden){syncSkillBranches();syncSkillDetail();}});

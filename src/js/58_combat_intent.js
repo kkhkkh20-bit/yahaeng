@@ -113,7 +113,9 @@ function finishKo(c, g) {
     const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;
     feedbackToast('takedown',left ? `표적 제거 · 남은 표적 ${left}` : '표적 제거 · 남은 목표 확인',1.8);
   } else if (g.civ) S.stats.extraKills++; else if (!g.dog) { S.stats.crewKills = (S.stats.crewKills || 0) + 1; killStreak(); if (S.stats.crewKills === 1) bossRadio('first'); }
-  beginFinishFeedback(c,null);feedbackEvent('kill',c,{effect:'strike',scale:.32,lift:10});
+  if(S.player.killAnim?.c===c)S.player.killAnim.finishAt=S.t;
+  else beginFinishFeedback(c,null);
+  feedbackEvent('kill',c,{effect:'strike',scale:.32,lift:10});
   if(!g.target&&feedbackOnce('kill'))feedbackToast('takedown','살해 · 다시 깨어나지 않는다',1.7);
   logEv(g.target ? 'target' : 'kill', c.x, c.y); play('kill', .45); noise(c.x, c.y, 40, 'kill', c.fl);
 }

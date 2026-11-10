@@ -1,0 +1,2 @@
+PASS finish review {'mobile': False, 'bad': [], 'roles': ['scene', 'entrance', 'entrance', 'entrance', 'junction', 'junction'], 'bodyEndpointStable': True, 'distinctLethalFinish': True}
+PASS finish review {'mobile': True, 'bad': [], 'roles': ['scene', 'entrance', 'entrance', 'entrance', 'junction', 'junction'], 'bodyEndpointStable': True, 'distinctLethalFinish': True}

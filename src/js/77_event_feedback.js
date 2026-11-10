@@ -65,12 +65,13 @@ function drawGuardTaskCue(g){
  else{ctx.beginPath();ctx.moveTo(x-4*k,y+2*k);ctx.lineTo(x-4*k,y-2*k);ctx.moveTo(x,y-5*k);ctx.quadraticCurveTo(x+7*k,y,x,y+5*k);ctx.moveTo(x+3*k,y-7*k);ctx.quadraticCurveTo(x+12*k,y,x+3*k,y+7*k);ctx.stroke();}ctx.restore();return true;
 }
 function beginFinishFeedback(c,source,wind=false){
- const P=S.player;if(P.killAnim)return;P.finishPose={c,source,wind,t0:S.t,dur:wind?1:.24,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.a=Math.atan2(c.y-P.y,c.x-P.x);warmFluidPose(playerKey(P),'workLow');
+ const P=S.player;if(P.killAnim)return;P.finishPose={c,source,wind,t0:S.t,dur:wind?1:.24,x:P.x,y:P.y,fl:flOf(P),z:P.z||0};P.a=Math.atan2(c.y-P.y,c.x-P.x);warmFluidPose(playerKey(P),'workLow');warmFluidPose(playerKey(P),'finish');
 }
 function drawFinishFeedback(P){
  const f=P.finishPose;if(!f)return false;
  if(f.fl!==flOf(P)||f.z!==(P.z||0)||P.carrying||P.hide||P.trav||P.pick||P.interact||P.moving||dist(P.x,P.y,f.x,f.y)>8||f.wind&&!combatHeld(f.source)||!f.wind&&S.t-f.t0>f.dur){P.finishPose=null;return false;}
  if(P.killAnim)return false;const t=clamp((S.t-f.t0)/f.dur,0,1),key=playerKey(P),meta=PR.bodies[prSplit(key)[1]]||PR,n=meta.anims.openLow?.[1]||17,frame=f.wind?Math.min(.55,t)*Math.max(1,n-1):(1-t)*.55*Math.max(1,n-1);
+ if(!f.wind&&prBodies[fluidSource(key,'finish')]){drawPR(key,P.x,P.y,P.a,'finish',0,1,1,0,t*8);return true;}
  drawPR(key,P.x,P.y,P.a,'openLow',0,1,1,0,frame);return true;
 }
 function beginDefeatFeedback(P){

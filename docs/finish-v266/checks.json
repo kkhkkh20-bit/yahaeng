@@ -1,0 +1,33 @@
+{
+  "frames": 5640,
+  "rows": [
+    {
+      "mobile": false,
+      "bad": [],
+      "roles": [
+        "scene",
+        "entrance",
+        "entrance",
+        "entrance",
+        "junction",
+        "junction"
+      ],
+      "bodyEndpointStable": true,
+      "distinctLethalFinish": true
+    },
+    {
+      "mobile": true,
+      "bad": [],
+      "roles": [
+        "scene",
+        "entrance",
+        "entrance",
+        "entrance",
+        "junction",
+        "junction"
+      ],
+      "bodyEndpointStable": true,
+      "distinctLethalFinish": true
+    }
+  ]
+}

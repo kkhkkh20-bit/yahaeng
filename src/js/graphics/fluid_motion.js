@@ -8,6 +8,18 @@ function fluidSource(key,anim){
  return null;
 }
 function warmFluidPose(key,anim){const name=fluidSource(key,anim);if(name)prLoadBody(name);}
+function corpseRestPose(c){
+ if(c.dog)return null;
+ const key=c.stripped?strippedKey(c):c.ch,elapsed=c.t0==null?2:S.t-c.t0;
+ if(!key||!c.settled&&elapsed<.75)return null;
+ const anim=c.settled||elapsed>=1?'rest':'restIn',name=fluidSource(key,anim);
+ if(!name)return null;if(!prBodies[name]){prLoadBody(name);return null;}
+ return{key,anim,frame:anim==='rest'?0:clamp((elapsed-.75)/.25,0,1)*8,meta:PR.bodies[name]};
+}
+function pairedRestShift(A){
+ const m=PR?.bodies?.[fluidSource(A.ch,'lowered')];
+ return m?.restShift?.[prDir(S.player.a)]||[Math.cos(S.player.a)*24,Math.sin(S.player.a)*24];
+}
 function fluidSprite(key,anim,t,frame=-1){
  const name=fluidSource(key,anim);if(!name)return null;
  if(!prBodies[name]){prLoadBody(name);return null;}
@@ -31,7 +43,7 @@ function updateHeroVisual(P){
  v.strikeRemaining=P.strikeT||0;v.gait=P.gaitTime||0;v.time=S.t;v.moving=moving;v.anim=anim;
  // Decode action poses during actual play, rather than blocking first input.
  const look=playerKey(P);
- if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');}
+ if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');warmFluidPose(look,'lower');}
  return v;
 }
 function heroMotionClock(P,anim,fallback=P.gaitTime??S.t){const v=heroVisualStates.get(P);return v&&HERO_LOOP[anim]?v.phase*HERO_LOOP[anim]:fallback;}
