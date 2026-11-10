@@ -364,7 +364,7 @@ function buildRouteLine(g) {
   }
 }
 // 지하 수로: 맨홀끼리 최소 신장 트리로 잇고 고리 하나를 더한다
-function buildSewers(wells) {
+function buildSewers(wells,legacy=false) {
   UG = new Uint8Array(MW * MH);
   if (wells.length < 2) return;
   const carve = (a, b) => {
@@ -373,6 +373,7 @@ function buildSewers(wells) {
     const stepTo = (tx, ty) => { while (x !== tx) { UG[y * MW + x] = 1; x += Math.sign(tx - x); } while (y !== ty) { UG[y * MW + x] = 1; y += Math.sign(ty - y); } UG[y * MW + x] = 1; };
     if (hFirst) { stepTo(b.tx, a.ty); stepTo(b.tx, b.ty); } else { stepTo(a.tx, b.ty); stepTo(b.tx, b.ty); }
   };
+  if(STAGE.sewerRoutes&&!legacy){for(const route of STAGE.sewerRoutes)for(let i=1;i<route.length;i++)carve({tx:route[i-1][0],ty:route[i-1][1]},{tx:route[i][0],ty:route[i][1]});return;}
   const inTree = [wells[0]], rest = wells.slice(1), edges = [];
   while (rest.length) {
     let bi = 0, bj = 0, bd = 1e9;

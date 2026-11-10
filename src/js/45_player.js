@@ -293,19 +293,20 @@ function coverPullRoute(g, P=S.player) {
   setLayer(L0);return best;
 }
 function coverTarget() {
-  const P = S.player; if (!abilityOn('ambush') || !P.cover || P.strikeT > 0 || S.pull) return null;
+  const P = S.player; if (!abilityOn('ambush') || !P.cover || P.captive || P.carrying || P.strikeT > 0 || S.pull) return null;
   let best=null,bd=Infinity;
   for(const g of S.guards){
-    if(g.child||g.dog||g.climb||g.doomed||g.yank||['DEAD','CAPTIVE','ALERT','FLEE','TERROR'].includes(g.state)||(g.seen&&g.meter>.6))continue;
+    if(g.child||g.dog||g.climb||g.doomed||g.yank||['DEAD','CAPTIVE','ALERT','FLEE','TERROR'].includes(g.state))continue;
     const route=coverPullRoute(g,P);if(route&&route.length<bd){best=g;bd=route.length;}
   }return best;
 }
 function updatePull(dt) {
   const L=S.pull;if(!abilityOn('ambush')){L.g.doomed=false;S.pull=null;return;}L.t+=dt;
+  if(L.holding&&combatHeld(L.intent?.source))L.held+=dt;else L.holding=false;
   const f=Math.min(1,L.t/L.dur),g=L.g,points=L.points||[{x:L.x0,y:L.y0},{x:L.x1,y:L.y1}],length=L.length||dist(L.x0,L.y0,L.x1,L.y1);
   let remaining=length*f*f;
   for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],d=dist(a.x,a.y,b.x,b.y);if(remaining<=d||i===points.length-1){const k=d?Math.min(1,remaining/d):1;g.x=a.x+(b.x-a.x)*k;g.y=a.y+(b.y-a.y)*k;break;}remaining-=d;}
-  if(f>=1){S.pull=null;g.doomed=false;if(g.state!=='DEAD'){killGuard(g,null,null,true);S.hitStop=.08;if(!g.civ){S.stats.special++;toast(lastKO()?'벽 뒤로 끌어당겨 기절':'벽 뒤로 끌어당겨 암살',1.6,'good');}}}
+  if(f>=1){S.pull=null;g.doomed=false;if(g.state!=='DEAD'){g.takedownIntent={...L.intent,lethal:!!L.intent?.lethal||L.holding&&L.held>=LETHAL_HOLD};killGuard(g,null,null,true);if(S.koHold?.g===g)S.koHold.t0=S.t-L.held;S.hitStop=.08;if(!g.civ){S.stats.special++;toast(lastKO()?'벽 뒤로 끌어당겨 기절':'벽 뒤로 끌어당겨 암살',1.6,'good');}}}
 }
 // 몸으로 오르고 넘는 동작: 순간이동하지 않고 정해진 길을 따라 시간을 들여 움직인다
 // o: { pts: [{x, y, f}], dur, phases: [{to, pose}], face, base: {x, y}, step, end }
@@ -504,7 +505,7 @@ function updatePlayer(dt) {
       P.a += clamp(angDiff(P.a, Math.atan2(ny, nx)), -12 * dt, 12 * dt);
       P.stepT -= dt; if (P.stepT <= 0) { P.stepT = 0.45; play('step_c' + ((Math.random() * 3) | 0), 0.12, 0.8); }
     }
-    hint('sewer', '지하 수로: 자경대원은 내려오지 않는다. 다른 맨홀 아래에서 [올라가기]');
+    hint('sewer', sewerEscapeGoal()?'점검 통로는 남쪽 도로로 이어진다. 끝의 사다리에서 올라가면 탈출한다.':'지하 점검 통로 · 맨홀 아래의 사다리에서 올라갈 수 있다.');
     return;
   }
   if (P.vent) {
@@ -618,7 +619,7 @@ function updatePlayer(dt) {
   checkObjective();
   if (STAGE.zones) { const zi = pZoneInfo(); if (zi.k !== Z_PUB && zi.allow) for (const o of myPermits()) if (zi.allow.includes(o)) (S.usedPermit || (S.usedPermit = {}))[o] = true; }  // 신분이 금지 구역을 통과시켜 준 기록 (도전 과제 판정)
   if (S.exitOpen && S.exits && S.exits.length > 1) S.exit = chooseEscape();  // 걸어서 닿는 경로가 짧은 탈출구로 안내
-  if (S.exitOpen && P.z === 0 && !flOf(P) && !S.over && (S.exits || [S.exit]).some(e => dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
+  if (S.exitOpen && P.z === 0 && !flOf(P) && !P.trav && !P.hide && !S.over && (S.exits || [S.exit]).some(e => !sewerEscapeEntry(e) && dist(P.x, P.y, e.x, e.y) < e.r)) endGame(true);
 }
 // 밀어서 넘기 예고: 차오르는 고리 + 이름
 function drawPushHint() {

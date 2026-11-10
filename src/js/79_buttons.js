@@ -34,7 +34,7 @@ function attackAction() {
   if (P.captive) return combatLabel({ k: 'cap', g:P.captive, label: '기절', hold: '처치' });
   const a = rawChoices().find(isAtk); if (a) {
     const action=koLabel(Object.assign({},a)),choice=assassinPreview();
-    if(choice&&choice.ids[0]===(action.g||action.list?.[0])?.id)action.hold=ASSASSIN_SKILLS[choice.key].name;
+    if(action.k!=='pull'&&choice&&choice.ids[0]===(action.g||action.list?.[0])?.id)action.hold=ASSASSIN_SKILLS[choice.key].name;
     return action;
   }
   const c = nearFinish(); if (c) return combatLabel({ k: 'finish', c, g: c.g });
@@ -150,7 +150,7 @@ function actAttack() {
   // 끌어당기기·끌어들이기·위에서 덮치기도 조직원은 먼저 기절 (계속 누르고 있으면 updateKoHold 가 처치)
   // 제압 의도는 대상에 묶는다. 비동기 끌어당기기가 다른 사람을 처치로 바꾸지 않는다.
   const choice=assassinOpportunity();
-  if(choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
+  if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));
 }
 function actEnv() {

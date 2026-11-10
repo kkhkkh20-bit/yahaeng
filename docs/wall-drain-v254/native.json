@@ -1,0 +1,83 @@
+{
+  "method": "Controlled original-map encounters with normal RAF and native PC/emulated touch.\nPositions and objectives are fixtures; other actors/cameras are removed. Not mission clears.\nWall skills are purchased in the real pre-mission tree; no whistle is used.\n",
+  "cases": [
+    {
+      "device": "pc",
+      "lethal": false,
+      "before": {
+        "x": 584.8886280000014,
+        "y": 168,
+        "noWhistle": true,
+        "hp": 3
+      },
+      "after": {
+        "ko": true,
+        "kills": 0,
+        "cover": true,
+        "hp": 3,
+        "detected": 0
+      }
+    },
+    {
+      "device": "pc",
+      "lethal": true,
+      "before": {
+        "x": 584.8843440000016,
+        "y": 168,
+        "noWhistle": true,
+        "hp": 3
+      },
+      "after": {
+        "ko": false,
+        "kills": 1,
+        "cover": true,
+        "hp": 3,
+        "detected": 0
+      }
+    },
+    {
+      "device": "pc",
+      "physicalDrainEscape": true,
+      "errors": []
+    },
+    {
+      "device": "touch",
+      "lethal": false,
+      "before": {
+        "x": 584.8886280000015,
+        "y": 168,
+        "noWhistle": true,
+        "hp": 3
+      },
+      "after": {
+        "ko": true,
+        "kills": 0,
+        "cover": true,
+        "hp": 3,
+        "detected": 0
+      }
+    },
+    {
+      "device": "touch",
+      "lethal": true,
+      "before": {
+        "x": 584.8886279999998,
+        "y": 168,
+        "noWhistle": true,
+        "hp": 3
+      },
+      "after": {
+        "ko": false,
+        "kills": 1,
+        "cover": true,
+        "hp": 3,
+        "detected": 0
+      }
+    },
+    {
+      "device": "touch",
+      "physicalDrainEscape": true,
+      "errors": []
+    }
+  ]
+}
