@@ -11,7 +11,8 @@ async def main():
     pg=await b.new_page(viewport={'width':w,'height':h},has_touch=w!=1280);errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
     await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri()+'?nostats'+('&tone=ink'if ink else''));await pg.wait_for_function('!!window.__game',polling=100)
     await pg.locator('#btnHelp').click()
-    assert await pg.locator('#help input:visible,#help button:visible:not(#btnHelpBack)').count()<=3,'default settings still expose advanced controls'
+    shown=await pg.locator('#help input:visible,#help button:visible:not(#btnHelpBack)').evaluate_all('a=>a.map(e=>e.id)')
+    assert set(shown)<={'volR','briR','btnMute','btnFull'},'default settings expose unrelated advanced controls'
     assert await pg.locator('#advancedSettings').evaluate('e=>!e.open')
     assert await pg.locator('#controlGuide .ctrl').is_hidden()
     await pg.locator('#advancedSettings summary').click();await pg.locator('#btnFps').click();await pg.locator('#btnOpps').click();await pg.locator('#btnRoutes').click()

@@ -1,0 +1,257 @@
+[
+  {
+    "width": 320,
+    "height": 568,
+    "volume": 85,
+    "brightness": 105,
+    "fps": 30,
+    "routesPersisted": true,
+    "sharedUIFont": {
+      "#help h2": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#settingsAudioTitle": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#volLabel": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#btnMute": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ],
+      "#controlGuide dd": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 9
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "volume": 85,
+    "brightness": 105,
+    "fps": 30,
+    "routesPersisted": true,
+    "sharedUIFont": {
+      "#help h2": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#settingsAudioTitle": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#volLabel": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#btnMute": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ],
+      "#controlGuide dd": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 9
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "volume": 85,
+    "brightness": 105,
+    "fps": 30,
+    "routesPersisted": true,
+    "sharedUIFont": {
+      "#help h2": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#settingsAudioTitle": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#volLabel": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#btnMute": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ],
+      "#controlGuide dd": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 9
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "volume": 85,
+    "brightness": 105,
+    "fps": 30,
+    "routesPersisted": true,
+    "sharedUIFont": {
+      "#help h2": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#settingsAudioTitle": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#volLabel": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#btnMute": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ],
+      "#controlGuide dd": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "volume": 85,
+    "brightness": 105,
+    "fps": 30,
+    "routesPersisted": true,
+    "sharedUIFont": {
+      "#help h2": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#settingsAudioTitle": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#volLabel": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 2
+        }
+      ],
+      "#btnMute": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 5
+        }
+      ],
+      "#controlGuide dd": [
+        {
+          "familyName": "IBM Plex Sans KR",
+          "postScriptName": "IBMPlexSansKR-Regular",
+          "isCustomFont": true,
+          "glyphCount": 10
+        }
+      ]
+    },
+    "errors": []
+  }
+]

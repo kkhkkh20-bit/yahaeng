@@ -57,11 +57,11 @@ def build():
     title_font = base64.b64encode(open(P('src', 'fonts', 'title-blackhansans.ttf'), 'rb').read()).decode()
     html = html.replace('__TITLE_FONT__', title_font)
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
-    menu_art = base64.b64encode(open(P('src', 'art', 'title', 'alley-wide.webp'), 'rb').read()).decode()
+    menu_art = base64.b64encode(open(P('src', 'art', 'title', 'rooftop-night.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
-    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css')).replace('__DISPLAY_FONT__',base64.b64encode(open(P('src','fonts','display-blackhansans.woff'),'rb').read()).decode())+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css')))
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','settings.css'))+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css')))
     for variant in ['wide','portrait']:
-        data='data:image/webp;base64,'+base64.b64encode(open(P('src','art','title','alley-'+variant+'.webp'),'rb').read()).decode()
+        data='data:image/webp;base64,'+menu_art
         html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
     html=html.replace('--menu-art:', '--title-alley-wide:url(data:image/webp;base64,'+menu_art+');--menu-art:',1)
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
@@ -70,8 +70,6 @@ def build():
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
     ink_ui=read(P('src','ink-interface.css'))
-    ink_ui=ink_ui.replace('__INK_HEADING_FONT__',base64.b64encode(open(P('src','fonts','ink-headings.woff2'),'rb').read()).decode())
-    ink_ui=ink_ui.replace('__INK_HEADING_LICENSE__','\n'.join(line.rstrip() for line in read(P('src','fonts','OFL-EastSeaDokdo.txt')).splitlines()))
     ink_ui=ink_ui.replace('__INK_WASH__',base64.b64encode(open(P('src','art','hud','ink-wash.webp'),'rb').read()).decode())
     html=html.replace('__INK_UI_CSS__',ink_ui)
     html = html.replace('__UI_FONT__', base64.b64encode(open(P('src','fonts','ui-regular.woff2'),'rb').read()).decode())
