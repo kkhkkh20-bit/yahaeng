@@ -1,0 +1,1 @@
+PASS {'upperFloorPixels': 'unchanged by exterior', 'scan': 'floor-aware', 'rooftopSigns': 'visible', 'doorCues': 70, 'extraBitmaps': 0}

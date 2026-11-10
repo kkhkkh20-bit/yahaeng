@@ -10,6 +10,7 @@ window.addEventListener('keydown', e => {
     if(e.code==='Tab'){e.preventDefault();const buttons=[...$('newCampaignDialog').querySelectorAll('button')],i=buttons.indexOf(document.activeElement);buttons[(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length].focus();}
     return;
   }
+  if($('briefInfo').open)return;
   if(loadoutOpen){handleLoadoutKey(e);return;}
   if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
@@ -387,6 +388,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) softP
 
 document.querySelectorAll('#modSel button').forEach(b => b.addEventListener('click', () => { MOD = b.dataset.m; try { localStorage.setItem('yahaeng.mod', MOD); } catch (e) {} renderStageList(); }));
 function start(i, noBrief) {
+  if($('briefInfo').open)$('briefInfo').close();
   clearResultTransition();
   resetCaseBoard();
   if(assassinMenu){assassinMenu=null;$('skillScreen').hidden=true;$('end').inert=false;}
@@ -431,6 +433,7 @@ function chooseEntry(i) {
 }
 function entryPos(e) { if (e.pole) { const o = S.poles.find(o => o.tx === e.pole[0] && o.ty === e.pole[1]); return { x: o.x, y: o.y - o.top }; } return { x: tc(e.at[0]), y: tc(e.at[1]) }; }
 function toMenu() {
+  if($('briefInfo').open)$('briefInfo').close();
   if(window.__EPISODE_ONE__){start(STAGES.findIndex(s=>s.episode));return;}
   closeKeypad();clearPlayerInput();closeEnvPicker();
   if (club && AC) club.g.gain.setTargetAtTime(0, AC.currentTime, 0.2);
@@ -457,3 +460,8 @@ atlas.src = A.atlas;
 if (PR&&!window.__CLUB_STUDY__) setTimeout(() => prWarm([window.__AGENT_CITY_STUDY__?'agent@heroAgent':'ninja']), 1500);  // 옷 색은 판마다 필요한 것만 (전부 칠해 두면 수백 MB)
 
 $('btnRadio').addEventListener('click',e=>{e.stopPropagation();replayEpisodeRadio();});
+
+$('btnBriefInfo').onclick=()=>$('briefInfo').showModal();
+$('btnBriefInfoClose').onclick=()=>$('briefInfo').close();
+$('briefInfo').addEventListener('keydown',e=>{if(e.code==='Tab'){e.preventDefault();$('btnBriefInfoClose').focus();}});
+$('briefInfo').addEventListener('close',()=>{if(!$('brief').hidden)$('btnBriefInfo').focus({preventScroll:true});});

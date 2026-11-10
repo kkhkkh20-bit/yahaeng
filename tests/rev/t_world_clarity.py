@@ -1,0 +1,34 @@
+"""Direct lamp interaction, usable relocated bins, furniture collision/depth and causes.
+Controlled placement with real interaction/update/render functions; no full AI playthrough claim.
+"""
+import asyncio,json
+from pathlib import Path
+from playwright.async_api import async_playwright
+R=Path(__file__).resolve().parents[2];O=Path('/workspace/work/brief-v259')
+async def main():
+ async with async_playwright()as p:
+  b=await p.chromium.launch();q=await b.new_page(viewport={'width':1000,'height':800});errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('__game?.officeReady()&&__game?.purchasedReady()',polling=100)
+  data=await q.evaluate('''()=>{const G=__game,check=(v,m)=>{if(!v)throw Error(m)},rows=[];const fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S;};
+   for(const id of ['tB','p0','e2','m2','m4','m6','m7','m5','n1']){let S=fresh(id),P=S.player,lights=0,bins=0;
+    check(!G.FURN.some(f=>['sofa','sofaV'].includes(f.t)),id+' large sofa remains');
+    for(const l of S.lamps.filter(l=>l.fixture&&!l.outdoor&&!l.hearth)){const at=G.lampControl(l);check(Math.hypot(at.x-l.fixture.x,at.y-l.fixture.y)<=15,id+' separate indoor switch remains');G.setLayer(l.fl||0);Object.assign(P,{fl:l.fl||0,z:0,hide:null,trav:null,jump:null,carrying:null,captive:null});const approach=[[0,0],[0,24],[24,0],[-24,0],[0,-24],[24,24],[-24,24],[24,-24],[-24,-24]].find(([dx,dy])=>{P.x=at.x+dx;P.y=at.y+dy;return !G.solidAt(P.x/48|0,P.y/48|0)&&G.objectReachable(at,48)&&G.envChoices().some(a=>a.k==='lamp'&&a.l===l)});check(approach,'direct lamp inaccessible '+id+':'+JSON.stringify({l:l.fixture,at}));lights++;}
+    G.setLayer(0);for(const m of G.STAGE.doorClearance||[]){const[x,y]=m.from,[nx,ny]=m.to;check(!G.solidAt(x,y),id+' bin remains in doorway');check(G.tileG(nx,ny)==='H',id+' bin collider missing');const h=S.hides.find(h=>!h.furn&&h.tx===nx&&h.ty===ny);check(h,id+' bin interaction missing');const adj=[[0,1],[1,0],[-1,0],[0,-1]].find(([dx,dy])=>!G.solidAt(nx+dx,ny+dy));check(adj,id+' bin sealed');Object.assign(P,{fl:0,z:0,x:(nx+adj[0]+.5)*48,y:(ny+adj[1]+.5)*48,hide:null});check(G.hideApproach(h),id+' bin unusable');bins++;}
+    rows.push({id,directLamps:lights,movedBins:bins});
+   }
+   // Toggle the chosen real fixture and preserve its blackout across checkpoint load.
+   let S=fresh('m4'),P=S.player,l=S.lamps.find(l=>l.fixture&&!l.outdoor&&!l.hearth);const at=G.lampControl(l);Object.assign(P,at);G.setLayer(l.fl||0);const a=G.envChoices().find(a=>a.k==='lamp'&&a.l===l);check(a,'native lamp choice missing');G.selectEnvTarget(G.envToken(a));G.actEnv();for(let i=0;i<30;i++){S.t+=.05;G.updatePlayer(.05);G.runTimers();}check(l.off,'direct light did not turn off');P.hp=2;G.saveCheckpoint();check(G.loadCheckpoint(),'lamp checkpoint rejected');check(G.S.player.hp===2&&G.S.lamps.some(o=>o.circuit===l.circuit&&o.off),'blackout/progress lost');
+   S=fresh('tB');S.player.hp=2;G.saveCheckpoint();G.CP.grids[1][4][19]='K';G.CP.grids[1][4][20]='K';check(G.loadCheckpoint(),'legacy sofa save rejected');G.setLayer(1);check(!G.solidAt(19,4)&&!G.solidAt(20,4)&&G.S.player.hp===2,'removed sofa leaves invisible collider in old save');
+   // Actual desk collision stops held movement at the front edge.
+   S=fresh('tB');P=S.player;G.setLayer(1);const f=G.FURN.find(f=>f.fl===1&&['desk','desk2'].includes(f.t)&&[...Array(f.w).keys()].some(dx=>!G.solidAt(f.x+dx,f.y+f.h)));check(f,'desk test fixture missing');const column=[...Array(f.w).keys()].find(dx=>!G.solidAt(f.x+dx,f.y+f.h));S.guards=[];Object.assign(P,{x:(f.x+column+.5)*48,y:(f.y+f.h)*48+28,fl:1,z:0,mode:'walk',hide:null,cover:null,trav:null,jump:null});S.keys={ArrowUp:true};for(let i=0;i<30;i++){S.t+=.05;G.updatePlayer(.05);}S.keys={};check(P.y>=(f.y+f.h)*48+8,'player crosses solid desk');
+   // Compare the real actor raster with and without the foreground furniture.
+   const ctx=G.ctx,all=G.FURN.slice(),render=(empty)=>{G.FURN.splice(0,G.FURN.length,...(empty?[]:[f]));ctx.save();ctx.setTransform(1,0,0,1,160-P.x,160-P.y);ctx.clearRect(P.x-160,P.y-160,320,320);G.drawPlayer(P);ctx.restore();return ctx.getImageData(0,0,320,320).data;};
+   Object.assign(P,{x:(f.x+.5)*48,y:f.y*48-3,moving:false,light:1,a:Math.PI/2,strikeT:0,killAnim:null});const raw=render(true),behind=render(false);let removed=0,left=0;for(let i=3;i<raw.length;i+=4){if(raw[i]>0&&behind[i]===0)removed++;if(behind[i]>0)left++;}check(removed>5&&left>5,'actor not occluded behind desk '+JSON.stringify({removed,left,f}));
+   P.y=(f.y+f.h)*48+20;const frontRaw=render(true),front=render(false);check(front.every((v,i)=>v===frontRaw[i]),'desk covers actor standing in front');G.FURN.splice(0,G.FURN.length,...all);ctx.setTransform(1,0,0,1,0,0);
+   // Real roll-call transition: no missing guard means no investigation. A missing
+   // colleague creates a check at their own post, not the hidden player's position.
+   S=fresh('m2');P=S.player;S.rcT=0;G.updateRadioCheck(.1);check(!S.guards.some(g=>g.why==='rollCall'),'routine call invents incident');const m=S.guards.find(g=>!g.civ&&!g.dog&&!g.target);m.state='DEAD';S.rcT=0;G.updateRadioCheck(.1);const sent=S.guards.find(g=>g.why==='rollCall');check(sent&&G.investigationReadout(sent).kind==='rollCall','missing response labelled report');check(!G.investigationReadout(sent).tag.includes('제보'),'misleading report text');
+   check(G.investigationReadout({...sent,why:'radioOrder'}).kind==='radioOrder','radio lure mislabelled');check(G.investigationReadout({...sent,why:'colleague'}).kind==='colleague','lost partner mislabelled');check(G.investigationReadout({...sent,why:'heard'}).kind==='sound','sound mislabelled');check(G.investigationReadout({...sent,state:'ALERT',why:'colleague'}).kind==='player','stale reason hides actual detection');
+   const receiver={...sent,state:'SEARCH',why:'report',poi:{x:100,y:200,clue:'player'},searchJob:null};check(G.investigationReadout(receiver).kind==='report','received sighting labelled own sight');return{rows,deskCollision:true,occlusion:{removed,left,frontUnchanged:true},nativeLampAndBlackout:true,rollCallAndCauseLabels:true};}''')
+  await q.evaluate("()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='tB'));while(G.DLG.modal)G.advanceDialog();const P=G.S.player;Object.assign(P,{x:18.5*48,y:8.5*48,fl:1,z:0});G.setLayer(1);G.S.fade=0;G.setZoom(1.1);G.updateHUD(true);G.moveCamera(1);G.benchDraw(2)}");await q.screenshot(path=str(O/'world-office.png'))
+  assert not errors,errors;(O/'world-checks.json').write_text(json.dumps(data,ensure_ascii=False,indent=2));print('PASS world clarity',json.dumps(data,ensure_ascii=False),flush=True);await b.close()
+asyncio.run(main())

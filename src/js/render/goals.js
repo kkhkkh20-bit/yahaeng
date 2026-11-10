@@ -13,7 +13,7 @@ function goalMarkerVisible(P,gl){
 }
 function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 화면 배경 찍기: 글자·표시 없이
   const gl = goalNavigation((S.alevel === 3 && chaseNow() && chaseHide(P)) || nextGoal()); if (!gl || gl.x == null) return;
-  if(!goalMarkerVisible(P,gl))return;
+  if(!goalMarkerVisible(P,gl)||gl.via)return;
   const k = isTouch ? 0.95 / SCALE : Math.max(1, 0.95 / SCALE), hw = W / SCALE / 2, hh = H / SCALE / 2, dx = gl.x - cam.x, dy = gl.y - cam.y, m = Math.max(1, Math.round(dist(P.x, P.y, gl.x, gl.y) / 32));
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.

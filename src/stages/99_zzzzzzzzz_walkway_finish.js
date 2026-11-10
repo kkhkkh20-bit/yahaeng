@@ -241,3 +241,17 @@ campaignStage('m2').roomPatches=(campaignStage('m2').roomPatches||[]).concat({fl
 campaignStage('m6').roomPatches=(campaignStage('m6').roomPatches||[]).concat({fl:0,bounds:[24,16,32,24],furniture:[{t:'shelf',from:[26,19],to:[25,19]},{t:'shelf',from:[26,21],to:[25,21]}],tiles:[[28,19,'t'],[28,21,'t']]});
 // Seat the chair at its table, rather than in the shared centre aisle.
 campaignStage('m4').roomPatches=(campaignStage('m4').roomPatches||[]).concat({fl:0,bounds:[22,17,32,24],furniture:[{t:'chair',from:[26,20],to:[25,19],r:0}],tiles:[[26,20,'t']]});
+
+// Keep door turning space and the dispatch corridor clear. Containers retain
+// their hiding function and migrate together with saved occupants and bodies.
+const DOOR_CLEARANCE={
+ tB:[{tile:'H',from:[22,11],to:[25,6],floor:'h',targetFloor:','}],
+ m4:[{tile:'H',from:[9,1],to:[5,1],floor:'.',targetFloor:'.'},
+     {tile:'H',from:[2,7],to:[2,3],floor:'r',targetFloor:'r'},
+     {tile:'H',from:[19,19],to:[14,23],floor:',',targetFloor:','}],
+ m7:[{tile:'H',from:[24,13],to:[11,16],floor:'h',targetFloor:'h'}],
+ n1:[{tile:'H',from:[9,23],to:[9,24],floor:',',targetFloor:','}]
+};
+for(const[id,moves]of Object.entries(DOOR_CLEARANCE)){
+ const s=campaignStage(id);s.doorClearance=moves;s.fixtureMoves=(s.fixtureMoves||[]).concat(moves);
+}

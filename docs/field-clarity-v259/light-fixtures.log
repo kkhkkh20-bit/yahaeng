@@ -1,0 +1,1 @@
+PASS {'stages': 27, 'counts': {'wall': 359, 'street': 54, 'pole': 13}, 'reachable': 426, 'legacyState': True}

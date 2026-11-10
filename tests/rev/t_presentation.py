@@ -26,12 +26,13 @@ async def main():
     assert await pg.locator('#brief').is_visible()
     assert not await pg.locator('#brRadio').is_visible()
     assert not await pg.locator('#brCh').is_visible()
-    assert await pg.locator('#brTodo li').count() >= 1
-    assert not await pg.locator('#brTodo').inner_text() == ''
+    assert await pg.locator('#brIdentity .mission-id').count() >= 1
+    assert await pg.locator('#brIdentity').inner_text()
     assert await pg.evaluate('document.documentElement.scrollWidth<=innerWidth'), 'briefing horizontal overflow'
-    await pg.locator('#brDetails summary').click()
+    await pg.locator('#btnBriefInfo').click()
     assert await pg.locator('#brRadio').is_visible(), 'detailed field intel lost'
     assert await pg.locator('#brLine').inner_text()
+    await pg.locator('#btnBriefInfoClose').click()
     await pg.locator('#btnBrGo').click()
     await pg.wait_for_timeout(150)
     for text in ['직원 복장이 필요하다.','직원 얼굴을 아는 경호원은 가까이서 변장을 확인한다. 다른 통로를 찾아라. '*4]:

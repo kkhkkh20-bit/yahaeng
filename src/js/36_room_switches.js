@@ -1,4 +1,4 @@
-// A room has one wall control. Lights remain at their authored positions so
+// A room has one circuit, operated at its fixtures. Lights keep their positions so
 // changing the fixture/control does not silently change stealth illumination.
 const lampCircuit = l => l.circuit ? S.lamps.filter(o=>o.circuit===l.circuit) : [l];
 const sameLampCircuit = (a,b) => !!a&&!!b&&(a===b||!!a.circuit&&a.circuit===b.circuit);
@@ -76,7 +76,7 @@ function reactToRoomDarkness(l,watchers) {
   const people=roomLightOccupants(l),at=lampControl(l);
   for(const g of people){
     endChat(g);g.path=null;g.act=null;g.glanceA=Math.atan2(at.y-g.y,at.x-g.x);g.want=g.glanceA;g.soundWatchUntil=S.t+1.5;g.lightNoticeUntil=S.t+2.4;setIcon(g,'?');
-    gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 스위치 확인해.',2.4);
+    gsay(g,g.civ?'어? 불이 왜 꺼졌지?':'불이 꺼졌네. 조명 확인해.',2.4);
   }
   const repair=people.filter(g=>!g.target).sort((a,b)=>(a.civ?1:0)-(b.civ?1:0)||dist(a.x,a.y,at.x,at.y)-dist(b.x,b.y,at.x,at.y))[0];
   if(repair&&!S.guards.some(g=>g.relight&&sameLampCircuit(g.relight.l,l))){
@@ -95,6 +95,6 @@ function updateRoomRelight(g,dt,spd) {
     if(!g.path?.length)pathTo(g,at.x,at.y);moveAlong(g,spd,dt);return true;
   }
   g.path=null;g.moving=false;work.t-=dt;
-  if(work.t<=0){setLampCircuit(l,false);g.relight=null;g.icon=null;play('switch',.4*proxVol(g));gsay(g,'불은 켜 둬야지.',1.8);if(dist(g.x,g.y,S.player.x,S.player.y)<700)toast((g.civ?'주민':'경비')+'이 스위치로 조명을 다시 켰다',2);if(!g.civ)setAlert(1,20);}
+  if(work.t<=0){setLampCircuit(l,false);g.relight=null;g.icon=null;play('switch',.4*proxVol(g));gsay(g,'불은 켜 둬야지.',1.8);if(dist(g.x,g.y,S.player.x,S.player.y)<700)toast((g.civ?'주민':'경비')+'이 조명을 다시 켰다',2);if(!g.civ)setAlert(1,20);}
   return true;
 }

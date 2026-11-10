@@ -64,7 +64,7 @@ function updateRadioCheck(dt) {
   for (const m of missing.slice(0, 3)) {
     const home = m.route && m.route[0] ? m.route[0] : { x: m.x, y: m.y }; let best = null, bd = 1e9;
     for (const g of S.guards) { if (!isCrew(g) || sent.has(g) || g.elite || ['DEAD', 'CAPTIVE', 'ALERT', 'FUSE'].includes(g.state) || flOf(g) !== flOf(m)) continue; const d = dist(g.x, g.y, home.x, home.y); if (d < bd) { bd = d; best = g; } }
-    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'radio'; gsay(best, ['응답이 없어. 내가 가 볼게.', '무전 안 받네. 확인하고 올게.', '계속 응답이 없네. 확인할게.'][best.id % 3], 2.4); }
+    if (best) { sent.add(best); endChat(best); best.act = null; goSuspicious(best, home.x, home.y, 6); best.why = 'rollCall'; gsay(best, ['응답이 없어. 내가 가 볼게.', '무전 안 받네. 확인하고 올게.', '계속 응답이 없네. 확인할게.'][best.id % 3], 2.4); }
   }
   setAlert(1, 30, `무전 점검 — ${missing.length}명이 대답하지 않는다. 확인하러 간다`);
 }

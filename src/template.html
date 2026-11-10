@@ -756,32 +756,32 @@ __FRONT_END_CSS__
   <div class="br-wrap">
     <div class="br-info">
       <div class="br-head"><div><h2 class="br-name" id="brName"></h2><span class="fx-sub" id="brSub"></span></div><div class="br-fee" id="brFeeBox"><small>수고비</small><b id="brFee"></b></div></div>
-      <div class="br-cast" aria-label="당신과 연락하는 인물">
-        <div><canvas width="96" height="96" data-speaker="hero" aria-hidden="true"></canvas><span><b>올빼미</b><small>당신 · 잠입 암살자</small></span></div>
-        <div><canvas width="96" height="96" data-speaker="master" aria-hidden="true"></canvas><span><b>까마귀</b><small>의뢰인</small></span></div>
-        <div><canvas width="96" height="96" data-speaker="aide" aria-hidden="true"></canvas><span><b>제비</b><small>현장 지원</small></span></div>
-      </div>
       <p id="brPurpose" class="br-purpose" hidden></p>
-      <p id="brStory" class="br-story" hidden></p>
-      <section id="caseBrief" class="case-entry" hidden></section>
       <div id="brIdentity" class="br-identities" hidden aria-label="이번 의뢰의 대상"></div>
-      <section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section>
       <ul class="br-todo" id="brTodo" aria-label="필수 목표"></ul>
       <p class="br-exit" id="brOutcome" hidden></p>
-      <details class="br-details" id="brDetails"><summary>현장 정보</summary>
-        <div class="br-radio" id="brRadio"><b>현장 정보</b><p id="brLine"></p></div>
-        <div id="brChBox"><small class="br-chl">추가 목표 · 선택</small><ul class="br-chips" id="brCh"></ul></div>
-      </details>
+      <div class="br-tools"><section id="brSkills" class="skill-preparation" aria-label="출발 전 기술 준비" hidden></section><section id="caseBrief" class="case-entry" hidden></section><button id="btnBriefInfo" class="ghost" type="button">현장 정보</button></div>
+
     </div>
-    <details class="br-mapcol" id="brMapDetails" open>
-      <summary>현장 지도</summary>
+    <section class="br-mapcol" id="brMapDetails" aria-labelledby="brMapTitle">
+      <h3 id="brMapTitle">현장 지도</h3>
       <div class="br-frame"><div class="br-map" id="brMap"></div></div>
       <div class="br-legend"><span><i class="mk dot" style="--c:#7fd6ff"></i>출발</span><span class="lg-it"><i class="mk dia" style="--c:#f2c46b"></i>회수 물품</span><span class="lg-tg"><i class="mk dot" style="--c:#e8473c"></i>표적</span><span><i class="mk ring" style="--c:#f2c46b"></i>탈출</span></div>
-    </details>
+    </section>
   </div>
   </div>
   <footer class="br-acts"><button class="ghost" id="btnBrBack" type="button">돌아가기</button><button class="ghost" id="btnBrCP" type="button" hidden>이어 하기</button><button class="cta" id="btnBrGo" type="button" aria-keyshortcuts="Space">출발 <small class="br-start-key" aria-hidden="true">Space</small> <span aria-hidden="true">→</span></button></footer>
 </div>
+<dialog id="briefInfo" aria-labelledby="briefInfoTitle"><header><h2 id="briefInfoTitle">현장 정보</h2><button id="btnBriefInfoClose" class="ghost" type="button" autofocus>닫기</button></header><p id="brInfoPurpose"></p>      <div class="br-cast" aria-label="당신과 연락하는 인물">
+        <div><canvas width="96" height="96" data-speaker="hero" aria-hidden="true"></canvas><span><b>올빼미</b><small>당신 · 잠입 암살자</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="master" aria-hidden="true"></canvas><span><b>까마귀</b><small>의뢰인</small></span></div>
+        <div><canvas width="96" height="96" data-speaker="aide" aria-hidden="true"></canvas><span><b>제비</b><small>현장 지원</small></span></div>
+      </div>
+      <p id="brStory" class="br-story" hidden></p>
+      <section class="br-details" id="brDetails">
+        <div class="br-radio" id="brRadio"><b>현장 정보</b><p id="brLine"></p></div>
+        <div id="brChBox"><small class="br-chl">추가 목표 · 선택</small><ul class="br-chips" id="brCh"></ul></div>
+      </section></dialog>
 <div class="screen" id="end" hidden>
   <div class="panel">
 

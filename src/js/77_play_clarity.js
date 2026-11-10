@@ -130,16 +130,4 @@ function drawContactFeedback() {
   const t=clamp((S.t-f.t)/.24,0,1);ctx.save();ctx.globalAlpha=(1-t)*.8;ctx.strokeStyle='#d8e2c7';ctx.lineWidth=2;
   ctx.beginPath();ctx.arc(f.x,f.y,f.surface?6+6*t:10+12*t,0,TAU);ctx.stroke();ctx.restore();
 }
-function drawAccessCues(P) {
-  if(!mainContract(STAGE)||P.z||P.under||P.vent||tactical)return;
-  const seen=new Set();ctx.save();
-  for(const l of S.ladders) {
-    if(l.kind!=='fstair')continue;
-    const up=flOf(P)===(l.bfl||0),down=flOf(P)===l.tfl;if(!up&&!down)continue;
-    const g=stairFloor(l.tx,l.ty,flOf(P)),m=up?g.up.marker:g.down.marker,token=`${m.x},${m.y},${up}`;
-    if(seen.has(token)||!fixtureVisible({...m,fl:flOf(P)},220))continue;seen.add(token);
-    ctx.save();ctx.translate(m.x,m.y);ctx.rotate(Math.atan2(g.d[1],g.d[0]));ctx.fillStyle='#222d32cc';ctx.fillRect(-12,-15,24,30);
-    ctx.strokeStyle='#b8c4b6';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-8,-11);ctx.lineTo(-8,11);ctx.moveTo(8,-11);ctx.lineTo(8,11);ctx.stroke();ctx.restore();
-    ctx.fillStyle='#d4dccd';ctx.font=uiFont(10);ctx.textAlign='center';ctx.fillText((up?'↑':'↓')+((up?l.tfl:l.bfl||0)+1)+'F',m.x,m.y+3);
-  }ctx.restore();
-}
+function drawAccessCues(P) { /* Physical doors and stairs identify their entrances. */ }
