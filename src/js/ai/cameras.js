@@ -62,9 +62,14 @@ function updateCams(dt) {
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
-    const painted=drawPropFurn(ctx,{t:'pc',x:cr.x/TILE-.5,y:cr.y/TILE-.5,w:1,h:1});
-    if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(cr.x-22,cr.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(cr.x-22,cr.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(cr.x-18,cr.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(cr.x-3,cr.y-7,6,9);ctx.fillRect(cr.x-12,cr.y+2,24,3);}
-    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(cr.x+15,cr.y-9,3,2); }
+    const at=cr.surface?surfacePoint(cr):cr;
+    // An authored workstation already contains its display. Keep one computer,
+    // and anchor its status lamp to that tabletop rather than its approach cell.
+    if(!cr.surface||!officeReady()){
+      const painted=drawPropFurn(ctx,{t:'pc',x:at.x/TILE-.5,y:at.y/TILE-.5,w:1,h:1});
+      if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(at.x-22,at.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(at.x-22,at.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(at.x-18,at.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(at.x-3,at.y-7,6,9);ctx.fillRect(at.x-12,at.y+2,24,3);}
+    }
+    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(at.x+15,at.y-9,3,2); }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {

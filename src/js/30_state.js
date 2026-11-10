@@ -222,6 +222,7 @@ function newGame(si) {
   // CCTV 관리실: { b, fl, at } — 화면 보는 사람(tag 'camop')이 있어야 CCTV가 경보로 이어진다
   S.securityTerminalVersion=STAGE.securityTerminalVersion||0;
   S.camRoom = null; if (STAGE.camRoom) { const q = STAGE.camRoom.pos || planPt(STAGE.camRoom.b, STAGE.camRoom.fl || 0, STAGE.camRoom.at || 'L'); if (q) S.camRoom = { x: tc(q[0]), y: tc(q[1]), tx: q[0], ty: q[1], fl: STAGE.camRoom.fl || 0 }; }
+  syncSecurityTerminalSurface();
   if (FRM) {
     // 정면 벽 가스관(노란 배관): 땅 → 옥상. 2층 베란다: 땅에서 난간을 타고 2층으로
     const occ = new Set(S.ladders.map(l => l.bx + ',' + l.by)); S.poles.forEach(o => occ.add(o.tx + ',' + o.ty));

@@ -33,7 +33,11 @@ function usePoint(u){
   const p=S.usePoints[i];if(p.surface)p.surfaceU=u.surface.u??.5;
   return p;
 }
+function syncSecurityTerminalSurface(){
+  if(S.camRoom&&STAGE.camRoom?.surface)attachSurface(S.camRoom,STAGE.camRoom.surface);
+}
 function syncSurfaceObjects(){
+  syncSecurityTerminalSurface();
   const phone=S.rendezvous?.phone;if(phone&&!phone.surface){const f=FURN.find(f=>f.x===phone.tx&&f.y===phone.ty&&(f.fl||0)===flOf(phone)&&f.t==='desk');if(f)phone.surface={...f};}
   for(const [i,n]of (S.notes||[]).entries()){
     const d=STAGE.notes?.[i];if(!d)continue;n.title=d.title;

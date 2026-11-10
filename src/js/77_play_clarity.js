@@ -23,12 +23,14 @@ function actorTextBlocks() {
 }
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
-  const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
+  const place=g.stored?'숨긴 표적':g.tut?'이동 지점':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
   const identity=!g.via&&!g.exit&&!g.shelter&&(g.g?.target?targetName(g.g).split(' · ')[0]+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):g.marker||'');
   const d=g.destinationFloor||g,level=d.z?`${d.z}층 옥상`:d.fl?`${d.fl+1}층`:bldAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE))>=0?'1층':'지상';
   const height=d.z||(d.fl||0),current=S.player.z||flOf(S.player);
   const floor=(identity||g.area||g.lastSeen||g.via||d.fl||d.z)?(height>current?'↑ ':height<current?'↓ ':'')+level:'';
-  const label=identity||place;
+  let label=identity||place;
+  if(floor&&label.startsWith(level+' · '))label=label.slice(level.length+3);
+  else if(floor&&label.startsWith(level+' '))label=label.slice(level.length+1);
   return [floor,label===level?'':label,meters+'m'].filter(Boolean).join(' · ');
 }
 function goalViewport(){

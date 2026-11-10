@@ -1015,6 +1015,11 @@ const FIRST_STEPS = {
   ['배차실을 나와 동쪽 골목으로 빠져나오기',()=>false,S=>S.exit,'다음 출발 전에 기술 포인트 1P를 사용할 수 있다.','move']
  ]
 };
+// Optional eighth tuple field names the actual destination, separate from its instruction.
+['이동 지점','상자 옆 풀숲','경비 뒤쪽','골목 경비','경비 복장',
+ (S,P)=>P.carrying?'몸을 숨길 풀숲':'쓰러진 경비','올라가는 계단',
+ (S,P,tg)=>!FIRST_STEPS.archiveGuide.guard()?'연락 서류':tg?.via?'복도 끝 문':'경비 뒤쪽',
+ '내려가는 계단','동쪽 골목'].forEach((label,i)=>FIRST_STEPS.steps[i][7]=label);
 STAGES.push(FIRST_STEPS);
 // Advanced lessons remain available, after the shorter first lesson.
 for(const [id,n] of [['t0',2],['tI',3],['t1',4]]){
@@ -2260,6 +2265,56 @@ campaignStage('m4').itemLayoutVersion=3;
 campaignStage('m4').fixedFurn=campaignStage('m4').fixedFurn.map(f=>f.t==='safe'&&f.fl===1&&f.x===6&&f.y===19?{...f,x:4}:f);
 campaignStage('m7').itemActions[1].faultResponse={target:'broker',check:1.25,call:1.6,stay:14};
 campaignStage('m7').brief+=' 관리자가 단말 이상을 무전으로 알리면 오태식이 배차실로 올라와 확인한다. 명세서를 먼저 빼낸 뒤 이곳으로 불러낼 수도 있다.';
+// Room identity comes from a different working arrangement, using owned pixels.
+// Keep the stair landings, door/window approaches, objectives and patrol stations clear.
+{
+ const st=campaignStage('m4');
+ st.roomPatches=(st.roomPatches||[]).concat({fl:1,bounds:[35,3,42,9],furniture:[
+  {t:'desk2',from:[36,5],remove:true},{t:'chairD',from:[36,6],remove:true},
+  {t:'desk2',from:[39,7],remove:true},{t:'chairD',from:[39,8],remove:true}],
+  tiles:[[36,5,'w'],[37,5,'w'],[36,6,'w'],[39,5,'w'],[40,5,'w'],[39,6,'w'],[39,7,'w'],[40,7,'w'],[39,8,'w']]});
+ st.fixedFurn=(st.fixedFurn||[]).concat([
+  {x:36,y:4,w:2,t:'counter',fl:1},{x:39,y:3,t:'cab',fl:1},{x:40,y:3,t:'cab',fl:1},
+  {x:38,y:7,w:2,t:'table',fl:1},{x:37,y:7,t:'chair',r:1,fl:1},{x:40,y:7,t:'chair',r:3,fl:1},
+  {x:27,y:3,w:2,t:'shelf',fl:1}]);
+ st.officeArt.buildings[3]=['club','executive'];st.officeArt.buildings[2]=['dispatch','security'];
+ st.officeArt.furniture=(st.officeArt.furniture||[]).concat([
+  {x:36,y:4,t:'counter',fl:1,art:'deskFiles'},
+  {x:39,y:3,t:'cab',fl:1,art:'filesGold'},{x:40,y:3,t:'cab',fl:1,art:'filesRed'},
+  {x:27,y:3,t:'shelf',fl:1,art:'monitorRackBlue'}]);
+ st.officeArt.floorZones=[{b:3,fl:1,x0:35,y0:6,x1:41,y1:8,art:'floorCarpet'}];
+ st.roomNames={'3:1':'정산 · 상담실','2:1':'감시 관리실'};
+ st.camRoom={...st.camRoom,surface:{b:2,types:['desk2']}};
+}
+{
+ const st=campaignStage('m7');
+ st.roomPatches=(st.roomPatches||[]).concat([0,1].map(fl=>({fl,bounds:[26,15,31,19],
+  furniture:[{t:'desk2',from:[27,17],remove:true},{t:'chairD',from:[27,18],remove:true}],
+  tiles:[[27,17,'w'],[28,17,'w'],[27,18,'w']]})));
+ st.fixedFurn=(st.fixedFurn||[]).concat([
+  {x:27,y:16,w:2,t:'counter',fl:0},{x:30,y:15,t:'cab',fl:0},
+  {x:27,y:18,w:2,t:'desk2',fl:1},{x:27,y:17,t:'chairD',r:0,fl:1},
+  {x:29,y:15,w:2,t:'shelf',fl:1}]);
+ st.officeArt.buildings[1]=['freight','dispatch'];
+ st.officeArt.furniture=(st.officeArt.furniture||[]).concat([
+  {x:27,y:16,t:'counter',fl:0,art:'counterWood'},
+  {x:30,y:15,t:'cab',fl:0,art:'filesBlue'},
+  {x:27,y:18,t:'desk2',fl:1,art:'deskLaptop'},
+  {x:29,y:15,t:'shelf',fl:1,art:'monitorRackBlue'}]);
+ st.officeArt.floorZones=[{b:1,fl:1,x0:26,y0:15,x1:31,y1:16,art:'floorSlate'}];
+ st.roomNames={'1:0':'접수 · 송장 확인','1:1':'야간 배차실'};
+ st.camRoom={...st.camRoom,surface:{b:1,types:['desk2']}};
+}
+{
+ const st=campaignStage('m6');
+ st.roomPatches=(st.roomPatches||[]).concat({fl:0,bounds:[4,8,15,11],
+  furniture:[{t:'desk',from:[10,9],remove:true},{t:'desk',from:[13,9],remove:true}],
+  tiles:[[10,9,'w'],[13,9,'w']]});
+ st.fixedFurn=(st.fixedFurn||[]).concat([{x:12,y:9,t:'cab'},{x:13,y:9,t:'cab'}]);
+ st.officeArt.furniture=(st.officeArt.furniture||[]).concat([
+  {x:12,y:9,t:'cab',fl:0,art:'filesBlue'},{x:13,y:9,t:'cab',fl:0,art:'filesRed'}]);
+ st.roomNames={'0:0':'접견 기록 · 압수품 보관'};
+}
 
 'use strict';
 (function () {
@@ -2787,7 +2842,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   const lab = (r, t) => { if (!r || r.x1 < rx0 || r.x0 > rx1 || r.y1 < ry0 || r.y0 > ry1) return; x.fillText(t, (r.x0 + r.x1 + 1) / 2 * TILE, (r.y0 + r.y1 + 1) / 2 * TILE); };
   PLANS.forEach((fls, bi) => { const p = fls && fls[f]; if (!p) return; const b = BLD[bi];if(INK_STUDY&&STAGE.id==='m2'&&b.name==='클럽')return;
     p.units.forEach(u => { if (!u.rooms.length && f === 0 && b.piloti) { lab(u.living, '주차장'); return; } lab(u.living, '거실'); u.rooms.forEach((r, i) => lab(r, i ? '작은방' : '안방')); lab(u.bath, '욕실'); });
-    if (p.store) lab(p.store, (b.signs && b.signs[f]) || USE_NAME[p.store.use] || '');
+    if (p.store) lab(p.store, STAGE.roomNames?.[bi+':'+f] || (b.signs && b.signs[f]) || USE_NAME[p.store.use] || '');
   });
   x.textBaseline = 'alphabetic';
 }
@@ -3703,7 +3758,8 @@ function officeGround(c,ch,tx,ty){
  const bi=bldAt(tx,ty),b=BLD[bi];if(!b||b.vacant||tx<=b.x0||tx>=b.x1||ty<=b.y0||ty>=b.y1)return false;
  if(!'wvthKEY'.includes(ch))return false;
  const bath=PLANS[bi]?.[CUR_F]?.units?.some(u=>u.bath&&tx>=u.bath.x0&&tx<=u.bath.x1&&ty>=u.bath.y0&&ty<=u.bath.y1);
- const style=officeStyle(bi),name=bath?'floorTile':ch==='h'?'floorSlate':style.floor;
+ const zone=STAGE.officeArt?.floorZones?.find(a=>a.b===bi&&(a.fl||0)===CUR_F&&tx>=a.x0&&tx<=a.x1&&ty>=a.y0&&ty<=a.y1);
+ const style=officeStyle(bi),name=bath?'floorTile':zone?.art||(ch==='h'?'floorSlate':style.floor);
  return officeBlit(c,name,tx*TILE,ty*TILE,TILE,TILE);
 }
 function officeWall(c,tx,ty){
@@ -5718,6 +5774,7 @@ function newGame(si) {
   // CCTV 관리실: { b, fl, at } — 화면 보는 사람(tag 'camop')이 있어야 CCTV가 경보로 이어진다
   S.securityTerminalVersion=STAGE.securityTerminalVersion||0;
   S.camRoom = null; if (STAGE.camRoom) { const q = STAGE.camRoom.pos || planPt(STAGE.camRoom.b, STAGE.camRoom.fl || 0, STAGE.camRoom.at || 'L'); if (q) S.camRoom = { x: tc(q[0]), y: tc(q[1]), tx: q[0], ty: q[1], fl: STAGE.camRoom.fl || 0 }; }
+  syncSecurityTerminalSurface();
   if (FRM) {
     // 정면 벽 가스관(노란 배관): 땅 → 옥상. 2층 베란다: 땅에서 난간을 타고 2층으로
     const occ = new Set(S.ladders.map(l => l.bx + ',' + l.by)); S.poles.forEach(o => occ.add(o.tx + ',' + o.ty));
@@ -8055,9 +8112,14 @@ function updateCams(dt) {
 }
 function drawCams(fl) {
   const cr = S.camRoom; if (cr && cr.fl === fl) {  // 관리실 모니터 (켜져 있으면 깜빡인다)
-    const painted=drawPropFurn(ctx,{t:'pc',x:cr.x/TILE-.5,y:cr.y/TILE-.5,w:1,h:1});
-    if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(cr.x-22,cr.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(cr.x-22,cr.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(cr.x-18,cr.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(cr.x-3,cr.y-7,6,9);ctx.fillRect(cr.x-12,cr.y+2,24,3);}
-    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(cr.x+15,cr.y-9,3,2); }
+    const at=cr.surface?surfacePoint(cr):cr;
+    // An authored workstation already contains its display. Keep one computer,
+    // and anchor its status lamp to that tabletop rather than its approach cell.
+    if(!cr.surface||!officeReady()){
+      const painted=drawPropFurn(ctx,{t:'pc',x:at.x/TILE-.5,y:at.y/TILE-.5,w:1,h:1});
+      if(!painted){ctx.fillStyle='#262f36';ctx.fillRect(at.x-22,at.y-35,44,28);ctx.strokeStyle='#8a969b';ctx.lineWidth=2;ctx.strokeRect(at.x-22,at.y-35,44,28);ctx.fillStyle=S.camsOff?'#1b2229':'#567c86';ctx.fillRect(at.x-18,at.y-31,36,20);ctx.fillStyle='#4b555a';ctx.fillRect(at.x-3,at.y-7,6,9);ctx.fillRect(at.x-12,at.y+2,24,3);}
+    }
+    ctx.fillStyle=S.camsOff?'#5c6266':'#c4d2c8';ctx.fillRect(at.x+15,at.y-9,3,2); }
   for (const c of S.cams || []) {
     if (c.fl !== fl) continue; const on = camOn(c);
     if (on && (c.search || showVisionField(c))) {
@@ -9432,7 +9494,11 @@ function usePoint(u){
   const p=S.usePoints[i];if(p.surface)p.surfaceU=u.surface.u??.5;
   return p;
 }
+function syncSecurityTerminalSurface(){
+  if(S.camRoom&&STAGE.camRoom?.surface)attachSurface(S.camRoom,STAGE.camRoom.surface);
+}
 function syncSurfaceObjects(){
+  syncSecurityTerminalSurface();
   const phone=S.rendezvous?.phone;if(phone&&!phone.surface){const f=FURN.find(f=>f.x===phone.tx&&f.y===phone.ty&&(f.fl||0)===flOf(phone)&&f.t==='desk');if(f)phone.surface={...f};}
   for(const [i,n]of (S.notes||[]).entries()){
     const d=STAGE.notes?.[i];if(!d)continue;n.title=d.title;
@@ -17786,12 +17852,14 @@ function actorTextBlocks() {
 }
 // 화면의 설명은 목표 한 곳, 사람과의 선택 한 묶음, 실제로 본 위험 한 단계로 나눈다.
 function goalMarkerCaption(g, meters) {
-  const place=g.stored?'숨긴 표적':g.tut?'여기':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
+  const place=g.stored?'숨긴 표적':g.tut?'이동 지점':g.meeting?'거래방':g.shelter?'은신처':g.locked?'잠긴 문':g.via?'연결 입구':g.exit?'탈출':g.area?'활동 구역':g.lastSeen?'목격 지점':g.fl?`${g.fl+1}층`:'';
   const identity=!g.via&&!g.exit&&!g.shelter&&(g.g?.target?targetName(g.g).split(' · ')[0]+(g.area?' 활동 구역':g.lastSeen?' 목격 지점':''):g.marker||'');
   const d=g.destinationFloor||g,level=d.z?`${d.z}층 옥상`:d.fl?`${d.fl+1}층`:bldAt(Math.floor(g.x/TILE),Math.floor(g.y/TILE))>=0?'1층':'지상';
   const height=d.z||(d.fl||0),current=S.player.z||flOf(S.player);
   const floor=(identity||g.area||g.lastSeen||g.via||d.fl||d.z)?(height>current?'↑ ':height<current?'↓ ':'')+level:'';
-  const label=identity||place;
+  let label=identity||place;
+  if(floor&&label.startsWith(level+' · '))label=label.slice(level.length+3);
+  else if(floor&&label.startsWith(level+' '))label=label.slice(level.length+1);
   return [floor,label===level?'':label,meters+'m'].filter(Boolean).join(' · ');
 }
 function goalViewport(){
@@ -18512,7 +18580,8 @@ function nextGoal() {
     if(STAGE.id==='tB'&&S.tutI===7&&P.carrying)return{text:tutText('{행동} 몸 숨기기 또는 내려놓기'),where:'손을 비운 뒤 서류를 챙긴다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     if(STAGE.id==='tB'&&P.hide)return{text:tutText('{행동} 은신처에서 나오기'),where:'나온 뒤 원래 안내를 계속한다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
-    return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
+    const marker=typeof st[7]==='function'?st[7](S,P,tg):st[7]||tg?.marker||'이동 지점';
+    return { text: tutText(st[0]), where: '', marker, x: tg && tg.x, y: tg && tg.y,
       fl: (tg && tg.fl) || 0, tut: true, moveCue:['move','run','crouch'].includes(tutorialCue()) };
   }
   if (STAGE.city) return cityGoal();

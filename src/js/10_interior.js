@@ -249,7 +249,7 @@ function drawRoomLabels(x, f, rx0, ry0, rx1, ry1) {
   const lab = (r, t) => { if (!r || r.x1 < rx0 || r.x0 > rx1 || r.y1 < ry0 || r.y0 > ry1) return; x.fillText(t, (r.x0 + r.x1 + 1) / 2 * TILE, (r.y0 + r.y1 + 1) / 2 * TILE); };
   PLANS.forEach((fls, bi) => { const p = fls && fls[f]; if (!p) return; const b = BLD[bi];if(INK_STUDY&&STAGE.id==='m2'&&b.name==='클럽')return;
     p.units.forEach(u => { if (!u.rooms.length && f === 0 && b.piloti) { lab(u.living, '주차장'); return; } lab(u.living, '거실'); u.rooms.forEach((r, i) => lab(r, i ? '작은방' : '안방')); lab(u.bath, '욕실'); });
-    if (p.store) lab(p.store, (b.signs && b.signs[f]) || USE_NAME[p.store.use] || '');
+    if (p.store) lab(p.store, STAGE.roomNames?.[bi+':'+f] || (b.signs && b.signs[f]) || USE_NAME[p.store.use] || '');
   });
   x.textBaseline = 'alphabetic';
 }

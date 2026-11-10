@@ -42,6 +42,11 @@ const FIRST_STEPS = {
   ['배차실을 나와 동쪽 골목으로 빠져나오기',()=>false,S=>S.exit,'다음 출발 전에 기술 포인트 1P를 사용할 수 있다.','move']
  ]
 };
+// Optional eighth tuple field names the actual destination, separate from its instruction.
+['이동 지점','상자 옆 풀숲','경비 뒤쪽','골목 경비','경비 복장',
+ (S,P)=>P.carrying?'몸을 숨길 풀숲':'쓰러진 경비','올라가는 계단',
+ (S,P,tg)=>!FIRST_STEPS.archiveGuide.guard()?'연락 서류':tg?.via?'복도 끝 문':'경비 뒤쪽',
+ '내려가는 계단','동쪽 골목'].forEach((label,i)=>FIRST_STEPS.steps[i][7]=label);
 STAGES.push(FIRST_STEPS);
 // Advanced lessons remain available, after the shorter first lesson.
 for(const [id,n] of [['t0',2],['tI',3],['t1',4]]){

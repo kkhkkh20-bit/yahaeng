@@ -198,7 +198,8 @@ function nextGoal() {
     if(STAGE.id==='tB'&&S.tutI===7&&P.carrying)return{text:tutText('{행동} 몸 숨기기 또는 내려놓기'),where:'손을 비운 뒤 서류를 챙긴다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     if(STAGE.id==='tB'&&P.hide)return{text:tutText('{행동} 은신처에서 나오기'),where:'나온 뒤 원래 안내를 계속한다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
     const st = STAGE.steps[S.tutI || 0], tg = st[2] && st[2](S);
-    return { text: tutText(st[0]), where: '', x: tg && tg.x, y: tg && tg.y,
+    const marker=typeof st[7]==='function'?st[7](S,P,tg):st[7]||tg?.marker||'이동 지점';
+    return { text: tutText(st[0]), where: '', marker, x: tg && tg.x, y: tg && tg.y,
       fl: (tg && tg.fl) || 0, tut: true, moveCue:['move','run','crouch'].includes(tutorialCue()) };
   }
   if (STAGE.city) return cityGoal();
