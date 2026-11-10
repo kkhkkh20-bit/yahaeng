@@ -72,7 +72,7 @@ function renderCaseBoard(){
   for(const n of members){
    const b=caseElement('button','case-node'+(n.eliminated?' eliminated':'')+(!n.level?' unknown':''));b.type='button';b.dataset.caseNode=n.id;
    const face=caseElement('span','case-face');
-   if(n.level>=2){const cv=caseElement('canvas');cv.width=cv.height=76;cv.setAttribute('aria-hidden','true');face.append(cv);drawFace(cv,{key:n.profile.key,col:'#c2cbd2'});}else face.append(caseElement('span','','?'));
+   if(n.level>=2){const cv=caseElement('canvas');cv.width=cv.height=76;cv.setAttribute('aria-hidden','true');face.append(cv);drawFace(cv,{key:n.profile.key,col:'#c2cbd2'});}else face.insertAdjacentHTML('beforeend',uiSigil('unknown'));
    const copy=caseElement('span','case-node-copy');copy.append(caseElement('strong','',n.level>=2?n.profile.name:n.level?n.alias:'신원 미상'),caseElement('small','',caseStatus(n)));b.append(face,copy);row.append(b);
   }group.append(row);hierarchy.append(group);
  }

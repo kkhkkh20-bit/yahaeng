@@ -27,7 +27,7 @@ async def main():
     # The PC and touch guides coexist; inspect the visible guide's actual text.
     if sel.endswith('dd')and not face['fonts']:
      node=await cdp.send('DOM.querySelector',{'nodeId':root['root']['nodeId'],'selector':'#controlGuide .touch-controls dd'});face=await cdp.send('CSS.getPlatformFontsForNode',{'nodeId':node['nodeId']})
-    assert face['fonts']and all(f['isCustomFont']and f['familyName']==('Black Han Sans'if sel=='#help h2'else'IBM Plex Sans KR')for f in face['fonts']),(w,sel,face);faces[sel]=face['fonts']
+    assert face['fonts']and all(f['isCustomFont']and f['familyName']==('Black Han Sans'if sel=='#help h2'else'IBM Plex Sans KR SemiBold'if sel in ['#settingsAudioTitle','#btnMute']else'IBM Plex Sans KR')for f in face['fonts']),(w,sel,face);faces[sel]=face['fonts']
    assert await q.evaluate('document.documentElement.scrollWidth<=innerWidth&&document.querySelector("#help .panel").scrollWidth<=document.querySelector("#help .panel").clientWidth+1'),'options overflow horizontally'
    await q.reload();await q.wait_for_function('__game?.officeReady()',polling=100);await q.click('#btnHelp');assert await q.locator('#volR').input_value()=='85'and await q.locator('#briR').input_value()=='105';assert await q.evaluate('__game.FPS_CAP===30');await q.click('#advancedSettings summary');assert await q.locator('#btnRoutes').get_attribute('aria-pressed')==routes
    await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible();await q.click('#btnSkillsIntro');await q.click('[data-select="quietStep"]');assert 'Yahaeng UI'in await q.locator('#skillDetail h3').evaluate('e=>getComputedStyle(e).fontFamily');await q.keyboard.press('Escape');await q.keyboard.press('Escape');assert await q.locator('#intro').is_visible()

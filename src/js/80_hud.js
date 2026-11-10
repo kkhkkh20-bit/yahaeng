@@ -126,7 +126,7 @@ function refreshMissionIdentityArt(){
       if(!atlas.complete||!atlas.naturalWidth)continue;
       c.fillStyle='#151b23';c.fillRect(0,0,w,h);
       if(cv.dataset.key==='terminal'){const s=Math.min(w,h)*.75;c.save();c.translate((w-s)/2,(h-s)/2);c.scale(s/36,s/36);c.fillStyle='#52606c';c.fillRect(3,5,30,22);c.fillStyle='#101c24';c.fillRect(6,8,24,15);c.fillStyle='#80afb9';c.fillRect(9,11,16,2);c.fillRect(9,16,10,2);c.fillStyle='#b8c3cc';c.fillRect(16,27,4,4);c.fillRect(10,31,16,2);c.restore();}else if(cv.dataset.key==='radio'){
-        const s=Math.min(w,h)*.74/36;c.save();c.translate((w-s*36)/2,(h-s*36)/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.lineWidth=1.8;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(SKILL_SIGILS.radio));c.restore();
+        const size=Math.min(w,h)*.78;if(!drawSkillEmblem(c,'radio',(w-size)/2,(h-size)/2,size,size))continue;
       }else if(cv.dataset.key==='cash'){
         const s=Math.min(w,h)/64;c.save();c.translate(w/2,h/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.fillStyle='#303c49';c.lineWidth=2;c.fillRect(-22,-12,44,29);c.strokeRect(-22,-12,44,29);c.strokeRect(-10,-21,20,9);c.fillStyle='#c9b68f';c.fillRect(-5,-3,10,9);c.restore();
       }else{

@@ -293,7 +293,7 @@ function quickTarget(){return recommendedStage();}
 function setQuickLabel(label,detail=''){
  const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
  if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
- b.replaceChildren(copy);b.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7"/></svg>');b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
+ b.replaceChildren(copy);b.insertAdjacentHTML('beforeend',uiSigil('arrow'));b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
 }
 function syncQuick(){
   if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}

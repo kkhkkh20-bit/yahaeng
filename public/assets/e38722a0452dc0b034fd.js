@@ -5385,7 +5385,7 @@ function renderCaseBoard(){
   for(const n of members){
    const b=caseElement('button','case-node'+(n.eliminated?' eliminated':'')+(!n.level?' unknown':''));b.type='button';b.dataset.caseNode=n.id;
    const face=caseElement('span','case-face');
-   if(n.level>=2){const cv=caseElement('canvas');cv.width=cv.height=76;cv.setAttribute('aria-hidden','true');face.append(cv);drawFace(cv,{key:n.profile.key,col:'#c2cbd2'});}else face.append(caseElement('span','','?'));
+   if(n.level>=2){const cv=caseElement('canvas');cv.width=cv.height=76;cv.setAttribute('aria-hidden','true');face.append(cv);drawFace(cv,{key:n.profile.key,col:'#c2cbd2'});}else face.insertAdjacentHTML('beforeend',uiSigil('unknown'));
    const copy=caseElement('span','case-node-copy');copy.append(caseElement('strong','',n.level>=2?n.profile.name:n.level?n.alias:'신원 미상'),caseElement('small','',caseStatus(n)));b.append(face,copy);row.append(b);
   }group.append(row);hierarchy.append(group);
  }
@@ -18437,7 +18437,7 @@ function refreshMissionIdentityArt(){
       if(!atlas.complete||!atlas.naturalWidth)continue;
       c.fillStyle='#151b23';c.fillRect(0,0,w,h);
       if(cv.dataset.key==='terminal'){const s=Math.min(w,h)*.75;c.save();c.translate((w-s)/2,(h-s)/2);c.scale(s/36,s/36);c.fillStyle='#52606c';c.fillRect(3,5,30,22);c.fillStyle='#101c24';c.fillRect(6,8,24,15);c.fillStyle='#80afb9';c.fillRect(9,11,16,2);c.fillRect(9,16,10,2);c.fillStyle='#b8c3cc';c.fillRect(16,27,4,4);c.fillRect(10,31,16,2);c.restore();}else if(cv.dataset.key==='radio'){
-        const s=Math.min(w,h)*.74/36;c.save();c.translate((w-s*36)/2,(h-s*36)/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.lineWidth=1.8;c.lineCap='round';c.lineJoin='round';c.stroke(new Path2D(SKILL_SIGILS.radio));c.restore();
+        const size=Math.min(w,h)*.78;if(!drawSkillEmblem(c,'radio',(w-size)/2,(h-size)/2,size,size))continue;
       }else if(cv.dataset.key==='cash'){
         const s=Math.min(w,h)/64;c.save();c.translate(w/2,h/2);c.scale(s,s);c.strokeStyle='#c5d0de';c.fillStyle='#303c49';c.lineWidth=2;c.fillRect(-22,-12,44,29);c.strokeRect(-22,-12,44,29);c.strokeRect(-10,-21,20,9);c.fillStyle='#c9b68f';c.fillRect(-5,-3,10,9);c.restore();
       }else{
@@ -19064,38 +19064,21 @@ function drawPlanFixtures(P) {
   ctx.restore();
 }
 
-// Small authored symbols and a static demonstration using the existing sprite cache.
-const SKILL_SIGILS={
- quietStep:'M14 6c3 0 4 4 3 7l-3 4-4-2 1-5c0-2 1-4 3-4ZM10 19l4 2-1 4-5-1Z M23 12c3 0 4 4 3 7l-3 4-4-2 1-5c0-2 1-4 3-4ZM19 25l4 2-1 4-5-1Z',
- quietCrouch:'M12 17l4-5 6 2 3 6M16 12l2-5M15 19l-5 6 8 2M21 20l-2 7h8 M5 13l3 2M5 20h3',
- lookout:'M3 18c8-11 22-11 30 0-8 11-22 11-30 0ZM18 13a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z M18 3v4M5 6l3 3M31 6l-3 3',
- swiftCrouch:'M14 16l5-5 6 4M19 11l1-5M17 18l-5 7h7M24 17l-3 9h8 M3 14h8M2 20h7M4 26h4',
- shadow:'M23 4a13 13 0 1 0 9 20A14 14 0 0 1 23 4Z M17 18l3-3 5 3M20 15v-3M20 20l-4 5h10',
- landing:'M18 5v12M13 12l5 5 5-5M10 21l4 4h8l4-4M5 28c8 5 18 5 26 0',
- foliage:'M18 31V13M18 22C4 23 3 14 4 8c10 0 14 5 14 14ZM18 17C31 18 34 9 32 4c-9 0-14 5-14 13Z M7 30l-4-5M29 30l4-5',
- sprint:'M21 10l-5 8 7 4-3 10M16 18l-5 9H5M21 10l6 7h6M21 5h1 M3 11h10M2 17h8',
- silentHands:'M12 27V16c0-3 3-3 3 0V9c0-3 3-3 3 0v7-10c0-3 3-3 3 0v10-7c0-3 3-3 3 0v12l3-4c2-3 5 0 3 3l-5 10H14Z',
- ambush:'M3 28h30M7 28V10h9v18M21 20l4-4 5 3M25 16v-5M22 22l-2 6M28 22l4 6M9 6h5',
- drop:'M7 7h22M18 4v13M13 12l5 5 5-5M18 23l-5 8M18 23l5 8M13 22l5-3 5 3',
- dual:'M8 4l7 13-3 5-4-6ZM28 4l-7 13 3 5 4-6ZM7 23l7 4M10 25l-3 6M29 23l-7 4M26 25l3 6M17 25h2',
- bodyCarry:'M11 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM11 12v12l-4 8M11 23l6 9M11 14l10 1 6 7M21 15l3-7h6M24 8l6 4',
- chain:'M7 6l8 8-4 5-4-7ZM23 17l7 8-4 6-5-7ZM18 8h10M25 5l3 3-3 3M8 26h10M15 23l3 3-3 3',
- reach:'M11 10l6 7 8-3M17 17l-5 8-8 3M17 17l6 8h8M26 6h7M30 3l3 3-3 3M10 4h1',
- flow:'M8 13a12 12 0 0 1 21-4l3 4M25 13h7V6M28 23A12 12 0 0 1 7 27l-3-4M11 23H4v7 M17 11l5 7-5 7',
- blindside:'M4 13c8-8 20-8 28 0M18 8v10M13 13l5 5 5-5M3 25h10M8 21l5 4-5 4M24 24l6 6M30 24l-6 6',
- kit:'M6 11h24v19H6ZM13 11V6h10v5M6 18h24M15 16v5h6v-5',
- dart:'M8 28L26 10M23 5l8 8M6 30l3-8 5 5ZM17 14l5 5M28 8l4-4',
- kunai:'M6 30l8-8M13 23l-4-4L30 3l-5 22-5-4ZM11 25l-4-4M4 32l-1-1',
- smoke:'M13 21h10l2 11H11ZM16 21v-4h5M9 13C0 9 9 2 14 6c0-7 12-5 11 1 9-2 11 9 2 9H14',
- precision:'M18 3v5M18 28v5M3 18h5M28 18h5M18 9a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM18 15a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z',
- smokeMix:'M13 4h10M15 4v10L7 29c-1 2 1 3 3 3h16c2 0 4-1 3-3l-8-15V4M12 24h13M13 12H6M9 8v8',
- electric:'M21 2L7 21h10l-2 13 14-20H19ZM5 7l3 2M31 27l-3-2',
- radio:'M10 12h16v20H10ZM13 12V3M17 17h5M15 23h6M15 27h6M26 5c5 1 7 4 7 8M26 9c2 0 3 2 3 4',
- hack:'M5 9h22v17H5ZM9 30h14M16 26v4M10 15l-3 3 3 3M20 15l3 3-3 3M16 14l-3 8M27 4l5 5M30 2l4 4',
- signal:'M5 12h8v12H5ZM23 12h8v12h-8ZM13 18h10M18 4v9M15 7l3-3 3 3M18 23v9M15 29l3 3 3-3'
-};
-const skillSigil=(id,cls='')=>`<svg class="${cls}" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${SKILL_SIGILS[id]||SKILL_SIGILS.kit}"/></svg>`;
-const skillLock='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 7V5a4 4 0 0 1 8 0v2M3 7h10v8H3Z"/></svg>';
+// Original solid emblems share the same pixels in the graph, detail and loadout.
+function uiSigil(id,cls=''){
+ const art=window.__HUD_ART__?.['ui:'+id];return art?art.replace('<svg ',`<svg class="${cls}" `):'';
+}
+function skillSigil(id,cls=''){
+ const art=window.__HUD_ART__?.['skill:'+id]||window.__HUD_ART__?.['skill:kit'];return art?art.replace('<svg ',`<svg class="${cls}" `):'';
+}
+const skillLock=uiSigil('lock');
+const skillEmblemImages=new Map();
+function drawSkillEmblem(c,id,x,y,w,h,color='#c5d0de'){
+ const key=id+':'+color;let im=skillEmblemImages.get(key);
+ if(!im){const svg=window.__HUD_ART__?.['skill:'+id];if(!svg)return false;im=new Image();skillEmblemImages.set(key,im);im.onload=()=>{if(S)refreshMissionIdentityArt();};im.src='data:image/svg+xml;base64,'+btoa(svg.replace(/currentColor/g,color));}
+ if(!im.complete||!im.naturalWidth)return false;c.drawImage(im,x,y,w,h);return true;
+}
+
 function skillUseText(d){
  if(['dual','chain'].includes(d.id))return '장착 후 공격 길게 · 짧게 떼면 한 명 기절 / B도 가능';
  if(d.id==='reach')return '등 뒤에서 공격 · 짧게 기절 / 길게 처치';
@@ -19261,7 +19244,7 @@ function renderAssassinMenu(){
   for(const d of defs){
    const at=layout.positions[d.id],v=skillViewState(d),article=document.createElement('div');article.className='skill-node'+(v.known?' learned':v.canLearn&&v.parents&&(v.practice||v.points>=d.cost)?' available':'');article.dataset.node=d.id;article.dataset.state=v.known?'learned':v.canLearn&&v.parents&&(v.practice||v.points>=d.cost)?'available':!v.parents?'locked':'unavailable';article.style.gridRow=String(at.row);article.style.gridColumn=at.col+' / span 2';
    const b=document.createElement('button');b.type='button';b.dataset.select=d.id;b.setAttribute('aria-pressed','false');b.setAttribute('aria-controls','skillDetail');b.setAttribute('aria-label',d.name+' · '+(v.known?'배움':d.cost+'P'+(!v.parents?' · 선행 기술 필요':!v.canLearn?' · 출발 준비에서 습득':'')));b.title=d.name;
-   const mark=v.known?'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="m3 8 3 3 7-7"/></svg>':!v.parents||!v.canLearn?skillLock:'';
+   const mark=v.known?uiSigil('check'):!v.parents||!v.canLearn?skillLock:'';
    b.innerHTML=skillSigil(d.id)+'<span class="skill-cost">'+(v.known?'배움':d.cost+'P')+'</span>'+(mark?'<span class="skill-state-mark" aria-hidden="true">'+mark+'</span>':'');b.onclick=()=>selectSkillNode(d.id);
    b.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const horizontal=e.key==='ArrowLeft'||e.key==='ArrowRight',sign=e.key==='ArrowLeft'||e.key==='ArrowUp'?-1:1,candidates=defs.filter(x=>x.id!==d.id).map(x=>({d:x,dx:layout.positions[x.id].col-at.col,dy:layout.positions[x.id].row-at.row})).filter(x=>(horizontal?x.dx:x.dy)*sign>0).sort((a,b)=>horizontal?Math.abs(a.dy)*4+Math.abs(a.dx)-(Math.abs(b.dy)*4+Math.abs(b.dx)):Math.abs(a.dy)*3+Math.abs(a.dx)-(Math.abs(b.dy)*3+Math.abs(b.dx)));if(candidates[0])selectSkillNode(candidates[0].d.id,true);};
    const label=document.createElement('span');label.className='skill-label';label.textContent=d.name;article.append(b,label);graph.append(article);
@@ -19838,7 +19821,7 @@ function quickTarget(){return recommendedStage();}
 function setQuickLabel(label,detail=''){
  const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
  if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
- b.replaceChildren(copy);b.insertAdjacentHTML('beforeend','<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15M13 5l7 7-7 7"/></svg>');b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
+ b.replaceChildren(copy);b.insertAdjacentHTML('beforeend',uiSigil('arrow'));b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
 }
 function syncQuick(){
   if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}

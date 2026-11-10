@@ -59,7 +59,7 @@ def build():
     html = html.replace('__TITLE_FONT_LICENSE__', read(P('src', 'fonts', 'OFL-BlackHanSans.txt')))
     menu_art = base64.b64encode(open(P('src', 'art', 'title', 'rooftop-night.webp'), 'rb').read()).decode()
     html = html.replace('__MENU_ART__', menu_art)
-    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','settings.css'))+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css'))+'\n'+read(P('src','ui-controls.css'))+'\n'+read(P('src','brief-layout.css'))+'\n'+read(P('src','brand-ui.css')))
+    html = html.replace('__FRONT_END_CSS__', read(P('src','front-end.css'))+'\n'+read(P('src','settings.css'))+'\n'+read(P('src','field-hud.css'))+'\n'+read(P('src','skill-tree-finish.css'))+'\n'+read(P('src','ui-controls.css'))+'\n'+read(P('src','brief-layout.css'))+'\n'+read(P('src','brand-ui.css'))+'\n'+read(P('src','icon-legibility.css')))
     for variant in ['wide','portrait']:
         data='data:image/webp;base64,'+menu_art
         html=html.replace('__TITLE_ALLEY_'+variant.upper()+'__',data)
@@ -67,12 +67,15 @@ def build():
     html = html.replace('__INK_STUDY_CSS__', read(P('src', 'ink-study.css')))
     icon_files=glob.glob(P('src','art','hud','*.svg'))+glob.glob(P('src','art','hud','frames','*.svg'))
     icons=':root{'+''.join('--art-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');' for f in sorted(icon_files))+'}'
+    ui_icons=glob.glob(P('src','art','hud','ui','*.svg'))
+    icons += ':root{'+''.join('--art-ui-'+os.path.basename(f)[:-4]+':url(data:image/svg+xml;base64,'+base64.b64encode(open(f,'rb').read()).decode()+');'for f in sorted(ui_icons))+'}'
     html = html.replace('__HUD_CSS__', icons+read(P('src', 'hud.css')))
     html = html.replace('__INTERFACE_CSS__', read(P('src','interface.css')))
     ink_ui=read(P('src','ink-interface.css'))
     ink_ui=ink_ui.replace('__INK_WASH__',base64.b64encode(open(P('src','art','hud','ink-wash.webp'),'rb').read()).decode())
     html=html.replace('__INK_UI_CSS__',ink_ui)
     html = html.replace('__UI_FONT__', base64.b64encode(open(P('src','fonts','ui-regular.woff2'),'rb').read()).decode())
+    html = html.replace('__UI_SEMIBOLD_FONT__', base64.b64encode(open(P('src','fonts','ui-semibold.woff2'),'rb').read()).decode())
     html = html.replace('__UI_FONT_LICENSE__','\n'.join(line.rstrip()for line in read(P('src','fonts','OFL-IBMPlexSansKR.txt')).splitlines()))
     ink_map=base64.b64encode(open(P('src','art','ink-vip-map.webp'),'rb').read()).decode()
     html=html.replace('<script>window.__ASSETS__','<script>window.__INK_VIP_MAP__ = '+json.dumps('data:image/webp;base64,'+ink_map)+';</script>\n<script>window.__ASSETS__')
@@ -108,6 +111,8 @@ def build():
     tbg = read(P('build', 'title_bg.json')) if os.path.exists(P('build', 'title_bg.json')) else 'null'  # 첫 화면 배경 (tools/titlebg.py)
     html = html.replace('<script>window.__ASSETS__', "<script>window.__BUILD_VERSION__ = " + json.dumps(v) + "; window.__PR = " + json.dumps(meta) + "; window.__KIT = " + kit + "; window.__TITLE_BG = " + tbg + "; window.__THUMBS = " + thumbs + ";</script>\n<script>window.__ASSETS__")
     hud_art={os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','*.svg')))}
+    hud_art.update({'skill:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','skills','*.svg')))})
+    hud_art.update({'ui:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','ui','*.svg')))})
     hud_art.update({'field:'+os.path.basename(f)[:-4]:read(f) for f in sorted(glob.glob(P('src','art','hud','field','*.svg')))})
     # The quick slots and world use the same pixel objects, rather than different icons.
     for tool, key in [('stone','can'),('coin','cigarettes'),('smoke','smoke'),('radio','radio')]:
