@@ -45,12 +45,12 @@ async def main():
    # No outcome at button-down; one contact, then KO, then one landing.
    await fresh();await down('KeyZ','btnAct')
    await pg.evaluate("check(!__game.S.corpses.length&&!__game.S.guards[0].unconscious&&__game.S.player.killAnim,'outcome precedes contact')")
-   await up('KeyZ','btnAct');await pg.evaluate("sim(.13);check(!__sounds.some(e=>e.name==='thud')&&!__game.S.contact,'early impact')")
+   await up('KeyZ','btnAct');await pg.evaluate("sim(.08);check(!__sounds.some(e=>e.name==='thud')&&!__game.S.contact,'early impact')")
    await pg.evaluate("sim(.03);check(__game.S.contact?.kind==='takedown'&&__sounds.some(e=>e.name==='cloth'),'missing hand contact')")
-   await pg.evaluate("sim(.37);check(!__game.S.corpses.length,'KO precedes the pose')")
-   await pg.evaluate("sim(.03);check(__game.S.corpses[0]?.ko&&__game.S.stats.kills===0&&!__sounds.some(e=>e.name==='thud'),'KO missing or hits floor early')")
+   await pg.evaluate("sim(.30);check(!__game.S.corpses.length,'KO precedes the pose')")
+   await pg.evaluate("sim(.02);check(__game.S.corpses[0]?.ko&&__game.S.stats.kills===0&&!__sounds.some(e=>e.name==='thud'),'KO missing or hits floor early')")
    await pg.evaluate("()=>{window.__emotes=[];const G=__game,t=G.S.t;G.benchDraw(1);G.S.t=t;check(!__emotes.includes('zz'),'KO icon covers an unfinished paired pose');}")
-   await pg.evaluate("sim(.37);check(!__sounds.some(e=>e.name==='thud'),'landing early');sim(.03);check(__sounds.filter(e=>e.name==='thud').length===1,'landing missing or repeated');sim(.3);check(!__game.S.player.killAnim&&!__game.actionBusy(),'recovery stays locked')")
+   await pg.evaluate("sim(.34);check(!__sounds.some(e=>e.name==='thud'),'landing early');sim(.03);check(__sounds.filter(e=>e.name==='thud').length===1,'landing missing or repeated');sim(.3);check(!__game.S.player.killAnim&&!__game.actionBusy(),'recovery stays locked')")
    events=await pg.evaluate('__sounds');results.append({'mobile':mobile,'events':events})
    # Same uninterrupted press still requires at least a second. No re-press inherits it.
    await fresh();await down('KeyZ','btnAct');await pg.evaluate("sim(.99);check(!__game.S.stats.kills,'early lethal intent');sim(.03);check(__game.S.stats.kills===1,'hold timer restarted at delayed KO');sim(.3);check(__game.S.stats.kills===1,'duplicate lethal result')");await up('KeyZ','btnAct')

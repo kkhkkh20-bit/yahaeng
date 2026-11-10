@@ -123,6 +123,7 @@ function contactFeedback(at,kind) {
     const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
     if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
     else if(kind==='grab')spawnEffect('dust',touch,{scale:.24,alpha:.45});
+    else if(kind==='takedown')spawnEffect('dust',touch,{scale:.20,alpha:.38});
   }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
 }

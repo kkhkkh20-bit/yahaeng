@@ -30,12 +30,14 @@ function updateHeroVisual(P){
  if(P.strikeT>0&&(!(v.strikeRemaining>0)||P.strikeT>v.strikeRemaining+.02)){v.strikeDuration=P.strikeT;v.strikeAt=S.t;}
  v.strikeRemaining=P.strikeT||0;v.gait=P.gaitTime||0;v.time=S.t;v.moving=moving;v.anim=anim;
  // Decode action poses during actual play, rather than blocking first input.
- if(S.t>.3&&!v.actionWarm){v.actionWarm=true;warmFluidPose(playerKey(P),'duck');}
+ const look=playerKey(P);
+ if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');}
  return v;
 }
 function heroMotionClock(P,anim,fallback=P.gaitTime??S.t){const v=heroVisualStates.get(P);return v&&HERO_LOOP[anim]?v.phase*HERO_LOOP[anim]:fallback;}
 function heroTransitionPose(P,moving){
  const v=heroVisualStates.get(P);if(!v||moving||P.carrying||P.captive||P.cover||P.strikeT>0)return null;
+ if(P.pairRise&&S.t-P.pairRise.t0<.16&&!actionBusy(P)&&P.mode!=='sneak')return{anim:'duck',frame:5*(1-clamp((S.t-P.pairRise.t0)/.16,0,1))};
  if(v.crouch>0&&v.crouch<1)return{anim:'duck',frame:v.crouch*8};
  if(v.stopAt!=null&&S.t-v.stopAt<.16&&P.mode!=='sneak')return{anim:'settle'+v.stopPhase,frame:clamp((S.t-v.stopAt)/.16,0,1)*6};
  return null;

@@ -4164,11 +4164,31 @@ function drawPurchasedPaper(c,key,x,y,scale=1){
  const name=key==='parcel'?'parcel':'paper',r=purchasedFrame(name),s=key==='parcel'?Math.min(1,25/r[2]):Math.min(1.3,20/r[2]);return purchasedBlit(c,name,x-r[2]*s*scale/2,y-r[3]*s*scale/2,r[2]*s*scale,r[3]*s*scale);
 }
 function drawPurchasedRoofHouse(c,p){
- if(!purchasedReady())return false;
+ if(!purchasedReady()||!freeCityReady())return false;
  const xs=p.cells.map(a=>a[0]),ys=p.cells.map(a=>a[1]),x=Math.min(...xs)*TILE,y=Math.min(...ys)*TILE,w=(Math.max(...xs)-Math.min(...xs)+1)*TILE,h=(Math.max(...ys)-Math.min(...ys)+1)*TILE;
- purchasedRepeat(c,'wallPanel',x,y-16,w,h+16);purchasedRepeat(c,'bridgeDeck',x,y-16,w,12);
  const l=S.ladders.find(l=>l.kind==='stair'&&l.tx===p.sx&&l.ty===p.sy),d=l?.roofDoor;
- if(d&&!STAGE.agentStudy){c.save();c.beginPath();c.rect(x,y-16,w,h+16);c.clip();purchasedBlit(c,'doorExterior',d.x-14,d.y-32,28,33);c.restore();}return true;
+ // The old interior skirting repeated across the entire hut, with a clipped
+ // wooden bridge above it. Use the same purchased masonry/roof as the building.
+ const wall=freeCityPattern('wallPanel'),f=freeCityArt.frames.roofTile?.rect;if(!wall||!f)return false;
+ // Roof sheets include their outer coping. Repeat only the interior field;
+ // otherwise a tiny hut acquires random bands from the large roof's borders.
+ let roof=freeCityPatterns.roofHouseField;
+ if(!roof){const e=freeCityArt.roofSlice||4;roof=document.createElement('canvas');roof.width=(f[2]-2*e)*1.5;roof.height=(f[3]-2*e)*1.5;const q=roof.getContext('2d');q.imageSmoothingEnabled=false;q.drawImage(freeCityAtlas,f[0]+e,f[1]+e,f[2]-2*e,f[3]-2*e,0,0,roof.width,roof.height);freeCityPatterns.roofHouseField=roof;}
+ c.save();c.imageSmoothingEnabled=false;
+ c.fillStyle='#08111a66';c.fillRect(x+4,y+4,w,h);
+ c.fillStyle=c.createPattern(wall,'repeat');c.fillRect(x,y-16,w,h+16);
+ const side=p.dir==='W'||p.dir==='E',rx=x+(p.dir==='W'?12:0),rw=w-(side?12:0),ry=y-16+(p.dir==='N'?12:0),rh=h-12-(p.dir==='N'?12:0);
+ c.fillStyle=c.createPattern(roof,'repeat');c.fillRect(rx,ry,rw,rh);
+ c.fillStyle='#85909a';c.fillRect(rx,ry,rw,2);c.fillRect(rx,ry,2,rh);
+ c.fillStyle='#1a2633';c.fillRect(rx,ry+rh-3,rw,3);c.fillRect(rx+rw-3,ry,3,rh);
+ // Draw the complete source image on its wall plane. Side doors use a narrow
+ // projection, rather than hiding half a front door behind a rectangular clip.
+ if(d&&!STAGE.agentStudy){
+  if(side)purchasedBlit(c,'doorExterior',p.dir==='W'?x-1:x+w-13,d.y-28,14,30);
+  else if(p.dir==='N')purchasedBlit(c,'doorExterior',d.x-14,y-16,28,13);
+  else purchasedBlit(c,'doorExterior',d.x-14,d.y-31,28,32);
+ }
+ c.restore();return true;
 }
 
 // Pre-rendered PixelFX. No live particle simulation, per-frame image decoding,
@@ -4439,7 +4459,7 @@ function prWarm(keys, first) {
 }
 // 처치·운반 동작 조각은 그 사람에게 다가갔을 때 미리 칠한다 (판 시작에 모두 칠하면 옷마다 14MB)
 const prNear = new Set();
-function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k); prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
+function prWarmNear(g) { if (!PR || !g || g.dog) return; const k = charOf(g); if (prNear.has(k)) return; prNear.add(k);warmFluidPose(k,'choked');prWarm([k], 2);const [pal,bn]=prSplit(k),name=(bn||'key')+'Motion';if(PR.bodies?.[name])prLoadBody(name).then(b=>{if(b)prWarm([pal+'@'+name],2);}); }
 // 판이 바뀌면 이 판에 없는 옷의 칠한 조각은 버린다 (메모리)
 function prKeep(keys){
   prNear.clear();const defaults=STAGE?.agentStudy?[]:['ninja'];const fluidKeys=[...keys,...defaults].flatMap(k=>{const[p,b]=prSplit(k);return Object.values(PR.fluidBodies?.[b||'key']||{}).map(n=>p+'@'+n);});
@@ -4502,15 +4522,23 @@ const strippedKey = c => {
 };
 const carryKey = c => c && !c.dog && (c.stripped ? strippedKey(c) : c.ch);
 const pairCarry = P => P.carrying && PAIR() && usePR(carryKey(P.carrying)) && usePR('ninja');
-// 처치 진행(0~1) → 핵심 자세 시간(0~3). 다가섬(0→1) → 버둥거림(1 근처를 오가며 힘이 빠짐) → 무릎 꺾임(1→2) → 주저앉음(2→3)
-// from = 1: 이미 목을 감은 상태(붙잡은 사람)에서 시작
+// Pose and gameplay share these beats. The grip tightens once, weight drops,
+// then hands release; repeatedly scrubbing the grip backwards looked like shaking.
+const TAKEDOWN_BEATS={
+ choke:{dur:1.08,contact:.10,commit:.42,knee:.61,land:.79,recover:.84},
+ stab:{dur:.90,contact:.09,commit:.22,knee:.43,land:.66,recover:.72}
+};
+function takedownBeats(kind,from=0){
+ const b=TAKEDOWN_BEATS[kind]||TAKEDOWN_BEATS.choke;
+ return from?{dur:b.dur*.8,contact:.04,commit:kind==='choke'?.30:.15,knee:b.knee*.8,land:b.land*.8,recover:b.recover*.8}:b;
+}
 const easeIO = u => u < 0.5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u);
 function killKT(kind, f, from) {
-  const A = from ? [0, 0.4, 0.72] : kind === 'choke' ? [0.13, 0.52, 0.8] : [0.15, 0.4, 0.72], n = kind === 'choke' ? 3 : 2;
-  if (f < A[0]) return easeIO(f / A[0]);
-  if (f < A[1]) { const u = (f - A[0]) / (A[1] - A[0]); return 1 + 0.34 * Math.abs(Math.sin(u * Math.PI * n)) * (1 - u * 0.4); }
-  if (f < A[2]) return 1 + easeIO((f - A[1]) / (A[2] - A[1]));
-  return 2 + easeIO(Math.min(1, (f - A[2]) / (1 - A[2])));
+  const b=takedownBeats(kind,from),t=clamp(f,0,1)*b.dur;
+  if(!from&&t<b.contact)return easeIO(t/b.contact);
+  if(t<b.commit)return 1+.22*easeIO(clamp((t-(from?0:b.contact))/(b.commit-(from?0:b.contact)),0,1));
+  if(t<b.knee)return 1.22+.78*easeIO((t-b.commit)/(b.knee-b.commit));
+  return 2+easeIO(clamp((t-b.knee)/(b.land-b.knee),0,1));
 }
 const ktFrame = (anim, kt) => { const nf = (PR.anims[anim] || [0, 4])[1]; return Math.max(0, Math.min(nf - 1, kt / 3 * (nf - 1))); };
 const pairGrab = P => P.captive && PAIR() && usePR(charOf(P.captive)) && usePR('ninja');
@@ -4548,12 +4576,14 @@ function updateHeroVisual(P){
  if(P.strikeT>0&&(!(v.strikeRemaining>0)||P.strikeT>v.strikeRemaining+.02)){v.strikeDuration=P.strikeT;v.strikeAt=S.t;}
  v.strikeRemaining=P.strikeT||0;v.gait=P.gaitTime||0;v.time=S.t;v.moving=moving;v.anim=anim;
  // Decode action poses during actual play, rather than blocking first input.
- if(S.t>.3&&!v.actionWarm){v.actionWarm=true;warmFluidPose(playerKey(P),'duck');}
+ const look=playerKey(P);
+ if(S.t>.3&&v.actionLook!==look){v.actionLook=look;warmFluidPose(look,'duck');warmFluidPose(look,'choke');}
  return v;
 }
 function heroMotionClock(P,anim,fallback=P.gaitTime??S.t){const v=heroVisualStates.get(P);return v&&HERO_LOOP[anim]?v.phase*HERO_LOOP[anim]:fallback;}
 function heroTransitionPose(P,moving){
  const v=heroVisualStates.get(P);if(!v||moving||P.carrying||P.captive||P.cover||P.strikeT>0)return null;
+ if(P.pairRise&&S.t-P.pairRise.t0<.16&&!actionBusy(P)&&P.mode!=='sneak')return{anim:'duck',frame:5*(1-clamp((S.t-P.pairRise.t0)/.16,0,1))};
  if(v.crouch>0&&v.crouch<1)return{anim:'duck',frame:v.crouch*8};
  if(v.stopAt!=null&&S.t-v.stopAt<.16&&P.mode!=='sneak')return{anim:'settle'+v.stopPhase,frame:clamp((S.t-v.stopAt)/.16,0,1)*6};
  return null;
@@ -14378,15 +14408,15 @@ function strikeKill(list, two) {
 }
 // 두 사람 동작으로 처치: 다가섬 → 입·목을 감음 → 버둥거리다 힘이 빠짐 → 무릎이 꺾임 → 내려놓음. 쓰러진 몸은 동작이 끝난 뒤에 보인다
 // from = 1 이면 이미 목을 감고 있는 상태(붙잡은 사람)에서 이어서 시작한다
-const KILL_DUR = { stab: 0.95, choke: 1.15 };
+const KILL_DUR = { stab: TAKEDOWN_BEATS.stab.dur, choke: TAKEDOWN_BEATS.choke.dur };
 function pairRecoveryReady(P){
   const A=P.killAnim,h=S.koHold;
-  return !!(A?.landed&&S.t-A.t0>=A.dur*.88&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
+  return !!(A?.landed&&S.t-A.t0>=takedownBeats(A.kind,A.from).recover&&!(h?.bodies.some(b=>b.c===A.c&&b.c.ko)&&combatHeld(h.source)));
 }
 function releasePairCombat(P){
   const A=P.killAnim;if(!A)return;
   if(A.c){A.c.hideT=S.t;A.c.t0=null;}
-  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.12;
+  P.killAnim=null;P.strikeT=0;P.riseT=S.t+.16;P.pairRise={t0:S.t};
 }
 function pairKill(g, kind, from, quiet) {
   const P = S.player;warmFluidPose(playerKey(P),kind);warmFluidPose(charOf(g),kind==='stab'?'stabbed':'choked');if(!from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)return;const dur = KILL_DUR[kind] * (from ? 0.8 : 1);
@@ -14402,19 +14432,20 @@ function pairKill(g, kind, from, quiet) {
 // Contact, incapacitation and lowering all advance on the same clock as the pose.
 function updatePairCombat(P,dt) {
   const A=P.killAnim;if(!A?.g)return false;
-  const g=A.g,t=S.t-A.t0;
+  const g=A.g,t=S.t-A.t0,beats=takedownBeats(A.kind,A.from);
   if(!A.committed&&(!concealedMeleeAllowed(P)||!A.from&&!STAGE.artSlice&&dist(P.x,P.y,g.x,g.y)>MELEE_CONTACT)||!S.guards.includes(g)||flOf(P)!==A.fl||(P.z||0)!==A.z||flOf(g)!==A.fl||(g.z||0)!==A.z||dist(P.x,P.y,A.x,A.y)>20||(!A.committed&&g.state==='DEAD')){
     g.doomed=false;if(g.state==='CAPTIVE')g.state='RETURN';P.killAnim=null;P.strikeT=0;return false;
   }
-  P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(0,A.dur-t);
+  P.vx=P.vy=0;P.moving=false;P.strikeT=Math.max(.001,A.dur-t);
+  if(A.c)A.c.hideT=Math.max(A.c.hideT,S.t+.05);
   P.hidden=!P.z&&tileAt(P.x,P.y)==='B'&&P.mode==='sneak';P.light=lightAt(P.x,P.y,!!P.z);
   if(t<A.dur&&P.hurtT>0)P.hurtT=Math.max(0,P.hurtT-dt);
   if(!A.committed)g.doomed=true;
-  if(!A.contact&&t>=(A.from ? .04 : .14)){
+  if(!A.contact&&t>=beats.contact){
     A.contact=true;play('cloth',.35);contactFeedback({x:P.x+Math.cos(P.a)*14,y:P.y+Math.sin(P.a)*14,fl:A.fl,z:A.z},'takedown');
     S.hitStop=Math.max(S.hitStop||0,.025);
   }
-  const at=A.kind==='choke'?(A.from ? .38 : .54):.24;
+  const at=beats.commit;
   if(!A.committed&&t>=at){
     A.committed=true;g.takedownIntent=A.intent;g.pairDown=true;S.koNext=A.ko;
     const nd=S.decals.length,nf=S.fx.length,nc=S.corpses.length;
@@ -14427,12 +14458,14 @@ function updatePairCombat(P,dt) {
     }
     S.hitStop=Math.max(S.hitStop||0,.035);
   }
-  if(!A.landed&&t>=A.dur*.82){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
+  if(!A.landed&&t>=beats.land){A.landed=true;play('thud',.32);if(A.c)feedbackEvent(A.c.ko?'ko':'kill',A.c,{effect:'dust',scale:.32,alpha:.45});}
   const moving=input.joy?.mag>.15||['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].some(k=>S.keys[k]);
   if(pairRecoveryReady(P)&&(moving||P.followupAttack)&&!P.recoveryQueue){
     releasePairCombat(P);return false;
   }
-  if(t>=A.dur){P.killAnim=null;P.strikeT=0;return false;}
+  // Captive executions can finish their pose before the deliberate one-second
+  // hold. Keep its final grounded pose until that exact press ends or commits.
+  if(t>=A.dur&&pairRecoveryReady(P)){releasePairCombat(P);return false;}
   return true;
 }
 // 붙잡은 사람 처치: 목을 감은 자세에서 그대로 조여(또는 찔러) 내려놓는다
@@ -14973,7 +15006,7 @@ function queueRecoveryInput(kind){
 // borrow a different held key, or convert a released tap into a lethal hold.
 function followupWindow(P=S.player){
  const A=P.killAnim;
- if(A?.committed&&A.dur-(S.t-A.t0)<=.22)return true;
+ if(A?.committed&&A.landed)return true;
  const B=P.assassinAnim;
  if(!B||B.hits.some(t=>t==null))return false;
  const end=B.key==='dual'?B.t0+ASSASSIN_BEATS.firstEnd:B.phase==='second'?B.secondAt+ASSASSIN_BEATS.secondEnd:Infinity;
@@ -15004,7 +15037,7 @@ function updateRecoveryInput(P){
   const q=P.recoveryQueue;if(!q)return;
   const movement=playerMoveIntent(),moving=!!(movement.x||movement.y),changed=moving&&(!q.movement||movement.x*q.movement.x+movement.y*q.movement.y<.5);
   if(S.t>q.until||changed||P.hurtT>0||flOf(P)!==q.fl||(P.z||0)!==q.z||dist(P.x,P.y,q.x,q.y)>8||!S.corpses.includes(q.c)||q.c.carried||q.c.stashed||q.c.hidden){P.recoveryQueue=null;return;}
-  if(q.kind==='cleanup'&&P.killAnim?.c===q.c&&pairRecoveryReady(P))releasePairCombat(P);
+  if(P.killAnim?.c===q.c&&pairRecoveryReady(P))releasePairCombat(P);
   if(actionBusy(P))return;
   P.recoveryQueue=null;
   if(!objectReachable(q.c,46))return;
@@ -15780,9 +15813,9 @@ function drawPlayerBody(P) {
     }
     if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = playerLook, s1 = sc / 3;
-      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt), j = !reducedFxMotion.matches&&kt > 0.9 && kt < 1.5 ? Math.sin((S.t-KA.t0)*18)*.55*(1-(kt-1)/.5) : 0,
-          approach=1-hideEase(clamp((S.t-KA.t0)/.14,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
-        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx + j, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
+      if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt),
+          approach=1-hideEase(clamp((S.t-KA.t0)/takedownBeats(KA.kind,KA.from).contact,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
+        drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }
       const j = Math.sin(S.t * 40) * 1.5; drawPR(PK1, P.x, P.y, P.a, 'grabI', 0, 1, s1, -yo); drawPR(KA.ch, P.x + j, P.y, P.a, 'heldI', 0, 1, s1, -yo); return;
     }
     const BA = P.bodyAnim;  // 시체 들기(허리 숙임 → 안아 올림 → 어깨) · 내려놓기(거꾸로) · 넣기(어깨에서 내려 통에 넣음)
@@ -17952,6 +17985,7 @@ function contactFeedback(at,kind) {
     const touch={x:p.x,y:p.y-(kind==='takedown'||kind==='grab'?20:0),fl:at.fl??flOf(S.player),z:at.z??S.player.z??0};
     if(kind==='pickup'||kind==='loot')spawnEffect('loot',touch,{scale:.75});
     else if(kind==='grab')spawnEffect('dust',touch,{scale:.24,alpha:.45});
+    else if(kind==='takedown')spawnEffect('dust',touch,{scale:.20,alpha:.38});
   }
   S.contact={x:p.x,y:p.y,fl:at.fl??flOf(S.player),z:at.z??S.player.z??0,t:S.t,kind,surface:!!at.surface};
 }
@@ -19532,6 +19566,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 function installGameApi() {
   window.__game = {
     startLoot,updatePick,nearLoot,lootLockpickPlan,itemObjectiveBlock,updateDispatchFault,startDispatchFault,
+    TAKEDOWN_BEATS,takedownBeats,drawPurchasedRoofHouse,releasePairCombat,followupWindow,
     freeCityReady,freeCityBuilding,cityBuildingStyle,freeCityGround,drawCityPlant,drawCityRoofProps,buildRoofCanvas,renderMap,cityBoundaryWall,cityWallEdges,cityExteriorEntries,drawCityEntrances,
     propArtFrame,propSurfacePoint,surfacePoint,surfaceFixture,drawPropFurn,refreshPropArt,switchArtNormal,get propArtReady(){return propAtlas.complete&&!!propAtlas.naturalWidth;},get propArtMeta(){return{w:propArt.w,h:propArt.h,frames:propArt.frames};},
     drawPlansFaint,drawLampTint,aperturePeekCandidate,updateAperturePeek,aperturePeekContains,switchVisualPoint,repairRoofLanding,get aperturePeekFrame(){return aperturePeekFrame;},windowRoomLit,officeWindowImage,paintOfficeSideWindow,drawOfficeLamp,goalMarkerVisible,subduedAction,feedbackEvent,

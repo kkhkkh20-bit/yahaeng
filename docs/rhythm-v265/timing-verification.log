@@ -1,0 +1,2 @@
+PASS takedown beats {'mobile': False, 'earlierStride': 3.3971518624812234, 'monotoneTracks': 4, 'completeRoofDoors': 35, 'directions': ['S', 'W'], 'errors': []}
+PASS takedown beats {'mobile': True, 'earlierStride': 3.3971518624812234, 'monotoneTracks': 4, 'completeRoofDoors': 35, 'directions': ['S', 'W'], 'errors': []}
