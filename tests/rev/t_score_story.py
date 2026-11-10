@@ -26,7 +26,7 @@ async def main():
    await q.locator('#musicR').fill('0');await q.wait_for_timeout(550);a=await q.evaluate('__game.audioInfo()');assert a['bus']<.02 and a['master']>.89,a
    await q.locator('#musicR').fill('65');await q.evaluate('document.fonts.ready');await q.screenshot(path=str(O/f'settings-{mobile}.png'))
    story=await q.evaluate('''()=>{const G=__game,ids=['tB','p0','e2','m2','m4','m6','m7','m5','n1'],out=[];
-    for(const id of ids){G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();const T=G.STAGE,S=G.S;
+    for(const id of ids){G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();const T=G.STAGE,S=G.S;if(id==='tB'){S.t=5;S.tutI=0;if(G.episodeRadioMessage().speaker!=='master')throw Error('story interrupts first movement lesson');S.tutI=6;if(G.episodeStoryMessage()?.storyBeat!=='missing-arrival')throw Error('personal stake missing after lessons');}
      if(!T.story.before||!T.story.after||!T.storyCoda.lines.length)throw Error('missing story '+id);
      const prior=JSON.stringify([S.items.map(i=>i.got),S.player,S.stats]);
      for(const beat of T.storyBeats){const old=beat.when;beat.when=()=>true;S.t+=10;const m=G.episodeStoryMessage();if(!m||m.storyBeat!==beat.id)throw Error('beat ordering '+id);G.acknowledgeEpisodeStory(m);const until=S.episodeStory.active.until;S.t+=.5;G.acknowledgeEpisodeStory(m);if(S.episodeStory.active.until!==until)throw Error('repeated HUD renews story forever');if(Object.keys(S.episodeStory.seen).filter(k=>k===beat.id).length!==1)throw Error('duplicate beat');S.t+=10;G.episodeStoryMessage();beat.when=old;}
