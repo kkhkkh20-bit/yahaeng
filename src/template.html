@@ -684,20 +684,25 @@ __FRONT_END_CSS__
 <div class="screen sub" id="help" hidden>
   <div class="panel">
     <div class="sub-head"><button class="back" id="btnHelpBack" type="button" aria-label="돌아가기">돌아가기</button><h2>설정</h2></div>
-    <section class="setbox">
-      <div class="pz-sets"><label><span id="volLabel">음량</span><output id="volValue" for="volR">90%</output><input type="range" id="volR" min="0" max="100" step="5"></label><label>밝기 <output id="briValue" for="briR">100%</output><input type="range" id="briR" min="80" max="160" step="5"></label></div>
-      <div class="pz-opts"><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+    <section class="setbox settings-basics" aria-label="소리와 화면 설정">
+      <section class="settings-group settings-audio" aria-labelledby="settingsAudioTitle"><h3 id="settingsAudioTitle">소리</h3>
+        <div class="pz-sets"><label><span id="volLabel">음량</span><output id="volValue" for="volR">90%</output><input type="range" id="volR" min="0" max="100" step="5"></label></div>
+        <div class="settings-group-actions"><button class="ghost" id="btnMute" type="button" aria-pressed="false">소리 끄기</button></div>
+      </section>
+      <section class="settings-group settings-display" aria-labelledby="settingsDisplayTitle"><h3 id="settingsDisplayTitle">화면</h3>
+        <div class="pz-sets"><label><span>밝기</span><output id="briValue" for="briR">100%</output><input type="range" id="briR" min="80" max="160" step="5"></label></div>
+        <div class="settings-group-actions"><button class="ghost" id="btnFull" type="button">전체 화면</button></div>
+      </section>
     </section>
-    <details class="rulesbox" id="advancedSettings"><summary class="rules-h">고급 설정</summary>
+    <details class="rulesbox" id="advancedSettings"><summary class="rules-h"><span>고급 설정</span><small>배율 · 성능 · 안내</small></summary>
       <div class="advanced-rows">
         <div><b>화면 배율</b><span><button class="ghost" id="btnZoomOut" type="button" aria-label="화면 축소">−</button><button class="ghost" id="btnZoomIn" type="button" aria-label="화면 확대">+</button></span></div>
         <div><b>프레임</b><button class="ghost" id="btnFps" type="button">60 fps</button></div>
         <div id="hapticSetting" hidden><b>진동</b><button class="ghost" id="btnHaptic" type="button" aria-pressed="false">꺼짐</button></div>
-        <div><b>소리</b><button class="ghost" id="btnMute" type="button">소리 끄기</button></div>
         <div><b>안내</b><span><button class="ghost" id="btnRoutes" type="button">순찰 동선</button><button class="ghost" id="btnOpps" type="button">단서: 최소</button></span></div>
       </div>
     </details>
-    <details class="rulesbox" id="controlGuide"><summary class="rules-h">조작</summary>
+    <details class="rulesbox" id="controlGuide"><summary class="rules-h"><span>조작 안내</span><small>이동 · 제압 · 도구</small></summary>
       <div class="ctrl">
         <p class="control-note">공격·다트: 짧게 기절 · 길게 처치</p>
         <div class="kbonly"><dl class="control-grid">
@@ -718,10 +723,10 @@ __FRONT_END_CSS__
         <li><strong>평가</strong>목격·시체 발견·민간인 피해가 등급과 수고비에 영향을 준다.</li>
       </ul>
     </details>
-    <details class="rulesbox"><summary class="rules-h">출처</summary>
+    <details class="rulesbox" id="gameCredits"><summary class="rules-h"><span>출처</span><small>에셋 · 라이선스</small></summary>
     <p class="credit">차량: <a href="https://minzinn.itch.io/pixelvehicles" target="_blank" rel="noopener">Pixel Vehicles — MinZinn (@MinZiin_)</a> · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · 원본 48방향 이미지 중 6개 차종을 선정해 게임용 이미지 묶음으로 재배치.</p>
     <p class="credit">조명 기구: <a href="https://kenney.nl/assets/furniture-kit" target="_blank" rel="noopener">Kenney Furniture Kit</a> · <a href="https://kenney.nl/assets/retro-urban-kit" target="_blank" rel="noopener">Retro Urban Kit</a> (CC0), 게임 시점에 맞춰 2D로 렌더링.</p>
-    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 화면 제목: East Sea Dokdo (YoonDesign, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
+    <p class="credit">그래픽·음악·효과음: <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack" target="_blank" rel="noopener">Ninja Adventure Asset Pack</a> (Pixel-Boy &amp; AAA, CC0) · 발소리 일부: <a href="https://kenney.nl" target="_blank" rel="noopener">Kenney</a> Impact·RPG·Interface Sounds (CC0) · 글꼴: IBM Plex Sans KR (IBM, OFL 1.1) · 제목 로고: Black Han Sans (Zess Type, OFL 1.1) · 귀뚜라미 소리: Wolfgang_ (CC0) · 쇠·자갈 발소리: congusbongus 'Footsteps on different surfaces' (쇠: Eelke 원음, CC-BY 3.0 / 자갈: Ali_6868, CC0), <a href="https://opengameart.org" target="_blank" rel="noopener">opengameart.org</a> · 종소리: 직접 합성 · 설계 참고: Commandos, Shadow Tactics, Mark of the Ninja</p>
     </details>
   </div>
 </div>

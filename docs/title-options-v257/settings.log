@@ -1,0 +1,5 @@
+PASS settings 320 568 native range/mute, persistence, fonts, guide, scroll, skill/menu/pause return
+PASS settings 390 844 native range/mute, persistence, fonts, guide, scroll, skill/menu/pause return
+PASS settings 844 390 native range/mute, persistence, fonts, guide, scroll, skill/menu/pause return
+PASS settings 1024 768 native range/mute, persistence, fonts, guide, scroll, skill/menu/pause return
+PASS settings 1440 900 native range/mute, persistence, fonts, guide, scroll, skill/menu/pause return

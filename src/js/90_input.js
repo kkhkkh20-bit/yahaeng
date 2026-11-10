@@ -279,7 +279,7 @@ const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == n
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
 let VOL = +lsGet('yahaeng.vol', 90) / 100, BRI = +lsGet('yahaeng.bri', 100) / 100;
 function applyVol() { if (master) master.gain.value = VOL; }
-function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';for(const [id,out]of [['volR','volValue'],['briR','briValue']]){const v=$(id).value+'%';$(out).value=v;$(id).setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);}}
+function syncSettingValues(){$('volLabel').textContent=muted?'음소거':'음량';$('btnMute').setAttribute('aria-pressed',String(muted));for(const [id,out]of [['volR','volValue'],['briR','briValue']]){const el=$(id),v=el.value+'%';$(out).value=v;el.setAttribute('aria-valuetext',id==='volR'&&muted?'음소거 · '+v:v);el.style.setProperty('--setting-fill',((+el.value-+el.min)/(+el.max-+el.min)*100)+'%');}}
 function applyBri() { canvas.style.filter = BRI === 1 ? '' : `brightness(${BRI})`; }
 $('volR').value = Math.round(VOL * 100); $('briR').value = Math.round(BRI * 100); applyBri(); syncSettingValues();
 $('volR').addEventListener('input', e => { VOL = +e.target.value / 100;if(VOL>0&&muted)toggleMute(); lsSet('yahaeng.vol', e.target.value); applyVol(); syncSettingValues(); });

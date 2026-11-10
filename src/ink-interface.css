@@ -1,5 +1,3 @@
-/* __INK_HEADING_LICENSE__ */
-@font-face { font-family:"Yahaeng Ink"; src:url(data:font/woff2;base64,__INK_HEADING_FONT__) format("woff2"); font-style:normal; font-weight:400; font-display:swap; }
 /* The title's charcoal/ivory material, carried through the playable interface. */
 :root {
  --ui-ground:#0d1117; --ui-panel:#171c22; --ui-line:#4e5359;
@@ -176,15 +174,15 @@ body.touch #hud #btnCrouch.on { color:#f2eee4; }
  #hud .obj.with-identities { padding:10px 26px 12px 62px; }
 }
 
-/* Brush lettering is reserved for titles; controls and sentences stay easy to read. */
-#brief .br-name { font-family:"Yahaeng Ink",var(--f-body); font-size:clamp(44px,4.5vw,64px); line-height:1; letter-spacing:0; }
-#hud #loadout h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:38px; line-height:1.1; letter-spacing:0; }
-#end h2 { font-family:"Yahaeng Ink",var(--f-body); font-size:54px; line-height:1.1; letter-spacing:0; }
+/* Interface headings share the complete Korean UI face. */
+#brief .br-name { font-family:var(--f-body); font-size:clamp(44px,4.5vw,64px); line-height:1; letter-spacing:0; }
+#hud #loadout h2 { font-family:var(--f-body); font-size:24px; line-height:1.4; letter-spacing:0; }
+#end h2 { font-family:var(--f-body); font-size:54px; line-height:1.1; letter-spacing:0; }
 #hud #hpPips { gap:6px; padding:2px; }
 #hud #hpPips i { width:8px; height:8px; transform:rotate(45deg); }
 @media(max-width:700px) {
  #brief .br-name { font-size:50px; }
- #hud #loadout h2 { font-size:34px; }
+ #hud #loadout h2 { font-size:22px; }
  #end h2 { font-size:44px; }
 }
 

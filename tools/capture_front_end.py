@@ -2,7 +2,7 @@
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
-R=Path(__file__).resolve().parents[1];O=R/'build/front-ui-v256';O.mkdir(parents=True,exist_ok=True)
+R=Path(__file__).resolve().parents[1];O=R/'build/front-ui-v257';O.mkdir(parents=True,exist_ok=True)
 async def main():
  rows=[]
  async with async_playwright()as p:
