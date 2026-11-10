@@ -31,7 +31,8 @@ function officeGround(c,ch,tx,ty){
  const bi=bldAt(tx,ty),b=BLD[bi];if(!b||b.vacant||tx<=b.x0||tx>=b.x1||ty<=b.y0||ty>=b.y1)return false;
  if(!'wvthKEY'.includes(ch))return false;
  const bath=PLANS[bi]?.[CUR_F]?.units?.some(u=>u.bath&&tx>=u.bath.x0&&tx<=u.bath.x1&&ty>=u.bath.y0&&ty<=u.bath.y1);
- const style=officeStyle(bi),name=bath?'floorTile':ch==='h'?'floorSlate':style.floor;
+ const zone=STAGE.officeArt?.floorZones?.find(a=>a.b===bi&&(a.fl||0)===CUR_F&&tx>=a.x0&&tx<=a.x1&&ty>=a.y0&&ty<=a.y1);
+ const style=officeStyle(bi),name=bath?'floorTile':zone?.art||(ch==='h'?'floorSlate':style.floor);
  return officeBlit(c,name,tx*TILE,ty*TILE,TILE,TILE);
 }
 function officeWall(c,tx,ty){

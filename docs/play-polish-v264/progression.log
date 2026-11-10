@@ -1,0 +1,8 @@
+PASS isolated progression p0 ['approach 2', 'kill 2', 'exit']
+PASS isolated progression e2 ['key pin', 'objective 0', 'approach 2', 'kill 2', 'exit']
+PASS isolated progression m2 ['approach 0', 'kill 0', 'door 5,8 keypad', 'key blue', 'objective 0', 'objective 1', 'exit']
+PASS isolated progression m4 ['approach 0', 'kill 0', 'approach 21', 'steal code', 'door 13,6 door', 'key blue', 'door 30,10 keypad', 'key green', 'key supplies', 'objective 0', 'objective 1', 'approach 2', 'kill 2', 'exit']
+PASS isolated progression m6 ['key pin', 'door 9,7 pick', 'key gear', 'objective 0', 'objective 1', 'exit']
+PASS isolated progression m7 ['approach 0', 'kill 0', 'door 23,9 door', 'objective 0', 'objective 1', 'exit']
+PASS isolated progression m5 ['door 18,6 keypad', 'objective 0', 'approach 0', 'kill 0', 'exit']
+PASS isolated progression n1 ['approach 4', 'steal green', 'door 21,13 door', 'objective 0', 'approach 0', 'kill 0', 'exit']

@@ -1,0 +1,6 @@
+127.0.0.1 - - [10/Nov/2026 10:01:47] "GET /build/preview_city.html?study=agent-city&nostats HTTP/1.1" 200 -
+127.0.0.1 - - [10/Nov/2026 10:01:49] code 404, message File not found
+127.0.0.1 - - [10/Nov/2026 10:01:49] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [10/Nov/2026 10:01:50] code 404, message File not found
+127.0.0.1 - - [10/Nov/2026 10:01:50] "GET /favicon.ico HTTP/1.1" 404 -
+PASS world polish {"reverse": {"x": 632.1199999999994, "v": -140, "a": 0}, "boundary": {"x": 46.14285714285714, "hp": 6, "impact": false}, "accesses": 8, "descents": ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"], "latch": true, "passBy": true, "captions": ["↓ 2층 · 이도현 활동 구역 · 5m", "↓ 2층 · 연결 입구 · 5m", "↓ 2층 · 이도현 · 1m", "↓ 5층 · 문서 · 5m"]}
