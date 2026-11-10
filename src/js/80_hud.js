@@ -160,7 +160,7 @@ function showBrief(go) {
   $('brName').textContent = STAGE.name; $('brSub').textContent = STAGE.sub || '';
   el.querySelector('.br-scroll').scrollTop = 0;
   if($('briefInfo').open)$('briefInfo').close();
-  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%'; mp.appendChild(cv);
+  const mp = $('brMap'); mp.innerHTML = ''; const cv = stageMap(Math.min(640, Math.round(mp.clientWidth || 340) * 2), 'brief'); cv.style.width = '100%';mp.closest('.br-mapcol').style.setProperty('--brief-map-ratio',cv.width+'/'+cv.height);mp.appendChild(cv);
   { const lg = document.querySelector('#brief .br-legend'); if (lg) { lg.querySelector('.lg-tg').hidden = !S.guards.some(g => g.target); lg.querySelector('.lg-it').hidden = !S.items.length; } }
   $('brFee').textContent = STAGE.fee || ''; $('brFeeBox').hidden = !STAGE.fee;
   $('brLine').textContent = STAGE.brief || ''; $('brRadio').hidden = !STAGE.brief;

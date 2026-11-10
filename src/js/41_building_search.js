@@ -49,7 +49,11 @@ function buildingSearchJobs(at, bi) {
   if (bi >= 0) {
     const B = BLD[bi];
     const doors = S.doors.filter(d => bldAt(d.tx, d.ty) === bi).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
-    if (doors.length) add(searchStandNear(doors[0]), 'entrance', 1);
+    for(const d of doors.slice(0,3))add(searchStandNear(d),'entrance',1+dist(d.x,d.y,at.x,at.y)/1800);
+    for(const l of S.ladders||[])if((l.kind==='stair'||l.kind==='fstair')&&bldAt(l.tx,l.ty)===bi){
+      const lo=stairLower(l);add(searchStandNear({...lo.up.entry,fl:l.bfl||0,z:0}),'junction',1.45);
+      if(l.kind==='fstair'){const hi=stairUpper(l);add(searchStandNear({...hi.down.entry,fl:l.tfl,z:0}),'junction',1.6);}
+    }
     for (let f = 0; f < B.h; f++) {
       const pts = searchFloorPoints(bi, f).sort((a, b) => dist(a.x, a.y, at.x, at.y) - dist(b.x, b.y, at.x, at.y));
       pts.forEach((p, i) => add(p, 'room', i === 0 ? 2 + f * .05 : 4 + i * .1));
@@ -91,7 +95,8 @@ function takeSearchJob(g, inc) {
   const jobs = inc.jobs.filter(j => !j.done && !j.failed?.includes(g.id) && (j.claim == null || j.claim === g.id) && (lvlKey(j.at) === fk || nextHop(g, fk, lvlKey(j.at), j.at)));
   // A real sighting is checked first, even upstairs; then sweep nearby rooms and hiding places.
   // Only incident jobs and the guard's own floor contribute; the hidden player is never queried.
-  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0);
+  const claimed=inc.jobs.filter(j=>j.claim!=null&&j.claim!==g.id),covered=new Set(claimed.map(j=>j.kind));
+  const cost=j=>j.priority+(lvlKey(j.at)===fk?0:2.5)+dist(g.x,g.y,j.at.x,j.at.y)/650-(j.kind==='scene'&&inc.source!=='body'?6:0)-(claimed.length&&!covered.has(j.kind)&&['entrance','escape','junction'].includes(j.kind)?1.5:0);
   jobs.sort((a,b)=>cost(a)-cost(b));
   let job, leg;
   for (const j of jobs) { const p = searchLeg(g, j.at); if (p) { job = j; leg = p; break; } }
@@ -100,7 +105,7 @@ function takeSearchJob(g, inc) {
   g.searchJob = { incident: inc.id, job: job.id, elapsed: 0, repath: 0, inspect: null };
   endChat(g); g.act = null; g.bubble = null; g.state = 'SEARCH'; g.poi = { ...job.at }; g.searchOrigin = { ...inc.at }; g.why = 'building';
   g.path = leg.path; g.hop = leg.hop; g.reached = false; g.meter = Math.min(g.meter || 0, .5); g.atkT = 0; g.shootT = 0; g.aim = 0; setIcon(g, '?');
-  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 볼게.' : job.at.z ? '옥상 확인하러 간다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽은 내가 볼게.', 2.2); }
+  if (!g.searchSaid || S.t - g.searchSaid > 12) { g.searchSaid = S.t; gsay(g, job.kind === 'entrance' ? '출입구는 내가 볼게.' : job.kind==='junction'?'계단 쪽 확인할게.':job.kind==='escape'?'바깥길은 내가 볼게.':job.kind==='trail'?'이쪽으로 갔어. 확인할게.':job.at.z ? '옥상 확인하러 간다.' : job.at.fl ? `${job.at.fl + 1}층 확인한다.` : '안쪽은 내가 볼게.', 2.2); }
   return true;
 }
 function startBuildingSearch(at, fac = 'A', source = 'sighting', seed) {

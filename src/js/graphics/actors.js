@@ -1,5 +1,7 @@
 function corpseBounds(c){
   if(c.dog)return[c.x-24,c.y-26,c.x+24,c.y+22];
+  const rest=corpseRestPose(c);
+  if(rest){const m=rest.meta,frame=Math.round(rest.frame),box=m.bounds?.[rest.anim]?.[prDir(c.a||0)]?.[frame],s=m.scales[rest.anim],x=c.x-PR.fr*s/2,y=c.y+7-m.grounds[rest.anim]*s;if(box)return[x+box[0]*s,y+box[1]*s,x+box[2]*s,y+box[3]*s];}
   const key=c.stripped?strippedKey(c):c.ch,bm=PR?.bodies?.[prSplit(key||'ninja')[1]],m=bm||PR;
   const frame=Math.min((m?.anims?.death?.[1]||10)-1,corpseFrame(c)),box=m?.bounds?.death?.[prDir(c.a||0)]?.[frame];
   if(!box)return[c.x-20,c.y-24,c.x+20,c.y+10];
@@ -15,6 +17,7 @@ function drawBody(c, lift = 0) {
   if (c.hideT > S.t || c.skillAnimating) return;  // 목 조르는 동안은 주인공과 함께 그린다
   if (c.carried && S.player.carrying === c && pairCarry(S.player)) return;  // 층·그리기 순서와 관계없이 운반 짝동작에서 한 번만 그린다
   if(c.dog||c.ch==='dog'){drawDog(c.x,c.y-lift,c.a||0,false,ctx.globalAlpha,true);return;}
+  const rest=corpseRestPose(c);if(rest){drawPR(rest.key,c.x,c.y-6,c.a||0,rest.anim,0,ctx.globalAlpha,1,lift,rest.frame);return;}
   const fr = corpseFrame(c);  // 쓰러지는 동작
   if (c.stripped && usePR(strippedKey(c))) { drawPR(strippedKey(c), c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, 9); return; }
   if (usePR(c.ch)) { drawPR(c.ch, c.x, c.y - 6, c.a || 0, 'death', 0, ctx.globalAlpha, 1, lift, fr); return; }

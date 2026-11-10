@@ -119,6 +119,16 @@ function drawPlayerBody(P) {
     }
     if (P.killAnim && P.strikeT > 0 && PAIR() && usePR(P.killAnim.ch)) {  // 뒤에서 처치: 칼 / 목 조르기 (핵심 자세 4개 + 사이 프레임)
       const KA = P.killAnim, PK1 = playerLook, s1 = sc / 3;
+      const beat=takedownBeats(KA.kind,KA.from),elapsed=S.t-KA.t0;
+      if(elapsed>=beat.knee&&fluidSource(PK1,'lower')&&fluidSource(KA.ch,'lowered')){
+        const u=clamp((elapsed-beat.knee)/(beat.land-beat.knee),0,1),finish=KA.finishAt!=null,fi=finish?clamp((S.t-KA.finishAt)/.16,0,1)*8:u*12;
+        const actor=fluidSource(PK1,finish?'finish':'lower'),victim=fluidSource(KA.ch,'lowered');
+        if(prBodies[actor]&&prBodies[victim]){
+          if(u>=1&&KA.c){const body=corpseRestPose(KA.c);if(body)drawPR(body.key,KA.c.x,KA.c.y-6,P.a,body.anim,0,1,s1,-yo,body.frame);else drawPR(KA.ch,P.x,P.y,P.a,'lowered',0,1,s1,-yo,12);}
+          else{const shift=pairedRestShift(KA);drawPR(KA.ch,P.x+shift[0]+(KA.restCorrection?.x||0)*u,P.y+shift[1]-6+(KA.restCorrection?.y||0)*u,P.a,'lowered',0,1,s1,-yo,u*12);}
+          drawPR(PK1,P.x,P.y,P.a,finish?'finish':'lower',0,1,s1,-yo,fi);return;
+        }
+      }
       if (KA.kind && PR.anims[KA.kind]) { const f = Math.min(1, (S.t - KA.t0) / KA.dur), kt = killKT(KA.kind, f, KA.from), fi = ktFrame(KA.kind, kt),
           approach=1-hideEase(clamp((S.t-KA.t0)/takedownBeats(KA.kind,KA.from).contact,0,1)),dx=(KA.victimOffset?.x||0)*approach,dy=(KA.victimOffset?.y||0)*approach;
         drawPR(PK1, P.x, P.y, P.a, KA.kind, 0, 1, s1, -yo, fi); drawPR(KA.ch, P.x + dx, P.y + dy, P.a, KA.kind === 'stab' ? 'stabbed' : 'choked', 0, 1, s1, -yo, fi); return; }

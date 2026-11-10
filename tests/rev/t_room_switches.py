@@ -1,4 +1,4 @@
-"""Room circuits, basic controls, local reactions and checkpoint migration."""
+"""Direct wall-lamp interaction, shared circuits, local reactions and checkpoint migration."""
 import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -23,14 +23,14 @@ async def main():
    }
    ok(counts.shared>10,'lights still require individual switches');
    let S=fresh('m2'),P=S.player;S.guards=[];
-   let l=S.lamps.find(l=>l.roomSwitch&&G.lampCircuit(l).length>=3&&!l.fl),group=G.lampCircuit(l),at=l.control;
-   const fixture=group.find(o=>Math.hypot(o.x-at.x,o.y-at.y)>90);ok(fixture,'no separated fixture');
+   let l=S.lamps.find(l=>l.roomSwitch&&G.lampCircuit(l).length>=3&&!l.fl&&Math.hypot(l.x-G.lampControl(l).x,l.y-G.lampControl(l).y)>90),group=G.lampCircuit(l),at=G.lampControl(l);
+   const fixture=group.find(o=>Math.hypot(o.x-G.lampControl(o).x,o.y-G.lampControl(o).y)>90);ok(fixture,'no separated fixture');
    Object.assign(P,{x:fixture.x,y:fixture.y,fl:0,z:0,hide:null,under:false,vent:false});G.setLayer(0);
-   ok(!G.objectActionValid({k:'lamp',l:fixture,at:{x:P.x,y:P.y}},null),'forged light-pool position bypasses wall switch');
-   Object.assign(P,{x:at.x-at.nx*19,y:at.y-at.ny*19});
+   ok(!G.objectActionValid({k:'lamp',l:fixture,at:{x:P.x,y:P.y}},null),'light pool bypasses physical wall luminaire');
+   Object.assign(P,{x:at.x,y:at.y});
    ok(!G.skillOn('electric')&&G.electricalActionAllowed({k:'lamp',l}),'ordinary switch requires training');
    const others=S.lamps.filter(o=>!group.includes(o)).map(o=>[o,o.off]);
-   const toggle=()=>{P.interact=null;G.actPrimary({k:'lamp',l,at,viaZ:true});ok(P.interact,'switch work did not start');G.updateObjectAction(P,.4);};
+   const toggle=()=>{P.interact=null;G.actPrimary({k:'lamp',l,at,viaZ:true});ok(P.interact,'switch work did not start');for(let i=0;i<60&&P.interact;i++){S.t+=.05;G.updatePlayer(.05);}};
    toggle();ok(group.every(o=>o.off),'one switch did not darken its room');ok(others.every(([o,off])=>o.off===off),'switch darkened another room');
    toggle();ok(group.every(o=>!o.off),'room did not turn back on');
    group[1].broken=true;toggle();G.saveCheckpoint();
@@ -40,14 +40,14 @@ async def main():
    ok(group.length>=3&&group.every(o=>o.off||o.broken)&&group.some(o=>o.broken),'migration loses circuit state or broken bulbs');
    const reactions=[];
    for(const civilian of [false,true]){
-    S=fresh('m2');P=S.player;l=S.lamps.find(l=>l.roomSwitch&&G.lampCircuit(l).length>=3&&!l.fl);group=G.lampCircuit(l);at=l.control;
+    S=fresh('m2');P=S.player;l=S.lamps.find(l=>l.roomSwitch&&G.lampCircuit(l).length>=3&&!l.fl);group=G.lampCircuit(l);at=G.lampControl(l);
     const g=S.guards.find(g=>!g.dog&&!g.target&&!g.child&&!!g.civ===civilian);ok(g,'no actor fixture');
     // Map width belongs to the actual grid; select a reachable floor cell.
     const width=G.G0[0].length;
     const cell=S.lightRooms[l.circuit].cells.map(v=>({x:(v%width)*48+24,y:Math.floor(v/width)*48+24})).find(p=>!G.solidAt(Math.floor(p.x/48),Math.floor(p.y/48))&&Math.hypot(p.x-at.x,p.y-at.y)>65&&Math.hypot(p.x-at.x,p.y-at.y)<150);
     ok(cell,'no repair approach fixture');Object.assign(g,{...cell,fl:0,z:0,state:'PATROL',path:null,relight:null,climb:null,doomed:false,meter:0});
-    const upstairs={...g,id:999,fl:1,relight:null};S.guards=[g,upstairs];Object.assign(P,{x:at.x-at.nx*19,y:at.y-at.ny*19,fl:0,z:0});G.setLayer(0);
-    G.actPrimary({k:'lamp',l,at,viaZ:true});G.updateObjectAction(P,.4);
+    const upstairs={...g,id:999,fl:1,relight:null};S.guards=[g,upstairs];Object.assign(P,{x:at.x,y:at.y,fl:0,z:0});G.setLayer(0);
+    G.actPrimary({k:'lamp',l,at,viaZ:true});for(let i=0;i<60&&P.interact;i++){S.t+=.05;G.updatePlayer(.05);}
     ok(g.relight?.roomNotice&&!upstairs.relight,'room reaction missing or crosses floor');ok(group.every(o=>o.off),'instant remote restoration');
     const start={x:g.x,y:g.y};Object.assign(P,{x:-9999,y:-9999});
     for(let i=0;i<300&&l.off;i++){S.t+=.05;G.updateGuard(g,.05);}

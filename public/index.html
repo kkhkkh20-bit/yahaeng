@@ -2670,6 +2670,14 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
 #newCampaignDialog #btnNewCampaignConfirm:disabled,#pause #btnRestart2:disabled{--brand-button:var(--art-menu-danger-disabled);color:#91a0a5}
 
 /* Readable captions, actual 600-weight Korean type, and original solid emblems. */
+#skillScreen .skill-graph{grid-auto-rows:var(--skill-row,116px)}
+#skillScreen .skill-tree.fit-compact{padding:10px 8px}
+#skillScreen .skill-tree.fit-compact h3{font-size:17px}
+#skillScreen .skill-tree.fit-compact>p{font-size:11px;margin:5px 0 10px;padding-bottom:7px}
+#skillScreen .skill-tree.fit-compact .skill-node button{width:44px;height:44px;min-height:44px;margin:2px 0 14px}
+#skillScreen .skill-tree.fit-compact .skill-node button svg[data-skill-icon]{width:28px;height:28px}
+#skillScreen .skill-tree.fit-compact .skill-node .skill-label{font-size:12px;line-height:1.4}
+#skillScreen .skill-tree.fit-compact .skill-node .skill-cost{font-size:10px;bottom:-11px}
 #skillScreen .skill-tree{border-width:6px}
 #skillScreen .skill-tree+.skill-tree{border-left-width:6px}
 #skillScreen .skill-tree h3{font-size:19px;font-weight:600;gap:10px}
@@ -2782,6 +2790,13 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
 #skillScreen .back,#skillScreen #btnSkillRewards,#skillScreen #btnSkillReset,#skillScreen .skill-detail-actions button:not(:disabled):not(.skill-equip),#help .panel button,#brief .br-tools button,#brief #btnBrGo,#pause .pz-big,#end .endacts button,#caseBoard .case-board-head button{font-weight:600}
 
 /* The departure sheet and dialogue use the same ivory/ink material as the title. */
+@media(max-width:700px) and (min-height:700px){
+ #brief .br-wrap{height:auto;max-height:100%;justify-content:center}
+ #brief .br-mapcol{flex:0 1 auto}
+ #brief .br-frame{flex:0 1 auto;aspect-ratio:var(--brief-map-ratio,1.3);width:100%;box-sizing:border-box}
+ #brief .br-identities .mission-id b{font-size:14px}
+ #brief .br-identities .mission-id span,#brief .br-identities .target-profile{font-size:11px}
+}
 #brief .br-wrap{border-width:8px;gap:24px}
 #brief .br-info{gap:12px}
 #brief .br-head{align-items:center;border-bottom:2px solid #60747d;padding-bottom:16px}
@@ -3044,7 +3059,7 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
       <button class="ghost" id="btnNewCampaign" type="button" hidden>처음부터 시작</button>
     </nav>
   </div>
-  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v265 · 2026-11-10</span></footer>
+  <footer class="title-footer"><span>잠입 · 암살 · 추적</span><span>v266 · 2026-11-10</span></footer>
 </div>
 
 <dialog id="caseBoard" aria-labelledby="caseBoardTitle"><header class="case-board-head"><div><small>작전 목표 · 금성회 해체</small><h2 id="caseBoardTitle">끊어진 보고선</h2><p id="casePressure"></p></div><button type="button" id="btnCaseClose" aria-label="조직도 닫기">닫기 ×</button></header><div class="case-board-body"><div id="caseHierarchy" aria-label="금성회 간부 조직도"></div><aside id="caseDetail" aria-live="polite"></aside></div><footer><span id="caseProgress"></span><small>간부 처치 → 새 단서 → 상급자 신원과 동선 확인</small></footer></dialog>
@@ -3160,7 +3175,7 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
       <button class="pz-big" id="btnRestart2" type="button">처음부터</button>
       <button class="pz-big" id="btnMenu2" type="button">의뢰 선택</button>
       <button class="pz-big" id="btnSet2" type="button">설정</button>
-      <small class="fx-sub" id="pauseVersion">v265 · 2026-11-10</small>
+      <small class="fx-sub" id="pauseVersion">v266 · 2026-11-10</small>
     </div>
     <div class="pz-side">
       <div class="pz-todo"><small>추적할 의뢰 목표</small><div id="missionGoals"></div></div>
@@ -3237,8 +3252,8 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
 <script defer src="./assets/036013c8b6159cbcc672.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/508c79b336731eab1cb0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/a337b747256c483a23b9.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/fc6127680b1f866bf3e0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/fb06582d4c51e3c1ff07.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 <script defer src="./assets/1fce0a241f87b2439051.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
-<script defer src="./assets/9d6235c967a6ebcca1a0.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
+<script defer src="./assets/3a3c79414e5435e80dc2.js" onload="window.__boot.loaded()" onerror="window.__boot.fail('스크립트 다운로드 실패')"></script>
 </body>
 </html>

@@ -264,6 +264,9 @@ function drawFurn(x, it) {
 }
 const furnKey = it => it.t + '_' + it.w + 'x' + it.h + (it.r ? '_r' + it.r : '');  // 구운 가구 그림 열쇠: 종류_가로x세로(_r방향)
 function drawFurnArt(x, it) {
+  drawFurnBase(x,it);drawOfficeSurfaceDress(x,it);
+}
+function drawFurnBase(x, it) {
   if(drawPropFurn(x,it))return;
   if(quarterFurn(x,it))return;
   if(it.t==='locker'||it.t==='wardrobe'){drawCabinet({type:it.t,tx:it.x,ty:it.y,w:it.w,h:it.h,furn:true,fl:it.fl||0},'all',x,0);return;}

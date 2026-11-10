@@ -1,0 +1,1 @@
+PASS {'counts': {'lamps': 519, 'rooms': 211, 'shared': 113, 'uncontrolled': 0}, 'reactions': ['guard approaches and restores', 'resident approaches and restores'], 'basicSwitch': True, 'sharedPower': True, 'legacyState': True}

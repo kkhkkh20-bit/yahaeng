@@ -1,4 +1,12 @@
 /* Readable captions, actual 600-weight Korean type, and original solid emblems. */
+#skillScreen .skill-graph{grid-auto-rows:var(--skill-row,116px)}
+#skillScreen .skill-tree.fit-compact{padding:10px 8px}
+#skillScreen .skill-tree.fit-compact h3{font-size:17px}
+#skillScreen .skill-tree.fit-compact>p{font-size:11px;margin:5px 0 10px;padding-bottom:7px}
+#skillScreen .skill-tree.fit-compact .skill-node button{width:44px;height:44px;min-height:44px;margin:2px 0 14px}
+#skillScreen .skill-tree.fit-compact .skill-node button svg[data-skill-icon]{width:28px;height:28px}
+#skillScreen .skill-tree.fit-compact .skill-node .skill-label{font-size:12px;line-height:1.4}
+#skillScreen .skill-tree.fit-compact .skill-node .skill-cost{font-size:10px;bottom:-11px}
 #skillScreen .skill-tree{border-width:6px}
 #skillScreen .skill-tree+.skill-tree{border-left-width:6px}
 #skillScreen .skill-tree h3{font-size:19px;font-weight:600;gap:10px}
