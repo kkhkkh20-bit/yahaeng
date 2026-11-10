@@ -25,6 +25,10 @@ async def main():
                 for sid in ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'n1']:
                     try:
                         result = await pg.evaluate(FLOW, {'sid':sid, 'alt':alt, 'mobile':mobile})
+                        await pg.wait_for_function("__game.DLG.modal||!document.getElementById('end').hidden",polling=100)
+                        for _ in range(12):
+                            if not await pg.evaluate('__game.DLG.modal'):break
+                            await pg.evaluate('__game.advanceDialog()')
                         await pg.wait_for_function("!document.getElementById('end').hidden && document.getElementById('end').dataset.win==='1'", polling=100)
                     except Exception:
                         print('FAILED', sid, alt, mobile, await pg.evaluate('window.__flowTrace'))

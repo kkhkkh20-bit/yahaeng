@@ -2,6 +2,7 @@
 // query the same rules as perception; they never grant clearance or suppress AI.
 const INVESTIGATION_LABELS={player:['내 모습 목격','내 마지막 목격 위치'],camera:['CCTV 목격','CCTV에 찍힌 위치'],body:['쓰러진 사람 발견','쓰러진 사람 발견 지점'],person:['사람 목격','사람을 본 지점'],sound:['소리 조사','소리 발생 지점'],blood:['핏자국 발견','핏자국 발견 지점'],exit:['출구 경계','출구 경비 위치'],report:['제보 조사','제보된 조사 지점'],trace:['이상 흔적 조사','흔적 조사 지점']};
 function investigationReadout(g){
+  if(g.dispatchVisit&&g.why==='dispatch'&&g.state==='SUSPICIOUS')return{kind:'dispatch',tag:'배차 확인 중',site:'배차 단말'};
   const searching=g.state==='SEARCH'&&g.searchJob;
   const inc=searching&&(S.searchIncidents||[]).find(i=>i.id===g.searchJob.incident);
   const at=searching?g.searchOrigin:g.poi;

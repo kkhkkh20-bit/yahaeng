@@ -1,0 +1,27 @@
+{
+  "method": "Native PC/emulated-touch opportunity encounters on original maps with all AI active.\nPlayer position/uniform and m7's already-recovered manifest are progress fixtures.\nNo actor/camera/health/clock changes. Safe tools come from normal stage inventory.\nThis verifies encounters, not full mission clears or novice usability.\n",
+  "cases": [
+    {
+      "device": "pc",
+      "safe": {
+        "picks": 0,
+        "green": false,
+        "hp": 3,
+        "detected": 0,
+        "actors": 31
+      },
+      "initialPicks": 2
+    },
+    {
+      "device": "touch",
+      "safe": {
+        "picks": 0,
+        "green": false,
+        "hp": 3,
+        "detected": 0,
+        "actors": 31
+      },
+      "initialPicks": 2
+    }
+  ]
+}

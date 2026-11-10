@@ -16,7 +16,7 @@
  const edges=new Map(),shaft=new Set();
  const add=(a,b,l,up)=>{const k=K(...a);if(!edges.has(k))edges.set(k,[]);edges.get(k).push({x:b[0],y:b[1],f:b[2],l,up})};
  for(const l of S.ladders.filter(l=>l.kind==='fstair')){
-  const lo=G.stairFloor(l.tx,l.ty,l.bfl||0),hi=G.stairFloor(l.tx,l.ty,l.tfl),a=lo.compact?lo.shaft:lo.up.entry,b=hi.down.entry;
+  const lo=G.stairLower(l),hi=G.stairUpper(l),a=lo.compact?lo.shaft:lo.up.entry,b=hi.down.entry;
   const A=[Math.floor(a.x/48),Math.floor(a.y/48),l.bfl||0],B=[Math.floor(b.x/48),Math.floor(b.y/48),l.tfl];
   add(A,B,l,true);add(B,A,l,false);shaft.add(K(l.tx,l.ty,l.bfl||0));
  }
@@ -84,6 +84,6 @@
  }
  for(const g of S.guards.filter(g=>g.target&&!G.targetEliminated(g)))attack(g,true);
  settle();check(S.exitOpen,'all objectives done but exit closed');
- const e=[];for(const exit of S.exits)for(let y=0;y<G.MH;y++)for(let x=0;x<G.MW;x++)if(Math.hypot(x*48+24-exit.x,y*48+24-exit.y)<exit.r-5&&pass(x,y,0))e.push({x,y,f:0});walk(e,'exit');settle();check(S.over&&S.exitOpen,'escape did not finish successfully '+JSON.stringify({over:S.over,success:S.success}));
+ const e=[];for(const exit of S.exits.filter(e=>!G.STAGE.sewerEscape||Math.hypot(e.x-(G.STAGE.sewerEscape.entry[0]+.5)*48,e.y-(G.STAGE.sewerEscape.entry[1]+.5)*48)>2))for(let y=0;y<G.MH;y++)for(let x=0;x<G.MW;x++)if(Math.hypot(x*48+24-exit.x,y*48+24-exit.y)<exit.r-5&&pass(x,y,0))e.push({x,y,f:0});walk(e,'exit');settle();check(S.over&&S.exitOpen,'escape did not finish successfully '+JSON.stringify({over:S.over,success:S.success}));
  stop();return {sid,alt,mobile,targetsFirst,objectives:S.items.length,targets:S.guards.filter(g=>g.target).length,seconds:Math.round(S.t),trace};
 }

@@ -254,6 +254,10 @@
       "group": "mission_plan"
     },
     {
+      "path": "44_play_opportunities.js",
+      "group": "mission_plan"
+    },
+    {
       "path": "44_mission_plan.js",
       "group": "mission_plan"
     },

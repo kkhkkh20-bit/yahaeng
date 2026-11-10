@@ -47,6 +47,7 @@ function chooseEscape(){
 }
 function initMissionPlan() {
   syncFlowRoutes();
+  syncPlayOpportunities();
   if(STAGE.id==='m2'&&S.vipContractVersion!==2){
     const escort=npc('vipEscort'),d=STAGE.guards.find(g=>g.tag==='vipEscort');if(escort&&d)escort.escortWait=cloneDeep(d.escortWait);
     // Saved staff walk to their new posts; bodies and active encounters stay intact.
