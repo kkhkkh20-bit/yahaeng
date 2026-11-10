@@ -238,6 +238,10 @@
       "group": "cqc_radio"
     },
     {
+      "path": "43_sewer_routes.js",
+      "group": "surfaces"
+    },
+    {
       "path": "43_surfaces.js",
       "group": "surfaces"
     },

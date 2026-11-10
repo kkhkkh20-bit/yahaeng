@@ -43,7 +43,7 @@ function primaryActionOne() {
 function primaryActionRaw() {
   const P = S.player;
   if (actionBusy(P)) return { k: 'none', label: '…' };
-  if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: '올라가기' } : { k: 'none', label: '지하' }; }
+  if (P.under) { const w = nearSewerExit(); return w ? { k: 'surface', w, label: S.exitOpen&&sewerEscapeOutlet(w)?'남쪽 도로로 나가 탈출':'올라가기' } : { k: 'none', label: '지하' }; }
   if (P.vent) { const t = ventAmbushTarget(); if (t) return { k: 'ventKill', g: t.g, v: t.v, label: '끌어들여 기절' }; const v = nearVent(); return v ? { k: 'ventOut', v, label: v.roof ? '옥상으로 나가기' : v.street ? '거리로 나가기' : '실내로 나가기' } : { k: 'none', label: '환풍구' }; }
   if (P.hide) { const g = ambushTarget(); return g ? { k: 'ambush', g, label: '끌어들여 암살' } : { k: 'leave', label: '나오기' }; }
   if (P.jump) return { k: 'none', label: '…' };
@@ -57,10 +57,10 @@ function primaryActionRaw() {
     return { k: 'none', label: '전깃줄' };
   }
   if (P.ledge) { const lg = ledgeTarget(); return lg ? { k: 'ledgeKill', g: lg, label: lg.civ ? '끌어내리기' : '끌어내려 떨어뜨리기' } : { k: 'ledgeUp', label: '올라서기' }; }
+  if(P.cover){const cg=coverTarget();if(cg)return{k:'pull',g:cg,label:'끌어당겨 기절'};}
   if (P.z) {
     const po = pushOffTarget(); if (po) return { k: 'pushOff', g: po, at: po.climb.to, label: '배관에서 밀어 떨어뜨리기' };
     const kz = killList(); if (kz.length) return { k: kz.length === 2 && !kz.some(g => g.civ) ? 'kill2' : 'kill', list: kz.length === 2 && kz.some(g => g.civ) ? kz.slice(0, 1) : kz, label: (dist(P.x, P.y, kz[0].x, kz[0].y) > MELEE_CONTACT ? '달려들어 ' : '') + (kz[0].target ? '표적 암살' : '암살') };
-    if (P.cover) { const cg = coverTarget(); if (cg) return { k: 'pull', g: cg, label: cg.civ ? '끌어당겨 기절시키기' : '끌어당겨 암살' }; }  // 옥탑방 벽에 기대 있을 때
     const tz = nearTrap(); if (tz) return { k: 'trap', tp: tz, label: tz.label };
     const hz = nearHide(); if (hz && !(P.carrying && hz.bodies >= hz.cap)) return P.carrying ? { k: 'stash', label: '넣기' } : { k: 'hide', h: hz, label: `${hideName(hz)}에 숨기` };  // 옥탑방
     const g = dropTarget(); if (g) return { k: 'drop', g, label: '낙하 암살' };
@@ -79,7 +79,6 @@ function primaryActionRaw() {
     return { k: 'execute', label: '기절', hold: '처치' };
   }
   if (P.hidden) { const ag = ambushTarget(); if (ag) return { k: 'ambush', g: ag, label: '끌어들여 암살' }; }
-  if (P.cover) { const cg = coverTarget(); if (cg) return { k: 'pull', g: cg, label: cg.civ ? '끌어당겨 기절시키기' : '끌어당겨 암살' }; }
   const kl = killList();
   if (kl.length === 2 && !kl.some(g => g.civ)) return { k: 'kill2', list: kl, label: '동시 암살' };
   if (kl.length === 2) kl.length = 1;
@@ -109,6 +108,7 @@ function primaryActionRaw() {
   }
   { const wc = nearWinClimb(); if (wc) return { k: 'winClimb', w: wc, at: { x: wc.x, y: wc.y }, label: '벽 타고 2층 창문으로' }; }  /* 1층 창문이 먼저, 2층 창문 오르기는 ⇄ */
   const h = nearHide();
+  if(h&&!P.carrying&&sewerEscapeEntry(h)&&ugAt(h.tx,h.ty))return{k:'sewerIn',h,label:'점검 통로로 내려가기'};
   if(h&&!P.carrying)return hideSpace(h,0,true)?{k:'hide',h,label:'들어가 숨기'}:{k:'keymsg',h,label:hideName(h)+' 가득 참'};
   if(h&&P.carrying)return hideSpace(h,1)?{k:'stash',h,c:P.carrying,label:P.carrying.ko?'기절자 넣기':'시체 넣기'}:{k:'keymsg',h,label:hideName(h)+' 가득 참'};
   if (P.carrying) {const bs=nearBushSpot();return bs?{k:'stash',h:bs,c:P.carrying,label:'화단에 숨기기'}:{k:'none',label:'—'};}

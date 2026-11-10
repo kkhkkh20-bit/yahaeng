@@ -1,0 +1,15 @@
+{
+  "wallPullPriority": true,
+  "suspicionWindow": true,
+  "confirmedAlertBlocked": true,
+  "holdIncludesPull": true,
+  "untilKO": 0.5100000000000002,
+  "connectedWells": 5,
+  "foundationAvoidance": true,
+  "noLidVictory": true,
+  "physicalDescent": true,
+  "undergroundGoal": true,
+  "victoryAfterAscent": true,
+  "objectivesRequired": true,
+  "legacyTunnelPreserved": true
+}

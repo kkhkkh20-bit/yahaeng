@@ -18,6 +18,7 @@ function episodeRadioMessage(){
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
  const speaker=STAGE.story?.solo?'hero':'master';
  if(chase)return{speaker,text:speaker==='hero'?'들켰어. 모퉁이를 돌아서 숨을 곳부터 찾아야겠네.':'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};
+ if(sewerEscapeGoal())return{speaker,text:'그 통로는 남쪽 도로로 이어져. 끝에 있는 사다리로 올라와. 거기서 빠져나가자.',action:sewerEscapeGoal().text,cue:'mission:drain-outlet',priority:0};
  if((P.hidden||P.hide)&&S.alevel>=2&&S.searchCause?.kind==='player')return{speaker,text:speaker==='hero'?'여기는 안 보이나 봐. 경비가 돌아갈 때까지 기다리자.':'지금은 널 못 보는 것 같아. 경비가 돌아갈 때까지 기다려.',action:'숨은 채 대기',cue:'danger:hidden',priority:1};
  if(P.captive)return P.captive.target?{speaker,text:'이번 표적은 죽여야 해. 공격을 1초 동안 눌러.',action:tutText('{공격} 1초 길게 · 살해')}:{speaker,text:'기절시키려면 공격을 짧게 눌렀다 떼. 1초 동안 누르면 죽어.',action:tutText('{공격} 짧게 누르고 떼기 · 기절')};
  const story=episodeStoryMessage();if(story)return story;
@@ -68,7 +69,7 @@ function episodeRadioMessage(){
 // The mission stays stable. Immediate instructions belong to the radio.
 function compactObjectiveText(){
  if(!S)return '';
- if(S.exitOpen)return evidencePending()?'CCTV 기록 삭제 후 탈출':(STAGE.exitName||'출구')+'로 탈출';
+ if(S.exitOpen)return evidencePending()?'CCTV 기록 삭제 후 탈출':sewerEscapeGoal()?'남쪽 도로 맨홀로 올라가 탈출':sewerEscapeEntry(S.exit)?'공터 맨홀로 내려가 탈출':(S.exit?.name||STAGE.exitName||'출구')+'로 탈출';
  if(STAGE.firstSteps&&STAGE.storyEpisode)return '연락 서류 회수 · 동쪽 골목 탈출';
  const targets=S.spare?[]:S.guards.filter(g=>g.target),parts=[];
  if(targets.length===1)parts.push(targetName(targets[0]).split(' · ')[0]+' 처치 '+targets.filter(targetEliminated).length+'/1');

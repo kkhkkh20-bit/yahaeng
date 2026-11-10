@@ -84,10 +84,11 @@ function beginAccessFlow(kind,obj) {
   if(exit&&(flOf(P)||dist(P.x,P.y,h.x,h.y)>(vent?36:50)))return false;
   if(!vent&&(h.type!=='well'||flOf(h)||(h.z||0)))return false;
   if(kind==='surface'&&(!P.under||!ugAt(obj.tx,obj.ty)))return false;
-  if(kind==='sewerDown'&&(P.hide!==obj||!ugAt(obj.tx,obj.ty)))return false;
+  const fromWell=kind==='sewerDown'&&P.hide===obj;
+  if(kind==='sewerDown'&&(!ugAt(obj.tx,obj.ty)||!fromWell&&(P.hide||P.under||P.vent||flOf(P)||P.z||!sewerEscapeEntry(obj)||!objectReachable(obj,64))))return false;
   if(!exit&&kind!=='sewerDown'&&!objectReachable(h,64))return false;
-  const stand=accessStand(h,z,exit?{x:obj.face?.[0]||0,y:obj.face?.[1]??1}:null);if(!stand&&kind!=='sewerDown'){toast('출입할 공간이 없다',1.4);return false;}
-  const at=stand||{x:h.x,y:h.y+36},pre=!exit&&kind!=='sewerDown'?ACCESS_WORK:0,post=exit?ACCESS_WORK:0,walk=!exit&&kind!=='sewerDown'?at.length/125:0;
+  const stand=accessStand(h,z,exit?{x:obj.face?.[0]||0,y:obj.face?.[1]??1}:null);if(!stand&&!fromWell){toast('출입할 공간이 없다',1.4);return false;}
+  const at=stand||{x:h.x,y:h.y+36},pre=!exit&&!fromWell?ACCESS_WORK:0,post=exit?ACCESS_WORK:0,walk=!exit&&!fromWell?at.length/125:0;
   const F={kind,obj,h,hx:h.x,hy:h.y,z,exit,stand:at,from:{x:P.x,y:P.y,z:P.z||0,fl:flOf(P),vent:!!P.vent,under:!!P.under,hide:P.hide},walk,pre,post,core:.65,crossed:false,t:0};
   startTrav({pts:[{x:P.x,y:P.y,f:0},{x:at.x,y:at.y,f:1}],dur:walk+pre+F.core+post,phases:[{to:1,pose:'access'}],local:true,accessFlow:F});closeEnvPicker();return true;
 }
@@ -118,7 +119,7 @@ function updateAccessFlow(P,dt) {
   P.hidden=!!(P.vent||P.under||P.hide)||!s.outside;P.light=P.hidden?0:lightAt(P.x,P.y,!!P.z);
   if(F.h.type==='vent')F.obj.open=accessOpen(F)>.25;
   if(!F.sound&&F.t>=F.walk+.12){F.sound=true;play('metal',.3);noise(F.h.x,F.h.y,35,'vent',0,F.z);}
-  if(F.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.exit?F.stand.x:F.h.x;P.y=F.exit?F.stand.y:F.h.y;if(F.obj.open!=null)F.obj.open=false;if(F.kind==='surface')F.obj.spotted=false;RC=null;}
+  if(F.t>=T.dur){P.trav=null;P.moving=false;finishEnvSelection();P.x=F.exit?F.stand.x:F.h.x;P.y=F.exit?F.stand.y:F.h.y;if(F.obj.open!=null)F.obj.open=false;if(F.kind==='surface')F.obj.spotted=false;RC=null;if(F.kind==='surface'&&F.from.under&&sewerEscapeOutlet(F.obj)&&S.exitOpen&&!S.over)endGame(true);}
 }
 function drawAccessFlow() {
   const P=S.player,T=P.trav,F=T?.accessFlow;if(!F)return;const s=accessActorSample(F),h=F.h,old=playerInkKey;playerInkKey=isTouch?playerKey(P):null;

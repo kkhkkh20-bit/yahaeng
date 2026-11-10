@@ -16,6 +16,7 @@ function actPrimary(force) {
     case 'contract': cityContract(a.c); break;
     case 'rumor': spreadRumor(a.c); break;
     case 'surface': {beginAccessFlow('surface',a.w);break;}
+    case 'sewerIn': {beginAccessFlow('sewerDown',a.h);break;}
     case 'ambush': startAmbush(a.g); break;
     case 'clean': startClean(a.d); break;
     case 'loot': startLoot(a.it); break;
@@ -174,7 +175,7 @@ function actPrimary(force) {
       const g=a.g,route=coverPullRoute(g);if(!route)break;
       g.doomed=true;g.moving=false;g.path=null;
       const first=route.points[0],last=route.points.at(-1);
-      S.pull={g,points:route.points,length:route.length,x0:first.x,y0:first.y,x1:last.x,y1:last.y,t:0,dur:.24+route.length/350};
+      S.pull={g,points:route.points,length:route.length,x0:first.x,y0:first.y,x1:last.x,y1:last.y,t:0,dur:.24+route.length/350,intent:{...(g.takedownIntent||{lethal:false})},held:0,holding:true};
       P.a=Math.atan2(g.y-P.y,g.x-P.x);P.strikeT=S.pull.dur;play('cloth',.55);break;
     }
     case 'kill': case 'kill2': {

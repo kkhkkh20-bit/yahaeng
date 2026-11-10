@@ -33,6 +33,13 @@ function drawMini() {
     for (const el of [cv, document.querySelector('#hud .obj'), document.getElementById('hintCard')]) { if (!el) continue; const r = el.getBoundingClientRect(); const over = r.width > 0 && px > r.left - 40 && px < r.right + 40 && py > r.top - 70 && py < r.bottom + 40; el.classList.toggle('hudfade', over); } }
   if (!miniBase || miniBase.stage !== S) { miniBase = buildMiniBase(); miniBase.stage = S; cv.width = miniBase.width; cv.height = miniBase.height; }
   const x = cv.getContext('2d'), s = miniBase.s, P = S.player, T = v => v / TILE * s;
+  if(P.under){
+    x.fillStyle='#080d13';x.fillRect(0,0,cv.width,cv.height);x.fillStyle='#46535a';
+    for(let ty=0;ty<MH;ty++)for(let tx=0;tx<MW;tx++)if(ugAt(tx,ty))x.fillRect(tx*s,ty*s,Math.ceil(s),Math.ceil(s));
+    x.strokeStyle='#a3b6bd';x.lineWidth=1;for(const h of S.hides)if(h.type==='well'&&ugAt(h.tx,h.ty)){x.beginPath();x.arc(T(h.x),T(h.y),2.5,0,TAU);x.stroke();}
+    const goal=sewerEscapeGoal();if(goal){x.strokeStyle='#f2c46b';x.lineWidth=2;x.beginPath();x.arc(T(goal.x),T(goal.y),5,0,TAU);x.stroke();}
+    x.fillStyle='#7fd6ff';x.beginPath();x.arc(T(P.x),T(P.y),2.5,0,TAU);x.fill();return;
+  }
   x.drawImage(miniBase, 0, 0);
   if(STAGE.artSlice&&!tactical&&window.__clubView?.drawPassageMap(cv))return;
   // 화면에 보이는 범위
@@ -182,6 +189,7 @@ function pendingFirstGoal() {
 // 의뢰 목표는 목적만 안내한다. 선택한 단서만 잠시 추적하고, 준비 행동으로 공략을 강요하지 않는다.
 function nextGoal() {
   const P = S.player;
+  const sewerGoal=sewerEscapeGoal();if(sewerGoal)return sewerGoal;
   if (STAGE.steps && (S.tutI || 0) < STAGE.steps.length) {
     if(STAGE.id==='tB'&&P.captive)return{text:tutText('{공격} 짧게 눌러 붙잡은 경비 기절시키기'),where:'이 동작이 끝나면 원래 안내가 이어진다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'attack'};
     if(STAGE.id==='tB'&&S.tutI===4&&P.carrying)return{text:tutText('{행동} 몸 내려놓기 · 그다음 옷 훔쳐 입기'),where:'몸을 들고서는 옷을 갈아입을 수 없다',x:P.x,y:P.y,fl:flOf(P),tut:true,interrupt:'env'};
@@ -194,7 +202,7 @@ function nextGoal() {
   if (STAGE.city) return cityGoal();
   syncMissionTracking();
   if (evidencePending() && S.items.every(i => i.got) && !S.guards.some(g => g.target && !targetEliminated(g)) && S.camRoom) return { text: '의뢰: CCTV 신원 기록 지우기', where: STAGE.camRoom?.name || placeName(S.camRoom.x, S.camRoom.y, S.camRoom.fl) + ' 보안실', x: S.camRoom.x, y: S.camRoom.y, fl: S.camRoom.fl || 0 };
-  if (S.exitOpen) return { text: S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: '노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
+  if (S.exitOpen) return { text: sewerEscapeEntry(S.exit)?'공터 맨홀로 내려가 남쪽 도로로 탈출':S.exits && S.exits.length > 1 ? '탈출 — ' + (S.exit.name || '가까운 노란 원') : '탈출 지점으로 빠져나가기', where: sewerEscapeEntry(S.exit)?'지하 점검 통로':'노란 원', x: S.exit.x, y: S.exit.y, fl: 0, exit: true };
   { const entry=beginnerEntryGoal();if(entry)return entry;const compound=compoundGoal();if(compound)return compound;const opening=openingGoal();if(opening)return opening;const starter=starterGoal();if(starter)return starter;const apprentice=apprenticeGoal();if(apprentice)return apprentice; }
   { const fg = !S.goalManual&&!S.storyTrackManual&&pendingFirstGoal(); if (fg) return { text: fg.text, where: fg.where || '', x: fg.x??(fg.at ? tc(fg.at[0]) : null), y: fg.y??(fg.at ? tc(fg.at[1]) : null), fl: fg.fl??(fg.at ? fg.at[2] || 0 : 0) }; }
   if(!S.goalManual&&!S.storyTrackManual){const flow=actionFlowGoal();if(flow)return flow;const route=contractRouteGoal();if(route)return route;}
@@ -229,7 +237,7 @@ function objectiveLines() {
 function floorBanner(P, ptx, pty) {
   const bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
   const secure=STAGE.zones&&!P.z&&zoneInfo(P.x,P.y,0,flOf(P)).secure;
-  const k = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.wire ? '' : P.fl ? `${P.fl + 1}층${secure?' · 보안구역 · 복장 통행 불가':' 실내'}` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
+  const k = P.vent ? '환풍구 안' : P.under ? '지하 점검 통로' : P.wire ? '' : P.fl ? `${P.fl + 1}층${secure?' · 보안구역 · 복장 통행 불가':' 실내'}` : P.z ? `${P.z}층 옥상` : indoor ? '1층 실내' : '거리';
   if (!k || P.trav || P.jump) return; const el = $('floorBan'); if (!el) return;
   if (S._flk == null) { S._flk = k; return; }
   if (k === S._flk) return; S._flk = k; el.textContent = k; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');feedbackEvent('arrival',P,{label:k});
@@ -254,7 +262,7 @@ function updateHUD(force) {
   const ptx = Math.floor(P.x / TILE), pty = Math.floor(P.y / TILE), bi = bldAt(ptx, pty), indoor = bi >= 0 && !BLD[bi].vacant;
   const bnm = !P.z && !P.wire && bldAt(ptx, pty) >= 0 && BLD[bldAt(ptx, pty)].name ? ' · ' + BLD[bldAt(ptx, pty)].name : '';
   const zi0 = STAGE.zones ? pZoneInfo() : null, zk0 = zi0 ? zi0.k : STAGE.tutorial ? -1 : Z_HOS, ok0 = zi0 && permitted(zi0);
-  setText(hud.layer, 'layer', (zk0 >= 0 && !P.vent && !P.under ? (zi0.secure ? '보안구역' : ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 수로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
+  setText(hud.layer, 'layer', (zk0 >= 0 && !P.vent && !P.under ? (zi0.secure ? '보안구역' : ok0 ? '통과' : ['공개', '금지', '적진'][zk0]) + ' · ' : '') + (P.vent ? '환풍구' : P.under ? '지하 점검 통로' : P.wire ? '전깃줄' : P.fl ? `${P.fl + 1}층` : P.z ? `${P.z}층 옥상` : indoor ? '1층' : '지상') + (STAGE.zones ? '' : bnm));
   floorBanner(P, ptx, pty);
   hud.layer.dataset.l = P.vent ? 'vent' : P.under ? 'under' : P.z ? 'roof' : indoor ? 'in' : 'out';
   hud.layer.dataset.z = !P.vent && !P.under && zk0 >= 0 ? (ok0 ? 'pub' : ['pub', 'res', 'hos'][zk0]) : '';
@@ -340,7 +348,7 @@ function updateStealth(lv) {
   else if(inBush&&!P.hidden&&!P.hide&&!P.under&&!P.vent){s='risk';word='몸을 낮추세요';why='서 있으면 화단에 숨지 못한다';}
   else if(!e&&P.mode==='sneak'&&lv<.22&&!P.hide&&!P.hidden&&!P.under&&!P.vent&&!pub){s='hide';word='그늘 속';why='발소리를 낮춰 접근';}
   else if (pub) { s = 'blend'; word = S.alevel>=2?(physicallyObserved()?'통행 중':'현재 시야 밖'):'의심 없음'; why = S.alevel>=2?'주변 수색 중 · 통행만 허용 · 수상한 행동 주의':disguised() ? '통행만 허용 · 신원 확인과 작업은 별도' : '공개 구역의 평범한 통행'; }
-  else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 수로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
+  else { s = 'hide'; word = '숨음'; why = P.vent ? '환풍구 안' : P.under ? '지하 점검 통로' : P.hide ? hideName(P.hide) + ' 안' : P.hidden ? '화단 · 웅크림' : P.cover ? '엄폐 중' : inBush ? '웅크려야 숨는다' : lv < 0.22 ? '어둠 속' : '시야 밖'; }
   { // 위험 막대(어쌔신 크리드 섀도우즈식): 나를 가장 많이 알아챈 사람의 게이지만큼 눈 양옆이 찬다
     const r=observer?.progress||0;
 

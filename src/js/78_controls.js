@@ -42,7 +42,7 @@ function actIcon(a) {
   const k = a.k, lb = a.label || '';
   if (KILLISH.has(k) || ((k === 'winJump' || k === 'up') && a.kill)) return /기절|끌어내리기/.test(lb) ? 'ko' : 'kill';
   return ({ hide: 'hide', quickStash:'stash', stash: 'stash', carry: a.h||/넣기/.test(lb) ? 'stash' : 'carry', throwBody: 'carry', leave: 'leave', surface: 'climb', up: 'climb', wireRoof: 'down', ledgeUp: 'climb', leap: 'climb', jump: 'down', ventIn: 'climb', ventOut: 'down',
-    down: 'down', fdown: 'down', tunnel: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: a.h?'hide':'door', pick: 'pick',
+    down: 'down', fdown: 'down', tunnel: 'down', sewerIn: 'down', ledge: 'down', ledgeDrop: 'down', wireFall: 'down', wireOn: 'wire', wireOff: 'down', window: 'window', winJump: 'window', door: 'door', keypad: 'door', keymsg: a.h?'hide':'door', pick: 'pick',
     read: 'read', fuse: 'light', bfuse: 'light', lamp: 'light', smother: 'light', trap: 'trap', grab: 'grab', dress: 'dress', pickup: lb.startsWith('옷') ? 'dress' : 'pickup', use: 'use', dropItem: 'pickup',
     clean: 'clean', loot: 'loot', counter: 'counter', carIn: 'car', carOut: 'car', contract: 'read', wallUp: 'climb', winClimb: 'climb', winDrop: 'down', cover: 'wall', uncover: 'wall', steal: 'key', candy: 'candy', camroom: 'light', camCable: 'light' })[k] || 'dot';
 }
@@ -57,6 +57,8 @@ function actVerb(a, ic) {
   if (a.k === 'cap') return a.label;
   if(a.k==='callMeet')return '전화 걸기';
   if(a.k==='ventIn')return '들어가기';
+  if(a.k==='sewerIn')return '내려가기';
+  if(a.k==='surface'&&sewerEscapeOutlet(a.w)&&S.exitOpen)return '나가 탈출';
   if(a.k==='ventOut')return '나오기';
   if (a.k === 'dropItem') return '내려놓기';
   if (a.k === 'drag') return '먼저 기절';
