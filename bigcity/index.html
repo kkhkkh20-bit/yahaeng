@@ -4194,6 +4194,9 @@ const STAGES = [
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
     W, H, start: [10, 4 + BS - 1], exit: [10, 4 + BS - 1], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0.6, rivals: 3,
     roadsX: Array.from({ length: BX + 1 }, (_, i) => i * P), roadsY: [0, P, 2 * P, 3 * P, 3 * P + RS, 4 * P + RS, 5 * P + RS, 6 * P + RS], traffic: 84,  // 강 남쪽 둑길도 도로
+    // 높낮이: 북쪽 가로 고가도로(둘째 가로 도로 위, 가운데쯤 난간 없는 공사 구간)와 청계천을 높이 건너는 세로 고가 다리. 경사로 8칸
+    decks: [{ axis: 'x', road: P, from: P + 6, to: 6 * P - 3, ramp: 8, gaps: [{ side: 'n', from: 3 * P + 6, to: 3 * P + 12 }] },
+            { axis: 'y', road: 4 * P, from: 2 * P + 6, to: 5 * P + RS - 3, ramp: 8 }],
     blockCount: [BX, BY], blockSize: BS,
     blockOrigin: B, signals: true, climbPipes: true, cityLife: true, gangWar: true, noPrompts: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
@@ -15498,7 +15501,8 @@ function spawnCopCar() {
     const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
     if (dd < 700 || dd > 1500 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
     if ((hor ? RX : RY).some(r => (hor ? x : y) > r * TILE - 60 && (hor ? x : y) < (r + 4) * TILE + 60)) continue;  // 교차로 한가운데는 피한다
-    const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD, c: 0, ai: true, driver: true, police: true, chase: true });
+    const dz = deckSpawnZ(x, y); if (dz < 0) continue;
+    const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD, c: 0, ai: true, driver: true, police: true, chase: true });
     planTurn(v); S.vehicles.push(v); return v;
   }
   return null;
@@ -15976,7 +15980,7 @@ function makeVehicle(o) {
   return v;
 }
 function trafficInit() {
-  S.vehicles = [];
+  S.vehicles = []; decksInit();
   for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9, type: STAGE.cityLife && p.c !== 9 ? pickVType(((p.x * 73856093 ^ p.y * 19349663) >>> 0) / 4294967296) : undefined }));  // 색 9 = 경찰차
   const RX = STAGE.roadsX, RY = STAGE.roadsY, n = STAGE.traffic || 0, P = S.player;
   // 도로 위 차: 가로·세로 도로에 번갈아, 나와 너무 가깝지 않게
@@ -15985,7 +15989,8 @@ function trafficInit() {
     const road = hor ? RY[(k * 7) % RY.length] : RX[(k * 5) % RX.length], along = ((k * 977) % ((hor ? MW : MH) - 4)) + 2;
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
-    const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
+    const dz = deckSpawnZ(x, y); if (dz < 0) continue;
+    const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
     planTurn(v); S.vehicles.push(v); i++;
   }
 }
@@ -15996,11 +16001,13 @@ function planTurn(v) {
   // 앞쪽 첫 교차 도로 (이미 들어선 교차로는 건너뛴다)
   const ahead = cross.filter(r => sgn > 0 ? r * TILE > pos - 8 : (r + 4) * TILE < pos + 8).sort((a, b) => sgn > 0 ? a - b : b - a);
   const r = ahead[0]; if (r == null) { v.turn = null; return; }
+  if (onDeckLevel(v)) { v.turn = null; v.crossEnd = sgn > 0 ? (r + 4) * TILE + 4 : r * TILE - 4; return; }  // 고가 위에서는 꺾지 않는다
   const opts = [];
   const lim = hor ? MW : MH, rLim = hor ? MH : MW;
   if (sgn > 0 ? r + 4 < lim : r > 0) opts.push(v.d, v.d);  // 직진 (조금 더 자주)
   const right = (v.d + 1) % 4, left = (v.d + 3) % 4;
-  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null) continue; if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
+  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null || deckBlocksTurn(!hor, r, myRoad)) continue;  // 고가 아래 교차로에서 고가 도로로는 못 꺾는다
+    if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
   if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }
@@ -16012,7 +16019,9 @@ function aheadBlocked(v) {
   const ca = Math.cos(v.a), sa = Math.sin(v.a), P = S.player;
   const inBox = (x, y, len, half) => { const dx = x - v.x, dy = y - v.y, f = dx * ca + dy * sa, s = -dx * sa + dy * ca; return f > 30 && f < len && Math.abs(s) < half; };
   if (v.chase) return P.car && inBox(P.car.x, P.car.y, 130, 40) ? 'car' : null;  // 추격 경찰차는 내 차 말고는 서지 않는다 (사람은 밀치고 간다)
-  for (const o of S.vehicles) if (o !== v && !o.dead && inBox(o.x, o.y, 150, 34)) return 'car';
+  const up = onDeckLevel(v);
+  for (const o of S.vehicles) if (o !== v && !o.dead && onDeckLevel(o) === up && inBox(o.x, o.y, 150, 34)) return 'car';
+  if (up) return null;  // 고가 위: 사람은 없다
   if (!P.car && !P.z && !flOf(P) && inBox(P.x, P.y, 120, 30)) return 'me';
   for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && inBox(g.x, g.y, 110, 28)) return 'ped';
   return null;
@@ -16020,7 +16029,7 @@ function aheadBlocked(v) {
 function updateVehicles(dt) {
   if (!S.vehicles) return;
   for (const v of S.vehicles) {
-    if (v.dead) { v.burn = Math.max(0, v.burn - dt); continue; }
+    if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
     if (v === (S.player.car || {})) continue;  // 내 차는 updateDriving
     if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
@@ -16042,7 +16051,7 @@ function pushBodiesFromCars() {
   people.sort((a, b) => a.x - b.x);
   const reach = 80 + 40 + BODY_R;
   for (const v of S.vehicles) {
-    if (v === P.car && Math.abs(v.v) > 1) continue;
+    if ((v === P.car && Math.abs(v.v) > 1) || onDeckLevel(v)) continue;
     const hl = v.hl ?? 25, ca = Math.cos(v.a) * hl, sa = Math.sin(v.a) * hl;
     let lo = 0, hi = people.length; while (lo < hi) { const m = (lo + hi) >> 1; if (people[m].x < v.x - reach) lo = m + 1; else hi = m; }
     for (let i = lo; i < people.length && people[i].x <= v.x + reach; i++) {
@@ -16061,6 +16070,7 @@ const AI_LOOK = 72;
 function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
+  if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
   const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
@@ -16190,7 +16200,7 @@ function pedWaits(g) {
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
 const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
 function trafficStopDistance(v){
- if(v.chase)return null;
+ if(v.chase||onDeckLevel(v))return null;  // 고가 위는 신호가 없다
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
  for(const rx of STAGE.roadsX||[])for(const ry of STAGE.roadsY||[]){
   const x0=rx*TILE,y0=ry*TILE,x1=x0+4*TILE,y1=y0+4*TILE,key=rx+','+ry;
@@ -16202,14 +16212,14 @@ function trafficStopDistance(v){
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
   if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
-  const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
+  const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
   incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);
   let owner=S.vehicles.find(o=>o.id===locks[key]);
   if(owner&&!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300){delete locks[key];owner=null;}
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=S.vehicles.find(o=>o!==v&&!o.parked&&inside(o))||incoming[0]||v;
+  if(!owner)owner=S.vehicles.find(o=>o!==v&&!o.parked&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
   locks[key]=owner.id;
   if(locks[key]===v.id||inside(v))return null;
   return Math.max(0,left);
@@ -16223,12 +16233,14 @@ const carPts = v => { const hl = v.hl ?? 25, ca = Math.cos(v.a), sa = Math.sin(v
 // 차가 벽·건물·다른 차와 겹치나 (겹친 상대 차를 돌려준다: 없으면 true/false)
 function carOverlap(v) {
   const R = v.r || CAR_R;
+  if (deckBlocked(v)) return true;
   for (const [px, py] of carPts(v)) {
+    if ((v.z || 0) > 0.15) break;  // 고가 위·떨어지는 중: 땅의 벽·건물은 아래에 있다
     const tx0 = Math.floor((px - R) / TILE), tx1 = Math.floor((px + R) / TILE), ty0 = Math.floor((py - R) / TILE), ty1 = Math.floor((py + R) / TILE);
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (v.ai&&!inMap(tx,ty)||!carBlocked(tx, ty)) continue;
       const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < R) return true; }
   }
-  for (const o of S.vehicles) { if (o === v || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
+  for (const o of S.vehicles) { if (o === v || Math.abs((o.z || 0) - (v.z || 0)) > 0.5 || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
     const RR = R + (o.r || CAR_R); for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < RR) return o; }
   return false;
 }
@@ -16238,7 +16250,8 @@ function missionBoundaryHint(){
  S.boundaryHintAfter=S.t+6;
  toast(S.exitOpen?'탈출구는 이쪽이 아니야. 표시된 출구로 가자.':'아직 할 일이 남았어. 임무부터 마무리하자.',2.8);
 }
-function carMove(v, dt, turn=0) {
+function carMove(v, dt, turn=0) { const hit = carMove0(v, dt, turn); deckStep(v, dt); return hit; }
+function carMove0(v, dt, turn=0) {
   const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
   for(let i=0;i<steps;i++){
    const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;const ma=v.va??v.a;v.x+=Math.cos(ma)*v.v*dt/steps;v.y+=Math.sin(ma)*v.v*dt/steps;  // 미끄러질 때는 차머리와 다른 쪽으로 간다
@@ -16266,7 +16279,7 @@ function carMove(v, dt, turn=0) {
 }
 // 차가 사람을 친다: 빠르면 처치, 느리면 넘어뜨린다 (기절). 내가 몰면 내 짓이다
 function hitPeople(v, dt) {
-  const spd = Math.abs(v.v); if (spd < 70) return;
+  const spd = Math.abs(v.v); if (spd < 70 || onDeckLevel(v)) return;  // 고가 위 차는 땅 사람을 치지 않는다
   const mine = S.player.car === v;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) || g.z || g.off) continue;
@@ -16338,6 +16351,7 @@ function carEnter(v) {
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;
+  if ((v.z || 0) > 0.05 && !force) return;  // 고가 위에서는 내리지 않는다
   v.va = null; v.skidding = false; v.skidPrev = null;
   const out = (v.r || CAR_R) + 31, spots = [v.a - Math.PI / 2, v.a + Math.PI / 2, v.a + Math.PI, v.a].map(a => ({ x: v.x + Math.cos(a) * out, y: v.y + Math.sin(a) * out }));
   const ok = spots.find(p => !solidAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && !S.vehicles.some(o => o !== v && dist(o.x, o.y, p.x, p.y) < 50)) || spots[0];
@@ -16352,8 +16366,13 @@ function drawVehicles() {
   if (!S.vehicles) return;
   const vx0 = cam.x - W / SCALE / 2 - 120, vx1 = cam.x + W / SCALE / 2 + 120, vy0 = cam.y - H / SCALE / 2 - 120, vy1 = cam.y + H / SCALE / 2 + 120;
   if (STAGE.cityLife) { drawSkids(); drawCarScorch(); }
+  if (S.decks?.length) drawDeckShadows();
   for (const v of S.vehicles) {
-    if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1) continue;
+    if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1 || (v.z || 0) > 0.01) continue;  // 고가 위 차는 drawDecks에서
+    drawOneVehicle(v);
+  }
+}
+function drawOneVehicle(v) {
     ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(v.a + Math.PI / 2);
     drawCarBody(v);
     // 전조등 (밤): 달리는 차는 앞을 비춘다
@@ -16363,7 +16382,6 @@ function drawVehicles() {
     ctx.restore();
     if (!STAGE.cityLife && v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
     if (!STAGE.cityLife && (v.smoke > 0 || (v.hp <= 2 && !v.dead))) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
-  }
 }
 // 도로 칠: 가운데 노란 겹선, 교차로 앞 정지선과 횡단보도 (지도 그림에 한 번 굽는다)
 function drawRoadMarks(x) {
@@ -16565,6 +16583,172 @@ function screechSound() {
 const RADIO_STATIONS = ['n_title', 'n_calm'];
 const carStation = v => RADIO_STATIONS[(v.id || 0) % RADIO_STATIONS.length];
 function radioWanted() { const v = S?.player?.car; return !!(STAGE.cityLife && v && !v.dead && !S.wanted && (S.moodHi || 0) < 2); }
+
+// ---------------------------------------------------------------- 큰 도시 높낮이: 고가도로 · 높은 다리 (GTA식 가짜 3D)
+// STAGE.decks: [{ axis: 'x'|'y', road, from, to, ramp, gaps: [{ side, from, to }] }] — 칸 단위.
+//  axis 'x' = 가로 도로(road = 그 도로의 첫 줄 y), from~to = 고가가 걸친 x 칸 범위(양 끝 ramp 칸은 경사로), 폭은 도로 4칸.
+//  gaps = 난간이 없는 구간(공사 중). 그쪽으로 벗어난 차는 떨어진다.
+// 높이 단위 z: 1 = 고가 한 층. 차는 v.z를 가진다. 경사로 낮은 끝으로 들어온 차만 올라가고(옆이나 아래에서는 벽),
+// 고가 위 차는 땅 차·사람과 따로 부딪힌다. 받쳐 줄 바닥이 없는 곳으로 나가면 떨어지고, 땅에 닿을 때 높이만큼 부서진다.
+// 그리기: 높이 z인 점은 카메라 중심에서 (1 + DECK_K·z)배 바깥으로 밀어 그린다. 그래서 카메라가 비켜 갈수록 옆면이 드러나고 위에 있는 것이 조금 크게 보인다.
+const DECK_K = 0.16, DECK_THICK = 0.22, DECK_G = 7;  // 원근 세기 · 바닥판 두께(층) · 떨어지는 가속(층/초²)
+const deckS = z => 1 + DECK_K * z;
+function decksInit() {
+  S.decks = (STAGE.decks || []).map(d => {
+    const T = TILE, h = d.axis === 'x';
+    const a0 = d.from * T, a1 = (d.to + 1) * T, r = d.ramp * T, c0 = d.road * T, c1 = (d.road + 4) * T;
+    const rect = (u0, u1) => h ? { x0: u0, x1: u1, y0: c0, y1: c1 } : { x0: c0, x1: c1, y0: u0, y1: u1 };
+    return { axis: d.axis, top: rect(a0 + r, a1 - r), rampA: rect(a0, a0 + r), rampB: rect(a1 - r, a1), a0, a1, r, c0, c1, road: d.road,
+      gaps: (d.gaps || []).map(g => ({ side: g.side, u0: g.from * T, u1: (g.to + 1) * T })) };
+  });
+}
+const inR = (R, x, y, m = 0) => x >= R.x0 - m && x <= R.x1 + m && y >= R.y0 - m && y <= R.y1 + m;
+// 이 점에서 받쳐 주는 높이 (고가 위 1 · 경사로 0~1 · 땅 0)
+function deckSupport(x, y) {
+  let z = 0;
+  for (const d of S.decks || []) {
+    if (inR(d.top, x, y)) return 1;
+    const u = d.axis === 'x' ? x : y;
+    if (inR(d.rampA, x, y)) z = Math.max(z, (u - d.a0) / d.r);
+    if (inR(d.rampB, x, y)) z = Math.max(z, (d.a1 - u) / d.r);
+  }
+  return clamp(z, 0, 1);
+}
+// 이 점이 고가·경사로 옆 가장자리 밖이면, 그 가장자리에 난간이 있나 (끝 쪽은 경사로로 이어져 난간 없음)
+function deckRailAt(d, x, y) {
+  const u = d.axis === 'x' ? x : y, c = d.axis === 'x' ? y : x;
+  if (u < d.a0 || u > d.a1) return false;
+  const side = c < d.c0 ? (d.axis === 'x' ? 'n' : 'w') : c > d.c1 ? (d.axis === 'x' ? 's' : 'e') : null;
+  if (!side) return false;
+  return !d.gaps.some(g => g.side === side && u >= g.u0 && u <= g.u1);
+}
+// 차의 높이에서 막히나: 고가 위에서 난간에 닿거나, 땅 높이 차가 경사로 옆면·고가 끝에 닿을 때
+function deckBlocked(v) {
+  if (!S.decks?.length) return false;
+  const z = v.z || 0, R = v.r || CAR_R;
+  for (const [px, py] of carPts(v)) {
+    const sup = deckSupport(px, py);
+    if (sup > z + 0.3) return true;  // 경사로를 옆이나 아래에서 들이받음
+    if (z > 0.5) for (const d of S.decks) if (inR(d.top, px, py, R) || inR(d.rampA, px, py, R) || inR(d.rampB, px, py, R)) {
+      // 난간: 차 몸 원이 가장자리를 넘으면 막는다
+      for (const [ox, oy] of [[px - R, py], [px + R, py], [px, py - R], [px, py + R]]) if (deckSupport(ox, oy) < z - 0.3 && deckRailAt(d, ox, oy)) return true;
+    }
+  }
+  return false;
+}
+// 한 걸음: 받침을 따라 높이를 맞추고, 받침이 없으면 떨어진다
+function deckStep(v, dt) {
+  if (!S.decks?.length) return;
+  const sup = deckSupport(v.x, v.y), z = v.z || 0;
+  if (z > sup + 0.04) {  // 떠 있다: 떨어진다
+    v.vz = (v.vz || 0) - DECK_G * dt; v.z = z + v.vz * dt;
+    if (v.z <= sup) { const hit = -v.vz; v.z = sup; v.vz = 0; deckLand(v, hit); }
+  } else { v.z = sup; v.vz = 0; }
+}
+function deckLand(v, hit) {
+  if (hit < 2) return;
+  const near = clamp(1 - dist(v.x, v.y, S.player.x, S.player.y) / 800, 0, 1);
+  play('thud', 0.5 + 0.5 * near); play('metal', 0.6 * near, .7); S.shakeT = Math.max(S.shakeT || 0, 0.15 + 0.35 * near);
+  if (typeof fireEmit === 'function') { fireEmit(v, 'spark', 20, v); fireEmit(v, 'debris', 6, v); }
+  // 건물·벽 위로 떨어졌으면 가장 가까운 빈 자리로
+  if (carOverlap(v) === true) { const x0 = v.x, y0 = v.y; let ok = false;
+    for (let r = 24; r <= 240 && !ok; r += 24) for (let k = 0; k < 12 && !ok; k++) { const a = k / 12 * TAU; v.x = x0 + Math.cos(a) * r; v.y = y0 + Math.sin(a) * r; if (!carOverlap(v)) ok = true; }
+    if (!ok) { v.x = x0; v.y = y0; } }
+  const dmg = Math.round(hit * 0.9); v.hp -= dmg; v.smoke = 2; v.v *= 0.4;
+  if (v.hp <= 0) (STAGE.cityLife ? carExplode : carWreck)(v);
+  if (S.player.car === v && !v.dead) { S.flash = Math.max(S.flash || 0, 0.15); }
+}
+const onDeckLevel = v => (v.z || 0) > 0.3;
+// 고가 아래 교차로에서 고가 도로로 꺾지 않는다 (가로 고가 = 그 도로 줄, 세로 고가 = 그 도로 열)
+function deckBlocksTurn(roadIsRow, road, at) {
+  for (const d of S.decks || []) {
+    if ((d.axis === 'x') !== roadIsRow || d.road !== road) continue;
+    if (at * TILE + 2 * TILE > d.a0 + d.r && at * TILE + 2 * TILE < d.a1 - d.r) return true;
+  }
+  return false;
+}
+// 생성 자리: 고가 아래(땅)면 고가 위에 놓고, 경사로 위면 쓰지 않는다
+function deckSpawnZ(x, y) {
+  for (const d of S.decks || []) { if (inR(d.top, x, y, 4)) return 1; if (inR(d.rampA, x, y, 8) || inR(d.rampB, x, y, 8)) return -1; }
+  return 0;
+}
+
+// ---------------- 그리기
+// 땅에 지는 그림자: 차보다 먼저(drawVehicles 앞) 그린다. 빛은 북서쪽에서
+function drawDeckShadows() {
+  for (const d of S.decks || []) { const R = d.top, w = R.x1 - R.x0, h = R.y1 - R.y0; if (!inView(R.x0 + w / 2, R.y0 + h / 2, Math.max(w, h) / 2 + 200)) continue;
+    ctx.fillStyle = 'rgba(0,0,0,.32)'; ctx.fillRect(R.x0 + 26, R.y0 + 38, w, h);
+    for (const [Rm, a] of [[d.rampA, 1], [d.rampB, -1]]) { const g = d.axis === 'x' ? ctx.createLinearGradient(Rm.x0, 0, Rm.x1, 0) : ctx.createLinearGradient(0, Rm.y0, 0, Rm.y1);
+      g.addColorStop(a > 0 ? 0 : 1, 'rgba(0,0,0,0)'); g.addColorStop(a > 0 ? 1 : 0, 'rgba(0,0,0,.32)'); ctx.fillStyle = g; ctx.fillRect(Rm.x0 + 20, Rm.y0 + 30, Rm.x1 - Rm.x0, Rm.y1 - Rm.y0); } }
+}
+function deckPt(x, y, z) { const s = deckS(z); return [cam.x + (x - cam.x) * s, cam.y + (y - cam.y) * s]; }
+function quad(p) { ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]); ctx.closePath(); ctx.fill(); }
+// 바닥판(직사각형, 네 꼭짓점 높이 따로): 옆면(카메라 쪽만) → 윗면
+function deckSlab(R, zs, top, side) {
+  // zs: 네 꼭짓점 [x0y0, x1y0, x1y1, x0y1] 의 윗면 높이. 아랫면은 그보다 DECK_THICK 아래(땅 밑으로는 안 감)
+  const P = [[R.x0, R.y0], [R.x1, R.y0], [R.x1, R.y1], [R.x0, R.y1]];
+  const T = P.map(([x, y], i) => deckPt(x, y, zs[i])), B = P.map(([x, y], i) => deckPt(x, y, Math.max(0, zs[i] - DECK_THICK)));
+  const faces = [[0, 1, R.y0 < cam.y], [1, 2, R.x1 > cam.x], [2, 3, R.y1 > cam.y], [3, 0, R.x0 < cam.x]];
+  ctx.fillStyle = side;
+  for (const [a, b, vis] of faces) if (vis) quad([B[a], B[b], T[b], T[a]]);
+  ctx.fillStyle = top; quad(T);
+  return T;
+}
+function drawDecks() {
+  if (!S.decks?.length) return;
+  const P = S.player, pz = P.car ? P.car.z || 0 : 0, under = S.decks.some(d => (inR(d.top, P.x, P.y) || inR(d.rampA, P.x, P.y) || inR(d.rampB, P.x, P.y)) && pz < 0.5);
+  ctx.save(); if (under) ctx.globalAlpha = 0.45;  // 고가 밑에 있으면 비쳐 보이게
+  for (const d of S.decks) {
+    const all = { x0: Math.min(d.rampA.x0, d.rampB.x0), y0: Math.min(d.rampA.y0, d.rampB.y0), x1: Math.max(d.rampA.x1, d.rampB.x1), y1: Math.max(d.rampA.y1, d.rampB.y1) };
+    if (!inView((all.x0 + all.x1) / 2, (all.y0 + all.y1) / 2, Math.max(all.x1 - all.x0, all.y1 - all.y0) / 2 + 300)) continue;
+    const h = d.axis === 'x';
+    // 기둥: 고가 밑, 6칸마다 두 개
+    for (let u = d.a0 + d.r + 2 * TILE; u < d.a1 - d.r - TILE; u += 6 * TILE) for (const c of [d.c0 + TILE * 0.9, d.c1 - TILE * 0.9]) {
+      const x = h ? u : c, y = h ? c : u, [tx, ty] = deckPt(x, y, 1 - DECK_THICK);
+      ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(x + 6, y + 6, 16, 10, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#4c5159'; ctx.lineWidth = 26; ctx.lineCap = 'butt'; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.strokeStyle = '#6b717a'; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(tx - 6 * deckS(1), ty); ctx.stroke();
+    }
+    // 경사로 둘과 고가 윗면
+    const ramp = (R, low) => { const zs = h ? (low === 'a' ? [0, 1, 1, 0] : [1, 0, 0, 1]) : (low === 'a' ? [0, 0, 1, 1] : [1, 1, 0, 0]);
+      const T = deckSlab(R, zs, '#353a42', '#565c65');
+      // 오를수록 밝게 (낮은 끝이 어둡다) · 양옆 방호벽
+      const lo = low === 'a' ? [T[0], T[3]] : h ? [T[1], T[2]] : [T[2], T[3]], hi = low === 'a' ? (h ? [T[1], T[2]] : [T[2], T[3]]) : (h ? [T[0], T[3]] : [T[0], T[1]]);
+      const g = ctx.createLinearGradient((lo[0][0] + lo[1][0]) / 2, (lo[0][1] + lo[1][1]) / 2, (hi[0][0] + hi[1][0]) / 2, (hi[0][1] + hi[1][1]) / 2);
+      g.addColorStop(0, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(255,255,255,.05)'); ctx.fillStyle = g; quad(T);
+      ctx.strokeStyle = '#9aa0a8'; ctx.lineWidth = 7; const side = h ? [[T[0], T[1]], [T[3], T[2]]] : [[T[0], T[3]], [T[1], T[2]]];
+      for (const [a, b] of side) { ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); }
+      return T; };
+    ramp(d.rampA, 'a'); ramp(d.rampB, 'b');
+    const T = deckSlab(d.top, [1, 1, 1, 1], '#2c3037', '#5a6069');
+    // 차선: 가운데 노란 겹선 · 흰 점선 · 가장자리 흰 선 (윗면 높이에서)
+    ctx.save(); ctx.translate(cam.x, cam.y); ctx.scale(deckS(1), deckS(1)); ctx.translate(-cam.x, -cam.y);
+    const L = h ? [d.top.x0, d.top.x1] : [d.top.y0, d.top.y1], mid = (d.c0 + d.c1) / 2;
+    const line = (c, w, col, dash) => { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath(); if (h) { ctx.moveTo(L[0], c); ctx.lineTo(L[1], c); } else { ctx.moveTo(c, L[0]); ctx.lineTo(c, L[1]); } ctx.stroke(); };
+    line(mid - 4, 2, '#d8b440'); line(mid + 4, 2, '#d8b440'); line(mid - TILE, 2, 'rgba(230,232,236,.7)', [26, 22]); line(mid + TILE, 2, 'rgba(230,232,236,.7)', [26, 22]);
+    line(d.c0 + 8, 3, 'rgba(230,232,236,.8)'); line(d.c1 - 8, 3, 'rgba(230,232,236,.8)'); ctx.setLineDash([]);
+    // 난간 (공사 구간은 비우고 주황 방호벽 조각과 줄무늬)
+    for (const [side, c] of h ? [['n', d.c0], ['s', d.c1]] : [['w', d.c0], ['e', d.c1]]) {
+      let u = d.a0 + d.r; const end = d.a1 - d.r;
+      while (u < end) { const g = d.gaps.find(g => g.side === side && u >= g.u0 && u < g.u1), nu = g ? Math.min(end, g.u1) : Math.min(end, ...d.gaps.filter(g => g.side === side && g.u0 > u).map(g => g.u0), end);
+        if (!g) { ctx.fillStyle = '#8d939b'; if (h) ctx.fillRect(u, c - 4, nu - u, 8); else ctx.fillRect(c - 4, u, 8, nu - u); ctx.fillStyle = '#b9bec4'; if (h) ctx.fillRect(u, c - 4, nu - u, 3); else ctx.fillRect(c - 4, u, 3, nu - u); }
+        else { ctx.fillStyle = '#e07a1f'; for (let k = u; k < nu; k += 40) { if (h) ctx.fillRect(k, c - 3, 16, 6); else ctx.fillRect(c - 3, k, 6, 16); } }
+        u = nu; }
+    }
+    // 고가 가로등 불빛
+    ctx.globalCompositeOperation = 'lighter';
+    for (let u = d.a0 + d.r + TILE; u < d.a1 - d.r; u += 5 * TILE) { const x = h ? u : mid, y = h ? mid : u, g = ctx.createRadialGradient(x, y, 0, x, y, 110); g.addColorStop(0, 'rgba(255,214,150,.16)'); g.addColorStop(1, 'rgba(255,214,150,0)'); ctx.fillStyle = g; ctx.fillRect(x - 110, y - 110, 220, 220); }
+    ctx.globalCompositeOperation = 'source-over'; ctx.restore();
+    // 밤 어둠 (고가는 어둠 단계 뒤에 그려지므로 따로 어둡게)
+    ctx.fillStyle = `rgba(4,8,22,${(STAGE.nightShade ?? 0.6) * 0.5})`; quad(T);
+  }
+  ctx.restore();
+  // 고가·경사로 위 차 (높이만큼 크게)
+  const ups = (S.vehicles || []).filter(v => (v.z || 0) > 0.01 && inView(v.x, v.y, 300)).sort((a, b) => (a.z || 0) - (b.z || 0));
+  for (const v of ups) { const s = deckS(v.z); ctx.save(); ctx.translate(cam.x, cam.y); ctx.scale(s, s); ctx.translate(-cam.x, -cam.y);
+    // 떨어지는 중이면 땅에 그림자
+    drawOneVehicle(v); ctx.restore(); }
+}
 
 // ---------------------------------------------------------------- 기회 (Hitman식): 직접 보거나 엿들어 알게 된 암살 수단을 임무 칸에 모은다
 function oppsInit() {
@@ -21929,6 +22113,7 @@ function draw() {
   }
   drawOutdoorLampFixtures();
   drawTrafficSignals();
+  if (S.decks?.length && !flOf(P)) drawDecks();  // 고가도로·높은 다리: 지붕·신호등보다 위 (고가 밑 신호등은 가려진다)
   if (STAGE.cityLife) drawCuffs();
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
