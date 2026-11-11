@@ -6,6 +6,24 @@ let mapC = null, ugC = null, ventC = null, S_ugC = null, stripePat = {};
 // 큰 지도 그림(가로 4000px 넘는 것도 있다)은 휴대폰 그래픽 칩이 한 장으로 못 다뤄 매 프레임 느린 길로 그려졌다.
 // 1024px 조각으로 나눠 두고, 화면에 걸친 조각만 그린다
 const BIG_T = 1024;
+// 큰 지도: 전체를 한 장(수억 바이트)에 그린 뒤 자르지 않고, BIG_T 조각마다 그 범위(+한 칸 여유)만 바로 그린다.
+// 큰 도시(232×199칸)는 한 장이 11000×9500px라 휴대폰에서는 캔버스 한도를 넘고, 데스크톱도 처음 그릴 때 오래 멈춘다
+// 그림 자산이 준비될 때마다 바닥 지도를 바로 다시 굽지 않고, 표시만 해 두었다가 다음 그리기 시작에 한 번만 굽는다
+let mapRebuildWanted = false;
+function requestMapRebuild() { mapRebuildWanted = true; }
+function flushMapRebuild() { if (!mapRebuildWanted || !G) return; mapRebuildWanted = false; const L = CUR_F; try { setLayer(0); mapC = renderMapBig(); S.floorC = {}; } finally { setLayer(L); } }
+function renderMapBig() {
+  const T = BIG_T, Wp = MW * TILE, Hp = MH * TILE;
+  if (Wp * Hp <= 4096 * 4096) return bigify(renderMap());
+  const nx = Math.ceil(Wp / T), ny = Math.ceil(Hp / T), tiles = [];
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+    const px0 = i * T, py0 = j * T, w = Math.min(T, Wp - px0), h = Math.min(T, Hp - py0);
+    const x0 = Math.max(0, Math.floor(px0 / TILE) - 1), y0 = Math.max(0, Math.floor(py0 / TILE) - 1), x1 = Math.min(MW - 1, Math.ceil((px0 + w) / TILE)), y1 = Math.min(MH - 1, Math.ceil((py0 + h) / TILE));
+    const c = renderMap({ x0, y0, x1, y1, marks: true }), t = document.createElement('canvas'); t.width = w; t.height = h;
+    t.getContext('2d').drawImage(c, px0 - x0 * TILE, py0 - y0 * TILE, w, h, 0, 0, w, h); c.width = c.height = 1; tiles.push(t);
+  }
+  return { big: true, width: Wp, height: Hp, nx, ny, tiles };
+}
 function bigify(c) {
   if (!c) return c; const T = BIG_T, nx = Math.ceil(c.width / T), ny = Math.ceil(c.height / T), tiles = [];
   for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
@@ -277,7 +295,7 @@ function newGame(si) {
   S.bfuses=S.bfuses||[];
   for(const d of STAGE.buildingFuses||[]){const [x,y,sx,sy]=d.at;if(!S.bfuses.some(f=>f.b===d.b&&f.tx===x&&f.ty===y))S.bfuses.push({b:d.b,tx:x,ty:y,x:tc(sx),y:tc(sy),at:d.at.slice(),cut:false,t:5,guard:null});}
   S.bushes = []; for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) if (G[ty][tx] === 'B') S.bushes.push({ type: 'bush', tx, ty, x: tc(tx), y: tc(ty) });
-  mapC = bigify(renderMap()); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
+  mapC = renderMapBig(); ugC = bigify(renderSewers()); ventC = bigify(renderVents());
   S.floorC = {};
   cam.x = S.player.x; cam.y = S.player.y; S.fade = 0.6;  // 시작할 때 어둠에서 서서히
   clearTimeout(window.__hintT); clearTimeout(window.__hintT2);
@@ -570,17 +588,20 @@ function drawStairGlow(P, openB) {
 }
 // 높이 그림자: 건물·전봇대·전깃줄이 같은 방향(오른쪽 아래)으로 높이만큼 긴 그림자를 땅에 드리운다. 한 번만 구워 땅 그림에 넣는다
 const SHD = { x: 20, y: 11 };  // 한 층 높이당 그림자가 밀리는 거리(px)
-function bakeCastShadows(x) {
-  const c = document.createElement('canvas'); c.width = MW * TILE; c.height = MH * TILE; const s = c.getContext('2d');
+function bakeCastShadows(x, R) {
+  // R: 이 칸 범위만 (큰 지도 조각). 그림자가 넘어오도록 둘레 6칸 안의 건물까지 본다
+  const px0 = R ? R.x0 * TILE : 0, py0 = R ? R.y0 * TILE : 0, pw = R ? (R.x1 - R.x0 + 1) * TILE : MW * TILE, ph = R ? (R.y1 - R.y0 + 1) * TILE : MH * TILE;
+  const near = b => !R || !(b.x1 < R.x0 - 6 || b.x0 > R.x1 + 6 || b.y1 < R.y0 - 6 || b.y0 > R.y1 + 6);
+  const c = document.createElement('canvas'); c.width = pw; c.height = ph; const s = c.getContext('2d'); s.translate(-px0, -py0);
   s.fillStyle = '#000'; s.strokeStyle = '#000'; s.lineCap = 'round';
-  BLD.forEach(b => { if (b.vacant) return; const h = b.h || 1, dx = h * SHD.x, dy = h * SHD.y, x0 = b.x0 * TILE, y0 = b.y0 * TILE, x1 = (b.x1 + 1) * TILE, y1 = (b.y1 + 1) * TILE;
+  BLD.forEach(b => { if (b.vacant || !near(b)) return; const h = b.h || 1, dx = h * SHD.x, dy = h * SHD.y, x0 = b.x0 * TILE, y0 = b.y0 * TILE, x1 = (b.x1 + 1) * TILE, y1 = (b.y1 + 1) * TILE;
     s.beginPath(); s.moveTo(x1, y0); s.lineTo(x1 + dx, y0 + dy); s.lineTo(x1 + dx, y1 + dy); s.lineTo(x0 + dx, y1 + dy); s.lineTo(x0, y1); s.lineTo(x1, y1); s.closePath(); s.fill(); });
   for (const o of S.poles || []) { s.lineWidth = 7; s.beginPath(); s.moveTo(o.x, o.y + 12); s.lineTo(o.x + o.z * SHD.x * 1.1, o.y + 12 + o.z * SHD.y * 1.1); s.stroke();
     s.lineWidth = 4; const tx = o.x + o.z * SHD.x * 1.1, ty = o.y + 12 + o.z * SHD.y * 1.1; s.beginPath(); s.moveTo(tx - 14, ty + 3); s.lineTo(tx + 14, ty - 3); s.stroke(); }
   for (const w of S.wires || []) { const a = w.a, b = w.b; s.lineWidth = 2.5; s.beginPath(); s.moveTo(a.x + a.z * SHD.x, a.y + a.z * SHD.y); s.lineTo(b.x + b.z * SHD.x, b.y + b.z * SHD.y); s.stroke(); }
   s.globalCompositeOperation = 'destination-out';  // 건물 바닥 안(실내)과 건물 자기 자리에는 드리우지 않는다
-  BLD.forEach(b => { if (!b.vacant) s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE); });
-  x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, 0, 0); x.restore();
+  BLD.forEach(b => { if (!b.vacant && near(b)) s.fillRect(b.x0 * TILE, b.y0 * TILE, (b.x1 - b.x0 + 1) * TILE, (b.y1 - b.y0 + 1) * TILE); });
+  x.save(); x.globalAlpha = 0.45; x.filter = 'blur(3px)'; x.drawImage(c, px0, py0); x.restore();
 }
 function renderMap(R) {
   // R = {x0, y0, x1, y1}: 그 사각형(칸)만 그린다 (위층 평면 캐시용)
@@ -642,7 +663,7 @@ function renderMap(R) {
       x.fillStyle = '#b4b6c4'; if (asph(0, 1)) x.fillRect(px, py + TILE - 6, TILE, 6); if (asph(0, -1)) x.fillRect(px, py, TILE, 5); if (asph(-1, 0)) x.fillRect(px, py, 5, TILE); if (asph(1, 0)) x.fillRect(px + TILE - 5, py, 5, TILE);
       x.fillStyle = 'rgba(0,0,0,.35)'; if (asph(0, 1)) x.fillRect(px, py + TILE, TILE, 3);
     }
-  if (!CUR_F && STAGE.roadsX && !R) drawRoadMarks(x);  // 도시: 차선·횡단보도
+  if (!CUR_F && STAGE.roadsX && (!R || R.marks)) drawRoadMarks(x, R);  // 도시: 차선·횡단보도
   if (!CUR_F) (STAGE.decor || []).forEach(d => {
     if (d[0] === 'shade') { x.fillStyle = `rgba(${d[6] || '0,0,0'},${d[5]})`; x.fillRect(d[1] * TILE, d[2] * TILE, (d[3] - d[1] + 1) * TILE, (d[4] - d[2] + 1) * TILE); return; }
     if (d[0] === 'lane') { x.fillStyle = 'rgba(232,196,90,.75)'; for (let xx = d[1] * TILE; xx < (d[3] + 1) * TILE; xx += 48) x.fillRect(xx + 6, d[2] * TILE - 2, 28, 4); return; }
@@ -727,13 +748,13 @@ function renderMap(R) {
   // 주차된 차 · 필로티 아래 그늘
   if (!CUR_F) {
     BLD.forEach(b => { if (b.piloti) { x.fillStyle = 'rgba(0,0,0,.38)'; x.fillRect((b.x0 + 1) * TILE, (b.y0 + 1) * TILE, (b.x1 - b.x0 - 1) * TILE, (b.y1 - b.y0) * TILE); } });
-    CARS.forEach(([cx, cy, c]) => { x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(cx * TILE + 8, cy * TILE + 10, 38, 88); blit(x, 'car' + c, cx * TILE, cy * TILE, TILE, TILE * 2); });
+    CARS.forEach(([cx, cy, c]) => { if (R && (cx < rx0 - 2 || cx > rx1 + 2 || cy < ry0 - 3 || cy > ry1 + 2)) return; x.fillStyle = 'rgba(0,0,0,.4)'; x.fillRect(cx * TILE + 8, cy * TILE + 10, 38, 88); blit(x, 'car' + c, cx * TILE, cy * TILE, TILE, TILE * 2); });
   }
-  if (!CUR_F && !R) bakeCastShadows(x);
+  if (!CUR_F && (!R || R.marks)) bakeCastShadows(x, R);
   // 정면벽 아래 땅 그림자
-  if (!CUR_F) BLD.forEach(b => { if (!b.facade) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
+  if (!CUR_F) BLD.forEach(b => { if (!b.facade || (R && (b.x1 < rx0 - 2 || b.x0 > rx1 + 2 || b.y1 < ry0 - 3 || b.y1 > ry1 + 2))) return; const sl = 9 + 8 * (b.h - 1); const g = x.createLinearGradient(0, (b.y1 + 1) * TILE, 0, (b.y1 + 1) * TILE + sl); g.addColorStop(0, 'rgba(0,0,0,.34)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(b.x0 * TILE + 4, (b.y1 + 1) * TILE, (b.x1 - b.x0 + 1) * TILE, sl); });
   // 석등
-  S.lamps.forEach(l => { if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || officeReady()&&!l.outdoor&&l.fixture||purchasedReady()&&l.outdoor&&l.mount) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
+  S.lamps.forEach(l => { if (R && (l.x < (rx0 - 3) * TILE || l.x > (rx1 + 3) * TILE || l.y < (ry0 - 3) * TILE || l.y > (ry1 + 3) * TILE)) return; if (l.roomFinish || l.hearth || flOf(l) !== CUR_F || officeReady()&&!l.outdoor&&l.fixture||purchasedReady()&&l.outdoor&&l.mount) return; if (G[Math.floor(l.y / TILE)][Math.floor(l.x / TILE)] === 'P') return; x.fillStyle = 'rgba(0,0,0,.35)'; x.fillRect(l.x - 3, l.y + 2, 9, 9); x.fillStyle = '#5d626c'; x.fillRect(l.x - 4, l.y - 4, 8, 8); x.fillStyle = '#9aa0aa'; x.fillRect(l.x - 2, l.y - 2, 4, 4); });
   return c;
 }
 

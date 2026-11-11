@@ -1,4 +1,5 @@
-"""Free-mode heights: an elevated expressway and a high bridge over the river (GTA-style pseudo 3D).
+"""Free-mode heights: elevated expressways and a high bridge over the river (GTA-style pseudo 3D);
+buildings lean away from the camera.
 
 - Driving up a ramp lifts a car from z 0 to 1; on the deck the rails stop it from leaving sideways.
 - Where the rail is missing (road works) a car that leaves the deck falls, takes damage on landing
@@ -12,6 +13,7 @@ from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
 CHECK = '''()=>{const G=__game;document.getElementById('btnFree').click();while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,d=S.decks[0],T=48,out={decks:S.decks.length};
+  { const b=G.BLD.find(b=>b.facade&&b.h>=2&&Math.abs((b.x0+b.x1+1)*24-P.x)>600);out.lean=b?Math.round(G.buildingShift?G.buildingShift(b):-1):0; }
   const v=S.vehicles.find(v=>v.parked&&!v.dead);for(const o of S.vehicles)if(o!==v&&Math.abs(o.y-(d.c0+d.c1)/2)<300)o.x=-9000;
   Object.assign(v,{parked:false,ai:false,x:d.a0-60,y:d.c0+3*T,a:0,v:0,z:0,d:0});P.car=v;P.x=v.x;P.y=v.y;
   const step=(s,mx,my)=>{for(let t=0;t<s;t+=1/60){G.input.joy={x:mx,y:my,mag:Math.min(1,Math.hypot(mx,my))};G.update(1/60);}G.input.joy=null;};
@@ -38,7 +40,8 @@ async def main():
         s = await q.evaluate(CHECK); print(json.dumps(s, ensure_ascii=False)); await b.close()
     def ok(v, m):
         if not v: bad.append(m)
-    ok(s['decks'] == 2, 'expected two decks: %s' % s['decks'])
+    ok(s['decks'] == 3, 'expected three decks: %s' % s['decks'])
+    ok(abs(s['lean']) > 10, 'buildings do not lean with the camera: %s' % s['lean'])
     ok(s['up']['z'] == 1 and s['up']['pastRamp'], 'car did not climb the ramp: %s' % s['up'])
     ok(s['railed']['z'] == 1 and s['railed']['onDeck'], 'rail did not hold the car: %s' % s['railed'])
     ok(s['fall']['z'] == 0 and s['fall']['lost'] >= 2 and s['fall']['alive'], 'fall through the gap: %s' % s['fall'])

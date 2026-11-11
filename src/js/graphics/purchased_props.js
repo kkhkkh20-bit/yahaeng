@@ -12,7 +12,7 @@ function purchasedPropBlit(c,name,x,y,scale=1.5){
 }
 function refreshPurchasedProps(){
  if(!purchasedPropsDirty||!S||!mapC)return;
- const layer=CUR_F;try{setLayer(0);mapC=bigify(renderMap());S.floorC={};miniBase=null;purchasedPropsDirty=false;}finally{setLayer(layer);}
+ const layer=CUR_F;try{setLayer(0);requestMapRebuild();S.floorC={};miniBase=null;purchasedPropsDirty=false;}finally{setLayer(layer);}
 }
 function purchasedPropCargoBounds(tx,ty){
  const key='cargoStable'+(((tx*7+ty*13)%3+3)%3),r=purchasedPropFrame(key);if(!r)return null;

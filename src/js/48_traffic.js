@@ -45,8 +45,8 @@ function makeVehicle(o) {
   const v = Object.assign({ x: 0, y: 0, a: 0, v: 0, d: 0, c: 0, ai: false, parked: false, driver: false, stopT: 0, honkT: 0, burn: 0, smoke: 0, id: (S.vehN = (S.vehN || 0) + 1) }, o);
   if (!v.type) v.type = v.police ? 'police' : ['sedan', 'civic', 'hatch', 'wagon', 'luxury'][((v.c % 5) + 5) % 5];
   // 몸 크기: 그림(팩의 동쪽을 본 칸)에서 잰 길이·폭. 충돌은 앞뒤로 늘어선 원으로 덮는다
-  const T = vType(v), f = A.cityVehicles?.frames?.[T.model || v.type], len = f?.len || CAR_LEN, wid = f?.wid || CAR_W;
-  v.len = len; v.r = Math.max(CAR_R, Math.round(wid / 2)); v.hl = Math.max(8, len / 2 - v.r + 4);
+  const T = vType(v), f = A.cityVehicles?.frames?.[T.model || v.type], len = T.len || f?.len || CAR_LEN, wid = T.wid || f?.wid || CAR_W;
+  v.len = len; v.r = T.r || Math.max(CAR_R, Math.round(wid / 2)); v.hl = Math.max(8, len / 2 - v.r + 4);
   if (o.hp == null) v.hp = T.hp; v.hpMax = T.hp;
   return v;
 }
@@ -455,11 +455,13 @@ function drawOneVehicle(v) {
     if (!STAGE.cityLife && (v.smoke > 0 || (v.hp <= 2 && !v.dead))) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
 }
 // 도로 칠: 가운데 노란 겹선, 교차로 앞 정지선과 횡단보도 (지도 그림에 한 번 굽는다)
-function drawRoadMarks(x) {
-  const RX = STAGE.roadsX, RY = STAGE.roadsY, T = TILE, inX = px => RX.some(r => px >= r * T && px < (r + 4) * T), inY = py => RY.some(r => py >= r * T && py < (r + 4) * T);
+function drawRoadMarks(x, R) {
+  // R: 이 칸 범위만 (큰 지도 조각). 없으면 전체
+  const T = TILE, X0 = R ? R.x0 * T : 0, X1 = R ? (R.x1 + 1) * T : MW * T, Y0 = R ? R.y0 * T : 0, Y1 = R ? (R.y1 + 1) * T : MH * T, M = 4 * T;
+  const RX = STAGE.roadsX.filter(r => (r + 4) * T >= X0 - M && r * T <= X1 + M), RY = STAGE.roadsY.filter(r => (r + 4) * T >= Y0 - M && r * T <= Y1 + M), ALLX = STAGE.roadsX, ALLY = STAGE.roadsY, inX = px => ALLX.some(r => px >= r * T && px < (r + 4) * T), inY = py => ALLY.some(r => py >= r * T && py < (r + 4) * T);
   x.save();
-  for (const r of RY) { const cy = (r + 2) * T; for (let px = 0; px < MW * T; px += 8) { if (inX(px)) continue; x.fillStyle = '#d8b440'; x.fillRect(px, cy - 4, 8, 2); x.fillRect(px, cy + 2, 8, 2); } }
-  for (const r of RX) { const cx = (r + 2) * T; for (let py = 0; py < MH * T; py += 8) { if (inY(py)) continue; x.fillStyle = '#d8b440'; x.fillRect(cx - 4, py, 2, 8); x.fillRect(cx + 2, py, 2, 8); } }
+  for (const r of RY) { const cy = (r + 2) * T; for (let px = Math.max(0, X0 - X0 % 8); px < Math.min(MW * T, X1); px += 8) { if (inX(px)) continue; x.fillStyle = '#d8b440'; x.fillRect(px, cy - 4, 8, 2); x.fillRect(px, cy + 2, 8, 2); } }
+  for (const r of RX) { const cx = (r + 2) * T; for (let py = Math.max(0, Y0 - Y0 % 8); py < Math.min(MH * T, Y1); py += 8) { if (inY(py)) continue; x.fillStyle = '#d8b440'; x.fillRect(cx - 4, py, 2, 8); x.fillRect(cx + 2, py, 2, 8); } }
   // 횡단보도: 교차로 네 변 바로 바깥
   x.fillStyle = 'rgba(225,228,236,.55)';
   for (const rx of RX) for (const ry of RY) {

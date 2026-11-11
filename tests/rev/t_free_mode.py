@@ -19,7 +19,7 @@ async def main():
         await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats'); await q.wait_for_function('!!window.__game')
         s = await q.evaluate('''()=>({story:document.querySelector('#btnQuick b')?.textContent,free:document.querySelector('#btnFree b')?.textContent,
           freeShown:!document.getElementById('btnFree').hidden,n:__game.STAGES.length,hasCity:__game.STAGES.some(s=>s.id==='cityXL')})''')
-        await q.click('#btnFree'); await q.wait_for_timeout(1500)
+        await q.evaluate("()=>{setTimeout(()=>document.getElementById('btnFree').click(),0)}"); await q.wait_for_function('__game.STAGE&&__game.STAGE.id==="cityXL"&&__game.S&&__game.S.t>0.2', timeout=120000)  # the first frame of the big map can take a while headless
         s.update(await q.evaluate('''()=>({after:__game.STAGES.length,stage:__game.STAGE.id,isFree:!!__game.STAGE.freeMode,brief:!document.getElementById('brief').hidden,
           noPrompts:document.body.classList.contains('no-prompts'),hud:!document.getElementById('hud').hidden,save:localStorage.getItem('yahaeng.ch')})'''))
         print(json.dumps(s, ensure_ascii=False)); await b.close()

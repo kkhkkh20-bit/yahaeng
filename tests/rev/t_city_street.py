@@ -44,7 +44,7 @@ async def main():
         q.on('pageerror', lambda e: errs.append(str(e)[:300]))
         await q.add_init_script('try{localStorage.clear()}catch(e){}')
         await q.goto((R / 'build/preview_city.html').as_uri() + '?nostats'); await q.wait_for_function('!!window.__game')
-        await q.click('#btnFree'); await q.wait_for_timeout(500)
+        await q.evaluate("()=>{setTimeout(()=>document.getElementById('btnFree').click(),0)}"); await q.wait_for_function('__game.STAGE&&__game.STAGE.id==="cityXL"&&__game.S&&__game.S.t>0.2', timeout=120000)  # the first frame of the big map can take a while headless
         s = await q.evaluate(CHECK)
         async def wait_z(cond):
             try: await q.wait_for_function('()=>{const P=__game.S.player;return !P.trav&&(%s)}' % cond, timeout=15000)
