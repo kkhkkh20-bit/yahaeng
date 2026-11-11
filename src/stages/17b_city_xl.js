@@ -11,6 +11,50 @@
   const FOOD = ['국밥', '노가리', '호프', '골뱅이', '곱창', '순댓국', '백반', '분식', '포차'];
   const STORE = ['편의점', '철물', '공구', '타일', '조명', '인쇄', '전파사', '약국', '지물포'];
   const PLAY = ['PC방', '당구장', '노래방', '다방', '기원'];
+  // 블록마다 다른 필지: 안쪽 14×14 칸을 북쪽 줄 · 가운데 골목 · 남쪽 줄로 나누고, 줄마다 폭이 다른 건물과 빈터를 놓는다.
+  // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대 밀집
+  const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
+  function genBlock(m, x, y, kind) {
+    const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1)), I0 = x + 1, I1 = x + 14;
+    const yard = (x0, y0, x1, y1) => {  // 빈터: 주차장 · 마당 · 쉼터 · 노점
+      const t = r(), w = x1 - x0 + 1, h = y1 - y0 + 1; if (w < 1 || h < 1) return;
+      if (t < 0.3 && w >= 2 && h >= 3) { m.fill(x0, y0, x1, y1, '.'); for (let cx = x0; cx <= x1 && cx <= x0 + 4; cx += 2) if (r() < 0.7) m.car(cx, y0 + (h > 3 ? 1 : 0), ri(0, 4)); }
+      else if (t < 0.55) { m.fill(x0, y0, x1, y1, 'g'); for (let k = 0; k < Math.max(1, (w * h) >> 3); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.5 ? 'T' : 'B'); }
+      else if (t < 0.7 && w >= 2 && h >= 2 && kind === 'shop') m.tent(x0, y0, ['R', 'B', 'G'][ri(0, 2)]);
+      else for (let k = 0; k < Math.max(1, (w * h) >> 4); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.6 ? 'O' : 'B');
+    };
+    const tall = kind === 'shop' ? [2, 4] : kind === 'dense' ? [2, 3] : [1, 3];
+    const building = (x0, y0, x1, y1, front) => {
+      const d = y1 - y0 + 1, h = Math.max(1, Math.min(ri(tall[0], tall[1]), d - 2));
+      if (kind === 'shop' && front) m.villa(x0, y0, x1, y1, h, { kind: 'shop', use: Array.from({ length: h }, (_, f) => f ? (r() < 0.3 ? 'pc' : 'office') : r() < 0.5 ? 'food' : 'store'),
+        signs: Array.from({ length: h }, (_, f) => f === 0 ? pick(r() < 0.5 ? FOOD : STORE, x0, y0) : f === 1 && r() < 0.5 ? pick(PLAY, x0, y0) : '') });
+      else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
+    };
+    // 한 줄을 폭 6~9칸 건물과 1~2칸 틈으로 채운다. 남는 자리는 빈터
+    const row = (y0, y1, front, setback) => {
+      let cx = I0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
+      while (I1 - cx + 1 >= 5) {
+        const left = I1 - cx + 1; let w = Math.min(left, ri(5, 8)); if (left - w > 0 && left - w < 6) w = left - w <= 2 ? left : Math.max(5, left - 6);  // 끝에 애매한 자투리가 남지 않게
+        const sb = setback && r() < 0.35 ? 1 : 0;
+        if (r() < (kind === 'res' ? 0.15 : 0.06)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
+        if (sb) yard(cx, front ? y1 : y0, cx + w - 1, front ? y1 : y0);
+        cx += w; const g = r() < 0.7 ? 1 : 2; if (cx <= I1) { yard(cx, y0, Math.min(I1, cx + g - 1), y1); cx += g; }
+      }
+      if (cx <= I1) yard(cx, y0, I1, y1);
+    };
+    if (r() < 0.22) {  // 한쪽은 깊은 큰 건물(뒤 골목 없이), 나머지는 줄
+      const w = ri(7, 9), left = r() < 0.5, bx0 = left ? I0 : I1 - w + 1;
+      building(bx0, y + 2, bx0 + w - 1, y + 14, true);
+      const ox0 = left ? bx0 + w + 1 : I0, ox1 = left ? I1 : bx0 - 2;
+      if (ox1 - ox0 + 1 >= 6) { building(ox0, y + 8, ox1, y + 14, true); yard(ox0, y + 1, ox1, y + 6); } else yard(ox0, y + 1, ox1, y + 14);
+      yard(bx0, y + 1, bx0 + w - 1, y + 1);
+      return;
+    }
+    const dN = ri(5, 7), dS = ri(5, Math.min(7, 13 - dN));
+    row(y + 1, y + dN, false, true);
+    m.fill(I0, y + dN + 1, I1, y + 14 - dS, ',');  // 가운데 골목
+    row(y + 15 - dS, y + 14, true, true);
+  }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
   const LAYOUT = [
@@ -24,12 +68,8 @@
   const zones = [], gangs = []; let collecting = true;
   const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
   const T = {
-    h(m, x, y) { m.villa(x + 1, y + 1, x + 6, y + 6, 2); m.villa(x + 9, y + 1, x + 14, y + 6, 3); m.villa(x + 1, y + 9, x + 6, y + 14, 2, { kind: 'house' }); m.villa(x + 9, y + 9, x + 14, y + 14, 2); },
-    s(m, x, y) {
-      m.villa(x + 1, y + 1, x + 14, y + 6, 3, { kind: 'shop', use: ['store', 'office', 'office'], signs: [pick(STORE, x, y), pick(['동진인쇄', '선일전기', '백송상사', '을지공업사'], x, y)], name: '상가' });
-      m.villa(x + 1, y + 9, x + 6, y + 14, 2, { kind: 'shop', use: ['food', 'office'], signs: [pick(FOOD, x, y), ''] }); m.villa(x + 9, y + 9, x + 14, y + 14, 3, { kind: 'shop', use: ['pc', 'office', 'office'], signs: [pick(PLAY, x, y), pick(STORE, x, y, 1), ''] });
-      Z([x + 1, y + 1, x + 14, y + 14, 'pub']);
-    },
+    h(m, x, y) { genBlock(m, x, y, 'res'); },
+    s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + 14, y + 14, 'pub']); },
     w(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 6, 1, { kind: 'shop', use: ['store'], signs: ['청계 상회'], name: '청계 상회', back: true });
       m.villa(x + 1, y + 9, x + 8, y + 14, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '청계파 사무실', name: '청계파 사무실' });
@@ -60,7 +100,7 @@
       Z([x + 9, y + 1, x + 14, y + 8, 'res', null, '건달파 당구장', ['rival']]);
       Gp({ kind: 'g2', fac: 'B', at: [x + 11, y + 8], post: 90 }, { kind: 'g1', fac: 'B', route: [[x + 1, y + 8, 3], [x + 14, y + 8, 3]] });
     },
-    e(m, x, y) { [[x + 1, y + 1, x + 6, y + 6], [x + 9, y + 1, x + 14, y + 6], [x + 1, y + 9, x + 6, y + 14], [x + 9, y + 9, x + 14, y + 14]].forEach((r, i) => m.villa(r[0], r[1], r[2], r[3], 2 + (i % 2), i === 2 ? { kind: 'house' } : {})); },
+    e(m, x, y) { genBlock(m, x, y, 'dense'); },
     H(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 7, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '시립 병원', name: '병원' });
       m.villa(x + 1, y + 10, x + 6, y + 14, 2); m.fill(x + 8, y + 10, x + 14, y + 14, 'g'); m.many('T', [[x + 9, y + 11], [x + 13, y + 13]]);
@@ -94,7 +134,7 @@
     W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 6,
     roadsX: Array.from({ length: BX + 1 }, (_, i) => i * 20), roadsY: [0, 20, 40, 60, 60 + RS, 80 + RS, 100 + RS, 120 + RS], traffic: 52,  // 강 남쪽 둑길(75~78)도 도로
     blockCount: [BX, BY],
-    blockOrigin: B, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
+    blockOrigin: B, signals: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
       m.fill(0, 0, W - 1, H - 1, '.');
       for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
@@ -136,6 +176,7 @@
       // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
       const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
       if (shop && w >= 12) { boards.push({ image: ['can', 'chimaek', 'soju'][i % 3], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
+      else if (shop && w >= 8 && fh >= 2 && i % 2 === 1) boards.push({ image: ['chimaek', 'soju', 'can'][(i >> 1) % 3], mode: 'roof', x: 1 });
       else if (shop && fh >= 3 && i % 2 === 0) boards.push({ image: ['octopus', 'face', 'karaoke', 'octopus'][(i >> 1) % 4], mode: 'face', x: w - 2, fl: 1 });
       specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal', boards: boards.length ? boards : null,
         ad: txt && SIGN_KEY[txt] ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },

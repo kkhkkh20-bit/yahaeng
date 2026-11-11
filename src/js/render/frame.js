@@ -267,6 +267,7 @@ function draw() {
     drawWires();
   }
   drawOutdoorLampFixtures();
+  drawTrafficSignals();
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();

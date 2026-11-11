@@ -83,7 +83,7 @@ function aiDrive(v, dt) {
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
   if((v.crashUntil||0)>S.t)want=0;
-  const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)));
+  const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)),Math.max(0,stop-6)/Math.max(dt,1/60));  // 먼 차는 큰 걸음으로 움직여도 정지선을 넘지 않게
   if (v.chase && copCarArrive(v, dt)) return;
   // 교차로: 꺾을 차로가 가까워지면 미리 새 차로로 갈아탄다 (오른쪽은 짧게, 왼쪽은 크게 돈다)
   if (v.turn) { const pos = hor ? v.x : v.y, left = (v.turn.at - pos) * sgn, right = v.turn.nd === (v.d + 1) % 4;
@@ -107,6 +107,32 @@ function aiDrive(v, dt) {
 }
 // One junction reservation, released after the rear bumper clears it. Waiting
 // never authorizes driving through another car after an arbitrary timeout.
+// 신호등 (STAGE.signals): 교차로마다 남북 → 남북 황색 → 동서 → 동서 황색. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
+const SIG_T = 16;
+function signalState(rx, ry) {
+  if (!STAGE.signals) return null;
+  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T;
+  return t < 7 ? { ns: 'G', ew: 'R' } : t < 8 ? { ns: 'Y', ew: 'R' } : t < 15 ? { ns: 'R', ew: 'G' } : { ns: 'R', ew: 'Y' };
+}
+function drawTrafficSignals() {
+  if (!STAGE.signals || flOf(S.player)) return;
+  const COL = { G: '#3ee07a', Y: '#ffc23a', R: '#ff3b3b' }, ORDER = ['R', 'Y', 'G'];
+  for (const rx of STAGE.roadsX || []) for (const ry of STAGE.roadsY || []) {
+    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 4 * TILE)) continue;
+    const s = signalState(rx, ry);
+    // 네 모퉁이: 북서·남동은 동서 방향 차를, 북동·남서는 남북 방향 차를 향한다
+    for (const [cx, cy, axis] of [[x0 - 14, y0 - 14, 'ew'], [x1 + 14, y1 + 14, 'ew'], [x1 + 14, y0 - 14, 'ns'], [x0 - 14, y1 + 14, 'ns']]) {
+      const on = s[axis], vert = axis === 'ns';
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - 2, cy, 6, 14);
+      ctx.fillStyle = '#4a525a'; ctx.fillRect(cx - 1, cy - 4, 3, 16);
+      const w = vert ? 10 : 26, h = vert ? 26 : 10, bx = cx - w / 2, by = cy - h - 4;
+      ctx.fillStyle = '#14181d'; ctx.fillRect(bx, by, w, h); ctx.strokeStyle = '#59626b'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, w - 1, h - 1);
+      ORDER.forEach((c, k) => { const lx = vert ? cx : bx + 5 + k * 8, ly = vert ? by + 5 + k * 8 : by + h / 2;
+        ctx.fillStyle = c === on ? COL[c] : 'rgba(80,80,80,.6)'; ctx.beginPath(); ctx.arc(lx, ly, 3, 0, TAU); ctx.fill();
+        if (c === on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = COL[c] + '55'; ctx.beginPath(); ctx.arc(lx, ly, 8, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; } });
+    }
+  }
+}
 function trafficStopDistance(v){
  if(v.chase)return null;
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
@@ -116,6 +142,9 @@ function trafficStopDistance(v){
   const aligned=hor?v.y>y0&&v.y<y1:v.x>x0&&v.x<x1;
   const entry=hor?(sgn>0?x0-58:x1+58):(sgn>0?y0-58:y1+58),left=(entry-(hor?v.x:v.y))*sgn;
   if(!aligned||left>230||left< -4*TILE-116){if(left< -4*TILE-116&&v.junctionWait)delete v.junctionWait[key];continue;}
+  // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
+  const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
+  if(light&&light!=='G'&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-58:x1+58):(s>0?y0-58:y1+58))-(h?o.x:o.y))*s;};
   const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
@@ -196,21 +225,14 @@ function hitPeople(v, dt) {
 function updateDriving(P, mx, my, mag, dt) {
   const v = P.car; P.moving = false; P.mode = 'walk'; P.vx = 0; P.vy = 0; P.z = 0; P.fl = 0;
   if (v.dead) { carExit(true); return; }
-  let thr = 0; if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
-  if (mag > 0.15) {
-    const ta = Math.atan2(my, mx), dA = angDiff(v.a, ta);
-    // Opposite input always brakes, then reverses; road clearance never changes gear.
-    if(Math.abs(dA)>2.3){
-      thr=v.v>0?-2:-.55*Math.min(1,mag);
-      if(v.v<=0){const err=angDiff(v.a,ta+Math.PI),a0=v.a;v.a+=clamp(err*3,-1,1)*CAR_TURN*Math.min(1,Math.abs(v.v)/90)*dt;if(carOverlap(v))v.a=a0;}
-    }else{
-      thr=Math.min(1,mag);const a0=v.a;v.a+=clamp(dA*3,-1,1)*CAR_TURN*Math.max(.15,Math.min(1,Math.abs(v.v)/90))*dt;if(carOverlap(v))v.a=a0;
-    }
-  }
-  if (thr > 0) v.v = Math.min(CAR_MAX, v.v + CAR_ACC * thr * dt);
-  else if (thr < -1) v.v = Math.max(0, v.v - CAR_BRAKE * dt);
-  else if (thr < 0) v.v = Math.max(-140, v.v - CAR_ACC * 0.8 * dt);
+  if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
+  // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다
+  const fwd = mag > 0.15 ? -my : 0, steer = mag > 0.15 ? mx : 0;
+  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(CAR_MAX, v.v + CAR_ACC * Math.min(1, fwd) * dt);
+  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - CAR_ACC * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
+  // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
+  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * CAR_TURN * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
   carMove(v, dt);
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
@@ -248,7 +270,7 @@ function carEnter(v) {
     v.driver = false;
   });
   P.trav.end = () => { v.jacking = false; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
-    hint('drive', isTouch ? '운전: 화면 왼쪽을 끌어 방향 조절. 진행 반대 방향으로 끌면 제동·후진. [행동]으로 내리기' : '운전: 방향키로 조향, 진행 반대 방향으로 제동·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
+    hint('drive', isTouch ? '운전: 화면 왼쪽을 위로 끌면 가속, 아래로 끌면 제동·후진, 좌우로 핸들. [행동]으로 내리기' : '운전: ↑ 가속 · ↓ 제동·후진 · ←→ 핸들. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;

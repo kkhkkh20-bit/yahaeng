@@ -31,7 +31,7 @@ async def main():
         # 3) 차로 사람을 치면 쓰러지고 수배가 붙는다
         r = await m.evaluate("""() => { const S = window.__game.S, P = S.player, v = P.car; v.v = 0; v.a = 0; v.x = 10 * 48; v.y = 21 * 48 + 24; P.x = v.x; P.y = v.y;
           const c = S.guards.find(q => q.civ && !q.child && q.state !== 'DEAD'); c.x = v.x + 160; c.y = v.y; c.route = [{ x: c.x, y: c.y, pause: 999 }]; c.routeLine = null; c.path = null; c.wait = 99; return c.id; }""")
-        await m.keyboard.down('ArrowRight'); await m.wait_for_timeout(1400); await m.keyboard.up('ArrowRight'); await m.wait_for_timeout(300)
+        await m.keyboard.down('ArrowUp'); await m.wait_for_timeout(1400); await m.keyboard.up('ArrowUp'); await m.wait_for_timeout(300)  # 차 기준 운전: 위 = 전진
         s = await m.evaluate("(id) => { const S = window.__game.S, c = S.guards.find(q => q.id === id); return [c.state, S.wanted, S.stats.runOver || 0]; }", r)
         print('치기', s)
         if s[0] != 'DEAD' or s[1] < 1: bad.append('차로 친 사람이 안 쓰러지거나 수배가 안 붙는다 %s' % s)

@@ -1,7 +1,8 @@
 """Big-city study (?study=city-xl): river, bridges, gangs and purchased building fronts.
 
 A Cheonggyecheon-style river crosses the whole map between two riverside roads. Every north-south
-road crosses it on a bridge that cars use; nobody drives into the water. Four gangs hold turf.
+road crosses it on a bridge that cars use; nobody drives into the water, and cars stop at red
+signals. Four gangs hold turf.
 Every building has a purchased-pack front, can be entered, and shops carry Korean signboards;
 wide shops carry rooftop billboards and front signs (crab, octopus, face, karaoke).
 """
@@ -15,12 +16,18 @@ CHECK = '''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL
   const tile=(x,y)=>x>=0&&y>=0&&x<W&&y<H?G.tileG(x,y):'';
   // every column of the river: water unless it is a road (bridge) or a bridge parapet
   let gaps=0,bridges=0;for(let x=0;x<W;x++){const road=ST.roadsX.some(r=>x>=r&&x<r+4),water=[4,5,6].every(r=>tile(x,Rv.y+r)==='~');if(road){bridges++;if([0,5,10].some(r=>tile(x,Rv.y+r)!=='.'))gaps++;}else if(!water&&![4,5,6].every(r=>tile(x,Rv.y+r)==='¦'))gaps++;}
-  let wet=0,onBridge=0;for(let k=0;k<60;k++){tick(1);for(const v of S.vehicles){if(v.dead||v.parked)continue;const tx=Math.floor(v.x/48),ty=Math.floor(v.y/48);if(tile(tx,ty)==='~')wet++;if(ty>=Rv.y&&ty<Rv.y+Rv.rows)onBridge++;}}
+  // traffic for 60 s at 30 fps: nobody in the water, cars on bridges, nobody enters a junction on a solid red
+  const jx=v=>{for(const rx of ST.roadsX)for(const ry of ST.roadsY)if(v.x>=rx*48&&v.x<(rx+4)*48&&v.y>=ry*48&&v.y<(ry+4)*48)return [rx,ry];return null};
+  const SIG=16,sig=(rx,ry,t)=>{const u=((t+((rx*3+ry*5)%SIG))%SIG+SIG)%SIG;return u<7?{ns:'G',ew:'R'}:u<8?{ns:'Y',ew:'R'}:u<15?{ns:'R',ew:'G'}:{ns:'R',ew:'Y'}};
+  const was=new Map(),dirs=new Map();let wet=0,onBridge=0,entries=0,redRuns=0;
+  for(let k=0;k<60*30;k++){G.update(1/30);for(const v of S.vehicles){if(v.dead||v.parked)continue;const tx=Math.floor(v.x/48),ty=Math.floor(v.y/48);if(tile(tx,ty)==='~')wet++;if(ty>=Rv.y&&ty<Rv.y+Rv.rows)onBridge++;
+    if(!v.ai||v.chase)continue;const h=dirs.get(v.id)||[];h.push(v.d);if(h.length>15)h.shift();dirs.set(v.id,h);const j=jx(v);
+    if(j&&!was.get(v.id)){entries++;const hor=h[0]%2===0;if([0,1,1.8].every(dt=>(hor?sig(j[0],j[1],S.t-dt).ew:sig(j[0],j[1],S.t-dt).ns)==='R'))redRuns++;}was.set(v.id,!!j);}}
   const fac={};for(const g of S.guards)if(g.fac&&g.state!=='DEAD')fac[g.fac]=(fac[g.fac]||0)+1;
   const specs=ST.referenceBuildings||[],signed=specs.filter(s=>s.ad).length,roofBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='roof')).length,faceBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='face')).length,doors=G.BLD.filter(b=>!b.vacant).length;
   const north=G.astar(30,ST.roadsY[3]+1,30,Rv.y+Rv.rows+1);
   S.player.x=30*48;S.player.y=(Rv.y+5)*48;tick(.2);G.benchDraw(2);
-  return {gaps,bridges,wet,onBridge,fac,turf:Object.fromEntries(Object.entries(S.turf).map(([k,v])=>[k,v.length])),
+  return {gaps,bridges,wet,onBridge,entries,redRuns,fac,turf:Object.fromEntries(Object.entries(S.turf).map(([k,v])=>[k,v.length])),
     bld:G.BLD.length,specs:specs.length,signed,roofBoards,faceBoards,fh:G.BLD.filter(b=>b.fh>=2).length,shade:ST.nightShade,cross:north.length};
 }'''
 
@@ -39,6 +46,7 @@ async def main():
     ok(s['bridges'] >= 32, 'not every north-south road crosses the river')
     ok(s['wet'] == 0, 'a car drove into the water')
     ok(s['onBridge'] > 0, 'no car crossed a bridge')
+    ok(s['entries'] > 100 and s['redRuns'] == 0, 'cars ran red lights: %s of %s' % (s['redRuns'], s['entries']))
     ok(s['cross'] > 0, 'cannot walk across a bridge')
     ok(all(s['fac'].get(f, 0) >= 2 for f in 'ABCD'), 'four gangs are not all present: %s' % s['fac'])
     ok(all(s['turf'].get(f, 0) >= 1 for f in 'ABCD'), 'a gang has no turf: %s' % s['turf'])
