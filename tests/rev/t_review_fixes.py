@@ -3,12 +3,13 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/flow-v156';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  async with async_playwright()as p:
-  b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
+  b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`)');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
   checks=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
-   const fresh=id=>{localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
+   const fresh=id=>{localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};
    const tick=seconds=>{for(let t=0;t<seconds;t+=.01){G.S.t+=.01;G.updatePlayer(.01)}};
    let S=fresh('m1'),P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.child&&!g.target);
    for(const k of ['props','hides','notes','lamps','doors','ladders','wires','poles','corpses','items','windows','fwindows','bfuses','traps','bushes'])S[k]=[];
@@ -24,6 +25,6 @@ async def main():
    return passed;
   }''')
   for seed in [1,42,777]:
-   result=await q.evaluate('''seed=>{const G=__game;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m4'));while(G.DLG.modal)G.advanceDialog();for(let t=0;t<30&&!G.S.over;t+=.02)G.update(.02);const S=G.S;if((S.stats.npcDown||0)!==0||S.stats.kills!==0)throw Error('Ambient attack during entry');return{npcDown:S.stats.npcDown||0,playerKills:S.stats.kills,guards:S.guards.length}}''',seed);checks.append('Live 30s entry, seed '+str(seed)+': '+json.dumps(result))
+   result=await q.evaluate('''seed=>{const G=__game;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);G.start(G.STAGES.findIndex(s=>s.id==='m4'));while(G.DLG.modal)G.advanceDialog();for(let t=0;t<30&&!G.S.over;t+=.02)G.update(.02);const S=G.S;if((S.stats.npcDown||0)!==0||S.stats.kills!==0)throw Error('Ambient attack during entry');return{npcDown:S.stats.npcDown||0,playerKills:S.stats.kills,guards:S.guards.length}}''',seed);checks.append('Live 30s entry, seed '+str(seed)+': '+json.dumps(result))
   assert not errors,errors;(O/'mechanics.json').write_text(json.dumps({'checks':checks,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS',len(checks),'review-fix mechanics');await b.close()
 asyncio.run(main())

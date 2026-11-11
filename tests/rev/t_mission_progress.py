@@ -10,7 +10,8 @@ async def main():
         pg = await b.new_page()
         errors = []
         pg.on('pageerror', lambda e: errors.append(str(e)))
-        await pg.add_init_script('window.requestAnimationFrame=()=>0')
+        # Detailed screen text: this test checks the remaining-target toast, which the minimal default leaves to the objective panel.
+        await pg.add_init_script('window.requestAnimationFrame=()=>0;try{localStorage.setItem(`yahaeng.guide`,`full`)}catch(e){}')
         await pg.goto((ROOT/'build/preview_city.html').as_uri())
         await pg.wait_for_function('!!window.__game')
         result = await pg.evaluate('''()=>{

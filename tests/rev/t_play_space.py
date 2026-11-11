@@ -4,6 +4,7 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 R=Path(__file__).resolve().parents[2];O=R/'build/play-space-v215';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
@@ -11,7 +12,7 @@ async def main():
   for width,height,touch in [(390,640,True),(390,844,True),(844,390,True),(1280,800,False)]:
    q=await browser.new_page(viewport={'width':width,'height':height},has_touch=touch,is_mobile=touch);errors=[]
    q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('localStorage.clear()')
+   await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`)')
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game&&(!window.__boot||window.__boot.state.ready)')
    await q.click('#btnQuick');await q.locator('#episodeRadio').wait_for(state='visible')
    assert not await q.locator('#episodeRadio').evaluate('e=>!!e.closest(".obj")'),'radio is still folded into mission'

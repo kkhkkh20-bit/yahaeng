@@ -3,12 +3,13 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2]
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch()
   for touch in [False,True]:
    q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
+   await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
    await q.evaluate('''()=>{const G=__game;window.fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};let S=fresh('m4');G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','dart']});S=fresh('m4');const P=S.player,g=S.guards[0],other=S.guards[1];Object.assign(P,{x:1584,y:792,a:0,fl:0,z:0});Object.assign(g,{x:1440,y:792,fl:0,z:0,state:'PATROL',doomed:false});Object.assign(other,{x:1690,y:792,fl:0,z:0,state:'PATROL',doomed:false});S.guards=[g,other];S.cams=[];S.facOn=false;G.updateHUD(true);G.moveCamera(1);G.benchDraw(1)}''')
    if touch:
     await q.tap('#btnToolNext');await q.tap('#tools [data-t="kunai"]')

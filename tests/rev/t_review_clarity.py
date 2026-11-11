@@ -6,13 +6,14 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2]
 O=R/'build/physical-v190/clarity';O.mkdir(parents=True,exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
   b=await p.chromium.launch()
   for w,h,touch in [(1280,800,False),(390,844,True),(844,390,True),(320,568,True)]:
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0')
+   await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0')
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
    checks=await q.evaluate('''()=>{
     const G=__game,out=[],ok=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};

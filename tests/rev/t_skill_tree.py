@@ -3,10 +3,11 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/skills-v150';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-  await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
+  await q.add_init_script('window.requestAnimationFrame=()=>0;localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`)');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
   result=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},passed=[];
    ok(G.SKILL_TREE.length===27&&['body','assassin','tools'].every((k,i)=>G.SKILL_TREE.filter(s=>s.branch===k).length===[8,9,10][i]),'Revised 27-node trees missing');
@@ -17,10 +18,10 @@ async def main():
    ok(G.resetTreeSkills()&&G.skillSpent(G.loadSkillTree())===0,'Lobby reset did not refund');
    localStorage.setItem('yahaeng.skillTree.v1',JSON.stringify({schema:1,learned:['chain','quietStep','quietStep','unknown']}));
    ok(G.loadSkillTree().learned.join(',')==='quietStep','Corrupt/duplicate/orphan save accepted');
-   G.closeAssassinMenu();localStorage.clear();
+   G.closeAssassinMenu();localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);
    const mission=G.STAGES.find(s=>s.id==='m1'),legacy={_clear:true};mission.challenges.slice(0,5).forEach(id=>legacy[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:legacy}));
    const migrated=G.loadSkillTree();ok(!migrated.learned.length,'Achievement flags automatically grant skills');ok(G.skillSpent(migrated)<=G.skillBudget(),'Migration exceeds available budget');
-   localStorage.clear();passed.push('27 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
+   localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);passed.push('27 nodes, prerequisite/point/duplicate checks, refund, corrupt save and v147 migration');
    G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();let S=G.S,P=S.player;
    const base={kunai:P.kunai,stones:P.stones,picks:P.picks};
    G.openAssassinMenu();ok(!G.learnTreeSkill('kit')&&!G.learnTreeSkill('smoke'),'Field learning is still available');G.closeAssassinMenu();G.storeSkillTree({schema:1,rewardVersion:152,learned:['kit','smoke']});G.syncRuntimeSkills();
@@ -70,7 +71,7 @@ async def main():
    return ['actual displacement: crouch, sprint and body carry; actual AI hearing/detection/foliage; constrained flank attack'];
   }''')
   result+=await q.evaluate('''()=>{
-   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.elite);S.guards=[g];let place=null;
+   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player,g=S.guards.find(g=>!g.civ&&!g.dog&&!g.elite);S.guards=[g];let place=null;
    for(let y=1;y<G.MH-1&&!place;y++)for(let x=1;x<G.MW-1&&!place;x++){const z=G.rLv(x,y);if(z<1||z>2||G.robAt(x,y))continue;for(const[dx,dy]of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;if(!G.rLv(nx,ny)&&G.bldAt(nx,ny)<0&&!G.solidAt(nx,ny)){place={x,y,z,nx,ny};break;}}}
    ok(place,'No real roof edge available');Object.assign(P,{x:place.x*48+24,y:place.y*48+24,z:place.z,fl:0,strikeT:0,carrying:null,captive:null,hide:null,jump:null,trav:null,wire:null});Object.assign(g,{x:place.nx*48+24,y:place.ny*48+24,z:0,fl:0,state:'PATROL',child:false,civ:false,dog:false,elite:false,doomed:false,climb:null});
    ok(!G.dropTarget(),'Unlearned drop is available');G.storeSkillTree({schema:1,rewardVersion:152,learned:['silentHands','drop']});G.syncRuntimeSkills();ok(G.dropTarget()===g,'Learned real roof drop unavailable');
@@ -79,11 +80,11 @@ async def main():
    return ['learned drop from a real roof: locked before purchase, physical descent and held lethal outcome'];
   }''')
   result+=await q.evaluate('''()=>{
-   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.slice(0,5).forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.t=12;delete S.skills;delete S.skillGrants;delete P.blades;S.perks={pick:true,can:false,dart:true};const before={picks:P.picks,kunai:P.kunai,stones:P.stones};G.saveCheckpoint();ok(G.loadCheckpoint(),'Old checkpoint rejected');const after=G.S.player;ok(after.picks===before.picks&&after.kunai===before.kunai&&after.stones===before.stones,'v147 checkpoint receives duplicate gear');
+   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.slice(0,5).forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.start(G.STAGES.findIndex(s=>s.id==='m1'));while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;S.t=12;delete S.skills;delete S.skillGrants;delete P.blades;S.perks={pick:true,can:false,dart:true};const before={picks:P.picks,kunai:P.kunai,stones:P.stones};G.saveCheckpoint();ok(G.loadCheckpoint(),'Old checkpoint rejected');const after=G.S.player;ok(after.picks===before.picks&&after.kunai===before.kunai&&after.stones===before.stones,'v147 checkpoint receives duplicate gear');
    G.syncRuntimeSkills();ok(!after.blades,'old achievement flags grant unlearned equipment');return ['v147 checkpoint migration preserves consumed gear without duplication'];
   }''')
   result+=await q.evaluate('''()=>{
-   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.storeSkillTree({schema:1,learned:['kit','kunai','smoke','radio','hack']});const i=G.STAGES.findIndex(s=>s.id==='m6');G.start(i);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;ok(G.STAGE.bare&&!P.blades&&!P.smokes&&!P.hackDevice&&G.toolCount('hack')===0&&!G.actHack(),'Bare start materializes learned gadgets');G.giveKey('gear');ok(P.blades===2&&P.smokes===1&&P.hackDevice===1,'Recovered kit lacks learned gadgets');P.smokes=0;G.syncRuntimeSkills();ok(!P.smokes,'Recovering kit enables repeated refill');for(const k of ['stonesUsed','kunaiUsed','coins','bladesUsed','smokesUsed']){S.stats.stonesUsed=S.stats.kunaiUsed=S.stats.coins=S.stats.bladesUsed=S.stats.smokesUsed=0;S.stats[k]=1;ok(!G.challengeStatus('nolure'),'Throwing challenge ignores '+k);}return ['bare start requires physical equipment; recovering confiscated kit grants owned tools once; new thrown tools affect challenge evaluation'];
+   const G=__game,ok=(v,m)=>{if(!v)throw Error(m)};localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);const st=G.STAGES.find(s=>s.id==='m1'),r={_clear:true};st.challenges.forEach(id=>r[id]=true);localStorage.setItem('yahaeng.ch',JSON.stringify({m1:r}));G.storeSkillTree({schema:1,learned:['kit','kunai','smoke','radio','hack']});const i=G.STAGES.findIndex(s=>s.id==='m6');G.start(i);while(G.DLG.modal)G.advanceDialog();const S=G.S,P=S.player;ok(G.STAGE.bare&&!P.blades&&!P.smokes&&!P.hackDevice&&G.toolCount('hack')===0&&!G.actHack(),'Bare start materializes learned gadgets');G.giveKey('gear');ok(P.blades===2&&P.smokes===1&&P.hackDevice===1,'Recovered kit lacks learned gadgets');P.smokes=0;G.syncRuntimeSkills();ok(!P.smokes,'Recovering kit enables repeated refill');for(const k of ['stonesUsed','kunaiUsed','coins','bladesUsed','smokesUsed']){S.stats.stonesUsed=S.stats.kunaiUsed=S.stats.coins=S.stats.bladesUsed=S.stats.smokesUsed=0;S.stats[k]=1;ok(!G.challengeStatus('nolure'),'Throwing challenge ignores '+k);}return ['bare start requires physical equipment; recovering confiscated kit grants owned tools once; new thrown tools affect challenge evaluation'];
   }''')
   assert not errors,errors;(O/'mechanics.json').write_text(json.dumps({'checks':result,'pageErrors':errors},ensure_ascii=False,indent=2));print('PASS','; '.join(result));await b.close()
 asyncio.run(main())

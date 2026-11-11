@@ -6,13 +6,14 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 from episode_training import continue_episode
 R=Path(__file__).resolve().parents[2];O=R/'build/physical-v190/vip-rules';O.mkdir(parents=True,exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
   b=await p.chromium.launch()
   for w,h,touch in [(1280,800,False),(390,844,True),(844,390,True),(320,568,True)]:
    q=await b.new_page(viewport={'width':w,'height':h},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate('localStorage.clear()')
+   await q.add_init_script('window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game');await q.evaluate('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`)')
    checks=await q.evaluate('''()=>{
     const G=__game,out=[],ok=(v,m)=>{if(!v)throw Error(m)},fresh=()=>{G.start(G.STAGES.findIndex(s=>s.id==='m2'));while(G.DLG.modal)G.advanceDialog();return G.S};window.vipFresh=fresh;
     let S=fresh(),P=S.player,g=S.guards[0];ok(G.STAGE.start.join()==='18,21'&&G.zoneInfo(P.x,P.y,0,0).k===G.Z_PUB,'public club entry missing');ok(G.nextGoal().text.includes('관찰')&&!G.nextGoal().text.includes('금고'),'mandatory vault still comes first');ok(g.hasKey==='code'&&g.wait>20,'physical memo or opening observation window missing');Object.assign(P,{x:1272,y:762});G.update(.1);ok(S.vipObserved&&G.nextGoal().g===g,'broad front approach still blocks observation');G.selectMissionGoal('item:0');ok(G.nextGoal().id==='item:0','manual ledger choice overridden');G.selectAutoGoal();ok(G.nextGoal().g===g,'auto cannot return to target');out.push('public observation first, real opening window and free objective order');
