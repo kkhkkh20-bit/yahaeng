@@ -11,7 +11,8 @@ async def main():
   for touch in [False,True]:
    q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch,is_mobile=touch)
    errors=[];q.on('pageerror',lambda err:errors.append(str(err)))
-   await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0')
+   # Detailed screen text: this test also checks the confirmation toast for stashing an unconscious body.
+   await q.add_init_script("localStorage.clear();localStorage.setItem('yahaeng.guide','full');window.requestAnimationFrame=()=>0")
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!window.__game',polling=100)
    await q.wait_for_function('__game.prBench().n>0',polling=100)
    await q.evaluate("""()=>{const G=__game;
