@@ -5,6 +5,8 @@ Built by tools/import_river_strip.py from:
   purchased by the project owner. Copyright GuttyKreum. All rights reserved.
   The pack licence allows derivative works inside the purchaser's own products.
 
+The elevated-road rails (deck.webp, tools/import_deck_rails.py) are cut from the same pack's tilemap.
+
 This picture is part of Yahaeng, not open-source art or a reusable asset pack.
 No permission is granted to extract or reuse it outside this game.
 The original pack ZIP, tilemap and example scene are private and are not in this repository.

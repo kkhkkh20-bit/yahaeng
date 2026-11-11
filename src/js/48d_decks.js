@@ -88,6 +88,18 @@ function deckSpawnZ(x, y) {
 }
 
 // ---------------- 그리기
+// 난간: 구매 팩 운하 다리의 흰 난간 보(16px 마디)를 이어 붙이고, 5칸마다 등기둥. 가로 고가는 90도 돌린다
+const deckArt = A.cityDeck, deckAtlas = deckArt ? Object.assign(new Image(), { src: deckArt.src }) : null;
+function deckBeam(u0, u1, c, h) {
+  const f = deckArt?.frames?.beam?.rect, L = deckArt?.frames?.lanternW?.rect;
+  if (!f || !deckAtlas.complete || !deckAtlas.naturalWidth) { ctx.fillStyle = '#b9bec4'; if (h) ctx.fillRect(u0, c - 5, u1 - u0, 10); else ctx.fillRect(c - 5, u0, 10, u1 - u0); return; }
+  const k = 1.5, bw = f[2] * k, seg = f[3] * k;
+  ctx.save(); ctx.imageSmoothingEnabled = false; ctx.translate(h ? u0 : c, h ? c : u0); if (h) ctx.rotate(-Math.PI / 2);
+  const len = u1 - u0, dir = h ? -1 : 1;  // 돌린 좌표에서 길이 방향은 h 면 -y
+  for (let t = 0; t < len; t += seg) { const n = Math.min(seg, len - t), sh = n / k; ctx.drawImage(deckAtlas, f[0], f[1], f[2], sh, -bw / 2, h ? -t - n : t, bw, n); }
+  if (L) for (let t = TILE * 2; t < len - TILE; t += TILE * 5) ctx.drawImage(deckAtlas, L[0], L[1], L[2], L[3], -L[2] * k / 2, (h ? -t : t) - L[3] * k / 2, L[2] * k, L[3] * k);
+  ctx.restore();
+}
 // 땅에 지는 그림자: 차보다 먼저(drawVehicles 앞) 그린다. 빛은 북서쪽에서
 function drawDeckShadows() {
   for (const d of S.decks || []) { const R = d.top, w = R.x1 - R.x0, h = R.y1 - R.y0; if (!inView(R.x0 + w / 2, R.y0 + h / 2, Math.max(w, h) / 2 + 200)) continue;
@@ -145,7 +157,7 @@ function drawDecks() {
     for (const [side, c] of h ? [['n', d.c0], ['s', d.c1]] : [['w', d.c0], ['e', d.c1]]) {
       let u = d.a0 + d.r; const end = d.a1 - d.r;
       while (u < end) { const g = d.gaps.find(g => g.side === side && u >= g.u0 && u < g.u1), nu = g ? Math.min(end, g.u1) : Math.min(end, ...d.gaps.filter(g => g.side === side && g.u0 > u).map(g => g.u0), end);
-        if (!g) { ctx.fillStyle = '#8d939b'; if (h) ctx.fillRect(u, c - 4, nu - u, 8); else ctx.fillRect(c - 4, u, 8, nu - u); ctx.fillStyle = '#b9bec4'; if (h) ctx.fillRect(u, c - 4, nu - u, 3); else ctx.fillRect(c - 4, u, 3, nu - u); }
+        if (!g) deckBeam(u, nu, c, h);
         else { ctx.fillStyle = '#e07a1f'; for (let k = u; k < nu; k += 40) { if (h) ctx.fillRect(k, c - 3, 16, 6); else ctx.fillRect(c - 3, k, 6, 16); } }
         u = nu; }
     }
