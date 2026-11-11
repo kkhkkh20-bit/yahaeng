@@ -71,7 +71,7 @@ function cityLodStep(o, dt, calm) {
   const d = Math.min(o.lodDt, CITY_LOD_MAX_DT); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
-  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt);
+  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) cityLifeUpdate(dt);
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
@@ -156,7 +156,7 @@ function cityScream(g, x, y) {
   addWanted(1, '주민이 경찰에 신고했다');
 }
 // 경찰차 (수배 ★★부터): 도로를 따라 나에게 온다. 가까워지면 서서 경찰 둘이 내린다 (빈 경찰차는 빼앗을 수 있다)
-const WANT_PCARS = [0, 0, 1, 2, 2, 3];
+const WANT_PCARS = [0, 1, 1, 2, 3, 3];  // 수배 ★1부터 경찰차가 온다
 function spawnCopCar() {
   const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 120, vh = H / SCALE / 2 + 120;
   for (let k = 0; k < 60; k++) {
@@ -175,7 +175,8 @@ function copCarArrive(v, dt) {
   if (!(d < 300 && slowMe)) return false;
   v.v = Math.max(0, v.v - CAR_BRAKE * dt); if (v.v > 5) { v.x += Math.cos(v.a) * v.v * dt; v.y += Math.sin(v.a) * v.v * dt; return true; }
   v.chase = false; v.ai = false; v.parked = true; v.driver = false; v.deployed = true; play('switch', 0.5);
-  for (const s of [-1, 1]) { const a = v.a + s * Math.PI / 2, x = v.x + Math.cos(a) * 50, y = v.y + Math.sin(a) * 50; const g = spawnCop(); if (g) { g.x = x; g.y = y; g.path = null; copChase(g); } }
+  if (STAGE.cityLife) deployFromCar(v);  // 경찰차는 경찰, 조직 차는 그 조직원 둘
+  else for (const s of [-1, 1]) { const a = v.a + s * Math.PI / 2, x = v.x + Math.cos(a) * 50, y = v.y + Math.sin(a) * 50; const g = spawnCop(); if (g) { g.x = x; g.y = y; g.path = null; copChase(g); } }
   return true;
 }
 function updateCopCars(dt) {

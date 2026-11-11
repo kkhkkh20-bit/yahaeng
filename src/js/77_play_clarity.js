@@ -113,7 +113,7 @@ function drawEncounter(x,y,rows) {
   });ctx.restore();
 }
 function queueEncounter(P,rows) {
-  if(isTouch||!rows.length||!TAGQ)return false;
+  if(isTouch||!rows.length||!TAGQ||STAGE.noPrompts)return false;
   const s=encounterSize(rows);if(!s.entries.length)return false;
   TAGQ.push({x:P.x,y:P.y+Math.max(22*s.k,18)+s.height/2,rows:s.entries,text:s.entries.map(r=>r.text).join('|'),pri:4.2});return true;
 }

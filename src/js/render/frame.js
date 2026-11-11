@@ -53,6 +53,7 @@ function draw() {
   if (showRoutes || tactical) drawRoutes(P);
   drawCityEntryThresholds();drawTrapsGround(); drawProps();
   for (const d of S.decals) { if (!onGround(d)) continue; ctx.save(); ctx.translate(d.x, d.y); ctx.rotate(d.rot); ctx.fillStyle = 'rgba(110,14,18,.82)'; ctx.beginPath(); ctx.ellipse(0, 0, d.r, d.r * 0.7, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(d.r * 0.8, d.r * 0.4, d.r * 0.3, 0, TAU); ctx.fill(); ctx.restore(); }
+  if (STAGE.cityLife) drawBloodParts();
   for (const it of S.items) if (!it.got && onGround(it)) drawLootItem(it);
   for (const n of S.notes || []) if (onGround(n)) drawNote(n);
   drawLoud(0); drawCams(0);
@@ -139,7 +140,7 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
-  if (studyStage() && !DBG.neon) drawBillboardsLit();
+  if (studyStage() && !DBG.neon) { drawBillboardsLit(); if (STAGE.cityLife) drawSignNeon(); }
   ctx.globalCompositeOperation = 'source-over';
 
   PM('neon+speech');

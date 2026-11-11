@@ -211,15 +211,17 @@ function hitPeople(v, dt) {
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) || g.z || g.off) continue;
     if (!carPts(v).some(([px, py]) => dist(px, py, g.x, g.y) < CAR_R + 12)) continue;
-    const lethal = spd > 170;
-    if (mine) { play('thud', 0.8); S.shakeT = 0.2; S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
+    const lethal = STAGE.cityLife ? spd > 100 : spd > 170;  // 큰 도시: 제법 달리던 차에 치이면 죽는다
+    if (mine) { if (!STAGE.cityLife) { play('thud', 0.8); S.shakeT = 0.2; } S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
+      if (STAGE.cityLife) carImpact(v, g, lethal);
       if (g.police) addWanted(2, '경찰을 차로 쳤다'); else addWanted(1, g.civ ? '사람을 차로 쳤다' : '조직원을 차로 쳤다'); v.v *= 0.8; }
-    else if (v.chase) { npcDown(g, null, false); v.v *= 0.7; }  // 추격 경찰차에 치인 행인
+    else if (v.chase) { npcDown(g, null, STAGE.cityLife && lethal); if (STAGE.cityLife) carImpact(v, g, lethal); v.v *= 0.7; }  // 추격 차에 치인 행인
     else if (v.ai) { v.v = 0; }  // 다른 차는 사람 앞에서 선다 (그래도 닿았으면 멈춤)
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
+  if (!mine && !P.car && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+    hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
 function updateDriving(P, mx, my, mag, dt) {

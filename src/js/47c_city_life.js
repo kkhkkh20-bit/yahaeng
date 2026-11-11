@@ -1,0 +1,152 @@
+// ---------------------------------------------------------------- 큰 도시의 거리 생활: 체포 · 조직의 칼 · 추격 차 · 차 사고 · 간판 네온
+// 경찰은 잡으면 지구대로 끌고 간다(목숨 대신 벌금). 조직은 칼을 들고 다니며 바로 죽이러 든다.
+// 쫓는 쪽이 멀어지면 경찰도 조직도 차를 몰고 온다. 차에 치이면 사람은 날아가 피를 쏟고 죽는다.
+
+// 경찰에게 붙잡힘: 수배가 낮을 때(★1~2) 경찰이 내 옆에 1초 붙어 있으면 수갑. 총을 꺼낸 뒤(★3 이상)는 붙잡지 않고 쏜다
+const ARREST_T = 1.0;
+function updateArrest(dt) {
+  const P = S.player; if (!S.wanted || P.car || P.z || flOf(P) || P.trav || S.over) { S.arrestT = 0; return; }
+  const cop = S.guards.find(g => g.police && !g.off && g.state === 'ALERT' && dist(g.x, g.y, P.x, P.y) < 34);
+  if (!cop || S.wanted >= 3) { S.arrestT = Math.max(0, (S.arrestT || 0) - dt * 2); return; }
+  S.arrestT = (S.arrestT || 0) + dt;
+  if (S.arrestT >= ARREST_T) { S.arrestT = 0; cityArrest('경찰에게 붙잡혔다.'); }
+}
+// 체포: 지구대 앞에서 풀려난다. 수입의 30%를 벌금으로 낸다
+function cityArrest(why) {
+  const P = S.player, fine = Math.round((S.cash || 0) * 0.3);
+  if (P.car) { const v = P.car; P.car = null; v.parked = true; }
+  P.captive = null; P.carrying = null; P.hide = null; P.hp = P.hpMax; P.hurtT = 2.5; S.fade = 1.2; S.flash = 0.2;
+  const at = STAGE.police || STAGE.start; P.x = tc(at[0]); P.y = tc(at[1] + 1); P.z = 0; P.fl = 0; setLayer(0); cam.x = P.x; cam.y = P.y;
+  S.cash = Math.max(0, (S.cash || 0) - fine); S.wanted = 0; S.wantLost = 0; S.alevel = 0; S.alevelT = 0;
+  for (const g of S.guards) { if (g.police && !g.off) despawnCop(g); else if (['ALERT', 'SEARCH', 'SUSPICIOUS', 'CHECK'].includes(g.state)) { g.state = 'RETURN'; g.path = null; g.icon = null; g.meter = 0; } }
+  S.stats.arrests = (S.stats.arrests || 0) + 1; play('lose', 0.35);
+  toast(why + ' — 지구대에서 풀려났다' + (fine ? ` (벌금 ${fine}만)` : ''), 3.2, 'warn');
+}
+
+// 조직원의 칼: 손에 든 칼날. 나를 쫓을 때는 앞으로 내민다
+const cityGang = g => !!(STAGE.city && g && !g.civ && !g.dog && !g.police && g.fac && g.fac !== 'P' && g.state !== 'DEAD' && g.state !== 'CAPTIVE');
+function drawGangKnife(g) {
+  if (!cityGang(g) || g.x < 0 || !inView(g.x, g.y, 60)) return;
+  const ready = g.state === 'ALERT' || !!g.brawl, a = g.a + (ready ? 0 : 0.9), hx = g.x + Math.cos(a) * (ready ? 13 : 9), hy = g.y - 14 + Math.sin(a) * (ready ? 9 : 6), len = ready ? 13 : 10;
+  ctx.save(); ctx.lineCap = 'round';
+  ctx.strokeStyle = '#2a2420'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hx - Math.cos(a) * 3, hy - Math.sin(a) * 3); ctx.lineTo(hx, hy); ctx.stroke();
+  ctx.strokeStyle = '#d9dee4'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(a) * len, hy + Math.sin(a) * len); ctx.stroke();
+  ctx.restore();
+}
+
+// 추격 차: 경찰차와 조직 차. 도로를 따라 와서 가까우면 서고 둘이 내린다
+const GANG_CAR_COL = { A: 2, B: 3, C: 6, D: 4 };
+function spawnChaseCar(fac) {
+  const v = spawnCopCar(); if (!v) return null;
+  if (fac && fac !== 'P') { v.police = false; v.gang = fac; v.c = GANG_CAR_COL[fac] ?? 2; }
+  return v;
+}
+function deployFromCar(v) {
+  const out = [];
+  for (const s of [-1, 1]) {
+    const a = v.a + s * Math.PI / 2, x = v.x + Math.cos(a) * 50, y = v.y + Math.sin(a) * 50;
+    if (!v.gang) { const g = spawnCop(); if (g) { g.x = x; g.y = y; g.path = null; copChase(g); out.push(g); } continue; }
+    const g = makeGuard({ kind: s < 0 ? 'g2' : 'g1', at: [Math.floor(x / TILE), Math.floor(y / TILE)], radio: false }, S.guards.length);
+    g.fac = v.gang; g.outfit = FAC_OUTFIT[v.gang] || null; g.rival = true; g.radio = false; g.torch = false; g.x = x; g.y = y; g.carCrew = true;
+    g.route = [{ x, y, pause: 999 }]; S.guards.push(g); setLayer(0); buildRouteLine(g); if (PR) prWarm([charOf(g)], true);
+    g.state = 'ALERT'; g.lastSeen = { x: S.player.x, y: S.player.y, fl: 0, z: 0 }; g.lostT = 0; g.path = null; out.push(g);
+  }
+  return out;
+}
+// 조직이 나를 쫓다 놓칠 만큼 멀어지면 차를 부른다 (조직마다 한 대)
+function updateGangCars(dt) {
+  if ((S.gangCarT = (S.gangCarT || 0) - dt) > 0) return; S.gangCarT = 3;
+  const P = S.player, hunting = {};
+  for (const g of S.guards) if (cityGang(g) && g.state === 'ALERT') { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
+  for (const f in hunting) {
+    if (hunting[f] < 520 && !P.car) continue;  // 걸어서 따라잡을 만하면 차는 부르지 않는다
+    if (S.vehicles.some(v => v.gang === f && v.chase && !v.dead)) continue;
+    spawnChaseCar(f);
+  }
+  // 나를 놓친 조직의 차는 그냥 차로 돌아간다
+  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && g.state === 'ALERT')) v.chase = false;
+}
+
+// 차 사고: 사람은 차 방향으로 날아가 쓰러지고, 그 자리에 피가 튄다
+function carImpact(v, g, lethal) {
+  const a = v.a, spd = Math.abs(v.v);
+  spawnEffect('impact', { x: g.x, y: g.y - 16, fl: 0, z: 0 }, { scale: 1.1 });
+  spawnEffect('strike', { x: g.x, y: g.y - 12, fl: 0, z: 0 }, { angle: a, scale: 1.2 });
+  S.shakeT = Math.max(S.shakeT || 0, lethal ? 0.35 : 0.2); S.flash = Math.max(S.flash || 0, lethal ? 0.18 : 0.1);
+  play('thud', 0.9); play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.7);
+  bloodSpray(g.x, g.y, a, lethal ? 7 : 3); bloodBurst(g.x, g.y - 10, a, lethal ? 4 : 2);
+  // 날아가는 몸: 벽에 닿기 전까지 차가 가던 쪽으로
+  const c = S.corpses[S.corpses.length - 1]; if (!c || c.g !== g) return;
+  let reach = Math.min(150, 40 + spd * 0.22), x1 = g.x, y1 = g.y;
+  for (let k = 6; k <= reach; k += 6) { const nx = g.x + Math.cos(a) * k, ny = g.y + Math.sin(a) * k; if (SOLID.has(G0[Math.floor(ny / TILE)]?.[Math.floor(nx / TILE)] ?? '#')) break; x1 = nx; y1 = ny; }
+  c.fly = { t: 0, dur: 0.32, x0: g.x, y0: g.y, x1, y1 };
+  bloodSpray(x1, y1, a, lethal ? 5 : 2); if (lethal) bloodPool(x1, y1 + 4, rnd(22, 30));
+}
+function bloodSpray(x, y, a, n) {
+  if (!S.decals) return;
+  for (let k = 0; k < n; k++) {
+    const d = rnd(4, 26 + n * 4), s = a + rnd(-0.7, 0.7);
+    S.decals.push({ x: x + Math.cos(s) * d, y: y + Math.sin(s) * d, r: rnd(5, k === 0 ? 20 : 12), rot: rnd(0, TAU), fl: 0, k: 0, spray: true });
+  }
+  if (S.decals.length > 400) S.decals.splice(0, S.decals.length - 400);
+}
+
+// 간판 네온: 밤에는 가게 간판이 제 색으로 빛난다 (가끔 깜빡임)
+const signGlowCache = {};
+function signGlowColor(key) {
+  if (signGlowCache[key] !== undefined) return signGlowCache[key];
+  const two = !citySignArt?.frames[key] && !!citySignArt2?.frames[key], art = two ? citySignArt2 : citySignArt, img = two ? citySignAtlas2 : citySignAtlas, f = art?.frames[key]?.rect;
+  if (!f || !img.complete || !img.naturalWidth) return null;
+  const c = document.createElement('canvas'); c.width = f[2]; c.height = f[3]; const q = c.getContext('2d'); q.drawImage(img, f[0], f[1], f[2], f[3], 0, 0, f[2], f[3]);
+  const d = q.getImageData(0, 0, f[2], f[3]).data; let best = null, bv = 0;
+  for (let i = 0; i < d.length; i += 16) { if (d[i + 3] < 200) continue; const r = d[i], gg = d[i + 1], b = d[i + 2], v = Math.max(r, gg, b) - Math.min(r, gg, b) + (r + gg + b) / 6; if (v > bv) { bv = v; best = [r, gg, b]; } }
+  return (signGlowCache[key] = best ? best.join(',') : '255,220,160');
+}
+function drawSignNeon() {
+  if (!STAGE.referenceBuildings) return;
+  BLD.forEach((b, i) => {
+    const spec = STAGE.referenceBuildings[i], a = spec?.ad; if (!a || b.vacant || i === S.openB) return;
+    const x = (b.x0 + a.x) * TILE, y = (b.y1 - a.fl) * TILE, w = a.w * TILE, h = a.h * TILE; if (!inView(x + w / 2, y + h / 2, w + 60)) return;
+    const rgb = signGlowColor(a.image); if (!rgb) return;
+    const flick = (i * 7 + Math.floor(S.t * 9)) % 61 === 0 ? 0.3 : 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    for (const [pad, al] of [[26, .06], [14, .1], [5, .16]]) { ctx.fillStyle = `rgba(${rgb},${al * flick})`; ctx.fillRect(x - pad, y - pad, w + pad * 2, h + pad * 2); }
+    ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 0.75 * flick; drawStudySign(b, a); ctx.restore();
+  });
+}
+
+// 피: 튀는 핏방울(떨어지면 바닥 자국)과 몸 밑에 번지는 피 웅덩이
+function bloodBurst(x, y, a, power) {
+  const B = S.bloodParts || (S.bloodParts = []);
+  for (let k = 0; k < power * 7; k++) {
+    const s = a + rnd(-1.0, 1.0), sp = rnd(70, 240) * (0.6 + power * 0.25);
+    B.push({ x, y, z: rnd(12, 26), vx: Math.cos(s) * sp, vy: Math.sin(s) * sp, vz: rnd(60, 180), r: rnd(1.6, 3.6) });
+  }
+  if (B.length > 600) B.splice(0, B.length - 600);
+}
+function bloodPool(x, y, to) { if (S.decals) S.decals.push({ x, y, r: 3, rot: rnd(0, TAU), fl: 0, k: 0, grow: to }); }
+function updateBlood(dt) {
+  const B = S.bloodParts; if (B && B.length) {
+    for (let i = B.length - 1; i >= 0; i--) { const p = B[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.vz -= 560 * dt; p.z += p.vz * dt; p.vx *= 0.985; p.vy *= 0.985;
+      if (p.z <= 0) { S.decals.push({ x: p.x, y: p.y, r: p.r * rnd(1.2, 2.2), rot: rnd(0, TAU), fl: 0, k: 0, spray: true }); B.splice(i, 1); } }
+  }
+  for (const d of S.decals || []) if (d.grow && d.r < d.grow) d.r = Math.min(d.grow, d.r + dt * 7);
+}
+function drawBloodParts() {
+  const B = S.bloodParts; if (!B || !B.length) return;
+  ctx.save(); ctx.fillStyle = '#9a1016';
+  for (const p of B) { if (!inView(p.x, p.y, 40)) continue; ctx.beginPath(); ctx.ellipse(p.x, p.y - p.z, p.r, p.r * 1.3, 0, 0, TAU); ctx.fill(); }
+  ctx.restore();
+}
+// 사람이 죽는 순간(칼·주먹·총·차): 피가 터지고 몸 밑에 웅덩이가 번진다
+function cityDeathGore(o, by) {
+  const a = by ? Math.atan2(o.y - by.y, o.x - by.x) : rnd(0, TAU);
+  bloodBurst(o.x, o.y - 6, a, by && cityGang(by) ? 3 : 2); bloodPool(o.x + rnd(-4, 4), o.y + rnd(-2, 6), rnd(18, 26));
+  spawnEffect('impact', { x: o.x, y: o.y - 16, fl: 0, z: 0 }, { scale: 0.9 });
+}
+
+function cityLifeUpdate(dt) {
+  updateArrest(dt);
+  updateGangCars(dt);
+  updateBlood(dt);
+}

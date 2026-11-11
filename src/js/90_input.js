@@ -61,6 +61,8 @@ window.addEventListener('keydown', e => {
   if (!running || S.over) return;
   // 키는 두 벌을 함께 쓴다 — 방향키 손: Z 공격 · X 행동 · C 붙잡기 · V 다트 / WASD 손: Space 공격 · E 행동 · Q 붙잡기 · F 다트 (히트맨 PC: E 상호작용 · Q 제압)
   // 다트·도구: 톡 = 자동 조준, 누르고 있으면 겨누기. 나머지: Tab 겹친 대상 바꾸기 · G 휘파람 · 1 2 3 도구 · R 항상 걷기 · Ctrl 살금
+  // 큰 도시: F · Enter = 차 타기/내리기 (GTA처럼). 차 근처가 아니면 F는 원래대로 다트
+  if (STAGE.city && (e.code === 'KeyF' || e.code === 'Enter') && (S.player.car || nearVehicle())) { actEnv(); return; }
   if (e.code === 'Space' || e.code === 'KeyZ') actAttack();
   if (e.code === 'KeyE' || e.code === 'KeyX') actEnv();
   if (e.code === 'KeyQ' || e.code === 'KeyC') actGrab();
@@ -399,7 +401,7 @@ function start(i, noBrief) {
   tactical = false; $('tacBanner').hidden = true; $('btnMap').classList.remove('on');
   input.sneakToggle=false;try{localStorage.setItem('yh_sneak','0');}catch(e){}syncSneakBtn(); input.scan = false; input.aiming = null; input.tool = 'kunai'; input.padWhistle = false;  // 새 의뢰는 서서 시작한다. 항상 걷기 설정은 유지한다.
   running = true; paused = false;
-  newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
+  newGame(i); document.body.classList.toggle('no-prompts', !!STAGE.noPrompts); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
   if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다

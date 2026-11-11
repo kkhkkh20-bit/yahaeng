@@ -164,7 +164,7 @@ function npcDown(o, by, lethal) {
   o.state = 'DEAD'; o.icon = null; o.path = null; o.say = null; o.brawl = null; o.hunt = null; o.moving = false;
   play(lethal ? 'kill' : 'thud', 0.5 * proxVol(o)); noise(o.x, o.y, 90, 'fight', flOf(o));
   const c = { fl: flOf(o), z: o.z || 0, ch: charOf(o), stripped:!!o.stripped, g: o, ko: !lethal, byNpc: true, by: by && by.fac, fac: o.fac, civ: !!o.civ, outfit: outfitOf(o), tag: o.tag, x: o.x, y: o.y, a: o.a, kind: o.kind, hidden: false, discovered: false, carried: false, stashed: false, light: lightAt(o.x, o.y), t0: S.t };
-  S.corpses.push(c); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
+  S.corpses.push(c); if (STAGE.cityLife && lethal && !c.fl) cityDeathGore(o, by); S.stats.npcDown = (S.stats.npcDown || 0) + 1; if (o.civ) S.stats.npcCiv = (S.stats.npcCiv || 0) + 1;
   if (blamed) c.blamed = blamed;  // 실제 목격된 조직만 현장 증거로 남긴다
   if (by && by.fac && by.fac !== 'P' && o.civ) policeCall(o.x, o.y, by);
   if (S.fuseGuard === o) S.fuseGuard = null;
@@ -229,7 +229,8 @@ function facScan(g) {
     const d = dist(g.x, g.y, o.x, o.y); if (d > (S.war ? 280 : 150) || !los(g.x, g.y, o.x, o.y)) continue;
     // 싸움은 구역이 정한다: 우리 구역(또는 적진)에 들어온 상대 · 동료가 이미 붙은 상대 · 전쟁 중이면 보는 즉시. 구역 밖에서 마주치면 말로만 시비
     const inHos = g.fac === 'A' && STAGE.zones && zoneAt(o.x, o.y, o.z) === Z_HOS;
-    if (S.war || inHos || inTurf(g.fac, o.x, o.y) || (o.brawl && o.brawl.o && o.brawl.o.fac === g.fac)) { startBrawl(g, o, inTurf(g.fac, o.x, o.y) ? (g.fac === 'B' ? '여기 우리 구역이다, 꺼져!' : '어딜 들어와!') : null); return true; }
+    // 큰 도시(gangWar): 조직끼리는 경찰이 안 보이는 곳에서 마주치면 바로 싸운다
+    if (S.war || inHos || inTurf(g.fac, o.x, o.y) || (o.brawl && o.brawl.o && o.brawl.o.fac === g.fac) || (STAGE.gangWar && d < 190 && !copNear(g, 300))) { startBrawl(g, o, inTurf(g.fac, o.x, o.y) ? (g.fac === 'B' ? '여기 우리 구역이다, 꺼져!' : '어딜 들어와!') : null); return true; }
     if (copNear(g, 380)) continue;  // 경찰이 보고 있으면 먼저 시비 걸지 않는다
     if (!g.tauntT || S.t - g.tauntT > 18) { g.tauntT = S.t; o.tauntT = S.t; g.want = Math.atan2(o.y - g.y, o.x - g.x); gsay(g, (g.fac === 'B' ? TAUNT_B : TAUNT)[g.id % 4], 2.2); }
   }

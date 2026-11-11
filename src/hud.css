@@ -504,3 +504,4 @@ body.episode-coached #hud .obj:not(.open) .tut-detail{display:none}
 #hud .objective-read-hint{display:none;font-size:10px;line-height:1.5;color:#aebac3;padding-top:8px}
 #hud .obj.open .objective-read-hint{display:block}
 @media(max-width:480px){body.first-episode #mini{visibility:hidden}}
+body.no-prompts #hud .keys{display:none}

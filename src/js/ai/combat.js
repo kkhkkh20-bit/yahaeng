@@ -1,5 +1,5 @@
 const GUN_AIM = 1.0, GUN_CD = 2.6, GUN_R = 430;
-const armed = g => !g.dog && !g.civ && !g.target && (g.elite || g.gun) && S.alevel >= 3;
+const armed = g => !g.dog && !g.civ && !g.target && ((g.elite || g.gun) && S.alevel >= 3 || STAGE.cityLife && g.police && S.wanted >= 2);  // 도시 경찰: 수배 ★2부터 권총
 function updateGun(g, dt, sameF) {
   const P = S.player; g.gunCd = Math.max(0, (g.gunCd || 0) - dt);
   const can = armed(g) && sameF && g.seen && !g.atkT && !g.gunCd && !P.hide && !P.under && !P.vent && !P.trav && (P.z || 0) === (g.z || 0), d = dist(g.x, g.y, P.x, P.y);
@@ -20,6 +20,7 @@ function hurtPlayer(g, why, origin=g) {
   if (P.car) { const v = P.car; if (g) { v.hp -= 1; v.smoke = 1.5; P.hurtT = 0.9; play('metal', 0.5, 0.8); if (v.hp <= 0) carWreck(v); } return; }  // 차 안: 차가 대신 맞는다
   if (!S.saidHurt && P.hp > 1) { S.saidHurt = true; after(0.6, () => bark('hero', 'hurt')); }
   rememberDamage(P,origin);spawnEffect('impact',{x:P.x,y:P.y-20,fl:flOf(P),z:P.z||0},{scale:.65});
+  if (STAGE.cityLife && !flOf(P)) { const src = g || origin; bloodBurst(P.x, P.y - 12, src ? Math.atan2(P.y - src.y, P.x - src.x) : rnd(0, TAU), g && !g.police ? 2 : 1); S.shakeT = Math.max(S.shakeT || 0, 0.25); }
   P.hp--; P.hurtT = 2.0; P.adrenT = 1.6; S.flash = 0.28;  // 맞으면 2초 무적 + 1.6초 동안 더 빨리 뛴다 (도망칠 여유)
   play(Math.random() < 0.5 ? 'kill' : 'kill2', 0.6); play('thud', 0.5);
   if (g) g.atkCd = Math.max(g.atkCd || 0, 2.2);  // 때린 자경대원은 잠깐 숨을 고른다
@@ -30,7 +31,8 @@ function hurtPlayer(g, why, origin=g) {
     collide(P, P.z ? 10 : 13, sol); if (sol(Math.floor(P.x / TILE), Math.floor(P.y / TILE))) { P.x = px0; P.y = py0; } }
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; c.seen = true; goAlert(c); }
-  if (P.hp <= 0) { if (STAGE.city) { cityDown(why); return; } endGame(false, why); return; }
+  if (STAGE.cityLife && g && !g.police && g.fac && g.fac !== 'P' && !g.civ) P.hp--;  // 조직은 칼로 죽이러 든다: 한 번에 두 칸
+  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) cityArrest(why); else cityDown(why); return; } endGame(false, why); return; }
   toast(P.hp === 1 ? `${why.replace(/\.$/, '')} — 마지막 체력! 지금 시야를 끊고 숨어라` : `${why.replace(/\.$/, '')} — 체력 ${P.hp}/${P.hpMax}. 시야를 끊고 숨어라`, 2.6, P.hp === 1 ? 'warn big' : 'warn');
 }
 // 숨은 곳에서 끌려 나옴

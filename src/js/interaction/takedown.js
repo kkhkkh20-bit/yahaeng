@@ -163,7 +163,7 @@ function killGuard(g, mode, where, quiet) {
   if (mode === 'stash') { c.stashed = true;c.container=where;if(Number.isFinite(where.x)){c.x=where.x;c.y=where.y;}where.bodies++;where.found=false; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (mode === 'bush') { c.x = where.x + rnd(-6, 6); c.y = where.y + rnd(-6, 6); c.hidden = true; S.stats.stashed++; noise(g.x, g.y, 40, 'kill'); }
   else if (g.z) noise(g.x, g.y, 60, 'kill', flOf(g));  // 옥상: 핏자국을 남기지 않는다 (아래층에서 보이거나 닦을 수 없는 피가 생기지 않게)
-  else { c.bleed = ++S.trailN || (S.trailN = 1); S.decals.push({ x: g.x + rnd(-6, 6), y: g.y + rnd(-6, 6), r: rnd(14, 19), rot: rnd(0, TAU), fl: flOf(g), trail: c.bleed, k: 0 }); noise(g.x, g.y, 60, 'kill', flOf(g)); }  // 처치한 자리에 핏자국. 이 시체를 옮기면 같은 번호로 핏방울이 이어진다
+  else { if (STAGE.cityLife && !flOf(g)) { bloodBurst(g.x, g.y - 8, Math.atan2(g.y - S.player.y, g.x - S.player.x), 2); bloodPool(g.x, g.y + 4, rnd(18, 24)); } c.bleed = ++S.trailN || (S.trailN = 1); S.decals.push({ x: g.x + rnd(-6, 6), y: g.y + rnd(-6, 6), r: rnd(14, 19), rot: rnd(0, TAU), fl: flOf(g), trail: c.bleed, k: 0 }); noise(g.x, g.y, 60, 'kill', flOf(g)); }  // 처치한 자리에 핏자국. 이 시체를 옮기면 같은 번호로 핏방울이 이어진다
   if (g.target) {
     if (S.player.disguise && !S.player.disguiseBlown) S.stats.disguiseKill = true;
     const left = S.guards.filter(o => o.target && !targetEliminated(o)).length;

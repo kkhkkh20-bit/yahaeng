@@ -131,10 +131,10 @@
     mission: '큰 도시 시험: 공중전화에서 의뢰를 받고 도시 안에서 표적을 처치한다',
     itemName: '', itemNames: [],
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
-    W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 6,
+    W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 3,
     roadsX: Array.from({ length: BX + 1 }, (_, i) => i * 20), roadsY: [0, 20, 40, 60, 60 + RS, 80 + RS, 100 + RS, 120 + RS], traffic: 52,  // 강 남쪽 둑길(75~78)도 도로
     blockCount: [BX, BY],
-    blockOrigin: B, signals: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
+    blockOrigin: B, signals: true, cityLife: true, gangWar: true, noPrompts: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
       m.fill(0, 0, W - 1, H - 1, '.');
       for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
@@ -199,6 +199,18 @@
     if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, x0 + 14, y0 + 14], at: [x0 + 7, y0 + 4] });
     if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, y0 + 8, x0 + 14, y0 + 10], at: [x0 + 8, y0 + 10] });
   }
+  // 일반인을 더: 블록마다 보도를 반대로 도는 사람 하나와, 다른 모퉁이에서 출발하는 사람 하나 (조직보다 훨씬 많게)
+  const BODIES = ['fBob', 'fTail', 'fLong', undefined, undefined, 'jacket'];
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
+    const r = ring(bx, by, (bx + by + 1) % 2), k = (bx * 5 + by * 3) % 4;
+    st.guards.push({ kind: 'civ', body: BODIES[(bx + by * 3) % BODIES.length], route: r.slice(k).concat(r.slice(0, k)) });
+    const r2 = ring(bx, by, (bx + by) % 2), k2 = (k + 2) % 4;
+    st.guards.push({ kind: 'civ', body: BODIES[(bx * 2 + by + 1) % BODIES.length], route: r2.slice(k2).concat(r2.slice(0, k2)) });
+  }
+  // 조직끼리 마주치게: 조직마다 두 패가 자기 동네와 다른 조직 동네 사이를 오간다 (경찰이 보면 싸움을 말린다)
+  const homes = { A: 'q', B: 'r', C: 'w', D: 'c' }, keys = Object.keys(homes);
+  keys.forEach((f, i) => { const [hx0, hy0] = find(homes[f]), [ox0, oy0] = find(homes[keys[(i + 1) % 4]]), [px0, py0] = find(homes[keys[(i + 3) % 4]]);
+    st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + 15, 3], [ox0 + 15, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + 15, hy0, 3], [px0, py0 + 15, 3]], radio: false }); });
   // 청계천 산책로: 북쪽 축대 길과 남쪽 둔치를 걷는 사람들
   for (let i = 0; i < 6; i++) { const x0 = 6 + i * 26, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
     st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 30), y, 2]] }); }
