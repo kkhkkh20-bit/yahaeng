@@ -5,6 +5,7 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/polish-v213';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks the guidance text the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
@@ -12,7 +13,7 @@ async def main():
   for touch in [False,True]:
    q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch)
    errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('localStorage.clear();requestAnimationFrame=()=>0;window.vibrations=[];Object.defineProperty(navigator,"vibrate",{value:p=>{vibrations.push(p);return true}})')
+   await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);requestAnimationFrame=()=>0;window.vibrations=[];Object.defineProperty(navigator,"vibrate",{value:p=>{vibrations.push(p);return true}})')
    await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game')
    result=await q.evaluate('''()=>{
     const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},out=[];
