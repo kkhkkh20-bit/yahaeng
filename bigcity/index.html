@@ -1710,18 +1710,18 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
 #intro .title-acts button[hidden]{display:none}
 #intro .title-acts button>svg{width:20px;height:20px;flex:none;color:inherit;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #intro .title-acts button::before,#intro .title-acts button::after{display:none}
-#intro .title-acts #btnQuick{--title-frame:var(--art-menu-primary-normal);grid-column:1/-1;justify-content:space-between;min-height:96px;margin:0 0 4px;padding:6px 10px 9px;border:12px solid transparent;border-image:var(--title-frame) 12 fill stretch;background:none;color:#111b27;text-align:left}
+#intro .title-acts :is(#btnQuick,#btnFree){--title-frame:var(--art-menu-primary-normal);grid-column:1/-1;justify-content:space-between;min-height:96px;margin:0 0 4px;padding:6px 10px 9px;border:12px solid transparent;border-image:var(--title-frame) 12 fill stretch;background:none;color:#111b27;text-align:left}
 #intro .title-start-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
 #intro .title-start-copy b{font:400 27px/1.3 "Yahaeng Title",var(--f-body);letter-spacing:0}
 #intro .title-start-copy small{font-size:11px;line-height:1.6;color:#28343c;word-break:keep-all}
-#intro #btnQuick>svg{width:26px;height:26px;margin-left:12px;color:inherit;stroke-width:2.2}
+#intro :is(#btnQuick,#btnFree)>svg{width:26px;height:26px;margin-left:12px;color:inherit;stroke-width:2.2}
 #intro .title-acts #btnNewCampaign{grid-column:1/-1;min-height:44px;margin-top:3px;padding:7px 12px;border:0;border-image:none;background:none;color:#b4bcb8;font-size:11px;text-decoration:underline;text-underline-offset:5px}
 #intro .title-acts button:focus-visible{outline:3px solid #c77e62;outline-offset:4px}
 #intro .title-acts button:not(:disabled):active{--title-frame:var(--art-menu-secondary-pressed);transform:none;background:none;color:#d9cbaa}
-#intro .title-acts #btnQuick:not(:disabled):active{--title-frame:var(--art-menu-primary-pressed);color:#111b27}
+#intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):active{--title-frame:var(--art-menu-primary-pressed);color:#111b27}
 #intro .title-acts button:disabled{--title-frame:var(--art-menu-secondary-disabled);color:#829095;cursor:default;transform:none;background:none;opacity:1}
-#intro .title-acts #btnQuick:disabled{--title-frame:var(--art-menu-primary-disabled);color:#9da8a9}
-#intro #btnQuick:disabled small{color:#9da8a9}
+#intro .title-acts :is(#btnQuick,#btnFree):disabled{--title-frame:var(--art-menu-primary-disabled);color:#9da8a9}
+#intro :is(#btnQuick,#btnFree):disabled small{color:#9da8a9}
 #intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.04em}
 #help .panel,#newCampaignDialog{padding:24px 30px;border:12px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;background:#10171d;box-shadow:0 18px 48px #0008}
 #help.screen{background:linear-gradient(#080e16e8,#080e16f5),var(--title-alley-wide) center/cover fixed}
@@ -1731,9 +1731,9 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
 #newCampaignDialog .cta{background:#d0bb93;border-color:#e7d8b6;color:#111820}
 @media(hover:hover) and (pointer:fine){
  #intro .title-acts button:not(:disabled):hover{--title-frame:var(--art-menu-secondary-hover);background:none;color:#fff3da}
- #intro .title-acts #btnQuick:not(:disabled):hover{--title-frame:var(--art-menu-primary-hover);color:#111b27}
+ #intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):hover{--title-frame:var(--art-menu-primary-hover);color:#111b27}
  #intro .title-acts button:not(:disabled):active{--title-frame:var(--art-menu-secondary-pressed)}
- #intro .title-acts #btnQuick:not(:disabled):active{--title-frame:var(--art-menu-primary-pressed)}
+ #intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):active{--title-frame:var(--art-menu-primary-pressed)}
 }
 @media(max-width:700px){
  #intro{padding:26px max(24px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(26px,env(safe-area-inset-left,0px));align-items:end}
@@ -1744,7 +1744,7 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro h1{font-size:119px}
  #intro .title-acts{gap:7px}
  #intro .title-acts button{flex-direction:row;gap:7px;min-height:68px;font-size:11px;padding:2px}
- #intro .title-acts #btnQuick{flex-direction:row;min-height:94px;padding:6px 7px 9px;margin-bottom:3px}
+ #intro .title-acts :is(#btnQuick,#btnFree){flex-direction:row;min-height:94px;padding:6px 7px 9px;margin-bottom:3px}
  #intro .title-start-copy b{font-size:25px}
  #intro .title-start-copy small{font-size:11px}
  #intro .title-footer{margin-top:24px;padding-top:11px;font-size:9px}
@@ -1754,7 +1754,7 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro{padding-top:20px}
  #intro .title-panel{margin-top:70px;gap:22px}
  #intro h1{font-size:100px}
- #intro .title-acts #btnQuick{min-height:86px;padding-block:4px}
+ #intro .title-acts :is(#btnQuick,#btnFree){min-height:86px;padding-block:4px}
  #intro .title-start-copy b{font-size:22px}
  #intro .title-acts button{min-height:64px}
  #intro .title-footer{margin-top:18px}
@@ -1764,11 +1764,11 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro .title-panel{display:grid;grid-template-columns:210px minmax(270px,370px);align-items:center;gap:38px;width:min(760px,100%);margin:0}
  #intro h1{font-size:112px}
  #intro .title-acts button{min-height:56px}
- #intro .title-acts #btnQuick{min-height:86px;padding-block:4px}
+ #intro .title-acts :is(#btnQuick,#btnFree){min-height:86px;padding-block:4px}
  #intro .title-start-copy b{font-size:22px}
  #intro .title-footer{margin-top:12px;padding-top:9px}
 }
-@media(max-width:360px){#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){flex-direction:column;gap:3px;padding:1px;font-size:10px}#intro .title-acts button>svg{width:18px;height:18px}#intro #btnQuick>svg{width:24px;height:24px}}
+@media(max-width:360px){#intro .title-acts button:not(#btnFree):not(#btnQuick):not(#btnNewCampaign){flex-direction:column;gap:3px;padding:1px;font-size:10px}#intro .title-acts button>svg{width:18px;height:18px}#intro :is(#btnQuick,#btnFree)>svg{width:24px;height:24px}}
 @media(prefers-reduced-motion:reduce){#intro .title-acts button{transition:none}}
 /* One complete Korean face for every interface heading; only the logo differs. */
 #help .sub-head h2,#brief .br-name,#end #endTitle,#newCampaignDialog h2{font-family:var(--f-body);font-weight:400;letter-spacing:-.025em;line-height:1.4}
@@ -2750,9 +2750,9 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
 #caseBoard .case-evidence strong{font-size:13px;font-weight:600}
 #caseBoard .case-board-head,#help .sub-head{border-bottom-width:2px}
 #caseBoard .case-kicker{font-size:12px}
-#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){font-weight:600}
+#intro .title-acts button:not(#btnQuick):not(#btnFree):not(#btnNewCampaign){font-weight:600}
 #intro .title-acts button>svg{width:23px;height:23px;stroke:none}
-#intro .title-acts #btnQuick>svg{stroke:none}
+#intro .title-acts :is(#btnQuick,#btnFree)>svg{stroke:none}
 #hud .pad b,#hud .sysbtns b,#hud #quickItems output{font-weight:600}
 @media(max-width:999px){
  #skillScreen .skill-detail-head h3{font-size:23px}
@@ -3056,7 +3056,8 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
   <div class="panel title-panel">
     <div class="title-brand"><span class="title-kicker">잠입 액션</span><h1>야행</h1></div>
     <nav class="title-acts" aria-label="주 메뉴">
-      <button class="cta" id="btnQuick" type="button">시작하기</button>
+      <button class="cta" id="btnQuick" type="button">스토리 모드</button>
+      <button class="cta" id="btnFree" type="button">자유 모드</button>
       <button class="ghost" data-case-open type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" data-ui-icon="navigation" data-icon-family="ivory-silhouette" fill="currentColor" stroke="none" aria-hidden="true"><path d="M17 3h14v12H17ZM5 32h14v12H5ZM29 32h14v12H29Z" fill="currentColor" fill-rule="evenodd"/><path d="M21 14h6v7h13v12h-5v-7H13v7H8V21h13Z" fill="currentColor" fill-rule="evenodd" opacity="0.7"/></svg><span>조직도</span></button>
       <button class="ghost" id="btnSkillsIntro" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" data-ui-icon="navigation" data-icon-family="ivory-silhouette" fill="currentColor" stroke="none" aria-hidden="true"><g transform="translate(1 -1) scale(.85)"><path d="M29 3 42 4 41 17 25 31l-8-8ZM29 10l-8 13 3 3 11-15Z" fill="currentColor" fill-rule="evenodd"/><path d="m13 24 13 13-4 4-13-13Z" fill="currentColor" fill-rule="evenodd"/><path d="m9 30 9 9-9 8-8-8ZM8 36a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" fill-rule="evenodd"/></g><g transform="translate(48 0) scale(-.85 .85)"><path d="M29 3 42 4 41 17 25 31l-8-8ZM29 10l-8 13 3 3 11-15Z" fill="currentColor" fill-rule="evenodd"/><path d="m13 24 13 13-4 4-13-13Z" fill="currentColor" fill-rule="evenodd"/><path d="m9 30 9 9-9 8-8-8ZM8 36a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" fill-rule="evenodd"/></g></svg><span>기술 습득</span></button>
       <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
@@ -4046,9 +4047,10 @@ const STAGES = [
   hints: ['도로에 선 차 옆에서 [행동] — 운전자를 끌어내고 탄다. 사람들이 보면 수배가 붙는다.', '빨간 표시는 의뢰 장소다. 앞에서 [행동]을 누르면 의뢰가 시작된다.']
 },
 // ───────── 도시 2배 시험 구역: 기존 도시(4×3 블록, 84×64칸)의 블록 설계를 그대로 써서 8×6 블록(168×128칸)으로 넓혔다.
-// 가로·세로 각 2배라 같은 속도로 끝에서 끝까지 두 배 걸린다. 캠페인·저장과 분리: 주소에 ?study=city-xl 일 때만 들어간다.
+// 가로·세로 각 2배라 같은 속도로 끝에서 끝까지 두 배 걸린다. 캠페인·저장과 분리된 자유 모드다.
+// 판 목록에는 처음부터 넣지 않는다: 메인 화면 [자유 모드]를 누를 때 window.__CITY_XL__()로 만들어 붙인다(주소에 ?study=city-xl 이면 처음부터 넣는다).
 // 블록 하나 = 16칸(바깥 한 칸 보도), 도로 4칸. 블록 종류는 기존 도시 12종을 다시 배치했다.
-...(new URLSearchParams(location.search).get('study') === 'city-xl' ? [(() => {
+...(window.__CITY_XL__ = () => {
   // 강: 셋째 블록 줄 아래 가로 도로(y 60~63) 바로 밑을 가로지른다(y 64~74). 넷째 줄부터는 강 폭만큼 남쪽으로 밀린다
   // 블록 24칸(바깥 한 칸 보도) + 도로 4칸 = 28칸 주기. 건물이 커지고 맵도 커졌다(232×199칸)
   const BX = 8, BY = 6, BS = 24, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
@@ -4185,9 +4187,9 @@ const STAGES = [
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), e = BS - 1, c = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
-    id: 'cityXL', no: 'TEST', name: '밤의 도시 · 큰 도시 시험', sub: '도시 · 2배 크기 시험 구역', fee: '',
+    id: 'cityXL', no: 'FREE', name: '자유 모드 · 을지로', sub: '을지로 · 청계천', fee: '', freeMode: true,
     city: true, retiredCampaign: true, study: 'city-xl', freeCityExteriors: true,
-    mission: '큰 도시 시험: 공중전화에서 의뢰를 받고 도시 안에서 표적을 처치한다',
+    mission: '자유 모드: 을지로를 마음대로 돌아다닌다. 공중전화에서 의뢰를 받을 수 있다',
     itemName: '', itemNames: [],
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
     W, H, start: [10, 4 + BS - 1], exit: [10, 4 + BS - 1], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0.6, rivals: 3,
@@ -4283,7 +4285,7 @@ const STAGES = [
     st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 34), y, 2]] }); }
   st.guards.push(...gangs);
   return st;
-})()] : []),
+}, new URLSearchParams(location.search).get('study') === 'city-xl' ? [window.__CITY_XL__()] : []),
 // Episode 04: a depot circuit. A legitimate uniform, a physical archive key,
 // or the rear duct offer different approaches without granting combat skills.
 {
@@ -7276,7 +7278,7 @@ function drawStudyFacade(b){
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
  if(spec.ad)drawStudySign(b,spec.ad);
  drawStudyBoards(b,'face');
- if(STAGE.cityLife)drawStoreSigns(b,false);
+ if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){
@@ -15721,7 +15723,6 @@ function signGlowColor(key) {
 }
 function drawSignNeon() {
   if (!STAGE.referenceBuildings) return;
-  BLD.forEach((b, i) => { if (!b.vacant && i !== S.openB) drawStoreSigns(b, true); });
   BLD.forEach((b, i) => {
     const spec = STAGE.referenceBuildings[i], a = spec?.ad; if (!a || b.vacant || i === S.openB) return;
     const x = (b.x0 + a.x) * TILE, y = (b.y1 - a.fl) * TILE, w = a.w * TILE, h = a.h * TILE; if (!inView(x + w / 2, y + h / 2, w + 60)) return;
@@ -15795,7 +15796,7 @@ function drawStoreSigns(b, lit) {
   if (name) {
     const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh + 4, sub = SIGN_SUB[hs % SIGN_SUB.length];
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
-      for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
+      for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
     ctx.fillStyle = st.bg; ctx.fillRect(bx, by, bw, bh); ctx.fillStyle = st.ac; ctx.fillRect(bx, by, bw, 3); ctx.fillRect(bx, by + bh - 2, bw, 2);
     ctx.font = '700 22px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; ctx.fillText(name, bx + bw / 2, by + bh / 2 + 1, bw - 80);
@@ -24179,18 +24180,19 @@ $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElemen
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
-function setQuickLabel(label,detail=''){
- const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
+function setQuickLabel(label,detail='',b=$('btnQuick')){
+ const copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
  if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
  b.replaceChildren(copy);b.insertAdjacentHTML('beforeend',uiSigil('arrow'));b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
 }
 function syncQuick(){
+  $('btnFree').hidden=!!(window.__AGENT_CITY_STUDY__||window.__CLUB_STUDY__||!window.__CITY_XL__);setQuickLabel('자유 모드','을지로 · 청계천 · 차·조직·경찰',$('btnFree'));$('btnFree').title='본편 진행과 따로 노는 열린 도시';
   if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
-  $('btnQuick').disabled=!st;if(!st){setQuickLabel('이야기 완료');return;}
+  $('btnQuick').disabled=!st;if(!st){setQuickLabel('스토리 모드','이야기 완료');return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  setQuickLabel(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기',st.name);
+  setQuickLabel('스토리 모드',(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기')+' · '+st.name);
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -24206,6 +24208,9 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); if(window.__AGENT_CITY_STUDY__)start(STAGES.findIndex(s=>s.agentStudy));else beginCampaign(); });
+// 자유 모드: 큰 도시는 처음 누를 때 만든다(판 목록·본편 저장과 분리)
+function freeModeIndex(){let i=STAGES.findIndex(s=>s.freeMode);if(i<0&&window.__CITY_XL__){STAGES.push(window.__CITY_XL__());i=STAGES.length-1;}return i;}
+$('btnFree').addEventListener('click', () => { initAudio(); const i=freeModeIndex(); if(i>=0)start(i,true); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
 const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){

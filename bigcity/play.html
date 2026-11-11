@@ -1710,18 +1710,18 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
 #intro .title-acts button[hidden]{display:none}
 #intro .title-acts button>svg{width:20px;height:20px;flex:none;color:inherit;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #intro .title-acts button::before,#intro .title-acts button::after{display:none}
-#intro .title-acts #btnQuick{--title-frame:var(--art-menu-primary-normal);grid-column:1/-1;justify-content:space-between;min-height:96px;margin:0 0 4px;padding:6px 10px 9px;border:12px solid transparent;border-image:var(--title-frame) 12 fill stretch;background:none;color:#111b27;text-align:left}
+#intro .title-acts :is(#btnQuick,#btnFree){--title-frame:var(--art-menu-primary-normal);grid-column:1/-1;justify-content:space-between;min-height:96px;margin:0 0 4px;padding:6px 10px 9px;border:12px solid transparent;border-image:var(--title-frame) 12 fill stretch;background:none;color:#111b27;text-align:left}
 #intro .title-start-copy{display:flex;flex-direction:column;gap:4px;min-width:0}
 #intro .title-start-copy b{font:400 27px/1.3 "Yahaeng Title",var(--f-body);letter-spacing:0}
 #intro .title-start-copy small{font-size:11px;line-height:1.6;color:#28343c;word-break:keep-all}
-#intro #btnQuick>svg{width:26px;height:26px;margin-left:12px;color:inherit;stroke-width:2.2}
+#intro :is(#btnQuick,#btnFree)>svg{width:26px;height:26px;margin-left:12px;color:inherit;stroke-width:2.2}
 #intro .title-acts #btnNewCampaign{grid-column:1/-1;min-height:44px;margin-top:3px;padding:7px 12px;border:0;border-image:none;background:none;color:#b4bcb8;font-size:11px;text-decoration:underline;text-underline-offset:5px}
 #intro .title-acts button:focus-visible{outline:3px solid #c77e62;outline-offset:4px}
 #intro .title-acts button:not(:disabled):active{--title-frame:var(--art-menu-secondary-pressed);transform:none;background:none;color:#d9cbaa}
-#intro .title-acts #btnQuick:not(:disabled):active{--title-frame:var(--art-menu-primary-pressed);color:#111b27}
+#intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):active{--title-frame:var(--art-menu-primary-pressed);color:#111b27}
 #intro .title-acts button:disabled{--title-frame:var(--art-menu-secondary-disabled);color:#829095;cursor:default;transform:none;background:none;opacity:1}
-#intro .title-acts #btnQuick:disabled{--title-frame:var(--art-menu-primary-disabled);color:#9da8a9}
-#intro #btnQuick:disabled small{color:#9da8a9}
+#intro .title-acts :is(#btnQuick,#btnFree):disabled{--title-frame:var(--art-menu-primary-disabled);color:#9da8a9}
+#intro :is(#btnQuick,#btnFree):disabled small{color:#9da8a9}
 #intro .title-footer{position:relative;left:auto;right:auto;bottom:auto;z-index:2;display:flex;justify-content:space-between;gap:20px;width:100%;margin:28px 0 0;padding-top:13px;border-top:1px solid #a4997830;font-size:10px;line-height:1.5;color:#a6aca8;letter-spacing:.04em}
 #help .panel,#newCampaignDialog{padding:24px 30px;border:12px solid transparent;border-image:var(--art-menu-frame) 12 fill stretch;background:#10171d;box-shadow:0 18px 48px #0008}
 #help.screen{background:linear-gradient(#080e16e8,#080e16f5),var(--title-alley-wide) center/cover fixed}
@@ -1731,9 +1731,9 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
 #newCampaignDialog .cta{background:#d0bb93;border-color:#e7d8b6;color:#111820}
 @media(hover:hover) and (pointer:fine){
  #intro .title-acts button:not(:disabled):hover{--title-frame:var(--art-menu-secondary-hover);background:none;color:#fff3da}
- #intro .title-acts #btnQuick:not(:disabled):hover{--title-frame:var(--art-menu-primary-hover);color:#111b27}
+ #intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):hover{--title-frame:var(--art-menu-primary-hover);color:#111b27}
  #intro .title-acts button:not(:disabled):active{--title-frame:var(--art-menu-secondary-pressed)}
- #intro .title-acts #btnQuick:not(:disabled):active{--title-frame:var(--art-menu-primary-pressed)}
+ #intro .title-acts :is(#btnQuick,#btnFree):not(:disabled):active{--title-frame:var(--art-menu-primary-pressed)}
 }
 @media(max-width:700px){
  #intro{padding:26px max(24px,env(safe-area-inset-right,0px)) max(18px,env(safe-area-inset-bottom,0px)) max(26px,env(safe-area-inset-left,0px));align-items:end}
@@ -1744,7 +1744,7 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro h1{font-size:119px}
  #intro .title-acts{gap:7px}
  #intro .title-acts button{flex-direction:row;gap:7px;min-height:68px;font-size:11px;padding:2px}
- #intro .title-acts #btnQuick{flex-direction:row;min-height:94px;padding:6px 7px 9px;margin-bottom:3px}
+ #intro .title-acts :is(#btnQuick,#btnFree){flex-direction:row;min-height:94px;padding:6px 7px 9px;margin-bottom:3px}
  #intro .title-start-copy b{font-size:25px}
  #intro .title-start-copy small{font-size:11px}
  #intro .title-footer{margin-top:24px;padding-top:11px;font-size:9px}
@@ -1754,7 +1754,7 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro{padding-top:20px}
  #intro .title-panel{margin-top:70px;gap:22px}
  #intro h1{font-size:100px}
- #intro .title-acts #btnQuick{min-height:86px;padding-block:4px}
+ #intro .title-acts :is(#btnQuick,#btnFree){min-height:86px;padding-block:4px}
  #intro .title-start-copy b{font-size:22px}
  #intro .title-acts button{min-height:64px}
  #intro .title-footer{margin-top:18px}
@@ -1764,11 +1764,11 @@ body.touch #hud #stealth.quiet .sth-wing{display:none}
  #intro .title-panel{display:grid;grid-template-columns:210px minmax(270px,370px);align-items:center;gap:38px;width:min(760px,100%);margin:0}
  #intro h1{font-size:112px}
  #intro .title-acts button{min-height:56px}
- #intro .title-acts #btnQuick{min-height:86px;padding-block:4px}
+ #intro .title-acts :is(#btnQuick,#btnFree){min-height:86px;padding-block:4px}
  #intro .title-start-copy b{font-size:22px}
  #intro .title-footer{margin-top:12px;padding-top:9px}
 }
-@media(max-width:360px){#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){flex-direction:column;gap:3px;padding:1px;font-size:10px}#intro .title-acts button>svg{width:18px;height:18px}#intro #btnQuick>svg{width:24px;height:24px}}
+@media(max-width:360px){#intro .title-acts button:not(#btnFree):not(#btnQuick):not(#btnNewCampaign){flex-direction:column;gap:3px;padding:1px;font-size:10px}#intro .title-acts button>svg{width:18px;height:18px}#intro :is(#btnQuick,#btnFree)>svg{width:24px;height:24px}}
 @media(prefers-reduced-motion:reduce){#intro .title-acts button{transition:none}}
 /* One complete Korean face for every interface heading; only the logo differs. */
 #help .sub-head h2,#brief .br-name,#end #endTitle,#newCampaignDialog h2{font-family:var(--f-body);font-weight:400;letter-spacing:-.025em;line-height:1.4}
@@ -2750,9 +2750,9 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
 #caseBoard .case-evidence strong{font-size:13px;font-weight:600}
 #caseBoard .case-board-head,#help .sub-head{border-bottom-width:2px}
 #caseBoard .case-kicker{font-size:12px}
-#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){font-weight:600}
+#intro .title-acts button:not(#btnQuick):not(#btnFree):not(#btnNewCampaign){font-weight:600}
 #intro .title-acts button>svg{width:23px;height:23px;stroke:none}
-#intro .title-acts #btnQuick>svg{stroke:none}
+#intro .title-acts :is(#btnQuick,#btnFree)>svg{stroke:none}
 #hud .pad b,#hud .sysbtns b,#hud #quickItems output{font-weight:600}
 @media(max-width:999px){
  #skillScreen .skill-detail-head h3{font-size:23px}
@@ -3056,7 +3056,8 @@ body.touch #hud #quickItems output{border-radius:2px;color:#f5dfb3;background:#1
   <div class="panel title-panel">
     <div class="title-brand"><span class="title-kicker">잠입 액션</span><h1>야행</h1></div>
     <nav class="title-acts" aria-label="주 메뉴">
-      <button class="cta" id="btnQuick" type="button">시작하기</button>
+      <button class="cta" id="btnQuick" type="button">스토리 모드</button>
+      <button class="cta" id="btnFree" type="button">자유 모드</button>
       <button class="ghost" data-case-open type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" data-ui-icon="navigation" data-icon-family="ivory-silhouette" fill="currentColor" stroke="none" aria-hidden="true"><path d="M17 3h14v12H17ZM5 32h14v12H5ZM29 32h14v12H29Z" fill="currentColor" fill-rule="evenodd"/><path d="M21 14h6v7h13v12h-5v-7H13v7H8V21h13Z" fill="currentColor" fill-rule="evenodd" opacity="0.7"/></svg><span>조직도</span></button>
       <button class="ghost" id="btnSkillsIntro" type="button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" data-ui-icon="navigation" data-icon-family="ivory-silhouette" fill="currentColor" stroke="none" aria-hidden="true"><g transform="translate(1 -1) scale(.85)"><path d="M29 3 42 4 41 17 25 31l-8-8ZM29 10l-8 13 3 3 11-15Z" fill="currentColor" fill-rule="evenodd"/><path d="m13 24 13 13-4 4-13-13Z" fill="currentColor" fill-rule="evenodd"/><path d="m9 30 9 9-9 8-8-8ZM8 36a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" fill-rule="evenodd"/></g><g transform="translate(48 0) scale(-.85 .85)"><path d="M29 3 42 4 41 17 25 31l-8-8ZM29 10l-8 13 3 3 11-15Z" fill="currentColor" fill-rule="evenodd"/><path d="m13 24 13 13-4 4-13-13Z" fill="currentColor" fill-rule="evenodd"/><path d="m9 30 9 9-9 8-8-8ZM8 36a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" fill="currentColor" fill-rule="evenodd"/></g></svg><span>기술 습득</span></button>
       <button class="ghost" id="btnLedger" type="button" hidden>기록 보관함</button>
@@ -4046,61 +4047,71 @@ const STAGES = [
   hints: ['도로에 선 차 옆에서 [행동] — 운전자를 끌어내고 탄다. 사람들이 보면 수배가 붙는다.', '빨간 표시는 의뢰 장소다. 앞에서 [행동]을 누르면 의뢰가 시작된다.']
 },
 // ───────── 도시 2배 시험 구역: 기존 도시(4×3 블록, 84×64칸)의 블록 설계를 그대로 써서 8×6 블록(168×128칸)으로 넓혔다.
-// 가로·세로 각 2배라 같은 속도로 끝에서 끝까지 두 배 걸린다. 캠페인·저장과 분리: 주소에 ?study=city-xl 일 때만 들어간다.
+// 가로·세로 각 2배라 같은 속도로 끝에서 끝까지 두 배 걸린다. 캠페인·저장과 분리된 자유 모드다.
+// 판 목록에는 처음부터 넣지 않는다: 메인 화면 [자유 모드]를 누를 때 window.__CITY_XL__()로 만들어 붙인다(주소에 ?study=city-xl 이면 처음부터 넣는다).
 // 블록 하나 = 16칸(바깥 한 칸 보도), 도로 4칸. 블록 종류는 기존 도시 12종을 다시 배치했다.
-...(new URLSearchParams(location.search).get('study') === 'city-xl' ? [(() => {
+...(window.__CITY_XL__ = () => {
   // 강: 셋째 블록 줄 아래 가로 도로(y 60~63) 바로 밑을 가로지른다(y 64~74). 넷째 줄부터는 강 폭만큼 남쪽으로 밀린다
-  const BX = 8, BY = 6, RIVER_Y = 64, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, W = BX * 20 + 8, H = BY * 20 + 8 + RS;
-  const B = (bx, by) => [4 + bx * 20, 4 + by * 20 + (by >= 3 ? RS : 0)];
+  // 블록 24칸(바깥 한 칸 보도) + 도로 4칸 = 28칸 주기. 건물이 커지고 맵도 커졌다(232×199칸)
+  const BX = 8, BY = 6, BS = 24, P = BS + 4, RIVER_ROWS = 11, RS = RIVER_ROWS + 4, RIVER_Y = 3 * P + 4, W = BX * P + 8, H = BY * P + 8 + RS;
+  const B = (bx, by) => [4 + bx * P, 4 + by * P + (by >= 3 ? RS : 0)];
   const RIVER = window.__ASSETS__ && window.__ASSETS__.cityRiver;
   // 간판 이름: 을지로 골목 가게들 (블록 자리마다 다르게)
   const pick = (list, x, y, k = 0) => list[((x * 7 + y * 13 + k * 5) >>> 0) % list.length];
   const FOOD = ['국밥', '노가리', '호프', '골뱅이', '곱창', '순댓국', '백반', '분식', '포차'];
   const STORE = ['편의점', '철물', '공구', '타일', '조명', '인쇄', '전파사', '약국', '지물포'];
   const PLAY = ['PC방', '당구장', '노래방', '다방', '기원'];
-  // 블록마다 다른 필지: 안쪽 14×14 칸을 북쪽 줄 · 가운데 골목 · 남쪽 줄로 나누고, 줄마다 폭이 다른 건물과 빈터를 놓는다.
-  // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대 밀집
+  // 필지: 사각형 안을 한두 줄로 나누고, 줄마다 폭이 다른 건물(6~11칸)과 1~2칸 틈 · 빈터를 놓는다.
+  // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대·사무실 밀집
   const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
-  function genBlock(m, x, y, kind) {
-    const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1)), I0 = x + 1, I1 = x + 14;
+  const UPPER = ['office', 'office', 'gym', 'pc', 'academy'], UPPER_SIGN = { office: ['', '세무사', '법무사', '부동산'], gym: ['헬스장'], pc: ['PC방', '당구장', '노래방'], academy: ['학원'] };
+  function genLots(m, X0, Y0, X1, Y1, kind, r) {
+    const ri = (a, b) => a + Math.floor(r() * (b - a + 1));
     const yard = (x0, y0, x1, y1) => {  // 빈터: 주차장 · 마당 · 쉼터 · 노점
       const t = r(), w = x1 - x0 + 1, h = y1 - y0 + 1; if (w < 1 || h < 1) return;
-      if (t < 0.3 && w >= 2 && h >= 3) { m.fill(x0, y0, x1, y1, '.'); for (let cx = x0; cx <= x1 && cx <= x0 + 4; cx += 2) if (r() < 0.7) m.car(cx, y0 + (h > 3 ? 1 : 0), ri(0, 4)); }
+      if (t < 0.3 && w >= 2 && h >= 3) { m.fill(x0, y0, x1, y1, '.'); for (let cx = x0; cx <= x1 && cx <= x0 + 6; cx += 2) if (r() < 0.7) m.car(cx, y0 + (h > 3 ? 1 : 0), ri(0, 4)); }
       else if (t < 0.55) { m.fill(x0, y0, x1, y1, 'g'); for (let k = 0; k < Math.max(1, (w * h) >> 3); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.5 ? 'T' : 'B'); }
       else if (t < 0.7 && w >= 2 && h >= 2 && kind === 'shop') m.tent(x0, y0, ['R', 'B', 'G'][ri(0, 2)]);
       else for (let k = 0; k < Math.max(1, (w * h) >> 4); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.6 ? 'O' : 'B');
     };
-    const tall = kind === 'shop' ? [2, 4] : kind === 'dense' ? [2, 3] : [1, 3];
+    const tall = kind === 'shop' ? [2, 5] : kind === 'dense' ? [3, 5] : [1, 3];
     const building = (x0, y0, x1, y1, front) => {
       const d = y1 - y0 + 1, h = Math.max(1, Math.min(ri(tall[0], tall[1]), d - 2));
-      if (kind === 'shop' && front) m.villa(x0, y0, x1, y1, h, { kind: 'shop', use: Array.from({ length: h }, (_, f) => f ? (r() < 0.3 ? 'pc' : 'office') : r() < 0.5 ? 'food' : 'store'),
-        signs: Array.from({ length: h }, (_, f) => f === 0 ? pick(r() < 0.5 ? FOOD : STORE, x0, y0) : f === 1 && r() < 0.5 ? pick(PLAY, x0, y0) : '') });
-      else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
+      if (front && kind !== 'res') {  // 1층 가게(식당 · 가게), 위층은 사무실 · 헬스장 · PC방 · 학원
+        const use = Array.from({ length: h }, (_, f) => f ? UPPER[ri(0, UPPER.length - 1)] : r() < 0.55 ? 'food' : 'store');
+        m.villa(x0, y0, x1, y1, h, { kind: 'shop', use, signs: use.map((u, f) => f === 0 ? pick(u === 'food' ? FOOD : STORE, x0, y0) : f <= 2 ? pick(UPPER_SIGN[u] || [''], x0, y0, f) : '') });
+      } else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
     };
-    // 한 줄을 폭 6~9칸 건물과 1~2칸 틈으로 채운다. 남는 자리는 빈터
-    const row = (y0, y1, front, setback) => {
-      let cx = I0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
-      while (I1 - cx + 1 >= 5) {
-        const left = I1 - cx + 1; let w = Math.min(left, ri(5, 8)); if (left - w > 0 && left - w < 6) w = left - w <= 2 ? left : Math.max(5, left - 6);  // 끝에 애매한 자투리가 남지 않게
-        const sb = setback && r() < 0.35 ? 1 : 0;
-        if (r() < (kind === 'res' ? 0.15 : 0.06)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
+    const row = (y0, y1, front) => {
+      let cx = X0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
+      while (X1 - cx + 1 >= 6) {
+        const left = X1 - cx + 1; let w = Math.min(left, ri(6, 11)); if (left - w > 0 && left - w < 7) w = left - w <= 2 ? left : Math.max(6, left - 7);  // 끝에 애매한 자투리가 남지 않게
+        const sb = r() < 0.3 ? 1 : 0;
+        if (r() < (kind === 'res' ? 0.12 : 0.05)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
         if (sb) yard(cx, front ? y1 : y0, cx + w - 1, front ? y1 : y0);
-        cx += w; const g = r() < 0.7 ? 1 : 2; if (cx <= I1) { yard(cx, y0, Math.min(I1, cx + g - 1), y1); cx += g; }
+        cx += w; const g = r() < 0.7 ? 1 : 2; if (cx <= X1) { yard(cx, y0, Math.min(X1, cx + g - 1), y1); cx += g; }
       }
-      if (cx <= I1) yard(cx, y0, I1, y1);
+      if (cx <= X1) yard(cx, y0, X1, y1);
     };
-    if (r() < 0.22) {  // 한쪽은 깊은 큰 건물(뒤 골목 없이), 나머지는 줄
-      const w = ri(7, 9), left = r() < 0.5, bx0 = left ? I0 : I1 - w + 1;
-      building(bx0, y + 2, bx0 + w - 1, y + 14, true);
-      const ox0 = left ? bx0 + w + 1 : I0, ox1 = left ? I1 : bx0 - 2;
-      if (ox1 - ox0 + 1 >= 6) { building(ox0, y + 8, ox1, y + 14, true); yard(ox0, y + 1, ox1, y + 6); } else yard(ox0, y + 1, ox1, y + 14);
-      yard(bx0, y + 1, bx0 + w - 1, y + 1);
+    const Hh = Y1 - Y0 + 1;
+    if (Hh >= 16) { const dN = ri(7, 10), dS = ri(7, Math.min(10, Hh - dN - 2)); row(Y0, Y0 + dN - 1, false); m.fill(X0, Y0 + dN, X1, Y1 - dS, ','); row(Y1 - dS + 1, Y1, true); }
+    else if (Hh >= 5 && X1 - X0 + 1 >= 6) row(Y0, Y1, true); else yard(X0, Y0, X1, Y1);
+  }
+  function genBlock(m, x, y, kind) {
+    const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1));
+    if (r() < 0.2) {  // 한쪽은 깊은 큰 건물, 나머지는 필지
+      const w = ri(9, 12), left = r() < 0.5, bx0 = left ? x + 1 : x + BS - 1 - w;
+      m.villa(bx0, y + 3, bx0 + w - 1, y + BS - 2, ri(3, 6), kind === 'res' ? {} : { kind: 'shop', use: ['food', 'gym', 'office', 'office', 'office', 'office'], signs: [pick(FOOD, x, y), '헬스장', pick(UPPER_SIGN.office, x, y)] });
+      genLots(m, left ? bx0 + w + 1 : x + 1, y + 1, left ? x + BS - 2 : bx0 - 2, y + BS - 2, kind, r); m.fill(bx0, y + 1, bx0 + w - 1, y + 2, ',');
       return;
     }
-    const dN = ri(5, 7), dS = ri(5, Math.min(7, 13 - dN));
-    row(y + 1, y + dN, false, true);
-    m.fill(I0, y + dN + 1, I1, y + 14 - dS, ',');  // 가운데 골목
-    row(y + 15 - dS, y + 14, true, true);
+    genLots(m, x + 1, y + 1, x + BS - 2, y + BS - 2, kind, r);
+  }
+  // 특수 블록(조직 구역 · 본부 · 클럽 · 병원 · 지구대 · 공원 · 시장 · 공사장)은 왼쪽 위 16칸에 그대로 두고, 남은 ㄱ자 땅을 필지로 채운다
+  function fillAround(m, x, y, kind) {
+    const r = rng(x * 3571 + y * 7349 + 7);
+    m.fill(x + 15, y + 1, x + 15, y + BS - 2, ','); m.fill(x + 1, y + 15, x + 14, y + 15, ',');
+    genLots(m, x + 16, y + 1, x + BS - 2, y + BS - 2, kind, r); genLots(m, x + 1, y + 16, x + 14, y + BS - 2, kind, r);
   }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
@@ -4116,7 +4127,7 @@ const STAGES = [
   const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
   const T = {
     h(m, x, y) { genBlock(m, x, y, 'res'); },
-    s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + 14, y + 14, 'pub']); },
+    s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + BS - 2, y + BS - 2, 'pub']); },
     w(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 6, 1, { kind: 'shop', use: ['store'], signs: ['청계 상회'], name: '청계 상회', back: true });
       m.villa(x + 1, y + 9, x + 8, y + 14, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '청계파 사무실', name: '청계파 사무실' });
@@ -4170,26 +4181,29 @@ const STAGES = [
   };
   // 강 칸 열: 세로 도로는 그대로 다리, 그 양옆은 다리 난간, 나머지는 4칸 주기 축대(다섯 주기마다 사다리)
   const riverCol = x => { for (const r of st.roadsX) { if (x >= r && x < r + 4) return 'road'; if (x === r - 1 || x === r + 4) return 'rail'; } return Math.floor(x / 4) % 5 === 2 && x % 4 === 2 ? 'ladder' : 'quay'; };
+  // 블록 하나: 일반 블록(h s e)은 통째로 필지, 특수 블록은 16칸 설계 + 남은 땅 필지
+  const AROUND = { w: 'dense', c: 'shop', p: 'res', m: 'shop', r: 'dense', H: 'dense', P: 'dense', k: 'res', q: 'dense' };
+  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; T[t](m, x0, y0); if (AROUND[t]) fillAround(m, x0, y0, AROUND[t]); }
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
-  const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), c = [[x0, y0], [x0 + 15, y0], [x0 + 15, y0 + 15], [x0, y0 + 15]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
+  const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), e = BS - 1, c = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
-    id: 'cityXL', no: 'TEST', name: '밤의 도시 · 큰 도시 시험', sub: '도시 · 2배 크기 시험 구역', fee: '',
+    id: 'cityXL', no: 'FREE', name: '자유 모드 · 을지로', sub: '을지로 · 청계천', fee: '', freeMode: true,
     city: true, retiredCampaign: true, study: 'city-xl', freeCityExteriors: true,
-    mission: '큰 도시 시험: 공중전화에서 의뢰를 받고 도시 안에서 표적을 처치한다',
+    mission: '자유 모드: 을지로를 마음대로 돌아다닌다. 공중전화에서 의뢰를 받을 수 있다',
     itemName: '', itemNames: [],
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
-    W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 3,
-    roadsX: Array.from({ length: BX + 1 }, (_, i) => i * 20), roadsY: [0, 20, 40, 60, 60 + RS, 80 + RS, 100 + RS, 120 + RS], traffic: 52,  // 강 남쪽 둑길(75~78)도 도로
-    blockCount: [BX, BY],
+    W, H, start: [10, 4 + BS - 1], exit: [10, 4 + BS - 1], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0.6, rivals: 3,
+    roadsX: Array.from({ length: BX + 1 }, (_, i) => i * P), roadsY: [0, P, 2 * P, 3 * P, 3 * P + RS, 4 * P + RS, 5 * P + RS, 6 * P + RS], traffic: 84,  // 강 남쪽 둑길도 도로
+    blockCount: [BX, BY], blockSize: BS,
     blockOrigin: B, signals: true, cityLife: true, gangWar: true, noPrompts: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
       m.fill(0, 0, W - 1, H - 1, '.');
       for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
-        const [x0, y0] = B(bx, by); m.fill(x0, y0, x0 + 15, y0 + 15, '='); m.fill(x0 + 1, y0 + 1, x0 + 14, y0 + 14, ',');
-        T[LAYOUT[by][bx]](m, x0, y0);
+        const [x0, y0] = B(bx, by), e = BS - 1; m.fill(x0, y0, x0 + e, y0 + e, '='); m.fill(x0 + 1, y0 + 1, x0 + e - 1, y0 + e - 1, ',');
+        buildBlock(m, bx, by);
         // 보도 소품: 맨홀·봉투·수거함을 블록마다 돌려 가며
         const k = (bx * 3 + by * 5) % 4;
-        if (k === 0) m.set(x0, y0 + 9, 'W'); else if (k === 1) m.set(x0 + 15, y0 + 1, 'O'); else if (k === 2) m.set(x0, y0 + 6, 'H'); else m.set(x0 + 9, y0 + 15, 'W');
+        if (k === 0) m.set(x0, y0 + 9, 'W'); else if (k === 1) m.set(x0 + e, y0 + 1, 'O'); else if (k === 2) m.set(x0, y0 + 6, 'H'); else m.set(x0 + 9, y0 + e, 'W');
       }
       // 강: 축대 길('=') · 축대 벽·난간('¦') · 물('~'). 도로 칸은 다리라서 그대로 둔다
       const grid = (RIVER && RIVER.grid) || ['=', '¦', '=', '¦', '~', '~', '~', '¦', '=', '=', '='];
@@ -4199,11 +4213,11 @@ const STAGES = [
     zones, zoneAllow: ['crew'],
     roofs: ['cRoofA', 'cRoofG', 'cRoofB'], bricks: [1, 0, 1],
     lamps: (() => { const L = []; for (let x = 6; x < W - 2; x += 10) L.push([x, RIVER_Y, 200, 1, 0, '255,214,160', null, true], [x + 5, RIVER_Y + RIVER_ROWS - 2, 190, 1, 0, null, null, true]);  // 강: 축대 등과 다리 등 (기둥은 그림에 있다)
-      for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); L.push([x0, y0, 180, 1], [x0 + 15, y0 + 15, 180, 1, 0, (bx + by) % 3 === 1 ? '255,90,190' : (bx + by) % 3 === 2 ? '90,220,255' : null]); } return L; })(),
+      for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); L.push([x0, y0, 180, 1], [x0 + BS - 1, y0 + BS - 1, 180, 1, 0, (bx + by) % 3 === 1 ? '255,90,190' : (bx + by) % 3 === 2 ? '90,220,255' : null]); } return L; })(),
     cams: [], radios: [], contracts: [],
     // 도시 안 의뢰: 공중전화(블록 동쪽 보도 가운데)에서 의뢰를 받으면 표적이 도시 어딘가를 돈다
     hits: true,
-    phones: [[0, 0], [3, 1], [6, 0], [1, 3], [5, 3], [2, 5], [7, 5], [4, 2]].map(([bx, by]) => { const [x0, y0] = B(bx, by); return [x0 + 15, y0 + 7]; }),
+    phones: [[0, 0], [3, 1], [6, 0], [1, 3], [5, 3], [2, 5], [7, 5], [4, 2]].map(([bx, by]) => { const [x0, y0] = B(bx, by); return [x0 + BS - 1, y0 + 9]; }),
     copBeats: [],
     guards: [], items: [], traps: [],
     well: 'manhole', kunai: 3, coins: 3,
@@ -4217,20 +4231,21 @@ const STAGES = [
     편의점: 'store', 철물: 'hardware', 공구: 'tools', 타일: 'tile', 조명: 'lighting', 인쇄: 'printshop', 전파사: 'radio', 약국: 'drug', 지물포: 'paper',
     PC방: 'pcroom', 당구장: 'billiards', 노래방: 'karaoke', 다방: 'dabang', 기원: 'baduk', 동진인쇄: 'dongjin', 선일전기: 'sunil', 백송상사: 'baeksong2', 을지공업사: 'euljigong',
     '청계 상회': 'cheonggye', '종로파 사무실': 'jongno', '건달파 당구장': 'rival', 시장: 'market', CLUB: 'club', '시립 병원': 'hospital', 지구대: 'police', 자재: 'material', '조직 본부': 'hq', 본부: 'hq', '청계파 사무실': 'cheonggye' };
-  const specs = [];
+  const specs = [], homeLocks = [];
   const dry = { villa(x0, y0, x1, y1, h, o = {}) {
       const i = specs.length, f = FRONTS[(x0 * 3 + y0 * 7 + i) % FRONTS.length], w = x1 - x0 + 1, txt = [o.plate, o.name, ...(o.signs || [])].find(s => s && SIGN_KEY[s]);
       // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
       const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
+      if (!shop) homeLocks.push({ b: i, door: 'front', key: 'gold' }, { b: i, door: 'back', key: 'gold' });  // 일반 주택은 앞뒤 문이 잠겨 있다: 창문으로 들어간다
       if (shop && w >= 12) { boards.push({ image: ['can', 'chimaek', 'soju'][i % 3], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
       else if (shop && w >= 8 && fh >= 2 && i % 2 === 1) boards.push({ image: ['chimaek', 'soju', 'can'][(i >> 1) % 3], mode: 'roof', x: 1 });
       else if (shop && fh >= 3 && i % 2 === 0) boards.push({ image: ['octopus', 'face', 'karaoke', 'octopus'][(i >> 1) % 4], mode: 'face', x: w - 2, fl: 1 });
       specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal', boards: boards.length ? boards : null,
-        ad: txt && SIGN_KEY[txt] ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },
+        ad: txt && SIGN_KEY[txt] && (!shop || o.plate || o.name) ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },
     fill() {}, set() {}, many() {}, car() {}, tent() {}, get() { return '.'; } };
-  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); T[LAYOUT[by][bx]](dry, x0, y0); }
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) buildBlock(dry, bx, by);
   collecting = false;
-  st.studyFacades = true; st.referenceBuildings = specs; st.studyStyles = specs.map(s => s.style);
+  st.locks = homeLocks; st.studyFacades = true; st.referenceBuildings = specs; st.studyStyles = specs.map(s => s.style);
   st.referenceRow = function (i, fl) { const s = this.referenceBuildings[i], n = s.windows.length; return fl === s.h - 1 ? 0 : fl < n - 1 ? n - 1 - fl : 1; };
   st.referenceWindow = function (i, tx, fl) { const s = this.referenceBuildings[i], row = s.windows[this.referenceRow(i, fl)]; return Array.isArray(row) ? !!row[(tx - s.box[0] - 1) % 3] : !!row; };
   const [hx, hy] = find('H'), [px, py] = find('P');
@@ -4254,16 +4269,23 @@ const STAGES = [
     const r2 = ring(bx, by, (bx + by) % 2), k2 = (k + 2) % 4;
     st.guards.push({ kind: 'civ', body: BODIES[(bx * 2 + by + 1) % BODIES.length], route: r2.slice(k2).concat(r2.slice(0, k2)) });
   }
+  // 길 건너는 사람: 블록마다 하나, 오른쪽(또는 아래쪽) 이웃 블록 모퉁이까지 횡단보도로 건너 오간다
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
+    const [x0, y0] = B(bx, by), e = BS - 1, right = bx + 1 < BX && (bx + by) % 2 === 0, down = !right && by + 1 < BY && by !== 2;
+    if (!right && !down) continue; const [nx0, ny0] = B(right ? bx + 1 : bx, down ? by + 1 : by);
+    const a = [x0 + e, y0 + e], c = right ? [nx0, y0 + e] : [x0 + e, ny0];  // 블록 모퉁이 줄 = 교차로 앞 횡단보도
+    st.guards.push({ kind: 'civ', body: BODIES[(bx * 3 + by) % BODIES.length], route: [[a[0], a[1], 2], [c[0], c[1], 2]] });
+  }
   // 조직끼리 마주치게: 조직마다 두 패가 자기 동네와 다른 조직 동네 사이를 오간다 (경찰이 보면 싸움을 말린다)
   const homes = { A: 'q', B: 'r', C: 'w', D: 'c' }, keys = Object.keys(homes);
   keys.forEach((f, i) => { const [hx0, hy0] = find(homes[f]), [ox0, oy0] = find(homes[keys[(i + 1) % 4]]), [px0, py0] = find(homes[keys[(i + 3) % 4]]);
-    st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + 15, 3], [ox0 + 15, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + 15, hy0, 3], [px0, py0 + 15, 3]], radio: false }); });
+    st.guards.push({ kind: 'g2', fac: f, route: [[hx0, hy0 + BS - 1, 3], [ox0 + BS - 1, oy0, 3]], radio: false }, { kind: 'g1', fac: f, route: [[hx0 + BS - 1, hy0, 3], [px0, py0 + BS - 1, 3]], radio: false }); });
   // 청계천 산책로: 북쪽 축대 길과 남쪽 둔치를 걷는 사람들
-  for (let i = 0; i < 6; i++) { const x0 = 6 + i * 26, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
-    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 30), y, 2]] }); }
+  for (let i = 0; i < 8; i++) { const x0 = 6 + i * 28, y = i % 2 ? RIVER_Y + RIVER_ROWS - 2 : RIVER_Y;
+    st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: [[x0, y, 2], [Math.min(W - 6, x0 + 34), y, 2]] }); }
   st.guards.push(...gangs);
   return st;
-})()] : []),
+}, new URLSearchParams(location.search).get('study') === 'city-xl' ? [window.__CITY_XL__()] : []),
 // Episode 04: a depot circuit. A legitimate uniform, a physical archive key,
 // or the rear duct offer different approaches without granting combat skills.
 {
@@ -6326,6 +6348,12 @@ function planInterior(g, b, bi, f) {
       const cols = ['255,60,170', '60,220,255']; [[0.3, 0.75], [0.75, 0.75]].forEach(([u, v], k) => AUTO_LAMPS.push([Math.round(sx0 + (sx1 - sx0) * u), Math.round(iy0 + (iy1 - iy0) * v), 140, 0, f, cols[k]]));
       rec.store = { x0: sx0, y0: vy + 1, x1: sx1, y1: iy1, use };
     }
+    else if (use === 'gym') {  // 헬스장: 앞줄 러닝머신, 가운데 벤치·랙, 벽에 사물함과 거울
+      furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'locker');
+      for (let x = sx0 + 3; x + 1 <= sx1; x += 3) furn(x, iy0, 2, 1, 'mirror', false);
+      for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
+      for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) furn(x, y, 1, 1, 'rack', true, 0);
+    }
     else if (use === 'food') { furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); } }  // 식당: 주방 싱크대, 양 끝에 의자 놓인 식탁
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); furn(sx0, iy1 - 1, 1, 1, 'locker'); }
@@ -6425,6 +6453,9 @@ function drawFurnBase(x, it) {
     case 'shelf': sh(); R(2, 8, w - 4, h - 16, '#8a8f98'); for (let k = 0; k < it.w * 4; k++) R(6 + k * 11, 12, 8, 10, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;
     case 'shelfS': sh(); R(6, 4, w - 12, h - 10, '#6a4a32'); for (let k = 0; k < 3; k++) R(10 + k * 9, 8, 6, 14, ['#a84a4a', '#4a6a9a', '#c8a050'][(k + s) % 3]); break;
     case 'disp': sh(); R(3, 10, w - 6, h - 18, '#8a8f98'); for (let k = 0; k < it.w * 3; k++) R(6 + k * 15, 13, 11, h - 26, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;  // 낮은 진열대
+    case 'tread': sh(); R(3, 10, w - 6, h - 18, '#2a2d34'); R(8, 13, w - 22, h - 24, '#3e434c'); for (let k = 12; k < w - 18; k += 6) R(k, 14, 2, h - 26, '#555b66'); R(w - 14, 6, 8, h - 12, '#4a4f58'); R(w - 13, 8, 6, 5, '#7ac8e8'); break;
+    case 'rack': sh(); R(8, 18, w - 16, 10, '#5a5f68'); R(4, 14, 6, 18, '#1c1e22'); R(w - 10, 14, 6, 18, '#1c1e22'); R(12, 8, w - 24, 6, '#8a3a3a'); break;
+    case 'mirror': R(2, 2, w - 4, 10, '#9fb8c8'); R(4, 3, w - 8, 3, 'rgba(255,255,255,.55)'); break;
     case 'counter': sh(); R(2, 6, w - 4, h - 12, '#d8d0c0'); R(10, 12, 16, 12, '#3a3d44'); R(12, 14, 12, 6, '#7ac85a'); break;
     case 'table': sh(); R(6, 10, w - 12, h - 20, '#b08860'); for (const a of [10, w - 22]) { R(a, 2, 12, 6, '#7a5a3a'); R(a, h - 8, 12, 6, '#7a5a3a'); } R(w / 2 - 8, h / 2 - 4, 16, 8, '#c8c0b0'); break;
     case 'tableS': R(8, 10, w - 16, h - 20, '#a07850'); R(18, 18, 12, 8, '#e8e4d8'); break;
@@ -7247,6 +7278,7 @@ function drawStudyFacade(b){
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
  if(spec.ad)drawStudySign(b,spec.ad);
  drawStudyBoards(b,'face');
+ if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){
@@ -9577,7 +9609,7 @@ function autoResidents() {
       const r = sleep ? u.rooms[0] : u.living, g = f ? GF[f] : G0; let pt = null;
       for (let y = r.y0; y <= r.y1 && !pt; y++) for (let x = r.x0; x <= r.x1; x++) { const c = g[y][x]; if (!SOLID.has(c) && c !== 'Y' && (sleep ? true : y > r.y0)) { pt = [x, y]; if (!sleep) break; } }
       if (!pt) return;
-      out.push({ kind: 'civ', look: (h >> 5) % 4, fl: f, at: pt, post: sleep ? 90 : ((h >> 7) % 4) * 90, sleep: !!sleep });
+      out.push({ kind: 'civ', resident: true, look: (h >> 5) % 4, fl: f, at: pt, post: sleep ? 90 : ((h >> 7) % 4) * 90, sleep: !!sleep });
     }); });
   });
   return out;
@@ -9597,7 +9629,7 @@ function makeGuard(d, i) {
   else { const leader = (STAGE._g || STAGE.guards)[d.follow]; sx = leader.route[0][0] - 1; sy = leader.route[0][1]; }
   const post = d.post != null ? d.post * Math.PI / 180 : null;
   return {
-    id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
+    id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, resident: !!d.resident, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.startPause ?? (d.route ? 0 : 999), waitBase: 0,
@@ -11232,7 +11264,7 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
-const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
+const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||STAGE.cityLife&&g.resident&&d.keyLock==='gold'||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function npcPostLegClear(a,b,sol=solidAt){
   const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
   for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){
@@ -11299,10 +11331,17 @@ function updateStairYield(g,dt){
   }
   return true;
 }
+// 잠긴 문 찾기: 프레임마다 한 번 '층:x,y' 표를 만든다 (문이 수백 개인 큰 도시에서 걸음마다 전부 훑지 않게)
+let lockedDoorIdx=null;
+function lockedDoorAt(fl,tx,ty){
+  if(!lockedDoorIdx||lockedDoorIdx.t!==S.t||lockedDoorIdx.S!==S){const m=new Map();for(const d of S.doors)if(d.locked)m.set(flOf(d)+':'+d.tx+','+d.ty,d);lockedDoorIdx={t:S.t,S,m};}
+  return lockedDoorIdx.m.get(fl+':'+tx+','+ty)||null;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
+  if(STAGE.signals&&g.civ&&pedWaits(g)){g.moving=false;return false;}  // 빨간불: 횡단보도 앞에서 기다린다
   requestStairSpace(g);
-  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=lockedDoorAt(flOf(g),Math.floor(next.x/TILE),Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied
@@ -11850,8 +11889,10 @@ function drawCams(fl) {
 function separateBodies(dt) {
   const R = 26, L = S.guards.filter(g => g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.doomed), k = Math.min(1, dt * 6), L0 = CUR_F;
   const push = (o, dx, dy) => { setLayer(flOf(o)); const sol = o.z ? solidFor(o.z) : solidAt, nx = o.x + dx, ny = o.y + dy; if (!sol(Math.floor(nx / TILE), Math.floor(o.y / TILE))) o.x = nx; if (!sol(Math.floor(o.x / TILE), Math.floor(ny / TILE))) o.y = ny; };
+  // x 순으로 정렬해 가까운 사람끼리만 비교한다 (사람이 많은 큰 도시에서 모든 쌍을 비교하지 않게)
+  L.sort((a, b) => a.x - b.x);
   for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) {
-    const a = L[i], b = L[j]; if (flOf(a) !== flOf(b) || (a.z || 0) !== (b.z || 0) || a.climb || b.climb) continue;
+    const a = L[i], b = L[j]; if (b.x - a.x > R) break; if (flOf(a) !== flOf(b) || (a.z || 0) !== (b.z || 0) || a.climb || b.climb) continue;
     let dx = b.x - a.x, dy = b.y - a.y; if (Math.abs(dx) > R || Math.abs(dy) > R) continue;
     let d = Math.hypot(dx, dy); if (d >= R) continue; if (d < 0.01) { dx = Math.cos(a.id + j); dy = Math.sin(a.id + j); d = 1; }
     const m = (R - d) / 2 * k / d; push(a, -dx * m, -dy * m); push(b, dx * m, dy * m);
@@ -12344,8 +12385,9 @@ function updateChats(dt) {
   if(STAGE.noAmbientChats)return;
   const gs = S.guards.filter(g => g.state === 'PATROL' && !g.doomed && !g.target && !g.dog && g.follow == null && !g.relight && !(g.civ && (g.sleep || g.seen)) && !(g.elite && !g.civ) && !(securityLevel()>=2&&securityCrew(g)));
   for (const g of gs) g.chatCd = (g.chatCd == null ? rnd(4, 14) : g.chatCd) - dt;
+  gs.sort((a, b) => a.x - b.x);  // x 순: 대화 거리(최대 200) 밖은 더 보지 않는다
   for (let i = 0; i < gs.length; i++) for (let j = i + 1; j < gs.length; j++) {
-    const a = gs[i], b = gs[j];
+    const a = gs[i], b = gs[j]; if (b.x - a.x > 200) break;
     if (a.civ !== b.civ || (S.alevel && !a.civ)) continue;
     if (a.chat || b.chat || a.chatCd > 0 || b.chatCd > 0 || flOf(a) !== flOf(b)) continue;
     if (dist(a.x, a.y, b.x, b.y) > (a.civ ? 170 : 200)) continue;
@@ -12426,7 +12468,7 @@ function hurtPlayer(g, why, origin=g) {
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; c.seen = true; goAlert(c); }
   if (STAGE.cityLife && g && !g.police && g.fac && g.fac !== 'P' && !g.civ) P.hp--;  // 조직은 칼로 죽이러 든다: 한 번에 두 칸
-  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) cityArrest(why); else cityDown(why); return; } endGame(false, why); return; }
+  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) { P.hp = 1; startCuffs(why, g || origin); } else cityDown(why); return; } endGame(false, why); return; }
   toast(P.hp === 1 ? `${why.replace(/\.$/, '')} — 마지막 체력! 지금 시야를 끊고 숨어라` : `${why.replace(/\.$/, '')} — 체력 ${P.hp}/${P.hpMax}. 시야를 끊고 숨어라`, 2.6, P.hp === 1 ? 'warn big' : 'warn');
 }
 // 숨은 곳에서 끌려 나옴
@@ -14352,7 +14394,7 @@ function padToolWhistle(){return !!(S&&!S.player.captive&&(input.padWhistle||isT
 function selectTool(t) { if(typeof activeToolPress!=='undefined'&&activeToolPress?.quick)finishToolPress(true); if(!availableTools().includes(t)){if(EXTRA_TOOLS[t])toast(abilityLockText(EXTRA_TOOLS[t].skill),2);return;} input.tool = t; input.padWhistle = false; if (input.aiming) input.aiming.t0 = performance.now(); syncTools(); play('click', 0.2); }
 function canAim() { const P = S.player; return S && running && !S.over && !paused && !DLG.modal && !S.keypad && !actionBusy(P) && !P.hide && !P.jump && !P.trav && !P.under && !P.vent && !P.captive; }
 // 도구: 누르고 있으면 조준(이동 입력으로 방향, 오래 누를수록 멀리), 떼면 사용
-function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
+function startAim(src) { if(!S||!running||S.over||paused||DLG.modal||S.keypad||tactical||S.player.cuffed)return; if (S.player.captive) { interrogate(); return; } if (!canAim() || tactical) return;if(input.tool==='kunai'&&!abilityOn('dart')){toast(abilityLockText('dart'),2);return;} if(!deviceReady(input.tool)){toast(toolDetail(input.tool),2);return;} if(toolCount(input.tool)<=0){toast(TOOL_NAME[input.tool]+' 없음 · 다른 도구로 바꾸세요',1.6,'warn');return;} input.aiming = { t0: performance.now(), src }; }
 function cancelAim() { input.aiming = null; input.queue = []; }
 // 동시 행동 예약 (Desperados III 방식): 시간이 멈춘 조준 중 [보조]로 지금 조준을 예약 → 손을 떼면 예약한 것까지 한꺼번에 던진다
 function queueAim() {
@@ -14453,7 +14495,7 @@ function sfxWhistle() {
   o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.4);
 }
 function whistle() {
-  if (!S || S.over || paused || !running || DLG.modal || tactical) return;
+  if (!S || S.over || paused || !running || DLG.modal || tactical || S.player.cuffed) return;
   const P = S.player; if (P.under || P.vent || P.trav || P.jump || P.wire || P.captive) return;
   if (S.whistleT > 0) return;
   S.whistleT = 2.5; sfxWhistle();
@@ -14781,6 +14823,7 @@ function updatePlayer(dt) {
   if (input.sneakToggle && !shiftRun) mode = 'sneak';
   if (input.walkLock && mode === 'run') mode = 'walk';  // 걷기 고정: 뛰지 않는다
   if ((P.carrying || P.captive) && mode === 'run') mode = 'walk';
+  if (P.cuffed) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 수갑을 차는 중: 움직일 수 없다
   if (P.car) { updateDriving(P, mx, my, mag, dt); return; }  // 도시: 운전 중
   if (P.captive) {
     const g = P.captive; g.captT += dt;
@@ -15266,8 +15309,10 @@ function policeCall(x, y, by) {
   if (!(STAGE.city || STAGE.copBeats) || !by) return; if ((S.incT || 0) > S.t) return; S.incT = S.t + 4;
   const idle = S.guards.filter(o => o.police && !o.off && npcAlive(o) && o.state !== 'ALERT' && !o.brawl && !o.incident).sort((p, q) => dist(p.x, p.y, x, y) - dist(q.x, q.y, x, y));
   let n = 0; for (const o of idle.slice(0, 2)) { o.incident = { x, y, by, t0: S.t }; o.state = 'PATROL'; o.path = null; n++; }
-  if (!n) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n = 1; } }
-  if (n && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
+  // 큰 도시: 가장 가까운 경찰도 멀고 사건이 내 근처면, 화면 밖에서 하나 더 뛰어온다
+  const far = !idle.length || dist(idle[0].x, idle[0].y, x, y) > 1000;
+  if (!n || (STAGE.cityLife && far && dist(S.player.x, S.player.y, x, y) < 1000)) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n++; } }
+  if (n && !STAGE.noPrompts && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
 }
 
 // ---------------------------------------------------------------- 도시 판 (GTA2식 시제품): 수배 · 경찰 · 의뢰 장소 · 병원
@@ -15324,13 +15369,13 @@ function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -999
 // 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
 // CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.
 // 한 번에 넘기는 시간은 CITY_LOD_MAX_DT 로 막아 벽 통과나 큰 순간이동을 막는다. 의뢰 판은 경비 동선 타이밍을 그대로 둔다.
-const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15;
+const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
 function cityLodFar(o) {
   const P = S.player;
   return dist(o.x, o.y, P.x, P.y) > CITY_LOD_FAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_FAR;
 }
 function cityLodGuardCalm(g) {
-  return (g.state === 'PATROL' || g.state === 'RETURN') && !g.police && !g.target && !g.seen && !(g.meter > 0) && !g.doomed && !g.carry && !g.captive && cityLodFar(g);
+  return (g.state === 'PATROL' || g.state === 'RETURN' || g.state === 'SLEEP') && !g.police && !g.target && !g.seen && !(g.meter > 0) && !g.doomed && !g.carry && !g.captive && cityLodFar(g);
 }
 function cityLodVehicleCalm(v) {
   return v.ai && !v.chase && !v.police && !v.dead && !((v.crashUntil || 0) > S.t) && cityLodFar(v);
@@ -15339,8 +15384,9 @@ function cityLodVehicleCalm(v) {
 function cityLodStep(o, dt, calm) {
   if (!calm) { const d = dt + (o.lodDt || 0); o.lodDt = 0; return Math.min(d, CITY_LOD_MAX_DT); }
   o.lodDt = (o.lodDt || 0) + dt;
-  if ((((o.id || 0) + S.lodTick) % CITY_LOD_EVERY) !== 0 && o.lodDt < CITY_LOD_MAX_DT) return 0;
-  const d = Math.min(o.lodDt, CITY_LOD_MAX_DT); o.lodDt = 0; return d;
+  const P = S.player, vfar = dist(o.x, o.y, P.x, P.y) > CITY_LOD_VFAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_VFAR, every = vfar ? CITY_LOD_VEVERY : CITY_LOD_EVERY, cap = vfar ? CITY_LOD_VMAX_DT : CITY_LOD_MAX_DT;
+  if ((((o.id || 0) + S.lodTick) % every) !== 0 && o.lodDt < cap) return 0;
+  const d = Math.min(o.lodDt, cap); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
   updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) cityLifeUpdate(dt);
@@ -15431,7 +15477,7 @@ function cityScream(g, x, y) {
 const WANT_PCARS = [0, 1, 1, 2, 3, 3];  // 수배 ★1부터 경찰차가 온다
 function spawnCopCar() {
   const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 120, vh = H / SCALE / 2 + 120;
-  for (let k = 0; k < 60; k++) {
+  for (let k = 0; k < 200; k++) {
     const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3), road = hor ? RY[(Math.random() * RY.length) | 0] : RX[(Math.random() * RX.length) | 0];
     const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
     if (dd < 700 || dd > 1500 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;
@@ -15475,9 +15521,9 @@ function hitAction() {
   return null;
 }
 // 블록 둘레 보도를 도는 길 (도시 행인과 같은 규칙)
-const hitBlock = (bx, by) => STAGE.blockOrigin ? STAGE.blockOrigin(bx, by) : [4 + bx * 20, 4 + by * 20];
+const hitBlock = (bx, by) => STAGE.blockOrigin ? STAGE.blockOrigin(bx, by) : [4 + bx * 20, 4 + by * 20], hitSpan = () => (STAGE.blockSize || 16) - 1;
 function hitRing(bx, by, rev) {
-  const [x0, y0] = hitBlock(bx, by), c = [[x0, y0, 2.5], [x0 + 15, y0, 0.6], [x0 + 15, y0 + 15, 3], [x0, y0 + 15, 0.6]];
+  const [x0, y0] = hitBlock(bx, by), e = hitSpan(), c = [[x0, y0, 2.5], [x0 + e, y0, 0.6], [x0 + e, y0 + e, 3], [x0, y0 + e, 0.6]];
   return rev ? c.slice().reverse() : c;
 }
 function takeHit() {
@@ -15486,7 +15532,7 @@ function takeHit() {
   const P = S.player, [BX, BY] = STAGE.blockCount || [(STAGE.roadsX || []).length - 1, (STAGE.roadsY || []).length - 1];
   // 나에게서 적당히 먼 블록 (화면 밖, 너무 멀지 않게)
   const blocks = [];
-  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [ox, oy] = hitBlock(bx, by), cx = tc(ox + 7.5), cy = tc(oy + 7.5), d = dist(P.x, P.y, cx, cy); if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [ox, oy] = hitBlock(bx, by), cx = tc(ox + hitSpan() / 2), cy = tc(oy + hitSpan() / 2), d = dist(P.x, P.y, cx, cy); if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
   if (!blocks.length) return;
   const [bx, by] = blocks[(Math.random() * blocks.length) | 0], rev = Math.random() < 0.5, route = hitRing(bx, by, rev);
   const name = HIT_NAMES[S.hitN % HIT_NAMES.length];
@@ -15555,7 +15601,32 @@ function updateArrest(dt) {
   const cop = S.guards.find(g => g.police && !g.off && g.state === 'ALERT' && dist(g.x, g.y, P.x, P.y) < 34);
   if (!cop || S.wanted >= 3) { S.arrestT = Math.max(0, (S.arrestT || 0) - dt * 2); return; }
   S.arrestT = (S.arrestT || 0) + dt;
-  if (S.arrestT >= ARREST_T) { S.arrestT = 0; cityArrest('경찰에게 붙잡혔다.'); }
+  if (S.arrestT >= ARREST_T) { S.arrestT = 0; startCuffs('경찰에게 붙잡혔다.', cop); }
+}
+// 수갑: 경찰이 등 뒤로 돌아와 손목에 채운다(철컥 두 번). 그동안 나는 움직일 수 없다. 끝나면 지구대로
+const CUFF_T = 1.6;
+function startCuffs(why, cop) {
+  const P = S.player; if (S.cuffs) return;
+  if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
+  cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  S.cuffs = { t: 0, why, cop, clicks: 0 }; P.cuffed = true; P.moving = false; P.hurtT = 9; input.aiming = null;
+  play('cloth', 0.6); S.shakeT = Math.max(S.shakeT || 0, 0.15);
+}
+function updateCuffs(dt) {
+  const C = S.cuffs; if (!C) return; const P = S.player; C.t += dt;
+  const g = C.cop; if (g && g.state !== 'DEAD' && !flOf(g) && !g.z && dist(g.x, g.y, P.x, P.y) < 90) {  // 가까이 붙은 경찰만 등 뒤로 (벽 너머로 끌어오지 않는다)
+    const bx = P.x - Math.cos(P.a) * 20, by = P.y - Math.sin(P.a) * 20; g.x += (bx - g.x) * Math.min(1, dt * 10); g.y += (by - g.y) * Math.min(1, dt * 10); g.a = g.want = P.a; g.moving = false; g.path = null; }
+  if (C.clicks < 1 && C.t > 0.55) { C.clicks = 1; play('metal', 0.7, 1.6); S.flash = Math.max(S.flash || 0, 0.12); }
+  if (C.clicks < 2 && C.t > 0.95) { C.clicks = 2; play('metal', 0.7, 1.8); S.flash = Math.max(S.flash || 0, 0.12); }
+  if (C.t >= CUFF_T) { S.cuffs = null; P.cuffed = false; cityArrest(C.why); }
+}
+function drawCuffs() {
+  const C = S.cuffs; if (!C || C.t < 0.5) return; const P = S.player, a = P.a + Math.PI;
+  const cx = P.x + Math.cos(a) * 8, cy = P.y - 12 + Math.sin(a) * 5, px = -Math.sin(a) * 4, py = Math.cos(a) * 4;
+  ctx.save(); ctx.strokeStyle = '#d4dbe2'; ctx.lineWidth = 2;
+  for (const s of C.t > 0.95 ? [-1, 1] : [-1]) { ctx.beginPath(); ctx.arc(cx + px * s, cy + py * s, 3.5, 0, TAU); ctx.stroke(); }
+  if (C.t > 0.95) { ctx.beginPath(); ctx.moveTo(cx - px, cy - py); ctx.lineTo(cx + px, cy + py); ctx.stroke(); }
+  ctx.restore();
 }
 // 체포: 지구대 앞에서 풀려난다. 수입의 30%를 벌금으로 낸다
 function cityArrest(why) {
@@ -15600,17 +15671,19 @@ function deployFromCar(v) {
   return out;
 }
 // 조직이 나를 쫓다 놓칠 만큼 멀어지면 차를 부른다 (조직마다 한 대)
+// 나를 쫓는 중이거나, 나를 쫓다가 놓치고 찾는 중(30초 안)인 조직원. 시체를 보고 수색하는 조직원은 빼다
+function huntsMe(g) { if (g.state === 'ALERT') { g.chasedT = S.t; return true; } return g.state === 'SEARCH' && g.chasedT != null && S.t - g.chasedT < 30; }
 function updateGangCars(dt) {
   if ((S.gangCarT = (S.gangCarT || 0) - dt) > 0) return; S.gangCarT = 3;
   const P = S.player, hunting = {};
-  for (const g of S.guards) if (cityGang(g) && g.state === 'ALERT') { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
+  for (const g of S.guards) if (cityGang(g) && huntsMe(g)) { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
   for (const f in hunting) {
     if (hunting[f] < 520 && !P.car) continue;  // 걸어서 따라잡을 만하면 차는 부르지 않는다
     if (S.vehicles.some(v => v.gang === f && v.chase && !v.dead)) continue;
-    spawnChaseCar(f);
+    if (!spawnChaseCar(f)) S.gangCarT = 0.5;  // 알맞은 길목을 못 찾았으면 곧 다시 찾는다
   }
-  // 나를 놓친 조직의 차는 그냥 차로 돌아간다
-  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && g.state === 'ALERT')) v.chase = false;
+  // 나를 찾는(추격·수색) 조직원이 없어진 조직의 차는 그냥 차로 돌아간다
+  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && huntsMe(g))) v.chase = false;
 }
 
 // 차 사고: 사람은 차 방향으로 날아가 쓰러지고, 그 자리에 피가 튄다
@@ -15692,9 +15765,57 @@ function cityDeathGore(o, by) {
 }
 
 function cityLifeUpdate(dt) {
-  updateArrest(dt);
+  updateCuffs(dt); if (!S.cuffs) updateArrest(dt);
+  for (const g of S.guards) if (g.state === 'ALERT' && cityGang(g)) g.chasedT = S.t;
   updateGangCars(dt);
   updateBlood(dt);
+}
+
+// 한국식 간판: 1층 위 건물 폭 가로 간판(가게 이름 · 작은 부제), 위층 업소는 건물 오른쪽 세로 돌출 간판(층 표시)
+// 밤에는 LED처럼 스스로 빛난다(lit). 글자는 게임 UI 글꼴로 그린다
+const SIGN_STYLE = [
+  [/국밥|순댓국|백반|분식|곱창|골뱅이|노가리|포차|식당/, '#c8302a', '#fff6e8', '#ffd25a'],
+  [/호프|생맥주|치킨/, '#f2b420', '#3a1a10', '#c8302a'],
+  [/편의점/, '#1f8a4a', '#ffffff', '#ffd25a'],
+  [/약국/, '#ffffff', '#1f8a4a', '#1f8a4a'],
+  [/PC방|노래방|당구장|기원|다방/, '#2a1440', '#ff7ad8', '#6ae8ff'],
+  [/헬스/, '#121418', '#ffd23a', '#ff4a3a'],
+  [/학원/, '#ffffff', '#1d4ea8', '#e8402a'],
+  [/세무사|법무사|부동산/, '#f4f2ea', '#1d2c58', '#b02a2a'],
+  [/CLUB/, '#120818', '#ff4ad8', '#6ae8ff'],
+];
+const SIGN_SUB = ['24시', '맛집', '배달', '영업중', '본점', '할인', '1층'];
+function signStyle(txt) { for (const [re, bg, fg, ac] of SIGN_STYLE) if (re.test(txt)) return { bg, fg, ac }; return { bg: '#1d3c78', fg: '#ffffff', ac: '#ffd25a' }; }
+function signHash(b) { return ((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0; }
+function drawStoreSigns(b, lit) {
+  if (b.kind !== 'shop' || !b.fh || !b.signs) return;
+  const hs = signHash(b), x0 = b.x0 * TILE, w = (b.x1 - b.x0 + 1) * TILE; if (!inView(x0 + w / 2, b.y1 * TILE, w)) return;
+  ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  // 가로 간판
+  const name = (b.signs[0] || '').trim();
+  if (name) {
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh + 4, sub = SIGN_SUB[hs % SIGN_SUB.length];
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
+      for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
+    ctx.fillStyle = st.bg; ctx.fillRect(bx, by, bw, bh); ctx.fillStyle = st.ac; ctx.fillRect(bx, by, bw, 3); ctx.fillRect(bx, by + bh - 2, bw, 2);
+    ctx.font = '700 22px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; ctx.fillText(name, bx + bw / 2, by + bh / 2 + 1, bw - 80);
+    if (bw > 150) { ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
+    ctx.globalAlpha = 1;
+  }
+  // 세로 돌출 간판: 위층 업소들 (층 표시와 함께)
+  const ups = []; for (let f = 1; f < b.signs.length && f < b.fh; f++) { const t = (b.signs[f] || '').trim(); if (t) ups.push([f, t]); }
+  if (ups.length) {
+    const [f, t] = ups[0], st = signStyle(t), vx = x0 + w - 4, vy = (b.y1 - b.fh + 1) * TILE + 8, vh = Math.max(TILE, (b.fh - 1) * TILE - 10), vw = 28, chars = [...t.replace(/\s/g, '')];
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.ac); for (const [pad, a] of [[16, .08], [6, .14]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(vx - pad, vy - pad, vw + pad * 2, vh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
+    ctx.fillStyle = '#2a2e36'; ctx.fillRect(vx - 6, vy + 6, 6, 3); ctx.fillRect(vx - 6, vy + vh - 9, 6, 3);
+    ctx.fillStyle = st.bg; ctx.fillRect(vx, vy, vw, vh); ctx.strokeStyle = st.ac; ctx.lineWidth = 2; ctx.strokeRect(vx + 1, vy + 1, vw - 2, vh - 2);
+    ctx.font = '700 16px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; const step = Math.min(20, (vh - 22) / Math.max(1, chars.length));
+    chars.forEach((ch, k) => ctx.fillText(ch, vx + vw / 2, vy + 12 + k * step));
+    ctx.font = uiFont(9); ctx.fillStyle = st.ac; ctx.fillText((f + 1) + 'F', vx + vw / 2, vy + vh - 8);
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
 }
 
 // ---------------------------------------------------------------- 차량 (도시 판): 도로를 다니는 차 · 세워 둔 차 · 내가 모는 차
@@ -15813,24 +15934,74 @@ function signalState(rx, ry) {
   const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T;
   return t < 7 ? { ns: 'G', ew: 'R' } : t < 8 ? { ns: 'Y', ew: 'R' } : t < 15 ? { ns: 'R', ew: 'G' } : { ns: 'R', ew: 'Y' };
 }
+// 신호등 그림: 모퉁이마다 굵은 기둥, 도로 위로 뻗은 팔에 차량 신호기(빨강 · 노랑 · 좌회전 · 초록), 기둥에 보행 신호(서 있는 사람 · 걷는 사람)
+// 북서·남동 기둥은 동서로 달리는 차, 북동·남서 기둥은 남북으로 달리는 차를 향한다. 보행 신호는 같은 쪽 차와 함께 초록이 된다
+const SIG_COL = { G: '#2ee87a', Y: '#ffc21f', R: '#ff3434' };
+function drawSignalHead(cx, cy, on) {
+  const w = 46, h = 16, x = cx - w / 2, y = cy - h / 2;
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 3, y + 4, w, h);
+  ctx.fillStyle = '#e2b62a'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);  // 노란 테 (뒤판)
+  ctx.fillStyle = '#121418'; ctx.fillRect(x, y, w, h);
+  [['R', 0], ['Y', 1], ['L', 2], ['G', 3]].forEach(([c, k]) => {
+    const lx = x + 6 + k * 11.3, ly = cy, lit = c === on;
+    const col = c === 'L' ? SIG_COL.G : SIG_COL[c];
+    ctx.fillStyle = '#25282e'; ctx.beginPath(); ctx.arc(lx, ly, 5, 0, TAU); ctx.fill();
+    if (c === 'L') { ctx.strokeStyle = on === 'G' ? col : 'rgba(90,100,90,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx + 3, ly); ctx.lineTo(lx - 3, ly); ctx.moveTo(lx - 1, ly - 2.5); ctx.lineTo(lx - 3.5, ly); ctx.lineTo(lx - 1, ly + 2.5); ctx.stroke(); return; }
+    ctx.fillStyle = lit ? col : 'rgba(70,70,74,.85)'; ctx.beginPath(); ctx.arc(lx, ly, 4, 0, TAU); ctx.fill();
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col + '55'; ctx.beginPath(); ctx.arc(lx, ly, 11, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+  });
+}
+function drawWalkHead(cx, cy, state, t) {
+  const go = state === 'G' || state === 'W', blink = state === 'W' && Math.floor(t * 4) % 2 === 0, x = cx - 8, y = cy - 12;
+  ctx.fillStyle = '#121418'; ctx.fillRect(x, y, 16, 24); ctx.strokeStyle = '#5a626b'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, 15, 23);
+  const col = go ? (blink ? '#0e3a22' : SIG_COL.G) : SIG_COL.R; ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 2;
+  const fy = go ? y + 13 : y + 5;  // 아래 칸 = 걷는 사람(초록), 위 칸 = 서 있는 사람(빨강)
+  ctx.beginPath(); ctx.arc(cx, fy + 1.5, 1.8, 0, TAU); ctx.fill();
+  ctx.beginPath(); if (go) { ctx.moveTo(cx, fy + 3); ctx.lineTo(cx - 1, fy + 7); ctx.lineTo(cx - 4, fy + 10); ctx.moveTo(cx - 1, fy + 7); ctx.lineTo(cx + 3, fy + 10); ctx.moveTo(cx - 3, fy + 5); ctx.lineTo(cx + 3, fy + 4); }
+  else { ctx.moveTo(cx, fy + 3); ctx.lineTo(cx, fy + 7); ctx.lineTo(cx - 2, fy + 10); ctx.moveTo(cx, fy + 7); ctx.lineTo(cx + 2, fy + 10); ctx.moveTo(cx - 3, fy + 4); ctx.lineTo(cx + 3, fy + 4); } ctx.stroke();
+  if (go && !blink) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(46,232,122,.25)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
+  if (!go) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,52,52,.2)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
+}
+// 보행 신호: 'G' 건너도 됨 · 'W' 곧 바뀜(깜빡임) · 'R' 기다림. 동서로 건너는 사람(남북 도로를 가로지름)은 동서 차와 같이 초록
+function walkState(rx, ry, horizontal) {
+  const s = signalState(rx, ry); if (!s) return 'G';
+  const c = horizontal ? s.ew : s.ns; if (c !== 'G') return 'R';
+  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T, end = horizontal ? 15 : 7;
+  return end - t < 2.5 ? 'W' : 'G';
+}
 function drawTrafficSignals() {
   if (!STAGE.signals || flOf(S.player)) return;
-  const COL = { G: '#3ee07a', Y: '#ffc23a', R: '#ff3b3b' }, ORDER = ['R', 'Y', 'G'];
+  ctx.save();
   for (const rx of STAGE.roadsX || []) for (const ry of STAGE.roadsY || []) {
-    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 4 * TILE)) continue;
+    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 5 * TILE)) continue;
     const s = signalState(rx, ry);
-    // 네 모퉁이: 북서·남동은 동서 방향 차를, 북동·남서는 남북 방향 차를 향한다
-    for (const [cx, cy, axis] of [[x0 - 14, y0 - 14, 'ew'], [x1 + 14, y1 + 14, 'ew'], [x1 + 14, y0 - 14, 'ns'], [x0 - 14, y1 + 14, 'ns']]) {
-      const on = s[axis], vert = axis === 'ns';
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - 2, cy, 6, 14);
-      ctx.fillStyle = '#4a525a'; ctx.fillRect(cx - 1, cy - 4, 3, 16);
-      const w = vert ? 10 : 26, h = vert ? 26 : 10, bx = cx - w / 2, by = cy - h - 4;
-      ctx.fillStyle = '#14181d'; ctx.fillRect(bx, by, w, h); ctx.strokeStyle = '#59626b'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, w - 1, h - 1);
-      ORDER.forEach((c, k) => { const lx = vert ? cx : bx + 5 + k * 8, ly = vert ? by + 5 + k * 8 : by + h / 2;
-        ctx.fillStyle = c === on ? COL[c] : 'rgba(80,80,80,.6)'; ctx.beginPath(); ctx.arc(lx, ly, 3, 0, TAU); ctx.fill();
-        if (c === on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = COL[c] + '55'; ctx.beginPath(); ctx.arc(lx, ly, 8, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; } });
+    for (const [px, py, axis, ax, ay] of [[x0 - 16, y0 - 16, 'ew', 0, 1], [x1 + 16, y1 + 16, 'ew', 0, -1], [x1 + 16, y0 - 16, 'ns', -1, 0], [x0 - 16, y1 + 16, 'ns', 1, 0]]) {
+      // 기둥과 팔
+      const armL = 2.2 * TILE, hx = px + ax * armL, hy = py + ay * armL;
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(px + 3, py + 4, 9, 5, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#3a4048'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.strokeStyle = '#6a737e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.fillStyle = '#4a515a'; ctx.beginPath(); ctx.arc(px, py, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#7d8690'; ctx.beginPath(); ctx.arc(px - 2, py - 2, 3, 0, TAU); ctx.fill();
+      drawSignalHead(hx, hy, s[axis]);
+      // 보행 신호: 이 모퉁이에서 가로로 건너는 쪽과 세로로 건너는 쪽
+      drawWalkHead(px + (px < x0 ? -14 : 14), py - 4, walkState(rx, ry, true), S.t);
+      drawWalkHead(px, py + (py < y0 ? -22 : 22), walkState(rx, ry, false), S.t);
     }
   }
+  ctx.restore();
+}
+// 행인: 보행 신호가 빨강이면 도로에 들어서기 직전(연석)에서 기다린다
+const ROAD_CH = '.';
+function pedWaits(g) {
+  if (!STAGE.signals || !g.civ || !['PATROL', 'RETURN'].includes(g.state) || flOf(g) || g.z) return false;  // 도망·신고하러 뛰는 사람은 신호를 안 본다
+  const next = g.path?.[0]; if (!next) return false;
+  const tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), nx = Math.floor(next.x / TILE), ny = Math.floor(next.y / TILE);
+  if (G0[ny]?.[nx] !== ROAD_CH || G0[ty]?.[tx] === ROAD_CH) return false;  // 이미 길 위면 끝까지 건넌다
+  const RX = STAGE.roadsX, RY = STAGE.roadsY, inR = (v, rs) => rs.find(r => v >= r && v < r + 4);
+  const rxv = inR(nx, RX), ryv = inR(ny, RY);
+  if (rxv != null && ryv == null) { const ry = RY.reduce((a, r) => Math.abs((r + 2) - ny) < Math.abs((a + 2) - ny) ? r : a, RY[0]); return walkState(rxv, ry, true) !== 'G'; }
+  if (ryv != null && rxv == null) { const rx = RX.reduce((a, r) => Math.abs((r + 2) - nx) < Math.abs((a + 2) - nx) ? r : a, RX[0]); return walkState(rx, ryv, false) !== 'G'; }
+  return false;
 }
 function trafficStopDistance(v){
  if(v.chase)return null;
@@ -15919,7 +16090,7 @@ function hitPeople(v, dt) {
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
     hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
@@ -19279,7 +19450,7 @@ function touchPlayFrame(){
 function moveCamera(dt) {
   { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
   const k = 1 - Math.pow(0.0015, dt);
-  SCALE += (targetScale() - SCALE) * Math.min(1, dt * 6);
+  SCALE += (targetScale() - SCALE) * Math.min(1, dt * (STAGE.cityLife ? 2.5 : 6));  // 큰 도시: 차에 오르내릴 때 화면이 서서히 넓어지고 좁아진다
   const vw = W / SCALE, vh = H / SCALE;
   if (tactical) {
     if (H > W * 1.3) {  // 세로 전술 지도: 나를 가운데로 시작, 손가락으로 끌어 옮긴다
@@ -21405,6 +21576,7 @@ function draw() {
   }
   drawOutdoorLampFixtures();
   drawTrafficSignals();
+  if (STAGE.cityLife) drawCuffs();
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
@@ -22416,7 +22588,7 @@ function grabAction() {
   const behind=Math.abs(angDiff(near.a,Math.atan2(P.y-near.y,P.x-near.x)))>1.75;
   return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?(near.seen?'교전 중':'경계 중'):!behind?'등 뒤로':'더 가까이' };
 }
-function actAttack() {
+function actAttack() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
@@ -22437,7 +22609,7 @@ function actAttack() {
   if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));
 }
-function actEnv() {
+function actEnv() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
@@ -22455,12 +22627,12 @@ function clothingAction(){
   return envChoices().find(a=>a.k==='dress'||a.k==='pickup'&&a.p?.outfit)||null;
 }
 function actDress(){
-  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||STAGE.tutorial&&!STAGE.storyEpisode)return;
+  if(!S||S.over||paused||!running||tactical||S.amb||DLG.modal||S.player.cuffed||STAGE.tutorial&&!STAGE.storyEpisode)return;
   if(actionBusy()){queueRecoveryInput('dress');return;}
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }
-function actGrab() {
+function actGrab() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
@@ -23563,7 +23735,8 @@ function resize() {
 function targetScale() {
   if (tactical) { const fit = Math.min(W / (MW * TILE), (H - 90) / (MH * TILE)) * 0.96; return H > W * 1.3 ? Math.max(fit, Math.min(W / (MW * TILE) * 2.3, 0.62)) : fit; }  // 세로: 지도를 크게 보여 주고 끌어서 옮긴다
   const P = S && S.player;
-  if (P && P.car) return BASE_SCALE * userZoom * (0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더)
+  if (P && P.car) return BASE_SCALE * userZoom * (STAGE.cityLife ? 0.62 - Math.min(0.2, Math.abs(P.car.v) / 2000) : 0.72 - Math.min(0.14, Math.abs(P.car.v) / 2600));  // 운전: 멀리 본다 (빠를수록 더, 큰 도시는 더 넓게)
+  if (STAGE.cityLife && P && !P.z) return BASE_SCALE * userZoom * skillViewMul() * 1.12;  // 큰 도시를 걸을 때는 가깝게: 차에 오르면 도시가 확 넓어진다
   const districtView=STAGE.agentStudy&&isTouch&&H>W*1.3?.80:1;
   return BASE_SCALE * districtView * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
@@ -23771,7 +23944,7 @@ window.addEventListener('keydown', e => {
   if (e.code !== 'Tab') closeHudInspection();
   S.keys[keyCode(e)] = true; combatPress(e.code);
   { const c = e.code, ks = /^Arrow|^Key[ZXCV]$/.test(c) ? 'arrow' : /^Key[WASDEQF]$|^Space$/.test(c) ? 'wasd' : null; if (ks && input.kset !== ks) { input.kset = ks; if (typeof hudCache !== 'undefined') hudCache.kset = null; } }
-  if (!running || S.over) return;
+  if (!running || S.over || S.player?.cuffed) return;
   // 키는 두 벌을 함께 쓴다 — 방향키 손: Z 공격 · X 행동 · C 붙잡기 · V 다트 / WASD 손: Space 공격 · E 행동 · Q 붙잡기 · F 다트 (히트맨 PC: E 상호작용 · Q 제압)
   // 다트·도구: 톡 = 자동 조준, 누르고 있으면 겨누기. 나머지: Tab 겹친 대상 바꾸기 · G 휘파람 · 1 2 3 도구 · R 항상 걷기 · Ctrl 살금
   // 큰 도시: F · Enter = 차 타기/내리기 (GTA처럼). 차 근처가 아니면 F는 원래대로 다트
@@ -24007,18 +24180,19 @@ $('btnFull').addEventListener('click',async()=>{try{if(document.fullscreenElemen
 document.addEventListener('fullscreenchange', () => { $('btnFull').textContent = document.fullscreenElement ? '전체 화면 끄기' : '전체 화면'; });
 // The title continues the single campaign; there is no episode picker.
 function quickTarget(){return recommendedStage();}
-function setQuickLabel(label,detail=''){
- const b=$('btnQuick'),copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
+function setQuickLabel(label,detail='',b=$('btnQuick')){
+ const copy=document.createElement('span'),name=document.createElement('b');copy.className='title-start-copy';name.textContent=label;copy.append(name);
  if(detail){const note=document.createElement('small');note.textContent=detail;copy.append(note);}
  b.replaceChildren(copy);b.insertAdjacentHTML('beforeend',uiSigil('arrow'));b.setAttribute('aria-label',[label,detail].filter(Boolean).join(' · '));
 }
 function syncQuick(){
+  $('btnFree').hidden=!!(window.__AGENT_CITY_STUDY__||window.__CLUB_STUDY__||!window.__CITY_XL__);setQuickLabel('자유 모드','을지로 · 청계천 · 차·조직·경찰',$('btnFree'));$('btnFree').title='본편 진행과 따로 노는 열린 도시';
   if(window.__AGENT_CITY_STUDY__){$('btnQuick').disabled=false;setQuickLabel('도시 테스트','여성 요원 · 야간 인계');$('btnQuick').title='야간 인계 · 본편 진행과 별도로 저장';$('btnNewCampaign').hidden=true;return;}
   $('btnNewCampaign').hidden=!hasCampaignSave();
   const st=STAGES[quickTarget()];if(!$('btnQuick'))return;
-  $('btnQuick').disabled=!st;if(!st){setQuickLabel('이야기 완료');return;}
+  $('btnQuick').disabled=!st;if(!st){setQuickLabel('스토리 모드','이야기 완료');return;}
   const done=LEARNING_ROUTE.every(id=>{const i=learningStageIndex(id);return i<0||learningComplete(STAGES[i]);});
-  setQuickLabel(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기',st.name);
+  setQuickLabel('스토리 모드',(st.firstSteps&&!campaignHasProgress()?'처음 시작':done&&!st.storyEpisode&&!st.tutorial?'다시 플레이':'이어서 하기')+' · '+st.name);
   $('btnQuick').title=st.mission||st.name;
 }
 document.querySelectorAll('.ledger-tabs button').forEach(button => button.addEventListener('click', () => {
@@ -24034,6 +24208,9 @@ $('btnSet2').addEventListener('click', () => { const h = $('help'); h.classList.
 { const bg = window.__TITLE_BG; if (bg) document.documentElement.style.setProperty('--title-bg', `url(${bg})`); }  // 첫 화면·브리핑·일시정지 공용 배경
 $('btnPortrait').addEventListener('click', () => document.body.classList.add('portraitOk'));
 $('btnQuick').addEventListener('click', () => { initAudio(); if(window.__AGENT_CITY_STUDY__)start(STAGES.findIndex(s=>s.agentStudy));else beginCampaign(); });
+// 자유 모드: 큰 도시는 처음 누를 때 만든다(판 목록·본편 저장과 분리)
+function freeModeIndex(){let i=STAGES.findIndex(s=>s.freeMode);if(i<0&&window.__CITY_XL__){STAGES.push(window.__CITY_XL__());i=STAGES.length-1;}return i;}
+$('btnFree').addEventListener('click', () => { initAudio(); const i=freeModeIndex(); if(i>=0)start(i,true); });
 // Only campaign data is reset. Display, sound and control preferences are retained.
 const CAMPAIGN_SAVE_KEYS=['yahaeng.ch','yahaeng.best','yahaeng.cityDone',SKILL_STORE,FIELD_LEARNING_STORE,'yahaeng.assassinSkill',CP_KEY,'yahaeng.mod',CASE_STORE,'yahaeng.feedbackSeen'];
 function hasCampaignSave(){
@@ -24187,11 +24364,5 @@ $('briefInfo').addEventListener('close',()=>{if(!$('brief').hidden)$('btnBriefIn
 })();
 
 </script>
-<script>
-(function(){if(new URLSearchParams(location.search).get('study')!=='city-xl')return;
-function go(){var G=window.__game;if(!G)return;var i=G.STAGES.findIndex(function(s){return s.id==='cityXL'});if(i<0)return;b.remove();G.start(i,true);}
-var b=document.createElement('button');b.id='bigCityGo';b.textContent='큰 도시 시작';
-b.style.cssText='position:fixed;left:50%;bottom:12%;transform:translateX(-50%);z-index:99999;padding:16px 34px;font-size:20px;font-weight:700;border:0;border-radius:10px;background:#e8473c;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.5);cursor:pointer';
-b.onclick=go;function add(){document.body.appendChild(b)}if(document.readyState==='loading')addEventListener('DOMContentLoaded',add);else add();})();
-</script></body>
+</body>
 </html>
