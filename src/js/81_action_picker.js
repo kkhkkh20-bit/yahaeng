@@ -47,7 +47,7 @@ function positionEnvPicker() {
   if (paused || tactical || S.keypad || DLG.modal || S.over || actionBusy() || flOf(P)!==envPicker.fl || (P.z||0)!==envPicker.z || dist(P.x,P.y,envPicker.x,envPicker.y)>8) { closeEnvPicker(); return; }
   const live = new Set(envChoices().map(envToken));
   for (const b of e.querySelectorAll('[data-env-token]')) b.disabled = !live.has(b.dataset.envToken);
-  const point=STAGE.artSlice&&window.__clubView?.ready?window.__clubView.actorScreen(P):{x:(P.x-cam.x)*SCALE+W/2,y:(P.y-cam.y)*SCALE+H/2},px=point.x,py=point.y;
+  const point=view3dOn()&&window.__clubView?.ready?window.__clubView.actorScreen(P):{x:(P.x-cam.x)*SCALE+W/2,y:(P.y-cam.y)*SCALE+H/2},px=point.x,py=point.y;
   // 중앙 표시·조작 버튼·인물의 자리를 예약한다. 좁은 화면에서만 폭을 줄인다.
   const blocks=[...document.querySelectorAll('#hud .top,#stealth,#mini,#btnPause,.pad > button:not([hidden]),.sysbtns button,#toasts .toast')]
     .filter(n=>!n.closest('[hidden]')&&getComputedStyle(n).visibility!=='hidden').map(n=>n.getBoundingClientRect()).filter(b=>b.width&&b.height)

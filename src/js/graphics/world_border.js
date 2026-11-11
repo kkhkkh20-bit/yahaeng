@@ -54,7 +54,7 @@ function exteriorGates(){
   return out;
 }
 function drawTownExterior(){
-  if(STAGE.artSlice)return;
+  if(view3dOn())return;
   const [vx,vy,vw,vh]=viewRect(40),width=MW*TILE,height=MH*TILE;
   if(vx>=0&&vy>=0&&vx+vw<=width&&vy+vh<=height)return;
   const cache=exteriorAssets(),ground=exteriorGround();cache.pattern=cache.pattern||ctx.createPattern(ground,'repeat');

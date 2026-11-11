@@ -470,7 +470,7 @@ function updatePlayer(dt) {
     mx = input.joy.x; my = input.joy.y; mag = input.joy.mag;
     mode = mag < JOY_RUN ? 'walk' : 'run';
   }
-  if(STAGE.artSlice&&window.__clubView?.ready){const v=window.__clubView.direction(mx,my);mx=v.x;my=v.y;}
+  if(view3dOn()&&window.__clubView?.ready){const v=window.__clubView.direction(mx,my);mx=v.x;my=v.y;}
   if (input.sneakToggle && !shiftRun) mode = 'sneak';
   if (input.walkLock && mode === 'run') mode = 'walk';  // 걷기 고정: 뛰지 않는다
   if ((P.carrying || P.captive) && mode === 'run') mode = 'walk';

@@ -6,9 +6,9 @@ function setFpsCap(v) { FPS_CAP = v; try { localStorage.setItem('yahaeng.fps2', 
 // Rendering can dip below 20 fps. Keep elapsed movement and timers, bounded into
 // small collision steps; a long interruption still cannot fast-forward the map.
 function advanceGameFrame(elapsed) {
-  const total=Math.max(0,Math.min(STAGE.artSlice?.25:.12,elapsed));
+  const total=Math.max(0,Math.min(view3dOn()?.25:.12,elapsed));
   if(!total)return;
-  const count=STAGE.artSlice?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
+  const count=view3dOn()?Math.ceil(total*60):Math.max(1,Math.round(total*60)),step=total/count;
   let advanced=false;
   for(let i=0;i<count;i++){
     if(!running||paused||S.over||tactical||DLG.modal||hudInspecting())break;
@@ -75,7 +75,7 @@ function targetScale() {
   const districtView=STAGE.agentStudy&&isTouch&&H>W*1.3?.80:1;
   return BASE_SCALE * districtView * userZoom * skillViewMul() * (quarterNear(P)?1.08:1) * (P && P.z >= 3 ? 0.8 : P && (P.z || P.jump) ? 0.9 : 1);
 }
-function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.agentStudy?'yahaeng.study.zoom':STAGE?.artSlice?'yahaeng.tacticalZoom':'yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
+function setZoom(z) { userZoom = clamp(z, 0.75, 1.6); try { localStorage.setItem(STAGE?.agentStudy?'yahaeng.study.zoom':(STAGE&&view3dOn())?'yahaeng.tacticalZoom':'yahaeng.zoom3', String(userZoom)); } catch (e) {} }  // 확대는 표시만 바꾼다. 전체는 전술 지도로
 function toggleTactical() {
   if (!running || !S || S.over || S.entrySel || paused || DLG.modal || S.keypad) return;
   clearPlayerInput();closeEnvPicker();

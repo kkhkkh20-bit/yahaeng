@@ -12,7 +12,7 @@ window.addEventListener('keydown', e => {
   }
   if($('briefInfo').open)return;
   if(loadoutOpen){handleLoadoutKey(e);return;}
-  if(STAGE?.artSlice&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
+  if((STAGE&&view3dOn())&&window.__clubView&&!window.__clubView.ready){e.preventDefault();return;}
   const menu = ['intro', 'ledger', 'help'].find(id => !$(id).hidden);
   if (menu) {
     if (e.code === 'Escape' && menu !== 'intro') { e.preventDefault(); $(menu === 'ledger' ? 'btnLedgerBack' : 'btnHelpBack').click(); }
@@ -116,7 +116,7 @@ let joyId = null, joyO = null;
 // Two fingers operate the tactical camera; ending a pinch never resumes walking.
 let viewPinch=null;
 const pinchDistance=e=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-canvas.addEventListener('touchstart',e=>{if(!STAGE?.artSlice||!running||paused||S.over||DLG.modal||S.keypad||e.touches.length<2)return;const next={distance:Math.max(1,pinchDistance(e)),zoom:userZoom};clearPlayerInput();viewPinch=next;e.preventDefault();e.stopImmediatePropagation();},{capture:true,passive:false});
+canvas.addEventListener('touchstart',e=>{if(!(STAGE&&view3dOn())||!running||paused||S.over||DLG.modal||S.keypad||e.touches.length<2)return;const next={distance:Math.max(1,pinchDistance(e)),zoom:userZoom};clearPlayerInput();viewPinch=next;e.preventDefault();e.stopImmediatePropagation();},{capture:true,passive:false});
 canvas.addEventListener('touchmove',e=>{if(!viewPinch)return;if(e.touches.length>=2)setZoom(viewPinch.zoom*pinchDistance(e)/viewPinch.distance);e.preventDefault();e.stopImmediatePropagation();},{capture:true,passive:false});
 for(const type of ['touchend','touchcancel'])canvas.addEventListener(type,e=>{if(!viewPinch)return;if(e.touches.length<2)viewPinch=null;joyId=null;input.joy=null;joyEl.hidden=true;for(const t of e.changedTouches)delete touchT[t.identifier];e.preventDefault();e.stopImmediatePropagation();},{capture:true,passive:false});
 canvas.addEventListener('touchstart', e => {
@@ -146,7 +146,7 @@ canvas.addEventListener('touchmove', e => {
 function markAt(cx, cy) {
   if (!S || !running || paused || S.over || DLG.modal || S.keypad) return false;
   const r = canvas.getBoundingClientRect(), wx = cam.x + (cx - r.left - W / 2) / SCALE, wy = cam.y + (cy - r.top - H / 2) / SCALE;
-  let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorPick(g):null,d=ip?Math.hypot(ip.x-cx,ip.y-cy):dist(g.x,g.y-14,wx,wy); if (d < bd) { bd = d; best = g; } }
+  let best = null, bd = 34; for (const g of S.guards) { if (g.state === 'DEAD' || flOf(g) !== flOf(S.player)) continue; const ip=view3dOn()&&!tactical&&window.__clubView?.ready?window.__clubView.actorPick(g):null,d=ip?Math.hypot(ip.x-cx,ip.y-cy):dist(g.x,g.y-14,wx,wy); if (d < bd) { bd = d; best = g; } }
   const camera=(S.cams||[]).filter(c=>c.fl===flOf(S.player)&&!S.player.z&&camOn(c)&&dist(c.x,c.y,wx,wy)<Math.min(28,bd)).sort((a,b)=>dist(a.x,a.y,wx,wy)-dist(b.x,b.y,wx,wy))[0];
   if (camera) {
     S.visionCamera=S.visionCamera===camera?null:camera;S.marked=null;play('click',.25);
@@ -402,7 +402,7 @@ function start(i, noBrief) {
   newGame(i); if(STAGE.firstSteps||introductoryContract(STAGE)){input.sneakToggle=false;input.walkLock=false;input.padWhistle=!!(STAGE.firstSteps||STAGE.openingContract)&&!availableTools().some(t=>toolCount(t)>0);syncSneakBtn();} resetDialog(); resetHelpTip(); const objectiveBox=document.querySelector('#hud .obj');objectiveBox.classList.remove('open');objectiveBox.setAttribute('aria-expanded','false');objectiveBox.setAttribute('aria-label','목표·무전 펼치기'); miniBase = null; renderToasts();
   if (!(S.player.kunai > 0)) input.tool = S.player.stones > 0 ? 'stone' : 'coin';  // 기본 도구는 다트 (없는 판이면 빈 캔)
   statsBegin('new');  // 플레이 기록: 판 시작
-  if (PR&&!STAGE.artSlice) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
+  if (PR&&!view3dOn()) { const ks = [playerKey(S.player), ...new Set(S.guards.filter(g => !g.dog).map(charOf))]; prKeep(ks); prWarm(ks, true); }  // 이 판 사람들 옷 색부터 미리 칠하고, 다른 판 옷은 버린다
   const keysEl = document.querySelector('.keys'); if (keysEl) keysEl.classList.add('mini');
   const hc = document.getElementById('hintCard'); if (hc) hc.classList.add('off');
   showMenu(null); $('end').hidden = true; $('pause').hidden = true; $('hud').hidden = false;

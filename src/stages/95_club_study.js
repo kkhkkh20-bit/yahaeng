@@ -1,6 +1,6 @@
 // The authored art slice is loaded only by its dedicated build, not the contract list.
 if(window.__CLUB_STUDY__)STAGES.push({
-  id:'clubStudy',artSlice:true,no:'01',name:'뒷문',sub:'클럽 뒷골목',fee:'',
+  id:'clubStudy',artSlice:true,clubDecor:true,no:'01',name:'뒷문',sub:'클럽 뒷골목',fee:'',
   mission:'2층 사무실의 장부를 회수하고 골목으로 빠져나간다',
   brief:'클럽이 문을 닫았다. 장부는 위층 사무실에 있다.',
   lootFurniture:['desk'],itemName:'장부',itemNames:['장부'],W:24,H:22,start:[5,18],exit:[3,19],exitName:'서쪽 골목',startA:-Math.PI/2,

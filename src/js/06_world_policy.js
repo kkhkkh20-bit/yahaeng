@@ -1,5 +1,7 @@
 // Shared physical rules for the current 2D streets. Training rigs and archived
 // episodes keep their authored traversal; utility fixtures are not access routes.
+// 3D 표시: 클럽 시제품(artSlice)과, 3D 빌드에서 기존 의뢰를 3D로 그리는 view3d. view3d 는 화면·입력만 바꾸고 규칙은 2D 그대로다.
+const view3dOn = (st = (typeof STAGE !== 'undefined' ? STAGE : null)) => !!st && (!!st.artSlice || !!st.view3d);
 const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (st.physicalWorld || /^m[1-9]\d*$/.test(st.id) || st.city);
 function physicalAccess(l) {
   if (!groundedWorld()) return true;
