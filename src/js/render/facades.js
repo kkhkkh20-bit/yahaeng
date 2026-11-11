@@ -133,7 +133,7 @@ function drawGrate(v,alpha){if(S.player.trav?.accessFlow?.obj===v)return;ctx.sav
 // Authored steel shutters and painted Korean signs for the opening freight yard.
 // Cosmetic texture uses coordinate hashes, never the AI random stream.
 function drawCityFacade(b){
- if(STAGE.agentStudy&&studyReady())return drawStudyFacade(b);
+ if(studyStage()&&studyReady())return drawStudyFacade(b);
  const x=b.x0*TILE,y=(b.y1-b.fh+1)*TILE,w=(b.x1-b.x0+1)*TILE,h=b.fh*TILE;
  ctx.save();ctx.imageSmoothingEnabled=false;paintFreeCityWall(ctx,b,x,y,w,h);
  drawFreeDepotDetails(ctx,b,x,y,w,h);

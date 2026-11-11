@@ -39,14 +39,18 @@ def campaign_assets(root):
     if (study/'details.json').exists():
         assets['cityStudy']=json.loads((study/'details.json').read_text())
         assets['cityStudy']['src']='data:image/webp;base64,'+base64.b64encode((study/'details.webp').read_bytes()).decode()
+    signs2=study/'korean-signs-extra.json'
+    if signs2.exists():
+        assets['citySigns2']=json.loads(signs2.read_text())
+        assets['citySigns2']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs-extra.webp').read_bytes()).decode()
     signs=study/'korean-signs.json'
     if signs.exists():
         assets['citySigns']=json.loads(signs.read_text())
         assets['citySigns']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs.webp').read_bytes()).decode()
-    euljiro=Path(root)/'src/art/euljiro'
-    if (euljiro/'district.json').exists():
-        assets['euljiro']=json.loads((euljiro/'district.json').read_text())
-        assets['euljiro']['src']='data:image/webp;base64,'+base64.b64encode((euljiro/'district.webp').read_bytes()).decode()
+    river=Path(root)/'src/art/euljiro'
+    if (river/'river.json').exists():
+        assets['cityRiver']=json.loads((river/'river.json').read_text())
+        assets['cityRiver']['src']='data:image/webp;base64,'+base64.b64encode((river/'river.webp').read_bytes()).decode()
     vehicles=Path(root)/'src/art/vehicles'
     if (vehicles/'traffic.json').exists():
         assets['cityVehicles']=json.loads((vehicles/'traffic.json').read_text())

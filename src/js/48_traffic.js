@@ -8,8 +8,6 @@ const CAR_MAX = 430, CAR_ACC = 320, CAR_BRAKE = 700, CAR_FRIC = 160, CAR_TURN = 
 const carBlocked = (tx, ty) => !inMap(tx, ty) || SOLID.has(G0[ty][tx]) || (BI && BI[ty * MW + tx] >= 0);
 // 차로 중심 좌표: 가로 도로(위쪽 칸 ry)에서 동쪽(0)으로 가면 아래 차로, 서쪽(2)은 위 차로 · 세로 도로(왼쪽 칸 rx)에서 남쪽(1)은 왼 차로, 북쪽(3)은 오른 차로
 const laneOf = (road, d) => road * TILE + (d === 0 || d === 3 ? 3 : 1) * TILE;
-// 끊긴 도로: 구역이 덮은 도로 칸(STAGE.roadGaps = [[x0,y0,x1,y1] 칸]). 차는 그쪽으로 꺾지도, 생기지도 않는다
-const roadGap = (px, py) => (STAGE.roadGaps || []).some(([x0, y0, x1, y1]) => px >= x0 * TILE && px < (x1 + 1) * TILE && py >= y0 * TILE && py < (y1 + 1) * TILE);
 // 맵을 지을 때: 세워 둔 차('A' 두 칸)를 운전할 수 있는 차로 바꿔 둔다 (지도 그림에서 빼고 칸을 비운다)
 let CITY_PARKED = [];
 function cityMapPrep() {
@@ -28,7 +26,7 @@ function trafficInit() {
     const hor = k % 2 === 0, d = hor ? (k % 4 === 0 ? 0 : 2) : (k % 4 === 1 ? 1 : 3);
     const road = hor ? RY[(k * 7) % RY.length] : RX[(k * 5) % RX.length], along = ((k * 977) % ((hor ? MW : MH) - 4)) + 2;
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
-    if (roadGap(x, y) || dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
+    if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
     const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true });
     planTurn(v); S.vehicles.push(v); i++;
   }
@@ -42,12 +40,9 @@ function planTurn(v) {
   const r = ahead[0]; if (r == null) { v.turn = null; return; }
   const opts = [];
   const lim = hor ? MW : MH, rLim = hor ? MH : MW;
-  // 교차로 한가운데에서 나갈 방향으로 한 블록(4칸) 나간 점이 끊긴 도로면 그쪽은 고르지 않는다
-  const mid = myRoad == null ? null : (myRoad + 2) * TILE, ix = hor ? (r + 2) * TILE : mid, iy = hor ? mid : (r + 2) * TILE;
-  const open = nd => mid == null || !roadGap(ix + DV[nd][0] * 4 * TILE, iy + DV[nd][1] * 4 * TILE);
-  if ((sgn > 0 ? r + 4 < lim : r > 0) && open(v.d)) opts.push(v.d, v.d);  // 직진 (조금 더 자주)
+  if (sgn > 0 ? r + 4 < lim : r > 0) opts.push(v.d, v.d);  // 직진 (조금 더 자주)
   const right = (v.d + 1) % 4, left = (v.d + 3) % 4;
-  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null) continue; if ((s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) && open(nd)) opts.push(nd); }
+  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null) continue; if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
   if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }

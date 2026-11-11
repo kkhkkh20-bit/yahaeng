@@ -5,7 +5,11 @@
 // 조직이 해친 주민은 내 감점이 아니다 — 대신 소란이 커져 사람들 눈이 그쪽으로 쏠린다.
 OUTFITS.rival = '건달파 점퍼';
 OUTFIT_PAL.rival = ['#dba57e', '#141414', '#b3262a', '#1a1a1e', '#e8e8e2']; PR_PAL.rival = OUTFIT_PAL.rival;  // 빨간 점퍼 · 흰 운동화 — 의뢰 조직과 한눈에 갈린다
-const FAC_NAME = { A: '조직', B: '건달파' };
+// 큰 도시의 다른 두 조직: 청계파(C, 청록 운동복) · 종로파(D, 자주색 정장). 서로 다른 조직은 모두 적이다
+OUTFITS.gangC = '청계파 운동복'; OUTFIT_PAL.gangC = ['#dba57e', '#141414', '#1f8a86', '#16262a', '#e8e8e2']; PR_PAL.gangC = OUTFIT_PAL.gangC;
+OUTFITS.gangD = '종로파 정장'; OUTFIT_PAL.gangD = ['#dba57e', '#141414', '#5a2a74', '#141418', '#2a2a2a']; PR_PAL.gangD = OUTFIT_PAL.gangD;
+const FAC_NAME = { A: '조직', B: '건달파', C: '청계파', D: '종로파' };
+const FAC_OUTFIT = { B: 'rival', C: 'gangC', D: 'gangD' };
 const TAUNT = ['여긴 우리 쪽이야. 돌아가.', '무슨 일로 왔어?', '입구 막지 마.', '여기서 시비 걸지 마.'];
 const TAUNT_B = ['이쪽은 우리가 맡아.', '길 막지 말고 비켜.', '무슨 일이야?', '가게 앞에서 이러지 마.'];
 const npcAlive = o => o && o.state !== 'DEAD' && o.state !== 'CAPTIVE' && !o.yank && !o.doomed;
@@ -60,7 +64,7 @@ function factionsInit() {
   S.war = false; S.facOn = !!STAGE.zones && !STAGE.tutorial;
   // 판에 적힌 소속: police: true = 경찰(제복) · fac: 'B' = 건달파(빨간 점퍼) · 나머지 조직원은 의뢰 조직(A)
   for (const g of S.guards) { if (g.civ || g.dog) continue; const d = (STAGE._g || [])[g.id];
-    if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (g.fac === 'B') { g.outfit = 'rival'; g.rival = true; } } }
+    if (d && d.police) { g.police = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; } else { g.fac = (d && d.fac) || 'A'; if (FAC_OUTFIT[g.fac]) { g.outfit = FAC_OUTFIT[g.fac]; g.rival = true; } } }
   turfInit();
   if (!S.facOn) return;
   const n = STAGE.rivals != null ? STAGE.rivals : 3; if (!n) return;
@@ -89,14 +93,14 @@ function factionsInit() {
 }
 // 세력 구역: 조직(A) = 판에 적힌 출입 금지·적진 구역(건달파·경찰 전용은 빼고) · 건달파(B) = 'rival' 허가 구역 (없으면 위에서 정한 건물 둘레)
 function turfInit() {
-  S.turf = { A: [], B: [] }; BLD.forEach(b => { b.gang = null; });
+  S.turf = { A: [], B: [], C: [], D: [] }; BLD.forEach(b => { b.gang = null; });
   for (const r of STAGE.zones || []) { if (r[4] === 'pub' || r[5] === 'roof') continue; const al = r[7] || [];
-    if (al.includes('rival')) S.turf.B.push([r[0], r[1], r[2], r[3]]); else if (!al.includes('police')) S.turf.A.push([r[0], r[1], r[2], r[3]]); }
-  BLD.forEach(b => { if (b.vacant) return; for (const f of ['B', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
+    const f = al.includes('rival') ? 'B' : al.includes('gangC') ? 'C' : al.includes('gangD') ? 'D' : al.includes('police') ? null : 'A'; if (f) S.turf[f].push([r[0], r[1], r[2], r[3]]); }
+  BLD.forEach(b => { if (b.vacant) return; for (const f of ['B', 'C', 'D', 'A']) if (!b.gang && S.turf[f].some(r => !(b.x1 < r[0] || b.x0 > r[2] || b.y1 < r[1] || b.y0 > r[3]))) b.gang = f; });
 }
 const inTurf = (f, x, y) => { if (!S.turf || !S.turf[f]) return false; const tx = Math.floor(x / TILE), ty = Math.floor(y / TILE); return S.turf[f].some(r => tx >= r[0] && tx <= r[2] && ty >= r[1] && ty <= r[3]); };
 // 건물 소속 깃발: 옥상 왼쪽 위 모서리에 조직(검정·금색) / 건달파(빨강) 깃발, 가까우면 이름
-const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'] };
+const GANG_COL = { A: ['#1b1d24', '#e0b450'], B: ['#c3302c', '#ffe9e4'], C: ['#1f8a86', '#e4fffb'], D: ['#5a2a74', '#f4e4ff'] };
 function drawGangFlags(P) {
   if (!S.turf) return;
   // Building affiliation is carried by people and access rules, without rooftop flags.

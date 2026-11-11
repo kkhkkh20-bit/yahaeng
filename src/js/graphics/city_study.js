@@ -3,6 +3,8 @@ const studyArt=A.cityStudy,studyAtlas=new Image();
 studyAtlas.onload=()=>{freeCityDirty=true;studyWindowTiles.clear();};
 if(studyArt)studyAtlas.src=studyArt.src;
 function studyReady(){return !!studyArt&&studyAtlas.complete&&studyAtlas.naturalWidth>0;}
+// 구매 팩 건물 정면(층마다 3칸 창 묶음)·옥상·출입구로 그리는 판: 요원 도시 연구판과 큰 도시 시험판
+function studyStage(){return !!(STAGE.agentStudy||STAGE.studyFacades);}
 function studyDraw(c,name,x,y,w,h){
  const f=studyArt?.frames[name]?.rect;if(!f||!studyReady())return false;
  c.drawImage(studyAtlas,...f,Math.round(x),Math.round(y),w??f[2]*2,h??f[3]*2);return true;
@@ -51,6 +53,8 @@ function drawAssetCar(v){
 }
 const citySignArt=A.citySigns,citySignAtlas=new Image();
 if(citySignArt)citySignAtlas.src=citySignArt.src;
+const citySignArt2=A.citySigns2,citySignAtlas2=new Image();  // 큰 도시 가게 간판 (Galmuri 글씨)
+if(citySignArt2)citySignAtlas2.src=citySignArt2.src;
 
 const studyWindowTiles=new Map();
 function studySourceRow(b,fl){const i=BLD.indexOf(b),s=STAGE.referenceBuildings[i];return{s,row:STAGE.referenceRow(i,fl)};}
@@ -73,12 +77,13 @@ function studyCellImage(b,tx,fl,w){
  studyWindowTiles.set(key,c);return c;
 }
 function drawStudySign(b,a){
- const f=citySignArt?.frames[a.image]?.rect;
- if(!f||!citySignAtlas.complete||!citySignAtlas.naturalWidth)return;
+ const two=!citySignArt?.frames[a.image]&&!!citySignArt2?.frames[a.image],art=two?citySignArt2:citySignArt,img=two?citySignAtlas2:citySignAtlas;
+ const f=art?.frames[a.image]?.rect;
+ if(!f||!img.complete||!img.naturalWidth)return;
  const x=(b.x0+a.x)*TILE,y=(b.y1-a.fl)*TILE,w=a.w*TILE,h=a.h*TILE;
  const scale=Math.min(w/f[2],h/f[3]),dw=Math.round(f[2]*scale),dh=Math.round(f[3]*scale);
  ctx.save();ctx.imageSmoothingEnabled=false;
- ctx.drawImage(citySignAtlas,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
+ ctx.drawImage(img,...f,Math.round(x+(w-dw)/2),Math.round(y+(h-dh)/2),dw,dh);
  ctx.restore();
 }
 

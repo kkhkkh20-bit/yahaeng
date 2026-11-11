@@ -15,17 +15,18 @@ function hitAction() {
   return null;
 }
 // 블록 둘레 보도를 도는 길 (도시 행인과 같은 규칙)
+const hitBlock = (bx, by) => STAGE.blockOrigin ? STAGE.blockOrigin(bx, by) : [4 + bx * 20, 4 + by * 20];
 function hitRing(bx, by, rev) {
-  const x0 = 4 + bx * 20, y0 = 4 + by * 20, c = [[x0, y0, 2.5], [x0 + 15, y0, 0.6], [x0 + 15, y0 + 15, 3], [x0, y0 + 15, 0.6]];
+  const [x0, y0] = hitBlock(bx, by), c = [[x0, y0, 2.5], [x0 + 15, y0, 0.6], [x0 + 15, y0 + 15, 3], [x0, y0 + 15, 0.6]];
   return rev ? c.slice().reverse() : c;
 }
 function takeHit() {
   if (S.hit) return;
   if (S.wanted > 0) { toast('수배 중에는 의뢰를 받을 수 없다', 2.2, 'warn'); return; }
-  const P = S.player, BX = (STAGE.roadsX || []).length - 1, BY = (STAGE.roadsY || []).length - 1;
+  const P = S.player, [BX, BY] = STAGE.blockCount || [(STAGE.roadsX || []).length - 1, (STAGE.roadsY || []).length - 1];
   // 나에게서 적당히 먼 블록 (화면 밖, 너무 멀지 않게)
   const blocks = [];
-  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const cx = tc(4 + bx * 20 + 7.5), cy = tc(4 + by * 20 + 7.5), d = dist(P.x, P.y, cx, cy); if ((STAGE.districtBlocks || []).some(([a, b]) => a === bx && b === by)) continue; if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [ox, oy] = hitBlock(bx, by), cx = tc(ox + 7.5), cy = tc(oy + 7.5), d = dist(P.x, P.y, cx, cy); if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
   if (!blocks.length) return;
   const [bx, by] = blocks[(Math.random() * blocks.length) | 0], rev = Math.random() < 0.5, route = hitRing(bx, by, rev);
   const name = HIT_NAMES[S.hitN % HIT_NAMES.length];

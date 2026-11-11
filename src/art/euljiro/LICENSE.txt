@@ -1,12 +1,12 @@
-Euljiro / Cheonggyecheon district — composed, game-specific artwork for Yahaeng
+Cheonggyecheon river strip — game-specific artwork for Yahaeng
 
-Built by tools/import_euljiro_district.py from:
+Built by tools/import_river_strip.py from:
 - GuttyKreum, Dotonbori City v3 (https://guttykreum.itch.io/dotonbori-city-game-assets),
   purchased by the project owner. Copyright GuttyKreum. All rights reserved.
   The pack licence allows derivative works inside the purchaser's own products.
-- Korean sign lettering drawn with Galmuri11 Bold, copyright Lee Minseo (quiple),
-  SIL Open Font License 1.1 (https://github.com/quiple/galmuri). The font is not shipped.
 
 This picture is part of Yahaeng, not open-source art or a reusable asset pack.
 No permission is granted to extract or reuse it outside this game.
 The original pack ZIP, tilemap and example scene are private and are not in this repository.
+The extra Korean shop signs (src/art/city-study/korean-signs-extra.webp) are drawn by
+tools/import_city_signs_extra.py with Galmuri11 Bold, copyright Lee Minseo, SIL OFL 1.1.

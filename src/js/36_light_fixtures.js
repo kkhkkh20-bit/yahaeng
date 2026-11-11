@@ -43,7 +43,7 @@ function completeStreetLighting(lamps,sites) {
   const ids=new Set(lamps.map(l=>l.streetSite).filter(Boolean));
   let added=0;const limit=Math.min(36,Math.ceil(MW*MH/50));
   for(const p of sites) {
-    if((p.nx?p.ty:p.tx)%3!==1||inDistrict(p.x,p.y))continue;
+    if((p.nx?p.ty:p.tx)%3!==1||inRiver(p.x,p.y))continue;
     const id=[p.b,p.tx,p.ty,p.nx,p.ny].join(':');if(ids.has(id))continue;
     if(lamps.some(l=>l.outdoor&&!flOf(l)&&dist(l.x,l.y,p.x,p.y)<190&&los(l.x,l.y,p.x,p.y)))continue;
     lamps.push({x:p.x,y:p.y,r:240,outdoor:true,fl:0,poly:null,broken:false,
@@ -58,7 +58,7 @@ function mountOutdoorLamps(lamps,fill=false) {
   for(const l of lamps) {
     if(!l.outdoor || l.hearth || flOf(l))continue;
     if(l.mountVersion===1&&l.mount){used.push({x:l.mount.ax,y:l.mount.ay});continue;}
-    if(l.painted){l.mount={kind:'painted',ax:l.x,ay:l.y,x:l.x,y:l.y,height:0};l.control=l.control||{x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:l.x,y:l.y});continue;}  // 그림 구역: 기둥은 그림에 이미 있다
+    if(l.painted){l.mount={kind:'painted',ax:l.x,ay:l.y,x:l.x,y:l.y,height:0};l.control=l.control||{x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:l.x,y:l.y});continue;}  // 그림으로 깐 강: 기둥은 그림에 이미 있다
     l.origin=l.origin||{x:l.x,y:l.y,fl:l.fl||0};
     const authored=l.streetSite&&sites.find(p=>[p.b,p.tx,p.ty,p.nx,p.ny].join(':')===l.streetSite);
     if(authored){l.mount={...authored};l.x=authored.x;l.y=authored.y;l.control={x:l.x,y:l.y,fl:0,z:0};l.mountVersion=1;l.poly=null;changed++;used.push({x:authored.ax,y:authored.ay});continue;}
