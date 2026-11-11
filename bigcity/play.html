@@ -4057,6 +4057,50 @@ const STAGES = [
   const FOOD = ['국밥', '노가리', '호프', '골뱅이', '곱창', '순댓국', '백반', '분식', '포차'];
   const STORE = ['편의점', '철물', '공구', '타일', '조명', '인쇄', '전파사', '약국', '지물포'];
   const PLAY = ['PC방', '당구장', '노래방', '다방', '기원'];
+  // 블록마다 다른 필지: 안쪽 14×14 칸을 북쪽 줄 · 가운데 골목 · 남쪽 줄로 나누고, 줄마다 폭이 다른 건물과 빈터를 놓는다.
+  // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대 밀집
+  const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
+  function genBlock(m, x, y, kind) {
+    const r = rng(x * 7919 + y * 104729 + kind.length * 13), ri = (a, b) => a + Math.floor(r() * (b - a + 1)), I0 = x + 1, I1 = x + 14;
+    const yard = (x0, y0, x1, y1) => {  // 빈터: 주차장 · 마당 · 쉼터 · 노점
+      const t = r(), w = x1 - x0 + 1, h = y1 - y0 + 1; if (w < 1 || h < 1) return;
+      if (t < 0.3 && w >= 2 && h >= 3) { m.fill(x0, y0, x1, y1, '.'); for (let cx = x0; cx <= x1 && cx <= x0 + 4; cx += 2) if (r() < 0.7) m.car(cx, y0 + (h > 3 ? 1 : 0), ri(0, 4)); }
+      else if (t < 0.55) { m.fill(x0, y0, x1, y1, 'g'); for (let k = 0; k < Math.max(1, (w * h) >> 3); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.5 ? 'T' : 'B'); }
+      else if (t < 0.7 && w >= 2 && h >= 2 && kind === 'shop') m.tent(x0, y0, ['R', 'B', 'G'][ri(0, 2)]);
+      else for (let k = 0; k < Math.max(1, (w * h) >> 4); k++) m.set(ri(x0, x1), ri(y0, y1), r() < 0.6 ? 'O' : 'B');
+    };
+    const tall = kind === 'shop' ? [2, 4] : kind === 'dense' ? [2, 3] : [1, 3];
+    const building = (x0, y0, x1, y1, front) => {
+      const d = y1 - y0 + 1, h = Math.max(1, Math.min(ri(tall[0], tall[1]), d - 2));
+      if (kind === 'shop' && front) m.villa(x0, y0, x1, y1, h, { kind: 'shop', use: Array.from({ length: h }, (_, f) => f ? (r() < 0.3 ? 'pc' : 'office') : r() < 0.5 ? 'food' : 'store'),
+        signs: Array.from({ length: h }, (_, f) => f === 0 ? pick(r() < 0.5 ? FOOD : STORE, x0, y0) : f === 1 && r() < 0.5 ? pick(PLAY, x0, y0) : '') });
+      else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
+    };
+    // 한 줄을 폭 6~9칸 건물과 1~2칸 틈으로 채운다. 남는 자리는 빈터
+    const row = (y0, y1, front, setback) => {
+      let cx = I0; if (r() < 0.15) { const w = ri(1, 2); yard(cx, y0, cx + w - 1, y1); cx += w; }
+      while (I1 - cx + 1 >= 5) {
+        const left = I1 - cx + 1; let w = Math.min(left, ri(5, 8)); if (left - w > 0 && left - w < 6) w = left - w <= 2 ? left : Math.max(5, left - 6);  // 끝에 애매한 자투리가 남지 않게
+        const sb = setback && r() < 0.35 ? 1 : 0;
+        if (r() < (kind === 'res' ? 0.15 : 0.06)) yard(cx, y0, cx + w - 1, y1); else building(cx, front ? y0 : y0 + sb, cx + w - 1, front ? y1 - sb : y1, front);
+        if (sb) yard(cx, front ? y1 : y0, cx + w - 1, front ? y1 : y0);
+        cx += w; const g = r() < 0.7 ? 1 : 2; if (cx <= I1) { yard(cx, y0, Math.min(I1, cx + g - 1), y1); cx += g; }
+      }
+      if (cx <= I1) yard(cx, y0, I1, y1);
+    };
+    if (r() < 0.22) {  // 한쪽은 깊은 큰 건물(뒤 골목 없이), 나머지는 줄
+      const w = ri(7, 9), left = r() < 0.5, bx0 = left ? I0 : I1 - w + 1;
+      building(bx0, y + 2, bx0 + w - 1, y + 14, true);
+      const ox0 = left ? bx0 + w + 1 : I0, ox1 = left ? I1 : bx0 - 2;
+      if (ox1 - ox0 + 1 >= 6) { building(ox0, y + 8, ox1, y + 14, true); yard(ox0, y + 1, ox1, y + 6); } else yard(ox0, y + 1, ox1, y + 14);
+      yard(bx0, y + 1, bx0 + w - 1, y + 1);
+      return;
+    }
+    const dN = ri(5, 7), dS = ri(5, Math.min(7, 13 - dN));
+    row(y + 1, y + dN, false, true);
+    m.fill(I0, y + dN + 1, I1, y + 14 - dS, ',');  // 가운데 골목
+    row(y + 15 - dS, y + 14, true, true);
+  }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
   const LAYOUT = [
@@ -4070,12 +4114,8 @@ const STAGES = [
   const zones = [], gangs = []; let collecting = true;
   const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
   const T = {
-    h(m, x, y) { m.villa(x + 1, y + 1, x + 6, y + 6, 2); m.villa(x + 9, y + 1, x + 14, y + 6, 3); m.villa(x + 1, y + 9, x + 6, y + 14, 2, { kind: 'house' }); m.villa(x + 9, y + 9, x + 14, y + 14, 2); },
-    s(m, x, y) {
-      m.villa(x + 1, y + 1, x + 14, y + 6, 3, { kind: 'shop', use: ['store', 'office', 'office'], signs: [pick(STORE, x, y), pick(['동진인쇄', '선일전기', '백송상사', '을지공업사'], x, y)], name: '상가' });
-      m.villa(x + 1, y + 9, x + 6, y + 14, 2, { kind: 'shop', use: ['food', 'office'], signs: [pick(FOOD, x, y), ''] }); m.villa(x + 9, y + 9, x + 14, y + 14, 3, { kind: 'shop', use: ['pc', 'office', 'office'], signs: [pick(PLAY, x, y), pick(STORE, x, y, 1), ''] });
-      Z([x + 1, y + 1, x + 14, y + 14, 'pub']);
-    },
+    h(m, x, y) { genBlock(m, x, y, 'res'); },
+    s(m, x, y) { genBlock(m, x, y, 'shop'); Z([x + 1, y + 1, x + 14, y + 14, 'pub']); },
     w(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 6, 1, { kind: 'shop', use: ['store'], signs: ['청계 상회'], name: '청계 상회', back: true });
       m.villa(x + 1, y + 9, x + 8, y + 14, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '청계파 사무실', name: '청계파 사무실' });
@@ -4106,7 +4146,7 @@ const STAGES = [
       Z([x + 9, y + 1, x + 14, y + 8, 'res', null, '건달파 당구장', ['rival']]);
       Gp({ kind: 'g2', fac: 'B', at: [x + 11, y + 8], post: 90 }, { kind: 'g1', fac: 'B', route: [[x + 1, y + 8, 3], [x + 14, y + 8, 3]] });
     },
-    e(m, x, y) { [[x + 1, y + 1, x + 6, y + 6], [x + 9, y + 1, x + 14, y + 6], [x + 1, y + 9, x + 6, y + 14], [x + 9, y + 9, x + 14, y + 14]].forEach((r, i) => m.villa(r[0], r[1], r[2], r[3], 2 + (i % 2), i === 2 ? { kind: 'house' } : {})); },
+    e(m, x, y) { genBlock(m, x, y, 'dense'); },
     H(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 7, 2, { kind: 'shop', use: ['office', 'office'], signs: ['', ''], plate: '시립 병원', name: '병원' });
       m.villa(x + 1, y + 10, x + 6, y + 14, 2); m.fill(x + 8, y + 10, x + 14, y + 14, 'g'); m.many('T', [[x + 9, y + 11], [x + 13, y + 13]]);
@@ -4140,7 +4180,7 @@ const STAGES = [
     W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 6,
     roadsX: Array.from({ length: BX + 1 }, (_, i) => i * 20), roadsY: [0, 20, 40, 60, 60 + RS, 80 + RS, 100 + RS, 120 + RS], traffic: 52,  // 강 남쪽 둑길(75~78)도 도로
     blockCount: [BX, BY],
-    blockOrigin: B, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
+    blockOrigin: B, signals: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
       m.fill(0, 0, W - 1, H - 1, '.');
       for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
@@ -4182,6 +4222,7 @@ const STAGES = [
       // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
       const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
       if (shop && w >= 12) { boards.push({ image: ['can', 'chimaek', 'soju'][i % 3], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
+      else if (shop && w >= 8 && fh >= 2 && i % 2 === 1) boards.push({ image: ['chimaek', 'soju', 'can'][(i >> 1) % 3], mode: 'roof', x: 1 });
       else if (shop && fh >= 3 && i % 2 === 0) boards.push({ image: ['octopus', 'face', 'karaoke', 'octopus'][(i >> 1) % 4], mode: 'face', x: w - 2, fl: 1 });
       specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal', boards: boards.length ? boards : null,
         ad: txt && SIGN_KEY[txt] ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },
@@ -15571,7 +15612,7 @@ function aiDrive(v, dt) {
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
   if((v.crashUntil||0)>S.t)want=0;
-  const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)));
+  const stop=trafficStopDistance(v);if(stop!=null)want=Math.min(want,Math.sqrt(2*CAR_BRAKE*Math.max(0,stop-6)),Math.max(0,stop-6)/Math.max(dt,1/60));  // 먼 차는 큰 걸음으로 움직여도 정지선을 넘지 않게
   if (v.chase && copCarArrive(v, dt)) return;
   // 교차로: 꺾을 차로가 가까워지면 미리 새 차로로 갈아탄다 (오른쪽은 짧게, 왼쪽은 크게 돈다)
   if (v.turn) { const pos = hor ? v.x : v.y, left = (v.turn.at - pos) * sgn, right = v.turn.nd === (v.d + 1) % 4;
@@ -15595,6 +15636,32 @@ function aiDrive(v, dt) {
 }
 // One junction reservation, released after the rear bumper clears it. Waiting
 // never authorizes driving through another car after an arbitrary timeout.
+// 신호등 (STAGE.signals): 교차로마다 남북 → 남북 황색 → 동서 → 동서 황색. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
+const SIG_T = 16;
+function signalState(rx, ry) {
+  if (!STAGE.signals) return null;
+  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T;
+  return t < 7 ? { ns: 'G', ew: 'R' } : t < 8 ? { ns: 'Y', ew: 'R' } : t < 15 ? { ns: 'R', ew: 'G' } : { ns: 'R', ew: 'Y' };
+}
+function drawTrafficSignals() {
+  if (!STAGE.signals || flOf(S.player)) return;
+  const COL = { G: '#3ee07a', Y: '#ffc23a', R: '#ff3b3b' }, ORDER = ['R', 'Y', 'G'];
+  for (const rx of STAGE.roadsX || []) for (const ry of STAGE.roadsY || []) {
+    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 4 * TILE)) continue;
+    const s = signalState(rx, ry);
+    // 네 모퉁이: 북서·남동은 동서 방향 차를, 북동·남서는 남북 방향 차를 향한다
+    for (const [cx, cy, axis] of [[x0 - 14, y0 - 14, 'ew'], [x1 + 14, y1 + 14, 'ew'], [x1 + 14, y0 - 14, 'ns'], [x0 - 14, y1 + 14, 'ns']]) {
+      const on = s[axis], vert = axis === 'ns';
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - 2, cy, 6, 14);
+      ctx.fillStyle = '#4a525a'; ctx.fillRect(cx - 1, cy - 4, 3, 16);
+      const w = vert ? 10 : 26, h = vert ? 26 : 10, bx = cx - w / 2, by = cy - h - 4;
+      ctx.fillStyle = '#14181d'; ctx.fillRect(bx, by, w, h); ctx.strokeStyle = '#59626b'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, w - 1, h - 1);
+      ORDER.forEach((c, k) => { const lx = vert ? cx : bx + 5 + k * 8, ly = vert ? by + 5 + k * 8 : by + h / 2;
+        ctx.fillStyle = c === on ? COL[c] : 'rgba(80,80,80,.6)'; ctx.beginPath(); ctx.arc(lx, ly, 3, 0, TAU); ctx.fill();
+        if (c === on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = COL[c] + '55'; ctx.beginPath(); ctx.arc(lx, ly, 8, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; } });
+    }
+  }
+}
 function trafficStopDistance(v){
  if(v.chase)return null;
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
@@ -15604,6 +15671,9 @@ function trafficStopDistance(v){
   const aligned=hor?v.y>y0&&v.y<y1:v.x>x0&&v.x<x1;
   const entry=hor?(sgn>0?x0-58:x1+58):(sgn>0?y0-58:y1+58),left=(entry-(hor?v.x:v.y))*sgn;
   if(!aligned||left>230||left< -4*TILE-116){if(left< -4*TILE-116&&v.junctionWait)delete v.junctionWait[key];continue;}
+  // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
+  const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
+  if(light&&light!=='G'&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-58:x1+58):(s>0?y0-58:y1+58))-(h?o.x:o.y))*s;};
   const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
@@ -15684,21 +15754,14 @@ function hitPeople(v, dt) {
 function updateDriving(P, mx, my, mag, dt) {
   const v = P.car; P.moving = false; P.mode = 'walk'; P.vx = 0; P.vy = 0; P.z = 0; P.fl = 0;
   if (v.dead) { carExit(true); return; }
-  let thr = 0; if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
-  if (mag > 0.15) {
-    const ta = Math.atan2(my, mx), dA = angDiff(v.a, ta);
-    // Opposite input always brakes, then reverses; road clearance never changes gear.
-    if(Math.abs(dA)>2.3){
-      thr=v.v>0?-2:-.55*Math.min(1,mag);
-      if(v.v<=0){const err=angDiff(v.a,ta+Math.PI),a0=v.a;v.a+=clamp(err*3,-1,1)*CAR_TURN*Math.min(1,Math.abs(v.v)/90)*dt;if(carOverlap(v))v.a=a0;}
-    }else{
-      thr=Math.min(1,mag);const a0=v.a;v.a+=clamp(dA*3,-1,1)*CAR_TURN*Math.max(.15,Math.min(1,Math.abs(v.v)/90))*dt;if(carOverlap(v))v.a=a0;
-    }
-  }
-  if (thr > 0) v.v = Math.min(CAR_MAX, v.v + CAR_ACC * thr * dt);
-  else if (thr < -1) v.v = Math.max(0, v.v - CAR_BRAKE * dt);
-  else if (thr < 0) v.v = Math.max(-140, v.v - CAR_ACC * 0.8 * dt);
+  if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
+  // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다
+  const fwd = mag > 0.15 ? -my : 0, steer = mag > 0.15 ? mx : 0;
+  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(CAR_MAX, v.v + CAR_ACC * Math.min(1, fwd) * dt);
+  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - CAR_ACC * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
+  // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
+  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * CAR_TURN * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
   carMove(v, dt);
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
@@ -15736,7 +15799,7 @@ function carEnter(v) {
     v.driver = false;
   });
   P.trav.end = () => { v.jacking = false; P.car = v; P.x = v.x; P.y = v.y; play('switch', 0.4); play('click', 0.3);
-    hint('drive', isTouch ? '운전: 화면 왼쪽을 끌어 방향 조절. 진행 반대 방향으로 끌면 제동·후진. [행동]으로 내리기' : '운전: 방향키로 조향, 진행 반대 방향으로 제동·후진. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
+    hint('drive', isTouch ? '운전: 화면 왼쪽을 위로 끌면 가속, 아래로 끌면 제동·후진, 좌우로 핸들. [행동]으로 내리기' : '운전: ↑ 가속 · ↓ 제동·후진 · ←→ 핸들. ' + KK('env') + ' = 내리기, ' + KK('atk') + ' = 경적'); };
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;
@@ -21167,6 +21230,7 @@ function draw() {
     drawWires();
   }
   drawOutdoorLampFixtures();
+  drawTrafficSignals();
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();
