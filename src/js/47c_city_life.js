@@ -176,6 +176,7 @@ function cityLifeUpdate(dt) {
   updateCuffs(dt); if (!S.cuffs) updateArrest(dt);
   for (const g of S.guards) if (g.state === 'ALERT' && cityGang(g)) g.chasedT = S.t;
   updateGangCars(dt);
+  shopsUpdate(dt);
   updateBlood(dt);
 }
 

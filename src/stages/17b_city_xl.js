@@ -17,6 +17,18 @@
   // 같은 블록은 언제나 같은 모양이다(블록 좌표로 정한 난수). kind: 'shop' 상가 골목 · 'res' 주택가 · 'dense' 다세대·사무실 밀집
   const rng = seed => () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };  // mulberry32
   const UPPER = ['office', 'office', 'gym', 'pc', 'academy'], UPPER_SIGN = { office: ['', '세무사', '법무사', '부동산'], gym: ['헬스장'], pc: ['PC방', '당구장', '노래방'], academy: ['학원'] };
+  // 구역: 블록 범위마다 이름 · 정면 그림(FRONTS 번호) · 간판 · 위층 업소 · 많이 다니는 차가 다르다 (GTA식 동네)
+  const DISTRICTS = [
+    { name: '종로 유흥가', bx: [0, 2], by: [0, 1], fronts: [5, 0, 4], food: ['포차', '호프', '곱창', '골뱅이'], store: ['편의점', '약국'], upper: ['pc', 'pc', 'office', 'gym'], mix: { taxi: 2, luxury: 2, sport: 2 } },
+    { name: '을지로 인쇄골목', bx: [3, 5], by: [0, 1], fronts: [3, 2, 0], food: ['노가리', '골뱅이', '백반'], store: ['인쇄', '공구', '조명', '타일', '철물', '지물포'], upper: ['office', 'office', 'academy'], mix: { pickup: 3, van: 2, box: 1 } },
+    { name: '동대문 시장', bx: [6, 7], by: [0, 1], fronts: [3, 5], food: ['국밥', '순댓국', '분식', '백반'], store: ['편의점', '철물', '지물포'], upper: ['office', 'gym'], mix: { pickup: 3, box: 3, van: 2, micro: 2 } },
+    { name: '청계천 상가', bx: [0, 7], by: [2, 2], fronts: [2, 5, 3], food: ['백반', '분식'], store: ['전파사', '조명', '공구', '철물'], upper: ['office', 'pc'], mix: { van: 2, pickup: 2 } },
+    { name: '신당동 주택가', bx: [0, 2], by: [3, 5], fronts: [4, 0], food: ['분식', '백반', '국밥'], store: ['편의점', '약국'], upper: ['academy', 'office'], mix: { micro: 3, hatch: 2, minivan: 2 } },
+    { name: '중구 관청가', bx: [3, 5], by: [3, 5], fronts: [1, 2], food: ['백반', '국밥'], store: ['편의점', '약국', '인쇄'], upper: ['office', 'office', 'academy', 'gym'], mix: { sedan: 2, luxury: 2, suv: 2, bus: 2 } },
+    { name: '성수 공장지대', bx: [6, 7], by: [3, 5], fronts: [2, 3], food: ['백반', '국밥'], store: ['철물', '공구', '자재'], upper: ['office'], mix: { box: 4, truck: 4, pickup: 3, van: 2 } },
+  ];
+  const districtOf = (bx, by) => DISTRICTS.find(d => bx >= d.bx[0] && bx <= d.bx[1] && by >= d.by[0] && by <= d.by[1]) || DISTRICTS[0];
+  let curD = DISTRICTS[0];  // buildBlock 이 지금 짓는 블록의 구역
   function genLots(m, X0, Y0, X1, Y1, kind, r) {
     const ri = (a, b) => a + Math.floor(r() * (b - a + 1));
     const yard = (x0, y0, x1, y1) => {  // 빈터: 주차장 · 마당 · 쉼터 · 노점
@@ -30,8 +42,8 @@
     const building = (x0, y0, x1, y1, front) => {
       const d = y1 - y0 + 1, h = Math.max(1, Math.min(ri(tall[0], tall[1]), d - 2));
       if (front && kind !== 'res') {  // 1층 가게(식당 · 가게), 위층은 사무실 · 헬스장 · PC방 · 학원
-        const use = Array.from({ length: h }, (_, f) => f ? UPPER[ri(0, UPPER.length - 1)] : r() < 0.55 ? 'food' : 'store');
-        m.villa(x0, y0, x1, y1, h, { kind: 'shop', use, signs: use.map((u, f) => f === 0 ? pick(u === 'food' ? FOOD : STORE, x0, y0) : f <= 2 ? pick(UPPER_SIGN[u] || [''], x0, y0, f) : '') });
+        const up = curD.upper || UPPER, use = Array.from({ length: h }, (_, f) => f ? up[ri(0, up.length - 1)] : r() < 0.55 ? 'food' : 'store');
+        m.villa(x0, y0, x1, y1, h, { kind: 'shop', use, signs: use.map((u, f) => f === 0 ? pick(u === 'food' ? curD.food || FOOD : curD.store || STORE, x0, y0) : f <= 2 ? pick(UPPER_SIGN[u] || [''], x0, y0, f) : '') });
       } else m.villa(x0, y0, x1, y1, h, r() < 0.35 ? { kind: 'house' } : {});
     };
     const row = (y0, y1, front) => {
@@ -67,13 +79,14 @@
   }
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
   // 조직 세력: A 조직(본부 q) · B 건달파(r 동네) · C 청계파(w 창고 상회) · D 종로파(c 클럽 거리 뒤 사무실)
+  // f 공장·창고 · d 중고차 매매·도색소 (성수 공장지대)
   const LAYOUT = [
-    'hsweshcs',
-    'pmrkemrh',
-    'eshcpsep',
-    'HPmhrkqe',
-    'skepmhsc',
-    'hewrPkHq'
+    'cscsesmm',
+    'sprkesmh',
+    'wsePsewe',
+    'hehHeqfd',
+    'hpreeqff',
+    'hehkPefk'
   ];
   const zones = [], gangs = []; let collecting = true;
   const Z = z => { if (collecting) zones.push(z); }, Gp = (...g) => { if (collecting) gangs.push(...g); };
@@ -124,6 +137,18 @@
       m.many('H', [[x + 2, y + 12], [x + 13, y + 2]]); m.many('O', [[x + 4, y + 12], [x + 12, y + 13]]); mat(m, 'r', [[x + 6, y + 6], [x + 7, y + 6], [x + 6, y + 7]]);
       m.villa(x + 9, y + 11, x + 14, y + 14, 1, { kind: 'shop', use: ['store'], signs: ['자재'] });
     },
+    f(m, x, y) {  // 공장·물류창고: 넓은 단층·2층 창고, 짐 마당(상자 · 화물차)
+      m.villa(x + 1, y + 1, x + 14, y + 7, 2, { kind: 'shop', use: ['store', 'office'], signs: ['', ''], plate: '물류창고' });
+      m.fill(x + 1, y + 9, x + 14, y + 14, '.'); m.many('O', [[x + 2, y + 9], [x + 3, y + 9], [x + 2, y + 10], [x + 13, y + 13], [x + 12, y + 13]]);
+      [[x + 5, y + 10, 1], [x + 8, y + 10, 4], [x + 11, y + 10, 2]].forEach(([a, b, c]) => m.car(a, b, c));
+    },
+    d(m, x, y) {  // 중고차 매매(사무실 + 전시장) · 카센터 도색소(앞 도색 칸에 차를 세우면 칠하고 수배가 풀린다)
+      m.villa(x + 1, y + 1, x + 8, y + 6, 1, { kind: 'shop', use: ['store'], signs: ['중고차'], plate: '중고차 매매', name: '중고차 매매' });
+      m.villa(x + 10, y + 1, x + 14, y + 6, 1, { kind: 'shop', use: ['store'], signs: ['도색'], plate: '카센터', name: '도색소' });
+      m.fill(x + 1, y + 8, x + 14, y + 14, '.'); m.fill(x + 10, y + 7, x + 14, y + 7, '.');
+      [[x + 2, y + 9, 0], [x + 5, y + 9, 1], [x + 8, y + 9, 2], [x + 2, y + 12, 3], [x + 5, y + 12, 4], [x + 8, y + 12, 0]].forEach(([a, b, c]) => m.car(a, b, c));
+      if (collecting) { st.dealer = { lot: [x + 1, y + 8, x + 9, y + 14], sell: [x + 1, y + 8, x + 9, y + 14], office: [x + 4, y + 7] }; st.respray = { bay: [x + 10, y + 7, x + 14, y + 10] }; }
+    },
     q(m, x, y) {
       m.villa(x + 1, y + 1, x + 14, y + 8, 3, { kind: 'shop', use: ['office', 'office', 'vip'], signs: ['', '', ''], plate: '본부', name: '조직 본부', back: true });
       m.villa(x + 1, y + 11, x + 6, y + 14, 1, { kind: 'shop', use: ['store'], signs: [''], plate: '차고' }); m.fill(x + 8, y + 10, x + 14, y + 14, '.'); m.car(x + 10, y + 11, 1); m.car(x + 13, y + 11, 3);
@@ -134,8 +159,8 @@
   // 강 칸 열: 세로 도로는 그대로 다리, 그 양옆은 다리 난간, 나머지는 4칸 주기 축대(다섯 주기마다 사다리)
   const riverCol = x => { for (const r of st.roadsX) { if (x >= r && x < r + 4) return 'road'; if (x === r - 1 || x === r + 4) return 'rail'; } return Math.floor(x / 4) % 5 === 2 && x % 4 === 2 ? 'ladder' : 'quay'; };
   // 블록 하나: 일반 블록(h s e)은 통째로 필지, 특수 블록은 16칸 설계 + 남은 땅 필지
-  const AROUND = { w: 'dense', c: 'shop', p: 'res', m: 'shop', r: 'dense', H: 'dense', P: 'dense', k: 'res', q: 'dense' };
-  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; T[t](m, x0, y0); if (AROUND[t]) fillAround(m, x0, y0, AROUND[t]); }
+  const AROUND = { w: 'dense', c: 'shop', p: 'res', m: 'shop', r: 'dense', H: 'dense', P: 'dense', k: 'res', q: 'dense', f: 'dense', d: 'dense' };
+  function buildBlock(m, bx, by) { const [x0, y0] = B(bx, by), t = LAYOUT[by][bx]; curD = districtOf(bx, by); T[t](m, x0, y0); if (AROUND[t]) fillAround(m, x0, y0, AROUND[t]); }
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), e = BS - 1, c = [[x0, y0], [x0 + e, y0], [x0 + e, y0 + e], [x0, y0 + e]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
@@ -188,7 +213,7 @@
     '청계 상회': 'cheonggye', '종로파 사무실': 'jongno', '건달파 당구장': 'rival', 시장: 'market', CLUB: 'club', '시립 병원': 'hospital', 지구대: 'police', 자재: 'material', '조직 본부': 'hq', 본부: 'hq', '청계파 사무실': 'cheonggye' };
   const specs = [], homeLocks = [];
   const dry = { villa(x0, y0, x1, y1, h, o = {}) {
-      const i = specs.length, f = FRONTS[(x0 * 3 + y0 * 7 + i) % FRONTS.length], w = x1 - x0 + 1, txt = [o.plate, o.name, ...(o.signs || [])].find(s => s && SIGN_KEY[s]);
+      const i = specs.length, fr = curD.fronts || [0, 1, 2, 3, 4, 5], f = FRONTS[fr[(x0 * 3 + y0 * 7 + i) % fr.length]], w = x1 - x0 + 1, txt = [o.plate, o.name, ...(o.signs || [])].find(s => s && SIGN_KEY[s]);
       // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
       const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
       if (!shop) homeLocks.push({ b: i, door: 'front', key: 'gold' }, { b: i, door: 'back', key: 'gold' });  // 일반 주택은 앞뒤 문이 잠겨 있다: 창문으로 들어간다
@@ -200,6 +225,10 @@
     fill() {}, set() {}, many() {}, car() {}, tent() {}, get() { return '.'; } };
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) buildBlock(dry, bx, by);
   collecting = false;
+  // 구역 찾기 (칸 좌표): 강 위는 청계천, 블록 밖 도로는 가까운 블록의 구역
+  st.districts = DISTRICTS.map(d => d.name);
+  st.districtAt = (tx, ty) => { if (ty >= RIVER_Y && ty < RIVER_Y + RIVER_ROWS) return '청계천'; const lim = (v, n) => Math.max(0, Math.min(n - 1, v)), bx = lim(Math.floor((tx - 4 + 2) / P), BX), by = lim(Math.floor((ty - 4 + 2 - (ty >= RIVER_Y + RIVER_ROWS ? RS : 0)) / P), BY); /* 스테이지 쪽에는 clamp 가 없다 */ return districtOf(bx, by).name; };
+  st.vehicleMix = (tx, ty) => { const n = st.districtAt(tx, ty), d = DISTRICTS.find(d => d.name === n); return d ? d.mix : null; };
   st.locks = homeLocks; st.studyFacades = true; st.referenceBuildings = specs; st.studyStyles = specs.map(s => s.style);
   st.referenceRow = function (i, fl) { const s = this.referenceBuildings[i], n = s.windows.length; return fl === s.h - 1 ? 0 : fl < n - 1 ? n - 1 - fl : 1; };
   st.referenceWindow = function (i, tx, fl) { const s = this.referenceBuildings[i], row = s.windows[this.referenceRow(i, fl)]; return Array.isArray(row) ? !!row[(tx - s.box[0] - 1) % 3] : !!row; };

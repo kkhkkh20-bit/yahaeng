@@ -39,7 +39,8 @@ const VTYPES = {
 };
 const vType = v => VTYPES[v.type] || VTYPES.sedan;
 // 큰 도시 거리 차: 비율대로 고른다 (r: 0~1)
-function pickVType(r) { const ks = Object.keys(VTYPES).filter(k => VTYPES[k].w > 0), tot = ks.reduce((a, k) => a + VTYPES[k].w, 0); let x = r * tot; for (const k of ks) { x -= VTYPES[k].w; if (x <= 0) return k; } return ks[0]; }
+// mix: 구역마다 많이 다니는 차 (비율에 곱한다, 예: 공장지대는 트럭)
+function pickVType(r, mix) { const wt = k => VTYPES[k].w * (mix?.[k] || 1), ks = Object.keys(VTYPES).filter(k => VTYPES[k].w > 0), tot = ks.reduce((a, k) => a + wt(k), 0); let x = r * tot; for (const k of ks) { x -= wt(k); if (x <= 0) return k; } return ks[0]; }
 function makeVehicle(o) {
   const v = Object.assign({ x: 0, y: 0, a: 0, v: 0, d: 0, c: 0, ai: false, parked: false, driver: false, stopT: 0, honkT: 0, burn: 0, smoke: 0, id: (S.vehN = (S.vehN || 0) + 1) }, o);
   if (!v.type) v.type = v.police ? 'police' : ['sedan', 'civic', 'hatch', 'wagon', 'luxury'][((v.c % 5) + 5) % 5];
@@ -51,7 +52,7 @@ function makeVehicle(o) {
 }
 function trafficInit() {
   S.vehicles = []; decksInit();
-  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9, type: STAGE.cityLife && p.c !== 9 ? pickVType(((p.x * 73856093 ^ p.y * 19349663) >>> 0) / 4294967296) : undefined }));  // 색 9 = 경찰차
+  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9, type: STAGE.cityLife && p.c !== 9 ? pickVType(((p.x * 73856093 ^ p.y * 19349663) >>> 0) / 4294967296, STAGE.vehicleMix?.(Math.floor(p.x / TILE), Math.floor(p.y / TILE))) : undefined }));  // 색 9 = 경찰차
   const RX = STAGE.roadsX, RY = STAGE.roadsY, n = STAGE.traffic || 0, P = S.player;
   // 도로 위 차: 가로·세로 도로에 번갈아, 나와 너무 가깝지 않게
   for (let i = 0, k = 0; i < n && k < 400; k++) {
@@ -60,7 +61,7 @@ function trafficInit() {
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
     const dz = deckSpawnZ(x, y); if (dz < 0) continue;
-    const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
+    const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296, STAGE.vehicleMix?.(Math.floor(x / TILE), Math.floor(y / TILE))) : undefined });
     planTurn(v); S.vehicles.push(v); i++;
   }
 }

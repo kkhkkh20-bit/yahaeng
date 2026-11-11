@@ -14,6 +14,9 @@ function actPrimary(force) {
     case 'carIn': carEnter(a.v); break;
     case 'carOut': carExit(); break;
     case 'contract': cityContract(a.c); break;
+    case 'shop': openShop(a.s); break;
+    case 'dealer': openDealer(); break;
+    case 'carSell': sellCar(a.v); break;
     case 'hitPhone': enterBooth(a.p || S.phones.find(p => dist(p.x, p.y, S.player.x, S.player.y) < 60)); break;
     case 'rumor': spreadRumor(a.c); break;
     case 'surface': {beginAccessFlow('surface',a.w);break;}

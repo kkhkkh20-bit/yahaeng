@@ -2,7 +2,7 @@
 // 별도 의뢰 맵으로 넘어가지 않는다. 조용히 등 뒤에서 처치하든, 차로 들이받든, 들켜서 싸우고 도망치든 같은 도시 안에서 끝난다.
 // 표적은 의뢰 맵의 target 표시를 쓰지 않는다(탈출·의뢰 완료 로직이 켜지지 않게). g.hit 으로만 구분한다.
 const HIT_NAMES = ['문태식', '오정길', '백상만', '한두철', '유창배', '노기석', '서판수', '장덕구'];
-const HIT_PAY = 50, HIT_QUIET_BONUS = 30;  // 만 원. 수배 없이 끝내면 보너스
+const HIT_PAY = 300, HIT_QUIET_BONUS = 200;  // 만 원. 수배 없이 끝내면 보너스 (차를 사고 가게에서 쓸 만큼)
 
 function hitsInit() {
   S.hit = null; S.hitN = 0; S.cash = S.cash || 0;

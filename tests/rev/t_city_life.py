@@ -12,7 +12,7 @@ from playwright.async_api import async_playwright
 
 R = Path(__file__).resolve().parents[2]
 CHECK = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();const tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.5);
-  const S=G.S,P=S.player,ST=G.STAGE,out={},ls=()=>({x:P.x,y:P.y,fl:0,z:0}),RY=(ST.roadsY[1]+1.5)*48,RX=k=>(ST.roadsX[k]+6)*48;
+  const S=G.S,P=S.player,ST=G.STAGE,out={},ls=()=>({x:P.x,y:P.y,fl:0,z:0}),RY=(ST.roadsY[2]+1.5)*48,RX=k=>(ST.roadsX[k]+6)*48;
   out.civ=S.guards.filter(g=>g.civ).length;out.gang=S.guards.filter(g=>!g.civ&&!g.police&&g.fac&&g.fac!=='P').length;
   out.keys=getComputedStyle(document.querySelector('#hud .keys')).display;
   // car hit
@@ -41,7 +41,7 @@ const f0=S.stats.fights||0;
   let copBrawl=0;for(let k=0;k<150*30;k++){G.update(1/30);if(k%15===0&&S.guards.some(g=>g.police&&g.brawl))copBrawl++;}
   out.fights=(S.stats.fights||0)-f0;
   // a fight in front of an officer: two rival members meet on the street and a patrolling officer 380px away steps in
-  const live=g=>g.state!=='DEAD'&&!g.brawl&&!g.off,ga=S.guards.find(g=>g.fac==='A'&&!g.civ&&live(g)),gc=S.guards.find(g=>g.fac==='C'&&!g.civ&&live(g)),cp=S.guards.find(g=>g.police&&live(g));
+  const live=g=>g.state!=='DEAD'&&!g.brawl&&!g.off,gang=S.guards.filter(g=>g.fac&&g.fac!=='P'&&!g.civ&&!g.police&&live(g)),ga=gang[0],gc=gang.find(g=>g.fac!==ga.fac),cp=S.guards.find(g=>g.police&&live(g));  /* any two rival members still standing after the long run */
   for(const g of S.guards)if(g.police&&g!==cp&&!g.off)g.x=-9000;
   Object.assign(P,{x:RX(3),y:RY});for(const [g,dx] of [[ga,-40],[gc,40],[cp,380]]){g.x=P.x+dx;g.y=P.y+30;g.state='PATROL';g.path=null;g.route=[{x:g.x,y:g.y,pause:999}];g.hunt=null;g.incident=null;}cp.a=Math.PI;
   for(let k=0;k<12*30;k++){G.update(1/30);if(S.guards.some(g=>g.police&&g.brawl))copBrawl++;}
