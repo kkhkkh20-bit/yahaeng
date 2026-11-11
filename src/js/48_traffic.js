@@ -14,12 +14,44 @@ function cityMapPrep() {
   CITY_PARKED = CARS.map(([x, y, c]) => ({ x: tc(x), y: (y + 1) * TILE, c })); CARS = [];
   for (const p of CITY_PARKED) { const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE) - 1; G0[ty][tx] = '.'; G0[ty + 1][tx] = '.'; if (G[ty]) { G[ty][tx] = '.'; G[ty + 1][tx] = '.'; } }
 }
+// 차종: 이름 · 그림 · 최고 속도 · 가속 · 핸들 · 내구성 · 무게 · 값(만 원, 0 = 못 판다) · 거리에 나오는 비율.
+// 앞의 다섯(세단·소형·해치백·왜건·고급)은 예전 차와 같은 성능이다(의뢰 맵의 차는 그대로)
+const VTYPES = {
+  sedan: { name: '중형 세단', max: 430, acc: 320, turn: 3.1, hp: 6, mass: 1, price: 700, w: 12 },
+  civic: { name: '소형 세단', max: 430, acc: 320, turn: 3.1, hp: 6, mass: 1, price: 500, w: 8 },
+  hatch: { name: '해치백', max: 430, acc: 320, turn: 3.1, hp: 6, mass: 1, price: 450, w: 6 },
+  wagon: { name: '왜건', max: 430, acc: 320, turn: 3.1, hp: 6, mass: 1, price: 600, w: 4 },
+  luxury: { name: '고급 세단', max: 430, acc: 320, turn: 3.1, hp: 6, mass: 1, price: 1500, w: 4 },
+  micro: { name: '경차', max: 330, acc: 300, turn: 3.7, hp: 4, mass: .7, price: 300, w: 12 },
+  taxi: { name: '택시', max: 440, acc: 330, turn: 3.2, hp: 6, mass: 1, price: 500, w: 18 },
+  suv: { name: 'SUV', max: 420, acc: 300, turn: 2.8, hp: 8, mass: 1.3, price: 1000, w: 8 },
+  sport: { name: '스포츠카', max: 560, acc: 440, turn: 3.6, hp: 5, mass: .9, price: 3000, w: 1.2 },
+  supercar: { name: '슈퍼카', max: 640, acc: 500, turn: 3.8, hp: 4, mass: .9, price: 5000, w: .5 },
+  pickup: { name: '1톤 트럭', max: 340, acc: 240, turn: 2.7, hp: 8, mass: 1.4, price: 600, w: 9 },
+  van: { name: '승합차', max: 340, acc: 230, turn: 2.5, hp: 8, mass: 1.5, price: 800, w: 5 },
+  minivan: { name: '미니밴', max: 380, acc: 260, turn: 2.8, hp: 7, mass: 1.3, price: 900, w: 4 },
+  box: { name: '탑차', max: 300, acc: 190, turn: 2.2, hp: 10, mass: 2.2, price: 1200, w: 4 },
+  truck: { name: '덤프트럭', max: 280, acc: 170, turn: 2.0, hp: 12, mass: 3, price: 0, w: 2 },
+  bus: { name: '시내버스', model: 'busGreen', max: 300, acc: 170, turn: 1.8, hp: 14, mass: 3.5, price: 0, w: 4 },
+  ambulance: { name: '구급차', max: 450, acc: 340, turn: 2.9, hp: 9, mass: 1.8, price: 0, w: 1 },
+  limo: { name: '리무진', max: 400, acc: 260, turn: 2.2, hp: 9, mass: 1.8, price: 6000, w: .5 },
+  police: { name: '경찰차', max: 500, acc: 380, turn: 3.3, hp: 9, mass: 1.3, price: 0, w: 0 },
+};
+const vType = v => VTYPES[v.type] || VTYPES.sedan;
+// 큰 도시 거리 차: 비율대로 고른다 (r: 0~1)
+function pickVType(r) { const ks = Object.keys(VTYPES).filter(k => VTYPES[k].w > 0), tot = ks.reduce((a, k) => a + VTYPES[k].w, 0); let x = r * tot; for (const k of ks) { x -= VTYPES[k].w; if (x <= 0) return k; } return ks[0]; }
 function makeVehicle(o) {
-  return Object.assign({ x: 0, y: 0, a: 0, v: 0, d: 0, c: 0, hp: 6, ai: false, parked: false, driver: false, stopT: 0, honkT: 0, burn: 0, smoke: 0, id: (S.vehN = (S.vehN || 0) + 1) }, o);
+  const v = Object.assign({ x: 0, y: 0, a: 0, v: 0, d: 0, c: 0, ai: false, parked: false, driver: false, stopT: 0, honkT: 0, burn: 0, smoke: 0, id: (S.vehN = (S.vehN || 0) + 1) }, o);
+  if (!v.type) v.type = v.police ? 'police' : ['sedan', 'civic', 'hatch', 'wagon', 'luxury'][((v.c % 5) + 5) % 5];
+  // 몸 크기: 그림(팩의 동쪽을 본 칸)에서 잰 길이·폭. 충돌은 앞뒤로 늘어선 원으로 덮는다
+  const T = vType(v), f = A.cityVehicles?.frames?.[T.model || v.type], len = f?.len || CAR_LEN, wid = f?.wid || CAR_W;
+  v.len = len; v.r = Math.max(CAR_R, Math.round(wid / 2)); v.hl = Math.max(8, len / 2 - v.r + 4);
+  if (o.hp == null) v.hp = T.hp; v.hpMax = T.hp;
+  return v;
 }
 function trafficInit() {
   S.vehicles = [];
-  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9 }));  // 색 9 = 경찰차
+  for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9, type: STAGE.cityLife && p.c !== 9 ? pickVType(((p.x * 73856093 ^ p.y * 19349663) >>> 0) / 4294967296) : undefined }));  // 색 9 = 경찰차
   const RX = STAGE.roadsX, RY = STAGE.roadsY, n = STAGE.traffic || 0, P = S.player;
   // 도로 위 차: 가로·세로 도로에 번갈아, 나와 너무 가깝지 않게
   for (let i = 0, k = 0; i < n && k < 400; k++) {
@@ -27,7 +59,7 @@ function trafficInit() {
     const road = hor ? RY[(k * 7) % RY.length] : RX[(k * 5) % RX.length], along = ((k * 977) % ((hor ? MW : MH) - 4)) + 2;
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
-    const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true });
+    const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
     planTurn(v); S.vehicles.push(v); i++;
   }
 }
@@ -82,17 +114,17 @@ function pushBodiesFromCars() {
   if (!P.car && !P.z && !flOf(P) && !P.hide && !P.vent) people.push(P);
   for (const g of S.guards) if (g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.off && !g.z && !flOf(g) && !g.climb && g.x > 0) people.push(g);
   people.sort((a, b) => a.x - b.x);
-  const reach = 25 + CAR_R + BODY_R;
+  const reach = 80 + 40 + BODY_R;
   for (const v of S.vehicles) {
     if (v === P.car && Math.abs(v.v) > 1) continue;
-    const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25;
+    const hl = v.hl ?? 25, ca = Math.cos(v.a) * hl, sa = Math.sin(v.a) * hl;
     let lo = 0, hi = people.length; while (lo < hi) { const m = (lo + hi) >> 1; if (people[m].x < v.x - reach) lo = m + 1; else hi = m; }
     for (let i = lo; i < people.length && people[i].x <= v.x + reach; i++) {
       const o = people[i]; if (Math.abs(o.y - v.y) > reach) continue;
       // 막대 위 가장 가까운 점
-      const t = clamp(((o.x - v.x) * ca + (o.y - v.y) * sa) / (25 * 25), -1, 1), qx = v.x + ca * t, qy = v.y + sa * t, dx = o.x - qx, dy = o.y - qy, d = Math.hypot(dx, dy), need = CAR_R + BODY_R;
+      const t = clamp(((o.x - v.x) * ca + (o.y - v.y) * sa) / (hl * hl), -1, 1), qx = v.x + ca * t, qy = v.y + sa * t, dx = o.x - qx, dy = o.y - qy, d = Math.hypot(dx, dy), need = (v.r || CAR_R) + BODY_R;
       if (d >= need) continue;
-      const ux = d > 0.01 ? dx / d : -sa / 25, uy = d > 0.01 ? dy / d : ca / 25, nx = qx + ux * need, ny = qy + uy * need;
+      const ux = d > 0.01 ? dx / d : -sa / hl, uy = d > 0.01 ? dy / d : ca / hl, nx = qx + ux * need, ny = qy + uy * need;
       if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { o.x = nx; o.y = ny; }
     }
   }
@@ -103,7 +135,7 @@ const AI_LOOK = 72;
 function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
-  const blk = aheadBlocked(v); let want = v.chase ? AI_SPD * 2 : AI_SPD;
+  const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
   } else v.stopT = 0;
@@ -120,9 +152,9 @@ function aiDrive(v, dt) {
   const err = angDiff(v.a, Math.atan2(ty - v.y, tx - v.x));
   if (Math.abs(err) > 0.5) want = Math.min(want, 95);  // 크게 꺾는 중엔 천천히
   // 가속·브레이크 (내 차와 같은 수치를 조금 순하게)
-  if (v.v < want) v.v = Math.min(want, v.v + CAR_ACC * (v.chase ? 1.2 : 0.7) * dt); else v.v = Math.max(want, v.v - CAR_BRAKE * dt);
+  if (v.v < want) v.v = Math.min(want, v.v + T.acc * (v.chase ? 1.2 : 0.7) * dt); else v.v = Math.max(want, v.v - CAR_BRAKE * dt);
   // 핸들: 내 차와 같은 식 — 빠를수록 잘 돌고, 서 있으면 거의 안 돈다
-  const turn=clamp(err * 3, -1, 1) * CAR_TURN * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
+  const turn=clamp(err * 3, -1, 1) * T.turn * Math.max(0.15, Math.min(1, Math.abs(v.v) / 90)) * dt;
   carMove(v,dt,turn);
   // 지도 끝: 반대 방향 차로로 돌아 들어온다
   if (v.x < -60 || v.x > MW * TILE + 60 || v.y < -60 || v.y > MH * TILE + 60) {
@@ -230,7 +262,7 @@ function pedWaits(g) {
   return false;
 }
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
-const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6;
+const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
 function trafficStopDistance(v){
  if(v.chase)return null;
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
@@ -238,12 +270,12 @@ function trafficStopDistance(v){
   const x0=rx*TILE,y0=ry*TILE,x1=x0+4*TILE,y1=y0+4*TILE,key=rx+','+ry;
   const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
   const aligned=hor?v.y>y0&&v.y<y1:v.x>x0&&v.x<x1;
-  const entry=hor?(sgn>0?x0-STOP_GAP:x1+STOP_GAP):(sgn>0?y0-STOP_GAP:y1+STOP_GAP),left=(entry-(hor?v.x:v.y))*sgn;
+  const G=stopGap(v),entry=hor?(sgn>0?x0-G:x1+G):(sgn>0?y0-G:y1+G),left=(entry-(hor?v.x:v.y))*sgn;
   if(!aligned||left>230||left< -4*TILE-STOP_GAP-58){if(left< -4*TILE-STOP_GAP-58&&v.junctionWait)delete v.junctionWait[key];continue;}
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
   if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
-  const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-STOP_GAP:x1+STOP_GAP):(s>0?y0-STOP_GAP:y1+STOP_GAP))-(h?o.x:o.y))*s;};
+  const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
   const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
   incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);
@@ -259,16 +291,19 @@ function trafficStopDistance(v){
  return null;
 }
 // Three overlapping circles cover the complete chassis, including its middle.
-const carPts = v => { const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25; return [[v.x + ca, v.y + sa], [v.x,v.y], [v.x - ca, v.y - sa]]; };
+const carPts = v => { const hl = v.hl ?? 25, ca = Math.cos(v.a), sa = Math.sin(v.a), r = v.r || CAR_R;
+  if (hl <= r * 1.6) return [[v.x + ca * hl, v.y + sa * hl], [v.x, v.y], [v.x - ca * hl, v.y - sa * hl]];
+  return [-1, -.5, 0, .5, 1].map(t => [v.x + ca * hl * t, v.y + sa * hl * t]); };  // 버스·리무진처럼 긴 차는 원 다섯
 // 차가 벽·건물·다른 차와 겹치나 (겹친 상대 차를 돌려준다: 없으면 true/false)
 function carOverlap(v) {
+  const R = v.r || CAR_R;
   for (const [px, py] of carPts(v)) {
-    const tx0 = Math.floor((px - CAR_R) / TILE), tx1 = Math.floor((px + CAR_R) / TILE), ty0 = Math.floor((py - CAR_R) / TILE), ty1 = Math.floor((py + CAR_R) / TILE);
+    const tx0 = Math.floor((px - R) / TILE), tx1 = Math.floor((px + R) / TILE), ty0 = Math.floor((py - R) / TILE), ty1 = Math.floor((py + R) / TILE);
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (v.ai&&!inMap(tx,ty)||!carBlocked(tx, ty)) continue;
-      const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < CAR_R) return true; }
+      const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < R) return true; }
   }
-  for (const o of S.vehicles) { if (o === v || dist(o.x, o.y, v.x, v.y) > 110) continue;
-    for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < CAR_R * 2) return o; }
+  for (const o of S.vehicles) { if (o === v || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
+    const RR = R + (o.r || CAR_R); for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < RR) return o; }
   return false;
 }
 // 움직이고, 벽·건물·다른 차에 부딪히면 튕겨 선다. 부딪힌 세기를 돌려준다
@@ -282,7 +317,7 @@ function carMove(v, dt, turn=0) {
   for(let i=0;i<steps;i++){
    const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;v.x+=Math.cos(v.a)*v.v*dt/steps;v.y+=Math.sin(v.a)*v.v*dt/steps;
    // The edge of the mission is a travel restriction, never a damaging wall.
-   if(!v.ai&&carPts(v).some(([x,y])=>x<CAR_R||y<CAR_R||x>MW*TILE-CAR_R||y>MH*TILE-CAR_R)){
+   if(!v.ai&&carPts(v).some(([x,y])=>x<v.r||y<v.r||x>MW*TILE-v.r||y>MH*TILE-v.r)){
     v.x=ox;v.y=oy;v.a=oa;v.v=0;if(S.player.car===v)missionBoundaryHint();return 0;
    }
    const o=carOverlap(v);if(!o)continue;
@@ -296,7 +331,8 @@ function carMove(v, dt, turn=0) {
     spawnEffect('impact',{x,y,fl:0,z:0},{scale:.55,alpha:.8});
     const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
     if(near){play('metal',Math.min(.7,hit/400)*near,.8);play('thud',.4*near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
-    if(hit>175){v.hp--;v.smoke=1.5;if(o!==true){o.hp--;o.smoke=1.5;}if(v.hp<=0)carWreck(v);if(o!==true&&o.hp<=0)carWreck(o);}
+    // 무거운 차와 부딪히면 가벼운 차가 더 크게 망가진다 (버스·트럭에 받히면 승용차는 두세 칸)
+    if(hit>175){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}if(v.hp<=0)carWreck(v);if(o!==true&&o.hp<=0)carWreck(o);}
    }
    return speed;
   }
@@ -308,7 +344,7 @@ function hitPeople(v, dt) {
   const mine = S.player.car === v;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) || g.z || g.off) continue;
-    if (!carPts(v).some(([px, py]) => dist(px, py, g.x, g.y) < CAR_R + 12)) continue;
+    if (!carPts(v).some(([px, py]) => dist(px, py, g.x, g.y) < v.r + 12)) continue;
     const lethal = STAGE.cityLife ? spd > 100 : spd > 170;  // 큰 도시: 제법 달리던 차에 치이면 죽는다
     if (mine) { if (!STAGE.cityLife) { play('thud', 0.8); S.shakeT = 0.2; } S.stats.runOver = (S.stats.runOver || 0) + 1; npcDown(g, null, lethal); const c = S.corpses[S.corpses.length - 1]; if (c && c.g === g) { c.byNpc = false; c.byCar = true; }
       if (STAGE.cityLife) carImpact(v, g, lethal);
@@ -318,7 +354,7 @@ function hitPeople(v, dt) {
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < v.r + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
     hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진
@@ -328,11 +364,12 @@ function updateDriving(P, mx, my, mag, dt) {
   if (v.revT > 0 && (v.revT -= dt) <= 0) v.revT = 0;
   // 운전은 차 기준: 위 = 가속(전진) · 아래 = 브레이크 후 후진 · 좌우 = 핸들. 화면 방향으로 걷듯이 몰지 않는다
   const fwd = mag > 0.15 ? -my : 0, steer = mag > 0.15 ? mx : 0;
-  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(CAR_MAX, v.v + CAR_ACC * Math.min(1, fwd) * dt);
-  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - CAR_ACC * 0.8 * Math.min(1, -fwd) * dt);
+  const T = vType(v);
+  if (fwd > 0.2) v.v = v.v < -4 ? Math.min(0, v.v + CAR_BRAKE * dt) : Math.min(T.max, v.v + T.acc * Math.min(1, fwd) * dt);
+  else if (fwd < -0.2) v.v = v.v > 4 ? Math.max(0, v.v - CAR_BRAKE * dt) : Math.max(-150, v.v - T.acc * 0.8 * Math.min(1, -fwd) * dt);
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
   // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
-  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * CAR_TURN * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
+  if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * T.turn * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
   carMove(v, dt);
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
@@ -444,6 +481,6 @@ function engineSound() {
   if (!AC || !master) return;
   const v = S && S.player && S.player.car, on = !!v && !S.over && running && !paused && !muted;
   if (!ENG) { if (!on) return; const o = AC.createOscillator(), o2 = AC.createOscillator(), lp = AC.createBiquadFilter(), g = AC.createGain(); o.type = 'sawtooth'; o2.type = 'square'; lp.type = 'lowpass'; lp.frequency.value = 420; g.gain.value = 0; o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master); o.start(); o2.start(); ENG = { o, o2, lp, g }; }
-  const now = AC.currentTime, sp = on ? Math.abs(v.v) / CAR_MAX : 0;
+  const now = AC.currentTime, sp = on ? Math.abs(v.v) / vType(v).max : 0;
   ENG.g.gain.setTargetAtTime(on ? 0.045 + sp * 0.05 : 0, now, 0.12); ENG.o.frequency.setTargetAtTime(38 + sp * 95, now, 0.1); ENG.o2.frequency.setTargetAtTime(19 + sp * 48, now, 0.1);
 }

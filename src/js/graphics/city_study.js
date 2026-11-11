@@ -45,11 +45,11 @@ const cityVehicleArt=A.cityVehicles,cityVehicleAtlas=new Image();
 if(cityVehicleArt)cityVehicleAtlas.src=cityVehicleArt.src;
 function drawAssetCar(v){
  if(!cityVehicleArt||!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth)return false;
- const model=v.police?'police':['sedan','civic','hatch','wagon','luxury'][((v.c%5)+5)%5],f=cityVehicleArt.frames[model];
- const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale;
+ const T=vType(v),f=cityVehicleArt.frames[T.model||v.type]||cityVehicleArt.frames[v.police?'police':'sedan'];
+ const i=Math.round(((v.a%TAU+TAU)%TAU)/TAU*48)%48,scale=f.scale,r=f.rects[i];
  ctx.save();ctx.rotate(-v.a-Math.PI/2);ctx.imageSmoothingEnabled=false;
  if(v.dead)ctx.filter='brightness(.28) saturate(.2)';
- ctx.drawImage(cityVehicleAtlas,...f.rects[i],-f.anchor[0]*scale,-f.anchor[1]*scale,100*scale,100*scale);
+ ctx.drawImage(cityVehicleAtlas,...r,-f.anchor[0]*scale,-f.anchor[1]*scale,r[2]*scale,r[3]*scale);
  ctx.restore();return true;
 }
 const citySignArt=A.citySigns,citySignAtlas=new Image();

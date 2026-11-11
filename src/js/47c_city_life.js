@@ -63,7 +63,7 @@ function drawGangKnife(g) {
 const GANG_CAR_COL = { A: 2, B: 3, C: 6, D: 4 };
 function spawnChaseCar(fac) {
   const v = spawnCopCar(); if (!v) return null;
-  if (fac && fac !== 'P') { v.police = false; v.gang = fac; v.c = GANG_CAR_COL[fac] ?? 2; }
+  if (fac && fac !== 'P') { v.police = false; v.gang = fac; v.c = GANG_CAR_COL[fac] ?? 2; v.type = ['limo', 'luxury', 'suv'][fac.charCodeAt(0) % 3]; Object.assign(v, makeVehicle({ type: v.type }), { id: v.id, x: v.x, y: v.y, a: v.a, v: v.v, d: v.d, ai: v.ai, driver: v.driver, chase: v.chase, turn: v.turn, lane: v.lane, police: false, gang: fac, c: v.c }); }  // 조직 차: 검은 리무진·고급 세단·SUV
   return v;
 }
 function deployFromCar(v) {
