@@ -9,7 +9,31 @@ function updateArrest(dt) {
   const cop = S.guards.find(g => g.police && !g.off && g.state === 'ALERT' && dist(g.x, g.y, P.x, P.y) < 34);
   if (!cop || S.wanted >= 3) { S.arrestT = Math.max(0, (S.arrestT || 0) - dt * 2); return; }
   S.arrestT = (S.arrestT || 0) + dt;
-  if (S.arrestT >= ARREST_T) { S.arrestT = 0; cityArrest('경찰에게 붙잡혔다.'); }
+  if (S.arrestT >= ARREST_T) { S.arrestT = 0; startCuffs('경찰에게 붙잡혔다.', cop); }
+}
+// 수갑: 경찰이 등 뒤로 돌아와 손목에 채운다(철컥 두 번). 그동안 나는 움직일 수 없다. 끝나면 지구대로
+const CUFF_T = 1.6;
+function startCuffs(why, cop) {
+  const P = S.player; if (S.cuffs) return;
+  if (P.car) { const v = P.car; P.car = null; v.parked = true; v.v = 0; }
+  cop = cop || S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD').sort((a, b) => dist(a.x, a.y, P.x, P.y) - dist(b.x, b.y, P.x, P.y))[0];
+  S.cuffs = { t: 0, why, cop, clicks: 0 }; P.cuffed = true; P.moving = false; P.hurtT = 9; input.aiming = null;
+  play('cloth', 0.6); S.shakeT = Math.max(S.shakeT || 0, 0.15);
+}
+function updateCuffs(dt) {
+  const C = S.cuffs; if (!C) return; const P = S.player; C.t += dt;
+  const g = C.cop; if (g && g.state !== 'DEAD') { const bx = P.x - Math.cos(P.a) * 20, by = P.y - Math.sin(P.a) * 20; g.x += (bx - g.x) * Math.min(1, dt * 10); g.y += (by - g.y) * Math.min(1, dt * 10); g.a = g.want = P.a; g.moving = false; g.path = null; }
+  if (C.clicks < 1 && C.t > 0.55) { C.clicks = 1; play('metal', 0.7, 1.6); S.flash = Math.max(S.flash || 0, 0.12); }
+  if (C.clicks < 2 && C.t > 0.95) { C.clicks = 2; play('metal', 0.7, 1.8); S.flash = Math.max(S.flash || 0, 0.12); }
+  if (C.t >= CUFF_T) { S.cuffs = null; P.cuffed = false; cityArrest(C.why); }
+}
+function drawCuffs() {
+  const C = S.cuffs; if (!C || C.t < 0.5) return; const P = S.player, a = P.a + Math.PI;
+  const cx = P.x + Math.cos(a) * 8, cy = P.y - 12 + Math.sin(a) * 5, px = -Math.sin(a) * 4, py = Math.cos(a) * 4;
+  ctx.save(); ctx.strokeStyle = '#d4dbe2'; ctx.lineWidth = 2;
+  for (const s of C.t > 0.95 ? [-1, 1] : [-1]) { ctx.beginPath(); ctx.arc(cx + px * s, cy + py * s, 3.5, 0, TAU); ctx.stroke(); }
+  if (C.t > 0.95) { ctx.beginPath(); ctx.moveTo(cx - px, cy - py); ctx.lineTo(cx + px, cy + py); ctx.stroke(); }
+  ctx.restore();
 }
 // 체포: 지구대 앞에서 풀려난다. 수입의 30%를 벌금으로 낸다
 function cityArrest(why) {
@@ -57,14 +81,14 @@ function deployFromCar(v) {
 function updateGangCars(dt) {
   if ((S.gangCarT = (S.gangCarT || 0) - dt) > 0) return; S.gangCarT = 3;
   const P = S.player, hunting = {};
-  for (const g of S.guards) if (cityGang(g) && g.state === 'ALERT') { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
+  for (const g of S.guards) if (cityGang(g) && (g.state === 'ALERT' || g.state === 'SEARCH')) { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
   for (const f in hunting) {
     if (hunting[f] < 520 && !P.car) continue;  // 걸어서 따라잡을 만하면 차는 부르지 않는다
     if (S.vehicles.some(v => v.gang === f && v.chase && !v.dead)) continue;
-    spawnChaseCar(f);
+    if (!spawnChaseCar(f)) S.gangCarT = 0.5;  // 알맞은 길목을 못 찾았으면 곧 다시 찾는다
   }
-  // 나를 놓친 조직의 차는 그냥 차로 돌아간다
-  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && g.state === 'ALERT')) v.chase = false;
+  // 나를 찾는(추격·수색) 조직원이 없어진 조직의 차는 그냥 차로 돌아간다
+  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && (g.state === 'ALERT' || g.state === 'SEARCH'))) v.chase = false;
 }
 
 // 차 사고: 사람은 차 방향으로 날아가 쓰러지고, 그 자리에 피가 튄다
@@ -104,6 +128,7 @@ function signGlowColor(key) {
 }
 function drawSignNeon() {
   if (!STAGE.referenceBuildings) return;
+  BLD.forEach((b, i) => { if (!b.vacant && i !== S.openB) drawStoreSigns(b, true); });
   BLD.forEach((b, i) => {
     const spec = STAGE.referenceBuildings[i], a = spec?.ad; if (!a || b.vacant || i === S.openB) return;
     const x = (b.x0 + a.x) * TILE, y = (b.y1 - a.fl) * TILE, w = a.w * TILE, h = a.h * TILE; if (!inView(x + w / 2, y + h / 2, w + 60)) return;
@@ -146,7 +171,54 @@ function cityDeathGore(o, by) {
 }
 
 function cityLifeUpdate(dt) {
-  updateArrest(dt);
+  updateCuffs(dt); if (!S.cuffs) updateArrest(dt);
   updateGangCars(dt);
   updateBlood(dt);
+}
+
+// 한국식 간판: 1층 위 건물 폭 가로 간판(가게 이름 · 작은 부제), 위층 업소는 건물 오른쪽 세로 돌출 간판(층 표시)
+// 밤에는 LED처럼 스스로 빛난다(lit). 글자는 게임 UI 글꼴로 그린다
+const SIGN_STYLE = [
+  [/국밥|순댓국|백반|분식|곱창|골뱅이|노가리|포차|식당/, '#c8302a', '#fff6e8', '#ffd25a'],
+  [/호프|생맥주|치킨/, '#f2b420', '#3a1a10', '#c8302a'],
+  [/편의점/, '#1f8a4a', '#ffffff', '#ffd25a'],
+  [/약국/, '#ffffff', '#1f8a4a', '#1f8a4a'],
+  [/PC방|노래방|당구장|기원|다방/, '#2a1440', '#ff7ad8', '#6ae8ff'],
+  [/헬스/, '#121418', '#ffd23a', '#ff4a3a'],
+  [/학원/, '#ffffff', '#1d4ea8', '#e8402a'],
+  [/세무사|법무사|부동산/, '#f4f2ea', '#1d2c58', '#b02a2a'],
+  [/CLUB/, '#120818', '#ff4ad8', '#6ae8ff'],
+];
+const SIGN_SUB = ['24시', '맛집', '배달', '영업중', '본점', '할인', '1층'];
+function signStyle(txt) { for (const [re, bg, fg, ac] of SIGN_STYLE) if (re.test(txt)) return { bg, fg, ac }; return { bg: '#1d3c78', fg: '#ffffff', ac: '#ffd25a' }; }
+function signHash(b) { return ((b.x0 * 73856093) ^ (b.y0 * 19349663)) >>> 0; }
+function drawStoreSigns(b, lit) {
+  if (b.kind !== 'shop' || !b.fh || !b.signs) return;
+  const hs = signHash(b), x0 = b.x0 * TILE, w = (b.x1 - b.x0 + 1) * TILE; if (!inView(x0 + w / 2, b.y1 * TILE, w)) return;
+  ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
+  // 가로 간판
+  const name = (b.signs[0] || '').trim();
+  if (name) {
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh + 4, sub = SIGN_SUB[hs % SIGN_SUB.length];
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
+      for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
+    ctx.fillStyle = st.bg; ctx.fillRect(bx, by, bw, bh); ctx.fillStyle = st.ac; ctx.fillRect(bx, by, bw, 3); ctx.fillRect(bx, by + bh - 2, bw, 2);
+    ctx.font = 'bold ' + uiFont(22); ctx.fillStyle = st.fg; ctx.fillText(name, bx + bw / 2, by + bh / 2 + 1, bw - 80);
+    if (bw > 150) { ctx.font = 'bold ' + uiFont(11); ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
+    ctx.globalAlpha = 1;
+  }
+  // 세로 돌출 간판: 위층 업소들 (층 표시와 함께)
+  const ups = []; for (let f = 1; f < b.signs.length && f < b.fh; f++) { const t = (b.signs[f] || '').trim(); if (t) ups.push([f, t]); }
+  if (ups.length) {
+    const [f, t] = ups[0], st = signStyle(t), vx = x0 + w - 4, vy = (b.y1 - b.fh + 1) * TILE + 8, vh = Math.max(TILE, (b.fh - 1) * TILE - 10), vw = 28, chars = [...t.replace(/\s/g, '')];
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.ac); for (const [pad, a] of [[16, .08], [6, .14]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(vx - pad, vy - pad, vw + pad * 2, vh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
+    ctx.fillStyle = '#2a2e36'; ctx.fillRect(vx - 6, vy + 6, 6, 3); ctx.fillRect(vx - 6, vy + vh - 9, 6, 3);
+    ctx.fillStyle = st.bg; ctx.fillRect(vx, vy, vw, vh); ctx.strokeStyle = st.ac; ctx.lineWidth = 2; ctx.strokeRect(vx + 1, vy + 1, vw - 2, vh - 2);
+    ctx.font = 'bold ' + uiFont(16); ctx.fillStyle = st.fg; const step = Math.min(20, (vh - 22) / Math.max(1, chars.length));
+    chars.forEach((ch, k) => ctx.fillText(ch, vx + vw / 2, vy + 12 + k * step));
+    ctx.font = uiFont(9); ctx.fillStyle = st.ac; ctx.fillText((f + 1) + 'F', vx + vw / 2, vy + vh - 8);
+    ctx.globalAlpha = 1;
+  }
+  ctx.restore();
 }

@@ -269,6 +269,7 @@ function draw() {
   }
   drawOutdoorLampFixtures();
   drawTrafficSignals();
+  if (STAGE.cityLife) drawCuffs();
   const aboveBridge=p=>!!(P.wire||(P.jump&&!lowJ)||travUp||P.z>p.z);
   if(!tactical)drawPlanks('front',aboveBridge);
   if (exteriorClip) ctx.restore();

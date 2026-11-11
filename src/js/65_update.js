@@ -126,7 +126,7 @@ function touchPlayFrame(){
 function moveCamera(dt) {
   { const P = S.player, low = !!(P.cover || (P.mode === 'sneak' && !P.trav) || (input.sneakToggle && !P.moving)); S.coneK = (S.coneK || 0) + ((low ? 1 : 0) - (S.coneK || 0)) * Math.min(1, dt * 12); }  // 시야 원뿔: 내 자세(서 있음 ↔ 웅크림)
   const k = 1 - Math.pow(0.0015, dt);
-  SCALE += (targetScale() - SCALE) * Math.min(1, dt * 6);
+  SCALE += (targetScale() - SCALE) * Math.min(1, dt * (STAGE.cityLife ? 2.5 : 6));  // 큰 도시: 차에 오르내릴 때 화면이 서서히 넓어지고 좁아진다
   const vw = W / SCALE, vh = H / SCALE;
   if (tactical) {
     if (H > W * 1.3) {  // 세로 전술 지도: 나를 가운데로 시작, 손가락으로 끌어 옮긴다

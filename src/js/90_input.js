@@ -58,7 +58,7 @@ window.addEventListener('keydown', e => {
   if (e.code !== 'Tab') closeHudInspection();
   S.keys[keyCode(e)] = true; combatPress(e.code);
   { const c = e.code, ks = /^Arrow|^Key[ZXCV]$/.test(c) ? 'arrow' : /^Key[WASDEQF]$|^Space$/.test(c) ? 'wasd' : null; if (ks && input.kset !== ks) { input.kset = ks; if (typeof hudCache !== 'undefined') hudCache.kset = null; } }
-  if (!running || S.over) return;
+  if (!running || S.over || S.player?.cuffed) return;
   // 키는 두 벌을 함께 쓴다 — 방향키 손: Z 공격 · X 행동 · C 붙잡기 · V 다트 / WASD 손: Space 공격 · E 행동 · Q 붙잡기 · F 다트 (히트맨 PC: E 상호작용 · Q 제압)
   // 다트·도구: 톡 = 자동 조준, 누르고 있으면 겨누기. 나머지: Tab 겹친 대상 바꾸기 · G 휘파람 · 1 2 3 도구 · R 항상 걷기 · Ctrl 살금
   // 큰 도시: F · Enter = 차 타기/내리기 (GTA처럼). 차 근처가 아니면 F는 원래대로 다트

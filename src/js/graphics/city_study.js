@@ -131,6 +131,7 @@ function drawStudyFacade(b){
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
  if(spec.ad)drawStudySign(b,spec.ad);
  drawStudyBoards(b,'face');
+ if(STAGE.cityLife)drawStoreSigns(b,false);
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){

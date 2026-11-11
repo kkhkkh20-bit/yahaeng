@@ -114,24 +114,74 @@ function signalState(rx, ry) {
   const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T;
   return t < 7 ? { ns: 'G', ew: 'R' } : t < 8 ? { ns: 'Y', ew: 'R' } : t < 15 ? { ns: 'R', ew: 'G' } : { ns: 'R', ew: 'Y' };
 }
+// 신호등 그림: 모퉁이마다 굵은 기둥, 도로 위로 뻗은 팔에 차량 신호기(빨강 · 노랑 · 좌회전 · 초록), 기둥에 보행 신호(서 있는 사람 · 걷는 사람)
+// 북서·남동 기둥은 동서로 달리는 차, 북동·남서 기둥은 남북으로 달리는 차를 향한다. 보행 신호는 같은 쪽 차와 함께 초록이 된다
+const SIG_COL = { G: '#2ee87a', Y: '#ffc21f', R: '#ff3434' };
+function drawSignalHead(cx, cy, on, t) {
+  const w = 46, h = 16, x = cx - w / 2, y = cy - h / 2;
+  ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 3, y + 4, w, h);
+  ctx.fillStyle = '#e2b62a'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);  // 노란 테 (뒤판)
+  ctx.fillStyle = '#121418'; ctx.fillRect(x, y, w, h);
+  [['R', 0], ['Y', 1], ['L', 2], ['G', 3]].forEach(([c, k]) => {
+    const lx = x + 6 + k * 11.3, ly = cy, lit = c === on || c === 'L' && on === 'G' && Math.floor(t * 2) % 2 === 0 && false;
+    const col = c === 'L' ? SIG_COL.G : SIG_COL[c];
+    ctx.fillStyle = '#25282e'; ctx.beginPath(); ctx.arc(lx, ly, 5, 0, TAU); ctx.fill();
+    if (c === 'L') { ctx.strokeStyle = on === 'G' ? col : 'rgba(90,100,90,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx + 3, ly); ctx.lineTo(lx - 3, ly); ctx.moveTo(lx - 1, ly - 2.5); ctx.lineTo(lx - 3.5, ly); ctx.lineTo(lx - 1, ly + 2.5); ctx.stroke(); return; }
+    ctx.fillStyle = lit ? col : 'rgba(70,70,74,.85)'; ctx.beginPath(); ctx.arc(lx, ly, 4, 0, TAU); ctx.fill();
+    if (lit) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col + '55'; ctx.beginPath(); ctx.arc(lx, ly, 11, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+  });
+}
+function drawWalkHead(cx, cy, state, t) {
+  const go = state === 'G' || state === 'W', blink = state === 'W' && Math.floor(t * 4) % 2 === 0, x = cx - 8, y = cy - 12;
+  ctx.fillStyle = '#121418'; ctx.fillRect(x, y, 16, 24); ctx.strokeStyle = '#5a626b'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, 15, 23);
+  const col = go ? (blink ? '#0e3a22' : SIG_COL.G) : SIG_COL.R; ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 2;
+  const fy = go ? y + 13 : y + 5;  // 아래 칸 = 걷는 사람(초록), 위 칸 = 서 있는 사람(빨강)
+  ctx.beginPath(); ctx.arc(cx, fy + 1.5, 1.8, 0, TAU); ctx.fill();
+  ctx.beginPath(); if (go) { ctx.moveTo(cx, fy + 3); ctx.lineTo(cx - 1, fy + 7); ctx.lineTo(cx - 4, fy + 10); ctx.moveTo(cx - 1, fy + 7); ctx.lineTo(cx + 3, fy + 10); ctx.moveTo(cx - 3, fy + 5); ctx.lineTo(cx + 3, fy + 4); }
+  else { ctx.moveTo(cx, fy + 3); ctx.lineTo(cx, fy + 7); ctx.lineTo(cx - 2, fy + 10); ctx.moveTo(cx, fy + 7); ctx.lineTo(cx + 2, fy + 10); ctx.moveTo(cx - 3, fy + 4); ctx.lineTo(cx + 3, fy + 4); } ctx.stroke();
+  if (go && !blink) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(46,232,122,.25)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
+  if (!go) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,52,52,.2)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
+}
+// 보행 신호: 'G' 건너도 됨 · 'W' 곧 바뀜(깜빡임) · 'R' 기다림. 동서로 건너는 사람(남북 도로를 가로지름)은 동서 차와 같이 초록
+function walkState(rx, ry, horizontal) {
+  const s = signalState(rx, ry); if (!s) return 'G';
+  const c = horizontal ? s.ew : s.ns; if (c !== 'G') return 'R';
+  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T, end = horizontal ? 15 : 7;
+  return end - t < 2.5 ? 'W' : 'G';
+}
 function drawTrafficSignals() {
   if (!STAGE.signals || flOf(S.player)) return;
-  const COL = { G: '#3ee07a', Y: '#ffc23a', R: '#ff3b3b' }, ORDER = ['R', 'Y', 'G'];
+  ctx.save();
   for (const rx of STAGE.roadsX || []) for (const ry of STAGE.roadsY || []) {
-    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 4 * TILE)) continue;
+    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 5 * TILE)) continue;
     const s = signalState(rx, ry);
-    // 네 모퉁이: 북서·남동은 동서 방향 차를, 북동·남서는 남북 방향 차를 향한다
-    for (const [cx, cy, axis] of [[x0 - 14, y0 - 14, 'ew'], [x1 + 14, y1 + 14, 'ew'], [x1 + 14, y0 - 14, 'ns'], [x0 - 14, y1 + 14, 'ns']]) {
-      const on = s[axis], vert = axis === 'ns';
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(cx - 2, cy, 6, 14);
-      ctx.fillStyle = '#4a525a'; ctx.fillRect(cx - 1, cy - 4, 3, 16);
-      const w = vert ? 10 : 26, h = vert ? 26 : 10, bx = cx - w / 2, by = cy - h - 4;
-      ctx.fillStyle = '#14181d'; ctx.fillRect(bx, by, w, h); ctx.strokeStyle = '#59626b'; ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, w - 1, h - 1);
-      ORDER.forEach((c, k) => { const lx = vert ? cx : bx + 5 + k * 8, ly = vert ? by + 5 + k * 8 : by + h / 2;
-        ctx.fillStyle = c === on ? COL[c] : 'rgba(80,80,80,.6)'; ctx.beginPath(); ctx.arc(lx, ly, 3, 0, TAU); ctx.fill();
-        if (c === on) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = COL[c] + '55'; ctx.beginPath(); ctx.arc(lx, ly, 8, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; } });
+    for (const [px, py, axis, ax, ay] of [[x0 - 16, y0 - 16, 'ew', 0, 1], [x1 + 16, y1 + 16, 'ew', 0, -1], [x1 + 16, y0 - 16, 'ns', -1, 0], [x0 - 16, y1 + 16, 'ns', 1, 0]]) {
+      // 기둥과 팔
+      const armL = 2.2 * TILE, hx = px + ax * armL, hy = py + ay * armL;
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(px + 3, py + 4, 9, 5, 0, 0, TAU); ctx.fill();
+      ctx.strokeStyle = '#3a4048'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.strokeStyle = '#6a737e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
+      ctx.fillStyle = '#4a515a'; ctx.beginPath(); ctx.arc(px, py, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#7d8690'; ctx.beginPath(); ctx.arc(px - 2, py - 2, 3, 0, TAU); ctx.fill();
+      drawSignalHead(hx, hy, s[axis], S.t);
+      // 보행 신호: 이 모퉁이에서 가로로 건너는 쪽과 세로로 건너는 쪽
+      drawWalkHead(px + (px < x0 ? -14 : 14), py - 4, walkState(rx, ry, true), S.t);
+      drawWalkHead(px, py + (py < y0 ? -22 : 22), walkState(rx, ry, false), S.t);
     }
   }
+  ctx.restore();
+}
+// 행인: 보행 신호가 빨강이면 도로에 들어서기 직전(연석)에서 기다린다
+const ROAD_CH = '.';
+function pedWaits(g) {
+  if (!STAGE.signals || !g.civ || g.state === 'PANIC' || flOf(g) || g.z) return false;
+  const next = g.path?.[0]; if (!next) return false;
+  const tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), nx = Math.floor(next.x / TILE), ny = Math.floor(next.y / TILE);
+  if (G0[ny]?.[nx] !== ROAD_CH || G0[ty]?.[tx] === ROAD_CH) return false;  // 이미 길 위면 끝까지 건넌다
+  const RX = STAGE.roadsX, RY = STAGE.roadsY, inR = (v, rs) => rs.find(r => v >= r && v < r + 4);
+  const rxv = inR(nx, RX), ryv = inR(ny, RY);
+  if (rxv != null && ryv == null) { const ry = RY.reduce((a, r) => Math.abs((r + 2) - ny) < Math.abs((a + 2) - ny) ? r : a, RY[0]); return walkState(rxv, ry, true) !== 'G'; }
+  if (ryv != null && rxv == null) { const rx = RX.reduce((a, r) => Math.abs((r + 2) - nx) < Math.abs((a + 2) - nx) ? r : a, RX[0]); return walkState(rx, ryv, false) !== 'G'; }
+  return false;
 }
 function trafficStopDistance(v){
  if(v.chase)return null;

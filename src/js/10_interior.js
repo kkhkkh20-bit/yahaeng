@@ -197,6 +197,12 @@ function planInterior(g, b, bi, f) {
       const cols = ['255,60,170', '60,220,255']; [[0.3, 0.75], [0.75, 0.75]].forEach(([u, v], k) => AUTO_LAMPS.push([Math.round(sx0 + (sx1 - sx0) * u), Math.round(iy0 + (iy1 - iy0) * v), 140, 0, f, cols[k]]));
       rec.store = { x0: sx0, y0: vy + 1, x1: sx1, y1: iy1, use };
     }
+    else if (use === 'gym') {  // 헬스장: 앞줄 러닝머신, 가운데 벤치·랙, 벽에 사물함과 거울
+      furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'locker');
+      for (let x = sx0 + 3; x + 1 <= sx1; x += 3) furn(x, iy0, 2, 1, 'mirror', false);
+      for (let x = sx0; x + 1 <= sx1; x += 3) furn(x, iy1 - 1, 2, 1, 'tread', true, 0);
+      for (let y = iy0 + 2; y + 1 < iy1 - 1; y += 3) for (let x = sx0 + 1; x <= sx1 - 1; x += 3) furn(x, y, 1, 1, 'rack', true, 0);
+    }
     else if (use === 'food') { furn(sx0, iy0, 2, 1, 'sink', true, 0, [[sx0, iy0 + 1], [sx0 + 1, iy0 + 1]]); for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1; x += 4) if (furn(x, y, 2, 1, 'table', true, 0)) { furn(x - 1, y, 1, 1, 'chair', true, 1); furn(x + 2, y, 1, 1, 'chair', true, 3); } }  // 식당: 주방 싱크대, 양 끝에 의자 놓인 식탁
     else { furn(sx0, iy0, 1, 1, 'locker'); furn(sx0 + 1, iy0, 1, 1, 'cab'); furn(sx1 - 1, iy0, 2, 1, 'sofa', true, 0, [[sx1 - 1, iy0 + 1], [sx1, iy0 + 1]]);  // 사무실: 벽에 사물함·서류장·소파, 가운데 책상 줄(책상마다 의자, 줄 사이 통로)
       for (let y = iy0 + 2; y + 1 < iy1; y += 3) for (let x = sx0 + 1; x + 1 <= sx1 - 1; x += 3) if (furn(x, y, 2, 1, 'desk2', true, 0)) furn(x, y + 1, 1, 1, 'chairD', true, 2); furn(sx0, iy1 - 1, 1, 1, 'locker'); }
@@ -296,6 +302,9 @@ function drawFurnBase(x, it) {
     case 'shelf': sh(); R(2, 8, w - 4, h - 16, '#8a8f98'); for (let k = 0; k < it.w * 4; k++) R(6 + k * 11, 12, 8, 10, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;
     case 'shelfS': sh(); R(6, 4, w - 12, h - 10, '#6a4a32'); for (let k = 0; k < 3; k++) R(10 + k * 9, 8, 6, 14, ['#a84a4a', '#4a6a9a', '#c8a050'][(k + s) % 3]); break;
     case 'disp': sh(); R(3, 10, w - 6, h - 18, '#8a8f98'); for (let k = 0; k < it.w * 3; k++) R(6 + k * 15, 13, 11, h - 26, ['#d85a4a', '#e8c25a', '#5aa86a', '#5a7ad8', '#e8e8e8'][(k + s) % 5]); break;  // 낮은 진열대
+    case 'tread': sh(); R(3, 10, w - 6, h - 18, '#2a2d34'); R(8, 13, w - 22, h - 24, '#3e434c'); for (let k = 12; k < w - 18; k += 6) R(k, 14, 2, h - 26, '#555b66'); R(w - 14, 6, 8, h - 12, '#4a4f58'); R(w - 13, 8, 6, 5, '#7ac8e8'); break;
+    case 'rack': sh(); R(8, 18, w - 16, 10, '#5a5f68'); R(4, 14, 6, 18, '#1c1e22'); R(w - 10, 14, 6, 18, '#1c1e22'); R(12, 8, w - 24, 6, '#8a3a3a'); break;
+    case 'mirror': R(2, 2, w - 4, 10, '#9fb8c8'); R(4, 3, w - 8, 3, 'rgba(255,255,255,.55)'); break;
     case 'counter': sh(); R(2, 6, w - 4, h - 12, '#d8d0c0'); R(10, 12, 16, 12, '#3a3d44'); R(12, 14, 12, 6, '#7ac85a'); break;
     case 'table': sh(); R(6, 10, w - 12, h - 20, '#b08860'); for (const a of [10, w - 22]) { R(a, 2, 12, 6, '#7a5a3a'); R(a, h - 8, 12, 6, '#7a5a3a'); } R(w / 2 - 8, h / 2 - 4, 16, 8, '#c8c0b0'); break;
     case 'tableS': R(8, 10, w - 16, h - 20, '#a07850'); R(18, 18, 12, 8, '#e8e4d8'); break;

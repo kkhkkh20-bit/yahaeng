@@ -32,7 +32,7 @@ function hurtPlayer(g, why, origin=g) {
   if (P.carrying) { const c = P.carrying; c.carried = false; c.hidden = false; P.carrying = null; }
   if (P.captive) { const c = P.captive; P.captive = null; c.state = 'PATROL'; c.seen = true; goAlert(c); }
   if (STAGE.cityLife && g && !g.police && g.fac && g.fac !== 'P' && !g.civ) P.hp--;  // 조직은 칼로 죽이러 든다: 한 번에 두 칸
-  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) cityArrest(why); else cityDown(why); return; } endGame(false, why); return; }
+  if (P.hp <= 0) { if (STAGE.city) { if (STAGE.cityLife && (g || origin)?.police) { P.hp = 1; startCuffs(why, g || origin); } else cityDown(why); return; } endGame(false, why); return; }
   toast(P.hp === 1 ? `${why.replace(/\.$/, '')} — 마지막 체력! 지금 시야를 끊고 숨어라` : `${why.replace(/\.$/, '')} — 체력 ${P.hp}/${P.hpMax}. 시야를 끊고 숨어라`, 2.6, P.hp === 1 ? 'warn big' : 'warn');
 }
 // 숨은 곳에서 끌려 나옴

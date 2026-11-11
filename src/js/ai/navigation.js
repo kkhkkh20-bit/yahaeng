@@ -74,10 +74,17 @@ function updateStairYield(g,dt){
   }
   return true;
 }
+// 잠긴 문 찾기: 프레임마다 한 번 '층:x,y' 표를 만든다 (문이 수백 개인 큰 도시에서 걸음마다 전부 훑지 않게)
+let lockedDoorIdx=null;
+function lockedDoorAt(fl,tx,ty){
+  if(!lockedDoorIdx||lockedDoorIdx.t!==S.t||lockedDoorIdx.S!==S){const m=new Map();for(const d of S.doors)if(d.locked)m.set(flOf(d)+':'+d.tx+','+d.ty,d);lockedDoorIdx={t:S.t,S,m};}
+  return lockedDoorIdx.m.get(fl+':'+tx+','+ty)||null;
+}
 function moveAlong(g, speed, dt) {
   if(g.doorWork){g.moving=false;return false;}
+  if(STAGE.signals&&g.civ&&pedWaits(g)){g.moving=false;return false;}  // 빨간불: 횡단보도 앞에서 기다린다
   requestStairSpace(g);
-  if(g.path?.length&&!g.z){const next=g.path[0],d=S.doors.find(d=>d.locked&&flOf(d)===flOf(g)&&d.tx===Math.floor(next.x/TILE)&&d.ty===Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
+  if(g.path?.length&&!g.z){const next=g.path[0],d=lockedDoorAt(flOf(g),Math.floor(next.x/TILE),Math.floor(next.y/TILE));if(d&&(npcCanOpenDoor(g,d)||npcCanForceDoor(g))&&dist(g.x,g.y,d.x,d.y)<44){g.doorWork={d,t:0,dur:npcCanOpenDoor(g,d)?.36:1.1,forced:!npcCanOpenDoor(g,d)};d.npcWork=g.doorWork;g.a=g.want=Math.atan2(d.y-g.y,d.x-g.x);g.moving=false;play('cloth',.15*proxVol(g));return false;}}
   // A necessary bend can lead away from the destination. Measure the next leg,
   // so an actor making progress is not repeatedly sent back around the building.
   // A stationary person can invalidate a local sidestep. Replan around occupied

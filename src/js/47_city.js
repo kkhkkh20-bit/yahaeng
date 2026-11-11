@@ -52,13 +52,13 @@ function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -999
 // 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
 // CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.
 // 한 번에 넘기는 시간은 CITY_LOD_MAX_DT 로 막아 벽 통과나 큰 순간이동을 막는다. 의뢰 판은 경비 동선 타이밍을 그대로 둔다.
-const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15;
+const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15, CITY_LOD_VFAR = 2200, CITY_LOD_VEVERY = 8, CITY_LOD_VMAX_DT = 0.4;  // 아주 먼 사람·차는 더 드물게
 function cityLodFar(o) {
   const P = S.player;
   return dist(o.x, o.y, P.x, P.y) > CITY_LOD_FAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_FAR;
 }
 function cityLodGuardCalm(g) {
-  return (g.state === 'PATROL' || g.state === 'RETURN') && !g.police && !g.target && !g.seen && !(g.meter > 0) && !g.doomed && !g.carry && !g.captive && cityLodFar(g);
+  return (g.state === 'PATROL' || g.state === 'RETURN' || g.state === 'SLEEP') && !g.police && !g.target && !g.seen && !(g.meter > 0) && !g.doomed && !g.carry && !g.captive && cityLodFar(g);
 }
 function cityLodVehicleCalm(v) {
   return v.ai && !v.chase && !v.police && !v.dead && !((v.crashUntil || 0) > S.t) && cityLodFar(v);
@@ -67,8 +67,9 @@ function cityLodVehicleCalm(v) {
 function cityLodStep(o, dt, calm) {
   if (!calm) { const d = dt + (o.lodDt || 0); o.lodDt = 0; return Math.min(d, CITY_LOD_MAX_DT); }
   o.lodDt = (o.lodDt || 0) + dt;
-  if ((((o.id || 0) + S.lodTick) % CITY_LOD_EVERY) !== 0 && o.lodDt < CITY_LOD_MAX_DT) return 0;
-  const d = Math.min(o.lodDt, CITY_LOD_MAX_DT); o.lodDt = 0; return d;
+  const P = S.player, vfar = dist(o.x, o.y, P.x, P.y) > CITY_LOD_VFAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_VFAR, every = vfar ? CITY_LOD_VEVERY : CITY_LOD_EVERY, cap = vfar ? CITY_LOD_VMAX_DT : CITY_LOD_MAX_DT;
+  if ((((o.id || 0) + S.lodTick) % every) !== 0 && o.lodDt < cap) return 0;
+  const d = Math.min(o.lodDt, cap); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
   updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt); if (STAGE.cityLife) cityLifeUpdate(dt);
@@ -159,7 +160,7 @@ function cityScream(g, x, y) {
 const WANT_PCARS = [0, 1, 1, 2, 3, 3];  // 수배 ★1부터 경찰차가 온다
 function spawnCopCar() {
   const P = S.player, RX = STAGE.roadsX, RY = STAGE.roadsY, vw = W / SCALE / 2 + 120, vh = H / SCALE / 2 + 120;
-  for (let k = 0; k < 60; k++) {
+  for (let k = 0; k < 200; k++) {
     const hor = Math.random() < 0.5, d = hor ? (Math.random() < 0.5 ? 0 : 2) : (Math.random() < 0.5 ? 1 : 3), road = hor ? RY[(Math.random() * RY.length) | 0] : RX[(Math.random() * RX.length) | 0];
     const along = rnd(2, (hor ? MW : MH) - 2) * TILE, x = hor ? along : laneOf(road, d), y = hor ? laneOf(road, d) : along, dd = dist(x, y, P.x, P.y);
     if (dd < 700 || dd > 1500 || (Math.abs(x - cam.x) < vw && Math.abs(y - cam.y) < vh)) continue;

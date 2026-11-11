@@ -24,7 +24,7 @@ CHECK = '''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL
     if(!v.ai||v.chase)continue;const h=dirs.get(v.id)||[];h.push(v.d);if(h.length>15)h.shift();dirs.set(v.id,h);const j=jx(v);
     if(j&&!was.get(v.id)){entries++;const hor=h[0]%2===0;if([0,1,1.8].every(dt=>(hor?sig(j[0],j[1],S.t-dt).ew:sig(j[0],j[1],S.t-dt).ns)==='R'))redRuns++;}was.set(v.id,!!j);}}
   const fac={};for(const g of S.guards)if(g.fac&&g.state!=='DEAD')fac[g.fac]=(fac[g.fac]||0)+1;
-  const specs=ST.referenceBuildings||[],signed=specs.filter(s=>s.ad).length,roofBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='roof')).length,faceBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='face')).length,doors=G.BLD.filter(b=>!b.vacant).length;
+  const specs=ST.referenceBuildings||[],signed=G.BLD.filter(b=>b.kind==='shop'&&b.signs&&b.signs[0]).length,roofBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='roof')).length,faceBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='face')).length,doors=G.BLD.filter(b=>!b.vacant).length;
   const north=G.astar(30,ST.roadsY[3]+1,30,Rv.y+Rv.rows+1);
   S.player.x=30*48;S.player.y=(Rv.y+5)*48;tick(.2);G.benchDraw(2);
   return {gaps,bridges,wet,onBridge,entries,redRuns,fac,turf:Object.fromEntries(Object.entries(S.turf).map(([k,v])=>[k,v.length])),

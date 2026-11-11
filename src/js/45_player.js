@@ -474,6 +474,7 @@ function updatePlayer(dt) {
   if (input.sneakToggle && !shiftRun) mode = 'sneak';
   if (input.walkLock && mode === 'run') mode = 'walk';  // 걷기 고정: 뛰지 않는다
   if ((P.carrying || P.captive) && mode === 'run') mode = 'walk';
+  if (P.cuffed) { P.moving = false; P.vx = 0; P.vy = 0; return; }  // 수갑을 차는 중: 움직일 수 없다
   if (P.car) { updateDriving(P, mx, my, mag, dt); return; }  // 도시: 운전 중
   if (P.captive) {
     const g = P.captive; g.captT += dt;

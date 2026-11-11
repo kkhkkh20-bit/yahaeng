@@ -328,6 +328,8 @@ function policeCall(x, y, by) {
   if (!(STAGE.city || STAGE.copBeats) || !by) return; if ((S.incT || 0) > S.t) return; S.incT = S.t + 4;
   const idle = S.guards.filter(o => o.police && !o.off && npcAlive(o) && o.state !== 'ALERT' && !o.brawl && !o.incident).sort((p, q) => dist(p.x, p.y, x, y) - dist(q.x, q.y, x, y));
   let n = 0; for (const o of idle.slice(0, 2)) { o.incident = { x, y, by, t0: S.t }; o.state = 'PATROL'; o.path = null; n++; }
-  if (!n) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n = 1; } }
-  if (n && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
+  // 큰 도시: 가장 가까운 경찰도 멀고 사건이 내 근처면, 화면 밖에서 하나 더 뛰어온다
+  const far = !idle.length || dist(idle[0].x, idle[0].y, x, y) > 1000;
+  if (!n || (STAGE.cityLife && far && dist(S.player.x, S.player.y, x, y) < 1000)) { const c = spawnCop(true); if (c) { c.incident = { x, y, by, t0: S.t }; n++; } }
+  if (n && !STAGE.noPrompts && dist(S.player.x, S.player.y, x, y) < 800) toast('누군가 경찰에 신고했다 — 경찰이 조직원을 잡으러 온다', 2.4);
 }

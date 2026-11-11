@@ -132,7 +132,7 @@ function grabAction() {
   const behind=Math.abs(angDiff(near.a,Math.atan2(P.y-near.y,P.x-near.x)))>1.75;
   return { k: 'none', near, label: '붙잡기', reason: near.elite?'정예 불가':near.state==='ALERT'?(near.seen?'교전 중':'경계 중'):!behind?'등 뒤로':'더 가까이' };
 }
-function actAttack() {
+function actAttack() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) { if (S && DLG.modal) advanceDialog(); return; }
   if (DLG.modal) { advanceDialog(); return; }
@@ -153,7 +153,7 @@ function actAttack() {
   if(a.k!=='pull'&&choice&&choice.ids[0]===(a.g||a.list?.[0])?.id&&combatSource('atk')){beginAssassinSkill('atk',a);return;}
   actPrimary(Object.assign({}, a, { viaZ: true, inputGroup: 'atk' }));
 }
-function actEnv() {
+function actEnv() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
@@ -176,7 +176,7 @@ function actDress(){
   RC=null;const a=clothingAction();
   if(a&&selectEnvTarget(envToken(a)))actEnv();
 }
-function actGrab() {
+function actGrab() {if(S?.player?.cuffed)return;
   RC = null;
   if (!S || S.over || paused || !running || tactical || S.amb) return;
   if (DLG.modal) { advanceDialog(); return; }
