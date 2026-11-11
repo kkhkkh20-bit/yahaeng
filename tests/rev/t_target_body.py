@@ -4,10 +4,11 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 ROOT=Path(__file__).resolve().parents[2]
 
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  async with async_playwright() as p:
   b=await p.chromium.launch();pg=await b.new_page();errors=[];pg.on('pageerror',lambda e:errors.append(str(e)))
-  await pg.add_init_script('window.requestAnimationFrame=()=>0');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!window.__game');await pg.wait_for_function('__game.prBench().n>0')
+  await pg.add_init_script('window.requestAnimationFrame=()=>0;try{localStorage.setItem(`yahaeng.guide`,`full`)}catch(e){}');await pg.goto((ROOT/'build/preview_city.html').as_uri());await pg.wait_for_function('!!window.__game');await pg.wait_for_function('__game.prBench().n>0')
   await pg.evaluate("__game.start(__game.STAGES.findIndex(s=>s.id==='m3'))")
   await pg.wait_for_function('__game.BLD.every(b=>!b.kit||b.kit.img.complete)',polling=100)
   result=await pg.evaluate('''()=>{

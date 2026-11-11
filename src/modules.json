@@ -514,6 +514,10 @@
       "group": "play_clarity"
     },
     {
+      "path": "77_guide.js",
+      "group": "play_clarity"
+    },
+    {
       "path": "78_controls.js",
       "group": "controls"
     },

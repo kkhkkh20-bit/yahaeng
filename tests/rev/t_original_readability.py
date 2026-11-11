@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'build/review-v177'
 OUT.mkdir(exist_ok=True)
 
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
     rows = []
     async with async_playwright() as p:
@@ -17,7 +18,7 @@ async def main():
             page = await browser.new_page(viewport={'width':width,'height':height},has_touch=touch)
             errors = []
             page.on('pageerror', lambda error: errors.append(str(error)))
-            await page.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0')
+            await page.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0')
             await page.goto((ROOT/'build/preview_city.html').as_uri())
             await page.wait_for_function('!!window.__game',polling=100)
             checks = await page.evaluate('''() => {

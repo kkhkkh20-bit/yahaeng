@@ -12,12 +12,13 @@ FIXTURE=r'''() => {
  window.silence=(g,lethal=false)=>{g.takedownIntent={lethal,assailantLook:'crew'};G.killGuard(g,null,null,true);G.updateRadioCall(.05)};
  window.G=G;window.P=P;window.S=S;
 }'''
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks the guidance text the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright() as p:
   b=await p.chromium.launch()
   for w,h in [(1280,800),(390,844)]:
-   q=await b.new_page(viewport={'width':w,'height':h},has_touch=w<1000,is_mobile=w<1000);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear();requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('__game?.officeReady()',polling=100);await q.evaluate(FIXTURE)
+   q=await b.new_page(viewport={'width':w,'height':h},has_touch=w<1000,is_mobile=w<1000);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('__game?.officeReady()',polling=100);await q.evaluate(FIXTURE)
    result=await q.evaluate(r'''()=>{
     const out=[];
     for(const lethal of [false,true]){

@@ -69,7 +69,7 @@ function draw() {
     if (c.dog) drawDog(c.x, c.y, c.a, false, c.hidden ? 0.5 : 0.9, true);
     else { if (c.carried && pairCarry(S.player)) continue; const lift = c.fly ? Math.sin(Math.min(1, c.fly.t / c.fly.dur) * Math.PI) * 40 : c.td != null && S.t - c.td < 0.22 ? (1 - (S.t - c.td) / 0.22) * 30 : 0; ctx.globalAlpha = c.hidden ? 0.5 : 1; drawBody(c, lift); ctx.globalAlpha = 1; }
     if(c.ko&&!c.playerHandled&&!c.carried)drawEmote('zz',c.x+16,c.y-6);
-    if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = uiFont(13); ctx.textAlign = 'center'; ctx.fillText('발견됨', c.x, c.y - 24); }
+    if (c.discovered && !c.carried) { ctx.fillStyle = 'rgba(194,54,43,.9)'; ctx.font = uiFont(13); ctx.textAlign = 'center'; if (guideFull()) ctx.fillText('발견됨', c.x, c.y - 24); else drawBadge(c.x, c.y - 24, 'alert', '#c2362b'); }
   }
   PM('cars+corpses');
   if (!DBG.sprites) for (const g of S.guards) {
@@ -79,7 +79,7 @@ function draw() {
     if (STAGE.zones) drawSharpEye(g);
     else if (P.disguise && !P.disguiseBlown && (g.elite || g.target) && dist(g.x, g.y, P.x, P.y) < 380) {  // 변장: 이 사람은 얼굴을 안다 (원 안에서 보이면 들킨다)
       ctx.strokeStyle = 'rgba(232,90,70,.4)'; ctx.lineWidth = 2; ctx.setLineDash([6, 6]); ctx.beginPath(); ctx.arc(g.x, g.y, 220, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-      tag(g.x, g.y + 34, '얼굴을 안다', '#e85a46', 0.9);
+      if (guideFull()) tag(g.x, g.y + 34, '얼굴을 안다', '#e85a46', 0.9); else drawBadge(g.x, g.y + 34, 'eye', '#e85a46', 0.95);
     }
     if (g.lookout && !g.icon) { ctx.strokeStyle = '#f2c46b'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(g.x - 7, g.y - 36); ctx.lineTo(g.x, g.y - 43); ctx.lineTo(g.x + 7, g.y - 36); ctx.moveTo(g.x - 7, g.y - 42); ctx.lineTo(g.x, g.y - 49); ctx.lineTo(g.x + 7, g.y - 42); ctx.stroke(); }
     if (g.elite) { ctx.fillStyle = '#c9c6b6'; ctx.beginPath(); ctx.moveTo(g.x, g.y - 34); ctx.lineTo(g.x - 6, g.y - 43); ctx.lineTo(g.x + 6, g.y - 43); ctx.closePath(); ctx.fill(); }
@@ -186,7 +186,7 @@ function draw() {
   // 자경대원 시야·표시 (옥상 위 자경대원은 옥상을 그린 뒤에 따로)
   const guardOverlay = g => {
     if(g.doomed||g.ledgeFalling||g.containerMoving||g.yank&&['box','well'].includes(S.amb?.h?.type))return;
-    if(g.targetIntroUntil>S.t&&targetKnowledge(g).live&&!g.seen)tag(g.x,g.y-62,targetName(g)+' · 처치 대상','#e5c4ab',.9,null,2);
+    if(g.targetIntroUntil>S.t&&targetKnowledge(g).live&&!g.seen)infoTag(g.x,g.y-62,targetName(g)+' · 처치 대상','#e5c4ab',.9,null,2);
     drawWarnRing(g); drawReport(g);
     const fov = guardFov(g), rg = guardRanges(g);
     if (g.civ && g.state === 'SLEEP') { if (g.icon) drawEmote(g.icon, g.x, g.y - 30); return; }
@@ -219,7 +219,7 @@ function draw() {
       ctx.strokeStyle = g.why === 'saw' ? 'rgba(255,120,90,.7)' : 'rgba(242,196,107,.7)'; ctx.setLineDash([3, 6]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(g.poi.x, g.poi.y); ctx.stroke(); ctx.setLineDash([]);
       const dup = S._poiL.find(q => dist(q.x, q.y, g.poi.x, g.poi.y) < 80); if (dup) { dup.n++; } else { S._poiL.push({ x: g.poi.x, y: g.poi.y, n: 1 }); }
       if (!dup) {
-      tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5);
+      if (guideFull()) tag(g.poi.x, g.poi.y, investigationReadout(g).tag, g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9, null, 1.5); else drawBadge(g.poi.x, g.poi.y, 'ask', g.why === 'saw' ? '#ff8a6a' : '#f2c46b', 0.9);
     } }
     if (g.state === 'CHECK' && g.checks[0]) { const c = g.checks[0]; ctx.strokeStyle = 'rgba(242,196,107,.6)'; ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(c.x, c.y); ctx.stroke(); ctx.setLineDash([]); }
     if(drawGuardTaskCue(g))return;
@@ -319,13 +319,13 @@ function draw() {
       const p = pos(pa);
       // The touch selector already owns this information. Keyboard captions
       // join the common placement queue so they cannot overprint combat hints.
-      if(p&&!isTouch)tag(p.x,p.y+34,`${pa.choiceI+1}/${pa.choices} · Tab 바꾸기`,'#e6d9ae',1,null,2.2);
+      if(p&&!isTouch)tag(p.x,p.y+34,guideFull()?`${pa.choiceI+1}/${pa.choices} · Tab 바꾸기`:Array.from({length:pa.choices},(_,i)=>i===pa.choiceI?'●':'○').join(''),'#e6d9ae',1,guideFull()?null:'Tab',2.2);
     }
     const ring = (g,col,c) => drawTargetRing(g,col,c);
     prWarmNear(ka.g || ka.kill || ka.stalk || ga.g || (P.captive) || null);
     if (ka.list) ka.list.forEach(g => ring(g, '#c4d3cd'));
     if (ka.k !== 'none' && ka.k !== 'counter' && !subduedAction(ka) && (ka.g || ka.kill)) ring(ka.g || ka.kill, ka.holdOnly?'#e8473c':'#c4d3cd',ka.c);
-    if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); }
+    if (ka.k === 'counter') { ring(ka.g, '#f2c46b'); if (guideFull()) tag(ka.g.x, ka.g.y - 46, '지금 [공격] — 반격', '#f2c46b', 1); else tag(ka.g.x, ka.g.y - 46, '반격', '#f2c46b', 1, KK('atk'), 3.5); }
     if (pa.k === 'lamp') { const at=lampControl(pa.l);ctx.strokeStyle = 'rgba(242,196,107,.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(at.x, at.y, 16, 0, TAU); ctx.stroke(); }
     if (pa.k === 'down' && pa.l.roofDoor) {
       const d = pa.l.roofDoor; ctx.save(); ctx.strokeStyle = '#f2c46b'; ctx.fillStyle = 'rgba(242,196,107,.12)'; ctx.lineWidth = 2;
@@ -346,17 +346,17 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.quadraticCurveTo((P.x + ap.x) / 2, (P.y + ap.y) / 2 - ap.d * 0.25, ap.x, ap.y); ctx.stroke(); ctx.setLineDash([]);
         ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(ap.x, ap.y, 12, 0, TAU); ctx.stroke();
         if (input.tool === 'stone') { ctx.strokeStyle = `rgba(${col},.25)`; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(ap.x, ap.y, 240, 0, TAU); ctx.stroke(); }
-        tag(ap.x, ap.y - 26, `${TOOL_NAME[input.tool]} — ${input.tool==='radio'?'놓으면 사용':'놓으면 던짐'}`, `rgb(${col})`);
+        infoTag(ap.x, ap.y - 26, `${TOOL_NAME[input.tool]} — ${input.tool==='radio'?'놓으면 사용':'놓으면 던짐'}`, `rgb(${col})`);
       }
     }
     if (input.aiming && input.queue && input.queue.length) input.queue.forEach((q, i) => {  // 예약한 행동
       const tx = q.tgt ? q.tgt.x : q.pt ? q.pt.x : P.x, ty = q.tgt ? q.tgt.y : q.pt ? q.pt.y : P.y;
       ctx.strokeStyle = 'rgba(127,214,204,.9)'; ctx.lineWidth = 2.5; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
-      ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, `예약 ${i + 1} · ${TOOL_NAME[q.tool]}`, '#7fd6cc');
+      ctx.beginPath(); ctx.arc(tx, ty, 14, 0, TAU); ctx.stroke(); tag(tx, ty - 26, guideFull() ? `예약 ${i + 1} · ${TOOL_NAME[q.tool]}` : String(i + 1), '#7fd6cc');
     });
     const kt=!input.padWhistle&&['kunai','blade'].includes(input.tool)&&canAim()?kunaiTarget():null;
-    if(kt&&!input.aiming){ctx.save();ctx.strokeStyle='#d7dbe2a0';ctx.lineWidth=1.2/SCALE;ctx.setLineDash([3/SCALE,4/SCALE]);drawTargetRing(kt.ref,ctx.strokeStyle);ctx.restore();if(S.marked===kt.ref)tag(kt.x,kt.y-30,projectileName(kt.ref)+' · '+TOOL_NAME[input.tool],'#d7dbe2');}
-    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); tag(kt.x, kt.y - 28, projectileName(kt.ref)+' · '+(input.tool==='blade'?'길게 처치':'짧게 기절 · 길게 처치'), '#d7dbe2'); }
+    if(kt&&!input.aiming){ctx.save();ctx.strokeStyle='#d7dbe2a0';ctx.lineWidth=1.2/SCALE;ctx.setLineDash([3/SCALE,4/SCALE]);drawTargetRing(kt.ref,ctx.strokeStyle);ctx.restore();if(S.marked===kt.ref)infoTag(kt.x,kt.y-30,projectileName(kt.ref)+' · '+TOOL_NAME[input.tool],'#d7dbe2');}
+    if(kt&&input.aiming&&['kunai','blade'].includes(input.tool)) { ctx.strokeStyle = 'rgba(215,219,226,.7)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 6]); ctx.beginPath(); ctx.moveTo(P.x, P.y); ctx.lineTo(kt.x, kt.y); ctx.stroke(); ctx.setLineDash([]); infoTag(kt.x, kt.y - 28, projectileName(kt.ref)+' · '+(input.tool==='blade'?'길게 처치':'짧게 기절 · 길게 처치'), '#d7dbe2'); }
     if (kt && input.aiming) {
       ctx.save(); ctx.translate(kt.x, kt.y); ctx.rotate(S.t * 1.5); ctx.strokeStyle = 'rgba(215,219,226,.85)'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(0, -14); ctx.lineTo(14, 0); ctx.lineTo(0, 14); ctx.lineTo(-14, 0); ctx.closePath(); ctx.stroke(); ctx.restore();

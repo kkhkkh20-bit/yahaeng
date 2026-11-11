@@ -342,3 +342,7 @@ body.episode-coda #dlg{bottom:calc(24px + env(safe-area-inset-bottom,0px))}
  #dlg .dlg-context{font-size:9px;padding-bottom:3px}
  body.episode-coda #dlg{bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 }
+/* 화면 글 최소(기본): 노출 상태 글은 숨기고 눈 아이콘의 색·모양으로만 보여 준다. 무전 패널의 '다음 행동' 줄도 숨긴다. */
+body.guide-min #hud #stealth .sth-txt{display:none}
+body.guide-min #hud #stealth{padding:5px 6px}
+body.guide-min #episodeRadioAction{display:none}

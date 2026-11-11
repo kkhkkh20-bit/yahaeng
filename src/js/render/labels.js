@@ -170,8 +170,9 @@ function drawActLabels(pa, P, ka, ga) {
     const bx = pa.l ? pa.l.x : pa.at ? pa.at.x : P.x, by = pa.l ? pa.l.y : pa.at ? pa.at.y + 30 : P.y; let n = 0;
     for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE' || g.climb || flOf(g) || (g.z || 0)) continue;
       if (canSee(g, bx, by, Math.max(0.35, lightAt(bx, by)), false, false, 0) > 0) { n++; ctx.strokeStyle = 'rgba(232,90,70,.7)'; ctx.setLineDash([4, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g.x, g.y - 20); ctx.lineTo(bx, by); ctx.stroke(); ctx.setLineDash([]); } }
-    if (n) lab += ` · 이 위치를 보는 경비 ${n}명`;
+    if (n && guideFull()) lab += ` · 이 위치를 보는 경비 ${n}명`;  // 최소: 빨간 시선 점선만
   }
+  if(!guideFull())lab=lab.split(' — ')[0];  // 최소: '옷 갈아입기 — 자경대원 옷' → '옷 갈아입기'
   if(!isTouch){const [p, kc] = T('행동', KK('env')); tag(x, y, p + lab, col, 1, kc, 3.5);}
 }
 const coveredG = (g, openB) => { const b = bldAt(Math.floor(g.x / TILE), Math.floor(g.y / TILE)); return b >= 0 && !BLD[b].vacant && b !== openB; };

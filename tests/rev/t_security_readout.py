@@ -5,12 +5,13 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/security-v173';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
   b=await p.chromium.launch()
   for width,height,touch in [(1280,800,False),(390,844,True),(844,390,True),(320,568,True)]:
-   q=await b.new_page(viewport={'width':width,'height':height},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
+   q=await b.new_page(viewport={'width':width,'height':height},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)));await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
    checks=await q.evaluate('''()=>{
     const G=__game,out=[],ok=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};let S=fresh('tC'),P=S.player,c=S.cams[0];S.guards=[];Object.assign(P,{x:984,y:600,light:1});G.updateCams(.4);ok(G.cameraAssessment(c).visible>0&&!G.cameraAssessment(c).detectable&&!c.meter,'ordinary public passage fills camera meter');out.push('public passage is observed geometrically but not recorded');
     Object.assign(P,{x:984,y:552,outfit:'crew',disguise:'sam'});G.updateCams(.4);ok(G.accessReadout().allowed&&!G.cameraAssessment(c).detectable&&!c.meter,'valid uniform does not permit staff passage');const before=JSON.stringify({pick:P.pick,hp:P.hp,stats:S.stats,meter:c.meter,inventory:P.picks});const risk=G.workRiskReadout({k:'loot'});ok(G.workRiskReadout({k:'pickup',p:{outfit:'crew'}}).kind==='camera'&&G.workRiskReadout({k:'camroom'}).kind==='camera','clothes pickup or console work omits witnessed risk');ok(risk.kind==='camera'&&G.cameraAssessment(c,true).detectable,'theft preview trusts uniform');ok(before===JSON.stringify({pick:P.pick,hp:P.hp,stats:S.stats,meter:c.meter,inventory:P.picks}),'preview changes gameplay');G.updateHUD(true);ok(document.querySelector('#accessLbl').textContent.includes('통행 허용')&&document.querySelector('#actionRiskLbl').textContent.includes('CCTV'),'permission and theft warning are not simultaneously visible');

@@ -18,7 +18,8 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
   // Nearby action targets have a button cue; a movement target still needs its
   // destination marker until the lesson actually advances.
   if(gl.tut&&m<3&&!gl.moveCue&&sameGoalLevel(P,gl))return;
-  const short=goalMarkerCaption(gl,m),pulse=.8+.2*Math.sin(S.t*4);
+  // 최소: 목표 이름·거리는 쓰지 않는다. 다른 층일 때만 층을 짧게 ('2층' · '옥상' · '지상').
+  const short=guideFull()?goalMarkerCaption(gl,m):sameGoalLevel(P,gl)?'':(gl.destinationFloor||gl).z?'옥상':(gl.destinationFloor||gl).fl?((gl.destinationFloor||gl).fl+1)+'층':'지상',pulse=.8+.2*Math.sin(S.t*4);
   ctx.font = uiFont(Math.round(12 * k)); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   // 할 일 글자는 전역 tag(겹침 정리)로
   const frame=goalViewport();
@@ -28,14 +29,14 @@ function drawGoal(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const b = Math.sin(S.t * 4) * 4 * k, y = gl.y - 46 * k + b;
     ctx.strokeStyle = `rgba(223,230,240,${pulse})`; ctx.lineWidth = 2 * k; ctx.setLineDash(gl.area?[9*k,7*k]:gl.lastSeen?[3*k,4*k]:[]); ctx.beginPath(); ctx.arc(gl.x, gl.y, (gl.area?32:20) * k + Math.sin(S.t * 4) * 2 * k, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = '#dfe6f0'; ctx.beginPath(); ctx.moveTo(gl.x - 8 * k, y); ctx.lineTo(gl.x + 8 * k, y); ctx.lineTo(gl.x, y + 10 * k); ctx.closePath(); ctx.fill();
-    tag(gl.x, y - 13 * k, short, '#dfe6f0', 1, null, 2.6);
+    if (short) tag(gl.x, y - 13 * k, short, '#dfe6f0', 1, null, 2.6);
   } else {  // 화면 밖: 가장자리 화살표 + 할 일 · 거리
     const cx = (sx0 + sx1) / 2, cy = (sy0 + sy1) / 2, ddx = gl.x - cx, ddy = gl.y - cy, kk = Math.min((sx1 - sx0) / 2 / Math.max(1e-6, Math.abs(ddx)), (sy1 - sy0) / 2 / Math.max(1e-6, Math.abs(ddy))), ex = cx + ddx * kk, ey = cy + ddy * kk, a = Math.atan2(ddy, ddx), sz = 13 * k;
     ctx.save(); ctx.translate(ex, ey); ctx.rotate(a); ctx.fillStyle = `rgba(223,230,240,${pulse})`; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
     ctx.beginPath(); ctx.moveTo(sz * 1.5, 0); ctx.lineTo(-sz, -sz); ctx.lineTo(-sz * 0.35, 0); ctx.lineTo(-sz, sz); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
     const txt = short; ctx.font = uiFont(13 * k); const th = ctx.measureText(txt).width / 2 + 10 * k, rEdge = cam.x + hw - (document.body.classList.contains('touch') ? 66 : 20) / SCALE;  // 글자가 화면·오른쪽 버튼 줄 밖으로 나가지 않게
     const lx = clamp(ex - Math.cos(a) * 46 * k, sx0 + th, Math.max(sx0 + th, rEdge - th)), ly = clamp(ey - Math.sin(a) * 30 * k, sy0 + 12 * k, sy1 - 12 * k);
-    tag(lx, ly, txt, '#dfe6f0', 1, null, 2.6);
+    if (txt) tag(lx, ly, txt, '#dfe6f0', 1, null, 2.6);
   }
   ctx.textBaseline = 'alphabetic';
 }

@@ -14,7 +14,7 @@ function drawKnownTargets() {
   for(const g of S.guards) if(g.target&&!targetEliminated(g)) {
     const a=targetKnowledge(g);if(a.live)continue;
     ctx.save();ctx.strokeStyle='#d59788';ctx.lineWidth=2;ctx.setLineDash(a.area?[9,7]:[3,4]);ctx.beginPath();ctx.arc(a.x,a.y,a.area?40:20,0,TAU);ctx.stroke();ctx.restore();
-    tag(a.x,a.y-32,targetName(g)+' · '+(a.area?'활동 구역':'마지막 목격'),'#d5ad98');
+    infoTag(a.x,a.y-32,targetName(g)+' · '+(a.area?'활동 구역':'마지막 목격'),'#d5ad98');
   }
 }
 function trapPreview(t) {
@@ -31,13 +31,13 @@ function drawPlanFixtures(P) {
     ctx.fillStyle='#202a30';ctx.fillRect(x-2,y-8,10,16);ctx.strokeStyle='#899397';ctx.lineWidth=1;ctx.strokeRect(x-2,y-8,10,16);
     ctx.fillStyle=d.locked?keyCol(d.keyLock):'#91ad8b';ctx.fillRect(x,y-5,6,5);
     if(d.keyLock==='code'){ctx.fillStyle='#bbc3c0';for(let i=0;i<6;i++)ctx.fillRect(x+i%3*2,y+2+Math.floor(i/3)*3,1,1);}
-    if(d.keyLock==='blue' && hasK('blue') && dist(P.x,P.y,d.x,d.y)<150) tag(x,y-20,'파란 카드키 · VIP룸 뒷문',keyCol('blue'),.8);
+    if(d.keyLock==='blue' && hasK('blue') && dist(P.x,P.y,d.x,d.y)<150) infoTag(x,y-20,'파란 카드키 · VIP룸 뒷문',keyCol('blue'),.8);
   }
   if(STAGE.id==='m2' && !P.fl && !P.z) {
     const physical=usePoint(STAGE.uses[0]),p={...surfacePoint(physical),fl:0};
     if(fixtureVisible(physical,260)) {
       drawLitContainer({...p,type:'surface',art:'bottle',dosed:S.usesDone[0]});
-      if(S.vipPlan && dist(P.x,P.y,p.x,p.y)<120)tag(p.x,p.y-27,S.vipPlan.phase==='sick'?'음용 완료':'준비된 실장 술병','#c9bc91',.8);
+      if(S.vipPlan && dist(P.x,P.y,p.x,p.y)<120)infoTag(p.x,p.y-27,S.vipPlan.phase==='sick'?'음용 완료':'준비된 실장 술병','#c9bc91',.8);
     }
     const g=npc('vip');
     if(g && g.drinkT>0 && canObserveTarget(g)) {
@@ -51,7 +51,13 @@ function drawPlanFixtures(P) {
       const p=trapPreview(t),x=tc(t.at[0]),y=tc(t.at[1]);
       ctx.strokeStyle='#9c9d88';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-18,y-10);ctx.lineTo(x-18,y+5);ctx.lineTo(x+18,y+5);ctx.lineTo(x+18,y-10);ctx.stroke();
       ctx.fillStyle='#b9b4a1';for(const dx of [-18,18])ctx.fillRect(x+dx-2,y-12,4,4);
-      tag(x,y-30,p.text,p.other?'#e6a27e':'#d9c98e',.85);
+      infoTag(x,y-30,p.text,p.other?'#e6a27e':'#d9c98e',.85);
+      if(!guideFull()&&t.hit){  // 최소: 글 대신 바닥에 낙하 범위. 표적만 있으면 금색, 다른 사람도 있으면 주황, 비었으면 흐리게
+        const [x0,y0,x1,y1]=t.hit,rx=x0*TILE,ry=y0*TILE,rw=(x1-x0+1)*TILE,rh=(y1-y0+1)*TILE,pu=.55+.25*Math.sin(S.t*5);
+        const col=p.other?'230,162,126':p.target?'242,196,107':'200,200,190',a=p.other||p.target?pu:.35;
+        ctx.fillStyle=`rgba(${col},${a*.22})`;ctx.fillRect(rx,ry,rw,rh);
+        ctx.strokeStyle=`rgba(${col},${a})`;ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.strokeRect(rx+1,ry+1,rw-2,rh-2);ctx.setLineDash([]);
+      }
     }
   }
   for(const g of S.guards) if(g.eyeWatching && (g.eyeT||0)>.05 && fixtureVisible(g,160)) {

@@ -4,12 +4,13 @@ from pathlib import Path
 from PIL import Image
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2]
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  for key in ['coat','apron','folder','paper']:
   with Image.open(R/'src/art/field-items'/(key+'.webp'))as im:assert im.getbbox() and im.width>=24
  async with async_playwright()as p:
   b=await p.chromium.launch();q=await b.new_page();errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-  await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear()');await q.goto((R/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!__game&&__game.fieldArtReady',polling=100)
+  await q.add_init_script('requestAnimationFrame=()=>0;localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`)');await q.goto((R/'build/preview_city.html').as_uri()+'?nostats');await q.wait_for_function('!!__game&&__game.fieldArtReady',polling=100)
   checks=await q.evaluate('''()=>{
    const G=__game,ok=(v,m)=>{if(!v)throw Error(m)},fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S},out=[];
    let S=fresh('tB'),P=S.player;G.update(.02);ok(!G.STAGE.steps.some(s=>s[4]==='skills')&&!S.exitOpen,'opening requires spending or opens early');

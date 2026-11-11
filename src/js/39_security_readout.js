@@ -32,7 +32,8 @@ function workRiskReadout(action){
 }
 function syncSecurityReadout(){
   const el=$('accessLbl'),risk=$('actionRiskLbl');if(!el||!risk)return;
-  const active=!!STAGE.zones&&!STAGE.firstSteps;el.hidden=!active;risk.hidden=true;if(!active)return;
+  // 최소: 복장·구역 글과 행동 위험 글을 숨긴다. 통행은 바닥 경계선 색, 목격 위험은 시야 원뿔이 보여 준다.
+  const active=!!STAGE.zones&&!STAGE.firstSteps&&guideFull();el.hidden=!active;risk.hidden=true;if(!active)return;
   const access=accessReadout();el.textContent=access.text;el.dataset.access=access.allowed?'allowed':'denied';el.title=access.need?'필요한 복장: '+access.need:access.allowed?'통행 권한이다. 훔치기와 신원 확인은 별도 판정한다.':'이 구역의 출입 권한이 없다.';
   // Match the selected X/touch action first. A nearby possible attack must not
   // replace a clothing/theft warning or the destination floor's access preview.

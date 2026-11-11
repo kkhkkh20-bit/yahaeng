@@ -5,13 +5,14 @@ import asyncio,json
 from pathlib import Path
 from playwright.async_api import async_playwright
 R=Path(__file__).resolve().parents[2];O=R/'build/fun-v169';O.mkdir(exist_ok=True)
+# Detailed screen text (설정 · 화면 글: 자세히): this test checks guidance the minimal default hides.
 async def main():
  rows=[]
  async with async_playwright()as p:
   b=await p.chromium.launch()
   for touch in [False,True]:
    q=await b.new_page(viewport={'width':390 if touch else 1280,'height':844 if touch else 800},has_touch=touch);errors=[];q.on('pageerror',lambda e:errors.append(str(e)))
-   await q.add_init_script('localStorage.clear();window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
+   await q.add_init_script('localStorage.clear();localStorage.setItem(`yahaeng.guide`,`full`);window.requestAnimationFrame=()=>0');await q.goto((R/'build/preview_city.html').as_uri());await q.wait_for_function('!!__game',polling=100)
    await q.evaluate('''()=>{const G=__game;window.fresh=id=>{G.start(G.STAGES.findIndex(s=>s.id===id));while(G.DLG.modal)G.advanceDialog();return G.S};fresh('m2');}''')
    await q.click('#btnPause');assert await q.locator('#btnCheckpointPause').is_hidden();await q.click('#btnResume')
    await q.evaluate('''()=>{const G=__game,S=G.S;window.points=G.skillBudget();G.saveCheckpoint();S.player.hp=1;S.items[0].got=true;S.stats.detected=3;G.updateHUD(true);}''')
