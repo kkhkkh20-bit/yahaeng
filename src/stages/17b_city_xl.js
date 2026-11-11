@@ -133,8 +133,12 @@
   const specs = [];
   const dry = { villa(x0, y0, x1, y1, h, o = {}) {
       const i = specs.length, f = FRONTS[(x0 * 3 + y0 * 7 + i) % FRONTS.length], w = x1 - x0 + 1, txt = [o.plate, o.name, ...(o.signs || [])].find(s => s && SIGN_KEY[s]);
-      specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal',
-        ad: txt && SIGN_KEY[txt] ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - 2, 4), h: 1 } : null }); },
+      // 대형 광고판: 넓은 상가는 옥상에 큰 판 + 정면에 대게 간판, 좁은 상가는 둘에 하나꼴로 정면 오른쪽에 세로 판
+      const shop = o.kind === 'shop', fh = Math.max(1, Math.min(h, y1 - y0 - 1)), boards = [];
+      if (shop && w >= 12) { boards.push({ image: ['can', 'chimaek', 'soju'][i % 3], mode: 'roof', x: 1 + (i % 2) * 4 }); if (fh >= 2) boards.push({ image: 'crab', mode: 'face', x: w - 6, fl: Math.min(fh - 1, 2) }); }
+      else if (shop && fh >= 3 && i % 2 === 0) boards.push({ image: ['octopus', 'face', 'karaoke', 'octopus'][(i >> 1) % 4], mode: 'face', x: w - 2, fl: 1 });
+      specs.push({ box: [x0, y0, x1, y1], h, front: f[0], windows: f[1], style: f[2], roof: i % 2 ? 'roofStone' : 'roofMetal', boards: boards.length ? boards : null,
+        ad: txt && SIGN_KEY[txt] ? { image: SIGN_KEY[txt], x: 1, fl: h > 1 ? 1 : 0, w: Math.min(w - (boards.some(d => d.mode === 'face') ? 4 : 2), 4), h: 1 } : null }); },
     fill() {}, set() {}, many() {}, car() {}, tent() {}, get() { return '.'; } };
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); T[LAYOUT[by][bx]](dry, x0, y0); }
   collecting = false;

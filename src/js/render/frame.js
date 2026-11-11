@@ -139,6 +139,7 @@ function draw() {
   ctx.globalCompositeOperation = 'source-over';
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
+  if (studyStage() && !DBG.neon) drawBillboardsLit();
   ctx.globalCompositeOperation = 'source-over';
 
   PM('neon+speech');

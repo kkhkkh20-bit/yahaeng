@@ -10,3 +10,6 @@ No permission is granted to extract or reuse it outside this game.
 The original pack ZIP, tilemap and example scene are private and are not in this repository.
 The extra Korean shop signs (src/art/city-study/korean-signs-extra.webp) are drawn by
 tools/import_city_signs_extra.py with Galmuri11 Bold, copyright Lee Minseo, SIL OFL 1.1.
+Big billboards (src/art/city-study/billboards.webp) are built by tools/import_city_billboards.py:
+the can, crab, octopus and face ads are cut from the same purchased pack with their Japanese
+lettering replaced by Korean; chimaek, soju and karaoke are drawn for Yahaeng.

@@ -2,7 +2,8 @@
 
 A Cheonggyecheon-style river crosses the whole map between two riverside roads. Every north-south
 road crosses it on a bridge that cars use; nobody drives into the water. Four gangs hold turf.
-Every building has a purchased-pack front, can be entered, and shops carry Korean signboards.
+Every building has a purchased-pack front, can be entered, and shops carry Korean signboards;
+wide shops carry rooftop billboards and front signs (crab, octopus, face, karaoke).
 """
 import asyncio, json, sys
 from pathlib import Path
@@ -16,11 +17,11 @@ CHECK = '''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL
   let gaps=0,bridges=0;for(let x=0;x<W;x++){const road=ST.roadsX.some(r=>x>=r&&x<r+4),water=[4,5,6].every(r=>tile(x,Rv.y+r)==='~');if(road){bridges++;if([0,5,10].some(r=>tile(x,Rv.y+r)!=='.'))gaps++;}else if(!water&&![4,5,6].every(r=>tile(x,Rv.y+r)==='¦'))gaps++;}
   let wet=0,onBridge=0;for(let k=0;k<60;k++){tick(1);for(const v of S.vehicles){if(v.dead||v.parked)continue;const tx=Math.floor(v.x/48),ty=Math.floor(v.y/48);if(tile(tx,ty)==='~')wet++;if(ty>=Rv.y&&ty<Rv.y+Rv.rows)onBridge++;}}
   const fac={};for(const g of S.guards)if(g.fac&&g.state!=='DEAD')fac[g.fac]=(fac[g.fac]||0)+1;
-  const specs=ST.referenceBuildings||[],signed=specs.filter(s=>s.ad).length,doors=G.BLD.filter(b=>!b.vacant).length;
+  const specs=ST.referenceBuildings||[],signed=specs.filter(s=>s.ad).length,roofBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='roof')).length,faceBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='face')).length,doors=G.BLD.filter(b=>!b.vacant).length;
   const north=G.astar(30,ST.roadsY[3]+1,30,Rv.y+Rv.rows+1);
   S.player.x=30*48;S.player.y=(Rv.y+5)*48;tick(.2);G.benchDraw(2);
   return {gaps,bridges,wet,onBridge,fac,turf:Object.fromEntries(Object.entries(S.turf).map(([k,v])=>[k,v.length])),
-    bld:G.BLD.length,specs:specs.length,signed,fh:G.BLD.filter(b=>b.fh>=2).length,shade:ST.nightShade,cross:north.length};
+    bld:G.BLD.length,specs:specs.length,signed,roofBoards,faceBoards,fh:G.BLD.filter(b=>b.fh>=2).length,shade:ST.nightShade,cross:north.length};
 }'''
 
 async def main():
@@ -43,6 +44,7 @@ async def main():
     ok(all(s['turf'].get(f, 0) >= 1 for f in 'ABCD'), 'a gang has no turf: %s' % s['turf'])
     ok(s['specs'] == s['bld'] and s['bld'] > 100, 'buildings without a purchased front')
     ok(s['signed'] >= 40, 'too few Korean signboards: %s' % s['signed'])
+    ok(s['roofBoards'] >= 15 and s['faceBoards'] >= 15, 'too few billboards: roof %s face %s' % (s['roofBoards'], s['faceBoards']))
     ok(s['fh'] >= 80, 'too few multi-storey fronts: %s' % s['fh'])
     ok(s['shade'] is not None and s['shade'] < 0.7, 'night is not brighter')
     if errs: bad.append('page errors %s' % errs[:3])

@@ -39,6 +39,10 @@ def campaign_assets(root):
     if (study/'details.json').exists():
         assets['cityStudy']=json.loads((study/'details.json').read_text())
         assets['cityStudy']['src']='data:image/webp;base64,'+base64.b64encode((study/'details.webp').read_bytes()).decode()
+    boards=study/'billboards.json'
+    if boards.exists():
+        assets['cityBoards']=json.loads(boards.read_text())
+        assets['cityBoards']['src']='data:image/webp;base64,'+base64.b64encode((study/'billboards.webp').read_bytes()).decode()
     signs2=study/'korean-signs-extra.json'
     if signs2.exists():
         assets['citySigns2']=json.loads(signs2.read_text())
