@@ -5,7 +5,7 @@ function drawPlansFaint(P, openB) {
     if (Math.abs(P.x - (bx + bw / 2)) > bw / 2 + 520 || Math.abs(P.y - (by + bh / 2)) > bh / 2 + 420) return;
     ctx.globalAlpha = 0.42; drawBig(ctx, mapC, bx, by, bw, bh); ctx.globalAlpha = 1;
     ctx.strokeStyle = 'rgba(160,200,235,.6)'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(bx + 1, by + 1, bw - 2, bh - 2); ctx.setLineDash([]);
-    if (b.name) tag(bx + bw / 2, by - 12, b.name, '#a0c8eb');
+    if (b.name) infoTag(bx + bw / 2, by - 12, b.name, '#a0c8eb');
   });
 }
 // 전봇대: 회색 콘크리트 기둥 + 노랑·검정 띠 + 완금(가로대)·애자 (+ 변압기)
@@ -100,7 +100,7 @@ function drawRoof1(b, i, roof) {
     if (b.kit && !freeCityBuilding(b) && drawKitBuilding(b)) {
       drawFacadeExtras(b, false, true);
       if (hasHeightCues(i)) drawRoofCoping(b);
-      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left'; if(!STAGE.agentStudy)ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
+      ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left'; if(!STAGE.agentStudy&&guideFull())ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
       return;
     }
     const sh = b.h * 6;
@@ -114,7 +114,7 @@ function drawRoof1(b, i, roof) {
     if (NEONY()) { ctx.strokeStyle = 'rgba(255,46,136,.85)'; ctx.lineWidth = 2.5; ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h + (b.facade ? b.fh * TILE : 0) - 3); if (b.facade) { ctx.strokeStyle = 'rgba(46,242,255,.8)'; ctx.beginPath(); ctx.moveTo(x, (b.y1 + 1) * TILE - 1); ctx.lineTo(x + w, (b.y1 + 1) * TILE - 1); ctx.stroke(); } }
     if (hasHeightCues(i)) drawRoofCoping(b);
     ctx.fillStyle = 'rgba(232,227,214,.55)'; ctx.font = uiFont(12); ctx.textAlign = 'left';
-    if(!STAGE.agentStudy)ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
+    if(!STAGE.agentStudy&&guideFull())ctx.fillText(b.h + '층 옥상', x + 6, y + 14);
     if (b.h >= 3 && !b.roofC.flat) { ctx.strokeStyle = 'rgba(232,227,214,.18)'; ctx.lineWidth = 2; ctx.strokeRect(x + 8, y + 8, w - 16, h - 16); }
     drawCityEntrances(b);
   }

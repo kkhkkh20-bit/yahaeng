@@ -49,7 +49,7 @@ function updateFallingSigns(dt) {
     const p={x:t.fall.x,y:t.fall.y};t.fall=null;t.wreck=p;let n=0;
     for(const g of S.guards)if(!g.child&&!flOf(g)&&!g.z&&g.state!=='DEAD'&&inZone(g,t.hit)){accidentKill(g,'fall');n++;}
     play('thud',.8);play('metal',.55);noise(p.x,p.y,260,'crash',0,0);S.shakeT=.18;
-    if(n)toast(`${signGeometry(t).appliance?'실외기':'간판'}에 ${n}명이 깔렸다`,2,'good');
+    if(n&&guideFull())toast(`${signGeometry(t).appliance?'실외기':'간판'}에 ${n}명이 깔렸다`,2,'good');  // 최소: 떨어지는 장면과 소리로 충분
   }
 }
 function drawHangingSigns(openB=-1) {

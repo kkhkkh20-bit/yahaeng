@@ -15,6 +15,8 @@ function episodeRadioMessage(){
  if(!S||(!STAGE.storyBeat&&(STAGE.story?.solo||(!STAGE.storyEpisode&&!introductoryContract(STAGE)&&!(STAGE.id==='m2'&&!stageCleared(STAGE))))))return null;
  const P=S.player;if(P.jump||P.trav)return null;
  const goal=nextGoal();if(!goal)return null;
+ // 화면 글 최소: 무전은 이야기 대사만 전한다. 해법·다음 행동·도주 요령은 플레이어가 화면에서 읽어 낸다.
+ if(!guideFull())return episodeStoryMessage()||null;
  const chase=S.guards.some(g=>g.state==='ALERT'&&g.seen&&flOf(g)===flOf(P));
  const speaker=STAGE.story?.solo?'hero':'master';
  if(chase)return{speaker,text:speaker==='hero'?'들켰어. 모퉁이를 돌아서 숨을 곳부터 찾아야겠네.':'들켰어! 모퉁이를 돌아 시야부터 피해. 근처에 숨을 곳이 있는지 봐.',action:'모퉁이·풀숲으로 이동',cue:'danger:chase',priority:2};

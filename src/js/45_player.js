@@ -114,7 +114,7 @@ function drawActorGear(g) {
   ctx.restore();
   if((input.scan||S.marked===g)&&dist(g.x,g.y,S.player.x,S.player.y)<460) {
     const traits=[g.radio?'무전기 소지':null,g.hasKey?keyName(g.hasKey)+' 소지':null].filter(Boolean);
-    if(traits.length)tag(g.x,g.y-72,traits.join(' · '),'#c8c9bb',.95);
+    if(traits.length)infoTag(g.x,g.y-72,traits.join(' · '),'#c8c9bb',.95);
   }
 }
 // 화면 밖에서 나를 보거나 쫓는 자경대원: 화면 가장자리에 화살표

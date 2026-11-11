@@ -114,7 +114,7 @@ function drawReport(g) {
   if (g.state !== 'REPORT' || !g.rep || !g.rep.to || flOf(g) !== flOf(S.player)) return; const o = g.rep.to;
   ctx.save(); ctx.strokeStyle = 'rgba(255,90,70,.75)'; ctx.lineWidth = 2.5; ctx.setLineDash([7, 6]); ctx.lineDashOffset = -S.t * 40;
   ctx.beginPath(); ctx.moveTo(g.x, g.y); ctx.lineTo(o.x, o.y); ctx.stroke(); ctx.restore();
-  if (dist(g.x, g.y, S.player.x, S.player.y) < 600) tag(g.x, g.y + 34, g.rep.kind === 'trespass' ? '알리러 간다' : '신고하러 간다', g.rep.kind === 'trespass' ? '#f2c46b' : '#ff8a76', 0.95);
+  if (dist(g.x, g.y, S.player.x, S.player.y) < 600) { if (guideFull()) tag(g.x, g.y + 34, g.rep.kind === 'trespass' ? '알리러 간다' : '신고하러 간다', g.rep.kind === 'trespass' ? '#f2c46b' : '#ff8a76', 0.95); else drawBadge(g.x, g.y + 34, 'alert', g.rep.kind === 'trespass' ? '#f2c46b' : '#ff8a76', 0.95); }
 }
 
 // ---- 표적 일과표 (이스케이피스트·히트맨식): 장소마다 머무는 시간과 하는 일. 경로(route)로 바꿔 쓰고, 이름은 정보 카드에 쓴다
@@ -203,7 +203,7 @@ function drawStoryMark(P) { if (window.__skip && window.__skip.ui) return;  // �
   const x = tc(s.at[0]), y = tc(s.at[1]), k = Math.max(1, 0.95 / SCALE), b = 6 * Math.sin(S.t * 4);
   ctx.save(); ctx.fillStyle = '#f2c46b'; ctx.strokeStyle = 'rgba(7,10,18,.9)'; ctx.lineWidth = 2 * k;
   ctx.beginPath(); ctx.moveTo(x, y - 30 * k + b); ctx.lineTo(x - 9 * k, y - 46 * k + b); ctx.lineTo(x + 9 * k, y - 46 * k + b); ctx.closePath(); ctx.stroke(); ctx.fill(); ctx.restore();
-  tag(x, y - 58 * k + b, st.d.name, '#f2c46b', 0.95);
+  infoTag(x, y - 58 * k + b, st.d.name, '#f2c46b', 0.95);
   if (!tactical && dist(P.x, P.y, x, y) > 520) { const a = Math.atan2(y - P.y, x - P.x); ctx.save(); ctx.translate(P.x + Math.cos(a) * 70, P.y + Math.sin(a) * 70); ctx.rotate(a); ctx.fillStyle = 'rgba(242,196,107,.85)'; ctx.beginPath(); ctx.moveTo(10, 0); ctx.lineTo(-6, -7); ctx.lineTo(-6, 7); ctx.closePath(); ctx.fill(); ctx.restore(); }
 }
 
@@ -257,7 +257,7 @@ function drawProps(fl=0) {
   else if(!key||!drawFieldItem(ctx,key,0,0)){
    ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(-11,-4,24,12);ctx.fillStyle=p.outfit?'#536147':p.id==='box'?'#b78a52':'#d9d2c2';ctx.strokeStyle='rgba(7,10,18,.9)';ctx.lineWidth=1.5;ctx.fillRect(-10,-9,20,15);ctx.strokeRect(-10,-9,20,15);
   }
-  ctx.restore();if(input.scan||dist(p.x,p.y,S.player.x,S.player.y)<76)tag(v.x,v.y-24,p.name||'물품','#f4e3c2',.85);
+  ctx.restore();if(input.scan||dist(p.x,p.y,S.player.x,S.player.y)<76)infoTag(v.x,v.y-24,p.name||'물품','#f4e3c2',.85);
  }
 }
 

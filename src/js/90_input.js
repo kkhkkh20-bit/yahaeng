@@ -356,7 +356,7 @@ $('btnMute').addEventListener('click', toggleMute);
   window.addEventListener('pointermove', e => { if (!drag || !tactical || !S || !S.tacCam) return; S.tacCam.x -= (e.clientX - drag.x) / SCALE; S.tacCam.y -= (e.clientY - drag.y) / SCALE; drag = { x: e.clientX, y: e.clientY }; });
   window.addEventListener('pointerup', () => { drag = null; }); }
 try { if (localStorage.getItem('yahaeng.joyseen')) document.body.classList.add('joyseen'); } catch (e) {}
-$('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);initHapticPreference();
+$('btnFps').addEventListener('click', () => setFpsCap(FPS_CAP === 30 ? 60 : 30)); setFpsCap(FPS_CAP);initHapticPreference();initGuidePreference();
 $('btnPause').addEventListener('click', togglePause);
 for(const id of ['btnPause','btnCrouch','btnSneak','btnToolNext','btnCycle'])$(id).addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code))e.stopPropagation();});
 $('btnMap').addEventListener('click', toggleTactical);

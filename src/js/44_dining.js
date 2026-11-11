@@ -110,7 +110,7 @@ function drawDiningFixtures(){
   if(p&&fixtureVisible(p,550)){
     const v=surfacePoint(p),food=surfacePoint({...p,surfaceU:.45});
     drawLitContainer({...food,fl:0,type:'surface',art:'meal'});drawLitContainer({...v,fl:0,type:'surface',art:'condiment'});
-    if(S.player.item?.id!=='laxative'&&dist(S.player.x,S.player.y,p.x,p.y)<110){const at=S.mealDosed?v:food;tag(at.x,at.y-27,S.mealDosed?'약을 넣은 양념통':S.dining?.eaten?'빈 그릇':'문지기 식사','#c9c0a6',.75);}
+    if(S.player.item?.id!=='laxative'&&dist(S.player.x,S.player.y,p.x,p.y)<110){const at=S.mealDosed?v:food;infoTag(at.x,at.y-27,S.mealDosed?'약을 넣은 양념통':S.dining?.eaten?'빈 그릇':'문지기 식사','#c9c0a6',.75);}
   }
   for(const sign of [{x:tc(40),y:tc(8),text:'WC'},{x:tc(7),y:tc(29),text:'WC'},{x:tc(6),y:tc(32),text:'식사'}])if((sign.x===tc(7)&&bldAt(Math.floor(S.player.x/TILE),Math.floor(S.player.y/TILE))===4)||fixtureVisible(sign,450))drawLitContainer({...sign,type:'surface',art:'placeSign'});
 }

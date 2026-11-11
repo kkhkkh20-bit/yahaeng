@@ -69,7 +69,10 @@ function refreshBodyLighting() {
 
 // ---------------------------------------------------------------- 메시지
 const toastEl = document.getElementById('toasts');
-function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec); S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
+function toast(text, sec = 2.6, kind = '') { if (kind === 'hint') return showHint(text, sec);
+  // 화면 글 최소: 이미 화면에서 보이는 일을 확인해 주는 알림은 띄우지 않고, 위험 알림('warn')은 요령을 뺀 사실만 남긴다.
+  if (!guideFull()) { if (kind !== 'warn') return; text = String(text).split(' — ')[0].split(' · ')[0]; }
+  S.toasts.push({ text, t: sec, kind }); if (S.toasts.length > 4) S.toasts.shift(); renderToasts(); }
 // 조작 설명은 연습과 조작 화면에 둔다. 구형 행동 코드의 호출은 자동 패널을 만들지 않는다.
 function hint() {}
 function showHint() { return false; }

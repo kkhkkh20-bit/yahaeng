@@ -92,7 +92,7 @@ function padButton(el, key, a, idle) {
 }
 // PC 아래 키 안내: 지금 그 키로 할 수 있는 것 (어쌔신 크리드식 상황별 버튼 지도). 할 게 없으면 흐리게
 function keyMap(ka, ea, ga) {
-  $('dressKey').hidden=!!STAGE.tutorial||!clothingAction();
+  $('dressKey').hidden=!!STAGE.tutorial||!guideFull()||!clothingAction();  // 최소: X 행동 칸이 이미 '옷 갈아입기'를 보여 준다
   const set = (id, t, on) => { const el = $(id); if (!el) return; setText(el, id, t); el.parentNode.classList.toggle('on', !!on); };
   if (hudCache.kset !== (input.kset || 'arrow')) { hudCache.kset = input.kset || 'arrow'; [['kkAtk', 'atk'], ['kkEnv', 'env'], ['kkGrab', 'grab'], ['kkTool', 'tool']].forEach(([id, k]) => { const el = $(id); if (el) el.textContent = KK(k); }); }
   set('kmAct', ka.skillLocked?(SKILL_BY_ID[ka.skillLocked]?.name||'기술')+' 미습득 · K 기술 트리':actionCaption(ka, ka.k === 'none' ? (ka.stalk ? actVerb(ka) : '공격') : ka.k === 'cap' ? ka.label : actVerb(ka, actIcon(ka))), ka.k !== 'none'&&!ka.busy&&!ka.skillLocked);
@@ -109,5 +109,5 @@ function drawHoldRing() {
   const flow=S.player.trav?.hideFlow||S.player.trav?.ventPull||S.amb,h=S.koHold||S.player.lethalHold||(flow?.intent&&flow.holding&&!flow.committed?{a:{g:flow.g},container:flow.h}:null);if(!h)return; const f = holdFrac(), c = h.container || h.c || (h.a && h.a.c) || combatVictims(h.a)[0] || actObj(h.a) || S.player, marker=actorMarker(c,h.container?null:h.a?.c||h.c),x=marker.x,y=marker.y-marker.ry-14;
   ctx.save(); ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(x, y, 16, 0, TAU); ctx.stroke();
   ctx.strokeStyle = '#e8473c'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 16, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); ctx.restore();
-  tag(x, y - 30, '계속 누르면 처치', '#ff8a76', 0.9);
+  infoTag(x, y - 30, '계속 누르면 처치', '#ff8a76', 0.9);
 }

@@ -126,6 +126,6 @@ function drawHeightVision(P){
     ctx.save();ctx.fillStyle=`rgba(${color},${a.direct ? .18 : .10})`;ctx.beginPath();for(const c of field.cells)ctx.rect(c.x,c.y,field.step,field.step);ctx.fill();
     ctx.strokeStyle=`rgba(${color},.72)`;ctx.lineWidth=1.25/clamp(SCALE,.65,1.4);ctx.beginPath();for(const e of field.edges){ctx.moveTo(e[0],e[1]);ctx.lineTo(e[2],e[3]);}ctx.stroke();ctx.restore();
     const at=field.cells.reduce((best,c)=>dist(c.x,c.y,P.x,P.y)<dist(best.x,best.y,P.x,P.y)?c:best,field.cells[0]);
-    tag(at.x+field.step/2,at.y-12,`${g.z?g.z+'층 옥상':'지상'} 경비 → ${P.z}층 옥상`,a.phase==='seen'?'#ff8f78':'#b8cdd9',.9,null,2.1);
+    infoTag(at.x+field.step/2,at.y-12,`${g.z?g.z+'층 옥상':'지상'} 경비 → ${P.z}층 옥상`,a.phase==='seen'?'#ff8f78':'#b8cdd9',.9,null,2.1);
   }
 }

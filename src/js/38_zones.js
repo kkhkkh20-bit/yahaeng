@@ -165,13 +165,13 @@ function drawZones(P) { if (window.__skip && window.__skip.ui) return;  // 첫 �
     const d = Math.hypot(clamp(P.x, x, x + w) - P.x, clamp(P.y, y, y + h) - P.y); if (d > far) continue;
     ctx.fillStyle = `rgba(${col},.05)`; ctx.fillRect(x, y, w, h);
     const lo = Math.max(x + 60, cam.x - W / SCALE / 2 + 110 / SCALE), hi = Math.min(x + w - 60, cam.x + W / SCALE / 2 - 110 / SCALE), lx = lo <= hi ? clamp(x + w / 2, lo, hi) : x + w / 2;  // 구역이 화면에 걸쳐 있으면 이름표를 보이는 쪽으로
-    if (input.scan||tactical) tag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통행 허용' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
+    if (input.scan||tactical) infoTag(lx, y + h - 12, ok ? (r[6] || '출입 금지').split(' · ')[0] + ' · 통행 허용' : (r[6] || (hos ? '적진' : '출입 금지')), ok ? '#8fe0a4' : hos ? '#ff8a76' : '#f2b45a', 0.95);
   }
   // 가까운 문턱에 '출입 금지' 표지 (가장 가까운 하나만). 허가 옷을 입었으면 '통과'
   if (!tactical) { let best = null, bd = 150; for (const e of zoneEdges()) { const mx = (e.x0 + e.x1) / 2, my = (e.y0 + e.y1) / 2, d = dist(P.x, P.y, mx, my); if (d < bd && sightLine(P,mx,my,0,P.mode==='sneak',0)) { bd = d; best = e; } }
     if (best) { const to=dist(P.x,P.y,best.ax,best.ay)<=dist(P.x,P.y,best.bx,best.by)?best.b:best.a,ok=to.k===Z_PUB||permitted(to);
       const text=ok?(to.k===Z_PUB?'공개 구역':'통행 허용 — '+permitName(to.allow)):to.secure||!to.allow.length?'복장 통행 불가':to.allow.map(outfitName).join(' / ')+' 필요';
-      tag((best.x0 + best.x1) / 2, (best.y0 + best.y1) / 2,text,ok?'#b4cbe0':'#f2b45a',.95,null,2.3); } }
+      infoTag((best.x0 + best.x1) / 2, (best.y0 + best.y1) / 2,text,ok?'#b4cbe0':'#f2b45a',.95,null,2.3); } }
 }
 // 눈썰미 인물: 머리 위 눈 표시, 알아채는 중이면 차오르는 고리
 function drawSharpEye(g) {
@@ -182,7 +182,7 @@ function drawSharpEye(g) {
   ctx.beginPath(); ctx.ellipse(x, y, 9, 5.5, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#141820'; ctx.beginPath(); ctx.arc(x, y, 2.6, 0, TAU); ctx.fill();
   if (f > 0) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.stroke(); ctx.strokeStyle = '#e8c16e'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 14, -Math.PI / 2, -Math.PI / 2 + TAU * f); ctx.stroke(); }
   ctx.restore();
-  if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g)))tag(g.x,g.y-77,f>0?'신원 확인 중 · 걸어서 벗어나기':'얼굴 확인 담당','#d7c6a3',1,null,2.3);
+  if(on&&dist(P.x,P.y,g.x,g.y)<180&&sightLine(P,g.x,g.y,g.z||0,P.mode==='sneak',flOf(g))){if(guideFull())tag(g.x,g.y-77,f>0?'신원 확인 중 · 걸어서 벗어나기':'얼굴 확인 담당','#d7c6a3',1,null,2.3);else drawBadge(g.x,g.y-77,'eye',f>0?'#ff8a76':'#d7c6a3',f>0?.75+.25*Math.sin(S.t*8):.9);}
 }
 // 출입 금지 경고 중: 경비 둘레에 남은 시간 고리 (다 닳기 전에 공개 구역으로 나가야 한다)
 function drawWarnRing(g) {
