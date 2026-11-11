@@ -306,7 +306,7 @@ function draw() {
   if (running && !tactical) { drawAwareness(S.player); drawCoverPush(S.player); if (!S.over) drawKillBlock(); drawRadioCall(); drawPickProgress(S.player);drawDamageDirection(S.player);drawNearbyBodyStatus(P,openB); }
   if (running) { drawOpps(P); drawStoryMark(P); drawHoldRing(); drawEnvSelection(); drawPlanFixtures(P); drawDiningFixtures(); drawRendezvousPhone(); drawInkClubSigns(P); drawAccessCues(P); drawContactFeedback(); if (!tactical) drawCorpseRisk(); }
   if(running && tactical) drawKnownTargets();
-  if (running && !tactical && !S.over) drawGoal(P);
+  if (running && !tactical && !S.over) { if (STAGE.hits) drawHits('ui'); drawGoal(P); }
   PM('overlays');
   if (running && !tactical) drawOffscreen();
   // 행동 표시

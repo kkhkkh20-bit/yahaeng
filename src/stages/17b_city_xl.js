@@ -73,9 +73,9 @@
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), c = [[x0, y0], [x0 + 15, y0], [x0 + 15, y0 + 15], [x0, y0 + 15]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
-    id: 'cityXL', no: 'TEST', name: '밤의 도시 · 2배 시험', sub: '도시 · 2배 크기 시험 구역', fee: '',
+    id: 'cityXL', no: 'TEST', name: '밤의 도시 · 큰 도시 시험', sub: '도시 · 2배 크기 시험 구역', fee: '',
     city: true, retiredCampaign: true, study: 'city-xl',
-    mission: '2배 크기 도시 시험: 주행 시간·밀도·성능 확인용. 의뢰 장소는 없다',
+    mission: '큰 도시 시험: 공중전화에서 의뢰를 받고 도시 안에서 표적을 처치한다',
     itemName: '', itemNames: [],
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
     W, H, start: [10, 19], exit: [10, 19], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0, rivals: 6,
@@ -94,6 +94,9 @@
     roofs: ['cRoofA', 'cRoofG', 'cRoofB'], bricks: [1, 0, 1],
     lamps: (() => { const L = []; for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); L.push([x0, y0, 180, 1], [x0 + 15, y0 + 15, 180, 1, 0, (bx + by) % 3 === 1 ? '255,90,190' : (bx + by) % 3 === 2 ? '90,220,255' : null]); } return L; })(),
     cams: [], radios: [], contracts: [],
+    // 도시 안 의뢰: 공중전화(블록 동쪽 보도 가운데)에서 의뢰를 받으면 표적이 도시 어딘가를 돈다
+    hits: true,
+    phones: [[0, 0], [3, 1], [6, 0], [1, 3], [5, 3], [2, 5], [7, 5], [4, 2]].map(([bx, by]) => [4 + bx * 20 + 15, 4 + by * 20 + 7]),
     copBeats: [],
     guards: [], items: [], traps: [],
     well: 'manhole', kunai: 3, coins: 3,

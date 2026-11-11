@@ -14,6 +14,7 @@ function actPrimary(force) {
     case 'carIn': carEnter(a.v); break;
     case 'carOut': carExit(); break;
     case 'contract': cityContract(a.c); break;
+    case 'hitPhone': takeHit(); break;
     case 'rumor': spreadRumor(a.c); break;
     case 'surface': {beginAccessFlow('surface',a.w);break;}
     case 'sewerIn': {beginAccessFlow('sewerDown',a.h);break;}

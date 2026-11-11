@@ -9,7 +9,7 @@ function markCityDone(id) { try { const d = cityDone(); d[id] = 1; localStorage.
 function cityInit() {
   S.wanted = 0; S.wantLost = 0; S.copT = 0;
   S.contracts = (STAGE.contracts || []).map(c => ({ id: c.id, name: c.name, x: tc(c.at[0]), y: tc(c.at[1]), si: STAGES.findIndex(s => s.id === c.id) })).filter(c => c.si >= 0);
-  trafficInit();
+  trafficInit(); if (STAGE.hits) hitsInit();  // 도시 안 의뢰 (공중전화)
   // 순찰 경찰 둘: 시내 보도를 돈다 (조직 구역에는 들어가지 않는다)
   for (const r of STAGE.copBeats || []) { const g = makeGuard({ kind: 'g1', route: r, radio: false }, S.guards.length); g.police = true; g.beat = true; g.fac = 'P'; g.outfit = 'police'; g.torch = true; g.radio = false; setLayer(0); buildRouteLine(g); S.guards.push(g); }
   if (CITY_RET) { const P = S.player, c = S.contracts.find(o => o.id === CITY_RET.id); if (c) { P.x = c.x; P.y = c.y + 30; cam.x = P.x; cam.y = P.y; } CITY_RET = null; }
@@ -71,7 +71,7 @@ function cityLodStep(o, dt, calm) {
   const d = Math.min(o.lodDt, CITY_LOD_MAX_DT); o.lodDt = 0; return d;
 }
 function cityUpdate(dt) {
-  updateVehicles(dt); updateCopCars(dt);
+  updateVehicles(dt); updateCopCars(dt); if (STAGE.hits) hitsUpdate(dt);
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
   if (S.wanted > 0) {
     // 경찰끼리 무전: 하나라도 나를 보면 모두 그 자리로
@@ -109,6 +109,7 @@ function cityAction() {
   const P = S.player;
   if (P.car) return { k: 'carOut', v: P.car, label: '차에서 내리기' };
   if (P.z || flOf(P) || P.hide) return null;
+  if (STAGE.hits) { const h = hitAction(); if (h) return h; }
   for (const c of S.contracts || []) if (dist(P.x, P.y, c.x, c.y) < 64) return { k: 'contract', c, at: { x: c.x, y: c.y - 40 }, label: '의뢰 받기 — ' + (STAGES[c.si].name) };
   const v = nearVehicle(); if (v) return { k: 'carIn', v, at: { x: v.x, y: v.y - 56 }, label: v.driver ? '운전자 끌어내고 타기' : '차 타기' };
   return null;
@@ -120,13 +121,17 @@ function cityContract(c) {
 // 지금 할 일: 가장 가까운 안 끝낸 의뢰 장소
 function cityGoal() {
   const P = S.player, done = cityDone();
+  if (STAGE.hits && S.hit) return hitGoal();  // 수배 중에도 표적은 따라간다
   if (S.wanted > 0) return { text: `수배 ${'★'.repeat(S.wanted)} — 경찰 눈을 피해 버티기`, where: '', x: null, y: null, fl: 0 };
+  if (STAGE.hits) return hitGoal() || { text: '도시를 돌아다닌다', where: '', x: null, y: null, fl: 0 };
   const c = (S.contracts || []).filter(o => !done[o.id]).sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y))[0];
   return c ? { text: '의뢰 받기 — ' + STAGES[c.si].name, where: c.name, x: c.x, y: c.y, fl: 0 } : { text: '의뢰를 모두 마쳤다 — 도시를 돌아다닌다', where: '', x: null, y: null, fl: 0 };
 }
 // 의뢰 장소 표시: 빨간 원과 이름 (끝낸 곳은 회색)
 function drawContracts() {
-  if (!S.contracts || flOf(S.player) || S.player.z > 0 || S.player.wire) return; const done = cityDone();  // 옥상·위층에선 땅 표시를 그리지 않는다
+  if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
+  if (STAGE.hits) drawHits('world');
+  if (!S.contracts) return; const done = cityDone();  // 옥상·위층에선 땅 표시를 그리지 않는다
   for (const c of S.contracts) {
     const ok = done[c.id], pulse = 0.6 + 0.4 * Math.sin(S.t * 3);
     ctx.strokeStyle = ok ? 'rgba(150,150,160,.6)' : `rgba(232,71,60,${pulse})`; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(c.x, c.y, 26, 0, TAU); ctx.stroke();

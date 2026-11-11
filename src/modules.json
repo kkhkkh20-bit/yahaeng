@@ -302,6 +302,10 @@
       "group": "city"
     },
     {
+      "path": "47b_city_hits.js",
+      "group": "city"
+    },
+    {
       "path": "48_traffic.js",
       "group": "traffic"
     },
