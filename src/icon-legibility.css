@@ -74,9 +74,9 @@
 #caseBoard .case-evidence strong{font-size:13px;font-weight:600}
 #caseBoard .case-board-head,#help .sub-head{border-bottom-width:2px}
 #caseBoard .case-kicker{font-size:12px}
-#intro .title-acts button:not(#btnQuick):not(#btnNewCampaign){font-weight:600}
+#intro .title-acts button:not(#btnQuick):not(#btnFree):not(#btnNewCampaign){font-weight:600}
 #intro .title-acts button>svg{width:23px;height:23px;stroke:none}
-#intro .title-acts #btnQuick>svg{stroke:none}
+#intro .title-acts :is(#btnQuick,#btnFree)>svg{stroke:none}
 #hud .pad b,#hud .sysbtns b,#hud #quickItems output{font-weight:600}
 @media(max-width:999px){
  #skillScreen .skill-detail-head h3{font-size:23px}

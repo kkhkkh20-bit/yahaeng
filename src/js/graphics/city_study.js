@@ -131,7 +131,7 @@ function drawStudyFacade(b){
  if(bi%3===0)studyDraw(ctx,'ivy',x+w-30,y,24,48);
  if(spec.ad)drawStudySign(b,spec.ad);
  drawStudyBoards(b,'face');
- if(STAGE.cityLife)drawStoreSigns(b,false);
+ if(STAGE.cityLife)drawStoreSigns(b,!DBG.neon);  // 간판은 여기서 한 번만: 정면은 어둠·네온 단계 뒤(지붕 단계)에 그려지므로 빛 번짐도 여기서 같이 그린다
  b.signRects=[];ctx.restore();
 }
 function studyGround(c,ch,tx,ty){
