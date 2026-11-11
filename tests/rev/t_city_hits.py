@@ -10,6 +10,7 @@ SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));w
   return G.envAction().k}'''
 STATE = '''()=>{const G=__game,S=G.S,h=S.hit;G.updateHUD(true);return{cash:S.cash,n:S.hitN,wanted:S.wanted,hit:h?{name:h.name,state:h.g.state,ko:!!h.g.unconscious,escorts:h.escorts.length}:null,summary:document.querySelector('#objectiveSummary').textContent}}'''
 BEHIND = '''()=>{const G=__game,S=G.S,P=S.player,g=S.hit.g;S.cams=[];g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.wait=99;for(const e of S.hit.escorts){e.follow=null;e.x=-9000;}
+  for(const c of S.guards)if(c!==g&&Math.hypot(c.x-g.x,c.y-g.y)<900){c.x=-9000;c.route=[{x:-9000,y:-9000,pause:999}];c.path=null;}  // the random block may have passers-by or a patrol who would report the knockout
   Object.assign(P,{x:g.x-Math.cos(g.a)*40,y:g.y-Math.sin(g.a)*40,a:g.a,mode:'sneak'});G.input.sneakToggle=true;tick(.1);return G.attackAction().k}'''
 
 async def main():

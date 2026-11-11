@@ -50,6 +50,10 @@
       "group": "graphics"
     },
     {
+      "path": "graphics/euljiro.js",
+      "group": "graphics"
+    },
+    {
       "path": "graphics/office_interiors.js",
       "group": "graphics"
     },

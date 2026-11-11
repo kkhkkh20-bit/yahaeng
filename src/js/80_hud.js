@@ -10,7 +10,7 @@ function buildMiniBase(mw = 200, mh = 140) {
   const x = c.getContext('2d');
   for (let ty = 0; ty < MH; ty++) for (let tx = 0; tx < MW; tx++) {
     const ch = G0[ty][tx], b = bldAt(tx, ty);
-    x.fillStyle = b >= 0 && !BLD[b].vacant ? (ch === '#' || ch === 'N' ? '#6a7486' : '#3e4758') : ch === '#' ? '#4a5262' : ch === '=' ? '#2c3343' : ch === ',' ? '#2a2e28' : ch === 'g' ? '#1f3020' : ch === 'd' ? '#3a3024' : ch === 'x' ? '#6a8aa0' : ch === 'p' ? '#28405a' : ch === 'm' ? '#5d636e' : ch === 'r' ? '#4a463e' : ch === 'J' ? '#3a3e48' : ch === '~' ? '#1e3a5a' : ch === 'B' || ch === 'T' ? '#2f4a34' : ch === 'P' ? '#8a8f98' : ch === 'M' ? '#6a3a3a' : ch === 'A' ? '#5a6070' : '#181d28';
+    x.fillStyle = b >= 0 && !BLD[b].vacant ? (ch === '#' || ch === 'N' ? '#6a7486' : '#3e4758') : ch === '#' ? '#4a5262' : ch === '=' ? '#2c3343' : ch === ',' ? '#2a2e28' : ch === 'g' ? '#1f3020' : ch === 'd' ? '#3a3024' : ch === 'x' ? '#6a8aa0' : ch === 'p' ? '#28405a' : ch === 'm' ? '#5d636e' : ch === 'r' ? '#4a463e' : ch === 'J' ? '#3a3e48' : ch === '~' ? '#1e3a5a' : ch === '§' ? '#4a5262' : ch === '¦' ? '#3a3e48' : ch === 'B' || ch === 'T' ? '#2f4a34' : ch === 'P' ? '#8a8f98' : ch === 'M' ? '#6a3a3a' : ch === 'A' ? '#5a6070' : '#181d28';
     if(INK_STUDY)x.fillStyle=b>=0&&!BLD[b].vacant?(ch==='#'||ch==='N'?'#777365':'#40463a'):ch==='B'||ch==='T'?'#46523d':ch==='='?'#37392f':ch==='~'?'#354a46':'#252b23';
     x.fillRect(tx * s, ty * s, Math.ceil(s), Math.ceil(s));
   }

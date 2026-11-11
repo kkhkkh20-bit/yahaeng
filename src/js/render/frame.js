@@ -12,6 +12,7 @@ function draw() {
   worldTransform(ctx, sc);
   ctx.imageSmoothingEnabled = false;
   drawBig(ctx, mapC, ...viewRect(60));
+  drawDistricts(ctx);
   const P = S.player;
   SPEECH_R = []; MARK_R = []; ACTION_R = []; TAGQ = [];  // 이번 화면의 글자 표시를 모은다 (끝에서 flushTags)
   setLayer(0);

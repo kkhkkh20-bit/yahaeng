@@ -43,6 +43,10 @@ def campaign_assets(root):
     if signs.exists():
         assets['citySigns']=json.loads(signs.read_text())
         assets['citySigns']['src']='data:image/webp;base64,'+base64.b64encode((study/'korean-signs.webp').read_bytes()).decode()
+    euljiro=Path(root)/'src/art/euljiro'
+    if (euljiro/'district.json').exists():
+        assets['euljiro']=json.loads((euljiro/'district.json').read_text())
+        assets['euljiro']['src']='data:image/webp;base64,'+base64.b64encode((euljiro/'district.webp').read_bytes()).decode()
     vehicles=Path(root)/'src/art/vehicles'
     if (vehicles/'traffic.json').exists():
         assets['cityVehicles']=json.loads((vehicles/'traffic.json').read_text())

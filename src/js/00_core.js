@@ -7,6 +7,8 @@ let MW = 44, MH = 30;
 // 땅(z=0)에서 막히는 칸 / 시야를 가리는 칸
 const SOLID = new Set(['#', 'C', 'O', 'F', 'T', 'K', 'E', 'R', '~', 'H', 'U', 'W', 'S', 'N', 'X', 'Z', 'M', 'Q', 'q', 'P', 'V', 'A', 'I']);  // 'A' 주차된 차 'I' 필로티 기둥  // 'V' 위층 바깥(허공)  // 'Q' 불 땐 아궁이 'q' 찬 아궁이 'P' 전봇대
 const OPAQUE = new Set(['#', 'C', 'O', 'T', 'H', 'U', 'S', 'X', 'M', 'V', 'E']);
+// 그림으로 깐 구역(큰 도시 을지로): '§' 건물 = 막힘 + 시선 가림 · '¦' 난간·축대·다리 난간 = 막힘 + 시선 통과
+SOLID.add('§'); SOLID.add('¦'); OPAQUE.add('§');
 // 가구는 두 가지뿐: 높은 가구('E') = 막힘 + 시선 가림, 낮은 가구('K') = 막힘 + 시선 통과(웅크리면 뒤에 숨는다). 깔개·춤추는 자리만 밟고 지나간다
 const FURN_TALL = new Set(['wardrobe', 'shelf', 'shelfS', 'locker', 'fridge', 'cab', 'boxes', 'plant', 'spk']);
 const FURN_FLAT = new Set(['rug', 'dance']);

@@ -25,7 +25,7 @@ function takeHit() {
   const P = S.player, BX = (STAGE.roadsX || []).length - 1, BY = (STAGE.roadsY || []).length - 1;
   // 나에게서 적당히 먼 블록 (화면 밖, 너무 멀지 않게)
   const blocks = [];
-  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const cx = tc(4 + bx * 20 + 7.5), cy = tc(4 + by * 20 + 7.5), d = dist(P.x, P.y, cx, cy); if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
+  for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const cx = tc(4 + bx * 20 + 7.5), cy = tc(4 + by * 20 + 7.5), d = dist(P.x, P.y, cx, cy); if ((STAGE.districtBlocks || []).some(([a, b]) => a === bx && b === by)) continue; if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
   if (!blocks.length) return;
   const [bx, by] = blocks[(Math.random() * blocks.length) | 0], rev = Math.random() < 0.5, route = hitRing(bx, by, rev);
   const name = HIT_NAMES[S.hitN % HIT_NAMES.length];

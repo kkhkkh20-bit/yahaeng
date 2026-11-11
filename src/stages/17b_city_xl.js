@@ -5,9 +5,10 @@
   const BX = 8, BY = 6, W = BX * 20 + 8, H = BY * 20 + 8;
   const B = (bx, by) => [4 + bx * 20, 4 + by * 20];
   // 블록 배치 (기존 도시 종류): h 주택가 · s 상가 · w 조직 창고 · c 클럽 거리 · p 공원 · m 시장 · r 건달파 동네 · e 주택 · H 병원 · P 지구대 · k 공사장 · q 조직 본부
+  // D = 을지로·청계천 구역: 2×2 블록과 그 사이 도로를 한 장의 그림 구역으로 쓴다 (src/art/euljiro, 칸 판정은 같은 파일의 tiles)
   const LAYOUT = [
-    'hsweshcs',
-    'pmrkemrh',
+    'hDDeshcs',
+    'pDDkemrh',
     'eshcpsep',
     'HPmhrkqe',
     'skepmhsc',
@@ -70,6 +71,9 @@
       Gp({ kind: 'g2', route: [[x + 1, y + 10, 2], [x + 14, y + 10, 2]] }, { kind: 'g1', at: [x + 7, y + 9], post: 90 }, { kind: 'g2', at: [x + 11, y + 14], post: 0 });
     }
   };
+  // 을지로 구역: 블록 (1,0)~(2,1), 칸 (24,4)~(59,39). 가운데 세로 도로(x 40~43)와 가로 도로(y 20~23)는 구역이 덮는다
+  const DIS = window.__ASSETS__ && window.__ASSETS__.euljiro, DX = 24, DY = 4, isD = (bx, by) => LAYOUT[by][bx] === 'D';
+  T.D = () => {};
   const find = ch => { for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (LAYOUT[by][bx] === ch) return B(bx, by); return B(0, 0); };
   const ring = (bx, by, d) => { const [x0, y0] = B(bx, by), c = [[x0, y0], [x0 + 15, y0], [x0 + 15, y0 + 15], [x0, y0 + 15]]; return (d ? c.slice().reverse() : c).map(([a, b]) => [a, b, 0.5]); };
   const st = {
@@ -83,19 +87,25 @@
     build(m) {
       m.fill(0, 0, W - 1, H - 1, '.');
       for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
+        if (isD(bx, by)) continue;
         const [x0, y0] = B(bx, by); m.fill(x0, y0, x0 + 15, y0 + 15, '='); m.fill(x0 + 1, y0 + 1, x0 + 14, y0 + 14, ',');
         T[LAYOUT[by][bx]](m, x0, y0);
         // 보도 소품: 맨홀·봉투·수거함을 블록마다 돌려 가며
         const k = (bx * 3 + by * 5) % 4;
         if (k === 0) m.set(x0, y0 + 9, 'W'); else if (k === 1) m.set(x0 + 15, y0 + 1, 'O'); else if (k === 2) m.set(x0, y0 + 6, 'H'); else m.set(x0 + 9, y0 + 15, 'W');
       }
+      if (DIS) DIS.tiles.forEach((row, y) => { for (let x = 0; x < row.length; x++) m.set(DX + x, DY + y, row[x]); });
+      else for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) if (isD(bx, by)) { const [x0, y0] = B(bx, by); m.fill(x0, y0, x0 + 15, y0 + 15, '='); m.fill(x0 + 1, y0 + 1, x0 + 14, y0 + 14, ','); }
     },
     zones, zoneAllow: ['crew'],
     roofs: ['cRoofA', 'cRoofG', 'cRoofB'], bricks: [1, 0, 1],
-    lamps: (() => { const L = []; for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [x0, y0] = B(bx, by); L.push([x0, y0, 180, 1], [x0 + 15, y0 + 15, 180, 1, 0, (bx + by) % 3 === 1 ? '255,90,190' : (bx + by) % 3 === 2 ? '90,220,255' : null]); } return L; })(),
+    lamps: (() => { const L = (DIS ? DIS.lamps : []).map(([x, y, r, out, fl, col]) => [DX + x, DY + y, r, out, fl || 0, col || null, null, true]); for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { if (isD(bx, by)) continue; const [x0, y0] = B(bx, by); L.push([x0, y0, 180, 1], [x0 + 15, y0 + 15, 180, 1, 0, (bx + by) % 3 === 1 ? '255,90,190' : (bx + by) % 3 === 2 ? '90,220,255' : null]); } return L; })(),
     cams: [], radios: [], contracts: [],
     // 도시 안 의뢰: 공중전화(블록 동쪽 보도 가운데)에서 의뢰를 받으면 표적이 도시 어딘가를 돈다
     hits: true,
+    district: DIS ? { x: DX, y: DY, w: DIS.w, h: DIS.h, name: '을지로' } : null,
+    districtBlocks: [[1, 0], [2, 0], [1, 1], [2, 1]],
+    roadGaps: DIS ? [[40, DY, 43, DY + 35], [DX, 20, DX + 35, 23]] : [],
     phones: [[0, 0], [3, 1], [6, 0], [1, 3], [5, 3], [2, 5], [7, 5], [4, 2]].map(([bx, by]) => [4 + bx * 20 + 15, 4 + by * 20 + 7]),
     copBeats: [],
     guards: [], items: [], traps: [],
@@ -113,12 +123,15 @@
   st.copBeats.push(ring(3, 2, 1), ring(5, 4, 0));
   // 행인: 블록 둘레 보도 (기존 도시와 같은 규칙) · 공원과 시장 사람들 · 조직원
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) {
+    if (isD(bx, by)) continue;
     st.guards.push({ kind: 'civ', route: ring(bx, by, (bx + by) % 2) });
     if ((bx * 3 + by) % 2 === 0) { const r = ring(bx, by, (bx + by + 1) % 2); st.guards.push({ kind: 'civ', body: 'fBob', route: r.slice(2).concat(r.slice(0, 2)) }); }
     const [x0, y0] = B(bx, by), t = LAYOUT[by][bx];
     if (t === 'p') st.guards.push({ kind: 'civ', wander: [x0 + 1, y0 + 1, x0 + 14, y0 + 14], at: [x0 + 7, y0 + 4] });
     if (t === 'm') st.guards.push({ kind: 'civ', body: 'fTail', wander: [x0 + 1, y0 + 8, x0 + 14, y0 + 10], at: [x0 + 8, y0 + 10] });
   }
+  // 을지로 행인: 다리를 건너는 사람, 청계천 산책로, 뒷골목, 구역 바깥 보도
+  if (DIS) DIS.routes.forEach((r, i) => st.guards.push({ kind: 'civ', body: i % 2 ? 'fBob' : undefined, route: r.map(([x, y, p]) => [DX + x, DY + y, p]) }));
   st.guards.push(...gangs);
   return st;
 })()] : []),
