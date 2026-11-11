@@ -50,7 +50,7 @@ function makeVehicle(o) {
   return v;
 }
 function trafficInit() {
-  S.vehicles = [];
+  S.vehicles = []; decksInit();
   for (const p of CITY_PARKED) S.vehicles.push(makeVehicle({ x: p.x, y: p.y, a: -Math.PI / 2, c: p.c === 9 ? 0 : p.c, parked: true, police: p.c === 9, type: STAGE.cityLife && p.c !== 9 ? pickVType(((p.x * 73856093 ^ p.y * 19349663) >>> 0) / 4294967296) : undefined }));  // 색 9 = 경찰차
   const RX = STAGE.roadsX, RY = STAGE.roadsY, n = STAGE.traffic || 0, P = S.player;
   // 도로 위 차: 가로·세로 도로에 번갈아, 나와 너무 가깝지 않게
@@ -59,7 +59,8 @@ function trafficInit() {
     const road = hor ? RY[(k * 7) % RY.length] : RX[(k * 5) % RX.length], along = ((k * 977) % ((hor ? MW : MH) - 4)) + 2;
     const x = hor ? tc(along) : laneOf(road, d), y = hor ? laneOf(road, d) : tc(along);
     if (dist(x, y, P.x, P.y) < 300 || S.vehicles.some(v => dist(v.x, v.y, x, y) < 160) || RX.some(rx=>RY.some(ry=>Math.abs(x-(rx+2)*TILE)<170&&Math.abs(y-(ry+2)*TILE)<170))) continue;
-    const v = makeVehicle({ x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
+    const dz = deckSpawnZ(x, y); if (dz < 0) continue;
+    const v = makeVehicle({ z: dz, x, y, d, a: Math.atan2(DV[d][1], DV[d][0]), v: AI_SPD * 0.6, c: (k * 3) % 5, ai: true, driver: true, type: STAGE.cityLife ? pickVType(((k * 2654435761) >>> 0) / 4294967296) : undefined });
     planTurn(v); S.vehicles.push(v); i++;
   }
 }
@@ -70,11 +71,13 @@ function planTurn(v) {
   // 앞쪽 첫 교차 도로 (이미 들어선 교차로는 건너뛴다)
   const ahead = cross.filter(r => sgn > 0 ? r * TILE > pos - 8 : (r + 4) * TILE < pos + 8).sort((a, b) => sgn > 0 ? a - b : b - a);
   const r = ahead[0]; if (r == null) { v.turn = null; return; }
+  if (onDeckLevel(v)) { v.turn = null; v.crossEnd = sgn > 0 ? (r + 4) * TILE + 4 : r * TILE - 4; return; }  // 고가 위에서는 꺾지 않는다
   const opts = [];
   const lim = hor ? MW : MH, rLim = hor ? MH : MW;
   if (sgn > 0 ? r + 4 < lim : r > 0) opts.push(v.d, v.d);  // 직진 (조금 더 자주)
   const right = (v.d + 1) % 4, left = (v.d + 3) % 4;
-  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null) continue; if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
+  for (const nd of [right, left]) { const s2 = DV[nd][0] + DV[nd][1]; if (myRoad == null || deckBlocksTurn(!hor, r, myRoad)) continue;  // 고가 아래 교차로에서 고가 도로로는 못 꺾는다
+    if (s2 > 0 ? myRoad + 4 < rLim : myRoad > 0) opts.push(nd); }
   let nd = opts.length ? opts[(v.id * 7 + r * 3 + Math.floor(S.t)) % opts.length] : (v.d + 2) % 4;
   if (v.chase && opts.length) { const P = S.player, ix = hor ? (r + 2) * TILE : v.x, iy = hor ? v.y : (r + 2) * TILE;  // 경찰차: 나에게 가까워지는 쪽
     nd = opts.slice().sort((a, b) => ((P.x - ix) * DV[b][0] + (P.y - iy) * DV[b][1]) - ((P.x - ix) * DV[a][0] + (P.y - iy) * DV[a][1]))[0]; }
@@ -86,7 +89,9 @@ function aheadBlocked(v) {
   const ca = Math.cos(v.a), sa = Math.sin(v.a), P = S.player;
   const inBox = (x, y, len, half) => { const dx = x - v.x, dy = y - v.y, f = dx * ca + dy * sa, s = -dx * sa + dy * ca; return f > 30 && f < len && Math.abs(s) < half; };
   if (v.chase) return P.car && inBox(P.car.x, P.car.y, 130, 40) ? 'car' : null;  // 추격 경찰차는 내 차 말고는 서지 않는다 (사람은 밀치고 간다)
-  for (const o of S.vehicles) if (o !== v && !o.dead && inBox(o.x, o.y, 150, 34)) return 'car';
+  const up = onDeckLevel(v);
+  for (const o of S.vehicles) if (o !== v && !o.dead && onDeckLevel(o) === up && inBox(o.x, o.y, 150, 34)) return 'car';
+  if (up) return null;  // 고가 위: 사람은 없다
   if (!P.car && !P.z && !flOf(P) && inBox(P.x, P.y, 120, 30)) return 'me';
   for (const g of S.guards) if (g.state !== 'DEAD' && !flOf(g) && !g.z && inBox(g.x, g.y, 110, 28)) return 'ped';
   return null;
@@ -94,7 +99,7 @@ function aheadBlocked(v) {
 function updateVehicles(dt) {
   if (!S.vehicles) return;
   for (const v of S.vehicles) {
-    if (v.dead) { v.burn = Math.max(0, v.burn - dt); continue; }
+    if (v.dead) { v.burn = Math.max(0, v.burn - dt); if ((v.z || 0) > 0.001) deckStep(v, dt); continue; }  // 부서진 차도 공중이면 떨어진다
     if (v.smoke > 0) v.smoke -= dt;
     if (v === (S.player.car || {})) continue;  // 내 차는 updateDriving
     if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
@@ -116,7 +121,7 @@ function pushBodiesFromCars() {
   people.sort((a, b) => a.x - b.x);
   const reach = 80 + 40 + BODY_R;
   for (const v of S.vehicles) {
-    if (v === P.car && Math.abs(v.v) > 1) continue;
+    if ((v === P.car && Math.abs(v.v) > 1) || onDeckLevel(v)) continue;
     const hl = v.hl ?? 25, ca = Math.cos(v.a) * hl, sa = Math.sin(v.a) * hl;
     let lo = 0, hi = people.length; while (lo < hi) { const m = (lo + hi) >> 1; if (people[m].x < v.x - reach) lo = m + 1; else hi = m; }
     for (let i = lo; i < people.length && people[i].x <= v.x + reach; i++) {
@@ -135,6 +140,7 @@ const AI_LOOK = 72;
 function aiDrive(v, dt) {
   let hor = v.d === 0 || v.d === 2, sgn = DV[v.d][0] + DV[v.d][1];
   if (v.lane == null) v.lane = hor ? v.y : v.x;
+  if (v.turn && onDeckLevel(v)) planTurn(v);  // 땅에서 정해 둔 꺾기는 고가에 오르면 취소 (고가 밑 교차로에서는 못 꺾는다)
   const T = vType(v), blk = aheadBlocked(v); let want = v.chase ? Math.min(AI_SPD * 2, T.max) : Math.min(AI_SPD, T.max * .55);  // 버스·트럭은 천천히
   if (blk) { v.stopT += dt; want = 0;
     if (blk !== 'car' && v.stopT > 1.4 && (v.honkT -= dt) <= 0) { v.honkT = 2.5; play('metal', 0.25 * proxVol(v), 2.4); if (blk === 'ped' || blk === 'me') noise(v.x, v.y, 120, 'car', 0); }
@@ -264,7 +270,7 @@ function pedWaits(g) {
 // 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
 const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6, stopGap = v => STOP_LINE + (v.len || CAR_LEN) / 2 - 6;
 function trafficStopDistance(v){
- if(v.chase)return null;
+ if(v.chase||onDeckLevel(v))return null;  // 고가 위는 신호가 없다
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
  for(const rx of STAGE.roadsX||[])for(const ry of STAGE.roadsY||[]){
   const x0=rx*TILE,y0=ry*TILE,x1=x0+4*TILE,y1=y0+4*TILE,key=rx+','+ry;
@@ -276,14 +282,14 @@ function trafficStopDistance(v){
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
   if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
   const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;const g=stopGap(o);return ((h?(s>0?x0-g:x1+g):(s>0?y0-g:y1+g))-(h?o.x:o.y))*s;};
-  const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
+  const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&!onDeckLevel(o)&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
   incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);
   let owner=S.vehicles.find(o=>o.id===locks[key]);
   if(owner&&!inside(owner)&&dist(owner.x,owner.y,(x0+x1)/2,(y0+y1)/2)>300){delete locks[key];owner=null;}
   // A car behind the queue cannot reserve the junction ahead of its own lead.
   if(owner&&!inside(owner)){const lead=incoming.find(o=>o.d===owner.d&&distance(o)<distance(owner)-3);if(lead)owner=lead;}
-  if(!owner)owner=S.vehicles.find(o=>o!==v&&!o.parked&&inside(o))||incoming[0]||v;
+  if(!owner)owner=S.vehicles.find(o=>o!==v&&!o.parked&&!onDeckLevel(o)&&inside(o))||incoming[0]||v;
   locks[key]=owner.id;
   if(locks[key]===v.id||inside(v))return null;
   return Math.max(0,left);
@@ -297,12 +303,14 @@ const carPts = v => { const hl = v.hl ?? 25, ca = Math.cos(v.a), sa = Math.sin(v
 // 차가 벽·건물·다른 차와 겹치나 (겹친 상대 차를 돌려준다: 없으면 true/false)
 function carOverlap(v) {
   const R = v.r || CAR_R;
+  if (deckBlocked(v)) return true;
   for (const [px, py] of carPts(v)) {
+    if ((v.z || 0) > 0.15) break;  // 고가 위·떨어지는 중: 땅의 벽·건물은 아래에 있다
     const tx0 = Math.floor((px - R) / TILE), tx1 = Math.floor((px + R) / TILE), ty0 = Math.floor((py - R) / TILE), ty1 = Math.floor((py + R) / TILE);
     for (let ty = ty0; ty <= ty1; ty++) for (let tx = tx0; tx <= tx1; tx++) { if (v.ai&&!inMap(tx,ty)||!carBlocked(tx, ty)) continue;
       const nx = clamp(px, tx * TILE, tx * TILE + TILE), ny = clamp(py, ty * TILE, ty * TILE + TILE); if (dist(px, py, nx, ny) < R) return true; }
   }
-  for (const o of S.vehicles) { if (o === v || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
+  for (const o of S.vehicles) { if (o === v || Math.abs((o.z || 0) - (v.z || 0)) > 0.5 || dist(o.x, o.y, v.x, v.y) > (v.hl ?? 25) + (o.hl ?? 25) + R + (o.r || CAR_R) + 8) continue;
     const RR = R + (o.r || CAR_R); for (const [px, py] of carPts(v)) for (const [qx, qy] of carPts(o)) if (dist(px, py, qx, qy) < RR) return o; }
   return false;
 }
@@ -312,7 +320,8 @@ function missionBoundaryHint(){
  S.boundaryHintAfter=S.t+6;
  toast(S.exitOpen?'탈출구는 이쪽이 아니야. 표시된 출구로 가자.':'아직 할 일이 남았어. 임무부터 마무리하자.',2.8);
 }
-function carMove(v, dt, turn=0) {
+function carMove(v, dt, turn=0) { const hit = carMove0(v, dt, turn); deckStep(v, dt); return hit; }
+function carMove0(v, dt, turn=0) {
   const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
   for(let i=0;i<steps;i++){
    const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;const ma=v.va??v.a;v.x+=Math.cos(ma)*v.v*dt/steps;v.y+=Math.sin(ma)*v.v*dt/steps;  // 미끄러질 때는 차머리와 다른 쪽으로 간다
@@ -340,7 +349,7 @@ function carMove(v, dt, turn=0) {
 }
 // 차가 사람을 친다: 빠르면 처치, 느리면 넘어뜨린다 (기절). 내가 몰면 내 짓이다
 function hitPeople(v, dt) {
-  const spd = Math.abs(v.v); if (spd < 70) return;
+  const spd = Math.abs(v.v); if (spd < 70 || onDeckLevel(v)) return;  // 고가 위 차는 땅 사람을 치지 않는다
   const mine = S.player.car === v;
   for (const g of S.guards) {
     if (g.state === 'DEAD' || g.state === 'CAPTIVE' || flOf(g) || g.z || g.off) continue;
@@ -412,6 +421,7 @@ function carEnter(v) {
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;
+  if ((v.z || 0) > 0.05 && !force) return;  // 고가 위에서는 내리지 않는다
   v.va = null; v.skidding = false; v.skidPrev = null;
   const out = (v.r || CAR_R) + 31, spots = [v.a - Math.PI / 2, v.a + Math.PI / 2, v.a + Math.PI, v.a].map(a => ({ x: v.x + Math.cos(a) * out, y: v.y + Math.sin(a) * out }));
   const ok = spots.find(p => !solidAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && !S.vehicles.some(o => o !== v && dist(o.x, o.y, p.x, p.y) < 50)) || spots[0];
@@ -426,8 +436,13 @@ function drawVehicles() {
   if (!S.vehicles) return;
   const vx0 = cam.x - W / SCALE / 2 - 120, vx1 = cam.x + W / SCALE / 2 + 120, vy0 = cam.y - H / SCALE / 2 - 120, vy1 = cam.y + H / SCALE / 2 + 120;
   if (STAGE.cityLife) { drawSkids(); drawCarScorch(); }
+  if (S.decks?.length) drawDeckShadows();
   for (const v of S.vehicles) {
-    if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1) continue;
+    if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1 || (v.z || 0) > 0.01) continue;  // 고가 위 차는 drawDecks에서
+    drawOneVehicle(v);
+  }
+}
+function drawOneVehicle(v) {
     ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(v.a + Math.PI / 2);
     drawCarBody(v);
     // 전조등 (밤): 달리는 차는 앞을 비춘다
@@ -437,7 +452,6 @@ function drawVehicles() {
     ctx.restore();
     if (!STAGE.cityLife && v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
     if (!STAGE.cityLife && (v.smoke > 0 || (v.hp <= 2 && !v.dead))) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
-  }
 }
 // 도로 칠: 가운데 노란 겹선, 교차로 앞 정지선과 횡단보도 (지도 그림에 한 번 굽는다)
 function drawRoadMarks(x) {

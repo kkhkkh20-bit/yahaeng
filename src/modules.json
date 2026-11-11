@@ -326,6 +326,10 @@
       "group": "traffic"
     },
     {
+      "path": "48d_decks.js",
+      "group": "traffic"
+    },
+    {
       "path": "50_opps_checkpoint.js",
       "group": "opps_checkpoint"
     },

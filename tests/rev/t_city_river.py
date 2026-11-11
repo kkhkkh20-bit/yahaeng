@@ -21,7 +21,7 @@ CHECK = '''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL
   const sig=(rx,ry,t)=>{const t0=S.t;S.t=t;const s=G.traffic.signalState(rx,ry);S.t=t0;return s};
   const was=new Map(),dirs=new Map();let wet=0,onBridge=0,entries=0,redRuns=0;
   for(let k=0;k<60*30;k++){G.update(1/30);for(const v of S.vehicles){if(v.dead||v.parked)continue;const tx=Math.floor(v.x/48),ty=Math.floor(v.y/48);if(tile(tx,ty)==='~')wet++;if(ty>=Rv.y&&ty<Rv.y+Rv.rows)onBridge++;
-    if(!v.ai||v.chase)continue;const h=dirs.get(v.id)||[];h.push(v.d);if(h.length>15)h.shift();dirs.set(v.id,h);const j=jx(v);
+    if(!v.ai||v.chase||(v.z||0)>0.3)continue;/* cars on an elevated deck pass over the junction */const h=dirs.get(v.id)||[];h.push(v.d);if(h.length>15)h.shift();dirs.set(v.id,h);const j=jx(v);
     if(j&&!was.get(v.id)){entries++;const hor=h[0]%2===0;if([0,1,1.8].every(dt=>(hor?sig(j[0],j[1],S.t-dt).ew:sig(j[0],j[1],S.t-dt).ns)==='R'))redRuns++;}was.set(v.id,!!j);}}
   const fac={};for(const g of S.guards)if(g.fac&&g.state!=='DEAD')fac[g.fac]=(fac[g.fac]||0)+1;
   const specs=ST.referenceBuildings||[],signed=G.BLD.filter(b=>b.kind==='shop'&&b.signs&&b.signs[0]).length,roofBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='roof')).length,faceBoards=specs.filter(s=>(s.boards||[]).some(d=>d.mode==='face')).length,doors=G.BLD.filter(b=>!b.vacant).length;

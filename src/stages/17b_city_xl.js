@@ -146,6 +146,9 @@
     brief: '기존 도시를 가로·세로 2배로 넓힌 시험 구역이다. 차를 빼앗아 끝에서 끝까지 달려 보고, 수배가 붙었을 때 따돌릴 공간이 충분한지 확인한다.',
     W, H, start: [10, 4 + BS - 1], exit: [10, 4 + BS - 1], exitName: '', startA: 0, noRefine: true, floors: true, pspd: 1.3, gspd: 1.0, residents: 0.6, rivals: 3,
     roadsX: Array.from({ length: BX + 1 }, (_, i) => i * P), roadsY: [0, P, 2 * P, 3 * P, 3 * P + RS, 4 * P + RS, 5 * P + RS, 6 * P + RS], traffic: 84,  // 강 남쪽 둑길도 도로
+    // 높낮이: 북쪽 가로 고가도로(둘째 가로 도로 위, 가운데쯤 난간 없는 공사 구간)와 청계천을 높이 건너는 세로 고가 다리. 경사로 8칸
+    decks: [{ axis: 'x', road: P, from: P + 6, to: 6 * P - 3, ramp: 8, gaps: [{ side: 'n', from: 3 * P + 6, to: 3 * P + 12 }] },
+            { axis: 'y', road: 4 * P, from: 2 * P + 6, to: 5 * P + RS - 3, ramp: 8 }],
     blockCount: [BX, BY], blockSize: BS,
     blockOrigin: B, signals: true, climbPipes: true, cityLife: true, gangWar: true, noPrompts: true, river: { y: RIVER_Y, rows: RIVER_ROWS, name: '청계천' }, nightShade: 0.55,
     build(m) {
