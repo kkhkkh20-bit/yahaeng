@@ -117,13 +117,13 @@ function signalState(rx, ry) {
 // 신호등 그림: 모퉁이마다 굵은 기둥, 도로 위로 뻗은 팔에 차량 신호기(빨강 · 노랑 · 좌회전 · 초록), 기둥에 보행 신호(서 있는 사람 · 걷는 사람)
 // 북서·남동 기둥은 동서로 달리는 차, 북동·남서 기둥은 남북으로 달리는 차를 향한다. 보행 신호는 같은 쪽 차와 함께 초록이 된다
 const SIG_COL = { G: '#2ee87a', Y: '#ffc21f', R: '#ff3434' };
-function drawSignalHead(cx, cy, on, t) {
+function drawSignalHead(cx, cy, on) {
   const w = 46, h = 16, x = cx - w / 2, y = cy - h / 2;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 3, y + 4, w, h);
   ctx.fillStyle = '#e2b62a'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);  // 노란 테 (뒤판)
   ctx.fillStyle = '#121418'; ctx.fillRect(x, y, w, h);
   [['R', 0], ['Y', 1], ['L', 2], ['G', 3]].forEach(([c, k]) => {
-    const lx = x + 6 + k * 11.3, ly = cy, lit = c === on || c === 'L' && on === 'G' && Math.floor(t * 2) % 2 === 0 && false;
+    const lx = x + 6 + k * 11.3, ly = cy, lit = c === on;
     const col = c === 'L' ? SIG_COL.G : SIG_COL[c];
     ctx.fillStyle = '#25282e'; ctx.beginPath(); ctx.arc(lx, ly, 5, 0, TAU); ctx.fill();
     if (c === 'L') { ctx.strokeStyle = on === 'G' ? col : 'rgba(90,100,90,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx + 3, ly); ctx.lineTo(lx - 3, ly); ctx.moveTo(lx - 1, ly - 2.5); ctx.lineTo(lx - 3.5, ly); ctx.lineTo(lx - 1, ly + 2.5); ctx.stroke(); return; }
@@ -162,7 +162,7 @@ function drawTrafficSignals() {
       ctx.strokeStyle = '#3a4048'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
       ctx.strokeStyle = '#6a737e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
       ctx.fillStyle = '#4a515a'; ctx.beginPath(); ctx.arc(px, py, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#7d8690'; ctx.beginPath(); ctx.arc(px - 2, py - 2, 3, 0, TAU); ctx.fill();
-      drawSignalHead(hx, hy, s[axis], S.t);
+      drawSignalHead(hx, hy, s[axis]);
       // 보행 신호: 이 모퉁이에서 가로로 건너는 쪽과 세로로 건너는 쪽
       drawWalkHead(px + (px < x0 ? -14 : 14), py - 4, walkState(rx, ry, true), S.t);
       drawWalkHead(px, py + (py < y0 ? -22 : 22), walkState(rx, ry, false), S.t);
@@ -173,7 +173,7 @@ function drawTrafficSignals() {
 // 행인: 보행 신호가 빨강이면 도로에 들어서기 직전(연석)에서 기다린다
 const ROAD_CH = '.';
 function pedWaits(g) {
-  if (!STAGE.signals || !g.civ || g.state === 'PANIC' || flOf(g) || g.z) return false;
+  if (!STAGE.signals || !g.civ || !['PATROL', 'RETURN'].includes(g.state) || flOf(g) || g.z) return false;  // 도망·신고하러 뛰는 사람은 신호를 안 본다
   const next = g.path?.[0]; if (!next) return false;
   const tx = Math.floor(g.x / TILE), ty = Math.floor(g.y / TILE), nx = Math.floor(next.x / TILE), ny = Math.floor(next.y / TILE);
   if (G0[ny]?.[nx] !== ROAD_CH || G0[ty]?.[tx] === ROAD_CH) return false;  // 이미 길 위면 끝까지 건넌다
@@ -270,7 +270,7 @@ function hitPeople(v, dt) {
   }
   // 내가 걷다가 달려오는 차에 치임
   const P = S.player;
-  if (!mine && !P.car && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
+  if (!mine && !P.car && !P.cuffed && !P.z && !flOf(P) && !P.hide && spd > 120 && carPts(v).some(([px, py]) => dist(px, py, P.x, P.y) < CAR_R + 10)) { if (STAGE.cityLife) { spawnEffect('impact', { x: P.x, y: P.y - 16, fl: 0, z: 0 }, { scale: 1.1 }); bloodSpray(P.x, P.y, v.a, spd > 220 ? 6 : 3); S.shakeT = 0.35; if (spd > 220) { P.hurtT = 0; hurtPlayer(null, '차에 치였다.'); } }  // 세게 치이면 두 칸
     hurtPlayer(null, '차에 치였다.'); P.x += Math.cos(v.a + Math.PI / 2) * 30; P.y += Math.sin(v.a + Math.PI / 2) * 30; v.v = 0; }
 }
 // 내가 운전: 조이스틱(방향키) 쪽으로 차머리를 돌리며 가속. 거의 반대쪽이면 브레이크 → 후진

@@ -328,7 +328,7 @@ function autoResidents() {
       const r = sleep ? u.rooms[0] : u.living, g = f ? GF[f] : G0; let pt = null;
       for (let y = r.y0; y <= r.y1 && !pt; y++) for (let x = r.x0; x <= r.x1; x++) { const c = g[y][x]; if (!SOLID.has(c) && c !== 'Y' && (sleep ? true : y > r.y0)) { pt = [x, y]; if (!sleep) break; } }
       if (!pt) return;
-      out.push({ kind: 'civ', look: (h >> 5) % 4, fl: f, at: pt, post: sleep ? 90 : ((h >> 7) % 4) * 90, sleep: !!sleep });
+      out.push({ kind: 'civ', resident: true, look: (h >> 5) % 4, fl: f, at: pt, post: sleep ? 90 : ((h >> 7) % 4) * 90, sleep: !!sleep });
     }); });
   });
   return out;
@@ -348,7 +348,7 @@ function makeGuard(d, i) {
   else { const leader = (STAGE._g || STAGE.guards)[d.follow]; sx = leader.route[0][0] - 1; sy = leader.route[0][1]; }
   const post = d.post != null ? d.post * Math.PI / 180 : null;
   return {
-    id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
+    id: i, smoker: !!d.smoker, fl: d.fl || 0, civ: d.kind === 'civ', wander: d.wander || null, club: !!d.club, look: d.look || 0, doc: !!d.doc, sleep: !!d.sleep, resident: !!d.resident, kind: d.elite ? 'g3' : d.kind, elite: !!d.elite, lookout: !!d.lookout, dog: d.kind === 'dog', hasKey: d.key ? (d.key === true ? 'gold' : d.key) : null, target: !!d.target, follow: d.follow, escortWait: d.escortWait || null, x: tc(sx), y: tc(sy), a: post != null ? post : 0, want: post != null ? post : 0,
     route: d.route ? d.route.map(r => ({ x: tc(r[0]), y: tc(r[1]), pause: r[2] })) : [{ x: tc(sx), y: tc(sy), pause: 999 }],
     // 무전기: 의뢰마다 든 사람을 정해 둔다 (STAGE.radios — 무리마다 하나). 없으면 정예 + 셋 중 하나
     post, ri: d.route ? 1 % d.route.length : 0, path: null, z: 0, homeFl: d.fl || 0, radio: d.kind !== 'civ' && d.kind !== 'dog' && !d.target && (d.radio != null ? !!d.radio : STAGE.radios ? STAGE.radios.includes(i) : !!d.elite || i % 3 === 0), wait: d.startPause ?? (d.route ? 0 : 999), waitBase: 0,

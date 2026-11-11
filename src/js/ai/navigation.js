@@ -7,7 +7,7 @@ function lookAround(g, dt, base, amp, hold) {
   g.want = base + g.lookOff;
 }
 const npcCanForceDoor = g => !g.civ && !g.dog && ['ALERT','SEARCH','CHECK','BODY','SUSPICIOUS'].includes(g.state);
-const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||!g.civ&&g.fac==='A'&&d.keyLock==='code';
+const npcCanOpenDoor=(g,d)=>!d.keyLock||g.hasKey===d.keyLock||STAGE.cityLife&&g.resident&&d.keyLock==='gold'||!g.civ&&g.fac==='A'&&d.keyLock==='code';
 function npcPostLegClear(a,b,sol=solidAt){
   const steps=Math.max(1,Math.ceil(dist(a.x,a.y,b.x,b.y)/6));
   for(let i=0;i<=steps;i++)for(const [dx,dy]of [[0,0],[9,0],[-9,0],[0,9],[0,-9]]){

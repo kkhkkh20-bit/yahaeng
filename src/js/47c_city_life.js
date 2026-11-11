@@ -22,7 +22,8 @@ function startCuffs(why, cop) {
 }
 function updateCuffs(dt) {
   const C = S.cuffs; if (!C) return; const P = S.player; C.t += dt;
-  const g = C.cop; if (g && g.state !== 'DEAD') { const bx = P.x - Math.cos(P.a) * 20, by = P.y - Math.sin(P.a) * 20; g.x += (bx - g.x) * Math.min(1, dt * 10); g.y += (by - g.y) * Math.min(1, dt * 10); g.a = g.want = P.a; g.moving = false; g.path = null; }
+  const g = C.cop; if (g && g.state !== 'DEAD' && !flOf(g) && !g.z && dist(g.x, g.y, P.x, P.y) < 90) {  // 가까이 붙은 경찰만 등 뒤로 (벽 너머로 끌어오지 않는다)
+    const bx = P.x - Math.cos(P.a) * 20, by = P.y - Math.sin(P.a) * 20; g.x += (bx - g.x) * Math.min(1, dt * 10); g.y += (by - g.y) * Math.min(1, dt * 10); g.a = g.want = P.a; g.moving = false; g.path = null; }
   if (C.clicks < 1 && C.t > 0.55) { C.clicks = 1; play('metal', 0.7, 1.6); S.flash = Math.max(S.flash || 0, 0.12); }
   if (C.clicks < 2 && C.t > 0.95) { C.clicks = 2; play('metal', 0.7, 1.8); S.flash = Math.max(S.flash || 0, 0.12); }
   if (C.t >= CUFF_T) { S.cuffs = null; P.cuffed = false; cityArrest(C.why); }
@@ -78,17 +79,19 @@ function deployFromCar(v) {
   return out;
 }
 // 조직이 나를 쫓다 놓칠 만큼 멀어지면 차를 부른다 (조직마다 한 대)
+// 나를 쫓는 중이거나, 나를 쫓다가 놓치고 찾는 중(30초 안)인 조직원. 시체를 보고 수색하는 조직원은 빼다
+function huntsMe(g) { if (g.state === 'ALERT') { g.chasedT = S.t; return true; } return g.state === 'SEARCH' && g.chasedT != null && S.t - g.chasedT < 30; }
 function updateGangCars(dt) {
   if ((S.gangCarT = (S.gangCarT || 0) - dt) > 0) return; S.gangCarT = 3;
   const P = S.player, hunting = {};
-  for (const g of S.guards) if (cityGang(g) && (g.state === 'ALERT' || g.state === 'SEARCH')) { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
+  for (const g of S.guards) if (cityGang(g) && huntsMe(g)) { const d = dist(g.x, g.y, P.x, P.y); hunting[g.fac] = Math.min(hunting[g.fac] ?? 1e9, d); }
   for (const f in hunting) {
     if (hunting[f] < 520 && !P.car) continue;  // 걸어서 따라잡을 만하면 차는 부르지 않는다
     if (S.vehicles.some(v => v.gang === f && v.chase && !v.dead)) continue;
     if (!spawnChaseCar(f)) S.gangCarT = 0.5;  // 알맞은 길목을 못 찾았으면 곧 다시 찾는다
   }
   // 나를 찾는(추격·수색) 조직원이 없어진 조직의 차는 그냥 차로 돌아간다
-  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && (g.state === 'ALERT' || g.state === 'SEARCH'))) v.chase = false;
+  for (const v of S.vehicles) if (v.gang && v.chase && !S.guards.some(g => g.fac === v.gang && cityGang(g) && huntsMe(g))) v.chase = false;
 }
 
 // 차 사고: 사람은 차 방향으로 날아가 쓰러지고, 그 자리에 피가 튄다
@@ -172,6 +175,7 @@ function cityDeathGore(o, by) {
 
 function cityLifeUpdate(dt) {
   updateCuffs(dt); if (!S.cuffs) updateArrest(dt);
+  for (const g of S.guards) if (g.state === 'ALERT' && cityGang(g)) g.chasedT = S.t;
   updateGangCars(dt);
   updateBlood(dt);
 }
@@ -204,8 +208,8 @@ function drawStoreSigns(b, lit) {
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
     ctx.fillStyle = st.bg; ctx.fillRect(bx, by, bw, bh); ctx.fillStyle = st.ac; ctx.fillRect(bx, by, bw, 3); ctx.fillRect(bx, by + bh - 2, bw, 2);
-    ctx.font = 'bold ' + uiFont(22); ctx.fillStyle = st.fg; ctx.fillText(name, bx + bw / 2, by + bh / 2 + 1, bw - 80);
-    if (bw > 150) { ctx.font = 'bold ' + uiFont(11); ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
+    ctx.font = '700 22px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; ctx.fillText(name, bx + bw / 2, by + bh / 2 + 1, bw - 80);
+    if (bw > 150) { ctx.font = '700 11px ' + UI_FONT_FAMILY; ctx.fillStyle = st.ac; ctx.fillText(sub, bx + 26, by + bh / 2 + 1); ctx.fillText('☎', bx + bw - 22, by + bh / 2 + 1); }
     ctx.globalAlpha = 1;
   }
   // 세로 돌출 간판: 위층 업소들 (층 표시와 함께)
@@ -215,7 +219,7 @@ function drawStoreSigns(b, lit) {
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.ac); for (const [pad, a] of [[16, .08], [6, .14]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(vx - pad, vy - pad, vw + pad * 2, vh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = .9; }
     ctx.fillStyle = '#2a2e36'; ctx.fillRect(vx - 6, vy + 6, 6, 3); ctx.fillRect(vx - 6, vy + vh - 9, 6, 3);
     ctx.fillStyle = st.bg; ctx.fillRect(vx, vy, vw, vh); ctx.strokeStyle = st.ac; ctx.lineWidth = 2; ctx.strokeRect(vx + 1, vy + 1, vw - 2, vh - 2);
-    ctx.font = 'bold ' + uiFont(16); ctx.fillStyle = st.fg; const step = Math.min(20, (vh - 22) / Math.max(1, chars.length));
+    ctx.font = '700 16px ' + UI_FONT_FAMILY; ctx.fillStyle = st.fg; const step = Math.min(20, (vh - 22) / Math.max(1, chars.length));
     chars.forEach((ch, k) => ctx.fillText(ch, vx + vw / 2, vy + 12 + k * step));
     ctx.font = uiFont(9); ctx.fillStyle = st.ac; ctx.fillText((f + 1) + 'F', vx + vw / 2, vy + vh - 8);
     ctx.globalAlpha = 1;
