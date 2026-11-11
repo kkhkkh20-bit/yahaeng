@@ -18,7 +18,12 @@ function update(dt, present=true) {
   if (S.qBuf > 0) { S.qBuf -= dt; const qa = primaryAction(); if (!S.qKill && qa.k !== 'none'&&!isAtk(qa)) { S.qBuf = 0; actPrimary(); } } // Generic object taps cannot turn into an attack on a new person.
   updateChats(dt);
   updateSecurityResponse(dt);
-  for (const g of S.guards) { setLayer(flOf(g)); updateGuard(g, dt); setLayer(flOf(S.player)); if (S.over) return; }
+  S.lodTick = (S.lodTick || 0) + 1;
+  for (const g of S.guards) {
+    let gdt = dt;
+    if (STAGE.city) { gdt = cityLodStep(g, dt, cityLodGuardCalm(g)); if (!gdt) continue; }  // 도시: 멀고 평온한 사람은 덜 자주
+    setLayer(flOf(g)); updateGuard(g, gdt); setLayer(flOf(S.player)); if (S.over) return;
+  }
   if(STAGE.firstSteps&&!STAGE.storyEpisode&&S.guards.some(g=>g.state==='ALERT')&&cpReady()){endGame(false,'적의 시야에 드러났다 — 시야 밖이나 풀숲으로 이동하자');return;}
   updateTargetPersonalities();
   updateVipPlan(dt);updateVipContract();

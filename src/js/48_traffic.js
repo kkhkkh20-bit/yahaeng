@@ -66,8 +66,10 @@ function updateVehicles(dt) {
     if (v.smoke > 0) v.smoke -= dt;
     if (v === (S.player.car || {})) continue;  // 내 차는 updateDriving
     if (!v.ai) { if (Math.abs(v.v) > 1) { v.v *= Math.pow(0.08, dt); carMove(v, dt); } continue; }  // 주인 없는 차: 미끄러지다 선다
-    aiDrive(v, dt);
-    hitPeople(v, dt);
+    let vdt = dt;
+    if (STAGE.city) { vdt = cityLodStep(v, dt, cityLodVehicleCalm(v)); if (!vdt) continue; }  // 도시: 멀리서 그냥 다니는 차는 덜 자주
+    aiDrive(v, vdt);
+    hitPeople(v, vdt);
   }
 }
 // 남이 모는 차: 내 차와 같은 몸(속도·방향·핸들)으로 달린다. 앞을 보고(차로 위 70px 앞 점을 따라가는 '순수 추종') 핸들을 꺾고,
