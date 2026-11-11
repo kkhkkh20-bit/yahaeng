@@ -49,6 +49,27 @@ function spawnCop(calm) {  // calm: 사건 출동 (나를 쫓지 않는다)
   if (!calm) copChase(g); return g;
 }
 function despawnCop(g) { g.off = true; g.state = 'DEAD'; g.x = -9999; g.y = -9999; g.path = null; g.icon = null; g.say = null; }
+// 먼 곳 갱신 줄이기 (도시 판만): 플레이어와 화면 양쪽에서 멀고, 평상시 상태인 행인·조직원·AI 차는
+// CITY_LOD_EVERY 번에 한 번만 갱신한다. 건너뛴 시간은 모아 두었다가 한꺼번에 넘기므로 걸음·순찰 시간은 그대로다.
+// 한 번에 넘기는 시간은 CITY_LOD_MAX_DT 로 막아 벽 통과나 큰 순간이동을 막는다. 의뢰 판은 경비 동선 타이밍을 그대로 둔다.
+const CITY_LOD_EVERY = 3, CITY_LOD_FAR = 1100, CITY_LOD_MAX_DT = 0.15;
+function cityLodFar(o) {
+  const P = S.player;
+  return dist(o.x, o.y, P.x, P.y) > CITY_LOD_FAR && dist(o.x, o.y, cam.x, cam.y) > CITY_LOD_FAR;
+}
+function cityLodGuardCalm(g) {
+  return (g.state === 'PATROL' || g.state === 'RETURN') && !g.police && !g.target && !g.seen && !(g.meter > 0) && !g.doomed && !g.carry && !g.captive && cityLodFar(g);
+}
+function cityLodVehicleCalm(v) {
+  return v.ai && !v.chase && !v.police && !v.dead && !((v.crashUntil || 0) > S.t) && cityLodFar(v);
+}
+// 이번 갱신에서 o 를 건너뛸지. 건너뛰지 않으면 모아 둔 시간을 포함한 dt 를 돌려준다
+function cityLodStep(o, dt, calm) {
+  if (!calm) { const d = dt + (o.lodDt || 0); o.lodDt = 0; return Math.min(d, CITY_LOD_MAX_DT); }
+  o.lodDt = (o.lodDt || 0) + dt;
+  if ((((o.id || 0) + S.lodTick) % CITY_LOD_EVERY) !== 0 && o.lodDt < CITY_LOD_MAX_DT) return 0;
+  const d = Math.min(o.lodDt, CITY_LOD_MAX_DT); o.lodDt = 0; return d;
+}
 function cityUpdate(dt) {
   updateVehicles(dt); updateCopCars(dt);
   const P = S.player, cops = S.guards.filter(g => g.police && !g.off && g.state !== 'DEAD');
