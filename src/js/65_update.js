@@ -2,7 +2,7 @@ const ESCAPE_T = 20;  // 발각 뒤 시야를 끊고 이만큼(초) 버티면 �
 // ---------------------------------------------------------------- 갱신
 function update(dt, present=true) {
   syncCaseProgress();
-  if(view3dOn()&&window.__clubView&&!window.__clubView.ready)return;
+  if(STAGE.artSlice&&window.__clubView&&!window.__clubView.ready)return;
   updateTraps(dt);
   S.t += dt;
   updateSkillDevices();

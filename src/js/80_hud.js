@@ -29,7 +29,7 @@ function drawMini() {
     const v = S.entrySel ? 'hidden' : ''; if (cv.style.visibility !== v) { cv.style.visibility = v; if (hc) hc.style.visibility = v; } }
   if (miniBase?.stage===S && S.t - miniT < 0.12 && S.t >= miniT) return; miniT = S.t;
   // 주인공(과 행동 표시)이 미니맵·목표·도움말 밑에 들어가면 그 판을 옅게 한다
-  { const cr = canvas.getBoundingClientRect(), ip=view3dOn()&&!tactical&&window.__clubView?.ready?window.__clubView.actorScreen(S.player):null,px = ip?ip.x:cr.left + (S.player.x - cam.x) * SCALE + W / 2, py = ip?ip.y:cr.top + (S.player.y - cam.y) * SCALE + H / 2;
+  { const cr = canvas.getBoundingClientRect(), ip=STAGE.artSlice&&!tactical&&window.__clubView?.ready?window.__clubView.actorScreen(S.player):null,px = ip?ip.x:cr.left + (S.player.x - cam.x) * SCALE + W / 2, py = ip?ip.y:cr.top + (S.player.y - cam.y) * SCALE + H / 2;
     for (const el of [cv, document.querySelector('#hud .obj'), document.getElementById('hintCard')]) { if (!el) continue; const r = el.getBoundingClientRect(); const over = r.width > 0 && px > r.left - 40 && px < r.right + 40 && py > r.top - 70 && py < r.bottom + 40; el.classList.toggle('hudfade', over); } }
   if (!miniBase || miniBase.stage !== S) { miniBase = buildMiniBase(); miniBase.stage = S; cv.width = miniBase.width; cv.height = miniBase.height; }
   const x = cv.getContext('2d'), s = miniBase.s, P = S.player, T = v => v / TILE * s;
@@ -41,9 +41,9 @@ function drawMini() {
     x.fillStyle='#7fd6ff';x.beginPath();x.arc(T(P.x),T(P.y),2.5,0,TAU);x.fill();return;
   }
   x.drawImage(miniBase, 0, 0);
-  if(view3dOn()&&!tactical&&window.__clubView?.drawPassageMap(cv))return;
+  if(STAGE.artSlice&&!tactical&&window.__clubView?.drawPassageMap(cv))return;
   // 화면에 보이는 범위
-  x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(view3dOn()&&!tactical&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
+  x.strokeStyle = 'rgba(232,227,214,.45)'; x.lineWidth = 1;if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){const pts=[[0,0],[W,0],[W,H],[0,H]].map(p=>window.__clubView.screenToWorld(...p));if(pts.every(Boolean)){x.beginPath();pts.forEach((p,i)=>i?x.lineTo(T(p.x),T(p.y)):x.moveTo(T(p.x),T(p.y)));x.closePath();x.stroke();}}else x.strokeRect(T(cam.x - W / SCALE / 2), T(cam.y - H / SCALE / 2), T(W / SCALE), T(H / SCALE));
   if (S.exitOpen) { x.strokeStyle = '#f2c46b'; x.lineWidth = 2; for (const e of S.exits || [S.exit]) { x.beginPath(); x.arc(T(e.x), T(e.y), 5, 0, TAU); x.stroke(); } }
   for (const it of S.items) if (!it.got) { x.fillStyle = '#f2c46b'; x.fillRect(T(it.x) - 2.5, T(it.y) - 2.5, 5, 5); if (it.fl) { x.fillStyle = '#0b0d12'; x.font = uiFont(7); x.textAlign = 'center'; x.fillText(String(it.fl + 1), T(it.x), T(it.y) + 2.5); } }
   // 보이는 사람만: 같은 층·시선이 닿는 자경대원(경계 단계 색), 주민은 초록

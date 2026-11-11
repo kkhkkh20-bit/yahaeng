@@ -2,7 +2,7 @@
 // canvas allocation, gameplay light or sound is added by a visual effect.
 const FX_META=A.pixelfx||null,FX_LIMIT=24;
 const fxAtlas=FX_META?Object.assign(new Image(),{src:FX_META.src}):null;
-const pixelFxEnabled=()=>!!FX_META&&!(STAGE&&view3dOn());
+const pixelFxEnabled=()=>!!FX_META&&!STAGE?.artSlice;
 const reducedFxMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function spawnEffect(kind,at,opts={}) {
   if(!S||!at||!pixelFxEnabled()||!FX_META.effects[kind]||!Number.isFinite(at.x)||!Number.isFinite(at.y))return false;

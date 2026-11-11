@@ -2,8 +2,8 @@ const DBG = window.__skip || (window.__skip = {});  // 성능 측정용: 그리�
 function draw() {
   refreshPurchasedArt();refreshPurchasedProps();refreshPropArt();refreshOfficeArt();refreshFreeCity();
   visionFrame=selectVisionFocus();
-  if(view3dOn()&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
-  if(view3dOn()&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
+  if(STAGE.artSlice&&window.__clubView?.ready)window.__clubView.setTactical(tactical);
+  if(STAGE.artSlice&&!tactical&&window.__clubView?.ready){window.__clubView.draw(ctx,canvas);drawMini();return;}
   if (S.player.under && !tactical) { drawUnderground(); return; }
   PM();hudBlockFrame=null;
   const sc = SCALE * DPR;
