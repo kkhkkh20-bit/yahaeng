@@ -1,4 +1,4 @@
-"""Open-city contracts (free mode): step into the phone booth, take the call -> target in the city -> kill pays, knockout does not."""
+"""Open-city contracts (free mode): step into the ringing phone booth, take the call -> target in the city -> kill pays, knockout does not."""
 import asyncio, json, sys
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -6,7 +6,7 @@ from playwright.async_api import async_playwright
 R = Path(__file__).resolve().parents[2]
 SETUP = '''()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL'));while(G.DLG.modal)G.advanceDialog();
   window.tick=s=>{for(let t=0;t<s;t+=1/60)G.update(1/60)};tick(.3);const S=G.S,P=S.player;
-  const p=S.phones.slice().sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];P.x=p.x+30;P.y=p.y+10;tick(.1);
+  const p=S.phones.slice().sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y))[0];P.x=p.x+30;P.y=p.y+10;S.ringPhone=p;S.ringT0=S.t;tick(.1);  // this booth is ringing
   return G.envAction().k}'''
 STATE = '''()=>{const G=__game,S=G.S,h=S.hit;G.updateHUD(true);return{cash:S.cash,n:S.hitN,wanted:S.wanted,hit:h?{name:h.name,state:h.g.state,ko:!!h.g.unconscious,escorts:h.escorts.length}:null,summary:document.querySelector('#objectiveSummary').textContent}}'''
 BEHIND = '''()=>{const G=__game,S=G.S,P=S.player,g=S.hit.g;S.cams=[];g.route=[{x:g.x,y:g.y,pause:999}];g.path=null;g.wait=99;for(const e of S.hit.escorts){e.follow=null;e.x=-9000;}

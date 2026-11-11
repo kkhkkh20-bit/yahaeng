@@ -32,7 +32,7 @@ function update(dt, present=true) {
   updateDispatchFault(dt);
   if ((S.targetIntelT = (S.targetIntelT || 0) - dt) <= 0) { S.targetIntelT = .15; updateTargetIntel(); }
   if (STAGE.city) cityUpdate(dt); else if (S.vehicles) updateVehicles(dt);
-  engineSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
+  engineSound(); screechSound();  // 운전 중 엔진 (판이 바뀌면 꺼진다)
   separateBodies(dt); updateClubMusic(); updateCams(dt);
   if(STAGE.securityLesson&&cpReady()&&(disguiseKnowledge().witnesses.length||(S.stats.camRec||0)>0)){endGame(false,disguiseKnowledge().witnesses.length?'신원 확인 게이지가 찼다 — 거리나 시야를 끊자':'CCTV 게이지가 찼다 — 통행과 작업은 별도 판정이다');return;}
   updateStarterContract();if(S.over)return;
@@ -45,7 +45,7 @@ function update(dt, present=true) {
   { let mood = S.alevel >= 3 || S.radioCall ? 2 : S.alevel === 2 ? 1 : 0;
     for (const g of S.guards) { if (g.civ || g.state === 'DEAD' || g.state === 'CAPTIVE') continue; if (g.state === 'ALERT') { mood = 2; break; } if (['NOTICE', 'SUSPICIOUS', 'SEARCH', 'BODY'].includes(g.state) || g.meter > 0.15) mood = Math.max(mood, 1); }
       if (mood >= (S.moodHi || 0)) { S.moodHi = mood; S.moodT = 4; } else if ((S.moodT -= dt) <= 0) S.moodHi = mood;
-      setMusic(['n_calm', 'n_tense', 'n_fight'][S.moodHi]); }
+      const radio = radioWanted(); setMusic(radio ? carStation(S.player.car) : ['n_calm', 'n_tense', 'n_fight'][S.moodHi]); musicRadio(radio); }  // 차 안: 라디오
   if (STAGE.fuse) {
     if (S.fuseGuard && S.fuseGuard.state !== 'FUSE') { S.fuseGuard.atFuse = false; S.fuseGuard = null; }
     if (!S.lightsOn && !S.fuseGuard && S.fuseT <= 0) S.fuseT = 3;

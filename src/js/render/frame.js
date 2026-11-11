@@ -141,6 +141,7 @@ function draw() {
   PM('glow+torch');
   if (NEONY() && !DBG.neon) drawNeonSigns();
   if (studyStage() && !DBG.neon) { drawBillboardsLit(); if (STAGE.cityLife) drawSignNeon(); }
+  if (STAGE.cityLife && !flOf(P)) drawCarFire();  // 불·연기·폭발은 어둠 위에
   ctx.globalCompositeOperation = 'source-over';
 
   PM('neon+speech');

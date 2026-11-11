@@ -318,6 +318,14 @@
       "group": "traffic"
     },
     {
+      "path": "48b_car_fire.js",
+      "group": "traffic"
+    },
+    {
+      "path": "48c_car_drift.js",
+      "group": "traffic"
+    },
+    {
       "path": "50_opps_checkpoint.js",
       "group": "opps_checkpoint"
     },

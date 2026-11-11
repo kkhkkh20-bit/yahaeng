@@ -22,7 +22,8 @@ function enterBooth(p) {
   const P = S.player; if (P.booth || P.car) return;
   P.booth = p; P.boothOut = { x: P.x, y: P.y }; P.x = p.x; P.y = p.y + 2; P.a = -Math.PI / 2; P.moving = false; P.vx = P.vy = 0;
   play('click', 0.6); setTimeout(() => play('metal', 0.25, 1.9), 250);
-  const plan = S.hit ? null : S.wanted > 0 ? null : planHit(), lines = phoneLines(plan);
+  const ringing = S.ringPhone === p; if (ringing) { S.ringPhone = null; S.ringNext = S.t + 25; }
+  const plan = !ringing || S.hit || S.wanted > 0 ? null : planHit(), lines = ringing ? phoneLines(plan) : [['hero', ['신호음뿐이다. 걸 데도 없다.', '...끊긴 전화다.'][(S.t | 0) % 2]]];
   S.phoneCall = true;
   say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startHit(plan); leaveBooth(); });
 }
@@ -31,6 +32,26 @@ function leaveBooth() {
   P.booth = null; P.x = p.x - BOOTH_HW - 22; P.y = p.y + 4; P.a = Math.PI;  // 보도 쪽으로 나온다
 }
 const DIR8 = ['동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽', '북쪽', '북동쪽'];
+// 울리는 공중전화: 일이 없을 때 가끔 내 둘레(멀지 않은) 부스 하나가 운다. 받으면 까마귀다. 40초 동안 안 받으면 끊긴다
+function updatePhoneRing(dt) {
+  const P = S.player;
+  if (S.ringPhone) {
+    const p = S.ringPhone; if (S.t - S.ringT0 > 40 || S.hit) { S.ringPhone = null; S.ringNext = S.t + 12; return; }
+    const ph = (S.t - S.ringT0) % 3;  // 따르릉-따르릉, 쉼
+    if ((ph < 0.4 || (ph > 0.6 && ph < 1.0)) && (S.ringBeat || 0) <= S.t) { S.ringBeat = S.t + 0.05; ringTone(clamp(1 - dist(P.x, P.y, p.x, p.y) / 1400, 0, 1)); }
+    return;
+  }
+  if (S.hit || S.wanted > 0 || S.t < (S.ringNext ?? 6)) return;
+  const near = (S.phones || []).filter(p => { const d = dist(P.x, P.y, p.x, p.y); return d > 250 && d < 1300; });
+  if (!near.length) { S.ringNext = S.t + 4; return; }
+  S.ringPhone = near[(Math.random() * near.length) | 0]; S.ringT0 = S.t;
+}
+// 전화벨: 두 높이를 빠르게 번갈아 (옛 전화기 벨)
+function ringTone(vol) {
+  if (!AC || !master || vol <= 0.02 || muted) return;
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain(); o.type = 'square'; o.frequency.setValueAtTime(Math.floor(t * 40) % 2 ? 1250 : 1580, t);
+  g.gain.setValueAtTime(0.025 * vol, t); g.gain.exponentialRampToValueAtTime(0.0005, t + 0.05); o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.06);
+}
 function phoneLines(plan) {
   if (S.hit) return [['master', `${S.hit.name} 일부터 끝내. 아직 숨 쉬고 있다더군.`], ['hero', '...알았어.']];
   if (S.wanted > 0) return [['master', '지금 경찰이 너를 쫓고 있잖나. 이 번호로 다시 걸지 마.'], ['master', '열기부터 식혀. 그다음에 일을 주지.']];
@@ -88,8 +109,8 @@ function boothBlock() {
     }
   }
 }
-function hitsUpdate() {
-  boothBlock();
+function hitsUpdate(dt) {
+  boothBlock(); updatePhoneRing(dt || 1 / 60);
   const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
   const h = S.hit; if (!h) return;
   const g = h.g;
@@ -104,8 +125,8 @@ function hitsUpdate() {
 function hitGoal() {
   const h = S.hit, P = S.player, money = `수입 ${S.cash || 0}만`;
   if (!h) {
-    const p = (S.phones || []).slice().sort((a, b) => dist(P.x, P.y, a.x, a.y) - dist(P.x, P.y, b.x, b.y))[0];
-    return p ? { text: `공중전화에서 의뢰 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 } : null;
+    const p = S.ringPhone; if (!p) return { text: `거리를 돈다 · ${money}`, where: '', x: null, y: null, fl: 0 };
+    return { text: `울리는 공중전화 받기 · ${money}`, where: '', x: p.x, y: p.y, fl: 0 };
   }
   const g = h.g;
   return { text: (g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
@@ -125,7 +146,7 @@ function drawBooth(p, front) {
   ctx.fillStyle = '#1f5fae'; ctx.fillRect(x - 8, top + 16, 16, 20);                               // 전화기
   ctx.fillStyle = '#9fc4ea'; ctx.fillRect(x - 6, top + 18, 12, 5);                                // 화면
   ctx.fillStyle = '#d7e3ef'; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(x - 5 + c * 4, top + 25 + r * 3, 2, 2);
-  if (!inUse) { ctx.fillStyle = '#121519'; ctx.fillRect(x + 5, top + 17, 3, 15); }                // 걸려 있는 수화기
+  if (!inUse) { const j = S.ringPhone === p && (S.t - S.ringT0) % 3 < 1 ? Math.sin(S.t * 60) * 1.5 : 0; ctx.fillStyle = '#121519'; ctx.fillRect(x + 5 + j, top + 17, 3, 15); }  // 걸려 있는 수화기 (울리면 떨린다)
   ctx.fillStyle = 'rgba(160,205,232,.28)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);              // 유리
   ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW, top + 4, 3, H + 8); ctx.fillRect(x + BOOTH_HW - 3, top + 4, 3, H + 8); ctx.fillRect(x - BOOTH_HW, y + 8, BOOTH_HW * 2, 4);
   ctx.fillStyle = '#d23a2e'; ctx.fillRect(x - BOOTH_HW - 2, top - 4, BOOTH_HW * 2 + 4, 9);         // 지붕 띠
@@ -136,7 +157,9 @@ function drawHits(layer) {
   for (const p of S.phones || []) {
     if (!inView(p.x, p.y, 80)) continue;
     if (layer === 'ui') {
-      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58); ctx.restore();  // 부스 안 형광등
+      const ring = S.ringPhone === p && Math.floor((S.t - S.ringT0) * 8) % 2 === 0 && (S.t - S.ringT0) % 3 < 1;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = ring ? 'rgba(255,236,190,.28)' : 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58);
+      if (ring) { ctx.fillStyle = 'rgba(255,90,70,.5)'; ctx.fillRect(p.x - BOOTH_HW - 2, p.y - 60, BOOTH_HW * 2 + 4, 9); } ctx.restore();  // 부스 안 형광등 · 울릴 때 지붕 띠가 깜빡인다
       if (S.player.booth === p) drawBooth(p, true);
       if (!STAGE.noPrompts && !S.hit) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
       continue;

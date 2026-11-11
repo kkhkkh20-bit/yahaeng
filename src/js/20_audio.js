@@ -19,6 +19,17 @@ function initAudio() {
 // 메인 화면 음악: 첫 화면이 떠 있고 판이 돌지 않을 때. 브라우저는 첫 클릭·키 입력 전에는 소리를 막으므로 그때 시작한다
 function onTitle() { const el = document.getElementById('intro'); return !!el && !el.hidden && !running; }
 for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (onTitle()) { initAudio(); setMusic('n_title'); } }, true);
+// 차 안 라디오: 음악을 작은 스피커처럼 걸러서(저음·고음을 깎고 살짝 찌그러뜨림) 내보낸다. 켜고 끌 때 짧은 잡음
+let radioNodes = null, radioOn = false;
+function musicRadio(on) {
+  if (!AC || !musicGain || on === radioOn) return; radioOn = on;
+  if (!radioNodes) { const hp = AC.createBiquadFilter(), lp = AC.createBiquadFilter(), sh = AC.createWaveShaper(), g = AC.createGain(); hp.type = 'highpass'; hp.frequency.value = 380; lp.type = 'lowpass'; lp.frequency.value = 3400;
+    const c = new Float32Array(256); for (let i = 0; i < 256; i++) { const x = i / 128 - 1; c[i] = Math.tanh(x * 1.8); } sh.curve = c; g.gain.value = 0.9; hp.connect(lp); lp.connect(sh); sh.connect(g); g.connect(master); radioNodes = { hp }; }
+  try { musicGain.disconnect(); } catch (e) {}
+  musicGain.connect(on ? radioNodes.hp : master);
+  const n = AC.sampleRate * 0.18 | 0, b = AC.createBuffer(1, n, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+  const s = AC.createBufferSource(), f = AC.createBiquadFilter(), g2 = AC.createGain(); s.buffer = b; f.type = 'bandpass'; f.frequency.value = 2200; g2.gain.value = 0.06; s.connect(f); f.connect(g2); g2.connect(master); s.start();
+}
 // Recorded score is lazy-decoded. Procedural loops remain an offline fallback.
 const MB = {}, SCORE = {}, scorePending = {}, scoreBytes = {}, scoreFailed = new Set();
 let musicGain = null, musicSrc = null, musicKey = null, wantedMusic = 'n_calm';

@@ -103,7 +103,7 @@ function updateVehicles(dt) {
     aiDrive(v, vdt);
     hitPeople(v, vdt);
   }
-  pushBodiesFromCars();
+  pushBodiesFromCars(); carFireUpdate(dt);
 }
 // 걷는 사람은 차를 밟고 지나가지 못한다: 차 몸(앞뒤 끝을 잇는 막대 + 반지름)에 닿은 사람은 차 밖으로 밀어낸다.
 // 벽 안으로 밀리면 그 자리에 둔다. 사람 x로 정렬해 차 근처만 본다
@@ -315,14 +315,14 @@ function missionBoundaryHint(){
 function carMove(v, dt, turn=0) {
   const steps=Math.max(1,Math.ceil(Math.abs(v.v*dt)/5),Math.ceil(Math.abs(turn)/.04));
   for(let i=0;i<steps;i++){
-   const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;v.x+=Math.cos(v.a)*v.v*dt/steps;v.y+=Math.sin(v.a)*v.v*dt/steps;
+   const ox=v.x,oy=v.y,oa=v.a;v.a+=turn/steps;const ma=v.va??v.a;v.x+=Math.cos(ma)*v.v*dt/steps;v.y+=Math.sin(ma)*v.v*dt/steps;  // 미끄러질 때는 차머리와 다른 쪽으로 간다
    // The edge of the mission is a travel restriction, never a damaging wall.
    if(!v.ai&&carPts(v).some(([x,y])=>x<v.r||y<v.r||x>MW*TILE-v.r||y>MH*TILE-v.r)){
     v.x=ox;v.y=oy;v.a=oa;v.v=0;if(S.player.car===v)missionBoundaryHint();return 0;
    }
    const o=carOverlap(v);if(!o)continue;
    const speed=Math.abs(v.v),hit=o===true?speed:Math.max(0,(v.v*Math.cos(v.a)-(o.v||0)*Math.cos(o.a))*(o.x-v.x)/Math.max(1,dist(v.x,v.y,o.x,o.y))+(v.v*Math.sin(v.a)-(o.v||0)*Math.sin(o.a))*(o.y-v.y)/Math.max(1,dist(v.x,v.y,o.x,o.y)));
-   v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;
+   v.x=ox;v.y=oy;v.a=oa;v.v=v.ai?0:-v.v*.2;if(v.va!=null)v.va=v.a;
    if(o!==true){o.v=0;o.stopT=0;v.crashUntil=o.crashUntil=S.t+.8;}
    if(hit>60&&(v.impactAfter||0)<=S.t){
     v.impactAfter=S.t+.65;if(o!==true)o.impactAfter=S.t+.65;
@@ -332,7 +332,7 @@ function carMove(v, dt, turn=0) {
     const near=clamp(1-dist(x,y,S.player.x,S.player.y)/600,0,1);
     if(near){play('metal',Math.min(.7,hit/400)*near,.8);play('thud',.4*near);if(hit>140)S.shakeT=Math.max(S.shakeT||0,.08*near);}
     // 무거운 차와 부딪히면 가벼운 차가 더 크게 망가진다 (버스·트럭에 받히면 승용차는 두세 칸)
-    if(hit>175){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}if(v.hp<=0)carWreck(v);if(o!==true&&o.hp<=0)carWreck(o);}
+    if(hit>175){const mv=vType(v).mass,mo=o===true?3:vType(o).mass;v.hp-=Math.max(1,Math.round(mo/mv));v.smoke=1.5;if(o!==true){o.hp-=Math.max(1,Math.round(mv/mo));o.smoke=1.5;}const wreck=STAGE.cityLife?carExplode:carWreck;if(v.hp<=0)wreck(v);if(o!==true&&o.hp<=0)wreck(o);}
    }
    return speed;
   }
@@ -370,6 +370,7 @@ function updateDriving(P, mx, my, mag, dt) {
   else { const f = CAR_FRIC * dt; v.v = Math.abs(v.v) <= f ? 0 : v.v - Math.sign(v.v) * f; }
   // 핸들은 바퀴가 굴러야 돈다. 후진 중에는 실제 차처럼 반대로 돈다
   if (Math.abs(steer) > 0.15) { const a0 = v.a; v.a += clamp(steer, -1, 1) * T.turn * clamp(v.v / 90, -1, 1) * dt; if (carOverlap(v)) v.a = a0; }
+  carDrift(v, steer, fwd, dt);
   carMove(v, dt);
   hitPeople(v, dt);
   P.x = v.x; P.y = v.y; P.a = v.a; P.light = lightAt(P.x, P.y, false);
@@ -377,7 +378,7 @@ function updateDriving(P, mx, my, mag, dt) {
 }
 function carWreck(v) {
   v.dead = true; v.v = 0; v.burn = 6; play('glass', 0.8); play('thud', 0.9); S.shakeT = 0.4; noise(v.x, v.y, 420, 'car', 0);
-  if (S.player.car === v) { carExit(true); hurtPlayer(null, '차가 부서졌다.'); toast('차가 부서졌다', 2, 'warn'); }
+  if (S.player.car === v) { carExit(true); hurtPlayer(null, '차가 부서졌다.'); if (!STAGE.noPrompts) toast('차가 부서졌다', 2, 'warn'); }
 }
 // 탈 수 있는 차: 가까이 있고 거의 멈춘(또는 천천히 가는) 차
 function nearVehicle() {
@@ -411,7 +412,8 @@ function carEnter(v) {
 }
 function carExit(force) {
   const P = S.player, v = P.car; if (!v) return;
-  const spots = [v.a - Math.PI / 2, v.a + Math.PI / 2, v.a + Math.PI, v.a].map(a => ({ x: v.x + Math.cos(a) * 52, y: v.y + Math.sin(a) * 52 }));
+  v.va = null; v.skidding = false; v.skidPrev = null;
+  const out = (v.r || CAR_R) + 31, spots = [v.a - Math.PI / 2, v.a + Math.PI / 2, v.a + Math.PI, v.a].map(a => ({ x: v.x + Math.cos(a) * out, y: v.y + Math.sin(a) * out }));
   const ok = spots.find(p => !solidAt(Math.floor(p.x / TILE), Math.floor(p.y / TILE)) && !S.vehicles.some(o => o !== v && dist(o.x, o.y, p.x, p.y) < 50)) || spots[0];
   P.car = null; P.x = ok.x; P.y = ok.y; P.vx = 0; P.vy = 0; collide(P, 13, groundSolidP);
   if (Math.abs(v.v) < 150) v.v = 0; play('switch', 0.4);  // 빨리 달리다 뛰어내리면 차는 혼자 굴러간다
@@ -423,6 +425,7 @@ function honk() { const v = S.player.car; if (!v || (v.honkT || 0) > S.t) return
 function drawVehicles() {
   if (!S.vehicles) return;
   const vx0 = cam.x - W / SCALE / 2 - 120, vx1 = cam.x + W / SCALE / 2 + 120, vy0 = cam.y - H / SCALE / 2 - 120, vy1 = cam.y + H / SCALE / 2 + 120;
+  if (STAGE.cityLife) { drawSkids(); drawCarScorch(); }
   for (const v of S.vehicles) {
     if (v.x < vx0 || v.x > vx1 || v.y < vy0 || v.y > vy1) continue;
     ctx.save(); ctx.translate(v.x, v.y); ctx.rotate(v.a + Math.PI / 2);
@@ -432,8 +435,8 @@ function drawVehicles() {
       if(!cityVehicleAtlas.complete||!cityVehicleAtlas.naturalWidth){ctx.fillStyle = 'rgba(255,60,50,.9)'; ctx.fillRect(-17, 44, 7, 3); ctx.fillRect(10, 44, 7, 3);} }
     if (S.player.car === v) { ctx.strokeStyle = 'rgba(120,210,255,.8)'; ctx.lineWidth = 2; ctx.strokeRect(-25, -49, 50, 98); }
     ctx.restore();
-    if (v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
-    if (v.smoke > 0 || (v.hp <= 2 && !v.dead)) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
+    if (!STAGE.cityLife && v.dead && v.burn > 0) { ctx.fillStyle = `rgba(255,${120 + Math.random() * 80 | 0},40,${0.5 * v.burn / 6})`; ctx.beginPath(); ctx.arc(v.x + rnd(-6, 6), v.y + rnd(-10, 10), 14 + Math.random() * 10, 0, TAU); ctx.fill(); }
+    if (!STAGE.cityLife && (v.smoke > 0 || (v.hp <= 2 && !v.dead))) { ctx.fillStyle = 'rgba(160,160,170,.35)'; ctx.beginPath(); ctx.arc(v.x + Math.cos(v.a) * 30 + Math.sin(S.t * 7) * 4, v.y + Math.sin(v.a) * 30 - 10, 10, 0, TAU); ctx.fill(); }
   }
 }
 // 도로 칠: 가운데 노란 겹선, 교차로 앞 정지선과 횡단보도 (지도 그림에 한 번 굽는다)
