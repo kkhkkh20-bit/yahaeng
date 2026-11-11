@@ -58,9 +58,15 @@ function drawRoofs(openB) {
   const roof = STAGE.roof || ['#444a55', '#545b68'];
   // 지붕은 열고 닫을 때 0.15초쯤 걸려 스르륵 (들어가고 나오고 벽을 탈 때 화면이 확 바뀌지 않게)
   const rdt = clamp(S.t - (S._roofT != null ? S._roofT : S.t), 0, 0.1); S._roofT = S.t;
+  // 화면 밖 건물·창문·문은 그리지 않는다 (넓은 도시에서 그리기 비용이 맵 넓이에 비례하지 않게).
+  // 그림자·간판·발코니가 건물 칸 밖으로 나오므로 여유를 크게 둔다. 지붕 열림 상태(b.ra)는 화면 밖에서도 갱신한다.
+  const vw = W / SCALE / 2 + 4 * TILE, vh = H / SCALE / 2 + 4 * TILE;
+  const seen = b => (b.x1 + 1) * TILE >= cam.x - vw && b.x0 * TILE <= cam.x + vw && (b.y1 + 1) * TILE + b.h * 6 >= cam.y - vh && (b.y0 - b.h) * TILE <= cam.y + vh;
+  const near = (tx, ty, m) => inView(tc(tx), tc(ty), m);
   BLD.forEach((b, i) => {
     if (b.vacant) return;
     const tgt = i === openB ? 0 : 1; if (b.ra == null) b.ra = tgt; b.ra += (tgt - b.ra) * Math.min(1, rdt * 14); if (Math.abs(tgt - b.ra) < 0.02) b.ra = tgt;
+    if (i !== openB && !seen(b)) return;
     if (b.ra < 1) { ctx.strokeStyle = `rgba(242,196,107,${0.35 * (1 - b.ra)})`; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
       ctx.strokeRect(b.x0 * TILE + 1, b.y0 * TILE + 1, (b.x1 - b.x0 + 1) * TILE - 2, (b.y1 - b.y0 + 1) * TILE - 2); ctx.setLineDash([]); }
     if (b.ra === 0) {
@@ -71,11 +77,11 @@ function drawRoofs(openB) {
     drawRoof1(b, i, roof); ctx.globalAlpha = 1;
   });
   const onFacade = (tx, ty) => { const b = bldAt(tx, ty); return b >= 0 && BLD[b].facade && ty >= BLD[b].y1 - BLD[b].fh + 1; };
-  for (const w of S.windows) { const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
-  for (const d of S.doors) { const b = bldAt(d.tx, d.ty),v=BLD[b]; if (v && b !== openB && !onFacade(d.tx, d.ty) && !v.plan && !freeCityBuilding(v) && (d.tx===v.x0||d.tx===v.x1||d.ty===v.y0||d.ty===v.y1)) drawDoor(d, true); }
-  for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l)) drawPipe(l);
-  for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB) drawChimney(l);
-  for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB) drawGrate(v, 1);
+  for (const w of S.windows) { if (!near(w.tx, w.ty, 2 * TILE)) continue; const b = bldAt(w.tx, w.ty); if (b >= 0 && b !== openB && !onFacade(w.tx, w.ty)) { if (BLD[b].kit||freeCityBuilding(BLD[b])) drawWindowEdge(w, BLD[b]); else drawWindow(w, 0.5); } }
+  for (const d of S.doors) { if (!near(d.tx, d.ty, 2 * TILE)) continue; const b = bldAt(d.tx, d.ty),v=BLD[b]; if (v && b !== openB && !onFacade(d.tx, d.ty) && !v.plan && !freeCityBuilding(v) && (d.tx===v.x0||d.tx===v.x1||d.ty===v.y0||d.ty===v.y1)) drawDoor(d, true); }
+  for (const l of S.ladders) if (l.kind === 'pipe' && (!l.gas||S.player.trav?.pipe===l) && near(l.tx, l.ty, 8 * TILE)) drawPipe(l);
+  for (const l of S.ladders) if (l.kind === 'chimney' && bldAt(l.tx, l.ty) !== openB && near(l.tx, l.ty, 6 * TILE)) drawChimney(l);
+  for (const v of S.vents) if (v.roof && bldAt(v.tx, v.ty) !== openB && near(v.tx, v.ty, 2 * TILE)) drawGrate(v, 1);
   drawTrapsRoof(openB);
 }
 function drawRoof1(b, i, roof) {
