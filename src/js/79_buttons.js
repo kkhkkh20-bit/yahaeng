@@ -143,7 +143,7 @@ function actAttack() {
   const a = attackAction();
   if (a.k === 'none') {
     if(a.skillLocked)toast(abilityLockText(a.skillLocked),2);
-    else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');  // 입력 실패 반응: 최소 모드에서도 사실만 남는다}
+    else if(a.stalk){if(!queueApproachAttack(a.stalk))toast('아직 손이 닿지 않는다 · 등 뒤로 더 가까이',1.5,'warn');}  // 입력 실패 반응: 최소 모드에서도 사실만 남는다
     else toast('공격할 사람의 등 뒤 가까이 접근하기',1.5);
     return;
   }
