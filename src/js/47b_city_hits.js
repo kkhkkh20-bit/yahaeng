@@ -6,13 +6,41 @@ const HIT_PAY = 50, HIT_QUIET_BONUS = 30;  // 만 원. 수배 없이 끝내면 �
 
 function hitsInit() {
   S.hit = null; S.hitN = 0; S.cash = S.cash || 0;
-  S.phones = (STAGE.phones || []).map(([tx, ty]) => ({ x: tc(tx), y: tc(ty) }));
+  // 부스는 보도 바깥 가장자리(차도 쪽 연석)에 선다: 보도를 걷는 사람 길을 막지 않고, 차로에도 닿지 않는다
+  S.phones = (STAGE.phones || []).map(([tx, ty]) => ({ x: tx * TILE + TILE + BOOTH_EDGE, y: tc(ty) }));
 }
+// 공중전화 부스: 폭 32 · 깊이 26 (발밑), 유리벽 높이 56
+const BOOTH_EDGE = 6, BOOTH_HW = 16, BOOTH_N = 14, BOOTH_S = 12;
 // 지금 맡은 의뢰가 없을 때, 가까운 공중전화에서 [행동]
 function hitAction() {
-  const P = S.player; if (S.hit || P.car) return null;
-  for (const p of S.phones || []) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'hitPhone', p, at: { x: p.x, y: p.y - 40 }, label: '의뢰 받기' };
+  const P = S.player; if (P.car || P.booth) return null;
+  for (const p of S.phones || []) if (dist(P.x, P.y, p.x, p.y) < 60) return { k: 'hitPhone', p, at: { x: p.x, y: p.y - 40 }, label: '공중전화' };
   return null;
+}
+// 부스에 들어가 수화기를 든다 → 까마귀와 통화(대사) → 끊으면 의뢰가 시작되고 부스에서 나온다
+function enterBooth(p) {
+  const P = S.player; if (P.booth || P.car) return;
+  P.booth = p; P.boothOut = { x: P.x, y: P.y }; P.x = p.x; P.y = p.y + 2; P.a = -Math.PI / 2; P.moving = false; P.vx = P.vy = 0;
+  play('click', 0.6); setTimeout(() => play('metal', 0.25, 1.9), 250);
+  const plan = S.hit ? null : S.wanted > 0 ? null : planHit(), lines = phoneLines(plan);
+  S.phoneCall = true;
+  say(lines, true, () => { S.phoneCall = false; play('click', 0.5); if (plan) startHit(plan); leaveBooth(); });
+}
+function leaveBooth() {
+  const P = S.player, p = P.booth; if (!p) return;
+  P.booth = null; P.x = p.x - BOOTH_HW - 22; P.y = p.y + 4; P.a = Math.PI;  // 보도 쪽으로 나온다
+}
+const DIR8 = ['동쪽', '남동쪽', '남쪽', '남서쪽', '서쪽', '북서쪽', '북쪽', '북동쪽'];
+function phoneLines(plan) {
+  if (S.hit) return [['master', `${S.hit.name} 일부터 끝내. 아직 숨 쉬고 있다더군.`], ['hero', '...알았어.']];
+  if (S.wanted > 0) return [['master', '지금 경찰이 너를 쫓고 있잖나. 이 번호로 다시 걸지 마.'], ['master', '열기부터 식혀. 그다음에 일을 주지.']];
+  if (!plan) return [['master', '오늘은 일이 없다. 끊어.']];
+  const P = S.player, a = Math.atan2(plan.cy - P.y, plan.cx - P.x), dir = DIR8[((Math.round(a / (Math.PI / 4)) % 8) + 8) % 8];
+  const river = STAGE.river && (P.y < tc(STAGE.river.y)) !== (plan.cy < tc(STAGE.river.y)) ? '청계천 건너 ' : '';
+  const where = `${river}${dir}${plan.sign ? `, '${plan.sign}' 간판 걸린 블록` : ' 블록'}`;
+  const esc = plan.escorts > 1 ? '경호원 둘이 바짝 붙어 다닌다. 정면으로 들어가면 시끄러워질 거다.' : '경호원 하나가 붙어 다닌다. 눈치 빠른 놈이니 등 뒤를 잡아.';
+  return [['master', '올빼미군. 일이 하나 들어왔다.'], ['master', `이름은 ${plan.name}. ${where}을 돌고 있다.`], ['master', esc],
+    ['master', `처리하면 ${HIT_PAY}만. 경찰 안 붙게 조용히 끝내면 ${HIT_QUIET_BONUS}만 더 얹어 주지.`], ['hero', '알았다. 끊지.']];
 }
 // 블록 둘레 보도를 도는 길 (도시 행인과 같은 규칙)
 const hitBlock = (bx, by) => STAGE.blockOrigin ? STAGE.blockOrigin(bx, by) : [4 + bx * 20, 4 + by * 20], hitSpan = () => (STAGE.blockSize || 16) - 1;
@@ -20,35 +48,56 @@ function hitRing(bx, by, rev) {
   const [x0, y0] = hitBlock(bx, by), e = hitSpan(), c = [[x0, y0, 2.5], [x0 + e, y0, 0.6], [x0 + e, y0 + e, 3], [x0, y0 + e, 0.6]];
   return rev ? c.slice().reverse() : c;
 }
-function takeHit() {
-  if (S.hit) return;
-  if (S.wanted > 0) { toast('수배 중에는 의뢰를 받을 수 없다', 2.2, 'warn'); return; }
+// 의뢰 고르기 (아직 사람을 세우지 않는다): 표적 이름 · 블록 · 경호원 수 · 그 블록의 가게 간판
+function planHit() {
   const P = S.player, [BX, BY] = STAGE.blockCount || [(STAGE.roadsX || []).length - 1, (STAGE.roadsY || []).length - 1];
   // 나에게서 적당히 먼 블록 (화면 밖, 너무 멀지 않게)
   const blocks = [];
   for (let by = 0; by < BY; by++) for (let bx = 0; bx < BX; bx++) { const [ox, oy] = hitBlock(bx, by), cx = tc(ox + hitSpan() / 2), cy = tc(oy + hitSpan() / 2), d = dist(P.x, P.y, cx, cy); if (d > 1100 && d < 3600) blocks.push([bx, by, d]); }
-  if (!blocks.length) return;
+  if (!blocks.length) return null;
   const [bx, by] = blocks[(Math.random() * blocks.length) | 0], rev = Math.random() < 0.5, route = hitRing(bx, by, rev);
-  const name = HIT_NAMES[S.hitN % HIT_NAMES.length];
+  const [ox, oy] = hitBlock(bx, by), e = hitSpan(), inB = b => b.x0 >= ox && b.x1 <= ox + e && b.y0 >= oy && b.y1 <= oy + e;
+  const shop = BLD.find(b => b.kind === 'shop' && b.signs && (b.signs[0] || '').trim() && inB(b));
+  return { bx, by, route, name: HIT_NAMES[S.hitN % HIT_NAMES.length], escorts: 1 + (S.hitN >= 2 ? 1 : 0), cx: tc(ox + e / 2), cy: tc(oy + e / 2), sign: shop ? shop.signs[0].trim() : '' };
+}
+function takeHit() { if (!S.hit && !S.wanted) { const plan = planHit(); if (plan) startHit(plan); } }
+function startHit(plan) {
+  if (S.hit) return;
+  const P = S.player, { route, name } = plan;
   const tIdx = S.guards.length, t = makeGuard({ kind: 't', route, radio: false }, tIdx); t.hit = true; t.hitName = name; t.fac = 'A'; S.guards.push(t);
   const escorts = [];
-  for (let k = 0; k < 1 + (S.hitN >= 2 ? 1 : 0); k++) {
+  for (let k = 0; k < plan.escorts; k++) {
     const g = makeGuard({ kind: k ? 'g1' : 'g2', route: [route[0]], follow: tIdx, radio: false }, S.guards.length); g.fac = 'A'; g.hitEscort = true;
     g.x += (k ? -1 : 1) * 30; g.y += 26; S.guards.push(g); escorts.push(g);
   }
   setLayer(0); for (const g of [t, ...escorts]) buildRouteLine(g); setLayer(flOf(P));
   if (PR) prWarm([t, ...escorts].map(charOf), true);
   S.hit = { g: t, escorts, name, t0: S.t, wantedAtStart: S.wanted };
-  play('bell', 0.5); toast(`의뢰: ${name} 처치`, 2.4, 'good');
+  if (!STAGE.noPrompts) toast(`의뢰: ${name} 처치`, 2.4, 'good');
+}
+// 부스는 사람이 지나가지 못한다 (안에 든 나만 예외)
+function boothBlock() {
+  const P = S.player;
+  for (const p of S.phones || []) {
+    const x0 = p.x - BOOTH_HW, x1 = p.x + BOOTH_HW, y0 = p.y - BOOTH_N, y1 = p.y + BOOTH_S;
+    for (const o of [P, ...S.guards]) {
+      if (o === P ? P.booth || P.car || P.z || flOf(P) : o.state === 'DEAD' || o.x < 0 || flOf(o) || o.z) continue;
+      if (o.x < x0 - BODY_R || o.x > x1 + BODY_R || o.y < y0 - BODY_R || o.y > y1 + BODY_R) continue;
+      const push = [[x0 - BODY_R - o.x, 0], [x1 + BODY_R - o.x, 0], [0, y0 - BODY_R - o.y], [0, y1 + BODY_R - o.y]].sort((a, b) => Math.abs(a[0] + a[1]) - Math.abs(b[0] + b[1]))[0];
+      o.x += push[0]; o.y += push[1];
+    }
+  }
 }
 function hitsUpdate() {
+  boothBlock();
+  const P = S.player; if (P.booth) { P.x = P.booth.x; P.y = P.booth.y + 2; P.moving = false; }
   const h = S.hit; if (!h) return;
   const g = h.g;
   if (!S.guards.includes(g)) { S.hit = null; return; }
   if (g.state === 'DEAD' && !g.unconscious) {
     const quiet = !S.wanted, pay = HIT_PAY + (quiet ? HIT_QUIET_BONUS : 0);
     S.cash = (S.cash || 0) + pay; S.hitN++; S.hit = null;
-    play('bell', 0.6); toast(`의뢰 완료 · ${pay}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
+    play('bell', 0.6); if (!STAGE.noPrompts) toast(`의뢰 완료 · ${pay}만${quiet ? ' (조용히)' : ''}`, 2.6, 'good');
     if (typeof feedbackPulse === 'function') feedbackPulse(document.querySelector('#hud .obj'), 'loot');
   }
 }
@@ -61,25 +110,43 @@ function hitGoal() {
   const g = h.g;
   return { text: (g.unconscious ? `${h.name} 기절 — 숨통을 끊어라` : `${h.name} 처치`) + ` · ${money}`, where: '', x: g.x, y: g.y, fl: flOf(g), g };
 }
-// 공중전화 부스와 표적 표시 (글 없이: 부스 그림, 표적 발밑의 붉은 고리)
-// layer 'world': 조명을 받는 부스 그림 · 'ui': 어둠 위에 그리는 고리와 이름표
+// 공중전화 부스 (위에서 비스듬히 본 유리 상자: 은색 기둥 · 유리벽 · 안쪽 벽의 파란 전화기 · 빨간 지붕 띠)와 표적 표시
+// layer 'world': 조명을 받는 부스 · 'ui': 어둠 위 — 안에 든 나를 덮는 앞 유리, 부스 안 불빛, 표적 고리
+function drawBooth(p, front) {
+  const x = p.x, y = p.y, H = 56, top = y - H, inUse = S.player.booth === p;
+  if (front) {  // 앞 유리와 앞 기둥만 (안에 든 사람 위로)
+    ctx.fillStyle = 'rgba(160,205,232,.22)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);
+    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(x - 10, top + 9, 3, H - 6);
+    ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW, top + 4, 3, H + 8); ctx.fillRect(x + BOOTH_HW - 3, top + 4, 3, H + 8); ctx.fillRect(x - BOOTH_HW, y + 8, BOOTH_HW * 2, 4);
+    return;
+  }
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(x + 5, y + 11, 20, 7, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#2e3742'; ctx.fillRect(x - BOOTH_HW, top + 4, BOOTH_HW * 2, H + 8);          // 안쪽 벽
+  ctx.fillStyle = '#1f5fae'; ctx.fillRect(x - 8, top + 16, 16, 20);                               // 전화기
+  ctx.fillStyle = '#9fc4ea'; ctx.fillRect(x - 6, top + 18, 12, 5);                                // 화면
+  ctx.fillStyle = '#d7e3ef'; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) ctx.fillRect(x - 5 + c * 4, top + 25 + r * 3, 2, 2);
+  if (!inUse) { ctx.fillStyle = '#121519'; ctx.fillRect(x + 5, top + 17, 3, 15); }                // 걸려 있는 수화기
+  ctx.fillStyle = 'rgba(160,205,232,.28)'; ctx.fillRect(x - 13, top + 6, 26, H + 4);              // 유리
+  ctx.fillStyle = '#c3cbd2'; ctx.fillRect(x - BOOTH_HW, top + 4, 3, H + 8); ctx.fillRect(x + BOOTH_HW - 3, top + 4, 3, H + 8); ctx.fillRect(x - BOOTH_HW, y + 8, BOOTH_HW * 2, 4);
+  ctx.fillStyle = '#d23a2e'; ctx.fillRect(x - BOOTH_HW - 2, top - 4, BOOTH_HW * 2 + 4, 9);         // 지붕 띠
+  ctx.fillStyle = '#f4efe6'; ctx.beginPath(); ctx.arc(x - 4, top + 1, 2, 0, TAU); ctx.arc(x + 4, top + 1, 2, 0, TAU); ctx.fill(); ctx.fillRect(x - 4, top - 1, 8, 2);  // 수화기 무늬
+}
 function drawHits(layer) {
   if (flOf(S.player) || S.player.z > 0 || S.player.wire) return;
   for (const p of S.phones || []) {
     if (!inView(p.x, p.y, 80)) continue;
     if (layer === 'ui') {
-      if (!S.hit) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); }
-      infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); continue;
+      ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,236,190,.10)'; ctx.fillRect(p.x - 13, p.y - 50, 26, 58); ctx.restore();  // 부스 안 형광등
+      if (S.player.booth === p) drawBooth(p, true);
+      if (!STAGE.noPrompts && !S.hit) { const pu = .5 + .4 * Math.sin(S.t * 4); ctx.strokeStyle = `rgba(80,220,170,${pu})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(p.x, p.y - 4, 24, 0, TAU); ctx.stroke(); infoTag(p.x, p.y + 22, '공중전화', '#8fe0c4', .9); }
+      continue;
     }
-    ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(p.x - 9, p.y - 6, 22, 16);
-    ctx.fillStyle = S.hit ? '#5b6470' : '#2f8f6f'; ctx.fillRect(p.x - 11, p.y - 30, 22, 30);
-    ctx.fillStyle = '#c9d6cf'; ctx.fillRect(p.x - 7, p.y - 26, 14, 10);
-    ctx.fillStyle = '#1b2228'; ctx.fillRect(p.x - 3, p.y - 12, 6, 8);
+    drawBooth(p, false);
   }
   if (layer !== 'ui') return;
   const h = S.hit; if (!h || h.g.state === 'DEAD' && !h.g.unconscious) return;
   const g = h.g; if (flOf(g) !== flOf(S.player) || !inView(g.x, g.y, 60)) return;
   const pu = .55 + .35 * Math.sin(S.t * 5);
   ctx.strokeStyle = `rgba(232,71,60,${pu})`; ctx.lineWidth = 2.5; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.arc(g.x, g.y, 22, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
-  infoTag(g.x, g.y - 60, h.name + ' · 표적', '#ff9a86', .95);
+  if (!STAGE.noPrompts) infoTag(g.x, g.y - 60, h.name + ' · 표적', '#ff9a86', .95);
 }

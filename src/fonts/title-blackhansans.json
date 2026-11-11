@@ -39,7 +39,10 @@
     "끊어진 회선",
     "창가의 중개인",
     "마지막 이름",
-    "현장 정보"
+    "현장 정보",
+    "스토리 모드",
+    "자유 모드",
+    "자유 모드 · 을지로"
   ],
   "wordmarkOutlinesUnchanged": true,
   "role": "Wordmark, primary title-menu action main screen and mission briefing headings; other UI uses IBM Plex Sans KR."

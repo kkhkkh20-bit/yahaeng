@@ -6,7 +6,7 @@ function initAudio() {
   try {
     AC = new (window.AudioContext || window.webkitAudioContext)();
     master = AC.createGain(); master.gain.value = muted ? 0 : (typeof VOL === 'number' ? VOL : 0.9); master.connect(AC.destination);
-    setTimeout(() => setMusic('n_calm'), 50);
+    setTimeout(() => setMusic(onTitle() ? 'n_title' : 'n_calm'), 50);
     setInterval(updateMusicMix, 120);
     for (const k in A.sounds) AC.decodeAudioData(b64ToBuf(A.sounds[k]), buf => { SB[k] = buf; }, () => {});
     const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0);
@@ -16,6 +16,9 @@ function initAudio() {
     const g = AC.createGain(); g.gain.value = 0.05; src.connect(lp); lp.connect(g); g.connect(master); src.start();
   } catch (e) { AC = null; }
 }
+// 메인 화면 음악: 첫 화면이 떠 있고 판이 돌지 않을 때. 브라우저는 첫 클릭·키 입력 전에는 소리를 막으므로 그때 시작한다
+function onTitle() { const el = document.getElementById('intro'); return !!el && !el.hidden && !running; }
+for (const ev of ['pointerdown', 'keydown']) addEventListener(ev, () => { if (onTitle()) { initAudio(); setMusic('n_title'); } }, true);
 // Recorded score is lazy-decoded. Procedural loops remain an offline fallback.
 const MB = {}, SCORE = {}, scorePending = {}, scoreBytes = {}, scoreFailed = new Set();
 let musicGain = null, musicSrc = null, musicKey = null, wantedMusic = 'n_calm';
@@ -49,7 +52,7 @@ function updateMusicMix() {
   }
 }
 function setMusic(k, force=false) {
-  if (!AC || !['n_calm','n_tense','n_fight'].includes(k)) return;
+  if (!AC || !['n_calm','n_tense','n_fight','n_title'].includes(k)) return;
   wantedMusic = k;
   if (!SCORE[k] && !scoreFailed.has(k)) loadScore(k);
   if (!force && musicKey === k) return;

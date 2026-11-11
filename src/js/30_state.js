@@ -235,7 +235,7 @@ function newGame(si) {
       if (!b.plan || !b.facade || b.piloti || b.h < 2) return;
       b.gas = []; b.balc = [];
       for (const x of (b.glass ? [] : [b.x0, b.x1, b.x0 + 1, b.x1 - 1])) {
-        if (G0[b.y1][x] !== '#' || !groundOk(x, b.y1 + 1)) continue;
+        if ((G0[b.y1][x] !== '#' && G0[b.y1][x] !== '§') || !groundOk(x, b.y1 + 1)) continue;  // § = 큰 도시 건물 벽
         S.ladders.push({ kind: 'pipe', gas: true, bx: x, by: b.y1 + 1, bz: 0, tx: x, ty: b.y1, tz: b.h, x: tc(x), y: tc(b.y1 + 1), ux: tc(x), uy: tc(b.y1) });
         occ.add(x + ',' + (b.y1 + 1)); b.gas.push(x); break;
       }

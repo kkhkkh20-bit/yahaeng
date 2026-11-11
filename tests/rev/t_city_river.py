@@ -18,7 +18,7 @@ CHECK = '''async()=>{const G=__game;G.start(G.STAGES.findIndex(s=>s.id==='cityXL
   let gaps=0,bridges=0;for(let x=0;x<W;x++){const road=ST.roadsX.some(r=>x>=r&&x<r+4),water=[4,5,6].every(r=>tile(x,Rv.y+r)==='~');if(road){bridges++;if([0,5,10].some(r=>tile(x,Rv.y+r)!=='.'))gaps++;}else if(!water&&![4,5,6].every(r=>tile(x,Rv.y+r)==='¦'))gaps++;}
   // traffic for 60 s at 30 fps: nobody in the water, cars on bridges, nobody enters a junction on a solid red
   const jx=v=>{for(const rx of ST.roadsX)for(const ry of ST.roadsY)if(v.x>=rx*48&&v.x<(rx+4)*48&&v.y>=ry*48&&v.y<(ry+4)*48)return [rx,ry];return null};
-  const SIG=16,sig=(rx,ry,t)=>{const u=((t+((rx*3+ry*5)%SIG))%SIG+SIG)%SIG;return u<7?{ns:'G',ew:'R'}:u<8?{ns:'Y',ew:'R'}:u<15?{ns:'R',ew:'G'}:{ns:'R',ew:'Y'}};
+  const sig=(rx,ry,t)=>{const t0=S.t;S.t=t;const s=G.traffic.signalState(rx,ry);S.t=t0;return s};
   const was=new Map(),dirs=new Map();let wet=0,onBridge=0,entries=0,redRuns=0;
   for(let k=0;k<60*30;k++){G.update(1/30);for(const v of S.vehicles){if(v.dead||v.parked)continue;const tx=Math.floor(v.x/48),ty=Math.floor(v.y/48);if(tile(tx,ty)==='~')wet++;if(ty>=Rv.y&&ty<Rv.y+Rv.rows)onBridge++;
     if(!v.ai||v.chase)continue;const h=dirs.get(v.id)||[];h.push(v.d);if(h.length>15)h.shift();dirs.set(v.id,h);const j=jx(v);

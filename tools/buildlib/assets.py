@@ -7,7 +7,7 @@ def campaign_assets(root):
     assets = json.loads((Path(root) / 'build/assets_city.json').read_text())
     # Retire the unused legacy catalogue; load the three licensed score loops.
     assets.pop('music', None)
-    assets['score'] = {key: 'data:audio/mpeg;base64,' + base64.b64encode((Path(root)/'src/audio'/name).read_bytes()).decode() for key,name in [('n_calm','night.mp3'),('n_tense','search.mp3'),('n_fight','chase.mp3')]}
+    assets['score'] = {key: 'data:audio/mpeg;base64,' + base64.b64encode((Path(root)/'src/audio'/name).read_bytes()).decode() for key,name in [('n_calm','night.mp3'),('n_tense','search.mp3'),('n_fight','chase.mp3'),('n_title','title.mp3')]}
     # UI and canvas now share the complete self-hosted face in interface.css.
     assets.pop('font', None)
     fx = Path(root) / 'src/art/fx'

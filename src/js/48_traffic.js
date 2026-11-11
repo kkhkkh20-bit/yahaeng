@@ -71,6 +71,31 @@ function updateVehicles(dt) {
     aiDrive(v, vdt);
     hitPeople(v, vdt);
   }
+  pushBodiesFromCars();
+}
+// 걷는 사람은 차를 밟고 지나가지 못한다: 차 몸(앞뒤 끝을 잇는 막대 + 반지름)에 닿은 사람은 차 밖으로 밀어낸다.
+// 벽 안으로 밀리면 그 자리에 둔다. 사람 x로 정렬해 차 근처만 본다
+const BODY_R = 12;
+function pushBodiesFromCars() {
+  if (!S.vehicles.length) return;
+  const P = S.player, people = [];
+  if (!P.car && !P.z && !flOf(P) && !P.hide && !P.vent) people.push(P);
+  for (const g of S.guards) if (g.state !== 'DEAD' && g.state !== 'CAPTIVE' && !g.off && !g.z && !flOf(g) && !g.climb && g.x > 0) people.push(g);
+  people.sort((a, b) => a.x - b.x);
+  const reach = 25 + CAR_R + BODY_R;
+  for (const v of S.vehicles) {
+    if (v === P.car && Math.abs(v.v) > 1) continue;
+    const ca = Math.cos(v.a) * 25, sa = Math.sin(v.a) * 25;
+    let lo = 0, hi = people.length; while (lo < hi) { const m = (lo + hi) >> 1; if (people[m].x < v.x - reach) lo = m + 1; else hi = m; }
+    for (let i = lo; i < people.length && people[i].x <= v.x + reach; i++) {
+      const o = people[i]; if (Math.abs(o.y - v.y) > reach) continue;
+      // 막대 위 가장 가까운 점
+      const t = clamp(((o.x - v.x) * ca + (o.y - v.y) * sa) / (25 * 25), -1, 1), qx = v.x + ca * t, qy = v.y + sa * t, dx = o.x - qx, dy = o.y - qy, d = Math.hypot(dx, dy), need = CAR_R + BODY_R;
+      if (d >= need) continue;
+      const ux = d > 0.01 ? dx / d : -sa / 25, uy = d > 0.01 ? dy / d : ca / 25, nx = qx + ux * need, ny = qy + uy * need;
+      if (!solidAt(Math.floor(nx / TILE), Math.floor(ny / TILE))) { o.x = nx; o.y = ny; }
+    }
+  }
 }
 // 남이 모는 차: 내 차와 같은 몸(속도·방향·핸들)으로 달린다. 앞을 보고(차로 위 70px 앞 점을 따라가는 '순수 추종') 핸들을 꺾고,
 // 교차로 앞에선 속도를 줄이고, 꺾을 때는 새 차로 쪽 점을 따라가 둥글게 돈다 (예전처럼 직각으로 '툭' 꺾이지 않는다)
@@ -107,32 +132,42 @@ function aiDrive(v, dt) {
 }
 // One junction reservation, released after the rear bumper clears it. Waiting
 // never authorizes driving through another car after an arbitrary timeout.
-// 신호등 (STAGE.signals): 교차로마다 남북 → 남북 황색 → 동서 → 동서 황색. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
-const SIG_T = 16;
+// 신호등 (STAGE.signals): 한국식 4현시. 동서 직진(초록) → 황색 → 동서 좌회전(빨강+화살표) → 황색 → 남북 직진 → 황색 → 남북 좌회전 → 황색.
+// 보행 신호는 같은 방향 직진과 함께 초록이 되고(끝 3초 깜빡임), 좌회전 때는 빨강이다. 교차로마다 시작을 어긋나게 해 한꺼번에 바뀌지 않는다
+const SIG_T = 36, SIG_PH = [[10, 'G'], [12, 'Y'], [17, 'L'], [18, 'Y']];
+function signalTime(rx, ry) { return ((S.t + ((rx * 7 + ry * 11) % SIG_T)) % SIG_T + SIG_T) % SIG_T; }
 function signalState(rx, ry) {
   if (!STAGE.signals) return null;
-  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T;
-  return t < 7 ? { ns: 'G', ew: 'R' } : t < 8 ? { ns: 'Y', ew: 'R' } : t < 15 ? { ns: 'R', ew: 'G' } : { ns: 'R', ew: 'Y' };
+  const t = signalTime(rx, ry), ph = t => SIG_PH.find(([end]) => t < end)[1];
+  return t < 18 ? { ew: ph(t), ns: 'R' } : { ew: 'R', ns: ph(t - 18) };
 }
-// 신호등 그림: 모퉁이마다 굵은 기둥, 도로 위로 뻗은 팔에 차량 신호기(빨강 · 노랑 · 좌회전 · 초록), 기둥에 보행 신호(서 있는 사람 · 걷는 사람)
-// 북서·남동 기둥은 동서로 달리는 차, 북동·남서 기둥은 남북으로 달리는 차를 향한다. 보행 신호는 같은 쪽 차와 함께 초록이 된다
+// 차가 이 교차로에서 갈 수 있나: 초록은 직진·우회전, 좌회전 화살표는 좌회전만
+function signalLets(light, v, x0, y0, x1, y1) {
+  const hor = v.d % 2 === 0, t = v.turn, here = t && (hor ? t.at > x0 && t.at < x1 : t.at > y0 && t.at < y1);
+  const turnLeft = here && t.nd === (v.d + 3) % 4;
+  return light === 'G' ? !turnLeft : light === 'L' ? turnLeft : false;
+}
+// 신호등 그림: 차량 신호기는 교차로 건너편(차가 바라보는 쪽) 모퉁이 기둥에서 다가오는 차로 위로 팔을 뻗어 단다.
+// 동쪽으로 가는 차 = 남동 기둥, 서쪽 = 북서, 남쪽 = 남서, 북쪽 = 북동. 등은 빨강 · 노랑 · 좌회전 화살표 · 초록 (좌회전 때는 빨강+화살표)
+// 보행 신호는 차량 신호기와 따로, 횡단보도 양 끝 보도에 선다
 const SIG_COL = { G: '#2ee87a', Y: '#ffc21f', R: '#ff3434' };
-function drawSignalHead(cx, cy, on) {
-  const w = 46, h = 16, x = cx - w / 2, y = cy - h / 2;
+function drawSignalHead(cx, cy, state, vertical, turnA) {  // turnA: 이 신호를 보는 차가 좌회전하는 쪽(화면 각도)
+  const L = 46, D = 16, w = vertical ? D : L, h = vertical ? L : D, x = cx - w / 2, y = cy - h / 2;
   ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 3, y + 4, w, h);
   ctx.fillStyle = '#e2b62a'; ctx.fillRect(x - 2, y - 2, w + 4, h + 4);  // 노란 테 (뒤판)
   ctx.fillStyle = '#121418'; ctx.fillRect(x, y, w, h);
-  [['R', 0], ['Y', 1], ['L', 2], ['G', 3]].forEach(([c, k]) => {
-    const lx = x + 6 + k * 11.3, ly = cy, lit = c === on;
-    const col = c === 'L' ? SIG_COL.G : SIG_COL[c];
+  const on = { R: state === 'R' || state === 'L', Y: state === 'Y', L: state === 'L', G: state === 'G' };
+  ['R', 'Y', 'L', 'G'].forEach((c, k) => {
+    const o = -L / 2 + 6 + k * 11.3, lx = vertical ? cx : cx + o, ly = vertical ? cy + o : cy, col = c === 'L' ? SIG_COL.G : SIG_COL[c];
     ctx.fillStyle = '#25282e'; ctx.beginPath(); ctx.arc(lx, ly, 5, 0, TAU); ctx.fill();
-    if (c === 'L') { ctx.strokeStyle = on === 'G' ? col : 'rgba(90,100,90,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(lx + 3, ly); ctx.lineTo(lx - 3, ly); ctx.moveTo(lx - 1, ly - 2.5); ctx.lineTo(lx - 3.5, ly); ctx.lineTo(lx - 1, ly + 2.5); ctx.stroke(); return; }
-    ctx.fillStyle = lit ? col : 'rgba(70,70,74,.85)'; ctx.beginPath(); ctx.arc(lx, ly, 4, 0, TAU); ctx.fill();
-    if (lit) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col + '55'; ctx.beginPath(); ctx.arc(lx, ly, 11, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+    if (c === 'L') { ctx.save(); ctx.translate(lx, ly); ctx.rotate(turnA); ctx.strokeStyle = on.L ? col : 'rgba(90,100,90,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(3, 0); ctx.moveTo(1, -2.5); ctx.lineTo(3.5, 0); ctx.lineTo(1, 2.5); ctx.stroke(); ctx.restore(); }
+    else { ctx.fillStyle = on[c] ? col : 'rgba(70,70,74,.85)'; ctx.beginPath(); ctx.arc(lx, ly, 4, 0, TAU); ctx.fill(); }
+    if (on[c]) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = col + '55'; ctx.beginPath(); ctx.arc(lx, ly, 11, 0, TAU); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
   });
 }
 function drawWalkHead(cx, cy, state, t) {
   const go = state === 'G' || state === 'W', blink = state === 'W' && Math.floor(t * 4) % 2 === 0, x = cx - 8, y = cy - 12;
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.fillRect(x + 2, y + 3, 16, 24);
   ctx.fillStyle = '#121418'; ctx.fillRect(x, y, 16, 24); ctx.strokeStyle = '#5a626b'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, 15, 23);
   const col = go ? (blink ? '#0e3a22' : SIG_COL.G) : SIG_COL.R; ctx.fillStyle = col; ctx.strokeStyle = col; ctx.lineWidth = 2;
   const fy = go ? y + 13 : y + 5;  // 아래 칸 = 걷는 사람(초록), 위 칸 = 서 있는 사람(빨강)
@@ -142,31 +177,42 @@ function drawWalkHead(cx, cy, state, t) {
   if (go && !blink) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(46,232,122,.25)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
   if (!go) { ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,52,52,.2)'; ctx.fillRect(x - 4, y - 4, 24, 32); ctx.globalCompositeOperation = 'source-over'; }
 }
-// 보행 신호: 'G' 건너도 됨 · 'W' 곧 바뀜(깜빡임) · 'R' 기다림. 동서로 건너는 사람(남북 도로를 가로지름)은 동서 차와 같이 초록
+// 보행 신호: 'G' 건너도 됨 · 'W' 곧 바뀜(깜빡임) · 'R' 기다림.
+// horizontal = 동서로 걷는 사람(남북 도로를 가로지르는 북쪽·남쪽 횡단보도): 동서 직진과 함께 초록. 세로는 남북 직진과 함께
 function walkState(rx, ry, horizontal) {
-  const s = signalState(rx, ry); if (!s) return 'G';
-  const c = horizontal ? s.ew : s.ns; if (c !== 'G') return 'R';
-  const t = ((S.t + ((rx * 3 + ry * 5) % SIG_T)) % SIG_T + SIG_T) % SIG_T, end = horizontal ? 15 : 7;
-  return end - t < 2.5 ? 'W' : 'G';
+  if (!STAGE.signals) return 'G';
+  const t = signalTime(rx, ry) - (horizontal ? 0 : 18);
+  return t < 0 || t >= 10 ? 'R' : t >= 7 ? 'W' : 'G';
+}
+function signalPole(px, py) {
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(px + 3, py + 4, 9, 5, 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#4a515a'; ctx.beginPath(); ctx.arc(px, py, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#7d8690'; ctx.beginPath(); ctx.arc(px - 2, py - 2, 3, 0, TAU); ctx.fill();
 }
 function drawTrafficSignals() {
   if (!STAGE.signals || flOf(S.player)) return;
   ctx.save();
+  const T = TILE;
   for (const rx of STAGE.roadsX || []) for (const ry of STAGE.roadsY || []) {
-    const x0 = rx * TILE, y0 = ry * TILE, x1 = x0 + 4 * TILE, y1 = y0 + 4 * TILE; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 5 * TILE)) continue;
+    const x0 = rx * T, y0 = ry * T, x1 = x0 + 4 * T, y1 = y0 + 4 * T; if (!inView((x0 + x1) / 2, (y0 + y1) / 2, 5 * T)) continue;
     const s = signalState(rx, ry);
-    for (const [px, py, axis, ax, ay] of [[x0 - 16, y0 - 16, 'ew', 0, 1], [x1 + 16, y1 + 16, 'ew', 0, -1], [x1 + 16, y0 - 16, 'ns', -1, 0], [x0 - 16, y1 + 16, 'ns', 1, 0]]) {
-      // 기둥과 팔
-      const armL = 2.2 * TILE, hx = px + ax * armL, hy = py + ay * armL;
-      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(px + 3, py + 4, 9, 5, 0, 0, TAU); ctx.fill();
+    // [기둥 x, y, 축, 신호기 x, y, 세로로 다나] — 신호기는 다가오는 차로(오른쪽 통행) 한가운데 위
+    // 마지막 값 = 좌회전 화살표 방향: 동쪽으로 가던 차는 북쪽으로, 서쪽은 남쪽, 남쪽은 동쪽, 북쪽은 서쪽으로 돈다
+    for (const [px, py, axis, hx, hy, vert, ta] of [
+      [x1 + 16, y1 + 16, 'ew', x1 + 16, y0 + 3 * T, true, -Math.PI / 2],  // 동쪽으로 가는 차 (남쪽 차로)
+      [x0 - 16, y0 - 16, 'ew', x0 - 16, y0 + T, true, Math.PI / 2],       // 서쪽으로 가는 차 (북쪽 차로)
+      [x0 - 16, y1 + 16, 'ns', x0 + T, y1 + 16, false, 0],                // 남쪽으로 가는 차 (서쪽 차로)
+      [x1 + 16, y0 - 16, 'ns', x0 + 3 * T, y0 - 16, false, Math.PI],      // 북쪽으로 가는 차 (동쪽 차로)
+    ]) {
       ctx.strokeStyle = '#3a4048'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
       ctx.strokeStyle = '#6a737e'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(hx, hy); ctx.stroke();
-      ctx.fillStyle = '#4a515a'; ctx.beginPath(); ctx.arc(px, py, 7, 0, TAU); ctx.fill(); ctx.fillStyle = '#7d8690'; ctx.beginPath(); ctx.arc(px - 2, py - 2, 3, 0, TAU); ctx.fill();
-      drawSignalHead(hx, hy, s[axis]);
-      // 보행 신호: 이 모퉁이에서 가로로 건너는 쪽과 세로로 건너는 쪽
-      drawWalkHead(px + (px < x0 ? -14 : 14), py - 4, walkState(rx, ry, true), S.t);
-      drawWalkHead(px, py + (py < y0 ? -22 : 22), walkState(rx, ry, false), S.t);
+      signalPole(px, py); drawSignalHead(hx, hy, s[axis], vert, ta);
     }
+    // 보행 신호: 횡단보도 양 끝 보도. 북쪽·남쪽 횡단보도는 동서로 걷고, 서쪽·동쪽은 남북으로 걷는다
+    const wh = walkState(rx, ry, true), wv = walkState(rx, ry, false);
+    for (const [cx, cy, st] of [
+      [x0 - 20, y0 - 50, wh], [x1 + 20, y0 - 50, wh], [x0 - 20, y1 + 50, wh], [x1 + 20, y1 + 50, wh],
+      [x0 - 50, y0 - 22, wv], [x0 - 50, y1 + 22, wv], [x1 + 50, y0 - 22, wv], [x1 + 50, y1 + 22, wv],
+    ]) drawWalkHead(cx, cy, st, S.t);
   }
   ctx.restore();
 }
@@ -183,19 +229,21 @@ function pedWaits(g) {
   if (ryv != null && rxv == null) { const rx = RX.reduce((a, r) => Math.abs((r + 2) - nx) < Math.abs((a + 2) - nx) ? r : a, RX[0]); return walkState(rx, ryv, false) !== 'G'; }
   return false;
 }
+// 횡단보도는 교차로 앞 70px(둘이 나란히 걷는 폭), 정지선은 그 바깥 84px. 차는 앞머리가 정지선에 닿게 선다(차 중심 = 정지선 + 차 반 길이)
+const XWALK = 70, STOP_LINE = 84, STOP_GAP = STOP_LINE + CAR_LEN / 2 - 6;
 function trafficStopDistance(v){
  if(v.chase)return null;
  const locks=S.trafficJunctions||(S.trafficJunctions={}),hor=v.d%2===0,sgn=DV[v.d][0]+DV[v.d][1];
  for(const rx of STAGE.roadsX||[])for(const ry of STAGE.roadsY||[]){
   const x0=rx*TILE,y0=ry*TILE,x1=x0+4*TILE,y1=y0+4*TILE,key=rx+','+ry;
-  const inside=o=>o.x>x0-55&&o.x<x1+55&&o.y>y0-55&&o.y<y1+55;
+  const inside=o=>o.x>x0-STOP_GAP+3&&o.x<x1+STOP_GAP-3&&o.y>y0-STOP_GAP+3&&o.y<y1+STOP_GAP-3;
   const aligned=hor?v.y>y0&&v.y<y1:v.x>x0&&v.x<x1;
-  const entry=hor?(sgn>0?x0-58:x1+58):(sgn>0?y0-58:y1+58),left=(entry-(hor?v.x:v.y))*sgn;
-  if(!aligned||left>230||left< -4*TILE-116){if(left< -4*TILE-116&&v.junctionWait)delete v.junctionWait[key];continue;}
+  const entry=hor?(sgn>0?x0-STOP_GAP:x1+STOP_GAP):(sgn>0?y0-STOP_GAP:y1+STOP_GAP),left=(entry-(hor?v.x:v.y))*sgn;
+  if(!aligned||left>230||left< -4*TILE-STOP_GAP-58){if(left< -4*TILE-STOP_GAP-58&&v.junctionWait)delete v.junctionWait[key];continue;}
   // 신호: 빨강이면 정지선(교차로 앞 횡단보도 앞)에서 선다. 황색은 정지선에 바짝 붙었으면 그대로 지나간다
   const sig=signalState(rx,ry),light=sig&&(hor?sig.ew:sig.ns);
-  if(light&&light!=='G'&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
-  const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-58:x1+58):(s>0?y0-58:y1+58))-(h?o.x:o.y))*s;};
+  if(light&&!signalLets(light,v,x0,y0,x1,y1)&&left>-40&&!(light==='Y'&&left<45&&Math.abs(v.v)>60))return Math.max(0,left);  // 좌회전 차는 화살표를, 직진 차는 초록을 기다린다  // 정지선을 조금 넘겨 선 차도 빨간불엔 그대로 기다린다
+  const distance=o=>{const h=o.d%2===0,s=DV[o.d][0]+DV[o.d][1];if(!(h?o.y>y0&&o.y<y1:o.x>x0&&o.x<x1))return Infinity;return ((h?(s>0?x0-STOP_GAP:x1+STOP_GAP):(s>0?y0-STOP_GAP:y1+STOP_GAP))-(h?o.x:o.y))*s;};
   const incoming=S.vehicles.filter(o=>o.ai&&!o.dead&&!o.parked&&distance(o)>=-6&&distance(o)<230);
   for(const o of incoming){const waits=o.junctionWait||(o.junctionWait={});waits[key]??=S.t;}
   incoming.sort((a,b)=>a.junctionWait[key]-b.junctionWait[key]||distance(a)-distance(b)||a.id-b.id);
@@ -361,7 +409,13 @@ function drawRoadMarks(x) {
   x.fillStyle = 'rgba(225,228,236,.55)';
   for (const rx of RX) for (const ry of RY) {
     const x0 = rx * T, y0 = ry * T, x1 = (rx + 4) * T, y1 = (ry + 4) * T;
-    for (let k = 0; k < 4 * T; k += 16) { if (y0 - 30 > 0) x.fillRect(x0 + k + 3, y0 - 30, 9, 26); if (y1 + 30 < MH * T) x.fillRect(x0 + k + 3, y1 + 4, 9, 26); if (x0 - 30 > 0) x.fillRect(x0 - 30, y0 + k + 3, 26, 9); if (x1 + 30 < MW * T) x.fillRect(x1 + 4, y0 + k + 3, 26, 9); }
+    const W2 = XWALK - 6, L = STOP_LINE;
+    for (let k = 0; k < 4 * T; k += 16) { if (y0 - L > 0) x.fillRect(x0 + k + 3, y0 - XWALK, 9, W2); if (y1 + L < MH * T) x.fillRect(x0 + k + 3, y1 + 6, 9, W2); if (x0 - L > 0) x.fillRect(x0 - XWALK, y0 + k + 3, W2, 9); if (x1 + L < MW * T) x.fillRect(x1 + 6, y0 + k + 3, W2, 9); }
+    // 정지선: 다가오는 차로(오른쪽 통행) 쪽에만 굵은 흰 선
+    x.fillStyle = 'rgba(235,236,240,.8)';
+    if (x0 - L > 0) x.fillRect(x0 - L, y0 + 2 * T, 6, 2 * T); if (x1 + L < MW * T) x.fillRect(x1 + L - 6, y0, 6, 2 * T);
+    if (y0 - L > 0) x.fillRect(x0, y0 - L, 2 * T, 6); if (y1 + L < MH * T) x.fillRect(x0 + 2 * T, y1 + L - 6, 2 * T, 6);
+    x.fillStyle = 'rgba(225,228,236,.55)';
   }
   x.restore();
 }

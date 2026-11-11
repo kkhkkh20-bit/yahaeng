@@ -89,7 +89,7 @@ function say(lines, modal, onEnd) {
     if (onEnd) onEnd(); return;
   }
   const speakers=[...new Set(lines.map(l=>l[0]))];
-  $('dlgContext').textContent=speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
+  $('dlgContext').textContent=S?.phoneCall?'공중전화 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).join(' / '):speakers.some(w=>w==='master'||w==='aide')?'무전 · '+speakers.map(w=>speakerOf(w).name+(w==='hero'?'(나)':'')).filter(Boolean).join(' / '):speakers.every(w=>w==='hero')?'올빼미의 생각':speakers.every(w=>w&&w.note)?'현장 기록':'현장 대화';
   $('dlg').dataset.channel=speakers.some(w=>w==='master'||w==='aide')?'radio':speakers.every(w=>w&&w.note)?'note':'conversation';
   $('dlgChannelIcon').innerHTML=($('dlg').dataset.channel==='radio'?skillSigil('radio'):uiSigil($('dlg').dataset.channel==='note'?'document':'conversation'));
   DLG.total=lines.length;DLG.index=0;DLG.q = lines.slice(); DLG.modal = !!modal; DLG.onEnd = onEnd || null; nextLine();

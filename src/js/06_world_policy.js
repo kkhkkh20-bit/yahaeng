@@ -4,6 +4,7 @@ const groundedWorld = (st = STAGE) => !!st && !st.artSlice && (st.physicalWorld 
 function physicalAccess(l) {
   if (!groundedWorld()) return true;
   if ((STAGE.retiredClimbs || []).some(([x,y])=>l.tx===x&&l.ty===y)) return false;
+  if (STAGE.climbPipes && l.kind === 'pipe' && l.gas) return true;  // 자유 모드 도시: 정면 가스관을 타고 옥상까지 오르내린다
   if (l.kind === 'pipe' || l.gas || l.kind === 'balc' || l.kind === 'chimney') return false;
   return l.kind !== 'ladder' || tileAt0(l.ux, l.uy) !== 'U';
 }

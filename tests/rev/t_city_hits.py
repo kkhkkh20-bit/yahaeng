@@ -1,4 +1,4 @@
-"""Open-city contracts (GTA-style study, ?study=city-xl): phone -> target in the city -> kill pays, knockout does not."""
+"""Open-city contracts (free mode): step into the phone booth, take the call -> target in the city -> kill pays, knockout does not."""
 import asyncio, json, sys
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -25,6 +25,10 @@ async def main():
             if not v: bad.append(m)
         ok(env == 'hitPhone', 'phone does not offer a contract: %s' % env)
         await q.keyboard.press('x'); await q.evaluate('tick(.3)')
+        call = await q.evaluate('''()=>{const G=__game,S=G.S,lines=[];const inBooth=!!S.player.booth,ctx=document.getElementById('dlgContext').textContent;
+          while(G.DLG.modal){lines.push(document.getElementById('dlgText')?.textContent||'');G.advanceDialog();}tick(.3);return {inBooth,ctx,lines:lines.length,out:!S.player.booth}}''')
+        print('call', json.dumps(call, ensure_ascii=False))
+        ok(call['inBooth'] and call['ctx'].startswith('공중전화') and call['lines'] >= 3 and call['out'], 'the phone booth call did not play: %s' % call)
         s = await q.evaluate(STATE); print('taken', json.dumps(s, ensure_ascii=False))
         ok(s['hit'] and s['hit']['state'] != 'DEAD' and s['hit']['escorts'] >= 1, 'no target with escort spawned')
         ok(s['hit'] and s['hit']['name'] in s['summary'], 'objective panel does not name the target')

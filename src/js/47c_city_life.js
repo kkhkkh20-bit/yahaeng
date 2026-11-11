@@ -199,10 +199,10 @@ function drawStoreSigns(b, lit) {
   if (b.kind !== 'shop' || !b.fh || !b.signs) return;
   const hs = signHash(b), x0 = b.x0 * TILE, w = (b.x1 - b.x0 + 1) * TILE; if (!inView(x0 + w / 2, b.y1 * TILE, w)) return;
   ctx.save(); ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
-  // 가로 간판
+  // 가로 간판: 1층 출입구 차양보다 위(2층 창 아랫단)에 건다
   const name = (b.signs[0] || '').trim();
   if (name) {
-    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh + 4, sub = SIGN_SUB[hs % SIGN_SUB.length];
+    const st = signStyle(name), bx = x0 + 4, bw = w - 8, bh = 30, by = b.y1 * TILE - bh - 22, sub = SIGN_SUB[hs % SIGN_SUB.length];
     if (lit) { ctx.globalCompositeOperation = 'lighter'; const c = hexRgb(st.bg === '#ffffff' || st.bg === '#f4f2ea' ? st.ac : st.bg);
       for (const [pad, a] of [[20, .07], [9, .12]]) { ctx.fillStyle = `rgba(${c},${a})`; ctx.fillRect(bx - pad, by - pad, bw + pad * 2, bh + pad * 2); } ctx.globalCompositeOperation = 'source-over'; }
     ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(bx + 2, by + 3, bw, bh);
